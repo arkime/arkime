@@ -1,6 +1,6 @@
 /* arkimeUtil.js  -- Shared util functions
  *
- * Copyright 2012-2016 AOL Inc. All rights reserved.
+ * Copyright Yahoo Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this Software except in compliance with the License.
@@ -18,6 +18,7 @@
 
 const Redis = require('ioredis');
 const memjs = require('memjs');
+const Auth = require('./auth');
 
 class ArkimeUtil {
   static debug = 0;
@@ -160,6 +161,82 @@ class ArkimeUtil {
     wildcard = wildcard.replace(/[.+^${}()|[\]\\]/g, '\\$&');
     return new RegExp(`^${wildcard.replace(/\*/g, '.*').replace(/\?/g, '.')}$`, 'i');
   }
+
+  static parseTimeStr (time) {
+    if (typeof time !== 'string') {
+      return time;
+    }
+
+    switch (time[time.length - 1]) {
+    case 'w':
+      return parseInt(time.slice(0, -1)) * 60 * 60 * 24 * 7;
+    case 'd':
+      return parseInt(time.slice(0, -1)) * 60 * 60 * 24;
+    case 'h':
+      return parseInt(time.slice(0, -1)) * 60 * 60;
+    case 'm':
+      return parseInt(time.slice(0, -1)) * 60;
+    case 's':
+      return parseInt(time.slice(0, -1));
+    default:
+      return parseInt(time);
+    }
+  }
+
+  /**
+   * Sends an error from the server by:
+   * 1. setting the http content-type header to json
+   * 2. setting the response status code (403 default)
+   * 3. sending a false success with message text (default "Server Error!")
+   * @param {Number} [resStatus=403] - The response status code (optional)
+   * @param {String} [text="Server Error!"] - The response text (optional)
+   * @returns {Object} res - The Express.js response object
+   */
+  static serverError (resStatus, text) {
+    this.status(resStatus || 403);
+    this.setHeader('Content-Type', 'application/json');
+    return this.send(
+      { success: false, text: text || 'Server Error!' }
+    );
+  }
+
+  // express middleware to set req.settingUser to who to work on, depending if admin or not
+  // This returns fresh from db
+  static getSettingUserDb (req, res, next) {
+    let userId;
+
+    if (req.query.userId === undefined || req.query.userId === req.user.userId) {
+      if (Auth.regressionTests) {
+        req.settingUser = req.user;
+        return next();
+      }
+
+      userId = req.user.userId;
+    } else if (!req.user.hasRole('usersAdmin')) {
+      // user is trying to get another user's settings without admin privilege
+      return res.serverError(403, 'Need admin privileges');
+    } else {
+      userId = req.query.userId;
+    }
+
+    User.getUser(userId, function (err, user) {
+      if (err || !user) {
+        if (!Auth.passwordSecret) {
+          req.settingUser = JSON.parse(JSON.stringify(req.user));
+          delete req.settingUser.found;
+        } else {
+          return res.serverError(403, 'Unknown user');
+        }
+
+        return next();
+      }
+
+      req.settingUser = user;
+      return next();
+    });
+  }
 }
 
 module.exports = ArkimeUtil;
+
+const User = require('./user');

@@ -39,6 +39,7 @@ function help () {
   console.log('  --webauthonly         Can auth using the web auth header only, password ignored');
   console.log('  --packetSearch        Can create a packet search job (hunt)');
   console.log('  --createOnly          Only create the user if it doesn\'t exist');
+  console.log('  --roles               Comma seperated list of roles');
   console.log('');
   console.log('Config Options:');
   console.log('  -c <config file>      Config file to use');
@@ -62,18 +63,18 @@ function main () {
     webEnabled: true,
     headerAuthEnabled: false,
     emailSearch: false,
-    createEnabled: false,
     removeEnabled: false,
     packetSearch: false,
     welcomeMsgNum: 0,
     settings: {}
   };
 
+  const roles = new Set();
   for (let i = 5; i < process.argv.length; i++) {
     switch (process.argv[i]) {
     case '--admin':
     case '-admin':
-      nuser.createEnabled = true;
+      roles.add('superAdmin');
       break;
 
     case '--remove':
@@ -118,11 +119,26 @@ function main () {
       nuser._createOnly = true;
       break;
 
+    case '--roles':
+    case '-roles':
+      process.argv[i + 1].split(',').forEach(r => roles.add(r));
+      i++;
+      break;
+
     default:
       console.log('Unknown option', process.argv[i]);
       help();
     }
   }
+
+  if (roles.size === 0) {
+    roles.add('arkimeUser');
+    roles.add('cont3xtUser');
+    roles.add('parliamentUser');
+    roles.add('wiseUser');
+  }
+
+  nuser.roles = [...roles];
 
   User.setUser(process.argv[2], nuser, (err, info) => {
     if (err) {
@@ -134,7 +150,9 @@ function main () {
     } else {
       console.log('Added');
     }
-    Db.close();
+    if (Config.nodeName() !== 'cont3xt') {
+      Db.close();
+    }
   });
 }
 
@@ -142,18 +160,37 @@ if (process.argv.length < 5) {
   help();
 }
 
-Db.initialize({
-  host: escInfo,
-  prefix: Config.get('prefix', 'arkime_'),
-  esClientKey: Config.get('esClientKey', null),
-  esClientCert: Config.get('esClientCert', null),
-  esClientKeyPass: Config.get('esClientKeyPass', null),
-  insecure: Config.insecure,
-  ca: Config.getCaTrustCerts(Config.nodeName()),
-  usersHost: Config.getArray('usersElasticsearch', ','),
-  usersPrefix: Config.get('usersPrefix'),
-  esApiKey: Config.get('elasticsearchAPIKey', null),
-  usersEsApiKey: Config.get('usersElasticsearchAPIKey', null),
-  esBasicAuth: Config.get('elasticsearchBasicAuth', null),
-  usersEsBasicAuth: Config.get('usersElasticsearchBasicAuth', null)
-}, main);
+if (Config.nodeName() === 'cont3xt') {
+  const usersUrl = Config.get('usersUrl');
+  const usersEs = Config.get('usersElasticsearch', Config.get('elasticsearch', 'http://localhost:9200')).split(',');
+  User.initialize({
+    insecure: Config.insecure,
+    requestTimeout: Config.get('elasticsearchTimeout', 300),
+    debug: Config.debug,
+    url: usersUrl,
+    node: usersEs,
+    clientKey: Config.get('esClientKey'),
+    clientCert: Config.get('esClientCert'),
+    clientKeyPass: Config.get('esClientKeyPass'),
+    prefix: Config.get('usersPrefix', ''),
+    apiKey: Config.get('usersElasticsearchAPIKey'),
+    basicAuth: Config.get('usersElasticsearchBasicAuth')
+  });
+  main();
+} else {
+  Db.initialize({
+    host: escInfo,
+    prefix: Config.get('prefix', 'arkime_'),
+    esClientKey: Config.get('esClientKey', null),
+    esClientCert: Config.get('esClientCert', null),
+    esClientKeyPass: Config.get('esClientKeyPass', null),
+    insecure: Config.insecure,
+    ca: Config.getCaTrustCerts(Config.nodeName()),
+    usersHost: Config.getArray('usersElasticsearch', ','),
+    usersPrefix: Config.get('usersPrefix'),
+    esApiKey: Config.get('elasticsearchAPIKey', null),
+    usersEsApiKey: Config.get('usersElasticsearchAPIKey', null),
+    esBasicAuth: Config.get('elasticsearchBasicAuth', null),
+    usersEsBasicAuth: Config.get('usersElasticsearchBasicAuth', null)
+  }, main);
+}

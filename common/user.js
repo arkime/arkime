@@ -18,7 +18,8 @@
 'use strict';
 const { Client } = require('@elastic/elasticsearch');
 const fs = require('fs');
-const ArkimeUtil = require('../common/arkimeUtil');
+const util = require('util');
+const cryptoLib = require('crypto');
 
 const systemRolesMapping = {
   superAdmin: ['usersAdmin', 'arkimeAdmin', 'arkimeUser', 'parliamentAdmin', 'parliamentUser', 'wiseAdmin', 'wiseUser', 'cont3xtAdmin', 'cont3xtUser'],
@@ -38,7 +39,6 @@ const usersMissing = {
   userName: '',
   expression: '',
   enabled: 0,
-  createEnabled: 0,
   webEnabled: 0,
   headerAuthEnabled: 0,
   emailSearch: 0,
@@ -47,13 +47,14 @@ const usersMissing = {
 };
 
 const searchColumns = [
-  'userId', 'userName', 'expression', 'enabled', 'createEnabled',
+  'userId', 'userName', 'expression', 'enabled',
   'webEnabled', 'headerAuthEnabled', 'emailSearch', 'removeEnabled', 'packetSearch',
   'hideStats', 'hideFiles', 'hidePcap', 'disablePcapDownload', 'welcomeMsgNum',
   'lastUsed', 'timeLimit', 'roles'
 ];
 
 let readOnly = false;
+let getCurrentUserCB;
 
 /******************************************************************************/
 // User class
@@ -74,6 +75,7 @@ class User {
     }
     User.debug = options.debug ?? 0;
     readOnly = options.readOnly ?? false;
+    getCurrentUserCB = options.getCurrentUserCB;
 
     if (!options.url) {
       User.implementation = new UserESImplementation(options);
@@ -171,7 +173,8 @@ class User {
    * @param query.filter search userId userName for
    * @param query.sortField the field to sort on, default userId
    * @param query.sortDescending sort descending, default false
-   * @returns {total: number matching, users: the users in the from-size section}
+   * @returns {number} total - The total number of matching users
+   * @returns {ArkimeUsers[]} users - The users in the from->size section
    */
   static searchUsers (query) {
     if (query.size > 10000) {
@@ -190,8 +193,9 @@ class User {
       const user = Object.assign(new User(), data);
       cleanUser(user);
       user.settings = user.settings ?? {};
+      user.expandRoles();
       if (readOnly) {
-        user.createEnabled = false;
+        user.roles = user.roles.filter(role => role === 'usersAdmin');
       }
       return cb(null, user);
     });
@@ -215,10 +219,25 @@ class User {
   /**
    * Set user, callback only
    */
-  static setUser (userId, doc, cb) {
-    delete doc._allRoles;
+  static setUser (userId, user, cb) {
+    delete user._allRoles;
+
+    // Save with usersAdmin role if needed
+    if (user.createEnabled) {
+      if (user.roles === undefined) {
+        user.roles = ['usersAdmin'];
+      } else if (!user.roles.includes('usersAdmin')) {
+        user.roles.push('usersAdmin');
+      }
+    }
+
+    // Maintain compatibility for now
+    if (user.roles !== undefined) {
+      user.createEnabled = user.roles.includes('usersAdmin');
+    }
+
     delete User.usersCache[userId];
-    User.implementation.setUser(userId, doc, (err, boo) => {
+    User.implementation.setUser(userId, user, (err, boo) => {
       cb(err, boo);
     });
   };
@@ -261,13 +280,12 @@ class User {
   /**
    * Web Api for getting current user
    */
-  static apiGetUser (req, res, next) {
+  static getCurrentUser (req) {
     const userProps = [
-      'createEnabled', 'emailSearch', 'enabled', 'removeEnabled',
+      'emailSearch', 'enabled', 'removeEnabled',
       'headerAuthEnabled', 'settings', 'userId', 'userName', 'webEnabled',
       'packetSearch', 'hideStats', 'hideFiles', 'hidePcap',
-      'disablePcapDownload', 'welcomeMsgNum', 'lastUsed', 'timeLimit',
-      'roles'
+      'disablePcapDownload', 'welcomeMsgNum', 'lastUsed', 'timeLimit'
     ];
 
     const clone = {};
@@ -278,28 +296,287 @@ class User {
       }
     }
 
-    /* ALW - FIX LATER FOR internals
-    clone.canUpload = internals.allowUploads;
+    clone.roles = [...req.user._allRoles];
 
-    // If esAdminUser is set use that, other wise use createEnable privilege
-    if (internals.esAdminUsersSet) {
-      clone.esAdminUser = internals.esAdminUsers.includes(req.user.userId);
-    } else {
-      clone.esAdminUser = req.user.createEnabled && Config.get('multiES', false) === false;
+    if (getCurrentUserCB) {
+      getCurrentUserCB(req.user, clone);
     }
 
-    // If no settings, use defaults
-    if (clone.settings === undefined) { clone.settings = internals.settingDefaults; }
+    return clone;
+  }
 
-    // Use settingsDefaults for any settings that are missing
-    for (const item in internals.settingDefaults) {
-      if (clone.settings[item] === undefined) {
-        clone.settings[item] = internals.settingDefaults[item];
-      }
-    }
-    */
-
+  static apiGetUser (req, res, next) {
+    const clone = User.getCurrentUser(req);
     return res.send(clone);
+  };
+
+  /**
+   * POST - /api/users
+   *
+   * Retrieves a list of users (admin only).
+   * @name /users
+   * @returns {ArkimeUser[]} data - The list of users configured.
+   * @returns {number} recordsTotal - The total number of users.
+   * @returns {number} recordsFiltered - The number of users returned in this result.
+   */
+  static apiGetUsers (req, res, next) {
+    const query = {
+      from: +req.body.start || 0,
+      size: +req.body.length || 10000
+    };
+
+    if (req.body.filter) {
+      query.filter = req.body.filter;
+    }
+
+    query.sortField = req.body.sortField || 'userId';
+    query.sortDescending = req.body.desc === true;
+
+    Promise.all([
+      User.searchUsers(query),
+      User.numberOfUsers()
+    ]).then(([users, total]) => {
+      if (users.error) { throw users.error; }
+      res.send({
+        success: true,
+        recordsTotal: total,
+        recordsFiltered: users.total,
+        data: users.users
+      });
+    }).catch((err) => {
+      console.log(`ERROR - ${req.method} /api/users`, util.inspect(err, false, 50));
+      return res.send({
+        success: true,
+        recordsTotal: 0,
+        recordsFiltered: 0,
+        data: []
+      });
+    });
+  };
+
+  /**
+   * POST - /api/user
+   *
+   * Creates a new user (admin only).
+   * @name /user
+   * @returns {boolean} success - Whether the add user operation was successful.
+   * @returns {string} text - The success/error message to (optionally) display to the user.
+   */
+  static apiCreateUser (req, res) {
+    if (!req.body || !req.body.userId || !req.body.userName) {
+      return res.serverError(403, 'Missing/Empty required fields');
+    }
+
+    let userIdTest = req.body.userId;
+    if (userIdTest.startsWith('role:')) {
+      userIdTest = userIdTest.slice(5);
+      req.body.password = cryptoLib.randomBytes(48); // Reset role password to random
+    } else if (!req.body.password) {
+      return res.serverError(403, 'Missing/Empty required fields');
+    }
+
+    if (userIdTest.match(/[^@\w.-]/)) {
+      return res.serverError(403, 'User ID must be word characters');
+    }
+
+    if (req.body.userId === '_moloch_shared') {
+      return res.serverError(403, 'User ID cannot be the same as the shared user');
+    }
+
+    if (req.body.roles && !Array.isArray(req.body.roles)) {
+      return res.serverError(403, 'Roles field must be an array');
+    }
+
+    if (req.body.roles === undefined) {
+      req.body.roles = [];
+    }
+
+    if (req.body.roles.includes('superAdmin') && !req.user.hasRole('superAdmin')) {
+      return res.serverError(403, 'Can not create superAdmin unless you are superAdmin');
+    }
+
+    User.getUser(req.body.userId, (err, user) => {
+      if (user) {
+        console.log('Trying to add duplicate user', util.inspect(err, false, 50), user);
+        return res.serverError(403, 'User already exists');
+      }
+
+      const nuser = {
+        userId: req.body.userId,
+        userName: req.body.userName,
+        expression: req.body.expression,
+        passStore: Auth.pass2store(req.body.userId, req.body.password),
+        enabled: req.body.enabled === true,
+        webEnabled: req.body.webEnabled === true,
+        emailSearch: req.body.emailSearch === true,
+        headerAuthEnabled: req.body.headerAuthEnabled === true,
+        removeEnabled: req.body.removeEnabled === true,
+        packetSearch: req.body.packetSearch === true,
+        timeLimit: req.body.timeLimit,
+        hideStats: req.body.hideStats === true,
+        hideFiles: req.body.hideFiles === true,
+        hidePcap: req.body.hidePcap === true,
+        disablePcapDownload: req.body.disablePcapDownload === true,
+        roles: req.body.roles,
+        welcomeMsgNum: 0
+      };
+
+      if (User.debug) {
+        console.log('Creating new user', nuser);
+      }
+
+      User.setUser(req.body.userId, nuser, (err, info) => {
+        if (!err) {
+          return res.send(JSON.stringify({
+            success: true,
+            text: `${req.body.userId.startsWith('role:') ? 'Role' : 'User'} created succesfully`
+          }));
+        } else {
+          console.log(`ERROR - ${req.method} /api/user`, util.inspect(err, false, 50), info);
+          return res.serverError(403, err);
+        }
+      });
+    });
+  };
+
+  /**
+   * DELETE - /api/user/:id
+   *
+   * Deletes a user (admin only).
+   * @name /user/:id
+   * @returns {boolean} success - Whether the delete user operation was successful.
+   * @returns {string} text - The success/error message to (optionally) display to the user.
+   */
+  static async apiDeleteUser (req, res) {
+    const userId = req.body.userId || req.params.id;
+    if (userId === req.user.userId) {
+      return res.serverError(403, 'Can not delete yourself');
+    }
+
+    try {
+      await User.deleteUser(userId);
+      res.send({ success: true, text: 'User deleted successfully' });
+    } catch (err) {
+      console.log(`ERROR - ${req.method} /api/user/${userId}`, util.inspect(err, false, 50));
+      res.send({ success: false, text: 'User not deleted' });
+    }
+  };
+
+  /**
+   * POST - /api/user/:id
+   *
+   * Updates a user (admin only).
+   * @name /user/:id
+   * @returns {boolean} success - Whether the update user operation was successful.
+   * @returns {string} text - The success/error message to (optionally) display to the user.
+   */
+  static apiUpdateUser (req, res) {
+    const userId = req.body.userId || req.params.id;
+
+    if (!userId) {
+      return res.serverError(403, 'Missing userId');
+    }
+
+    if (userId === '_moloch_shared') {
+      return res.serverError(403, "_moloch_shared is a shared user. This user's settings cannot be updated");
+    }
+
+    if (req.body.roles === undefined) {
+      req.body.roles = [];
+    }
+
+    if (req.body.roles.includes('superAdmin') && !req.user.hasRole('superAdmin')) {
+      return res.serverError(403, 'Can not enable superAdmin unless you are superAdmin');
+    }
+
+    User.getUser(userId, (err, user) => {
+      if (err || !user) {
+        console.log(`ERROR - ${req.method} /api/user/${userId}`, util.inspect(err, false, 50), user);
+        return res.serverError(403, 'User not found');
+      }
+
+      user.enabled = req.body.enabled === true;
+
+      if (req.body.expression !== undefined) {
+        if (req.body.expression.match(/^\s*$/)) {
+          delete user.expression;
+        } else {
+          user.expression = req.body.expression;
+        }
+      }
+
+      if (req.body.userName !== undefined) {
+        if (req.body.userName.match(/^\s*$/)) {
+          console.log(`ERROR - ${req.method} /api/user/${userId} empty username`, util.inspect(req.body));
+          return res.serverError(403, 'Username can not be empty');
+        } else {
+          user.userName = req.body.userName;
+        }
+      }
+
+      user.webEnabled = req.body.webEnabled === true;
+      user.emailSearch = req.body.emailSearch === true;
+      user.headerAuthEnabled = req.body.headerAuthEnabled === true;
+      user.removeEnabled = req.body.removeEnabled === true;
+      user.packetSearch = req.body.packetSearch === true;
+      user.hideStats = req.body.hideStats === true;
+      user.hideFiles = req.body.hideFiles === true;
+      user.hidePcap = req.body.hidePcap === true;
+      user.disablePcapDownload = req.body.disablePcapDownload === true;
+      user.timeLimit = req.body.timeLimit ? parseInt(req.body.timeLimit) : undefined;
+      user.roles = req.body.roles;
+
+      User.setUser(userId, user, (err, info) => {
+        if (User.debug) {
+          console.log('setUser', user, err, info);
+        }
+
+        if (err) {
+          console.log(`ERROR - ${req.method} /api/user/${userId}`, util.inspect(err, false, 50), user, info);
+          return res.serverError(500, 'Error updating user:' + err);
+        }
+
+        return res.send(JSON.stringify({
+          success: true,
+          text: `User ${userId} updated successfully`
+        }));
+      });
+    });
+  };
+
+  /**
+   * POST - /api/user/password
+   *
+   * Update user password.
+   * @name /user/password
+   * @returns {boolean} success - Whether the update password operation was successful.
+   * @returns {string} text - The success/error message to (optionally) display to the user.
+   */
+  static apiUpdateUserPassword (req, res) {
+    if (!req.body.newPassword || req.body.newPassword.length < 3) {
+      return res.serverError(403, 'New password needs to be at least 3 characters');
+    }
+
+    if (!req.user.hasRole('usersAdmin') && (Auth.store2ha1(req.user.passStore) !==
+      Auth.store2ha1(Auth.pass2store(req.token.userId, req.body.currentPassword)) ||
+      req.token.userId !== req.user.userId)) {
+      return res.serverError(403, 'New password mismatch');
+    }
+
+    const user = req.settingUser;
+    user.passStore = Auth.pass2store(user.userId, req.body.newPassword);
+
+    User.setUser(user.userId, user, (err, info) => {
+      if (err) {
+        console.log(`ERROR - ${req.method} /api/user/password update error`, util.inspect(err, false, 50), info);
+        return res.serverError(500, 'Password update failed');
+      }
+
+      return res.send(JSON.stringify({
+        success: true,
+        text: 'Changed password successfully'
+      }));
+    });
   };
 
   /******************************************************************************/
@@ -349,7 +626,7 @@ class User {
 
       // See if role actually exists
       const role = await User.getUserCache(r);
-      if (!role) { continue; }
+      if (!role || !role.enabled) { continue; }
       allRoles.add(r);
 
       // schedule any sub roles
@@ -364,23 +641,71 @@ class User {
   }
 
   /**
-   * Check if user has role. The check can be against a single role or array of roles.
+   * Check if user has ANY of the roles in role2Check. The check can be against a single role or array of roles.
    */
-  async hasRole (role) {
-    if (this._allRoles === undefined) {
-      await this.expandRoles();
+  hasRole (role2Check) {
+    if (!Array.isArray(role2Check)) {
+      return this._allRoles.has(role2Check);
     }
 
-    if (!Array.isArray(role)) {
-      return this._allRoles.has(role);
-    }
-
-    for (const r of role) {
+    for (const r of role2Check) {
       if (this._allRoles.has(r)) {
         return true;
       }
     }
     return false;
+  }
+
+  /**
+   * Check if user has ALL of the roles in role2Check. The check can be against a single role or array of roles.
+   */
+  hasAllRole (role2Check) {
+    if (!Array.isArray(role2Check)) {
+      return this._allRoles.has(role2Check);
+    }
+
+    for (const r of role2Check) {
+      if (!this._allRoles.has(r)) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  /**
+   *
+   */
+  static checkRole (role) {
+    return async (req, res, next) => {
+      if (!req.user.hasAllRole(role)) {
+        console.log(`Permission denied to ${req.user.userId} while requesting resource: ${req._parsedUrl.pathname}, using role ${role}`);
+        return res.serverError(403, 'You do not have permission to access this resource');
+      }
+      next();
+    };
+  }
+
+  /**
+   *
+   */
+  static checkPermissions (permissions) {
+    const inversePermissions = {
+      hidePcap: true,
+      hideFiles: true,
+      hideStats: true,
+      disablePcapDownload: true
+    };
+
+    return (req, res, next) => {
+      for (const permission of permissions) {
+        if ((!req.user[permission] && !inversePermissions[permission]) ||
+          (req.user[permission] && inversePermissions[permission])) {
+          console.log(`Permission denied to ${req.user.userId} while requesting resource: ${req._parsedUrl.pathname}, using permission ${permission}`);
+          return res.serverError(403, 'You do not have permission to access this resource');
+        }
+      }
+      next();
+    };
   }
 
   /**
@@ -424,6 +749,17 @@ function cleanUser (user) {
   user.packetSearch = user.packetSearch || false;
   user.timeLimit = user.timeLimit || undefined;
   user.lastUsed = user.lastUsed || 0;
+
+  // By default give to all user stuff if never had roles
+  if (user.roles === undefined) {
+    user.roles = ['arkimeUser', 'cont3xtUser', 'parliamentUser', 'wiseUser'];
+  }
+
+  // Convert createEnable to usersAdmin role
+  if (user.createEnabled && !user.roles.includes('usersAdmin')) {
+    user.roles.push('usersAdmin');
+  }
+  delete user.createEnabled;
 }
 
 /******************************************************************************/
@@ -465,7 +801,7 @@ function filterUsers (users, filter) {
   const results = [];
   const re = ArkimeUtil.wildcardToRegexp(`*${filter}*`);
   for (let i = 0; i < users.length; i++) {
-    if (users[i].userId.match(re) || users[i].userName.match(re)) {
+    if (users[i].userId.match(re) || users[i].userName.match(re) || users[i].roles.match(re)) {
       results.push(users[i]);
     }
   }
@@ -480,7 +816,9 @@ class UserESImplementation {
   client;
 
   constructor (options) {
-    if (options.prefix === undefined || options.prefix === '') {
+    if (options.prefix === undefined) {
+      this.prefix = 'arkime_';
+    } else if (options.prefix === '') {
       this.prefix = '';
     } else if (options.prefix.endsWith('_')) {
       this.prefix = options.prefix;
@@ -550,7 +888,8 @@ class UserESImplementation {
     if (query.filter) {
       esQuery.query.bool.should = [
         { wildcard: { userName: '*' + query.filter + '*' } },
-        { wildcard: { userId: '*' + query.filter + '*' } }
+        { wildcard: { userId: '*' + query.filter + '*' } },
+        { wildcard: { roles: '*' + query.filter + '*' } }
       ];
     }
 
@@ -867,3 +1206,6 @@ class UserRedisImplementation {
 }
 
 module.exports = User;
+
+const Auth = require('../common/auth');
+const ArkimeUtil = require('../common/arkimeUtil');

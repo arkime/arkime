@@ -7,12 +7,13 @@
   },
   "dependencies": {
     "bcrypt": "^5.0.0",
-    "jsonwebtoken": "^8.3.0",
-    "serve-favicon": "^2.5.0"
+    "jsonwebtoken": "^8.3.0"
   },
   "scripts": {
     "bundle": "cd ../ && npm run parliament:bundle",
     "bundle:min": "cd ../ && npm run parliament:build",
+    "dev": "cd ../ && npm run parliament:dev",
+    "noauth": "cd ../ && npm run parliament:noauth",
     "lint": "cd ../ && npm run parliament:lint"
   },
   "engines": {
@@ -21,8 +22,8 @@
   },
   "nodemonConfig": {
     "ignore": [
-      "node_modules/*",
-      "vueapp/*",
+      "node_modules",
+      "vueapp",
       "*.json"
     ]
   },

@@ -6,17 +6,20 @@ import $ from 'jquery';
 import { render, fireEvent } from '@testing-library/vue';
 import Help from '../src/components/help/Help.vue';
 import HasPermission from '../src/components/utils/HasPermission.vue';
-const { fields } = require('./consts');
+import HasRole from '../../../common/vueapp/HasRole.vue';
+const { fields, userWithSettings } = require('./consts');
 
 global.$ = global.jQuery = $;
 
 Vue.directive('has-permission', HasPermission);
+Vue.directive('has-role', HasRole);
 
 jest.mock('../src/components/search/FieldService');
 
 const store = {
   state: {
-    fieldsArr: fields
+    fieldsArr: fields,
+    user: userWithSettings
   }
 };
 

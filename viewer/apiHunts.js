@@ -85,7 +85,7 @@ module.exports = (Config, Db, internals, notifierAPIs, sessionAPIs, ViewerUtils)
         processSessionIdCb(null);
       }, (err, session) => {
         if (err) {
-          return cb(null, false);
+          return; /* cb(null, false); */
         }
 
         const len = packets.length;
@@ -303,7 +303,7 @@ ${Config.arkimeWebURL()}hunt
 
         session = session.fields;
 
-        const huntRemotePath = `${session.node}/hunt/${huntId}/remote/${sessionId}`;
+        const huntRemotePath = `api/hunt/${session.node}/${huntId}/remote/${sessionId}`;
 
         if (Config.debug > 1) {
           console.log('HUNT - remote', huntRemotePath);
@@ -431,7 +431,7 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
             updateHuntStats(hunt, huntId, session, searchedSessions, cb);
           });
         }, () => { // Check Remotely
-          const huntRemotePath = `${node}/hunt/${huntId}/remote/${sessionId}`;
+          const huntRemotePath = `api/hunt/${node}/${huntId}/remote/${sessionId}`;
 
           if (Config.debug > 1) {
             console.log('HUNT - failed remote', huntRemotePath);
@@ -751,7 +751,7 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
       return res.serverError(403, 'Improper packet search type. Must be "raw" or "reassembled"');
     }
 
-    const limit = req.user.createEnabled ? Config.get('huntAdminLimit', 10000000) : Config.get('huntLimit', 1000000);
+    const limit = req.user.hasRole('arkimeAdmin') ? Config.get('huntAdminLimit', 10000000) : Config.get('huntLimit', 1000000);
     if (parseInt(req.body.totalSessions) > limit) {
       return res.serverError(403, `This hunt applies to too many sessions. Narrow down your session search to less than ${limit} first.`);
     }
@@ -887,7 +887,7 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
 
         // clear out secret fields for users who don't have access to that hunt
         // if the user is not an admin and didn't create the hunt and isn't part of the user's list
-        if (!req.user.createEnabled && req.user.userId !== hunt.userId && hunt.users.indexOf(req.user.userId) < 0) {
+        if (!req.user.hasRole('arkimeAdmin') && req.user.userId !== hunt.userId && hunt.users.indexOf(req.user.userId) < 0) {
           // since hunt isn't cached we can just modify
           hunt.id = '';
           hunt.search = '';
@@ -1204,7 +1204,7 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
         if (!res.headersSent) { res.send({ matched: matched }); }
       });
     }).catch((err) => {
-      console.log(`ERROR - ${req.method} /api/${req.params.nodeName}/hunt/${req.params.huntId}/remote/${req.params.sessionId}`, util.inspect(err, false, 50));
+      console.log(`ERROR - ${req.method} /api/hunt/${req.params.nodeName}/${req.params.huntId}/remote/${req.params.sessionId}`, util.inspect(err, false, 50));
       if (!res.headersSent) { res.send({ matched: false, error: err }); }
     });
   };

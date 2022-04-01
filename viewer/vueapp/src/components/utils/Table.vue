@@ -212,7 +212,7 @@
 import Sortable from 'sortablejs';
 
 import UserService from '../users/UserService';
-import ToggleBtn from '../utils/ToggleBtn';
+import ToggleBtn from '../../../../../common/vueapp/ToggleBtn';
 
 // column resize variables and functions
 let selectedColElem; // store selected column to watch drag and calculate new column width

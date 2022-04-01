@@ -308,7 +308,9 @@ my ($cmd) = @_;
     }
 
     my $es = "-o 'elasticsearch=$ELASTICSEARCH'";
+    my $ces = "-o 'cont3xt.elasticsearch=$ELASTICSEARCH'";
     my $ues = "-o 'usersElasticsearch=$ELASTICSEARCH'";
+    my $cues = "-o 'cont3xt.usersElasticsearch=$ELASTICSEARCH'";
     my $mes = "-o 'multiESNodes=$ELASTICSEARCH,prefix:tests,name:test;$ELASTICSEARCH,prefix:tests2_,name:test2'";
 
     if ($cmd ne "--viewernostart" && $cmd ne "--viewerstart" && $cmd ne "--viewerhang") {
@@ -347,6 +349,7 @@ my ($cmd) = @_;
             system("cd ../viewer ; $node --trace-warnings viewer.js $es $ues -c ../tests/config.test.ini -n test3 --debug $INSECURE > /tmp/moloch.test3 &");
             system("cd ../viewer ; $node --trace-warnings viewer.js $ues -c ../tests/config.test.ini -n all --debug $INSECURE > /tmp/moloch.all &");
             system("cd ../parliament ; $node --trace-warnings parliament.js --regressionTests -c /dev/null --debug > /tmp/moloch.parliament 2>&1 &");
+            system("cd ../cont3xt ; $node --trace-warnings cont3xt.js $ces $cues --regressionTests -c ../tests/cont3xt.tests.ini --debug > /tmp/moloch.cont3xt 2>&1 &");
         } else {
             system("cd ../viewer ; $node multies.js $mes -c ../tests/config.test.ini -n all $INSECURE > /dev/null &");
             waitFor($MolochTest::host, 8200, 1);
@@ -355,6 +358,7 @@ my ($cmd) = @_;
             system("cd ../viewer ; $node viewer.js $es $ues -c ../tests/config.test.ini -n test3 $INSECURE > /dev/null &");
             system("cd ../viewer ; $node viewer.js $ues -c ../tests/config.test.ini -n all $INSECURE > /dev/null &");
             system("cd ../parliament ; $node parliament.js --regressionTests -c /dev/null > /dev/null 2>&1 &");
+            system("cd ../cont3xt ; $node cont3xt.js $ces $cues --regressionTests -c ../tests/cont3xt.tests.ini > /dev/null 2>&1 &");
         }
         sleep (10000) if ($cmd eq "--viewerhang");
     }
@@ -384,6 +388,7 @@ my ($cmd) = @_;
         $main::userAgent->post("http://localhost:8200/regressionTests/shutdown");
         $main::userAgent->post("http://localhost:8081/regressionTests/shutdown");
         $main::userAgent->post("http://localhost:8008/regressionTests/shutdown");
+        $main::userAgent->post("http://localhost:3218/regressionTests/shutdown");
     }
 
 # Coverage
@@ -391,6 +396,7 @@ my ($cmd) = @_;
         system("cd ../viewer ; c8 report");
         system("cd ../wiseService ; c8 report");
         system("cd ../parliament ; c8 report");
+        system("cd ../cont3xt ; c8 report");
     }
 
     exit(1) if ( $parser->has_errors );
@@ -416,6 +422,7 @@ while (scalar (@ARGV) > 0) {
         system("rm -rf ../viewer/coverage");
         system("rm -rf ../wiseService/coverage");
         system("rm -rf ../parliament/coverage");
+        system("rm -rf ../cont3xt/coverage");
         shift @ARGV;
     } elsif ($ARGV[0] eq "--insecure") {
         $MolochTest::userAgent->ssl_opts(

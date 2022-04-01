@@ -169,7 +169,7 @@ module.exports = (Config, Db, internals) => {
 
       const notifiers = sharedUser.notifiers || [];
 
-      if (req.user.createEnabled) {
+      if (req.user.hasRole('arkimeAdmin')) {
         return res.send(arrayifyAndSort(notifiers));
       }
 
@@ -248,7 +248,6 @@ module.exports = (Config, Db, internals) => {
           webEnabled: false,
           emailSearch: false,
           headerAuthEnabled: false,
-          createEnabled: false,
           removeEnabled: false,
           packetSearch: false,
           views: {},

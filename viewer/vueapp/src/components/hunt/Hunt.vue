@@ -415,7 +415,7 @@
               {{ runningJob.name }} by
               {{ runningJob.userId }}
               <span class="pull-right">
-                <button v-if="user.userId === runningJob.userId || user.createEnabled"
+                <button v-if="user.userId === runningJob.userId || user.roles.includes('arkimeAdmin')"
                   @click="removeJob(runningJob, 'results')"
                   :disabled="runningJob.disabled"
                   type="button"
@@ -429,7 +429,7 @@
                     class="fa fa-spinner fa-spin fa-fw">
                   </span>
                 </button>
-                <span v-if="user.userId === runningJob.userId || user.createEnabled || runningJob.users.indexOf(user.userId) > -1">
+                <span v-if="user.userId === runningJob.userId || user.roles.includes('arkimeAdmin') || runningJob.users.indexOf(user.userId) > -1">
                   <button type="button"
                     @click="openSessions(runningJob)"
                     v-if="runningJob.matchedSessions"
@@ -446,7 +446,7 @@
                     might take a minute to show up.
                   </b-tooltip>
                 </span>
-                <button v-if="user.userId === runningJob.userId || user.createEnabled"
+                <button v-if="user.userId === runningJob.userId || user.roles.includes('arkimeAdmin')"
                   @click="cancelJob(runningJob)"
                   :disabled="runningJob.disabled"
                   type="button"
@@ -460,7 +460,7 @@
                     class="fa fa-spinner fa-spin fa-fw">
                   </span>
                 </button>
-                <button v-if="user.userId === runningJob.userId || user.createEnabled"
+                <button v-if="user.userId === runningJob.userId || user.roles.includes('arkimeAdmin')"
                   @click="pauseJob(runningJob)"
                   :disabled="runningJob.loading"
                   type="button"
@@ -480,7 +480,7 @@
               <div class="row">
                 <div class="col">
                   <toggle-btn
-                    v-if="user.userId === runningJob.userId || user.createEnabled || runningJob.users.indexOf(user.userId) > -1"
+                    v-if="user.userId === runningJob.userId || user.roles.includes('arkimeAdmin') || runningJob.users.indexOf(user.userId) > -1"
                     :opened="runningJob.expanded"
                     @toggle="toggleJobDetail(runningJob)">
                   </toggle-btn>
@@ -488,7 +488,7 @@
                     id="runningJob"
                     v-b-tooltip.hover
                     style="height:26px;"
-                    :class="{'progress-toggle':user.userId === runningJob.userId || user.createEnabled || runningJob.users.indexOf(user.userId) > -1}">
+                    :class="{'progress-toggle':user.userId === runningJob.userId || user.roles.includes('arkimeAdmin') || runningJob.users.indexOf(user.userId) > -1}">
                     <div class="progress-bar bg-success progress-bar-striped progress-bar-animated"
                       role="progressbar"
                       :style="{width: runningJob.progress + '%'}"
@@ -501,7 +501,7 @@
                   <b-tooltip target="runningJob">
                     <div class="mt-2">
                       Found <strong>{{ runningJob.matchedSessions | commaString }}</strong> sessions
-                      <span v-if="user.userId === runningJob.userId || user.createEnabled || runningJob.users.indexOf(user.userId) > -1">
+                      <span v-if="user.userId === runningJob.userId || user.roles.includes('arkimeAdmin') || runningJob.users.indexOf(user.userId) > -1">
                         matching <strong>{{ runningJob.search }}</strong> ({{ runningJob.searchType }})
                       </span>
                       <span v-if="runningJob.failedSessionIds && runningJob.failedSessionIds.length">
@@ -826,7 +826,7 @@ import SessionsService from '../sessions/SessionsService';
 import ConfigService from '../utils/ConfigService';
 import HuntService from './HuntService';
 // import components
-import ToggleBtn from '../utils/ToggleBtn';
+import ToggleBtn from '../../../../../common/vueapp/ToggleBtn';
 import MolochSearch from '../search/Search';
 import MolochLoading from '../utils/Loading';
 import MolochPaging from '../utils/Pagination';

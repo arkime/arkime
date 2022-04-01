@@ -19,7 +19,6 @@
 
 // eslint-disable-next-line no-shadow
 const crypto = require('crypto');
-const User = require('../common/user');
 const passport = require('passport');
 const DigestStrategy = require('passport-http').DigestStrategy;
 const iptrie = require('iptrie');
@@ -34,8 +33,13 @@ class Auth {
   static requiredAuthHeader;
   static requiredAuthHeaderVal;
   static userAutoCreateTmpl;
+  static regressionTests;
 
   static initialize (options) {
+    if (options.debug > 1) {
+      console.log('Auth.initialize', options);
+    }
+
     Auth.debug = options.debug ?? 0;
     Auth.mode = options.mode ?? 'anonymous';
     Auth.basePath = options.basePath ?? '/';
@@ -52,6 +56,7 @@ class Auth {
     Auth.requiredAuthHeaderVal = options.requiredAuthHeaderVal;
     Auth.userAutoCreateTmpl = options.userAutoCreateTmpl;
     Auth.userAuthIps = new iptrie.IPTrie();
+    Auth.regressionTests = false;
 
     if (options.userAuthIps) {
       for (const cidr in options.userAuthIps.split(',')) {
@@ -69,18 +74,20 @@ class Auth {
       Auth.userAuthIps.add('::', 0, 1);
     }
 
-    if (Auth.mode === 'digest') {
+    // Initialize passport in both digest and header mode since header mode will fallback to digest
+    if (Auth.mode === 'digest' || Auth.mode === 'header') {
       passport.use(new DigestStrategy({ qop: 'auth', realm: Auth.httpRealm },
         function (userid, done) {
           if (userid.startsWith('role:')) {
             console.log(`User ${userid} Can not authenticate with role`);
             return done('Can not authenticate with role');
           }
-          User.getUserCache(userid, (err, user) => {
+          User.getUserCache(userid, async (err, user) => {
             if (err) { return done(err); }
             if (!user) { console.log('User', userid, "doesn't exist"); return done(null, false); }
             if (!user.enabled) { console.log('User', userid, 'not enabled'); return done('Not enabled'); }
 
+            await user.expandRoles();
             user.setLastUsed();
             return done(null, user, { ha1: Auth.store2ha1(user.passStore) });
           });
@@ -107,6 +114,7 @@ class Auth {
       break;
     case 'regressionTests':
       Auth.authFunc = Auth.regressionTestsAuth;
+      Auth.regressionTests = true;
       break;
     }
   }
@@ -116,12 +124,14 @@ class Auth {
       if (!Auth.userAuthIps.find(req.ip)) {
         res.status(403);
         res.send(JSON.stringify({ success: false, text: `Not allowed by ip (${req.ip})` }));
+        console.log('Blocked by ip', req.ip, req.url);
         return 1;
       }
     } else {
       if (!Auth.userAuthIps.find(`::ffff:${req.ip}`)) {
         res.status(403);
         res.send(JSON.stringify({ success: false, text: `Not allowed by ip (${req.ip})` }));
+        console.log('Blocked by ip', req.ip, req.url);
         return 1;
       }
     }
@@ -133,7 +143,6 @@ class Auth {
     req.user = Object.assign(new User(), {
       userId: 'anonymous',
       enabled: true,
-      createEnabled: true,
       webEnabled: true,
       headerAuthEnabled: false,
       emailSearch: true,
@@ -143,6 +152,7 @@ class Auth {
       welcomeMsgNum: 1,
       roles: ['superAdmin']
     });
+    req.user.expandRoles();
     return next();
   }
 
@@ -150,7 +160,6 @@ class Auth {
     req.user = Object.assign(new User(), {
       userId: 'anonymous',
       enabled: true,
-      createEnabled: false,
       webEnabled: true,
       headerAuthEnabled: false,
       emailSearch: true,
@@ -160,6 +169,7 @@ class Auth {
       welcomeMsgNum: 1,
       roles: ['superAdmin']
     });
+    req.user.expandRoles();
     User.getUserCache('anonymous', (err, user) => {
       if (user) {
         req.user.setLastUsed();
@@ -190,16 +200,24 @@ class Auth {
       req.user = Object.assign(new User(), {
         userId: userId,
         enabled: true,
-        createEnabled: userId === 'anonymous',
         webEnabled: true,
         headerAuthEnabled: false,
         emailSearch: true,
         removeEnabled: true,
         packetSearch: true,
         settings: {},
-        welcomeMsgNum: 1,
-        roles: ['superAdmin']
+        welcomeMsgNum: 1
       });
+
+      if (userId === 'superAdmin') {
+        req.user.roles = ['superAdmin'];
+      } else if (userId === 'anonymous') {
+        req.user.roles = ['arkimeAdmin', 'cont3xtUser', 'parliamentUser', 'usersAdmin', 'wiseUser'];
+      } else {
+        req.user.roles = ['arkimeUser', 'cont3xtUser', 'parliamentUser', 'wiseUser'];
+      }
+
+      req.user.expandRoles();
       return next();
     });
   }
@@ -263,12 +281,13 @@ class Auth {
       return res.status(401).send(JSON.stringify({ success: false, text: 'Can not authenticate with role' }));
     }
 
-    function headerAuthCheck (err, user) {
+    async function headerAuthCheck (err, user) {
       if (err || !user) { return res.send(JSON.stringify({ success: false, text: 'User not found' })); }
       if (!user.enabled) { return res.send(JSON.stringify({ success: false, text: 'User not enabled' })); }
       if (!user.headerAuthEnabled) { return res.send(JSON.stringify({ success: false, text: 'User header auth not enabled' })); }
 
       req.user = user;
+      await req.user.expandRoles();
       req.user.setLastUsed();
       return next();
     }
@@ -480,3 +499,5 @@ class Auth {
 }
 
 module.exports = Auth;
+
+const User = require('../common/user');

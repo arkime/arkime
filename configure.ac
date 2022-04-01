@@ -1,4 +1,4 @@
-AC_INIT([arkime], [3.4.3-GIT])
+AC_INIT([arkime], [4.0.0-GIT])
 AM_INIT_AUTOMAKE([-Wall -Werror foreign])
 AC_PROG_CC
 AC_PROG_CXX
@@ -22,6 +22,7 @@ AC_CONFIG_FILES([
   parliament/Makefile
   release/Makefile
   wiseService/Makefile
+  cont3xt/Makefile
 ])
 
 AC_CHECK_LIB(pcre, main,,AC_MSG_ERROR(please install PCRE library))

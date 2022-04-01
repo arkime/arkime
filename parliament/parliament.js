@@ -14,13 +14,17 @@ const bp = require('body-parser');
 const logger = require('morgan');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
+const cryptoLib = require('crypto');
 const glob = require('glob');
 const os = require('os');
 const helmet = require('helmet');
 const uuid = require('uuidv4').default;
 const upgrade = require('./upgrade');
 const path = require('path');
+const chalk = require('chalk');
 const dayMs = 60000 * 60 * 24;
+const User = require('../common/user');
+const Auth = require('../common/auth');
 
 /* app setup --------------------------------------------------------------- */
 const app = express();
@@ -45,7 +49,13 @@ const settingsDefault = {
     removeIssuesAfter: 60,
     removeAcknowledgedAfter: 15
   },
+  commonAuth: {},
   notifiers: {}
+};
+
+const internals = {
+  notifierTypes: {},
+  authSetupCode: cryptoLib.randomBytes(20).toString('base64').replace(/[=+/]/g, '').substr(0, 10)
 };
 
 const parliamentReadError = `\nYou must fix this before you can run Parliament.
@@ -91,6 +101,7 @@ const invalidTokens = {};
 
     case '--pass':
       bcrypt.hash(appArgs[i + 1], saltrounds, setPasswordHash);
+      app.set('hasPass', true);
       i++;
       break;
 
@@ -148,6 +159,7 @@ if (app.get('regressionTests')) {
   app.post('/regressionTests/shutdown', function (req, res) {
     process.exit(0);
   });
+  internals.authSetupCode = '0000000000';
 }
 
 // parliament object!
@@ -175,12 +187,21 @@ try { // get the parliament file or error out if it's unreadable
   } else if (parliament.password) {
     // if the password is not supplied when starting the server,
     // use any existing password in the parliament json file
+    app.set('hasPass', true);
     app.set('password', parliament.password);
   }
 } catch (err) {
   console.log(`Error reading ${app.get('file') || 'your parliament file'}:\n\n`, err.stack);
   console.log(parliamentReadError);
   process.exit(1);
+}
+
+// optional config code for setting up auth
+if (!app.get('dashboardOnly') && !app.get('hasPass')) {
+  // if we're not in dashboardOnly mode and we don't have a password
+  console.log(chalk.cyan(
+    `${chalk.bgCyan.black('IMPORTANT')} - Auth setup pin code is: ${internals.authSetupCode}`
+  ));
 }
 
 // construct the issues file name
@@ -259,10 +280,6 @@ app.use('/parliament/api', router);
 router.use(bp.json());
 router.use(bp.urlencoded({ extended: true }));
 
-const internals = {
-  notifierTypes: {}
-};
-
 // Load notifier plugins for Parliament alerting
 function loadNotifiers () {
   const api = {
@@ -339,6 +356,55 @@ function verifyToken (req, res, next) {
       req.decoded = decoded;
       next();
     }
+  });
+}
+
+function checkAuthUpdate (req, res, next) {
+  if (app.get('dashboardOnly')) {
+    const error = new Error('Your Parliament is in dasboard only mode.');
+    error.httpStatusCode = 403;
+    return next(error);
+  }
+
+  if (app.get('password') || parliament.authMode) {
+    return isAdmin(req, res, next);
+  }
+
+  if (req.body !== undefined && req.body.authSetupCode !== undefined && req.body.authSetupCode === internals.authSetupCode) {
+    return next();
+  } else {
+    console.log(chalk.cyan(
+      `${chalk.bgCyan.black('IMPORTANT')} - Incorrect auth setup code used! Code is: ${internals.authSetupCode}`
+    ));
+    return res.status(403).send(JSON.stringify({ success: false, text: 'Not authorized, check log file' })); // not specific error
+  }
+}
+
+function isUser (req, res, next) {
+  if (!parliament.authMode) { return verifyToken(req, res, next); }
+  Auth.doAuth(req, res, () => {
+    if (req.user.hasRole('parliamentUser')) {
+      return next();
+    }
+    res.status(403).json({
+      tokenError: true,
+      success: false,
+      text: 'Permission Denied: Not a user'
+    });
+  });
+}
+
+function isAdmin (req, res, next) {
+  if (!parliament.authMode) { return verifyToken(req, res, next); }
+  Auth.doAuth(req, res, () => {
+    if (req.user.hasRole('parliamentAdmin')) {
+      return next();
+    }
+    res.status(403).json({
+      tokenError: true,
+      success: false,
+      text: 'Permission Denied: Not an admin'
+    });
   });
 }
 
@@ -589,7 +655,7 @@ function getStats (cluster) {
     const timeout = getGeneralSetting('esQueryTimeout') * 1000;
 
     const options = {
-      url: `${cluster.localUrl || cluster.url}/parliament.json`,
+      url: `${cluster.localUrl || cluster.url}/api/parliament`,
       method: 'GET',
       rejectUnauthorized: false,
       timeout: timeout
@@ -1099,7 +1165,7 @@ router.post('/logout', (req, res, next) => {
 
 // Get whether authentication or dashboardOnly mode is set
 router.get('/auth', (req, res, next) => {
-  const hasAuth = !!app.get('password');
+  const hasAuth = !!app.get('password') || !!parliament.settings.commonAuth;
   const dashboardOnly = !!app.get('dashboardOnly');
   return res.json({
     hasAuth: hasAuth,
@@ -1109,12 +1175,54 @@ router.get('/auth', (req, res, next) => {
 
 // Get whether the user is logged in
 // If it passes the verifyToken middleware, the user is logged in
-router.get('/auth/loggedin', verifyToken, (req, res, next) => {
-  return res.json({ loggedin: true });
+router.get('/auth/loggedin', isUser, (req, res, next) => {
+  return res.json({
+    loggedin: true,
+    commonAuth: !!parliament.authMode,
+    isUser: !parliament.authMode ? true : req.user.hasRole('parliamentUser'),
+    isAdmin: !parliament.authMode ? true : req.user.hasRole('parliamentAdmin')
+  });
+});
+
+// Update (or create) common auth settings for the parliament
+router.put('/auth/commonauth', [checkAuthUpdate], (req, res, next) => {
+  if (app.get('dashboardOnly')) {
+    const error = new Error('Your Parliament is in dasboard only mode. You cannot setup auth.');
+    error.httpStatusCode = 403;
+    return next(error);
+  }
+
+  if (!req.body.commonAuth) {
+    const error = new Error('Missing auth settings');
+    error.httpStatusCode = 422;
+    return next(error);
+  }
+
+  // Go thru the secret fields and if the save still has ******** that means the user didn't change, so save what we have
+  for (const s of ['passwordSecret', 'usersElasticsearchAPIKey', 'usersElasticsearchBasicAuth']) {
+    if (req.body.commonAuth[s] === '********') {
+      req.body.commonAuth[s] = parliament.settings.commonAuth[s];
+    }
+  }
+
+  for (const s in req.body.commonAuth) {
+    let setting = req.body.commonAuth[s];
+    if (setting === '') {
+      setting = undefined;
+    }
+    if (!parliament.settings.commonAuth) {
+      parliament.settings.commonAuth = {};
+    }
+    parliament.settings.commonAuth[s] = setting;
+  }
+
+  const successObj = { success: true, text: 'Successfully updated your common auth settings.' };
+  const errorText = 'Unable to update your common auth settings.';
+  writeParliament(req, res, next, successObj, errorText);
 });
 
 // Update (or create) a password for the parliament
-router.put('/auth/update', (req, res, next) => {
+router.put('/auth/update', [checkAuthUpdate], (req, res, next) => {
   if (app.get('dashboardOnly')) {
     const error = new Error('Your Parliament is in dasboard only mode. You cannot create a password.');
     error.httpStatusCode = 403;
@@ -1168,12 +1276,12 @@ router.put('/auth/update', (req, res, next) => {
   });
 });
 
-router.get('/notifierTypes', verifyToken, (req, res) => {
+router.get('/notifierTypes', isAdmin, (req, res) => {
   return res.json(internals.notifierTypes || {});
 });
 
 // Get the parliament settings object
-router.get('/settings', verifyToken, (req, res, next) => {
+router.get('/settings', isAdmin, (req, res, next) => {
   if (!parliament.settings) {
     const error = new Error('Your settings are empty. Try restarting Parliament.');
     error.httpStatusCode = 500;
@@ -1186,20 +1294,36 @@ router.get('/settings', verifyToken, (req, res, next) => {
     settings.general = settingsDefault.general;
   }
 
+  if (!settings.commonAuth) {
+    settings.commonAuth = {};
+  }
+
+  // Hide the secrets
+  for (const s of ['passwordSecret', 'usersElasticsearchAPIKey', 'usersElasticsearchBasicAuth']) {
+    if (settings.commonAuth[s] !== undefined) {
+      settings.commonAuth[s] = '********';
+    }
+  }
+
   return res.json(settings);
 });
 
 // Update the parliament general settings object
-router.put('/settings', verifyToken, (req, res, next) => {
+router.put('/settings', isAdmin, (req, res, next) => {
   // save general settings
   for (const s in req.body.settings.general) {
     let setting = req.body.settings.general[s];
-    if (s !== 'hostname' && s !== 'includeUrl' && isNaN(setting)) {
-      const error = new Error(`${s} must be a number.`);
-      error.httpStatusCode = 422;
-      return next(error);
+
+    if (s !== 'hostname' && s !== 'includeUrl') {
+      if (isNaN(setting)) {
+        const error = new Error(`${s} must be a number.`);
+        error.httpStatusCode = 422;
+        return next(error);
+      } else {
+        setting = parseInt(setting);
+      }
     }
-    if (s !== 'hostname' && s !== 'includeUrl') { setting = parseInt(setting); }
+
     parliament.settings.general[s] = setting;
   }
 
@@ -1209,7 +1333,7 @@ router.put('/settings', verifyToken, (req, res, next) => {
 });
 
 // Update an existing notifier
-router.put('/notifiers/:name', verifyToken, (req, res, next) => {
+router.put('/notifiers/:name', isAdmin, (req, res, next) => {
   if (!parliament.settings.notifiers[req.params.name]) {
     const error = new Error(`${req.params.name} not fount.`);
     error.httpStatusCode = 404;
@@ -1306,7 +1430,7 @@ router.put('/notifiers/:name', verifyToken, (req, res, next) => {
 });
 
 // Remove a notifier
-router.delete('/notifiers/:name', verifyToken, (req, res, next) => {
+router.delete('/notifiers/:name', isAdmin, (req, res, next) => {
   if (!parliament.settings.notifiers[req.params.name]) {
     const error = new Error(`Cannot find ${req.params.name} notifier to remove`);
     error.httpStatusCode = 403;
@@ -1321,7 +1445,7 @@ router.delete('/notifiers/:name', verifyToken, (req, res, next) => {
 });
 
 // Create a new notifier
-router.post('/notifiers', verifyToken, (req, res, next) => {
+router.post('/notifiers', isAdmin, (req, res, next) => {
   if (!req.body.notifier) {
     const error = new Error('Missing notifier');
     error.httpStatusCode = 403;
@@ -1393,7 +1517,7 @@ router.post('/notifiers', verifyToken, (req, res, next) => {
 });
 
 // Update the parliament general settings object to the defaults
-router.put('/settings/restoreDefaults', verifyToken, (req, res, next) => {
+router.put('/settings/restoreDefaults', isAdmin, (req, res, next) => {
   let type = 'all'; // default
   if (req.body.type) {
     type = req.body.type;
@@ -1454,7 +1578,7 @@ router.get('/parliament', (req, res, next) => {
 });
 
 // Updates the parliament order of clusters and groups
-router.put('/parliament', verifyToken, (req, res, next) => {
+router.put('/parliament', isAdmin, (req, res, next) => {
   if (!req.body.reorderedParliament) {
     const error = new Error('You must provide the new parliament order');
     error.httpStatusCode = 422;
@@ -1479,7 +1603,7 @@ router.put('/parliament', verifyToken, (req, res, next) => {
 });
 
 // Create a new group in the parliament
-router.post('/groups', verifyToken, (req, res, next) => {
+router.post('/groups', isAdmin, (req, res, next) => {
   if (!req.body.title) {
     const error = new Error('A group must have a title');
     error.httpStatusCode = 422;
@@ -1497,7 +1621,7 @@ router.post('/groups', verifyToken, (req, res, next) => {
 });
 
 // Delete a group in the parliament
-router.delete('/groups/:id', verifyToken, (req, res, next) => {
+router.delete('/groups/:id', isAdmin, (req, res, next) => {
   let index = 0;
   let foundGroup = false;
   for (const group of parliament.groups) {
@@ -1521,7 +1645,7 @@ router.delete('/groups/:id', verifyToken, (req, res, next) => {
 });
 
 // Update a group in the parliament
-router.put('/groups/:id', verifyToken, (req, res, next) => {
+router.put('/groups/:id', isAdmin, (req, res, next) => {
   if (!req.body.title) {
     const error = new Error('A group must have a title.');
     error.httpStatusCode = 422;
@@ -1552,7 +1676,7 @@ router.put('/groups/:id', verifyToken, (req, res, next) => {
 });
 
 // Create a new cluster within an existing group
-router.post('/groups/:id/clusters', verifyToken, (req, res, next) => {
+router.post('/groups/:id/clusters', isAdmin, (req, res, next) => {
   if (!req.body.title || !req.body.url) {
     let message;
     if (!req.body.title) {
@@ -1601,7 +1725,7 @@ router.post('/groups/:id/clusters', verifyToken, (req, res, next) => {
 });
 
 // Delete a cluster
-router.delete('/groups/:groupId/clusters/:clusterId', verifyToken, (req, res, next) => {
+router.delete('/groups/:groupId/clusters/:clusterId', isAdmin, (req, res, next) => {
   let clusterIndex = 0;
   let foundCluster = false;
   for (const group of parliament.groups) {
@@ -1629,7 +1753,7 @@ router.delete('/groups/:groupId/clusters/:clusterId', verifyToken, (req, res, ne
 });
 
 // Update a cluster
-router.put('/groups/:groupId/clusters/:clusterId', verifyToken, (req, res, next) => {
+router.put('/groups/:groupId/clusters/:clusterId', isAdmin, (req, res, next) => {
   if (!req.body.title || !req.body.url) {
     let message;
     if (!req.body.title) {
@@ -1745,7 +1869,7 @@ router.get('/issues', (req, res, next) => {
 });
 
 // acknowledge one or more issues
-router.put('/acknowledgeIssues', verifyToken, (req, res, next) => {
+router.put('/acknowledgeIssues', isUser, (req, res, next) => {
   if (!req.body.issues || !req.body.issues.length) {
     const message = 'Must specify the issue(s) to acknowledge.';
     const error = new Error(message);
@@ -1785,7 +1909,7 @@ router.put('/acknowledgeIssues', verifyToken, (req, res, next) => {
 });
 
 // ignore one or more issues
-router.put('/ignoreIssues', verifyToken, (req, res, next) => {
+router.put('/ignoreIssues', isUser, (req, res, next) => {
   if (!req.body.issues || !req.body.issues.length) {
     const message = 'Must specify the issue(s) to ignore.';
     const error = new Error(message);
@@ -1828,7 +1952,7 @@ router.put('/ignoreIssues', verifyToken, (req, res, next) => {
 });
 
 // unignore one or more issues
-router.put('/removeIgnoreIssues', verifyToken, (req, res, next) => {
+router.put('/removeIgnoreIssues', isUser, (req, res, next) => {
   if (!req.body.issues || !req.body.issues.length) {
     const message = 'Must specify the issue(s) to unignore.';
     const error = new Error(message);
@@ -1868,7 +1992,7 @@ router.put('/removeIgnoreIssues', verifyToken, (req, res, next) => {
 });
 
 // Remove an issue with a cluster
-router.put('/groups/:groupId/clusters/:clusterId/removeIssue', verifyToken, (req, res, next) => {
+router.put('/groups/:groupId/clusters/:clusterId/removeIssue', isUser, (req, res, next) => {
   if (!req.body.type) {
     const message = 'Must specify the issue type to remove.';
     const error = new Error(message);
@@ -1890,7 +2014,7 @@ router.put('/groups/:groupId/clusters/:clusterId/removeIssue', verifyToken, (req
 });
 
 // Remove all acknowledged all issues
-router.put('/issues/removeAllAcknowledgedIssues', verifyToken, (req, res, next) => {
+router.put('/issues/removeAllAcknowledgedIssues', isUser, (req, res, next) => {
   let count = 0;
 
   let len = issues.length;
@@ -1914,7 +2038,7 @@ router.put('/issues/removeAllAcknowledgedIssues', verifyToken, (req, res, next) 
 });
 
 // remove one or more acknowledged issues
-router.put('/removeSelectedAcknowledgedIssues', verifyToken, (req, res, next) => {
+router.put('/removeSelectedAcknowledgedIssues', isUser, (req, res, next) => {
   if (!req.body.issues || !req.body.issues.length) {
     const message = 'Must specify the acknowledged issue(s) to remove.';
     const error = new Error(message);
@@ -1970,7 +2094,7 @@ router.put('/removeSelectedAcknowledgedIssues', verifyToken, (req, res, next) =>
 });
 
 // issue a test alert to a specified notifier
-router.post('/testAlert', verifyToken, (req, res, next) => {
+router.post('/testAlert', isAdmin, (req, res, next) => {
   if (!req.body.notifier) {
     const error = new Error('Must specify the notifier.');
     error.httpStatusCode = 422;
@@ -2026,6 +2150,31 @@ router.post('/testAlert', verifyToken, (req, res, next) => {
   );
 });
 
+function setupAuth () {
+  parliament.authMode = false;
+
+  if (!parliament?.settings?.commonAuth?.userNameHeader) { return; }
+
+  parliament.authMode = parliament.settings.commonAuth.userNameHeader === 'digest' ? 'digest' : 'header';
+
+  Auth.initialize({
+    debug: app.get('debug'),
+    mode: parliament.authMode,
+    userNameHeader: parliament.authMode === 'digest' ? undefined : parliament.settings.commonAuth.userNameHeader,
+    passwordSecret: parliament.settings.commonAuth.passwordSecret ?? 'password',
+    userAuthIps: undefined,
+    basePath: '/parliament/api/'
+  });
+
+  User.initialize({
+    insecure: internals.insecure,
+    node: parliament.settings.commonAuth.usersElasticsearch ?? 'http://localhost:9200',
+    prefix: parliament.settings.commonAuth.usersPrefix,
+    apiKey: parliament.settings.commonAuth.usersElasticsearchAPIKey,
+    basicAuth: parliament.settings.commonAuth.usersElasticsearchBasicAuth
+  });
+}
+
 /* SIGNALS! ----------------------------------------------------------------- */
 // Explicit sigint handler for running under docker
 // See https://github.com/nodejs/node/issues/4182
@@ -2066,6 +2215,8 @@ if (app.get('keyFile') && app.get('certFile')) {
 } else {
   server = http.createServer(app);
 }
+
+setupAuth();
 
 server
   .on('error', function (e) {

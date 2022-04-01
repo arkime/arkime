@@ -5,25 +5,37 @@ Vue.use(Vuex);
 
 const store = new Vuex.Store({
   state: {
+    isUser: false,
+    isAdmin: false,
     hasAuth: false,
     loggedIn: false,
-    refreshInterval: 15000,
-    dashboardOnly: false
+    commonAuth: false,
+    dashboardOnly: false,
+    refreshInterval: 15000
   },
   mutations: {
-    setLoggedIn (state, value) {
-      state.loggedIn = value;
+    setIsUser (state, value) {
+      state.isUser = value;
+    },
+    setIsAdmin (state, value) {
+      state.isAdmin = value;
     },
     setHasAuth (state, value) {
       state.hasAuth = value;
+    },
+    setLoggedIn (state, value) {
+      state.loggedIn = value;
+    },
+    setCommonAuth (state, value) {
+      state.commonAuth = value;
+    },
+    setDashboardOnly (state, value) {
+      state.dashboardOnly = value;
     },
     setRefreshInterval (state, value) {
       value = parseInt(value) || 0;
       localStorage.setItem('refreshInterval', value);
       state.refreshInterval = value;
-    },
-    setDashboardOnly (state, value) {
-      state.dashboardOnly = value;
     }
   }
 });

@@ -71,7 +71,7 @@ const internals = {
         { name: 'usersElasticsearch', required: false, help: 'The URL to connect to elasticsearch. Default http://localhost:9200' },
         { name: 'usersElasticsearchAPIKey', required: false, help: 'an Elastisearch API key for users DB access', password: true },
         { name: 'userAuthIps', required: false, help: 'comma separated list of CIDRs to allow authed requests from' },
-        { name: 'usersPrefix', required: false, help: 'The prefix used with db.pl --prefix for users elasticsearch, usually empty' },
+        { name: 'usersPrefix', required: false, help: 'The prefix used with db.pl --prefix for users elasticsearch, if empty arkime_ is used' },
         { name: 'sourcePath', required: false, help: 'Where to look for the source files. Defaults to "./"' }
       ]
     },
@@ -140,10 +140,12 @@ function processArgs (argv) {
       console.log('wiseService.js [<options>]');
       console.log('');
       console.log('Options:');
-      console.log('  --debug               Increase debug level, multiple are supported');
-      console.log('  --webconfig           Allow the config to be edited from web page');
-      console.log('  --workers <b>         Number of worker processes to create');
-      console.log('  --insecure            Disable cert verification');
+      console.log('  -c <file|url>               Where to fetch the config file from');
+      console.log('  -o <section>.<key>=<value>  Override the config file');
+      console.log('  --debug                     Increase debug level, multiple are supported');
+      console.log('  --webconfig                 Allow the config to be edited from web page');
+      console.log('  --workers <b>               Number of worker processes to create');
+      console.log('  --insecure                  Disable cert verification');
 
       process.exit(0);
     }
@@ -244,7 +246,7 @@ function setupAuth () {
   User.initialize({
     insecure: internals.insecure,
     node: es,
-    prefix: getConfig('wiseService', 'usersPrefix', ''),
+    prefix: getConfig('wiseService', 'usersPrefix'),
     apiKey: getConfig('wiseService', 'usersElasticsearchAPIKey'),
     basicAuth: getConfig('wiseService', 'usersElasticsearchBasicAuth')
   });
@@ -258,11 +260,21 @@ function isConfigWeb (req, res, next) {
 }
 
 // ----------------------------------------------------------------------------
-function checkAdmin (req, res, next) {
-  if (req.user.createEnabled) {
+function isWiseAdmin (req, res, next) {
+  if (req.user.hasRole('wiseAdmin')) {
     return next();
   } else {
-    console.log(`${req.userId} is not an admin`);
+    console.log(`${req.userId} is not wiseAdmin`);
+    return res.send(JSON.stringify({ success: false, text: 'Not authorized, check log file' }));
+  }
+}
+
+// ----------------------------------------------------------------------------
+function isWiseUser (req, res, next) {
+  if (req.user.hasRole('wiseUser')) {
+    return next();
+  } else {
+    console.log(`${req.userId} is not wiseUser`);
     return res.send(JSON.stringify({ success: false, text: 'Not authorized, check log file' }));
   }
 }
@@ -884,7 +896,7 @@ function processQuery (req, query, cb) {
   }
 
   // Fetch the cache for this query
-  internals.cache.get(query, (err, cacheResult) => {
+  internals.cache.get(query.typeName + '-' + query.value, (err, cacheResult) => {
     if (req.timedout) {
       return cb('Timed out ' + query.typeName + ' ' + query.value);
     }
@@ -972,7 +984,7 @@ function processQuery (req, query, cb) {
 
       // Need to update the cache
       if (cacheChanged) {
-        internals.cache.set(query, cacheResult);
+        internals.cache.set(query.typeName + '-' + query.value, cacheResult);
       }
     });
   });
@@ -1102,7 +1114,7 @@ app.get('/sources', [ArkimeUtil.noCacheJson], (req, res) => {
  * @param {string} :source - The source to get the raw data for
  * @returns {object} All the views
  */
-app.get('/source/:source/get', [isConfigWeb, Auth.doAuth, ArkimeUtil.noCacheJson], (req, res) => {
+app.get('/source/:source/get', [isConfigWeb, Auth.doAuth, isWiseUser, ArkimeUtil.noCacheJson], (req, res) => {
   const source = internals.sources[req.params.source];
   if (!source) {
     return res.send({ success: false, text: `Source ${req.params.source} not found` });
@@ -1128,7 +1140,7 @@ app.get('/source/:source/get', [isConfigWeb, Auth.doAuth, ArkimeUtil.noCacheJson
  * @param {string} :source - The source to put the raw data for
  * @returns {object} All the views
  */
-app.put('/source/:source/put', [isConfigWeb, Auth.doAuth, ArkimeUtil.noCacheJson, checkAdmin, jsonParser], (req, res) => {
+app.put('/source/:source/put', [isConfigWeb, Auth.doAuth, isWiseAdmin, ArkimeUtil.noCacheJson, jsonParser], (req, res) => {
   const source = internals.sources[req.params.source];
   if (!source) {
     return res.send({ success: false, text: `Source ${req.params.source} not found` });
@@ -1165,7 +1177,7 @@ app.get('/config/defs', [ArkimeUtil.noCacheJson], function (req, res) {
  * @name "/config/get"
  * @returns {object}
  */
-app.get('/config/get', [isConfigWeb, Auth.doAuth, ArkimeUtil.noCacheJson], (req, res) => {
+app.get('/config/get', [isConfigWeb, Auth.doAuth, isWiseUser, ArkimeUtil.noCacheJson], (req, res) => {
   const config = Object.keys(internals.config)
     .sort()
     .filter(key => internals.configDefs[key.split(':')[0]])
@@ -1198,7 +1210,7 @@ app.get('/config/get', [isConfigWeb, Auth.doAuth, ArkimeUtil.noCacheJson], (req,
  *
  * @name "/config/save"
  */
-app.put('/config/save', [isConfigWeb, Auth.doAuth, ArkimeUtil.noCacheJson, checkAdmin, jsonParser, checkConfigCode], (req, res) => {
+app.put('/config/save', [isConfigWeb, Auth.doAuth, isWiseAdmin, ArkimeUtil.noCacheJson, jsonParser, checkConfigCode], (req, res) => {
   if (req.body.config === undefined) {
     return res.send({ success: false, text: 'Missing config' });
   }

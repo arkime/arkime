@@ -461,6 +461,14 @@ sub esForceMerge
     esPost("/$index/_forcemerge?max_num_segments=$segments", "", 2);
     esWaitForNoTask("forcemerge") if ($dowait);
 }
+################################################################################
+sub esMatchingIndices
+{
+    my $indices = esGet("/_cat/indices/$_[0]?format=json", 1);
+    return "" if (ref ($indices) ne "ARRAY");
+    my %indices = map { $_->{index} => $_ } @{$indices};
+    return join(",", keys (%indices));
+}
 
 ################################################################################
 sub sequenceCreate
@@ -6106,7 +6114,7 @@ if ($ARGV[1] =~ /^(users-?import|import)$/) {
     logmsg "Exporting templates...\n";
     my @templates = ("sessions3_template", "history_v1_template");
     foreach my $template (@templates) {
-        my $data = esGet("/_template/${PREFIX}${template}?include_type_name=true");
+        my $data = esGet("/_template/${PREFIX}${template}");
         my @name = split(/_/, $template);
         my $fh = bopen("template");
         print $fh to_json($data);
@@ -6321,7 +6329,7 @@ if ($ARGV[1] =~ /^(users-?import|import)$/) {
 } elsif ($ARGV[1] =~ /^(disable-?users)$/) {
     showHelp("Invalid number of <days>") if (!defined $ARGV[2] || $ARGV[2] !~ /^[+-]?\d+$/);
 
-    my $users = esGet("/${PREFIX}users/_search?size=1000&q=enabled:true+AND+createEnabled:false+AND+_exists_:lastUsed");
+    my $users = esGet("/${PREFIX}users/_search?size=1000&q=enabled:true+AND+createEnabled:false+AND+_exists_:lastUsed+AND+-userId:role\\:*");
     my $rmcount = 0;
 
     foreach my $hit (@{$users->{hits}->{hits}}) {
@@ -7155,11 +7163,11 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
     esDelete("/${PREFIX}fields_v30,${OLDPREFIX}fields_v3,${OLDPREFIX}fields_v2,${OLDPREFIX}fields_v1,${OLDPREFIX}fields?ignore_unavailable=true", 1);
     esDelete("/${PREFIX}hunts_v30,${OLDPREFIX}hunts_v2,${OLDPREFIX}hunts_v1,${OLDPREFIX}hunts?ignore_unavailable=true", 1);
     esDelete("/${PREFIX}lookups_v30,${OLDPREFIX}lookups_v1,${OLDPREFIX}lookups?ignore_unavailable=true", 1);
-    esDelete("/${OLDPREFIX}sessions-*", 1);
-    esDelete("/${OLDPREFIX}sessions2-*", 1);
-    esDelete("/${PREFIX}sessions3-*", 1);
-    esDelete("/${OLDPREFIX}history_v1-*", 1);
-    esDelete("/${PREFIX}history_v1-*", 1);
+    my $indices;
+    esDelete("/$indices" , 1) if (($indices = esMatchingIndices("${OLDPREFIX}sessions2-*")) ne "");
+    esDelete("/$indices" , 1) if (($indices = esMatchingIndices("${PREFIX}sessions3-*")) ne "");
+    esDelete("/$indices" , 1) if (($indices = esMatchingIndices("${OLDPREFIX}history_v1-*")) ne "");
+    esDelete("/$indices" , 1) if (($indices = esMatchingIndices("${PREFIX}history_v1-*")) ne "");
     esDelete("/_template/${OLDPREFIX}template_1", 1);
     esDelete("/_template/${OLDPREFIX}sessions_template", 1);
     esDelete("/_template/${OLDPREFIX}sessions2_template", 1);
@@ -7343,7 +7351,7 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
             my $data = do { local $/; <$fh> };
             $data = from_json($data);
             my @template_name = keys %{$data};
-            esPut("/_template/$template_name[0]?master_timeout=${ESTIMEOUT}s&include_type_name=true", to_json($data->{$template_name[0]}));
+            esPut("/_template/$template_name[0]?master_timeout=${ESTIMEOUT}s", to_json($data->{$template_name[0]}));
             close($fh);
         }
     }
@@ -7360,7 +7368,7 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
                 logmsg "Updating sessions2 mapping for ", scalar(keys %{$indices}), " indices\n" if (scalar(keys %{$indices}) != 0);
                 foreach my $i (keys %{$indices}) {
                     progress("$i ");
-                    esPut("/$i/session/_mapping?master_timeout=${ESTIMEOUT}s&include_type_name=true", to_json($mapping), 1);
+                    esPut("/$i/session/_mapping?master_timeout=${ESTIMEOUT}s", to_json($mapping), 1);
                 }
                 logmsg "\n";
             } elsif (($template cmp "sessions3") == 0 && $UPGRADEALLSESSIONS) {
@@ -7376,7 +7384,7 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
                 logmsg "Updating history mapping for ", scalar(keys %{$indices}), " indices\n" if (scalar(keys %{$indices}) != 0);
                 foreach my $i (keys %{$indices}) {
                     progress("$i ");
-                    esPut("/$i/history/_mapping?master_timeout=${ESTIMEOUT}s&include_type_name=true", to_json($mapping), 1);
+                    esPut("/$i/history/_mapping?master_timeout=${ESTIMEOUT}s", to_json($mapping), 1);
                 }
                 logmsg "\n";
             }

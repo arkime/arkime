@@ -17,7 +17,7 @@
  */
 'use strict';
 
-const MIN_DB_VERSION = 70;
+const MIN_DB_VERSION = 71;
 
 // ============================================================================
 // MODULES
@@ -229,7 +229,10 @@ if (Config.get('regressionTests')) {
   app.get('/regressionTests/deleteAllUsers', User.apiDeleteAllUsers);
   app.get('/regressionTests/getUser/:user', (req, res) => {
     User.getUser(req.params.user, (err, user) => {
-      res.send(user);
+      // Shallow copy
+      const cuser = Object.assign({}, user);
+      delete cuser._allRoles;
+      res.send(cuser);
     });
   });
 }
@@ -278,6 +281,14 @@ if (Config.get('passwordSecret')) {
 
     // Browser auth
     return Auth.digestAuth(req, res, next);
+  });
+
+  // check for arkimeUser
+  app.use((req, res, next) => {
+    if (!req.user.hasRole('arkimeUser')) {
+      return res.send('Need arkimeUser role assigned');
+    }
+    next();
   });
 } else if (Config.get('regressionTests', false)) {
   console.log('WARNING - The setting "regressionTests" is set to true, do NOT use in production, for testing only');
@@ -487,7 +498,7 @@ function checkCookieToken (req, res, next) {
   const diff = Math.abs(Date.now() - req.token.date);
   if (diff > 2400000 || /* req.token.pid !== process.pid || */
       req.token.userId !== req.user.userId) {
-    console.trace('bad token', req.token);
+    console.trace('bad token', req.token, diff, req.token.userId, req.user.userId);
     return res.serverError(500, 'Timeout - Please try reloading page and repeating the action');
   }
 
@@ -503,26 +514,6 @@ function checkHeaderToken (req, res, next) {
   }
 }
 
-function checkPermissions (permissions) {
-  const inversePermissions = {
-    hidePcap: true,
-    hideFiles: true,
-    hideStats: true,
-    disablePcapDownload: true
-  };
-
-  return (req, res, next) => {
-    for (const permission of permissions) {
-      if ((!req.user[permission] && !inversePermissions[permission]) ||
-        (req.user[permission] && inversePermissions[permission])) {
-        console.log(`Permission denied to ${req.user.userId} while requesting resource: ${req._parsedUrl.pathname}, using permission ${permission}`);
-        return res.serverError(403, 'You do not have permission to access this resource');
-      }
-    }
-    next();
-  };
-}
-
 // used to disable endpoints in multi es mode
 function disableInMultiES (req, res, next) {
   if (Config.get('multiES', false)) {
@@ -532,7 +523,7 @@ function disableInMultiES (req, res, next) {
 }
 
 async function checkHuntAccess (req, res, next) {
-  if (req.user.createEnabled) {
+  if (req.user.hasRole('arkimeAdmin')) {
     // an admin can do anything to any hunt
     return next();
   } else {
@@ -554,12 +545,21 @@ async function checkHuntAccess (req, res, next) {
 }
 
 async function checkCronAccess (req, res, next) {
-  if (req.user.createEnabled) {
+  if (req.params.key !== undefined) {
+    req.body.key = req.params.key;
+    delete req.params.key;
+  }
+
+  if (req.body.key === undefined) {
+    return res.serverError(403, 'Missing cron key');
+  }
+
+  if (req.user.hasRole('arkimeAdmin')) {
     // an admin can do anything to any query
     return next();
   } else {
     try {
-      const { body: query } = Db.get('queries', 'query', req.body.key);
+      const { body: query } = await Db.get('queries', 'query', req.body.key);
       if (query._source.creator === req.user.userId) {
         return next();
       }
@@ -576,7 +576,7 @@ function checkEsAdminUser (req, res, next) {
       return next();
     }
   } else {
-    if (req.user.createEnabled && Config.get('multiES', false) === false) {
+    if (req.user.hasRole('arkimeAdmin') && Config.get('multiES', false) === false) {
       return next();
     }
   }
@@ -731,7 +731,7 @@ function getSettingUserCache (req, res, next) {
   }
 
   // user is trying to get another user's settings without admin privilege
-  if (!req.user.createEnabled) { return res.serverError(403, 'Need admin privileges'); }
+  if (!req.user.hasRole('usersAdmin')) { return res.serverError(403, 'Need admin privileges'); }
 
   User.getUserCache(req.query.userId, (err, user) => {
     if (err || !user) {
@@ -748,45 +748,20 @@ function getSettingUserCache (req, res, next) {
   });
 }
 
-// express middleware to set req.settingUser to who to work on, depending if admin or not
-// This returns fresh from db
-function getSettingUserDb (req, res, next) {
-  let userId;
-
-  if (req.query.userId === undefined || req.query.userId === req.user.userId) {
-    if (Config.get('regressionTests', false)) {
-      req.settingUser = req.user;
-      return next();
-    }
-
-    userId = req.user.userId;
-  } else if (!req.user.createEnabled) {
-    // user is trying to get another user's settings without admin privilege
-    return res.serverError(403, 'Need admin privileges');
-  } else {
-    userId = req.query.userId;
-  }
-
-  User.getUser(userId, function (err, user) {
-    if (err || !user) {
-      if (internals.noPasswordSecret) {
-        req.settingUser = JSON.parse(JSON.stringify(req.user));
-        delete req.settingUser.found;
-      } else {
-        return res.serverError(403, 'Unknown user');
-      }
-      return next();
-    }
-    req.settingUser = user;
-    return next();
-  });
-}
-
 // view middleware ------------------------------------------------------------
-// remove the string, 'shared:', that is added to shared views with the same
-// name as a user's personal view in the endpoint '/user/views'
-// also remove any special characters except ('-', '_', ':', and ' ')
+// * remove the string, 'shared:', that is added to shared views with the same
+//   name as a user's personal view in the endpoint '/user/views'
+// * remove any special characters except ('-', '_', ':', and ' ')
+// * map req.params.(key|name) to req.body.(key|name)
 function sanitizeViewName (req, res, next) {
+  if (req.params.name !== undefined) {
+    req.body.name = req.params.name;
+    delete req.params.name;
+  }
+  if (req.params.key !== undefined) {
+    req.body.key = req.params.key;
+    delete req.params.key;
+  }
   if (req.body.name) {
     req.body.name = req.body.name.replace(/(^(shared:)+)|[^-a-zA-Z0-9_: ]/g, '');
   }
@@ -1231,7 +1206,7 @@ app.get(['/', '/app'], (req, res) => {
 });
 
 // redirect to help page (keeps #)
-app.get('/about', checkPermissions(['webEnabled']), (req, res) => {
+app.get('/about', User.checkPermissions(['webEnabled']), (req, res) => {
   res.redirect('help');
 });
 
@@ -1241,54 +1216,54 @@ app.get('/about', checkPermissions(['webEnabled']), (req, res) => {
 // user apis ------------------------------------------------------------------
 app.get( // current user endpoint
   ['/api/user', '/user/current'],
-  checkPermissions(['webEnabled']),
-  userAPIs.getUser
+  User.checkPermissions(['webEnabled']),
+  User.apiGetUser
 );
 
 app.post( // create user endpoint
   ['/api/user', '/user/create'],
-  [ArkimeUtil.noCacheJson, logAction(), checkCookieToken, checkPermissions(['createEnabled'])],
-  userAPIs.createUser
+  [ArkimeUtil.noCacheJson, logAction(), checkCookieToken, User.checkRole('usersAdmin')],
+  User.apiCreateUser
 );
 
 app.delete( // user delete endpoint
   ['/api/user/:id', '/user/delete'],
-  [ArkimeUtil.noCacheJson, logAction(), checkCookieToken, checkPermissions(['createEnabled'])],
-  userAPIs.deleteUser
+  [ArkimeUtil.noCacheJson, logAction(), checkCookieToken, User.checkRole('usersAdmin')],
+  User.apiDeleteUser
 );
 app.post( // user delete endpoint for backwards compatibility with API 0.x-2.x
   ['/user/delete'],
-  [ArkimeUtil.noCacheJson, logAction(), checkCookieToken, checkPermissions(['createEnabled'])],
-  userAPIs.deleteUser
+  [ArkimeUtil.noCacheJson, logAction(), checkCookieToken, User.checkRole('usersAdmin')],
+  User.apiDeleteUser
 );
 
 app.get( // user css endpoint
   ['/api/user[/.]css', '/user.css'],
-  checkPermissions(['webEnabled']),
+  User.checkPermissions(['webEnabled']),
   userAPIs.getUserCSS
 );
 
 app.post( // get users endpoint
   ['/api/users', '/user/list'],
-  [ArkimeUtil.noCacheJson, recordResponseTime, logAction('users'), checkPermissions(['createEnabled'])],
-  userAPIs.getUsers
+  [ArkimeUtil.noCacheJson, recordResponseTime, logAction('users'), User.checkRole('usersAdmin')],
+  User.apiGetUsers
 );
 
 app.post( // update user password endpoint
   ['/api/user/password', '/user/password/change'],
-  [ArkimeUtil.noCacheJson, checkCookieToken, logAction(), getSettingUserDb],
-  userAPIs.updateUserPassword
+  [ArkimeUtil.noCacheJson, checkCookieToken, logAction(), ArkimeUtil.getSettingUserDb],
+  User.apiUpdateUserPassword
 );
 
 app.get( // user settings endpoint
   ['/api/user/settings', '/user/settings'],
-  [ArkimeUtil.noCacheJson, recordResponseTime, getSettingUserDb, checkPermissions(['webEnabled']), setCookie],
+  [ArkimeUtil.noCacheJson, recordResponseTime, ArkimeUtil.getSettingUserDb, User.checkPermissions(['webEnabled']), setCookie],
   userAPIs.getUserSettings
 );
 
 app.post( // udpate user settings endpoint
   ['/api/user/settings', '/user/settings/update'],
-  [ArkimeUtil.noCacheJson, checkCookieToken, logAction(), getSettingUserDb],
+  [ArkimeUtil.noCacheJson, checkCookieToken, logAction(), ArkimeUtil.getSettingUserDb],
   userAPIs.updateUserSettings
 );
 
@@ -1300,30 +1275,30 @@ app.get( // user views endpoint
 
 app.post( // create user view endpoint
   ['/api/user/view', '/user/views/create'],
-  [ArkimeUtil.noCacheJson, checkCookieToken, logAction(), getSettingUserDb, sanitizeViewName],
+  [ArkimeUtil.noCacheJson, checkCookieToken, logAction(), ArkimeUtil.getSettingUserDb, sanitizeViewName],
   userAPIs.createUserView
 );
 
 app.deletepost( // delete user view endpoint
   ['/api/user/view/:name', '/user/views/delete'],
-  [ArkimeUtil.noCacheJson, checkCookieToken, logAction(), getSettingUserDb, sanitizeViewName],
+  [ArkimeUtil.noCacheJson, checkCookieToken, logAction(), ArkimeUtil.getSettingUserDb, sanitizeViewName],
   userAPIs.deleteUserView
 );
 
 app.post( // (un)share a user view endpoint
   ['/api/user/view/:name/toggleshare', '/user/views/toggleShare'],
-  [ArkimeUtil.noCacheJson, checkCookieToken, logAction(), getSettingUserDb, sanitizeViewName],
+  [ArkimeUtil.noCacheJson, checkCookieToken, logAction(), ArkimeUtil.getSettingUserDb, sanitizeViewName],
   userAPIs.userViewToggleShare
 );
 
 app.put( // update user view endpoint
   ['/api/user/view/:key', '/user/views/update'],
-  [ArkimeUtil.noCacheJson, checkCookieToken, logAction(), getSettingUserDb, sanitizeViewName],
+  [ArkimeUtil.noCacheJson, checkCookieToken, logAction(), ArkimeUtil.getSettingUserDb, sanitizeViewName],
   userAPIs.updateUserView
 );
 app.post( // update user view endpoint for backwards compatibility with API 0.x-2.x
   ['/user/views/update'],
-  [ArkimeUtil.noCacheJson, checkCookieToken, logAction(), getSettingUserDb, sanitizeViewName],
+  [ArkimeUtil.noCacheJson, checkCookieToken, logAction(), ArkimeUtil.getSettingUserDb, sanitizeViewName],
   userAPIs.updateUserView
 );
 
@@ -1335,72 +1310,72 @@ app.get( // user cron queries endpoint
 
 app.post( // create user cron query
   ['/api/user/cron', '/user/cron/create'],
-  [ArkimeUtil.noCacheJson, checkCookieToken, logAction(), getSettingUserDb],
+  [ArkimeUtil.noCacheJson, checkCookieToken, logAction(), ArkimeUtil.getSettingUserDb],
   userAPIs.createUserCron
 );
 
 app.delete( // delete user cron endpoint
   ['/api/user/cron/:key', '/user/cron/delete'],
-  [ArkimeUtil.noCacheJson, checkCookieToken, logAction(), getSettingUserDb, checkCronAccess],
+  [ArkimeUtil.noCacheJson, checkCookieToken, logAction(), ArkimeUtil.getSettingUserDb, checkCronAccess],
   userAPIs.deleteUserCron
 );
 app.post( // delete user cron endpoint for backwards compatibility with API 0.x-2.x
   '/user/cron/delete',
-  [ArkimeUtil.noCacheJson, checkCookieToken, logAction(), getSettingUserDb, checkCronAccess],
+  [ArkimeUtil.noCacheJson, checkCookieToken, logAction(), ArkimeUtil.getSettingUserDb, checkCronAccess],
   userAPIs.deleteUserCron
 );
 
 app.post( // update user cron endpoint
   ['/api/user/cron/:key', '/user/cron/update'],
-  [ArkimeUtil.noCacheJson, checkCookieToken, logAction(), getSettingUserDb, checkCronAccess],
+  [ArkimeUtil.noCacheJson, checkCookieToken, logAction(), ArkimeUtil.getSettingUserDb, checkCronAccess],
   userAPIs.updateUserCron
 );
 
 app.get( // user custom columns endpoint
   ['/api/user/columns', '/user/columns'],
-  [ArkimeUtil.noCacheJson, getSettingUserCache, checkPermissions(['webEnabled'])],
+  [ArkimeUtil.noCacheJson, getSettingUserCache, User.checkPermissions(['webEnabled'])],
   userAPIs.getUserColumns
 );
 
 app.post( // create user custom columns endpoint
   ['/api/user/column', '/user/columns/create'],
-  [ArkimeUtil.noCacheJson, checkCookieToken, logAction(), getSettingUserDb],
+  [ArkimeUtil.noCacheJson, checkCookieToken, logAction(), ArkimeUtil.getSettingUserDb],
   userAPIs.createUserColumns
 );
 
 app.put( // update user custom column endpoint
   ['/api/user/column/:name', '/user/columns/:name'],
-  [ArkimeUtil.noCacheJson, checkCookieToken, logAction(), getSettingUserDb],
+  [ArkimeUtil.noCacheJson, checkCookieToken, logAction(), ArkimeUtil.getSettingUserDb],
   userAPIs.updateUserColumns
 );
 
 app.deletepost( // delete user custom column endpoint (DELETE and POST)
   ['/api/user/column/:name', '/user/columns/delete'],
-  [ArkimeUtil.noCacheJson, checkCookieToken, logAction(), getSettingUserDb],
+  [ArkimeUtil.noCacheJson, checkCookieToken, logAction(), ArkimeUtil.getSettingUserDb],
   userAPIs.deleteUserColumns
 );
 
 app.get( // user spiview fields endpoint
   ['/api/user/spiview', '/user/spiview/fields'],
-  [ArkimeUtil.noCacheJson, getSettingUserCache, checkPermissions(['webEnabled'])],
+  [ArkimeUtil.noCacheJson, getSettingUserCache, User.checkPermissions(['webEnabled'])],
   userAPIs.getUserSpiviewFields
 );
 
 app.post( // create spiview fields endpoint
   ['/api/user/spiview', '/user/spiview/fields/create'],
-  [ArkimeUtil.noCacheJson, checkCookieToken, logAction(), getSettingUserDb],
+  [ArkimeUtil.noCacheJson, checkCookieToken, logAction(), ArkimeUtil.getSettingUserDb],
   userAPIs.createUserSpiviewFields
 );
 
 app.put( // update user spiview fields endpoint
   ['/api/user/spiview/:name', '/user/spiview/fields/:name'],
-  [ArkimeUtil.noCacheJson, checkCookieToken, logAction(), getSettingUserDb],
+  [ArkimeUtil.noCacheJson, checkCookieToken, logAction(), ArkimeUtil.getSettingUserDb],
   userAPIs.updateUserSpiviewFields
 );
 
 app.deletepost( // delete user spiview fields endpoint (DELETE and POST)
   ['/api/user/spiview/:name', '/user/spiview/fields/delete'],
-  [ArkimeUtil.noCacheJson, checkCookieToken, logAction(), getSettingUserDb],
+  [ArkimeUtil.noCacheJson, checkCookieToken, logAction(), ArkimeUtil.getSettingUserDb],
   userAPIs.deleteUserSpiviewFields
 );
 
@@ -1412,8 +1387,8 @@ app.put( // acknowledge message endoint
 
 app.post( // update user endpoint
   ['/api/user/:id', '/user/update'],
-  [ArkimeUtil.noCacheJson, logAction(), checkCookieToken, checkPermissions(['createEnabled'])],
-  userAPIs.updateUser
+  [ArkimeUtil.noCacheJson, logAction(), checkCookieToken, User.checkRole('usersAdmin')],
+  User.apiUpdateUser
 );
 
 app.get( // user state endpoint
@@ -1443,7 +1418,7 @@ app.get( // user roles endpoint
 // notifier apis --------------------------------------------------------------
 app.get( // notifier types endpoint
   ['/api/notifiertypes', '/notifierTypes'],
-  [checkPermissions(['createEnabled']), checkCookieToken],
+  [User.checkRole('arkimeAdmin'), checkCookieToken],
   notifierAPIs.getNotifierTypes
 );
 
@@ -1455,25 +1430,25 @@ app.get( // notifiers endpoint
 
 app.post( // create notifier endpoint
   ['/api/notifier', '/notifiers'],
-  [ArkimeUtil.noCacheJson, getSettingUserDb, checkPermissions(['createEnabled']), checkCookieToken],
+  [ArkimeUtil.noCacheJson, ArkimeUtil.getSettingUserDb, User.checkRole('arkimeAdmin'), checkCookieToken],
   notifierAPIs.createNotifier
 );
 
 app.put( // update notifier endpoint
   ['/api/notifier/:name', '/notifiers/:name'],
-  [ArkimeUtil.noCacheJson, getSettingUserDb, checkPermissions(['createEnabled']), checkCookieToken],
+  [ArkimeUtil.noCacheJson, ArkimeUtil.getSettingUserDb, User.checkRole('arkimeAdmin'), checkCookieToken],
   notifierAPIs.updateNotifier
 );
 
 app.delete( // delete notifier endpoint
   ['/api/notifier/:name', '/notifiers/:name'],
-  [ArkimeUtil.noCacheJson, getSettingUserDb, checkPermissions(['createEnabled']), checkCookieToken],
+  [ArkimeUtil.noCacheJson, ArkimeUtil.getSettingUserDb, User.checkRole('arkimeAdmin'), checkCookieToken],
   notifierAPIs.deleteNotifier
 );
 
 app.post( // test notifier endpoint
   ['/api/notifier/:name/test', '/notifiers/:name/test'],
-  [ArkimeUtil.noCacheJson, getSettingUserCache, checkPermissions(['createEnabled']), checkCookieToken],
+  [ArkimeUtil.noCacheJson, getSettingUserCache, User.checkRole('arkimeAdmin'), checkCookieToken],
   notifierAPIs.testNotifier
 );
 
@@ -1486,7 +1461,7 @@ app.get( // get histories endpoint
 
 app.delete( // delete history endpoint
   ['/api/history/:id', '/history/list/:id'],
-  [ArkimeUtil.noCacheJson, checkCookieToken, checkPermissions(['createEnabled', 'removeEnabled'])],
+  [ArkimeUtil.noCacheJson, checkCookieToken, User.checkRole('arkimeAdmin'), User.checkPermissions(['removeEnabled'])],
   historyAPIs.deleteHistory
 );
 
@@ -1494,80 +1469,80 @@ app.delete( // delete history endpoint
 
 app.get( // stats endpoint
   ['/api/stats', '/stats.json'],
-  [ArkimeUtil.noCacheJson, recordResponseTime, checkPermissions(['hideStats']), setCookie],
+  [ArkimeUtil.noCacheJson, recordResponseTime, User.checkPermissions(['hideStats']), setCookie],
   statsAPIs.getStats
 );
 
 app.get( // detailed stats endpoint
   ['/api/dstats', '/dstats.json'],
-  [ArkimeUtil.noCacheJson, checkPermissions(['hideStats'])],
+  [ArkimeUtil.noCacheJson, User.checkPermissions(['hideStats'])],
   statsAPIs.getDetailedStats
 );
 
 app.get( // elasticsearch stats endpoint
   ['/api/esstats', '/esstats.json'],
-  [ArkimeUtil.noCacheJson, recordResponseTime, checkPermissions(['hideStats']), setCookie],
+  [ArkimeUtil.noCacheJson, recordResponseTime, User.checkPermissions(['hideStats']), setCookie],
   statsAPIs.getESStats
 );
 
 app.get( // elasticsearch indices endpoint
   ['/api/esindices', '/esindices/list'],
-  [ArkimeUtil.noCacheJson, recordResponseTime, checkPermissions(['hideStats']), setCookie],
+  [ArkimeUtil.noCacheJson, recordResponseTime, User.checkPermissions(['hideStats']), setCookie],
   statsAPIs.getESIndices
 );
 
 app.delete( // delete elasticsearch index endpoint
   ['/api/esindices/:index', '/esindices/:index'],
-  [ArkimeUtil.noCacheJson, recordResponseTime, checkPermissions(['createEnabled', 'removeEnabled']), setCookie],
+  [ArkimeUtil.noCacheJson, recordResponseTime, User.checkRole('arkimeAdmin'), User.checkPermissions(['removeEnabled']), setCookie],
   statsAPIs.deleteESIndex
 );
 
 app.post( // optimize elasticsearch index endpoint
   ['/api/esindices/:index/optimize', '/esindices/:index/optimize'],
-  [ArkimeUtil.noCacheJson, logAction(), checkCookieToken, checkPermissions(['createEnabled'])],
+  [ArkimeUtil.noCacheJson, logAction(), checkCookieToken, User.checkRole('arkimeAdmin')],
   statsAPIs.optimizeESIndex
 );
 
 app.post( // close elasticsearch index endpoint
   ['/api/esindices/:index/close', '/esindices/:index/close'],
-  [ArkimeUtil.noCacheJson, logAction(), checkCookieToken, checkPermissions(['createEnabled'])],
+  [ArkimeUtil.noCacheJson, logAction(), checkCookieToken, User.checkRole('arkimeAdmin')],
   statsAPIs.closeESIndex
 );
 
 app.post( // open elasticsearch index endpoint
   ['/api/esindices/:index/open', '/esindices/:index/open'],
-  [ArkimeUtil.noCacheJson, logAction(), checkCookieToken, checkPermissions(['createEnabled'])],
+  [ArkimeUtil.noCacheJson, logAction(), checkCookieToken, User.checkRole('arkimeAdmin')],
   statsAPIs.openESIndex
 );
 
 app.post( // shrink elasticsearch index endpoint
   ['/api/esindices/:index/shrink', '/esindices/:index/shrink'],
-  [ArkimeUtil.noCacheJson, logAction(), checkCookieToken, checkPermissions(['createEnabled'])],
+  [ArkimeUtil.noCacheJson, logAction(), checkCookieToken, User.checkRole('arkimeAdmin')],
   statsAPIs.shrinkESIndex
 );
 
 app.get( // elasticsearch tasks endpoint
   ['/api/estasks', '/estask/list'],
-  [ArkimeUtil.noCacheJson, recordResponseTime, checkPermissions(['hideStats']), setCookie],
+  [ArkimeUtil.noCacheJson, recordResponseTime, User.checkPermissions(['hideStats']), setCookie],
   statsAPIs.getESTasks
 );
 
 app.post( // cancel elasticsearch task endpoint
   ['/api/estasks/:id/cancel', '/estask/cancel'],
-  [ArkimeUtil.noCacheJson, logAction(), checkCookieToken, checkPermissions(['createEnabled'])],
+  [ArkimeUtil.noCacheJson, logAction(), checkCookieToken, User.checkRole('arkimeAdmin')],
   statsAPIs.cancelESTask
 );
 
 app.post( // cancel elasticsearch task by opaque id endpoint
   ['/api/estasks/:id/cancelwith', '/estask/cancelById'],
-  // should not have createEnabled check so users can use, each user is name spaced
+  // should not have admin check so users can use, each user is name spaced
   [ArkimeUtil.noCacheJson, logAction(), checkCookieToken],
   statsAPIs.cancelUserESTask
 );
 
 app.post( // cancel all elasticsearch tasks endpoint
   ['/api/estasks/cancelall', '/estask/cancelAll'],
-  [ArkimeUtil.noCacheJson, logAction(), checkCookieToken, checkPermissions(['createEnabled'])],
+  [ArkimeUtil.noCacheJson, logAction(), checkCookieToken, User.checkRole('arkimeAdmin')],
   statsAPIs.cancelAllESTasks
 );
 
@@ -1609,25 +1584,25 @@ app.post( // unflood elasticsearch admin endpoint
 
 app.get( // elasticsearch shards endpoint
   ['/api/esshards', '/esshard/list'],
-  [ArkimeUtil.noCacheJson, recordResponseTime, checkPermissions(['hideStats']), setCookie],
+  [ArkimeUtil.noCacheJson, recordResponseTime, User.checkPermissions(['hideStats']), setCookie],
   statsAPIs.getESShards
 );
 
 app.post( // exclude elasticsearch shard endpoint
   ['/api/esshards/:type/:value/exclude', '/esshard/exclude/:type/:value'],
-  [ArkimeUtil.noCacheJson, logAction(), checkCookieToken, checkPermissions(['createEnabled'])],
+  [ArkimeUtil.noCacheJson, logAction(), checkCookieToken, User.checkRole('arkimeAdmin')],
   statsAPIs.excludeESShard
 );
 
 app.post( // include elasticsearch shard endpoint
   ['/api/esshards/:type/:value/include', '/esshard/include/:type/:value'],
-  [ArkimeUtil.noCacheJson, logAction(), checkCookieToken, checkPermissions(['createEnabled'])],
+  [ArkimeUtil.noCacheJson, logAction(), checkCookieToken, User.checkRole('arkimeAdmin')],
   statsAPIs.includeESShard
 );
 
 app.get( // elasticsearch recovery endpoint
   ['/api/esrecovery', '/esrecovery/list'],
-  [ArkimeUtil.noCacheJson, recordResponseTime, checkPermissions(['hideStats']), setCookie],
+  [ArkimeUtil.noCacheJson, recordResponseTime, User.checkPermissions(['hideStats']), setCookie],
   statsAPIs.getESRecovery
 );
 
@@ -1696,7 +1671,7 @@ app.get( // session detail (SPI) endpoint
 
 app.get( // session packets endpoint
   ['/api/session/:nodeName/:id/packets', '/:nodeName/session/:id/packets'],
-  [logAction(), checkPermissions(['hidePcap'])],
+  [logAction(), User.checkPermissions(['hidePcap'])],
   sessionAPIs.getPackets
 );
 
@@ -1708,7 +1683,7 @@ app.post( // add tags endpoint
 
 app.post( // remove tags endpoint
   ['/api/sessions/removetags', '/removeTags'],
-  [ArkimeUtil.noCacheJson, checkHeaderToken, logAction('removeTags'), checkPermissions(['removeEnabled'])],
+  [ArkimeUtil.noCacheJson, checkHeaderToken, logAction('removeTags'), User.checkPermissions(['removeEnabled'])],
   sessionAPIs.removeTags
 );
 
@@ -1726,43 +1701,43 @@ app.get( // session body file image endpoint
 
 app.get( // session pcap endpoint
   ['/api/sessions[/.]pcap', /\/sessions.pcap.*/],
-  [logAction(), checkPermissions(['disablePcapDownload'])],
+  [logAction(), User.checkPermissions(['disablePcapDownload'])],
   sessionAPIs.getPCAP
 );
 
 app.get( // session pcapng endpoint
   ['/api/sessions[/.]pcapng', /\/sessions.pcapng.*/],
-  [logAction(), checkPermissions(['disablePcapDownload'])],
+  [logAction(), User.checkPermissions(['disablePcapDownload'])],
   sessionAPIs.getPCAPNG
 );
 
 app.get( // session node pcap endpoint
   ['/api/session/:nodeName/:id[/.]pcap*', '/:nodeName/pcap/:id.pcap'],
-  [checkProxyRequest, checkPermissions(['disablePcapDownload'])],
+  [checkProxyRequest, User.checkPermissions(['disablePcapDownload'])],
   sessionAPIs.getPCAPFromNode
 );
 
 app.get( // session node pcapng endpoint
   ['/api/session/:nodeName/:id[/.]pcapng', '/:nodeName/pcapng/:id.pcapng'],
-  [checkProxyRequest, checkPermissions(['disablePcapDownload'])],
+  [checkProxyRequest, User.checkPermissions(['disablePcapDownload'])],
   sessionAPIs.getPCAPNGFromNode
 );
 
 app.get( // session entire pcap endpoint
   ['/api/session/entire/:nodeName/:id[/.]pcap', '/:nodeName/entirePcap/:id.pcap'],
-  [checkProxyRequest, checkPermissions(['disablePcapDownload'])],
+  [checkProxyRequest, User.checkPermissions(['disablePcapDownload'])],
   sessionAPIs.getEntirePCAP
 );
 
 app.get( // session packets file image endpoint
   ['/api/session/raw/:nodeName/:id[/.]png', '/:nodeName/raw/:id.png'],
-  [checkProxyRequest, checkPermissions(['disablePcapDownload'])],
+  [checkProxyRequest, User.checkPermissions(['disablePcapDownload'])],
   sessionAPIs.getPacketPNG
 );
 
 app.get( // session raw packets endpoint
   ['/api/session/raw/:nodeName/:id', '/:nodeName/raw/:id'],
-  [checkProxyRequest, checkPermissions(['disablePcapDownload'])],
+  [checkProxyRequest, User.checkPermissions(['disablePcapDownload'])],
   sessionAPIs.getRawPackets
 );
 
@@ -1809,7 +1784,7 @@ app.post( // sessions recieve endpoint
 
 app.post( // delete data endpoint
   ['/api/delete', '/delete'],
-  [ArkimeUtil.noCacheJson, checkCookieToken, logAction(), checkPermissions(['removeEnabled'])],
+  [ArkimeUtil.noCacheJson, checkCookieToken, logAction(), User.checkPermissions(['removeEnabled'])],
   sessionAPIs.deleteData
 );
 
@@ -1831,55 +1806,55 @@ app.getpost( // connections csv endpoint (POST or GET) - uses fillQueryFromBody 
 // hunt apis ------------------------------------------------------------------
 app.get( // hunts endpoint
   ['/api/hunts', '/hunt/list'],
-  [ArkimeUtil.noCacheJson, disableInMultiES, recordResponseTime, checkPermissions(['packetSearch']), setCookie],
+  [ArkimeUtil.noCacheJson, disableInMultiES, recordResponseTime, User.checkPermissions(['packetSearch']), setCookie],
   huntAPIs.getHunts
 );
 
 app.post( // create hunt endpoint
   ['/api/hunt', '/hunt'],
-  [ArkimeUtil.noCacheJson, disableInMultiES, logAction('hunt'), checkCookieToken, checkPermissions(['packetSearch'])],
+  [ArkimeUtil.noCacheJson, disableInMultiES, logAction('hunt'), checkCookieToken, User.checkPermissions(['packetSearch'])],
   huntAPIs.createHunt
 );
 
 app.delete( // delete hunt endpoint
   ['/api/hunt/:id', '/hunt/:id'],
-  [ArkimeUtil.noCacheJson, disableInMultiES, logAction('hunt/:id'), checkCookieToken, checkPermissions(['packetSearch']), checkHuntAccess],
+  [ArkimeUtil.noCacheJson, disableInMultiES, logAction('hunt/:id'), checkCookieToken, User.checkPermissions(['packetSearch']), checkHuntAccess],
   huntAPIs.deleteHunt
 );
 
 app.put( // cancel hunt endpoint
   ['/api/hunt/:id/cancel', '/hunt/:id/cancel'],
-  [ArkimeUtil.noCacheJson, disableInMultiES, logAction('hunt/:id/cancel'), checkCookieToken, checkPermissions(['packetSearch']), checkHuntAccess],
+  [ArkimeUtil.noCacheJson, disableInMultiES, logAction('hunt/:id/cancel'), checkCookieToken, User.checkPermissions(['packetSearch']), checkHuntAccess],
   huntAPIs.cancelHunt
 );
 
 app.put( // pause hunt endpoint
   ['/api/hunt/:id/pause', '/hunt/:id/pause'],
-  [ArkimeUtil.noCacheJson, disableInMultiES, logAction('hunt/:id/pause'), checkCookieToken, checkPermissions(['packetSearch']), checkHuntAccess],
+  [ArkimeUtil.noCacheJson, disableInMultiES, logAction('hunt/:id/pause'), checkCookieToken, User.checkPermissions(['packetSearch']), checkHuntAccess],
   huntAPIs.pauseHunt
 );
 
 app.put( // play hunt endpoint
   ['/api/hunt/:id/play', '/hunt/:id/play'],
-  [ArkimeUtil.noCacheJson, disableInMultiES, logAction('hunt/:id/play'), checkCookieToken, checkPermissions(['packetSearch']), checkHuntAccess],
+  [ArkimeUtil.noCacheJson, disableInMultiES, logAction('hunt/:id/play'), checkCookieToken, User.checkPermissions(['packetSearch']), checkHuntAccess],
   huntAPIs.playHunt
 );
 
 app.put( // remove from sessions hunt endpoint
   ['/api/hunt/:id/removefromsessions', '/hunt/:id/removefromsessions'],
-  [ArkimeUtil.noCacheJson, disableInMultiES, logAction('hunt/:id/removefromsessions'), checkCookieToken, checkPermissions(['packetSearch', 'removeEnabled']), checkHuntAccess],
+  [ArkimeUtil.noCacheJson, disableInMultiES, logAction('hunt/:id/removefromsessions'), checkCookieToken, User.checkPermissions(['packetSearch', 'removeEnabled']), checkHuntAccess],
   huntAPIs.removeFromSessions
 );
 
 app.post( // add users to hunt endpoint
   ['/api/hunt/:id/users', '/hunt/:id/users'],
-  [ArkimeUtil.noCacheJson, disableInMultiES, logAction('hunt/:id/users'), checkCookieToken, checkPermissions(['packetSearch']), checkHuntAccess],
+  [ArkimeUtil.noCacheJson, disableInMultiES, logAction('hunt/:id/users'), checkCookieToken, User.checkPermissions(['packetSearch']), checkHuntAccess],
   huntAPIs.addUsers
 );
 
 app.delete( // remove users from hunt endpoint
   ['/api/hunt/:id/user/:user', '/hunt/:id/users/:user'],
-  [ArkimeUtil.noCacheJson, disableInMultiES, logAction('hunt/:id/user/:user'), checkCookieToken, checkPermissions(['packetSearch']), checkHuntAccess],
+  [ArkimeUtil.noCacheJson, disableInMultiES, logAction('hunt/:id/user/:user'), checkCookieToken, User.checkPermissions(['packetSearch']), checkHuntAccess],
   huntAPIs.removeUsers
 );
 
@@ -1898,19 +1873,19 @@ app.get( // get shortcuts endpoint
 
 app.post( // create shortcut endpoint
   ['/api/shortcut', '/lookups'],
-  [ArkimeUtil.noCacheJson, getSettingUserDb, logAction('shortcut'), checkCookieToken],
+  [ArkimeUtil.noCacheJson, ArkimeUtil.getSettingUserDb, logAction('shortcut'), checkCookieToken],
   shortcutAPIs.createShortcut
 );
 
 app.put( // update shortcut endpoint
   ['/api/shortcut/:id', '/lookups/:id'],
-  [ArkimeUtil.noCacheJson, getSettingUserDb, logAction('shortcut/:id'), checkCookieToken],
+  [ArkimeUtil.noCacheJson, ArkimeUtil.getSettingUserDb, logAction('shortcut/:id'), checkCookieToken],
   shortcutAPIs.updateShortcut
 );
 
 app.delete( // delete shortcut endpoint
   ['/api/shortcut/:id', '/lookups/:id'],
-  [ArkimeUtil.noCacheJson, getSettingUserDb, logAction('shortcut/:id'), checkCookieToken],
+  [ArkimeUtil.noCacheJson, ArkimeUtil.getSettingUserDb, logAction('shortcut/:id'), checkCookieToken],
   shortcutAPIs.deleteShortcut
 );
 
@@ -1928,27 +1903,27 @@ app.get( // fields endpoint
 
 app.get( // files endpoint
   ['/api/files', '/file/list'],
-  [ArkimeUtil.noCacheJson, recordResponseTime, logAction('files'), checkPermissions(['hideFiles']), setCookie],
+  [ArkimeUtil.noCacheJson, recordResponseTime, logAction('files'), User.checkPermissions(['hideFiles']), setCookie],
   miscAPIs.getFiles
 );
 
 app.get( // filesize endpoint
   ['/api/:nodeName/:fileNum/filesize', '/:nodeName/:fileNum/filesize.json'],
-  [ArkimeUtil.noCacheJson, checkPermissions(['hideFiles'])],
+  [ArkimeUtil.noCacheJson, User.checkPermissions(['hideFiles'])],
   miscAPIs.getFileSize
 );
 
 // title apis -----------------------------------------------------------------
 app.get( // titleconfig endpoint
   ['/api/title', '/titleconfig'],
-  checkPermissions(['webEnabled']),
+  User.checkPermissions(['webEnabled']),
   miscAPIs.getPageTitle
 );
 
 // value actions apis ---------------------------------------------------------
 app.get( // value actions endpoint
   ['/api/valueactions', '/api/valueActions', '/molochRightClick'],
-  [ArkimeUtil.noCacheJson, checkPermissions(['webEnabled'])],
+  [ArkimeUtil.noCacheJson, User.checkPermissions(['webEnabled'])],
   miscAPIs.getValueActions
 );
 
@@ -1980,7 +1955,7 @@ app.get(
 // app apis -------------------------------------------------------------------
 app.get(
   '/api/appinfo',
-  [ArkimeUtil.noCacheJson, checkCookieToken, getSettingUserCache, checkPermissions(['webEnabled'])],
+  [ArkimeUtil.noCacheJson, checkCookieToken, getSettingUserCache, User.checkPermissions(['webEnabled'])],
   miscAPIs.getAppInfo
 );
 
@@ -1992,7 +1967,7 @@ app.get('/cyberchef.html', express.static( // cyberchef client file endpoint
 
 app.get( // cyberchef endpoint
   '/cyberchef/:nodeName/session/:id',
-  [checkPermissions(['webEnabled']), checkProxyRequest, cyberchefCspHeader],
+  [User.checkPermissions(['webEnabled']), checkProxyRequest, cyberchefCspHeader],
   miscAPIs.cyberChef
 );
 
@@ -2028,7 +2003,7 @@ app.use(cspHeader, setCookie, (req, res) => {
     return res.status(403).send('Permission denied');
   }
 
-  if (req.path === '/users' && !req.user.createEnabled) {
+  if (req.path === '/users' && !req.user.hasRole('usersAdmin')) {
     return res.status(403).send('Permission denied');
   }
 
@@ -2048,7 +2023,7 @@ app.use(cspHeader, setCookie, (req, res) => {
     .replace(/_userId_/g, req.user ? req.user.userId : '-')
     .replace(/_userName_/g, req.user ? req.user.userName : '-');
 
-  const limit = req.user.createEnabled ? Config.get('huntAdminLimit', 10000000) : Config.get('huntLimit', 1000000);
+  const limit = req.user.hasRole('arkimeAdmin') ? Config.get('huntAdminLimit', 10000000) : Config.get('huntLimit', 1000000);
 
   const appContext = {
     theme: theme,
@@ -2066,8 +2041,7 @@ app.use(cspHeader, setCookie, (req, res) => {
     anonymousMode: !!internals.noPasswordSecret && !Config.get('regressionTests', false),
     businesDayStart: Config.get('businessDayStart', false),
     businessDayEnd: Config.get('businessDayEnd', false),
-    businessDays: Config.get('businessDays', '1,2,3,4,5'),
-    tmpRolesSupport: Config.get('tmpRolesSupport', false)
+    businessDays: Config.get('businessDays', '1,2,3,4,5')
   };
 
   // Create a fresh Vue app instance
@@ -2511,5 +2485,6 @@ Db.initialize({
   usersEsApiKey: Config.get('usersElasticsearchAPIKey', null),
   esBasicAuth: Config.get('elasticsearchBasicAuth', null),
   usersEsBasicAuth: Config.get('usersElasticsearchBasicAuth', null),
-  cronQueries: Config.get('cronQueries', false)
+  cronQueries: Config.get('cronQueries', false),
+  getCurrentUserCB: userAPIs.getCurrentUserCB
 }, main);

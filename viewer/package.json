@@ -14,7 +14,6 @@
     "pngjs": "^3.3.3",
     "re2": "^1.17.3",
     "save-svg-as-png": "^1.4.5",
-    "serve-favicon": "^2.3.0",
     "through2": "^2.0.1"
   },
   "devDependencies": {
@@ -22,9 +21,7 @@
     "jquery": "^3.6.0",
     "qs": "^6.9.4",
     "sanitize-html": "^2.3.2",
-    "vue-clickaway": "^2.2.2",
-    "vue-clipboard2": "^0.3.0",
-    "vue-color": "^2.4.6"
+    "vue-clickaway": "^2.2.2"
   },
   "scripts": {
     "bundle": "cd ../ && npm run viewer:bundle",
@@ -41,8 +38,13 @@
   },
   "nodemonConfig": {
     "ignore": [
-      "node_modules/*",
-      "vueapp/*"
+      "node_modules",
+      "vueapp"
+    ],
+    "watch": [
+      ".",
+      "../common",
+      "../tests/config.test.ini"
     ]
   },
   "browserslist": [

@@ -2,7 +2,7 @@
   <tr>
     <td>
       <toggle-btn
-        v-if="user.userId === job.userId || user.createEnabled || job.users.indexOf(user.userId) > -1"
+        v-if="user.userId === job.userId || user.roles.includes('arkimeAdmin') || job.users.indexOf(user.userId) > -1"
         :opened="job.expanded"
         @toggle="$emit('toggle', job)">
       </toggle-btn>
@@ -60,7 +60,7 @@
       {{ job.userId }}
     </td>
     <td class="word-break">
-      <span v-if="user.userId === job.userId || user.createEnabled || job.users.indexOf(user.userId) > -1">
+      <span v-if="user.userId === job.userId || user.roles.includes('arkimeAdmin') || job.users.indexOf(user.userId) > -1">
         {{ job.search }} ({{ job.searchType }})
       </span>
     </td>
@@ -71,12 +71,12 @@
       {{ job.created * 1000 | timezoneDateString(user.settings.timezone, false) }}
     </td>
     <td>
-      <span v-if="user.userId === job.userId || user.createEnabled || job.users.indexOf(user.userId) > -1">
+      <span v-if="user.userId === job.userId || user.roles.includes('arkimeAdmin') || job.users.indexOf(user.userId) > -1">
         {{ job.id }}
       </span>
     </td>
     <td class="no-wrap">
-      <button v-if="user.userId === job.userId || user.createEnabled"
+      <button v-if="user.userId === job.userId || user.roles.includes('arkimeAdmin')"
         @click="$emit('removeJob', job, arrayName)"
         :disabled="job.loading"
         type="button"
@@ -96,7 +96,7 @@
         @click="$emit('removeFromSessions', job)"
         class="ml-1 pull-right btn btn-sm btn-danger"
         title="Remove the hunt name and ID fields from the matched sessions."
-        v-if="(user.userId === job.userId || user.createEnabled) && canRemoveFromSessions"
+        v-if="(user.userId === job.userId || user.roles.includes('arkimeAdmin')) && canRemoveFromSessions"
         :disabled="job.loading || !job.matchedSessions || job.removed || !user.removeEnabled">
         <span v-if="!job.loading"
           class="fa fa-times fa-fw">
@@ -112,7 +112,7 @@
         <strong>Note:</strong> ES takes a while to update sessions, so scrubbing these fields
         might take a minute.
       </b-tooltip>
-      <span v-if="user.userId === job.userId || user.createEnabled || job.users.indexOf(user.userId) > -1">
+      <span v-if="user.userId === job.userId || user.roles.includes('arkimeAdmin') || job.users.indexOf(user.userId) > -1">
         <button type="button"
           @click="$emit('openSessions', job)"
           :disabled="!job.matchedSessions || job.removed"
@@ -129,7 +129,7 @@
           might take a minute to show up.
         </b-tooltip>
       </span>
-      <button v-if="canRerun && !job.unrunnable && (user.userId === job.userId || user.createEnabled || job.users.indexOf(user.userId) > -1)"
+      <button v-if="canRerun && !job.unrunnable && (user.userId === job.userId || user.roles.includes('arkimeAdmin') || job.users.indexOf(user.userId) > -1)"
         type="button"
         @click="$emit('rerunJob', job)"
         v-b-tooltip.hover
@@ -138,7 +138,7 @@
         <span class="fa fa-refresh fa-fw">
         </span>
       </button>
-      <button v-if="canRepeat && !job.unrunnable && (user.userId === job.userId || user.createEnabled)"
+      <button v-if="canRepeat && !job.unrunnable && (user.userId === job.userId || user.roles.includes('arkimeAdmin'))"
         type="button"
         @click="$emit('repeatJob', job)"
         v-b-tooltip.hover
@@ -147,7 +147,7 @@
         <span class="fa fa-repeat fa-fw">
         </span>
       </button>
-      <button v-if="canCancel && (user.userId === job.userId || user.createEnabled)"
+      <button v-if="canCancel && (user.userId === job.userId || user.roles.includes('arkimeAdmin'))"
         @click="$emit('cancelJob', job)"
         :disabled="job.loading"
         type="button"
@@ -161,7 +161,7 @@
           class="fa fa-spinner fa-spin fa-fw">
         </span>
       </button>
-      <button v-if="(job.status === 'running' || job.status === 'queued') && (user.userId === job.userId || user.createEnabled)"
+      <button v-if="(job.status === 'running' || job.status === 'queued') && (user.userId === job.userId || user.roles.includes('arkimeAdmin'))"
         :disabled="job.loading"
         @click="$emit('pauseJob', job)"
         type="button"
@@ -175,7 +175,7 @@
           class="fa fa-spinner fa-spin fa-fw">
         </span>
       </button>
-      <button v-else-if="job.status === 'paused' && (user.userId === job.userId || user.createEnabled)"
+      <button v-else-if="job.status === 'paused' && (user.userId === job.userId || user.roles.includes('arkimeAdmin'))"
         :disabled="job.loading"
         @click="$emit('playJob', job)"
         type="button"
@@ -194,7 +194,7 @@
 </template>
 
 <script>
-import ToggleBtn from '../utils/ToggleBtn';
+import ToggleBtn from '../../../../../common/vueapp/ToggleBtn';
 import HuntStatus from './HuntStatus';
 
 export default {

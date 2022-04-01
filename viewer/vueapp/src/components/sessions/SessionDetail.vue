@@ -661,10 +661,11 @@ export default {
         });
     },
     showSrcBytesImg: function () {
+      const url = `api/session/raw/${this.session.node}/${this.session.id}.png?type=src`;
       this.$refs.packetContainer.getElementsByClassName('src-col-tip')[0].innerHTML = `Source Bytes:
         <br>
-        <img src="${this.session.node}/raw/${this.session.id}.png?type=src">
-        <a class="no-decoration download-bytes" href="${this.session.node}/raw/${this.session.id}.png?type=src" download="${this.session.id}-src.png">
+        <img src="${url}">
+        <a class="no-decoration download-bytes" href="${url}" download="${this.session.id}-src.png">
           <span class="fa fa-download"></span>&nbsp;
           Download source bytes image
         </button>
@@ -672,10 +673,11 @@ export default {
       this.$refs.packetContainer.getElementsByClassName('srccol')[0].removeEventListener('mouseenter', this.showSrcBytesImg);
     },
     showDstBytesImg: function () {
+      const url = `api/session/raw/${this.session.node}/${this.session.id}.png?type=dst`;
       this.$refs.packetContainer.getElementsByClassName('dst-col-tip')[0].innerHTML = `Destination Bytes:
         <br>
-        <img src="${this.session.node}/raw/${this.session.id}.png?type=dst">
-        <a class="no-decoration download-bytes" href="${this.session.node}/raw/${this.session.id}.png?type=dst" download="${this.session.id}-dst.png">
+        <img src="${url}">
+        <a class="no-decoration download-bytes" href="${url}" download="${this.session.id}-dst.png">
           <span class="fa fa-download"></span>&nbsp;
           Download destination bytes image
         </button>

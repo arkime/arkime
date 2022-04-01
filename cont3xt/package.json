@@ -1,0 +1,38 @@
+{
+  "license": "Apache-2.0",
+  "scripts": {
+    "bundle": "cd ../ && npm run cont3xt:bundle",
+    "bundle:min": "cd ../ && npm run cont3xt:build",
+    "addtestuser": "cd ../ && npm run cont3xt:addtestuser",
+    "dev": "cd ../ && npm run cont3xt:dev",
+    "doc": "cd ../ && npm run cont3xt:doc",
+    "lint": "cd ../ && npm run cont3xt:lint",
+    "test": "cd ../ && npm run cont3xt:testui"
+  },
+  "engines": {
+    "node": ">= 6.0.0",
+    "npm": ">= 3.0.0"
+  },
+  "nodemonConfig": {
+    "ignore": [
+      "node_modules",
+      "vueapp"
+    ],
+    "watch": [
+      ".",
+      "../common",
+      "../tests/cont3xt.ini"
+    ]
+  },
+  "browserslist": [
+    "> 1%",
+    "last 2 versions",
+    "not ie <= 8"
+  ],
+  "dependencies": {
+    "email-deep-validator": "^3.3.0",
+    "extract-domain": "^2.3.4",
+    "maxmind": "^4.3.2",
+    "whois-json": "^2.0.4"
+  }
+}

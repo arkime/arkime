@@ -1,7 +1,6 @@
 'use strict';
 
 export const users = [{
-  createEnabled: true,
   emailSearch: false,
   enabled: true,
   expression: '',
@@ -13,9 +12,9 @@ export const users = [{
   userId: 'testuserid',
   userName: 'testuser',
   webEnabled: true,
-  welcomeMsgNum: 1
+  welcomeMsgNum: 1,
+  roles: ['arkimeAdmin']
 }, {
-  createEnabled: false,
   emailSearch: false,
   enabled: true,
   expression: '',
@@ -27,8 +26,22 @@ export const users = [{
   userId: 'testuserid2',
   userName: 'testuser2',
   webEnabled: true,
-  welcomeMsgNum: 1
+  welcomeMsgNum: 1,
+  roles: []
 }];
+
+export const roles = [
+  { text: 'arkimeAdmin', value: 'arkimeAdmin', userDefined: false },
+  { text: 'arkimeUser', value: 'arkimeUser', userDefined: false },
+  { text: 'cont3xtAdmin', value: 'cont3xtAdmin', userDefined: false },
+  { text: 'cont3xtUser', value: 'cont3xtUser', userDefined: false },
+  { text: 'parliamentAdmin', value: 'parliamentAdmin', userDefined: false },
+  { text: 'parliamentUser', value: 'parliamentUser', userDefined: false },
+  { text: 'superAdmin', value: 'superAdmin', userDefined: false },
+  { text: 'usersAdmin', value: 'usersAdmin', userDefined: false },
+  { text: 'wiseAdmin', value: 'wiseAdmin', userDefined: false },
+  { text: 'wiseUser', value: 'wiseUser', userDefined: false }
+];
 
 export const userSettings = {
   timezone: 'gmt',

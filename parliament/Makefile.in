@@ -19,7 +19,6 @@ install:
 	$(CP) -pr favicon.ico $(PARLIAMENTDIR)
 	$(CP) -pr vueapp/dist "$(PARLIAMENTDIR)/vueapp"
 	(cd $(PARLIAMENTDIR) ; npm ci --production)
-	rm -f $(PARLIAMENTDIR)/package-lock.json
 
 distclean realclean clean:
 	rm -rf node_modules

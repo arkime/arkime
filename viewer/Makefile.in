@@ -25,7 +25,6 @@ install:
 	$(CP) -pr views public $(VIEWERDIR)
 	$(CP) -pr vueapp/dist "$(VIEWERDIR)/vueapp"
 	(cd $(VIEWERDIR) ; npm ci --production)
-	rm -f $(VIEWERDIR)/package-lock.json
 
 distclean realclean clean:
 	rm -rf node_modules

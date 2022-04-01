@@ -6,8 +6,7 @@
     "url": "https://github.com/arkime/arkime.git"
   },
   "dependencies": {
-    "core-js": "^3.6.5",
-    "serve-favicon": "^2.5.0"
+    "core-js": "^3.6.5"
   },
   "scripts": {
     "bundle": "cd ../ && npm run wise:bundle",
@@ -23,8 +22,12 @@
   },
   "nodemonConfig": {
     "ignore": [
-      "node_modules/*",
-      "vueapp/*"
+      "node_modules",
+      "vueapp"
+    ],
+    "watch": [
+      ".",
+      "../common"
     ]
   },
   "browserslist": [

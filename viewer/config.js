@@ -95,8 +95,11 @@ if (!fs.existsSync(internals.configFile)) {
 internals.config = ini.parseSync(internals.configFile);
 
 if (internals.config.default === undefined) {
-  console.log('ERROR - [default] section missing from', internals.configFile);
-  process.exit(1);
+  if (internals.nodeName !== 'cont3xt') {
+    console.log('ERROR - [default] section missing from', internals.configFile);
+    process.exit(1);
+  }
+  internals.config.default = {};
 }
 
 exports.sectionGet = function (section, key, defaultValue) {
@@ -503,9 +506,20 @@ exports.loadFields = function (data) {
 // Initialize Auth
 /// ///////////////////////////////////////////////////////////////////////////////
 
+let mode = 'anonymousWithDB';
+if (exports.get('passwordSecret')) {
+  if (exports.get('userNameHeader')) {
+    mode = 'header';
+  } else {
+    mode = 'digest';
+  }
+} else if (exports.get('regressionTests')) {
+  mode = 'regressionTests';
+}
+
 Auth.initialize({
+  mode,
   debug: exports.debug,
-  mode: 'digest',
   basePath: exports.basePath(),
   realm: exports.get('httpRealm', 'Moloch'),
   passwordSecret: exports.getFull('default', 'passwordSecret', 'password'),

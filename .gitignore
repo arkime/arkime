@@ -30,6 +30,12 @@ capture/capture
 # tests
 tests/GeoLite2*
 tests/oui.txt
+tests/lmdbCache
+
+# Require force update
+tests/cont3xt.ini
+tests/test.config.ini
+tests/test.config.json
 
 # viewer
 viewer/public/CyberChef*.zip
@@ -46,6 +52,9 @@ parliament/vueapp/dist
 
 # wiseservice
 wiseService/vueapp/dist
+
+# cont3xt
+cont3xt/vueapp/dist
 
 # Makefiles
 Makefile

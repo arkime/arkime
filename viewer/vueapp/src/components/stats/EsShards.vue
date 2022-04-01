@@ -33,7 +33,7 @@
                   size="sm"
                   v-if="column.hasDropdown"
                   class="column-actions-btn pull-right mb-1"
-                  v-has-permission="'createEnabled'">
+                  v-has-role="{user:user,roles:'arkimeAdmin'}">
                   <b-dropdown-item v-if="!column.nodeExcluded"
                     @click="exclude('name', column)">
                     Exclude node {{ column.name }}
@@ -186,6 +186,9 @@ export default {
       set: function (newValue) {
         this.$store.commit('setLoadingData', newValue);
       }
+    },
+    user () {
+      return this.$store.state.user;
     }
   },
   watch: {

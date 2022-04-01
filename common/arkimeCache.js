@@ -28,25 +28,28 @@ const ArkimeUtil = require('../common/arkimeUtil');
 class ArkimeCache {
   constructor (options) {
     this.cacheSize = parseInt(options.cacheSize ?? 100000);
-    this.cacheTimeout = parseInt(options.cacheTimeout ?? 24 * 60 * 60);
-    this.cache = {};
+    this.cacheTimeout = ArkimeUtil.parseTimeStr(options.cacheTimeout ?? 24 * 60 * 60);
+    this.cache = LRU({ max: this.cacheSize });
   }
 
   // ----------------------------------------------------------------------------
-  get (query, cb) {
-    const cache = this.cache[query.typeName];
-    cb(null, cache ? cache.get(query.value) : undefined);
-  }
-
-  // ----------------------------------------------------------------------------
-  set (query, result) {
-    let cache = this.cache[query.typeName];
-    if (!cache) {
-      cache = this.cache[query.typeName] = LRU({ max: this.cacheSize });
+  get (key, cb) {
+    // promise version
+    if (!cb) {
+      return new Promise((resolve, reject) => {
+        resolve(this.cache.get(key));
+      });
     }
-    cache.set(query.value, result);
+
+    cb(null, this.cache.get(key));
   }
 
+  // ----------------------------------------------------------------------------
+  set (key, result) {
+    this.cache.set(key, result);
+  }
+
+  // ----------------------------------------------------------------------------
   static createCache (options) {
     switch (options.type) {
     case 'memory':
@@ -55,8 +58,10 @@ class ArkimeCache {
       return new ArkimeRedisCache(options);
     case 'memcached':
       return new ArkimeMemcachedCache(options);
+    case 'lmdb':
+      return new ArkimeLMDBCache(options);
     default:
-      console.log('Unknown cache type', options.type);
+      console.log('ERROR - Unknown cache type', options.type);
       process.exit(1);
     }
   };
@@ -79,15 +84,28 @@ class ArkimeRedisCache extends ArkimeCache {
   }
 
   // ----------------------------------------------------------------------------
-  get (query, cb) {
+  get (key, cb) {
+    // Convert promise to cb by calling ourselves
+    if (!cb) {
+      return new Promise((resolve, reject) => {
+        this.get(key, (err, data) => {
+          if (err) {
+            reject(err);
+          } else {
+            resolve(data);
+          }
+        });
+      });
+    }
+
     // Check memory cache first
-    super.get(query, (err, result) => {
+    super.get(key, (err, result) => {
       if (err || result) {
         return cb(err, result);
       }
 
       // Check redis
-      this.client.getBuffer(query.typeName + '-' + query.value, (err, reply) => {
+      this.client.getBuffer(key, (err, reply) => {
         if (err || reply === null) {
           return cb(null, undefined);
         }
@@ -102,15 +120,15 @@ class ArkimeRedisCache extends ArkimeCache {
             bsonResult[source].result = newResult;
           }
         }
-        super.set(query.value, bsonResult); // Set memory cache
+        super.set(key, bsonResult); // Set memory cache
         cb(null, bsonResult);
       });
     });
   };
 
   // ----------------------------------------------------------------------------
-  set (query, result) {
-    super.set(query, result);
+  set (key, result) {
+    super.set(key, result);
 
     let newResult;
     if (this.redisFormat === 3) {
@@ -124,7 +142,7 @@ class ArkimeRedisCache extends ArkimeCache {
     }
 
     const data = BSON.serialize(newResult, false, true, false);
-    this.client.setex(query.typeName + '-' + query.value, this.cacheTimeout, data);
+    this.client.setex(key, this.cacheTimeout, data);
   };
 };
 
@@ -139,30 +157,90 @@ class ArkimeMemcachedCache extends ArkimeCache {
   }
 
   // ----------------------------------------------------------------------------
-  get (query, cb) {
+  get (key, cb) {
+    // Convert promise to cb by calling ourselves
+    if (!cb) {
+      return new Promise((resolve, reject) => {
+        this.get(key, (err, data) => {
+          if (err) {
+            reject(err);
+          } else {
+            resolve(data);
+          }
+        });
+      });
+    }
+
     // Check memory cache first
-    super.get(query, (err, result) => {
+    super.get(key, (err, result) => {
       if (err || result) {
         return cb(err, result);
       }
 
       // Check memcache
-      this.client.get(query.typeName + '-' + query.value, (err, reply) => {
+      this.client.get(key, (err, reply) => {
         if (err || reply === null) {
           return cb(err, undefined);
         }
         const bsonResult = BSON.deserialize(reply, { promoteBuffers: true });
-        super.set(query.value, bsonResult); // Set memory cache
+        super.set(key, bsonResult); // Set memory cache
         cb(null, bsonResult);
       });
     });
   };
 
   // ----------------------------------------------------------------------------
-  set (query, result) {
-    super.set(query, result);
+  set (key, result) {
+    super.set(key, result);
 
     const data = BSON.serialize(result, false, true, false);
-    this.client.set(query.typeName + '-' + query.value, data, { expires: this.cacheTimeout }, () => {});
+    this.client.set(key, data, { expires: this.cacheTimeout }, () => {});
+  };
+};
+
+/******************************************************************************/
+// LMDB Cache
+/******************************************************************************/
+class ArkimeLMDBCache extends ArkimeCache {
+  constructor (options) {
+    super(options);
+
+    // eslint-disable-next-line no-shadow
+    const { open } = require('lmdb-store');
+
+    const path = options.getConfig('lmdbDir');
+
+    if (typeof (path) !== 'string') {
+      console.log('ERROR - lmdbDir must be set');
+      process.exit(1);
+    }
+
+    try {
+      this.store = open({
+        path: path,
+        compression: true
+      });
+    } catch (err) {
+      console.log('ERROR -', err);
+      process.exit(1);
+    }
+  }
+
+  // ----------------------------------------------------------------------------
+  get (key, cb) {
+    if (!cb) {
+      return this.store.get(key);
+    }
+
+    return new Promise((resolve, reject) => {
+      this.store.get(key)
+        .then(data => cb(null, data))
+        .catch(err => cb(err, null));
+    });
+  }
+
+  // ----------------------------------------------------------------------------
+  set (key, result) {
+    this.store.put(key, result);
   };
 };

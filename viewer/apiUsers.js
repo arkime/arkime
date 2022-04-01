@@ -3,9 +3,7 @@
 const fs = require('fs');
 const util = require('util');
 const stylus = require('stylus');
-const Auth = require('../common/auth');
 const User = require('../common/user');
-const cryptoLib = require('crypto');
 
 module.exports = (Config, Db, internals, ViewerUtils) => {
   const userAPIs = {};
@@ -24,7 +22,6 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
           webEnabled: false,
           emailSearch: false,
           headerAuthEnabled: false,
-          createEnabled: false,
           removeEnabled: false,
           packetSearch: false,
           views: {}
@@ -129,29 +126,14 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
     return user.spiviewFieldConfigs || [];
   }
 
-  userAPIs.getCurrentUser = (req) => {
-    const userProps = [
-      'createEnabled', 'emailSearch', 'enabled', 'removeEnabled',
-      'headerAuthEnabled', 'settings', 'userId', 'userName', 'webEnabled',
-      'packetSearch', 'hideStats', 'hideFiles', 'hidePcap',
-      'disablePcapDownload', 'welcomeMsgNum', 'lastUsed', 'timeLimit'
-    ];
-
-    const clone = {};
-
-    for (const prop of userProps) {
-      if (req.user[prop]) {
-        clone[prop] = req.user[prop];
-      }
-    }
-
+  userAPIs.getCurrentUserCB = (user, clone) => {
     clone.canUpload = internals.allowUploads;
 
-    // If esAdminUser is set use that, other wise use createEnable privilege
+    // If esAdminUser is set use that, other wise use arkimeAdmin privilege
     if (internals.esAdminUsersSet) {
-      clone.esAdminUser = internals.esAdminUsers.includes(req.user.userId);
+      clone.esAdminUser = internals.esAdminUsers.includes(user.userId);
     } else {
-      clone.esAdminUser = req.user.createEnabled && Config.get('multiES', false) === false;
+      clone.esAdminUser = user.hasRole('arkimeAdmin') && Config.get('multiES', false) === false;
     }
 
     // If no settings, use defaults
@@ -220,7 +202,6 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * @param {string} userId - The ID of the user.
    * @param {string} userName - The name of the user (to be displayed in the UI).
    * @param {boolean} enabled=true - Whether the user is enabled (or disabled). Disabled users cannot access the UI or APIs.
-   * @param {boolean} createEnabled=false - Can create new accounts and change the settings for other accounts and other administrative tasks.
    * @param {boolean} webEnabled=true - Can access the web interface. When off only APIs can be used.
    * @param {boolean} headerAuthEnabled=false - Can login using the web auth header. This setting doesn't disable the password so it should be scrambled.
    * @param {boolean} emailSearch=false - Can perform searches for fields relating to email.
@@ -307,236 +288,6 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    */
 
   /**
-   * GET - /api/user
-   *
-   * Retrieves the currently logged in user.
-   * @name /user
-   * @returns {ArkimeUser} user - The currently logged in user.
-   */
-  userAPIs.getUser = (req, res) => {
-    return res.send(userAPIs.getCurrentUser(req));
-  };
-
-  /**
-   * POST - /api/user
-   *
-   * Creates a new Arkime user (admin only).
-   * @name /user
-   * @returns {boolean} success - Whether the add user operation was successful.
-   * @returns {string} text - The success/error message to (optionally) display to the user.
-   */
-  userAPIs.createUser = (req, res) => {
-    if (!req.body || !req.body.userId || !req.body.userName) {
-      return res.serverError(403, 'Missing/Empty required fields');
-    }
-
-    let userIdTest = req.body.userId;
-    if (userIdTest.startsWith('role:')) {
-      userIdTest = userIdTest.slice(5);
-      req.body.password = cryptoLib.randomBytes(48); // Reset role password to random
-    } else if (!req.body.password) {
-      return res.serverError(403, 'Missing/Empty required fields');
-    }
-
-    if (userIdTest.match(/[^@\w.-]/)) {
-      return res.serverError(403, 'User ID must be word characters');
-    }
-
-    if (req.body.userId === '_moloch_shared') {
-      return res.serverError(403, 'User ID cannot be the same as the shared moloch user');
-    }
-
-    if (req.body.roles && !Array.isArray(req.body.roles)) {
-      return res.serverError(403, 'Roles field must be an array');
-    }
-
-    User.getUser(req.body.userId, (err, user) => {
-      if (user) {
-        console.log('Trying to add duplicate user', util.inspect(err, false, 50), user);
-        return res.serverError(403, 'User already exists');
-      }
-
-      const nuser = {
-        userId: req.body.userId,
-        userName: req.body.userName,
-        expression: req.body.expression,
-        passStore: Auth.pass2store(req.body.userId, req.body.password),
-        enabled: req.body.enabled === true,
-        webEnabled: req.body.webEnabled === true,
-        emailSearch: req.body.emailSearch === true,
-        headerAuthEnabled: req.body.headerAuthEnabled === true,
-        createEnabled: req.body.createEnabled === true,
-        removeEnabled: req.body.removeEnabled === true,
-        packetSearch: req.body.packetSearch === true,
-        timeLimit: req.body.timeLimit,
-        hideStats: req.body.hideStats === true,
-        hideFiles: req.body.hideFiles === true,
-        hidePcap: req.body.hidePcap === true,
-        disablePcapDownload: req.body.disablePcapDownload === true,
-        roles: req.body.roles || undefined,
-        welcomeMsgNum: 0
-      };
-
-      if (Config.debug) {
-        console.log('Creating new user', nuser);
-      }
-
-      User.setUser(req.body.userId, nuser, (err, info) => {
-        if (!err) {
-          return res.send(JSON.stringify({
-            success: true,
-            text: `${req.body.userId.startsWith('role:') ? 'Role' : 'User'} created succesfully`
-          }));
-        } else {
-          console.log(`ERROR - ${req.method} /api/user`, util.inspect(err, false, 50), info);
-          return res.serverError(403, err);
-        }
-      });
-    });
-  };
-
-  /**
-   * DELETE - /api/user/:id
-   *
-   * Deletes an Arkime user (admin only).
-   * @name /user/:id
-   * @returns {boolean} success - Whether the delete user operation was successful.
-   * @returns {string} text - The success/error message to (optionally) display to the user.
-   */
-  userAPIs.deleteUser = async (req, res) => {
-    const userId = req.body.userId || req.params.id;
-    if (userId === req.user.userId) {
-      return res.serverError(403, 'Can not delete yourself');
-    }
-
-    try {
-      await User.deleteUser(userId);
-      res.send(JSON.stringify({
-        success: true, text: 'User deleted successfully'
-      }));
-    } catch (err) {
-      console.log(`ERROR - ${req.method} /api/user/${userId}`, util.inspect(err, false, 50));
-      res.send(JSON.stringify({
-        success: false, text: 'User not deleted'
-      }));
-    }
-  };
-
-  /**
-   * POST - /api/user/:id
-   *
-   * Updates an Arkime user (admin only).
-   * @name /user/:id
-   * @returns {boolean} success - Whether the update user operation was successful.
-   * @returns {string} text - The success/error message to (optionally) display to the user.
-   */
-  userAPIs.updateUser = (req, res) => {
-    const userId = req.body.userId || req.params.id;
-
-    if (!userId) {
-      return res.serverError(403, 'Missing userId');
-    }
-
-    if (userId === '_moloch_shared') {
-      return res.serverError(403, '_moloch_shared is a shared user. This users settings cannot be updated');
-    }
-
-    User.getUser(userId, (err, user) => {
-      if (err || !user) {
-        console.log(`ERROR - ${req.method} /api/user/${userId}`, util.inspect(err, false, 50), user);
-        return res.serverError(403, 'User not found');
-      }
-
-      user.enabled = req.body.enabled === true;
-
-      if (req.body.expression !== undefined) {
-        if (req.body.expression.match(/^\s*$/)) {
-          delete user.expression;
-        } else {
-          user.expression = req.body.expression;
-        }
-      }
-
-      if (req.body.userName !== undefined) {
-        if (req.body.userName.match(/^\s*$/)) {
-          console.log(`ERROR - ${req.method} /api/user/${userId} empty username`, util.inspect(req.body));
-          return res.serverError(403, 'Username can not be empty');
-        } else {
-          user.userName = req.body.userName;
-        }
-      }
-
-      user.webEnabled = req.body.webEnabled === true;
-      user.emailSearch = req.body.emailSearch === true;
-      user.headerAuthEnabled = req.body.headerAuthEnabled === true;
-      user.removeEnabled = req.body.removeEnabled === true;
-      user.packetSearch = req.body.packetSearch === true;
-      user.hideStats = req.body.hideStats === true;
-      user.hideFiles = req.body.hideFiles === true;
-      user.hidePcap = req.body.hidePcap === true;
-      user.disablePcapDownload = req.body.disablePcapDownload === true;
-      user.timeLimit = req.body.timeLimit ? parseInt(req.body.timeLimit) : undefined;
-      user.roles = req.body.roles;
-
-      // Can only change createEnabled if it is currently turned on
-      if (req.body.createEnabled !== undefined && req.user.createEnabled) {
-        user.createEnabled = req.body.createEnabled === true;
-      }
-
-      User.setUser(userId, user, (err, info) => {
-        if (Config.debug) {
-          console.log('setUser', user, err, info);
-        }
-
-        if (err) {
-          console.log(`ERROR - ${req.method} /api/user/${userId}`, util.inspect(err, false, 50), user, info);
-          return res.serverError(500, 'Error updating user:' + err);
-        }
-
-        return res.send(JSON.stringify({
-          success: true,
-          text: `User ${userId} updated successfully`
-        }));
-      });
-    });
-  };
-
-  /**
-   * POST - /api/user/password
-   *
-   * Update user password.
-   * @name /user/password
-   * @returns {boolean} success - Whether the update password operation was successful.
-   * @returns {string} text - The success/error message to (optionally) display to the user.
-   */
-  userAPIs.updateUserPassword = (req, res) => {
-    if (!req.body.newPassword || req.body.newPassword.length < 3) {
-      return res.serverError(403, 'New password needs to be at least 3 characters');
-    }
-
-    if (!req.user.createEnabled && (Auth.store2ha1(req.user.passStore) !==
-      Auth.store2ha1(Auth.pass2store(req.token.userId, req.body.currentPassword)) ||
-      req.token.userId !== req.user.userId)) {
-      return res.serverError(403, 'New password mismatch');
-    }
-
-    const user = req.settingUser;
-    user.passStore = Auth.pass2store(user.userId, req.body.newPassword);
-
-    User.setUser(user.userId, user, (err, info) => {
-      if (err) {
-        console.log(`ERROR - ${req.method} /api/user/password update error`, util.inspect(err, false, 50), info);
-        return res.serverError(500, 'Password update failed');
-      }
-
-      return res.send(JSON.stringify({
-        success: true,
-        text: 'Changed password successfully'
-      }));
-    });
-  };
-
-  /**
    * GET - /api/user/css OR /api/user.css
    *
    * Retrieves custom user css for the user's custom theme.
@@ -598,46 +349,6 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
       style.render((err, css) => {
         if (err) { return error(err); }
         return res.send(css);
-      });
-    });
-  };
-
-  /**
-   * POST - /api/users
-   *
-   * Retrieves a list of Arkime users (admin only).
-   * @name /users
-   * @returns {ArkimeUser[]} data - The list of users configured to access this Arkime cluster.
-   * @returns {number} recordsTotal - The total number of users Arkime knows about.
-   * @returns {number} recordsFiltered - The number of users returned in this result.
-   */
-  userAPIs.getUsers = (req, res) => {
-    const query = {
-      from: +req.body.start || 0,
-      size: +req.body.length || 10000
-    };
-
-    if (req.body.filter) {
-      query.filter = req.body.filter;
-    }
-
-    query.sortField = req.body.sortField || 'userId';
-    query.sortDescending = req.body.desc === true;
-
-    Promise.all([
-      User.searchUsers(query),
-      User.numberOfUsers()
-    ]).then(([users, total]) => {
-      if (users.error) { throw users.error; }
-      res.send({
-        recordsTotal: total,
-        recordsFiltered: users.total,
-        data: users.users
-      });
-    }).catch((err) => {
-      console.log(`ERROR - ${req.method} /api/users`, util.inspect(err, false, 50));
-      return res.send({
-        recordsTotal: 0, recordsFiltered: 0, data: []
       });
     });
   };
@@ -765,7 +476,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * @returns {string} text - The success/error message to (optionally) display to the user.
    */
   userAPIs.deleteUserView = (req, res) => {
-    const viewName = req.body.name || req.params.name;
+    const viewName = req.body.name;
     if (!viewName) {
       return res.serverError(403, 'Missing view name');
     }
@@ -781,7 +492,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
             return res.serverError(404, 'View not found');
           }
           // only admins or the user that created the view can delete the shared view
-          if (!user.createEnabled && sharedUser.views[viewName].user !== user.userId) {
+          if (!user.hasRole('arkimeAdmin') && sharedUser.views[viewName].user !== user.userId) {
             return res.serverError(401, 'Need admin privelages to delete another user\'s shared view');
           }
           delete sharedUser.views[viewName];
@@ -828,7 +539,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * @returns {string} text - The success/error message to (optionally) display to the user.
    */
   userAPIs.userViewToggleShare = (req, res) => {
-    const viewName = req.params.name || req.body.name;
+    const viewName = req.body.name;
     if (!viewName) {
       return res.serverError(403, 'Missing view name');
     }
@@ -866,7 +577,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
         // if unsharing, remove it from shared user and add it to current user
         if (sharedUser.views[viewName] === undefined) { return res.serverError(404, 'View not found'); }
         // only admins or the user that created the view can update the shared view
-        if (!user.createEnabled && sharedUser.views[viewName].user !== user.userId) {
+        if (!user.hasRole('arkimeAdmin') && sharedUser.views[viewName].user !== user.userId) {
           return res.serverError(401, 'Need admin privelages to unshare another user\'s shared view');
         }
         // delete the shared view
@@ -885,7 +596,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * @returns {string} text - The success/error message to (optionally) display to the user.
    */
   userAPIs.updateUserView = (req, res) => {
-    const key = req.body.key || req.params.key;
+    const key = req.body.key;
 
     if (!key) {
       return res.serverError(403, 'Missing view key');
@@ -910,7 +621,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
             return res.serverError(404, 'View not found');
           }
           // only admins or the user that created the view can update the shared view
-          if (!user.createEnabled && sharedUser.views[req.body.name].user !== user.userId) {
+          if (!user.hasRole('arkimeAdmin') && sharedUser.views[req.body.name].user !== user.userId) {
             return res.serverError(401, 'Need admin privelages to update another user\'s shared view');
           }
           sharedUser.views[req.body.name] = {
@@ -1100,7 +811,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * @returns {string} text - The success/error message to (optionally) display to the user.
    */
   userAPIs.deleteUserCron = async (req, res) => {
-    const key = req.body.key || req.params.key;
+    const key = req.body.key;
     if (!key) {
       return res.serverError(403, 'Missing query key');
     }
@@ -1127,7 +838,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * @returns {ArkimeQuery} query - The updated query object
    */
   userAPIs.updateUserCron = async (req, res) => {
-    const key = req.body.key || req.params.key;
+    const key = req.body.key;
     if (!key) {
       return res.serverError(403, 'Missing query key');
     }

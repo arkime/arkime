@@ -170,7 +170,8 @@
                 role="button"
                 title="Delete history"
                 class="btn btn-xs btn-warning"
-                v-has-permission="'createEnabled,removeEnabled'"
+                v-has-role="{user:user,roles:'arkimeAdmin'}"
+                v-has-permission="'removeEnabled'"
                 @click="deleteLog(item, index)">
                 <span class="fa fa-trash-o">
                 </span>
@@ -191,7 +192,7 @@
             <td class="no-wrap text-right">
               {{ item.range*1000 | readableTime }}
             </td>
-            <td v-has-permission="'createEnabled'"
+            <td v-has-role="{user:user,roles:'arkimeAdmin'}"
               class="no-wrap">
               {{ item.userId }}
             </td>
@@ -223,7 +224,7 @@
             <td :colspan="colSpan">
               <dl class="dl-horizontal">
                 <!-- forced expression -->
-                <div v-has-permission="'createEnabled'"
+                <div v-has-role="{user:user,roles:'arkimeAdmin'}"
                   v-if="item.forcedExpression !== undefined"
                   class="mt-1">
                   <span>
@@ -300,7 +301,7 @@
                   </div>
                 </div> <!-- /query params -->
                 <!-- es query -->
-                <div v-has-permission="'createEnabled'">
+                <div v-has-role="{user:user,roles:'arkimeAdmin'}">
                   <div class="mt-3" v-if="item.esQueryIndices">
                     <h5>Elasticsearch Query Indices</h5>
                     <code class="mr-3 ml-3">{{ item.esQueryIndices }}</code>
@@ -342,7 +343,7 @@ import qs from 'qs';
 import MolochPaging from '../utils/Pagination';
 import MolochLoading from '../utils/Loading';
 import MolochError from '../utils/Error';
-import ToggleBtn from '../utils/ToggleBtn';
+import ToggleBtn from '../../../../../common/vueapp/ToggleBtn';
 import MolochTime from '../search/Time';
 import FocusInput from '../utils/FocusInput';
 import MolochToast from '../utils/Toast';
@@ -382,7 +383,7 @@ export default {
       columns: [
         { name: 'Time', sort: 'timestamp', nowrap: true, width: 13, help: 'The time of the request' },
         { name: 'Time Range', sort: 'range', nowrap: true, width: 11, classes: 'text-right', help: 'The time range of the request' },
-        { name: 'User ID', sort: 'userId', nowrap: true, width: 8, filter: true, permission: 'createEnabled', help: 'The id of the user that initiated the request' },
+        { name: 'User ID', sort: 'userId', nowrap: true, width: 8, filter: true, role: 'arkimeAdmin', help: 'The id of the user that initiated the request' },
         { name: 'Query Time', sort: 'queryTime', nowrap: true, width: 8, classes: 'text-right', help: 'Execution time in MS' },
         { name: 'Method', sort: 'method', nowrap: true, width: 5, help: 'The HTTP request method' },
         { name: 'API', sort: 'api', nowrap: true, width: 13, filter: true, help: 'The API endpoint of the request' },
@@ -426,7 +427,7 @@ export default {
   },
   created: function () {
     // if the user is an admin, show them all the columns
-    if (this.user.createEnabled) { this.colSpan = 9; }
+    if (this.user.roles.includes('arkimeAdmin')) { this.colSpan = 9; }
     // query for the user requested or the current user
     this.filters.userId = this.$route.query.userId || this.user.userId;
 

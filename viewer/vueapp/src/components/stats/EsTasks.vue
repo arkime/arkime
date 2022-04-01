@@ -14,7 +14,7 @@
       <button type="button"
         v-b-tooltip.hover
         @click="cancelTasks"
-        v-has-permission="'createEnabled'"
+        v-has-role="{user:user,roles:'arkimeAdmin'}"
         title="Cancel ALL cancelable tasks"
         class="pull-right btn btn-sm btn-warning">
         <span class="fa fa-ban"></span>&nbsp;
@@ -48,7 +48,7 @@
             @click="cancelTask(item.taskId)"
             v-b-tooltip.hover
             title="Cancel task"
-            v-has-permission="'createEnabled'">
+            v-has-role="{user:user,roles:'arkimeAdmin'}">
             <span class="fa fa-trash-o">
             </span>
           </a>

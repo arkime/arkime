@@ -11,8 +11,10 @@ import UserService from '../src/components/users/UserService';
 import ConfigService from '../src/components/utils/ConfigService';
 import SettingsService from '../src/components/settings/SettingsService';
 import HasPermission from '../src/components/utils/HasPermission.vue';
+import HasRole from '../../../common/vueapp/HasRole.vue';
 import Utils from '../src/components/utils/utils';
 import '../src/filters.js';
+import '../../../common/vueapp/vueFilters';
 const {
   userSettings, userWithSettings, views, periodicQueries, fields, notifiers,
   notifierTypes, shortcuts, users, fieldsMap
@@ -25,6 +27,7 @@ global.$ = global.jQuery = $;
 Vue.use(BootstrapVue);
 
 Vue.directive('has-permission', HasPermission);
+Vue.directive('has-role', HasRole);
 
 Vue.prototype.$constants = {
   MOLOCH_MULTIVIEWER: false

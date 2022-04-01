@@ -25,13 +25,17 @@ body {
 
 /* MISC -------------------------------------- */
 .margin-for-nav {
-  margin-top: 70px;
+  margin-top: 70px !important;
 }
+
+/* widths */
+.w-40 { width: 40% !important; }
 
 /* cursors */
 .cursor-help, .help-cursor { cursor: help; }
 .cursor-text, .text-cursor { cursor: text; }
 .cursor-move, .move-cursor { cursor: move; }
+.cursor-grab, .grab-cursor { cursor: grab; }
 .cursor-pointer, .pointer-cursor { cursor: pointer; }
 .cursor-crosshair, .crosshair-cursor { cursor: crosshair; }
 
@@ -52,9 +56,14 @@ body {
 .no-overflow-y  { overflow-y: hidden; }
 .break-word     { word-break: break-word; }
 .word-break     { word-break: break-word; }
+.break-all      { word-break: break-all; }
+.all-break      { word-break: break-all; }
+
+.ellipsis { text-overflow: ellipsis; }
 
 /* display */
 .display-inline { display: inline; }
+.display-inline-block { display: inline-block; }
 
 /* remove underline for anchor tag hover */
 .no-decoration { text-decoration: none !important; }
@@ -76,6 +85,30 @@ body {
   padding: 1px 5px;
   font-size: 12px;
   border-radius: 3px;
+}
+
+/* user roles dropdown scrolls for long lists */
+.roles-dropdown ul {
+  overflow: auto;
+  max-width: 220px;
+  max-height: 200px;
+}
+
+/* xs input groups */
+.input-group-xs > .form-control,
+.input-group-xs > .custom-select,
+.input-group-xs > .input-group-prepend > .input-group-text,
+.input-group-xs > .input-group-append > .input-group-text,
+.input-group-xs > .input-group-prepend > .btn,
+.input-group-xs > .input-group-append > .btn {
+  line-height: 1;
+  padding: 0.25rem;
+  font-size: 0.825rem;
+  border-radius: 2px;
+}
+.input-group-xs > .custom-select,
+.input-group-xs > .form-control:not(textarea) {
+  height: calc(0.825em + 0.5rem + 4px);
 }
 
 /* INFO AREA --------------------------------- */
@@ -212,7 +245,7 @@ body.dark .info-area > div {
 }
 
 /* darken pre */
-body.dark pre {
+body.dark pre:not([class*="text-"]) {
   color: white !important;
 }
 
@@ -238,7 +271,8 @@ body.dark .dropdown-menu {
   background-color: #222;
   border: 1px solid #333;
 }
-body.dark .dropdown-menu .dropdown-item {
+body.dark .dropdown-menu .dropdown-item,
+body.dark .dropdown-menu .b-dropdown-form {
   color: #EEE;
 }
 body.dark .dropdown-menu .dropdown-item:hover,
@@ -292,6 +326,9 @@ body.dark .table-hover .table-secondary:hover,
 body.dark .table-hover .table-secondary:hover > th,
 body.dark .table-hover .table-secondary:hover > td {
   background-color: #4F4F4F;
+}
+body.dark .table-striped tbody tr:nth-of-type(odd) {
+  background-color: rgba(255, 255, 255, 0.05);
 }
 
 /* lighten table text in dark mode */
@@ -389,6 +426,21 @@ body.dark .pagination .page-item.active > button:focus {
   background-color: #111;
 }
 
+/* dark modal */
+body.dark .modal-content {
+  color: #EEE;
+  background-color: #222;
+}
+body.dark .modal-content .modal-header,
+body.dark .modal-content .modal-footer {
+  background-color: #333;
+}
+
+/* dark panel */
+body.dark .b-sidebar-body {
+  color: #EEE;
+  background-color: #333;
+}
 
 /* ANIMATIONS -------------------------------- */
 /* for transition groups (any block element)

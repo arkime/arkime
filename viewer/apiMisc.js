@@ -5,6 +5,7 @@ const fs = require('fs');
 const unzipper = require('unzipper');
 const util = require('util');
 const ArkimeUtil = require('../common/arkimeUtil');
+const User = require('../common/user');
 
 module.exports = (Config, Db, internals, sessionAPIs, userAPIs, ViewerUtils) => {
   const miscAPIs = {};
@@ -204,8 +205,8 @@ module.exports = (Config, Db, internals, sessionAPIs, userAPIs, ViewerUtils) => 
     }`
     };
     actions.reverseDNS = { category: 'ip', name: 'Get Reverse DNS', url: 'api/reversedns?ip=%TEXT%', actionType: 'fetch' };
-    actions.bodyHashMd5 = { category: 'md5', url: '%NODE%/%ID%/bodyHash/%TEXT%', name: 'Download File' };
-    actions.bodyHashSha256 = { category: 'sha256', url: '%NODE%/%ID%/bodyHash/%TEXT%', name: 'Download File' };
+    actions.bodyHashMd5 = { category: 'md5', url: 'api/session/%NODE%/%ID%/bodyHash/%TEXT%', name: 'Download File' };
+    actions.bodyHashSha256 = { category: 'sha256', url: 'api/session/%NODE%/%ID%/bodyHash/%TEXT%', name: 'Download File' };
 
     for (const key in internals.rightClicks) {
       const rc = internals.rightClicks[key];
@@ -349,7 +350,7 @@ module.exports = (Config, Db, internals, sessionAPIs, userAPIs, ViewerUtils) => 
 
       // can't fetch user or fields is FATAL, so let it fall through to outer
       // catch and send an error to the client
-      const user = userAPIs.getCurrentUser(req);
+      const user = User.getCurrentUser(req);
       const fieldsArr = internals.fieldsArr;
       const fieldsMap = JSON.parse(internals.fieldsMap);
 

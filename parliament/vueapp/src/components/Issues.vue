@@ -66,32 +66,34 @@
         of {{ recordsFiltered }} entries
       </div>
       <!-- /page info -->
-      <!-- remove/cancel all issues button -->
-      <button v-if="loggedIn && issues && issues.length"
-        class="btn btn-outline-danger btn-sm cursor-pointer"
-        v-b-tooltip.hover.bottom
-        title="Remove ALL acknowledged issues across the ENTIRE Parliament"
-        @click="removeAllAcknowledgedIssues">
-        <span class="fa fa-trash fa-fw">
-        </span>
-        <transition name="visibility">
-          <span v-if="removeAllAcknowledgedIssuesConfirm">
-            Click to confirm
-          </span>
-        </transition>
-      </button>
-      <transition name="slide-fade">
-        <button class="btn btn-outline-warning btn-sm cursor-pointer"
-          v-if="loggedIn && issues && issues.length && removeAllAcknowledgedIssuesConfirm"
+      <template v-if="isUser">
+        <!-- remove/cancel all issues button -->
+        <button v-if="loggedIn && issues && issues.length"
+          class="btn btn-outline-danger btn-sm cursor-pointer"
           v-b-tooltip.hover.bottom
-          title="Cancel removing ALL acknowledged issues"
-          @click="cancelRemoveAllAcknowledgedIssues">
-          <span class="fa fa-ban fa-fw">
-          </span>&nbsp;
-          Cancel
+          title="Remove ALL acknowledged issues across the ENTIRE Parliament"
+          @click="removeAllAcknowledgedIssues">
+          <span class="fa fa-trash fa-fw">
+          </span>
+          <transition name="visibility">
+            <span v-if="removeAllAcknowledgedIssuesConfirm">
+              Click to confirm
+            </span>
+          </transition>
         </button>
-      </transition>
-      <!-- /remove/cancel all issues button -->
+        <transition name="slide-fade">
+          <button class="btn btn-outline-warning btn-sm cursor-pointer"
+            v-if="isUser && loggedIn && issues && issues.length && removeAllAcknowledgedIssuesConfirm"
+            v-b-tooltip.hover.bottom
+            title="Cancel removing ALL acknowledged issues"
+            @click="cancelRemoveAllAcknowledgedIssues">
+            <span class="fa fa-ban fa-fw">
+            </span>&nbsp;
+            Cancel
+          </button>
+        </transition>
+        <!-- /remove/cancel all issues button -->
+      </template>
       <!-- search -->
       <div class="input-group input-group-sm pull-right issue-search">
         <div class="input-group-prepend">
@@ -123,7 +125,7 @@
       class="table table-hover table-sm">
       <thead>
         <tr>
-          <th v-if="loggedIn && issues.length">
+          <th v-if="isUser && loggedIn && issues.length">
             <input type="checkbox"
               @click="toggleAllIssues"
               v-model="allIssuesSelected"
@@ -232,7 +234,7 @@
               class="fa fa-sort-desc fa-fw">
             </span>
           </th>
-          <th v-if="loggedIn && issues && issues.length"
+          <th v-if="isUser && loggedIn && issues && issues.length"
             width="120px"
             scope="col">
             <span v-if="atLeastOneIssueSelected">
@@ -297,7 +299,7 @@
         <template v-for="issue of issues">
           <tr :key="getIssueTrackingId(issue)"
             :class="getIssueRowClass(issue)">
-            <td v-if="loggedIn">
+            <td v-if="isUser && loggedIn">
               <input type="checkbox"
                 v-model="issue.selected"
                 @change="toggleIssue(issue)"
@@ -334,7 +336,7 @@
                 {{ issue.acknowledged | moment('YYYY/MM/DD HH:mm:ss') }}
               </span>
             </td>
-            <td v-if="loggedIn">
+            <td v-if="isUser && loggedIn">
               <issue-actions class="issue-btns"
                 :issue="issue"
                 @issueChange="issueChange">
@@ -401,6 +403,9 @@ export default {
     };
   },
   computed: {
+    isUser: function () {
+      return this.$store.state.isUser;
+    },
     loggedIn: function () {
       return this.$store.state.loggedIn;
     },

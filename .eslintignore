@@ -14,3 +14,7 @@
 /viewer/node_modules
 /viewer/public
 /viewer/version.js
+/cont3xt/vueapp/build/
+/cont3xt/vueapp/config/
+/cont3xt/vueapp/dist/
+/cont3xt/node_modules

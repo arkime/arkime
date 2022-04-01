@@ -33,7 +33,7 @@
           </router-link>
         </li>
         <li class="nav-item mr-2"
-          v-if="(hasAuth && loggedIn) || (!hasAuth && !dashboardOnly)">
+          v-if="(hasAuth && loggedIn && isAdmin) || (!hasAuth && !dashboardOnly)">
           <router-link to="settings"
             active-class="active"
             class="nav-link">
@@ -94,43 +94,45 @@
           </div>
         </span> <!-- /refresh interval select -->
         <!-- password input -->
-        <form>
-          <input type="text"
-            name="username"
-            value="..."
-            autocomplete="username"
-            class="d-none"
-          />
-          <input class="form-control ml-1"
-            tabindex="2"
-            type="password"
-            v-model="password"
-            v-focus-input="focusPassInput"
-            placeholder="password please"
-            autocomplete="password"
-            :class="{'hide-login':!showLoginInput,'show-login':showLoginInput}"
-          />
-        </form> <!-- /password input -->
-        <!-- login button -->
-        <button type="button"
-          class="btn btn-outline-success cursor-pointer ml-1"
-          @click="login"
-          tabindex="3"
-          v-if="!loggedIn && hasAuth && !dashboardOnly">
-          <span class="fa fa-unlock">
-          </span>&nbsp;
-          Login
-        </button> <!-- /login button -->
-        <!-- logout btn -->
-        <button type="button"
-          class="btn btn-outline-danger cursor-pointer ml-1"
-          @click="logout"
-          tabindex="4"
-          v-if="loggedIn">
-          <span class="fa fa-lock">
-          </span>&nbsp;
-          Logout
-        </button> <!-- /logout btn -->
+        <template v-if="!commonAuth">
+          <form>
+            <input type="text"
+              name="username"
+              value="..."
+              autocomplete="username"
+              class="d-none"
+            />
+            <input class="form-control ml-1"
+              tabindex="2"
+              type="password"
+              v-model="password"
+              v-focus-input="focusPassInput"
+              placeholder="password please"
+              autocomplete="password"
+              :class="{'hide-login':!showLoginInput,'show-login':showLoginInput}"
+            />
+          </form> <!-- /password input -->
+          <!-- login button -->
+          <button type="button"
+            class="btn btn-outline-success cursor-pointer ml-1"
+            @click="login"
+            tabindex="3"
+            v-if="!loggedIn && hasAuth && !dashboardOnly">
+            <span class="fa fa-unlock">
+            </span>&nbsp;
+            Login
+          </button> <!-- /login button -->
+          <!-- logout btn -->
+          <button type="button"
+            class="btn btn-outline-danger cursor-pointer ml-1"
+            @click="logout"
+            tabindex="4"
+            v-if="loggedIn">
+            <span class="fa fa-lock">
+            </span>&nbsp;
+            Logout
+          </button> <!-- /logout btn -->
+        </template>
       </div>
     </nav> <!-- /parliament nav -->
 
@@ -159,11 +161,17 @@ export default {
   },
   computed: {
     // auth vars
+    isAdmin: function () {
+      return this.$store.state.isAdmin;
+    },
     hasAuth: function () {
       return this.$store.state.hasAuth;
     },
     loggedIn: function () {
       return this.$store.state.loggedIn;
+    },
+    commonAuth: function () {
+      return this.$store.state.commonAuth;
     },
     dashboardOnly: function () {
       return this.$store.state.dashboardOnly;
@@ -211,17 +219,16 @@ export default {
           return;
         }
 
-        AuthService.login(this.password)
-          .then((response) => {
-            this.error = '';
-            this.password = '';
-            this.showLoginInput = false;
-          })
-          .catch((error) => {
-            this.password = '';
-            this.focusPassInput = true;
-            this.error = error.text || 'Unable to login';
-          });
+        AuthService.login(this.password).then((response) => {
+          this.error = '';
+          this.password = '';
+          this.showLoginInput = false;
+          AuthService.isLoggedIn();
+        }).catch((error) => {
+          this.password = '';
+          this.focusPassInput = true;
+          this.error = error.text || 'Unable to login';
+        });
       } else {
         this.showLoginInput = true;
         this.focusPassInput = true;

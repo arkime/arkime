@@ -42,87 +42,12 @@ export default {
   },
 
   /**
-   * Gets a list of users
-   * @param {Object} query      Parameters to query the server for specific users
-   * @returns {Promise} Promise A promise object that signals the completion
-   *                            or rejection of the request.
-   */
-  getUsers (query) {
-    return new Promise((resolve, reject) => {
-      const options = {
-        url: 'api/users',
-        method: 'POST',
-        data: query
-      };
-
-      Vue.axios(options)
-        .then((response) => {
-          resolve(response);
-        }, (error) => {
-          reject(error);
-        });
-    });
-  },
-
-  /**
-   * Creates a new user
-   * @param {Object} newuser    The new user object
-   * @returns {Promise} Promise A promise object that signals the completion
-   *                            or rejection of the request.
-   */
-  createUser (newuser) {
-    return new Promise((resolve, reject) => {
-      Vue.axios.post('api/user', newuser)
-        .then((response) => {
-          resolve(response);
-        }, (error) => {
-          reject(error);
-        });
-    });
-  },
-
-  /**
-   * Deletes a user
-   * @param {Object} user       The user to delete
-   * @returns {Promise} Promise A promise object that signals the completion
-   *                            or rejection of the request.
-   */
-  deleteUser (user) {
-    return new Promise((resolve, reject) => {
-      Vue.axios.delete(`api/user/${user.id}`, user)
-        .then((response) => {
-          resolve(response);
-        }, (error) => {
-          reject(error);
-        });
-    });
-  },
-
-  /**
-   * Updates a user
-   * @param {Object} user       The user to update
-   * @returns {Promise} Promise A promise object that signals the completion
-   *                            or rejection of the request.
-   */
-  updateUser (user) {
-    return new Promise((resolve, reject) => {
-      Vue.axios.post(`api/user/${user.id}`, user)
-        .then((response) => {
-          resolve(response);
-        }, (error) => {
-          reject(error);
-        });
-    });
-  },
-
-  /**
    * Determines whether a user has permission to perform a specific task
    * @param {string} priv The privilege in question. Values include:
-   *                      'createEnabled', 'emailSearch', 'enabled', 'packetSearch',
+   *                      'emailSearch', 'enabled', 'packetSearch',
    *                      'headerAuthEnabled', 'removeEnabled', 'webEnabled',
    *                      '!hideStats', '!hideFiles', '!hidePcap', '!disablePcapDownload'
-   * @returns {boolean}   A promise object that signals the completion
-   *                            or rejection of the request.
+   * @returns {boolean}   true if all permissions are included.
    */
   hasPermission (priv) {
     const user = store.state.user;
@@ -136,6 +61,29 @@ export default {
       }
       if ((!reverse && !user[p]) ||
         (reverse && user[p])) {
+        return false;
+      }
+    }
+    return true;
+  },
+
+  /**
+   * Determines whether a user has role to perform a specific task
+   * @param {string} role The role in question.
+   * @returns {boolean} true if all roles are included
+   */
+  hasRole (role) {
+    const user = store.state.user;
+    if (!user) { return false; }
+    const roles = role.split(',');
+    for (let r of roles) {
+      let reverse = false;
+      if (r.startsWith('!')) {
+        reverse = true;
+        r = r.substr(1);
+      }
+      if ((!reverse && !user.roles.includes(r)) ||
+        (reverse && user.roles.includes(r))) {
         return false;
       }
     }
@@ -783,7 +731,7 @@ export default {
           let userDefined = false;
           const roleId = role;
           if (role.startsWith('role:')) {
-            role = role.replace('role:', '');
+            role = role.slice(5);
             userDefined = true;
           }
           role = { text: role, value: roleId, userDefined };

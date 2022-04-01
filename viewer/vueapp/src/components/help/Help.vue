@@ -21,6 +21,10 @@
         </span>&nbsp;
         Search Bar
       </a>
+      <a href="help#timebounding"
+        class="nav-link nested">
+        Time Bounding
+      </a>
       <a href="help#stringSearch"
         class="nav-link nested">
         String
@@ -100,7 +104,7 @@
         Settings
       </a>
       <a href="help#users"
-        v-has-permission="'createEnabled'"
+        v-has-role="{user:user,roles:'arkimeAdmin'}"
         class="nav-link">
         <span class="fa fa-fw fa-users">
         </span>&nbsp;
@@ -121,7 +125,7 @@
     </div> <!-- End of navbar -->
 
     <!-- Page content -->
-    <div class="mt-5 ml-4 mr-4 navbar-offset">
+    <div class="mt-2 ml-4 mr-4 navbar-offset">
 
       <h3 id="about">
         <span class="fa fa-question-circle"></span>&nbsp;
@@ -172,25 +176,38 @@
         Most fields also support a shorthand OR query using square brackets
         using CSV rules to list possible values (<code>field==[item1,item2,item3]</code>).
       </p>
-      <p>
-        All queries are bounded by a start and stop time. The bounded start and stop times can be
-        set either by selecting a choice from a quick relative drop down or by entering exact time sections.
-        Since every session has a first packet, last packet, and database timestamp, Arkime offers
-        a choice on how to select the sessions:
-      </p>
-      <dl class="dl-horizontal">
-        <dt>First Packet</dt>
-        <dd>The timestamp of the first packet received for the session.</dd>
-        <dt>Last Packet</dt>
-        <dd>The timestamp of the last packet received for the session.</dd>
-        <dt>Bounded</dt>
-        <dd>Both the first and last packet timestamps for the session must be inside the time window.</dd>
-        <dt>Session Overlaps</dt>
-        <dd>The timestamp of the first packet must be before the end of the time window AND the timestamp of the last packet must be after the start of the time window.</dd>
-        <dt>Database</dt>
-        <dd>The timestamp the session was written to the database.  This can be up to several minutes AFTER the last packet was received.</dd>
-      </dl>
-      <br>
+      <div class="ml-4">
+        <h6 id="timebounding">
+          <span class="fa fa-search"></span>&nbsp;
+          Time Bounding
+        </h6>
+        <p>
+          All queries are bounded by a start and stop time.
+          The bounded start and stop times can be set either by selecting a choice from a quick relative drop down or by entering exact time sections.
+          Entering an exact time will automatically switch from a relative time bounding to a fixed time bounding.
+          Next to the start/stop entries are buttons that will quickly take you to the start/stop of each day.
+        </p>
+        <p>
+          Since every session has a first packet, last packet, and database timestamp, Arkime offers
+          a choice on how to select the sessions:
+        </p>
+        <dl class="dl-horizontal">
+          <dt>First Packet</dt>
+          <dd>The timestamp of the first packet received for the session.</dd>
+          <dt>Last Packet</dt>
+          <dd>The timestamp of the last packet received for the session.</dd>
+          <dt>Bounded</dt>
+          <dd>Both the first and last packet timestamps for the session must be inside the time window.</dd>
+          <dt>Session Overlaps</dt>
+          <dd>The timestamp of the first packet must be before the end of the time window AND the timestamp of the last packet must be after the start of the time window.</dd>
+          <dt>Database</dt>
+          <dd>The timestamp the session was written to the database.  This can be up to several minutes AFTER the last packet was received.</dd>
+        </dl>
+        <p>
+          The Interval drop down allows you to control how much time each column/point in the graph represents.
+          The auto setting will change the bucket sized based on the time range selected.
+        </p>
+      </div>
       <div class="ml-4">
         <h6 id="stringSearch">
           <span class="fa fa-search"></span>&nbsp;
@@ -266,9 +283,12 @@
           and not equals. For example: <code>starttime == "2004/07/31 05:33:41"</code>.
           They also support lists for a simple OR query. For example:
           <code>stoptime == ["2004/07/31 05:33:41","2004/07/31 06:33:41"]</code>.
-          However, it's much easier to use the
+          However, usually it's much easier to use the
           <a href="help#timebounding" class="no-decoration">time bounding</a>
           controls under the search bar.
+          <strong>IMPORTANT</strong>, using starttime or stoptime does <strong>NOT</strong>
+          change the overall <a href="help#timebounding" class="no-decoration">time bounding</a>
+          of the query.
           Finally, relative dates and optional snapping are supported using the
           Splunk syntax:
         </p>
@@ -363,15 +383,6 @@
           The magnifying glass ( <span class="fa fa-search"></span> ) in the top left corner indicates the search bar. Enter your query string here and then hit ENTER or click the "Search" button to run your query.
           While typing fieldnames into the query bar predicative typing will overlay with potential fieldname choices based on what has been typed so far.
           See the <a href="help#search" class="no-decoration">search section</a> for more in depth information.
-        </p>
-        <h6 id="timebounding">
-          <span class="fa fa-fw fa-exchange"></span>&nbsp;
-          Time Bounding
-        </h6>
-        <p>
-          The controls under the search bar contain the time bounding selections. The first element sets relative timing (such as last hour, last day, etc).
-          The Start box allows a start time/date to be selected. The End box allows an end time/date to be selected.
-          The bounding box is used to select where time bounding is applied (last packet, bounded, Session Overlaps, Database)
         </p>
         <h6>
           <span class="fa fa-fw fa-exchange"></span>&nbsp;
@@ -1172,18 +1183,75 @@
 
       <hr>
 
-      <h3 id="users" v-has-permission="'createEnabled'">
+      <h3 id="users" v-has-role="{user:user,roles:'usersAdmin'}">
         <span class="fa fa-fw fa-users"></span>&nbsp;
         Users
       </h3>
-      <p v-has-permission="'createEnabled'">
-        The Users page, as you may have guessed, is where user options are configured and added to the system. Multiple options for role based access control (RBAC) may be leveraged.
-        These options include: The User ID, The Name of the user, a Forced expression (only allows a user to see data related to the specified expression/query), an Account enabled toggle, an Admin toggle,
-        if the user is allowed access to the web interface, if the user is allowed access to http based Authorization Headers, if the user may search captured email data, if the user may remove data from the system (scrub).
-        This page also allows for the deletion of a previously created user. Clicking on the Settings link will jump to the users <a href="help#settings" class="no-decoration">Settings</a> page.
-      </p>
+      <span v-has-role="{user:user,roles:'arkimeAdmin'}">
+        <p>
+          The Users page is where you can add, modify, and delete both Users and Roles for the entire Arkime ecosystem.
 
-      <hr>
+          Arkime has builtin Roles that control how different subsystems are accessed.
+          You can also create user defined Roles that are used to share different items.
+          Basic inheritance is supported for role, so if you create a 'team' role and assign it the cont3xtUser role,
+          any user assigned the new 'team' role will also have the 'cont3xtUser' role assigned.
+        </p>
+
+        System Roles:
+        <dl class="dl-horizontal dl-horizontal-wide">
+          <dt>superAdmin</dt>
+          <dd>Has all system roles assigned. Can only be assigned by another superAdmin.</dd>
+          <dt>usersAdmin</dt>
+          <dd>Can use the Users page to add/modify/delete users</dd>
+          <dt>arkimeAdmin</dt>
+          <dd>Can perform arkime configuration, automatically a arkimeUser also.</dd>
+          <dt>arkimeUser</dt>
+          <dd>Can use the Arkime viewer application</dd>
+          <dt>cont3xtAdmin</dt>
+          <dd>Can perform cont3xt configuration, automatically a cont3xtUser also.</dd>
+          <dt>contx3tUser</dt>
+          <dd>Can use the Cont3xt application</dd>
+          <dt>parliamentAdmin</dt>
+          <dd>Can perform parliament configuration, automatically a parliamentUser also.</dd>
+          <dt>parliamentUser</dt>
+          <dd>Can dismiss parliament issues and notifications. Unlike other roles parliament doesn't require a role to be set to use as a dashboard</dd>
+          <dt>wiseAdmin</dt>
+          <dd>Can perform wise configuration, automatically a wiseUser also.</dd>
+          <dt>wiseUser</dt>
+          <dd>Can use the WISE UI to do queries and viewer stats</dd>
+        </dl>
+
+        <p>
+        As each user is added you'll need to assign and sometimes change the default permissions
+        </p>
+
+        <dl class="dl-horizontal dl-horizontal-wide">
+          <dt>Enabled</dt>
+          <dd>Can this user/role actually be used</dd>
+          <dt>Web Interface</dt>
+          <dd>Can this user use the web interface, or only API calls</dd>
+          <dt>Web Auth Header</dt>
+          <dd>Can this user be authenticated by the Web Auth Header setting, or only digest</dd>
+          <dt>Disable Arkime Email Search</dt>
+          <dd>Should the user be able to use the email.* search criteria, they will see email field when openning a session</dd>
+          <dt>Disable Arkime Data Removal</dt>
+          <dd>Should the user be able to remove data, such as tags</dd>
+          <dt>Disable Arkime Hunting</dt>
+          <dd>Should the user be able to create new Arkime Hunts</dd>
+          <dt>Hide Arkime stats Page</dt>
+          <dd>Should the user be able to view the Arkime Stats tabs</dd>
+          <dt>Hide Arkime PCAP</dt>
+          <dd>When opening a session, should the user see the PCAP section</dd>
+          <dt>Disable Arkime PCAP Download</dt>
+          <dd>Should the user be able to download PCAP files</dd>
+          <dt>Forced Expression</dt>
+          <dd>This Arkime Expression will be added to all queries the does</dd>
+          <dt>Query Time Limit</dt>
+          <dd>How far back can the user do queries for</dd>
+        </dl>
+      </span>
+
+      <hr v-has-role="{user:user,roles:'arkimeAdmin'}">
 
       <h3 id="hotkeys">
         <span class="fa fa-fw fa-keyboard-o"></span>&nbsp;
@@ -1213,7 +1281,7 @@
         <code>'?'</code> - shows you the keyboard shortcuts help dialog
       </p>
 
-      <hr v-has-permission="'createEnabled'">
+      <hr>
 
       <h3 id="fields">
         <span class="fa fa-fw fa-list"></span>&nbsp;
@@ -1345,14 +1413,17 @@ export default {
       }
     };
   },
-  computed: {
-    fields () {
-      return this.fixFields(this.$store.state.fieldsArr);
-    }
-  },
   watch: {
     searchFields: function (newVal, oldVal) {
       this.debounceGetFilteredFields();
+    }
+  },
+  computed: {
+    user () {
+      return this.$store.state.user;
+    },
+    fields () {
+      return this.fixFields(this.$store.state.fieldsArr);
     }
   },
   created: function () {
