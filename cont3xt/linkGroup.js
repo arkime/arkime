@@ -26,7 +26,40 @@ class LinkGroup {
   }
 
   /**
-   * Return LinkGroups user can see
+   * A Link object
+   *
+   * Links are used to navigate to external sources.
+   * @typedef Link
+   * @type {object}
+   * @param {string} name - The name of the link
+   * @param {string} color - The color of the link
+   * @param {string[]} itypes - The type of cont3xt results that pertain to this link
+   * @param {string} url - The url of the link. Links can include placeholder values that will be filled in with the data from the Cont3xt results
+   */
+
+  /**
+   * A Link Group object
+   *
+   * Link Groups are used to list links to external sources.
+   * @typedef LinkGroup
+   * @type {object}
+   * @param {string} _id - The id of the link group
+   * @param {string} name - The name of the link group
+   * @param {string} creator - The creator of the link group
+   * @param {Links[]} links - The array of links in this link group
+   * @param {array} editRoles - The Arkime roles that can edit this link group
+   * @param {array} viewRoles - The Arkime roles that can view this link group
+   * @param {boolean} _editable - Whether the logged in user is allowed to edit this link group
+   * @param {boolean} _viewable - Whether the logged in user is allowed to view this link group
+   */
+
+  /**
+   * GET - /api/linkGroup
+   *
+   * Returns link groups that the requesting user is allowed to view.
+   * @name /linkGroup
+   * @returns {LinkGroup[]} linkGroups - An array of link groups that the logged in user can view
+   * @returns {boolean} success - True if the request was successful, false otherwise
    */
   static async apiGet (req, res, next) {
     const roles = await req.user.getRoles();
@@ -64,9 +97,7 @@ class LinkGroup {
     res.send({ success: true, linkGroups: linkGroups });
   }
 
-  /**
-   * Verify the link group, returns error msg on failure
-   */
+  // Verify the link group, returns error msg on failure
   static verifyLinkGroup (lg) {
     // TODO: Check roles
 
@@ -102,7 +133,13 @@ class LinkGroup {
   }
 
   /**
-   * Create new link group
+   * PUT - /api/linkGroup
+   *
+   * Creates a new link group
+   * @name /linkGroup
+   * @param {LinkGroup} linkGroup - The link group to create
+   * @returns {boolean} success - True if the request was successful, false otherwise
+   * @returns {string} text - The success/error message to (optionally) display to the user
    */
   static async apiCreate (req, res, next) {
     const linkGroup = req.body;
@@ -121,7 +158,13 @@ class LinkGroup {
   }
 
   /**
-   * Update new link group
+   * PUT - /api/linkGroup/:id
+   *
+   * Updates a link group
+   * @name /linkGroup/:id
+   * @param {LinkGroup} linkGroup - The link group to update
+   * @returns {boolean} success - True if the request was successful, false otherwise
+   * @returns {string} text - The success/error message to (optionally) display to the user
    */
   static async apiUpdate (req, res, next) {
     const olinkGroup = await Db.getLinkGroup(req.params.id);
@@ -153,7 +196,12 @@ class LinkGroup {
   }
 
   /**
-   * Delete a link group
+   * DELETE - /api/linkGroup/:id
+   *
+   * Deletes a link group
+   * @name /linkGroup/:id
+   * @returns {boolean} success - True if the request was successful, false otherwise
+   * @returns {string} text - The success/error message to (optionally) display to the user
    */
   static async apiDelete (req, res, next) {
     const linkGroup = await Db.getLinkGroup(req.params.id);

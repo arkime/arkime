@@ -184,11 +184,80 @@ class Integration {
   }
 
   /**
+   * An Integration field definition object
+   *
+   * The specifics on how to display a field
+   * @typedef IntegrationFieldDef
+   * @type {object}
+   * @param {string} label - The field label to display to a user
+   * @param {string} path - The path (it can have dots) to the data for field, if not set the field is the same as name. For table type this will be the path to the array.
+   * @param {IntegrationField[]} fields - Used with table data types, the list of fields to display in the table
+   * @param {boolean} defang - When true defang the string, change http to hXXp and change . to [.]
+   * @param {boolean} pivot - When set this field should be added to action menu for table entry that you can replace query with
+   * @param {string} join - Used with array data types, display with value as the separator on one line (example single: ', ')
+   * @param {string} defaultSortField - Used with table data types, sorts the table by this field initially
+   * @param {string} defaultSortDirection="desc" - Used with table data types if defaultSortField is also set, sorts the table in this direction ('asc' or 'desc')
+   */
+
+  /**
+    * An Integration field type string
+    *
+    * The data type of the field data
+    * @typedef IntegrationFieldType
+    * @type {string}
+    * @param {string} type="string" - The type of data displayed in the field
+    *                                 string - obvious
+    *                                 url - a url that should be made clickable
+    *                                 table - there will be a fields element
+    *                                 array - the field var will point to an array, display 1 per line unless join set
+    *                                 date - a date value
+    *                                 ms - a ms time value
+    *                                 seconds - a second time value
+    *                                 json - just display raw json, call in JSON.stringify(blah, false, 2)
+    */
+
+  /**
+   * An Integration field object
+   *
+   * Information about how to display a field within an Integration's data.
+   * @typedef IntegrationField
+   * @type {object}
+   * @param {string} name - The name of the field
+   * @param {IntegrationFieldType} type - The type of data displayed in the field
+   * @param {IntegrationFieldDef} field - If not "name" and "type" it's an object describing the data
+   */
+
+  /**
+   * An Integration card object
+   *
+   * Information about how to display the integration's data.
+   * @typedef IntegrationCard
+   * @type {object}
+   * @param {string} title - The title of the card to display in the UI
+   * @param {IntegrationField[]} fields - An array of field objects to outline how to display data for each field within the integration's data
+   */
+
+  /**
+   * An Integration object
+   *
+   * Integrations are the configured data sources for Cont3xt.
+   * @typedef Integration
+   * @type {object}
+   * @param {string} cachePolicy - Who can access the cached results of this integration's data ("shared")
+   * @param {number} cacheTimeout - How long results will be cached, -1 not cached
+   * @param {boolean} doable - Whether the user has access to execute this integration
+   * @param {string} icon - The relative url to the integrations icon
+   * @param {number} order - The order in which this integration displays in the UI
+   * @param {IntegrationCard} card - Information on how to display the integration's data
+   */
+
+  /**
+   * GET - /api/integration
+   *
    * List out all the integrations. Integrations without any itypes are skipped.
-   * doable - as a user will this integration execute
-   * cacheTimeout - how long results will be cached, -1 not cached
-   * icon - relative url to icon
-   * card - information on how to display the card
+   * @name /integration
+   * @returns {Integrations[]} integrations - A map of integrations that the logged in user has configured
+   * @returns {boolean} success - True if the request was successful, false otherwise
    */
   static async apiList (req, res, next) {
     const results = {};
@@ -366,11 +435,38 @@ class Integration {
   }
 
   /**
-   * The search api to go against integrations
+   * The classification of the search string
    *
-   * body.query String to actually query
-   * body.doIntegrations Array of integration names to skip
-   * body.skipCache Don't use the cache
+   * @typedef Itype
+   * @type {string}
+   * @param {string} itype="text" - The type of the search
+   *                                ip, domain, url, email, phone, hashes, or text
+   */
+
+  /**
+   * Integration Data Chunk object
+   *
+   * An chunk of data returned from searching integrations
+   * @typedef IntegrationChunk
+   * @type {object}
+   * @param {boolean} success - Whether the search was successful (sent in first chunk only)
+   * @param {Itype} itype - The type of the search
+   * @param {number} total - The total number of integrations to query
+   * @param {number} sent - The number of integration results that have completed and been sent to the client
+   * @param {string} name - The name of the integration result within the chunk
+   * @param {string} query - The query that was run against the integration to retrieve data
+   * @param {object} data - The data from the integration query. This varies based upon the integration. The <a href="#integrationcard-type">IntegrationCard</a> describes how to present this data to the user.
+   */
+
+  /**
+   * POST - /api/integration/search
+   *
+   * Fetches integration data
+   * @name /integration/search
+   * @param {string} query - The string to query integrations
+   * @param {string[]} doIntegrations - A list of integration names to query
+   * @param {boolean} skipCache - Ignore any cached data and query all integrations again
+   * @returns {IntegrationChunk[]} results - An array data chunks with the data
    */
   static async apiSearch (req, res, next) {
     if (!req.body.query) {
@@ -414,7 +510,14 @@ class Integration {
   }
 
   /**
-   * The search api to go against single itype/integration
+   * POST - /api/integration/:itype/:integration/search
+   *
+   * Fetches integration data about a single itype/integration
+   * @name /integration/:itype/:integration/search
+   * @param {string} query - The string to query the integration
+   * @returns {boolean} success - True if the request was successful, false otherwise
+   * @returns {string} _query - The query that was run against the integration to retrieve data
+   * @returns {object} data - The data from the integration query. This varies based upon the integration. The IntegrationCard describes how to present this data to the user.
    */
   static async apiSingleSearch (req, res, next) {
     if (!req.body.query) {
@@ -475,8 +578,24 @@ class Integration {
   }
 
   /**
-   * Return all the settings and current values that a user can set about
-   * Intergrations so a Setting UI can be built on the fly.
+   * Integration Settings object
+   *
+   * The settings for an integration for the logged in user
+   * @typedef IntegrationSetting
+   * @type {object}
+   * @param {boolean} globalConfiged - Whether integration is configured globally across cont3xt users or by this user (if a user has changed the settings for an integration, this if false)
+   * @param {string} homePage - The link to the home page for this integration so a user can learn more
+   * @param {object} settings - The setting field definitions for this integration
+   * @param {object} values - The values that map to the setting fields for this integration (empty object if not set)
+   */
+
+  /**
+   * GET - /api/integration/settings
+   *
+   * Return all the integration settings and current values that a user can set
+   * @name /integration/settings
+   * @returns {boolean} success - True if the request was successful, false otherwise
+   * @returns {IntegrationSetting[]} settings - The settings for each integration for the logged in user
    */
   static async apiGetSettings (req, res, next) {
     const result = {};
@@ -523,8 +642,12 @@ class Integration {
   }
 
   /**
-   * Return all the settings and current values that a user can set about
-   * Intergrations so a Setting UI can be built on the fly.
+   * PUT - /api/integration/settings
+   *
+   * Updates the integration settings
+   * @name /integration/settings
+   * @returns {boolean} success - True if the request was successful, false otherwise
+   * @returns {IntegrationSetting[]} settings - The integration settings to update for the logged in user
    */
   static async apiPutSettings (req, res, next) {
     if (!req.body?.settings) {
@@ -535,7 +658,33 @@ class Integration {
   }
 
   /**
-   * Get stats about integrations
+   * Integration Stat object
+   *
+   * The statistic data for an integration
+   * @typedef Stat
+   * @type {object}
+   * @param {number} cacheFound - The number of entries found in the cache for this integration
+   * @param {number} cacheGood - The number of valid entries found in the cache for this integration
+   * @param {number} cacheLookup - The number of entries looked up in the cache for this integration
+   * @param {number} cacheRecentAvgMS - How long it takes to look up this integration from the cache
+   * @param {number} directError - The number of entries queried directly from the integration that failed
+   * @param {number} directFound - The number of entries found directly from the integration
+   * @param {number} directGood - The number of valid entries queried directly from the integration
+   * @param {number} directLookup - The number of entries queried directly from the integration
+   * @param {number} directRecentAvgMS - How long it takes to look up directly from the integration
+   * @param {number} name - The name of the integration
+   * @param {number} total - The number of times the integration was asked for a result
+   */
+
+  /**
+   * GET - /api/integration/stats
+   *
+   * Fetches stats about integrations
+   * @name /integration/stats
+   * @returns {boolean} success - True if the request was successful, false otherwise
+   * @returns {number} startTime - The start time of the cont3xt server (the start of the stats data)
+   * @returns {Stat[]} stats - The integration stat data
+   * @returns {Stat[]} itypeStats - The itype stat data
    */
   static async apiStats (req, res, next) {
     const result = [];
@@ -554,9 +703,8 @@ class Integration {
     return Integration.getConfig(this.name, k, d);
   }
 
-  /**
-   * Return a config value by first check the user, then the interation name section.
-   */
+
+  // Return a config value by first check the user, then the interation name section.
   getUserConfig (user, section, key, d) {
     if (user.cont3xt?.keys) {
       const keys = user.getCont3xtKeys();

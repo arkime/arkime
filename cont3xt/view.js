@@ -23,7 +23,28 @@ class View {
   }
 
   /**
-   * Return views a user can see
+   * A Cont3xt View object
+   *
+   * Cont3xt Views are used to save lists of integrations to apply to a query.
+   * @typedef Cont3xtView
+   * @type {object}
+   * @param {string} _id - The id of the view
+   * @param {string} name - The name of the view
+   * @param {string} creator - The creator of the view
+   * @param {string[]} integrations - The array of integration names in this view
+   * @param {array} editRoles - The Arkime roles that can edit this view
+   * @param {array} viewRoles - The Arkime roles that can view this view
+   * @param {boolean} _editable - Whether the logged in user is allowed to edit this view
+   * @param {boolean} _viewable - Whether the logged in user is allowed to view this view
+   */
+
+  /**
+   * GET - /api/views
+   *
+   * Returns views that the requesting user is allowed to view.
+   * @name /views
+   * @returns {Cont3xtView[]} views - An array of views that the logged in user can view
+   * @returns {boolean} success - True if the request was successful, false otherwise
    */
   static async apiGet (req, res, next) {
     const roles = await req.user.getRoles();
@@ -39,7 +60,7 @@ class View {
   }
 
   /**
-   * Verify the link group, returns error msg on failure
+   * Verify the view, returns error msg on failure
    */
   static verifyView (view) {
     // TODO: Check roles
@@ -63,7 +84,13 @@ class View {
   }
 
   /**
-   * Create new view
+   * POST - /api/view
+   *
+   * Creates a new view
+   * @name /view
+   * @param {Cont3xtView} views - The view to create
+   * @returns {boolean} success - True if the request was successful, false otherwise
+   * @returns {string} text - The success/error message to (optionally) display to the user
    */
   static async apiCreate (req, res, next) {
     const view = req.body;
@@ -87,7 +114,13 @@ class View {
   }
 
   /**
-   * Update a view
+   * PUT - /api/view/:id
+   *
+   * Updates a view
+   * @name /view/:id
+   * @param {Cont3xtView} views - The view to update
+   * @returns {boolean} success - True if the request was successful, false otherwise
+   * @returns {string} text - The success/error message to (optionally) display to the user
    */
   static async apiUpdate (req, res, next) {
     const dbView = await Db.getView(req.params.id);
@@ -119,7 +152,13 @@ class View {
   }
 
   /**
-   * Delete a view
+   * DELETE - /api/view/:id
+   *
+   * Deletes a view
+   * @name /view/:id
+   * @param {Cont3xtView} views - The view to delete
+   * @returns {boolean} success - True if the request was successful, false otherwise
+   * @returns {string} text - The success/error message to (optionally) display to the user
    */
   static async apiDelete (req, res, next) {
     const view = await Db.getView(req.params.id);

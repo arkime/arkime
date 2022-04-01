@@ -233,7 +233,13 @@ app.get('/api/health', (req, res) => { res.send({ success: true }); });
 // ----------------------------------------------------------------------------
 
 /**
- * Return all the cont3xt settings
+ * GET - /api/settings
+ *
+ * Returns all the settings relevant for the cont3xt settings page
+ * @name /settings
+ * @returns {boolean} success - True if the request was successful, false otherwise
+ * @returns {object} settings - General cont3xt settings
+ * @returns {LinkGroup[]} linkGroups - An array of link groups that the logged in user can view/edit
  */
 function apiGetSettings (req, res, next) {
   const cont3xt = req.user.cont3xt ?? {};
@@ -245,7 +251,13 @@ function apiGetSettings (req, res, next) {
 }
 
 /**
- * Save all the cont3xt settings
+ * PUT - /api/settings
+ *
+ * Updates the general cont3xt settings
+ * @name /settings
+ * @param {object} settings - General cont3xt settings for the logged in user
+ * @returns {boolean} success - True if the request was successful, false otherwise
+ * @returns {string} text - The success/error message to (optionally) display to the user
  */
 function apiPutSettings (req, res, next) {
   let save = false;
