@@ -292,6 +292,8 @@ export default {
         .replace(/\${numHours}/g, this.numHours)
         .replace(/\${stopTS}/g, this.stopDate)
         .replace(/\${startTS}/g, this.startDate)
+        .replace(/\${stopEpoch}/g, new Date(this.stopDate).getTime() / 1000)
+        .replace(/\${startEpoch}/g, new Date(this.startDate).getTime() / 1000)
         .replace(/\${stopDate}/g, this.stopDate.split('T')[0])
         .replace(/\${startDate}/g, this.startDate.split('T')[0]);
     },
