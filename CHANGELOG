@@ -23,6 +23,19 @@ Node Versions:
 NOTICE: Restart wiseService before capture when upgrading
 NOTICE: Cross-cluster Shortcuts require you to not restart all your viewers at once after upgrading
 
+4.0.0 2022/04/xx
+  - BREAKING - Must be 3.3.0+ to upgrade to 4.x
+  - BREAKING - Move to roles for some permission checking,
+               userAdmin role required to edit users
+  - addUser.js - new --roles option, --admin creates superAdmin user
+  - cont3xt - new Cont3xt application, see https://arkime.com/cont3xt
+  - cont3xt/viewer - share new user UI
+  - parliament/wise - can be configured to use shared user DB
+  - wise - fix some stats sorting
+  - wise - fix UI saving of INI formatted config
+  - viewer - fixed auth fallback to digest from header mode
+  - all - Support ES 8
+
 3.4.2 2022/03/31
   - release - node 16.14.2
   - viewer - Packets/s, Sessions/s, Dropped/s didn't have correct total/average

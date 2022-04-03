@@ -5865,14 +5865,14 @@ sub checkForOld6Indices {
     my $found = 0;
 
     while ( my ($key, $value) = each (%{$result})) {
-        if ($value->{settings}->{index}->{version}->{created} < 6000000) {
-            logmsg "WARNING: You must delete index '$key' before upgrading to ES 7\n";
+        if ($value->{settings}->{index}->{version}->{created} < 7000000) {
+            logmsg "WARNING: You must delete index '$key' before upgrading to ES 8\n";
             $found = 1;
         }
     }
 
     if ($found) {
-        logmsg "\nYou MUST delete (and optionally re-add) the indices above while still on ES 6.x otherwise ES 7.x will NOT start.\n\n";
+        logmsg "\nYou MUST delete (and optionally re-add) the indices above while still on ES 7.x otherwise ES 8.x will NOT start.\n\n";
     }
 }
 ################################################################################
@@ -7397,8 +7397,8 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
 # Remaing is upgrade or upgradenoprompt
 
 # For really old versions don't support upgradenoprompt
-    if ($main::versionNumber < 64) {
-        logmsg "Can not upgrade directly, please upgrade to Moloch 2.4.x or 2.7.x first. (Db version $main::versionNumber)\n\n";
+    if ($main::versionNumber < 72) {
+        logmsg "Can not upgrade directly, please upgrade to Moloch 3.3.0+ first. (Db version $main::versionNumber)\n\n";
         exit 1;
     }
 
@@ -7412,31 +7412,8 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
 
     logmsg "Starting Upgrade\n";
 
-    if ($main::versionNumber < 70) {
-        checkForOld6Indices();
-        dbCheckForActivity($OLDPREFIX);
-        esPost("/_flush/synced", "", 1);
-        sequenceUpgrade();
-        createNewAliasesFromOld("${OLDPREFIX}fields", "${PREFIX}fields_v30", "${OLDPREFIX}fields_v3", \&fieldsCreate);
-        createNewAliasesFromOld("${OLDPREFIX}queries", "${PREFIX}queries_v30", "${OLDPREFIX}queries_v3", \&queriesCreate);
-        createNewAliasesFromOld("${OLDPREFIX}files", "${PREFIX}files_v30", "${OLDPREFIX}files_v6", \&filesCreate);
-        createNewAliasesFromOld("${OLDPREFIX}users", "${PREFIX}users_v30", "${OLDPREFIX}users_v7", \&usersCreate);
-        createNewAliasesFromOld("${OLDPREFIX}dstats", "${PREFIX}dstats_v30", "${OLDPREFIX}dstats_v4", \&dstatsCreate);
-        createNewAliasesFromOld("${OLDPREFIX}stats", "${PREFIX}stats_v30", "${OLDPREFIX}stats_v4", \&statsCreate);
-        createNewAliasesFromOld("${OLDPREFIX}hunts", "${PREFIX}hunts_v30", "${OLDPREFIX}hunts_v2", \&huntsCreate);
-        createNewAliasesFromOld("${OLDPREFIX}lookups", "${PREFIX}lookups_v30", "${OLDPREFIX}lookups_v1", \&lookupsCreate);
-        sessions3Update();
-        historyUpdate();
-        ecsFieldsUpdate();
-        esDelete("/_template/${OLDPREFIX}sessions2_template", 1);
-        esDelete("/_template/${OLDPREFIX}history_v1_template", 1);
-    } elsif ($main::versionNumber < 71) {
-        usersUpdate();
-        sessions3Update();
-        historyUpdate();
-        fieldsUpdate();
-        huntsUpdate();
-    } elsif ($main::versionNumber <= 72) {
+    if ($main::versionNumber <= 72) {
+        checkForOld7Indices();
         sessions3Update();
         historyUpdate();
         huntsUpdate();
