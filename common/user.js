@@ -257,7 +257,20 @@ class User {
   }
 
   /**
-   * Web Api for listing available roles
+   * An Arkime Role
+   *
+   * Roles are assigned to users to give them access to Arkime content
+   * @typedef ArkimeRole
+   * @type {string}
+   */
+
+  /**
+   * GET - /api/roles
+   *
+   * List all available Arkime roles
+   * @name /roles
+   * @returns {boolean} success - True if the request was successful, false otherwise
+   * @returns {ArkimeRole[]} roles - The list of available Arkime roles
    */
   static async apiRoles (req, res, next) {
     let roles = await User.allRolesCache();
@@ -305,6 +318,43 @@ class User {
     return clone;
   }
 
+  /**
+   * The Arkime user object.
+   *
+   * @typedef ArkimeUser
+   * @type {object}
+   * @param {string} userId - The ID of the user.
+   * @param {string} userName - The name of the user (to be displayed in the UI).
+   * @param {boolean} enabled=true - Whether the user is enabled (or disabled). Disabled users cannot access the UI or APIs.
+   * @param {boolean} webEnabled=true - Can access the web interface. When off only APIs can be used.
+   * @param {boolean} headerAuthEnabled=false - Can login using the web auth header. This setting doesn't disable the password so it should be scrambled.
+   * @param {boolean} emailSearch=false - Can perform searches for fields relating to email.
+   * @param {boolean} removeEnabled=false - Can delete tags or delete/scrub pcap data and other deletion operations.
+   * @param {boolean} packetSearch=true - Can create a packet search job (hunt).
+   * @param {boolean} hideStats=false - Hide the Stats page from this user.
+   * @param {boolean} hideFiles=false - Hide the Files page from this user.
+   * @param {boolean} hidePcap=false - Hide PCAP (and only show metadata/session detail) for this user when they open a Session.
+   * @param {boolean} disablePcapDownload=false - Do not allow this user to download PCAP files.
+   * @param {string} expression - An Arkime search expression that is silently added to all queries. Useful to limit what data a user can access (e.g. which nodes or IPs).
+   * @param {ArkimeSettings} settings - The Arkime app settings.
+   * @param {object} views - A list of views that the user can apply to their search.
+   * @param {object} notifiers - A list of notifiers taht the user can use.
+   * @param {object} columnConfigs - A list of sessions table column configurations that a user has created.
+   * @param {object} spiviewFieldConfigs - A list of SPIView page field configurations that a user has created.
+   * @param {object} tableStates - A list of table states used to render Arkime tables as the user has configured them.
+   * @param {number} welcomeMsgNum=0 - The message number that a user is on. Gets incremented when a user dismisses a message.
+   * @param {number} lastUsed - The date that the user last used Arkime. Format is milliseconds since Unix EPOC.
+   * @param {number} timeLimit - Limits the time range a user can query for.
+   * @param {array} roles - The list of Arkime roles assigned to this user.
+   */
+
+  /**
+   * GET - /api/user
+   *
+   * Fetches the currently logged in user
+   * @name /user
+   * @returns {ArkimeUser[]} user - The currently logged in user.
+   */
   static apiGetUser (req, res, next) {
     const clone = User.getCurrentUser(req);
     return res.send(clone);
@@ -315,6 +365,7 @@ class User {
    *
    * Retrieves a list of users (admin only).
    * @name /users
+   * @returns {boolean} success - True if the request was successful, false otherwise
    * @returns {ArkimeUser[]} data - The list of users configured.
    * @returns {number} recordsTotal - The total number of users.
    * @returns {number} recordsFiltered - The number of users returned in this result.

@@ -703,7 +703,6 @@ class Integration {
     return Integration.getConfig(this.name, k, d);
   }
 
-
   // Return a config value by first check the user, then the interation name section.
   getUserConfig (user, section, key, d) {
     if (user.cont3xt?.keys) {

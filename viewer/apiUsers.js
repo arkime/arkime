@@ -195,6 +195,14 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
   // APIs
   // --------------------------------------------------------------------------
   /**
+   * An Arkime Role
+   *
+   * Roles are assigned to users to give them access to Arkime content
+   * @typedef ArkimeRole
+   * @type {string}
+   */
+
+  /**
    * The user object.
    *
    * @typedef ArkimeUser
@@ -221,6 +229,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * @param {number} welcomeMsgNum=0 - The message number that a user is on. Gets incremented when a user dismisses a message.
    * @param {number} lastUsed - The date that the user last used Arkime. Format is milliseconds since Unix EPOC.
    * @param {number} timeLimit - Limits the time range a user can query for.
+   * @param {array} roles - The list of Arkime roles assigned to this user.
    */
 
   /**
