@@ -175,6 +175,7 @@
 </template>
 
 <script>
+import moment from 'moment';
 import dr from 'defang-refang';
 import { mapGetters } from 'vuex';
 
@@ -292,10 +293,12 @@ export default {
         .replace(/\${numHours}/g, this.numHours)
         .replace(/\${stopTS}/g, this.stopDate)
         .replace(/\${startTS}/g, this.startDate)
+        .replace(/\${stopDate}/g, this.stopDate.split('T')[0])
+        .replace(/\${startDate}/g, this.startDate.split('T')[0])
         .replace(/\${stopEpoch}/g, new Date(this.stopDate).getTime() / 1000)
         .replace(/\${startEpoch}/g, new Date(this.startDate).getTime() / 1000)
-        .replace(/\${stopDate}/g, this.stopDate.split('T')[0])
-        .replace(/\${startDate}/g, this.startDate.split('T')[0]);
+        .replace(/\${stopSplunk}/g, moment(this.stopDate).format('MM/DD/YYYY:HH:mm:ss'))
+        .replace(/\${startSplunk}/g, moment(this.startDate).format('MM/DD/YYYY:HH:mm:ss'));
     },
     openAllLinks (linkGroup) {
       for (const link of linkGroup.links) {

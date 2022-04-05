@@ -71,22 +71,26 @@
           <dd>Your search query (will be refanged)</dd>
           <dt>${type}</dt>
           <dd>The search type (ip, url, etc)</dd>
-          <dt>${startDate}</dt>
-          <dd>The start date defined in the "Start Date" input (YYYY-mm-dd)</dd>
-          <dt>${stopDate}</dt>
-          <dd>The stop date defined in the "Stop Date" input (YYYY-mm-dd)</dd>
-          <dt>${startTS}</dt>
-          <dd>The start date timestamp defined in the "Start Date" input (YYYY-mm-ddTHH.mm.ssZ)</dd>
-          <dt>${stopTS}</dt>
-          <dd>The stop date timestamp defined in the "Stop Date" input (YYYY-mm-ddTHH.mm.ssZ)</dd>
-          <dt>${startEpoch}</dt>
-          <dd>The start date timestamp since epoch (in seconds) defined in the "Start Date" input</dd>
-          <dt>${stopEpoch}</dt>
-          <dd>The stop date timestamp since epoch (in seconds) in the "Stop Date" input</dd>
           <dt>${numDays}</dt>
           <dd>The number of days defined in the "Days" input</dd>
           <dt>${numHours}</dt>
           <dd>The number of hours defined in the "Hours" input</dd>
+          <dt>${stopTS}</dt>
+          <dd>The stop date timestamp defined in the "Stop Date" input (YYYY-mm-ddTHH.mm.ssZ)</dd>
+          <dt>${startTS}</dt>
+          <dd>The start date timestamp defined in the "Start Date" input (YYYY-mm-ddTHH.mm.ssZ)</dd>
+          <dt>${stopDate}</dt>
+          <dd>The stop date defined in the "Stop Date" input (YYYY-mm-dd)</dd>
+          <dt>${startDate}</dt>
+          <dd>The start date defined in the "Start Date" input (YYYY-mm-dd)</dd>
+          <dt>${stopEpoch}</dt>
+          <dd>The stop date timestamp since epoch (in seconds) in the "Stop Date" input</dd>
+          <dt>${startEpoch}</dt>
+          <dd>The start date timestamp since epoch (in seconds) defined in the "Start Date" input</dd>
+          <dt>${stopSplunk}</dt>
+          <dd>The stop date timestamp defined in the "Stop Date" input (MM/DD/YYYY:HH:mm:ss)</dd>
+          <dt>${startSplunk}</dt>
+          <dd>The start date timestamp defined in the "Start Date" input (MM/DD/YYYY:HH:mm:ss)</dd>
         </dl>
         <p class="mt-1">
           Example:
