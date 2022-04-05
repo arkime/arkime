@@ -188,7 +188,7 @@
                   "notAfter" : 1648944000000,
                   "notBefore" : 1207137600000,
                   "publicAlgorithm" : "rsaEncryption",
-                  "remainingDays" : 1,
+                  "remainingDays" : -1,
                   "serial" : "0a5f114d035b179117d2efd4038c3f3b",
                   "subjectCN" : [
                      "digicert high assurance ca-3"
@@ -575,7 +575,7 @@
                   "notAfter" : 1648944000000,
                   "notBefore" : 1207137600000,
                   "publicAlgorithm" : "rsaEncryption",
-                  "remainingDays" : 1,
+                  "remainingDays" : -1,
                   "serial" : "0a5f114d035b179117d2efd4038c3f3b",
                   "subjectCN" : [
                      "digicert high assurance ca-3"
@@ -959,7 +959,7 @@
                   "notAfter" : 1648944000000,
                   "notBefore" : 1207137600000,
                   "publicAlgorithm" : "rsaEncryption",
-                  "remainingDays" : 1,
+                  "remainingDays" : -1,
                   "serial" : "0a5f114d035b179117d2efd4038c3f3b",
                   "subjectCN" : [
                      "digicert high assurance ca-3"
