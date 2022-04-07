@@ -259,7 +259,18 @@ class User {
   /**
    * An Arkime Role
    *
-   * Roles are assigned to users to give them access to Arkime content
+   * Roles are assigned to users to give them access to Arkime content<br>
+   * Default roles include:<br>
+   * arkimeAdmin - has administrative access to Arkime (can configure and update Arkime)<br>
+   * arkimeUser - has access to Arkime<br>
+   * cont3xtAdmin - has administrative access to Cont3xt (can configure and update Cont3xt)<br>
+   * cont3xtUser - has access to Cont3xt<br>
+   * parliamentAdmin - has administrative access to Parliament (can configure and update Parliament)<br>
+   * parliamentUser - has access to Parliament (can view and interact with Parliament Issues)<br>
+   * superAdmin - has access to all the applications and can configure anything<br>
+   * usersAdmin - has access to configure users<br>
+   * wiseAdmin - has administrative access to WISE (can configure and update WISE)<br>
+   * wiseUser - has access to WISE
    * @typedef ArkimeRole
    * @type {string}
    */
