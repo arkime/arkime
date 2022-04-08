@@ -25,7 +25,7 @@
 const ini = require('iniparser');
 const os = require('os');
 const fs = require('fs');
-const version = require('./version');
+const version = require('../common/version');
 const Auth = require('../common/auth');
 
 exports.debug = 0;

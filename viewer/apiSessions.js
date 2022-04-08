@@ -13,7 +13,7 @@ const ArkimeUtil = require('../common/arkimeUtil');
 const Auth = require('../common/auth');
 const User = require('../common/user');
 const Pcap = require('./pcap.js');
-const version = require('./version');
+const version = require('../common/version');
 const molochparser = require('./molochparser.js');
 
 module.exports = (Config, Db, internals, ViewerUtils) => {

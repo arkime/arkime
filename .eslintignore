@@ -13,7 +13,7 @@
 /viewer/molochparser.js
 /viewer/node_modules
 /viewer/public
-/viewer/version.js
+/common/version.js
 /cont3xt/vueapp/build/
 /cont3xt/vueapp/config/
 /cont3xt/vueapp/dist/
