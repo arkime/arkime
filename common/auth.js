@@ -347,10 +347,12 @@ class Auth {
       return next();
     }
 
-    User.getUserCache(obj.user, (err, user) => {
+    User.getUserCache(obj.user, async (err, user) => {
       if (err) { return res.send('ERROR - x-arkime getUser - user: ' + obj.user + ' err:' + err); }
       if (!user) { return res.send(obj.user + " doesn't exist"); }
       if (!user.enabled) { return res.send(obj.user + ' not enabled'); }
+
+      await user.expandRoles();
       req.user = user;
       req.user.setLastUsed();
       return next();
