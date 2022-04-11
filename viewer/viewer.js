@@ -2352,6 +2352,11 @@ ${cq.description}
 // MAIN
 // ============================================================================
 async function main () {
+  if (!fs.existsSync(path.join(process.cwd(), '/views/mixins.pug'))) {
+    console.error('ERROR - ./views/mixins.pug missing - The viewer app MUST be run from inside the viewer directory');
+    process.exit();
+  }
+
   if (!fs.existsSync(path.join(__dirname, '/vueapp/dist/index.html')) && app.settings.env !== 'development') {
     console.log('WARNING - ./vueapp/dist/index.html missing - The viewer app must be run from inside the viewer directory');
   }
