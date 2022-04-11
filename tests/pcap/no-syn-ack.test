@@ -132,6 +132,10 @@
             "fileId" : [],
             "firstPacket" : 1483544164032,
             "http" : {
+               "bodyMagic" : [
+                  "video/mp2t"
+               ],
+               "bodyMagicCnt" : 1,
                "clientVersion" : [
                   "1.1"
                ],

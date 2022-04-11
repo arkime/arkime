@@ -50,6 +50,7 @@ LOCAL enum MolochMagicMode magicMode;
 #define MAGIC_RESULT(str) moloch_field_string_add(field, session, str, sizeof(str)-1, TRUE), str
 const char *moloch_parsers_magic_basic(MolochSession_t *session, int field, const char *data, int len)
 {
+    LOG("ALW0 %02x", data[0]);
     switch (data[0]) {
     case 0:
         if (len > 10 && MAGIC_MATCH(4, "ftyp")) {
@@ -59,8 +60,12 @@ const char *moloch_parsers_magic_basic(MolochSession_t *session, int field, cons
             if (MAGIC_MATCH(8, "3g")) {
                 return MAGIC_RESULT("video/3gpp");
             }
-        } else if (MAGIC_MATCH(0, "\000\001\000\000\000")) {
+        }
+        if (MAGIC_MATCH(0, "\000\001\000\000\000")) {
             return MAGIC_RESULT("application/x-font-ttf");
+        }
+        if (MAGIC_MATCH(0, "\000\000\002\000\001\000")) {
+            return MAGIC_RESULT("image/x-win-bitmap");
         }
         break;
     case '\032':
@@ -107,6 +112,11 @@ const char *moloch_parsers_magic_basic(MolochSession_t *session, int field, cons
         }
         break;
 #endif
+    case '!':
+        if (MAGIC_MATCH_LEN(1, "<arch>\ndebian-binary")) {
+            return MAGIC_RESULT("application/x-debian-package");
+        }
+        break;
     case '#':
         if (data[1] == '!') {
             if (MAGIC_MEMSTR_LEN(3, "node")) {
@@ -202,6 +212,9 @@ const char *moloch_parsers_magic_basic(MolochSession_t *session, int field, cons
     case 'G':
         if (MAGIC_MATCH(0, "GIF8")) {
             return MAGIC_RESULT("image/gif");
+        }
+        if (len > 188 && data[2] == 0 && data[188] == 'G') {
+            return MAGIC_RESULT("video/mp2t");
         }
         break;
     case 'i':
