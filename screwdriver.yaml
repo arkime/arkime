@@ -219,6 +219,9 @@ jobs:
             - AWS_SECRET_ACCESS_KEY
 
     centos-7-sanitize:
+      annotations:
+          screwdriver.cd/cpu: TURBO
+          screwdriver.cd/ram: TURBO
         requires: [~pr, ~commit]
         image: andywick/arkime-build-7:3.0.1-2
         steps:
@@ -233,7 +236,8 @@ jobs:
             - installing: INSTALL_BUNDLE=bundle scl enable devtoolset-9 rh-python36 'make install'
             - linting: npm run lint
             - cp -r capture/plugins/lua/samples /data/moloch/lua
-            - run-es: (chown -R elasticsearch /elasticsearch-7.10.2; cd /elasticsearch-7.10.2 ; su elasticsearch -c "ES_JAVA_OPTS='-Xms700m -Xmx700m' bin/elasticsearch" > /tmp/es &)
+            - run-es: (chown -R elasticsearch /elasticsearch-7.10.2; cd /elasticsearch-7.10.2 ; su elasticsearch -c "ES_JAVA_OPTS='-Xms1000m -Xmx1000m' bin/elasticsearch" > /tmp/es &)
+            - sleep 5
             - test-viewer-ui: npm run viewer:testui
             - cat /tmp/es
             - test-viewer: (cd tests ; G_SLICE=always-malloc ./tests.pl --viewer)
