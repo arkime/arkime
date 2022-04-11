@@ -219,9 +219,9 @@ jobs:
             - AWS_SECRET_ACCESS_KEY
 
     centos-7-sanitize:
-      annotations:
-          screwdriver.cd/cpu: TURBO
-          screwdriver.cd/ram: TURBO
+        annotations:
+            screwdriver.cd/cpu: TURBO
+            screwdriver.cd/ram: TURBO
         requires: [~pr, ~commit]
         image: andywick/arkime-build-7:3.0.1-2
         steps:
