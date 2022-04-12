@@ -34,49 +34,37 @@ INSTALL         = @INSTALL@
 bindir          = @prefix@/bin
 installinclude  = @prefix@/include
 
-SANITIZE_FLAGS  = -DMOLOCH_USE_MALLOC -fno-common -fsanitize=address -fsanitize=integer -fsanitize=nullability
-FUZZ_FLAGS      = -DMOLOCH_USE_MALLOC -DFUZZLOCH -fno-common -fsanitize=fuzzer,address -fstack-protector-all -fsanitize-address-use-after-scope
+SANITIZE_LDFLAGS = -fno-common -fsanitize=address -fsanitize=integer -fsanitize=nullability
+SANITIZE_CFLAGS  = -DMOLOCH_USE_MALLOC $(SANITIZE_LDFLAGS)
 
-all:thirdparty/js0n.o thirdparty/http_parser.o thirdparty/patricia.o
-	$(CC) -fno-strict-aliasing -pthread -fPIC @CFLAGS@ -Wall -Wextra -D_GNU_SOURCE -std=gnu99 -c $(C_FILES) \
-	    $(INCLUDE_PCAP) \
-	    $(INCLUDE_OTHER) \
-	    -DBUILD_VERSION='"$(BUILD_VERSION)"'
-	$(CC) -rdynamic -ggdb -pthread $(O_FILES) -o capture \
+FUZZ_LDFLAGS     = -fno-common -fsanitize=fuzzer,address -fstack-protector-all -fsanitize-address-use-after-scope
+FUZZ_CFLAGS      = -DMOLOCH_USE_MALLOC -DFUZZLOCH $(FUZZ_LDFLAGS)
+
+%.o : %.c moloch.h hash.h dll.h
+	$(CC) -fno-strict-aliasing -pthread -fPIC -g -O2 $(EXTRA_CFLAGS) -Wall -Wextra -D_GNU_SOURCE -std=gnu99 -c $< \
+            $(INCLUDE_PCAP) \
+            $(INCLUDE_OTHER) \
+            -DBUILD_VERSION='"$(BUILD_VERSION)"'
+
+all:thirdparty/js0n.o thirdparty/http_parser.o thirdparty/patricia.o $(O_FILES)
+	$(CC) $(EXTRA_LDFLAGS) -rdynamic -ggdb -pthread $(O_FILES) -o capture \
             @UNDEFINED_FLAGS@ \
 	    $(LIB_PCAP) \
 	    $(LIB_OTHER) \
 	    -lm @RESOLV_LIB@ @MAGIC_LIBS@ -lffi -lz
-	(cd parsers; $(MAKE))
-	(cd plugins; $(MAKE))
+	(cd parsers; $(MAKE) EXTRA_CFLAGS="$(EXTRA_CFLAGS)")
+	(cd plugins; $(MAKE) EXTRA_CFLAGS="$(EXTRA_CFLAGS)")
 
 sanitize:thirdparty/js0n.o thirdparty/http_parser.o thirdparty/patricia.o
-	$(CC) $(SANITIZE_FLAGS) -fno-strict-aliasing -pthread -fPIC -g -O0 -Wall -Wextra -D_GNU_SOURCE -std=gnu99 -c $(C_FILES) \
-	    $(INCLUDE_PCAP) \
-	    $(INCLUDE_OTHER) \
-	    -DBUILD_VERSION='"$(BUILD_VERSION)"'
-	$(CC) $(SANITIZE_FLAGS) -rdynamic -ggdb -pthread $(O_FILES) -o capture \
-            @UNDEFINED_FLAGS@ \
-	    $(LIB_PCAP) \
-	    $(LIB_OTHER) \
-	    -lm @RESOLV_LIB@ @MAGIC_LIBS@ -lffi -lz
-	-rm */*.so
-	(cd parsers; $(MAKE) SANITIZE_FLAGS="$(SANITIZE_FLAGS)")
-	(cd plugins; $(MAKE) SANITIZE_FLAGS="$(SANITIZE_FLAGS)")
+	touch moloch.h
+	$(MAKE) EXTRA_CFLAGS="$(SANITIZE_CFLAGS)" EXTRA_LDFLAGS="$(SANITIZE_LDFLAGS)"
+	touch moloch.h
 
 fuzzloch:thirdparty/js0n.o thirdparty/http_parser.o thirdparty/patricia.o
-	$(CC) $(FUZZ_FLAGS) -fno-strict-aliasing -pthread -fPIC -g -O0 -Wall -Wextra -D_GNU_SOURCE -std=gnu99 -c $(C_FILES) \
-	    $(INCLUDE_PCAP) \
-	    $(INCLUDE_OTHER) \
-	    -DBUILD_VERSION='"$(BUILD_VERSION)"'
-	$(CC) $(FUZZ_FLAGS) -rdynamic -ggdb -pthread $(O_FILES) -o fuzzloch-capture \
-            @UNDEFINED_FLAGS@ \
-	    $(LIB_PCAP) \
-	    $(LIB_OTHER) \
-	    -lm -lresolv -lmagic -lffi -lz
-	-rm */*.so
-	(cd parsers; $(MAKE) SANITIZE_FLAGS="$(FUZZ_FLAGS)")
-	(cd plugins; $(MAKE) SANITIZE_FLAGS="$(FUZZ_FLAGS)")
+	touch moloch.h
+	$(MAKE) EXTRA_CFLAGS="$(FUZZ_CFLAGS)" EXTRA_LDFLAGS="$(FUZZ_LDFLAGS)"
+	mv capture fuzzloch-capture
+	touch moloch.h
 
 thirdparty/js0n.o:thirdparty/js0n.c
 	$(CC) -fno-strict-aliasing -pthread -fPIC -O2 -c thirdparty/js0n.c -o thirdparty/js0n.o
