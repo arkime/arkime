@@ -1,7 +1,6 @@
 <template>
   <b-card
-    v-if="data"
-    class="mb-2">
+    v-if="data">
     <div class="d-xl-flex mb-2">
       <div class="d-xl-flex flex-grow-1 flex-wrap mt-1">
         <h4 class="text-warning">
