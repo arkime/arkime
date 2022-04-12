@@ -100,39 +100,7 @@
         <!-- link inputs -->
         <b-form inline
           v-if="searchTerm && initialized"
-          class="w-50 d-flex justify-content-between link-inputs">
-          <b-input-group
-            size="xs"
-            class="mr-2 mb-1">
-            <template #prepend>
-              <b-input-group-text>
-                Days
-              </b-input-group-text>
-            </template>
-            <b-form-input
-              debounce="400"
-              :value="numDays"
-              style="width:35px"
-              placeholder="Number of Days"
-              @input="updateVars('numDays', $event)"
-            />
-          </b-input-group>
-          <b-input-group
-            size="xs"
-            class="mr-2 mb-1">
-            <template #prepend>
-              <b-input-group-text>
-                Hours
-              </b-input-group-text>
-            </template>
-            <b-form-input
-              debounce="400"
-              :value="numHours"
-              style="width:45px"
-              placeholder="Number of Hours"
-              @input="updateVars('numHours', $event)"
-            />
-          </b-input-group>
+          class="w-50 d-flex align-items-center link-inputs">
           <b-input-group
             size="xs"
             class="mr-2 mb-1">
@@ -143,11 +111,10 @@
             </template>
             <b-form-input
               type="text"
-              debounce="400"
-              :value="startDate"
+              v-model="startDate"
               style="width:152px"
               placeholder="Start Date"
-              @input="updateVars('startDate', $event)"
+              @change="updateVars('startDate')"
             />
           </b-input-group>
           <b-input-group
@@ -160,13 +127,18 @@
             </template>
             <b-form-input
               type="text"
-              debounce="400"
-              :value="stopDate"
+              v-model="stopDate"
               style="width:152px"
               placeholder="Stop Date"
-              @input="updateVars('stopDate', $event)"
+              @change="updateVars('stopDate')"
             />
           </b-input-group>
+          <span class="fa fa-lg fa-question-circle cursor-help"
+            v-b-tooltip.hover.html="linkPlaceholderTip"
+          />
+          <span class="pl-3 align-self-start">
+            {{ numDays }} days - {{ numHours }} hours
+          </span>
         </b-form> <!-- /link inputs -->
 
         <!-- results -->
@@ -354,7 +326,10 @@ export default {
       skipCache: false,
       searchComplete: false,
       linkSearchTerm: '',
-      hideLinks: {}
+      hideLinks: {},
+      linkPlaceholderTip: {
+        title: 'These values are used to fill in placeholders in the links below.<br><a href="help" class="no-decoration">Learn more here!</a><br>Try using relative times like -5d or -1h<br>(hours/days/weeks/months/<br>quarters/years)'
+      }
     };
   },
   computed: {
@@ -521,35 +496,34 @@ export default {
         }
       });
     },
-    updateVars (updated, newVal) {
-      this[updated] = newVal;
+    updateVars (updated) {
+      let stopMs = new Date(this.stopDate).getTime();
+      let startMs = new Date(this.startDate).getTime();
 
-      const stopMs = new Date(this.stopDate).getTime();
-      const startMs = new Date(this.startDate).getTime();
-
-      if (isNaN(stopMs) || isNaN(stopMs)) {
-        return;
+      // test for relative times
+      if (isNaN(stopMs)) {
+        stopMs = this.$options.filters.parseSeconds(this.stopDate) * 1000;
+      }
+      if (isNaN(startMs)) {
+        startMs = this.$options.filters.parseSeconds(this.startDate) * 1000;
       }
 
+      // can't do anyting if we can't calculate the date ms
+      if (isNaN(stopMs) || isNaN(startMs)) { return; }
+
+      const days = (stopMs - startMs) / (3600000 * 24);
+
       switch (updated) {
-      case 'numDays':
-        this.numHours = this.numDays * 24;
-        this.stopDate = new Date().toISOString().slice(0, -5) + 'Z';
-        this.startDate = new Date(new Date().getTime() - (3600000 * 24 * this.numDays)).toISOString().slice(0, -5) + 'Z';
-        break;
-      case 'numHours':
-        this.numDays = this.numHours / 24;
-        this.stopDate = new Date().toISOString();
-        this.startDate = new Date(new Date().getTime() - (3600000 * 24 * this.numDays)).toISOString().slice(0, -5) + 'Z';
-        break;
       case 'stopDate':
-        this.numDays = (stopMs - startMs) / (3600000 * 24);
-        this.numHours = this.numDays * 24;
-        this.startDate = new Date(new Date(this.stopDate).getTime() - (3600000 * 24 * this.numDays)).toISOString().slice(0, -5) + 'Z';
+        this.numDays = Math.ceil(days);
+        this.numHours = Math.round(days * 24);
+        this.startDate = new Date(stopMs - (3600000 * 24 * days)).toISOString().slice(0, -5) + 'Z';
+        this.stopDate = new Date(stopMs).toISOString().slice(0, -5) + 'Z';
         break;
       case 'startDate':
-        this.numDays = Math.floor((stopMs - startMs) / (3600000 * 24));
-        this.numHours = this.numDays * 24;
+        this.numDays = Math.ceil(days);
+        this.numHours = Math.round(days * 24);
+        this.startDate = new Date(startMs).toISOString().slice(0, -5) + 'Z';
         break;
       }
     },

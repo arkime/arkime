@@ -116,3 +116,73 @@ export const timezoneDateString = function (ms, timezone, showMs) {
   return moment(ms).format(format);
 };
 Vue.filter('timezoneDateString', timezoneDateString);
+
+// used in parseSeconds to determine the unit of relative time
+function str2format (str) {
+  if (str.match(/^(s|sec|secs|second|seconds)$/)) {
+    return 'seconds';
+  } else if (str.match(/^(m|min|mins|minute|minutes)$/)) {
+    return 'minutes';
+  } else if (str.match(/^(h|hr|hrs|hour|hours)$/)) {
+    return 'hours';
+  } else if (str.match(/^(d|day|days)$/)) {
+    return 'days';
+  } else if (str.match(/^(w|week|weeks)\d*$/)) {
+    return 'weeks';
+  } else if (str.match(/^(M|mon|mons|month|months)$/)) {
+    return 'months';
+  } else if (str.match(/^(q|qtr|qtrs|quarter|quarters)$/)) {
+    return 'quarters';
+  } else if (str.match(/^(y|yr|yrs|year|years)$/)) {
+    return 'years';
+  }
+
+  return undefined;
+}
+
+/**
+ * Parses the current time to seconds based on a relative time
+ * (+/- seconds/minutes/hours/days/weeks/months/quarters/years)
+ *
+ * @example
+ * '{{ -5h | parseSeconds }}'
+ * this.$options.filters.parseSeconds('-5d');
+ *
+ * @param {string} str The relative time string
+ */
+export const parseSeconds = function (str) {
+  let m, n;
+  if ((m = str.match(/^([+-])(\d*)([a-z]*)([@]*)([a-z0-9]*)/))) {
+    const d = moment();
+    const format = str2format(m[3]);
+    const snap = str2format(m[5]);
+
+    if (m[2] === '') {
+      m[2] = 1;
+    }
+
+    if (snap) {
+      d.startOf(snap);
+      if ((n = m[5].match(/^(w|week|weeks)(\d+)$/))) {
+        d.day(n[2]);
+      }
+    }
+
+    d.add((m[1] === '-' ? -1 : 1) * m[2], format);
+    return d.unix();
+  }
+
+  if ((m = str.match(/^@([a-z0-9]+)/))) {
+    const d = moment();
+    const snap = str2format(m[1]);
+
+    d.startOf(snap);
+    if ((n = m[1].match(/^(w|week|weeks)(\d+)$/))) {
+      d.day(n[2]);
+    }
+    return d.unix();
+  }
+
+  return moment(str, ['YYYY/MM/DDTHH:mm:ss', 'YYYY/MM/DDTHH:mm:ssZ', moment.ISO_8601]).unix();
+};
+Vue.filter('parseSeconds', parseSeconds);
