@@ -34,11 +34,11 @@ INSTALL         = @INSTALL@
 bindir          = @prefix@/bin
 installinclude  = @prefix@/include
 
-SANITIZE_CFLAGS  = -DMOLOCH_USE_MALLOC -fno-common -fsanitize=address -fsanitize=integer -fsanitize=nullability
 SANITIZE_LDFLAGS = -fno-common -fsanitize=address -fsanitize=integer -fsanitize=nullability
+SANITIZE_CFLAGS  = -DMOLOCH_USE_MALLOC $(SANITIZE_LDFLAGS)
 
-FUZZ_CFLAGS      = -DMOLOCH_USE_MALLOC -DFUZZLOCH -fno-common -fsanitize=fuzzer,address -fstack-protector-all -fsanitize-address-use-after-scope
 FUZZ_LDFLAGS     = -fno-common -fsanitize=fuzzer,address -fstack-protector-all -fsanitize-address-use-after-scope
+FUZZ_CFLAGS      = -DMOLOCH_USE_MALLOC -DFUZZLOCH $(FUZZ_LDFLAGS)
 
 %.o : %.c moloch.h hash.h dll.h
 	$(CC) -fno-strict-aliasing -pthread -fPIC -g -O2 $(EXTRA_CFLAGS) -Wall -Wextra -D_GNU_SOURCE -std=gnu99 -c $< \
