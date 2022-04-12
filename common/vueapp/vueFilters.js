@@ -151,6 +151,10 @@ function str2format (str) {
  * @param {string} str The relative time string
  */
 export const parseSeconds = function (str) {
+  if (str === "" || str === "now") {
+    return moment().unix();
+  }
+
   let m, n;
   if ((m = str.match(/^([+-])(\d*)([a-z]*)([@]*)([a-z0-9]*)/))) {
     const d = moment();
