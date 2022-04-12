@@ -242,12 +242,21 @@
             Lucene regex implementation which doesn't support most PCRE features.
             Check out the ES <a href="https://www.elastic.co/guide/en/elasticsearch/reference/current/regexp-syntax.html">Regexp Syntax</a> guide.
           </dd>
-          <dt>Lists</dt>
+          <dt>OR Lists</dt>
           <dd>
-            In Arkime, lists are used as a shorthand method for doing multiple OR queries. For example
-            <code>protocols == [http,ssh]</code>. This query will search for any sessions containing either http OR ssh.
-            <strong>Note:</strong> A list containing wildcard or regex strings will be processed as normal strings instead
-            of wildcards and regexes.
+            In Arkime, OR lists are used as a shorthand method for doing multiple OR queries.
+            For example <code>protocols == [http,ssh]</code>.
+            This query will search for any sessions containing either http OR ssh.
+            A list containing wildcard or regex strings will process as wildcard/regexes.
+            Using an OR list many times can be faster to process.
+          </dd>
+          <dt>AND Lists</dt>
+          <dd>
+            In Arkime, AND lists are used as a shorthand method for doing multiple AND queries.
+            For example <code>protocols == ]http,ssh[</code>.
+            This query will search for any sessions containing both http AND ssh.
+            A list containing wildcard or regex strings will process as wildcard/regexes.
+            Using an AND list many times can be faster to process.
           </dd>
         </dl>
         <h6 id="ipSearch">
