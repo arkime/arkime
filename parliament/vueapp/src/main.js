@@ -32,5 +32,14 @@ new Vue({
   store,
   router,
   components: { App },
-  template: '<App/>'
+  template: '<App/>',
+  created: function () {
+    // define app constants
+    /* eslint-disable no-undef */
+    Vue.prototype.$constants = {
+      VERSION: VERSION,
+      BUILD_DATE: BUILD_DATE, // from webpack.DefinePlugin
+      BUILD_VERSION: BUILD_VERSION // from webpack.DefinePlugin
+    };
+  }
 });

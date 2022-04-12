@@ -7,8 +7,10 @@
     <link rel="stylesheet" href="font-awesome/css/font-awesome.min.css">
     <title>WISE</title>
   </head>
+  <script nonce="{{ nonce }}">
+    const VERSION = '{{ version }}';
+  </script>
   <body>
-    <div id="app"></div>
-    <!-- built files will be auto injected -->
+    <!--vue-ssr-outlet-->
   </body>
 </html>

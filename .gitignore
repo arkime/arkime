@@ -40,7 +40,6 @@ tests/test.config.json
 # viewer
 viewer/public/CyberChef*.zip
 viewer/vueapp/dist
-viewer/version.js
 
 # parliament
 parliament/issues.json
@@ -55,6 +54,9 @@ wiseService/vueapp/dist
 
 # cont3xt
 cont3xt/vueapp/dist
+
+# common
+common/version.js
 
 # Makefiles
 Makefile

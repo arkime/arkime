@@ -63,11 +63,8 @@
 
         <b-navbar-nav
           class="ml-auto">
-          <small
-            :title="buildInfo"
-            v-b-tooltip.hover="buildInfo"
-            class="navbar-text mr-2 text-right cursor-help">
-            v{{ molochVersion }}
+          <small>
+            <Version :timezone="timezone" />
           </small>
           <router-link
             :to="{ path: helpLink.href, query: helpLink.query, params: { nav: true } }">
@@ -104,15 +101,16 @@ import qs from 'qs';
 import { mapMutations } from 'vuex';
 
 import ESHealth from './ESHealth';
+import Version from '../../../../../common/vueapp/Version';
 
 export default {
   name: 'MolochNavbar',
-  components: { ESHealth },
+  components: {
+    Version,
+    ESHealth
+  },
   data: function () {
     return {
-      buildDate: this.$constants.BUILD_DATE,
-      buildVersion: this.$constants.BUILD_VERSION,
-      molochVersion: this.$constants.MOLOCH_VERSION,
       menuOrder: [
         'sessions', 'spiview', 'spigraph', 'connections', 'hunt',
         'files', 'stats', 'history', 'upload', 'settings', 'users'
@@ -120,12 +118,6 @@ export default {
     };
   },
   computed: {
-    buildInfo: function () {
-      const dateMs = new Date(this.buildDate).getTime();
-      const tz = this.$store.state?.user?.settings?.timezone || 'gmt';
-      const date = this.$options.filters.timezoneDateString(dateMs, tz);
-      return `${this.buildVersion}${!isNaN(dateMs) ? ' @ ' + date : ''}`;
-    },
     userLogo: function () {
       if (this.user && this.user.settings.logo && this.user.settings.logo) {
         return this.user.settings.logo;
@@ -229,6 +221,9 @@ export default {
     },
     stickySessionsBtn: function () {
       return this.$store.state.stickySessionsBtn;
+    },
+    timezone: function () {
+      return this.$store.state?.user?.settings?.timezone || 'gmt';
     }
   },
   methods: {

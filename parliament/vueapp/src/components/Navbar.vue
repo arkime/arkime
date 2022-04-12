@@ -41,6 +41,10 @@
           </router-link>
         </li>
       </ul> <!-- /page links -->
+      <!-- version -->
+      <span class="pr-2">
+        <Version timezone="local" />
+      </span>
       <!-- login error -->
       <div v-if="error"
         class="alert alert-danger alert-sm mt-2 mr-3">
@@ -143,9 +147,11 @@
 <script>
 import AuthService from '@/auth';
 import { focusInput } from '@/components/utils';
+import Version from '@/../../../common/vueapp/Version';
 
 export default {
   name: 'ParliamentNavbar',
+  components: { Version },
   directives: { focusInput },
   data: function () {
     return {

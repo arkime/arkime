@@ -35,11 +35,60 @@
 
       <!-- general -->
       <div v-if="visibleTab === 'general'">
-        <div class="text-center">
-          <b-card>
-            <h1>Coming soon!</h1>
-          </b-card>
-        </div>
+        <h3 id="dateInputs">
+          <span class="fa fa-search"></span>&nbsp;
+          Dates
+        </h3>
+        <p>
+          The date fields displayed under the search bar are used to fill
+          in placeholder values within
+          <a @click="openView('linkgroups')" class="no-decoration cursor-pointer">links</a>.
+        </p>
+        <p>
+          Relative dates and optional snapping are supported using the
+          Splunk syntax:
+        </p>
+        <ul>
+          <li>
+            Begin the string with a plus (+) or minus (-) to indicate the offset from
+            the current time.
+          </li>
+          <li>
+            Define the time amount with a number and a unit.
+            The supported time units are:
+            <ul>
+              <li>
+                <strong>second:</strong> s, sec, secs, second, seconds
+              </li>
+              <li>
+                <strong>minute:</strong> m, min, minute, minutes
+              </li>
+              <li>
+                <strong>hour:</strong> h, hr, hrs, hour, hours
+              </li>
+              <li>
+                <strong>day:</strong> d, day, days
+              </li>
+              <li>
+                <strong>week:</strong> w, week, weeks
+              </li>
+              <li>
+                <strong>month:</strong> mon, month, months
+              </li>
+              <li>
+                <strong>quarter:</strong> q, qtr, qtrs, quarter, quarters
+              </li>
+              <li>
+                <strong>year:</strong> y, yr, yrs, year, years
+              </li>
+            </ul>
+          </li>
+          <li>
+            Optionally, specify a "snap to" time unit that indicates the nearest
+            or latest time to which the time amount rounds down. Separate the time
+            amount from the "snap to" time unit with an "@" character.
+          </li>
+        </ul>
       </div> <!-- /general -->
 
       <!-- integrations -->
@@ -64,7 +113,9 @@
         <p>
         <p class="mb-0">
           Use placeholder values in your links that will be filled in with
-          the data from the Cont3xt results.
+          the data from the Cont3xt results. Updating the
+          <a @click="openView('general')" class="no-decoration cursor-pointer">date fields</a>
+          updates the date placeholder values in the links.
         </p>
         <dl class="dl-horizontal">
           <dt>${indicator}</dt>
@@ -107,7 +158,7 @@ export default {
   name: 'Cont3xtHelp',
   data () {
     return {
-      visibleTab: 'linkgroups'
+      visibleTab: 'general'
     };
   },
   created () {
@@ -123,6 +174,8 @@ export default {
     /* page functions ------------------------------------------------------ */
     /* opens a specific settings tab */
     openView (tabName) {
+      if (tabName === this.visibleTab) { return; }
+
       this.visibleTab = tabName;
       this.$router.push({
         hash: tabName

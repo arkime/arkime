@@ -61,6 +61,15 @@
           </a>
         </span>
       </div> <!-- /health check -->
+      <!-- version -->
+      <Version :timezone="timezone" />
+      <!-- help button -->
+      <router-link :to="{ path: 'help' }">
+        <span class="fa fa-2x fa-fw fa-question-circle mr-2"
+          v-b-tooltip.hover
+          title="HELP!">
+        </span>
+      </router-link>
       <!-- dark/light mode -->
       <div class="form-inline"
         @keyup.enter="login"
@@ -68,7 +77,7 @@
         <button type="button"
           @click="toggleTheme"
           v-b-tooltip.hover.left
-          class="btn cursor-pointer mr-2"
+          class="btn cursor-pointer"
           title="Toggle light/dark theme"
           :class="{'btn-outline-info':theme === 'dark', 'btn-outline-warning':theme === 'light'}">
           <span v-if="theme === 'light'"
@@ -103,10 +112,13 @@
 import axios from 'axios';
 import { mapGetters } from 'vuex';
 
+import Version from '@/../../../common/vueapp/Version';
+
 let interval;
 
 export default {
   name: 'Cont3xtNavbar',
+  components: { Version },
   data: function () {
     return {
       theme: 'dark', // default theme is dark
@@ -114,7 +126,10 @@ export default {
     };
   },
   computed: {
-    ...mapGetters(['getLoading', 'getUser'])
+    ...mapGetters(['getLoading', 'getUser']),
+    timezone () {
+      return this.getUser?.settings?.timezone || 'local';
+    }
   },
   mounted: function () {
     if (localStorage.getItem('cont3xtTheme')) {

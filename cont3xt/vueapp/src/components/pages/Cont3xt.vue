@@ -100,7 +100,7 @@
         <!-- link inputs -->
         <b-form inline
           v-if="searchTerm && initialized"
-          class="w-50 d-flex align-items-center link-inputs">
+          class="w-50 d-flex align-items-start link-inputs">
           <b-input-group
             size="xs"
             class="mr-2 mb-1">
@@ -133,11 +133,11 @@
               @change="updateVars('stopDate')"
             />
           </b-input-group>
-          <span class="fa fa-lg fa-question-circle cursor-help"
+          <span class="fa fa-lg fa-question-circle cursor-help mt-1"
             v-b-tooltip.hover.html="linkPlaceholderTip"
           />
-          <span class="pl-3 align-self-start">
-            {{ numDays }} days - {{ numHours }} hours
+          <span class="pl-2">
+            {{ numDays }} days | {{ numHours }} hours
           </span>
         </b-form> <!-- /link inputs -->
 
@@ -328,7 +328,8 @@ export default {
       linkSearchTerm: '',
       hideLinks: {},
       linkPlaceholderTip: {
-        title: 'These values are used to fill in placeholders in the links below.<br><a href="help" class="no-decoration">Learn more here!</a><br>Try using relative times like -5d or -1h<br>(hours/days/weeks/months/<br>quarters/years)'
+        title: 'These values are used to fill in <a href="help#linkgroups" class="no-decoration">link placeholders</a>.<br>' +
+          'Try using <a href="help#general" class="no-decoration">relative times</a> like -5d or -1h.'
       }
     };
   },

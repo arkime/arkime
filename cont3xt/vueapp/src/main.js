@@ -37,7 +37,10 @@ new Vue({
     // define app constants
     /* eslint-disable no-undef */
     Vue.prototype.$constants = {
-      WEB_PATH: WEB_PATH
+      VERSION: VERSION,
+      WEB_PATH: WEB_PATH,
+      BUILD_DATE: BUILD_DATE, // from webpack.DefinePlugin
+      BUILD_VERSION: BUILD_VERSION // from webpack.DefinePlugin
     };
   }
 });
