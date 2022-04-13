@@ -114,7 +114,7 @@
               v-model="startDate"
               style="width:152px"
               placeholder="Start Date"
-              @change="updateVars('startDate')"
+              @change="updateStopStart('startDate')"
             />
           </b-input-group>
           <b-input-group
@@ -130,7 +130,7 @@
               v-model="stopDate"
               style="width:152px"
               placeholder="Stop Date"
-              @change="updateVars('stopDate')"
+              @change="updateStopStart('stopDate')"
             />
           </b-input-group>
           <span class="fa fa-lg fa-question-circle cursor-help"
@@ -315,9 +315,9 @@ export default {
     return {
       error: '',
       numDays: 7, // 1 week
-      startDate: new Date(new Date().getTime() - (3600000 * 24 * 7)).toISOString().slice(0, -5) + 'Z', // 7 days ago
-      stopDate: new Date().toISOString().slice(0, -5) + 'Z', // now
       numHours: 7 * 24, // 1 week
+      startDate: new Date(new Date().getTime() - (3600000 * 24 * 7)).toISOString().slice(0, -5) + 'Z', // 1 week ago
+      stopDate: new Date().toISOString().slice(0, -5) + 'Z', // now
       results: {},
       scrollPx: 0,
       searchItype: '',
@@ -325,12 +325,23 @@ export default {
       searchTerm: this.$route.query.q ? this.$route.query.q : (this.$route.query.b ? window.atob(this.$route.query.b) : ''),
       skipCache: false,
       searchComplete: false,
-      linkSearchTerm: '',
+      linkSearchTerm: this.$route.query.linkSearch || '',
       hideLinks: {},
       linkPlaceholderTip: {
         title: 'These values are used to fill in placeholders in the links below.<br><a href="help" class="no-decoration">Learn more here!</a><br>Try using relative times like -5d or -1h<br>(hours/days/weeks/months/<br>quarters/years)'
       }
     };
+  },
+  mounted () {
+    // set the stop/start date to the query parameters
+    if (this.$route.query.stopDate) {
+      this.stopDate = this.$route.query.stopDate;
+      this.updateStopStart('stopDate');
+    }
+    if (this.$route.query.startDate) {
+      this.startDate = this.$route.query.startDate;
+      this.updateStopStart('startDate');
+    }
   },
   computed: {
     ...mapGetters([
@@ -369,21 +380,16 @@ export default {
     linkSearchTerm (searchTerm) {
       this.hideLinks = {};
 
-      if (searchTerm) {
-        const query = searchTerm.toLowerCase();
-
-        for (const group of this.getLinkGroups) {
-          this.hideLinks[group._id] = {};
-          for (let i = 0; i < group.links.length; i++) {
-            const match = group.links[i].name.toString().toLowerCase().match(query);
-            if (!match || match.length <= 0) {
-              this.hideLinks[group._id][i] = true;
-            }
+      if (this.$route.query.linkSearch !== searchTerm) {
+        this.$router.push({
+          query: {
+            ...this.$route.query,
+            linkSearch: searchTerm
           }
-        }
+        });
       }
 
-      this.arrangeLinkGroups();
+      this.filterLinks(searchTerm);
     },
     collapsedLinkGroups: {
       deep: true,
@@ -445,7 +451,7 @@ export default {
             // determine the search type and save the search term
             // based of the first itype seen
             this.searchItype = data.itype;
-            this.arrangeLinkGroups();
+            this.filterLinks(this.linkSearchTerm);
           }
 
           if (data.itype && data.name) { // add the data to the page per itype
@@ -496,7 +502,7 @@ export default {
         }
       });
     },
-    updateVars (updated) {
+    updateStopStart (updated) {
       let stopMs = new Date(this.stopDate).getTime();
       let startMs = new Date(this.startDate).getTime();
 
@@ -511,17 +517,24 @@ export default {
       // can't do anyting if we can't calculate the date ms
       if (isNaN(stopMs) || isNaN(startMs)) { return; }
 
+      // update the query params with the updated value
+      if (this.$route.query[updated] !== this[updated]) {
+        const query = { ...this.$route.query };
+        query[updated] = this[updated];
+        this.$router.push({ query });
+      }
+
       const days = (stopMs - startMs) / (3600000 * 24);
 
       switch (updated) {
       case 'stopDate':
-        this.numDays = Math.ceil(days);
+        this.numDays = Math.round(days);
         this.numHours = Math.round(days * 24);
         this.startDate = new Date(stopMs - (3600000 * 24 * days)).toISOString().slice(0, -5) + 'Z';
         this.stopDate = new Date(stopMs).toISOString().slice(0, -5) + 'Z';
         break;
       case 'startDate':
-        this.numDays = Math.ceil(days);
+        this.numDays = Math.round(days);
         this.numHours = Math.round(days * 24);
         this.startDate = new Date(startMs).toISOString().slice(0, -5) + 'Z';
         break;
@@ -557,6 +570,23 @@ export default {
           }
         }
       }
+    },
+    filterLinks (searchTerm) {
+      if (!searchTerm) { return; }
+
+      const query = searchTerm.toLowerCase();
+
+      for (const group of this.getLinkGroups) {
+        this.hideLinks[group._id] = {};
+        for (let i = 0; i < group.links.length; i++) {
+          const match = group.links[i].name.toString().toLowerCase().match(query);
+          if (!match || match.length <= 0) {
+            this.hideLinks[group._id][i] = true;
+          }
+        }
+      }
+
+      this.arrangeLinkGroups();
     },
     arrangeLinkGroups () {
       this.$nextTick(() => { // wait for render
