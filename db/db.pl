@@ -6720,7 +6720,7 @@ if ($ARGV[1] =~ /^(users-?import|import)$/) {
     closedir $dh;
     logmsg "Checking ", scalar @files, " files, this may take a while.\n";
     foreach my $file (@files) {
-        $file =~ /(\d+)-(\d+).(pcap|arkime)/;
+        next if ($file !~ /(\d+)-(\d+).(pcap|arkime)/);
         my $filenum = int($2);
         my $ctime = (stat("$dir/$file"))[10];
         my $info = esGet("/${PREFIX}files/_doc/$ARGV[2]-$filenum", 1);
@@ -6771,7 +6771,8 @@ if ($ARGV[1] =~ /^(users-?import|import)$/) {
     foreach my $file (@localfiles) {
         my @stat = stat("$file");
         if (!exists $remotefileshash{$file}) {
-            $file =~ /\/([^\/]*)-(\d+)-(\d+).(pcap|arkime)/;
+            next if ($file !~ /\/([^\/]*)-(\d+)-(\d+).(pcap|arkime)/);
+            print $file;
             my $node = $1;
             my $filenum = int($3);
             progress("Adding $file $node $filenum $stat[7]\n");
@@ -6783,12 +6784,12 @@ if ($ARGV[1] =~ /^(users-?import|import)$/) {
                          'node' => $node,
                          'filesize' => $stat[7]}), 1);
         } elsif ($stat[7] != $remotefileshash{$file}->{filesize}) {
-          progress("Updating filesize $file $stat[7]\n");
-          $file =~ /\/([^\/]*)-(\d+)-(\d+).(pcap|arkime)/;
-          my $node = $1;
-          my $filenum = int($3);
-          $remotefileshash{$file}->{filesize} = $stat[7];
-          esPost("/${PREFIX}files/_doc/$node-$filenum", to_json($remotefileshash{$file}), 1);
+            progress("Updating filesize $file $stat[7]\n");
+            next if ($file !~ /\/([^\/]*)-(\d+)-(\d+).(pcap|arkime)/);
+            my $node = $1;
+            my $filenum = int($3);
+            $remotefileshash{$file}->{filesize} = $stat[7];
+            esPost("/${PREFIX}files/_doc/$node-$filenum", to_json($remotefileshash{$file}), 1);
         }
     }
     logmsg("\n") if ($verbose > 0);

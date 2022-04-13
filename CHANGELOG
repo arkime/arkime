@@ -36,6 +36,7 @@ NOTICE: Cross-cluster Shortcuts require you to not restart all your viewers at o
   - wise - fix UI saving of INI formatted config
   - viewer - fixed auth fallback to digest from header mode
   - all - Support ES 8
+  - db.pl - fix sync-files/add-missing trying to add non pcap files
 
 3.4.2 2022/03/31
   - release - node 16.14.2
