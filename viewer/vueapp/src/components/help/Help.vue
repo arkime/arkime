@@ -167,14 +167,15 @@
       </h3>
       <p>
         Most Arkime tabs have a search bar on the top of the page.
-        Arkime uses a very simple query language for building expressions. It
-        supports grouping using parentheses as well as logical AND and OR statements using
+        Arkime uses a very simple query language for building expressions.
+        It supports grouping using parentheses as well as logical AND and OR statements using
         <code>&amp;&amp;</code> and <code>||</code> respectively.
-        Fields can be accessed directly using the field names
-        and operators described in the
+        Fields can be accessed directly using the field names and operators described in the
         <a href="help#fields" class="no-decoration">table below</a>.
-        Most fields also support a shorthand OR query using square brackets
+        Most fields also support a shorthand OR List query using square brackets
         using CSV rules to list possible values (<code>field==[item1,item2,item3]</code>).
+        A shorthand AND List query using reversed square brackets
+        (<code>field==]item1,item2,item3[</code>) is also supported by those fields.
       </p>
       <div class="ml-4">
         <h6 id="timebounding">
@@ -183,7 +184,8 @@
         </h6>
         <p>
           All queries are bounded by a start and stop time.
-          The bounded start and stop times can be set either by selecting a choice from a quick relative drop down or by entering exact time sections.
+          The bounded start and stop times can be set either by selecting a choice from a quick relative time drop down or by entering an exact time.
+          Relative times are recalculated for each new query performed.
           Entering an exact time will automatically switch from a relative time bounding to a fixed time bounding.
           Next to the start/stop entries are buttons that will quickly take you to the start/stop of each day.
         </p>
@@ -214,9 +216,8 @@
           String Search
         </h6>
         <p>
-          In Arkime, string fields are special since they can be searched in several different
-          ways. When fields are indexed, their case may or may not be normalized,
-          which is documented in the
+          In Arkime, string fields are special since they can be searched in several different ways.
+          When fields are indexed, their case may or may not be normalized, which is documented in the
           <a href="help#fields" class="no-decoration">fields table below</a>.
           The types of string searches are:
         </p>
@@ -244,19 +245,19 @@
           </dd>
           <dt>OR Lists</dt>
           <dd>
-            In Arkime, OR lists are used as a shorthand method for doing multiple OR queries.
-            For example <code>protocols == [http,ssh]</code>.
-            This query will search for any sessions containing either http OR ssh.
+            In Arkime, OR Lists are used as a shorthand method for doing multiple OR queries.
             A list containing wildcard or regex strings will process as wildcard/regexes.
-            Using an OR list many times can be faster to process.
+            For example instead of <code>(protocols == http || protocols == s*)</code> use <code>protocols == [http,s*]</code>.
+            This query will search for any sessions where the protocols field contains either the exact 'http' value OR values starting with 's'.
+            Using an OR List many times can be faster for the system to process than using <code>||</code>.
           </dd>
           <dt>AND Lists</dt>
           <dd>
-            In Arkime, AND lists are used as a shorthand method for doing multiple AND queries.
-            For example <code>protocols == ]http,ssh[</code>.
-            This query will search for any sessions containing both http AND ssh.
+            In Arkime, AND Lists are used as a shorthand method for doing multiple AND queries.
             A list containing wildcard or regex strings will process as wildcard/regexes.
-            Using an AND list many times can be faster to process.
+            For example instead of <code>(protocols == http &amp;&amp; protocols == s*)</code> use <code>protocols == ]http,s*[</code>.
+            This query will search for any sessions where the protocols field contains both the exact 'http' value AND a value starting with 's'.
+            Using an AND List many times can be faster for the system to process than using <code>&amp;&amp;</code>.
           </dd>
         </dl>
         <h6 id="ipSearch">
@@ -270,7 +271,7 @@
           representations with a colon (ip4) or dot (ip6) and then the port number to further refine a query. Ports are also
           first class searchable and may be searched for directly. For example:
           <code>ip == 1.2.3/24:80</code>. This query will search for all sessions which contain an IP address within the 1.2.3/24 CIDR range as well as utilizing port 80 during the session.
-          An IP search can also be done with list of IPs which may be in mixed representations: <code>ip == [1.2.3.4,1.3/16]</code>
+          An IP search can also be done with list of IPs which may be in mixed representations, both OR Lists and AND Lists are supported: <code>ip == [1.2.3.4,1.3/16]</code>
           If you only want to find ipv4 or ipv6 traffic, you can search using those tokens: <code>ip.src == ipv6</code>
         </p>
         <h6 id="numericSearch">
@@ -281,7 +282,7 @@
           Numeric fields support simple range operators besides the default equals
           and not equals query types. For example, to show events with bytes transferred being less than 10000,
           use this query: <code>bytes &lt;= 10000</code>.
-          Numeric fields also support lists for a simple OR query. For example, <code>port == [80,443,23]</code>
+          Numeric fields also support both OR Lists and AND Lists. For example, <code>port == [80,443,23]</code>
         </p>
         <h6 id="dateSearch">
           <span class="fa fa-search"></span>&nbsp;
@@ -290,7 +291,7 @@
         <p>
           Date fields support simple range operators besides the default equals
           and not equals. For example: <code>starttime == "2004/07/31 05:33:41"</code>.
-          They also support lists for a simple OR query. For example:
+          They also support both OR Lists and AND Lists for a simple OR/AND queries. For example:
           <code>stoptime == ["2004/07/31 05:33:41","2004/07/31 06:33:41"]</code>.
           However, usually it's much easier to use the
           <a href="help#timebounding" class="no-decoration">time bounding</a>
@@ -391,7 +392,7 @@
         <p>
           The magnifying glass ( <span class="fa fa-search"></span> ) in the top left corner indicates the search bar. Enter your query string here and then hit ENTER or click the "Search" button to run your query.
           While typing fieldnames into the query bar predicative typing will overlay with potential fieldname choices based on what has been typed so far.
-          See the <a href="help#search" class="no-decoration">search section</a> for more in depth information.
+          See the <a href="help#search" class="no-decoration">Search Bar section</a> for more in depth information.
         </p>
         <h6>
           <span class="fa fa-fw fa-exchange"></span>&nbsp;
