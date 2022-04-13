@@ -1,5 +1,6 @@
 'use strict';
 
+// eslint-disable-next-line camelcase
 const child_process = require('child_process');
 
 function git (command) {
