@@ -8,6 +8,7 @@
       <div class="float-right mt-1">
         <b-button
           size="sm"
+          tabindex="-1"
           @click="copy"
           variant="outline-success"
           v-b-tooltip.hover="'Copy as raw JSON'">
@@ -15,6 +16,7 @@
         </b-button>
         <b-button
           size="sm"
+          tabindex="-1"
           @click="download"
           variant="outline-success"
           v-b-tooltip.hover="'Download as raw JSON'">
@@ -23,6 +25,7 @@
         <b-button
           size="sm"
           @click="refresh"
+          tabindex="-1"
           variant="outline-info"
           v-b-tooltip.hover="`Queried ${$options.filters.moment(getIntegrationData.data._cont3xt.createTime, 'from')}\n${$options.filters.dateString(getIntegrationData.data._cont3xt.createTime)}`">
           <span class="fa fa-refresh fa-fw" />
@@ -78,7 +81,8 @@
       </template> <!-- /card template -->
       <!-- raw -->
       <b-card class="mt-2">
-        <h6 v-b-toggle.collapse-raw
+        <h6 tabindex="-1"
+          v-b-toggle.collapse-raw
           class="card-title mb-1 text-warning">
           raw
           <span class="pull-right">
@@ -88,6 +92,7 @@
         </h6>
         <b-collapse
           class="mt-2"
+          tabindex="-1"
           id="collapse-raw">
           <pre class="text-info">{{ getIntegrationData.data }}</pre>
         </b-collapse>

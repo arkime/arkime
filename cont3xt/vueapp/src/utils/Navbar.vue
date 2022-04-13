@@ -5,6 +5,7 @@
       <router-link
         exact
         to="help"
+        tabindex="-1"
         active-class="active">
         <span
           v-b-tooltip.hover
@@ -17,9 +18,10 @@
         <li class="nav-item mr-2">
           <router-link
             to="/"
-            active-class="active"
+            exact
+            tabindex="-1"
             class="nav-link"
-            exact>
+            active-class="active">
             Cont3xt
           </router-link>
         </li>
@@ -27,6 +29,7 @@
           <router-link
             exact
             to="stats"
+            tabindex="-1"
             class="nav-link"
             active-class="active">
             Stats
@@ -35,6 +38,7 @@
         <li class="nav-item mr-2">
           <router-link
             to="settings"
+            tabindex="-1"
             class="nav-link"
             active-class="active">
             Settings
@@ -43,6 +47,7 @@
         <li class="nav-item mr-2">
           <router-link
             to="users"
+            tabindex="-1"
             v-if="getUser"
             class="nav-link"
             active-class="active"
@@ -55,7 +60,8 @@
       <div class="mr-2 text-light">
         <span v-if="healthError">
           {{ healthError || 'Network Error' }} - try
-          <a @click="reload"
+          <a tabindex="-1"
+            @click="reload"
             class="cursor-pointer">
             reloading the page
           </a>
@@ -64,7 +70,9 @@
       <!-- version -->
       <Version :timezone="timezone" />
       <!-- help button -->
-      <router-link :to="{ path: 'help' }">
+      <router-link
+        tabindex="-1"
+        :to="{ path: 'help' }">
         <span class="fa fa-2x fa-fw fa-question-circle mr-2"
           v-b-tooltip.hover
           title="HELP!">
@@ -74,7 +82,8 @@
       <div class="form-inline"
         @keyup.enter="login"
         @keyup.esc="clearLogin">
-        <button type="button"
+        <button
+          tabindex="-1"
           @click="toggleTheme"
           v-b-tooltip.hover.left
           class="btn cursor-pointer"

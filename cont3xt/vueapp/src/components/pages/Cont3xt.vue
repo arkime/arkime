@@ -14,6 +14,7 @@
             </b-input-group-text>
           </template>
           <b-form-input
+            tabindex="1"
             v-focus="true"
             v-model="searchTerm"
             @keydown.enter="search"
@@ -21,12 +22,14 @@
           />
           <b-input-group-append>
             <b-button
+              tabindex="-1"
               @click="skipCache = !skipCache"
               :variant="skipCache ? 'warning': 'outline-warning'"
               v-b-tooltip.hover="skipCache ? 'Ignorning cache (click to use cache)' : 'Using cache (click to ignore cache)'">
               <span class="fa fa-database fa-fw" />
             </b-button>
             <b-button
+              tabindex="-1"
               @click="search"
               variant="success">
               Get Cont3xt
@@ -37,6 +40,7 @@
           v-b-tooltip.hover="'Download a report of this result.'">
           <b-button
             class="mr-2"
+            tabindex="-1"
             @click="generateReport"
             variant="outline-secondary"
             :class="{'disabled':!searchComplete}">
@@ -44,6 +48,7 @@
           </b-button>
         </div>
         <b-button
+          tabindex="-1"
           @click="shareLink"
           variant="outline-primary"
           v-b-tooltip.hover="'Copy share link to clipboard'">
@@ -80,6 +85,7 @@
           <span class="fa fa-exclamation-triangle" />&nbsp;
           {{ error }}
           <button
+            tabindex="-1"
             type="button"
             @click="error = ''"
             class="close cursor-pointer">
@@ -111,6 +117,7 @@
             </template>
             <b-form-input
               type="text"
+              tabindex="2"
               v-model="startDate"
               style="width:152px"
               placeholder="Start Date"
@@ -127,6 +134,7 @@
             </template>
             <b-form-input
               type="text"
+              tabindex="3"
               v-model="stopDate"
               style="width:152px"
               placeholder="Stop Date"
@@ -200,6 +208,7 @@
                     </b-input-group-text>
                   </template>
                   <b-form-input
+                    tabindex="4"
                     debounce="400"
                     v-model="linkSearchTerm"
                     placeholder="Search links below"

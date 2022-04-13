@@ -32,11 +32,13 @@
             v-if="itype && link.name !== '----------'">
             <b-form-checkbox
               inline
+              tabindex="-1"
               class="link-checkbox"
               @change="$store.commit('TOGGLE_CHECK_LINK', { lgId: linkGroup._id, lname: link.name })"
               :checked="getCheckedLinks[linkGroup._id] && getCheckedLinks[linkGroup._id][link.name]"
             />
-            <a target="_blank"
+            <a tabindex="-1"
+              target="_blank"
               :title="link.name"
               :href="getUrl(link.url)"
               :style="link.color ? `color:${link.color}` : ''">
@@ -50,7 +52,8 @@
             <strong class="text-warning">
               {{ link.name }}
             </strong>
-            <a href="javascript:void(0)"
+            <a tabindex="-1"
+              href="javascript:void(0)"
               :style="link.color ? `color:${link.color}` : ''">
               {{ link.url }}
             </a>
@@ -67,6 +70,7 @@
     <template #footer v-if="itype && !collapsedLinkGroups[linkGroup._id]">
       <div class="w-100 d-flex justify-content-between align-items-start">
         <b-form-checkbox
+          tabindex="-1"
           role="checkbox"
           class="mr-2 mt-1"
           v-b-tooltip.hover="'Select All'"
@@ -76,6 +80,7 @@
         <b-button
           block
           size="sm"
+          tabindex="-1"
           variant="secondary"
           @click="openAllLinks(linkGroup)"
           v-b-tooltip.hover="'Open all selected links in this group'">

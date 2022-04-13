@@ -3,6 +3,7 @@
     <template v-for="integration in integrations">
       <b-button
         size="xs"
+        tabindex="-1"
         variant="outline-dark"
         class="ml-1 mt-1 float-right"
         :id="itype + integration.name"

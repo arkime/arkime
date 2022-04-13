@@ -5,6 +5,7 @@
     :class="{'cursor-help':value.full}">
     <div :class="field.type === 'table' || field.type === 'array' ? 'd-flex justify-content-between align-items-center' : 'd-inline'">
       <label
+        tabindex="-1"
         v-if="!hideLabel"
         class="text-warning"
         @click="toggleValue"
@@ -19,6 +20,7 @@
       <div class="d-inline">
         <b-button
           size="xs"
+          tabindex="-1"
           @click="copy"
           variant="outline-success"
           v-if="field.type === 'table'"
@@ -27,6 +29,7 @@
         </b-button>
         <b-button
           size="xs"
+          tabindex="-1"
           @click="download"
           variant="outline-success"
           v-if="field.type === 'table'"
