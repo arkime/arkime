@@ -152,7 +152,8 @@ export default {
         return response.json();
       }).then((response) => {
         if (response.success) {
-          return resolve(response);
+          store.commit('SET_VIEWS', response.views);
+          return resolve(response.views);
         } else {
           return reject(response.text);
         }
@@ -175,6 +176,7 @@ export default {
         return response.json();
       }).then((response) => {
         if (response.success) {
+          this.getIntegrationViews();
           return resolve(response);
         } else {
           return reject(response.text);
@@ -198,6 +200,7 @@ export default {
         return response.json();
       }).then((response) => {
         if (response.success) {
+          this.getIntegrationViews();
           return resolve(response);
         } else {
           return reject(response.text);
@@ -220,6 +223,7 @@ export default {
         return response.json();
       }).then((response) => {
         if (response.success) {
+          this.getIntegrationViews();
           return resolve(response);
         } else {
           return reject(response.text);

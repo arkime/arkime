@@ -1,10 +1,5 @@
 <template>
   <span>
-    <!-- view create form -->
-    <create-view-modal
-      @update-views="getViews"
-    />
-
     <!-- open search panel on hover button -->
     <div
       class="sidebar-btn"
@@ -39,86 +34,17 @@
           </h4> <!-- /header/toggle open -->
           <hr>
           <div class="d-flex justify-content-between">
-            <!-- view selector -->
             <div class="d-inline">
-              <b-dropdown
-                size="sm"
-                class="view-dropdown"
-                text="Integration Views">
-                <b-dropdown-item
-                  class="small"
-                  v-b-modal.view-form
-                  v-if="!views.length">
-                  No saved views.
-                  <br>
-                  Click to create one.
-                </b-dropdown-item>
-                <div class="ml-1 mr-1 mb-2" v-else>
-                  <b-input-group size="sm">
-                    <template #prepend>
-                      <b-input-group-text>
-                        <span class="fa fa-search" />
-                      </b-input-group-text>
-                    </template>
-                    <b-form-input
-                      debounce="400"
-                      v-model="viewSearch"
-                    />
-                  </b-input-group>
-                </div>
-                <template v-for="view in filteredViews">
-                  <b-tooltip
-                    noninteractive
-                    :target="view._id"
-                    placement="right"
-                    boundary="viewport"
-                    :key="view._id + '-tooltip'"
-                    v-if="view.name.length > 24">
-                    {{ view.name }}
-                  </b-tooltip>
-                  <b-dropdown-item
-                    class="small"
-                    :id="view._id"
-                    :key="view._id"
-                    @click="selectView(view)">
-                    <div class="d-flex justify-content-between">
-                      <div class="d-inline no-wrap no-overflow ellipsis flex-grow-1">
-                        <span
-                          class="fa fa-share-alt mr-1 cursor-help"
-                          v-if="getUser && view.creator !== getUser.userId"
-                          v-b-tooltip.hover="`Shared with you by ${view.creator}`"
-                        />
-                        {{ view.name }}
-                      </div>
-                      <template v-if="view._editable">
-                        <b-button
-                          size="xs"
-                          variant="danger"
-                          class="pull-right ml-1"
-                          @click.stop.prevent="deleteView(view._id)"
-                          v-b-tooltip.hover.top="'Delete this view.'">
-                          <span class="fa fa-trash-o" />
-                        </b-button>
-                      </template>
-                    </div>
-                  </b-dropdown-item>
-                </template>
-              </b-dropdown>
+              <ViewSelector />
             </div> <!-- /view selector -->
             <b-button
               size="sm"
               variant="success"
               v-b-modal.view-form
-              v-b-tooltip.hover.right="'Save these integrations as a view'">
+              v-b-tooltip.hover.top="'Save these integrations as a view'">
               <span class="fa fa-plus-circle" />
             </b-button>
           </div>
-          <b-alert
-            size="sm"
-            class="mt-2"
-            :show="!!viewsError">
-            {{ viewsError }}
-          </b-alert>
           <br>
           <!-- select integrations -->
           <b-form>
@@ -159,21 +85,16 @@
 <script>
 import { mapGetters } from 'vuex';
 
-import UserService from '@/components/services/UserService';
-import CreateViewModal from '@/components/views/CreateViewModal';
+import ViewSelector from '@/components/views/ViewSelector';
 
 export default {
   name: 'IntegrationPanel',
-  components: { CreateViewModal },
+  components: { ViewSelector },
   props: {
     sidebarHover: Boolean
   },
   data () {
     return {
-      views: [],
-      viewSearch: '',
-      filteredViews: [],
-      viewsError: false,
       allSelected: false,
       indeterminate: false,
       sidebarOpen: this.$store.state.sidebarKeepOpen
@@ -197,14 +118,6 @@ export default {
       set (val) { this.$store.commit('SET_SELECTED_INTEGRATIONS', val); }
     }
   },
-  watch: {
-    viewSearch (searchTerm) {
-      this.filterViews(searchTerm);
-    }
-  },
-  created () {
-    this.getViews();
-  },
   methods: {
     /* page functions ------------------------------------------------------ */
     mouseEnterSidebar () {
@@ -222,16 +135,6 @@ export default {
     toggleAll (checked) {
       this.selectedIntegrations = checked ? Object.keys(this.getDoableIntegrations) : [];
     },
-    selectView (view) {
-      this.selectedIntegrations = view.integrations;
-    },
-    deleteView (id) {
-      UserService.deleteIntegrationsView(id).then((response) => {
-        this.getViews();
-      }).catch((error) => {
-        this.viewsError = error.text || error;
-      });
-    },
     /* helpers ------------------------------------------------------------- */
     calculateSelectAll (list) {
       if (list.length === 0) {
@@ -244,27 +147,6 @@ export default {
         this.allSelected = false;
         this.indeterminate = true;
       }
-    },
-    getViews () {
-      UserService.getIntegrationViews().then((response) => {
-        this.viewsError = '';
-        this.views = response.views;
-        this.filterViews(this.viewSearch);
-      }).catch((error) => {
-        this.viewsError = error.text || error;
-      });
-    },
-    filterViews (searchTerm) {
-      if (!searchTerm) {
-        this.filteredViews = JSON.parse(JSON.stringify(this.views));
-        return;
-      }
-
-      const query = searchTerm.toLowerCase();
-
-      this.filteredViews = this.views.filter((view) => {
-        return view.name.toString().toLowerCase().match(query)?.length > 0;
-      });
     }
   }
 };
@@ -306,13 +188,5 @@ body.dark .sidebar-btn {
 .main-content.with-sidebar,
 .main-content.with-sidebar .search-nav {
   margin-left: 252px;
-}
-
-.view-dropdown .dropdown-item {
-  padding: 0.1rem 0.5rem;
-}
-.view-dropdown .dropdown-menu {
-  width: 240px;
-  overflow: hidden;
 }
 </style>

@@ -41,6 +41,7 @@ export default {
     LinkService.getLinkGroups();
     UserService.getUser();
     UserService.getRoles();
+    UserService.getIntegrationViews();
   }
 };
 </script>

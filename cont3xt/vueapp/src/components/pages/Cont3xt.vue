@@ -1,7 +1,9 @@
 <template>
   <div class="container-fluid">
-
+    <!-- integration selection panel -->
     <IntegrationPanel />
+    <!-- view create form -->
+    <create-view-modal />
     <!-- page content -->
     <div class="main-content"
       :class="{'with-sidebar': getSidebarKeepOpen}">
@@ -28,6 +30,11 @@
               v-b-tooltip.hover="skipCache ? 'Ignorning cache (click to use cache)' : 'Using cache (click to ignore cache)'">
               <span class="fa fa-database fa-fw" />
             </b-button>
+            <ViewSelector>
+              <template #title>
+                <span class="fa fa-eye mr-2" />
+              </template>
+            </ViewSelector>
             <b-button
               tabindex="-1"
               @click="search"
@@ -298,8 +305,10 @@ import Cont3xtText from '@/components/itypes/Text';
 import Cont3xtEmail from '@/components/itypes/Email';
 import Cont3xtPhone from '@/components/itypes/Phone';
 import Cont3xtDomain from '@/components/itypes/Domain';
+import ViewSelector from '@/components/views/ViewSelector';
 import UserService from '@/components/services/UserService';
 import LinkGroupCard from '@/components/links/LinkGroupCard';
+import CreateViewModal from '@/components/views/CreateViewModal';
 import Cont3xtService from '@/components/services/Cont3xtService';
 import IntegrationCard from '@/components/integrations/IntegrationCard';
 import IntegrationPanel from '@/components/integrations/IntegrationPanel';
@@ -314,8 +323,10 @@ export default {
     Cont3xtText,
     Cont3xtEmail,
     Cont3xtPhone,
+    ViewSelector,
     Cont3xtDomain,
     LinkGroupCard,
+    CreateViewModal,
     IntegrationCard,
     IntegrationPanel
   },

@@ -169,9 +169,15 @@ export default {
       indeterminate: false
     };
   },
+  created () {
+    if (!this.localView.integrations.length) {
+      this.localView.integrations = this.getSelectedIntegrations;
+    }
+  },
   computed: {
     ...mapGetters([
-      'getRoles', 'getUser', 'getDoableIntegrations', 'getSortedIntegrations'
+      'getRoles', 'getUser', 'getDoableIntegrations', 'getSortedIntegrations',
+      'getSelectedIntegrations'
     ])
   },
   methods: {

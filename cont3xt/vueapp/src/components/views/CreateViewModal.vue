@@ -73,7 +73,10 @@ export default {
     close () {
       this.error = '';
       this.focus = false;
-      this.view = defaultView;
+      this.$set(this.view, 'name', '');
+      this.$set(this.view, 'editRoles', []);
+      this.$set(this.view, 'viewRoles', []);
+      this.$set(this.view, 'integrations', []);
       this.$bvModal.hide('view-form');
     },
     create () {
@@ -84,8 +87,8 @@ export default {
         return;
       }
 
+      // NOTE: this function handles fetching the updated view list and storing it
       UserService.saveIntegrationsView(this.view).then((response) => {
-        this.$emit('update-views');
         this.close();
       }).catch((error) => {
         this.error = error.text || error;

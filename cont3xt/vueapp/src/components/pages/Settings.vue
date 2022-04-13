@@ -77,9 +77,7 @@
       <!-- view settings -->
       <div v-if="visibleTab === 'views'">
         <!-- view create form -->
-        <create-view-modal
-          @update-views="getViews"
-        />
+        <create-view-modal />
         <div class="mr-3 w-100 d-flex justify-content-between align-items-center">
           <h1>
             Views
@@ -107,7 +105,7 @@
         <div class="d-flex flex-wrap">
           <!-- no views -->
           <div class="row lead mt-4"
-            v-if="views && (!views.length || !views.filter(v => v._editable).length)">
+            v-if="getViews && (!getViews.length || !getViews.filter(v => v._editable).length)">
             <div class="col">
               No Views are configured or shared for you to edit.
               <b-button
@@ -434,7 +432,6 @@ export default {
       // link groups
       selectedLinkGroup: 0,
       // views
-      views: undefined,
       filteredViews: undefined,
       viewSearchTerm: '',
       viewForm: false,
@@ -454,17 +451,17 @@ export default {
       }
     }
 
-    this.getViews();
-
     UserService.getIntegrationSettings().then((response) => {
       this.integrationSettings = response;
       this.filteredIntegrationSettings = JSON.parse(JSON.stringify(response));
     }).catch((err) => {
       this.showMessage({ variant: 'danger', message: err });
     });
+
+    this.filterViews(this.viewSearchTerm);
   },
   computed: {
-    ...mapGetters(['getLinkGroups', 'getLinkGroupsError', 'getIntegrations']),
+    ...mapGetters(['getLinkGroups', 'getLinkGroupsError', 'getIntegrations', 'getViews']),
     linkGroupsError: {
       get () {
         return !!this.$store.state.linkGroupsError;
@@ -493,6 +490,9 @@ export default {
     },
     viewSearchTerm (searchTerm) {
       this.filterViews(searchTerm);
+    },
+    getViews () {
+      this.filterViews(this.viewSearchTerm);
     }
   },
   methods: {
@@ -610,6 +610,7 @@ export default {
       delete view.error;
       delete view.success;
 
+      // NOTE: this function handles fetching the updated view list and storing it
       UserService.updateIntegrationsView(view).then((response) => {
         this.$set(view, 'success', true);
       }).catch((error) => {
@@ -623,11 +624,9 @@ export default {
       });
     },
     deleteView (view, index) {
-      UserService.deleteIntegrationsView(view._id).then((response) => {
-        this.getViews();
-      }).catch((error) => {
+      // NOTE: this function handles fetching the updated view list and storing it
+      UserService.deleteIntegrationsView(view._id).catch((error) => {
         this.$set(view, 'error', true);
-      }).finally(() => {
         setTimeout(() => {
           delete view.error;
           this.$set(this.filteredViews, index, view);
@@ -750,23 +749,15 @@ export default {
       return data;
     },
     /* VIEWS! -------------------------------- */
-    getViews () {
-      UserService.getIntegrationViews().then((response) => {
-        this.views = response.views;
-        this.filterViews(this.viewSearch);
-      }).catch((error) => {
-        this.showMessage({ variant: 'danger', message: error.text || error });
-      });
-    },
     filterViews (searchTerm) {
       if (!searchTerm) {
-        this.filteredViews = JSON.parse(JSON.stringify(this.views));
+        this.filteredViews = JSON.parse(JSON.stringify(this.getViews));
         return;
       }
 
       const query = searchTerm.toLowerCase();
 
-      this.filteredViews = this.views.filter((view) => {
+      this.filteredViews = this.getViews.filter((view) => {
         return view.name.toString().toLowerCase().match(query)?.length > 0;
       });
     }

@@ -29,7 +29,8 @@ const store = new Vuex.Store({
     collapsedLinkGroups: {},
     checkedLinks: {},
     selectedIntegrations: undefined,
-    sidebarKeepOpen: false
+    sidebarKeepOpen: false,
+    views: []
   },
   mutations: {
     SET_USER (state, data) {
@@ -147,6 +148,9 @@ const store = new Vuex.Store({
     },
     SET_COLLAPSED_LINK_GROUPS (state, data) {
       state.collapsedLinkGroups = data;
+    },
+    SET_VIEWS (state, data) {
+      state.views = data;
     }
   },
   getters: {
@@ -191,6 +195,9 @@ const store = new Vuex.Store({
       integrations.sort((a, b) => { return a.key.localeCompare(b.key); });
       return integrations;
     },
+    getSelectedIntegrations (state) {
+      return state.selectedIntegrations;
+    },
     getIntegrationsError (state) {
       return state.integrationsError;
     },
@@ -211,6 +218,9 @@ const store = new Vuex.Store({
     },
     getSidebarKeepOpen (state) {
       return state.sidebarKeepOpen;
+    },
+    getViews (state) {
+      return state.views;
     }
   },
   plugins: [createPersistedState({
