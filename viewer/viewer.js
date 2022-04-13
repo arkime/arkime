@@ -1020,7 +1020,7 @@ function expireDevice (nodes, dirs, minFreeSpaceG, nextCb) {
     console.log('EXPIRE - device', nodes, dirs, minFreeSpaceG);
   }
   const query = {
-    _source: ['num', 'name', 'first', 'size', 'node'],
+    _source: ['num', 'name', 'first', 'size', 'node', 'indexFilename'],
     from: '0',
     size: 500,
     query: {
