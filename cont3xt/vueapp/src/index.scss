@@ -114,3 +114,8 @@ body:not(.dark) .card {
 .table-sm > tfoot > tr > td {
   padding: 0.1rem 0.5rem;
 }
+
+/* increase the width of tooltips (because andy said so) ---------- */
+.tooltip-inner {
+  max-width: 350px;
+}

@@ -329,6 +329,7 @@ app.use(cspHeader, setCookie, (req, res, next) => {
 
   const appContext = {
     nonce: res.locals.nonce,
+    version: version.version,
     path: getConfig('cont3xt', 'webBasePath', '/')
   };
 

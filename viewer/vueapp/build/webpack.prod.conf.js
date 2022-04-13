@@ -2,7 +2,7 @@
 
 const path = require('path')
 const utils = require('./utils')
-const { git } = require('./git')
+const { git } = require('../../../common/git')
 const webpack = require('webpack')
 const config = require('../config')
 const { merge } = require('webpack-merge')

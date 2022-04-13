@@ -57,9 +57,14 @@
 
       </div> <!-- /data interval select -->
 
+      <!-- version -->
+      <span class="pl-4">
+        <Version timezone="local" />
+      </span>
+
       <!-- help -->
       <router-link to="help">
-        <span class="fa fa-lg fa-fw fa-question-circle mr-2 ml-2 help-link text-theme-button text-theme-gray-hover"
+        <span class="fa fa-2x fa-fw fa-question-circle mr-2 ml-2 help-link text-theme-button text-theme-gray-hover"
           v-b-tooltip.hover="'HELP!'">
         </span>
       </router-link> <!-- /help -->
@@ -82,9 +87,11 @@
 </template>
 
 <script>
+import Version from '@/../../../common/vueapp/Version';
 
 export default {
   name: 'WiseNavbar',
+  components: { Version },
   data: function () {
     return {
       queryParams: {}

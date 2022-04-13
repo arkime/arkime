@@ -3,7 +3,7 @@
   <div class="footer">
     <p>
       <small>
-        Arkime v{{molochVersion}} |
+        Arkime v{{ version }} |
         <a href="https://arkime.com">arkime.com</a>
         <span v-if="responseTime && !loadingData">
           | {{ responseTime | commaString }}ms
@@ -24,7 +24,7 @@ export default {
   name: 'MolochFooter',
   data: function () {
     return {
-      molochVersion: this.$constants.MOLOCH_VERSION
+      version: this.$constants.VERSION
     };
   },
   computed: {

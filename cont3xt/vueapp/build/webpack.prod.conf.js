@@ -2,6 +2,7 @@
 
 const path = require('path')
 const utils = require('./utils')
+const { git } = require('../../../common/git')
 const webpack = require('webpack')
 const config = require('../config')
 const { merge } = require('webpack-merge')
@@ -44,7 +45,9 @@ const webpackConfig = merge(baseWebpackConfig, {
   plugins: [
     // http://vuejs.github.io/vue-loader/en/workflow/production.html
     new webpack.DefinePlugin({
-      'process.env': env
+      'process.env': env,
+      BUILD_VERSION: JSON.stringify(git('describe --tags')),
+      BUILD_DATE: JSON.stringify(git('log -1 --format=%aI'))
     }),
     // generate dist index.html with correct asset hash for caching.
     // you can customize output by editing /index.html

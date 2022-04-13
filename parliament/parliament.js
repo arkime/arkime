@@ -25,6 +25,7 @@ const chalk = require('chalk');
 const dayMs = 60000 * 60 * 24;
 const User = require('../common/user');
 const Auth = require('../common/auth');
+const version = require('../common/version');
 
 /* app setup --------------------------------------------------------------- */
 const app = express();
@@ -2201,8 +2202,43 @@ app.use(['/app.js.map', '/parliament/app.js.map'], express.static(
 ));
 
 // vue index page
+const Vue = require('vue');
+const vueServerRenderer = require('vue-server-renderer');
+
+// Factory function to create fresh Vue apps
+function createApp () {
+  return new Vue({
+    template: '<div id="app"></div>'
+  });
+}
+
 app.use((req, res, next) => {
-  res.sendFile(path.join(__dirname, '/vueapp/dist/index.html'));
+  const renderer = vueServerRenderer.createRenderer({
+    template: fs.readFileSync(path.join(__dirname, '/vueapp/dist/index.html'), 'utf-8')
+  });
+
+  const appContext = {
+    nonce: res.locals.nonce,
+    version: version.version
+  };
+
+  // Create a fresh Vue app instance
+  const vueApp = createApp();
+
+  // Render the Vue instance to HTML
+  renderer.renderToString(vueApp, appContext, (err, html) => {
+    if (err) {
+      console.log('ERROR - fetching vue index page:', err);
+      if (err.code === 404) {
+        res.status(404).end('Page not found');
+      } else {
+        res.status(500).end('Internal Server Error');
+      }
+      return;
+    }
+
+    res.send(html);
+  });
 });
 
 let server;
