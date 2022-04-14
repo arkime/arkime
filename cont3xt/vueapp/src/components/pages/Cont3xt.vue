@@ -39,7 +39,9 @@
           class="mr-1 search-btn">
           Get Cont3xt
         </b-button>
-        <ViewSelector :no-caret="true">
+        <ViewSelector
+          :no-caret="true"
+          :show-selected-view="true">
           <template #title>
             <span class="fa fa-eye" />
           </template>

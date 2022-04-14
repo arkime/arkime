@@ -31,7 +31,8 @@ const store = new Vuex.Store({
     selectedIntegrations: undefined,
     sidebarKeepOpen: false,
     views: [],
-    integrationsPanelHoverDelay: 400
+    integrationsPanelHoverDelay: 400,
+    selectedView: ''
   },
   mutations: {
     SET_USER (state, data) {
@@ -155,6 +156,9 @@ const store = new Vuex.Store({
     },
     SET_INTEGRATIONS_PANEL_DELAY (state, data) {
       state.integrationsPanelHoverDelay = data;
+    },
+    SET_SELECTED_VIEW (state, data) {
+      state.selectedView = data;
     }
   },
   getters: {
@@ -225,6 +229,9 @@ const store = new Vuex.Store({
     },
     getViews (state) {
       return state.views;
+    },
+    getSelectedView (state) {
+      return state.selectedView;
     }
   },
   plugins: [createPersistedState({

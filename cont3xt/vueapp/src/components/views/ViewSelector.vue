@@ -2,11 +2,15 @@
   <b-dropdown
     size="sm"
     :no-caret="noCaret"
-    class="view-dropdown">
+    class="view-dropdown"
+    ref="integrationViewsDropdown">
     <template #button-content>
       <slot name="title">
         Integration Views
       </slot>
+      <span v-if="showSelectedView">
+        {{ getSelectedView }}
+      </span>
     </template>
     <div class="ml-1 mr-1 mb-2" v-if="getViews.length">
       <b-input-group size="sm">
@@ -71,7 +75,7 @@
               size="xs"
               variant="danger"
               class="pull-right ml-1"
-              @click.stop.prevent="deleteView(view._id)"
+              @click.stop.prevent="deleteView(view)"
               v-b-tooltip.hover.top="'Delete this view.'">
               <span class="fa fa-trash-o" />
             </b-button>
@@ -93,6 +97,10 @@ export default {
     noCaret: {
       type: Boolean,
       default: false
+    },
+    showSelectedView: {
+      type: Boolean,
+      default: false
     }
   },
   data () {
@@ -106,7 +114,9 @@ export default {
     this.filterViews(this.viewSearchTerm);
   },
   computed: {
-    ...mapGetters(['getViews', 'getUser'])
+    ...mapGetters([
+      'getViews', 'getUser', 'getSelectedIntegrations', 'getSelectedView'
+    ])
   },
   watch: {
     viewSearch (searchTerm) {
@@ -118,11 +128,17 @@ export default {
   },
   methods: {
     selectView (view) {
+      this.$store.commit('SET_SELECTED_VIEW', view.name);
       this.$store.commit('SET_SELECTED_INTEGRATIONS', view.integrations);
     },
-    deleteView (id) {
+    deleteView (view) {
       // NOTE: this function handles fetching the updated view list and storing it
-      UserService.deleteIntegrationsView(id).catch((error) => {
+      UserService.deleteIntegrationsView(view._id).then(() => {
+        if (view.name === this.getSelectedView) {
+          this.$refs.integrationViewsDropdown.hide(true);
+          this.$store.commit('SET_SELECTED_VIEW', '');
+        }
+      }).catch((error) => {
         this.error = error.text || error;
         setTimeout(() => { this.error = ''; }, 5000);
       });

@@ -67,6 +67,7 @@
               <template
                 v-for="integration in getSortedIntegrations">
                 <b-form-checkbox
+                  @change="unsetView"
                   :key="integration.key"
                   :value="integration.key"
                   v-if="integration.doable">
@@ -158,6 +159,10 @@ export default {
     },
     toggleAll (checked) {
       this.selectedIntegrations = checked ? Object.keys(this.getDoableIntegrations) : [];
+      this.unsetView();
+    },
+    unsetView () {
+      this.$store.commit('SET_SELECTED_VIEW', '');
     },
     /* helpers ------------------------------------------------------------- */
     calculateSelectAll (list) {
