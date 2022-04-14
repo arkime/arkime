@@ -666,6 +666,14 @@ export default {
       }
     },
     setupGraphElement: function () {
+      plotCheck = setInterval(() => {
+        if ($.plot) {
+          clearInterval(plotCheck);
+          plotCheck = undefined;
+          initialized = true;
+        }
+      }, 50);
+
       this.plotArea = $('#plotArea' + this.id);
       this.plot = $.plot(this.plotArea, this.graph, this.graphOptions);
 
