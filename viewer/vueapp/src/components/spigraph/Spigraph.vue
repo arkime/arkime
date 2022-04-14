@@ -138,8 +138,7 @@
         :map-data="mapData"
         :primary="true"
         :timelineDataFilters="timelineDataFilters"
-        @fetchMapData="cancelAndLoad(true)"
-        page="spigraph">
+        @fetchMapData="cancelAndLoad(true)">
       </moloch-visualizations>
     </div> <!-- /main visualization -->
 

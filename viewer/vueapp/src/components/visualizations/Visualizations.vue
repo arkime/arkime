@@ -1,32 +1,6 @@
 <template>
   <div :class="{'sticky-viz':stickyViz && primary, 'hide-viz':hideViz && primary}">
 
-    <!-- viz options button -->
-    <div class="viz-options-btn-container">
-      <b-dropdown
-        right
-        size="sm"
-        v-if="primary"
-        variant="primary"
-        class="viz-options-btn">
-        <template #button-content>
-          <span class="fa fa-bar-chart-o fa-fw" />
-          <span class="fa fa-gear fa-fw" />
-        </template>
-        <b-dropdown-item
-          @click="toggleStickyViz">
-          {{ !stickyViz ? 'Pin' : 'Unpin' }}{{ page && page === 'spigraph' ? ' top' : '' }} {{ page && page === 'sessions' ? 'graph, map, and column headers' : 'graph and map' }}
-        </b-dropdown-item>
-        <b-dropdown-item
-          v-if="showHideBtn"
-          @click="toggleHideViz"
-          v-b-tooltip.hover.left="!hideViz ? 'Speeds up large queries!' : 'Show graph & map'">
-          {{ !hideViz ? 'Hide' : 'Show' }} graph and map
-        </b-dropdown-item>
-      </b-dropdown>
-    </div>
-    <!-- viz options button -->
-
     <div class="pt-2 pl-2 pr-2 viz-container"
       :id="'vizContainer' + id"
       :class="{'map-visible':showMap,'map-invisible':!showMap}">
@@ -298,9 +272,7 @@ export default {
     timelineDataFilters: {
       type: Array,
       required: true
-    },
-    showHideBtn: Boolean,
-    page: String
+    }
   },
   data: function () {
     return {
@@ -316,9 +288,7 @@ export default {
       plotPan: 0.1,
       graph: undefined,
       graphOptions: {},
-      showMap: undefined,
-      stickyViz: false,
-      hideViz: false
+      showMap: undefined
     };
   },
   computed: {
@@ -387,6 +357,12 @@ export default {
     },
     capStartTimes: function () {
       return this.$store.state.capStartTimes;
+    },
+    stickyViz: function () {
+      return this.$store.state.stickyViz;
+    },
+    hideViz: function () {
+      return this.$store.state.hideViz;
     }
   },
   watch: {
@@ -503,20 +479,10 @@ export default {
       const showMap = localStorage && localStorage[`${basePath}-open-map`] &&
         localStorage[`${basePath}-open-map`] !== 'false';
 
-      const stickyViz = localStorage && localStorage[`${basePath}-sticky-viz`] &&
-        localStorage[`${basePath}-sticky-viz`] !== 'false';
-
-      const hideViz = localStorage && localStorage[`${basePath}-hide-viz`] &&
-        localStorage[`${basePath}-hide-viz`] !== 'false';
-
       this.showCapStartTimes = localStorage && localStorage[`${basePath}-cap-times`] &&
         localStorage[`${basePath}-cap-times`] !== 'false';
 
-      this.$store.commit('toggleStickyViz', stickyViz);
-
       this.showMap = showMap;
-      this.stickyViz = stickyViz;
-      this.hideViz = hideViz;
 
       if (this.primary) {
         this.$store.commit('toggleMaps', showMap);
@@ -552,18 +518,6 @@ export default {
       return 'sessionsHisto';
     },
     /* exposed functions --------------------------------------------------- */
-    toggleStickyViz: function () {
-      this.stickyViz = !this.stickyViz;
-      this.$store.commit('toggleStickyViz', this.stickyViz);
-      localStorage[`${basePath}-sticky-viz`] = this.stickyViz;
-    },
-    toggleHideViz: function () {
-      this.hideViz = !this.hideViz;
-      localStorage[`${basePath}-hide-viz`] = this.hideViz;
-      if (!this.hideViz) {
-        this.$emit('fetchGraphData');
-      }
-    },
     /* exposed MAP functions */
     toggleMap: function () {
       if (this.primary) {

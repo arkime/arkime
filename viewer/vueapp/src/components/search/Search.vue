@@ -1,6 +1,31 @@
 <template>
 
   <form class="position-relative">
+
+    <!-- viz options button -->
+    <div class="viz-options-btn-container">
+      <b-dropdown
+        right
+        size="sm"
+        variant="primary"
+        class="viz-options-btn">
+        <template #button-content>
+          <span class="fa fa-bar-chart-o fa-fw" />
+          <span class="fa fa-gear fa-fw" />
+        </template>
+        <b-dropdown-item
+          @click="toggleStickyViz">
+          {{ !stickyViz ? 'Pin' : 'Unpin' }}{{ basePath && basePath === 'spigraph' ? ' top' : '' }} {{ basePath && basePath === 'sessions' ? 'graph, map, and column headers' : 'graph and map' }}
+        </b-dropdown-item>
+        <b-dropdown-item
+          @click="toggleHideViz"
+          v-if="basePath !== 'spigraph'"
+          v-b-tooltip.hover.left="!hideViz ? 'Speeds up large queries!' : 'Show graph & map'">
+          {{ !hideViz ? 'Hide' : 'Show' }} graph and map
+        </b-dropdown-item>
+      </b-dropdown>
+    </div> <!-- /viz options button -->
+
     <div class="pr-1 pl-1 pt-1 pb-1">
 
       <!-- actions dropdown menu -->
@@ -388,7 +413,8 @@ export default {
       messageType: undefined,
       updateTime: false,
       editableView: undefined, // Not necessarily active view
-      multiviewer: this.$constants.MOLOCH_MULTIVIEWER
+      multiviewer: this.$constants.MOLOCH_MULTIVIEWER,
+      basePath: undefined
     };
   },
   computed: {
@@ -463,6 +489,14 @@ export default {
     },
     matchingItemsTooltip: function () {
       return 'Apply action to ' + this.$options.filters.commaString(this.numMatchingSessions) + ' query matching sessions';
+    },
+    stickyViz: {
+      get: function () { return this.$store.state.stickyViz; },
+      set: function (newValue) { this.$store.commit('toggleStickyViz', newValue); }
+    },
+    hideViz: {
+      get: function () { return this.$store.state.hideViz; },
+      set: function (newValue) { this.$store.commit('toggleHideViz', newValue); }
     }
   },
   watch: {
@@ -497,6 +531,14 @@ export default {
         }
       }
     }
+
+    this.basePath = this.$route.path.split('/')[1];
+
+    this.stickyViz = localStorage && localStorage[`${this.basePath}-sticky-viz`] &&
+      localStorage[`${this.basePath}-sticky-viz`] !== 'false';
+
+    this.hideViz = localStorage && localStorage[`${this.basePath}-hide-viz`] &&
+      localStorage[`${this.basePath}-hide-viz`] !== 'false';
   },
   methods: {
     /* exposed page functions ------------------------------------ */
@@ -628,6 +670,21 @@ export default {
     },
     applyColumns: function (view) {
       this.$emit('setColumns', view.sessionsColConfig);
+    },
+    toggleStickyViz: function () {
+      this.stickyViz = !this.stickyViz;
+      localStorage[`${this.basePath}-sticky-viz`] = this.stickyViz;
+    },
+    toggleHideViz: function () {
+      this.hideViz = !this.hideViz;
+      localStorage[`${this.basePath}-hide-viz`] = this.hideViz;
+      if (!this.hideViz) { // watch for $store.state.fetchGraphData
+        // wherever graph data needs to be updated when viz is shown
+        this.$store.commit('setFetchGraphData', true);
+        setTimeout(() => {
+          this.$store.commit('setFetchGraphData', false);
+        }, 500);
+      }
     },
     /* MultiES functions ------------------------------------------ */
     isClusterVis: function (cluster) {
@@ -773,5 +830,12 @@ form {
 .action-menu-dropdown { z-index: 1030; }
 .form-group {
   margin-bottom: 0;
+}
+
+/* viz options button position above viz in nav */
+.viz-options-btn-container {
+  top: 118px;
+  right: 4px;
+  position: fixed;
 }
 </style>

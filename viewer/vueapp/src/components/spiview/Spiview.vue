@@ -151,10 +151,7 @@
       :map-data="mapData"
       :primary="true"
       :timelineDataFilters="timelineDataFilters"
-      @fetchMapData="fetchVizData"
-      @fetchGraphData="fetchGraphData"
-      :show-hide-btn="true"
-      page="spiview">
+      @fetchMapData="fetchVizData">
     </moloch-visualizations> <!-- /visualizations -->
 
     <div class="spiview-content mr-1 ml-1">
@@ -475,6 +472,11 @@ export default {
     },
     fields: function () {
       return this.$store.state.fieldsArr;
+    }
+  },
+  watch: {
+    '$store.state.fetchGraphData': function (value) {
+      if (value) { this.fetchGraphData(); }
     }
   },
   mounted: function () {
@@ -1395,6 +1397,7 @@ export default {
 
 /* canel btn */
 .cancel-btn {
+  margin-top: -4px;
   margin-right: 80px;
 }
 </style>

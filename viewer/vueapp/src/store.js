@@ -29,7 +29,9 @@ const store = new Vuex.Store({
       startTime: undefined,
       stopTime: undefined
     },
+    hideViz: false,
     stickyViz: false,
+    fetchGraphData: false,
     showMaps: true,
     showToolBars: true,
     mapSrc: true,
@@ -96,6 +98,12 @@ const store = new Vuex.Store({
     },
     toggleStickyViz (state, value) {
       state.stickyViz = value;
+    },
+    toggleHideViz (state, value) {
+      state.hideViz = value;
+    },
+    setFetchGraphData (state, value) {
+      state.fetchGraphData = value;
     },
     toggleMaps (state, value) {
       state.showMaps = value;

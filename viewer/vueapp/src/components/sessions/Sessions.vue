@@ -33,14 +33,12 @@
 
     <!-- visualizations -->
     <moloch-visualizations
+      v-if="graphData"
       :graph-data="graphData"
       :map-data="mapData"
       :primary="true"
       :timelineDataFilters="timelineDataFilters"
-      @fetchMapData="cancelAndLoad(true)"
-      @fetchGraphData="fetchGraphData"
-      :show-hide-btn="true"
-      page="sessions">
+      @fetchMapData="cancelAndLoad(true)">
     </moloch-visualizations> <!-- /visualizations -->
 
     <div class="sessions-content ml-2"
@@ -802,6 +800,9 @@ export default {
     '$store.state.stickyViz': function () {
       this.stickyHeader = this.$store.state.stickyViz;
       this.toggleStickyHeader();
+    },
+    '$store.state.fetchGraphData': function (value) {
+      if (value) { this.fetchGraphData(); }
     }
   },
   methods: {
