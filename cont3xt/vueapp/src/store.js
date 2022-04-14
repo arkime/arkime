@@ -30,7 +30,8 @@ const store = new Vuex.Store({
     checkedLinks: {},
     selectedIntegrations: undefined,
     sidebarKeepOpen: false,
-    views: []
+    views: [],
+    integrationsPanelHoverDelay: 400
   },
   mutations: {
     SET_USER (state, data) {
@@ -151,6 +152,9 @@ const store = new Vuex.Store({
     },
     SET_VIEWS (state, data) {
       state.views = data;
+    },
+    SET_INTEGRATIONS_PANEL_DELAY (state, data) {
+      state.integrationsPanelHoverDelay = data;
     }
   },
   getters: {
@@ -226,7 +230,7 @@ const store = new Vuex.Store({
   plugins: [createPersistedState({
     paths: [ // only these state variables are persisted to localstorage
       'checkedLinks', 'selectedIntegrations', 'sidebarKeepOpen',
-      'collapsedLinkGroups'
+      'collapsedLinkGroups', 'integrationsPanelHoverDelay'
     ]
   })]
 });

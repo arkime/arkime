@@ -16,51 +16,59 @@
             </b-input-group-text>
           </template>
           <b-form-input
-            tabindex="1"
+            tabindex="0"
             v-focus="true"
             v-model="searchTerm"
             @keydown.enter="search"
             placeholder="Indicators"
           />
-          <b-input-group-append>
+          <template #append>
             <b-button
-              tabindex="-1"
-              @click="skipCache = !skipCache"
-              :variant="skipCache ? 'warning': 'outline-warning'"
-              v-b-tooltip.hover="skipCache ? 'Ignorning cache (click to use cache)' : 'Using cache (click to ignore cache)'">
-              <span class="fa fa-database fa-fw" />
+              tabindex="0"
+              @click="clear"
+              :disabled="!searchTerm"
+              title="Remove the search text">
+              <span class="fa fa-close" />
             </b-button>
-            <ViewSelector>
-              <template #title>
-                <span class="fa fa-eye mr-2" />
-              </template>
-            </ViewSelector>
-            <b-button
-              tabindex="-1"
-              @click="search"
-              variant="success">
-              Get Cont3xt
-            </b-button>
-          </b-input-group-append>
+          </template>
         </b-input-group>
-        <div
-          v-b-tooltip.hover="'Download a report of this result.'">
-          <b-button
-            class="mr-2"
-            tabindex="-1"
-            @click="generateReport"
-            variant="outline-secondary"
-            :class="{'disabled':!searchComplete}">
-            <span class="fa fa-file-text fa-fw" />
-          </b-button>
-        </div>
         <b-button
           tabindex="-1"
-          @click="shareLink"
-          variant="outline-primary"
-          v-b-tooltip.hover="'Copy share link to clipboard'">
-          <span class="fa fa-share-alt fa-fw" />
+          @click="search"
+          variant="success"
+          class="mr-1 search-btn">
+          Get Cont3xt
         </b-button>
+        <ViewSelector :no-caret="true">
+          <template #title>
+            <span class="fa fa-eye" />
+          </template>
+        </ViewSelector>
+        <b-dropdown
+          class="ml-1"
+          tabindex="-1"
+          variant="info">
+          <b-dropdown-item
+            :active="skipCache"
+            @click="skipCache = !skipCache"
+            v-b-tooltip.hover.left="skipCache ? 'Ignorning cache (click to use cache)' : 'Using cache (click to ignore cache)'">
+            <span class="fa fa-database fa-fw mr-1" />
+            Skip Cache
+          </b-dropdown-item>
+          <b-dropdown-item
+            @click="generateReport"
+            :class="{'disabled':!searchComplete}"
+            v-b-tooltip.hover.left="'Download a report of this result.'">
+            <span class="fa fa-file-text fa-fw mr-1" />
+            Download Report
+          </b-dropdown-item>
+          <b-dropdown-item
+            @click="shareLink"
+            v-b-tooltip.hover.left="'Copy share link to clipboard'">
+            <span class="fa fa-share-alt fa-fw mr-1" />
+            Copy Share Link
+          </b-dropdown-item>
+        </b-dropdown>
       </div> <!-- /search -->
 
       <div class="margin-for-search cont3xt-content">
@@ -124,7 +132,7 @@
             </template>
             <b-form-input
               type="text"
-              tabindex="2"
+              tabindex="0"
               v-model="startDate"
               style="width:152px"
               placeholder="Start Date"
@@ -141,7 +149,7 @@
             </template>
             <b-form-input
               type="text"
-              tabindex="3"
+              tabindex="0"
               v-model="stopDate"
               style="width:152px"
               placeholder="Stop Date"
@@ -215,7 +223,7 @@
                     </b-input-group-text>
                   </template>
                   <b-form-input
-                    tabindex="4"
+                    tabindex="0"
                     debounce="400"
                     v-model="linkSearchTerm"
                     placeholder="Search links below"
@@ -421,6 +429,9 @@ export default {
   },
   methods: {
     /* page functions ------------------------------------------------------ */
+    clear () {
+      this.searchTerm = '';
+    },
     updateList ({ list }) {
       const ids = [];
       for (const group of list) {
@@ -668,6 +679,10 @@ export default {
 </script>
 
 <style scoped>
+.search-btn {
+  width: 148px;
+}
+
 .search-nav {
   padding: 16px 16px 0 16px;
   background-color: #FFF;

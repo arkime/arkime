@@ -4,8 +4,11 @@
     <div
       class="sidebar-btn"
       @mouseenter="mouseEnterSidebar">
-      <div class="mt-3 pt-3">
-        <span class="fa fa-chevron-right" />
+      <div class="mt-3 pt-1">
+        <span
+          @click="toggleSidebar"
+          class="fa fa-chevron-right cursor-pointer"
+        />
       </div>
     </div> <!-- /open search panel on hover button -->
 
@@ -24,6 +27,7 @@
             Integrations
             <b-button
               size="sm"
+              tabindex="-1"
               variant="link"
               class="float-right"
               @click="toggleSidebar"
@@ -39,6 +43,7 @@
             </div> <!-- /view selector -->
             <b-button
               size="sm"
+              tabindex="-1"
               variant="success"
               v-b-modal.view-form
               v-b-tooltip.hover.top="'Save these integrations as a view'">
@@ -49,6 +54,7 @@
           <!-- select integrations -->
           <b-form>
             <b-form-checkbox
+              tabindex="-1"
               role="checkbox"
               @change="toggleAll"
               v-model="allSelected"
@@ -77,6 +83,18 @@
             </b-form-checkbox>
           </b-form> <!-- /select integrations -->
         </div>
+        <!-- hover delay -->
+        <b-row class="m-1">
+          <b-input-group
+            size="sm"
+            append="ms"
+            prepend="Hover Delay">
+            <b-form-input
+              debounce="400"
+              v-model="hoverDelay"
+            />
+          </b-input-group>
+        </b-row> <!-- /hover delay -->
       </b-sidebar>
     </div> <!-- integrations panel -->
   </span>
@@ -116,12 +134,18 @@ export default {
         return this.$store.state.selectedIntegrations;
       },
       set (val) { this.$store.commit('SET_SELECTED_INTEGRATIONS', val); }
+    },
+    hoverDelay: {
+      get () { return this.$store.state.integrationsPanelHoverDelay; },
+      set (val) { this.$store.commit('SET_INTEGRATIONS_PANEL_DELAY', val); }
     }
   },
   methods: {
     /* page functions ------------------------------------------------------ */
     mouseEnterSidebar () {
-      this.sidebarOpen = true;
+      setTimeout(() => {
+        this.sidebarOpen = true;
+      }, this.hoverDelay || 400);
     },
     mouseLeaveSidebar () {
       if (!this.sidebarKeepOpen) {

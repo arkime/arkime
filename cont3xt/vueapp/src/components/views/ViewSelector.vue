@@ -1,6 +1,7 @@
 <template>
   <b-dropdown
     size="sm"
+    :no-caret="noCaret"
     class="view-dropdown">
     <template #button-content>
       <slot name="title">
@@ -88,6 +89,12 @@ import UserService from '@/components/services/UserService';
 
 export default {
   name: 'ViewSelector',
+  props: {
+    noCaret: {
+      type: Boolean,
+      default: false
+    }
+  },
   data () {
     return {
       error: '',
