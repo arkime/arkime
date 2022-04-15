@@ -167,7 +167,7 @@ logger.token('username', (req, res) => {
 
 // appwide middleware ---------------------------------------------------------
 app.use((req, res, next) => {
-  res.serverError = serverError;
+  res.serverError = ArkimeUtil.serverError;
 
   req.url = req.url.replace(Config.basePath(), '/');
   return next();
@@ -180,11 +180,11 @@ app.use(favicon(path.join(__dirname, '/public/favicon.ico')));
 app.use('/font-awesome', express.static(
   path.join(__dirname, '/../node_modules/font-awesome'),
   { maxAge: dayMs, fallthrough: false }
-), missingResource);
+), ArkimeUtil.missingResource);
 app.use(['/assets', '/logos'], express.static(
   path.join(__dirname, '../assets'),
   { maxAge: dayMs, fallthrough: false }
-), missingResource);
+), ArkimeUtil.missingResource);
 
 // regression test methods, before auth checks --------------------------------
 if (Config.get('regressionTests')) {
@@ -442,20 +442,6 @@ function createRightClicks () {
 // ============================================================================
 // API MIDDLEWARE
 // ============================================================================
-// error middleware -----------------------------------------------------------
-function serverError (resStatus, text) {
-  this.status(resStatus || 403);
-  return this.send(JSON.stringify({ success: false, text: text }));
-}
-
-// missing resource error handler for static file endpoints
-function missingResource (err, req, res, next) {
-  res.status(404);
-  const msg = `Cannot locate resource requsted from ${req.path}`;
-  console.log(msg);
-  return res.send(msg);
-}
-
 // security/access middleware -------------------------------------------------
 function checkProxyRequest (req, res, next) {
   sessionAPIs.isLocalView(req.params.nodeName, function () {
@@ -1963,7 +1949,7 @@ app.get(
 app.get('/cyberchef.html', express.static( // cyberchef client file endpoint
   path.join(__dirname, '/public'),
   { maxAge: dayMs, fallthrough: false }
-), missingResource, cyberchefCspHeader);
+), ArkimeUtil.missingResource, cyberchefCspHeader);
 
 app.get( // cyberchef endpoint
   '/cyberchef/:nodeName/session/:id',
@@ -1996,7 +1982,7 @@ function createApp () {
 app.use('/static', express.static(
   path.join(__dirname, '/vueapp/dist/static'),
   { maxAge: dayMs, fallthrough: false }
-), missingResource);
+), ArkimeUtil.missingResource);
 
 app.use(cspHeader, setCookie, (req, res) => {
   if (!req.user.webEnabled) {
