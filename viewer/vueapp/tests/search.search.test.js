@@ -47,7 +47,9 @@ const store = {
         inactive: []
       },
       selectedCluster: []
-    }
+    },
+    hideViz: false,
+    stickyViz: false
   },
   mutations: {
     setAvailableCluster: jest.fn(),
@@ -56,7 +58,9 @@ const store = {
     setViews: jest.fn(),
     setTimeRange: jest.fn(),
     setExpression: jest.fn(),
-    deleteViews: jest.fn()
+    deleteViews: jest.fn(),
+    toggleHideViz: jest.fn(),
+    toggleStickyViz: jest.fn()
   }
 };
 
@@ -71,7 +75,11 @@ beforeEach(() => {
 });
 
 test("search bar doesn't have actions button", async () => {
-  const $route = { query: {}, name: 'Spiview' };
+  const $route = {
+    query: {},
+    name: 'Spiview',
+    path: 'http://localhost:8123/arkime/spiview'
+  };
 
   const {
     queryByTitle
@@ -86,7 +94,11 @@ test("search bar doesn't have actions button", async () => {
 });
 
 test('search bar', async () => {
-  const $route = { query: {}, name: 'Sessions' };
+  const $route = {
+    query: {},
+    name: 'Sessions',
+    path: 'http://localhost:8123/arkime/sessions'
+  };
 
   const {
     getByText, getAllByText, getByTitle, getByPlaceholderText
@@ -141,7 +153,11 @@ test('search bar', async () => {
 });
 
 test('search bar - change view with no view applied', async () => {
-  const $route = { query: {} };
+  const $route = {
+    query: {},
+    name: 'Sessions',
+    path: 'http://localhost:8123/arkime/sessions'
+  };
 
   const {
     getByText, emitted
@@ -159,7 +175,11 @@ test('search bar - change view with no view applied', async () => {
 });
 
 test('search bar - change view when same view applied', async () => {
-  const $route = { query: { view: 'test view 1' }, name: 'Sessions' };
+  const $route = {
+    query: { view: 'test view 1' },
+    name: 'Sessions',
+    path: 'http://localhost:8123/arkime/sessions'
+  };
 
   const {
     getAllByText, emitted
@@ -177,7 +197,11 @@ test('search bar - change view when same view applied', async () => {
 });
 
 test('search bar - change view to different view', async () => {
-  const $route = { query: { view: 'test view 2' }, name: 'Sessions' };
+  const $route = {
+    query: { view: 'test view 2' },
+    name: 'Sessions',
+    path: 'http://localhost:8123/arkime/sessions'
+  };
 
   const {
     getByText, emitted

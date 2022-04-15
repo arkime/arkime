@@ -3,7 +3,8 @@
   <form class="position-relative">
 
     <!-- viz options button -->
-    <div class="viz-options-btn-container">
+    <div  class="viz-options-btn-container"
+      v-if="basePath === 'spigraph' || basePath === 'sessions' || basePath === 'spiview'">
       <b-dropdown
         right
         size="sm"

@@ -58,11 +58,13 @@ const store = {
     setTime: jest.fn(),
     setTimeRange: jest.fn(),
     setExpression: jest.fn(),
-    setIssueSearch: jest.fn()
+    setIssueSearch: jest.fn(),
+    toggleHideViz: jest.fn(),
+    toggleStickyViz: jest.fn()
   }
 };
 
-const $route = { query: {} };
+const $route = { query: {}, path: 'http://localhost:8123/arkime/hunt' };
 
 beforeEach(() => {
   ConfigService.getMolochClusters = jest.fn().mockResolvedValue({

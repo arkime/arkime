@@ -32,9 +32,13 @@ const store = {
     views: {},
     fieldsMap,
     fieldsArr: fields,
-    fieldhistory: []
+    fieldhistory: [],
+    hideViz: false,
+    stickyViz: false
   },
   mutations: {
+    toggleHideViz: jest.fn(),
+    toggleStickyViz: jest.fn(),
     setFocusSearch: jest.fn(),
     setExpression (state, value) {
       state.expression = value;
