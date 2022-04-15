@@ -674,27 +674,27 @@ app.use(favicon(path.join(__dirname, '/favicon.ico')));
 app.use('/font-awesome', express.static(
   path.join(__dirname, '/../node_modules/font-awesome'),
   { maxAge: dayMs, fallthrough: false }
-));
+), ArkimeUtil.missingResource);
 app.use('/assets', express.static(
   path.join(__dirname, '/../assets'),
   { maxAge: dayMs, fallthrough: false }
-));
+), ArkimeUtil.missingResource);
 
 // expose vue bundles (prod) - need to be here because of wildcard endpoint matches
 app.use('/static', express.static(
   path.join(__dirname, '/vueapp/dist/static'),
   { maxAge: dayMs, fallthrough: false }
-));
+), ArkimeUtil.missingResource);
 
 // expose vue bundle (dev)
 app.use(['/app.js', '/vueapp/app.js'], express.static(
   path.join(__dirname, '/vueapp/dist/app.js'),
   { fallthrough: false }
-));
+), ArkimeUtil.missingResource);
 app.use(['/app.js.map', '/vueapp/app.js.map'], express.static(
   path.join(__dirname, '/vueapp/dist/app.js.map'),
   { fallthrough: false }
-));
+), ArkimeUtil.missingResource);
 
 // ----------------------------------------------------------------------------
 if (internals.regressionTests) {

@@ -142,14 +142,6 @@ app.use((req, res, next) => {
   return next();
 });
 
-// missing resource error handler for static file endpoints
-function missingResource (err, req, res, next) {
-  res.status(404);
-  const msg = `Cannot locate resource requsted from ${req.path}`;
-  console.log(msg);
-  return res.send(msg);
-}
-
 // ----------------------------------------------------------------------------
 // Routes
 // ----------------------------------------------------------------------------
@@ -159,24 +151,26 @@ function missingResource (err, req, res, next) {
 app.use('/font-awesome', express.static(
   path.join(__dirname, '/../node_modules/font-awesome'),
   { maxAge: dayMs, fallthrough: false }
-), missingResource);
+), ArkimeUtil.missingResource);
 app.use('/assets', express.static(
   path.join(__dirname, '/../assets'),
   { maxAge: dayMs, fallthrough: false }
-), missingResource);
+), ArkimeUtil.missingResource);
 app.use('/public', express.static(
   path.join(__dirname, '/public'),
   { maxAge: dayMs, fallthrough: false }
-), missingResource);
+), ArkimeUtil.missingResource);
 const integrationsStatic = express.static(
   path.join(__dirname, '/integrations'),
   { maxAge: dayMs, fallthrough: false }
 );
 app.use('/integrations', (req, res, next) => {
   if (req.url.endsWith('png')) {
-    return integrationsStatic(req, res, (err) => { missingResource(err, req, res); });
+    return integrationsStatic(req, res, (err) => {
+      ArkimeUtil.missingResource(err, req, res);
+    });
   }
-  return missingResource('Not png', req, res);
+  return ArkimeUtil.missingResource('Not png', req, res);
 });
 
 app.use(favicon(path.join(__dirname, '/favicon.ico')));
@@ -307,16 +301,16 @@ function createApp () {
 app.use('/static', express.static(
   path.join(__dirname, '/vueapp/dist/static'),
   { maxAge: dayMs, fallthrough: false }
-), missingResource);
+), ArkimeUtil.missingResource);
 // expose vue bundle (dev)
 app.use('/app.js', express.static(
   path.join(__dirname, '/vueapp/dist/app.js'),
   { fallthrough: false }
-), missingResource);
+), ArkimeUtil.missingResource);
 app.use('/app.js.map', express.static(
   path.join(__dirname, '/vueapp/dist/app.js.map'),
   { fallthrough: false }
-), missingResource);
+), ArkimeUtil.missingResource);
 // vue index page
 app.use(cspHeader, setCookie, (req, res, next) => {
   if (req.path === '/users' && !req.user.hasRole('usersAdmin')) {

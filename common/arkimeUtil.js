@@ -200,6 +200,21 @@ class ArkimeUtil {
     );
   }
 
+  /**
+   * Missing resource error handler for static file endpoints.
+   * Sends a missing resource message to the client by:
+   * 1. setting the response status code to 404 (not found)
+   * 2. sending a message that the resource cannot be found
+   * This is so the client recieves an understandable message instead of the client index.html
+   * @returns {Object} res - The Express.js response object
+   */
+  static missingResource (err, req, res, next) {
+    res.status(404);
+    const msg = `Cannot locate resource requsted from ${req.path}`;
+    console.log(msg);
+    return res.send(msg);
+  }
+
   // express middleware to set req.settingUser to who to work on, depending if admin or not
   // This returns fresh from db
   static getSettingUserDb (req, res, next) {

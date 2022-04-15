@@ -26,6 +26,7 @@ const dayMs = 60000 * 60 * 24;
 const User = require('../common/user');
 const Auth = require('../common/auth');
 const version = require('../common/version');
+const ArkimeUtil = require('../common/arkimeUtil');
 
 /* app setup --------------------------------------------------------------- */
 const app = express();
@@ -265,11 +266,11 @@ app.use(cspHeader);
 app.use('/parliament/font-awesome', express.static(
   path.join(__dirname, '/../node_modules/font-awesome'),
   { maxAge: dayMs, fallthrough: false }
-));
+), ArkimeUtil.missingResource);
 app.use('/parliament/assets', express.static(
   path.join(__dirname, '/../assets'),
   { maxAge: dayMs, fallthrough: false }
-));
+), ArkimeUtil.missingResource);
 
 // log requests
 app.use(logger(':date \x1b[1m:method\x1b[0m \x1b[33m:url\x1b[0m :status :res[content-length] bytes :response-time ms', { stream: process.stdout }));
@@ -2190,16 +2191,16 @@ process.on('SIGINT', function () {
 app.use(['/static', '/parliament/static'], express.static(
   path.join(__dirname, '/vueapp/dist/static'),
   { maxAge: dayMs, fallthrough: false }
-));
+), ArkimeUtil.missingResource);
 // expose vue bundle (dev)
 app.use(['/app.js', '/parliament/app.js'], express.static(
   path.join(__dirname, '/vueapp/dist/app.js'),
   { fallthrough: false }
-));
+), ArkimeUtil.missingResource);
 app.use(['/app.js.map', '/parliament/app.js.map'], express.static(
   path.join(__dirname, '/vueapp/dist/app.js.map'),
   { fallthrough: false }
-));
+), ArkimeUtil.missingResource);
 
 // vue index page
 const Vue = require('vue');
