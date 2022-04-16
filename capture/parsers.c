@@ -50,7 +50,6 @@ LOCAL enum MolochMagicMode magicMode;
 #define MAGIC_RESULT(str) moloch_field_string_add(field, session, str, sizeof(str)-1, TRUE), str
 const char *moloch_parsers_magic_basic(MolochSession_t *session, int field, const char *data, int len)
 {
-    LOG("ALW0 %02x", data[0]);
     switch (data[0]) {
     case 0:
         if (len > 10 && MAGIC_MATCH(4, "ftyp")) {
