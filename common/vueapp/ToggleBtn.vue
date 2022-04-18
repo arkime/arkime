@@ -1,6 +1,7 @@
 <template>
 
   <a role="button"
+    title="toggle"
     @click="toggle"
     :class="btnClass"
     class="btn btn-sm btn-toggle">

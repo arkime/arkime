@@ -105,6 +105,7 @@
                 size="sm"
                 v-if="roles"
                 variant="success"
+                title="Create a new role"
                 v-b-modal.create-user-modal
                 @click="createMode = 'role'">
                 <span class="fa fa-plus-circle mr-1" />
@@ -113,6 +114,7 @@
               <b-button
                 size="sm"
                 variant="primary"
+                title="Create a new user"
                 v-b-modal.create-user-modal
                 @click="createMode = 'user'">
                 <span class="fa fa-plus-circle mr-1" />
@@ -140,8 +142,9 @@
             <b-button v-if="changed[data.item.userId]"
               size="sm"
               variant="success"
+              v-b-tooltip.hover
               @click="updateUser(data)"
-              v-b-tooltip.hover="`Save the updated settings for ${data.item.userId}`">
+              :title="`Save the updated settings for ${data.item.userId}`">
               <span class="fa fa-save" />
             </b-button>
             <b-button v-if="changed[data.item.userId]"
@@ -171,8 +174,9 @@
             <b-button
               size="sm"
               variant="danger"
-              @click="deleteUser(data.item, data.index)"
-              v-b-tooltip.hover="`Delete ${data.item.userId}`">
+              v-b-tooltip.hover
+              :title="`Delete ${data.item.userId}`"
+              @click="deleteUser(data.item, data.index)">
               <span class="fa fa-trash-o" />
             </b-button>
           </div>
@@ -194,6 +198,7 @@
             @input="userHasChanged(data.item.userId)"
           />
           <b-form-checkbox
+            data-testid="checkbox"
             v-model="data.item[data.field.key]"
             v-else-if="data.field.type === 'checkbox'"
             @input="userHasChanged(data.item.userId)"
@@ -240,36 +245,43 @@
         <template #row-details="data">
           <div class="m-2">
             <b-form-checkbox inline
+              data-testid="checkbox"
               :checked="!data.item.emailSearch"
               @input="newVal => negativeToggle(newVal, data.item, 'emailSearch', true)">
               Disable Arkime Email Search
             </b-form-checkbox>
             <b-form-checkbox inline
+              data-testid="checkbox"
               :checked="!data.item.removeEnabled"
               @input="newVal => negativeToggle(newVal, data.item, 'removeEnabled', true)">
               Disable Arkime Data Removal
             </b-form-checkbox>
             <b-form-checkbox inline
+              data-testid="checkbox"
               :checked="!data.item.packetSearch"
               @input="newVal => negativeToggle(newVal, data.item, 'packetSearch', true)">
               Disable Arkime Hunting
             </b-form-checkbox>
             <b-form-checkbox inline
+              data-testid="checkbox"
               v-model="data.item.hideStats"
               @input="userHasChanged(data.item.userId)">
               Hide Arkime Stats Page
             </b-form-checkbox>
             <b-form-checkbox inline
+              data-testid="checkbox"
               v-model="data.item.hideFiles"
               @input="userHasChanged(data.item.userId)">
               Hide Arkime Files Page
             </b-form-checkbox>
             <b-form-checkbox inline
+              data-testid="checkbox"
               v-model="data.item.hidePcap"
               @input="userHasChanged(data.item.userId)">
               Hide Arkime PCAP
             </b-form-checkbox>
             <b-form-checkbox inline
+              data-testid="checkbox"
               v-model="data.item.disablePcapDownload"
               @input="userHasChanged(data.item.userId)">
               Disable Arkime PCAP Download
@@ -382,8 +394,8 @@
             <b-form-input
               autofocus
               autocomplete="userid"
-              v-model.lazy="newUser.userId"
               placeholder="Unique ID"
+              v-model.lazy="newUser.userId"
               :state="this.newUser.userId.length > 0"
             />
           </b-input-group>
@@ -398,8 +410,8 @@
             </template>
             <b-form-input
               autocomplete="username"
-              v-model.lazy="newUser.userName"
               placeholder="Readable name"
+              v-model.lazy="newUser.userName"
               :state="this.newUser.userName.length > 0"
             />
           </b-input-group>
@@ -554,6 +566,7 @@
       <template #modal-footer>
         <div class="w-100 d-flex justify-content-between">
           <b-button
+            title="Cancel"
             variant="danger"
             @click="$bvModal.hide('create-user-modal')">
             <span class="fa fa-times" />
@@ -570,9 +583,10 @@
             </b-button>
             <b-button
               variant="primary"
+              v-b-tooltip.hover
+              title="Create New User"
               @click="createUser(false)"
-              v-if="createMode === 'user'"
-              v-b-tooltip.hover="'Create New User'">
+              v-if="createMode === 'user'">
               <span class="fa fa-plus-circle mr-1" />
               Create User
             </b-button>
