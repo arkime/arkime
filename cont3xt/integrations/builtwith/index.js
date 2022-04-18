@@ -25,7 +25,7 @@ class BuiltWithIntegration extends Integration {
     domain: 'fetchDomain'
   };
 
-  homePage = 'https://builtwith.com/'
+  homePage = 'https://builtwith.com/';
   settings = {
     disabled: {
       help: 'Disable integration for all queries',
@@ -36,7 +36,7 @@ class BuiltWithIntegration extends Integration {
       password: true,
       required: true
     }
-  }
+  };
 
   card = {
     title: 'BuiltWith for %{query}',
@@ -68,7 +68,7 @@ class BuiltWithIntegration extends Integration {
         ]
       }
     ]
-  }
+  };
 
   constructor () {
     super();

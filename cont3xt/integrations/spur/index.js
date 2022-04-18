@@ -65,9 +65,9 @@ class SpurIntegration extends Integration {
         type: 'json'
       }
     ]
-  }
+  };
 
-  homePage = 'https://spur.us/'
+  homePage = 'https://spur.us/';
   settings = {
     disabled: {
       help: 'Disable integration for all queries',
@@ -78,7 +78,7 @@ class SpurIntegration extends Integration {
       password: true,
       required: true
     }
-  }
+  };
 
   constructor () {
     super();

@@ -33,7 +33,7 @@ class CymruIntegration extends Integration {
         type: 'seconds'
       }
     ]
-  }
+  };
 
   cacheTimeout = '1h';
 

@@ -18,7 +18,7 @@ const whois = require('whois-json');
 
 class WhoisIntegration extends Integration {
   name = 'Whois';
-  icon = 'integrations/whois/icon.png'
+  icon = 'integrations/whois/icon.png';
   order = 100;
   itypes = {
     domain: 'fetchDomain'
@@ -39,7 +39,7 @@ class WhoisIntegration extends Integration {
       'registrantOrganization',
       'adminCountry'
     ]
-  }
+  };
 
   constructor () {
     super();

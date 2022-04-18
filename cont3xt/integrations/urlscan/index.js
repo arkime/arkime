@@ -25,7 +25,7 @@ class URLScanIntegration extends Integration {
     ip: 'fetch'
   };
 
-  homePage = 'https://urlscan.io/'
+  homePage = 'https://urlscan.io/';
   settings = {
     disabled: {
       help: 'Disable integration for all queries',
@@ -36,7 +36,7 @@ class URLScanIntegration extends Integration {
       password: true,
       required: true
     }
-  }
+  };
 
   card = {
     title: 'URL Scan for %{query}',
@@ -83,7 +83,7 @@ class URLScanIntegration extends Integration {
         ]
       }
     ]
-  }
+  };
 
   constructor () {
     super();

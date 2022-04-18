@@ -39,7 +39,7 @@ class AlienVaultOTXIntegration extends Integration {
       password: true,
       required: true
     }
-  }
+  };
 
   card = {
     title: 'AlienVault OTX for %{query}',
@@ -124,7 +124,7 @@ class AlienVaultOTXIntegration extends Integration {
         ]
       }
     ]
-  }
+  };
 
   constructor () {
     super();

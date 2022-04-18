@@ -28,7 +28,7 @@ class EmailVerifyIntegration extends Integration {
       help: 'Disable integration for all queries',
       type: 'boolean'
     }
-  }
+  };
 
   constructor () {
     super();

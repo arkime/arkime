@@ -82,7 +82,7 @@ class CensysIntegration extends Integration {
     ]
   };
 
-  homePage = 'https://search.censys.io/'
+  homePage = 'https://search.censys.io/';
   settings = {
     disabled: {
       help: 'Disable integration for all queries',
