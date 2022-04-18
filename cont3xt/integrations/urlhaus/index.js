@@ -26,19 +26,19 @@ class URLHausIntegration extends Integration {
     ip: 'fetch'
   };
 
-  homePage = 'https://urlhaus.abuse.ch/'
+  homePage = 'https://urlhaus.abuse.ch/';
   settings = {
     disabled: {
       help: 'Disable integration for all queries',
       type: 'boolean'
     }
-  }
+  };
 
   card = {
     title: 'URLHaus for %{query}',
     fields: [
     ]
-  }
+  };
 
   constructor () {
     super();

@@ -25,7 +25,7 @@ class TwilioIntegration extends Integration {
     phone: 'fetch'
   };
 
-  homePage = 'https://www.twilio.com/'
+  homePage = 'https://www.twilio.com/';
   settings = {
     disabled: {
       help: 'Disable integration for all queries',
@@ -40,7 +40,7 @@ class TwilioIntegration extends Integration {
       password: true,
       required: true
     }
-  }
+  };
 
   card = {
     title: 'Twilio for %{query}',
@@ -55,7 +55,7 @@ class TwilioIntegration extends Integration {
         type: 'json'
       }
     ]
-  }
+  };
 
   constructor () {
     super();

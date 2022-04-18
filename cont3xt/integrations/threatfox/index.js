@@ -26,19 +26,19 @@ class ThreatFoxIntegration extends Integration {
     hash: 'fetchHash'
   };
 
-  homePage = 'https://threatfox.abuse.ch/'
+  homePage = 'https://threatfox.abuse.ch/';
   settings = {
     disabled: {
       help: 'Disable integration for all queries',
       type: 'boolean'
     }
-  }
+  };
 
   card = {
     title: 'ThreatFox for %{query}',
     fields: [
     ]
-  }
+  };
 
   constructor () {
     super();

@@ -51,7 +51,7 @@ class ThreatstreamIntegration extends Integration {
     ]
   };
 
-  homePage = 'https://www.anomali.com/products/threatstream'
+  homePage = 'https://www.anomali.com/products/threatstream';
   settings = {
     disabled: {
       help: 'Disable integration for all queries',
@@ -69,7 +69,7 @@ class ThreatstreamIntegration extends Integration {
       password: true,
       required: true
     }
-  }
+  };
 
   constructor () {
     super();

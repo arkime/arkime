@@ -134,7 +134,9 @@ class PassiveTotalSource extends WISESource {
   };
 
   // ----------------------------------------------------------------------------
+  // eslint-disable-next-line no-use-before-define
   getIp = PassiveTotalSource.prototype.fetch;
+  // eslint-disable-next-line no-use-before-define
   getDomain = PassiveTotalSource.prototype.fetch;
 }
 

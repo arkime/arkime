@@ -29,7 +29,7 @@ class VirusTotalIntegration extends Integration {
       password: true,
       required: true
     }
-  }
+  };
 
   // Default cacheTimeout 24 hours
   cacheTimeout = 24 * 60 * 60 * 1000;
@@ -45,7 +45,7 @@ class VirusTotalDomainIntegration extends Integration {
   name = 'VT Domain';
   icon = 'integrations/virustotal/icon.png';
   order = 600;
-  configName = 'VirusTotal'
+  configName = 'VirusTotal';
   itypes = {
     domain: 'fetchDomain'
   };
@@ -55,7 +55,7 @@ class VirusTotalDomainIntegration extends Integration {
       help: 'Disable integration for all queries',
       type: 'boolean'
     }
-  }
+  };
 
   card = {
     title: 'VirusTotal Domain for %{query}',
@@ -179,7 +179,7 @@ class VirusTotalIPIntegration extends Integration {
   name = 'VT IP';
   icon = 'integrations/virustotal/icon.png';
   order = 620;
-  configName = 'VirusTotal'
+  configName = 'VirusTotal';
   itypes = {
     ip: 'fetchIp'
   };
@@ -189,7 +189,7 @@ class VirusTotalIPIntegration extends Integration {
       help: 'Disable integration for all queries',
       type: 'boolean'
     }
-  }
+  };
 
   card = {
     title: 'VirusTotal IP for %{query}',
@@ -312,18 +312,18 @@ class VirusTotalHashIntegration extends Integration {
   name = 'VT Hash';
   icon = 'integrations/virustotal/icon.png';
   order = 640;
-  configName = 'VirusTotal'
+  configName = 'VirusTotal';
   itypes = {
     hash: 'fetchHash'
   };
 
-  homePage = 'https://www.virustotal.com/'
+  homePage = 'https://www.virustotal.com/';
   settings = {
     disabled: {
       help: 'Disable integration for all queries',
       type: 'boolean'
     }
-  }
+  };
 
   card = {
     title: 'VirusTotal Hash for %{query}',

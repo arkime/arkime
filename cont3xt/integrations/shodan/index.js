@@ -116,9 +116,9 @@ class ShodanIntegration extends Integration {
       'ip_str',
       'last_update'
     ]
-  }
+  };
 
-  homePage = 'https://www.shodan.io/'
+  homePage = 'https://www.shodan.io/';
   settings = {
     disabled: {
       help: 'Disable integration for all queries',
@@ -129,7 +129,7 @@ class ShodanIntegration extends Integration {
       password: true,
       required: true
     }
-  }
+  };
 
   constructor () {
     super();

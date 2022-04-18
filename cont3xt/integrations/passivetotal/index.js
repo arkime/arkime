@@ -23,7 +23,7 @@ class PassiveTotalIntegration extends Integration {
   itypes = {
   };
 
-  homePage = 'https://community.riskiq.com/registration/signupforfree'
+  homePage = 'https://community.riskiq.com/registration/signupforfree';
   settings = {
     user: {
       help: 'Your Passive Total api user',
@@ -60,7 +60,7 @@ class PassiveTotalWhoisIntegration extends Integration {
       help: 'Disable integration for all queries',
       type: 'boolean'
     }
-  }
+  };
 
   card = {
     title: 'PassiveTotal Whois for %{query}',
@@ -98,7 +98,7 @@ class PassiveTotalWhoisIntegration extends Integration {
         type: 'date'
       }
     ]
-  }
+  };
 
   // Default cacheTimeout 24 hours
   cacheTimeout = 24 * 60 * 60 * 1000;
@@ -155,7 +155,7 @@ class PassiveTotalSubdomainsIntegration extends Integration {
       help: 'Disable integration for all queries',
       type: 'boolean'
     }
-  }
+  };
 
   card = {
     title: 'PassiveTotal Subdomains for %{query}',
@@ -166,7 +166,7 @@ class PassiveTotalSubdomainsIntegration extends Integration {
         field: 'subdomains'
       }
     ]
-  }
+  };
 
   // Default cacheTimeout 24 hours
   cacheTimeout = 24 * 60 * 60 * 1000;
@@ -219,13 +219,13 @@ class PassiveTotalDNSIntegration extends Integration {
     domain: 'fetch'
   };
 
-  homePage = ''
+  homePage = '';
   settings = {
     disabled: {
       help: 'Disable integration for all queries',
       type: 'boolean'
     }
-  }
+  };
 
   card = {
     title: 'PassiveTotal Domain Passive DNS for %{query}',
@@ -266,7 +266,7 @@ class PassiveTotalDNSIntegration extends Integration {
         ]
       }
     ]
-  }
+  };
 
   // Default cacheTimeout 24 hours
   cacheTimeout = 24 * 60 * 60 * 1000;
