@@ -24,16 +24,21 @@ const DigestStrategy = require('passport-http').DigestStrategy;
 const iptrie = require('iptrie');
 
 class Auth {
-  static httpRealm;
+  static authFunc;
+  static debug;
+  static mode;
+  static userNameHeader;
+  static regressionTests;
   static passwordSecret;
   static passwordSecret256;
-  static serverSecret256;
-  static basePath;
-  static authFunc;
-  static requiredAuthHeader;
-  static requiredAuthHeaderVal;
-  static userAutoCreateTmpl;
-  static regressionTests;
+
+  static #httpRealm;
+  static #serverSecret256;
+  static #basePath;
+  static #requiredAuthHeader;
+  static #requiredAuthHeaderVal;
+  static #userAutoCreateTmpl;
+  static #userAuthIps;
 
   static initialize (options) {
     if (options.debug > 1) {
@@ -42,41 +47,41 @@ class Auth {
 
     Auth.debug = options.debug ?? 0;
     Auth.mode = options.mode ?? 'anonymous';
-    Auth.basePath = options.basePath ?? '/';
+    Auth.#basePath = options.basePath ?? '/';
     Auth.userNameHeader = options.userNameHeader;
-    Auth.httpRealm = options.httpRealm ?? 'Moloch';
+    Auth.#httpRealm = options.httpRealm ?? 'Moloch';
     Auth.passwordSecret = options.passwordSecret ?? 'password';
     Auth.passwordSecret256 = crypto.createHash('sha256').update(Auth.passwordSecret).digest();
     if (options.serverSecret) {
-      Auth.serverSecret256 = crypto.createHash('sha256').update(options.serverSecret).digest();
+      Auth.#serverSecret256 = crypto.createHash('sha256').update(options.serverSecret).digest();
     } else {
-      Auth.serverSecret256 = Auth.passwordSecret256;
+      Auth.#serverSecret256 = Auth.passwordSecret256;
     }
-    Auth.requiredAuthHeader = options.requiredAuthHeader;
-    Auth.requiredAuthHeaderVal = options.requiredAuthHeaderVal;
-    Auth.userAutoCreateTmpl = options.userAutoCreateTmpl;
-    Auth.userAuthIps = new iptrie.IPTrie();
+    Auth.#requiredAuthHeader = options.requiredAuthHeader;
+    Auth.#requiredAuthHeaderVal = options.requiredAuthHeaderVal;
+    Auth.#userAutoCreateTmpl = options.userAutoCreateTmpl;
+    Auth.#userAuthIps = new iptrie.IPTrie();
     Auth.regressionTests = false;
 
     if (options.userAuthIps) {
       for (const cidr in options.userAuthIps.split(',')) {
         const parts = cidr.split('/');
         if (parts[0].includes(':')) {
-          Auth.userAuthIps.add(parts[0], +(parts[1] ?? 128), 1);
+          Auth.#userAuthIps.add(parts[0], +(parts[1] ?? 128), 1);
         } else {
-          Auth.userAuthIps.add(`::ffff:${parts[0]}`, 96 + +(parts[1] ?? 32), 1);
+          Auth.#userAuthIps.add(`::ffff:${parts[0]}`, 96 + +(parts[1] ?? 32), 1);
         }
       }
     } else if (Auth.mode === 'header') {
-      Auth.userAuthIps.add('::ffff:127.0.0.0', 96 + 8, 1);
-      Auth.userAuthIps.add('::1', 128, 1);
+      Auth.#userAuthIps.add('::ffff:127.0.0.0', 96 + 8, 1);
+      Auth.#userAuthIps.add('::1', 128, 1);
     } else {
-      Auth.userAuthIps.add('::', 0, 1);
+      Auth.#userAuthIps.add('::', 0, 1);
     }
 
     // Initialize passport in both digest and header mode since header mode will fallback to digest
     if (Auth.mode === 'digest' || Auth.mode === 'header') {
-      passport.use(new DigestStrategy({ qop: 'auth', realm: Auth.httpRealm },
+      passport.use(new DigestStrategy({ qop: 'auth', realm: Auth.#httpRealm },
         function (userid, done) {
           if (userid.startsWith('role:')) {
             console.log(`User ${userid} Can not authenticate with role`);
@@ -119,16 +124,16 @@ class Auth {
     }
   }
 
-  static checkIps (req, res) {
+  static #checkIps (req, res) {
     if (req.ip.includes(':')) {
-      if (!Auth.userAuthIps.find(req.ip)) {
+      if (!Auth.#userAuthIps.find(req.ip)) {
         res.status(403);
         res.send(JSON.stringify({ success: false, text: `Not allowed by ip (${req.ip})` }));
         console.log('Blocked by ip', req.ip, req.url);
         return 1;
       }
     } else {
-      if (!Auth.userAuthIps.find(`::ffff:${req.ip}`)) {
+      if (!Auth.#userAuthIps.find(`::ffff:${req.ip}`)) {
         res.status(403);
         res.send(JSON.stringify({ success: false, text: `Not allowed by ip (${req.ip})` }));
         console.log('Blocked by ip', req.ip, req.url);
@@ -223,16 +228,16 @@ class Auth {
   }
 
   static digestAuth (req, res, next) {
-    if (Auth.checkIps(req, res)) {
+    if (Auth.#checkIps(req, res)) {
       return;
     }
 
-    if (Auth.basePath !== '/') {
-      req.url = req.url.replace('/', Auth.basePath);
+    if (Auth.#basePath !== '/') {
+      req.url = req.url.replace('/', Auth.#basePath);
     }
     passport.authenticate('digest', { session: false })(req, res, function (err) {
-      if (Auth.basePath !== '/') {
-        req.url = req.url.replace(Auth.basePath, '/');
+      if (Auth.#basePath !== '/') {
+        req.url = req.url.replace(Auth.#basePath, '/');
       }
       if (err) {
         res.status(403);
@@ -244,7 +249,7 @@ class Auth {
   }
 
   static headerAuth (req, res, next) {
-    if (Auth.checkIps(req, res)) {
+    if (Auth.#checkIps(req, res)) {
       return;
     }
 
@@ -256,14 +261,14 @@ class Auth {
       return res.send(JSON.stringify({ success: false, text: 'Username not found' }));
     }
 
-    if (Auth.requiredAuthHeader !== undefined && Auth.requiredAuthHeaderVal !== undefined) {
-      const authHeader = req.headers[Auth.requiredAuthHeader];
+    if (Auth.#requiredAuthHeader !== undefined && Auth.#requiredAuthHeaderVal !== undefined) {
+      const authHeader = req.headers[Auth.#requiredAuthHeader];
       if (authHeader === undefined) {
         return res.send('Missing authorization header');
       }
       let authorized = false;
       authHeader.split(',').forEach(headerVal => {
-        if (headerVal.trim() === Auth.requiredAuthHeaderVal) {
+        if (headerVal.trim() === Auth.#requiredAuthHeaderVal) {
           authorized = true;
         }
       });
@@ -293,11 +298,11 @@ class Auth {
     }
 
     User.getUserCache(userId, (err, user) => {
-      if (Auth.userAutoCreateTmpl === undefined) {
+      if (Auth.#userAutoCreateTmpl === undefined) {
         return headerAuthCheck(err, user);
       } else if ((err && err.toString().includes('Not Found')) || (!user)) { // Try dynamic creation
         const nuser = JSON.parse(new Function('return `' +
-               Auth.userAutoCreateTmpl + '`;').call(req.headers));
+               Auth.#userAutoCreateTmpl + '`;').call(req.headers));
         if (nuser.passStore === undefined) {
           nuser.passStore = Auth.pass2store(nuser.userId, crypto.randomBytes(48));
         }
@@ -326,7 +331,7 @@ class Auth {
 
   static s2sAuth (req, res, next) {
     const obj = Auth.auth2obj(req.headers['x-arkime-auth'] || req.headers['x-moloch-auth']);
-    obj.path = obj.path.replace(Auth.basePath, '/');
+    obj.path = obj.path.replace(Auth.#basePath, '/');
 
     if (obj.user.startsWith('role:')) {
       return res.send('Can not authenticate with role');
@@ -376,7 +381,7 @@ class Auth {
   // Encryption is used because ES is insecure by default and we don't want others adding accounts.
   static pass2store (userid, password) {
     // md5 is required because of http digest
-    const m = Auth.md5(userid + ':' + Auth.httpRealm + ':' + password);
+    const m = Auth.md5(userid + ':' + Auth.#httpRealm + ':' + password);
 
     // New style with IV: IV.E
     const iv = crypto.randomBytes(16);
@@ -416,7 +421,7 @@ class Auth {
     if (secret) {
       secret = crypto.createHash('sha256').update(secret).digest();
     } else {
-      secret = Auth.serverSecret256;
+      secret = Auth.#serverSecret256;
     }
 
     const iv = crypto.randomBytes(16);
@@ -432,58 +437,32 @@ class Auth {
   static auth2obj (auth, secret) {
     const parts = auth.split('.');
 
-    if (parts.length === 3) {
-      // New style with IV: IV.E.H
-      if (secret) {
-        secret = crypto.createHash('sha256').update(secret).digest();
-      } else {
-        secret = Auth.serverSecret256;
-      }
+    if (parts.length !== 3) {
+      throw new Error(`Unsupported auth2obj ${parts.length}`);
+    }
 
-      const signature = Buffer.from(parts[2], 'hex');
-      const h = crypto.createHmac('sha256', secret).update(parts[0] + '.' + parts[1]).digest();
-
-      if (!crypto.timingSafeEqual(signature, h)) {
-        throw new Error('Incorrect signature');
-      }
-
-      try {
-        const c = crypto.createDecipheriv('aes-256-cbc', secret, Buffer.from(parts[0], 'hex'));
-        let d = c.update(parts[1], 'hex', 'binary');
-        d += c.final('binary');
-        return JSON.parse(d);
-      } catch (error) {
-        console.log(error);
-        throw new Error('Incorrect auth supplied');
-      }
+    // New style with IV: IV.E.H
+    if (secret) {
+      secret = crypto.createHash('sha256').update(secret).digest();
     } else {
-      // Old style without IV: E or E.H
+      secret = Auth.#serverSecret256;
+    }
 
-      secret = secret || Auth.serverSecret;
+    const signature = Buffer.from(parts[2], 'hex');
+    const h = crypto.createHmac('sha256', secret).update(parts[0] + '.' + parts[1]).digest();
 
-      if (parts.length === 1) {
-        throw new Error('Missing signature');
-      }
+    if (!crypto.timingSafeEqual(signature, h)) {
+      throw new Error('Incorrect signature');
+    }
 
-      if (parts.length > 1) {
-        const signature = Buffer.from(parts[1], 'hex');
-        const h = crypto.createHmac('sha256', secret).update(parts[0], 'hex').digest();
-
-        if (!crypto.timingSafeEqual(signature, h)) {
-          throw new Error('Incorrect signature');
-        }
-      }
-
-      try {
-        // eslint-disable-next-line node/no-deprecated-api
-        const c = crypto.createDecipher('aes192', secret);
-        let d = c.update(parts[0], 'hex', 'binary');
-        d += c.final('binary');
-        return JSON.parse(d);
-      } catch (error) {
-        console.log(error);
-        throw new Error('Incorrect auth supplied');
-      }
+    try {
+      const c = crypto.createDecipheriv('aes-256-cbc', secret, Buffer.from(parts[0], 'hex'));
+      let d = c.update(parts[1], 'hex', 'binary');
+      d += c.final('binary');
+      return JSON.parse(d);
+    } catch (error) {
+      console.log(error);
+      throw new Error('Incorrect auth supplied');
     }
   };
 
