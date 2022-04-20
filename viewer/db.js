@@ -63,10 +63,13 @@ function checkURLs (nodes) {
 
 exports.initialize = async (info, cb) => {
   internals.multiES = info.multiES === 'true' || info.multiES === true || false;
-  internals.debug = info.debug || 0;
-
   delete info.multiES;
+
+  internals.debug = info.debug || 0;
   delete info.debug;
+
+  internals.maxConcurrentShardRequests = info.maxConcurrentShardRequests;
+  delete info.maxConcurrentShardRequests;
 
   internals.info = info;
 
@@ -562,6 +565,11 @@ exports.search = async (index, type, query, options, cb) => {
 
   try {
     const { body: results } = await internals.client7.search(params, cancelId);
+    if (!internals.debug && internals.esProfile) {
+      console.log('QUERY:', JSON.stringify(query, false, 2));
+      console.log('RESPONSE:', JSON.stringify(results, false, 2));
+    }
+
     return cb ? cb(null, results) : results;
   } catch (err) {
     console.trace(`ES Search Error - query: ${JSON.stringify(params, false, 2)} err:`, err);
@@ -679,6 +687,7 @@ exports.searchSessions = function (index, query, options, cb) {
   if (!options) { options = {}; }
   const unflatten = options.arkime_unflatten ?? true;
   const params = { preference: 'primaries', ignore_unavailable: 'true' };
+  if (internals.maxConcurrentShardRequests) { params.maxConcurrentShardRequests = internals.maxConcurrentShardRequests; }
   exports.merge(params, options);
   delete params.arkime_unflatten;
   exports.searchScroll(index, 'session', query, params, (err, result) => {

@@ -2477,5 +2477,6 @@ Db.initialize({
   esBasicAuth: Config.get('elasticsearchBasicAuth', null),
   usersEsBasicAuth: Config.get('usersElasticsearchBasicAuth', null),
   cronQueries: Config.get('cronQueries', false),
-  getCurrentUserCB: userAPIs.getCurrentUserCB
+  getCurrentUserCB: userAPIs.getCurrentUserCB,
+  maxConcurrentShardRequests: Config.get('esMaxConcurrentShardRequests')
 }, main);
