@@ -61,10 +61,12 @@ let getCurrentUserCB;
 /******************************************************************************/
 class User {
   static lastUsedMinInterval = 60 * 1000;
-  static userCacheTimeout = 5 * 1000;
-  static usersCache = {};
-  static rolesCache = { _timeStamp: 0 };
-  static debug = false;
+
+  static #userCacheTimeout = 5 * 1000;
+  static #usersCache = {};
+  static #rolesCache = { _timeStamp: 0 };
+  static #debug = false;
+  static #implementation;
 
   /**
    * Initialize the User subsystem
@@ -73,18 +75,18 @@ class User {
     if (options.debug > 1) {
       console.log('User.initialize', options);
     }
-    User.debug = options.debug ?? 0;
+    User.#debug = options.debug ?? 0;
     readOnly = options.readOnly ?? false;
     getCurrentUserCB = options.getCurrentUserCB;
 
     if (!options.url) {
-      User.implementation = new UserESImplementation(options);
+      User.#implementation = new UserESImplementation(options);
     } else if (options.url.startsWith('lmdb')) {
-      User.implementation = new UserLMDBImplementation(options);
+      User.#implementation = new UserLMDBImplementation(options);
     } else if (options.url.startsWith('redis')) {
-      User.implementation = new UserRedisImplementation(options);
+      User.#implementation = new UserRedisImplementation(options);
     } else {
-      User.implementation = new UserESImplementation(options);
+      User.#implementation = new UserESImplementation(options);
     }
   }
 
@@ -92,14 +94,18 @@ class User {
    * Flush any in memory data
    */
   static flushCache () {
-    User.usersCache = {};
-    User.rolesCache = { _timeStamp: 0 };
+    User.#usersCache = {};
+    User.#rolesCache = { _timeStamp: 0 };
+  }
+
+  static deleteCache (userId) {
+    delete User.#usersCache[userId];
   }
 
   // Get the ES client for viewer, will remove someday
   static getClient () {
-    if (User.implementation.getClient()) {
-      return User.implementation.getClient();
+    if (User.#implementation.getClient()) {
+      return User.#implementation.getClient();
     }
     return null;
   }
@@ -109,11 +115,11 @@ class User {
    */
   static async getUserCache (userId, cb) {
     // If we have the cache just cb/return it
-    if (User.usersCache[userId] && User.usersCache[userId]._timeStamp > Date.now() - User.userCacheTimeout) {
+    if (User.#usersCache[userId] && User.#usersCache[userId]._timeStamp > Date.now() - User.#userCacheTimeout) {
       if (cb) {
-        return cb(null, User.usersCache[userId].user);
+        return cb(null, User.#usersCache[userId].user);
       } else {
-        return User.usersCache[userId].user;
+        return User.#usersCache[userId].user;
       }
     }
 
@@ -124,7 +130,7 @@ class User {
           if (err) { return reject(err); }
           if (!user) { return resolve(user); }
 
-          User.usersCache[userId] = { _timeStamp: Date.now(), user: user };
+          User.#usersCache[userId] = { _timeStamp: Date.now(), user: user };
           return resolve(user);
         });
       });
@@ -136,7 +142,7 @@ class User {
         return cb(err, user);
       }
 
-      User.usersCache[userId] = {
+      User.#usersCache[userId] = {
         _timeStamp: Date.now(),
         user: user
       };
@@ -152,8 +158,8 @@ class User {
    * Flush anything to disk and refresh any index
    */
   static flush () {
-    if (User.implementation.flush) {
-      return User.implementation.flush();
+    if (User.#implementation.flush) {
+      return User.#implementation.flush();
     }
   }
 
@@ -161,8 +167,8 @@ class User {
    * Close the DB if needed
    */
   static close () {
-    if (User.implementation.close) {
-      return User.implementation.close();
+    if (User.#implementation.close) {
+      return User.#implementation.close();
     }
   }
 
@@ -180,14 +186,14 @@ class User {
     if (query.size > 10000) {
       return { error: 'Max of 10000 users' };
     }
-    return User.implementation.searchUsers(query);
+    return User.#implementation.searchUsers(query);
   }
 
   /**
    * Return a user from DB, callback only
    */
   static getUser (userId, cb) {
-    User.implementation.getUser(userId, async (err, data) => {
+    User.#implementation.getUser(userId, async (err, data) => {
       if (err || !data) { return cb(err, null); }
 
       const user = Object.assign(new User(), data);
@@ -205,15 +211,15 @@ class User {
    * Number of users we know about
    */
   static numberOfUsers () {
-    return User.implementation.numberOfUsers();
+    return User.#implementation.numberOfUsers();
   };
 
   /**
    * Delete user
    */
   static deleteUser (userId) {
-    delete User.usersCache[userId];
-    return User.implementation.deleteUser(userId);
+    delete User.#usersCache[userId];
+    return User.#implementation.deleteUser(userId);
   };
 
   /**
@@ -236,8 +242,8 @@ class User {
       user.createEnabled = user.roles.includes('usersAdmin');
     }
 
-    delete User.usersCache[userId];
-    User.implementation.setUser(userId, user, (err, boo) => {
+    delete User.#usersCache[userId];
+    User.#implementation.setUser(userId, user, (err, boo) => {
       cb(err, boo);
     });
   };
@@ -246,14 +252,14 @@ class User {
    * Return all available roles using cache
    */
   static async allRolesCache () {
-    if (User.rolesCache._timeStamp > Date.now() - User.userCacheTimeout) {
-      return User.rolesCache.roles;
+    if (User.#rolesCache._timeStamp > Date.now() - User.#userCacheTimeout) {
+      return User.#rolesCache.roles;
     }
 
-    User.rolesCache._timeStamp = Date.now();
-    const userAllRoles = await User.implementation.allRoles();
-    User.rolesCache.roles = new Set([...Object.keys(systemRolesMapping), ...userAllRoles]);
-    return User.rolesCache.roles;
+    User.#rolesCache._timeStamp = Date.now();
+    const userAllRoles = await User.#implementation.allRoles();
+    User.#rolesCache.roles = new Set([...Object.keys(systemRolesMapping), ...userAllRoles]);
+    return User.#rolesCache.roles;
   }
 
   /**
@@ -483,7 +489,7 @@ class User {
         welcomeMsgNum: 0
       };
 
-      if (User.debug) {
+      if (User.#debug) {
         console.log('Creating new user', nuser);
       }
 
@@ -589,7 +595,7 @@ class User {
       user.roles = req.body.roles;
 
       User.setUser(userId, user, (err, info) => {
-        if (User.debug) {
+        if (User.#debug) {
           console.log('setUser', user, err, info);
         }
 
@@ -649,7 +655,7 @@ class User {
    * Delete all the users
    */
   static apiDeleteAllUsers (req, res, next) {
-    User.implementation.deleteAllUsers();
+    User.#implementation.deleteAllUsers();
     User.flushCache();
     return res.send({ success: true });
   }
@@ -788,10 +794,10 @@ class User {
         const now = Date.now();
         if (!this.lastUsed || (now - this.lastUsed) > User.lastUsedMinInterval) {
           this.lastUsed = now;
-          await User.implementation.setLastUsed(this.userId, now);
+          await User.#implementation.setLastUsed(this.userId, now);
         }
       } catch (err) {
-        if (User.debug) {
+        if (User.#debug) {
           console.log('DEBUG - user lastUsed update error', err);
         }
       }
@@ -1013,7 +1019,7 @@ class UserESImplementation {
       id: userId,
       refresh: true
     });
-    delete User.usersCache[userId]; // Delete again after db says its done refreshing
+    User.deleteCache(userId); // Delete again after db says its done refreshing
   };
 
   // Set user, callback only
@@ -1028,7 +1034,7 @@ class UserESImplementation {
       timeout: '10m',
       op_type: createOnly ? 'create' : 'index'
     }, (err) => {
-      delete User.usersCache[userId]; // Delete again after db says its done refreshing
+      User.deleteCache(userId); // Delete again after db says its done refreshing
       cb(err);
     });
   };
@@ -1122,7 +1128,7 @@ class UserLMDBImplementation {
   // Delete user, promise only
   async deleteUser (userId) {
     await this.store.remove(userId);
-    delete User.usersCache[userId]; // Delete again after db says its done refreshing
+    User.deleteCache(userId); // Delete again after db says its done refreshing
   };
 
   // Set user, callback only
@@ -1223,7 +1229,7 @@ class UserRedisImplementation {
   // Delete user, promise only
   async deleteUser (userId) {
     await this.client.del(userId);
-    delete User.usersCache[userId]; // Delete again after db says its done refreshing
+    User.deleteCache(userId); // Delete again after db says its done refreshing
   };
 
   // Set user, callback only
@@ -1237,7 +1243,7 @@ class UserRedisImplementation {
         // cb({ meta: { body: { error: { type: 'version_conflict_engine_exception' } } } });
       } else {
         this.client.set(userId, doc, cb);
-        delete User.usersCache[userId];
+        User.deleteCache(userId);
       }
     } catch (err) {
       cb(err);
