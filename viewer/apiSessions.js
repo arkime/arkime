@@ -1354,6 +1354,14 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
       }
     }
 
+    // Remove aggregations if too many days
+    const sessionsMaxDaysForAggregations = +Config.get('sessionsMaxDaysForAggregations', 365);
+    if (query.aggregations && sessionsMaxDaysForAggregations !== -1 &&
+        (reqQuery.date === '-1' || (reqQuery.stopTime - reqQuery.startTime > sessionsMaxDaysForAggregations * 24 * 60 * 60))) {
+      console.log(`Removing aggregations from sessionsMaxDaysForAggregations ${sessionsMaxDaysForAggregations}`);
+      delete query.aggregations;
+    }
+
     addSortToQuery(query, reqQuery, 'firstPacket');
 
     let shortcuts;
