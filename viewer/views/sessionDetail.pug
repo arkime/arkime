@@ -2,30 +2,33 @@ ul.nav.nav-pills.mb-3
   if (session.rootId)
     li.nav-item
       a.nav-link.cursor-pointer(@click='allSessions(' + '"' + session.rootId + '"' + ', ' + session.firstPacket + ')') All Sessions
+  if (session.packetPos && session.packetPos.length > 0)
+    if (session.rootId)
+      li.nav-item
+        a.nav-link(href='api/session/' + session.node + '/' + session.id + '/pcap', target="_blank", download=session.id + '-segment.pcap') Download Segment Pcap
+      li.nav-item
+        a.nav-link(href='api/session/entire/' + session.node + '/' + session.rootId + '/pcap', target="_blank", download=session.id + '.pcap') Download Entire Pcap
+    else
+      li.nav-item
+        a.nav-link(href='api/session/' + session.node + '/' + session.id + '/pcap', target="_blank", v-has-permission="'!disablePcapDownload'", v-b-tooltip.hover.bottom.d300="'Download the PCAP file for this session.'", download=session.id + '.pcap')
+          span.fa.fa-download
+          | &nbsp;Download PCAP
     li.nav-item
-      a.nav-link(href='api/session/' + session.node + '/' + session.id + '/pcap', target="_blank", download=session.id + '-segment.pcap') Download Segment Pcap
+      a.nav-link(href='api/session/raw/' + session.node + '/' + session.id + '?type=src', target="_blank", v-b-tooltip.hover.bottom.d300="'Download the raw source packets for this session.'", download=session.id + '-src-raw')
+        span.fa.fa-arrow-circle-up
+        | &nbsp;Source Raw
     li.nav-item
-      a.nav-link(href='api/session/entire/' + session.node + '/' + session.rootId + '/pcap', target="_blank", download=session.id + '.pcap') Download Entire Pcap
-  else
-    li.nav-item
-      a.nav-link(href='api/session/' + session.node + '/' + session.id + '/pcap', target="_blank", v-has-permission="'!disablePcapDownload'", v-b-tooltip.hover.bottom.d300="'Download the PCAP file for this session.'", download=session.id + '.pcap')
-        span.fa.fa-download
-        | &nbsp;Download PCAP
-  li.nav-item
-    a.nav-link(href='api/session/raw/' + session.node + '/' + session.id + '?type=src', target="_blank", v-b-tooltip.hover.bottom.d300="'Download the raw source packets for this session.'", download=session.id + '-src-raw')
-      span.fa.fa-arrow-circle-up
-      | &nbsp;Source Raw
-  li.nav-item
-    a.nav-link(href='api/session/raw/' + session.node + '/' + session.id + '?type=dst', target="_blank", v-b-tooltip.hover.bottom.d300="'Download the raw destination packets for this session.'", download=session.id + '-dst-raw')
-      span.fa.fa-arrow-circle-down
-      | &nbsp;Destination Raw
+      a.nav-link(href='api/session/raw/' + session.node + '/' + session.id + '?type=dst', target="_blank", v-b-tooltip.hover.bottom.d300="'Download the raw destination packets for this session.'", download=session.id + '-dst-raw')
+        span.fa.fa-arrow-circle-down
+        | &nbsp;Destination Raw
   li.nav-item
     a.nav-link.cursor-pointer(@click="openPermalink", v-b-tooltip.hover.bottom.d300="'Navigate to the sessions page containing just this session. You can use this link to share this session with other users.'")
       span.fa.fa-link
       | &nbsp;Link
   b-dropdown.nav-item(text="Actions", size="sm")
-    b-dropdown-item(@click="exportPCAP", v-has-permission="'!disablePcapDownload'")
-      | Export PCAP
+    if (session.packetPos && session.packetPos.length > 0)
+      b-dropdown-item(@click="exportPCAP", v-has-permission="'!disablePcapDownload'")
+        | Export PCAP
     b-dropdown-item(@click="addTags")
       | Add Tags
     b-dropdown-item(@click="removeTags", v-has-permission="'removeEnabled'")
