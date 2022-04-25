@@ -26,6 +26,7 @@
 #include <sys/statvfs.h>
 #include <fcntl.h>
 #include <arpa/inet.h>
+#include <dirent.h>
 #include "patricia.h"
 
 #include "maxminddb.h"
@@ -1421,7 +1422,7 @@ LOCAL uint64_t moloch_db_used_space()
     if (config.pcapDirTemplate)
         return 0;
 
-    uint64_t   spaceM = 0;
+    uint64_t   spaceB = 0;
     static int nodeNameLen = 0;
 
     if (nodeNameLen == 0) {
@@ -1430,40 +1431,30 @@ LOCAL uint64_t moloch_db_used_space()
 
     int i;
     for (i = 0; config.pcapDir[i]; i++) {
-        GError   *error = NULL;
-        GDir     *dir = g_dir_open(config.pcapDir[i], 0, &error);
-        if (!dir || error) {
-            if (dir)
-                g_dir_close(dir);
-            if (error) {
-                g_error_free(error);
-            }
+        DIR *dir = opendir(config.pcapDir[i]);
+        if (!dir) {
             continue;
         }
+        int dfd = dirfd(dir);
 
-        const gchar *filename;
-        while ((filename = g_dir_read_name(dir))) {
+        struct dirent *entry;
+        while ((entry = readdir(dir))) {
             // Skip hidden files/directories
-            if (filename[0] == '.')
+            if (entry->d_name[0] == '.')
                 continue;
-            int len = strlen(filename);
-            if (len < nodeNameLen + 21 ||
-                filename[nodeNameLen] != '-' ||
-                memcmp(filename, config.nodeName, nodeNameLen) != 0 ||
-                memcmp(filename+nodeNameLen+16, ".pcap", 5) != 0) {
+            int len = strlen(entry->d_name);
+            if (len < nodeNameLen || memcmp(entry->d_name, config.nodeName, nodeNameLen) != 0) {
                 continue;
             }
 
-            gchar *fullfilename = g_build_filename (config.pcapDir[i], filename, NULL);
             struct stat sb;
-            if (stat(fullfilename, &sb) == 0) {
-                spaceM += sb.st_size;
+            if (fstatat(dfd, entry->d_name, &sb, 0) == 0) {
+                spaceB += sb.st_size;
             }
-            g_free(fullfilename);
         }
-        g_dir_close(dir);
+        closedir(dir);
     }
-    return spaceM/(1000*1000);
+    return spaceB/(1000*1000);
 }
 /******************************************************************************/
 LOCAL void moloch_db_update_stats(int n, gboolean sync)
