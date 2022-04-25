@@ -78,6 +78,7 @@ uint64_t                     packetStats[MOLOCH_PACKET_MAX];
 /******************************************************************************/
 LOCAL  MolochPacketHead_t    packetQ[MOLOCH_MAX_PACKET_THREADS];
 LOCAL  uint32_t              overloadDrops[MOLOCH_MAX_PACKET_THREADS];
+LOCAL  uint32_t              overloadDropTimes[MOLOCH_MAX_PACKET_THREADS];
 
 LOCAL  MOLOCH_LOCK_DEFINE(frags);
 
@@ -1311,7 +1312,8 @@ void moloch_packet_batch(MolochPacketBatch_t * batch, MolochPacket_t * const pac
     if (DLL_COUNT(packet_, &packetQ[thread]) >= config.maxPacketsInQueue) {
         MOLOCH_LOCK(packetQ[thread].lock);
         overloadDrops[thread]++;
-        if ((overloadDrops[thread] % 10000) == 1) {
+        if ((overloadDrops[thread] % 10000) == 1 && (overloadDropTimes[thread] + 60) < packet->ts.tv_sec) {
+            overloadDropTimes[thread] = packet->ts.tv_sec;
             LOG("WARNING - Packet Q %u is overflowing, total dropped so far %u.  See https://arkime.com/faq#why-am-i-dropping-packets and modify %s", thread, overloadDrops[thread], config.configFile);
         }
         MOLOCH_COND_SIGNAL(packetQ[thread].lock);
