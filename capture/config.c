@@ -505,7 +505,7 @@ void moloch_config_load()
         CONFIGEXIT("'%s' is not a valid value for pcapDirAlgorithm.  Supported algorithms are round-robin, max-free-percent, and max-free-bytes.\n", config.pcapDirAlgorithm);
     }
 
-    config.maxFileSizeG          = moloch_config_double(keyfile, "maxFileSizeG", 4, 0.01, 1024);
+    config.maxFileSizeG          = moloch_config_double(keyfile, "maxFileSizeG", 12, 0.01, 1024);
     config.maxFileSizeB          = config.maxFileSizeG*1024LL*1024LL*1024LL;
     config.maxFileTimeM          = moloch_config_int(keyfile, "maxFileTimeM", 0, 0, 0xffff);
     config.timeouts[SESSION_ICMP]= moloch_config_int(keyfile, "icmpTimeout", 10, 1, 0xffff);
@@ -549,7 +549,7 @@ void moloch_config_load()
     config.parseHTTPHeaderResponseAll = moloch_config_boolean(keyfile, "parseHTTPHeaderResponseAll", FALSE);
     config.supportSha256         = moloch_config_boolean(keyfile, "supportSha256", FALSE);
     config.reqBodyOnlyUtf8       = moloch_config_boolean(keyfile, "reqBodyOnlyUtf8", TRUE);
-    config.compressES            = moloch_config_boolean(keyfile, "compressES", FALSE);
+    config.compressES            = moloch_config_boolean(keyfile, "compressES", TRUE);
     config.antiSynDrop           = moloch_config_boolean(keyfile, "antiSynDrop", TRUE);
     config.readTruncatedPackets  = moloch_config_boolean(keyfile, "readTruncatedPackets", FALSE);
     config.trackESP              = moloch_config_boolean(keyfile, "trackESP", FALSE);

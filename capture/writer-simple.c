@@ -791,7 +791,7 @@ void writer_simple_init(char *name)
     simpleGzipLevel = moloch_config_int(NULL, "simpleGzipLevel", 6, 1, 9);
     char *mode = moloch_config_str(NULL, "simpleEncoding", NULL);
 
-    simpleGzipBlockSize = moloch_config_int(NULL, "simpleGzipBlockSize", 0, 0, 0xfffff);
+    simpleGzipBlockSize = moloch_config_int(NULL, "simpleGzipBlockSize", 32000, 0, 0xfffff);
     if (simpleGzipBlockSize > 0) {
         gzip = TRUE;
         if (simpleGzipBlockSize < 8192) {

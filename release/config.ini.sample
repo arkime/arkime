@@ -48,18 +48,8 @@ passwordSecret = ARKIME_PASSWORD
 # will make all previously stored passwords no longer work
 httpRealm = Moloch
 
-# The base path for Arkime web access.  Must end with a / or bad things will happen
-# Default: "/"
-# webBasePath = /arkime/
-
 # Semicolon ';' seperated list of interfaces to listen on for traffic
 interface=ARKIME_INTERFACE
-
-# The bpf filter of traffic to ignore
-#bpf=not port 9200
-
-# The yara file name
-#yara=
 
 # Host to connect to for wiseService
 #wiseHost=127.0.0.1
@@ -111,13 +101,10 @@ maxPackets = 10000
 freeSpaceG = 5%
 
 # The port to listen on, by default 8005
-viewPort = 8005
+#viewPort = 8005
 
 # The host/ip to listen on, by default 0.0.0.0 which is ALL
 #viewHost = localhost
-
-# By default the viewer process is https://hostname:<viewPort> for each node.
-#viewUrl = https://HOSTNAME:8005
 
 # A MaxMind account is now required, Arkime checks several install locations, or
 # will work without Geo files installed. See https://arkime.com/faq#maxmind
@@ -141,12 +128,6 @@ dropUser=nobody
 
 # Group to drop privileges to. The pcapDir must be writable by this group or user above
 dropGroup=daemon
-
-# Semicolon ';' seperated list of tags which once capture sets for a session causes the
-# remaining pcap from being saved for the session.  It is likely that the initial packets
-# WILL be saved for the session since tags usually aren't set until after several packets
-# Each tag can optionally be followed by a :<num> which specifies how many total packets to save
-#dontSaveTags=
 
 # Header to use for determining the username to check in the database for instead of
 # using http digest.  Use this if apache or something else is doing the auth.
@@ -251,25 +232,6 @@ spiDataMaxIndices=4
 # Number of threads processing packets
 packetThreads=2
 
-# HSTS Header
-# If set to true, adds a Strict-Transport-Security response header with a max age of a year
-# and includes subdomains (the app must be served over https)
-#hstsHeader=true
-
-# Business Hours
-# If set, displays a colored background on the sessions timeline graph during business hours
-# Values are set in hours from midnight UTC (default is off)
-#businessDayStart=9
-#businessDayEnd=17
-
-# Business Days
-# Comma separated list of days
-# If set, displays the business hours on only the days provided here
-# Business hours must be set for these to be of use
-# Values are the days of the week as numbers, the week starts at Sunday = 0 and ends on Saturday = 6
-# (default is Monday - Friday 1,2,3,4,5)
-#businessDays=1,2,3,4,5
-
 # ADVANCED - Semicolon ';' seperated list of files to load for config.  Files are loaded
 # in order and can replace values set in this file or previous files.
 #includes=
@@ -286,10 +248,6 @@ pcapWriteSize = 262143
 
 # ADVANCED - Number of bytes to bulk index at a time
 dbBulkSize = 300000
-
-# ADVANCED - Compress requests to ES, reduces ES bandwidth by ~80% at the cost
-# of increased CPU. MUST have "http.compression: true" in elasticsearch.yml file
-compressES = false
 
 # ADVANCED - Max number of connections to elastic search
 maxESConns = 30
@@ -335,28 +293,23 @@ logFileCreation = true
 # packetThreads=1
 # pcapWriteSize = 65536
 
-
-##############################################################################
-# Classes of nodes
-# Can override most default values, and create a tag call node:<classname>
-[class1]
-freeSpaceG = 10%
-
 ##############################################################################
 # Nodes
 # Usually just use the hostname before the first dot as the node name
 # Can override most default values
 
 [node1]
-nodeClass = class1
 # Might use a different elasticsearch node
 elasticsearch=elasticsearchhost1
 
 # Uncomment if this node should process the cron queries and packet search jobs, only ONE node should process cron queries and packet search jobs
 # cronQueries = true
+#
+# The base path for Arkime web access.  Must end with a / or bad things will happen
+# Only set when using a reverse proxy
+# webBasePath = /arkime/
 
 [node2]
-nodeClass = class2
 # Might use a different elasticsearch node
 elasticsearch=elasticsearchhost2
 # Uses a different interface
@@ -409,8 +362,8 @@ authorization=type:string
 # this section
 
 #[moloch-clusters]
-#forensics=url:https://viewer1.host.domain:8005;passwordSecret:password4arkime;name:Forensics Cluster
-#shortname2=url:http://viewer2.host.domain:8123;passwordSecret:password4arkime;name:Testing Cluster
+#forensics=url:https://viewer1.host.domain:8005;serverSecret:password4arkime;name:Forensics Cluster
+#shortname2=url:http://viewer2.host.domain:8123;serverSecret:password4arkime;name:Testing Cluster
 
 
 
