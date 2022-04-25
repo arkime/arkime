@@ -1496,7 +1496,7 @@ LOCAL void moloch_db_update_stats(int n, gboolean sync)
         lastTime[n] = startTime;
     }
 
-    if (n == 0) {
+    if (n == 1 || lastUsedSpaceM == 0) {
         lastUsedSpaceM = moloch_db_used_space();
     }
 
