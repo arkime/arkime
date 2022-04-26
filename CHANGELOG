@@ -31,6 +31,7 @@ NOTICE: Cross-cluster Shortcuts require you to not restart all your viewers at o
   - BREAKING - new defaults maxFileSizeG=12, compressES=true
   - BREAKING - pcap compression is turned on by default with simpleGzipBlockSize=32000
   - addUser.js - new --roles option, --admin creates superAdmin user
+  - capture - New ecsEventDatset setting
   - cont3xt - new Cont3xt application, see https://arkime.com/cont3xt
   - cont3xt/viewer - share new user UI
   - parliament/wise - can be configured to use shared user DB
