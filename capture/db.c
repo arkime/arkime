@@ -71,6 +71,7 @@ LOCAL int               dbExit;
 LOCAL char             *esBulkQuery;
 LOCAL int               esBulkQueryLen;
 LOCAL char             *ecsEventProvider;
+LOCAL char             *ecsEventDataset;
 
 extern uint64_t         packetStats[MOLOCH_PACKET_MAX];
 
@@ -906,8 +907,12 @@ void moloch_db_save_session(MolochSession_t *session, int final)
     }
     BSB_EXPORT_cstr(jbsb, "],");
 
-    if (ecsEventProvider) {
+    if (ecsEventProvider && ecsEventDataset) {
+        BSB_EXPORT_sprintf(jbsb, "\"event\":{\"provider\":\"%s\", \"dataset\":\"%s\"},", ecsEventProvider, ecsEventDataset);
+    } else if (ecsEventProvider) {
         BSB_EXPORT_sprintf(jbsb, "\"event\":{\"provider\":\"%s\"},", ecsEventProvider);
+    } else if (ecsEventDataset) {
+        BSB_EXPORT_sprintf(jbsb, "\"event\":{\"dataset\":\"%s\"},", ecsEventDataset);
     }
 
     int inGroupNum = 0;
@@ -2661,6 +2666,7 @@ void moloch_db_init()
     }
 
     ecsEventProvider = moloch_config_str(NULL, "ecsEventProvider", NULL);
+    ecsEventDataset = moloch_config_str(NULL, "ecsEventDataset", NULL);
 
     int thread;
     for (thread = 0; thread < config.packetThreads; thread++) {
