@@ -23,6 +23,7 @@
                 v-focus-input="focusInput"
                 @blur="onOffFocus"
                 @input="searchForFiles"
+                @keydown.enter="searchForFiles"
                 placeholder="Begin typing to search for files by name"
               />
               <span class="input-group-append">
