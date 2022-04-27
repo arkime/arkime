@@ -1,5 +1,5 @@
 /******************************************************************************/
-/* writer-simple.c  -- Simple Writer Plugin
+/* writer-simple.c  -- Simple Writer
  *
  * This writer just creates a file per packet thread and queues buffers
  * to be written to disk in a single output thread.
@@ -52,17 +52,17 @@ typedef struct {
     int                  fd;
     uint8_t              dek[256];
     z_stream             z_strm;
+    uint8_t              thread;
 } MolochSimpleFile_t;
 
 // Information about the current buffer being written to, there can be multiple buffers per file
 // NOTE this points to the file structure, kind of backwards
 typedef struct molochsimple {
     struct molochsimple *simple_next, *simple_prev;
-    char                *buf;
+    char                *buf;     // mmap buffer, config.pcapWriteSize + MOLOCH_PACKET_MAX_LEN
     MolochSimpleFile_t  *file;
-    uint32_t             bufpos;
-    uint8_t              closing;
-    uint8_t              thread;
+    uint32_t             bufpos;  // Where in buf we are writing to
+    uint8_t              closing; // This is the last block, close file when done
 } MolochSimple_t;
 
 typedef struct {
@@ -133,7 +133,6 @@ LOCAL MolochSimple_t *writer_simple_alloc(int thread, MolochSimple_t *previous)
         if (unlikely(info->buf == MAP_FAILED)) {
             LOGEXIT("ERROR - MMap failure in writer_simple_alloc, %d: %s", errno, strerror(errno));
         }
-        info->thread = thread;
     } else {
         info->bufpos = 0;
         info->closing = 0;
@@ -147,7 +146,7 @@ LOCAL MolochSimple_t *writer_simple_alloc(int thread, MolochSimple_t *previous)
 /******************************************************************************/
 LOCAL void writer_simple_free(MolochSimple_t *info)
 {
-    int thread = info->thread;
+    int thread = info->file->thread;
 
     if (info->closing) {
         switch(simpleMode) {
@@ -392,13 +391,14 @@ LOCAL void writer_simple_write(const MolochSession_t * const session, MolochPack
 
         info = currentInfo[thread] = writer_simple_alloc(thread, NULL);
         info->file = MOLOCH_TYPE_ALLOC0(MolochSimpleFile_t);
+        info->file->thread = thread;
 
         if (gzip) {
             uncompressedBitsArg = (gpointer)(long)uncompressedBits;
 
             info->file->z_strm.next_out = (Bytef *) info->buf;
             info->file->z_strm.avail_out = config.pcapWriteSize + MOLOCH_PACKET_MAX_LEN;
-            deflateInit2(&info->file->z_strm, simpleGzipLevel, Z_DEFLATED, 16 + 15, 8, Z_DEFAULT_STRATEGY);
+            deflateInit2(&info->file->z_strm, simpleGzipLevel, Z_DEFLATED, 16 + 15, 9, Z_DEFAULT_STRATEGY);
         }
 
         switch(simpleMode) {
@@ -788,7 +788,7 @@ void writer_simple_init(char *name)
     moloch_writer_write        = writer_simple_write;
 
     simpleMaxQ = moloch_config_int(NULL, "simpleMaxQ", 2000, 50, 0xffff);
-    simpleGzipLevel = moloch_config_int(NULL, "simpleGzipLevel", 6, 1, 9);
+    simpleGzipLevel = moloch_config_int(NULL, "simpleGzipLevel", 5, 1, 9);
     char *mode = moloch_config_str(NULL, "simpleEncoding", NULL);
 
     simpleGzipBlockSize = moloch_config_int(NULL, "simpleGzipBlockSize", 32000, 0, 0xfffff);
