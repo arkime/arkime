@@ -32,7 +32,15 @@ const store = new Vuex.Store({
     sidebarKeepOpen: false,
     views: [],
     integrationsPanelHoverDelay: 400,
-    selectedView: ''
+    selectedView: '',
+    shiftKeyHold: false,
+    focusSearch: true,
+    issueSearch: false,
+    focusStartDate: false,
+    focusLinkSearch: false,
+    toggleCache: false,
+    downloadReport: false,
+    copyShareLink: false
   },
   mutations: {
     SET_USER (state, data) {
@@ -159,6 +167,37 @@ const store = new Vuex.Store({
     },
     SET_SELECTED_VIEW (state, data) {
       state.selectedView = data;
+    },
+    SET_SHIFT_HOLD (state, data) {
+      state.shiftKeyHold = data;
+    },
+    SET_FOCUS_SEARCH (state, value) {
+      state.focusSearch = value;
+      setTimeout(() => { state.focusSearch = false; });
+    },
+    SET_ISSUE_SEARCH (state, value) {
+      state.issueSearch = value;
+      setTimeout(() => { state.issueSearch = false; });
+    },
+    SET_FOCUS_START_DATE (state, value) {
+      state.focusStartDate = value;
+      setTimeout(() => { state.focusStartDate = false; });
+    },
+    SET_FOCUS_LINK_SEARCH (state, value) {
+      state.focusLinkSearch = value;
+      setTimeout(() => { state.focusLinkSearch = false; });
+    },
+    SET_TOGGLE_CACHE (state, value) {
+      state.toggleCache = value;
+      setTimeout(() => { state.toggleCache = false; });
+    },
+    SET_DOWNLOAD_REPORT (state, value) {
+      state.downloadReport = value;
+      setTimeout(() => { state.downloadReport = false; });
+    },
+    SET_COPY_SHARE_LINK (state, value) {
+      state.copyShareLink = value;
+      setTimeout(() => { state.copyShareLink = false; });
     }
   },
   getters: {
@@ -232,6 +271,30 @@ const store = new Vuex.Store({
     },
     getSelectedView (state) {
       return state.selectedView;
+    },
+    getShiftKeyHold (state) {
+      return state.shiftKeyHold;
+    },
+    getFocusSearch (state) {
+      return state.focusSearch;
+    },
+    getIssueSearch (state) {
+      return state.issueSearch;
+    },
+    getFocusStartDate (state) {
+      return state.focusStartDate;
+    },
+    getFocusLinkSearch (state) {
+      return state.focusLinkSearch;
+    },
+    getToggleCache (state) {
+      return state.toggleCache;
+    },
+    getDownloadReport (state) {
+      return state.downloadReport;
+    },
+    getCopyShareLink (state) {
+      return state.copyShareLink;
     }
   },
   plugins: [createPersistedState({

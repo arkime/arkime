@@ -9,10 +9,19 @@
         active-class="active">
         <span
           v-b-tooltip.hover
+          id="tooltipHelp"
           class="fa fa-rocket fa-2x text-light"
           title="Can I help you? Click me to see the help page"
         />
       </router-link>
+      <b-tooltip
+        triggers=""
+        boundary="window"
+        placement="bottom"
+        target="tooltipHelp"
+        :show="getShiftKeyHold">
+        <strong class="help-shortcut">H</strong>
+      </b-tooltip>
       <!-- page links -->
       <ul class="navbar-nav mr-auto ml-3">
         <li class="nav-item mr-2">
@@ -22,7 +31,7 @@
             tabindex="-1"
             class="nav-link"
             active-class="active">
-            Cont3xt
+            <span :class="{'holding-shift':getShiftKeyHold}">C</span>ont3xt
           </router-link>
         </li>
         <li class="nav-item mr-2">
@@ -32,7 +41,7 @@
             tabindex="-1"
             class="nav-link"
             active-class="active">
-            Stats
+            St<span :class="{'holding-shift':getShiftKeyHold}">a</span>ts
           </router-link>
         </li>
         <li class="nav-item mr-2">
@@ -41,7 +50,7 @@
             tabindex="-1"
             class="nav-link"
             active-class="active">
-            Settings
+            <span :class="{'holding-shift':getShiftKeyHold}">S</span>ettings
           </router-link>
         </li>
         <li class="nav-item mr-2">
@@ -135,7 +144,7 @@ export default {
     };
   },
   computed: {
-    ...mapGetters(['getLoading', 'getUser']),
+    ...mapGetters(['getLoading', 'getUser', 'getShiftKeyHold']),
     timezone () {
       return this.getUser?.settings?.timezone || 'local';
     }
@@ -198,5 +207,9 @@ div.progress {
 }
 body.dark div.progress {
   background-color: #404040;
+}
+
+.holding-shift {
+  color: var(--warning) !important;
 }
 </style>
