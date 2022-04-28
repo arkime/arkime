@@ -312,7 +312,7 @@ LOCAL void moloch_packet_process(MolochPacket_t *packet, int thread)
         // If we hit stopSaving for this session and try and save 1 more packet then
         // add truncated-pcap tag to the session
         if (packets - 1 == session->stopSaving) {
-            moloch_session_add_tag(session, "truncated-pcap");
+            moloch_session_set_stop_saving(session);
         }
         MOLOCH_THREAD_INCR_NUM(unwrittenBytes, packet->pktlen);
     }
