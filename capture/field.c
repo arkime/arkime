@@ -1370,7 +1370,7 @@ void moloch_field_ops_run(MolochSession_t *session, MolochFieldOps_t *ops)
         if (op->fieldPos < 0) {
             switch (op->fieldPos) {
             case MOLOCH_FIELD_SPECIAL_STOP_SPI:
-                session->stopSPI = op->strLenOrInt;
+                moloch_session_set_stop_spi(session, op->strLenOrInt);
                 break;
             case MOLOCH_FIELD_SPECIAL_STOP_PCAP:
                 session->stopSaving = op->strLenOrInt;

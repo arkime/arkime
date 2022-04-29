@@ -702,6 +702,7 @@ typedef struct moloch_session {
     uint16_t               diskOverload:1;
     uint16_t               pq:1;
     uint16_t               synSet:2;
+    uint16_t               inStoppedSave:1;
 } MolochSession_t;
 
 typedef struct moloch_session_head {
@@ -1056,6 +1057,9 @@ typedef void (*MolochCmd_func)(MolochSession_t *session, gpointer uw1, gpointer 
 
 void moloch_session_add_cmd(MolochSession_t *session, MolochSesCmd sesCmd, gpointer uw1, gpointer uw2, MolochCmd_func func);
 void moloch_session_add_cmd_thread(int thread, gpointer uw1, gpointer uw2, MolochCmd_func func);
+
+void moloch_session_set_stop_saving(MolochSession_t *session);
+void moloch_session_set_stop_spi(MolochSession_t *session, int value);
 
 /******************************************************************************/
 /*
