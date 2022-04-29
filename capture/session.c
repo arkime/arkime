@@ -527,14 +527,16 @@ LOCAL void moloch_session_load_stopped()
         return;
     }
 
-    int cnt;
+    uint32_t cnt;
     if (!fread(&cnt, 4, 1, fp)) {
         fclose(fp);
         LOG("ERROR - `%s` corrupt", stoppedFilename);
         return;
     }
 
-    for (int i = 0; i < cnt; i++) {
+    if (config.debug)
+        LOG("Load %u", cnt);
+    for (uint32_t i = 0; i < cnt; i++) {
         int read = 0;
         uint8_t  key[MOLOCH_SESSIONID_LEN];
         uint32_t value;
@@ -590,7 +592,7 @@ LOCAL gboolean moloch_session_save_stopped(gpointer UNUSED(user_data))
         g_hash_table_iter_init(&iter, stoppedSessions[t].new);
         unsigned char *ikey;
         gpointer ivalue;
-        while (g_hash_table_iter_next (&iter, &ikey, &ivalue)) {
+        while (g_hash_table_iter_next (&iter, (gpointer *)&ikey, &ivalue)) {
             cnt++;
             fwrite(ikey, ikey[0], 1, fp);
             uint32_t val = (long)ivalue;
@@ -602,6 +604,9 @@ LOCAL gboolean moloch_session_save_stopped(gpointer UNUSED(user_data))
     // Now write the count
     fseek(fp, 4, SEEK_SET);
     fwrite(&cnt, 4, 1, fp);
+
+    if (config.debug)
+        LOG("Saved %u", cnt);
 
     fclose(fp);
     return TRUE;
