@@ -128,17 +128,15 @@ const store = new Vuex.Store({
     },
     setFocusSearch (state, value) {
       state.focusSearch = value;
+      setTimeout(() => { state.focusSearch = false; });
     },
     setIssueSearch (state, value) {
       state.issueSearch = value;
-      if (value) {
-        setTimeout(() => {
-          state.issueSearch = false;
-        });
-      }
+      setTimeout(() => { state.issueSearch = false; });
     },
     setFocusTimeRange (state, value) {
       state.focusTimeRange = value;
+      setTimeout(() => { state.focusTimeRange = false; });
     },
     setShiftKeyHold (state, value) {
       state.shiftKeyHold = value;

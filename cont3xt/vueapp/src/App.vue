@@ -133,8 +133,8 @@ export default {
         break;
       case 65: // a
         // open stats page if not on stats page
-        if (this.$route.name !== 'Settings') {
-          this.routeTo('/settings');
+        if (this.$route.name !== 'Stats') {
+          this.routeTo('/stats');
         }
         break;
       case 83: // s
@@ -159,6 +159,13 @@ export default {
   methods: {
     shiftHoldChange (val) {
       this.$store.commit('SET_SHIFT_HOLD', val);
+    },
+    routeTo (url) {
+      this.$router.push({
+        path: url,
+        hash: this.$route.hash,
+        query: { ...this.$route.query }
+      });
     }
   }
 };
@@ -170,11 +177,11 @@ export default {
   top: 140px;
   z-index: 9;
   position: fixed;
-  border-left: none;
   color: var(--info);
   border: var(--color-gray);
   background: var(--color-light);
   border-radius: 4px 0 0 4px;
+  border-right: none;
   -webkit-box-shadow: 0 0 16px -2px black;
      -moz-box-shadow: 0 0 16px -2px black;
           box-shadow: 0 0 16px -2px black;
