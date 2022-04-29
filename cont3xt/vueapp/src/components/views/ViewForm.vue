@@ -20,74 +20,18 @@
       />
     </b-input-group> <!-- /view name -->
     <!-- group roles -->
-    <b-dropdown
-      size="sm"
-      text="Who Can View"
-      class="roles-dropdown mb-2">
-      <b-dropdown-form>
-        <b-form-checkbox-group
-          v-model="localView.viewRoles"
-          @change="$emit('update-view', { view: localView, index: viewIndex })">
-          <b-form-checkbox
-            v-for="role in getRoles"
-            :value="role.value"
-            :key="role.value">
-            {{ role.text }}
-            <span
-              v-if="role.userDefined"
-              class="fa fa-user cursor-help ml-2"
-              v-b-tooltip.hover="'User defined role'"
-            />
-          </b-form-checkbox>
-          <template v-for="role in localView.viewRoles">
-            <b-form-checkbox
-              :key="role"
-              :value="role"
-              v-if="!getRoles.find(r => r.value === role)">
-              {{ role }}
-              <span
-                class="fa fa-times-circle cursor-help ml-2"
-                v-b-tooltip.hover="'This role no longer exists'"
-              />
-            </b-form-checkbox>
-          </template>
-        </b-form-checkbox-group>
-      </b-dropdown-form>
-    </b-dropdown>
-    <b-dropdown
-      size="sm"
-      text="Who Can Edit"
-      class="mb-2 roles-dropdown">
-      <b-dropdown-form>
-        <b-form-checkbox-group
-          v-model="localView.editRoles"
-          @change="$emit('update-view', { view: localView, index: viewIndex })">
-          <b-form-checkbox
-            v-for="role in getRoles"
-            :value="role.value"
-            :key="role.value">
-            {{ role.text }}
-            <span
-              v-if="role.userDefined"
-              class="fa fa-user cursor-help ml-2"
-              v-b-tooltip.hover="'User defined role'"
-            />
-          </b-form-checkbox>
-          <template v-for="role in localView.editRoles">
-            <b-form-checkbox
-              :key="role"
-              :value="role"
-              v-if="!getRoles.find(r => r.value === role)">
-              {{ role }}
-              <span
-                class="fa fa-times-circle cursor-help ml-2"
-                v-b-tooltip.hover="'This role no longer exists'"
-              />
-            </b-form-checkbox>
-          </template>
-        </b-form-checkbox-group>
-      </b-dropdown-form>
-    </b-dropdown>
+    <RoleDropdown
+      :roles="getRoles"
+      display-text="Who Can View"
+      :selected-roles="localView.viewRoles"
+      @selected-roles-updated="updateViewRoles"
+    />
+    <RoleDropdown
+      :roles="getRoles"
+      display-text="Who Can Edit"
+      :selected-roles="localView.editRoles"
+      @selected-roles-updated="updateEditRoles"
+    />
     <span
       class="fa fa-info-circle fa-lg cursor-help ml-2 mr-1"
       v-b-tooltip.hover="'Creators will always be able to view and edit their views regardless of the roles selected here.'"
@@ -146,10 +90,12 @@
 import { mapGetters } from 'vuex';
 
 import Focus from '@/utils/Focus';
+import RoleDropdown from '@../../../common/vueapp/RoleDropdown';
 
 export default {
   name: 'ViewForm',
   directives: { Focus },
+  components: { RoleDropdown },
   props: {
     view: {
       type: Object,
@@ -184,6 +130,14 @@ export default {
     /* page functions ------------------------------------------------------ */
     toggleAll (checked) {
       this.localView.integrations = checked ? Object.keys(this.getDoableIntegrations) : [];
+      this.$emit('update-view', { view: this.localView, index: this.viewIndex });
+    },
+    updateViewRoles (roles) {
+      this.$set(this.localView, 'viewRoles', roles);
+      this.$emit('update-view', { view: this.localView, index: this.viewIndex });
+    },
+    updateEditRoles (roles) {
+      this.$set(this.localView, 'editRoles', roles);
       this.$emit('update-view', { view: this.localView, index: this.viewIndex });
     },
     /* helpers ------------------------------------------------------------- */

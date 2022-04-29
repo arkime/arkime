@@ -203,42 +203,14 @@
             v-else-if="data.field.type === 'checkbox'"
             @input="userHasChanged(data.item.userId)"
           />
-          <b-dropdown
-            size="sm"
-            class="roles-dropdown"
-            :text="getRolesStr(data.item.roles)"
-            v-else-if="data.field.type === 'select' && roles && roles.length">
-            <b-dropdown-form>
-              <b-form-checkbox-group
-                v-model="data.item.roles">
-                <b-form-checkbox
-                  v-for="role in roles"
-                  :value="role.value"
-                  :key="role.value"
-                  @input="userHasChanged(data.item.userId)">
-                  {{ role.text }}
-                  <span
-                    v-if="role.userDefined"
-                    class="fa fa-user cursor-help ml-2"
-                    v-b-tooltip.hover="'User defined role'"
-                  />
-                </b-form-checkbox>
-                <template v-for="role in data.item.roles">
-                  <b-form-checkbox
-                    :key="role"
-                    :value="role"
-                    v-if="!roles.find(r => r.value === role)"
-                    @input="userHasChanged(data.item.userId)">
-                    {{ role }}
-                    <span
-                      class="fa fa-times-circle cursor-help ml-2"
-                      v-b-tooltip.hover="'This role no longer exists'"
-                    />
-                  </b-form-checkbox>
-                </template>
-              </b-form-checkbox-group>
-            </b-dropdown-form>
-          </b-dropdown>
+          <template v-else-if="data.field.type === 'select' && roles && roles.length">
+            <RoleDropdown
+              :roles="roles"
+              :id="data.item.userId"
+              :selected-roles="data.item.roles"
+              @selected-roles-updated="updateRoles"
+            />
+          </template>
         </template> <!-- all other columns -->
 
         <!-- detail row -->
@@ -465,27 +437,11 @@
           </div>
           <div v-if="roles"
             class="col-md-6 mt-2">
-            <b-dropdown
-              size="sm"
-              class="mb-2"
-              text="Roles">
-              <b-dropdown-form>
-                <b-form-checkbox-group
-                  v-model="newUser.roles">
-                  <b-form-checkbox
-                    v-for="role in roles"
-                    :value="role.value"
-                    :key="role.value">
-                    {{ role.text }}
-                    <span
-                      v-if="role.userDefined"
-                      class="fa fa-user cursor-help ml-2"
-                      v-b-tooltip.hover="'User defined role'"
-                    />
-                  </b-form-checkbox>
-                </b-form-checkbox-group>
-              </b-dropdown-form>
-            </b-dropdown>
+            <RoleDropdown
+              :roles="roles"
+              display-text="Roles"
+              @selected-roles-updated="updateNewUserRoles"
+            />
             <span
               class="fa fa-info-circle fa-lg cursor-help ml-2"
               v-b-tooltip.hover="'These roles are applied across apps (Arkime, Parliament, WISE, Cont3xt)'"
@@ -494,7 +450,7 @@
         </div>
         <b-input-group
           size="sm"
-          class="mb-2"
+          class="mb-2 mt-2"
           v-if="createMode === 'user'">
           <template #prepend>
             <b-input-group-text>
@@ -611,6 +567,7 @@
 import HasRole from './HasRole';
 import ToggleBtn from './ToggleBtn';
 import UserService from './UserService';
+import RoleDropdown from './RoleDropdown';
 import { timezoneDateString } from './vueFilters';
 
 const defaultNewUser = {
@@ -627,7 +584,10 @@ const defaultNewUser = {
 export default {
   name: 'UsersCommon',
   directives: { HasRole },
-  components: { ToggleBtn },
+  components: {
+    ToggleBtn,
+    RoleDropdown
+  },
   props: {
     roles: Array,
     parentApp: String,
@@ -724,6 +684,11 @@ export default {
 
       this.userHasChanged(user.userId);
     },
+    updateRoles (roles, userId) {
+      const user = this.users.find(u => u.userId === userId);
+      this.$set(user, 'roles', roles);
+      this.userHasChanged(userId);
+    },
     userHasChanged (userId) {
       const newUser = JSON.parse(JSON.stringify(this.users.find(u => u.userId === userId)));
       const oldUser = JSON.parse(JSON.stringify(this.dbUserList.find(u => u.userId === userId)));
@@ -807,6 +772,9 @@ export default {
           userId: userId
         }
       });
+    },
+    updateNewUserRoles (roles) {
+      this.newUser.roles = roles;
     },
     createUser (createRole) {
       this.createError = '';

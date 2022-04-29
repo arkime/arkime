@@ -20,74 +20,18 @@
       />
     </b-input-group> <!-- /group name -->
     <!-- group roles -->
-    <b-dropdown
-      size="sm"
-      text="Who Can View"
-      class="roles-dropdown mb-2">
-      <b-dropdown-form>
-        <b-form-checkbox-group
-          v-model="lg.viewRoles"
-          @change="$emit('update-link-group', lg)">
-          <b-form-checkbox
-            v-for="role in getRoles"
-            :value="role.value"
-            :key="role.value">
-            {{ role.text }}
-            <span
-              v-if="role.userDefined"
-              class="fa fa-user cursor-help ml-2"
-              v-b-tooltip.hover="'User defined role'"
-            />
-          </b-form-checkbox>
-          <template v-for="role in lg.viewRoles">
-            <b-form-checkbox
-              :key="role"
-              :value="role"
-              v-if="!getRoles.find(r => r.value === role)">
-              {{ role }}
-              <span
-                class="fa fa-times-circle cursor-help ml-2"
-                v-b-tooltip.hover="'This role no longer exists'"
-              />
-            </b-form-checkbox>
-          </template>
-        </b-form-checkbox-group>
-      </b-dropdown-form>
-    </b-dropdown>
-    <b-dropdown
-      size="sm"
-      text="Who Can Edit"
-      class="mb-2 roles-dropdown">
-      <b-dropdown-form>
-        <b-form-checkbox-group
-          v-model="lg.editRoles"
-          @change="$emit('update-link-group', lg)">
-          <b-form-checkbox
-            v-for="role in getRoles"
-            :value="role.value"
-            :key="role.value">
-            {{ role.text }}
-            <span
-              v-if="role.userDefined"
-              class="fa fa-user cursor-help ml-2"
-              v-b-tooltip.hover="'User defined role'"
-            />
-          </b-form-checkbox>
-          <template v-for="role in lg.editRoles">
-            <b-form-checkbox
-              :key="role"
-              :value="role"
-              v-if="!getRoles.find(r => r.value === role)">
-              {{ role }}
-              <span
-                class="fa fa-times-circle cursor-help ml-2"
-                v-b-tooltip.hover="'This role no longer exists'"
-              />
-            </b-form-checkbox>
-          </template>
-        </b-form-checkbox-group>
-      </b-dropdown-form>
-    </b-dropdown>
+    <RoleDropdown
+      :roles="getRoles"
+      display-text="Who Can View"
+      :selected-roles="lg.viewRoles"
+      @selected-roles-updated="updateViewRoles"
+    />
+    <RoleDropdown
+      :roles="getRoles"
+      display-text="Who Can Edit"
+      :selected-roles="lg.editRoles"
+      @selected-roles-updated="updateEditRoles"
+    />
     <span
       class="fa fa-info-circle fa-lg cursor-help ml-2 mr-1"
       v-b-tooltip.hover="'Creators will always be able to view and edit their link groups regardless of the roles selected here.'"
@@ -230,6 +174,7 @@ import ColorPicker from '@/utils/ColorPicker';
 import ReorderList from '@/utils/ReorderList';
 
 import LinkBtns from '@/components/links/LinkBtns';
+import RoleDropdown from '@../../../common/vueapp/RoleDropdown';
 
 const defaultLink = {
   url: '',
@@ -243,7 +188,8 @@ export default {
   components: {
     LinkBtns,
     ColorPicker,
-    ReorderList
+    ReorderList,
+    RoleDropdown
   },
   props: {
     linkGroupIndex: {
@@ -320,6 +266,14 @@ export default {
       this.$set(this.lg, 'links', list);
       this.$emit('update-link-group', this.lg);
       this.$emit('save-link-group', this.lg);
+    },
+    updateViewRoles (roles) {
+      this.$set(this.lg, 'viewRoles', roles);
+      this.$emit('update-link-group', this.lg);
+    },
+    updateEditRoles (roles) {
+      this.$set(this.lg, 'editRoles', roles);
+      this.$emit('update-link-group', this.lg);
     }
   }
 };
