@@ -23,6 +23,7 @@
           </template>
           <b-form-input
             tabindex="0"
+            ref="search"
             v-model="searchTerm"
             @keydown.enter="search"
             placeholder="Indicators"
@@ -157,6 +158,7 @@
             <b-form-input
               type="text"
               tabindex="0"
+              ref="startDate"
               v-model="startDate"
               style="width:152px"
               placeholder="Start Date"
@@ -256,6 +258,7 @@
                   <b-form-input
                     tabindex="0"
                     debounce="400"
+                    ref="linkSearch"
                     v-model="linkSearchTerm"
                     v-focus="getFocusLinkSearch"
                     placeholder="Search links below"
@@ -486,6 +489,15 @@ export default {
           this.activeShareLink = false;
         }, 500);
       }
+    },
+    getFocusSearch (val) {
+      if (val) { this.$refs.search.select(); }
+    },
+    getFocusStartDate (val) {
+      if (val) { this.$refs.startDate.select(); }
+    },
+    getFocusLinkSearch (val) {
+      if (val) { this.$refs.linkSearch.select(); }
     }
   },
   methods: {
