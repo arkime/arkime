@@ -201,10 +201,18 @@ export default {
   transform: translateX(465px);
 }
 
-/* make the shortcut letter the same size/position as the icon */
+/* make the shortcut letter the same size/position as the original icon/text it replaces */
 .query-shortcut {
-  width: 21px;
+  width: 20.563px;
   font-size: 16px;
+  color: var(--warning);
+}
+.lg-query-shortcut {
+  width: 18px;
+  color: var(--warning);
+}
+.start-time-shortcut {
+  width: 28.359px;
   color: var(--warning);
 }
 </style>

@@ -12,7 +12,6 @@
         <b-input-group class="flex-grow-1 mr-2">
           <template #prepend>
             <b-input-group-text>
-              <!-- <span class="fa fa-search" /> -->
               <span v-if="!getShiftKeyHold"
                 class="fa fa-search fa-fw"
               />
@@ -69,21 +68,21 @@
           <b-dropdown-item
             :active="skipCache"
             @click="skipCache = !skipCache"
-            v-b-tooltip.hover.left="skipCache ? 'Ignorning cache (click to use cache)' : 'Using cache (click to ignore cache)'">
+            v-b-tooltip.hover.left="skipCache ? 'Ignorning cache - click to use cache (shift + c)' : 'Using cache - click to ignore cache (shift + c)'">
             <span class="fa fa-database fa-fw mr-1" />
             Skip Cache
           </b-dropdown-item>
           <b-dropdown-item
             @click="generateReport"
-            :class="{'disabled':!searchComplete}"
-            v-b-tooltip.hover.left="'Download a report of this result.'">
+            :disabled="!searchComplete"
+            v-b-tooltip.hover.left="'Download a report of this result (shift + r)'">
             <span class="fa fa-file-text fa-fw mr-1" />
             Download Report
           </b-dropdown-item>
           <b-dropdown-item
             @click="shareLink"
             :active="activeShareLink"
-            v-b-tooltip.hover.left="'Copy share link to clipboard'">
+            v-b-tooltip.hover.left="'Copy share link to clipboard (shift + l)'">
             <span class="fa fa-share-alt fa-fw mr-1" />
             Copy Share Link
           </b-dropdown-item>
@@ -146,7 +145,13 @@
             class="mr-2 mb-1">
             <template #prepend>
               <b-input-group-text>
-                Start
+                <span v-if="!getShiftKeyHold">
+                  Start
+                </span>
+                <span v-else
+                  class="start-time-shortcut">
+                  T
+                </span>
               </b-input-group-text>
             </template>
             <b-form-input
@@ -239,7 +244,13 @@
                 <b-input-group size="sm">
                   <template #prepend>
                     <b-input-group-text>
-                      <span class="fa fa-search" />
+                      <span v-if="!getShiftKeyHold"
+                        class="fa fa-search fa-fw"
+                      />
+                      <span v-else
+                        class="lg-query-shortcut">
+                        F
+                      </span>
                     </b-input-group-text>
                   </template>
                   <b-form-input
