@@ -12,15 +12,21 @@
         <b-input-group class="flex-grow-1 mr-2">
           <template #prepend>
             <b-input-group-text>
-              <span class="fa fa-search" />
+              <span v-if="!getShiftKeyHold"
+                class="fa fa-search fa-fw"
+              />
+              <span v-else
+                class="query-shortcut">
+                Q
+              </span>
             </b-input-group-text>
           </template>
           <b-form-input
             tabindex="0"
-            v-focus="true"
             v-model="searchTerm"
             @keydown.enter="search"
             placeholder="Indicators"
+            v-focus="getFocusSearch"
           />
           <template #append>
             <b-button
@@ -37,7 +43,15 @@
           @click="search"
           variant="success"
           class="mr-1 search-btn">
-          Get Cont3xt
+          <span v-if="!getShiftKeyHold">
+            Get Cont3xt
+          </span>
+          <span v-else
+            class="enter-icon">
+            <span class="fa fa-long-arrow-left fa-lg" />
+            <div class="enter-arm">
+            </div>
+          </span>
         </b-button>
         <ViewSelector
           :no-caret="true"
@@ -49,24 +63,26 @@
         <b-dropdown
           class="ml-1"
           tabindex="-1"
-          variant="info">
+          variant="info"
+          ref="actionDropdown">
           <b-dropdown-item
             :active="skipCache"
             @click="skipCache = !skipCache"
-            v-b-tooltip.hover.left="skipCache ? 'Ignorning cache (click to use cache)' : 'Using cache (click to ignore cache)'">
+            v-b-tooltip.hover.left="skipCache ? 'Ignorning cache - click to use cache (shift + c)' : 'Using cache - click to ignore cache (shift + c)'">
             <span class="fa fa-database fa-fw mr-1" />
             Skip Cache
           </b-dropdown-item>
           <b-dropdown-item
             @click="generateReport"
-            :class="{'disabled':!searchComplete}"
-            v-b-tooltip.hover.left="'Download a report of this result.'">
+            :disabled="!searchComplete"
+            v-b-tooltip.hover.left="'Download a report of this result (shift + r)'">
             <span class="fa fa-file-text fa-fw mr-1" />
             Download Report
           </b-dropdown-item>
           <b-dropdown-item
             @click="shareLink"
-            v-b-tooltip.hover.left="'Copy share link to clipboard'">
+            :active="activeShareLink"
+            v-b-tooltip.hover.left="'Copy share link to clipboard (shift + l)'">
             <span class="fa fa-share-alt fa-fw mr-1" />
             Copy Share Link
           </b-dropdown-item>
@@ -129,7 +145,13 @@
             class="mr-2 mb-1">
             <template #prepend>
               <b-input-group-text>
-                Start
+                <span v-if="!getShiftKeyHold">
+                  Start
+                </span>
+                <span v-else
+                  class="start-time-shortcut">
+                  T
+                </span>
               </b-input-group-text>
             </template>
             <b-form-input
@@ -138,6 +160,7 @@
               v-model="startDate"
               style="width:152px"
               placeholder="Start Date"
+              v-focus="getFocusStartDate"
               @change="updateStopStart('startDate')"
             />
           </b-input-group>
@@ -221,13 +244,20 @@
                 <b-input-group size="sm">
                   <template #prepend>
                     <b-input-group-text>
-                      <span class="fa fa-search" />
+                      <span v-if="!getShiftKeyHold"
+                        class="fa fa-search fa-fw"
+                      />
+                      <span v-else
+                        class="lg-query-shortcut">
+                        F
+                      </span>
                     </b-input-group-text>
                   </template>
                   <b-form-input
                     tabindex="0"
                     debounce="400"
                     v-model="linkSearchTerm"
+                    v-focus="getFocusLinkSearch"
                     placeholder="Search links below"
                   />
                 </b-input-group> <!-- /link search -->
@@ -360,7 +390,8 @@ export default {
       linkPlaceholderTip: {
         title: 'These values are used to fill in <a href="help#linkgroups" class="no-decoration">link placeholders</a>.<br>' +
           'Try using <a href="help#general" class="no-decoration">relative times</a> like -5d or -1h.'
-      }
+      },
+      activeShareLink: false
     };
   },
   mounted () {
@@ -373,12 +404,17 @@ export default {
       this.startDate = this.$route.query.startDate;
       this.updateStopStart('startDate');
     }
+
+    // needs to be unfocused to focus again later with hotkey (subsequent focuses are unfocused in store)
+    this.$store.commit('SET_FOCUS_SEARCH', false);
   },
   computed: {
     ...mapGetters([
       'getRendering', 'getWaitRendering', 'getIntegrationData',
       'getIntegrationsError', 'getLinkGroupsError', 'getLinkGroups',
-      'getSidebarKeepOpen'
+      'getSidebarKeepOpen', 'getShiftKeyHold', 'getFocusSearch',
+      'getIssueSearch', 'getFocusStartDate', 'getFocusLinkSearch',
+      'getToggleCache', 'getDownloadReport', 'getCopyShareLink'
     ]),
     loading: {
       get () { return this.$store.state.loading; },
@@ -426,6 +462,29 @@ export default {
       deep: true,
       handler () {
         this.arrangeLinkGroups();
+      }
+    },
+    getIssueSearch (val) {
+      if (val) { this.search(); }
+    },
+    getToggleCache (val) {
+      if (val) {
+        this.$refs.actionDropdown.show();
+        setTimeout(() => { this.skipCache = !this.skipCache; }, 100);
+        setTimeout(() => { this.$refs.actionDropdown.hide(); }, 1000);
+      }
+    },
+    getDownloadReport (val) {
+      if (val) { this.generateReport(); }
+    },
+    getCopyShareLink (val) {
+      if (val) {
+        this.$refs.actionDropdown.show();
+        setTimeout(() => { this.activeShareLink = true; }, 100);
+        setTimeout(() => {
+          this.shareLink();
+          this.activeShareLink = false;
+        }, 500);
       }
     }
   },
@@ -758,6 +817,21 @@ body.dark .search-nav {
 
 .link-group {
   transition: margin-top 0.5s ease-out;
+}
+
+/* enter icon for search/refresh button to be displayed on shift hold */
+.enter-icon > .fa-long-arrow-left {
+  top: 2px;
+  position: relative;
+}
+.enter-icon > .enter-arm {
+  top: -2px;
+  right: 6px;
+  width: 3px;
+  height: 9px;
+  position: relative;
+  display: inline-block;
+  background-color: #FFF;
 }
 </style>
 

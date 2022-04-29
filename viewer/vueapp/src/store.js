@@ -43,7 +43,6 @@ const store = new Vuex.Store({
     issueSearch: undefined,
     focusTimeRange: undefined,
     shiftKeyHold: false,
-    displayKeyboardShortcutsHelp: undefined,
     responseTime: undefined,
     sessionsTableState: undefined,
     loadingData: false,
@@ -128,23 +127,18 @@ const store = new Vuex.Store({
     },
     setFocusSearch (state, value) {
       state.focusSearch = value;
+      setTimeout(() => { state.focusSearch = false; });
     },
     setIssueSearch (state, value) {
       state.issueSearch = value;
-      if (value) {
-        setTimeout(() => {
-          state.issueSearch = false;
-        });
-      }
+      setTimeout(() => { state.issueSearch = false; });
     },
     setFocusTimeRange (state, value) {
       state.focusTimeRange = value;
+      setTimeout(() => { state.focusTimeRange = false; });
     },
     setShiftKeyHold (state, value) {
       state.shiftKeyHold = value;
-    },
-    setDisplayKeyboardShortcutsHelp (state, value) {
-      state.displayKeyboardShortcutsHelp = value;
     },
     setUser (state, value) {
       state.user = value;
