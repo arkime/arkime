@@ -205,12 +205,12 @@ uint32_t moloch_session_hash(const void *key)
 #endif
 
 /******************************************************************************/
-LOCAL gboolean moloch_session_equal(const void *a, const void *b)
+LOCAL gboolean moloch_session_equal(const unsigned char *a, const unsigned char *b)
 {
-    if (((unsigned char *)a)[0] != ((unsigned char *)b)[0])
+    if (a[0] != b[0])
         return FALSE;
 
-    return memcmp(a, b, ((unsigned char *)a)[0]) == 0;
+    return memcmp(a, b, a[0]) == 0;
 }
 /******************************************************************************/
 LOCAL int moloch_session_cmp(const void *keyv, const MolochSession_t *session)
@@ -318,7 +318,7 @@ LOCAL void moloch_session_free (MolochSession_t *session)
     if (session->pq)
         moloch_pq_free(session);
 
-    if (session->stopSPI) {
+    if (session->inStoppedSave) {
         MOLOCH_LOCK(stoppedSessions[session->thread].lock);
         g_hash_table_remove(stoppedSessions[session->thread].new, session->sessionId);
         MOLOCH_UNLOCK(stoppedSessions[session->thread].lock);
@@ -465,6 +465,15 @@ int moloch_session_need_save_outstanding()
 void moloch_session_set_stop_saving(MolochSession_t *session)
 {
     moloch_session_add_tag(session, "truncated-pcap");
+
+    MOLOCH_LOCK(stoppedSessions[session->thread].lock);
+    uint64_t result = (uint64_t)g_hash_table_lookup(stoppedSessions[session->thread].new, session->sessionId);
+    if ((result & 0x02) == 0) {
+        result |= 0x02;
+        g_hash_table_insert(stoppedSessions[session->thread].new, session->sessionId, (gpointer)result);
+        session->inStoppedSave = 1;
+    }
+    MOLOCH_UNLOCK(stoppedSessions[session->thread].lock);
 }
 /******************************************************************************/
 void moloch_session_set_stop_spi(MolochSession_t *session, int value)
@@ -477,10 +486,18 @@ void moloch_session_set_stop_spi(MolochSession_t *session, int value)
         if ((result & 0x01) == 0) {
             result |= 0x01;
             g_hash_table_insert(stoppedSessions[session->thread].new, session->sessionId, (gpointer)result);
+            session->inStoppedSave = 1;
         }
     } else {
-        if ((result & 0x01) == 1) {
-            g_hash_table_remove(stoppedSessions[session->thread].new, session->sessionId);
+        if ((result & 0x01) == 0x01) {
+            result &= ~0x01;
+            if (result) {
+                g_hash_table_insert(stoppedSessions[session->thread].new, session->sessionId, (gpointer)result);
+                session->inStoppedSave = 1;
+            } else {
+                g_hash_table_remove(stoppedSessions[session->thread].new, session->sessionId);
+                session->inStoppedSave = 0;
+            }
         }
     }
     MOLOCH_UNLOCK(stoppedSessions[session->thread].lock);
@@ -516,15 +533,21 @@ LOCAL void moloch_session_load_stopped()
         LOG("ERROR - `%s` corrupt", stoppedFilename);
         return;
     }
+
     for (int i = 0; i < cnt; i++) {
         int read = 0;
-        char     key[MOLOCH_SESSIONID_LEN];
+        uint8_t  key[MOLOCH_SESSIONID_LEN];
         uint32_t value;
-        read += fread(key, MOLOCH_SESSIONID_LEN, 1, fp);
+        read += fread(key, 1, 1, fp);
+        if (key[0] > MOLOCH_SESSIONID_LEN) {
+            LOG("WARNING - `%s` corrupt", stoppedFilename);
+            break;
+        }
+        read += fread(key+1, key[0] - 1, 1, fp);
         read += fread(&value, 4, 1, fp);
 
-        if (read != MOLOCH_SESSIONID_LEN + 4) {
-            LOG("ERROR - `%s` corrupt", stoppedFilename);
+        if (read != 3) {
+            LOG("WARNING - `%s` corrupt %d", stoppedFilename, read);
             break;
         }
 
@@ -565,11 +588,11 @@ LOCAL gboolean moloch_session_save_stopped(gpointer UNUSED(user_data))
 
         GHashTableIter iter;
         g_hash_table_iter_init(&iter, stoppedSessions[t].new);
-        gpointer ikey;
+        unsigned char *ikey;
         gpointer ivalue;
         while (g_hash_table_iter_next (&iter, &ikey, &ivalue)) {
             cnt++;
-            fwrite(ikey, ((unsigned char*)ikey)[0], 1, fp);
+            fwrite(ikey, ikey[0], 1, fp);
             uint32_t val = (long)ivalue;
             fwrite(&val, 4, 1, fp);
         }
@@ -646,9 +669,12 @@ MolochSession_t *moloch_session_find_or_create(int mProtocol, uint32_t hash, uin
         session->pluginData = MOLOCH_SIZE_ALLOC0(pluginData, sizeof(void *)*config.numPlugins);
 
     if (stoppedSessions[thread].old) {
-        uint64_t result = (uint64_t)g_hash_table_lookup(stoppedSessions[session->thread].new, session->sessionId);
+        uint64_t result = (uint64_t)g_hash_table_lookup(stoppedSessions[session->thread].old, session->sessionId);
         if (result & 0x01) {
             session->stopSPI = 1;
+        }
+        if (result & 0x02) {
+            session->stopSaving = 0;
         }
     }
 
@@ -792,8 +818,8 @@ void moloch_session_init()
 
 
         MOLOCH_LOCK_INIT(stoppedSessions[t].lock);
-        stoppedSessions[t].old = g_hash_table_new_full(moloch_session_hash, moloch_session_equal, g_free, NULL);
-        stoppedSessions[t].new = g_hash_table_new(moloch_session_hash, moloch_session_equal);
+        stoppedSessions[t].old = g_hash_table_new_full(moloch_session_hash, (GEqualFunc)moloch_session_equal, g_free, NULL);
+        stoppedSessions[t].new = g_hash_table_new(moloch_session_hash, (GEqualFunc)moloch_session_equal);
     }
 
     moloch_add_can_quit(moloch_session_cmd_outstanding, "session commands outstanding");
