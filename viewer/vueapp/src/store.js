@@ -43,7 +43,6 @@ const store = new Vuex.Store({
     issueSearch: undefined,
     focusTimeRange: undefined,
     shiftKeyHold: false,
-    displayKeyboardShortcutsHelp: undefined,
     responseTime: undefined,
     sessionsTableState: undefined,
     loadingData: false,
@@ -140,9 +139,6 @@ const store = new Vuex.Store({
     },
     setShiftKeyHold (state, value) {
       state.shiftKeyHold = value;
-    },
-    setDisplayKeyboardShortcutsHelp (state, value) {
-      state.displayKeyboardShortcutsHelp = value;
     },
     setUser (state, value) {
       state.user = value;

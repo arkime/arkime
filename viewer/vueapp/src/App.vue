@@ -83,14 +83,6 @@ export default {
         this.$store.commit('setShiftKeyHold', newValue);
       }
     },
-    displayKeyboardShortcutsHelp: {
-      get: function () {
-        return this.$store.state.displayKeyboardShortcutsHelp;
-      },
-      set: function (newValue) {
-        this.$store.commit('setDisplayKeyboardShortcutsHelp', newValue);
-      }
-    },
     user: {
       get: function () {
         return this.$store.state.user;
@@ -187,10 +179,6 @@ export default {
       case 13: // enter
         // trigger search/refresh
         this.$store.commit('setIssueSearch', true);
-        break;
-      case 191: // /
-        // toggle display of the the keyboard shortcut dialog
-        this.$store.commit('setDisplayKeyboardShortcutsHelp', !this.displayKeyboardShortcutsHelp);
         break;
       }
     });
