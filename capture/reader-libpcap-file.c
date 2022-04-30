@@ -445,13 +445,13 @@ dirsDone:
 LOCAL gboolean reader_libpcapfile_monitor_gfunc (gpointer UNUSED(user_data))
 {
     if (DLL_COUNT(s_, &monitorQ) == 0)
-        return TRUE;
+        return G_SOURCE_CONTINUE;
 
     if (reader_libpcapfile_next()) {
-        return FALSE;
+        return G_SOURCE_REMOVE;
     }
 
-    return TRUE;
+    return G_SOURCE_CONTINUE;
 }
 /******************************************************************************/
 LOCAL int reader_libpcapfile_stats(MolochReaderStats_t *stats)

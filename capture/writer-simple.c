@@ -675,7 +675,7 @@ LOCAL gboolean writer_simple_check_gfunc (gpointer UNUSED(user_data))
     }
     MOLOCH_UNLOCK(simpleQ);
 
-    return TRUE;
+    return G_SOURCE_CONTINUE;
 }
 /******************************************************************************/
 FILE *writer_simple_get_index(int thread, int64_t fileNum)

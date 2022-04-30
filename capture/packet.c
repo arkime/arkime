@@ -1381,7 +1381,7 @@ LOCAL gboolean moloch_packet_save_drophash(gpointer UNUSED(user_data))
     if (packetDrop6S.changed)
         moloch_drophash_save(&packetDrop6S);
 
-    return TRUE;
+    return G_SOURCE_CONTINUE;
 }
 /******************************************************************************/
 void moloch_packet_save_ethernet( MolochPacket_t * const packet, uint16_t type)

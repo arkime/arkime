@@ -247,7 +247,7 @@ LOCAL gboolean pcapoverip_client_check_connections (gpointer UNUSED(user_data))
         if (!isConnected[i])
             pcapoverip_client_connect(i);
     }
-    return TRUE;
+    return G_SOURCE_CONTINUE;
 }
 /******************************************************************************/
 LOCAL void pcapoverip_client_start()

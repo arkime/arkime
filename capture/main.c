@@ -285,7 +285,7 @@ LOCAL gboolean moloch_free_later_check (gpointer UNUSED(user_data))
         freeLaterFront = (freeLaterFront + 1) % FREE_LATER_SIZE;
     }
     MOLOCH_UNLOCK(freeLaterList);
-    return TRUE;
+    return G_SOURCE_CONTINUE;
 }
 /******************************************************************************/
 LOCAL void moloch_free_later_init()
@@ -660,7 +660,7 @@ void moloch_quit()
 gboolean moloch_ready_gfunc (gpointer UNUSED(user_data))
 {
     if (moloch_http_queue_length(esServer))
-        return TRUE;
+        return G_SOURCE_CONTINUE;
 
     if (config.debug)
         LOG("maxField = %d", config.maxField);
@@ -682,7 +682,7 @@ gboolean moloch_ready_gfunc (gpointer UNUSED(user_data))
     moloch_readers_start();
     if (!config.pcapReadOffline && (pcapFileHeader.dlt == DLT_NULL || pcapFileHeader.snaplen == 0))
         LOGEXIT("ERROR - Reader didn't call moloch_packet_set_dltsnap");
-    return FALSE;
+    return G_SOURCE_REMOVE;
 }
 /******************************************************************************/
 void moloch_hex_init()
