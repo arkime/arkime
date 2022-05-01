@@ -2,8 +2,8 @@ Instructions for using the prebuilt Arkime packages.
 Please report any bugs or feature requests by opening an issue at https://github.com/arkime/arkime/issues
 
 Basic Arkime Installation steps:
- 1) Download an Arkime build for 64bit Ubuntu 14.04, Ubuntu 16.04, Centos 6, or Centos 7 from http://arkime.com/index.html#downloads
- 2) Install package
+ 1) Download an Arkime build for your OS from http://arkime.com/index.html#downloads
+ 2) Install the downloaded package
  3) Configure basic arkime items by running the Configure script (this needs to be done only once)
      /opt/arkime/bin/Configure
  4) The Configure script can install elasticsearch for you or you can install yourself
