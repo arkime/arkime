@@ -565,6 +565,10 @@ LOCAL gboolean moloch_session_save_stopped(gpointer UNUSED(user_data))
 {
     int t;
 
+    // If quitting don't update since sessions are removed when not actually done
+    if (config.quitting)
+        return G_SOURCE_REMOVE;
+
     // Free old table first time this is called
     if (stoppedSessions[0].old) {
         for (t = 0; t < config.packetThreads; t++) {
@@ -576,7 +580,7 @@ LOCAL gboolean moloch_session_save_stopped(gpointer UNUSED(user_data))
     FILE *fp;
     if (!(fp = fopen(stoppedFilename, "w"))) {
         LOG("ERROR - Couldn't open `%s` to save stopped sessions", stoppedFilename);
-        return TRUE;
+        return G_SOURCE_CONTINUE;
     }
     uint32_t ver = 1;
     uint32_t cnt = 0;
@@ -609,7 +613,7 @@ LOCAL gboolean moloch_session_save_stopped(gpointer UNUSED(user_data))
         LOG("Saved %u", cnt);
 
     fclose(fp);
-    return TRUE;
+    return G_SOURCE_CONTINUE;
 }
 /******************************************************************************/
 MolochSession_t *moloch_session_find(int ses, uint8_t *sessionId)

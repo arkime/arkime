@@ -657,7 +657,7 @@ LOCAL gboolean tagger_fetch_files (gpointer sync)
         moloch_http_send(esServer, "GET", key, key_len, NULL, 0, NULL, FALSE, tagger_fetch_files_cb, NULL);
     }
 
-    return TRUE;
+    return G_SOURCE_CONTINUE;
 }
 /******************************************************************************/
 /*

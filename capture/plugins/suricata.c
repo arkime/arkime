@@ -451,7 +451,7 @@ LOCAL gboolean suricata_timer(gpointer UNUSED(user_data))
             suricata_read();
             suricata_close();
         }
-        return TRUE;
+        return G_SOURCE_CONTINUE;
     }
 
     if (file && fileInode != sb.st_ino) {
@@ -477,7 +477,7 @@ LOCAL gboolean suricata_timer(gpointer UNUSED(user_data))
     }
 
     printedError = 0;
-    return TRUE;
+    return G_SOURCE_CONTINUE;
 }
 /******************************************************************************/
 /*

@@ -627,7 +627,7 @@ LOCAL gboolean wise_flush(gpointer UNUSED(user_data))
     MOLOCH_LOCK(iRequest);
     wise_flush_locked();
     MOLOCH_UNLOCK(iRequest);
-    return TRUE;
+    return G_SOURCE_CONTINUE;
 }
 /******************************************************************************/
 

@@ -917,7 +917,7 @@ gboolean moloch_config_reload_files (gpointer UNUSED(user_data))
         }
     }
 
-    return TRUE;
+    return G_SOURCE_CONTINUE;
 }
 /******************************************************************************/
 void moloch_config_init()

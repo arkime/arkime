@@ -814,7 +814,7 @@ LOCAL gboolean writer_s3_file_time_gfunc (gpointer UNUSED(user_data))
     }
     MOLOCH_UNLOCK(output);
 
-    return TRUE;
+    return G_SOURCE_CONTINUE;
 }
 
 /******************************************************************************/

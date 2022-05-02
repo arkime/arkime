@@ -1711,7 +1711,7 @@ LOCAL gboolean moloch_db_flush_gfunc (gpointer user_data )
         }
     }
 
-    return TRUE;
+    return G_SOURCE_CONTINUE;
 }
 /******************************************************************************/
 LOCAL void moloch_db_health_check_cb(int UNUSED(code), unsigned char *data, int data_len, gpointer uw)
@@ -1750,7 +1750,7 @@ LOCAL gboolean moloch_db_health_check (gpointer user_data )
 {
     moloch_http_schedule(esServer, "GET", "/_cat/health?format=json", -1, NULL, 0, NULL, MOLOCH_HTTP_PRIORITY_DROPABLE, moloch_db_health_check_cb, user_data);
     clock_gettime(CLOCK_MONOTONIC, &startHealthCheck);
-    return TRUE;
+    return G_SOURCE_CONTINUE;
 }
 /******************************************************************************/
 typedef struct moloch_seq_request {
