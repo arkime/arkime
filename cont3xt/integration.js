@@ -342,7 +342,13 @@ class Integration {
 
     let normalizedQuery = query;
     if (itype === 'ip') {
-      normalizedQuery = ipaddr.parse(query).toNormalizedString();
+      try {
+        normalizedQuery = ipaddr.parse(query).toNormalizedString();
+      } catch (e) {
+        console.log(`WARNING - ${query} is not really an ip`);
+        shared.total -= integrations.length;
+        return;
+      }
       // I'm sure there is some function to do this with ipv6 but I couldn't find it
       if (normalizedQuery.includes(':')) {
         normalizedQuery = normalizedQuery.split(':').map(x => x.padStart(4, '0')).join(':');

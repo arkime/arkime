@@ -32,15 +32,38 @@ class DNSIntegration extends Integration {
   }
 
   addMoreIntegrations (itype, response, addMore) {
+    const CNAME = [];
     if (itype === 'domain' && this.name === 'DNS' && response?.A?.Status === 0 && Array.isArray(response?.A?.Answer)) {
+      const A = [];
       for (const answer of response.A.Answer) {
-        addMore(answer.data, 'ip');
+        if (answer.type === 1) {
+          addMore(answer.data, 'ip');
+          A.push(answer);
+        } else if (answer.type === 5) {
+          if (!CNAME.find(element => element.data === answer.data)) {
+            CNAME.push(answer);
+          }
+        }
       }
+      response.A.Answer = A;
     }
     if (itype === 'domain' && this.name === 'DNS' && response?.AAAA?.Status === 0 && Array.isArray(response?.AAAA?.Answer)) {
+      const AAAA = [];
       for (const answer of response.AAAA.Answer) {
-        addMore(answer.data, 'ip');
+        if (answer.type === 28) {
+          addMore(answer.data, 'ip');
+          AAAA.push(answer);
+        } else if (answer.type === 5) {
+          if (!CNAME.find(element => element.data === answer.data)) {
+            CNAME.push(answer);
+          }
+        }
       }
+      response.AAAA.Answer = AAAA;
+    }
+
+    if (CNAME.length > 0) {
+      response.CNAME = { Status: 0, Answer: CNAME };
     }
   }
 
