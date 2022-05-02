@@ -5860,7 +5860,7 @@ sub dbCheck {
     }
 }
 ################################################################################
-sub checkForOld6Indices {
+sub checkForOld7Indices {
     my $result = esGet("/_all/_settings/index.version.created?pretty");
     my $found = 0;
 
