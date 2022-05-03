@@ -64,7 +64,7 @@ class Auth {
     Auth.regressionTests = false;
 
     if (options.userAuthIps) {
-      for (const cidr in options.userAuthIps.split(',')) {
+      for (const cidr of options.userAuthIps.split(',')) {
         const parts = cidr.split('/');
         if (parts[0].includes(':')) {
           Auth.#userAuthIps.add(parts[0], +(parts[1] ?? 128), 1);
