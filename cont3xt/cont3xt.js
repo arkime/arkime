@@ -441,7 +441,8 @@ function setupAuth () {
     debug: internals.debug,
     mode: mode,
     userNameHeader: userNameHeader,
-    passwordSecret: getConfig('cont3xt', 'passwordSecret', 'password')
+    passwordSecret: getConfig('cont3xt', 'passwordSecret', 'password'),
+    basePath: internals.webBasePath
   });
 
   const dbUrl = getConfig('cont3xt', 'dbUrl');
