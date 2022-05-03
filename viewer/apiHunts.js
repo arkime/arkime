@@ -781,7 +781,8 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
         stopTime: req.body.query.stopTime,
         view: req.body.query.view
       },
-      description: req.body.description
+      description: req.body.description,
+      roles: req.body.roles
     };
 
     async function doneCb (doneHunt, invalidUsers) {
@@ -888,12 +889,24 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
         // clear out secret fields for users who don't have access to that hunt
         // if the user is not an admin and didn't create the hunt and isn't part of the user's list
         if (!req.user.hasRole('arkimeAdmin') && req.user.userId !== hunt.userId && hunt.users.indexOf(req.user.userId) < 0) {
-          // since hunt isn't cached we can just modify
-          hunt.id = '';
-          hunt.search = '';
-          hunt.userId = '';
-          hunt.searchType = '';
-          delete hunt.query;
+          let userHasRole = false;
+          if (hunt.roles.length) {
+            for (const role of hunt.roles) {
+              if (req.user.roles.indexOf(role) > -1) {
+                userHasRole = true;
+                break;
+              }
+            }
+          }
+
+          if (!userHasRole) {
+            // since hunt isn't cached we can just modify
+            hunt.id = '';
+            hunt.search = '';
+            hunt.userId = '';
+            hunt.searchType = '';
+            delete hunt.query;
+          }
         }
 
         // don't add the running job to the queue
@@ -1058,6 +1071,39 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
     } catch (err) {
       console.log(`ERROR - ${req.method} /api/hunt/${req.params.id}/removefromsessions`, util.inspect(err, false, 50));
       return res.serverError(500, 'Unable to remove hunt name and ID from the matched sessions.');
+    }
+  };
+
+  /**
+   * PUT - /api/hunt/:id
+   *
+   * Update a hunt - can only update description & roles
+   * @name /hunt/:id
+   * @param {Hunt} hunt - The new hunt data
+   * @returns {boolean} success - Whether the operation was successful.
+   * @returns {string} text - The success/error message to (optionally) display to the user.
+   */
+  huntAPIs.updateHunt = async (req, res) => {
+    try {
+      const { body: { _source: hunt } } = await Db.getHunt(req.params.id);
+
+      // update properties
+      hunt.description = req.body.description;
+      hunt.roles = req.body.roles;
+
+      try {
+        await Db.setHunt(req.params.id, hunt);
+        res.send(JSON.stringify({
+          success: true,
+          text: 'Updated Hunt Succesfully!'
+        }));
+      } catch (err) {
+        console.log(`ERROR - ${req.method} /api/hunt/${req.params.id} (setHunt)`, util.inspect(err, false, 50));
+        return res.serverError(500, 'Unable to update hunt');
+      }
+    } catch (err) {
+      console.log(`ERROR - ${req.method} /api/hunt/${req.params.id}/users (getHunt)`, util.inspect(err, false, 50));
+      return res.serverError(500, 'Unable update hunt');
     }
   };
 

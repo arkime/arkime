@@ -347,6 +347,7 @@ module.exports = (Config, Db, internals, sessionAPIs, userAPIs, ViewerUtils) => 
       const fieldhistory = userAPIs.findUserState('fieldHistory', req.user); // {}
       const getViews = util.promisify(userAPIs.getViews);
       const views = await getViews(req); // {}
+      const roles = await User.getRoles();
 
       // can't fetch user or fields is FATAL, so let it fall through to outer
       // catch and send an error to the client
@@ -363,7 +364,8 @@ module.exports = (Config, Db, internals, sessionAPIs, userAPIs, ViewerUtils) => 
         clusters,
         user,
         fieldsArr,
-        fieldsMap
+        fieldsMap,
+        roles
       });
     } catch (err) {
       console.log('ERROR - /api/appinfo', err);

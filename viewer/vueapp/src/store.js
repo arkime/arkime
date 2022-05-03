@@ -50,7 +50,8 @@ const store = new Vuex.Store({
     sortsParam: 'firstPacket:desc',
     stickySessionsBtn: false,
     showCapStartTimes: true,
-    capStartTimes: [{ nodeName: 'none', startTime: 1 }]
+    capStartTimes: [{ nodeName: 'none', startTime: 1 }],
+    roles: []
   },
   getters: {
     sessionsTableState (state) {
@@ -223,6 +224,7 @@ const store = new Vuex.Store({
       state.remoteclusters = value.remoteclusters;
       state.fieldhistory = value.fieldhistory.fields || [];
       state.esCluster.availableCluster = value.clusters;
+      state.roles = Vue.filter('parseRoles')(value.roles);
 
       // fieldsMap has keys for these fields: dbField, dbField2, fieldECS, and exp (id/key)
       // fieldsAliasMap has keys for field aliases
@@ -240,6 +242,9 @@ const store = new Vuex.Store({
           state.fieldsAliasMap[alias] = field;
         });
       }
+    },
+    setRoles (state, value) {
+      state.roles = value;
     }
   }
 });

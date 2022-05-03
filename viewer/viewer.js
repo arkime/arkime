@@ -1808,6 +1808,12 @@ app.delete( // delete hunt endpoint
   huntAPIs.deleteHunt
 );
 
+app.put( // update hunt endpoint
+  ['/api/hunt/:id', '/hunt/:id'],
+  [ArkimeUtil.noCacheJson, disableInMultiES, logAction('hunt/:id'), checkCookieToken, User.checkPermissions(['packetSearch']), checkHuntAccess],
+  huntAPIs.updateHunt
+);
+
 app.put( // cancel hunt endpoint
   ['/api/hunt/:id/cancel', '/hunt/:id/cancel'],
   [ArkimeUtil.noCacheJson, disableInMultiES, logAction('hunt/:id/cancel'), checkCookieToken, User.checkPermissions(['packetSearch']), checkHuntAccess],

@@ -133,6 +133,30 @@ export default {
   },
 
   /**
+   * Updates a hunt - can only update description & roles
+   * @param {string} id The id of the hunt
+   * @param {object} data The udpated description & roles:
+                          { description: 'text', roles: ['one', 'two'] }
+   * @returns {Promise} Promise A promise object that signals the completion
+   *                            or rejection of the request.
+   */
+  updateHunt (id, data) {
+    return new Promise((resolve, reject) => {
+      const options = {
+        url: `api/hunt/${id}`,
+        method: 'PUT',
+        data: data
+      };
+
+      Vue.axios(options).then((response) => {
+        resolve(response);
+      }).catch((error) => {
+        reject(error);
+      });
+    });
+  },
+
+  /**
    * Removes a user from a hunt
    * @param {string} id The id of the hunt
    * @param {string} userid The id of the user to remove
@@ -196,5 +220,58 @@ export default {
         reject(error);
       });
     });
+  },
+
+  /**
+   * Determines whether a user has a role assigned to a hunt
+   * @param {object} user The user trying to access the hunt
+   * @param {object} hunt The hunt being accessed
+   * @returns {boolean} - True if the user has a role assigned to the hunt, false otherwise
+   */
+  userHasHuntRole (user, hunt) {
+    if (hunt.roles.length) {
+      for (const role of hunt.roles) {
+        if (user.roles.indexOf(role) > -1) {
+          return true;
+        }
+      }
+    }
+
+    return false;
+  },
+
+  /**
+   * Determines whether a user can edit a hunt
+   * @param {object} user The user trying to access the hunt
+   * @param {object} hunt The hunt being accessed
+   * @returns {boolean} - True if the user is the creator of the hunt or an Arkime admin
+   */
+  canEditHunt (user, hunt) {
+    return user.userId === hunt.userId || user.roles.includes('arkimeAdmin');
+  },
+
+  /**
+   * Determines whether a user can view a hunt
+   * @param {object} user The user trying to access the hunt
+   * @param {object} hunt The hunt being accessed
+   * @returns {boolean} - True if the user is the creator of the hunt, or an Arkime admin, or the user has
+   *                      been assigned to the hunt, or the user has a role that is assigned to the hunt
+   */
+  canViewHunt (user, hunt) {
+    return user.userId === hunt.userId ||
+      user.roles.includes('arkimeAdmin') ||
+      hunt.users.indexOf(user.userId) > -1 ||
+      this.userHasHuntRole(user, hunt);
+  },
+
+  /**
+   * Determines whether hunt is shared with a user
+   * @param {object} user The user trying to access the hunt
+   * @param {object} hunt The hunt being accessed
+   * @returns {boolean} - True if the user has been assigned to the hunt, or the user has a role 
+   *                      that is assigned to the hunt
+   */
+  isShared (user, hunt) {
+    return this.userHasHuntRole(user, hunt) || hunt.users.indexOf(user.userId) > -1;
   }
 };
