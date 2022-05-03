@@ -200,7 +200,8 @@ export const hunts = [{
   totalSessions: 318,
   type: 'raw',
   userId: 'admin',
-  users: ['test1']
+  users: ['test1'],
+  roles: ['arkimeUser']
 }, {
   created: 1625595118,
   dst: true,
@@ -221,7 +222,8 @@ export const hunts = [{
   totalSessions: 318,
   type: 'raw',
   userId: 'admin',
-  users: ['test1']
+  users: ['test1'],
+  roles: ['arkimeUser']
 }, {
   created: 1625595118,
   dst: true,
@@ -242,7 +244,8 @@ export const hunts = [{
   totalSessions: 318,
   type: 'raw',
   userId: 'admin',
-  users: ['test1']
+  users: ['test1'],
+  roles: ['arkimeUser']
 }, {
   created: 1625595118,
   dst: true,
@@ -263,7 +266,8 @@ export const hunts = [{
   totalSessions: 318,
   type: 'raw',
   userId: 'admin',
-  users: ['test1']
+  users: ['test1'],
+  roles: ['arkimeUser']
 }, {
   created: 1625595118,
   dst: true,
@@ -284,7 +288,8 @@ export const hunts = [{
   totalSessions: 318,
   type: 'raw',
   userId: 'admin',
-  users: ['test1']
+  users: ['test1'],
+  roles: ['arkimeUser']
 }];
 
 export const fields = [{

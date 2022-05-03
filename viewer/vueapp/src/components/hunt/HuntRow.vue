@@ -114,6 +114,7 @@ canEdit<template>
       </b-tooltip>
       <span v-if="canView">
         <button type="button"
+          title="Open results in a new Sessions tab."
           @click="$emit('openSessions', job)"
           :disabled="!job.matchedSessions || job.removed"
           :id="`openresults${job.id}`"

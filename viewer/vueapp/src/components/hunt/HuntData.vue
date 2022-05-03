@@ -7,11 +7,16 @@
         </hunt-status>
       </div>
     </div>
-    <div class="row" v-if="job.description">
+    <div class="row">
       <div class="col-12 d-flex">
         <span class="fa fa-fw fa-file-text mt-1" />&nbsp;
         <template v-if="!editDescription">
-          {{ job.description }}
+          <span v-if="job.description" class="pl-1">
+            {{ job.description }}
+          </span>
+          <em v-else class="pl-1">
+            No description
+          </em>
           <button
             v-if="canEdit"
             v-b-tooltip.hover.right
@@ -29,15 +34,18 @@
             prepend="Description">
             <b-form-input
               v-model="newDescription"
+              placeholder="Update the description"
             />
             <b-input-group-append>
               <b-button
                 variant="warning"
-                @click="editDescription = false">
+                @click="editDescription = false"
+                title="Cancel hunt description update">
                 Cancel
               </b-button>
               <b-button
                 variant="success"
+                title="Save hunt description"
                 @click="updateJobDescription">
                 Save
               </b-button>

@@ -247,7 +247,8 @@ export default {
    * @returns {boolean} - True if the user is the creator of the hunt or an Arkime admin
    */
   canEditHunt (user, hunt) {
-    return user.userId === hunt.userId || user.roles.includes('arkimeAdmin');
+    const userRoles = user.roles || [];
+    return user.userId === hunt.userId || userRoles.includes('arkimeAdmin');
   },
 
   /**
@@ -258,9 +259,12 @@ export default {
    *                      been assigned to the hunt, or the user has a role that is assigned to the hunt
    */
   canViewHunt (user, hunt) {
+    const huntUsers = hunt.users || [];
+    const userRoles = user.roles || [];
+
     return user.userId === hunt.userId ||
-      user.roles.includes('arkimeAdmin') ||
-      hunt.users.indexOf(user.userId) > -1 ||
+      userRoles.includes('arkimeAdmin') ||
+      huntUsers.includes(user.userId) ||
       this.userHasHuntRole(user, hunt);
   },
 
@@ -268,10 +272,11 @@ export default {
    * Determines whether hunt is shared with a user
    * @param {object} user The user trying to access the hunt
    * @param {object} hunt The hunt being accessed
-   * @returns {boolean} - True if the user has been assigned to the hunt, or the user has a role 
+   * @returns {boolean} - True if the user has been assigned to the hunt, or the user has a role
    *                      that is assigned to the hunt
    */
   isShared (user, hunt) {
-    return this.userHasHuntRole(user, hunt) || hunt.users.indexOf(user.userId) > -1;
+    const huntUsers = hunt.users || [];
+    return this.userHasHuntRole(user, hunt) || huntUsers.includes(user.userId);
   }
 };
