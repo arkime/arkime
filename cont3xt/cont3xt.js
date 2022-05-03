@@ -139,6 +139,9 @@ logger.token('username', (req, res) => {
 // ----------------------------------------------------------------------------
 app.use((req, res, next) => {
   res.serverError = ArkimeUtil.serverError;
+  if (internals.webBasePath !== '/') {
+    req.url = req.url.replace(internals.webBasePath, '/');
+  }
   return next();
 });
 
@@ -498,6 +501,7 @@ async function main () {
     if (internals.debug) {
       console.log('Debug Level', internals.debug);
     }
+    internals.webBasePath = getConfig('cont3xt', 'webBasePath', '/');
   } catch (err) {
     console.log(err);
     process.exit();
