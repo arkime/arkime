@@ -889,7 +889,7 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
         // clear out secret fields for users who don't have access to that hunt
         // if the user is not an admin and didn't create the hunt and isn't part of the user's list
         if (!req.user.hasRole('arkimeAdmin') && req.user.userId !== hunt.userId && hunt.users.indexOf(req.user.userId) < 0) {
-          if (!hunt.roles || (hunt.roles.length && req.user.hasRole(hunt.roles))) {
+          if (!hunt.roles || (hunt.roles.length && !req.user.hasRole(hunt.roles))) {
             // since hunt isn't cached we can just modify
             hunt.id = '';
             hunt.search = '';
