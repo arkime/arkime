@@ -281,15 +281,7 @@ class User {
    * @type {string}
    */
 
-  /**
-   * GET - /api/roles
-   *
-   * List all available Arkime roles
-   * @name /roles
-   * @returns {boolean} success - True if the request was successful, false otherwise
-   * @returns {ArkimeRole[]} roles - The list of available Arkime roles
-   */
-  static async apiRoles (req, res, next) {
+  static async getRoles () {
     let roles = await User.allRolesCache();
 
     const userDefinedRoles = [];
@@ -304,6 +296,19 @@ class User {
 
     roles = userDefinedRoles.concat(roles);
 
+    return roles;
+  }
+
+  /**
+   * GET - /api/roles
+   *
+   * List all available Arkime roles
+   * @name /roles
+   * @returns {boolean} success - True if the request was successful, false otherwise
+   * @returns {ArkimeRole[]} roles - The list of available Arkime roles
+   */
+  static async apiRoles (req, res, next) {
+    const roles = await User.getRoles();
     return res.send({ success: true, roles });
   }
 

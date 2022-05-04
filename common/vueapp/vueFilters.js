@@ -190,3 +190,37 @@ export const parseSeconds = function (str) {
   return moment(str, ['YYYY/MM/DDTHH:mm:ss', 'YYYY/MM/DDTHH:mm:ssZ', moment.ISO_8601]).unix();
 };
 Vue.filter('parseSeconds', parseSeconds);
+
+/**
+ * remove "role:" from user defined roles and mark them as userDefined
+ * ['role:amazingrole', 'arkimeUser'] ->
+   [
+     { text: 'amazingrole', roleId: 'role:amazingrole', userDefined: true},
+     { text: 'arkimeUser', roleId: 'arkimeUser', userDefined: false }
+   ]
+ *
+ * @example
+ * '{{ ["role:amazingrole", "arkimeUser"] | parseRoles }}'
+ * this.$options.filters.parseRoles(['role:amazingrole', 'arkimeUser']);
+ * Vue.filter('parseRoles')(['role:amazingrole', 'arkimeUser'])
+ *
+ * @param {array} rolesStrs - the list of role strings to parse
+ * @returns {array} roleObjs - the role objects parsed from basic role strings
+ */
+export const parseRoles = function (roleStrs) {
+  const roles = [];
+
+  for (let role of roleStrs) {
+    let userDefined = false;
+    const roleId = role;
+    if (role.startsWith('role:')) {
+      role = role.slice(5);
+      userDefined = true;
+    }
+    role = { text: role, value: roleId, userDefined };
+    roles.push(role);
+  }
+
+  return roles;
+};
+Vue.filter('parseRoles', parseRoles);

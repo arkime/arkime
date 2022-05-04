@@ -17,7 +17,7 @@
  */
 'use strict';
 
-const MIN_DB_VERSION = 71;
+const MIN_DB_VERSION = 73;
 
 // ============================================================================
 // MODULES
@@ -1806,6 +1806,12 @@ app.delete( // delete hunt endpoint
   ['/api/hunt/:id', '/hunt/:id'],
   [ArkimeUtil.noCacheJson, disableInMultiES, logAction('hunt/:id'), checkCookieToken, User.checkPermissions(['packetSearch']), checkHuntAccess],
   huntAPIs.deleteHunt
+);
+
+app.put( // update hunt endpoint
+  ['/api/hunt/:id', '/hunt/:id'],
+  [ArkimeUtil.noCacheJson, disableInMultiES, logAction('hunt/:id'), checkCookieToken, User.checkPermissions(['packetSearch']), checkHuntAccess],
+  huntAPIs.updateHunt
 );
 
 app.put( // cancel hunt endpoint

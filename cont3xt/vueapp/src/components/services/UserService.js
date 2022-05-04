@@ -1,3 +1,4 @@
+import Vue from 'vue';
 import store from '@/store';
 import setReqHeaders from '../../../../../common/vueapp/setReqHeaders';
 
@@ -78,17 +79,7 @@ export default {
         }
         return response.json();
       }).then((response) => {
-        const roles = [];
-        for (let role of response.roles) {
-          let userDefined = false;
-          const roleId = role;
-          if (role.startsWith('role:')) {
-            role = role.slice(5);
-            userDefined = true;
-          }
-          role = { text: role, value: roleId, userDefined };
-          roles.push(role);
-        }
+        const roles = Vue.filter('parseRoles')(response.roles);
         store.commit('SET_ROLES', roles);
         return resolve(roles);
       }).catch((err) => { // this catches an issue within the ^ .then

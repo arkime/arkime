@@ -349,25 +349,35 @@
                     </label>
                   </div>
                 </div> <!-- /packet search type -->
-                <!-- users -->
-                <div class="form-group col-lg-6 col-md-12"
+                <!-- sharing with users/roles -->
+                <div class="form-group d-flex col-lg-6 col-md-12"
                   v-if="!anonymousMode">
-                  <div class="input-group input-group-sm mt-">
-                    <span class="input-group-prepend cursor-help"
-                      v-b-tooltip.hover
-                      title="Let these users view the results of this hunt">
-                      <span class="input-group-text">
-                        <span class="fa fa-user">
-                        </span>
-                      </span>
-                    </span>
-                    <input type="text"
-                      v-model="jobUsers"
-                      placeholder="Comma separated list of additional users that can view the hunt"
-                      class="form-control"
+                  <div class="align-self-start">
+                    <RoleDropdown
+                      :roles="roles"
+                      :selected-roles="jobRoles"
+                      display-text="Share with roles"
+                      @selected-roles-updated="updateNewJobRoles"
                     />
                   </div>
-                </div> <!-- /users -->
+                  <div class="flex-grow-1 ml-2">
+                    <div class="input-group input-group-sm">
+                      <span class="input-group-prepend cursor-help"
+                        v-b-tooltip.hover
+                        title="Let these users view the results of this hunt">
+                        <span class="input-group-text">
+                          <span class="fa fa-user">
+                          </span>
+                        </span>
+                      </span>
+                      <input type="text"
+                        v-model="jobUsers"
+                        placeholder="Comma separated list of additional users that can view the hunt"
+                        class="form-control"
+                      />
+                    </div>
+                  </div>
+                </div> <!-- /sharing with users/roles -->
               </div>
               <div class="row">
                 <div class="col-12 mt-1">
@@ -415,7 +425,7 @@
               {{ runningJob.name }} by
               {{ runningJob.userId }}
               <span class="pull-right">
-                <button v-if="user.userId === runningJob.userId || user.roles.includes('arkimeAdmin')"
+                <button v-if="canEdit"
                   @click="removeJob(runningJob, 'results')"
                   :disabled="runningJob.disabled"
                   type="button"
@@ -429,7 +439,7 @@
                     class="fa fa-spinner fa-spin fa-fw">
                   </span>
                 </button>
-                <span v-if="user.userId === runningJob.userId || user.roles.includes('arkimeAdmin') || runningJob.users.indexOf(user.userId) > -1">
+                <span v-if="canView">
                   <button type="button"
                     @click="openSessions(runningJob)"
                     v-if="runningJob.matchedSessions"
@@ -446,7 +456,7 @@
                     might take a minute to show up.
                   </b-tooltip>
                 </span>
-                <button v-if="user.userId === runningJob.userId || user.roles.includes('arkimeAdmin')"
+                <button v-if="canEdit"
                   @click="cancelJob(runningJob)"
                   :disabled="runningJob.disabled"
                   type="button"
@@ -460,7 +470,7 @@
                     class="fa fa-spinner fa-spin fa-fw">
                   </span>
                 </button>
-                <button v-if="user.userId === runningJob.userId || user.roles.includes('arkimeAdmin')"
+                <button v-if="canEdit"
                   @click="pauseJob(runningJob)"
                   :disabled="runningJob.loading"
                   type="button"
@@ -480,7 +490,7 @@
               <div class="row">
                 <div class="col">
                   <toggle-btn
-                    v-if="user.userId === runningJob.userId || user.roles.includes('arkimeAdmin') || runningJob.users.indexOf(user.userId) > -1"
+                    v-if="canView"
                     :opened="runningJob.expanded"
                     @toggle="toggleJobDetail(runningJob)">
                   </toggle-btn>
@@ -488,7 +498,7 @@
                     id="runningJob"
                     v-b-tooltip.hover
                     style="height:26px;"
-                    :class="{'progress-toggle':user.userId === runningJob.userId || user.roles.includes('arkimeAdmin') || runningJob.users.indexOf(user.userId) > -1}">
+                    :class="{'progress-toggle':canView}">
                     <div class="progress-bar bg-success progress-bar-striped progress-bar-animated"
                       role="progressbar"
                       :style="{width: runningJob.progress + '%'}"
@@ -501,7 +511,7 @@
                   <b-tooltip target="runningJob">
                     <div class="mt-2">
                       Found <strong>{{ runningJob.matchedSessions | commaString }}</strong> sessions
-                      <span v-if="user.userId === runningJob.userId || user.roles.includes('arkimeAdmin') || runningJob.users.indexOf(user.userId) > -1">
+                      <span v-if="canView">
                         matching <strong>{{ runningJob.search }}</strong> ({{ runningJob.searchType }})
                       </span>
                       <span v-if="runningJob.failedSessionIds && runningJob.failedSessionIds.length">
@@ -537,7 +547,8 @@
                   <hunt-data :job="runningJob"
                     @removeUser="removeUser"
                     @addUsers="addUsers"
-                    :user="user">
+                    :user="user"
+                    @updateHunt="updateHunt">
                   </hunt-data>
                 </div>
               </transition>
@@ -621,7 +632,8 @@
                 <hunt-data :job="job"
                   @removeUser="removeUser"
                   @addUsers="addUsers"
-                  :user="user">
+                  :user="user"
+                  @updateHunt="updateHunt">
                 </hunt-data>
               </td>
             </tr>
@@ -757,7 +769,8 @@
                   @removeJob="removeJob"
                   @removeUser="removeUser"
                   @addUsers="addUsers"
-                  :user="user">
+                  :user="user"
+                  @updateHunt="updateHunt">
                 </hunt-data>
               </td>
             </tr>
@@ -834,6 +847,7 @@ import MolochCollapsible from '../utils/CollapsibleWrapper';
 import FocusInput from '../utils/FocusInput';
 import HuntData from './HuntData';
 import HuntRow from './HuntRow';
+import RoleDropdown from '../../../../../common/vueapp/RoleDropdown';
 // import utils
 import Utils from '../utils/utils';
 
@@ -851,7 +865,8 @@ export default {
     MolochCollapsible,
     MolochPaging,
     HuntData,
-    HuntRow
+    HuntRow,
+    RoleDropdown
   },
   directives: { FocusInput },
   data: function () {
@@ -887,6 +902,7 @@ export default {
       jobNotifier: undefined,
       jobUsers: '',
       jobDescription: '',
+      jobRoles: [],
       // notifiers
       notifiers: undefined,
       // hunt limits
@@ -921,6 +937,15 @@ export default {
     },
     user: function () {
       return this.$store.state.user;
+    },
+    roles () {
+      return this.$store.state.roles;
+    },
+    canEdit () {
+      return HuntService.canEditHunt(this.user, this.runningJob);
+    },
+    canView () {
+      return HuntService.canViewHunt(this.user, this.runningJob);
     }
   },
   mounted: function () {
@@ -983,6 +1008,9 @@ export default {
       this.createFormError = '';
       this.createFormOpened = false;
     },
+    updateNewJobRoles (roles) {
+      this.jobRoles = roles;
+    },
     createJob: function () {
       this.createFormError = '';
 
@@ -1019,13 +1047,15 @@ export default {
         query: this.sessionsQuery,
         notifier: this.jobNotifier,
         users: this.jobUsers,
-        description: this.jobDescription
+        description: this.jobDescription,
+        roles: this.jobRoles
       };
 
       HuntService.create(newJob).then((response) => {
         this.createFormOpened = false;
         this.jobName = '';
         this.jobUsers = '';
+        this.jobRoles = [];
         this.jobSearch = '';
         this.jobDescription = '';
         this.createFormError = '';
@@ -1200,6 +1230,24 @@ export default {
 
       HuntService.addUsers(job.id, users).then((response) => {
         this.$set(job, 'users', response.data.users);
+      }).catch((error) => {
+        this.$set(this, 'floatingError', error.text || error);
+      });
+    },
+    updateHunt: function (job) {
+      this.$set(this, 'floatingError', '');
+      this.$set(this, 'floatingSuccess', '');
+
+      const data = {
+        roles: job.roles,
+        description: job.description
+      };
+
+      HuntService.updateHunt(job.id, data).then((response) => {
+        this.$set(this, 'floatingSuccess', response.data.text);
+        setTimeout(() => {
+          this.$set(this, 'floatingSuccess', '');
+        }, 5000);
       }).catch((error) => {
         this.$set(this, 'floatingError', error.text || error);
       });

@@ -1,4 +1,4 @@
-use Test::More tests => 270;
+use Test::More tests => 314;
 use Cwd;
 use URI::Escape;
 use MolochTest;
@@ -9,6 +9,7 @@ use strict;
 
 my $token = getTokenCookie();
 my $otherToken = getTokenCookie('user2');
+my $nonadminToken = getTokenCookie2('user3');
 my $json;
 
 
@@ -237,6 +238,44 @@ my $hToken = getTokenCookie('huntuser');
   viewerGet("/regressionTests/processHuntJobs");
   $json = viewerPutToken("/api/hunt/$id8/removefromsessions?molochRegressionUser=anonymous", "{}", $token);
   is ($json->{success}, 1, "can remove hunt name and id from sessions");
+
+# can update hunt description
+  $json = viewerPutToken("/api/hunt/$id7", '{"description":"awesome new description"}', $token);
+  is ($json->{success}, 1, "can update hunt description");
+  $hunts = viewerGet("/hunt/list?all");
+  is ($hunts->{data}->[4]->{description}, "awesome new description", "description updated");
+
+# validate that user can't access hunt secret fields because of hunt roles
+  $hunts = viewerGetToken("/hunt/list?all&molochRegressionUser=user3", $nonadminToken);
+  my ($viewHunt, $badHunt);
+  foreach my $item (@{$hunts->{data}}) {
+    is ($item->{id}, "", "should be missing id field");
+    is ($item->{userId}, "", "should be missing userId field");
+    is ($item->{search}, "", "should be missing search field");
+    is ($item->{searchType}, "", "should be missing searchType field");
+    is ($item->{query}, undef, "should be missing query field");
+  }
+
+# can update hunt roles
+  $json = viewerPutToken("/api/hunt/$id7", '{"roles":["arkimeUser"]}', $token);
+  is ($json->{success}, 1, "can update hunt roles");
+  $hunts = viewerGet("/hunt/list?all");
+  is ($hunts->{data}->[4]->{roles}->[0], "arkimeUser", "roles updated");
+
+# validate that user can access hunt secrets now that the role is set
+  $hunts = viewerGetToken("/hunt/list?all&molochRegressionUser=user3", $nonadminToken);
+  diag(Dumper($hunts->{data}->[4]));
+  ok(exists $hunts->{data}->[4]->{id});
+  isnt($hunts->{data}->[4]->{id}, "", "should have id field");
+  ok(exists $hunts->{data}->[4]->{userId});
+  isnt($hunts->{data}->[4]->{userId}, "", "should be missing userId field");
+  ok(exists $hunts->{data}->[4]->{search});
+  isnt($hunts->{data}->[4]->{search}, "", "should be missing search field");
+  ok(exists $hunts->{data}->[4]->{searchType});
+  isnt($hunts->{data}->[4]->{searchType}, "", "should be missing searchType field");
+  ok(exists $hunts->{data}->[4]->{query});
+  isnt($hunts->{data}->[4]->{query}, undef, "should be missing query field");
+
 
 # cleanup
   viewerDeleteToken("/hunt/$id5?molochRegressionUser=anonymous", $token);

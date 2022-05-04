@@ -2,7 +2,7 @@
   <tr>
     <td>
       <toggle-btn
-        v-if="user.userId === job.userId || user.roles.includes('arkimeAdmin') || job.users.indexOf(user.userId) > -1"
+        v-if="canView"
         :opened="job.expanded"
         @toggle="$emit('toggle', job)">
       </toggle-btn>
@@ -60,7 +60,7 @@
       {{ job.userId }}
     </td>
     <td class="word-break">
-      <span v-if="user.userId === job.userId || user.roles.includes('arkimeAdmin') || job.users.indexOf(user.userId) > -1">
+      <span v-if="canView">
         {{ job.search }} ({{ job.searchType }})
       </span>
     </td>
@@ -71,12 +71,12 @@
       {{ job.created * 1000 | timezoneDateString(user.settings.timezone, false) }}
     </td>
     <td>
-      <span v-if="user.userId === job.userId || user.roles.includes('arkimeAdmin') || job.users.indexOf(user.userId) > -1">
+      <span v-if="canView">
         {{ job.id }}
       </span>
     </td>
     <td class="no-wrap">
-      <button v-if="user.userId === job.userId || user.roles.includes('arkimeAdmin')"
+      <button v-if="canEdit"
         @click="$emit('removeJob', job, arrayName)"
         :disabled="job.loading"
         type="button"
@@ -96,7 +96,7 @@
         @click="$emit('removeFromSessions', job)"
         class="ml-1 pull-right btn btn-sm btn-danger"
         title="Remove the hunt name and ID fields from the matched sessions."
-        v-if="(user.userId === job.userId || user.roles.includes('arkimeAdmin')) && canRemoveFromSessions"
+        v-if="canEdit && canRemoveFromSessions"
         :disabled="job.loading || !job.matchedSessions || job.removed || !user.removeEnabled">
         <span v-if="!job.loading"
           class="fa fa-times fa-fw">
@@ -112,8 +112,9 @@
         <strong>Note:</strong> ES takes a while to update sessions, so scrubbing these fields
         might take a minute.
       </b-tooltip>
-      <span v-if="user.userId === job.userId || user.roles.includes('arkimeAdmin') || job.users.indexOf(user.userId) > -1">
+      <span v-if="canView">
         <button type="button"
+          title="Open results in a new Sessions tab."
           @click="$emit('openSessions', job)"
           :disabled="!job.matchedSessions || job.removed"
           :id="`openresults${job.id}`"
@@ -129,7 +130,7 @@
           might take a minute to show up.
         </b-tooltip>
       </span>
-      <button v-if="canRerun && !job.unrunnable && (user.userId === job.userId || user.roles.includes('arkimeAdmin') || job.users.indexOf(user.userId) > -1)"
+      <button v-if="canRerun && !job.unrunnable && (canView)"
         type="button"
         @click="$emit('rerunJob', job)"
         v-b-tooltip.hover
@@ -138,7 +139,7 @@
         <span class="fa fa-refresh fa-fw">
         </span>
       </button>
-      <button v-if="canRepeat && !job.unrunnable && (user.userId === job.userId || user.roles.includes('arkimeAdmin'))"
+      <button v-if="canRepeat && !job.unrunnable && canEdit"
         type="button"
         @click="$emit('repeatJob', job)"
         v-b-tooltip.hover
@@ -147,7 +148,7 @@
         <span class="fa fa-repeat fa-fw">
         </span>
       </button>
-      <button v-if="canCancel && (user.userId === job.userId || user.roles.includes('arkimeAdmin'))"
+      <button v-if="canCancel && canEdit"
         @click="$emit('cancelJob', job)"
         :disabled="job.loading"
         type="button"
@@ -161,7 +162,7 @@
           class="fa fa-spinner fa-spin fa-fw">
         </span>
       </button>
-      <button v-if="(job.status === 'running' || job.status === 'queued') && (user.userId === job.userId || user.roles.includes('arkimeAdmin'))"
+      <button v-if="(job.status === 'running' || job.status === 'queued') && canEdit"
         :disabled="job.loading"
         @click="$emit('pauseJob', job)"
         type="button"
@@ -175,7 +176,7 @@
           class="fa fa-spinner fa-spin fa-fw">
         </span>
       </button>
-      <button v-else-if="job.status === 'paused' && (user.userId === job.userId || user.roles.includes('arkimeAdmin'))"
+      <button v-else-if="job.status === 'paused' && canEdit"
         :disabled="job.loading"
         @click="$emit('playJob', job)"
         type="button"
@@ -196,6 +197,7 @@
 <script>
 import ToggleBtn from '../../../../../common/vueapp/ToggleBtn';
 import HuntStatus from './HuntStatus';
+import HuntService from './HuntService';
 
 export default {
   name: 'HuntRow',
@@ -211,6 +213,14 @@ export default {
   components: {
     ToggleBtn,
     HuntStatus
+  },
+  computed: {
+    canEdit () {
+      return HuntService.canEditHunt(this.user, this.job);
+    },
+    canView () {
+      return HuntService.canViewHunt(this.user, this.job);
+    }
   }
 };
 </script>

@@ -66,6 +66,7 @@
 # 70 - reindex everything, ecs, sessions3
 # 71 - user.roles, user.cont3xt
 # 72 - save es query in history, hunt description
+# 73 - hunt roles
 
 use HTTP::Request::Common;
 use LWP::UserAgent;
@@ -77,7 +78,7 @@ use IO::Compress::Gzip qw(gzip $GzipError);
 use IO::Uncompress::Gunzip qw(gunzip $GunzipError);
 use strict;
 
-my $VERSION = 72;
+my $VERSION = 73;
 my $verbose = 0;
 my $PREFIX = undef;
 my $OLDPREFIX = "";
@@ -5404,6 +5405,9 @@ sub huntsUpdate
     "description": {
       "type": "text",
       "index": "false"
+    },
+    "roles": {
+      "type": "keyword"
     }
   }
 }';
@@ -7413,7 +7417,7 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
 
     logmsg "Starting Upgrade\n";
 
-    if ($main::versionNumber <= 72) {
+    if ($main::versionNumber <= 73) {
         checkForOld7Indices();
         sessions3Update();
         historyUpdate();

@@ -24,11 +24,6 @@ export default {
     UsersCommon,
     MolochLoading
   },
-  data () {
-    return {
-      userRoles: []
-    };
-  },
   computed: {
     user: {
       get () {
@@ -37,10 +32,15 @@ export default {
       set (newValue) {
         this.$store.commit('setUser', newValue);
       }
+    },
+    userRoles: {
+      get () {
+        return this.$store.state.roles;
+      },
+      set (newValue) {
+        this.$store.commit('setRoles', newValue);
+      }
     }
-  },
-  created () {
-    this.getRoles();
   },
   methods: {
     getRoles () {

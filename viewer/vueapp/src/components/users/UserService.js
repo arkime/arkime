@@ -722,21 +722,10 @@ export default {
    * @returns {Promise} Promise A promise object that signals the completion
    *                            or rejection of the request.
    */
-  getRoles (page) {
+  getRoles () {
     return new Promise((resolve, reject) => {
       Vue.axios.get('api/user/roles').then((response) => {
-        // remove "role:" from user defined roles and mark them as userDefined
-        const roles = [];
-        for (let role of response.data.roles) {
-          let userDefined = false;
-          const roleId = role;
-          if (role.startsWith('role:')) {
-            role = role.slice(5);
-            userDefined = true;
-          }
-          role = { text: role, value: roleId, userDefined };
-          roles.push(role);
-        }
+        const roles = Vue.filter('parseRoles')(response.data.roles);
         return resolve(roles);
       }).catch((err) => {
         return reject(err);
