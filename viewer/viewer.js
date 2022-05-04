@@ -17,7 +17,7 @@
  */
 'use strict';
 
-const MIN_DB_VERSION = 71;
+const MIN_DB_VERSION = 73;
 
 // ============================================================================
 // MODULES

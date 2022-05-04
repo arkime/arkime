@@ -234,7 +234,7 @@
           <template v-if="job.roles && job.roles.length">
             This job is being shared with these roles:
           </template>
-          <template v-else-if="job.users && !job.users.length">
+          <template v-else-if="job.roles && !job.roles.length">
             This hunt is not being shared with any roles.
             Add roles here:
           </template>

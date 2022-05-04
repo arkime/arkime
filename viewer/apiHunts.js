@@ -889,17 +889,7 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
         // clear out secret fields for users who don't have access to that hunt
         // if the user is not an admin and didn't create the hunt and isn't part of the user's list
         if (!req.user.hasRole('arkimeAdmin') && req.user.userId !== hunt.userId && hunt.users.indexOf(req.user.userId) < 0) {
-          let userHasRole = false;
-          if (hunt.roles.length) {
-            for (const role of hunt.roles) {
-              if (req.user.roles.indexOf(role) > -1) {
-                userHasRole = true;
-                break;
-              }
-            }
-          }
-
-          if (!userHasRole) {
+          if (!hunt.roles || (hunt.roles.length && req.user.hasRole(hunt.roles))) {
             // since hunt isn't cached we can just modify
             hunt.id = '';
             hunt.search = '';
@@ -1088,8 +1078,12 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
       const { body: { _source: hunt } } = await Db.getHunt(req.params.id);
 
       // update properties
-      hunt.description = req.body.description;
-      hunt.roles = req.body.roles;
+      if (req.body.description !== undefined) {
+        hunt.description = req.body.description;
+      }
+      if (req.body.roles) {
+        hunt.roles = req.body.roles;
+      }
 
       try {
         await Db.setHunt(req.params.id, hunt);
