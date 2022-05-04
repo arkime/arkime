@@ -774,7 +774,7 @@ export default {
       });
     },
     updateNewUserRoles (roles) {
-      this.newUser.roles = roles;
+      this.$set(this.newUser, 'roles', roles);
     },
     createUser (createRole) {
       this.createError = '';

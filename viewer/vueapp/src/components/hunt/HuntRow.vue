@@ -1,4 +1,4 @@
-canEdit<template>
+<template>
   <tr>
     <td>
       <toggle-btn
