@@ -68,6 +68,14 @@ class DNSIntegration extends Integration {
   }
 
   async fetchDomain (user, domain) {
+    const error = (err) => {
+      if (err?.response?.status === 400) {
+        console.log(this.name, domain, err?.request?.path, err.toString());
+      } else {
+        console.log(this.name, domain, err);
+      }
+    };
+
     try {
       const instance = axios.create({
         headers: { Accept: 'application/dns-json' }
@@ -77,15 +85,16 @@ class DNSIntegration extends Integration {
 
       // Start all the queries in parallel
       for (const query of ['A', 'AAAA', 'NS', 'MX', 'TXT', 'CAA', 'SOA']) {
-        queries[query] = instance.get(`https://cloudflare-dns.com/dns-query?name=${domain}&type=${query}`);
+        queries[query] = instance.get(`https://cloudflare-dns.com/dns-query?name=${domain}&type=${query}`).catch(error);
       }
-      queries.DMARC = instance.get(`https://cloudflare-dns.com/dns-query?name=_dmarc.${domain}&type=TXT`);
-      queries.BIMI = instance.get(`https://cloudflare-dns.com/dns-query?name=default._bimi.${domain}&type=TXT`);
+      queries.DMARC = instance.get(`https://cloudflare-dns.com/dns-query?name=_dmarc.${domain}&type=TXT`).catch(error);
+      queries.BIMI = instance.get(`https://cloudflare-dns.com/dns-query?name=default._bimi.${domain}&type=TXT`).catch(error);
 
       const result = {};
       // Wait for them to finish
       for (const query in queries) {
-        const data = (await queries[query]).data;
+        const data = (await queries[query])?.data;
+        if (!data) { continue; }
         result[query] = { Status: data.Status };
         if (data.Answer) {
           result[query].Answer = data.Answer;
