@@ -6,8 +6,9 @@
       <span class="fixed-header">
         <!-- search navbar -->
         <moloch-search
+          @changeSearch="changeSearch"
           :num-matching-sessions="filtered"
-          @changeSearch="changeSearch">
+          :disabled-aggregations="disabledAggregations">
         </moloch-search> <!-- /search navbar -->
 
         <!-- info navbar -->
@@ -115,6 +116,7 @@
               Loading SPI data
             </em>
             <button type="button"
+              :class="{'disabled-aggregations':disabledAggregations}"
               class="btn btn-warning btn-sm pull-right cancel-btn"
               @click="cancelLoading">
               <span class="fa fa-ban">
@@ -147,11 +149,12 @@
     <!-- visualizations -->
     <moloch-visualizations
       v-if="mapData && graphData && showToolBars"
-      :graph-data="graphData"
-      :map-data="mapData"
       :primary="true"
+      :map-data="mapData"
+      :graph-data="graphData"
+      @fetchMapData="fetchVizData"
       :timelineDataFilters="timelineDataFilters"
-      @fetchMapData="fetchVizData">
+      :disabled-aggregations="disabledAggregations">
     </moloch-visualizations> <!-- /visualizations -->
 
     <div class="spiview-content mr-1 ml-1">
@@ -443,7 +446,8 @@ export default {
       fieldConfigError: '',
       fieldConfigSuccess: '',
       multiviewer: this.$constants.MOLOCH_MULTIVIEWER,
-      spiviewFieldTransition: ''
+      spiviewFieldTransition: '',
+      disabledAggregations: false
     };
   },
   computed: {
@@ -881,6 +885,13 @@ export default {
         query.facets = 0;
       }
 
+      if ( // set whether the user wants to force aggregations to be run
+        (localStorage['force-aggregations'] && localStorage['force-aggregations'] !== 'false') ||
+        (sessionStorage['force-aggregations'] && sessionStorage['force-aggregations'] !== 'false')
+      ) {
+        query.forceAggregations = true;
+      }
+
       const promise = new Promise((resolve, reject) => {
         const options = {
           method: 'POST',
@@ -893,10 +904,14 @@ export default {
           if (response.data.bsqErr) {
             response.data.error = response.data.bsqErr;
           }
-          if (hideViz) { // always set map/graph data so viz area shows up
+
+          if (hideViz || !query.forceAggregations) { // always set map/graph data so viz area shows up
             this.mapData = {};
             this.graphData = {};
           }
+
+          this.disabledAggregations = response.data.disabledAggregations;
+
           resolve(response.data);
         }).catch((error) => {
           if (!Vue.axios.isCancel(error)) {
@@ -1399,5 +1414,8 @@ export default {
 .cancel-btn {
   margin-top: -4px;
   margin-right: 80px;
+}
+.cancel-btn.disabled-aggregations {
+  margin-right: 160px;
 }
 </style>
