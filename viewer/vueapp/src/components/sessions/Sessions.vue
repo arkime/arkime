@@ -14,7 +14,8 @@
           :start="query.start"
           @changeSearch="cancelAndLoad(true)"
           @setView="loadNewView"
-          @setColumns="loadColumns">
+          @setColumns="loadColumns"
+          :disabled-aggregations="sessions.disabledAggregations">
         </moloch-search> <!-- /search navbar -->
 
         <!-- paging navbar -->
@@ -34,12 +35,14 @@
     <!-- visualizations -->
     <moloch-visualizations
       v-if="graphData"
-      :graph-data="graphData"
-      :map-data="mapData"
       :primary="true"
+      :map-data="mapData"
+      :graph-data="graphData"
+      @fetchMapData="cancelAndLoad(true)"
       :timelineDataFilters="timelineDataFilters"
-      @fetchMapData="cancelAndLoad(true)">
-    </moloch-visualizations> <!-- /visualizations -->
+      :disabled-aggregations="sessions.disabledAggregations">
+    </moloch-visualizations>
+    <!-- /visualizations -->
 
     <div class="sessions-content ml-2"
       id="sessions-content"
@@ -794,6 +797,9 @@ export default {
     },
     fields: function () {
       return this.$store.state.fieldsMap;
+    },
+    hideViz: function () {
+      return this.$store.state.hideViz;
     }
   },
   watch: {

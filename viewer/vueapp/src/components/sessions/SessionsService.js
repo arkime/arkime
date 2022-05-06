@@ -66,6 +66,13 @@ export default {
         params.facets = 0;
       }
 
+      if ( // set whether the user wants to force aggregations to be run
+        (localStorage['force-aggregations'] && localStorage['force-aggregations'] !== 'false') ||
+        (sessionStorage['force-aggregations'] && sessionStorage['force-aggregations'] !== 'false')
+      ) {
+        params.forceAggregations = true;
+      }
+
       const options = {
         url: 'api/sessions',
         method: 'POST',

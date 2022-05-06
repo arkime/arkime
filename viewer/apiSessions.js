@@ -1651,6 +1651,20 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
     options = ViewerUtils.addCluster(req.query.cluster, options);
     options.arkime_unflatten = parseInt(req.query.flatten) !== 1;
 
+    let aggregations = true;
+    if (!req.query.forceAggregations) { // client can force aggregations for any time range
+      if (req.query.date === '-1') {
+        aggregations = false;
+      } else if (req.query.stopTime && req.query.startTime) {
+        const deltaTime = (req.query.stopTime - req.query.startTime) / 86400; // secs to days
+        if (deltaTime > Config.get('turnOffGraphDays', 30)) {
+          aggregations = false;
+        }
+      }
+    }
+
+    if (!aggregations) { req.query.facets = 0; }
+
     const response = {
       data: [],
       map: {},
@@ -1746,6 +1760,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
           try {
             response.map = map;
             response.graph = graph;
+            response.disabledAggregations = !aggregations;
             response.data = (results ? results.results : []);
             response.recordsTotal = total.count;
             response.recordsFiltered = (results ? results.total : 0);

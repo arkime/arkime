@@ -1,225 +1,242 @@
 <template>
-  <div :class="{'sticky-viz':stickyViz && primary, 'hide-viz':hideViz && primary}">
+  <div :class="{'sticky-viz':stickyViz && primary, 'hide-viz':hideViz && primary, 'disabled-msg':disabledAggregations}">
 
     <div class="pt-2 pl-2 pr-2 viz-container"
       :id="'vizContainer' + id"
       :class="{'map-visible':showMap,'map-invisible':!showMap}">
 
       <div v-show="!hideViz">
-        <!-- map content -->
-        <div :class="{'expanded':mapExpanded}">
-
-          <!-- map open button -->
-          <div class="map-btn"
-            v-show="!showMap && primary"
-            @click="toggleMap"
-            v-b-tooltip.hover.left
-            title="View map">
-            <span class="fa fa-fw fa-globe">
-            </span>
-          </div> <!-- /map open button -->
-
-          <div class="inline-map">
-            <div v-if="mapData">
-              <div class="map-container">
-
-                <!-- map -->
-                <div class="map"
-                  :id="'molochMap' + id">
-                </div> <!-- /map -->
-
-                <!-- map buttons -->
-                <button type="button"
-                  v-if="primary"
-                  class="btn btn-xs btn-default btn-close-map btn-fw"
-                  @click="toggleMap"
-                  v-b-tooltip.hover.left
-                  title="Close map">
-                  <span class="fa fa-close">
-                  </span>
-                </button>
-                <button type="button"
-                  class="btn btn-xs btn-default btn-fw btn-z-index-2"
-                  :class="{'btn-expand-map':primary,'btn-close-map':!primary}"
-                  @click="toggleMapSize"
-                  v-b-tooltip.hover.left
-                  title="Expand/Collapse Map">
-                  <span class="fa"
-                    :class="{'fa-expand':!mapExpanded,'fa-compress':mapExpanded}">
-                  </span>
-                </button>
-                <div v-if="primary"
-                  class="btn-group-vertical src-dst-btns btn-fw">
-                  <button type="button"
-                    class="btn btn-xs btn-default"
-                    :class="{'active':src}"
-                    @click="toggleSrcDstXff('src')"
-                    v-b-tooltip.hover.left
-                    title="Toggle source countries">
-                    <strong>S</strong>
-                  </button>
-                  <button type="button"
-                    class="btn btn-xs btn-default"
-                    :class="{'active':dst}"
-                    @click="toggleSrcDstXff('dst')"
-                    v-b-tooltip.hover.left
-                    title="Toggle destination countries">
-                    <strong>D</strong>
-                  </button>
-                </div>
-                <button v-if="primary"
-                  type="button"
-                  class="btn btn-xs btn-default btn-fw xff-btn"
-                  @click="toggleSrcDstXff('xffGeo')"
-                  :class="{'active':xffGeo}"
-                  title="Toggle XFF Countries">
-                  <small>XFF</small>
-                </button> <!-- /map buttons -->
-
-                <!-- map legend -->
-                <div class="map-legend"
-                  v-if="mapExpanded && legend.length">
-                  <strong>Top 10</strong>&nbsp;
-                  <span v-for="(item, key) in legend"
-                    :key="key"
-                    class="legend-item"
-                    :style="{'background-color':item.color}">
-                    {{ item.name }}
-                    ({{ item.value | commaString }})
-                  </span>
-                </div> <!-- map legend -->
-
-              </div>
+        <div class="row" v-if="disabledAggregations">
+          <div class="col text-center">
+            <div class="alert alert-sm alert-info container">
+              <strong>
+                This cluster is set to hide the graph if a time range of greater than {{ turnOffGraphDays }} days is requested
+              </strong>
+              <span class="fa fa-info-circle fa-lg ml-1 mr-1 cursor-help"
+                v-b-tooltip="'This helps with performance as computing the visualization data takes longer than just fetching the sessions data'"
+              />
+              <br>
+              Click the "Fetch Viz Data" button above to fetch visualization data for this query (or open the dropdown for more options).
             </div>
           </div>
+        </div>
 
-        </div> <!-- /map content -->
+        <template v-else>
+          <!-- map content -->
+          <div :class="{'expanded':mapExpanded}">
 
-        <!-- graph content -->
-        <div>
+            <!-- map open button -->
+            <div class="map-btn"
+              v-show="!showMap && primary"
+              @click="toggleMap"
+              v-b-tooltip.hover.left
+              title="View map">
+              <span class="fa fa-fw fa-globe">
+              </span>
+            </div> <!-- /map open button -->
 
-          <!-- graph controls -->
-          <div class="session-graph-btn-container"
-            v-if="primary">
-            <!-- zoom in/out -->
-            <div class="btn-group btn-group-xs">
-              <label class="btn btn-default"
-                @click="zoomOut"
-                v-b-tooltip.hover.right
-                title="Zoom out">
-                <span class="fa fa-search-minus">
-                </span>
-              </label>
-              <label class="btn btn-default"
-                @click="zoomIn"
-                v-b-tooltip.hover.right
-                title="Zoom in">
-                <span class="fa fa-search-plus">
-                </span>
-              </label>
-            </div> <!-- /zoom in/out -->
-            <!-- pan left/right -->
-            <div class="btn-group btn-group-xs ml-1">
-              <label class="btn btn-default"
-                @click="panLeft"
-                v-b-tooltip.hover
-                title="Pan left">
-                <span class="fa fa-chevron-left">
-                </span>
-              </label>
-              <b-dropdown size="sm"
-                boundary="body"
-                variant="default"
-                class="pan-dropdown">
-                <template slot="button-content">
-                  {{ plotPan * 100 + '%' }}
-                </template>
-                <b-dropdown-item @click="plotPanChange(0.05)">
-                  5%
-                </b-dropdown-item>
-                <b-dropdown-item @click="plotPanChange(0.1)">
-                  10%
-                </b-dropdown-item>
-                <b-dropdown-item @click="plotPanChange(0.2)">
-                  20%
-                </b-dropdown-item>
-                <b-dropdown-item @click="plotPanChange(0.5)">
-                  50%
-                </b-dropdown-item>
-                <b-dropdown-item @click="plotPanChange(1)">
-                  100%
-                </b-dropdown-item>
-              </b-dropdown>
-              <label class="btn btn-default"
-                @click="panRight"
-                v-b-tooltip.hover
-                title="Pan right">
-                <span class="fa fa-chevron-right">
-                </span>
-              </label>
-            </div> <!-- /pan left/right -->
-            <!-- graph type -->
-            <div class="btn-group btn-group-xs btn-group-radios ml-1">
-              <b-form-radio-group
-                size="sm"
-                buttons
-                v-model="graphType"
-                @input="changeGraphType">
-                <b-radio
-                  value="sessionsHisto"
-                  key="sessionsHisto"
-                  class="btn-radio">
-                  {{ "Session" }}
-                </b-radio>
-                <b-radio
-                  v-for="filter in timelineDataFilters"
-                  :value="filter.dbField + 'Histo'"
-                  :key="filter.dbField"
-                  class="btn-radio">
-                  {{ filter.friendlyName }}
-                </b-radio>
-              </b-form-radio-group>
-            </div> <!-- graph type -->
-            <!-- series type -->
-            <div class="btn-group btn-group-xs btn-group-radios ml-1">
-              <b-form-radio-group
-                size="sm"
-                buttons
-                v-model="seriesType"
-                @input="changeSeriesType">
-                <b-radio value="lines"
-                  class="btn-radio">
-                  Lines
-                </b-radio>
-                <b-radio value="bars"
-                  class="btn-radio">
-                  Bars
-                </b-radio>
-              </b-form-radio-group>
-            </div> <!-- series type -->
-            <!-- cap times -->
-            <div class="btn-group btn-group-xs btn-group-checkboxes ml-1">
-              <b-form-checkbox
-                button
-                size="sm"
-                :active="showCapStartTimes"
-                v-model="showCapStartTimes"
-                @change="toggleCapStartTimes"
-                v-b-tooltip="'Toggle the capture process start time(s)'">
-                Cap Restarts
-              </b-form-checkbox> <!-- /cap times -->
+            <div class="inline-map">
+              <div v-if="mapData">
+                <div class="map-container">
+
+                  <!-- map -->
+                  <div class="map"
+                    :id="'molochMap' + id">
+                  </div> <!-- /map -->
+
+                  <!-- map buttons -->
+                  <button type="button"
+                    v-if="primary"
+                    class="btn btn-xs btn-default btn-close-map btn-fw"
+                    @click="toggleMap"
+                    v-b-tooltip.hover.left
+                    title="Close map">
+                    <span class="fa fa-close">
+                    </span>
+                  </button>
+                  <button type="button"
+                    class="btn btn-xs btn-default btn-fw btn-z-index-2"
+                    :class="{'btn-expand-map':primary,'btn-close-map':!primary}"
+                    @click="toggleMapSize"
+                    v-b-tooltip.hover.left
+                    title="Expand/Collapse Map">
+                    <span class="fa"
+                      :class="{'fa-expand':!mapExpanded,'fa-compress':mapExpanded}">
+                    </span>
+                  </button>
+                  <div v-if="primary"
+                    class="btn-group-vertical src-dst-btns btn-fw">
+                    <button type="button"
+                      class="btn btn-xs btn-default"
+                      :class="{'active':src}"
+                      @click="toggleSrcDstXff('src')"
+                      v-b-tooltip.hover.left
+                      title="Toggle source countries">
+                      <strong>S</strong>
+                    </button>
+                    <button type="button"
+                      class="btn btn-xs btn-default"
+                      :class="{'active':dst}"
+                      @click="toggleSrcDstXff('dst')"
+                      v-b-tooltip.hover.left
+                      title="Toggle destination countries">
+                      <strong>D</strong>
+                    </button>
+                  </div>
+                  <button v-if="primary"
+                    type="button"
+                    class="btn btn-xs btn-default btn-fw xff-btn"
+                    @click="toggleSrcDstXff('xffGeo')"
+                    :class="{'active':xffGeo}"
+                    title="Toggle XFF Countries">
+                    <small>XFF</small>
+                  </button> <!-- /map buttons -->
+
+                  <!-- map legend -->
+                  <div class="map-legend"
+                    v-if="mapExpanded && legend.length">
+                    <strong>Top 10</strong>&nbsp;
+                    <span v-for="(item, key) in legend"
+                      :key="key"
+                      class="legend-item"
+                      :style="{'background-color':item.color}">
+                      {{ item.name }}
+                      ({{ item.value | commaString }})
+                    </span>
+                  </div> <!-- map legend -->
+
+                </div>
+              </div>
             </div>
-          </div> <!-- /graph controls -->
 
-          <!-- graph -->
-          <div v-if="graphData"
-            class="plot-container pr-4">
-            <div class="plot-area"
-              :id="'plotArea' + id">
-            </div>
-          </div> <!-- /graph -->
+          </div> <!-- /map content -->
 
-        </div> <!-- /graph content -->
+          <!-- graph content -->
+          <div>
+
+            <!-- graph controls -->
+            <div class="session-graph-btn-container"
+              v-if="primary">
+              <!-- zoom in/out -->
+              <div class="btn-group btn-group-xs">
+                <label class="btn btn-default"
+                  @click="zoomOut"
+                  v-b-tooltip.hover.right
+                  title="Zoom out">
+                  <span class="fa fa-search-minus">
+                  </span>
+                </label>
+                <label class="btn btn-default"
+                  @click="zoomIn"
+                  v-b-tooltip.hover.right
+                  title="Zoom in">
+                  <span class="fa fa-search-plus">
+                  </span>
+                </label>
+              </div> <!-- /zoom in/out -->
+              <!-- pan left/right -->
+              <div class="btn-group btn-group-xs ml-1">
+                <label class="btn btn-default"
+                  @click="panLeft"
+                  v-b-tooltip.hover
+                  title="Pan left">
+                  <span class="fa fa-chevron-left">
+                  </span>
+                </label>
+                <b-dropdown size="sm"
+                  boundary="body"
+                  variant="default"
+                  class="pan-dropdown">
+                  <template slot="button-content">
+                    {{ plotPan * 100 + '%' }}
+                  </template>
+                  <b-dropdown-item @click="plotPanChange(0.05)">
+                    5%
+                  </b-dropdown-item>
+                  <b-dropdown-item @click="plotPanChange(0.1)">
+                    10%
+                  </b-dropdown-item>
+                  <b-dropdown-item @click="plotPanChange(0.2)">
+                    20%
+                  </b-dropdown-item>
+                  <b-dropdown-item @click="plotPanChange(0.5)">
+                    50%
+                  </b-dropdown-item>
+                  <b-dropdown-item @click="plotPanChange(1)">
+                    100%
+                  </b-dropdown-item>
+                </b-dropdown>
+                <label class="btn btn-default"
+                  @click="panRight"
+                  v-b-tooltip.hover
+                  title="Pan right">
+                  <span class="fa fa-chevron-right">
+                  </span>
+                </label>
+              </div> <!-- /pan left/right -->
+              <!-- graph type -->
+              <div class="btn-group btn-group-xs btn-group-radios ml-1">
+                <b-form-radio-group
+                  size="sm"
+                  buttons
+                  v-model="graphType"
+                  @input="changeGraphType">
+                  <b-radio
+                    value="sessionsHisto"
+                    key="sessionsHisto"
+                    class="btn-radio">
+                    {{ "Session" }}
+                  </b-radio>
+                  <b-radio
+                    v-for="filter in timelineDataFilters"
+                    :value="filter.dbField + 'Histo'"
+                    :key="filter.dbField"
+                    class="btn-radio">
+                    {{ filter.friendlyName }}
+                  </b-radio>
+                </b-form-radio-group>
+              </div> <!-- graph type -->
+              <!-- series type -->
+              <div class="btn-group btn-group-xs btn-group-radios ml-1">
+                <b-form-radio-group
+                  size="sm"
+                  buttons
+                  v-model="seriesType"
+                  @input="changeSeriesType">
+                  <b-radio value="lines"
+                    class="btn-radio">
+                    Lines
+                  </b-radio>
+                  <b-radio value="bars"
+                    class="btn-radio">
+                    Bars
+                  </b-radio>
+                </b-form-radio-group>
+              </div> <!-- series type -->
+              <!-- cap times -->
+              <div class="btn-group btn-group-xs btn-group-checkboxes ml-1">
+                <b-form-checkbox
+                  button
+                  size="sm"
+                  :active="showCapStartTimes"
+                  v-model="showCapStartTimes"
+                  @change="toggleCapStartTimes"
+                  v-b-tooltip="'Toggle the capture process start time(s)'">
+                  Cap Restarts
+                </b-form-checkbox> <!-- /cap times -->
+              </div>
+            </div> <!-- /graph controls -->
+
+            <!-- graph -->
+            <div v-if="graphData"
+              class="plot-container pr-4">
+              <div class="plot-area"
+                :id="'plotArea' + id">
+              </div>
+            </div> <!-- /graph -->
+
+          </div> <!-- /graph content -->
+        </template>
       </div>
 
     </div>
@@ -272,6 +289,10 @@ export default {
     timelineDataFilters: {
       type: Array,
       required: true
+    },
+    disabledAggregations: {
+      type: Boolean,
+      default: false
     }
   },
   data: function () {
@@ -288,7 +309,8 @@ export default {
       plotPan: 0.1,
       graph: undefined,
       graphOptions: {},
-      showMap: undefined
+      showMap: undefined,
+      turnOffGraphDays: this.$constants.TURN_OFF_GRAPH_DAYS
     };
   },
   computed: {
@@ -452,6 +474,10 @@ export default {
     }
   },
   mounted: function () {
+    if (this.disabledAggregations || this.hideViz) {
+      return; // don't need to do anything, there's no data
+    }
+
     // lazy load flot so it loads after data
     import(/* webpackChunkName: "flot" */ 'public/flot-0.7/jquery.flot.min');
     import(/* webpackChunkName: "flot" */ 'public/flot-0.7/jquery.flot.selection.min');
@@ -1300,6 +1326,13 @@ export default {
   overflow: hidden;
   box-shadow: 0 0 16px -2px black;
   background-color: var(--color-background, white);
+}
+
+.sticky-viz.disabled-msg {
+  padding-bottom: 48px;
+}
+.sticky-viz.disabled-msg .viz-container {
+  height: 62px;
 }
 
 /* viz options button styles ----------------- */
