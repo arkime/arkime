@@ -59,7 +59,7 @@ my $json;
     is (!exists $json->{graph}, 1, "Shouldn't have spiview.json graph");
     is (!exists $json->{map}, 1, "Shouldn't have spiview.json map");
 
-    $json = viewerGet2("/spiview.json?spi=ta&facets=1&map=true&date=-1");
+    $json = viewerGet2("/spiview.json?spi=ta&facets=1&map=true&date=-1&forceAggregations=true");
     is (scalar keys %{$json->{spi}}, 1, "one spiview.json spi");
     is (scalar keys %{$json->{spi}->{ta}}, 2, "Two spiview.json ta elements");
     is ($json->{recordsTotal}, 0, "Correct spiview.json recordsTotal");
