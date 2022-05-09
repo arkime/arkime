@@ -1,4 +1,4 @@
-use Test::More tests => 73;
+use Test::More tests => 77;
 use Cwd;
 use URI::Escape;
 use MolochTest;
@@ -10,10 +10,10 @@ use strict;
 my $pwd = "*/pcap";
 
 # bigendian pcap file tests
-    my $json = viewerGet("/spiview.json?map=true&date=-1&facets=1&spi=source.ip,destination.ip,ipProtocol,fileand&expression=" . uri_escape("file=$pwd/bigendian.pcap"));
-    my $pjson = viewerPost("/api/spiview", '{"map":true, "date":-1, "facets":1, "spi":"source.ip,destination.ip,ipProtocol,fileand", "expression":"file=' . $pwd . '/bigendian.pcap"}');
-    my $mjson = multiGet("/spiview.json?map=true&date=-1&facets=1&spi=source.ip,destination.ip,ipProtocol,fileand&expression=" . uri_escape("file=$pwd/bigendian.pcap"));
-    my $djson = multiGet("/spiview.json?map=true&startTime=1332734457&stopTime=1389743152&facets=1&spi=source.ip,destination.ip,ipProtocol,fileand&expression=" . uri_escape("file=$pwd/bigendian.pcap"));
+    my $json = viewerGet("/spiview.json?map=true&forceAggregations=true&date=-1&facets=1&spi=source.ip,destination.ip,ipProtocol,fileand&expression=" . uri_escape("file=$pwd/bigendian.pcap"));
+    my $pjson = viewerPost("/api/spiview", '{"map":true, "forceAggregations":true, "date":-1, "facets":1, "spi":"source.ip,destination.ip,ipProtocol,fileand", "expression":"file=' . $pwd . '/bigendian.pcap"}');
+    my $mjson = multiGet("/spiview.json?map=true&forceAggregations=true&date=-1&facets=1&spi=source.ip,destination.ip,ipProtocol,fileand&expression=" . uri_escape("file=$pwd/bigendian.pcap"));
+    my $djson = multiGet("/spiview.json?map=true&forceAggregations=true&startTime=1332734457&stopTime=1389743152&facets=1&spi=source.ip,destination.ip,ipProtocol,fileand&expression=" . uri_escape("file=$pwd/bigendian.pcap"));
 
     eq_or_diff($json, $pjson, "GET and POST versions of spiview endpoint are not the same");
     eq_or_diff($json->{map}, from_json('{"src": {}, "dst":{}, "xffGeo":{}}'), "map bigendian");
@@ -31,9 +31,9 @@ my $pwd = "*/pcap";
     eq_or_diff($json, $djson, "single doesn't match date", { context => 3 });
 
 # bigendian pcap file tests no facets
-    $json = viewerGet("/spiview.json?date=-1&spi=source.ip,destination.ip,ipProtocol&expression=" . uri_escape("file=$pwd/bigendian.pcap"));
-    $pjson = viewerPost("/api/spiview", '{"date":-1, "spi":"source.ip,destination.ip,ipProtocol", "expression":"file=' . $pwd . '/bigendian.pcap"}');
-    $mjson = multiGet("/spiview.json?date=-1&spi=source.ip,destination.ip,ipProtocol&expression=" . uri_escape("file=$pwd/bigendian.pcap"));
+    $json = viewerGet("/spiview.json?date=-1&forceAggregations=true&spi=source.ip,destination.ip,ipProtocol&expression=" . uri_escape("file=$pwd/bigendian.pcap"));
+    $pjson = viewerPost("/api/spiview", '{"date":-1, "forceAggregations":true, "spi":"source.ip,destination.ip,ipProtocol", "expression":"file=' . $pwd . '/bigendian.pcap"}');
+    $mjson = multiGet("/spiview.json?date=-1&forceAggregations=true&spi=source.ip,destination.ip,ipProtocol&expression=" . uri_escape("file=$pwd/bigendian.pcap"));
 
     eq_or_diff($json, $pjson, "GET and POST versions of spiview endpoint are not the same");
     is (!exists $json->{map}, 1, "map bigendian no facets");
@@ -95,10 +95,10 @@ my $pwd = "*/pcap";
     eq_or_diff($json, $mjson, "single doesn't match multi", { context => 3 });
 
 # Check facets ALL
-    $json = viewerGet("/spiview.json?map=true&date=-1&facets=1&spi=source.ip,destination.ip,ipProtocol,fileand,tags:5,http.requestHeader&expression=" . uri_escape("file=$pwd/bigendian.pcap|file=$pwd/socks-http-example.pcap|file=$pwd/bt-tcp.pcap"));
-    $pjson = viewerPost("/api/spiview", '{"map":true, "date":-1, "facets":1, "spi":"source.ip,destination.ip,ipProtocol,fileand,tags:5,http.requestHeader", "expression":"file=' . $pwd . '/bigendian.pcap|file=' . $pwd .'/socks-http-example.pcap|file=' . $pwd .'/bt-tcp.pcap"}');
-    $mjson = multiGet("/spiview.json?map=true&date=-1&facets=1&spi=source.ip,destination.ip,ipProtocol,fileand,tags:5,http.requestHeader&expression=" . uri_escape("file=$pwd/bigendian.pcap|file=$pwd/socks-http-example.pcap|file=$pwd/bt-tcp.pcap"));
-    $djson = viewerGet("/spiview.json?map=true&startTime=1332734457&stopTime=1482563001&facets=1&spi=source.ip,destination.ip,ipProtocol,fileand,tags:5,http.requestHeader&expression=" . uri_escape("file=$pwd/bigendian.pcap|file=$pwd/socks-http-example.pcap|file=$pwd/bt-tcp.pcap"));
+    $json = viewerGet("/spiview.json?map=true&forceAggregations=true&date=-1&facets=1&spi=source.ip,destination.ip,ipProtocol,fileand,tags:5,http.requestHeader&expression=" . uri_escape("file=$pwd/bigendian.pcap|file=$pwd/socks-http-example.pcap|file=$pwd/bt-tcp.pcap"));
+    $pjson = viewerPost("/api/spiview", '{"map":true, "forceAggregations":true, "date":-1, "facets":1, "spi":"source.ip,destination.ip,ipProtocol,fileand,tags:5,http.requestHeader", "expression":"file=' . $pwd . '/bigendian.pcap|file=' . $pwd .'/socks-http-example.pcap|file=' . $pwd .'/bt-tcp.pcap"}');
+    $mjson = multiGet("/spiview.json?map=true&date=-1&forceAggregations=true&facets=1&spi=source.ip,destination.ip,ipProtocol,fileand,tags:5,http.requestHeader&expression=" . uri_escape("file=$pwd/bigendian.pcap|file=$pwd/socks-http-example.pcap|file=$pwd/bt-tcp.pcap"));
+    $djson = viewerGet("/spiview.json?map=true&forceAggregations=true&startTime=1332734457&stopTime=1482563001&facets=1&spi=source.ip,destination.ip,ipProtocol,fileand,tags:5,http.requestHeader&expression=" . uri_escape("file=$pwd/bigendian.pcap|file=$pwd/socks-http-example.pcap|file=$pwd/bt-tcp.pcap"));
 
     # Sort alpha since counts are the same and could come back in random order
     @{$json->{spi}->{"http.requestHeader"}->{buckets}} = sort({$a->{key} cmp $b->{key}} @{$json->{spi}->{"http.requestHeader"}->{buckets}});
@@ -148,7 +148,15 @@ my $pwd = "*/pcap";
     eq_or_diff($djson, $json, "single doesn't match date", { context => 3 });
 
 # no map data
-    $json = viewerGet("/spiview.json?date=-1&facets=1&spi=source.ip,destination.ip,ipProtocol,fileand&expression=" . uri_escape("file=$pwd/bigendian.pcap"));
-    $pjson = viewerPost("/api/spiview", '{"date":-1, "facets":1, "spi":"source.ip,destination.ip,ipProtocol,fileand", "expression":"file=' . $pwd . '/bigendian.pcap"}');
+    $json = viewerGet("/spiview.json?date=-1&forceAggregations=true&facets=1&spi=source.ip,destination.ip,ipProtocol,fileand&expression=" . uri_escape("file=$pwd/bigendian.pcap"));
+    $pjson = viewerPost("/api/spiview", '{"date":-1, "forceAggregations":true, "facets":1, "spi":"source.ip,destination.ip,ipProtocol,fileand", "expression":"file=' . $pwd . '/bigendian.pcap"}');
     eq_or_diff($json->{map}, from_json('{}'), "no map data");
     eq_or_diff($pjson->{map}, from_json('{}'), "no map data");
+
+# no aggregation data
+    $json = viewerGet("/spiview.json?date=-1&facets=1&spi=source.ip,destination.ip,ipProtocol,fileand&expression=" . uri_escape("file=$pwd/bigendian.pcap"));
+    $pjson = viewerPost("/api/spiview", '{"date":-1, "facets":1, "spi":"source.ip,destination.ip,ipProtocol,fileand", "expression":"file=' . $pwd . '/bigendian.pcap"}');
+    eq_or_diff($json->{map}, undef, "no map data");
+    eq_or_diff($json->{graph}, undef, "no graph data");
+    eq_or_diff($pjson->{map}, undef, "no map data");
+    eq_or_diff($pjson->{graph}, undef, "no graph data");

@@ -1109,8 +1109,12 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
 
   // determine whether to run aggregations based on the time range or if the client forces it
   function shouldRunAggregations (query) {
-    if (!query.forceAggregations) { // client can force aggregations for any time range
-      if (query.date === '-1') {
+    if (query.forceAggregations && (query.forceAggregations === true || query.forceAggregations === 'true')) {
+      return true; // client can force aggregations for any time range
+    }
+
+    if (!query.forceAggregations) {
+      if (query.date === '-1' || query.date === -1) {
         return false;
       } else if (query.stopTime && query.startTime) {
         const deltaTime = (query.stopTime - query.startTime) / 86400; // secs to days
