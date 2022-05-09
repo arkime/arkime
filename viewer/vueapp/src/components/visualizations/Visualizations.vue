@@ -428,9 +428,13 @@ export default {
             clearInterval(plotCheck);
             initialized = true;
             plotCheck = undefined;
-            this.setupGraphData(); // setup this.graph and this.graphOptions
-            this.plot = $.plot(this.plotArea, this.graph, this.graphOptions);
-            this.calculateHoverBarWidth();
+            // create map
+            this.displayMap();
+            // create graph
+            // setup the graph data and options
+            this.setupGraphData();
+            // create flot graph
+            this.setupGraphElement();
           }
         });
       }
@@ -474,10 +478,6 @@ export default {
     }
   },
   mounted: function () {
-    if (this.disabledAggregations || this.hideViz) {
-      return; // don't need to do anything, there's no data
-    }
-
     // lazy load flot so it loads after data
     import(/* webpackChunkName: "flot" */ 'public/flot-0.7/jquery.flot.min');
     import(/* webpackChunkName: "flot" */ 'public/flot-0.7/jquery.flot.selection.min');
