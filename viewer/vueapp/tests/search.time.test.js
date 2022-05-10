@@ -8,7 +8,7 @@ import { render, fireEvent } from '@testing-library/vue';
 import userEvent from '@testing-library/user-event';
 import Time from '../src/components/search/Time.vue';
 import '../src/filters.js';
-const { userWithSettings } = require('./consts');
+const { userWithSettings } = require('../../../common/vueapp/tests/consts');
 
 console.info = jest.fn(); // don't display console.info messages
 console.warn = jest.fn(); // don't display console.warn messages

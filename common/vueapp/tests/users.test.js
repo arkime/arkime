@@ -1,19 +1,14 @@
 'use strict';
 
 import Vue from 'vue';
-// eslint-disable-next-line no-shadow
-import $ from 'jquery';
 import BootstrapVue from 'bootstrap-vue';
 import '@testing-library/jest-dom';
 import { render, waitFor, fireEvent } from '@testing-library/vue';
-import Users from '../../../common/vueapp/Users.vue';
-import UserService from '../../../common/vueapp/UserService';
-import HasRole from '../../../common/vueapp/HasRole.vue';
-import '../src/filters.js';
-import '../../../common/vueapp/vueFilters';
+import Users from '../Users.vue';
+import UserService from '../UserService';
+import HasRole from '../HasRole.vue';
+import '../vueFilters';
 const { users, userWithSettings, roles } = require('./consts');
-
-global.$ = global.jQuery = $;
 
 console.info = jest.fn(); // don't display console.info messages
 
@@ -21,7 +16,7 @@ Vue.use(BootstrapVue);
 
 Vue.directive('has-role', HasRole);
 
-jest.mock('../src/components/users/UserService');
+jest.mock('../UserService');
 
 const store = {
   state: {

@@ -40,7 +40,8 @@ export const roles = [
   { text: 'superAdmin', value: 'superAdmin', userDefined: false },
   { text: 'usersAdmin', value: 'usersAdmin', userDefined: false },
   { text: 'wiseAdmin', value: 'wiseAdmin', userDefined: false },
-  { text: 'wiseUser', value: 'wiseUser', userDefined: false }
+  { text: 'wiseUser', value: 'wiseUser', userDefined: false },
+  { text: 'userDefined', value: 'userDefined', userDefined: true }
 ];
 
 export const userSettings = {
