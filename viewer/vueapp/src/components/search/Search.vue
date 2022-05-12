@@ -35,7 +35,7 @@
             Always fetch vizualizations
           </b-dropdown-item>
         </template>
-        <template v-if="!disabledAggregations">
+        <template v-if="forcedAggregations">
           <b-dropdown-item
             @click="overrideDisabledAggregations(undefined)">
             Disable forced vizualizations
@@ -529,6 +529,9 @@ export default {
     },
     disabledAggregations: function () {
       return this.$store.state.disabledAggregations;
+    },
+    forcedAggregations: function () {
+      return this.$store.state.forcedAggregations;
     }
   },
   watch: {
@@ -729,13 +732,16 @@ export default {
       if (option === undefined) {
         localStorage['force-aggregations'] = false;
         sessionStorage['force-aggregations'] = false;
+        this.$store.commit('setForcedAggregations', false);
         return;
       }
 
       if (option === -1) {
         localStorage['force-aggregations'] = true;
+        this.$store.commit('setForcedAggregations', true);
       } else {
         sessionStorage['force-aggregations'] = true;
+        this.$store.commit('setForcedAggregations', true);
       }
 
       if (this.hideViz || this.disabledAggregations) { // data is missing
@@ -745,8 +751,10 @@ export default {
       this.hideViz = false;
       setTimeout(() => {
         this.$store.commit('setFetchGraphData', false); // unset for future data fetching
+        this.$store.commit('setForcedAggregations', true);
         if (option === 1) { // if just override just once, unset it for future calls to disable aggs
           sessionStorage['force-aggregations'] = false;
+          this.$store.commit('setForcedAggregations', false);
         }
       }, 500);
     },

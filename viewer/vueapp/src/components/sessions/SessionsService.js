@@ -1,36 +1,12 @@
 import Vue from 'vue';
 import qs from 'qs';
 import store from '../../store';
+import Utils from '../utils/utils';
 
 let getDecodingsQIP;
 let _decodingsCache;
 
 export default {
-
-  setFacetsQuery (query) {
-    if (
-      (localStorage['force-aggregations'] && localStorage['force-aggregations'] !== 'false') ||
-      (sessionStorage['force-aggregations'] && sessionStorage['force-aggregations'] !== 'false')
-    ) {
-      store.commit('setDisabledAggregations', false);
-      query.facets = 1;
-      return;
-    }
-
-    if (query.date === '-1') {
-      store.commit('setDisabledAggregations', true);
-      query.facets = 0;
-      return;
-    } else if (query.stopTime && query.startTime) {
-      store.commit('setDisabledAggregations', true);
-      const deltaTime = (query.stopTime - query.startTime) / 86400; // secs to days
-      /* eslint-disable no-undef */
-      if (deltaTime > (TURN_OFF_GRAPH_DAYS || 30)) {
-        query.facets = 0;
-        return;
-      }
-    }
-  },
 
   /* service methods ------------------------------------------------------- */
   /**
@@ -82,6 +58,8 @@ export default {
         }
       }
 
+      Utils.setFacetsQuery(params);
+
       // set whether map is open on the sessions page
       if (localStorage.getItem('sessions-open-map') === 'true') {
         params.map = true;
@@ -90,14 +68,6 @@ export default {
       if (localStorage.getItem('sessions-hide-viz') === 'true') {
         params.facets = 0;
       }
-
-      // if ( // set whether the user wants to force aggregations to be run
-      //   (localStorage['force-aggregations'] && localStorage['force-aggregations'] !== 'false') ||
-      //   (sessionStorage['force-aggregations'] && sessionStorage['force-aggregations'] !== 'false')
-      // ) {
-      //   params.forceAggregations = true;
-      // }
-      this.setFacetsQuery(params);
 
       const options = {
         url: 'api/sessions',

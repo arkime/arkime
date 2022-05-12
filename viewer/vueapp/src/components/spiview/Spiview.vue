@@ -874,6 +874,8 @@ export default {
     get: function (query) {
       const source = Vue.axios.CancelToken.source();
 
+      Utils.setFacetsQuery(query);
+
       // set whether map is open on the spiview page
       if (localStorage.getItem('spiview-open-map') === 'true') {
         query.map = true;
@@ -883,13 +885,6 @@ export default {
       if (localStorage.getItem('spiview-hide-viz') === 'true') {
         hideViz = true;
         query.facets = 0;
-      }
-
-      if ( // set whether the user wants to force aggregations to be run
-        (localStorage['force-aggregations'] && localStorage['force-aggregations'] !== 'false') ||
-        (sessionStorage['force-aggregations'] && sessionStorage['force-aggregations'] !== 'false')
-      ) {
-        query.forceAggregations = true;
       }
 
       const promise = new Promise((resolve, reject) => {
