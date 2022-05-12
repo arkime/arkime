@@ -1,4 +1,4 @@
-use Test::More tests => 83;
+use Test::More tests => 80;
 use Cwd;
 use URI::Escape;
 use MolochTest;
@@ -111,7 +111,7 @@ my ($url) = @_;
     is ($json->{graph}->{xmin}, 1386004308000, "correct xmin medium");
 
 # Check facets ALL
-    $json = get("/sessions.json?map=true&date=-1&forceAggregations=true&facets=1&expression=" . uri_escape("file=$pwd/bigendian.pcap|file=$pwd/socks-http-example.pcap|file=$pwd/bt-tcp.pcap"));
+    $json = get("/sessions.json?map=true&date=-1&facets=1&expression=" . uri_escape("file=$pwd/bigendian.pcap|file=$pwd/socks-http-example.pcap|file=$pwd/bt-tcp.pcap"));
 
     eq_or_diff($json->{map}, from_json('{"dst":{"US": 3, "CA": 1}, "src":{"US": 3, "RU":1}, "xffGeo":{}}'), "map ALL");
     eq_or_diff($json->{graph}->{sessionsHisto}, from_json('[["1335956400000", 1], ["1386003600000", 3], [1387742400000, 1], [1482552000000,1]]'), "sessionsHisto ALL");
@@ -166,11 +166,6 @@ tcp,1386004309468,1386004309478,10.180.156.185,53533,US,10.180.156.249,1080,US,2
 # no map data
     $json = get("/sessions.json?startTime=1386004308&stopTime=1386004400&facets=1&expression=" . uri_escape("file=$pwd/bigendian.pcap|file=$pwd/socks-http-example.pcap|file=$pwd/bt-tcp.pcap"));
     eq_or_diff($json->{map}, from_json('{}'), "no map data");
-
-# no aggregation data
-    $json = get("/sessions.json?date=-1&facets=1&expression=" . uri_escape("file=$pwd/bigendian.pcap|file=$pwd/socks-http-example.pcap|file=$pwd/bt-tcp.pcap"));
-    eq_or_diff($json->{map}, from_json('{}'), "no map data");
-    eq_or_diff($json->{graph}->{xmax}, undef, "empty graph data");
 
 # Check file != blah.pcap
     my $json = get("/sessions.json?date=-1&expression=" . uri_escape("file=$pwd/bigendian.pcap|file=$pwd/socks-http-example.pcap|file=$pwd/bt-tcp.pcap"));

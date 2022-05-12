@@ -289,10 +289,6 @@ export default {
     timelineDataFilters: {
       type: Array,
       required: true
-    },
-    disabledAggregations: {
-      type: Boolean,
-      default: false
     }
   },
   data: function () {
@@ -385,6 +381,9 @@ export default {
     },
     hideViz: function () {
       return this.$store.state.hideViz;
+    },
+    disabledAggregations: function () {
+      return this.$store.state.disabledAggregations;
     }
   },
   watch: {
@@ -938,6 +937,8 @@ export default {
       this.setupMapData();
     },
     setupMapElement: function () {
+      if (this.mapEl) { return; }
+
       this.mapEl = $('#molochMap' + this.id);
 
       // watch for the window to resize to resize the expanded map

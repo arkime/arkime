@@ -35,13 +35,13 @@
             Always fetch vizualizations
           </b-dropdown-item>
         </template>
-        <template v-if="forcedViz">
+        <template v-if="!disabledAggregations">
           <b-dropdown-item
             @click="overrideDisabledAggregations(undefined)">
             Disable forced vizualizations
           </b-dropdown-item>
         </template>
-        <b-dropdown-divider v-if="forcedViz || (!hideViz && disabledAggregations)" />
+        <b-dropdown-divider v-if="!hideViz && disabledAggregations" />
         <b-dropdown-item
           @click="toggleStickyViz">
           {{ !stickyViz ? 'Pin' : 'Unpin' }}{{ basePath && basePath === 'spigraph' ? ' top' : '' }} {{ basePath && basePath === 'sessions' ? 'graph, map, and column headers' : 'graph and map' }}
@@ -422,8 +422,7 @@ export default {
     'start',
     'fields',
     'hideActions',
-    'hideInterval',
-    'disabledAggregations' // whether the server has disabled aggregations
+    'hideInterval'
   ],
   data: function () {
     return {
@@ -444,8 +443,7 @@ export default {
       updateTime: false,
       editableView: undefined, // Not necessarily active view
       multiviewer: this.$constants.MOLOCH_MULTIVIEWER,
-      basePath: undefined,
-      forcedViz: false
+      basePath: undefined
     };
   },
   computed: {
@@ -528,6 +526,9 @@ export default {
     hideViz: {
       get: function () { return this.$store.state.hideViz; },
       set: function (newValue) { this.$store.commit('toggleHideViz', newValue); }
+    },
+    disabledAggregations: function () {
+      return this.$store.state.disabledAggregations;
     }
   },
   watch: {
@@ -726,7 +727,6 @@ export default {
      */
     overrideDisabledAggregations: function (option) {
       if (option === undefined) {
-        this.forcedViz = false;
         localStorage['force-aggregations'] = false;
         sessionStorage['force-aggregations'] = false;
         return;
@@ -743,11 +743,9 @@ export default {
       }
 
       this.hideViz = false;
-      this.forcedViz = true;
       setTimeout(() => {
         this.$store.commit('setFetchGraphData', false); // unset for future data fetching
         if (option === 1) { // if just override just once, unset it for future calls to disable aggs
-          this.forcedViz = false;
           sessionStorage['force-aggregations'] = false;
         }
       }, 500);

@@ -14,8 +14,7 @@
           :start="query.start"
           @changeSearch="cancelAndLoad(true)"
           @setView="loadNewView"
-          @setColumns="loadColumns"
-          :disabled-aggregations="sessions.disabledAggregations">
+          @setColumns="loadColumns">
         </moloch-search> <!-- /search navbar -->
 
         <!-- paging navbar -->
@@ -39,8 +38,7 @@
       :map-data="mapData"
       :graph-data="graphData"
       @fetchMapData="cancelAndLoad(true)"
-      :timelineDataFilters="timelineDataFilters"
-      :disabled-aggregations="sessions.disabledAggregations">
+      :timelineDataFilters="timelineDataFilters">
     </moloch-visualizations>
     <!-- /visualizations -->
 

@@ -7,8 +7,7 @@
         <!-- search navbar -->
         <moloch-search
           @changeSearch="changeSearch"
-          :num-matching-sessions="filtered"
-          :disabled-aggregations="disabledAggregations">
+          :num-matching-sessions="filtered">
         </moloch-search> <!-- /search navbar -->
 
         <!-- info navbar -->
@@ -153,8 +152,7 @@
       :map-data="mapData"
       :graph-data="graphData"
       @fetchMapData="fetchVizData"
-      :timelineDataFilters="timelineDataFilters"
-      :disabled-aggregations="disabledAggregations">
+      :timelineDataFilters="timelineDataFilters">
     </moloch-visualizations> <!-- /visualizations -->
 
     <div class="spiview-content mr-1 ml-1">
@@ -446,8 +444,7 @@ export default {
       fieldConfigError: '',
       fieldConfigSuccess: '',
       multiviewer: this.$constants.MOLOCH_MULTIVIEWER,
-      spiviewFieldTransition: '',
-      disabledAggregations: false
+      spiviewFieldTransition: ''
     };
   },
   computed: {
@@ -476,6 +473,9 @@ export default {
     },
     fields: function () {
       return this.$store.state.fieldsArr;
+    },
+    disabledAggregations: function () {
+      return this.$store.state.disabledAggregations;
     }
   },
   watch: {
@@ -909,8 +909,6 @@ export default {
             this.mapData = {};
             this.graphData = {};
           }
-
-          this.disabledAggregations = response.data.disabledAggregations;
 
           resolve(response.data);
         }).catch((error) => {

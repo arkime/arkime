@@ -1107,26 +1107,6 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
     });
   }
 
-  // determine whether to run aggregations based on the time range or if the client forces it
-  function shouldRunAggregations (query) {
-    if (query.forceAggregations && (query.forceAggregations === true || query.forceAggregations === 'true')) {
-      return true; // client can force aggregations for any time range
-    }
-
-    if (!query.forceAggregations) {
-      if (query.date === '-1' || query.date === -1) {
-        return false;
-      } else if (query.stopTime && query.startTime) {
-        const deltaTime = (query.stopTime - query.startTime) / 86400; // secs to days
-        if (deltaTime > Config.get('turnOffGraphDays', 30)) {
-          return false;
-        }
-      }
-    }
-
-    return true;
-  }
-
   // --------------------------------------------------------------------------
   // EXPOSED HELPERS
   // --------------------------------------------------------------------------
@@ -1671,9 +1651,6 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
     options = ViewerUtils.addCluster(req.query.cluster, options);
     options.arkime_unflatten = parseInt(req.query.flatten) !== 1;
 
-    const aggregations = shouldRunAggregations(req.query);
-    if (!aggregations) { req.query.facets = 0; }
-
     const response = {
       data: [],
       map: {},
@@ -1769,7 +1746,6 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
           try {
             response.map = map;
             response.graph = graph;
-            response.disabledAggregations = !aggregations;
             response.data = (results ? results.results : []);
             response.recordsTotal = total.count;
             response.recordsFiltered = (results ? results.total : 0);
@@ -1852,9 +1828,6 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
     }
 
     const response = { spi: {} };
-
-    const aggregations = shouldRunAggregations(req.query);
-    if (!aggregations) { req.query.facets = 0; }
 
     sessionAPIs.buildSessionQuery(req, (bsqErr, query, indices) => {
       if (bsqErr) {
@@ -1961,7 +1934,6 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
             response.recordsTotal = total.count;
             response.spi = sessions.aggregations;
             response.recordsFiltered = recordsFiltered;
-            response.disabledAggregations = !aggregations;
             res.logCounts(response.spi.count, response.recordsFiltered, response.total);
             return res.send(response);
           } catch (e) {
