@@ -83,8 +83,15 @@ export default {
    * Sets the facets query based on the query time range and whether the user wants to force aggregations
    * NOTE: mutates the query object and sets the store values
    * @param {object} query The query parameters for the search to be passed to the server
+   * @param {string} page The page the query is for
    */
-  setFacetsQuery (query) {
+  setFacetsQuery (query, page) {
+    if (!page || (page !== 'sessions' && page !== 'spiview')) {
+      store.commit('setDisabledAggregations', false);
+      query.facets = 1;
+      return;
+    }
+
     if (
       (localStorage['force-aggregations'] && localStorage['force-aggregations'] !== 'false') ||
       (sessionStorage['force-aggregations'] && sessionStorage['force-aggregations'] !== 'false')

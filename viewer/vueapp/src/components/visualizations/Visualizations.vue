@@ -420,7 +420,7 @@ export default {
       this.plot = $.plot(this.plotArea, this.graph, this.graphOptions);
     },
     graphData: function (newVal, oldVal) {
-      if (newVal && oldVal && !this.hideViz) {
+      if (newVal && oldVal && !this.hideViz && !this.disabledAggregations) {
         if (plotCheck) { clearInterval(plotCheck); }
         plotCheck = setInterval(() => { // wait for plot func to be loaded
           if ($.plot || initialized) {
@@ -660,8 +660,12 @@ export default {
 
       setTimeout(() => { // wait for plot to render
         // account for size of the y axis labels
-        const yAxisLabelSize = $(this.plotArea.find('.yAxis > .tickLabel')).width() * 2;
-        this.plotWidth = this.plotArea.find('canvas')[0].width - yAxisLabelSize;
+        const yAxisLabel = $(this.plotArea.find('.yAxis > .tickLabel'));
+        const canvasArea = this.plotArea.find('canvas');
+        const yAxisLabelSize = (yAxisLabel?.width() || 0) * 2;
+        if (canvasArea && canvasArea.length) {
+          this.plotWidth = canvasArea[0].width - yAxisLabelSize;
+        }
       }, 1000);
 
       // triggered when an area of the graph is selected

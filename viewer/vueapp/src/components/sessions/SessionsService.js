@@ -58,7 +58,7 @@ export default {
         }
       }
 
-      Utils.setFacetsQuery(params);
+      Utils.setFacetsQuery(params, 'sessions');
 
       // set whether map is open on the sessions page
       if (localStorage.getItem('sessions-open-map') === 'true') {

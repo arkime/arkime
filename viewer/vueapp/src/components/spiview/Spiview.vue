@@ -874,7 +874,7 @@ export default {
     get: function (query) {
       const source = Vue.axios.CancelToken.source();
 
-      Utils.setFacetsQuery(query);
+      Utils.setFacetsQuery(query, 'spiview');
 
       // set whether map is open on the spiview page
       if (localStorage.getItem('spiview-open-map') === 'true') {
