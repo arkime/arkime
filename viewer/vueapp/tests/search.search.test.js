@@ -245,7 +245,7 @@ test('search bar - viz buttons', async () => {
   expect(store.mutations.setForcedAggregations).toHaveBeenCalledWith(store.state, true);
 
   // should not have the remove disabled force viz button
-  expect(queryByText('Disable forced vizualizations')).not.toBeInTheDocument()
+  expect(queryByText('Disable forced vizualizations')).not.toBeInTheDocument();
 
   // should show all fetch viz buttons
   getByText('Fetch vizualizations for this query');
