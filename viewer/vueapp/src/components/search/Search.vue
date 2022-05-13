@@ -32,7 +32,7 @@
           <b-dropdown-item
             @click="overrideDisabledAggregations(-1)"
             v-b-tooltip.hover.left="'slows down future searches until you turn it off'">
-            Always fetch vizualizations
+            Always fetch vizualizations for this browser
           </b-dropdown-item>
         </template>
         <template v-if="forcedAggregations">
