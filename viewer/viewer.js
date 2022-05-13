@@ -2144,12 +2144,12 @@ function processCronQuery (cq, options, query, endTime, cb) {
         doNext();
       }
     });
-  }, () => {
+  }, (testCb) => {
     Db.refresh('sessions*');
     if (Config.debug > 1) {
       console.log('CRON', cq.name, cq.creator, '- Continue process', singleEndTime, endTime);
     }
-    return singleEndTime !== endTime;
+    return setImmediate(testCb, null, singleEndTime !== endTime);
   }, (err) => {
     cb(count, singleEndTime);
   });
@@ -2328,11 +2328,11 @@ ${cq.description}
         return setImmediate(whilstCb, err);
       });
     });
-  }, () => {
+  }, (testCb) => {
     if (Config.debug > 1) {
       console.log('CRON - Process again: ', repeat);
     }
-    return repeat;
+    return setImmediate(testCb, null, repeat);
   }, (err) => {
     if (Config.debug) {
       console.log('CRON - Should be up to date');
