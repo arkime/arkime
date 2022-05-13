@@ -2091,7 +2091,7 @@ function processCronQuery (cq, options, query, endTime, cb) {
           try {
             Db.update('queries', 'query', options.qid, doc, { refresh: true });
           } catch (err) {
-            console.log('ERROR - updating query', err);
+            console.log('ERROR CRON - updating query', err);
           }
         }
 
@@ -2106,13 +2106,13 @@ function processCronQuery (cq, options, query, endTime, cb) {
           const { body: results } = await Db.scroll(query);
           return getMoreUntilDone(null, results);
         } catch (err) {
-          console.log('ERROR - issuing scroll for cron job', err);
+          console.log('ERROR CRON - issuing scroll for cron job', err);
           return getMoreUntilDone(err, {});
         }
       }
 
       if (err || result.error) {
-        console.log('cronQuery error', err, (result ? result.error : null), 'for', cq);
+        console.log('CRON - cronQuery error', err, (result ? result.error : null), 'for', cq);
         return setImmediate(whilstCb, 'ERR');
       }
 
@@ -2139,7 +2139,7 @@ function processCronQuery (cq, options, query, endTime, cb) {
           sessionAPIs.addTagsList(tags, list, doNext);
         });
       } else {
-        console.log('Unknown action', cq);
+        console.log('CRON - Unknown action', cq);
         doNext();
       }
     });
@@ -2157,7 +2157,7 @@ function processCronQuery (cq, options, query, endTime, cb) {
 internals.processCronQueries = () => {
   Db.setQueriesNode(Config.nodeName());
   if (internals.cronRunning) {
-    console.log('processQueries already running', qlworking);
+    console.log('CRON - processQueries already running', qlworking);
     return;
   }
   internals.cronRunning = true;
@@ -2171,7 +2171,7 @@ internals.processCronQueries = () => {
     Db.search('queries', 'query', { size: 1000 }, (err, data) => {
       if (err) {
         internals.cronRunning = false;
-        console.log('processCronQueries', err);
+        console.log('CRON - processCronQueries', err);
         return setImmediate(whilstCb, err);
       }
 
@@ -2205,11 +2205,11 @@ internals.processCronQueries = () => {
             return forQueriesCb();
           }
           if (!user) {
-            console.log(`User ${cq.creator} doesn't exist`);
+            console.log(`CRON - User ${cq.creator} doesn't exist`);
             return forQueriesCb(null);
           }
           if (!user.enabled) {
-            console.log(`User ${cq.creator} not enabled`);
+            console.log(`CRON - User ${cq.creator} not enabled`);
             return forQueriesCb();
           }
 
@@ -2226,7 +2226,7 @@ internals.processCronQueries = () => {
             shortcuts = await Db.getShortcutsCache(cq.creator);
           } catch (err) { // don't need to do anything, there will just be no
             // shortcuts sent to the parser. but still log the error.
-            console.log('ERROR - fetching shortcuts cache when processing periodic query', err);
+            console.log('ERROR CRON - fetching shortcuts cache when processing periodic query', err);
           }
 
           // always complete building the query regardless of shortcuts
@@ -2249,7 +2249,7 @@ internals.processCronQueries = () => {
           try {
             query.query.bool.filter.push(molochparser.parse(cq.query));
           } catch (e) {
-            console.log("Couldn't compile periodic query expression", cq, e);
+            console.log("CRON - Couldn't compile periodic query expression", cq, e);
             return forQueriesCb();
           }
 
@@ -2260,7 +2260,7 @@ internals.processCronQueries = () => {
               const userExpression = molochparser.parse(user.expression);
               query.query.bool.filter.push(userExpression);
             } catch (e) {
-              console.log("Couldn't compile user forced expression", user.expression, e);
+              console.log("CRON - Couldn't compile user forced expression", user.expression, e);
               return forQueriesCb();
             }
           }
@@ -2284,7 +2284,7 @@ internals.processCronQueries = () => {
                 try {
                   await Db.update('queries', 'query', qid, doc, { refresh: true });
                 } catch (err) {
-                  console.log('ERROR - updating query', err);
+                  console.log('ERROR CRON - updating query', err);
                 }
                 if (lpValue !== endTime) { repeat = true; }
                 return forQueriesCb();
@@ -2388,7 +2388,7 @@ async function main () {
   setInterval(createRightClicks, 150 * 1000); // Check every 2.5 minutes
 
   if (Config.get('cronQueries', false)) { // this viewer will process the cron queries
-    console.log('This node will process Periodic Queries, delayed by', internals.cronTimeout, 'seconds');
+    console.log('This node will process Periodic Queries (CRON), delayed by', internals.cronTimeout, 'seconds');
     setInterval(internals.processCronQueries, 60 * 1000);
     setTimeout(internals.processCronQueries, 1000);
     setInterval(huntAPIs.processHuntJobs, 10000);
