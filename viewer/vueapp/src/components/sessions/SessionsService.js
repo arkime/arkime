@@ -1,6 +1,7 @@
 import Vue from 'vue';
 import qs from 'qs';
 import store from '../../store';
+import Utils from '../utils/utils';
 
 let getDecodingsQIP;
 let _decodingsCache;
@@ -56,6 +57,8 @@ export default {
           }
         }
       }
+
+      Utils.setFacetsQuery(params, 'sessions');
 
       // set whether map is open on the sessions page
       if (localStorage.getItem('sessions-open-map') === 'true') {

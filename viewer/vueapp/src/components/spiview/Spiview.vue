@@ -6,8 +6,8 @@
       <span class="fixed-header">
         <!-- search navbar -->
         <moloch-search
-          :num-matching-sessions="filtered"
-          @changeSearch="changeSearch">
+          @changeSearch="changeSearch"
+          :num-matching-sessions="filtered">
         </moloch-search> <!-- /search navbar -->
 
         <!-- info navbar -->
@@ -115,6 +115,7 @@
               Loading SPI data
             </em>
             <button type="button"
+              :class="{'disabled-aggregations':disabledAggregations}"
               class="btn btn-warning btn-sm pull-right cancel-btn"
               @click="cancelLoading">
               <span class="fa fa-ban">
@@ -147,11 +148,11 @@
     <!-- visualizations -->
     <moloch-visualizations
       v-if="mapData && graphData && showToolBars"
-      :graph-data="graphData"
-      :map-data="mapData"
       :primary="true"
-      :timelineDataFilters="timelineDataFilters"
-      @fetchMapData="fetchVizData">
+      :map-data="mapData"
+      :graph-data="graphData"
+      @fetchMapData="fetchVizData"
+      :timelineDataFilters="timelineDataFilters">
     </moloch-visualizations> <!-- /visualizations -->
 
     <div class="spiview-content mr-1 ml-1">
@@ -472,6 +473,9 @@ export default {
     },
     fields: function () {
       return this.$store.state.fieldsArr;
+    },
+    disabledAggregations: function () {
+      return this.$store.state.disabledAggregations;
     }
   },
   watch: {
@@ -870,6 +874,8 @@ export default {
     get: function (query) {
       const source = Vue.axios.CancelToken.source();
 
+      Utils.setFacetsQuery(query, 'spiview');
+
       // set whether map is open on the spiview page
       if (localStorage.getItem('spiview-open-map') === 'true') {
         query.map = true;
@@ -893,10 +899,12 @@ export default {
           if (response.data.bsqErr) {
             response.data.error = response.data.bsqErr;
           }
-          if (hideViz) { // always set map/graph data so viz area shows up
+
+          if (hideViz || !query.forceAggregations) { // always set map/graph data so viz area shows up
             this.mapData = {};
             this.graphData = {};
           }
+
           resolve(response.data);
         }).catch((error) => {
           if (!Vue.axios.isCancel(error)) {
@@ -1399,5 +1407,8 @@ export default {
 .cancel-btn {
   margin-top: -4px;
   margin-right: 80px;
+}
+.cancel-btn.disabled-aggregations {
+  margin-right: 160px;
 }
 </style>

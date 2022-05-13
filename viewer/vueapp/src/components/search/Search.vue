@@ -3,17 +3,45 @@
   <form class="position-relative">
 
     <!-- viz options button -->
-    <div  class="viz-options-btn-container"
+    <div class="viz-options-btn-container"
       v-if="basePath === 'spigraph' || basePath === 'sessions' || basePath === 'spiview'">
       <b-dropdown
+        split
         right
         size="sm"
         variant="primary"
-        class="viz-options-btn">
+        class="viz-options-btn"
+        @click="overrideDisabledAggregations(1)">
         <template #button-content>
-          <span class="fa fa-bar-chart-o fa-fw" />
           <span class="fa fa-gear fa-fw" />
+          <span v-if="!hideViz && disabledAggregations">
+            Fetch Viz Data
+          </span>
         </template>
+        <template v-if="!hideViz && disabledAggregations">
+          <b-dropdown-item
+            @click="overrideDisabledAggregations(1)"
+            v-b-tooltip.hover.left="'might take a while'">
+            Fetch vizualizations for this query
+          </b-dropdown-item>
+          <b-dropdown-item
+            @click="overrideDisabledAggregations(0)"
+            v-b-tooltip.hover.left="'slows down future searches until you close this tab'">
+            Fetch vizualizations for this browser session
+          </b-dropdown-item>
+          <b-dropdown-item
+            @click="overrideDisabledAggregations(-1)"
+            v-b-tooltip.hover.left="'slows down future searches until you turn it off'">
+            Always fetch vizualizations for this browser
+          </b-dropdown-item>
+        </template>
+        <template v-if="forcedAggregations">
+          <b-dropdown-item
+            @click="overrideDisabledAggregations(undefined)">
+            Disable forced vizualizations
+          </b-dropdown-item>
+        </template>
+        <b-dropdown-divider v-if="!hideViz && disabledAggregations" />
         <b-dropdown-item
           @click="toggleStickyViz">
           {{ !stickyViz ? 'Pin' : 'Unpin' }}{{ basePath && basePath === 'spigraph' ? ' top' : '' }} {{ basePath && basePath === 'sessions' ? 'graph, map, and column headers' : 'graph and map' }}
@@ -498,6 +526,12 @@ export default {
     hideViz: {
       get: function () { return this.$store.state.hideViz; },
       set: function (newValue) { this.$store.commit('toggleHideViz', newValue); }
+    },
+    disabledAggregations: function () {
+      return this.$store.state.disabledAggregations;
+    },
+    forcedAggregations: function () {
+      return this.$store.state.forcedAggregations;
     }
   },
   watch: {
@@ -686,6 +720,43 @@ export default {
           this.$store.commit('setFetchGraphData', false);
         }, 500);
       }
+    },
+    /**
+     * Overrides the server's diabling of aggregations on large time ranges
+     * @param {number} option - How long to disable the aggregation
+     *                          -1 = forever
+     *                          0  = this session
+     *                          1  = once
+     */
+    overrideDisabledAggregations: function (option) {
+      if (option === undefined) {
+        localStorage['force-aggregations'] = false;
+        sessionStorage['force-aggregations'] = false;
+        this.$store.commit('setForcedAggregations', false);
+        return;
+      }
+
+      if (option === -1) {
+        localStorage['force-aggregations'] = true;
+        this.$store.commit('setForcedAggregations', true);
+      } else {
+        sessionStorage['force-aggregations'] = true;
+        this.$store.commit('setForcedAggregations', true);
+      }
+
+      if (this.hideViz || this.disabledAggregations) { // data is missing
+        this.$store.commit('setFetchGraphData', true); // fetch the data
+      }
+
+      this.hideViz = false;
+      setTimeout(() => {
+        this.$store.commit('setFetchGraphData', false); // unset for future data fetching
+        this.$store.commit('setForcedAggregations', true);
+        if (option === 1) { // if just override just once, unset it for future calls to disable aggs
+          sessionStorage['force-aggregations'] = false;
+          this.$store.commit('setForcedAggregations', false);
+        }
+      }, 500);
     },
     /* MultiES functions ------------------------------------------ */
     isClusterVis: function (cluster) {

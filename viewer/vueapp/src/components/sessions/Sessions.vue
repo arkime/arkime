@@ -34,12 +34,13 @@
     <!-- visualizations -->
     <moloch-visualizations
       v-if="graphData"
-      :graph-data="graphData"
-      :map-data="mapData"
       :primary="true"
-      :timelineDataFilters="timelineDataFilters"
-      @fetchMapData="cancelAndLoad(true)">
-    </moloch-visualizations> <!-- /visualizations -->
+      :map-data="mapData"
+      :graph-data="graphData"
+      @fetchMapData="cancelAndLoad(true)"
+      :timelineDataFilters="timelineDataFilters">
+    </moloch-visualizations>
+    <!-- /visualizations -->
 
     <div class="sessions-content ml-2"
       id="sessions-content"
@@ -794,6 +795,9 @@ export default {
     },
     fields: function () {
       return this.$store.state.fieldsMap;
+    },
+    hideViz: function () {
+      return this.$store.state.hideViz;
     }
   },
   watch: {

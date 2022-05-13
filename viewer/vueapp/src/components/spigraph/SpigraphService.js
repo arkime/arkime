@@ -1,5 +1,7 @@
 import Vue from 'vue';
 
+import Utils from '../utils/utils';
+
 export default {
 
   /* service methods ------------------------------------------------------- */
@@ -11,6 +13,8 @@ export default {
    *                              or rejection of the request.
    */
   get: function (query, cancelToken) {
+    Utils.setFacetsQuery(query, 'spigraph');
+
     return new Promise((resolve, reject) => {
       const options = {
         url: 'api/spigraph',
@@ -39,6 +43,8 @@ export default {
    *                              or rejection of the request.
    */
   getHierarchy: function (query, cancelToken) {
+    Utils.setFacetsQuery(query, 'spigraph');
+
     return new Promise((resolve, reject) => {
       const options = {
         url: 'api/spigraphhierarchy',

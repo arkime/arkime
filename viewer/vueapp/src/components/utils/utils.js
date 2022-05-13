@@ -1,5 +1,7 @@
 import uuid from 'uuidv4';
 
+import store from '../../store';
+
 export default {
 
   /**
@@ -75,5 +77,44 @@ export default {
       result.error = 'Invalid ES cluster is selected';
       return result;
     }
+  },
+
+  /**
+   * Sets the facets query based on the query time range and whether the user wants to force aggregations
+   * NOTE: mutates the query object and sets the store values
+   * @param {object} query The query parameters for the search to be passed to the server
+   * @param {string} page The page the query is for
+   */
+  setFacetsQuery (query, page) {
+    if (!page || (page !== 'sessions' && page !== 'spiview')) {
+      store.commit('setDisabledAggregations', false);
+      query.facets = 1;
+      return;
+    }
+
+    if (
+      (localStorage['force-aggregations'] && localStorage['force-aggregations'] !== 'false') ||
+      (sessionStorage['force-aggregations'] && sessionStorage['force-aggregations'] !== 'false')
+    ) {
+      store.commit('setDisabledAggregations', false);
+      query.facets = 1;
+      return;
+    }
+
+    if (query.date === '-1') {
+      store.commit('setDisabledAggregations', true);
+      query.facets = 0;
+      return;
+    } else if (query.stopTime && query.startTime) {
+      store.commit('setDisabledAggregations', true);
+      const deltaTime = (query.stopTime - query.startTime) / 86400; // secs to days
+      /* eslint-disable no-undef */
+      if (deltaTime > (TURN_OFF_GRAPH_DAYS || 30)) {
+        query.facets = 0;
+        return;
+      }
+    }
+
+    store.commit('setDisabledAggregations', false);
   }
 };

@@ -32,6 +32,8 @@ const store = new Vuex.Store({
     hideViz: false,
     stickyViz: false,
     fetchGraphData: false,
+    disabledAggregations: false,
+    forcedAggregations: false,
     showMaps: true,
     showToolBars: true,
     mapSrc: true,
@@ -245,6 +247,12 @@ const store = new Vuex.Store({
     },
     setRoles (state, value) {
       state.roles = value;
+    },
+    setDisabledAggregations (state, value) {
+      state.disabledAggregations = value;
+    },
+    setForcedAggregations (state, value) {
+      state.forcedAggregations = value;
     }
   }
 });
