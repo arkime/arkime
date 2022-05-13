@@ -49,7 +49,8 @@ const store = {
       selectedCluster: []
     },
     hideViz: false,
-    stickyViz: false
+    stickyViz: false,
+    disabledAggregations: true
   },
   mutations: {
     setAvailableCluster: jest.fn(),
@@ -60,7 +61,9 @@ const store = {
     setExpression: jest.fn(),
     deleteViews: jest.fn(),
     toggleHideViz: jest.fn(),
-    toggleStickyViz: jest.fn()
+    toggleStickyViz: jest.fn(),
+    setFetchGraphData: jest.fn(),
+    setForcedAggregations: jest.fn()
   }
 };
 
@@ -216,4 +219,76 @@ test('search bar - change view to different view', async () => {
   await fireEvent.click(getByText('test view 1'));
   expect(emitted()).toHaveProperty('setView');
   expect($router.push).toHaveBeenCalledWith({ query: { view: 'test view 1' } });
+});
+
+test('search bar - viz buttons', async () => {
+  const $route = {
+    query: { date: '-1' },
+    name: 'Sessions',
+    path: 'arkime/sessions'
+  };
+
+  const {
+    getByText, queryByText
+  } = render(Search, {
+    store,
+    mocks: { $route, $router },
+    props: { openSessions: [], fields: fields }
+  });
+
+  // should show viz options buttons
+  const vizDropdown = getByText('Fetch Viz Data');
+
+  // clicking button should fetch data and set forced aggs
+  await fireEvent.click(vizDropdown);
+  expect(store.mutations.setFetchGraphData).toHaveBeenCalledWith(store.state, true);
+  expect(store.mutations.setForcedAggregations).toHaveBeenCalledWith(store.state, true);
+
+  // should not have the remove disabled force viz button
+  expect(queryByText('Disable forced vizualizations')).not.toBeInTheDocument()
+
+  // should show all fetch viz buttons
+  getByText('Fetch vizualizations for this query');
+  const alwaysBtn = getByText('Always fetch vizualizations');
+  const sessionBtn = getByText('Fetch vizualizations for this browser session');
+
+  // clicking always button should fetch data and set forced aggs
+  await fireEvent.click(alwaysBtn);
+  expect(store.mutations.setFetchGraphData).toHaveBeenCalledWith(store.state, true);
+  expect(store.mutations.setForcedAggregations).toHaveBeenCalledWith(store.state, true);
+
+  // clicking session button should fetch data and set forced aggs
+  await fireEvent.click(sessionBtn);
+  expect(store.mutations.setFetchGraphData).toHaveBeenCalledWith(store.state, true);
+  expect(store.mutations.setForcedAggregations).toHaveBeenCalledWith(store.state, true);
+});
+
+test('search bar - disable forced viz button', async () => {
+  const $route = {
+    query: { date: '-1' },
+    name: 'Sessions',
+    path: 'arkime/sessions'
+  };
+
+  store.state.disabledAggregations = false; // aggregations are visible
+  store.state.forcedAggregations = true; // show the disable forced button
+
+  const {
+    getByText, queryByText
+  } = render(Search, {
+    store,
+    mocks: { $route, $router },
+    props: { openSessions: [], fields: fields }
+  });
+
+  // should show viz options dropdown, but not the button to fetch viz data
+  // (since it's already visible because aggregations have been forced)
+  getByText('Toggle Dropdown');
+  expect(queryByText('Fetch Viz Data')).not.toBeInTheDocument();
+
+  // should see disable force viz button
+  const disableForced = getByText('Disable forced vizualizations');
+  await fireEvent.click(disableForced);
+  expect(store.mutations.setFetchGraphData).not.toHaveBeenCalled();
+  expect(store.mutations.setForcedAggregations).toHaveBeenCalledWith(store.state, false);
 });
