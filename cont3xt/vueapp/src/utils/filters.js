@@ -36,8 +36,8 @@ Vue.filter('dateString', dateString);
  * Parsing various date strings and converts to our common format
  *
  * @example
- * '{{ 1524680821 | dateString }}'
- * this.$options.filters.dateString(1524680821);
+ * '{{ 2020-07-10 15:00:00.000 | reDateString }}'
+ * this.$options.filters.dateString('2020-07-10 15:00:00.000');
  *
  * @returns {string} - Our common date string display
  */
@@ -58,6 +58,8 @@ Vue.filter('reDateString', reDateString);
  * @returns {String} - RIR string (ARIN|RIPE|APNIC|LACNIC|AFRINIC)
  */
 export const baseRIR = function (rirLink) {
+  if (!rirLink) { return 'unknown rir'; }
+
   const RIRs = ['arin', 'ripe', 'apnic', 'lacnic', 'afrinic'];
 
   for (const rir of RIRs) {
