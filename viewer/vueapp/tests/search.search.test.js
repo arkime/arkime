@@ -249,7 +249,7 @@ test('search bar - viz buttons', async () => {
 
   // should show all fetch viz buttons
   getByText('Fetch vizualizations for this query');
-  const alwaysBtn = getByText('Always fetch vizualizations');
+  const alwaysBtn = getByText('Always fetch vizualizations for this browser');
   const sessionBtn = getByText('Fetch vizualizations for this browser session');
 
   // clicking always button should fetch data and set forced aggs

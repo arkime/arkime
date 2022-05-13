@@ -941,7 +941,9 @@ export default {
       this.setupMapData();
     },
     setupMapElement: function () {
-      if (this.mapEl) { return; }
+      if (this.mapEl) {
+        this.map = $(this.mapEl).children('.jvectormap-container').remove();
+      }
 
       this.mapEl = $('#molochMap' + this.id);
 
