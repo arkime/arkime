@@ -234,7 +234,8 @@ function setupAuth () {
     mode: mode,
     userNameHeader: userNameHeader,
     passwordSecret: getConfig('wiseService', 'passwordSecret', 'password'),
-    userAuthIps: getConfig('wiseService', 'userAuthIps')
+    userAuthIps: getConfig('wiseService', 'userAuthIps'),
+    httpRealm: getConfig('wiseService', 'httpRealm')
   });
 
   if (mode === 'anonymous') {

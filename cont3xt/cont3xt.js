@@ -442,7 +442,8 @@ function setupAuth () {
     mode: mode,
     userNameHeader: userNameHeader,
     passwordSecret: getConfig('cont3xt', 'passwordSecret', 'password'),
-    basePath: internals.webBasePath
+    basePath: internals.webBasePath,
+    httpRealm: getConfig('cont3xt', 'httpRealm')
   });
 
   const dbUrl = getConfig('cont3xt', 'dbUrl');

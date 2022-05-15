@@ -521,7 +521,7 @@ Auth.initialize({
   mode,
   debug: exports.debug,
   basePath: exports.basePath(),
-  realm: exports.get('httpRealm', 'Moloch'),
+  httpRealm: exports.get('httpRealm', 'Moloch'),
   passwordSecret: exports.getFull('default', 'passwordSecret', 'password'),
   serverSecret: exports.getFull('default', 'serverSecret'),
   userNameHeader: exports.get('userNameHeader'),
