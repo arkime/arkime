@@ -25,7 +25,7 @@
         placeholder="Search"
         v-model="expression"
         v-caret-pos="caretPos"
-        v-focus-input="focusInput"
+        v-focus="focusInput"
         @input="debounceExprChange"
         @keydown.enter.prevent.stop="enterClick"
         @keydown.esc.tab.enter.down.up.prevent.stop="keyup($event)"
@@ -148,8 +148,8 @@
 import UserService from '../users/UserService';
 import FieldService from './FieldService';
 import CaretPos from '../utils/CaretPos';
-import FocusInput from '../utils/FocusInput';
 import { mixin as clickaway } from 'vue-clickaway';
+import Focus from '../../../../../common/vueapp/Focus';
 
 let tokens;
 let timeout;
@@ -159,7 +159,7 @@ const operations = ['==', '!=', '<', '<=', '>', '>='];
 export default {
   name: 'ExpressionTypeahead',
   mixins: [clickaway],
-  directives: { CaretPos, FocusInput },
+  directives: { CaretPos, Focus },
   data: function () {
     return {
       activeIdx: -1,

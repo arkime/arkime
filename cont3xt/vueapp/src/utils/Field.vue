@@ -7,6 +7,7 @@
     <!-- clickable field menu -->
     <div v-if="isOpen"
       class="field-dropdown"
+      data-testid="field-dropdown"
       :class="{'pull-right':!pullLeft,'pull-left':pullLeft}">
       <b-dropdown-item
         v-if="options.copy"
@@ -27,11 +28,11 @@
 export default {
   name: 'Cont3xtField',
   props: {
-    value: { // the value to be used in copy and display is no display value
+    value: { // the value to be used in copy and display if no display value
       type: String,
       required: true
     },
-    display: { // the value to display (uses value is this is mssing)
+    display: { // the value to display (uses value is this is missing)
       type: String
     },
     pullLeft: { // whether the dropdown should drop down from the left

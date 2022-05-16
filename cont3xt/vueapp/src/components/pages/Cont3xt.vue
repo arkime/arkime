@@ -339,7 +339,6 @@
 <script>
 import { mapGetters } from 'vuex';
 
-import Focus from '@/utils/Focus';
 import ReorderList from '@/utils/ReorderList';
 import Cont3xtIp from '@/components/itypes/IP';
 import Cont3xtUrl from '@/components/itypes/URL';
@@ -347,6 +346,7 @@ import Cont3xtHash from '@/components/itypes/Hash';
 import Cont3xtText from '@/components/itypes/Text';
 import Cont3xtEmail from '@/components/itypes/Email';
 import Cont3xtPhone from '@/components/itypes/Phone';
+import Focus from '@/../../../../common/vueapp/Focus';
 import Cont3xtDomain from '@/components/itypes/Domain';
 import ViewSelector from '@/components/views/ViewSelector';
 import UserService from '@/components/services/UserService';
