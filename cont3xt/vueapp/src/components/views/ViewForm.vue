@@ -89,7 +89,7 @@
 <script>
 import { mapGetters } from 'vuex';
 
-import Focus from '@/../../../../common/vueapp/Focus';
+import Focus from '@/../../../common/vueapp/Focus';
 import RoleDropdown from '@../../../common/vueapp/RoleDropdown';
 
 export default {
