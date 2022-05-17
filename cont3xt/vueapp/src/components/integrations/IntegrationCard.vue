@@ -10,24 +10,27 @@
           size="sm"
           tabindex="-1"
           @click="copy"
-          variant="outline-success"
-          v-b-tooltip.hover="'Copy as raw JSON'">
+          v-b-tooltip.hover
+          title="Copy as raw JSON"
+          variant="outline-success">
           <span class="fa fa-copy fa-fw" />
         </b-button>
         <b-button
           size="sm"
           tabindex="-1"
           @click="download"
+          v-b-tooltip.hover
           variant="outline-success"
-          v-b-tooltip.hover="'Download as raw JSON'">
+          title="Download as raw JSON">
           <span class="fa fa-download fa-fw" />
         </b-button>
         <b-button
           size="sm"
-          @click="refresh"
           tabindex="-1"
+          @click="refresh"
+          v-b-tooltip.hover
           variant="outline-info"
-          v-b-tooltip.hover="`Queried ${$options.filters.moment(getIntegrationData.data._cont3xt.createTime, 'from')}\n${$options.filters.dateString(getIntegrationData.data._cont3xt.createTime)}`">
+          :title="`Queried ${$options.filters.moment(getIntegrationData.data._cont3xt.createTime, 'from')}\n${$options.filters.dateString(getIntegrationData.data._cont3xt.createTime)}`">
           <span class="fa fa-refresh fa-fw" />
         </b-button>
       </div>
