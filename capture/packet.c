@@ -70,6 +70,7 @@ int                          udpMProtocol;
 
 LOCAL int                    mProtocolCnt;
 MolochProtocol_t             mProtocols[0x100];
+static int                   MULTI_MAC_WARNING_SHOWN = 0;
 
 /******************************************************************************/
 
@@ -121,18 +122,6 @@ LOCAL MolochDropHashGroup_t      packetDrop6S;
 #define IPPROTO_IPV4            4
 #endif
 
-void moloch_field_macoui_add_debug(MolochSession_t *session, int macField,int ouiField, int ethCount,int offset,const uint8_t* data){
-    char str[20];
-    snprintf(str, sizeof(str), "%02x:%02x:%02x:%02x:%02x:%02x",
-             data[0],
-             data[1],
-             data[2],
-             data[3],
-             data[4],
-             data[5]);
-    LOG("moloch_packet_ether ethCount:%d, mac:%s, offset:%d, macField:%d, ouiField:%d",ethCount,str,offset,macField,ouiField );
-    moloch_field_macoui_add(session, macField, ouiField, data);
-}
 /******************************************************************************/
 void moloch_packet_free(MolochPacket_t *packet)
 {
@@ -341,13 +330,12 @@ LOCAL void moloch_packet_process(MolochPacket_t *packet, int thread)
         }
 
         if (pcapFileHeader.dlt == DLT_EN10MB) {
-            LOG("Adding normal mac to session with 0 offzet direction %d", packet->direction );
             if (packet->direction == 1) {
-                moloch_field_macoui_add_debug(session, mac1Field, oui1Field, 0,0,pcapData+0);
-                moloch_field_macoui_add_debug(session, mac2Field, oui2Field,0,6, pcapData+6);
+                moloch_field_macoui_add(session, mac1Field, oui1Field, pcapData+0);
+                moloch_field_macoui_add(session, mac2Field, oui2Field, pcapData+6);
             } else {
-                moloch_field_macoui_add_debug(session, mac1Field, oui1Field,0,6, pcapData+6);
-                moloch_field_macoui_add_debug(session, mac2Field, oui2Field,0,0, pcapData+0);
+                moloch_field_macoui_add(session, mac1Field, oui1Field, pcapData+6);
+                moloch_field_macoui_add(session, mac2Field, oui2Field, pcapData+0);
             }
 
             int n = 12;
@@ -361,19 +349,14 @@ LOCAL void moloch_packet_process(MolochPacket_t *packet, int thread)
         if (packet->vlan)
             moloch_field_int_add(vlanField, session, packet->vlan);
 
-        if (packet->ethCount>1){
+        if (packet->ethCount>1 && config.parseMaxMacAddresses>1){
             for (int ethNr=1;ethNr<packet->ethCount;ethNr++) {
-                LOG("setting macoui fields direction:%d, ethCount %d, ethNr %d, offset %d",packet->direction,packet->ethCount,ethNr,packet->ethOffset[ethNr]);
                 if (packet->direction == 1) {
-                    moloch_field_macoui_add_debug(session, mac1Field, oui1Field, ethNr,packet->ethOffset[ethNr],
-                                                  packet->pkt + packet->ethOffset[ethNr]);
-                    moloch_field_macoui_add_debug(session, mac2Field, oui2Field,ethNr,packet->ethOffset[ethNr]+6,
-                                                  packet->pkt + packet->ethOffset[ethNr] + 6);
+                    moloch_field_macoui_add(session, mac1Field, oui1Field, packet->pkt + packet->ethOffset[ethNr]);
+                    moloch_field_macoui_add(session, mac2Field, oui2Field, packet->pkt + packet->ethOffset[ethNr] + 6);
                 } else {
-                    moloch_field_macoui_add_debug(session, mac2Field, oui2Field,ethNr,packet->ethOffset[ethNr],
-                                                  packet->pkt + packet->ethOffset[ethNr]);
-                    moloch_field_macoui_add_debug(session, mac1Field, oui1Field,ethNr,packet->ethOffset[ethNr]+6,
-                                                  packet->pkt + packet->ethOffset[ethNr] + 6);
+                    moloch_field_macoui_add(session, mac2Field, oui2Field, packet->pkt + packet->ethOffset[ethNr]);
+                    moloch_field_macoui_add(session, mac1Field, oui1Field, packet->pkt + packet->ethOffset[ethNr] + 6);
                 }
             }
         }
@@ -1104,7 +1087,7 @@ LOCAL MolochPacketRC moloch_packet_ether(MolochPacketBatch_t * batch, MolochPack
     }
 
     packet->ethOffset[packet->ethCount] = (uint8_t*)data - packet->pkt;
-
+#ifdef DEBUG_PACKET
     char str[20];
     snprintf(str, sizeof(str), "%02x:%02x:%02x:%02x:%02x:%02x",
              data[0],
@@ -1114,7 +1097,7 @@ LOCAL MolochPacketRC moloch_packet_ether(MolochPacketBatch_t * batch, MolochPack
              data[4],
              data[5]);
 
-    LOG("moloch_packet_ether if lucky MAC A:%d, %s, %d",packet->ethCount,str,packet->ethOffset[packet->ethCount]);
+    LOG("moloch_packet_ether MAC A:%d, %s, %d", packet->ethCount, str, packet->ethOffset[packet->ethCount]);
     snprintf(str, sizeof(str), "%02x:%02x:%02x:%02x:%02x:%02x",
              data[6],
              data[7],
@@ -1122,13 +1105,16 @@ LOCAL MolochPacketRC moloch_packet_ether(MolochPacketBatch_t * batch, MolochPack
              data[9],
              data[10],
              data[11]);
-    LOG("moloch_packet_ether if lucky MAC B:%d, %s,%d",packet->ethCount,str,packet->ethOffset[packet->ethCount]);
+    LOG("moloch_packet_ether MAC B:%d, %s,%d", packet->ethCount, str, packet->ethOffset[packet->ethCount]);
+#endif
 
-    if (packet->ethCount < MOLOCH_ETHER_MAX_STORE){
+
+    if (packet->ethCount < MOLOCH_ETHER_MAX_STORE && packet->ethCount<config.parseMaxMacAddresses){
         packet->ethCount++; // don't move the counter beyond the maximum number of ethernet frames we store, just overwrite last frame
     }
-    else{
-        LOG("Warning: more then %d ethernet frames found, overwriting the most inner",MOLOCH_ETHER_MAX_STORE);
+    else if (!MULTI_MAC_WARNING_SHOWN){
+        LOG("Warning: more then %d ethernet frames found, overwriting the most inner (or edit config.parseMaxMacAddresses)", config.parseMaxMacAddresses);
+        MULTI_MAC_WARNING_SHOWN=1;
     }
     int n = 12;
     while (n+2 < len) {
