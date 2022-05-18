@@ -116,7 +116,7 @@
                     <input
                       type="text"
                       v-model="jobName"
-                      v-focus-input="true"
+                      v-focus="true"
                       placeholder="Name your packet search job"
                       class="form-control"
                       maxlength="40"
@@ -844,7 +844,7 @@ import MolochSearch from '../search/Search';
 import MolochLoading from '../utils/Loading';
 import MolochPaging from '../utils/Pagination';
 import MolochCollapsible from '../utils/CollapsibleWrapper';
-import FocusInput from '../utils/FocusInput';
+import Focus from '../../../../../common/vueapp/Focus';
 import HuntData from './HuntData';
 import HuntRow from './HuntRow';
 import RoleDropdown from '../../../../../common/vueapp/RoleDropdown';
@@ -868,7 +868,7 @@ export default {
     HuntRow,
     RoleDropdown
   },
-  directives: { FocusInput },
+  directives: { Focus },
   data: function () {
     return {
       queuedListError: '',

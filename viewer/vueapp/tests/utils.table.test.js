@@ -7,7 +7,7 @@ import BootstrapVue from 'bootstrap-vue';
 import { render, fireEvent, waitFor } from '@testing-library/vue';
 import Table from '../src/components/utils/Table.vue';
 import UserService from '../src/components/users/UserService';
-const { userWithSettings } = require('./consts');
+const { userWithSettings } = require('../../../common/vueapp/tests/consts');
 
 console.info = jest.fn(); // don't display console.info messages
 

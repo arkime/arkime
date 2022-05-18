@@ -7,7 +7,7 @@ import $ from 'jquery';
 import { render, fireEvent, waitFor } from '@testing-library/vue';
 import Intersection from '../src/components/sessions/Intersection.vue';
 import SessionsService from '../src/components/sessions/SessionsService';
-import { sessions, fieldsMap } from './consts';
+import { sessions, fieldsMap } from '../../../common/vueapp/tests/consts';
 
 console.info = jest.fn(); // ignore vue devtool messages
 

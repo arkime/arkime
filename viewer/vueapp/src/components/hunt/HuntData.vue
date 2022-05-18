@@ -207,7 +207,7 @@
               <input type="text"
                 v-model="newUsers"
                 class="form-control"
-                v-focus-input="focusInput"
+                v-focus="focusInput"
                 @keyup.enter="addUsers(newUsers, job)"
                 placeholder="Comma separated list of user IDs"
               />
@@ -281,7 +281,7 @@
 <script>
 import HuntStatus from './HuntStatus';
 import HuntService from './HuntService';
-import FocusInput from '../utils/FocusInput';
+import Focus from '../../../../../common/vueapp/Focus';
 import RoleDropdown from '../../../../../common/vueapp/RoleDropdown';
 
 export default {
@@ -294,7 +294,7 @@ export default {
     HuntStatus,
     RoleDropdown
   },
-  directives: { FocusInput },
+  directives: { Focus },
   data: function () {
     return {
       newUsers: '',

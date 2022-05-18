@@ -7,7 +7,7 @@ import $ from 'jquery';
 import { render, fireEvent, waitFor } from '@testing-library/vue';
 import ExportCsv from '../src/components/sessions/ExportCsv.vue';
 import SessionsService from '../src/components/sessions/SessionsService';
-import { sessions, fieldsMap } from './consts';
+import { sessions, fieldsMap } from '../../../common/vueapp/tests/consts';
 
 global.$ = global.jQuery = $;
 

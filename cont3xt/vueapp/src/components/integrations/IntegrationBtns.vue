@@ -13,6 +13,7 @@
         <img
           :alt="integration.name"
           :src="integration.icon"
+          data-testid="integration-btn-icon"
           class="integration-img cursor-pointer"
         />
         <b-badge

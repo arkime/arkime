@@ -1,6 +1,7 @@
 <template>
   <span
-    v-b-tooltip.hover="value.full"
+    v-b-tooltip.hover
+    :title="value.full"
     v-if="value.value !== undefined"
     :class="{'cursor-help':value.full}">
     <div :class="field.type === 'table' || field.type === 'array' ? 'd-flex justify-content-between align-items-center' : 'd-inline'">

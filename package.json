@@ -91,7 +91,8 @@
     "wise:dev": "(cd wiseService && NODE_ENV=development nodemon wiseService.js -c ../tests/config.test.json --webconfig) & webpack --watch --progress --config wiseService/vueapp/build/webpack.dev.conf.js",
     "wise:devdebug": "(cd wiseService && NODE_ENV=development nodemon wiseService.js -c ../tests/config.test.json --webconfig --debug --debug) & webpack --watch --progress --config wiseService/vueapp/build/webpack.dev.conf.js",
     "common:doc": "jsdoc2md --partial jsdoc/*.hbs --helper jsdoc/dochelpers.js --files common/*.js > ../arkimeweb/_wiki/api_common_docs.md",
-    "test": "cd viewer && jest"
+    "common:testui": "cd common && jest",
+    "test": "(cd common && jest) && (cd viewer && jest) && (cd cont3xt && jest)"
   },
   "devDependencies": {
     "@babel/core": "^7.12.17",

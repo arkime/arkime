@@ -16,7 +16,7 @@ import UserService from '../src/components/users/UserService';
 import ConfigService from '../src/components/utils/ConfigService';
 import '../src/filters.js';
 import '../../../common/vueapp/vueFilters';
-const { roles, hunts, userWithSettings } = require('./consts');
+const { roles, hunts, userWithSettings } = require('../../../common/vueapp/tests/consts');
 
 console.info = jest.fn(); // ignore tooltip warnings
 

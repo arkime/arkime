@@ -341,7 +341,7 @@
         <input type="text"
           class="form-control"
           v-model="searchTerm"
-          v-focus-input="focusInput"
+          v-focus="focusInput"
           @blur="onOffFocus"
           @input="debounceSearchInput"
           @keyup.enter="debounceSearchInput"
@@ -460,9 +460,9 @@ import EsIndices from './EsIndices';
 import EsAdmin from './EsAdmin';
 import CaptureGraphs from './CaptureGraphs';
 import CaptureStats from './CaptureStats';
-import FocusInput from '../utils/FocusInput';
 import MolochCollapsible from '../utils/CollapsibleWrapper';
 import utils from '../utils/utils';
+import Focus from '../../../../../common/vueapp/Focus';
 
 let searchInputTimeout;
 
@@ -479,7 +479,7 @@ export default {
     EsAdmin,
     MolochCollapsible
   },
-  directives: { FocusInput },
+  directives: { Focus },
   data: function () {
     return {
       tabIndex: parseInt(this.$route.query.statsTab, 10) || 0,

@@ -13,9 +13,10 @@
           @change="updateRoles">
           {{ role.text }}
           <span
+            v-b-tooltip.hover
             v-if="role.userDefined"
+            title="User defined role"
             class="fa fa-user cursor-help ml-2"
-            v-b-tooltip.hover="'User defined role'"
           />
         </b-form-checkbox>
         <template v-for="role in localSelectedRoles">

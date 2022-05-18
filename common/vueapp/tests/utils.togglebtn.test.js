@@ -1,7 +1,7 @@
 'use strict';
 
 import { render, fireEvent } from '@testing-library/vue';
-import ToggleBtn from '../../../common/vueapp/ToggleBtn.vue';
+import ToggleBtn from '../ToggleBtn.vue';
 
 test('toggle button', async () => {
   const { getByRole, emitted } = render(ToggleBtn);

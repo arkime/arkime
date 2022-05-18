@@ -5,7 +5,7 @@ import BootstrapVue from 'bootstrap-vue';
 import { render, fireEvent } from '@testing-library/vue';
 import WelcomeMessage from '../src/components/utils/WelcomeMessage.vue';
 import UserService from '../src/components/users/UserService';
-const { users } = require('./consts');
+const { users } = require('../../../common/vueapp/tests/consts');
 
 console.warn = jest.fn(); // ignore tooltip warnings
 

@@ -8,7 +8,7 @@ import '@testing-library/jest-dom';
 import { render, fireEvent } from '@testing-library/vue';
 import userEvent from '@testing-library/user-event';
 import PacketOptions from '../src/components/sessions/PacketOptions.vue';
-import { sessions } from './consts';
+import { sessions } from '../../../common/vueapp/tests/consts';
 
 global.$ = global.jQuery = $;
 
