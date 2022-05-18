@@ -63,6 +63,7 @@
 #define MOLOCH_V6_TO_V4(_addr) (((uint32_t *)(_addr).s6_addr)[3])
 
 #define MOLOCH_PACKET_MAX_LEN 0x10000
+#define MOLOCH_ETHER_MAX_STORE 10
 
 #define MOLOCH_ETHERTYPE_ETHER   0
 // If an ethertype is unknown this ethertype will be called
@@ -571,6 +572,8 @@ typedef struct molochpacket_t
     uint8_t        ipProtocol;     // ip protocol
     uint8_t        mProtocol;      // moloch protocol
     uint8_t        readerPos;      // position for filename/ops
+    uint8_t        ethCount;       // the number of ethernet frames found
+    uint32_t       ethOffset[MOLOCH_ETHER_MAX_STORE];  // offset to last ethernet frame from start
     uint32_t       ipOffset:11;    // offset to ip header from start
     uint32_t       vpnIpOffset:11; // offset to vpn ip header from start
     uint32_t       direction:1;    // direction of packet
@@ -981,6 +984,7 @@ typedef void (*MolochHttpHeader_cb)(char *url, const char *field, const char *va
 #define MOLOCH_HTTP_BUFFER_SIZE 10000
 
 void moloch_http_init();
+
 
 unsigned char *moloch_http_send_sync(void *serverV, const char *method, const char *key, int32_t key_len, char *data, uint32_t data_len, char **headers, size_t *return_len);
 gboolean moloch_http_send(void *serverV, const char *method, const char *key, int32_t key_len, char *data, uint32_t data_len, char **headers, gboolean dropable, MolochHttpResponse_cb func, gpointer uw);
