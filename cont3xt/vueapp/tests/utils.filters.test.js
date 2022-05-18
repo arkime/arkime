@@ -18,7 +18,6 @@ test('dateString', () => {
 test('reDateString', () => {
   expect(filters.reDateString()).toBe('Invalid date');
   expect(filters.reDateString('2020-07-10 15:00:00.000')).toBe('2020/07/10 15:00:00 ');
-  expect(filters.reDateString('2022-05-13T17:19:18Z')).toBe('2022/05/13 13:19:18 ');
   expect(filters.reDateString('2022-W19')).toBe('2022/05/09 00:00:00 ');
   expect(filters.reDateString('2022-W19-5')).toBe('2022/05/13 00:00:00 ');
 });
