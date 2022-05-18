@@ -50,7 +50,7 @@
     <table class="table table-sm table-striped table-bordered small">
       <tr>
         <th
-          @click="sortBy(field)"
+          @click="sortBy(field, true)"
           v-for="field in fields"
           :key="`${field.label}-header`"
           :class="{'cursor-pointer':isSortable(field)}">
@@ -59,13 +59,16 @@
             <span
               class="fa fa-sort"
               v-if="sortField !== field.label"
+              :data-testid="`sort-${field.label}`"
             />
             <span
               class="fa fa-sort-desc"
+              :data-testid="`sort-desc-${field.label}`"
               v-else-if="sortField === field.label && desc"
             />
             <span
               class="fa fa-sort-asc"
+              :data-testid="`sort-asc-${field.label}`"
               v-else-if="sortField === field.label && !desc"
             />
           </template>
@@ -162,7 +165,7 @@ export default {
     if (this.sortField) {
       for (const field of this.fields) {
         if (field.path.includes(this.sortField)) {
-          this.sortBy(field);
+          this.sortBy(field, false);
           break;
         }
       }
@@ -222,15 +225,17 @@ export default {
     isSortable (field) {
       return field.type === 'string' || field.type === 'date';
     },
-    sortBy (field) {
+    sortBy (field, toggleSort) {
       if (!this.isSortable(field)) {
         return;
       }
 
-      if (this.sortField === field.label) {
-        this.desc = !this.desc;
-      } else {
-        this.desc = true;
+      if (toggleSort) {
+        if (this.sortField === field.label) {
+          this.desc = !this.desc;
+        } else {
+          this.desc = true;
+        }
       }
 
       this.sortField = field.label;
