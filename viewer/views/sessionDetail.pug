@@ -466,8 +466,8 @@ dl
       dd
         +clickableValue('socks.user', session.socks.user)
 
-  if (session.gre)
-    +ipArrayList(session.gre.ip, "ip", "GRE IPs", "gre.ip")
+  if (session.greIp)
+    +ipArrayList(session, "greIp", "GRE IPs", "gre.ip")
 
   if (session.tcpflags)
     dt
