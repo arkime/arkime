@@ -35,6 +35,7 @@ ipv6-in-ipv4.pcap - http://packetlife.net/captures/protocol/ipv6/  named IPv6_in
 6-4-gre-ppp-udp-4-dns.pcap - http://packetlife.net/captures/protocol/ipv6/  named gre_and_4over6.cap
 wireshark-esp.pcap - Subset of capture.pcap from https://wiki.wireshark.org/SampleCaptures?action=AttachFile&do=view&target=ipsec_esp_capture_1.tgz
 gre-erspan.pcap - https://www.cloudshark.org/captures/76ce4261df29
+gre-erspan-vxlan.pcap - https://github.com/arkime/arkime/issues/1676
 gtp-u.pcap - https://www.cloudshark.org/captures/374cf36574b6
 gtp-iphone.pcap - Subset of http://www.pcapr.net/view/paulc/2014/10/5/11/iphone6_volte_limited.pcap.html
 http-post-upload.pcap - https://github.com/aol/moloch/issues/1037
