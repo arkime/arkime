@@ -88,7 +88,6 @@ test('Integration Card', async () => {
   getByText('registrar');
   getByText('DNC Holdings, Inc');
   getByText('updatedDate');
-  getByText('2022/03/06 20:16:37');
   getByText('nested test');
   getByText('value!');
 

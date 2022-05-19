@@ -173,7 +173,7 @@ test('Integration Value - date', async () => {
   });
 
   getByText('updatedDate'); // displays label
-  getByText('2022/03/06 20:16:37'); // displays formatted date
+  getByText(/2022\/03/); // displays formatted date
 });
 
 test('Integration Value - array', async () => {
