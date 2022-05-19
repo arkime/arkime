@@ -427,7 +427,7 @@ jobs:
             - cp -r capture/plugins/lua/samples /opt/arkime/lua
             - build-package: |
                 export ARKIME_VERSION=`sed 's/.*"\(.*\)\".*$/\1/' /opt/arkime/common/version.js | head -n 1`
-                /root/.local/share/gem/ruby/3.0.0/bin/fpm -s dir -t pacman -n arkime -x opt/arkime/logs -x opt/arkime/raw -v $ARKIME_VERSION --iteration $RELEASE_ITERATION --template-scripts --after-install "release/afterinstall.sh" --url "https://arkime.com" --description "Arkime Full Packet System" -d libmaxminddb -d libpcap -d yara /opt/arkime
+                /root/.local/share/gem/ruby/3.0.0/bin/fpm -s dir -t pacman -n arkime -x opt/arkime/logs -x opt/arkime/raw -v $ARKIME_VERSION --iteration $RELEASE_ITERATION --template-scripts --after-install "release/afterinstall.sh" --url "https://arkime.com" --description "Arkime Full Packet System" -d libmaxminddb -d libpcap -d yara -d perl-http-message -d perl-lwp-protocol-https -d perl-json -d libnet /opt/arkime
                 aws s3 cp --quiet arkime*x86_64.pkg.tar.zst s3://files.molo.ch/builds/arch/arkime-${ARKIME_VERSION}-${RELEASE_ITERATION}_arch.x86_64.pkg.tar.zst --acl public-read
             - ls -l *.zst
 
