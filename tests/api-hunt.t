@@ -264,7 +264,6 @@ my $hToken = getTokenCookie('huntuser');
 
 # validate that user can access hunt secrets now that the role is set
   $hunts = viewerGetToken("/hunt/list?all&molochRegressionUser=user3", $nonadminToken);
-  diag(Dumper($hunts->{data}->[4]));
   ok(exists $hunts->{data}->[4]->{id});
   isnt($hunts->{data}->[4]->{id}, "", "should have id field");
   ok(exists $hunts->{data}->[4]->{userId});
