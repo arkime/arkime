@@ -409,8 +409,8 @@ function createSessionDetail () {
   });
 }
 
-function createRightClicks () {
-  const mrc = Config.configMap('right-click');
+function createActions (configKey, emitter, internalsKey) {
+  const mrc = Config.configMap(configKey);
   for (const key in mrc) {
     if (mrc[key].fields) {
       mrc[key].fields = mrc[key].fields.split(',');
@@ -423,7 +423,7 @@ function createRightClicks () {
       mrc[key].users = users;
     }
   }
-  const makers = internals.pluginEmitter.listeners('makeRightClick');
+  const makers = internals.pluginEmitter.listeners(emitter);
   async.each(makers, function (cb, nextCb) {
     cb(function (err, items) {
       for (const k in items) {
@@ -435,7 +435,7 @@ function createRightClicks () {
       return nextCb();
     });
   }, function () {
-    internals.rightClicks = mrc;
+    internals[internalsKey] = mrc;
   });
 }
 
@@ -1912,11 +1912,17 @@ app.get( // titleconfig endpoint
   miscAPIs.getPageTitle
 );
 
-// value actions apis ---------------------------------------------------------
+// menu actions apis ---------------------------------------------------------
 app.get( // value actions endpoint
   ['/api/valueactions', '/api/valueActions', '/molochRightClick'],
   [ArkimeUtil.noCacheJson, User.checkPermissions(['webEnabled'])],
   miscAPIs.getValueActions
+);
+
+app.get( // field actions endpoint
+  ['/api/fieldactions', '/api/fieldActions'],
+  [ArkimeUtil.noCacheJson, User.checkPermissions(['webEnabled'])],
+  miscAPIs.getFieldActions
 );
 
 // reverse dns apis -----------------------------------------------------------
@@ -2385,8 +2391,10 @@ async function main () {
     setInterval(expireCheckAll, 60 * 1000);
   }
 
-  createRightClicks();
-  setInterval(createRightClicks, 150 * 1000); // Check every 2.5 minutes
+  createActions('right-click', 'makeRightClick', 'rightClick');
+  setInterval(() => createActions('right-click', 'makeRightClick', 'rightClick'), 150 * 1000); // Check every 2.5 minutes
+  createActions('field-actions', 'makeValueActions', 'fieldActions');
+  setInterval(() => createActions('field-actions', 'makeValueActions', 'fieldActions'), 150 * 1000); // Check every 2.5 minutes
 
   if (Config.get('cronQueries', false)) { // this viewer will process the cron queries
     console.log('This node will process Periodic Queries (CRON), delayed by', internals.cronTimeout, 'seconds');
