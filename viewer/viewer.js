@@ -2393,8 +2393,8 @@ async function main () {
 
   createActions('right-click', 'makeRightClick', 'rightClick');
   setInterval(() => createActions('right-click', 'makeRightClick', 'rightClick'), 150 * 1000); // Check every 2.5 minutes
-  createActions('field-actions', 'makeValueActions', 'fieldActions');
-  setInterval(() => createActions('field-actions', 'makeValueActions', 'fieldActions'), 150 * 1000); // Check every 2.5 minutes
+  createActions('field-actions', 'makeFieldActions', 'fieldActions');
+  setInterval(() => createActions('field-actions', 'makeFieldActions', 'fieldActions'), 150 * 1000); // Check every 2.5 minutes
 
   if (Config.get('cronQueries', false)) { // this viewer will process the cron queries
     console.log('This node will process Periodic Queries (CRON), delayed by', internals.cronTimeout, 'seconds');
