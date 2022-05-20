@@ -138,7 +138,6 @@ import MolochSendSessions from '../sessions/Send';
 import MolochExportPcap from '../sessions/ExportPcap';
 import MolochToast from '../utils/Toast';
 import PacketOptions from './PacketOptions';
-import FieldActions from './FieldActions';
 
 const defaultUserSettings = {
   detailFormat: 'last',
@@ -468,8 +467,7 @@ export default {
             MolochRemoveData,
             MolochSendSessions,
             MolochExportPcap,
-            MolochToast,
-            FieldActions
+            MolochToast
           }
         }).$mount();
 
