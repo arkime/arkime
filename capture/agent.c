@@ -33,8 +33,8 @@ LOCAL void *awsMetaServer;
 
 LOCAL  int s3UseTokenForMetadata = 0;
 
-char       constantItems[10000];
-int        constantItemsLen;
+extern char constantItems[10000];
+extern int  constantItemsLen;
 
 /******************************************************************************/
 // Packet forwarding
