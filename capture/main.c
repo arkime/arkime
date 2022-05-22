@@ -112,12 +112,11 @@ LOCAL  GOptionEntry entries[] =
     { "dryrun",      0,                    0, G_OPTION_ARG_NONE,           &config.dryRun,        "dry run, nothing written to databases or filesystem", NULL },
     { "flush",       0,                    0, G_OPTION_ARG_NONE,           &config.flushBetween,  "In offline mode flush streams between files", NULL },
     { "nospi",       0, G_OPTION_FLAG_HIDDEN, G_OPTION_ARG_NONE,           &config.noSPI,         "no SPI data written to ES", NULL },
-    { "tests",       0, G_OPTION_FLAG_HIDDEN, G_OPTION_ARG_NONE,           &config.testsMode,     "Output test suite information", NULL },
+    { "tests",       0, G_OPTION_FLAG_HIDDEN, G_OPTION_ARG_NONE,           &config.tests,         "Output test suite information", NULL },
     { "nostats",     0, G_OPTION_FLAG_HIDDEN, G_OPTION_ARG_NONE,           &config.noStats,       "Don't send node stats", NULL },
     { "insecure",    0,                    0, G_OPTION_ARG_NONE,           &config.insecure,      "Disable certificate verification for https calls", NULL },
     { "nolockpcap",  0,                    0, G_OPTION_ARG_NONE,           &config.noLockPcap,    "Don't lock offline pcap files (ie., allow deletion)", NULL },
     { "ignoreerrors",0, G_OPTION_FLAG_HIDDEN, G_OPTION_ARG_NONE,           &config.ignoreErrors,  "Ignore most errors and continue", NULL },
-    { "agent",       0,                    0, G_OPTION_ARG_NONE,           &config.agentMode,     "Arkime Agent Mode", NULL },
     { NULL,          0, 0,                                    0,           NULL, NULL, NULL }
 };
 
@@ -220,11 +219,11 @@ void parse_args(int argc, char **argv)
         LOG("hostName = %s", config.hostName);
     }
 
-    if (config.testsMode) {
+    if (config.tests) {
         config.dryRun = 1;
     }
 
-    if (!config.agentMode && config.pcapSkip && config.copyPcap) {
+    if (config.pcapSkip && config.copyPcap) {
         printf("Can't skip and copy pcap files\n");
         exit(1);
     }
@@ -666,9 +665,7 @@ gboolean moloch_ready_gfunc (gpointer UNUSED(user_data))
     if (config.debug)
         LOG("maxField = %d", config.maxField);
 
-    if (config.agentMode) {
-      moloch_writers_start("agent");
-    } else if (config.pcapReadOffline) {
+    if (config.pcapReadOffline) {
         if (config.dryRun || !config.copyPcap) {
             moloch_writers_start("inplace");
         } else {
@@ -683,7 +680,7 @@ gboolean moloch_ready_gfunc (gpointer UNUSED(user_data))
         }
     }
     moloch_readers_start();
-    if (!config.pcapReadOffline && (/*pcapFileHeader.dlt == DLT_NULL ||*/ pcapFileHeader.snaplen == 0))
+    if (!config.pcapReadOffline && (pcapFileHeader.dlt == DLT_NULL || pcapFileHeader.snaplen == 0))
         LOGEXIT("ERROR - Reader didn't call moloch_packet_set_dltsnap");
     return G_SOURCE_REMOVE;
 }
@@ -863,8 +860,6 @@ int main(int argc, char **argv)
     arkime_dedup_init();
     moloch_writers_init();
     moloch_readers_init();
-    if (config.agentMode)
-        arkime_agent_init();
     moloch_plugins_init();
     moloch_plugins_load(config.rootPlugins);
     if (config.pcapReadOffline)
@@ -898,8 +893,6 @@ int main(int argc, char **argv)
     moloch_db_exit();
     moloch_http_exit();
     moloch_field_exit();
-    if (config.agentMode)
-        arkime_agent_exit();
     moloch_readers_exit();
     arkime_dedup_exit();
     moloch_config_exit();

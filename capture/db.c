@@ -75,10 +75,6 @@ LOCAL char             *ecsEventDataset;
 
 extern uint64_t         packetStats[MOLOCH_PACKET_MAX];
 
-// ALW - TODO create function to set these
-char              constantItems[10000];
-int               constantItemsLen;
-
 /******************************************************************************/
 extern MolochConfig_t        config;
 
@@ -137,7 +133,7 @@ LOCAL MolochIpInfo_t *moloch_db_get_local_ip6(MolochSession_t *session, struct i
 }
 
 /******************************************************************************/
-void moloch_db_js0n_str(BSB * bsb, unsigned char * in, gboolean utf8)
+LOCAL void moloch_db_js0n_str(BSB * bsb, unsigned char * in, gboolean utf8)
 {
     BSB_EXPORT_u08(*bsb, '"');
     while (*in) {
@@ -203,7 +199,7 @@ end:
 }
 
 /******************************************************************************/
-void moloch_db_js0n_str_unquoted(BSB * bsb, unsigned char * in, int len, gboolean utf8)
+LOCAL void moloch_db_js0n_str_unquoted(BSB * bsb, unsigned char * in, int len, gboolean utf8)
 {
 
     if (len == -1)
@@ -504,7 +500,7 @@ void moloch_db_save_session(MolochSession_t *session, int final)
         return;
 
     /* No Packets */
-    if (!config.agentMode && !config.dryRun && !session->filePosArray->len)
+    if (!config.dryRun && !session->filePosArray->len)
         return;
 
     /* Not enough packets */
@@ -516,18 +512,8 @@ void moloch_db_save_session(MolochSession_t *session, int final)
         moloch_writer_index(session);
     }
 
-    if (config.agentMode && (session->agentAction & AGENT_SEND_TELEMETRY) == 0) {
-        return;
-    }
-
     /* jsonSize is an estimate of how much space it will take to encode the session */
-    jsonSize = 1300 + constantItemsLen;
-    if (session->filePosArray) {
-        jsonSize += session->filePosArray->len * 17;
-    }
-    if (session->fileNumArray) {
-        jsonSize += session->fileNumArray->len * 11;
-    }
+    jsonSize = 1300 + session->filePosArray->len*17 + 11*session->fileNumArray->len;
     if (config.enablePacketLen) {
         jsonSize += 10*session->fileLenArray->len;
     }
@@ -854,13 +840,13 @@ void moloch_db_save_session(MolochSession_t *session, int final)
     BSB_EXPORT_sprintf(jbsb, "\"server\":{\"bytes\":%" PRIu64 "},",
                       session->databytes[1]);
 
-    BSB_EXPORT_ptr(jbsb, constantItems, constantItemsLen);
-
     BSB_EXPORT_sprintf(jbsb,
                       "\"totDataBytes\":%" PRIu64 ","
-                      "\"segmentCnt\":%u,",
+                      "\"segmentCnt\":%u,"
+                      "\"node\":\"%s\",",
                       session->databytes[0] + session->databytes[1],
-                      session->segments);
+                      session->segments,
+                      config.nodeName);
 
     if (session->rootId) {
         BSB_EXPORT_sprintf(jbsb, "\"rootId\":\"%s\",", session->rootId);
@@ -1301,7 +1287,7 @@ void moloch_db_save_session(MolochSession_t *session, int final)
     MOLOCH_THREAD_INCR_NUM(totalSessionBytes, (int)(BSB_WORK_PTR(jbsb)-dataPtr));
 
     if (config.dryRun) {
-        if (config.testsMode) {
+        if (config.tests) {
             static int outputed;
 
             MOLOCH_LOCK(outputed);
@@ -2386,7 +2372,7 @@ void moloch_db_add_field(char *group, char *kind, char *expression, char *friend
     int                    key_len;
     BSB                    bsb;
 
-    if (config.dryRun || config.agentMode)
+    if (config.dryRun)
         return;
 
     char                  *json = moloch_http_get_buffer(10000);
@@ -2430,7 +2416,7 @@ void moloch_db_update_field(char *expression, char *name, char *value)
     int                    key_len;
     BSB                    bsb;
 
-    if (config.dryRun || config.agentMode)
+    if (config.dryRun)
         return;
 
     char                  *json = moloch_http_get_buffer(1000);
@@ -2455,7 +2441,7 @@ void moloch_db_update_filesize(uint32_t fileid, uint64_t filesize, uint64_t pack
     int                    key_len;
     int                    json_len;
 
-    if (config.dryRun || config.agentMode)
+    if (config.dryRun)
         return;
 
     char                  *json = moloch_http_get_buffer(2000);
@@ -2581,13 +2567,13 @@ LOCAL void *moloch_db_stats_thread(void *UNUSED(threadp))
 LOCAL  guint timers[10];
 void moloch_db_init()
 {
-    if (config.testsMode) {
+    if (config.tests) {
         MOLOCH_LOCK(outputed);
         fprintf(stderr, "{\"sessions3\": [\n");
         fflush(stderr);
         MOLOCH_UNLOCK(outputed);
     }
-    if (!(config.dryRun || config.agentMode)) {
+    if (!config.dryRun) {
         esServer = moloch_http_create_server(config.elasticsearch, config.maxESConns, config.maxESRequests, config.compressES);
 
         static char *headers[4] = {"Content-Type: application/json", "Expect:", NULL, NULL};
@@ -2628,7 +2614,7 @@ void moloch_db_init()
     }
     myPid = getpid() & 0xffff;
     gettimeofday(&startTime, NULL);
-    if (!(config.dryRun || config.agentMode)) {
+    if (!config.dryRun) {
         moloch_db_check();
         moloch_db_load_file_num();
         moloch_db_load_stats();
@@ -2668,9 +2654,7 @@ void moloch_db_init()
     if (config.rirFile)
         moloch_config_monitor_file_msg("rir file", config.rirFile, moloch_db_load_rir, "ERROR - Maybe try running " CONFIG_PREFIX " /bin/moloch_update_geo.sh");
 
-    if (config.agentMode) {
-        timers[0] = g_timeout_add_seconds(  1, moloch_db_flush_gfunc, 0);
-    } else if (!config.dryRun) {
+    if (!config.dryRun) {
         int t = 0;
         if (!config.noStats) {
             g_thread_unref(g_thread_new("moloch-stats", &moloch_db_stats_thread, NULL));
@@ -2683,11 +2667,6 @@ void moloch_db_init()
 
     ecsEventProvider = moloch_config_str(NULL, "ecsEventProvider", NULL);
     ecsEventDataset = moloch_config_str(NULL, "ecsEventDataset", NULL);
-
-    if (constantItemsLen == 0) {
-        snprintf(constantItems, sizeof(constantItems), "\"node\":\"%s\",", config.nodeName);
-        constantItemsLen = strlen(constantItems);
-    }
 
     int thread;
     for (thread = 0; thread < config.packetThreads; thread++) {
@@ -2705,9 +2684,6 @@ void moloch_db_exit()
 
         moloch_db_flush_gfunc((gpointer)1);
         dbExit = 1;
-    }
-
-    if (!(config.dryRun || config.agentMode)) {
         if (!config.noStats) {
             moloch_db_update_stats(0, 1);
         }
@@ -2717,7 +2693,7 @@ void moloch_db_exit()
         moloch_http_free_server(esServer);
     }
 
-    if (config.testsMode) {
+    if (config.tests) {
         usleep(10000);
         MOLOCH_LOCK(outputed);
         fprintf(stderr, "]}\n");

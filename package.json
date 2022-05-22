@@ -46,15 +46,9 @@
     "vue-server-renderer": "^2.6.12"
   },
   "scripts": {
-    "lint": "eslint --ext .js,.vue parliament viewer wiseService capture/plugins common cont3xt agent",
-    "lint-fix": "eslint --fix --ext .js,.vue parliament viewer wiseService capture/plugins common cont3xt agent",
+    "lint": "eslint --ext .js,.vue parliament viewer wiseService capture/plugins common cont3xt",
+    "lint-fix": "eslint --fix --ext .js,.vue parliament viewer wiseService capture/plugins common cont3xt",
     "common:lint": "eslint --ext .js,.vue common",
-    "agent:build": "cd agent && node vueapp/build/build.js",
-    "agent:bundle": "webpack --progress --config agent/vueapp/build/webpack.dev.conf.js",
-    "agent:dev": "(cd agent && NODE_ENV=development nodemon agent.js -c ../tests/agent.ini)",
-    "agent:doc": "jsdoc2md --partial jsdoc/*.hbs --helper jsdoc/dochelpers.js --files agent/*.js > ../arkimeweb/_wiki/api_agent.md",
-    "agent:lint": "eslint --ext .js,.vue agent common",
-    "agent:testui": "cd agent && jest",
     "cont3xt:build": "cd cont3xt && node vueapp/build/build.js",
     "cont3xt:bundle": "webpack --progress --config cont3xt/vueapp/build/webpack.dev.conf.js",
     "cont3xt:dev": "(cd cont3xt && NODE_ENV=development nodemon cont3xt.js -c ../tests/cont3xt.ini) & webpack --watch --progress --config cont3xt/vueapp/build/webpack.dev.conf.js",

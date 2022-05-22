@@ -253,9 +253,6 @@ LOCAL void moloch_packet_process(MolochPacket_t *packet, int thread)
         if (pluginsCbs & MOLOCH_PLUGIN_NEW)
             moloch_plugins_cb_new(session);
 
-        if (config.agentMode)
-            arkime_agent_session_new(session);
-
         moloch_rules_session_create(session);
     }
 
