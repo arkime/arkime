@@ -56,7 +56,7 @@
 #define SUPPRESS_INT_CONVERSION
 #endif
 
-#define MOLOCH_API_VERSION 230
+#define MOLOCH_API_VERSION 400
 
 #define MOLOCH_SESSIONID_LEN 37
 
@@ -399,7 +399,8 @@ typedef struct moloch_config {
     gboolean  copyPcap;
     gboolean  pcapRecursive;
     gboolean  noStats;
-    gboolean  tests;
+    gboolean  testsMode;
+    char      agentMode;
     gboolean  pcapMonitor;
     gboolean  pcapDelete;
     gboolean  pcapSkip;
@@ -703,6 +704,7 @@ typedef struct moloch_session {
     uint16_t               pq:1;
     uint16_t               synSet:2;
     uint16_t               inStoppedSave:1;
+    uint16_t               agentAction:2;
 } MolochSession_t;
 
 typedef struct moloch_session_head {
@@ -833,6 +835,16 @@ void moloch_quit();
 uint32_t moloch_get_next_prime(uint32_t v);
 uint32_t moloch_get_next_powerof2(uint32_t v);
 
+/******************************************************************************/
+/*
+ * agent.c
+ */
+#define AGENT_SEND_PACKETS   0x01
+#define AGENT_SEND_TELEMETRY 0x02
+#define AGENT_SEND_BOTH      0x03
+void arkime_agent_init();
+void arkime_agent_session_new(MolochSession_t *session);
+void arkime_agent_exit();
 
 /******************************************************************************/
 /*
@@ -1018,7 +1030,7 @@ gboolean moloch_http_is_moloch(uint32_t hash, uint8_t *sessionId);
 void     moloch_session_id (uint8_t *sessionId, uint32_t addr1, uint16_t port1, uint32_t addr2, uint16_t port2);
 void     moloch_session_id6 (uint8_t *sessionId, uint8_t *addr1, uint16_t port1, uint8_t *addr2, uint16_t port2);
 char    *moloch_session_id_string (uint8_t *sessionId, char *buf);
-char    *moloch_session_pretty_string (MolochSession_t *session, char *buf, int len);
+char    *moloch_session_pretty_string (const MolochSession_t * const session, char *buf, int len);
 
 uint32_t moloch_session_hash(const void *key);
 
@@ -1412,7 +1424,7 @@ void moloch_pq_flush(int thread);
 int js0n(const unsigned char *js, unsigned int len, unsigned int *out, unsigned int olen);
 
 /******************************************************************************/
-// Idea from https://github.com/git/git/blob/master/banned.h
+// Modified from https://github.com/git/git/blob/master/banned.h
 #define BANNED(func, func2) sorry_##func##_is_a_banned_function_use_##func2
 
 #undef strcpy
