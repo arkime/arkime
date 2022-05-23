@@ -20,7 +20,6 @@
 const { Client } = require('@elastic/elasticsearch');
 
 const fs = require('fs');
-const ArkimeUtil = require('../common/arkimeUtil');
 
 class Db {
   static debug;
@@ -47,15 +46,19 @@ class Db {
   static async getMatchingConfig (config) {
     return Db.implementation.getMatchingConfig(config);
   }
+
   static async putConfig (config) {
     return Db.implementation.putConfig(config);
   }
+
   static async getConfig (id) {
     return Db.implementation.getConfig(id);
   }
+
   static async deleteConfig (id) {
     return Db.implementation.deleteConfig(id);
   }
+
   static async countConfig () {
     return Db.implementation.countConfig();
   }
@@ -170,7 +173,7 @@ class DbESImplementation {
       rest_total_hits_as_int: true
     });
 
-    return results.body.hits.hits.sort((a,b) => (a._source.priority - b._source.priority)).map( a => a._source.rule );
+    return results.body.hits.hits.sort((a, b) => (a._source.priority - b._source.priority)).map(a => a._source.rule);
   }
 
   async putConfig (config) {

@@ -295,7 +295,7 @@ void arkime_agent_session_new(MolochSession_t *session)
 
     uint32_t checkIp = 0;
     uint32_t checkPort = 0;
-    struct in6_addr *checkIp6;
+    struct in6_addr *checkIp6 = 0;
 
     if (IN6_IS_ADDR_V4MAPPED(&session->addr1)) {
         uint32_t ip1 = MOLOCH_V6_TO_V4(session->addr1);
