@@ -51,7 +51,29 @@ exports.init = function (Config, emitter) {
   });
 
   emitter.on('makeRightClick', function (cb) {
-    const url = baseURL + '/rightClicks';
+    const url = baseURL + '/valueActions';
+    const req = client.request(url, function (res) {
+      let body = '';
+      res.on('data', function (chunk) {
+        body += chunk;
+      });
+      res.on('end', function () {
+        if (res.statusCode !== 200) {
+          return cb(null, {});
+        }
+        const result = JSON.parse(body);
+        return cb(null, result);
+      });
+    });
+    req.on('error', function (err) {
+      console.log('WISE Right Click ERROR', err);
+      return cb(err, {});
+    });
+    req.end();
+  });
+
+  emitter.on('makeFieldActions', function (cb) {
+    const url = baseURL + '/fieldActions';
     const req = client.request(url, function (res) {
       let body = '';
       res.on('data', function (chunk) {

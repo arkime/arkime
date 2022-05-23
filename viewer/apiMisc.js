@@ -221,6 +221,35 @@ module.exports = (Config, Db, internals, sessionAPIs, userAPIs, ViewerUtils) => 
     return res.send(actions);
   };
 
+  /**
+   * GET - /api/fieldactions
+   *
+   * Retrives the actions that can be preformed on fields.
+   * @name /fieldactions
+   * @returns {object} - The list of actions that can be preformed on fields.
+   */
+  miscAPIs.getFieldActions = (req, res) => {
+    if (!req.user || !req.user.userId) {
+      return res.send({});
+    }
+
+    const actions = {};
+
+    for (const key in internals.fieldActions) {
+      const action = internals.fieldActions[key];
+      if (action.notUsers && action.notUsers[req.user.userId]) {
+        continue;
+      }
+      if (!action.users || action.users[req.user.userId]) {
+        actions[key] = action;
+      }
+
+      delete actions[key].users;
+    }
+
+    return res.send(actions);
+  };
+
   // reverse dns apis ---------------------------------------------------------
   /**
    * GET - /api/reversedns

@@ -25,6 +25,7 @@ module.exports = (app, Config) => {
     caTrustCerts: {},
     cronRunning: false,
     rightClicks: {},
+    fieldActions: {},
     pluginEmitter: new EventEmitter(),
     writers: {},
     oldDBFields: {},
