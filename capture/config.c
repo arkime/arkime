@@ -515,9 +515,9 @@ void moloch_config_load()
     config.timeouts[SESSION_ESP] = moloch_config_int(keyfile, "espTimeout", 60*10, 10, 0xffff);
     config.timeouts[SESSION_OTHER] = 60*10;
     config.tcpSaveTimeout        = moloch_config_int(keyfile, "tcpSaveTimeout", 60*8, 10, 60*120);
-    int maxStreams               = moloch_config_int(keyfile, "maxStreams", 1500000, 1, 16777215);
+    int maxStreams               = moloch_config_int(keyfile, "maxStreams", config.agentMode ? 15000 : 1500000, 1, 16777215);
     config.maxPackets            = moloch_config_int(keyfile, "maxPackets", 10000, 1, 0xffff);
-    config.maxPacketsInQueue     = moloch_config_int(keyfile, "maxPacketsInQueue", 200000, 10000, 5000000);
+    config.maxPacketsInQueue     = moloch_config_int(keyfile, "maxPacketsInQueue", config.agentMode ? 2000 : 200000, 2000, 5000000);
     config.dbBulkSize            = moloch_config_int(keyfile, "dbBulkSize", 200000, MOLOCH_HTTP_BUFFER_SIZE*2, 10000000);
     config.dbFlushTimeout        = moloch_config_int(keyfile, "dbFlushTimeout", 5, 1, 60*30);
     config.maxESConns            = moloch_config_int(keyfile, "maxESConns", 20, 3, 500);
