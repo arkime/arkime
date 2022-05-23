@@ -30,6 +30,7 @@ NOTICE: Cross-cluster Shortcuts require you to not restart all your viewers at o
   - BREAKING - the version file lives in common directory now
   - BREAKING - new defaults maxFileSizeG=12, compressES=true
   - BREAKING - pcap compression is turned on by default with simpleGzipBlockSize=32000
+  - BREAKING - right-click changed to value-actions in config
   - addUser.js - new --roles option, --admin creates superAdmin user
   - capture - New ecsEventDatset setting
   - cont3xt - new Cont3xt application, see https://arkime.com/cont3xt
@@ -41,6 +42,7 @@ NOTICE: Cross-cluster Shortcuts require you to not restart all your viewers at o
   - viewer - fixed auth fallback to digest from header mode
   - all - Support ES 8
   - db.pl - fix sync-files/add-missing trying to add non pcap files
+  - viewer - field-actions to display configurable menu items on field labels
 
 3.4.2 2022/03/31
   - release - node 16.14.2
