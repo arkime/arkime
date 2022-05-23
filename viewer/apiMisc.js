@@ -243,6 +243,8 @@ module.exports = (Config, Db, internals, sessionAPIs, userAPIs, ViewerUtils) => 
       if (!action.users || action.users[req.user.userId]) {
         actions[key] = action;
       }
+
+      delete actions[key].users;
     }
 
     return res.send(actions);

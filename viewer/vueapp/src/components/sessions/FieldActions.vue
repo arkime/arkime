@@ -1,6 +1,7 @@
 <template>
   <span>
     <b-dropdown-divider
+      data-testid="separator"
       v-if="Object.keys(menuItems).length && separator"
     />
     <b-dropdown-item
@@ -84,7 +85,7 @@ export default {
         } else {
           isostart.setHours(isostart.getHours() - 1);
         }
-        dateparams = `date=${urlParams.date}`;
+        dateparams = urlParams.date;
       }
 
       for (const key in this.fieldActions) {

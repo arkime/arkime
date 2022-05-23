@@ -1,4 +1,4 @@
-use Test::More tests => 118;
+use Test::More tests => 120;
 use Cwd;
 use URI::Escape;
 use MolochTest;
@@ -318,6 +318,13 @@ my $json;
 
     $json = viewerGet("/api/valueactions?molochRegressionUser=test2");
     eq_or_diff($json, from_json('{"text": "You do not have permission to access this resource", "success": false}'), 'test2 valueActions');
+
+# fieldActions tests
+    $json = viewerGet("/api/fieldActions?molochRegressionUser=test1");
+    eq_or_diff($json->{ASDF}, from_json('{"url": "https://www.asdf.com?expression=%EXPRESSION%&date=%DATE%&field=%FIELD%&dbField=%DBFIELD%", "name": "Field Action %FIELDNAME%!", "category": "ip"}'), 'fetches field actions');
+
+    $json = viewerGet("/api/fieldActions?molochRegressionUser=test2");
+    eq_or_diff($json, from_json('{"text": "You do not have permission to access this resource", "success": false}'), 'user cannot access field action');
 
 # state tests
     $json = viewerPostToken("/api/user/state/state1?molochRegressionUser=test1", '{"order":"test","visibleHeaders":["firstPacket","lastPacket","src","srcPort","dst","dstPort","totPackets","dbby","node"]}', $test1Token);
