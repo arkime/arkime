@@ -5,6 +5,7 @@ let _molochClustersCache;
 let getMolochClustersQIP;
 let _molochClickablesCache;
 let getMolochClickablesQIP;
+let getFieldActionsQIP;
 
 export default {
   /**
@@ -58,7 +59,7 @@ export default {
     if (getMolochClickablesQIP) { return getMolochClickablesQIP; }
 
     getMolochClickablesQIP = new Promise((resolve, reject) => {
-      if (_molochClickablesCache) { resolve(_molochClickablesCache); }
+      if (_molochClickablesCache) { return resolve(_molochClickablesCache); }
 
       Vue.axios.get('api/valueactions')
         .then((response) => {
@@ -77,14 +78,47 @@ export default {
           }
 
           _molochClickablesCache = response.data;
-          resolve(response.data);
+          return resolve(response.data);
         }, (error) => {
           getMolochClickablesQIP = undefined;
-          reject(error);
+          return reject(error);
         });
     });
 
     return getMolochClickablesQIP;
+  },
+
+  /**
+   * Gets the available field actions to add to field dropdown menus
+   * and caches the result (in store)
+   * @returns {Promise} Promise A promise object that signals the completion
+   *                            or rejection of the request.
+   */
+  getFieldActions: function () {
+    if (getFieldActionsQIP) { return getFieldActionsQIP; }
+
+    getFieldActionsQIP = new Promise((resolve, reject) => {
+      const fieldActions = store.getters.getFieldActions;
+      if (fieldActions && Object.keys(fieldActions).length > 0) {
+        return resolve(fieldActions);
+      }
+
+      Vue.axios.get('api/fieldactions').then((response) => {
+        getFieldActionsQIP = undefined;
+        for (const key in response.data) {
+          const item = response.data[key];
+          if (item.category !== undefined && !Array.isArray(item.category)) {
+            item.category = item.category.split(',');
+          }
+        }
+
+        store.commit('setFieldActions', response.data);
+        return resolve(response.data);
+      }).catch((error) => {
+        getFieldActionsQIP = undefined;
+        return reject(error);
+      });
+    });
   },
 
   /**

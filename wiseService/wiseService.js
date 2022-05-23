@@ -93,6 +93,7 @@ const internals = {
   types: {
   },
   views: {},
+  fieldActions: {},
   valueActions: {},
   workers: 1,
   regressionTests: false,
@@ -623,6 +624,15 @@ class WISESourceAPI {
     internals.valueActions[actionName] = action;
   }
 
+  /**
+   * Add a field action set
+   * @params {string} actionName - The globally unique name of this action, not shown to user
+   * @params {WISESourceAPI~ValueAction} action - The action
+   */
+  addFieldAction (actionName, action) {
+    internals.fieldActions[actionName] = action;
+  }
+
   isWebConfig () {
     return internals.webconfig;
   }
@@ -751,6 +761,16 @@ app.get('/views', [ArkimeUtil.noCacheJson], function (req, res) {
  */
 app.get(['/rightClicks', '/valueActions'], [ArkimeUtil.noCacheJson], function (req, res) {
   res.send(internals.valueActions);
+});
+// ----------------------------------------------------------------------------
+/**
+ * GET - Used by viewer to retrieve all the field actions created by wise sources
+ *
+ * @name "/fieldActions"
+ * @returns {object|array} All the field actions
+ */
+app.get('/fieldActions', [ArkimeUtil.noCacheJson], function (req, res) {
+  res.send(internals.fieldActions);
 });
 
 // ----------------------------------------------------------------------------
