@@ -27,7 +27,7 @@ LIB_OTHER     = @GLIB2_LIBS@ \
 	        thirdparty/patricia.o \
 		@DL_LIB@ -lssl -lcrypto -lyaml
 
-C_FILES         = main.c db.c yara.c http.c config.c parsers.c plugins.c field.c trie.c writers.c writer-inplace.c writer-null.c writer-simple.c readers.c reader-libpcap-file.c reader-libpcap.c reader-tpacketv3.c reader-null.c reader-pcapoverip.c packet.c session.c rules.c drophash.c pq.c dedup.c
+C_FILES         = main.c db.c yara.c http.c config.c parsers.c plugins.c field.c writers.c writer-inplace.c writer-null.c writer-simple.c readers.c reader-libpcap-file.c reader-libpcap.c reader-tpacketv3.c reader-null.c reader-pcapoverip.c packet.c session.c rules.c drophash.c pq.c dedup.c
 O_FILES         = $(C_FILES:.c=.o)
 
 INSTALL         = @INSTALL@

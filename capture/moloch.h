@@ -1376,21 +1376,6 @@ void moloch_rules_exit();
 
 /******************************************************************************/
 /*
- * trie.c
- */
-void moloch_trie_init(MolochTrie_t *trie);
-MolochTrieNode_t *moloch_trie_add_node(MolochTrieNode_t *node, const char key);
-void moloch_trie_add_forward(MolochTrie_t *trie, const char *key, const int len, void *data);
-void moloch_trie_add_reverse(MolochTrie_t *trie, const char *key, const int len, void *data);
-void *moloch_trie_get_forward(MolochTrie_t *trie, const char *key, const int len);
-void *moloch_trie_get_reverse(MolochTrie_t *trie, const char *key, const int len);
-void *moloch_trie_best_forward(MolochTrie_t *trie, const char *key, const int len);
-void *moloch_trie_best_reverse(MolochTrie_t *trie, const char *key, const int len);
-void *moloch_trie_del_forward(MolochTrie_t *trie, const char *key, const int len);
-void *moloch_trie_del_reverse(MolochTrie_t *trie, const char *key, const int len);
-
-/******************************************************************************/
-/*
  * pq.c
  */
 typedef void (*MolochPQ_cb)(MolochSession_t *session, gpointer uw);
