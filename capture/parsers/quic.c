@@ -433,7 +433,7 @@ LOCAL void quic_ietf_udp_classify(MolochSession_t *session, const unsigned char 
     if (packet_len != BSB_REMAINING(bsb)) {
         char ipStr[200];
         moloch_session_pretty_string(session, ipStr, sizeof(ipStr));
-        LOG("Couldn't parse header packet len %d remaining %ld %s", packet_len, BSB_REMAINING(bsb), ipStr);
+        LOG("Couldn't parse header packet len %d remaining %ld %s", packet_len, (long)BSB_REMAINING(bsb), ipStr);
         return;
     }
 

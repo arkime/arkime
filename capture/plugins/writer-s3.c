@@ -175,17 +175,14 @@ void writer_s3_part_cb (int code, unsigned char *data, int len, gpointer uw)
 /******************************************************************************/
 unsigned char *moloch_get_instance_metadata(void *serverV, char *key, int key_len, size_t *mlen)
 {
-    unsigned char *token;
     char *requestHeaders[2];
-    char tokenHeader[200];
-    char *tokenRequestHeaders[2];
-    tokenRequestHeaders[0] = "X-aws-ec2-metadata-token-ttl-seconds: 30";
-    tokenRequestHeaders[1] = NULL;
+    char  tokenHeader[200];
+    char *tokenRequestHeaders[2] = {"X-aws-ec2-metadata-token-ttl-seconds: 30", NULL};
     requestHeaders[1] = NULL;
     if (s3UseTokenForMetadata) {
         if (config.debug)
             LOG("Requesting IMDSv2 metadata token");
-        token = moloch_http_send_sync(serverV, "PUT", "/latest/api/token", -1, NULL, 0, tokenRequestHeaders, mlen);
+        unsigned char *token = moloch_http_send_sync(serverV, "PUT", "/latest/api/token", -1, NULL, 0, tokenRequestHeaders, mlen);
         if (config.debug)
             LOG("IMDSv2 metadata token received");
         snprintf(tokenHeader, sizeof(tokenHeader), "X-aws-ec2-metadata-token: %s", token);

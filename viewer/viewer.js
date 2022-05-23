@@ -2404,7 +2404,7 @@ async function main () {
   } else if (!Config.get('multiES', false)) {
     const info = await Db.getQueriesNode();
     if (info.node === undefined) {
-      console.log('WARNING - No cronQueries=true found, cron/hunts might be broken');
+      console.log(`WARNING - No cronQueries=true found in ${config.getConfigFile()}, one and only one node MUST have cronQueries=true set for cron/hunts to work`);
     } else if (Date.now() - info.updateTime > 2 * 60 * 1000) {
       console.log(`WARNING - cronQueries=true node '${info.node}' hasn't checked in lately, cron/hunts might be broken`);
     }

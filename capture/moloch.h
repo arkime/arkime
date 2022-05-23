@@ -946,7 +946,7 @@ void moloch_parsers_initial_tag(MolochSession_t *session);
 unsigned char *moloch_parsers_asn_get_tlv(BSB *bsb, uint32_t *apc, uint32_t *atag, uint32_t *alen);
 int moloch_parsers_asn_get_sequence(MolochASNSeq_t *seqs, int maxSeq, const unsigned char *data, int len, gboolean wrapper);
 const char *moloch_parsers_asn_sequence_to_string(MolochASNSeq_t *seq, int *len);
-void moloch_parsers_asn_decode_oid(char *buf, int bufsz, unsigned char *oid, int len);
+void moloch_parsers_asn_decode_oid(char *buf, int bufsz, const unsigned char *oid, int len);
 uint64_t moloch_parsers_asn_parse_time(MolochSession_t *session, int tag, unsigned char* value, int len);
 void moloch_parsers_classify_tcp(MolochSession_t *session, const unsigned char *data, int remaining, int which);
 void moloch_parsers_classify_udp(MolochSession_t *session, const unsigned char *data, int remaining, int which);

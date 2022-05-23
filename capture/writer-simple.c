@@ -796,7 +796,7 @@ void writer_simple_init(char *name)
         gzip = TRUE;
         if (simpleGzipBlockSize < 8192) {
             simpleGzipBlockSize = 8191;
-            LOG ("INFO: Reseting simpleGzipBlockSize to %d, the minimum value", simpleGzipBlockSize);
+            LOG ("INFO: Reseting simpleGzipBlockSize to %u, the minimum value", simpleGzipBlockSize);
         }
         uncompressedBits = ceil(log2(simpleGzipBlockSize));
 
@@ -806,11 +806,11 @@ void writer_simple_init(char *name)
 
         if (simpleGzipBlockSize > config.pcapWriteSize) {
             config.pcapWriteSize = simpleGzipBlockSize + 1;
-            LOG ("INFO: Reseting pcapWriteSize to %d, so it is larger than simpleGzipBlockSize", config.pcapWriteSize);
+            LOG ("INFO: Reseting pcapWriteSize to %u, so it is larger than simpleGzipBlockSize", config.pcapWriteSize);
         }
 
         if (config.debug)
-            LOG("Will gzip - blocksize: %u bits: %u", simpleGzipBlockSize, uncompressedBits);
+            LOG("Will gzip - blocksize: %u bits: %d", simpleGzipBlockSize, uncompressedBits);
     }
 
     if (mode == NULL || !mode[0]) {
