@@ -38,6 +38,32 @@ module.exports = (Db, internals, ViewerUtils) => {
 
   const shortcutMutex = new Mutex();
 
+  /**
+   * Normalizes the data in a shortcut by turning values and users string to arrays
+   * and removing the type parameter and replacing it with `type: values`
+   * Also validates that the users added to the shortcut are valid within the system
+   * NOTE: Mutates the shortcut direclty
+   * @param {Shortcut} shortcut - The shortcut to normalize
+   * @returns {Object} {type, values, invalidusers} - The shortcut type (ip, string, number),
+   *                                                  array of values, and list of invalid users
+   */
+  async function normalizeShortcut (shortcut) {
+    // comma/newline separated value -> array of values
+    const values = ViewerUtils.commaStringToArray(shortcut.value);
+    shortcut[shortcut.type] = values;
+
+    const type = shortcut.type;
+    delete shortcut.type;
+    delete shortcut.value;
+
+    // comma/newline separated value -> array of values
+    let users = ViewerUtils.commaStringToArray(shortcut.users || '');
+    users = await ViewerUtils.validateUserIds(users);
+    shortcut.users = users.validUsers;
+
+    return { type, values, invalidUsers: users.invalidUsers };
+  }
+
   // --------------------------------------------------------------------------
   // APIs
   // --------------------------------------------------------------------------
@@ -53,6 +79,8 @@ module.exports = (Db, internals, ViewerUtils) => {
    * @param {number[]} number - A list of number values to use as the shortcut value. A shortcut must contain a list of numbers, strings, or ips.
    * @param {string[]} ip - A list of ip values to use as the shortcut value. A shortcut must contain a list of numbers, strings, or ips.
    * @param {string[]} string - A list of string values to use as the shortcut value. A shortcut must contain a list of numbers, strings, or ips.
+   * @param {string[]} users - A list of userIds that have access to this shortcut.
+   * @param {string[]} roles - A list of Arkime roles that have access to this shortcut.
    * @param {boolean} locked=false - Whether the shortcut is locked and must be updated using the db.pl script (can't be updated in the web application user interface).
    */
 
@@ -88,8 +116,10 @@ module.exports = (Db, internals, ViewerUtils) => {
             {
               bool: {
                 should: [
-                  { term: { shared: true } },
-                  { term: { userId: req.settingUser.userId } }
+                  { term: { shared: true } }, // shared to everyone in cluster
+                  { terms: { roles: req.settingUser.roles } }, // shared via user role
+                  { term: { users: req.settingUser.userId } }, // shared via userId
+                  { term: { userId: req.settingUser.userId } } // created by this user
                 ]
               }
             }
@@ -152,6 +182,15 @@ module.exports = (Db, internals, ViewerUtils) => {
 
         shortcut.value = values.join('\n');
         delete shortcut[shortcut.type];
+
+        if (user.userId !== shortcut.userId) {
+          // remove sensitive information for users this shortcut is shared with
+          delete shortcut.users;
+          delete shortcut.roles;
+        } else if (shortcut.users) {
+          // client expects a string
+          shortcut.users = shortcut.users.join(',');
+        }
 
         if (map) {
           results.map[shortcut.id] = shortcut;
@@ -230,13 +269,7 @@ module.exports = (Db, internals, ViewerUtils) => {
         const newShortcut = req.body;
         newShortcut.userId = user.userId;
 
-        // comma/newline separated value -> array of values
-        const values = ViewerUtils.commaStringToArray(newShortcut.value);
-        newShortcut[newShortcut.type] = values;
-
-        const type = newShortcut.type;
-        delete newShortcut.type;
-        delete newShortcut.value;
+        const { type, values, invalidUsers } = await normalizeShortcut(newShortcut);
 
         try {
           const { body: result } = await Db.createShortcut(newShortcut);
@@ -249,8 +282,10 @@ module.exports = (Db, internals, ViewerUtils) => {
           shortcutMutex.unlock();
 
           return res.send(JSON.stringify({
+            invalidUsers,
             success: true,
-            shortcut: newShortcut
+            shortcut: newShortcut,
+            text: 'Created new shortcut!'
           }));
         } catch (err) {
           shortcutMutex.unlock();
@@ -329,23 +364,19 @@ module.exports = (Db, internals, ViewerUtils) => {
             }
           }
 
-          // comma/newline separated value -> array of values
-          const values = ViewerUtils.commaStringToArray(sentShortcut.value);
-          sentShortcut[sentShortcut.type] = values;
-          sentShortcut.userId = fetchedShortcut._source.userId;
-
-          delete sentShortcut.type;
-          delete sentShortcut.value;
+          const { values, invalidUsers } = await normalizeShortcut(sentShortcut);
 
           try {
             await Db.setShortcut(req.params.id, sentShortcut);
             shortcutMutex.unlock();
             sentShortcut.value = values.join('\n');
+            sentShortcut.users = sentShortcut.users.join(',');
 
             return res.send(JSON.stringify({
+              invalidUsers,
               success: true,
               shortcut: sentShortcut,
-              text: 'Successfully updated shortcut'
+              text: 'Updated shortcut!'
             }));
           } catch (err) {
             shortcutMutex.unlock();
@@ -374,10 +405,13 @@ module.exports = (Db, internals, ViewerUtils) => {
    */
   shortcutAPIs.deleteShortcut = async (req, res) => {
     try {
-      const { data: shortcut } = await Db.getShortcut(req.params.id);
+      const { body: shortcut } = await Db.getShortcut(req.params.id);
+
+      if (!shortcut) {
+        return res.serverError(404, 'Shortcut not found to delete');
+      }
 
       // only allow admins or shortcut creator to delete shortcut item
-
       if (!req.user.hasRole('arkimeAdmin') && req.settingUser.userId !== shortcut?._source.userId) {
         return res.serverError(403, 'Permission denied');
       }

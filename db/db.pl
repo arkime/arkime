@@ -67,6 +67,7 @@
 # 71 - user.roles, user.cont3xt
 # 72 - save es query in history, hunt description
 # 73 - hunt roles
+# 74 - shortcut sharing with users/roles
 
 use HTTP::Request::Common;
 use LWP::UserAgent;
@@ -78,7 +79,7 @@ use IO::Compress::Gzip qw(gzip $GzipError);
 use IO::Uncompress::Gunzip qw(gunzip $GunzipError);
 use strict;
 
-my $VERSION = 73;
+my $VERSION = 74;
 my $verbose = 0;
 my $PREFIX = undef;
 my $OLDPREFIX = "";
@@ -5466,6 +5467,12 @@ sub lookupsUpdate
     },
     "locked": {
       "type": "boolean"
+    },
+    "users": {
+      "type": "keyword"
+    },
+    "roles": {
+      "type": "keyword"
     }
   }
 }';
@@ -7417,11 +7424,12 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
 
     logmsg "Starting Upgrade\n";
 
-    if ($main::versionNumber <= 73) {
+    if ($main::versionNumber <= 74) {
         checkForOld7Indices();
         sessions3Update();
         historyUpdate();
         huntsUpdate();
+        lookupsUpdate();
     } else {
         logmsg "db.pl is hosed\n";
     }

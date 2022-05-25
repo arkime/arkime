@@ -2142,386 +2142,11 @@
         <!-- /notifiers settings -->
 
         <!-- shortcut settings -->
-        <form class="form-horizontal"
+        <shortcuts
+          id="shortcuts"
           v-if="visibleTab === 'shortcuts'"
-          id="shortcuts">
-
-          <h3>Shortcuts</h3>
-
-          <p>
-            Create a list of values that can be used in queries as shortcuts.
-            For example, create a list of IPs and use them in a query
-            expression <code>ip.src == $MY_IPS</code>.
-          </p>
-          <p>
-            <strong>Tip:</strong>
-            Use <code>$</code> to autocomplete shortcuts in search expressions.
-          </p>
-          <p>
-            <strong>Note:</strong>
-            <template v-if="hasUsersES">
-              These shortcuts will be synced across clusters.
-              It can take up to one minute to sync to all clusters.
-              But you can use the shortcut on this cluster immediately.
-            </template>
-            <template v-else>
-              These shortcuts are local to this cluster only.
-            </template>
-          </p>
-
-          <div class="row">
-            <div class="col-5">
-              <div class="input-group input-group-sm">
-                <div class="input-group-prepend">
-                  <div class="input-group-text">
-                    <span class="fa fa-search"></span>
-                  </div>
-                </div>
-                <input type="text"
-                  class="form-control"
-                  v-model="shortcutsQuery.search"
-                  @input="getShortcutsTimeout"
-                />
-              </div>
-            </div>
-            <div class="col-7">
-              <moloch-paging v-if="shortcuts.data"
-                class="pull-right"
-                @changePaging="changeShortcutsPaging"
-                :length-default="shortcutsSize"
-                :records-total="shortcuts.recordsTotal"
-                :records-filtered="shortcuts.recordsFiltered">
-              </moloch-paging>
-            </div>
-          </div>
-
-          <table v-if="shortcuts.data"
-            class="table table-striped table-sm">
-            <thead>
-              <tr>
-                <th>Shared</th>
-                <th class="cursor-pointer"
-                  @click.self="sortShortcuts('name')">
-                  Name
-                  <span v-show="shortcutsQuery.sortField === 'name' && !shortcutsQuery.desc" class="fa fa-sort-asc"></span>
-                  <span v-show="shortcutsQuery.sortField === 'name' && shortcutsQuery.desc" class="fa fa-sort-desc"></span>
-                  <span v-show="shortcutsQuery.sortField !== 'name'" class="fa fa-sort"></span>
-                </th>
-                <th class="cursor-pointer"
-                  @click.self="sortShortcuts('description')">
-                  Description
-                  <span v-show="shortcutsQuery.sortField === 'description' && !shortcutsQuery.desc" class="fa fa-sort-asc"></span>
-                  <span v-show="shortcutsQuery.sortField === 'description' && shortcutsQuery.desc" class="fa fa-sort-desc"></span>
-                  <span v-show="shortcutsQuery.sortField !== 'description'" class="fa fa-sort"></span>
-                </th>
-                <th>Value(s)</th>
-                <th>Type</th>
-                <th>Creator</th>
-                <th>&nbsp;</th>
-              </tr>
-            </thead>
-            <tbody>
-              <!-- shortcuts -->
-              <template v-for="(item, index) in shortcuts.data">
-                <tr :key="`${item.id}-content`">
-                  <td>
-                    <input type="checkbox"
-                      :disabled="(!user.roles.includes('arkimeAdmin') && item.userId !== user.userId) || item.locked"
-                      v-model="item.shared"
-                      @input="toggleShortcutShared(item, index)"
-                    />
-                  </td>
-                  <td class="shortcut-value narrow cursor-help"
-                    v-b-tooltip.hover="item.name">
-                    {{ item.name }}
-                  </td>
-                  <td class="shortcut-value cursor-help"
-                    v-b-tooltip.hover="item.description">
-                    {{ item.description }}
-                  </td>
-                  <td class="shortcut-value"
-                    :class="{'show-all':item.showAll}">
-                    <span
-                      v-if="item.value.length > 50"
-                      @click="toggleDisplayAllShortcut(item)"
-                      class="fa pull-right cursor-pointer mt-1"
-                      :class="{'fa-chevron-down':!item.showAll,'fa-chevron-up':item.showAll}"
-                    />
-                    <span v-if="!item.showAll">
-                      {{ item.value.substring(0, 50) }}
-                      <span v-if="item.value.length > 50">...</span>
-                    </span>
-                    <span v-else>{{ item.value }}</span>
-                  </td>
-                  <td>
-                    {{ item.type }}
-                  </td>
-                  <td>
-                    {{ item.userId }}
-                  </td>
-                  <td class="shortcut-btns">
-                    <span class="pull-right">
-                      <button type="button"
-                        v-b-tooltip.hover
-                        title="Copy this shortcut's value"
-                        class="btn btn-sm btn-theme-secondary"
-                        @click="copyValue(item.value)">
-                        <span class="fa fa-clipboard fa-fw">
-                        </span>
-                      </button>
-                      <span v-if="user.roles.includes('arkimeAdmin') || item.userId === user.userId">
-                        <button type="button"
-                          v-b-tooltip.hover
-                          title="Delete this shortcut"
-                          class="btn btn-sm btn-danger"
-                          @click="deleteShortcut(item, index)">
-                          <span class="fa fa-trash-o fa-fw" v-if="!item.loading">
-                          </span>
-                          <span class="fa fa-spinner fa-spin fa-fw" v-else>
-                          </span>
-                        </button>
-                        <span v-if="!item.editing">
-                          <div v-if="item.locked"
-                            v-b-tooltip.hover
-                            style="display:inline-block"
-                            title="Locked shortcut. Ask your admin to use db.pl to update this shortcut.">
-                            <button :disabled="true"
-                              type="button"
-                              class="btn btn-sm btn-warning disabled cursor-help">
-                              <span class="fa fa-lock fa-fw">
-                              </span>
-                            </button>
-                          </div>
-                          <button type="button"
-                            v-b-tooltip.hover
-                            v-else
-                            @click="toggleEditShortcut(item)"
-                            title="Make changes to this shortcut's value"
-                            class="btn btn-sm btn-theme-tertiary">
-                            <span class="fa fa-pencil fa-fw" v-if="!item.loading">
-                            </span>
-                            <span class="fa fa-spinner fa-spin fa-fw" v-else>
-                            </span>
-                          </button>
-                        </span>
-                        <span v-else>
-                          <button type="button"
-                            v-b-tooltip.hover
-                            title="Cancel changes to this shortcut's value"
-                            class="btn btn-sm btn-warning"
-                            @click="toggleEditShortcut(item)">
-                            <span class="fa fa-ban fa-fw" v-if="!item.loading">
-                            </span>
-                            <span class="fa fa-spinner fa-spin fa-fw" v-else>
-                            </span>
-                          </button>
-                          <button type="button"
-                            v-b-tooltip.hover
-                            @click="updateShortcut(item, index)"
-                            title="Save changes to this shortcut's value"
-                            class="btn btn-sm btn-theme-tertiary">
-                            <span class="fa fa-save fa-fw" v-if="!item.loading">
-                            </span>
-                            <span class="fa fa-spinner fa-spin fa-fw" v-else>
-                            </span>
-                          </button>
-                        </span>
-                      </span>
-                    </span>
-                  </td>
-                </tr>
-                <!-- edit shortcut -->
-                <tr :key="`${item.id}-edit`"
-                  v-if="item.editing">
-                  <td colspan="6">
-                    <div class="form-group row mt-2">
-                      <label for="updateShortcutName"
-                        class="col-2 col-form-label text-right">
-                        Name<sup>*</sup>
-                      </label>
-                      <div class="col-10">
-                        <input id="updateShortcutName"
-                          type="text"
-                          class="form-control form-control-sm"
-                          v-model="item.newName"
-                        />
-                      </div>
-                    </div>
-                    <div class="form-group row">
-                      <label for="updateShortcutDescription"
-                        class="col-2 col-form-label text-right">
-                        Description
-                      </label>
-                      <div class="col-10">
-                        <input id="updateShortcutDescription"
-                          type="text"
-                          class="form-control form-control-sm"
-                          v-model="item.newDescription"
-                        />
-                      </div>
-                    </div>
-                    <div class="form-group row">
-                      <label for="updateShortcutValue"
-                        class="col-2 col-form-label text-right">
-                        Value(s)<sup>*</sup>
-                      </label>
-                      <div class="col-10">
-                        <textarea id="updateShortcutValue"
-                          type="text"
-                          rows="5"
-                          class="form-control form-control-sm"
-                          v-model="item.newValue">
-                        </textarea>
-                      </div>
-                    </div>
-                    <div class="form-group row">
-                      <label for="updateShortcutType"
-                        class="col-2 col-form-label text-right">
-                        Type<sup>*</sup>
-                      </label>
-                      <div class="col-10">
-                        <select id="updateShortcutType"
-                          v-model="item.newType"
-                          class="form-control form-control-sm">
-                          <option value="ip">IP(s)</option>
-                          <option value="string">String(s)</option>
-                          <option value="number">Number(s)</option>
-                        </select>
-                      </div>
-                    </div>
-                  </td>
-                </tr> <!-- /edit shortcut -->
-              </template> <!-- /shortcuts -->
-              <!-- no shortcuts -->
-              <tr v-if="shortcuts.data && shortcuts.data.length === 0">
-                <td colspan="6">
-                  <p class="text-center mb-0">
-                    <span class="fa fa-folder-open">
-                    </span>&nbsp;
-                    No shortcuts or none that match your search
-                  </p>
-                </td>
-              </tr> <!-- /no shortcuts -->
-              <!-- shortcuts list error -->
-              <tr v-if="shortcutsListError">
-                <td colspan="6">
-                  <p class="text-danger mb-0">
-                    <span class="fa fa-exclamation-triangle">
-                    </span>&nbsp;
-                    {{ shortcutsListError }}
-                  </p>
-                </td>
-              </tr> <!-- /shortcuts list error -->
-            </tbody>
-          </table>
-          <!-- new shortcut form -->
-          <div class="row var-form mr-1 ml-1 mt-2">
-            <div class="col">
-              <div class="row mb-3 mt-4">
-                <div class="col-10 offset-2">
-                  <h3 class="mt-3">
-                    New Shortcut
-                  </h3>
-                </div>
-              </div>
-              <div class="form-group row">
-                <label for="newShortcutName"
-                  class="col-2 col-form-label text-right">
-                  Name<sup>*</sup>
-                </label>
-                <div class="col-10">
-                  <input id="newShortcutName"
-                    type="text"
-                    class="form-control form-control-sm"
-                    v-model="newShortcutName"
-                    placeholder="MY_MOLOCH_VAR"
-                  />
-                </div>
-              </div>
-              <div class="form-group row">
-                <label for="newShortcutDescription"
-                  class="col-2 col-form-label text-right">
-                  Description
-                </label>
-                <div class="col-10">
-                  <input id="newShortcutDescription"
-                    type="text"
-                    class="form-control form-control-sm"
-                    v-model="newShortcutDescription"
-                  />
-                </div>
-              </div>
-              <div class="form-group row">
-                <label for="newShortcutValue"
-                  class="col-2 col-form-label text-right">
-                  Value(s)<sup>*</sup>
-                </label>
-                <div class="col-10">
-                  <textarea id="newShortcutValue"
-                    type="text"
-                    rows="5"
-                    class="form-control form-control-sm"
-                    v-model="newShortcutValue"
-                    placeholder="Enter a comma or newline separated list of values">
-                  </textarea>
-                </div>
-              </div>
-              <div class="form-group row">
-                <label for="newShortcutType"
-                  class="col-2 col-form-label text-right">
-                  Type<sup>*</sup>
-                </label>
-                <div class="col-10">
-                  <select id="newShortcutType"
-                    v-model="newShortcutType"
-                    class="form-control form-control-sm">
-                    <option value="ip">IP(s)</option>
-                    <option value="string">String(s)</option>
-                    <option value="number">Number(s)</option>
-                  </select>
-                </div>
-              </div>
-              <div class="form-group row">
-                <label for="newShortcutShared"
-                  class="col-2 col-form-label text-right">
-                  Shared
-                </label>
-                <div class="col-10">
-                  <input id="newShortcutShared"
-                    type="checkbox"
-                    v-model="newShortcutShared"
-                  />
-                  <button class="btn btn-theme-tertiary btn-sm pull-right"
-                    type="button"
-                    @click="createShortcut">
-                    <template v-if="!createShortcutLoading">
-                      <span class="fa fa-plus-circle">
-                      </span>&nbsp;
-                      Create
-                    </template>
-                    <template v-else>
-                      <span class="fa fa-spinner fa-spin">
-                      </span>&nbsp;
-                      Creating
-                    </template>
-                  </button>
-                </div>
-              </div>
-              <!-- shortcut form error -->
-              <div class="row mb-4 text-right">
-                <div class="col-12">
-                  <p v-if="shortcutFormError"
-                    class="small text-danger mb-0">
-                    <span class="fa fa-exclamation-triangle">
-                    </span>&nbsp;
-                    {{ shortcutFormError }}
-                  </p>
-                </div>
-              </div> <!-- /shortcut form error -->
-            </div>
-          </div> <!-- /new shortcut form -->
-
-        </form> <!-- / shortcut settings -->
+          @display-message="displayMessage"
+        />
 
       </div>
 
@@ -2544,10 +2169,9 @@ import ColorPicker from '../utils/ColorPicker';
 import MolochPaging from '../utils/Pagination';
 import ToggleBtn from '../../../../../common/vueapp/ToggleBtn';
 import Utils from '../utils/utils';
+import Shortcuts from './Shortcuts';
 
 let clockInterval;
-
-let shortcutsInputTimeout;
 
 const defaultSpiviewConfig = { fields: ['destination.ip', 'protocol', 'source.ip'] };
 const secretMatch = [38, 38, 40, 40, 37, 39, 37, 39, 66, 65];
@@ -2562,7 +2186,8 @@ export default {
     MolochFieldTypeahead,
     ColorPicker,
     MolochPaging,
-    ToggleBtn
+    ToggleBtn,
+    Shortcuts
   },
   data: function () {
     return {
@@ -2648,24 +2273,7 @@ export default {
       notifierTypes: [],
       notifiersError: '',
       newNotifier: undefined,
-      newNotifierError: '',
-      // shortcut settings vars
-      shortcuts: {},
-      shortcutsListError: '',
-      newShortcutShared: false,
-      newShortcutName: '',
-      newShortcutDescription: '',
-      newShortcutValue: '',
-      newShortcutType: 'string',
-      shortcutFormError: '',
-      shortcutsStart: 0,
-      shortcutsSize: 50,
-      shortcutsQuery: {
-        desc: false,
-        sortField: 'name',
-        search: ''
-      },
-      createShortcutLoading: false
+      newNotifierError: ''
     };
   },
   computed: {
@@ -2784,6 +2392,11 @@ export default {
     messageDone: function () {
       this.msg = '';
       this.msgType = undefined;
+    },
+    /* displays a message in the navbar */
+    displayMessage ({ msg, type }) {
+      this.msg = msg;
+      this.msgType = type || 'success';
     },
     /* GENERAL ------------------------------- */
     /**
@@ -3498,141 +3111,6 @@ export default {
         this.$set(this.notifiers[index], 'loading', false);
       });
     },
-    /* SHORTCUTS --------------------------------------- */
-    /**
-     * triggered when shortcuts paging is changed
-     * @param {object} newParams Object containing length & start
-     */
-    changeShortcutsPaging: function (newParams) {
-      this.shortcutsSize = newParams.length;
-      this.shortcutsStart = newParams.start;
-      this.getShortcuts();
-    },
-    /* triggered when shortcuts search input is changed
-     * debounces the input so it only issues a request after keyups cease for 400ms */
-    getShortcutsTimeout: function () {
-      if (shortcutsInputTimeout) { clearTimeout(shortcutsInputTimeout); }
-      shortcutsInputTimeout = setTimeout(() => {
-        shortcutsInputTimeout = null;
-        this.getShortcuts();
-      }, 400);
-    },
-    /**
-     * triggered when a sortable shortcuts column is clicked
-     * if the sort field is the same as the current sort field, toggle the desc
-     * flag, otherwise set it to default (false)
-     * @param {string} sort The field to sort on
-     */
-    sortShortcuts: function (sort) {
-      this.shortcutsQuery.desc = this.shortcutsQuery.sortField === sort ? !this.shortcutsQuery.desc : false;
-      this.shortcutsQuery.sortField = sort;
-      this.getShortcuts();
-    },
-    /* toggles shared var on a shortcut and saves the shortcut */
-    toggleShortcutShared: function (shortcut, index) {
-      this.$set(shortcut, 'shared', !shortcut.shared);
-      this.updateShortcut(shortcut, index);
-    },
-    /* opens up text area to edit shortcut value */
-    toggleEditShortcut: function (shortcut) {
-      const editingShortcut = !shortcut.editing;
-      this.$set(shortcut, 'editing', editingShortcut);
-      this.$set(shortcut, 'newValue', shortcut.value);
-      this.$set(shortcut, 'newName', shortcut.name);
-      this.$set(shortcut, 'newType', shortcut.type);
-      this.$set(shortcut, 'newDescription', shortcut.description);
-    },
-    /* show/hide the entire shortcut value */
-    toggleDisplayAllShortcut: function (shortcut) {
-      this.$set(shortcut, 'showAll', !shortcut.showAll);
-    },
-    /* creates a new shortcut */
-    createShortcut: function () {
-      if (!this.newShortcutName) {
-        this.shortcutFormError = 'Enter a unique shortcut name';
-        return;
-      }
-
-      if (!this.newShortcutValue) {
-        this.shortcutFormError = 'Enter a value for your new shortcut';
-        return;
-      }
-
-      this.createShortcutLoading = true;
-
-      const data = {
-        name: this.newShortcutName,
-        type: this.newShortcutType,
-        value: this.newShortcutValue,
-        shared: this.newShortcutShared,
-        description: this.newShortcutDescription
-      };
-
-      SettingsService.createShortcut(data).then((response) => {
-        this.getShortcuts();
-        // clear the inputs and any error
-        this.shortcutFormError = false;
-        this.newShortcutName = '';
-        this.newShortcutValue = '';
-        this.newShortcutShared = false;
-        this.newShortcutDescription = '';
-        // display success message to user
-        this.msg = response.text;
-        this.msgType = 'success';
-        this.createShortcutLoading = false;
-      }).catch((error) => {
-        this.msg = error.text;
-        this.msgType = 'danger';
-        this.createShortcutLoading = false;
-      });
-    },
-    /* updates a specified shortcut (only shared and value are editable) */
-    updateShortcut: function (shortcut, index) {
-      this.$set(shortcut, 'loading', true);
-
-      const data = {
-        shared: shortcut.shared,
-        userId: shortcut.userId,
-        name: shortcut.newName || shortcut.name,
-        type: shortcut.newType || shortcut.type,
-        value: shortcut.newValue || shortcut.value,
-        description: shortcut.newDescription || shortcut.description
-      };
-
-      SettingsService.updateShortcut(shortcut.id, data).then((response) => {
-        response.shortcut.id = shortcut.id;
-        response.shortcut.type = shortcut.newType || shortcut.type;
-        this.$set(this.shortcuts.data, index, response.shortcut);
-        // display success message to user
-        this.msg = response.text;
-        this.msgType = 'success';
-        this.$set(shortcut, 'loading', false);
-      }).catch((error) => {
-        this.msg = error.text;
-        this.msgType = 'danger';
-        this.$set(shortcut, 'loading', false);
-      });
-    },
-    /* deletes a shortcut and removes it from the shortcuts array */
-    deleteShortcut: function (shortcut, index) {
-      this.$set(shortcut, 'loading', true);
-
-      SettingsService.deleteShortcut(shortcut.id).then((response) => {
-        // remove it from the array
-        this.shortcuts.data.splice(index, 1);
-        this.shortcuts.recordsTotal--;
-        this.shortcuts.recordsFiltered--;
-        // display success message to user
-        this.msg = response.text;
-        this.msgType = 'success';
-        this.$set(shortcut, 'loading', false);
-      }).catch((error) => {
-        // display error message to user
-        this.msg = error.text;
-        this.msgType = 'danger';
-        this.$set(shortcut, 'loading', false);
-      });
-    },
 
     /* helper functions ---------------------------------------------------- */
     /* retrievs the theme colors from the document body's property values */
@@ -3703,7 +3181,6 @@ export default {
             this.getSpiviewConfigs();
             this.getNotifierTypes();
             this.getNotifiers();
-            this.getShortcuts();
           }
 
           this.setTheme();
@@ -3843,24 +3320,6 @@ export default {
         this.notifiersError = error.text || error;
       });
     },
-    getShortcuts: function () {
-      const queryParams = {
-        length: this.shortcutsSize,
-        start: this.shortcutsStart,
-        desc: this.shortcutsQuery.desc,
-        sort: this.shortcutsQuery.sortField
-      };
-
-      if (this.shortcutsQuery.search) { queryParams.searchTerm = this.shortcutsQuery.search; }
-      if (this.userId) { queryParams.userId = this.userId; }
-
-      SettingsService.getShortcuts().then((response) => {
-        this.shortcuts = response;
-        this.shortcutsListError = '';
-      }).catch((error) => {
-        this.shortcutsListError = error.text || error;
-      });
-    },
     /**
      * Setup this.columns with a list of field objects
      * @param {array} colIdArray The array of column ids
@@ -3877,7 +3336,6 @@ export default {
   },
   beforeDestroy: function () {
     if (clockInterval) { clearInterval(clockInterval); }
-    if (shortcutsInputTimeout) { clearTimeout(shortcutsInputTimeout); }
 
     // remove userId route query parameter so that when a user
     // comes back to this page, they are on their own settings
@@ -3937,36 +3395,6 @@ export default {
   box-shadow: inset 0 1px 1px rgba(0, 0, 0, .05);
   background-color: var(--color-gray-lighter);
   border: 1px solid var(--color-gray-light);
-}
-
-/* shortcuts form */
-.settings-page .var-form {
-  box-shadow: inset 0 1px 1px rgba(0, 0, 0, .05);
-  background-color: var(--color-gray-lighter);
-  border: 1px solid var(--color-gray-light);
-  border-radius: 3px;
-}
-.settings-page .var-form input[type='checkbox'] {
-  margin-top: 0.75rem;
-}
-
-/* shortcuts table */
-.settings-page .shortcut-value {
-  max-width: 340px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-.settings-page .shortcut-value.show-all {
-  overflow: visible;
-  white-space: normal;
-}
-.settings-page .shortcut-value.narrow {
-  max-width: 160px;
-}
-.settings-page .shortcut-btns {
-  min-width: 140px;
-  white-space: nowrap;
 }
 
 /* theme displays ----------------- */
