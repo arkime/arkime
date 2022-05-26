@@ -74,13 +74,13 @@ module.exports = (Db, internals, ViewerUtils) => {
    * @type {object}
    * @param {string} userId - The ID of the user that created the shortcut.
    * @param {string} name - The name of the shortcut.
-   * @param {boolean} shared=false - Whether the shortcut is shared with the other users in the cluster.
+   * @param {boolean} shared=false - Whether the shortcut is shared with the all other users.
    * @param {string} description - The description of the shortcut to display to users.
    * @param {number[]} number - A list of number values to use as the shortcut value. A shortcut must contain a list of numbers, strings, or ips.
    * @param {string[]} ip - A list of ip values to use as the shortcut value. A shortcut must contain a list of numbers, strings, or ips.
    * @param {string[]} string - A list of string values to use as the shortcut value. A shortcut must contain a list of numbers, strings, or ips.
-   * @param {string[]} users - A list of userIds that have access to this shortcut.
-   * @param {string[]} roles - A list of Arkime roles that have access to this shortcut.
+   * @param {string[]} users - A list of userIds that have access to this shortcut (this is not applicable if shared=true).
+   * @param {string[]} roles - A list of Arkime roles that have access to this shortcut (this is not applicable if shared=true).
    * @param {boolean} locked=false - Whether the shortcut is locked and must be updated using the db.pl script (can't be updated in the web application user interface).
    */
 
@@ -222,6 +222,10 @@ module.exports = (Db, internals, ViewerUtils) => {
    * @param {string} name - The name of the new shortcut.
    * @param {string} type - The type of the shortcut (number, ip, or string).
    * @param {string} value - The shortcut value.
+   * @param {string} description - The optional description of this shortcut.
+   * @param {boolean} shared - Whether this shortcut is shared to EVERY user.
+   * @param {string} users - A comma separated list of users that can view this shortcut.
+   * @param {Array} roles - The roles that can view this shortcut.
    * @returns {Shortcut} shortcut - The new shortcut object.
    * @returns {boolean} success - Whether the create shortcut operation was successful.
    */
@@ -308,6 +312,10 @@ module.exports = (Db, internals, ViewerUtils) => {
    * @param {string} name - The name of the shortcut.
    * @param {string} type - The type of the shortcut (number, ip, or string).
    * @param {string} value - The shortcut value.
+   * @param {string} description - The optional description of this shortcut.
+   * @param {boolean} shared - Whether this shortcut is shared to EVERY user.
+   * @param {string} users - A comma separated list of users that can view this shortcut.
+   * @param {Array} roles - The roles that can view this shortcut.
    * @returns {Shortcut} shortcut - The updated shortcut object.
    * @returns {boolean} success - Whether the upate shortcut operation was successful.
    * @returns {string} text - The success/error message to (optionally) display to the user.
@@ -365,6 +373,7 @@ module.exports = (Db, internals, ViewerUtils) => {
           }
 
           const { values, invalidUsers } = await normalizeShortcut(sentShortcut);
+          sentShortcut.userId = fetchedShortcut._source.userId;
 
           try {
             await Db.setShortcut(req.params.id, sentShortcut);
