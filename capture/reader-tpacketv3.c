@@ -51,16 +51,17 @@ void reader_tpacketv3_init(char *UNUSED(name))
 
 #else
 
+#define MAX_TPACKETV3_THREADS 12
+
 typedef struct {
     int                  fd;
     struct tpacket_req3  req;
     uint8_t             *map;
     struct iovec        *rd;
-    int                  nextPos;
-    MOLOCH_LOCK_EXTERN(lock);
+    uint8_t              interfacePos;
 } MolochTPacketV3_t;
 
-LOCAL MolochTPacketV3_t infos[MAX_INTERFACES];
+LOCAL MolochTPacketV3_t infos[MAX_INTERFACES][MAX_TPACKETV3_THREADS];
 
 LOCAL int numThreads;
 
@@ -75,15 +76,15 @@ int reader_tpacketv3_stats(MolochReaderStats_t *stats)
 {
     MOLOCH_LOCK(gStats);
 
-    int i;
-
     struct tpacket_stats_v3 tpstats;
-    for (i = 0; i < MAX_INTERFACES && config.interface[i]; i++) {
-        socklen_t len = sizeof(tpstats);
-        getsockopt(infos[i].fd, SOL_PACKET, PACKET_STATISTICS, &tpstats, &len);
+    for (int i = 0; i < MAX_INTERFACES && config.interface[i]; i++) {
+        for (int t = 0; t < MAX_TPACKETV3_THREADS; t++) {
+            socklen_t len = sizeof(tpstats);
+            getsockopt(infos[i][t].fd, SOL_PACKET, PACKET_STATISTICS, &tpstats, &len);
 
-        gStats.dropped += tpstats.tp_drops;
-        gStats.total += tpstats.tp_packets;
+            gStats.dropped += tpstats.tp_drops;
+            gStats.total += tpstats.tp_packets;
+        }
     }
     *stats = gStats;
     MOLOCH_UNLOCK(gStats);
@@ -92,12 +93,12 @@ int reader_tpacketv3_stats(MolochReaderStats_t *stats)
 /******************************************************************************/
 LOCAL void *reader_tpacketv3_thread(gpointer infov)
 {
-    long info = (long)infov;
+    MolochTPacketV3_t *info = (MolochTPacketV3_t *)infov;
     struct pollfd pfd;
-    int pos = -1;
+    int pos = 0;
 
     memset(&pfd, 0, sizeof(pfd));
-    pfd.fd = infos[info].fd;
+    pfd.fd = info->fd;
     pfd.events = POLLIN | POLLERR;
     pfd.revents = 0;
 
@@ -105,28 +106,21 @@ LOCAL void *reader_tpacketv3_thread(gpointer infov)
     moloch_packet_batch_init(&batch);
 
     while (!config.quitting) {
-        if (pos == -1) {
-            MOLOCH_LOCK(infos[info].lock);
-            pos = infos[info].nextPos;
-            infos[info].nextPos = (infos[info].nextPos + 1) % infos[info].req.tp_block_nr;
-            MOLOCH_UNLOCK(infos[info].lock);
-        }
-
-        struct tpacket_block_desc *tbd = infos[info].rd[pos].iov_base;
+        struct tpacket_block_desc *tbd = info->rd[pos].iov_base;
         if (config.debug > 2) {
             int i;
             int cnt = 0;
             int waiting = 0;
 
-            for (i = 0; i < (int)infos[info].req.tp_block_nr; i++) {
-                struct tpacket_block_desc *stbd = infos[info].rd[i].iov_base;
+            for (i = 0; i < (int)info->req.tp_block_nr; i++) {
+                struct tpacket_block_desc *stbd = info->rd[i].iov_base;
                 if (stbd->hdr.bh1.block_status & TP_STATUS_USER) {
                     cnt++;
                     waiting += stbd->hdr.bh1.num_pkts;
                 }
             }
 
-            LOG("Stats pos:%d info:%ld status:%x waiting:%d total cnt:%d total waiting:%d", pos, info, tbd->hdr.bh1.block_status, tbd->hdr.bh1.num_pkts, cnt, waiting);
+            LOG("Stats pos:%d info:%d status:%x waiting:%d total cnt:%d total waiting:%d", pos, info->interfacePos, tbd->hdr.bh1.block_status, tbd->hdr.bh1.num_pkts, cnt, waiting);
         }
 
         // Wait until the block is owned by moloch
@@ -152,7 +146,7 @@ LOCAL void *reader_tpacketv3_thread(gpointer infov)
             packet->pktlen        = th->tp_len;
             packet->ts.tv_sec     = th->tp_sec;
             packet->ts.tv_usec    = th->tp_nsec/1000;
-            packet->readerPos     = info;
+            packet->readerPos     = info->interfacePos;
 
             if ((th->tp_status & TP_STATUS_VLAN_VALID) && th->hv1.tp_vlan_tci) {
                 packet->vlan = th->hv1.tp_vlan_tci & 0xfff;
@@ -165,35 +159,34 @@ LOCAL void *reader_tpacketv3_thread(gpointer infov)
         moloch_packet_batch_flush(&batch);
 
         tbd->hdr.bh1.block_status = TP_STATUS_KERNEL;
-        pos = -1;
+        pos = (pos + 1) % info->req.tp_block_nr;
     }
     return NULL;
 }
 /******************************************************************************/
 void reader_tpacketv3_start() {
-    int i, t;
     char name[100];
-    for (i = 0; i < MAX_INTERFACES && config.interface[i]; i++) {
-        for (t = 0; t < numThreads; t++) {
+    for (int i = 0; i < MAX_INTERFACES && config.interface[i]; i++) {
+        for (int t = 0; t < numThreads; t++) {
             snprintf(name, sizeof(name), "moloch-af3%d-%d", i, t);
-            g_thread_unref(g_thread_new(name, &reader_tpacketv3_thread, (gpointer)(long)i));
+            g_thread_unref(g_thread_new(name, &reader_tpacketv3_thread, &infos[i][t]));
         }
     }
 }
 /******************************************************************************/
 void reader_tpacketv3_exit()
 {
-    int i;
-    for (i = 0; i < MAX_INTERFACES && config.interface[i]; i++) {
-        close(infos[i].fd);
+    for (int i = 0; i < MAX_INTERFACES && config.interface[i]; i++) {
+        for (int t = 0; t < numThreads; t++) {
+            close(infos[i][t].fd);
+        }
     }
 }
 /******************************************************************************/
 void reader_tpacketv3_init(char *UNUSED(name))
 {
-    int i;
     int blocksize = moloch_config_int(NULL, "tpacketv3BlockSize", 1<<21, 1<<16, 1U<<31);
-    numThreads = moloch_config_int(NULL, "tpacketv3NumThreads", 2, 1, 12);
+    numThreads = moloch_config_int(NULL, "tpacketv3NumThreads", 2, 1, MAX_TPACKETV3_THREADS);
 
     if (blocksize % getpagesize() != 0) {
         CONFIGEXIT("block size %d not divisible by pagesize %d", blocksize, getpagesize());
@@ -213,73 +206,76 @@ void reader_tpacketv3_init(char *UNUSED(name))
         }
     }
 
-    int fanout_group_id = moloch_config_int(NULL, "tpacketv3ClusterId", 0x0000, 0x0000, 0xffff);
+    int fanout_group_id = moloch_config_int(NULL, "tpacketv3ClusterId", 8005, 0x0001, 0xffff);
 
+    int version = TPACKET_V3;
+    int i;
     for (i = 0; i < MAX_INTERFACES && config.interface[i]; i++) {
-        MOLOCH_LOCK_INIT(infos[i].lock);
-
         int ifindex = if_nametoindex(config.interface[i]);
 
-        infos[i].fd = socket(AF_PACKET, SOCK_RAW, 0);
+        for (int t = 0; t < numThreads; t++) {
+            infos[i][t].fd = socket(AF_PACKET, SOCK_RAW, 0);
+            infos[i][t].interfacePos = i;
 
-        int version = TPACKET_V3;
-        if (setsockopt(infos[i].fd, SOL_PACKET, PACKET_VERSION, &version, sizeof(version)) < 0)
-            CONFIGEXIT("Error setting TPACKET_V3, might need a newer kernel: %s", strerror(errno));
+            if (setsockopt(infos[i][t].fd, SOL_PACKET, PACKET_VERSION, &version, sizeof(version)) < 0)
+                CONFIGEXIT("Error setting TPACKET_V3, might need a newer kernel: %s", strerror(errno));
 
+            memset(&infos[i][t].req, 0, sizeof(infos[i][t].req));
+            infos[i][t].req.tp_block_size = blocksize;
+            infos[i][t].req.tp_block_nr = 64;
+            infos[i][t].req.tp_frame_size = config.snapLen;
+            infos[i][t].req.tp_frame_nr = (blocksize * infos[i][t].req.tp_block_nr) / infos[i][t].req.tp_frame_size;
+            infos[i][t].req.tp_retire_blk_tov = 60;
+            infos[i][t].req.tp_feature_req_word = 0;
+            if (setsockopt(infos[i][t].fd, SOL_PACKET, PACKET_RX_RING, &infos[i][t].req, sizeof(infos[i][t].req)) < 0)
+                CONFIGEXIT("Error setting PACKET_RX_RING: %s", strerror(errno));
 
-        memset(&infos[i].req, 0, sizeof(infos[i].req));
-        infos[i].req.tp_block_size = blocksize;
-        infos[i].req.tp_block_nr = numThreads*64;
-        infos[i].req.tp_frame_size = config.snapLen;
-        infos[i].req.tp_frame_nr = (blocksize * infos[i].req.tp_block_nr) / infos[i].req.tp_frame_size;
-        infos[i].req.tp_retire_blk_tov = 60;
-        infos[i].req.tp_feature_req_word = 0;
-        if (setsockopt(infos[i].fd, SOL_PACKET, PACKET_RX_RING, &infos[i].req, sizeof(infos[i].req)) < 0)
-            CONFIGEXIT("Error setting PACKET_RX_RING: %s", strerror(errno));
+            struct packet_mreq      mreq;
+            memset(&mreq, 0, sizeof(mreq));
+            mreq.mr_ifindex = ifindex;
+            mreq.mr_type    = PACKET_MR_PROMISC;
+            if (setsockopt(infos[i][t].fd, SOL_PACKET, PACKET_ADD_MEMBERSHIP, &mreq, sizeof(mreq)) < 0)
+                CONFIGEXIT("Error setting PROMISC: %s", strerror(errno));
 
-        struct packet_mreq      mreq;
-        memset(&mreq, 0, sizeof(mreq));
-        mreq.mr_ifindex = ifindex;
-        mreq.mr_type    = PACKET_MR_PROMISC;
-        if (setsockopt(infos[i].fd, SOL_PACKET, PACKET_ADD_MEMBERSHIP, &mreq, sizeof(mreq)) < 0)
-            CONFIGEXIT("Error setting PROMISC: %s", strerror(errno));
+            if (config.bpf) {
+                struct sock_fprog       fcode;
+                fcode.len = bpf.bf_len;
+                fcode.filter = (struct sock_filter *)bpf.bf_insns;
+                if (setsockopt(infos[i][t].fd, SOL_SOCKET, SO_ATTACH_FILTER, &fcode, sizeof(fcode)) < 0)
+                    CONFIGEXIT("Error setting SO_ATTACH_FILTER: %s", strerror(errno));
+            }
 
-        if (config.bpf) {
-            struct sock_fprog       fcode;
-            fcode.len = bpf.bf_len;
-            fcode.filter = (struct sock_filter *)bpf.bf_insns;
-            if (setsockopt(infos[i].fd, SOL_SOCKET, SO_ATTACH_FILTER, &fcode, sizeof(fcode)) < 0)
-                CONFIGEXIT("Error setting SO_ATTACH_FILTER: %s", strerror(errno));
+            infos[i][t].map = mmap64(NULL, infos[i][t].req.tp_block_size * infos[i][t].req.tp_block_nr,
+                                 PROT_READ | PROT_WRITE, MAP_SHARED | MAP_LOCKED, infos[i][t].fd, 0);
+            if (unlikely(infos[i][t].map == MAP_FAILED)) {
+                CONFIGEXIT("MMap64 failure in reader_tpacketv3_init, %d: %s. Tried to allocate %d bytes (tpacketv3BlockSize: %d * tpacketv3NumThreads: %d * 64) which was probbaly too large for this host, you probably need to reduce one of the values.", errno, strerror(errno), infos[i][t].req.tp_block_size * infos[i][t].req.tp_block_nr, blocksize, numThreads);
+            }
+            infos[i][t].rd = malloc(infos[i][t].req.tp_block_nr * sizeof(struct iovec));
+
+            uint16_t j;
+            for (j = 0; j < infos[i][t].req.tp_block_nr; j++) {
+                infos[i][t].rd[j].iov_base = infos[i][t].map + (j * infos[i][t].req.tp_block_size);
+                infos[i][t].rd[j].iov_len = infos[i][t].req.tp_block_size;
+            }
+
+            struct sockaddr_ll ll;
+            memset(&ll, 0, sizeof(ll));
+            ll.sll_family = PF_PACKET;
+            ll.sll_protocol = htons(ETH_P_ALL);
+            ll.sll_ifindex = ifindex;
+
+            if (bind(infos[i][t].fd, (struct sockaddr *) &ll, sizeof(ll)) < 0)
+                CONFIGEXIT("Error binding %s: %s", config.interface[i], strerror(errno));
+
+            if (fanout_group_id != 0) {
+                int fanout_type = PACKET_FANOUT_HASH;
+                int fanout_arg = ((fanout_group_id+i) | (fanout_type << 16));
+                if(setsockopt(infos[i][t].fd, SOL_PACKET, PACKET_FANOUT, &fanout_arg, sizeof(fanout_arg)) < 0)
+                    CONFIGEXIT("Error setting packet fanout parameters: tpacketv3ClusterId: %d (%s)", fanout_group_id, strerror(errno));
+            }
         }
 
-        infos[i].map = mmap64(NULL, infos[i].req.tp_block_size * infos[i].req.tp_block_nr,
-                             PROT_READ | PROT_WRITE, MAP_SHARED | MAP_LOCKED, infos[i].fd, 0);
-        if (unlikely(infos[i].map == MAP_FAILED)) {
-            CONFIGEXIT("MMap64 failure in reader_tpacketv3_init, %d: %s. Tried to allocate %d bytes (tpacketv3BlockSize: %d * tpacketv3NumThreads: %d * 64) which was probbaly too large for this host, you probably need to reduce one of the values.", errno, strerror(errno), infos[i].req.tp_block_size * infos[i].req.tp_block_nr, blocksize, numThreads);
-        }
-        infos[i].rd = malloc(infos[i].req.tp_block_nr * sizeof(struct iovec));
-
-        uint16_t j;
-        for (j = 0; j < infos[i].req.tp_block_nr; j++) {
-            infos[i].rd[j].iov_base = infos[i].map + (j * infos[i].req.tp_block_size);
-            infos[i].rd[j].iov_len = infos[i].req.tp_block_size;
-        }
-
-        struct sockaddr_ll ll;
-        memset(&ll, 0, sizeof(ll));
-        ll.sll_family = PF_PACKET;
-        ll.sll_protocol = htons(ETH_P_ALL);
-        ll.sll_ifindex = ifindex;
-
-        if (bind(infos[i].fd, (struct sockaddr *) &ll, sizeof(ll)) < 0)
-            CONFIGEXIT("Error binding %s: %s", config.interface[i], strerror(errno));
-        
-        if (fanout_group_id != 0) {
-            int fanout_type = PACKET_FANOUT_HASH;
-            int fanout_arg = ((fanout_group_id+i) | (fanout_type << 16));
-            if(setsockopt(infos[i].fd, SOL_PACKET, PACKET_FANOUT, &fanout_arg, sizeof(fanout_arg)) < 0)
-                CONFIGEXIT("Error setting packet fanout parameters: tpacketv3ClusterId: %d (%s)", fanout_group_id, strerror(errno));
-        }
+        fanout_group_id++;
     }
 
     pcap_close(dpcap);
