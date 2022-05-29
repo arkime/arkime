@@ -193,7 +193,7 @@ void reader_tpacketv3_init(char *UNUSED(name))
     }
 
     if (blocksize % config.snapLen != 0) {
-        CONFIGEXIT("block size %d not divisible by %u", blocksize, config.snapLen);
+        CONFIGEXIT("tpacketv3BlockSize %d not divisible by snapLen %u", blocksize, config.snapLen);
     }
 
     moloch_packet_set_dltsnap(DLT_EN10MB, config.snapLen);
@@ -267,12 +267,10 @@ void reader_tpacketv3_init(char *UNUSED(name))
             if (bind(infos[i][t].fd, (struct sockaddr *) &ll, sizeof(ll)) < 0)
                 CONFIGEXIT("Error binding %s: %s", config.interface[i], strerror(errno));
 
-            if (fanout_group_id != 0) {
-                int fanout_type = PACKET_FANOUT_HASH;
-                int fanout_arg = ((fanout_group_id+i) | (fanout_type << 16));
-                if(setsockopt(infos[i][t].fd, SOL_PACKET, PACKET_FANOUT, &fanout_arg, sizeof(fanout_arg)) < 0)
-                    CONFIGEXIT("Error setting packet fanout parameters: tpacketv3ClusterId: %d (%s)", fanout_group_id, strerror(errno));
-            }
+            int fanout_type = PACKET_FANOUT_HASH;
+            int fanout_arg = ((fanout_group_id+i) | (fanout_type << 16));
+            if(setsockopt(infos[i][t].fd, SOL_PACKET, PACKET_FANOUT, &fanout_arg, sizeof(fanout_arg)) < 0)
+                CONFIGEXIT("Error setting packet fanout parameters: tpacketv3ClusterId: %d (%s)", fanout_group_id, strerror(errno));
         }
 
         fanout_group_id++;
