@@ -5450,9 +5450,6 @@ sub lookupsUpdate
     "name": {
       "type": "keyword"
     },
-    "shared": {
-      "type": "boolean"
-    },
     "description": {
       "type": "keyword"
     },
@@ -5479,6 +5476,14 @@ sub lookupsUpdate
 
 logmsg "Setting lookups_v30 mapping\n" if ($verbose > 0);
 esPut("/${PREFIX}lookups_v30/_mapping?master_timeout=${ESTIMEOUT}s&pretty", $mapping);
+
+# update shared=true to roles=['arkimeUser']
+my $json = esGet("/${PREFIX}lookups/_search?q=shared:true&size=1000");
+foreach my $j (@{$json->{hits}->{hits}}) {
+   delete $j->{_source}->{shared};
+   $j->{_source}->{roles} = ["arkimeUser"];
+   esPut("/${PREFIX}lookups/_doc/$j->{_id}", to_json($j->{_source}));
+}
 }
 ################################################################################
 
