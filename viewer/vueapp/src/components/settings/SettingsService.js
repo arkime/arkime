@@ -1,4 +1,5 @@
 import Vue from 'vue';
+import store from '../../store';
 
 export default {
   // NOTIFIERS ------------------------------------------------------------- //
@@ -19,12 +20,14 @@ export default {
 
   /**
    * Gets a list of user configured notifiers
+   * NOTE: updates the store with the list of notifiers returned
    * @returns {Promise} Promise - A promise object that signals the completion
    *                              or rejection of the request.
    */
   getNotifiers: function () {
     return new Promise((resolve, reject) => {
       Vue.axios.get('api/notifiers').then((response) => {
+        store.commit('setNotifiers', response.data);
         resolve(response.data);
       }).catch((err) => {
         reject(err);

@@ -67,7 +67,7 @@
 # 71 - user.roles, user.cont3xt
 # 72 - save es query in history, hunt description
 # 73 - hunt roles
-# 74 - shortcut sharing with users/roles
+# 74 - shortcut sharing with users/roles, notifiers index
 
 use HTTP::Request::Common;
 use LWP::UserAgent;
@@ -5483,6 +5483,43 @@ esPut("/${PREFIX}lookups_v30/_mapping?master_timeout=${ESTIMEOUT}s&pretty", $map
 ################################################################################
 
 ################################################################################
+sub notifiersCreate
+{
+  my $settings = '
+{
+  "settings": {
+    "index.priority": 30,
+    "number_of_shards": 1,
+    "number_of_replicas": 0,
+    "auto_expand_replicas": "0-3"
+  }
+}';
+
+  logmsg "Creating notifiers_v30 index\n" if ($verbose > 0);
+  esPut("/${PREFIX}notifiers_v30?master_timeout=${ESTIMEOUT}s", $settings);
+  esAlias("add", "notifiers_v30", "notifiers");
+  notifiersUpdate();
+}
+
+sub notifiersUpdate
+{
+    my $mapping = '
+{
+  "_source": {"enabled": "true"},
+  "dynamic": "true",
+  "properties": {
+    "name": {
+      "type": "keyword"
+    }
+  }
+}';
+
+logmsg "Setting notifiers_v30 mapping\n" if ($verbose > 0);
+esPut("/${PREFIX}notifiers_v30/_mapping?master_timeout=${ESTIMEOUT}s&pretty", $mapping);
+}
+################################################################################
+
+################################################################################
 sub usersCreate
 {
     my $settings = '
@@ -7430,6 +7467,7 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
         historyUpdate();
         huntsUpdate();
         lookupsUpdate();
+        notifiersCreate();
     } else {
         logmsg "db.pl is hosed\n";
     }

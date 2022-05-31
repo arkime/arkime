@@ -1895,251 +1895,11 @@
         </form> <!-- /password settings -->
 
         <!-- notifiers settings -->
-        <form class="form-horizontal"
+        <notifiers
+          id="notifiers"
+          @display-message="displayMessage"
           v-if="visibleTab === 'notifiers'"
-          v-has-role="{user:user,roles:'arkimeAdmin'}"
-          id="notifiers">
-
-          <h3>
-            Notifiers
-            <template v-if="notifierTypes">
-              <button v-for="notifier of notifierTypes"
-                :key="notifier.name"
-                class="btn btn-theme-tertiary btn-sm pull-right ml-1"
-                type="button"
-                @click="createNewNotifier(notifier)">
-                <span class="fa fa-plus-circle">
-                </span>&nbsp;
-                Create {{ notifier.name }} Notifier
-              </button>
-            </template>
-          </h3>
-
-          <p>
-            Configure notifiers that can be added to cron queries and hunt jobs.
-          </p>
-
-          <hr>
-
-          <div v-if="!notifiers || !Object.keys(notifiers).length"
-            class="alert alert-info">
-            <span class="fa fa-info-circle fa-lg">
-            </span>
-            <strong>
-              You have no notifiers configured.
-            </strong>
-            <br>
-            <br>
-            Create one by clicking one of the create buttons above.
-            Then use it by adding it to your cron queries or hunt jobs!
-          </div>
-
-          <!-- new notifier -->
-          <div class="row"
-            v-if="newNotifier">
-            <div class="col">
-              <div class="card mb-3">
-                <div class="card-body">
-                  <!-- newNotifier title -->
-                  <h4 class="mb-3">
-                    Create new {{ newNotifier.type }} notifier
-                    <span v-if="newNotifierError"
-                      class="alert alert-sm alert-danger pull-right pr-2">
-                      {{ newNotifierError }}
-                      <span class="fa fa-close cursor-pointer"
-                        @click="newNotifierError = ''">
-                      </span>
-                    </span>
-                  </h4> <!-- /new notifier title -->
-                  <!-- new notifier name -->
-                  <div class="input-group">
-                    <span class="input-group-prepend cursor-help"
-                      :title="`Give your ${newNotifier.type} notifier a unique name`"
-                      v-b-tooltip.hover.bottom-left>
-                      <span class="input-group-text">
-                        Name
-                        <sup>*</sup>
-                      </span>
-                    </span>
-                    <input class="form-control"
-                      v-model="newNotifier.name"
-                      type="text"
-                    />
-                  </div>
-                  <small class="form-text text-muted mb-2 mt-0">
-                    Be specific! There can be multiple {{ newNotifier.type }}
-                    notifiers.
-                  </small> <!-- /new notifier name -->
-                  <!-- new notifier fields -->
-                  <div v-for="field of newNotifier.fields"
-                    :key="field.name">
-                    <span class="mb-2"
-                      :class="{'input-group':field.type !== 'checkbox'}">
-                      <span class="input-group-prepend cursor-help"
-                        v-if="field.type !== 'checkbox'"
-                        :title="field.description"
-                        v-b-tooltip.hover.bottom-left>
-                        <span class="input-group-text">
-                          {{ field.name }}
-                          <sup v-if="field.required">*</sup>
-                        </span>
-                      </span>
-                      <input :class="{'form-control':field.type !== 'checkbox'}"
-                        v-model="field.value"
-                        :type="getFieldInputType(field)"
-                      />
-                      <span v-if="field.type === 'secret'"
-                        class="input-group-append cursor-pointer"
-                        @click="toggleVisibleSecretField(field)">
-                        <span class="input-group-text">
-                          <span class="fa"
-                            :class="{'fa-eye':field.type === 'secret' && !field.showValue, 'fa-eye-slash':field.type === 'secret' && field.showValue}">
-                          </span>
-                        </span>
-                      </span>
-                    </span>
-                    <label v-if="field.type === 'checkbox'">
-                      &nbsp;{{ field.name }}
-                    </label>
-                  </div> <!-- /new notifier fields -->
-                  <!-- new notifier actions -->
-                  <div class="row mt-3">
-                    <div class="col-12">
-                      <button type="button"
-                        class="btn btn-sm btn-outline-warning cursor-pointer"
-                        @click="clearNotifierFields">
-                        Clear fields
-                      </button>
-                      <button type="button"
-                        class="btn btn-sm btn-success cursor-pointer pull-right ml-1"
-                        @click="createNotifier">
-                        <span class="fa fa-plus">
-                        </span>&nbsp;
-                        Create {{ newNotifier.type }} Notifier
-                      </button>
-                      <button type="button"
-                        class="btn btn-sm btn-warning cursor-pointer pull-right"
-                        @click="newNotifier = undefined">
-                        <span class="fa fa-ban">
-                        </span>&nbsp;
-                        Cancel
-                      </button>
-                    </div>
-                  </div> <!-- /new notifier actions -->
-                </div>
-              </div>
-            </div>
-          </div> <!-- new notifier -->
-
-          <!-- notifiers -->
-          <div class="row"
-            v-if="notifiers">
-            <div class="col-12 col-xl-6"
-              v-for="(notifier, index) of notifiers"
-              :key="notifier.key">
-              <div class="card mb-3">
-                <div class="card-body">
-                  <!-- notifier title -->
-                  <h4 class="mb-3">
-                    {{ notifier.type }} Notifier
-                  </h4> <!-- /notifier title -->
-                  <!-- notifier name -->
-                  <div class="input-group mb-2">
-                    <span class="input-group-prepend cursor-help"
-                      :title="`Give your notifier a unique name`"
-                      v-b-tooltip.hover.bottom-left>
-                      <span class="input-group-text">
-                        Name
-                        <sup>*</sup>
-                      </span>
-                    </span>
-                    <input class="form-control"
-                      v-model="notifier.name"
-                      type="text"
-                    />
-                  </div> <!-- /notifier name -->
-                  <!-- notifier fields -->
-                  <div v-for="field of notifier.fields"
-                    :key="field.name">
-                    <span class="mb-2"
-                      :class="{'input-group':field.type !== 'checkbox'}">
-                      <span class="input-group-prepend cursor-help"
-                        v-if="field.type !== 'checkbox'"
-                        :title="field.description"
-                        v-b-tooltip.hover.bottom-left>
-                        <span class="input-group-text">
-                          {{ field.name }}
-                          <sup v-if="field.required">*</sup>
-                        </span>
-                      </span>
-                      <input :class="{'form-control':field.type !== 'checkbox'}"
-                        v-model="field.value"
-                        :type="getFieldInputType(field)"
-                      />
-                      <span v-if="field.type === 'secret'"
-                        class="input-group-append cursor-pointer"
-                        @click="toggleVisibleSecretField(field)">
-                        <span class="input-group-text">
-                          <span class="fa"
-                            :class="{'fa-eye':field.type === 'secret' && !field.showValue, 'fa-eye-slash':field.type === 'secret' && field.showValue}">
-                          </span>
-                        </span>
-                      </span>
-                    </span>
-                    <label v-if="field.type === 'checkbox'">
-                      &nbsp;{{ field.name }}
-                    </label>
-                  </div> <!-- /notifier fields -->
-                  <!-- notifier info -->
-                  <div class="row">
-                    <div class="col-12 small">
-                      <span v-if="notifier.created || notifier.user">
-                        Created by {{ notifier.user }} at
-                        {{ notifier.created * 1000 | timezoneDateString(user.settings.timezone, false) }}
-                      </span>
-                      <span v-if="notifier.updated"
-                        class="pull-right">
-                        Last updated at {{ notifier.updated * 1000 | timezoneDateString(user.settings.timezone, false) }}
-                      </span>
-                    </div>
-                  </div> <!-- /notifier info -->
-                  <!-- notifier actions -->
-                  <div class="row mt-3">
-                    <div class="col-12">
-                      <button type="button"
-                        :disabled="notifier.loading"
-                        class="btn btn-sm btn-outline-warning cursor-pointer"
-                        @click="testNotifier(notifier.name, index)">
-                        <span v-if="notifier.loading"
-                          class="fa fa-spinner fa-spin">
-                        </span>
-                        <span v-else class="fa fa-bell">
-                        </span>&nbsp;
-                        Test
-                      </button>
-                      <button type="button"
-                        class="btn btn-sm btn-success cursor-pointer pull-right ml-1"
-                        @click="updateNotifier(notifier.key, index, notifier)">
-                        <span class="fa fa-save">
-                        </span>&nbsp;
-                        Save
-                      </button>
-                      <button type="button"
-                        class="btn btn-sm btn-danger cursor-pointer pull-right"
-                        @click="removeNotifier(notifier.name, index)">
-                        <span class="fa fa-trash-o">
-                        </span>&nbsp;
-                        Delete
-                      </button>
-                    </div>
-                  </div> <!-- /notifier actions -->
-                </div>
-              </div>
-            </div>
-          </div> <!-- notifiers -->
-
-        </form>
-        <!-- /notifiers settings -->
+        />
 
         <!-- shortcut settings -->
         <shortcuts
@@ -2170,6 +1930,7 @@ import MolochPaging from '../utils/Pagination';
 import ToggleBtn from '../../../../../common/vueapp/ToggleBtn';
 import Utils from '../utils/utils';
 import Shortcuts from './Shortcuts';
+import Notifiers from './Notifiers';
 
 let clockInterval;
 
@@ -2187,7 +1948,8 @@ export default {
     ColorPicker,
     MolochPaging,
     ToggleBtn,
-    Shortcuts
+    Shortcuts,
+    Notifiers
   },
   data: function () {
     return {
@@ -2267,13 +2029,7 @@ export default {
       confirmNewPassword: '',
       changePasswordError: '',
       multiviewer: this.$constants.MOLOCH_MULTIVIEWER,
-      hasUsersES: this.$constants.MOLOCH_HASUSERSES,
-      // notifiers settings vars
-      notifiers: undefined,
-      notifierTypes: [],
-      notifiersError: '',
-      newNotifier: undefined,
-      newNotifierError: ''
+      hasUsersES: this.$constants.MOLOCH_HASUSERSES
     };
   },
   computed: {
@@ -2303,6 +2059,9 @@ export default {
     },
     molochClusters: function () {
       return this.$store.state.remoteclusters;
+    },
+    notifiers () {
+      return this.$store.state.notifiers;
     }
   },
   created: function () {
@@ -3007,110 +2766,6 @@ export default {
         this.msgType = 'danger';
       });
     },
-    /* NOTIFIERS --------------------------------------- */
-    /* opens the form to create a new notifier */
-    createNewNotifier: function (notifier) {
-      this.newNotifier = JSON.parse(JSON.stringify(notifier));
-    },
-    /* gets the type of input associated with a field */
-    getFieldInputType: function (field) {
-      if (field.type === 'checkbox') {
-        return 'checkbox';
-      } else if (field.type === 'secret' && !field.showValue) {
-        return 'password';
-      } else {
-        return 'text';
-      }
-    },
-    /* clears the fields of the new notifier form */
-    clearNotifierFields: function () {
-      this.newNotifier.name = '';
-      for (const field of this.newNotifier.fields) {
-        field.value = '';
-      }
-    },
-    /* creates a new notifier */
-    createNotifier: function () {
-      if (!this.newNotifier) {
-        this.newNotifierError = 'No notifier chosen';
-        return;
-      }
-
-      if (!this.newNotifier.name) {
-        this.newNotifierError = 'Your new notifier must have a unique name';
-        return;
-      }
-
-      // make sure required fields are filled
-      for (const field of this.newNotifier.fields) {
-        if (!field.value && field.required) {
-          this.newNotifierError = `${field.name} is required`;
-          return;
-        }
-      }
-
-      SettingsService.createNotifier(this.newNotifier).then((response) => {
-        // display success message to user
-        this.msg = response.text || 'Successfully created new notifier.';
-        this.msgType = 'success';
-        this.notifiersError = '';
-        // add notifier to the list
-        this.notifiers.push(response.notifier);
-        this.newNotifier = undefined;
-      }).catch((error) => {
-        this.msg = error.text || 'Error creating new notifier.';
-        this.msgType = 'danger';
-      });
-    },
-    /* toggles the visibility of the value of secret fields */
-    toggleVisibleSecretField: function (field) {
-      this.$set(field, 'showValue', !field.showValue);
-    },
-    /* deletes a notifier */
-    removeNotifier: function (notifierName, index) {
-      SettingsService.deleteNotifier(notifierName).then((response) => {
-        // display success message to user
-        this.msg = response.text || 'Successfully deleted notifier.';
-        this.msgType = 'success';
-        this.notifiers.splice(index, 1);
-        this.notifiersError = '';
-      }).catch((error) => {
-        this.msg = error.text || 'Error deleting notifier.';
-        this.msgType = 'danger';
-      });
-    },
-    /* updates a notifier */
-    updateNotifier: function (key, index, notifier) {
-      SettingsService.updateNotifier(key, notifier).then((response) => {
-        // display success message to user
-        this.msg = response.text || 'Successfully updated notifier.';
-        this.msgType = 'success';
-        this.notifiers.splice(index, 1, response.notifier);
-        this.notifiersError = '';
-      }).catch((error) => {
-        this.msg = error.text || 'Error updating notifier.';
-        this.msgType = 'danger';
-      });
-    },
-    /* tests a notifier */
-    testNotifier: function (notifierName, index) {
-      if (this.notifiers[index].loading) {
-        return;
-      }
-
-      this.$set(this.notifiers[index], 'loading', true);
-
-      SettingsService.testNotifier(notifierName).then((response) => {
-        // display success message to user
-        this.msg = response.text || 'Successfully issued alert.';
-        this.msgType = 'success';
-        this.$set(this.notifiers[index], 'loading', false);
-      }).catch((error) => {
-        this.msg = error.text || 'Error issuing alert.';
-        this.msgType = 'danger';
-        this.$set(this.notifiers[index], 'loading', false);
-      });
-    },
 
     /* helper functions ---------------------------------------------------- */
     /* retrievs the theme colors from the document body's property values */
@@ -3179,8 +2834,7 @@ export default {
             this.getCronQueries();
             this.getColConfigs();
             this.getSpiviewConfigs();
-            this.getNotifierTypes();
-            this.getNotifiers();
+            SettingsService.getNotifiers(); // sets notifiers in the store
           }
 
           this.setTheme();
@@ -3302,22 +2956,6 @@ export default {
         }
       }).catch((error) => {
         this.spiviewConfigError = error.text;
-      });
-    },
-    /* retrieves the types of notifiers that can be configured */
-    getNotifierTypes: function () {
-      SettingsService.getNotifierTypes().then((response) => {
-        this.notifierTypes = response;
-      }).catch((error) => {
-        this.notifiersError = error.text || error;
-      });
-    },
-    /* retrieves the notifiers that have been configured */
-    getNotifiers: function () {
-      SettingsService.getNotifiers().then((response) => {
-        this.notifiers = response;
-      }).catch((error) => {
-        this.notifiersError = error.text || error;
       });
     },
     /**
