@@ -1,4 +1,4 @@
-use Test::More tests => 82;
+use Test::More tests => 88;
 use Cwd;
 use URI::Escape;
 use MolochTest;
@@ -9,6 +9,8 @@ use strict;
 
 my $token = getTokenCookie();
 my $otherToken = getTokenCookie('user2');
+
+viewerPostToken("/user/create", '{"userId": "user2", "userName": "user2", "enabled":true, "password":"password", "roles":["arkimeUser"]}', $token);
 
 esPost("/tests_lookups/_delete_by_query?conflicts=proceed&refresh", '{ "query": { "match_all": {} } }');
 esPost("/tests2_lookups/_delete_by_query?conflicts=proceed&refresh", '{ "query": { "match_all": {} } }');
@@ -113,15 +115,10 @@ is(@{$shortcuts->{data}}, 1, "1 shortcut for this user");
 $shortcuts = multiGet("/api/shortcuts?molochRegressionUser=user2");
 is(@{$shortcuts->{data}}, 1, "1 shortcut for this user");
 
-# create shared shortcut by another user
-$json = viewerPostToken("/lookups?molochRegressionUser=user2", '{"shared":true,"name":"other_test_shortcut_2","type":"string","value":"udp"}', $otherToken);
+# create a shortcut by another user
+$json = viewerPostToken("/lookups?molochRegressionUser=user2", '{"name":"other_test_shortcut_2","type":"string","value":"udp"}', $otherToken);
 ok($json->{success}, "create shortcut success");
-ok($json->{shortcut}->{shared}, "create shared shortcut");
 my $shortcut3Id = $json->{shortcut}->{id}; # save id for cleanup later
-
-# shared shortcut exists for user
-$shortcuts = viewerGet("/lookups?molochRegressionUser=user2");
-is(@{$shortcuts->{data}}, 2, "2 shortcuts for this user");
 
 # can't update shortcut and duplicate name
 $json = viewerPutToken("/api/shortcut/$shortcut3Id", '{"name":"test_shortcut_updated","type":"ip","value":"10.0.0.1"}', $token);
@@ -129,7 +126,35 @@ ok(!$json->{success}, "unique shortcut names");
 
 # unshared shortcut can't be seen by nonadmin users
 $shortcuts = viewerGet('/api/shortcuts?molochRegressionUser=user3');
-is(@{$shortcuts->{data}}, 1, "nonadmin user can only see shared shortcuts");
+is(@{$shortcuts->{data}}, 0, "user3 has no shortcuts shared with them");
+
+# can share shortcut with users
+$json = viewerPostToken("/lookups", '{"name":"user_shared_shortcut","type":"string","value":"udp","users":"user2"}', $token);
+ok($json->{success}, "create shortcut with users success");
+is($json->{shortcut}->{users}->[0], "user2", "create user shared shortcut");
+my $shortcut4Id = $json->{shortcut}->{id}; # save id for cleanup later
+
+# user2 can see shortcut shared with just them
+$shortcuts = viewerGet("/api/shortcuts?molochRegressionUser=user2");
+is(@{$shortcuts->{data}}, 3, "3 shortcut for this user");
+
+# but a user3 cannot see that shortcut
+$shortcuts = viewerGet("/api/shortcuts?molochRegressionUser=user3");
+is(@{$shortcuts->{data}}, 0, "0 shortcuts for this user");
+
+# share shortcut with roles
+$json = viewerPutToken("/api/shortcut/$shortcut4Id", '{"name":"role_shared_shortcut","type":"string","value":"udp","users":"","roles":["cont3xtUser"]}', $token);
+ok($json->{success}, "create shortcut with roles success");
+is($json->{shortcut}->{roles}->[0], "cont3xtUser", "create role shared shortcut");
+
+# user2 can't see shortcut because they don't have that role
+$shortcuts = viewerGet("/api/shortcuts?molochRegressionUser=user2");
+is(@{$shortcuts->{data}}, 2, "2 shortcut for this user");
+
+# user2 can see the shortcut because they have the role
+$json = viewerPutToken("/api/shortcut/$shortcut4Id", '{"name":"role_shared_shortcut","type":"string","value":"udp","users":"","roles":["arkimeUser"]}', $token);
+$shortcuts = viewerGet("/api/shortcuts?molochRegressionUser=user2");
+is(@{$shortcuts->{data}}, 3, "3 shortcut for this user");
 
 # get only shortcuts of a specific type
 $shortcuts = viewerGet("/lookups?fieldType=string");
@@ -141,7 +166,7 @@ is($shortcuts->{data}->[0]->{type}, 'ip', 'shortcut should be of type ip');
 
 # get shortcuts map
 $shortcuts = viewerGet("/lookups?map=true");
-ok(exists $shortcuts->{$shortcut1Id} && exists $shortcuts->{$shortcut3Id}, "Request lookup map");
+ok(exists $shortcuts->{$shortcut1Id} && exists $shortcuts->{$shortcut4Id}, "Request lookup map");
 
 # get shortcuts formatted for typeahead
 $shortcuts = viewerGet("/api/shortcuts?fieldFormat=true&map=true");
@@ -167,7 +192,7 @@ for (my $i=0; $i < scalar(@{$testsCluster}); $i++) { # indexes are different
 
 eq_or_diff($testsCluster, $tests2Cluster, "cluster sync failed", { context => 2 });
 
-# delete shortcute requires token
+# delete shortcut requires token
 $json = viewerDelete("/lookups/$shortcut1Id");
 is($json->{text}, "Missing token", "delete shortcut requires token");
 
@@ -188,6 +213,7 @@ ok($json->{success}, "delete shortcut success");
 # cleanup
 $json = viewerDeleteToken("/lookups/$shortcut2Id", $token);
 $json = viewerDeleteToken("/lookups/$shortcut3Id", $token);
+$json = viewerDeleteToken("/lookups/$shortcut4Id", $token);
 
 # make sure cleanup worked
 $shortcuts = viewerGet("/lookups");
@@ -212,3 +238,5 @@ eq_or_diff($testsCluster, $tests2Cluster, "cluster sync failed", { context => 2 
 
 # remove shared user that gets added when creating shared shortcuts
 viewerPostToken("/user/delete", "userId=_moloch_shared", $token);
+# remove user2
+viewerPostToken("/user/delete", "userId=user2", $token);
