@@ -531,7 +531,6 @@ void moloch_config_load()
     config.snapLen               = moloch_config_int(keyfile, "snapLen", 16384, 1, MOLOCH_PACKET_MAX_LEN);
     config.maxMemPercentage      = moloch_config_int(keyfile, "maxMemPercentage", 100, 5, 100);
     config.maxReqBody            = moloch_config_int(keyfile, "maxReqBody", 256, 0, 0x7fff);
-    config.parseMaxMacAddresses  = moloch_config_int(keyfile, "parseMaxMacAddresses", 1, 1, 7);
 
     config.packetThreads         = moloch_config_int(keyfile, "packetThreads", 1, 1, MOLOCH_MAX_PACKET_THREADS);
 

@@ -63,7 +63,6 @@
 #define MOLOCH_V6_TO_V4(_addr) (((uint32_t *)(_addr).s6_addr)[3])
 
 #define MOLOCH_PACKET_MAX_LEN 0x10000
-#define MOLOCH_ETHER_MAX_STORE 7
 
 #define MOLOCH_ETHERTYPE_ETHER   0
 // If an ethertype is unknown this ethertype will be called
@@ -474,7 +473,6 @@ typedef struct moloch_config {
     uint32_t  snapLen;
     uint32_t  maxMemPercentage;
     uint32_t  maxReqBody;
-    uint32_t  parseMaxMacAddresses;
     int       packetThreads;
 
     char      logUnknownProtocols;
@@ -574,12 +572,13 @@ typedef struct molochpacket_t
     uint8_t        ipProtocol;     // ip protocol
     uint8_t        mProtocol;      // moloch protocol
     uint8_t        readerPos;      // position for filename/ops
-    uint8_t        ethCount:3;       // the number of ethernet frames found
-    uint16_t       ethOffset[MOLOCH_ETHER_MAX_STORE];  // offset to ethernet frame from start
+    uint32_t       etherOffset:11; // offset to current ethernet frame from start
+    uint32_t       vpnEtherOffset:11;// offset to previous ethernet frame from start
     uint32_t       ipOffset:11;    // offset to ip header from start
     uint32_t       vpnIpOffset:11; // offset to vpn ip header from start
     uint32_t       direction:1;    // direction of packet
     uint32_t       v6:1;           // v6 or not
+    uint32_t       vpnv6:1;        // vpn v6 or not
     uint32_t       copied:1;       // don't need to copy
     uint32_t       wasfrag:1;      // was a fragment
     uint32_t       tunnel:8;       // tunnel type

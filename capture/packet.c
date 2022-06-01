@@ -23,7 +23,7 @@
 #include <errno.h>
 #include "pcap.h"
 
-//#define DEBUG_PACKET
+#define DEBUG_PACKET
 
 /******************************************************************************/
 extern MolochConfig_t        config;
@@ -44,11 +44,15 @@ uint64_t                     unwrittenBytes;
 
 int                          mac1Field;
 int                          mac2Field;
+int                          vpnmac1Field;
+int                          vpnmac2Field;
 int                          vlanField;
 LOCAL int                    oui1Field;
 LOCAL int                    oui2Field;
+LOCAL int                    vpnoui1Field;
+LOCAL int                    vpnoui2Field;
 LOCAL int                    dscpField[2];
-LOCAL int                    greIpField;
+LOCAL int                    vpnIpField;
 
 LOCAL uint64_t               droppedFrags;
 
@@ -70,7 +74,6 @@ int                          udpMProtocol;
 
 LOCAL int                    mProtocolCnt;
 MolochProtocol_t             mProtocols[0x100];
-static int                   MULTI_MAC_WARNING_SHOWN = 0;
 
 /******************************************************************************/
 
@@ -331,11 +334,11 @@ LOCAL void moloch_packet_process(MolochPacket_t *packet, int thread)
 
         if (pcapFileHeader.dlt == DLT_EN10MB) {
             if (packet->direction == 1) {
-                moloch_field_macoui_add(session, mac1Field, oui1Field, pcapData+0);
-                moloch_field_macoui_add(session, mac2Field, oui2Field, pcapData+6);
+                moloch_field_macoui_add(session, mac1Field, oui1Field, packet->pkt + packet->etherOffset);
+                moloch_field_macoui_add(session, mac2Field, oui2Field, packet->pkt + packet->etherOffset+6);
             } else {
-                moloch_field_macoui_add(session, mac1Field, oui1Field, pcapData+6);
-                moloch_field_macoui_add(session, mac2Field, oui2Field, pcapData+0);
+                moloch_field_macoui_add(session, mac1Field, oui1Field, packet->pkt + packet->etherOffset+6);
+                moloch_field_macoui_add(session, mac2Field, oui2Field, packet->pkt + packet->etherOffset);
             }
 
             int n = 12;
@@ -349,22 +352,30 @@ LOCAL void moloch_packet_process(MolochPacket_t *packet, int thread)
         if (packet->vlan)
             moloch_field_int_add(vlanField, session, packet->vlan);
 
-        if (packet->ethCount>1 && config.parseMaxMacAddresses>1){
-            for (int ethNr=1;ethNr<packet->ethCount;ethNr++) {
+        if (packet->vpnEtherOffset != 0 && packet->vpnEtherOffset!=packet->etherOffset) {
                 if (packet->direction == 1) {
-                    moloch_field_macoui_add(session, mac1Field, oui1Field, packet->pkt + packet->ethOffset[ethNr]);
-                    moloch_field_macoui_add(session, mac2Field, oui2Field, packet->pkt + packet->ethOffset[ethNr] + 6);
+                    moloch_field_macoui_add(session, vpnmac1Field, vpnoui1Field, packet->pkt + packet->vpnEtherOffset);
+                    moloch_field_macoui_add(session, vpnmac2Field, vpnoui2Field, packet->pkt + packet->vpnEtherOffset + 6);
                 } else {
-                    moloch_field_macoui_add(session, mac2Field, oui2Field, packet->pkt + packet->ethOffset[ethNr]);
-                    moloch_field_macoui_add(session, mac1Field, oui1Field, packet->pkt + packet->ethOffset[ethNr] + 6);
+                    moloch_field_macoui_add(session, vpnmac2Field, vpnoui2Field, packet->pkt + packet->vpnEtherOffset);
+                    moloch_field_macoui_add(session, vpnmac1Field, vpnoui1Field, packet->pkt + packet->vpnEtherOffset + 6);
                 }
+        }
+        if(packet->vpnIpOffset != 0 && packet->vpnIpOffset!=packet->ipOffset) {
+            if (packet->vpnv6 == 0) {
+                ip4 = (struct ip *) (packet->pkt + packet->vpnIpOffset);
+                moloch_field_ip4_add(vpnIpField, session, ip4->ip_src.s_addr);
+                moloch_field_ip4_add(vpnIpField, session, ip4->ip_dst.s_addr);
+            }
+            else{
+                ip6 = (struct ip6_hdr *) (packet->pkt + packet->vpnIpOffset);
+                moloch_field_ip6_add(vpnIpField, session, ip6->ip6_src.s6_addr);
+                moloch_field_ip6_add(vpnIpField, session, ip6->ip6_dst.s6_addr);
             }
         }
 
         if (packet->tunnel & MOLOCH_PACKET_TUNNEL_GRE) {
-            ip4 = (struct ip*)(packet->pkt + packet->vpnIpOffset);
-            moloch_field_ip4_add(greIpField, session, ip4->ip_src.s_addr);
-            moloch_field_ip4_add(greIpField, session, ip4->ip_dst.s_addr);
+
             moloch_session_add_protocol(session, "gre");
         }
 
@@ -759,7 +770,9 @@ LOCAL MolochPacketRC moloch_packet_ip4(MolochPacketBatch_t *batch, MolochPacket_
     if ((uint8_t*)data - packet->pkt >= 2048)
         return MOLOCH_PACKET_CORRUPT;
 
+    packet->vpnv6 = packet->v6; // v6 will get reset
     packet->v6 = 0;
+    packet->vpnIpOffset = packet->ipOffset; // ipOffset will get reset
     packet->ipOffset = (uint8_t*)data - packet->pkt;
     packet->payloadOffset = packet->ipOffset + ip_hdr_len;
     packet->payloadLen = ip_len - ip_hdr_len;
@@ -893,7 +906,9 @@ LOCAL MolochPacketRC moloch_packet_ip6(MolochPacketBatch_t * batch, MolochPacket
 
     int ip_hdr_len = sizeof(struct ip6_hdr);
 
+    packet->vpnv6 = packet->v6; // v6 will get reset
     packet->v6 = 1;
+    packet->vpnIpOffset = packet->ipOffset; // ipOffset will get reset
     packet->ipOffset = (uint8_t*)data - packet->pkt;
     packet->payloadOffset = packet->ipOffset + ip_hdr_len;
 
@@ -1085,8 +1100,8 @@ LOCAL MolochPacketRC moloch_packet_ether(MolochPacketBatch_t * batch, MolochPack
 #endif
         return MOLOCH_PACKET_CORRUPT;
     }
-
-    packet->ethOffset[packet->ethCount] = (uint8_t*)data - packet->pkt;
+    packet->vpnEtherOffset = packet->etherOffset; //we need to keep track of the current and the previous mac offset, we don't know if this is the last etherframe here
+    packet->etherOffset = (uint8_t*)data - packet->pkt;
 #ifdef DEBUG_PACKET
     char str[20];
     snprintf(str, sizeof(str), "%02x:%02x:%02x:%02x:%02x:%02x",
@@ -1097,7 +1112,7 @@ LOCAL MolochPacketRC moloch_packet_ether(MolochPacketBatch_t * batch, MolochPack
              data[4],
              data[5]);
 
-    LOG("moloch_packet_ether MAC A:%d, %s, %d", packet->ethCount, str, packet->ethOffset[packet->ethCount]);
+    LOG("moloch_packet_ether MAC A: %s, %d", str, packet->etherOffset );
     snprintf(str, sizeof(str), "%02x:%02x:%02x:%02x:%02x:%02x",
              data[6],
              data[7],
@@ -1105,17 +1120,11 @@ LOCAL MolochPacketRC moloch_packet_ether(MolochPacketBatch_t * batch, MolochPack
              data[9],
              data[10],
              data[11]);
-    LOG("moloch_packet_ether MAC B:%d, %s,%d", packet->ethCount, str, packet->ethOffset[packet->ethCount]);
+    LOG("moloch_packet_ether MAC B: %s, %d", str, packet->etherOffset );
 #endif
 
 
-    if (packet->ethCount < MOLOCH_ETHER_MAX_STORE && packet->ethCount<config.parseMaxMacAddresses){
-        packet->ethCount++; // don't move the counter beyond the maximum number of ethernet frames we store, just overwrite last frame
-    }
-    else if (!MULTI_MAC_WARNING_SHOWN){
-        LOG("Warning: more then %d ethernet frames found, overwriting the most inner (or edit config.parseMaxMacAddresses)", config.parseMaxMacAddresses);
-        MULTI_MAC_WARNING_SHOWN=1;
-    }
+
     int n = 12;
     while (n+2 < len) {
         int ethertype = data[n] << 8 | data[n+1];
@@ -1550,6 +1559,22 @@ void moloch_packet_init()
         "fieldECS", "destination.mac",
         (char *)NULL);
 
+    vpnmac1Field = moloch_field_define("general", "lotermfield",
+                                    "vpnmac.src", "Src VPNMAC", "source.vpnmac",
+                                    "Source ethernet vpn mac addresses set for session",
+                                    MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_ECS_CNT | MOLOCH_FIELD_FLAG_LINKED_SESSIONS | MOLOCH_FIELD_FLAG_NOSAVE,
+                                    "transform", "dash2Colon",
+                                    "fieldECS", "source.vpnmac",
+                                    (char *)NULL);
+
+    vpnmac2Field = moloch_field_define("general", "lotermfield",
+                                    "vpnmac.dst", "Dst VPN MAC", "destination.vpnmac",
+                                    "Destination ethernet vpn mac addresses set for session",
+                                    MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_ECS_CNT | MOLOCH_FIELD_FLAG_LINKED_SESSIONS | MOLOCH_FIELD_FLAG_NOSAVE,
+                                    "transform", "dash2Colon",
+                                    "fieldECS", "destination.vpnmac",
+                                    (char *)NULL);
+
     dscpField[0] = moloch_field_define("general", "integer",
         "dscp.src", "Src DSCP", "srcDscp",
         "Source non zero differentiated services class selector set for session",
@@ -1570,6 +1595,14 @@ void moloch_packet_init()
         "transform", "dash2Colon",
         (char *)NULL);
 
+    moloch_field_define("general", "lotermfield",
+                        "vpnmac", "Src or Dst VPN MAC", "vpnmacall",
+                        "Shorthand for vpnmac.src or vpnmac.dst",
+                        0,  MOLOCH_FIELD_FLAG_FAKE,
+                        "regex", "^vpnmac\\\\.(?:(?!\\\\.cnt$).)*$",
+                        "transform", "dash2Colon",
+                        (char *)NULL);
+
     oui1Field = moloch_field_define("general", "termfield",
         "oui.src", "Src OUI", "srcOui",
         "Source ethernet oui set for session",
@@ -1588,9 +1621,9 @@ void moloch_packet_init()
         MOLOCH_FIELD_TYPE_INT_GHASH,  MOLOCH_FIELD_FLAG_ECS_CNT | MOLOCH_FIELD_FLAG_LINKED_SESSIONS | MOLOCH_FIELD_FLAG_NOSAVE,
         (char *)NULL);
 
-    greIpField = moloch_field_define("general", "ip",
-        "gre.ip", "GRE IP", "greIp",
-        "GRE ip addresses for session",
+    vpnIpField = moloch_field_define("general", "ip",
+        "vpn.ip", "VPN IP", "vpnIp",
+        "VPN ip addresses for session",
         MOLOCH_FIELD_TYPE_IP_GHASH,  MOLOCH_FIELD_FLAG_CNT | MOLOCH_FIELD_FLAG_LINKED_SESSIONS,
         (char *)NULL);
 
