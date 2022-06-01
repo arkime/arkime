@@ -20,6 +20,11 @@ mixin clickableLabel(field, title)
       | Toggle #{title} in Info column
     b-dropdown-item(@click="fieldExists('" + field  + "', '==')")
       | Add #{title} EXISTS! to query
+    +clickableFieldActions(field, true)
+
+//- Display a clickable field action in the field menu
+mixin clickableFieldActions(fieldExpr, sep)
+  field-actions(:expr=`'${fieldExpr}'`, :separator=`${sep}`)
 
 mixin arrayPrint(container, field, expr)
   if ((container && container[field]))

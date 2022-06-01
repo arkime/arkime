@@ -210,9 +210,8 @@ class ArkimeUtil {
    */
   static missingResource (err, req, res, next) {
     res.status(404);
-    const msg = `Cannot locate resource requsted from ${req.path}`;
-    console.log(msg);
-    return res.send(msg);
+    console.log(`Cannot locate resource requsted from ${req.path}`);
+    return res.send('Cannot locate resource');
   }
 
   // express middleware to set req.settingUser to who to work on, depending if admin or not

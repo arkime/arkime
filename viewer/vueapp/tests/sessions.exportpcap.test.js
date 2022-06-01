@@ -7,7 +7,7 @@ import $ from 'jquery';
 import { render, fireEvent, waitFor } from '@testing-library/vue';
 import ExportPcap from '../src/components/sessions/ExportPcap.vue';
 import SessionsService from '../src/components/sessions/SessionsService';
-import { sessions } from './consts';
+import { sessions } from '../../../common/vueapp/tests/consts';
 
 global.$ = global.jQuery = $;
 

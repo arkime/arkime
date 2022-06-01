@@ -371,6 +371,11 @@
                       @click="pivot(header.dbField, header.exp)">
                       Pivot on {{ header.friendlyName }}
                     </b-dropdown-item>
+                    <!-- field actions -->
+                    <field-actions
+                      :separator="true"
+                      :expr="header.exp"
+                    />
                   </template> <!-- /single field column -->
                   <!-- multiple field column -->
                   <template v-else-if="header.children && header.type !== 'seconds'">
@@ -409,6 +414,11 @@
                           @click="pivot(child.dbField, child.exp)">
                           Pivot on {{ child.friendlyName }}
                         </b-dropdown-item>
+                        <!-- field actions -->
+                        <field-actions
+                          :expr="child.exp"
+                          :separator="false"
+                        />
                       </template>
                     </span>
                   </template> <!-- /multiple field column -->
@@ -563,6 +573,7 @@ import MolochSessionDetail from './SessionDetail';
 import MolochCollapsible from '../utils/CollapsibleWrapper';
 import MolochVisualizations from '../visualizations/Visualizations';
 import MolochStickySessions from './StickySessions';
+import FieldActions from './FieldActions';
 // import external
 import Sortable from 'sortablejs';
 
@@ -700,7 +711,8 @@ export default {
     MolochSessionDetail,
     MolochVisualizations,
     MolochStickySessions,
-    MolochCollapsible
+    MolochCollapsible,
+    FieldActions
   },
   data: function () {
     return {
@@ -734,6 +746,7 @@ export default {
   },
   created: function () {
     this.getSessionsConfig(); // IMPORTANT: kicks off the initial search query!
+    ConfigService.getFieldActions();
 
     // watch for window resizing and update the info column width
     // this is only registered when the user has not set widths for any

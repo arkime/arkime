@@ -95,7 +95,7 @@
                 class="form-control"
                 id="newGroupTitle"
                 placeholder="Group title"
-                v-focus-input="focusGroupInput"
+                v-focus="focusGroupInput"
               />
             </div>
           </div>
@@ -239,7 +239,7 @@
                     class="form-control"
                     id="editGroupTitle"
                     placeholder="Group title"
-                    v-focus-input="focusGroupInput"
+                    v-focus="focusGroupInput"
                   />
                 </div>
               </div>
@@ -278,7 +278,7 @@
                     class="form-control"
                     id="newClusterTitle"
                     placeholder="Cluster title"
-                    v-focus-input="focusClusterInput"
+                    v-focus="focusClusterInput"
                   />
                 </div>
               </div>
@@ -590,7 +590,7 @@
                         class="form-control form-control-sm"
                         id="newClusterTitle"
                         placeholder="Cluster title"
-                        v-focus-input="focusClusterInput"
+                        v-focus="focusClusterInput"
                       />
                     </div>
                     <div class="form-group">
@@ -722,7 +722,7 @@
 <script>
 import ParliamentService from './parliament.service';
 import Issue from './Issue';
-import { focusInput } from '@/components/utils';
+import Focus from '@/../../../common/vueapp/Focus';
 
 import Sortable from 'sortablejs';
 
@@ -737,7 +737,7 @@ export default {
     Issue
   },
   directives: {
-    focusInput
+    Focus
   },
   data: function () {
     return {

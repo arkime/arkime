@@ -1,0 +1,138 @@
+{
+   "sessions3" : [
+      {
+         "body" : {
+            "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 30
+            },
+            "destination" : {
+               "bytes" : 489,
+               "ip" : "10.16.27.131",
+               "mac" : [
+                  "aa:aa:aa:aa:aa:a1",
+                  "bb:bb:bb:bb:bb:b1"
+               ],
+               "mac-cnt" : 2,
+               "packets" : 3,
+               "port" : 80
+            },
+            "dstPayload8" : "485454502f312e31",
+            "fileId" : [],
+            "firstPacket" : 1652950005864,
+            "greASN" : [
+               "AS16509 Amazon.com, Inc.",
+               "AS16509 Amazon.com, Inc."
+            ],
+            "greGEO" : [
+               "US",
+               "US"
+            ],
+            "greIp" : [
+               "100.20.9.1",
+               "100.20.9.2"
+            ],
+            "greIpCnt" : 2,
+            "greRIR" : [
+               "ARIN",
+               "ARIN"
+            ],
+            "http" : {
+               "md5" : [
+                  "f73d2a4f4331dc56920d51fe6ba8ebc9"
+               ],
+               "md5Cnt" : 1,
+               "serverVersion" : [
+                  "1.1"
+               ],
+               "serverVersionCnt" : 1,
+               "sha256" : [
+                  "37f481d025d06cada595431200f7406b368918401a14fb4d3b4b3777c5ff9a4e"
+               ],
+               "sha256Cnt" : 1,
+               "statuscode" : [
+                  200
+               ],
+               "statuscodeCnt" : 1,
+               "uri" : [
+                  "/Hello"
+               ],
+               "uriCnt" : 1
+            },
+            "initRTT" : 1,
+            "ipProtocol" : 6,
+            "lastPacket" : 1652950005876,
+            "length" : 11,
+            "network" : {
+               "bytes" : 1135,
+               "community_id" : "1:vJGJyvSGPn66/zbr0DiR1fCFooo=",
+               "packets" : 7
+            },
+            "node" : "test",
+            "packetLen" : [
+               170,
+               170,
+               170,
+               200,
+               197,
+               170,
+               170
+            ],
+            "packetPos" : [
+               24,
+               194,
+               364,
+               534,
+               734,
+               931,
+               1101
+            ],
+            "protocol" : [
+               "gre",
+               "http",
+               "tcp",
+               "vxlan-gpe"
+            ],
+            "protocolCnt" : 4,
+            "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 27
+            },
+            "source" : {
+               "bytes" : 646,
+               "ip" : "10.16.27.12",
+               "mac" : [
+                  "aa:aa:aa:aa:aa:a1",
+                  "bb:bb:bb:bb:bb:b1"
+               ],
+               "mac-cnt" : 2,
+               "packets" : 4,
+               "port" : 65174
+            },
+            "srcPayload8" : "474554202f48656c",
+            "tags" : [
+               "gretest-erspan-vxlan"
+            ],
+            "tagsCnt" : 1,
+            "tcpflags" : {
+               "ack" : 2,
+               "dstZero" : 0,
+               "fin" : 2,
+               "psh" : 1,
+               "rst" : 0,
+               "srcZero" : 0,
+               "syn" : 1,
+               "syn-ack" : 1,
+               "urg" : 0
+            },
+            "totDataBytes" : 57
+         },
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions3-220519"
+            }
+         }
+      }
+   ]
+}
+

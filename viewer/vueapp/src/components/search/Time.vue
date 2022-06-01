@@ -21,9 +21,9 @@
           tabindex="3"
           role="listbox"
           v-model="timeRange"
+          v-focus="focusTimeRange"
           @change="changeTimeRange"
           @blur="onOffTimeRangeFocus"
-          v-focus-input="focusTimeRange"
           class="form-control time-range-control">
           <option value="1">Last hour</option>
           <option value="6"
@@ -245,7 +245,7 @@
 </template>
 
 <script>
-import FocusInput from '../utils/FocusInput';
+import Focus from '../../../../../common/vueapp/Focus';
 
 import datePicker from 'vue-bootstrap-datetimepicker';
 import moment from 'moment-timezone';
@@ -259,7 +259,7 @@ let stopDateCheck;
 export default {
   name: 'MolochTime',
   components: { datePicker },
-  directives: { FocusInput },
+  directives: { Focus },
   props: [
     'timezone',
     'hideBounding',

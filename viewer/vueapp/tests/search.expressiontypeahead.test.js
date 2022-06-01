@@ -12,7 +12,7 @@ import ExpressionTypeahead from '../src/components/search/ExpressionTypeahead.vu
 import UserService from '../src/components/users/UserService';
 import FieldService from '../src/components/search/FieldService';
 import countries from '../src/components/search/countries.json';
-const { fields, fieldsMap } = require('./consts');
+const { fields, fieldsMap } = require('../../../common/vueapp/tests/consts');
 
 console.info = jest.fn(); // don't display console.info messages
 

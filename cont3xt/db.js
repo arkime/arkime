@@ -1,5 +1,5 @@
 /******************************************************************************/
-/* db.js  -- ES DB Interface
+/* db.js  -- Cont3xt DB Interface
  *
  * Copyright Yahoo Inc.
  *
@@ -29,7 +29,7 @@ class Db {
 
   static async initialize (options) {
     if (options.debug > 1) {
-      console.log('Auth.initialize', options);
+      console.log('Db.initialize', options);
     }
 
     Db.debug = options.debug;

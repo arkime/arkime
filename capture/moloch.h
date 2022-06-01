@@ -939,7 +939,7 @@ void moloch_parsers_initial_tag(MolochSession_t *session);
 unsigned char *moloch_parsers_asn_get_tlv(BSB *bsb, uint32_t *apc, uint32_t *atag, uint32_t *alen);
 int moloch_parsers_asn_get_sequence(MolochASNSeq_t *seqs, int maxSeq, const unsigned char *data, int len, gboolean wrapper);
 const char *moloch_parsers_asn_sequence_to_string(MolochASNSeq_t *seq, int *len);
-void moloch_parsers_asn_decode_oid(char *buf, int bufsz, unsigned char *oid, int len);
+void moloch_parsers_asn_decode_oid(char *buf, int bufsz, const unsigned char *oid, int len);
 uint64_t moloch_parsers_asn_parse_time(MolochSession_t *session, int tag, unsigned char* value, int len);
 void moloch_parsers_classify_tcp(MolochSession_t *session, const unsigned char *data, int remaining, int which);
 void moloch_parsers_classify_udp(MolochSession_t *session, const unsigned char *data, int remaining, int which);
@@ -1379,21 +1379,6 @@ void moloch_rules_run_after_classify(MolochSession_t *session);
 void moloch_rules_run_before_save(MolochSession_t *session, int final);
 void moloch_rules_stats();
 void moloch_rules_exit();
-
-/******************************************************************************/
-/*
- * trie.c
- */
-void moloch_trie_init(MolochTrie_t *trie);
-MolochTrieNode_t *moloch_trie_add_node(MolochTrieNode_t *node, const char key);
-void moloch_trie_add_forward(MolochTrie_t *trie, const char *key, const int len, void *data);
-void moloch_trie_add_reverse(MolochTrie_t *trie, const char *key, const int len, void *data);
-void *moloch_trie_get_forward(MolochTrie_t *trie, const char *key, const int len);
-void *moloch_trie_get_reverse(MolochTrie_t *trie, const char *key, const int len);
-void *moloch_trie_best_forward(MolochTrie_t *trie, const char *key, const int len);
-void *moloch_trie_best_reverse(MolochTrie_t *trie, const char *key, const int len);
-void *moloch_trie_del_forward(MolochTrie_t *trie, const char *key, const int len);
-void *moloch_trie_del_reverse(MolochTrie_t *trie, const char *key, const int len);
 
 /******************************************************************************/
 /*

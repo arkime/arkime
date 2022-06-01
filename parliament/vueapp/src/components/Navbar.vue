@@ -110,7 +110,7 @@
               tabindex="2"
               type="password"
               v-model="password"
-              v-focus-input="focusPassInput"
+              v-focus="focusPassInput"
               placeholder="password please"
               autocomplete="password"
               :class="{'hide-login':!showLoginInput,'show-login':showLoginInput}"
@@ -146,13 +146,13 @@
 
 <script>
 import AuthService from '@/auth';
-import { focusInput } from '@/components/utils';
+import Focus from '@/../../../common/vueapp/Focus';
 import Version from '@/../../../common/vueapp/Version';
 
 export default {
   name: 'ParliamentNavbar',
   components: { Version },
-  directives: { focusInput },
+  directives: { Focus },
   data: function () {
     return {
       // login error

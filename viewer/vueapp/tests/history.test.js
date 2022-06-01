@@ -13,7 +13,7 @@ import HasPermission from '../src/components/utils/HasPermission.vue';
 import HasRole from '../../../common/vueapp/HasRole.vue';
 import '../src/filters.js';
 import '../../../common/vueapp/vueFilters';
-const { histories, userWithSettings } = require('./consts');
+const { histories, userWithSettings } = require('../../../common/vueapp/tests/consts');
 
 console.info = jest.fn(); // ignore tooltip warnings
 

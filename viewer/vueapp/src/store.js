@@ -53,7 +53,8 @@ const store = new Vuex.Store({
     stickySessionsBtn: false,
     showCapStartTimes: true,
     capStartTimes: [{ nodeName: 'none', startTime: 1 }],
-    roles: []
+    roles: [],
+    fieldActions: {}
   },
   getters: {
     sessionsTableState (state) {
@@ -61,6 +62,9 @@ const store = new Vuex.Store({
         state.sessionsTableState = Utils.getDefaultTableState();
       }
       return state.sessionsTableState;
+    },
+    getFieldActions (state) {
+      return state.fieldActions;
     }
   },
   mutations: {
@@ -253,6 +257,9 @@ const store = new Vuex.Store({
     },
     setForcedAggregations (state, value) {
       state.forcedAggregations = value;
+    },
+    setFieldActions (state, value) {
+      state.fieldActions = value;
     }
   }
 });

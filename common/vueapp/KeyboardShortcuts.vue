@@ -1,15 +1,17 @@
 <template>
-  <div>
+  <div data-testid="shortcut-test">
     <!-- shortcuts help display -->
     <transition :name="shortcutsHelpTransition">
       <div
         v-if="displayHelp"
         id="shortcutsHelp"
         class="shortcuts-help"
-        :class="shortcutsClass">
+        :class="shortcutsClass"
+        data-testid="shortcuts-help-content">
         <div class="pl-2 pt-1 pb-1">
           <!-- close shortcuts help -->
           <a @click="close"
+            title="Close shortcuts help"
             class="pull-right mr-2 cursor-pointer">
             <span class="fa fa-close" />
           </a>
@@ -23,6 +25,7 @@
       <div @click="open"
         class="cursor-pointer"
         :class="shortcutsClass"
+          title="Display shortcuts help"
         v-if="shiftHold && !displayHelp">
         <span class="fa fa-question fa-fw" />
       </div>

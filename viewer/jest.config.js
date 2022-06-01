@@ -4,6 +4,9 @@
  */
 
 module.exports = {
+  name: 'unit',
+  displayName: 'Arkime Unit Tests',
+  rootDir: './',
   // All imported modules in your tests should be mocked automatically
   // automock: false,
 

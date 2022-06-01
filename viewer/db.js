@@ -1559,8 +1559,11 @@ exports.numberOfDocuments = async (index, options) => {
 exports.checkVersion = async function (minVersion, checkUsers) {
   const match = process.versions.node.match(/^(\d+)\.(\d+)\.(\d+)/);
   const nodeVersion = parseInt(match[1], 10) * 10000 + parseInt(match[2], 10) * 100 + parseInt(match[3], 10);
-  if (nodeVersion < 81200) {
-    console.log(`ERROR - Need at least node 8.12.0, currently using ${process.version}`);
+  if (nodeVersion < 160000) {
+    console.log(`ERROR - Need node 16.x, currently using ${process.version}`);
+    process.exit(1);
+  } else if (nodeVersion >= 180000) {
+    console.log(`ERROR - Node version ${process.version} is not supported, please use node 16.x`);
     process.exit(1);
   }
 

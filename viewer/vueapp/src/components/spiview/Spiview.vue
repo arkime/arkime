@@ -271,6 +271,10 @@
                               @click="openSpiGraph(field.dbField)">
                               Open {{ field.friendlyName }} SPI Graph
                             </b-dropdown-item>
+                            <field-actions
+                              :separator="true"
+                              :expr="field.exp"
+                            />
                           </b-dropdown>
                         </span>
                       </template>
@@ -319,6 +323,10 @@
                           @click="pivot(value)">
                           Pivot on {{ value.field.friendlyName }}
                         </b-dropdown-item>
+                        <field-actions
+                          :separator="true"
+                          :expr="value.field.exp"
+                        />
                       </b-dropdown> <!-- spiview field label button -->
                       <!-- spiview field data -->
                       <span v-if="value && value.value && value.value.buckets">
@@ -390,6 +398,7 @@
 import Vue from 'vue';
 
 import SessionsService from '../sessions/SessionsService';
+import ConfigService from '../utils/ConfigService';
 import FieldService from '../search/FieldService';
 import UserService from '../users/UserService';
 
@@ -397,6 +406,7 @@ import MolochError from '../utils/Error';
 import MolochSearch from '../search/Search';
 import MolochVisualizations from '../visualizations/Visualizations';
 import MolochCollapsible from '../utils/CollapsibleWrapper';
+import FieldActions from '../sessions/FieldActions';
 
 // import utils
 import Utils from '../utils/utils';
@@ -422,7 +432,8 @@ export default {
     MolochError,
     MolochSearch,
     MolochVisualizations,
-    MolochCollapsible
+    MolochCollapsible,
+    FieldActions
   },
   data: function () {
     return {
@@ -497,6 +508,8 @@ export default {
     } else {
       this.issueQueries();
     }
+
+    ConfigService.getFieldActions();
   },
   methods: {
     /* exposed page functions ---------------------------------------------- */

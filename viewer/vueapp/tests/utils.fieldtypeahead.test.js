@@ -4,7 +4,7 @@ import { render, fireEvent, waitFor } from '@testing-library/vue';
 import FieldTypeahead from '../src/components/utils/FieldTypeahead.vue';
 import UserService from '../src/components/users/UserService';
 import '../src/filters.js';
-const { fields } = require('./consts');
+const { fields } = require('../../../common/vueapp/tests/consts');
 
 console.info = jest.fn(); // don't display console.info messages
 

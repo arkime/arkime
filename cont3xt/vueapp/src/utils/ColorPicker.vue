@@ -3,11 +3,14 @@
     ref="colorpicker"
     @keyup.esc="hidePicker"
     class="color-picker-input">
-    <div class="input-group-append cursor-pointer color"
-      @click="togglePicker">
+    <div
+      @click="togglePicker"
+      data-testid="picker-btn"
+      class="input-group-append cursor-pointer color">
       <span
         style="width: 60px;"
         class="input-group-text"
+        data-testid="color-display"
         :style="{'background-color':colorValue}">
         &nbsp;&nbsp;
         <span v-if="displayPicker"
@@ -16,10 +19,12 @@
         &nbsp;&nbsp;
       </span>
     </div>
-    <chrome-picker v-model="colorValue"
+    <chrome-picker
+      v-model="colorValue"
       v-if="displayPicker"
       class="color-picker"
-      @input="changeColor">
+      @input="changeColor"
+      data-testid="picker">
     </chrome-picker>
   </span>
 </template>
@@ -28,7 +33,7 @@
 import VueColor from 'vue-color';
 
 export default {
-  name: 'Settings',
+  name: 'ColorPicker',
   components: {
     'chrome-picker': VueColor.Chrome
   },

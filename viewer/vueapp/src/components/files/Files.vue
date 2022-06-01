@@ -20,7 +20,7 @@
               <input type="text"
                 class="form-control"
                 v-model="query.filter"
-                v-focus-input="focusInput"
+                v-focus="focusInput"
                 @blur="onOffFocus"
                 @input="searchForFiles"
                 @keydown.enter="searchForFiles"
@@ -87,8 +87,8 @@ import MolochError from '../utils/Error';
 import MolochLoading from '../utils/Loading';
 import MolochTable from '../utils/Table';
 import MolochCollapsible from '../utils/CollapsibleWrapper';
-import FocusInput from '../utils/FocusInput';
 import FileService from './FileService';
+import Focus from '../../../../../common/vueapp/Focus';
 
 let searchInputTimeout; // timeout to debounce the search input
 
@@ -101,7 +101,7 @@ export default {
     MolochTable,
     MolochCollapsible
   },
-  directives: { FocusInput },
+  directives: { Focus },
   data: function () {
     return {
       error: '',

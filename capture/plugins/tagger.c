@@ -335,7 +335,7 @@ LOCAL void tagger_plugin_exit()
 }
 
 /******************************************************************************/
-LOCAL void tagger_remove_file(GPtrArray *infos, TaggerFile_t *file)
+LOCAL void tagger_remove_file(GPtrArray *infos, const TaggerFile_t *file)
 {
     int f;
     for (f = 0; f < (int)infos->len; f++) {

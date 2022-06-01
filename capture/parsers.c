@@ -482,7 +482,7 @@ const char *moloch_parsers_asn_sequence_to_string(MolochASNSeq_t *seq, int *len)
     return ivalue;
 }
 /******************************************************************************/
-void moloch_parsers_asn_decode_oid(char *buf, int bufsz, unsigned char *oid, int len) {
+void moloch_parsers_asn_decode_oid(char *buf, int bufsz, const unsigned char *oid, int len) {
     int buflen = 0;
     int pos = 0;
     int first = TRUE;
@@ -875,9 +875,8 @@ char *moloch_sprint_hex_string(char *buf, const unsigned char* data, unsigned in
 /******************************************************************************/
 void  moloch_parsers_register2(MolochSession_t *session, MolochParserFunc func, void *uw, MolochParserFreeFunc ffunc, MolochParserSaveFunc sfunc)
 {
-    char ipStr[200];
-
     if (session->parserNum > 30) {
+        char ipStr[200];
         moloch_session_pretty_string(session, ipStr, sizeof(ipStr));
         LOG("WARNING - Too many parsers registered: %d %s", session->parserNum, ipStr);
         return;

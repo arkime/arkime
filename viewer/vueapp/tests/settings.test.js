@@ -18,7 +18,7 @@ import '../../../common/vueapp/vueFilters';
 const {
   userSettings, userWithSettings, views, periodicQueries, fields, notifiers,
   notifierTypes, shortcuts, users, fieldsMap
-} = require('./consts');
+} = require('../../../common/vueapp/tests/consts');
 
 console.info = jest.fn(); // ignore vue dev mode info
 

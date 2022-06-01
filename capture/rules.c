@@ -383,13 +383,13 @@ LOCAL void moloch_rules_load_add_field_range_match(MolochRule_t *rule, int pos, 
     uint32_t min = atoi(key);
     uint32_t max = atoi(dash+1);
     if (min > max)
-        CONFIGEXIT("Min %d > Max %d not allowed", min, max);
+        CONFIGEXIT("Min %u > Max %u not allowed", min, max);
 
     // If the range is small convert back to non range.
     if (max - min < 20) {
         char str[30];
         for (;min <= max; min++) {
-            snprintf(str, sizeof(str), "%d", min);
+            snprintf(str, sizeof(str), "%u", min);
             moloch_rules_load_add_field(rule, pos, str);
         }
         return;

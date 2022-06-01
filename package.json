@@ -7,6 +7,7 @@
   },
   "dependencies": {
     "@elastic/elasticsearch": "7.10.0",
+    "arkime-notifme-sdk": "^1.11.1",
     "async": "^3.2.3",
     "axios": "^0.21.4",
     "better-sqlite3": "^7.5.0",
@@ -30,7 +31,6 @@
     "memjs": "^1.3.0",
     "moment": "^2.29.2",
     "morgan": "^1.10.0",
-    "notifme-sdk": "^1.11.0",
     "on-headers": "^1.0.2",
     "passport": "^0.3.2",
     "passport-http": "^0.3.0",
@@ -91,7 +91,8 @@
     "wise:dev": "(cd wiseService && NODE_ENV=development nodemon wiseService.js -c ../tests/config.test.json --webconfig) & webpack --watch --progress --config wiseService/vueapp/build/webpack.dev.conf.js",
     "wise:devdebug": "(cd wiseService && NODE_ENV=development nodemon wiseService.js -c ../tests/config.test.json --webconfig --debug --debug) & webpack --watch --progress --config wiseService/vueapp/build/webpack.dev.conf.js",
     "common:doc": "jsdoc2md --partial jsdoc/*.hbs --helper jsdoc/dochelpers.js --files common/*.js > ../arkimeweb/_wiki/api_common_docs.md",
-    "test": "cd viewer && jest"
+    "common:testui": "cd common && jest",
+    "test": "(cd common && jest) && (cd viewer && jest) && (cd cont3xt && jest)"
   },
   "devDependencies": {
     "@babel/core": "^7.12.17",
@@ -159,5 +160,9 @@
     "webpack-cli": "^4.8.0",
     "webpack-dev-server": "^4.3.1",
     "webpack-merge": "^5.7.3"
+  },
+  "engines": {
+    "node": ">= 16.0.0 < 18",
+    "npm": ">= 3.0.0"
   }
 }

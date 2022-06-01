@@ -41,7 +41,7 @@
                 @input="debounceSearch"
                 class="form-control"
                 v-model="searchTerm"
-                v-focus-input="focusInput"
+                v-focus="focusInput"
                 @blur="onOffFocus"
                 placeholder="Search for history in the table below"
               />
@@ -345,10 +345,10 @@ import MolochLoading from '../utils/Loading';
 import MolochError from '../utils/Error';
 import ToggleBtn from '../../../../../common/vueapp/ToggleBtn';
 import MolochTime from '../search/Time';
-import FocusInput from '../utils/FocusInput';
 import MolochToast from '../utils/Toast';
 import MolochCollapsible from '../utils/CollapsibleWrapper';
 import HistoryService from './HistoryService';
+import Focus from '../../../../../common/vueapp/Focus';
 
 let searchInputTimeout; // timeout to debounce the search input
 
@@ -363,7 +363,7 @@ export default {
     MolochToast,
     MolochCollapsible
   },
-  directives: { FocusInput },
+  directives: { Focus },
   data: function () {
     return {
       error: '',
