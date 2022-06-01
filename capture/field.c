@@ -1044,7 +1044,7 @@ gboolean moloch_field_ip6_add(int pos, MolochSession_t *session, const uint8_t *
     if (info->flags & MOLOCH_FIELD_FLAG_DISABLED || pos >= session->maxFields)
         return FALSE;
 
-    struct in6_addr *v = g_memdup(val, sizeof(struct in6_addr));
+    struct in6_addr *v = g_memdup2(val, sizeof(struct in6_addr));
 
     if (!session->fields[pos]) {
         field = MOLOCH_TYPE_ALLOC(MolochField_t);
@@ -1215,7 +1215,6 @@ void moloch_field_macoui_add(MolochSession_t *session, int macField, int ouiFiel
             mac[3],
             mac[4],
             mac[5]);
-
     if (moloch_field_string_add(macField, session, str, 17, TRUE))
         moloch_db_oui_lookup(ouiField, session, mac);
 }

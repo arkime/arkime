@@ -27,23 +27,6 @@
             "dstRIR" : "ARIN",
             "fileId" : [],
             "firstPacket" : 1055289968793,
-            "greASN" : [
-               "---",
-               "AS11590 Cumberland Technologies International"
-            ],
-            "greGEO" : [
-               "---",
-               "US"
-            ],
-            "greIp" : [
-               "172.27.1.66",
-               "66.59.109.137"
-            ],
-            "greIpCnt" : 2,
-            "greRIR" : [
-               "ARIN",
-               "ARIN"
-            ],
             "icmp" : {
                "code" : [
                   0,
@@ -125,7 +108,24 @@
                "gretest-sample"
             ],
             "tagsCnt" : 1,
-            "totDataBytes" : 650
+            "totDataBytes" : 650,
+            "vpnASN" : [
+               "---",
+               "AS11590 Cumberland Technologies International"
+            ],
+            "vpnGEO" : [
+               "---",
+               "US"
+            ],
+            "vpnIp" : [
+               "172.27.1.66",
+               "66.59.109.137"
+            ],
+            "vpnIpCnt" : 2,
+            "vpnRIR" : [
+               "ARIN",
+               "ARIN"
+            ]
          },
          "header" : {
             "index" : {
@@ -167,23 +167,6 @@
             "dstRIR" : "ARIN",
             "fileId" : [],
             "firstPacket" : 1055289973849,
-            "greASN" : [
-               "---",
-               "AS11590 Cumberland Technologies International"
-            ],
-            "greGEO" : [
-               "---",
-               "US"
-            ],
-            "greIp" : [
-               "172.27.1.66",
-               "66.59.109.137"
-            ],
-            "greIpCnt" : 2,
-            "greRIR" : [
-               "ARIN",
-               "ARIN"
-            ],
             "ipProtocol" : 17,
             "lastPacket" : 1055289973923,
             "length" : 74,
@@ -245,7 +228,24 @@
                "gretest-sample"
             ],
             "tagsCnt" : 1,
-            "totDataBytes" : 96
+            "totDataBytes" : 96,
+            "vpnASN" : [
+               "---",
+               "AS11590 Cumberland Technologies International"
+            ],
+            "vpnGEO" : [
+               "---",
+               "US"
+            ],
+            "vpnIp" : [
+               "172.27.1.66",
+               "66.59.109.137"
+            ],
+            "vpnIpCnt" : 2,
+            "vpnRIR" : [
+               "ARIN",
+               "ARIN"
+            ]
          },
          "header" : {
             "index" : {
@@ -277,23 +277,6 @@
             "dstRIR" : "ARIN",
             "fileId" : [],
             "firstPacket" : 1055289978756,
-            "greASN" : [
-               "---",
-               "AS11590 Cumberland Technologies International"
-            ],
-            "greGEO" : [
-               "---",
-               "US"
-            ],
-            "greIp" : [
-               "172.27.1.66",
-               "66.59.109.137"
-            ],
-            "greIpCnt" : 2,
-            "greRIR" : [
-               "ARIN",
-               "ARIN"
-            ],
             "initRTT" : 22,
             "ipProtocol" : 6,
             "lastPacket" : 1055289981914,
@@ -422,7 +405,24 @@
                "syn-ack" : 1,
                "urg" : 0
             },
-            "totDataBytes" : 2623
+            "totDataBytes" : 2623,
+            "vpnASN" : [
+               "---",
+               "AS11590 Cumberland Technologies International"
+            ],
+            "vpnGEO" : [
+               "---",
+               "US"
+            ],
+            "vpnIp" : [
+               "172.27.1.66",
+               "66.59.109.137"
+            ],
+            "vpnIpCnt" : 2,
+            "vpnRIR" : [
+               "ARIN",
+               "ARIN"
+            ]
          },
          "header" : {
             "index" : {
@@ -471,23 +471,6 @@
             "dstRIR" : "ARIN",
             "fileId" : [],
             "firstPacket" : 1055289987055,
-            "greASN" : [
-               "---",
-               "AS11590 Cumberland Technologies International"
-            ],
-            "greGEO" : [
-               "---",
-               "US"
-            ],
-            "greIp" : [
-               "172.27.1.66",
-               "66.59.109.137"
-            ],
-            "greIpCnt" : 2,
-            "greRIR" : [
-               "ARIN",
-               "ARIN"
-            ],
             "ipProtocol" : 17,
             "lastPacket" : 1055289992056,
             "length" : 5001,
@@ -545,7 +528,24 @@
                "gretest-sample"
             ],
             "tagsCnt" : 1,
-            "totDataBytes" : 66
+            "totDataBytes" : 66,
+            "vpnASN" : [
+               "---",
+               "AS11590 Cumberland Technologies International"
+            ],
+            "vpnGEO" : [
+               "---",
+               "US"
+            ],
+            "vpnIp" : [
+               "172.27.1.66",
+               "66.59.109.137"
+            ],
+            "vpnIpCnt" : 2,
+            "vpnRIR" : [
+               "ARIN",
+               "ARIN"
+            ]
          },
          "header" : {
             "index" : {
@@ -587,23 +587,6 @@
             "dstRIR" : "ARIN",
             "fileId" : [],
             "firstPacket" : 1055289992849,
-            "greASN" : [
-               "---",
-               "AS11590 Cumberland Technologies International"
-            ],
-            "greGEO" : [
-               "---",
-               "US"
-            ],
-            "greIp" : [
-               "172.27.1.66",
-               "66.59.109.137"
-            ],
-            "greIpCnt" : 2,
-            "greRIR" : [
-               "ARIN",
-               "ARIN"
-            ],
             "ipProtocol" : 17,
             "lastPacket" : 1055289992905,
             "length" : 56,
@@ -665,7 +648,24 @@
                "gretest-sample"
             ],
             "tagsCnt" : 1,
-            "totDataBytes" : 96
+            "totDataBytes" : 96,
+            "vpnASN" : [
+               "---",
+               "AS11590 Cumberland Technologies International"
+            ],
+            "vpnGEO" : [
+               "---",
+               "US"
+            ],
+            "vpnIp" : [
+               "172.27.1.66",
+               "66.59.109.137"
+            ],
+            "vpnIpCnt" : 2,
+            "vpnRIR" : [
+               "ARIN",
+               "ARIN"
+            ]
          },
          "header" : {
             "index" : {
@@ -707,23 +707,6 @@
             "dstRIR" : "ARIN",
             "fileId" : [],
             "firstPacket" : 1055289996849,
-            "greASN" : [
-               "---",
-               "AS11590 Cumberland Technologies International"
-            ],
-            "greGEO" : [
-               "---",
-               "US"
-            ],
-            "greIp" : [
-               "172.27.1.66",
-               "66.59.109.137"
-            ],
-            "greIpCnt" : 2,
-            "greRIR" : [
-               "ARIN",
-               "ARIN"
-            ],
             "ipProtocol" : 17,
             "lastPacket" : 1055289996921,
             "length" : 72,
@@ -785,7 +768,24 @@
                "gretest-sample"
             ],
             "tagsCnt" : 1,
-            "totDataBytes" : 96
+            "totDataBytes" : 96,
+            "vpnASN" : [
+               "---",
+               "AS11590 Cumberland Technologies International"
+            ],
+            "vpnGEO" : [
+               "---",
+               "US"
+            ],
+            "vpnIp" : [
+               "172.27.1.66",
+               "66.59.109.137"
+            ],
+            "vpnIpCnt" : 2,
+            "vpnRIR" : [
+               "ARIN",
+               "ARIN"
+            ]
          },
          "header" : {
             "index" : {

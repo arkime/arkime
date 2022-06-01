@@ -23,7 +23,7 @@
 #include <errno.h>
 #include "pcap.h"
 
-#define DEBUG_PACKET
+//#define DEBUG_PACKET
 
 /******************************************************************************/
 extern MolochConfig_t        config;
@@ -352,7 +352,7 @@ LOCAL void moloch_packet_process(MolochPacket_t *packet, int thread)
         if (packet->vlan)
             moloch_field_int_add(vlanField, session, packet->vlan);
 
-        if (packet->vpnEtherOffset != 0 && packet->vpnEtherOffset!=packet->etherOffset) {
+        if (packet->etherOffset!=0 && packet->vpnEtherOffset!=packet->etherOffset) {
                 if (packet->direction == 1) {
                     moloch_field_macoui_add(session, vpnmac1Field, vpnoui1Field, packet->pkt + packet->vpnEtherOffset);
                     moloch_field_macoui_add(session, vpnmac2Field, vpnoui2Field, packet->pkt + packet->vpnEtherOffset + 6);
@@ -361,7 +361,7 @@ LOCAL void moloch_packet_process(MolochPacket_t *packet, int thread)
                     moloch_field_macoui_add(session, vpnmac1Field, vpnoui1Field, packet->pkt + packet->vpnEtherOffset + 6);
                 }
         }
-        if(packet->vpnIpOffset != 0 && packet->vpnIpOffset!=packet->ipOffset) {
+        if(packet->vpnIpOffset!=0 && packet->vpnIpOffset!=packet->ipOffset) {
             if (packet->vpnv6 == 0) {
                 ip4 = (struct ip *) (packet->pkt + packet->vpnIpOffset);
                 moloch_field_ip4_add(vpnIpField, session, ip4->ip_src.s_addr);
@@ -1614,6 +1614,18 @@ void moloch_packet_init()
         "Destination ethernet oui set for session",
         MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT | MOLOCH_FIELD_FLAG_LINKED_SESSIONS,
         (char *)NULL);
+
+    vpnoui1Field = moloch_field_define("general", "termfield",
+                                    "vpnoui.src", "Src VPN OUI", "srcvpnOui",
+                                    "Source ethernet vpn oui set for session",
+                                    MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT | MOLOCH_FIELD_FLAG_LINKED_SESSIONS,
+                                    (char *)NULL);
+
+    vpnoui2Field = moloch_field_define("general", "termfield",
+                                    "vpnoui.dst", "Dst VPN OUI", "dstvpnOui",
+                                    "Destination ethernet oui set for session",
+                                    MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT | MOLOCH_FIELD_FLAG_LINKED_SESSIONS,
+                                    (char *)NULL);
 
     vlanField = moloch_field_define("general", "integer",
         "vlan", "VLan", "network.vlan.id",

@@ -13,18 +13,21 @@
                },
                "ip" : "30.0.0.2",
                "mac" : [
-                  "00:1b:21:3c:ac:30",
                   "fe:71:d8:83:72:4f"
                ],
-               "mac-cnt" : 2,
+               "mac-cnt" : 1,
                "packets" : 3,
-               "port" : 0
+               "port" : 0,
+               "vpnmac" : [
+                  "00:1b:21:3c:ac:30"
+               ],
+               "vpnmac-cnt" : 1
             },
-            "dstOui" : [
+            "dstRIR" : "ARIN",
+            "dstvpnOui" : [
                "Intel Corporate"
             ],
-            "dstOuiCnt" : 1,
-            "dstRIR" : "ARIN",
+            "dstvpnOuiCnt" : 1,
             "fileId" : [],
             "firstPacket" : 1422828273817,
             "icmp" : {
@@ -76,19 +79,39 @@
                },
                "ip" : "30.0.0.1",
                "mac" : [
-                  "00:1b:21:3c:ab:64",
                   "b6:9e:d2:49:51:48"
                ],
-               "mac-cnt" : 2,
+               "mac-cnt" : 1,
                "packets" : 3,
-               "port" : 0
+               "port" : 0,
+               "vpnmac" : [
+                  "00:1b:21:3c:ab:64"
+               ],
+               "vpnmac-cnt" : 1
             },
-            "srcOui" : [
+            "srcRIR" : "ARIN",
+            "srcvpnOui" : [
                "Intel Corporate"
             ],
-            "srcOuiCnt" : 1,
-            "srcRIR" : "ARIN",
-            "totDataBytes" : 384
+            "srcvpnOuiCnt" : 1,
+            "totDataBytes" : 384,
+            "vpnASN" : [
+               "AS8075 Microsoft Corporation",
+               "AS8075 Microsoft Corporation"
+            ],
+            "vpnGEO" : [
+               "US",
+               "US"
+            ],
+            "vpnIp" : [
+               "20.0.0.1",
+               "20.0.0.2"
+            ],
+            "vpnIpCnt" : 2,
+            "vpnRIR" : [
+               "ARIN",
+               "ARIN"
+            ]
          },
          "header" : {
             "index" : {
@@ -109,19 +132,22 @@
                },
                "ip" : "30.0.0.1",
                "mac" : [
-                  "00:1b:21:3c:ab:64",
                   "b6:9e:d2:49:51:48"
                ],
-               "mac-cnt" : 2,
+               "mac-cnt" : 1,
                "packets" : 16,
-               "port" : 22
+               "port" : 22,
+               "vpnmac" : [
+                  "00:1b:21:3c:ab:64"
+               ],
+               "vpnmac-cnt" : 1
             },
-            "dstOui" : [
-               "Intel Corporate"
-            ],
-            "dstOuiCnt" : 1,
             "dstPayload8" : "5353482d322e302d",
             "dstRIR" : "ARIN",
+            "dstvpnOui" : [
+               "Intel Corporate"
+            ],
+            "dstvpnOuiCnt" : 1,
             "fileId" : [],
             "firstPacket" : 1422828273999,
             "initRTT" : 0,
@@ -221,19 +247,22 @@
                },
                "ip" : "30.0.0.2",
                "mac" : [
-                  "00:1b:21:3c:ac:30",
                   "fe:71:d8:83:72:4f"
                ],
-               "mac-cnt" : 2,
+               "mac-cnt" : 1,
                "packets" : 17,
-               "port" : 51225
+               "port" : 51225,
+               "vpnmac" : [
+                  "00:1b:21:3c:ac:30"
+               ],
+               "vpnmac-cnt" : 1
             },
-            "srcOui" : [
-               "Intel Corporate"
-            ],
-            "srcOuiCnt" : 1,
             "srcPayload8" : "5353482d322e302d",
             "srcRIR" : "ARIN",
+            "srcvpnOui" : [
+               "Intel Corporate"
+            ],
+            "srcvpnOuiCnt" : 1,
             "ssh" : {
                "hassh" : [
                   "21b457a327ce7a2d4fce5ef2c42400bd"
@@ -264,7 +293,24 @@
                "syn-ack" : 1,
                "urg" : 0
             },
-            "totDataBytes" : 4396
+            "totDataBytes" : 4396,
+            "vpnASN" : [
+               "AS8075 Microsoft Corporation",
+               "AS8075 Microsoft Corporation"
+            ],
+            "vpnGEO" : [
+               "US",
+               "US"
+            ],
+            "vpnIp" : [
+               "20.0.0.1",
+               "20.0.0.2"
+            ],
+            "vpnIpCnt" : 2,
+            "vpnRIR" : [
+               "ARIN",
+               "ARIN"
+            ]
          },
          "header" : {
             "index" : {

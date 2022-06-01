@@ -10,20 +10,23 @@
                "bytes" : 0,
                "ip" : "192.168.56.12",
                "mac" : [
-                  "08:00:27:ae:4d:62",
-                  "08:00:27:f2:1d:8c",
                   "ba:09:2b:6e:f8:be",
                   "ff:ff:ff:ff:ff:ff"
                ],
-               "mac-cnt" : 4,
+               "mac-cnt" : 2,
                "packets" : 0,
-               "port" : 0
+               "port" : 0,
+               "vpnmac" : [
+                  "08:00:27:ae:4d:62",
+                  "08:00:27:f2:1d:8c"
+               ],
+               "vpnmac-cnt" : 2
             },
-            "dstOui" : [
+            "dstRIR" : "ARIN",
+            "dstvpnOui" : [
                "PCS Computer Systems GmbH"
             ],
-            "dstOuiCnt" : 1,
-            "dstRIR" : "ARIN",
+            "dstvpnOuiCnt" : 1,
             "fileId" : [],
             "firstPacket" : 1467818432675,
             "ipProtocol" : 17,
@@ -55,20 +58,23 @@
                "bytes" : 184,
                "ip" : "192.168.56.11",
                "mac" : [
-                  "08:00:27:ae:4d:62",
-                  "08:00:27:f2:1d:8c",
                   "4a:7f:01:3b:a2:71",
                   "ba:09:2b:6e:f8:be"
                ],
-               "mac-cnt" : 4,
+               "mac-cnt" : 2,
                "packets" : 2,
-               "port" : 0
+               "port" : 0,
+               "vpnmac" : [
+                  "08:00:27:ae:4d:62",
+                  "08:00:27:f2:1d:8c"
+               ],
+               "vpnmac-cnt" : 2
             },
-            "srcOui" : [
+            "srcRIR" : "ARIN",
+            "srcvpnOui" : [
                "PCS Computer Systems GmbH"
             ],
-            "srcOuiCnt" : 1,
-            "srcRIR" : "ARIN",
+            "srcvpnOuiCnt" : 1,
             "totDataBytes" : 0
          },
          "header" : {
@@ -97,18 +103,21 @@
                },
                "ip" : "10.0.0.2",
                "mac" : [
-                  "08:00:27:f2:1d:8c",
                   "4a:7f:01:3b:a2:71"
                ],
-               "mac-cnt" : 2,
+               "mac-cnt" : 1,
                "packets" : 4,
-               "port" : 0
+               "port" : 0,
+               "vpnmac" : [
+                  "08:00:27:f2:1d:8c"
+               ],
+               "vpnmac-cnt" : 1
             },
-            "dstOui" : [
+            "dstRIR" : "TEST",
+            "dstvpnOui" : [
                "PCS Computer Systems GmbH"
             ],
-            "dstOuiCnt" : 1,
-            "dstRIR" : "TEST",
+            "dstvpnOuiCnt" : 1,
             "fileId" : [],
             "firstPacket" : 1467818432676,
             "icmp" : {
@@ -171,17 +180,20 @@
                },
                "ip" : "10.0.0.1",
                "mac" : [
-                  "08:00:27:ae:4d:62",
                   "ba:09:2b:6e:f8:be"
                ],
-               "mac-cnt" : 2,
+               "mac-cnt" : 1,
                "packets" : 4,
-               "port" : 0
+               "port" : 0,
+               "vpnmac" : [
+                  "08:00:27:ae:4d:62"
+               ],
+               "vpnmac-cnt" : 1
             },
-            "srcOui" : [
+            "srcvpnOui" : [
                "PCS Computer Systems GmbH"
             ],
-            "srcOuiCnt" : 1,
+            "srcvpnOuiCnt" : 1,
             "tags" : [
                "dstip",
                "srcip"
@@ -207,7 +219,24 @@
                   "16777226:0,33554442:0"
                ]
             },
-            "totDataBytes" : 512
+            "totDataBytes" : 512,
+            "vpnASN" : [
+               "---",
+               "---"
+            ],
+            "vpnGEO" : [
+               "---",
+               "---"
+            ],
+            "vpnIp" : [
+               "192.168.56.11",
+               "192.168.56.12"
+            ],
+            "vpnIpCnt" : 2,
+            "vpnRIR" : [
+               "ARIN",
+               "ARIN"
+            ]
          },
          "header" : {
             "index" : {

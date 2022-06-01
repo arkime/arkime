@@ -275,7 +275,24 @@
             ],
             "srcOuiCnt" : 1,
             "srcRIR" : "APNIC",
-            "totDataBytes" : 6528
+            "totDataBytes" : 6528,
+            "vpnASN" : [
+               "---",
+               "---"
+            ],
+            "vpnGEO" : [
+               "---",
+               "---"
+            ],
+            "vpnIp" : [
+               "192.168.40.178",
+               "192.168.40.179"
+            ],
+            "vpnIpCnt" : 2,
+            "vpnRIR" : [
+               "ARIN",
+               "ARIN"
+            ]
          },
          "header" : {
             "index" : {

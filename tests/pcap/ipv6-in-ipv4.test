@@ -77,7 +77,24 @@
                "packets" : 5,
                "port" : 0
             },
-            "totDataBytes" : 600
+            "totDataBytes" : 600,
+            "vpnASN" : [
+               "AS0 This is neat",
+               "AS1 Cool Beans!"
+            ],
+            "vpnGEO" : [
+               "CA",
+               "RU"
+            ],
+            "vpnIp" : [
+               "10.0.0.1",
+               "10.0.0.2"
+            ],
+            "vpnIpCnt" : 2,
+            "vpnRIR" : [
+               "",
+               "TEST"
+            ]
          },
          "header" : {
             "index" : {

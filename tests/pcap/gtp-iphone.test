@@ -118,7 +118,24 @@
             },
             "srcPayload8" : "d333010000010000",
             "srcRIR" : "ARIN",
-            "totDataBytes" : 299
+            "totDataBytes" : 299,
+            "vpnASN" : [
+               "---",
+               "---"
+            ],
+            "vpnGEO" : [
+               "---",
+               "---"
+            ],
+            "vpnIp" : [
+               "127.0.1.1",
+               "127.0.1.100"
+            ],
+            "vpnIpCnt" : 2,
+            "vpnRIR" : [
+               "",
+               ""
+            ]
          },
          "header" : {
             "index" : {
@@ -177,7 +194,24 @@
                "packets" : 1,
                "port" : 0
             },
-            "totDataBytes" : 8
+            "totDataBytes" : 8,
+            "vpnASN" : [
+               "---",
+               "---"
+            ],
+            "vpnGEO" : [
+               "---",
+               "---"
+            ],
+            "vpnIp" : [
+               "127.0.1.1",
+               "127.0.1.100"
+            ],
+            "vpnIpCnt" : 2,
+            "vpnRIR" : [
+               "",
+               ""
+            ]
          },
          "header" : {
             "index" : {
@@ -236,7 +270,24 @@
                "packets" : 1,
                "port" : 0
             },
-            "totDataBytes" : 48
+            "totDataBytes" : 48,
+            "vpnASN" : [
+               "---",
+               "---"
+            ],
+            "vpnGEO" : [
+               "---",
+               "---"
+            ],
+            "vpnIp" : [
+               "127.0.1.1",
+               "127.0.1.100"
+            ],
+            "vpnIpCnt" : 2,
+            "vpnRIR" : [
+               "",
+               ""
+            ]
          },
          "header" : {
             "index" : {
@@ -362,7 +413,24 @@
             },
             "srcPayload8" : "7442010000010000",
             "srcRIR" : "ARIN",
-            "totDataBytes" : 299
+            "totDataBytes" : 299,
+            "vpnASN" : [
+               "---",
+               "---"
+            ],
+            "vpnGEO" : [
+               "---",
+               "---"
+            ],
+            "vpnIp" : [
+               "127.0.1.1",
+               "127.0.1.100"
+            ],
+            "vpnIpCnt" : 2,
+            "vpnRIR" : [
+               "",
+               ""
+            ]
          },
          "header" : {
             "index" : {
@@ -423,7 +491,24 @@
                "port" : 0
             },
             "srcRIR" : "ARIN",
-            "totDataBytes" : 36
+            "totDataBytes" : 36,
+            "vpnASN" : [
+               "---",
+               "---"
+            ],
+            "vpnGEO" : [
+               "---",
+               "---"
+            ],
+            "vpnIp" : [
+               "127.0.1.1",
+               "127.0.1.100"
+            ],
+            "vpnIpCnt" : 2,
+            "vpnRIR" : [
+               "",
+               ""
+            ]
          },
          "header" : {
             "index" : {
@@ -484,7 +569,24 @@
                "packets" : 2,
                "port" : 0
             },
-            "totDataBytes" : 176
+            "totDataBytes" : 176,
+            "vpnASN" : [
+               "---",
+               "---"
+            ],
+            "vpnGEO" : [
+               "---",
+               "---"
+            ],
+            "vpnIp" : [
+               "127.0.1.1",
+               "127.0.1.100"
+            ],
+            "vpnIpCnt" : 2,
+            "vpnRIR" : [
+               "",
+               ""
+            ]
          },
          "header" : {
             "index" : {
@@ -575,7 +677,24 @@
                "syn-ack" : 1,
                "urg" : 0
             },
-            "totDataBytes" : 2386
+            "totDataBytes" : 2386,
+            "vpnASN" : [
+               "---",
+               "---"
+            ],
+            "vpnGEO" : [
+               "---",
+               "---"
+            ],
+            "vpnIp" : [
+               "127.0.1.1",
+               "127.0.1.100"
+            ],
+            "vpnIpCnt" : 2,
+            "vpnRIR" : [
+               "",
+               ""
+            ]
          },
          "header" : {
             "index" : {
@@ -663,7 +782,24 @@
                "syn-ack" : 1,
                "urg" : 0
             },
-            "totDataBytes" : 2525
+            "totDataBytes" : 2525,
+            "vpnASN" : [
+               "---",
+               "---"
+            ],
+            "vpnGEO" : [
+               "---",
+               "---"
+            ],
+            "vpnIp" : [
+               "127.0.1.1",
+               "127.0.1.100"
+            ],
+            "vpnIpCnt" : 2,
+            "vpnRIR" : [
+               "",
+               ""
+            ]
          },
          "header" : {
             "index" : {
@@ -724,7 +860,24 @@
                "port" : 5060
             },
             "srcPayload8" : "5355425343524942",
-            "totDataBytes" : 2332
+            "totDataBytes" : 2332,
+            "vpnASN" : [
+               "---",
+               "---"
+            ],
+            "vpnGEO" : [
+               "---",
+               "---"
+            ],
+            "vpnIp" : [
+               "127.0.1.1",
+               "127.0.1.100"
+            ],
+            "vpnIpCnt" : 2,
+            "vpnRIR" : [
+               "",
+               ""
+            ]
          },
          "header" : {
             "index" : {
@@ -832,7 +985,24 @@
                "syn-ack" : 1,
                "urg" : 0
             },
-            "totDataBytes" : 4817
+            "totDataBytes" : 4817,
+            "vpnASN" : [
+               "---",
+               "---"
+            ],
+            "vpnGEO" : [
+               "---",
+               "---"
+            ],
+            "vpnIp" : [
+               "127.0.1.1",
+               "127.0.1.100"
+            ],
+            "vpnIpCnt" : 2,
+            "vpnRIR" : [
+               "",
+               ""
+            ]
          },
          "header" : {
             "index" : {
@@ -938,7 +1108,24 @@
                "port" : 19956
             },
             "srcPayload8" : "80e652d84bcad9ca",
-            "totDataBytes" : 1138
+            "totDataBytes" : 1138,
+            "vpnASN" : [
+               "---",
+               "---"
+            ],
+            "vpnGEO" : [
+               "---",
+               "---"
+            ],
+            "vpnIp" : [
+               "127.0.1.1",
+               "127.0.1.100"
+            ],
+            "vpnIpCnt" : 2,
+            "vpnRIR" : [
+               "",
+               ""
+            ]
          },
          "header" : {
             "index" : {
@@ -1064,7 +1251,24 @@
             },
             "srcPayload8" : "c2b1010000010000",
             "srcRIR" : "ARIN",
-            "totDataBytes" : 299
+            "totDataBytes" : 299,
+            "vpnASN" : [
+               "---",
+               "---"
+            ],
+            "vpnGEO" : [
+               "---",
+               "---"
+            ],
+            "vpnIp" : [
+               "127.0.1.1",
+               "127.0.1.100"
+            ],
+            "vpnIpCnt" : 2,
+            "vpnRIR" : [
+               "",
+               ""
+            ]
          },
          "header" : {
             "index" : {
@@ -1121,7 +1325,24 @@
                "port" : 19957
             },
             "srcPayload8" : "81c8000c6399bbc1",
-            "totDataBytes" : 112
+            "totDataBytes" : 112,
+            "vpnASN" : [
+               "---",
+               "---"
+            ],
+            "vpnGEO" : [
+               "---",
+               "---"
+            ],
+            "vpnIp" : [
+               "127.0.1.1",
+               "127.0.1.100"
+            ],
+            "vpnIpCnt" : 2,
+            "vpnRIR" : [
+               "",
+               ""
+            ]
          },
          "header" : {
             "index" : {
@@ -1184,7 +1405,24 @@
                "packets" : 3,
                "port" : 0
             },
-            "totDataBytes" : 250
+            "totDataBytes" : 250,
+            "vpnASN" : [
+               "---",
+               "---"
+            ],
+            "vpnGEO" : [
+               "---",
+               "---"
+            ],
+            "vpnIp" : [
+               "127.0.1.1",
+               "127.0.1.100"
+            ],
+            "vpnIpCnt" : 2,
+            "vpnRIR" : [
+               "",
+               ""
+            ]
          },
          "header" : {
             "index" : {
@@ -1270,7 +1508,24 @@
                "syn-ack" : 1,
                "urg" : 0
             },
-            "totDataBytes" : 2178
+            "totDataBytes" : 2178,
+            "vpnASN" : [
+               "---",
+               "---"
+            ],
+            "vpnGEO" : [
+               "---",
+               "---"
+            ],
+            "vpnIp" : [
+               "127.0.1.1",
+               "127.0.1.100"
+            ],
+            "vpnIpCnt" : 2,
+            "vpnRIR" : [
+               "",
+               ""
+            ]
          },
          "header" : {
             "index" : {

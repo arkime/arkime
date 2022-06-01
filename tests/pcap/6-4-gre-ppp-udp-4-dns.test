@@ -57,23 +57,6 @@
             "dstRIR" : "ARIN",
             "fileId" : [],
             "firstPacket" : 1417577703821,
-            "greASN" : [
-               "---",
-               "AS8100 QuadraNet Enterprises LLC"
-            ],
-            "greGEO" : [
-               "US",
-               "US"
-            ],
-            "greIp" : [
-               "16.0.0.200",
-               "192.52.166.154"
-            ],
-            "greIpCnt" : 2,
-            "greRIR" : [
-               "ARIN",
-               "ARIN"
-            ],
             "ipProtocol" : 17,
             "lastPacket" : 1417577704035,
             "length" : 214,
@@ -125,7 +108,24 @@
             "srcOuiCnt" : 1,
             "srcPayload8" : "a62c010000010000",
             "srcRIR" : "ARIN",
-            "totDataBytes" : 217
+            "totDataBytes" : 217,
+            "vpnASN" : [
+               "---",
+               "AS8100 QuadraNet Enterprises LLC"
+            ],
+            "vpnGEO" : [
+               "US",
+               "US"
+            ],
+            "vpnIp" : [
+               "16.0.0.200",
+               "192.52.166.154"
+            ],
+            "vpnIpCnt" : 2,
+            "vpnRIR" : [
+               "ARIN",
+               "ARIN"
+            ]
          },
          "header" : {
             "index" : {
