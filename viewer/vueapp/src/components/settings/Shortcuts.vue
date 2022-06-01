@@ -53,10 +53,6 @@
       class="table table-striped table-sm">
       <thead>
         <tr>
-          <th class="cursor-help"
-            v-b-tooltip.hover="'Whether this shortcut is shared with EVERY user'">
-            Shared
-          </th>
           <th class="cursor-pointer"
             @click.self="sortShortcuts('name')">
             Name
@@ -91,15 +87,6 @@
         </tr>
         <template v-for="(item, index) in shortcuts.data">
           <tr :key="`${item.id}-content`">
-            <td>
-              <input
-                type="checkbox"
-                v-model="item.shared"
-                @input="toggleShortcutShared(item, index)"
-                :disabled="(!user.roles.includes('arkimeAdmin') && item.userId !== user.userId) || item.locked"
-                v-b-tooltip.hover="`click to ${item.shared ? 'unshare' : 'share'} this shortcut with EVERY user`"
-              />
-            </td>
             <td class="shortcut-value narrow cursor-help"
               v-b-tooltip.hover="item.name">
               {{ item.name }}
@@ -255,21 +242,11 @@
                 </div>
               </div>
               <div class="form-group row">
-                <label for="newShortcutShared"
-                  class="col-2 col-form-label text-right">
+                <label class="col-2 col-form-label text-right">
                   Sharing
                 </label>
-                <div class="col-2">
-                  <b-form-checkbox
-                    class="mt-2"
-                    v-model="item.shared"
-                    id="updateShortcutShared"
-                    v-b-tooltip.hover="'Share this shortcut with EVERY user'">
-                    All Share
-                  </b-form-checkbox>
-                </div>
-                <template v-if="!item.shared">
-                  <div class="col-3">
+                <div class="col-10 d-flex">
+                  <div>
                     <RoleDropdown
                       :id="item.id"
                       :roles="roles"
@@ -278,7 +255,7 @@
                       :display-text="item.newRoles && item.newRoles.length ? undefined : 'Share with roles'"
                     />
                   </div>
-                  <div class="col-5">
+                  <div class="ml-2 flex-grow-1">
                     <b-input-group
                       size="sm"
                       prepend="Share with users">
@@ -288,7 +265,7 @@
                       />
                     </b-input-group>
                   </div>
-                </template>
+                </div>
               </div>
             </td>
           </tr> <!-- /edit shortcut -->
@@ -381,28 +358,18 @@
           </div>
         </div>
         <div class="form-group row">
-          <label for="newShortcutShared"
-            class="col-2 col-form-label text-right">
+          <label class="col-2 col-form-label text-right">
             Sharing
           </label>
-          <div class="col-2">
-            <b-form-checkbox
-              class="mt-2"
-              id="newShortcutShared"
-              v-model="newShortcutShared"
-              v-b-tooltip.hover="'Share this shortcut with EVERY user'">
-              All Share
-            </b-form-checkbox>
-          </div>
-          <template v-if="!newShortcutShared">
-            <div class="col-3">
+          <div class="col-10 d-flex">
+            <div>
               <RoleDropdown
                 :roles="roles"
                 display-text="Share with roles"
                 @selected-roles-updated="updateNewShortcutRoles"
               />
             </div>
-            <div class="col-5">
+            <div class="ml-2 flex-grow-1">
               <b-input-group
                 size="sm"
                 prepend="Share with users">
@@ -412,7 +379,7 @@
                 />
               </b-input-group>
             </div>
-          </template>
+          </div>
         </div>
         <div class="form-group row">
           <div class="col offset-2">
@@ -456,7 +423,6 @@ export default {
       loading: true,
       shortcuts: {},
       shortcutsListError: '',
-      newShortcutShared: false,
       newShortcutName: '',
       newShortcutDescription: '',
       newShortcutValue: '',
@@ -512,11 +478,6 @@ export default {
       this.shortcutsQuery.sortField = sort;
       this.getShortcuts();
     },
-    /* toggles shared var on a shortcut and saves the shortcut */
-    toggleShortcutShared (shortcut, index) {
-      this.$set(shortcut, 'shared', !shortcut.shared);
-      this.updateShortcut(shortcut, index);
-    },
     /* opens up text area to edit shortcut value */
     toggleEditShortcut (shortcut) {
       const editingShortcut = !shortcut.editing;
@@ -555,7 +516,6 @@ export default {
         value: this.newShortcutValue,
         users: this.newShortcutUsers,
         roles: this.newShortcutRoles,
-        shared: this.newShortcutShared,
         description: this.newShortcutDescription
       };
 
@@ -566,11 +526,10 @@ export default {
         this.newShortcutValue = '';
         this.newShortcutUsers = '';
         this.newShortcutRoles = '';
-        this.newShortcutShared = false;
         this.newShortcutDescription = '';
         // display success message to user
         let msg = response.text;
-        if (response.invalidUsers) {
+        if (response.invalidUsers && response.invalidUsers.length) {
           msg += ` Could not add these users: ${response.invalidUsers.join(',')}`;
         }
         this.$emit('display-message', { msg });
@@ -588,12 +547,11 @@ export default {
         }
       }
     },
-    /* updates a specified shortcut (only shared and value are editable) */
+    /* updates a specified shortcut */
     updateShortcut (shortcut, index) {
       this.$set(shortcut, 'loading', true);
 
       const data = {
-        shared: shortcut.shared,
         userId: shortcut.userId,
         users: shortcut.newUsers,
         roles: shortcut.newRoles,
@@ -608,9 +566,8 @@ export default {
         response.shortcut.type = shortcut.newType || shortcut.type;
         this.$set(this.shortcuts.data, index, response.shortcut);
         // display success message to user
-        // display success message to user
         let msg = response.text;
-        if (response.invalidUsers) {
+        if (response.invalidUsers && response.invalidUsers.length) {
           msg += ` Could not add these users: ${response.invalidUsers.join(',')}`;
         }
         this.$emit('display-message', { msg });
