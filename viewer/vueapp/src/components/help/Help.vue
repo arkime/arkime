@@ -1174,8 +1174,10 @@
           Shortcuts are lists of values that can be used in search queries.
           For example, create a list of IPs and use them in a query
           expression <code>ip.src == $MY_IPS</code>. Users can share
-          shortcuts with users of the same cluster by toggling the "shared"
-          checkbox.
+          shortcuts with specific users by listing each user's userId.
+          Users can share shortcuts with multiple users by sharing to
+          roles. For example, sharing with the "arkimeUser" role will share
+          the shortcut with any user that has access to Arkime.
           <br>
           <strong>Tip:</strong> Use <code>$</code> to autocomplete shortcuts
           in search expressions.
