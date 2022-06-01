@@ -239,6 +239,56 @@ dl
         strong.medium.ml-4 VLan
         +arrayPrint(session.network.vlan, "id", "vlan")
 
+  if (session.source.vpnmac)
+    dt
+      b-dropdown.clickable-label(text="vpn Ethernet", size="sm", variant="default")
+        b-dropdown-item(@click="exportUnique('vpnmac.src', 0)")
+          | Export vpn Unique Src Mac
+        b-dropdown-item(@click="exportUnique('vpnmac.src', 1)")
+          | Export vpn Unique Src Mac with counts
+        b-dropdown-item(@click="openSpiGraph('vpnmac.src')")
+          | Open vpn Src Mac SPI Graph
+        b-dropdown-item(@click="fieldExists('vpnmac.src', '==')")
+          | Add vpn Src Mac EXISTS! to query
+        b-dropdown-divider
+        b-dropdown-item(@click="exportUnique('vpnoui.src', 0)")
+          | Export vpn Unique Src OUI
+        b-dropdown-item(@click="exportUnique('vpnoui.src', 1)")
+          | Export vpn Unique Src OUI with counts
+        b-dropdown-item(@click="openSpiGraph('vpnoui.src')")
+          | Open vpn Src OUI SPI Graph
+        b-dropdown-item(@click="fieldExists('vpnoui.src', '==')")
+          | Add vpn Src OUI EXISTS! to query
+        b-dropdown-divider
+        b-dropdown-item(@click="exportUnique('vpnmac.dst', 0)")
+          | Export vpn Unique Dst Mac
+        b-dropdown-item(@click="exportUnique('vpnmac.dst', 1)")
+          | Export vpn Unique Dst Mac with counts
+        b-dropdown-item(@click="openSpiGraph('vpnmac.dst')")
+          | Open vpn Dst Mac SPI Graph
+        b-dropdown-item(@click="fieldExists('vpnmac.dst', '==')")
+          | Add vpn Dst Mac EXISTS! to query
+        b-dropdown-divider
+        b-dropdown-item(@click="exportUnique('vpnoui.dst', 0)")
+          | Export Unique vpn Dst OUI
+        b-dropdown-item(@click="exportUnique('vpnoui.dst', 1)")
+          | Export Unique vpn Dst OUI with counts
+        b-dropdown-item(@click="openSpiGraph('vpnoui.dst')")
+          | Open vpn Dst OUI SPI Graph
+        b-dropdown-item(@click="fieldExists('vpnoui.dst', '==')")
+          | Add vpn Dst OUI EXISTS! to query
+
+    dd
+      strong.medium.ml-1 vpn Src Mac
+      +arrayPrint(session.source, "vpnmac", "vpnmac.src", true)
+
+      if (session.srcvpnOui)
+        strong.medium vpn OUI
+        +arrayPrint(session, "srcvpnOui", "vpnoui.src", true)
+
+      strong.medium.ml-4 vpn Dst Mac
+      +arrayPrint(session.destination, "vpnmac", "vpnmac.dst", true)
+
   dt
     b-dropdown.clickable-label(text="Src IP/Port", size="sm", variant="default")
       b-dropdown-item(@click="exportUnique('ip.src', 0)")
@@ -293,6 +343,9 @@ dl
 
   dd
     +ipPrint(session, session.source.ip, session.source.port, session.source.geo.country_iso_code, session.source.as.full, session.srcRIR, "src")
+
+  if (session.vpnIp)
+    +ipArrayList(session, "vpnIp", "VPN IPs", "vpn.ip")
 
   dt
     b-dropdown.clickable-label(text="Dst IP/Port", size="sm", variant="default")
@@ -496,8 +549,6 @@ dl
       dd
         +clickableValue('socks.user', session.socks.user)
 
-  if (session.greIp)
-    +ipArrayList(session, "greIp", "GRE IPs", "gre.ip")
 
   if (session.tcpflags)
     dt

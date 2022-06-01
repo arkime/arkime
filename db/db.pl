@@ -4506,19 +4506,19 @@ sub sessions3Update
     "firstPacket" : {
       "type" : "date"
     },
-    "greASN" : {
+    "vpnASN" : {
       "type" : "keyword"
     },
-    "greGEO" : {
+    "vpnGEO" : {
       "type" : "keyword"
     },
-    "greIp" : {
+    "vpnIp" : {
       "type" : "ip"
     },
-    "greIpCnt" : {
+    "vpnIpCnt" : {
       "type" : "long"
     },
-    "greRIR" : {
+    "vpnRIR" : {
       "type" : "keyword"
     },
     "http" : {
