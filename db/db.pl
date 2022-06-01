@@ -5502,9 +5502,9 @@ sub notifiersCreate
   }
 }';
 
-  logmsg "Creating notifiers_v30 index\n" if ($verbose > 0);
-  esPut("/${PREFIX}notifiers_v30?master_timeout=${ESTIMEOUT}s", $settings);
-  esAlias("add", "notifiers_v30", "notifiers");
+  logmsg "Creating notifiers_v40 index\n" if ($verbose > 0);
+  esPut("/${PREFIX}notifiers_v40?master_timeout=${ESTIMEOUT}s", $settings);
+  esAlias("add", "notifiers_v40", "notifiers");
   notifiersUpdate();
 }
 
@@ -5521,8 +5521,23 @@ sub notifiersUpdate
   }
 }';
 
-logmsg "Setting notifiers_v30 mapping\n" if ($verbose > 0);
-esPut("/${PREFIX}notifiers_v30/_mapping?master_timeout=${ESTIMEOUT}s&pretty", $mapping);
+logmsg "Setting notifiers_v40 mapping\n" if ($verbose > 0);
+esPut("/${PREFIX}notifiers_v40/_mapping?master_timeout=${ESTIMEOUT}s&pretty", $mapping);
+
+# TODO put this in the right place!?
+# add the notifiers from the _moloch_shared user to the new notifiers index
+my $sharedUser = esGet("/${PREFIX}users/_doc/_moloch_shared/_source");
+my @notifiers = keys %{$sharedUser->{notifiers}};
+
+foreach my $n (@notifiers) {
+    my $notifier = $sharedUser->{notifiers}{$n};
+    $notifier->{roles} = ["arkimeUser", "parliamentUser"];
+    esPost("/${PREFIX}notifiers/_doc/", to_json($notifier));
+}
+
+# remove notifiers from the _moloch_shared user
+delete $sharedUser->{notifiers};
+esPut("/${PREFIX}users/_doc/_moloch_shared", to_json($sharedUser));
 }
 ################################################################################
 
@@ -7261,6 +7276,7 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
     historyUpdate();
     huntsCreate();
     lookupsCreate();
+    notifiersCreate();
     if ($ARGV[1] =~ "init") {
         usersCreate();
         queriesCreate();
@@ -7354,6 +7370,7 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
     esDelete("/${PREFIX}stats_v30", 1);
     esDelete("/${PREFIX}hunts_v30", 1);
     esDelete("/${PREFIX}lookups_v30", 1);
+    esDelete("/${PREFIX}notifiers_v40", 1);
     esDelete("/_template/${PREFIX}sessions3_ecs_template", 1);
     esDelete("/_template/${PREFIX}sessions3_template", 1);
     esDelete("/_template/${PREFIX}history_v1_template", 1);
@@ -7484,7 +7501,7 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
         historyUpdate();
         huntsUpdate();
         lookupsUpdate();
-        notifiersCreate();
+        notifiersCreate(); # TODO this only works once, then we need to use notifiersUpdate. How DO!?
     } else {
         logmsg "db.pl is hosed\n";
     }
