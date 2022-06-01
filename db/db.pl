@@ -104,7 +104,8 @@ my $WARMAFTER = -1;
 my $WARMKIND = "daily";
 my $OPTIMIZEWARM = 0;
 my $TYPE = "string";
-my $SHARED = 0;
+my $SHAREROLES = "";
+my $SHAREUSERS = "";
 my $DESCRIPTION = "";
 my $LOCKED = 0;
 my $GZ = 0;
@@ -189,7 +190,8 @@ sub showHelp($)
     print "       userid                  - UserId of the user to add the shortcut for\n";
     print "       file                    - File that includes a comma or newline separated list of values\n";
     print "    --type <type>              - Type of shortcut = string, ip, number, default is string\n";
-    print "    --shared                   - Whether the shortcut is shared to all users\n";
+    print "    --shareRoles               - Share to roles (comma separated list of roles)\n";
+    print "    --shareUsers               - Share to specific users (comma seprated list of userIds)\n";
     print "    --description <description>- Description of the shortcut\n";
     print "    --locked                   - Whether the shortcut is locked and cannot be modified by the web interface\n";
     print "  shrink <index> <node> <num>  - Shrink a session index\n";
@@ -5961,8 +5963,12 @@ sub parseArgs {
             }
         } elsif ($ARGV[$pos] eq "--optimizewarm") {
             $OPTIMIZEWARM = 1;
-        } elsif ($ARGV[$pos] eq "--shared") {
-            $SHARED = 1;
+        } elsif ($ARGV[$pos] eq "--shareUsers") {
+            $pos++;
+            $SHAREUSERS = $ARGV[$pos];
+        } elsif ($ARGV[$pos] eq "--shareRoles") {
+            $pos++;
+            $SHAREROLES = $ARGV[$pos];
         } elsif ($ARGV[$pos] eq "--locked") {
             $LOCKED = 1;
         } elsif ($ARGV[$pos] eq "--gz") {
@@ -6411,15 +6417,21 @@ if ($ARGV[1] =~ /^(users-?import|import)$/) {
       if ($existingShortcut->{_source}->{description}) {
         $newShortcut->{description} = $existingShortcut->{_source}->{description};
       }
-      if ($existingShortcut->{_source}->{shared}) {
-        $newShortcut->{shared} = $existingShortcut->{_source}->{shared};
+      if ($existingShortcut->{_source}->{users}) {
+        $newShortcut->{users} = $existingShortcut->{_source}->{users};
+      }
+      if ($existingShortcut->{_source}->{roles}) {
+        $newShortcut->{roles} = $existingShortcut->{_source}->{roles};
       }
     }
     if ($DESCRIPTION) {
       $newShortcut->{description} = $DESCRIPTION;
     }
-    if ($SHARED) {
-      $newShortcut->{shared} = \1;
+    if ($SHAREUSERS) {
+      $newShortcut->{users} = [split /[,]/, $SHAREUSERS];
+    }
+    if ($SHAREROLES) {
+      $newShortcut->{roles} = [split /[,]/, $SHAREROLES];
     }
     if ($LOCKED) {
       $newShortcut->{locked} = \1;

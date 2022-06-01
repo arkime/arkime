@@ -129,7 +129,7 @@ $shortcuts = viewerGet('/api/shortcuts?molochRegressionUser=user3');
 is(@{$shortcuts->{data}}, 0, "user3 has no shortcuts shared with them");
 
 # can share shortcut with users
-$json = viewerPostToken("/lookups", '{"shared":false,"name":"user_shared_shortcut","type":"string","value":"udp","users":"user2"}', $token);
+$json = viewerPostToken("/lookups", '{"name":"user_shared_shortcut","type":"string","value":"udp","users":"user2"}', $token);
 ok($json->{success}, "create shortcut with users success");
 is($json->{shortcut}->{users}->[0], "user2", "create user shared shortcut");
 my $shortcut4Id = $json->{shortcut}->{id}; # save id for cleanup later
