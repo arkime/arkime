@@ -3381,7 +3381,7 @@ export default {
 }
 
 /* make sure the form is taller than the nav pills */
-.settings-page form {
+.settings-page form:not(.b-dropdown-form) {
   min-height: 280px;
 }
 
