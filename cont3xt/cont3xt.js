@@ -452,6 +452,7 @@ function setupAuth () {
   let usersEs = getConfig('cont3xt', 'usersElasticsearch');
 
   Db.initialize({
+    insecure: internals.insecure,
     debug: internals.debug,
     url: dbUrl,
     node: es,
