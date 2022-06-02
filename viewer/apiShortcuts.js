@@ -183,8 +183,8 @@ module.exports = (Db, internals, ViewerUtils) => {
         shortcut.value = values.join('\n');
         delete shortcut[shortcut.type];
 
-        if (user.userId !== shortcut.userId) {
-          // remove sensitive information for users this shortcut is shared with
+        if (user.userId !== shortcut.userId && !user.hasRole('arkimeAdmin')) {
+          // remove sensitive information for users this shortcut is shared with (except arkimeAdmin)
           delete shortcut.users;
           delete shortcut.roles;
         } else if (shortcut.users) {

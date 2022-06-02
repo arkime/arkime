@@ -1,4 +1,4 @@
-use Test::More tests => 88;
+use Test::More tests => 92;
 use Cwd;
 use URI::Escape;
 use MolochTest;
@@ -155,6 +155,15 @@ is(@{$shortcuts->{data}}, 2, "2 shortcut for this user");
 $json = viewerPutToken("/api/shortcut/$shortcut4Id", '{"name":"role_shared_shortcut","type":"string","value":"udp","users":"","roles":["arkimeUser"]}', $token);
 $shortcuts = viewerGet("/api/shortcuts?molochRegressionUser=user2");
 is(@{$shortcuts->{data}}, 3, "3 shortcut for this user");
+
+# but they can't see users and roles fields if the shortcut is shared with them (they didn't create it)
+is($shortcuts->{data}->[2]->{roles}, undef, "can't see roles field if it's a shared shortcut");
+is($shortcuts->{data}->[2]->{users}, undef, "can't see users field if it's a shared shortcut");
+
+# arkimeAdmin can view users and roles fields
+$shortcuts = viewerGet("/api/shortcuts");
+ok(exists $shortcuts->{data}->[0]->{roles}, 'arkimeAdmin can see roles');
+ok(exists $shortcuts->{data}->[0]->{users}, 'arkimeAdmin can see users');
 
 # get only shortcuts of a specific type
 $shortcuts = viewerGet("/lookups?fieldType=string");
