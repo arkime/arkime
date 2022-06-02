@@ -76,13 +76,13 @@ export default {
 
   /**
    * Deletes a notifier
-   * @param {String} notifierName - The name of the notifier to delete
+   * @param {String} id - The id of the notifier to delete
    * @returns {Promise} Promise - A promise object that signals the completion
    *                              or rejection of the request.
    */
-  deleteNotifier (notifierName) {
+  deleteNotifier (id) {
     return new Promise((resolve, reject) => {
-      Vue.axios.delete(`api/notifier/${notifierName}`).then((response) => {
+      Vue.axios.delete(`api/notifier/${id}`).then((response) => {
         resolve(response.data);
       }).catch((error) => {
         reject(error);
@@ -92,14 +92,14 @@ export default {
 
   /**
    * Tests a notifier
-   * @param {String} notifierName - The name of the notifier to test
+   * @param {String} id - The id of the notifier to test
    * @returns {Promise} Promise - A promise object that signals the completion
    *                              or rejection of the request.
    */
-  testNotifier: function (notifierName) {
+  testNotifier: function (id) {
     return new Promise((resolve, reject) => {
       const options = {
-        url: `api/notifier/${notifierName}/test`,
+        url: `api/notifier/${id}/test`,
         method: 'POST',
         data: {}
       };

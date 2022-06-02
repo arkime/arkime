@@ -5517,6 +5517,24 @@ sub notifiersUpdate
   "properties": {
     "name": {
       "type": "keyword"
+    },
+    "users": {
+      "type": "keyword"
+    },
+    "roles": {
+      "type": "keyword"
+    },
+    "user": {
+      "type": "keyword"
+    },
+    "type": {
+      "type": "keyword"
+    },
+    "created": {
+      "type": "date"
+    },
+    "updated": {
+      "type": "date"
     }
   }
 }';

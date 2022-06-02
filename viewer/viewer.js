@@ -65,7 +65,7 @@ const compression = require('compression');
 // internal app deps
 const { internals } = require('./internals')(app, Config);
 const ViewerUtils = require('./viewerUtils')(Config, Db, internals);
-const notifierAPIs = require('./apiNotifiers')(Config, Db, internals);
+const notifierAPIs = require('./apiNotifiers')(Config, Db, internals, ViewerUtils);
 const sessionAPIs = require('./apiSessions')(Config, Db, internals, ViewerUtils);
 const connectionAPIs = require('./apiConnections')(Config, Db, ViewerUtils, sessionAPIs);
 const statsAPIs = require('./apiStats')(Config, Db, internals, ViewerUtils);
@@ -1421,19 +1421,19 @@ app.post( // create notifier endpoint
 );
 
 app.put( // update notifier endpoint
-  ['/api/notifier/:name', '/notifiers/:name'],
+  ['/api/notifier/:id', '/notifiers/:id'],
   [ArkimeUtil.noCacheJson, ArkimeUtil.getSettingUserDb, User.checkRole('arkimeAdmin'), checkCookieToken],
   notifierAPIs.updateNotifier
 );
 
 app.delete( // delete notifier endpoint
-  ['/api/notifier/:name', '/notifiers/:name'],
+  ['/api/notifier/:id', '/notifiers/:id'],
   [ArkimeUtil.noCacheJson, ArkimeUtil.getSettingUserDb, User.checkRole('arkimeAdmin'), checkCookieToken],
   notifierAPIs.deleteNotifier
 );
 
 app.post( // test notifier endpoint
-  ['/api/notifier/:name/test', '/notifiers/:name/test'],
+  ['/api/notifier/:id/test', '/notifiers/:id/test'],
   [ArkimeUtil.noCacheJson, getSettingUserCache, User.checkRole('arkimeAdmin'), checkCookieToken],
   notifierAPIs.testNotifier
 );

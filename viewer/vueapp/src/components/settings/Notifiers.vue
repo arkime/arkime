@@ -111,6 +111,32 @@
                 &nbsp;{{ field.name }}
               </label>
             </div> <!-- /new notifier fields -->
+            <!-- new notifier sharing -->
+            <div class="form-group row">
+              <label class="col-2 col-form-label">
+                Sharing
+              </label>
+              <div class="col-10 d-flex">
+                <div>
+                  <RoleDropdown
+                    :roles="roles"
+                    display-text="Share with roles"
+                    :selected-roles="newNotifier.roles"
+                    @selected-roles-updated="updateNewNotifierRoles"
+                  />
+                </div>
+                <div class="ml-2 flex-grow-1">
+                  <b-input-group
+                    size="sm"
+                    prepend="Share with users">
+                    <b-form-input
+                      v-model="newNotifier.users"
+                      placeholder="comma separated list of userIds"
+                    />
+                  </b-input-group>
+                </div>
+              </div>
+            </div> <!-- /new notifier sharing -->
             <!-- new notifier actions -->
             <div class="row mt-3">
               <div class="col-12">
@@ -199,6 +225,33 @@
                 &nbsp;{{ field.name }}
               </label>
             </div> <!-- /notifier fields -->
+            <!-- notifier sharing -->
+            <div class="form-group row">
+              <label class="col-2 col-form-label">
+                Sharing
+              </label>
+              <div class="col-10 d-flex">
+                <div>
+                  <RoleDropdown
+                    :roles="roles"
+                    :id="notifier.id"
+                    :selected-roles="notifier.roles"
+                    @selected-roles-updated="updateNotifierRoles"
+                    :display-text="notifier.roles && notifier.roles.length ? undefined : 'Share with roles'"
+                  />
+                </div>
+                <div class="ml-2 flex-grow-1">
+                  <b-input-group
+                    size="sm"
+                    prepend="Share with users">
+                    <b-form-input
+                      v-model="notifier.users"
+                      placeholder="comma separated list of userIds"
+                    />
+                  </b-input-group>
+                </div>
+              </div>
+            </div> <!-- /notifier sharing -->
             <!-- notifier info -->
             <div class="row">
               <div class="col-12 small">
@@ -218,7 +271,7 @@
                 <button type="button"
                   :disabled="notifier.loading"
                   class="btn btn-sm btn-outline-warning cursor-pointer"
-                  @click="testNotifier(notifier.name, index)">
+                  @click="testNotifier(notifier.id, index)">
                   <span v-if="notifier.loading"
                     class="fa fa-spinner fa-spin">
                   </span>
@@ -228,14 +281,14 @@
                 </button>
                 <button type="button"
                   class="btn btn-sm btn-success cursor-pointer pull-right ml-1"
-                  @click="updateNotifier(notifier.key, index, notifier)">
+                  @click="updateNotifier(notifier.id, index, notifier)">
                   <span class="fa fa-save">
                   </span>&nbsp;
                   Save
                 </button>
                 <button type="button"
                   class="btn btn-sm btn-danger cursor-pointer pull-right"
-                  @click="removeNotifier(notifier.name, index)">
+                  @click="removeNotifier(notifier.id, index)">
                   <span class="fa fa-trash-o">
                   </span>&nbsp;
                   Delete
@@ -251,10 +304,16 @@
 </template>
 
 <script>
+// services
 import SettingsService from './SettingsService';
+// components
+import RoleDropdown from '../../../../../common/vueapp/RoleDropdown';
 
 export default {
   name: 'Notifiers',
+  components: {
+    RoleDropdown
+  },
   data () {
     return {
       error: '',
@@ -287,6 +346,21 @@ export default {
     /* opens the form to create a new notifier */
     createNewNotifier (notifier) {
       this.newNotifier = JSON.parse(JSON.stringify(notifier));
+      this.newNotifier.roles = ['arkimeUser', 'parliamentUser'];
+      this.newNotifier.users = '';
+    },
+    /* updates the roles on the new notifier object from the RoleDropdown component */
+    updateNewNotifierRoles (roles) {
+      this.$set(this.newNotifier, 'roles', roles);
+    },
+    /* updates the roles on a notifier object from the RoleDropdown component */
+    updateNotifierRoles (roles, id) {
+      for (const notifier of this.notifiers) {
+        if (notifier.id === id) {
+          this.$set(notifier, 'roles', roles);
+          return;
+        }
+      }
     },
     /* gets the type of input associated with a field */
     getFieldInputType (field) {
@@ -340,8 +414,8 @@ export default {
       this.$set(field, 'showValue', !field.showValue);
     },
     /* deletes a notifier */
-    removeNotifier (notifierName, index) {
-      SettingsService.deleteNotifier(notifierName).then((response) => {
+    removeNotifier (id, index) {
+      SettingsService.deleteNotifier(id).then((response) => {
         this.notifiers.splice(index, 1);
         // display success message to user
         this.$emit('display-message', { msg: response.text || 'Successfully deleted notifier.', type: 'success' });
@@ -350,8 +424,8 @@ export default {
       });
     },
     /* updates a notifier */
-    updateNotifier (key, index, notifier) {
-      SettingsService.updateNotifier(key, notifier).then((response) => {
+    updateNotifier (id, index, notifier) {
+      SettingsService.updateNotifier(id, notifier).then((response) => {
         this.notifiers.splice(index, 1, response.notifier);
         // display success message to user
         this.$emit('display-message', { msg: response.text || 'Successfully updated notifier.', type: 'success' });
@@ -360,14 +434,14 @@ export default {
       });
     },
     /* tests a notifier */
-    testNotifier (notifierName, index) {
+    testNotifier (id, index) {
       if (this.notifiers[index].loading) {
         return;
       }
 
       this.$set(this.notifiers[index], 'loading', true);
 
-      SettingsService.testNotifier(notifierName).then((response) => {
+      SettingsService.testNotifier(id).then((response) => {
         this.$set(this.notifiers[index], 'loading', false);
         // display success message to user
         this.$emit('display-message', { msg: response.text || 'Successfully tested notifier.', type: 'success' });

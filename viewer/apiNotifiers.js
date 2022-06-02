@@ -3,9 +3,8 @@
 const glob = require('glob');
 const path = require('path');
 const util = require('util');
-const User = require('../common/user');
 
-module.exports = (Config, Db, internals) => {
+module.exports = (Config, Db, internals, ViewerUtils) => {
   const notifierAPIs = {};
 
   // --------------------------------------------------------------------------
@@ -28,25 +27,51 @@ module.exports = (Config, Db, internals) => {
     });
   };
 
-  notifierAPIs.issueAlert = (notifierName, alertMessage, continueProcess) => {
-    if (!notifierName) {
-      return continueProcess('No name supplied for notifier');
+  /**
+   * Checks that the notifier type is valid and the required fields are filled out
+   * @param {string} type - The type of notifier that is being checked
+   * @param {Array} fields - The list of fields to be checked against the type of notifier
+   *                         to determine that all the required fields are filled out
+   * @returns {string|undefined} - String message to describe check error or undefined if all is good
+   */
+  function checkNotifierTypesAndFields (type, fields) {
+    if (!internals.notifiers) { buildNotifiers(); }
+
+    let foundNotifier;
+    for (const n in internals.notifiers) {
+      const notifier = internals.notifiers[n];
+      if (notifier.type === type) {
+        foundNotifier = notifier;
+      }
+    }
+
+    if (!foundNotifier) {
+      return 'Unknown notifier type';
+    }
+
+    // check that required notifier fields exist
+    for (const field of foundNotifier.fields) {
+      if (field.required) {
+        for (const sentField of fields) {
+          if (sentField.name === field.name && !sentField.value) {
+            return `Missing a value for ${field.name}`;
+          }
+        }
+      }
+    }
+
+    return;
+  }
+
+  notifierAPIs.issueAlert = async (id, alertMessage, continueProcess) => {
+    if (!id) {
+      return continueProcess('No id supplied for notifier');
     }
 
     if (!internals.notifiers) { buildNotifiers(); }
 
-    // find notifier
-    User.getUser('_moloch_shared', (err, sharedUser) => {
-      if (!sharedUser) {
-        if (Config.debug) {
-          console.log('Cannot find notifier, no alert can be issued');
-        }
-        return continueProcess('Cannot find notifier, no alert can be issued');
-      }
-
-      sharedUser.notifiers = sharedUser.notifiers || {};
-
-      const notifier = sharedUser.notifiers[notifierName];
+    try {
+      const { body: { _source: notifier } } = await Db.getNotifier(id);
 
       if (!notifier) {
         if (Config.debug) {
@@ -94,9 +119,14 @@ module.exports = (Config, Db, internals) => {
             err = response.errors[e];
           }
         }
-        return continueProcess(err);
+        return continueProcess(err, notifier.name);
       });
-    });
+    } catch (err) {
+      if (Config.debug) {
+        console.log('Cannot find notifier, no alert can be issued');
+      }
+      return continueProcess('Cannot find notifier, no alert can be issued');
+    }
   };
 
   // --------------------------------------------------------------------------
@@ -134,46 +164,47 @@ module.exports = (Config, Db, internals) => {
    * @returns {Notifier[]} notifiers - The notifiers that have been created.
    */
   notifierAPIs.getNotifiers = (req, res) => {
-    function cloneNotifiers (notifiers) {
-      const clone = {};
+    const roles = [...req.user._allRoles.keys()]; // es requries an array for terms search
 
-      for (const key in notifiers) { // strip sensitive notifier fields
-        if (notifiers[key]) {
-          const notifier = notifiers[key];
-          clone[key] = {
-            name: notifier.name,
-            type: notifier.type
-          };
+    const query = {
+      sort: { created: { order: 'asc' } }
+    };
+
+    // if not an admin, restrict who can see the notifiers
+    if (!req.user.hasRole('arkimeAdmin')) {
+      query.query = {
+        bool: {
+          filter: [
+            {
+              bool: {
+                should: [
+                  { terms: { roles: roles } }, // shared via user role
+                  { term: { users: req.user.userId } } // shared via userId
+                ]
+              }
+            }
+          ]
         }
-      }
-
-      return clone;
+      };
     }
 
-    // send client an array so it can be sorted and is always in the same order
-    function arrayifyAndSort (notifiers) {
-      const notifierArray = [];
-      for (const key in notifiers) {
-        const notifier = notifiers[key];
-        notifier.key = key;
-        notifierArray.push(notifier);
-      }
-      notifierArray.sort((a, b) => { return a.created < b.created; });
-      return notifierArray;
-    }
+    Db.searchNotifiers(query).then(({ body: { hits: { hits: notifiers } } }) => {
+      const results = notifiers.map((notifier) => {
+        const id = notifier._id;
+        const result = notifier._source;
+        // client expects a string
+        result.users = result.users.join(',');
+        if (!req.user.hasRole('arkimeAdmin')) {
+          // non-admins only need name and type to use notifiers (they cannot create/update/delete)
+          const notifierType = result.type;
+          const notifierName = result.name;
+          return { name: notifierName, type: notifierType };
+        }
+        result.id = id;
+        return result;
+      });
 
-    User.getUser('_moloch_shared', (err, sharedUser) => {
-      if (!sharedUser) {
-        return res.send([]);
-      }
-
-      const notifiers = sharedUser.notifiers || [];
-
-      if (req.user.hasRole('arkimeAdmin')) {
-        return res.send(arrayifyAndSort(notifiers));
-      }
-
-      return res.send(arrayifyAndSort(cloneNotifiers(notifiers)));
+      return res.send(results);
     });
   };
 
@@ -182,16 +213,16 @@ module.exports = (Config, Db, internals) => {
    *
    * Creates a new notifier (admin only).
    * @name /notifier
-   * @param {string} name - The name of the new notifier (must be unique).
+   * @param {string} name - The name of the new notifier.
    * @param {type} type - The type of notifier.
    * @param {array} fields - The fields to configure the notifier.
    * @returns {boolean} success - Whether the create notifier operation was successful.
    * @returns {string} text - The success/error message to (optionally) display to the user.
    * @returns {Notifier} notifier - If successful, the notifier with name sanitized and created/user fields added.
    */
-  notifierAPIs.createNotifier = (req, res) => {
+  notifierAPIs.createNotifier = async (req, res) => {
     if (!req.body.name) {
-      return res.serverError(403, 'Missing a unique notifier name');
+      return res.serverError(403, 'Missing a notifier name');
     }
 
     if (!req.body.type) {
@@ -208,230 +239,160 @@ module.exports = (Config, Db, internals) => {
 
     req.body.name = req.body.name.replace(/[^-a-zA-Z0-9_: ]/g, '');
 
-    if (!internals.notifiers) { buildNotifiers(); }
-
-    let foundNotifier;
-    for (const n in internals.notifiers) {
-      const notifier = internals.notifiers[n];
-      if (notifier.type === req.body.type) {
-        foundNotifier = notifier;
-      }
-    }
-
-    if (!foundNotifier) {
-      return res.serverError(403, 'Unknown notifier type');
-    }
-
-    // check that required notifier fields exist
-    for (const field of foundNotifier.fields) {
-      if (field.required) {
-        for (const sentField of req.body.fields) {
-          if (sentField.name === field.name && !sentField.value) {
-            return res.serverError(403, `Missing a value for ${field.name}`);
-          }
-        }
-      }
+    const errorMsg = checkNotifierTypesAndFields(req.body.type, req.body.fields);
+    if (errorMsg) {
+      return res.serverError(403, errorMsg);
     }
 
     // add user and created date
     req.body.user = req.user.userId;
     req.body.created = Math.floor(Date.now() / 1000);
 
-    // save the notifier on the shared user
-    User.getUser('_moloch_shared', (err, sharedUser) => {
-      if (!sharedUser) {
-        // sharing for the first time
-        sharedUser = {
-          userId: '_moloch_shared',
-          userName: '_moloch_shared',
-          enabled: false,
-          webEnabled: false,
-          emailSearch: false,
-          headerAuthEnabled: false,
-          removeEnabled: false,
-          packetSearch: false,
-          views: {},
-          notifiers: {}
-        };
-      }
+    // comma/newline separated value -> array of values
+    let users = ViewerUtils.commaStringToArray(req.body.users || '');
+    users = await ViewerUtils.validateUserIds(users);
+    req.body.users = users.validUsers;
 
-      sharedUser.notifiers = sharedUser.notifiers || {};
+    try {
+      const { body: { _id: id } } = await Db.createNotifier(req.body);
 
-      if (sharedUser.notifiers[req.body.name]) {
-        if (Config.debug) {
-          console.log('Trying to add duplicate notifier', sharedUser);
-        }
-        return res.serverError(403, 'Notifier already exists');
-      }
-
-      sharedUser.notifiers[req.body.name] = req.body;
-
-      User.setUser('_moloch_shared', sharedUser, (err, info) => {
-        if (err) {
-          console.log(`ERROR - ${req.method} /api/notifier`, util.inspect(err, false, 50), info);
-          return res.serverError(500, 'Creating notifier failed');
-        }
-        return res.send(JSON.stringify({
-          success: true,
-          text: 'Successfully created notifier',
-          notifier: { ...req.body, key: req.body.name }
-        }));
-      });
-    });
+      req.body.id = id;
+      req.body.users = req.body.users.join(',');
+      return res.send(JSON.stringify({
+        success: true,
+        notifier: req.body,
+        text: 'Created notifier!',
+        invalidUsers: users.invalidUsers
+      }));
+    } catch (err) {
+      console.log(`ERROR - ${req.method} /api/notifier (createNotifier)`, util.inspect(err, false, 50));
+      return res.serverError(500, 'Error creating notifier');
+    }
   };
 
   /**
-   * PUT - /api/notifier/:name
+   * PUT - /api/notifier/:id
    *
    * Updates an existing notifier (admin only).
-   * @name /notifier/:name
-   * @param {string} name - The new name of the notifier (must be unique).
+   * @name /notifier/:id
+   * @param {string} id - The new id of the notifier.
    * @param {type} type - The new type of notifier.
    * @param {array} fields - The new field values to configure the notifier.
    * @returns {boolean} success - Whether the update notifier operation was successful.
    * @returns {string} text - The success/error message to (optionally) display to the user.
    * @returns {Notifier} notifier - If successful, the updated notifier with name sanitized and updated field added/updated.
    */
-  notifierAPIs.updateNotifier = (req, res) => {
-    User.getUser('_moloch_shared', (err, sharedUser) => {
-      if (!sharedUser) {
-        return res.serverError(404, 'Cannot find notifer to udpate');
+  notifierAPIs.updateNotifier = async (req, res) => {
+    if (!req.body.name) {
+      return res.serverError(403, 'Missing a notifier name');
+    }
+
+    if (!req.body.fields) {
+      return res.serverError(403, 'Missing notifier fields');
+    }
+
+    if (!Array.isArray(req.body.fields)) {
+      return res.serverError(403, 'Notifier fields must be an array');
+    }
+
+    req.body.name = req.body.name.replace(/[^-a-zA-Z0-9_: ]/g, '');
+
+    const errorMsg = checkNotifierTypesAndFields(req.body.type, req.body.fields);
+    if (errorMsg) {
+      return res.serverError(403, errorMsg);
+    }
+
+    try {
+      const { body: { _source: notifier } } = await Db.getNotifier(req.params.id);
+
+      if (!notifier) {
+        return res.serverError(404, 'Notifier not found');
       }
 
-      sharedUser.notifiers = sharedUser.notifiers || {};
+      // only name, fields, roles, users can change
+      notifier.name = req.body.name;
+      notifier.roles = req.body.roles;
+      notifier.fields = req.body.fields;
+      notifier.updated = Math.floor(Date.now() / 1000); // update/add updated time
 
-      if (!sharedUser.notifiers[req.params.name]) {
-        return res.serverError(404, 'Cannot find notifer to udpate');
-      }
+      // comma/newline separated value -> array of values
+      let users = ViewerUtils.commaStringToArray(req.body.users || '');
+      users = await ViewerUtils.validateUserIds(users);
+      notifier.users = users.validUsers;
 
-      if (!req.body.name) {
-        return res.serverError(403, 'Missing a unique notifier name');
-      }
-
-      if (!req.body.type) {
-        return res.serverError(403, 'Missing notifier type');
-      }
-
-      if (!req.body.fields) {
-        return res.serverError(403, 'Missing notifier fields');
-      }
-
-      if (!Array.isArray(req.body.fields)) {
-        return res.serverError(403, 'Notifier fields must be an array');
-      }
-
-      req.body.name = req.body.name.replace(/[^-a-zA-Z0-9_: ]/g, '');
-
-      if (!internals.notifiers) { buildNotifiers(); }
-
-      let foundNotifier;
-      for (const n in internals.notifiers) {
-        const notifier = internals.notifiers[n];
-        if (notifier.type === req.body.type) {
-          foundNotifier = notifier;
-        }
-      }
-
-      if (!foundNotifier) { return res.serverError(403, 'Unknown notifier type'); }
-
-      // check that required notifier fields exist
-      for (const field of foundNotifier.fields) {
-        if (field.required) {
-          for (const sentField of req.body.fields) {
-            if (sentField.name === field.name && !sentField.value) {
-              return res.serverError(403, `Missing a value for ${field.name}`);
-            }
-          }
-        }
-      }
-
-      sharedUser.notifiers[req.body.name] = {
-        name: req.body.name, // update name
-        type: sharedUser.notifiers[req.params.name].type, // type can't change
-        user: sharedUser.notifiers[req.params.name].user, // user can't change
-        created: sharedUser.notifiers[req.params.name].created, // created can't change
-        updated: Math.floor(Date.now() / 1000), // update/add updated time
-        fields: req.body.fields // update fields
-      };
-
-      // delete the old notifier if the name has changed
-      if (sharedUser.notifiers[req.params.name] && req.body.name !== req.params.name) {
-        sharedUser.notifiers[req.params.name] = null;
-        delete sharedUser.notifiers[req.params.name];
-      }
-
-      User.setUser('_moloch_shared', sharedUser, (err, info) => {
-        if (err) {
-          console.log(`ERROR - ${req.method} /api/notifier/${req.params.name}`, util.inspect(err, false, 50), info);
-          return res.serverError(500, 'Updating notifier failed');
-        }
-        return res.send(JSON.stringify({
+      try {
+        await Db.setNotifier(req.params.id, notifier);
+        notifier.id = req.params.id;
+        notifier.users = notifier.users.join(',');
+        res.send(JSON.stringify({
+          notifier,
           success: true,
-          text: 'Successfully updated notifier',
-          notifier: { ...sharedUser.notifiers[req.body.name], key: req.body.name }
+          invalidUsers: users.invalidUsers,
+          text: 'Updated notifier successfully'
         }));
-      });
-    });
+      } catch (err) {
+        console.log(`ERROR - ${req.method} /api/notifier/${req.params.id} (setNotifier)`, util.inspect(err, false, 50));
+        return res.serverError(500, 'Error updating notifier');
+      }
+    } catch (err) {
+      console.log(`ERROR - ${req.method} /api/notifier/${req.params.id} (getNotifier)`, util.inspect(err, false, 50));
+      return res.serverError(500, 'Fetching notifier to update failed');
+    }
   };
 
   /**
-   * DELETE - /api/notifier/:name
+   * DELETE - /api/notifier/:id
    *
    * Deletes an existing notifier (admin only).
-   * @name /notifier/:name
+   * @name /notifier/:id
    * @returns {boolean} success - Whether the delete notifier operation was successful.
    * @returns {string} text - The success/error message to (optionally) display to the user.
-   * @returns {string} name - If successful, the name of the deleted notifier.
    */
-  notifierAPIs.deleteNotifier = (req, res) => {
-    User.getUser('_moloch_shared', (err, sharedUser) => {
-      if (!sharedUser) {
-        return res.serverError(404, 'Cannot find notifer to remove');
+  notifierAPIs.deleteNotifier = async (req, res) => {
+    try {
+      const { body: notifier } = await Db.getNotifier(req.params.id);
+
+      if (!notifier) {
+        return res.serverError(404, 'Notifier not found');
       }
 
-      sharedUser.notifiers = sharedUser.notifiers || {};
-
-      if (!sharedUser.notifiers[req.params.name]) {
-        return res.serverError(404, 'Cannot find notifer to remove');
-      }
-
-      sharedUser.notifiers[req.params.name] = undefined;
-
-      User.setUser('_moloch_shared', sharedUser, (err, info) => {
-        if (err) {
-          console.log(`ERROR - ${req.method} /api/notifier/${req.params.name}`, util.inspect(err, false, 50), info);
-          return res.serverError(500, 'Deleting notifier failed');
-        }
-        return res.send(JSON.stringify({
+      try {
+        await Db.deleteNotifier(req.params.id);
+        res.send(JSON.stringify({
           success: true,
-          text: 'Successfully deleted notifier',
-          name: req.params.name
+          text: 'Deleted notifier successfully'
         }));
-      });
-    });
+      } catch (err) {
+        console.log(`ERROR - ${req.method} /api/notifier/${req.params.id} (deleteNotifier)`, util.inspect(err, false, 50));
+        return res.serverError(500, 'Error deleting notifier');
+      }
+    } catch (err) {
+      console.log(`ERROR - ${req.method} /api/notifier/${req.params.id} (deleteNotifier)`, util.inspect(err, false, 50));
+      return res.serverError(500, 'Fetching notifier to delete failed');
+    }
   };
 
   /**
-   * POST - /api/notifier/:name/test
+   * POST - /api/notifier/:id/test
    *
    * Tests an existing notifier (admin only).
-   * @name /notifier/:name/test
+   * @name /notifier/:id/test
    * @returns {boolean} success - Whether the test notifier operation was successful.
    * @returns {string} text - The success/error message to (optionally) display to the user.
    */
   notifierAPIs.testNotifier = (req, res) => {
-    function continueProcess (err) {
+    function continueProcess (err, notifierName) {
       if (err) {
         return res.serverError(500, `Error testing alert: ${err}`);
       }
 
       return res.send(JSON.stringify({
         success: true,
-        text: `Successfully issued alert using the ${req.params.name} notifier.`
+        text: `Successfully issued alert using the ${notifierName} notifier.`
       }));
     }
 
-    notifierAPIs.issueAlert(req.params.name, `Test alert from ${req.user.userId}`, continueProcess);
+    notifierAPIs.issueAlert(req.params.id, `Test alert from ${req.user.userId}`, continueProcess);
   };
 
   return notifierAPIs;
