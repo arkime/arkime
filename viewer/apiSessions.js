@@ -1358,7 +1358,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
 
     let shortcuts;
     try { // try to fetch shortcuts
-      shortcuts = await Db.getShortcutsCache(req.user.userId);
+      shortcuts = await Db.getShortcutsCache(req.user);
     } catch (err) { // don't need to do anything, there will just be no
       // shortcuts sent to the parser. but still log the error.
       console.log('ERROR - fetching shortcuts cache when building sessions query', util.inspect(err, false, 50));

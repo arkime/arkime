@@ -1304,18 +1304,21 @@ exports.setShortcut = async (id, doc) => {
 exports.getShortcut = async (id) => {
   return internals.usersClient7.get({ index: internals.remoteShortcutsIndex, id: id });
 };
-exports.getShortcutsCache = async (userId) => {
-  if (internals.shortcutsCache[userId] && internals.shortcutsCache._timeStamp > Date.now() - 30000) {
-    return internals.shortcutsCache[userId];
+exports.getShortcutsCache = async (user) => {
+  if (internals.shortcutsCache[user.userId] && internals.shortcutsCache._timeStamp > Date.now() - 30000) {
+    return internals.shortcutsCache[user.userId];
   }
+
+  const roles = [...user._allRoles.keys()]; // es requries an array for terms search
 
   // only get shortcuts for this user or shared
   const query = {
     query: {
       bool: {
         should: [
-          { term: { shared: true } },
-          { term: { userId: userId } }
+          { terms: { roles: roles } }, // shared via user role
+          { term: { users: user.userId } }, // shared via userId
+          { term: { userId: user.userId } } // created by this user
         ]
       }
     },
@@ -1330,7 +1333,7 @@ exports.getShortcutsCache = async (userId) => {
     shortcutsMap[shortcut._source.name] = shortcut;
   }
 
-  internals.shortcutsCache[userId] = shortcutsMap;
+  internals.shortcutsCache[user.userId] = shortcutsMap;
   internals.shortcutsCache._timeStamp = Date.now();
 
   return shortcutsMap;

@@ -105,6 +105,8 @@ module.exports = (Db, internals, ViewerUtils) => {
     const user = req.settingUser;
     if (!user) { return res.send({}); }
 
+    const roles = [...user._allRoles.keys()]; // es requries an array for terms search
+
     const map = req.query.map && req.query.map === 'true';
 
     // only get shortcuts for setting user or shared
@@ -115,7 +117,7 @@ module.exports = (Db, internals, ViewerUtils) => {
             {
               bool: {
                 should: [
-                  { terms: { roles: req.settingUser.roles } }, // shared via user role
+                  { terms: { roles: roles } }, // shared via user role
                   { term: { users: req.settingUser.userId } }, // shared via userId
                   { term: { userId: req.settingUser.userId } } // created by this user
                 ]
