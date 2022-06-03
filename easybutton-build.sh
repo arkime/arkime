@@ -117,8 +117,17 @@ if [ -f "/etc/debian_version" ]; then
     echo "ARKIME: apt-get failed"
     exit 1
   fi
+
+  # Just use OS packages, currently for Ubuntu 22
   if [ $DOTHIRDPARTY -eq 0 ]; then
-      apt-get -qq install libmaxminddb-dev libcurl4-openssl-dev libyara-dev libglib2.0-dev libpcap-dev libnghttp2-dev
+      apt-get -qq install libmaxminddb-dev libcurl4-openssl-dev libyara-dev libglib2.0-dev libpcap-dev libnghttp2-dev liblua5.4-dev
+      if [ $? -ne 0 ]; then
+        echo "ARKIME: apt-get failed"
+        exit 1
+      fi
+      export LUA_CFLAGS="-I/usr/include/lua5.4/"
+      export LUA_LIBS="-llua5.4"
+      with_lua=no
   fi
 fi
 
@@ -153,7 +162,7 @@ elif [ -f "/etc/arch-release" ]; then
     echo './configure --with-libpcap=no --with-yara=no --with-glib2=no --with-pfring=no --with-curl=no --with-lua=no LIBS="-lpcap -lyara -llua -lcurl" GLIB2_CFLAGS="-I/usr/include/glib-2.0 -I/usr/lib/glib-2.0/include" GLIB2_LIBS="-lglib-2.0 -lgmodule-2.0 -lgobject-2.0 -lgio-2.0"'
     ./configure --with-libpcap=no --with-yara=no --with-glib2=no --with-pfring=no --with-curl=no --with-lua=no LIBS="-lpcap -lyara -llua -lcurl" GLIB2_CFLAGS="-I/usr/include/glib-2.0 -I/usr/lib/glib-2.0/include" GLIB2_LIBS="-lglib-2.0 -lgmodule-2.0 -lgobject-2.0 -lgio-2.0"
 elif [ $DOTHIRDPARTY -eq 0 ]; then
-    ./configure
+    ./configure --with-lua=$with_lua
 else
   echo "ARKIME: Downloading and building static thirdparty libraries"
   if [ ! -d "thirdparty" ]; then
