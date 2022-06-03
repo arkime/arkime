@@ -287,6 +287,10 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
       return res.serverError(403, 'Missing a notifier name');
     }
 
+    if (!req.body.type) {
+      return res.serverError(403, 'Missing notifier type');
+    }
+
     if (!req.body.fields) {
       return res.serverError(403, 'Missing notifier fields');
     }

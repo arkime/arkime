@@ -113,10 +113,7 @@
             </div> <!-- /new notifier fields -->
             <!-- new notifier sharing -->
             <div class="form-group row">
-              <label class="col-2 col-form-label">
-                Sharing
-              </label>
-              <div class="col-10 d-flex">
+              <div class="col d-flex">
                 <div>
                   <RoleDropdown
                     :roles="roles"
@@ -227,11 +224,8 @@
             </div> <!-- /notifier fields -->
             <!-- notifier sharing -->
             <div class="form-group row">
-              <label class="col-2 col-form-label">
-                Sharing
-              </label>
-              <div class="col-10 d-flex">
-                <div>
+              <div class="col-12 d-flex">
+                <div v-b-tooltip.hover.left="'Share with roles'">
                   <RoleDropdown
                     :roles="roles"
                     :id="notifier.id"
@@ -404,7 +398,11 @@ export default {
         this.notifiers.push(response.notifier);
         this.newNotifier = undefined;
         // display success message to user
-        this.$emit('display-message', { msg: response.text || 'Successfully created notifier.', type: 'success' });
+        let msg = response.text || 'Successfully created notifier.';
+        if (response.invalidUsers && response.invalidUsers.length) {
+          msg += ` Could not add these users: ${response.invalidUsers.join(',')}`;
+        }
+        this.$emit('display-message', { msg });
       }).catch((error) => {
         this.$emit('display-message', { msg: error.text || 'Error creating notifier.', type: 'danger' });
       });
@@ -428,7 +426,11 @@ export default {
       SettingsService.updateNotifier(id, notifier).then((response) => {
         this.notifiers.splice(index, 1, response.notifier);
         // display success message to user
-        this.$emit('display-message', { msg: response.text || 'Successfully updated notifier.', type: 'success' });
+        let msg = response.text || 'Successfully updated notifier.';
+        if (response.invalidUsers && response.invalidUsers.length) {
+          msg += ` Could not add these users: ${response.invalidUsers.join(',')}`;
+        }
+        this.$emit('display-message', { msg });
       }).catch((error) => {
         this.$emit('display-message', { msg: error.text || 'Error updating notifier.', type: 'danger' });
       });
