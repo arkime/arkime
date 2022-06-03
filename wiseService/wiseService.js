@@ -146,7 +146,7 @@ function processArgs (argv) {
       console.log('  --debug                     Increase debug level, multiple are supported');
       console.log('  --webconfig                 Allow the config to be edited from web page');
       console.log('  --workers <b>               Number of worker processes to create');
-      console.log('  --insecure                  Disable cert verification');
+      console.log('  --insecure                  Disable certificate verification for https calls');
 
       process.exit(0);
     }

@@ -379,7 +379,7 @@ function processArgs (argv) {
       console.log('  -c <file>                   Where to fetch the config file from');
       console.log('  -o <section>.<key>=<value>  Override the config file');
       console.log('  --debug                     Increase debug level, multiple are supported');
-      console.log('  --insecure                  Disable cert verification');
+      console.log('  --insecure                  Disable certificate verification for https calls');
 
       process.exit(0);
     }
