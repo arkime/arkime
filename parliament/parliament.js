@@ -57,7 +57,8 @@ const settingsDefault = {
 
 const internals = {
   notifierTypes: {},
-  authSetupCode: cryptoLib.randomBytes(20).toString('base64').replace(/[=+/]/g, '').substr(0, 10)
+  authSetupCode: cryptoLib.randomBytes(20).toString('base64').replace(/[=+/]/g, '').substr(0, 10),
+  insecure: false
 };
 
 const parliamentReadError = `\nYou must fix this before you can run Parliament.
@@ -89,6 +90,7 @@ const invalidTokens = {};
     console.log('  --cert         Public certificate to use for https');
     console.log('  --key          Private certificate to use for https');
     console.log('  --debug        Increase debug level, multiple are supported');
+    console.log('  --insecure     Disable certificate verification for https calls');
 
     process.exit(0);
   }
@@ -132,6 +134,10 @@ const invalidTokens = {};
 
     case '--debug':
       debug++;
+      break;
+
+    case '--insecure':
+      internals.insecure = true;
       break;
 
     case '-h':
@@ -606,7 +612,7 @@ function getHealth (cluster) {
     const options = {
       url: `${cluster.localUrl || cluster.url}/eshealth.json`,
       method: 'GET',
-      rejectUnauthorized: false,
+      rejectUnauthorized: !internals.insecure,
       timeout: timeout
     };
 
@@ -659,7 +665,7 @@ function getStats (cluster) {
     const options = {
       url: `${cluster.localUrl || cluster.url}/api/parliament`,
       method: 'GET',
-      rejectUnauthorized: false,
+      rejectUnauthorized: !internals.insecure,
       timeout: timeout
     };
 

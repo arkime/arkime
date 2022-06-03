@@ -270,7 +270,7 @@ esac ], [
   else
     TMP=$LIBS
     LIBS="-lyara $LIBS"
-    AC_TRY_LINK([#include <yara.h>], yr_init(), LIBYARA_FOUND=1,LIBYARA_FOUND=0)
+    AC_TRY_LINK([#include <yara.h>], yr_initialize(), LIBYARA_FOUND=1,LIBYARA_FOUND=0)
     LIBS=$TMP
     if test $LIBYARA_FOUND = 1 ; then
       YARA_LIBS="-lyara"

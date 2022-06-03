@@ -1304,18 +1304,21 @@ exports.setShortcut = async (id, doc) => {
 exports.getShortcut = async (id) => {
   return internals.usersClient7.get({ index: internals.remoteShortcutsIndex, id: id });
 };
-exports.getShortcutsCache = async (userId) => {
-  if (internals.shortcutsCache[userId] && internals.shortcutsCache._timeStamp > Date.now() - 30000) {
-    return internals.shortcutsCache[userId];
+exports.getShortcutsCache = async (user) => {
+  if (internals.shortcutsCache[user.userId] && internals.shortcutsCache._timeStamp > Date.now() - 30000) {
+    return internals.shortcutsCache[user.userId];
   }
+
+  const roles = [...user._allRoles.keys()]; // es requries an array for terms search
 
   // only get shortcuts for this user or shared
   const query = {
     query: {
       bool: {
         should: [
-          { term: { shared: true } },
-          { term: { userId: userId } }
+          { terms: { roles: roles } }, // shared via user role
+          { term: { users: user.userId } }, // shared via userId
+          { term: { userId: user.userId } } // created by this user
         ]
       }
     },
@@ -1330,7 +1333,7 @@ exports.getShortcutsCache = async (userId) => {
     shortcutsMap[shortcut._source.name] = shortcut;
   }
 
-  internals.shortcutsCache[userId] = shortcutsMap;
+  internals.shortcutsCache[user.userId] = shortcutsMap;
   internals.shortcutsCache._timeStamp = Date.now();
 
   return shortcutsMap;
@@ -1559,8 +1562,11 @@ exports.numberOfDocuments = async (index, options) => {
 exports.checkVersion = async function (minVersion, checkUsers) {
   const match = process.versions.node.match(/^(\d+)\.(\d+)\.(\d+)/);
   const nodeVersion = parseInt(match[1], 10) * 10000 + parseInt(match[2], 10) * 100 + parseInt(match[3], 10);
-  if (nodeVersion < 81200) {
-    console.log(`ERROR - Need at least node 8.12.0, currently using ${process.version}`);
+  if (nodeVersion < 160000) {
+    console.log(`ERROR - Need node 16.x, currently using ${process.version}`);
+    process.exit(1);
+  } else if (nodeVersion >= 180000) {
+    console.log(`ERROR - Node version ${process.version} is not supported, please use node 16.x`);
     process.exit(1);
   }
 

@@ -349,7 +349,7 @@ my ($cmd) = @_;
             system("cd ../viewer ; $node --trace-warnings viewer.js $es $ues -c ../tests/config.test.ini -n test3 --debug $INSECURE > /tmp/moloch.test3 &");
             system("cd ../viewer ; $node --trace-warnings viewer.js $ues -c ../tests/config.test.ini -n all --debug $INSECURE > /tmp/moloch.all &");
             system("cd ../parliament ; $node --trace-warnings parliament.js --regressionTests -c /dev/null --debug > /tmp/moloch.parliament 2>&1 &");
-            system("cd ../cont3xt ; $node --trace-warnings cont3xt.js $ces $cues --regressionTests -c ../tests/cont3xt.tests.ini --debug > /tmp/moloch.cont3xt 2>&1 &");
+            system("cd ../cont3xt ; $node --trace-warnings cont3xt.js $ces $cues --regressionTests -c ../tests/cont3xt.tests.ini --debug $INSECURE > /tmp/moloch.cont3xt 2>&1 &");
         } else {
             system("cd ../viewer ; $node multies.js $mes -c ../tests/config.test.ini -n all $INSECURE > /dev/null &");
             waitFor($MolochTest::host, 8200, 1);
@@ -358,7 +358,7 @@ my ($cmd) = @_;
             system("cd ../viewer ; $node viewer.js $es $ues -c ../tests/config.test.ini -n test3 $INSECURE > /dev/null &");
             system("cd ../viewer ; $node viewer.js $ues -c ../tests/config.test.ini -n all $INSECURE > /dev/null &");
             system("cd ../parliament ; $node parliament.js --regressionTests -c /dev/null > /dev/null 2>&1 &");
-            system("cd ../cont3xt ; $node cont3xt.js $ces $cues --regressionTests -c ../tests/cont3xt.tests.ini > /dev/null 2>&1 &");
+            system("cd ../cont3xt ; $node cont3xt.js $ces $cues --regressionTests -c ../tests/cont3xt.tests.ini $INSECURE > /dev/null 2>&1 &");
         }
         sleep (10000) if ($cmd eq "--viewerhang");
     }

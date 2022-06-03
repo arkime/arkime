@@ -16,7 +16,7 @@ countTest(0, "date=-1&expression=" . uri_escape("file=$copytest"));
 system("../db/db.pl --prefix tests $MolochTest::elasticsearch rm $copytest 2>&1 1>/dev/null");
 viewerPost("/regressionTests/flushCache");
 system("/bin/cp pcap/socks-http-example.pcap copytest.pcap");
-system("../capture/capture $es -c config.test.ini -n test -r copytest.pcap");
+system("../capture/capture $es -c config.test.ini -n test -r copytest.pcap $ENV{INSECURE}");
 esGet("/_flush");
 esGet("/_refresh");
 

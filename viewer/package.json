@@ -9,7 +9,7 @@
     "compression": "^1.6.2",
     "fs-ext": "^2.0.0",
     "method-override": "^2.3.6",
-    "multer": "^1.2.0",
+    "multer": "^1.4.5-lts.1",
     "peek-stream": "^1.1.1",
     "pngjs": "^3.3.3",
     "re2": "^1.17.3",
@@ -33,7 +33,7 @@
     "test": "cd ../ && npm run viewer:testui"
   },
   "engines": {
-    "node": ">= 6.0.0",
+    "node": ">= 16.0.0 < 18",
     "npm": ">= 3.0.0"
   },
   "nodemonConfig": {

@@ -10,7 +10,7 @@ use strict;
 my $json;
 
     $json = mesGet("/");
-    is ($json->{tagline}, "You Know, for Search", "ES tagline");
+    ok ($json->{tagline} eq "You Know, for Search" || $json->{tagline} eq "The OpenSearch Project: https://opensearch.org/", "ES tagline");
     ok (!exists $json->{status} || $json->{status} == 200, "ES no status or 200 status");
 
     $json = mesGet("/_template/MULTIPREFIX_sessions3_template?filter_path=**._meta");
