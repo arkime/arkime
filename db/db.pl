@@ -5551,8 +5551,10 @@ sub notifiersMove
 
     foreach my $n (@notifiers) {
         my $notifier = $sharedUser->{notifiers}{$n};
+        $notifier->{users} = "";
         $notifier->{roles} = ["arkimeUser", "parliamentUser"];
-        esPost("/${PREFIX}notifiers/_doc/", to_json($notifier));
+        my $name = $notifier->{name};
+        esPost("/${PREFIX}notifiers/_doc/${name}", to_json($notifier));
     }
 
 # remove notifiers from the _moloch_shared user

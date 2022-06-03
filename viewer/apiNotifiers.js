@@ -193,7 +193,10 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
         const id = notifier._id;
         const result = notifier._source;
         // client expects a string
-        result.users = result.users.join(',');
+        result.users = '';
+        if (result.users) {
+          result.users = result.users.join(',') || '';
+        }
         if (!req.user.hasRole('arkimeAdmin')) {
           // non-admins only need name and type to use notifiers (they cannot create/update/delete)
           const notifierType = result.type;
