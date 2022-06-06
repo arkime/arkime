@@ -770,8 +770,8 @@
                       @change="cronQueryChanged(item)">
                       <option value=undefined>none</option>
                       <option v-for="notifier in notifiers"
-                        :key="notifier.name"
-                        :value="notifier.name">
+                        :key="notifier.id"
+                        :value="notifier.id">
                         {{ notifier.name }} ({{ notifier.type }})
                       </option>
                     </select>
@@ -957,8 +957,8 @@
                   class="form-control form-control-sm">
                   <option value=undefined>none</option>
                   <option v-for="notifier in notifiers"
-                    :key="notifier.name"
-                    :value="notifier.name">
+                    :key="notifier.id"
+                    :value="notifier.id">
                     {{ notifier.name }} ({{ notifier.type }})
                   </option>
                 </select>

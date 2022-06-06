@@ -117,7 +117,7 @@
       <div class="col-12">
         <span class="fa fa-fw fa-bell">
         </span>&nbsp;
-        Notifying: {{ job.notifier }}
+        Notifying: {{ notifierName }}
       </div>
     </div>
     <div class="row">
@@ -288,7 +288,8 @@ export default {
   name: 'HuntData',
   props: {
     job: Object,
-    user: Object
+    user: Object,
+    notifierName: String
   },
   components: {
     HuntStatus,

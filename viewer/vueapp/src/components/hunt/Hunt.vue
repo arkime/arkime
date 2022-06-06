@@ -154,8 +154,8 @@
                       style="-webkit-appearance: none;">
                       <option value=undefined>none</option>
                       <option v-for="notifier in notifiers"
-                        :key="notifier.name"
-                        :value="notifier.name">
+                        :key="notifier.id"
+                        :value="notifier.id">
                         {{ notifier.name }} ({{ notifier.type }})
                       </option>
                     </select>
@@ -548,7 +548,8 @@
                     @removeUser="removeUser"
                     @addUsers="addUsers"
                     :user="user"
-                    @updateHunt="updateHunt">
+                    @updateHunt="updateHunt"
+                    :notifierName="getNotifierName(runningJob.notifier)">
                   </hunt-data>
                 </div>
               </transition>
@@ -624,7 +625,8 @@
               @cancelJob="cancelJob"
               @removeJob="removeJob"
               @toggle="toggleJobDetail"
-              @openSessions="openSessions">
+              @openSessions="openSessions"
+              :notifierName="getNotifierName(job.notifier)">
             </hunt-row>
             <tr :key="`${job.id}-detail`"
               v-if="job.expanded">
@@ -633,7 +635,8 @@
                   @removeUser="removeUser"
                   @addUsers="addUsers"
                   :user="user"
-                  @updateHunt="updateHunt">
+                  @updateHunt="updateHunt"
+                  :notifierName="getNotifierName(job.notifier)">
                 </hunt-data>
               </td>
             </tr>
@@ -760,7 +763,8 @@
               @removeJob="removeJob"
               @toggle="toggleJobDetail"
               @openSessions="openSessions"
-              @removeFromSessions="removeFromSessions">
+              @removeFromSessions="removeFromSessions"
+              :notifierName="getNotifierName(job.notifier)">
             </hunt-row>
             <tr :key="`${job.id}-detail`"
               v-if="job.expanded">
@@ -770,7 +774,8 @@
                   @removeUser="removeUser"
                   @addUsers="addUsers"
                   :user="user"
-                  @updateHunt="updateHunt">
+                  @updateHunt="updateHunt"
+                  :notifierName="getNotifierName(job.notifier)">
                 </hunt-data>
               </td>
             </tr>
@@ -903,8 +908,6 @@ export default {
       jobUsers: '',
       jobDescription: '',
       jobRoles: [],
-      // notifiers
-      notifiers: undefined,
       // hunt limits
       huntWarn: this.$constants.MOLOCH_HUNTWARN,
       huntLimit: this.$constants.MOLOCH_HUNTLIMIT,
@@ -946,6 +949,9 @@ export default {
     },
     canView () {
       return HuntService.canViewHunt(this.user, this.runningJob);
+    },
+    notifiers () {
+      return this.$store.state.notifiers;
     }
   },
   mounted: function () {
@@ -953,7 +959,7 @@ export default {
       // wait for computed queries
       this.loadData();
       this.cancelAndLoad(true);
-      this.loadNotifiers();
+      SettingsService.getNotifiers(); // sets notifiers in store
     });
 
     // interval to load jobs every 5 seconds
@@ -1252,6 +1258,14 @@ export default {
         this.$set(this, 'floatingError', error.text || error);
       });
     },
+    getNotifierName (id) {
+      if (!this.notifiers) { return; }
+      for (const notifier of this.notifiers) {
+        if (notifier.id === id) {
+          return notifier.name;
+        }
+      }
+    },
     /* helper functions ---------------------------------------------------- */
     setErrorForList: function (arrayName, errorText) {
       let errorArea = 'queuedListError';
@@ -1404,12 +1418,6 @@ export default {
         this.sessions = {};
         this.loadingSessions = false;
         this.loadingSessionsError = 'Problem loading sessions. Try narrowing down your results on the sessions page first.';
-      });
-    },
-    /* retrieves the notifiers that have been configured */
-    loadNotifiers: function () {
-      SettingsService.getNotifiers().then((response) => {
-        this.notifiers = response;
       });
     }
   },
