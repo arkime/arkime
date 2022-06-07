@@ -67,7 +67,8 @@
 # 71 - user.roles, user.cont3xt
 # 72 - save es query in history, hunt description
 # 73 - hunt roles
-# 74 - shortcut sharing with users/roles, notifiers index
+# 74 - shortcut sharing with users/roles
+# 75 - notifiers index
 
 use HTTP::Request::Common;
 use LWP::UserAgent;
@@ -79,7 +80,7 @@ use IO::Compress::Gzip qw(gzip $GzipError);
 use IO::Uncompress::Gunzip qw(gunzip $GunzipError);
 use strict;
 
-my $VERSION = 74;
+my $VERSION = 75;
 my $verbose = 0;
 my $PREFIX = undef;
 my $OLDPREFIX = "";
@@ -7525,7 +7526,7 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
 
     logmsg "Starting Upgrade\n";
 
-    if ($main::versionNumber < 74) {
+    if ($main::versionNumber < 75) {
         checkForOld7Indices();
         sessions3Update();
         historyUpdate();
@@ -7533,7 +7534,7 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
         lookupsUpdate();
         notifiersCreate();
         notifiersMove();
-    } elsif ($main::versionNumber <= 74) {
+    } elsif ($main::versionNumber <= 75) {
         checkForOld7Indices();
         sessions3Update();
         historyUpdate();
