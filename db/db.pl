@@ -5515,6 +5515,16 @@ sub notifiersUpdate
 {
   "_source": {"enabled": "true"},
   "dynamic": "true",
+  "dynamic_templates": [
+    {
+      "string_template": {
+        "match_mapping_type": "string",
+        "mapping": {
+          "type": "keyword"
+        }
+      }
+    }
+  ],
   "properties": {
     "name": {
       "type": "keyword"
