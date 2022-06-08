@@ -125,7 +125,7 @@ class Auth {
   }
 
   static isAnonymousMode () {
-    return Auth.mode === 'anonymous';
+    return Auth.mode === 'anonymous' || Auth.mode === 'anonymousWithDB';
   }
 
   static #checkIps (req, res) {
