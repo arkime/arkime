@@ -70,7 +70,6 @@ NotifierAPIs.initialize({
   debug: Config.debug,
   anonymousMode: !!internals.noPasswordSecret && !Config.get('regressionTests', false)
 });
-// const notifierAPIs = require('../common/api.notifier')(Config.debug, !!internals.noPasswordSecret && !Config.get('regressionTests', false));
 const sessionAPIs = require('./apiSessions')(Config, Db, internals, ViewerUtils);
 const connectionAPIs = require('./apiConnections')(Config, Db, ViewerUtils, sessionAPIs);
 const statsAPIs = require('./apiStats')(Config, Db, internals, ViewerUtils);
