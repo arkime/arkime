@@ -65,18 +65,14 @@ const compression = require('compression');
 // internal app deps
 const { internals } = require('./internals')(app, Config);
 const ViewerUtils = require('./viewerUtils')(Config, Db, internals);
-const NotifierAPIs = require('../common/api.notifier');
-NotifierAPIs.initialize({
-  debug: Config.debug,
-  anonymousMode: !!internals.noPasswordSecret && !Config.get('regressionTests', false)
-});
+const Notifier = require('../common/notifier');
 const sessionAPIs = require('./apiSessions')(Config, Db, internals, ViewerUtils);
 const connectionAPIs = require('./apiConnections')(Config, Db, ViewerUtils, sessionAPIs);
 const statsAPIs = require('./apiStats')(Config, Db, internals, ViewerUtils);
-const huntAPIs = require('./apiHunts')(Config, Db, internals, NotifierAPIs, sessionAPIs, ViewerUtils, !!internals.noPasswordSecret && !Config.get('regressionTests', false));
+const huntAPIs = require('./apiHunts')(Config, Db, internals, sessionAPIs, ViewerUtils);
 const userAPIs = require('./apiUsers')(Config, Db, internals, ViewerUtils);
 const historyAPIs = require('./apiHistory')(Db);
-const shortcutAPIs = require('./apiShortcuts')(Db, internals, !!internals.noPasswordSecret && !Config.get('regressionTests', false));
+const shortcutAPIs = require('./apiShortcuts')(Db, internals);
 const miscAPIs = require('./apiMisc')(Config, Db, internals, sessionAPIs, userAPIs, ViewerUtils);
 
 // registers a get and a post
@@ -1409,37 +1405,37 @@ app.get( // user roles endpoint
 app.get( // notifier types endpoint
   ['/api/notifiertypes', '/notifierTypes'],
   [User.checkRole('arkimeAdmin'), checkCookieToken],
-  NotifierAPIs.getNotifierTypes
+  Notifier.apiGetNotifierTypes
 );
 
 app.get( // notifiers endpoint
   ['/api/notifiers', '/notifiers'],
   [checkCookieToken],
-  NotifierAPIs.getNotifiers
+  Notifier.apiGetNotifiers
 );
 
 app.post( // create notifier endpoint
   ['/api/notifier', '/notifiers'],
   [ArkimeUtil.noCacheJson, ArkimeUtil.getSettingUserDb, User.checkRole('arkimeAdmin'), checkCookieToken],
-  NotifierAPIs.createNotifier
+  Notifier.apiCreateNotifier
 );
 
 app.put( // update notifier endpoint
   ['/api/notifier/:id', '/notifiers/:id'],
   [ArkimeUtil.noCacheJson, ArkimeUtil.getSettingUserDb, User.checkRole('arkimeAdmin'), checkCookieToken],
-  NotifierAPIs.updateNotifier
+  Notifier.apiUpdateNotifier
 );
 
 app.delete( // delete notifier endpoint
   ['/api/notifier/:id', '/notifiers/:id'],
   [ArkimeUtil.noCacheJson, ArkimeUtil.getSettingUserDb, User.checkRole('arkimeAdmin'), checkCookieToken],
-  NotifierAPIs.deleteNotifier
+  Notifier.apiDeleteNotifier
 );
 
 app.post( // test notifier endpoint
   ['/api/notifier/:id/test', '/notifiers/:id/test'],
   [ArkimeUtil.noCacheJson, getSettingUserCache, User.checkRole('arkimeAdmin'), checkCookieToken],
-  NotifierAPIs.testNotifier
+  Notifier.apiTestNotifier
 );
 
 // history apis ---------------------------------------------------------------
@@ -2323,7 +2319,7 @@ ${Config.arkimeWebURL()}${urlPath}${cq.description ? '\n' + cq.description : ''}
                 `;
 
                 Db.refresh('*'); // Before sending alert make sure everything has been refreshed
-                NotifierAPIs.issueAlert(cq.notifier, message, continueProcess);
+                Notifier.issueAlert(cq.notifier, message, continueProcess);
               } else {
                 return continueProcess();
               }
@@ -2498,3 +2494,9 @@ Db.initialize({
   getCurrentUserCB: userAPIs.getCurrentUserCB,
   maxConcurrentShardRequests: Config.get('esMaxConcurrentShardRequests')
 }, main);
+
+Notifier.initialize({
+  debug: Config.debug,
+  prefix: internals.prefix,
+  esclient: User.getClient()
+});

@@ -2,8 +2,9 @@
 
 const util = require('util');
 const ArkimeUtil = require('../common/arkimeUtil');
+const User = require('../common/user');
 
-module.exports = (Db, internals, anonymousMode) => {
+module.exports = (Db, internals) => {
   const shortcutAPIs = {};
 
   // --------------------------------------------------------------------------
@@ -59,7 +60,7 @@ module.exports = (Db, internals, anonymousMode) => {
 
     // comma/newline separated value -> array of values
     let users = ArkimeUtil.commaOrNewlineStringToArray(shortcut.users || '');
-    users = await ArkimeUtil.validateUserIds(users, anonymousMode);
+    users = await User.validateUserIds(users);
     shortcut.users = users.validUsers;
 
     return { type, values, invalidUsers: users.invalidUsers };

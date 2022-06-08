@@ -1336,33 +1336,6 @@ exports.getShortcutsCache = async (userId) => {
   return shortcutsMap;
 };
 
-exports.searchNotifiers = async (query) => {
-  return internals.usersClient7.search({
-    index: fixIndex('notifiers'), body: query, rest_total_hits_as_int: true, version: true
-  });
-};
-exports.getNotifier = async (id) => {
-  return internals.usersClient7.get({ index: fixIndex('notifiers'), id: id });
-};
-exports.createNotifier = async (doc) => {
-  const response = await internals.usersClient7.index({
-    index: fixIndex('notifiers'), body: doc, refresh: 'wait_for', timeout: '10m'
-  });
-  return response;
-};
-exports.deleteNotifier = async (id) => {
-  const response = await internals.usersClient7.delete({
-    index: fixIndex('notifiers'), id: id, refresh: true
-  });
-  return response;
-};
-exports.setNotifier = async (id, doc) => {
-  const response = await internals.usersClient7.index({
-    index: fixIndex('notifiers'), body: doc, id: id, refresh: true, timeout: '10m'
-  });
-  return response;
-};
-
 exports.molochNodeStats = async (nodeName, cb) => {
   try {
     const { body: stat } = await exports.get('stats', 'stat', nodeName);
