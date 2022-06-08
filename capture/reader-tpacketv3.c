@@ -78,7 +78,7 @@ int reader_tpacketv3_stats(MolochReaderStats_t *stats)
 
     struct tpacket_stats_v3 tpstats;
     for (int i = 0; i < MAX_INTERFACES && config.interface[i]; i++) {
-        for (int t = 0; t < MAX_TPACKETV3_THREADS; t++) {
+        for (int t = 0; t < numThreads; t++) {
             socklen_t len = sizeof(tpstats);
             getsockopt(infos[i][t].fd, SOL_PACKET, PACKET_STATISTICS, &tpstats, &len);
 
@@ -189,11 +189,11 @@ void reader_tpacketv3_init(char *UNUSED(name))
     numThreads = moloch_config_int(NULL, "tpacketv3NumThreads", 2, 1, MAX_TPACKETV3_THREADS);
 
     if (blocksize % getpagesize() != 0) {
-        CONFIGEXIT("block size %d not divisible by pagesize %d", blocksize, getpagesize());
+        CONFIGEXIT("tpacketv3BlockSize=%d not divisible by pagesize %d", blocksize, getpagesize());
     }
 
     if (blocksize % config.snapLen != 0) {
-        CONFIGEXIT("tpacketv3BlockSize %d not divisible by snapLen %u", blocksize, config.snapLen);
+        CONFIGEXIT("tpacketv3BlockSize=%d not divisible by snapLen=%u", blocksize, config.snapLen);
     }
 
     moloch_packet_set_dltsnap(DLT_EN10MB, config.snapLen);
