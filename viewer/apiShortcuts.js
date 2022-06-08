@@ -1,8 +1,9 @@
 'use strict';
 
 const util = require('util');
+const ArkimeUtil = require('../common/arkimeUtil');
 
-module.exports = (Db, internals, ViewerUtils) => {
+module.exports = (Db, internals, anonymousMode) => {
   const shortcutAPIs = {};
 
   // --------------------------------------------------------------------------
@@ -49,7 +50,7 @@ module.exports = (Db, internals, ViewerUtils) => {
    */
   async function normalizeShortcut (shortcut) {
     // comma/newline separated value -> array of values
-    const values = ViewerUtils.commaStringToArray(shortcut.value);
+    const values = ArkimeUtil.commaOrNewlineStringToArray(shortcut.value);
     shortcut[shortcut.type] = values;
 
     const type = shortcut.type;
@@ -57,8 +58,8 @@ module.exports = (Db, internals, ViewerUtils) => {
     delete shortcut.value;
 
     // comma/newline separated value -> array of values
-    let users = ViewerUtils.commaStringToArray(shortcut.users || '');
-    users = await ViewerUtils.validateUserIds(users);
+    let users = ArkimeUtil.commaOrNewlineStringToArray(shortcut.users || '');
+    users = await ArkimeUtil.validateUserIds(users, anonymousMode);
     shortcut.users = users.validUsers;
 
     return { type, values, invalidUsers: users.invalidUsers };

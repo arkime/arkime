@@ -3,19 +3,22 @@
 const glob = require('glob');
 const path = require('path');
 const util = require('util');
+const Db = require('../viewer/db');
+const ArkimeUtil = require('./arkimeUtil');
 
-module.exports = (Config, Db, internals, ViewerUtils) => {
-  const notifierAPIs = {};
+class NotifierAPIs {
+  static debug;
+  static mode;
+  static notifierTypes;
 
-  // --------------------------------------------------------------------------
-  // HELPERS
-  // --------------------------------------------------------------------------
-  function buildNotifiers () {
-    internals.notifiers = {};
+  static initialize (options) {
+    NotifierAPIs.debug = options.debug ?? 0;
+    NotifierAPIs.anonymousMode = options.anonymousMode ?? false;
+    NotifierAPIs.notifierTypes = {};
 
     const api = {
       register: (str, info) => {
-        internals.notifiers[str] = info;
+        NotifierAPIs.notifierTypes[str] = info;
       }
     };
 
@@ -25,7 +28,11 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
       const plugin = require(file);
       plugin.init(api);
     });
-  };
+  }
+
+  // --------------------------------------------------------------------------
+  // HELPERS
+  // --------------------------------------------------------------------------
 
   /**
    * Checks that the notifier type is valid and the required fields are filled out
@@ -34,12 +41,10 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    *                         to determine that all the required fields are filled out
    * @returns {string|undefined} - String message to describe check error or undefined if all is good
    */
-  function checkNotifierTypesAndFields (type, fields) {
-    if (!internals.notifiers) { buildNotifiers(); }
-
+  static checkNotifierTypesAndFields (type, fields) {
     let foundNotifier;
-    for (const n in internals.notifiers) {
-      const notifier = internals.notifiers[n];
+    for (const n in NotifierAPIs.notifierTypes) {
+      const notifier = NotifierAPIs.notifierTypes[n];
       if (notifier.type === type) {
         foundNotifier = notifier;
       }
@@ -63,31 +68,29 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
     return;
   }
 
-  notifierAPIs.issueAlert = async (id, alertMessage, continueProcess) => {
+  static async issueAlert (id, alertMessage, continueProcess) {
     if (!id) {
       return continueProcess('No id supplied for notifier');
     }
-
-    if (!internals.notifiers) { buildNotifiers(); }
 
     try {
       const { body: { _source: notifier } } = await Db.getNotifier(id);
 
       if (!notifier) {
-        if (Config.debug) {
+        if (NotifierAPIs.debug) {
           console.log('Cannot find notifier, no alert can be issued');
         }
         return continueProcess('Cannot find notifier, no alert can be issued');
       }
 
       let notifierDefinition;
-      for (const n in internals.notifiers) {
-        if (internals.notifiers[n].type === notifier.type) {
-          notifierDefinition = internals.notifiers[n];
+      for (const n in NotifierAPIs.notifierTypes) {
+        if (NotifierAPIs.notifierTypes[n].type === notifier.type) {
+          notifierDefinition = NotifierAPIs.notifierTypes[n];
         }
       }
       if (!notifierDefinition) {
-        if (Config.debug) {
+        if (NotifierAPIs.debug) {
           console.log('Cannot find notifier definition, no alert can be issued');
         }
         return continueProcess('Cannot find notifier, no alert can be issued');
@@ -103,7 +106,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
 
         // If a field is required and nothing was set, then we have an error
         if (field.required && config[field.name] === undefined) {
-          if (Config.debug) {
+          if (NotifierAPIs.debug) {
             console.log(`Cannot find notifier field value: ${field.name}, no alert can be issued`);
           }
           continueProcess(`Cannot find notifier field value: ${field.name}, no alert can be issued`);
@@ -122,12 +125,12 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
         return continueProcess(err, notifier.name);
       });
     } catch (err) {
-      if (Config.debug) {
+      if (NotifierAPIs.debug) {
         console.log('Cannot find notifier, no alert can be issued');
       }
       return continueProcess('Cannot find notifier, no alert can be issued');
     }
-  };
+  }
 
   // --------------------------------------------------------------------------
   // APIs
@@ -151,10 +154,9 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * @name /notifiertypes
    * @returns {object} notifiers - The notifiers that Arkime knows about.
    */
-  notifierAPIs.getNotifierTypes = (req, res) => {
-    if (!internals.notifiers) { buildNotifiers(); }
-    return res.send(internals.notifiers);
-  };
+  static getNotifierTypes (req, res) {
+    return res.send(NotifierAPIs.notifierTypes);
+  }
 
   /**
    * GET - /api/notifiers
@@ -163,7 +165,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * @name /notifiers
    * @returns {Notifier[]} notifiers - The notifiers that have been created.
    */
-  notifierAPIs.getNotifiers = (req, res) => {
+  static getNotifiers (req, res) {
     const roles = [...req.user._allRoles.keys()]; // es requries an array for terms search
 
     const query = {
@@ -193,9 +195,10 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
         const id = notifier._id;
         const result = notifier._source;
         // client expects a string
+        const users = result.users;
         result.users = '';
-        if (result.users) {
-          result.users = result.users.join(',') || '';
+        if (users) {
+          result.users = users.join(',') || '';
         }
         if (!req.user.hasRole('arkimeAdmin')) {
           // non-admins only need name and type to use notifiers (they cannot create/update/delete)
@@ -209,7 +212,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
 
       return res.send(results);
     });
-  };
+  }
 
   /**
    * POST - /api/notifier
@@ -223,7 +226,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * @returns {string} text - The success/error message to (optionally) display to the user.
    * @returns {Notifier} notifier - If successful, the notifier with name sanitized and created/user fields added.
    */
-  notifierAPIs.createNotifier = async (req, res) => {
+  static async createNotifier (req, res) {
     if (!req.body.name) {
       return res.serverError(403, 'Missing a notifier name');
     }
@@ -242,7 +245,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
 
     req.body.name = req.body.name.replace(/[^-a-zA-Z0-9_: ]/g, '');
 
-    const errorMsg = checkNotifierTypesAndFields(req.body.type, req.body.fields);
+    const errorMsg = NotifierAPIs.checkNotifierTypesAndFields(req.body.type, req.body.fields);
     if (errorMsg) {
       return res.serverError(403, errorMsg);
     }
@@ -252,8 +255,8 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
     req.body.created = Math.floor(Date.now() / 1000);
 
     // comma/newline separated value -> array of values
-    let users = ViewerUtils.commaStringToArray(req.body.users || '');
-    users = await ViewerUtils.validateUserIds(users);
+    let users = ArkimeUtil.commaOrNewlineStringToArray(req.body.users || '');
+    users = await ArkimeUtil.validateUserIds(users, NotifierAPIs.anonymousMode);
     req.body.users = users.validUsers;
 
     try {
@@ -271,7 +274,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
       console.log(`ERROR - ${req.method} /api/notifier (createNotifier)`, util.inspect(err, false, 50));
       return res.serverError(500, 'Error creating notifier');
     }
-  };
+  }
 
   /**
    * PUT - /api/notifier/:id
@@ -285,7 +288,8 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * @returns {string} text - The success/error message to (optionally) display to the user.
    * @returns {Notifier} notifier - If successful, the updated notifier with name sanitized and updated field added/updated.
    */
-  notifierAPIs.updateNotifier = async (req, res) => {
+
+  static async updateNotifier (req, res) {
     if (!req.body.name) {
       return res.serverError(403, 'Missing a notifier name');
     }
@@ -304,7 +308,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
 
     req.body.name = req.body.name.replace(/[^-a-zA-Z0-9_: ]/g, '');
 
-    const errorMsg = checkNotifierTypesAndFields(req.body.type, req.body.fields);
+    const errorMsg = NotifierAPIs.checkNotifierTypesAndFields(req.body.type, req.body.fields);
     if (errorMsg) {
       return res.serverError(403, errorMsg);
     }
@@ -323,8 +327,8 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
       notifier.updated = Math.floor(Date.now() / 1000); // update/add updated time
 
       // comma/newline separated value -> array of values
-      let users = ViewerUtils.commaStringToArray(req.body.users || '');
-      users = await ViewerUtils.validateUserIds(users);
+      let users = ArkimeUtil.commaOrNewlineStringToArray(req.body.users || '');
+      users = await ArkimeUtil.validateUserIds(users, NotifierAPIs.anonymousMode);
       notifier.users = users.validUsers;
 
       try {
@@ -345,7 +349,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
       console.log(`ERROR - ${req.method} /api/notifier/${req.params.id} (getNotifier)`, util.inspect(err, false, 50));
       return res.serverError(500, 'Fetching notifier to update failed');
     }
-  };
+  }
 
   /**
    * DELETE - /api/notifier/:id
@@ -355,7 +359,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * @returns {boolean} success - Whether the delete notifier operation was successful.
    * @returns {string} text - The success/error message to (optionally) display to the user.
    */
-  notifierAPIs.deleteNotifier = async (req, res) => {
+  static async deleteNotifier (req, res) {
     try {
       const { body: notifier } = await Db.getNotifier(req.params.id);
 
@@ -377,7 +381,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
       console.log(`ERROR - ${req.method} /api/notifier/${req.params.id} (deleteNotifier)`, util.inspect(err, false, 50));
       return res.serverError(500, 'Fetching notifier to delete failed');
     }
-  };
+  }
 
   /**
    * POST - /api/notifier/:id/test
@@ -387,7 +391,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * @returns {boolean} success - Whether the test notifier operation was successful.
    * @returns {string} text - The success/error message to (optionally) display to the user.
    */
-  notifierAPIs.testNotifier = (req, res) => {
+  static testNotifier (req, res) {
     function continueProcess (err, notifierName) {
       if (err) {
         return res.serverError(500, `Error testing alert: ${err}`);
@@ -399,8 +403,8 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
       }));
     }
 
-    notifierAPIs.issueAlert(req.params.id, `Test alert from ${req.user.userId}`, continueProcess);
-  };
+    NotifierAPIs.issueAlert(req.params.id, `Test alert from ${req.user.userId}`, continueProcess);
+  }
+}
 
-  return notifierAPIs;
-};
+module.exports = NotifierAPIs;

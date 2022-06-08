@@ -4,8 +4,9 @@ const async = require('async');
 const RE2 = require('re2');
 const util = require('util');
 const Pcap = require('./pcap.js');
+const ArkimeUtil = require('../common/arkimeUtil');
 
-module.exports = (Config, Db, internals, notifierAPIs, sessionAPIs, ViewerUtils) => {
+module.exports = (Config, Db, internals, notifierAPIs, sessionAPIs, ViewerUtils, anonymousMode) => {
   const huntAPIs = {};
 
   // --------------------------------------------------------------------------
@@ -811,10 +812,10 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
       return doneCb(hunt);
     }
 
-    const reqUsers = ViewerUtils.commaStringToArray(req.body.users);
+    const reqUsers = ArkimeUtil.commaOrNewlineStringToArray(req.body.users);
 
     try {
-      const users = await ViewerUtils.validateUserIds(reqUsers);
+      const users = await ArkimeUtil.validateUserIds(reqUsers, anonymousMode);
       hunt.users = users.validUsers;
       // dedupe the array of users
       hunt.users = [...new Set(hunt.users)];
@@ -1119,10 +1120,10 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
     try {
       const { body: { _source: hunt } } = await Db.getHunt(req.params.id);
 
-      const reqUsers = ViewerUtils.commaStringToArray(req.body.users);
+      const reqUsers = ArkimeUtil.commaOrNewlineStringToArray(req.body.users);
 
       try {
-        const users = await ViewerUtils.validateUserIds(reqUsers);
+        const users = await ArkimeUtil.validateUserIds(reqUsers, anonymousMode);
         if (!users.validUsers.length) {
           return res.serverError(404, 'Unable to validate user IDs provided');
         }
