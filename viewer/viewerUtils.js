@@ -485,18 +485,6 @@ module.exports = (Config, Db, internals) => {
     }
   };
 
-  ViewerUtils.commaStringToArray = (commaString) => {
-    // split string on commas and newlines
-    let values = commaString.split(/[,\n]+/g);
-
-    // remove any empty values
-    values = values.filter(function (val) {
-      return val !== '';
-    });
-
-    return values;
-  };
-
   // https://medium.com/dailyjs/rewriting-javascript-converting-an-array-of-objects-to-an-object-ec579cafbfc7
   ViewerUtils.arrayToObject = (array, key) => {
     return array.reduce((obj, item) => {
@@ -622,32 +610,6 @@ module.exports = (Config, Db, internals) => {
       });
     } else {
       User.getUserCache(userId, cb);
-    }
-  };
-
-  ViewerUtils.validateUserIds = async (userIdList) => {
-    // don't even bother searching for users if in anonymous mode
-    if (!!internals.noPasswordSecret && !Config.get('regressionTests', false)) {
-      return { validUsers: [], invalidUsers: [] };
-    }
-
-    try {
-      const users = await User.searchUsers({});
-      let usersList = [];
-      usersList = users.users.map((user) => {
-        return user.userId;
-      });
-
-      const validUsers = [];
-      const invalidUsers = [];
-      for (const user of userIdList) {
-        usersList.indexOf(user) > -1 ? validUsers.push(user) : invalidUsers.push(user);
-      }
-
-      return { validUsers, invalidUsers };
-    } catch (err) {
-      console.log('ERROR -', err);
-      throw new Error('Unable to validate userIds');
     }
   };
 

@@ -124,6 +124,10 @@ class Auth {
     }
   }
 
+  static isAnonymousMode () {
+    return Auth.mode === 'anonymous' || Auth.mode === 'anonymousWithDB';
+  }
+
   static #checkIps (req, res) {
     if (req.ip.includes(':')) {
       if (!Auth.#userAuthIps.find(req.ip)) {

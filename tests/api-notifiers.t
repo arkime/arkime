@@ -1,4 +1,4 @@
-use Test::More tests => 32;
+use Test::More tests => 50;
 use Cwd;
 use URI::Escape;
 use MolochTest;
@@ -9,6 +9,10 @@ use strict;
 
 my $token = getTokenCookie();
 my $notAdminToken = getTokenCookie('notadmin');
+
+# add users for sharing tests
+  viewerPostToken("/user/create", '{"userId": "notadmin", "userName": "notadmin", "enabled":true, "password":"password", "roles":["arkimeUser"]}', $token);
+  viewerPostToken("/user/create", '{"userId": "user2", "userName": "user2", "enabled":true, "password":"password", "roles":["arkimeUser"]}', $token);
 
 # notifier types
   my $notifierTypes = viewerGetToken("/api/notifiertypes", $token);
@@ -22,7 +26,7 @@ my $notAdminToken = getTokenCookie('notadmin');
 
 # create notifier required items
   my $json = viewerPostToken("/api/notifier", '{}', $token);
-  is($json->{text}, "Missing a unique notifier name", "notifier name required");
+  is($json->{text}, "Missing a notifier name", "notifier name required");
   $json = viewerPostToken("/notifiers", '{"name":"test1"}', $token);
   is($json->{text}, "Missing notifier type", "notifier type required");
   $json = viewerPostToken("/api/notifier", '{"name":"test1","type":"slack"}', $token);
@@ -43,43 +47,41 @@ my $notAdminToken = getTokenCookie('notadmin');
 # create notifier
   $json = viewerPostToken("/notifiers", '{"name":"test1","type":"slack","fields":[{"slackWebhookUrl":{"value":"test1url"}}]}', $token);
   ok($json->{success}, "notifier create success");
-
-# create notifier requires unique notifier name
-  $json = viewerPostToken("/notifiers", '{"name":"test1","type":"slack","fields":[{"slackWebhookUrl":{"value":"test1url"}}]}', $token);
-  is($json->{text}, "Notifier already exists", "notifier must have a unique name");
+  my $id1 = $json->{notifier}->{id};
 
 # create notifier sanitizes notifier name
   $json = viewerPostToken("/api/notifier", '{"name":"test2`~!@#$%^&*+[]{}(),.<>?","type":"slack","fields":[{"slackWebhookUrl":{"value":"test1url"}}]}', $token);
   is($json->{notifier}->{name}, "test2", "notifier name sanitization");
+  my $id2 = $json->{notifier}->{id};
 
 # created/user fields should be set when creating a notifier
   is($json->{notifier}->{user}, "anonymous", "user field set");
   ok(exists $json->{notifier}->{created}, "created field was set");
 
 # update notifier requires admin access
-  $json = viewerPutToken("/api/notifier/test1?molochRegressionUser=notadmin", '{}', $notAdminToken);
+  $json = viewerPutToken("/api/notifier/$id1?molochRegressionUser=notadmin", '{}', $notAdminToken);
   is($json->{text}, "You do not have permission to access this resource", "update notifier requires admin");
 
-# update notifier needs valid name
-  $json = viewerPutToken("/notifiers/badname", '{}', $token);
-  is($json->{text}, "Cannot find notifer to udpate", "update notifier needs valid name");
+# update notifier needs valid id
+  $json = viewerPutToken("/notifiers/badid", '{"name":"hi","fields":[],"type":"slack"}', $token);
+  is($json->{text}, "Fetching notifier to update failed", "update notifier needs valid id");
 
 # update notifier required fields
-  $json = viewerPutToken("/api/notifier/test1", '{}', $token);
-  is($json->{text}, "Missing a unique notifier name", "notifier name required");
-  $json = viewerPutToken("/notifiers/test1", '{"name":"test1a"}', $token);
+  $json = viewerPutToken("/api/notifier/$id1", '{}', $token);
+  is($json->{text}, "Missing a notifier name", "notifier name required");
+  $json = viewerPutToken("/notifiers/$id1", '{"name":"test1a"}', $token);
   is($json->{text}, "Missing notifier type", "notifier type required");
-  $json = viewerPutToken("/api/notifier/test1", '{"name":"test1a","type":"slack"}', $token);
+  $json = viewerPutToken("/api/notifier/$id1", '{"name":"test1a","type":"slack"}', $token);
   is($json->{text}, "Missing notifier fields", "notifier fields required");
-  $json = viewerPutToken("/notifiers/test1", '{"name":"test1a","type":"slack","fields":"badfields"}', $token);
+  $json = viewerPutToken("/notifiers/$id1", '{"name":"test1a","type":"slack","fields":"badfields"}', $token);
   is($json->{text}, "Notifier fields must be an array", "notifier fields must be an array");
 
 # update notifier needs valid notifier type
-  $json = viewerPutToken("/notifiers/test1", '{"name":"test1a","type":"unknown","fields":[]}', $token);
+  $json = viewerPutToken("/notifiers/$id1", '{"name":"test1a","type":"unknown","fields":[]}', $token);
   is($json->{text}, "Unknown notifier type", "invalid notifier type");
 
 # update notifier
-  $json = viewerPutToken("/notifiers/test1", '{"name":"test1a","type":"slack","fields":[{"slackWebhookUrl":{"value":"test1aurl"}}]}', $token);
+  $json = viewerPutToken("/notifiers/$id1", '{"name":"test1a","type":"slack","fields":[{"slackWebhookUrl":{"value":"test1aurl"}}]}', $token);
   ok($json->{success}, "notifier update success");
   is($json->{notifier}->{name}, "test1a", "notifier name update");
   is($json->{notifier}->{fields}[0]->{slackWebhookUrl}->{value}, "test1aurl", "notifier field value update");
@@ -87,19 +89,61 @@ my $notAdminToken = getTokenCookie('notadmin');
 # updated field should be set when updating a notifier
   ok(exists $json->{notifier}->{updated}, "updated field was set");
 
-# non admin no fields
+# can share with a users and returns invalid users
+  $json = viewerPostToken("/notifiers", '{"name":"test3","users":"notadmin,asdf","type":"slack","fields":[{"slackWebhookUrl":{"value":"testurl"}}]}', $token);
+  ok($json->{success}, "notifier create success");
+  is($json->{notifier}->{users}, "notadmin", "users set");
+  is($json->{invalidUsers}->[0], "asdf", "correct invalid users");
+  my $id3 = $json->{notifier}->{id};
+
+# user can see shared notifier only but non admin no fields
   $notifiers = viewerGetToken("/notifiers?molochRegressionUser=notadmin", $notAdminToken);
+  is (@{$notifiers}, 1, "Single notifier shared with notadmin user");
   ok(exists $notifiers->[0], "notifier update");
   ok(!exists $notifiers->[0]->{fields}, "fields shouldn't exist for non admin");
 
+# can share with a role
+  $json = viewerPostToken("/notifiers", '{"name":"test4","roles":["parliamentUser"],"type":"slack","fields":[{"slackWebhookUrl":{"value":"testurl"}}]}', $token);
+  ok($json->{success}, "notifier create success");
+  is($json->{notifier}->{roles}->[0], "parliamentUser", "roles set");
+  my $id4 = $json->{notifier}->{id};
+
+# notadmin user cannot see id4 notifier
+  $notifiers = viewerGetToken("/notifiers?molochRegressionUser=notadmin", $notAdminToken);
+  is (@{$notifiers}, 1, "Still single notifier shared with notadmin user");
+
+# can update shared users and returns invalid users
+  $json = viewerPutToken("/notifiers/$id3", '{"name":"test3","users":"notadmin,user2,fdsa","type":"slack","fields":[{"slackWebhookUrl":{"value":"testurl"}}]}', $token);
+  ok($json->{success}, "notifier update success");
+  is($json->{notifier}->{users}, "notadmin,user2", "notifier users update");
+  is($json->{invalidUsers}->[0], "fdsa", "correct invalid users on update");
+
+# can update roles
+  $json = viewerPutToken("/notifiers/$id4", '{"name":"test4","roles":["arkimeUser","parliamentUser"],"type":"slack","fields":[{"slackWebhookUrl":{"value":"testurl"}}]}', $token);
+  ok($json->{success}, "notifier update success");
+  is($json->{notifier}->{roles}->[0], "arkimeUser", "roles updated");
+  is($json->{notifier}->{roles}->[1], "parliamentUser", "roles updated");
+
+# notadmin user can now see see id4 notifier
+  $notifiers = viewerGetToken("/notifiers?molochRegressionUser=notadmin", $notAdminToken);
+  is (@{$notifiers}, 2, "2 notifiers shared with notadmin user (one by user sharing and one by role sharing)");
+  is (${notifiers}->[0]->{name}, "test3", 'can see notifier shared by users');
+  is (${notifiers}->[1]->{name}, "test4", 'can see notifier shared by roles');
+
 # cleanup
-  $json = viewerDeleteToken("/api/notifier/test1a", $token);
+  $json = viewerDeleteToken("/api/notifier/badid", $token);
+  is($json->{text}, "Fetching notifier to delete failed", "notifier delete needs valid id");
+  $json = viewerDeleteToken("/api/notifier/$id1", $token);
   ok($json->{success}, "notifier delete success");
-  $json = viewerDeleteToken("/notifiers/test2", $token);
+  $json = viewerDeleteToken("/notifiers/$id2", $token);
+  ok($json->{success}, "notifier delete success");
+  $json = viewerDeleteToken("/notifiers/$id3", $token);
+  ok($json->{success}, "notifier delete success");
+  $json = viewerDeleteToken("/notifiers/$id4", $token);
   ok($json->{success}, "notifier delete success");
   esGet("/_refresh");
   $notifiers = viewerGetToken("/notifiers", $token);
   is (@{$notifiers}, 0, "Removed notifiers");
-
-# remove shared user that gets added when creating notifiers
-  viewerPostToken("/user/delete", "userId=_moloch_shared", $token);
+  # remove added users
+  viewerPostToken("/user/delete", "userId=notadmin", $token);
+  viewerPostToken("/user/delete", "userId=user2", $token);

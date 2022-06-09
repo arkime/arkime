@@ -47,6 +47,7 @@ NOTICE: Cross-cluster Shortcuts require you to not restart all your viewers at o
   - db.pl - fix sync-files/add-missing trying to add non pcap files
   - viewer - field-actions to display configurable menu items on field labels
   - viewer - share shortcuts with specific users or roles ("arkimeUser" role = old shortcut sharing)
+  - viewer - share notifiers with specific users or roles (all previous notifiers will be shared with the "arkimeUser" role)
 
 3.4.2 2022/03/31
   - release - node 16.14.2

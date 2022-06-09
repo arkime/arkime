@@ -249,6 +249,23 @@ class ArkimeUtil {
       return next();
     });
   }
+
+  /**
+   * Breaks a comma or newline separated string of values into an array of values
+   * @param {string} string - The comma or newline separated string of values
+   * @returns {Array} The array of values parsed from the string
+   */
+  static commaOrNewlineStringToArray (string) {
+    // split string on commas and newlines
+    let values = string.split(/[,\n]+/g);
+
+    // remove any empty values
+    values = values.filter(function (val) {
+      return val !== '';
+    });
+
+    return values;
+  }
 }
 
 module.exports = ArkimeUtil;
