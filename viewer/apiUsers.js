@@ -149,29 +149,6 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
     return clone;
   };
 
-  userAPIs.getViews = async (req, cb) => {
-    if (!req.settingUser) { return {}; }
-
-    // Clone the views so we don't modify that cached user
-    const views = JSON.parse(JSON.stringify(req.settingUser.views || {}));
-
-    User.getUser('_moloch_shared', (err, sharedUser) => {
-      if (sharedUser) {
-        for (const viewName in sharedUser.views) {
-          // check for views with the same name as a shared view so user specific views don't get overwritten
-          let sharedViewName = viewName;
-          if (views[sharedViewName] && !views[sharedViewName].shared) {
-            sharedViewName = `shared:${sharedViewName}`;
-          }
-          views[sharedViewName] = sharedUser.views[viewName];
-        }
-      }
-
-      // don't send error, just send views that we could get
-      return cb(null, views);
-    });
-  };
-
   userAPIs.findUserState = (stateName, user) => {
     if (!user.tableStates || !user.tableStates[stateName]) {
       return {};
@@ -232,7 +209,6 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * @param {boolean} disablePcapDownload=false - Do not allow this user to download PCAP files.
    * @param {string} expression - An Arkime search expression that is silently added to all queries. Useful to limit what data a user can access (e.g. which nodes or IPs).
    * @param {ArkimeSettings} settings - The Arkime app settings.
-   * @param {object} views - A list of views that the user can apply to their search.
    * @param {object} notifiers - A list of notifiers taht the user can use.
    * @param {object} columnConfigs - A list of sessions table column configurations that a user has created.
    * @param {object} spiviewFieldConfigs - A list of SPIView page field configurations that a user has created.
@@ -411,143 +387,6 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
         text: 'Updated user settings successfully'
       }));
     });
-  };
-
-  /**
-   * GET - /api/user/views
-   *
-   * Retrieves an Arkime user's views.
-   * @name /user/views
-   * @returns {ArkimeView[]} views - A list of views a user has configured or has been shared.
-   */
-  userAPIs.getUserViews = (req, res) => {
-    userAPIs.getViews(req, (err, views) => {
-      res.send(views);
-    });
-  };
-
-  /**
-   * POST - /api/user/view
-   *
-   * Creates an Arkime view for a user.
-   * @name /user/view
-   * @returns {boolean} success - Whether the create view operation was successful.
-   * @returns {string} text - The success/error message to (optionally) display to the user.
-   * @returns {string} viewName - The name of the new view.
-   * @returns {ArkimeView} view - The new view data.
-   */
-  userAPIs.createUserView = (req, res) => {
-    if (!req.body.name) {
-      return res.serverError(403, 'Missing view name');
-    }
-
-    if (!req.body.expression) {
-      return res.serverError(403, 'Missing view expression');
-    }
-
-    const user = req.settingUser;
-    user.views = user.views || {};
-
-    const newView = {
-      expression: req.body.expression,
-      user: user.userId
-    };
-
-    if (req.body.shared) {
-      // save the view on the shared user
-      newView.shared = true;
-      saveSharedView(req, res, user, newView, '/api/user/view', 'Created shared view successfully', 'Create shared view failed');
-    } else {
-      newView.shared = false;
-      if (user.views[req.body.name]) {
-        return res.serverError(403, 'A view already exists with this name.');
-      } else {
-        user.views[req.body.name] = newView;
-      }
-
-      if (req.body.sessionsColConfig) {
-        user.views[req.body.name].sessionsColConfig = req.body.sessionsColConfig;
-      } else if (user.views[req.body.name].sessionsColConfig && !req.body.sessionsColConfig) {
-        user.views[req.body.name].sessionsColConfig = undefined;
-      }
-
-      User.setUser(user.userId, user, (err, info) => {
-        if (err) {
-          console.log(`ERROR - ${req.method} /api/user/view`, util.inspect(err, false, 50), info);
-          return res.serverError(500, 'Create view failed');
-        }
-
-        return res.send(JSON.stringify({
-          success: true,
-          text: 'Created view successfully',
-          viewName: req.body.name,
-          view: newView
-        }));
-      });
-    }
-  };
-
-  /**
-   * DELETE - /api/user/view/:name
-   *
-   * Deletes an Arkime view for a user.
-   * @name /user/view/:name
-   * @returns {boolean} success - Whether the delete view operation was successful.
-   * @returns {string} text - The success/error message to (optionally) display to the user.
-   */
-  userAPIs.deleteUserView = (req, res) => {
-    const viewName = req.body.name;
-    if (!viewName) {
-      return res.serverError(403, 'Missing view name');
-    }
-
-    const user = req.settingUser;
-    user.views = user.views || {};
-
-    if (req.body.shared) {
-      User.getUser('_moloch_shared', (err, sharedUser) => {
-        if (sharedUser) {
-          sharedUser.views = sharedUser.views || {};
-          if (sharedUser.views[viewName] === undefined) {
-            return res.serverError(404, 'View not found');
-          }
-          // only admins or the user that created the view can delete the shared view
-          if (!user.hasRole('arkimeAdmin') && sharedUser.views[viewName].user !== user.userId) {
-            return res.serverError(401, 'Need admin privelages to delete another user\'s shared view');
-          }
-          delete sharedUser.views[viewName];
-        }
-
-        User.setUser('_moloch_shared', sharedUser, (err, info) => {
-          if (err) {
-            console.log(`ERROR - ${req.method} /api/user/view (setUser _moloch_shared)`, util.inspect(err, false, 50), info);
-            return res.serverError(500, 'Delete shared view failed');
-          }
-
-          return res.send(JSON.stringify({
-            success: true,
-            text: 'Deleted shared view successfully'
-          }));
-        });
-      });
-    } else {
-      if (user.views[viewName] === undefined) {
-        return res.serverError(404, 'View not found');
-      }
-      delete user.views[viewName];
-
-      User.setUser(user.userId, user, (err, info) => {
-        if (err) {
-          console.log(`ERROR - ${req.method} /api/user/view (setUser ${user.userId})`, util.inspect(err, false, 50), info);
-          return res.serverError(500, 'Delete view failed');
-        }
-
-        return res.send(JSON.stringify({
-          success: true,
-          text: 'Deleted view successfully'
-        }));
-      });
-    }
   };
 
   /**

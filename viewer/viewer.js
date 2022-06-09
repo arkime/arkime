@@ -17,7 +17,7 @@
  */
 'use strict';
 
-const MIN_DB_VERSION = 75;
+const MIN_DB_VERSION = 76;
 
 // ============================================================================
 // MODULES
@@ -66,6 +66,7 @@ const compression = require('compression');
 const { internals } = require('./internals')(app, Config);
 const ViewerUtils = require('./viewerUtils')(Config, Db, internals);
 const Notifier = require('../common/notifier');
+const View = require('./apiViews');
 const sessionAPIs = require('./apiSessions')(Config, Db, internals, ViewerUtils);
 const connectionAPIs = require('./apiConnections')(Config, Db, ViewerUtils, sessionAPIs);
 const statsAPIs = require('./apiStats')(Config, Db, internals, ViewerUtils);
@@ -1253,22 +1254,23 @@ app.post( // udpate user settings endpoint
   userAPIs.updateUserSettings
 );
 
+// TODO move views endpoints to different section
 app.get( // user views endpoint
-  ['/api/user/views', '/user/views'],
+  ['/api/user/views', '/user/views', '/api/views'],
   [ArkimeUtil.noCacheJson, getSettingUserCache],
-  userAPIs.getUserViews
+  View.apiGetViews
 );
 
 app.post( // create user view endpoint
-  ['/api/user/view', '/user/views/create'],
+  ['/api/user/view', '/user/views/create', '/api/view'],
   [ArkimeUtil.noCacheJson, checkCookieToken, logAction(), ArkimeUtil.getSettingUserDb, sanitizeViewName],
-  userAPIs.createUserView
+  View.apiCreateView
 );
 
 app.deletepost( // delete user view endpoint
-  ['/api/user/view/:name', '/user/views/delete'],
+  ['/api/user/view/:id', '/user/views/delete', '/api/view/:id'],
   [ArkimeUtil.noCacheJson, checkCookieToken, logAction(), ArkimeUtil.getSettingUserDb, sanitizeViewName],
-  userAPIs.deleteUserView
+  View.apiDeleteView
 );
 
 app.post( // (un)share a user view endpoint

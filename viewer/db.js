@@ -1339,6 +1339,30 @@ exports.getShortcutsCache = async (user) => {
   return shortcutsMap;
 };
 
+exports.searchViews = async (query) => {
+  return internals.usersClient7.search({
+    index: fixIndex('views'), body: query, rest_total_hits_as_int: true, version: true
+  });
+};
+exports.createView = async (doc) => {
+  return await internals.usersClient7.index({
+    index: fixIndex('views'), body: doc, refresh: 'wait_for', timeout: '10m'
+  });
+};
+exports.deleteView = async (id) => {
+  return await internals.usersClient7.delete({
+    index: fixIndex('views'), id, refresh: true
+  });
+};
+exports.setView = async (id, doc) => {
+  return await internals.usersClient7.index({
+    index: fixIndex('views'), body: doc, id, refresh: true, timeout: '10m'
+  });
+};
+exports.getView = async (id) => {
+  return internals.usersClient7.get({ index: fixIndex('views'), id });
+};
+
 exports.molochNodeStats = async (nodeName, cb) => {
   try {
     const { body: stat } = await exports.get('stats', 'stat', nodeName);
