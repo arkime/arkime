@@ -425,11 +425,11 @@ LOCAL void quic_ietf_udp_classify(MolochSession_t *session, const unsigned char 
     BSB_IMPORT_skip(bsb, slen);
 
     // Token
-    int tlen = quic_get_number(&bsb);
+    uint32_t tlen = quic_get_number(&bsb);
     BSB_IMPORT_skip(bsb, tlen);
 
     // Length
-    int packet_len = quic_get_number(&bsb);
+    uint32_t packet_len = quic_get_number(&bsb);
     if (packet_len != BSB_REMAINING(bsb)) {
         char ipStr[200];
         moloch_session_pretty_string(session, ipStr, sizeof(ipStr));
@@ -562,8 +562,8 @@ LOCAL void quic_ietf_udp_classify(MolochSession_t *session, const unsigned char 
 
         if (type == 6) { // CRYPTO
             moloch_session_add_protocol(session, "quic");
-            int offset = quic_get_number(&bsb);
-            int length = quic_get_number(&bsb);
+            uint32_t offset = quic_get_number(&bsb);
+            uint32_t length = quic_get_number(&bsb);
 
             if (offset + length < (int)sizeof(cbuf) && BSB_REMAINING(bsb) >= length) {
                 memcpy(cbuf + offset, BSB_WORK_PTR(bsb), length);

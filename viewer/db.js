@@ -1309,7 +1309,7 @@ exports.getShortcutsCache = async (user) => {
     return internals.shortcutsCache[user.userId];
   }
 
-  const roles = [...user._allRoles.keys()]; // es requries an array for terms search
+  const roles = [...await user.getRoles()]; // es requries an array for terms search
 
   // only get shortcuts for this user or shared
   const query = {

@@ -249,6 +249,39 @@ class User {
   };
 
   /**
+   * Determines whether each user in the list of users is valid or invalid.
+   * @param {Array} userIdList - Array of userIds
+   * @param {boolean} anonymousMode - Whether the app is running in anonymous mode (no users)
+   * @returns {Object} - An object containing two lists, one of valid users and one of invalid users.
+   *                     A valid user can be found in the user's db based on userId
+   */
+  static async validateUserIds (userIdList) {
+    // don't even bother searching for users if in anonymous mode
+    if (Auth.isAnonymousMode()) {
+      return { validUsers: [], invalidUsers: [] };
+    }
+
+    try {
+      const users = await User.searchUsers({});
+      let usersList = [];
+      usersList = users.users.map((user) => {
+        return user.userId;
+      });
+
+      const validUsers = [];
+      const invalidUsers = [];
+      for (const user of userIdList) {
+        usersList.indexOf(user) > -1 ? validUsers.push(user) : invalidUsers.push(user);
+      }
+
+      return { validUsers, invalidUsers };
+    } catch (err) {
+      console.log('ERROR -', err);
+      throw new Error('Unable to validate userIds');
+    }
+  }
+
+  /**
    * Return all available roles using cache
    */
   static async allRolesCache () {

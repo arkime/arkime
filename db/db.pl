@@ -68,6 +68,7 @@
 # 72 - save es query in history, hunt description
 # 73 - hunt roles
 # 74 - shortcut sharing with users/roles
+# 75 - notifiers index
 
 use HTTP::Request::Common;
 use LWP::UserAgent;
@@ -79,7 +80,7 @@ use IO::Compress::Gzip qw(gzip $GzipError);
 use IO::Uncompress::Gunzip qw(gunzip $GunzipError);
 use strict;
 
-my $VERSION = 74;
+my $VERSION = 75;
 my $verbose = 0;
 my $PREFIX = undef;
 my $OLDPREFIX = "";
@@ -5490,6 +5491,90 @@ foreach my $j (@{$json->{hits}->{hits}}) {
 ################################################################################
 
 ################################################################################
+sub notifiersCreate
+{
+  my $settings = '
+{
+  "settings": {
+    "index.priority": 30,
+    "number_of_shards": 1,
+    "number_of_replicas": 0,
+    "auto_expand_replicas": "0-3"
+  }
+}';
+
+  logmsg "Creating notifiers_v40 index\n" if ($verbose > 0);
+  esPut("/${PREFIX}notifiers_v40?master_timeout=${ESTIMEOUT}s", $settings);
+  esAlias("add", "notifiers_v40", "notifiers");
+  notifiersUpdate();
+}
+
+sub notifiersUpdate
+{
+    my $mapping = '
+{
+  "_source": {"enabled": "true"},
+  "dynamic": "true",
+  "dynamic_templates": [
+    {
+      "string_template": {
+        "match_mapping_type": "string",
+        "mapping": {
+          "type": "keyword"
+        }
+      }
+    }
+  ],
+  "properties": {
+    "name": {
+      "type": "keyword"
+    },
+    "users": {
+      "type": "keyword"
+    },
+    "roles": {
+      "type": "keyword"
+    },
+    "user": {
+      "type": "keyword"
+    },
+    "type": {
+      "type": "keyword"
+    },
+    "created": {
+      "type": "date"
+    },
+    "updated": {
+      "type": "date"
+    }
+  }
+}';
+
+logmsg "Setting notifiers_v40 mapping\n" if ($verbose > 0);
+esPut("/${PREFIX}notifiers_v40/_mapping?master_timeout=${ESTIMEOUT}s&pretty", $mapping);
+}
+
+sub notifiersMove
+{
+# add the notifiers from the _moloch_shared user to the new notifiers index
+    my $sharedUser = esGet("/${PREFIX}users/_doc/_moloch_shared/_source");
+    my @notifiers = keys %{$sharedUser->{notifiers}};
+
+    foreach my $n (@notifiers) {
+        my $notifier = $sharedUser->{notifiers}{$n};
+        $notifier->{users} = "";
+        $notifier->{roles} = ["arkimeUser", "parliamentUser"];
+        my $name = $notifier->{name};
+        esPost("/${PREFIX}notifiers/_doc/${name}", to_json($notifier));
+    }
+
+# remove notifiers from the _moloch_shared user
+    delete $sharedUser->{notifiers};
+    esPut("/${PREFIX}users/_doc/_moloch_shared", to_json($sharedUser));
+}
+################################################################################
+
+################################################################################
 sub usersCreate
 {
     my $settings = '
@@ -5907,7 +5992,7 @@ sub progress {
 ################################################################################
 sub optimizeOther {
     logmsg "Optimizing Admin Indices\n";
-    esForceMerge("${PREFIX}stats_v30,${PREFIX}dstats_v30,${PREFIX}fields_v30,${PREFIX}files_v30,${PREFIX}sequence_v30,${PREFIX}users_v30,${PREFIX}queries_v30,${PREFIX}hunts_v30,${PREFIX}lookups_v30", 1, 0);
+    esForceMerge("${PREFIX}stats_v30,${PREFIX}dstats_v30,${PREFIX}fields_v30,${PREFIX}files_v30,${PREFIX}sequence_v30,${PREFIX}users_v30,${PREFIX}queries_v30,${PREFIX}hunts_v30,${PREFIX}lookups_v30,${PREFIX}notifiers_v40", 1, 0);
     logmsg "\n" if ($verbose > 0);
 }
 ################################################################################
@@ -6117,7 +6202,7 @@ if ($ARGV[1] =~ /^(users-?import|import)$/) {
         }
     }
 
-    my @indexes = ("users", "sequence", "stats", "queries", "files", "fields", "dstats", "hunts", "lookups");
+    my @indexes = ("users", "sequence", "stats", "queries", "files", "fields", "dstats", "hunts", "lookups", "notifiers");
     logmsg "Exporting documents...\n";
     foreach my $index (@indexes) {
         my $data = esScroll($index, "", '{"version": true}');
@@ -7044,7 +7129,7 @@ qq/ {
         }
     }
 
-    foreach my $i ("stats_v30", "dstats_v30", "fields_v30", "queries_v30", "hunts_v30", "lookups_v30", "users_v30") {
+    foreach my $i ("stats_v30", "dstats_v30", "fields_v30", "queries_v30", "hunts_v30", "lookups_v30", "users_v30", "notifiers_v40") {
         if (!defined $indices{"${PREFIX}$i"}) {
             print "--> Couldn't find index ${PREFIX}$i, repair might fail\n"
         }
@@ -7056,7 +7141,7 @@ qq/ {
         }
     }
 
-    foreach my $i ("queries", "hunts", "lookups", "users") {
+    foreach my $i ("queries", "hunts", "lookups", "users", "notifiers") {
         if (defined $indices{"${PREFIX}$i"}) {
             print "--> Will delete the index ${PREFIX}$i and recreate as alias, this WILL cause data loss in those indices, maybe cancel and run backup first\n"
         }
@@ -7066,7 +7151,7 @@ qq/ {
     $verbose = 3 if ($verbose < 3);
 
     print "Deleting any indices that should be aliases\n";
-    foreach my $i ("stats", "dstats", "fields", "queries", "hunts", "lookups", "users") {
+    foreach my $i ("stats", "dstats", "fields", "queries", "hunts", "lookups", "users", "notifiers") {
         esDelete("/${PREFIX}$i", 0) if (defined $indices{"${PREFIX}$i"});
     }
 
@@ -7080,6 +7165,7 @@ qq/ {
     esAlias("add", "hunts_v30", "hunts");
     esAlias("add", "lookups_v30", "lookups");
     esAlias("add", "users_v30", "users");
+    esAlias("add", "notifiers_v40", "notifiers");
 
     if (defined $indices{"${PREFIX}users_v30"}) {
         usersUpdate();
@@ -7121,6 +7207,12 @@ qq/ {
         queriesUpdate();
     } else {
         queriesCreate();
+    }
+
+    if (defined $indices{"${PREFIX}notifiers_v40"}) {
+        notifiersUpdate();
+    } else {
+        notifiersCreate();
     }
 
     print "\n";
@@ -7192,6 +7284,7 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
     esDelete("/${PREFIX}fields_v30,${OLDPREFIX}fields_v3,${OLDPREFIX}fields_v2,${OLDPREFIX}fields_v1,${OLDPREFIX}fields?ignore_unavailable=true", 1);
     esDelete("/${PREFIX}hunts_v30,${OLDPREFIX}hunts_v2,${OLDPREFIX}hunts_v1,${OLDPREFIX}hunts?ignore_unavailable=true", 1);
     esDelete("/${PREFIX}lookups_v30,${OLDPREFIX}lookups_v1,${OLDPREFIX}lookups?ignore_unavailable=true", 1);
+    esDelete("/${PREFIX}notifiers_v40?ignore_unavailable=true", 1);
     my $indices;
     esDelete("/$indices" , 1) if (($indices = esMatchingIndices("${OLDPREFIX}sessions2-*")) ne "");
     esDelete("/$indices" , 1) if (($indices = esMatchingIndices("${PREFIX}sessions3-*")) ne "");
@@ -7224,6 +7317,7 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
     historyUpdate();
     huntsCreate();
     lookupsCreate();
+    notifiersCreate();
     if ($ARGV[1] =~ "init") {
         usersCreate();
         queriesCreate();
@@ -7234,7 +7328,7 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
 
     dbCheckForActivity($PREFIX);
 
-    my @indexes = ("users", "sequence", "stats", "queries", "hunts", "files", "fields", "dstats", "lookups");
+    my @indexes = ("users", "sequence", "stats", "queries", "hunts", "files", "fields", "dstats", "lookups", "notifiers");
     my @filelist = ();
     foreach my $index (@indexes) { # list of data, settings, and mappings files
         push(@filelist, "$ARGV[2].${PREFIX}${index}.json\n") if (-e "$ARGV[2].${PREFIX}${index}.json");
@@ -7317,6 +7411,7 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
     esDelete("/${PREFIX}stats_v30", 1);
     esDelete("/${PREFIX}hunts_v30", 1);
     esDelete("/${PREFIX}lookups_v30", 1);
+    esDelete("/${PREFIX}notifiers_v40", 1);
     esDelete("/_template/${PREFIX}sessions3_ecs_template", 1);
     esDelete("/_template/${PREFIX}sessions3_template", 1);
     esDelete("/_template/${PREFIX}history_v1_template", 1);
@@ -7441,21 +7536,27 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
 
     logmsg "Starting Upgrade\n";
 
-    if ($main::versionNumber <= 74) {
+    if ($main::versionNumber < 75) {
         checkForOld7Indices();
         sessions3Update();
         historyUpdate();
         huntsUpdate();
         lookupsUpdate();
+        notifiersCreate();
+        notifiersMove();
+    } elsif ($main::versionNumber <= 75) {
+        checkForOld7Indices();
+        sessions3Update();
+        historyUpdate();
     } else {
         logmsg "db.pl is hosed\n";
     }
 }
 
 if ($DOHOTWARM) {
-    esPut("/${PREFIX}stats_v30,${PREFIX}dstats_v30,${PREFIX}fields_v30,${PREFIX}files_v30,${PREFIX}sequence_v30,${PREFIX}users_v30,${PREFIX}queries_v30,${PREFIX}hunts_v30,${PREFIX}history*,${PREFIX}lookups_v30/_settings?master_timeout=${ESTIMEOUT}s&allow_no_indices=true&ignore_unavailable=true", "{\"index.routing.allocation.require.molochtype\": \"warm\"}");
+    esPut("/${PREFIX}stats_v30,${PREFIX}dstats_v30,${PREFIX}fields_v30,${PREFIX}files_v30,${PREFIX}sequence_v30,${PREFIX}users_v30,${PREFIX}queries_v30,${PREFIX}hunts_v30,${PREFIX}history*,${PREFIX}lookups_v30,${PREFIX}notifiers_v40/_settings?master_timeout=${ESTIMEOUT}s&allow_no_indices=true&ignore_unavailable=true", "{\"index.routing.allocation.require.molochtype\": \"warm\"}");
 } else {
-    esPut("/${PREFIX}stats_v30,${PREFIX}dstats_v30,${PREFIX}fields_v30,${PREFIX}files_v30,${PREFIX}sequence_v30,${PREFIX}users_v30,${PREFIX}queries_v30,${PREFIX}hunts_v30,${PREFIX}history*,${PREFIX}lookups_v30/_settings?master_timeout=${ESTIMEOUT}s&allow_no_indices=true&ignore_unavailable=true", "{\"index.routing.allocation.require.molochtype\": null}");
+    esPut("/${PREFIX}stats_v30,${PREFIX}dstats_v30,${PREFIX}fields_v30,${PREFIX}files_v30,${PREFIX}sequence_v30,${PREFIX}users_v30,${PREFIX}queries_v30,${PREFIX}hunts_v30,${PREFIX}history*,${PREFIX}lookups_v30,${PREFIX}notifiers_v40/_settings?master_timeout=${ESTIMEOUT}s&allow_no_indices=true&ignore_unavailable=true", "{\"index.routing.allocation.require.molochtype\": null}");
 }
 
 logmsg "Finished\n";

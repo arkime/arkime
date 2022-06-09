@@ -65,7 +65,7 @@
       </span>
     </td>
     <td>
-      {{ job.notifier }}
+      {{ notifierName }}
     </td>
     <td>
       {{ job.created * 1000 | timezoneDateString(user.settings.timezone, false) }}
@@ -208,6 +208,7 @@ export default {
     canRerun: Boolean,
     canRepeat: Boolean,
     canCancel: Boolean,
+    notifierName: String,
     canRemoveFromSessions: Boolean
   },
   components: {
