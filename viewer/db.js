@@ -1344,6 +1344,11 @@ exports.searchViews = async (query) => {
     index: fixIndex('views'), body: query, rest_total_hits_as_int: true, version: true
   });
 };
+exports.numberOfViews = async (query) => {
+  return internals.usersClient7.count({
+    index: fixIndex('views'), body: query
+  });
+};
 exports.createView = async (doc) => {
   return await internals.usersClient7.index({
     index: fixIndex('views'), body: doc, refresh: 'wait_for', timeout: '10m'

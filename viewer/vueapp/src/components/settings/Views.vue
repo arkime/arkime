@@ -8,10 +8,42 @@
         and can be activated in the search bar.
     </p>
 
+    <div class="row mb-2">
+      <div class="col-5">
+        <div class="input-group input-group-sm">
+          <div class="input-group-prepend">
+            <div class="input-group-text">
+              <span class="fa fa-search"></span>
+            </div>
+          </div>
+          <b-form-input
+            debounce="400"
+            v-model="viewsQuery.search"
+          />
+        </div>
+      </div>
+      <div class="col-7">
+        <moloch-paging
+          v-if="views"
+          class="pull-right"
+          :length-default="size"
+          :records-total="recordsTotal"
+          :records-filtered="recordsFiltered"
+          @changePaging="changeViewsPaging">
+        </moloch-paging>
+      </div>
+    </div>
+
     <table class="table table-striped table-sm">
       <thead>
         <tr>
-          <th>Name</th>
+          <th class="cursor-pointer"
+            @click.self="sortViews('name')">
+            Name
+            <span v-show="viewsQuery.sortField === 'name' && !viewsQuery.desc" class="fa fa-sort-asc"></span>
+            <span v-show="viewsQuery.sortField === 'name' && viewsQuery.desc" class="fa fa-sort-desc"></span>
+            <span v-show="viewsQuery.sortField !== 'name'" class="fa fa-sort"></span>
+          </th>
           <th>Roles</th>
           <th>Users</th>
           <th>Expression</th>
@@ -96,7 +128,7 @@
                 v-b-tooltip.hover
                 title="Copy this views's expression"
                 class="btn btn-sm btn-theme-secondary"
-                @click="copyValue(item.expression)">
+                @click="$emit('copy-value', item.expression)">
                 <span class="fa fa-clipboard fa-fw">
                 </span>
               </button>
@@ -134,7 +166,7 @@
         </tr> <!-- /views -->
         <!-- view list error -->
         <tr v-if="viewListError">
-          <td colspan="6">
+          <td colspan="7">
             <p class="text-danger mb-0">
               <span class="fa fa-exclamation-triangle">
               </span>&nbsp;
@@ -188,7 +220,7 @@
         </tr> <!-- /new view form -->
         <!-- view form error -->
         <tr v-if="viewFormError">
-          <td colspan="6">
+          <td colspan="7">
             <p class="text-danger mb-0">
               <span class="fa fa-exclamation-triangle">
               </span>&nbsp;
@@ -206,11 +238,13 @@
 // services
 import SettingsService from './SettingsService';
 // components
+import MolochPaging from '../utils/Pagination';
 import RoleDropdown from '../../../../../common/vueapp/RoleDropdown';
 
 export default {
   name: 'Views',
   components: {
+    MolochPaging,
     RoleDropdown
   },
   data () {
@@ -220,7 +254,16 @@ export default {
       newViewName: '',
       newViewExpression: '',
       newViewRoles: [],
-      newViewUsers: ''
+      newViewUsers: '',
+      size: 50,
+      start: 0,
+      viewsQuery: {
+        search: '',
+        desc: false,
+        sortField: 'name'
+      },
+      recordsTotal: 0,
+      recordsFiltered: 0
     };
   },
   props: {
@@ -242,11 +285,38 @@ export default {
       return this.$store.state.roles;
     }
   },
+  watch: {
+    'viewsQuery.search' () {
+      this.getViews();
+    }
+  },
   mounted () {
+    // need to fetch views even though they're in the store because
+    // we might be getting views for another user
     this.getViews();
   },
   methods: {
     /* exposed page functions ---------------------------------------------- */
+    /**
+     * triggered when a sortable column is clicked
+     * if the sort field is the same as the current sort field, toggle the desc
+     * flag, otherwise set it to default (false)
+     * @param {string} sort The field to sort on
+     */
+    sortViews (sort) {
+      this.viewsQuery.desc = this.viewsQuery.sortField === sort ? !this.viewsQuery.desc : false;
+      this.viewsQuery.sortField = sort;
+      this.getViews();
+    },
+    /**
+     * triggered when paging is changed
+     * @param {object} newParams Object containing length & start
+     */
+    changeViewsPaging (newParams) {
+      this.size = newParams.length;
+      this.start = newParams.start;
+      this.getViews();
+    },
     canEditView (view) {
       return this.user.roles.includes('arkimeAdmin') || (view.user && view.user === this.user.userId);
     },
@@ -255,6 +325,7 @@ export default {
       for (const view of this.views) {
         if (view.id === id) {
           this.$set(view, 'roles', roles);
+          this.$set(view, 'changed', true);
           return;
         }
       }
@@ -322,7 +393,7 @@ export default {
      * @param {number} index The index of the changed view
      */
     viewChanged (index) {
-      this.views[index].changed = true;
+      this.$set(this.views[index], 'changed', true);
     },
     /**
      * Cancels a view change by retrieving the view
@@ -337,28 +408,23 @@ export default {
     },
     /**
      * Updates a view
-     * @param {string} key The unique id of the view to update
+     * @param {string} index The index of the view to update
      */
-    updateView (key) {
-      const data = this.views[key];
-
-      if (!data) {
-        this.$emit('display-message', { msg: 'Could not find corresponding view', type: 'danger' });
-        return;
-      }
-
-      if (!data.changed) {
+    updateView (index) {
+      if (!this.views[index].changed) {
         this.$emit('display-message', { msg: 'This view has not changed', type: 'dangwarninger' });
         return;
       }
 
-      data.key = key;
-
-      SettingsService.updateView(data, this.userId).then((response) => {
-        // display success message to user
-        this.$emit('display-message', { msg: response.text, type: 'success' });
+      SettingsService.updateView(this.views[index], this.userId).then((response) => {
         // set the view as unchanged
-        data.changed = false;
+        this.$set(this.views, index, response.view);
+        // display success message to user
+        let msg = response.text || 'Successfully created view.';
+        if (response.invalidUsers && response.invalidUsers.length) {
+          msg += ` Could not add these users: ${response.invalidUsers.join(',')}`;
+        }
+        this.$emit('display-message', { msg });
       }).catch((error) => {
         // display error message to user
         this.$emit('display-message', { msg: error.text, type: 'danger' });
@@ -367,8 +433,20 @@ export default {
     /* helper functions ---------------------------------------------------- */
     /* retrieves the specified user's views */
     getViews () {
-      SettingsService.getViews(this.userId).then(() => {
+      const queryParams = {
+        length: this.size,
+        start: this.start,
+        desc: this.viewsQuery.desc,
+        sort: this.viewsQuery.sortField
+      };
+
+      if (this.viewsQuery.search) { queryParams.searchTerm = this.viewsQuery.search; }
+      if (this.userId) { queryParams.userId = this.userId; }
+
+      SettingsService.getViews(queryParams).then((response) => {
         this.viewListError = '';
+        this.recordsTotal = response.recordsTotal;
+        this.recordsFiltered = response.recordsFiltered;
       }).catch((error) => {
         this.viewListError = error.text;
       });

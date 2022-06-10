@@ -501,6 +501,7 @@
         <Views
           id="views"
           :userId="userId"
+          @copy-value="copyValue"
           v-if="visibleTab === 'views'"
           @display-message="displayMessage"
         />

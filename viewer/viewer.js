@@ -1254,42 +1254,6 @@ app.post( // udpate user settings endpoint
   userAPIs.updateUserSettings
 );
 
-// TODO move views endpoints to different section
-app.get( // user views endpoint
-  ['/api/user/views', '/user/views', '/api/views'],
-  [ArkimeUtil.noCacheJson, getSettingUserCache],
-  View.apiGetViews
-);
-
-app.post( // create user view endpoint
-  ['/api/user/view', '/user/views/create', '/api/view'],
-  [ArkimeUtil.noCacheJson, checkCookieToken, logAction(), ArkimeUtil.getSettingUserDb, sanitizeViewName],
-  View.apiCreateView
-);
-
-app.deletepost( // delete user view endpoint
-  ['/api/user/view/:id', '/user/views/delete', '/api/view/:id'],
-  [ArkimeUtil.noCacheJson, checkCookieToken, logAction(), ArkimeUtil.getSettingUserDb, sanitizeViewName],
-  View.apiDeleteView
-);
-
-app.post( // (un)share a user view endpoint
-  ['/api/user/view/:name/toggleshare', '/user/views/toggleShare'],
-  [ArkimeUtil.noCacheJson, checkCookieToken, logAction(), ArkimeUtil.getSettingUserDb, sanitizeViewName],
-  userAPIs.userViewToggleShare
-);
-
-app.put( // update user view endpoint
-  ['/api/user/view/:key', '/user/views/update'],
-  [ArkimeUtil.noCacheJson, checkCookieToken, logAction(), ArkimeUtil.getSettingUserDb, sanitizeViewName],
-  userAPIs.updateUserView
-);
-app.post( // update user view endpoint for backwards compatibility with API 0.x-2.x
-  ['/user/views/update'],
-  [ArkimeUtil.noCacheJson, checkCookieToken, logAction(), ArkimeUtil.getSettingUserDb, sanitizeViewName],
-  userAPIs.updateUserView
-);
-
 app.get( // user cron queries endpoint
   ['/api/user/crons', '/user/cron'],
   [ArkimeUtil.noCacheJson, getSettingUserCache],
@@ -1401,6 +1365,36 @@ app.get( // user roles endpoint
   '/api/user/roles',
   [ArkimeUtil.noCacheJson, checkCookieToken],
   User.apiRoles
+);
+
+// view apis ------------------------------------------------------------------
+app.get( // get views endpoint
+  ['/api/user/views', '/user/views', '/api/views'],
+  [ArkimeUtil.noCacheJson, getSettingUserCache],
+  View.apiGetViews
+);
+
+app.post( // create view endpoint
+  ['/api/user/view', '/user/views/create', '/api/view'],
+  [ArkimeUtil.noCacheJson, checkCookieToken, logAction(), ArkimeUtil.getSettingUserDb, sanitizeViewName],
+  View.apiCreateView
+);
+
+app.deletepost( // delete view endpoint
+  ['/api/user/view/:id', '/user/views/delete', '/api/view/:id'],
+  [ArkimeUtil.noCacheJson, checkCookieToken, logAction(), ArkimeUtil.getSettingUserDb, sanitizeViewName],
+  View.apiDeleteView
+);
+
+app.put( // update view endpoint
+  ['/api/user/view/:id', '/user/views/update', '/api/view/:id'],
+  [ArkimeUtil.noCacheJson, checkCookieToken, logAction(), ArkimeUtil.getSettingUserDb, sanitizeViewName],
+  View.apiUpdateView
+);
+app.post( // update view endpoint for backwards compatibility with API 0.x-2.x
+  ['/user/views/update'],
+  [ArkimeUtil.noCacheJson, checkCookieToken, logAction(), ArkimeUtil.getSettingUserDb, sanitizeViewName],
+  View.apiUpdateView
 );
 
 // notifier apis --------------------------------------------------------------

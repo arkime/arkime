@@ -10,7 +10,7 @@ class View {
     const user = req.settingUser;
     if (!user) { return {}; }
 
-    const roles = [...user._allRoles.keys()]; // es requries an array for terms search
+    const roles = [...await user.getRoles()]; // es requries an array for terms search
 
     // only get shortcuts for setting user or shared
     const query = {
@@ -29,12 +29,29 @@ class View {
           ]
         }
       },
-      size: 1000
+      sort: {},
+      from: req.query.start || 0,
+      size: req.query.length || 50
     };
 
-    const { body: { hits: { hits: views } } } = await Db.searchViews(query);
+    query.sort[req.query.sort || 'name'] = {
+      order: req.query.desc === 'true' ? 'desc' : 'asc'
+    };
 
-    const results = views.map((view) => {
+    if (req.query.searchTerm) {
+      query.query.bool.filter.push({
+        wildcard: { name: '*' + req.query.searchTerm + '*' }
+      });
+    }
+
+    const { body: { hits: views } } = await Db.searchViews(query);
+
+    delete query.sort;
+    delete query.size;
+    delete query.from;
+    const { body: { count: total } } = await Db.numberOfViews(query);
+
+    const results = views.hits.map((view) => {
       const id = view._id;
       const result = view._source;
 
@@ -51,7 +68,7 @@ class View {
       return result;
     });
 
-    return results;
+    return { data: results, recordsTotal: views.total, recordsFiltered: total };
   }
 
   /**
@@ -59,6 +76,7 @@ class View {
    *
    * @typedef ArkimeView
    * @type {object}
+   * @param {string} name - The name of the view.
    * @param {string} expression - The search expression to filter sessions.
    * @param {ArkimeColumnConfig} sessionsColConfig - The Sessions column configuration to apply to the Sessions table when applying the view.
    * @param {string} user - The user ID of the user who created the view.
@@ -141,6 +159,60 @@ class View {
     } catch (err) {
       console.log(`ERROR - ${req.method} /api/view/${req.params.id} (deleteView)`, util.inspect(err, false, 50));
       return res.serverError(500, 'Error deleting notifier');
+    }
+  }
+
+  /**
+   * PUT - /api/view/:id
+   *
+   * Updates an Arkime view.
+   * @name /view/:id
+   * @returns {boolean} success - Whether the update view operation was successful.
+   * @returns {string} text - The success/error message to (optionally) display to the user.
+   */
+  static async apiUpdateView (req, res) {
+    // make sure all the necessary data is included in the body
+    if (!req.body.name) {
+      return res.serverError(403, 'Missing view name');
+    }
+
+    if (!req.body.expression) {
+      return res.serverError(403, 'Missing view expression');
+    }
+
+    const view = req.body;
+
+    try {
+      const { body: dbView } = await Db.getView(req.params.id);
+
+      // only allow admins or view creator can update view
+      if (!req.user.hasRole('arkimeAdmin') && req.settingUser.userId !== dbView._source.user) {
+        return res.serverError(403, 'Permission denied');
+      }
+
+      // comma/newline separated value -> array of values
+      let users = ArkimeUtil.commaOrNewlineStringToArray(view.users || '');
+      users = await User.validateUserIds(users);
+      view.users = users.validUsers;
+
+      try {
+        await Db.setView(req.params.id, view);
+        view.users = view.users.join(',');
+        view.id = req.params.id;
+
+        return res.send(JSON.stringify({
+          view,
+          success: true,
+          text: 'Updated view!',
+          invalidUsers: users.invalidUsers
+        }));
+      } catch (err) {
+        console.log(`ERROR - ${req.method} /api/view/${req.params.id} (setView)`, util.inspect(err, false, 50));
+        return res.serverError(500, 'Error updating view');
+      }
+    } catch (err) {
+      console.log(`ERROR - ${req.method} /api/view/${req.params.id} (getView)`, util.inspect(err, false, 50));
+      return res.serverError(500, 'Fetching view to update failed');
     }
   }
 }

@@ -184,34 +184,26 @@ export default {
     });
   },
 
-  // TODO update store
-  // TODO don't need to pass in userid
   // VIEWS ----------------------------------------------------------------- //
   /**
-   * Gets a user's views
-   * @param {string} userId     The unique identifier for a user
-   *                            (only required if not the current user)
+   * Gets views
+   * @param {Object} params     Query params object to search for views
    * @returns {Promise} Promise A promise object that signals the completion
    *                            or rejection of the request.
    */
-  getViews (userId) {
+  getViews (params) {
     return new Promise((resolve, reject) => {
-      const options = {
-        url: 'api/views',
-        method: 'GET',
-        params: { userId: userId }
-      };
-
-      Vue.axios(options).then((response) => {
+      Vue.axios.get('api/views', { params }).then((response) => {
+        store.commit('setViews', response.data.data);
         resolve(response.data);
-      }).catch((error) => {
-        reject(error.data);
+      }).catch((err) => {
+        reject(err);
       });
     });
   },
 
   /**
-   * Creates a specified view for a user
+   * Creates a view
    * @param {Object} data       The new view data to the server
    *                            { name: 'specialview', expression: 'something == somethingelse'}
    * @param {string} userId     The unique identifier for a user
@@ -237,7 +229,7 @@ export default {
   },
 
   /**
-   * Deletes a user's specified view
+   * Deletes a view
    * @param {string} viewId     The name of the view to delete
    * @param {string} userId     The unique identifier for a user
    *                            (only required if not the current user)
@@ -261,19 +253,25 @@ export default {
   },
 
   /**
-   * Updates a specified view for a user
-   * @param {Object} data       The view data to pass to the server
+   * Updates a view
+   * @param {Object} view       The view data to pass to the server
    * @param {string} userId     The unique identifier for a user
    *                            (only required if not the current user)
    * @returns {Promise} Promise A promise object that signals the completion
    *                            or rejection of the request.
    */
-  updateView (data, userId) {
+  updateView (view, userId) {
     return new Promise((resolve, reject) => {
+      const id = view.id;
+
+      // remove client only fields
+      delete view.id;
+      delete view.changed;
+
       const options = {
-        url: `api/user/view/${data.key}`,
+        data: view,
         method: 'PUT',
-        data: data,
+        url: `api/view/${id}`,
         params: { userId: userId }
       };
 
