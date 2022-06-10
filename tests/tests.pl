@@ -23,20 +23,22 @@ my $INSECURE = "";
 
 ################################################################################
 sub doGeo {
-    if (! -f "ipv4-address-space.csv") {
-        system("wget https://s3.amazonaws.com/files.molo.ch/testing/ipv4-address-space.csv");
-    }
+    if(!$main::skipgeo) {
+        if (! -f "ipv4-address-space.csv") {
+            system("wget https://s3.amazonaws.com/files.molo.ch/testing/ipv4-address-space.csv");
+        }
 
-    if (! -f "oui.txt") {
-        system("wget https://s3.amazonaws.com/files.molo.ch/testing/oui.txt");
-    }
+        if (! -f "oui.txt") {
+            system("wget https://s3.amazonaws.com/files.molo.ch/testing/oui.txt");
+        }
 
-    if (! -f "GeoLite2-Country.mmdb") {
-        system("wget https://s3.amazonaws.com/files.molo.ch/testing/GeoLite2-Country.mmdb");
-    }
+        if (! -f "GeoLite2-Country.mmdb") {
+            system("wget https://s3.amazonaws.com/files.molo.ch/testing/GeoLite2-Country.mmdb");
+        }
 
-    if (! -f "GeoLite2-ASN.mmdb") {
-        system("wget https://s3.amazonaws.com/files.molo.ch/testing/GeoLite2-ASN.mmdb");
+        if (! -f "GeoLite2-ASN.mmdb") {
+            system("wget https://s3.amazonaws.com/files.molo.ch/testing/GeoLite2-ASN.mmdb");
+        }
     }
 
     if (! -f "plugins/test.so" || (stat('../capture/moloch.h'))[9] > (stat('plugins/test.so'))[9]) {
@@ -406,6 +408,7 @@ $main::debug = 0;
 $main::c8 = 0;
 $main::valgrind = 0;
 $main::copy = "";
+$main::skipgeo = 0;
 $main::cmd = "--capture";
 
 while (scalar (@ARGV) > 0) {
@@ -436,6 +439,9 @@ while (scalar (@ARGV) > 0) {
         shift @ARGV;
     } elsif ($ARGV[0] eq "--copy") {
         $main::copy = "--copy";
+        shift @ARGV;
+    } elsif ($ARGV[0] eq "--skipgeo") {
+        $main::skipgeo = 1;
         shift @ARGV;
     } elsif ($ARGV[0] =~ /^--(viewer|fix|make|capture|viewernostart|viewerstart|viewerhang|viewerload|help|reip|fuzz|fuzz2pcap)$/) {
         $main::cmd = $ARGV[0];
@@ -468,6 +474,7 @@ if ($main::cmd eq "--fix") {
     print "  --elasticsearch <url> Set elasticsearch URL\n";
     print "  --debug               Turn on debuggin\n";
     print "  --valgrind            Use valgrind on capture\n";
+    print "  --skipgeo             Skip downloading Geo files, assume already present (useful for offline)\n";
     print "\n";
     print "Commands:\n";
     print "  --help                This help\n";
