@@ -767,8 +767,26 @@ void writer_simple_index (MolochSession_t * session)
             }
             BSB_EXPORT_u08(bsb, ((val >> 21) & 0x7f));
 
-            // Has to be last because of config.maxFileSizeB on init
-            BSB_EXPORT_u08(bsb, 0x80 | ((val >> 28) & 0x7f));
+            if (val <= 0x07ffffffff) {
+                BSB_EXPORT_u08(bsb, 0x80 | ((val >> 28) & 0x7f));
+                continue;
+            }
+            BSB_EXPORT_u08(bsb, ((val >> 28) & 0x7f));
+
+            if (val <= 0x03ffffffffff) {
+                BSB_EXPORT_u08(bsb, 0x80 | ((val >> 35) & 0x7f));
+                continue;
+            }
+            BSB_EXPORT_u08(bsb, ((val >> 35) & 0x7f));
+
+            if (val <= 0x01ffffffffffff) {
+                BSB_EXPORT_u08(bsb, 0x80 | ((val >> 42) & 0x7f));
+                continue;
+            }
+            BSB_EXPORT_u08(bsb, ((val >> 42) & 0x7f));
+
+            // support up to 0xffffffffffffffUL (2^56-1)
+            BSB_EXPORT_u08(bsb, 0x80 | ((val >> 49) & 0x7f));
         }
     }
 
@@ -865,7 +883,12 @@ void writer_simple_init(char *name)
             LOG("WARNING - Will always use first pcap directory for local index");
         }
 
-        config.maxFileSizeB = MIN(config.maxFileSizeB, 0x07ffffffffL);
+        if (gzip) {
+            config.maxFileSizeB = MIN(config.maxFileSizeB, 0xffffffffffffffUL >> (uncompressedBits + 1));
+        } else {
+            config.maxFileSizeB = MIN(config.maxFileSizeB, 0xffffffffffffffUL);
+        }
+        
         config.gapPacketPos = FALSE;
         moloch_writer_index = writer_simple_index;
     }
