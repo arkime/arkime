@@ -723,7 +723,7 @@ function getSettingUserCache (req, res, next) {
   User.getUserCache(req.query.userId, (err, user) => {
     if (err || !user) {
       if (internals.noPasswordSecret) {
-        req.settingUser = JSON.parse(JSON.stringify(req.user));
+        req.settingUser = Object.assign(new User(), req.user);
         delete req.settingUser.found;
       } else {
         req.settingUser = null;

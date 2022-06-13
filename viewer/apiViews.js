@@ -8,7 +8,7 @@ const ArkimeUtil = require('../common/arkimeUtil');
 class View {
   static async getViews (req) {
     const user = req.settingUser;
-    if (!user) { return {}; }
+    if (!user) { return { data: [], recordsTotal: 0, recordsFiltered: 0 }; }
 
     const roles = [...await user.getRoles()]; // es requries an array for terms search
 
@@ -55,7 +55,7 @@ class View {
       const id = view._id;
       const result = view._source;
 
-      if (user.userId !== result.userId && !user.hasRole('arkimeAdmin')) {
+      if (user.userId !== result.user && !user.hasRole('arkimeAdmin')) {
         // remove sensitive information for users this view is shared with (except arkimeAdmin)
         delete result.users;
         delete result.roles;
@@ -189,6 +189,10 @@ class View {
       if (!req.user.hasRole('arkimeAdmin') && req.settingUser.userId !== dbView._source.user) {
         return res.serverError(403, 'Permission denied');
       }
+
+      // can't update creator of the view or the id
+      view.user = dbView._source.user;
+      if (view.id) { delete view.id; }
 
       // comma/newline separated value -> array of values
       let users = ArkimeUtil.commaOrNewlineStringToArray(view.users || '');
