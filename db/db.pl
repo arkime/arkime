@@ -5615,6 +5615,11 @@ sub viewsUpdate
     },
     "expression": {
       "type": "keyword"
+    },
+    "sessionsColConfig": {
+      "type": "object",
+      "dynamic": "true",
+      "enabled": "false"
     }
   }
 }';
