@@ -6690,7 +6690,7 @@ if ($ARGV[1] =~ /^(users-?import|import)$/) {
     printf "ES Version:          %17s\n", $esversion->{version}->{number};
     printf "DB Version:          %17s\n", $main::versionNumber;
     printf "ES Data Nodes:       %17s/%s\n", commify($dataNodes), commify($totalNodes);
-    printf "Sessions2 Indices:   %17s\n", commify(scalar(@sessions));
+    printf "Sessions Indices:    %17s\n", commify(scalar(@sessions));
     printf "Sessions:            %17s (%s bytes)\n", commify($sessions), commify($sessionsBytes);
     if (scalar(@sessions) > 0 && $dataNodes > 0) {
         printf "Sessions Density:    %17s (%s bytes)\n", commify(int($sessions/($dataNodes*scalar(@sessions)))),
