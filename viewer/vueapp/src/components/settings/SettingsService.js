@@ -214,7 +214,7 @@ export default {
   createView (data, userId) {
     return new Promise((resolve, reject) => {
       const options = {
-        url: 'api/user/view',
+        url: 'api/view',
         method: 'POST',
         data: data,
         params: { userId: userId }

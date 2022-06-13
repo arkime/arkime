@@ -59,7 +59,8 @@
           @keyup.esc="cancelViewChange(index)"
           :key="index">
           <td>
-            <input type="text"
+            <input
+              type="text"
               maxlength="20"
               v-model="item.name"
               @input="viewChanged(index)"

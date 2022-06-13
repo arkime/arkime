@@ -11,7 +11,6 @@ const util = require('util');
 const decode = require('./decode.js');
 const ArkimeUtil = require('../common/arkimeUtil');
 const Auth = require('../common/auth');
-const User = require('../common/user');
 const Pcap = require('./pcap.js');
 const version = require('../common/version');
 const molochparser = require('./molochparser.js');
@@ -161,44 +160,36 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * @param {boolean} queryOverride=null - override the client query with overriding query
    * @returns {function} - the callback to call once the session query is built or an error occurs
    */
-  function addViewToQuery (req, query, continueBuildQueryCb, finalCb, queryOverride = null) {
-    let err;
-    let viewExpression;
-
+  async function addViewToQuery (req, query, continueBuildQueryCb, finalCb, queryOverride = null) {
     // queryOverride can supercede req.query if specified
     const reqQuery = queryOverride || req.query;
 
-    if (req.user.views && req.user.views[reqQuery.view]) { // it's a user's view
-      try {
-        viewExpression = molochparser.parse(req.user.views[reqQuery.view].expression);
-        query.query.bool.filter.push(viewExpression);
-      } catch (e) {
-        console.log(`ERROR - User expression (${reqQuery.view}) doesn't compile -`, util.inspect(e, false, 50));
-        err = e;
+    try {
+      const { body: { _source: view } } = await Db.getView(reqQuery.view);
+      const roles = [...await req.user.getRoles()];
+
+      if (!view.users) { view.users = ''; }
+      if (!view.roles) { view.roles = []; }
+
+      if (view.user !== req.user.userId && // user didn't create view
+        view.users.indexOf(req.user.userId) === -1 && // user is not in users list
+        !(view.roles.filter(role => roles.includes(role))).length // user does not have access via a role
+      ) { // user doesn't have access to this view
+        console.log(`ERROR - User does not have permission to access this view: ${reqQuery.view}`);
+        return continueBuildQueryCb(req, query, 'Access to view denied!', finalCb, queryOverride);
       }
+
+      try {
+        const viewExpression = molochparser.parse(view.expression);
+        query.query.bool.filter.push(viewExpression);
+        return continueBuildQueryCb(req, query, undefined, finalCb, queryOverride);
+      } catch (err) {
+        console.log(`ERROR - User expression (${reqQuery.view}) doesn't compile -`, util.inspect(err, false, 50));
+        return continueBuildQueryCb(req, query, err, finalCb, queryOverride);
+      }
+    } catch (err) {
+      console.log(`ERROR - Can't find view (${reqQuery.view}) -`, util.inspect(err, false, 50));
       return continueBuildQueryCb(req, query, err, finalCb, queryOverride);
-    } else { // it's a shared view
-      User.getUserCache('_moloch_shared', (err, sharedUser) => {
-        if (sharedUser) {
-          sharedUser.views = sharedUser.views || {};
-          for (const viewName in sharedUser.views) {
-            if (viewName === reqQuery.view) {
-              viewExpression = sharedUser.views[viewName].expression;
-              break;
-            }
-          }
-          if (sharedUser.views[reqQuery.view]) {
-            try {
-              viewExpression = molochparser.parse(sharedUser.views[reqQuery.view].expression);
-              query.query.bool.filter.push(viewExpression);
-            } catch (e) {
-              console.log(`ERROR - Shared user expression (${reqQuery.view}) doesn't compile -`, util.inspect(e, false, 50));
-              err = e;
-            }
-          }
-          return continueBuildQueryCb(req, query, err, finalCb, queryOverride);
-        }
-      });
     }
   }
 

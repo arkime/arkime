@@ -149,10 +149,10 @@
           :class="{'active':!view}">
           None
         </b-dropdown-item>
-        <b-dropdown-item v-for="(value, key) in views"
-          :key="key"
-          :class="{'active':view === key}"
-          @click.self="setView(key)"
+        <b-dropdown-item v-for="(value, index) in views"
+          :key="value.id"
+          :class="{'active':view === value.id}"
+          @click.self="setView(value.id)"
           v-b-tooltip.hover.left
           :title="value.expression">
           <span v-if="value.shared"
@@ -163,7 +163,7 @@
             type="button"
             v-b-tooltip.hover.top
             title="Delete this view."
-            @click.stop.prevent="deleteView(value, key)">
+            @click.stop.prevent="deleteView(value.id, index)">
             <span class="fa fa-trash-o">
             </span>
           </button>
@@ -171,7 +171,7 @@
             type="button"
             v-b-tooltip.hover.top
             title="Edit this view."
-            @click.stop.prevent="modView(views[key])">
+            @click.stop.prevent="modView(views[index])">
             <span class="fa fa-edit">
             </span>
           </button>
@@ -192,7 +192,7 @@
             <span class="fa fa-columns">
             </span>
           </button> <!-- /view action buttons -->
-          {{ key }}&nbsp;
+          {{ value.name }}&nbsp;
         </b-dropdown-item>
       </b-dropdown> <!-- /views dropdown menu -->
 
@@ -389,7 +389,7 @@
 </template>
 
 <script>
-import UserService from '../users/UserService';
+import SettingsService from '../settings/SettingsService';
 import ExpressionTypeahead from './ExpressionTypeahead';
 import MolochTime from './Time';
 import MolochToast from '../utils/Toast';
@@ -628,9 +628,14 @@ export default {
       this.showApplyButtons = true;
     },
     modView: function (view) {
-      this.editableView = view;
-      this.actionForm = 'modify:view';
-      this.showApplyButtons = false;
+      this.editableView = undefined;
+      this.actionForm = undefined;
+
+      this.$nextTick(() => {
+        this.editableView = view;
+        this.actionForm = 'modify:view';
+        this.showApplyButtons = false;
+      });
     },
     viewIntersection: function () {
       this.actionForm = 'view:intersection';
@@ -659,35 +664,34 @@ export default {
         this.messageType = success ? 'success' : 'warning';
       }
     },
-    deleteView: function (view, viewName) {
-      UserService.deleteView(view, viewName, this.user.userId).then((response) => {
+    deleteView: function (viewId, index) {
+      SettingsService.deleteView(viewId, this.user.userId).then((response) => {
         // check if deleting current view
-        if (this.view === viewName) {
+        if (this.view === viewId) {
           this.setView(undefined);
         }
         // remove the view from the view list
-        this.$store.commit('deleteViews', viewName);
+        this.views.splice(index, 1);
         // display success message to user
         this.msg = response.text;
         this.msgType = 'success';
       }).catch((error) => {
-        console.log(error);
         // display error message to user
         this.msg = error.text;
         this.msgType = 'danger';
       });
     },
-    setView: function (view) {
-      this.view = view;
+    setView: function (viewId) {
+      this.view = viewId;
 
       // update the url and session storage (to persist user's choice)
       // triggers the '$route.query.view' watcher that issues changeSearch event
-      sessionStorage['moloch-view'] = view;
-      if (this.$route.query.view !== view) { // view name changed
+      sessionStorage['moloch-view'] = viewId;
+      if (this.$route.query.view !== viewId) { // view name changed
         this.$router.push({
           query: {
             ...this.$route.query,
-            view: view
+            view: viewId
           }
         });
 
