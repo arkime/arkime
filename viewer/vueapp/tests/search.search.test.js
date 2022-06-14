@@ -14,7 +14,8 @@ import HasPermission from '../src/components/utils/HasPermission.vue';
 import SessionsService from '../src/components/sessions/SessionsService';
 import '../src/filters.js';
 import '../../../common/vueapp/vueFilters';
-const { userWithSettings, fields, views } = require('../../../common/vueapp/tests/consts');
+import SettingsService from '../src/components/settings/SettingsService';
+const { userWithSettings, fields, views, roles } = require('../../../common/vueapp/tests/consts');
 
 global.$ = global.jQuery = $;
 
@@ -33,6 +34,7 @@ const $router = { push: jest.fn() };
 
 const store = {
   state: {
+    roles,
     user: userWithSettings,
     expression: '',
     issueSearch: false,
@@ -68,7 +70,7 @@ const store = {
 };
 
 beforeEach(() => {
-  UserService.deleteView = jest.fn().mockResolvedValue({
+  SettingsService.deleteView = jest.fn().mockResolvedValue({
     success: true, text: 'yay!'
   });
   UserService.getState = jest.fn().mockResolvedValue({ data: {} });
@@ -104,7 +106,7 @@ test('search bar', async () => {
   };
 
   const {
-    getByText, getAllByText, getByTitle, getByPlaceholderText
+    getByText, getAllByText, getByTitle, getAllByTitle, getByPlaceholderText
   } = render(Search, {
     store,
     mocks: { $route, $router },
@@ -151,8 +153,8 @@ test('search bar', async () => {
   await fireEvent.click(getByTitle('Create a new view'));
   getByText('Create View'); // view form can be opened
 
-  await fireEvent.click(getByTitle('Delete this view.'));
-  expect(UserService.deleteView).toHaveBeenCalledTimes(1); // view can be deleted
+  await fireEvent.click(getAllByTitle('Delete this view.')[0]);
+  expect(SettingsService.deleteView).toHaveBeenCalledTimes(1); // view can be deleted
 });
 
 test('search bar - change view with no view applied', async () => {
@@ -171,15 +173,15 @@ test('search bar - change view with no view applied', async () => {
   });
 
   // setView gets called when there is no view applied
-  // there should only be one element with 'text view 1' since this view is not applied
-  await fireEvent.click(getByText('test view 1'));
+  // there should only be one element with 'text view 2' since this view is not applied
+  await fireEvent.click(getByText('test view 2'));
   expect(emitted()).toHaveProperty('setView');
-  expect($router.push).toHaveBeenCalledWith({ query: { view: 'test view 1' } });
+  expect($router.push).toHaveBeenCalledWith({ query: { view: '2' } });
 });
 
 test('search bar - change view when same view applied', async () => {
   const $route = {
-    query: { view: 'test view 1' },
+    query: { view: '2' },
     name: 'Sessions',
     path: 'http://localhost:8123/arkime/sessions'
   };
@@ -193,15 +195,15 @@ test('search bar - change view when same view applied', async () => {
   });
 
   // changeSearch gets called when there is the view applied has the same name
-  // there should be 2 elements with 'text view 1' since this view not applied
-  await fireEvent.click(getAllByText('test view 1')[1]);
+  // there should be 2 elements with 'text view 2' since this view not applied
+  await fireEvent.click(getAllByText('test view 2')[1]);
   expect(emitted()).toHaveProperty('changeSearch');
   expect($router.push).not.toHaveBeenCalled();
 });
 
 test('search bar - change view to different view', async () => {
   const $route = {
-    query: { view: 'test view 2' },
+    query: { view: '3' },
     name: 'Sessions',
     path: 'http://localhost:8123/arkime/sessions'
   };
@@ -215,10 +217,10 @@ test('search bar - change view to different view', async () => {
   });
 
   // setview gets called when there is a different view applied
-  // there should only be one element with 'text view 1' since this view is not applied
-  await fireEvent.click(getByText('test view 1'));
+  // there should only be one element with 'test view 1' since this view is not applied
+  await fireEvent.click(getByText('test view 2'));
   expect(emitted()).toHaveProperty('setView');
-  expect($router.push).toHaveBeenCalledWith({ query: { view: 'test view 1' } });
+  expect($router.push).toHaveBeenCalledWith({ query: { view: '2' } });
 });
 
 test('search bar - viz buttons', async () => {

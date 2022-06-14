@@ -127,11 +127,11 @@
         toggle-class="rounded"
         variant="theme-secondary">
         <template slot="button-content">
-          <div v-if="view && views && views[view]"
+          <div v-if="view && views && views.find(v => v.id === view)"
             v-b-tooltip.hover.left
-            :title="views[view].expression">
+            :title="views.find(v => v.id === view).expression">
             <span class="fa fa-eye"></span>
-            <span v-if="view">{{ view }}</span>
+            <span v-if="view">{{ views.find(v => v.id === view).name }}</span>
             <span class="sr-only">Views</span>
           </div>
           <div v-else>
@@ -159,22 +159,26 @@
             class="fa fa-share-square">
           </span>
           <!-- view action buttons -->
-          <button class="btn btn-xs btn-danger pull-right ml-1"
-            type="button"
-            v-b-tooltip.hover.top
-            title="Delete this view."
-            @click.stop.prevent="deleteView(value.id, index)">
-            <span class="fa fa-trash-o">
-            </span>
-          </button>
-          <button class="btn btn-xs btn-warning pull-right ml-1"
-            type="button"
-            v-b-tooltip.hover.top
-            title="Edit this view."
-            @click.stop.prevent="modView(views[index])">
-            <span class="fa fa-edit">
-            </span>
-          </button>
+          <template v-if="canEditView(value)">
+            <button
+              type="button"
+              v-b-tooltip.hover.top
+              title="Delete this view."
+              class="btn btn-xs btn-danger pull-right ml-1"
+              @click.stop.prevent="deleteView(value.id, index)">
+              <span class="fa fa-trash-o">
+              </span>
+            </button>
+            <button
+              type="button"
+              v-b-tooltip.hover.top
+              title="Edit this view."
+              @click.stop.prevent="modView(views[index])"
+              class="btn btn-xs btn-warning pull-right ml-1">
+              <span class="fa fa-edit">
+              </span>
+            </button>
+          </template>
           <button class="btn btn-xs btn-theme-secondary pull-right ml-1"
             type="button"
             v-b-tooltip.hover.top
@@ -663,6 +667,9 @@ export default {
         this.message = message;
         this.messageType = success ? 'success' : 'warning';
       }
+    },
+    canEditView: function (view) {
+      return this.user.roles.includes('arkimeAdmin') || (view.user && view.user === this.user.userId);
     },
     deleteView: function (viewId, index) {
       SettingsService.deleteView(viewId, this.user.userId).then((response) => {
