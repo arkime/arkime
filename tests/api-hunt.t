@@ -418,3 +418,4 @@ my $hToken = getTokenCookie('huntuser');
   viewerDeleteToken("/hunt/$id1?molochRegressionUser=anonymous", $token);
   viewerDeleteToken("/hunt/$id3?molochRegressionUser=anonymous", $token);
   esPost("/tests_hunts/_delete_by_query?conflicts=proceed&refresh", '{ "query": { "match_all": {} } }');
+  viewerDeleteToken("/api/view/${viewId}?molochRegressionUser=user2", $otherToken);
