@@ -60,7 +60,8 @@ module.exports = (app, Config) => {
       packetSearch: true,
       settings: {},
       welcomeMsgNum: 1,
-      found: true
+      found: true,
+      roles: ['arkimeUser']
     },
     scriptAggs: {},
     // default settings for users with no settings

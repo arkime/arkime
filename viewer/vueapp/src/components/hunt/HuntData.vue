@@ -151,7 +151,7 @@
         <span class="fa fa-fw fa-search">
         </span>&nbsp;
         The sessions query view was:
-        <strong>{{ job.query.view }}</strong>
+        <strong>{{ getViewName(job.query.view) }}</strong>
       </div>
     </div>
     <div class="row">
@@ -310,6 +310,9 @@ export default {
     roles () {
       return this.$store.state.roles;
     },
+    views () {
+      return this.$store.state.views;
+    },
     canEdit () {
       return !this.anonymousMode && HuntService.canEditHunt(this.user, this.job);
     },
@@ -341,6 +344,10 @@ export default {
       this.$set(this.job, 'description', this.newDescription);
       this.$emit('updateHunt', this.job);
       this.editDescription = false;
+    },
+    getViewName: function (viewId) {
+      const view = this.views.find(v => v.id === viewId);
+      return view?.name || 'unknown or deleted view';
     }
   }
 };
