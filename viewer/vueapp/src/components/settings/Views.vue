@@ -85,6 +85,7 @@
                 v-model="item.users"
                 @input="viewChanged(index)"
                 class="form-control form-control-sm"
+                placeholder="Comma separated list of users to share this view with"
               />
             </template>
           </td>
@@ -197,6 +198,7 @@
             <input type="text"
               v-model="newViewUsers"
               class="form-control form-control-sm"
+              placeholder="Comma separated list of users to share this new view with"
             />
           </td>
           <td colspan="2">

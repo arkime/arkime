@@ -16,7 +16,7 @@ import Utils from '../src/components/utils/utils';
 import '../src/filters.js';
 import '../../../common/vueapp/vueFilters';
 const {
-  userSettings, userWithSettings, views, periodicQueries, fields, notifiers,
+  userSettings, userWithSettings, periodicQueries, fields, notifiers,
   notifierTypes, shortcuts, users, fieldsMap
 } = require('../../../common/vueapp/tests/consts');
 
@@ -39,13 +39,9 @@ jest.mock('../src/components/settings/SettingsService');
 
 const store = {
   state: {
-    views,
     user: userWithSettings,
     fieldsArr: fields,
     fieldsMap
-  },
-  mutations: {
-    setViews: jest.fn()
   }
 };
 
@@ -61,7 +57,6 @@ const $router = {
   replace: jest.fn()
 };
 
-const newView = { name: 'newview', expression: 'protocols == tls' };
 const newPeriodicQuery = {
   ...periodicQueries[0],
   key: 'newuniquekey329084',
@@ -97,16 +92,6 @@ UserService.getSettings = jest.fn().mockResolvedValue(userSettings);
 UserService.saveSettings = jest.fn().mockResolvedValue({ text: 'saveSettings YAY!' });
 UserService.resetSettings = jest.fn().mockResolvedValue({ text: 'resetSettings YAY!' });
 UserService.changePassword = jest.fn().mockResolvedValue({ text: 'changePassword YAY!' });
-// view services
-UserService.getViews = jest.fn().mockResolvedValue(views);
-UserService.updateView = jest.fn().mockResolvedValue({ text: 'updateView YAY!' });
-UserService.toggleShareView = jest.fn().mockResolvedValue({ text: 'toggleShareView YAY!' });
-UserService.deleteView = jest.fn().mockResolvedValue({ text: 'deleteView YAY!' });
-UserService.createView = jest.fn().mockResolvedValue({
-  view: newView,
-  viewName: 'newview',
-  text: 'createView YAY!'
-});
 // periodic query services
 UserService.createCronQuery = jest.fn().mockResolvedValue({
   text: 'createCronQuery YAY!',
@@ -141,7 +126,7 @@ ConfigService.getMolochClusters = jest.fn().mockResolvedValue({
 
 test('settings - self', async () => {
   const {
-    getByText, getAllByText, getByRole, getAllByRole, getByPlaceholderText,
+    getByText, getAllByText, getByRole, getByPlaceholderText,
     getByTitle, getAllByTitle, getByDisplayValue, queryByText
   } = render(Settings, {
     store,
@@ -165,73 +150,10 @@ test('settings - self', async () => {
   getByText('saveSettings YAY!'); // displays success
 
   // can change tabs ------------------------------------------------------- //
-  await fireEvent.click(getByText('Views'));
-  getAllByText('Views');
-
-  // VIEWS! ///////////////////////////////////////////////////////////////////
-  // displays views -------------------------------------------------------- //
-  await waitFor(() => { // displays view with buttons
-    getByTitle("Copy this views's expression");
-  });
-
-  // create view form validation ------------------------------------------- //
-  const createViewBtn = getByTitle('Create new view');
-  await fireEvent.click(createViewBtn);
-  getByText('No view name specified.');
-  const viewNameInput = getByPlaceholderText('Enter a new view name (20 chars or less)');
-  const newViewName = 'viewname1';
-  await fireEvent.update(viewNameInput, newViewName);
-  await fireEvent.click(createViewBtn);
-  getByText('No view expression specified.');
-
-  // can create a view ----------------------------------------------------- //
-  const shareViewCheckbox = getAllByRole('checkbox')[1];
-  await fireEvent.click(shareViewCheckbox);
-  const viewExpressionInput = getByPlaceholderText('Enter a new view expression');
-  const newViewExpression = 'protocols == tls';
-  await fireEvent.update(viewExpressionInput, newViewExpression);
-  await fireEvent.click(createViewBtn);
-  expect(UserService.createView).toHaveBeenCalledWith({
-    shared: true,
-    name: newViewName,
-    expression: newViewExpression
-  }, undefined);
-
-  await waitFor(() => { // create view to return
-    getByText('createView YAY!'); // displays success
-  });
-  expect(viewNameInput.value).toBe(''); // clears form
-  expect(viewExpressionInput.value).toBe('');
-  expect(shareViewCheckbox).not.toBeChecked();
-
-  await waitFor(() => { // displays new view
-    expect(getAllByTitle("Copy this views's expression").length).toBe(2);
-  });
-
-  // can share a view ------------------------------------------------------ //
-  await fireEvent.click(getAllByRole('checkbox')[0]);
-  const view = views[Object.keys(views)[0]];
-  expect(UserService.toggleShareView).toHaveBeenCalledWith(view, view.user);
-
-  // can update a view ----------------------------------------------------- //
-  await fireEvent.update(getByDisplayValue(view.name), 'updated view name');
-  await waitFor(() => {
-    fireEvent.click(getByTitle('Save changes to this view'));
-  });
-  expect(UserService.updateView).toHaveBeenCalledWith({
-    ...view,
-    name: 'updated view name'
-  }, undefined);
-
-  // can delete a view ----------------------------------------------------- //
-  await fireEvent.click(getByTitle('Delete this view'));
-  expect(UserService.deleteView).toHaveBeenCalledWith(newView, undefined);
-
-  // PERIODIC QUERIES! ////////////////////////////////////////////////////////
-  // display periodic queries ---------------------------------------------- //
   await fireEvent.click(getByText('Periodic Queries'));
   getAllByText('Periodic Queries');
 
+  // PERIODIC QUERIES! ////////////////////////////////////////////////////////
   // create periodic query form validation --------------------------------- //
   const createQueryBtn = getByTitle('Create new periodic query');
   await fireEvent.click(createQueryBtn);
