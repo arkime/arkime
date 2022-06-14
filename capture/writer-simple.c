@@ -885,10 +885,8 @@ void writer_simple_init(char *name)
 
         if (gzip) {
             config.maxFileSizeB = MIN(config.maxFileSizeB, 0xffffffffffffffUL >> (uncompressedBits + 1));
-        } else {
-            config.maxFileSizeB = MIN(config.maxFileSizeB, 0xffffffffffffffUL);
         }
-        
+
         config.gapPacketPos = FALSE;
         moloch_writer_index = writer_simple_index;
     }
