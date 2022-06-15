@@ -232,8 +232,8 @@ function setupAuth () {
 
   Auth.initialize({
     debug: internals.debug,
-    mode: mode,
-    userNameHeader: userNameHeader,
+    mode,
+    userNameHeader,
     passwordSecret: getConfig('wiseService', 'passwordSecret', 'password'),
     userAuthIps: getConfig('wiseService', 'userAuthIps'),
     httpRealm: getConfig('wiseService', 'httpRealm')
@@ -423,7 +423,7 @@ class WISESourceAPI {
 
     WISESource.pos2Field[pos] = fieldName;
     WISESource.field2Pos[fieldName] = pos;
-    WISESource.field2Info[fieldName] = { pos: pos, friendly: friendly, db: db };
+    WISESource.field2Info[fieldName] = { pos, friendly, db };
     return pos;
   }
 
@@ -847,8 +847,8 @@ function addType (type, newSrc) {
       cacheSrcMissStats: 0,
       cacheSrcRefreshStats: 0,
       excludes: [],
-      globalAllowed: globalAllowed,
-      sourceAllowed: sourceAllowed
+      globalAllowed,
+      sourceAllowed
     };
 
     if (type === 'url') {
@@ -967,7 +967,7 @@ function processQuery (req, query, cb) {
           if (!err && result !== undefined) {
             src.directHitStat++;
             if (src.cacheTimeout !== -1) { // If err or cacheTimeout is -1 then don't cache
-              cacheResult[src.section] = { ts: now, result: result };
+              cacheResult[src.section] = { ts: now, result };
               cacheChanged = true;
             }
           }
@@ -1094,7 +1094,7 @@ app.post('/get', function (req, res) {
           console.log(typeName, value);
         }
         offset += len;
-        queries.push({ typeName: typeName, value: value });
+        queries.push({ typeName, value });
       }
     } catch (err) {
       return res.end('Received malformed packet');
@@ -1220,7 +1220,7 @@ app.get('/config/get', [isConfigWeb, Auth.doAuth, isWiseUser, ArkimeUtil.noCache
 
   return res.send({
     success: true,
-    config: config,
+    config,
     filePath: internals.configFile
   });
 });
@@ -1460,7 +1460,7 @@ app.get('/stats', [ArkimeUtil.noCacheJson], (req, res) => {
     }
     if (!match) { continue; }
     stats.types.push({
-      type: type,
+      type,
       request: typeInfo.requestStats,
       found: typeInfo.foundStats,
       cacheHit: typeInfo.cacheHitStats,

@@ -16,7 +16,7 @@ export default {
         url: 'api/connections',
         method: 'POST',
         data: query,
-        cancelToken: cancelToken
+        cancelToken
       };
 
       Vue.axios(options)

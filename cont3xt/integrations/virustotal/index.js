@@ -144,7 +144,7 @@ class VirusTotalDomainIntegration extends Integration {
       const response = await axios.get('https://www.virustotal.com/vtapi/v2/domain/report', {
         params: {
           apikey: key,
-          domain: domain
+          domain
         },
         headers: {
           'User-Agent': this.userAgent()
@@ -277,7 +277,7 @@ class VirusTotalIPIntegration extends Integration {
       const response = await axios.get('https://www.virustotal.com/vtapi/v2/ip-address/report', {
         params: {
           apikey: key,
-          ip: ip
+          ip
         },
         headers: {
           'User-Agent': this.userAgent()
@@ -396,7 +396,7 @@ class VirusTotalHashIntegration extends Integration {
 function makeSamples (field) {
   return {
     label: field,
-    field: field,
+    field,
     type: 'table',
     fields: [
       'positives',

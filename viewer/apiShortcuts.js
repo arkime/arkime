@@ -119,7 +119,7 @@ module.exports = (Db, internals) => {
             {
               bool: {
                 should: [
-                  { terms: { roles: roles } }, // shared via user role
+                  { terms: { roles } }, // shared via user role
                   { term: { users: req.settingUser.userId } }, // shared via userId
                   { term: { userId: req.settingUser.userId } } // created by this user
                 ]

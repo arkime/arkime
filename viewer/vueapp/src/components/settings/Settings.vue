@@ -1821,7 +1821,7 @@ export default {
       // spiview field config settings vars
       spiviewConfigs: undefined,
       spiviewConfigError: '',
-      defaultSpiviewConfig: defaultSpiviewConfig,
+      defaultSpiviewConfig,
       // theme settings vars
       themeDisplays: [
         { name: 'Arkime Light', class: 'arkime-light-theme' },

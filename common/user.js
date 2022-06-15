@@ -130,7 +130,7 @@ class User {
           if (err) { return reject(err); }
           if (!user) { return resolve(user); }
 
-          User.#usersCache[userId] = { _timeStamp: Date.now(), user: user };
+          User.#usersCache[userId] = { _timeStamp: Date.now(), user };
           return resolve(user);
         });
       });
@@ -144,7 +144,7 @@ class User {
 
       User.#usersCache[userId] = {
         _timeStamp: Date.now(),
-        user: user
+        user
       };
       cb(null, user);
     });

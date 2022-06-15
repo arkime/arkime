@@ -422,7 +422,7 @@ module.exports = (Config, Db, internals, sessionAPIs, userAPIs, ViewerUtils) => 
         data += results[i].data.toString('hex');
       }
 
-      res.send({ data: data });
+      res.send({ data });
     });
   };
 

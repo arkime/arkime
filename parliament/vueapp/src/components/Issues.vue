@@ -470,8 +470,8 @@ export default {
       }
 
       this.query = {
-        sort: sort,
-        order: order,
+        sort,
+        order,
         start: this.start,
         length: this.query.length
       };

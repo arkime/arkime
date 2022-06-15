@@ -783,7 +783,7 @@ export default {
         this.$router.push({
           query: {
             ...this.$route.query,
-            cluster: cluster
+            cluster
           }
         });
       }

@@ -1397,7 +1397,7 @@ export default {
         path: '/sessions',
         query: {
           ...this.$route.query,
-          expression: expression
+          expression
         }
       });
 
@@ -1434,7 +1434,7 @@ export default {
         filteredGroupedFields[group] = filteredFields;
       }
 
-      return { count: count, fields: filteredGroupedFields };
+      return { count, fields: filteredGroupedFields };
     },
 
     /* helper functions ---------------------------------------------------- */

@@ -4,7 +4,7 @@ import store from '@/store';
 export default {
   login: function (password) {
     return new Promise((resolve, reject) => {
-      Vue.axios.post('api/auth', { password: password }).then((response) => {
+      Vue.axios.post('api/auth', { password }).then((response) => {
         this.saveToken(response.data.token);
         resolve(response.data);
       }).catch((error) => {

@@ -15,7 +15,7 @@ export default {
 
   saveSettings: function (settings) {
     return new Promise((resolve, reject) => {
-      Vue.axios.put('api/settings', { settings: settings })
+      Vue.axios.put('api/settings', { settings })
         .then((response) => {
           resolve(response.data);
         })
@@ -27,7 +27,7 @@ export default {
 
   restoreDefaults: function (type) {
     return new Promise((resolve, reject) => {
-      Vue.axios.put('api/settings/restoreDefaults', { type: type })
+      Vue.axios.put('api/settings/restoreDefaults', { type })
         .then((response) => {
           resolve(response.data);
         })
@@ -39,7 +39,7 @@ export default {
 
   createNotifier: function (notifier) {
     return new Promise((resolve, reject) => {
-      Vue.axios.post('api/notifiers', { notifier: notifier })
+      Vue.axios.post('api/notifiers', { notifier })
         .then((response) => {
           resolve(response.data);
         })
@@ -65,7 +65,7 @@ export default {
     return new Promise((resolve, reject) => {
       Vue.axios.put(`api/notifiers/${oldNotifierName}`, {
         key: notifierKey,
-        notifier: notifier
+        notifier
       })
         .then((response) => {
           resolve(response.data);

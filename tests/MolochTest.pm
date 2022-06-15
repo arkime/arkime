@@ -30,7 +30,7 @@ my ($url, $debug) = @_;
     my $response = $MolochTest::userAgent->get("http://$MolochTest::host:8123$url");
     diag $url, " response:", $response->content if ($debug);
     my $tmp = $response->content;
-    $tmp =~ s,/[-0-9A-Za-z./]+tests/pcap/,/DIR/tests/pcap/,g;
+    $tmp =~ s,/[-0-9A-Za-z./_]+tests/pcap/,/DIR/tests/pcap/,g;
     my $json = from_json($tmp);
     return ($json);
 }
@@ -41,7 +41,7 @@ my ($url, $token, $debug) = @_;
     my $response = $MolochTest::userAgent->get("http://$MolochTest::host:8123$url", "x-arkime-cookie" => $token);
     diag $url, " response:>", $response->content, "<:\n" if ($debug);
     my $tmp = $response->content;
-    $tmp =~ s,/[-0-9A-Za-z./]+tests/pcap/,/DIR/tests/pcap/,g;
+    $tmp =~ s,/[-0-9A-Za-z./_]+tests/pcap/,/DIR/tests/pcap/,g;
     my $json = from_json($tmp);
     return ($json);
 }
@@ -52,7 +52,7 @@ my ($url, $debug) = @_;
     my $response = $MolochTest::userAgent->get("http://$MolochTest::host:8124$url");
     diag $url, " response:", $response->content if ($debug);
     my $tmp = $response->content;
-    $tmp =~ s,/[-0-9A-Za-z./]+tests/pcap/,/DIR/tests/pcap/,g;
+    $tmp =~ s,/[-0-9A-Za-z./_]+tests/pcap/,/DIR/tests/pcap/,g;
     my $json = from_json($tmp);
     return ($json);
 }
@@ -63,7 +63,7 @@ my ($url, $debug) = @_;
     my $response = $MolochTest::userAgent->get("http://$MolochTest::host:8125$url");
     diag $url, " response:", $response->content if ($debug);
     my $tmp = $response->content;
-    $tmp =~ s,/[-0-9A-Za-z./]+tests/pcap/,/DIR/tests/pcap/,g;
+    $tmp =~ s,/[-0-9A-Za-z./_]+tests/pcap/,/DIR/tests/pcap/,g;
     my $json = from_json($tmp);
     return ($json);
 }
@@ -98,7 +98,7 @@ my ($url, $content, $debug) = @_;
 
     diag $url, " response:", $response->content if ($debug);
     my $tmp = $response->content;
-    $tmp =~ s,/[-0-9A-Za-z./]+tests/pcap/,/DIR/tests/pcap/,g;
+    $tmp =~ s,/[-0-9A-Za-z./_]+tests/pcap/,/DIR/tests/pcap/,g;
     my $json = from_json($tmp);
     return ($json);
 }
@@ -115,7 +115,7 @@ my ($url, $content, $debug) = @_;
 
     diag $url, " response:", $response->content if ($debug);
     my $tmp = $response->content;
-    $tmp =~ s,/[-0-9A-Za-z./]+tests/pcap/,/DIR/tests/pcap/,g;
+    $tmp =~ s,/[-0-9A-Za-z./_]+tests/pcap/,/DIR/tests/pcap/,g;
     my $json = from_json($tmp);
     return ($json);
 }

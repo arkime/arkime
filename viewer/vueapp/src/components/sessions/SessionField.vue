@@ -463,7 +463,7 @@ export default {
 
       const options = {
         method: 'GET',
-        url: url
+        url
       };
 
       const oldValue = this.asyncMenuItems[key].value;
@@ -581,12 +581,12 @@ export default {
 
           if (this.molochClickables[key].actionType !== undefined) {
             if (this.molochClickables[key].actionType === 'fetch') {
-              this.$set(this.asyncMenuItems, key, { name: clickableName, value: value, url: result });
+              this.$set(this.asyncMenuItems, key, { name: clickableName, value, url: result });
               continue;
             }
           }
 
-          this.$set(this.menuItems, key, { name: clickableName, value: value, url: result });
+          this.$set(this.menuItems, key, { name: clickableName, value, url: result });
         }
       }
     }

@@ -248,7 +248,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
     if (nodeName !== undefined && nodeName !== 'Total' && nodeName !== 'Average') {
       query.sort = { currentTime: { order: 'desc' } };
       query.size = req.query.size || 1440;
-      query.query.bool.filter.push({ term: { nodeName: nodeName } });
+      query.query.bool.filter.push({ term: { nodeName } });
     } else {
       query.size = 100000;
     }
@@ -429,7 +429,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
 
         stats.push({
           name: node.name,
-          ip: ip,
+          ip,
           ipExcluded: ipExcludes.includes(ip),
           nodeExcluded: nodeExcludes.includes(node.name),
           storeSize: node.indices.store.size_in_bytes,
@@ -441,17 +441,17 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
           nonHeapSize: node.jvm.mem.non_heap_used_in_bytes,
           uptime: Math.floor(node.jvm.uptime_in_millis / (1000 * 60)),
           cpu: node.process.cpu.percent,
-          read: read,
-          write: write,
+          read,
+          write,
           writesRejected: writeInfo.rejected,
           writesCompleted: writeInfo.completed,
           writesRejectedDelta: rejected,
           writesCompletedDelta: completed,
           writesQueueSize: threadpoolInfo.queue_size,
           load: node.os.load_average !== undefined ? /* ES 2 */ node.os.load_average : /* ES 5 */ node.os.cpu.load_average['5m'],
-          version: version,
-          molochtype: molochtype,
-          molochzone: molochzone,
+          version,
+          molochtype,
+          molochzone,
           roles: node.roles,
           isMaster: (master.length > 0 && node.name === master[0].node),
           shards: shards.get(node.name) || 0,
@@ -910,7 +910,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
       function addSetting (key, type, settingName, url, regex, current) {
         if (current === undefined) { current = getValue(key); }
         if (current === undefined) { return; }
-        rsettings.push({ key: key, current: current, name: settingName, type: type, url: url, regex: regex });
+        rsettings.push({ key, current, name: settingName, type, url, regex });
       }
 
       addSetting('search.max_buckets', 'Integer',
@@ -991,7 +991,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
         template[`${internals.prefix}sessions3_template`].settings['index.routing.allocation.total_shards_per_node'] || '');
 
       function addIlm (key, current, ilmName, type, regex) {
-        rsettings.push({ key: key, current: current, name: ilmName, type: type, url: 'https://arkime.com/faq#ilm', regex: regex });
+        rsettings.push({ key, current, name: ilmName, type, url: 'https://arkime.com/faq#ilm', regex });
       }
 
       if (ilm[`${internals.prefix}molochsessions`]) {
@@ -1293,10 +1293,10 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
       }
 
       res.send({
-        nodes: nodes,
-        indices: indices,
-        nodeExcludes: nodeExcludes,
-        ipExcludes: ipExcludes
+        nodes,
+        indices,
+        nodeExcludes,
+        ipExcludes
       });
     });
   };

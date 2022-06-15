@@ -456,7 +456,7 @@ export default {
     addExpression: function (slice, op) {
       const fullExpression = `${slice.field} == ${slice.name}`;
       this.$store.commit('addToExpression', {
-        expression: fullExpression, op: op
+        expression: fullExpression, op
       });
     },
     /**

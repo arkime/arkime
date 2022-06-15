@@ -504,7 +504,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
       return res.send(JSON.stringify({
         success: true,
         text: 'Updated query successfully',
-        query: query
+        query
       }));
     } catch (err) {
       console.log(`ERROR - ${req.method} /api/user/cron/${key}`, util.inspect(err, false, 50));

@@ -145,7 +145,7 @@ export default {
       const options = {
         url: `api/hunt/${id}`,
         method: 'PUT',
-        data: data
+        data
       };
 
       Vue.axios(options).then((response) => {
@@ -190,7 +190,7 @@ export default {
       const options = {
         url: `api/hunt/${id}/users`,
         method: 'POST',
-        data: { users: users }
+        data: { users }
       };
 
       Vue.axios(options).then((response) => {

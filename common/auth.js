@@ -207,7 +207,7 @@ class Auth {
         return next();
       }
       req.user = Object.assign(new User(), {
-        userId: userId,
+        userId,
         enabled: true,
         webEnabled: true,
         headerAuthEnabled: false,
@@ -407,7 +407,7 @@ class Auth {
         return d;
       } else {
         // Old style without IV: E
-        // eslint-disable-next-line node/no-deprecated-api
+        // eslint-disable-next-line n/no-deprecated-api
         const c = crypto.createDecipher('aes192', Auth.passwordSecret);
         let d = c.update(passstore, 'hex', 'binary');
         d += c.final('binary');
@@ -477,8 +477,8 @@ class Auth {
     options.headers['x-moloch-auth'] = Auth.obj2auth({
       date: Date.now(),
       user: user.userId,
-      node: node,
-      path: path
+      node,
+      path
     }, secret);
   }
 }

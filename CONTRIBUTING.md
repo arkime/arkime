@@ -17,9 +17,10 @@ First, checkout the main [Arkime README](README.md) for information on how to bu
 
 **Then, get some test data!**
 
-* Make sure `node` is in your path
+* Make sure `node` is in your path, currently main only support Node version 16.
 * [Install Elasticsearch](https://www.elastic.co/downloads/past-releases#elasticsearch) (make sure you're installing a compatible ES version with the main branch of Arkime using the top entry of "ES Versions" in the [CHANGELOG](CHANGELOG))
 * Start Elasticsearch (see the bottom of the page you downloaded ES from)
+* If on a Mac install either [Homebrew](https://brew.sh) or [MacPorts](https://www.macports.org/)
 * Run `./easybutton-build.sh`
 * Run `make check` from the top level directory, this will
   * run `npm ci` everywhere (to install all the necessary dependencies)

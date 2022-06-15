@@ -760,7 +760,7 @@ export default {
         path: '/settings',
         query: {
           ...this.$route.query,
-          userId: userId
+          userId
         }
       });
     },
@@ -769,7 +769,7 @@ export default {
         path: '/history',
         query: {
           ...this.$route.query,
-          userId: userId
+          userId
         }
       });
     },

@@ -209,11 +209,11 @@ export default {
             method: 'GET',
             url: 'api/dstats',
             params: {
-              nodeName: nodeName,
+              nodeName,
               start: startV / 1000,
               stop: stopV / 1000,
               step: stepV / 1000,
-              interval: interval,
+              interval,
               name: metricName
             }
           };

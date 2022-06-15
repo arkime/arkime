@@ -399,7 +399,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
         cache: internals.isProduction,
         compileDebug: !internals.isProduction,
         user: req.user,
-        session: session,
+        session,
         data: incoming,
         reqPackets: req.query.packets,
         query: req.query,
@@ -802,7 +802,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
 
       const options = {
         id: sessionID,
-        nodeName: nodeName,
+        nodeName,
         order: [],
         'ITEM-HTTP': {
           order: []
@@ -811,7 +811,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
           order: ['BODY-UNBASE64']
         },
         'ITEM-HASH': {
-          hash: hash
+          hash
         },
         'ITEM-CB': {
         }
@@ -848,7 +848,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
           user: req.user,
           cluster: req.body.cluster,
           id: sid,
-          saveId: saveId,
+          saveId,
           tags: req.body.tags,
           nodeName: fields.node
         };
@@ -1119,7 +1119,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
       } else {
         text = `Scrubbing PCAP of ${list.length} sessions complete`;
       }
-      return res.end(JSON.stringify({ success: true, text: text }));
+      return res.end(JSON.stringify({ success: true, text }));
     });
   }
 
@@ -1419,7 +1419,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
     const nonArrayFields = ['ipProtocol', 'firstPacket', 'lastPacket', 'source.ip', 'source.port', 'source.geo.country_iso_code', 'destination.ip', 'destination.port', 'destination.geo.country_iso_code', 'network.bytes', 'totDataBytes', 'network.packets', 'node', 'rootId', 'http.xffGEO'];
     const fixFields = nonArrayFields.filter((x) => { return fields.indexOf(x) !== -1; });
 
-    const options = ViewerUtils.addCluster(req ? req.query.cluster : undefined, { _source: false, fields: fields });
+    const options = ViewerUtils.addCluster(req ? req.query.cluster : undefined, { _source: false, fields });
     options.arkime_unflatten = false;
     async.eachLimit(ids, 10, (id, nextCb) => {
       Db.getSession(id, options, (err, session) => {
@@ -1640,7 +1640,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
         query.fields = ViewerUtils.queryValueToArray(req.query.fields);
       }
 
-      res.send({ esquery: query, indices: indices });
+      res.send({ esquery: query, indices });
     });
   };
 
@@ -2028,11 +2028,11 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
       if (req.query.exp === 'ip.dst:port') { field = 'ip.dst:port'; }
 
       if (field === 'ip.dst:port') {
-        query.aggregations.field = { terms: { field: 'destination.ip', size: size }, aggregations: { sub: { terms: { field: 'destination.port', size: size } } } };
+        query.aggregations.field = { terms: { field: 'destination.ip', size }, aggregations: { sub: { terms: { field: 'destination.port', size } } } };
       } else if (field === 'fileand') {
-        query.aggregations.field = { terms: { field: 'node', size: 1000 }, aggregations: { sub: { terms: { field: 'fileId', size: size } } } };
+        query.aggregations.field = { terms: { field: 'node', size: 1000 }, aggregations: { sub: { terms: { field: 'fileId', size } } } };
       } else {
-        query.aggregations.field = { terms: { field: field, size: size * 2 } };
+        query.aggregations.field = { terms: { field, size: size * 2 } };
       }
 
       Promise.all([
@@ -2232,9 +2232,9 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
         query.query.bool.filter.push({ exists: { field: fields[i].dbField } });
 
         if (fields[i].script) {
-          lastQ.aggregations = { field: { terms: { script: { lang: 'painless', source: fields[i].script }, size: size } } };
+          lastQ.aggregations = { field: { terms: { script: { lang: 'painless', source: fields[i].script }, size } } };
         } else {
-          lastQ.aggregations = { field: { terms: { field: fields[i].dbField, size: size } } };
+          lastQ.aggregations = { field: { terms: { field: fields[i].dbField, size } } };
         }
         lastQ = lastQ.aggregations.field;
       }
@@ -2293,7 +2293,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
               tableResults.push({
                 name: bucket.key,
                 size: bucket.doc_count,
-                parents: parents
+                parents
               });
             }
           }
@@ -2304,8 +2304,8 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
 
         return res.send({
           success: true,
-          tableResults: tableResults,
-          hierarchicalResults: hierarchicalResults
+          tableResults,
+          hierarchicalResults
         });
       });
     });
@@ -2570,12 +2570,12 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
           cache: internals.isProduction,
           compileDebug: !internals.isProduction,
           user: req.user,
-          session: session,
+          session,
           sep: session.source.ip?.includes(':') ? '.' : ':',
-          Db: Db,
+          Db,
           query: req.query,
           basedir: '/',
-          hidePackets: hidePackets,
+          hidePackets,
           reqFields: Config.headers('headers-http-request'),
           resFields: Config.headers('headers-http-response'),
           emailFields: Config.headers('headers-email')
@@ -2789,7 +2789,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
   sessionAPIs.getPCAPFromNode = (req, res) => {
     ViewerUtils.noCache(req, res, 'application/vnd.tcpdump.pcap');
     const writeHeader = !req.query || !req.query.noHeader || req.query.noHeader !== 'true';
-    writePcap(res, req.params.id, { writeHeader: writeHeader }, () => {
+    writePcap(res, req.params.id, { writeHeader }, () => {
       res.end();
     });
   };
@@ -2804,7 +2804,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
   sessionAPIs.getPCAPNGFromNode = (req, res) => {
     ViewerUtils.noCache(req, res, 'application/vnd.tcpdump.pcap');
     const writeHeader = !req.query || !req.query.noHeader || req.query.noHeader !== 'true';
-    writePcapNg(res, req.params.id, { writeHeader: writeHeader }, () => {
+    writePcapNg(res, req.params.id, { writeHeader }, () => {
       res.end();
     });
   };
@@ -3119,7 +3119,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
       const options = {
         user: req.user,
         cluster: req.query.cluster,
-        id: id,
+        id,
         saveId: req.query.saveId,
         tags: req.body.tags,
         nodeName: req.params.nodeName

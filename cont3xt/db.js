@@ -235,7 +235,7 @@ class DbESImplementation {
     if (creator) {
       query.query.bool.should.push({
         term: {
-          creator: creator
+          creator
         }
       });
     }
@@ -272,7 +272,7 @@ class DbESImplementation {
 
   async putLinkGroup (id, linkGroup) {
     const results = await this.client.index({
-      id: id,
+      id,
       index: 'cont3xt_links',
       body: linkGroup,
       refresh: true
@@ -284,7 +284,7 @@ class DbESImplementation {
   async getLinkGroup (id) {
     const results = await this.client.get({
       index: 'cont3xt_links',
-      id: id
+      id
     });
 
     if (results?.body?._source) {
@@ -296,7 +296,7 @@ class DbESImplementation {
   async deleteLinkGroup (id) {
     const results = await this.client.delete({
       index: 'cont3xt_links',
-      id: id,
+      id,
       refresh: true
     });
 
@@ -319,7 +319,7 @@ class DbESImplementation {
     if (creator) {
       query.query.bool.should.push({
         term: {
-          creator: creator
+          creator
         }
       });
     }
@@ -361,7 +361,7 @@ class DbESImplementation {
 
   async putView (id, view) {
     const results = await this.client.index({
-      id: id,
+      id,
       body: view,
       refresh: true,
       index: 'cont3xt_views'
@@ -372,7 +372,7 @@ class DbESImplementation {
 
   async getView (id) {
     const results = await this.client.get({
-      id: id,
+      id,
       index: 'cont3xt_views'
     });
 
@@ -385,7 +385,7 @@ class DbESImplementation {
 
   async deleteView (id) {
     const results = await this.client.delete({
-      id: id,
+      id,
       refresh: true,
       index: 'cont3xt_views'
     });

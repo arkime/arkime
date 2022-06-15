@@ -130,7 +130,7 @@ export default {
       const pagingParams = {
         start: this.start,
         length: this.length,
-        issueQuery: issueQuery
+        issueQuery
       };
 
       this.$emit('changePaging', pagingParams);

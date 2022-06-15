@@ -106,7 +106,7 @@ Pcap.prototype.open = function (info) {
   this.encoding = info.encoding ?? 'normal';
 
   if (info.dek) {
-    // eslint-disable-next-line node/no-deprecated-api
+    // eslint-disable-next-line n/no-deprecated-api
     const decipher = cryptoLib.createDecipher('aes-192-cbc', info.kek);
     this.encKey = Buffer.concat([decipher.update(Buffer.from(info.dek, 'hex')), decipher.final()]);
   }
@@ -892,7 +892,7 @@ Pcap.reassemble_icmp = function (packets, numPackets, cb) {
     const key = item.ip.addr1;
     if (results.length === 0 || key !== results[results.length - 1].key) {
       const result = {
-        key: key,
+        key,
         data: item.icmp.data,
         ts: item.pcap.ts_sec * 1000 + Math.round(item.pcap.ts_usec / 1000)
       };
@@ -915,7 +915,7 @@ Pcap.reassemble_udp = function (packets, numPackets, cb) {
       const key = item.ip.addr1 + ':' + item.udp.sport;
       if (results.length === 0 || key !== results[results.length - 1].key) {
         const result = {
-          key: key,
+          key,
           data: item.udp.data,
           ts: item.pcap.ts_sec * 1000 + Math.round(item.pcap.ts_usec / 1000)
         };
@@ -941,7 +941,7 @@ Pcap.reassemble_sctp = function (packets, numPackets, cb) {
       const key = item.ip.addr1 + ':' + item.sctp.sport;
       if (results.length === 0 || key !== results[results.length - 1].key) {
         const result = {
-          key: key,
+          key,
           data: item.sctp.data,
           ts: item.pcap.ts_sec * 1000 + Math.round(item.pcap.ts_usec / 1000)
         };
@@ -966,7 +966,7 @@ Pcap.reassemble_esp = function (packets, numPackets, cb) {
     const key = item.ip.addr1;
     if (results.length === 0 || key !== results[results.length - 1].key) {
       const result = {
-        key: key,
+        key,
         data: item.esp.data,
         ts: item.pcap.ts_sec * 1000 + Math.round(item.pcap.ts_usec / 1000)
       };
@@ -988,7 +988,7 @@ Pcap.reassemble_generic_ip = function (packets, numPackets, cb) {
     const key = item.ip.addr1;
     if (results.length === 0 || key !== results[results.length - 1].key) {
       const result = {
-        key: key,
+        key,
         data: item.ip.data,
         ts: item.pcap.ts_sec * 1000 + Math.round(item.pcap.ts_usec / 1000)
       };
@@ -1010,7 +1010,7 @@ Pcap.reassemble_generic_ether = function (packets, numPackets, cb) {
     const key = item.ether.addr1;
     if (results.length === 0 || key !== results[results.length - 1].key) {
       const result = {
-        key: key,
+        key,
         data: item.ether.data,
         ts: item.pcap.ts_sec * 1000 + Math.round(item.pcap.ts_usec / 1000)
       };

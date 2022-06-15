@@ -92,7 +92,7 @@ class Notifier {
     let foundNotifier;
     for (const n in Notifier.notifierTypes) {
       const notifier = Notifier.notifierTypes[n];
-      if (notifier.type === type) {
+      if (notifier.type === type.toLowerCase()) {
         foundNotifier = notifier;
       }
     }
@@ -124,23 +124,21 @@ class Notifier {
       const { body: { _source: notifier } } = await Notifier.getNotifier(id);
 
       if (!notifier) {
-        if (Notifier.#debug) {
-          console.log('Cannot find notifier, no alert can be issued');
-        }
-        return continueProcess('Cannot find notifier, no alert can be issued');
+        const msg = `ERROR - Cannot find notifier (${id}), no alert can be issued`;
+        if (Notifier.#debug) { console.log(msg); }
+        return continueProcess(msg);
       }
 
       let notifierDefinition;
       for (const n in Notifier.notifierTypes) {
-        if (Notifier.notifierTypes[n].type === notifier.type) {
+        if (Notifier.notifierTypes[n].type === notifier.type.toLowerCase()) {
           notifierDefinition = Notifier.notifierTypes[n];
         }
       }
       if (!notifierDefinition) {
-        if (Notifier.#debug) {
-          console.log('Cannot find notifier definition, no alert can be issued');
-        }
-        return continueProcess('Cannot find notifier, no alert can be issued');
+        const msg = `Cannot find notifier definition (for ${notifier.type}), no alert can be issued`;
+        console.log(msg);
+        return continueProcess(msg);
       }
 
       const config = {};
@@ -153,17 +151,15 @@ class Notifier {
 
         // If a field is required and nothing was set, then we have an error
         if (field.required && config[field.name] === undefined) {
-          if (Notifier.#debug) {
-            console.log(`Cannot find notifier field value: ${field.name}, no alert can be issued`);
-          }
-          continueProcess(`Cannot find notifier field value: ${field.name}, no alert can be issued`);
+          const msg = `Cannot find notifier field value: ${field.name}, no alert can be issued`;
+          if (Notifier.#debug) { console.log(msg); }
+          continueProcess(msg);
         }
       }
 
       notifierDefinition.sendAlert(config, alertMessage, null, (response) => {
         let err;
-        // there should only be one error here because only one
-        // notifier alert is sent at a time
+        // there should only be one error here because only one notifier alert is sent at a time
         if (response.errors) {
           for (const e in response.errors) {
             err = response.errors[e];
@@ -172,9 +168,7 @@ class Notifier {
         return continueProcess(err, notifier.name);
       });
     } catch (err) {
-      if (Notifier.#debug) {
-        console.log('Cannot find notifier, no alert can be issued');
-      }
+      console.log(`ERROR - Cannot find notifier (${id}):`, util.inspect(err, false, 50));
       return continueProcess('Cannot find notifier, no alert can be issued');
     }
   }
@@ -229,7 +223,7 @@ class Notifier {
             {
               bool: {
                 should: [
-                  { terms: { roles: roles } }, // shared via user role
+                  { terms: { roles } }, // shared via user role
                   { term: { users: req.user.userId } } // shared via userId
                 ]
               }
