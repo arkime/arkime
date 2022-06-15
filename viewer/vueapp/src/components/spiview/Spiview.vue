@@ -743,7 +743,7 @@ export default {
         path: '/sessions',
         query: {
           ...this.$route.query,
-          expression: expression
+          expression
         }
       });
 
@@ -1244,7 +1244,7 @@ export default {
       if (!category.spi) { category.spi = {}; }
 
       if (!category.spi[field.dbField]) {
-        Vue.set(category.spi, field.dbField, { field: field });
+        Vue.set(category.spi, field.dbField, { field });
       }
 
       return category;

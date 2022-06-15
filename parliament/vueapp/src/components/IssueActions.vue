@@ -153,8 +153,8 @@ export default {
     /* helper functions ---------------------------------------------------- */
     updateIssue: function (success, message, issue) {
       const emit = {
-        success: success,
-        message: message,
+        success,
+        message,
         groupId: this.groupId,
         clusterId: this.clusterId
       };

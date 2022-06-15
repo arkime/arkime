@@ -34,10 +34,10 @@ let HTTPParser;
 if (process.version.startsWith('v16')) {
   HTTPParser = require('_http_common').HTTPParser;
 } else if (process.version.startsWith('v12')) {
-  // eslint-disable-next-line node/no-deprecated-api
+  // eslint-disable-next-line n/no-deprecated-api
   HTTPParser = process.binding('http_parser_llhttp').HTTPParser;
 } else {
-  // eslint-disable-next-line node/no-deprecated-api
+  // eslint-disable-next-line n/no-deprecated-api
   HTTPParser = process.binding('http_parser').HTTPParser;
 }
 
@@ -331,7 +331,7 @@ ItemSMTPStream.prototype._process = function (item, callback) {
 
   function addBuffer (newState, mimeData) {
     if (mimeData) {
-      const headerInfo = { bodyType: bodyType, bodyName: bodyName, bodyNum: ++self.bodyNum, itemPos: ++self.itemPos };
+      const headerInfo = { bodyType, bodyName, bodyNum: ++self.bodyNum, itemPos: ++self.itemPos };
       const bufferStream = new Stream.PassThrough();
       const order = self.options['ITEM-SMTP'] ? self.options['ITEM-SMTP'].order || [] : [];
       const pipes = exports.createPipeline(self.options, order, bufferStream, headerInfo);
@@ -486,7 +486,7 @@ ItemSMTPStream.prototype._process = function (item, callback) {
   callback();
 };
 ItemSMTPStream.prototype.bodyDone = function (item, data, headerInfo) {
-  this.push({ client: item.client, ts: item.ts, data: data, bodyNum: headerInfo.bodyNum, bodyType: headerInfo.bodyType, bodyName: headerInfo.bodyName, itemPos: headerInfo.itemPos });
+  this.push({ client: item.client, ts: item.ts, data, bodyNum: headerInfo.bodyNum, bodyType: headerInfo.bodyType, bodyName: headerInfo.bodyName, itemPos: headerInfo.itemPos });
   this.runningStreams--;
   if (this.runningStreams === 0 && this.endCb) {
     this.endCb();
@@ -604,7 +604,7 @@ ItemHTTPStream.prototype.bodyDone = function (item, data, headerInfo) {
   }
 
   const bodyName = item.bodyName || bodyType + item.bodyNum;
-  this.push({ client: item.client, ts: item.ts, data: data, bodyNum: item.bodyNum, bodyType: bodyType, bodyName: bodyName });
+  this.push({ client: item.client, ts: item.ts, data, bodyNum: item.bodyNum, bodyType, bodyName });
   this.runningStreams--;
   if (this.runningStreams === 0 && this.endCb) {
     this.endCb();

@@ -94,7 +94,7 @@ class LinkGroup {
       linkGroups = reordered.concat(unordered);
     }
 
-    res.send({ success: true, linkGroups: linkGroups });
+    res.send({ success: true, linkGroups });
   }
 
   // Verify the link group, returns error msg on failure

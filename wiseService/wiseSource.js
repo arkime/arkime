@@ -154,7 +154,7 @@ class WISESource {
       const pos = this.api.addField(line);
       const match = line.match(/shortcut:([^;]+)/);
       if (match) {
-        this.shortcuts[match[1]] = { pos: pos, mod: 0 };
+        this.shortcuts[match[1]] = { pos, mod: 0 };
         const kind = line.match(/kind:([^;]+)/);
         if (kind) {
           if (kind[1] === 'lotermfield') {
@@ -495,7 +495,7 @@ class WISESource {
       const len = results[offset + 1];
       const value = results.toString('utf8', offset + 2, offset + 2 + len - 1);
       offset += 2 + len;
-      collection.push({ field: WISESource.pos2Field[pos], len: len - 1, value: value });
+      collection.push({ field: WISESource.pos2Field[pos], len: len - 1, value });
     }
 
     return JSON.stringify(collection).replace(/},{/g, '},\n{');
@@ -524,7 +524,7 @@ class WISESource {
     }
     let statusCode;
     console.log(url);
-    request({ url: url, headers: headers })
+    request({ url, headers })
       .on('response', function (response) {
         statusCode = response.statusCode;
         if (response.statusCode === 200) {

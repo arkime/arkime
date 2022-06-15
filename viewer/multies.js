@@ -943,9 +943,9 @@ app.post(['/:index/:type/:id/_update', '/:index/_update/:id'], async (req, res) 
     const id = req.params.id;
     const params = {
       retry_on_conflict: 3,
-      index: index,
-      body: body,
-      id: id,
+      index,
+      body,
+      id,
       timeout: '10m'
     };
 
@@ -1081,7 +1081,7 @@ function pingESNode (client, node) {
     client.ping({}, {
       requestTimeout: 3 * 1000 // ping usually has a 3000ms timeout
     }, function (error, { body: response }) {
-      resolve({ isActive: !error, node: node });
+      resolve({ isActive: !error, node });
     });
   });
 }

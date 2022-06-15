@@ -26,9 +26,9 @@ new Vue({
     // define app constants
     /* eslint-disable no-undef */
     Vue.prototype.$constants = {
-      VERSION: VERSION,
-      BUILD_DATE: BUILD_DATE, // from webpack.DefinePlugin
-      BUILD_VERSION: BUILD_VERSION // from webpack.DefinePlugin
+      VERSION,
+      BUILD_DATE, // from webpack.DefinePlugin
+      BUILD_VERSION // from webpack.DefinePlugin
     };
   }
 });

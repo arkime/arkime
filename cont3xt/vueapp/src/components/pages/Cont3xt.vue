@@ -578,7 +578,7 @@ export default {
           if (data.sent && data.total) { // update the progress bar
             failed = data.failed ? ++failed : failed;
             this.loading = {
-              failed: failed,
+              failed,
               total: data.total,
               received: data.sent,
               failure: data.failed && data.name ? data.name : null

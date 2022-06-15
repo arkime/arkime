@@ -287,7 +287,7 @@ class PassiveTotalDNSIntegration extends Integration {
 
       const result = await axios.get('https://api.passivetotal.org/v2/dns/passive', {
         params: {
-          query: query
+          query
         },
         auth: {
           username: puser,

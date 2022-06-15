@@ -52,7 +52,7 @@ function main () {
     }
 
     // Decrypt the dek
-    // eslint-disable-next-line node/no-deprecated-api
+    // eslint-disable-next-line n/no-deprecated-api
     const kdecipher = cryptoLib.createDecipher('aes-192-cbc', kek);
     const encKey = Buffer.concat([kdecipher.update(Buffer.from(info.dek, 'hex')), kdecipher.final()]);
 

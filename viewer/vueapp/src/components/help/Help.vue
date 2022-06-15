@@ -1508,7 +1508,7 @@ export default {
         // scrollBehavior actually triggers on page load
         this.$router.replace({
           ...this.$route,
-          hash: hash
+          hash
         });
       }, 750);
     }

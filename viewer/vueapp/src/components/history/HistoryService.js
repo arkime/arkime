@@ -36,7 +36,7 @@ export default {
       const options = {
         url: `api/history/${id}`,
         method: 'DELETE',
-        params: { index: index }
+        params: { index }
       };
 
       Vue.axios(options)

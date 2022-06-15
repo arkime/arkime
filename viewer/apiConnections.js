@@ -35,11 +35,11 @@ module.exports = (Config, Db, ViewerUtils, sessionAPIs) => {
   // --------------------------------------------------------------------------
   function buildConnectionQuery (req, fields, options, fsrc, fdst, dstipport, resultId, cb) {
     const result = {
-      resultId: resultId,
+      resultId,
       err: null,
       query: null,
       indices: null,
-      options: options
+      options
     };
 
     // If network graph baseline is enabled (enabled: req.query.baselineDate != 0, disabled:req.query.baselineDate=0 or undefined)
@@ -482,8 +482,8 @@ module.exports = (Config, Db, ViewerUtils, sessionAPIs) => {
     buildConnections(req, res, (err, nodes, links, total) => {
       if (err) { return res.serverError(403, err.toString()); }
       res.send({
-        nodes: nodes,
-        links: links,
+        nodes,
+        links,
         recordsFiltered: total
       });
     });
