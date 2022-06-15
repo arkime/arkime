@@ -20,7 +20,7 @@ export default {
         url: 'api/spigraph',
         method: 'POST',
         data: query,
-        cancelToken: cancelToken
+        cancelToken
       };
 
       Vue.axios(options)
@@ -50,7 +50,7 @@ export default {
         url: 'api/spigraphhierarchy',
         method: 'POST',
         data: query,
-        cancelToken: cancelToken
+        cancelToken
       };
 
       Vue.axios(options)

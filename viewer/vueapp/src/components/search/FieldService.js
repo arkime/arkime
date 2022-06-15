@@ -17,7 +17,7 @@ const ipDstPortField = {
 
 export default {
 
-  ipDstPortField: ipDstPortField,
+  ipDstPortField,
 
   addIpDstPortField (fields) {
     let result;
@@ -44,7 +44,7 @@ export default {
     const source = Vue.axios.CancelToken.source();
 
     const promise = new Promise((resolve, reject) => {
-      const options = { params: params, cancelToken: source.token };
+      const options = { params, cancelToken: source.token };
 
       Vue.axios.get('api/unique', options)
         .then((response) => {

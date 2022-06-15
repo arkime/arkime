@@ -221,7 +221,7 @@ class Notifier {
             {
               bool: {
                 should: [
-                  { terms: { roles: roles } }, // shared via user role
+                  { terms: { roles } }, // shared via user role
                   { term: { users: req.user.userId } } // shared via userId
                 ]
               }

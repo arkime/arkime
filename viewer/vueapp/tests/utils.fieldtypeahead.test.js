@@ -29,7 +29,7 @@ const renderOptions = {
   mocks: { $route },
   props: {
     dropup: false,
-    fields: fields,
+    fields,
     page: 'testpage',
     initialValue: 'Src IP',
     queryParam: 'queryParam'

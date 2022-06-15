@@ -687,7 +687,7 @@ export default {
         this.$router.push({
           query: {
             ...this.$route.query,
-            view: view
+            view
           }
         });
 
@@ -772,7 +772,7 @@ export default {
         this.$router.push({
           query: {
             ...this.$route.query,
-            cluster: cluster
+            cluster
           }
         });
       }

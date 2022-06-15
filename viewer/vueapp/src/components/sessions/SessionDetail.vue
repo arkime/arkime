@@ -305,8 +305,8 @@ export default {
             return {
               form: undefined,
               cluster: undefined,
-              message: message,
-              messageType: messageType
+              message,
+              messageType
             };
           },
           computed: {

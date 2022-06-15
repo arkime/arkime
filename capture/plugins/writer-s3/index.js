@@ -54,7 +54,7 @@ function makeS3 (node, region) {
     return s3;
   }
 
-  const s3Params = { region: region };
+  const s3Params = { region };
 
   if (key) {
     const secret = Config.getFull(node, 's3SecretAccessKey');
@@ -126,7 +126,7 @@ function processSessionIdS3 (session, headerCb, packetCb, endCb, limit) {
         }
         header = header.subarray(0, 24);
         pcap = Pcap.make(info.name, header);
-        lru.set(cacheKey, { pcap: pcap, header: header });
+        lru.set(cacheKey, { pcap, header });
         if (headerCb) {
           headerCb(pcap, header);
         }
@@ -253,9 +253,9 @@ function processSessionIdS3 (session, headerCb, packetCb, endCb, limit) {
               Key: parts[4]
             };
             const pd = packetData[pp] = {
-              params: params,
-              info: info,
-              compressed: compressed
+              params,
+              info,
+              compressed
             };
             if (compressed) {
               pd.rangeStart = Math.floor(packetPos / (1 << COMPRESSED_WITHIN_BLOCK_BITS));

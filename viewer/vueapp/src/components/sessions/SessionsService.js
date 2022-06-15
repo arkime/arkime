@@ -73,7 +73,7 @@ export default {
         url: 'api/sessions',
         method: 'POST',
         data: params,
-        cancelToken: cancelToken
+        cancelToken
       };
 
       Vue.axios(options)
@@ -101,7 +101,7 @@ export default {
       const options = {
         method: 'GET',
         params: {
-          cluster: cluster
+          cluster
         },
         url: `api/session/${node}/${id}/detail`
       };
@@ -133,7 +133,7 @@ export default {
         method: 'GET',
         params: {
           ...params,
-          cluster: cluster
+          cluster
         },
         cancelToken: source.token,
         url: `api/session/${node}/${id}/packets`
@@ -373,8 +373,8 @@ export default {
     const clonedParams = JSON.parse(JSON.stringify(routeParams));
 
     const params = {
-      exp: exp,
-      counts: counts,
+      exp,
+      counts,
       view: clonedParams.view,
       date: clonedParams.date,
       stopTime: clonedParams.stopTime,
@@ -450,10 +450,10 @@ export default {
     delete combinedParams.numMatching;
 
     return {
-      data: data,
+      data,
       url: baseUrl,
-      error: error,
-      method: method,
+      error,
+      method,
       params: combinedParams
     };
   }

@@ -162,7 +162,7 @@ export default {
           } else {
             this.sourceStats = data.sources;
             Object.keys(this.sourceStats[0]).forEach(key => {
-              const obj = { key: key, sortable: true };
+              const obj = { key, sortable: true };
               if (key !== 'source') {
                 obj.formatter = (value) => value.toString().replace(/\B(?<!\.\d*)(?=(\d{3})+(?!\d))/g, ',');
                 obj.tdClass = 'text-right';
@@ -178,7 +178,7 @@ export default {
           } else {
             this.typeStats = data.types;
             Object.keys(this.typeStats[0]).forEach(key => {
-              const obj = { key: key, sortable: true };
+              const obj = { key, sortable: true };
               if (key !== 'type') {
                 obj.formatter = (value) => value.toString().replace(/\B(?<!\.\d*)(?=(\d{3})+(?!\d))/g, ',');
                 obj.tdClass = 'text-right';

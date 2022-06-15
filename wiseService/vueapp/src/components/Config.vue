@@ -1097,7 +1097,7 @@ export default {
         const key = keyValArr[0];
         const val = keyValArr[1];
         const values = val.split(';');
-        const valuesObj = { key: key };
+        const valuesObj = { key };
         valuesObj.id = Math.floor(Math.random() * 99999); // need id for v-for key
         for (const value of values) {
           const keyVal = value.split(/:(.+)/); // splits on first ':'

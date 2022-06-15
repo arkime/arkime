@@ -792,7 +792,7 @@ export default {
       this.graphOptions = { // flot graph options
         series: {
           stack: true,
-          bars: { barWidth: barWidth },
+          bars: { barWidth },
           lines: {
             fill: true
           }
@@ -886,7 +886,7 @@ export default {
           const dayStop = day.clone().add(this.$constants.MOLOCH_BUSINESS_DAY_END, 'hours');
           // add business hours for this day to graph
           this.graphOptions.grid.markings.push({
-            color: color,
+            color,
             xaxis: {
               from: dayStart.valueOf(),
               to: dayStop.valueOf()

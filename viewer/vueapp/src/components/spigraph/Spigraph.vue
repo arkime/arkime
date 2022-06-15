@@ -301,7 +301,7 @@ export default {
         sort = this.$route.query.graphType || this.$store.state.graphType || 'sessionsHisto';
       }
       return {
-        sort: sort,
+        sort,
         date: this.$store.state.timeRange,
         exp: this.$route.query.exp || this.$route.query.field || this.user.settings.spiGraph || 'node',
         size: this.$route.query.size || 20,

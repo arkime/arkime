@@ -517,8 +517,8 @@ function buildAlert (cluster, issue) {
     }
 
     alerts.push({
-      config: config,
-      message: message,
+      config,
+      message,
       notifier: notifierDef,
       cluster: cluster.title
     });
@@ -613,7 +613,7 @@ function getHealth (cluster) {
       url: `${cluster.localUrl || cluster.url}/eshealth.json`,
       method: 'GET',
       rejectUnauthorized: !internals.insecure,
-      timeout: timeout
+      timeout
     };
 
     rp(options)
@@ -666,7 +666,7 @@ function getStats (cluster) {
       url: `${cluster.localUrl || cluster.url}/api/parliament`,
       method: 'GET',
       rejectUnauthorized: !internals.insecure,
-      timeout: timeout
+      timeout
     };
 
     // Get now before the query since we don't know how long query/response will take
@@ -1157,7 +1157,7 @@ router.post('/auth', (req, res, next) => {
   res.json({ // return the information including token as JSON
     success: true,
     text: 'Here\'s your token!',
-    token: token
+    token
   });
 });
 
@@ -1176,8 +1176,8 @@ router.get('/auth', (req, res, next) => {
   const hasAuth = !!app.get('password') || !!parliament.settings.commonAuth;
   const dashboardOnly = !!app.get('dashboardOnly');
   return res.json({
-    hasAuth: hasAuth,
-    dashboardOnly: dashboardOnly
+    hasAuth,
+    dashboardOnly
   });
 });
 
@@ -1278,7 +1278,7 @@ router.put('/auth/update', [checkAuthUpdate], (req, res, next) => {
     });
 
     // return the information including token as JSON
-    const successObj = { success: true, text: 'Here\'s your new token!', token: token };
+    const successObj = { success: true, text: 'Here\'s your new token!', token };
     const errorText = 'Unable to update your password.';
     writeParliament(req, res, next, successObj, errorText);
   });
@@ -1555,7 +1555,7 @@ router.put('/settings/restoreDefaults', isAdmin, (req, res, next) => {
       }
 
       return res.json({
-        settings: settings,
+        settings,
         text: `Successfully restored ${req.body.type} default settings.`
       });
     }
@@ -1725,7 +1725,7 @@ router.post('/groups/:id/clusters', isAdmin, (req, res, next) => {
   const successObj = {
     success: true,
     cluster: newCluster,
-    parliament: parliament,
+    parliament,
     text: 'Successfully added the requested cluster.'
   };
   const errorText = 'Unable to add that cluster to the parliament.';
@@ -1872,7 +1872,7 @@ router.get('/issues', (req, res, next) => {
 
   return res.json({
     issues: issuesClone,
-    recordsFiltered: recordsFiltered
+    recordsFiltered
   });
 });
 
@@ -1955,7 +1955,7 @@ router.put('/ignoreIssues', isUser, (req, res, next) => {
     errorText += 's';
   }
 
-  const successObj = { success: true, text: successText, ignoreUntil: ignoreUntil };
+  const successObj = { success: true, text: successText, ignoreUntil };
   writeIssues(req, res, next, successObj, errorText);
 });
 

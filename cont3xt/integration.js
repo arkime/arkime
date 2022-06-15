@@ -298,12 +298,12 @@ class Integration {
       const order = integration.getUserConfig(req.user, integration.name, 'order', integration.order);
 
       results[integration.name] = {
-        doable: doable,
+        doable,
         cacheTimeout: integration.cacheable ? integration.cacheTimeout : -1,
         cachePolicy: integration.cachePolicy,
         icon: integration.icon,
-        card: card,
-        order: order
+        card,
+        order
       };
     }
 
@@ -324,9 +324,9 @@ class Integration {
       }
 
       if (response === Integration.NoResult) {
-        shared.res.write(JSON.stringify({ sent: shared.sent, total: shared.total, name: integration.name, itype: itype, query: query, data: { _cont3xt: { createTime: Date.now() } } }));
+        shared.res.write(JSON.stringify({ sent: shared.sent, total: shared.total, name: integration.name, itype, query, data: { _cont3xt: { createTime: Date.now() } } }));
       } else {
-        shared.res.write(JSON.stringify({ sent: shared.sent, total: shared.total, name: integration.name, itype: itype, query: query, data: response }));
+        shared.res.write(JSON.stringify({ sent: shared.sent, total: shared.total, name: integration.name, itype, query, data: response }));
       }
       shared.res.write(',\n');
     };
@@ -434,7 +434,7 @@ class Integration {
           shared.sent++;
           stats.directError++;
           istats.directError++;
-          shared.res.write(JSON.stringify({ sent: shared.sent, total: shared.total, name: integration.name, itype: itype, query: query, failed: true }));
+          shared.res.write(JSON.stringify({ sent: shared.sent, total: shared.total, name: integration.name, itype, query, failed: true }));
           shared.res.write(',\n');
         });
     }
@@ -492,12 +492,12 @@ class Integration {
       skipCache: !!req.body.skipCache,
       doIntegrations: req.body.doIntegrations,
       user: req.user,
-      res: res,
+      res,
       sent: 0,
       total: 0 // runIntegrationsList will fix
     };
     res.write('[\n');
-    res.write(JSON.stringify({ success: true, itype: itype, sent: shared.sent, total: integrations.length, text: 'more to follow' }));
+    res.write(JSON.stringify({ success: true, itype, sent: shared.sent, total: integrations.length, text: 'more to follow' }));
     res.write(',\n');
 
     Integration.runIntegrationsList(shared, query, itype, integrations);
@@ -639,8 +639,8 @@ class Integration {
 
       result[integration.name] = {
         settings: integration.settings,
-        values: values,
-        globalConfiged: globalConfiged,
+        values,
+        globalConfiged,
         homePage: integration.homePage
       };
     }
