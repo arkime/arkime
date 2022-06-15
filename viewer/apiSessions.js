@@ -165,19 +165,44 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
     const reqQuery = queryOverride || req.query;
 
     try {
-      const { body: { _source: view } } = await Db.getView(reqQuery.view);
-      const roles = [...await req.user.getRoles()];
+      const roles = [...await req.user.getRoles()]; // es requries an array for terms search
 
-      if (!view.users) { view.users = ''; }
-      if (!view.roles) { view.roles = []; }
+      const viewQuery = { // search for the shortcut
+        size: 1,
+        query: {
+          bool: {
+            filter: [{
+              bool: {
+                must: [{ // needs to match the id OR name
+                  bool: {
+                    should: [ // match id OR name
+                      { term: { _id: reqQuery.view } }, // matches the id
+                      { term: { name: reqQuery.view } } // matches the name
+                    ]
+                  }
+                }, { // AND be shared with the user via role, user, OR creator
+                  bool: {
+                    should: [
+                      { terms: { roles: roles } }, // shared via user role
+                      { term: { users: req.user.userId } }, // shared via userId
+                      { term: { user: req.user.userId } } // created by this user
+                    ]
+                  }
+                }]
+              }
+            }]
+          }
+        }
+      };
 
-      if (view.user !== req.user.userId && // user didn't create view
-        view.users.indexOf(req.user.userId) === -1 && // user is not in users list
-        !(view.roles.filter(role => roles.includes(role))).length // user does not have access via a role
-      ) { // user doesn't have access to this view
-        console.log(`ERROR - User does not have permission to access this view: ${reqQuery.view}`);
-        return continueBuildQueryCb(req, query, 'Access to view denied!', finalCb, queryOverride);
+      const { body: { hits: { hits: views } } } = await Db.searchViews(viewQuery);
+
+      if (!views.length) {
+        console.log(`ERROR - User does not have permission to access this view or the view doesn't exist: ${reqQuery.view}`);
+        return continueBuildQueryCb(req, query, "Can't find view", finalCb, queryOverride);
       }
+
+      const view = views[0]._source;
 
       try {
         const viewExpression = molochparser.parse(view.expression);

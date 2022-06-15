@@ -346,7 +346,7 @@ export default {
       this.editDescription = false;
     },
     getViewName: function (viewId) {
-      const view = this.views.find(v => v.id === viewId);
+      const view = this.views.find(v => v.id === viewId || v.name === viewId);
       return view?.name || 'unknown or deleted view';
     }
   }

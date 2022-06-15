@@ -5644,7 +5644,7 @@ sub viewsMove
             $view->{roles} = ["arkimeUser"];
           }
           delete $view->{shared};
-          esPost("/${PREFIX}views/_doc/${v}", to_json($view));
+          esPost("/${PREFIX}views/_doc", to_json($view));
       }
 
       # update the user to delete views

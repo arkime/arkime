@@ -12,7 +12,7 @@ class View {
 
     const roles = [...await user.getRoles()]; // es requries an array for terms search
 
-    // only get shortcuts for setting user or shared
+    // only get views for setting user or shared
     const query = {
       query: {
         bool: {
