@@ -93,11 +93,16 @@
 
       <!-- cancel button -->
       <div class="col-md-2">
+        <div @click="done(null)"
+          v-b-tooltip.hover="'cancel'"
+          class="btn btn-sm btn-warning pull-right ml-1">
+          <span class="fa fa-ban" />
+        </div>
         <button
           type="button"
           @click="modifyView"
           :class="{'disabled':loading}"
-          class="btn btn-sm btn-theme-tertiary pull-right ml-1"
+          class="btn btn-sm btn-theme-tertiary pull-right"
           :title="`${mode === 'create' ? 'Create View' : 'Save View'}`">
           <span v-if="!loading">
             <span v-if="mode === 'create'">
@@ -119,14 +124,6 @@
             </span>
           </span>
         </button>
-        <div
-          @click="done(null)"
-          class="btn btn-sm btn-warning pull-right">
-          <span class="fa fa-ban" />
-          <span class="d-sm-none d-md-none d-lg-none d-xl-inline">
-            &nbsp;Cancel
-          </span>
-        </div>
       </div> <!-- /cancel button -->
 
     </div> <!-- /modify view form -->

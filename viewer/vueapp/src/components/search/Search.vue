@@ -4,7 +4,7 @@
 
     <!-- viz options button -->
     <div class="viz-options-btn-container"
-      v-if="basePath === 'spigraph' || basePath === 'sessions' || basePath === 'spiview'">
+      v-if="!actionForm && (basePath === 'spigraph' || basePath === 'sessions' || basePath === 'spiview')">
       <b-dropdown
         split
         right

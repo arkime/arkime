@@ -270,7 +270,8 @@ export default {
     };
   },
   props: {
-    userId: String // the setting user id
+    userId: String, // the setting user id
+    fieldsMap: Object // the map of fields to field objects
   },
   computed: {
     views: {
