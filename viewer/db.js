@@ -935,7 +935,7 @@ exports.flush = async (index) => {
   if (index === 'users') {
     return User.flush();
   } else if (index === 'lookups') {
-    return internals.usersClient7.indices.flush({ index: fixIndex(index) });
+    return internals.usersClient7.indices.flush({ index: `${internals.usersPrefix}${index}` });
   } else {
     return internals.client7.indices.flush({ index: fixIndex(index) });
   }
@@ -945,7 +945,7 @@ exports.refresh = async (index) => {
   if (index === 'users') {
     User.flush();
   } else if (index === 'lookups') {
-    return internals.usersClient7.indices.refresh({ index: fixIndex(index) });
+    return internals.usersClient7.indices.refresh({ index: `${internals.usersPrefix}${index}` });
   } else {
     return internals.client7.indices.refresh({ index: fixIndex(index) });
   }
@@ -1341,31 +1341,31 @@ exports.getShortcutsCache = async (user) => {
 
 exports.searchViews = async (query) => {
   return internals.usersClient7.search({
-    index: fixIndex('views'), body: query, rest_total_hits_as_int: true, version: true
+    index: `${internals.usersPrefix}views`, body: query, rest_total_hits_as_int: true, version: true
   });
 };
 exports.numberOfViews = async (query) => {
   return internals.usersClient7.count({
-    index: fixIndex('views'), body: query
+    index: `${internals.usersPrefix}views`, body: query
   });
 };
 exports.createView = async (doc) => {
   return await internals.usersClient7.index({
-    index: fixIndex('views'), body: doc, refresh: 'wait_for', timeout: '10m'
+    index: `${internals.usersPrefix}views`, body: doc, refresh: 'wait_for', timeout: '10m'
   });
 };
 exports.deleteView = async (id) => {
   return await internals.usersClient7.delete({
-    index: fixIndex('views'), id, refresh: true
+    index: `${internals.usersPrefix}views`, id, refresh: true
   });
 };
 exports.setView = async (id, doc) => {
   return await internals.usersClient7.index({
-    index: fixIndex('views'), body: doc, id, refresh: true, timeout: '10m'
+    index: `${internals.usersPrefix}views`, body: doc, id, refresh: true, timeout: '10m'
   });
 };
 exports.getView = async (id) => {
-  return internals.usersClient7.get({ index: fixIndex('views'), id });
+  return internals.usersClient7.get({ index: `${internals.usersPrefix}views`, id });
 };
 
 exports.molochNodeStats = async (nodeName, cb) => {
