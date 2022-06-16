@@ -56,7 +56,7 @@ class View {
       view._viewable = view.creator === req.user.userId || req.user.hasRole(view.viewRoles);
     }
 
-    res.send({ success: true, views: views });
+    res.send({ success: true, views });
   }
 
   /**

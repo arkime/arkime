@@ -217,7 +217,7 @@ class ArkimeLMDBCache extends ArkimeCache {
 
     try {
       this.store = open({
-        path: path,
+        path,
         compression: true
       });
     } catch (err) {

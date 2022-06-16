@@ -102,7 +102,7 @@ export default {
       const options = {
         url: 'api/user/settings',
         method: 'GET',
-        params: { userId: userId }
+        params: { userId }
       };
 
       Vue.axios(options)
@@ -133,7 +133,7 @@ export default {
         url: 'api/user/settings',
         method: 'POST',
         data: settings,
-        params: { userId: userId }
+        params: { userId }
       };
 
       // update user settings
@@ -181,7 +181,7 @@ export default {
       const options = {
         url: 'api/user/views',
         method: 'GET',
-        params: { userId: userId }
+        params: { userId }
       };
 
       Vue.axios(options)
@@ -208,8 +208,8 @@ export default {
       const options = {
         url: 'api/user/view',
         method: 'POST',
-        data: data,
-        params: { userId: userId }
+        data,
+        params: { userId }
       };
 
       Vue.axios(options)
@@ -236,7 +236,7 @@ export default {
         url: `api/user/view/${viewName}`,
         method: 'DELETE',
         data: view,
-        params: { userId: userId }
+        params: { userId }
       };
 
       Vue.axios(options)
@@ -261,8 +261,8 @@ export default {
       const options = {
         url: `api/user/view/${data.key}`,
         method: 'PUT',
-        data: data,
-        params: { userId: userId }
+        data,
+        params: { userId }
       };
 
       Vue.axios(options)
@@ -288,8 +288,8 @@ export default {
       const options = {
         url: `api/user/view/${data.name}/toggleshare`,
         method: 'POST',
-        data: data,
-        params: { userId: userId }
+        data,
+        params: { userId }
       };
 
       Vue.axios(options)
@@ -313,7 +313,7 @@ export default {
       const options = {
         url: 'api/user/crons',
         method: 'GET',
-        params: { userId: userId }
+        params: { userId }
       };
 
       Vue.axios(options)
@@ -338,8 +338,8 @@ export default {
       const options = {
         url: 'api/user/cron',
         method: 'POST',
-        data: data,
-        params: { userId: userId }
+        data,
+        params: { userId }
       };
 
       Vue.axios(options)
@@ -364,7 +364,7 @@ export default {
       const options = {
         url: `api/user/cron/${key}`,
         method: 'DELETE',
-        params: { userId: userId }
+        params: { userId }
       };
 
       Vue.axios(options)
@@ -389,8 +389,8 @@ export default {
       const options = {
         url: `api/user/cron/${data.key}`,
         method: 'POST',
-        data: data,
-        params: { userId: userId }
+        data,
+        params: { userId }
       };
 
       Vue.axios(options)
@@ -414,7 +414,7 @@ export default {
       const options = {
         url: 'api/user/columns',
         method: 'GET',
-        params: { userId: userId }
+        params: { userId }
       };
 
       Vue.axios(options)
@@ -440,8 +440,8 @@ export default {
       const options = {
         url: 'api/user/column',
         method: 'POST',
-        data: data,
-        params: { userId: userId }
+        data,
+        params: { userId }
       };
 
       Vue.axios(options)
@@ -466,7 +466,7 @@ export default {
       const options = {
         url: `api/user/column/${colName}`,
         method: 'DELETE',
-        params: { userId: userId }
+        params: { userId }
       };
 
       Vue.axios(options)
@@ -491,8 +491,8 @@ export default {
       const options = {
         url: `api/user/column/${data.name}`,
         method: 'PUT',
-        data: data,
-        params: { userId: userId }
+        data,
+        params: { userId }
       };
 
       Vue.axios(options)
@@ -516,7 +516,7 @@ export default {
       const options = {
         url: 'api/user/spiview',
         method: 'GET',
-        params: { userId: userId }
+        params: { userId }
       };
 
       Vue.axios(options)
@@ -542,8 +542,8 @@ export default {
       const options = {
         url: 'api/user/spiview',
         method: 'POST',
-        data: data,
-        params: { userId: userId }
+        data,
+        params: { userId }
       };
 
       Vue.axios(options)
@@ -569,7 +569,7 @@ export default {
         url: `api/user/spiview/${spiName}`,
         method: 'POST',
         data: { name: spiName },
-        params: { userId: userId }
+        params: { userId }
       };
 
       Vue.axios(options)
@@ -594,8 +594,8 @@ export default {
       const options = {
         url: `api/user/spiview/${data.name}`,
         method: 'PUT',
-        data: data,
-        params: { userId: userId }
+        data,
+        params: { userId }
       };
 
       Vue.axios(options)
@@ -621,8 +621,8 @@ export default {
       const options = {
         url: 'api/user/password',
         method: 'POST',
-        data: data,
-        params: { userId: userId }
+        data,
+        params: { userId }
       };
 
       Vue.axios(options)
@@ -689,7 +689,7 @@ export default {
       const options = {
         url: `api/user/${userId}/acknowledge`,
         method: 'PUT',
-        data: { msgNum: msgNum }
+        data: { msgNum }
       };
 
       Vue.axios(options)

@@ -249,7 +249,7 @@ function doProxyFull (config, req, res) {
 }
 
 function doProxy (req, res) {
-  doProxyFull({ elasticsearch: elasticsearch, authHeader: authHeader }, req, res);
+  doProxyFull({ elasticsearch, authHeader }, req, res);
   if (elasticsearchTee) {
     doProxyFull({ elasticsearch: elasticsearchTee, authHeader: authHeaderTee }, req, {
       setHeader: () => {},

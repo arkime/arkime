@@ -578,7 +578,7 @@ export default {
       highlightPrimaryColor: undefined,
       highlightSecondaryColor: undefined,
       highlightTertiaryColor: undefined,
-      closePopups: closePopups,
+      closePopups,
       fontSize: 0.4,
       zoomLevel: 1,
       weight: 'sessions',
@@ -1417,7 +1417,7 @@ export default {
           `,
           parent: this,
           data: {
-            dataNode: dataNode,
+            dataNode,
             nodeFields: this.nodeFields,
             fields: this.fieldsMap,
             baselineDate: this.query.baselineDate
@@ -1436,7 +1436,7 @@ export default {
             },
             addExpression: function (op) {
               const fullExpression = `${this.dataNode.exp} == ${this.dataNode.id}`;
-              this.$store.commit('addToExpression', { expression: fullExpression, op: op });
+              this.$store.commit('addToExpression', { expression: fullExpression, op });
             },
             closePopup: function () {
               this.$parent.closePopups();
@@ -1532,7 +1532,7 @@ export default {
           `,
           parent: this,
           data: {
-            linkData: linkData,
+            linkData,
             linkFields: this.linkFields,
             fields: this.fieldsMap
           },
@@ -1547,7 +1547,7 @@ export default {
             },
             addExpression: function (op) {
               const fullExpression = `(${linkData.srcExp} == ${linkData.source.id} && ${linkData.dstExp} == ${linkData.target.id})`;
-              this.$store.commit('addToExpression', { expression: fullExpression, op: op });
+              this.$store.commit('addToExpression', { expression: fullExpression, op });
             },
             closePopup: function () {
               this.$parent.closePopups();

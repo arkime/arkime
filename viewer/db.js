@@ -278,11 +278,11 @@ exports.merge = (to, from) => {
 };
 
 exports.get = async (index, type, id) => {
-  return internals.client7.get({ index: fixIndex(index), id: id });
+  return internals.client7.get({ index: fixIndex(index), id });
 };
 
 exports.getWithOptions = async (index, type, id, options) => {
-  const params = { index: fixIndex(index), id: id };
+  const params = { index: fixIndex(index), id };
   exports.merge(params, options);
   return internals.client7.get(params);
 };
@@ -532,12 +532,12 @@ exports.getSession = async (id, options, cb) => {
 };
 
 exports.index = async (index, type, id, doc) => {
-  return internals.client7.index({ index: fixIndex(index), body: doc, id: id });
+  return internals.client7.index({ index: fixIndex(index), body: doc, id });
 };
 
 exports.indexNow = async (index, type, id, doc) => {
   return internals.client7.index({
-    index: fixIndex(index), body: doc, id: id, refresh: true
+    index: fixIndex(index), body: doc, id, refresh: true
   });
 };
 
@@ -708,7 +708,7 @@ exports.msearchSessions = async (index, queries, options) => {
     body.push(queries[i]);
   }
 
-  const params = { body: body, rest_total_hits_as_int: true };
+  const params = { body, rest_total_hits_as_int: true };
 
   let cancelId = null;
   if (options && options.cancelId) {
@@ -729,42 +729,42 @@ exports.clearScroll = async (params) => {
 };
 
 exports.deleteDocument = async (index, type, id, options) => {
-  const params = { index: fixIndex(index), id: id };
+  const params = { index: fixIndex(index), id };
   exports.merge(params, options);
   return internals.client7.delete(params);
 };
 
 // This API does not call fixIndex
 exports.deleteIndex = async (index, options) => {
-  const params = { index: index };
+  const params = { index };
   exports.merge(params, options);
   return internals.client7.indices.delete(params);
 };
 
 // This API does not call fixIndex
 exports.optimizeIndex = async (index, options) => {
-  const params = { index: index, maxNumSegments: 1 };
+  const params = { index, maxNumSegments: 1 };
   exports.merge(params, options);
   return internals.client7.indices.forcemerge(params);
 };
 
 // This API does not call fixIndex
 exports.closeIndex = async (index, options) => {
-  const params = { index: index };
+  const params = { index };
   exports.merge(params, options);
   return internals.client7.indices.close(params);
 };
 
 // This API does not call fixIndex
 exports.openIndex = async (index, options) => {
-  const params = { index: index };
+  const params = { index };
   exports.merge(params, options);
   return internals.client7.indices.open(params);
 };
 
 // This API does not call fixIndex
 exports.shrinkIndex = async (index, options) => {
-  const params = { index: index, target: `${index}-shrink` };
+  const params = { index, target: `${index}-shrink` };
   exports.merge(params, options);
   return internals.client7.indices.shrink(params);
 };
@@ -815,7 +815,7 @@ exports.indicesSettings = async (index) => {
 exports.setIndexSettings = async (index, options) => {
   try {
     const { body: response } = await internals.client7.indices.putSettings({
-      index: index,
+      index,
       body: options.body,
       timeout: '10m',
       masterTimeout: '10m'
@@ -871,7 +871,7 @@ exports.tasks = async () => {
 };
 
 exports.taskCancel = async (taskId) => {
-  return internals.client7.tasks.cancel(taskId ? { taskId: taskId } : {});
+  return internals.client7.tasks.cancel(taskId ? { taskId } : {});
 };
 
 exports.nodesStats = async (options) => {
@@ -884,7 +884,7 @@ exports.nodesInfo = async (options) => {
 
 exports.update = async (index, type, id, doc, options) => {
   const params = {
-    id: id,
+    id,
     body: doc,
     timeout: '10m',
     retry_on_conflict: 3,
@@ -899,7 +899,7 @@ exports.updateSession = async (index, id, doc, cb) => {
     retry_on_conflict: 3,
     index: fixIndex(index),
     body: doc,
-    id: id,
+    id,
     timeout: '10m'
   };
 
@@ -971,7 +971,7 @@ exports.addTagsToSession = function (index, id, tags, cluster, cb) {
       source: script,
       lang: 'painless',
       params: {
-        tags: tags
+        tags
       }
     }
   };
@@ -1001,7 +1001,7 @@ exports.removeTagsFromSession = function (index, id, tags, cluster, cb) {
       source: script,
       lang: 'painless',
       params: {
-        tags: tags
+        tags
       }
     }
   };
@@ -1030,8 +1030,8 @@ exports.addHuntToSession = function (index, id, huntId, huntName, cb) {
       source: script,
       lang: 'painless',
       params: {
-        huntId: huntId,
-        huntName: huntName
+        huntId,
+        huntName
       }
     }
   };
@@ -1056,8 +1056,8 @@ exports.removeHuntFromSession = function (index, id, huntId, huntName, cb) {
       source: script,
       lang: 'painless',
       params: {
-        huntId: huntId,
-        huntName: huntName
+        huntId,
+        huntName
       }
     }
   };
@@ -1114,7 +1114,7 @@ exports.countHistory = async () => {
 };
 exports.deleteHistory = async (id, index) => {
   return internals.client7.delete({
-    index: index, id: id, refresh: true
+    index, id, refresh: true
   });
 };
 
@@ -1137,17 +1137,17 @@ exports.countHunts = async () => {
 };
 exports.deleteHunt = async (id) => {
   return internals.client7.delete({
-    index: fixIndex('hunts'), id: id, refresh: true
+    index: fixIndex('hunts'), id, refresh: true
   });
 };
 exports.setHunt = async (id, doc) => {
   exports.refresh('sessions*');
   return internals.client7.index({
-    index: fixIndex('hunts'), body: doc, id: id, refresh: true, timeout: '10m'
+    index: fixIndex('hunts'), body: doc, id, refresh: true, timeout: '10m'
   });
 };
 exports.getHunt = async (id) => {
-  return internals.client7.get({ index: fixIndex('hunts'), id: id });
+  return internals.client7.get({ index: fixIndex('hunts'), id });
 };
 
 // fetches the version of the remote shortcuts index (remote db = user's es)
@@ -1287,7 +1287,7 @@ exports.deleteShortcut = async (id) => {
   internals.shortcutsCache = {};
   await setShortcutsVersion();
   const response = await internals.usersClient7.delete({
-    index: internals.remoteShortcutsIndex, id: id, refresh: true
+    index: internals.remoteShortcutsIndex, id, refresh: true
   });
   if (internals.doShortcutsUpdates) { exports.updateLocalShortcuts(); }
   return response;
@@ -1296,13 +1296,13 @@ exports.setShortcut = async (id, doc) => {
   internals.shortcutsCache = {};
   await setShortcutsVersion();
   const response = await internals.usersClient7.index({
-    index: internals.remoteShortcutsIndex, body: doc, id: id, refresh: true, timeout: '10m'
+    index: internals.remoteShortcutsIndex, body: doc, id, refresh: true, timeout: '10m'
   });
   if (internals.doShortcutsUpdates) { exports.updateLocalShortcuts(); }
   return response;
 };
 exports.getShortcut = async (id) => {
-  return internals.usersClient7.get({ index: internals.remoteShortcutsIndex, id: id });
+  return internals.usersClient7.get({ index: internals.remoteShortcutsIndex, id });
 };
 exports.getShortcutsCache = async (user) => {
   if (internals.shortcutsCache[user.userId] && internals.shortcutsCache._timeStamp > Date.now() - 30000) {
@@ -1316,7 +1316,7 @@ exports.getShortcutsCache = async (user) => {
     query: {
       bool: {
         should: [
-          { terms: { roles: roles } }, // shared via user role
+          { terms: { roles } }, // shared via user role
           { term: { users: user.userId } }, // shared via userId
           { term: { userId: user.userId } } // created by this user
         ]
@@ -1465,7 +1465,7 @@ exports.indicesSettingsCache = async () => {
 };
 
 exports.hostnameToNodeids = function (hostname, cb) {
-  const query = { query: { match: { hostname: hostname } } };
+  const query = { query: { match: { hostname } } };
   exports.search('stats', 'stat', query, (err, sdata) => {
     const nodes = [];
     if (sdata && sdata.hits && sdata.hits.hits) {
@@ -1556,7 +1556,7 @@ exports.numberOfDocuments = async (index, options) => {
     }
   }
 
-  return { count: count };
+  return { count };
 };
 
 exports.checkVersion = async function (minVersion, checkUsers) {
@@ -1801,7 +1801,7 @@ exports.getIndices = async (startTime, stopTime, bounding, rotateIndex) => {
 exports.getMinValue = async (index, field) => {
   const params = {
     index: fixIndex(index),
-    body: { size: 0, aggs: { min: { min: { field: field } } } }
+    body: { size: 0, aggs: { min: { min: { field } } } }
   };
   return internals.client7.search(params);
 };
@@ -1839,13 +1839,13 @@ exports.getTemplate = async (templateName) => {
 };
 
 exports.putTemplate = async (templateName, body) => {
-  return internals.client7.indices.putTemplate({ name: fixIndex(templateName), body: body });
+  return internals.client7.indices.putTemplate({ name: fixIndex(templateName), body });
 };
 
 exports.setQueriesNode = async (node) => {
   internals.client7.indices.putMapping({
     index: fixIndex('queries'),
-    body: { _meta: { node: node, updateTime: Date.now() } }
+    body: { _meta: { node, updateTime: Date.now() } }
   });
 };
 

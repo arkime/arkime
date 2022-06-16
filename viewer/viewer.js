@@ -2024,8 +2024,8 @@ app.use(cspHeader, setCookie, (req, res) => {
   const limit = req.user.hasRole('arkimeAdmin') ? Config.get('huntAdminLimit', 10000000) : Config.get('huntLimit', 1000000);
 
   const appContext = {
-    theme: theme,
-    titleConfig: titleConfig,
+    theme,
+    titleConfig,
     path: Config.basePath(),
     version: version.version,
     devMode: Config.get('devMode', false),
@@ -2221,11 +2221,11 @@ internals.processCronQueries = () => {
           }
 
           const options = {
-            user: user,
-            cluster: cluster,
+            user,
+            cluster,
             saveId: Config.nodeName() + '-' + new Date().getTime().toString(36),
             tags: cq.tags.replace(/[^-a-zA-Z0-9_:,]/g, ''),
-            qid: qid
+            qid
           };
 
           let shortcuts;
@@ -2242,7 +2242,7 @@ internals.processCronQueries = () => {
             fieldsMap: Config.getFieldsMap(),
             dbFieldsMap: Config.getDBFieldsMap(),
             prefix: internals.prefix,
-            shortcuts: shortcuts,
+            shortcuts,
             shortcutTypeMap: internals.shortcutTypeMap
           };
 
@@ -2280,7 +2280,7 @@ internals.processCronQueries = () => {
               // Do the ES update
               const doc = {
                 doc: {
-                  lpValue: lpValue,
+                  lpValue,
                   lastRun: Math.floor(Date.now() / 1000),
                   count: (cq.count || 0) + count,
                   lastCount: count

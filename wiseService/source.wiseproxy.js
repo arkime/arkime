@@ -127,7 +127,7 @@ class WiseProxySource extends WISESource {
     this.buffer[this.offset] = type; this.offset++;
     this.buffer.writeUInt16BE(item.length, this.offset); this.offset += 2;
     this.buffer.write(item, this.offset); this.offset += item.length;
-    this.bufferInfo.push({ type: type, item: item, cb: cb });
+    this.bufferInfo.push({ type, item, cb });
 
     if (this.bufferInfo.length > 100) {
       this.performQuery();

@@ -551,7 +551,7 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
       }
 
       const fakeReq = {
-        user: user,
+        user,
         query: {
           from: 0,
           size: 100, // only fetch 100 items at a time
@@ -916,7 +916,7 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
         recordsTotal: total,
         recordsFiltered: results.total,
         data: results.results,
-        runningJob: runningJob
+        runningJob
       });
     }).catch(err => {
       console.log(`ERROR - ${req.method} /api/hunts`, util.inspect(err, false, 50));
@@ -1244,7 +1244,7 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
           updateSessionWithHunt(session, sessionId, hunt, huntId);
         }
 
-        if (!res.headersSent) { res.send({ matched: matched }); }
+        if (!res.headersSent) { res.send({ matched }); }
       });
     }).catch((err) => {
       console.log(`ERROR - ${req.method} /api/hunt/${req.params.nodeName}/${req.params.huntId}/remote/${req.params.sessionId}`, util.inspect(err, false, 50));

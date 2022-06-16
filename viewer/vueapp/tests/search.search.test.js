@@ -37,7 +37,7 @@ const store = {
     expression: '',
     issueSearch: false,
     shiftKeyHold: false,
-    views: views,
+    views,
     timeRange: -1,
     time: { startTime: 0, stopTime: 0 },
     remoteclusters: { test2: { name: 'Test2', url: 'http://localhost:8124' } },
@@ -89,7 +89,7 @@ test("search bar doesn't have actions button", async () => {
   } = render(Search, {
     store,
     mocks: { $route, $router },
-    props: { openSessions: [], fields: fields }
+    props: { openSessions: [], fields }
   });
 
   // actions menu is only available on the sessions page
@@ -108,7 +108,7 @@ test('search bar', async () => {
   } = render(Search, {
     store,
     mocks: { $route, $router },
-    props: { openSessions: [], fields: fields }
+    props: { openSessions: [], fields }
   });
 
   getByText('Search'); // component rendered, search button is visible
@@ -167,7 +167,7 @@ test('search bar - change view with no view applied', async () => {
   } = render(Search, {
     store,
     mocks: { $route, $router },
-    props: { openSessions: [], fields: fields }
+    props: { openSessions: [], fields }
   });
 
   // setView gets called when there is no view applied
@@ -189,7 +189,7 @@ test('search bar - change view when same view applied', async () => {
   } = render(Search, {
     store,
     mocks: { $route, $router },
-    props: { openSessions: [], fields: fields }
+    props: { openSessions: [], fields }
   });
 
   // changeSearch gets called when there is the view applied has the same name
@@ -211,7 +211,7 @@ test('search bar - change view to different view', async () => {
   } = render(Search, {
     store,
     mocks: { $route, $router },
-    props: { openSessions: [], fields: fields }
+    props: { openSessions: [], fields }
   });
 
   // setview gets called when there is a different view applied
@@ -233,7 +233,7 @@ test('search bar - viz buttons', async () => {
   } = render(Search, {
     store,
     mocks: { $route, $router },
-    props: { openSessions: [], fields: fields }
+    props: { openSessions: [], fields }
   });
 
   // should show viz options buttons
@@ -278,7 +278,7 @@ test('search bar - disable forced viz button', async () => {
   } = render(Search, {
     store,
     mocks: { $route, $router },
-    props: { openSessions: [], fields: fields }
+    props: { openSessions: [], fields }
   });
 
   // should show viz options dropdown, but not the button to fetch viz data

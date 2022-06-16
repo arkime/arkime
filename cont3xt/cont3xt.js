@@ -439,8 +439,8 @@ function setupAuth () {
 
   Auth.initialize({
     debug: internals.debug,
-    mode: mode,
-    userNameHeader: userNameHeader,
+    mode,
+    userNameHeader,
     passwordSecret: getConfig('cont3xt', 'passwordSecret', 'password'),
     basePath: internals.webBasePath,
     httpRealm: getConfig('cont3xt', 'httpRealm')
@@ -489,8 +489,8 @@ function setupAuth () {
 
   Integration.initialize({
     debug: internals.debug,
-    cache: cache,
-    getConfig: getConfig
+    cache,
+    getConfig
   });
 }
 
