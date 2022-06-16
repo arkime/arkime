@@ -5644,6 +5644,9 @@ sub viewsMove
             $view->{roles} = ["arkimeUser"];
           }
           delete $view->{shared};
+          if (!exists $view->{user})
+            $view->{user} = $user->{_source}->{userId};
+          }
           esPost("/${PREFIX}views/_doc", to_json($view));
       }
 
