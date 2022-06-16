@@ -6,6 +6,7 @@ const unzipper = require('unzipper');
 const util = require('util');
 const ArkimeUtil = require('../common/arkimeUtil');
 const User = require('../common/user');
+const View = require('./apiViews');
 
 module.exports = (Config, Db, internals, sessionAPIs, userAPIs, ViewerUtils) => {
   const miscAPIs = {};
@@ -374,8 +375,7 @@ module.exports = (Config, Db, internals, sessionAPIs, userAPIs, ViewerUtils) => 
       const clusters = await getClusters(); // { active: [], inactive: [] }
       const remoteclusters = remoteClusters(); // {}
       const fieldhistory = userAPIs.findUserState('fieldHistory', req.user); // {}
-      const getViews = util.promisify(userAPIs.getViews);
-      const views = await getViews(req); // {}
+      const { data: views } = await View.getViews(req);
       const roles = await User.getRoles();
 
       // can't fetch user or fields is FATAL, so let it fall through to outer

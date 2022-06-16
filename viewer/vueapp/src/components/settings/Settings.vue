@@ -498,188 +498,14 @@
         </form>
 
         <!-- view settings -->
-        <form v-if="visibleTab === 'views'"
+        <Views
           id="views"
-          class="form-horizontal">
-
-          <h3>Views</h3>
-
-          <p>
-             Saved views provide an easier method to specify common base queries
-             and can be activated in the search bar.
-          </p>
-
-          <table class="table table-striped table-sm">
-            <thead>
-              <tr>
-                <th>Share</th>
-                <th>Name</th>
-                <th>Expression</th>
-                <th width="30%">Sessions Columns</th>
-                <th>Sessions Sort</th>
-                <th>&nbsp;</th>
-              </tr>
-            </thead>
-            <tbody>
-              <!-- views -->
-              <tr v-for="(item, key) in views"
-                @keyup.enter="updateView(key)"
-                @keyup.esc="cancelViewChange(key)"
-                :key="key">
-                <td>
-                  <input type="checkbox"
-                    v-model="item.shared"
-                    @change="toggleShared(item)"
-                    class="form-check mt-2"
-                    :disabled="!user.roles.includes('arkimeAdmin') && item.user && item.user !== user.userId"
-                  />
-                </td>
-                <td>
-                  <input type="text"
-                    maxlength="20"
-                    v-model="item.name"
-                    @input="viewChanged(key)"
-                    class="form-control form-control-sm"
-                    :disabled="!user.roles.includes('arkimeAdmin') && item.user && item.user !== user.userId"
-                  />
-                </td>
-                <td>
-                  <input type="text"
-                    v-model="item.expression"
-                    @input="viewChanged(key)"
-                    class="form-control form-control-sm"
-                    :disabled="!user.roles.includes('arkimeAdmin') && item.user && item.user !== user.userId"
-                  />
-                </td>
-                <td>
-                  <span v-if="item.sessionsColConfig">
-                    <template v-for="col in item.sessionsColConfig.visibleHeaders">
-                      <label class="badge badge-secondary mr-1 mb-0 help-cursor"
-                        v-if="fieldsMap[col]"
-                        v-b-tooltip.hover
-                        :title="fieldsMap[col].help"
-                        :key="col">
-                        {{ fieldsMap[col].friendlyName }}
-                      </label>
-                    </template>
-                  </span>
-                </td>
-                <td>
-                  <span v-if="item.sessionsColConfig">
-                    <template v-for="order in item.sessionsColConfig.order">
-                      <label class="badge badge-secondary mr-1 help-cursor"
-                        :title="fieldsMap[order[0]].help"
-                        v-if="fieldsMap[order[0]]"
-                        v-b-tooltip.hover
-                        :key="order[0]">
-                        {{ fieldsMap[order[0]].friendlyName }}&nbsp;
-                        ({{ order[1] }})
-                      </label>
-                    </template>
-                  </span>
-                </td>
-                <td>
-                  <span class="pull-right">
-                    <button type="button"
-                      v-b-tooltip.hover
-                      title="Copy this views's expression"
-                      class="btn btn-sm btn-theme-secondary"
-                      @click="copyValue(item.expression)">
-                      <span class="fa fa-clipboard fa-fw">
-                      </span>
-                    </button>
-                    <span v-if="user.roles.includes('arkimeAdmin') || item.user === user.userId || !item.user">
-                      <span v-if="item.changed">
-                        <button type="button"
-                          v-b-tooltip.hover
-                          @click="updateView(key)"
-                          title="Save changes to this view"
-                          class="btn btn-sm btn-theme-tertiary">
-                          <span class="fa fa-save fa-fw">
-                          </span>
-                        </button>
-                        <button type="button"
-                          v-b-tooltip.hover
-                          class="btn btn-sm btn-warning"
-                          @click="cancelViewChange(key)"
-                          title="Undo changes to this view">
-                          <span class="fa fa-ban fa-fw">
-                          </span>
-                        </button>
-                      </span>
-                      <button v-else
-                        type="button"
-                        v-b-tooltip.hover
-                        title="Delete this view"
-                        class="btn btn-sm btn-danger"
-                        @click="deleteView(item, key)">
-                        <span class="fa fa-trash-o fa-fw">
-                        </span>
-                      </button>
-                    </span>
-                  </span>
-                </td>
-              </tr> <!-- /views -->
-              <!-- view list error -->
-              <tr v-if="viewListError">
-                <td colspan="6">
-                  <p class="text-danger mb-0">
-                    <span class="fa fa-exclamation-triangle">
-                    </span>&nbsp;
-                    {{ viewListError }}
-                  </p>
-                </td>
-              </tr> <!-- /view list error -->
-              <!-- new view form -->
-              <tr @keyup.enter="createView">
-                <td>
-                  <input type="checkbox"
-                    v-model="newViewShared"
-                    class="form-check mt-2"
-                  />
-                </td>
-                <td>
-                  <input type="text"
-                    maxlength="20"
-                    v-model="newViewName"
-                    class="form-control form-control-sm"
-                    placeholder="Enter a new view name (20 chars or less)"
-                  />
-                </td>
-                <td colspan="2">
-                  <input type="text"
-                    v-model="newViewExpression"
-                    class="form-control form-control-sm"
-                    placeholder="Enter a new view expression"
-                  />
-                </td>
-                <td>&nbsp;</td>
-                <td>
-                  <button
-                    type="button"
-                    @click="createView"
-                    title="Create new view"
-                    class="btn btn-theme-tertiary btn-sm pull-right">
-                    <span class="fa fa-plus-circle">
-                    </span>&nbsp;
-                    Create
-                  </button>
-                </td>
-              </tr> <!-- /new view form -->
-              <!-- view form error -->
-              <tr v-if="viewFormError">
-                <td colspan="6">
-                  <p class="text-danger mb-0">
-                    <span class="fa fa-exclamation-triangle">
-                    </span>&nbsp;
-                    {{ viewFormError }}
-                  </p>
-                </td>
-              </tr> <!-- /view form error -->
-            </tbody>
-          </table>
-
-        </form> <!-- /view settings -->
+          :userId="userId"
+          :fields-map="fieldsMap"
+          @copy-value="copyValue"
+          v-if="visibleTab === 'views'"
+          @display-message="displayMessage"
+        />
 
         <!-- cron query settings -->
         <form v-if="visibleTab === 'cron' && !multiviewer"
@@ -1931,6 +1757,7 @@ import ToggleBtn from '../../../../../common/vueapp/ToggleBtn';
 import Utils from '../utils/utils';
 import Shortcuts from './Shortcuts';
 import Notifiers from './Notifiers';
+import Views from './Views';
 
 let clockInterval;
 
@@ -1949,7 +1776,8 @@ export default {
     MolochPaging,
     ToggleBtn,
     Shortcuts,
-    Notifiers
+    Notifiers,
+    Views
   },
   data: function () {
     return {
@@ -1974,12 +1802,6 @@ export default {
       connDstFieldTypeahead: undefined,
       timelineDataFilters: [],
       filtersTypeahead: '',
-      // view settings vars
-      viewListError: '',
-      viewFormError: '',
-      newViewName: '',
-      newViewExpression: '',
-      newViewShared: false,
       // cron settings vars
       cronLoading: false,
       cronQueries: undefined,
@@ -2035,14 +1857,6 @@ export default {
   computed: {
     user: function () {
       return this.$store.state.user;
-    },
-    views: {
-      get: function () {
-        return this.$store.state.views;
-      },
-      set: function (newValue) {
-        this.$store.commit('setViews', newValue);
-      }
     },
     sortableColumns: function () {
       return this.columns.filter(column => !column.unsortable);
@@ -2312,136 +2126,6 @@ export default {
           return this.fields[i].friendlyName;
         }
       }
-    },
-    /* VIEWS ------------------------------------------- */
-    /* creates a view given the view name and expression */
-    createView: function () {
-      if (!this.newViewName || this.newViewName === '') {
-        this.viewFormError = 'No view name specified.';
-        return;
-      }
-
-      if (!this.newViewExpression || this.newViewExpression === '') {
-        this.viewFormError = 'No view expression specified.';
-        return;
-      }
-
-      const data = {
-        shared: this.newViewShared,
-        name: this.newViewName,
-        expression: this.newViewExpression
-      };
-
-      UserService.createView(data, this.userId).then((response) => {
-        // display success message to user
-        this.msg = response.text;
-        this.msgType = 'success';
-        // clear the inputs and any error
-        this.viewFormError = false;
-        this.newViewName = null;
-        this.newViewExpression = null;
-        this.newViewShared = false;
-        // add the view to the view list
-        if (response.view && response.viewName) {
-          if (this.views[response.viewName]) {
-            // a shared view with this name already exists
-            // so just get the list of views again
-            this.getViews();
-          } else {
-            response.view.name = response.viewName;
-            this.$set(this.views, response.viewName, response.view);
-          }
-        }
-      }).catch((error) => {
-        // display error message to user
-        this.msg = error.text;
-        this.msgType = 'danger';
-      });
-    },
-    /**
-     * Deletes a view given its name
-     * @param {Object} view The view to delete
-     * @param {string} viewName The name of the view to delete
-     */
-    deleteView: function (view, viewName) {
-      UserService.deleteView(view, this.userId).then((response) => {
-        // remove the view from the view list
-        this.views[viewName] = null;
-        delete this.views[viewName];
-        // display success message to user
-        this.msg = response.text;
-        this.msgType = 'success';
-      }).catch((error) => {
-        // display error message to user
-        this.msg = error.text;
-        this.msgType = 'danger';
-      });
-    },
-    /**
-     * Sets a view as having been changed
-     * @param {string} key The unique id of the changed view
-     */
-    viewChanged: function (key) {
-      this.views[key].changed = true;
-    },
-    /**
-     * Cancels a view change by retrieving the view
-     * @param {string} key The unique id of the view
-     */
-    cancelViewChange: function (key) {
-      UserService.getViews(this.userId).then((response) => {
-        this.views[key] = response[key];
-      }).catch((error) => {
-        this.viewListError = error.text;
-      });
-    },
-    /**
-     * Updates a view
-     * @param {string} key The unique id of the view to update
-     */
-    updateView: function (key) {
-      const data = this.views[key];
-
-      if (!data) {
-        this.msg = 'Could not find corresponding view';
-        this.msgType = 'danger';
-        return;
-      }
-
-      if (!data.changed) {
-        this.msg = 'This view has not changed';
-        this.msgType = 'warning';
-        return;
-      }
-
-      data.key = key;
-
-      UserService.updateView(data, this.userId).then((response) => {
-        // display success message to user
-        this.msg = response.text;
-        this.msgType = 'success';
-        // set the view as unchanged
-        data.changed = false;
-      }).catch((error) => {
-        // display error message to user
-        this.msg = error.text;
-        this.msgType = 'danger';
-      });
-    },
-    /**
-     * Shares or unshares a view given its name
-     * @param {Object} view The view to share/unshare
-     */
-    toggleShared: function (view) {
-      UserService.toggleShareView(view, view.user).then((response) => {
-        // display success message to user
-        this.msg = response.text;
-        this.msgType = 'success';
-      }).catch((error) => {
-        // display error message to user
-        this.msg = error.text;
-        this.msgType = 'danger';
-      });
     },
     /* CRON QUERIES ------------------------------------ */
     /* creates a cron query given the name, expression, process, and tags */
@@ -2830,7 +2514,6 @@ export default {
 
           if (initLoad) {
             // get all the other things!
-            this.getViews();
             this.getCronQueries();
             this.getColConfigs();
             this.getSpiviewConfigs();
@@ -2900,14 +2583,6 @@ export default {
           this.setupColumns(this.defaultColConfig.visibleHeaders);
           resolve();
         });
-      });
-    },
-    /* retrieves the specified user's views */
-    getViews: function () {
-      UserService.getViews(this.userId).then((response) => {
-        this.views = response;
-      }).catch((error) => {
-        this.viewListError = error.text;
       });
     },
     /* retrieves the specified user's cron queries */

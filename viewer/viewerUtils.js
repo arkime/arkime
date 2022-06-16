@@ -599,11 +599,10 @@ module.exports = (Config, Db, internals) => {
   ViewerUtils.getUserCacheIncAnon = (userId, cb) => {
     if (internals.noPasswordSecret) { // user is anonymous
       User.getUserCache('anonymous', (err, anonUser) => {
-        const anon = internals.anonymousUser;
+        const anon = Object.assign(new User(), internals.anonymousUser);
 
         if (anonUser) {
           anon.settings = anonUser.settings || {};
-          anon.views = anonUser.views;
         }
 
         return cb(null, anon);

@@ -11,6 +11,13 @@ textarea.form-control:focus {
   background-color: var(--color-inputs, #FFF);
 }
 
+input.form-control:disabled,
+select.form-control:disabled,
+textarea.form-control:disabled {
+  color: var(--color-gray-darker, #333);
+  background-color: var(--color-gray-lighter, #DDD);
+}
+
 
 /* dark default buttons ---------------------------------------------------- */
 .btn.btn-default {

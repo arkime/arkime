@@ -182,5 +182,104 @@ export default {
         reject(error);
       });
     });
+  },
+
+  // VIEWS ----------------------------------------------------------------- //
+  /**
+   * Gets views
+   * @param {Object} params     Query params object to search for views
+   * @returns {Promise} Promise A promise object that signals the completion
+   *                            or rejection of the request.
+   */
+  getViews (params) {
+    return new Promise((resolve, reject) => {
+      Vue.axios.get('api/views', { params }).then((response) => {
+        store.commit('setViews', response.data.data);
+        resolve(response.data);
+      }).catch((err) => {
+        reject(err);
+      });
+    });
+  },
+
+  /**
+   * Creates a view
+   * @param {Object} data       The new view data to the server
+   *                            { name: 'specialview', expression: 'something == somethingelse'}
+   * @param {string} userId     The unique identifier for a user
+   *                            (only required if not the current user)
+   * @returns {Promise} Promise A promise object that signals the completion
+   *                            or rejection of the request.
+   */
+  createView (data, userId) {
+    return new Promise((resolve, reject) => {
+      const options = {
+        data,
+        method: 'POST',
+        url: 'api/view',
+        params: { userId }
+      };
+
+      Vue.axios(options).then((response) => {
+        resolve(response.data);
+      }).catch((error) => {
+        reject(error.data);
+      });
+    });
+  },
+
+  /**
+   * Deletes a view
+   * @param {string} viewId     The name of the view to delete
+   * @param {string} userId     The unique identifier for a user
+   *                            (only required if not the current user)
+   * @returns {Promise} Promise A promise object that signals the completion
+   *                            or rejection of the request.
+   */
+  deleteView (viewId, userId) {
+    return new Promise((resolve, reject) => {
+      const options = {
+        method: 'DELETE',
+        params: { userId },
+        url: `api/view/${viewId}`
+      };
+
+      Vue.axios(options).then((response) => {
+        resolve(response.data);
+      }).catch((error) => {
+        reject(error.data);
+      });
+    });
+  },
+
+  /**
+   * Updates a view
+   * @param {Object} view       The view data to pass to the server
+   * @param {string} userId     The unique identifier for a user
+   *                            (only required if not the current user)
+   * @returns {Promise} Promise A promise object that signals the completion
+   *                            or rejection of the request.
+   */
+  updateView (view, userId) {
+    return new Promise((resolve, reject) => {
+      const id = view.id;
+
+      // remove client only fields
+      delete view.id;
+      delete view.changed;
+
+      const options = {
+        data: view,
+        method: 'PUT',
+        params: { userId },
+        url: `api/view/${id}`
+      };
+
+      Vue.axios(options).then((response) => {
+        resolve(response.data);
+      }).catch((error) => {
+        reject(error.data);
+      });
+    });
   }
 };

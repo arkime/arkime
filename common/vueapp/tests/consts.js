@@ -52,14 +52,28 @@ export const userSettings = {
 
 export const userWithSettings = { ...users[0], settings: { ...userSettings } };
 
-export const views = {
-  'test view 1': {
-    shared: false,
-    user: 'testuser',
-    name: 'test view 1',
-    expression: 'protocols == tls'
-  }
-};
+export const views = [{
+  id: '1',
+  users: '',
+  roles: [],
+  user: 'testuser',
+  name: 'test view 1',
+  expression: 'protocols == tls'
+}, {
+  id: '2',
+  roles: [],
+  user: 'admin',
+  users: 'testuser',
+  name: 'test view 2',
+  expression: 'protocols == tls'
+}, {
+  id: '3',
+  users: '',
+  user: 'testuserid',
+  name: 'test view 3',
+  roles: ['arkimeUser'],
+  expression: 'protocols == tls'
+}];
 
 export const periodicQueries = [{
   enabled: true,
