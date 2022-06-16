@@ -50,7 +50,7 @@ app.post('/config', [jsonParser], async (req, res) => {
     vxlanId: 12345,
     packetEndpoint: '10.89.81.198',
     source: '172.0.0.0/8',
-    rules: rules
+    rules
   });
 });
 

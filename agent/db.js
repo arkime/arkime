@@ -189,7 +189,7 @@ class DbESImplementation {
   async getConfig (id) {
     const results = await this.client.get({
       index: 'agent_config',
-      id: id
+      id
     });
     if (results?.body?._source) {
       return results.body._source;
@@ -200,7 +200,7 @@ class DbESImplementation {
   async deleteConfig (id) {
     const results = await this.client.delete({
       index: 'agent_config',
-      id: id,
+      id,
       refresh: true
     });
 
