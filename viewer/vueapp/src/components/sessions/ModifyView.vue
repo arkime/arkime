@@ -1,11 +1,11 @@
 <template>
   <div>
     <!-- modify view form -->
-    <div class="row"
+    <div class="d-flex flex-row"
       @keyup.stop.prevent.enter="modifyView">
 
       <!-- view name input -->
-      <div class="col-md-2">
+      <div>
         <div class="input-group input-group-sm">
           <div class="input-group-prepend">
             <span class="input-group-text">
@@ -25,8 +25,7 @@
       </div> <!-- /view name input -->
 
       <!-- view expression input -->
-      <div class="pl-0"
-        :class="{'col-md-4':sessionsPage,'col-md-5':!sessionsPage}">
+      <div class="flex-grow-1 ml-2">
         <div class="input-group input-group-sm">
           <div class="input-group-prepend">
             <span class="input-group-text">
@@ -44,7 +43,7 @@
       </div> <!-- /view expression input -->
 
       <!-- view users input -->
-      <div class="col-md-2">
+      <div class="ml-2">
         <div class="input-group input-group-sm">
           <div class="input-group-prepend">
             <span class="input-group-text">
@@ -62,7 +61,7 @@
       </div> <!-- /view users input -->
 
       <!-- view roles input -->
-      <div class="col-md-1">
+      <div class="ml-2">
         <RoleDropdown
           :roles="roles"
           :selected-roles="viewRoles"
@@ -72,11 +71,10 @@
       </div> <!-- /view roles input -->
 
       <!-- save sessions cols -->
-      <div v-if="sessionsPage"
-        class="col-md-1 no-wrap">
+      <div v-if="sessionsPage" class="ml-2">
         <div
           v-b-tooltip.hover
-          class="form-check small mt-1 pl-0"
+          class="form-check"
           title="Save the visible sessions table columns and sort order with this view. When applying this view, the sessions table will be updated.">
           <input
             type="checkbox"
@@ -92,17 +90,12 @@
       </div> <!-- /save sessions cols -->
 
       <!-- cancel button -->
-      <div class="col-md-2">
-        <div @click="done(null)"
-          v-b-tooltip.hover="'cancel'"
-          class="btn btn-sm btn-warning pull-right ml-1">
-          <span class="fa fa-ban" />
-        </div>
+      <div class="ml-2">
         <button
           type="button"
           @click="modifyView"
           :class="{'disabled':loading}"
-          class="btn btn-sm btn-theme-tertiary pull-right"
+          class="btn btn-sm btn-theme-tertiary"
           :title="`${mode === 'create' ? 'Create View' : 'Save View'}`">
           <span v-if="!loading">
             <span v-if="mode === 'create'">
@@ -124,6 +117,11 @@
             </span>
           </span>
         </button>
+        <div @click="done(null)"
+          v-b-tooltip.hover="'cancel'"
+          class="btn btn-sm btn-warning">
+          <span class="fa fa-ban" />
+        </div>
       </div> <!-- /cancel button -->
 
     </div> <!-- /modify view form -->
