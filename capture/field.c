@@ -1044,7 +1044,7 @@ gboolean moloch_field_ip6_add(int pos, MolochSession_t *session, const uint8_t *
     if (info->flags & MOLOCH_FIELD_FLAG_DISABLED || pos >= session->maxFields)
         return FALSE;
 
-    struct in6_addr *v = g_memdup2(val, sizeof(struct in6_addr));
+    struct in6_addr *v = g_memdup(val, sizeof(struct in6_addr));
 
     if (!session->fields[pos]) {
         field = MOLOCH_TYPE_ALLOC(MolochField_t);
