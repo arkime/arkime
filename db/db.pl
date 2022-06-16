@@ -5654,7 +5654,7 @@ sub viewsMove
   }
 
   # delete the _moloch_shared user
-  esDelete("/${PREFIX}users/_doc/_moloch_shared");
+  esDelete("/${PREFIX}users/_doc/_moloch_shared", 1);
 }
 ################################################################################
 
