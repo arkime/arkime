@@ -113,6 +113,19 @@
                "Juniper Networks"
             ],
             "dstOuiCnt" : 1,
+            "dstouterASN" : [
+               "---"
+            ],
+            "dstouterGEO" : [
+               "---"
+            ],
+            "dstouterRIR" : [
+               ""
+            ],
+            "dstouterip" : [
+               "1111:2222:3333:4444:5555:6666::"
+            ],
+            "dstouteripCnt" : 1,
             "fileId" : [],
             "firstPacket" : 1513078266494,
             "ipProtocol" : 17,
@@ -161,24 +174,20 @@
             ],
             "srcOuiCnt" : 1,
             "srcPayload8" : "9d46818000010011",
-            "totDataBytes" : 332,
-            "vpnASN" : [
-               "---",
+            "srcouterASN" : [
                "---"
             ],
-            "vpnGEO" : [
-               "---",
+            "srcouterGEO" : [
                "---"
             ],
-            "vpnIp" : [
-               "1111:2222:3333:4444:5555:6666:0:1",
-               "1111:2222:3333:4444:5555:6666::"
-            ],
-            "vpnIpCnt" : 2,
-            "vpnRIR" : [
-               "",
+            "srcouterRIR" : [
                ""
-            ]
+            ],
+            "srcouterip" : [
+               "1111:2222:3333:4444:5555:6666:0:1"
+            ],
+            "srcouteripCnt" : 1,
+            "totDataBytes" : 332
          },
          "header" : {
             "index" : {

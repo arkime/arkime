@@ -24,22 +24,34 @@
                ],
                "mac-cnt" : 1,
                "packets" : 2,
-               "port" : 0,
-               "vpnmac" : [
-                  "64:00:f1:e2:01:01",
-                  "64:00:f1:e2:01:12"
-               ],
-               "vpnmac-cnt" : 2
+               "port" : 0
             },
             "dstOui" : [
                "Cisco Systems, Inc"
             ],
             "dstOuiCnt" : 1,
             "dstRIR" : "ARIN",
-            "dstvpnOui" : [
+            "dstouterASN" : [
+               "AS13335 Cloudflare, Inc."
+            ],
+            "dstouterGEO" : [
+               "AU"
+            ],
+            "dstouterRIR" : [
+               "APNIC"
+            ],
+            "dstouterip" : [
+               "1.1.1.1"
+            ],
+            "dstouteripCnt" : 1,
+            "dstoutermac" : [
+               "64:00:f1:e2:01:01"
+            ],
+            "dstoutermac-cnt" : 1,
+            "dstouteroui" : [
                "Cisco Systems, Inc"
             ],
-            "dstvpnOuiCnt" : 1,
+            "dstouterouiCnt" : 1,
             "fileId" : [],
             "firstPacket" : 1402723255667,
             "icmp" : {
@@ -98,44 +110,39 @@
                ],
                "mac-cnt" : 1,
                "packets" : 2,
-               "port" : 0,
-               "vpnmac" : [
-                  "64:00:f1:e2:01:01",
-                  "64:00:f1:e2:01:12"
-               ],
-               "vpnmac-cnt" : 2
+               "port" : 0
             },
             "srcOui" : [
                "Cisco Systems, Inc"
             ],
             "srcOuiCnt" : 1,
             "srcRIR" : "ARIN",
-            "srcvpnOui" : [
+            "srcouterASN" : [
+               "AS3215 Orange"
+            ],
+            "srcouterGEO" : [
+               "FR"
+            ],
+            "srcouterRIR" : [
+               "RIPE"
+            ],
+            "srcouterip" : [
+               "2.2.2.2"
+            ],
+            "srcouteripCnt" : 1,
+            "srcoutermac" : [
+               "64:00:f1:e2:01:12"
+            ],
+            "srcoutermac-cnt" : 1,
+            "srcouteroui" : [
                "Cisco Systems, Inc"
             ],
-            "srcvpnOuiCnt" : 1,
+            "srcouterouiCnt" : 1,
             "tags" : [
                "gretest-erspan"
             ],
             "tagsCnt" : 1,
-            "totDataBytes" : 320,
-            "vpnASN" : [
-               "AS13335 Cloudflare, Inc.",
-               "AS3215 Orange"
-            ],
-            "vpnGEO" : [
-               "AU",
-               "FR"
-            ],
-            "vpnIp" : [
-               "1.1.1.1",
-               "2.2.2.2"
-            ],
-            "vpnIpCnt" : 2,
-            "vpnRIR" : [
-               "APNIC",
-               "RIPE"
-            ]
+            "totDataBytes" : 320
          },
          "header" : {
             "index" : {

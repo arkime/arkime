@@ -17,17 +17,35 @@
                ],
                "mac-cnt" : 1,
                "packets" : 3,
-               "port" : 0,
-               "vpnmac" : [
-                  "00:1b:21:3c:ac:30"
-               ],
-               "vpnmac-cnt" : 1
+               "port" : 0
             },
             "dstRIR" : "ARIN",
-            "dstvpnOui" : [
+            "dstouterASN" : [
+               "AS8075 Microsoft Corporation",
+               "AS8075 Microsoft Corporation"
+            ],
+            "dstouterGEO" : [
+               "US",
+               "US"
+            ],
+            "dstouterRIR" : [
+               "ARIN",
+               "ARIN"
+            ],
+            "dstouterip" : [
+               "20.0.0.1",
+               "20.0.0.2"
+            ],
+            "dstouteripCnt" : 2,
+            "dstoutermac" : [
+               "00:1b:21:3c:ab:64",
+               "00:1b:21:3c:ac:30"
+            ],
+            "dstoutermac-cnt" : 2,
+            "dstouteroui" : [
                "Intel Corporate"
             ],
-            "dstvpnOuiCnt" : 1,
+            "dstouterouiCnt" : 1,
             "fileId" : [],
             "firstPacket" : 1422828273817,
             "icmp" : {
@@ -83,35 +101,36 @@
                ],
                "mac-cnt" : 1,
                "packets" : 3,
-               "port" : 0,
-               "vpnmac" : [
-                  "00:1b:21:3c:ab:64"
-               ],
-               "vpnmac-cnt" : 1
+               "port" : 0
             },
             "srcRIR" : "ARIN",
-            "srcvpnOui" : [
-               "Intel Corporate"
-            ],
-            "srcvpnOuiCnt" : 1,
-            "totDataBytes" : 384,
-            "vpnASN" : [
+            "srcouterASN" : [
                "AS8075 Microsoft Corporation",
                "AS8075 Microsoft Corporation"
             ],
-            "vpnGEO" : [
+            "srcouterGEO" : [
                "US",
                "US"
             ],
-            "vpnIp" : [
+            "srcouterRIR" : [
+               "ARIN",
+               "ARIN"
+            ],
+            "srcouterip" : [
                "20.0.0.1",
                "20.0.0.2"
             ],
-            "vpnIpCnt" : 2,
-            "vpnRIR" : [
-               "ARIN",
-               "ARIN"
-            ]
+            "srcouteripCnt" : 2,
+            "srcoutermac" : [
+               "00:1b:21:3c:ab:64",
+               "00:1b:21:3c:ac:30"
+            ],
+            "srcoutermac-cnt" : 2,
+            "srcouteroui" : [
+               "Intel Corporate"
+            ],
+            "srcouterouiCnt" : 1,
+            "totDataBytes" : 384
          },
          "header" : {
             "index" : {
@@ -136,18 +155,36 @@
                ],
                "mac-cnt" : 1,
                "packets" : 16,
-               "port" : 22,
-               "vpnmac" : [
-                  "00:1b:21:3c:ab:64"
-               ],
-               "vpnmac-cnt" : 1
+               "port" : 22
             },
             "dstPayload8" : "5353482d322e302d",
             "dstRIR" : "ARIN",
-            "dstvpnOui" : [
+            "dstouterASN" : [
+               "AS8075 Microsoft Corporation",
+               "AS8075 Microsoft Corporation"
+            ],
+            "dstouterGEO" : [
+               "US",
+               "US"
+            ],
+            "dstouterRIR" : [
+               "ARIN",
+               "ARIN"
+            ],
+            "dstouterip" : [
+               "20.0.0.1",
+               "20.0.0.2"
+            ],
+            "dstouteripCnt" : 2,
+            "dstoutermac" : [
+               "00:1b:21:3c:ab:64",
+               "00:1b:21:3c:ac:30"
+            ],
+            "dstoutermac-cnt" : 2,
+            "dstouteroui" : [
                "Intel Corporate"
             ],
-            "dstvpnOuiCnt" : 1,
+            "dstouterouiCnt" : 1,
             "fileId" : [],
             "firstPacket" : 1422828273999,
             "initRTT" : 0,
@@ -251,18 +288,36 @@
                ],
                "mac-cnt" : 1,
                "packets" : 17,
-               "port" : 51225,
-               "vpnmac" : [
-                  "00:1b:21:3c:ac:30"
-               ],
-               "vpnmac-cnt" : 1
+               "port" : 51225
             },
             "srcPayload8" : "5353482d322e302d",
             "srcRIR" : "ARIN",
-            "srcvpnOui" : [
+            "srcouterASN" : [
+               "AS8075 Microsoft Corporation",
+               "AS8075 Microsoft Corporation"
+            ],
+            "srcouterGEO" : [
+               "US",
+               "US"
+            ],
+            "srcouterRIR" : [
+               "ARIN",
+               "ARIN"
+            ],
+            "srcouterip" : [
+               "20.0.0.1",
+               "20.0.0.2"
+            ],
+            "srcouteripCnt" : 2,
+            "srcoutermac" : [
+               "00:1b:21:3c:ab:64",
+               "00:1b:21:3c:ac:30"
+            ],
+            "srcoutermac-cnt" : 2,
+            "srcouteroui" : [
                "Intel Corporate"
             ],
-            "srcvpnOuiCnt" : 1,
+            "srcouterouiCnt" : 1,
             "ssh" : {
                "hassh" : [
                   "21b457a327ce7a2d4fce5ef2c42400bd"
@@ -293,24 +348,7 @@
                "syn-ack" : 1,
                "urg" : 0
             },
-            "totDataBytes" : 4396,
-            "vpnASN" : [
-               "AS8075 Microsoft Corporation",
-               "AS8075 Microsoft Corporation"
-            ],
-            "vpnGEO" : [
-               "US",
-               "US"
-            ],
-            "vpnIp" : [
-               "20.0.0.1",
-               "20.0.0.2"
-            ],
-            "vpnIpCnt" : 2,
-            "vpnRIR" : [
-               "ARIN",
-               "ARIN"
-            ]
+            "totDataBytes" : 4396
          },
          "header" : {
             "index" : {

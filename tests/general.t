@@ -1,4 +1,4 @@
-use Test::More tests => 685;
+use Test::More tests => 701;
 use Cwd;
 use URI::Escape;
 use MolochTest;
@@ -397,10 +397,21 @@ if (0) {
     countTest(2, "date=-1&expression=" . uri_escape("(file=$pwd/dns-flags0110.pcap||file=$pwd/socks5-reverse.pcap)&&stoptime<=\"2014/02/26 10:27:57\""));
 
 #gre
-    countTest(6, "date=-1&expression=" . uri_escape("(file=$pwd/dns-flags0110.pcap||file=$pwd/gre-sample.pcap)&&vpn.ip==172.27.1.66"));
-    countTest(6, "date=-1&expression=" . uri_escape("(file=$pwd/dns-flags0110.pcap||file=$pwd/gre-sample.pcap)&&vpn.ip.cnt==2"));
-    countTest(0, "date=-1&expression=" . uri_escape("(file=$pwd/dns-flags0110.pcap||file=$pwd/gre-sample.pcap)&&vpn.ip.cnt==1"));
-    countTest(6, "date=-1&expression=" . uri_escape("(file=$pwd/dns-flags0110.pcap||file=$pwd/gre-sample.pcap)&&vpn.ip.rir==ARIN"));
+    countTest(6, "date=-1&expression=" . uri_escape("(file=$pwd/dns-flags0110.pcap||file=$pwd/gre-sample.pcap)&&outerip.src==172.27.1.66"));
+    countTest(5, "date=-1&expression=" . uri_escape("(file=$pwd/dns-flags0110.pcap||file=$pwd/gre-sample.pcap)&&outerip.dst==172.27.1.66"));
+
+    countTest(5, "date=-1&expression=" . uri_escape("(file=$pwd/dns-flags0110.pcap||file=$pwd/gre-sample.pcap)&&outerip.src==66.59.109.137"));
+    countTest(6, "date=-1&expression=" . uri_escape("(file=$pwd/dns-flags0110.pcap||file=$pwd/gre-sample.pcap)&&outerip.dst==66.59.109.137"));
+
+    countTest(5, "date=-1&expression=" . uri_escape("(file=$pwd/dns-flags0110.pcap||file=$pwd/gre-sample.pcap)&&outerip.src.cnt==2"));
+    countTest(1, "date=-1&expression=" . uri_escape("(file=$pwd/dns-flags0110.pcap||file=$pwd/gre-sample.pcap)&&outerip.src.cnt==1"));
+    countTest(6, "date=-1&expression=" . uri_escape("(file=$pwd/dns-flags0110.pcap||file=$pwd/gre-sample.pcap)&&outerip.src.rir==ARIN"));
+
+    countTest(1, "date=-1&expression=" . uri_escape("(file=$pwd/dns-flags0110.pcap||file=$pwd/gre-erspan-vxlan.pcap)&&outerip.src.rir==ARIN"));
+    countTest(1, "date=-1&expression=" . uri_escape("(file=$pwd/dns-flags0110.pcap||file=$pwd/gre-erspan-vxlan.pcap)&&outerip.src==172.16.27.131"));
+    countTest(1, "date=-1&expression=" . uri_escape("(file=$pwd/dns-flags0110.pcap||file=$pwd/gre-erspan-vxlan.pcap)&&outerip.dst==172.16.27.121"));
+    countTest(1, "date=-1&expression=" . uri_escape("(file=$pwd/dns-flags0110.pcap||file=$pwd/gre-erspan-vxlan.pcap)&&outermac.dst==ee:ee:ee:ee:ee:e1"));
+    countTest(1, "date=-1&expression=" . uri_escape("(file=$pwd/dns-flags0110.pcap||file=$pwd/gre-erspan-vxlan.pcap)&&outermac.src==ff:dd:ff:ff:ff:f1"));
 
 #tcpflags
     countTest(9, "date=-1&expression=" . uri_escape("(file=$pwd/socks-http-pass.pcap||file=$pwd/gre-sample.pcap)"));

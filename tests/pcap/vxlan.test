@@ -15,18 +15,18 @@
                ],
                "mac-cnt" : 2,
                "packets" : 0,
-               "port" : 0,
-               "vpnmac" : [
-                  "08:00:27:ae:4d:62",
-                  "08:00:27:f2:1d:8c"
-               ],
-               "vpnmac-cnt" : 2
+               "port" : 0
             },
             "dstRIR" : "ARIN",
-            "dstvpnOui" : [
+            "dstoutermac" : [
+               "08:00:27:ae:4d:62",
+               "08:00:27:f2:1d:8c"
+            ],
+            "dstoutermac-cnt" : 2,
+            "dstouteroui" : [
                "PCS Computer Systems GmbH"
             ],
-            "dstvpnOuiCnt" : 1,
+            "dstouterouiCnt" : 1,
             "fileId" : [],
             "firstPacket" : 1467818432675,
             "ipProtocol" : 17,
@@ -63,18 +63,18 @@
                ],
                "mac-cnt" : 2,
                "packets" : 2,
-               "port" : 0,
-               "vpnmac" : [
-                  "08:00:27:ae:4d:62",
-                  "08:00:27:f2:1d:8c"
-               ],
-               "vpnmac-cnt" : 2
+               "port" : 0
             },
             "srcRIR" : "ARIN",
-            "srcvpnOui" : [
+            "srcoutermac" : [
+               "08:00:27:ae:4d:62",
+               "08:00:27:f2:1d:8c"
+            ],
+            "srcoutermac-cnt" : 2,
+            "srcouteroui" : [
                "PCS Computer Systems GmbH"
             ],
-            "srcvpnOuiCnt" : 1,
+            "srcouterouiCnt" : 1,
             "totDataBytes" : 0
          },
          "header" : {
@@ -107,17 +107,35 @@
                ],
                "mac-cnt" : 1,
                "packets" : 4,
-               "port" : 0,
-               "vpnmac" : [
-                  "08:00:27:f2:1d:8c"
-               ],
-               "vpnmac-cnt" : 1
+               "port" : 0
             },
             "dstRIR" : "TEST",
-            "dstvpnOui" : [
+            "dstouterASN" : [
+               "---",
+               "---"
+            ],
+            "dstouterGEO" : [
+               "---",
+               "---"
+            ],
+            "dstouterRIR" : [
+               "ARIN",
+               "ARIN"
+            ],
+            "dstouterip" : [
+               "192.168.56.11",
+               "192.168.56.12"
+            ],
+            "dstouteripCnt" : 2,
+            "dstoutermac" : [
+               "08:00:27:ae:4d:62",
+               "08:00:27:f2:1d:8c"
+            ],
+            "dstoutermac-cnt" : 2,
+            "dstouteroui" : [
                "PCS Computer Systems GmbH"
             ],
-            "dstvpnOuiCnt" : 1,
+            "dstouterouiCnt" : 1,
             "fileId" : [],
             "firstPacket" : 1467818432676,
             "icmp" : {
@@ -184,16 +202,34 @@
                ],
                "mac-cnt" : 1,
                "packets" : 4,
-               "port" : 0,
-               "vpnmac" : [
-                  "08:00:27:ae:4d:62"
-               ],
-               "vpnmac-cnt" : 1
+               "port" : 0
             },
-            "srcvpnOui" : [
+            "srcouterASN" : [
+               "---",
+               "---"
+            ],
+            "srcouterGEO" : [
+               "---",
+               "---"
+            ],
+            "srcouterRIR" : [
+               "ARIN",
+               "ARIN"
+            ],
+            "srcouterip" : [
+               "192.168.56.11",
+               "192.168.56.12"
+            ],
+            "srcouteripCnt" : 2,
+            "srcoutermac" : [
+               "08:00:27:ae:4d:62",
+               "08:00:27:f2:1d:8c"
+            ],
+            "srcoutermac-cnt" : 2,
+            "srcouteroui" : [
                "PCS Computer Systems GmbH"
             ],
-            "srcvpnOuiCnt" : 1,
+            "srcouterouiCnt" : 1,
             "tags" : [
                "dstip",
                "srcip"
@@ -219,24 +255,7 @@
                   "16777226:0,33554442:0"
                ]
             },
-            "totDataBytes" : 512,
-            "vpnASN" : [
-               "---",
-               "---"
-            ],
-            "vpnGEO" : [
-               "---",
-               "---"
-            ],
-            "vpnIp" : [
-               "192.168.56.11",
-               "192.168.56.12"
-            ],
-            "vpnIpCnt" : 2,
-            "vpnRIR" : [
-               "ARIN",
-               "ARIN"
-            ]
+            "totDataBytes" : 512
          },
          "header" : {
             "index" : {

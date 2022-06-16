@@ -25,6 +25,23 @@
             ],
             "dstOuiCnt" : 1,
             "dstRIR" : "ARIN",
+            "dstouterASN" : [
+               "---",
+               "AS11590 Cumberland Technologies International"
+            ],
+            "dstouterGEO" : [
+               "---",
+               "US"
+            ],
+            "dstouterRIR" : [
+               "ARIN",
+               "ARIN"
+            ],
+            "dstouterip" : [
+               "172.27.1.66",
+               "66.59.109.137"
+            ],
+            "dstouteripCnt" : 2,
             "fileId" : [],
             "firstPacket" : 1055289968793,
             "icmp" : {
@@ -104,28 +121,28 @@
             ],
             "srcOuiCnt" : 1,
             "srcRIR" : "ARIN",
+            "srcouterASN" : [
+               "---",
+               "AS11590 Cumberland Technologies International"
+            ],
+            "srcouterGEO" : [
+               "---",
+               "US"
+            ],
+            "srcouterRIR" : [
+               "ARIN",
+               "ARIN"
+            ],
+            "srcouterip" : [
+               "172.27.1.66",
+               "66.59.109.137"
+            ],
+            "srcouteripCnt" : 2,
             "tags" : [
                "gretest-sample"
             ],
             "tagsCnt" : 1,
-            "totDataBytes" : 650,
-            "vpnASN" : [
-               "---",
-               "AS11590 Cumberland Technologies International"
-            ],
-            "vpnGEO" : [
-               "---",
-               "US"
-            ],
-            "vpnIp" : [
-               "172.27.1.66",
-               "66.59.109.137"
-            ],
-            "vpnIpCnt" : 2,
-            "vpnRIR" : [
-               "ARIN",
-               "ARIN"
-            ]
+            "totDataBytes" : 650
          },
          "header" : {
             "index" : {
@@ -165,6 +182,23 @@
             "dstOuiCnt" : 1,
             "dstPayload8" : "240206ee000003bc",
             "dstRIR" : "ARIN",
+            "dstouterASN" : [
+               "---",
+               "AS11590 Cumberland Technologies International"
+            ],
+            "dstouterGEO" : [
+               "---",
+               "US"
+            ],
+            "dstouterRIR" : [
+               "ARIN",
+               "ARIN"
+            ],
+            "dstouterip" : [
+               "172.27.1.66",
+               "66.59.109.137"
+            ],
+            "dstouteripCnt" : 2,
             "fileId" : [],
             "firstPacket" : 1055289973849,
             "ipProtocol" : 17,
@@ -224,28 +258,28 @@
             "srcOuiCnt" : 1,
             "srcPayload8" : "230b06ef00000000",
             "srcRIR" : "ARIN",
+            "srcouterASN" : [
+               "---",
+               "AS11590 Cumberland Technologies International"
+            ],
+            "srcouterGEO" : [
+               "---",
+               "US"
+            ],
+            "srcouterRIR" : [
+               "ARIN",
+               "ARIN"
+            ],
+            "srcouterip" : [
+               "172.27.1.66",
+               "66.59.109.137"
+            ],
+            "srcouteripCnt" : 2,
             "tags" : [
                "gretest-sample"
             ],
             "tagsCnt" : 1,
-            "totDataBytes" : 96,
-            "vpnASN" : [
-               "---",
-               "AS11590 Cumberland Technologies International"
-            ],
-            "vpnGEO" : [
-               "---",
-               "US"
-            ],
-            "vpnIp" : [
-               "172.27.1.66",
-               "66.59.109.137"
-            ],
-            "vpnIpCnt" : 2,
-            "vpnRIR" : [
-               "ARIN",
-               "ARIN"
-            ]
+            "totDataBytes" : 96
          },
          "header" : {
             "index" : {
@@ -275,6 +309,23 @@
             "dstOuiCnt" : 1,
             "dstPayload8" : "5353482d312e3939",
             "dstRIR" : "ARIN",
+            "dstouterASN" : [
+               "---",
+               "AS11590 Cumberland Technologies International"
+            ],
+            "dstouterGEO" : [
+               "---",
+               "US"
+            ],
+            "dstouterRIR" : [
+               "ARIN",
+               "ARIN"
+            ],
+            "dstouterip" : [
+               "172.27.1.66",
+               "66.59.109.137"
+            ],
+            "dstouteripCnt" : 2,
             "fileId" : [],
             "firstPacket" : 1055289978756,
             "initRTT" : 22,
@@ -371,6 +422,23 @@
             "srcOuiCnt" : 1,
             "srcPayload8" : "5353482d322e302d",
             "srcRIR" : "ARIN",
+            "srcouterASN" : [
+               "---",
+               "AS11590 Cumberland Technologies International"
+            ],
+            "srcouterGEO" : [
+               "---",
+               "US"
+            ],
+            "srcouterRIR" : [
+               "ARIN",
+               "ARIN"
+            ],
+            "srcouterip" : [
+               "172.27.1.66",
+               "66.59.109.137"
+            ],
+            "srcouteripCnt" : 2,
             "ssh" : {
                "hassh" : [
                   "5ef6678a6b060094834599ca16581b05"
@@ -405,24 +473,7 @@
                "syn-ack" : 1,
                "urg" : 0
             },
-            "totDataBytes" : 2623,
-            "vpnASN" : [
-               "---",
-               "AS11590 Cumberland Technologies International"
-            ],
-            "vpnGEO" : [
-               "---",
-               "US"
-            ],
-            "vpnIp" : [
-               "172.27.1.66",
-               "66.59.109.137"
-            ],
-            "vpnIpCnt" : 2,
-            "vpnRIR" : [
-               "ARIN",
-               "ARIN"
-            ]
+            "totDataBytes" : 2623
          },
          "header" : {
             "index" : {
@@ -469,6 +520,19 @@
             ],
             "dstOuiCnt" : 1,
             "dstRIR" : "ARIN",
+            "dstouterASN" : [
+               "AS11590 Cumberland Technologies International"
+            ],
+            "dstouterGEO" : [
+               "US"
+            ],
+            "dstouterRIR" : [
+               "ARIN"
+            ],
+            "dstouterip" : [
+               "66.59.109.137"
+            ],
+            "dstouteripCnt" : 1,
             "fileId" : [],
             "firstPacket" : 1055289987055,
             "ipProtocol" : 17,
@@ -524,28 +588,24 @@
             "srcOuiCnt" : 1,
             "srcPayload8" : "bdaa010000010000",
             "srcRIR" : "ARIN",
+            "srcouterASN" : [
+               "---"
+            ],
+            "srcouterGEO" : [
+               "---"
+            ],
+            "srcouterRIR" : [
+               "ARIN"
+            ],
+            "srcouterip" : [
+               "172.27.1.66"
+            ],
+            "srcouteripCnt" : 1,
             "tags" : [
                "gretest-sample"
             ],
             "tagsCnt" : 1,
-            "totDataBytes" : 66,
-            "vpnASN" : [
-               "---",
-               "AS11590 Cumberland Technologies International"
-            ],
-            "vpnGEO" : [
-               "---",
-               "US"
-            ],
-            "vpnIp" : [
-               "172.27.1.66",
-               "66.59.109.137"
-            ],
-            "vpnIpCnt" : 2,
-            "vpnRIR" : [
-               "ARIN",
-               "ARIN"
-            ]
+            "totDataBytes" : 66
          },
          "header" : {
             "index" : {
@@ -585,6 +645,23 @@
             "dstOuiCnt" : 1,
             "dstPayload8" : "240306ef000008cf",
             "dstRIR" : "ARIN",
+            "dstouterASN" : [
+               "---",
+               "AS11590 Cumberland Technologies International"
+            ],
+            "dstouterGEO" : [
+               "---",
+               "US"
+            ],
+            "dstouterRIR" : [
+               "ARIN",
+               "ARIN"
+            ],
+            "dstouterip" : [
+               "172.27.1.66",
+               "66.59.109.137"
+            ],
+            "dstouteripCnt" : 2,
             "fileId" : [],
             "firstPacket" : 1055289992849,
             "ipProtocol" : 17,
@@ -644,28 +721,28 @@
             "srcOuiCnt" : 1,
             "srcPayload8" : "230b06ef00000000",
             "srcRIR" : "ARIN",
+            "srcouterASN" : [
+               "---",
+               "AS11590 Cumberland Technologies International"
+            ],
+            "srcouterGEO" : [
+               "---",
+               "US"
+            ],
+            "srcouterRIR" : [
+               "ARIN",
+               "ARIN"
+            ],
+            "srcouterip" : [
+               "172.27.1.66",
+               "66.59.109.137"
+            ],
+            "srcouteripCnt" : 2,
             "tags" : [
                "gretest-sample"
             ],
             "tagsCnt" : 1,
-            "totDataBytes" : 96,
-            "vpnASN" : [
-               "---",
-               "AS11590 Cumberland Technologies International"
-            ],
-            "vpnGEO" : [
-               "---",
-               "US"
-            ],
-            "vpnIp" : [
-               "172.27.1.66",
-               "66.59.109.137"
-            ],
-            "vpnIpCnt" : 2,
-            "vpnRIR" : [
-               "ARIN",
-               "ARIN"
-            ]
+            "totDataBytes" : 96
          },
          "header" : {
             "index" : {
@@ -705,6 +782,23 @@
             "dstOuiCnt" : 1,
             "dstPayload8" : "240206f5000005b6",
             "dstRIR" : "ARIN",
+            "dstouterASN" : [
+               "---",
+               "AS11590 Cumberland Technologies International"
+            ],
+            "dstouterGEO" : [
+               "---",
+               "US"
+            ],
+            "dstouterRIR" : [
+               "ARIN",
+               "ARIN"
+            ],
+            "dstouterip" : [
+               "172.27.1.66",
+               "66.59.109.137"
+            ],
+            "dstouteripCnt" : 2,
             "fileId" : [],
             "firstPacket" : 1055289996849,
             "ipProtocol" : 17,
@@ -764,28 +858,28 @@
             "srcOuiCnt" : 1,
             "srcPayload8" : "230b06ef00000000",
             "srcRIR" : "ARIN",
+            "srcouterASN" : [
+               "---",
+               "AS11590 Cumberland Technologies International"
+            ],
+            "srcouterGEO" : [
+               "---",
+               "US"
+            ],
+            "srcouterRIR" : [
+               "ARIN",
+               "ARIN"
+            ],
+            "srcouterip" : [
+               "172.27.1.66",
+               "66.59.109.137"
+            ],
+            "srcouteripCnt" : 2,
             "tags" : [
                "gretest-sample"
             ],
             "tagsCnt" : 1,
-            "totDataBytes" : 96,
-            "vpnASN" : [
-               "---",
-               "AS11590 Cumberland Technologies International"
-            ],
-            "vpnGEO" : [
-               "---",
-               "US"
-            ],
-            "vpnIp" : [
-               "172.27.1.66",
-               "66.59.109.137"
-            ],
-            "vpnIpCnt" : 2,
-            "vpnRIR" : [
-               "ARIN",
-               "ARIN"
-            ]
+            "totDataBytes" : 96
          },
          "header" : {
             "index" : {

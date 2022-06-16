@@ -16,6 +16,23 @@
                "packets" : 5,
                "port" : 0
             },
+            "dstouterASN" : [
+               "AS0 This is neat",
+               "AS1 Cool Beans!"
+            ],
+            "dstouterGEO" : [
+               "CA",
+               "RU"
+            ],
+            "dstouterRIR" : [
+               "",
+               "TEST"
+            ],
+            "dstouterip" : [
+               "10.0.0.1",
+               "10.0.0.2"
+            ],
+            "dstouteripCnt" : 2,
             "fileId" : [],
             "firstPacket" : 1214308747487,
             "icmp" : {
@@ -77,24 +94,29 @@
                "packets" : 5,
                "port" : 0
             },
-            "totDataBytes" : 600,
-            "vpnASN" : [
+            "srcouterASN" : [
                "AS0 This is neat",
                "AS1 Cool Beans!"
             ],
-            "vpnGEO" : [
+            "srcouterGEO" : [
                "CA",
                "RU"
             ],
-            "vpnIp" : [
+            "srcouterRIR" : [
+               "",
+               "TEST"
+            ],
+            "srcouterip" : [
                "10.0.0.1",
                "10.0.0.2"
             ],
-            "vpnIpCnt" : 2,
-            "vpnRIR" : [
-               "",
-               "TEST"
-            ]
+            "srcouteripCnt" : 2,
+            "tags" : [
+               "dstip",
+               "srcip"
+            ],
+            "tagsCnt" : 2,
+            "totDataBytes" : 600
          },
          "header" : {
             "index" : {

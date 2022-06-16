@@ -15,14 +15,26 @@
                ],
                "mac-cnt" : 2,
                "packets" : 3,
-               "port" : 80,
-               "vpnmac" : [
-                  "ee:ee:ee:ee:ee:e1",
-                  "ff:dd:ff:ff:ff:f1"
-               ],
-               "vpnmac-cnt" : 2
+               "port" : 80
             },
             "dstPayload8" : "485454502f312e31",
+            "dstouterASN" : [
+               "---"
+            ],
+            "dstouterGEO" : [
+               "---"
+            ],
+            "dstouterRIR" : [
+               "ARIN"
+            ],
+            "dstouterip" : [
+               "172.16.27.121"
+            ],
+            "dstouteripCnt" : 1,
+            "dstoutermac" : [
+               "ee:ee:ee:ee:ee:e1"
+            ],
+            "dstoutermac-cnt" : 1,
             "fileId" : [],
             "firstPacket" : 1652950005864,
             "http" : {
@@ -95,14 +107,26 @@
                ],
                "mac-cnt" : 2,
                "packets" : 4,
-               "port" : 65174,
-               "vpnmac" : [
-                  "ee:ee:ee:ee:ee:e1",
-                  "ff:dd:ff:ff:ff:f1"
-               ],
-               "vpnmac-cnt" : 2
+               "port" : 65174
             },
             "srcPayload8" : "474554202f48656c",
+            "srcouterASN" : [
+               "---"
+            ],
+            "srcouterGEO" : [
+               "---"
+            ],
+            "srcouterRIR" : [
+               "ARIN"
+            ],
+            "srcouterip" : [
+               "172.16.27.131"
+            ],
+            "srcouteripCnt" : 1,
+            "srcoutermac" : [
+               "ff:dd:ff:ff:ff:f1"
+            ],
+            "srcoutermac-cnt" : 1,
             "tags" : [
                "gretest-erspan-vxlan"
             ],
@@ -118,24 +142,7 @@
                "syn-ack" : 1,
                "urg" : 0
             },
-            "totDataBytes" : 57,
-            "vpnASN" : [
-               "---",
-               "---"
-            ],
-            "vpnGEO" : [
-               "---",
-               "---"
-            ],
-            "vpnIp" : [
-               "172.16.27.121",
-               "172.16.27.131"
-            ],
-            "vpnIpCnt" : 2,
-            "vpnRIR" : [
-               "ARIN",
-               "ARIN"
-            ]
+            "totDataBytes" : 57
          },
          "header" : {
             "index" : {
