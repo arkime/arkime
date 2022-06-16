@@ -214,10 +214,10 @@ export default {
   createView (data, userId) {
     return new Promise((resolve, reject) => {
       const options = {
-        url: 'api/view',
+        data,
         method: 'POST',
-        data: data,
-        params: { userId: userId }
+        url: 'api/view',
+        params: { userId }
       };
 
       Vue.axios(options).then((response) => {
@@ -239,9 +239,9 @@ export default {
   deleteView (viewId, userId) {
     return new Promise((resolve, reject) => {
       const options = {
-        url: `api/view/${viewId}`,
         method: 'DELETE',
-        params: { userId: userId }
+        params: { userId },
+        url: `api/view/${viewId}`
       };
 
       Vue.axios(options).then((response) => {
@@ -271,8 +271,8 @@ export default {
       const options = {
         data: view,
         method: 'PUT',
-        url: `api/view/${id}`,
-        params: { userId: userId }
+        params: { userId },
+        url: `api/view/${id}`
       };
 
       Vue.axios(options).then((response) => {

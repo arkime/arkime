@@ -20,7 +20,7 @@ class View {
             {
               bool: {
                 should: [
-                  { terms: { roles: roles } }, // shared via user role
+                  { terms: { roles } }, // shared via user role
                   { term: { users: user.userId } }, // shared via userId
                   { term: { user: user.userId } } // created by this user
                 ]

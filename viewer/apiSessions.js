@@ -183,7 +183,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
                 }, { // AND be shared with the user via role, user, OR creator
                   bool: {
                     should: [
-                      { terms: { roles: roles } }, // shared via user role
+                      { terms: { roles } }, // shared via user role
                       { term: { users: req.user.userId } }, // shared via userId
                       { term: { user: req.user.userId } } // created by this user
                     ]
