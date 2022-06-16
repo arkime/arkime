@@ -96,7 +96,7 @@
                   v-if="showFitButton && !loading"
                   class="btn btn-xs btn-theme-quaternary fit-btn"
                   v-b-tooltip.hover.right="'Fit the table to the current window size'"
-                  :class="{'ml-4':stickySessions.length === 0, 'fit-btn-right':sessions.data.length <= 50 && stickySessions.length > 0}">
+                  :class="{'ml-4':stickySessions.length === 0, 'fit-btn-right':sessions.data && sessions.data.length <= 50 && stickySessions.length > 0}">
                   <span class="fa fa-arrows-h">
                   </span>
                 </button>

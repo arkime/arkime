@@ -127,11 +127,11 @@
         toggle-class="rounded"
         variant="theme-secondary">
         <template slot="button-content">
-          <div v-if="view && views && views.find(v => v.id === view)"
+          <div v-if="view && views && getView(view)"
             v-b-tooltip.hover.left
-            :title="views.find(v => v.id === view).expression">
+            :title="getView(view).expression || ''">
             <span class="fa fa-eye"></span>
-            <span v-if="view">{{ views.find(v => v.id === view).name }}</span>
+            <span v-if="view">{{ getView(view).name || view }}</span>
             <span class="sr-only">Views</span>
           </div>
           <div v-else>
@@ -713,6 +713,9 @@ export default {
       setTimeout(() => { // unfocus input for further re-focusing
         this.$store.commit('setFocusSearch', false);
       }, 1000);
+    },
+    getView: function (viewId) {
+      return this.views.find(v => v.id === viewId || v.name === viewId);
     },
     applyColumns: function (view) {
       this.$emit('setColumns', view.sessionsColConfig);
