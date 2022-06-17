@@ -17,7 +17,7 @@
  */
 'use strict';
 
-const MIN_DB_VERSION = 76;
+const MIN_DB_VERSION = 77;
 
 // ============================================================================
 // MODULES
@@ -67,6 +67,7 @@ const { internals } = require('./internals')(app, Config);
 const ViewerUtils = require('./viewerUtils')(Config, Db, internals);
 const Notifier = require('../common/notifier');
 const View = require('./apiViews');
+const Cron = require('./apiCrons');
 const sessionAPIs = require('./apiSessions')(Config, Db, internals, ViewerUtils);
 const connectionAPIs = require('./apiConnections')(Config, Db, ViewerUtils, sessionAPIs);
 const statsAPIs = require('./apiStats')(Config, Db, internals, ViewerUtils);
@@ -546,8 +547,8 @@ async function checkCronAccess (req, res, next) {
     return next();
   } else {
     try {
-      const { body: query } = await Db.get('queries', 'query', req.body.key);
-      if (query._source.creator === req.user.userId) {
+      const { body: { _source: query } } = await Db.get('queries', 'query', req.body.key);
+      if (query.creator === req.user.userId) {
         return next();
       }
       return res.serverError(403, 'You cannot change another user\'s query unless you have admin privileges');
@@ -1173,7 +1174,7 @@ if (Config.get('demoMode', false)) {
     return res.send('Disabled in demo mode.');
   });
 
-  app.get(['/user/cron', '/history/list'], (req, res) => {
+  app.get(['/user/cron', '/api/cron', '/api/user/cron', '/history/list'], (req, res) => {
     return res.serverError(403, 'Disabled in demo mode.');
   });
 
@@ -1252,35 +1253,6 @@ app.post( // udpate user settings endpoint
   ['/api/user/settings', '/user/settings/update'],
   [ArkimeUtil.noCacheJson, checkCookieToken, logAction(), ArkimeUtil.getSettingUserDb],
   userAPIs.updateUserSettings
-);
-
-app.get( // user cron queries endpoint
-  ['/api/user/crons', '/user/cron'],
-  [ArkimeUtil.noCacheJson, getSettingUserCache],
-  userAPIs.getUserCron
-);
-
-app.post( // create user cron query
-  ['/api/user/cron', '/user/cron/create'],
-  [ArkimeUtil.noCacheJson, checkCookieToken, logAction(), ArkimeUtil.getSettingUserDb],
-  userAPIs.createUserCron
-);
-
-app.delete( // delete user cron endpoint
-  ['/api/user/cron/:key', '/user/cron/delete'],
-  [ArkimeUtil.noCacheJson, checkCookieToken, logAction(), ArkimeUtil.getSettingUserDb, checkCronAccess],
-  userAPIs.deleteUserCron
-);
-app.post( // delete user cron endpoint for backwards compatibility with API 0.x-2.x
-  '/user/cron/delete',
-  [ArkimeUtil.noCacheJson, checkCookieToken, logAction(), ArkimeUtil.getSettingUserDb, checkCronAccess],
-  userAPIs.deleteUserCron
-);
-
-app.post( // update user cron endpoint
-  ['/api/user/cron/:key', '/user/cron/update'],
-  [ArkimeUtil.noCacheJson, checkCookieToken, logAction(), ArkimeUtil.getSettingUserDb, checkCronAccess],
-  userAPIs.updateUserCron
 );
 
 app.get( // user custom columns endpoint
@@ -1395,6 +1367,36 @@ app.post( // update view endpoint for backwards compatibility with API 0.x-2.x
   ['/user/views/update'],
   [ArkimeUtil.noCacheJson, checkCookieToken, logAction(), ArkimeUtil.getSettingUserDb, sanitizeViewName],
   View.apiUpdateView
+);
+
+// cron apis ------------------------------------------------------------------
+app.get( // get cron queries endpoint
+  ['/api/user/crons', '/user/cron', '/api/crons'],
+  [ArkimeUtil.noCacheJson, getSettingUserCache],
+  Cron.getCrons
+);
+
+app.post( // create cron query endpoint
+  ['/api/user/cron', '/user/cron/create', '/api/cron'],
+  [ArkimeUtil.noCacheJson, checkCookieToken, logAction(), ArkimeUtil.getSettingUserDb],
+  Cron.createCron
+);
+
+app.delete( // delete cron endpoint
+  ['/api/user/cron/:key', '/user/cron/delete', '/api/cron/:key'],
+  [ArkimeUtil.noCacheJson, checkCookieToken, logAction(), ArkimeUtil.getSettingUserDb, checkCronAccess],
+  Cron.deleteCron
+);
+app.post( // delete cron endpoint for backwards compatibility with API 0.x-2.x
+  '/user/cron/delete',
+  [ArkimeUtil.noCacheJson, checkCookieToken, logAction(), ArkimeUtil.getSettingUserDb, checkCronAccess],
+  Cron.deleteCron
+);
+
+app.post( // update cron endpoint
+  ['/api/user/cron/:key', '/user/cron/update', '/api/cron/:key'],
+  [ArkimeUtil.noCacheJson, checkCookieToken, logAction(), ArkimeUtil.getSettingUserDb, checkCronAccess],
+  Cron.updateCron
 );
 
 // notifier apis --------------------------------------------------------------
@@ -2495,4 +2497,8 @@ Notifier.initialize({
   debug: Config.debug,
   prefix: internals.prefix,
   esclient: User.getClient()
+});
+
+Cron.initialize({
+  processCronQueries: internals.processCronQueries
 });

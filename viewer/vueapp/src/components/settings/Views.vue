@@ -424,7 +424,7 @@ export default {
         // set the view as unchanged
         this.$set(this.views, index, response.view);
         // display success message to user
-        let msg = response.text || 'Successfully created view.';
+        let msg = response.text || 'Successfully updated view.';
         if (response.invalidUsers && response.invalidUsers.length) {
           msg += ` Could not add these users: ${response.invalidUsers.join(',')}`;
         }
