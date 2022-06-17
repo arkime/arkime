@@ -279,6 +279,15 @@ module.exports = (Config, Db, internals, sessionAPIs, userAPIs, ViewerUtils) => 
    */
   miscAPIs.upload = (req, res) => {
     const exec = require('child_process').exec;
+    const uploadCommand = Config.get('uploadCommand');
+
+    if (!uploadCommand) {
+      const msg = 'Need to set https://arkime.com/settings#uploadcommand in config file for uploads to work. However if you are trying to import pcap files from the command line, just use capture instead, https://arkime.com/faq#how-do-i-import-existing-pcaps';
+      res.status(500);
+      res.end(msg);
+      console.log('ERROR -', msg);
+      return;
+    }
 
     let tags = '';
     if (req.body.tags) {
@@ -290,7 +299,7 @@ module.exports = (Config, Db, internals, sessionAPIs, userAPIs, ViewerUtils) => 
       });
     }
 
-    const cmd = Config.get('uploadCommand')
+    const cmd = uploadCommand
       .replace(/{TAGS}/g, tags)
       .replace(/{NODE}/g, Config.nodeName())
       .replace(/{TMPFILE}/g, req.file.path)
