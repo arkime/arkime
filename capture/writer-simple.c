@@ -19,12 +19,16 @@
  * limitations under the License.
  */
 #define _FILE_OFFSET_BITS 64
+#define HAVE_ZSTD 1
 #include "moloch.h"
 #include <fcntl.h>
 #include <errno.h>
 #include <sys/mman.h>
 #include <sys/stat.h>
 #include <zlib.h>
+#ifdef HAVE_ZSTD
+#include <zstd.h>
+#endif
 #include <math.h>
 #include "openssl/rand.h"
 #include "openssl/evp.h"
@@ -33,10 +37,16 @@
 #define O_NOATIME 0
 #endif
 
+typedef enum {
+    MOLOCH_COMPRESSION_NONE,
+    MOLOCH_COMPRESSION_GZIP,
+    MOLOCH_COMPRESSION_ZSTD
+} MolochCompressionMode;
+
 extern MolochConfig_t        config;
 extern MolochPcapFileHdr_t   pcapFileHeader;
 LOCAL  gboolean              localPcapIndex;
-LOCAL  gboolean              gzip;
+LOCAL  MolochCompressionMode compressionMode = MOLOCH_COMPRESSION_NONE;
 LOCAL  gboolean              simpleShortHeader;
 LOCAL  int                   simpleGzipLevel;
 
@@ -53,6 +63,11 @@ typedef struct {
     uint8_t              dek[256];
     z_stream             z_strm;
     uint8_t              thread;
+#ifdef HAVE_ZSTD
+    ZSTD_CStream        *zstd_strm;
+    ZSTD_outBuffer       zstd_out;
+    ZSTD_inBuffer        zstd_in;
+#endif
 } MolochSimpleFile_t;
 
 // Information about the current buffer being written to, there can be multiple buffers per file
@@ -158,8 +173,13 @@ LOCAL void writer_simple_free(MolochSimple_t *info)
             EVP_CIPHER_CTX_free(info->file->cipher_ctx);
             break;
         }
-        if (gzip)
+        switch(compressionMode) {
+        case MOLOCH_COMPRESSION_GZIP:
             deflateEnd(&info->file->z_strm);
+            break;
+        default:
+            break;
+        }
         MOLOCH_TYPE_FREE(MolochSimpleFile_t, info->file);
     }
     info->file = 0;
@@ -192,23 +212,36 @@ LOCAL void writer_simple_process_buf(int thread, int closing)
         memcpy(ninfo->buf, info->buf + writeSize, info->bufpos - writeSize);
         ninfo->bufpos = info->bufpos - writeSize;
 
-        // Start the gzip buffer after what we copied from previous buffer.
-        if (gzip) {
+        switch(compressionMode) {
+        case MOLOCH_COMPRESSION_GZIP:
+            // Start the gzip buffer after what we copied from previous buffer.
             ninfo->file->z_strm.next_out = (Bytef *) ninfo->buf + ninfo->bufpos;
             ninfo->file->z_strm.avail_out = config.pcapWriteSize + MOLOCH_PACKET_MAX_LEN - ninfo->bufpos;
+            break;
+        default:
+            break;
         }
 
         // Set what we are going to write
         info->bufpos = writeSize;
-        if (gzip) {
+
+        switch(compressionMode) {
+        case MOLOCH_COMPRESSION_GZIP:
             info->file->pos += info->bufpos;
+            break;
+        default:
+            break;
         }
 
     } else {
-        if (gzip) {
+        switch(compressionMode) {
+        case MOLOCH_COMPRESSION_GZIP:
             deflate(&info->file->z_strm, Z_FINISH);
             info->bufpos = (char *)info->file->z_strm.next_out - info->buf;
             info->file->pos += info->bufpos;
+            break;
+        default:
+            break;
         }
         currentInfo[thread] = NULL; // This will cause a new file to be allocated on next packet
     }
@@ -328,7 +361,14 @@ LOCAL char *writer_simple_get_kekId ()
 /******************************************************************************/
 LOCAL void writer_simple_write_output(MolochSimple_t *info, const unsigned char *data, int len)
 {
-    if (gzip) {
+    switch(compressionMode) {
+    case MOLOCH_COMPRESSION_NONE:
+        memcpy(info->buf + info->bufpos, data, len);
+        info->bufpos += len;
+        info->file->pos += len;
+        break;
+
+    case MOLOCH_COMPRESSION_GZIP:
         info->file->z_strm.next_in = (Bytef *)data;
         info->file->z_strm.avail_in = len;
 
@@ -337,10 +377,9 @@ LOCAL void writer_simple_write_output(MolochSimple_t *info, const unsigned char 
         }
         info->file->posInBlock += len;
         info->bufpos = (char *)info->file->z_strm.next_out - info->buf;
-    } else {
-        memcpy(info->buf + info->bufpos, data, len);
-        info->bufpos += len;
-        info->file->pos += len;
+        break;
+    default:
+        break;
     }
 
     info->file->packetBytesWritten += len;
@@ -393,19 +432,23 @@ LOCAL void writer_simple_write(const MolochSession_t * const session, MolochPack
         info->file = MOLOCH_TYPE_ALLOC0(MolochSimpleFile_t);
         info->file->thread = thread;
 
-        if (gzip) {
+        switch(compressionMode) {
+        case MOLOCH_COMPRESSION_GZIP:
             uncompressedBitsArg = (gpointer)(long)uncompressedBits;
 
             info->file->z_strm.next_out = (Bytef *) info->buf;
             info->file->z_strm.avail_out = config.pcapWriteSize + MOLOCH_PACKET_MAX_LEN;
             deflateInit2(&info->file->z_strm, simpleGzipLevel, Z_DEFLATED, 16 + 15, 9, Z_DEFAULT_STRATEGY);
+            break;
+        default:
+            break;
         }
 
         switch(simpleMode) {
         case MOLOCH_SIMPLE_NORMAL:
             if (simpleShortHeader)
                 name = ".arkime";
-            else if (gzip)
+            else if (compressionMode == MOLOCH_COMPRESSION_GZIP)
                 name = ".pcap.gz";
             else
                 name = ".pcap";
@@ -487,7 +530,7 @@ LOCAL void writer_simple_write(const MolochSession_t * const session, MolochPack
         g_free(name);
 
         // Make a new block for start of packets
-        if (gzip)
+        if (compressionMode == MOLOCH_COMPRESSION_GZIP)
             writer_simple_gzip_make_new_block(info);
         gettimeofday(&fileAge[thread], NULL);
     } else {
@@ -496,7 +539,7 @@ LOCAL void writer_simple_write(const MolochSession_t * const session, MolochPack
 
     packet->writerFileNum = info->file->id;
 
-    if (gzip) {
+    if (compressionMode == MOLOCH_COMPRESSION_GZIP) {
         if (info->file->posInBlock >= simpleGzipBlockSize) {
             writer_simple_gzip_make_new_block(info);
         }
@@ -652,7 +695,7 @@ LOCAL void writer_simple_check(MolochSession_t *session, void *UNUSED(uw1), void
         return;
 
     // Don't force writes for gzip for now
-    if (!gzip) {
+    if (compressionMode != MOLOCH_COMPRESSION_GZIP) {
         writer_simple_process_buf(session->thread, 0);
     }
 }
@@ -811,7 +854,7 @@ void writer_simple_init(char *name)
 
     simpleGzipBlockSize = moloch_config_int(NULL, "simpleGzipBlockSize", 32000, 0, 0xfffff);
     if (simpleGzipBlockSize > 0) {
-        gzip = TRUE;
+        compressionMode = MOLOCH_COMPRESSION_GZIP;
         if (simpleGzipBlockSize < 8192) {
             simpleGzipBlockSize = 8191;
             LOG ("INFO: Reseting simpleGzipBlockSize to %u, the minimum value", simpleGzipBlockSize);
@@ -883,7 +926,7 @@ void writer_simple_init(char *name)
             LOG("WARNING - Will always use first pcap directory for local index");
         }
 
-        if (gzip) {
+        if (compressionMode == MOLOCH_COMPRESSION_GZIP) {
             config.maxFileSizeB = MIN(config.maxFileSizeB, 0xffffffffffffffUL >> (uncompressedBits + 1));
         }
 
