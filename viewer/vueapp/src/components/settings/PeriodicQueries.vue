@@ -19,6 +19,29 @@
       updates have been completed for that session.
     </p>
 
+    <hr>
+
+    <!-- no results -->
+    <div class="text-center mt-4"
+      v-if="!cronQueries || !cronQueries.length">
+      <h3>
+        <span class="fa fa-folder-open fa-2x" />
+      </h3>
+      <h5>
+        No periodic queries have been created.
+        <br>
+        Click the create button above to create one!
+      </h5>
+    </div> <!-- /no results -->
+
+    <!-- cron query list error -->
+    <tr v-if="cronQueryListError">
+      <p class="alert alert-danger">
+        <span class="fa fa-exclamation-triangle mr-1" />
+        {{ cronQueryListError }}
+      </p>
+    </tr> <!-- /cron query list error -->
+
     <!-- new cron query form -->
      <b-modal
       size="xl"
@@ -237,27 +260,6 @@
         </div>
       </template> <!-- /modal footer -->
     </b-modal> <!-- /new cron query form -->
-
-    <!-- no results -->
-    <div class="text-center mt-4"
-      v-if="!cronQueries || !cronQueries.length">
-      <h3>
-        <span class="fa fa-folder-open fa-2x" />
-      </h3>
-      <h5>
-        No periodic queries have been created.
-        <br>
-        Use the form below to create one!
-      </h5>
-    </div> <!-- /no results -->
-
-    <!-- cron query list error -->
-    <tr v-if="cronQueryListError">
-      <p class="alert alert-danger">
-        <span class="fa fa-exclamation-triangle mr-1" />
-        {{ cronQueryListError }}
-      </p>
-    </tr> <!-- /cron query list error -->
 
     <!-- cron queries -->
     <b-card-group

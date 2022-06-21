@@ -165,6 +165,7 @@ export const notifiers = [{
   key: 'Slack',
   name: 'Slack',
   type: 'slack',
+  id: 'notifierid',
   user: 'testuserid'
 }];
 

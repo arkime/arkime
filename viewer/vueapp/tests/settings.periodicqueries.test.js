@@ -18,7 +18,7 @@ const store = {
   state: {
     roles,
     notifiers,
-    removeClusters: {},
+    remoteClusters: {},
     user: userWithSettings
   }
 };

@@ -92,6 +92,14 @@
             </span>&nbsp;
             Views
           </a>
+          <a v-if="!multiviewer || (multiviewer && hasUsersES)"
+            class="nav-link cursor-pointer"
+            @click="openView('shortcuts')"
+            :class="{'active':visibleTab === 'shortcuts'}">
+            <span class="fa fa-fw fa-list">
+            </span>&nbsp;
+            Shortcuts
+          </a>
           <a v-if="!multiviewer"
             class="nav-link cursor-pointer"
             @click="openView('cron')"
@@ -107,14 +115,6 @@
             <span class="fa fa-fw fa-bell">
             </span>&nbsp;
             Notifiers
-          </a>
-          <a v-if="!multiviewer || (multiviewer && hasUsersES)"
-            class="nav-link cursor-pointer"
-            @click="openView('shortcuts')"
-            :class="{'active':visibleTab === 'shortcuts'}">
-            <span class="fa fa-fw fa-list">
-            </span>&nbsp;
-            Shortcuts
           </a>
         </div>
       </div> <!-- /navigation -->

@@ -16,8 +16,7 @@ import Utils from '../src/components/utils/utils';
 import '../src/filters.js';
 import '../../../common/vueapp/vueFilters';
 const {
-  userSettings, userWithSettings, fields, notifiers,
-  notifierTypes, shortcuts, users, fieldsMap
+  userSettings, userWithSettings, fields, shortcuts, users, fieldsMap
 } = require('../../../common/vueapp/tests/consts');
 
 console.info = jest.fn(); // ignore vue dev mode info
@@ -57,21 +56,6 @@ const $router = {
 };
 
 // setting services
-SettingsService.getNotifierTypes = jest.fn().mockResolvedValue(notifierTypes);
-SettingsService.getNotifiers = jest.fn().mockResolvedValue(notifiers);
-SettingsService.createNotifier = jest.fn().mockResolvedValue({
-  text: 'createNotifier YAY!',
-  notifier: notifiers[0]
-});
-SettingsService.updateNotifier = jest.fn().mockResolvedValue({
-  text: 'updateNotifier YAY!',
-  notifier: {
-    ...notifiers[0],
-    updated: 1629133294
-  }
-});
-SettingsService.deleteNotifier = jest.fn().mockResolvedValue({ text: 'deleteNotifier YAY!' });
-SettingsService.testNotifier = jest.fn().mockResolvedValue({ text: 'testNotifier YAY!' });
 SettingsService.getShortcuts = jest.fn().mockResolvedValue(shortcuts);
 SettingsService.createShortcut = jest.fn().mockResolvedValue({ text: 'createShortcut YAY!' });
 SettingsService.updateShortcut = jest.fn().mockResolvedValue({
