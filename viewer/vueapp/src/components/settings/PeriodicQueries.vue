@@ -7,7 +7,7 @@
         size="sm"
         variant="success"
         class="pull-right"
-        @click="toggleNewForm">
+        v-b-modal.create-periodic-query-modal>
         <span class="fa fa-plus-circle mr-1" />
         New Periodic Query
       </b-button>
@@ -20,10 +20,11 @@
     </p>
 
     <!-- new cron query form -->
-    <div v-if="newForm"
-      class="well well-lg mb-2"
-      @keyup.enter="createCronQuery">
-      <h4 class="mt-2">
+     <b-modal
+      size="xl"
+      id="create-periodic-query-modal"
+      title="Create New Periodic Query">
+      <!-- <h4 class="mt-2">
         New Periodic Query
         <b-button
           size="sm"
@@ -53,188 +54,221 @@
           <span class="fa fa-ban mr-1" />
           Cancel
         </b-button>
-        <div v-if="cronQueryFormError"
-          class="xsmall text-danger pull-right mr-2 mt-2">
-          <span class="fa fa-exclamation-triangle mr-1" />
-          {{ cronQueryFormError }}
-        </div> <!-- /cron query form error -->
       </h4>
-      <hr>
-      <div class="row mb-2">
-        <div class="col-md-4">
-          <b-input-group size="sm">
+      <hr> -->
+      <!-- create form -->
+      <b-form>
+        <div class="row mb-2">
+          <div class="col-md-4">
+            <b-input-group size="sm">
+              <template #prepend>
+                <b-input-group-text
+                  v-b-tooltip.hover
+                  class="cursor-help"
+                  title="Enter a query name (20 chars or less)">
+                  Query Name<sup>*</sup>
+                </b-input-group-text>
+              </template>
+              <b-form-input
+                maxlength="20"
+                v-model="newCronQueryName"
+                placeholder="Periodic query name (20 chars or less)"
+              />
+            </b-input-group>
+          </div>
+          <div class="col-md-4">
+            <b-input-group size="sm">
+              <template #prepend>
+                <b-input-group-text
+                  v-b-tooltip.hover
+                  class="cursor-help"
+                  title="Action to perform when a session matches this query">
+                  Query Action<sup>*</sup>
+                </b-input-group-text>
+              </template>
+              <select
+                v-model="newCronQueryAction"
+                class="form-control form-control-sm">
+                <option value="tag">Tag</option>
+                <option v-for="(cluster, key) in clusters"
+                  :key="key"
+                  :value="`forward:${key}`">
+                  Tag & Export to {{ cluster.name }}
+                </option>
+              </select>
+            </b-input-group>
+          </div>
+          <div class="col-md-4">
+            <b-input-group size="sm">
+              <template #prepend>
+                <b-input-group-text
+                  v-b-tooltip.hover
+                  class="cursor-help"
+                  title="Enter a comma separated list of tags to add to the sessions that match this query">
+                  Tags<sup>*</sup>
+                </b-input-group-text>
+              </template>
+              <b-form-input
+                v-model="newCronQueryTags"
+                placeholder="Comma separated list of tags"
+              />
+            </b-input-group>
+          </div>
+        </div>
+        <div class="row mb-2">
+          <div class="col">
+            <b-input-group size="sm">
+              <template #prepend>
+                <b-input-group-text
+                  v-b-tooltip.hover
+                  class="cursor-help"
+                  title="Enter a sessions search expression">
+                  Search Expression<sup>*</sup>
+                </b-input-group-text>
+              </template>
+              <b-form-input
+                v-model="newCronQueryExpression"
+                placeholder="Periodic query expression"
+              />
+            </b-input-group>
+          </div>
+        </div>
+        <div class="row mb-2">
+          <div class="col-md-6">
+            <b-input-group size="sm">
+              <template #prepend>
+                <b-input-group-text
+                  v-b-tooltip.hover
+                  class="cursor-help"
+                  title="Start processing query since">
+                  Process Query Since<sup>*</sup>
+                </b-input-group-text>
+              </template>
+              <b-form-select
+                class="form-control"
+                v-model="newCronQueryProcess"
+                :options="[
+                  { value: 0, text: 'Now' },
+                  { value: 1, text: '1 hour ago' },
+                  { value: 6, text: '6 hours ago' },
+                  { value: 24, text: '24 hours ago' },
+                  { value: 48, text: '48 hours ago' },
+                  { value: 72, text: '72 hours ago' },
+                  { value: 168, text: '1 week ago' },
+                  { value: 336, text: '2 weeks ago' },
+                  { value: 720, text: '1 month ago' },
+                  { value: 1440, text: '2 months ago' },
+                  { value: 4380, text: '6 months ago' },
+                  { value: 8760, text: '1 year ago' },
+                  { value: -1, text: 'All (careful)' }
+                ]"
+              />
+            </b-input-group>
+          </div>
+          <div class="col-md-6">
+            <b-input-group size="sm">
+              <template #prepend>
+                <b-input-group-text
+                  v-b-tooltip.hover
+                  class="cursor-help"
+                  title="Send a notification when there are matches to this periodic query">
+                  Notify
+                </b-input-group-text>
+              </template>
+              <select
+                v-model="newCronQueryNotifier"
+                class="form-control form-control-sm">
+                <option value=undefined>none</option>
+                <option v-for="notifier in notifiers"
+                  :key="notifier.id"
+                  :value="notifier.id">
+                  {{ notifier.name }} ({{ notifier.type }})
+                </option>
+              </select>
+            </b-input-group>
+          </div>
+        </div>
+        <div class="row mb-2">
+          <div class="col">
+            <b-input-group size="sm">
+              <template #prepend>
+                <b-input-group-text
+                  v-b-tooltip.hover
+                  class="cursor-help"
+                  title="Enter an optional description to explain the reason for this query">
+                  Description
+                </b-input-group-text>
+              </template>
+              <b-form-textarea
+                v-model="newCronQueryDescription"
+                placeholder="Periodic query description"
+              />
+            </b-input-group>
+          </div>
+        </div>
+        <div class="d-flex">
+          <div class="mr-3">
+            <RoleDropdown
+              :roles="roles"
+              display-text="Share with roles"
+              :selected-roles="newCronQueryRoles"
+              @selected-roles-updated="updateNewCronQueryRoles"
+            />
+          </div>
+          <b-input-group
+            size="sm"
+            class="flex-grow-1">
             <template #prepend>
               <b-input-group-text
                 v-b-tooltip.hover
                 class="cursor-help"
-                title="Enter a query name (20 chars or less)">
-                Query Name<sup>*</sup>
+                title="Enter a comma separated list of users that can view this periodic query">
+                Share with users
               </b-input-group-text>
             </template>
             <b-form-input
-              maxlength="20"
-              v-model="newCronQueryName"
-              placeholder="Periodic query name (20 chars or less)"
+              v-model="newCronQueryUsers"
+              placeholder="Comma separated list of users"
             />
           </b-input-group>
         </div>
-        <div class="col-md-4">
-          <b-input-group size="sm">
-            <template #prepend>
-              <b-input-group-text
-                v-b-tooltip.hover
-                class="cursor-help"
-                title="Action to perform when a session matches this query">
-                Query Action<sup>*</sup>
-              </b-input-group-text>
+      </b-form> <!-- /create form -->
+      <!-- create form error -->
+      <b-alert
+        variant="danger"
+        class="mt-2 mb-0"
+        :show="!!cronQueryFormError">
+        <span class="fa fa-exclamation-triangle mr-1" />
+        {{ cronQueryFormError }}
+      </b-alert> <!-- /create form error -->
+      <template #modal-footer>
+        <div class="w-100 d-flex justify-content-between">
+          <b-button
+            title="Cancel"
+            variant="danger"
+            @click="$bvModal.hide('create-periodic-query-modal')">
+            <span class="fa fa-times" />
+            Cancel
+          </b-button>
+          <b-button
+            variant="primary"
+            v-b-tooltip.hover
+            :disabled="cronLoading"
+            @click="createCronQuery"
+            :class="{'disabled':cronLoading}"
+            title="Create new periodic query">
+            <template v-if="!cronLoading">
+              <span class="fa fa-plus-circle mr-1" />
+              Create
             </template>
-            <select
-              v-model="newCronQueryAction"
-              class="form-control form-control-sm">
-              <option value="tag">Tag</option>
-              <option v-for="(cluster, key) in clusters"
-                :key="key"
-                :value="`forward:${key}`">
-                Tag & Export to {{ cluster.name }}
-              </option>
-            </select>
-          </b-input-group>
-        </div>
-        <div class="col-md-4">
-          <b-input-group size="sm">
-            <template #prepend>
-              <b-input-group-text
-                v-b-tooltip.hover
-                class="cursor-help"
-                title="Enter a comma separated list of tags to add to the sessions that match this query">
-                Tags<sup>*</sup>
-              </b-input-group-text>
+            <template v-else>
+              <span class="fa fa-spinner fa-spin mr-1" />
+              Creating
             </template>
-            <b-form-input
-              v-model="newCronQueryTags"
-              placeholder="Comma separated list of tags"
-            />
-          </b-input-group>
+          </b-button>
         </div>
-      </div>
-      <div class="row mb-2">
-        <div class="col">
-          <b-input-group size="sm">
-            <template #prepend>
-              <b-input-group-text
-                v-b-tooltip.hover
-                class="cursor-help"
-                title="Enter a sessions search expression">
-                Search Expression<sup>*</sup>
-              </b-input-group-text>
-            </template>
-            <b-form-input
-              v-model="newCronQueryExpression"
-              placeholder="Periodic query expression"
-            />
-          </b-input-group>
-        </div>
-      </div>
-      <div class="row mb-2">
-        <div class="col-md-6">
-          <b-input-group size="sm">
-            <template #prepend>
-              <b-input-group-text
-                v-b-tooltip.hover
-                class="cursor-help"
-                title="Start processing query since">
-                Process Query Since<sup>*</sup>
-              </b-input-group-text>
-            </template>
-            <b-form-select
-              class="form-control"
-              v-model="newCronQueryProcess"
-              :options="[
-                { value: 0, text: 'Now' },
-                { value: 1, text: '1 hour ago' },
-                { value: 6, text: '6 hours ago' },
-                { value: 24, text: '24 hours ago' },
-                { value: 48, text: '48 hours ago' },
-                { value: 72, text: '72 hours ago' },
-                { value: 168, text: '1 week ago' },
-                { value: 336, text: '2 weeks ago' },
-                { value: 720, text: '1 month ago' },
-                { value: 1440, text: '2 months ago' },
-                { value: 4380, text: '6 months ago' },
-                { value: 8760, text: '1 year ago' },
-                { value: -1, text: 'All (careful)' }
-              ]"
-            />
-          </b-input-group>
-        </div>
-        <div class="col-md-6">
-          <b-input-group size="sm">
-            <template #prepend>
-              <b-input-group-text
-                v-b-tooltip.hover
-                class="cursor-help"
-                title="Send a notification when there are matches to this periodic query">
-                Notify
-              </b-input-group-text>
-            </template>
-            <select
-              v-model="newCronQueryNotifier"
-              class="form-control form-control-sm">
-              <option value=undefined>none</option>
-              <option v-for="notifier in notifiers"
-                :key="notifier.id"
-                :value="notifier.id">
-                {{ notifier.name }} ({{ notifier.type }})
-              </option>
-            </select>
-          </b-input-group>
-        </div>
-      </div>
-      <div class="row mb-2">
-        <div class="col">
-          <b-input-group size="sm">
-            <template #prepend>
-              <b-input-group-text
-                v-b-tooltip.hover
-                class="cursor-help"
-                title="Enter an optional description to explain the reason for this query">
-                Description
-              </b-input-group-text>
-            </template>
-            <b-form-textarea
-              v-model="newCronQueryDescription"
-              placeholder="Periodic query description"
-            />
-          </b-input-group>
-        </div>
-      </div>
-      <div class="d-flex">
-        <div class="mr-3">
-          <RoleDropdown
-            :roles="roles"
-            display-text="Share with roles"
-            :selected-roles="newCronQueryRoles"
-            @selected-roles-updated="updateNewCronQueryRoles"
-          />
-        </div>
-        <b-input-group
-          size="sm"
-          class="flex-grow-1">
-          <template #prepend>
-            <b-input-group-text
-              v-b-tooltip.hover
-              class="cursor-help"
-              title="Enter a comma separated list of users that can view this periodic query">
-              Share with users
-            </b-input-group-text>
-          </template>
-          <b-form-input
-            v-model="newCronQueryUsers"
-            placeholder="Comma separated list of users"
-          />
-        </b-input-group>
-      </div>
-    </div> <!-- /new cron query form -->
+      </template> <!-- /modal footer -->
+    </b-modal> <!-- /new cron query form -->
 
     <!-- no results -->
     <div class="text-center mt-4"
@@ -530,7 +564,6 @@ export default {
   },
   data () {
     return {
-      newForm: false,
       cronLoading: false,
       cronQueries: undefined,
       cronQueryListError: '',
@@ -582,12 +615,6 @@ export default {
     canEditCronQuery (query) {
       return this.user.roles.includes('arkimeAdmin') || (query.creator && query.creator === this.user.userId);
     },
-    toggleNewForm () {
-      this.newForm = !this.newForm;
-      if (!this.newForm) { // clear the inputs
-        this.clearNewFormInputs();
-      }
-    },
     updateNewCronQueryRoles (roles) {
       this.newCronQueryRoles = roles;
     },
@@ -633,6 +660,7 @@ export default {
         this.newForm = false;
         this.clearNewFormInputs();
         this.cronLoading = false;
+        this.$bvModal.hide('create-periodic-query-modal');
         // display success message to user
         let msg = response.text || 'Successfully created periodic query.';
         if (response.invalidUsers && response.invalidUsers.length) {
@@ -642,7 +670,7 @@ export default {
       }).catch((error) => {
         // display error message to user
         this.cronLoading = false;
-        this.$emit('display-message', { msg: error.text, type: 'danger' });
+        this.cronQueryFormError = error.text;
       });
     },
     /**
@@ -715,6 +743,21 @@ export default {
     updateCronQuery (query, index) {
       if (!this.canEditCronQuery(query)) {
         this.$emit('display-message', { msg: 'Permission denied!', type: 'danger' });
+        return;
+      }
+
+      if (!query.name) {
+        this.$emit('display-message', { msg: 'Missing query name', type: 'warning' });
+        return;
+      }
+
+      if (!query.query) {
+        this.$emit('display-message', { msg: 'Missing query expression', type: 'warning' });
+        return;
+      }
+
+      if (!query.tags) {
+        this.$emit('display-message', { msg: 'Missing query tags', type: 'warning' });
         return;
       }
 
