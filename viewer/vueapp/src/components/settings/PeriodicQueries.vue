@@ -24,38 +24,6 @@
       size="xl"
       id="create-periodic-query-modal"
       title="Create New Periodic Query">
-      <!-- <h4 class="mt-2">
-        New Periodic Query
-        <b-button
-          size="sm"
-          v-b-tooltip.hover
-          class="pull-right ml-1"
-          variant="theme-tertiary"
-          :disabled="cronLoading"
-          @click="createCronQuery"
-          :class="{'disabled':cronLoading}"
-          title="Create new periodic query">
-          <template v-if="!cronLoading">
-            <span class="fa fa-plus-circle mr-1" />
-            Create
-          </template>
-          <template v-else>
-            <span class="fa fa-spinner fa-spin mr-1" />
-            Creating
-          </template>
-        </b-button>
-        <b-button
-          size="sm"
-          variant="warning"
-          class="pull-right"
-          @click="toggleNewForm"
-          :disabled="cronLoading"
-          :class="{'disabled':cronLoading}">
-          <span class="fa fa-ban mr-1" />
-          Cancel
-        </b-button>
-      </h4>
-      <hr> -->
       <!-- create form -->
       <b-form>
         <div class="row mb-2">
