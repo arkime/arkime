@@ -196,7 +196,7 @@ test('Integration Table - table sorting', async () => {
 
 test('Integration Table - table searching', async () => {
   const {
-    getByText, queryByText, getByPlaceholderText
+    getByText, queryByText, getByPlaceholderText, getAllByRole
   } = render(IntegrationTable, {
     store,
     props: { fields, tableData }
@@ -209,5 +209,11 @@ test('Integration Table - table searching', async () => {
   await waitFor(() => { // only shows row4
     displaysRows(3, 3, getByText);
     doesNotDisplayRows(0, 2, queryByText);
+  });
+
+  const fieldSelectCheckbox = getAllByRole('checkbox')[3];
+  fireEvent.click(fieldSelectCheckbox);
+  await waitFor(() => { // doesn't show any rows
+    doesNotDisplayRows(0, 3, queryByText);
   });
 });
