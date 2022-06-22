@@ -172,40 +172,11 @@ export default {
     }
   },
   watch: {
-    searchTerm (newValue, oldValue) {
-      if (!newValue) {
-        this.filteredData = this.data;
-        this.setTableLen();
-        return;
-      }
-      this.filteredData = this.data.filter((row) => {
-        let match = false;
-        const query = newValue.toLowerCase();
-
-        for (const field of this.fields) {
-          // if no fields selected, search all fields
-          if (this.selectedFields.length && this.selectedFields.indexOf(field.label) < 0) { continue; }
-          for (const c in row) {
-            if (!field.path.includes(c)) { continue; }
-            if (!row[c]) { continue; }
-
-            let value = row;
-            for (const p of field.path) {
-              value = value[p];
-            }
-
-            if (!value) { continue; }
-
-            match = value.toString().toLowerCase().match(query)?.length > 0;
-            if (match) { break; }
-          }
-          if (match) { break; }
-        }
-
-        return match;
-      });
-
-      this.setTableLen();
+    searchTerm (newValue) {
+      this.updateFilteredData(newValue);
+    },
+    selectedFields () {
+      this.updateFilteredData(this.searchTerm);
     }
   },
   methods: {
@@ -271,6 +242,47 @@ export default {
     },
     toggleAllFields (select) {
       this.selectedFields = select ? this.fields.map(f => f.label) : [];
+    },
+    updateFilteredData (newSearchTerm) {
+      const syncWithParent = () => {
+        this.$emit('tableFilteredDataChanged', this.filteredData);
+      };
+
+      if (!newSearchTerm) {
+        this.filteredData = this.data;
+        this.setTableLen();
+        syncWithParent();
+        return;
+      }
+      this.filteredData = this.data.filter((row) => {
+        let match = false;
+        const query = newSearchTerm.toLowerCase();
+
+        for (const field of this.fields) {
+          // if no fields selected, search all fields
+          if (this.selectedFields.length && this.selectedFields.indexOf(field.label) < 0) { continue; }
+          for (const c in row) {
+            if (!field.path.includes(c)) { continue; }
+            if (!row[c]) { continue; }
+
+            let value = row;
+            for (const p of field.path) {
+              value = value[p];
+            }
+
+            if (!value) { continue; }
+
+            match = value.toString().toLowerCase().match(query)?.length > 0;
+            if (match) { break; }
+          }
+          if (match) { break; }
+        }
+
+        return match;
+      });
+
+      this.setTableLen();
+      syncWithParent();
     },
     // helpers ------------------------------------------------------------- */
     setTableLen () {

@@ -55,6 +55,7 @@
             :table-data="value.value"
             :default-sort-field="field.defaultSortField"
             :default-sort-direction="field.defaultSortDirection"
+            @tableFilteredDataChanged="tableFilteredDataChanged"
           />
           <template #overlay>
             <div class="overlay-loading">
@@ -161,7 +162,8 @@ export default {
   },
   data () {
     return {
-      visible: true
+      visible: true,
+      tableFilteredData: null
     };
   },
   computed: {
@@ -201,6 +203,9 @@ export default {
       a.click();
       URL.revokeObjectURL(a.href);
     },
+    tableFilteredDataChanged (newFilteredData) { // syncs filteredData with table
+      this.tableFilteredData = newFilteredData;
+    },
     /* helpers ------------------------------------------------------------- */
     findValue (data, field) {
       let value = JSON.parse(JSON.stringify(data));
@@ -238,6 +243,9 @@ export default {
       let value = this.value.value;
       if (!Array.isArray(value)) {
         value = [value];
+      }
+      if (this.tableFilteredData) {
+        value = this.tableFilteredData;
       }
 
       for (const valueRow of value) {
