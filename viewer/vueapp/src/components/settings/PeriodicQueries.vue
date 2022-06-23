@@ -35,15 +35,16 @@
     </div> <!-- /no results -->
 
     <!-- cron query list error -->
-    <tr v-if="cronQueryListError">
-      <p class="alert alert-danger">
-        <span class="fa fa-exclamation-triangle mr-1" />
-        {{ cronQueryListError }}
-      </p>
-    </tr> <!-- /cron query list error -->
+    <b-alert
+      variant="danger"
+      class="mt-2 mb-0"
+      :show="!!cronQueryListError">
+      <span class="fa fa-exclamation-triangle mr-1" />
+      {{ cronQueryListError }}
+    </b-alert> <!-- /cron query list error -->
 
     <!-- new cron query form -->
-     <b-modal
+    <b-modal
       size="xl"
       id="create-periodic-query-modal"
       title="Create New Periodic Query">
@@ -242,7 +243,7 @@
             Cancel
           </b-button>
           <b-button
-            variant="primary"
+            variant="success"
             v-b-tooltip.hover
             :disabled="cronLoading"
             @click="createCronQuery"

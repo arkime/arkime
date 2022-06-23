@@ -1356,6 +1356,7 @@
         <!-- shortcut settings -->
         <Shortcuts
           id="shortcuts"
+          @copy-value="copyValue"
           v-if="visibleTab === 'shortcuts'"
           @display-message="displayMessage"
         />

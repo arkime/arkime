@@ -173,10 +173,11 @@ export const shortcuts = [{
   description: 'test shortcut description',
   id: '6f7tT3sBcKdkTkqAFBjf',
   name: 'SHORTCUT_1',
-  shared: true,
   type: 'ip',
   userId: 'testuserid',
-  value: '10.0.0.1\n10.0.0.2\n10.0.0.3'
+  value: '10.0.0.1\n10.0.0.2\n10.0.0.3',
+  users: '',
+  roles: []
 }];
 
 export const sessions = [{

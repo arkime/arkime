@@ -136,17 +136,18 @@
       <template #modal-footer>
         <div class="w-100 d-flex justify-content-between">
           <b-button
-            variant="warning"
-            @click="clearNotifierFields">
-            Clear fields
+            title="Cancel"
+            variant="danger"
+            @click="$bvModal.hide('create-notifier-modal')">
+            <span class="fa fa-times mr-1" />
+            Cancel
           </b-button>
           <div>
             <b-button
-              title="Cancel"
-              variant="danger"
-              @click="$bvModal.hide('create-notifier-modal')">
-              <span class="fa fa-times" />
-              Cancel
+              variant="warning"
+              @click="clearNotifierFields">
+              <span class="fa fa-ban mr-1" />
+              Clear fields
             </b-button>
             <b-button
               variant="success"

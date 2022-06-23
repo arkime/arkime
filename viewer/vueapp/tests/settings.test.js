@@ -7,16 +7,16 @@ import $ from 'jquery';
 import '@testing-library/jest-dom';
 import { render, waitFor, fireEvent } from '@testing-library/vue';
 import Settings from '../src/components/settings/Settings.vue';
+import SettingsService from '../src/components/settings/SettingsService';
 import UserService from '../src/components/users/UserService';
 import ConfigService from '../src/components/utils/ConfigService';
-import SettingsService from '../src/components/settings/SettingsService';
 import HasPermission from '../src/components/utils/HasPermission.vue';
 import HasRole from '../../../common/vueapp/HasRole.vue';
 import Utils from '../src/components/utils/utils';
 import '../src/filters.js';
 import '../../../common/vueapp/vueFilters';
 const {
-  userSettings, userWithSettings, fields, shortcuts, users, fieldsMap
+  userSettings, userWithSettings, fields, users, fieldsMap, notifiers
 } = require('../../../common/vueapp/tests/consts');
 
 console.info = jest.fn(); // ignore vue dev mode info
@@ -56,13 +56,7 @@ const $router = {
 };
 
 // setting services
-SettingsService.getShortcuts = jest.fn().mockResolvedValue(shortcuts);
-SettingsService.createShortcut = jest.fn().mockResolvedValue({ text: 'createShortcut YAY!' });
-SettingsService.updateShortcut = jest.fn().mockResolvedValue({
-  text: 'updateShortcut YAY!',
-  shortcut: shortcuts[0]
-});
-SettingsService.deleteShortcut = jest.fn().mockResolvedValue({ text: 'deleteShortcut YAY!' });
+SettingsService.getNotifiers = jest.fn().mockResolvedValue(notifiers);
 // user services
 UserService.getCurrent = jest.fn().mockResolvedValue(userWithSettings);
 UserService.getSettings = jest.fn().mockResolvedValue(userSettings);
@@ -115,8 +109,8 @@ test('settings - self', async () => {
   getByText('saveSettings YAY!'); // displays success
 
   // can change tabs ------------------------------------------------------- //
-  await fireEvent.click(getByText('Periodic Queries'));
-  getAllByText('Periodic Queries');
+  await fireEvent.click(getByText('Column Configs'));
+  getAllByText('Column Configs');
 
   // CUSTOM SESSIONS COLUMN CONFIGURATIONS ////////////////////////////////////
   // display custom session's table column configurations ------------------ //
