@@ -1,5 +1,5 @@
 <template>
-  <form class="form-horizontal mb-2">
+  <div>
 
     <h3>
       Shortcuts
@@ -185,6 +185,15 @@
       </tbody>
     </table>
 
+    <!-- shortcuts list error -->
+    <b-alert
+      variant="danger"
+      class="mt-2 mb-0"
+      :show="!!shortcutsListError">
+      <span class="fa fa-exclamation-triangle mr-1" />
+      {{ shortcutsListError }}
+    </b-alert> <!-- /shortcuts list error -->
+
     <!-- no results -->
     <div class="text-center mt-4"
       v-if="shortcuts.data && shortcuts.data.length === 0">
@@ -197,15 +206,6 @@
         Click the create button above to create one!
       </h5>
     </div> <!-- /no results -->
-
-    <!-- cron query list error -->
-    <b-alert
-      variant="danger"
-      class="mt-2 mb-0"
-      :show="!!shortcutsListError">
-      <span class="fa fa-exclamation-triangle mr-1" />
-      {{ shortcutsListError }}
-    </b-alert> <!-- /cron query list error -->
 
     <!-- new shortcut form -->
     <b-modal
@@ -353,7 +353,7 @@
       </template> <!-- /modal footer -->
     </b-modal> <!-- /new shortcut form -->
 
-  </form> <!-- / shortcut settings -->
+  </div> <!-- / shortcut settings -->
 </template>
 
 <script>
@@ -431,7 +431,7 @@ export default {
       this.shortcutsQuery.sortField = sort;
       this.getShortcuts();
     },
-    /* opens up text area to edit shortcut value */
+    /* opens up modal to edit shortcut */
     editShortcut (shortcut) {
       this.shortcutFormError = '';
       this.editingShortcut = shortcut.id;
@@ -470,7 +470,6 @@ export default {
         this.clearShortcutForm();
         this.$bvModal.hide('shortcut-modal');
         this.displaySuccess(response);
-        this.createShortcutLoading = false;
       }).catch((error) => {
         this.shortcutFormError = error.text;
         this.createShortcutLoading = false;
@@ -512,7 +511,6 @@ export default {
         this.editingShortcut = undefined;
         this.$bvModal.hide('shortcut-modal');
         this.displaySuccess(response);
-        this.createShortcutLoading = false;
       }).catch((error) => {
         this.shortcutFormError = error.text;
         this.createShortcutLoading = false;

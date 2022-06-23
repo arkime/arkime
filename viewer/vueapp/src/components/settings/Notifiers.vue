@@ -1,7 +1,5 @@
 <template>
-  <form class="form-horizontal"
-    v-has-role="{user:user,roles:'arkimeAdmin'}"
-    id="notifiers">
+  <div>
 
     <h3>
       Notifiers
@@ -25,6 +23,15 @@
 
     <hr>
 
+    <!-- notifiers list error -->
+    <b-alert
+      :show="!!error"
+      variant="danger"
+      class="mt-2 mb-2">
+      <span class="fa fa-exclamation-triangle mr-1" />
+      {{ error }}
+    </b-alert> <!-- /notifiers list error -->
+
     <!-- no results -->
     <div class="text-center mt-4"
       v-if="!notifiers || !Object.keys(notifiers).length">
@@ -37,12 +44,6 @@
         Then use it by adding it to your periodic queries or hunt jobs!
       </h5>
     </div> <!-- /no results -->
-
-    <div v-if="error"
-      class="alert alert-danger">
-      <span class="fa fa-exclamation-triangle mr-2" />
-      {{ error }}
-    </div>
 
     <!-- new notifier -->
     <b-modal
@@ -282,7 +283,7 @@
       </b-card>
     </b-card-group> <!-- notifiers -->
 
-  </form>
+  </div>
 </template>
 
 <script>

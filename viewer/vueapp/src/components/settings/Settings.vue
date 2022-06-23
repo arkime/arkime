@@ -1351,6 +1351,7 @@
           id="notifiers"
           @display-message="displayMessage"
           v-if="visibleTab === 'notifiers'"
+          v-has-role="{user:user,roles:'arkimeAdmin'}"
         />
 
         <!-- shortcut settings -->

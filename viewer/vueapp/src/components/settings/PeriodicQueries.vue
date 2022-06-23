@@ -1,5 +1,5 @@
 <template>
-   <form class="form-horizontal">
+   <div>
 
     <h3>
       Periodic Queries
@@ -21,6 +21,15 @@
 
     <hr>
 
+    <!-- cron query list error -->
+    <b-alert
+      variant="danger"
+      class="mt-2 mb-2"
+      :show="!!cronQueryListError">
+      <span class="fa fa-exclamation-triangle mr-1" />
+      {{ cronQueryListError }}
+    </b-alert> <!-- /cron query list error -->
+
     <!-- no results -->
     <div class="text-center mt-4"
       v-if="!cronQueries || !cronQueries.length">
@@ -33,15 +42,6 @@
         Click the create button above to create one!
       </h5>
     </div> <!-- /no results -->
-
-    <!-- cron query list error -->
-    <b-alert
-      variant="danger"
-      class="mt-2 mb-0"
-      :show="!!cronQueryListError">
-      <span class="fa fa-exclamation-triangle mr-1" />
-      {{ cronQueryListError }}
-    </b-alert> <!-- /cron query list error -->
 
     <!-- new cron query form -->
     <b-modal
@@ -516,7 +516,7 @@
       </b-card>
     </b-card-group> <!-- /cron queries -->
 
-  </form>
+  </div>
 </template>
 
 <script>
