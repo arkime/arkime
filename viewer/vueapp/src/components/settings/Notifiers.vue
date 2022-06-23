@@ -254,31 +254,33 @@
         </b-card-text>
         <!-- notifier actions -->
         <template #footer>
-          <button type="button"
+          <b-button
+            size="sm"
+            variant="outline-warning"
             :disabled="notifier.loading"
-            class="btn btn-sm btn-outline-warning cursor-pointer"
             @click="testNotifier(notifier.id, index)">
             <span v-if="notifier.loading"
-              class="fa fa-spinner fa-spin">
-            </span>
-            <span v-else class="fa fa-bell">
-            </span>&nbsp;
+              class="fa fa-spinner fa-spin fa-fw mr-1"
+            />
+            <span v-else class="fa fa-bell fa-fw mr-1" />
             Test
-          </button>
-          <button type="button"
-            class="btn btn-sm btn-success cursor-pointer pull-right ml-1"
-            @click="updateNotifier(notifier.id, index, notifier)">
-            <span class="fa fa-save">
-            </span>&nbsp;
-            Save
-          </button>
-          <button type="button"
-            class="btn btn-sm btn-danger cursor-pointer pull-right"
-            @click="removeNotifier(notifier.id, index)">
-            <span class="fa fa-trash-o">
-            </span>&nbsp;
-            Delete
-          </button>
+          </b-button>
+          <span class="pull-right">
+            <b-button
+              size="sm"
+              variant="danger"
+              @click="removeNotifier(notifier.id, index)">
+              <span class="fa fa-trash-o fa-fw mr-1" />
+              Delete
+            </b-button>
+            <b-button
+              size="sm"
+              variant="success"
+              @click="updateNotifier(notifier.id, index, notifier)">
+              <span class="fa fa-save fa-fw mr-1" />
+              Save
+            </b-button>
+          </span>
         </template> <!-- /notifier actions -->
       </b-card>
     </b-card-group> <!-- notifiers -->
