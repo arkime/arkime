@@ -25,7 +25,8 @@
           @click="copy"
           variant="outline-success"
           v-if="field.type === 'table'"
-          v-b-tooltip.hover="'Copy as table as CSV string'">
+          v-b-tooltip.hover
+          title="Copy table as CSV string">
           <span class="fa fa-copy fa-fw" />
         </b-button>
         <b-button
@@ -34,7 +35,8 @@
           @click="download"
           variant="outline-success"
           v-if="field.type === 'table'"
-          v-b-tooltip.hover="'Download as table as CSV'">
+          v-b-tooltip.hover
+          title="Download table as CSV">
           <span class="fa fa-download fa-fw" />
         </b-button>
       </div>

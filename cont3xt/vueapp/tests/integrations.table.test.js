@@ -5,6 +5,7 @@ import '@testing-library/jest-dom';
 import BootstrapVue from 'bootstrap-vue';
 import { render, waitFor, fireEvent } from '@testing-library/vue';
 import IntegrationTable from '../src/components/integrations/IntegrationTable.vue';
+import IntegrationValue from '../src/components/integrations/IntegrationValue';
 
 Vue.use(BootstrapVue);
 
@@ -212,8 +213,53 @@ test('Integration Table - table searching', async () => {
   });
 
   const fieldSelectCheckbox = getAllByRole('checkbox')[3];
-  fireEvent.click(fieldSelectCheckbox);
+  await fireEvent.click(fieldSelectCheckbox);
   await waitFor(() => { // doesn't show any rows
     doesNotDisplayRows(0, 3, queryByText);
+  });
+});
+
+test('Integration Table - table downloading contents (with & without search)', async () => {
+  const {
+    getByPlaceholderText, getByText, queryByText, getByTitle
+  } = render(IntegrationValue, {
+    store,
+    props: { field: { label: 'table test', path: ['table'], type: 'table', fields }, data: { table: tableData } }
+  });
+  // spies on the constructor for Blob to intercept the downloaded string
+  const blobConstructorSpy = jest.spyOn(global, 'Blob');
+
+  // get download button
+  const downloadButton = getByTitle('Download table as CSV');
+
+  // press download button without any search
+  await fireEvent.click(downloadButton);
+
+  // can update input and issue search
+  const searchInput = getByPlaceholderText('Search table values');
+  await fireEvent.update(searchInput, 'row4col4');
+
+  // wait until UI has been updated to only show row4
+  await waitFor(() => {
+    displaysRows(3, 3, getByText);
+    doesNotDisplayRows(0, 2, queryByText);
+  });
+
+  // press download button with search made
+  await fireEvent.click(downloadButton);
+
+  const expectedResultWithoutSearch = `col1,col2,col3,col4
+row1col1,row1col2,row1col3,row1col4
+row2col1,row2col2,row2col3,row2col4
+row3col1,row3col2,row3col3,row3col4
+row4col1,row4col2,row4col3,row4col4
+`;
+  const expectedResultWithSearch = `col1,col2,col3,col4
+row4col1,row4col2,row4col3,row4col4
+`;
+  await waitFor(() => {
+    expect(blobConstructorSpy).toHaveBeenCalledTimes(2);
+    expect(blobConstructorSpy.mock.calls[0][0][0]).toBe(expectedResultWithoutSearch);
+    expect(blobConstructorSpy.mock.calls[1][0][0]).toBe(expectedResultWithSearch);
   });
 });
