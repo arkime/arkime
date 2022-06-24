@@ -216,7 +216,7 @@ test('Integration Value - seconds', async () => {
 });
 
 test('Integration Value - url', async () => {
-  const { getByText } = render(IntegrationValue, {
+  const { getByText, getByTestId } = render(IntegrationValue, {
     store,
     props: {
       field: field8,
@@ -225,7 +225,7 @@ test('Integration Value - url', async () => {
   });
 
   getByText('url test'); // displays label
-  const anchor = getByText('https://buttthreat.com/'); // displays url
+  const anchor = getByTestId('integration-url'); // displays url
   expect(anchor.href).toBe('https://buttthreat.com/'); // url has href
 });
 

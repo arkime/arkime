@@ -48,6 +48,12 @@ export default {
     size: { // the rows of data to display initially and increment or
       type: Number, // decrement thereafter (by clicking more/less)
       default: 50
+    },
+    highlightsArr: {
+      type: Array,
+      default () {
+        return null;
+      }
     }
   },
   data () {

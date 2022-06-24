@@ -78,7 +78,7 @@
         :key="index"
         v-for="index in (Math.max(tableLen, 0))">
         <td class="break-all"
-          v-for="field in fields"
+          v-for="(field, columnIndex) in fields"
           :key="`${field.label}-${index}-cell`">
           <integration-value
             :field="field"
@@ -86,6 +86,7 @@
             :hide-label="true"
             v-if="filteredData[index - 1]"
             :data="filteredData[index - 1]"
+            :highlights="highlightData ? highlightData[index - 1][columnIndex] : null"
           />
         </td>
       </tr>
@@ -121,6 +122,8 @@
 </template>
 
 <script>
+import { findDisplayValue } from '../../utils/displayValues';
+
 export default {
   name: 'IntegrationCardTable',
   components: {
@@ -158,7 +161,8 @@ export default {
       tableLen: Math.min(this.tableData.length || 1, this.size),
       desc: this.defaultSortDirection && this.defaultSortDirection === 'desc',
       data: Array.isArray(this.tableData) ? this.tableData : [this.tableData],
-      filteredData: Array.isArray(this.tableData) ? this.tableData : [this.tableData]
+      filteredData: Array.isArray(this.tableData) ? this.tableData : [this.tableData],
+      highlightData: null
     };
   },
   mounted () {
@@ -250,36 +254,59 @@ export default {
 
       if (!newSearchTerm) {
         this.filteredData = this.data;
+        this.highlightData = null;
         this.setTableLen();
         syncWithParent();
         return;
       }
-      this.filteredData = this.data.filter((row) => {
-        let match = false;
-        const query = newSearchTerm.toLowerCase();
 
-        for (const field of this.fields) {
+      /**
+       * @param arr the array to be simultaneously filtered/mapped over
+       * @param filterMapFunc (arrElement) -> [boolean, outputElement]
+       */
+      const filterMap = (arr, filterMapFunc) => {
+        const outputArr = [];
+        for (const elem of arr) {
+          const [passedFilter, outputElement] = filterMapFunc(elem);
+          if (passedFilter) {
+            outputArr.push(outputElement);
+          }
+        }
+        return outputArr;
+      };
+
+      // filters while mapping to avoid needing to re-match values for highlighting data
+      const filterAndHighlightData = filterMap(this.data, (row) => {
+        const query = newSearchTerm.toLowerCase();
+        const rowHighlightData = [];
+        let matchInRow = false;
+        for (const [columnIndex, field] of this.fields.entries()) {
           // if no fields selected, search all fields
           if (this.selectedFields.length && this.selectedFields.indexOf(field.label) < 0) { continue; }
           for (const c in row) {
             if (!field.path.includes(c)) { continue; }
             if (!row[c]) { continue; }
 
-            let value = row;
-            for (const p of field.path) {
-              value = value[p];
-            }
+            const value = findDisplayValue(row, field);
 
             if (!value) { continue; }
 
-            match = value.toString().toLowerCase().match(query)?.length > 0;
-            if (match) { break; }
-          }
-          if (match) { break; }
-        }
+            const matchObj = value.toString().toLowerCase().match(query);
+            const match = matchObj?.length > 0;
 
-        return match;
+            if (match) {
+              matchInRow = true;
+              const matchStart = matchObj.index;
+              // create span information for highlighting
+              rowHighlightData[columnIndex] = [{ start: matchStart, end: matchStart + matchObj[0].length }];
+            }
+          }
+        }
+        return [matchInRow, { filteredDataElement: row, highlightDataElement: rowHighlightData }];
       });
+
+      this.filteredData = filterAndHighlightData.map(obj => obj.filteredDataElement);
+      this.highlightData = filterAndHighlightData.map(obj => obj.highlightDataElement);
 
       this.setTableLen();
       syncWithParent();
