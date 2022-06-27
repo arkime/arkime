@@ -78,7 +78,7 @@
         :key="index"
         v-for="index in (Math.max(tableLen, 0))">
         <td class="break-all"
-          v-for="field in fields"
+          v-for="(field, columnIndex) in fields"
           :key="`${field.label}-${index}-cell`">
           <integration-value
             :field="field"
@@ -86,6 +86,7 @@
             :hide-label="true"
             v-if="filteredData[index - 1]"
             :data="filteredData[index - 1]"
+            :highlights="highlightData ? highlightData[index - 1][columnIndex] : null"
           />
         </td>
       </tr>
@@ -121,6 +122,8 @@
 </template>
 
 <script>
+import { formatValue } from '@/utils/formatValue';
+
 export default {
   name: 'IntegrationCardTable',
   components: {
@@ -158,7 +161,8 @@ export default {
       tableLen: Math.min(this.tableData.length || 1, this.size),
       desc: this.defaultSortDirection && this.defaultSortDirection === 'desc',
       data: Array.isArray(this.tableData) ? this.tableData : [this.tableData],
-      filteredData: Array.isArray(this.tableData) ? this.tableData : [this.tableData]
+      filteredData: Array.isArray(this.tableData) ? this.tableData : [this.tableData],
+      highlightData: null
     };
   },
   mounted () {
@@ -250,36 +254,87 @@ export default {
 
       if (!newSearchTerm) {
         this.filteredData = this.data;
+        this.highlightData = null;
         this.setTableLen();
         syncWithParent();
         return;
       }
-      this.filteredData = this.data.filter((row) => {
-        let match = false;
-        const query = newSearchTerm.toLowerCase();
 
-        for (const field of this.fields) {
+      /**
+       * @param arr the array to be simultaneously filtered/mapped over
+       * @param checkMapperFunc (arrElement) -> [boolean, outputElement]
+       */
+      const combinedFilterMap = (arr, checkMapperFunc) => {
+        return arr.reduce((accrued, currentElem) => {
+          const [passedFilter, outputElement] = checkMapperFunc(currentElem);
+          return passedFilter ? accrued.push(outputElement) && accrued : accrued;
+        }, []);
+      };
+
+      // filters while mapping to avoid needing to re-match values for highlighting data
+      const filterAndHighlightData = combinedFilterMap(this.data, (row) => {
+        /* helpers ----------- */
+        const cellHighlightDataFromMatch = (matchObj) => {
+          const matchStart = matchObj.index;
+          // create span information for highlighting
+          return [{ start: matchStart, end: matchStart + matchObj[0].length }];
+        };
+        const matchAndCellHighlightDataFromValue = (fullValue, matchRegex) => {
+          let match = false;
+          let cellHighlightData = null;
+
+          if (Array.isArray(fullValue)) {
+            cellHighlightData = [];
+            for (const [index, value] of fullValue.entries()) {
+              const matchObj = matchRegex.exec(value.toString().toLowerCase());
+
+              if (matchObj) {
+                match = true;
+                cellHighlightData[index] = cellHighlightDataFromMatch(matchObj);
+              }
+            }
+          } else {
+            const matchObj = matchRegex.exec(fullValue.toString().toLowerCase());
+            if (matchObj) {
+              match = true;
+              cellHighlightData = cellHighlightDataFromMatch(matchObj);
+            }
+          }
+
+          return { match, cellHighlightData };
+        };
+        /* ------------------- */
+
+        const query = newSearchTerm.toLowerCase();
+        const regex = new RegExp(query);
+
+        const rowHighlightData = [];
+        let matchInRow = false;
+        for (const [columnIndex, field] of this.fields.entries()) {
           // if no fields selected, search all fields
           if (this.selectedFields.length && this.selectedFields.indexOf(field.label) < 0) { continue; }
           for (const c in row) {
             if (!field.path.includes(c)) { continue; }
             if (!row[c]) { continue; }
 
-            let value = row;
-            for (const p of field.path) {
-              value = value[p];
-            }
+            const value = formatValue(row, field);
 
             if (!value) { continue; }
 
-            match = value.toString().toLowerCase().match(query)?.length > 0;
-            if (match) { break; }
-          }
-          if (match) { break; }
-        }
+            const { match, cellHighlightData } = matchAndCellHighlightDataFromValue(value, regex);
 
-        return match;
+            if (match) {
+              matchInRow = true;
+              // add highlighting info if match is found
+              rowHighlightData[columnIndex] = cellHighlightData;
+            }
+          }
+        }
+        return [matchInRow, { filteredDataElement: row, highlightDataElement: rowHighlightData }];
       });
+
+      this.filteredData = filterAndHighlightData.map(obj => obj.filteredDataElement);
+      this.highlightData = filterAndHighlightData.map(obj => obj.highlightDataElement);
 
       this.setTableLen();
       syncWithParent();

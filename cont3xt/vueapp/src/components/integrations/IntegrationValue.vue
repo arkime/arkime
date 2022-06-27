@@ -80,6 +80,7 @@
             :field="field"
             v-if="value.value"
             :array-data="value.value"
+            :highlights-array="highlights"
           />
           <template #overlay>
             <div class="overlay-loading">
@@ -94,55 +95,53 @@
         <a
           target="_blank"
           :href="value.value"
-          rel="noopener noreferrer">
-          {{ value.value }}
+          rel="noopener noreferrer"
+          data-testid="integration-url">
+          <highlightable-text
+            :content="value.value"
+            :highlights="highlights"/>
         </a>
       </template> <!-- /url field -->
       <!-- json field -->
       <template v-else-if="field.type === 'json'">
-        <pre class="text-info"><code>{{ JSON.stringify(value.value, null, 2) }}</code></pre>
+        <pre class="text-info"><code><highlightable-text
+            :content="value.value"
+            :highlights="highlights"/></code></pre>
       </template> <!-- /json field -->
-      <!-- ms field -->
-      <template v-else-if="field.type === 'ms'">
-        {{ this.$options.filters.dateString(value.value) }}
-      </template> <!-- /ms field -->
-      <!-- seconds field -->
-      <template v-else-if="field.type === 'seconds'">
-        {{ this.$options.filters.dateString(value.value * 1000) }}
-      </template> <!-- /seconds field -->
-      <!-- date field -->
-      <template v-else-if="field.type === 'date'">
-        {{ this.$options.filters.reDateString(value.value) }}
-      </template> <!-- /seconds field -->
-      <!-- default string field -->
+      <!-- /default string, ms, seconds, & date field -->
       <template v-else>
         <template v-if="field.pivot">
           <cont3xt-field
             :value="value.value"
+            :highlights="highlights"
           />
         </template>
         <template v-else>
-          {{ value.value }}
+          <highlightable-text
+              :content="value.value"
+              :highlights="highlights"/>
         </template>
-      </template> <!-- /default string field -->
+      </template> <!-- /default string, ms, seconds, & date field -->
     </template>
   </span>
 </template>
 
 <script>
-import dr from 'defang-refang';
 import { mapGetters } from 'vuex';
 
 import Cont3xtField from '@/utils/Field';
 import IntegrationArray from '@/components/integrations/IntegrationArray';
 import IntegrationTable from '@/components/integrations/IntegrationTable';
+import HighlightableText from '@/utils/HighlightableText';
+import { formatValue } from '@/utils/formatValue';
 
 export default {
   name: 'IntegrationValue',
   components: {
     Cont3xtField,
     IntegrationArray,
-    IntegrationTable
+    IntegrationTable,
+    HighlightableText
   },
   props: {
     data: { // the data to search for values within
@@ -160,6 +159,12 @@ export default {
     truncate: { // whether to truncate the value if it is long (used for tables)
       type: Boolean,
       default: false
+    },
+    highlights: { // array of highlighted spans (or array of highlighted span arrays [for integration-arrays])
+      type: Array,
+      default () {
+        return null;
+      }
     }
   },
   data () {
@@ -210,27 +215,7 @@ export default {
     },
     /* helpers ------------------------------------------------------------- */
     findValue (data, field) {
-      let value = JSON.parse(JSON.stringify(data));
-
-      for (const p of field.path) {
-        if (!value) {
-          console.warn(`Can't resolve path: ${field.path.join('.')}`);
-          return '';
-        }
-        value = value[p];
-      }
-
-      if (field.defang) {
-        value = dr.defang(value);
-      }
-
-      // don't show empty tables, lists, or strings
-      if (field.type !== 'json' && value && value.length === 0) {
-        // ignores ms because it's a number and value.length is undefined
-        value = undefined;
-      }
-
-      return value;
+      return formatValue(data, field);
     },
     generateCSVString () {
       let csvStr = '';
