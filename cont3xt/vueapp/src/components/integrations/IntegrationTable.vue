@@ -122,7 +122,7 @@
 </template>
 
 <script>
-import { findDisplayValue } from '@/utils/displayValues';
+import { formatValue } from '@/utils/formatValue';
 
 export default {
   name: 'IntegrationCardTable',
@@ -262,42 +262,40 @@ export default {
 
       /**
        * @param arr the array to be simultaneously filtered/mapped over
-       * @param filterMapFunc (arrElement) -> [boolean, outputElement]
+       * @param checkMapperFunc (arrElement) -> [boolean, outputElement]
        */
-      const filterMap = (arr, filterMapFunc) => {
-        const outputArr = [];
-        for (const elem of arr) {
-          const [passedFilter, outputElement] = filterMapFunc(elem);
-          if (passedFilter) {
-            outputArr.push(outputElement);
-          }
-        }
-        return outputArr;
+      const combinedFilterMap = (arr, checkMapperFunc) => {
+        return arr.reduce((accrued, currentElem) => {
+          const [passedFilter, outputElement] = checkMapperFunc(currentElem);
+          return passedFilter ? accrued.push(outputElement) && accrued : accrued;
+        }, []);
       };
 
       // filters while mapping to avoid needing to re-match values for highlighting data
-      const filterAndHighlightData = filterMap(this.data, (row) => {
+      const filterAndHighlightData = combinedFilterMap(this.data, (row) => {
         /* helpers ----------- */
         const cellHighlightDataFromMatch = (matchObj) => {
           const matchStart = matchObj.index;
           // create span information for highlighting
           return [{ start: matchStart, end: matchStart + matchObj[0].length }];
         };
-        const matchAndCellHighlightDataFromValue = (fullValue, matchQuery) => {
+        const matchAndCellHighlightDataFromValue = (fullValue, matchRegex) => {
           let match = false;
           let cellHighlightData = null;
+
           if (Array.isArray(fullValue)) {
             cellHighlightData = [];
             for (const [index, value] of fullValue.entries()) {
-              const matchObj = value.toString().toLowerCase().match(matchQuery);
-              if (matchObj?.length > 0) {
+              const matchObj = matchRegex.exec(value.toString().toLowerCase());
+
+              if (matchObj) {
                 match = true;
                 cellHighlightData[index] = cellHighlightDataFromMatch(matchObj);
               }
             }
           } else {
-            const matchObj = fullValue.toString().toLowerCase().match(matchQuery);
-            if (matchObj?.length > 0) {
+            const matchObj = matchRegex.exec(fullValue.toString().toLowerCase());
+            if (matchObj) {
               match = true;
               cellHighlightData = cellHighlightDataFromMatch(matchObj);
             }
@@ -308,6 +306,8 @@ export default {
         /* ------------------- */
 
         const query = newSearchTerm.toLowerCase();
+        const regex = new RegExp(query);
+
         const rowHighlightData = [];
         let matchInRow = false;
         for (const [columnIndex, field] of this.fields.entries()) {
@@ -317,11 +317,11 @@ export default {
             if (!field.path.includes(c)) { continue; }
             if (!row[c]) { continue; }
 
-            const value = findDisplayValue(row, field);
+            const value = formatValue(row, field);
 
             if (!value) { continue; }
 
-            const { match, cellHighlightData } = matchAndCellHighlightDataFromValue(value, query);
+            const { match, cellHighlightData } = matchAndCellHighlightDataFromValue(value, regex);
 
             if (match) {
               matchInRow = true;

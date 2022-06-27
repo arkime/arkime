@@ -45,18 +45,18 @@ export default {
 
       const spanList = [];
       const expandedHighlights = [{ start: -1, end: 0 }, ...this.highlights];
-
-      const correctHighlightStart = (start) => {
-        return Math.min(start, this.text.length - 3);
+      const correctHighlightStart = (span) => {
+        if (span.end > this.text.length) {
+          return Math.min(span.start, this.text.length - 3);
+        }
+        return span.start;
       };
 
       for (const [i, highlightedSpan] of expandedHighlights.entries()) {
-        if (highlightedSpan.start !== -1) {
-          const passesEnd = highlightedSpan.end > this.text.length;
-
-          if (passesEnd) {
+        if (i !== 0) {
+          if (highlightedSpan.end > this.text.length) {
             // snaps highlight onto '...' if it surpasses the length of the string -- then stops highlighting
-            spanList.push({ highlighted: true, start: correctHighlightStart(highlightedSpan.start), end: this.text.length });
+            spanList.push({ highlighted: true, start: correctHighlightStart(highlightedSpan), end: this.text.length });
             break;
           }
 
@@ -64,7 +64,7 @@ export default {
         }
 
         const nonHighlightedStart = highlightedSpan.end;
-        const nonHighlightedEnd = (i === expandedHighlights.length - 1) ? this.text.length : correctHighlightStart(expandedHighlights[i + 1].start);
+        const nonHighlightedEnd = (i === expandedHighlights.length - 1) ? this.text.length : correctHighlightStart(expandedHighlights[i + 1]);
         if (nonHighlightedStart !== nonHighlightedEnd) {
           spanList.push({ highlighted: false, start: nonHighlightedStart, end: nonHighlightedEnd });
         }
@@ -77,7 +77,7 @@ export default {
 
 <style scoped>
 .highlight {
-  background-color: blue;
-  filter: invert(100%);
+  background-color: #ffff00;
+  color: black;
 }
 </style>

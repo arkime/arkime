@@ -1,7 +1,15 @@
 import dr from 'defang-refang';
 import { dateString, reDateString } from './filters';
 
-export const findDisplayValue = (data, field) => {
+/**
+ * Finds the specified value in data and returns the value in its most-formatted usable form
+ * i.e. the types 'array' and 'table' return arrays and objects, respectively,
+ * while more simple types return formatted strings (since their underlying values are not needed).
+ * @param data the object in which to search for the value specified by field
+ * @param field the object that describes the value's type and location in data
+ * @returns {string|array|object}
+ */
+export const formatValue = (data, field) => {
   let value = JSON.parse(JSON.stringify(data));
 
   for (const p of field.path) {

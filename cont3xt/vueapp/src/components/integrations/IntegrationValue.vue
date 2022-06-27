@@ -133,7 +133,7 @@ import Cont3xtField from '@/utils/Field';
 import IntegrationArray from '@/components/integrations/IntegrationArray';
 import IntegrationTable from '@/components/integrations/IntegrationTable';
 import HighlightableText from '@/utils/HighlightableText';
-import { findDisplayValue } from '@/utils/displayValues';
+import { formatValue } from '@/utils/formatValue';
 
 export default {
   name: 'IntegrationValue',
@@ -215,7 +215,7 @@ export default {
     },
     /* helpers ------------------------------------------------------------- */
     findValue (data, field) {
-      return findDisplayValue(data, field);
+      return formatValue(data, field);
     },
     generateCSVString () {
       let csvStr = '';
