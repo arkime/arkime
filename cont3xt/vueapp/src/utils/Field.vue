@@ -30,7 +30,7 @@
 </template>
 
 <script>
-import HighlightableText from '../components/highlighting/HighlightableText';
+import HighlightableText from '@/utils/HighlightableText';
 
 export default {
   name: 'Cont3xtField',

@@ -80,6 +80,7 @@
             :field="field"
             v-if="value.value"
             :array-data="value.value"
+            :highlights-array="highlights"
           />
           <template #overlay>
             <div class="overlay-loading">
@@ -131,8 +132,8 @@ import { mapGetters } from 'vuex';
 import Cont3xtField from '@/utils/Field';
 import IntegrationArray from '@/components/integrations/IntegrationArray';
 import IntegrationTable from '@/components/integrations/IntegrationTable';
-import HighlightableText from '@/components/highlighting/HighlightableText';
-import { findDisplayValue } from '../../utils/displayValues';
+import HighlightableText from '@/utils/HighlightableText';
+import { findDisplayValue } from '@/utils/displayValues';
 
 export default {
   name: 'IntegrationValue',
@@ -159,7 +160,7 @@ export default {
       type: Boolean,
       default: false
     },
-    highlights: {
+    highlights: { // array of highlighted spans (or array of highlighted span arrays [for integration-arrays])
       type: Array,
       default () {
         return null;
