@@ -70,6 +70,7 @@
 # 74 - shortcut sharing with users/roles
 # 75 - notifiers index
 # 76 - views index
+# 77 - cron sharing with roles and users
 
 use HTTP::Request::Common;
 use LWP::UserAgent;
@@ -81,7 +82,7 @@ use IO::Compress::Gzip qw(gzip $GzipError);
 use IO::Uncompress::Gunzip qw(gunzip $GunzipError);
 use strict;
 
-my $VERSION = 76;
+my $VERSION = 77;
 my $verbose = 0;
 my $PREFIX = undef;
 my $OLDPREFIX = "";
@@ -1207,6 +1208,12 @@ sub queriesUpdate
       "type": "date"
     },
     "lastToggledBy": {
+      "type": "keyword"
+    },
+    "roles": {
+      "type": "keyword"
+    },
+    "users": {
       "type": "keyword"
     }
   }
@@ -7643,16 +7650,19 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
         notifiersMove();
         viewsCreate();
         viewsMove();
+        queriesUpdate();
     } elsif ($main::versionNumber == 75) {
         checkForOld7Indices();
         sessions3Update();
         historyUpdate();
         viewsCreate();
         viewsMove();
-    } elsif ($main::versionNumber <= 76) {
+        queriesUpdate();
+    } elsif ($main::versionNumber <= 77) {
         checkForOld7Indices();
         sessions3Update();
         historyUpdate();
+        queriesUpdate();
     } else {
         logmsg "db.pl is hosed\n";
     }

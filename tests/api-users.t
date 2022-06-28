@@ -1,4 +1,4 @@
-use Test::More tests => 99;
+use Test::More tests => 90;
 use Cwd;
 use URI::Escape;
 use MolochTest;
@@ -263,26 +263,6 @@ my $json;
     $json = viewerGetToken("/api/user/state/state1?molochRegressionUser=test1", $test1Token);
     eq_or_diff($json->{order}, from_json('[["firstPacket","asc"]]'), "share fetch success");
     eq_or_diff($json->{visibleHeaders}, from_json('["firstPacket","lastPacket"]'), "share fetch success");
-
-# query tests
-    $json = viewerPostToken("/api/user/cron?molochRegressionUser=test1", '{}', $test1Token);
-    ok(!$json->{success}, "query must have name");
-    $json = viewerPostToken("/api/user/cron?molochRegressionUser=test1", '{"name":"test1"}', $test1Token);
-    ok(!$json->{success}, "query must have query expression");
-    $json = viewerPostToken("/api/user/cron?molochRegressionUser=test1", '{"name":"test1","query":"protocols == tls"}', $test1Token);
-    ok(!$json->{success}, "query must have query action");
-    $json = viewerPostToken("/api/user/cron?molochRegressionUser=test1", '{"name":"test1","query":"protocols == tls","action":"tag"}', $test1Token);
-    ok(!$json->{success}, "query must have query tag(s)");
-    $json = viewerPostToken("/api/user/cron?molochRegressionUser=test1", '{"name":"test1","query":"protocols == tls","action":"tag","tags":"tls"}', $test1Token);
-    ok($json->{success}, "query can be created");
-    my $key = $json->{query}->{key};
-    $json = viewerPostToken("/api/user/cron/$key?molochRegressionUser=test1", '{"key": "$key", "name":"test1update","query":"protocols == tls","action":"tag","tags":"tls"}', $test1Token);
-    ok($json->{success}, "query can be updated");
-    eq_or_diff($json->{query}->{name}, "test1update", "query was updated");
-    $json = viewerGetToken("/api/user/crons?molochRegressionUser=test1", $test1Token);
-    eq_or_diff($json->[0]->{name}, "test1update", "can fetch queries");
-    $json = viewerDeleteToken("/api/user/cron/$key?molochRegressionUser=test1", $test1Token);
-    ok($json->{success}, "query can be updated");
 
 # roles
     $json = viewerPostToken("/user/create", '{"userId": "role:test1", "userName": "UserName", "enabled":true, "roles":"bad"}', $token);
