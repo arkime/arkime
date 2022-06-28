@@ -744,6 +744,11 @@ class Integration {
         f.fields = this.normalizeCardFields(f.fields);
       }
 
+      if ((f.type === 'array' || f.type === 'table') && f.selectField !== undefined) {
+        f.selectPath = f.selectField.split('.');
+        delete f.selectField;
+      }
+
       outFields.push(f);
     }
 
