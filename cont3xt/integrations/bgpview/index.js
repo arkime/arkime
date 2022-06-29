@@ -37,6 +37,7 @@ class BGPViewIntegration extends Integration {
     title: 'BGPView for %{query}',
     fields: [
       {
+        label: 'Data',
         field: 'data',
         type: 'table',
         fields: [

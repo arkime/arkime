@@ -53,13 +53,8 @@ class CensysIntegration extends Integration {
           {
             label: 'product',
             field: 'software',
-            type: 'table',
-            fields: [
-              {
-                label: 'uniform_resource_id',
-                field: 'uniform_resource_identifier'
-              }
-            ]
+            type: 'array',
+            fieldRoot: 'uniform_resource_identifier'
           },
           {
             label: 'observed_at',
@@ -71,11 +66,30 @@ class CensysIntegration extends Integration {
       {
         label: 'Certificates',
         field: 'result.services',
+        fieldRoot: 'tls.certificates.leaf_data',
         type: 'table',
         fields: [
           {
-            label: 'tls',
-            field: 'tls'
+            label: 'names',
+            field: 'names',
+            type: 'array'
+          },
+          {
+            label: 'subject_dn',
+            field: 'subject_dn'
+          },
+          {
+            label: 'issuer_dn',
+            field: 'issuer_dn'
+          },
+          {
+            label: 'fingerprint',
+            field: 'fingerprint'
+          },
+          {
+            label: 'issuer',
+            field: 'issuer.common_name',
+            type: 'array'
           }
         ]
       }

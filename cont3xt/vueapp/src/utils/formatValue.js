@@ -24,8 +24,24 @@ export const formatValue = (data, field) => {
     value = dr.defang(value);
   }
 
-  // don't show empty tables, lists, or strings
-  if (field.type !== 'json' && value && value.length === 0) {
+  const arrayLike = field.type === 'array' || (field.type === 'table' && Array.isArray(value));
+
+  if (arrayLike && value != null) {
+    // map arrays of objects to flat arrays when a fieldRootPath exists
+    if (field.fieldRootPath !== undefined) {
+      for (const p of field.fieldRootPath) {
+        value = value.map(element => element != null ? element[p] : undefined);
+      }
+    }
+
+    // nullish filtering for arrays and tables
+    if (field.filterEmpty) {
+      value = value.filter(element => element != null && element !== '' && element !== []);
+    }
+  }
+
+  // don't show empty lists or strings (empty tables remain as [] due to auto-collapse behavior)
+  if ((field.type !== 'json' && field.type !== 'table') && value && value.length === 0) {
     // ignores ms because it's a number and value.length is undefined
     value = undefined;
   }

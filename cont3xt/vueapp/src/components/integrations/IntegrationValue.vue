@@ -8,15 +8,19 @@
       <label
         tabindex="-1"
         v-if="!hideLabel"
-        class="text-warning"
         @click="toggleValue"
         :class="field.type === 'table' || field.type === 'array' ? 'flex-grow-1 cursor-pointer': 'pr-2'">
-        {{ field.label }}
-        <span
-          class="fa"
-          v-if="field.type === 'table' || field.type === 'array'"
-          :class="{'fa-caret-down':visible,'fa-caret-up':!visible}"
-        />
+        <span class="text-warning">
+          {{ field.label }}
+          <span
+              class="fa"
+              v-if="field.type === 'table' || field.type === 'array'"
+              :class="{'fa-caret-down':visible,'fa-caret-up':!visible}"
+          />
+        </span>
+        <span v-if="field.type === 'table'"
+            :class="getTableLength() === 0 ? 'table-count-low' : 'text-default'">({{ getTableLength() }})
+        </span>
       </label>
       <div class="d-inline">
         <b-button
@@ -188,6 +192,12 @@ export default {
       return { value, full };
     }
   },
+  mounted () {
+    // automatically collapses empty tables
+    if (this.getTableLength() === 0) {
+      this.visible = false;
+    }
+  },
   methods: {
     /* page functions ------------------------------------------------------ */
     toggleValue () {
@@ -217,6 +227,15 @@ export default {
     findValue (data, field) {
       return formatValue(data, field);
     },
+    getTableData () {
+      if (this.tableFilteredData) {
+        return this.tableFilteredData;
+      }
+      return Array.isArray(this.value.value) ? this.value.value : [this.value.value];
+    },
+    getTableLength () {
+      return this.getTableData().length;
+    },
     generateCSVString () {
       let csvStr = '';
 
@@ -227,19 +246,19 @@ export default {
 
       csvStr += `${fieldLabels.join(',')}\n`;
 
-      let value = this.value.value;
-      if (!Array.isArray(value)) {
-        value = [value];
-      }
-      if (this.tableFilteredData) {
-        value = this.tableFilteredData;
-      }
+      const value = this.getTableData();
 
       for (const valueRow of value) {
-        const values = [];
-        for (const field of this.field.fields) {
-          values.push(this.findValue(valueRow, field));
-        }
+        const values = this.field.fields.map(field => {
+          // double quotes in the text are escaped as two consecutive double quotes
+          let valueStr = this.findValue(valueRow, field)?.toString()?.replaceAll('"', '""');
+          if (valueStr == null) { valueStr = ''; }
+          // text containing commas or line breaks is wrapped in double quotes
+          if (valueStr.includes(',') || valueStr.includes('\n')) {
+            valueStr = `"${valueStr}"`;
+          }
+          return valueStr;
+        });
         csvStr += `${values.join(',')}\n`;
       }
 
@@ -248,3 +267,9 @@ export default {
   }
 };
 </script>
+
+<style scoped>
+.table-count-low {
+  color: gray;
+}
+</style>

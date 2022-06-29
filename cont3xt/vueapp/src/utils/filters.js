@@ -7,7 +7,7 @@ import moment from 'moment-timezone';
  * '{{ "1996-03-07T21:00:00.000-08:00" | removeTime }}'
  * this.$options.filters.removeTime('1996-03-07T21:00:00.000-08:00');
  *
- * @param {String} dateString - The time using ISO 8601
+ * @param {String} dateStringWTime - The time using ISO 8601
  * @returns {String} - Date string without time
  */
 export const removeTime = function (dateStringWTime) {
@@ -66,7 +66,7 @@ export const baseRIR = function (rirLink) {
     if (rirLink.includes(rir)) {
       return rir.toUpperCase();
     }
-  };
+  }
 
   return 'unknown rir';
 };
