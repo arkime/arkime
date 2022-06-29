@@ -40,7 +40,8 @@ const store = new Vuex.Store({
     focusLinkSearch: false,
     toggleCache: false,
     downloadReport: false,
-    copyShareLink: false
+    copyShareLink: false,
+    immediateSubmissionReady: false
   },
   mutations: {
     SET_USER (state, data) {
@@ -198,6 +199,9 @@ const store = new Vuex.Store({
     SET_COPY_SHARE_LINK (state, value) {
       state.copyShareLink = value;
       setTimeout(() => { state.copyShareLink = false; });
+    },
+    SET_IMMEDIATE_SUBMISSION_READY (state, value) {
+      state.immediateSubmissionReady = value;
     }
   },
   getters: {
@@ -295,6 +299,9 @@ const store = new Vuex.Store({
     },
     getCopyShareLink (state) {
       return state.copyShareLink;
+    },
+    getImmediateSubmissionReady (state) {
+      return state.immediateSubmissionReady;
     }
   },
   plugins: [createPersistedState({

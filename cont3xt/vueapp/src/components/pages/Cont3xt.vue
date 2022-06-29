@@ -417,7 +417,8 @@ export default {
       'getIntegrationsError', 'getLinkGroupsError', 'getLinkGroups',
       'getSidebarKeepOpen', 'getShiftKeyHold', 'getFocusSearch',
       'getIssueSearch', 'getFocusStartDate', 'getFocusLinkSearch',
-      'getToggleCache', 'getDownloadReport', 'getCopyShareLink'
+      'getToggleCache', 'getDownloadReport', 'getCopyShareLink',
+      'getViews', 'getImmediateSubmissionReady', 'getDoableIntegrations'
     ]),
     loading: {
       get () { return this.$store.state.loading; },
@@ -450,11 +451,13 @@ export default {
     linkSearchTerm (searchTerm) {
       this.hideLinks = {};
 
-      if (this.$route.query.linkSearch !== searchTerm) {
+      // removes linkSearch query parameter when empty string
+      const queryParamLinkSearch = searchTerm === '' ? undefined : searchTerm;
+      if (this.$route.query.linkSearch !== queryParamLinkSearch) {
         this.$router.push({
           query: {
             ...this.$route.query,
-            linkSearch: searchTerm
+            linkSearch: queryParamLinkSearch
           }
         });
       }
@@ -498,6 +501,26 @@ export default {
     },
     getFocusLinkSearch (val) {
       if (val) { this.$refs.linkSearch.select(); }
+    },
+    getImmediateSubmissionReady () { // fires once both integrations and views are loaded in from backend
+      if (!this.getImmediateSubmissionReady) {
+        return; // flag must be true!
+      }
+
+      // apply 'view' query param
+      if (this.$route.query.view != null) {
+        this.setViewByQueryParamName(this.$route.query.view);
+      }
+
+      // search now depending on 'submit' query parameter
+      if (this.shouldSubmitImmediately()) {
+        this.search();
+      }
+
+      // remove 'submit' query parameter
+      if (this.$route.query.submit !== undefined) {
+        this.$router.push({ query: { ...this.$route.query, submit: undefined } });
+      }
     }
   },
   methods: {
@@ -619,7 +642,7 @@ export default {
         startMs = this.$options.filters.parseSeconds(this.startDate) * 1000;
       }
 
-      // can't do anyting if we can't calculate the date ms
+      // can't do anything if we can't calculate the date ms
       if (isNaN(stopMs) || isNaN(startMs)) { return; }
 
       // update the query params with the updated value
@@ -654,7 +677,14 @@ export default {
       return false;
     },
     shareLink () {
-      this.$copyText(window.location.href);
+      let shareLink = window.location.href;
+      if (this.$route.query.b !== undefined || this.$route.query.q !== undefined) {
+        // share link is given submit=y query param (assuming some query exists)
+        const search = window.location.search;
+        const appendSubmitSymbol = search.startsWith('?') ? '&' : '?';
+        shareLink = `${window.location.origin}/${search}${appendSubmitSymbol}submit=y`;
+      }
+      this.$copyText(shareLink);
     },
     generateReport () {
       if (!this.searchComplete) { return; }
@@ -742,6 +772,39 @@ export default {
           target.style = `margin-top: -${delta}px`;
         }
       });
+    },
+    setViewByQueryParamName (viewName) {
+      const removeViewParam = () => {
+        this.$router.push({ query: { ...this.$route.query, view: undefined } });
+      };
+
+      if (typeof viewName !== 'string' || viewName === '') {
+        console.log(`WARNING -- Invalid view '${viewName}' from query parameter... defaulting to current integrations.`);
+        removeViewParam();
+        return;
+      }
+      const lowercaseViewName = viewName.toLowerCase();
+      for (const view of this.getViews) {
+        if (view.name.toLowerCase() === lowercaseViewName) {
+          this.$store.commit('SET_SELECTED_VIEW', view.name);
+          this.$store.commit('SET_SELECTED_INTEGRATIONS', view.integrations);
+          return;
+        }
+      }
+      removeViewParam();
+
+      if (lowercaseViewName === 'none') {
+        this.$store.commit('SET_SELECTED_INTEGRATIONS', []);
+      } else if (lowercaseViewName === 'all') {
+        this.$store.commit('SET_SELECTED_INTEGRATIONS', Object.keys(this.getDoableIntegrations));
+      } else {
+        console.log(`WARNING -- View '${viewName}' specified by query parameter was not found... defaulting to current integrations.`);
+      }
+    },
+    shouldSubmitImmediately () {
+      const submitParam = this.$route.query.submit;
+      return (submitParam === 'y' || submitParam === 'yes' ||
+          submitParam === 't' || submitParam === 'true');
     }
   },
   beforeDestroy () {

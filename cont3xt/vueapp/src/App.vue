@@ -77,11 +77,16 @@ export default {
     }
 
     // NOTE: don't need to do anything with the data (the store does it)
-    Cont3xtService.getIntegrations();
+    Promise.allSettled([
+      Cont3xtService.getIntegrations(),
+      UserService.getIntegrationViews()
+    ]).then(() => {
+      // raise flag to process on-load query parameters like 'submit' once the necessary data is loaded
+      this.$store.commit('SET_IMMEDIATE_SUBMISSION_READY', true);
+    });
     LinkService.getLinkGroups();
     UserService.getUser();
     UserService.getRoles();
-    UserService.getIntegrationViews();
 
     // watch for keyup/down events for the entire app
     // the rest of the app should compute necessary values with:

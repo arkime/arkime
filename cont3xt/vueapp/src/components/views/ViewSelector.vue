@@ -124,6 +124,12 @@ export default {
     },
     getViews () {
       this.filterViews(this.viewSearch);
+    },
+    getSelectedView (newView) {
+      const newViewName = newView === '' ? undefined : newView?.toLowerCase();
+      if (this.$route.query.view !== newViewName) {
+        this.$router.push({ query: { ...this.$route.query, view: newViewName } });
+      }
     }
   },
   methods: {
