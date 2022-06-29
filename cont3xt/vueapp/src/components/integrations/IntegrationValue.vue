@@ -250,7 +250,8 @@ export default {
       for (const valueRow of value) {
         const values = this.field.fields.map(field => {
           // double quotes in the text are escaped as two consecutive double quotes
-          let valueStr = this.findValue(valueRow, field).toString().replaceAll('"', '""');
+          let valueStr = this.findValue(valueRow, field)?.toString()?.replaceAll('"', '""');
+          if (valueStr == null) { valueStr = ''; }
           // text containing commas or line breaks is wrapped in double quotes
           if (valueStr.includes(',') || valueStr.includes('\n')) {
             valueStr = `"${valueStr}"`;
