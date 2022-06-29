@@ -8,17 +8,18 @@
       <label
         tabindex="-1"
         v-if="!hideLabel"
-        class="text-warning"
         @click="toggleValue"
         :class="field.type === 'table' || field.type === 'array' ? 'flex-grow-1 cursor-pointer': 'pr-2'">
-        {{ field.label }}
-        <span
-          class="fa"
-          v-if="field.type === 'table' || field.type === 'array'"
-          :class="{'fa-caret-down':visible,'fa-caret-up':!visible}"
-        />
+        <span class="text-warning">
+          {{ field.label }}
+          <span
+              class="fa"
+              v-if="field.type === 'table' || field.type === 'array'"
+              :class="{'fa-caret-down':visible,'fa-caret-up':!visible}"
+          />
+        </span>
         <span v-if="field.type === 'table'"
-            :class="getTableLength() === 0 ? 'table-count-low' : 'table-count-normal'">({{ getTableLength() }})
+            :class="getTableLength() === 0 ? 'table-count-low' : 'text-default'">({{ getTableLength() }})
         </span>
       </label>
       <div class="d-inline">
@@ -268,9 +269,6 @@ export default {
 </script>
 
 <style scoped>
-.table-count-normal {
-  color: #EEE;
-}
 .table-count-low {
   color: gray;
 }
