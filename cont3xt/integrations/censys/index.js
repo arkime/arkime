@@ -54,7 +54,7 @@ class CensysIntegration extends Integration {
             label: 'product',
             field: 'software',
             type: 'array',
-            selectField: 'uniform_resource_identifier'
+            fieldRoot: 'uniform_resource_identifier'
           },
           {
             label: 'observed_at',
@@ -66,9 +66,8 @@ class CensysIntegration extends Integration {
       {
         label: 'Certificates',
         field: 'result.services',
-        selectField: 'tls.certificates.leaf_data',
+        fieldRoot: 'tls.certificates.leaf_data',
         type: 'table',
-        filterEmpty: true,
         fields: [
           {
             label: 'names',

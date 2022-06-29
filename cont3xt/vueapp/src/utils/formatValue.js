@@ -27,9 +27,9 @@ export const formatValue = (data, field) => {
   const arrayLike = field.type === 'array' || (field.type === 'table' && Array.isArray(value));
 
   if (arrayLike && value != null) {
-    // map arrays of objects to flat arrays when a selectPath exists
-    if (field.selectPath !== undefined) {
-      for (const p of field.selectPath) {
+    // map arrays of objects to flat arrays when a fieldRootPath exists
+    if (field.fieldRootPath !== undefined) {
+      for (const p of field.fieldRootPath) {
         value = value.map(element => element != null ? element[p] : undefined);
       }
     }

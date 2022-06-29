@@ -394,16 +394,10 @@ export default {
         title: 'These values are used to fill in <a href="help#linkgroups" class="no-decoration">link placeholders</a>.<br>' +
           'Try using <a href="help#general" class="no-decoration">relative times</a> like -5d or -1h.'
       },
-      activeShareLink: false,
-      shouldIssueSearchImmediately: this.$route.query.submit
+      activeShareLink: false
     };
   },
   mounted () {
-    if (this.shouldIssueSearchImmediately === 'y' || this.shouldIssueSearchImmediately === 'yes') {
-      // TODO:
-      this.search();
-    }
-
     // set the stop/start date to the query parameters
     if (this.$route.query.stopDate) {
       this.stopDate = this.$route.query.stopDate;

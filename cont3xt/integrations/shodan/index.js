@@ -73,8 +73,7 @@ class ShodanIntegration extends Integration {
         label: 'Certificates',
         type: 'table',
         field: 'data',
-        selectField: 'ssl.cert',
-        filterEmpty: true,
+        fieldRoot: 'ssl.cert',
         fields: [
           {
             label: 'issued',
