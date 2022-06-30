@@ -90,7 +90,7 @@ class Db {
   }
 
   /**
-   * Get a single linkGroup
+   * Get a single view
    */
   static async getView (id) {
     return Db.implementation.getView(id);

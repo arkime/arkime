@@ -32,7 +32,7 @@ const store = new Vuex.Store({
     sidebarKeepOpen: false,
     views: [],
     integrationsPanelHoverDelay: 400,
-    selectedView: '',
+    selectedView: undefined,
     shiftKeyHold: false,
     focusSearch: true,
     issueSearch: false,
@@ -40,7 +40,8 @@ const store = new Vuex.Store({
     focusLinkSearch: false,
     toggleCache: false,
     downloadReport: false,
-    copyShareLink: false
+    copyShareLink: false,
+    immediateSubmissionReady: false
   },
   mutations: {
     SET_USER (state, data) {
@@ -198,6 +199,9 @@ const store = new Vuex.Store({
     SET_COPY_SHARE_LINK (state, value) {
       state.copyShareLink = value;
       setTimeout(() => { state.copyShareLink = false; });
+    },
+    SET_IMMEDIATE_SUBMISSION_READY (state, value) {
+      state.immediateSubmissionReady = value;
     }
   },
   getters: {
@@ -295,6 +299,29 @@ const store = new Vuex.Store({
     },
     getCopyShareLink (state) {
       return state.copyShareLink;
+    },
+    getImmediateSubmissionReady (state) {
+      return state.immediateSubmissionReady;
+    },
+    getAllViews (state, getters) {
+      const makeSystemDefault = (viewName, integrationList, _id) => {
+        return {
+          creator: 'THE_SYSTEM',
+          name: viewName,
+          integrations: integrationList,
+          viewRoles: [],
+          editRoles: [],
+          _id,
+          _editable: false,
+          _viewable: false,
+          _systemDefault: true
+        };
+      };
+      const systemDefaultViews = [
+        makeSystemDefault('All', Object.keys(getters.getDoableIntegrations), 'all'),
+        makeSystemDefault('None', [], 'none')
+      ];
+      return [...systemDefaultViews, ...state.views];
     }
   },
   plugins: [createPersistedState({

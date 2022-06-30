@@ -18,12 +18,12 @@
 import Cont3xtField from '@/utils/Field';
 
 export default {
-  name: 'Cont3xtPhone',
+  name: 'Cont3xtText',
   components: {
     Cont3xtField
   },
   props: {
-    query: { // the query string to display (needed because phones don't get
+    query: { // the query string to display (needed because text doesn't get
       // searched so there is no data.phone)
       type: String,
       required: true
