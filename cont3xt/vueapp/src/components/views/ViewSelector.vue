@@ -12,7 +12,7 @@
         {{ getSelectedView }}
       </span>
     </template>
-    <div class="ml-1 mr-1 mb-2" v-if="getViews.length">
+    <div class="ml-1 mr-1 mb-2">
       <b-input-group size="sm">
         <template #prepend>
           <b-input-group-text>
@@ -25,14 +25,6 @@
         />
       </b-input-group>
     </div>
-    <b-dropdown-text
-      v-if="error"
-      variant="danger">
-      <span
-        class="fa fa-exclamation-triangle"
-      />
-      {{ error }}
-    </b-dropdown-text>
     <template v-for="(view, index) in filteredViews">
       <b-tooltip
         noninteractive
@@ -69,7 +61,8 @@
           </template>
         </div>
       </b-dropdown-item>
-      <hr :key="view._id + '-separator'" v-if="view._systemDefault && (filteredViews[index + 1] == null || !filteredViews[index + 1]._systemDefault)"
+      <hr :key="view._id + '-separator'"
+          v-if="view._systemDefault && ((filteredViews[index + 1] && !filteredViews[index + 1]._systemDefault) || (!filteredViews[index + 1] && getViews.length === 0))"
           class="border-secondary my-0"/>
     </template>
     <b-dropdown-item
@@ -85,6 +78,14 @@
       <br>
       Click to create one.
     </b-dropdown-item>
+    <b-dropdown-text
+        v-if="error"
+        variant="danger">
+      <span
+          class="fa fa-exclamation-triangle"
+      />
+      {{ error }}
+    </b-dropdown-text>
   </b-dropdown>
 </template>
 
