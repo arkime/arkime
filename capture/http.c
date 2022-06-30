@@ -892,13 +892,6 @@ gboolean moloch_http_schedule(void *serverV, const char *method, const char *key
 }
 
 /******************************************************************************/
-gboolean moloch_http_set(void *serverV, char *key, int key_len, char *data, uint32_t data_len, MolochHttpResponse_cb func, gpointer uw)
-{
-    // If no func then this request is dropable
-    return moloch_http_send(serverV, "POST", key, key_len, data, data_len, NULL, func == 0, func, uw);
-}
-
-/******************************************************************************/
 unsigned char *moloch_http_get(void *serverV, char *key, int key_len, size_t *mlen)
 {
     return moloch_http_send_sync(serverV, "GET", key, key_len, NULL, 0, NULL, mlen);

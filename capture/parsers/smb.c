@@ -313,7 +313,7 @@ LOCAL int smb1_parse(MolochSession_t *session, SMBInfo_t *smb, BSB *bsb, char *s
         BSB_IMPORT_u16(*bsb, passlength);
         BSB_IMPORT_skip(*bsb, 2 + passlength);
 
-        int offset = ((BSB_WORK_PTR(*bsb) - start) % 2 == 0)?2:1;
+        uint32_t offset = ((BSB_WORK_PTR(*bsb) - start) % 2 == 0)?2:1;
 
         if (BSB_IS_ERROR(*bsb) || offset > BSB_REMAINING(*bsb)) {
             return 1;
@@ -346,7 +346,7 @@ LOCAL int smb1_parse(MolochSession_t *session, SMBInfo_t *smb, BSB *bsb, char *s
             smb_security_blob(session, BSB_WORK_PTR(*bsb), securitylen);
             BSB_IMPORT_skip(*bsb, securitylen);
 
-            int offset = ((BSB_WORK_PTR(*bsb) - start) % 2 == 0)?0:1;
+            uint32_t offset = ((BSB_WORK_PTR(*bsb) - start) % 2 == 0)?0:1;
             BSB_IMPORT_skip(*bsb, offset);
 
             if (!BSB_IS_ERROR(*bsb)) {
@@ -362,7 +362,7 @@ LOCAL int smb1_parse(MolochSession_t *session, SMBInfo_t *smb, BSB *bsb, char *s
 
             BSB_IMPORT_skip(*bsb, 10 + ansipw + upw);
 
-            int offset = ((BSB_WORK_PTR(*bsb) - start) % 2 == 0)?0:1;
+            uint32_t offset = ((BSB_WORK_PTR(*bsb) - start) % 2 == 0)?0:1;
             BSB_IMPORT_skip(*bsb, offset);
 
             if (!BSB_IS_ERROR(*bsb)) {

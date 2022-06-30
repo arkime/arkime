@@ -991,7 +991,6 @@ gboolean moloch_http_send(void *serverV, const char *method, const char *key, in
 gboolean moloch_http_schedule(void *serverV, const char *method, const char *key, int32_t key_len, char *data, uint32_t data_len, char **headers, int priority, MolochHttpResponse_cb func, gpointer uw);
 
 
-gboolean moloch_http_set(void *server, char *key, int key_len, char *data, uint32_t data_len, MolochHttpResponse_cb func, gpointer uw);
 unsigned char *moloch_http_get(void *server, char *key, int key_len, size_t *mlen);
 #define moloch_http_get_buffer(size) MOLOCH_SIZE_ALLOC(buffer, size)
 #define moloch_http_free_buffer(b) MOLOCH_SIZE_FREE(buffer, b)
@@ -1103,7 +1102,6 @@ void     moloch_packet_batch(MolochPacketBatch_t * batch, MolochPacket_t * const
 void     moloch_packet_batch_process(MolochPacketBatch_t * batch, MolochPacket_t * const packet, int thread);
 
 void     moloch_packet_set_dltsnap(int dlt, int snaplen);
-void     moloch_packet_set_linksnap(int linktype, int snaplen); // Don't use, backwards compat
 uint32_t moloch_packet_dlt_to_linktype(int dlt);
 void     moloch_packet_drophash_add(MolochSession_t *session, int which, int min);
 
