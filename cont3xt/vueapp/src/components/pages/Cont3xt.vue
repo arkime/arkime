@@ -509,7 +509,6 @@ export default {
 
       // apply 'view' query param
       if (this.$route.query.view !== undefined) {
-        console.log(this.$route.query);
         this.setViewByQueryParam(this.$route.query.view);
       }
 
