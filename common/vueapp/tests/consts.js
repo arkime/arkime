@@ -52,14 +52,28 @@ export const userSettings = {
 
 export const userWithSettings = { ...users[0], settings: { ...userSettings } };
 
-export const views = {
-  'test view 1': {
-    shared: false,
-    user: 'testuser',
-    name: 'test view 1',
-    expression: 'protocols == tls'
-  }
-};
+export const views = [{
+  id: '1',
+  users: '',
+  roles: [],
+  user: 'testuser',
+  name: 'test view 1',
+  expression: 'protocols == tls'
+}, {
+  id: '2',
+  roles: [],
+  user: 'admin',
+  users: 'testuser',
+  name: 'test view 2',
+  expression: 'protocols == tls'
+}, {
+  id: '3',
+  users: '',
+  user: 'testuserid',
+  name: 'test view 3',
+  roles: ['arkimeUser'],
+  expression: 'protocols == tls'
+}];
 
 export const periodicQueries = [{
   enabled: true,
@@ -151,6 +165,7 @@ export const notifiers = [{
   key: 'Slack',
   name: 'Slack',
   type: 'slack',
+  id: 'notifierid',
   user: 'testuserid'
 }];
 
@@ -158,10 +173,11 @@ export const shortcuts = [{
   description: 'test shortcut description',
   id: '6f7tT3sBcKdkTkqAFBjf',
   name: 'SHORTCUT_1',
-  shared: true,
   type: 'ip',
   userId: 'testuserid',
-  value: '10.0.0.1\n10.0.0.2\n10.0.0.3'
+  value: '10.0.0.1\n10.0.0.2\n10.0.0.3',
+  users: '',
+  roles: []
 }];
 
 export const sessions = [{

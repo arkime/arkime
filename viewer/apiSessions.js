@@ -11,7 +11,6 @@ const util = require('util');
 const decode = require('./decode.js');
 const ArkimeUtil = require('../common/arkimeUtil');
 const Auth = require('../common/auth');
-const User = require('../common/user');
 const Pcap = require('./pcap.js');
 const version = require('../common/version');
 const molochparser = require('./molochparser.js');
@@ -161,44 +160,61 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * @param {boolean} queryOverride=null - override the client query with overriding query
    * @returns {function} - the callback to call once the session query is built or an error occurs
    */
-  function addViewToQuery (req, query, continueBuildQueryCb, finalCb, queryOverride = null) {
-    let err;
-    let viewExpression;
-
+  async function addViewToQuery (req, query, continueBuildQueryCb, finalCb, queryOverride = null) {
     // queryOverride can supercede req.query if specified
     const reqQuery = queryOverride || req.query;
 
-    if (req.user.views && req.user.views[reqQuery.view]) { // it's a user's view
-      try {
-        viewExpression = molochparser.parse(req.user.views[reqQuery.view].expression);
-        query.query.bool.filter.push(viewExpression);
-      } catch (e) {
-        console.log(`ERROR - User expression (${reqQuery.view}) doesn't compile -`, util.inspect(e, false, 50));
-        err = e;
-      }
-      return continueBuildQueryCb(req, query, err, finalCb, queryOverride);
-    } else { // it's a shared view
-      User.getUserCache('_moloch_shared', (err, sharedUser) => {
-        if (sharedUser) {
-          sharedUser.views = sharedUser.views || {};
-          for (const viewName in sharedUser.views) {
-            if (viewName === reqQuery.view) {
-              viewExpression = sharedUser.views[viewName].expression;
-              break;
-            }
+    try {
+      const roles = [...await req.user.getRoles()]; // es requries an array for terms search
+
+      const viewQuery = { // search for the shortcut
+        size: 1,
+        query: {
+          bool: {
+            filter: [{
+              bool: {
+                must: [{ // needs to match the id OR name
+                  bool: {
+                    should: [ // match id OR name
+                      { term: { _id: reqQuery.view } }, // matches the id
+                      { term: { name: reqQuery.view } } // matches the name
+                    ]
+                  }
+                }, { // AND be shared with the user via role, user, OR creator
+                  bool: {
+                    should: [
+                      { terms: { roles } }, // shared via user role
+                      { term: { users: req.user.userId } }, // shared via userId
+                      { term: { user: req.user.userId } } // created by this user
+                    ]
+                  }
+                }]
+              }
+            }]
           }
-          if (sharedUser.views[reqQuery.view]) {
-            try {
-              viewExpression = molochparser.parse(sharedUser.views[reqQuery.view].expression);
-              query.query.bool.filter.push(viewExpression);
-            } catch (e) {
-              console.log(`ERROR - Shared user expression (${reqQuery.view}) doesn't compile -`, util.inspect(e, false, 50));
-              err = e;
-            }
-          }
-          return continueBuildQueryCb(req, query, err, finalCb, queryOverride);
         }
-      });
+      };
+
+      const { body: { hits: { hits: views } } } = await Db.searchViews(viewQuery);
+
+      if (!views.length) {
+        console.log(`ERROR - User does not have permission to access this view or the view doesn't exist: ${reqQuery.view}`);
+        return continueBuildQueryCb(req, query, "Can't find view", finalCb, queryOverride);
+      }
+
+      const view = views[0]._source;
+
+      try {
+        const viewExpression = molochparser.parse(view.expression);
+        query.query.bool.filter.push(viewExpression);
+        return continueBuildQueryCb(req, query, undefined, finalCb, queryOverride);
+      } catch (err) {
+        console.log(`ERROR - User expression (${reqQuery.view}) doesn't compile -`, util.inspect(err, false, 50));
+        return continueBuildQueryCb(req, query, err, finalCb, queryOverride);
+      }
+    } catch (err) {
+      console.log(`ERROR - Can't find view (${reqQuery.view}) -`, util.inspect(err, false, 50));
+      return continueBuildQueryCb(req, query, err, finalCb, queryOverride);
     }
   }
 

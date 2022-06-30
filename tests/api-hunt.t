@@ -12,7 +12,6 @@ my $otherToken = getTokenCookie('user2');
 my $nonadminToken = getTokenCookie2('user3');
 my $json;
 
-
 # Delete old hunts
   esPost("/tests_hunts/_delete_by_query?conflicts=proceed&refresh", '{ "query": { "match_all": {} } }');
 
@@ -101,7 +100,7 @@ my $hToken = getTokenCookie('huntuser');
   $hunts = viewerGet("/api/hunts?molochRegressionUser=user2&history=true");
   is (@{$hunts->{data}}, 1, "Add hunt 1");
 
-# user2 shouldn't see is, query, search, searchType, userId
+# user2 shouldn't see id, query, search, searchType, userId
   my $item = $hunts->{data}->[0];
   is($item->{id}, '');
   is($item->{search}, '');
@@ -165,8 +164,9 @@ my $hToken = getTokenCookie('huntuser');
   is ($found, 0, "Admin can remove any hunt");
 
 # should be able to run a hunt with a view
-  viewerPostToken("/user/views/create?molochRegressionUser=user2", '{"name": "tls", "expression": "protocols == tls", "shared": true}', $otherToken);
-  $json = viewerPostToken("/hunt?molochRegressionUser=user2", '{"totalSessions":1,"name":"test hunt 13~`!@#$%^&*()[]{};<>?/`","size":"50","search":"test search text","searchType":"ascii","type":"raw","src":true,"dst":true,"query":{"startTime":18000,"stopTime":1536872891,"view":"tls"}}', $otherToken);
+  $json = viewerPostToken("/api/view?molochRegressionUser=user2", '{"name": "tls", "expression": "protocols == tls", "users": "user2,user3", "roles":["arkimeUser"]}', $otherToken);
+  my $viewId = $json->{view}->{id};
+  $json = viewerPostToken("/hunt?molochRegressionUser=user2", '{"totalSessions":1,"name":"test hunt 13~`!@#$%^&*()[]{};<>?/`","size":"50","search":"test search text","searchType":"ascii","type":"raw","src":true,"dst":true,"query":{"startTime":18000,"stopTime":1536872891,"view":"' . $viewId . '"}}', $otherToken);
   is ($json->{success}, 1, "can run a hunt with a view");
   my $id5 = $json->{hunt}->{id};
 
@@ -188,7 +188,7 @@ my $hToken = getTokenCookie('huntuser');
   }
 
 # verify viewHunt and badHunt
-  is($viewHunt->{query}->{view}, "tls", "hunt has a view applied");
+  is($viewHunt->{query}->{view}, $viewId, "hunt has a view applied");
   is($viewHunt->{unrunnable}, undef, "hunt should be runable");
 
   is($badHunt->{unrunnable}, 1, "hunt should be unrunable");
@@ -418,6 +418,4 @@ my $hToken = getTokenCookie('huntuser');
   viewerDeleteToken("/hunt/$id1?molochRegressionUser=anonymous", $token);
   viewerDeleteToken("/hunt/$id3?molochRegressionUser=anonymous", $token);
   esPost("/tests_hunts/_delete_by_query?conflicts=proceed&refresh", '{ "query": { "match_all": {} } }');
-
-# remove shared user that gets added when creating shared shortcuts
-  viewerPostToken("/user/delete", "userId=_moloch_shared", $token);
+  viewerDeleteToken("/api/view/${viewId}?molochRegressionUser=user2", $otherToken);

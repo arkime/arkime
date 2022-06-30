@@ -96,7 +96,7 @@
                   v-if="showFitButton && !loading"
                   class="btn btn-xs btn-theme-quaternary fit-btn"
                   v-b-tooltip.hover.right="'Fit the table to the current window size'"
-                  :class="{'ml-4':stickySessions.length === 0, 'fit-btn-right':sessions.data.length <= 50 && stickySessions.length > 0}">
+                  :class="{'ml-4':stickySessions.length === 0, 'fit-btn-right':sessions.data && sessions.data.length <= 50 && stickySessions.length > 0}">
                   <span class="fa fa-arrows-h">
                   </span>
                 </button>
@@ -1529,12 +1529,10 @@ export default {
       this.sorts = this.tableState.order || JSON.parse(JSON.stringify(Utils.getDefaultTableState().order));
 
       if (this.viewChanged && this.views) {
-        for (const view in this.views) {
-          if (view === this.query.view && this.views[view].sessionsColConfig) {
-            this.tableState = JSON.parse(JSON.stringify(this.views[view].sessionsColConfig));
-            this.sorts = this.tableState.order;
-            this.saveTableState();
-          }
+        const view = this.views.find(v => v.id === this.query.view);
+        if (view && view.sessionsColConfig) {
+          this.tableState = JSON.parse(JSON.stringify(view.sessionsColConfig));
+          this.saveTableState();
         }
 
         this.mapHeadersToFields();

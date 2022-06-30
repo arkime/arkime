@@ -8,15 +8,19 @@
       <label
         tabindex="-1"
         v-if="!hideLabel"
-        class="text-warning"
         @click="toggleValue"
         :class="field.type === 'table' || field.type === 'array' ? 'flex-grow-1 cursor-pointer': 'pr-2'">
-        {{ field.label }}
-        <span
-          class="fa"
-          v-if="field.type === 'table' || field.type === 'array'"
-          :class="{'fa-caret-down':visible,'fa-caret-up':!visible}"
-        />
+        <span class="text-warning">
+          {{ field.label }}
+          <span
+              class="fa"
+              v-if="field.type === 'table' || field.type === 'array'"
+              :class="{'fa-caret-down':visible,'fa-caret-up':!visible}"
+          />
+        </span>
+        <span v-if="field.type === 'table'"
+            :class="getTableLength() === 0 ? 'table-count-low' : 'text-default'">({{ getTableLength() }})
+        </span>
       </label>
       <div class="d-inline">
         <b-button
@@ -25,7 +29,8 @@
           @click="copy"
           variant="outline-success"
           v-if="field.type === 'table'"
-          v-b-tooltip.hover="'Copy as table as CSV string'">
+          v-b-tooltip.hover
+          title="Copy table as CSV string">
           <span class="fa fa-copy fa-fw" />
         </b-button>
         <b-button
@@ -34,7 +39,8 @@
           @click="download"
           variant="outline-success"
           v-if="field.type === 'table'"
-          v-b-tooltip.hover="'Download as table as CSV'">
+          v-b-tooltip.hover
+          title="Download table as CSV">
           <span class="fa fa-download fa-fw" />
         </b-button>
       </div>
@@ -55,6 +61,7 @@
             :table-data="value.value"
             :default-sort-field="field.defaultSortField"
             :default-sort-direction="field.defaultSortDirection"
+            @tableFilteredDataChanged="tableFilteredDataChanged"
           />
           <template #overlay>
             <div class="overlay-loading">
@@ -77,6 +84,7 @@
             :field="field"
             v-if="value.value"
             :array-data="value.value"
+            :highlights-array="highlights"
           />
           <template #overlay>
             <div class="overlay-loading">
@@ -91,55 +99,53 @@
         <a
           target="_blank"
           :href="value.value"
-          rel="noopener noreferrer">
-          {{ value.value }}
+          rel="noopener noreferrer"
+          data-testid="integration-url">
+          <highlightable-text
+            :content="value.value"
+            :highlights="highlights"/>
         </a>
       </template> <!-- /url field -->
       <!-- json field -->
       <template v-else-if="field.type === 'json'">
-        <pre class="text-info"><code>{{ JSON.stringify(value.value, null, 2) }}</code></pre>
+        <pre class="text-info"><code><highlightable-text
+            :content="value.value"
+            :highlights="highlights"/></code></pre>
       </template> <!-- /json field -->
-      <!-- ms field -->
-      <template v-else-if="field.type === 'ms'">
-        {{ this.$options.filters.dateString(value.value) }}
-      </template> <!-- /ms field -->
-      <!-- seconds field -->
-      <template v-else-if="field.type === 'seconds'">
-        {{ this.$options.filters.dateString(value.value * 1000) }}
-      </template> <!-- /seconds field -->
-      <!-- date field -->
-      <template v-else-if="field.type === 'date'">
-        {{ this.$options.filters.reDateString(value.value) }}
-      </template> <!-- /seconds field -->
-      <!-- default string field -->
+      <!-- /default string, ms, seconds, & date field -->
       <template v-else>
         <template v-if="field.pivot">
           <cont3xt-field
             :value="value.value"
+            :highlights="highlights"
           />
         </template>
         <template v-else>
-          {{ value.value }}
+          <highlightable-text
+              :content="value.value"
+              :highlights="highlights"/>
         </template>
-      </template> <!-- /default string field -->
+      </template> <!-- /default string, ms, seconds, & date field -->
     </template>
   </span>
 </template>
 
 <script>
-import dr from 'defang-refang';
 import { mapGetters } from 'vuex';
 
 import Cont3xtField from '@/utils/Field';
 import IntegrationArray from '@/components/integrations/IntegrationArray';
 import IntegrationTable from '@/components/integrations/IntegrationTable';
+import HighlightableText from '@/utils/HighlightableText';
+import { formatValue } from '@/utils/formatValue';
 
 export default {
   name: 'IntegrationValue',
   components: {
     Cont3xtField,
     IntegrationArray,
-    IntegrationTable
+    IntegrationTable,
+    HighlightableText
   },
   props: {
     data: { // the data to search for values within
@@ -157,11 +163,18 @@ export default {
     truncate: { // whether to truncate the value if it is long (used for tables)
       type: Boolean,
       default: false
+    },
+    highlights: { // array of highlighted spans (or array of highlighted span arrays [for integration-arrays])
+      type: Array,
+      default () {
+        return null;
+      }
     }
   },
   data () {
     return {
-      visible: true
+      visible: true,
+      tableFilteredData: null
     };
   },
   computed: {
@@ -177,6 +190,12 @@ export default {
       }
 
       return { value, full };
+    }
+  },
+  mounted () {
+    // automatically collapses empty tables
+    if (this.getTableLength() === 0) {
+      this.visible = false;
     }
   },
   methods: {
@@ -201,29 +220,21 @@ export default {
       a.click();
       URL.revokeObjectURL(a.href);
     },
+    tableFilteredDataChanged (newFilteredData) { // syncs filteredData with table
+      this.tableFilteredData = newFilteredData;
+    },
     /* helpers ------------------------------------------------------------- */
     findValue (data, field) {
-      let value = JSON.parse(JSON.stringify(data));
-
-      for (const p of field.path) {
-        if (!value) {
-          console.warn(`Can't resolve path: ${field.path.join('.')}`);
-          return '';
-        }
-        value = value[p];
+      return formatValue(data, field);
+    },
+    getTableData () {
+      if (this.tableFilteredData) {
+        return this.tableFilteredData;
       }
-
-      if (field.defang) {
-        value = dr.defang(value);
-      }
-
-      // don't show empty tables, lists, or strings
-      if (field.type !== 'json' && value && value.length === 0) {
-        // ignores ms because it's a number and value.length is undefined
-        value = undefined;
-      }
-
-      return value;
+      return Array.isArray(this.value.value) ? this.value.value : [this.value.value];
+    },
+    getTableLength () {
+      return this.getTableData().length;
     },
     generateCSVString () {
       let csvStr = '';
@@ -235,16 +246,19 @@ export default {
 
       csvStr += `${fieldLabels.join(',')}\n`;
 
-      let value = this.value.value;
-      if (!Array.isArray(value)) {
-        value = [value];
-      }
+      const value = this.getTableData();
 
       for (const valueRow of value) {
-        const values = [];
-        for (const field of this.field.fields) {
-          values.push(this.findValue(valueRow, field));
-        }
+        const values = this.field.fields.map(field => {
+          // double quotes in the text are escaped as two consecutive double quotes
+          let valueStr = this.findValue(valueRow, field)?.toString()?.replaceAll('"', '""');
+          if (valueStr == null) { valueStr = ''; }
+          // text containing commas or line breaks is wrapped in double quotes
+          if (valueStr.includes(',') || valueStr.includes('\n')) {
+            valueStr = `"${valueStr}"`;
+          }
+          return valueStr;
+        });
         csvStr += `${values.join(',')}\n`;
       }
 
@@ -253,3 +267,9 @@ export default {
   }
 };
 </script>
+
+<style scoped>
+.table-count-low {
+  color: gray;
+}
+</style>

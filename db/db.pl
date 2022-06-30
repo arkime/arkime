@@ -69,6 +69,8 @@
 # 73 - hunt roles
 # 74 - shortcut sharing with users/roles
 # 75 - notifiers index
+# 76 - views index
+# 77 - cron sharing with roles and users
 
 use HTTP::Request::Common;
 use LWP::UserAgent;
@@ -80,7 +82,7 @@ use IO::Compress::Gzip qw(gzip $GzipError);
 use IO::Uncompress::Gunzip qw(gunzip $GunzipError);
 use strict;
 
-my $VERSION = 75;
+my $VERSION = 77;
 my $verbose = 0;
 my $PREFIX = undef;
 my $OLDPREFIX = "";
@@ -1206,6 +1208,12 @@ sub queriesUpdate
       "type": "date"
     },
     "lastToggledBy": {
+      "type": "keyword"
+    },
+    "roles": {
+      "type": "keyword"
+    },
+    "users": {
       "type": "keyword"
     }
   }
@@ -5575,6 +5583,92 @@ sub notifiersMove
 ################################################################################
 
 ################################################################################
+sub viewsCreate
+{
+  my $settings = '
+{
+  "settings": {
+    "index.priority": 30,
+    "number_of_shards": 1,
+    "number_of_replicas": 0,
+    "auto_expand_replicas": "0-3"
+  }
+}';
+
+  logmsg "Creating views_v40 index\n" if ($verbose > 0);
+  esPut("/${PREFIX}views_v40?master_timeout=${ESTIMEOUT}s", $settings);
+  esAlias("add", "views_v40", "views");
+  viewsUpdate();
+}
+
+sub viewsUpdate
+{
+    my $mapping = '
+{
+  "_source": {"enabled": "true"},
+  "dynamic": "strict",
+  "properties": {
+    "name": {
+      "type": "keyword"
+    },
+    "users": {
+      "type": "keyword"
+    },
+    "roles": {
+      "type": "keyword"
+    },
+    "user": {
+      "type": "keyword"
+    },
+    "expression": {
+      "type": "keyword"
+    },
+    "sessionsColConfig": {
+      "type": "object",
+      "dynamic": "true",
+      "enabled": "false"
+    }
+  }
+}';
+
+logmsg "Setting views_v40 mapping\n" if ($verbose > 0);
+esPut("/${PREFIX}views_v40/_mapping?master_timeout=${ESTIMEOUT}s&pretty", $mapping);
+}
+
+sub viewsMove
+{
+# add the views from all users to the new views index
+  my $users = esGet("/${PREFIX}users/_search?size=1000");
+
+  foreach my $user (@{$users->{hits}->{hits}}) {
+      my @views = keys %{$user->{_source}->{views}};
+
+      foreach my $v (@views) {
+          my $view = $user->{_source}->{views}{$v};
+          $view->{users} = "";
+          $view->{name} = $v;
+          if ($view->{shared}) {
+            $view->{roles} = ["arkimeUser"];
+          }
+          delete $view->{shared};
+          if (!exists $view->{user}) {
+            $view->{user} = $user->{_source}->{userId};
+          }
+          esPost("/${PREFIX}views/_doc", to_json($view));
+      }
+
+      # update the user to delete views
+      delete $user->{_source}->{views};
+      my $userId = $user->{_id};
+      esPut("/${PREFIX}users/_doc/${userId}", to_json($user->{_source}));
+  }
+
+  # delete the _moloch_shared user
+  esDelete("/${PREFIX}users/_doc/_moloch_shared", 1);
+}
+################################################################################
+
+################################################################################
 sub usersCreate
 {
     my $settings = '
@@ -5992,7 +6086,7 @@ sub progress {
 ################################################################################
 sub optimizeOther {
     logmsg "Optimizing Admin Indices\n";
-    esForceMerge("${PREFIX}stats_v30,${PREFIX}dstats_v30,${PREFIX}fields_v30,${PREFIX}files_v30,${PREFIX}sequence_v30,${PREFIX}users_v30,${PREFIX}queries_v30,${PREFIX}hunts_v30,${PREFIX}lookups_v30,${PREFIX}notifiers_v40", 1, 0);
+    esForceMerge("${PREFIX}stats_v30,${PREFIX}dstats_v30,${PREFIX}fields_v30,${PREFIX}files_v30,${PREFIX}sequence_v30,${PREFIX}users_v30,${PREFIX}queries_v30,${PREFIX}hunts_v30,${PREFIX}lookups_v30,${PREFIX}notifiers_v40,${PREFIX}views_v40", 1, 0);
     logmsg "\n" if ($verbose > 0);
 }
 ################################################################################
@@ -6202,7 +6296,7 @@ if ($ARGV[1] =~ /^(users-?import|import)$/) {
         }
     }
 
-    my @indexes = ("users", "sequence", "stats", "queries", "files", "fields", "dstats", "hunts", "lookups", "notifiers");
+    my @indexes = ("users", "sequence", "stats", "queries", "files", "fields", "dstats", "hunts", "lookups", "notifiers", "views");
     logmsg "Exporting documents...\n";
     foreach my $index (@indexes) {
         my $data = esScroll($index, "", '{"version": true}');
@@ -7129,7 +7223,7 @@ qq/ {
         }
     }
 
-    foreach my $i ("stats_v30", "dstats_v30", "fields_v30", "queries_v30", "hunts_v30", "lookups_v30", "users_v30", "notifiers_v40") {
+    foreach my $i ("stats_v30", "dstats_v30", "fields_v30", "queries_v30", "hunts_v30", "lookups_v30", "users_v30", "notifiers_v40", "views_v40") {
         if (!defined $indices{"${PREFIX}$i"}) {
             print "--> Couldn't find index ${PREFIX}$i, repair might fail\n"
         }
@@ -7141,7 +7235,7 @@ qq/ {
         }
     }
 
-    foreach my $i ("queries", "hunts", "lookups", "users", "notifiers") {
+    foreach my $i ("queries", "hunts", "lookups", "users", "notifiers", "views") {
         if (defined $indices{"${PREFIX}$i"}) {
             print "--> Will delete the index ${PREFIX}$i and recreate as alias, this WILL cause data loss in those indices, maybe cancel and run backup first\n"
         }
@@ -7151,7 +7245,7 @@ qq/ {
     $verbose = 3 if ($verbose < 3);
 
     print "Deleting any indices that should be aliases\n";
-    foreach my $i ("stats", "dstats", "fields", "queries", "hunts", "lookups", "users", "notifiers") {
+    foreach my $i ("stats", "dstats", "fields", "queries", "hunts", "lookups", "users", "notifiers", "views") {
         esDelete("/${PREFIX}$i", 0) if (defined $indices{"${PREFIX}$i"});
     }
 
@@ -7166,6 +7260,7 @@ qq/ {
     esAlias("add", "lookups_v30", "lookups");
     esAlias("add", "users_v30", "users");
     esAlias("add", "notifiers_v40", "notifiers");
+    esAlias("add", "views_v40", "views");
 
     if (defined $indices{"${PREFIX}users_v30"}) {
         usersUpdate();
@@ -7213,6 +7308,12 @@ qq/ {
         notifiersUpdate();
     } else {
         notifiersCreate();
+    }
+
+    if (defined $indices{"${PREFIX}views_v40"}) {
+        viewsUpdate();
+    } else {
+        viewsCreate();
     }
 
     print "\n";
@@ -7277,14 +7378,15 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
         waitFor("CLEAN", "do you want to clean everything?");
     }
     logmsg "Erasing\n";
-    esDelete("/${PREFIX}sequence_v30,${OLDPREFIX}sequence_v3,${OLDPREFIX}sequence_v2,${OLDPREFIX}sequence_v1,${OLDPREFIX}sequence?ignore_unavailable=true", 1);
-    esDelete("/${PREFIX}files_v30,${OLDPREFIX}files_v6,${OLDPREFIX}files_v5,${OLDPREFIX}files_v4,${OLDPREFIX}files_v3,${OLDPREFIX}files?ignore_unavailable=true", 1);
-    esDelete("/${PREFIX}stats_v30,${OLDPREFIX}stats_v4,${OLDPREFIX}stats_v3,${OLDPREFIX}stats_v2,${OLDPREFIX}stats_v1,${OLDPREFIX}stats?ignore_unavailable=true", 1);
-    esDelete("/${PREFIX}dstats_v30,${OLDPREFIX}dstats_v4,${OLDPREFIX}dstats_v3,${OLDPREFIX}dstats_v2,${OLDPREFIX}dstats_v1,${OLDPREFIX}dstats?ignore_unavailable=true", 1);
-    esDelete("/${PREFIX}fields_v30,${OLDPREFIX}fields_v3,${OLDPREFIX}fields_v2,${OLDPREFIX}fields_v1,${OLDPREFIX}fields?ignore_unavailable=true", 1);
-    esDelete("/${PREFIX}hunts_v30,${OLDPREFIX}hunts_v2,${OLDPREFIX}hunts_v1,${OLDPREFIX}hunts?ignore_unavailable=true", 1);
-    esDelete("/${PREFIX}lookups_v30,${OLDPREFIX}lookups_v1,${OLDPREFIX}lookups?ignore_unavailable=true", 1);
-    esDelete("/${PREFIX}notifiers_v40?ignore_unavailable=true", 1);
+    esDelete("/${PREFIX}sequence_v30,${OLDPREFIX}sequence_v3,${OLDPREFIX}sequence_v2,${OLDPREFIX}sequence_v1,${OLDPREFIX}sequence,${PREFIX}sequence?ignore_unavailable=true", 1);
+    esDelete("/${PREFIX}files_v30,${OLDPREFIX}files_v6,${OLDPREFIX}files_v5,${OLDPREFIX}files_v4,${OLDPREFIX}files_v3,${OLDPREFIX}files,${PREFIX}files?ignore_unavailable=true", 1);
+    esDelete("/${PREFIX}stats_v30,${OLDPREFIX}stats_v4,${OLDPREFIX}stats_v3,${OLDPREFIX}stats_v2,${OLDPREFIX}stats_v1,${OLDPREFIX}stats,${PREFIX}stats?ignore_unavailable=true", 1);
+    esDelete("/${PREFIX}dstats_v30,${OLDPREFIX}dstats_v4,${OLDPREFIX}dstats_v3,${OLDPREFIX}dstats_v2,${OLDPREFIX}dstats_v1,${OLDPREFIX}dstats,${PREFIX}dstats?ignore_unavailable=true", 1);
+    esDelete("/${PREFIX}fields_v30,${OLDPREFIX}fields_v3,${OLDPREFIX}fields_v2,${OLDPREFIX}fields_v1,${OLDPREFIX}fields,${PREFIX}fields?ignore_unavailable=true", 1);
+    esDelete("/${PREFIX}hunts_v30,${OLDPREFIX}hunts_v2,${OLDPREFIX}hunts_v1,${OLDPREFIX}hunts,${PREFIX}hunts?ignore_unavailable=true", 1);
+    esDelete("/${PREFIX}lookups_v30,${OLDPREFIX}lookups_v1,${OLDPREFIX}lookups,${PREFIX}lookups?ignore_unavailable=true", 1);
+    esDelete("/${PREFIX}notifiers_v40,${PREFIX}notifiers?ignore_unavailable=true", 1);
+    esDelete("/${PREFIX}views_v40,${PREFIX}views?ignore_unavailable=true", 1);
     my $indices;
     esDelete("/$indices" , 1) if (($indices = esMatchingIndices("${OLDPREFIX}sessions2-*")) ne "");
     esDelete("/$indices" , 1) if (($indices = esMatchingIndices("${PREFIX}sessions3-*")) ne "");
@@ -7298,8 +7400,8 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
     esDelete("/_template/${OLDPREFIX}history_v1_template", 1);
     esDelete("/_template/${PREFIX}history_v1_template", 1);
     if ($ARGV[1] =~ /^(init|clean)/) {
-        esDelete("/${PREFIX}users_v30,${OLDPREFIX}users_v7,${OLDPREFIX}users_v6,${OLDPREFIX}users_v5,${OLDPREFIX}users?ignore_unavailable=true", 1);
-        esDelete("/${PREFIX}queries_v30,${OLDPREFIX}queries_v3,${OLDPREFIX}queries_v2,${OLDPREFIX}queries_v1,${OLDPREFIX}queries?ignore_unavailable=true", 1);
+        esDelete("/${PREFIX}users_v30,${OLDPREFIX}users_v7,${OLDPREFIX}users_v6,${OLDPREFIX}users_v5,${OLDPREFIX}users,${PREFIX}users?ignore_unavailable=true", 1);
+        esDelete("/${PREFIX}queries_v30,${OLDPREFIX}queries_v3,${OLDPREFIX}queries_v2,${OLDPREFIX}queries_v1,${OLDPREFIX}queries,${PREFIX}queries?ignore_unavailable=true", 1);
     }
     esDelete("/tagger", 1);
 
@@ -7318,6 +7420,7 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
     huntsCreate();
     lookupsCreate();
     notifiersCreate();
+    viewsCreate();
     if ($ARGV[1] =~ "init") {
         usersCreate();
         queriesCreate();
@@ -7328,7 +7431,7 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
 
     dbCheckForActivity($PREFIX);
 
-    my @indexes = ("users", "sequence", "stats", "queries", "hunts", "files", "fields", "dstats", "lookups", "notifiers");
+    my @indexes = ("users", "sequence", "stats", "queries", "hunts", "files", "fields", "dstats", "lookups", "notifiers", "views");
     my @filelist = ();
     foreach my $index (@indexes) { # list of data, settings, and mappings files
         push(@filelist, "$ARGV[2].${PREFIX}${index}.json\n") if (-e "$ARGV[2].${PREFIX}${index}.json");
@@ -7357,61 +7460,18 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
 
     logmsg "Erasing data ...\n\n";
 
-    esDelete("/${OLDPREFIX}tags_v3", 1);
-    esDelete("/${OLDPREFIX}tags_v2", 1);
-    esDelete("/${OLDPREFIX}tags", 1);
-    esDelete("/${OLDPREFIX}sequence", 1);
-    esDelete("/${OLDPREFIX}sequence_v1", 1);
-    esDelete("/${OLDPREFIX}sequence_v2", 1);
-    esDelete("/${OLDPREFIX}sequence_v3", 1);
-    esDelete("/${OLDPREFIX}files_v6", 1);
-    esDelete("/${OLDPREFIX}files_v5", 1);
-    esDelete("/${OLDPREFIX}files_v4", 1);
-    esDelete("/${OLDPREFIX}files_v3", 1);
-    esDelete("/${OLDPREFIX}files", 1);
-    esDelete("/${OLDPREFIX}stats", 1);
-    esDelete("/${OLDPREFIX}stats_v1", 1);
-    esDelete("/${OLDPREFIX}stats_v2", 1);
-    esDelete("/${OLDPREFIX}stats_v3", 1);
-    esDelete("/${OLDPREFIX}stats_v4", 1);
-    esDelete("/${OLDPREFIX}dstats", 1);
-    esDelete("/${OLDPREFIX}dstats_v1", 1);
-    esDelete("/${OLDPREFIX}dstats_v2", 1);
-    esDelete("/${OLDPREFIX}dstats_v3", 1);
-    esDelete("/${OLDPREFIX}dstats_v4", 1);
-    esDelete("/${OLDPREFIX}fields", 1);
-    esDelete("/${OLDPREFIX}fields_v1", 1);
-    esDelete("/${OLDPREFIX}fields_v2", 1);
-    esDelete("/${OLDPREFIX}fields_v3", 1);
-    esDelete("/${OLDPREFIX}hunts_v2", 1);
-    esDelete("/${OLDPREFIX}hunts_v1", 1);
-    esDelete("/${OLDPREFIX}hunts", 1);
-    esDelete("/${OLDPREFIX}users_v3", 1);
-    esDelete("/${OLDPREFIX}users_v4", 1);
-    esDelete("/${OLDPREFIX}users_v5", 1);
-    esDelete("/${OLDPREFIX}users_v6", 1);
-    esDelete("/${OLDPREFIX}users_v7", 1);
-    esDelete("/${OLDPREFIX}users", 1);
-    esDelete("/${OLDPREFIX}queries", 1);
-    esDelete("/${OLDPREFIX}queries_v1", 1);
-    esDelete("/${OLDPREFIX}queries_v2", 1);
-    esDelete("/${OLDPREFIX}queries_v3", 1);
-    esDelete("/${OLDPREFIX}lookups_v1", 1);
-    esDelete("/_template/${OLDPREFIX}template_1", 1);
-    esDelete("/_template/${OLDPREFIX}sessions_template", 1);
-    esDelete("/_template/${OLDPREFIX}sessions2_template", 1);
-    esDelete("/_template/${OLDPREFIX}history_v1_template", 1);
+    esDelete("/${PREFIX}sequence_v30,${OLDPREFIX}sequence_v3,${OLDPREFIX}sequence_v2,${OLDPREFIX}sequence_v1,${OLDPREFIX}sequence,${PREFIX}sequence?ignore_unavailable=true", 1);
+    esDelete("/${PREFIX}files_v30,${OLDPREFIX}files_v6,${OLDPREFIX}files_v5,${OLDPREFIX}files_v4,${OLDPREFIX}files_v3,${OLDPREFIX}files,${PREFIX}files?ignore_unavailable=true", 1);
+    esDelete("/${PREFIX}stats_v30,${OLDPREFIX}stats_v4,${OLDPREFIX}stats_v3,${OLDPREFIX}stats_v2,${OLDPREFIX}stats_v1,${OLDPREFIX}stats,${PREFIX}stats?ignore_unavailable=true", 1);
+    esDelete("/${PREFIX}dstats_v30,${OLDPREFIX}dstats_v4,${OLDPREFIX}dstats_v3,${OLDPREFIX}dstats_v2,${OLDPREFIX}dstats_v1,${OLDPREFIX}dstats,${PREFIX}dstats?ignore_unavailable=true", 1);
+    esDelete("/${PREFIX}fields_v30,${OLDPREFIX}fields_v3,${OLDPREFIX}fields_v2,${OLDPREFIX}fields_v1,${OLDPREFIX}fields,${PREFIX}fields?ignore_unavailable=true", 1);
+    esDelete("/${PREFIX}hunts_v30,${OLDPREFIX}hunts_v2,${OLDPREFIX}hunts_v1,${OLDPREFIX}hunts,${PREFIX}hunts?ignore_unavailable=true", 1);
+    esDelete("/${PREFIX}lookups_v30,${OLDPREFIX}lookups_v1,${OLDPREFIX}lookups,${PREFIX}lookups?ignore_unavailable=true", 1);
+    esDelete("/${PREFIX}notifiers_v40,${PREFIX}notifiers?ignore_unavailable=true", 1);
+    esDelete("/${PREFIX}views_v40,${PREFIX}views?ignore_unavailable=true", 1);
+    esDelete("/${PREFIX}users_v30,${OLDPREFIX}users_v7,${OLDPREFIX}users_v6,${OLDPREFIX}users_v5,${OLDPREFIX}users,${PREFIX}users?ignore_unavailable=true", 1);
+    esDelete("/${PREFIX}queries_v30,${OLDPREFIX}queries_v3,${OLDPREFIX}queries_v2,${OLDPREFIX}queries_v1,${OLDPREFIX}queries,${PREFIX}queries?ignore_unavailable=true", 1);
 
-    esDelete("/${PREFIX}sequence_v3", 1); # should be 30
-    esDelete("/${PREFIX}fields_v30", 1);
-    esDelete("/${PREFIX}queries_v30", 1);
-    esDelete("/${PREFIX}files_v30", 1);
-    esDelete("/${PREFIX}users_v30", 1);
-    esDelete("/${PREFIX}dstats_v30", 1);
-    esDelete("/${PREFIX}stats_v30", 1);
-    esDelete("/${PREFIX}hunts_v30", 1);
-    esDelete("/${PREFIX}lookups_v30", 1);
-    esDelete("/${PREFIX}notifiers_v40", 1);
     esDelete("/_template/${PREFIX}sessions3_ecs_template", 1);
     esDelete("/_template/${PREFIX}sessions3_template", 1);
     esDelete("/_template/${PREFIX}history_v1_template", 1);
@@ -7544,19 +7604,30 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
         lookupsUpdate();
         notifiersCreate();
         notifiersMove();
-    } elsif ($main::versionNumber <= 75) {
+        viewsCreate();
+        viewsMove();
+        queriesUpdate();
+    } elsif ($main::versionNumber == 75) {
         checkForOld7Indices();
         sessions3Update();
         historyUpdate();
+        viewsCreate();
+        viewsMove();
+        queriesUpdate();
+    } elsif ($main::versionNumber <= 77) {
+        checkForOld7Indices();
+        sessions3Update();
+        historyUpdate();
+        queriesUpdate();
     } else {
         logmsg "db.pl is hosed\n";
     }
 }
 
 if ($DOHOTWARM) {
-    esPut("/${PREFIX}stats_v30,${PREFIX}dstats_v30,${PREFIX}fields_v30,${PREFIX}files_v30,${PREFIX}sequence_v30,${PREFIX}users_v30,${PREFIX}queries_v30,${PREFIX}hunts_v30,${PREFIX}history*,${PREFIX}lookups_v30,${PREFIX}notifiers_v40/_settings?master_timeout=${ESTIMEOUT}s&allow_no_indices=true&ignore_unavailable=true", "{\"index.routing.allocation.require.molochtype\": \"warm\"}");
+    esPut("/${PREFIX}stats_v30,${PREFIX}dstats_v30,${PREFIX}fields_v30,${PREFIX}files_v30,${PREFIX}sequence_v30,${PREFIX}users_v30,${PREFIX}queries_v30,${PREFIX}hunts_v30,${PREFIX}history*,${PREFIX}lookups_v30,${PREFIX}notifiers_v40/_settings?master_timeout=${ESTIMEOUT}s&allow_no_indices=true&ignore_unavailable=true,${PREFIX}views_v40/_settings?master_timeout=${ESTIMEOUT}s&allow_no_indices=true&ignore_unavailable=true", "{\"index.routing.allocation.require.molochtype\": \"warm\"}");
 } else {
-    esPut("/${PREFIX}stats_v30,${PREFIX}dstats_v30,${PREFIX}fields_v30,${PREFIX}files_v30,${PREFIX}sequence_v30,${PREFIX}users_v30,${PREFIX}queries_v30,${PREFIX}hunts_v30,${PREFIX}history*,${PREFIX}lookups_v30,${PREFIX}notifiers_v40/_settings?master_timeout=${ESTIMEOUT}s&allow_no_indices=true&ignore_unavailable=true", "{\"index.routing.allocation.require.molochtype\": null}");
+    esPut("/${PREFIX}stats_v30,${PREFIX}dstats_v30,${PREFIX}fields_v30,${PREFIX}files_v30,${PREFIX}sequence_v30,${PREFIX}users_v30,${PREFIX}queries_v30,${PREFIX}hunts_v30,${PREFIX}history*,${PREFIX}lookups_v30,${PREFIX}notifiers_v40/_settings?master_timeout=${ESTIMEOUT}s&allow_no_indices=true&ignore_unavailable=true,${PREFIX}views_v40/_settings?master_timeout=${ESTIMEOUT}s&allow_no_indices=true&ignore_unavailable=true", "{\"index.routing.allocation.require.molochtype\": null}");
 }
 
 logmsg "Finished\n";

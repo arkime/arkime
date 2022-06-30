@@ -7,26 +7,32 @@ import $ from 'jquery';
 import '@testing-library/jest-dom';
 import { render, fireEvent } from '@testing-library/vue';
 import ModifyView from '../src/components/sessions/ModifyView.vue';
-import UserService from '../src/components/users/UserService';
+import SettingsService from '../src/components/settings/SettingsService';
 import utils from '../src/components/utils/utils';
+const { roles } = require('../../../common/vueapp/tests/consts');
 
 global.$ = global.jQuery = $;
 
 Vue.use(BootstrapVue);
 
-jest.mock('../src/components/users/UserService');
+jest.mock('../src/components/settings/SettingsService');
 
 const store = {
+  state: {
+    roles
+  },
   getters: {
     sessionsTableState: jest.fn(() => {
       return utils.getDefaultTableState();
     })
   },
   mutations: {
-    addViews: jest.fn(),
+    addView: jest.fn(),
     updateViews: jest.fn()
   }
 };
+
+SettingsService.getViews = jest.fn();
 
 test('sessions - create view', async () => {
   const props = {
@@ -34,12 +40,24 @@ test('sessions - create view', async () => {
     initialExpression: ''
   };
 
-  UserService.createView = jest.fn().mockResolvedValue({ text: 'yay!' });
+  const newView = {
+    roles: [],
+    users: '',
+    name: 'view name 1',
+    expression: 'ip.src == 10.0.0.1',
+    sessionsColConfig: utils.getDefaultTableState()
+  };
+
+  SettingsService.createView = jest.fn().mockResolvedValue({
+    text: 'yay!',
+    success: true,
+    view: { ...newView, id: '10' }
+  });
 
   const $route = { query: {}, name: 'Sessions' };
 
   const {
-    getByTitle, getByPlaceholderText, getByText, getByLabelText, emitted
+    getByTitle, getByPlaceholderText, getByText, getByLabelText
   } = render(ModifyView, {
     mocks: { $route },
     props,
@@ -67,16 +85,9 @@ test('sessions - create view', async () => {
   expect(saveColsCheckbox).toBeChecked();
 
   // calls create view ----------------------------------------------------- //
-  const newView = {
-    name: nameInput.value,
-    expression: expressionInput.value,
-    sessionsColConfig: utils.getDefaultTableState()
-  };
   await fireEvent.click(saveBtn);
-  expect(store.mutations.addViews).toHaveBeenCalledWith({}, newView);
-  expect(emitted()).toHaveProperty('setView');
-  expect(emitted().setView[0][0]).toBe(newView.name);
-  expect(UserService.createView).toHaveBeenCalledWith(newView);
+  expect(SettingsService.createView).toHaveBeenCalledWith(newView, undefined);
+  expect(store.mutations.addView).toHaveBeenCalledWith(store.state, { ...newView, id: '10' });
 });
 
 test('sessions - save columns not available', async () => {
@@ -85,7 +96,7 @@ test('sessions - save columns not available', async () => {
     initialExpression: ''
   };
 
-  UserService.createView = jest.fn().mockResolvedValue({ text: 'yay!' });
+  SettingsService.createView = jest.fn().mockResolvedValue({ text: 'yay!' });
 
   const $route = { query: {}, name: 'SpiGraph' };
 
@@ -110,12 +121,12 @@ test('sessions - update applied view', async () => {
     }
   };
 
-  UserService.updateView = jest.fn().mockResolvedValue({ text: 'yay!' });
+  SettingsService.updateView = jest.fn().mockResolvedValue({ text: 'yay!' });
 
   const $route = { query: { view: 'edit me' }, name: 'Sessions' };
 
   const {
-    getByTitle, getByPlaceholderText, emitted
+    getByTitle, getByPlaceholderText
   } = render(ModifyView, {
     mocks: { $route },
     props,
@@ -137,15 +148,14 @@ test('sessions - update applied view', async () => {
 
   // calls create view ----------------------------------------------------- //
   const updatedView = {
+    roles: [],
+    users: '',
     name: nameInput.value,
-    key: props.editView.name,
     expression: expressionInput.value
   };
   await fireEvent.click(saveBtn);
-  expect(UserService.updateView).toHaveBeenCalledWith(updatedView, undefined);
-  expect(store.mutations.updateViews).toHaveBeenCalledWith({}, updatedView);
-  expect(emitted()).toHaveProperty('setView');
-  expect(emitted().setView[0][0]).toBe(updatedView.name);
+  expect(SettingsService.updateView).toHaveBeenCalledWith(updatedView, undefined);
+  expect(SettingsService.getViews).toHaveBeenCalled();
 });
 
 test('sessions - update unapplied view', async () => {
@@ -158,12 +168,12 @@ test('sessions - update unapplied view', async () => {
     }
   };
 
-  UserService.updateView = jest.fn().mockResolvedValue({ text: 'yay!' });
+  SettingsService.updateView = jest.fn().mockResolvedValue({ text: 'yay!' });
 
   const $route = { query: { view: 'different view' }, name: 'Sessions' };
 
   const {
-    getByTitle, getByPlaceholderText, emitted
+    getByTitle, getByPlaceholderText
   } = render(ModifyView, {
     mocks: { $route },
     props,
@@ -181,12 +191,12 @@ test('sessions - update unapplied view', async () => {
 
   // calls create view ----------------------------------------------------- //
   const updatedView = {
+    roles: [],
+    users: '',
     name: nameInput.value,
-    key: props.editView.name,
     expression: expressionInput.value
   };
   await fireEvent.click(saveBtn);
-  expect(UserService.updateView).toHaveBeenCalledWith(updatedView, undefined);
-  expect(store.mutations.updateViews).toHaveBeenCalledWith({}, updatedView);
-  expect(emitted()).not.toHaveProperty('setView');
+  expect(SettingsService.updateView).toHaveBeenCalledWith(updatedView, undefined);
+  expect(SettingsService.getViews).toHaveBeenCalled();
 });

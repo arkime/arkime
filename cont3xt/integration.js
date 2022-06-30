@@ -744,6 +744,15 @@ class Integration {
         f.fields = this.normalizeCardFields(f.fields);
       }
 
+      if (f.type === 'array' || f.type === 'table') { // array-like types
+        if (f.filterEmpty === undefined) { f.filterEmpty = true; }
+
+        if (f.fieldRoot !== undefined) {
+          f.fieldRootPath = f.fieldRoot.split('.');
+          delete f.fieldRoot;
+        }
+      }
+
       outFields.push(f);
     }
 

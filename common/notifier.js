@@ -186,6 +186,8 @@ class Notifier {
    * @property {number} created - The time the notifier was created. Format is seconds since Unix EPOC.
    * @property {number} updated - The time the notifier was last updated. Format is seconds since Unix EPOC.
    * @property {string} user - The ID of the user that created the notifier.
+   * @property {Arrray} users - The list of userIds who have access to use this notifier.
+   * @property {Array} roles - The list of roles who have access to use this notifier.
    */
 
   /**

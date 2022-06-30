@@ -16,7 +16,7 @@
         class="text-theme-primary">
         <br>
         Don't forget! You have a view applied to your search:
-        <strong>{{ view }}</strong>
+        <strong>{{ viewName }}</strong>
       </small>
     </div>
 
@@ -27,7 +27,13 @@
 <script>
 export default {
   name: 'MolochNoResults',
-  props: ['recordsTotal', 'view']
+  props: ['recordsTotal', 'view'],
+  computed: {
+    viewName () {
+      const view = this.$store.state.views.find(v => v.id === this.view || v.name === this.view);
+      return view?.name || 'unknown or deleted view';
+    }
+  }
 };
 </script>
 

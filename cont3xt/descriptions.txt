@@ -25,5 +25,7 @@ Card Description - an object of the following
       * defang - when true defang the string, change http to hXXp and change . to [.]
       * pivot - when set this field should be added to action menu for table entry that you can replace query with
       * join - with array, display with value as the separator on one line (example single: ', ')
+      * fieldRoot - for arrays/tables, the path (it can have dots) from each object in the array to its desired field. Effectively maps the root array of objects to an array of values/sub-objects.
+      * filterEmpty - for arrays/tables, removes empty (nullish & empty string/array) rows/elements when true (default is true)
       * defaultSortField - with array, sorts the table by this field
       * defaultSortDirection - with array and defaultSortField, sorts the table in this direction ('asc' or 'desc')

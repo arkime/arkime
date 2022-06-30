@@ -1,4 +1,4 @@
-use Test::More tests => 120;
+use Test::More tests => 90;
 use Cwd;
 use URI::Escape;
 use MolochTest;
@@ -224,77 +224,6 @@ my $json;
     $info = viewerGet("/user/spiview/fields?molochRegressionUser=test1");
     eq_or_diff($info, from_json("[]"), "spiview fields: empty");
 
-# views
-
-    # No views
-    $info = viewerGet("/user/views?molochRegressionUser=test1");
-    eq_or_diff($info, from_json("{}"), "view: empty");
-
-    # Create view and make sure we get it
-    $info = viewerPostToken("/user/views/create?molochRegressionUser=test1", '{"name": "view1", "expression": "ip == 1.2.3.4"}', $test1Token);
-    ok($info->{success}, "view: create success");
-    is($info->{viewName}, "view1", "view: create name");
-    eq_or_diff($info->{view}, from_json('{"expression":"ip == 1.2.3.4","user":"test1","shared":false}'), "view: 1 item");
-
-    $info = viewerGet("/user/views?molochRegressionUser=test1");
-    eq_or_diff($info, from_json('{"view1":{"expression":"ip == 1.2.3.4","user":"test1","shared":false}}'), "view: 1 item");
-
-
-    # Fail duplicate create
-    $info = viewerPostToken("/api/user/view?molochRegressionUser=test1", '{"name": "view1", "expression": "ip == 1.2.3.5"}', $test1Token);
-    ok(!$info->{success}, "view: create failure with same view name");
-
-
-    # As admin see test1 views
-    $info = viewerGet("/api/user/views?molochRegressionUser=anonymous&userId=test1");
-    eq_or_diff($info, from_json('{"view1":{"expression":"ip == 1.2.3.4","user":"test1","shared":false}}'), "view: 1 item admin");
-
-
-    # Fail delete wrong name
-    $info = viewerPostToken("/user/views/delete?molochRegressionUser=test1", '{"name":"fred"}', $test1Token);
-    ok(!$info->{success}, "view: delete not found");
-
-
-    # As see test1 views again
-    $info = viewerGet("/user/views?molochRegressionUser=test1");
-    eq_or_diff($info, from_json('{"view1":{"expression":"ip == 1.2.3.4","user":"test1","shared":false}}'), "view: 1 item");
-
-
-
-    # Share the test1 view
-    $info = viewerPostToken("/user/views/toggleShare?molochRegressionUser=test1", '{"expression":"ip == 1.2.3.7","user":"test1","shared":true,"name":"view1"}', $test1Token);
-    ok($info->{success}, "view: share");
-
-    # Make sure test1 view is shared
-    $info = viewerGet("/user/views?molochRegressionUser=test1");
-    eq_or_diff($info, from_json('{"view1":{"expression":"ip == 1.2.3.4","user":"test1","shared":true}}'), "view: 1 shared item");
-
-    # Unshare the test1 view
-    $info = viewerPostToken("/user/views/toggleShare?molochRegressionUser=test1", '{"expression":"ip == 1.2.3.8","user":"test1","shared":false,"name":"view1"}', $test1Token);
-    ok($info->{success}, "view: unshare");
-
-    $info = viewerDeleteToken("/api/user/view/view1?molochRegressionUser=test1", $test1Token);
-    ok($info->{success}, "view: delete found");
-
-    $info = viewerPostToken("/user/views/create?molochRegressionUser=test1", '{"name": "view2", "expression": "ip == 1.2.3.10", "shared": true}', $test1Token);
-    ok($info->{success}, "view2: create success");
-    is($info->{viewName}, "view2", "view2: create name");
-    ok($info->{view}->{shared}, "view2: create shared");
-    eq_or_diff($info->{view}, from_json('{"expression":"ip == 1.2.3.10","user":"test1","shared":true}'), "view: 2 item");
-
-    $info = viewerPostToken("/user/views/create?molochRegressionUser=test1", '{"name": "view2", "expression": "ip == 1.2.3.4", "shared": true}', $test1Token);
-    ok(!$info->{success}, "view2: create failure with same shared view name");
-
-    $info = viewerPostToken("/api/user/view/view2/toggleshare?molochRegressionUser=test1", '{"expression":"ip == 1.2.3.4","user":"test1","shared":false,"name":"view2"}', $test1Token);
-    ok($info->{success}, "view2: unshare");
-    $info = viewerPostToken("/user/views/delete?molochRegressionUser=test1", '{"expression":"ip == 1.2.3.4","user":"test1","shared":false,"name":"view2"}', $test1Token);
-
-    $info = viewerGet("/user/views?molochRegressionUser=test1");
-    eq_or_diff($info, from_json("{}"), "view: empty");
-
-    $info = viewerPutToken("/api/user/view/view2?molochRegressionUser=test1", '{"expression":"ip == 1.2.3.4","user":"test1","shared":false,"name":"view2"}', $test1Token);
-    ok($info->{success}, "view: update");
-
 # Messages
     $info = viewerPutToken("/user/test1/acknowledgeMsg", '{"msgNum":2}', $token2);
     ok(!$info->{success}, "can't update welcome message number for another user");
@@ -334,26 +263,6 @@ my $json;
     $json = viewerGetToken("/api/user/state/state1?molochRegressionUser=test1", $test1Token);
     eq_or_diff($json->{order}, from_json('[["firstPacket","asc"]]'), "share fetch success");
     eq_or_diff($json->{visibleHeaders}, from_json('["firstPacket","lastPacket"]'), "share fetch success");
-
-# query tests
-    $json = viewerPostToken("/api/user/cron?molochRegressionUser=test1", '{}', $test1Token);
-    ok(!$json->{success}, "query must have name");
-    $json = viewerPostToken("/api/user/cron?molochRegressionUser=test1", '{"name":"test1"}', $test1Token);
-    ok(!$json->{success}, "query must have query expression");
-    $json = viewerPostToken("/api/user/cron?molochRegressionUser=test1", '{"name":"test1","query":"protocols == tls"}', $test1Token);
-    ok(!$json->{success}, "query must have query action");
-    $json = viewerPostToken("/api/user/cron?molochRegressionUser=test1", '{"name":"test1","query":"protocols == tls","action":"tag"}', $test1Token);
-    ok(!$json->{success}, "query must have query tag(s)");
-    $json = viewerPostToken("/api/user/cron?molochRegressionUser=test1", '{"name":"test1","query":"protocols == tls","action":"tag","tags":"tls"}', $test1Token);
-    ok($json->{success}, "query can be created");
-    my $key = $json->{query}->{key};
-    $json = viewerPostToken("/api/user/cron/$key?molochRegressionUser=test1", '{"key": "$key", "name":"test1update","query":"protocols == tls","action":"tag","tags":"tls"}', $test1Token);
-    ok($json->{success}, "query can be updated");
-    eq_or_diff($json->{query}->{name}, "test1update", "query was updated");
-    $json = viewerGetToken("/api/user/crons?molochRegressionUser=test1", $test1Token);
-    eq_or_diff($json->[0]->{name}, "test1update", "can fetch queries");
-    $json = viewerDeleteToken("/api/user/cron/$key?molochRegressionUser=test1", $test1Token);
-    ok($json->{success}, "query can be updated");
 
 # roles
     $json = viewerPostToken("/user/create", '{"userId": "role:test1", "userName": "UserName", "enabled":true, "roles":"bad"}', $token);
