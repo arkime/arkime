@@ -302,6 +302,26 @@ const store = new Vuex.Store({
     },
     getImmediateSubmissionReady (state) {
       return state.immediateSubmissionReady;
+    },
+    getAllViews (state, getters) {
+      const makeSystemDefault = (viewName, integrationList, _id) => {
+        return {
+          creator: 'THE_SYSTEM',
+          name: viewName,
+          integrations: integrationList,
+          viewRoles: [],
+          editRoles: [],
+          _id,
+          _editable: false,
+          _viewable: false,
+          _systemDefault: true
+        };
+      };
+      const systemDefaultViews = [
+        makeSystemDefault('All', Object.keys(getters.getDoableIntegrations), 'DEFAULT_VIEW_ALL'),
+        makeSystemDefault('None', [], 'DEFAULT_VIEW_NONE')
+      ];
+      return [...systemDefaultViews, ...state.views];
     }
   },
   plugins: [createPersistedState({

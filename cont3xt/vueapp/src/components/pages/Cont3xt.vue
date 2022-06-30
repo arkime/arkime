@@ -418,7 +418,7 @@ export default {
       'getSidebarKeepOpen', 'getShiftKeyHold', 'getFocusSearch',
       'getIssueSearch', 'getFocusStartDate', 'getFocusLinkSearch',
       'getToggleCache', 'getDownloadReport', 'getCopyShareLink',
-      'getViews', 'getImmediateSubmissionReady', 'getDoableIntegrations'
+      'getAllViews', 'getImmediateSubmissionReady'
     ]),
     loading: {
       get () { return this.$store.state.loading; },
@@ -508,7 +508,7 @@ export default {
       }
 
       // apply 'view' query param
-      if (this.$route.query.view != null) {
+      if (this.$route.query.view !== undefined) {
         this.setViewByQueryParamName(this.$route.query.view);
       }
 
@@ -778,28 +778,21 @@ export default {
         this.$router.push({ query: { ...this.$route.query, view: undefined } });
       };
 
-      if (typeof viewName !== 'string' || viewName === '') {
+      if (typeof viewName !== 'string' || viewName === '' || viewName === null) {
         console.log(`WARNING -- Invalid view '${viewName}' from query parameter... defaulting to current integrations.`);
         removeViewParam();
         return;
       }
       const lowercaseViewName = viewName.toLowerCase();
-      for (const view of this.getViews) {
+      for (const view of this.getAllViews) {
         if (view.name.toLowerCase() === lowercaseViewName) {
           this.$store.commit('SET_SELECTED_VIEW', view.name);
           this.$store.commit('SET_SELECTED_INTEGRATIONS', view.integrations);
           return;
         }
       }
+      console.log(`WARNING -- View '${viewName}' specified by query parameter was not found... defaulting to current integrations.`);
       removeViewParam();
-
-      if (lowercaseViewName === 'none') {
-        this.$store.commit('SET_SELECTED_INTEGRATIONS', []);
-      } else if (lowercaseViewName === 'all') {
-        this.$store.commit('SET_SELECTED_INTEGRATIONS', Object.keys(this.getDoableIntegrations));
-      } else {
-        console.log(`WARNING -- View '${viewName}' specified by query parameter was not found... defaulting to current integrations.`);
-      }
     },
     shouldSubmitImmediately () {
       const submitParam = this.$route.query.submit;

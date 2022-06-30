@@ -25,19 +25,6 @@
         />
       </b-input-group>
     </div>
-    <b-dropdown-item
-      class="small"
-      v-b-modal.view-form
-      v-if="!getViews.length || !filteredViews.length">
-      <template v-if="!getViews.length">
-        No saved views.
-      </template>
-      <template v-else>
-        No views match your search.
-      </template>
-      <br>
-      Click to create one.
-    </b-dropdown-item>
     <b-dropdown-text
       v-if="error"
       variant="danger">
@@ -46,7 +33,7 @@
       />
       {{ error }}
     </b-dropdown-text>
-    <template v-for="view in filteredViews">
+    <template v-for="(view, index) in filteredViews">
       <b-tooltip
         noninteractive
         :target="view._id"
@@ -65,7 +52,7 @@
           <div class="d-inline no-wrap no-overflow ellipsis flex-grow-1">
             <span
               class="fa fa-share-alt mr-1 cursor-help"
-              v-if="getUser && view.creator !== getUser.userId"
+              v-if="getUser && view.creator !== getUser.userId && !view._systemDefault"
               v-b-tooltip.hover="`Shared with you by ${view.creator}`"
             />
             {{ view.name }}
@@ -82,7 +69,22 @@
           </template>
         </div>
       </b-dropdown-item>
+      <hr :key="view._id + '-separator'" v-if="view._systemDefault && (filteredViews[index + 1] == null || !filteredViews[index + 1]._systemDefault)"
+          class="border-secondary my-0"/>
     </template>
+    <b-dropdown-item
+        class="small"
+        v-b-modal.view-form
+        v-if="!getViews.length || !filteredViews.length">
+      <template v-if="!getViews.length">
+        No saved views.
+      </template>
+      <template v-else>
+        No views match your search.
+      </template>
+      <br>
+      Click to create one.
+    </b-dropdown-item>
   </b-dropdown>
 </template>
 
@@ -115,7 +117,7 @@ export default {
   },
   computed: {
     ...mapGetters([
-      'getViews', 'getUser', 'getSelectedIntegrations', 'getSelectedView'
+      'getViews', 'getUser', 'getSelectedView', 'getDoableIntegrations', 'getAllViews'
     ])
   },
   watch: {
@@ -151,13 +153,12 @@ export default {
     },
     filterViews (searchTerm) {
       if (!searchTerm) {
-        this.filteredViews = JSON.parse(JSON.stringify(this.getViews));
+        this.filteredViews = JSON.parse(JSON.stringify(this.getAllViews));
         return;
       }
 
       const query = searchTerm.toLowerCase();
-
-      this.filteredViews = this.getViews.filter((view) => {
+      this.filteredViews = this.getAllViews.filter((view) => {
         return view.name.toString().toLowerCase().match(query)?.length > 0;
       });
     }

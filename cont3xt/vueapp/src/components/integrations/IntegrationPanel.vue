@@ -67,7 +67,7 @@
               <template
                 v-for="integration in getSortedIntegrations">
                 <b-form-checkbox
-                  @change="unsetView"
+                  @change="changeView"
                   :key="integration.key"
                   :value="integration.key"
                   v-if="integration.doable">
@@ -159,10 +159,17 @@ export default {
     },
     toggleAll (checked) {
       this.selectedIntegrations = checked ? Object.keys(this.getDoableIntegrations) : [];
-      this.unsetView();
+      this.changeView(this.selectedIntegrations);
     },
-    unsetView () {
-      this.$store.commit('SET_SELECTED_VIEW', '');
+    changeView (newSelectedIntegrations) {
+      // optionalUpdatedSelectedIntegrations only exists when called from @change in UI
+      const selectedIntegrationsStr = JSON.stringify(newSelectedIntegrations);
+      const selectView = (() => {
+        if (selectedIntegrationsStr === JSON.stringify([])) { return 'None'; }
+        if (selectedIntegrationsStr === JSON.stringify(Object.keys(this.getDoableIntegrations))) { return 'All'; }
+        return '';
+      })();
+      this.$store.commit('SET_SELECTED_VIEW', selectView);
     },
     /* helpers ------------------------------------------------------------- */
     calculateSelectAll (list) {
