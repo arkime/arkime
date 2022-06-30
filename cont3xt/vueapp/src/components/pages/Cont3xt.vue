@@ -509,7 +509,8 @@ export default {
 
       // apply 'view' query param
       if (this.$route.query.view !== undefined) {
-        this.setViewByQueryParamName(this.$route.query.view);
+        console.log(this.$route.query);
+        this.setViewByQueryParam(this.$route.query.view);
       }
 
       // search now depending on 'submit' query parameter
@@ -773,25 +774,33 @@ export default {
         }
       });
     },
-    setViewByQueryParamName (viewName) {
+    setViewByQueryParam (viewParam) {
       const removeViewParam = () => {
         this.$router.push({ query: { ...this.$route.query, view: undefined } });
       };
 
-      if (typeof viewName !== 'string' || viewName === '' || viewName === null) {
-        console.log(`WARNING -- Invalid view '${viewName}' from query parameter... defaulting to current integrations.`);
+      if (typeof viewParam !== 'string' || viewParam === '' || viewParam === null) {
+        console.log(`WARNING -- Invalid view '${viewParam}' from query parameter... defaulting to current integrations.`);
         removeViewParam();
         return;
       }
-      const lowercaseViewName = viewName.toLowerCase();
+      // first check if the parameter is an existing view id
       for (const view of this.getAllViews) {
-        if (view.name.toLowerCase() === lowercaseViewName) {
-          this.$store.commit('SET_SELECTED_VIEW', view.name);
+        if (viewParam === view._id) {
+          this.$store.commit('SET_SELECTED_VIEW', view);
           this.$store.commit('SET_SELECTED_INTEGRATIONS', view.integrations);
           return;
         }
       }
-      console.log(`WARNING -- View '${viewName}' specified by query parameter was not found... defaulting to current integrations.`);
+      // if not an id, check if the parameter is an exact match for an existing view name
+      for (const view of this.getAllViews) {
+        if (viewParam === view.name) {
+          this.$store.commit('SET_SELECTED_VIEW', view);
+          this.$store.commit('SET_SELECTED_INTEGRATIONS', view.integrations);
+          return;
+        }
+      }
+      console.log(`WARNING -- View '${viewParam}' specified by query parameter was not found... defaulting to current integrations.`);
       removeViewParam();
     },
     shouldSubmitImmediately () {

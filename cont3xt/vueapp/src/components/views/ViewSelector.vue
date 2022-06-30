@@ -8,8 +8,8 @@
       <slot name="title">
         Integration Views
       </slot>
-      <span v-if="showSelectedView">
-        {{ getSelectedView }}
+      <span v-if="showSelectedView && getSelectedView">
+        {{ getSelectedView.name }}
       </span>
     </template>
     <div class="ml-1 mr-1 mb-2">
@@ -129,15 +129,15 @@ export default {
       this.filterViews(this.viewSearch);
     },
     getSelectedView (newView) {
-      const newViewName = newView === '' ? undefined : newView?.toLowerCase();
-      if (this.$route.query.view !== newViewName) {
-        this.$router.push({ query: { ...this.$route.query, view: newViewName } });
+      const newViewIDParam = newView?._id;
+      if (this.$route.query.view !== newViewIDParam) {
+        this.$router.push({ query: { ...this.$route.query, view: newViewIDParam } });
       }
     }
   },
   methods: {
     selectView (view) {
-      this.$store.commit('SET_SELECTED_VIEW', view.name);
+      this.$store.commit('SET_SELECTED_VIEW', view);
       this.$store.commit('SET_SELECTED_INTEGRATIONS', view.integrations);
     },
     deleteView (view) {
@@ -145,7 +145,7 @@ export default {
       UserService.deleteIntegrationsView(view._id).then(() => {
         if (view.name === this.getSelectedView) {
           this.$refs.integrationViewsDropdown.hide(true);
-          this.$store.commit('SET_SELECTED_VIEW', '');
+          this.$store.commit('SET_SELECTED_VIEW', undefined);
         }
       }).catch((error) => {
         this.error = error.text || error;

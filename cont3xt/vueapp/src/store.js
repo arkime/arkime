@@ -32,7 +32,7 @@ const store = new Vuex.Store({
     sidebarKeepOpen: false,
     views: [],
     integrationsPanelHoverDelay: 400,
-    selectedView: '',
+    selectedView: undefined,
     shiftKeyHold: false,
     focusSearch: true,
     issueSearch: false,
@@ -318,8 +318,8 @@ const store = new Vuex.Store({
         };
       };
       const systemDefaultViews = [
-        makeSystemDefault('All', Object.keys(getters.getDoableIntegrations), 'DEFAULT_VIEW_ALL'),
-        makeSystemDefault('None', [], 'DEFAULT_VIEW_NONE')
+        makeSystemDefault('All', Object.keys(getters.getDoableIntegrations), 'all'),
+        makeSystemDefault('None', [], 'none')
       ];
       return [...systemDefaultViews, ...state.views];
     }

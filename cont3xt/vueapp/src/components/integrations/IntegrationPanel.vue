@@ -120,7 +120,7 @@ export default {
     };
   },
   computed: {
-    ...mapGetters(['getDoableIntegrations', 'getRoles', 'getUser', 'getSortedIntegrations']),
+    ...mapGetters(['getDoableIntegrations', 'getRoles', 'getUser', 'getSortedIntegrations', 'getAllViews']),
     sidebarKeepOpen: {
       get () {
         return this.$store.state.sidebarKeepOpen;
@@ -164,11 +164,21 @@ export default {
     changeView (newSelectedIntegrations) {
       // optionalUpdatedSelectedIntegrations only exists when called from @change in UI
       const selectedIntegrationsStr = JSON.stringify(newSelectedIntegrations);
+      // set the selected view to none/all if that is the case, otherwise, clear the selected view
+      const getViewByIdOrUndefined = (viewID) => {
+        return this.getAllViews.find(view => view._id === viewID);
+      };
       const selectView = (() => {
-        if (selectedIntegrationsStr === JSON.stringify([])) { return 'None'; }
-        if (selectedIntegrationsStr === JSON.stringify(Object.keys(this.getDoableIntegrations))) { return 'All'; }
-        return '';
+        switch (selectedIntegrationsStr) {
+        case JSON.stringify([]):
+          return getViewByIdOrUndefined('none');
+        case JSON.stringify(Object.keys(this.getDoableIntegrations)):
+          return getViewByIdOrUndefined('all');
+        default:
+          return undefined;
+        }
       })();
+
       this.$store.commit('SET_SELECTED_VIEW', selectView);
     },
     /* helpers ------------------------------------------------------------- */
