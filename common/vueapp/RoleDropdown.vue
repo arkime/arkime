@@ -51,6 +51,11 @@ export default {
       localSelectedRoles: this.selectedRoles || []
     };
   },
+  watch: {
+    selectedRoles (newValue) { // localSelectedRoles must be changed whenever selectedRoles is (this syncs during sorting)
+      this.localSelectedRoles = newValue || [];
+    }
+  },
   methods: {
     updateRoles (newVal) {
       this.$emit('selected-roles-updated', newVal, this.id);
