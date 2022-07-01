@@ -1703,12 +1703,6 @@ void moloch_packet_set_dltsnap(int dlt, int snaplen)
     moloch_rules_recompile();
 }
 /******************************************************************************/
-void moloch_packet_set_linksnap(int linktype, int snaplen)
-{
-    // In theory you might need to do some mapping here, but we don't
-    moloch_packet_set_dltsnap(linktype, snaplen);
-}
-/******************************************************************************/
 // PCAP Header needs linktype when written
 // Code based on https://github.com/aol/moloch/issues/1303#issuecomment-554684749
 // Values from libpcap pcap-common.c

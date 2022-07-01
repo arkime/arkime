@@ -92,8 +92,8 @@ LOCAL int quic_chlo_parser(MolochSession_t *session, BSB dbsb) {
 /******************************************************************************/
 LOCAL int quic_2445_udp_parser(MolochSession_t *session, void *UNUSED(uw), const unsigned char *data, int len, int UNUSED(which))
 {
-    int version = -1;
-    int offset = 1;
+    uint32_t version = -1;
+    uint32_t offset = 1;
 
     if ( len < 9) {
         return 0;
@@ -109,7 +109,7 @@ LOCAL int quic_2445_udp_parser(MolochSession_t *session, void *UNUSED(uw), const
         offset += 8;
     }
 
-    if ( len < offset+5) {
+    if ( (uint32_t)len < offset+5) {
         return 0;
     }
 
@@ -142,7 +142,7 @@ LOCAL int quic_2445_udp_parser(MolochSession_t *session, void *UNUSED(uw), const
     if (version < 34)
         offset++;
 
-    if (offset > len)
+    if (offset > (uint32_t)len)
         return 0;
 
     BSB bsb;
@@ -157,7 +157,7 @@ LOCAL int quic_2445_udp_parser(MolochSession_t *session, void *UNUSED(uw), const
             return 0;
         }
 
-        int offsetLen = 0;
+        uint32_t offsetLen = 0;
         if (type & 0x1C) {
             offsetLen = ((type & 0x1C) >> 2) + 1;
         }
@@ -192,8 +192,8 @@ LOCAL int quic_2445_udp_parser(MolochSession_t *session, void *UNUSED(uw), const
 // https://docs.google.com/document/d/1FcpCJGTDEMblAs-Bm5TYuqhHyUqeWpqrItw2vkMFsdY/edit
 LOCAL int quic_4648_udp_parser(MolochSession_t *session, void *UNUSED(uw), const unsigned char *data, int len, int UNUSED(which))
 {
-    int version = -1;
-    int offset = 5;
+    uint32_t version = -1;
+    uint32_t offset = 5;
 
     if (len < 20 || data[1] != 'Q' || (data[0] & 0xc0) != 0xc0) {
         return MOLOCH_PARSER_UNREGISTER;
@@ -207,7 +207,7 @@ LOCAL int quic_4648_udp_parser(MolochSession_t *session, void *UNUSED(uw), const
     if (version < 46 || version > 48) {
         return MOLOCH_PARSER_UNREGISTER;
     }
-    for (;offset < len - 20; offset++) {
+    for (;offset < (uint32_t)len - 20; offset++) {
         if (data[offset] == 'C' && memcmp(data+offset, "CHLO", 4) == 0) {
             BSB bsb;
             BSB_INIT(bsb, data + offset, len - offset);
@@ -433,7 +433,7 @@ LOCAL void quic_ietf_udp_classify(MolochSession_t *session, const unsigned char 
     if (packet_len != BSB_REMAINING(bsb)) {
         char ipStr[200];
         moloch_session_pretty_string(session, ipStr, sizeof(ipStr));
-        LOG("Couldn't parse header packet len %d remaining %ld %s", packet_len, (long)BSB_REMAINING(bsb), ipStr);
+        LOG("Couldn't parse header packet len %u remaining %ld %s", packet_len, (long)BSB_REMAINING(bsb), ipStr);
         return;
     }
 
