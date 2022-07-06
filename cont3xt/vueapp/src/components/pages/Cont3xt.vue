@@ -355,6 +355,7 @@ import CreateViewModal from '@/components/views/CreateViewModal';
 import Cont3xtService from '@/components/services/Cont3xtService';
 import IntegrationCard from '@/components/integrations/IntegrationCard';
 import IntegrationPanel from '@/components/integrations/IntegrationPanel';
+import AuditService from '@/components/services/AuditService';
 
 export default {
   name: 'Cont3xt',
@@ -573,12 +574,28 @@ export default {
         });
       }
 
+      const queryOptionsUsed = Object.fromEntries(
+        Object.entries(this.$route.query).filter(([key, _]) => key !== 'b')
+      );
+      const searchIssuedAt = Date.now();
+
+      const createAuditHistoryLog = () => {
+        AuditService.createAudit({
+          issuedAt: searchIssuedAt,
+          iType: this.searchItype,
+          indicator: this.searchTerm,
+          tags: [],
+          queryOptions: queryOptionsUsed
+        });
+      };
+
       Cont3xtService.search({ searchTerm: this.searchTerm, skipCache: this.skipCache }).subscribe({
         next: (data) => {
           if (data.itype && !this.searchItype) {
             // determine the search type and save the search term
             // based of the first itype seen
             this.searchItype = data.itype;
+            createAuditHistoryLog();
             this.filterLinks(this.linkSearchTerm);
           }
 

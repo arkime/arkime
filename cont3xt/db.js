@@ -102,6 +102,21 @@ class Db {
   static async deleteView (id) {
     return Db.implementation.deleteView(id);
   }
+
+  /**
+   * Update a single audit entry
+   */
+  static async putAudit (id, audit) {
+    return Db.implementation.putAudit(id, audit);
+  }
+
+  /**
+   * Get all audit logs for a user
+   * TODO: implement usage for roles
+   */
+  static async getMatchingAudits (userID, roles) {
+    return Db.implementation.getMatchingAudits(userID, roles);
+  }
 }
 
 /******************************************************************************/
@@ -149,6 +164,8 @@ class DbESImplementation {
     this.createLinksIndex();
     // Create the cont3xt_views index
     this.createViewsIndex();
+    // Create the cont3xt_history index
+    this.createHistoryIndex();
   };
 
   async createLinksIndex () {
@@ -220,6 +237,41 @@ class DbESImplementation {
         }
       }
     });
+  }
+
+  async createHistoryIndex () {
+    try {
+      await this.client.indices.create({
+        index: 'cont3xt_history',
+        body: {
+          settings: {
+            number_of_shards: 1,
+            number_of_replicas: 0,
+            auto_expand_replicas: '0-2'
+          }
+        }
+      });
+    } catch (err) {
+      // If already exists ignore error
+      if (err.meta.body?.error?.type !== 'resource_already_exists_exception') {
+        console.log(err);
+        process.exit(0);
+      }
+    }
+
+    // await this.client.indices.putMapping({
+    //   index: 'cont3xt_history',
+    //   body: {
+    //     properties: {
+    //       issuedAt: { type: 'keyword' },
+    //       userId: { type: 'keyword' },
+    //       iType: { type: 'keyword' },
+    //       indicator: { type: 'keyword' },
+    //       tags: { type: 'keyword', index: false },
+    //       queryOptions: { type: 'keyword', index: false }
+    //     }
+    //   }
+    // });
   }
 
   async getMatchingLinkGroups (creator, roles) {
@@ -396,6 +448,57 @@ class DbESImplementation {
 
     return null;
   }
+
+  /* Audit Log ---------------------------------------- */
+  async putAudit (id, audit) {
+    const results = await this.client.index({
+      id,
+      body: audit,
+      refresh: true,
+      index: 'cont3xt_history'
+    });
+
+    return results.body._id;
+  }
+
+  async getMatchingAudits (userId, roles) {
+    const query = {
+      size: 1000,
+      query: {
+        bool: {
+          should: []
+        }
+      }
+    };
+
+    if (userId) {
+      query.query.bool.should.push({
+        term: {
+          userId
+        }
+      });
+    }
+
+    // TODO: TOBY - add influence for roles!
+    // TODO: also add date ranges!
+
+    try {
+      const results = await this.client.search({
+        body: query,
+        index: 'cont3xt_history',
+        rest_total_hits_as_int: true
+      });
+
+      const hits = results.body.hits.hits;
+
+      return hits.map(({ _id, _source }) => {
+        return new Audit(Object.assign(_source, { _id }));
+      });
+    } catch (err) {
+      console.log('ERROR FETCHING AUDIT LOG HISTORY', err);
+      return [];
+    }
+  }
 }
 /******************************************************************************/
 // LMDB Implementation of Users DB
@@ -404,11 +507,13 @@ class DbLMDBImplementation {
   store;
   viewStore;
   linkGroupStore;
+  auditStore;
 
   constructor (options) {
     this.store = ArkimeUtil.createLMDBStore(options.url, 'Db');
     this.linkGroupStore = this.store.openDB('linkGroups');
     this.viewStore = this.store.openDB('views');
+    this.auditStore = this.store.openDB('audits');
   }
 
   /**
@@ -456,7 +561,7 @@ class DbLMDBImplementation {
   }
 
   /**
-   * Get all the links that match the creator and set of roles
+   * Get all the views that match the creator and set of roles
    */
   async getMatchingViews (creator, roles) {
     const hits = [];
@@ -498,8 +603,33 @@ class DbLMDBImplementation {
   async deleteView (id) {
     return this.viewStore.remove(id);
   }
+
+  /* Audit Log ---------------------------------------- */
+  async putAudit (id, audit) {
+    if (id === null) {
+      // Maybe should be a UUID?
+      id = cryptoLib.randomBytes(16).toString('hex');
+    }
+    await this.auditStore.put(id, audit);
+    return id;
+  }
+
+  async getMatchingAudits (userId, roles) {
+    return [...this.auditStore.getRange({})
+      .filter(({ _, value }) => {
+        if (userId !== value.userId) { return false; }
+        // if (roles !== undefined) { // TODO: roles!
+        //   if (value.editRoles && roles.some(x => value.editRoles.includes(x))) { return true; }
+        //   if (value.viewRoles && roles.some(x => value.viewRoles.includes(x))) { return true; }
+        // }
+        return true;
+      }).map(({ key, value }) => new Audit(
+        Object.assign(value, { _id: key }))
+      )];
+  }
 }
 
 module.exports = Db;
 
 const View = require('./view');
+const Audit = require('./audit');

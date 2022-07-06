@@ -31,6 +31,7 @@ const ArkimeCache = require('../common/arkimeCache');
 const ArkimeUtil = require('../common/arkimeUtil');
 const LinkGroup = require('./linkGroup');
 const Integration = require('./integration');
+const Audit = require('./audit');
 const View = require('./view');
 const Db = require('./db');
 const bp = require('body-parser');
@@ -222,6 +223,9 @@ app.get('/api/views', [setCookie], View.apiGet);
 app.post('/api/view', [jsonParser, checkCookieToken], View.apiCreate);
 app.put('/api/view/:id', [jsonParser, checkCookieToken], View.apiUpdate);
 app.delete('/api/view/:id', [jsonParser, checkCookieToken], View.apiDelete);
+
+app.get('/api/audits', [jsonParser], Audit.apiGet);
+app.put('/api/audit', [jsonParser], Audit.apiCreate);
 
 app.get('/api/health', (req, res) => { res.send({ success: true }); });
 

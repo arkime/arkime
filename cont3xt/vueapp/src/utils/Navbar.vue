@@ -64,6 +64,16 @@
             Users
           </router-link>
         </li>
+        <li class="nav-item mr-2">
+          <router-link
+              to="history"
+              tabindex="-1"
+              v-if="getUser"
+              class="nav-link"
+              active-class="active">
+            History
+          </router-link>
+        </li>
       </ul> <!-- /page links -->
       <!-- health check -->
       <div class="mr-2 text-light">
