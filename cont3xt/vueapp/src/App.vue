@@ -15,6 +15,8 @@
           <br>
           <code>'F'</code> - set focus to the link group search filter
           <br>
+          <code>'V'</code> - set focus to the view dropdown search filter
+          <br>
           <code>'E'</code> - toggle cache On/Off
           <br>
           <code>'R'</code> - generate a report of the current results
@@ -117,6 +119,10 @@ export default {
       case 70: // f
         // focus on time range selector
         this.$store.commit('SET_FOCUS_LINK_SEARCH', true);
+        break;
+      case 86: // v
+        // focus on view dropdown selector
+        this.$store.commit('SET_FOCUS_VIEW_SEARCH', true);
         break;
       case 69: // e
         // toggle cache

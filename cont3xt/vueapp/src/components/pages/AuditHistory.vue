@@ -12,7 +12,7 @@
           ref="search"
           v-model="filter"
           debounce="400"
-          placeholder="Search history by indicator"
+          placeholder="Search history by indicator, iType, or tags"
       />
       <template #append>
         <b-button
@@ -34,11 +34,11 @@
         striped
         show-empty
         :filter="filter"
+        :filter-function="customFilter"
         :fields="fields"
         :items="auditLogs"
         :sort-by.sync="sortBy"
         :sort-desc.sync="sortDesc"
-        :filter-included-fields="filterOn"
         empty-text="There is no history to show"
         :empty-filtered-text="`There are now searches that contain: ${filter}`"
     >
@@ -53,6 +53,12 @@
       <!--   customize column sizes   -->
 
       <template #cell(buttons)="data">
+        <b-button
+            @click="deleteLog(data.item._id)"
+            class="btn btn-xs btn-warning"
+            v-b-tooltip.hover="'Delete log'">
+          <span class="fa fa-trash"/>
+        </b-button>
         <b-button
             target="_blank"
             :href="reissueSearchLink(data.item)"
@@ -77,9 +83,13 @@
         </template>
       </template>
       <template #cell(queryOptions)="data">
-        {{ JSON.stringify(data.item.queryOptions) }}
+        <template v-if="Object.keys(data.item.queryOptions).length">
+          {{ JSON.stringify(data.item.queryOptions) }}
+        </template>
+        <template v-else>
+          -
+        </template>
       </template>
-
     </b-table>
     <!--  history table  -->
 
@@ -132,21 +142,18 @@ export default {
         {
           label: 'Tags',
           key: 'tags',
-          formatter: JSON.stringify,
           sortable: true
         },
         {
           label: 'Options',
           key: 'queryOptions',
-          formatter: JSON.stringify,
           sortable: true,
           setWidth: '15rem'
         }
       ],
       sortBy: 'name',
       sortDesc: false,
-      filter: '',
-      filterOn: ['indicator']
+      filter: ''
     };
   },
   methods: {
@@ -156,6 +163,21 @@ export default {
     reissueSearchLink (log) {
       const otherQueryParams = Object.entries(log.queryOptions).map(([key, value]) => `&${key}=${value}`).join('');
       return `?b=${window.btoa(log.indicator)}${otherQueryParams}`;
+    },
+    deleteLog (id) {
+      AuditService.deleteAudit(id).then(() => {
+        this.auditLogs = this.auditLogs.filter(log => log._id !== id);
+      }).catch((err) => console.log('ERROR - ', err));
+    },
+    customFilter (data, filterBy) {
+      const lowerFilter = filterBy.toLowerCase();
+      const simpleFilter = (value) => {
+        return value.toLowerCase().includes(lowerFilter);
+      };
+      const arrayFilter = (arr) => {
+        return arr.some(el => simpleFilter(el));
+      };
+      return simpleFilter(data.iType) || simpleFilter(data.indicator) || arrayFilter(data.tags);
     }
   },
   mounted () {
@@ -170,9 +192,5 @@ export default {
 .indicator-limit-width {
   max-width: 35rem;
   overflow-wrap: break-word;
-}
-
-.center-cell {
-  background-color: red;
 }
 </style>

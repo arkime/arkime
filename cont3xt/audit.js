@@ -89,6 +89,30 @@ class Audit {
 
     res.send({ success: true, audits });
   }
+
+  /**
+   * DELETE - /api/audit/:id
+   *
+   * Delete a log from history
+   * @name /audit/:id
+   * @returns {boolean} success - Whether the delete history log operation was successful.
+   * @returns {string} text - The success/error message to (optionally) display.
+   */
+  static async apiDelete (req, res, next) {
+    const audit = await Db.getAudit(req.params.id);
+
+    if (!audit) {
+      return res.send({ success: false, text: 'History log not found' });
+    }
+
+    const results = await Db.implementation.deleteAudit(req.params.id);
+
+    if (!results) {
+      return res.send({ success: false, text: 'Database error' });
+    }
+
+    res.send({ success: true, text: 'Success' });
+  }
 }
 
 module.exports = Audit;

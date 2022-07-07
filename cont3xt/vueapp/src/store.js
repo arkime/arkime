@@ -38,6 +38,7 @@ const store = new Vuex.Store({
     issueSearch: false,
     focusStartDate: false,
     focusLinkSearch: false,
+    focusViewSearch: false,
     toggleCache: false,
     downloadReport: false,
     copyShareLink: false,
@@ -188,6 +189,10 @@ const store = new Vuex.Store({
       state.focusLinkSearch = value;
       setTimeout(() => { state.focusLinkSearch = false; });
     },
+    SET_FOCUS_VIEW_SEARCH (state, value) {
+      state.focusViewSearch = value;
+      setTimeout(() => { state.focusViewSearch = false; });
+    },
     SET_TOGGLE_CACHE (state, value) {
       state.toggleCache = value;
       setTimeout(() => { state.toggleCache = false; });
@@ -290,6 +295,9 @@ const store = new Vuex.Store({
     },
     getFocusLinkSearch (state) {
       return state.focusLinkSearch;
+    },
+    getFocusViewSearch (state) {
+      return state.focusViewSearch;
     },
     getToggleCache (state) {
       return state.toggleCache;

@@ -43,6 +43,12 @@ class ThreatstreamIntegration extends Integration {
           'confidence',
           'import_session_id',
           {
+            label: 'tags',
+            field: 'tags',
+            type: 'array',
+            fieldRoot: 'name'
+          },
+          {
             label: 'created_ts',
             type: 'date'
           }

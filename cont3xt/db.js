@@ -117,6 +117,13 @@ class Db {
   static async getMatchingAudits (userID, roles) {
     return Db.implementation.getMatchingAudits(userID, roles);
   }
+
+  /**
+   * Get a single history audit log
+   */
+  static async getAudit (id) {
+    return Db.implementation.getAudit(id);
+  }
 }
 
 /******************************************************************************/
@@ -272,6 +279,36 @@ class DbESImplementation {
     //     }
     //   }
     // });
+
+    // TODO: TOBY, add specific mapping
+  }
+
+  #createDeleter (index) {
+    return async (id) => {
+      const results = await this.client.delete({
+        index,
+        id,
+        refresh: true
+      });
+
+      if (results.body) {
+        return results.body;
+      }
+      return null;
+    };
+  }
+
+  #createPutter (index) {
+    return async (id, obj) => {
+      const results = await this.client.index({
+        id,
+        body: obj,
+        refresh: true,
+        index
+      });
+
+      return results.body._id;
+    };
   }
 
   async getMatchingLinkGroups (creator, roles) {
@@ -450,15 +487,20 @@ class DbESImplementation {
   }
 
   /* Audit Log ---------------------------------------- */
-  async putAudit (id, audit) {
-    const results = await this.client.index({
+  putAudit = this.#createPutter('cont3xt_history');
+  deleteAudit = this.#createDeleter('cont3xt_history');
+
+  async getAudit (id) {
+    const results = await this.client.get({
       id,
-      body: audit,
-      refresh: true,
       index: 'cont3xt_history'
     });
 
-    return results.body._id;
+    if (results?.body?._source) {
+      return results.body._source;
+    }
+
+    return null;
   }
 
   async getMatchingAudits (userId, roles) {
@@ -614,11 +656,15 @@ class DbLMDBImplementation {
     return id;
   }
 
+  async deleteAudit (id) {
+    return this.viewStore.remove(id);
+  }
+
   async getMatchingAudits (userId, roles) {
     return [...this.auditStore.getRange({})
       .filter(({ _, value }) => {
         if (userId !== value.userId) { return false; }
-        // if (roles !== undefined) { // TODO: roles!
+        // if (roles !== undefined) { // TODO: roles! & time-span
         //   if (value.editRoles && roles.some(x => value.editRoles.includes(x))) { return true; }
         //   if (value.viewRoles && roles.some(x => value.viewRoles.includes(x))) { return true; }
         // }
@@ -626,6 +672,9 @@ class DbLMDBImplementation {
       }).map(({ key, value }) => new Audit(
         Object.assign(value, { _id: key }))
       )];
+  }
+  async getAudit (id) {
+    return await this.auditStore.get(id);
   }
 }
 

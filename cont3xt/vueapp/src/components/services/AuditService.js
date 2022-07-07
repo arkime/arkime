@@ -41,5 +41,27 @@ export default {
         return reject(err);
       });
     });
+  },
+
+  /**
+   * Deletes a history log
+   * @param {String} id - The id of the view to delete
+   * @returns {Promise} - The promise that either resolves the request or rejects in error
+   */
+  deleteAudit (id) {
+    return new Promise((resolve, reject) => {
+      fetch(`api/audit/${id}`, {
+        method: 'DELETE',
+        headers: setReqHeaders({ 'Content-Type': 'application/json' })
+      }).then((response) => {
+        return response.json();
+      }).then((response) => {
+        if (response.success) {
+          return resolve(response);
+        } else {
+          return reject(response.text);
+        }
+      });
+    });
   }
 };

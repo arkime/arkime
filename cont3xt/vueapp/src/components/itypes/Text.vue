@@ -1,26 +1,14 @@
 <template>
-  <b-card>
-    <div class="d-xl-flex mb-2">
-      <div class="d-xl-flex flex-grow-1 flex-wrap mt-1" style="margin-bottom:-10px">
-        <h4 class="text-warning">
-          {{ itype.toUpperCase() }}
-        </h4>
-        <cont3xt-field
-          :value="initialQuery"
-          class="align-self-center mr-1"
-        />
-      </div>
-    </div>
-  </b-card>
+  <basic-i-type-card itype="text" :query="query"/>
 </template>
 
 <script>
-import Cont3xtField from '@/utils/Field';
+import BasicITypeCard from '@/utils/BasicITypeCard';
 
 export default {
   name: 'Cont3xtText',
   components: {
-    Cont3xtField
+    BasicITypeCard
   },
   props: {
     query: { // the query string to display (needed because text doesn't get
@@ -31,8 +19,7 @@ export default {
   },
   data () {
     return {
-      itype: 'text',
-      initialQuery: this.query
+      itype: 'text'
     };
   }
 };

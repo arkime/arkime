@@ -56,7 +56,8 @@
         </b-button>
         <ViewSelector
           :no-caret="true"
-          :show-selected-view="true">
+          :show-selected-view="true"
+          :hot-key-enabled="true">
           <template #title>
             <span class="fa fa-eye" />
           </template>
@@ -139,7 +140,7 @@
 
         <!-- link inputs -->
         <b-form inline
-          v-if="searchTerm && initialized"
+          v-if="lastSearchedTerm && initialized"
           class="w-50 d-flex align-items-start link-inputs">
           <b-input-group
             size="xs"
@@ -192,40 +193,43 @@
         </b-form> <!-- /link inputs -->
 
         <!-- results -->
-        <template v-if="searchTerm">
+        <template v-if="lastSearchedTerm">
           <!-- itype results summary -->
           <div class="results-container results-summary">
             <div>
               <cont3xt-domain
                 :data="results"
+                :query="lastSearchedTerm"
                 v-if="searchItype === 'domain'"
               />
               <cont3xt-ip
                 :data="results"
+                :query="lastSearchedTerm"
                 v-else-if="searchItype === 'ip'"
               />
               <cont3xt-url
                 :data="results"
-                :query="searchTerm"
+                :query="lastSearchedTerm"
                 v-else-if="searchItype === 'url'"
               />
               <cont3xt-email
                 :data="results"
-                :query="searchTerm"
+                :query="lastSearchedTerm"
                 v-else-if="searchItype === 'email'"
               />
               <cont3xt-hash
                 :data="results"
+                :query="lastSearchedTerm"
                 v-else-if="searchItype === 'hash'"
               />
               <cont3xt-phone
                 :data="results"
-                :query="searchTerm"
+                :query="lastSearchedTerm"
                 v-else-if="searchItype === 'phone'"
               />
               <cont3xt-text
                 :data="results"
-                :query="searchTerm"
+                :query="lastSearchedTerm"
                 v-else-if="searchItype === 'text'"
               />
               <div v-else-if="searchItype">
@@ -234,7 +238,7 @@
                 </h3>
                 <pre class="text-info"><code>{{ results }}</code></pre>
               </div>
-              <hr v-if="searchTerm && initialized">
+              <hr v-if="searchItype && initialized">
               <!-- link groups error -->
               <b-alert
                 variant="danger"
@@ -279,7 +283,7 @@
                       </template>
                       <template slot="default">
                         <link-group-card
-                          :query="searchTerm"
+                          :query="lastSearchedTerm"
                           :num-days="numDays"
                           :itype="searchItype"
                           :num-hours="numHours"
@@ -387,6 +391,7 @@ export default {
       searchItype: '',
       initialized: false,
       searchTerm: this.$route.query.q ? this.$route.query.q : (this.$route.query.b ? window.atob(this.$route.query.b) : ''),
+      lastSearchedTerm: '',
       skipCache: false,
       searchComplete: false,
       linkSearchTerm: this.$route.query.linkSearch || '',
@@ -551,6 +556,10 @@ export default {
       });
     },
     search () {
+      if (this.searchTerm == null || this.searchTerm === '') {
+        return; // do NOT search if the query is empty
+      }
+
       this.error = '';
       this.results = {};
       this.searchItype = '';
@@ -589,11 +598,14 @@ export default {
         });
       };
 
-      Cont3xtService.search({ searchTerm: this.searchTerm, skipCache: this.skipCache }).subscribe({
+      const termSearched = this.searchTerm;
+
+      Cont3xtService.search({ searchTerm: termSearched, skipCache: this.skipCache }).subscribe({
         next: (data) => {
           if (data.itype && !this.searchItype) {
             // determine the search type and save the search term
             // based of the first itype seen
+            this.lastSearchedTerm = termSearched;
             this.searchItype = data.itype;
             createAuditHistoryLog();
             this.filterLinks(this.linkSearchTerm);
