@@ -266,21 +266,27 @@ class DbESImplementation {
       }
     }
 
-    // await this.client.indices.putMapping({
-    //   index: 'cont3xt_history',
-    //   body: {
-    //     properties: {
-    //       issuedAt: { type: 'keyword' },
-    //       userId: { type: 'keyword' },
-    //       iType: { type: 'keyword' },
-    //       indicator: { type: 'keyword' },
-    //       tags: { type: 'keyword', index: false },
-    //       queryOptions: { type: 'keyword', index: false }
-    //     }
-    //   }
-    // });
-
-    // TODO: TOBY, add specific mapping
+    await this.client.indices.putMapping({
+      index: 'cont3xt_history',
+      body: {
+        properties: {
+          issuedAt: { type: 'long' },
+          userId: { type: 'text' },
+          iType: { type: 'text' },
+          indicator: { type: 'text' },
+          tags: { type: 'text' },
+          queryOptions: {
+            properties: {
+              linkSearch: { type: 'text' },
+              view: { type: 'text' },
+              submit: { type: 'text' },
+              startDate: { type: 'text' },
+              stopDate: { type: 'text' }
+            }
+          }
+        }
+      }
+    });
   }
 
   #createDeleter (index) {
@@ -664,15 +670,15 @@ class DbLMDBImplementation {
     return [...this.auditStore.getRange({})
       .filter(({ _, value }) => {
         if (userId !== value.userId) { return false; }
-        // if (roles !== undefined) { // TODO: roles! & time-span
-        //   if (value.editRoles && roles.some(x => value.editRoles.includes(x))) { return true; }
-        //   if (value.viewRoles && roles.some(x => value.viewRoles.includes(x))) { return true; }
-        // }
+
+        // TODO: roles! & time-span
+
         return true;
       }).map(({ key, value }) => new Audit(
         Object.assign(value, { _id: key }))
       )];
   }
+
   async getAudit (id) {
     return await this.auditStore.get(id);
   }
