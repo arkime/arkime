@@ -111,11 +111,10 @@ class Db {
   }
 
   /**
-   * Get all audit logs for a user
-   * TODO: implement usage for roles
+   * Get all audit logs for a user within a date range (or everyone's, if roles contains cont3xtAdmin)
    */
-  static async getMatchingAudits (userID, roles) {
-    return Db.implementation.getMatchingAudits(userID, roles);
+  static async getMatchingAudits (userID, roles, dateRange) {
+    return Db.implementation.getMatchingAudits(userID, roles, dateRange);
   }
 
   /**
@@ -287,34 +286,6 @@ class DbESImplementation {
         }
       }
     });
-  }
-
-  #createDeleter (index) {
-    return async (id) => {
-      const results = await this.client.delete({
-        index,
-        id,
-        refresh: true
-      });
-
-      if (results.body) {
-        return results.body;
-      }
-      return null;
-    };
-  }
-
-  #createPutter (index) {
-    return async (id, obj) => {
-      const results = await this.client.index({
-        id,
-        body: obj,
-        refresh: true,
-        index
-      });
-
-      return results.body._id;
-    };
   }
 
   async getMatchingLinkGroups (creator, roles) {
@@ -493,8 +464,28 @@ class DbESImplementation {
   }
 
   /* Audit Log ---------------------------------------- */
-  putAudit = this.#createPutter('cont3xt_history');
-  deleteAudit = this.#createDeleter('cont3xt_history');
+  async putAudit (id, audit) {
+    const results = await this.client.index({
+      id,
+      body: audit,
+      refresh: true,
+      index: 'cont3xt_history'
+    });
+
+    return results.body._id;
+  }
+
+  async deleteAudit (id) {
+    const results = await this.client.delete({
+      index: 'cont3xt_history',
+      id,
+      refresh: true
+    });
+
+    if (results.body) {
+      return results.body;
+    }
+  }
 
   async getAudit (id) {
     const results = await this.client.get({
@@ -509,26 +500,31 @@ class DbESImplementation {
     return null;
   }
 
-  async getMatchingAudits (userId, roles) {
+  async getMatchingAudits (userId, roles, dateRange) {
     const query = {
       size: 1000,
       query: {
         bool: {
-          should: []
+          must: []
         }
       }
     };
 
-    if (userId) {
-      query.query.bool.should.push({
-        term: {
-          userId
+    if (dateRange) {
+      query.query.bool.must.push({ // restricts logs to those between certain dates
+        range: {
+          issuedAt: {
+            gte: dateRange.start,
+            lte: dateRange.end
+          }
         }
       });
     }
 
-    // TODO: TOBY - add influence for roles!
-    // TODO: also add date ranges!
+    // normal users can only see their own history, but cont3xtAdmins can see everyone's!
+    if (!roles.includes('cont3xtAdmin')) {
+      query.query.bool.must.push({ term: { userId } });
+    }
 
     try {
       const results = await this.client.search({
@@ -666,15 +662,20 @@ class DbLMDBImplementation {
     return this.viewStore.remove(id);
   }
 
-  async getMatchingAudits (userId, roles) {
+  async getMatchingAudits (userId, roles, dateRange) {
     return [...this.auditStore.getRange({})
       .filter(({ _, value }) => {
-        if (userId !== value.userId) { return false; }
-
-        // TODO: roles! & time-span
-
-        return true;
-      }).map(({ key, value }) => new Audit(
+        // remove entries outside the dateRange, if there is one
+        if (dateRange != null && (value.issuedAt < dateRange.start || value.issuedAt > dateRange.end)) {
+          return false;
+        }
+        // cont3xtAdmins can see anyone's logs
+        if (roles?.includes('cont3xtAdmin')) {
+          return true;
+        }
+        // non-admin accounts can only see their own logs
+        return userId === value.userId;
+      }).map(({ key, value }) => new Audit( // create Audit objs with _id
         Object.assign(value, { _id: key }))
       )];
   }

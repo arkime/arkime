@@ -138,59 +138,12 @@
           {{ getIntegrationsError }}
         </div> <!-- /integration error -->
 
-        <!-- link inputs -->
-        <b-form inline
-          v-if="lastSearchedTerm && initialized"
-          class="w-50 d-flex align-items-start link-inputs">
-          <b-input-group
-            size="xs"
-            class="mr-2 mb-1">
-            <template #prepend>
-              <b-input-group-text>
-                <span v-if="!getShiftKeyHold">
-                  Start
-                </span>
-                <span v-else
-                  class="start-time-shortcut">
-                  T
-                </span>
-              </b-input-group-text>
-            </template>
-            <b-form-input
-              type="text"
-              tabindex="0"
-              ref="startDate"
-              v-model="startDate"
-              style="width:152px"
-              placeholder="Start Date"
-              v-focus="getFocusStartDate"
-              @change="updateStopStart('startDate')"
-            />
-          </b-input-group>
-          <b-input-group
-            size="xs"
-            class="mr-2 mb-1">
-            <template #prepend>
-              <b-input-group-text>
-                Stop
-              </b-input-group-text>
-            </template>
-            <b-form-input
-              type="text"
-              tabindex="0"
-              v-model="stopDate"
-              style="width:152px"
-              placeholder="Stop Date"
-              @change="updateStopStart('stopDate')"
-            />
-          </b-input-group>
-          <span class="fa fa-lg fa-question-circle cursor-help mt-1"
-            v-b-tooltip.hover.html="linkPlaceholderTip"
-          />
-          <span class="pl-2">
-            {{ numDays }} days | {{ numHours }} hours
-          </span>
-        </b-form> <!-- /link inputs -->
+        <!--    time range input for links    -->
+        <time-range-input v-if="lastSearchedTerm && initialized"
+          class="link-inputs"
+          v-model="timeRangeInfo"
+          :place-holder-tip="linkPlaceholderTip" />
+        <!--    /time range input for links    -->
 
         <!-- results -->
         <template v-if="lastSearchedTerm">
@@ -284,11 +237,11 @@
                       <template slot="default">
                         <link-group-card
                           :query="lastSearchedTerm"
-                          :num-days="numDays"
+                          :num-days="timeRangeInfo.numDays"
                           :itype="searchItype"
-                          :num-hours="numHours"
-                          :stop-date="stopDate"
-                          :start-date="startDate"
+                          :num-hours="timeRangeInfo.numHours"
+                          :stop-date="timeRangeInfo.stopDate"
+                          :start-date="timeRangeInfo.startDate"
                           :link-group-index="index"
                           v-if="getLinkGroups.length"
                           :hide-links="hideLinks[linkGroup._id]"
@@ -344,6 +297,7 @@
 import { mapGetters } from 'vuex';
 
 import ReorderList from '@/utils/ReorderList';
+import TimeRangeInput from '@/utils/TimeRangeInput';
 import Cont3xtIp from '@/components/itypes/IP';
 import Cont3xtUrl from '@/components/itypes/URL';
 import Cont3xtHash from '@/components/itypes/Hash';
@@ -376,16 +330,13 @@ export default {
     LinkGroupCard,
     CreateViewModal,
     IntegrationCard,
-    IntegrationPanel
+    IntegrationPanel,
+    TimeRangeInput
   },
   directives: { Focus },
   data () {
     return {
       error: '',
-      numDays: 7, // 1 week
-      numHours: 7 * 24, // 1 week
-      startDate: new Date(new Date().getTime() - (3600000 * 24 * 7)).toISOString().slice(0, -5) + 'Z', // 1 week ago
-      stopDate: new Date().toISOString().slice(0, -5) + 'Z', // now
       results: {},
       scrollPx: 0,
       searchItype: '',
@@ -400,19 +351,17 @@ export default {
         title: 'These values are used to fill in <a href="help#linkgroups" class="no-decoration">link placeholders</a>.<br>' +
           'Try using <a href="help#general" class="no-decoration">relative times</a> like -5d or -1h.'
       },
-      activeShareLink: false
+      activeShareLink: false,
+      timeRangeInfo: {
+        numDays: 7, // 1 week
+        numHours: 7 * 24, // 1 week
+        startDate: new Date(new Date().getTime() - (3600000 * 24 * 7)).toISOString().slice(0, -5) + 'Z', // 1 week ago
+        stopDate: new Date().toISOString().slice(0, -5) + 'Z' // now
+      }
     };
   },
   mounted () {
-    // set the stop/start date to the query parameters
-    if (this.$route.query.stopDate) {
-      this.stopDate = this.$route.query.stopDate;
-      this.updateStopStart('stopDate');
-    }
-    if (this.$route.query.startDate) {
-      this.startDate = this.$route.query.startDate;
-      this.updateStopStart('startDate');
-    }
+    // no need to parse start/stopDate query params here -- that is handled by TimeRangeInput
 
     // needs to be unfocused to focus again later with hotkey (subsequent focuses are unfocused in store)
     this.$store.commit('SET_FOCUS_SEARCH', false);
@@ -422,7 +371,7 @@ export default {
       'getRendering', 'getWaitRendering', 'getIntegrationData',
       'getIntegrationsError', 'getLinkGroupsError', 'getLinkGroups',
       'getSidebarKeepOpen', 'getShiftKeyHold', 'getFocusSearch',
-      'getIssueSearch', 'getFocusStartDate', 'getFocusLinkSearch',
+      'getIssueSearch', 'getFocusLinkSearch',
       'getToggleCache', 'getDownloadReport', 'getCopyShareLink',
       'getAllViews', 'getImmediateSubmissionReady'
     ]),
@@ -501,9 +450,6 @@ export default {
     },
     getFocusSearch (val) {
       if (val) { this.$refs.search.select(); }
-    },
-    getFocusStartDate (val) {
-      if (val) { this.$refs.startDate.select(); }
     },
     getFocusLinkSearch (val) {
       if (val) { this.$refs.linkSearch.select(); }
@@ -658,44 +604,6 @@ export default {
           }, 2000);
         }
       });
-    },
-    updateStopStart (updated) {
-      let stopMs = new Date(this.stopDate).getTime();
-      let startMs = new Date(this.startDate).getTime();
-
-      // test for relative times
-      if (isNaN(stopMs)) {
-        stopMs = this.$options.filters.parseSeconds(this.stopDate) * 1000;
-      }
-      if (isNaN(startMs)) {
-        startMs = this.$options.filters.parseSeconds(this.startDate) * 1000;
-      }
-
-      // can't do anything if we can't calculate the date ms
-      if (isNaN(stopMs) || isNaN(startMs)) { return; }
-
-      // update the query params with the updated value
-      if (this.$route.query[updated] !== this[updated]) {
-        const query = { ...this.$route.query };
-        query[updated] = this[updated];
-        this.$router.push({ query });
-      }
-
-      const days = (stopMs - startMs) / (3600000 * 24);
-
-      switch (updated) {
-      case 'stopDate':
-        this.numDays = Math.round(days);
-        this.numHours = Math.round(days * 24);
-        this.startDate = new Date(stopMs - (3600000 * 24 * days)).toISOString().slice(0, -5) + 'Z';
-        this.stopDate = new Date(stopMs).toISOString().slice(0, -5) + 'Z';
-        break;
-      case 'startDate':
-        this.numDays = Math.round(days);
-        this.numHours = Math.round(days * 24);
-        this.startDate = new Date(startMs).toISOString().slice(0, -5) + 'Z';
-        break;
-      }
     },
     hasLinksWithItype (linkGroup) {
       for (const link of linkGroup.links) {

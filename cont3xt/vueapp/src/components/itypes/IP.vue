@@ -117,7 +117,7 @@ export default {
     },
     query: {
       type: String,
-      required: false // fallback in case of no results -- DNS IPs are guaranteed results of some kind
+      required: false // fallback in case of no results -- not required since DNS IPs are guaranteed results of some kind
     }
   },
   data () {

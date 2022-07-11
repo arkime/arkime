@@ -26,11 +26,16 @@ export default {
 
   /**
    * Fetches the list of audit log entries that a user can view.
+   * @param {Object} dateRange - An object holding the requested time range, of shape: { start, end }
+   * @param {Object} audit - The audit data
    * @returns {Promise} - The promise that either resolves to an `Audit[]` or rejects in error
    */
-  getAudits () {
+  getAudits (dateRange) {
     return new Promise((resolve, reject) => {
-      fetch('api/audits').then((response) => {
+      fetch(`api/audits/${JSON.stringify(dateRange)}`, {
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' }
+      }).then((response) => {
         if (!response.ok) { // test for bad response code
           throw new Error(response.statusText);
         }

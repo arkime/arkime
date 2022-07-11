@@ -28,8 +28,8 @@ export default {
       required: true
     },
     query: {
-      type: [String, Object],
-      required: true
+      type: String,
+      required: false
     }
   }
 };

@@ -26,7 +26,11 @@
     </b-input-group>
     <!--  search bar form  -->
 
-    <!--  primary page content  -->
+    <!-- time range inputs -->
+    <time-range-input class="mt-1"
+        v-model="timeRangeInfo" :place-holder-tip="timePlaceHolderTip"/>
+    <!-- /time range inputs -->
+
     <!--  history table  -->
     <b-table
         small
@@ -50,8 +54,9 @@
             :style="{ width: field.setWidth }"
         >
       </template>
-      <!--   customize column sizes   -->
+      <!--   /customize column sizes   -->
 
+      <!--   Custom cell display -- Buttons   -->
       <template #cell(buttons)="data">
         <b-button
             @click="deleteLog(data.item._id)"
@@ -67,6 +72,7 @@
           <span class="fa fa-external-link"/>
         </b-button>
       </template>
+      <!--   /Custom cell display -- Buttons   -->
 
       <template #cell(indicator)="data">
         <div class="indicator-limit-width">
@@ -91,8 +97,7 @@
         </template>
       </template>
     </b-table>
-    <!--  history table  -->
-
+    <!--  /history table  -->
   </div>
 </template>
 
@@ -100,14 +105,28 @@
 import AuditService from '@/components/services/AuditService';
 import { reDateString } from '@/utils/filters';
 import IndicatorTag from '@/utils/IndicatorTag';
+import TimeRangeInput from '@/utils/TimeRangeInput';
 
 export default {
   name: 'AuditHistory',
-  components: { IndicatorTag },
+  components: { IndicatorTag, TimeRangeInput },
   data () {
     return {
       auditLogs: [],
       filteredLogs: [],
+      timeRangeInfo: {
+        numDays: 7, // 1 week
+        numHours: 7 * 24, // 1 week
+        startDate: new Date(new Date().getTime() - (3600000 * 24 * 7)).toISOString().slice(0, -5) + 'Z', // 1 week ago
+        stopDate: new Date().toISOString().slice(0, -5) + 'Z', // now
+        startMs: Date.now() - (3600000 * 24 * 7), // by default, looks back one week
+        stopMs: Date.now() // now
+      },
+      lastTimeRangeInfoSearched: null,
+      timePlaceHolderTip: {
+        title: 'These values specify the date range searched.<br>' +
+            'Try using <a href="help#general" class="no-decoration">relative times</a> like -5d or -1h.'
+      },
       fields: [
         { // virtual button field
           label: '',
@@ -156,7 +175,17 @@ export default {
       filter: ''
     };
   },
-  methods: {
+  watch: {
+    timeRangeInfo (newVal) {
+      // only re-search audits if there has already been a search, and the time-range has actually changed
+      if (this.lastTimeRangeInfoSearched != null &&
+          (newVal.startMs !== this.lastTimeRangeInfoSearched.startMs || newVal.stopMs !== this.lastTimeRangeInfoSearched.stopMs)) {
+        this.loadAuditsFromSearch();
+      }
+      // TODO: if heavy on the server, this can be optimized to filter on client-side when narrowing range
+    }
+  },
+  methods: { /* page methods ---------------------------------------- */
     clearSearchTerm () {
       this.filter = '';
     },
@@ -178,12 +207,16 @@ export default {
         return arr.some(el => simpleFilter(el));
       };
       return simpleFilter(data.iType) || simpleFilter(data.indicator) || arrayFilter(data.tags);
+    },
+    loadAuditsFromSearch () {
+      this.lastTimeRangeInfoSearched = JSON.parse(JSON.stringify(this.timeRangeInfo));
+      AuditService.getAudits({ start: this.timeRangeInfo.startMs, end: this.timeRangeInfo.stopMs }).then(audits => {
+        this.auditLogs = audits;
+      });
     }
   },
   mounted () {
-    AuditService.getAudits().then(audits => {
-      this.auditLogs = audits;
-    });
+    this.loadAuditsFromSearch();
   }
 };
 </script>

@@ -77,12 +77,14 @@ class Audit {
    *
    * Returns list of audit logs (sorted by issuedAt) that the requesting user is allowed to view.
    * @name /audits
+   * @param {String} dateRange - A json-stringified object holding the requested time range, of shape: { start, end }
    * @returns {Audit[]} audits - A sorted array of audit logs that the logged-in user can view
    * @returns {boolean} success - True if the request was successful, false otherwise
    */
   static async apiGet (req, res, next) {
     const roles = await req.user.getRoles();
-    const audits = await Db.getMatchingAudits(req.user.userId, [...roles]);
+    const dateRange = req.params.dateRange ? JSON.parse(req.params.dateRange) : undefined;
+    const audits = await Db.getMatchingAudits(req.user.userId, [...roles], dateRange);
 
     // sorts chronologically, according to issuedAt (milliseconds)
     audits.sort((a, b) => b.issuedAt - a.issuedAt);
