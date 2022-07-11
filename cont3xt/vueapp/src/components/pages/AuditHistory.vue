@@ -56,11 +56,12 @@
       </template>
       <!--   /customize column sizes   -->
 
-      <!--   Custom cell display -- Buttons   -->
+      <!--   Button Column   -->
       <template #cell(buttons)="data">
         <b-button
             @click="deleteLog(data.item._id)"
             class="btn btn-xs btn-warning"
+            :class="{ 'invisible': getUser != null && data.item.userId !== getUser.userId }"
             v-b-tooltip.hover="'Delete log'">
           <span class="fa fa-trash"/>
         </b-button>
@@ -72,14 +73,17 @@
           <span class="fa fa-external-link"/>
         </b-button>
       </template>
-      <!--   /Custom cell display -- Buttons   -->
+      <!--   /Button Column   -->
 
+      <!--   Indicator Column (enforces max length)-->
       <template #cell(indicator)="data">
         <div class="indicator-limit-width">
           {{ data.item.indicator }}
         </div>
       </template>
+      <!--   /Indicator Column (enforces max length)-->
 
+      <!--   Tag Column   -->
       <template #cell(tags)="data">
         <template v-if="data.item.tags.length">
           <indicator-tag v-for="tag in data.item.tags" :key="tag" :value="tag"/>
@@ -88,14 +92,23 @@
           -
         </template>
       </template>
+      <!--   /Tag Column   -->
+
+      <!--   Options Column   -->
       <template #cell(queryOptions)="data">
         <template v-if="Object.keys(data.item.queryOptions).length">
-          {{ JSON.stringify(data.item.queryOptions) }}
+          <template v-for="([key, value], index) in Object.entries(data.item.queryOptions)">
+            <span :key="index">{{ index === 0 ? '?' : '&' }}{{ key }}=<template>
+              <span class="text-success" v-b-tooltip.hover="value" v-if="key === 'view' && viewLookup[value] != null">{{ viewLookup[value] }}</span>
+              <span v-else>{{ value }}</span>
+            </template></span>
+          </template>
         </template>
         <template v-else>
           -
         </template>
       </template>
+      <!--   /Options Column   -->
     </b-table>
     <!--  /history table  -->
   </div>
@@ -106,10 +119,17 @@ import AuditService from '@/components/services/AuditService';
 import { reDateString } from '@/utils/filters';
 import IndicatorTag from '@/utils/IndicatorTag';
 import TimeRangeInput from '@/utils/TimeRangeInput';
+import { mapGetters } from 'vuex';
 
 export default {
   name: 'AuditHistory',
   components: { IndicatorTag, TimeRangeInput },
+  computed: {
+    ...mapGetters(['getViews', 'getUser']),
+    viewLookup () {
+      return Object.fromEntries(this.getViews.map(view => [view._id, view.name]));
+    }
+  },
   data () {
     return {
       auditLogs: [],
@@ -156,7 +176,7 @@ export default {
           label: 'Indicator',
           key: 'indicator',
           sortable: true,
-          setWidth: '35rem'
+          setWidth: '30rem'
         },
         {
           label: 'Tags',
@@ -168,6 +188,22 @@ export default {
           key: 'queryOptions',
           sortable: true,
           setWidth: '15rem'
+        },
+        {
+          label: 'Count',
+          key: 'resultCount',
+          sortable: true,
+          setWidth: '4rem',
+          tdClass: 'text-right',
+          formatter: this.orQuestionMark
+        },
+        {
+          label: 'Took',
+          key: 'took',
+          sortable: true,
+          setWidth: '4rem',
+          tdClass: 'text-right',
+          formatter: this.millisecondStr
         }
       ],
       sortBy: 'name',
@@ -188,6 +224,12 @@ export default {
   methods: { /* page methods ---------------------------------------- */
     clearSearchTerm () {
       this.filter = '';
+    },
+    orQuestionMark (obj) {
+      return obj ?? '?';
+    },
+    millisecondStr (msNum) {
+      return msNum ? `${msNum}ms` : '?';
     },
     reissueSearchLink (log) {
       const otherQueryParams = Object.entries(log.queryOptions).map(([key, value]) => `&${key}=${value}`).join('');
@@ -223,7 +265,7 @@ export default {
 
 <style scoped>
 .indicator-limit-width {
-  max-width: 35rem;
+  max-width: 30rem;
   overflow-wrap: break-word;
 }
 </style>

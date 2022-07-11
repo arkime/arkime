@@ -270,6 +270,8 @@ class DbESImplementation {
       body: {
         properties: {
           issuedAt: { type: 'long' },
+          took: { type: 'long' },
+          resultCount: { type: 'long' },
           userId: { type: 'text' },
           iType: { type: 'text' },
           indicator: { type: 'text' },

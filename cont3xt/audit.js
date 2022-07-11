@@ -26,7 +26,9 @@ class Audit {
    * A Cont3xt Audit Object
    * @param {string} _id
    * @param {string} userId
-   * @param {Date} issuedAt
+   * @param {number} issuedAt
+   * @param {number} took
+   * @param {number} resultCount
    * @param {string} iType
    * @param {string} indicator
    * @param {string[]} tags
@@ -64,6 +66,8 @@ class Audit {
     };
     if (typeof (audit.userId) !== 'string') { return 'must have field userId of type string'; }
     if (typeof (audit.issuedAt) !== 'number') { return 'must have field issuedAt of type number (milliseconds)'; }
+    if (typeof (audit.took) !== 'number') { return 'must have field took of type number (milliseconds)'; }
+    if (typeof (audit.resultCount) !== 'number') { return 'must have field resultCount of type number (milliseconds)'; }
     if (typeof (audit.iType) !== 'string') { return 'must have field iType of type string'; }
     if (typeof (audit.indicator) !== 'string') { return 'must have field indicator of type string'; }
     if (!Array.isArray(audit.tags)) { return 'must have field tags of type Array'; }
@@ -105,6 +109,11 @@ class Audit {
 
     if (!audit) {
       return res.send({ success: false, text: 'History log not found' });
+    }
+
+    // permissions (can only delete your own history)
+    if (req.user.userId !== audit.userId) {
+      return res.send({ success: false, text: 'Can not delete a history log that is not your own' });
     }
 
     const results = await Db.implementation.deleteAudit(req.params.id);

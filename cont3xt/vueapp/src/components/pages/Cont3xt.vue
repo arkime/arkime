@@ -533,18 +533,19 @@ export default {
         Object.entries(this.$route.query).filter(([key, _]) => key !== 'b')
       );
       const searchIssuedAt = Date.now();
+      const termSearched = this.searchTerm;
 
-      const createAuditHistoryLog = () => {
+      const createAuditHistoryLog = ({ finishedAt, resultCount }) => {
         AuditService.createAudit({
           issuedAt: searchIssuedAt,
+          took: finishedAt - searchIssuedAt,
+          resultCount,
           iType: this.searchItype,
-          indicator: this.searchTerm,
+          indicator: termSearched,
           tags: [],
           queryOptions: queryOptionsUsed
         });
       };
-
-      const termSearched = this.searchTerm;
 
       Cont3xtService.search({ searchTerm: termSearched, skipCache: this.skipCache }).subscribe({
         next: (data) => {
@@ -553,7 +554,6 @@ export default {
             // based of the first itype seen
             this.lastSearchedTerm = termSearched;
             this.searchItype = data.itype;
-            createAuditHistoryLog();
             this.filterLinks(this.linkSearchTerm);
           }
 
@@ -584,6 +584,10 @@ export default {
           }
 
           if (data.finished) { // we finished receiving results
+            createAuditHistoryLog({
+              finishedAt: Date.now(),
+              resultCount: data.resultCount
+            });
             const leftover = this.loading.total - this.loading.failed - this.loading.received;
             if (leftover) {
               this.loading = { // complete the progress bar

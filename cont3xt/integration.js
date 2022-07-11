@@ -333,7 +333,7 @@ class Integration {
 
     const writeDone = () => {
       if (shared.sent === shared.total) {
-        shared.res.write(JSON.stringify({ finished: true }));
+        shared.res.write(JSON.stringify({ finished: true, resultCount: shared.resultCount }));
         shared.res.end(']\n');
       }
     };
@@ -354,6 +354,9 @@ class Integration {
         normalizedQuery = normalizedQuery.split(':').map(x => x.padStart(4, '0')).join(':');
       }
     }
+
+    // must finish in case of no integrations (text)
+    if (shared.total === 0) { writeDone(); }
 
     for (const integration of integrations) {
       // Can disable a integration per user
@@ -419,6 +422,7 @@ class Integration {
             stats.directGood++;
             istats.directGood++;
             if (!response._cont3xt) { response._cont3xt = {}; }
+            shared.resultCount += response._cont3xt.count ?? 0;
             response._cont3xt.createTime = Date.now();
             writeOne(integration, response);
             if (Integration.cache && integration.cacheable) {
@@ -494,7 +498,8 @@ class Integration {
       user: req.user,
       res,
       sent: 0,
-      total: 0 // runIntegrationsList will fix
+      total: 0, // runIntegrationsList will fix
+      resultCount: 0 // sum of _cont3xt.count from results
     };
     res.write('[\n');
     res.write(JSON.stringify({ success: true, itype, sent: shared.sent, total: integrations.length, text: 'more to follow' }));
