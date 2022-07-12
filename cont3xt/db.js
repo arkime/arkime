@@ -724,14 +724,8 @@ class DbLMDBImplementation {
         }
 
         // cont3xtAdmins can see anyone's logs
-        if (roles?.includes('cont3xtAdmin')) {
-          return true;
-        }
-
-        // TODO:
-
         // non-admin accounts can only see their own logs
-        return userId === value.userId;
+        return (roles?.includes('cont3xtAdmin') || userId === value.userId);
       }).map(({ key, value }) => new Audit( // create Audit objs with _id
         Object.assign(value, { _id: key }))
       )];
