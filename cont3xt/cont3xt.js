@@ -486,6 +486,11 @@ function setupAuth () {
     basicAuth: getConfig('cont3xt', 'usersElasticsearchBasicAuth')
   });
 
+  Audit.initialize({
+    debug: internals.debug,
+    expireHistoryDays: getConfig('cont3xt', 'expireHistoryDays', 180)
+  });
+
   const cache = ArkimeCache.createCache({
     type: getConfig('cache', 'type', 'memory'),
     cacheSize: getConfig('cache', 'cacheSize', '100000'),

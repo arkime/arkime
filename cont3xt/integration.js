@@ -331,7 +331,7 @@ class Integration {
       shared.res.write(',\n');
     };
 
-    const writeDone = () => {
+    const checkWriteDone = () => {
       if (shared.sent === shared.total) {
         shared.res.write(JSON.stringify({ finished: true, resultCount: shared.resultCount }));
         shared.res.end(']\n');
@@ -356,7 +356,9 @@ class Integration {
     }
 
     // must finish in case of no integrations (text)
-    if (shared.total === 0) { writeDone(); }
+    if (shared.total === 0) {
+      checkWriteDone();
+    }
 
     for (const integration of integrations) {
       // Can disable a integration per user
@@ -366,7 +368,7 @@ class Integration {
         if (Integration.debug > 1) {
           console.log('DISABLED', integration.name);
         }
-        writeDone();
+        checkWriteDone();
         continue;
       }
 
@@ -379,13 +381,14 @@ class Integration {
 
       if (shared.doIntegrations && !shared.doIntegrations.includes(integration.name)) {
         shared.total--;
-        writeDone();
+        checkWriteDone();
         continue;
       }
 
       stats.total++;
       istats.total++;
 
+      // if available, first try cache
       if (!shared.skipCache && Integration.cache && integration.cacheable) {
         stats.cacheLookup++;
         istats.cacheLookup++;
@@ -400,13 +403,15 @@ class Integration {
             stats.cacheGood++;
             istats.cacheGood++;
             shared.sent++;
+            shared.resultCount += response._cont3xt.count ?? 0;
             writeOne(integration, response);
-            writeDone();
+            checkWriteDone();
             continue;
           }
         }
       }
 
+      // if cache fails, fetch
       stats.directLookup++;
       istats.directLookup++;
       const dStartTime = Date.now();
@@ -431,7 +436,7 @@ class Integration {
           } else {
             // console.log('ALW null', integration.name, cacheKey);
           }
-          writeDone();
+          checkWriteDone();
         })
         .catch(err => {
           console.log(integration.name, itype, query, err);

@@ -22,6 +22,36 @@ class Audit {
     Object.assign(this, data);
   }
 
+  // initialization sets up periodic cleaning of expired audit history logs
+  static initialize (options) {
+    if (options.debug > 1) {
+      console.log('Audit.initialize', options);
+    }
+    let { expireHistoryDays } = options;
+    if (typeof expireHistoryDays === 'string') {
+      expireHistoryDays = parseFloat(expireHistoryDays);
+    }
+    if (isNaN(expireHistoryDays)) {
+      console.log(`ERROR - expireHistoryDays (${expireHistoryDays}) is not a number. History will NOT be cleaned!`);
+      return;
+    }
+
+    const hourMs = 3600000;
+    const expireHistoryMsBack = Math.ceil(expireHistoryDays * 24 * hourMs);
+
+    const deleteExpiredAudits = () => {
+      Db.deleteExpiredAudits(Date.now() - expireHistoryMsBack).then((numDeleted) => {
+        console.log(`Successful deletion of ${numDeleted} expired history logs`);
+      }).catch((err) => {
+        console.log('ERROR - Failed to delete expired history logs.', err);
+      });
+    };
+
+    // fire off one initial cleaning, then begin hourly interval
+    deleteExpiredAudits();
+    setInterval(deleteExpiredAudits, hourMs);
+  }
+
   /**
    * A Cont3xt Audit Object
    * @param {string} _id
@@ -106,15 +136,21 @@ class Audit {
    */
   static async apiDelete (req, res, next) {
     const audit = await Db.getAudit(req.params.id);
+    const roles = [...await req.user.getRoles()];
 
     if (!audit) {
       return res.send({ success: false, text: 'History log not found' });
     }
 
-    // permissions (can only delete your own history)
-    if (req.user.userId !== audit.userId) {
-      return res.send({ success: false, text: 'Can not delete a history log that is not your own' });
+    // permissions ---------------------------
+    if (!req.user.removeEnabled) {
+      return res.send({ success: false, text: 'Can not delete a history log when user has data removal disabled.' });
     }
+
+    if (req.user.userId !== audit.userId && !roles?.includes('cont3xtAdmin')) {
+      return res.send({ success: false, text: 'User does not have permission to delete this log.' });
+    }
+    // ----------------------------------------
 
     const results = await Db.implementation.deleteAudit(req.params.id);
 

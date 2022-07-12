@@ -123,6 +123,14 @@ class Db {
   static async getAudit (id) {
     return Db.implementation.getAudit(id);
   }
+
+  /**
+   * Delete all history audit logs created before expireMs
+   * @returns number of deleted logs
+   */
+  static async deleteExpiredAudits (expireMs) {
+    return await Db.implementation.deleteExpiredAudits(expireMs);
+  }
 }
 
 /******************************************************************************/
@@ -502,6 +510,29 @@ class DbESImplementation {
     return null;
   }
 
+  async deleteExpiredAudits (expireMs) {
+    const query = {
+      size: 1000,
+      query: {
+        range: {
+          issuedAt: {
+            lt: expireMs
+          }
+        }
+      }
+    };
+
+    try {
+      const results = await this.client.delete_by_query({
+        body: query,
+        index: 'cont3xt_history'
+      });
+      return results.body.deleted;
+    } catch (err) {
+      return null;
+    }
+  }
+
   async getMatchingAudits (userId, roles, dateRange) {
     const query = {
       size: 1000,
@@ -661,7 +692,7 @@ class DbLMDBImplementation {
   }
 
   async deleteAudit (id) {
-    return this.viewStore.remove(id);
+    return await this.auditStore.remove(id);
   }
 
   async getMatchingAudits (userId, roles, dateRange) {
@@ -684,6 +715,15 @@ class DbLMDBImplementation {
 
   async getAudit (id) {
     return await this.auditStore.get(id);
+  }
+
+  async deleteExpiredAudits (expireMs) {
+    const expiredLogIds = [...this.auditStore.getRange({}).filter(({ value }) => value.issuedAt < expireMs).map(({ key }) => key)];
+
+    for (const expiredLogId of expiredLogIds) {
+      await this.deleteAudit(expiredLogId);
+    }
+    return expiredLogIds.length;
   }
 }
 

@@ -58,10 +58,9 @@
 
       <!--   Button Column   -->
       <template #cell(buttons)="data">
-        <b-button
+        <b-button v-if="getUser && getUser.removeEnabled"
             @click="deleteLog(data.item._id)"
             class="btn btn-xs btn-warning"
-            :class="{ 'invisible': getUser != null && data.item.userId !== getUser.userId }"
             v-b-tooltip.hover="'Delete log'">
           <span class="fa fa-trash"/>
         </b-button>
