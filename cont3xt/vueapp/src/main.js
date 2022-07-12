@@ -13,6 +13,8 @@ import store from '@/store';
 import '@/utils/filters.js';
 import '@/../../../common/vueapp/vueFilters.js';
 import HasRole from '@/../../../common/vueapp/HasRole';
+import axios from 'axios';
+import VueAxios from 'vue-axios';
 
 import '@/index.scss'; // includes boostrap(vue) scss
 // common css needs to be after ^ because it overrides some bootstrap styles
@@ -23,6 +25,7 @@ Vue.config.productionTip = false;
 Vue.use(BootstrapVue);
 Vue.use(VueClipboard);
 Vue.use(VueMoment, { moment });
+Vue.use(VueAxios, axios);
 
 Vue.directive('has-role', HasRole);
 

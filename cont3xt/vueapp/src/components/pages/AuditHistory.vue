@@ -37,14 +37,11 @@
         hover
         striped
         show-empty
-        :filter="filter"
-        :filter-function="customFilter"
         :fields="fields"
         :items="auditLogs"
         :sort-by.sync="sortBy"
         :sort-desc.sync="sortDesc"
         empty-text="There is no history to show"
-        :empty-filtered-text="`There are now searches that contain: ${filter}`"
     >
       <!--   customize column sizes   -->
       <template #table-colgroup="scope">
@@ -205,8 +202,8 @@ export default {
           formatter: this.millisecondStr
         }
       ],
-      sortBy: 'name',
-      sortDesc: false,
+      sortBy: 'issuedAt',
+      sortDesc: true,
       filter: ''
     };
   },
@@ -217,7 +214,9 @@ export default {
           (newVal.startMs !== this.lastTimeRangeInfoSearched.startMs || newVal.stopMs !== this.lastTimeRangeInfoSearched.stopMs)) {
         this.loadAuditsFromSearch();
       }
-      // TODO: if heavy on the server, this can be optimized to filter on client-side when narrowing range
+    },
+    filter () {
+      this.loadAuditsFromSearch();
     }
   },
   methods: { /* page methods ---------------------------------------- */
@@ -251,7 +250,11 @@ export default {
     },
     loadAuditsFromSearch () {
       this.lastTimeRangeInfoSearched = JSON.parse(JSON.stringify(this.timeRangeInfo));
-      AuditService.getAudits({ start: this.timeRangeInfo.startMs, end: this.timeRangeInfo.stopMs }).then(audits => {
+      AuditService.getAudits({
+        startMs: this.timeRangeInfo.startMs,
+        stopMs: this.timeRangeInfo.stopMs,
+        searchTerm: this.filter === '' ? undefined : this.filter.toLowerCase()
+      }).then(audits => {
         this.auditLogs = audits;
       });
     }

@@ -1,4 +1,5 @@
 import setReqHeaders from '../../../../../common/vueapp/setReqHeaders';
+import Vue from 'vue';
 
 export default {
   /**
@@ -26,23 +27,22 @@ export default {
 
   /**
    * Fetches the list of audit log entries that a user can view.
-   * @param {Object} dateRange - An object holding the requested time range, of shape: { start, end }
-   * @param {Object} audit - The audit data
+   * @param {Object} query of shape { searchTerm, startMs, stopMs }
    * @returns {Promise} - The promise that either resolves to an `Audit[]` or rejects in error
    */
-  getAudits (dateRange) {
+  getAudits (query) {
     return new Promise((resolve, reject) => {
-      fetch(`api/audits/${JSON.stringify(dateRange)}`, {
+      const options = {
         method: 'GET',
-        headers: { 'Content-Type': 'application/json' }
-      }).then((response) => {
-        if (!response.ok) { // test for bad response code
+        params: query,
+        url: 'api/audits'
+      };
+      Vue.axios(options).then((response) => {
+        if (response.status !== 200) { // test for bad response code
           throw new Error(response.statusText);
         }
-        return response.json();
-      }).then((response) => {
-        return resolve(response.audits);
-      }).catch((err) => { // this catches an issue within the ^ .then
+        return resolve(response.data.audits);
+      }).catch((err) => {
         return reject(err);
       });
     });

@@ -113,8 +113,8 @@ class Db {
   /**
    * Get all audit logs for a user within a date range (or everyone's, if roles contains cont3xtAdmin)
    */
-  static async getMatchingAudits (userID, roles, dateRange) {
-    return Db.implementation.getMatchingAudits(userID, roles, dateRange);
+  static async getMatchingAudits (userID, roles, reqQuery) {
+    return Db.implementation.getMatchingAudits(userID, roles, reqQuery);
   }
 
   /**
@@ -533,30 +533,39 @@ class DbESImplementation {
     }
   }
 
-  async getMatchingAudits (userId, roles, dateRange) {
+  async getMatchingAudits (userId, roles, reqQuery) {
+    const { startMs, stopMs, searchTerm } = reqQuery;
+    const filter = [];
     const query = {
       size: 1000,
       query: {
-        bool: {
-          must: []
-        }
+        bool: { filter }
       }
     };
 
-    if (dateRange) {
-      query.query.bool.must.push({ // restricts logs to those between certain dates
+    if (startMs != null && stopMs != null) {
+      filter.push({ // restricts logs to those between certain dates
         range: {
           issuedAt: {
-            gte: dateRange.start,
-            lte: dateRange.end
+            gte: startMs,
+            lte: stopMs
           }
+        }
+      });
+    }
+
+    if (searchTerm != null) {
+      filter.push({ // apply search term
+        query_string: {
+          query: `*${searchTerm}*`,
+          fields: ['indicator', 'iType', 'tags']
         }
       });
     }
 
     // normal users can only see their own history, but cont3xtAdmins can see everyone's!
     if (!roles.includes('cont3xtAdmin')) {
-      query.query.bool.must.push({ term: { userId } });
+      filter.push({ term: { userId } });
     }
 
     try {
@@ -695,17 +704,32 @@ class DbLMDBImplementation {
     return await this.auditStore.remove(id);
   }
 
-  async getMatchingAudits (userId, roles, dateRange) {
+  async getMatchingAudits (userId, roles, reqQuery) {
+    const { startMs, stopMs, searchTerm } = reqQuery;
     return [...this.auditStore.getRange({})
       .filter(({ _, value }) => {
         // remove entries outside the dateRange, if there is one
-        if (dateRange != null && (value.issuedAt < dateRange.start || value.issuedAt > dateRange.end)) {
+        if ((startMs != null && stopMs != null) && (value.issuedAt < startMs || value.issuedAt > stopMs)) {
           return false;
         }
+
+        // apply search term
+        if (searchTerm != null) {
+          const containsTerm = (
+            value.indicator.includes(searchTerm) ||
+            value.iType.includes(searchTerm) ||
+            value.tags.some(tag => tag.includes(searchTerm))
+          );
+          if (!containsTerm) { return false; }
+        }
+
         // cont3xtAdmins can see anyone's logs
         if (roles?.includes('cont3xtAdmin')) {
           return true;
         }
+
+        // TODO:
+
         // non-admin accounts can only see their own logs
         return userId === value.userId;
       }).map(({ key, value }) => new Audit( // create Audit objs with _id

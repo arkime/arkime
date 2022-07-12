@@ -224,9 +224,8 @@ app.post('/api/view', [jsonParser, checkCookieToken], View.apiCreate);
 app.put('/api/view/:id', [jsonParser, checkCookieToken], View.apiUpdate);
 app.delete('/api/view/:id', [jsonParser, checkCookieToken], View.apiDelete);
 
-app.get('/api/audits/:dateRange', [jsonParser], Audit.apiGet);
+app.get('/api/audits', Audit.apiGet);
 app.put('/api/audit', [jsonParser], Audit.apiCreate);
-app.get('/api/audit/:id', [jsonParser], Audit.apiGet);
 app.delete('/api/audit/:id', [jsonParser], Audit.apiDelete);
 
 app.get('/api/health', (req, res) => { res.send({ success: true }); });
