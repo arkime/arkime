@@ -248,7 +248,17 @@ class DbESImplementation {
           viewRoles: { type: 'keyword' },
           editRoles: { type: 'keyword' },
           integrations: { type: 'keyword', index: false }
-        }
+        },
+        dynamic_templates: [
+          {
+            string_template: {
+              match_mapping_type: 'string',
+              mapping: {
+                type: 'keyword'
+              }
+            }
+          }
+        ]
       }
     });
   }
@@ -581,7 +591,7 @@ class DbESImplementation {
         return new Audit(Object.assign(_source, { _id }));
       });
     } catch (err) {
-      console.log('ERROR FETCHING AUDIT LOG HISTORY', err);
+      console.log('ERROR - fetching audit log history', err);
       return [];
     }
   }

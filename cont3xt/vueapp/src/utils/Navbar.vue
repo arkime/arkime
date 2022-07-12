@@ -55,6 +55,16 @@
         </li>
         <li class="nav-item mr-2">
           <router-link
+              to="history"
+              tabindex="-1"
+              v-if="getUser"
+              class="nav-link"
+              active-class="active">
+            History
+          </router-link>
+        </li>
+        <li class="nav-item mr-2">
+          <router-link
             to="users"
             tabindex="-1"
             v-if="getUser"
@@ -62,16 +72,6 @@
             active-class="active"
             v-has-role="{user:getUser,roles:'usersAdmin'}">
             Users
-          </router-link>
-        </li>
-        <li class="nav-item mr-2">
-          <router-link
-              to="history"
-              tabindex="-1"
-              v-if="getUser"
-              class="nav-link"
-              active-class="active">
-            History
           </router-link>
         </li>
       </ul> <!-- /page links -->

@@ -58,7 +58,7 @@
         <b-button v-if="getUser && getUser.removeEnabled"
             @click="deleteLog(data.item._id)"
             class="btn btn-xs btn-warning"
-            v-b-tooltip.hover="'Delete log'">
+            v-b-tooltip.hover="'Delete history item'">
           <span class="fa fa-trash"/>
         </b-button>
         <b-button
@@ -186,7 +186,7 @@ export default {
           setWidth: '15rem'
         },
         {
-          label: 'Count',
+          label: 'Results',
           key: 'resultCount',
           sortable: true,
           setWidth: '4rem',
@@ -230,8 +230,11 @@ export default {
       return msNum ? `${msNum}ms` : '?';
     },
     reissueSearchLink (log) {
-      const otherQueryParams = Object.entries(log.queryOptions).map(([key, value]) => `&${key}=${value}`).join('');
-      return `?b=${window.btoa(log.indicator)}${otherQueryParams}`;
+      // encodeURIComponent ensures use of the url-safe equivalents of special characters
+      const baseQuery = `?b=${encodeURIComponent(window.btoa(log.indicator))}`;
+      const allOtherQueryParamsList = { ...log.queryOptions, submit: 'y' };
+      const otherQueryParams = Object.entries(allOtherQueryParamsList).map(([key, value]) => `&${key}=${encodeURIComponent(value)}`).join('');
+      return `${baseQuery}${otherQueryParams}`;
     },
     deleteLog (id) {
       AuditService.deleteAudit(id).then(() => {
