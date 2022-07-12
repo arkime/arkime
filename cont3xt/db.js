@@ -277,20 +277,20 @@ class DbESImplementation {
       index: 'cont3xt_history',
       body: {
         properties: {
-          issuedAt: { type: 'long' },
+          issuedAt: { type: 'date' },
           took: { type: 'long' },
           resultCount: { type: 'long' },
-          userId: { type: 'text' },
-          iType: { type: 'text' },
-          indicator: { type: 'text' },
-          tags: { type: 'text' },
+          userId: { type: 'keyword' },
+          iType: { type: 'keyword' },
+          indicator: { type: 'keyword' },
+          tags: { type: 'keyword' },
           queryOptions: {
             properties: {
-              linkSearch: { type: 'text' },
-              view: { type: 'text' },
-              submit: { type: 'text' },
-              startDate: { type: 'text' },
-              stopDate: { type: 'text' }
+              linkSearch: { type: 'keyword' },
+              view: { type: 'keyword' },
+              submit: { type: 'keyword' },
+              startDate: { type: 'keyword' },
+              stopDate: { type: 'keyword' }
             }
           }
         }
