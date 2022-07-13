@@ -248,17 +248,7 @@ class DbESImplementation {
           viewRoles: { type: 'keyword' },
           editRoles: { type: 'keyword' },
           integrations: { type: 'keyword', index: false }
-        },
-        dynamic_templates: [
-          {
-            string_template: {
-              match_mapping_type: 'string',
-              mapping: {
-                type: 'keyword'
-              }
-            }
-          }
-        ]
+        }
       }
     });
   }
@@ -303,7 +293,17 @@ class DbESImplementation {
               stopDate: { type: 'keyword' }
             }
           }
-        }
+        },
+        dynamic_templates: [
+          {
+            string_template: {
+              match_mapping_type: 'string',
+              mapping: {
+                type: 'keyword'
+              }
+            }
+          }
+        ]
       }
     });
   }
