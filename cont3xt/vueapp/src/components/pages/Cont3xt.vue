@@ -140,7 +140,7 @@
 
         <!--    time range input for links    -->
         <time-range-input v-if="lastSearchedTerm && initialized"
-          class="link-inputs"
+          class="link-inputs w-50 mb-1"
           v-model="timeRangeInfo"
           :place-holder-tip="linkPlaceholderTip" />
         <!--    /time range input for links    -->

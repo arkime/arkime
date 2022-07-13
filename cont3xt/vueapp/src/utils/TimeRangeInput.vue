@@ -1,8 +1,8 @@
 <template>
-  <b-form inline class="w-50 d-flex align-items-start">
+  <b-form inline class="d-flex align-items-center">
     <b-input-group
-        size="xs"
-        class="mr-2 mb-1">
+        :size="inputGroupSize"
+        class="mr-2">
       <template #prepend>
         <b-input-group-text>
           <span v-if="!getShiftKeyHold">
@@ -19,15 +19,15 @@
           tabindex="0"
           ref="startDate"
           v-model="localStartDate"
-          style="width:152px"
+          :style="`width:${inputWidth}`"
           placeholder="Start Date"
           v-focus="getFocusStartDate"
           @change="updateStopStart('startDate')"
       />
     </b-input-group>
     <b-input-group
-        size="xs"
-        class="mr-2 mb-1">
+        :size="inputGroupSize"
+        class="mr-2">
       <template #prepend>
         <b-input-group-text>
           Stop
@@ -37,7 +37,7 @@
           type="text"
           tabindex="0"
           v-model="localStopDate"
-          style="width:152px"
+          :style="`width:${inputWidth}`"
           placeholder="Stop Date"
           @change="updateStopStart('stopDate')"
       />
@@ -70,6 +70,14 @@ export default {
     placeHolderTip: { // (Question mark hover text) -- shape of { title: String }
       type: Object,
       required: true
+    },
+    inputGroupSize: {
+      type: String,
+      default: 'xs'
+    },
+    inputWidth: {
+      type: String,
+      default: '152px'
     }
   },
   data () {

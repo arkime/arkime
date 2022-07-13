@@ -1,35 +1,42 @@
 <template>
   <div class="container-fluid">
-    <!--  search bar form  -->
-    <b-input-group class="flex-grow-1 mr-2">
-      <template #prepend>
-        <b-input-group-text>
+    <div class="d-flex align-items-center mb-2">
+      <div class="flex-grow-1">
+        <!--  search bar form  -->
+        <b-input-group class="flex-grow-1 mr-2">
+          <template #prepend>
+            <b-input-group-text>
               <span class="fa fa-search fa-fw"/>
-        </b-input-group-text>
-      </template>
-      <b-form-input
-          tabindex="0"
-          ref="search"
-          v-model="filter"
-          debounce="400"
-          placeholder="Search history by indicator, iType, or tags"
-      />
-      <template #append>
-        <b-button
-            tabindex="0"
-            @click="clearSearchTerm"
-            :disabled="!filter"
-            title="Remove the search text">
-          <span class="fa fa-close" />
-        </b-button>
-      </template>
-    </b-input-group>
-    <!--  search bar form  -->
+            </b-input-group-text>
+          </template>
+          <b-form-input
+              tabindex="0"
+              ref="search"
+              v-model="filter"
+              debounce="400"
+              placeholder="Search history by indicator, iType, or tags"
+          />
+          <template #append>
+            <b-button
+                tabindex="0"
+                @click="clearSearchTerm"
+                :disabled="!filter"
+                title="Remove the search text">
+              <span class="fa fa-close" />
+            </b-button>
+          </template>
+        </b-input-group>
+        <!--  search bar form  -->
+      </div>
 
-    <!-- time range inputs -->
-    <time-range-input class="mt-1"
-        v-model="timeRangeInfo" :place-holder-tip="timePlaceHolderTip"/>
-    <!-- /time range inputs -->
+      <div>
+        <!-- time range inputs -->
+        <time-range-input
+            class="ml-2" input-group-size="s" input-width="12rem"
+            v-model="timeRangeInfo" :place-holder-tip="timePlaceHolderTip"/>
+        <!-- /time range inputs -->
+      </div>
+    </div>
 
     <!--  history table  -->
     <b-table
