@@ -368,7 +368,7 @@
               autocomplete="userid"
               placeholder="Unique ID"
               v-model.lazy="newUser.userId"
-              :state="this.newUser.userId.length > 0"
+              :state="newUser.userId.length > 0"
             />
           </b-input-group>
           <b-input-group
@@ -384,7 +384,7 @@
               autocomplete="username"
               placeholder="Readable name"
               v-model.lazy="newUser.userName"
-              :state="this.newUser.userName.length > 0"
+              :state="newUser.userName.length > 0"
             />
           </b-input-group>
         </div>
