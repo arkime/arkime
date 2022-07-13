@@ -118,6 +118,7 @@ import { reDateString } from '@/utils/filters';
 import IndicatorTag from '@/utils/IndicatorTag';
 import TimeRangeInput from '@/utils/TimeRangeInput';
 import { mapGetters } from 'vuex';
+import { paramStr } from '@/utils/paramStr';
 
 export default {
   name: 'AuditHistory',
@@ -232,11 +233,8 @@ export default {
       return msNum ? `${msNum}ms` : '?';
     },
     reissueSearchLink (log) {
-      // encodeURIComponent ensures use of the url-safe equivalents of special characters
-      const baseQuery = `?b=${encodeURIComponent(window.btoa(log.indicator))}`;
-      const allOtherQueryParamsList = { ...log.queryOptions, submit: 'y' };
-      const otherQueryParams = Object.entries(allOtherQueryParamsList).map(([key, value]) => `&${key}=${encodeURIComponent(value)}`).join('');
-      return `${baseQuery}${otherQueryParams}`;
+      const allQueryParams = { b: window.btoa(log.indicator), ...log.queryOptions, submit: 'y' };
+      return `/${paramStr(allQueryParams)}`;
     },
     deleteLog (id) {
       AuditService.deleteAudit(id).then(() => {

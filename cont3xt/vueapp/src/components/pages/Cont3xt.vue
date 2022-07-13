@@ -314,6 +314,7 @@ import Cont3xtService from '@/components/services/Cont3xtService';
 import IntegrationCard from '@/components/integrations/IntegrationCard';
 import IntegrationPanel from '@/components/integrations/IntegrationPanel';
 import AuditService from '@/components/services/AuditService';
+import { paramStr } from '@/utils/paramStr';
 
 export default {
   name: 'Cont3xt',
@@ -620,10 +621,9 @@ export default {
     shareLink () {
       let shareLink = window.location.href;
       if (this.$route.query.b !== undefined || this.$route.query.q !== undefined) {
-        // share link is given submit=y query param (assuming some query exists)
-        const search = window.location.search;
-        const appendSubmitSymbol = search.startsWith('?') ? '&' : '?';
-        shareLink = `${window.location.origin}/${search}${appendSubmitSymbol}submit=y`;
+        // share link is given submit=y query param (only if some search parameter exists)
+        const allSharedQueryParams = { ...this.$route.query, submit: 'y' };
+        shareLink = `${window.location.origin}/${paramStr(allSharedQueryParams)}`;
       }
       this.$copyText(shareLink);
     },

@@ -1,5 +1,5 @@
 import setReqHeaders from '../../../../../common/vueapp/setReqHeaders';
-import Vue from 'vue';
+import { paramStr } from '../../utils/paramStr';
 
 export default {
   /**
@@ -32,17 +32,14 @@ export default {
    */
   getAudits (query) {
     return new Promise((resolve, reject) => {
-      const options = {
-        method: 'GET',
-        params: query,
-        url: 'api/audits'
-      };
-      Vue.axios(options).then((response) => {
-        if (response.status !== 200) { // test for bad response code
+      fetch(`api/audits/${paramStr(query)}`).then((response) => {
+        if (!response.ok) { // test for bad response code
           throw new Error(response.statusText);
         }
-        return resolve(response.data.audits);
-      }).catch((err) => {
+        return response.json();
+      }).then((response) => {
+        return resolve(response.audits);
+      }).catch((err) => { // this catches an issue within the ^ .then
         return reject(err);
       });
     });
