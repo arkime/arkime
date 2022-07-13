@@ -31,6 +31,7 @@ NOTICE: Cross-cluster Shortcuts require you to not restart all your viewers at o
   - BREAKING - new defaults maxFileSizeG=12, compressES=true
   - BREAKING - pcap compression is turned on by default with simpleGzipBlockSize=32000
   - BREAKING - right-click changed to value-actions in config
+  - release - cyberchef 9.46.0
   - all - Support ES 8
   - addUser.js - new --roles option, --admin creates superAdmin user
   - capture - New ecsEventDatset setting
@@ -47,10 +48,13 @@ NOTICE: Cross-cluster Shortcuts require you to not restart all your viewers at o
   - viewer - fixed auth fallback to digest from header mode
   - viewer - field-actions to display configurable menu items on field labels
   - viewer - share shortcuts with specific users or roles ("arkimeUser" role = old shortcut sharing)
+  - viewer - share views with specific users or roles ("arkimeUser" role = old shortcut sharing)
   - viewer - share notifiers with specific users or roles (all previous notifiers will be shared with the "arkimeUser" role)
   - viewer - share queries with specific users or roles
+  - viewer - share hunts with roles
   - viewer - rework some settings UI, try and make UX similiar when adding things
   - viewer - no more _moloch_shared user
+  - viewer - configure auto-hiding map/graph on large queries using turnOffGraphDays (default = 30 days)
   - wise - fix some stats sorting
   - wise - fix UI saving of INI formatted config
 
