@@ -31,7 +31,7 @@ NOTICE: Cross-cluster Shortcuts require you to not restart all your viewers at o
   - BREAKING - new defaults maxFileSizeG=12, compressES=true
   - BREAKING - pcap compression is turned on by default with simpleGzipBlockSize=32000
   - BREAKING - right-click changed to value-actions in config
-  - release - cyberchef 9.46.0
+  - release - cyberchef 9.46.0, node 16.16.0
   - all - Support ES 8
   - addUser.js - new --roles option, --admin creates superAdmin user
   - capture - New ecsEventDatset setting
