@@ -365,9 +365,10 @@
             </template>
             <b-form-input
               autofocus
-              autocomplete="userid"
+              debounce="400"
               placeholder="Unique ID"
-              v-model.lazy="newUser.userId"
+              :value="newUser.userId"
+              @change="v => newUser.userId = v"
               :state="newUser.userId.length > 0"
             />
           </b-input-group>
@@ -381,9 +382,10 @@
               </b-input-group-text>
             </template>
             <b-form-input
-              autocomplete="username"
+              debounce="400"
               placeholder="Readable name"
-              v-model.lazy="newUser.userName"
+              :value="newUser.userName"
+              @change="v => newUser.userName = v"
               :state="newUser.userName.length > 0"
             />
           </b-input-group>
@@ -399,9 +401,10 @@
             </b-input-group-text>
           </template>
           <b-form-input
-            autocomplete="expression"
+            debounce="400"
             placeholder="node == test"
-            v-model.lazy="newUser.expression"
+            :value="newUser.expression"
+            @change="v => newUser.expression = v"
           />
         </b-input-group>
         <div class="row">
@@ -458,11 +461,12 @@
             </b-input-group-text>
           </template>
           <b-form-input
+            debounce="400"
             type="password"
             :state="validatePassword"
             placeholder="New password"
-            autocomplete="new-password"
-            v-model.lazy="newUser.password"
+            :value="newUser.password"
+            @change="v => newUser.password = v"
           />
         </b-input-group>
         <b-form-checkbox inline
