@@ -44,6 +44,7 @@
         hover
         striped
         show-empty
+        :dark="getDarkThemeEnabled"
         :fields="fields"
         :items="auditLogs"
         :sort-by.sync="sortBy"
@@ -131,7 +132,7 @@ export default {
   name: 'AuditHistory',
   components: { IndicatorTag, TimeRangeInput },
   computed: {
-    ...mapGetters(['getViews', 'getUser']),
+    ...mapGetters(['getViews', 'getUser', 'getDarkThemeEnabled']),
     viewLookup () {
       return Object.fromEntries(this.getViews.map(view => [view._id, view.name]));
     }

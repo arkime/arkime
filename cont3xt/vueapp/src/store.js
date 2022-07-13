@@ -42,7 +42,8 @@ const store = new Vuex.Store({
     toggleCache: false,
     downloadReport: false,
     copyShareLink: false,
-    immediateSubmissionReady: false
+    immediateSubmissionReady: false,
+    theme: undefined
   },
   mutations: {
     SET_USER (state, data) {
@@ -207,6 +208,9 @@ const store = new Vuex.Store({
     },
     SET_IMMEDIATE_SUBMISSION_READY (state, value) {
       state.immediateSubmissionReady = value;
+    },
+    SET_THEME (state, data) {
+      state.theme = data;
     }
   },
   getters: {
@@ -330,12 +334,18 @@ const store = new Vuex.Store({
         makeSystemDefault('None', [], 'none')
       ];
       return [...systemDefaultViews, ...state.views];
+    },
+    getTheme (state) {
+      return state.theme;
+    },
+    getDarkThemeEnabled (state) {
+      return state.theme === 'dark';
     }
   },
   plugins: [createPersistedState({
     paths: [ // only these state variables are persisted to localstorage
       'checkedLinks', 'selectedIntegrations', 'sidebarKeepOpen',
-      'collapsedLinkGroups', 'integrationsPanelHoverDelay'
+      'collapsedLinkGroups', 'integrationsPanelHoverDelay', 'theme'
     ]
   })]
 });
