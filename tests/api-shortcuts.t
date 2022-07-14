@@ -1,4 +1,4 @@
-use Test::More tests => 92;
+use Test::More tests => 94;
 use Cwd;
 use URI::Escape;
 use MolochTest;
@@ -164,6 +164,12 @@ is($shortcuts->{data}->[2]->{users}, undef, "can't see users field if it's a sha
 $shortcuts = viewerGet("/api/shortcuts");
 ok(exists $shortcuts->{data}->[0]->{roles}, 'arkimeAdmin can see roles');
 ok(exists $shortcuts->{data}->[0]->{users}, 'arkimeAdmin can see users');
+
+# admin can view all shortcuts when all param is supplied
+$shortcuts = viewerGet("/api/shortcuts?molochRegressionUser=anonymous");
+eq_or_diff($shortcuts->{recordsTotal}, 2, "returns 2 recordsTotal without all flag");
+$shortcuts = viewerGet("/api/shortcuts?molochRegressionUser=anonymous&all=true");
+eq_or_diff($shortcuts->{recordsTotal}, 4, "returns 4 recordsTotal with all flag");
 
 # get only shortcuts of a specific type
 $shortcuts = viewerGet("/lookups?fieldType=string");

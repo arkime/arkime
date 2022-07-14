@@ -158,9 +158,14 @@ module.exports = (Db, internals) => {
       }
     }
 
+    const numQuery = { ...query };
+    delete numQuery.sort;
+    delete numQuery.size;
+    delete numQuery.from;
+
     Promise.all([
       Db.searchShortcuts(query),
-      Db.numberOfShortcuts()
+      Db.numberOfShortcuts(numQuery)
     ]).then(([{ body: { hits: shortcuts } }, { body: { count: total } }]) => {
       const results = { list: [], map: {} };
       for (const hit of shortcuts.hits) {
