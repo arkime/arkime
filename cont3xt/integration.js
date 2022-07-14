@@ -320,7 +320,7 @@ class Integration {
     const writeOne = (integration, response) => {
       if (integration.addMoreIntegrations) {
         integration.addMoreIntegrations(itype, response, (moreQuery, moreIType) => {
-          Integration.runIntegrationsList(shared, moreQuery, moreIType, Integration.integrations[moreIType]);
+          Integration.runIntegrationsList(shared, moreQuery, moreIType, Integration.integrations[moreIType], onFinish);
         });
       }
 
