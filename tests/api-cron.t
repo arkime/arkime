@@ -1,4 +1,4 @@
-use Test::More tests => 22;
+use Test::More tests => 24;
 use Cwd;
 use MolochTest;
 use JSON;
@@ -62,6 +62,14 @@ eq_or_diff($json->[0]->{name}, "test1update", "test1 user can see query");
 ok(!exists $json->[0]->{users}, "test1 user cannot see users");
 ok(!exists $json->[0]->{roles}, "test1 user cannot see roles");
 
+# admin can view all periodic queries when all param is supplied
+$json = viewerPostToken("/api/cron?molochRegressionUser=test1", '{"name":"asdf","query":"protocols == tls","action":"tag","tags":"test"}', $test1Token);
+my $key2 = $json->{query}->{key};
+$json = viewerGet("/api/crons?molochRegressionUser=anonymous");
+is (@{$json}, 1, "returns 1 query without all flag");
+$json = viewerGet("/api/crons?molochRegressionUser=anonymous&all=true");
+is (@{$json}, 2, "returns 2 queries with all flag");
+
 # shared user cannot update query
 $json = viewerPostToken("/api/cron/$key?molochRegressionUser=test1", '{"name":"bad name","query":"protocols == tls","action":"tag","tags":"tls","users":"test2,test3", "roles":["arkimeUser"]}', $test1Token);
 ok(!$json->{success}, "shared user cannot update query");
@@ -75,5 +83,6 @@ $json = viewerDeleteToken("/api/cron/$key", $token);
 ok($json->{success}, "query can be deleted");
 
 # cleanup
+$json = viewerDeleteToken("/api/cron/$key2?molochRegressionUser=test1", $test1Token);
 $json = viewerDeleteToken("/api/user/test1", $token);
 $json = viewerDeleteToken("/api/user/test2", $token);

@@ -3,6 +3,18 @@
 
     <h3>
       Periodic Queries
+      <b-form-checkbox
+        button
+        size="sm"
+        class="ml-2"
+        v-model="seeAll"
+        v-b-tooltip.hover
+        @input="getCronQueries"
+        v-if="user.roles.includes('arkimeAdmin')"
+        :title="seeAll ? 'Just show the periodic queries created by you and shared with you' : 'See all the periodic queries that exist for all users (you can because you are an ADMIN!)'">
+        <span class="fa fa-user-circle mr-1" />
+        See {{ seeAll ? ' MY ' : ' ALL ' }} Periodic Queries
+      </b-form-checkbox>
       <b-button
         size="sm"
         variant="success"
@@ -547,7 +559,8 @@ export default {
       newCronQueryProcess: '0',
       newCronQueryAction: 'tag',
       newCronQueryUsers: '',
-      newCronQueryRoles: []
+      newCronQueryRoles: [],
+      seeAll: false
     };
   },
   computed: {
@@ -752,7 +765,12 @@ export default {
     },
     /* retrieves the specified user's cron queries */
     getCronQueries () {
-      SettingsService.getCronQueries(this.userId).then((response) => {
+      const queryParams = {};
+
+      if (this.seeAll) { queryParams.all = true; }
+      if (this.userId) { queryParams.userId = this.userId; }
+
+      SettingsService.getCronQueries(queryParams).then((response) => {
         this.cronQueries = response;
       }).catch((error) => {
         this.cronQueryListError = error.text;

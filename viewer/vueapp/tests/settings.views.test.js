@@ -51,7 +51,7 @@ SettingsService.createView = jest.fn().mockResolvedValue({
 
 test('views', async () => {
   const {
-    emitted, getByText, getAllByTitle, queryByText, getByPlaceholderText
+    emitted, getByText, getByTitle, getAllByTitle, queryByText, getByPlaceholderText
   } = render(Views, {
     store,
     mocks: { $route }
@@ -115,4 +115,18 @@ test('views', async () => {
   await fireEvent.click(getAllByTitle('Delete this view')[0]);
   expect(SettingsService.deleteView).toHaveBeenCalledWith('1', undefined);
   expect(queryByText('updated view name')).not.toBeInTheDocument(); // view removed
+
+  // can click see all button ---------------------------------------------- //
+  const seeAllBtn = getByTitle('See all the views that exist for all users (you can because you are an ADMIN!)');
+  await fireEvent.click(seeAllBtn);
+  expect(SettingsService.getViews).toHaveBeenCalledWith({
+    start: 0,
+    all: true,
+    length: 50,
+    desc: false,
+    sort: 'name'
+  });
+  await waitFor(() => { // updates the title of the button
+    getByTitle('Just show the views created by you and shared with you');
+  });
 });

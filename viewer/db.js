@@ -1269,9 +1269,9 @@ exports.searchShortcutsLocal = async (query) => {
     index: internals.localShortcutsIndex, body: query, rest_total_hits_as_int: true, version: true
   });
 };
-exports.numberOfShortcuts = async () => {
+exports.numberOfShortcuts = async (query) => {
   return internals.usersClient7.count({
-    index: internals.remoteShortcutsIndex
+    index: internals.remoteShortcutsIndex, body: query
   });
 };
 exports.createShortcut = async (doc) => {
