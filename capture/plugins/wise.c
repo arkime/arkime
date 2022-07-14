@@ -335,7 +335,7 @@ LOCAL void wise_cb(int UNUSED(code), unsigned char *data, int data_len, gpointer
         BSB_IMPORT_u08(bsb, numOps);
 
         moloch_field_ops_init(&wi->ops, numOps, MOLOCH_FIELD_OPS_FLAGS_COPY);
-        for (int o = 0; o < numOps; o++) {
+        for (int o = 0; o < numOps && !BSB_IS_ERROR(bsb); o++) {
 
             int rfield = 0;
             BSB_IMPORT_u08(bsb, rfield);
@@ -349,6 +349,11 @@ LOCAL void wise_cb(int UNUSED(code), unsigned char *data, int data_len, gpointer
             if (fieldPos == -1) {
                 LOG("Couldn't find pos %d", rfield);
                 continue;
+            }
+
+            if (BSB_IS_ERROR(bsb)) {
+                LOG("ERROR - WISE Response was corrupt");
+                break;
             }
 
             moloch_field_ops_add(&wi->ops, fieldPos, str, len - 1);
@@ -555,9 +560,9 @@ void wise_lookup_tuple(MolochSession_t *session, WiseRequest_t *request)
         }
         BSB_EXPORT_ptr(bsb, hstring->str, hstring->len);
     );
-    
+
     if (IN6_IS_ADDR_V4MAPPED(&session->addr1)) {
-      
+
       uint32_t ip1 = MOLOCH_V6_TO_V4(session->addr1);
       uint32_t ip2 = MOLOCH_V6_TO_V4(session->addr2);
 
@@ -571,18 +576,18 @@ void wise_lookup_tuple(MolochSession_t *session, WiseRequest_t *request)
       // inet_ntop(AF_INET6, ip6, ipstr, sizeof(ipstr));
       char ipstr1[INET6_ADDRSTRLEN];
       char ipstr2[INET6_ADDRSTRLEN];
-      
+
       inet_ntop(AF_INET6, &session->addr1, ipstr1, sizeof(ipstr1));
       inet_ntop(AF_INET6, &session->addr2, ipstr2, sizeof(ipstr2));
-      
+
       BSB_EXPORT_sprintf(bsb, ";%s;%u;%s;%u",
                          ipstr1,
                          session->port1,
                          ipstr2,
                          session->port2
                         );
-      
-      
+
+
     }
     wise_lookup(session, request, str, INTEL_TYPE_TUPLE);
 }

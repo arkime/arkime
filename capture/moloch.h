@@ -559,26 +559,29 @@ struct moloch_pcap_sf_pkthdr {
 typedef struct molochpacket_t
 {
     struct molochpacket_t   *packet_next, *packet_prev;
-    struct timeval ts;             // timestamp
-    uint8_t       *pkt;            // full packet
-    uint64_t       writerFilePos;  // where in output file
-    uint64_t       readerFilePos;  // where in input file
-    uint32_t       writerFileNum;  // file number in db
-    uint32_t       hash;           // Saved hash
-    uint16_t       pktlen;         // length of packet
-    uint16_t       payloadLen;     // length of ip payload
-    uint16_t       payloadOffset;  // offset to ip payload from start
-    uint16_t       vlan;           // non zero if the reader gets the vlan
-    uint8_t        ipProtocol;     // ip protocol
-    uint8_t        mProtocol;      // moloch protocol
-    uint8_t        readerPos;      // position for filename/ops
-    uint32_t       ipOffset:11;    // offset to ip header from start
-    uint32_t       vpnIpOffset:11; // offset to vpn ip header from start
-    uint32_t       direction:1;    // direction of packet
-    uint32_t       v6:1;           // v6 or not
-    uint32_t       copied:1;       // don't need to copy
-    uint32_t       wasfrag:1;      // was a fragment
-    uint32_t       tunnel:8;       // tunnel type
+    struct timeval ts;                  // timestamp
+    uint8_t       *pkt;                 // full packet
+    uint64_t       writerFilePos;       // where in output file
+    uint64_t       readerFilePos;       // where in input file
+    uint32_t       writerFileNum;       // file number in db
+    uint32_t       hash;                // Saved hash
+    uint16_t       pktlen;              // length of packet
+    uint16_t       payloadLen;          // length of ip payload
+    uint16_t       payloadOffset;       // offset to ip payload from start
+    uint16_t       vlan;                // non zero if the reader gets the vlan
+    uint8_t        ipProtocol;          // ip protocol
+    uint8_t        mProtocol;           // moloch protocol
+    uint8_t        readerPos;           // position for filename/ops
+    uint32_t       etherOffset:11;      // offset to current ethernet frame from start
+    uint32_t       outerEtherOffset:11; // offset to previous ethernet frame from start
+    uint32_t       ipOffset:11;         // offset to ip header from start
+    uint32_t       outerIpOffset:11;    // offset to outer ip header from start
+    uint32_t       direction:1;         // direction of packet
+    uint32_t       v6:1;                // v6 or not
+    uint32_t       outerv6:1;           // outer v6 or not
+    uint32_t       copied:1;            // don't need to copy
+    uint32_t       wasfrag:1;           // was a fragment
+    uint32_t       tunnel:8;            // tunnel type
 } MolochPacket_t;
 
 typedef struct
@@ -1003,7 +1006,6 @@ gboolean moloch_http_send(void *serverV, const char *method, const char *key, in
 gboolean moloch_http_schedule(void *serverV, const char *method, const char *key, int32_t key_len, char *data, uint32_t data_len, char **headers, int priority, MolochHttpResponse_cb func, gpointer uw);
 
 
-gboolean moloch_http_set(void *server, char *key, int key_len, char *data, uint32_t data_len, MolochHttpResponse_cb func, gpointer uw);
 unsigned char *moloch_http_get(void *server, char *key, int key_len, size_t *mlen);
 #define moloch_http_get_buffer(size) MOLOCH_SIZE_ALLOC(buffer, size)
 #define moloch_http_free_buffer(b) MOLOCH_SIZE_FREE(buffer, b)
@@ -1115,7 +1117,6 @@ void     moloch_packet_batch(MolochPacketBatch_t * batch, MolochPacket_t * const
 void     moloch_packet_batch_process(MolochPacketBatch_t * batch, MolochPacket_t * const packet, int thread);
 
 void     moloch_packet_set_dltsnap(int dlt, int snaplen);
-void     moloch_packet_set_linksnap(int linktype, int snaplen); // Don't use, backwards compat
 uint32_t moloch_packet_dlt_to_linktype(int dlt);
 void     moloch_packet_drophash_add(MolochSession_t *session, int which, int min);
 

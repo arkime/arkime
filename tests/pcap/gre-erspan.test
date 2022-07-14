@@ -20,10 +20,9 @@
                },
                "ip" : "23.0.0.3",
                "mac" : [
-                  "64:00:f1:e2:01:01",
-                  "64:00:f1:e2:01:12"
+                  "64:00:f1:e1:03:03"
                ],
-               "mac-cnt" : 2,
+               "mac-cnt" : 1,
                "packets" : 2,
                "port" : 0
             },
@@ -31,26 +30,30 @@
                "Cisco Systems, Inc"
             ],
             "dstOuiCnt" : 1,
+            "dstOuterASN" : [
+               "AS13335 Cloudflare, Inc."
+            ],
+            "dstOuterGEO" : [
+               "AU"
+            ],
+            "dstOuterIp" : [
+               "1.1.1.1"
+            ],
+            "dstOuterIpCnt" : 1,
+            "dstOuterMac" : [
+               "64:00:f1:e2:01:01"
+            ],
+            "dstOuterMac-cnt" : 1,
+            "dstOuterOui" : [
+               "Cisco Systems, Inc"
+            ],
+            "dstOuterOuiCnt" : 1,
+            "dstOuterRIR" : [
+               "APNIC"
+            ],
             "dstRIR" : "ARIN",
             "fileId" : [],
             "firstPacket" : 1402723255667,
-            "greASN" : [
-               "AS13335 Cloudflare, Inc.",
-               "AS3215 Orange"
-            ],
-            "greGEO" : [
-               "AU",
-               "FR"
-            ],
-            "greIp" : [
-               "1.1.1.1",
-               "2.2.2.2"
-            ],
-            "greIpCnt" : 2,
-            "greRIR" : [
-               "APNIC",
-               "RIPE"
-            ],
             "icmp" : {
                "code" : [
                   0
@@ -103,10 +106,9 @@
                },
                "ip" : "23.0.0.2",
                "mac" : [
-                  "64:00:f1:e2:01:01",
-                  "64:00:f1:e2:01:12"
+                  "64:00:f1:e1:02:02"
                ],
-               "mac-cnt" : 2,
+               "mac-cnt" : 1,
                "packets" : 2,
                "port" : 0
             },
@@ -114,6 +116,27 @@
                "Cisco Systems, Inc"
             ],
             "srcOuiCnt" : 1,
+            "srcOuterASN" : [
+               "AS3215 Orange"
+            ],
+            "srcOuterGEO" : [
+               "FR"
+            ],
+            "srcOuterIp" : [
+               "2.2.2.2"
+            ],
+            "srcOuterIpCnt" : 1,
+            "srcOuterMac" : [
+               "64:00:f1:e2:01:12"
+            ],
+            "srcOuterMac-cnt" : 1,
+            "srcOuterOui" : [
+               "Cisco Systems, Inc"
+            ],
+            "srcOuterOuiCnt" : 1,
+            "srcOuterRIR" : [
+               "RIPE"
+            ],
             "srcRIR" : "ARIN",
             "tags" : [
                "gretest-erspan"

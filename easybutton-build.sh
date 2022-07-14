@@ -18,7 +18,7 @@ PCAP=1.10.1
 CURL=7.78.0
 LUA=5.3.6
 DAQ=2.0.7
-NODE=16.14.2
+NODE=16.16.0
 NGHTTP2=1.44.0
 
 TDIR="/opt/arkime"
@@ -190,7 +190,7 @@ else
     fi
 
     if [ ! -f "glib-$GLIB/_build/gio/libgio-2.0.a" ] || [ ! -f "glib-$GLIB/_build/glib/libglib-2.0.a" ]; then
-      sudo pip3 install meson
+      pip3 install --user meson
       git clone https://github.com/ninja-build/ninja.git
       (echo $PATH; cd ninja; git checkout release; python3 configure.py --bootstrap)
       xzcat glib-$GLIB.tar.xz | tar xf -
@@ -263,7 +263,7 @@ else
 
   if [ ! -f "curl-$CURL/lib/.libs/libcurl.a" ]; then
     tar zxf curl-$CURL.tar.gz
-    ( cd curl-$CURL; ./configure --disable-ldap --disable-ldaps --without-libidn2 --without-librtmp --without-libpsl --without-nghttp2 --without-nghttp2 --without-nss --with-openssl; $MAKE)
+    ( cd curl-$CURL; ./configure --disable-ldap --disable-ldaps --without-libidn2 --without-librtmp --without-libpsl --without-nghttp2 --without-nghttp2 --without-nss --with-openssl --without-zstd; $MAKE)
     if [ $? -ne 0 ]; then
       echo "ARKIME: $MAKE failed"
       exit 1

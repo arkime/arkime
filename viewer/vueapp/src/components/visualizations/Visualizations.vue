@@ -10,7 +10,7 @@
           <div class="col text-center">
             <div class="alert alert-sm alert-info container">
               <strong>
-                This cluster is set to hide the graph if a time range of greater than {{ turnOffGraphDays }} days is requested
+                This cluster is set to hide the graph if a time range of {{ turnOffGraphDays }} days or greater is requested
               </strong>
               <span class="fa fa-info-circle fa-lg ml-1 mr-1 cursor-help"
                 v-b-tooltip="'This helps with performance as computing the visualization data takes longer than just fetching the sessions data'"
