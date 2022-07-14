@@ -313,7 +313,6 @@ import CreateViewModal from '@/components/views/CreateViewModal';
 import Cont3xtService from '@/components/services/Cont3xtService';
 import IntegrationCard from '@/components/integrations/IntegrationCard';
 import IntegrationPanel from '@/components/integrations/IntegrationPanel';
-import AuditService from '@/components/services/AuditService';
 import { paramStr } from '@/utils/paramStr';
 
 export default {
@@ -374,7 +373,7 @@ export default {
       'getSidebarKeepOpen', 'getShiftKeyHold', 'getFocusSearch',
       'getIssueSearch', 'getFocusLinkSearch',
       'getToggleCache', 'getDownloadReport', 'getCopyShareLink',
-      'getAllViews', 'getImmediateSubmissionReady'
+      'getAllViews', 'getImmediateSubmissionReady', 'getSelectedView'
     ]),
     loading: {
       get () { return this.$store.state.loading; },
@@ -529,26 +528,9 @@ export default {
           }
         });
       }
-
-      const queryOptionsUsed = Object.fromEntries(
-        Object.entries(this.$route.query).filter(([key, _]) => key !== 'b')
-      );
-      const searchIssuedAt = Date.now();
       const termSearched = this.searchTerm;
-
-      const createAuditHistoryLog = ({ finishedAt, resultCount }) => {
-        AuditService.createAudit({
-          issuedAt: searchIssuedAt,
-          took: finishedAt - searchIssuedAt,
-          resultCount,
-          iType: this.searchItype,
-          indicator: termSearched,
-          tags: [],
-          queryOptions: queryOptionsUsed
-        });
-      };
-
-      Cont3xtService.search({ searchTerm: termSearched, skipCache: this.skipCache }).subscribe({
+      const viewId = this.getSelectedView?._id;
+      Cont3xtService.search({ searchTerm: termSearched, skipCache: this.skipCache, tags: [], viewId }).subscribe({
         next: (data) => {
           if (data.itype && !this.searchItype) {
             // determine the search type and save the search term
@@ -585,10 +567,6 @@ export default {
           }
 
           if (data.finished) { // we finished receiving results
-            createAuditHistoryLog({
-              finishedAt: Date.now(),
-              resultCount: data.resultCount
-            });
             const leftover = this.loading.total - this.loading.failed - this.loading.received;
             if (leftover) {
               this.loading = { // complete the progress bar

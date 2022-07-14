@@ -62,38 +62,35 @@ class Audit {
    * @param {string} iType
    * @param {string} indicator
    * @param {string[]} tags
-   * @param {Object} queryOptions
+   * @param {string | undefined} viewId
    */
 
   /**
-   * PUT - /api/audit
-   *
-   * Creates a new link group
+   * Creates a new history audit log
    * @name /audit
    * @param {Audit} audit - The history entry to create
-   * @returns {boolean} success - True if the request was successful, false otherwise
-   * @returns {string} text - The success/error message to (optionally) display to the user
+   * @returns {Promise} - The promise that either resolves or rejects in error
    */
-  static async apiCreate (req, res, next) {
-    const audit = { userId: req.user.userId, ...req.body };
+  static async create (audit) {
+    return new Promise((resolve, reject) => {
+      const msg = Audit.verifyAudit(audit);
 
-    const msg = Audit.verifyAudit(audit);
-    if (msg) {
-      return res.send({ success: false, text: msg });
-    }
+      if (msg) {
+        reject(msg);
+      }
 
-    const results = await Db.putAudit(null, audit);
-    if (!results) {
-      return res.send({ success: false, text: 'ES Error' }); // TODO: on 'api' methods, change 'ES Error' to 'Database Error', or determine database at runtime
-    }
-    return res.send({ success: true, text: 'Success' });
+      Db.putAudit(null, audit).then((results) => {
+        if (!results) {
+          reject('ES Error');
+        } else {
+          resolve(results);
+        }
+      }).catch((err) => reject('ES Error', err));
+    });
   }
 
   // Verify the given audit entry, returns error msg on failure, null otherwise
   static verifyAudit (audit) {
-    const isObject = (obj) => {
-      return (typeof obj === 'object' && !Array.isArray(obj) && obj != null);
-    };
     if (typeof (audit.userId) !== 'string') { return 'must have field userId of type string'; }
     if (typeof (audit.issuedAt) !== 'number') { return 'must have field issuedAt of type number (milliseconds)'; }
     if (typeof (audit.took) !== 'number') { return 'must have field took of type number (milliseconds)'; }
@@ -101,7 +98,7 @@ class Audit {
     if (typeof (audit.iType) !== 'string') { return 'must have field iType of type string'; }
     if (typeof (audit.indicator) !== 'string') { return 'must have field indicator of type string'; }
     if (!Array.isArray(audit.tags)) { return 'must have field tags of type Array'; }
-    if (!isObject(audit.queryOptions)) { return 'must have field queryOptions of type Object'; }
+    if (typeof (audit.viewId) !== 'string' && audit.viewId !== undefined) { return 'field viewId must be of type string or undefined'; }
 
     return null;
   }
