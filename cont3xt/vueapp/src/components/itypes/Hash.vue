@@ -20,9 +20,11 @@
       </div>
     </div>
   </b-card>
+  <basic-i-type-card :itype="itype" :query="query" v-else/>
 </template>
 
 <script>
+import BasicITypeCard from '@/utils/BasicITypeCard';
 import Cont3xtField from '@/utils/Field';
 import IntegrationBtns from '@/components/integrations/IntegrationBtns';
 
@@ -30,11 +32,16 @@ export default {
   name: 'Cont3xtHash',
   components: {
     Cont3xtField,
-    IntegrationBtns
+    IntegrationBtns,
+    BasicITypeCard
   },
   props: {
     data: { // the data returned from cont3xt search
       type: Object,
+      required: true
+    },
+    query: { // fallback used in case data is non-existent
+      type: String,
       required: true
     }
   },

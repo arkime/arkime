@@ -133,6 +133,10 @@ module.exports = (Db, internals) => {
       from: req.query.start || 0
     };
 
+    if (req.query.all && roles.includes('arkimeAdmin')) {
+      query.query.bool.filter = []; // remove sharing restrictions
+    }
+
     query.sort[req.query.sort || 'name'] = {
       order: req.query.desc === 'true' ? 'desc' : 'asc'
     };
@@ -154,9 +158,14 @@ module.exports = (Db, internals) => {
       }
     }
 
+    const numQuery = { ...query };
+    delete numQuery.sort;
+    delete numQuery.size;
+    delete numQuery.from;
+
     Promise.all([
       Db.searchShortcuts(query),
-      Db.numberOfShortcuts()
+      Db.numberOfShortcuts(numQuery)
     ]).then(([{ body: { hits: shortcuts } }, { body: { count: total } }]) => {
       const results = { list: [], map: {} };
       for (const hit of shortcuts.hits) {

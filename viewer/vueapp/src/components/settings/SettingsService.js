@@ -286,20 +286,13 @@ export default {
   // PERIODIC QUERIES ------------------------------------------------------ //
   /**
    * Gets a user's cron queries
-   * @param {string} userId     The unique identifier for a user
-   *                            (only required if not the current user)
+  * @param {Object} params      Query params object to search for queries
    * @returns {Promise} Promise A promise object that signals the completion
    *                            or rejection of the request.
    */
-  getCronQueries (userId) {
+  getCronQueries (params) {
     return new Promise((resolve, reject) => {
-      const options = {
-        method: 'GET',
-        params: { userId },
-        url: 'api/crons'
-      };
-
-      Vue.axios(options).then((response) => {
+      Vue.axios.get('api/crons', { params }).then((response) => {
         resolve(response.data);
       }).catch((error) => {
         reject(error);

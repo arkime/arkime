@@ -46,7 +46,7 @@ SettingsService.createShortcut = jest.fn().mockResolvedValue({ text: 'createShor
 
 test('shortcuts', async () => {
   const {
-    getByText, getByPlaceholderText, getAllByTitle, emitted, queryByText
+    getByText, getByTitle, getByPlaceholderText, getAllByTitle, emitted, queryByText
   } = render(Shortcuts, {
     store,
     mocks: { $route, $router }
@@ -156,4 +156,18 @@ test('shortcuts', async () => {
     expect(emitted()['display-message'][2][0]).toStrictEqual({ msg: 'deleteShortcut YAY!' });
   });
   expect(queryByText('NEW_NAME')).not.toBeInTheDocument(); // query removed
+
+  // can click see all button ---------------------------------------------- //
+  const seeAllBtn = getByTitle('See all the shortcuts that exist for all users (you can because you are an ADMIN!)');
+  await fireEvent.click(seeAllBtn);
+  expect(SettingsService.getShortcuts).toHaveBeenCalledWith({
+    start: 0,
+    all: true,
+    length: 50,
+    desc: false,
+    sort: 'name'
+  });
+  await waitFor(() => { // updates the title of the button
+    getByTitle('Just show the shortcuts created by you and shared with you');
+  });
 });

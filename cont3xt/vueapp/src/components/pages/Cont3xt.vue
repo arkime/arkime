@@ -56,7 +56,8 @@
         </b-button>
         <ViewSelector
           :no-caret="true"
-          :show-selected-view="true">
+          :show-selected-view="true"
+          :hot-key-enabled="true">
           <template #title>
             <span class="fa fa-eye" />
           </template>
@@ -137,95 +138,51 @@
           {{ getIntegrationsError }}
         </div> <!-- /integration error -->
 
-        <!-- link inputs -->
-        <b-form inline
-          v-if="searchTerm && initialized"
-          class="w-50 d-flex align-items-start link-inputs">
-          <b-input-group
-            size="xs"
-            class="mr-2 mb-1">
-            <template #prepend>
-              <b-input-group-text>
-                <span v-if="!getShiftKeyHold">
-                  Start
-                </span>
-                <span v-else
-                  class="start-time-shortcut">
-                  T
-                </span>
-              </b-input-group-text>
-            </template>
-            <b-form-input
-              type="text"
-              tabindex="0"
-              ref="startDate"
-              v-model="startDate"
-              style="width:152px"
-              placeholder="Start Date"
-              v-focus="getFocusStartDate"
-              @change="updateStopStart('startDate')"
-            />
-          </b-input-group>
-          <b-input-group
-            size="xs"
-            class="mr-2 mb-1">
-            <template #prepend>
-              <b-input-group-text>
-                Stop
-              </b-input-group-text>
-            </template>
-            <b-form-input
-              type="text"
-              tabindex="0"
-              v-model="stopDate"
-              style="width:152px"
-              placeholder="Stop Date"
-              @change="updateStopStart('stopDate')"
-            />
-          </b-input-group>
-          <span class="fa fa-lg fa-question-circle cursor-help mt-1"
-            v-b-tooltip.hover.html="linkPlaceholderTip"
-          />
-          <span class="pl-2">
-            {{ numDays }} days | {{ numHours }} hours
-          </span>
-        </b-form> <!-- /link inputs -->
+        <!--    time range input for links    -->
+        <time-range-input v-if="lastSearchedTerm && initialized"
+          class="link-inputs w-50 mb-1"
+          v-model="timeRangeInfo"
+          :place-holder-tip="linkPlaceholderTip" />
+        <!--    /time range input for links    -->
 
         <!-- results -->
-        <template v-if="searchTerm">
+        <template v-if="lastSearchedTerm">
           <!-- itype results summary -->
           <div class="results-container results-summary">
             <div>
               <cont3xt-domain
                 :data="results"
+                :query="lastSearchedTerm"
                 v-if="searchItype === 'domain'"
               />
               <cont3xt-ip
                 :data="results"
+                :query="lastSearchedTerm"
                 v-else-if="searchItype === 'ip'"
               />
               <cont3xt-url
                 :data="results"
-                :query="searchTerm"
+                :query="lastSearchedTerm"
                 v-else-if="searchItype === 'url'"
               />
               <cont3xt-email
                 :data="results"
-                :query="searchTerm"
+                :query="lastSearchedTerm"
                 v-else-if="searchItype === 'email'"
               />
               <cont3xt-hash
                 :data="results"
+                :query="lastSearchedTerm"
                 v-else-if="searchItype === 'hash'"
               />
               <cont3xt-phone
                 :data="results"
-                :query="searchTerm"
+                :query="lastSearchedTerm"
                 v-else-if="searchItype === 'phone'"
               />
               <cont3xt-text
                 :data="results"
-                :query="searchTerm"
+                :query="lastSearchedTerm"
                 v-else-if="searchItype === 'text'"
               />
               <div v-else-if="searchItype">
@@ -234,7 +191,7 @@
                 </h3>
                 <pre class="text-info"><code>{{ results }}</code></pre>
               </div>
-              <hr v-if="searchTerm && initialized">
+              <hr v-if="searchItype && initialized">
               <!-- link groups error -->
               <b-alert
                 variant="danger"
@@ -279,12 +236,12 @@
                       </template>
                       <template slot="default">
                         <link-group-card
-                          :query="searchTerm"
-                          :num-days="numDays"
+                          :query="lastSearchedTerm"
+                          :num-days="timeRangeInfo.numDays"
                           :itype="searchItype"
-                          :num-hours="numHours"
-                          :stop-date="stopDate"
-                          :start-date="startDate"
+                          :num-hours="timeRangeInfo.numHours"
+                          :stop-date="timeRangeInfo.stopDate"
+                          :start-date="timeRangeInfo.startDate"
                           :link-group-index="index"
                           v-if="getLinkGroups.length"
                           :hide-links="hideLinks[linkGroup._id]"
@@ -340,6 +297,7 @@
 import { mapGetters } from 'vuex';
 
 import ReorderList from '@/utils/ReorderList';
+import TimeRangeInput from '@/utils/TimeRangeInput';
 import Cont3xtIp from '@/components/itypes/IP';
 import Cont3xtUrl from '@/components/itypes/URL';
 import Cont3xtHash from '@/components/itypes/Hash';
@@ -355,6 +313,7 @@ import CreateViewModal from '@/components/views/CreateViewModal';
 import Cont3xtService from '@/components/services/Cont3xtService';
 import IntegrationCard from '@/components/integrations/IntegrationCard';
 import IntegrationPanel from '@/components/integrations/IntegrationPanel';
+import { paramStr } from '@/utils/paramStr';
 
 export default {
   name: 'Cont3xt',
@@ -371,21 +330,19 @@ export default {
     LinkGroupCard,
     CreateViewModal,
     IntegrationCard,
-    IntegrationPanel
+    IntegrationPanel,
+    TimeRangeInput
   },
   directives: { Focus },
   data () {
     return {
       error: '',
-      numDays: 7, // 1 week
-      numHours: 7 * 24, // 1 week
-      startDate: new Date(new Date().getTime() - (3600000 * 24 * 7)).toISOString().slice(0, -5) + 'Z', // 1 week ago
-      stopDate: new Date().toISOString().slice(0, -5) + 'Z', // now
       results: {},
       scrollPx: 0,
       searchItype: '',
       initialized: false,
       searchTerm: this.$route.query.q ? this.$route.query.q : (this.$route.query.b ? window.atob(this.$route.query.b) : ''),
+      lastSearchedTerm: '',
       skipCache: false,
       searchComplete: false,
       linkSearchTerm: this.$route.query.linkSearch || '',
@@ -394,19 +351,17 @@ export default {
         title: 'These values are used to fill in <a href="help#linkgroups" class="no-decoration">link placeholders</a>.<br>' +
           'Try using <a href="help#general" class="no-decoration">relative times</a> like -5d or -1h.'
       },
-      activeShareLink: false
+      activeShareLink: false,
+      timeRangeInfo: {
+        numDays: 7, // 1 week
+        numHours: 7 * 24, // 1 week
+        startDate: new Date(new Date().getTime() - (3600000 * 24 * 7)).toISOString().slice(0, -5) + 'Z', // 1 week ago
+        stopDate: new Date().toISOString().slice(0, -5) + 'Z' // now
+      }
     };
   },
   mounted () {
-    // set the stop/start date to the query parameters
-    if (this.$route.query.stopDate) {
-      this.stopDate = this.$route.query.stopDate;
-      this.updateStopStart('stopDate');
-    }
-    if (this.$route.query.startDate) {
-      this.startDate = this.$route.query.startDate;
-      this.updateStopStart('startDate');
-    }
+    // no need to parse start/stopDate query params here -- that is handled by TimeRangeInput
 
     // needs to be unfocused to focus again later with hotkey (subsequent focuses are unfocused in store)
     this.$store.commit('SET_FOCUS_SEARCH', false);
@@ -416,9 +371,9 @@ export default {
       'getRendering', 'getWaitRendering', 'getIntegrationData',
       'getIntegrationsError', 'getLinkGroupsError', 'getLinkGroups',
       'getSidebarKeepOpen', 'getShiftKeyHold', 'getFocusSearch',
-      'getIssueSearch', 'getFocusStartDate', 'getFocusLinkSearch',
+      'getIssueSearch', 'getFocusLinkSearch',
       'getToggleCache', 'getDownloadReport', 'getCopyShareLink',
-      'getAllViews', 'getImmediateSubmissionReady'
+      'getAllViews', 'getImmediateSubmissionReady', 'getSelectedView'
     ]),
     loading: {
       get () { return this.$store.state.loading; },
@@ -496,9 +451,6 @@ export default {
     getFocusSearch (val) {
       if (val) { this.$refs.search.select(); }
     },
-    getFocusStartDate (val) {
-      if (val) { this.$refs.startDate.select(); }
-    },
     getFocusLinkSearch (val) {
       if (val) { this.$refs.linkSearch.select(); }
     },
@@ -550,6 +502,10 @@ export default {
       });
     },
     search () {
+      if (this.searchTerm == null || this.searchTerm === '') {
+        return; // do NOT search if the query is empty
+      }
+
       this.error = '';
       this.results = {};
       this.searchItype = '';
@@ -572,12 +528,14 @@ export default {
           }
         });
       }
-
-      Cont3xtService.search({ searchTerm: this.searchTerm, skipCache: this.skipCache }).subscribe({
+      const termSearched = this.searchTerm;
+      const viewId = this.getSelectedView?._id;
+      Cont3xtService.search({ searchTerm: termSearched, skipCache: this.skipCache, tags: [], viewId }).subscribe({
         next: (data) => {
           if (data.itype && !this.searchItype) {
             // determine the search type and save the search term
             // based of the first itype seen
+            this.lastSearchedTerm = termSearched;
             this.searchItype = data.itype;
             this.filterLinks(this.linkSearchTerm);
           }
@@ -630,44 +588,6 @@ export default {
         }
       });
     },
-    updateStopStart (updated) {
-      let stopMs = new Date(this.stopDate).getTime();
-      let startMs = new Date(this.startDate).getTime();
-
-      // test for relative times
-      if (isNaN(stopMs)) {
-        stopMs = this.$options.filters.parseSeconds(this.stopDate) * 1000;
-      }
-      if (isNaN(startMs)) {
-        startMs = this.$options.filters.parseSeconds(this.startDate) * 1000;
-      }
-
-      // can't do anything if we can't calculate the date ms
-      if (isNaN(stopMs) || isNaN(startMs)) { return; }
-
-      // update the query params with the updated value
-      if (this.$route.query[updated] !== this[updated]) {
-        const query = { ...this.$route.query };
-        query[updated] = this[updated];
-        this.$router.push({ query });
-      }
-
-      const days = (stopMs - startMs) / (3600000 * 24);
-
-      switch (updated) {
-      case 'stopDate':
-        this.numDays = Math.round(days);
-        this.numHours = Math.round(days * 24);
-        this.startDate = new Date(stopMs - (3600000 * 24 * days)).toISOString().slice(0, -5) + 'Z';
-        this.stopDate = new Date(stopMs).toISOString().slice(0, -5) + 'Z';
-        break;
-      case 'startDate':
-        this.numDays = Math.round(days);
-        this.numHours = Math.round(days * 24);
-        this.startDate = new Date(startMs).toISOString().slice(0, -5) + 'Z';
-        break;
-      }
-    },
     hasLinksWithItype (linkGroup) {
       for (const link of linkGroup.links) {
         if (link.itypes.indexOf(this.searchItype) > -1) {
@@ -679,10 +599,9 @@ export default {
     shareLink () {
       let shareLink = window.location.href;
       if (this.$route.query.b !== undefined || this.$route.query.q !== undefined) {
-        // share link is given submit=y query param (assuming some query exists)
-        const search = window.location.search;
-        const appendSubmitSymbol = search.startsWith('?') ? '&' : '?';
-        shareLink = `${window.location.origin}/${search}${appendSubmitSymbol}submit=y`;
+        // share link is given submit=y query param (only if some search parameter exists)
+        const allSharedQueryParams = { ...this.$route.query, submit: 'y' };
+        shareLink = `${window.location.origin}/${paramStr(allSharedQueryParams)}`;
       }
       this.$copyText(shareLink);
     },

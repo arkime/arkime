@@ -74,6 +74,10 @@ class Cron {
       }
     };
 
+    if (req.query.all && roles.includes('arkimeAdmin')) {
+      query.query.bool.filter = []; // remove sharing restrictions
+    }
+
     Db.search('queries', 'query', query, (err, data) => {
       if (err || data.error) {
         console.log(`ERROR - ${req.method} /api/crons`, util.inspect(err || data.error, false, 50));

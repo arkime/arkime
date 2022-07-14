@@ -18,30 +18,39 @@
       and can be activated in the search bar.
     </p>
 
-    <div class="row mb-2">
-      <div class="col-5">
-        <div class="input-group input-group-sm">
-          <div class="input-group-prepend">
-            <div class="input-group-text">
-              <span class="fa fa-search"></span>
-            </div>
-          </div>
+    <div class="d-flex">
+      <div class="flex-grow-1 mr-2">
+        <b-input-group size="sm">
+          <template #prepend>
+            <b-input-group-text>
+              <span class="fa fa-search" />
+            </b-input-group-text>
+          </template>
           <b-form-input
             debounce="400"
             v-model="viewsQuery.search"
           />
-        </div>
+        </b-input-group>
       </div>
-      <div class="col-7">
-        <moloch-paging
-          v-if="views"
-          class="pull-right"
-          :length-default="size"
-          :records-total="recordsTotal"
-          :records-filtered="recordsFiltered"
-          @changePaging="changeViewsPaging">
-        </moloch-paging>
-      </div>
+      <b-form-checkbox
+        button
+        size="sm"
+        class="mr-2"
+        v-model="seeAll"
+        @input="getViews"
+        v-b-tooltip.hover
+        v-if="user.roles.includes('arkimeAdmin')"
+        :title="seeAll ? 'Just show the views created by you and shared with you' : 'See all the views that exist for all users (you can because you are an ADMIN!)'">
+        <span class="fa fa-user-circle mr-1" />
+        See {{ seeAll ? ' MY ' : ' ALL ' }} Views
+      </b-form-checkbox>
+      <moloch-paging
+        v-if="views"
+        :length-default="size"
+        :records-total="recordsTotal"
+        :records-filtered="recordsFiltered"
+        @changePaging="changeViewsPaging">
+      </moloch-paging>
     </div>
 
     <table class="table table-striped table-sm">
@@ -54,6 +63,7 @@
             <span v-show="viewsQuery.sortField === 'name' && viewsQuery.desc" class="fa fa-sort-desc"></span>
             <span v-show="viewsQuery.sortField !== 'name'" class="fa fa-sort"></span>
           </th>
+          <th>Creator</th>
           <th>Roles</th>
           <th>Users</th>
           <th>Expression</th>
@@ -68,6 +78,9 @@
            v-for="(item, index) in views">
           <td>
             {{ item.name }}
+          </td>
+          <td>
+            {{ item.user }}
           </td>
           <td>
             {{ item.roles ? item.roles.join(', ') : '' }}
@@ -297,7 +310,8 @@ export default {
         sortField: 'name'
       },
       recordsTotal: 0,
-      recordsFiltered: 0
+      recordsFiltered: 0,
+      seeAll: false
     };
   },
   props: {
@@ -451,8 +465,9 @@ export default {
         sort: this.viewsQuery.sortField
       };
 
-      if (this.viewsQuery.search) { queryParams.searchTerm = this.viewsQuery.search; }
+      if (this.seeAll) { queryParams.all = true; }
       if (this.userId) { queryParams.userId = this.userId; }
+      if (this.viewsQuery.search) { queryParams.searchTerm = this.viewsQuery.search; }
 
       SettingsService.getViews(queryParams).then((response) => {
         this.viewListError = '';

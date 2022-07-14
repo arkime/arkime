@@ -7,11 +7,18 @@ import { render, waitFor, fireEvent } from '@testing-library/vue';
 import IntegrationTable from '../src/components/integrations/IntegrationTable.vue';
 import IntegrationValue from '../src/components/integrations/IntegrationValue';
 
+console.error = jest.fn(); // ignore blob new error
+
 Vue.use(BootstrapVue);
 
 const store = {
   state: {
     renderingTable: false
+  },
+  getters: {
+    getRenderingTable (state) {
+      return state.renderingTable;
+    }
   },
   mutations: {
     SET_RENDERING_TABLE: jest.fn()

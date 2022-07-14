@@ -34,6 +34,10 @@ class View {
       size: req.query.length || 50
     };
 
+    if (req.query.all && roles.includes('arkimeAdmin')) {
+      query.query.bool.filter = []; // remove sharing restrictions
+    }
+
     query.sort[req.query.sort || 'name'] = {
       order: req.query.desc === 'true' ? 'desc' : 'asc'
     };

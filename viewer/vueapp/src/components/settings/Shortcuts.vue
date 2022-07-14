@@ -34,30 +34,39 @@
       </template>
     </p>
 
-    <div class="row">
-      <div class="col-5">
-        <div class="input-group input-group-sm">
-          <div class="input-group-prepend">
-            <div class="input-group-text">
-              <span class="fa fa-search"></span>
-            </div>
-          </div>
+    <div class="d-flex">
+      <div class="flex-grow-1 mr-2">
+        <b-input-group size="sm">
+          <template #prepend>
+            <b-input-group-text>
+              <span class="fa fa-search" />
+            </b-input-group-text>
+          </template>
           <b-form-input
             debounce="400"
             v-model="shortcutsQuery.search"
           />
-        </div>
+        </b-input-group>
       </div>
-      <div class="col-7">
-        <moloch-paging
-          class="pull-right"
-          v-if="shortcuts.data"
-          :length-default="shortcutsSize"
-          @changePaging="changeShortcutsPaging"
-          :records-total="shortcuts.recordsTotal"
-          :records-filtered="shortcuts.recordsFiltered">
-        </moloch-paging>
-      </div>
+      <b-form-checkbox
+        button
+        size="sm"
+        class="mr-2"
+        v-model="seeAll"
+        @input="getShortcuts"
+        v-b-tooltip.hover
+        v-if="user.roles.includes('arkimeAdmin')"
+        :title="seeAll ? 'Just show the shortcuts created by you and shared with you' : 'See all the shortcuts that exist for all users (you can because you are an ADMIN!)'">
+        <span class="fa fa-user-circle mr-1" />
+        See {{ seeAll ? ' MY ' : ' ALL ' }} Shortcuts
+      </b-form-checkbox>
+      <moloch-paging
+        v-if="shortcuts.data"
+        :length-default="shortcutsSize"
+        @changePaging="changeShortcutsPaging"
+        :records-total="shortcuts.recordsTotal"
+        :records-filtered="shortcuts.recordsFiltered">
+      </moloch-paging>
     </div>
 
     <table v-if="shortcuts.data"
@@ -390,7 +399,8 @@ export default {
         search: ''
       },
       createShortcutLoading: false,
-      hasUsersES: this.$constants.MOLOCH_HASUSERSES
+      hasUsersES: this.$constants.MOLOCH_HASUSERSES,
+      showAll: false
     };
   },
   computed: {
@@ -542,8 +552,9 @@ export default {
         sort: this.shortcutsQuery.sortField
       };
 
-      if (this.shortcutsQuery.search) { queryParams.searchTerm = this.shortcutsQuery.search; }
+      if (this.seeAll) { queryParams.all = true; }
       if (this.userId) { queryParams.userId = this.userId; }
+      if (this.shortcutsQuery.search) { queryParams.searchTerm = this.shortcutsQuery.search; }
 
       SettingsService.getShortcuts(queryParams).then((response) => {
         this.loading = false;
