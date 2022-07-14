@@ -100,21 +100,21 @@
       </template>
       <!--   /Tag Column   -->
 
-      <!--   Options Column   -->
-      <template #cell(queryOptions)="data">
-        <template v-if="Object.keys(data.item.queryOptions).length">
-          <template v-for="([key, value], index) in Object.entries(data.item.queryOptions)">
-            <span :key="index">{{ index === 0 ? '?' : '&' }}{{ key }}=<template>
-              <span class="text-success" v-b-tooltip.hover="value" v-if="key === 'view' && viewLookup[value] != null">{{ viewLookup[value] }}</span>
-              <span v-else>{{ value }}</span>
-            </template></span>
-          </template>
+      <!--   View Column   -->
+      <template #cell(viewId)="data">
+        <template v-if="data.item.viewId != null">
+          <span v-if="viewLookup[data.item.viewId] != null" v-b-tooltip.hover="data.item.viewId" class="text-success">
+            {{viewLookup[data.item.viewId]}}
+          </span>
+          <span v-else>
+            {{data.item.viewId}}
+          </span>
         </template>
         <template v-else>
           -
         </template>
       </template>
-      <!--   /Options Column   -->
+      <!--   /View Column   -->
     </b-table>
     <!--  /history table  -->
   </div>
@@ -191,10 +191,10 @@ export default {
           sortable: true
         },
         {
-          label: 'Options',
-          key: 'queryOptions',
+          label: 'View',
+          key: 'viewId',
           sortable: true,
-          setWidth: '15rem'
+          setWidth: '8rem'
         },
         {
           label: 'Results',
@@ -238,7 +238,7 @@ export default {
       return obj ?? '?';
     },
     millisecondStr (msNum) {
-      return msNum ? `${msNum}ms` : '?';
+      return typeof msNum === 'number' ? `${msNum}ms` : '?';
     },
     reissueSearchLink (log) {
       const allQueryParams = { b: window.btoa(log.indicator), ...log.queryOptions, submit: 'y' };

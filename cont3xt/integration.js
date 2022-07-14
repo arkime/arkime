@@ -22,6 +22,7 @@ const glob = require('glob');
 const path = require('path');
 const extractDomain = require('extract-domain');
 const ipaddr = require('ipaddr.js');
+const Audit = require('./audit');
 
 const itypeStats = {};
 
@@ -310,7 +311,7 @@ class Integration {
     return res.send({ success: true, integrations: results });
   }
 
-  static async runIntegrationsList (shared, query, itype, integrations) {
+  static async runIntegrationsList (shared, query, itype, integrations, onFinish) {
     shared.total += integrations.length;
     if (Integration.debug > 0) {
       console.log('RUNNING', itype, query, integrations.map(integration => integration.name));
@@ -333,8 +334,7 @@ class Integration {
 
     const checkWriteDone = () => {
       if (shared.sent === shared.total) {
-        shared.res.write(JSON.stringify({ finished: true, resultCount: shared.resultCount }));
-        shared.res.end(']\n');
+        onFinish();
       }
     };
 
@@ -481,6 +481,8 @@ class Integration {
    * @param {string} query - The string to query integrations
    * @param {string[]} doIntegrations - A list of integration names to query
    * @param {boolean} skipCache - Ignore any cached data and query all integrations again
+   * @param {string[]} tags - Tags applied at the time of search
+   * @param {string | undefined} viewId - The ID of the view at the time of search (if any)
    * @returns {IntegrationChunk[]} results - An array data chunks with the data
    */
   static async apiSearch (req, res, next) {
@@ -510,17 +512,37 @@ class Integration {
     res.write(JSON.stringify({ success: true, itype, sent: shared.sent, total: integrations.length, text: 'more to follow' }));
     res.write(',\n');
 
-    Integration.runIntegrationsList(shared, query, itype, integrations);
+    const issuedAt = Date.now();
+    // end data write and create audit log when finished
+    const finishWrite = () => {
+      res.write(JSON.stringify({ finished: true, resultCount: shared.resultCount }));
+      res.end(']\n');
+
+      Audit.create({
+        userId: req.user.userId,
+        indicator: query,
+        iType: itype,
+        tags: req.body.tags,
+        viewId: req.body.viewId,
+        issuedAt,
+        took: Date.now() - issuedAt,
+        resultCount: shared.resultCount
+      }).catch((err) => {
+        console.log('ERROR - creating audit log.', err);
+      });
+    };
+
+    Integration.runIntegrationsList(shared, query, itype, integrations, finishWrite);
     if (itype === 'email') {
       const dquery = query.slice(query.indexOf('@') + 1);
-      Integration.runIntegrationsList(shared, dquery, 'domain', Integration.integrations.domain);
+      Integration.runIntegrationsList(shared, dquery, 'domain', Integration.integrations.domain, finishWrite);
     } else if (itype === 'url') {
       const url = new URL(query);
       if (Integration.classify(url.hostname) === 'ip') {
-        Integration.runIntegrationsList(shared, url.hostname, 'ip', Integration.integrations.ip);
+        Integration.runIntegrationsList(shared, url.hostname, 'ip', Integration.integrations.ip, finishWrite);
       } else {
         const equery = extractDomain(query, { tld: true });
-        Integration.runIntegrationsList(shared, equery, 'domain', Integration.integrations.domain);
+        Integration.runIntegrationsList(shared, equery, 'domain', Integration.integrations.domain, finishWrite);
       }
     }
   }

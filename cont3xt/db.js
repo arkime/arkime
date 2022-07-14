@@ -284,15 +284,7 @@ class DbESImplementation {
           iType: { type: 'keyword' },
           indicator: { type: 'keyword' },
           tags: { type: 'keyword' },
-          queryOptions: {
-            properties: {
-              linkSearch: { type: 'keyword' },
-              view: { type: 'keyword' },
-              submit: { type: 'keyword' },
-              startDate: { type: 'keyword' },
-              stopDate: { type: 'keyword' }
-            }
-          }
+          viewId: { type: 'keyword' }
         },
         dynamic_templates: [
           {

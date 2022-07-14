@@ -41,9 +41,11 @@ export default {
    * Sends chunks back to the subscriber of the search.
    * @param {String} searchTerm - The query to search the integrations for
    * @param {Boolean} skipCache - Whether to use the cached result or fetch it new
+   * @param {string[]} tags - Tags applied at the time of search
+   * @param {string | undefined} viewId - The ID of the view at the time of search (if any)
    * @returns {Observable} - The observable object to subscribe to updates
    */
-  search ({ searchTerm, skipCache }) {
+  search ({ searchTerm, skipCache, tags, viewId }) {
     return new Observable((subscriber) => {
       searchTerm = dr.refang(searchTerm.trim());
 
@@ -62,7 +64,7 @@ export default {
       fetch('api/integration/search', {
         method: 'POST',
         headers: setReqHeaders({ 'Content-Type': 'application/json' }),
-        body: JSON.stringify({ query: searchTerm, skipCache, doIntegrations })
+        body: JSON.stringify({ query: searchTerm, skipCache, doIntegrations, tags, viewId })
       }).then((response) => {
         if (!response.ok) { // test for bad response code (only on first chunk)
           throw new Error(response.statusText);

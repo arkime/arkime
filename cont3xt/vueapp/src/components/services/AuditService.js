@@ -3,29 +3,6 @@ import { paramStr } from '../../utils/paramStr';
 
 export default {
   /**
-   * Creates an audit log entry.
-   * @param {Object} audit - The audit data
-   * @returns {Promise} - The promise that either resolves or rejects in error
-   */
-  createAudit (audit) {
-    return new Promise((resolve, reject) => {
-      fetch('api/audit', {
-        method: 'PUT',
-        headers: setReqHeaders({ 'Content-Type': 'application/json' }),
-        body: JSON.stringify(audit)
-      }).then((response) => {
-        return response.json();
-      }).then((response) => {
-        if (response.success) {
-          return resolve(response);
-        } else {
-          return reject(response.text);
-        }
-      });
-    });
-  },
-
-  /**
    * Fetches the list of audit log entries that a user can view.
    * @param {Object} query of shape { searchTerm, startMs, stopMs }
    * @returns {Promise} - The promise that either resolves to an `Audit[]` or rejects in error
