@@ -133,6 +133,7 @@ fi
 
 if [ "$UNAME" = "Darwin" ]; then
   DONODE=0
+  DOINSTALL=0
   if [ -x "/opt/local/bin/port" ]; then
     sudo port install libpcap yara glib2 jansson ossp-uuid libmaxminddb libmagic pcre lua libyaml wget nghttp2
   elif [ -x "/usr/local/bin/brew" ] || [ -x "/opt/homebrew/bin/brew" ]; then
@@ -380,9 +381,12 @@ if [ $DONODE -eq 1 ] && [ ! -f "$TDIR/bin/node" ]; then
     (cd $TDIR/bin ; sudo ln -sf ../node-v$NODE-linux-$ARCH/bin/* .)
 fi
 
+echo
 if [ $DOINSTALL -eq 1 ]; then
     sudo env "PATH=$TDIR/bin:$PATH" make install
     echo "ARKIME: Installed, now type sudo make config'"
+elif [ "$UNAME" = "Darwin" ]; then
+    echo "ARKIME: On Macs we don't recommend installing, instead use 'make check' to update node deps and run regression tests"
 else
     echo "ARKIME: Now type 'sudo make install' and 'sudo make config'"
 fi
