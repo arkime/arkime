@@ -141,6 +141,14 @@ export default {
       set (val) { this.$store.commit('SET_INTEGRATIONS_PANEL_DELAY', val); }
     }
   },
+  watch: {
+    getDoableIntegrations (newVal) {
+      // forces initialization of selectedIntegrations when without persisted storage (ex. new browser/incognito)
+      if (this.selectedIntegrations == null) {
+        this.selectedIntegrations = Object.keys(newVal);
+      }
+    }
+  },
   methods: {
     /* page functions ------------------------------------------------------ */
     mouseEnterSidebar () {
@@ -183,6 +191,10 @@ export default {
     },
     /* helpers ------------------------------------------------------------- */
     calculateSelectAll (list) {
+      if (list == null) {
+        return; // do not try to get info from list until it has been loaded or defaulted
+      }
+
       if (list.length === 0) {
         this.allSelected = false;
         this.indeterminate = false;

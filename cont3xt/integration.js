@@ -331,9 +331,9 @@ class Integration {
       shared.res.write(',\n');
     };
 
-    const writeDone = () => {
+    const checkWriteDone = () => {
       if (shared.sent === shared.total) {
-        shared.res.write(JSON.stringify({ finished: true }));
+        shared.res.write(JSON.stringify({ finished: true, resultCount: shared.resultCount }));
         shared.res.end(']\n');
       }
     };
@@ -355,6 +355,11 @@ class Integration {
       }
     }
 
+    // must finish in case of no integrations (text)
+    if (shared.total === 0) {
+      checkWriteDone();
+    }
+
     for (const integration of integrations) {
       // Can disable a integration per user
       const disabled = keys?.[integration.name]?.disabled;
@@ -363,7 +368,7 @@ class Integration {
         if (Integration.debug > 1) {
           console.log('DISABLED', integration.name);
         }
-        writeDone();
+        checkWriteDone();
         continue;
       }
 
@@ -376,13 +381,14 @@ class Integration {
 
       if (shared.doIntegrations && !shared.doIntegrations.includes(integration.name)) {
         shared.total--;
-        writeDone();
+        checkWriteDone();
         continue;
       }
 
       stats.total++;
       istats.total++;
 
+      // if available, first try cache
       if (!shared.skipCache && Integration.cache && integration.cacheable) {
         stats.cacheLookup++;
         istats.cacheLookup++;
@@ -397,13 +403,15 @@ class Integration {
             stats.cacheGood++;
             istats.cacheGood++;
             shared.sent++;
+            shared.resultCount += response._cont3xt.count ?? 0;
             writeOne(integration, response);
-            writeDone();
+            checkWriteDone();
             continue;
           }
         }
       }
 
+      // if cache fails, fetch
       stats.directLookup++;
       istats.directLookup++;
       const dStartTime = Date.now();
@@ -419,6 +427,7 @@ class Integration {
             stats.directGood++;
             istats.directGood++;
             if (!response._cont3xt) { response._cont3xt = {}; }
+            shared.resultCount += response._cont3xt.count ?? 0;
             response._cont3xt.createTime = Date.now();
             writeOne(integration, response);
             if (Integration.cache && integration.cacheable) {
@@ -427,7 +436,7 @@ class Integration {
           } else {
             // console.log('ALW null', integration.name, cacheKey);
           }
-          writeDone();
+          checkWriteDone();
         })
         .catch(err => {
           console.log(integration.name, itype, query, err);
@@ -494,7 +503,8 @@ class Integration {
       user: req.user,
       res,
       sent: 0,
-      total: 0 // runIntegrationsList will fix
+      total: 0, // runIntegrationsList will fix
+      resultCount: 0 // sum of _cont3xt.count from results
     };
     res.write('[\n');
     res.write(JSON.stringify({ success: true, itype, sent: shared.sent, total: integrations.length, text: 'more to follow' }));

@@ -38,10 +38,12 @@ const store = new Vuex.Store({
     issueSearch: false,
     focusStartDate: false,
     focusLinkSearch: false,
+    focusViewSearch: false,
     toggleCache: false,
     downloadReport: false,
     copyShareLink: false,
-    immediateSubmissionReady: false
+    immediateSubmissionReady: false,
+    theme: undefined
   },
   mutations: {
     SET_USER (state, data) {
@@ -188,6 +190,10 @@ const store = new Vuex.Store({
       state.focusLinkSearch = value;
       setTimeout(() => { state.focusLinkSearch = false; });
     },
+    SET_FOCUS_VIEW_SEARCH (state, value) {
+      state.focusViewSearch = value;
+      setTimeout(() => { state.focusViewSearch = false; });
+    },
     SET_TOGGLE_CACHE (state, value) {
       state.toggleCache = value;
       setTimeout(() => { state.toggleCache = false; });
@@ -202,6 +208,9 @@ const store = new Vuex.Store({
     },
     SET_IMMEDIATE_SUBMISSION_READY (state, value) {
       state.immediateSubmissionReady = value;
+    },
+    SET_THEME (state, data) {
+      state.theme = data;
     }
   },
   getters: {
@@ -291,6 +300,9 @@ const store = new Vuex.Store({
     getFocusLinkSearch (state) {
       return state.focusLinkSearch;
     },
+    getFocusViewSearch (state) {
+      return state.focusViewSearch;
+    },
     getToggleCache (state) {
       return state.toggleCache;
     },
@@ -322,12 +334,18 @@ const store = new Vuex.Store({
         makeSystemDefault('None', [], 'none')
       ];
       return [...systemDefaultViews, ...state.views];
+    },
+    getTheme (state) {
+      return state.theme;
+    },
+    getDarkThemeEnabled (state) {
+      return state.theme === 'dark';
     }
   },
   plugins: [createPersistedState({
     paths: [ // only these state variables are persisted to localstorage
       'checkedLinks', 'selectedIntegrations', 'sidebarKeepOpen',
-      'collapsedLinkGroups', 'integrationsPanelHoverDelay'
+      'collapsedLinkGroups', 'integrationsPanelHoverDelay', 'theme'
     ]
   })]
 });

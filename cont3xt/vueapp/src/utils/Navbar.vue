@@ -55,6 +55,16 @@
         </li>
         <li class="nav-item mr-2">
           <router-link
+              to="history"
+              tabindex="-1"
+              v-if="getUser"
+              class="nav-link"
+              active-class="active">
+            History
+          </router-link>
+        </li>
+        <li class="nav-item mr-2">
+          <router-link
             to="users"
             tabindex="-1"
             v-if="getUser"
@@ -139,33 +149,35 @@ export default {
   components: { Version },
   data: function () {
     return {
-      theme: 'dark', // default theme is dark
       healthError: ''
     };
   },
   computed: {
-    ...mapGetters(['getLoading', 'getUser', 'getShiftKeyHold']),
+    ...mapGetters(['getLoading', 'getUser', 'getShiftKeyHold', 'getTheme']),
     timezone () {
       return this.getUser?.settings?.timezone || 'local';
+    },
+    theme: {
+      get () {
+        return this.getTheme;
+      },
+      set (value) {
+        document.body.classList = value === 'dark' ? ['dark'] : [];
+        this.$store.commit('SET_THEME', value);
+      }
     }
   },
   mounted: function () {
-    if (localStorage.getItem('cont3xtTheme')) {
-      this.theme = localStorage.getItem('cont3xtTheme');
-      if (this.theme === 'dark') {
-        document.body.classList = [this.theme];
-      }
-    } else { // there's no theme set use the OS default
+    if (this.getTheme === undefined) {
       if (window.matchMedia) {
         const darkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
         this.theme = darkMode ? 'dark' : 'light';
-        document.body.classList = darkMode ? ['dark'] : [];
       } else {
         this.theme = 'light';
-        document.body.classList = [];
       }
+    } else {
+      this.theme = this.getTheme; // initialize theme setting side-effects
     }
-
     interval = setInterval(() => {
       axios.get('api/health').then((response) => {
         this.healthError = '';
@@ -177,13 +189,7 @@ export default {
   methods: {
     /* page functions ------------------------------------------------------ */
     toggleTheme () {
-      if (this.theme === 'light') {
-        this.theme = 'dark';
-        document.body.classList = [this.theme];
-      } else {
-        this.theme = 'light';
-        document.body.classList = [];
-      }
+      this.theme = (this.theme === 'light') ? 'dark' : 'light';
 
       localStorage.setItem('cont3xtTheme', this.theme);
     },
