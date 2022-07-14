@@ -1215,6 +1215,7 @@ void moloch_field_macoui_add(MolochSession_t *session, int macField, int ouiFiel
             mac[3],
             mac[4],
             mac[5]);
+
     if (moloch_field_string_add(macField, session, str, 17, TRUE))
         moloch_db_oui_lookup(ouiField, session, mac);
 }

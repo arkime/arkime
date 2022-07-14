@@ -30,28 +30,28 @@
                "Cisco Systems, Inc"
             ],
             "dstOuiCnt" : 1,
-            "dstRIR" : "ARIN",
-            "dstouterASN" : [
+            "dstOuterASN" : [
                "AS13335 Cloudflare, Inc."
             ],
-            "dstouterGEO" : [
+            "dstOuterGEO" : [
                "AU"
             ],
-            "dstouterRIR" : [
-               "APNIC"
-            ],
-            "dstouterip" : [
+            "dstOuterIp" : [
                "1.1.1.1"
             ],
-            "dstouteripCnt" : 1,
-            "dstoutermac" : [
+            "dstOuterIpCnt" : 1,
+            "dstOuterMac" : [
                "64:00:f1:e2:01:01"
             ],
-            "dstoutermac-cnt" : 1,
-            "dstouteroui" : [
+            "dstOuterMac-cnt" : 1,
+            "dstOuterOui" : [
                "Cisco Systems, Inc"
             ],
-            "dstouterouiCnt" : 1,
+            "dstOuterOuiCnt" : 1,
+            "dstOuterRIR" : [
+               "APNIC"
+            ],
+            "dstRIR" : "ARIN",
             "fileId" : [],
             "firstPacket" : 1402723255667,
             "icmp" : {
@@ -116,28 +116,28 @@
                "Cisco Systems, Inc"
             ],
             "srcOuiCnt" : 1,
-            "srcRIR" : "ARIN",
-            "srcouterASN" : [
+            "srcOuterASN" : [
                "AS3215 Orange"
             ],
-            "srcouterGEO" : [
+            "srcOuterGEO" : [
                "FR"
             ],
-            "srcouterRIR" : [
-               "RIPE"
-            ],
-            "srcouterip" : [
+            "srcOuterIp" : [
                "2.2.2.2"
             ],
-            "srcouteripCnt" : 1,
-            "srcoutermac" : [
+            "srcOuterIpCnt" : 1,
+            "srcOuterMac" : [
                "64:00:f1:e2:01:12"
             ],
-            "srcoutermac-cnt" : 1,
-            "srcouteroui" : [
+            "srcOuterMac-cnt" : 1,
+            "srcOuterOui" : [
                "Cisco Systems, Inc"
             ],
-            "srcouterouiCnt" : 1,
+            "srcOuterOuiCnt" : 1,
+            "srcOuterRIR" : [
+               "RIPE"
+            ],
+            "srcRIR" : "ARIN",
             "tags" : [
                "gretest-erspan"
             ],

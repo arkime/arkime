@@ -239,10 +239,10 @@ dl
         strong.medium.ml-4 VLan
         +arrayPrint(session.network.vlan, "id", "vlan")
 
-  if (session.srcoutermac ||session.dstoutermac ||session.srcouterip||session.dstouterip )
+  if (session.srcOuterMac ||session.dstOuterMac ||session.srcOuterIp||session.dstOuterIp )
     dt
       b-dropdown.clickable-label(text="Outer Layer", size="sm", variant="default")
-        if (session.srcoutermac)
+        if (session.srcOuterMac)
           b-dropdown-item(@click="exportUnique('outermac.src', 0)")
             | Export outer Unique Src Mac
           b-dropdown-item(@click="exportUnique('outermac.src', 1)")
@@ -252,7 +252,7 @@ dl
           b-dropdown-item(@click="fieldExists('outermac.src', '==')")
             | Add outer Src Mac EXISTS! to query
           b-dropdown-divider
-        if (session.dstoutermac)
+        if (session.dstOuterMac)
           b-dropdown-item(@click="exportUnique('outermac.dst', 0)")
             | Export outer Unique Dst Mac
           b-dropdown-item(@click="exportUnique('outermac.dst', 1)")
@@ -262,7 +262,7 @@ dl
           b-dropdown-item(@click="fieldExists('outermac.dst', '==')")
             | Add outer Dst Mac EXISTS! to query
           b-dropdown-divider
-        if (session.srcouterip)
+        if (session.srcOuterIp)
           b-dropdown-item(@click="exportUnique('outerip.src', 0)")
             | Export outer Unique Src IP
           b-dropdown-item(@click="exportUnique('outerip.src', 1)")
@@ -272,7 +272,7 @@ dl
           b-dropdown-item(@click="fieldExists('outerip.src', '==')")
             | Add outer Src IP EXISTS! to query
           b-dropdown-divider
-        if (session.dstouterip)
+        if (session.dstOuterIp)
           b-dropdown-item(@click="exportUnique('outerip.dst', 0)")
             | Export outer Unique Dst IP
           b-dropdown-item(@click="exportUnique('outerip.dst', 1)")
@@ -282,7 +282,7 @@ dl
           b-dropdown-item(@click="fieldExists('outerip.dst', '==')")
             | Add outer Dst IP EXISTS! to query
           b-dropdown-divider
-        if (session.dstouteroui)
+        if (session.dstOuterOui)
           b-dropdown-item(@click="exportUnique('outeroui.dst', 0)")
             | Export outer Unique Dst Oui
           b-dropdown-item(@click="exportUnique('outeroui.dst', 1)")
@@ -292,7 +292,7 @@ dl
           b-dropdown-item(@click="fieldExists('outeroui.dst', '==')")
             | Add outer Dst Oui EXISTS! to query
           b-dropdown-divider
-        if (session.srcouteroui)
+        if (session.srcOuterOui)
           b-dropdown-item(@click="exportUnique('outeroui.src', 0)")
             | Export outer Unique Src Oui
           b-dropdown-item(@click="exportUnique('outeroui.src', 1)")
@@ -303,24 +303,24 @@ dl
             | Add outer Src Oui EXISTS! to query
           b-dropdown-divider
     dd
-      if (session.srcoutermac)
+      if (session.srcOuterMac)
         strong.medium.ml-1 Outer Src Mac
-        +arrayPrint(session, "srcoutermac", "outermac.src", true)
-      if (session.srcouteroui)
+        +arrayPrint(session, "srcOuterMac", "outermac.src", true)
+      if (session.srcOuterOui)
         strong.medium.ml-1 Outer Src Oui
-        +arrayPrint(session, "srcouteroui", "outeroui.src", true)
-      if (session.dstoutermac)
+        +arrayPrint(session, "srcOuterOui", "outeroui.src", true)
+      if (session.dstOuterMac)
         strong.medium.ml-1 Outer Dst Mac
-        +arrayPrint(session, "dstoutermac", "outermac.dst", true)
-      if (session.dstouteroui)
+        +arrayPrint(session, "dstOuterMac", "outermac.dst", true)
+      if (session.dstOuterOui)
         strong.medium.ml-1 Outer Dst Oui
-        +arrayPrint(session, "dstouteroui", "outeroui.dst", true)
-      if (session.srcouterip)
+        +arrayPrint(session, "dstOuterOui", "outeroui.dst", true)
+      if (session.srcOuterIp)
         strong.medium.ml-1 Outer Src IP
-        +arrayPrint(session, "srcouterip", "outerip.src", true)
-      if (session.dstouterip)
+        +arrayPrint(session, "srcOuterIp", "outerip.src", true)
+      if (session.dstOuterIp)
         strong.medium.ml-1 Outer Dst IP
-        +arrayPrint(session, "dstouterip", "outerip.dst", true)
+        +arrayPrint(session, "dstOuterIp", "outerip.dst", true)
 
   dt
     b-dropdown.clickable-label(text="Src IP/Port", size="sm", variant="default")
@@ -376,9 +376,6 @@ dl
 
   dd
     +ipPrint(session, session.source.ip, session.source.port, session.source.geo.country_iso_code, session.source.as.full, session.srcRIR, "src")
-
-  if (session.outerip)
-    +ipArrayList(session, "outerip", "Outer IPs", "outerip")
 
   dt
     b-dropdown.clickable-label(text="Dst IP/Port", size="sm", variant="default")

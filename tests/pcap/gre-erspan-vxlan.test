@@ -17,24 +17,24 @@
                "packets" : 3,
                "port" : 80
             },
-            "dstPayload8" : "485454502f312e31",
-            "dstouterASN" : [
+            "dstOuterASN" : [
                "---"
             ],
-            "dstouterGEO" : [
+            "dstOuterGEO" : [
                "---"
             ],
-            "dstouterRIR" : [
-               "ARIN"
-            ],
-            "dstouterip" : [
+            "dstOuterIp" : [
                "172.16.27.121"
             ],
-            "dstouteripCnt" : 1,
-            "dstoutermac" : [
+            "dstOuterIpCnt" : 1,
+            "dstOuterMac" : [
                "ee:ee:ee:ee:ee:e1"
             ],
-            "dstoutermac-cnt" : 1,
+            "dstOuterMac-cnt" : 1,
+            "dstOuterRIR" : [
+               "ARIN"
+            ],
+            "dstPayload8" : "485454502f312e31",
             "fileId" : [],
             "firstPacket" : 1652950005864,
             "http" : {
@@ -109,24 +109,24 @@
                "packets" : 4,
                "port" : 65174
             },
-            "srcPayload8" : "474554202f48656c",
-            "srcouterASN" : [
+            "srcOuterASN" : [
                "---"
             ],
-            "srcouterGEO" : [
+            "srcOuterGEO" : [
                "---"
             ],
-            "srcouterRIR" : [
-               "ARIN"
-            ],
-            "srcouterip" : [
+            "srcOuterIp" : [
                "172.16.27.131"
             ],
-            "srcouteripCnt" : 1,
-            "srcoutermac" : [
+            "srcOuterIpCnt" : 1,
+            "srcOuterMac" : [
                "ff:dd:ff:ff:ff:f1"
             ],
-            "srcoutermac-cnt" : 1,
+            "srcOuterMac-cnt" : 1,
+            "srcOuterRIR" : [
+               "ARIN"
+            ],
+            "srcPayload8" : "474554202f48656c",
             "tags" : [
                "gretest-erspan-vxlan"
             ],

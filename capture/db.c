@@ -739,7 +739,6 @@ void moloch_db_save_session(MolochSession_t *session, int final)
             SAVE_FIELD_STR_HASH(mac1Field, MOLOCH_FIELD_FLAG_ECS_CNT);
         }
 
-
         BSB_EXPORT_rewind(jbsb, 1); // Remove last comma
         BSB_EXPORT_cstr(jbsb, "},"); // Close source
 
@@ -788,7 +787,6 @@ void moloch_db_save_session(MolochSession_t *session, int final)
         if (session->fields[mac1Field]) {
             SAVE_FIELD_STR_HASH(mac1Field, MOLOCH_FIELD_FLAG_ECS_CNT);
         }
-
 
         BSB_EXPORT_rewind(jbsb, 1); // Remove last comma
         BSB_EXPORT_cstr(jbsb, "},"); // Close source

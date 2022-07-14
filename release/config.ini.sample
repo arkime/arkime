@@ -180,9 +180,6 @@ supportSha256=false
 # Only index HTTP request bodies less than this number of bytes */
 maxReqBody=64
 
-# Default Arikime captures the inner mac address, increase this number if also the other mac addresses need to be captured, this increases need for memory (max=7)
-#maxMacAddressCount=6
-
 # Only store request bodies that Utf-8?
 config.reqBodyOnlyUtf8 = true
 

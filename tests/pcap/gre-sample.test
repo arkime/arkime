@@ -24,24 +24,24 @@
                "Alfa, Inc."
             ],
             "dstOuiCnt" : 1,
-            "dstRIR" : "ARIN",
-            "dstouterASN" : [
+            "dstOuterASN" : [
                "---",
                "AS11590 Cumberland Technologies International"
             ],
-            "dstouterGEO" : [
+            "dstOuterGEO" : [
                "---",
                "US"
             ],
-            "dstouterRIR" : [
-               "ARIN",
-               "ARIN"
-            ],
-            "dstouterip" : [
+            "dstOuterIp" : [
                "172.27.1.66",
                "66.59.109.137"
             ],
-            "dstouteripCnt" : 2,
+            "dstOuterIpCnt" : 2,
+            "dstOuterRIR" : [
+               "ARIN",
+               "ARIN"
+            ],
+            "dstRIR" : "ARIN",
             "fileId" : [],
             "firstPacket" : 1055289968793,
             "icmp" : {
@@ -120,24 +120,24 @@
                "Agere Systems"
             ],
             "srcOuiCnt" : 1,
-            "srcRIR" : "ARIN",
-            "srcouterASN" : [
+            "srcOuterASN" : [
                "---",
                "AS11590 Cumberland Technologies International"
             ],
-            "srcouterGEO" : [
+            "srcOuterGEO" : [
                "---",
                "US"
             ],
-            "srcouterRIR" : [
-               "ARIN",
-               "ARIN"
-            ],
-            "srcouterip" : [
+            "srcOuterIp" : [
                "172.27.1.66",
                "66.59.109.137"
             ],
-            "srcouteripCnt" : 2,
+            "srcOuterIpCnt" : 2,
+            "srcOuterRIR" : [
+               "ARIN",
+               "ARIN"
+            ],
+            "srcRIR" : "ARIN",
             "tags" : [
                "gretest-sample"
             ],
@@ -180,25 +180,25 @@
                "Alfa, Inc."
             ],
             "dstOuiCnt" : 1,
-            "dstPayload8" : "240206ee000003bc",
-            "dstRIR" : "ARIN",
-            "dstouterASN" : [
+            "dstOuterASN" : [
                "---",
                "AS11590 Cumberland Technologies International"
             ],
-            "dstouterGEO" : [
+            "dstOuterGEO" : [
                "---",
                "US"
             ],
-            "dstouterRIR" : [
-               "ARIN",
-               "ARIN"
-            ],
-            "dstouterip" : [
+            "dstOuterIp" : [
                "172.27.1.66",
                "66.59.109.137"
             ],
-            "dstouteripCnt" : 2,
+            "dstOuterIpCnt" : 2,
+            "dstOuterRIR" : [
+               "ARIN",
+               "ARIN"
+            ],
+            "dstPayload8" : "240206ee000003bc",
+            "dstRIR" : "ARIN",
             "fileId" : [],
             "firstPacket" : 1055289973849,
             "ipProtocol" : 17,
@@ -256,25 +256,25 @@
                "Agere Systems"
             ],
             "srcOuiCnt" : 1,
-            "srcPayload8" : "230b06ef00000000",
-            "srcRIR" : "ARIN",
-            "srcouterASN" : [
+            "srcOuterASN" : [
                "---",
                "AS11590 Cumberland Technologies International"
             ],
-            "srcouterGEO" : [
+            "srcOuterGEO" : [
                "---",
                "US"
             ],
-            "srcouterRIR" : [
-               "ARIN",
-               "ARIN"
-            ],
-            "srcouterip" : [
+            "srcOuterIp" : [
                "172.27.1.66",
                "66.59.109.137"
             ],
-            "srcouteripCnt" : 2,
+            "srcOuterIpCnt" : 2,
+            "srcOuterRIR" : [
+               "ARIN",
+               "ARIN"
+            ],
+            "srcPayload8" : "230b06ef00000000",
+            "srcRIR" : "ARIN",
             "tags" : [
                "gretest-sample"
             ],
@@ -307,25 +307,25 @@
                "Alfa, Inc."
             ],
             "dstOuiCnt" : 1,
-            "dstPayload8" : "5353482d312e3939",
-            "dstRIR" : "ARIN",
-            "dstouterASN" : [
+            "dstOuterASN" : [
                "---",
                "AS11590 Cumberland Technologies International"
             ],
-            "dstouterGEO" : [
+            "dstOuterGEO" : [
                "---",
                "US"
             ],
-            "dstouterRIR" : [
-               "ARIN",
-               "ARIN"
-            ],
-            "dstouterip" : [
+            "dstOuterIp" : [
                "172.27.1.66",
                "66.59.109.137"
             ],
-            "dstouteripCnt" : 2,
+            "dstOuterIpCnt" : 2,
+            "dstOuterRIR" : [
+               "ARIN",
+               "ARIN"
+            ],
+            "dstPayload8" : "5353482d312e3939",
+            "dstRIR" : "ARIN",
             "fileId" : [],
             "firstPacket" : 1055289978756,
             "initRTT" : 22,
@@ -420,25 +420,25 @@
                "Agere Systems"
             ],
             "srcOuiCnt" : 1,
-            "srcPayload8" : "5353482d322e302d",
-            "srcRIR" : "ARIN",
-            "srcouterASN" : [
+            "srcOuterASN" : [
                "---",
                "AS11590 Cumberland Technologies International"
             ],
-            "srcouterGEO" : [
+            "srcOuterGEO" : [
                "---",
                "US"
             ],
-            "srcouterRIR" : [
-               "ARIN",
-               "ARIN"
-            ],
-            "srcouterip" : [
+            "srcOuterIp" : [
                "172.27.1.66",
                "66.59.109.137"
             ],
-            "srcouteripCnt" : 2,
+            "srcOuterIpCnt" : 2,
+            "srcOuterRIR" : [
+               "ARIN",
+               "ARIN"
+            ],
+            "srcPayload8" : "5353482d322e302d",
+            "srcRIR" : "ARIN",
             "ssh" : {
                "hassh" : [
                   "5ef6678a6b060094834599ca16581b05"
@@ -519,20 +519,20 @@
                "Alfa, Inc."
             ],
             "dstOuiCnt" : 1,
-            "dstRIR" : "ARIN",
-            "dstouterASN" : [
+            "dstOuterASN" : [
                "AS11590 Cumberland Technologies International"
             ],
-            "dstouterGEO" : [
+            "dstOuterGEO" : [
                "US"
             ],
-            "dstouterRIR" : [
-               "ARIN"
-            ],
-            "dstouterip" : [
+            "dstOuterIp" : [
                "66.59.109.137"
             ],
-            "dstouteripCnt" : 1,
+            "dstOuterIpCnt" : 1,
+            "dstOuterRIR" : [
+               "ARIN"
+            ],
+            "dstRIR" : "ARIN",
             "fileId" : [],
             "firstPacket" : 1055289987055,
             "ipProtocol" : 17,
@@ -586,21 +586,21 @@
                "Agere Systems"
             ],
             "srcOuiCnt" : 1,
-            "srcPayload8" : "bdaa010000010000",
-            "srcRIR" : "ARIN",
-            "srcouterASN" : [
+            "srcOuterASN" : [
                "---"
             ],
-            "srcouterGEO" : [
+            "srcOuterGEO" : [
                "---"
             ],
-            "srcouterRIR" : [
-               "ARIN"
-            ],
-            "srcouterip" : [
+            "srcOuterIp" : [
                "172.27.1.66"
             ],
-            "srcouteripCnt" : 1,
+            "srcOuterIpCnt" : 1,
+            "srcOuterRIR" : [
+               "ARIN"
+            ],
+            "srcPayload8" : "bdaa010000010000",
+            "srcRIR" : "ARIN",
             "tags" : [
                "gretest-sample"
             ],
@@ -643,25 +643,25 @@
                "Alfa, Inc."
             ],
             "dstOuiCnt" : 1,
-            "dstPayload8" : "240306ef000008cf",
-            "dstRIR" : "ARIN",
-            "dstouterASN" : [
+            "dstOuterASN" : [
                "---",
                "AS11590 Cumberland Technologies International"
             ],
-            "dstouterGEO" : [
+            "dstOuterGEO" : [
                "---",
                "US"
             ],
-            "dstouterRIR" : [
-               "ARIN",
-               "ARIN"
-            ],
-            "dstouterip" : [
+            "dstOuterIp" : [
                "172.27.1.66",
                "66.59.109.137"
             ],
-            "dstouteripCnt" : 2,
+            "dstOuterIpCnt" : 2,
+            "dstOuterRIR" : [
+               "ARIN",
+               "ARIN"
+            ],
+            "dstPayload8" : "240306ef000008cf",
+            "dstRIR" : "ARIN",
             "fileId" : [],
             "firstPacket" : 1055289992849,
             "ipProtocol" : 17,
@@ -719,25 +719,25 @@
                "Agere Systems"
             ],
             "srcOuiCnt" : 1,
-            "srcPayload8" : "230b06ef00000000",
-            "srcRIR" : "ARIN",
-            "srcouterASN" : [
+            "srcOuterASN" : [
                "---",
                "AS11590 Cumberland Technologies International"
             ],
-            "srcouterGEO" : [
+            "srcOuterGEO" : [
                "---",
                "US"
             ],
-            "srcouterRIR" : [
-               "ARIN",
-               "ARIN"
-            ],
-            "srcouterip" : [
+            "srcOuterIp" : [
                "172.27.1.66",
                "66.59.109.137"
             ],
-            "srcouteripCnt" : 2,
+            "srcOuterIpCnt" : 2,
+            "srcOuterRIR" : [
+               "ARIN",
+               "ARIN"
+            ],
+            "srcPayload8" : "230b06ef00000000",
+            "srcRIR" : "ARIN",
             "tags" : [
                "gretest-sample"
             ],
@@ -780,25 +780,25 @@
                "Alfa, Inc."
             ],
             "dstOuiCnt" : 1,
-            "dstPayload8" : "240206f5000005b6",
-            "dstRIR" : "ARIN",
-            "dstouterASN" : [
+            "dstOuterASN" : [
                "---",
                "AS11590 Cumberland Technologies International"
             ],
-            "dstouterGEO" : [
+            "dstOuterGEO" : [
                "---",
                "US"
             ],
-            "dstouterRIR" : [
-               "ARIN",
-               "ARIN"
-            ],
-            "dstouterip" : [
+            "dstOuterIp" : [
                "172.27.1.66",
                "66.59.109.137"
             ],
-            "dstouteripCnt" : 2,
+            "dstOuterIpCnt" : 2,
+            "dstOuterRIR" : [
+               "ARIN",
+               "ARIN"
+            ],
+            "dstPayload8" : "240206f5000005b6",
+            "dstRIR" : "ARIN",
             "fileId" : [],
             "firstPacket" : 1055289996849,
             "ipProtocol" : 17,
@@ -856,25 +856,25 @@
                "Agere Systems"
             ],
             "srcOuiCnt" : 1,
-            "srcPayload8" : "230b06ef00000000",
-            "srcRIR" : "ARIN",
-            "srcouterASN" : [
+            "srcOuterASN" : [
                "---",
                "AS11590 Cumberland Technologies International"
             ],
-            "srcouterGEO" : [
+            "srcOuterGEO" : [
                "---",
                "US"
             ],
-            "srcouterRIR" : [
-               "ARIN",
-               "ARIN"
-            ],
-            "srcouterip" : [
+            "srcOuterIp" : [
                "172.27.1.66",
                "66.59.109.137"
             ],
-            "srcouteripCnt" : 2,
+            "srcOuterIpCnt" : 2,
+            "srcOuterRIR" : [
+               "ARIN",
+               "ARIN"
+            ],
+            "srcPayload8" : "230b06ef00000000",
+            "srcRIR" : "ARIN",
             "tags" : [
                "gretest-sample"
             ],

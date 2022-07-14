@@ -79,25 +79,25 @@
                ],
                "statusCnt" : 1
             },
-            "dstPayload8" : "d333818000010001",
-            "dstRIR" : "ARIN",
-            "dstouterASN" : [
+            "dstOuterASN" : [
                "---",
                "---"
             ],
-            "dstouterGEO" : [
+            "dstOuterGEO" : [
                "---",
                "---"
             ],
-            "dstouterRIR" : [
-               "",
-               ""
-            ],
-            "dstouterip" : [
+            "dstOuterIp" : [
                "127.0.1.1",
                "127.0.1.100"
             ],
-            "dstouteripCnt" : 2,
+            "dstOuterIpCnt" : 2,
+            "dstOuterRIR" : [
+               "",
+               ""
+            ],
+            "dstPayload8" : "d333818000010001",
+            "dstRIR" : "ARIN",
             "fileId" : [],
             "firstPacket" : 1415985409420,
             "ipProtocol" : 17,
@@ -133,25 +133,25 @@
                "packets" : 1,
                "port" : 57801
             },
-            "srcPayload8" : "d333010000010000",
-            "srcRIR" : "ARIN",
-            "srcouterASN" : [
+            "srcOuterASN" : [
                "---",
                "---"
             ],
-            "srcouterGEO" : [
+            "srcOuterGEO" : [
                "---",
                "---"
             ],
-            "srcouterRIR" : [
-               "",
-               ""
-            ],
-            "srcouterip" : [
+            "srcOuterIp" : [
                "127.0.1.1",
                "127.0.1.100"
             ],
-            "srcouteripCnt" : 2,
+            "srcOuterIpCnt" : 2,
+            "srcOuterRIR" : [
+               "",
+               ""
+            ],
+            "srcPayload8" : "d333010000010000",
+            "srcRIR" : "ARIN",
             "totDataBytes" : 299
          },
          "header" : {
@@ -172,19 +172,19 @@
                "packets" : 0,
                "port" : 0
             },
-            "dstouterASN" : [
+            "dstOuterASN" : [
                "---"
             ],
-            "dstouterGEO" : [
+            "dstOuterGEO" : [
                "---"
             ],
-            "dstouterRIR" : [
-               ""
-            ],
-            "dstouterip" : [
+            "dstOuterIp" : [
                "127.0.1.100"
             ],
-            "dstouteripCnt" : 1,
+            "dstOuterIpCnt" : 1,
+            "dstOuterRIR" : [
+               ""
+            ],
             "fileId" : [],
             "firstPacket" : 1415985409932,
             "icmp" : {
@@ -224,19 +224,19 @@
                "packets" : 1,
                "port" : 0
             },
-            "srcouterASN" : [
+            "srcOuterASN" : [
                "---"
             ],
-            "srcouterGEO" : [
+            "srcOuterGEO" : [
                "---"
             ],
-            "srcouterRIR" : [
-               ""
-            ],
-            "srcouterip" : [
+            "srcOuterIp" : [
                "127.0.1.1"
             ],
-            "srcouteripCnt" : 1,
+            "srcOuterIpCnt" : 1,
+            "srcOuterRIR" : [
+               ""
+            ],
             "totDataBytes" : 8
          },
          "header" : {
@@ -257,19 +257,19 @@
                "packets" : 0,
                "port" : 0
             },
-            "dstouterASN" : [
+            "dstOuterASN" : [
                "---"
             ],
-            "dstouterGEO" : [
+            "dstOuterGEO" : [
                "---"
             ],
-            "dstouterRIR" : [
-               ""
-            ],
-            "dstouterip" : [
+            "dstOuterIp" : [
                "127.0.1.1"
             ],
-            "dstouteripCnt" : 1,
+            "dstOuterIpCnt" : 1,
+            "dstOuterRIR" : [
+               ""
+            ],
             "fileId" : [],
             "firstPacket" : 1415985409932,
             "icmp" : {
@@ -309,19 +309,19 @@
                "packets" : 1,
                "port" : 0
             },
-            "srcouterASN" : [
+            "srcOuterASN" : [
                "---"
             ],
-            "srcouterGEO" : [
+            "srcOuterGEO" : [
                "---"
             ],
-            "srcouterRIR" : [
-               ""
-            ],
-            "srcouterip" : [
+            "srcOuterIp" : [
                "127.0.1.100"
             ],
-            "srcouteripCnt" : 1,
+            "srcOuterIpCnt" : 1,
+            "srcOuterRIR" : [
+               ""
+            ],
             "totDataBytes" : 48
          },
          "header" : {
@@ -409,25 +409,25 @@
                ],
                "statusCnt" : 1
             },
-            "dstPayload8" : "7442818000010001",
-            "dstRIR" : "ARIN",
-            "dstouterASN" : [
+            "dstOuterASN" : [
                "---",
                "---"
             ],
-            "dstouterGEO" : [
+            "dstOuterGEO" : [
                "---",
                "---"
             ],
-            "dstouterRIR" : [
-               "",
-               ""
-            ],
-            "dstouterip" : [
+            "dstOuterIp" : [
                "127.0.1.1",
                "127.0.1.100"
             ],
-            "dstouteripCnt" : 2,
+            "dstOuterIpCnt" : 2,
+            "dstOuterRIR" : [
+               "",
+               ""
+            ],
+            "dstPayload8" : "7442818000010001",
+            "dstRIR" : "ARIN",
             "fileId" : [],
             "firstPacket" : 1415985410140,
             "ipProtocol" : 17,
@@ -463,25 +463,25 @@
                "packets" : 1,
                "port" : 58364
             },
-            "srcPayload8" : "7442010000010000",
-            "srcRIR" : "ARIN",
-            "srcouterASN" : [
+            "srcOuterASN" : [
                "---",
                "---"
             ],
-            "srcouterGEO" : [
+            "srcOuterGEO" : [
                "---",
                "---"
             ],
-            "srcouterRIR" : [
-               "",
-               ""
-            ],
-            "srcouterip" : [
+            "srcOuterIp" : [
                "127.0.1.1",
                "127.0.1.100"
             ],
-            "srcouteripCnt" : 2,
+            "srcOuterIpCnt" : 2,
+            "srcOuterRIR" : [
+               "",
+               ""
+            ],
+            "srcPayload8" : "7442010000010000",
+            "srcRIR" : "ARIN",
             "totDataBytes" : 299
          },
          "header" : {
@@ -502,20 +502,20 @@
                "packets" : 0,
                "port" : 0
             },
-            "dstRIR" : "ARIN",
-            "dstouterASN" : [
+            "dstOuterASN" : [
                "---"
             ],
-            "dstouterGEO" : [
+            "dstOuterGEO" : [
                "---"
             ],
-            "dstouterRIR" : [
-               ""
-            ],
-            "dstouterip" : [
+            "dstOuterIp" : [
                "127.0.1.100"
             ],
-            "dstouteripCnt" : 1,
+            "dstOuterIpCnt" : 1,
+            "dstOuterRIR" : [
+               ""
+            ],
+            "dstRIR" : "ARIN",
             "fileId" : [],
             "firstPacket" : 1415985410172,
             "icmp" : {
@@ -555,20 +555,20 @@
                "packets" : 1,
                "port" : 0
             },
-            "srcRIR" : "ARIN",
-            "srcouterASN" : [
+            "srcOuterASN" : [
                "---"
             ],
-            "srcouterGEO" : [
+            "srcOuterGEO" : [
                "---"
             ],
-            "srcouterRIR" : [
-               ""
-            ],
-            "srcouterip" : [
+            "srcOuterIp" : [
                "127.0.1.1"
             ],
-            "srcouteripCnt" : 1,
+            "srcOuterIpCnt" : 1,
+            "srcOuterRIR" : [
+               ""
+            ],
+            "srcRIR" : "ARIN",
             "totDataBytes" : 36
          },
          "header" : {
@@ -589,19 +589,19 @@
                "packets" : 0,
                "port" : 0
             },
-            "dstouterASN" : [
+            "dstOuterASN" : [
                "---"
             ],
-            "dstouterGEO" : [
+            "dstOuterGEO" : [
                "---"
             ],
-            "dstouterRIR" : [
-               ""
-            ],
-            "dstouterip" : [
+            "dstOuterIp" : [
                "127.0.1.100"
             ],
-            "dstouteripCnt" : 1,
+            "dstOuterIpCnt" : 1,
+            "dstOuterRIR" : [
+               ""
+            ],
             "fileId" : [],
             "firstPacket" : 1415985411060,
             "icmp" : {
@@ -643,19 +643,19 @@
                "packets" : 2,
                "port" : 0
             },
-            "srcouterASN" : [
+            "srcOuterASN" : [
                "---"
             ],
-            "srcouterGEO" : [
+            "srcOuterGEO" : [
                "---"
             ],
-            "srcouterRIR" : [
-               ""
-            ],
-            "srcouterip" : [
+            "srcOuterIp" : [
                "127.0.1.1"
             ],
-            "srcouteripCnt" : 1,
+            "srcOuterIpCnt" : 1,
+            "srcOuterRIR" : [
+               ""
+            ],
             "totDataBytes" : 176
          },
          "header" : {
@@ -676,24 +676,24 @@
                "packets" : 5,
                "port" : 5060
             },
-            "dstPayload8" : "5349502f322e3020",
-            "dstouterASN" : [
+            "dstOuterASN" : [
                "---",
                "---"
             ],
-            "dstouterGEO" : [
+            "dstOuterGEO" : [
                "---",
                "---"
             ],
-            "dstouterRIR" : [
-               "",
-               ""
-            ],
-            "dstouterip" : [
+            "dstOuterIp" : [
                "127.0.1.1",
                "127.0.1.100"
             ],
-            "dstouteripCnt" : 2,
+            "dstOuterIpCnt" : 2,
+            "dstOuterRIR" : [
+               "",
+               ""
+            ],
+            "dstPayload8" : "5349502f322e3020",
             "fileId" : [],
             "firstPacket" : 1415985412100,
             "initRTT" : 15,
@@ -752,24 +752,24 @@
                "packets" : 8,
                "port" : 5060
             },
-            "srcPayload8" : "5245474953544552",
-            "srcouterASN" : [
+            "srcOuterASN" : [
                "---",
                "---"
             ],
-            "srcouterGEO" : [
+            "srcOuterGEO" : [
                "---",
                "---"
             ],
-            "srcouterRIR" : [
-               "",
-               ""
-            ],
-            "srcouterip" : [
+            "srcOuterIp" : [
                "127.0.1.1",
                "127.0.1.100"
             ],
-            "srcouteripCnt" : 2,
+            "srcOuterIpCnt" : 2,
+            "srcOuterRIR" : [
+               "",
+               ""
+            ],
+            "srcPayload8" : "5245474953544552",
             "tcpflags" : {
                "ack" : 6,
                "dstZero" : 0,
@@ -801,24 +801,24 @@
                "packets" : 5,
                "port" : 5060
             },
-            "dstPayload8" : "5349502f322e3020",
-            "dstouterASN" : [
+            "dstOuterASN" : [
                "---",
                "---"
             ],
-            "dstouterGEO" : [
+            "dstOuterGEO" : [
                "---",
                "---"
             ],
-            "dstouterRIR" : [
-               "",
-               ""
-            ],
-            "dstouterip" : [
+            "dstOuterIp" : [
                "127.0.1.1",
                "127.0.1.100"
             ],
-            "dstouteripCnt" : 2,
+            "dstOuterIpCnt" : 2,
+            "dstOuterRIR" : [
+               "",
+               ""
+            ],
+            "dstPayload8" : "5349502f322e3020",
             "fileId" : [],
             "firstPacket" : 1415985444984,
             "ipProtocol" : 6,
@@ -874,24 +874,24 @@
                "packets" : 7,
                "port" : 5060
             },
-            "srcPayload8" : "5245474953544552",
-            "srcouterASN" : [
+            "srcOuterASN" : [
                "---",
                "---"
             ],
-            "srcouterGEO" : [
+            "srcOuterGEO" : [
                "---",
                "---"
             ],
-            "srcouterRIR" : [
-               "",
-               ""
-            ],
-            "srcouterip" : [
+            "srcOuterIp" : [
                "127.0.1.1",
                "127.0.1.100"
             ],
-            "srcouteripCnt" : 2,
+            "srcOuterIpCnt" : 2,
+            "srcOuterRIR" : [
+               "",
+               ""
+            ],
+            "srcPayload8" : "5245474953544552",
             "tcpflags" : {
                "ack" : 6,
                "dstZero" : 0,
@@ -923,24 +923,24 @@
                "packets" : 2,
                "port" : 5060
             },
-            "dstPayload8" : "5349502f322e3020",
-            "dstouterASN" : [
+            "dstOuterASN" : [
                "---",
                "---"
             ],
-            "dstouterGEO" : [
+            "dstOuterGEO" : [
                "---",
                "---"
             ],
-            "dstouterRIR" : [
-               "",
-               ""
-            ],
-            "dstouterip" : [
+            "dstOuterIp" : [
                "127.0.1.1",
                "127.0.1.100"
             ],
-            "dstouteripCnt" : 2,
+            "dstOuterIpCnt" : 2,
+            "dstOuterRIR" : [
+               "",
+               ""
+            ],
+            "dstPayload8" : "5349502f322e3020",
             "fileId" : [],
             "firstPacket" : 1415985445984,
             "ipProtocol" : 17,
@@ -980,24 +980,24 @@
                "packets" : 2,
                "port" : 5060
             },
-            "srcPayload8" : "5355425343524942",
-            "srcouterASN" : [
+            "srcOuterASN" : [
                "---",
                "---"
             ],
-            "srcouterGEO" : [
+            "srcOuterGEO" : [
                "---",
                "---"
             ],
-            "srcouterRIR" : [
-               "",
-               ""
-            ],
-            "srcouterip" : [
+            "srcOuterIp" : [
                "127.0.1.1",
                "127.0.1.100"
             ],
-            "srcouteripCnt" : 2,
+            "srcOuterIpCnt" : 2,
+            "srcOuterRIR" : [
+               "",
+               ""
+            ],
+            "srcPayload8" : "5355425343524942",
             "totDataBytes" : 2332
          },
          "header" : {
@@ -1018,24 +1018,24 @@
                "packets" : 10,
                "port" : 5060
             },
-            "dstPayload8" : "5349502f322e3020",
-            "dstouterASN" : [
+            "dstOuterASN" : [
                "---",
                "---"
             ],
-            "dstouterGEO" : [
+            "dstOuterGEO" : [
                "---",
                "---"
             ],
-            "dstouterRIR" : [
-               "",
-               ""
-            ],
-            "dstouterip" : [
+            "dstOuterIp" : [
                "127.0.1.1",
                "127.0.1.100"
             ],
-            "dstouteripCnt" : 2,
+            "dstOuterIpCnt" : 2,
+            "dstOuterRIR" : [
+               "",
+               ""
+            ],
+            "dstPayload8" : "5349502f322e3020",
             "fileId" : [],
             "firstPacket" : 1415985484900,
             "ipProtocol" : 6,
@@ -1111,24 +1111,24 @@
                "packets" : 12,
                "port" : 5060
             },
-            "srcPayload8" : "494e564954452074",
-            "srcouterASN" : [
+            "srcOuterASN" : [
                "---",
                "---"
             ],
-            "srcouterGEO" : [
+            "srcOuterGEO" : [
                "---",
                "---"
             ],
-            "srcouterRIR" : [
-               "",
-               ""
-            ],
-            "srcouterip" : [
+            "srcOuterIp" : [
                "127.0.1.1",
                "127.0.1.100"
             ],
-            "srcouteripCnt" : 2,
+            "srcOuterIpCnt" : 2,
+            "srcOuterRIR" : [
+               "",
+               ""
+            ],
+            "srcPayload8" : "494e564954452074",
             "tcpflags" : {
                "ack" : 11,
                "dstZero" : 0,
@@ -1160,24 +1160,24 @@
                "packets" : 13,
                "port" : 49120
             },
-            "dstPayload8" : "80660000000000a0",
-            "dstouterASN" : [
+            "dstOuterASN" : [
                "---",
                "---"
             ],
-            "dstouterGEO" : [
+            "dstOuterGEO" : [
                "---",
                "---"
             ],
-            "dstouterRIR" : [
-               "",
-               ""
-            ],
-            "dstouterip" : [
+            "dstOuterIp" : [
                "127.0.1.1",
                "127.0.1.100"
             ],
-            "dstouteripCnt" : 2,
+            "dstOuterIpCnt" : 2,
+            "dstOuterRIR" : [
+               "",
+               ""
+            ],
+            "dstPayload8" : "80660000000000a0",
             "fileId" : [],
             "firstPacket" : 1415985490121,
             "ipProtocol" : 17,
@@ -1262,24 +1262,24 @@
                "packets" : 14,
                "port" : 19956
             },
-            "srcPayload8" : "80e652d84bcad9ca",
-            "srcouterASN" : [
+            "srcOuterASN" : [
                "---",
                "---"
             ],
-            "srcouterGEO" : [
+            "srcOuterGEO" : [
                "---",
                "---"
             ],
-            "srcouterRIR" : [
-               "",
-               ""
-            ],
-            "srcouterip" : [
+            "srcOuterIp" : [
                "127.0.1.1",
                "127.0.1.100"
             ],
-            "srcouteripCnt" : 2,
+            "srcOuterIpCnt" : 2,
+            "srcOuterRIR" : [
+               "",
+               ""
+            ],
+            "srcPayload8" : "80e652d84bcad9ca",
             "totDataBytes" : 1138
          },
          "header" : {
@@ -1367,25 +1367,25 @@
                ],
                "statusCnt" : 1
             },
-            "dstPayload8" : "c2b1818000010001",
-            "dstRIR" : "ARIN",
-            "dstouterASN" : [
+            "dstOuterASN" : [
                "---",
                "---"
             ],
-            "dstouterGEO" : [
+            "dstOuterGEO" : [
                "---",
                "---"
             ],
-            "dstouterRIR" : [
-               "",
-               ""
-            ],
-            "dstouterip" : [
+            "dstOuterIp" : [
                "127.0.1.1",
                "127.0.1.100"
             ],
-            "dstouteripCnt" : 2,
+            "dstOuterIpCnt" : 2,
+            "dstOuterRIR" : [
+               "",
+               ""
+            ],
+            "dstPayload8" : "c2b1818000010001",
+            "dstRIR" : "ARIN",
             "fileId" : [],
             "firstPacket" : 1415985490220,
             "ipProtocol" : 17,
@@ -1421,25 +1421,25 @@
                "packets" : 1,
                "port" : 60716
             },
-            "srcPayload8" : "c2b1010000010000",
-            "srcRIR" : "ARIN",
-            "srcouterASN" : [
+            "srcOuterASN" : [
                "---",
                "---"
             ],
-            "srcouterGEO" : [
+            "srcOuterGEO" : [
                "---",
                "---"
             ],
-            "srcouterRIR" : [
-               "",
-               ""
-            ],
-            "srcouterip" : [
+            "srcOuterIp" : [
                "127.0.1.1",
                "127.0.1.100"
             ],
-            "srcouteripCnt" : 2,
+            "srcOuterIpCnt" : 2,
+            "srcOuterRIR" : [
+               "",
+               ""
+            ],
+            "srcPayload8" : "c2b1010000010000",
+            "srcRIR" : "ARIN",
             "totDataBytes" : 299
          },
          "header" : {
@@ -1460,19 +1460,19 @@
                "packets" : 0,
                "port" : 49121
             },
-            "dstouterASN" : [
+            "dstOuterASN" : [
                "---"
             ],
-            "dstouterGEO" : [
+            "dstOuterGEO" : [
                "---"
             ],
-            "dstouterRIR" : [
-               ""
-            ],
-            "dstouterip" : [
+            "dstOuterIp" : [
                "127.0.1.1"
             ],
-            "dstouteripCnt" : 1,
+            "dstOuterIpCnt" : 1,
+            "dstOuterRIR" : [
+               ""
+            ],
             "fileId" : [],
             "firstPacket" : 1415985494581,
             "ipProtocol" : 17,
@@ -1509,20 +1509,20 @@
                "packets" : 3,
                "port" : 19957
             },
-            "srcPayload8" : "81c8000c6399bbc1",
-            "srcouterASN" : [
+            "srcOuterASN" : [
                "---"
             ],
-            "srcouterGEO" : [
+            "srcOuterGEO" : [
                "---"
             ],
-            "srcouterRIR" : [
-               ""
-            ],
-            "srcouterip" : [
+            "srcOuterIp" : [
                "127.0.1.100"
             ],
-            "srcouteripCnt" : 1,
+            "srcOuterIpCnt" : 1,
+            "srcOuterRIR" : [
+               ""
+            ],
+            "srcPayload8" : "81c8000c6399bbc1",
             "totDataBytes" : 112
          },
          "header" : {
@@ -1543,19 +1543,19 @@
                "packets" : 0,
                "port" : 0
             },
-            "dstouterASN" : [
+            "dstOuterASN" : [
                "---"
             ],
-            "dstouterGEO" : [
+            "dstOuterGEO" : [
                "---"
             ],
-            "dstouterRIR" : [
-               ""
-            ],
-            "dstouterip" : [
+            "dstOuterIp" : [
                "127.0.1.1"
             ],
-            "dstouteripCnt" : 1,
+            "dstOuterIpCnt" : 1,
+            "dstOuterRIR" : [
+               ""
+            ],
             "fileId" : [],
             "firstPacket" : 1415985500740,
             "icmp" : {
@@ -1599,19 +1599,19 @@
                "packets" : 3,
                "port" : 0
             },
-            "srcouterASN" : [
+            "srcOuterASN" : [
                "---"
             ],
-            "srcouterGEO" : [
+            "srcOuterGEO" : [
                "---"
             ],
-            "srcouterRIR" : [
-               ""
-            ],
-            "srcouterip" : [
+            "srcOuterIp" : [
                "127.0.1.100"
             ],
-            "srcouteripCnt" : 1,
+            "srcOuterIpCnt" : 1,
+            "srcOuterRIR" : [
+               ""
+            ],
             "totDataBytes" : 250
          },
          "header" : {
@@ -1632,24 +1632,24 @@
                "packets" : 5,
                "port" : 5060
             },
-            "dstPayload8" : "5349502f322e3020",
-            "dstouterASN" : [
+            "dstOuterASN" : [
                "---",
                "---"
             ],
-            "dstouterGEO" : [
+            "dstOuterGEO" : [
                "---",
                "---"
             ],
-            "dstouterRIR" : [
-               "",
-               ""
-            ],
-            "dstouterip" : [
+            "dstOuterIp" : [
                "127.0.1.1",
                "127.0.1.100"
             ],
-            "dstouteripCnt" : 2,
+            "dstOuterIpCnt" : 2,
+            "dstOuterRIR" : [
+               "",
+               ""
+            ],
+            "dstPayload8" : "5349502f322e3020",
             "fileId" : [],
             "firstPacket" : 1415985559780,
             "ipProtocol" : 6,
@@ -1703,24 +1703,24 @@
                "packets" : 6,
                "port" : 5060
             },
-            "srcPayload8" : "5245474953544552",
-            "srcouterASN" : [
+            "srcOuterASN" : [
                "---",
                "---"
             ],
-            "srcouterGEO" : [
+            "srcOuterGEO" : [
                "---",
                "---"
             ],
-            "srcouterRIR" : [
-               "",
-               ""
-            ],
-            "srcouterip" : [
+            "srcOuterIp" : [
                "127.0.1.1",
                "127.0.1.100"
             ],
-            "srcouteripCnt" : 2,
+            "srcOuterIpCnt" : 2,
+            "srcOuterRIR" : [
+               "",
+               ""
+            ],
+            "srcPayload8" : "5245474953544552",
             "tcpflags" : {
                "ack" : 6,
                "dstZero" : 0,

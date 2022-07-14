@@ -4518,19 +4518,58 @@ sub sessions3Update
     "firstPacket" : {
       "type" : "date"
     },
-    "vpnASN" : {
-      "type" : "keyword"
-    },
-    "vpnGEO" : {
-      "type" : "keyword"
-    },
-    "vpnIp" : {
+    "srcOuterIp" : {
       "type" : "ip"
     },
-    "vpnIpCnt" : {
+    "srcOuterIpCnt" : {
       "type" : "long"
     },
-    "vpnRIR" : {
+    "dstOuterIp" : {
+      "type" : "ip"
+    },
+    "dstOuterIpCnt" : {
+      "type" : "long"
+    },
+    "srcOuterOui" : {
+      "type" : "keyword"
+    },
+    "srcOuterOuiCnt" : {
+      "type" : "long"
+    },
+    "dstOuterOui" : {
+      "type" : "keyword"
+    },
+    "dstOuterOuiCnt" : {
+      "type" : "long"
+    },
+    "srcOuterMac" : {
+      "type" : "keyword"
+    },
+    "srcOuterMacCnt" : {
+      "type" : "long"
+    },
+    "dstOuterMac" : {
+      "type" : "keyword"
+    },
+    "dstOuterMacCnt" : {
+      "type" : "long"
+    },
+    "srcOuterRIR" : {
+      "type" : "keyword"
+    },
+    "dstOuterRIR" : {
+      "type" : "keyword"
+    },
+    "srcOuterGEO" : {
+      "type" : "keyword"
+    },
+    "dstOuterGEO" : {
+      "type" : "keyword"
+    },
+    "srcOuterASN" : {
+      "type" : "keyword"
+    },
+    "dstOuterASN" : {
       "type" : "keyword"
     },
     "http" : {

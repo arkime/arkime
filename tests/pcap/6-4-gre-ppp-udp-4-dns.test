@@ -53,25 +53,25 @@
                "Cisco Systems, Inc"
             ],
             "dstOuiCnt" : 1,
-            "dstPayload8" : "a62c818300010000",
-            "dstRIR" : "ARIN",
-            "dstouterASN" : [
+            "dstOuterASN" : [
                "---",
                "AS8100 QuadraNet Enterprises LLC"
             ],
-            "dstouterGEO" : [
+            "dstOuterGEO" : [
                "US",
                "US"
             ],
-            "dstouterRIR" : [
-               "ARIN",
-               "ARIN"
-            ],
-            "dstouterip" : [
+            "dstOuterIp" : [
                "16.0.0.200",
                "192.52.166.154"
             ],
-            "dstouteripCnt" : 2,
+            "dstOuterIpCnt" : 2,
+            "dstOuterRIR" : [
+               "ARIN",
+               "ARIN"
+            ],
+            "dstPayload8" : "a62c818300010000",
+            "dstRIR" : "ARIN",
             "fileId" : [],
             "firstPacket" : 1417577703821,
             "ipProtocol" : 17,
@@ -123,25 +123,25 @@
                "Juniper Networks"
             ],
             "srcOuiCnt" : 1,
-            "srcPayload8" : "a62c010000010000",
-            "srcRIR" : "ARIN",
-            "srcouterASN" : [
+            "srcOuterASN" : [
                "---",
                "AS8100 QuadraNet Enterprises LLC"
             ],
-            "srcouterGEO" : [
+            "srcOuterGEO" : [
                "US",
                "US"
             ],
-            "srcouterRIR" : [
-               "ARIN",
-               "ARIN"
-            ],
-            "srcouterip" : [
+            "srcOuterIp" : [
                "16.0.0.200",
                "192.52.166.154"
             ],
-            "srcouteripCnt" : 2,
+            "srcOuterIpCnt" : 2,
+            "srcOuterRIR" : [
+               "ARIN",
+               "ARIN"
+            ],
+            "srcPayload8" : "a62c010000010000",
+            "srcRIR" : "ARIN",
             "totDataBytes" : 217
          },
          "header" : {

@@ -1555,14 +1555,14 @@ void moloch_packet_init()
         (char *)NULL);
 
     outermac1Field = moloch_field_define("general", "lotermfield",
-                                    "outermac.src", "Src Outer MAC", "srcoutermac",
+                                    "outermac.src", "Src Outer MAC", "srcOuterMac",
                                     "Source ethernet outer mac addresses set for session",
                                     MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_ECS_CNT | MOLOCH_FIELD_FLAG_LINKED_SESSIONS,
                                     "transform", "dash2Colon",
                                     (char *)NULL);
 
     outermac2Field = moloch_field_define("general", "lotermfield",
-                                    "outermac.dst", "Dst Outer MAC", "dstoutermac",
+                                    "outermac.dst", "Dst Outer MAC", "dstOuterMac",
                                     "Destination ethernet outer mac addresses set for session",
                                     MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_ECS_CNT | MOLOCH_FIELD_FLAG_LINKED_SESSIONS,
                                     "transform", "dash2Colon",
@@ -1609,14 +1609,14 @@ void moloch_packet_init()
         (char *)NULL);
 
     outeroui1Field = moloch_field_define("general", "termfield",
-                                    "outeroui.src", "Src Outer OUI", "srcouteroui",
+                                    "outeroui.src", "Src Outer OUI", "srcOuterOui",
                                     "Source ethernet outer oui for session",
                                     MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT | MOLOCH_FIELD_FLAG_LINKED_SESSIONS,
                                     (char *)NULL);
 
     outeroui2Field = moloch_field_define("general", "termfield",
-                                    "outeroui.dst", "Dst Outer OUI", "dstouteroui",
-                                    "Destination ethernet oui for session",
+                                    "outeroui.dst", "Dst Outer OUI", "dstOuterOui",
+                                    "Destination ethernet outer oui for session",
                                     MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT | MOLOCH_FIELD_FLAG_LINKED_SESSIONS,
                                     (char *)NULL);
 
@@ -1628,13 +1628,13 @@ void moloch_packet_init()
 
 
     outerip1Field = moloch_field_define("general", "ip",
-                                         "outerip.src", "Src Outer IP", "srcouterip",
+                                         "outerip.src", "Src Outer IP", "srcOuterIp",
                                          "Source ethernet outer ip for session",
                                         MOLOCH_FIELD_TYPE_IP_GHASH,  MOLOCH_FIELD_FLAG_CNT | MOLOCH_FIELD_FLAG_LINKED_SESSIONS,
                                          (char *)NULL);
 
     outerip2Field = moloch_field_define("general", "ip",
-                                         "outerip.dst", "Dst Outer IP", "dstouterip",
+                                         "outerip.dst", "Dst Outer IP", "dstOuterIp",
                                          "Destination outer ip for session",
                                          MOLOCH_FIELD_TYPE_IP_GHASH,  MOLOCH_FIELD_FLAG_CNT | MOLOCH_FIELD_FLAG_LINKED_SESSIONS,
                                          (char *)NULL);

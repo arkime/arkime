@@ -17,16 +17,16 @@
                "packets" : 0,
                "port" : 0
             },
-            "dstRIR" : "ARIN",
-            "dstoutermac" : [
+            "dstOuterMac" : [
                "08:00:27:ae:4d:62",
                "08:00:27:f2:1d:8c"
             ],
-            "dstoutermac-cnt" : 2,
-            "dstouteroui" : [
+            "dstOuterMac-cnt" : 2,
+            "dstOuterOui" : [
                "PCS Computer Systems GmbH"
             ],
-            "dstouterouiCnt" : 1,
+            "dstOuterOuiCnt" : 1,
+            "dstRIR" : "ARIN",
             "fileId" : [],
             "firstPacket" : 1467818432675,
             "ipProtocol" : 17,
@@ -65,16 +65,16 @@
                "packets" : 2,
                "port" : 0
             },
-            "srcRIR" : "ARIN",
-            "srcoutermac" : [
+            "srcOuterMac" : [
                "08:00:27:ae:4d:62",
                "08:00:27:f2:1d:8c"
             ],
-            "srcoutermac-cnt" : 2,
-            "srcouteroui" : [
+            "srcOuterMac-cnt" : 2,
+            "srcOuterOui" : [
                "PCS Computer Systems GmbH"
             ],
-            "srcouterouiCnt" : 1,
+            "srcOuterOuiCnt" : 1,
+            "srcRIR" : "ARIN",
             "totDataBytes" : 0
          },
          "header" : {
@@ -109,33 +109,33 @@
                "packets" : 4,
                "port" : 0
             },
-            "dstRIR" : "TEST",
-            "dstouterASN" : [
+            "dstOuterASN" : [
                "---",
                "---"
             ],
-            "dstouterGEO" : [
+            "dstOuterGEO" : [
                "---",
                "---"
             ],
-            "dstouterRIR" : [
-               "ARIN",
-               "ARIN"
-            ],
-            "dstouterip" : [
+            "dstOuterIp" : [
                "192.168.56.11",
                "192.168.56.12"
             ],
-            "dstouteripCnt" : 2,
-            "dstoutermac" : [
+            "dstOuterIpCnt" : 2,
+            "dstOuterMac" : [
                "08:00:27:ae:4d:62",
                "08:00:27:f2:1d:8c"
             ],
-            "dstoutermac-cnt" : 2,
-            "dstouteroui" : [
+            "dstOuterMac-cnt" : 2,
+            "dstOuterOui" : [
                "PCS Computer Systems GmbH"
             ],
-            "dstouterouiCnt" : 1,
+            "dstOuterOuiCnt" : 1,
+            "dstOuterRIR" : [
+               "ARIN",
+               "ARIN"
+            ],
+            "dstRIR" : "TEST",
             "fileId" : [],
             "firstPacket" : 1467818432676,
             "icmp" : {
@@ -204,32 +204,32 @@
                "packets" : 4,
                "port" : 0
             },
-            "srcouterASN" : [
+            "srcOuterASN" : [
                "---",
                "---"
             ],
-            "srcouterGEO" : [
+            "srcOuterGEO" : [
                "---",
                "---"
             ],
-            "srcouterRIR" : [
-               "ARIN",
-               "ARIN"
-            ],
-            "srcouterip" : [
+            "srcOuterIp" : [
                "192.168.56.11",
                "192.168.56.12"
             ],
-            "srcouteripCnt" : 2,
-            "srcoutermac" : [
+            "srcOuterIpCnt" : 2,
+            "srcOuterMac" : [
                "08:00:27:ae:4d:62",
                "08:00:27:f2:1d:8c"
             ],
-            "srcoutermac-cnt" : 2,
-            "srcouteroui" : [
+            "srcOuterMac-cnt" : 2,
+            "srcOuterOui" : [
                "PCS Computer Systems GmbH"
             ],
-            "srcouterouiCnt" : 1,
+            "srcOuterOuiCnt" : 1,
+            "srcOuterRIR" : [
+               "ARIN",
+               "ARIN"
+            ],
             "tags" : [
                "dstip",
                "srcip"

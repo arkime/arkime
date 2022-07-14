@@ -113,19 +113,19 @@
                "Juniper Networks"
             ],
             "dstOuiCnt" : 1,
-            "dstouterASN" : [
+            "dstOuterASN" : [
                "---"
             ],
-            "dstouterGEO" : [
+            "dstOuterGEO" : [
                "---"
             ],
-            "dstouterRIR" : [
-               ""
-            ],
-            "dstouterip" : [
+            "dstOuterIp" : [
                "1111:2222:3333:4444:5555:6666::"
             ],
-            "dstouteripCnt" : 1,
+            "dstOuterIpCnt" : 1,
+            "dstOuterRIR" : [
+               ""
+            ],
             "fileId" : [],
             "firstPacket" : 1513078266494,
             "ipProtocol" : 17,
@@ -173,20 +173,20 @@
                "Alcatel-Lucent IPD"
             ],
             "srcOuiCnt" : 1,
-            "srcPayload8" : "9d46818000010011",
-            "srcouterASN" : [
+            "srcOuterASN" : [
                "---"
             ],
-            "srcouterGEO" : [
+            "srcOuterGEO" : [
                "---"
             ],
-            "srcouterRIR" : [
-               ""
-            ],
-            "srcouterip" : [
+            "srcOuterIp" : [
                "1111:2222:3333:4444:5555:6666:0:1"
             ],
-            "srcouteripCnt" : 1,
+            "srcOuterIpCnt" : 1,
+            "srcOuterRIR" : [
+               ""
+            ],
+            "srcPayload8" : "9d46818000010011",
             "totDataBytes" : 332
          },
          "header" : {
