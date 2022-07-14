@@ -113,6 +113,19 @@
                "Juniper Networks"
             ],
             "dstOuiCnt" : 1,
+            "dstOuterASN" : [
+               "---"
+            ],
+            "dstOuterGEO" : [
+               "---"
+            ],
+            "dstOuterIp" : [
+               "1111:2222:3333:4444:5555:6666::"
+            ],
+            "dstOuterIpCnt" : 1,
+            "dstOuterRIR" : [
+               ""
+            ],
             "fileId" : [],
             "firstPacket" : 1513078266494,
             "ipProtocol" : 17,
@@ -160,6 +173,19 @@
                "Alcatel-Lucent IPD"
             ],
             "srcOuiCnt" : 1,
+            "srcOuterASN" : [
+               "---"
+            ],
+            "srcOuterGEO" : [
+               "---"
+            ],
+            "srcOuterIp" : [
+               "1111:2222:3333:4444:5555:6666:0:1"
+            ],
+            "srcOuterIpCnt" : 1,
+            "srcOuterRIR" : [
+               ""
+            ],
             "srcPayload8" : "9d46818000010011",
             "totDataBytes" : 332
          },

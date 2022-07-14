@@ -47,8 +47,13 @@ int                          mac2Field;
 int                          vlanField;
 LOCAL int                    oui1Field;
 LOCAL int                    oui2Field;
+LOCAL int                    outermac1Field;
+LOCAL int                    outermac2Field;
+LOCAL int                    outeroui1Field;
+LOCAL int                    outeroui2Field;
+LOCAL int                    outerip1Field;
+LOCAL int                    outerip2Field;
 LOCAL int                    dscpField[2];
-LOCAL int                    greIpField;
 
 LOCAL uint64_t               droppedFrags;
 
@@ -330,11 +335,11 @@ LOCAL void moloch_packet_process(MolochPacket_t *packet, int thread)
 
         if (pcapFileHeader.dlt == DLT_EN10MB) {
             if (packet->direction == 1) {
-                moloch_field_macoui_add(session, mac1Field, oui1Field, pcapData+0);
-                moloch_field_macoui_add(session, mac2Field, oui2Field, pcapData+6);
+                moloch_field_macoui_add(session, mac1Field, oui1Field, packet->pkt + packet->etherOffset);
+                moloch_field_macoui_add(session, mac2Field, oui2Field, packet->pkt + packet->etherOffset+6);
             } else {
-                moloch_field_macoui_add(session, mac1Field, oui1Field, pcapData+6);
-                moloch_field_macoui_add(session, mac2Field, oui2Field, pcapData+0);
+                moloch_field_macoui_add(session, mac1Field, oui1Field, packet->pkt + packet->etherOffset+6);
+                moloch_field_macoui_add(session, mac2Field, oui2Field, packet->pkt + packet->etherOffset);
             }
 
             int n = 12;
@@ -348,10 +353,24 @@ LOCAL void moloch_packet_process(MolochPacket_t *packet, int thread)
         if (packet->vlan)
             moloch_field_int_add(vlanField, session, packet->vlan);
 
+        if (packet->etherOffset!=0 && packet->outerEtherOffset!=packet->etherOffset) {
+            moloch_field_macoui_add(session, outermac1Field, outeroui1Field, packet->pkt + packet->outerEtherOffset);
+            moloch_field_macoui_add(session, outermac2Field, outeroui2Field, packet->pkt + packet->outerEtherOffset + 6);
+        }
+        if(packet->outerIpOffset!=0 && packet->outerIpOffset!=packet->ipOffset) {
+            if (packet->outerv6 == 0) {
+                ip4 = (struct ip *) (packet->pkt + packet->outerIpOffset);
+                moloch_field_ip4_add(outerip1Field, session, ip4->ip_src.s_addr);
+                moloch_field_ip4_add(outerip2Field, session, ip4->ip_dst.s_addr);
+            }
+            else{
+                ip6 = (struct ip6_hdr *) (packet->pkt + packet->outerIpOffset);
+                moloch_field_ip6_add(outerip1Field, session, ip6->ip6_src.s6_addr);
+                moloch_field_ip6_add(outerip2Field, session, ip6->ip6_dst.s6_addr);
+            }
+        }
+
         if (packet->tunnel & MOLOCH_PACKET_TUNNEL_GRE) {
-            ip4 = (struct ip*)(packet->pkt + packet->vpnIpOffset);
-            moloch_field_ip4_add(greIpField, session, ip4->ip_src.s_addr);
-            moloch_field_ip4_add(greIpField, session, ip4->ip_dst.s_addr);
             moloch_session_add_protocol(session, "gre");
         }
 
@@ -382,6 +401,8 @@ LOCAL void moloch_packet_process(MolochPacket_t *packet, int thread)
         if (packet->tunnel & MOLOCH_PACKET_TUNNEL_GENEVE) {
             moloch_session_add_protocol(session, "geneve");
         }
+
+
     }
 
     if (mProtocols[packet->mProtocol].process) {
@@ -744,7 +765,9 @@ LOCAL MolochPacketRC moloch_packet_ip4(MolochPacketBatch_t *batch, MolochPacket_
     if ((uint8_t*)data - packet->pkt >= 2048)
         return MOLOCH_PACKET_CORRUPT;
 
+    packet->outerv6 = packet->v6; // v6 will get reset
     packet->v6 = 0;
+    packet->outerIpOffset = packet->ipOffset; // ipOffset will get reset
     packet->ipOffset = (uint8_t*)data - packet->pkt;
     packet->payloadOffset = packet->ipOffset + ip_hdr_len;
     packet->payloadLen = ip_len - ip_hdr_len;
@@ -878,7 +901,9 @@ LOCAL MolochPacketRC moloch_packet_ip6(MolochPacketBatch_t * batch, MolochPacket
 
     int ip_hdr_len = sizeof(struct ip6_hdr);
 
+    packet->outerv6 = packet->v6; // v6 will get reset
     packet->v6 = 1;
+    packet->outerIpOffset = packet->ipOffset; // ipOffset will get reset
     packet->ipOffset = (uint8_t*)data - packet->pkt;
     packet->payloadOffset = packet->ipOffset + ip_hdr_len;
 
@@ -1070,6 +1095,31 @@ LOCAL MolochPacketRC moloch_packet_ether(MolochPacketBatch_t * batch, MolochPack
 #endif
         return MOLOCH_PACKET_CORRUPT;
     }
+    packet->outerEtherOffset = packet->etherOffset; //we need to keep track of the current and the previous mac offset, we don't know if this is the last etherframe here
+    packet->etherOffset = (uint8_t*)data - packet->pkt;
+#ifdef DEBUG_PACKET
+    char str[20];
+    snprintf(str, sizeof(str), "%02x:%02x:%02x:%02x:%02x:%02x",
+             data[0],
+             data[1],
+             data[2],
+             data[3],
+             data[4],
+             data[5]);
+
+    LOG("moloch_packet_ether MAC A: %s, %d", str, packet->etherOffset );
+    snprintf(str, sizeof(str), "%02x:%02x:%02x:%02x:%02x:%02x",
+             data[6],
+             data[7],
+             data[8],
+             data[9],
+             data[10],
+             data[11]);
+    LOG("moloch_packet_ether MAC B: %s, %d", str, packet->etherOffset );
+#endif
+
+
+
     int n = 12;
     while (n+2 < len) {
         int ethertype = data[n] << 8 | data[n+1];
@@ -1504,6 +1554,20 @@ void moloch_packet_init()
         "fieldECS", "destination.mac",
         (char *)NULL);
 
+    outermac1Field = moloch_field_define("general", "lotermfield",
+                                    "outermac.src", "Src Outer MAC", "srcOuterMac",
+                                    "Source ethernet outer mac addresses set for session",
+                                    MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_ECS_CNT | MOLOCH_FIELD_FLAG_LINKED_SESSIONS,
+                                    "transform", "dash2Colon",
+                                    (char *)NULL);
+
+    outermac2Field = moloch_field_define("general", "lotermfield",
+                                    "outermac.dst", "Dst Outer MAC", "dstOuterMac",
+                                    "Destination ethernet outer mac addresses set for session",
+                                    MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_ECS_CNT | MOLOCH_FIELD_FLAG_LINKED_SESSIONS,
+                                    "transform", "dash2Colon",
+                                    (char *)NULL);
+
     dscpField[0] = moloch_field_define("general", "integer",
         "dscp.src", "Src DSCP", "srcDscp",
         "Source non zero differentiated services class selector set for session",
@@ -1524,17 +1588,37 @@ void moloch_packet_init()
         "transform", "dash2Colon",
         (char *)NULL);
 
+    moloch_field_define("general", "lotermfield",
+                        "outermac", "Src or Dst Outer MAC", "outermacall",
+                        "Shorthand for outermac.src or outermac.dst",
+                        0,  MOLOCH_FIELD_FLAG_FAKE,
+                        "regex", "^outermac\\\\.(?:(?!\\\\.cnt$).)*$",
+                        "transform", "dash2Colon",
+                        (char *)NULL);
+
     oui1Field = moloch_field_define("general", "termfield",
         "oui.src", "Src OUI", "srcOui",
-        "Source ethernet oui set for session",
+        "Source ethernet oui for session",
         MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT | MOLOCH_FIELD_FLAG_LINKED_SESSIONS,
         (char *)NULL);
 
     oui2Field = moloch_field_define("general", "termfield",
         "oui.dst", "Dst OUI", "dstOui",
-        "Destination ethernet oui set for session",
+        "Destination ethernet oui for session",
         MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT | MOLOCH_FIELD_FLAG_LINKED_SESSIONS,
         (char *)NULL);
+
+    outeroui1Field = moloch_field_define("general", "termfield",
+                                    "outeroui.src", "Src Outer OUI", "srcOuterOui",
+                                    "Source ethernet outer oui for session",
+                                    MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT | MOLOCH_FIELD_FLAG_LINKED_SESSIONS,
+                                    (char *)NULL);
+
+    outeroui2Field = moloch_field_define("general", "termfield",
+                                    "outeroui.dst", "Dst Outer OUI", "dstOuterOui",
+                                    "Destination ethernet outer oui for session",
+                                    MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT | MOLOCH_FIELD_FLAG_LINKED_SESSIONS,
+                                    (char *)NULL);
 
     vlanField = moloch_field_define("general", "integer",
         "vlan", "VLan", "network.vlan.id",
@@ -1542,11 +1626,25 @@ void moloch_packet_init()
         MOLOCH_FIELD_TYPE_INT_GHASH,  MOLOCH_FIELD_FLAG_ECS_CNT | MOLOCH_FIELD_FLAG_LINKED_SESSIONS | MOLOCH_FIELD_FLAG_NOSAVE,
         (char *)NULL);
 
-    greIpField = moloch_field_define("general", "ip",
-        "gre.ip", "GRE IP", "greIp",
-        "GRE ip addresses for session",
-        MOLOCH_FIELD_TYPE_IP_GHASH,  MOLOCH_FIELD_FLAG_CNT | MOLOCH_FIELD_FLAG_LINKED_SESSIONS,
-        (char *)NULL);
+
+    outerip1Field = moloch_field_define("general", "ip",
+                                         "outerip.src", "Src Outer IP", "srcOuterIp",
+                                         "Source ethernet outer ip for session",
+                                        MOLOCH_FIELD_TYPE_IP_GHASH,  MOLOCH_FIELD_FLAG_CNT | MOLOCH_FIELD_FLAG_LINKED_SESSIONS,
+                                         (char *)NULL);
+
+    outerip2Field = moloch_field_define("general", "ip",
+                                         "outerip.dst", "Dst Outer IP", "dstOuterIp",
+                                         "Destination outer ip for session",
+                                         MOLOCH_FIELD_TYPE_IP_GHASH,  MOLOCH_FIELD_FLAG_CNT | MOLOCH_FIELD_FLAG_LINKED_SESSIONS,
+                                         (char *)NULL);
+
+    moloch_field_define("general", "lotermfield",
+                        "outerip", "Src or Dst Outer IP", "outeripall",
+                        "Shorthand for outerip.src or outerip.dst",
+                        0,  MOLOCH_FIELD_FLAG_FAKE,
+                        "regex", "^outerip\\\\.(?:(?!\\\\.cnt$).)*$",
+                        (char *)NULL);
 
     moloch_field_define("general", "integer",
         "tcpflags.syn", "TCP Flag SYN", "tcpflags.syn",

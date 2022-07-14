@@ -29,7 +29,6 @@ extern MolochConfig_t        config;
 LOCAL MolochPacketRC gre_packet_enqueue(MolochPacketBatch_t * UNUSED(batch), MolochPacket_t * const packet, const uint8_t *data, int UNUSED(len))
 {
     packet->tunnel |= MOLOCH_PACKET_TUNNEL_GRE;
-    packet->vpnIpOffset = packet->ipOffset; // ipOffset will get reset
 
     //LOG("ALW ipOffset %d payloadOffset %d diff %d", packet->ipOffset, packet->payloadOffset, (int)(data - packet->pkt));
 

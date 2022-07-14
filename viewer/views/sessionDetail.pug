@@ -239,6 +239,89 @@ dl
         strong.medium.ml-4 VLan
         +arrayPrint(session.network.vlan, "id", "vlan")
 
+  if (session.srcOuterMac ||session.dstOuterMac ||session.srcOuterIp||session.dstOuterIp )
+    dt
+      b-dropdown.clickable-label(text="Outer Layer", size="sm", variant="default")
+        if (session.srcOuterMac)
+          b-dropdown-item(@click="exportUnique('outermac.src', 0)")
+            | Export outer Unique Src Mac
+          b-dropdown-item(@click="exportUnique('outermac.src', 1)")
+            | Export outer Unique Src Mac with counts
+          b-dropdown-item(@click="openSpiGraph('outermac.src')")
+            | Open outer Src Mac SPI Graph
+          b-dropdown-item(@click="fieldExists('outermac.src', '==')")
+            | Add outer Src Mac EXISTS! to query
+          b-dropdown-divider
+        if (session.dstOuterMac)
+          b-dropdown-item(@click="exportUnique('outermac.dst', 0)")
+            | Export outer Unique Dst Mac
+          b-dropdown-item(@click="exportUnique('outermac.dst', 1)")
+            | Export outer Unique Dst Mac with counts
+          b-dropdown-item(@click="openSpiGraph('outermac.dst')")
+            | Open outer Dst Mac SPI Graph
+          b-dropdown-item(@click="fieldExists('outermac.dst', '==')")
+            | Add outer Dst Mac EXISTS! to query
+          b-dropdown-divider
+        if (session.srcOuterIp)
+          b-dropdown-item(@click="exportUnique('outerip.src', 0)")
+            | Export outer Unique Src IP
+          b-dropdown-item(@click="exportUnique('outerip.src', 1)")
+            | Export outer Unique Src IP with counts
+          b-dropdown-item(@click="openSpiGraph('outerip.src')")
+            | Open outer Src IP SPI Graph
+          b-dropdown-item(@click="fieldExists('outerip.src', '==')")
+            | Add outer Src IP EXISTS! to query
+          b-dropdown-divider
+        if (session.dstOuterIp)
+          b-dropdown-item(@click="exportUnique('outerip.dst', 0)")
+            | Export outer Unique Dst IP
+          b-dropdown-item(@click="exportUnique('outerip.dst', 1)")
+            | Export outer Unique Dst IP with counts
+          b-dropdown-item(@click="openSpiGraph('outerip.dst')")
+            | Open outer Dst IP SPI Graph
+          b-dropdown-item(@click="fieldExists('outerip.dst', '==')")
+            | Add outer Dst IP EXISTS! to query
+          b-dropdown-divider
+        if (session.dstOuterOui)
+          b-dropdown-item(@click="exportUnique('outeroui.dst', 0)")
+            | Export outer Unique Dst Oui
+          b-dropdown-item(@click="exportUnique('outeroui.dst', 1)")
+            | Export outer Unique Dst Oui with counts
+          b-dropdown-item(@click="openSpiGraph('outeroui.dst')")
+            | Open outer Dst Oui SPI Graph
+          b-dropdown-item(@click="fieldExists('outeroui.dst', '==')")
+            | Add outer Dst Oui EXISTS! to query
+          b-dropdown-divider
+        if (session.srcOuterOui)
+          b-dropdown-item(@click="exportUnique('outeroui.src', 0)")
+            | Export outer Unique Src Oui
+          b-dropdown-item(@click="exportUnique('outeroui.src', 1)")
+            | Export outer Unique Src Oui with counts
+          b-dropdown-item(@click="openSpiGraph('outeroui.src')")
+            | Open outer Src Oui SPI Graph
+          b-dropdown-item(@click="fieldExists('outeroui.src', '==')")
+            | Add outer Src Oui EXISTS! to query
+          b-dropdown-divider
+    dd
+      if (session.srcOuterMac)
+        strong.medium.ml-1 Outer Src Mac
+        +arrayPrint(session, "srcOuterMac", "outermac.src", true)
+      if (session.srcOuterOui)
+        strong.medium.ml-1 Outer Src Oui
+        +arrayPrint(session, "srcOuterOui", "outeroui.src", true)
+      if (session.dstOuterMac)
+        strong.medium.ml-1 Outer Dst Mac
+        +arrayPrint(session, "dstOuterMac", "outermac.dst", true)
+      if (session.dstOuterOui)
+        strong.medium.ml-1 Outer Dst Oui
+        +arrayPrint(session, "dstOuterOui", "outeroui.dst", true)
+      if (session.srcOuterIp)
+        strong.medium.ml-1 Outer Src IP
+        +arrayPrint(session, "srcOuterIp", "outerip.src", true)
+      if (session.dstOuterIp)
+        strong.medium.ml-1 Outer Dst IP
+        +arrayPrint(session, "dstOuterIp", "outerip.dst", true)
+
   dt
     b-dropdown.clickable-label(text="Src IP/Port", size="sm", variant="default")
       b-dropdown-item(@click="exportUnique('ip.src', 0)")
@@ -496,8 +579,6 @@ dl
       dd
         +clickableValue('socks.user', session.socks.user)
 
-  if (session.greIp)
-    +ipArrayList(session, "greIp", "GRE IPs", "gre.ip")
 
   if (session.tcpflags)
     dt

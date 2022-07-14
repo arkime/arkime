@@ -20,6 +20,23 @@
                "VMware, Inc."
             ],
             "dstOuiCnt" : 1,
+            "dstOuterASN" : [
+               "---",
+               "---"
+            ],
+            "dstOuterGEO" : [
+               "---",
+               "---"
+            ],
+            "dstOuterIp" : [
+               "192.168.40.178",
+               "192.168.40.179"
+            ],
+            "dstOuterIpCnt" : 2,
+            "dstOuterRIR" : [
+               "ARIN",
+               "ARIN"
+            ],
             "dstRIR" : "ARIN",
             "fileId" : [],
             "firstPacket" : 1260442415441,
@@ -274,6 +291,23 @@
                "VMware, Inc."
             ],
             "srcOuiCnt" : 1,
+            "srcOuterASN" : [
+               "---",
+               "---"
+            ],
+            "srcOuterGEO" : [
+               "---",
+               "---"
+            ],
+            "srcOuterIp" : [
+               "192.168.40.178",
+               "192.168.40.179"
+            ],
+            "srcOuterIpCnt" : 2,
+            "srcOuterRIR" : [
+               "ARIN",
+               "ARIN"
+            ],
             "srcRIR" : "APNIC",
             "totDataBytes" : 6528
          },

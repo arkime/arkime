@@ -13,16 +13,38 @@
                },
                "ip" : "30.0.0.2",
                "mac" : [
-                  "00:1b:21:3c:ac:30"
+                  "fe:71:d8:83:72:4f"
                ],
                "mac-cnt" : 1,
                "packets" : 3,
                "port" : 0
             },
-            "dstOui" : [
+            "dstOuterASN" : [
+               "AS8075 Microsoft Corporation",
+               "AS8075 Microsoft Corporation"
+            ],
+            "dstOuterGEO" : [
+               "US",
+               "US"
+            ],
+            "dstOuterIp" : [
+               "20.0.0.1",
+               "20.0.0.2"
+            ],
+            "dstOuterIpCnt" : 2,
+            "dstOuterMac" : [
+               "00:1b:21:3c:ab:64",
+               "00:1b:21:3c:ac:30"
+            ],
+            "dstOuterMac-cnt" : 2,
+            "dstOuterOui" : [
                "Intel Corporate"
             ],
-            "dstOuiCnt" : 1,
+            "dstOuterOuiCnt" : 1,
+            "dstOuterRIR" : [
+               "ARIN",
+               "ARIN"
+            ],
             "dstRIR" : "ARIN",
             "fileId" : [],
             "firstPacket" : 1422828273817,
@@ -75,16 +97,38 @@
                },
                "ip" : "30.0.0.1",
                "mac" : [
-                  "00:1b:21:3c:ab:64"
+                  "b6:9e:d2:49:51:48"
                ],
                "mac-cnt" : 1,
                "packets" : 3,
                "port" : 0
             },
-            "srcOui" : [
+            "srcOuterASN" : [
+               "AS8075 Microsoft Corporation",
+               "AS8075 Microsoft Corporation"
+            ],
+            "srcOuterGEO" : [
+               "US",
+               "US"
+            ],
+            "srcOuterIp" : [
+               "20.0.0.1",
+               "20.0.0.2"
+            ],
+            "srcOuterIpCnt" : 2,
+            "srcOuterMac" : [
+               "00:1b:21:3c:ab:64",
+               "00:1b:21:3c:ac:30"
+            ],
+            "srcOuterMac-cnt" : 2,
+            "srcOuterOui" : [
                "Intel Corporate"
             ],
-            "srcOuiCnt" : 1,
+            "srcOuterOuiCnt" : 1,
+            "srcOuterRIR" : [
+               "ARIN",
+               "ARIN"
+            ],
             "srcRIR" : "ARIN",
             "totDataBytes" : 384
          },
@@ -107,16 +151,38 @@
                },
                "ip" : "30.0.0.1",
                "mac" : [
-                  "00:1b:21:3c:ab:64"
+                  "b6:9e:d2:49:51:48"
                ],
                "mac-cnt" : 1,
                "packets" : 16,
                "port" : 22
             },
-            "dstOui" : [
+            "dstOuterASN" : [
+               "AS8075 Microsoft Corporation",
+               "AS8075 Microsoft Corporation"
+            ],
+            "dstOuterGEO" : [
+               "US",
+               "US"
+            ],
+            "dstOuterIp" : [
+               "20.0.0.1",
+               "20.0.0.2"
+            ],
+            "dstOuterIpCnt" : 2,
+            "dstOuterMac" : [
+               "00:1b:21:3c:ab:64",
+               "00:1b:21:3c:ac:30"
+            ],
+            "dstOuterMac-cnt" : 2,
+            "dstOuterOui" : [
                "Intel Corporate"
             ],
-            "dstOuiCnt" : 1,
+            "dstOuterOuiCnt" : 1,
+            "dstOuterRIR" : [
+               "ARIN",
+               "ARIN"
+            ],
             "dstPayload8" : "5353482d322e302d",
             "dstRIR" : "ARIN",
             "fileId" : [],
@@ -218,16 +284,38 @@
                },
                "ip" : "30.0.0.2",
                "mac" : [
-                  "00:1b:21:3c:ac:30"
+                  "fe:71:d8:83:72:4f"
                ],
                "mac-cnt" : 1,
                "packets" : 17,
                "port" : 51225
             },
-            "srcOui" : [
+            "srcOuterASN" : [
+               "AS8075 Microsoft Corporation",
+               "AS8075 Microsoft Corporation"
+            ],
+            "srcOuterGEO" : [
+               "US",
+               "US"
+            ],
+            "srcOuterIp" : [
+               "20.0.0.1",
+               "20.0.0.2"
+            ],
+            "srcOuterIpCnt" : 2,
+            "srcOuterMac" : [
+               "00:1b:21:3c:ab:64",
+               "00:1b:21:3c:ac:30"
+            ],
+            "srcOuterMac-cnt" : 2,
+            "srcOuterOui" : [
                "Intel Corporate"
             ],
-            "srcOuiCnt" : 1,
+            "srcOuterOuiCnt" : 1,
+            "srcOuterRIR" : [
+               "ARIN",
+               "ARIN"
+            ],
             "srcPayload8" : "5353482d322e302d",
             "srcRIR" : "ARIN",
             "ssh" : {
