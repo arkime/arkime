@@ -131,4 +131,12 @@ test('periodic queries', async () => {
     expect(emitted()['display-message'][2][0]).toStrictEqual({ msg: 'deleteCronQuery YAY!' });
   });
   expect(queryByText('test update query name')).not.toBeInTheDocument(); // query removed
+
+  // can click see all button ---------------------------------------------- //
+  const seeAllBtn = getByTitle('See all the periodic queries that exist for all users (you can because you are an ADMIN!)');
+  await fireEvent.click(seeAllBtn);
+  expect(SettingsService.getCronQueries).toHaveBeenCalledWith({ all: true });
+  await waitFor(() => { // updates the title of the button
+    getByTitle('Just show the periodic queries created by you and shared with you');
+  });
 });
