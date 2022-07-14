@@ -21,6 +21,23 @@
             ],
             "dstOuiCnt" : 1,
             "dstRIR" : "ARIN",
+            "dstouterASN" : [
+               "---",
+               "---"
+            ],
+            "dstouterGEO" : [
+               "---",
+               "---"
+            ],
+            "dstouterRIR" : [
+               "ARIN",
+               "ARIN"
+            ],
+            "dstouterip" : [
+               "192.168.40.178",
+               "192.168.40.179"
+            ],
+            "dstouteripCnt" : 2,
             "fileId" : [],
             "firstPacket" : 1260442415441,
             "icmp" : {
@@ -275,6 +292,23 @@
             ],
             "srcOuiCnt" : 1,
             "srcRIR" : "APNIC",
+            "srcouterASN" : [
+               "---",
+               "---"
+            ],
+            "srcouterGEO" : [
+               "---",
+               "---"
+            ],
+            "srcouterRIR" : [
+               "ARIN",
+               "ARIN"
+            ],
+            "srcouterip" : [
+               "192.168.40.178",
+               "192.168.40.179"
+            ],
+            "srcouteripCnt" : 2,
             "totDataBytes" : 6528
          },
          "header" : {

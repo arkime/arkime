@@ -20,10 +20,9 @@
                },
                "ip" : "23.0.0.3",
                "mac" : [
-                  "64:00:f1:e2:01:01",
-                  "64:00:f1:e2:01:12"
+                  "64:00:f1:e1:03:03"
                ],
-               "mac-cnt" : 2,
+               "mac-cnt" : 1,
                "packets" : 2,
                "port" : 0
             },
@@ -32,25 +31,29 @@
             ],
             "dstOuiCnt" : 1,
             "dstRIR" : "ARIN",
+            "dstouterASN" : [
+               "AS13335 Cloudflare, Inc."
+            ],
+            "dstouterGEO" : [
+               "AU"
+            ],
+            "dstouterRIR" : [
+               "APNIC"
+            ],
+            "dstouterip" : [
+               "1.1.1.1"
+            ],
+            "dstouteripCnt" : 1,
+            "dstoutermac" : [
+               "64:00:f1:e2:01:01"
+            ],
+            "dstoutermac-cnt" : 1,
+            "dstouteroui" : [
+               "Cisco Systems, Inc"
+            ],
+            "dstouterouiCnt" : 1,
             "fileId" : [],
             "firstPacket" : 1402723255667,
-            "greASN" : [
-               "AS13335 Cloudflare, Inc.",
-               "AS3215 Orange"
-            ],
-            "greGEO" : [
-               "AU",
-               "FR"
-            ],
-            "greIp" : [
-               "1.1.1.1",
-               "2.2.2.2"
-            ],
-            "greIpCnt" : 2,
-            "greRIR" : [
-               "APNIC",
-               "RIPE"
-            ],
             "icmp" : {
                "code" : [
                   0
@@ -103,10 +106,9 @@
                },
                "ip" : "23.0.0.2",
                "mac" : [
-                  "64:00:f1:e2:01:01",
-                  "64:00:f1:e2:01:12"
+                  "64:00:f1:e1:02:02"
                ],
-               "mac-cnt" : 2,
+               "mac-cnt" : 1,
                "packets" : 2,
                "port" : 0
             },
@@ -115,6 +117,27 @@
             ],
             "srcOuiCnt" : 1,
             "srcRIR" : "ARIN",
+            "srcouterASN" : [
+               "AS3215 Orange"
+            ],
+            "srcouterGEO" : [
+               "FR"
+            ],
+            "srcouterRIR" : [
+               "RIPE"
+            ],
+            "srcouterip" : [
+               "2.2.2.2"
+            ],
+            "srcouteripCnt" : 1,
+            "srcoutermac" : [
+               "64:00:f1:e2:01:12"
+            ],
+            "srcoutermac-cnt" : 1,
+            "srcouteroui" : [
+               "Cisco Systems, Inc"
+            ],
+            "srcouterouiCnt" : 1,
             "tags" : [
                "gretest-erspan"
             ],

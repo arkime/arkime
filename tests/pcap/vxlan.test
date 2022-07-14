@@ -10,18 +10,23 @@
                "bytes" : 0,
                "ip" : "192.168.56.12",
                "mac" : [
-                  "08:00:27:ae:4d:62",
-                  "08:00:27:f2:1d:8c"
+                  "ba:09:2b:6e:f8:be",
+                  "ff:ff:ff:ff:ff:ff"
                ],
                "mac-cnt" : 2,
                "packets" : 0,
                "port" : 0
             },
-            "dstOui" : [
+            "dstRIR" : "ARIN",
+            "dstoutermac" : [
+               "08:00:27:ae:4d:62",
+               "08:00:27:f2:1d:8c"
+            ],
+            "dstoutermac-cnt" : 2,
+            "dstouteroui" : [
                "PCS Computer Systems GmbH"
             ],
-            "dstOuiCnt" : 1,
-            "dstRIR" : "ARIN",
+            "dstouterouiCnt" : 1,
             "fileId" : [],
             "firstPacket" : 1467818432675,
             "ipProtocol" : 17,
@@ -53,18 +58,23 @@
                "bytes" : 184,
                "ip" : "192.168.56.11",
                "mac" : [
-                  "08:00:27:ae:4d:62",
-                  "08:00:27:f2:1d:8c"
+                  "4a:7f:01:3b:a2:71",
+                  "ba:09:2b:6e:f8:be"
                ],
                "mac-cnt" : 2,
                "packets" : 2,
                "port" : 0
             },
-            "srcOui" : [
+            "srcRIR" : "ARIN",
+            "srcoutermac" : [
+               "08:00:27:ae:4d:62",
+               "08:00:27:f2:1d:8c"
+            ],
+            "srcoutermac-cnt" : 2,
+            "srcouteroui" : [
                "PCS Computer Systems GmbH"
             ],
-            "srcOuiCnt" : 1,
-            "srcRIR" : "ARIN",
+            "srcouterouiCnt" : 1,
             "totDataBytes" : 0
          },
          "header" : {
@@ -93,17 +103,39 @@
                },
                "ip" : "10.0.0.2",
                "mac" : [
-                  "08:00:27:f2:1d:8c"
+                  "4a:7f:01:3b:a2:71"
                ],
                "mac-cnt" : 1,
                "packets" : 4,
                "port" : 0
             },
-            "dstOui" : [
+            "dstRIR" : "TEST",
+            "dstouterASN" : [
+               "---",
+               "---"
+            ],
+            "dstouterGEO" : [
+               "---",
+               "---"
+            ],
+            "dstouterRIR" : [
+               "ARIN",
+               "ARIN"
+            ],
+            "dstouterip" : [
+               "192.168.56.11",
+               "192.168.56.12"
+            ],
+            "dstouteripCnt" : 2,
+            "dstoutermac" : [
+               "08:00:27:ae:4d:62",
+               "08:00:27:f2:1d:8c"
+            ],
+            "dstoutermac-cnt" : 2,
+            "dstouteroui" : [
                "PCS Computer Systems GmbH"
             ],
-            "dstOuiCnt" : 1,
-            "dstRIR" : "TEST",
+            "dstouterouiCnt" : 1,
             "fileId" : [],
             "firstPacket" : 1467818432676,
             "icmp" : {
@@ -166,16 +198,38 @@
                },
                "ip" : "10.0.0.1",
                "mac" : [
-                  "08:00:27:ae:4d:62"
+                  "ba:09:2b:6e:f8:be"
                ],
                "mac-cnt" : 1,
                "packets" : 4,
                "port" : 0
             },
-            "srcOui" : [
+            "srcouterASN" : [
+               "---",
+               "---"
+            ],
+            "srcouterGEO" : [
+               "---",
+               "---"
+            ],
+            "srcouterRIR" : [
+               "ARIN",
+               "ARIN"
+            ],
+            "srcouterip" : [
+               "192.168.56.11",
+               "192.168.56.12"
+            ],
+            "srcouteripCnt" : 2,
+            "srcoutermac" : [
+               "08:00:27:ae:4d:62",
+               "08:00:27:f2:1d:8c"
+            ],
+            "srcoutermac-cnt" : 2,
+            "srcouteroui" : [
                "PCS Computer Systems GmbH"
             ],
-            "srcOuiCnt" : 1,
+            "srcouterouiCnt" : 1,
             "tags" : [
                "dstip",
                "srcip"
