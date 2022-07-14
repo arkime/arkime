@@ -46,7 +46,6 @@
       </b-form-checkbox>
       <moloch-paging
         v-if="views"
-        class="pull-right"
         :length-default="size"
         :records-total="recordsTotal"
         :records-filtered="recordsFiltered"
@@ -64,7 +63,7 @@
             <span v-show="viewsQuery.sortField === 'name' && viewsQuery.desc" class="fa fa-sort-desc"></span>
             <span v-show="viewsQuery.sortField !== 'name'" class="fa fa-sort"></span>
           </th>
-          <th v-if="user.roles.includes('arkimeAdmin')">Creator</th>
+          <th>Creator</th>
           <th>Roles</th>
           <th>Users</th>
           <th>Expression</th>
@@ -80,7 +79,7 @@
           <td>
             {{ item.name }}
           </td>
-          <td v-if="user.roles.includes('arkimeAdmin')">
+          <td>
             {{ item.user }}
           </td>
           <td>
