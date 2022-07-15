@@ -31,6 +31,7 @@ const ArkimeCache = require('../common/arkimeCache');
 const ArkimeUtil = require('../common/arkimeUtil');
 const LinkGroup = require('./linkGroup');
 const Integration = require('./integration');
+const Audit = require('./audit');
 const View = require('./view');
 const Db = require('./db');
 const bp = require('body-parser');
@@ -135,6 +136,13 @@ logger.token('username', (req, res) => {
 });
 
 // ----------------------------------------------------------------------------
+// Load balancer test - no auth
+// ----------------------------------------------------------------------------
+app.use('/_ns_/nstest.html', function (req, res) {
+  res.end();
+});
+
+// ----------------------------------------------------------------------------
 // Middleware
 // ----------------------------------------------------------------------------
 app.use((req, res, next) => {
@@ -222,6 +230,9 @@ app.get('/api/views', [setCookie], View.apiGet);
 app.post('/api/view', [jsonParser, checkCookieToken], View.apiCreate);
 app.put('/api/view/:id', [jsonParser, checkCookieToken], View.apiUpdate);
 app.delete('/api/view/:id', [jsonParser, checkCookieToken], View.apiDelete);
+
+app.get('/api/audits', Audit.apiGet);
+app.delete('/api/audit/:id', [jsonParser], Audit.apiDelete);
 
 app.get('/api/health', (req, res) => { res.send({ success: true }); });
 
@@ -478,6 +489,11 @@ function setupAuth () {
     prefix: getConfig('cont3xt', 'usersPrefix'),
     apiKey: getConfig('cont3xt', 'usersElasticsearchAPIKey'),
     basicAuth: getConfig('cont3xt', 'usersElasticsearchBasicAuth')
+  });
+
+  Audit.initialize({
+    debug: internals.debug,
+    expireHistoryDays: getConfig('cont3xt', 'expireHistoryDays', 180)
   });
 
   const cache = ArkimeCache.createCache({

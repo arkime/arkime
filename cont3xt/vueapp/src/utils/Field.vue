@@ -1,7 +1,12 @@
 <template>
   <span class="field">
     <a @click="toggleDropdown">
-      {{ display || value }}
+      <template v-if="highlights">
+        <highlightable-text :content="display || value" :highlights="highlights"/>
+      </template>
+      <template v-else>
+        {{display || value}}
+      </template>
       <span class="fa fa-caret-down" />
     </a>
     <!-- clickable field menu -->
@@ -25,8 +30,13 @@
 </template>
 
 <script>
+import HighlightableText from '@/utils/HighlightableText';
+
 export default {
   name: 'Cont3xtField',
+  components: {
+    HighlightableText
+  },
   props: {
     value: { // the value to be used in copy and display if no display value
       type: String,
@@ -42,6 +52,12 @@ export default {
     options: { // which options to display in the dropdown
       type: Object,
       default: () => { return { copy: 'copy', pivot: 'pivot' }; }
+    },
+    highlights: { // optional highlight span array for use in table highlighting
+      type: Array,
+      default () {
+        return null;
+      }
     }
   },
   data () {

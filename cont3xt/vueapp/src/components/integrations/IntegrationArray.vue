@@ -6,7 +6,7 @@
     <template v-else>
       <div :key="index"
         v-for="index in (Math.max(arrayLen, 0))">
-        {{ arrayData[index - 1] }}
+        <highlightable-text :content="arrayData[index - 1]" :highlights="highlightsArray ? highlightsArray[index - 1] : null"/>
       </div>
       <div class="d-flex justify-content-between"
         v-if="arrayData.length > arrayLen || arrayLen > size">
@@ -34,8 +34,13 @@
 </template>
 
 <script>
+import HighlightableText from '@/utils/HighlightableText';
+
 export default {
   name: 'IntegrationArray',
+  components: {
+    HighlightableText
+  },
   props: {
     field: { // the field for which to display the array value
       type: Object,
@@ -48,6 +53,12 @@ export default {
     size: { // the rows of data to display initially and increment or
       type: Number, // decrement thereafter (by clicking more/less)
       default: 50
+    },
+    highlightsArray: {
+      type: Array,
+      default () {
+        return null;
+      }
     }
   },
   data () {

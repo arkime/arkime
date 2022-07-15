@@ -90,19 +90,22 @@
       </div>
     </div>
   </b-card>
+  <basic-i-type-card :itype="itype" :query="query" v-else/>
 </template>
 
 <script>
 import { countryCodeEmoji } from 'country-code-emoji';
 
 import Cont3xtField from '@/utils/Field';
+import BasicITypeCard from '@/utils/BasicITypeCard';
 import IntegrationBtns from '@/components/integrations/IntegrationBtns';
 
 export default {
   name: 'Cont3xtIp',
   components: {
     Cont3xtField,
-    IntegrationBtns
+    IntegrationBtns,
+    BasicITypeCard
   },
   props: {
     data: { // the data returned from cont3xt search
@@ -111,6 +114,10 @@ export default {
     },
     value: { // the value to display as the IP (used if there are multiple ip
       type: String // results - like in a domain search)
+    },
+    query: {
+      type: String,
+      required: false // fallback in case of no results -- not required since DNS IPs are guaranteed results of some kind
     }
   },
   data () {

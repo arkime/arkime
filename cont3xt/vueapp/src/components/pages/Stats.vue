@@ -40,6 +40,7 @@
             hover
             striped
             show-empty
+            :dark="getDarkThemeEnabled"
             :filter="filter"
             :fields="fields"
             :items="data.stats"
@@ -60,6 +61,7 @@
             hover
             striped
             show-empty
+            :dark="getDarkThemeEnabled"
             :filter="filter"
             :fields="fields"
             :sort-by.sync="sortBy"
@@ -99,9 +101,13 @@
 
 <script>
 import Cont3xtService from '@/components/services/Cont3xtService';
+import { mapGetters } from 'vuex';
 
 export default {
   name: 'Cont3xtStats',
+  computed: {
+    ...mapGetters(['getDarkThemeEnabled'])
+  },
   data () {
     return {
       data: {},

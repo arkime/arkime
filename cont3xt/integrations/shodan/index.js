@@ -73,22 +73,23 @@ class ShodanIntegration extends Integration {
         label: 'Certificates',
         type: 'table',
         field: 'data',
+        fieldRoot: 'ssl.cert',
         fields: [
           {
             label: 'issued',
-            field: 'ssl.cert.issued'
+            field: 'issued'
           },
           {
             label: 'expires',
-            field: 'ssl.cert.expires'
+            field: 'expires'
           },
           {
             label: 'sha1',
-            field: 'ssl.cert.fingerprint.sha1'
+            field: 'fingerprint.sha1'
           },
           {
             label: 'issuer',
-            field: 'ssl.cert.issuer',
+            field: 'issuer',
             type: 'json'
           }
         ]

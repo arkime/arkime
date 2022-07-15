@@ -32,15 +32,18 @@ const store = new Vuex.Store({
     sidebarKeepOpen: false,
     views: [],
     integrationsPanelHoverDelay: 400,
-    selectedView: '',
+    selectedView: undefined,
     shiftKeyHold: false,
     focusSearch: true,
     issueSearch: false,
     focusStartDate: false,
     focusLinkSearch: false,
+    focusViewSearch: false,
     toggleCache: false,
     downloadReport: false,
-    copyShareLink: false
+    copyShareLink: false,
+    immediateSubmissionReady: false,
+    theme: undefined
   },
   mutations: {
     SET_USER (state, data) {
@@ -187,6 +190,10 @@ const store = new Vuex.Store({
       state.focusLinkSearch = value;
       setTimeout(() => { state.focusLinkSearch = false; });
     },
+    SET_FOCUS_VIEW_SEARCH (state, value) {
+      state.focusViewSearch = value;
+      setTimeout(() => { state.focusViewSearch = false; });
+    },
     SET_TOGGLE_CACHE (state, value) {
       state.toggleCache = value;
       setTimeout(() => { state.toggleCache = false; });
@@ -198,6 +205,12 @@ const store = new Vuex.Store({
     SET_COPY_SHARE_LINK (state, value) {
       state.copyShareLink = value;
       setTimeout(() => { state.copyShareLink = false; });
+    },
+    SET_IMMEDIATE_SUBMISSION_READY (state, value) {
+      state.immediateSubmissionReady = value;
+    },
+    SET_THEME (state, data) {
+      state.theme = data;
     }
   },
   getters: {
@@ -287,6 +300,9 @@ const store = new Vuex.Store({
     getFocusLinkSearch (state) {
       return state.focusLinkSearch;
     },
+    getFocusViewSearch (state) {
+      return state.focusViewSearch;
+    },
     getToggleCache (state) {
       return state.toggleCache;
     },
@@ -295,12 +311,41 @@ const store = new Vuex.Store({
     },
     getCopyShareLink (state) {
       return state.copyShareLink;
+    },
+    getImmediateSubmissionReady (state) {
+      return state.immediateSubmissionReady;
+    },
+    getAllViews (state, getters) {
+      const makeSystemDefault = (viewName, integrationList, _id) => {
+        return {
+          creator: 'THE_SYSTEM',
+          name: viewName,
+          integrations: integrationList,
+          viewRoles: [],
+          editRoles: [],
+          _id,
+          _editable: false,
+          _viewable: false,
+          _systemDefault: true
+        };
+      };
+      const systemDefaultViews = [
+        makeSystemDefault('All', Object.keys(getters.getDoableIntegrations), 'all'),
+        makeSystemDefault('None', [], 'none')
+      ];
+      return [...systemDefaultViews, ...state.views];
+    },
+    getTheme (state) {
+      return state.theme;
+    },
+    getDarkThemeEnabled (state) {
+      return state.theme === 'dark';
     }
   },
   plugins: [createPersistedState({
     paths: [ // only these state variables are persisted to localstorage
       'checkedLinks', 'selectedIntegrations', 'sidebarKeepOpen',
-      'collapsedLinkGroups', 'integrationsPanelHoverDelay'
+      'collapsedLinkGroups', 'integrationsPanelHoverDelay', 'theme'
     ]
   })]
 });

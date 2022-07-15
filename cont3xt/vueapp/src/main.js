@@ -17,6 +17,8 @@ import HasRole from '@/../../../common/vueapp/HasRole';
 import '@/index.scss'; // includes boostrap(vue) scss
 // common css needs to be after ^ because it overrides some bootstrap styles
 import '@/../../../common.css';
+// cont3xt css is applied after common.css because it modifies some of its styles
+import '@/cont3xt.css';
 
 Vue.config.productionTip = false;
 

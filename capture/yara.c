@@ -35,6 +35,8 @@ char *moloch_yara_version() {
 #else /* YR_MAJOR_VERSION */
  #ifdef STRING_IS_HEX
     snprintf(buf, sizeof(buf), "2.x");
+ #else
+    snprintf(buf, sizeof(buf), "unknown");
  #endif /* STRING_IS_HEX */
 #endif /* YR_MAJOR_VERSION */
     return buf;

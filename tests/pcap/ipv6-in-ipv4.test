@@ -16,6 +16,23 @@
                "packets" : 5,
                "port" : 0
             },
+            "dstOuterASN" : [
+               "AS0 This is neat",
+               "AS1 Cool Beans!"
+            ],
+            "dstOuterGEO" : [
+               "CA",
+               "RU"
+            ],
+            "dstOuterIp" : [
+               "10.0.0.1",
+               "10.0.0.2"
+            ],
+            "dstOuterIpCnt" : 2,
+            "dstOuterRIR" : [
+               "",
+               "TEST"
+            ],
             "fileId" : [],
             "firstPacket" : 1214308747487,
             "icmp" : {
@@ -77,6 +94,28 @@
                "packets" : 5,
                "port" : 0
             },
+            "srcOuterASN" : [
+               "AS0 This is neat",
+               "AS1 Cool Beans!"
+            ],
+            "srcOuterGEO" : [
+               "CA",
+               "RU"
+            ],
+            "srcOuterIp" : [
+               "10.0.0.1",
+               "10.0.0.2"
+            ],
+            "srcOuterIpCnt" : 2,
+            "srcOuterRIR" : [
+               "",
+               "TEST"
+            ],
+            "tags" : [
+               "dstip",
+               "srcip"
+            ],
+            "tagsCnt" : 2,
             "totDataBytes" : 600
          },
          "header" : {

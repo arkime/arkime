@@ -131,9 +131,11 @@
       </span>
     </template>
   </b-card>
+  <basic-i-type-card :itype="itype" :query="query" v-else/>
 </template>
 
 <script>
+import BasicITypeCard from '@/utils/BasicITypeCard';
 import Cont3xtField from '@/utils/Field';
 import Cont3xtIp from '@/components/itypes/IP';
 import IntegrationBtns from '@/components/integrations/IntegrationBtns';
@@ -143,12 +145,17 @@ export default {
   components: {
     Cont3xtIp,
     Cont3xtField,
-    IntegrationBtns
+    IntegrationBtns,
+    BasicITypeCard
   },
   props: {
     data: { // the data returned from cont3xt search
       type: Object,
       required: true
+    },
+    query: { // fallback in case data is non-existent
+      type: String,
+      required: false // not necessary when domain is sub-element (from url) -- as it is then guaranteed data
     }
   },
   data () {

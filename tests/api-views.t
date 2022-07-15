@@ -1,4 +1,4 @@
-use Test::More tests => 28;
+use Test::More tests => 30;
 use MolochTest;
 use JSON;
 use Test::Differences;
@@ -92,8 +92,17 @@ delete $info->{data}->[0]->{id};
 eq_or_diff($info->{recordsTotal}, 1, "returns 1 recordsTotal for test1 user");
 eq_or_diff($info->{data}->[0], from_json('{"name": "view2", "expression": "ip == 10.0.0.1","user":"test2"}'), "view fields updated");
 
+# admin can view all views when all param is supplied
+$info = viewerPostToken("/api/view?molochRegressionUser=test1", '{"name": "asdf", "expression": "ip == 1.2.3.4"}', $token);
+my $id3 = $info->{view}->{id};
+$info = viewerGet("/api/views?molochRegressionUser=anonymous");
+eq_or_diff($info->{recordsTotal}, 1, "returns 1 recordsTotal without all flag");
+$info = viewerGet("/api/views?molochRegressionUser=anonymous&all=true");
+eq_or_diff($info->{recordsTotal}, 2, "returns 2 recordsTotal with all flag");
+
 # cleanup views
 viewerDeleteToken("/api/view/${id2}?molochRegressionUser=test1", $token);
+viewerDeleteToken("/api/view/${id3}?molochRegressionUser=test1", $token);
 
 # views are empty
 $info = viewerGet("/user/views?molochRegressionUser=test1");

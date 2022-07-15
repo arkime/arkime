@@ -1,7 +1,17 @@
 <template>
-  <form class="form-horizontal mb-2">
+  <div>
 
-    <h3>Shortcuts</h3>
+    <h3>
+      Shortcuts
+      <b-button
+        size="sm"
+        variant="success"
+        class="pull-right"
+        v-b-modal.shortcut-modal>
+        <span class="fa fa-plus-circle mr-1" />
+        New Shortcut
+      </b-button>
+    </h3>
 
     <p>
       Create a list of values that can be used in queries as shortcuts.
@@ -24,29 +34,39 @@
       </template>
     </p>
 
-    <div class="row">
-      <div class="col-5">
-        <div class="input-group input-group-sm">
-          <div class="input-group-prepend">
-            <div class="input-group-text">
-              <span class="fa fa-search"></span>
-            </div>
-          </div>
+    <div class="d-flex">
+      <div class="flex-grow-1 mr-2">
+        <b-input-group size="sm">
+          <template #prepend>
+            <b-input-group-text>
+              <span class="fa fa-search" />
+            </b-input-group-text>
+          </template>
           <b-form-input
             debounce="400"
             v-model="shortcutsQuery.search"
           />
-        </div>
+        </b-input-group>
       </div>
-      <div class="col-7">
-        <moloch-paging v-if="shortcuts.data"
-          class="pull-right"
-          @changePaging="changeShortcutsPaging"
-          :length-default="shortcutsSize"
-          :records-total="shortcuts.recordsTotal"
-          :records-filtered="shortcuts.recordsFiltered">
-        </moloch-paging>
-      </div>
+      <b-form-checkbox
+        button
+        size="sm"
+        class="mr-2"
+        v-model="seeAll"
+        @input="getShortcuts"
+        v-b-tooltip.hover
+        v-if="user.roles.includes('arkimeAdmin')"
+        :title="seeAll ? 'Just show the shortcuts created by you and shared with you' : 'See all the shortcuts that exist for all users (you can because you are an ADMIN!)'">
+        <span class="fa fa-user-circle mr-1" />
+        See {{ seeAll ? ' MY ' : ' ALL ' }} Shortcuts
+      </b-form-checkbox>
+      <moloch-paging
+        v-if="shortcuts.data"
+        :length-default="shortcutsSize"
+        @changePaging="changeShortcutsPaging"
+        :records-total="shortcuts.recordsTotal"
+        :records-filtered="shortcuts.recordsFiltered">
+      </moloch-paging>
     </div>
 
     <table v-if="shortcuts.data"
@@ -123,286 +143,226 @@
             </td>
             <td class="shortcut-btns">
               <span class="pull-right">
-                <button type="button"
+                <b-button
+                  size="sm"
                   v-b-tooltip.hover
+                  variant="theme-secondary"
                   title="Copy this shortcut's value"
-                  class="btn btn-sm btn-theme-secondary"
-                  @click="copyValue(item.value)">
+                  @click="$emit('copy-value', item.value)">
                   <span class="fa fa-clipboard fa-fw" />
-                </button>
+                </b-button>
                 <span v-if="user.roles.includes('arkimeAdmin') || item.userId === user.userId">
-                  <button type="button"
+                  <b-button
+                    size="sm"
+                    variant="danger"
                     v-b-tooltip.hover
                     title="Delete this shortcut"
-                    class="btn btn-sm btn-danger"
                     @click="deleteShortcut(item, index)">
                     <span class="fa fa-trash-o fa-fw" v-if="!item.loading" />
                     <span class="fa fa-spinner fa-spin fa-fw" v-else />
-                  </button>
-                  <span v-if="!item.editing">
-                    <div v-if="item.locked"
+                  </b-button>
+                  <span>
+                    <div
+                      v-if="item.locked"
                       v-b-tooltip.hover
                       style="display:inline-block"
                       title="Locked shortcut. Ask your admin to use db.pl to update this shortcut.">
-                      <button :disabled="true"
-                        type="button"
-                        class="btn btn-sm btn-warning disabled cursor-help">
+                      <b-button
+                        size="sm"
+                        :disabled="true"
+                        variant="warning"
+                        class="disabled cursor-help">
                         <span class="fa fa-lock fa-fw" />
-                      </button>
+                      </b-button>
                     </div>
-                    <button type="button"
-                      v-b-tooltip.hover
+                    <b-button
                       v-else
-                      @click="toggleEditShortcut(item)"
-                      title="Make changes to this shortcut's value"
-                      class="btn btn-sm btn-theme-tertiary">
+                      size="sm"
+                      v-b-tooltip.hover
+                      variant="theme-tertiary"
+                      @click="editShortcut(item)"
+                      title="Update this shortcut">
                       <span class="fa fa-pencil fa-fw" v-if="!item.loading" />
                       <span class="fa fa-spinner fa-spin fa-fw" v-else />
-                    </button>
-                  </span>
-                  <span v-else>
-                    <button type="button"
-                      v-b-tooltip.hover
-                      title="Cancel changes to this shortcut's value"
-                      class="btn btn-sm btn-warning"
-                      @click="toggleEditShortcut(item)">
-                      <span class="fa fa-ban fa-fw" v-if="!item.loading" />
-                      <span class="fa fa-spinner fa-spin fa-fw" v-else />
-                    </button>
-                    <button type="button"
-                      v-b-tooltip.hover
-                      @click="updateShortcut(item, index)"
-                      title="Save changes to this shortcut's value"
-                      class="btn btn-sm btn-theme-tertiary">
-                      <span class="fa fa-save fa-fw" v-if="!item.loading" />
-                      <span class="fa fa-spinner fa-spin fa-fw" v-else />
-                    </button>
+                    </b-button>
                   </span>
                 </span>
               </span>
             </td>
           </tr>
-          <!-- edit shortcut -->
-          <tr :key="`${item.id}-edit`"
-            v-if="item.editing">
-            <td colspan="9">
-              <div class="form-group row mt-2">
-                <label for="updateShortcutName"
-                  class="col-2 col-form-label text-right">
-                  Name<sup>*</sup>
-                </label>
-                <div class="col-10">
-                  <input id="updateShortcutName"
-                    type="text"
-                    class="form-control form-control-sm"
-                    v-model="item.newName"
-                  />
-                </div>
-              </div>
-              <div class="form-group row">
-                <label for="updateShortcutDescription"
-                  class="col-2 col-form-label text-right">
-                  Description
-                </label>
-                <div class="col-10">
-                  <input id="updateShortcutDescription"
-                    type="text"
-                    class="form-control form-control-sm"
-                    v-model="item.newDescription"
-                  />
-                </div>
-              </div>
-              <div class="form-group row">
-                <label for="updateShortcutValue"
-                  class="col-2 col-form-label text-right">
-                  Value(s)<sup>*</sup>
-                </label>
-                <div class="col-10">
-                  <textarea id="updateShortcutValue"
-                    type="text"
-                    rows="5"
-                    class="form-control form-control-sm"
-                    v-model="item.newValue">
-                  </textarea>
-                </div>
-              </div>
-              <div class="form-group row">
-                <label for="updateShortcutType"
-                  class="col-2 col-form-label text-right">
-                  Type<sup>*</sup>
-                </label>
-                <div class="col-10">
-                  <select id="updateShortcutType"
-                    v-model="item.newType"
-                    class="form-control form-control-sm">
-                    <option value="ip">IP(s)</option>
-                    <option value="string">String(s)</option>
-                    <option value="number">Number(s)</option>
-                  </select>
-                </div>
-              </div>
-              <div class="form-group row">
-                <label class="col-2 col-form-label text-right">
-                  Sharing
-                </label>
-                <div class="col-10 d-flex">
-                  <div>
-                    <RoleDropdown
-                      :id="item.id"
-                      :roles="roles"
-                      :selected-roles="item.newRoles"
-                      @selected-roles-updated="updateShortcutRoles"
-                      :display-text="item.newRoles && item.newRoles.length ? undefined : 'Share with roles'"
-                    />
-                  </div>
-                  <div class="ml-2 flex-grow-1">
-                    <b-input-group
-                      size="sm"
-                      prepend="Share with users">
-                      <b-form-input
-                        v-model="item.newUsers"
-                        placeholder="comma separated list of userIds"
-                      />
-                    </b-input-group>
-                  </div>
-                </div>
-              </div>
-            </td>
-          </tr> <!-- /edit shortcut -->
         </template> <!-- /shortcuts -->
-        <!-- no shortcuts -->
-        <tr v-if="shortcuts.data && shortcuts.data.length === 0">
-          <td colspan="9">
-            <p class="text-center mb-0">
-              <span class="fa fa-folder-open" />
-              No shortcuts or none that match your search
-            </p>
-          </td>
-        </tr> <!-- /no shortcuts -->
-        <!-- shortcuts list error -->
-        <tr v-if="shortcutsListError">
-          <td colspan="9">
-            <p class="text-danger mb-0">
-              <span class="fa fa-exclamation-triangle" />
-              {{ shortcutsListError }}
-            </p>
-          </td>
-        </tr> <!-- /shortcuts list error -->
       </tbody>
     </table>
-    <!-- new shortcut form -->
-    <div class="row var-form mr-1 ml-1 mt-2">
-      <div class="col">
-        <div class="row mb-3 mt-4">
-          <div class="col-10 offset-2">
-            <h3 class="mt-3">
-              New Shortcut
-            </h3>
-          </div>
-        </div>
-        <div class="form-group row">
-          <label for="newShortcutName"
-            class="col-2 col-form-label text-right">
-            Name<sup>*</sup>
-          </label>
-          <div class="col-10">
-            <input id="newShortcutName"
-              type="text"
-              class="form-control form-control-sm"
-              v-model="newShortcutName"
-              placeholder="MY_MOLOCH_VAR"
-            />
-          </div>
-        </div>
-        <div class="form-group row">
-          <label for="newShortcutDescription"
-            class="col-2 col-form-label text-right">
-            Description
-          </label>
-          <div class="col-10">
-            <input id="newShortcutDescription"
-              type="text"
-              class="form-control form-control-sm"
-              v-model="newShortcutDescription"
-            />
-          </div>
-        </div>
-        <div class="form-group row">
-          <label for="newShortcutValue"
-            class="col-2 col-form-label text-right">
-            Value(s)<sup>*</sup>
-          </label>
-          <div class="col-10">
-            <textarea id="newShortcutValue"
-              type="text"
-              rows="5"
-              class="form-control form-control-sm"
-              v-model="newShortcutValue"
-              placeholder="Enter a comma or newline separated list of values">
-            </textarea>
-          </div>
-        </div>
-        <div class="form-group row">
-          <label for="newShortcutType"
-            class="col-2 col-form-label text-right">
-            Type<sup>*</sup>
-          </label>
-          <div class="col-10">
-            <select id="newShortcutType"
-              v-model="newShortcutType"
-              class="form-control form-control-sm">
-              <option value="ip">IP(s)</option>
-              <option value="string">String(s)</option>
-              <option value="number">Number(s)</option>
-            </select>
-          </div>
-        </div>
-        <div class="form-group row">
-          <label class="col-2 col-form-label text-right">
-            Sharing
-          </label>
-          <div class="col-10 d-flex">
-            <div>
-              <RoleDropdown
-                :roles="roles"
-                display-text="Share with roles"
-                @selected-roles-updated="updateNewShortcutRoles"
-              />
-            </div>
-            <div class="ml-2 flex-grow-1">
-              <b-input-group
-                size="sm"
-                prepend="Share with users">
-                <b-form-input
-                  v-model="newShortcutUsers"
-                  placeholder="comma separated list of userIds"
-                />
-              </b-input-group>
-            </div>
-          </div>
-        </div>
-        <div class="form-group row">
-          <div class="col offset-2">
-            <b-button
-              block
-              size="sm"
-              @click="createShortcut"
-              variant="theme-tertiary">
-              <template v-if="!createShortcutLoading">
-                <span class="fa fa-plus-circle mr-1" />
-                Create
-              </template>
-              <template v-else>
-                <span class="fa fa-spinner fa-spin mr-1" />
-                Creating
-              </template>
-            </b-button>
-          </div>
-        </div>
-      </div>
-    </div> <!-- /new shortcut form -->
 
-  </form> <!-- / shortcut settings -->
+    <!-- shortcuts list error -->
+    <b-alert
+      variant="danger"
+      class="mt-2 mb-0"
+      :show="!!shortcutsListError">
+      <span class="fa fa-exclamation-triangle mr-1" />
+      {{ shortcutsListError }}
+    </b-alert> <!-- /shortcuts list error -->
+
+    <!-- no results -->
+    <div class="text-center mt-4"
+      v-if="shortcuts.data && shortcuts.data.length === 0">
+      <h3>
+        <span class="fa fa-folder-open fa-2x" />
+      </h3>
+      <h5>
+        No shortcuts or none that match your search.
+        <br>
+        Click the create button above to create one!
+      </h5>
+    </div> <!-- /no results -->
+
+    <!-- new shortcut form -->
+    <b-modal
+      size="xl"
+      id="shortcut-modal"
+      :title="editingShortcut ? 'Edit Shortcut' : 'Create New Shortcut'">
+      <b-input-group
+        size="sm"
+        class="mb-2">
+        <template #prepend>
+          <b-input-group-text
+            v-b-tooltip.hover
+            class="cursor-help"
+            title="Enter a descriptive name">
+            Name<sup>*</sup>
+          </b-input-group-text>
+        </template>
+        <b-form-input
+          v-model="newShortcutName"
+          placeholder="MY_ARKIME_VAR"
+        />
+      </b-input-group>
+      <b-input-group
+        size="sm"
+        class="mb-2">
+        <template #prepend>
+          <b-input-group-text
+            v-b-tooltip.hover
+            class="cursor-help"
+            title="Enter an optional description to explain the shortcut">
+            Description
+          </b-input-group-text>
+        </template>
+        <b-form-input
+          v-model="newShortcutDescription"
+          placeholder="Shortcut description"
+        />
+      </b-input-group>
+      <b-input-group
+        size="sm"
+        class="mb-2">
+        <template #prepend>
+          <b-input-group-text
+            v-b-tooltip.hover
+            class="cursor-help"
+            title="Enter an optional description to explain the reason for this query">
+            Value(s)<sup>*</sup>
+          </b-input-group-text>
+        </template>
+        <b-form-textarea
+          rows="5"
+          v-model="newShortcutValue"
+          placeholder="Enter a comma or newline separated list of values"
+        />
+      </b-input-group>
+      <b-input-group
+        size="sm"
+        class="mb-2">
+        <template #prepend>
+          <b-input-group-text
+            v-b-tooltip.hover
+            class="cursor-help"
+            title="The type of shortcut this is">
+            Type<sup>*</sup>
+          </b-input-group-text>
+        </template>
+        <select
+          v-model="newShortcutType"
+          class="form-control form-control-sm">
+          <option value="ip">IP(s)</option>
+          <option value="string">String(s)</option>
+          <option value="number">Number(s)</option>
+        </select>
+      </b-input-group>
+      <div class="d-flex">
+        <div class="mr-3">
+          <RoleDropdown
+            :roles="roles"
+            display-text="Share with roles"
+            @selected-roles-updated="updateNewShortcutRoles"
+          />
+        </div>
+        <b-input-group
+          size="sm"
+          class="flex-grow-1"
+          prepend="Share with users">
+          <b-form-input
+            v-model="newShortcutUsers"
+            placeholder="comma separated list of userIds"
+          />
+        </b-input-group>
+      </div>
+      <!-- create form error -->
+      <b-alert
+        variant="danger"
+        class="mt-2 mb-0"
+        :show="!!shortcutFormError">
+        <span class="fa fa-exclamation-triangle mr-1" />
+        {{ shortcutFormError }}
+      </b-alert> <!-- /create form error -->
+      <template #modal-footer>
+        <div class="w-100 d-flex justify-content-between">
+          <b-button
+            title="Cancel"
+            variant="danger"
+            @click="$bvModal.hide('shortcut-modal')">
+            <span class="fa fa-times" />
+            Cancel
+          </b-button>
+          <b-button
+            variant="success"
+            v-b-tooltip.hover
+            v-if="!editingShortcut"
+            @click="createShortcut"
+            title="Create new shortcut"
+            :disabled="createShortcutLoading"
+            :class="{'disabled':createShortcutLoading}">
+            <template v-if="!createShortcutLoading">
+              <span class="fa fa-plus-circle mr-1" />
+              Create
+            </template>
+            <template v-else>
+              <span class="fa fa-spinner fa-spin mr-1" />
+              Creating
+            </template>
+          </b-button>
+          <b-button
+            v-else
+            variant="success"
+            v-b-tooltip.hover
+            @click="updateShortcut"
+            title="Update shortcut"
+            :disabled="createShortcutLoading"
+            :class="{'disabled':createShortcutLoading}">
+            <template v-if="!createShortcutLoading">
+              <span class="fa fa-save mr-1" />
+              Save
+            </template>
+            <template v-else>
+              <span class="fa fa-spinner fa-spin mr-1" />
+              Saving
+            </template>
+          </b-button>
+        </div>
+      </template> <!-- /modal footer -->
+    </b-modal> <!-- /new shortcut form -->
+
+  </div> <!-- / shortcut settings -->
 </template>
 
 <script>
@@ -423,12 +383,14 @@ export default {
       loading: true,
       shortcuts: {},
       shortcutsListError: '',
+      shortcutFormError: '',
       newShortcutName: '',
       newShortcutDescription: '',
       newShortcutValue: '',
       newShortcutType: 'string',
       newShortcutUsers: '',
       newShortcutRoles: [],
+      editingShortcut: false,
       shortcutsStart: 0,
       shortcutsSize: 50,
       shortcutsQuery: {
@@ -437,7 +399,8 @@ export default {
         search: ''
       },
       createShortcutLoading: false,
-      hasUsersES: this.$constants.MOLOCH_HASUSERSES
+      hasUsersES: this.$constants.MOLOCH_HASUSERSES,
+      showAll: false
     };
   },
   computed: {
@@ -478,16 +441,17 @@ export default {
       this.shortcutsQuery.sortField = sort;
       this.getShortcuts();
     },
-    /* opens up text area to edit shortcut value */
-    toggleEditShortcut (shortcut) {
-      const editingShortcut = !shortcut.editing;
-      this.$set(shortcut, 'editing', editingShortcut);
-      this.$set(shortcut, 'newValue', shortcut.value);
-      this.$set(shortcut, 'newName', shortcut.name);
-      this.$set(shortcut, 'newType', shortcut.type);
-      this.$set(shortcut, 'newRoles', shortcut.roles);
-      this.$set(shortcut, 'newUsers', shortcut.users);
-      this.$set(shortcut, 'newDescription', shortcut.description);
+    /* opens up modal to edit shortcut */
+    editShortcut (shortcut) {
+      this.shortcutFormError = '';
+      this.editingShortcut = shortcut.id;
+      this.newShortcutName = shortcut.name || '';
+      this.newShortcutValue = shortcut.value || '';
+      this.newShortcutUsers = shortcut.users || '';
+      this.newShortcutRoles = shortcut.roles || [];
+      this.newShortcutType = shortcut.type || 'string';
+      this.newShortcutDescription = shortcut.description || '';
+      this.$bvModal.show('shortcut-modal');
     },
     /* show/hide the entire shortcut value */
     toggleDisplayAllShortcut (shortcut) {
@@ -498,15 +462,7 @@ export default {
     },
     /* creates a new shortcut */
     createShortcut () {
-      if (!this.newShortcutName) {
-        this.$emit('display-message', { msg: 'Enter a unique shortcut name', type: 'danger' });
-        return;
-      }
-
-      if (!this.newShortcutValue) {
-        this.$emit('display-message', { msg: 'Enter a value for your new shortcut', type: 'danger' });
-        return;
-      }
+      if (!this.validShortcutForm()) { return; }
 
       this.createShortcutLoading = true;
 
@@ -521,21 +477,11 @@ export default {
 
       SettingsService.createShortcut(data).then((response) => {
         this.getShortcuts();
-        // clear the inputs
-        this.newShortcutName = '';
-        this.newShortcutValue = '';
-        this.newShortcutUsers = '';
-        this.newShortcutRoles = '';
-        this.newShortcutDescription = '';
-        // display success message to user
-        let msg = response.text;
-        if (response.invalidUsers && response.invalidUsers.length) {
-          msg += ` Could not add these users: ${response.invalidUsers.join(',')}`;
-        }
-        this.$emit('display-message', { msg });
-        this.createShortcutLoading = false;
+        this.clearShortcutForm();
+        this.$bvModal.hide('shortcut-modal');
+        this.displaySuccess(response);
       }).catch((error) => {
-        this.$emit('display-message', { msg: error.text, type: 'danger' });
+        this.shortcutFormError = error.text;
         this.createShortcutLoading = false;
       });
     },
@@ -548,33 +494,36 @@ export default {
       }
     },
     /* updates a specified shortcut */
-    updateShortcut (shortcut, index) {
-      this.$set(shortcut, 'loading', true);
+    updateShortcut () {
+      if (!this.validShortcutForm()) { return; }
+
+      this.createShortcutLoading = true;
 
       const data = {
-        userId: shortcut.userId,
-        users: shortcut.newUsers,
-        roles: shortcut.newRoles,
-        name: shortcut.newName || shortcut.name,
-        type: shortcut.newType || shortcut.type,
-        value: shortcut.newValue || shortcut.value,
-        description: shortcut.newDescription || shortcut.description
+        name: this.newShortcutName,
+        type: this.newShortcutType,
+        value: this.newShortcutValue,
+        users: this.newShortcutUsers,
+        roles: this.newShortcutRoles,
+        description: this.newShortcutDescription
       };
 
-      SettingsService.updateShortcut(shortcut.id, data).then((response) => {
-        response.shortcut.id = shortcut.id;
-        response.shortcut.type = shortcut.newType || shortcut.type;
-        this.$set(this.shortcuts.data, index, response.shortcut);
-        // display success message to user
-        let msg = response.text;
-        if (response.invalidUsers && response.invalidUsers.length) {
-          msg += ` Could not add these users: ${response.invalidUsers.join(',')}`;
+      SettingsService.updateShortcut(this.editingShortcut, data).then((response) => {
+        response.shortcut.id = this.editingShortcut; // server doesn't return id
+        response.shortcut.type = this.newShortcutType; // server doesn't return type
+        // update the shortcut in the table
+        for (let i = 0; i < this.shortcuts.data.length; i++) {
+          if (this.shortcuts.data[i].id === this.editingShortcut) {
+            this.$set(this.shortcuts.data, i, response.shortcut);
+          }
         }
-        this.$emit('display-message', { msg });
-        this.$set(shortcut, 'loading', false);
+        this.clearShortcutForm();
+        this.editingShortcut = undefined;
+        this.$bvModal.hide('shortcut-modal');
+        this.displaySuccess(response);
       }).catch((error) => {
-        this.$emit('display-message', { msg: error.text, type: 'danger' });
-        this.$set(shortcut, 'loading', false);
+        this.shortcutFormError = error.text;
+        this.createShortcutLoading = false;
       });
     },
     /* deletes a shortcut and removes it from the shortcuts array */
@@ -586,18 +535,16 @@ export default {
         this.shortcuts.data.splice(index, 1);
         this.shortcuts.recordsTotal--;
         this.shortcuts.recordsFiltered--;
-        // display success message to user
-        this.$emit('display-message', { msg: response.text });
         this.$set(shortcut, 'loading', false);
+        this.displaySuccess(response);
       }).catch((error) => {
         // display error message to user
         this.$emit('display-message', { msg: error.text, type: 'danger' });
         this.$set(shortcut, 'loading', false);
       });
     },
-
     /* helpers ------------------------------------------------------------- */
-    getShortcuts: function () {
+    getShortcuts () {
       const queryParams = {
         length: this.shortcutsSize,
         start: this.shortcutsStart,
@@ -605,8 +552,9 @@ export default {
         sort: this.shortcutsQuery.sortField
       };
 
-      if (this.shortcutsQuery.search) { queryParams.searchTerm = this.shortcutsQuery.search; }
+      if (this.seeAll) { queryParams.all = true; }
       if (this.userId) { queryParams.userId = this.userId; }
+      if (this.shortcutsQuery.search) { queryParams.searchTerm = this.shortcutsQuery.search; }
 
       SettingsService.getShortcuts(queryParams).then((response) => {
         this.loading = false;
@@ -616,23 +564,50 @@ export default {
         this.loading = false;
         this.shortcutsListError = error.text || error;
       });
+    },
+    /* validates the shortcut form. returns false if form is not valid and true otherwise.
+     * sets the shortcut form error if the form in invalid */
+    validShortcutForm () {
+      if (!this.newShortcutName) {
+        this.shortcutFormError = 'Shortcut name required';
+        return false;
+      }
+
+      if (!this.newShortcutValue) {
+        this.shortcutFormError = 'Shortcut value(s) required';
+        return false;
+      }
+
+      if (!this.newShortcutType) {
+        this.shortcutFormError = 'Shortcut type required';
+        return false;
+      }
+
+      return true;
+    },
+    /* clear shortcut form inputs, errors, and loading state */
+    clearShortcutForm () {
+      this.shortcutFormError = '';
+      this.newShortcutName = '';
+      this.newShortcutValue = '';
+      this.newShortcutUsers = '';
+      this.newShortcutRoles = [];
+      this.newShortcutDescription = '';
+      this.createShortcutLoading = false;
+    },
+    /* display success message to user and add any invalid users if they exist */
+    displaySuccess (response) {
+      let msg = response.text;
+      if (response.invalidUsers && response.invalidUsers.length) {
+        msg += ` Could not add these users: ${response.invalidUsers.join(',')}`;
+      }
+      this.$emit('display-message', { msg });
     }
   }
 };
 </script>
 
 <style>
-/* shortcuts form */
-.settings-page .var-form {
-  box-shadow: inset 0 1px 1px rgba(0, 0, 0, .05);
-  background-color: var(--color-gray-lighter);
-  border: 1px solid var(--color-gray-light);
-  border-radius: 3px;
-}
-.settings-page .var-form input[type='checkbox'] {
-  margin-top: 0.75rem;
-}
-
 /* shortcuts table */
 .settings-page .shortcut-value {
   max-width: 340px;

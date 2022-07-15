@@ -10,33 +10,33 @@
                "bytes" : 489,
                "ip" : "10.16.27.131",
                "mac" : [
-                  "aa:aa:aa:aa:aa:a1",
-                  "bb:bb:bb:bb:bb:b1"
+                  "aa:bb:cc:dd:cc:c1",
+                  "dd:dd:dd:dd:dd:d1"
                ],
                "mac-cnt" : 2,
                "packets" : 3,
                "port" : 80
             },
+            "dstOuterASN" : [
+               "---"
+            ],
+            "dstOuterGEO" : [
+               "---"
+            ],
+            "dstOuterIp" : [
+               "172.16.27.121"
+            ],
+            "dstOuterIpCnt" : 1,
+            "dstOuterMac" : [
+               "ee:ee:ee:ee:ee:e1"
+            ],
+            "dstOuterMac-cnt" : 1,
+            "dstOuterRIR" : [
+               "ARIN"
+            ],
             "dstPayload8" : "485454502f312e31",
             "fileId" : [],
             "firstPacket" : 1652950005864,
-            "greASN" : [
-               "AS16509 Amazon.com, Inc.",
-               "AS16509 Amazon.com, Inc."
-            ],
-            "greGEO" : [
-               "US",
-               "US"
-            ],
-            "greIp" : [
-               "100.20.9.1",
-               "100.20.9.2"
-            ],
-            "greIpCnt" : 2,
-            "greRIR" : [
-               "ARIN",
-               "ARIN"
-            ],
             "http" : {
                "md5" : [
                   "f73d2a4f4331dc56920d51fe6ba8ebc9"
@@ -102,13 +102,30 @@
                "bytes" : 646,
                "ip" : "10.16.27.12",
                "mac" : [
-                  "aa:aa:aa:aa:aa:a1",
-                  "bb:bb:bb:bb:bb:b1"
+                  "aa:bb:cc:dd:cc:c1",
+                  "dd:dd:dd:dd:dd:d1"
                ],
                "mac-cnt" : 2,
                "packets" : 4,
                "port" : 65174
             },
+            "srcOuterASN" : [
+               "---"
+            ],
+            "srcOuterGEO" : [
+               "---"
+            ],
+            "srcOuterIp" : [
+               "172.16.27.131"
+            ],
+            "srcOuterIpCnt" : 1,
+            "srcOuterMac" : [
+               "ff:dd:ff:ff:ff:f1"
+            ],
+            "srcOuterMac-cnt" : 1,
+            "srcOuterRIR" : [
+               "ARIN"
+            ],
             "srcPayload8" : "474554202f48656c",
             "tags" : [
                "gretest-erspan-vxlan"

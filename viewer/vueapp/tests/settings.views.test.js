@@ -51,7 +51,7 @@ SettingsService.createView = jest.fn().mockResolvedValue({
 
 test('views', async () => {
   const {
-    emitted, getByText, getByTitle, getAllByTitle, queryByText, getByDisplayValue, getByPlaceholderText
+    emitted, getByText, getByTitle, getAllByTitle, queryByText, getByPlaceholderText
   } = render(Views, {
     store,
     mocks: { $route }
@@ -63,17 +63,20 @@ test('views', async () => {
   });
 
   // create view form validation ------------------------------------------- //
-  const createViewBtn = getByTitle('Create new view');
+  const openCreateFormBtn = getByText('New View');
+  await fireEvent.click(openCreateFormBtn);
+  getByText('Create New View'); // displays form
+  const createViewBtn = getByText('Create');
   await fireEvent.click(createViewBtn);
-  getByText('No view name specified.');
-  const viewNameInput = getByPlaceholderText('Enter a new view name (20 chars or less)');
+  getByText('View name required');
+  const viewNameInput = getByPlaceholderText('View name (20 chars or less)');
   const newViewName = 'viewname1';
   await fireEvent.update(viewNameInput, newViewName);
   await fireEvent.click(createViewBtn);
-  getByText('No view expression specified.');
+  getByText('View expression required');
 
   // can create a view ----------------------------------------------------- //
-  const viewExpressionInput = getByPlaceholderText('Enter a new view expression');
+  const viewExpressionInput = getByPlaceholderText('View expression');
   const newViewExpression = 'protocols == tls';
   await fireEvent.update(viewExpressionInput, newViewExpression);
   await fireEvent.click(createViewBtn);
@@ -96,17 +99,34 @@ test('views', async () => {
   });
 
   // can update a view ----------------------------------------------------- //
-  await fireEvent.update(getByDisplayValue('test view 1'), 'updated view name');
-  await waitFor(() => {
-    fireEvent.click(getByTitle('Save changes to this view'));
-  });
-  expect(SettingsService.updateView).toHaveBeenCalledWith({
-    ...updatedView,
-    changed: true
-  }, undefined);
+  const updateBtn = getAllByTitle('Update this view')[0];
+  await fireEvent.click(updateBtn);
+  getByText('Edit View'); // displays edit form
+  // and fills out view values
+  expect(viewNameInput.value).toBe(views[0].name);
+  await fireEvent.update(viewNameInput, 'updated view name');
+  const saveBtn = getByText('Save');
+  await fireEvent.click(saveBtn);
+  delete updatedView.user;
+  expect(SettingsService.updateView).toHaveBeenCalledWith({ ...updatedView }, undefined);
+  getByText('updated view name'); // updates the view in the table
 
   // can delete a view ----------------------------------------------------- //
   await fireEvent.click(getAllByTitle('Delete this view')[0]);
-  expect(SettingsService.deleteView).toHaveBeenCalledWith('2', undefined);
-  expect(queryByText('test view 2')).not.toBeInTheDocument(); // view removed
+  expect(SettingsService.deleteView).toHaveBeenCalledWith('1', undefined);
+  expect(queryByText('updated view name')).not.toBeInTheDocument(); // view removed
+
+  // can click see all button ---------------------------------------------- //
+  const seeAllBtn = getByTitle('See all the views that exist for all users (you can because you are an ADMIN!)');
+  await fireEvent.click(seeAllBtn);
+  expect(SettingsService.getViews).toHaveBeenCalledWith({
+    start: 0,
+    all: true,
+    length: 50,
+    desc: false,
+    sort: 'name'
+  });
+  await waitFor(() => { // updates the title of the button
+    getByTitle('Just show the views created by you and shared with you');
+  });
 });

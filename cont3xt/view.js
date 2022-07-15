@@ -73,7 +73,7 @@ class View {
     }
 
     if (view.editRoles !== undefined && !Array.isArray(view.editRoles)) {
-      return 'viewRoles must be array';
+      return 'editRoles must be array';
     }
 
     if (view.integrations !== undefined && !Array.isArray(view.integrations)) {

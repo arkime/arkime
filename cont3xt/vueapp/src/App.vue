@@ -15,6 +15,8 @@
           <br>
           <code>'F'</code> - set focus to the link group search filter
           <br>
+          <code>'V'</code> - set focus to the view dropdown search filter
+          <br>
           <code>'E'</code> - toggle cache On/Off
           <br>
           <code>'R'</code> - generate a report of the current results
@@ -77,11 +79,16 @@ export default {
     }
 
     // NOTE: don't need to do anything with the data (the store does it)
-    Cont3xtService.getIntegrations();
+    Promise.allSettled([
+      Cont3xtService.getIntegrations(),
+      UserService.getIntegrationViews()
+    ]).then(() => {
+      // raise flag to process on-load query parameters like 'submit' once the necessary data is loaded
+      this.$store.commit('SET_IMMEDIATE_SUBMISSION_READY', true);
+    });
     LinkService.getLinkGroups();
     UserService.getUser();
     UserService.getRoles();
-    UserService.getIntegrationViews();
 
     // watch for keyup/down events for the entire app
     // the rest of the app should compute necessary values with:
@@ -112,6 +119,10 @@ export default {
       case 70: // f
         // focus on time range selector
         this.$store.commit('SET_FOCUS_LINK_SEARCH', true);
+        break;
+      case 86: // v
+        // focus on view dropdown selector
+        this.$store.commit('SET_FOCUS_VIEW_SEARCH', true);
         break;
       case 69: // e
         // toggle cache
