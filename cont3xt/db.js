@@ -566,7 +566,6 @@ class DbESImplementation {
     }
 
     // normal users can only see their own history, but cont3xtAdmins can see everyone's!
-    console.log(reqQuery, reqQuery.seeAll, 'POGG');
     if (!roles.includes('cont3xtAdmin') || reqQuery.seeAll !== 'true') {
       filter.push({ term: { userId } });
     }
