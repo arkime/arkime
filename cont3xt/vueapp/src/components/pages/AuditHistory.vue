@@ -43,7 +43,7 @@
           class="ml-2"
           v-model="seeAll"
           v-b-tooltip.hover
-          @input="loadAuditsFromSearch"
+          @input="seeAllChanged"
           v-if="roles.includes('cont3xtAdmin')"
           :title="seeAll ? 'Just show the audit logs created from your activity' : 'See all the audit logs that exist for all users (you can because you are an ADMIN!)'">
         <span class="fa fa-user-circle mr-1" />
@@ -292,9 +292,17 @@ export default {
       }).then(audits => {
         this.auditLogs = audits;
       });
+    },
+    seeAllChanged () {
+      this.$router.push({ query: { ...this.$route.query, seeAll: this.seeAll ? 'true' : undefined } });
+      this.loadAuditsFromSearch();
     }
   },
   mounted () {
+    if (this.$route.query.seeAll === 'true') {
+      this.seeAll = true;
+    }
+
     this.loadAuditsFromSearch();
   }
 };
