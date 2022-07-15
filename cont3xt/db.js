@@ -566,7 +566,8 @@ class DbESImplementation {
     }
 
     // normal users can only see their own history, but cont3xtAdmins can see everyone's!
-    if (!roles.includes('cont3xtAdmin')) {
+    console.log(reqQuery, reqQuery.seeAll, 'POGG');
+    if (!roles.includes('cont3xtAdmin') || reqQuery.seeAll !== 'true') {
       filter.push({ term: { userId } });
     }
 
@@ -727,7 +728,7 @@ class DbLMDBImplementation {
 
         // cont3xtAdmins can see anyone's logs
         // non-admin accounts can only see their own logs
-        return (roles?.includes('cont3xtAdmin') || userId === value.userId);
+        return ((roles?.includes('cont3xtAdmin') && reqQuery.seeAll === 'true') || userId === value.userId);
       }).map(({ key, value }) => new Audit( // create Audit objs with _id
         Object.assign(value, { _id: key }))
       )];

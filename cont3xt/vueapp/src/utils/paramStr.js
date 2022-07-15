@@ -5,7 +5,7 @@
  */
 export const paramStr = (queryParamObj) => {
   return '?' + Object.entries(queryParamObj)
-    .filter(([_, value]) => typeof value === 'string' || typeof value === 'number')
+    .filter(([_, value]) => typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean')
     .map(([key, value]) => `${encodeURIComponent(key)}=${encodeURIComponent('' + value)}`)
     .join('&');
 };

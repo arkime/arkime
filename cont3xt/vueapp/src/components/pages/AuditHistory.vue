@@ -36,6 +36,19 @@
             v-model="timeRangeInfo" :place-holder-tip="timePlaceHolderTip"/>
         <!-- /time range inputs -->
       </div>
+
+      <b-form-checkbox
+          button
+          size="sm"
+          class="ml-2"
+          v-model="seeAll"
+          v-b-tooltip.hover
+          @input="loadAuditsFromSearch"
+          v-if="roles.includes('cont3xtAdmin')"
+          :title="seeAll ? 'Just show the audit logs created from your activity' : 'See all the audit logs that exist for all users (you can because you are an ADMIN!)'">
+        <span class="fa fa-user-circle mr-1" />
+        See {{ seeAll ? ' MY ' : ' ALL ' }} History
+      </b-form-checkbox>
     </div>
 
     <!--  history table  -->
@@ -135,26 +148,14 @@ export default {
     ...mapGetters(['getViews', 'getUser', 'getDarkThemeEnabled']),
     viewLookup () {
       return Object.fromEntries(this.getViews.map(view => [view._id, view.name]));
-    }
-  },
-  data () {
-    return {
-      auditLogs: [],
-      filteredLogs: [],
-      timeRangeInfo: {
-        numDays: 7, // 1 week
-        numHours: 7 * 24, // 1 week
-        startDate: new Date(new Date().getTime() - (3600000 * 24 * 7)).toISOString().slice(0, -5) + 'Z', // 1 week ago
-        stopDate: new Date().toISOString().slice(0, -5) + 'Z', // now
-        startMs: Date.now() - (3600000 * 24 * 7), // by default, looks back one week
-        stopMs: Date.now() // now
-      },
-      lastTimeRangeInfoSearched: null,
-      timePlaceHolderTip: {
-        title: 'These values specify the date range searched.<br>' +
-            'Try using <a href="help#general" class="no-decoration">relative times</a> like -5d or -1h.'
-      },
-      fields: [
+    },
+    roles () {
+      return this.getUser?.roles ?? [];
+    },
+    fields () {
+      const showUserIds = this.roles.includes('cont3xtAdmin');
+
+      return [
         { // virtual button field
           label: '',
           key: 'buttons',
@@ -167,12 +168,14 @@ export default {
           sortable: true,
           setWidth: '10rem'
         },
-        {
-          label: 'User ID',
-          key: 'userId',
-          sortable: true,
-          setWidth: '5rem'
-        },
+        showUserIds
+          ? {
+            label: 'User ID',
+            key: 'userId',
+            sortable: true,
+            setWidth: '5rem'
+          }
+          : undefined,
         {
           label: 'iType',
           key: 'iType',
@@ -212,10 +215,30 @@ export default {
           tdClass: 'text-right',
           formatter: this.millisecondStr
         }
-      ],
+      ];
+    }
+  },
+  data () {
+    return {
+      auditLogs: [],
+      filteredLogs: [],
+      timeRangeInfo: {
+        numDays: 7, // 1 week
+        numHours: 7 * 24, // 1 week
+        startDate: new Date(new Date().getTime() - (3600000 * 24 * 7)).toISOString().slice(0, -5) + 'Z', // 1 week ago
+        stopDate: new Date().toISOString().slice(0, -5) + 'Z', // now
+        startMs: Date.now() - (3600000 * 24 * 7), // by default, looks back one week
+        stopMs: Date.now() // now
+      },
+      lastTimeRangeInfoSearched: null,
+      timePlaceHolderTip: {
+        title: 'These values specify the date range searched.<br>' +
+            'Try using <a href="help#general" class="no-decoration">relative times</a> like -5d or -1h.'
+      },
       sortBy: 'issuedAt',
       sortDesc: true,
-      filter: ''
+      filter: '',
+      seeAll: false
     };
   },
   watch: {
@@ -264,7 +287,8 @@ export default {
       AuditService.getAudits({
         startMs: this.timeRangeInfo.startMs,
         stopMs: this.timeRangeInfo.stopMs,
-        searchTerm: this.filter === '' ? undefined : this.filter.toLowerCase()
+        searchTerm: this.filter === '' ? undefined : this.filter.toLowerCase(),
+        seeAll: this.seeAll
       }).then(audits => {
         this.auditLogs = audits;
       });
