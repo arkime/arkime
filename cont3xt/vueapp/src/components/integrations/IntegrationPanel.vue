@@ -5,10 +5,13 @@
       class="sidebar-btn"
       @mouseenter="mouseEnterSidebar">
       <div class="mt-3 pt-1">
-        <span
-          @click="toggleSidebar"
-          class="fa fa-chevron-right cursor-pointer"
-        />
+        <!--    dynamic margin counteracts the shift caused by the change in cont3xt-content margin on tag open/close    -->
+        <div :style="`margin-top: ${tagsOpen ? -14 : 6}px`">
+          <span
+              @click="toggleSidebar"
+              class="fa fa-chevron-right cursor-pointer"
+          />
+        </div>
       </div>
     </div> <!-- /open search panel on hover button -->
 
@@ -110,7 +113,8 @@ export default {
   name: 'IntegrationPanel',
   components: { ViewSelector },
   props: {
-    sidebarHover: Boolean
+    sidebarHover: Boolean,
+    tagsOpen: Boolean // allows for correct positioning of sidebar button
   },
   data () {
     return {

@@ -1,5 +1,5 @@
 <template>
-  <span class="px-1 ml-1 rounded bg-danger">
+  <span class="px-1 ml-1 rounded bg-danger tag">
     {{ value }}
   </span>
 </template>
@@ -17,5 +17,8 @@ export default {
 </script>
 
 <style scoped>
-
+/* use light text on tags for light and dark theme */
+.tag {
+  color: #EEE;
+}
 </style>

@@ -87,7 +87,7 @@
         </span>
       </div> <!-- /health check -->
       <!-- version -->
-      <Version :timezone="timezone" />
+      <Version :timezone="timezone" class="no-wrap" />
       <!-- help button -->
       <router-link
         tabindex="-1"
