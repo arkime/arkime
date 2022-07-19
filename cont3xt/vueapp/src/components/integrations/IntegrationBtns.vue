@@ -6,8 +6,8 @@
         tabindex="0"
         variant="outline-dark"
         class="ml-1 mt-1 float-right"
-        :id="itype + integration.name"
-        :key="itype + integration.name"
+        :id="`${itype}-${integration.name}-${value}`"
+        :key="integration.name"
         v-if="instanceData[integration.name] && integration.icon"
         @click="$store.commit('SET_DISPLAY_INTEGRATION', { source: integration.name, itype, value })">
         <img
@@ -23,7 +23,7 @@
           {{ instanceData[integration.name]._cont3xt.count | humanReadableNumber }}
         </b-badge>
         <b-tooltip
-          :target="itype + integration.name">
+            :target="`${itype}-${integration.name}-${value}`">
           {{ integration.name }}
         </b-tooltip>
       </b-button>
