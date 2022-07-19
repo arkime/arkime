@@ -31,7 +31,7 @@ const data = {
       },
       name: 'Whois',
       itype: 'domain',
-      query: 'threatbutt.com'
+      _query: 'threatbutt.com'
     }],
     'PT Whois': [{
       data: {
@@ -41,7 +41,7 @@ const data = {
       },
       itype: 'domain',
       name: 'PT Whois',
-      query: 'threatbutt.com'
+      _query: 'threatbutt.com'
     }]
   }
 };
