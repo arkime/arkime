@@ -17,8 +17,5 @@ export default {
 </script>
 
 <style scoped>
-/* use light text on tags for light and dark theme */
-.tag {
-  color: #EEE;
-}
+
 </style>

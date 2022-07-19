@@ -4,7 +4,7 @@
         tabindex="0"
         @click="clearTags"
         title="Clear tags"
-        class="tag-button px-1 py-0 m-0"
+        class="border-0 px-1 py-0 m-0"
         id="clear-tags"
         v-if="tags.length > 0"
     >
@@ -25,17 +25,18 @@
             tabindex="0"
             @click="removeTag(index)"
             title="Remove tag"
-            class="bg-danger tag-button px-1 py-0 m-0"
+            class="bg-danger border-0 px-1 py-0 m-0"
         >
           <span class="fa fa-close"/>
         </b-button>
       </span>
       <span ref="tagOffScreenCounter" id="off-screen-counter"
             class="rounded pl-1 ml-1 bold no-wrap cursor-help"
-            :class="{ invisible: tagsOffScreen <= 0 }" v-if="tagsOffScreen > 0 || checkInProgress"
+            :class="{ invisible: tagsOffScreen <= 0 }"
       >
         <span>+ {{ tagsOffScreen }} more</span>
-        <b-tooltip boundary="viewport" placement="bottomleft" target="off-screen-counter">
+        <b-tooltip boundary="viewport" placement="bottomleft" target="off-screen-counter"
+            :custom-class="tagsOffScreen <= 0 && !checkInProgress ? 'invisible' : 'visible'">
           <div class="d-flex flex-wrap justify-content-end">
             <div v-for="(tag, index) in tags" :key="index" class="d-flex">
               <span class="bg-danger rounded pl-1 ml-1 bold tag no-wrap" v-if="index >= (tags.length - tagsOffScreen)">
@@ -44,7 +45,7 @@
                     tabindex="0"
                     @click="removeTag(index)"
                     title="Remove tag"
-                    class="bg-danger tag-button px-1 py-0 m-0"
+                    class="bg-danger border-0 px-1 py-0 m-0"
                 >
                   <span class="fa fa-close"/>
                 </b-button>
@@ -69,7 +70,7 @@ export default {
   data () {
     return {
       tagsOffScreen: 0,
-      resizeObserver: undefined,
+      resizeObserver: undefined, // ResizeObserver that checks for tags off-screen on resize events
       checkSafeWidthRange: undefined, // object of shape { start: number, end: number }
       checkInProgress: false
     };
@@ -161,8 +162,5 @@ export default {
 </script>
 
 <style scoped>
-/* use light text on tags for light and dark theme */
-.tag {
-  color: #EEE;
-}
+
 </style>

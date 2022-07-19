@@ -1,7 +1,7 @@
 <template>
   <div class="container-fluid">
     <!-- integration selection panel -->
-    <IntegrationPanel :tagsOpen="tagDisplayShown"/>
+    <IntegrationPanel :tagsOpen="!tagDisplayCollapsed"/>
     <!-- view create form -->
     <create-view-modal />
     <!-- page content -->
@@ -27,7 +27,7 @@
                   id="expand-collapse-tags"
                   :disabled="!tags.length"
               >
-                <template v-if="!tagDisplayShown">
+                <template v-if="tagDisplayCollapsed">
                   <b-tooltip noninteractive target="expand-collapse-tags"
                              placement="top" boundary="viewport">
                     Expand tag display
@@ -86,8 +86,7 @@
             <span v-else
                   class="enter-icon">
             <span class="fa fa-long-arrow-left fa-lg" />
-            <div class="enter-arm">
-            </div>
+            <div class="enter-arm" />
           </span>
           </b-button>
           <ViewSelector
@@ -128,7 +127,7 @@
 
         </div>
         <div class="pad-full-width d-flex justify-content-start">
-          <tag-display-line v-if="tagDisplayShown" :tags="tags" :remove-tag="removeTag" :clear-tags="clearTags"/>
+          <tag-display-line v-if="!tagDisplayCollapsed" :tags="tags" :remove-tag="removeTag" :clear-tags="clearTags"/>
         </div>
       </div> <!-- /search -->
 
@@ -403,7 +402,7 @@ export default {
       },
       tagInput: '',
       tags: [],
-      tagDisplayCollapsed: false
+      tagDisplayCollapsed: true
     };
   },
   mounted () {
@@ -432,16 +431,13 @@ export default {
       return this.$store.state.collapsedLinkGroups;
     },
     navMarginPixels () {
-      return this.tagDisplayShown ? 140 : 120;
+      return this.tagDisplayCollapsed ? 120 : 140;
     },
     navHeightStyle () {
       return `height: calc(100vh - ${this.navMarginPixels}px);`;
     },
     navMarginHeightStyle () {
       return this.navHeightStyle + `margin-top: ${this.navMarginPixels}px;`;
-    },
-    tagDisplayShown () {
-      return !this.tagDisplayCollapsed && this.tags.length > 0;
     }
   },
   watch: {
@@ -540,6 +536,7 @@ export default {
     },
     clearTags () {
       this.tags = [];
+      this.tagDisplayCollapsed = true;
     },
     submitTag () {
       if (this.tagInput !== '') {
@@ -555,6 +552,9 @@ export default {
     },
     removeTag (index) {
       this.tags.splice(index, 1);
+      if (this.tags.length === 0) {
+        this.tagDisplayCollapsed = true;
+      }
     },
     clear () {
       this.searchTerm = '';
@@ -916,15 +916,6 @@ body.dark {
   font-size: 0.8rem;
   padding: 0.1rem 0.5rem;
 }
-
-.tag-button {
-  border-width: 0 !important;
-}
-
-.search-nav {
-  background-color: transparent;
-}
-
 /* stops search bar/tag display from hitting edge of screen */
 .pad-full-width {
   width: calc(100% - 20px);
