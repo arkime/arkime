@@ -8,7 +8,7 @@
         class="ml-1 mt-1 float-right"
         :id="itype + integration.name"
         :key="itype + integration.name"
-        v-if="data[itype] && data[itype][integration.name] && data[itype][integration.name][0] && integration.icon"
+        v-if="instanceData[integration.name] && integration.icon"
         @click="$store.commit('SET_DISPLAY_INTEGRATION', { source: integration.name, itype, value })">
         <img
           :alt="integration.name"
@@ -18,9 +18,9 @@
         />
         <b-badge
           class="btn-badge"
-          v-if="data[itype][integration.name][0].data._cont3xt.count !== undefined"
-          :variant="countBadgeColor(data[itype][integration.name][0].data)">
-          {{ data[itype][integration.name][0].data._cont3xt.count | humanReadableNumber }}
+          v-if="instanceData[integration.name]._cont3xt.count !== undefined"
+          :variant="countBadgeColor(instanceData[integration.name])">
+          {{ instanceData[integration.name]._cont3xt.count | humanReadableNumber }}
         </b-badge>
         <b-tooltip
           :target="itype + integration.name">
@@ -60,6 +60,23 @@ export default {
       return this.getIntegrationsArray.slice().sort((a, b) => {
         return a.order - b.order;
       });
+    },
+    /** @returns a map of integration names to integration data objects */
+    instanceData () {
+      const instanceDataMap = {};
+      for (const integration of this.integrations) {
+        const dataArrayForIntegration = this.data?.[this.itype]?.[integration.name];
+        if (dataArrayForIntegration == null) { continue; }
+
+        // look for data object matching query in the integration's data-array
+        for (const queryElement of dataArrayForIntegration) {
+          if (this.value === queryElement?._query) {
+            instanceDataMap[integration.name] = queryElement.data;
+            break;
+          }
+        }
+      }
+      return instanceDataMap;
     }
   },
   methods: {
