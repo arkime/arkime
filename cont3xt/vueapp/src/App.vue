@@ -17,6 +17,8 @@
           <br>
           <code>'V'</code> - set focus to the view dropdown search filter
           <br>
+          <code>'G'</code> - set focus to the tag input
+          <br>
           <code>'E'</code> - toggle cache On/Off
           <br>
           <code>'R'</code> - generate a report of the current results
@@ -124,6 +126,10 @@ export default {
         // focus on view dropdown selector
         this.$store.commit('SET_FOCUS_VIEW_SEARCH', true);
         break;
+      case 71: // g
+        // focus on tag input
+        this.$store.commit('SET_FOCUS_TAG_INPUT', true);
+        break;
       case 69: // e
         // toggle cache
         this.$store.commit('SET_TOGGLE_CACHE', true);
@@ -225,5 +231,9 @@ export default {
 .start-time-shortcut {
   width: 28.359px;
   color: var(--warning);
+}
+.tag-shortcut {
+  color: var(--warning);
+  padding-inline: 2px;
 }
 </style>

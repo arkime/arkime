@@ -15,9 +15,11 @@
             <b-form-input
                 type="text"
                 tabindex="0"
+                ref="tagInput"
                 :placeholder="`Tags${tags.length ? ` (${tags.length})` : ''}`"
                 @keydown.enter="submitTag"
                 v-model="tagInput"
+                v-focus="getFocusTagInput"
             />
             <template #append>
               <b-button
@@ -27,7 +29,10 @@
                   id="expand-collapse-tags"
                   :disabled="!tags.length"
               >
-                <template v-if="tagDisplayCollapsed">
+                <template v-if="getShiftKeyHold">
+                  <span class="tag-shortcut">G</span>
+                </template>
+                <template v-else-if="tagDisplayCollapsed">
                   <b-tooltip noninteractive target="expand-collapse-tags"
                              placement="top" boundary="viewport">
                     Expand tag display
@@ -400,9 +405,7 @@ export default {
         startDate: new Date(new Date().getTime() - (3600000 * 24 * 7)).toISOString().slice(0, -5) + 'Z', // 1 week ago
         stopDate: new Date().toISOString().slice(0, -5) + 'Z' // now
       },
-      tagInput: '',
-      tags: [],
-      tagDisplayCollapsed: true
+      tagInput: ''
     };
   },
   mounted () {
@@ -416,10 +419,19 @@ export default {
       'getRendering', 'getWaitRendering', 'getIntegrationData',
       'getIntegrationsError', 'getLinkGroupsError', 'getLinkGroups',
       'getSidebarKeepOpen', 'getShiftKeyHold', 'getFocusSearch',
-      'getIssueSearch', 'getFocusLinkSearch',
+      'getIssueSearch', 'getFocusLinkSearch', 'getFocusTagInput',
       'getToggleCache', 'getDownloadReport', 'getCopyShareLink',
-      'getAllViews', 'getImmediateSubmissionReady', 'getSelectedView'
+      'getAllViews', 'getImmediateSubmissionReady', 'getSelectedView',
+      'getTags', 'getTagDisplayCollapsed'
     ]),
+    tags: {
+      get () { return this.getTags; },
+      set (val) { this.$store.commit('SET_TAGS', val); }
+    },
+    tagDisplayCollapsed: {
+      get () { return this.getTagDisplayCollapsed; },
+      set (val) { this.$store.commit('SET_TAG_DISPLAY_COLLAPSED', val); }
+    },
     loading: {
       get () { return this.$store.state.loading; },
       set (val) { this.$store.commit('SET_LOADING', val); }
@@ -508,6 +520,9 @@ export default {
     getFocusLinkSearch (val) {
       if (val) { this.$refs.linkSearch.select(); }
     },
+    getFocusTagInput (val) {
+      if (val) { this.$refs.tagInput.select(); }
+    },
     getImmediateSubmissionReady () { // fires once both integrations and views are loaded in from backend
       if (!this.getImmediateSubmissionReady) {
         return; // flag must be true!
@@ -551,10 +566,12 @@ export default {
       }
     },
     removeTag (index) {
-      this.tags.splice(index, 1);
-      if (this.tags.length === 0) {
+      const newTags = [...this.tags];
+      newTags.splice(index, 1);
+      if (newTags.length === 0) {
         this.tagDisplayCollapsed = true;
       }
+      this.tags = newTags;
     },
     clear () {
       this.searchTerm = '';
