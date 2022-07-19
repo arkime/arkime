@@ -14,3 +14,8 @@ body.dark .table-striped thead th {
 .table-dark {
     background-color: revert;
 }
+
+/* use light text on tags for light and dark theme */
+.tag {
+    color: #EEE;
+}

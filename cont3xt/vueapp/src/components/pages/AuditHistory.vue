@@ -105,7 +105,7 @@
       <!--   Tag Column   -->
       <template #cell(tags)="data">
         <template v-if="data.item.tags.length">
-          <indicator-tag v-for="tag in data.item.tags" :key="tag" :value="tag"/>
+          <indicator-tag v-for="(tag, index) of data.item.tags" :key="index" :value="tag"/>
         </template>
         <template v-else>
           -

@@ -1,97 +1,142 @@
 <template>
   <div class="container-fluid">
     <!-- integration selection panel -->
-    <IntegrationPanel />
+    <IntegrationPanel :tagsOpen="!tagDisplayCollapsed"/>
     <!-- view create form -->
     <create-view-modal />
     <!-- page content -->
     <div class="main-content"
       :class="{'with-sidebar': getSidebarKeepOpen}">
       <!-- search -->
-      <div class="fixed-top search-nav d-flex justify-content-between">
-        <b-input-group class="flex-grow-1 mr-2">
-          <template #prepend>
-            <b-input-group-text>
+      <div class="fixed-top search-nav d-flex row">
+        <div class="pad-full-width py-1 d-flex justify-content-between">
+          <!--    tag input      -->
+          <b-input-group style="max-width: 150px" class="mr-2">
+            <b-form-input
+                type="text"
+                tabindex="0"
+                ref="tagInput"
+                :placeholder="`Tags${tags.length ? ` (${tags.length})` : ''}`"
+                @keydown.enter="submitTag"
+                v-model="tagInput"
+                v-focus="getFocusTagInput"
+            />
+            <template #append>
+              <b-button
+                  tabindex="0"
+                  @click="toggleCollapseTagDisplay"
+                  title="Collapse tag display"
+                  id="expand-collapse-tags"
+                  :disabled="!tags.length"
+              >
+                <template v-if="getShiftKeyHold">
+                  <span class="tag-shortcut">G</span>
+                </template>
+                <template v-else-if="tagDisplayCollapsed">
+                  <b-tooltip noninteractive target="expand-collapse-tags"
+                             placement="top" boundary="viewport">
+                    Expand tag display
+                  </b-tooltip>
+                  <span class="fa fa-chevron-down"/>
+                </template>
+                <template v-else>
+                  <b-tooltip noninteractive target="expand-collapse-tags"
+                             placement="top" boundary="viewport">
+                    Collapse tag display
+                  </b-tooltip>
+                  <span class="fa fa-chevron-up"/>
+                </template>
+              </b-button>
+            </template>
+          </b-input-group>
+          <!--    /tag input      -->
+          <b-input-group class="flex-grow-1 mr-2">
+            <template #prepend>
+              <b-input-group-text>
               <span v-if="!getShiftKeyHold"
-                class="fa fa-search fa-fw"
+                    class="fa fa-search fa-fw"
               />
-              <span v-else
-                class="query-shortcut">
+                <span v-else
+                      class="query-shortcut">
                 Q
               </span>
-            </b-input-group-text>
-          </template>
-          <b-form-input
-            tabindex="0"
-            ref="search"
-            v-model="searchTerm"
-            @keydown.enter="search"
-            placeholder="Indicators"
-            v-focus="getFocusSearch"
-          />
-          <template #append>
-            <b-button
-              tabindex="0"
-              @click="clear"
-              :disabled="!searchTerm"
-              title="Remove the search text">
-              <span class="fa fa-close" />
-            </b-button>
-          </template>
-        </b-input-group>
-        <b-button
-          tabindex="-1"
-          @click="search"
-          variant="success"
-          class="mr-1 search-btn">
-          <span v-if="!getShiftKeyHold">
+              </b-input-group-text>
+            </template>
+            <b-form-input
+                tabindex="0"
+                ref="search"
+                v-model="searchTerm"
+                @keydown.enter="search"
+                placeholder="Indicators"
+                v-focus="getFocusSearch"
+            />
+            <template #append>
+              <b-button
+                  tabindex="0"
+                  @click="clear"
+                  :disabled="!searchTerm"
+                  title="Remove the search text">
+                <span class="fa fa-close" />
+              </b-button>
+            </template>
+          </b-input-group>
+          <b-button
+              tabindex="-1"
+              @click="search"
+              variant="success"
+              class="mr-1 search-btn">
+          <span v-if="!getShiftKeyHold" class="no-wrap">
             Get Cont3xt
           </span>
-          <span v-else
-            class="enter-icon">
+            <span v-else
+                  class="enter-icon">
             <span class="fa fa-long-arrow-left fa-lg" />
-            <div class="enter-arm">
-            </div>
+            <div class="enter-arm" />
           </span>
-        </b-button>
-        <ViewSelector
-          :no-caret="true"
-          :show-selected-view="true"
-          :hot-key-enabled="true">
-          <template #title>
-            <span class="fa fa-eye" />
-          </template>
-        </ViewSelector>
-        <b-dropdown
-          class="ml-1"
-          tabindex="-1"
-          variant="info"
-          ref="actionDropdown">
-          <b-dropdown-item
-            :active="skipCache"
-            @click="skipCache = !skipCache"
-            v-b-tooltip.hover.left="skipCache ? 'Ignorning cache - click to use cache (shift + c)' : 'Using cache - click to ignore cache (shift + c)'">
-            <span class="fa fa-database fa-fw mr-1" />
-            Skip Cache
-          </b-dropdown-item>
-          <b-dropdown-item
-            @click="generateReport"
-            :disabled="!searchComplete"
-            v-b-tooltip.hover.left="'Download a report of this result (shift + r)'">
-            <span class="fa fa-file-text fa-fw mr-1" />
-            Download Report
-          </b-dropdown-item>
-          <b-dropdown-item
-            @click="shareLink"
-            :active="activeShareLink"
-            v-b-tooltip.hover.left="'Copy share link to clipboard (shift + l)'">
-            <span class="fa fa-share-alt fa-fw mr-1" />
-            Copy Share Link
-          </b-dropdown-item>
-        </b-dropdown>
+          </b-button>
+          <ViewSelector
+              :no-caret="true"
+              :show-selected-view="true"
+              :hot-key-enabled="true">
+            <template #title>
+              <span class="fa fa-eye" />
+            </template>
+          </ViewSelector>
+          <b-dropdown
+              class="ml-1"
+              tabindex="-1"
+              variant="info"
+              ref="actionDropdown">
+            <b-dropdown-item
+                :active="skipCache"
+                @click="skipCache = !skipCache"
+                v-b-tooltip.hover.left="skipCache ? 'Ignorning cache - click to use cache (shift + c)' : 'Using cache - click to ignore cache (shift + c)'">
+              <span class="fa fa-database fa-fw mr-1" />
+              Skip Cache
+            </b-dropdown-item>
+            <b-dropdown-item
+                @click="generateReport"
+                :disabled="!searchComplete"
+                v-b-tooltip.hover.left="'Download a report of this result (shift + r)'">
+              <span class="fa fa-file-text fa-fw mr-1" />
+              Download Report
+            </b-dropdown-item>
+            <b-dropdown-item
+                @click="shareLink"
+                :active="activeShareLink"
+                v-b-tooltip.hover.left="'Copy share link to clipboard (shift + l)'">
+              <span class="fa fa-share-alt fa-fw mr-1" />
+              Copy Share Link
+            </b-dropdown-item>
+          </b-dropdown>
+
+        </div>
+        <div class="pad-full-width d-flex justify-content-start">
+          <tag-display-line v-if="!tagDisplayCollapsed" :tags="tags" :remove-tag="removeTag" :clear-tags="clearTags"/>
+        </div>
       </div> <!-- /search -->
 
-      <div class="margin-for-search cont3xt-content">
+      <div class="cont3xt-content" :style="navMarginHeightStyle">
         <!-- welcome -->
         <div class="whole-page-info container"
           v-if="!initialized && !error.length && !getIntegrationsError.length">
@@ -149,7 +194,7 @@
         <template v-if="lastSearchedTerm">
           <!-- itype results summary -->
           <div class="results-container results-summary">
-            <div>
+            <div :style="navHeightStyle">
               <cont3xt-domain
                 :data="results"
                 :query="lastSearchedTerm"
@@ -255,7 +300,7 @@
           </div> <!-- /itype results summary -->
           <!-- integration results -->
           <div class="results-container results-integration pull-right">
-            <div
+            <div :style="navHeightStyle"
               @scroll="handleScroll"
               ref="resultsIntegration">
               <b-overlay
@@ -313,6 +358,7 @@ import CreateViewModal from '@/components/views/CreateViewModal';
 import Cont3xtService from '@/components/services/Cont3xtService';
 import IntegrationCard from '@/components/integrations/IntegrationCard';
 import IntegrationPanel from '@/components/integrations/IntegrationPanel';
+import TagDisplayLine from '@/utils/TagDisplayLine';
 import { paramStr } from '@/utils/paramStr';
 
 export default {
@@ -331,7 +377,8 @@ export default {
     CreateViewModal,
     IntegrationCard,
     IntegrationPanel,
-    TimeRangeInput
+    TimeRangeInput,
+    TagDisplayLine
   },
   directives: { Focus },
   data () {
@@ -357,7 +404,8 @@ export default {
         numHours: 7 * 24, // 1 week
         startDate: new Date(new Date().getTime() - (3600000 * 24 * 7)).toISOString().slice(0, -5) + 'Z', // 1 week ago
         stopDate: new Date().toISOString().slice(0, -5) + 'Z' // now
-      }
+      },
+      tagInput: ''
     };
   },
   mounted () {
@@ -371,10 +419,19 @@ export default {
       'getRendering', 'getWaitRendering', 'getIntegrationData',
       'getIntegrationsError', 'getLinkGroupsError', 'getLinkGroups',
       'getSidebarKeepOpen', 'getShiftKeyHold', 'getFocusSearch',
-      'getIssueSearch', 'getFocusLinkSearch',
+      'getIssueSearch', 'getFocusLinkSearch', 'getFocusTagInput',
       'getToggleCache', 'getDownloadReport', 'getCopyShareLink',
-      'getAllViews', 'getImmediateSubmissionReady', 'getSelectedView'
+      'getAllViews', 'getImmediateSubmissionReady', 'getSelectedView',
+      'getTags', 'getTagDisplayCollapsed'
     ]),
+    tags: {
+      get () { return this.getTags; },
+      set (val) { this.$store.commit('SET_TAGS', val); }
+    },
+    tagDisplayCollapsed: {
+      get () { return this.getTagDisplayCollapsed; },
+      set (val) { this.$store.commit('SET_TAG_DISPLAY_COLLAPSED', val); }
+    },
     loading: {
       get () { return this.$store.state.loading; },
       set (val) { this.$store.commit('SET_LOADING', val); }
@@ -384,6 +441,15 @@ export default {
     },
     collapsedLinkGroups () {
       return this.$store.state.collapsedLinkGroups;
+    },
+    navMarginPixels () {
+      return this.tagDisplayCollapsed ? 120 : 140;
+    },
+    navHeightStyle () {
+      return `height: calc(100vh - ${this.navMarginPixels}px);`;
+    },
+    navMarginHeightStyle () {
+      return this.navHeightStyle + `margin-top: ${this.navMarginPixels}px;`;
     }
   },
   watch: {
@@ -454,6 +520,9 @@ export default {
     getFocusLinkSearch (val) {
       if (val) { this.$refs.linkSearch.select(); }
     },
+    getFocusTagInput (val) {
+      if (val) { this.$refs.tagInput.select(); }
+    },
     getImmediateSubmissionReady () { // fires once both integrations and views are loaded in from backend
       if (!this.getImmediateSubmissionReady) {
         return; // flag must be true!
@@ -477,6 +546,33 @@ export default {
   },
   methods: {
     /* page functions ------------------------------------------------------ */
+    toggleCollapseTagDisplay () {
+      this.tagDisplayCollapsed = !this.tagDisplayCollapsed;
+    },
+    clearTags () {
+      this.tags = [];
+      this.tagDisplayCollapsed = true;
+    },
+    submitTag () {
+      if (this.tagInput !== '') {
+        const tagsCreated = this.tagInput.split(',')
+          .map(str => str.trim())
+          .filter(str => str !== '');
+        if (tagsCreated.length > 0) {
+          this.tagDisplayCollapsed = false;
+        }
+        this.tags = [...this.tags, ...tagsCreated];
+        this.tagInput = '';
+      }
+    },
+    removeTag (index) {
+      const newTags = [...this.tags];
+      newTags.splice(index, 1);
+      if (newTags.length === 0) {
+        this.tagDisplayCollapsed = true;
+      }
+      this.tags = newTags;
+    },
     clear () {
       this.searchTerm = '';
     },
@@ -530,7 +626,7 @@ export default {
       }
       const termSearched = this.searchTerm;
       const viewId = this.getSelectedView?._id;
-      Cont3xtService.search({ searchTerm: termSearched, skipCache: this.skipCache, tags: [], viewId }).subscribe({
+      Cont3xtService.search({ searchTerm: termSearched, skipCache: this.skipCache, tags: this.tags, viewId }).subscribe({
         next: (data) => {
           if (data.itype && !this.searchItype) {
             // determine the search type and save the search term
@@ -741,21 +837,16 @@ export default {
 
 .search-nav {
   padding: 16px 16px 0 16px;
-  background-color: #FFF;
-  margin-top: 60px !important;
+  margin-top: 50px !important;
 }
-body.dark .search-nav {
+body.dark {
   background-color: #222;
 }
 
-.margin-for-search {
-  margin-top: 126px;
-}
 .cont3xt-content {
   overflow: hidden;
   margin-left: -7px;
   margin-right: -7px;
-  height: calc(100vh - 126px); /* total height - margin for search */
 }
 
 .link-inputs {
@@ -781,7 +872,6 @@ body.dark .search-nav {
   padding-right: 0.5rem;
 }
 .results-container.results-integration > div {
-  height: calc(100vh - 126px); /* total height - margin for search */
   overflow-y: auto;
   overflow-x: hidden;
   padding-right: 8px;
@@ -842,5 +932,9 @@ body.dark .search-nav {
 .integration-select .custom-control {
   font-size: 0.8rem;
   padding: 0.1rem 0.5rem;
+}
+/* stops search bar/tag display from hitting edge of screen */
+.pad-full-width {
+  width: calc(100% - 20px);
 }
 </style>
