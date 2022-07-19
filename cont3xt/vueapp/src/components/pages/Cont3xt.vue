@@ -32,14 +32,14 @@
                              placement="top" boundary="viewport">
                     Expand tag display
                   </b-tooltip>
-                  <span class="fa fa-plus"/>
+                  <span class="fa fa-chevron-down"/>
                 </template>
                 <template v-else>
                   <b-tooltip noninteractive target="expand-collapse-tags"
                              placement="top" boundary="viewport">
                     Collapse tag display
                   </b-tooltip>
-                  <span class="fa fa-minus"/>
+                  <span class="fa fa-chevron-up"/>
                 </template>
               </b-button>
             </template>
