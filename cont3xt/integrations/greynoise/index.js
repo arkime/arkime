@@ -59,7 +59,6 @@ class GreyNoiseIntegration extends Integration {
   }
 
   async fetchIp (user, ip) {
-
     try {
       const c = await axios.get(`https://api.greynoise.io/v3/community/${ip}`, {
         headers: {
