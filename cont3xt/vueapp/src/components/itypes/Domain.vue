@@ -107,6 +107,7 @@
                     itype="ip"
                     :data="data"
                     :value="item.data"
+                    :ttl="item.TTL"
                   />
                 </span>
               </template>
@@ -120,9 +121,11 @@
               <dd>
                 <template v-for="(item, index) in value.Answer">
                   <cont3xt-field
-                    :key="key+index"
+                    :id="`${key}-${index}`"
+                    :key="`${key}-${index}`"
                     :value="item.data"
                   />
+                  <ttl-tooltip :ttl="item.TTL" :key="`${key}-${index}`" :target="`${key}-${index}`"/>
                 </template>
               </dd>
             </dl>
@@ -139,6 +142,7 @@ import BasicITypeCard from '@/utils/BasicITypeCard';
 import Cont3xtField from '@/utils/Field';
 import Cont3xtIp from '@/components/itypes/IP';
 import IntegrationBtns from '@/components/integrations/IntegrationBtns';
+import TtlTooltip from '@/utils/TtlTooltip';
 
 export default {
   name: 'Cont3xtDomain',
@@ -146,7 +150,8 @@ export default {
     Cont3xtIp,
     Cont3xtField,
     IntegrationBtns,
-    BasicITypeCard
+    BasicITypeCard,
+    TtlTooltip
   },
   props: {
     data: { // the data returned from cont3xt search
