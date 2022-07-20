@@ -14,7 +14,7 @@
               ref="search"
               v-model="filter"
               debounce="400"
-              placeholder="Search history by indicator, iType, or tags"
+              placeholder="Search history by indicator, iType, or tags (case-sensitive)"
           />
           <template #append>
             <b-button
