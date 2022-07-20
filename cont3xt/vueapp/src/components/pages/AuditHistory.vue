@@ -287,7 +287,7 @@ export default {
       AuditService.getAudits({
         startMs: this.timeRangeInfo.startMs,
         stopMs: this.timeRangeInfo.stopMs,
-        searchTerm: this.filter === '' ? undefined : this.filter.toLowerCase(),
+        searchTerm: this.filter === '' ? undefined : this.filter,
         seeAll: this.seeAll
       }).then(audits => {
         this.auditLogs = audits;
