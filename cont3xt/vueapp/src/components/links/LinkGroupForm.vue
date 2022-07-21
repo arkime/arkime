@@ -51,7 +51,7 @@
         <span class="fa fa-bars d-inline link-handle" />
       </template>
       <template slot="default">
-        <b-card v-if="link.name != '----------'">
+        <b-card v-if="link.name !== '----------'">
           <div class="d-flex justify-content-between align-items-center">
             <div class="mr-4 flex-grow-1">
               <b-input-group
@@ -114,6 +114,50 @@
                 <b-input-group-text
                   class="cursor-help"
                   v-b-tooltip.hover.html="linkTip">
+                  <span class="fa fa-info-circle" />
+                </b-input-group-text>
+              </template>
+            </b-input-group>
+            <b-input-group
+                size="sm"
+                class="mb-2 mt-2">
+              <template #prepend>
+                <b-input-group-text>
+                  Description
+                </b-input-group-text>
+              </template>
+              <b-form-input
+                  trim
+                  v-model="link.infoField"
+                  :state="link.infoField ? true : undefined"
+                  @change="$emit('update-link-group', lg)"
+              />
+              <template #append>
+                <b-input-group-text
+                    class="cursor-help"
+                    v-b-tooltip.hover.html="linkInfoTip">
+                  <span class="fa fa-info-circle" />
+                </b-input-group-text>
+              </template>
+            </b-input-group>
+            <b-input-group
+                size="sm"
+                class="mb-2 mt-2">
+              <template #prepend>
+                <b-input-group-text>
+                  External Documentation
+                </b-input-group-text>
+              </template>
+              <b-form-input
+                  trim
+                  v-model="link.externalDocUrl"
+                  :state="link.externalDocUrl ? true : undefined"
+                  @change="$emit('update-link-group', lg)"
+              />
+              <template #append>
+                <b-input-group-text
+                    class="cursor-help"
+                    v-b-tooltip.hover.html="linkExternalDocTip">
                   <span class="fa fa-info-circle" />
                 </b-input-group-text>
               </template>
@@ -213,6 +257,12 @@ export default {
       linkTip: {
         /* eslint-disable no-template-curly-in-string */
         title: 'These values within links will be filled in <code>${indicator}</code>, <code>${startDate}</code>, <code>${stopDate}</code>, <code>${startTS}</code>, <code>${stopTS}</code>, <code>${numDays}</code>, <code>${numHours}</code>, <code>${type}</code><br><a target="_blank" href="help#linkgroups">more info</a>'
+      },
+      linkInfoTip: {
+        title: 'Use this field to provide guidance about this link. It will be shown as an <span class="fa fa-info-circle cursor-help"></span> tooltip.'
+      },
+      linkExternalDocTip: {
+        title: 'Provide a URL for external documentation relating to this link. It will be accessible via the <span class="fa fa-external-link cursor-pointer"></span> icon.'
       }
     };
   },
