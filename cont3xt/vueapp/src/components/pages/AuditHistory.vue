@@ -14,7 +14,7 @@
               ref="search"
               v-model="filter"
               debounce="400"
-              placeholder="Search history by indicator, iType, or tags"
+              placeholder="Search history by indicator, iType, or tags (case-sensitive)"
           />
           <template #append>
             <b-button
@@ -287,7 +287,7 @@ export default {
       AuditService.getAudits({
         startMs: this.timeRangeInfo.startMs,
         stopMs: this.timeRangeInfo.stopMs,
-        searchTerm: this.filter === '' ? undefined : this.filter.toLowerCase(),
+        searchTerm: this.filter === '' ? undefined : this.filter,
         seeAll: this.seeAll
       }).then(audits => {
         this.auditLogs = audits;
