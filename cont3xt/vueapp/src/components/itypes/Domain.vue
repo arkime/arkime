@@ -125,7 +125,7 @@
                     :key="`${key}-${index}`"
                     :value="item.data"
                   />
-                  <ttl-tooltip :ttl="item.TTL" :key="`${key}-${index}`" :target="`${key}-${index}`"/>
+                  <ttl-tooltip :ttl="item.TTL" :key="`${key}-${index}-tooltip`" :target="`${key}-${index}`"/>
                 </template>
               </dd>
             </dl>
