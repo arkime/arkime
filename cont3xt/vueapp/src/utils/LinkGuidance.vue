@@ -4,8 +4,11 @@
           v-b-tooltip.hover.topright.noninteractive="link.infoField" />
     <a :href="link.externalDocUrl" target="_blank" rel="noopener noreferrer"
        class="external-link-color cursor-pointer"
-       v-b-tooltip.hover.topright.noninteractive="link.externalDocName || 'External Documentation'">
-      <span v-if="link.externalDocUrl" class="fa fa-external-link" />
+       :id="`${elementId}-guidance`">
+      <span v-if="link.externalDocUrl" class="fa fa-question-circle" />
+      <b-tooltip :target="`${elementId}-guidance`">
+        <a :href="link.externalDocUrl">{{ link.externalDocName || 'External Documentation' }} <span class="fa fa-external-link" /></a>
+      </b-tooltip>
     </a>
   </span>
 </template>
@@ -16,6 +19,10 @@ export default {
   props: {
     link: {
       type: Object,
+      required: true
+    },
+    elementId: {
+      type: String,
       required: true
     }
   }

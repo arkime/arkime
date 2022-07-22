@@ -174,7 +174,7 @@
                 <b-form-input
                     trim
                     v-model="link.externalDocUrl"
-                    :state="link.externalDocUrl ? true : undefined"
+                    :state="externalDocWarningSuccessState(link.externalDocName, link.externalDocUrl)"
                     @change="$emit('update-link-group', lg)"
                 />
                 <template #append>
@@ -286,10 +286,10 @@ export default {
         title: 'Use this field to provide guidance about this link. It will be shown as an <span class="fa fa-info-circle cursor-help"></span> tooltip.'
       },
       linkExternalDocUrlTip: {
-        title: 'Provide a URL for external documentation relating to this link. It will be accessible via the <span class="fa fa-external-link cursor-pointer"></span> icon.'
+        title: 'Provide a URL for external documentation relating to this link. It will be accessible via the <span class="fa fa-question-circle cursor-pointer"></span> icon.'
       },
       linkExternalDocNameTip: {
-        title: 'Give a name to label the external documentation icon. This will be seen on the <span class="fa fa-external-link cursor-pointer"></span> icon\'s tooltip. By default, this will be: "External Documentation."'
+        title: 'Give a name to label the external documentation icon. This will be seen on the <span class="fa fa-question-circle cursor-pointer"></span> icon\'s tooltip. By default, this will be: "External Documentation."'
       }
     };
   },
@@ -310,6 +310,11 @@ export default {
   },
   methods: {
     /* page functions ------------------------------------------------------ */
+    externalDocWarningSuccessState (docName, docUrl) {
+      if (docUrl) { return true; }
+      if (docName && !docUrl) { return false; }
+      return undefined;
+    },
     addLink (index) {
       this.lg.links.splice(index + 1, 0, JSON.parse(JSON.stringify(defaultLink)));
     },

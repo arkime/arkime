@@ -44,7 +44,7 @@
               :style="link.color ? `color:${link.color}` : ''">
               {{ link.name }}
             </a>
-            <link-guidance :link="link" />
+            <link-guidance :link="link" :element-id="`${linkGroup._id}-${i}`" />
           </div> <!-- /display link to click -->
           <!-- display link to view -->
           <div :title="link.name"
@@ -58,7 +58,7 @@
               :style="link.color ? `color:${link.color}` : ''">
               {{ link.url }}
             </a>
-            <link-guidance :link="link" />
+            <link-guidance :link="link" :element-id="`${linkGroup.name}-${i}`" />
           </div> <!-- /display link to view -->
           <!-- separator -->
           <hr class="link-separator-display"
