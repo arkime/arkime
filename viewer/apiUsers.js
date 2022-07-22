@@ -124,6 +124,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * @param {number} lastUsed - The date that the user last used Arkime. Format is milliseconds since Unix EPOC.
    * @param {number} timeLimit - Limits the time range a user can query for.
    * @param {array} roles - The list of Arkime roles assigned to this user.
+   * @param {array} roleAssigners - The list of userIds that can manage who has this (ROLE)
    */
 
   /**
