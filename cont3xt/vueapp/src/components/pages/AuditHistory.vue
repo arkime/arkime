@@ -79,17 +79,17 @@
         <b-button v-if="getUser && getUser.removeEnabled"
             @click="deleteLog(data.item._id)"
             class="btn btn-xs btn-warning"
-            :id="`${data.item._id}-trash`">
+            v-b-tooltip.hover.noninteractive
+            title="Delete history item">
           <span class="fa fa-trash"/>
-        <b-tooltip :target="`${data.item._id}-trash`" noninteractive>Delete history item</b-tooltip>
         </b-button>
         <b-button
             target="_blank"
             :href="reissueSearchLink(data.item)"
             class="btn btn-xs btn-success"
-            :id="`${data.item._id}-reissue`">
+            v-b-tooltip.hover.noninteractive
+            title="Repeat search">
           <span class="fa fa-external-link"/>
-        <b-tooltip :target="`${data.item._id}-reissue`" noninteractive>Repeat search</b-tooltip>
         </b-button>
       </template>
       <!--   /Button Column   -->
