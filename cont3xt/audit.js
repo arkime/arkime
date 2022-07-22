@@ -111,6 +111,7 @@ class Audit {
    * @param {string} searchTerm - an optional query parameter to filter on indicator, iType, and tags
    * @param {string} startMs - an optional query parameter to specify the start of results (milliseconds since Unix EPOC)
    * @param {string} stopMs - an optional query parameter to specify the end of results (milliseconds since Unix EPOC)
+   * @param {string} seeAll - an optional query parameter to request viewing all history (only works for admin users)
    * @returns {Audit[]} audits - A sorted array of audit logs that the logged-in user can view
    * @returns {boolean} success - True if the request was successful, false otherwise
    */

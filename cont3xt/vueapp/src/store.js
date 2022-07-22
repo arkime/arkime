@@ -39,11 +39,14 @@ const store = new Vuex.Store({
     focusStartDate: false,
     focusLinkSearch: false,
     focusViewSearch: false,
+    focusTagInput: false,
     toggleCache: false,
     downloadReport: false,
     copyShareLink: false,
     immediateSubmissionReady: false,
-    theme: undefined
+    theme: undefined,
+    tags: [],
+    tagDisplayCollapsed: true
   },
   mutations: {
     SET_USER (state, data) {
@@ -194,6 +197,10 @@ const store = new Vuex.Store({
       state.focusViewSearch = value;
       setTimeout(() => { state.focusViewSearch = false; });
     },
+    SET_FOCUS_TAG_INPUT (state, value) {
+      state.focusTagInput = value;
+      setTimeout(() => { state.focusTagInput = false; });
+    },
     SET_TOGGLE_CACHE (state, value) {
       state.toggleCache = value;
       setTimeout(() => { state.toggleCache = false; });
@@ -211,6 +218,12 @@ const store = new Vuex.Store({
     },
     SET_THEME (state, data) {
       state.theme = data;
+    },
+    SET_TAGS (state, data) {
+      state.tags = data;
+    },
+    SET_TAG_DISPLAY_COLLAPSED (state, data) {
+      state.tagDisplayCollapsed = data;
     }
   },
   getters: {
@@ -303,6 +316,9 @@ const store = new Vuex.Store({
     getFocusViewSearch (state) {
       return state.focusViewSearch;
     },
+    getFocusTagInput (state) {
+      return state.focusTagInput;
+    },
     getToggleCache (state) {
       return state.toggleCache;
     },
@@ -340,6 +356,12 @@ const store = new Vuex.Store({
     },
     getDarkThemeEnabled (state) {
       return state.theme === 'dark';
+    },
+    getTags (state) {
+      return state.tags;
+    },
+    getTagDisplayCollapsed (state) {
+      return state.tagDisplayCollapsed;
     }
   },
   plugins: [createPersistedState({

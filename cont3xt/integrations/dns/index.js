@@ -98,6 +98,32 @@ class DNSIntegration extends Integration {
         result[query] = { Status: data.Status };
         if (data.Answer) {
           result[query].Answer = data.Answer;
+
+          if (query === 'TXT') {
+            // split out SPF records into their own section
+            const spfAnswer = [];
+            const txtAnswer = [];
+            for (const txtEntry of data.Answer) {
+              const isSpf = (txtEntry.data.includes('v=spf1') || txtEntry.data.includes('spf2'));
+              const targetList = isSpf ? spfAnswer : txtAnswer;
+              targetList.push(txtEntry);
+            }
+            result.SPF = { Status: data.Status, Answer: spfAnswer };
+
+            // group domain/site-verification at the top, sorted alphabetically
+            const groupPrecedence = (txtEntry) => {
+              if (txtEntry.data.includes('domain-verification')) { return 0; }
+              if (txtEntry.data.includes('site-verification')) { return 1; }
+              return 2;
+            };
+            const sortTxtEntry = (a, b) => {
+              const groupDiff = groupPrecedence(a) - groupPrecedence(b);
+              if (groupDiff !== 0) { return groupDiff; } // sort by group first
+              return a.data.localeCompare(b.data); // fall back to alphabetical within groups
+            };
+            txtAnswer.sort(sortTxtEntry);
+            result[query].Answer = txtAnswer; // update TXT Answer
+          }
         }
       }
 

@@ -211,7 +211,7 @@
             <div
               :key="key"
               class="w-25 p-2"
-              v-for="(setting, key) in filteredIntegrationSettings">
+              v-for="([key, setting]) in sortedFilteredIntegrationSettings">
               <b-card>
                 <template #header>
                   <h4 class="mb-0 d-inline">
@@ -469,6 +469,11 @@ export default {
       set (value) {
         this.$store.commit('SET_LINK_GROUPS_ERROR', '');
       }
+    },
+    sortedFilteredIntegrationSettings () {
+      const entries = Object.entries(this.filteredIntegrationSettings);
+      entries.sort(([aKey], [bKey]) => aKey.localeCompare(bKey));
+      return entries;
     }
   },
   watch: {

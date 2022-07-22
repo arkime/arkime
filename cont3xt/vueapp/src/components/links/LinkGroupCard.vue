@@ -44,6 +44,7 @@
               :style="link.color ? `color:${link.color}` : ''">
               {{ link.name }}
             </a>
+            <link-guidance :link="link" :element-id="`${linkGroup._id}-${i}`" />
           </div> <!-- /display link to click -->
           <!-- display link to view -->
           <div :title="link.name"
@@ -57,6 +58,7 @@
               :style="link.color ? `color:${link.color}` : ''">
               {{ link.url }}
             </a>
+            <link-guidance :link="link" :element-id="`${linkGroup.name}-${i}`" />
           </div> <!-- /display link to view -->
           <!-- separator -->
           <hr class="link-separator-display"
@@ -186,12 +188,13 @@ import { mapGetters } from 'vuex';
 
 import LinkService from '@/components/services/LinkService';
 import LinkGroupForm from '@/components/links/LinkGroupForm';
+import LinkGuidance from '@/utils/LinkGuidance';
 
 let timeout;
 
 export default {
   name: 'LinkGroupCard',
-  components: { LinkGroupForm },
+  components: { LinkGroupForm, LinkGuidance },
   props: {
     itype: String, // the itype of the search to display links for
     query: String, // the query in the search bar to apply to urls

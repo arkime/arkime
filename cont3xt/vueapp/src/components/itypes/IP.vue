@@ -9,7 +9,10 @@
         <cont3xt-field
           class="align-self-center mr-1"
           :value="value || data[itype]._query"
+          :id="`${value || data[itype]._query}-ip`"
         />
+        <ttl-tooltip v-if="ttl" :ttl="ttl" :target="`${value || data[itype]._query}-ip`"/>
+
         <template v-if="data[itype].RDAP">
           <template v-for="(rdap, index) in data[itype].RDAP">
             <template v-if="value && value === rdap._query || !value">
@@ -99,13 +102,15 @@ import { countryCodeEmoji } from 'country-code-emoji';
 import Cont3xtField from '@/utils/Field';
 import BasicITypeCard from '@/utils/BasicITypeCard';
 import IntegrationBtns from '@/components/integrations/IntegrationBtns';
+import TtlTooltip from '@/utils/TtlTooltip';
 
 export default {
   name: 'Cont3xtIp',
   components: {
     Cont3xtField,
     IntegrationBtns,
-    BasicITypeCard
+    BasicITypeCard,
+    TtlTooltip
   },
   props: {
     data: { // the data returned from cont3xt search
@@ -118,6 +123,10 @@ export default {
     query: {
       type: String,
       required: false // fallback in case of no results -- not required since DNS IPs are guaranteed results of some kind
+    },
+    ttl: {
+      type: Number,
+      required: false // TTL property on A/AAAA records
     }
   },
   data () {

@@ -99,21 +99,24 @@
               <span class="fa fa-filter"></span>
             </button>
           </th>
-          <th v-for="column of columns"
+          <th
             :key="column.name"
-            :class="`cursor-pointer ${column.classes}`"
             v-b-tooltip.hover
             :title="column.help"
+            v-for="column of columns"
             v-has-permission="column.permission"
-            :style="{'width': `${column.width}%`}">
-            <input type="text"
-              v-if="column.filter && showColFilters"
-              v-has-permission="column.permission"
+            :style="{'width': `${column.width}%`}"
+            v-has-role="{user:user,roles:column.role}"
+            :class="`cursor-pointer ${column.classes}`">
+            <input
+              type="text"
+              @click.stop
+              @keyup="debounceSearch"
               v-model="filters[column.sort]"
+              v-has-permission="column.permission"
+              v-if="column.filter && showColFilters"
               :placeholder="`Filter by ${column.name}`"
               class="form-control form-control-sm input-filter"
-              @keyup="debounceSearch"
-              @click.stop
             />
             <div v-if="column.exists"
               class="mr-1 header-div">
@@ -134,14 +137,18 @@
               </span>
               {{ column.name }}
             </div>
-            <a v-if="filters[column.sort]"
-              v-b-tooltip.hover
-              :title="'The history is being filtered by ' + column.name + '. Click to display the filter.'"
-              @click="showColFilters = true"
-              class="cursor-pointer ml-1">
-              <span class="fa fa-filter">
-              </span>
-            </a>
+            <b-form-checkbox
+              button
+              size="sm"
+              v-model="seeAll"
+              class="ml-2 all-btn"
+              @input="toggleSeeAll"
+              v-b-tooltip.hover.bottom
+              v-if="column.sort == 'userId'"
+              :title="seeAll ? 'Just show your history' : 'See the history for all users (you can because you are an ADMIN!)'">
+              <span class="fa fa-user-circle mr-1" />
+              See {{ seeAll ? ' MY ' : ' ALL ' }}
+            </b-form-checkbox>
           </th>
         </tr>
       </thead>
@@ -380,14 +387,15 @@ export default {
       desc: true,
       msg: '',
       msgType: undefined,
+      seeAll: false,
       columns: [
         { name: 'Time', sort: 'timestamp', nowrap: true, width: 13, help: 'The time of the request' },
         { name: 'Time Range', sort: 'range', nowrap: true, width: 11, classes: 'text-right', help: 'The time range of the request' },
-        { name: 'User ID', sort: 'userId', nowrap: true, width: 8, filter: true, role: 'arkimeAdmin', help: 'The id of the user that initiated the request' },
+        { name: 'User ID', sort: 'userId', nowrap: true, width: 10, filter: true, classes: 'no-wrap', role: 'arkimeAdmin', help: 'The id of the user that initiated the request' },
         { name: 'Query Time', sort: 'queryTime', nowrap: true, width: 8, classes: 'text-right', help: 'Execution time in MS' },
         { name: 'Method', sort: 'method', nowrap: true, width: 5, help: 'The HTTP request method' },
         { name: 'API', sort: 'api', nowrap: true, width: 13, filter: true, help: 'The API endpoint of the request' },
-        { name: 'Expression', sort: 'expression', nowrap: true, width: 27, exists: false, help: 'The query expression issued with the request' },
+        { name: 'Expression', sort: 'expression', nowrap: true, width: 25, exists: false, help: 'The query expression issued with the request' },
         { name: 'View', sort: 'view.name', nowrap: true, width: 20, exists: false, help: 'The view expression applied to the request' }
       ]
     };
@@ -438,6 +446,11 @@ export default {
   },
   methods: {
     /* exposed page functions ------------------------------------ */
+    toggleSeeAll () {
+      this.filters.userId = this.seeAll ? '' : this.user.userId;
+      if (this.seeAll) { this.showColFilters = true; }
+      this.loadData();
+    },
     debounceSearch: function () {
       if (searchInputTimeout) { clearTimeout(searchInputTimeout); }
       // debounce the input so it only issues a request after keyups cease for 400ms
@@ -618,5 +631,16 @@ export default {
   line-height: 1.5;
   border-radius: 3px;
   margin-top: -2px !important;
+}
+</style>
+
+<style>
+/* shrink all btn */
+.history-page div.all-btn > label {
+  height: 18px;
+  margin-top: -5px;
+  font-size: 0.8rem;
+  line-height: 1rem;
+  padding: 0.1rem 0.3rem;
 }
 </style>

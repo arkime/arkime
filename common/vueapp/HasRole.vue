@@ -5,8 +5,9 @@ import UserService from './UserService';
 // NOTE: assumes we are using bootstrap and hides the element with d-none
 export default {
   name: 'HasRole',
-  bind: function (el, binding, vnode) {
+  bind (el, binding) {
     if (!binding.value) { return; }
+    if (!binding.value.roles) { return; }
 
     el.classList.add('d-none');
 

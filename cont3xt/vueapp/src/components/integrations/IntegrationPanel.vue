@@ -5,10 +5,13 @@
       class="sidebar-btn"
       @mouseenter="mouseEnterSidebar">
       <div class="mt-3 pt-1">
-        <span
-          @click="toggleSidebar"
-          class="fa fa-chevron-right cursor-pointer"
-        />
+        <!--    dynamic margin counteracts the shift caused by the change in cont3xt-content margin on tag open/close    -->
+        <div :style="`margin-top: ${tagsOpen ? -14 : 6}px`">
+          <span
+              @click="toggleSidebar"
+              class="fa fa-chevron-right cursor-pointer"
+          />
+        </div>
       </div>
     </div> <!-- /open search panel on hover button -->
 
@@ -110,7 +113,8 @@ export default {
   name: 'IntegrationPanel',
   components: { ViewSelector },
   props: {
-    sidebarHover: Boolean
+    sidebarHover: Boolean,
+    tagsOpen: Boolean // allows for correct positioning of sidebar button
   },
   data () {
     return {
@@ -120,7 +124,10 @@ export default {
     };
   },
   computed: {
-    ...mapGetters(['getDoableIntegrations', 'getRoles', 'getUser', 'getSortedIntegrations', 'getAllViews']),
+    ...mapGetters([
+      'getDoableIntegrations', 'getRoles', 'getUser', 'getSortedIntegrations',
+      'getAllViews', 'getImmediateSubmissionReady', 'getSelectedView'
+    ]),
     sidebarKeepOpen: {
       get () {
         return this.$store.state.sidebarKeepOpen;
@@ -147,6 +154,10 @@ export default {
       if (this.selectedIntegrations == null) {
         this.selectedIntegrations = Object.keys(newVal);
       }
+    },
+    getImmediateSubmissionReady () {
+      // view is matched to selectedIntegrations following mount (once integrations/views are properly loaded)
+      this.changeView(this.selectedIntegrations);
     }
   },
   methods: {
@@ -170,21 +181,18 @@ export default {
       this.changeView(this.selectedIntegrations);
     },
     changeView (newSelectedIntegrations) {
-      // optionalUpdatedSelectedIntegrations only exists when called from @change in UI
-      const selectedIntegrationsStr = JSON.stringify(newSelectedIntegrations);
       // set the selected view to none/all if that is the case, otherwise, clear the selected view
       const getViewByIdOrUndefined = (viewID) => {
         return this.getAllViews.find(view => view._id === viewID);
       };
       const selectView = (() => {
-        switch (selectedIntegrationsStr) {
-        case JSON.stringify([]):
+        if (newSelectedIntegrations.length === 0) {
           return getViewByIdOrUndefined('none');
-        case JSON.stringify(Object.keys(this.getDoableIntegrations)):
-          return getViewByIdOrUndefined('all');
-        default:
-          return undefined;
         }
+        if (newSelectedIntegrations.length === Object.keys(this.getDoableIntegrations).length) {
+          return getViewByIdOrUndefined('all');
+        }
+        return undefined;
       })();
 
       this.$store.commit('SET_SELECTED_VIEW', selectView);

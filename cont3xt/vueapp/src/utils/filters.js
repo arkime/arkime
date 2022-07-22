@@ -49,6 +49,20 @@ export const reDateString = function (str) {
 Vue.filter('reDateString', reDateString);
 
 /**
+ * Converts milliseconds to a readable time-span
+ *
+ * @example
+ * '{{ 300000 | 5 minutes }}'
+ * this.$options.filters.readableDuration(300000);
+ *
+ * @returns {string} - the readable time period string
+ */
+export const readableDuration = function (ms) {
+  return moment.duration(ms).humanize(false);
+};
+Vue.filter('readableDuration', readableDuration);
+
+/**
  * Determines the RIR based on a link.
  * @example
  * '{{ "https://rdap.arin.net/registry/ip/74.6.136.150" | rirLink }}'
