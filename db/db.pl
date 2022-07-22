@@ -6581,7 +6581,7 @@ if ($ARGV[1] =~ /^(users-?import|import)$/) {
         if ($lastUsed > $ARGV[2]) {
             my $userId = $hit->{_source}->{userId};
             print "Disabling user: $userId\n";
-            esPost("/${PREFIX}users/_doc/$userId/_update", '{"doc": {"enabled": false}}');
+            esPost("/${PREFIX}users/_update/$userId", '{"doc": {"enabled": false}}');
             $rmcount++;
         }
     }
@@ -6881,7 +6881,7 @@ if ($ARGV[1] =~ /^(users-?import|import)$/) {
 
     foreach my $hit (@{$results->{hits}->{hits}}) {
         my $script = '{"script" : "ctx._source.name = \"' . $ARGV[3] . '\"; ctx._source.locked = 1;"}';
-        esPost("/${PREFIX}files/_doc/" . $hit->{_id} . "/_update", $script);
+        esPost("/${PREFIX}files/_update/" . $hit->{_id}, $script);
     }
     logmsg "Moved " . scalar (@{$results->{hits}->{hits}}) . " file(s) in database\n";
     exit 0;
@@ -6946,12 +6946,12 @@ if ($ARGV[1] =~ /^(users-?import|import)$/) {
 } elsif ($ARGV[1] =~ /^hide-?node$/) {
     my $results = esGet("/${PREFIX}stats/stat/$ARGV[2]", 1);
     die "Node $ARGV[2] not found" if (!$results->{found});
-    esPost("/${PREFIX}stats/_doc/$ARGV[2]/_update", '{"doc": {"hide": true}}');
+    esPost("/${PREFIX}stats/_update/$ARGV[2]", '{"doc": {"hide": true}}');
     exit 0;
 } elsif ($ARGV[1] =~ /^unhide-?node$/) {
     my $results = esGet("/${PREFIX}stats/stat/$ARGV[2]", 1);
     die "Node $ARGV[2] not found" if (!$results->{found});
-    esPost("/${PREFIX}stats/_doc/$ARGV[2]/_update", '{"script" : "ctx._source.remove(\"hide\")"}');
+    esPost("/${PREFIX}stats/_update/$ARGV[2]", '{"script" : "ctx._source.remove(\"hide\")"}');
     exit 0;
 } elsif ($ARGV[1] =~ /^add-?alias$/) {
     my $results = esGet("/${PREFIX}stats/stat/$ARGV[2]", 1);
@@ -7045,7 +7045,7 @@ if ($ARGV[1] =~ /^(users-?import|import)$/) {
     my $found = $result->{found};
     die "Field $ARGV[3] isn't found" if (!$found);
 
-    esPost("/${PREFIX}fields/_doc/$ARGV[3]/_update", "{\"doc\":{\"disabled\":" . ($ARGV[2] eq "disable"?"true":"false").  "}}");
+    esPost("/${PREFIX}fields/_update/$ARGV[3]", "{\"doc\":{\"disabled\":" . ($ARGV[2] eq "disable"?"true":"false").  "}}");
     exit 0;
 } elsif ($ARGV[1] =~ /^force-?put-?version$/) {
     die "This command doesn't work anymore, use force-sessions3-update";
