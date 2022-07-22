@@ -2423,7 +2423,7 @@ void moloch_db_update_field(char *expression, char *name, char *value)
 
     BSB_INIT(bsb, json, 1000);
 
-    key_len = snprintf(key, sizeof(key), "/%sfields/_doc/%s/_update", config.prefix, expression);
+    key_len = snprintf(key, sizeof(key), "/%sfields/_update/%s", config.prefix, expression);
 
     BSB_EXPORT_sprintf(bsb, "{\"doc\": {\"%s\":", name);
     if (*value == '[') {
@@ -2446,7 +2446,7 @@ void moloch_db_update_filesize(uint32_t fileid, uint64_t filesize, uint64_t pack
 
     char                  *json = moloch_http_get_buffer(2000);
 
-    key_len = snprintf(key, sizeof(key), "/%sfiles/_doc/%s-%u/_update", config.prefix, config.nodeName, fileid);
+    key_len = snprintf(key, sizeof(key), "/%sfiles/_update/%s-%u", config.prefix, config.nodeName, fileid);
 
     json_len = snprintf(json, 2000, "{\"doc\": {\"filesize\": %" PRIu64 ", \"packetsSize\": %" PRIu64 ", \"packets\": %u}}", filesize, packetsSize, packets);
     if (config.debug)
