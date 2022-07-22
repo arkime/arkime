@@ -4,7 +4,7 @@
           v-b-tooltip.hover.topright.noninteractive="link.infoField" />
     <a :href="link.externalDocUrl" target="_blank" rel="noopener noreferrer"
        class="external-link-color cursor-pointer"
-       v-b-tooltip.hover.topright.noninteractive="'External Documentation'">
+       v-b-tooltip.hover.topright.noninteractive="link.externalDocName || 'External Documentation'">
       <span v-if="link.externalDocUrl" class="fa fa-external-link" />
     </a>
   </span>

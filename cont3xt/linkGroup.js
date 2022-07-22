@@ -37,6 +37,7 @@ class LinkGroup {
    * @param {string} url - The url of the link. Links can include placeholder values that will be filled in with the data from the Cont3xt results
    * @param {string} infoField - An optional text field to display as an informative tooltip.
    * @param {string} externalDocUrl - An optional URL to link out to external documentation.
+   * @param {string} externalDocName - An optional name to label the external documentation.
    */
 
   /**

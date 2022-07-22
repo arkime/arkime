@@ -140,28 +140,52 @@
                 </b-input-group-text>
               </template>
             </b-input-group>
-            <b-input-group
-                size="sm"
-                class="mb-2 mt-2">
-              <template #prepend>
-                <b-input-group-text>
-                  External Documentation
-                </b-input-group-text>
-              </template>
-              <b-form-input
-                  trim
-                  v-model="link.externalDocUrl"
-                  :state="link.externalDocUrl ? true : undefined"
-                  @change="$emit('update-link-group', lg)"
-              />
-              <template #append>
-                <b-input-group-text
-                    class="cursor-help"
-                    v-b-tooltip.hover.html="linkExternalDocTip">
-                  <span class="fa fa-info-circle" />
-                </b-input-group-text>
-              </template>
-            </b-input-group>
+            <div class="d-flex">
+              <b-input-group
+                  size="sm"
+                  class="mb-2 mt-2 w-40">
+                <template #prepend>
+                  <b-input-group-text>
+                    External Doc Name
+                  </b-input-group-text>
+                </template>
+                <b-form-input
+                    trim
+                    v-model="link.externalDocName"
+                    :state="link.externalDocName ? true : undefined"
+                    @change="$emit('update-link-group', lg)"
+                />
+                <template #append>
+                  <b-input-group-text
+                      class="cursor-help"
+                      v-b-tooltip.hover.html="linkExternalDocNameTip">
+                    <span class="fa fa-info-circle" />
+                  </b-input-group-text>
+                </template>
+              </b-input-group>
+              <b-input-group
+                  size="sm"
+                  class="mb-2 mt-2 ml-2">
+                <template #prepend>
+                  <b-input-group-text>
+                    External Doc URL
+                  </b-input-group-text>
+                </template>
+                <b-form-input
+                    trim
+                    v-model="link.externalDocUrl"
+                    :state="link.externalDocUrl ? true : undefined"
+                    @change="$emit('update-link-group', lg)"
+                />
+                <template #append>
+                  <b-input-group-text
+                      class="cursor-help"
+                      v-b-tooltip.hover.html="linkExternalDocUrlTip">
+                    <span class="fa fa-info-circle" />
+                  </b-input-group-text>
+                </template>
+              </b-input-group>
+            </div>
           </div>
         </b-card>
         <template v-else>
@@ -261,8 +285,11 @@ export default {
       linkInfoTip: {
         title: 'Use this field to provide guidance about this link. It will be shown as an <span class="fa fa-info-circle cursor-help"></span> tooltip.'
       },
-      linkExternalDocTip: {
+      linkExternalDocUrlTip: {
         title: 'Provide a URL for external documentation relating to this link. It will be accessible via the <span class="fa fa-external-link cursor-pointer"></span> icon.'
+      },
+      linkExternalDocNameTip: {
+        title: 'Give a name to label the external documentation icon. This will be seen on the <span class="fa fa-external-link cursor-pointer"></span> icon\'s tooltip. By default, this will be: "External Documentation."'
       }
     };
   },
