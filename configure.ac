@@ -507,6 +507,30 @@ AC_MSG_RESULT(yes) ])
 AC_SUBST(NGHTTP2_CFLAGS)
 AC_SUBST(NGHTTP2_LIBS)
 
+
+dnl Checks for zstd
+AC_ARG_ENABLE([zstd],
+              [AS_HELP_STRING([--enable-zstd=@<:@yes/no/auto@:>@],
+                              [build without zstd support (default=auto)])],
+              [enable_zstd="$enableval"],
+              [enable_zstd=auto])
+
+AS_IF([test "x$enable_zstd" != "xno"], [
+  PKG_CHECK_MODULES([ZSTD], [libzstd], [have_zstd=yes], [have_zstd=no])
+  AS_IF([test "$enable_zstd" = "yes"], [
+    if test "$have_zstd" = "no"; then
+      AC_MSG_ERROR([--enable-zstd specified, but not available])
+    fi
+  ])
+])
+
+if test "x$have_zstd" = "xyes"; then
+  AC_DEFINE([HAVE_ZSTD], [1], [Define if libzstd is available])
+  ZSTD_REQUIRES=libzstd
+  AC_SUBST(ZSTD_REQUIRES)
+fi
+AM_CONDITIONAL([HAVE_ZSTD], [test "x$have_zstd" = "xyes"])
+
 AS_IF([test "$prefix" == "NONE"],
     [AC_DEFINE_UNQUOTED(CONFIG_PREFIX,"$ac_default_prefix", [config prefix directory])],
     [AC_DEFINE_UNQUOTED(CONFIG_PREFIX,"$prefix", [config prefix directory])])
