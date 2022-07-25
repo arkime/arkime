@@ -19,7 +19,6 @@
  * limitations under the License.
  */
 #define _FILE_OFFSET_BITS 64
-#define HAVE_ZSTD 1
 #include "moloch.h"
 #include <fcntl.h>
 #include <errno.h>
@@ -500,8 +499,8 @@ LOCAL void writer_simple_write(const MolochSession_t * const session, MolochPack
             info->file->zstd_out.pos = 0;
             info->file->completedBlockStart = 0;
             break;
-        default:
 #endif
+        default:
             break;
         }
 
