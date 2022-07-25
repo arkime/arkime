@@ -67,7 +67,7 @@ typedef struct {
     ZSTD_CStream        *zstd_strm;
     ZSTD_outBuffer       zstd_out;
     ZSTD_inBuffer        zstd_in;
-    uint64_t             zstd_total_out;
+    uint64_t             completedBlockStart;
 #endif
 } MolochSimpleFile_t;
 
@@ -178,9 +178,11 @@ LOCAL void writer_simple_free(MolochSimple_t *info)
         case MOLOCH_COMPRESSION_GZIP:
             deflateEnd(&info->file->z_strm);
             break;
+#ifdef HAVE_ZSTD
         case MOLOCH_COMPRESSION_ZSTD:
             ZSTD_freeCStream(info->file->zstd_strm);
             break;
+#endif
         default:
             break;
         }
@@ -222,10 +224,13 @@ LOCAL void writer_simple_process_buf(int thread, int closing)
             ninfo->file->z_strm.next_out = (Bytef *) ninfo->buf + ninfo->bufpos;
             ninfo->file->z_strm.avail_out = config.pcapWriteSize + MOLOCH_PACKET_MAX_LEN - ninfo->bufpos;
             break;
+#ifdef HAVE_ZSTD
         case MOLOCH_COMPRESSION_ZSTD:
+            info->file->completedBlockStart += writeSize;
             ninfo->file->zstd_out.dst = ninfo->buf + ninfo->bufpos;
             ninfo->file->zstd_out.size = config.pcapWriteSize + MOLOCH_PACKET_MAX_LEN - ninfo->bufpos;
             ninfo->file->zstd_out.pos = 0;
+#endif
         default:
             break;
         }
@@ -237,9 +242,11 @@ LOCAL void writer_simple_process_buf(int thread, int closing)
         case MOLOCH_COMPRESSION_GZIP:
             info->file->pos += info->bufpos;
             break;
+#ifdef HAVE_ZSTD
         case MOLOCH_COMPRESSION_ZSTD:
             info->file->pos += info->bufpos;
             break;
+#endif
         default:
             break;
         }
@@ -251,11 +258,13 @@ LOCAL void writer_simple_process_buf(int thread, int closing)
             info->bufpos = (char *)info->file->z_strm.next_out - info->buf;
             info->file->pos += info->bufpos;
             break;
+#ifdef HAVE_ZSTD
         case MOLOCH_COMPRESSION_ZSTD:
             ZSTD_endStream(info->file->zstd_strm, &info->file->zstd_out);
             info->bufpos = (char *)info->file->zstd_out.dst + info->file->zstd_out.pos - info->buf;
             info->file->pos += info->bufpos;
             break;
+#endif
         default:
             break;
         }
@@ -394,17 +403,18 @@ LOCAL void writer_simple_write_output(MolochSimple_t *info, const unsigned char 
         info->file->posInBlock += len;
         info->bufpos = (char *)info->file->z_strm.next_out - info->buf;
         break;
+#ifdef HAVE_ZSTD
     case MOLOCH_COMPRESSION_ZSTD:
         info->file->zstd_in.src = (Bytef *)data;
         info->file->zstd_in.size = len;
-        info->file->zstd_in.pos = len;
+        info->file->zstd_in.pos = 0;
 
-        while (info->file->zstd_in.pos < info->file->zstd_in.size) {
-            ZSTD_compressStream2(info->file->zstd_strm, &info->file->zstd_out, &info->file->zstd_in, ZSTD_e_continue);
+        while (ZSTD_compressStream2(info->file->zstd_strm, &info->file->zstd_out, &info->file->zstd_in, ZSTD_e_continue) != 0) {
         }
         info->file->posInBlock += len;
-        info->bufpos = (char *)info->file->z_strm.next_out - info->buf;
+        info->bufpos = info->file->zstd_out.pos;
         break;
+#endif
     default:
         break;
     }
@@ -422,10 +432,12 @@ LOCAL void writer_simple_gzip_make_new_block(MolochSimple_t *info)
 /******************************************************************************/
 LOCAL void writer_simple_zstd_make_new_block(MolochSimple_t *info)
 {
-    ZSTD_compressStream2(info->file->zstd_strm, &info->file->zstd_out, &info->file->zstd_in, ZSTD_e_flush);
-    info->bufpos = (char *)info->file->z_strm.next_out - info->buf;
-    info->file->blockStart = info->file->z_strm.total_out;
+#ifdef HAVE_ZSTD
+    ZSTD_compressStream2(info->file->zstd_strm, &info->file->zstd_out, &info->file->zstd_in, ZSTD_e_end);
+    info->bufpos = info->file->zstd_out.pos;
+    info->file->blockStart = info->file->completedBlockStart + info->file->zstd_out.pos;
     info->file->posInBlock = 0;
+#endif
 }
 /******************************************************************************/
 LOCAL void writer_simple_write(const MolochSession_t * const session, MolochPacket_t * const packet)
@@ -453,6 +465,7 @@ LOCAL void writer_simple_write(const MolochSession_t * const session, MolochPack
         char *kekId;
         char *packetPosEncoding = MOLOCH_VAR_ARG_SKIP;
         char *uncompressedBitsArg = MOLOCH_VAR_ARG_SKIP;
+        char *compressionArg = MOLOCH_VAR_ARG_SKIP;
         char  indexFilename[1024];
 
         indexFilename[0] = 0;
@@ -470,18 +483,25 @@ LOCAL void writer_simple_write(const MolochSession_t * const session, MolochPack
         switch(compressionMode) {
         case MOLOCH_COMPRESSION_GZIP:
             uncompressedBitsArg = (gpointer)(long)uncompressedBits;
+            compressionArg = "gzip";
 
             info->file->z_strm.next_out = (Bytef *) info->buf;
             info->file->z_strm.avail_out = config.pcapWriteSize + MOLOCH_PACKET_MAX_LEN;
             deflateInit2(&info->file->z_strm, simpleGzipLevel, Z_DEFLATED, 16 + 15, 9, Z_DEFAULT_STRATEGY);
             break;
+#ifdef HAVE_ZSTD
         case MOLOCH_COMPRESSION_ZSTD:
+            info->file->zstd_strm = ZSTD_createCStream();
             uncompressedBitsArg = (gpointer)(long)uncompressedBits;
-            ninfo->file->zstd_out.dst = info->buf;
-            ninfo->file->zstd_out.size = config.pcapWriteSize + MOLOCH_PACKET_MAX_LEN;
-            ninfo->file->zstd_out.pos = 0;
+            compressionArg = "zstd";
+
+            info->file->zstd_out.dst = info->buf;
+            info->file->zstd_out.size = config.pcapWriteSize + MOLOCH_PACKET_MAX_LEN;
+            info->file->zstd_out.pos = 0;
+            info->file->completedBlockStart = 0;
             break;
         default:
+#endif
             break;
         }
 
@@ -498,6 +518,7 @@ LOCAL void writer_simple_write(const MolochSession_t * const session, MolochPack
             name = moloch_db_create_file_full(packet->ts.tv_sec, name, 0, 0, &info->file->id,
                                               "packetPosEncoding", packetPosEncoding,
                                               "uncompressedBits", uncompressedBitsArg,
+                                              "compression", compressionArg,
                                               "indexFilename", indexFilename[0] ? indexFilename : MOLOCH_VAR_ARG_SKIP,
                                               (char *)NULL);
             break;
@@ -512,6 +533,7 @@ LOCAL void writer_simple_write(const MolochSession_t * const session, MolochPack
                                               "kekId", kekId,
                                               "packetPosEncoding", packetPosEncoding,
                                               "uncompressedBits", uncompressedBitsArg,
+                                              "compression", compressionArg,
                                               "indexFilename", indexFilename[0] ? indexFilename : MOLOCH_VAR_ARG_SKIP,
                                               (char *)NULL);
             g_free(kekId);
@@ -536,6 +558,7 @@ LOCAL void writer_simple_write(const MolochSession_t * const session, MolochPack
                                               "kekId", kekId,
                                               "packetPosEncoding", packetPosEncoding,
                                               "uncompressedBits", uncompressedBitsArg,
+                                              "compression", compressionArg,
                                               "indexFilename", indexFilename[0] ? indexFilename : MOLOCH_VAR_ARG_SKIP,
                                               (char *)NULL);
             g_free(kekId);
@@ -900,12 +923,22 @@ void writer_simple_init(char *name)
     moloch_writer_write        = writer_simple_write;
 
     simpleMaxQ = moloch_config_int(NULL, "simpleMaxQ", 2000, 50, 0xffff);
-    simpleGzipLevel = moloch_config_int(NULL, "simpleGzipLevel", 5, 1, 9);
     char *mode = moloch_config_str(NULL, "simpleEncoding", NULL);
+    char *compression = moloch_config_str(NULL, "simpleCompression", "gzip");
 
-    simpleGzipBlockSize = moloch_config_int(NULL, "simpleGzipBlockSize", 32000, 0, 0xfffff);
-    if (simpleGzipBlockSize > 0) {
-        compressionMode = MOLOCH_COMPRESSION_ZSTD; // ALW FIX
+    if (!compression || compression[0] == 0 || strcmp(compression, "none") == 0) {
+        compressionMode = MOLOCH_COMPRESSION_NONE;
+    } else if (strcmp(compression, "gzip") == 0) {
+        compressionMode = MOLOCH_COMPRESSION_GZIP;
+    } else if (strcmp(compression, "zstd") == 0) {
+        compressionMode = MOLOCH_COMPRESSION_ZSTD;
+    } else {
+        CONFIGEXIT("Unknown simpleCompression value %s", compression);
+    }
+
+    if (compressionMode != MOLOCH_COMPRESSION_NONE) {
+        simpleGzipLevel = moloch_config_int(NULL, "simpleGzipLevel", 5, 1, 9);
+        simpleGzipBlockSize = moloch_config_int(NULL, "simpleGzipBlockSize", 32000, 0, 0xfffff);
         if (simpleGzipBlockSize < 8192) {
             simpleGzipBlockSize = 8191;
             LOG ("INFO: Reseting simpleGzipBlockSize to %u, the minimum value", simpleGzipBlockSize);
