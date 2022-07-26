@@ -935,6 +935,7 @@ void writer_simple_init(char *name)
     } else {
         CONFIGEXIT("Unknown simpleCompression value %s", compression);
     }
+    g_free(compression);
 
     if (compressionMode != MOLOCH_COMPRESSION_NONE) {
         simpleGzipLevel = moloch_config_int(NULL, "simpleGzipLevel", 5, 1, 9);
