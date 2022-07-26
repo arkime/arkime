@@ -20,6 +20,7 @@
  */
 #define _FILE_OFFSET_BITS 64
 #include "moloch.h"
+#include "arkimeconfig.h"
 #include <fcntl.h>
 #include <errno.h>
 #include <sys/mman.h>
@@ -114,16 +115,16 @@ struct {
  * A compressed file is made up of compressed blocks.
  * You can only start reading a compressed file at the beginning of a block.
  * Blocks are variable sized, with the max UNCOMPRESED data per block
- * controlled by simpleGzipBlockSize.
- * uncompressedBits is calculated so it can hold simpleGzipBlockSize.
+ * controlled by simpleCompressionBlockSize.
+ * uncompressedBits is calculated so it can hold simpleCompressionBlockSize.
  * The file pos for each packet is made of two parts
  *   X the location in the file of the start of the compress block, which
  *   is shifted uncompressedBits
  *   Y the location inside the uncompressed block of the packet start
- * A larger simpleGzipBlockSize leads to better compression but slower read time.
+ * A larger simpleCompressionBlockSize leads to better compression but slower read time.
  */
 LOCAL int      uncompressedBits;    // Number of bits used in filepos to store location in block
-LOCAL uint32_t simpleGzipBlockSize; // Max data that we try and compress, can be represented by uncompressedBits
+LOCAL uint32_t simpleCompressionBlockSize; // Max data that we try and compress, can be represented by uncompressedBits
 
 /******************************************************************************/
 LOCAL uint32_t writer_simple_queue_length()
@@ -607,13 +608,13 @@ LOCAL void writer_simple_write(const MolochSession_t * const session, MolochPack
     packet->writerFileNum = info->file->id;
 
     if (compressionMode == MOLOCH_COMPRESSION_GZIP) {
-        if (info->file->posInBlock >= simpleGzipBlockSize) {
+        if (info->file->posInBlock >= simpleCompressionBlockSize) {
             writer_simple_gzip_make_new_block(info);
         }
 
         packet->writerFilePos = (info->file->blockStart << uncompressedBits) + info->file->posInBlock;
     } else if (compressionMode == MOLOCH_COMPRESSION_ZSTD) {
-        if (info->file->posInBlock >= simpleGzipBlockSize) {
+        if (info->file->posInBlock >= simpleCompressionBlockSize) {
             writer_simple_zstd_make_new_block(info);
         }
 
@@ -937,24 +938,20 @@ void writer_simple_init(char *name)
 
     if (compressionMode != MOLOCH_COMPRESSION_NONE) {
         simpleGzipLevel = moloch_config_int(NULL, "simpleGzipLevel", 5, 1, 9);
-        simpleGzipBlockSize = moloch_config_int(NULL, "simpleGzipBlockSize", 32000, 0, 0xfffff);
-        if (simpleGzipBlockSize < 8192) {
-            simpleGzipBlockSize = 8191;
-            LOG ("INFO: Reseting simpleGzipBlockSize to %u, the minimum value", simpleGzipBlockSize);
-        }
-        uncompressedBits = ceil(log2(simpleGzipBlockSize));
+        simpleCompressionBlockSize = moloch_config_int(NULL, "simpleCompressionBlockSize", 32000, 8191, 0xfffff);
+        uncompressedBits = ceil(log2(simpleCompressionBlockSize));
 
-        // simpleGzipBlockSize can't be a power of 2
-        if ((uint32_t)pow(2, uncompressedBits) == simpleGzipBlockSize)
-            simpleGzipBlockSize--;
+        // simpleCompressionBlockSize can't be a power of 2
+        if ((uint32_t)pow(2, uncompressedBits) == simpleCompressionBlockSize)
+            simpleCompressionBlockSize--;
 
-        if (simpleGzipBlockSize > config.pcapWriteSize) {
-            config.pcapWriteSize = simpleGzipBlockSize + 1;
-            LOG ("INFO: Reseting pcapWriteSize to %u, so it is larger than simpleGzipBlockSize", config.pcapWriteSize);
+        if (simpleCompressionBlockSize > config.pcapWriteSize) {
+            config.pcapWriteSize = simpleCompressionBlockSize + 1;
+            LOG ("INFO: Reseting pcapWriteSize to %u, so it is larger than simpleCompressionBlockSize", config.pcapWriteSize);
         }
 
         if (config.debug)
-            LOG("Will gzip - blocksize: %u bits: %d", simpleGzipBlockSize, uncompressedBits);
+            LOG("Will compress - blocksize: %u bits: %d", simpleCompressionBlockSize, uncompressedBits);
     }
 
     if (mode == NULL || !mode[0]) {

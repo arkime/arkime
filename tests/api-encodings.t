@@ -25,7 +25,7 @@ sub doTest {
         $cmd .= " -o simpleEncoding=$encryption -o simpleKEKId=test";
     }
     if (defined $gzip) {
-        $cmd .= " -o simpleCompression=gzip -o simpleGzipBlockSize=$gzip";
+        $cmd .= " -o simpleCompression=gzip -o simpleCompressionBlockSize=$gzip";
     }
     if (defined $shortheader) {
         $cmd .= " -o simpleShortHeader=$shortheader";
@@ -39,7 +39,7 @@ sub doTest {
         $cmd .= " -o simpleEncoding=$encryption -o simpleKEKId=test";
     }
     if (defined $gzip) {
-        $cmd .= " -o simpleCompression=gzip -o simpleGzipBlockSize=$gzip";
+        $cmd .= " -o simpleCompression=gzip -o simpleCompressionBlockSize=$gzip";
     }
     if (defined $shortheader) {
         $cmd .= " -o simpleShortHeader=$shortheader";

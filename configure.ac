@@ -526,8 +526,10 @@ AS_IF([test "x$enable_zstd" != "xno"], [
 
 if test "x$have_zstd" = "xyes"; then
   AC_DEFINE([HAVE_ZSTD], [1], [Define if libzstd is available])
-  ZSTD_REQUIRES=libzstd
-  AC_SUBST(ZSTD_REQUIRES)
+  ZSTD_CFLAGS=
+  ZSTD_LIBS="-lzstd"
+  AC_SUBST(ZSTD_CFLAGS)
+  AC_SUBST(ZSTD_LIBS)
 fi
 AM_CONDITIONAL([HAVE_ZSTD], [test "x$have_zstd" = "xyes"])
 

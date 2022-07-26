@@ -21,6 +21,7 @@ LIB_OTHER     = @GLIB2_LIBS@ \
 	        @MAXMINDDB_LIBS@ \
 	        @CURL_LIBS@ \
 	        @NGHTTP2_LIBS@ \
+	        @ZSTD_LIBS@ \
                 @LIBS@ \
 	        thirdparty/http_parser.o \
 	        thirdparty/js0n.o \
