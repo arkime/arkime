@@ -1,66 +1,58 @@
 <template>
-  <b-dropdown
-      size="sm"
-      class="users-dropdown"
-      :text="displayText || getUsersStr()">
-    <b-dropdown-form v-if="!loading">
+  <div class="d-inline-flex align-items-center">
+    <label v-if="label" :for="`user-dropdown-${roleId}`" class="mb-0 mr-1">{{ label }}</label>
+    <b-dropdown
+        :id="`user-dropdown-${roleId}`"
+        size="sm"
+        class="users-dropdown"
+        v-b-tooltip.topright="selectedTooltip ? getUsersStr() : ''">
 
-      <b-input-group size="sm">
-        <template #prepend>
-          <b-input-group-text>
-            <span class="fa fa-search fa-fw" />
-          </b-input-group-text>
-        </template>
-        <b-form-input
-            autofocus
-            type="text"
-            debounce="400"
-            v-model="searchTerm"
-            placeholder="Begin typing to search for users by name"
-        />
-        <template #append>
-          <b-button
-              :disabled="!searchTerm"
-              @click="searchTerm = ''"
-              variant="outline-secondary"
-              v-b-tooltip.hover="'Clear search'">
-            <span class="fa fa-close" />
-          </b-button>
-        </template>
-      </b-input-group>
+      <template #button-content>
+        <slot :count="localSelectedUsers.length" :filter="searchTerm">
+          {{ getUsersStr() }}
+        </slot>
+      </template>
 
-<!--        <b-input-group class="d-flex w-100">-->
-<!--          <b-form-select-->
-<!--              size="sm"-->
-<!--              v-model="perPage"-->
-<!--              :options="[-->
-<!--            { value: 10, text: '10 per page'},-->
-<!--            { value: 20, text: '20 per page'},-->
-<!--            { value: 50, text: '50 per page'},-->
-<!--            { value: 100, text: '100 per page'},-->
-<!--            { value: 200, text: '200 per page'}-->
-<!--          ]"-->
-<!--          />-->
-<!--          <b-pagination-->
-<!--              size="sm"-->
-<!--              :per-page="perPage"-->
-<!--              v-model="currentPage"-->
-<!--              :total-rows="recordsTotal"-->
-<!--          />-->
-<!--        </b-input-group>-->
+      <b-dropdown-form v-if="!loading">
 
-      <b-form-checkbox-group v-if="!loading" class="d-flex flex-column"
-          v-model="localSelectedUsers">
-        <b-form-checkbox
-            :key="user.userId"
-            :value="user.userId"
-            v-for="user in users"
-            @change="updateUsers(user.userId, $event)">
-          {{ user.userId }}
-        </b-form-checkbox>
-      </b-form-checkbox-group>
-    </b-dropdown-form>
-  </b-dropdown>
+        <b-input-group size="sm" class="sticky-top hide-behind-search">
+          <template #prepend>
+            <b-input-group-text>
+              <span class="fa fa-search fa-fw" />
+            </b-input-group-text>
+          </template>
+          <b-form-input
+              autofocus
+              type="text"
+              debounce="400"
+              v-model="searchTerm"
+              placeholder="Begin typing to search for users by name or id"
+          />
+          <template #append>
+            <b-button
+                :disabled="!searchTerm"
+                @click="searchTerm = ''"
+                variant="outline-secondary"
+                v-b-tooltip.hover="'Clear search'">
+              <span class="fa fa-close" />
+            </b-button>
+          </template>
+        </b-input-group>
+
+        <b-form-checkbox-group v-if="!loading" class="d-flex flex-column"
+                               v-model="localSelectedUsers">
+          <b-form-checkbox
+              :key="user.userId"
+              :value="user.userId"
+              v-for="user in users"
+              @change="updateUsers(user.userId, $event)">
+            {{ user.userName }} ({{ user.userId }})
+          </b-form-checkbox>
+        </b-form-checkbox-group>
+      </b-dropdown-form>
+    </b-dropdown>
+  </div>
+
 </template>
 
 <script>
@@ -73,33 +65,29 @@ export default {
       type: String,
       required: false // during creation, a role will not have an ID
     },
-    displayText: { type: String },
     selectedUsers: {
       type: Array,
-      required: false
+      required: false // can use initializeSelectionWithRole instead
     },
-    initializeSelectionWithRole: { type: Boolean }
+    requestRoleStatus: { type: Boolean },
+    initializeSelectionWithRole: { type: Boolean },
+    selectedTooltip: { type: Boolean },
+    label: {
+      type: String,
+      required: false
+    }
   },
   data () {
     return {
-      perPage: 100,
-      currentPage: 1,
       searchTerm: '',
       users: undefined,
       loading: true,
       error: '',
-      recordsTotal: undefined,
       localSelectedUsers: this.selectedUsers || []
     };
   },
   watch: {
     searchTerm () {
-      this.loadUsers();
-    },
-    perPage () {
-      this.loadUsers();
-    },
-    currentPage () {
       this.loadUsers();
     }
   },
@@ -111,18 +99,15 @@ export default {
     },
     loadUsers () {
       const query = {
-        start: (this.currentPage - 1) * this.perPage,
-        length: this.perPage, // assume this will get ALL users
         filter: this.searchTerm
       };
-      if (this.roleId != null) {
+      if (this.requestRoleStatus && this.roleId != null) {
         query.roleId = this.roleId;
       }
 
       UserService.searchAssignableUsers(query).then((response) => {
         this.error = '';
         this.loading = false;
-        this.recordsTotal = response.recordsTotal;
         this.users = JSON.parse(JSON.stringify(response.data));
         if (this.initializeSelectionWithRole) {
           this.localSelectedUsers = this.users.filter(u => u.hasRole).map(u => u.userId);
@@ -150,5 +135,9 @@ export default {
 </script>
 
 <style scoped>
-
+/* hides elements scrolling behind sticky search bar */
+.hide-behind-search {
+  padding-top: 0.5rem !important;
+  background-color: var(--color-background) !important;
+}
 </style>

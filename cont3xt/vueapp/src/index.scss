@@ -21,6 +21,7 @@ body {
   --color-gray: #777777;
   --color-gray-dark: #555555;
   --color-dark: #131313;
+  --color-background: #FFFFFF;
 }
 body.dark {
   --color-dark: #F3F3F3;
@@ -28,6 +29,7 @@ body.dark {
   --color-gray: #777777;
   --color-gray-light: #555555;
   --color-light: #131313;
+  --color-background: #222;
 }
 
 

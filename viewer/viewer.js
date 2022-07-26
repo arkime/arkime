@@ -1339,6 +1339,18 @@ app.get( // user roles endpoint
   User.apiRoles
 );
 
+app.post( // list users for roleAssigners
+  '/api/users/assignment/list',
+  [ArkimeUtil.noCacheJson, checkCookieToken, User.checkRoleAssignmentAccess('usersAdmin')],
+  User.apiGetAssignableUsers
+);
+
+app.post( // assign or un-assign role from a user
+  '/api/user/assignment/role',
+  [ArkimeUtil.noCacheJson, checkCookieToken, User.checkRoleAssignmentAccess('usersAdmin')],
+  User.apiUpdateUserRole
+);
+
 // view apis ------------------------------------------------------------------
 app.get( // get views endpoint
   ['/api/user/views', '/user/views', '/api/views'],

@@ -1,6 +1,11 @@
 <template>
   <div class="container-fluid">
-    <h1>Roles</h1>
+    <span class="d-inline-flex align-items-center">
+      <h1>Role Management</h1>
+      <h5>
+        <span class="fa fa-info-circle ml-2" v-b-tooltip.hover.html="pageTip"/>
+      </h5>
+    </span>
     <b-overlay
         rounded="sm"
         blur="0.2rem"
@@ -16,12 +21,39 @@
         </div>
       </template> <!-- /loading overlay template -->
 
-      <template v-if="!loading">
-        <span v-for="role in getUser.assignableRoles" :key="role">
-          <UserDropdown :display-text="`Who Has ${role}`" :role-id="role" :selected-users="[]" @selected-users-updated="updateUsers"
-            :initialize-selection-with-role="true" />
-        </span>
-      </template>
+      <b-table
+        v-if="!loading"
+        small
+        hover
+        striped
+        show-empty
+        :dark="getDarkThemeEnabled"
+        :fields="fields"
+        :items="roleData"
+        :sort-by.sync="sortBy"
+        :sort-desc.sync="sortDesc"
+        empty-text="There is no history to show"
+      >
+        <!--   customize column sizes   -->
+        <template #table-colgroup="scope">
+          <col
+              v-for="field in scope.fields"
+              :key="field.key"
+              :style="{ width: field.setWidth }"
+          >
+        </template>
+        <!--   /customize column sizes   -->
+
+        <!--   members cell     -->
+        <template #cell(members)="data">
+          <UserDropdown :selected-tooltip="true"
+            :role-id="data.item.value" @selected-users-updated="updateUsers"
+            :request-role-status="true" :initialize-selection-with-role="true"
+            v-slot="{ count, filter }">
+            {{ count }} {{ count === 1 ? 'user' : 'users' }} with <strong>{{ data.item.text }}</strong>{{ filter ? ` (that match${count === 1 ? 'es' : ''} filter: "${filter}")` : '' }}
+          </UserDropdown>
+        </template> <!--   /members cell     -->
+      </b-table>
     </b-overlay>
   </div>
 </template>
@@ -36,13 +68,36 @@ export default {
   components: {
     UserDropdown
   },
+  data () {
+    return {
+      sortBy: 'text',
+      sortDesc: true,
+      fields: [
+        {
+          label: 'Name',
+          key: 'text',
+          setWidth: '10rem'
+        },
+        { // virtual members field
+          label: 'Members',
+          key: 'members'
+        }
+      ],
+      pageTip: 'These are roles you manage. Assign users to them with the dropdowns under <strong>Members</strong>.'
+    };
+  },
   computed: {
-    ...mapGetters(['getUser']),
+    ...mapGetters(['getUser', 'getDarkThemeEnabled']),
     loading () {
       return this.getUser?.assignableRoles == null;
+    },
+    roleData () {
+      const assignableRoles = this.getUser?.assignableRoles || [];
+      return this.$options.filters.parseRoles(assignableRoles);
     }
   },
   methods: {
+    /* page functions ------------------------------------------------------ */
     updateUsers ({ changedUser }, roleId) {
       UserService.updateUserRole({
         userId: changedUser.userId,

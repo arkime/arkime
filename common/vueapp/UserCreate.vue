@@ -87,19 +87,22 @@
             </select>
           </b-input-group>
         </div>
-        <div v-if="roles"
-          class="col-md-6 mt-2">
-          <RoleDropdown
-            :roles="roles"
-            display-text="Roles"
-            @selected-roles-updated="updateNewUserRoles"
-          />
-          <span
-            class="fa fa-info-circle fa-lg cursor-help ml-2"
-            v-b-tooltip.hover="'These roles are applied across apps (Arkime, Parliament, WISE, Cont3xt)'"
-          />
+        <div class="col-md-6 mt-2 d-inline-flex align-items-center">
+          <template v-if="roles">
+            <RoleDropdown
+                :roles="roles"
+                display-text="Roles"
+                @selected-roles-updated="updateNewUserRoles"
+            />
+            <span
+                class="fa fa-info-circle fa-lg cursor-help ml-2"
+                v-b-tooltip.hover="'These roles are applied across apps (Arkime, Parliament, WISE, Cont3xt)'"
+            />
+          </template>
           <template v-if="createMode === 'role'">
-            <UserDropdown class="ml-3" display-text="Role Assigners" :selected-users="newUser.roleAssigners" @selected-users-updated="updateNewRoleAssigners"/>
+            <UserDropdown class="ml-3" display-text="Role Assigners" :selected-users="newUser.roleAssigners" @selected-users-updated="updateNewRoleAssigners">
+              Role Assigners
+            </UserDropdown>
             <span
                 class="fa fa-info-circle fa-lg cursor-help ml-2"
                 v-b-tooltip.hover="'These users will be able to manage who has this role'"

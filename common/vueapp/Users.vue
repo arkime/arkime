@@ -15,7 +15,7 @@
             type="text"
             debounce="400"
             v-model="searchTerm"
-            placeholder="Begin typing to search for users by name"
+            placeholder="Begin typing to search for users by name, id, or roles"
           />
           <template #append>
             <b-button
@@ -343,13 +343,11 @@
                   </b-button>
                 </div>
               </form>
-<!--  TODO TOBY             -->
-              <span v-else class="d-inline-flex align-items-center">
-                <span>Role Assigners: </span>
-                <UserDropdown class="mt-2"
-                  :selected-users="data.item.roleAssigners || []"
-                  :role-id="data.item.userId"
-                  @selected-users-updated="updateRoleAssigners"/>
+              <span v-else>
+                <UserDropdown class="mt-2" label="Role Assigners: "
+                              :selected-users="data.item.roleAssigners || []"
+                              :role-id="data.item.userId"
+                              @selected-users-updated="updateRoleAssigners" />
               </span>
             </template>
           </div>

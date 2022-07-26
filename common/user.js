@@ -180,6 +180,7 @@ class User {
    * @param query.sortField the field to sort on, default userId
    * @param query.sortDescending sort descending, default false
    * @param query.noRoles filters out users with ids starting with 'role:', default false
+   * @param query.searchFields array of fields (with options "userName", "userId", & "roles") to be used in filter
    * @returns {number} total - The total number of matching users
    * @returns {ArkimeUsers[]} users - The users in the from->size section
    */
@@ -443,6 +444,7 @@ class User {
 
     query.sortField = req.body.sortField || 'userId';
     query.sortDescending = req.body.desc === true;
+    query.searchFields = ['userId', 'userName', 'roles'];
 
     Promise.all([
       User.searchUsers(query),
@@ -467,7 +469,7 @@ class User {
   };
 
   /**
-   * POST - /api/users/assignable
+   * POST - /api/users/assignment/list
    *
    * Retrieves a list of users (admin & roleAssigners only).
    * @name /users
@@ -485,6 +487,7 @@ class User {
       sortDescending: false
     };
     if (req.body.filter) { query.filter = req.body.filter; }
+    query.searchFields = ['userId', 'userName'];
 
     Promise.all([
       User.searchUsers(query),
@@ -495,7 +498,7 @@ class User {
       // since this is accessible to non-userAdmins (i.e. roleAssigners), minimal user-info is returned
       //   (only ID and whether they have the managed role)
       const userInfo = users.users.map(u => {
-        const providedUserInfo = { userId: u.userId };
+        const providedUserInfo = { userId: u.userId, userName: u.userName };
         if (req.body.roleId != null) {
           providedUserInfo.hasRole = !!(u.roles?.includes(req.body.roleId));
         }
@@ -509,7 +512,7 @@ class User {
         data: userInfo
       });
     }).catch((err) => {
-      console.log(`ERROR - ${req.method} /api/users/assignable`, util.inspect(err, false, 50));
+      console.log(`ERROR - ${req.method} /api/users/assignment/list`, util.inspect(err, false, 50));
       return res.send({
         success: true,
         recordsTotal: 0,
@@ -716,7 +719,7 @@ class User {
   };
 
   /**
-   * POST - /api/user/assign/:id
+   * POST - /api/user/assignment/role
    *
    * Updates whether a user has a certain role (admin only).
    * @name /user/assign/:id
@@ -747,7 +750,7 @@ class User {
 
     User.getUser(userId, (err, user) => {
       if (err || !user) {
-        console.log(`ERROR - ${req.method} /api/user/assign/${userId}`, util.inspect(err, false, 50), user);
+        console.log(`ERROR - ${req.method} /api/user/assignment/role/`, util.inspect(err, false, 50), user);
         return res.serverError(403, 'User not found');
       }
 
@@ -773,7 +776,7 @@ class User {
         }
 
         if (err) {
-          console.log(`ERROR - ${req.method} /api/user/assign/${userId}`, util.inspect(err, false, 50), user, info);
+          console.log(`ERROR - ${req.method} /api/user/assignment/role`, util.inspect(err, false, 50), user, info);
           return res.serverError(500, 'Error updating user role:' + err);
         }
 
@@ -927,15 +930,17 @@ class User {
   }
 
   /**
-   * Fails request if user lacks usersAdmin and is not included in the given role's roleAssigners
+   * Fails request if user lacks the overriding role and is not included in the given role's roleAssigners
    */
-  static async checkRoleAssignmentAccess (req, res, next) {
-    const role = req.body.roleId;
-    if (!req.user.hasAllRole('usersAdmin') && (role == null || !(await req.user.getAssignableRoles(req.user.userId)).includes(role))) {
-      console.log(`Permission denied to ${req.user.userId} while requesting resource: ${req._parsedUrl.pathname}, for assignment-access to role ${role}`);
-      return res.serverError(403, 'You do not have permission to access this resource');
-    }
-    next();
+  static checkRoleAssignmentAccess (overridingRole) {
+    return async (req, res, next) => {
+      const role = req.body.roleId;
+      if (!req.user.hasAllRole('usersAdmin') && (role == null || !(await req.user.getAssignableRoles(req.user.userId)).includes(role))) {
+        console.log(`Permission denied to ${req.user.userId} while requesting resource: ${req._parsedUrl.pathname}, for assignment-access to role ${role}`);
+        return res.serverError(403, 'You do not have permission to access this resource');
+      }
+      next();
+    };
   }
 
   /**
@@ -1057,15 +1062,22 @@ function sortUsers (users, sortField, sortDescending) {
 /******************************************************************************/
 // Filter Users
 /******************************************************************************/
-function filterUsers (users, filter, noRoles) {
-  const results = [];
-  const re = ArkimeUtil.wildcardToRegexp(`*${filter}*`);
-  for (let i = 0; i < users.length; i++) {
-    if ((!noRoles || !users[i].userId.startsWith('role:')) && (users[i].userId.match(re) || users[i].userName.match(re) || users[i].roles.match(re))) {
-      results.push(users[i]);
-    }
+function filterUsers (users, filter, searchFields, noRoles) {
+  const validSearchUsers = searchFields
+    .filter(field => field === 'userId' || field === 'userName' || field === 'roles');
+  const usingFilter = filter && validSearchUsers.length;
+  if (!noRoles && !usingFilter) {
+    return users; // nothing to filter on
   }
-  return results;
+  const re = ArkimeUtil.wildcardToRegexp(`*${filter}*`);
+
+  return users.filter(user => {
+    // exclude roles
+    if (noRoles && user.userId.startsWith('role:')) { return false; }
+
+    // filter searched fields
+    return (!usingFilter || validSearchUsers.any(field => user[field].match(re)));
+  });
 }
 
 /******************************************************************************/
@@ -1151,12 +1163,11 @@ class UserESImplementation {
       });
     }
 
-    if (query.filter) {
-      esQuery.query.bool.should = [
-        { wildcard: { userName: '*' + query.filter + '*' } },
-        { wildcard: { userId: '*' + query.filter + '*' } },
-        { wildcard: { roles: '*' + query.filter + '*' } }
-      ];
+    if (query.filter && query.searchFields.length) {
+      const filters = query.searchFields
+        .filter(field => field === 'userId' || field === 'userName' || field === 'roles')
+        .map(validField => { return { wildcard: { [validField]: '*' + query.filter + '*' } }; });
+      if (filters.length) { esQuery.query.bool.should = filters; }
     }
 
     if (query.sortField) {
@@ -1306,9 +1317,7 @@ class UserLMDBImplementation {
         hits.push(Object.assign(new User(), value));
       });
 
-    if (query.filter) {
-      hits = filterUsers(hits, query.filter, query.noRoles);
-    }
+    hits = filterUsers(hits, query.filter, query.searchFields, query.noRoles);
     sortUsers(hits, query.sortField, query.sortDescending);
 
     return {
@@ -1429,9 +1438,7 @@ class UserRedisImplementation {
       hits.push(Object.assign(new User(), user));
     }
 
-    if (query.filter) {
-      hits = filterUsers(hits, query.filter, query.noRoles);
-    }
+    hits = filterUsers(hits, query.filter, query.searchFields, query.noRoles);
     sortUsers(hits, query.sortField, query.sortDescending);
 
     return {
