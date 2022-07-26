@@ -74,6 +74,16 @@
             Users
           </router-link>
         </li>
+        <li class="nav-item mr-2">
+          <router-link
+              to="roles"
+              tabindex="-1"
+              v-if="getUser && getUser.assignableRoles && getUser.assignableRoles.length > 0"
+              class="nav-link"
+              active-class="active">
+            Roles
+          </router-link>
+        </li>
       </ul> <!-- /page links -->
       <!-- health check -->
       <div class="mr-2 text-light">

@@ -94,6 +94,14 @@ body {
   max-height: 200px;
 }
 
+/* user dropdown scrolls for long lists */
+.users-dropdown ul {
+  overflow: auto;
+  min-width: 500px;
+  max-width: 600px;
+  max-height: 200px;
+}
+
 /* xs input groups */
 .input-group-xs > .form-control,
 .input-group-xs > .custom-select,

@@ -50,7 +50,7 @@ const searchColumns = [
   'userId', 'userName', 'expression', 'enabled',
   'webEnabled', 'headerAuthEnabled', 'emailSearch', 'removeEnabled', 'packetSearch',
   'hideStats', 'hideFiles', 'hidePcap', 'disablePcapDownload', 'welcomeMsgNum',
-  'lastUsed', 'timeLimit', 'roles'
+  'lastUsed', 'timeLimit', 'roles', 'roleAssigners'
 ];
 
 let readOnly = false;
@@ -179,6 +179,7 @@ class User {
    * @param query.filter search userId userName for
    * @param query.sortField the field to sort on, default userId
    * @param query.sortDescending sort descending, default false
+   * @param query.noRoles filters out users with ids starting with 'role:', default false
    * @returns {number} total - The total number of matching users
    * @returns {ArkimeUsers[]} users - The users in the from->size section
    */
@@ -348,7 +349,7 @@ class User {
   /**
    * Web Api for getting current user
    */
-  static getCurrentUser (req) {
+  static async getCurrentUser (req) {
     const userProps = [
       'emailSearch', 'enabled', 'removeEnabled',
       'headerAuthEnabled', 'settings', 'userId', 'userName', 'webEnabled',
@@ -365,6 +366,9 @@ class User {
     }
 
     clone.roles = [...req.user._allRoles];
+
+    const assignableRoles = await req.user.getAssignableRoles(req.user.userId);
+    clone.assignableRoles = [...assignableRoles];
 
     if (getCurrentUserCB) {
       getCurrentUserCB(req.user, clone);
@@ -411,8 +415,8 @@ class User {
    * @name /user
    * @returns {ArkimeUser[]} user - The currently logged in user.
    */
-  static apiGetUser (req, res, next) {
-    const clone = User.getCurrentUser(req);
+  static async apiGetUser (req, res, next) {
+    const clone = await User.getCurrentUser(req);
     return res.send(clone);
   };
 
@@ -435,6 +439,7 @@ class User {
     if (req.body.filter) {
       query.filter = req.body.filter;
     }
+    query.noRoles = !!req.body.noRoles;
 
     query.sortField = req.body.sortField || 'userId';
     query.sortDescending = req.body.desc === true;
@@ -452,6 +457,59 @@ class User {
       });
     }).catch((err) => {
       console.log(`ERROR - ${req.method} /api/users`, util.inspect(err, false, 50));
+      return res.send({
+        success: true,
+        recordsTotal: 0,
+        recordsFiltered: 0,
+        data: []
+      });
+    });
+  };
+
+  /**
+   * POST - /api/users/assignable
+   *
+   * Retrieves a list of users (admin & roleAssigners only).
+   * @name /users
+   * @returns {boolean} success - True if the request was successful, false otherwise
+   * @returns {ArkimeUser[]} data - The list of users configured.
+   * @returns {number} recordsTotal - The total number of users.
+   * @returns {number} recordsFiltered - The number of users returned in this result.
+   */
+  static apiGetAssignableUsers (req, res, next) {
+    const query = {
+      from: +req.body.start || 0,
+      size: +req.body.length || 10000,
+      noRoles: true,
+      sortField: 'userId',
+      sortDescending: false
+    };
+    if (req.body.filter) { query.filter = req.body.filter; }
+
+    Promise.all([
+      User.searchUsers(query),
+      User.numberOfUsers()
+    ]).then(([users, total]) => {
+      if (users.error) { throw users.error; }
+
+      // since this is accessible to non-userAdmins (i.e. roleAssigners), minimal user-info is returned
+      //   (only ID and whether they have the managed role)
+      const userInfo = users.users.map(u => {
+        const providedUserInfo = { userId: u.userId };
+        if (req.body.roleId != null) {
+          providedUserInfo.hasRole = !!(u.roles?.includes(req.body.roleId));
+        }
+        return providedUserInfo;
+      });
+
+      res.send({
+        success: true,
+        recordsTotal: total,
+        recordsFiltered: users.total,
+        data: userInfo
+      });
+    }).catch((err) => {
+      console.log(`ERROR - ${req.method} /api/users/assignable`, util.inspect(err, false, 50));
       return res.send({
         success: true,
         recordsTotal: 0,
@@ -502,6 +560,10 @@ class User {
       return res.serverError(403, 'Can not create superAdmin unless you are superAdmin');
     }
 
+    if (req.body.roleAssigners === undefined) {
+      req.body.roleAssigners = [];
+    }
+
     User.getUser(req.body.userId, (err, user) => {
       if (user) {
         console.log('Trying to add duplicate user', util.inspect(err, false, 50), user);
@@ -525,7 +587,8 @@ class User {
         hidePcap: req.body.hidePcap === true,
         disablePcapDownload: req.body.disablePcapDownload === true,
         roles: req.body.roles,
-        welcomeMsgNum: 0
+        welcomeMsgNum: 0,
+        roleAssigners: req.body.roleAssigners
       };
 
       if (User.#debug) {
@@ -632,6 +695,7 @@ class User {
       user.disablePcapDownload = req.body.disablePcapDownload === true;
       user.timeLimit = req.body.timeLimit ? parseInt(req.body.timeLimit) : undefined;
       user.roles = req.body.roles;
+      user.roleAssigners = req.body.roleAssigners || [];
 
       User.setUser(userId, user, (err, info) => {
         if (User.#debug) {
@@ -646,6 +710,76 @@ class User {
         return res.send(JSON.stringify({
           success: true,
           text: `User ${userId} updated successfully`
+        }));
+      });
+    });
+  };
+
+  /**
+   * POST - /api/user/assign/:id
+   *
+   * Updates whether a user has a certain role (admin only).
+   * @name /user/assign/:id
+   * @returns {boolean} success - Whether the update user operation was successful.
+   * @returns {string} text - The success/error message to (optionally) display to the user.
+   */
+  static apiUpdateUserRole (req, res) {
+    const roleId = req.body.roleId;
+    const newRoleState = req.body.newRoleState;
+
+    const userId = req.body.userId || req.params.id;
+
+    if (!userId) {
+      return res.serverError(403, 'Missing userId');
+    }
+
+    if (!roleId) {
+      return res.serverError(403, 'Missing roleId');
+    }
+
+    if (typeof newRoleState !== 'boolean') {
+      return res.serverError(403, 'Missing boolean newRoleState');
+    }
+
+    if (userId === '_moloch_shared') {
+      return res.serverError(403, "_moloch_shared is a shared user. This user's settings cannot be updated");
+    }
+
+    User.getUser(userId, (err, user) => {
+      if (err || !user) {
+        console.log(`ERROR - ${req.method} /api/user/assign/${userId}`, util.inspect(err, false, 50), user);
+        return res.serverError(403, 'User not found');
+      }
+
+      const roles = [...user.roles];
+      const hasRole = roles.includes(roleId);
+      if (newRoleState) {
+        if (hasRole) {
+          return res.serverError(403, 'Can not add a role that the user already has');
+        }
+        roles.push(roleId);
+      } else {
+        if (!hasRole) {
+          return res.serverError(403, 'Can not remove a role that the user does not have');
+        }
+        roles.splice(roles.indexOf(roleId), 1);
+      }
+
+      user.roles = roles;
+
+      User.setUser(userId, user, (err, info) => {
+        if (User.#debug) {
+          console.log('setUser', user, err, info);
+        }
+
+        if (err) {
+          console.log(`ERROR - ${req.method} /api/user/assign/${userId}`, util.inspect(err, false, 50), user, info);
+          return res.serverError(500, 'Error updating user role:' + err);
+        }
+
+        return res.send(JSON.stringify({
+          success: true,
+          text: `User ${userId}'s role ${roleId} updated successfully`
         }));
       });
     });
@@ -793,6 +927,18 @@ class User {
   }
 
   /**
+   * Fails request if user lacks usersAdmin and is not included in the given role's roleAssigners
+   */
+  static async checkRoleAssignmentAccess (req, res, next) {
+    const role = req.body.roleId;
+    if (!req.user.hasAllRole('usersAdmin') && (role == null || !(await req.user.getAssignableRoles(req.user.userId)).includes(role))) {
+      console.log(`Permission denied to ${req.user.userId} while requesting resource: ${req._parsedUrl.pathname}, for assignment-access to role ${role}`);
+      return res.serverError(403, 'You do not have permission to access this resource');
+    }
+    next();
+  }
+
+  /**
    *
    */
   static checkPermissions (permissions) {
@@ -824,6 +970,13 @@ class User {
     }
 
     return this._allRoles;
+  }
+
+  /**
+   * Returns all roles that the currently this user has assignment access to
+   */
+  async getAssignableRoles (userId) {
+    return await User.#implementation.getAssignableRoles(userId);
   }
 
   // Set last used info for user, should only be used by Auth
@@ -904,11 +1057,11 @@ function sortUsers (users, sortField, sortDescending) {
 /******************************************************************************/
 // Filter Users
 /******************************************************************************/
-function filterUsers (users, filter) {
+function filterUsers (users, filter, noRoles) {
   const results = [];
   const re = ArkimeUtil.wildcardToRegexp(`*${filter}*`);
   for (let i = 0; i < users.length; i++) {
-    if (users[i].userId.match(re) || users[i].userName.match(re) || users[i].roles.match(re)) {
+    if ((!noRoles || !users[i].userId.startsWith('role:')) && (users[i].userId.match(re) || users[i].userName.match(re) || users[i].roles.match(re))) {
       results.push(users[i]);
     }
   }
@@ -991,6 +1144,12 @@ class UserESImplementation {
         }
       }
     };
+
+    if (query.noRoles) {
+      esQuery.query.bool.must_not.push({
+        wildcard: { userId: 'role:*' } // exclude roles
+      });
+    }
 
     if (query.filter) {
       esQuery.query.bool.should = [
@@ -1097,7 +1256,26 @@ class UserESImplementation {
     });
 
     return response.body.hits.hits.map(h => h._source.userId);
-  }
+  };
+
+  async getAssignableRoles (userId) {
+    const query = {
+      bool: {
+        must: [
+          { prefix: { userId: 'role:' } },
+          { term: { roleAssigners: userId } }
+        ]
+      }
+    };
+
+    const response = await this.client.search({
+      index: this.prefix + 'users',
+      body: { query },
+      rest_total_hits_as_int: true
+    });
+
+    return response.body.hits.hits.map(h => h._source.userId);
+  };
 
   async deleteAllUsers () {
     await this.client.delete_by_query({
@@ -1129,7 +1307,7 @@ class UserLMDBImplementation {
       });
 
     if (query.filter) {
-      hits = filterUsers(hits, query.filter);
+      hits = filterUsers(hits, query.filter, query.noRoles);
     }
     sortUsers(hits, query.sortField, query.sortDescending);
 
@@ -1209,6 +1387,17 @@ class UserLMDBImplementation {
     return hits;
   }
 
+  async getAssignableRoles (userId) {
+    const hits = [];
+    this.store.getRange({})
+      .filter(({ key, value }) => { return key.startsWith('role:') && value.roleAssigners?.includes(userId); })
+      .forEach(({ key }) => {
+        hits.push(key);
+      });
+
+    return hits;
+  }
+
   async deleteAllUsers () {
     this.store.getKeys({})
       .forEach(key => {
@@ -1241,7 +1430,7 @@ class UserRedisImplementation {
     }
 
     if (query.filter) {
-      hits = filterUsers(hits, query.filter);
+      hits = filterUsers(hits, query.filter, query.noRoles);
     }
     sortUsers(hits, query.sortField, query.sortDescending);
 
@@ -1301,6 +1490,11 @@ class UserRedisImplementation {
   async allRoles () {
     const keys = await this.client.keys('role:*');
     return keys;
+  }
+
+  async getAssignableRoles (userId) {
+    const keys = await this.allRoles();
+    return keys.filter(async key => this.client.get(key).roleAssigners?.includes(userId));
   }
 
   async deleteAllUsers () {

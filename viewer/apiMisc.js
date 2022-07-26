@@ -389,7 +389,7 @@ module.exports = (Config, Db, internals, sessionAPIs, userAPIs, ViewerUtils) => 
 
       // can't fetch user or fields is FATAL, so let it fall through to outer
       // catch and send an error to the client
-      const user = User.getCurrentUser(req);
+      const user = await User.getCurrentUser(req);
       const fieldsArr = internals.fieldsArr;
       const fieldsMap = JSON.parse(internals.fieldsMap);
 

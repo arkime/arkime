@@ -132,7 +132,7 @@
               @toggle="data.toggleDetails"
               :opened="data.detailsShowing"
               :class="{expanded: data.detailsShowing}"
-              v-b-tooltip.hover="!data.item.emailSearch || !data.item.removeEnabled || !data.item.packetSearch || data.item.hideStats || data.item.hideFiles || data.item.hidePcap || data.item.disablePcapDownload || data.item.timeLimit || data.item.expression ? 'This user has additional restricted permissions' : ''"
+              v-b-tooltip.hover.noninteractive="!data.item.emailSearch || !data.item.removeEnabled || !data.item.packetSearch || data.item.hideStats || data.item.hideFiles || data.item.hidePcap || data.item.disablePcapDownload || data.item.timeLimit || data.item.expression ? 'This user has additional restricted permissions' : ''"
             />
           </span>
         </template> <!-- /toggle column -->
@@ -304,45 +304,54 @@
             <!-- display change password if not a role and
                  we're in cont3xt or arkime
                  (assumes user is a usersAdmin since only usersAdmin can see this page) -->
-            <form class="row"
-              v-if="!data.item.userId.startsWith('role:') && (parentApp === 'Cont3xt' || parentApp === 'Arkime')">
-              <div class="col-9 mt-4">
-                <!-- new password -->
-                <b-input-group
-                  size="sm"
-                  class="mt-2"
-                  prepend="New Password">
-                  <b-form-input
-                    type="password"
-                    v-model="newPassword"
-                    autocomplete="new-password"
-                    @keydown.enter="changePassword"
-                    placeholder="Enter a new password"
-                  />
-                </b-input-group>
-                <!-- confirm new password -->
-                <b-input-group
-                  size="sm"
-                  class="mt-2"
-                  prepend="Confirm Password">
-                  <b-form-input
-                    type="password"
-                    autocomplete="new-password"
-                    v-model="confirmNewPassword"
-                    @keydown.enter="changePassword"
-                    placeholder="Confirm the new password"
-                  />
-                </b-input-group>
-                <!-- change password button -->
-                <b-button
-                  size="sm"
-                  class="mt-2"
-                  variant="success"
-                  @click="changePassword(data.item.userId)">
-                  Change Password
-                </b-button>
-              </div>
-            </form>
+            <template v-if="parentApp === 'Cont3xt' || parentApp === 'Arkime'">
+              <form class="row" v-if="!data.item.userId.startsWith('role:')">
+                <div class="col-9 mt-4">
+                  <!-- new password -->
+                  <b-input-group
+                      size="sm"
+                      class="mt-2"
+                      prepend="New Password">
+                    <b-form-input
+                        type="password"
+                        v-model="newPassword"
+                        autocomplete="new-password"
+                        @keydown.enter="changePassword"
+                        placeholder="Enter a new password"
+                    />
+                  </b-input-group>
+                  <!-- confirm new password -->
+                  <b-input-group
+                      size="sm"
+                      class="mt-2"
+                      prepend="Confirm Password">
+                    <b-form-input
+                        type="password"
+                        autocomplete="new-password"
+                        v-model="confirmNewPassword"
+                        @keydown.enter="changePassword"
+                        placeholder="Confirm the new password"
+                    />
+                  </b-input-group>
+                  <!-- change password button -->
+                  <b-button
+                      size="sm"
+                      class="mt-2"
+                      variant="success"
+                      @click="changePassword(data.item.userId)">
+                    Change Password
+                  </b-button>
+                </div>
+              </form>
+<!--  TODO TOBY             -->
+              <span v-else class="d-inline-flex align-items-center">
+                <span>Role Assigners: </span>
+                <UserDropdown class="mt-2"
+                  :selected-users="data.item.roleAssigners || []"
+                  :role-id="data.item.userId"
+                  @selected-users-updated="updateRoleAssigners"/>
+              </span>
+            </template>
           </div>
         </template> <!-- /detail row -->
       </b-table>
@@ -373,6 +382,7 @@ import ToggleBtn from './ToggleBtn';
 import UserCreate from './UserCreate';
 import UserService from './UserService';
 import RoleDropdown from './RoleDropdown';
+import UserDropdown from './UserDropdown';
 import { timezoneDateString } from './vueFilters';
 
 export default {
@@ -381,7 +391,8 @@ export default {
   components: {
     ToggleBtn,
     UserCreate,
-    RoleDropdown
+    RoleDropdown,
+    UserDropdown
   },
   props: {
     roles: Array,
@@ -480,6 +491,12 @@ export default {
       const user = this.users.find(u => u.userId === userId);
       this.$set(user, 'roles', roles);
       this.userHasChanged(userId);
+    },
+    updateRoleAssigners ({ newSelection }, roleId) {
+      const role = this.users.find(u => u.userId === roleId);
+      console.log(role, newSelection, roleId);
+      this.$set(role, 'roleAssigners', newSelection);
+      this.userHasChanged(roleId);
     },
     userHasChanged (userId) {
       const newUser = JSON.parse(JSON.stringify(this.users.find(u => u.userId === userId)));
@@ -687,7 +704,7 @@ export default {
 }
 
 /* make the roles dropdown text smaller */
-.roles-dropdown > button {
+.roles-dropdown > button, .users-dropdown > button {
   font-size: 0.8rem;
 }
 

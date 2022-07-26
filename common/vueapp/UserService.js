@@ -26,6 +26,54 @@ export default {
   },
 
   /**
+   * Searches for users
+   * @param {Object} query - The query to search for users
+   *                         {roleId:"role:something",filter:"",start:0,length:50}
+   */
+  searchAssignableUsers (query) {
+    return new Promise((resolve, reject) => {
+      fetch('api/users/assignable', {
+        method: 'POST',
+        headers: setReqHeaders({ 'Content-Type': 'application/json' }),
+        body: JSON.stringify(query)
+      }).then((response) => {
+        return response.json();
+      }).then((response) => {
+        if (!response.success) {
+          return reject(response);
+        }
+        return resolve(response);
+      }).catch((error) => {
+        reject(error);
+      });
+    });
+  },
+
+  /**
+   * Sets whether a user has a certain role
+   * @param {Object} query - The query to search for users
+   *                         {userId:"user123",roleId:"role:something",newRoleState:true}
+   */
+  updateUserRole (query) {
+    return new Promise((resolve, reject) => {
+      fetch('api/user/assign', {
+        method: 'POST',
+        headers: setReqHeaders({ 'Content-Type': 'application/json' }),
+        body: JSON.stringify(query)
+      }).then((response) => {
+        return response.json();
+      }).then((response) => {
+        if (!response.success) {
+          return reject(response);
+        }
+        return resolve(response);
+      }).catch((error) => {
+        reject(error);
+      });
+    });
+  },
+
+  /**
    * Updates a user
    * @param {Object} user - The updated user object
    */
