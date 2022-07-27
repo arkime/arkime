@@ -20,6 +20,7 @@ LUA=5.3.6
 DAQ=2.0.7
 NODE=16.16.0
 NGHTTP2=1.44.0
+ZSTD=1.5.2
 
 TDIR="/opt/arkime"
 DOPFRING=0
@@ -29,6 +30,7 @@ DONODE=1
 DOINSTALL=0
 DORMINSTALL=0
 DOTHIRDPARTY=1
+BUILDZSTD=0
 
 while :
 do
@@ -104,6 +106,10 @@ UNAME="$(uname)"
 # Installing dependencies
 echo "ARKIME: Installing Dependencies"
 if [ -f "/etc/redhat-release" ] || [ -f "/etc/system-release" ]; then
+  . /etc/os-release
+  if [ "$VERSION_ID" = "7" ]; then
+      BUILDZSTD=1
+  fi
   sudo yum -y install wget curl pcre pcre-devel pkgconfig flex bison gcc-c++ zlib-devel e2fsprogs-devel openssl-devel file-devel make gettext libuuid-devel perl-JSON bzip2-libs bzip2-devel perl-libwww-perl libpng-devel xz libffi-devel readline-devel libtool libyaml-devel perl-Socket6 perl-Test-Differences libzstd-devel
   if [ $? -ne 0 ]; then
     echo "ARKIME: yum failed"
@@ -320,6 +326,24 @@ else
       fi
     else
       echo "ARKIME: Not rebuilding daq"
+    fi
+  fi
+
+  # zstd
+  if [ $BUILDZSTD -eq 1]; then
+    if [ ! -f "zstd-$ZSTD.tar.gz" ]; then
+      wget https://github.com/facebook/zstd/releases/download/v$ZSTD/zstd-$ZSTD.tar.gz
+    fi
+
+    if [ ! -f "zstd-$ZSTD/lib/libzstd.a" ]; then
+      tar zxf zstd-$ZSTD.tar.gz
+      ( cd zstd-$ZSTD; $MAKE)
+      if [ $? -ne 0 ]; then
+        echo "ARKIME: $MAKE failed"
+        exit 1
+      fi
+    else
+      echo "ARKIME: Not rebuilding zstd"
     fi
   fi
 
