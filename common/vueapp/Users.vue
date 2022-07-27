@@ -492,7 +492,6 @@ export default {
     },
     updateRoleAssigners ({ newSelection }, roleId) {
       const role = this.users.find(u => u.userId === roleId);
-      console.log(role, newSelection, roleId);
       this.$set(role, 'roleAssigners', newSelection);
       this.userHasChanged(roleId);
     },

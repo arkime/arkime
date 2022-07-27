@@ -793,7 +793,7 @@ export default {
         this.$router.push({ query: { ...this.$route.query, view: undefined } });
       };
 
-      if (typeof viewParam !== 'string' || viewParam === '' || viewParam === null) {
+      if (typeof viewParam !== 'string' || viewParam === '') {
         console.log(`WARNING -- Invalid view '${viewParam}' from query parameter... defaulting to current integrations.`);
         removeViewParam();
         return;

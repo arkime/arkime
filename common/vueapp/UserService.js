@@ -27,8 +27,8 @@ export default {
 
   /**
    * Searches for users
-   * @param {Object} query - The query to search for users
-   *                         {roleId:"role:something",filter:"",start:0,length:50}
+   * @param {Object} query - The query to search for limited user info (userId, userName, and whether they have some role)
+   *                         {roleId:"role:something",filter:""}
    */
   searchAssignableUsers (query) {
     return new Promise((resolve, reject) => {
@@ -51,7 +51,7 @@ export default {
 
   /**
    * Sets whether a user has a certain role
-   * @param {Object} query - The query to search for users
+   * @param {Object} query - The query to update a user's role
    *                         {userId:"user123",roleId:"role:something",newRoleState:true}
    */
   updateUserRole (query) {

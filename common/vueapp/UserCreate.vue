@@ -263,7 +263,6 @@ export default {
     },
     updateNewRoleAssigners ({ newSelection }) {
       this.$set(this.newUser, 'roleAssigners', newSelection);
-      console.log(this.newUser);
     },
     createUser (createRole) {
       this.createError = '';
@@ -292,7 +291,6 @@ export default {
         }
       }
 
-      console.log('creating', user);
       UserService.createUser(user).then((response) => {
         this.newUser = defaultNewUser;
         this.$emit('user-created', response.text);

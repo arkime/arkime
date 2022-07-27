@@ -182,7 +182,7 @@ class User {
    * @param query.noRoles filters out users with ids starting with 'role:', default false
    * @param query.searchFields array of fields (with options "userName", "userId", & "roles") to be used in filter
    * @returns {number} total - The total number of matching users
-   * @returns {ArkimeUsers[]} users - The users in the from->size section
+   * @returns {ArkimeUser[]} users - The users in the from->size section
    */
   static searchUsers (query) {
     if (query.size > 10000) {
@@ -469,12 +469,22 @@ class User {
   };
 
   /**
+   * The Arkime user-info object (information provided to roleAssigners).
+   *
+   * @typedef ArkimeUserInfo
+   * @type {object}
+   * @param {string} userId - The ID of the user.
+   * @param {string} userName - The name of the user (to be displayed in the UI).
+   * @param {boolean | undefined} hasRole - whether the user has the requested role (only if a role was provided)
+   */
+
+  /**
    * POST - /api/users/assignment/list
    *
    * Retrieves a list of users (admin & roleAssigners only).
    * @name /users
    * @returns {boolean} success - True if the request was successful, false otherwise
-   * @returns {ArkimeUser[]} data - The list of users configured.
+   * @returns {ArkimeUserInfo[]} data - The list of users configured.
    * @returns {number} recordsTotal - The total number of users.
    * @returns {number} recordsFiltered - The number of users returned in this result.
    */
@@ -917,7 +927,7 @@ class User {
   }
 
   /**
-   *
+   * Denies access if the requesting user lacks the required role
    */
   static checkRole (role) {
     return async (req, res, next) => {
@@ -931,6 +941,7 @@ class User {
 
   /**
    * Fails request if user lacks the overriding role and is not included in the given role's roleAssigners
+   *     this expects the roleId to be in the request body (assuming a roleId is provided)
    */
   static checkRoleAssignmentAccess (overridingRole) {
     return async (req, res, next) => {
@@ -1063,9 +1074,9 @@ function sortUsers (users, sortField, sortDescending) {
 // Filter Users
 /******************************************************************************/
 function filterUsers (users, filter, searchFields, noRoles) {
-  const validSearchUsers = searchFields
+  const validSearchFields = searchFields
     .filter(field => field === 'userId' || field === 'userName' || field === 'roles');
-  const usingFilter = filter && validSearchUsers.length;
+  const usingFilter = filter && validSearchFields.length;
   if (!noRoles && !usingFilter) {
     return users; // nothing to filter on
   }
@@ -1076,7 +1087,7 @@ function filterUsers (users, filter, searchFields, noRoles) {
     if (noRoles && user.userId.startsWith('role:')) { return false; }
 
     // filter searched fields
-    return (!usingFilter || validSearchUsers.any(field => user[field].match(re)));
+    return (!usingFilter || validSearchFields.any(field => user[field].match(re)));
   });
 }
 
@@ -1164,10 +1175,10 @@ class UserESImplementation {
     }
 
     if (query.filter && query.searchFields.length) {
-      const filters = query.searchFields
+      const searchFilters = query.searchFields
         .filter(field => field === 'userId' || field === 'userName' || field === 'roles')
         .map(validField => { return { wildcard: { [validField]: '*' + query.filter + '*' } }; });
-      if (filters.length) { esQuery.query.bool.should = filters; }
+      if (searchFilters.length) { esQuery.query.bool.should = searchFilters; }
     }
 
     if (query.sortField) {
