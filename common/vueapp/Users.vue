@@ -15,7 +15,7 @@
             type="text"
             debounce="400"
             v-model="searchTerm"
-            placeholder="Begin typing to search for users by name, id, or roles"
+            placeholder="Begin typing to search for users by name, id, or role"
           />
           <template #append>
             <b-button

@@ -182,7 +182,7 @@ test('users page user crud', async () => {
   await fireEvent.click(cancelBtn);
 
   // search users ---------------------------------------------------------- //
-  const searchInput = getByPlaceholderText('Begin typing to search for users by name');
+  const searchInput = getByPlaceholderText('Begin typing to search for users by name, id, or role');
 
   await fireEvent.update(searchInput, 'testuserid'); // update search input
 
