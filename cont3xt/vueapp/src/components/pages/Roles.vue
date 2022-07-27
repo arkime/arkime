@@ -49,8 +49,8 @@
           <UserDropdown :selected-tooltip="true"
             :role-id="data.item.value" @selected-users-updated="updateUsers"
             :request-role-status="true" :initialize-selection-with-role="true"
-            v-slot="{ count, filter }">
-            {{ count }} {{ count === 1 ? 'user' : 'users' }} with <strong>{{ data.item.text }}</strong>{{ filter ? ` (that match${count === 1 ? 'es' : ''} filter: "${filter}")` : '' }}
+            v-slot="{ count, filter, unknown }">
+            {{ userCountMemberString(count, unknown) }} with <strong>{{ data.item.text }}</strong>{{ filter ? ` (that match${count === 1 ? 'es' : ''} filter: "${filter}")` : '' }}
           </UserDropdown>
         </template> <!--   /members cell     -->
       </b-table>
@@ -104,6 +104,10 @@ export default {
         roleId,
         newRoleState: changedUser.newState
       });
+    },
+    userCountMemberString (count, unknown) {
+      // the text shown on the member dropdowns
+      return `${unknown ? '?' : count} ${count === 1 ? 'user' : 'users'}`;
     }
   }
 };

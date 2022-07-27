@@ -9,37 +9,40 @@
 
       <!--   Text on dropdown (configurable via default slot)   -->
       <template #button-content>
-        <slot :count="localSelectedUsers.length" :filter="searchTerm">
+        <slot :count="localSelectedUsers.length" :filter="searchTerm" :unknown="loading || error">
           {{ getUsersStr() }}
         </slot>
       </template><!--   /Text on dropdown (configurable via default slot)   -->
 
       <b-dropdown-form>
         <!--    search bar    -->
-        <b-input-group size="sm" class="sticky-top hide-behind-search">
-          <template #prepend>
-            <b-input-group-text>
-              <span class="fa fa-search fa-fw" />
-            </b-input-group-text>
-          </template>
-          <b-form-input
-              autofocus
-              type="text"
-              debounce="400"
-              v-model="searchTerm"
-              placeholder="Begin typing to search for users by name or id"
-          />
-          <template #append>
-            <b-button
-                :disabled="!searchTerm"
-                @click="searchTerm = ''"
-                variant="outline-secondary"
-                v-b-tooltip.hover="'Clear search'">
-              <span class="fa fa-close" />
-            </b-button>
-          </template>
-        </b-input-group><!--    /search bar    -->
+        <div class="w-100 sticky-top dropdown-sticky-search-bar-container">
+          <b-input-group size="sm" class="hide-behind-search dropdown-sticky-search-bar">
+            <template #prepend>
+              <b-input-group-text>
+                <span class="fa fa-search fa-fw" />
+              </b-input-group-text>
+            </template>
+            <b-form-input
+                autofocus
+                type="text"
+                debounce="400"
+                v-model="searchTerm"
+                placeholder="Begin typing to search for users by name or id"
+            />
+            <template #append>
+              <b-button
+                  :disabled="!searchTerm"
+                  @click="searchTerm = ''"
+                  variant="outline-secondary"
+                  v-b-tooltip.hover="'Clear search'">
+                <span class="fa fa-close" />
+              </b-button>
+            </template>
+          </b-input-group>
+        </div><!--    /search bar    -->
 
+        <div class="w-100 dropdown-checkbox-pad">
           <!-- loading -->
           <template v-if="loading">
             <div class="mt-3 text-center">
@@ -48,8 +51,16 @@
             </div>
           </template> <!-- /loading -->
 
+          <!--    error      -->
+          <template v-else-if="error">
+            <div class="mt-3 alert alert-warning">
+              <span class="fa fa-exclamation-triangle" />&nbsp;
+              {{ error }}
+            </div>
+          </template><!--    /error      -->
+
           <!--     user checkboxes     -->
-          <b-form-checkbox-group v-if="!loading" class="d-flex flex-column"
+          <b-form-checkbox-group v-else class="d-flex flex-column"
                                  v-model="localSelectedUsers">
             <b-form-checkbox
                 :key="user.userId"
@@ -59,6 +70,7 @@
               {{ user.userName }} ({{ user.userId }})
             </b-form-checkbox>
           </b-form-checkbox-group><!--     /user checkboxes     -->
+        </div>
       </b-dropdown-form>
     </b-dropdown>
   </div>
@@ -149,5 +161,10 @@ export default {
 .hide-behind-search {
   padding-top: 0.5rem !important;
   background-color: var(--color-background) !important;
+}
+
+/* allows different apps to customize compactness of their user dropdowns */
+.dropdown-sticky-search-bar-container, .dropdown-checkbox-pad {
+  padding-inline: 1.5rem;
 }
 </style>

@@ -104,6 +104,10 @@ body {
   padding-top: 0 !important;
 }
 
+.users-dropdown form {
+  padding-inline: 0 !important;
+}
+
 /* xs input groups */
 .input-group-xs > .form-control,
 .input-group-xs > .custom-select,

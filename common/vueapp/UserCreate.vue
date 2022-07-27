@@ -105,7 +105,7 @@
             </UserDropdown>
             <span
                 class="fa fa-info-circle fa-lg cursor-help ml-2"
-                v-b-tooltip.hover="'These users will be able to manage who has this role'"
+                v-b-tooltip.hover="'These users can manage who has this role'"
             />
           </template>
         </div>
