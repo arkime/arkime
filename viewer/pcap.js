@@ -22,6 +22,7 @@ const fs = require('fs');
 const cryptoLib = require('crypto');
 const ipaddr = require('ipaddr.js');
 const zlib = require('zlib');
+const { decompressSync } = require('@xingrz/cppzst');
 
 const Pcap = module.exports = function Pcap (key) {
   this.key = key;
@@ -114,6 +115,11 @@ Pcap.prototype.open = function (info) {
   if (info.uncompressedBits) {
     this.uncompressedBits = info.uncompressedBits;
     this.uncompressedBitsSize = Math.pow(2, this.uncompressedBits);
+    this.compression = 'gzip';
+  }
+
+  if (info.compression) {
+    this.compression = info.compression;
   }
 
   if (info.iv) {
@@ -207,7 +213,11 @@ Pcap.prototype.readHeader = function (cb) {
   };
 
   if (this.uncompressedBits) {
-    this.headBuffer = zlib.gunzipSync(this.headBuffer, { finishFlush: zlib.constants.Z_SYNC_FLUSH });
+    if (this.compression === 'gzip') {
+      this.headBuffer = zlib.gunzipSync(this.headBuffer, { finishFlush: zlib.constants.Z_SYNC_FLUSH });
+    } else if (this.compression === 'zstd') {
+      this.headBuffer = decompressSync(this.headBuffer);
+    }
   }
 
   // Actual pcap header is 24, that is all we need
@@ -284,6 +294,8 @@ Pcap.prototype.readPacketInternal = function (posArg, hpLenArg, cb) {
   hpLen = 256 * Math.ceil((hpLen + insideOffset + posoffset) / 256);
   const buffer = Buffer.alloc(hpLen);
 
+  // console.log(`readPacketInternal pos ${pos} posArg ${posArg} hpLen ${hpLen} hpLenArg ${hpLenArg} posoffset ${posoffset} insideoffset ${insideOffset}`);
+
   try {
     // Try and read full packet and header in one read
     fs.read(this.fd, buffer, 0, buffer.length, pos, (err, bytesRead, readBuffer) => {
@@ -311,7 +323,11 @@ Pcap.prototype.readPacketInternal = function (posArg, hpLenArg, cb) {
 
       // Uncompress if needed
       if (this.uncompressedBits) {
-        readBuffer = zlib.inflateRawSync(readBuffer, { finishFlush: zlib.constants.Z_SYNC_FLUSH });
+        if (this.compression === 'gzip') {
+          readBuffer = zlib.inflateRawSync(readBuffer, { finishFlush: zlib.constants.Z_SYNC_FLUSH });
+        } else if (this.compression === 'zstd') {
+          readBuffer = decompressSync(readBuffer);
+        }
       }
 
       // Reset readBuffer to where the packet actually starts inside the buffer

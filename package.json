@@ -7,6 +7,7 @@
   },
   "dependencies": {
     "@elastic/elasticsearch": "7.10.0",
+    "@xingrz/cppzst": "^2.1.0-alpha.8",
     "arkime-notifme-sdk": "^1.11.1",
     "async": "^3.2.3",
     "axios": "^0.21.4",
