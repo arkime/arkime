@@ -32,7 +32,7 @@ export default {
    */
   searchAssignableUsers (query) {
     return new Promise((resolve, reject) => {
-      fetch('api/users/assignment/list', {
+      fetch('api/users/list', {
         method: 'POST',
         headers: setReqHeaders({ 'Content-Type': 'application/json' }),
         body: JSON.stringify(query)
@@ -55,11 +55,13 @@ export default {
    *                         {userId:"user123",roleId:"role:something",newRoleState:true}
    */
   updateUserRole (query) {
+    const { userId, roleId, newRoleState } = query;
+
     return new Promise((resolve, reject) => {
-      fetch(`/api/user/${query.userId}/assignment`, {
+      fetch(`/api/user/${userId}/assignment`, {
         method: 'POST',
         headers: setReqHeaders({ 'Content-Type': 'application/json' }),
-        body: JSON.stringify(query)
+        body: JSON.stringify({ roleId, newRoleState })
       }).then((response) => {
         return response.json();
       }).then((response) => {

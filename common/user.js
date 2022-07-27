@@ -476,13 +476,14 @@ class User {
    * @type {object}
    * @param {string} userId - The ID of the user.
    * @param {string} userName - The name of the user (to be displayed in the UI).
-   * @param {boolean | undefined} hasRole - whether the user has the requested role (only if a role was provided)
+   * @param {boolean | undefined} hasRole - whether the user has the requested role
+   *            (only if a role was provided & the requester is a roleAssigner for it)
    */
 
   /**
-   * POST - /api/users/assignment/list
+   * POST - /api/users/list
    *
-   * Retrieves a list of users (admin & roleAssigners only).
+   * Retrieves a list of users (non-admin usable [with role status returned only for roleAssigners]).
    * @name /users
    * @returns {boolean} success - True if the request was successful, false otherwise
    * @returns {ArkimeUserInfo[]} data - The list of users configured.
@@ -523,7 +524,7 @@ class User {
         data: userInfo
       });
     }).catch((err) => {
-      console.log(`ERROR - ${req.method} /api/users/assignment/list`, util.inspect(err, false, 50));
+      console.log(`ERROR - ${req.method} /api/users/list`, util.inspect(err, false, 50));
       return res.send({
         success: true,
         recordsTotal: 0,
@@ -738,10 +739,9 @@ class User {
    * @returns {string} text - The success/error message to (optionally) display to the user.
    */
   static apiUpdateUserRole (req, res) {
+    const userId = req.params.id;
     const roleId = req.body.roleId;
     const newRoleState = req.body.newRoleState;
-
-    const userId = req.body.userId || req.params.id;
 
     if (!userId) {
       return res.serverError(403, 'Missing userId');
@@ -941,18 +941,15 @@ class User {
   }
 
   /**
-   * Fails request if user lacks the overriding role and is not included in the given role's roleAssigners
-   *     this expects the roleId to be in the request body (assuming a roleId is provided)
+   * Fails request if a roleId is given in the body, but the user is not a roleAssigner for the given role
    */
-  static checkRoleAssignmentAccess (overridingRole) {
-    return async (req, res, next) => {
-      const role = req.body.roleId;
-      if (!req.user.hasAllRole('usersAdmin') && (role == null || !(await req.user.getAssignableRoles(req.user.userId)).includes(role))) {
-        console.log(`Permission denied to ${req.user.userId} while requesting resource: ${req._parsedUrl.pathname}, for assignment-access to role ${role}`);
-        return res.serverError(403, 'You do not have permission to access this resource');
-      }
-      next();
-    };
+  static async checkAssignableRole (req, res, next) {
+    const role = req.body.roleId;
+    if (role != null && !(await req.user.getAssignableRoles(req.user.userId)).includes(role)) {
+      console.log(`Permission denied to ${req.user.userId} while requesting resource: ${req._parsedUrl.pathname}, for assignment-access to role ${role}`);
+      return res.serverError(403, 'You do not have permission to access this resource');
+    }
+    next();
   }
 
   /**
@@ -1076,7 +1073,7 @@ function sortUsers (users, sortField, sortDescending) {
 /******************************************************************************/
 function filterUsers (users, filter, searchFields, noRoles) {
   const validSearchFields = searchFields
-    .filter(field => field === 'userId' || field === 'userName' || field === 'roles');
+    ?.filter(field => field === 'userId' || field === 'userName' || field === 'roles') || [];
   const usingFilter = filter && validSearchFields.length;
   if (!noRoles && !usingFilter) {
     return users; // nothing to filter on

@@ -1237,6 +1237,12 @@ app.post( // get users endpoint
   User.apiGetUsers
 );
 
+app.post( // (non-admin) list users for (with role status for roleAssigners)
+  '/api/users/list',
+  [ArkimeUtil.noCacheJson, checkCookieToken, User.checkAssignableRole],
+  User.apiGetAssignableUsers
+);
+
 app.post( // update user password endpoint
   ['/api/user/password', '/user/password/change'],
   [ArkimeUtil.noCacheJson, checkCookieToken, logAction(), ArkimeUtil.getSettingUserDb],
@@ -1315,6 +1321,12 @@ app.post( // update user endpoint
   User.apiUpdateUser
 );
 
+app.post( // assign or un-assign role from a user
+  '/api/user/:id/assignment',
+  [ArkimeUtil.noCacheJson, checkCookieToken, User.checkAssignableRole],
+  User.apiUpdateUserRole
+);
+
 app.get( // user state endpoint
   ['/api/user/state/:name', '/state/:name'],
   [ArkimeUtil.noCacheJson, checkCookieToken, logAction()],
@@ -1337,18 +1349,6 @@ app.get( // user roles endpoint
   '/api/user/roles',
   [ArkimeUtil.noCacheJson, checkCookieToken],
   User.apiRoles
-);
-
-app.post( // list users for roleAssigners
-  '/api/users/assignment/list',
-  [ArkimeUtil.noCacheJson, checkCookieToken, User.checkRoleAssignmentAccess('usersAdmin')],
-  User.apiGetAssignableUsers
-);
-
-app.post( // assign or un-assign role from a user
-  '/api/user/:id/assignment',
-  [ArkimeUtil.noCacheJson, checkCookieToken, User.checkRoleAssignmentAccess('usersAdmin')],
-  User.apiUpdateUserRole
 );
 
 // view apis ------------------------------------------------------------------

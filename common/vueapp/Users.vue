@@ -545,7 +545,7 @@ export default {
 
         // update the current user if they were changed or if their assignableRoles should be changed
         if (this.currentUser.userId === user.userId || currentUserRoleAssignmentChanged) {
-          this.$emit('update-current-user');
+          this.emitCurrentUserUpdate();
         }
       }).catch((error) => {
         this.showMessage({ variant: 'danger', message: error.text });
@@ -555,6 +555,9 @@ export default {
       UserService.deleteUser(user).then((response) => {
         this.users.splice(index, 1);
         this.showMessage({ variant: 'success', message: response.text });
+        if (user.roleAssigners?.includes(this.currentUser.userId)) {
+          this.emitCurrentUserUpdate(); // update current user if one of their assignable roles is deleted
+        }
       }).catch((error) => {
         this.showMessage({ variant: 'danger', message: error.text });
       });
@@ -628,12 +631,15 @@ export default {
       this.reloadUsers();
       this.$emit('update-roles');
       if (user.roleAssigners?.includes(this.currentUser.userId)) {
-        this.$emit('update-current-user'); // update current user if they were made an assigner
+        this.emitCurrentUserUpdate(); // update current user if they were made an assigner
       }
       this.$bvModal.hide('create-user-modal');
       this.showMessage({ variant: 'success', message });
     },
     /* helper functions ---------------------------------------------------- */
+    emitCurrentUserUpdate () {
+      this.$emit('update-current-user');
+    },
     showMessage ({ variant, message }) {
       this.msg = message;
       this.msgType = variant;
