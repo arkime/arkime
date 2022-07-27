@@ -293,7 +293,7 @@ export default {
 
       UserService.createUser(user).then((response) => {
         this.newUser = defaultNewUser;
-        this.$emit('user-created', response.text);
+        this.$emit('user-created', response.text, user);
       }).catch((error) => {
         this.createError = error.text;
       });

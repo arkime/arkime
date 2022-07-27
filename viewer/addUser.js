@@ -66,8 +66,7 @@ function main () {
     removeEnabled: false,
     packetSearch: false,
     welcomeMsgNum: 0,
-    settings: {},
-    roleAssigners: []
+    settings: {}
   };
 
   const roles = new Set();

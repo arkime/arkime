@@ -539,8 +539,12 @@ export default {
         this.showMessage({ variant: 'success', message: response.text });
         this.reloadUsers();
 
-        // update the current user if they were changed
-        if (this.currentUser.userId === user.userId) {
+        const oldUser = this.dbUserList.find(u => u.userId === user.userId);
+        const currentUserRoleAssignmentChanged =
+            user.roleAssigners?.includes(this.currentUser.userId) !== oldUser.roleAssigners?.includes(this.currentUser.userId);
+
+        // update the current user if they were changed or if their assignableRoles should be changed
+        if (this.currentUser.userId === user.userId || currentUserRoleAssignmentChanged) {
           this.$emit('update-current-user');
         }
       }).catch((error) => {
@@ -620,9 +624,12 @@ export default {
         this.showMessage({ variant: 'danger', message: error.text || error });
       });
     },
-    userCreated (message) {
+    userCreated (message, user) {
       this.reloadUsers();
       this.$emit('update-roles');
+      if (user.roleAssigners?.includes(this.currentUser.userId)) {
+        this.$emit('update-current-user'); // update current user if they were made an assigner
+      }
       this.$bvModal.hide('create-user-modal');
       this.showMessage({ variant: 'success', message });
     },

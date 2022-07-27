@@ -370,6 +370,7 @@ class User {
 
     const assignableRoles = await req.user.getAssignableRoles(req.user.userId);
     clone.assignableRoles = [...assignableRoles];
+    clone.canAssignRoles = clone.assignableRoles.length > 0;
 
     if (getCurrentUserCB) {
       getCurrentUserCB(req.user, clone);

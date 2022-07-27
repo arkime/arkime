@@ -113,7 +113,7 @@ export default {
     return {
       menuOrder: [
         'sessions', 'spiview', 'spigraph', 'connections', 'hunt',
-        'files', 'stats', 'history', 'upload', 'settings', 'users'
+        'files', 'stats', 'history', 'upload', 'settings', 'users', 'roles'
       ]
     };
   },
@@ -132,7 +132,8 @@ export default {
         connections: { title: 'Connections', link: 'connections', hotkey: ['Connections'] },
         files: { title: 'Files', link: 'files', permission: 'hideFiles', reverse: true },
         stats: { title: 'Stats', link: 'stats', permission: 'hideStats', reverse: true },
-        upload: { title: 'Upload', link: 'upload', permission: 'canUpload' }
+        upload: { title: 'Upload', link: 'upload', permission: 'canUpload' },
+        roles: { title: 'Roles', link: 'roles', permission: 'canAssignRoles' }
       };
 
       if (!this.$constants.MOLOCH_MULTIVIEWER) {

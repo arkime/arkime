@@ -5,6 +5,7 @@ import Stats from '@/components/stats/Stats';
 import Help from '@/components/help/Help';
 import Files from '@/components/files/Files';
 import Users from '@/components/users/Users';
+import Roles from '@/components/roles/Roles';
 import ArkimeHistory from '@/components/history/History';
 import Sessions from '@/components/sessions/Sessions';
 import Spiview from '@/components/spiview/Spiview';
@@ -60,6 +61,11 @@ const router = new Router({
       path: '/users',
       name: 'Users',
       component: Users
+    },
+    {
+      path: '/roles',
+      name: 'Roles',
+      component: Roles
     },
     {
       path: '/history',
