@@ -210,14 +210,14 @@ app.put('/api/linkGroup/:id', [jsonParser, checkCookieToken], LinkGroup.apiUpdat
 app.delete('/api/linkGroup/:id', [jsonParser, checkCookieToken], LinkGroup.apiDelete);
 
 app.get('/api/roles', [checkCookieToken], User.apiRoles);
-app.post('/api/users/assignment/list', [jsonParser, checkCookieToken, User.checkRoleAssignmentAccess('usersAdmin')], User.apiGetAssignableUsers);
-app.post('/api/user/assignment/role', [jsonParser, checkCookieToken, User.checkRoleAssignmentAccess('usersAdmin')], User.apiUpdateUserRole);
 app.get('/api/user', User.apiGetUser);
 app.post('/api/users', [jsonParser, User.checkRole('usersAdmin'), setCookie], User.apiGetUsers);
 app.post('/api/user', [jsonParser, checkCookieToken, User.checkRole('usersAdmin')], User.apiCreateUser);
 app.post('/api/user/password', [jsonParser, checkCookieToken, ArkimeUtil.getSettingUserDb], User.apiUpdateUserPassword);
 app.delete('/api/user/:id', [jsonParser, checkCookieToken, User.checkRole('usersAdmin')], User.apiDeleteUser);
 app.post('/api/user/:id', [jsonParser, checkCookieToken, User.checkRole('usersAdmin')], User.apiUpdateUser);
+app.post('/api/users/assignment/list', [jsonParser, checkCookieToken, User.checkRoleAssignmentAccess('usersAdmin')], User.apiGetAssignableUsers);
+app.post('/api/user/:id/assignment', [jsonParser, checkCookieToken, User.checkRoleAssignmentAccess('usersAdmin')], User.apiUpdateUserRole);
 
 app.get('/api/integration', Integration.apiList);
 app.post('/api/integration/search', [jsonParser], Integration.apiSearch);

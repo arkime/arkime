@@ -7,14 +7,15 @@
         class="users-dropdown"
         v-b-tooltip.topright="selectedTooltip ? getUsersStr() : ''">
 
+      <!--   Text on dropdown (configurable via default slot)   -->
       <template #button-content>
         <slot :count="localSelectedUsers.length" :filter="searchTerm">
           {{ getUsersStr() }}
         </slot>
-      </template>
+      </template><!--   /Text on dropdown (configurable via default slot)   -->
 
-      <b-dropdown-form v-if="!loading">
-
+      <b-dropdown-form>
+        <!--    search bar    -->
         <b-input-group size="sm" class="sticky-top hide-behind-search">
           <template #prepend>
             <b-input-group-text>
@@ -37,18 +38,27 @@
               <span class="fa fa-close" />
             </b-button>
           </template>
-        </b-input-group>
+        </b-input-group><!--    /search bar    -->
 
-        <b-form-checkbox-group v-if="!loading" class="d-flex flex-column"
-                               v-model="localSelectedUsers">
-          <b-form-checkbox
-              :key="user.userId"
-              :value="user.userId"
-              v-for="user in users"
-              @change="updateUsers(user.userId, $event)">
-            {{ user.userName }} ({{ user.userId }})
-          </b-form-checkbox>
-        </b-form-checkbox-group>
+          <!-- loading -->
+          <template v-if="loading">
+            <div class="mt-3 text-center">
+              <span class="fa fa-circle-o-notch fa-spin fa-2x" />
+              <p>Loading users...</p>
+            </div>
+          </template> <!-- /loading -->
+
+          <!--     user checkboxes     -->
+          <b-form-checkbox-group v-if="!loading" class="d-flex flex-column"
+                                 v-model="localSelectedUsers">
+            <b-form-checkbox
+                :key="user.userId"
+                :value="user.userId"
+                v-for="user in users"
+                @change="updateUsers(user.userId, $event)">
+              {{ user.userName }} ({{ user.userId }})
+            </b-form-checkbox>
+          </b-form-checkbox-group><!--     /user checkboxes     -->
       </b-dropdown-form>
     </b-dropdown>
   </div>

@@ -56,7 +56,7 @@ export default {
    */
   updateUserRole (query) {
     return new Promise((resolve, reject) => {
-      fetch('api/user/assignment/role', {
+      fetch(`/api/user/${query.userId}/assignment`, {
         method: 'POST',
         headers: setReqHeaders({ 'Content-Type': 'application/json' }),
         body: JSON.stringify(query)

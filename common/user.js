@@ -201,7 +201,7 @@ class User {
       const user = Object.assign(new User(), data);
       cleanUser(user);
       user.settings = user.settings ?? {};
-      user.expandRoles();
+      await user.expandRoles();
       if (readOnly) {
         user.roles = user.roles.filter(role => role === 'usersAdmin');
       }
@@ -719,10 +719,10 @@ class User {
   };
 
   /**
-   * POST - /api/user/assignment/role
+   * POST - /api/user/:id/assignment
    *
-   * Updates whether a user has a certain role (admin only).
-   * @name /user/assign/:id
+   * Updates whether a user has a certain role (admin & roleAssigners only).
+   * @name /user/:id/assignment
    * @returns {boolean} success - Whether the update user operation was successful.
    * @returns {string} text - The success/error message to (optionally) display to the user.
    */
@@ -750,7 +750,7 @@ class User {
 
     User.getUser(userId, (err, user) => {
       if (err || !user) {
-        console.log(`ERROR - ${req.method} /api/user/assignment/role/`, util.inspect(err, false, 50), user);
+        console.log(`ERROR - ${req.method} /api/user/${userId}/assignment`, util.inspect(err, false, 50), user);
         return res.serverError(403, 'User not found');
       }
 
@@ -776,7 +776,7 @@ class User {
         }
 
         if (err) {
-          console.log(`ERROR - ${req.method} /api/user/assignment/role`, util.inspect(err, false, 50), user, info);
+          console.log(`ERROR - ${req.method} /api/user/${userId}/assignment`, util.inspect(err, false, 50), user, info);
           return res.serverError(500, 'Error updating user role:' + err);
         }
 

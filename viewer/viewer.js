@@ -1346,7 +1346,7 @@ app.post( // list users for roleAssigners
 );
 
 app.post( // assign or un-assign role from a user
-  '/api/user/assignment/role',
+  '/api/user/:id/assignment',
   [ArkimeUtil.noCacheJson, checkCookieToken, User.checkRoleAssignmentAccess('usersAdmin')],
   User.apiUpdateUserRole
 );

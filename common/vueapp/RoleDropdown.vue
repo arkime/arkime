@@ -3,7 +3,7 @@
     size="sm"
     class="roles-dropdown"
     :text="displayText || getRolesStr(localSelectedRoles)">
-    <b-dropdown-form>
+    <b-dropdown-form class="d-flex flex-column">
       <b-form-checkbox-group
         v-model="localSelectedRoles">
         <b-form-checkbox
