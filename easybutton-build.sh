@@ -330,7 +330,7 @@ else
   fi
 
   # zstd
-  if [ $BUILDZSTD -eq 1]; then
+  if [ $BUILDZSTD -eq 1 ]; then
     if [ ! -f "zstd-$ZSTD.tar.gz" ]; then
       wget https://github.com/facebook/zstd/releases/download/v$ZSTD/zstd-$ZSTD.tar.gz
     fi
