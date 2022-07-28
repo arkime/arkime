@@ -56,7 +56,6 @@ function main () {
     const kdecipher = cryptoLib.createDecipher('aes-192-cbc', kek);
     const encKey = Buffer.concat([kdecipher.update(Buffer.from(info.dek, 'hex')), kdecipher.final()]);
 
-
     const r = fs.createReadStream(process.argv[2]);
 
     if (info.encoding === 'aes-256-ctr') {
