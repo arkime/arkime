@@ -1237,10 +1237,10 @@ app.post( // get users endpoint
   User.apiGetUsers
 );
 
-app.post( // (non-admin) list users for (with role status for roleAssigners)
-  '/api/users/list',
+app.post( // (non-admin) list users (with role status for roleAssigners)
+  '/api/users/min',
   [ArkimeUtil.noCacheJson, checkCookieToken, User.checkAssignableRole],
-  User.apiGetAssignableUsers
+  User.apiGetUsersMin
 );
 
 app.post( // update user password endpoint

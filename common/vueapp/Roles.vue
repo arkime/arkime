@@ -83,14 +83,8 @@ export default {
     UserDropdown
   },
   props: {
-    currentUser: {
-      type: Object,
-      required: true
-    },
-    cont3xtDarkTheme: {
-      type: Boolean,
-      required: false
-    }
+    currentUser: Object,
+    cont3xtDarkTheme: Boolean
   },
   data () {
     return {

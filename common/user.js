@@ -182,7 +182,7 @@ class User {
    * @param query.noRoles filters out users with ids starting with 'role:', default false
    * @param query.searchFields array of fields (with options "userName", "userId", & "roles") to be used in filter
    * @returns {number} total - The total number of matching users
-   * @returns {ArkimeUser[]} users - The users in the from->size section
+   * @returns {Promise<{error: Error, users: ArkimeUser[], total: number}>} users - The users in the from->size section
    */
   static searchUsers (query) {
     if (query.size > 10000) {
@@ -441,7 +441,7 @@ class User {
     if (req.body.filter) {
       query.filter = req.body.filter;
     }
-    query.noRoles = !!req.body.noRoles;
+    query.noRoles = false;
 
     query.sortField = req.body.sortField || 'userId';
     query.sortDescending = req.body.desc === true;
@@ -461,7 +461,7 @@ class User {
     }).catch((err) => {
       console.log(`ERROR - ${req.method} /api/users`, util.inspect(err, false, 50));
       return res.send({
-        success: true,
+        success: false,
         recordsTotal: 0,
         recordsFiltered: 0,
         data: []
@@ -470,7 +470,7 @@ class User {
   };
 
   /**
-   * The Arkime user-info object (information provided to roleAssigners).
+   * The Arkime user-info object (information provided to roleAssigners or non-admin users).
    *
    * @typedef ArkimeUserInfo
    * @type {object}
@@ -481,7 +481,7 @@ class User {
    */
 
   /**
-   * POST - /api/users/list
+   * POST - /api/users/min
    *
    * Retrieves a list of users (non-admin usable [with role status returned only for roleAssigners]).
    * @name /users
@@ -490,10 +490,10 @@ class User {
    * @returns {number} recordsTotal - The total number of users.
    * @returns {number} recordsFiltered - The number of users returned in this result.
    */
-  static apiGetAssignableUsers (req, res, next) {
+  static apiGetUsersMin (req, res, next) {
     const query = {
-      from: +req.body.start || 0,
-      size: +req.body.length || 10000,
+      from: 0,
+      size: 10000,
       noRoles: true,
       sortField: 'userId',
       sortDescending: false
@@ -501,10 +501,7 @@ class User {
     if (req.body.filter) { query.filter = req.body.filter; }
     query.searchFields = ['userId', 'userName'];
 
-    Promise.all([
-      User.searchUsers(query),
-      User.numberOfUsers()
-    ]).then(([users, total]) => {
+    User.searchUsers(query).then((users) => {
       if (users.error) { throw users.error; }
 
       // since this is accessible to non-userAdmins (i.e. roleAssigners), minimal user-info is returned
@@ -519,16 +516,12 @@ class User {
 
       res.send({
         success: true,
-        recordsTotal: total,
-        recordsFiltered: users.total,
         data: userInfo
       });
     }).catch((err) => {
-      console.log(`ERROR - ${req.method} /api/users/list`, util.inspect(err, false, 50));
+      console.log(`ERROR - ${req.method} /api/users/min`, util.inspect(err, false, 50));
       return res.send({
-        success: true,
-        recordsTotal: 0,
-        recordsFiltered: 0,
+        success: false,
         data: []
       });
     });

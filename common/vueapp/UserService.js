@@ -4,7 +4,7 @@ export default {
   /**
    * Searches for users
    * @param {Object} query - The query to search for users
-   *                         {desc:false,length:50,filter:"",sortField:"userId",start:0,searchFields:["userName","userId","roles"]}
+   *                         {desc:false,start:0,length:50,filter:"",sortField:"userId"}
    */
   searchUsers (query) {
     return new Promise((resolve, reject) => {
@@ -32,7 +32,7 @@ export default {
    */
   searchAssignableUsers (query) {
     return new Promise((resolve, reject) => {
-      fetch('api/users/list', {
+      fetch('api/users/min', {
         method: 'POST',
         headers: setReqHeaders({ 'Content-Type': 'application/json' }),
         body: JSON.stringify(query)

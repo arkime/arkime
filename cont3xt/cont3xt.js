@@ -212,7 +212,7 @@ app.delete('/api/linkGroup/:id', [jsonParser, checkCookieToken], LinkGroup.apiDe
 app.get('/api/roles', [checkCookieToken], User.apiRoles);
 app.get('/api/user', User.apiGetUser);
 app.post('/api/users', [jsonParser, User.checkRole('usersAdmin'), setCookie], User.apiGetUsers);
-app.post('/api/users/list', [jsonParser, checkCookieToken, User.checkAssignableRole], User.apiGetAssignableUsers);
+app.post('/api/users/min', [jsonParser, checkCookieToken, User.checkAssignableRole], User.apiGetUsersMin);
 app.post('/api/user', [jsonParser, checkCookieToken, User.checkRole('usersAdmin')], User.apiCreateUser);
 app.post('/api/user/password', [jsonParser, checkCookieToken, ArkimeUtil.getSettingUserDb], User.apiUpdateUserPassword);
 app.delete('/api/user/:id', [jsonParser, checkCookieToken, User.checkRole('usersAdmin')], User.apiDeleteUser);
