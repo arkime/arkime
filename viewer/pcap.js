@@ -267,7 +267,11 @@ Pcap.prototype.readPacketInternal = function (posArg, hpLenArg, cb) {
 
   // -1 is used to mean first try for this packet
   if (hpLen === -1) {
-    hpLen = 1792;
+    if (this.encoding === 'xor-2048') {
+      hpLen = this.uncompressedBitsSize;
+    } else {
+      hpLen = 2048;
+    }
   }
 
   let insideOffset = 0;

@@ -227,9 +227,8 @@ LOCAL void writer_simple_process_buf(int thread, int closing)
 #ifdef HAVE_ZSTD
         case MOLOCH_COMPRESSION_ZSTD:
             info->file->completedBlockStart += writeSize;
-            ninfo->file->zstd_out.dst = ninfo->buf + ninfo->bufpos;
-            ninfo->file->zstd_out.size = config.pcapWriteSize + MOLOCH_PACKET_MAX_LEN - ninfo->bufpos;
-            ninfo->file->zstd_out.pos = 0;
+            ninfo->file->zstd_out.dst = ninfo->buf;
+            ninfo->file->zstd_out.pos = ninfo->bufpos;
 #endif
         default:
             break;

@@ -56,19 +56,36 @@ function main () {
     const kdecipher = cryptoLib.createDecipher('aes-192-cbc', kek);
     const encKey = Buffer.concat([kdecipher.update(Buffer.from(info.dek, 'hex')), kdecipher.final()]);
 
-    // Setup IV
-    const iv = Buffer.alloc(16);
-    Buffer.from(info.iv, 'hex').copy(iv);
 
-    // Setup streams
     const r = fs.createReadStream(process.argv[2]);
-    const d = cryptoLib.createDecipheriv(info.encoding, encKey, iv);
-    d.on('end', function () {
-      process.exit();
-    });
 
-    // Doit
-    r.pipe(d).pipe(process.stdout);
+    if (info.encoding === 'aes-256-ctr') {
+      // Setup IV
+      const iv = Buffer.alloc(16);
+      Buffer.from(info.iv, 'hex').copy(iv);
+
+      // Setup streams
+      const d = cryptoLib.createDecipheriv(info.encoding, encKey, iv);
+      d.on('end', () => {
+        process.exit();
+      });
+
+      // Doit
+      r.pipe(d).pipe(process.stdout);
+    } else if (info.encoding === 'xor-2048') {
+      let pos = 0;
+      r.on('data', (chunk) => {
+        for (let i = 0; i < chunk.length; i++, pos++) {
+          chunk[i] ^= encKey[pos % 256];
+        }
+        process.stdout.write(chunk);
+      });
+      r.on('end', () => {
+        process.exit();
+      });
+    } else {
+      console.log('Unknown encoding', info.encoding);
+    }
   });
 }
 
