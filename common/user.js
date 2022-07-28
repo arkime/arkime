@@ -1078,7 +1078,7 @@ function filterUsers (users, filter, searchFields, noRoles) {
     if (noRoles && user.userId.startsWith('role:')) { return false; }
 
     // filter searched fields
-    return (!usingFilter || validSearchFields.any(field => user[field].match(re)));
+    return (!usingFilter || validSearchFields.some(field => user[field].match(re)));
   });
 }
 

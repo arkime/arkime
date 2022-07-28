@@ -37,6 +37,7 @@ const props = {
 
 test('users page no users', async () => {
   UserService.searchUsers = jest.fn().mockResolvedValue({ data: [] });
+  UserService.searchUsersMin = jest.fn().mockResolvedValue({ data: [] });
 
   const {
     getByText, getAllByText
@@ -58,6 +59,7 @@ test('users page user crud', async () => {
     recordsTotal: 1,
     recordsFiltered: 1
   });
+  UserService.searchUsersMin = jest.fn().mockResolvedValue({ data: [users[0]].map(u => ({ userId: u.userId, userName: u.userName })) });
   UserService.createUser = jest.fn().mockResolvedValue({
     text: 'Successfully created the user!'
   });
