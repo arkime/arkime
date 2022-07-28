@@ -267,7 +267,8 @@ Pcap.prototype.readPacketInternal = function (posArg, hpLenArg, cb) {
 
   // -1 is used to mean first try for this packet
   if (hpLen === -1) {
-    if (this.encoding === 'xor-2048') {
+    // zstd requires the entire block it seems :(
+    if (this.compression === 'zstd') {
       hpLen = this.uncompressedBitsSize;
     } else {
       hpLen = 2048;
