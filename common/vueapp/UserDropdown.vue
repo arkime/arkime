@@ -3,6 +3,7 @@
     <label v-if="label" :for="`user-dropdown-${roleId}`" class="mb-0 mr-1">{{ label }}</label>
     <b-dropdown
         :id="`user-dropdown-${roleId}`"
+        data-testid="user-dropdown"
         size="sm"
         class="users-dropdown"
         v-b-tooltip.topright="selectedTooltip ? getUsersStr() : ''">
@@ -127,7 +128,7 @@ export default {
         query.roleId = this.roleId;
       }
 
-      UserService.searchAssignableUsers(query).then((response) => {
+      UserService.searchUsersMin(query).then((response) => {
         this.error = '';
         this.loading = false;
         this.users = JSON.parse(JSON.stringify(response.data));

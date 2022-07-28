@@ -30,7 +30,7 @@ export default {
    * @param {Object} query - The query to search for limited user info (userId, userName, and whether they have some role)
    *                         {roleId:"role:something",filter:""}
    */
-  searchAssignableUsers (query) {
+  searchUsersMin (query) {
     return new Promise((resolve, reject) => {
       fetch('api/users/min', {
         method: 'POST',
