@@ -182,7 +182,7 @@ class User {
    * @param query.noRoles filters out users with ids starting with 'role:', default false
    * @param query.searchFields array of fields (with options "userName", "userId", & "roles") to be used in filter
    * @returns {number} total - The total number of matching users
-   * @returns {Promise<{error: Error, users: ArkimeUser[], total: number}>} users - The users in the from->size section
+   * @returns {Promise<{error: Error} | {users: ArkimeUser[], total: number}>} users - The users in the from->size section
    */
   static searchUsers (query) {
     if (query.size > 10000) {
