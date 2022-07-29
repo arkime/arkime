@@ -507,6 +507,41 @@ AC_MSG_RESULT(yes) ])
 AC_SUBST(NGHTTP2_CFLAGS)
 AC_SUBST(NGHTTP2_LIBS)
 
+
+dnl Checks for zstd
+AC_MSG_CHECKING(for zstd)
+AC_ARG_WITH(zstd,
+[  --with-zstd=DIR use zstd build directory],
+[ case "$withval" in
+  yes)
+    AC_CHECK_LIB(zstd, main,,AC_MSG_ERROR(please install zstd library))
+     ;;
+  no)
+     AC_MSG_RESULT(no)
+     ;;
+  *)
+  AC_MSG_RESULT($withval)
+    if test -f $withval/lib/zstd.h -a -f $withval/lib/libzstd.a; then
+      owd=`pwd`
+      if cd $withval; then
+        withval=`pwd`;
+        cd $owd;
+      fi
+      ZSTD_CFLAGS="-I$withval/lib"
+      ZSTD_LIBS="$withval/lib/libzstd.a"
+      AC_DEFINE([HAVE_ZSTD], [1], [Define if libzstd is available])
+    else
+      AC_ERROR(zstd.h or libzstd.a not found in $withval)
+    fi
+    ;;
+esac ], [
+  AC_DEFINE([HAVE_ZSTD], [1], [Define if libzstd is available])
+  ZSTD_CFLAGS=`pkg-config libzstd --cflags`
+  ZSTD_LIBS=`pkg-config libzstd --libs`
+AC_MSG_RESULT(yes) ])
+AC_SUBST(ZSTD_CFLAGS)
+AC_SUBST(ZSTD_LIBS)
+
 AS_IF([test "$prefix" == "NONE"],
     [AC_DEFINE_UNQUOTED(CONFIG_PREFIX,"$ac_default_prefix", [config prefix directory])],
     [AC_DEFINE_UNQUOTED(CONFIG_PREFIX,"$prefix", [config prefix directory])])

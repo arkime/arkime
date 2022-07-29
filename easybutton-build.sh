@@ -20,6 +20,7 @@ LUA=5.3.6
 DAQ=2.0.7
 NODE=16.16.0
 NGHTTP2=1.44.0
+ZSTD=1.5.2
 
 TDIR="/opt/arkime"
 DOPFRING=0
@@ -29,6 +30,7 @@ DONODE=1
 DOINSTALL=0
 DORMINSTALL=0
 DOTHIRDPARTY=1
+BUILDZSTD=0
 
 while :
 do
@@ -104,7 +106,11 @@ UNAME="$(uname)"
 # Installing dependencies
 echo "ARKIME: Installing Dependencies"
 if [ -f "/etc/redhat-release" ] || [ -f "/etc/system-release" ]; then
-  sudo yum -y install wget curl pcre pcre-devel pkgconfig flex bison gcc-c++ zlib-devel e2fsprogs-devel openssl-devel file-devel make gettext libuuid-devel perl-JSON bzip2-libs bzip2-devel perl-libwww-perl libpng-devel xz libffi-devel readline-devel libtool libyaml-devel perl-Socket6 perl-Test-Differences
+  . /etc/os-release
+  if [ "$VERSION_ID" = "7" ]; then
+      BUILDZSTD=1
+  fi
+  sudo yum -y install wget curl pcre pcre-devel pkgconfig flex bison gcc-c++ zlib-devel e2fsprogs-devel openssl-devel file-devel make gettext libuuid-devel perl-JSON bzip2-libs bzip2-devel perl-libwww-perl libpng-devel xz libffi-devel readline-devel libtool libyaml-devel perl-Socket6 perl-Test-Differences libzstd-devel
   if [ $? -ne 0 ]; then
     echo "ARKIME: yum failed"
     exit 1
@@ -112,7 +118,7 @@ if [ -f "/etc/redhat-release" ] || [ -f "/etc/system-release" ]; then
 fi
 
 if [ -f "/etc/debian_version" ]; then
-  sudo apt-get -qq install wget curl libpcre3-dev uuid-dev libmagic-dev pkg-config g++ flex bison zlib1g-dev libffi-dev gettext libgeoip-dev make libjson-perl libbz2-dev libwww-perl libpng-dev xz-utils libffi-dev libssl-dev libreadline-dev libtool libyaml-dev dh-autoreconf libsocket6-perl libtest-differences-perl
+  sudo apt-get -qq install wget curl libpcre3-dev uuid-dev libmagic-dev pkg-config g++ flex bison zlib1g-dev libffi-dev gettext libgeoip-dev make libjson-perl libbz2-dev libwww-perl libpng-dev xz-utils libffi-dev libssl-dev libreadline-dev libtool libyaml-dev dh-autoreconf libsocket6-perl libtest-differences-perl libzstd-dev
   if [ $? -ne 0 ]; then
     echo "ARKIME: apt-get failed"
     exit 1
@@ -323,12 +329,33 @@ else
     fi
   fi
 
+  # zstd
+  if [ $BUILDZSTD -eq 1 ]; then
+    WITHZSTD="--with-zstd=thirdparty/zstd-$ZSTD"
+    if [ ! -f "zstd-$ZSTD.tar.gz" ]; then
+      wget https://github.com/facebook/zstd/releases/download/v$ZSTD/zstd-$ZSTD.tar.gz
+    fi
+
+    if [ ! -f "zstd-$ZSTD/lib/libzstd.a" ]; then
+      tar zxf zstd-$ZSTD.tar.gz
+      ( cd zstd-$ZSTD; $MAKE)
+      if [ $? -ne 0 ]; then
+        echo "ARKIME: $MAKE failed"
+        exit 1
+      fi
+    else
+      echo "ARKIME: Not rebuilding zstd"
+    fi
+  else
+    WITHZSTD=""
+  fi
+
 
   # Now build arkime
   echo "ARKIME: Building capture"
   cd ..
-  echo "./configure --prefix=$TDIR $PCAPBUILD --with-yara=thirdparty/yara/yara-$YARA --with-maxminddb=thirdparty/libmaxminddb-$MAXMIND $WITHGLIB --with-curl=thirdparty/curl-$CURL --with-nghttp2=thirdparty/nghttp2-$NGHTTP2 --with-lua=thirdparty/lua-$LUA"
-        ./configure --prefix=$TDIR $PCAPBUILD --with-yara=thirdparty/yara/yara-$YARA --with-maxminddb=thirdparty/libmaxminddb-$MAXMIND $WITHGLIB --with-curl=thirdparty/curl-$CURL --with-nghttp2=thirdparty/nghttp2-$NGHTTP2 --with-lua=thirdparty/lua-$LUA
+  echo "./configure --prefix=$TDIR $PCAPBUILD --with-yara=thirdparty/yara/yara-$YARA --with-maxminddb=thirdparty/libmaxminddb-$MAXMIND $WITHGLIB --with-curl=thirdparty/curl-$CURL --with-nghttp2=thirdparty/nghttp2-$NGHTTP2 --with-lua=thirdparty/lua-$LUA $WITHZSTD"
+        ./configure --prefix=$TDIR $PCAPBUILD --with-yara=thirdparty/yara/yara-$YARA --with-maxminddb=thirdparty/libmaxminddb-$MAXMIND $WITHGLIB --with-curl=thirdparty/curl-$CURL --with-nghttp2=thirdparty/nghttp2-$NGHTTP2 --with-lua=thirdparty/lua-$LUA $WITHZSTD
 fi
 
 if [ $DOCLEAN -eq 1 ]; then

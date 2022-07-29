@@ -1,4 +1,4 @@
-use Test::More tests => 216;
+use Test::More tests => 324;
 use Cwd;
 use URI::Escape;
 use MolochTest;
@@ -13,19 +13,21 @@ my $token = getTokenCookie();
 my $es = "-o 'elasticsearch=$MolochTest::elasticsearch' $ENV{INSECURE}";
 
 sub doTest {
-    my ($encryption, $gzip, $shortheader) = @_;
+    my ($encryption, $compression, $blocksize, $shortheader) = @_;
     my ($cmd, $id, $json, $content, $result);
 
-    my $stag = "socks-$prefix-$encryption-$gzip-$shortheader";
-    my $btag = "bdat-$prefix-$encryption-$gzip-$shortheader";
+    my $stag = "socks-$prefix-$encryption-$compression-$blocksize-$shortheader";
+    my $btag = "bdat-$prefix-$encryption-$compression-$blocksize-$shortheader";
+
+    #diag $btag;
 
   ###### wireshark-bdat.pcap - run
-    $cmd = "../capture/capture $es -c config.test.ini -n test --copy -r pcap/wireshark-bdat.pcap --tag $btag";
+    $cmd = "../capture/capture $es -c config.test.ini -n test --copy -r pcap/wireshark-bdat.pcap --tag $btag -o simpleCompression=$compression";
     if (defined $encryption) {
         $cmd .= " -o simpleEncoding=$encryption -o simpleKEKId=test";
     }
-    if (defined $gzip) {
-        $cmd .= " -o simpleGzipBlockSize=$gzip";
+    if (defined $blocksize) {
+        $cmd .= " -o simpleCompressionBlockSize=$blocksize";
     }
     if (defined $shortheader) {
         $cmd .= " -o simpleShortHeader=$shortheader";
@@ -34,12 +36,12 @@ sub doTest {
     system("$cmd");
 
   ###### socks-http-pass.pcap - run
-    $cmd = "../capture/capture $es -c config.test.ini -n test --copy -r pcap/socks-http-pass.pcap --tag $stag";
+    $cmd = "../capture/capture $es -c config.test.ini -n test --copy -r pcap/socks-http-pass.pcap --tag $stag -o simpleCompression=$compression";
     if (defined $encryption) {
         $cmd .= " -o simpleEncoding=$encryption -o simpleKEKId=test";
     }
-    if (defined $gzip) {
-        $cmd .= " -o simpleGzipBlockSize=$gzip";
+    if (defined $blocksize) {
+        $cmd .= " -o simpleCompressionBlockSize=$blocksize";
     }
     if (defined $shortheader) {
         $cmd .= " -o simpleShortHeader=$shortheader";
@@ -84,9 +86,11 @@ sub doTest {
 
 ### MAIN ###
 foreach my $e (undef, "xor-2048", "aes-256-ctr") {
-  foreach my $g (undef, 0, 8000, 64000) {
-      foreach my $s ("true", "false") {
-          doTest($e, $g, $s);
-      }
-  }
+    foreach my $c ("none", "gzip", "zstd") {
+        foreach my $b (8000, 64000) {
+            foreach my $s ("true", "false") {
+                doTest($e, $c, $b, $s);
+            }
+        }
+    }
 }
