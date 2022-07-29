@@ -514,7 +514,7 @@ AC_ARG_WITH(zstd,
 [  --with-zstd=DIR use zstd build directory],
 [ case "$withval" in
   yes)
-    AC_CHECK_LIB(zstd, main,,AC_MSG_ERROR(please install zstd library))
+     AC_CHECK_LIB(zstd, main, AC_DEFINE([HAVE_ZSTD], [1], [Define if libzstd is available]) ZSTD_LIBS=-lzstd, AC_MSG_ERROR(please install zstd library))
      ;;
   no)
      AC_MSG_RESULT(no)
