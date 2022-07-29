@@ -19,7 +19,7 @@ sub doTest {
     my $stag = "socks-$prefix-$encryption-$compression-$blocksize-$shortheader";
     my $btag = "bdat-$prefix-$encryption-$compression-$blocksize-$shortheader";
 
-    diag $btag;
+    #diag $btag;
 
   ###### wireshark-bdat.pcap - run
     $cmd = "../capture/capture $es -c config.test.ini -n test --copy -r pcap/wireshark-bdat.pcap --tag $btag -o simpleCompression=$compression";
