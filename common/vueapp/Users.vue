@@ -15,7 +15,7 @@
             type="text"
             debounce="400"
             v-model="searchTerm"
-            placeholder="Begin typing to search for users by name"
+            placeholder="Begin typing to search for users by name, id, or role"
           />
           <template #append>
             <b-button
@@ -132,7 +132,7 @@
               @toggle="data.toggleDetails"
               :opened="data.detailsShowing"
               :class="{expanded: data.detailsShowing}"
-              v-b-tooltip.hover="!data.item.emailSearch || !data.item.removeEnabled || !data.item.packetSearch || data.item.hideStats || data.item.hideFiles || data.item.hidePcap || data.item.disablePcapDownload || data.item.timeLimit || data.item.expression ? 'This user has additional restricted permissions' : ''"
+              v-b-tooltip.hover.noninteractive="!data.item.emailSearch || !data.item.removeEnabled || !data.item.packetSearch || data.item.hideStats || data.item.hideFiles || data.item.hidePcap || data.item.disablePcapDownload || data.item.timeLimit || data.item.expression ? 'This user has additional restricted permissions' : ''"
             />
           </span>
         </template> <!-- /toggle column -->
@@ -304,45 +304,52 @@
             <!-- display change password if not a role and
                  we're in cont3xt or arkime
                  (assumes user is a usersAdmin since only usersAdmin can see this page) -->
-            <form class="row"
-              v-if="!data.item.userId.startsWith('role:') && (parentApp === 'Cont3xt' || parentApp === 'Arkime')">
-              <div class="col-9 mt-4">
-                <!-- new password -->
-                <b-input-group
-                  size="sm"
-                  class="mt-2"
-                  prepend="New Password">
-                  <b-form-input
-                    type="password"
-                    v-model="newPassword"
-                    autocomplete="new-password"
-                    @keydown.enter="changePassword"
-                    placeholder="Enter a new password"
-                  />
-                </b-input-group>
-                <!-- confirm new password -->
-                <b-input-group
-                  size="sm"
-                  class="mt-2"
-                  prepend="Confirm Password">
-                  <b-form-input
-                    type="password"
-                    autocomplete="new-password"
-                    v-model="confirmNewPassword"
-                    @keydown.enter="changePassword"
-                    placeholder="Confirm the new password"
-                  />
-                </b-input-group>
-                <!-- change password button -->
-                <b-button
-                  size="sm"
-                  class="mt-2"
-                  variant="success"
-                  @click="changePassword(data.item.userId)">
-                  Change Password
-                </b-button>
-              </div>
-            </form>
+            <template v-if="parentApp === 'Cont3xt' || parentApp === 'Arkime'">
+              <form class="row" v-if="!data.item.userId.startsWith('role:')">
+                <div class="col-9 mt-4">
+                  <!-- new password -->
+                  <b-input-group
+                      size="sm"
+                      class="mt-2"
+                      prepend="New Password">
+                    <b-form-input
+                        type="password"
+                        v-model="newPassword"
+                        autocomplete="new-password"
+                        @keydown.enter="changePassword"
+                        placeholder="Enter a new password"
+                    />
+                  </b-input-group>
+                  <!-- confirm new password -->
+                  <b-input-group
+                      size="sm"
+                      class="mt-2"
+                      prepend="Confirm Password">
+                    <b-form-input
+                        type="password"
+                        autocomplete="new-password"
+                        v-model="confirmNewPassword"
+                        @keydown.enter="changePassword"
+                        placeholder="Confirm the new password"
+                    />
+                  </b-input-group>
+                  <!-- change password button -->
+                  <b-button
+                      size="sm"
+                      class="mt-2"
+                      variant="success"
+                      @click="changePassword(data.item.userId)">
+                    Change Password
+                  </b-button>
+                </div>
+              </form>
+              <span v-else>
+                <UserDropdown class="mt-2" label="Role Assigners: "
+                              :selected-users="data.item.roleAssigners || []"
+                              :role-id="data.item.userId"
+                              @selected-users-updated="updateRoleAssigners" />
+              </span>
+            </template>
           </div>
         </template> <!-- /detail row -->
       </b-table>
@@ -373,6 +380,7 @@ import ToggleBtn from './ToggleBtn';
 import UserCreate from './UserCreate';
 import UserService from './UserService';
 import RoleDropdown from './RoleDropdown';
+import UserDropdown from './UserDropdown';
 import { timezoneDateString } from './vueFilters';
 
 export default {
@@ -381,7 +389,8 @@ export default {
   components: {
     ToggleBtn,
     UserCreate,
-    RoleDropdown
+    RoleDropdown,
+    UserDropdown
   },
   props: {
     roles: Array,
@@ -481,6 +490,11 @@ export default {
       this.$set(user, 'roles', roles);
       this.userHasChanged(userId);
     },
+    updateRoleAssigners ({ newSelection }, roleId) {
+      const role = this.users.find(u => u.userId === roleId);
+      this.$set(role, 'roleAssigners', newSelection);
+      this.userHasChanged(roleId);
+    },
     userHasChanged (userId) {
       const newUser = JSON.parse(JSON.stringify(this.users.find(u => u.userId === userId)));
       const oldUser = JSON.parse(JSON.stringify(this.dbUserList.find(u => u.userId === userId)));
@@ -525,9 +539,13 @@ export default {
         this.showMessage({ variant: 'success', message: response.text });
         this.reloadUsers();
 
-        // update the current user if they were changed
-        if (this.currentUser.userId === user.userId) {
-          this.$emit('update-current-user');
+        const oldUser = this.dbUserList.find(u => u.userId === user.userId);
+        const currentUserRoleAssignmentChanged =
+            user.roleAssigners?.includes(this.currentUser.userId) !== oldUser.roleAssigners?.includes(this.currentUser.userId);
+
+        // update the current user if they were changed or if their assignableRoles should be changed
+        if (this.currentUser.userId === user.userId || currentUserRoleAssignmentChanged) {
+          this.emitCurrentUserUpdate();
         }
       }).catch((error) => {
         this.showMessage({ variant: 'danger', message: error.text });
@@ -537,6 +555,9 @@ export default {
       UserService.deleteUser(user).then((response) => {
         this.users.splice(index, 1);
         this.showMessage({ variant: 'success', message: response.text });
+        if (user.roleAssigners?.includes(this.currentUser.userId)) {
+          this.emitCurrentUserUpdate(); // update current user if one of their assignable roles is deleted
+        }
       }).catch((error) => {
         this.showMessage({ variant: 'danger', message: error.text });
       });
@@ -606,13 +627,19 @@ export default {
         this.showMessage({ variant: 'danger', message: error.text || error });
       });
     },
-    userCreated (message) {
+    userCreated (message, user) {
       this.reloadUsers();
       this.$emit('update-roles');
+      if (user.roleAssigners?.includes(this.currentUser.userId)) {
+        this.emitCurrentUserUpdate(); // update current user if they were made an assigner
+      }
       this.$bvModal.hide('create-user-modal');
       this.showMessage({ variant: 'success', message });
     },
     /* helper functions ---------------------------------------------------- */
+    emitCurrentUserUpdate () {
+      this.$emit('update-current-user');
+    },
     showMessage ({ variant, message }) {
       this.msg = message;
       this.msgType = variant;
@@ -687,7 +714,7 @@ export default {
 }
 
 /* make the roles dropdown text smaller */
-.roles-dropdown > button {
+.roles-dropdown > button, .users-dropdown > button {
   font-size: 0.8rem;
 }
 

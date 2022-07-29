@@ -4,7 +4,7 @@ export default {
   /**
    * Searches for users
    * @param {Object} query - The query to search for users
-   *                         {desc:false,length:50,filter:"",sortField:"userId",start:0}
+   *                         {desc:false,start:0,length:50,filter:"",sortField:"userId"}
    */
   searchUsers (query) {
     return new Promise((resolve, reject) => {
@@ -12,6 +12,56 @@ export default {
         method: 'POST',
         headers: setReqHeaders({ 'Content-Type': 'application/json' }),
         body: JSON.stringify(query)
+      }).then((response) => {
+        return response.json();
+      }).then((response) => {
+        if (!response.success) {
+          return reject(response);
+        }
+        return resolve(response);
+      }).catch((error) => {
+        reject(error);
+      });
+    });
+  },
+
+  /**
+   * Searches for users
+   * @param {Object} query - The query to search for limited user info (userId, userName, and whether they have some role)
+   *                         {roleId:"role:something",filter:""}
+   */
+  searchUsersMin (query) {
+    return new Promise((resolve, reject) => {
+      fetch('api/users/min', {
+        method: 'POST',
+        headers: setReqHeaders({ 'Content-Type': 'application/json' }),
+        body: JSON.stringify(query)
+      }).then((response) => {
+        return response.json();
+      }).then((response) => {
+        if (!response.success) {
+          return reject(response);
+        }
+        return resolve(response);
+      }).catch((error) => {
+        reject(error);
+      });
+    });
+  },
+
+  /**
+   * Sets whether a user has a certain role
+   * @param {Object} query - The query to update a user's role
+   *                         {userId:"user123",roleId:"role:something",newRoleState:true}
+   */
+  updateUserRole (query) {
+    const { userId, roleId, newRoleState } = query;
+
+    return new Promise((resolve, reject) => {
+      fetch(`/api/user/${userId}/assignment`, {
+        method: 'POST',
+        headers: setReqHeaders({ 'Content-Type': 'application/json' }),
+        body: JSON.stringify({ roleId, newRoleState })
       }).then((response) => {
         return response.json();
       }).then((response) => {

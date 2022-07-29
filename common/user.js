@@ -50,7 +50,7 @@ const searchColumns = [
   'userId', 'userName', 'expression', 'enabled',
   'webEnabled', 'headerAuthEnabled', 'emailSearch', 'removeEnabled', 'packetSearch',
   'hideStats', 'hideFiles', 'hidePcap', 'disablePcapDownload', 'welcomeMsgNum',
-  'lastUsed', 'timeLimit', 'roles'
+  'lastUsed', 'timeLimit', 'roles', 'roleAssigners'
 ];
 
 let readOnly = false;
@@ -179,8 +179,10 @@ class User {
    * @param query.filter search userId userName for
    * @param query.sortField the field to sort on, default userId
    * @param query.sortDescending sort descending, default false
+   * @param query.noRoles filters out users with ids starting with 'role:', default false
+   * @param query.searchFields array of fields (with options "userName", "userId", & "roles") to be used in filter
    * @returns {number} total - The total number of matching users
-   * @returns {ArkimeUsers[]} users - The users in the from->size section
+   * @returns {Promise<{error: Error} | {users: ArkimeUser[], total: number}>} users - The users in the from->size section
    */
   static searchUsers (query) {
     if (query.size > 10000) {
@@ -199,7 +201,7 @@ class User {
       const user = Object.assign(new User(), data);
       cleanUser(user);
       user.settings = user.settings ?? {};
-      user.expandRoles();
+      await user.expandRoles();
       if (readOnly) {
         user.roles = user.roles.filter(role => role === 'usersAdmin');
       }
@@ -348,7 +350,7 @@ class User {
   /**
    * Web Api for getting current user
    */
-  static getCurrentUser (req) {
+  static async getCurrentUser (req) {
     const userProps = [
       'emailSearch', 'enabled', 'removeEnabled',
       'headerAuthEnabled', 'settings', 'userId', 'userName', 'webEnabled',
@@ -365,6 +367,10 @@ class User {
     }
 
     clone.roles = [...req.user._allRoles];
+
+    const assignableRoles = await req.user.getAssignableRoles(req.user.userId);
+    clone.assignableRoles = [...assignableRoles];
+    clone.canAssignRoles = clone.assignableRoles.length > 0;
 
     if (getCurrentUserCB) {
       getCurrentUserCB(req.user, clone);
@@ -401,6 +407,7 @@ class User {
    * @param {number} lastUsed - The date that the user last used Arkime. Format is milliseconds since Unix EPOC.
    * @param {number} timeLimit - Limits the time range a user can query for.
    * @param {array} roles - The list of Arkime roles assigned to this user.
+   * @param {array} roleAssigners - The list of userIds that can manage who has this (ROLE)
    */
 
   /**
@@ -410,8 +417,8 @@ class User {
    * @name /user
    * @returns {ArkimeUser[]} user - The currently logged in user.
    */
-  static apiGetUser (req, res, next) {
-    const clone = User.getCurrentUser(req);
+  static async apiGetUser (req, res, next) {
+    const clone = await User.getCurrentUser(req);
     return res.send(clone);
   };
 
@@ -434,9 +441,11 @@ class User {
     if (req.body.filter) {
       query.filter = req.body.filter;
     }
+    query.noRoles = false;
 
     query.sortField = req.body.sortField || 'userId';
     query.sortDescending = req.body.desc === true;
+    query.searchFields = ['userId', 'userName', 'roles'];
 
     Promise.all([
       User.searchUsers(query),
@@ -452,9 +461,67 @@ class User {
     }).catch((err) => {
       console.log(`ERROR - ${req.method} /api/users`, util.inspect(err, false, 50));
       return res.send({
-        success: true,
+        success: false,
         recordsTotal: 0,
         recordsFiltered: 0,
+        data: []
+      });
+    });
+  };
+
+  /**
+   * The Arkime user-info object (information provided to roleAssigners or non-admin users).
+   *
+   * @typedef ArkimeUserInfo
+   * @type {object}
+   * @param {string} userId - The ID of the user.
+   * @param {string} userName - The name of the user (to be displayed in the UI).
+   * @param {boolean | undefined} hasRole - whether the user has the requested role
+   *            (only if a role was provided & the requester is a roleAssigner for it)
+   */
+
+  /**
+   * POST - /api/users/min
+   *
+   * Retrieves a list of users (non-admin usable [with role status returned only for roleAssigners]).
+   * @name /users
+   * @returns {boolean} success - True if the request was successful, false otherwise
+   * @returns {ArkimeUserInfo[]} data - The list of users configured.
+   * @returns {number} recordsTotal - The total number of users.
+   * @returns {number} recordsFiltered - The number of users returned in this result.
+   */
+  static apiGetUsersMin (req, res, next) {
+    const query = {
+      from: 0,
+      size: 10000,
+      noRoles: true,
+      sortField: 'userId',
+      sortDescending: false
+    };
+    if (req.body.filter) { query.filter = req.body.filter; }
+    query.searchFields = ['userId', 'userName'];
+
+    User.searchUsers(query).then((users) => {
+      if (users.error) { throw users.error; }
+
+      // since this is accessible to non-userAdmins (i.e. roleAssigners), minimal user-info is returned
+      //   (only ID and whether they have the managed role)
+      const userInfo = users.users.map(u => {
+        const providedUserInfo = { userId: u.userId, userName: u.userName };
+        if (req.body.roleId != null) {
+          providedUserInfo.hasRole = !!(u.roles?.includes(req.body.roleId));
+        }
+        return providedUserInfo;
+      });
+
+      res.send({
+        success: true,
+        data: userInfo
+      });
+    }).catch((err) => {
+      console.log(`ERROR - ${req.method} /api/users/min`, util.inspect(err, false, 50));
+      return res.send({
+        success: false,
         data: []
       });
     });
@@ -501,6 +568,10 @@ class User {
       return res.serverError(403, 'Can not create superAdmin unless you are superAdmin');
     }
 
+    if (req.body.roleAssigners === undefined) {
+      req.body.roleAssigners = [];
+    }
+
     User.getUser(req.body.userId, (err, user) => {
       if (user) {
         console.log('Trying to add duplicate user', util.inspect(err, false, 50), user);
@@ -524,7 +595,8 @@ class User {
         hidePcap: req.body.hidePcap === true,
         disablePcapDownload: req.body.disablePcapDownload === true,
         roles: req.body.roles,
-        welcomeMsgNum: 0
+        welcomeMsgNum: 0,
+        roleAssigners: req.body.roleAssigners
       };
 
       if (User.#debug) {
@@ -631,6 +703,7 @@ class User {
       user.disablePcapDownload = req.body.disablePcapDownload === true;
       user.timeLimit = req.body.timeLimit ? parseInt(req.body.timeLimit) : undefined;
       user.roles = req.body.roles;
+      user.roleAssigners = req.body.roleAssigners || [];
 
       User.setUser(userId, user, (err, info) => {
         if (User.#debug) {
@@ -645,6 +718,75 @@ class User {
         return res.send(JSON.stringify({
           success: true,
           text: `User ${userId} updated successfully`
+        }));
+      });
+    });
+  };
+
+  /**
+   * POST - /api/user/:id/assignment
+   *
+   * Updates whether a user has a certain role (admin & roleAssigners only).
+   * @name /user/:id/assignment
+   * @returns {boolean} success - Whether the update user operation was successful.
+   * @returns {string} text - The success/error message to (optionally) display to the user.
+   */
+  static apiUpdateUserRole (req, res) {
+    const userId = req.params.id;
+    const roleId = req.body.roleId;
+    const newRoleState = req.body.newRoleState;
+
+    if (!userId) {
+      return res.serverError(403, 'Missing userId');
+    }
+
+    if (!roleId) {
+      return res.serverError(403, 'Missing roleId');
+    }
+
+    if (typeof newRoleState !== 'boolean') {
+      return res.serverError(403, 'Missing boolean newRoleState');
+    }
+
+    if (userId === '_moloch_shared') {
+      return res.serverError(403, "_moloch_shared is a shared user. This user's settings cannot be updated");
+    }
+
+    User.getUser(userId, (err, user) => {
+      if (err || !user) {
+        console.log(`ERROR - ${req.method} /api/user/${userId}/assignment`, util.inspect(err, false, 50), user);
+        return res.serverError(403, 'User not found');
+      }
+
+      const roles = [...user.roles];
+      const hasRole = roles.includes(roleId);
+      if (newRoleState) {
+        if (hasRole) {
+          return res.serverError(403, 'Can not add a role that the user already has');
+        }
+        roles.push(roleId);
+      } else {
+        if (!hasRole) {
+          return res.serverError(403, 'Can not remove a role that the user does not have');
+        }
+        roles.splice(roles.indexOf(roleId), 1);
+      }
+
+      user.roles = roles;
+
+      User.setUser(userId, user, (err, info) => {
+        if (User.#debug) {
+          console.log('setUser', user, err, info);
+        }
+
+        if (err) {
+          console.log(`ERROR - ${req.method} /api/user/${userId}/assignment`, util.inspect(err, false, 50), user, info);
+          return res.serverError(500, 'Error updating user role:' + err);
+        }
+
+        return res.send(JSON.stringify({
+          success: true,
+          text: `User ${userId}'s role ${roleId} updated successfully`
         }));
       });
     });
@@ -779,7 +921,7 @@ class User {
   }
 
   /**
-   *
+   * Denies access if the requesting user lacks the required role
    */
   static checkRole (role) {
     return async (req, res, next) => {
@@ -789,6 +931,18 @@ class User {
       }
       next();
     };
+  }
+
+  /**
+   * Fails request if a roleId is given in the body, but the user is not a roleAssigner for the given role
+   */
+  static async checkAssignableRole (req, res, next) {
+    const role = req.body.roleId;
+    if (role != null && !(await req.user.getAssignableRoles(req.user.userId)).includes(role)) {
+      console.log(`Permission denied to ${req.user.userId} while requesting resource: ${req._parsedUrl.pathname}, for assignment-access to role ${role}`);
+      return res.serverError(403, 'You do not have permission to access this resource');
+    }
+    next();
   }
 
   /**
@@ -823,6 +977,13 @@ class User {
     }
 
     return this._allRoles;
+  }
+
+  /**
+   * Returns all roles that the currently this user has assignment access to
+   */
+  async getAssignableRoles (userId) {
+    return await User.#implementation.getAssignableRoles(userId);
   }
 
   // Set last used info for user, should only be used by Auth
@@ -903,15 +1064,22 @@ function sortUsers (users, sortField, sortDescending) {
 /******************************************************************************/
 // Filter Users
 /******************************************************************************/
-function filterUsers (users, filter) {
-  const results = [];
-  const re = ArkimeUtil.wildcardToRegexp(`*${filter}*`);
-  for (let i = 0; i < users.length; i++) {
-    if (users[i].userId.match(re) || users[i].userName.match(re) || users[i].roles.match(re)) {
-      results.push(users[i]);
-    }
+function filterUsers (users, filter, searchFields, noRoles) {
+  const validSearchFields = searchFields
+    ?.filter(field => field === 'userId' || field === 'userName' || field === 'roles') || [];
+  const usingFilter = filter && validSearchFields.length;
+  if (!noRoles && !usingFilter) {
+    return users; // nothing to filter on
   }
-  return results;
+  const re = ArkimeUtil.wildcardToRegexp(`*${filter}*`);
+
+  return users.filter(user => {
+    // exclude roles
+    if (noRoles && user.userId.startsWith('role:')) { return false; }
+
+    // filter searched fields
+    return (!usingFilter || validSearchFields.some(field => user[field].match(re)));
+  });
 }
 
 /******************************************************************************/
@@ -991,12 +1159,17 @@ class UserESImplementation {
       }
     };
 
-    if (query.filter) {
-      esQuery.query.bool.should = [
-        { wildcard: { userName: '*' + query.filter + '*' } },
-        { wildcard: { userId: '*' + query.filter + '*' } },
-        { wildcard: { roles: '*' + query.filter + '*' } }
-      ];
+    if (query.noRoles) {
+      esQuery.query.bool.must_not.push({
+        wildcard: { userId: 'role:*' } // exclude roles
+      });
+    }
+
+    if (query.filter && query.searchFields.length) {
+      const searchFilters = query.searchFields
+        .filter(field => field === 'userId' || field === 'userName' || field === 'roles')
+        .map(validField => { return { wildcard: { [validField]: '*' + query.filter + '*' } }; });
+      if (searchFilters.length) { esQuery.query.bool.should = searchFilters; }
     }
 
     if (query.sortField) {
@@ -1096,7 +1269,26 @@ class UserESImplementation {
     });
 
     return response.body.hits.hits.map(h => h._source.userId);
-  }
+  };
+
+  async getAssignableRoles (userId) {
+    const query = {
+      bool: {
+        must: [
+          { prefix: { userId: 'role:' } },
+          { term: { roleAssigners: userId } }
+        ]
+      }
+    };
+
+    const response = await this.client.search({
+      index: this.prefix + 'users',
+      body: { query },
+      rest_total_hits_as_int: true
+    });
+
+    return response.body.hits.hits.map(h => h._source.userId);
+  };
 
   async deleteAllUsers () {
     await this.client.delete_by_query({
@@ -1127,9 +1319,7 @@ class UserLMDBImplementation {
         hits.push(Object.assign(new User(), value));
       });
 
-    if (query.filter) {
-      hits = filterUsers(hits, query.filter);
-    }
+    hits = filterUsers(hits, query.filter, query.searchFields, query.noRoles);
     sortUsers(hits, query.sortField, query.sortDescending);
 
     return {
@@ -1208,6 +1398,17 @@ class UserLMDBImplementation {
     return hits;
   }
 
+  async getAssignableRoles (userId) {
+    const hits = [];
+    this.store.getRange({})
+      .filter(({ key, value }) => { return key.startsWith('role:') && value.roleAssigners?.includes(userId); })
+      .forEach(({ key }) => {
+        hits.push(key);
+      });
+
+    return hits;
+  }
+
   async deleteAllUsers () {
     this.store.getKeys({})
       .forEach(key => {
@@ -1239,9 +1440,7 @@ class UserRedisImplementation {
       hits.push(Object.assign(new User(), user));
     }
 
-    if (query.filter) {
-      hits = filterUsers(hits, query.filter);
-    }
+    hits = filterUsers(hits, query.filter, query.searchFields, query.noRoles);
     sortUsers(hits, query.sortField, query.sortDescending);
 
     return {
@@ -1300,6 +1499,11 @@ class UserRedisImplementation {
   async allRoles () {
     const keys = await this.client.keys('role:*');
     return keys;
+  }
+
+  async getAssignableRoles (userId) {
+    const keys = await this.allRoles();
+    return keys.filter(async key => this.client.get(key).roleAssigners?.includes(userId));
   }
 
   async deleteAllUsers () {

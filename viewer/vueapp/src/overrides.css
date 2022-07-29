@@ -209,6 +209,10 @@ input.field-typeahead + ul[uib-typeahead-popup] {
   background-color: var(--color-primary-light);
 }
 
+.dropdown-sticky-search-bar-container {
+  padding-inline: 8px !important;
+}
+
 /* give cards theme color -------------------------------------------------- */
 .card {
   border-color: var(--color-gray-light);

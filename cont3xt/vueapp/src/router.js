@@ -7,6 +7,7 @@ import Cont3xtHelp from '@/components/pages/Help';
 import Cont3xt404 from '@/components/pages/404';
 import Users from '@/components/pages/Users';
 import AuditHistory from '@/components/pages/AuditHistory';
+import Roles from '@/components/pages/Roles';
 
 Vue.use(Router);
 
@@ -44,6 +45,11 @@ export default new Router({
       path: '/history',
       name: 'History',
       component: AuditHistory
+    },
+    {
+      path: '/roles',
+      name: 'Roles',
+      component: Roles
     },
     {
       path: '*',

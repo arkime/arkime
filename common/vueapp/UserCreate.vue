@@ -87,17 +87,27 @@
             </select>
           </b-input-group>
         </div>
-        <div v-if="roles"
-          class="col-md-6 mt-2">
-          <RoleDropdown
-            :roles="roles"
-            display-text="Roles"
-            @selected-roles-updated="updateNewUserRoles"
-          />
-          <span
-            class="fa fa-info-circle fa-lg cursor-help ml-2"
-            v-b-tooltip.hover="'These roles are applied across apps (Arkime, Parliament, WISE, Cont3xt)'"
-          />
+        <div class="col-md-6 mt-2 d-inline-flex align-items-center">
+          <template v-if="roles">
+            <RoleDropdown
+                :roles="roles"
+                display-text="Roles"
+                @selected-roles-updated="updateNewUserRoles"
+            />
+            <span
+                class="fa fa-info-circle fa-lg cursor-help ml-2"
+                v-b-tooltip.hover="'These roles are applied across apps (Arkime, Parliament, WISE, Cont3xt)'"
+            />
+          </template>
+          <template v-if="createMode === 'role'">
+            <UserDropdown class="ml-3" display-text="Role Assigners" :selected-users="newUser.roleAssigners" @selected-users-updated="updateNewRoleAssigners">
+              Role Assigners
+            </UserDropdown>
+            <span
+                class="fa fa-info-circle fa-lg cursor-help ml-2"
+                v-b-tooltip.hover="'These users can manage who has this role'"
+            />
+          </template>
         </div>
       </div>
       <b-input-group
@@ -207,6 +217,7 @@
 <script>
 import UserService from './UserService';
 import RoleDropdown from './RoleDropdown';
+import UserDropdown from './UserDropdown';
 
 const defaultNewUser = {
   userId: '',
@@ -216,13 +227,15 @@ const defaultNewUser = {
   webEnabled: true,
   packetSearch: true,
   emailSearch: false,
-  removeEnabled: false
+  removeEnabled: false,
+  roleAssigners: []
 };
 
 export default {
   name: 'CreateUser',
   components: {
-    RoleDropdown
+    RoleDropdown,
+    UserDropdown
   },
   props: {
     roles: {
@@ -247,6 +260,9 @@ export default {
     },
     updateNewUserRoles (roles) {
       this.$set(this.newUser, 'roles', roles);
+    },
+    updateNewRoleAssigners ({ newSelection }) {
+      this.$set(this.newUser, 'roleAssigners', newSelection);
     },
     createUser (createRole) {
       this.createError = '';
@@ -277,7 +293,7 @@ export default {
 
       UserService.createUser(user).then((response) => {
         this.newUser = defaultNewUser;
-        this.$emit('user-created', response.text);
+        this.$emit('user-created', response.text, user);
       }).catch((error) => {
         this.createError = error.text;
       });
