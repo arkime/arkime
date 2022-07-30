@@ -299,7 +299,7 @@ jobs:
             - SLACK
 
     release-build:
-      image: andywick/arkime-build-7:4.0.0-4
+        image: andywick/arkime-build-7:4.0.0-4
         requires: []
         annotations:
             beta.screwdriver.cd/cpu: LOW
