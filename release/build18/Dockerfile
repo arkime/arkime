@@ -2,7 +2,9 @@ FROM ubuntu:18.04
 MAINTAINER Andy Wick <andy.wick@oath.com>
 
 RUN apt-get update && \
-apt-get install -y lsb-release ruby-dev make python3-pip git libtest-differences-perl sudo wget && \
+apt-get install -y gnupg lsb-release ruby-dev make python3-pip git libtest-differences-perl sudo wget && \
+apt-key adv --refresh-keys --keyserver keyserver.ubuntu.com && \
+apt-get clean && \
 (cd /tmp && wget https://packages.ntop.org/apt-stable/18.04/all/apt-ntop-stable.deb && dpkg -i apt-ntop-stable.deb) && \
 apt-get update && \
 apt-get install -y pfring && \
