@@ -63,9 +63,90 @@ class SpurIntegration extends Integration {
       {
         label: 'wifi',
         type: 'json'
+      },
+      {
+        label: 'tunnel operators',
+        field: 'tunnels',
+        fieldRoot: 'operator',
+        type: 'array'
+      },
+      {
+        label: 'client proxies',
+        field: 'client.proxies',
+        type: 'array'
+      },
+      {
+        label: 'client behaviors',
+        field: 'client.behaviors',
+        type: 'array'
+      },
+      {
+        label: 'risks',
+        type: 'array'
       }
     ]
   };
+
+  tidbits = [
+    {
+      tooltip: 'infrastructure',
+      field: 'infrastructure',
+      display: 'badge',
+      order: 300
+    },
+    {
+      tooltip: 'tunnel operators',
+      field: 'tunnels',
+      fieldRoot: 'operator',
+      type: 'array',
+      display: 'warningEnums',
+      order: 301
+    },
+    {
+      tooltip: 'client proxies',
+      field: 'client.proxies',
+      type: 'array',
+      display: 'warningEnums',
+      order: 302
+    },
+    {
+      tooltip: 'client behaviors',
+      field: 'client.behaviors',
+      type: 'array',
+      display: 'warningEnums',
+      order: 303
+    },
+    {
+      tooltip: 'risks',
+      field: 'risks',
+      type: 'array',
+      display: 'warningEnums',
+      order: 304
+    }
+  ];
+
+  temp = [
+    {
+      label: 'tunnel operators',
+      field: 'tunnels',
+      fieldRoot: 'operator',
+      type: 'array'
+    },
+    {
+      label: 'client proxies',
+      field: 'client.proxies',
+      type: 'array'
+    },
+    {
+      label: 'client behaviors',
+      field: 'client.behaviors',
+      type: 'array'
+    },
+    {
+      label: 'risks',
+      type: 'array'
+    }
+  ];
 
   homePage = 'https://spur.us/';
   settings = {
@@ -93,7 +174,7 @@ class SpurIntegration extends Integration {
         return undefined;
       }
 
-      const response = await axios.get(`https://api.spur.us/v1/context/${ip}`, {
+      const response = await axios.get(`https://api.spur.us/v2/context/${ip}`, {
         headers: {
           Token: key,
           'User-Agent': this.userAgent()

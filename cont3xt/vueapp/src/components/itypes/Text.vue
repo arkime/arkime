@@ -1,16 +1,24 @@
 <template>
-  <basic-i-type-card itype="text" :query="query"/>
+  <i-type-basis
+      :value="query"
+      :itype="itype"
+      :data="data"
+  />
 </template>
 
 <script>
-import BasicITypeCard from '@/utils/BasicITypeCard';
+import ITypeBasis from '@/components/itypes/ITypeBasis';
 
 export default {
   name: 'Cont3xtText',
   components: {
-    BasicITypeCard
+    ITypeBasis
   },
   props: {
+    data: { // the data returned from cont3xt search
+      type: Object, // NOTE: there will never be data specifically for text
+      required: true
+    },
     query: { // the query string to display (needed because text doesn't get
       // searched so there is no data.phone)
       type: String,

@@ -2,6 +2,7 @@
   <div class="wrap-btns">
     <template v-for="integration in integrations">
       <b-button
+        v-b-tooltip.hover.noninteractive="integration.name"
         size="xs"
         tabindex="0"
         variant="outline-dark"
@@ -22,10 +23,6 @@
           :variant="countBadgeColor(instanceData[integration.name])">
           {{ instanceData[integration.name]._cont3xt.count | humanReadableNumber }}
         </b-badge>
-        <b-tooltip
-            :target="`${itype}-${integration.name}-${value}`">
-          {{ integration.name }}
-        </b-tooltip>
       </b-button>
     </template>
   </div>

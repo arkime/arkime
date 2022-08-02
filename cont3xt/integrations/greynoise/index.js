@@ -19,7 +19,7 @@ const axios = require('axios');
 class GreyNoiseIntegration extends Integration {
   name = 'GreyNoise';
   icon = 'integrations/greynoise/icon.png';
-  order = 16000;
+  order = 210;
   itypes = {
     ip: 'fetchIp'
   };

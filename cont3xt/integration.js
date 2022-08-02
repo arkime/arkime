@@ -135,6 +135,7 @@ class Integration {
     }
 
     integration.normalizeCard();
+    integration.normalizeTidbits();
     // console.log(integration.name, JSON.stringify(integration.card, false, 2));
 
     Integration.integrationsByName[integration.name] = integration;
@@ -218,6 +219,27 @@ class Integration {
     */
 
   /**
+   * An Integration tidbit object
+   *
+   * Information about how to display a field from an Integration's data to the primary indicator-tree display.
+   * @typedef IntegrationTidbit
+   * @type {object}
+   * @param {string|undefined} label - The name of the field. If given, tidbit is displayed as key-value pair at bottom
+   * @param {IntegrationFieldType} type - The type of data displayed in the field, default 'string'
+   * @param {IntegrationFieldDef} field - path to data
+   * @param {IntegrationFieldDef|undefined} fieldRoot - path to element data from data root
+   * @param {string} display - how to display value in UI, default 'badge'
+   * @param {string|undefined} template - pseudo template-string applied to value before postProcess
+   * @param {string[]|string|undefined} postProcess - named filter(s) to pass value into
+   * @param {string|undefined} tooltip - value used as tooltip
+   * @param {string|undefined} tooltipTemplate - pseudo template-string filled with value & data for use in tooltip
+   * @param {number} order - number by which tidbits are sorted (ascending order), default 0
+   * @param {number|undefined} precedence - the higher, the more preferred among those with the same purpose
+   * @param {string|undefined} purpose - when multiple valid tidbits have the same purpose,
+   *                                     only the one with the highest precedence will be kept
+   */
+
+  /**
    * An Integration field object
    *
    * Information about how to display a field within an Integration's data.
@@ -250,6 +272,7 @@ class Integration {
    * @param {string} icon - The relative url to the integrations icon
    * @param {number} order - The order in which this integration displays in the UI
    * @param {IntegrationCard} card - Information on how to display the integration's data
+   * @param {IntegrationTidbit[]} tidbits - Information on specialized fields to pull into indicator-tree UI
    */
 
   /**
@@ -304,7 +327,8 @@ class Integration {
         cachePolicy: integration.cachePolicy,
         icon: integration.icon,
         card,
-        order
+        order,
+        tidbits: integration.tidbits || []
       };
     }
 
@@ -800,6 +824,45 @@ class Integration {
     }
     if (card.fields === undefined) { card.fields = []; }
     card.fields = this.normalizeCardFields(card.fields);
+  }
+
+  normalizeTidbits () {
+    if (!this.tidbits) { return; }
+    this.tidbits = this.tidbits.map(this.normalizeTidbit);
+  }
+
+  normalizeTidbit (tidbit) {
+    const {
+      type,
+      path: fieldPath,
+      field,
+      fieldRootPath,
+      fieldRoot,
+      order,
+      tooltip,
+      label,
+      display,
+      postProcess,
+      template,
+      tooltipTemplate,
+      precedence,
+      purpose
+    } = tidbit;
+
+    return {
+      path: fieldPath || field?.split('.') || [],
+      fieldRootPath: fieldRootPath || fieldRoot?.split('.') || [],
+      order: order || 0,
+      tooltip,
+      tooltipTemplate,
+      label,
+      type: type || 'string',
+      display: display || 'badge',
+      template,
+      postProcess,
+      precedence: precedence || Number.MIN_VALUE,
+      purpose: purpose || ''
+    };
   }
 }
 

@@ -1,41 +1,19 @@
 <template>
-  <b-card
-    v-if="data">
-    <div class="d-xl-flex mb-2">
-      <div class="d-xl-flex flex-grow-1 flex-wrap mt-1">
-        <h4 class="text-warning">
-          {{ itype.toUpperCase() }}
-        </h4>
-        <cont3xt-field
-          :value="initialQuery"
-          class="align-self-center mr-1"
-        />
-      </div>
-      <div class="d-flex align-self-center justify-content-end">
-        <integration-btns
-          :data="data"
-          :itype="itype"
-          :value="initialQuery"
-        />
-      </div>
-    </div>
-    <cont3xt-domain
+  <i-type-basis
+      :value="query"
+      :itype="itype"
       :data="data"
-    />
-  </b-card>
+      :children="sliceChildren"
+  />
 </template>
 
 <script>
-import Cont3xtField from '@/utils/Field';
-import Cont3xtDomain from '@/components/itypes/Domain';
-import IntegrationBtns from '@/components/integrations/IntegrationBtns';
+import ITypeBasis from '@/components/itypes/ITypeBasis';
 
 export default {
   name: 'Cont3xtUrl',
   components: {
-    Cont3xtField,
-    Cont3xtDomain,
-    IntegrationBtns
+    ITypeBasis
   },
   props: {
     data: { // the data returned from cont3xt search
@@ -48,10 +26,16 @@ export default {
       required: true
     }
   },
+  computed: {
+    sliceChildren () { // array containing the child (either IP or domain) resulting from slicing the URL
+      const childType = (!this.data?.ip || this.data?.domain) ? 'domain' : 'ip';
+      const query = this.data?.[childType]?._query;
+      return query ? [{ itype: childType, query }] : [];
+    }
+  },
   data () {
     return {
-      itype: 'url',
-      initialQuery: this.query
+      itype: 'url'
     };
   }
 };

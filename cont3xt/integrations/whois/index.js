@@ -41,6 +41,23 @@ class WhoisIntegration extends Integration {
     ]
   };
 
+  tidbits = [
+    {
+      field: 'creationDate',
+      postProcess: 'removeTime',
+      tooltipTemplate: '<value>',
+      purpose: 'registered',
+      precedence: 3,
+      order: 100
+    },
+    {
+      field: 'registrar',
+      purpose: 'registrar',
+      precedence: 3,
+      order: 101
+    }
+  ];
+
   constructor () {
     super();
 

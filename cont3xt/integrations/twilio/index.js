@@ -57,6 +57,24 @@ class TwilioIntegration extends Integration {
     ]
   };
 
+  tidbits = [
+    {
+      label: 'Caller Name',
+      field: 'caller_name.caller_name',
+      display: 'cont3xtField'
+    },
+    {
+      tooltip: 'carrier name',
+      field: 'carrier.name',
+      order: 100
+    },
+    {
+      tooltip: 'carrier type',
+      field: 'carrier.type',
+      order: 101
+    }
+  ];
+
   constructor () {
     super();
 
