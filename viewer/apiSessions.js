@@ -1140,7 +1140,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
 
       const fields = session.fields;
 
-      if (maxPackets && fields.packetPos.length > maxPackets) {
+      if (maxPackets && fields.packetPos && fields.packetPos.length > maxPackets) {
         fields.packetPos.length = maxPackets;
       }
 
@@ -1160,11 +1160,16 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
         }
       }
 
-      for (i = 0, ilen = fields.packetPos.length; i < ilen; i++) {
-        if (fields.packetPos[i] < 0) {
-          outstanding++;
-          Db.fileIdToFile(fields.node, -1 * fields.packetPos[i], fileReadyCb);
+      if (fields.packetPos) {
+        for (i = 0, ilen = fields.packetPos.length; i < ilen; i++) {
+          if (fields.packetPos[i] < 0) {
+            outstanding++;
+            Db.fileIdToFile(fields.node, -1 * fields.packetPos[i], fileReadyCb);
+          }
         }
+      } else {
+        // no PCAP backing the session
+        readyToProcess();
       }
 
       function readyToProcess () {
