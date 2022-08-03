@@ -243,6 +243,7 @@ my $hToken = getTokenCookie('huntuser');
   $json = viewerPutToken("/api/hunt/$id7", '{"description":"awesome new description"}', $token);
   is ($json->{success}, 1, "can update hunt description");
   $hunts = viewerGet("/hunt/list?all");
+  diag Dumper($hunts);
   is ($hunts->{data}->[4]->{description}, "awesome new description", "description updated");
 
 # validate that user can't access hunt secret fields because of hunt roles
@@ -260,6 +261,7 @@ my $hToken = getTokenCookie('huntuser');
   $json = viewerPutToken("/api/hunt/$id7", '{"roles":["arkimeUser"]}', $token);
   is ($json->{success}, 1, "can update hunt roles");
   $hunts = viewerGet("/hunt/list?all");
+  diag Dumper($hunts);
   is ($hunts->{data}->[4]->{roles}->[0], "arkimeUser", "roles updated");
 
 # validate that user can access hunt secrets now that the role is set
