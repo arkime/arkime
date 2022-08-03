@@ -1,4 +1,4 @@
-use Test::More tests => 90;
+use Test::More tests => 92;
 use Cwd;
 use URI::Escape;
 use MolochTest;
@@ -23,6 +23,13 @@ my $json;
 # users
     my $users = viewerPost("/user/list", "");
     is (@{$users->{data}}, 0, "Empty users table");
+
+# Can't create system rule
+    $json = viewerPostToken("/user/create", '{"userId": "usersAdmin", "userName": "UserName", "enabled":true, "password":"password"}', $token);
+    eq_or_diff($json, from_json('{"text": "User ID can\'t be a system role id", "success": false}'));
+
+    $json = viewerPostToken("/user/update", '{"userId": "usersAdmin", "userName": "UserName", "enabled":true, "password":"password", "roles":["superAdmin"]}', $token);
+    eq_or_diff($json, from_json('{"text": "User ID can\'t be a system role id", "success": false}'));
 
 # Add User 1
     $json = viewerPostToken("/user/create", '{"userId": "test1", "userName": "UserName", "enabled":true, "password":"password"}', $token);
@@ -275,6 +282,20 @@ my $json;
 
     $json = viewerPost("/user/list?molochRegressionUser=role:test1", "");
     eq_or_diff($json, from_json('{"text": "Can not authenticate with role", "success": false}'));
+
+# role assigner
+    $json = viewerPostToken("/user/update", '{"userId": "role:test1", "userName": "UserName", "enabled":true, "roles":"bad", "roleAssigners": "foo"}', $token);
+    eq_or_diff($json, from_json('{"text": "roleAssigners field must be an array", "success": false}'));
+
+    $json = viewerPostToken("/user/update", '{"userId": "role:test1", "userName": "UserName", "enabled":true, "roles":"bad", "roleAssigners": ["test1"]}', $token);
+    eq_or_diff($json, from_json('{"text": "User role:test1 updated successfully", "success": true}'));
+
+    $json = viewerPost("/user/list", "");
+    diag Dumper($json);
+
+    $json = viewerPost("/user/list/min", "");
+    diag Dumper($json);
+
 
 # Delete Users
     $json = viewerDeleteToken("/api/user/test1", $token);

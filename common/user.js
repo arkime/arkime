@@ -540,6 +540,10 @@ class User {
       return res.serverError(403, 'Missing/Empty required fields');
     }
 
+    if (systemRolesMapping[req.body.userId]) {
+      return res.serverError(403, 'User ID can\'t be a system role id');
+    }
+
     let userIdTest = req.body.userId;
     if (userIdTest.startsWith('role:')) {
       userIdTest = userIdTest.slice(5);
@@ -566,6 +570,10 @@ class User {
 
     if (req.body.roles.includes('superAdmin') && !req.user.hasRole('superAdmin')) {
       return res.serverError(403, 'Can not create superAdmin unless you are superAdmin');
+    }
+
+    if (req.body.roleAssigners && !Array.isArray(req.body.roleAssigners)) {
+      return res.serverError(403, 'roleAssigners field must be an array');
     }
 
     if (req.body.roleAssigners === undefined) {
@@ -659,8 +667,16 @@ class User {
       return res.serverError(403, "_moloch_shared is a shared user. This user's settings cannot be updated");
     }
 
+    if (systemRolesMapping[userId]) {
+      return res.serverError(403, 'User ID can\'t be a system role id');
+    }
+
     if (req.body.roles === undefined) {
       req.body.roles = [];
+    }
+
+    if (req.body.roleAssigners && !Array.isArray(req.body.roleAssigners)) {
+      return res.serverError(403, 'roleAssigners field must be an array');
     }
 
     if (req.body.roles.includes('superAdmin') && !req.user.hasRole('superAdmin')) {
@@ -703,7 +719,7 @@ class User {
       user.disablePcapDownload = req.body.disablePcapDownload === true;
       user.timeLimit = req.body.timeLimit ? parseInt(req.body.timeLimit) : undefined;
       user.roles = req.body.roles;
-      user.roleAssigners = req.body.roleAssigners || [];
+      user.roleAssigners = req.body.roleAssigners ?? [];
 
       User.setUser(userId, user, (err, info) => {
         if (User.#debug) {
