@@ -1,4 +1,4 @@
-use Test::More tests => 314;
+use Test::More tests => 316;
 use Cwd;
 use URI::Escape;
 use MolochTest;
@@ -148,7 +148,8 @@ my $hToken = getTokenCookie('huntuser');
   $json = viewerPostToken("/hunt?molochRegressionUser=user2", '{"totalSessions":1,"name":"test hunt 16","size":"50","search":"test search text","searchType":"ascii","type":"raw","src":true,"dst":true,"query":{"startTime":18000,"stopTime":1536872891}}', $otherToken);
   my $id4 = $json->{hunt}->{id};
 
-  sleep(2); # Wait for it to finish processing
+  viewerGet("/regressionTests/processHuntJobs");
+  sleep(1); # Wait for it to finish processing
 
   $json = viewerDeleteToken("/hunt/$id4?molochRegressionUser=anonymous", $token);
   is ($json->{text}, "Deleted hunt successfully");
@@ -244,6 +245,7 @@ my $hToken = getTokenCookie('huntuser');
   is ($json->{success}, 1, "can update hunt description");
   $hunts = viewerGet("/hunt/list?all");
   diag Dumper($hunts);
+  is ($hunts->{recordsTotal}, 6, 'Wrong number of hunts');
   is ($hunts->{data}->[4]->{description}, "awesome new description", "description updated");
 
 # validate that user can't access hunt secret fields because of hunt roles
@@ -262,6 +264,7 @@ my $hToken = getTokenCookie('huntuser');
   is ($json->{success}, 1, "can update hunt roles");
   $hunts = viewerGet("/hunt/list?all");
   diag Dumper($hunts);
+  is ($hunts->{recordsTotal}, 6, 'Wrong number of hunts');
   is ($hunts->{data}->[4]->{roles}->[0], "arkimeUser", "roles updated");
 
 # validate that user can access hunt secrets now that the role is set
