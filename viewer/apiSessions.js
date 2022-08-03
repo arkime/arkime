@@ -1140,6 +1140,10 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
 
       const fields = session.fields;
 
+      if (!fields.packetPos) {
+        return endCb(null);
+      }
+
       if (maxPackets && fields.packetPos.length > maxPackets) {
         fields.packetPos.length = maxPackets;
       }
