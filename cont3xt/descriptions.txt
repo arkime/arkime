@@ -30,30 +30,32 @@ Card Description - an object of the following
       * defaultSortField - with array, sorts the table by this field
       * defaultSortDirection - with array and defaultSortField, sorts the table in this direction ('asc' or 'desc')
 
-Tidbit Description - an array of the following objects
-  * label - the field label to show the user. If set, this will cause the tidbit to be shown as a key-value pair at the bottom of the display.
-  * field - the path (it can have dots) to the data for field, if not set the field is the same as name. For table type this will be the path to the array.
-  * fields - for tables, the list of fields, same format as this
-  * type - if not set it is string
-    * string - obvious
-    * array - the field var will point to an array
-    * date - a date value
-    * ms - a ms time value
-    * seconds - a second time value
-    * json - just display raw json, call in JSON.stringify(blah, false, 2)
-  * fieldRoot - for arrays, the path (it can have dots) from each object in the array to its desired field. Effectively maps the root array of objects to an array of values/sub-objects.
-  * template - string used to create display value with pseudo string-interpolation (applied before postProcess)
-    * string with angle brackets surrounding paths (they can have dots) that are replaced by the data at that path (starting at value [the field] or data [entire data object]). Example: 'one value: <value> and two value: <data.something.otherValue>'
-  * postProcess - optional string or array of strings that identify filters to be applied to value before display
-  * tooltip - the string to display as the tooltip
-  * tooltipTemplate - pseudo string-interpolation string used to generate tooltip
-    * see "template" for details on templating
-  * display - describes how the resulting value is displayed (default is badge)
-    * badge - simple badge with information
-    * cont3xtField - clickable field with options: "copy", "pivot"
-    * cont3xtCopyLink - clickable field with option: "copy link"
-    * warningEnums - (for array type),
-  * order - number by which tidbits are sorted (ascending order), default 0
-  * purpose - optional, string to identify the purpose of a tidbit when the same information can be provided by more than one source. When multiple valid tidbits have the same purpose, only the one with the highest precedence will be kept
-  * precedence - order of preference as a number, where a higher precedence level makes a data-source more preferred for the given purpose
-    * only required when purpose is set
+Tidbit Description - an object of the following
+  * order - the default order to apply to all fields
+  * fields - an array of the following objects (used for specifying tidbit UI)
+    * label - the field label to show the user. If set, this will cause the tidbit to be shown as a key-value pair at the bottom of the display.
+    * field - the path (it can have dots) to the data for field, if not set the field is the same as name. For table type this will be the path to the array.
+    * fields - for tables, the list of fields, same format as this
+    * type - if not set it is string
+      * string - obvious
+      * array - the field var will point to an array
+      * date - a date value
+      * ms - a ms time value
+      * seconds - a second time value
+      * json - just display raw json, call in JSON.stringify(blah, false, 2)
+    * fieldRoot - for arrays, the path (it can have dots) from each object in the array to its desired field. Effectively maps the root array of objects to an array of values/sub-objects.
+    * template - string used to create display value with pseudo string-interpolation (applied before postProcess)
+      * string with angle brackets surrounding paths (they can have dots) that are replaced by the data at that path (starting at value [the field] or data [entire data object]). Example: 'one value: <value> and two value: <data.something.otherValue>'
+    * postProcess - optional string or array of strings that identify filters to be applied to value before display
+    * tooltip - the string to display as the tooltip
+    * tooltipTemplate - pseudo string-interpolation string used to generate tooltip
+      * see "template" for details on templating
+    * display - describes how the resulting value is displayed (default is badge)
+      * badge - simple badge with information
+      * cont3xtField - clickable field with options: "copy", "pivot"
+      * cont3xtCopyLink - clickable field with option: "copy link"
+      * warningEnums - (for array type),
+    * order - number by which tidbits are sorted (ascending order), default 0
+    * purpose - optional, string to identify the purpose of a tidbit when the same information can be provided by more than one source. When multiple valid tidbits have the same purpose, only the one with the highest precedence will be kept
+    * precedence - order of preference as a number, where a higher precedence level makes a data-source more preferred for the given purpose
+      * only required when purpose is set

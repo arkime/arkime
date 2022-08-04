@@ -24,28 +24,28 @@ class MaxmindIntegration extends Integration {
     ip: 'fetchIp'
   };
 
-  tidbits = [
-    {
-      tooltip: 'asn',
-      field: 'asn.autonomous_system_number',
-      type: 'badge',
-      template: 'AS<value>',
-      order: 200
-    },
-    {
-      tooltip: 'organization',
-      field: 'asn.autonomous_system_organization',
-      type: 'badge',
-      order: 201
-    },
-    {
-      field: 'country.country.iso_code',
-      type: 'badge',
-      postProcess: 'countryEmoji',
-      tooltipTemplate: '<data.country.country.names.en> (<value>)',
-      order: 202
-    }
-  ];
+  tidbits = {
+    order: 200,
+    fields: [
+      {
+        tooltip: 'asn',
+        field: 'asn.autonomous_system_number',
+        type: 'badge',
+        template: 'AS<value>'
+      },
+      {
+        tooltip: 'organization',
+        field: 'asn.autonomous_system_organization',
+        type: 'badge'
+      },
+      {
+        field: 'country.country.iso_code',
+        type: 'badge',
+        postProcess: 'countryEmoji',
+        tooltipTemplate: '<data.country.country.names.en> (<value>)'
+      }
+    ]
+  };
 
   constructor () {
     super();

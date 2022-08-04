@@ -75,13 +75,13 @@ import IntegrationBtns from '@/components/integrations/IntegrationBtns';
 import IntegrationTidbit from '@/components/integrations/IntegrationTidbit';
 
 export default {
-  name: 'ITypeBasis',
+  name: 'BaseIType',
   components: {
     Cont3xtField,
     IntegrationBtns,
     IntegrationTidbit,
     // NOTE: need async import here because there's a circular dependency
-    //       between ITypeBasis and the different implementation types
+    //       between BaseIType and the different implementation types
     // see: vuejs.org/v2/guide/components.html#Circular-References-Between-Components
     Cont3xtDomain: () => import('@/components/itypes/Domain'),
     Cont3xtEmail: () => import('@/components/itypes/Email'),

@@ -1,5 +1,5 @@
 <template>
-  <i-type-basis
+  <base-i-type
     :value="query"
     :itype="itype"
     :data="data"
@@ -8,21 +8,21 @@
     <template #after-field>
       <ttl-tooltip v-if="ttl" :ttl="ttl" :target="`${query}-ip`"/>
     </template>
-  </i-type-basis>
+  </base-i-type>
 </template>
 
 <script>
 import { countryCodeEmoji } from 'country-code-emoji';
 
 import TtlTooltip from '@/utils/TtlTooltip';
-import ITypeBasis from '@/components/itypes/ITypeBasis';
+import BaseIType from '@/components/itypes/BaseIType';
 import { ITypeMixin } from './ITypeMixin';
 
 export default {
   name: 'Cont3xtIp',
   mixins: [ITypeMixin], // gives enhancements
   components: {
-    ITypeBasis,
+    BaseIType,
     TtlTooltip
   },
   props: {

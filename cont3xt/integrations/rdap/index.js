@@ -22,20 +22,22 @@ class RDAPIntegration extends Integration {
     ip: 'fetchIp'
   };
 
-  tidbits = [
-    {
-      tooltip: 'link',
-      field: 'link',
-      postProcess: 'baseRIR',
-      display: 'cont3xtCopyLink',
-      order: 100
-    },
-    {
-      label: 'Name',
-      field: 'name',
-      display: 'cont3xtField'
-    }
-  ];
+  tidbits = {
+    order: 100,
+    fields: [
+      {
+        tooltip: 'link',
+        field: 'link',
+        postProcess: 'baseRIR',
+        display: 'cont3xtCopyLink'
+      },
+      {
+        label: 'Name',
+        field: 'name',
+        display: 'cont3xtField'
+      }
+    ]
+  };
 
   settings = {
     disabled: {

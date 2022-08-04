@@ -87,66 +87,41 @@ class SpurIntegration extends Integration {
     ]
   };
 
-  tidbits = [
-    {
-      tooltip: 'infrastructure',
-      field: 'infrastructure',
-      display: 'badge',
-      order: 300
-    },
-    {
-      tooltip: 'tunnel operators',
-      field: 'tunnels',
-      fieldRoot: 'operator',
-      type: 'array',
-      display: 'warningEnums',
-      order: 301
-    },
-    {
-      tooltip: 'client proxies',
-      field: 'client.proxies',
-      type: 'array',
-      display: 'warningEnums',
-      order: 302
-    },
-    {
-      tooltip: 'client behaviors',
-      field: 'client.behaviors',
-      type: 'array',
-      display: 'warningEnums',
-      order: 303
-    },
-    {
-      tooltip: 'risks',
-      field: 'risks',
-      type: 'array',
-      display: 'warningEnums',
-      order: 304
-    }
-  ];
-
-  temp = [
-    {
-      label: 'tunnel operators',
-      field: 'tunnels',
-      fieldRoot: 'operator',
-      type: 'array'
-    },
-    {
-      label: 'client proxies',
-      field: 'client.proxies',
-      type: 'array'
-    },
-    {
-      label: 'client behaviors',
-      field: 'client.behaviors',
-      type: 'array'
-    },
-    {
-      label: 'risks',
-      type: 'array'
-    }
-  ];
+  tidbits = {
+    order: 300,
+    fields: [
+      {
+        tooltip: 'infrastructure',
+        field: 'infrastructure',
+        display: 'badge'
+      },
+      {
+        tooltip: 'tunnel operators',
+        field: 'tunnels',
+        fieldRoot: 'operator',
+        type: 'array',
+        display: 'warningEnums'
+      },
+      {
+        tooltip: 'client proxies',
+        field: 'client.proxies',
+        type: 'array',
+        display: 'warningEnums'
+      },
+      {
+        tooltip: 'client behaviors',
+        field: 'client.behaviors',
+        type: 'array',
+        display: 'warningEnums'
+      },
+      {
+        tooltip: 'risks',
+        field: 'risks',
+        type: 'array',
+        display: 'warningEnums'
+      }
+    ]
+  };
 
   homePage = 'https://spur.us/';
   settings = {

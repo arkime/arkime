@@ -1,5 +1,5 @@
 <template>
-  <i-type-basis
+  <base-i-type
       :itype="itype"
       :value="query"
       :data="data"
@@ -36,13 +36,13 @@
         </div>
       </template>
     </template><!--  /non-ip dns records  -->
-  </i-type-basis>
+  </base-i-type>
 </template>
 
 <script>
 import Cont3xtField from '@/utils/Field';
 import TtlTooltip from '@/utils/TtlTooltip';
-import ITypeBasis from '@/components/itypes/ITypeBasis';
+import BaseIType from '@/components/itypes/BaseIType';
 import { ITypeMixin } from './ITypeMixin';
 
 export default {
@@ -51,7 +51,7 @@ export default {
   components: {
     Cont3xtField,
     TtlTooltip,
-    ITypeBasis
+    BaseIType
   },
   props: {
     data: { // the data returned from cont3xt search

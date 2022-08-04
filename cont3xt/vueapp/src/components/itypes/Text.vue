@@ -1,5 +1,5 @@
 <template>
-  <i-type-basis
+  <base-i-type
       :value="query"
       :itype="itype"
       :data="data"
@@ -7,12 +7,12 @@
 </template>
 
 <script>
-import ITypeBasis from '@/components/itypes/ITypeBasis';
+import BaseIType from '@/components/itypes/BaseIType';
 
 export default {
   name: 'Cont3xtText',
   components: {
-    ITypeBasis
+    BaseIType
   },
   props: {
     data: { // the data returned from cont3xt search

@@ -219,6 +219,16 @@ class Integration {
     */
 
   /**
+   * An Integration tidbits object
+   *
+   * Information for creating and ordering tidbits
+   * @typedef IntegrationTidbitContainer
+   * @type {object}
+   * @param {number|undefined} order - a default order to apply to all contained tidbits
+   * @param {IntegrationTidbit[]} fields - the objects that define individual tidbit displays
+   */
+
+  /**
    * An Integration tidbit object
    *
    * Information about how to display a field from an Integration's data to the primary indicator-tree display.
@@ -272,7 +282,7 @@ class Integration {
    * @param {string} icon - The relative url to the integrations icon
    * @param {number} order - The order in which this integration displays in the UI
    * @param {IntegrationCard} card - Information on how to display the integration's data
-   * @param {IntegrationTidbit[]} tidbits - Information on specialized fields to pull into indicator-tree UI
+   * @param {IntegrationTidbitContainer} tidbits - Information on how to pull specialized fields into indicator-tree UI
    */
 
   /**
@@ -328,7 +338,7 @@ class Integration {
         icon: integration.icon,
         card,
         order,
-        tidbits: integration.tidbits || []
+        tidbits: integration.tidbits?.fields || []
       };
     }
 
@@ -828,10 +838,16 @@ class Integration {
 
   normalizeTidbits () {
     if (!this.tidbits) { return; }
-    this.tidbits = this.tidbits.map(this.normalizeTidbit);
+    if (Array.isArray(this.tidbits)) {
+      // if tidbits is just an array, make that into fields.
+      this.tidbits = { fields: this.tidbits };
+    }
+    this.tidbits.order ??= 0;
+    this.tidbits.fields = this.tidbits.fields
+      ?.map((tidbit, index) => this.normalizeTidbitField(tidbit, index, this.tidbits.order));
   }
 
-  normalizeTidbit (tidbit) {
+  normalizeTidbitField (tidbit, index, containerOrder) {
     const {
       type,
       path: fieldPath,
@@ -852,7 +868,7 @@ class Integration {
     return {
       path: fieldPath || field?.split('.') || [],
       fieldRootPath: fieldRootPath || fieldRoot?.split('.') || [],
-      order: order || 0,
+      order: order || containerOrder,
       tooltip,
       tooltipTemplate,
       label,
@@ -861,7 +877,8 @@ class Integration {
       template,
       postProcess,
       precedence: precedence || Number.MIN_VALUE,
-      purpose: purpose || ''
+      purpose: purpose || '',
+      definitionOrder: index
     };
   }
 }

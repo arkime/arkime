@@ -1,5 +1,5 @@
 <template>
-  <i-type-basis
+  <base-i-type
       :value="query"
       :itype="itype"
       :data="data"
@@ -8,14 +8,14 @@
 </template>
 
 <script>
-import ITypeBasis from '@/components/itypes/ITypeBasis';
+import BaseIType from '@/components/itypes/BaseIType';
 import { ITypeMixin } from './ITypeMixin';
 
 export default {
   name: 'Cont3xtPhone',
   mixins: [ITypeMixin],
   components: {
-    ITypeBasis
+    BaseIType
   },
   props: {
     data: { // the data returned from cont3xt search
