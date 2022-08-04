@@ -125,6 +125,25 @@ class VirusTotalDomainIntegration extends Integration {
     ]
   };
 
+  tidbits = {
+    fields: [
+      {
+        field: 'whois',
+        postProcess: ['getVTDomainCreation', 'removeTime'],
+        purpose: 'registered',
+        precedence: 2,
+        order: 100
+      },
+      {
+        field: 'whois',
+        postProcess: 'getVTDomainRegistrar',
+        purpose: 'registrar',
+        precedence: 2,
+        order: 110
+      }
+    ]
+  };
+
   // Default cacheTimeout 24 hours
   cacheTimeout = 24 * 60 * 60 * 1000;
 
@@ -140,7 +159,6 @@ class VirusTotalDomainIntegration extends Integration {
       if (!key) {
         return undefined;
       }
-
       const response = await axios.get('https://www.virustotal.com/vtapi/v2/domain/report', {
         params: {
           apikey: key,

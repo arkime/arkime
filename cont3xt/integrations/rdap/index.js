@@ -22,6 +22,23 @@ class RDAPIntegration extends Integration {
     ip: 'fetchIp'
   };
 
+  tidbits = {
+    order: 100,
+    fields: [
+      {
+        tooltip: 'link',
+        field: 'link',
+        postProcess: 'baseRIR',
+        display: 'cont3xtCopyLink'
+      },
+      {
+        label: 'Name',
+        field: 'name',
+        display: 'cont3xtField'
+      }
+    ]
+  };
+
   settings = {
     disabled: {
       help: 'Disable integration for all queries',

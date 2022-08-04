@@ -100,6 +100,26 @@ class PassiveTotalWhoisIntegration extends Integration {
     ]
   };
 
+  tidbits = {
+    fields: [
+      {
+        field: 'registered',
+        postProcess: 'removeTime',
+        tooltipTemplate: '<value>',
+        purpose: 'registered',
+        precedence: 2,
+        order: 100
+      },
+      {
+        tooltip: 'registrar',
+        field: 'registrar',
+        purpose: 'registrar',
+        precedence: 2,
+        order: 110
+      }
+    ]
+  };
+
   // Default cacheTimeout 24 hours
   cacheTimeout = 24 * 60 * 60 * 1000;
 

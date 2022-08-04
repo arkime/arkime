@@ -244,7 +244,7 @@
                 {{ getLinkGroupsError }}
               </b-alert>
               <!-- link search -->
-              <div v-if="searchItype && initialized">
+              <div v-if="searchItype && initialized" class="mb-5">
                 <b-input-group size="sm">
                   <template #prepend>
                     <b-input-group-text>
