@@ -128,7 +128,8 @@ export default {
         { id: 'packets', sort: 'packets', name: 'Packets', classes: 'text-right', help: 'Number of packets in file', width: 130 },
         { id: 'packetsSize', sort: 'packetsSize', name: 'Packets Bytes', classes: 'text-right', help: 'Size of packets before compression', width: 150, dataFunction: (item) => { return this.$options.filters.commaString(item.packetsSize); } },
         { id: 'uncompressedBits', sort: 'uncompressedBits', name: 'UC Bits', classes: 'text-right', help: 'Number of bits used to store uncompressed position', width: 100 },
-        { id: 'compression', name: 'Compression', classes: 'text-right', help: '1 - compressed/uncompressed in bytes', width: 100, dataFunction: (item) => { return item.compression + '%'; } }
+        { id: 'cratio', name: 'C Ratio', classes: 'text-right', help: '1 - compressed/uncompressed in bytes', width: 100, dataFunction: (item) => { return item.cratio + '%'; } },
+        { id: 'compression', name: 'Compression', help: 'Compression Algorithm', width: 100 }
       ]
     };
   },

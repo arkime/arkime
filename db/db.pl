@@ -71,6 +71,7 @@
 # 75 - notifiers index
 # 76 - views index
 # 77 - cron sharing with roles and users
+# 78 - added roleAssigners to users
 
 use HTTP::Request::Common;
 use LWP::UserAgent;
@@ -82,7 +83,7 @@ use IO::Compress::Gzip qw(gzip $GzipError);
 use IO::Uncompress::Gunzip qw(gunzip $GunzipError);
 use strict;
 
-my $VERSION = 77;
+my $VERSION = 78;
 my $verbose = 0;
 my $PREFIX = undef;
 my $OLDPREFIX = "";
@@ -5823,6 +5824,9 @@ sub usersUpdate
     },
     "roles": {
       "type": "keyword"
+    },
+    "roleAssigners": {
+      "type": "keyword"
     }
   }
 }';
@@ -7646,6 +7650,7 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
         viewsCreate();
         viewsMove();
         queriesUpdate();
+        usersUpdate();
     } elsif ($main::versionNumber == 75) {
         checkForOld7Indices();
         sessions3Update();
@@ -7653,7 +7658,14 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
         viewsCreate();
         viewsMove();
         queriesUpdate();
+        usersUpdate();
     } elsif ($main::versionNumber <= 77) {
+        checkForOld7Indices();
+        sessions3Update();
+        historyUpdate();
+        queriesUpdate();
+        usersUpdate();
+    } elsif ($main::versionNumber <= 78) {
         checkForOld7Indices();
         sessions3Update();
         historyUpdate();

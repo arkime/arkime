@@ -11,6 +11,7 @@ INCLUDE_OTHER = -Ithirdparty \
 	        @YARA_CFLAGS@ \
 	        @MAXMINDDB_CFLAGS@ \
 	        @MAGIC_CFLAGS@ \
+	        @ZSTD_CFLAGS@ \
 	        @CURL_CFLAGS@
 
 
@@ -21,6 +22,7 @@ LIB_OTHER     = @GLIB2_LIBS@ \
 	        @MAXMINDDB_LIBS@ \
 	        @CURL_LIBS@ \
 	        @NGHTTP2_LIBS@ \
+	        @ZSTD_LIBS@ \
                 @LIBS@ \
 	        thirdparty/http_parser.o \
 	        thirdparty/js0n.o \

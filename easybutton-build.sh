@@ -20,6 +20,7 @@ LUA=5.3.6
 DAQ=2.0.7
 NODE=16.16.0
 NGHTTP2=1.44.0
+ZSTD=1.5.2
 
 TDIR="/opt/arkime"
 DOPFRING=0
@@ -29,6 +30,7 @@ DONODE=1
 DOINSTALL=0
 DORMINSTALL=0
 DOTHIRDPARTY=1
+BUILDZSTD=0
 
 while :
 do
@@ -104,7 +106,11 @@ UNAME="$(uname)"
 # Installing dependencies
 echo "ARKIME: Installing Dependencies"
 if [ -f "/etc/redhat-release" ] || [ -f "/etc/system-release" ]; then
-  sudo yum -y install wget curl pcre pcre-devel pkgconfig flex bison gcc-c++ zlib-devel e2fsprogs-devel openssl-devel file-devel make gettext libuuid-devel perl-JSON bzip2-libs bzip2-devel perl-libwww-perl libpng-devel xz libffi-devel readline-devel libtool libyaml-devel perl-Socket6 perl-Test-Differences
+  . /etc/os-release
+  if [ "$VERSION_ID" = "7" ]; then
+      BUILDZSTD=1
+  fi
+  sudo yum -y install wget curl pcre pcre-devel pkgconfig flex bison gcc-c++ zlib-devel e2fsprogs-devel openssl-devel file-devel make gettext libuuid-devel perl-JSON bzip2-libs bzip2-devel perl-libwww-perl libpng-devel xz libffi-devel readline-devel libtool libyaml-devel perl-Socket6 perl-Test-Differences libzstd-devel
   if [ $? -ne 0 ]; then
     echo "ARKIME: yum failed"
     exit 1
@@ -112,7 +118,11 @@ if [ -f "/etc/redhat-release" ] || [ -f "/etc/system-release" ]; then
 fi
 
 if [ -f "/etc/debian_version" ]; then
-  sudo apt-get -qq install wget curl libpcre3-dev uuid-dev libmagic-dev pkg-config g++ flex bison zlib1g-dev libffi-dev gettext libgeoip-dev make libjson-perl libbz2-dev libwww-perl libpng-dev xz-utils libffi-dev libssl-dev libreadline-dev libtool libyaml-dev dh-autoreconf libsocket6-perl libtest-differences-perl
+  . /etc/os-release
+  if [ "$VERSION_CODENAME" = "bionic" ]; then
+      BUILDZSTD=1
+  fi
+  sudo apt-get -qq install wget curl libpcre3-dev uuid-dev libmagic-dev pkg-config g++ flex bison zlib1g-dev libffi-dev gettext libgeoip-dev make libjson-perl libbz2-dev libwww-perl libpng-dev xz-utils libffi-dev libssl-dev libreadline-dev libtool libyaml-dev dh-autoreconf libsocket6-perl libtest-differences-perl libzstd-dev
   if [ $? -ne 0 ]; then
     echo "ARKIME: apt-get failed"
     exit 1
@@ -165,9 +175,9 @@ if [ "$UNAME" = "Darwin" ]; then
          ./configure --with-libpcap=/opt/homebrew/opt/libpcap --with-maxminddb=/opt/homebrew --with-yara=/opt/homebrew CFLAGS="-I/opt/homebrew/include" LDFLAGS="-L/opt/homebrew/lib" --with-glib2=no GLIB2_CFLAGS="-I/opt/homebrew/include/glib-2.0 -I/opt/homebrew/lib/glib-2.0/include -I/opt/homebrew/opt/openssl@1.1/include" GLIB2_LIBS="-L/opt/homebrew/lib -lglib-2.0 -lgmodule-2.0 -lgobject-2.0 -lgio-2.0 -L/opt/homebrew/opt/openssl@1.1/lib" --with-pfring=no --with-curl=yes --with-nghttp2=yes --with-lua=no LUA_CFLAGS="-I/opt/homebrew/include/lua" LUA_LIBS="-L/opt/homebrew/lib -llua"
   fi
 elif [ -f "/etc/arch-release" ]; then
-    sudo pacman -Sy --noconfirm gcc ruby make python-pip git perl perl-test-differences sudo wget gawk lua geoip yara file libpcap libmaxminddb libnet lua libtool autoconf gettext automake perl-http-message perl-lwp-protocol-https perl-json perl-socket6
-    echo './configure --with-libpcap=no --with-yara=no --with-glib2=no --with-pfring=no --with-curl=no --with-lua=no LIBS="-lpcap -lyara -llua -lcurl" GLIB2_CFLAGS="-I/usr/include/glib-2.0 -I/usr/lib/glib-2.0/include" GLIB2_LIBS="-lglib-2.0 -lgmodule-2.0 -lgobject-2.0 -lgio-2.0"'
-    ./configure --with-libpcap=no --with-yara=no --with-glib2=no --with-pfring=no --with-curl=no --with-lua=no LIBS="-lpcap -lyara -llua -lcurl" GLIB2_CFLAGS="-I/usr/include/glib-2.0 -I/usr/lib/glib-2.0/include" GLIB2_LIBS="-lglib-2.0 -lgmodule-2.0 -lgobject-2.0 -lgio-2.0"
+    sudo pacman -Sy --noconfirm gcc ruby make python-pip git perl perl-test-differences sudo wget gawk lua geoip yara file libpcap libmaxminddb libnet lua libtool autoconf gettext automake perl-http-message perl-lwp-protocol-https perl-json perl-socket6 zstd
+    echo './configure --with-zstd=yes --with-libpcap=no --with-yara=no --with-glib2=no --with-pfring=no --with-curl=no --with-lua=no LIBS="-lpcap -lyara -llua -lcurl" GLIB2_CFLAGS="-I/usr/include/glib-2.0 -I/usr/lib/glib-2.0/include" GLIB2_LIBS="-lglib-2.0 -lgmodule-2.0 -lgobject-2.0 -lgio-2.0"'
+    ./configure --with-zstd=yes --with-libpcap=no --with-yara=no --with-glib2=no --with-pfring=no --with-curl=no --with-lua=no LIBS="-lpcap -lyara -llua -lcurl" GLIB2_CFLAGS="-I/usr/include/glib-2.0 -I/usr/lib/glib-2.0/include" GLIB2_LIBS="-lglib-2.0 -lgmodule-2.0 -lgobject-2.0 -lgio-2.0"
 elif [ $DOTHIRDPARTY -eq 0 ]; then
     ./configure --with-lua=$with_lua
 else
@@ -191,7 +201,7 @@ else
     fi
 
     if [ ! -f "glib-$GLIB/_build/gio/libgio-2.0.a" ] || [ ! -f "glib-$GLIB/_build/glib/libglib-2.0.a" ]; then
-      pip3 install --user meson
+      sudo pip3 install meson
       git clone https://github.com/ninja-build/ninja.git
       (echo $PATH; cd ninja; git checkout release; python3 configure.py --bootstrap)
       xzcat glib-$GLIB.tar.xz | tar xf -
@@ -323,12 +333,33 @@ else
     fi
   fi
 
+  # zstd
+  if [ $BUILDZSTD -eq 1 ]; then
+    WITHZSTD="--with-zstd=thirdparty/zstd-$ZSTD"
+    if [ ! -f "zstd-$ZSTD.tar.gz" ]; then
+      wget https://github.com/facebook/zstd/releases/download/v$ZSTD/zstd-$ZSTD.tar.gz
+    fi
+
+    if [ ! -f "zstd-$ZSTD/lib/libzstd.a" ]; then
+      tar zxf zstd-$ZSTD.tar.gz
+      ( cd zstd-$ZSTD; $MAKE)
+      if [ $? -ne 0 ]; then
+        echo "ARKIME: $MAKE failed"
+        exit 1
+      fi
+    else
+      echo "ARKIME: Not rebuilding zstd"
+    fi
+  else
+    WITHZSTD=""
+  fi
+
 
   # Now build arkime
   echo "ARKIME: Building capture"
   cd ..
-  echo "./configure --prefix=$TDIR $PCAPBUILD --with-yara=thirdparty/yara/yara-$YARA --with-maxminddb=thirdparty/libmaxminddb-$MAXMIND $WITHGLIB --with-curl=thirdparty/curl-$CURL --with-nghttp2=thirdparty/nghttp2-$NGHTTP2 --with-lua=thirdparty/lua-$LUA"
-        ./configure --prefix=$TDIR $PCAPBUILD --with-yara=thirdparty/yara/yara-$YARA --with-maxminddb=thirdparty/libmaxminddb-$MAXMIND $WITHGLIB --with-curl=thirdparty/curl-$CURL --with-nghttp2=thirdparty/nghttp2-$NGHTTP2 --with-lua=thirdparty/lua-$LUA
+  echo "./configure --prefix=$TDIR $PCAPBUILD --with-yara=thirdparty/yara/yara-$YARA --with-maxminddb=thirdparty/libmaxminddb-$MAXMIND $WITHGLIB --with-curl=thirdparty/curl-$CURL --with-nghttp2=thirdparty/nghttp2-$NGHTTP2 --with-lua=thirdparty/lua-$LUA $WITHZSTD"
+        ./configure --prefix=$TDIR $PCAPBUILD --with-yara=thirdparty/yara/yara-$YARA --with-maxminddb=thirdparty/libmaxminddb-$MAXMIND $WITHGLIB --with-curl=thirdparty/curl-$CURL --with-nghttp2=thirdparty/nghttp2-$NGHTTP2 --with-lua=thirdparty/lua-$LUA $WITHZSTD
 fi
 
 if [ $DOCLEAN -eq 1 ]; then

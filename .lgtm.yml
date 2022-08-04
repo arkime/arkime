@@ -1,0 +1,2 @@
+queries:
+  - exclude: js/missing-rate-limiting

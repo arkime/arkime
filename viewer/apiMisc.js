@@ -93,7 +93,7 @@ module.exports = (Config, Db, internals, sessionAPIs, userAPIs, ViewerUtils) => 
    * @returns {number} recordsFiltered - The number of files returned in this result
    */
   miscAPIs.getFiles = (req, res) => {
-    const columns = ['num', 'node', 'name', 'locked', 'first', 'filesize', 'encoding', 'packetPosEncoding', 'packets', 'packetsSize', 'uncompressedBits'];
+    const columns = ['num', 'node', 'name', 'locked', 'first', 'filesize', 'encoding', 'packetPosEncoding', 'packets', 'packetsSize', 'uncompressedBits', 'compression'];
 
     const query = {
       _source: columns,
@@ -122,7 +122,7 @@ module.exports = (Config, Db, internals, sessionAPIs, userAPIs, ViewerUtils) => 
         if (fields.locked === undefined) {
           fields.locked = 0;
         }
-        fields.compression = fields.packetsSize ? Math.round(100 - (100 * fields.filesize / fields.packetsSize)) : 0;
+        fields.cratio = fields.packetsSize ? Math.round(100 - (100 * fields.filesize / fields.packetsSize)) : 0;
         fields.id = fields._id;
         results.results.push(fields);
       }
@@ -389,7 +389,7 @@ module.exports = (Config, Db, internals, sessionAPIs, userAPIs, ViewerUtils) => 
 
       // can't fetch user or fields is FATAL, so let it fall through to outer
       // catch and send an error to the client
-      const user = User.getCurrentUser(req);
+      const user = await User.getCurrentUser(req);
       const fieldsArr = internals.fieldsArr;
       const fieldsMap = JSON.parse(internals.fieldsMap);
 

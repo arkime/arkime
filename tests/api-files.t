@@ -52,7 +52,7 @@ cmp_ok ($json->{recordsFiltered}, "==", 1);
 delete $json->{data}->[0]->{id};
 delete $json->{data}->[0]->{num};
 delete $json->{data}->[0]->{first};
-eq_or_diff($json->{data}->[0], from_json('{"locked":1,"filesize":9159,"node":"test","name":"/DIR/tests/pcap/v6-http.pcap","compression":0}'));
+eq_or_diff($json->{data}->[0], from_json('{"locked":1,"filesize":9159,"node":"test","name":"/DIR/tests/pcap/v6-http.pcap","cratio":0}'));
 
 # filter 2
 $json = get("/file/list?sortField=name&desc=true&filter=/v6");
@@ -65,8 +65,8 @@ delete $json->{data}->[0]->{first};
 delete $json->{data}->[1]->{id};
 delete $json->{data}->[1]->{num};
 delete $json->{data}->[1]->{first};
-eq_or_diff($json->{data}, from_json('[{"locked":1,"filesize":28251,"node":"test","name":"/DIR/tests/pcap/v6.pcap","compression":0},' .
-                                     '{"locked":1,"filesize":9159,"node":"test","name":"/DIR/tests/pcap/v6-http.pcap","compression":0}]'));
+eq_or_diff($json->{data}, from_json('[{"locked":1,"filesize":28251,"node":"test","name":"/DIR/tests/pcap/v6.pcap","cratio":0},' .
+                                     '{"locked":1,"filesize":9159,"node":"test","name":"/DIR/tests/pcap/v6-http.pcap","cratio":0}]'));
 
 # filter emptry
 $json = get("/file/list?sortField=name&desc=true&filter=sillyname");

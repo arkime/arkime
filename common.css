@@ -94,6 +94,20 @@ body {
   max-height: 200px;
 }
 
+/* user dropdown scrolls for long lists */
+/* padding helps hide content behind sticky search bar */
+.users-dropdown ul {
+  overflow: auto;
+  min-width: 500px;
+  max-width: 600px;
+  max-height: 200px;
+  padding-top: 0 !important;
+}
+
+.users-dropdown form {
+  padding-inline: 0 !important;
+}
+
 /* xs input groups */
 .input-group-xs > .form-control,
 .input-group-xs > .custom-select,
