@@ -46,7 +46,7 @@ export const applyTemplate = (templateStr, accessibleVars) => {
     let data = accessibleVars;
     for (const p of path) {
       if (data == null) {
-        console.warn(`Can't resolve path: ${path.join('.')} in template ${templateStr}`);
+        // console.warn(`Can't resolve path: ${path.join('.')} in template ${templateStr}`);
         data = 'undefined';
         break; // break for-loop
       }
