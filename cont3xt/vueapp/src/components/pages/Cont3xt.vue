@@ -409,6 +409,13 @@ export default {
     };
   },
   mounted () {
+    // parse tags from query parameter (used by history to reissue search with tags), then remove it
+    if (this.$route.query.tags) {
+      this.tags = this.$route.query.tags.split(',').map(tag => tag.trim());
+      this.$router.push({ query: { ...this.$route.query, tags: undefined } });
+      this.tagDisplayCollapsed = !this.tags.length;
+    }
+
     // no need to parse start/stopDate query params here -- that is handled by TimeRangeInput
 
     // needs to be unfocused to focus again later with hotkey (subsequent focuses are unfocused in store)

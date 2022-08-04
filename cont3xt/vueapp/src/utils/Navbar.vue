@@ -60,7 +60,7 @@
               v-if="getUser"
               class="nav-link"
               active-class="active">
-            History
+            Histor<span :class="{'holding-shift':getShiftKeyHold}">y</span>
           </router-link>
         </li>
         <li class="nav-item mr-2">

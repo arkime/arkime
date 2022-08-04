@@ -31,6 +31,8 @@
           <br>
           <code>'A'</code> - jump to the Stats page
           <br>
+          <code>'Y'</code> - jump to the History page
+          <br>
           <code>'H'</code> - jump to the Help page
           <br>
           <code>'shift + enter'</code> - issue search/refresh
@@ -152,6 +154,12 @@ export default {
         // open stats page if not on stats page
         if (this.$route.name !== 'Stats') {
           this.routeTo('/stats');
+        }
+        break;
+      case 89: // y
+        // open history page if not on history page
+        if (this.$route.name !== 'History') {
+          this.routeTo('/history');
         }
         break;
       case 83: // s
