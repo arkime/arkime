@@ -484,11 +484,10 @@ class User {
    * POST - /api/users/min
    *
    * Retrieves a list of users (non-admin usable [with role status returned only for roleAssigners]).
-   * @name /users
+   * @name /users/min
+   * @param {string} roleId - Optional roleId to match against
    * @returns {boolean} success - True if the request was successful, false otherwise
    * @returns {ArkimeUserInfo[]} data - The list of users configured.
-   * @returns {number} recordsTotal - The total number of users.
-   * @returns {number} recordsFiltered - The number of users returned in this result.
    */
   static apiGetUsersMin (req, res, next) {
     const query = {
