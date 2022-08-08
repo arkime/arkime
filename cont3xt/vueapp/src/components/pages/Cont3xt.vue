@@ -545,8 +545,8 @@ export default {
         this.search();
       }
 
-      // remove 'submit' query parameter
-      if (this.$route.query.submit !== undefined) {
+      // remove 'submit' and 'tags' query parameters
+      if (this.$route.query.submit !== undefined || this.$route.query.tags !== undefined) {
         this.$router.push({ query: { ...this.$route.query, submit: undefined, tags: undefined } });
       }
     }
