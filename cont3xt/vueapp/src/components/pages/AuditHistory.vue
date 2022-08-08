@@ -10,6 +10,7 @@
             </b-input-group-text>
           </template>
           <b-form-input
+              autofocus
               tabindex="0"
               ref="search"
               v-model="filter"
