@@ -1,4 +1,4 @@
-use Test::More tests => 90;
+use Test::More tests => 99;
 use Cwd;
 use URI::Escape;
 use MolochTest;
@@ -15,7 +15,8 @@ my $json;
 # Get tokens
     my $token = getTokenCookie();
     my $token2 = getTokenCookie2();
-    my $token3 = getTokenCookie('test1');
+    my $test1Token = getTokenCookie('test1');
+    my $test2Token = getTokenCookie('test2');
 
 # clean old crons
     esPost("/tests_queries/_delete_by_query?conflicts=proceed&refresh", '{ "query": { "match_all": {} } }');
@@ -23,6 +24,13 @@ my $json;
 # users
     my $users = viewerPost("/user/list", "");
     is (@{$users->{data}}, 0, "Empty users table");
+
+# Can't create system rule
+    $json = viewerPostToken("/user/create", '{"userId": "usersAdmin", "userName": "UserName", "enabled":true, "password":"password"}', $token);
+    eq_or_diff($json, from_json('{"text": "User ID can\'t be a system role id", "success": false}'));
+
+    $json = viewerPostToken("/user/update", '{"userId": "usersAdmin", "userName": "UserName", "enabled":true, "password":"password", "roles":["superAdmin"]}', $token);
+    eq_or_diff($json, from_json('{"text": "User ID can\'t be a system role id", "success": false}'));
 
 # Add User 1
     $json = viewerPostToken("/user/create", '{"userId": "test1", "userName": "UserName", "enabled":true, "password":"password"}', $token);
@@ -227,7 +235,7 @@ my $json;
 # Messages
     $info = viewerPutToken("/user/test1/acknowledgeMsg", '{"msgNum":2}', $token2);
     ok(!$info->{success}, "can't update welcome message number for another user");
-    $info = viewerPutToken("/api/user/test1/acknowledge?molochRegressionUser=test1", '{"msgNum":2}', $token3);
+    $info = viewerPutToken("/api/user/test1/acknowledge?molochRegressionUser=test1", '{"msgNum":2}', $test1Token);
     ok($info->{success}, "update welcome message number");
     $info = viewerGet("/user/current?molochRegressionUser=test1");
     eq_or_diff($info->{welcomeMsgNum}, 2, "welcome message number is correct");
@@ -275,6 +283,28 @@ my $json;
 
     $json = viewerPost("/user/list?molochRegressionUser=role:test1", "");
     eq_or_diff($json, from_json('{"text": "Can not authenticate with role", "success": false}'));
+
+# role assigner
+    $json = viewerPostToken("/user/update", '{"userId": "role:test1", "userName": "UserName", "enabled":true, "roles":"bad", "roleAssigners": "foo"}', $token);
+    eq_or_diff($json, from_json('{"text": "roleAssigners field must be an array", "success": false}'));
+
+    $json = viewerPostToken("/user/update", '{"userId": "role:test1", "userName": "UserName", "enabled":true, "roles":"bad", "roleAssigners": ["test1"]}', $token);
+    eq_or_diff($json, from_json('{"text": "User role:test1 updated successfully", "success": true}'));
+
+    $json = viewerPost("/user/list", "filter=role:test1");
+    eq_or_diff($json->{data}->[0]->{roleAssigners}, from_json('["test1"]'));
+
+    $json = viewerPostToken("/api/users/min?molochRegressionUser=test1", "", $test1Token);
+    eq_or_diff($json, from_json('{"data":[{"userName":"UserNameUpdated","userId":"test1"},{"userId":"test2","userName":"UserNameUpdated3"}],"success":true}'));
+
+    $json = viewerPostToken("/api/users/min?molochRegressionUser=test1", '{"roleId": "role:test1"}', $test1Token);
+    eq_or_diff($json, from_json('{"data":[{"hasRole": false, "userName":"UserNameUpdated","userId":"test1"},{"hasRole": false, "userId":"test2","userName":"UserNameUpdated3"}],"success":true}'));
+
+    $json = viewerPostToken("/api/users/min?molochRegressionUser=test2", "", $test2Token);
+    eq_or_diff($json, from_json('{"data":[{"userName":"UserNameUpdated","userId":"test1"},{"userId":"test2","userName":"UserNameUpdated3"}],"success":true}'));
+
+    $json = viewerPostToken("/api/users/min?molochRegressionUser=test2", '{"roleId": "role:test1"}', $test2Token);
+    eq_or_diff($json, from_json('{"text": "You do not have permission to access this resource","success":false}'));
 
 # Delete Users
     $json = viewerDeleteToken("/api/user/test1", $token);

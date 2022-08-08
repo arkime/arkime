@@ -484,11 +484,10 @@ class User {
    * POST - /api/users/min
    *
    * Retrieves a list of users (non-admin usable [with role status returned only for roleAssigners]).
-   * @name /users
+   * @name /users/min
+   * @param {string} roleId - Optional roleId to match against
    * @returns {boolean} success - True if the request was successful, false otherwise
    * @returns {ArkimeUserInfo[]} data - The list of users configured.
-   * @returns {number} recordsTotal - The total number of users.
-   * @returns {number} recordsFiltered - The number of users returned in this result.
    */
   static apiGetUsersMin (req, res, next) {
     const query = {
@@ -540,6 +539,10 @@ class User {
       return res.serverError(403, 'Missing/Empty required fields');
     }
 
+    if (systemRolesMapping[req.body.userId]) {
+      return res.serverError(403, 'User ID can\'t be a system role id');
+    }
+
     let userIdTest = req.body.userId;
     if (userIdTest.startsWith('role:')) {
       userIdTest = userIdTest.slice(5);
@@ -566,6 +569,10 @@ class User {
 
     if (req.body.roles.includes('superAdmin') && !req.user.hasRole('superAdmin')) {
       return res.serverError(403, 'Can not create superAdmin unless you are superAdmin');
+    }
+
+    if (req.body.roleAssigners && !Array.isArray(req.body.roleAssigners)) {
+      return res.serverError(403, 'roleAssigners field must be an array');
     }
 
     if (req.body.roleAssigners === undefined) {
@@ -659,8 +666,16 @@ class User {
       return res.serverError(403, "_moloch_shared is a shared user. This user's settings cannot be updated");
     }
 
+    if (systemRolesMapping[userId]) {
+      return res.serverError(403, 'User ID can\'t be a system role id');
+    }
+
     if (req.body.roles === undefined) {
       req.body.roles = [];
+    }
+
+    if (req.body.roleAssigners && !Array.isArray(req.body.roleAssigners)) {
+      return res.serverError(403, 'roleAssigners field must be an array');
     }
 
     if (req.body.roles.includes('superAdmin') && !req.user.hasRole('superAdmin')) {
@@ -703,7 +718,7 @@ class User {
       user.disablePcapDownload = req.body.disablePcapDownload === true;
       user.timeLimit = req.body.timeLimit ? parseInt(req.body.timeLimit) : undefined;
       user.roles = req.body.roles;
-      user.roleAssigners = req.body.roleAssigners || [];
+      user.roleAssigners = req.body.roleAssigners ?? [];
 
       User.setUser(userId, user, (err, info) => {
         if (User.#debug) {
