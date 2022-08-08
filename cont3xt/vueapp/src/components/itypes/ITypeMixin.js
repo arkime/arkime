@@ -11,8 +11,8 @@ export const ITypeMixin = {
         .flatMap(([integration, data]) => (
           this.getIntegrations[integration].tidbits.map(tidbit => {
             const value = formatValue(data, tidbit);
-            const displayValue = this.applyTidbitPostProcess(value, data, tidbit.postProcess, tidbit.template);
-            const tooltip = this.applyTidbitTooltip(value, data, integration, tidbit.tooltip, tidbit.tooltipTemplate);
+            const displayValue = this.applyTidbitPostProcess(value, data, integration, tidbit.postProcess, tidbit.template);
+            const tooltip = this.applyTidbitTooltip(value, data, displayValue, tidbit.tooltip, tidbit.tooltipTemplate);
 
             return {
               integration,
@@ -28,7 +28,8 @@ export const ITypeMixin = {
             };
           })
         ))
-        .filter(tidbit => tidbit.value != null && tidbit.value !== ''); // remove tidbits that failed to get proper data
+        .filter(tidbit => tidbit.value != null && tidbit.value?.length !== 0 &&
+                          tidbit.displayValue != null && tidbit.displayValue?.length !== 0); // remove tidbits that failed to get proper data
 
       // sort by purpose, then precedence -- to allow for purpose-based culling
       validTidbits.sort((a, b) => {
@@ -74,13 +75,13 @@ export const ITypeMixin = {
     }
   },
   methods: {
-    applyTidbitTooltip (value, data, integration, tooltip, tooltipTemplate) {
+    applyTidbitTooltip (value, data, displayValue, tooltip, tooltipTemplate) {
       // if the template exists, fill it, otherwise, return the string|undefined tooltip
       return tooltipTemplate
-        ? applyTemplate(tooltipTemplate, { value, data })
+        ? applyTemplate(tooltipTemplate, { value, data, displayValue })
         : tooltip;
     },
-    applyTidbitPostProcess (value, data, postProcess, template) {
+    applyTidbitPostProcess (value, data, integration, postProcess, template) {
       // first fill template, if existent
       if (template?.length) {
         value = applyTemplate(template, { value, data });
@@ -89,8 +90,15 @@ export const ITypeMixin = {
       if (postProcess) {
         const postProcessors = Array.isArray(postProcess) ? postProcess : [postProcess]; // ensure array
         for (const postProcessor of postProcessors) {
-          const filterFunc = this.$options?.filters[postProcessor] || this.otherFilters[postProcessor];
-          value = filterFunc?.(value) || value;
+          const customFilterFunc = this.otherFilters[postProcessor];
+          const defaultFilterFunc = this.$options?.filters[postProcessor];
+          if (customFilterFunc) {
+            value = customFilterFunc(value, this.getIntegrations[integration].uiSettings);
+          } else if (defaultFilterFunc) {
+            value = defaultFilterFunc(value);
+          } else {
+            console.warn(`No such postProcess ${postProcessor}`);
+          }
         }
       }
       return value;
@@ -117,10 +125,31 @@ export const ITypeMixin = {
       return data.slice(start, end + start);
     };
 
+    const threatStreamTags = (tagObjs, settings) => {
+      // use filters for ThreatStream from Settings
+      const wildcardFiltersStr = settings.filters || '';
+      const wildcardFilters = wildcardFiltersStr.split(',').map(str => str.trim());
+
+      // create regexes from wildcard notation filters
+      const filters = wildcardFilters.map(wildcardFilter =>
+        new RegExp(`^${wildcardFilter.replaceAll('*', '[\\s\\S]*?')}$`)
+      );
+
+      // return existing tags names that do not match any filters
+      return tagObjs?.map(tagObj => tagObj?.name)
+        .filter(tagName =>
+          tagName != null &&
+          !filters.some(filter => filter.test(tagName))
+        );
+    };
+
     this.otherFilters = { // non-reactive constant
       countryEmoji: countryCodeEmoji,
       getVTDomainCreation: (value) => getVTDomainField(value, 'Creation Date: '),
-      getVTDomainRegistrar: (value) => getVTDomainField(value, 'Registrar: ')
+      getVTDomainRegistrar: (value) => getVTDomainField(value, 'Registrar: '),
+      threatStreamTags,
+      /* common operations -------------------------------------------------------------- */
+      flatten: (value) => value?.flat()
     };
   }
 };

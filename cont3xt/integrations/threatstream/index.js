@@ -39,6 +39,7 @@ class ThreatstreamIntegration extends Integration {
           'status',
           'tlp',
           'itype',
+          'value',
           'source',
           'confidence',
           'import_session_id',
@@ -57,11 +58,29 @@ class ThreatstreamIntegration extends Integration {
     ]
   };
 
+  tidbits = {
+    order: 1000,
+    fields: [
+      {
+        field: 'objects',
+        fieldRoot: 'tags',
+        type: 'array',
+        postProcess: ['flatten', 'threatStreamTags'],
+        display: 'dangerGroup',
+        tooltip: 'tags'
+      }
+    ]
+  };
+
   homePage = 'https://www.anomali.com/products/threatstream';
   settings = {
     disabled: {
       help: 'Disable integration for all queries',
       type: 'boolean'
+    },
+    filters: {
+      help: 'Will not display tags that match these filters to the indicator result tree. Write comma-separated with wildcard notation: (EXACT, START*, *MIDDLE*, *END, START*END, etc.)',
+      uiAccessible: true
     },
     host: {
       help: 'The threatstream host to send queries. Only set if you have a on premise deployment.'

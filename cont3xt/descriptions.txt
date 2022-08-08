@@ -54,7 +54,7 @@ Tidbit Description - an object of the following
       * badge - simple badge with information
       * cont3xtField - clickable field with options: "copy", "pivot"
       * cont3xtCopyLink - clickable field with option: "copy link"
-      * warningEnums - (for array type),
+      * <color>Group - (for array type), color options: primary, secondary, success, info, warning, danger
     * order - number by which tidbits are sorted (ascending order), default 0
     * purpose - optional, string to identify the purpose of a tidbit when the same information can be provided by more than one source. When multiple valid tidbits have the same purpose, only the one with the highest precedence will be kept
     * precedence - order of preference as a number, where a higher precedence level makes a data-source more preferred for the given purpose

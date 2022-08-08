@@ -6,7 +6,7 @@
         size="xs"
         tabindex="0"
         variant="outline-dark"
-        class="ml-1 mt-1 float-right"
+        class="ml-1 mt-1 float-right no-wrap"
         :id="`${itype}-${integration.name}-${value}`"
         :key="integration.name"
         v-if="instanceData[integration.name] && integration.icon"

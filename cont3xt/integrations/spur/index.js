@@ -100,25 +100,25 @@ class SpurIntegration extends Integration {
         field: 'tunnels',
         fieldRoot: 'operator',
         type: 'array',
-        display: 'warningEnums'
+        display: 'warningGroup'
       },
       {
         tooltip: 'client proxies',
         field: 'client.proxies',
         type: 'array',
-        display: 'warningEnums'
+        display: 'warningGroup'
       },
       {
         tooltip: 'client behaviors',
         field: 'client.behaviors',
         type: 'array',
-        display: 'warningEnums'
+        display: 'warningGroup'
       },
       {
         tooltip: 'risks',
         field: 'risks',
         type: 'array',
-        display: 'warningEnums'
+        display: 'warningGroup'
       }
     ]
   };
