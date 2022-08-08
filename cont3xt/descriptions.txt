@@ -2,6 +2,7 @@ User Settings Description - an object with each sub object a setting.
   * sub objects can have
     * help - some help text
     * password - if true then its a password
+    * uiSetting - true if value is needed in the UI (do not set true for secure values like passwords)
 
 Card Description - an object of the following
   * title - title of the card

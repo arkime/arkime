@@ -80,7 +80,7 @@ class ThreatstreamIntegration extends Integration {
     },
     filters: {
       help: 'Will not display tags that match these filters to the indicator result tree. Write comma-separated with wildcard notation: (EXACT, START*, *MIDDLE*, *END, START*END, etc.)',
-      uiAccessible: true
+      uiSetting: true
     },
     host: {
       help: 'The threatstream host to send queries. Only set if you have a on premise deployment.'

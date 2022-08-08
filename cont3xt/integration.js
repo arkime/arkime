@@ -323,7 +323,7 @@ class Integration {
       // Gather settings to be made accessible from the UI
       const uiSettings = Object.fromEntries(
         Object.entries(keys?.[integration.name] || {})
-          .filter(([key, _]) => integration?.settings?.[key]?.uiAccessible)
+          .filter(([key, _]) => integration?.settings?.[key]?.uiSetting)
       );
 
       // User can override card display
