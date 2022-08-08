@@ -409,14 +409,8 @@ export default {
     };
   },
   mounted () {
-    // parse tags from query parameter (used by history to reissue search with tags), then remove it
-    if (this.$route.query.tags) {
-      this.tags = this.$route.query.tags.split(',').map(tag => tag.trim());
-      this.$router.push({ query: { ...this.$route.query, tags: undefined } });
-      this.tagDisplayCollapsed = !this.tags.length;
-    }
-
     // no need to parse start/stopDate query params here -- that is handled by TimeRangeInput
+    // submit, view, and tags query params are handled in watcher
 
     // needs to be unfocused to focus again later with hotkey (subsequent focuses are unfocused in store)
     this.$store.commit('SET_FOCUS_SEARCH', false);
@@ -530,9 +524,15 @@ export default {
     getFocusTagInput (val) {
       if (val) { this.$refs.tagInput.select(); }
     },
-    getImmediateSubmissionReady () { // fires once both integrations and views are loaded in from backend
-      if (!this.getImmediateSubmissionReady) {
-        return; // flag must be true!
+    // handle page-load query params -- fires once both integrations and views are loaded in from backend
+    getImmediateSubmissionReady () {
+      // only proceed when ready
+      if (!this.getImmediateSubmissionReady) { return; }
+
+      // parse tags from query parameter (used by history to reissue search with tags), then remove it
+      if (this.$route.query.tags) {
+        this.tags = this.$route.query.tags.split(',').map(tag => tag.trim());
+        this.tagDisplayCollapsed = !this.tags.length;
       }
 
       // apply 'view' query param
@@ -547,7 +547,7 @@ export default {
 
       // remove 'submit' query parameter
       if (this.$route.query.submit !== undefined) {
-        this.$router.push({ query: { ...this.$route.query, submit: undefined } });
+        this.$router.push({ query: { ...this.$route.query, submit: undefined, tags: undefined } });
       }
     }
   },
