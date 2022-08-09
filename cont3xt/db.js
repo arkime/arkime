@@ -451,14 +451,16 @@ class DbESImplementation {
   }
 
   async getView (id) {
-    const results = await this.client.get({
-      id,
-      index: 'cont3xt_views'
-    });
+    try {
+      const results = await this.client.get({
+        id,
+        index: 'cont3xt_views'
+      });
 
-    if (results?.body?._source) {
-      return results.body._source;
-    }
+      if (results?.body?._source) {
+        return results.body._source;
+      }
+    } catch (err) {}
 
     return null;
   }
@@ -511,8 +513,7 @@ class DbESImplementation {
       if (results?.body?._source) {
         return results.body._source;
       }
-    } catch (err) {
-    }
+    } catch (err) {}
 
     return null;
   }
