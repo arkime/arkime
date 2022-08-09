@@ -1,5 +1,5 @@
 # Test cont3xt.js
-use Test::More tests => 14;
+use Test::More tests => 63;
 use Test::Differences;
 use Data::Dumper;
 use MolochTest;
@@ -7,6 +7,8 @@ use JSON;
 use strict;
 
 esPost("/cont3xt_links/_delete_by_query?conflicts=proceed&refresh", '{ "query": { "match_all": {} } }');
+esPost("/cont3xt_history/_delete_by_query?conflicts=proceed&refresh", '{ "query": { "match_all": {} } }');
+esPost("/cont3xt_views/_delete_by_query?conflicts=proceed&refresh", '{ "query": { "match_all": {} } }');
 
 my $token = getCont3xtTokenCookie();
 
@@ -119,8 +121,141 @@ eq_or_diff($json, from_json('{"success": false, "text": "Missing token"}'));
 $json = cont3xtDeleteToken("/api/linkGroup/$id", "{}", $token);
 eq_or_diff($json, from_json('{"success": true, "text": "Success"}'));
 
+$json = cont3xtDeleteToken("/api/linkGroup/foo", "{}", $token);
+eq_or_diff($json, from_json('{"success": false, "text": "LinkGroup not found"}'));
+
 $json = cont3xtGet('/api/linkGroup');
 eq_or_diff($json, from_json('{"success": true, "linkGroups": []}'));
 
-#$json = cont3xtGet('/api/roles');
-#eq_or_diff($json, from_json('{"success": true, "roles": ["arkimeAdmin","arkimeUser","cont3xtAdmin","cont3xtUser","parliamentAdmin","parliamentUser","superAdmin","usersAdmin","wiseAdmin","wiseUser"]}'));
+### ROLES
+$json = cont3xtGet('/api/roles');
+eq_or_diff($json, from_json('{"success": false, "text": "Missing token"}'));
+
+$json = cont3xtGetToken('/api/roles', $token);
+eq_or_diff($json, from_json('{"success": true, "roles": ["arkimeAdmin","arkimeUser","cont3xtAdmin","cont3xtUser","parliamentAdmin","parliamentUser","superAdmin","usersAdmin","wiseAdmin","wiseUser"]}'));
+
+### INTEGRATION
+$json = cont3xtGet('/api/integration');
+is ($json->{success}, 1);
+cmp_ok (keys %{$json->{integrations}}, ">", 10);
+
+$json = cont3xtPost('/api/integration/search', to_json({
+  query => "example.com"
+}));
+
+is($json->[0]->{sent}, 0);
+is($json->[0]->{text}, "more to follow");
+is($json->[0]->{itype}, "domain");
+is($json->[0]->{success}, 1);
+cmp_ok (scalar @{$json}, ">", 10);
+
+$json = cont3xtPost('/api/integration/search', to_json({
+  query => "example.com",
+  doIntegrations => ["dns"]
+}));
+
+is($json->[0]->{sent}, 0);
+is($json->[0]->{text}, "more to follow");
+is($json->[0]->{itype}, "domain");
+is($json->[0]->{success}, 1);
+is($json->[1]->{finished}, 1);
+is($json->[1]->{resultCount}, 0);
+is (scalar @{$json}, 2);
+
+$json = cont3xtPost('/api/integration/search', to_json({
+  query => "example.com",
+  tags => ["goodtag"],
+  doIntegrations => ["DNS"]
+}));
+
+is($json->[0]->{sent}, 0);
+is($json->[0]->{text}, "more to follow");
+is($json->[0]->{itype}, "domain");
+is($json->[0]->{success}, 1);
+is($json->[2]->{finished}, 1);
+is($json->[2]->{resultCount}, 0);
+is (scalar @{$json}, 3);
+
+$json = cont3xtPost('/api/integration/search', to_json({
+  query => "example.com",
+  tags => "badtag",
+  doIntegrations => ["DNS"]
+}));
+
+eq_or_diff($json, from_json('{"success": false, "text": "Tags must be an array when present"}'));
+
+esGet("/_flush");
+esGet("/_refresh");
+
+### HISTORY
+$json = cont3xtGet('/api/audits?searchTerm=goodtag');
+is($json->{success}, 1);
+is (scalar @{$json->{audits}}, 1);
+
+$json = cont3xtGet('/api/audits?searchTerm=foo');
+is($json->{success}, 1);
+is (scalar @{$json->{audits}}, 0);
+
+$json = cont3xtGet('/api/audits');
+is($json->{success}, 1);
+is (scalar @{$json->{audits}}, 3);
+$id = $json->{audits}->[0]->{_id};
+
+$json = cont3xtDelete("/api/audit/$id", '{}');
+eq_or_diff($json, from_json('{"success": false, "text": "Missing token"}'));
+
+$json = cont3xtDeleteToken("/api/audit/$id", '{}', $token);
+eq_or_diff($json, from_json('{"success": true, "text": "Success"}'));
+
+$json = cont3xtDeleteToken('/api/audit/foo', '{}', $token);
+eq_or_diff($json, from_json('{"success": false, "text": "History log not found"}'));
+
+$json = cont3xtGet('/api/audits');
+is($json->{success}, 1);
+is (scalar @{$json->{audits}}, 2);
+
+### VIEWS
+$json = cont3xtPostToken('/api/view', to_json({
+}), $token);
+eq_or_diff($json, from_json('{"success": false, "text": "Missing name"}'));
+
+$json = cont3xtPostToken('/api/view', to_json({
+  name => "view1"
+}), $token);
+delete $json->{view}->{_id};
+eq_or_diff($json, from_json('{"view":{"_viewable":true,"name":"view1","_editable":true,"creator":"anonymous"},"success":true,"text":"Success"}'));
+
+$json = cont3xtPostToken('/api/view', to_json({
+  name => "view2"
+}), $token);
+$id = $json->{view}->{_id};
+delete $json->{view}->{_id};
+eq_or_diff($json, from_json('{"success":true,"view":{"creator":"anonymous","_editable":true,"name":"view2","_viewable":true},"text":"Success"}'));
+
+$json = cont3xtPutToken("/api/view/$id", to_json({
+  name => "view2changed"
+}), $token);
+eq_or_diff($json, from_json('{"success": true, "text": "Success"}'));
+
+$json = cont3xtPutToken("/api/view/foo", to_json({
+  name => "view2changed"
+}), $token);
+eq_or_diff($json, from_json('{"success": false, "text": "View not found"}'));
+
+$json = cont3xtGet('/api/views');
+is($json->{success}, 1);
+is($json->{views}->[1]->{name}, "view2changed");
+is (scalar @{$json->{views}}, 2);
+
+$json = cont3xtDelete("/api/view/$id", '{}');
+eq_or_diff($json, from_json('{"success": false, "text": "Missing token"}'));
+
+$json = cont3xtDeleteToken("/api/view/$id", '{}', $token);
+eq_or_diff($json, from_json('{"success": true, "text": "Success"}'));
+
+$json = cont3xtDeleteToken('/api/view/foo', '{}', $token);
+eq_or_diff($json, from_json('{"success": false, "text": "View not found"}'));
+
+$json = cont3xtGet('/api/views');
+is($json->{success}, 1);
+is (scalar @{$json->{views}}, 1);

@@ -524,6 +524,10 @@ class Integration {
       return res.send({ success: false, text: 'Missing query' });
     }
 
+    if (req.body.tags !== undefined && !Array.isArray(req.body.tags)) {
+      return res.send({ success: false, text: 'Tags must be an array when present' });
+    }
+
     if (req.body.doIntegrations && !Array.isArray(req.body.doIntegrations)) {
       return res.send({ success: false, text: 'doIntegrations bad format' });
     }
@@ -556,7 +560,7 @@ class Integration {
         userId: req.user.userId,
         indicator: query,
         iType: itype,
-        tags: req.body.tags,
+        tags: req.body.tags ?? [],
         viewId: req.body.viewId,
         issuedAt,
         took: Date.now() - issuedAt,
