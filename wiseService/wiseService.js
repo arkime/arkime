@@ -645,8 +645,12 @@ class WISESourceAPI {
 function loadSources () {
   glob(getConfig('wiseService', 'sourcePath', path.join(__dirname, '/')) + 'source.*.js', (err, files) => {
     files.forEach((file) => {
-      const src = require(file);
-      src.initSource(internals.sourceApi);
+      try {
+        const src = require(file);
+        src.initSource(internals.sourceApi);
+      } catch (err) {
+        console.log(`WARNING - Couldn't load ${file}\n`, err);
+      }
     });
   });
 
