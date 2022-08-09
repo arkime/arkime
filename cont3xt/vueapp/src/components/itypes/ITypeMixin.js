@@ -1,7 +1,7 @@
 import { formatValue } from '@/utils/formatValue';
 import { mapGetters } from 'vuex';
-import { countryCodeEmoji } from 'country-code-emoji';
 import { applyTemplate } from '@/utils/applyTemplate';
+import { applyPostProcess } from '@/utils/applyPostProcess';
 
 export const ITypeMixin = {
   computed: {
@@ -87,21 +87,7 @@ export const ITypeMixin = {
         value = applyTemplate(template, { value, data });
       }
       // apply any post processors
-      if (postProcess) {
-        const postProcessors = Array.isArray(postProcess) ? postProcess : [postProcess]; // ensure array
-        for (const postProcessor of postProcessors) {
-          const customFilterFunc = this.otherFilters[postProcessor];
-          const defaultFilterFunc = this.$options?.filters[postProcessor];
-          if (customFilterFunc) {
-            value = customFilterFunc(value, this.getIntegrations[integration].uiSettings);
-          } else if (defaultFilterFunc) {
-            value = defaultFilterFunc(value);
-          } else {
-            console.warn(`No such postProcess ${postProcessor}`);
-          }
-        }
-      }
-      return value;
+      return applyPostProcess(postProcess, value, data, this.getIntegrations[integration].uiSettings);
     },
     gatherIntegrationData (data, itype, query) { // restructures data into the shape {[integrationName]: data}
       const iTypeStub = data?.[itype] || {};
@@ -112,44 +98,5 @@ export const ITypeMixin = {
 
       return Object.fromEntries(integrationPairs);
     }
-  },
-  /* adds additional post-processors -------------------------- */
-  created () {
-    // parse the VT Domain whois field for values
-    // NOTE: assumes that each value ends with \n
-    const getVTDomainField = (data, fStr) => {
-      if (data == null) { return undefined; }
-      const start = data.indexOf(fStr) + fStr.length;
-      const leftover = data.slice(start);
-      const end = leftover.indexOf('\n');
-      return data.slice(start, end + start);
-    };
-
-    const threatStreamTags = (tagObjs, settings) => {
-      // use filters for ThreatStream from Settings
-      const wildcardFiltersStr = settings.filters || '';
-      const wildcardFilters = wildcardFiltersStr.split(',').map(str => str.trim());
-
-      // create regexes from wildcard notation filters
-      const filters = wildcardFilters.map(wildcardFilter =>
-        new RegExp(`^${wildcardFilter.replaceAll('*', '[\\s\\S]*?')}$`)
-      );
-
-      // return existing tags names that do not match any filters
-      return tagObjs?.map(tagObj => tagObj?.name)
-        .filter(tagName =>
-          tagName != null &&
-          !filters.some(filter => filter.test(tagName))
-        );
-    };
-
-    this.otherFilters = { // non-reactive constant
-      countryEmoji: countryCodeEmoji,
-      getVTDomainCreation: (value) => getVTDomainField(value, 'Creation Date: '),
-      getVTDomainRegistrar: (value) => getVTDomainField(value, 'Registrar: '),
-      threatStreamTags,
-      /* common operations -------------------------------------------------------------- */
-      flatten: (value) => value?.flat()
-    };
   }
 };

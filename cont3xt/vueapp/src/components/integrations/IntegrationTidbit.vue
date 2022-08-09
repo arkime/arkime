@@ -32,7 +32,7 @@
     </template>
     <template v-else-if="groupColorNames.includes(tidbit.display)">
       <h5 :id="id" class="align-self-end mr-1">
-        <b-badge variant="light" class="d-inline-flex flex-wrap group-container"
+        <b-badge variant="light" class="d-inline-flex flex-wrap group-container mw-100 overflow-auto"
           :class="groupClassMap(tidbit.display)"
         >
           <b-badge v-for="(element, index) in (tidbit.displayValue || tidbit.value)"

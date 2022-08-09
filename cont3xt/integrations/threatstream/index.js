@@ -65,7 +65,22 @@ class ThreatstreamIntegration extends Integration {
         field: 'objects',
         fieldRoot: 'tags',
         type: 'array',
-        postProcess: ['flatten', 'threatStreamTags'],
+        postProcess: [
+          'flatten',
+          { mapTo: 'name' },
+          'removeNullish',
+          {
+            filterOut: {
+              matchAny: { // filter out using regexes created from Threatstream 'hide tags' setting
+                setting: 'hide tags',
+                postProcess: [
+                  { split: ',' },
+                  { map: ['trim', 'wildcardRegex'] }
+                ]
+              }
+            }
+          }
+        ],
         display: 'dangerGroup',
         tooltip: 'tags'
       }
@@ -78,7 +93,7 @@ class ThreatstreamIntegration extends Integration {
       help: 'Disable integration for all queries',
       type: 'boolean'
     },
-    filters: {
+    'hide tags': {
       help: 'Will not display tags that match these filters to the indicator result tree. Write comma-separated with wildcard notation: (EXACT, START*, *MIDDLE*, *END, START*END, etc.)',
       uiSetting: true
     },
