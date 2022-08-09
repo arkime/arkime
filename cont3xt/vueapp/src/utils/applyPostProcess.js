@@ -5,19 +5,27 @@ import { applyTemplate } from './applyTemplate';
 
 const filters = require('./filters');
 
-/* integration-specific operations -------------------------------------- */
+/**
+ * A post processor
+ *
+ * Post processors are used to transform values for display in tidbits.
+ * @typedef PostProcessor
+ * @type {string|Object<string,*>}
+ * @
+ */
 
-// parse the VT Domain whois field for values
+/* generalized post processors --------------------------------- */
+
 // NOTE: assumes that each value ends with \n
-const getVTDomainField = (data, fStr) => {
+const restOfLineFollowing = (data, { param: afterStr }) => {
   if (data == null) { return undefined; }
-  const start = data.indexOf(fStr) + fStr.length;
+  const start = data.indexOf(afterStr) + afterStr.length;
   const leftover = data.slice(start);
   const end = leftover.indexOf('\n');
   return data.slice(start, end + start);
 };
 
-/* generalized operations --------------------------------- */
+// step into value using field/path
 const pathInto = (value, { param: fieldOrPath }) => {
   const path = Array.isArray(fieldOrPath) ? fieldOrPath : fieldOrPath.split('.');
   for (const p of path) {
@@ -81,27 +89,31 @@ const jsonEquals = (value, { param: to }) => {
 };
 
 /* resolvable types are evaluated and replaced with their actual values at runtime */
+// get a field from data by path
 const dataFunc = (_, { postProcess, ...args }, uiSettings, data) => { // resolvable
   const fieldValue = pathInto(data, args);
   return applyPostProcess(postProcess, fieldValue, data, uiSettings);
 };
 
+// get a setting by key
 const setting = (_, { param: key, postProcess }, uiSettings, data) => { // resolvable
   return applyPostProcess(postProcess, uiSettings?.[key], data, uiSettings);
 };
 
+// returns the value it is passed -- escapes objects containing resolved keys ('setting', 'data', 'with', 'escapeValue')
 const escapeValue = (_, { param: escapedValue }) => { // resolvable
   return escapedValue;
 };
 
-const withFunc = (value, { param: postProcess }, uiSettings, data) => {
+// applies postProcess to current value -- used in 'value' key-pair to temporarily modify/access sub-fields
+//    for an operation without permanently modifying it
+const withFunc = (value, { param: postProcess }, uiSettings, data) => { // resolvable
   return applyPostProcess(postProcess, value, uiSettings, data);
 };
 
 const customFilters = {
-  /* integration-specific operations ------------------------------------------------ */
-  getVTDomainField: (value, { param: field }) => getVTDomainField(value, field),
   /* niche operations --------------------------------------------------------------- */
+  restOfLineFollowing,
   countryEmoji: countryCodeEmoji,
   wildcardRegex,
   matchAny,
@@ -144,6 +156,18 @@ const resolvePostProcessorArgs = (args, value, data, uiSettings) => {
   return resolvedArgs;
 };
 
+/**
+ * Runs a value through a set of named functions or 'filters'
+ *   parameterless PostProcessors are strings
+ *   object PostProcessors are identified by the key for their primary argument ('param'),
+ *     with the option of additional arguments
+ *
+ * @param {PostProcessor|PostProcessor[]} postProcess
+ * @param {*} value
+ * @param {*} data
+ * @param {Object<string,*>} uiSettings
+ * @returns {*} the formatted displayValue (or intermediate value during recursive post-processing)
+ */
 export const applyPostProcess = (postProcess, value, data, uiSettings) => {
   if (!postProcess) { return value; }
   const postProcessors = Array.isArray(postProcess) ? postProcess : [postProcess]; // ensure array
@@ -162,7 +186,7 @@ export const applyPostProcess = (postProcess, value, data, uiSettings) => {
         args = { ...postProcessor, param: postProcessor[possiblePostProcessorName] };
         delete args[possiblePostProcessorName];
 
-        // resolve values from settings, data, or overriding/escaping
+        // resolve values from settings, data, or escaping
         args = resolvePostProcessorArgs(args, value, data, uiSettings);
       } else {
         // not a valid postProcessor -- stringified for better debugging

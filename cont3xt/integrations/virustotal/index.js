@@ -129,14 +129,14 @@ class VirusTotalDomainIntegration extends Integration {
     fields: [
       {
         field: 'whois',
-        postProcess: [{ getVTDomainField: 'Creation Date: ' }, 'removeTime'],
+        postProcess: [{ restOfLineFollowing: 'Creation Date: ' }, 'removeTime'],
         purpose: 'registered',
         precedence: 2,
         order: 100
       },
       {
         field: 'whois',
-        postProcess: { getVTDomainField: 'Registrar: ' },
+        postProcess: { restOfLineFollowing: 'Registrar: ' },
         purpose: 'registrar',
         precedence: 2,
         order: 110
