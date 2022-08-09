@@ -1,5 +1,5 @@
 # Test cont3xt.js
-use Test::More tests => 58;
+use Test::More tests => 63;
 use Test::Differences;
 use Data::Dumper;
 use MolochTest;
@@ -127,8 +127,12 @@ eq_or_diff($json, from_json('{"success": false, "text": "LinkGroup not found"}')
 $json = cont3xtGet('/api/linkGroup');
 eq_or_diff($json, from_json('{"success": true, "linkGroups": []}'));
 
-#$json = cont3xtGet('/api/roles');
-#eq_or_diff($json, from_json('{"success": true, "roles": ["arkimeAdmin","arkimeUser","cont3xtAdmin","cont3xtUser","parliamentAdmin","parliamentUser","superAdmin","usersAdmin","wiseAdmin","wiseUser"]}'));
+### ROLES
+$json = cont3xtGet('/api/roles');
+eq_or_diff($json, from_json('{"success": false, "text": "Missing token"}'));
+
+$json = cont3xtGetToken('/api/roles', $token);
+eq_or_diff($json, from_json('{"success": true, "roles": ["arkimeAdmin","arkimeUser","cont3xtAdmin","cont3xtUser","parliamentAdmin","parliamentUser","superAdmin","usersAdmin","wiseAdmin","wiseUser"]}'));
 
 ### INTEGRATION
 $json = cont3xtGet('/api/integration');
@@ -228,8 +232,19 @@ $id = $json->{view}->{_id};
 delete $json->{view}->{_id};
 eq_or_diff($json, from_json('{"success":true,"view":{"creator":"anonymous","_editable":true,"name":"view2","_viewable":true},"text":"Success"}'));
 
+$json = cont3xtPutToken("/api/view/$id", to_json({
+  name => "view2changed"
+}), $token);
+eq_or_diff($json, from_json('{"success": true, "text": "Success"}'));
+
+$json = cont3xtPutToken("/api/view/foo", to_json({
+  name => "view2changed"
+}), $token);
+eq_or_diff($json, from_json('{"success": false, "text": "View not found"}'));
+
 $json = cont3xtGet('/api/views');
 is($json->{success}, 1);
+is($json->{views}->[1]->{name}, "view2changed");
 is (scalar @{$json->{views}}, 2);
 
 $json = cont3xtDelete("/api/view/$id", '{}');
