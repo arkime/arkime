@@ -556,7 +556,7 @@ class Integration {
         userId: req.user.userId,
         indicator: query,
         iType: itype,
-        tags: req.body.tags,
+        tags: req.body.tags ?? [],
         viewId: req.body.viewId,
         issuedAt,
         took: Date.now() - issuedAt,

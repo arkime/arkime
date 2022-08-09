@@ -3,7 +3,7 @@ use Exporter;
 use strict;
 use Test::More;
 @MolochTest::ISA = qw(Exporter);
-@MolochTest::EXPORT = qw (esGet esPost esPut esDelete esCopy viewerGet viewerGetToken viewerGet2 viewerDelete viewerDeleteToken viewerPost viewerPost2 viewerPostToken viewerPostToken2 countTest countTestToken countTest2 countTestMulti errTest bin2hex mesGet mesPost multiGet multiPost getTokenCookie getTokenCookie2 parliamentGet parliamentGetToken parliamentPost parliamentPut parliamentDelete parliamentDeleteToken waitFor viewerPutToken viewerPut getCont3xtTokenCookie cont3xtGet cont3xtPut cont3xtPutToken cont3xtDelete cont3xtDeleteToken);
+@MolochTest::EXPORT = qw (esGet esPost esPut esDelete esCopy viewerGet viewerGetToken viewerGet2 viewerDelete viewerDeleteToken viewerPost viewerPost2 viewerPostToken viewerPostToken2 countTest countTestToken countTest2 countTestMulti errTest bin2hex mesGet mesPost multiGet multiPost getTokenCookie getTokenCookie2 parliamentGet parliamentGetToken parliamentPost parliamentPut parliamentDelete parliamentDeleteToken waitFor viewerPutToken viewerPut getCont3xtTokenCookie cont3xtGet cont3xtPut cont3xtPutToken cont3xtDelete cont3xtDeleteToken cont3xtPost cont3xtPostToken);
 
 use LWP::UserAgent;
 use HTTP::Request::Common;
@@ -430,6 +430,22 @@ my ($url, $content, $debug) = @_;
 sub cont3xtPutToken {
 my ($url, $content, $token, $debug) = @_;
     my $response = $MolochTest::userAgent->request(HTTP::Request::Common::PUT("http://$MolochTest::host:3218$url", Content => $content, "Content-Type" => "application/json;charset=UTF-8", "x-cont3xt-cookie" => $token));
+    diag $url, " response:", $response->content if ($debug);
+    my $json = from_json($response->content);
+    return ($json);
+}
+################################################################################
+sub cont3xtPost {
+my ($url, $content, $debug) = @_;
+    my $response = $MolochTest::userAgent->request(HTTP::Request::Common::POST("http://$MolochTest::host:3218$url", Content => $content, "Content-Type" => "application/json;charset=UTF-8"));
+    diag $url, " response:", $response->content if ($debug);
+    my $json = from_json($response->content);
+    return ($json);
+}
+################################################################################
+sub cont3xtPostToken {
+my ($url, $content, $token, $debug) = @_;
+    my $response = $MolochTest::userAgent->request(HTTP::Request::Common::POST("http://$MolochTest::host:3218$url", Content => $content, "Content-Type" => "application/json;charset=UTF-8", "x-cont3xt-cookie" => $token));
     diag $url, " response:", $response->content if ($debug);
     my $json = from_json($response->content);
     return ($json);

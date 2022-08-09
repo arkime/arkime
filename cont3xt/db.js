@@ -360,14 +360,16 @@ class DbESImplementation {
   }
 
   async getLinkGroup (id) {
-    const results = await this.client.get({
-      index: 'cont3xt_links',
-      id
-    });
+    try {
+      const results = await this.client.get({
+        index: 'cont3xt_links',
+        id
+      });
 
-    if (results?.body?._source) {
-      return results.body._source;
-    }
+      if (results?.body?._source) {
+        return results.body._source;
+      }
+    } catch (err) {}
     return null;
   }
 
@@ -500,13 +502,16 @@ class DbESImplementation {
   }
 
   async getAudit (id) {
-    const results = await this.client.get({
-      id,
-      index: 'cont3xt_history'
-    });
+    try {
+      const results = await this.client.get({
+        id,
+        index: 'cont3xt_history'
+      });
 
-    if (results?.body?._source) {
-      return results.body._source;
+      if (results?.body?._source) {
+        return results.body._source;
+      }
+    } catch (err) {
     }
 
     return null;
