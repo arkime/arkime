@@ -2,6 +2,7 @@ User Settings Description - an object with each sub object a setting.
   * sub objects can have
     * help - some help text
     * password - if true then its a password
+    * uiSetting - true if value is needed in the UI (do not set true for secure values like passwords)
 
 Card Description - an object of the following
   * title - title of the card
@@ -46,7 +47,9 @@ Tidbit Description - an object of the following
     * fieldRoot - for arrays, the path (it can have dots) from each object in the array to its desired field. Effectively maps the root array of objects to an array of values/sub-objects.
     * template - string used to create display value with pseudo string-interpolation (applied before postProcess)
       * string with angle brackets surrounding paths (they can have dots) that are replaced by the data at that path (starting at value [the field] or data [entire data object]). Example: 'one value: <value> and two value: <data.something.otherValue>'
-    * postProcess - optional string or array of strings that identify filters to be applied to value before display
+    * postProcess - optional single post-processor or array of post-processors to format data, each of which can be any of the following:
+      * string that identifies the name of the parameter-less filter to be applied (e.g. 'trim')
+      * object, whose filter's name is identified by the primary parameter's key (e.g. { mapTo: 'some.value' })
     * tooltip - the string to display as the tooltip
     * tooltipTemplate - pseudo string-interpolation string used to generate tooltip
       * see "template" for details on templating
@@ -54,7 +57,7 @@ Tidbit Description - an object of the following
       * badge - simple badge with information
       * cont3xtField - clickable field with options: "copy", "pivot"
       * cont3xtCopyLink - clickable field with option: "copy link"
-      * warningEnums - (for array type),
+      * <color>Group - (for array type), color options: primary, secondary, success, info, warning, danger
     * order - number by which tidbits are sorted (ascending order), default 0
     * purpose - optional, string to identify the purpose of a tidbit when the same information can be provided by more than one source. When multiple valid tidbits have the same purpose, only the one with the highest precedence will be kept
     * precedence - order of preference as a number, where a higher precedence level makes a data-source more preferred for the given purpose

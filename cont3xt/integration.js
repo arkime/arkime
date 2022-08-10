@@ -320,6 +320,12 @@ class Integration {
         }
       }
 
+      // Gather settings to be made accessible from the UI
+      const uiSettings = Object.fromEntries(
+        Object.entries(keys?.[integration.name] ?? {})
+          .filter(([key, _]) => integration?.settings?.[key]?.uiSetting)
+      );
+
       // User can override card display
       let card = integration.card;
       const cardstr = integration.getUserConfig(req.user, integration.name, 'card');
@@ -338,7 +344,8 @@ class Integration {
         icon: integration.icon,
         card,
         order,
-        tidbits: integration.tidbits?.fields || []
+        tidbits: integration.tidbits?.fields || [],
+        uiSettings: uiSettings || {}
       };
     }
 
@@ -870,18 +877,18 @@ class Integration {
     } = tidbit;
 
     return {
-      path: fieldPath || field?.split('.') || [],
-      fieldRootPath: fieldRootPath || fieldRoot?.split('.') || [],
-      order: order || containerOrder,
+      path: fieldPath ?? field?.split('.') ?? [],
+      fieldRootPath: fieldRootPath ?? fieldRoot?.split('.') ?? [],
+      order: order ?? containerOrder,
       tooltip,
       tooltipTemplate,
       label,
-      type: type || 'string',
-      display: display || 'badge',
+      type: type ?? 'string',
+      display: display ?? 'badge',
       template,
       postProcess,
-      precedence: precedence || Number.MIN_VALUE,
-      purpose: purpose || '',
+      precedence: precedence ?? Number.MIN_VALUE,
+      purpose: purpose ?? '',
       definitionOrder: index
     };
   }
