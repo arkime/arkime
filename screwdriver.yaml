@@ -439,7 +439,7 @@ jobs:
             - AWS_ACCESS_KEY_ID
             - AWS_SECRET_ACCESS_KEY
 
-    ubuntu-22:
+    release-ubuntu-22:
         requires: [release-build]
         image: andywick/arkime-build-22:4.0.0-5
         steps:
