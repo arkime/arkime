@@ -111,9 +111,9 @@ if [ -f "/etc/redhat-release" ] || [ -f "/etc/system-release" ]; then
       BUILDZSTD=1
   fi
   if [ "$VERSION_ID" = "9" ]; then
-      sudo yum install -y libpcap-devel glib2-devel libmaxminddb-devel libcurl-devel
+      sudo yum install -y glib2-devel libmaxminddb-devel libcurl-devel
       WITHGLIB=" "
-      WITHMAXMIND=" "
+      WITHCURL=" "
   fi
   sudo yum -y install wget curl pcre pcre-devel pkgconfig flex bison gcc-c++ zlib-devel e2fsprogs-devel openssl-devel file-devel make gettext libuuid-devel perl-JSON bzip2-libs bzip2-devel perl-libwww-perl libpng-devel xz libffi-devel readline-devel libtool libyaml-devel perl-Socket6 perl-Test-Differences libzstd-devel
   if [ $? -ne 0 ]; then
@@ -199,7 +199,7 @@ else
     #Screw it, use whatever the OS has
     WITHGLIB=" "
   elif [ -z "$WITHGLIB" ]; then
-    # Already decided what to do above
+    echo "ARKIME: glib $WITHGLIB"
   else
     WITHGLIB="--with-glib2=thirdparty/glib-$GLIB"
     if [ ! -f "glib-$GLIB.tar.xz" ]; then
@@ -275,19 +275,24 @@ else
   PCAPBUILD="--with-libpcap=$PCAPDIR"
 
   # curl
-  if [ ! -f "curl-$CURL.tar.gz" ]; then
-    wget https://curl.haxx.se/download/curl-$CURL.tar.gz
-  fi
-
-  if [ ! -f "curl-$CURL/lib/.libs/libcurl.a" ]; then
-    tar zxf curl-$CURL.tar.gz
-    ( cd curl-$CURL; ./configure --disable-ldap --disable-ldaps --without-libidn2 --without-librtmp --without-libpsl --without-nghttp2 --without-nghttp2 --without-nss --with-openssl --without-zstd; $MAKE)
-    if [ $? -ne 0 ]; then
-      echo "ARKIME: $MAKE failed"
-      exit 1
-    fi
+  if [ -z "$WITHCURL" ]; then
+    echo "ARKIME: curl $WITHCURL"
   else
-    echo "ARKIME: Not rebuilding curl"
+    WITHCURL="--with-curl=thirdparty/curl-$CURL"
+    if [ ! -f "curl-$CURL.tar.gz" ]; then
+      wget https://curl.haxx.se/download/curl-$CURL.tar.gz
+    fi
+
+    if [ ! -f "curl-$CURL/lib/.libs/libcurl.a" ]; then
+      tar zxf curl-$CURL.tar.gz
+      ( cd curl-$CURL; ./configure --disable-ldap --disable-ldaps --without-libidn2 --without-librtmp --without-libpsl --without-nghttp2 --without-nghttp2 --without-nss --with-openssl --without-zstd; $MAKE)
+      if [ $? -ne 0 ]; then
+        echo "ARKIME: $MAKE failed"
+        exit 1
+      fi
+    else
+      echo "ARKIME: Not rebuilding curl"
+    fi
   fi
 
   # nghttp2
@@ -365,8 +370,8 @@ else
   # Now build arkime
   echo "ARKIME: Building capture"
   cd ..
-  echo "./configure --prefix=$TDIR $PCAPBUILD --with-yara=thirdparty/yara/yara-$YARA --with-maxminddb=thirdparty/libmaxminddb-$MAXMIND $WITHGLIB --with-curl=thirdparty/curl-$CURL --with-nghttp2=thirdparty/nghttp2-$NGHTTP2 --with-lua=thirdparty/lua-$LUA $WITHZSTD"
-        ./configure --prefix=$TDIR $PCAPBUILD --with-yara=thirdparty/yara/yara-$YARA --with-maxminddb=thirdparty/libmaxminddb-$MAXMIND $WITHGLIB --with-curl=thirdparty/curl-$CURL --with-nghttp2=thirdparty/nghttp2-$NGHTTP2 --with-lua=thirdparty/lua-$LUA $WITHZSTD
+  echo "./configure --prefix=$TDIR $PCAPBUILD --with-yara=thirdparty/yara/yara-$YARA --with-maxminddb=thirdparty/libmaxminddb-$MAXMIND $WITHGLIB $WITHCURL --with-nghttp2=thirdparty/nghttp2-$NGHTTP2 --with-lua=thirdparty/lua-$LUA $WITHZSTD"
+        ./configure --prefix=$TDIR $PCAPBUILD --with-yara=thirdparty/yara/yara-$YARA --with-maxminddb=thirdparty/libmaxminddb-$MAXMIND $WITHGLIB $WITHCURL --with-nghttp2=thirdparty/nghttp2-$NGHTTP2 --with-lua=thirdparty/lua-$LUA $WITHZSTD
 fi
 
 if [ $DOCLEAN -eq 1 ]; then
