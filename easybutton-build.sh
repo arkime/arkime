@@ -110,7 +110,7 @@ if [ -f "/etc/redhat-release" ] || [ -f "/etc/system-release" ]; then
   if [ "$VERSION_ID" = "7" ]; then
       BUILDZSTD=1
   fi
-  if [ "$VERSION_ID" = 9* ]; then
+  if [[ "$VERSION_ID" == 9* ]]; then
       sudo yum install -y glib2-devel libmaxminddb-devel libcurl-devel
       WITHGLIB=" "
       WITHCURL=" "
@@ -198,7 +198,7 @@ else
   if [ "$UNAME" = "FreeBSD" ]; then
     #Screw it, use whatever the OS has
     WITHGLIB=" "
-  elif [ -z "$WITHGLIB" ]; then
+  elif [ ! -z "$WITHGLIB" ]; then
     echo "ARKIME: withglib $WITHGLIB"
   else
     WITHGLIB="--with-glib2=thirdparty/glib-$GLIB"
@@ -275,7 +275,7 @@ else
   PCAPBUILD="--with-libpcap=$PCAPDIR"
 
   # curl
-  if [ -z "$WITHCURL" ]; then
+  if [ ! -z "$WITHCURL" ]; then
     echo "ARKIME: withcurl $WITHCURL"
   else
     WITHCURL="--with-curl=thirdparty/curl-$CURL"
