@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 # Use this script to install OS dependencies, downloading and compile arkime dependencies, compile arkime capture, optionally install
 
 # This script will
@@ -110,6 +110,11 @@ if [ -f "/etc/redhat-release" ] || [ -f "/etc/system-release" ]; then
   if [ "$VERSION_ID" = "7" ]; then
       BUILDZSTD=1
   fi
+  if [ "$VERSION_ID" = "9" ]; then
+      sudo yum install -y libpcap-devel glib2-devel libmaxminddb-devel libcurl-devel
+      WITHGLIB=" "
+      WITHMAXMIND=" "
+  fi
   sudo yum -y install wget curl pcre pcre-devel pkgconfig flex bison gcc-c++ zlib-devel e2fsprogs-devel openssl-devel file-devel make gettext libuuid-devel perl-JSON bzip2-libs bzip2-devel perl-libwww-perl libpng-devel xz libffi-devel readline-devel libtool libyaml-devel perl-Socket6 perl-Test-Differences libzstd-devel
   if [ $? -ne 0 ]; then
     echo "ARKIME: yum failed"
@@ -193,6 +198,8 @@ else
   if [ "$UNAME" = "FreeBSD" ]; then
     #Screw it, use whatever the OS has
     WITHGLIB=" "
+  elif [ -z "$WITHGLIB" ]; then
+    # Already decided what to do above
   else
     WITHGLIB="--with-glib2=thirdparty/glib-$GLIB"
     if [ ! -f "glib-$GLIB.tar.xz" ]; then
