@@ -873,18 +873,18 @@ class Integration {
     } = tidbit;
 
     return {
-      path: fieldPath || field?.split('.') || [],
-      fieldRootPath: fieldRootPath || fieldRoot?.split('.') || [],
-      order: order || containerOrder,
+      path: fieldPath ?? field?.split('.') ?? [],
+      fieldRootPath: fieldRootPath ?? fieldRoot?.split('.') ?? [],
+      order: order ?? containerOrder,
       tooltip,
       tooltipTemplate,
       label,
-      type: type || 'string',
-      display: display || 'badge',
+      type: type ?? 'string',
+      display: display ?? 'badge',
       template,
       postProcess,
-      precedence: precedence || Number.MIN_VALUE,
-      purpose: purpose || '',
+      precedence: precedence ?? Number.MIN_VALUE,
+      purpose: purpose ?? '',
       definitionOrder: index
     };
   }

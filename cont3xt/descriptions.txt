@@ -47,7 +47,9 @@ Tidbit Description - an object of the following
     * fieldRoot - for arrays, the path (it can have dots) from each object in the array to its desired field. Effectively maps the root array of objects to an array of values/sub-objects.
     * template - string used to create display value with pseudo string-interpolation (applied before postProcess)
       * string with angle brackets surrounding paths (they can have dots) that are replaced by the data at that path (starting at value [the field] or data [entire data object]). Example: 'one value: <value> and two value: <data.something.otherValue>'
-    * postProcess - optional string or array of strings that identify filters to be applied to value before display
+    * postProcess - optional single post-processor or array of post-processors to format data, each of which can be any of the following:
+      * string that identifies the name of the parameter-less filter to be applied (e.g. 'trim')
+      * object, whose filter's name is identified by the primary parameter's key (e.g. { mapTo: 'some.value' })
     * tooltip - the string to display as the tooltip
     * tooltipTemplate - pseudo string-interpolation string used to generate tooltip
       * see "template" for details on templating

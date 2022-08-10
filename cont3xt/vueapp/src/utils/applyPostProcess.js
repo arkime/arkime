@@ -11,7 +11,6 @@ const filters = require('./filters');
  * Post processors are used to transform values for display in tidbits.
  * @typedef PostProcessor
  * @type {string|Object<string,*>}
- * @
  */
 
 /* generalized post processors --------------------------------- */
