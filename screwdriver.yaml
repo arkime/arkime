@@ -196,11 +196,11 @@ jobs:
 
     ubuntu-22:
         requires: [~pr, ~commit]
-        image: andywick/arkime-build-22:4.0.0-4
+        image: andywick/arkime-build-22:4.0.0-5
         steps:
             - apt-get update
             - ln -s /thirdparty .
-            - build: ./easybutton-build.sh --nothirdparty --rminstall
+            - build: ./easybutton-build.sh --nothirdparty --pfring --rminstall
             - test-capture: (cd tests ; ./tests.pl)
             - export PATH=/opt/arkime/bin:/data/moloch/bin:$PATH
             - npm -g config set user root
@@ -281,7 +281,7 @@ jobs:
             - AWS_SECRET_ACCESS_KEY
 
     slack:
-        requires: [centos-7, centos-7-sanitize, centos-8, ubuntu-18, ubuntu-20]
+        requires: [centos-7, centos-7-sanitize, centos-8, ubuntu-18, ubuntu-20, ubuntu-22]
         image: andywick/arkime-build-7:4.0.0-4
         annotations:
             beta.screwdriver.cd/cpu: LOW
@@ -435,6 +435,26 @@ jobs:
                 fpm -s dir -t deb -n moloch -x data/moloch/logs -x data/moloch/raw -v $ARKIME_VERSION --iteration $RELEASE_ITERATION --template-scripts --url "https://moloch.com" --description "Moloch Full Packet System" -d libwww-perl -d libjson-perl -d ethtool -d libyaml-dev -d libzstd1 /data/moloch
                 aws s3 cp moloch_${ARKIME_VERSION}-${RELEASE_ITERATION}_amd64.deb s3://files.molo.ch/builds/ubuntu-20.04/ --acl public-read
             - ls -l *.deb
+        secrets:
+            - AWS_ACCESS_KEY_ID
+            - AWS_SECRET_ACCESS_KEY
+
+    release-ubuntu-22:
+        requires: [release-build]
+        image: andywick/arkime-build-22:4.0.0-5
+        steps:
+            - apt-get update
+            - ln -s /thirdparty .
+            - build: ./easybutton-build.sh --nothirdparty --pfring --rminstall
+            - export PATH=/opt/arkime/bin:/data/moloch/bin:$PATH
+            - npm -g config set user root
+            - installing: make install
+            - cp -r capture/plugins/lua/samples /opt/arkime/lua
+            - build-package: |
+                export ARKIME_VERSION=`sed 's/.*"\(.*\)\".*$/\1/' /opt/arkime/common/version.js | head -n 1`
+                fpm -s dir -t deb -n arkime -x opt/arkime/logs -x opt/arkime/raw -v $ARKIME_VERSION --iteration $RELEASE_ITERATION --template-scripts --after-install "release/afterinstall.sh" --url "https://arkime.com" --description "Arkime Full Packet System" -d libwww-perl -d libjson-perl -d ethtool -d libyaml-dev -d liblua5.4-0 -d libmaxminddb0 -d libcurl4 -d libpcap0.8 -d libglib2.0-0 -d libnghttp2-14 -d libyara8 -d libzstd1 /opt/arkime
+                aws s3 cp arkime_${ARKIME_VERSION}-${RELEASE_ITERATION}_amd64.deb s3://files.molo.ch/builds/ubuntu-22.04/ --acl public-read
+
         secrets:
             - AWS_ACCESS_KEY_ID
             - AWS_SECRET_ACCESS_KEY
