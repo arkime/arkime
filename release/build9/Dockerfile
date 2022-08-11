@@ -16,7 +16,7 @@ git clone https://github.com/arkime/arkime && \
 mv arkime/thirdparty / && \
 rm -rf /thirdparty/glib*/*/tests /thirdparty/glib*/*/*/tests && \
 rm -rf arkime && \
-gem install --no-ri --no-rdoc fpm && \
+gem install --no-document fpm && \
 pip3 install awscli && \
 useradd -u 2000 elasticsearch && \
 yum -y clean all && \

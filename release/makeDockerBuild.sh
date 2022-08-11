@@ -8,6 +8,9 @@ docker image build build7 --no-cache=true --tag andywick/arkime-build-7:$VER
 echo "ARKIME DOCKER 8"
 docker image build build8 --no-cache=true --tag andywick/arkime-build-8:$VER
 
+echo "ARKIME DOCKER 9"
+docker image build build9 --no-cache=true --tag andywick/arkime-build-9:$VER
+
 echo "ARKIME DOCKER 18"
 docker image build build18 --no-cache=true --tag andywick/arkime-build-18:$VER
 
@@ -24,6 +27,7 @@ exit 0
 
 docker push andywick/arkime-build-7:$VER
 docker push andywick/arkime-build-8:$VER
+docker push andywick/arkime-build-9:$VER
 docker push andywick/arkime-build-18:$VER
 docker push andywick/arkime-build-20:$VER
 docker push andywick/arkime-build-22:$VER
