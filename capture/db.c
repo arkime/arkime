@@ -2366,22 +2366,61 @@ LOCAL void moloch_db_load_fields()
     free(data);
 }
 /******************************************************************************/
+LOCAL char *fieldBuf;
+LOCAL BSB   fieldBSB;
+void moloch_db_add_field_mode(gboolean bulk)
+{
+    if (config.dryRun)
+        return;
+
+    // Switching to bulk mode
+    if (bulk) {
+        // Already in bulk mode
+        if (fieldBuf)
+            return;
+
+        fieldBuf = moloch_http_get_buffer(config.dbBulkSize);
+        BSB_INIT(fieldBSB, fieldBuf, config.dbBulkSize);
+        return;
+    }
+
+    // Already in non bulk mode
+    if (!fieldBuf)
+        return;
+
+    if (BSB_LENGTH(fieldBSB) > 0) {
+        moloch_http_schedule(esServer, "POST", "/_bulk", 6, (char *)fieldBSB.buf, BSB_LENGTH(fieldBSB), NULL, MOLOCH_HTTP_PRIORITY_BEST, NULL, NULL);
+    } else {
+        moloch_http_free_buffer(fieldBuf);
+    }
+    fieldBuf = 0;
+}
+/******************************************************************************/
 void moloch_db_add_field(char *group, char *kind, char *expression, char *friendlyName, char *dbField, char *help, int haveap, va_list ap)
 {
     char                   key[100];
     int                    key_len;
-    BSB                    bsb;
+    BSB                    jbsb;
+    BSB                   *bsb;
 
     if (config.dryRun)
         return;
 
-    char                  *json = moloch_http_get_buffer(10000);
+    if (fieldBuf) {
+        if (BSB_REMAINING(fieldBSB) < 1000) {
+            moloch_db_add_field_mode(FALSE);
+            moloch_db_add_field_mode(TRUE);
+        }
+        bsb = &fieldBSB;
+        BSB_EXPORT_sprintf(fieldBSB, "{\"index\": {\"_index\": \"%sfields\"}}\n", config.prefix);
+    } else {
+        char *json = moloch_http_get_buffer(10000);
+        BSB_INIT(jbsb, json, 10000);
+        bsb = &jbsb;
+        key_len = snprintf(key, sizeof(key), "/%sfields/_doc/%s", config.prefix, expression);
+    }
 
-    BSB_INIT(bsb, json, 10000);
-
-    key_len = snprintf(key, sizeof(key), "/%sfields/_doc/%s", config.prefix, expression);
-
-    BSB_EXPORT_sprintf(bsb, "{\"friendlyName\": \"%s\", \"group\": \"%s\", \"help\": \"%s\", \"dbField2\": \"%s\", \"type\": \"%s\"",
+    BSB_EXPORT_sprintf(*bsb, "{\"friendlyName\": \"%s\", \"group\": \"%s\", \"help\": \"%s\", \"dbField2\": \"%s\", \"type\": \"%s\"",
              friendlyName,
              group,
              help,
@@ -2398,16 +2437,20 @@ void moloch_db_add_field(char *group, char *kind, char *expression, char *friend
             if (!value)
                 break;
 
-            BSB_EXPORT_sprintf(bsb, ", \"%s\": ", field);
+            BSB_EXPORT_sprintf(*bsb, ", \"%s\": ", field);
             if (*value == '{' || *value == '[')
-                BSB_EXPORT_sprintf(bsb, "%s", value);
+                BSB_EXPORT_sprintf(*bsb, "%s", value);
             else
-                BSB_EXPORT_sprintf(bsb, "\"%s\"", value);
+                BSB_EXPORT_sprintf(*bsb, "\"%s\"", value);
         }
     }
 
-    BSB_EXPORT_u08(bsb, '}');
-    moloch_http_schedule(esServer, "POST", key, key_len, json, BSB_LENGTH(bsb), NULL, MOLOCH_HTTP_PRIORITY_NORMAL, NULL, NULL);
+    BSB_EXPORT_u08(*bsb, '}');
+    if (fieldBuf) {
+        BSB_EXPORT_u08(*bsb, '\n');
+    } else {
+        moloch_http_schedule(esServer, "POST", key, key_len, (char *)bsb->buf, BSB_LENGTH(*bsb), NULL, MOLOCH_HTTP_PRIORITY_BEST, NULL, NULL);
+    }
 }
 /******************************************************************************/
 void moloch_db_update_field(char *expression, char *name, char *value)

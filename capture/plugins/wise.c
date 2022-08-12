@@ -202,6 +202,7 @@ LOCAL void wise_load_fields()
         LOGEXIT("ERROR - Wise server is returning too many fields %d > %d", cnt, MOLOCH_FIELDS_DB_MAX);
     }
 
+    moloch_db_add_field_mode(TRUE);
     for (int i = 0; i < cnt; i++) {
         int len = 0;
         BSB_IMPORT_u16(bsb, len); // len includes NULL terminated
@@ -213,6 +214,7 @@ LOCAL void wise_load_fields()
         }
         BSB_IMPORT_skip(bsb, len);
     }
+    moloch_db_add_field_mode(FALSE);
     free(data);
 }
 /******************************************************************************/
@@ -311,6 +313,7 @@ LOCAL void wise_cb(int UNUSED(code), unsigned char *data, int data_len, gpointer
         if (cnt)
             memset(fieldsMap[hashPos], -1, sizeof(fieldsMap[hashPos]));
 
+        moloch_db_add_field_mode(TRUE);
         for (i = 0; i < cnt; i++) {
             int len = 0;
             BSB_IMPORT_u16(bsb, len); // len includes NULL terminated
@@ -322,6 +325,7 @@ LOCAL void wise_cb(int UNUSED(code), unsigned char *data, int data_len, gpointer
             }
             BSB_IMPORT_skip(bsb, len);
         }
+        moloch_db_add_field_mode(FALSE);
         MOLOCH_UNLOCK(item);
     }
 

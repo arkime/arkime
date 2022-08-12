@@ -698,6 +698,7 @@ void moloch_parsers_init()
         HASH_ADD(s_, loaded, hstring->str, hstring);
     }
 
+    moloch_db_add_field_mode(TRUE);
     for (d = 0; config.parsersDir[d]; d++) {
         GError      *error = 0;
         GDir *dir = g_dir_open(config.parsersDir[d], 0, &error);
@@ -781,6 +782,7 @@ void moloch_parsers_init()
         g_dir_close(dir);
     }
 
+
     if (loaded.count == 0) {
         LOG("WARNING - No parsers loaded, is parsersDir set correctly");
     }
@@ -814,6 +816,7 @@ void moloch_parsers_init()
         g_free(value);
     }
     g_strfreev(keys);
+    moloch_db_add_field_mode(FALSE);
 
 
     if (config.extraOps) {
