@@ -253,13 +253,13 @@ export default {
     }
   },
   methods: {
-    updateLinkGroup (linkGroup) {
+    updateLinkGroup (updated) {
+      this.updatedLinkGroup = JSON.parse(JSON.stringify(updated));
+
       // determine whether there are unsaved changes
-      this.updatedLinkGroup = JSON.parse(JSON.stringify(linkGroup));
-      const comparableUpdatedLinkGroup = this.normalizedLinkGroupForComparison(this.updatedLinkGroup);
-      const comparableInitialLinkGroup = this.normalizedLinkGroupForComparison(this.linkGroup);
-      console.log(comparableInitialLinkGroup, comparableUpdatedLinkGroup);
-      this.changesMade = JSON.stringify(comparableUpdatedLinkGroup) !== JSON.stringify(comparableInitialLinkGroup);
+      const normalizedInitial = this.normalizeLinkGroup(this.linkGroup);
+      const normalizedUpdated = this.normalizeLinkGroup(this.updatedLinkGroup);
+      this.changesMade = JSON.stringify(normalizedInitial) !== JSON.stringify(normalizedUpdated);
       // persist these changes to the scope of the Settings page
       this.$emit('update-link-group', this.updatedLinkGroup);
     },
@@ -278,7 +278,7 @@ export default {
         }, 4000);
       }); // store deals with failure
     },
-    normalizedLinkGroupForComparison (unNormalizedLinkGroup) {
+    normalizeLinkGroup (unNormalizedLinkGroup) {
       const normalizedLinkGroup = JSON.parse(JSON.stringify(unNormalizedLinkGroup));
 
       // use falsy undefined defaults to ensure that all links have all fields

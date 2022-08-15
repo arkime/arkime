@@ -65,8 +65,9 @@ class LinkGroup {
    * @returns {boolean} success - True if the request was successful, false otherwise
    */
   static async apiGet (req, res, next) {
+    const all = req.query.all && req.user.hasRole('cont3xtAdmin');
     const roles = await req.user.getRoles();
-    let linkGroups = await Db.getMatchingLinkGroups(req.user.userId, [...roles], !!req.query.all);
+    let linkGroups = await Db.getMatchingLinkGroups(req.user.userId, [...roles], all);
 
     // Set editable on any linkGroups that the user is allowed to edit
     for (const lg of linkGroups) {

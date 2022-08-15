@@ -47,8 +47,9 @@ class View {
    * @returns {boolean} success - True if the request was successful, false otherwise
    */
   static async apiGet (req, res, next) {
+    const all = req.query.all && req.user.hasRole('cont3xtAdmin');
     const roles = await req.user.getRoles();
-    const views = await Db.getMatchingViews(req.user.userId, [...roles], !!req.query.all);
+    const views = await Db.getMatchingViews(req.user.userId, [...roles], all);
 
     // Set editable on any views that the user is allowed to edit
     for (const view of views) {

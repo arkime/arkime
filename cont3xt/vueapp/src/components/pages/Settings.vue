@@ -684,7 +684,7 @@ export default {
         this.$set(this.filteredViews, index, view);
       }
     },
-    normalizedViewForComparison (unNormalizedView) {
+    normalizeView (unNormalizedView) {
       const view = JSON.parse(JSON.stringify(unNormalizedView));
 
       // sort these fields to make order not affect result of comparison, because their orders are not meaningful
@@ -695,10 +695,8 @@ export default {
     },
     updateView (view) {
       // see if the view has unsaved changes
-      const preUpdateView = this.getViews.find(v => view._id === v._id);
-      const comparablePreUpdateView = this.normalizedViewForComparison(preUpdateView);
-      const comparableView = this.normalizedViewForComparison(view);
-      const hasChanged = JSON.stringify(comparablePreUpdateView) !== JSON.stringify(comparableView);
+      const initialView = this.getViews.find(v => view._id === v._id);
+      const hasChanged = JSON.stringify(this.normalizeView(initialView)) !== JSON.stringify(this.normalizeView(view));
 
       // if the view has changed from what is in the database, store the updated state, otherwise undefined
       this.updatedViewMap[view._id] = hasChanged ? view : undefined;

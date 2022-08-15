@@ -495,12 +495,12 @@ export default {
       this.$set(role, 'roleAssigners', newSelection);
       this.userHasChanged(roleId);
     },
-    normalizedUserForComparison (unNormalizedUser) {
+    normalizeUser (unNormalizedUser) {
       const user = JSON.parse(JSON.stringify(unNormalizedUser));
       // remove _showDetails for user (added by b-table when user row is expanded)
       delete user._showDetails;
 
-      // roles might be undefined, but compare to emtpy array since toggling on
+      // roles might be undefined, but compare to empty array since toggling on
       // any roles sets roles to an array, and removing that role = empty array
       user.roles ??= [];
 
@@ -522,14 +522,14 @@ export default {
       user.disablePcapDownload ||= undefined;
 
       user.expanded = undefined; // don't care about expanded field (just for UI)
-      user.lastUsed = undefined; // don't compare lastused, it might be different if the user is using the UI
+      user.lastUsed = undefined; // don't compare lastUsed, it might be different if the user is using the UI
       return user;
     },
     userHasChanged (userId) {
-      const newComparableUser = this.normalizedUserForComparison(this.users.find(u => u.userId === userId));
-      const oldComparableUser = this.normalizedUserForComparison(this.dbUserList.find(u => u.userId === userId));
+      const newUser = this.users.find(u => u.userId === userId);
+      const oldUser = this.dbUserList.find(u => u.userId === userId);
 
-      const hasChanged = JSON.stringify(newComparableUser) !== JSON.stringify(oldComparableUser);
+      const hasChanged = JSON.stringify(this.normalizeUser(newUser)) !== JSON.stringify(this.normalizeUser(oldUser));
       this.$set(this.changed, userId, hasChanged);
       return hasChanged;
     },

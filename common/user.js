@@ -961,17 +961,6 @@ class User {
   }
 
   /**
-   * Fails request if all=true is specified in the body, but the user does not have cont3xtAdmin
-   */
-  static async checkCont3xtAdminIfAllRequested (req, res, next) {
-    if (req.query.all && !req.user.hasRole('cont3xtAdmin')) {
-      console.log(`Permission denied to ${req.user.userId} while requesting all for resource: ${req._parsedUrl.pathname}`);
-      return res.serverError(403, 'You do not have permission to access this resource');
-    }
-    next();
-  }
-
-  /**
    *
    */
   static checkPermissions (permissions) {
