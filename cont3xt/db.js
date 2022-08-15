@@ -48,8 +48,8 @@ class Db {
   /**
    * Get all the links that match the creator and set of roles
    */
-  static async getMatchingLinkGroups (creator, roles) {
-    return Db.implementation.getMatchingLinkGroups(creator, roles);
+  static async getMatchingLinkGroups (creator, roles, all) {
+    return Db.implementation.getMatchingLinkGroups(creator, roles, all);
   }
 
   /**
@@ -77,8 +77,8 @@ class Db {
   /**
    * Get all the views that match the creator and set of roles
    */
-  static async getMatchingViews (creator, roles) {
-    return Db.implementation.getMatchingViews(creator, roles);
+  static async getMatchingViews (creator, roles, all) {
+    return Db.implementation.getMatchingViews(creator, roles, all);
   }
 
   /**
@@ -300,7 +300,7 @@ class DbESImplementation {
     });
   }
 
-  async getMatchingLinkGroups (creator, roles) {
+  async getMatchingLinkGroups (creator, roles, all) {
     const query = {
       size: 1000,
       query: {
@@ -310,25 +310,27 @@ class DbESImplementation {
       }
     };
 
-    if (creator) {
-      query.query.bool.should.push({
-        term: {
-          creator
-        }
-      });
-    }
-    if (roles) {
-      query.query.bool.should.push({
-        terms: {
-          editRoles: roles
-        }
-      });
+    if (!all) {
+      if (creator) {
+        query.query.bool.should.push({
+          term: {
+            creator
+          }
+        });
+      }
+      if (roles) {
+        query.query.bool.should.push({
+          terms: {
+            editRoles: roles
+          }
+        });
 
-      query.query.bool.should.push({
-        terms: {
-          viewRoles: roles
-        }
-      });
+        query.query.bool.should.push({
+          terms: {
+            viewRoles: roles
+          }
+        });
+      }
     }
 
     const results = await this.client.search({
@@ -384,7 +386,7 @@ class DbESImplementation {
     return null;
   }
 
-  async getMatchingViews (creator, roles) {
+  async getMatchingViews (creator, roles, all) {
     const query = {
       size: 1000,
       query: {
@@ -394,25 +396,27 @@ class DbESImplementation {
       }
     };
 
-    if (creator) {
-      query.query.bool.should.push({
-        term: {
-          creator
-        }
-      });
-    }
+    if (!all) {
+      if (creator) {
+        query.query.bool.should.push({
+          term: {
+            creator
+          }
+        });
+      }
 
-    if (roles) {
-      query.query.bool.should.push({
-        terms: {
-          editRoles: roles
-        }
-      });
-      query.query.bool.should.push({
-        terms: {
-          viewRoles: roles
-        }
-      });
+      if (roles) {
+        query.query.bool.should.push({
+          terms: {
+            editRoles: roles
+          }
+        });
+        query.query.bool.should.push({
+          terms: {
+            viewRoles: roles
+          }
+        });
+      }
     }
 
     try {
@@ -607,10 +611,11 @@ class DbLMDBImplementation {
   /**
    * Get all the links that match the creator and set of roles
    */
-  async getMatchingLinkGroups (creator, roles) {
+  async getMatchingLinkGroups (creator, roles, all) {
     const hits = [];
     this.linkGroupStore.getRange({})
       .filter(({ key, value }) => {
+        if (all) { return true; }
         if (creator !== undefined && creator === value.creator) { return true; }
         if (roles !== undefined) {
           if (value.editRoles && roles.some(x => value.editRoles.includes(x))) { return true; }
@@ -651,10 +656,11 @@ class DbLMDBImplementation {
   /**
    * Get all the views that match the creator and set of roles
    */
-  async getMatchingViews (creator, roles) {
+  async getMatchingViews (creator, roles, all) {
     const hits = [];
     this.viewStore.getRange({})
       .filter(({ key, value }) => {
+        if (all) { return true; }
         if (creator !== undefined && creator === value.creator) { return true; }
         if (roles !== undefined) {
           if (value.editRoles && roles.some(x => value.editRoles.includes(x))) { return true; }

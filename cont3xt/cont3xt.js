@@ -204,7 +204,7 @@ app.use((req, res, next) => {
   next();
 });
 
-app.get('/api/linkGroup', LinkGroup.apiGet);
+app.get('/api/linkGroup', [User.checkCont3xtAdminIfAllRequested], LinkGroup.apiGet);
 app.put('/api/linkGroup', [jsonParser, checkCookieToken], LinkGroup.apiCreate);
 app.put('/api/linkGroup/:id', [jsonParser, checkCookieToken], LinkGroup.apiUpdate);
 app.delete('/api/linkGroup/:id', [jsonParser, checkCookieToken], LinkGroup.apiDelete);
@@ -228,7 +228,7 @@ app.get('/api/integration/settings', [setCookie], Integration.apiGetSettings);
 app.put('/api/integration/settings', [jsonParser, checkCookieToken], Integration.apiPutSettings);
 app.get('/api/integration/stats', [setCookie], Integration.apiStats);
 
-app.get('/api/views', [setCookie], View.apiGet);
+app.get('/api/views', [User.checkCont3xtAdminIfAllRequested, setCookie], View.apiGet);
 app.post('/api/view', [jsonParser, checkCookieToken], View.apiCreate);
 app.put('/api/view/:id', [jsonParser, checkCookieToken], View.apiUpdate);
 app.delete('/api/view/:id', [jsonParser, checkCookieToken], View.apiDelete);

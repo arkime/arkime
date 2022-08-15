@@ -16,7 +16,7 @@
         v-model="localView.name"
         @keydown.enter.stop.prevent
         :state="localView.name.length > 0"
-        @change="$emit('update-view', { view: localView, index: viewIndex })"
+        @input="$emit('update-view', { ...localView, name: $event })"
       />
     </b-input-group> <!-- /view name -->
     <!-- group roles -->
@@ -51,7 +51,7 @@
       <b-form-checkbox-group
         class="wrap-checkboxes"
         v-model="localView.integrations"
-        @change="$emit('update-view', { view: localView, index: viewIndex })">
+        @change="$emit('update-view', { ...localView, integrations: $event })">
         <template
           v-for="integration in getSortedIntegrations">
           <b-form-checkbox
@@ -101,9 +101,6 @@ export default {
       type: Object,
       required: true
     },
-    viewIndex: {
-      type: Number
-    },
     focus: {
       type: Boolean
     }
@@ -130,15 +127,15 @@ export default {
     /* page functions ------------------------------------------------------ */
     toggleAll (checked) {
       this.localView.integrations = checked ? Object.keys(this.getDoableIntegrations) : [];
-      this.$emit('update-view', { view: this.localView, index: this.viewIndex });
+      this.$emit('update-view', this.localView);
     },
     updateViewRoles (roles) {
       this.$set(this.localView, 'viewRoles', roles);
-      this.$emit('update-view', { view: this.localView, index: this.viewIndex });
+      this.$emit('update-view', this.localView);
     },
     updateEditRoles (roles) {
       this.$set(this.localView, 'editRoles', roles);
-      this.$emit('update-view', { view: this.localView, index: this.viewIndex });
+      this.$emit('update-view', this.localView);
     },
     /* helpers ------------------------------------------------------------- */
     calculateSelectAll (list) {

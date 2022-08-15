@@ -48,7 +48,7 @@ class View {
    */
   static async apiGet (req, res, next) {
     const roles = await req.user.getRoles();
-    const views = await Db.getMatchingViews(req.user.userId, [...roles]);
+    const views = await Db.getMatchingViews(req.user.userId, [...roles], !!req.query.all);
 
     // Set editable on any views that the user is allowed to edit
     for (const view of views) {
@@ -128,7 +128,7 @@ class View {
       return res.send({ success: false, text: 'View not found' });
     }
 
-    if (dbView.creator !== req.user.userId && !(req.user.hasRole(dbView.editRoles))) {
+    if (dbView.creator !== req.user.userId && !(req.user.hasRole(dbView.editRoles)) && !req.user.hasRole('cont3xtAdmin')) {
       return res.send({ success: false, text: 'Permission denied' });
     }
 
@@ -166,7 +166,7 @@ class View {
       return res.send({ success: false, text: 'View not found' });
     }
 
-    if (view.creator !== req.user.userId && !(req.user.hasRole(view.editRoles))) {
+    if (view.creator !== req.user.userId && !(req.user.hasRole(view.editRoles)) && !req.user.hasRole('cont3xtAdmin')) {
       return res.send({ success: false, text: 'Permission denied' });
     }
 
