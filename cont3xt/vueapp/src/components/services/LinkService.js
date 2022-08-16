@@ -1,16 +1,22 @@
 import store from '@/store';
 import setReqHeaders from '../../../../../common/vueapp/setReqHeaders';
+import { paramStr } from '@/utils/paramStr';
 
 export default {
   /**
    * Fetches the list of link groups that a user can view.
+   * @param {boolean} all - if true, request all link groups (admin only)
+   * @param {boolean} doSet - whether to store these link groups as those to be applied during use
    * @returns {Promise} - The promise that either resovles the or rejects in error
    */
-  getLinkGroups () {
+  getLinkGroups (all = false) {
     store.commit('SET_LINK_GROUPS_ERROR', '');
 
+    const query = {};
+    if (store.state.seeAllLinkGroups) { query.all = true; }
+
     return new Promise((resolve, reject) => {
-      fetch('api/linkGroup').then((response) => {
+      fetch(`api/linkGroup/${paramStr(query)}`).then((response) => {
         if (!response.ok) { // test for bad response code
           throw new Error(response.statusText);
         }
@@ -56,10 +62,9 @@ export default {
   /**
    * Deletes a link group.
    * @param {String} id - The id of the link group to delete
-   * @param {Number} index - The index of the link group within the array to delete
    * @returns {Promise} - The promise that either resovles the or rejects in error
    */
-  deleteLinkGroup (id, index) {
+  deleteLinkGroup (id) {
     store.commit('SET_LINK_GROUPS_ERROR', '');
 
     return new Promise((resolve, reject) => {
@@ -70,7 +75,7 @@ export default {
         return response.json();
       }).then((response) => {
         if (response.success) {
-          store.commit('REMOVE_LINK_GROUP', index);
+          store.commit('REMOVE_LINK_GROUP', id);
           return resolve(response);
         } else {
           store.commit('SET_LINK_GROUPS_ERROR', response.text);

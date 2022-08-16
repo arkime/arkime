@@ -67,7 +67,7 @@ export default {
   },
   methods: {
     /* page functions ------------------------------------------------------ */
-    update ({ view }) {
+    update (view) {
       this.view = view;
     },
     close () {

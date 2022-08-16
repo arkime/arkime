@@ -1,7 +1,7 @@
 <template v-if="linkGroup">
   <!-- view (for con3xt page and users who can view but not edit) -->
   <b-card
-    v-if="itype || !(getUser && (getUser.userId === linkGroup.creator || linkGroup._editable))"
+    v-if="itype || !(getUser && (getUser.userId === linkGroup.creator || linkGroup._editable || (getUser.roles && getUser.roles.includes('cont3xtAdmin'))))"
     class="h-100 align-self-stretch">
     <template #header>
       <h6 class="mb-0 link-header">
@@ -105,7 +105,7 @@
         </b-button>
         <b-alert
           variant="success"
-          :show="linkGroup.success"
+          :show="success"
           class="mb-0 mt-0 alert-sm mr-1 ml-1">
           <span class="fa fa-check mr-2" />
           Saved!
@@ -120,6 +120,7 @@
           </b-button>
           <b-button
             size="sm"
+            :class="{'invisible': !changesMade}"
             variant="success"
             @click="saveLinkGroup(linkGroup)"
             v-b-tooltip.hover="'Save this link group'">
@@ -132,15 +133,14 @@
       <textarea
         rows="20"
         size="sm"
-        v-if="linkGroup.rawEdit"
-        @input="e => debounceRawEdit(e, linkGroup)"
+        v-if="rawEditText !== undefined"
+        @input="e => debounceRawEdit(e)"
         class="form-control form-control-sm"
-        :value="JSON.stringify(linkGroup.rawEdit, null, 2)"
+        :value="rawEditText"
       />
       <link-group-form
         v-else
-        @save-link-group="saveLinkGroup"
-        :link-group-index="linkGroupIndex"
+        :link-group="updatedLinkGroup"
         @update-link-group="updateLinkGroup"
       />
     </b-card-body>
@@ -155,7 +155,7 @@
         </b-button>
         <b-alert
           variant="success"
-          :show="linkGroup.success"
+          :show="success"
           class="mb-0 mt-0 alert-sm mr-1 ml-1">
           <span class="fa fa-check mr-2" />
           Saved!
@@ -170,6 +170,7 @@
           </b-button>
           <b-button
             size="sm"
+            :class="{'invisible': !changesMade}"
             variant="success"
             @click="saveLinkGroup(linkGroup)"
             v-b-tooltip.hover="'Save this link group'">
@@ -202,22 +203,29 @@ export default {
     numHours: [Number, String], // the number of hours to apply to urls
     stopDate: String, // the stop date to apply to urls
     startDate: String, // the start date to apply to urls
-    linkGroupIndex: Number, // the index of the link group to display in the array of link groups
-    hideLinks: Object // which links to hide when a user is searching links in link groups
+    hideLinks: Object, // which links to hide when a user is searching links in link groups
+    linkGroup: { // the link group object to generate links
+      type: Object,
+      required: true
+    },
+    preUpdatedLinkGroup: { // persists unsaved changes between switching the actively-edited link group
+      type: Object,
+      required: false
+    }
   },
   data () {
     return {
-      collapsedLinkGroups: this.$store.state.collapsedLinkGroups
+      collapsedLinkGroups: this.$store.state.collapsedLinkGroups,
+      changesMade: false,
+      updatedLinkGroup: this.preUpdatedLinkGroup ?? JSON.parse(JSON.stringify(this.linkGroup)),
+      rawEditText: undefined,
+      success: false
     };
   },
   computed: {
     ...mapGetters([
       'getUser', 'getCheckedLinks', 'getLinkGroups'
     ]),
-    linkGroup () {
-      if (this.linkGroupIndex === undefined) { return {}; }
-      return this.getLinkGroups.length ? this.getLinkGroups[this.linkGroupIndex] : {};
-    },
     filteredLinks () {
       const links = [];
 
@@ -245,54 +253,86 @@ export default {
     }
   },
   methods: {
-    updateLinkGroup (linkGroup) {
-      this.$store.commit('UPDATE_LINK_GROUP', linkGroup);
+    updateLinkGroup (updated) {
+      this.updatedLinkGroup = JSON.parse(JSON.stringify(updated));
+
+      // determine whether there are unsaved changes
+      const normalizedInitial = this.normalizeLinkGroup(this.linkGroup);
+      const normalizedUpdated = this.normalizeLinkGroup(this.updatedLinkGroup);
+      this.changesMade = JSON.stringify(normalizedInitial) !== JSON.stringify(normalizedUpdated);
+      // persist these changes to the scope of the Settings page
+      this.$emit('update-link-group', this.updatedLinkGroup);
     },
     deleteLinkGroup (id) {
-      LinkService.deleteLinkGroup(id, this.linkGroupIndex);
-      this.$emit('delete-link-group', { index: this.linkGroupIndex });
+      LinkService.deleteLinkGroup(id);
     },
-    saveLinkGroup (linkGroup) {
-      this.$set(linkGroup, 'rawEdit', undefined);
-      this.$set(linkGroup, 'success', undefined);
+    saveLinkGroup () {
+      this.rawEditText = undefined;
+      this.success = undefined;
 
-      LinkService.updateLinkGroup(linkGroup).then((response) => {
-        linkGroup.success = true;
-        this.$store.commit('UPDATE_LINK_GROUP', linkGroup);
+      LinkService.updateLinkGroup(this.updatedLinkGroup).then(() => {
+        this.changesMade = false;
+        this.success = true;
         setTimeout(() => {
-          linkGroup.success = false;
-          this.$store.commit('UPDATE_LINK_GROUP', linkGroup);
+          this.success = false;
         }, 4000);
       }); // store deals with failure
     },
-    rawConfigLinkGroup (linkGroup) {
-      if (linkGroup.rawEdit) {
-        this.$set(linkGroup, 'rawEdit', undefined);
+    normalizeLinkGroup (unNormalizedLinkGroup) {
+      const normalizedLinkGroup = JSON.parse(JSON.stringify(unNormalizedLinkGroup));
+
+      // use falsy undefined defaults to ensure that all links have all fields
+      normalizedLinkGroup.links = normalizedLinkGroup.links?.map(link => ({
+        ...link,
+        externalDocName: link.externalDocName || undefined,
+        externalDocUrl: link.externalDocUrl || undefined,
+        infoField: link.infoField || undefined,
+        expanded: undefined // don't care about expanded (only used for UI)
+      }));
+
+      // sort edit/view roles to make order not matter for the comparison of these fields (as it is not meaningful)
+      normalizedLinkGroup.viewRoles.sort();
+      normalizedLinkGroup.editRoles.sort();
+
+      return normalizedLinkGroup;
+    },
+    rawConfigLinkGroup () {
+      if (this.rawEditText) {
+        this.rawEditText = undefined;
         return;
       }
 
       // remove uneditable fields
-      const clone = JSON.parse(JSON.stringify(linkGroup));
+      const clone = JSON.parse(JSON.stringify(this.updatedLinkGroup));
       delete clone._id;
-      delete clone.success;
       delete clone.creator;
-      delete clone.rawEdit;
+      delete clone._editable;
       delete clone._editable;
 
-      this.$set(linkGroup, 'rawEdit', clone);
+      this.rawEditText = JSON.stringify(clone, null, 2);
     },
-    debounceRawEdit (e, linkGroup) {
+    debounceRawEdit (e) {
+      this.rawEditText = e.target.value;
       if (timeout) { clearTimeout(timeout); }
       // debounce the textarea so it only updates the link group after keyups cease for 400ms
       timeout = setTimeout(() => {
         timeout = null;
-        this.updateRawLinkGroup(e, linkGroup);
+        this.updateRawLinkGroup();
       }, 400);
     },
-    updateRawLinkGroup (e, linkGroup) {
-      const updatedLinkGroup = JSON.parse(e.target.value);
-      this.$set(linkGroup, 'name', updatedLinkGroup.name);
-      this.$set(linkGroup, 'links', updatedLinkGroup.links || []);
+    updateRawLinkGroup () { // TODO: add try catch + error
+      try {
+        const linkGroupFromRaw = JSON.parse(this.rawEditText);
+        this.updateLinkGroup({
+          ...this.updatedLinkGroup,
+          name: linkGroupFromRaw.name,
+          links: linkGroupFromRaw.links,
+          viewRoles: linkGroupFromRaw.viewRoles,
+          editRoles: linkGroupFromRaw.editRoles
+        });
+      } catch (err) {
+        console.warn('Invalid JSON for raw link group');
+      }
     },
     getUrl (url) {
       return url.replace(/\${indicator}/g, dr.refang(this.query))
@@ -338,6 +378,11 @@ export default {
     toggleLinkGroup (linkGroup) {
       this.$set(this.collapsedLinkGroups, linkGroup._id, !this.collapsedLinkGroups[linkGroup._id]);
       this.$store.commit('SET_COLLAPSED_LINK_GROUPS', this.collapsedLinkGroups);
+    }
+  },
+  mounted () {
+    if (this.preUpdatedLinkGroup != null) {
+      this.updateLinkGroup(this.updatedLinkGroup);
     }
   }
 };

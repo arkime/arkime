@@ -34,18 +34,9 @@
       </b-input-group>
     </div>
     <template v-for="(view, index) in filteredViews">
-      <b-tooltip
-        noninteractive
-        :target="view._id"
-        placement="right"
-        boundary="viewport"
-        :key="view._id + '-tooltip'"
-        v-if="view.name.length > 24">
-        {{ view.name }}
-      </b-tooltip>
       <b-dropdown-item
+        v-b-tooltip.right.hover.noninteractive="(view.name.length > 24) ? view.name : ''"
         :class="{ small: true, 'top-searched-dropdown': index === 0 && barFocused }"
-        :id="view._id"
         :key="view._id"
         @click="selectView(view)">
         <div class="d-flex justify-content-between">

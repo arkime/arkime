@@ -16,7 +16,6 @@
         autofocus
         v-model="lg.name"
         :state="lg.name.length > 0"
-        @change="$emit('update-link-group', lg)"
       />
     </b-input-group> <!-- /group name -->
     <!-- group roles -->
@@ -66,7 +65,7 @@
                   trim
                   v-model="link.name"
                   :state="link.name.length > 0"
-                  @change="$emit('update-link-group', lg)"
+                  @input="e => linkChange(i, { name: e })"
                 />
                 <template #append>
                   <color-picker
@@ -94,7 +93,7 @@
             <b-form-checkbox-group
               v-model="link.itypes"
               :options="itypeOptions"
-              @change="$emit('update-link-group', lg)"
+              @change="e => linkChange(i, { itypes: e })"
             />
             <b-input-group
               size="sm"
@@ -108,7 +107,7 @@
                 trim
                 v-model="link.url"
                 :state="link.url.length > 0"
-                @change="$emit('update-link-group', lg)"
+                @input="e => linkChange(i, { url: e })"
               />
               <template #append>
                 <b-input-group-text
@@ -130,7 +129,7 @@
                   trim
                   v-model="link.infoField"
                   :state="link.infoField ? true : undefined"
-                  @change="$emit('update-link-group', lg)"
+                  @input="e => linkChange(i, { infoField: e })"
               />
               <template #append>
                 <b-input-group-text
@@ -153,7 +152,7 @@
                     trim
                     v-model="link.externalDocName"
                     :state="link.externalDocName ? true : undefined"
-                    @change="$emit('update-link-group', lg)"
+                    @input="e => linkChange(i, { externalDocName: e })"
                 />
                 <template #append>
                   <b-input-group-text
@@ -175,7 +174,7 @@
                     trim
                     v-model="link.externalDocUrl"
                     :state="externalDocWarningSuccessState(link.externalDocName, link.externalDocUrl)"
-                    @change="$emit('update-link-group', lg)"
+                    @change="e => linkChange(i, { externalDocUrl: e })"
                 />
                 <template #append>
                   <b-input-group-text
@@ -198,7 +197,7 @@
                 v-model="link.itypes"
                 v-show="link.expanded"
                 :options="itypeOptions"
-                @change="$emit('update-link-group', lg)"
+                @change="e => linkChange(i, { itypes: e })"
                 class="text-center link-separator-checkbox-group"
               />
             </div>
@@ -260,13 +259,11 @@ export default {
     RoleDropdown
   },
   props: {
-    linkGroupIndex: {
-      type: Number
-    }
+    linkGroup: Object
   },
   data () {
     return {
-      lg: this.linkGroupIndex !== undefined ? JSON.parse(JSON.stringify(this.$store.getters.getLinkGroups[this.linkGroupIndex])) : undefined,
+      lg: !this.linkGroup ? undefined : JSON.parse(JSON.stringify(this.linkGroup)),
       itypeOptions: [
         { text: 'Domain', value: 'domain' },
         { text: 'IP', value: 'ip' },
@@ -294,18 +291,22 @@ export default {
     };
   },
   computed: {
-    ...mapGetters(['getRoles', 'getLinkGroups', 'getUser'])
-  },
-  watch: {
-    linkGroupIndex (oldVal, newVal) {
-      if (newVal === undefined) { return undefined; }
-      this.lg = JSON.parse(JSON.stringify(this.getLinkGroups[this.linkGroupIndex]));
-    }
+    ...mapGetters(['getRoles', 'getUser'])
   },
   created () {
     if (!this.lg) { // creating new link group
       this.lg = { name: '', links: [], viewRoles: [], editRoles: [] };
       this.addLink();
+    }
+  },
+  watch: {
+    'linkGroup._id' () {
+      if (this.linkGroup) {
+        this.lg = JSON.parse(JSON.stringify(this.linkGroup));
+      }
+    },
+    'lg.name' () {
+      this.$emit('update-link-group', this.lg);
     }
   },
   methods: {
@@ -315,8 +316,14 @@ export default {
       if (docName && !docUrl) { return false; }
       return undefined;
     },
+    linkChange (index, changeFieldObj) {
+      const links = [...this.lg.links];
+      links[index] = { ...links[index], ...changeFieldObj };
+      this.$emit('update-link-group', { ...this.lg, links });
+    },
     addLink (index) {
       this.lg.links.splice(index + 1, 0, JSON.parse(JSON.stringify(defaultLink)));
+      this.$emit('update-link-group', this.lg);
     },
     addSeparator (index) {
       const link = JSON.parse(JSON.stringify(defaultLink));
@@ -339,7 +346,7 @@ export default {
     expandLink (index) {
       this.$set(this.lg.links[index], 'expanded', !this.lg.links[index].expanded);
     },
-    changeColor ({ linkName, color, index }) {
+    changeColor ({ color, index }) {
       const link = this.lg.links[index];
       this.$set(link, 'color', color);
       this.$emit('update-link-group', this.lg);
@@ -347,7 +354,6 @@ export default {
     updateList ({ list }) {
       this.$set(this.lg, 'links', list);
       this.$emit('update-link-group', this.lg);
-      this.$emit('save-link-group', this.lg);
     },
     updateViewRoles (roles) {
       this.$set(this.lg, 'viewRoles', roles);
