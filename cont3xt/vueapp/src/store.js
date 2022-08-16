@@ -46,7 +46,9 @@ const store = new Vuex.Store({
     immediateSubmissionReady: false,
     theme: undefined,
     tags: [],
-    tagDisplayCollapsed: true
+    tagDisplayCollapsed: true,
+    seeAllViews: false,
+    seeAllLinkGroups: false
   },
   mutations: {
     SET_USER (state, data) {
@@ -112,8 +114,11 @@ const store = new Vuex.Store({
     SET_LINK_GROUPS_ERROR (state, data) {
       state.linkGroupsError = data;
     },
-    REMOVE_LINK_GROUP (state, index) {
-      state.linkGroups.splice(index, 1);
+    REMOVE_LINK_GROUP (state, id) {
+      const index = state.linkGroups.findIndex(linkGroup => linkGroup._id === id);
+      if (index !== -1) {
+        state.linkGroups.splice(index, 1);
+      }
     },
     UPDATE_LINK_GROUP (state, data) {
       for (let i = 0; i < state.linkGroups.length; i++) {
@@ -224,6 +229,12 @@ const store = new Vuex.Store({
     },
     SET_TAG_DISPLAY_COLLAPSED (state, data) {
       state.tagDisplayCollapsed = data;
+    },
+    SET_SEE_ALL_VIEWS (state, data) {
+      state.seeAllViews = data;
+    },
+    SET_SEE_ALL_LINK_GROUPS (state, data) {
+      state.seeAllLinkGroups = data;
     }
   },
   getters: {
@@ -362,6 +373,12 @@ const store = new Vuex.Store({
     },
     getTagDisplayCollapsed (state) {
       return state.tagDisplayCollapsed;
+    },
+    getSeeAllViews (state) {
+      return state.seeAllViews;
+    },
+    getSeeAllLinkGroups (state) {
+      return state.seeAllLinkGroups;
     }
   },
   plugins: [createPersistedState({

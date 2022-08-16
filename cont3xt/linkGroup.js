@@ -65,8 +65,9 @@ class LinkGroup {
    * @returns {boolean} success - True if the request was successful, false otherwise
    */
   static async apiGet (req, res, next) {
+    const all = req.query.all && req.user.hasRole('cont3xtAdmin');
     const roles = await req.user.getRoles();
-    let linkGroups = await Db.getMatchingLinkGroups(req.user.userId, [...roles]);
+    let linkGroups = await Db.getMatchingLinkGroups(req.user.userId, [...roles], all);
 
     // Set editable on any linkGroups that the user is allowed to edit
     for (const lg of linkGroups) {
@@ -175,7 +176,7 @@ class LinkGroup {
       return res.send({ success: false, text: 'LinkGroup not found' });
     }
 
-    if (olinkGroup.creator !== req.user.userId && !(req.user.hasRole(olinkGroup.editRoles))) {
+    if (olinkGroup.creator !== req.user.userId && !(req.user.hasRole(olinkGroup.editRoles)) && !req.user.hasRole('cont3xtAdmin')) {
       return res.send({ success: false, text: 'Permission denied' });
     }
 
@@ -212,7 +213,7 @@ class LinkGroup {
       return res.send({ success: false, text: 'LinkGroup not found' });
     }
 
-    if (linkGroup.creator !== req.user.userId && !(req.user.hasRole(linkGroup.editRoles))) {
+    if (linkGroup.creator !== req.user.userId && !(req.user.hasRole(linkGroup.editRoles)) && !req.user.hasRole('cont3xtAdmin')) {
       return res.send({ success: false, text: 'Permission denied' });
     }
 

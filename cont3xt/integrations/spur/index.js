@@ -63,6 +63,62 @@ class SpurIntegration extends Integration {
       {
         label: 'wifi',
         type: 'json'
+      },
+      {
+        label: 'tunnel operators',
+        field: 'tunnels',
+        fieldRoot: 'operator',
+        type: 'array'
+      },
+      {
+        label: 'client proxies',
+        field: 'client.proxies',
+        type: 'array'
+      },
+      {
+        label: 'client behaviors',
+        field: 'client.behaviors',
+        type: 'array'
+      },
+      {
+        label: 'risks',
+        type: 'array'
+      }
+    ]
+  };
+
+  tidbits = {
+    order: 300,
+    fields: [
+      {
+        tooltip: 'infrastructure',
+        field: 'infrastructure',
+        display: 'badge'
+      },
+      {
+        tooltip: 'tunnel operators',
+        field: 'tunnels',
+        fieldRoot: 'operator',
+        type: 'array',
+        display: 'warningGroup'
+      },
+      {
+        tooltip: 'client proxies',
+        field: 'client.proxies',
+        type: 'array',
+        display: 'warningGroup'
+      },
+      {
+        tooltip: 'client behaviors',
+        field: 'client.behaviors',
+        type: 'array',
+        display: 'warningGroup'
+      },
+      {
+        tooltip: 'risks',
+        field: 'risks',
+        type: 'array',
+        display: 'warningGroup'
       }
     ]
   };
@@ -93,7 +149,7 @@ class SpurIntegration extends Integration {
         return undefined;
       }
 
-      const response = await axios.get(`https://api.spur.us/v1/context/${ip}`, {
+      const response = await axios.get(`https://api.spur.us/v2/context/${ip}`, {
         headers: {
           Token: key,
           'User-Agent': this.userAgent()

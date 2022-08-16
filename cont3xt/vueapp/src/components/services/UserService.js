@@ -1,6 +1,7 @@
 import Vue from 'vue';
 import store from '@/store';
 import setReqHeaders from '../../../../../common/vueapp/setReqHeaders';
+import { paramStr } from '@/utils/paramStr';
 
 export default {
   /**
@@ -132,11 +133,14 @@ export default {
 
   /**
    * Fetches a list of integration views
-   * @returns {Promise} - The promise that either resovles the request or rejects in error
+   * @returns {Promise} - The promise that either resolves the request or rejects in error
    */
   getIntegrationViews () {
+    const query = {};
+    if (store.state.seeAllViews) { query.all = true; }
+
     return new Promise((resolve, reject) => {
-      fetch('api/views', {
+      fetch(`api/views/${paramStr(query)}`, {
         method: 'GET',
         headers: { 'Content-Type': 'application/json' }
       }).then((response) => {

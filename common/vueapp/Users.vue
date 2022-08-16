@@ -495,38 +495,41 @@ export default {
       this.$set(role, 'roleAssigners', newSelection);
       this.userHasChanged(roleId);
     },
-    userHasChanged (userId) {
-      const newUser = JSON.parse(JSON.stringify(this.users.find(u => u.userId === userId)));
-      const oldUser = JSON.parse(JSON.stringify(this.dbUserList.find(u => u.userId === userId)));
-
+    normalizeUser (unNormalizedUser) {
+      const user = JSON.parse(JSON.stringify(unNormalizedUser));
       // remove _showDetails for user (added by b-table when user row is expanded)
-      delete newUser._showDetails;
-      delete oldUser._showDetails;
+      delete user._showDetails;
 
-      // roles might be undefined, but compare to emtpy array since toggling on
+      // roles might be undefined, but compare to empty array since toggling on
       // any roles sets roles to an array, and removing that role = empty array
-      if (oldUser.roles === undefined) { oldUser.roles = []; }
-      if (newUser.roles === undefined) { newUser.roles = []; }
+      user.roles ??= [];
+
+      // sort, since order is not meaningful for roles
+      user.roles.sort();
+
+      // roleAssigners may be undefined, which should be functionally synonymous with an empty array
+      user.roleAssigners ??= [];
+
+      // sort, since order is not meaningful for roleAssigners
+      user.roleAssigners.sort();
 
       // make sure these fields exist or the objects will be different
       // (undefined is the same as false for these fields)
-      oldUser.timeLimit = oldUser.timeLimit ? oldUser.timeLimit : undefined;
-      newUser.timeLimit = newUser.timeLimit ? newUser.timeLimit : undefined;
-      oldUser.hidePcap = oldUser.hidePcap ? oldUser.hidePcap : undefined;
-      newUser.hidePcap = newUser.hidePcap ? newUser.hidePcap : undefined;
-      oldUser.hideFiles = oldUser.hideFiles ? oldUser.hideFiles : undefined;
-      newUser.hideFiles = newUser.hideFiles ? newUser.hideFiles : undefined;
-      oldUser.hideStats = oldUser.hideStats ? oldUser.hideStats : undefined;
-      newUser.hideStats = newUser.hideStats ? newUser.hideStats : undefined;
-      oldUser.disablePcapDownload = oldUser.disablePcapDownload ? oldUser.disablePcapDownload : undefined;
-      newUser.disablePcapDownload = newUser.disablePcapDownload ? newUser.disablePcapDownload : undefined;
+      user.timeLimit ||= undefined;
+      user.hidePcap ||= undefined;
+      user.hideFiles ||= undefined;
+      user.hideStats ||= undefined;
+      user.disablePcapDownload ||= undefined;
 
-      oldUser.expanded = undefined; // don't care about expanded field (just for UI)
-      newUser.expanded = undefined;
-      oldUser.lastUsed = undefined; // don't compare lastused, it might be different if the user is using the UI
-      newUser.lastUsed = undefined;
+      user.expanded = undefined; // don't care about expanded field (just for UI)
+      user.lastUsed = undefined; // don't compare lastUsed, it might be different if the user is using the UI
+      return user;
+    },
+    userHasChanged (userId) {
+      const newUser = this.users.find(u => u.userId === userId);
+      const oldUser = this.dbUserList.find(u => u.userId === userId);
 
-      const hasChanged = JSON.stringify(newUser) !== JSON.stringify(oldUser);
+      const hasChanged = JSON.stringify(this.normalizeUser(newUser)) !== JSON.stringify(this.normalizeUser(oldUser));
       this.$set(this.changed, userId, hasChanged);
       return hasChanged;
     },

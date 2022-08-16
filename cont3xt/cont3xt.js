@@ -95,7 +95,7 @@ function setCookie (req, res, next) {
     overwrite: true
   };
 
-  if (getConfig('cont3xt', 'hstsHeader', false)) { cookieOptions.secure = true; }
+  if (getConfig('cont3xt', 'keyFile') && getConfig('cont3xt', 'certFile')) { cookieOptions.secure = true; }
 
   res.cookie( // send cookie for basic, non admin functions
     'CONT3XT-COOKIE',
@@ -234,7 +234,7 @@ app.put('/api/view/:id', [jsonParser, checkCookieToken], View.apiUpdate);
 app.delete('/api/view/:id', [jsonParser, checkCookieToken], View.apiDelete);
 
 app.get('/api/audits', Audit.apiGet);
-app.delete('/api/audit/:id', [jsonParser], Audit.apiDelete);
+app.delete('/api/audit/:id', [jsonParser, checkCookieToken], Audit.apiDelete);
 
 app.get('/api/health', (req, res) => { res.send({ success: true }); });
 

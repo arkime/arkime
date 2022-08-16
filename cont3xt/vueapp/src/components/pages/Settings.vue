@@ -48,8 +48,8 @@
             :index="i"
             :key="lg._id"
             @update="updateList"
-            :list="getLinkGroups"
-            v-for="(lg, i) in getLinkGroups"
+            :list="linkGroups"
+            v-for="(lg, i) in linkGroups"
             style="position:relative; max-width:calc(100% - 1rem); margin-left:1rem;">
             <template slot="handle">
               <span class="fa fa-bars d-inline sub-nav-handle" />
@@ -101,6 +101,18 @@
             <span class="fa fa-plus-circle mr-2" />
             New View
           </b-button>
+
+          <b-form-checkbox
+              button
+              class="ml-2 no-wrap"
+              v-model="seeAllViews"
+              v-b-tooltip.hover
+              @input="seeAllViewsChanged"
+              v-if="roles.includes('cont3xtAdmin')"
+              :title="seeAllViews ? 'Just show the views created from your activity or shared with you' : 'See all the views that exist for all users (you can because you are an ADMIN!)'">
+            <span class="fa fa-user-circle mr-1" />
+            See {{ seeAllViews ? ' MY ' : ' ALL ' }} Views
+          </b-form-checkbox>
         </div>
         <div class="d-flex flex-wrap">
           <!-- no views -->
@@ -123,18 +135,19 @@
             </div>
           </div> <!-- /no view results -->
           <!-- views -->
-          <template v-for="(view, index) in filteredViews">
+          <template v-for="view in filteredViews">
             <div
-              :key="view._id"
+              :key="`${view._id}`"
+              :id="view._id"
               class="w-25 p-2"
-              v-if="view._editable">
+              v-if="view._editable || roles.includes('cont3xtAdmin')">
               <b-card>
                 <template #header>
                   <div class="w-100 d-flex justify-content-between align-items-start">
                     <b-button
                       size="sm"
                       variant="danger"
-                      @click="deleteView(view, index)"
+                      @click="deleteView(view)"
                       v-b-tooltip.hover="'Delete this view'">
                       <span class="fa fa-trash" />
                     </b-button>
@@ -153,9 +166,10 @@
                       Error!
                     </b-alert>
                     <b-button
+                      :class="{'invisible': !updatedViewMap[view._id]}"
                       size="sm"
                       variant="success"
-                      @click="saveView(view, index)"
+                      @click="saveView(view)"
                       v-b-tooltip.hover="'Save this view'">
                       <span class="fa fa-save" />
                     </b-button>
@@ -163,7 +177,6 @@
                 </template>
                 <ViewForm
                   :view="view"
-                  :view-index="index"
                   @update-view="updateView"
                 />
               </b-card>
@@ -294,14 +307,27 @@
         <!-- link groups -->
         <h1>
           Link Groups
-          <b-button
-            class="pull-right"
-            variant="outline-primary"
-            v-b-modal.link-group-form>
-            <span class="fa fa-plus-circle" />
-            New Group
-          </b-button>
+          <span class="pull-right">
+            <b-button
+                variant="outline-primary"
+                v-b-modal.link-group-form>
+              <span class="fa fa-plus-circle" />
+              New Group
+            </b-button>
+            <b-form-checkbox
+                button
+                class="ml-2 no-wrap"
+                v-model="seeAllLinkGroups"
+                v-b-tooltip.hover
+                @input="seeAllLinkGroupsChanged"
+                v-if="roles.includes('cont3xtAdmin')"
+                :title="seeAllLinkGroups ? 'Just show the link groups created from your activity or shared with you' : 'See all the link groups that exist for all users (you can because you are an ADMIN!)'">
+              <span class="fa fa-user-circle mr-1" />
+              See {{ seeAllLinkGroups ? ' MY ' : ' ALL ' }} Groups
+            </b-form-checkbox>
+          </span>
         </h1>
+
         <!-- link group error -->
         <b-alert
           dismissible
@@ -311,15 +337,18 @@
           class="position-fixed fixed-bottom m-0 rounded-0">
           {{ getLinkGroupsError }}
         </b-alert> <!-- /link group error -->
+        <!-- link groups -->
         <link-group-card
-          v-if="getLinkGroups && getLinkGroups.length"
-          :link-group-index="selectedLinkGroup"
-          @delete-link-group="deleteLinkGroup"
+          v-if="linkGroups && linkGroups.length"
+          :link-group="linkGroups[selectedLinkGroup]"
+          :key="linkGroups[selectedLinkGroup]._id"
+          :pre-updated-link-group="updatedLinkGroupMap[linkGroups[selectedLinkGroup]._id]"
+          @update-link-group="updateLinkGroup"
         /> <!-- /link groups -->
         <!-- no link groups -->
         <div
           class="row lead mt-4"
-          v-if="getLinkGroups && !getLinkGroups.length">
+          v-if="linkGroups && !linkGroups.length">
           <div class="col">
             No Link Groups are configured.
             <b-button
@@ -406,6 +435,7 @@ import LinkGroupCard from '@/components/links/LinkGroupCard';
 import CreateViewModal from '@/components/views/CreateViewModal';
 import Cont3xtService from '@/components/services/Cont3xtService';
 import CreateLinkGroupModal from '@/components/links/CreateLinkGroupModal';
+import LinkService from '@/components/services/LinkService';
 
 let timeout;
 
@@ -431,10 +461,12 @@ export default {
       rawIntegrationSettings: undefined,
       // link groups
       selectedLinkGroup: 0,
+      updatedLinkGroupMap: {},
       // views
       filteredViews: undefined,
       viewSearchTerm: '',
       viewForm: false,
+      updatedViewMap: {},
       // password
       currentPassword: '',
       newPassword: '',
@@ -461,14 +493,31 @@ export default {
     this.filterViews(this.viewSearchTerm);
   },
   computed: {
-    ...mapGetters(['getLinkGroups', 'getLinkGroupsError', 'getIntegrations', 'getViews']),
+    ...mapGetters(['getLinkGroups', 'getLinkGroupsError', 'getIntegrations', 'getViews', 'getUser']),
+    seeAllViews: {
+      get () { return this.$store.state.seeAllViews; },
+      set (value) { this.$store.commit('SET_SEE_ALL_VIEWS', value); }
+    },
+    seeAllLinkGroups: {
+      get () { return this.$store.state.seeAllLinkGroups; },
+      set (value) { this.$store.commit('SET_SEE_ALL_LINK_GROUPS', value); }
+    },
     linkGroupsError: {
       get () {
         return !!this.$store.state.linkGroupsError;
       },
-      set (value) {
+      set () {
         this.$store.commit('SET_LINK_GROUPS_ERROR', '');
       }
+    },
+    linkGroups () {
+      if (this.getLinkGroups == null) { return undefined; }
+      const sortedLinkGroups = [...this.getLinkGroups];
+      sortedLinkGroups.sort((a, b) => a.name.localeCompare(b.name));
+      return sortedLinkGroups;
+    },
+    roles () {
+      return this.getUser?.roles ?? [];
     },
     sortedFilteredIntegrationSettings () {
       const entries = Object.entries(this.filteredIntegrationSettings);
@@ -495,6 +544,30 @@ export default {
     },
     viewSearchTerm (searchTerm) {
       this.filterViews(searchTerm);
+    },
+    linkGroups (newValue, oldValue) { // changes the selected index when linkGroups changes
+      const findNextBestIndex = () => {
+        const newLength = newValue?.length;
+        // undefined if the new list does not exist or is empty
+        if (!newLength) { return undefined; }
+        // remain on the current index, or use the last element in the list
+        return Math.min(this.selectedLinkGroup ?? 0, newLength - 1);
+      };
+
+      // do not try to link old to new index, if old does not exist
+      if (!oldValue?.length) {
+        this.selectedLinkGroup = findNextBestIndex();
+        return;
+      }
+
+      // using the old id, try to match to the index of that link group in the new list -- if existent
+      const previousSelectedLinkGroupId = oldValue[this.selectedLinkGroup]?._id;
+      if (previousSelectedLinkGroupId == null) {
+        this.selectedLinkGroup = findNextBestIndex();
+        return;
+      }
+      const newIndex = newValue.findIndex(v => v._id === previousSelectedLinkGroupId);
+      this.selectedLinkGroup = (newIndex !== -1) ? newIndex : findNextBestIndex();
     },
     getViews () {
       this.filterViews(this.viewSearchTerm);
@@ -562,22 +635,15 @@ export default {
       return setting.values[sname] ? setting.values[sname].length > 0 : false;
     },
     /* LINK GROUPS! -------------------------- */
+    updateLinkGroup (linkGroup) {
+      this.updatedLinkGroupMap[linkGroup._id] = linkGroup;
+    },
     openLinkGroupForm () {
       this.$bvModal.show('link-group-form');
     },
-    // NOTE: need to toggle selectedLinkGroup so that the children that use it
-    // (LinkGroupCard & LinkGroupForm) can update their data based on the value
-    // For example: the selectedLinkGroup index doesn't change when an item in
-    // the list is deleted, but the data associated with that index does
-    deleteLinkGroup ({ index }) {
-      this.selectedLinkGroup = undefined;
-      setTimeout(() => {
-        if (index >= this.getLinkGroups.length - 1) {
-          this.selectedLinkGroup = Math.max(this.getLinkGroups.length - 1, 0);
-        } else {
-          this.selectedLinkGroup = index;
-        }
-      }, 100);
+    // re-fetch link groups when changing see-all for link groups
+    seeAllLinkGroupsChanged () {
+      LinkService.getLinkGroups(this.seeAllLinkGroups);
     },
     updateList ({ list, from, to }) {
       const ids = [];
@@ -608,13 +674,40 @@ export default {
     openViewForm () {
       this.$bvModal.show('view-form');
     },
-    updateView ({ view, index }) {
-      this.$set(this.filteredViews, index, view);
+    // re-fetch views when changing see-all for views
+    seeAllViewsChanged () {
+      UserService.getIntegrationViews();
     },
-    saveView (view, index) {
+    setFilteredView (view) {
+      const index = this.filteredViews.findIndex(v => v._id === view._id);
+      if (index !== -1) {
+        this.$set(this.filteredViews, index, view);
+      }
+    },
+    normalizeView (unNormalizedView) {
+      const view = JSON.parse(JSON.stringify(unNormalizedView));
+
+      // sort these fields to make order not affect result of comparison, because their orders are not meaningful
+      view.editRoles.sort();
+      view.viewRoles.sort();
+      view.integrations.sort();
+      return view;
+    },
+    updateView (view) {
+      // see if the view has unsaved changes
+      const initialView = this.getViews.find(v => view._id === v._id);
+      const hasChanged = JSON.stringify(this.normalizeView(initialView)) !== JSON.stringify(this.normalizeView(view));
+
+      // if the view has changed from what is in the database, store the updated state, otherwise undefined
+      this.updatedViewMap[view._id] = hasChanged ? view : undefined;
+
+      // update the filteredViews array with this value
+      this.setFilteredView(view);
+    },
+    saveView (view) {
+      this.updatedViewMap[view._id] = undefined;
       delete view.error;
       delete view.success;
-
       // NOTE: this function handles fetching the updated view list and storing it
       UserService.updateIntegrationsView(view).then((response) => {
         this.$set(view, 'success', true);
@@ -624,17 +717,17 @@ export default {
         setTimeout(() => {
           delete view.error;
           delete view.success;
-          this.$set(this.filteredViews, index, view);
+          this.setFilteredView(view);
         }, 4000);
       });
     },
-    deleteView (view, index) {
+    deleteView (view) {
       // NOTE: this function handles fetching the updated view list and storing it
       UserService.deleteIntegrationsView(view._id).catch((error) => {
         this.$set(view, 'error', true);
         setTimeout(() => {
           delete view.error;
-          this.$set(this.filteredViews, index, view);
+          this.setFilteredView(view);
         }, 4000);
       });
     },
@@ -754,15 +847,22 @@ export default {
       return data;
     },
     /* VIEWS! -------------------------------- */
+    // NOTE: this filters/orders views while preserving keeping any updates made previously
     filterViews (searchTerm) {
+      const viewsCopy = JSON.parse(JSON.stringify(this.getViews));
+      viewsCopy.sort((a, b) => a.name.localeCompare(b.name)); // sort alphabetically
+      // use updated versions of views
+      const editedViews = viewsCopy.map((view) => this.updatedViewMap[view._id] ?? view);
+
+      // no filter
       if (!searchTerm) {
-        this.filteredViews = JSON.parse(JSON.stringify(this.getViews));
+        this.filteredViews = editedViews;
         return;
       }
 
+      // filter by searchTerm
       const query = searchTerm.toLowerCase();
-
-      this.filteredViews = this.getViews.filter((view) => {
+      this.filteredViews = editedViews.filter((view) => {
         return view.name.toString().toLowerCase().match(query)?.length > 0;
       });
     }

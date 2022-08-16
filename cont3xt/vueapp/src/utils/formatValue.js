@@ -14,7 +14,7 @@ export const formatValue = (data, field) => {
 
   for (const p of field.path) {
     if (!value) {
-      console.warn(`Can't resolve path: ${field.path.join('.')}`);
+      // console.warn(`Can't resolve path: ${field.path.join('.')}`);
       return '';
     }
     value = value[p];

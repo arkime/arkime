@@ -135,6 +135,7 @@ class Integration {
     }
 
     integration.normalizeCard();
+    integration.normalizeTidbits();
     // console.log(integration.name, JSON.stringify(integration.card, false, 2));
 
     Integration.integrationsByName[integration.name] = integration;
@@ -218,6 +219,37 @@ class Integration {
     */
 
   /**
+   * An Integration tidbits object
+   *
+   * Information for creating and ordering tidbits
+   * @typedef IntegrationTidbitContainer
+   * @type {object}
+   * @param {number|undefined} order - a default order to apply to all contained tidbits
+   * @param {IntegrationTidbit[]} fields - the objects that define individual tidbit displays
+   */
+
+  /**
+   * An Integration tidbit object
+   *
+   * Information about how to display a field from an Integration's data to the primary indicator-tree display.
+   * @typedef IntegrationTidbit
+   * @type {object}
+   * @param {string|undefined} label - The name of the field. If given, tidbit is displayed as key-value pair at bottom
+   * @param {IntegrationFieldType} type - The type of data displayed in the field, default 'string'
+   * @param {IntegrationFieldDef} field - path to data
+   * @param {IntegrationFieldDef|undefined} fieldRoot - path to element data from data root
+   * @param {string} display - how to display value in UI, default 'badge'
+   * @param {string|undefined} template - pseudo template-string applied to value before postProcess
+   * @param {string[]|string|undefined} postProcess - named filter(s) to pass value into
+   * @param {string|undefined} tooltip - value used as tooltip
+   * @param {string|undefined} tooltipTemplate - pseudo template-string filled with value & data for use in tooltip
+   * @param {number} order - number by which tidbits are sorted (ascending order), default 0
+   * @param {number|undefined} precedence - the higher, the more preferred among those with the same purpose
+   * @param {string|undefined} purpose - when multiple valid tidbits have the same purpose,
+   *                                     only the one with the highest precedence will be kept
+   */
+
+  /**
    * An Integration field object
    *
    * Information about how to display a field within an Integration's data.
@@ -250,6 +282,7 @@ class Integration {
    * @param {string} icon - The relative url to the integrations icon
    * @param {number} order - The order in which this integration displays in the UI
    * @param {IntegrationCard} card - Information on how to display the integration's data
+   * @param {IntegrationTidbitContainer} tidbits - Information on how to pull specialized fields into indicator-tree UI
    */
 
   /**
@@ -287,6 +320,12 @@ class Integration {
         }
       }
 
+      // Gather settings to be made accessible from the UI
+      const uiSettings = Object.fromEntries(
+        Object.entries(keys?.[integration.name] ?? {})
+          .filter(([key, _]) => integration?.settings?.[key]?.uiSetting)
+      );
+
       // User can override card display
       let card = integration.card;
       const cardstr = integration.getUserConfig(req.user, integration.name, 'card');
@@ -304,7 +343,9 @@ class Integration {
         cachePolicy: integration.cachePolicy,
         icon: integration.icon,
         card,
-        order
+        order,
+        tidbits: integration.tidbits?.fields || [],
+        uiSettings: uiSettings || {}
       };
     }
 
@@ -490,6 +531,10 @@ class Integration {
       return res.send({ success: false, text: 'Missing query' });
     }
 
+    if (req.body.tags !== undefined && !Array.isArray(req.body.tags)) {
+      return res.send({ success: false, text: 'Tags must be an array when present' });
+    }
+
     if (req.body.doIntegrations && !Array.isArray(req.body.doIntegrations)) {
       return res.send({ success: false, text: 'doIntegrations bad format' });
     }
@@ -522,7 +567,7 @@ class Integration {
         userId: req.user.userId,
         indicator: query,
         iType: itype,
-        tags: req.body.tags,
+        tags: req.body.tags ?? [],
         viewId: req.body.viewId,
         issuedAt,
         took: Date.now() - issuedAt,
@@ -800,6 +845,52 @@ class Integration {
     }
     if (card.fields === undefined) { card.fields = []; }
     card.fields = this.normalizeCardFields(card.fields);
+  }
+
+  normalizeTidbits () {
+    if (!this.tidbits) { return; }
+    if (Array.isArray(this.tidbits)) {
+      // if tidbits is just an array, make that into fields.
+      this.tidbits = { fields: this.tidbits };
+    }
+    this.tidbits.order ??= 0;
+    this.tidbits.fields = this.tidbits.fields
+      ?.map((tidbit, index) => this.normalizeTidbitField(tidbit, index, this.tidbits.order));
+  }
+
+  normalizeTidbitField (tidbit, index, containerOrder) {
+    const {
+      type,
+      path: fieldPath,
+      field,
+      fieldRootPath,
+      fieldRoot,
+      order,
+      tooltip,
+      label,
+      display,
+      postProcess,
+      template,
+      tooltipTemplate,
+      precedence,
+      purpose
+    } = tidbit;
+
+    return {
+      path: fieldPath ?? field?.split('.') ?? [],
+      fieldRootPath: fieldRootPath ?? fieldRoot?.split('.') ?? [],
+      order: order ?? containerOrder,
+      tooltip,
+      tooltipTemplate,
+      label,
+      type: type ?? 'string',
+      display: display ?? 'badge',
+      template,
+      postProcess,
+      precedence: precedence ?? Number.MIN_VALUE,
+      purpose: purpose ?? '',
+      definitionOrder: index
+    };
   }
 }
 

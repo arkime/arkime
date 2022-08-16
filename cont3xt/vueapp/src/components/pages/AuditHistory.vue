@@ -10,6 +10,7 @@
             </b-input-group-text>
           </template>
           <b-form-input
+              autofocus
               tabindex="0"
               ref="search"
               v-model="filter"
@@ -264,7 +265,8 @@ export default {
       return typeof msNum === 'number' ? `${msNum}ms` : '?';
     },
     reissueSearchLink (log) {
-      const allQueryParams = { b: window.btoa(log.indicator), ...log.queryOptions, submit: 'y' };
+      const resubmittedTags = log.tags?.length ? log.tags.join(',') : undefined;
+      const allQueryParams = { b: window.btoa(log.indicator), view: log.viewId, tags: resubmittedTags, submit: 'y' };
       return `/${paramStr(allQueryParams)}`;
     },
     deleteLog (id) {
