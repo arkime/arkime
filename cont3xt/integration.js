@@ -377,7 +377,8 @@ class Integration {
     const checkWriteDone = () => {
       // setImmediate to ensure that any pending integration lists have a chance to start (and contribute to total)
       setImmediate(() => {
-        if (shared.sent === shared.total) {
+        if (shared.sent === shared.total && shared.finished !== true) {
+          shared.finished = true;
           onFinish();
         }
       });
