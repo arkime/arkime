@@ -39,6 +39,7 @@ NOTICE: Cross-cluster Shortcuts require you to not restart all your viewers at o
   - capture - save sessions not saving packets for across restarts
   - capture - afpacket rewrite, improve performance & less out of order packets
   - capture - fix quic crash
+  - capture - make creating fields from config/parsers/wise/tagger use ES bulk call
   - capture/viewer - new outer fields replace gre fields (PR #1889)
   - cont3xt - new Cont3xt application, see https://arkime.com/cont3xt
   - cont3xt/viewer - share new user UI

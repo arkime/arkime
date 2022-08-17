@@ -2366,22 +2366,39 @@ LOCAL void moloch_db_load_fields()
     free(data);
 }
 /******************************************************************************/
+LOCAL BSB   fieldBSB;
+LOCAL int   fieldBSBTimeout;
+LOCAL gboolean moloch_db_fieldsbsb_timeout(gpointer UNUSED(user_data))
+{
+    if (fieldBSB.buf && BSB_LENGTH(fieldBSB) > 0) {
+        moloch_http_schedule(esServer, "POST", "/_bulk", 6, (char *)fieldBSB.buf, BSB_LENGTH(fieldBSB), NULL, MOLOCH_HTTP_PRIORITY_BEST, NULL, NULL);
+        BSB_INIT(fieldBSB, moloch_http_get_buffer(config.dbBulkSize), config.dbBulkSize);
+    }
+    fieldBSBTimeout = 0;
+    return G_SOURCE_REMOVE;
+}
+/******************************************************************************/
+LOCAL void moloch_db_fieldbsb_make()
+{
+    if (!fieldBSB.buf) {
+        BSB_INIT(fieldBSB, moloch_http_get_buffer(config.dbBulkSize), config.dbBulkSize);
+        fieldBSBTimeout = g_timeout_add_seconds(1, moloch_db_fieldsbsb_timeout, 0);
+    } else if (BSB_REMAINING(fieldBSB) < 1000) {
+        g_source_remove(fieldBSBTimeout);
+        moloch_db_fieldsbsb_timeout(0);
+        fieldBSBTimeout = g_timeout_add_seconds(1, moloch_db_fieldsbsb_timeout, 0);
+    }
+}
+/******************************************************************************/
 void moloch_db_add_field(char *group, char *kind, char *expression, char *friendlyName, char *dbField, char *help, int haveap, va_list ap)
 {
-    char                   key[100];
-    int                    key_len;
-    BSB                    bsb;
-
     if (config.dryRun)
         return;
 
-    char                  *json = moloch_http_get_buffer(10000);
+    moloch_db_fieldbsb_make();
 
-    BSB_INIT(bsb, json, 10000);
-
-    key_len = snprintf(key, sizeof(key), "/%sfields/_doc/%s", config.prefix, expression);
-
-    BSB_EXPORT_sprintf(bsb, "{\"friendlyName\": \"%s\", \"group\": \"%s\", \"help\": \"%s\", \"dbField2\": \"%s\", \"type\": \"%s\"",
+    BSB_EXPORT_sprintf(fieldBSB, "{\"index\": {\"_index\": \"%sfields\", \"_id\": \"%s\"}}\n", config.prefix, expression);
+    BSB_EXPORT_sprintf(fieldBSB, "{\"friendlyName\": \"%s\", \"group\": \"%s\", \"help\": \"%s\", \"dbField2\": \"%s\", \"type\": \"%s\"",
              friendlyName,
              group,
              help,
@@ -2398,41 +2415,33 @@ void moloch_db_add_field(char *group, char *kind, char *expression, char *friend
             if (!value)
                 break;
 
-            BSB_EXPORT_sprintf(bsb, ", \"%s\": ", field);
+            BSB_EXPORT_sprintf(fieldBSB, ", \"%s\": ", field);
             if (*value == '{' || *value == '[')
-                BSB_EXPORT_sprintf(bsb, "%s", value);
+                BSB_EXPORT_sprintf(fieldBSB, "%s", value);
             else
-                BSB_EXPORT_sprintf(bsb, "\"%s\"", value);
+                BSB_EXPORT_sprintf(fieldBSB, "\"%s\"", value);
         }
     }
 
-    BSB_EXPORT_u08(bsb, '}');
-    moloch_http_schedule(esServer, "POST", key, key_len, json, BSB_LENGTH(bsb), NULL, MOLOCH_HTTP_PRIORITY_NORMAL, NULL, NULL);
+    BSB_EXPORT_cstr(fieldBSB, "}\n");
 }
 /******************************************************************************/
 void moloch_db_update_field(char *expression, char *name, char *value)
 {
-    char                   key[1000];
-    int                    key_len;
-    BSB                    bsb;
-
     if (config.dryRun)
         return;
 
-    char                  *json = moloch_http_get_buffer(1000);
+    moloch_db_fieldbsb_make();
 
-    BSB_INIT(bsb, json, 1000);
+    BSB_EXPORT_sprintf(fieldBSB, "{\"update\": {\"_index\": \"%sfields\", \"_id\": \"%s\"}}\n", config.prefix, expression);
 
-    key_len = snprintf(key, sizeof(key), "/%sfields/_update/%s", config.prefix, expression);
-
-    BSB_EXPORT_sprintf(bsb, "{\"doc\": {\"%s\":", name);
+    BSB_EXPORT_sprintf(fieldBSB, "{\"doc\": {\"%s\":", name);
     if (*value == '[') {
-        BSB_EXPORT_sprintf(bsb, "%s", value);
+        BSB_EXPORT_sprintf(fieldBSB, "%s", value);
     } else {
-        moloch_db_js0n_str(&bsb, (unsigned char*)value, TRUE);
+        moloch_db_js0n_str(&fieldBSB, (unsigned char*)value, TRUE);
     }
-    BSB_EXPORT_sprintf(bsb, "}}");
-    moloch_http_schedule(esServer, "POST", key, key_len, json, BSB_LENGTH(bsb), NULL, MOLOCH_HTTP_PRIORITY_NORMAL, NULL, NULL);
+    BSB_EXPORT_cstr(fieldBSB, "}}\n");
 }
 /******************************************************************************/
 void moloch_db_update_filesize(uint32_t fileid, uint64_t filesize, uint64_t packetsSize, uint32_t packets)
@@ -2678,6 +2687,12 @@ void moloch_db_init()
 void moloch_db_exit()
 {
     if (!config.dryRun) {
+        if (fieldBSB.buf && BSB_LENGTH(fieldBSB) > 0) {
+            if (fieldBSBTimeout)
+                g_source_remove(fieldBSBTimeout);
+            moloch_db_fieldsbsb_timeout(0);
+        }
+
         for (int i = 0; timers[i]; i++) {
             g_source_remove(timers[i]);
         }
