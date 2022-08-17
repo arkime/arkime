@@ -95,8 +95,10 @@ export default {
         for (const txtEntry of answer) {
           txtGroups[this.txtGroupIndex(txtEntry.data)].push(txtEntry);
         }
-        // return only groups with 1 or more entries
-        return txtGroups.filter(group => group.length > 0);
+        // filter out empty groups, then sort alphabetically within groups
+        const filteredTxtGroups = txtGroups.filter(group => group.length > 0);
+        filteredTxtGroups.forEach(group => group.sort((a, b) => a.data.localeCompare(b.data)));
+        return filteredTxtGroups;
       }
       // most record types only have 1 group, so make an array of size one
       return [answer];
