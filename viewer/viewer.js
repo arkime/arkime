@@ -1968,10 +1968,10 @@ app.get(
 );
 
 // cyberchef apis -------------------------------------------------------------
-app.get('/cyberchef.html', express.static( // cyberchef client file endpoint
+app.get('/cyberchef.html', [ArkimeUtil.missingResource, cyberchefCspHeader], express.static( // cyberchef client file endpoint
   path.join(__dirname, '/public'),
   { maxAge: dayMs, fallthrough: false }
-), ArkimeUtil.missingResource, cyberchefCspHeader);
+));
 
 app.get( // cyberchef endpoint
   '/cyberchef/:nodeName/session/:id',
