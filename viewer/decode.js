@@ -907,7 +907,7 @@ if (require.main === module) {
     const packets = [];
 
     async.whilst(
-      function () { return pos < stat.size; },
+      function (cb) { return cb(null, pos < stat.size); },
       function (callback) {
         pcap.readPacket(pos, function (packet) {
           const obj = {};
