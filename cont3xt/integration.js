@@ -354,6 +354,8 @@ class Integration {
 
   static async runIntegrationsList (shared, query, itype, integrations, onFinish) {
     shared.total += integrations.length;
+    shared.pendingIntegrationLists--; // the list has been started
+
     if (Integration.debug > 0) {
       console.log('RUNNING', itype, query, integrations.map(integration => integration.name));
     }
@@ -361,6 +363,7 @@ class Integration {
     const writeOne = (integration, response) => {
       if (integration.addMoreIntegrations) {
         integration.addMoreIntegrations(itype, response, (moreQuery, moreIType) => {
+          shared.pendingIntegrationLists++; // ensure response does not finish before this list is added
           Integration.runIntegrationsList(shared, moreQuery, moreIType, Integration.integrations[moreIType], onFinish);
         });
       }
@@ -374,7 +377,7 @@ class Integration {
     };
 
     const checkWriteDone = () => {
-      if (shared.sent === shared.total) {
+      if (shared.sent === shared.total && shared.pendingIntegrationLists === 0) {
         onFinish();
       }
     };
@@ -396,8 +399,8 @@ class Integration {
       }
     }
 
-    // must finish in case of no integrations (text)
-    if (shared.total === 0) {
+    // must finish in case of no possible integrations (text)
+    if (integrations.length === 0) {
       checkWriteDone();
     }
 
@@ -551,7 +554,10 @@ class Integration {
       res,
       sent: 0,
       total: 0, // runIntegrationsList will fix
-      resultCount: 0 // sum of _cont3xt.count from results
+      resultCount: 0, // sum of _cont3xt.count from results
+      /** avoid preemptive end in cases of multiple lists
+       * starts at 1, since there will always be at least one list to run (top-level indicator) */
+      pendingIntegrationLists: 1
     };
     res.write('[\n');
     res.write(JSON.stringify({ success: true, itype, sent: shared.sent, total: integrations.length, text: 'more to follow' }));
@@ -576,6 +582,12 @@ class Integration {
         console.log('ERROR - creating audit log.', err);
       });
     };
+
+    if (itype === 'email' || itype === 'url') {
+      // another integration list is guaranteed
+      // this must be known before the first call to runIntegrationsList (as it may finish before the next is started)
+      shared.pendingIntegrationLists++;
+    }
 
     Integration.runIntegrationsList(shared, query, itype, integrations, finishWrite);
     if (itype === 'email') {
