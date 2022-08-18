@@ -17,6 +17,7 @@ Card Description - an object of the following
       * type - if not set it is string
         * string - obvious
         * url - a url that should be made clickable
+        * externalLink - a button that leads out to an external link
         * table - there will be a fields element
         * array - the field var will point to an array, display 1 per line unless join set
         * date - a date value
@@ -30,6 +31,7 @@ Card Description - an object of the following
       * filterEmpty - for arrays/tables, removes empty (nullish & empty string/array) rows/elements when true (default is true)
       * defaultSortField - with array, sorts the table by this field
       * defaultSortDirection - with array and defaultSortField, sorts the table in this direction ('asc' or 'desc')
+      * altText - optional text to be displayed on externalLink tooltip instead of URL
 
 Tidbit Description - an object of the following
   * order - the default order to apply to all fields

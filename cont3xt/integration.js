@@ -830,6 +830,9 @@ class Integration {
         }
       }
 
+      // disable filtering if not searchable
+      f.searchable ??= f.type !== 'externalLink';
+
       outFields.push(f);
     }
 

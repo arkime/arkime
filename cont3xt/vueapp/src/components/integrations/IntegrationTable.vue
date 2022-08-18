@@ -11,7 +11,7 @@
           <b-dropdown
             size="sm"
             variant="outline-secondary"
-            :text="`Searching ${!selectedFields.length || selectedFields.length === fields.length ? 'all' : selectedFields.join(', ')} fields`">
+            :text="`Searching ${!selectedFields.length || selectedFields.length === searchableFields.length ? 'all' : selectedFields.join(', ')} field${selectedFields.length === 1 ? '' : 's'}`">
             <b-dropdown-item
               class="small"
               @click.native.capture.stop.prevent="toggleAllFields(true)">
@@ -28,7 +28,7 @@
                 stacked
                 v-model="selectedFields">
                 <template
-                  v-for="field in fields">
+                  v-for="field in searchableFields">
                   <b-form-checkbox
                     :key="field.label"
                     :value="field.label">
@@ -122,7 +122,7 @@
 </template>
 
 <script>
-import { formatValue } from '@/utils/formatValue';
+import { formatPostProcessedValue } from '@/utils/formatValue';
 
 export default {
   name: 'IntegrationCardTable',
@@ -156,7 +156,7 @@ export default {
   data () {
     return {
       searchTerm: '',
-      selectedFields: this.fields.map(f => f.label), // select all fields to start
+      selectedFields: this.fields.filter(f => f.searchable).map(f => f.label), // select all fields to start
       sortField: this.defaultSortField || undefined,
       tableLen: Math.min(this.tableData.length || 1, this.size),
       desc: this.defaultSortDirection && this.defaultSortDirection === 'desc',
@@ -164,6 +164,11 @@ export default {
       filteredData: Array.isArray(this.tableData) ? this.tableData : [this.tableData],
       highlightData: null
     };
+  },
+  computed: {
+    searchableFields () {
+      return this.fields.filter(f => f.searchable);
+    }
   },
   mounted () {
     if (this.sortField) {
@@ -245,7 +250,7 @@ export default {
       });
     },
     toggleAllFields (select) {
-      this.selectedFields = select ? this.fields.map(f => f.label) : [];
+      this.selectedFields = select ? this.searchableFields.map(f => f.label) : [];
     },
     updateFilteredData (newSearchTerm) {
       const syncWithParent = () => {
@@ -315,9 +320,10 @@ export default {
           if (this.selectedFields.length && this.selectedFields.indexOf(field.label) < 0) { continue; }
           for (const c in row) {
             if (!field.path.includes(c)) { continue; }
+            if (!field.searchable) { continue; }
             if (!row[c]) { continue; }
 
-            const value = formatValue(row, field);
+            const value = formatPostProcessedValue(row, field);
 
             if (!value) { continue; }
 
