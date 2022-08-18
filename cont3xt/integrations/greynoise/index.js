@@ -54,6 +54,14 @@ class GreyNoiseIntegration extends Integration {
           then: 'RIOT',
           else: undefined
         }
+      },
+      {
+        field: 'noise',
+        postProcess: {
+          if: { equals: true },
+          then: 'NOISE',
+          else: undefined
+        }
       }
     ]
   };
