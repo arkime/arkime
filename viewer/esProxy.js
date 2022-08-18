@@ -170,6 +170,11 @@ app.use((req, res, next) => {
 // Proxy code to real ES
 // ===========================================================================
 
+function normalizeUrlPath (path) {
+  const normalizedUrl = new URL(path, 'https://0.0.0.0/');
+  return normalizedUrl.pathname + normalizedUrl.search + normalizedUrl.hash;
+}
+
 // Save the post body
 
 function hasBody (req) {
@@ -264,7 +269,7 @@ function doProxy (req, res) {
 
 // Get requests
 app.get('*', (req, res) => {
-  const path = req.params['0'];
+  const path = normalizeUrlPath(req.params['0']);
 
   // Empty IFs since those are allowed requests and will run code at end
   if (getExact[path]) {
@@ -334,7 +339,7 @@ function validateUpdate (req) {
 
 // Post requests
 app.post('*', saveBody, (req, res) => {
-  const path = req.params['0'];
+  const path = normalizeUrlPath(req.params['0']);
 
   // Empty IFs since those are allowed requests and will run code at end
   if (postExact[path]) {
@@ -361,7 +366,7 @@ app.post('*', saveBody, (req, res) => {
 
 // Delete requests
 app.delete('*', (req, res) => {
-  const path = req.params['0'];
+  const path = normalizeUrlPath(req.params['0']);
 
   // Empty IFs since those are allowed requests and will run code at end
   if (path.startsWith(`/${prefix}files/_doc/${req.sensor.node}-`)) {
@@ -374,7 +379,7 @@ app.delete('*', (req, res) => {
 
 // Put requests
 app.put('*', (req, res) => {
-  const path = req.params['0'];
+  const path = normalizeUrlPath(req.params['0']);
 
   // Empty IFs since those are allowed requests and will run code at end
   if (putExact[path]) {
