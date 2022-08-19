@@ -176,7 +176,7 @@ const integrationsStatic = express.static(
   { maxAge: dayMs, fallthrough: false }
 );
 app.use('/integrations', (req, res, next) => {
-  if (req.url.endsWith('png')) {
+  if (req.path.endsWith('.png')) {
     return integrationsStatic(req, res, (err) => {
       ArkimeUtil.missingResource(err, req, res);
     });
