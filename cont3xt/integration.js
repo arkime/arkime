@@ -354,6 +354,7 @@ class Integration {
 
   static async runIntegrationsList (shared, query, itype, integrations, onFinish) {
     shared.total += integrations.length;
+
     if (Integration.debug > 0) {
       console.log('RUNNING', itype, query, integrations.map(integration => integration.name));
     }
@@ -374,9 +375,13 @@ class Integration {
     };
 
     const checkWriteDone = () => {
-      if (shared.sent === shared.total) {
-        onFinish();
-      }
+      // setImmediate to ensure that any pending integration lists have a chance to start (and contribute to total)
+      setImmediate(() => {
+        if (shared.sent === shared.total && shared.finished !== true) {
+          shared.finished = true;
+          onFinish();
+        }
+      });
     };
 
     const keys = shared.user.getCont3xtKeys();
@@ -396,8 +401,8 @@ class Integration {
       }
     }
 
-    // must finish in case of no integrations (text)
-    if (shared.total === 0) {
+    // must finish in case of no possible integrations (text)
+    if (integrations.length === 0) {
       checkWriteDone();
     }
 

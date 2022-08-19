@@ -109,20 +109,7 @@ class DNSIntegration extends Integration {
               targetList.push(txtEntry);
             }
             result.SPF = { Status: data.Status, Answer: spfAnswer };
-
-            // group domain/site-verification at the top, sorted alphabetically
-            const groupPrecedence = (txtEntry) => {
-              if (txtEntry.data.includes('domain-verification')) { return 0; }
-              if (txtEntry.data.includes('site-verification')) { return 1; }
-              return 2;
-            };
-            const sortTxtEntry = (a, b) => {
-              const groupDiff = groupPrecedence(a) - groupPrecedence(b);
-              if (groupDiff !== 0) { return groupDiff; } // sort by group first
-              return a.data.localeCompare(b.data); // fall back to alphabetical within groups
-            };
-            txtAnswer.sort(sortTxtEntry);
-            result[query].Answer = txtAnswer; // update TXT Answer
+            result.TXT.Answer = txtAnswer; // update TXT Answer
           }
         }
       }
