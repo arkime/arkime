@@ -493,15 +493,6 @@ function checkCookieToken (req, res, next) {
   return next();
 }
 
-// use for APIs that can be used from places other than just the UI
-function checkHeaderToken (req, res, next) {
-  if (req.headers.cookie) { // if there's a cookie, check header
-    return checkCookieToken(req, res, next);
-  } else { // if there's no cookie, just continue so the API still works
-    return next();
-  }
-}
-
 // used to disable endpoints in multi es mode
 function disableInMultiES (req, res, next) {
   if (Config.get('multiES', false)) {
@@ -1673,13 +1664,13 @@ app.get( // session packets endpoint
 
 app.post( // add tags endpoint
   ['/api/sessions/addtags', '/addTags'],
-  [ArkimeUtil.noCacheJson, checkHeaderToken, logAction('addTags')],
+  [ArkimeUtil.noCacheJson, checkCookieToken, logAction('addTags')],
   sessionAPIs.addTags
 );
 
 app.post( // remove tags endpoint
   ['/api/sessions/removetags', '/removeTags'],
-  [ArkimeUtil.noCacheJson, checkHeaderToken, logAction('removeTags'), User.checkPermissions(['removeEnabled'])],
+  [ArkimeUtil.noCacheJson, checkCookieToken, logAction('removeTags'), User.checkPermissions(['removeEnabled'])],
   sessionAPIs.removeTags
 );
 
