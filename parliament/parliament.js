@@ -1343,7 +1343,7 @@ router.put('/settings', isAdmin, (req, res, next) => {
 // Update an existing notifier
 router.put('/notifiers/:name', isAdmin, (req, res, next) => {
   if (!parliament.settings.notifiers[req.params.name]) {
-    const error = new Error(`${req.params.name} not fount.`);
+    const error = new Error(`${req.params.name} not found.`);
     error.httpStatusCode = 404;
     return next(error);
   }
