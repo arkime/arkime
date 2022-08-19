@@ -948,7 +948,7 @@ function updateParliament () {
         return resolve();
       })
       .catch((error) => {
-        console.log('Parliament update error:', error.messge || error);
+        console.log('Parliament update error:', error.message || error);
         return resolve();
       });
   });
