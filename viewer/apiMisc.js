@@ -72,7 +72,8 @@ module.exports = (Config, Db, internals, sessionAPIs, userAPIs, ViewerUtils) => 
       res.status(404);
       res.send('Cannot locate fields');
     }
-
+    
+    res.header('Content-Type', 'application/json');
     if (req.query && req.query.array) {
       res.send(internals.fieldsArr);
     } else {
