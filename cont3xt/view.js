@@ -73,12 +73,30 @@ class View {
       return 'viewRoles must be array';
     }
 
+    for (const viewRole of view.viewRoles) {
+      if (typeof viewRole !== 'string') {
+        return 'every roles must be strings';
+      }
+    }
+
     if (view.editRoles !== undefined && !Array.isArray(view.editRoles)) {
       return 'editRoles must be array';
     }
 
+    for (const editRole of view.editRoles) {
+      if (typeof editRole !== 'string') {
+        return 'every roles must be strings';
+      }
+    }
+
     if (view.integrations !== undefined && !Array.isArray(view.integrations)) {
       return 'integrations must be array';
+    }
+
+    for (const integration of view.integrations) {
+      if (typeof integration !== 'string') {
+        return 'every integrations must be strings';
+      }
     }
 
     return null;
