@@ -44,11 +44,38 @@ class GreyNoiseIntegration extends Integration {
     ]
   };
 
+  tidbits = {
+    order: 400,
+    fields: [
+      {
+        field: 'riot',
+        postProcess: {
+          if: { equals: true },
+          then: 'RIOT',
+          else: undefined
+        }
+      },
+      {
+        field: 'noise',
+        postProcess: {
+          if: { equals: true },
+          then: 'NOISE',
+          else: undefined
+        }
+      }
+    ]
+  };
+
   homePage = 'https://www.greynoise.io/';
   settings = {
     disabled: {
       help: 'Disable integration for all queries',
       type: 'boolean'
+    },
+    key: {
+      help: 'Your GreyNoise api key',
+      password: true,
+      required: false
     }
   };
 
@@ -60,15 +87,27 @@ class GreyNoiseIntegration extends Integration {
 
   async fetchIp (user, ip) {
     try {
+      const key = this.getUserConfig(user, 'GreyNoise', 'key');
+
+      const headers = { 'User-Agent': this.userAgent() };
+      // use key if provided (optional, allows one to get around the daily rate limit)
+      if (key != null) { headers.key = key; }
+
       const c = await axios.get(`https://api.greynoise.io/v3/community/${ip}`, {
-        headers: {
-          'User-Agent': this.userAgent()
-        }
+        headers
       });
 
+      // add one to count for riot or noise being true (differentiate from NoResult button)
+      let count = 0;
+      if (c.data.riot) { count++; }
+      if (c.data.noise) { count++; }
+      c.data._cont3xt = { count };
       return c.data;
     } catch (err) {
-      console.log(this.name, ip, err);
+      if (err?.response?.status === 404) {
+        return Integration.NoResult; // IP not found in riot dataset or noise
+      }
+
       return undefined;
     }
   }
