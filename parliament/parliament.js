@@ -1685,7 +1685,7 @@ router.put('/groups/:id', isAdmin, (req, res, next) => {
 
 // Create a new cluster within an existing group
 router.post('/groups/:id/clusters', isAdmin, (req, res, next) => {
-  if (!req.body.title || !req.body.url) {
+  if (!req.body.title || !req.body.url || typeof req.body.title !== 'string' || typeof req.body.url !== 'string') {
     let message;
     if (!req.body.title || typeof req.body.title !== 'string') {
       message = 'A cluster must have a title.';
@@ -1762,7 +1762,7 @@ router.delete('/groups/:groupId/clusters/:clusterId', isAdmin, (req, res, next) 
 
 // Update a cluster
 router.put('/groups/:groupId/clusters/:clusterId', isAdmin, (req, res, next) => {
-  if (!req.body.title || !req.body.url) {
+  if (!req.body.title || !req.body.url || typeof req.body.title !== 'string' || typeof req.body.url !== 'string') {
     let message;
     if (!req.body.title || typeof req.body.title !== 'string') {
       message = 'A cluster must have a title.';
