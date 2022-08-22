@@ -427,6 +427,7 @@ function createActions (configKey, emitter, internalsKey) {
       mrc[key].users = users;
     }
   }
+
   const makers = internals.pluginEmitter.listeners(emitter);
   async.each(makers, function (cb, nextCb) {
     cb(function (err, items) {
@@ -2402,8 +2403,8 @@ async function main () {
     setInterval(expireCheckAll, 60 * 1000);
   }
 
-  createActions('value-actions', 'makeRightClick', 'rightClick');
-  setInterval(() => createActions('value-actions', 'makeRightClick', 'rightClick'), 150 * 1000); // Check every 2.5 minutes
+  createActions('value-actions', 'makeRightClick', 'rightClicks');
+  setInterval(() => createActions('value-actions', 'makeRightClick', 'rightClicks'), 150 * 1000); // Check every 2.5 minutes
   createActions('field-actions', 'makeFieldActions', 'fieldActions');
   setInterval(() => createActions('field-actions', 'makeFieldActions', 'fieldActions'), 150 * 1000); // Check every 2.5 minutes
 
