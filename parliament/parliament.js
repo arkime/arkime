@@ -1612,7 +1612,7 @@ router.put('/parliament', isAdmin, (req, res, next) => {
 
 // Create a new group in the parliament
 router.post('/groups', isAdmin, (req, res, next) => {
-  if (!req.body.title && typeof req.body.title !== 'string') {
+  if (!req.body.title || typeof req.body.title !== 'string') {
     const error = new Error('A group must have a title');
     error.httpStatusCode = 422;
     return next(error);
@@ -1654,7 +1654,7 @@ router.delete('/groups/:id', isAdmin, (req, res, next) => {
 
 // Update a group in the parliament
 router.put('/groups/:id', isAdmin, (req, res, next) => {
-  if (!req.body.title && typeof req.body.title !== 'string') {
+  if (!req.body.title || typeof req.body.title !== 'string') {
     const error = new Error('A group must have a title.');
     error.httpStatusCode = 422;
     return next(error);
@@ -1687,9 +1687,9 @@ router.put('/groups/:id', isAdmin, (req, res, next) => {
 router.post('/groups/:id/clusters', isAdmin, (req, res, next) => {
   if (!req.body.title || !req.body.url) {
     let message;
-    if (!req.body.title && typeof req.body.title !== 'string') {
+    if (!req.body.title || typeof req.body.title !== 'string') {
       message = 'A cluster must have a title.';
-    } else if (!req.body.url && typeof req.body.url !== 'string') {
+    } else if (!req.body.url || typeof req.body.url !== 'string') {
       message = 'A cluster must have a url.';
     }
 
@@ -1764,9 +1764,9 @@ router.delete('/groups/:groupId/clusters/:clusterId', isAdmin, (req, res, next) 
 router.put('/groups/:groupId/clusters/:clusterId', isAdmin, (req, res, next) => {
   if (!req.body.title || !req.body.url) {
     let message;
-    if (!req.body.title && typeof req.body.title !== 'string') {
+    if (!req.body.title || typeof req.body.title !== 'string') {
       message = 'A cluster must have a title.';
-    } else if (!req.body.url && typeof req.body.url !== 'string') {
+    } else if (!req.body.url || typeof req.body.url !== 'string') {
       message = 'A cluster must have a url.';
     }
 
