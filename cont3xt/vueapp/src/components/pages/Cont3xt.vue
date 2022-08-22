@@ -642,9 +642,8 @@ export default {
           }
         });
       }
-      const termSearched = this.searchTerm;
       const viewId = this.getSelectedView?._id;
-      Cont3xtService.search({ searchTerm: termSearched, skipCache: this.skipCache, tags: this.tags, viewId }).subscribe({
+      Cont3xtService.search({ searchTerm: this.searchTerm, skipCache: this.skipCache, tags: this.tags, viewId }).subscribe({
         next: (data) => {
           if (data.itype && !this.searchItype) {
             // determine the search type and save the search term
