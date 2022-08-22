@@ -132,43 +132,52 @@
         Enabled
       </b-form-checkbox>
       <b-form-checkbox inline
+        v-if="createMode === 'user'"
         v-model="newUser.webEnabled">
         Web Interface
       </b-form-checkbox>
       <b-form-checkbox inline
+        v-if="createMode === 'user'"
         v-model="newUser.headerAuthEnabled">
         Web Auth Header
       </b-form-checkbox>
 
       <b-form-checkbox inline
         :checked="!newUser.emailSearch"
+        v-if="createMode === 'user'"
         @input="newVal => negativeToggle(newVal, newUser, 'emailSearch')">
         Disable Arkime Email Search
       </b-form-checkbox>
       <b-form-checkbox inline
         :checked="!newUser.removeEnabled"
+        v-if="createMode === 'user'"
         @input="newVal => negativeToggle(newVal, newUser, 'removeEnabled')">
         Disable Arkime Data Removal
       </b-form-checkbox>
       <b-form-checkbox inline
         :checked="!newUser.packetSearch"
+        v-if="createMode === 'user'"
         @input="newVal => negativeToggle(newVal, newUser, 'packetSearch')">
         Disable Arkime Hunting
       </b-form-checkbox>
 
       <b-form-checkbox inline
+        v-if="createMode === 'user'"
         v-model="newUser.hideStats">
         Hide Arkime Stats Page
       </b-form-checkbox>
       <b-form-checkbox inline
+        v-if="createMode === 'user'"
         v-model="newUser.hideFiles">
         Hide Arkime Files Page
       </b-form-checkbox>
       <b-form-checkbox inline
+        v-if="createMode === 'user'"
         v-model="newUser.hidePcap">
         Hide Arkime PCAP
       </b-form-checkbox>
       <b-form-checkbox inline
+        v-if="createMode === 'user'"
         v-model="newUser.disablePcapDownload">
         Disable Arkime PCAP Download
       </b-form-checkbox>

@@ -600,8 +600,8 @@ function logAction (uiPage) {
     }
     log.query = log.query.slice(0, -1);
 
-    if (req.user.expression) {
-      log.forcedExpression = req.user.expression;
+    if (req.user.getExpression()) {
+      log.forcedExpression = req.user.getExpression();
     }
 
     if (uiPage) { log.uiPage = uiPage; }
@@ -2273,14 +2273,14 @@ internals.processCronQueries = () => {
             return forQueriesCb();
           }
 
-          if (user.expression && user.expression.length > 0) {
+          if (user.getExpression()) {
             try {
               // Expression was set by admin, so assume email search ok
               molochparser.parser.yy.emailSearch = true;
-              const userExpression = molochparser.parse(user.expression);
+              const userExpression = molochparser.parse(user.getExpression());
               query.query.bool.filter.push(userExpression);
             } catch (e) {
-              console.log("CRON - Couldn't compile user forced expression", user.expression, e);
+              console.log("CRON - Couldn't compile user forced expression", user.getExpression(), e);
               return forQueriesCb();
             }
           }

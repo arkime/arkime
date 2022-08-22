@@ -201,7 +201,7 @@ class User {
       const user = Object.assign(new User(), data);
       cleanUser(user);
       user.settings = user.settings ?? {};
-      await user.expandRoles();
+      await user.expandFromRoles();
       if (readOnly) {
         user.roles = user.roles.filter(role => role === 'usersAdmin');
       }
@@ -353,7 +353,7 @@ class User {
       'emailSearch', 'enabled', 'removeEnabled',
       'headerAuthEnabled', 'settings', 'userId', 'userName', 'webEnabled',
       'packetSearch', 'hideStats', 'hideFiles', 'hidePcap',
-      'disablePcapDownload', 'welcomeMsgNum', 'lastUsed', 'timeLimit'
+      'disablePcapDownload', 'welcomeMsgNum', 'lastUsed'
     ];
 
     const clone = {};
@@ -369,6 +369,7 @@ class User {
     const assignableRoles = await req.user.getAssignableRoles(req.user.userId);
     clone.assignableRoles = [...assignableRoles];
     clone.canAssignRoles = clone.assignableRoles.length > 0;
+    clone.timeLimit = req.user.#allTimeLimit;
 
     if (getCurrentUserCB) {
       getCurrentUserCB(req.user, clone);
@@ -857,6 +858,8 @@ class User {
   // Per User Methods
   /******************************************************************************/
   #allRoles;
+  #allExpression;
+  #allTimeLimit;
   /**
    * Save user, callback only
    */
@@ -865,13 +868,20 @@ class User {
   }
 
   /**
-   * Generate set of all the roles this user has and store in #allRoles.
+   * Create the combined variables from ourselves and enabled roles we use.
    */
-  async expandRoles () {
+  async expandFromRoles () {
+    if (this.#allRoles !== undefined) { return; }
     const allRoles = new Set();
 
     // The roles we need to process to see if any subroles
     const rolesQ = [...this.roles ?? []];
+
+    if (this.expression && this.expression.trim().length > 0) {
+      this.#allExpression = '(' + this.expression.trim() + ')';
+    }
+
+    this.#allTimeLimit = this.timeLimit;
 
     while (rolesQ.length) {
       const r = rolesQ.pop();
@@ -890,6 +900,19 @@ class User {
       const role = await User.getUserCache(r);
       if (!role || !role.enabled) { continue; }
       allRoles.add(r);
+
+      if (role.expression && role.expression.trim().length > 0) {
+        if (!this.#allExpression) { this.#allExpression = ''; }
+        this.#allExpression += ' && (' + role.expression.trim() + ')';
+      }
+
+      if (role.timeLimit !== undefined) {
+        if (this.#allTimeLimit === undefined) {
+          this.#allTimeLimit = role.timeLimit;
+        } else {
+          this.#allTimeLimit = Math.min(this.timeLimit, role.timeLimit);
+        }
+      }
 
       // schedule any sub roles
       if (!role.roles) { continue; }
@@ -987,10 +1010,14 @@ class User {
    */
   async getRoles () {
     if (this.#allRoles === undefined) {
-      await this.expandRoles();
+      await this.expandFromRoles();
     }
 
     return this.#allRoles;
+  }
+
+  getExpression () {
+    return this.#allExpression;
   }
 
   /**

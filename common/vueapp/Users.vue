@@ -219,42 +219,49 @@
             <b-form-checkbox inline
               data-testid="checkbox"
               :checked="!data.item.emailSearch"
+              v-if="!data.item.userId.startsWith('role:')"
               @input="newVal => negativeToggle(newVal, data.item, 'emailSearch', true)">
               Disable Arkime Email Search
             </b-form-checkbox>
             <b-form-checkbox inline
               data-testid="checkbox"
               :checked="!data.item.removeEnabled"
+              v-if="!data.item.userId.startsWith('role:')"
               @input="newVal => negativeToggle(newVal, data.item, 'removeEnabled', true)">
               Disable Arkime Data Removal
             </b-form-checkbox>
             <b-form-checkbox inline
               data-testid="checkbox"
               :checked="!data.item.packetSearch"
+              v-if="!data.item.userId.startsWith('role:')"
               @input="newVal => negativeToggle(newVal, data.item, 'packetSearch', true)">
               Disable Arkime Hunting
             </b-form-checkbox>
             <b-form-checkbox inline
               data-testid="checkbox"
               v-model="data.item.hideStats"
+              v-if="!data.item.userId.startsWith('role:')"
               @input="userHasChanged(data.item.userId)">
               Hide Arkime Stats Page
             </b-form-checkbox>
             <b-form-checkbox inline
               data-testid="checkbox"
               v-model="data.item.hideFiles"
+              v-if="!data.item.userId.startsWith('role:')"
               @input="userHasChanged(data.item.userId)">
               Hide Arkime Files Page
             </b-form-checkbox>
             <b-form-checkbox inline
               data-testid="checkbox"
               v-model="data.item.hidePcap"
+              v-if="!data.item.userId.startsWith('role:')"
               @input="userHasChanged(data.item.userId)">
               Hide Arkime PCAP
             </b-form-checkbox>
             <b-form-checkbox inline
               data-testid="checkbox"
               v-model="data.item.disablePcapDownload"
+              v-if="!data.item.userId.startsWith('role:')"
               @input="userHasChanged(data.item.userId)">
               Disable Arkime PCAP Download
             </b-form-checkbox>

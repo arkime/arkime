@@ -254,14 +254,14 @@ module.exports = (Config, Db, internals) => {
     // queryOverride can supercede req.query if specified
     const reqQuery = queryOverride || req.query;
 
-    if (!err && req.user.expression && req.user.expression.length > 0) {
+    if (!err && req.user.getExpression()) {
       try {
         // Expression was set by admin, so assume email search ok
         molochparser.parser.yy.emailSearch = true;
-        const userExpression = molochparser.parse(req.user.expression);
+        const userExpression = molochparser.parse(req.user.getExpression());
         query.query.bool.filter.push(userExpression);
       } catch (e) {
-        console.log(`ERROR - Forced expression (${req.user.expression}) doesn't compile -`, e);
+        console.log(`ERROR - Forced expression (${req.user.getExpression()}) doesn't compile -`, e);
         err = e;
       }
     }
