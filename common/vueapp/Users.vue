@@ -533,7 +533,7 @@ export default {
       return user;
     },
     isUser (userOrRoleObj) {
-      return userOrRoleObj.userId.startsWith('roles:');
+      return !userOrRoleObj.userId.startsWith('role:');
     },
     userHasChanged (userId) {
       const newUser = this.users.find(u => u.userId === userId);
