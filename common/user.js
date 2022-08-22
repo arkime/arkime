@@ -983,7 +983,7 @@ class User {
   }
 
   /**
-   * Return set of all roles for ourself
+   * Return set of all roles expanded for ourself
    */
   async getRoles () {
     if (this.#allRoles === undefined) {
