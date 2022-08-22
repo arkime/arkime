@@ -159,7 +159,7 @@
               variant="primary"
               @click="openSettings(data.item.userId)"
               v-has-role="{user:currentUser,roles:'arkimeAdmin'}"
-              v-if="parentApp === 'Arkime' && !data.item.userId.startsWith('role:')"
+              v-if="parentApp === 'Arkime' && isUser(data.item)"
               v-b-tooltip.hover="`Arkime settings for ${data.item.userId}`">
               <span class="fa fa-gear" />
             </b-button>
@@ -219,49 +219,49 @@
             <b-form-checkbox inline
               data-testid="checkbox"
               :checked="!data.item.emailSearch"
-              v-if="!data.item.userId.startsWith('role:')"
+              v-if="isUser(data.item)"
               @input="newVal => negativeToggle(newVal, data.item, 'emailSearch', true)">
               Disable Arkime Email Search
             </b-form-checkbox>
             <b-form-checkbox inline
               data-testid="checkbox"
               :checked="!data.item.removeEnabled"
-              v-if="!data.item.userId.startsWith('role:')"
+              v-if="isUser(data.item)"
               @input="newVal => negativeToggle(newVal, data.item, 'removeEnabled', true)">
               Disable Arkime Data Removal
             </b-form-checkbox>
             <b-form-checkbox inline
               data-testid="checkbox"
               :checked="!data.item.packetSearch"
-              v-if="!data.item.userId.startsWith('role:')"
+              v-if="isUser(data.item)"
               @input="newVal => negativeToggle(newVal, data.item, 'packetSearch', true)">
               Disable Arkime Hunting
             </b-form-checkbox>
             <b-form-checkbox inline
               data-testid="checkbox"
               v-model="data.item.hideStats"
-              v-if="!data.item.userId.startsWith('role:')"
+              v-if="isUser(data.item)"
               @input="userHasChanged(data.item.userId)">
               Hide Arkime Stats Page
             </b-form-checkbox>
             <b-form-checkbox inline
               data-testid="checkbox"
               v-model="data.item.hideFiles"
-              v-if="!data.item.userId.startsWith('role:')"
+              v-if="isUser(data.item)"
               @input="userHasChanged(data.item.userId)">
               Hide Arkime Files Page
             </b-form-checkbox>
             <b-form-checkbox inline
               data-testid="checkbox"
               v-model="data.item.hidePcap"
-              v-if="!data.item.userId.startsWith('role:')"
+              v-if="isUser(data.item)"
               @input="userHasChanged(data.item.userId)">
               Hide Arkime PCAP
             </b-form-checkbox>
             <b-form-checkbox inline
               data-testid="checkbox"
               v-model="data.item.disablePcapDownload"
-              v-if="!data.item.userId.startsWith('role:')"
+              v-if="isUser(data.item)"
               @input="userHasChanged(data.item.userId)">
               Disable Arkime PCAP Download
             </b-form-checkbox>
@@ -312,7 +312,7 @@
                  we're in cont3xt or arkime
                  (assumes user is a usersAdmin since only usersAdmin can see this page) -->
             <template v-if="parentApp === 'Cont3xt' || parentApp === 'Arkime'">
-              <form class="row" v-if="!data.item.userId.startsWith('role:')">
+              <form class="row" v-if="isUser(data.item)">
                 <div class="col-9 mt-4">
                   <!-- new password -->
                   <b-input-group
@@ -531,6 +531,9 @@ export default {
       user.expanded = undefined; // don't care about expanded field (just for UI)
       user.lastUsed = undefined; // don't compare lastUsed, it might be different if the user is using the UI
       return user;
+    },
+    isUser (userOrRoleObj) {
+      return userOrRoleObj.userId.startsWith('roles:');
     },
     userHasChanged (userId) {
       const newUser = this.users.find(u => u.userId === userId);
