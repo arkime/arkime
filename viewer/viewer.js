@@ -140,7 +140,10 @@ const cyberchefCspHeader = helmet.contentSecurityPolicy({
     defaultSrc: ["'self'"],
     styleSrc: ["'self'", "'unsafe-inline'"],
     scriptSrc: ["'self'", "'unsafe-eval'", "'unsafe-inline'"],
-    objectSrc: ["'self'", 'data:']
+    objectSrc: ["'self'", 'data:'],
+    workerSrc: ["'self'", 'blob:'],
+    frameSrc: ["'self'"],
+    imgSrc: ["'self'", 'data:']
   }
 });
 
