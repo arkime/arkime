@@ -236,7 +236,6 @@ if (Config.get('regressionTests')) {
     User.getUser(req.params.user, (err, user) => {
       // Shallow copy
       const cuser = Object.assign({}, user);
-      delete cuser._allRoles;
       res.send(cuser);
     });
   });
