@@ -1,4 +1,4 @@
-use Test::More tests => 99;
+use Test::More tests => 101;
 use Cwd;
 use URI::Escape;
 use MolochTest;
@@ -59,6 +59,12 @@ my $json;
     delete $users->{data}->[0]->{lastUsed};
 
     eq_or_diff($users->{data}->[0], from_json('{"roles": [], "userId": "test1", "removeEnabled": false, "expression": "", "headerAuthEnabled": false, "userName": "UserName", "id": "test1", "emailSearch": false, "enabled": true, "webEnabled": false, "packetSearch": false, "welcomeMsgNum": 0, "disablePcapDownload": false, "hideFiles": false, "hidePcap": false, "hideStats": false, "roleAssigners": []}', {relaxed => 1}), "Test User Add", { context => 3 });
+
+# Check appinfo works
+    $json = viewerGetToken("/api/appInfo", $token);
+    eq_or_diff(sort($json->{roles}), from_json('["arkimeAdmin", "arkimeUser", "cont3xtAdmin", "cont3xtUser", "parliamentAdmin", "parliamentUser", "superAdmin", "usersAdmin", "wiseAdmin", "wiseUser"]'));
+    my @roles = sort @{$json->{user}->{roles}};
+    eq_or_diff(\@roles, from_json('["arkimeAdmin", "arkimeUser", "cont3xtUser", "parliamentUser", "usersAdmin", "wiseUser"]'));
 
 # Can we create superAdmin
     $json = viewerPostToken("/user/create", '{"userId": "testSuper", "userName": "SUserName", "enabled":true, "password":"password", "roles":["superAdmin"]}', $token);
