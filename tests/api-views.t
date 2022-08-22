@@ -101,7 +101,7 @@ $info = viewerGet("/api/views?molochRegressionUser=anonymous&all=true");
 eq_or_diff($info->{recordsTotal}, 2, "returns 2 recordsTotal with all flag");
 
 # cleanup views
-viewerDeleteToken("/api/view/${id2}?molochRegressionUser=test1", $token);
+viewerDeleteToken("/api/view/${id2}?molochRegressionUser=test2", $token2);
 viewerDeleteToken("/api/view/${id3}?molochRegressionUser=test1", $token);
 
 # views are empty
