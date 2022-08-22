@@ -139,7 +139,7 @@ my ($url) = @_;
     $json = viewerGet("/history/list");
     my $found2 = 0;
     foreach my $item3 (@{$json->{data}}) {
-        if ($item3->{forcedExpression} eq "protocols == udp") {
+        if ($item3->{forcedExpression} eq "(protocols == udp)") {
             $found2 = 1;
             last;
         }
@@ -151,7 +151,7 @@ my ($url) = @_;
 
   my $found3 = 0;
   foreach my $item4 (@{$json->{data}}) {
-      if ($item4->{forcedExpression} eq "protocols == udp") {
+      if ($item4->{forcedExpression} eq "(protocols == udp)") {
           $found3 = 1;
           last;
       }
