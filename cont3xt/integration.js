@@ -559,7 +559,7 @@ class Integration {
       resultCount: 0 // sum of _cont3xt.count from results
     };
     res.write('[\n');
-    res.write(JSON.stringify({ success: true, itype, sent: shared.sent, total: integrations.length, text: 'more to follow' }));
+    res.write(JSON.stringify({ success: true, itype, query, sent: shared.sent, total: integrations.length, text: 'more to follow' }));
     res.write(',\n');
 
     const issuedAt = Date.now();

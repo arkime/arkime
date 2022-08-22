@@ -649,7 +649,7 @@ export default {
           if (data.itype && !this.searchItype) {
             // determine the search type and save the search term
             // based of the first itype seen
-            this.lastSearchedTerm = termSearched;
+            this.lastSearchedTerm = data.query;
             this.searchItype = data.itype;
             this.filterLinks(this.linkSearchTerm);
           }
@@ -779,7 +779,7 @@ export default {
               } else {
                 break;
               }
-              x = x - 2;
+              x -= 2;
             }
             if (leftHeight > rightHeight) {
               delta = Math.abs(leftHeight - rightHeight);
@@ -795,7 +795,7 @@ export default {
               } else {
                 break;
               }
-              x = x - 2;
+              x -= 2;
             }
             if (rightHeight > leftHeight) {
               delta = Math.abs(rightHeight - leftHeight);
