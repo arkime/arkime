@@ -1,4 +1,4 @@
-use Test::More tests => 30;
+use Test::More tests => 31;
 use MolochTest;
 use JSON;
 use Test::Differences;
@@ -68,6 +68,10 @@ eq_or_diff($info->{recordsTotal}, 1, "returns 1 recordsTotal for test2 user");
 delete $info->{data}->[0]->{id};
 # and it doesn't show users and roles field because test2 is not the creator
 eq_or_diff($info->{data}->[0], from_json('{"expression":"ip == 4.3.2.1","user":"test1","name":"view1update"}'), "can't see roles and users fields");
+
+# can not delete view from other user
+$info = viewerDeleteToken("/api/view/${id1}?molochRegressionUser=test2", $token2);
+ok(!$info->{success}, "can't delete view created by an other user");
 
 # can delete view with id
 $info = viewerDeleteToken("/api/view/${id1}?molochRegressionUser=test1", $token);
