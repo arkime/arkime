@@ -102,12 +102,13 @@ module.exports = (Db, internals) => {
    * @returns {number} recordsTotal - The total number of shortcut results stored.
    * @returns {number} recordsFiltered - The number of shortcut items returned in this result.
    */
-  shortcutAPIs.getShortcuts = (req, res) => {
+  shortcutAPIs.getShortcuts = async (req, res) => {
     // return nothing if we can't find the user
     const user = req.settingUser;
     if (!user) { return res.send({}); }
 
-    const roles = [...user._allRoles.keys()]; // es requries an array for terms search
+    const allRoles = await user.getRoles();
+    const roles = [...allRoles.keys()]; // es requries an array for terms search
 
     const map = req.query.map && req.query.map === 'true';
 

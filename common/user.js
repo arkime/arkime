@@ -228,8 +228,6 @@ class User {
    * Set user, callback only
    */
   static setUser (userId, user, cb) {
-    delete user._allRoles;
-
     // Save with usersAdmin role if needed
     if (user.createEnabled) {
       if (user.roles === undefined) {
@@ -366,7 +364,7 @@ class User {
       }
     }
 
-    clone.roles = [...req.user._allRoles];
+    clone.roles = [...req.user.#allRoles];
 
     const assignableRoles = await req.user.getAssignableRoles(req.user.userId);
     clone.assignableRoles = [...assignableRoles];
@@ -858,6 +856,7 @@ class User {
   /******************************************************************************/
   // Per User Methods
   /******************************************************************************/
+  #allRoles;
   /**
    * Save user, callback only
    */
@@ -866,7 +865,7 @@ class User {
   }
 
   /**
-   * Generate set of all the roles this user has and store in _allRoles.
+   * Generate set of all the roles this user has and store in #allRoles.
    */
   async expandRoles () {
     const allRoles = new Set();
@@ -900,7 +899,7 @@ class User {
       });
     }
 
-    this._allRoles = allRoles;
+    this.#allRoles = allRoles;
   }
 
   /**
@@ -908,11 +907,11 @@ class User {
    */
   hasRole (role2Check) {
     if (!Array.isArray(role2Check)) {
-      return this._allRoles.has(role2Check);
+      return this.#allRoles.has(role2Check);
     }
 
     for (const r of role2Check) {
-      if (this._allRoles.has(r)) {
+      if (this.#allRoles.has(r)) {
         return true;
       }
     }
@@ -924,11 +923,11 @@ class User {
    */
   hasAllRole (role2Check) {
     if (!Array.isArray(role2Check)) {
-      return this._allRoles.has(role2Check);
+      return this.#allRoles.has(role2Check);
     }
 
     for (const r of role2Check) {
-      if (!this._allRoles.has(r)) {
+      if (!this.#allRoles.has(r)) {
         return false;
       }
     }
@@ -987,11 +986,11 @@ class User {
    * Return set of all roles for ourself
    */
   async getRoles () {
-    if (this._allRoles === undefined) {
+    if (this.#allRoles === undefined) {
       await this.expandRoles();
     }
 
-    return this._allRoles;
+    return this.#allRoles;
   }
 
   /**

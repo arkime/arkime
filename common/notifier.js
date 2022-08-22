@@ -208,8 +208,9 @@ class Notifier {
    * @name /notifiers
    * @returns {Notifier[]} notifiers - The notifiers that have been created.
    */
-  static apiGetNotifiers (req, res) {
-    const roles = [...req.user._allRoles.keys()]; // es requries an array for terms search
+  static async apiGetNotifiers (req, res) {
+    const allRoles = await req.user.getRoles();
+    const roles = [...allRoles.keys()]; // es requries an array for terms search
 
     const query = {
       sort: { created: { order: 'asc' } }
