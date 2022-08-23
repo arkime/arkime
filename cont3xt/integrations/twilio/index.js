@@ -94,9 +94,13 @@ class TwilioIntegration extends Integration {
         return undefined;
       }
 
-      const result = await axios.get(`https://${sid}:${token}@lookups.twilio.com/v1/PhoneNumbers/+1${query}?Type=carrier&Type=caller-name`, {
+      const result = await axios.get(`https://lookups.twilio.com/v1/PhoneNumbers/+1${query}?Type=carrier&Type=caller-name`, {
         headers: {
           'User-Agent': this.userAgent()
+        },
+        auth: {
+          username: sid,
+          password: token
         }
       });
 
