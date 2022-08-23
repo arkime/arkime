@@ -34,11 +34,10 @@
           v-model="perPage"
           @change="perPageChange"
           :options="[
-            { value: 10, text: '10 per page'},
-            { value: 20, text: '20 per page'},
             { value: 50, text: '50 per page'},
             { value: 100, text: '100 per page'},
-            { value: 200, text: '200 per page'}
+            { value: 200, text: '200 per page'},
+            { value: 500, text: '500 per page'}
           ]"
         />
       </div>

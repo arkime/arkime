@@ -26,6 +26,7 @@ jobs:
             - export PATH=/opt/arkime/bin:/data/moloch/bin:$PATH
             - npm -g config set user root; npm -g config set cache-min 9999999
             - installing: scl enable devtoolset-9 rh-python36 'make install'
+            - test-ui: npm run test
             - linting: npm run lint
             - cp -r capture/plugins/lua/samples /opt/arkime/lua
             - build-package: |
@@ -288,7 +289,6 @@ jobs:
             - run-es: (chown -R elasticsearch /elasticsearch-7.10.2; cd /elasticsearch-7.10.2 ; su elasticsearch -c "ES_JAVA_OPTS='-Xms1000m -Xmx1000m' bin/elasticsearch" > /tmp/es &)
             - sleep 30
             - cat /tmp/es
-            - test-ui: npm run test
             - test-viewer: (cd tests ; G_SLICE=always-malloc ./tests.pl --viewer)
             - build-package: |
                 mv /data/moloch/bin/capture /data/moloch/bin/moloch-capture
