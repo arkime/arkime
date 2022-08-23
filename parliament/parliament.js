@@ -152,6 +152,11 @@ const invalidTokens = {};
     }
   }
 
+  if (file && !file.endsWith('.json')) {
+    console.log('ERROR: Parliament config filename must end with \'.json\'');
+    process.exit(1);
+  }
+
   if (!appArgs.length) {
     console.log('WARNING: No config options were set, starting Parliament in view only mode with defaults.\n');
   }
