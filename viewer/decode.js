@@ -29,7 +29,6 @@ const peek = require('peek-stream');
 const async = require('async');
 const cryptoLib = require('crypto');
 const ArkimeUtil = require('../common/arkimeUtil');
-const sanitizeHtml = require('sanitize-html');
 
 let HTTPParser;
 if (process.version.startsWith('v16')) {
@@ -791,11 +790,10 @@ exports.register('ITEM-LINKBODY', through.ctor({ objectMode: true }, function (i
 
   const url = `api/session/${encodeURIComponent(this.options.nodeName)}/${encodeURIComponent(this.options.id)}/body/${encodeURIComponent(item.bodyType)}/${encodeURIComponent(item.bodyNum)}/${encodeURIComponent(item.bodyName)}.pellet`;
 
-
   if (item.bodyType === 'image') {
     item.html = '<img src="' + url + '">';
   } else {
-    item.html = "<a target='_blank' class='imagetag file' href=\"" + url + '">' + sanitizeHtml(item.bodyName, {allowedTags: [], allowedAttributes: {}}) + '</a>';
+    item.html = "<a target='_blank' class='imagetag file' href=\"" + url + '">' + ArkimeUtil.safeStr(item.bodyName) + '</a>';
   }
   callback(null, item);
 }));
