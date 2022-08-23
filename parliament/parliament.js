@@ -1725,7 +1725,6 @@ router.post('/groups/:id/clusters', isAdmin, (req, res, next) => {
   const successObj = {
     success: true,
     cluster: newCluster,
-    parliament,
     text: 'Successfully added the requested cluster.'
   };
   const errorText = 'Unable to add that cluster to the parliament.';
