@@ -155,6 +155,13 @@ class View {
    */
   static async apiDeleteView (req, res) {
     try {
+      const { body: dbView } = await Db.getView(req.params.id);
+
+      // only allow admins or view creator to delete view
+      if (!req.user.hasRole('arkimeAdmin') && req.settingUser.userId !== dbView._source.user) {
+        return res.serverError(403, 'Permission denied');
+      }
+
       await Db.deleteView(req.params.id);
       res.send(JSON.stringify({
         success: true,
