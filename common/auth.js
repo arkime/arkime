@@ -92,7 +92,7 @@ class Auth {
             if (!user) { console.log('User', userid, "doesn't exist"); return done(null, false); }
             if (!user.enabled) { console.log('User', userid, 'not enabled'); return done('Not enabled'); }
 
-            await user.expandRoles();
+            await user.expandFromRoles();
             user.setLastUsed();
             return done(null, user, { ha1: Auth.store2ha1(user.passStore) });
           });
@@ -161,7 +161,7 @@ class Auth {
       welcomeMsgNum: 1,
       roles: ['superAdmin']
     });
-    req.user.expandRoles();
+    req.user.expandFromRoles();
     return next();
   }
 
@@ -178,7 +178,7 @@ class Auth {
       welcomeMsgNum: 1,
       roles: ['superAdmin']
     });
-    req.user.expandRoles();
+    req.user.expandFromRoles();
     User.getUserCache('anonymous', (err, user) => {
       if (user) {
         req.user.setLastUsed();
@@ -226,7 +226,7 @@ class Auth {
         req.user.roles = ['arkimeUser', 'cont3xtUser', 'parliamentUser', 'wiseUser'];
       }
 
-      req.user.expandRoles();
+      req.user.expandFromRoles();
       return next();
     });
   }
@@ -296,7 +296,7 @@ class Auth {
       if (!user.headerAuthEnabled) { return res.send(JSON.stringify({ success: false, text: 'User header auth not enabled' })); }
 
       req.user = user;
-      await req.user.expandRoles();
+      await req.user.expandFromRoles();
       req.user.setLastUsed();
       return next();
     }
@@ -361,7 +361,7 @@ class Auth {
       if (!user) { return res.send(obj.user + " doesn't exist"); }
       if (!user.enabled) { return res.send(obj.user + ' not enabled'); }
 
-      await user.expandRoles();
+      await user.expandFromRoles();
       req.user = user;
       req.user.setLastUsed();
       return next();
