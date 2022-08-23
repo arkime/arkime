@@ -256,6 +256,7 @@ app.get(
 // stats apis - no auth -------------------------------------------------------
 app.get( // es health endpoint
   ['/api/eshealth', '/eshealth.json'],
+  [ArkimeUtil.noCacheJson],
   statsAPIs.getESHealth
 );
 
@@ -1207,7 +1208,7 @@ app.get('/about', User.checkPermissions(['webEnabled']), (req, res) => {
 // user apis ------------------------------------------------------------------
 app.get( // current user endpoint
   ['/api/user', '/user/current'],
-  User.checkPermissions(['webEnabled']),
+  [ArkimeUtil.noCacheJson, User.checkPermissions(['webEnabled'])],
   User.apiGetUser
 );
 
@@ -1417,13 +1418,13 @@ app.post( // update cron endpoint
 // notifier apis --------------------------------------------------------------
 app.get( // notifier types endpoint
   ['/api/notifiertypes', '/notifierTypes'],
-  [User.checkRole('arkimeAdmin'), checkCookieToken],
+  [ArkimeUtil.noCacheJson, User.checkRole('arkimeAdmin'), checkCookieToken],
   Notifier.apiGetNotifierTypes
 );
 
 app.get( // notifiers endpoint
   ['/api/notifiers', '/notifiers'],
-  [checkCookieToken],
+  [ArkimeUtil.noCacheJson, checkCookieToken],
   Notifier.apiGetNotifiers
 );
 
@@ -1903,6 +1904,7 @@ app.get( // sync shortcuts endpoint
 // file apis ------------------------------------------------------------------
 app.get( // fields endpoint
   ['/api/fields', '/fields'],
+  [ArkimeUtil.noCacheJson],
   miscAPIs.getFields
 );
 
@@ -1955,11 +1957,13 @@ app.post(
 // clusters apis --------------------------------------------------------------
 app.get(
   ['/api/clusters', '/clusters'],
+  [ArkimeUtil.noCacheJson],
   miscAPIs.getClusters
 );
 
 app.get(
   ['/remoteclusters', '/molochclusters'],
+  [ArkimeUtil.noCacheJson],
   miscAPIs.getRemoteClusters
 );
 
