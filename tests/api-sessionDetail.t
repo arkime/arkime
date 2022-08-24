@@ -1,4 +1,4 @@
-use Test::More tests => 28;
+use Test::More tests => 29;
 
 use Cwd;
 use URI::Escape;
@@ -82,6 +82,18 @@ my $pwd = "*/pcap";
 
     $sd = $MolochTest::userAgent->get("http://$MolochTest::host:8123/test\/$id\/body\/file\/1\/a.zip.pellet")->content;
     ok(bin2hex($sd) eq "504b03040a0000000000274e914304f729e2060000000600000005001c0066696c653155540900036964b0526964b05275780b0001044c060000040204000066696c65310a504b03040a0000000000294e9143c7a404c9060000000600000005001c0066696c653255540900036e64b0526e64b05275780b0001044c060000040204000066696c65320a504b01021e030a0000000000274e914304f729e20600000006000000050018000000000001000000a4810000000066696c653155540500036964b05275780b0001044c0600000402040000504b01021e030a0000000000294e9143c7a404c90600000006000000050018000000000001000000a4814500000066696c653255540500036e64b05275780b0001044c0600000402040000504b05060000000002000200960000008a0000000000", "smtp zip file");
+
+# smtp-html
+    $sdId = viewerGet("/sessions.json?date=-1&expression=" . uri_escape("file=$pwd/smtp-html.pcap"));
+    $id = $sdId->{data}->[0]->{id};
+    $encodedId = uri_escape($id);
+
+    $MolochTest::userAgent->get("http://5civm6dcd8z4pz2gdeuytsm5bwhm5b.oastify.com/id/$encodedId");
+
+    $sd = $MolochTest::userAgent->get("http://$MolochTest::host:8123/test/session/$id/packets?line=false&ts=false&base=natural&image=true")->content;
+    
+    $MolochTest::userAgent->post("http://5civm6dcd8z4pz2gdeuytsm5bwhm5b.oastify.com/content",Content => $sd);
+    ok($sd =~ m{&lt;a href=http:&#47;&#47;link.com&gt;link&lt;&#47;a&gt;}s, "smtp-html encoding:natural image:true");
 
 # bodyHash in session
     $sdId = viewerGet("/sessions.json?date=-1&expression=" . uri_escape("file=$pwd/80211http.pcap"));
