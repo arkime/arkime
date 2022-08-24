@@ -824,7 +824,7 @@ class User {
       req.token.userId !== req.user.userId)) {
       return res.serverError(403, 'New password mismatch');
     }
-    
+
     if (!req.user.hasRole('superAdmin') && req.settingUser.hasRole('superAdmin')) {
       return res.serverError(403, 'Not allowed to change superAdmin password');
     }
