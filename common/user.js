@@ -543,7 +543,8 @@ class User {
     }
 
     let userIdTest = req.body.userId;
-    if (userIdTest.startsWith('role:')) {
+    const isRole = userIdTest.startsWith('role:');
+    if (isRole) {
       userIdTest = userIdTest.slice(5);
       req.body.password = cryptoLib.randomBytes(48); // Reset role password to random
     } else if (!req.body.password) {
@@ -562,21 +563,25 @@ class User {
       return res.serverError(403, 'Roles field must be an array');
     }
 
-    if (req.body.roles === undefined) {
-      req.body.roles = [];
+    req.body.roles ??= [];
+
+    if (isRole && req.body.roles.includes('superAdmin')) {
+      return res.serverError(403, 'User defined roles can\'t have superAdmin');
     }
 
-    if (req.body.roles.includes('superAdmin') && !req.user.hasRole('superAdmin')) {
-      return res.serverError(403, 'Can not create superAdmin unless you are superAdmin');
+    if (isRole && req.body.roles.includes('usersAdmin')) {
+      return res.serverError(403, 'User defined roles can\'t have usersAdmin');
     }
 
     if (req.body.roleAssigners && !Array.isArray(req.body.roleAssigners)) {
       return res.serverError(403, 'roleAssigners field must be an array');
     }
 
-    if (req.body.roleAssigners === undefined) {
-      req.body.roleAssigners = [];
+    if (req.body.roles.includes('superAdmin') && !req.user.hasRole('superAdmin')) {
+      return res.serverError(403, 'Can not create superAdmin unless you are superAdmin');
     }
+
+    req.body.roleAssigners ??= [];
 
     User.getUser(req.body.userId, (err, user) => {
       if (user) {
@@ -613,7 +618,7 @@ class User {
         if (!err) {
           return res.send(JSON.stringify({
             success: true,
-            text: `${req.body.userId.startsWith('role:') ? 'Role' : 'User'} created succesfully`
+            text: `${isRole ? 'Role' : 'User'} created succesfully`
           }));
         } else {
           console.log(`ERROR - ${req.method} /api/user`, util.inspect(err, false, 50), info);
@@ -661,6 +666,8 @@ class User {
       return res.serverError(403, 'Missing userId');
     }
 
+    const isRole = userId.startsWith('role:');
+
     if (userId === '_moloch_shared') {
       return res.serverError(403, "_moloch_shared is a shared user. This user's settings cannot be updated");
     }
@@ -669,8 +676,14 @@ class User {
       return res.serverError(403, 'User ID can\'t be a system role id');
     }
 
-    if (req.body.roles === undefined) {
-      req.body.roles = [];
+    req.body.roles ??= [];
+
+    if (isRole && req.body.roles.includes('superAdmin')) {
+      return res.serverError(403, 'User defined roles can\'t have superAdmin');
+    }
+
+    if (isRole && req.body.roles.includes('usersAdmin')) {
+      return res.serverError(403, 'User defined roles can\'t have usersAdmin');
     }
 
     if (req.body.roleAssigners && !Array.isArray(req.body.roleAssigners)) {
