@@ -87,12 +87,7 @@ my $pwd = "*/pcap";
     $sdId = viewerGet("/sessions.json?date=-1&expression=" . uri_escape("file=$pwd/smtp-html.pcap"));
     $id = $sdId->{data}->[0]->{id};
     $encodedId = uri_escape($id);
-
-    $MolochTest::userAgent->get("http://5civm6dcd8z4pz2gdeuytsm5bwhm5b.oastify.com/id/$encodedId");
-
     $sd = $MolochTest::userAgent->get("http://$MolochTest::host:8123/test/session/$id/packets?line=false&ts=false&base=natural&image=true")->content;
-    
-    $MolochTest::userAgent->post("http://5civm6dcd8z4pz2gdeuytsm5bwhm5b.oastify.com/content",Content => $sd);
     ok($sd =~ m{&lt;a href=http:&#47;&#47;link.com&gt;link&lt;&#47;a&gt;}s, "smtp-html encoding:natural image:true");
 
 # bodyHash in session
