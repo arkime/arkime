@@ -1,0 +1,67 @@
+{
+   "sessions3" : [
+      {
+         "body" : {
+            "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 0
+            },
+            "destination" : {
+               "bytes" : 0,
+               "ip" : "127.0.0.1",
+               "packets" : 0,
+               "port" : 8000
+            },
+            "fileId" : [],
+            "firstPacket" : 1661319541920,
+            "ipProtocol" : 6,
+            "lastPacket" : 1661319541920,
+            "length" : 0,
+            "network" : {
+               "bytes" : 225,
+               "community_id" : "1:g4VybVz/9iDmvty0Sm13EBZFEZQ=",
+               "packets" : 1
+            },
+            "node" : "test",
+            "packetLen" : [
+               241
+            ],
+            "packetPos" : [
+               24
+            ],
+            "protocol" : [
+               "tcp"
+            ],
+            "protocolCnt" : 1,
+            "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 0
+            },
+            "source" : {
+               "bytes" : 225,
+               "ip" : "127.0.0.1",
+               "packets" : 1,
+               "port" : 51009
+            },
+            "tcpflags" : {
+               "ack" : 0,
+               "dstZero" : 0,
+               "fin" : 0,
+               "psh" : 1,
+               "rst" : 0,
+               "srcZero" : 0,
+               "syn" : 0,
+               "syn-ack" : 0,
+               "urg" : 0
+            },
+            "totDataBytes" : 0
+         },
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions3-220824"
+            }
+         }
+      }
+   ]
+}
+
