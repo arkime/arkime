@@ -174,6 +174,7 @@ module.exports = (Config, Db, internals, sessionAPIs, userAPIs, ViewerUtils) => 
    * @returns {string} title - The title of the app based on the configured setting.
    */
   miscAPIs.getPageTitle = (req, res) => {
+    ViewerUtils.noCache(req, res, 'text/plain; charset=utf-8');
     let titleConfig = Config.get('titleTemplate', '_cluster_ - _page_ _-view_ _-expression_');
 
     titleConfig = titleConfig.replace(/_cluster_/g, internals.clusterName)
