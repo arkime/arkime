@@ -84,7 +84,7 @@ module.exports = (Db) => {
 
       if (userId) { // filter on userId
         query.query.bool.filter.push({
-          wildcard: { userId: '*' + userId + '*' }
+          wildcard: { userId: userId }
         });
       }
     }
