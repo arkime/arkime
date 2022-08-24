@@ -1,4 +1,4 @@
-use Test::More tests => 42;
+use Test::More tests => 49;
 use Cwd;
 use URI::Escape;
 use MolochTest;
@@ -68,6 +68,11 @@ my ($url) = @_;
 
 # Make sure can't request someone elses
     $json = get("/history/list?molochRegressionUser=historytest2&userId=historytest1");
+    eq_or_diff($json, from_json('{"success": false, "text": "Need admin privileges"}'));
+
+# Make sure can't request ours with wildcard
+    $json = get("/history/list?molochRegressionUser=historytest2&userId=historytest2*");
+    eq_or_diff($json, from_json('{"success": false, "text": "Need admin privileges"}'));
 
 # An admin user should see everything, find it
     $json = viewerGet("/api/histories");
@@ -91,6 +96,18 @@ my ($url) = @_;
     is ($json->{recordsFiltered}, 0, "Test4: recordsFiltered");
     $json = viewerGet("/history/list?userId=somethingsilly&api=sessions");
     is ($json->{recordsFiltered}, 0, "Test4: recordsFiltered");
+
+    $json = viewerGet("/history/list?userId=historytest1*&api=sessions");
+    is ($json->{recordsFiltered}, 1, "Test4b: recordsFiltered");
+
+    $json = viewerGet("/history/list?userId=h*&api=sessions");
+    is ($json->{recordsFiltered}, 1, "Test4c: recordsFiltered");
+
+    $json = viewerGet("/history/list?userId=*i*&api=sessions");
+    is ($json->{recordsFiltered}, 1, "Test4d: recordsFiltered");
+
+    $json = viewerGet("/history/list?userId=*j*&api=sessions");
+    is ($json->{recordsFiltered}, 0, "Test4e: recordsFiltered");
 
 # Should be able to filter by time range
     my $current = time;
