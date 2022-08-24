@@ -1,4 +1,4 @@
-use Test::More tests => 101;
+use Test::More tests => 106;
 use Cwd;
 use URI::Escape;
 use MolochTest;
@@ -285,16 +285,30 @@ my $json;
     $json = viewerPostToken("/user/create", '{"userId": "role:test1", "userName": "UserName", "enabled":true}', $token);
     eq_or_diff($json, from_json('{"text": "Role created succesfully", "success": true}'));
 
+    $json = viewerPostToken("/user/create", '{"userId": "role:test2", "userName": "UserName", "enabled":true, "roles":["role:test1", "superAdmin"]}', $token);
+    eq_or_diff($json, from_json('{"text": "User defined roles can\'t have superAdmin", "success": false}'));
+
+    $json = viewerPostToken("/user/create", '{"userId": "role:test2", "userName": "UserName", "enabled":true, "roles":["role:test1", "usersAdmin"]}', $token);
+    eq_or_diff($json, from_json('{"text": "User defined roles can\'t have usersAdmin", "success": false}'));
+
     $json = viewerPostToken("/user/create", '{"userId": "role:test2", "userName": "UserName", "enabled":true, "roles":["role:test1"]}', $token);
+    eq_or_diff($json, from_json('{"text": "Role created succesfully", "success": true}'));
 
     $json = viewerPost("/user/list?molochRegressionUser=role:test1", "");
     eq_or_diff($json, from_json('{"text": "Can not authenticate with role", "success": false}'));
 
+# role tests
+    $json = viewerPostToken("/user/update", '{"userId": "role:test1", "roles":["superAdmin"]}', $token);
+    eq_or_diff($json, from_json('{"text": "User defined roles can\'t have superAdmin", "success": false}'));
+
+    $json = viewerPostToken("/user/update", '{"userId": "role:test1", "roles":["usersAdmin"]}', $token);
+    eq_or_diff($json, from_json('{"text": "User defined roles can\'t have usersAdmin", "success": false}'));
+
 # role assigner
-    $json = viewerPostToken("/user/update", '{"userId": "role:test1", "userName": "UserName", "enabled":true, "roles":"bad", "roleAssigners": "foo"}', $token);
+    $json = viewerPostToken("/user/update", '{"userId": "role:test1", "userName": "UserName", "enabled":true, "roleAssigners": "foo"}', $token);
     eq_or_diff($json, from_json('{"text": "roleAssigners field must be an array", "success": false}'));
 
-    $json = viewerPostToken("/user/update", '{"userId": "role:test1", "userName": "UserName", "enabled":true, "roles":"bad", "roleAssigners": ["test1"]}', $token);
+    $json = viewerPostToken("/user/update", '{"userId": "role:test1", "userName": "UserName", "enabled":true, "roleAssigners": ["test1"]}', $token);
     eq_or_diff($json, from_json('{"text": "User role:test1 updated successfully", "success": true}'));
 
     $json = viewerPost("/user/list", "filter=role:test1");
