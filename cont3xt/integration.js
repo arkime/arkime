@@ -169,7 +169,14 @@ class Integration {
     // https://urlregex.com/
     // eslint-disable-next-line no-useless-escape
     if (str.match(/https?:\/\//) && str.match(/((([A-Za-z]{3,9}:(?:\/\/)?)(?:[\-;:&=\+\$,\w]+@)?[A-Za-z0-9\.\-]+|(?:www\.|[\-;:&=\+\$,\w]+@)[A-Za-z0-9\.\-]+)((?:\/[\+~%\/\.\w\-_]*)?\??(?:[\-\+=&;%@\.\w_]*)#?(?:[\.\!\/\\\w]*))?)/)) {
-      return 'url';
+      try {
+        // Make sure we can construct a proper URL-object using this string
+        // eslint-disable-next-line no-unused-vars
+        const url = new URL(str);
+        return 'url';
+      } catch (e) {
+        // This looked like a URL but could not be parsed as such. Continue testing below.
+      }
     }
 
     if (str.match(/^[A-Fa-f0-9]{32}$/) || str.match(/^[A-Fa-f0-9]{40}$/) || str.match(/^[A-Fa-f0-9]{64}$/)) {
