@@ -183,8 +183,8 @@ class Integration {
       return 'hash';
     }
 
-    // https://www.oreilly.com/library/view/regular-expressions-cookbook/9781449327453/ch08s15.html
-    if (str.match(/^([a-z0-9]+(-[a-z0-9]+)*\.)+[a-z]{2,}$/)) {
+    // https://www.oreilly.com/library/view/regular-expressions-cookbook/9781449327453/ch08s15.html + uppercase
+    if (str.match(/^([a-zA-Z0-9]+(-[a-zA-Z0-9]+)*\.)+[a-zA-Z]{2,}$/)) {
       return 'domain';
     }
 

@@ -121,8 +121,8 @@ class ThreatstreamIntegration extends Integration {
     try {
       const host = this.getUserConfig(user, 'Threatstream', 'host', 'api.threatstream.com');
 
-      // https://www.oreilly.com/library/view/regular-expressions-cookbook/9781449327453/ch08s15.html
-      if (!host.match(/^([a-z0-9]+(-[a-z0-9]+)*\.)+[a-z]{2,}$/)) {
+      // https://www.oreilly.com/library/view/regular-expressions-cookbook/9781449327453/ch08s15.html + uppercase
+      if (!host.match(/^([a-zA-Z0-9]+(-[a-zA-Z0-9]+)*\.)+[a-zA-Z]{2,}$/)) {
         console.log(`userId: '${user.userId}' bad threatstream hostname: '${host}'`);
         return undefined;
       }
