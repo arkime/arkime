@@ -146,8 +146,8 @@ class LinkGroup {
       if (!Array.isArray(link.itypes)) {
         return 'Link missing itypes';
       }
-      for(const itype in link.itypes) {
-        if(typeof itype !== 'string') {
+      for (const itype in link.itypes) {
+        if (typeof itype !== 'string') {
           return 'every itypes must be strings';
         }
       }
