@@ -1090,6 +1090,11 @@ app.post('/get', function (req, res) {
           typeName = internals.type2Name[type];
         }
 
+        if (!typeName) {
+          console.log('Couldn\'t find typeName');
+          throw new Error('Could not make out typeName from query');
+        }
+
         const len = buf.readUInt16BE(offset);
         offset += 2;
 

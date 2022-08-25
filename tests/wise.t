@@ -1,5 +1,5 @@
 # WISE tests
-use Test::More tests => 102;
+use Test::More tests => 103;
 use MolochTest;
 use Cwd;
 use URI::Escape;
@@ -226,3 +226,7 @@ eq_or_diff($wise, '["ip"]',"types reversedns");
 $wise = from_json($MolochTest::userAgent->get("http://$MolochTest::host:8081/stats")->content);
 ok (exists $wise->{"sources"});
 ok (exists $wise->{"types"});
+
+# Get
+$wise = $MolochTest::userAgent->post("http://$MolochTest::host:8081/get", Content => "XXX")->content;
+is ($wise, 'Received malformed packet');
