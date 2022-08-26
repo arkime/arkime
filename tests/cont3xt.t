@@ -1,5 +1,5 @@
 # Test cont3xt.js
-use Test::More tests => 63;
+use Test::More tests => 79;
 use Test::Differences;
 use Data::Dumper;
 use MolochTest;
@@ -14,8 +14,130 @@ my $token = getCont3xtTokenCookie();
 
 my $json;
 
+# Make sure delete worked
 $json = cont3xtGet('/api/linkGroup');
 eq_or_diff($json, from_json('{"success": true, "linkGroups": []}'));
+
+# Bad data
+$json = cont3xtPutToken("/api/linkGroup", to_json({
+  name => "Links1",
+  viewRoles => 1,
+  editRoles => ["superAdmin"],
+  links => [{
+    name => "foo1",
+    url => "http://www.foobar.com",
+    itypes => ["ip", "hash"]
+  }]
+}), $token);
+eq_or_diff($json, from_json('{"success": false, "text": "viewRoles must be array"}'));
+
+$json = cont3xtPutToken("/api/linkGroup", to_json({
+  name => "Links1",
+  viewRoles => [1],
+  editRoles => ["superAdmin"],
+  links => [{
+    name => "foo1",
+    url => "http://www.foobar.com",
+    itypes => ["ip", "hash"]
+  }]
+}), $token);
+eq_or_diff($json, from_json('{"success": false, "text": "viewRoles must contain strings"}'));
+
+$json = cont3xtPutToken("/api/linkGroup", to_json({
+  name => "Links1",
+  viewRoles => ["cont3xtUser"],
+  editRoles => 1,
+  links => [{
+    name => "foo1",
+    url => "http://www.foobar.com",
+    itypes => ["ip", "hash"]
+  }]
+}), $token);
+eq_or_diff($json, from_json('{"success": false, "text": "editRoles must be array"}'));
+
+$json = cont3xtPutToken("/api/linkGroup", to_json({
+  name => "Links1",
+  viewRoles => ["cont3xtUser"],
+  editRoles => [1],
+  links => [{
+    name => "foo1",
+    url => "http://www.foobar.com",
+    itypes => ["ip", "hash"]
+  }]
+}), $token);
+eq_or_diff($json, from_json('{"success": false, "text": "editRoles must contain strings"}'));
+
+$json = cont3xtPutToken("/api/linkGroup", to_json({
+  name => "Links1",
+  viewRoles => ["cont3xtUser"],
+  editRoles => ["superAdmin"],
+  links => [1]
+}), $token);
+eq_or_diff($json, from_json('{"success": false, "text": "Link must be object"}'));
+
+$json = cont3xtPutToken("/api/linkGroup", to_json({
+  name => "Links1",
+  viewRoles => ["cont3xtUser"],
+  editRoles => ["superAdmin"],
+  links => [{
+    name => "foo1",
+    url => "http://www.foobar.com",
+    itypes => 1
+  }]
+}), $token);
+eq_or_diff($json, from_json('{"success": false, "text": "Link missing itypes"}'));
+
+$json = cont3xtPutToken("/api/linkGroup", to_json({
+  name => "Links1",
+  viewRoles => ["cont3xtUser"],
+  editRoles => ["superAdmin"],
+  links => [{
+    name => "foo1",
+    url => "http://www.foobar.com",
+    itypes => [1]
+  }]
+}), $token);
+eq_or_diff($json, from_json('{"success": false, "text": "Link itypes must be strings"}'));
+
+$json = cont3xtPutToken("/api/linkGroup", to_json({
+  name => "Links1",
+  viewRoles => ["cont3xtUser"],
+  editRoles => ["superAdmin"],
+  links => [{
+    name => "foo1",
+    url => "http://www.foobar.com",
+    itypes => ["ip", "hash"],
+    infoField => 1
+  }]
+}), $token);
+eq_or_diff($json, from_json('{"success": false, "text": "Link infoField must be a string"}'));
+
+$json = cont3xtPutToken("/api/linkGroup", to_json({
+  name => "Links1",
+  viewRoles => ["cont3xtUser"],
+  editRoles => ["superAdmin"],
+  links => [{
+    name => "foo1",
+    url => "http://www.foobar.com",
+    itypes => ["ip", "hash"],
+    externalDocName => 1
+  }]
+}), $token);
+eq_or_diff($json, from_json('{"success": false, "text": "Link externalDocName must be a string"}'));
+
+$json = cont3xtPutToken("/api/linkGroup", to_json({
+  name => "Links1",
+  viewRoles => ["cont3xtUser"],
+  editRoles => ["superAdmin"],
+  links => [{
+    name => "foo1",
+    url => "http://www.foobar.com",
+    itypes => ["ip", "hash"],
+    externalDocUrl => 1
+  }]
+}), $token);
+eq_or_diff($json, from_json('{"success": false, "text": "Link externalDocUrl must be a string"}'));
+
 
 # update link group requires token
 $json = cont3xtPut('/api/linkGroup', to_json({
@@ -215,10 +337,44 @@ is($json->{success}, 1);
 is (scalar @{$json->{audits}}, 2);
 
 ### VIEWS
+# Bad
 $json = cont3xtPostToken('/api/view', to_json({
 }), $token);
 eq_or_diff($json, from_json('{"success": false, "text": "Missing name"}'));
 
+$json = cont3xtPostToken('/api/view', to_json({
+  name => "view1", viewRoles => 1
+}), $token);
+eq_or_diff($json, from_json('{"success": false, "text": "viewRoles must be array"}'));
+
+$json = cont3xtPostToken('/api/view', to_json({
+  name => "view1", viewRoles => [1]
+}), $token);
+eq_or_diff($json, from_json('{"success": false, "text": "viewRoles must contain strings"}'));
+
+$json = cont3xtPostToken('/api/view', to_json({
+  name => "view1", editRoles => 1
+}), $token);
+eq_or_diff($json, from_json('{"success": false, "text": "editRoles must be array"}'));
+
+$json = cont3xtPostToken('/api/view', to_json({
+  name => "view1", editRoles => [1]
+}), $token);
+eq_or_diff($json, from_json('{"success": false, "text": "editRoles must contain strings"}'));
+
+$json = cont3xtPostToken('/api/view', to_json({
+  name => "view1", integrations => 1
+}), $token);
+eq_or_diff($json, from_json('{"success": false, "text": "integrations must be array"}'));
+
+$json = cont3xtPostToken('/api/view', to_json({
+  name => "view1", integrations => [1]
+}), $token);
+eq_or_diff($json, from_json('{"success": false, "text": "integrations must contain strings"}'));
+
+
+
+# Good
 $json = cont3xtPostToken('/api/view', to_json({
   name => "view1"
 }), $token);

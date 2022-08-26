@@ -119,7 +119,7 @@ class LinkGroup {
 
     for (const viewRole of lg.viewRoles) {
       if (typeof viewRole !== 'string') {
-        return 'every roles must be strings';
+        return 'viewRoles must contain strings';
       }
     }
 
@@ -129,7 +129,7 @@ class LinkGroup {
 
     for (const editRole of lg.editRoles) {
       if (typeof editRole !== 'string') {
-        return 'every roles must be strings';
+        return 'editRoles must contain strings';
       }
     }
 
@@ -146,19 +146,19 @@ class LinkGroup {
       if (!Array.isArray(link.itypes)) {
         return 'Link missing itypes';
       }
-      for (const itype in link.itypes) {
+      for (const itype of link.itypes) {
         if (typeof itype !== 'string') {
-          return 'every itypes must be strings';
+          return 'Link itypes must be strings';
         }
       }
       if (link.infoField !== undefined && typeof link.infoField !== 'string') {
-        return 'infoField must be a string';
+        return 'Link infoField must be a string';
       }
       if (link.externalDocName !== undefined && typeof link.externalDocName !== 'string') {
-        return 'externalDocName must be a string';
+        return 'Link externalDocName must be a string';
       }
       if (link.externalDocUrl !== undefined && typeof link.externalDocUrl !== 'string') {
-        return 'externalDocUrl must be a string';
+        return 'Link externalDocUrl must be a string';
       }
     }
 
