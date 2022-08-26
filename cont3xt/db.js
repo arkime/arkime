@@ -566,7 +566,7 @@ class DbESImplementation {
       });
     }
 
-    if (searchTerm != null) {
+    if (searchTerm != null && typeof searchTerm === 'string') {
       filter.push({ // apply search term
         query_string: {
           query: `*${searchTerm}*`,
