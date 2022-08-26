@@ -430,7 +430,7 @@ class Auth {
 
     const iv = crypto.randomBytes(16);
     const c = crypto.createCipheriv('aes-256-cbc', secret, iv);
-    let e = c.update(JSON.stringify(obj), 'binary', 'hex');
+    let e = c.update(JSON.stringify(obj), 'utf8', 'hex');
     e += c.final('hex');
     e = iv.toString('hex') + '.' + e;
     const h = crypto.createHmac('sha256', secret).update(e).digest('hex');
@@ -461,8 +461,8 @@ class Auth {
 
     try {
       const c = crypto.createDecipheriv('aes-256-cbc', secret, Buffer.from(parts[0], 'hex'));
-      let d = c.update(parts[1], 'hex', 'binary');
-      d += c.final('binary');
+      let d = c.update(parts[1], 'hex', 'utf8');
+      d += c.final('utf8');
       return JSON.parse(d);
     } catch (error) {
       console.log(error);
