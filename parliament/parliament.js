@@ -1617,14 +1617,14 @@ router.put('/parliament', isAdmin, (req, res, next) => {
 
 // Create a new group in the parliament
 router.post('/groups', isAdmin, (req, res, next) => {
-  if (!req.body.title) {
+  if (!req.body.title || typeof req.body.title !== 'string') {
     const error = new Error('A group must have a title');
     error.httpStatusCode = 422;
     return next(error);
   }
 
   const newGroup = { title: req.body.title, id: globalGroupId++, clusters: [] };
-  if (req.body.description) { newGroup.description = req.body.description; }
+  if (req.body.description && typeof req.body.description === 'string') { newGroup.description = req.body.description; }
 
   parliament.groups.push(newGroup);
 
@@ -1659,7 +1659,7 @@ router.delete('/groups/:id', isAdmin, (req, res, next) => {
 
 // Update a group in the parliament
 router.put('/groups/:id', isAdmin, (req, res, next) => {
-  if (!req.body.title) {
+  if (!req.body.title || typeof req.body.title !== 'string') {
     const error = new Error('A group must have a title.');
     error.httpStatusCode = 422;
     return next(error);
@@ -1669,7 +1669,7 @@ router.put('/groups/:id', isAdmin, (req, res, next) => {
   for (const group of parliament.groups) {
     if (group.id === parseInt(req.params.id)) {
       group.title = req.body.title;
-      if (req.body.description) {
+      if (req.body.description && typeof req.body.description === 'string') {
         group.description = req.body.description;
       }
       foundGroup = true;
@@ -1690,11 +1690,11 @@ router.put('/groups/:id', isAdmin, (req, res, next) => {
 
 // Create a new cluster within an existing group
 router.post('/groups/:id/clusters', isAdmin, (req, res, next) => {
-  if (!req.body.title || !req.body.url) {
+  if (!req.body.title || !req.body.url || typeof req.body.title !== 'string' || typeof req.body.url !== 'string') {
     let message;
-    if (!req.body.title) {
+    if (!req.body.title || typeof req.body.title !== 'string') {
       message = 'A cluster must have a title.';
-    } else if (!req.body.url) {
+    } else if (!req.body.url || typeof req.body.url !== 'string') {
       message = 'A cluster must have a url.';
     }
 
@@ -1705,11 +1705,11 @@ router.post('/groups/:id/clusters', isAdmin, (req, res, next) => {
 
   const newCluster = {
     title: req.body.title,
-    description: req.body.description,
+    description: typeof req.body.description === 'string' ? req.body.description : undefined,
     url: req.body.url,
-    localUrl: req.body.localUrl,
+    localUrl: typeof req.body.localUrl === 'string' ? req.body.localUrl : undefined,
     id: globalClusterId++,
-    type: req.body.type || undefined
+    type: typeof req.body.type === 'string' ? req.body.type : undefined
   };
 
   let foundGroup = false;
@@ -1766,11 +1766,11 @@ router.delete('/groups/:groupId/clusters/:clusterId', isAdmin, (req, res, next) 
 
 // Update a cluster
 router.put('/groups/:groupId/clusters/:clusterId', isAdmin, (req, res, next) => {
-  if (!req.body.title || !req.body.url) {
+  if (!req.body.title || !req.body.url || typeof req.body.title !== 'string' || typeof req.body.url !== 'string') {
     let message;
-    if (!req.body.title) {
+    if (!req.body.title || typeof req.body.title !== 'string') {
       message = 'A cluster must have a title.';
-    } else if (!req.body.url) {
+    } else if (!req.body.url || typeof req.body.url !== 'string') {
       message = 'A cluster must have a url.';
     }
 
@@ -1786,15 +1786,15 @@ router.put('/groups/:groupId/clusters/:clusterId', isAdmin, (req, res, next) => 
         if (cluster.id === parseInt(req.params.clusterId)) {
           cluster.url = req.body.url;
           cluster.title = req.body.title;
-          cluster.localUrl = req.body.localUrl;
-          cluster.description = req.body.description;
-          cluster.hideDeltaBPS = req.body.hideDeltaBPS;
-          cluster.hideDataNodes = req.body.hideDataNodes;
-          cluster.hideDeltaTDPS = req.body.hideDeltaTDPS;
-          cluster.hideTotalNodes = req.body.hideTotalNodes;
-          cluster.hideMonitoring = req.body.hideMonitoring;
-          cluster.hideMolochNodes = req.body.hideMolochNodes;
-          cluster.type = req.body.type || undefined;
+          cluster.localUrl = typeof req.body.localUrl === 'string' ? req.body.localUrl : undefined;
+          cluster.description = typeof req.body.description === 'string' ? req.body.description : undefined;
+          cluster.hideDeltaBPS = typeof req.body.hideDeltaBPS === 'boolean' ? req.body.hideDeltaBPS : undefined;
+          cluster.hideDataNodes = typeof req.body.hideDataNodes === 'boolean' ? req.body.hideDataNodes : undefined;
+          cluster.hideDeltaTDPS = typeof req.body.hideDeltaTDPS === 'boolean' ? req.body.hideDeltaTDPS : undefined;
+          cluster.hideTotalNodes = typeof req.body.hideTotalNodes === 'boolean' ? req.body.hideTotalNodes : undefined;
+          cluster.hideMonitoring = typeof req.body.hideMonitoring === 'boolean' ? req.body.hideMonitoring : undefined;
+          cluster.hideMolochNodes = typeof req.body.hideMolochNodes === 'boolean' ? req.body.hideMolochNodes : undefined;
+          cluster.type = typeof req.body.type === 'string' ? req.body.type : undefined;
 
           foundCluster = true;
           break;
