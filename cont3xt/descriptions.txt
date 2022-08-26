@@ -32,6 +32,7 @@ Card Description - an object of the following
       * defaultSortField - with array, sorts the table by this field
       * defaultSortDirection - with array and defaultSortField, sorts the table in this direction ('asc' or 'desc')
       * altText - optional text to be displayed on externalLink tooltip instead of URL
+      * postProcess - one postProcessor or an array of postProcessors (see "PostProcessor Description") -- to customize value
 
 Tidbit Description - an object of the following
   * order - the default order to apply to all fields
@@ -49,9 +50,7 @@ Tidbit Description - an object of the following
     * fieldRoot - for arrays, the path (it can have dots) from each object in the array to its desired field. Effectively maps the root array of objects to an array of values/sub-objects.
     * template - string used to create display value with pseudo string-interpolation (applied before postProcess)
       * string with angle brackets surrounding paths (they can have dots) that are replaced by the data at that path (starting at value [the field] or data [entire data object]). Example: 'one value: <value> and two value: <data.something.otherValue>'
-    * postProcess - optional single post-processor or array of post-processors to format data, each of which can be any of the following:
-      * string that identifies the name of the parameter-less filter to be applied (e.g. 'trim')
-      * object, whose filter's name is identified by the primary parameter's key (e.g. { mapTo: 'some.value' })
+    * postProcess - one postProcessor or an array of postProcessors (see "PostProcessor Description") -- to customize value
     * tooltip - the string to display as the tooltip
     * tooltipTemplate - pseudo string-interpolation string used to generate tooltip
       * see "template" for details on templating
@@ -64,3 +63,7 @@ Tidbit Description - an object of the following
     * purpose - optional, string to identify the purpose of a tidbit when the same information can be provided by more than one source. When multiple valid tidbits have the same purpose, only the one with the highest precedence will be kept
     * precedence - order of preference as a number, where a higher precedence level makes a data-source more preferred for the given purpose
       * only required when purpose is set
+
+PostProcessor Description - can be either of the following
+  * a string that identifies the name of the parameter-less filter to be applied (e.g. 'trim')
+  * an object, whose filter's name is identified by the primary parameter's key (e.g. { mapTo: 'some.nested.value' })
