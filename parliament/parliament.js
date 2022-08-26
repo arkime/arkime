@@ -152,8 +152,8 @@ const invalidTokens = {};
     }
   }
 
-  if (file && !file.endsWith('.json')) {
-    console.log('ERROR: Parliament config filename must end with \'.json\'');
+  if (file && !file.endsWith('.json') && file !== '/dev/null') {
+    console.log(`ERROR: Parliament config filename ${file} must end with .json`);
     process.exit(1);
   }
 
