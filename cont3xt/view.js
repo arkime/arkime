@@ -69,16 +69,34 @@ class View {
       return 'Missing name';
     }
 
-    if (view.viewRoles !== undefined && !Array.isArray(view.viewRoles)) {
-      return 'viewRoles must be array';
+    if (view.viewRoles !== undefined) {
+      if (!Array.isArray(view.viewRoles)) { return 'viewRoles must be array'; }
+
+      for (const viewRole of view.viewRoles) {
+        if (typeof viewRole !== 'string') {
+          return 'viewRoles must contain strings';
+        }
+      }
     }
 
-    if (view.editRoles !== undefined && !Array.isArray(view.editRoles)) {
-      return 'editRoles must be array';
+    if (view.editRoles !== undefined) {
+      if (!Array.isArray(view.editRoles)) { return 'editRoles must be array'; }
+
+      for (const editRole of view.editRoles) {
+        if (typeof editRole !== 'string') {
+          return 'editRoles must contain strings';
+        }
+      }
     }
 
-    if (view.integrations !== undefined && !Array.isArray(view.integrations)) {
-      return 'integrations must be array';
+    if (view.integrations !== undefined) {
+      if (!Array.isArray(view.integrations)) { return 'integrations must be array'; }
+
+      for (const integration of view.integrations) {
+        if (typeof integration !== 'string') {
+          return 'integrations must contain strings';
+        }
+      }
     }
 
     return null;

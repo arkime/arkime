@@ -539,7 +539,7 @@ class Integration {
    * @returns {IntegrationChunk[]} results - An array data chunks with the data
    */
   static async apiSearch (req, res, next) {
-    if (!req.body.query) {
+    if (!req.body.query || typeof req.body.query !== 'string') {
       return res.send({ success: false, text: 'Missing query' });
     }
 
@@ -615,7 +615,7 @@ class Integration {
    * @returns {object} data - The data from the integration query. This varies based upon the integration. The IntegrationCard describes how to present this data to the user.
    */
   static async apiSingleSearch (req, res, next) {
-    if (!req.body.query) {
+    if (!req.body.query || typeof req.body.query !== 'string') {
       return res.send({ success: false, text: 'Missing query' });
     }
 
