@@ -1059,7 +1059,7 @@ function writeParliament (req, res, next, successObj, errorText, sendParliament)
       if (err) {
         const errorMsg = `Unable to write parliament data: ${err.message || err}`;
         console.log(errorMsg);
-        return next(newError(errorMsg, 500));
+        return next(newError(500, errorMsg));
       }
 
       updateParliament()
