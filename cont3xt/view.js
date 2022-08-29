@@ -64,7 +64,6 @@ class View {
    * Verify the view, returns error msg on failure
    */
   static verifyView (view) {
-    // TODO: Check roles
     if (typeof (view.name) !== 'string') {
       return 'Missing name';
     }

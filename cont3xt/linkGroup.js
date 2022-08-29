@@ -103,8 +103,6 @@ class LinkGroup {
 
   // Verify the link group, returns error msg on failure
   static verifyLinkGroup (lg) {
-    // TODO: Check roles
-
     if (typeof (lg.name) !== 'string') {
       return 'Missing name';
     }
@@ -113,23 +111,27 @@ class LinkGroup {
       return 'Missing list of links';
     }
 
-    if (lg.viewRoles !== undefined && !Array.isArray(lg.viewRoles)) {
-      return 'viewRoles must be array';
-    }
+    if (lg.viewRoles !== undefined) {
+      if (!Array.isArray(lg.viewRoles)) {
+        return 'viewRoles must be array';
+      }
 
-    for (const viewRole of lg.viewRoles) {
-      if (typeof viewRole !== 'string') {
-        return 'viewRoles must contain strings';
+      for (const viewRole of lg.viewRoles) {
+        if (typeof viewRole !== 'string') {
+          return 'viewRoles must contain strings';
+        }
       }
     }
 
-    if (lg.editRoles !== undefined && !Array.isArray(lg.editRoles)) {
-      return 'editRoles must be array';
-    }
+    if (lg.editRoles !== undefined) {
+      if (!Array.isArray(lg.editRoles)) {
+        return 'editRoles must be array';
+      }
 
-    for (const editRole of lg.editRoles) {
-      if (typeof editRole !== 'string') {
-        return 'editRoles must contain strings';
+      for (const editRole of lg.editRoles) {
+        if (typeof editRole !== 'string') {
+          return 'editRoles must contain strings';
+        }
       }
     }
 

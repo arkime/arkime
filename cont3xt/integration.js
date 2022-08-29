@@ -539,16 +539,30 @@ class Integration {
    * @returns {IntegrationChunk[]} results - An array data chunks with the data
    */
   static async apiSearch (req, res, next) {
-    if (!req.body.query || typeof req.body.query !== 'string') {
+    if (typeof req.body.query !== 'string') {
       return res.send({ success: false, text: 'Missing query' });
     }
 
-    if (req.body.tags !== undefined && !Array.isArray(req.body.tags)) {
-      return res.send({ success: false, text: 'Tags must be an array when present' });
+    if (req.body.tags !== undefined) {
+      if (!Array.isArray(req.body.tags)) {
+        return res.send({ success: false, text: 'tags must be an array when present' });
+      }
+      if (req.body.tags.some(t => typeof t !== 'string')) {
+        return res.send({ success: false, text: 'every tag must be a string' });
+      }
     }
 
-    if (req.body.doIntegrations && !Array.isArray(req.body.doIntegrations)) {
-      return res.send({ success: false, text: 'doIntegrations bad format' });
+    if (req.body.doIntegrations) {
+      if (!Array.isArray(req.body.doIntegrations)) {
+        return res.send({ success: false, text: 'doIntegrations must be an array when present' });
+      }
+      if (req.body.doIntegrations.some(i => typeof i !== 'string')) {
+        return res.send({ success: false, text: 'every doIntegration must be a string' });
+      }
+    }
+
+    if (req.body.viewId !== undefined && typeof req.body.viewId === 'string') {
+      return res.send({ success: false, text: 'viewId must be a string when present' });
     }
 
     const query = req.body.query.trim();
@@ -615,7 +629,7 @@ class Integration {
    * @returns {object} data - The data from the integration query. This varies based upon the integration. The IntegrationCard describes how to present this data to the user.
    */
   static async apiSingleSearch (req, res, next) {
-    if (!req.body.query || typeof req.body.query !== 'string') {
+    if (typeof req.body.query !== 'string') {
       return res.send({ success: false, text: 'Missing query' });
     }
 
@@ -745,7 +759,7 @@ class Integration {
    * @returns {IntegrationSetting[]} settings - The integration settings to update for the logged in user
    */
   static async apiPutSettings (req, res, next) {
-    if (!req.body?.settings) {
+    if (typeof req.body.settings !== 'object') {
       res.send({ success: false, text: 'Missing settings' });
     }
     req.user.setCont3xtKeys(req.body.settings);

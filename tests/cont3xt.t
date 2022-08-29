@@ -1,5 +1,5 @@
 # Test cont3xt.js
-use Test::More tests => 79;
+use Test::More tests => 82;
 use Test::Differences;
 use Data::Dumper;
 use MolochTest;
@@ -303,8 +303,26 @@ $json = cont3xtPost('/api/integration/search', to_json({
   tags => "badtag",
   doIntegrations => ["DNS"]
 }));
+eq_or_diff($json, from_json('{"success": false, "text": "tags must be an array when present"}'));
 
-eq_or_diff($json, from_json('{"success": false, "text": "Tags must be an array when present"}'));
+$json = cont3xtPost('/api/integration/search', to_json({
+  query => "example.com",
+  tags => [1],
+  doIntegrations => ["DNS"]
+}));
+eq_or_diff($json, from_json('{"success": false, "text": "every tag must be a string"}'));
+
+$json = cont3xtPost('/api/integration/search', to_json({
+  query => "example.com",
+  doIntegrations => 1
+}));
+eq_or_diff($json, from_json('{"success": false, "text": "doIntegrations must be an array when present"}'));
+
+$json = cont3xtPost('/api/integration/search', to_json({
+  query => "example.com",
+  doIntegrations => [1]
+}));
+eq_or_diff($json, from_json('{"success": false, "text": "every doIntegration must be a string"}'));
 
 esGet("/_flush");
 esGet("/_refresh");
