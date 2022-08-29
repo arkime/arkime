@@ -204,7 +204,7 @@
           />
           <template v-else-if="data.field.type === 'select' && roles && roles.length">
             <RoleDropdown
-              :roles="roles"
+              :roles="isUser(data.item) ? roles : roleAssignableRoles"
               :id="data.item.userId"
               :selected-roles="data.item.roles"
               @selected-roles-updated="updateRoles"
@@ -363,7 +363,7 @@
 
     <!-- create user -->
     <UserCreate
-      :roles="roles"
+      :roles="createMode === 'user' ? roles : roleAssignableRoles"
       :create-mode="createMode"
       @user-created="userCreated"
     />
@@ -435,6 +435,11 @@ export default {
       confirmNewPassword: ''
     };
   },
+  computed: {
+    roleAssignableRoles () {
+      return this.roles.filter(({ value }) => value !== 'superAdmin' && value !== 'usersAdmin');
+    }
+  },
   created () {
     this.loadUsers();
   },
@@ -442,30 +447,12 @@ export default {
     searchTerm () {
       this.loadUsers();
     },
-    currentPage (newPage) {
+    currentPage () {
       this.loadUsers();
     }
   },
   methods: {
     /* exposed page functions ---------------------------------------------- */
-    getRolesStr (userRoles) {
-      let userDefinedRoles = [];
-      let roles = [];
-      for (let role of userRoles) {
-        if (role.startsWith('role:')) {
-          role = role.slice(5);
-          userDefinedRoles.push(role);
-          continue;
-        }
-        roles.push(role);
-      }
-
-      userDefinedRoles = userDefinedRoles.sort();
-      roles = roles.sort();
-
-      const allRoles = userDefinedRoles.concat(roles);
-      return allRoles.join(', ');
-    },
     tzDateStr (date, tz, ms) {
       return timezoneDateString(date, tz, ms);
     },
