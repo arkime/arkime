@@ -164,8 +164,8 @@ const invalidTokens = {};
   app.set('debug', debug);
 
   // set optional config options that reqiure defaults
-  app.set('port', port || 8008);
-  app.set('file', file || './parliament.json');
+  app.set('port', port ?? 8008);
+  app.set('file', file ?? './parliament.json');
 }());
 
 if (app.get('regressionTests')) {
@@ -204,7 +204,7 @@ try { // get the parliament file or error out if it's unreadable
     app.set('password', parliament.password);
   }
 } catch (err) {
-  console.log(`Error reading ${app.get('file') || 'your parliament file'}:\n\n`, err.stack);
+  console.log(`Error reading ${app.get('file') ?? 'your parliament file'}:\n\n`, err.stack);
   console.log(parliamentReadError);
   process.exit(1);
 }
@@ -330,16 +330,16 @@ router.use((req, res, next) => {
 // Handle errors
 app.use((err, req, res, next) => {
   console.log(err.stack);
-  res.status(err.httpStatusCode || 500).json({
+  res.status(err.httpStatusCode ?? 500).json({
     success: false,
-    text: err.message || 'Error'
+    text: err.message ?? 'Error'
   });
 });
 
 // Verify token
 function verifyToken (req, res, next) {
   function tokenError (req, res, errorText) {
-    errorText = errorText || 'Token Error!';
+    errorText = errorText ?? 'Token Error!';
     res.status(403).json({
       tokenError: true,
       success: false,
@@ -353,7 +353,7 @@ function verifyToken (req, res, next) {
   }
 
   // check for token in header, url parameters, or post parameters
-  const token = req.body.token || req.query.token || req.headers['x-access-token'];
+  const token = req.body.token ?? req.query.token ?? req.headers['x-access-token'];
 
   if (!token) {
     return tokenError(req, res, 'No token provided.');
@@ -381,7 +381,7 @@ function checkAuthUpdate (req, res, next) {
     return next(newError(403, 'Your Parliament is in dasboard only mode.'));
   }
 
-  if (app.get('password') || parliament.authMode) {
+  if (app.get('password') ?? parliament.authMode) {
     return isAdmin(req, res, next);
   }
 
@@ -604,7 +604,7 @@ function setIssue (cluster, newIssue) {
     fs.writeFile(app.get('issuesfile'), JSON.stringify(issues, null, 2), 'utf8',
       (err) => {
         if (err) {
-          console.log('Unable to write issue:', err.message || err);
+          console.log('Unable to write issue:', err.message ?? err);
         }
       }
     );
@@ -617,7 +617,7 @@ function getHealth (cluster) {
     const timeout = getGeneralSetting('esQueryTimeout') * 1000;
 
     const options = {
-      url: `${cluster.localUrl || cluster.url}/eshealth.json`,
+      url: `${cluster.localUrl ?? cluster.url}/eshealth.json`,
       method: 'GET',
       rejectUnauthorized: !internals.insecure,
       timeout
@@ -632,7 +632,7 @@ function getHealth (cluster) {
           health = JSON.parse(response);
         } catch (e) {
           cluster.healthError = 'ES health parse failure';
-          console.log('Bad response for es health', cluster.localUrl || cluster.url);
+          console.log('Bad response for es health', cluster.localUrl ?? cluster.url);
           return resolve();
         }
 
@@ -649,7 +649,7 @@ function getHealth (cluster) {
         return resolve();
       })
       .catch((error) => {
-        const message = error.message || error;
+        const message = error.message ?? error;
 
         setIssue(cluster, { type: 'esDown', value: message });
 
@@ -670,7 +670,7 @@ function getStats (cluster) {
     const timeout = getGeneralSetting('esQueryTimeout') * 1000;
 
     const options = {
-      url: `${cluster.localUrl || cluster.url}/api/parliament`,
+      url: `${cluster.localUrl ?? cluster.url}/api/parliament`,
       method: 'GET',
       rejectUnauthorized: !internals.insecure,
       timeout
@@ -693,7 +693,7 @@ function getStats (cluster) {
           stats = JSON.parse(response);
         } catch (e) {
           cluster.statsError = 'ES stats parse failure';
-          console.log('Bad response for stats', cluster.localUrl || cluster.url);
+          console.log('Bad response for stats', cluster.localUrl ?? cluster.url);
           return resolve();
         }
 
@@ -765,7 +765,7 @@ function getStats (cluster) {
         return resolve();
       })
       .catch((error) => {
-        const message = error.message || error;
+        const message = error.message ?? error;
 
         setIssue(cluster, { type: 'esDown', value: message });
 
@@ -802,10 +802,10 @@ function buildNotifierTypes () {
 // and sets up the parliament settings
 function initializeParliament () {
   return new Promise((resolve, reject) => {
-    if (!parliament.version || parliament.version < MIN_PARLIAMENT_VERSION) {
+    if (parliament.version === undefined || parliament.version < MIN_PARLIAMENT_VERSION) {
       // notify of upgrade
       console.log(
-        `WARNING - Current parliament version (${parliament.version || 1}) is less then required version (${MIN_PARLIAMENT_VERSION})
+        `WARNING - Current parliament version (${parliament.version ?? 1}) is less then required version (${MIN_PARLIAMENT_VERSION})
           Upgrading ${app.get('file')} file...\n`
       );
 
@@ -883,7 +883,7 @@ function initializeParliament () {
       fs.writeFile(app.get('file'), JSON.stringify(parliament, null, 2), 'utf8',
         (err) => {
           if (err) {
-            console.log('Parliament initialization error:', err.message || err);
+            console.log('Parliament initialization error:', err.message ?? err);
             return reject(new Error('Parliament initialization error'));
           }
 
@@ -924,7 +924,7 @@ function updateParliament () {
             fs.writeFile(app.get('issuesfile'), JSON.stringify(issues, null, 2), 'utf8',
               (err) => {
                 if (err) {
-                  console.log('Unable to write issue:', err.message || err);
+                  console.log('Unable to write issue:', err.message ?? err);
                 }
               }
             );
@@ -937,7 +937,7 @@ function updateParliament () {
           fs.writeFile(app.get('file'), JSON.stringify(parliament, null, 2), 'utf8',
             (err) => {
               if (err) {
-                console.log('Parliament update error:', err.message || err);
+                console.log('Parliament update error:', err.message ?? err);
                 return reject(new Error('Parliament update error'));
               }
 
@@ -955,7 +955,7 @@ function updateParliament () {
         return resolve();
       })
       .catch((error) => {
-        console.log('Parliament update error:', error.message || error);
+        console.log('Parliament update error:', error.message ?? error);
         return resolve();
       });
   });
@@ -1053,11 +1053,11 @@ function writeParliament (req, res, next, successObj, errorText, sendParliament)
   fs.writeFile(app.get('file'), JSON.stringify(parliament, null, 2), 'utf8',
     (err) => {
       if (app.get('debug')) {
-        console.log('Wrote parliament file', err || '');
+        console.log('Wrote parliament file', err ?? '');
       }
 
       if (err) {
-        const errorMsg = `Unable to write parliament data: ${err.message || err}`;
+        const errorMsg = `Unable to write parliament data: ${err.message ?? err}`;
         console.log(errorMsg);
         return next(newError(500, errorMsg));
       }
@@ -1071,7 +1071,7 @@ function writeParliament (req, res, next, successObj, errorText, sendParliament)
           return res.json(successObj);
         })
         .catch((err) => {
-          return next(newError(500, errorText || 'Error updating parliament.'));
+          return next(newError(500, errorText ?? 'Error updating parliament.'));
         });
     }
   );
@@ -1103,11 +1103,11 @@ function writeIssues (req, res, next, successObj, errorText, sendIssues) {
   fs.writeFile(app.get('issuesfile'), JSON.stringify(issues, null, 2), 'utf8',
     (err) => {
       if (app.get('debug')) {
-        console.log('Wrote issues file', err || '');
+        console.log('Wrote issues file', err ?? '');
       }
 
       if (err) {
-        const errorMsg = `Unable to write issue data: ${err.message || err}`;
+        const errorMsg = `Unable to write issue data: ${err.message ?? err}`;
         console.log(errorMsg);
         return next(newError(500, errorMsg));
       }
@@ -1155,7 +1155,7 @@ router.post('/auth', (req, res, next) => {
 // logout a "session" by invalidating the token
 router.post('/logout', (req, res, next) => {
   // check for token in header, url parameters, or post parameters
-  const token = req.body.token || req.query.token || req.headers['x-access-token'];
+  const token = req.body.token ?? req.query.token ?? req.headers['x-access-token'];
   // add token to invalid token map
   if (token) { invalidTokens[token] = true; }
 
@@ -1262,7 +1262,7 @@ router.put('/auth/update', [checkAuthUpdate], (req, res, next) => {
 });
 
 router.get('/notifierTypes', isAdmin, (req, res) => {
-  return res.json(internals.notifierTypes || {});
+  return res.json(internals.notifierTypes ?? {});
 });
 
 // Get the parliament settings object
@@ -1478,7 +1478,7 @@ router.put('/settings/restoreDefaults', isAdmin, (req, res, next) => {
   fs.writeFile(app.get('file'), JSON.stringify(parliament, null, 2), 'utf8',
     (err) => {
       if (err) {
-        const errorMsg = `Unable to write parliament data: ${err.message || err}`;
+        const errorMsg = `Unable to write parliament data: ${err.message ?? err}`;
         console.log(errorMsg);
         return next(newError(500, errorMsg));
       }
@@ -1771,7 +1771,7 @@ router.get('/issues', (req, res, next) => {
   }
 
   if (sortBy) {
-    const order = req.query.order || 'desc';
+    const order = req.query.order ?? 'desc';
     issuesClone.sort((a, b) => {
       if (type === 'number') {
         let aVal = 0;
@@ -1851,7 +1851,7 @@ router.put('/ignoreIssues', isUser, (req, res, next) => {
     return next(newError(422, message));
   }
 
-  const ms = req.body.ms || 3600000; // Default to 1 hour
+  const ms = req.body.ms ?? 3600000; // Default to 1 hour
   let ignoreUntil = Date.now() + ms;
   if (ms === -1) { ignoreUntil = -1; } // -1 means ignore it forever
 
