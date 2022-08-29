@@ -499,7 +499,7 @@ function checkCookieToken (req, res, next) {
 
 // use for APIs that can be used from places other than just the UI
 function checkHeaderToken (req, res, next) {
-  if (req.headers.cookie) { // if there's a cookie, check header
+  if (req.headers.cookie || req.headers.referer) { // if there's a cookie or referer, check for token
     return checkCookieToken(req, res, next);
   } else { // if there's no cookie, just continue so the API still works
     return next();
