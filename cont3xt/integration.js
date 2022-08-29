@@ -831,7 +831,7 @@ class Integration {
       }
 
       // disable filtering if not searchable
-      f.searchable ??= f.type !== 'externalLink';
+      f.noSearch ??= f.type === 'externalLink';
 
       outFields.push(f);
     }

@@ -32,6 +32,7 @@ Card Description - an object of the following
       * defaultSortField - with array, sorts the table by this field
       * defaultSortDirection - with array and defaultSortField, sorts the table in this direction ('asc' or 'desc')
       * altText - optional text to be displayed on externalLink tooltip instead of URL
+      * noSearch - for tables, boolean to turn off search-ability on column, default false (but true for externalLink types)
       * postProcess - one postProcessor or an array of postProcessors (see "PostProcessor Description") -- to customize value
 
 Tidbit Description - an object of the following

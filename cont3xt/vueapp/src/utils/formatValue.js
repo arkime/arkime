@@ -63,11 +63,12 @@ export const formatValue = (data, field) => {
 
 /**
  * Finds the specified value in data and returns the value in its most-formatted usable form
- * then puts this through any existing postProcess
+ * and runs this value through any post-processors in the field's postProcess
  * @param data the object in which to search for the value specified by field
  * @param field the object that describes the value's type and location in data
+ * @param field.postProcess the optional PostProcessor(s) to be applied while finding data
  * @returns {string|array|object}
  */
 export const formatPostProcessedValue = (data, field) => {
-  return applyPostProcess(field.postProcess, formatValue(data, field), data, {});
+  return applyPostProcess(field.postProcess, formatValue(data, field), { data });
 };

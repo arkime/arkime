@@ -156,7 +156,7 @@ export default {
   data () {
     return {
       searchTerm: '',
-      selectedFields: this.fields.filter(f => f.searchable).map(f => f.label), // select all fields to start
+      selectedFields: this.fields.filter(f => !f.noSearch).map(f => f.label), // select all fields to start
       sortField: this.defaultSortField || undefined,
       tableLen: Math.min(this.tableData.length || 1, this.size),
       desc: this.defaultSortDirection && this.defaultSortDirection === 'desc',
@@ -167,7 +167,7 @@ export default {
   },
   computed: {
     searchableFields () {
-      return this.fields.filter(f => f.searchable);
+      return this.fields.filter(f => !f.noSearch);
     }
   },
   mounted () {
@@ -320,7 +320,7 @@ export default {
           if (this.selectedFields.length && this.selectedFields.indexOf(field.label) < 0) { continue; }
           for (const c in row) {
             if (!field.path.includes(c)) { continue; }
-            if (!field.searchable) { continue; }
+            if (field.noSearch) { continue; }
             if (!row[c]) { continue; }
 
             const value = formatPostProcessedValue(row, field);
