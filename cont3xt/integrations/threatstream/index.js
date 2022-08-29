@@ -71,7 +71,7 @@ class ThreatstreamIntegration extends Integration {
           'removeNullish',
           {
             filterOut: {
-              matchAny: { // filter out using regexes created from Threatstream 'hide tags' setting
+              matchAnyRegex: { // filter out using regexes created from Threatstream 'hide tags' setting
                 setting: 'hide tags',
                 postProcess: [
                   { split: ',' },

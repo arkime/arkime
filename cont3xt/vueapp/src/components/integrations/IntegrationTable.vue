@@ -156,7 +156,7 @@ export default {
   data () {
     return {
       searchTerm: '',
-      selectedFields: this.fields.filter(f => !f.noSearch).map(f => f.label), // select all fields to start
+      selectedFields: this.getSearchableFields().map(f => f.label), // select all fields to start
       sortField: this.defaultSortField || undefined,
       tableLen: Math.min(this.tableData.length || 1, this.size),
       desc: this.defaultSortDirection && this.defaultSortDirection === 'desc',
@@ -166,9 +166,7 @@ export default {
     };
   },
   computed: {
-    searchableFields () {
-      return this.fields.filter(f => !f.noSearch);
-    }
+    searchableFields () { return this.getSearchableFields(); }
   },
   mounted () {
     if (this.sortField) {
@@ -348,6 +346,9 @@ export default {
     // helpers ------------------------------------------------------------- */
     setTableLen () {
       this.tableLen = Math.min(this.filteredData.length, this.size);
+    },
+    getSearchableFields () {
+      return this.fields.filter(f => !f.noSearch);
     }
   },
   updated () { // data is rendered
