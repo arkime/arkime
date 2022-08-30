@@ -46,6 +46,7 @@ NOTICE: Cross-cluster Shortcuts require you to not restart all your viewers at o
   - cont3xt/viewer - share new user UI
   - db.pl - fix sync-files/add-missing trying to add non pcap files
   - db.pl - init/wipe clean up aliases that became indices
+  - db.pl - determine data node using roles array (issue #2006)
   - common - fix userAuthIps setting
   - parliament - added --insecure option
   - parliament/wise - can be configured to use shared user DB
