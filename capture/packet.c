@@ -1164,6 +1164,19 @@ LOCAL MolochPacketRC moloch_packet_sll(MolochPacketBatch_t * batch, MolochPacket
     return MOLOCH_PACKET_CORRUPT;
 }
 /******************************************************************************/
+LOCAL MolochPacketRC moloch_packet_sll2(MolochPacketBatch_t * batch, MolochPacket_t * const packet, const uint8_t *data, int len)
+{
+    if (len < 20) {
+#ifdef DEBUG_PACKET
+        LOG("BAD PACKET: Too short %d", len);
+#endif
+        return MOLOCH_PACKET_CORRUPT;
+    }
+
+    int ethertype = data[0] << 8 | data[1];
+    return moloch_packet_run_ethernet_cb(batch, packet, data+20,len-20, ethertype, "SLL2");
+}
+/******************************************************************************/
 LOCAL MolochPacketRC moloch_packet_nflog(MolochPacketBatch_t * batch, MolochPacket_t * const packet, const uint8_t *data, int len)
 {
     if (len < 14 ||
@@ -1292,6 +1305,9 @@ void moloch_packet_batch(MolochPacketBatch_t * batch, MolochPacket_t * const pac
             rc = moloch_packet_sll(batch, packet, packet->pkt, packet->pktlen);
         else
             rc = moloch_packet_ip4(batch, packet, packet->pkt, packet->pktlen);
+        break;
+    case DLT_LINUX_SLL2: // SLL2
+        rc = moloch_packet_sll2(batch, packet, packet->pkt, packet->pktlen);
         break;
     case DLT_IEEE802_11_RADIO: // radiotap
         rc = moloch_packet_radiotap(batch, packet, packet->pkt, packet->pktlen);

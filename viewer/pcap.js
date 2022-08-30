@@ -866,6 +866,9 @@ Pcap.prototype.pcap = function (buffer, obj) {
   case 239: // NFLOG
     this.nflog(buffer.slice(16, obj.pcap.incl_len + 16), obj, 16);
     break;
+  case 276: // SLL2
+    this.ip4(buffer.slice(36, obj.pcap.incl_len + 20), obj, 36);
+    break;
   default:
     console.log('Unsupported pcap file', this.filename, 'link type', this.linkType);
     break;

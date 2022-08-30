@@ -42,6 +42,7 @@ NOTICE: Cross-cluster Shortcuts require you to not restart all your viewers at o
   - capture - fix quic crash
   - capture - make creating fields from config/parsers/wise/tagger use ES bulk call
   - capture/viewer - new outer fields replace gre fields (PR #1889)
+  - capture/viewer - initial SLL2 support (issue #2002)
   - cont3xt - new Cont3xt application, see https://arkime.com/cont3xt
   - cont3xt/viewer - share new user UI
   - db.pl - fix sync-files/add-missing trying to add non pcap files
