@@ -856,6 +856,9 @@ class Integration {
         }
       }
 
+      // disable filtering if not searchable
+      f.noSearch ??= f.type === 'externalLink';
+
       outFields.push(f);
     }
 
