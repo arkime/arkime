@@ -561,7 +561,7 @@ class Integration {
       }
     }
 
-    if (req.body.viewId !== undefined && typeof req.body.viewId === 'string') {
+    if (req.body.viewId !== undefined && typeof req.body.viewId !== 'string') {
       return res.send({ success: false, text: 'viewId must be a string when present' });
     }
 
