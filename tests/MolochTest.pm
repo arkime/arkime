@@ -431,6 +431,7 @@ sub cont3xtPut {
 my ($url, $content, $debug) = @_;
     my $response = $MolochTest::userAgent->request(HTTP::Request::Common::PUT("http://$MolochTest::host:3218$url", Content => $content, "Content-Type" => "application/json;charset=UTF-8"));
     diag $url, " response:", $response->content if ($debug);
+    return $response->content if ($response->content =~ /^[^[{]/);
     my $json = from_json($response->content);
     return ($json);
 }
@@ -439,6 +440,7 @@ sub cont3xtPutToken {
 my ($url, $content, $token, $debug) = @_;
     my $response = $MolochTest::userAgent->request(HTTP::Request::Common::PUT("http://$MolochTest::host:3218$url", Content => $content, "Content-Type" => "application/json;charset=UTF-8", "x-cont3xt-cookie" => $token));
     diag $url, " response:", $response->content if ($debug);
+    return $response->content if ($response->content =~ /^[^\[{]/);
     my $json = from_json($response->content);
     return ($json);
 }
@@ -447,6 +449,7 @@ sub cont3xtPost {
 my ($url, $content, $debug) = @_;
     my $response = $MolochTest::userAgent->request(HTTP::Request::Common::POST("http://$MolochTest::host:3218$url", Content => $content, "Content-Type" => "application/json;charset=UTF-8"));
     diag $url, " response:", $response->content if ($debug);
+    return $response->content if ($response->content =~ /^[^\[{]/);
     my $json = from_json($response->content);
     return ($json);
 }
@@ -455,6 +458,7 @@ sub cont3xtPostToken {
 my ($url, $content, $token, $debug) = @_;
     my $response = $MolochTest::userAgent->request(HTTP::Request::Common::POST("http://$MolochTest::host:3218$url", Content => $content, "Content-Type" => "application/json;charset=UTF-8", "x-cont3xt-cookie" => $token));
     diag $url, " response:", $response->content if ($debug);
+    return $response->content if ($response->content =~ /^[^\[{]/);
     my $json = from_json($response->content);
     return ($json);
 }

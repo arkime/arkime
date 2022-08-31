@@ -1,5 +1,5 @@
 # Test cont3xt.js
-use Test::More tests => 82;
+use Test::More tests => 86;
 use Test::Differences;
 use Data::Dumper;
 use MolochTest;
@@ -324,6 +324,12 @@ $json = cont3xtPost('/api/integration/search', to_json({
 }));
 eq_or_diff($json, from_json('{"success": false, "text": "every doIntegration must be a string"}'));
 
+$json = cont3xtPost('/api/integration/search', to_json({
+  query => "example.com",
+  viewId => 1
+}));
+eq_or_diff($json, from_json('{"success": false, "text": "viewId must be a string when present"}'));
+
 esGet("/_flush");
 esGet("/_refresh");
 
@@ -433,3 +439,13 @@ eq_or_diff($json, from_json('{"success": false, "text": "View not found"}'));
 $json = cont3xtGet('/api/views');
 is($json->{success}, 1);
 is (scalar @{$json->{views}}, 1);
+
+### Settings
+$json = cont3xtGet('/api/integration/settings');
+ok($json->{success});
+
+$json = cont3xtPut('/api/integration/settings', '{}');
+eq_or_diff($json, from_json('{"success": false, "text": "Missing token"}'));
+
+$json = cont3xtPutToken('/api/integration/settings', 'hi', $token);
+is (substr($json, 0, 5), "<!DOC");
