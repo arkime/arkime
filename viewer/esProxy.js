@@ -172,7 +172,7 @@ app.use((req, res, next) => {
 
 function normalizeUrlPath (path) {
   const normalizedUrl = new URL(path, 'https://0.0.0.0/');
-  return normalizedUrl.pathname + normalizedUrl.search + normalizedUrl.hash;
+  return normalizedUrl.pathname;
 }
 
 // Save the post body
@@ -297,7 +297,7 @@ function validateBulk (req) {
 
   const index = req.body.toString('utf8').match(/{"_index": *"[^"]*"}/g);
   for (const i in index) {
-    if (!index[i].includes('sessions2') && !index[i].includes('sessions2')) {
+    if (!index[i].includes('sessions2') && !index[i].includes('sessions3')) {
       console.log(`Invalid index ${index[i]} for bulk`);
       return false;
     }
