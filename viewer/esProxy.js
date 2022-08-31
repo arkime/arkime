@@ -24,6 +24,7 @@ const http = require('http');
 const https = require('https');
 const fs = require('fs');
 const basicAuth = require('basic-auth');
+const zlib = require('zlib');
 
 // express app
 const app = express();
@@ -289,13 +290,22 @@ app.get('*', (req, res) => {
 });
 
 // Validate Bulk
-// TODO - work with inflate/defate
 function validateBulk (req) {
   if (!req._body) {
     return true;
   }
 
-  const index = req.body.toString('utf8').match(/{"_index": *"[^"]*"}/g);
+  let body;
+  if (req.headers['content-encoding'] === undefined) {
+    body = req.body;
+  } else if (req.headers['content-encoding'] === 'gzip') {
+    body = zlib.gunzipSync(req.body);
+  } else {
+    console.log(`Invalid content-encoding ${req.headers['content-encoding']} for bulk`);
+    return false;
+  }
+
+  const index = body.toString('utf8').match(/"_index" *: *"[^"]+"/g);
   for (const i in index) {
     if (!index[i].includes('sessions2') && !index[i].includes('sessions3')) {
       console.log(`Invalid index ${index[i]} for bulk`);
