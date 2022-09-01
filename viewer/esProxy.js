@@ -299,18 +299,31 @@ function validateBulk (req) {
   if (req.headers['content-encoding'] === undefined) {
     body = req.body;
   } else if (req.headers['content-encoding'] === 'gzip') {
-    body = zlib.gunzipSync(req.body);
+    try {
+      body = zlib.gunzipSync(req.body);
+    } catch (err) {
+      console.log('Error decoding gzip for bulk');
+      return false;
+    }
   } else {
     console.log(`Invalid content-encoding ${req.headers['content-encoding']} for bulk`);
     return false;
   }
 
-  const index = body.toString('utf8').match(/"_index" *: *"[^"]+"/g);
-  for (const i in index) {
-    if (!index[i].includes('sessions2') && !index[i].includes('sessions3')) {
-      console.log(`Invalid index ${index[i]} for bulk`);
+  const lines = body.toString('utf8').split('\n');
+  for (let i = 0; i < lines.length; i++) {
+    // ES allows blank lines between pairs of meta/object
+    if (lines[i].trim() === '') { continue; }
+    try {
+      const json = JSON.parse(lines[i]);
+      if (typeof json.index !== 'object' || typeof json.index._index !== 'string') { throw new Error('Missing index object'); }
+      const _index = json.index._index;
+      if (!_index.includes('sessions2') && !_index.includes('sessions3') && !_index.includes('fields')) { throw new Error(`Bad index ${_index}`); }
+    } catch (err) {
+      console.log('Bulk error', err, lines[i]);
       return false;
     }
+    i++; // Skip object
   }
 
   return true;
