@@ -316,14 +316,24 @@ function validateBulk (req) {
     if (lines[i].trim() === '') { continue; }
     try {
       const json = JSON.parse(lines[i]);
-      if (typeof json.index !== 'object' || typeof json.index._index !== 'string') { throw new Error('Missing index object'); }
-      const _index = json.index._index;
-      if (!_index.includes('sessions2') && !_index.includes('sessions3') && !_index.includes('fields')) { throw new Error(`Bad index ${_index}`); }
+      if (Object.keys(json).length !== 1) { throw new Error('More than 1 bulk operation in object'); }
+      if (typeof json.index === 'object') {
+        if (typeof json.index._index !== 'string') { throw new Error('Missing index _index string'); }
+
+        // Eventually this should only allow fields
+        const _index = json.index._index;
+        if (!_index.includes('sessions2') && !_index.includes('sessions3') && !_index.includes('fields')) { throw new Error(`Bad index ${_index}`); }
+      } else if (typeof json.create === 'object') {
+        const _index = json.create._index;
+        if (!_index.includes('sessions2') && !_index.includes('sessions3')) { throw new Error(`Bad index ${_index}`); }
+      } else {
+        throw new Error('Missing create or index operation');
+      }
     } catch (err) {
       console.log('Bulk error', err, lines[i]);
       return false;
     }
-    i++; // Skip object
+    i++; // Skip object, must be there since we only support create/index
   }
 
   return true;
