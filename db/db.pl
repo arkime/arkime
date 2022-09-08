@@ -7177,7 +7177,7 @@ qq/ {
 }/;
     }
     esPut("/_ilm/policy/${PREFIX}molochsessions?master_timeout=${ESTIMEOUT}s", $policy);
-    esPut("/${OLDPREFIX}sessions2-*,${PREFIX}sessions3-*/_settings?master_timeout=${ESTIMEOUT}s", qq/{"settings": {"index.lifecycle.name": "${PREFIX}molochsessions"}}/, 1);
+    esPut("/${OLDPREFIX}sessions2-*,${PREFIX}sessions3-*/_settings?allow_no_indices=true&master_timeout=${ESTIMEOUT}s", qq/{"settings": {"index.lifecycle.name": "${PREFIX}molochsessions"}}/, 1);
     print "Policy:\n$policy\n" if ($verbose > 1);
     exit 0;
 } elsif ($ARGV[1] =~ /^reindex$/) {
