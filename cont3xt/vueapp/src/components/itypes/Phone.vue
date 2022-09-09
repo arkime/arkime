@@ -13,7 +13,7 @@ import { ITypeMixin } from './ITypeMixin';
 
 export default {
   name: 'Cont3xtPhone',
-  mixins: [ITypeMixin],
+  mixins: [ITypeMixin], // for tidbits
   components: {
     BaseIType
   },
