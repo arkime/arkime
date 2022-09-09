@@ -2,7 +2,11 @@ import axios from 'axios';
 import AuthService from './auth';
 
 export default function setup () {
+  // set xsrf cookie and always send credentials
   axios.defaults.withCredentials = true;
+  axios.defaults.xsrfCookieName = 'PARLIAMENT-COOKIE';
+  axios.defaults.xsrfHeaderName = 'X-PARLIAMENT-COOKIE';
+  axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
 
   axios.interceptors.request.use((config) => {
     const token = AuthService.getToken();

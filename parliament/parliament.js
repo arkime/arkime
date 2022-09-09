@@ -272,6 +272,47 @@ const cspHeader = helmet.contentSecurityPolicy({
 });
 app.use(cspHeader);
 
+function setCookie (req, res, next) {
+  if (parliament.authMode) {
+    const cookieOptions = {
+      path: '/',
+      sameSite: 'Strict',
+      overwrite: true
+    };
+    // make cookie secure on https
+    if (app.get('keyFile') && app.get('certFile')) { cookieOptions.secure = true; }
+
+    res.cookie( // send cookie for basic, non admin functions
+      'PARLIAMENT-COOKIE',
+      Auth.obj2auth({
+        date: Date.now(),
+        pid: process.pid,
+        userId: req.user.userId
+      }),
+      cookieOptions
+    );
+  }
+  return next();
+}
+
+function checkCookieToken (req, res, next) {
+  if (parliament.authMode) {
+    if (!req.headers['x-parliament-cookie']) {
+      return next(newError(500, 'Missing token'));
+    }
+
+    const cookie = req.headers['x-parliament-cookie'];
+    req.token = Auth.auth2obj(cookie);
+    const diff = Math.abs(Date.now() - req.token.date);
+    if (diff > 2400000 || req.token.userId !== req.user.userId) {
+      console.trace('bad token', req.token, diff, req.token.userId, req.user.userId);
+      return next(newError(500, 'Timeout - Please try reloading page and repeating the action'));
+    }
+  }
+
+  return next();
+}
+
 // using fallthrough: false because there is no 404 endpoint (client router
 // handles 404s) and sending index.html is confusing
 app.use('/parliament/font-awesome', express.static(
@@ -1126,7 +1167,7 @@ function writeIssues (req, res, next, successObj, errorText, sendIssues) {
 // Authenticate user
 router.post('/auth', (req, res, next) => {
   if (app.get('dashboardOnly')) {
-    return next(newError(403, 'Your Parliament is in dasboard only mode. You cannot login.'));
+    return next(newError(403, 'Your Parliament is in dashboard only mode. You cannot login.'));
   }
 
   const hasAuth = !!app.get('password');
@@ -1174,7 +1215,7 @@ router.get('/auth', (req, res, next) => {
 
 // Get whether the user is logged in
 // If it passes the verifyToken middleware, the user is logged in
-router.get('/auth/loggedin', isUser, (req, res, next) => {
+router.get('/auth/loggedin', [isUser, setCookie], (req, res, next) => {
   return res.json({
     loggedin: true,
     commonAuth: !!parliament.authMode,
@@ -1261,12 +1302,12 @@ router.put('/auth/update', [checkAuthUpdate], (req, res, next) => {
   });
 });
 
-router.get('/notifierTypes', isAdmin, (req, res) => {
+router.get('/notifierTypes', [isAdmin, setCookie], (req, res) => {
   return res.json(internals.notifierTypes ?? {});
 });
 
 // Get the parliament settings object
-router.get('/settings', isAdmin, (req, res, next) => {
+router.get('/settings', [isAdmin, setCookie], (req, res, next) => {
   if (!parliament.settings) {
     return next(newError(500, 'Your settings are empty. Try restarting Parliament.'));
   }
@@ -1292,7 +1333,7 @@ router.get('/settings', isAdmin, (req, res, next) => {
 });
 
 // Update the parliament general settings object
-router.put('/settings', isAdmin, (req, res, next) => {
+router.put('/settings', [isAdmin, checkCookieToken], (req, res, next) => {
   // save general settings
   for (const s in req.body.settings.general) {
     let setting = req.body.settings.general[s];
@@ -1342,7 +1383,7 @@ function verifyNotifierReqBody (req) {
 }
 
 // Update an existing notifier
-router.put('/notifiers/:name', isAdmin, (req, res, next) => {
+router.put('/notifiers/:name', [isAdmin, checkCookieToken], (req, res, next) => {
   if (!parliament.settings.notifiers[req.params.name]) {
     return next(newError(404, `${req.params.name} not found.`));
   }
@@ -1398,7 +1439,7 @@ router.put('/notifiers/:name', isAdmin, (req, res, next) => {
 });
 
 // Remove a notifier
-router.delete('/notifiers/:name', isAdmin, (req, res, next) => {
+router.delete('/notifiers/:name', [isAdmin, checkCookieToken], (req, res, next) => {
   if (!parliament.settings.notifiers[req.params.name]) {
     return next(newError(403, `Cannot find ${req.params.name} notifier to remove`));
   }
@@ -1411,7 +1452,7 @@ router.delete('/notifiers/:name', isAdmin, (req, res, next) => {
 });
 
 // Create a new notifier
-router.post('/notifiers', isAdmin, (req, res, next) => {
+router.post('/notifiers', [isAdmin, checkCookieToken], (req, res, next) => {
   const verifyMsg = verifyNotifierReqBody(req);
   if (verifyMsg) { return next(newError(422, verifyMsg)); }
 
@@ -1456,7 +1497,7 @@ router.post('/notifiers', isAdmin, (req, res, next) => {
 });
 
 // Update the parliament general settings object to the defaults
-router.put('/settings/restoreDefaults', isAdmin, (req, res, next) => {
+router.put('/settings/restoreDefaults', [isAdmin, checkCookieToken], (req, res, next) => {
   let type = 'all'; // default
   if (req.body.type) {
     type = req.body.type;
@@ -1515,7 +1556,7 @@ router.get('/parliament', (req, res, next) => {
 });
 
 // Updates the parliament order of clusters and groups
-router.put('/parliament', isAdmin, (req, res, next) => {
+router.put('/parliament', [isAdmin, checkCookieToken], (req, res, next) => {
   if (typeof req.body.reorderedParliament !== 'object') {
     return next(newError(422, 'You must provide the new parliament order'));
   }
@@ -1538,7 +1579,7 @@ router.put('/parliament', isAdmin, (req, res, next) => {
 });
 
 // Create a new group in the parliament
-router.post('/groups', isAdmin, (req, res, next) => {
+router.post('/groups', [isAdmin, checkCookieToken], (req, res, next) => {
   if (typeof req.body.title !== 'string') {
     return next(newError(422, 'A group must have a title'));
   }
@@ -1558,7 +1599,7 @@ router.post('/groups', isAdmin, (req, res, next) => {
 });
 
 // Delete a group in the parliament
-router.delete('/groups/:id', isAdmin, (req, res, next) => {
+router.delete('/groups/:id', [isAdmin, checkCookieToken], (req, res, next) => {
   let index = 0;
   let foundGroup = false;
   for (const group of parliament.groups) {
@@ -1580,7 +1621,7 @@ router.delete('/groups/:id', isAdmin, (req, res, next) => {
 });
 
 // Update a group in the parliament
-router.put('/groups/:id', isAdmin, (req, res, next) => {
+router.put('/groups/:id', [isAdmin, checkCookieToken], (req, res, next) => {
   if (typeof req.body.title !== 'string') {
     return next(newError(422, 'A group must have a title.'));
   }
@@ -1609,7 +1650,7 @@ router.put('/groups/:id', isAdmin, (req, res, next) => {
 });
 
 // Create a new cluster within an existing group
-router.post('/groups/:id/clusters', isAdmin, (req, res, next) => {
+router.post('/groups/:id/clusters', [isAdmin, checkCookieToken], (req, res, next) => {
   if (typeof req.body.title !== 'string') {
     return next(newError(422, 'A cluster must have a title.'));
   }
@@ -1662,7 +1703,7 @@ router.post('/groups/:id/clusters', isAdmin, (req, res, next) => {
 });
 
 // Delete a cluster
-router.delete('/groups/:groupId/clusters/:clusterId', isAdmin, (req, res, next) => {
+router.delete('/groups/:groupId/clusters/:clusterId', [isAdmin, checkCookieToken], (req, res, next) => {
   let clusterIndex = 0;
   let foundCluster = false;
   for (const group of parliament.groups) {
@@ -1688,7 +1729,7 @@ router.delete('/groups/:groupId/clusters/:clusterId', isAdmin, (req, res, next) 
 });
 
 // Update a cluster
-router.put('/groups/:groupId/clusters/:clusterId', isAdmin, (req, res, next) => {
+router.put('/groups/:groupId/clusters/:clusterId', [isAdmin, checkCookieToken], (req, res, next) => {
   if (typeof req.body.title !== 'string') {
     return next(newError(422, 'A cluster must have a title.'));
   }
@@ -1809,7 +1850,7 @@ router.get('/issues', (req, res, next) => {
 });
 
 // acknowledge one or more issues
-router.put('/acknowledgeIssues', isUser, (req, res, next) => {
+router.put('/acknowledgeIssues', [isUser, checkCookieToken], (req, res, next) => {
   if (!Array.isArray(req.body.issues) || !req.body.issues.length) {
     const message = 'Must specify the issue(s) to acknowledge.';
     return next(newError(422, message));
@@ -1845,7 +1886,7 @@ router.put('/acknowledgeIssues', isUser, (req, res, next) => {
 });
 
 // ignore one or more issues
-router.put('/ignoreIssues', isUser, (req, res, next) => {
+router.put('/ignoreIssues', [isUser, checkCookieToken], (req, res, next) => {
   if (!Array.isArray(req.body.issues) || !req.body.issues.length) {
     const message = 'Must specify the issue(s) to ignore.';
     return next(newError(422, message));
@@ -1884,7 +1925,7 @@ router.put('/ignoreIssues', isUser, (req, res, next) => {
 });
 
 // unignore one or more issues
-router.put('/removeIgnoreIssues', isUser, (req, res, next) => {
+router.put('/removeIgnoreIssues', [isUser, checkCookieToken], (req, res, next) => {
   if (!Array.isArray(req.body.issues) || !req.body.issues.length) {
     const message = 'Must specify the issue(s) to unignore.';
     return next(newError(422, message));
@@ -1920,7 +1961,7 @@ router.put('/removeIgnoreIssues', isUser, (req, res, next) => {
 });
 
 // Remove an issue with a cluster
-router.put('/groups/:groupId/clusters/:clusterId/removeIssue', isUser, (req, res, next) => {
+router.put('/groups/:groupId/clusters/:clusterId/removeIssue', [isUser, checkCookieToken], (req, res, next) => {
   if (typeof req.body.type !== 'string') {
     const message = 'Must specify the issue type to remove.';
     return next(newError(422, message));
@@ -1938,7 +1979,7 @@ router.put('/groups/:groupId/clusters/:clusterId/removeIssue', isUser, (req, res
 });
 
 // Remove all acknowledged all issues
-router.put('/issues/removeAllAcknowledgedIssues', isUser, (req, res, next) => {
+router.put('/issues/removeAllAcknowledgedIssues', [isUser, checkCookieToken], (req, res, next) => {
   let count = 0;
 
   let len = issues.length;
@@ -1960,7 +2001,7 @@ router.put('/issues/removeAllAcknowledgedIssues', isUser, (req, res, next) => {
 });
 
 // remove one or more acknowledged issues
-router.put('/removeSelectedAcknowledgedIssues', isUser, (req, res, next) => {
+router.put('/removeSelectedAcknowledgedIssues', [isUser, checkCookieToken], (req, res, next) => {
   if (!Array.isArray(req.body.issues) || !req.body.issues.length) {
     const message = 'Must specify the acknowledged issue(s) to remove.';
     return next(newError(422, message));
@@ -2010,7 +2051,7 @@ router.put('/removeSelectedAcknowledgedIssues', isUser, (req, res, next) => {
 });
 
 // issue a test alert to a specified notifier
-router.post('/testAlert', isAdmin, (req, res, next) => {
+router.post('/testAlert', [isAdmin, checkCookieToken], (req, res, next) => {
   if (typeof req.body.notifier !== 'string') {
     return next(newError(422, 'Must specify the notifier.'));
   }
