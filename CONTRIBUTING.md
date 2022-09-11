@@ -17,7 +17,7 @@ First, checkout the main [Arkime README](README.md) for information on how to bu
 
 **Then, get some test data!**
 
-* If using a VM/docker make sure you dev host has at least 2-3G of memory
+* If using a VM/docker make sure your dev host has at least 2-3G of memory
 * Make sure `node` is in your path, currently main only support Node version 16.
 * [Install Elasticsearch](https://www.elastic.co/downloads/past-releases#elasticsearch) (make sure you're installing a compatible ES version with the main branch of Arkime using the top entry of "ES Versions" in the [CHANGELOG](CHANGELOG))
 * Start Elasticsearch (see the bottom of the page you downloaded ES from)
