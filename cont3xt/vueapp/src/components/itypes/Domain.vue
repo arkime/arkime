@@ -54,7 +54,7 @@ import { ITypeMixin } from './ITypeMixin';
 
 export default {
   name: 'Cont3xtDomain',
-  mixins: [ITypeMixin],
+  mixins: [ITypeMixin], // for tidbits
   components: {
     Cont3xtField,
     TtlTooltip,
