@@ -16,12 +16,12 @@ rm -rf /thirdparty/glib*/*/tests /thirdparty/glib*/*/*/tests && \
 rm -rf arkime; \
 scl enable rh-ruby23 'gem install --no-ri --no-rdoc fpm'; \
 scl enable devtoolset-9 rh-python36 'pip3 install awscli'; \
-useradd -u 2000 elasticsearch; \
+useradd -u 2000 opensearch; \
 (cd / ; \
- wget https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-7.10.2-linux-x86_64.tar.gz; \
- tar xf elasticsearch-7.10.2-linux-x86_64.tar.gz; \
- chown -R elasticsearch elasticsearch-7.10.2; \
- rm -f elasticsearch-7.10.2-linux-x86_64.tar.gz \
+ wget https://artifacts.opensearch.org/releases/core/opensearch/2.3.0/opensearch-min-2.3.0-linux-x64.tar.gz; \
+ tar xf opensearch-min-2.3.0-linux-x64.tar.gz; \
+ chown -R opensearch opensearch-2.3.0; \
+ rm -f opensearch-min-2.3.0-linux-x64.tar.gz \
 ); \
 yum -y clean all; \
 rm -rf /var/cache/yum

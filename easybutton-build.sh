@@ -154,8 +154,8 @@ if [ "$UNAME" = "Darwin" ]; then
   elif [ -x "/usr/local/bin/brew" ] || [ -x "/opt/homebrew/bin/brew" ]; then
     brew install libpcap yara glib jansson ossp-uuid libmaxminddb libmagic pcre lua libyaml openssl wget autoconf automake nghttp2 zstd
   else
-      echo "ARKIME: Please install MacPorts or Homebrew"
-      exit 1
+    echo "ARKIME: Please install MacPorts or Homebrew"
+    exit 1
   fi
 fi
 
