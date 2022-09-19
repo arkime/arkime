@@ -273,7 +273,7 @@ jobs:
             screwdriver.cd/cpu: TURBO
             screwdriver.cd/ram: TURBO
         requires: [~pr, ~commit]
-        image: andywick/arkime-build-7:4.0.0-4
+        image: andywick/arkime-build-7:4.0.0-7
         steps:
             - (cd / ; curl https://s3.amazonaws.com/files.molo.ch/snfmin.tar.gz | tar -zxvf -)
             - ln -s /thirdparty .
@@ -286,16 +286,16 @@ jobs:
             - installing: INSTALL_BUNDLE=bundle scl enable devtoolset-9 rh-python36 'make install'
             - linting: npm run lint
             - cp -r capture/plugins/lua/samples /data/moloch/lua
-            - run-es: (chown -R elasticsearch /elasticsearch-7.10.2; cd /elasticsearch-7.10.2 ; su elasticsearch -c "ES_JAVA_OPTS='-Xms1000m -Xmx1000m' bin/elasticsearch" > /tmp/es &)
+            - run-es: (chown -R opensearch /opensearch-2.3.0; cd /opensearch-2.3.0 ; su opensearch -c "ES_JAVA_OPTS='-Xms1000m -Xmx1000m' bin/opensearch" > /tmp/os &)
             - sleep 30
-            - cat /tmp/es
+            - cat /tmp/os
             - test-viewer: (cd tests ; G_SLICE=always-malloc ./tests.pl --viewer)
             - build-package: |
                 mv /data/moloch/bin/capture /data/moloch/bin/moloch-capture
                 mv /data/moloch/bin/arkime_update_geo.sh /data/moloch/bin/moloch_update_geo.sh
 
                 export ARKIME_VERSION=`sed 's/.*"\(.*\)\".*$/\1/' /data/moloch/common/version.js | head -n 1 | tr "-" "_"`
-                scl enable rh-ruby23 'fpm -s dir -t rpm -n moloch -x data/moloch/logs -x data/moloch/raw -v $ARKIME_VERSION --iteration $SD_BUILD_ID --template-scripts --url "https://arkime.com" --description "Moloch Full Packet System" -d perl-libwww-perl -d perl-JSON -d ethtool -d libyaml-devel -d libasan-static -d libubsan1 -d libasan5 -d perl-LWP-Protocol-https -d libzstd /data/moloch'
+                scl enable rh-ruby26 'fpm -s dir -t rpm -n moloch -x data/moloch/logs -x data/moloch/raw -v $ARKIME_VERSION --iteration $SD_BUILD_ID --template-scripts --url "https://arkime.com" --description "Moloch Full Packet System" -d perl-libwww-perl -d perl-JSON -d ethtool -d libyaml-devel -d libasan-static -d libubsan1 -d libasan5 -d perl-LWP-Protocol-https -d libzstd /data/moloch'
                 if [ "$GIT_BRANCH" = "$MOLOCH_COPY_BRANCH" ]; then
                   scl enable devtoolset-9 rh-python36 'aws s3 cp --quiet moloch*.x86_64.rpm s3://files.molo.ch/sanitize/moloch-${MOLOCH_FILE_NAME}.centos7.x86_64.rpm --acl public-read'
                   scl enable devtoolset-9 rh-python36 'aws s3api put-object-acl --bucket files.molo.ch --key sanitize/moloch-${MOLOCH_FILE_NAME}.centos7.x86_64.rpm --acl public-read'
