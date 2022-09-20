@@ -149,8 +149,8 @@ void parse_args(int argc, char **argv)
     extern const char *MMDB_lib_version(void);
     extern const char *zlibVersion(void);
     extern const char *yaml_get_version_string(void);
-    extern int magic_version(void);
-    extern const char *OpenSSL_version(int type);
+    //extern int magic_version(void);
+    //extern const char *OpenSSL_version(int type);
 
     context = g_option_context_new ("- capture");
     g_option_context_add_main_entries (context, entries, NULL);
@@ -175,9 +175,9 @@ void parse_args(int argc, char **argv)
         printf("curl: %s\n", curl_version());
         printf("glib2: %u.%u.%u\n", glib_major_version, glib_minor_version, glib_micro_version);
         printf("libpcap: %s\n", pcap_lib_version());
-        printf("magic: %d\n", magic_version());
+        //printf("magic: %d\n", magic_version());
         printf("maxminddb: %s\n", MMDB_lib_version());
-        printf("openssl: %s\n", OpenSSL_version(0));
+        //printf("openssl: %s\n", OpenSSL_version(0));
         printf("pcre: %s\n", pcre_version());
         printf("yaml: %s\n", yaml_get_version_string());
         printf("yara: %s\n", moloch_yara_version());
