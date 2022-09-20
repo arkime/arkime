@@ -25,7 +25,7 @@ import store from './store';
 import './filters.js';
 import '@/../../../common/vueapp/vueFilters.js';
 
-import '../../../common.css';
+import '../../../common/common.css';
 // bootstrap overrides
 import './overrides.css';
 // themed css deps

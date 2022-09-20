@@ -15,7 +15,7 @@ import store from './store';
 import interceptorSetup from './interceptors';
 import './filters.js';
 
-import '../../../common.css';
+import '../../../common/common.css';
 
 Vue.config.productionTip = false;
 
