@@ -2,7 +2,8 @@
 # Simple capital C Configure script for rpm/deb, like the old days
 
 if [ "$1" == "--help" ]; then
-    echo "Configure (--wise|--parliament|)  = Only 1 option can be used"
+    echo "Configure (--wise|--parliament|--cont3xt|)  = Only 1 option can be used"
+    echo "--cont3xt      = install and start cont3xt"
     echo "--wise         = install and start wise"
     echo "--parliament   = install and start parliament"
     echo "               = install arkime capture and viewer"
@@ -57,6 +58,28 @@ if [ "$1" == "--parliament" ]; then
     else
         echo "No startup scripts created for parliament"
     fi
+
+    exit 0;
+fi
+
+if [ "$1" == "--cont3xt" ]; then
+    if [ ! -f "$ARKIME_INSTALL_DIR/etc/cont3xt.ini" ]; then
+        sed -e "s,ARKIME_ELASTICSEARCH,${ARKIME_ELASTICSEARCH},g" -e "s,ARKIME_INSTALL_DIR,${ARKIME_INSTALL_DIR},g" < $ARKIME_INSTALL_DIR/etc/wise.ini.sample > $ARKIME_INSTALL_DIR/etc/cont3xt.ini
+    else
+        echo "Not overwriting $ARKIME_INSTALL_DIR/etc/cont3xt.ini, delete and run again if update required (usually not), or edit by hand"
+        sleep 1
+    fi
+
+    if [ -d "/etc/systemd" ] && [ -x "/bin/systemctl" ]; then
+        echo "Installing systemd start files, use systemctl"
+        sed -e "s,ARKIME_INSTALL_DIR,${ARKIME_INSTALL_DIR},g" < $ARKIME_INSTALL_DIR/etc/arkimecont3xt.systemd.service > /etc/systemd/system/arkimecont3xt.service
+        systemctl daemon-reload
+        systemctl enable arkimecont3xt
+        systemctl start arkimecont3xt
+    else
+        echo "No startup scripts created for cont3xt"
+    fi
+
 
     exit 0;
 fi

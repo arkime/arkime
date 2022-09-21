@@ -1,0 +1,35 @@
+# WISE Service Config - https://arkime.com/cont3xt
+[cont3xt]
+# Port Cont3xt listens on
+#port=3218
+
+# Where all the cont3xt data is stored
+elasticsearch=ARKIME_ELASTICSEARCH
+
+# Where the user database is. This might be the same as above
+#usersElasticsearch=ARKIME_ELASTICSEARCH
+
+# Use digest by default
+userNameHeader=digest
+
+# If using SSO remove digest above and uncomment below with the http header with the username in it
+#userNameHeader=moloch_user
+
+# default cache timeout
+cacheTimeout=1d
+
+# By default use a cache that will survive restarts but local to instance
+[cache]
+type=lmdb
+lmdbDir=ARKIME_INSTALL_DIR/cont3xt-cache
+
+##### INTEGRATION SETTINGS
+
+[Threatstream]
+# For threatstream we don't share the cache, it is per user
+cachePolicy=user
+#host=threatstreamonprem.host
+
+[VirusTotal]
+# For VT lets increase the timeout
+cacheTimeout=1w

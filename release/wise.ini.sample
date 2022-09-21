@@ -1,4 +1,4 @@
-# WISE Service Config - https://molo.ch/wise
+# WISE Service Config - https://arkime.com/wise
 [wiseService]
 port = 8081
 
