@@ -49,6 +49,7 @@ LOCAL  gboolean              localPcapIndex;
 LOCAL  MolochCompressionMode compressionMode = MOLOCH_COMPRESSION_NONE;
 LOCAL  gboolean              simpleShortHeader;
 LOCAL  int                   simpleGzipLevel;
+LOCAL  int                   simpleZstdLevel;
 
 // Information about the current file being written to, all items that are constant per file should be here
 typedef struct {
@@ -67,7 +68,7 @@ typedef struct {
     ZSTD_CStream        *zstd_strm;
     ZSTD_outBuffer       zstd_out;
     ZSTD_inBuffer        zstd_in;
-    uint64_t             completedBlockStart;
+    uint64_t             zstd_completedBlockStart;
 #endif
 } MolochSimpleFile_t;
 
@@ -226,7 +227,7 @@ LOCAL void writer_simple_process_buf(int thread, int closing)
             break;
 #ifdef HAVE_ZSTD
         case MOLOCH_COMPRESSION_ZSTD:
-            info->file->completedBlockStart += writeSize;
+            info->file->zstd_completedBlockStart += writeSize;
             ninfo->file->zstd_out.dst = ninfo->buf;
             ninfo->file->zstd_out.pos = ninfo->bufpos;
 #endif
@@ -434,7 +435,7 @@ LOCAL void writer_simple_zstd_make_new_block(MolochSimple_t *info)
 #ifdef HAVE_ZSTD
     ZSTD_compressStream2(info->file->zstd_strm, &info->file->zstd_out, &info->file->zstd_in, ZSTD_e_end);
     info->bufpos = info->file->zstd_out.pos;
-    info->file->blockStart = info->file->completedBlockStart + info->file->zstd_out.pos;
+    info->file->blockStart = info->file->zstd_completedBlockStart + info->file->zstd_out.pos;
     info->file->posInBlock = 0;
 #endif
 }
@@ -491,13 +492,14 @@ LOCAL void writer_simple_write(const MolochSession_t * const session, MolochPack
 #ifdef HAVE_ZSTD
         case MOLOCH_COMPRESSION_ZSTD:
             info->file->zstd_strm = ZSTD_createCStream();
+            ZSTD_CCtx_setParameter(info->file->zstd_strm, ZSTD_c_compressionLevel, simpleZstdLevel);
             uncompressedBitsArg = (gpointer)(long)uncompressedBits;
             compressionArg = "zstd";
 
             info->file->zstd_out.dst = info->buf;
             info->file->zstd_out.size = config.pcapWriteSize + MOLOCH_PACKET_MAX_LEN;
             info->file->zstd_out.pos = 0;
-            info->file->completedBlockStart = 0;
+            info->file->zstd_completedBlockStart = 0;
             break;
 #endif
         default:
@@ -937,7 +939,10 @@ void writer_simple_init(char *name)
     g_free(compression);
 
     if (compressionMode != MOLOCH_COMPRESSION_NONE) {
-        simpleGzipLevel = moloch_config_int(NULL, "simpleGzipLevel", 5, 1, 9);
+        simpleGzipLevel = moloch_config_int(NULL, "simpleGzipLevel", 3, 1, 9);
+#ifdef HAVE_ZSTD
+        simpleZstdLevel = moloch_config_int(NULL, "simpleZstdLevel", 0, 0, ZSTD_maxCLevel());
+#endif
         simpleCompressionBlockSize = moloch_config_int(NULL, "simpleCompressionBlockSize", 32000, 8191, 0xfffff);
         uncompressedBits = ceil(log2(simpleCompressionBlockSize));
 
