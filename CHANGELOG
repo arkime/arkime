@@ -33,7 +33,7 @@ NOTICE: Cross-cluster Shortcuts require you to not restart all your viewers at o
   - BREAKING - simpleGzipBlockSize renamed simpleCompressionBlockSize
   - BREAKING - right-click changed to value-actions in config
   - BREAKING - the userId search in history for admin nolonger adds the surrounding wildcards automatically
-  - release - cyberchef 9.46.0, node 16.16.0
+  - release - cyberchef 9.46.5, node 16.16.0
   - all - Support ES 8
   - addUser.js - new --roles option, --admin creates superAdmin user
   - capture - New ecsEventDatset setting
