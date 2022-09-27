@@ -164,7 +164,7 @@ module.exports = (Db) => {
    *
    * Deletes a history entry (admin only).
    * @name /history/:id
-   * @param {string} index - The Elasticsearch index that the history item was stored in.
+   * @param {string} index - The OpenSearch/Elasticsearch index that the history item was stored in.
    * @returns {boolean} success - Whether the delete history operation was successful.
    * @returns {string} text - The success/error message to (optionally) display to the user.
    */

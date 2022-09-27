@@ -425,9 +425,9 @@ module.exports = (Config, Db, internals) => {
     }
 
     if (str.match('IndexMissingException')) {
-      return "Arkime's Elasticsearch database has no matching session indices for the timeframe selected.";
+      return "Arkime's OpenSearch/Elasticsearch database has no matching session indices for the timeframe selected.";
     } else {
-      return 'Elasticsearch error: ' + str;
+      return 'OpenSearch/Elasticsearch error: ' + str;
     }
   };
 
@@ -535,7 +535,7 @@ module.exports = (Config, Db, internals) => {
       }
 
       if (Config.debug > 1) {
-        console.log(`DEBUG: node:${node} is using ${stat.hostname} from elasticsearch stats index`);
+        console.log(`DEBUG: node:${node} is using ${stat.hostname} from OpenSearch/Elasticsearch stats index`);
       }
 
       if (Config.isHTTPS(node)) {

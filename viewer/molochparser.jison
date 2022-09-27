@@ -87,7 +87,7 @@ const util = require('util');
 const moment = require('moment');
 
 /* Given a field name, if prefixed with 'db:' return dbFieldsMap entry (i.e., looked up according to
- * the Elasticsearch field name); otherwise return fieldsMap entry (see #1461)
+ * the OpenSearch/Elasticsearch field name); otherwise return fieldsMap entry (see #1461)
  */
 function getFieldInfo (yy, field) {
   let info = null;

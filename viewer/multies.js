@@ -1101,7 +1101,7 @@ function enumerateActiveNodes () {
         let host = values[i].node.split('://');
         host = host[host.length > 1 ? 1 : 0].split('@'); // user:pass@elastic.com:9200
         host = host[host.length > 1 ? host.length - 1 : 0];
-        console.log('Elasticsearch is down at ', host);
+        console.log('OpenSearch/Elasticsearch is down at ', host);
       }
     }
     activeESNodes = activeNodes.slice();

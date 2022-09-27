@@ -1479,128 +1479,128 @@ app.get( // detailed stats endpoint
   statsAPIs.getDetailedStats
 );
 
-app.get( // elasticsearch stats endpoint
+app.get( // OpenSearch/Elasticsearch stats endpoint
   ['/api/esstats', '/esstats.json'],
   [ArkimeUtil.noCacheJson, recordResponseTime, User.checkPermissions(['hideStats']), setCookie],
   statsAPIs.getESStats
 );
 
-app.get( // elasticsearch indices endpoint
+app.get( // OpenSearch/Elasticsearch indices endpoint
   ['/api/esindices', '/esindices/list'],
   [ArkimeUtil.noCacheJson, recordResponseTime, User.checkPermissions(['hideStats']), setCookie],
   statsAPIs.getESIndices
 );
 
-app.delete( // delete elasticsearch index endpoint
+app.delete( // delete OpenSearch/Elasticsearch index endpoint
   ['/api/esindices/:index', '/esindices/:index'],
   [ArkimeUtil.noCacheJson, recordResponseTime, User.checkRole('arkimeAdmin'), User.checkPermissions(['removeEnabled']), setCookie],
   statsAPIs.deleteESIndex
 );
 
-app.post( // optimize elasticsearch index endpoint
+app.post( // optimize OpenSearch/Elasticsearch index endpoint
   ['/api/esindices/:index/optimize', '/esindices/:index/optimize'],
   [ArkimeUtil.noCacheJson, logAction(), checkCookieToken, User.checkRole('arkimeAdmin')],
   statsAPIs.optimizeESIndex
 );
 
-app.post( // close elasticsearch index endpoint
+app.post( // close OpenSearch/Elasticsearch index endpoint
   ['/api/esindices/:index/close', '/esindices/:index/close'],
   [ArkimeUtil.noCacheJson, logAction(), checkCookieToken, User.checkRole('arkimeAdmin')],
   statsAPIs.closeESIndex
 );
 
-app.post( // open elasticsearch index endpoint
+app.post( // open OpenSearch/Elasticsearch index endpoint
   ['/api/esindices/:index/open', '/esindices/:index/open'],
   [ArkimeUtil.noCacheJson, logAction(), checkCookieToken, User.checkRole('arkimeAdmin')],
   statsAPIs.openESIndex
 );
 
-app.post( // shrink elasticsearch index endpoint
+app.post( // shrink OpenSearch/Elasticsearch index endpoint
   ['/api/esindices/:index/shrink', '/esindices/:index/shrink'],
   [ArkimeUtil.noCacheJson, logAction(), checkCookieToken, User.checkRole('arkimeAdmin')],
   statsAPIs.shrinkESIndex
 );
 
-app.get( // elasticsearch tasks endpoint
+app.get( // OpenSearch/Elasticsearch tasks endpoint
   ['/api/estasks', '/estask/list'],
   [ArkimeUtil.noCacheJson, recordResponseTime, User.checkPermissions(['hideStats']), setCookie],
   statsAPIs.getESTasks
 );
 
-app.post( // cancel elasticsearch task endpoint
+app.post( // cancel OpenSearch/Elasticsearch task endpoint
   ['/api/estasks/:id/cancel', '/estask/cancel'],
   [ArkimeUtil.noCacheJson, logAction(), checkCookieToken, User.checkRole('arkimeAdmin')],
   statsAPIs.cancelESTask
 );
 
-app.post( // cancel elasticsearch task by opaque id endpoint
+app.post( // cancel OpenSearch/Elasticsearch task by opaque id endpoint
   ['/api/estasks/:id/cancelwith', '/estask/cancelById'],
   // should not have admin check so users can use, each user is name spaced
   [ArkimeUtil.noCacheJson, logAction(), checkCookieToken],
   statsAPIs.cancelUserESTask
 );
 
-app.post( // cancel all elasticsearch tasks endpoint
+app.post( // cancel all OpenSearch/Elasticsearch tasks endpoint
   ['/api/estasks/cancelall', '/estask/cancelAll'],
   [ArkimeUtil.noCacheJson, logAction(), checkCookieToken, User.checkRole('arkimeAdmin')],
   statsAPIs.cancelAllESTasks
 );
 
-app.get( // elasticsearch admin settings endpoint
+app.get( // OpenSearch/Elasticsearch admin settings endpoint
   ['/api/esadmin', '/esadmin/list'],
   [ArkimeUtil.noCacheJson, recordResponseTime, checkEsAdminUser, setCookie],
   statsAPIs.getESAdminSettings
 );
 
-app.post( // set elasticsearch admin setting endpoint
+app.post( // set OpenSearch/Elasticsearch admin setting endpoint
   ['/api/esadmin/set', '/esadmin/set'],
   [ArkimeUtil.noCacheJson, recordResponseTime, checkEsAdminUser, checkCookieToken],
   statsAPIs.setESAdminSettings
 );
 
-app.post( // reroute elasticsearch admin endpoint
+app.post( // reroute OpenSearch/Elasticsearch admin endpoint
   ['/api/esadmin/reroute', '/esadmin/reroute'],
   [ArkimeUtil.noCacheJson, recordResponseTime, checkEsAdminUser, checkCookieToken],
   statsAPIs.rerouteES
 );
 
-app.post( // flush elasticsearch admin endpoint
+app.post( // flush OpenSearch/Elasticsearch admin endpoint
   ['/api/esadmin/flush', '/esadmin/flush'],
   [ArkimeUtil.noCacheJson, recordResponseTime, checkEsAdminUser, checkCookieToken],
   statsAPIs.flushES
 );
 
-app.post( // unflood elasticsearch admin endpoint
+app.post( // unflood OpenSearch/Elasticsearch admin endpoint
   ['/api/esadmin/unflood', '/esadmin/unflood'],
   [ArkimeUtil.noCacheJson, recordResponseTime, checkEsAdminUser, checkCookieToken],
   statsAPIs.unfloodES
 );
 
-app.post( // unflood elasticsearch admin endpoint
+app.post( // unflood OpenSearch/Elasticsearch admin endpoint
   ['/api/esadmin/clearcache', '/esadmin/clearcache'],
   [ArkimeUtil.noCacheJson, recordResponseTime, checkEsAdminUser, checkCookieToken],
   statsAPIs.clearCacheES
 );
 
-app.get( // elasticsearch shards endpoint
+app.get( // OpenSearch/Elasticsearch shards endpoint
   ['/api/esshards', '/esshard/list'],
   [ArkimeUtil.noCacheJson, recordResponseTime, User.checkPermissions(['hideStats']), setCookie],
   statsAPIs.getESShards
 );
 
-app.post( // exclude elasticsearch shard endpoint
+app.post( // exclude OpenSearch/Elasticsearch shard endpoint
   ['/api/esshards/:type/:value/exclude', '/esshard/exclude/:type/:value'],
   [ArkimeUtil.noCacheJson, logAction(), checkCookieToken, User.checkRole('arkimeAdmin')],
   statsAPIs.excludeESShard
 );
 
-app.post( // include elasticsearch shard endpoint
+app.post( // include OpenSearch/Elasticsearch shard endpoint
   ['/api/esshards/:type/:value/include', '/esshard/include/:type/:value'],
   [ArkimeUtil.noCacheJson, logAction(), checkCookieToken, User.checkRole('arkimeAdmin')],
   statsAPIs.includeESShard
 );
 
-app.get( // elasticsearch recovery endpoint
+app.get( // OpenSearch/Elasticsearch recovery endpoint
   ['/api/esrecovery', '/esrecovery/list'],
   [ArkimeUtil.noCacheJson, recordResponseTime, User.checkPermissions(['hideStats']), setCookie],
   statsAPIs.getESRecovery
@@ -2294,7 +2294,7 @@ internals.processCronQueries = () => {
               if (Config.debug > 1) {
                 console.log('CRON - setting lpValue', new Date(lpValue * 1000));
               }
-              // Do the ES update
+              // Do the OpenSearch/Elasticsearch update
               const doc = {
                 doc: {
                   lpValue,
@@ -2382,7 +2382,7 @@ async function main () {
     const health = await Db.healthCache();
     internals.clusterName = health.cluster_name;
   } catch (err) {
-    console.log('ERROR - fetching ES health', err);
+    console.log('ERROR - fetching OpenSearch/Elasticsearch health', err);
   }
 
   try {
@@ -2392,7 +2392,7 @@ async function main () {
     info.nodes.timestamp = new Date().getTime();
     internals.previousNodesStats.push(info.nodes);
   } catch (err) {
-    console.log('ERROR - fetching ES nodes stats', err);
+    console.log('ERROR - fetching OpenSearch/Elasticsearch nodes stats', err);
   }
 
   setFieldLocals();

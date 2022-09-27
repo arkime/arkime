@@ -1141,7 +1141,7 @@ function filterUsers (users, filter, searchFields, noRoles) {
 }
 
 /******************************************************************************/
-// ES Implementation of Users DB
+// OpenSearch/Elasticsearch Implementation of Users DB
 /******************************************************************************/
 class UserESImplementation {
   prefix;

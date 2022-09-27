@@ -363,7 +363,7 @@ module.exports = (Config, Db, internals, sessionAPIs, userAPIs, ViewerUtils) => 
    * Retrieves information that the app uses on every page:
    * eshealth, currentuser, views, remoteclusters, clusters, fields, fieldsmap, fieldshistory
    * @name /appinfo
-   * @returns {ESHealth} eshealth - The Elasticsearch cluster health status and information.
+   * @returns {ESHealth} eshealth - The OpenSearch/Elasticsearch cluster health status and information.
    * @returns {ArkimeUser} currentuser - The currently logged in user
    * @returns {ArkimeView[]} views - A list of views accessible to the logged in user
    * @returns {Object} remoteclusters - A list of known remote Arkime clusters
