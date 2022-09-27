@@ -82,6 +82,7 @@ use POSIX;
 use IO::Compress::Gzip qw(gzip $GzipError);
 use IO::Uncompress::Gunzip qw(gunzip $GunzipError);
 use strict;
+use experimental 'smartmatch';
 
 my $VERSION = 78;
 my $verbose = 0;
