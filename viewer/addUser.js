@@ -145,7 +145,7 @@ function main () {
       if (err.meta.body.error.type === 'version_conflict_engine_exception') {
         console.log('User already exists');
       } else {
-        console.log('Elastic search error', JSON.stringify(err, false, 2));
+        console.log('OpenSearch/Elasticsearch error', JSON.stringify(err, false, 2));
       }
     } else {
       console.log('Added');

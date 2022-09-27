@@ -321,7 +321,7 @@ class Auth {
 
         User.setUser(userId, nuser, (err, info) => {
           if (err) {
-            console.log('Elastic search error adding user: (' + userId + '):(' + JSON.stringify(nuser) + '):' + err);
+            console.log('OpenSearch/Elasticsearch error adding user: (' + userId + '):(' + JSON.stringify(nuser) + '):' + err);
           } else {
             console.log('Added user:' + userId + ':' + JSON.stringify(nuser));
           }
@@ -382,7 +382,7 @@ class Auth {
   };
 
   // Hash (MD5) and encrypt the password before storing.
-  // Encryption is used because ES is insecure by default and we don't want others adding accounts.
+  // Encryption is used because OpenSearch/Elasticsearch is insecure by default and we don't want others adding accounts.
   static pass2store (userid, password) {
     // md5 is required because of http digest
     const m = Auth.md5(userid + ':' + Auth.#httpRealm + ':' + password);

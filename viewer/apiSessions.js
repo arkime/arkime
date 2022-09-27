@@ -1113,9 +1113,9 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
     }, (err) => {
       let text;
       if (whatToRemove === 'all') {
-        text = `Deletion PCAP and SPI of ${list.length} sessions complete. Give Elasticsearch 60 seconds to complete SPI deletion.`;
+        text = `Deletion PCAP and SPI of ${list.length} sessions complete. Give OpenSearch/Elasticsearch 60 seconds to complete SPI deletion.`;
       } else if (whatToRemove === 'spi') {
-        text = `Deletion SPI of ${list.length} sessions complete. Give Elasticsearch 60 seconds to complete SPI deletion.`;
+        text = `Deletion SPI of ${list.length} sessions complete. Give OpenSearch/Elasticsearch 60 seconds to complete SPI deletion.`;
       } else {
         text = `Scrubbing PCAP of ${list.length} sessions complete`;
       }
@@ -1195,7 +1195,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
   };
 
   /**
-   * The query params to build an Elasticsearch sessions query.
+   * The query params to build an OpenSearch/Elasticsearch sessions query.
    *
    * For long expressions use POST for client requests to the server.
    * When using POST the request body and request query are merged. Any duplicate parameters use the request body parameter.

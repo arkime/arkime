@@ -51,12 +51,12 @@ function checkURLs (nodes) {
   if (Array.isArray(nodes)) {
     nodes.forEach(node => {
       if (!node.startsWith('http')) {
-        console.log(`ERROR - Elasticsearch endpoint url '${node}' must start with http:// or https://`);
+        console.log(`ERROR - OpenSearch/Elasticsearch endpoint url '${node}' must start with http:// or https://`);
         process.exit();
       }
     });
   } else if (!nodes.startsWith('http')) {
-    console.log(`ERROR - Elasticsearch endpoint url '${nodes}' must start with http:// or https://`);
+    console.log(`ERROR - OpenSearch/Elasticsearch endpoint url '${nodes}' must start with http:// or https://`);
     process.exit();
   }
 }
@@ -217,13 +217,13 @@ exports.initialize = async (info, cb) => {
       }
     } else {
       if (data.version.number.match(/^([0-6]|7\.[0-9]\.)/)) {
-        console.log(`ERROR - ES ${data.version.number} not supported, ES 7.10.0 or later required.`);
+        console.log(`ERROR - Elasticsearch ${data.version.number} not supported, Elasticsearch 7.10.0 or later required.`);
         process.exit();
       }
     }
     return cb();
   } catch (err) {
-    console.log('ERROR - getting ES client info, is ES running?', err);
+    console.log('ERROR - getting OpenSearch/Elasticsearch client info failed, is it running?', err);
     process.exit(1);
   }
 };
@@ -396,7 +396,7 @@ function fixSessionFields (fields, unflatten) {
   }
 }
 
-// Get a session from ES and decode packetPos if requested
+// Get a session from OpenSearch/Elasticsearch and decode packetPos if requested
 exports.getSession = async (id, options, cb) => {
   if (internals.debug > 2) {
     console.log('GETSESSION -', id, options);
@@ -572,7 +572,7 @@ exports.search = async (index, type, query, options, cb) => {
 
     return cb ? cb(null, results) : results;
   } catch (err) {
-    console.trace(`ES Search Error - query: ${JSON.stringify(params, false, 2)} err:`, err);
+    console.trace(`OpenSearch/Elasticsearch Search Error - query: ${JSON.stringify(params, false, 2)} err:`, err);
     if (cb) { return cb(err, null); }
     throw err;
   }
@@ -598,10 +598,10 @@ exports.cancelByOpaqueId = async (cancelId) => {
   }
 
   if (!found) { // not found, return error
-    throw new Error('Cancel ID not found, cannot cancel ES task(s)');
+    throw new Error('Cancel ID not found, cannot cancel OpenSearch/Elasticsearch task(s)');
   }
 
-  return 'ES task cancelled succesfully';
+  return 'OpenSearch/Elasticsearch task cancelled succesfully';
 };
 
 exports.searchScroll = function (index, type, query, options, cb) {
@@ -1629,7 +1629,7 @@ exports.checkVersion = async function (minVersion, checkUsers) {
       process.exit(0);
     }
   } catch (err) {
-    console.log("ERROR - Couldn't retrieve database version, is ES running?  Have you run ./db.pl host:port init?", err);
+    console.log("ERROR - Couldn't retrieve database version, is OpenSearch/Elasticsearch running?  Have you run ./db.pl host:port init?", err);
     process.exit(0);
   }
 
