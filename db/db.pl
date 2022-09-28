@@ -82,7 +82,7 @@ use POSIX;
 use IO::Compress::Gzip qw(gzip $GzipError);
 use IO::Uncompress::Gunzip qw(gunzip $GunzipError);
 use strict;
-use experimental 'smartmatch';
+no if ($] >= 5.018), 'warnings' => 'experimental';
 
 my $VERSION = 78;
 my $verbose = 0;
