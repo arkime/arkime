@@ -11,6 +11,7 @@ install:
 	@mkdir -p $(etcdir) @prefix@/logs
 	$(INSTALL) config.ini.sample $(etcdir)/
 	$(INSTALL) wise.ini.sample $(etcdir)/
+	$(INSTALL) cont3xt.ini.sample $(etcdir)/
 
 	sed -e "s,BUILD_ARKIME_INSTALL_DIR,@prefix@,g" < arkimecont3xt.systemd.service > @prefix@/etc/arkimecont3xt.systemd.service
 	sed -e "s,BUILD_ARKIME_INSTALL_DIR,@prefix@,g" < arkimecapture.systemd.service > @prefix@/etc/arkimecapture.systemd.service

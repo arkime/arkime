@@ -64,7 +64,7 @@ fi
 
 if [ "$1" == "--cont3xt" ]; then
     if [ ! -f "$ARKIME_INSTALL_DIR/etc/cont3xt.ini" ]; then
-        sed -e "s,ARKIME_ELASTICSEARCH,${ARKIME_ELASTICSEARCH},g" -e "s,ARKIME_INSTALL_DIR,${ARKIME_INSTALL_DIR},g" < $ARKIME_INSTALL_DIR/etc/wise.ini.sample > $ARKIME_INSTALL_DIR/etc/cont3xt.ini
+        sed -e "s,ARKIME_ELASTICSEARCH,${ARKIME_ELASTICSEARCH},g" -e "s,ARKIME_INSTALL_DIR,${ARKIME_INSTALL_DIR},g" < $ARKIME_INSTALL_DIR/etc/cont3xt.ini.sample > $ARKIME_INSTALL_DIR/etc/cont3xt.ini
     else
         echo "Not overwriting $ARKIME_INSTALL_DIR/etc/cont3xt.ini, delete and run again if update required (usually not), or edit by hand"
         sleep 1
