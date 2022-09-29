@@ -1,19 +1,20 @@
-# WISE Service Config - https://arkime.com/cont3xt
+# Con3xt Service Config - https://arkime.com/cont3xt
+
 [cont3xt]
-# Port Cont3xt listens on
-#port=3218
-
-# Where all the cont3xt data is stored
+# The OpenSearch/Elasticsearch where all the cont3xt data is stored
 elasticsearch=ARKIME_ELASTICSEARCH
+# elasticsearchBasicAuth=
 
-# Where the user database is. This might be the same as above
-#usersElasticsearch=ARKIME_ELASTICSEARCH
+# Where the user database is, the above is used if not set
+# usersElasticsearch=ARKIME_ELASTICSEARCH
+# usersElasticsearchBasicAuth=
 
-# Use digest by default
+# Use digest auth by default
+# If using SSO change to the http header with the username in it
 userNameHeader=digest
 
-# If using SSO remove digest above and uncomment below with the http header with the username in it
-#userNameHeader=moloch_user
+# Port Cont3xt listens on
+#port=3218
 
 # default cache timeout
 cacheTimeout=1d
@@ -31,5 +32,8 @@ cachePolicy=user
 #host=threatstreamonprem.host
 
 [VirusTotal]
-# For VT lets increase the timeout
+# For VT lets increase the cache timeout
 cacheTimeout=1w
+
+# WARNING: This is an ini file with sections, most likely you don't want to put a setting 
+# here, unless creating a new section
