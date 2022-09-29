@@ -28,6 +28,7 @@ fi
 
 if [ "$1" == "--wise" ]; then
     if [ ! -f "$ARKIME_INSTALL_DIR/etc/wise.ini" ]; then
+        echo "Installing sample $ARKIME_INSTALL_DIR/etc/wise.ini"
         sed -e "s,ARKIME_ELASTICSEARCH,${ARKIME_ELASTICSEARCH},g" -e "s,ARKIME_INSTALL_DIR,${ARKIME_INSTALL_DIR},g" < $ARKIME_INSTALL_DIR/etc/wise.ini.sample > $ARKIME_INSTALL_DIR/etc/wise.ini
     else
         echo "Not overwriting $ARKIME_INSTALL_DIR/etc/wise.ini, delete and run again if update required (usually not), or edit by hand"
@@ -64,6 +65,7 @@ fi
 
 if [ "$1" == "--cont3xt" ]; then
     if [ ! -f "$ARKIME_INSTALL_DIR/etc/cont3xt.ini" ]; then
+        echo "Installing sample $ARKIME_INSTALL_DIR/etc/cont3xt.ini"
         sed -e "s,ARKIME_ELASTICSEARCH,${ARKIME_ELASTICSEARCH},g" -e "s,ARKIME_INSTALL_DIR,${ARKIME_INSTALL_DIR},g" < $ARKIME_INSTALL_DIR/etc/cont3xt.ini.sample > $ARKIME_INSTALL_DIR/etc/cont3xt.ini
     else
         echo "Not overwriting $ARKIME_INSTALL_DIR/etc/cont3xt.ini, delete and run again if update required (usually not), or edit by hand"
@@ -129,6 +131,7 @@ ARKIME_PASSWORD=${ARKIME_PASSWORD//\//\\/}
 ################################################################################
 echo "Arkime - Creating configuration files"
 if [ ! -f "$ARKIME_INSTALL_DIR/etc/config.ini" ]; then
+    echo "Installing sample $ARKIME_INSTALL_DIR/etc/config.ini"
     echo sed -e "s/ARKIME_INTERFACE/${ARKIME_INTERFACE}/g" -e "s,ARKIME_ELASTICSEARCH,${ARKIME_ELASTICSEARCH},g" -e "s/ARKIME_PASSWORD/${ARKIME_PASSWORD}/g" -e "s,ARKIME_INSTALL_DIR,${ARKIME_INSTALL_DIR},g" < $ARKIME_INSTALL_DIR/etc/config.ini.sample > $ARKIME_INSTALL_DIR/etc/config.ini
     sed -e "s/ARKIME_INTERFACE/${ARKIME_INTERFACE}/g" -e "s,ARKIME_ELASTICSEARCH,${ARKIME_ELASTICSEARCH},g" -e "s/ARKIME_PASSWORD/${ARKIME_PASSWORD}/g" -e "s,ARKIME_INSTALL_DIR,${ARKIME_INSTALL_DIR},g" < $ARKIME_INSTALL_DIR/etc/config.ini.sample > $ARKIME_INSTALL_DIR/etc/config.ini
 else
