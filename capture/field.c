@@ -1491,13 +1491,34 @@ void moloch_field_ops_add(MolochFieldOps_t *ops, int fieldPos, char *value, int 
     if (fieldPos < 0) {
         switch (op->fieldPos) {
         case MOLOCH_FIELD_SPECIAL_STOP_SPI:
+            op->strLenOrInt = atoi(value);
+            if (op->strLenOrInt > 1) op->strLenOrInt = 1;
+            if (op->strLenOrInt < 0) op->strLenOrInt = 0;
+            op->str = 0;
+            break;
         case MOLOCH_FIELD_SPECIAL_STOP_PCAP:
+            op->strLenOrInt = atoi(value);
+            if (op->strLenOrInt > 0xffff) op->strLenOrInt = 0xffff;
+            if (op->strLenOrInt < 0) op->strLenOrInt = 0;
+            op->str = 0;
+            break;
         case MOLOCH_FIELD_SPECIAL_MIN_SAVE:
+            op->strLenOrInt = atoi(value);
+            if (op->strLenOrInt > 0xff) op->strLenOrInt = 0xff;
+            if (op->strLenOrInt < 0) op->strLenOrInt = 0;
+            op->str = 0;
+            break;
         case MOLOCH_FIELD_SPECIAL_DROP_SRC:
         case MOLOCH_FIELD_SPECIAL_DROP_DST:
         case MOLOCH_FIELD_SPECIAL_DROP_SESSION:
+            op->strLenOrInt = atoi(value);
+            if (op->strLenOrInt < 0) op->strLenOrInt = 0;
+            op->str = 0;
+            break;
         case MOLOCH_FIELD_SPECIAL_STOP_YARA:
             op->strLenOrInt = atoi(value);
+            if (op->strLenOrInt > 1) op->strLenOrInt = 1;
+            if (op->strLenOrInt < 0) op->strLenOrInt = 0;
             op->str = 0;
             break;
         default:
