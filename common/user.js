@@ -88,6 +88,15 @@ class User {
     } else {
       User.#implementation = new UserESImplementation(options);
     }
+
+    if (!options.noUsersCheck && !Auth.isAnonymousMode()) {
+      setImmediate(async () => {
+        const count = await User.numberOfUsers();
+        if (count === 0) {
+          console.log('WARNING\nWARNING - No users are defined, use `/opt/arkime/bin/arkime_add_user.sh` to add one\nWARNING');
+        }
+      });
+    }
   }
 
   /**

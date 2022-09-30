@@ -2376,7 +2376,7 @@ async function main () {
     console.log('WARNING - ./vueapp/dist/index.html missing - The viewer app must be run from inside the viewer directory');
   }
 
-  Db.checkVersion(MIN_DB_VERSION, Config.get('passwordSecret') !== undefined);
+  Db.checkVersion(MIN_DB_VERSION);
 
   try {
     const health = await Db.healthCache();

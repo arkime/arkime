@@ -174,7 +174,8 @@ if (Config.nodeName() === 'cont3xt') {
     clientKeyPass: Config.get('esClientKeyPass'),
     prefix: Config.get('usersPrefix', ''),
     apiKey: Config.get('usersElasticsearchAPIKey'),
-    basicAuth: Config.get('usersElasticsearchBasicAuth')
+    basicAuth: Config.get('usersElasticsearchBasicAuth', Config.get('elasticsearchBasicAuth')),
+    noUsersCheck: true
   });
   main();
 } else {
@@ -191,6 +192,7 @@ if (Config.nodeName() === 'cont3xt') {
     esApiKey: Config.get('elasticsearchAPIKey', null),
     usersEsApiKey: Config.get('usersElasticsearchAPIKey', null),
     esBasicAuth: Config.get('elasticsearchBasicAuth', null),
-    usersEsBasicAuth: Config.get('usersElasticsearchBasicAuth', null)
+    usersEsBasicAuth: Config.get('usersElasticsearchBasicAuth', null),
+    noUsersCheck: true
   }, main);
 }
