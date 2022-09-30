@@ -1588,7 +1588,7 @@ exports.numberOfDocuments = async (index, options) => {
   return { count };
 };
 
-exports.checkVersion = async function (minVersion, checkUsers) {
+exports.checkVersion = async function (minVersion) {
   const match = process.versions.node.match(/^(\d+)\.(\d+)\.(\d+)/);
   const nodeVersion = parseInt(match[1], 10) * 10000 + parseInt(match[2], 10) * 100 + parseInt(match[3], 10);
   if (nodeVersion < 160000) {
@@ -1631,13 +1631,6 @@ exports.checkVersion = async function (minVersion, checkUsers) {
   } catch (err) {
     console.log("ERROR - Couldn't retrieve database version, is OpenSearch/Elasticsearch running?  Have you run ./db.pl host:port init?", err);
     process.exit(0);
-  }
-
-  if (checkUsers) {
-    const count = await User.numberOfUsers();
-    if (count === 0) {
-      console.log('WARNING - No users are defined, use node viewer/addUser.js to add one, or turn off auth by unsetting passwordSecret');
-    }
   }
 };
 

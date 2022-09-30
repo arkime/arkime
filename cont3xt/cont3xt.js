@@ -490,7 +490,7 @@ function setupAuth () {
     clientKeyPass: getConfig('cont3xt', 'esClientKeyPass'),
     prefix: getConfig('cont3xt', 'usersPrefix'),
     apiKey: getConfig('cont3xt', 'usersElasticsearchAPIKey'),
-    basicAuth: getConfig('cont3xt', 'usersElasticsearchBasicAuth')
+    basicAuth: getConfig('cont3xt', 'usersElasticsearchBasicAuth', getConfig('cont3xt', 'elasticsearchBasicAuth'))
   });
 
   Audit.initialize({
