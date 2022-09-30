@@ -45,7 +45,7 @@ int js0n(const unsigned char *js, unsigned int len, unsigned int *out, unsigned 
 		[0 ... 31] = &&l_bad, // ALW - removed 127 logic
 		[32 ... 127] = &&l_loop, // ALW - changed to 127
 		['\\'] = &&l_esc, ['"'] = &&l_qdown,
-		[127 ... 191] = &&l_bad,
+		[128 ... 191] = &&l_bad,
 		[192 ... 223] = &&l_utf8_2,
 		[224 ... 239] = &&l_utf8_3,
 		[240 ... 247] = &&l_utf8_4,
