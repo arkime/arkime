@@ -1603,7 +1603,7 @@ exports.checkVersion = async function (minVersion) {
     try {
       await exports.indexStats(index);
     } catch (err) {
-      console.log(`ERROR - Issue with index ${index}. Make sure 'db/db.pl <eshost:esport> init' has been run`, err);
+      console.log(`ERROR - Issue with '${fixIndex(index)}' index, make sure 'db/db.pl <host:port> init' has been run.\n`, err);
       process.exit(1);
     }
   });
