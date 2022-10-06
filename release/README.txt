@@ -8,7 +8,7 @@ Basic Arkime Installation steps:
      /opt/arkime/bin/Configure
  4) The Configure script can install elasticsearch for you or you can install yourself
       systemctl start elasticsearch.service
- 5) Initialize/Upgrade Elasticsearch Arkime configuration
+ 5) Initialize/Upgrade OpenSearchElasticsearch Arkime configuration
   a) If this is the first install, or want to delete all data
       /opt/arkime/db/db.pl http://ESHOST:9200 init
   b) If this is an update to a moloch/arkime package
