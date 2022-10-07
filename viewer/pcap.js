@@ -340,13 +340,18 @@ Pcap.prototype.readPacketInternal = function (posArg, hpLenArg, cb) {
         readBuffer = readBuffer.slice(insideOffset);
       }
 
+      // Get the packetLen
       let packetLen;
-      let hlen;
+      const headerLen = (this.shortHeader === undefined) ? 16 : 6;
+
+      if (readBuffer.length < headerLen) {
+        console.log(`Not enough data ${readBuffer.length} for header ${headerLen}`);
+        return cb(undefined);
+      }
+
       if (this.shortHeader === undefined) {
-        hlen = 16;
         packetLen = (this.bigEndian ? readBuffer.readUInt32BE(8) : readBuffer.readUInt32LE(8));
       } else {
-        hlen = 6;
         packetLen = (this.bigEndian ? readBuffer.readUInt16BE(0) : readBuffer.readUInt16LE(0));
       }
 
@@ -355,7 +360,7 @@ Pcap.prototype.readPacketInternal = function (posArg, hpLenArg, cb) {
       }
 
       // Full packet fit
-      if ((hlen + packetLen) <= readBuffer.length) {
+      if ((headerLen + packetLen) <= readBuffer.length) {
         if (this.shortHeader !== undefined) {
           const t = readBuffer.readUInt32LE(2);
           const sec = (t >>> 20) + this.shortHeader;
@@ -370,7 +375,7 @@ Pcap.prototype.readPacketInternal = function (posArg, hpLenArg, cb) {
           readBuffer.copy(newBuffer, 16, 6, packetLen + 6);
           return cb(newBuffer);
         }
-        return cb(readBuffer.slice(0, hlen + packetLen));
+        return cb(readBuffer.slice(0, headerLen + packetLen));
       }
 
       // Don't try again
@@ -392,12 +397,12 @@ Pcap.prototype.readPacketPromise = async function (pos) {
 };
 
 Pcap.prototype.scrubPacket = function (packet, pos, buf, entire) {
-  const hlen = (this.shortHeader === undefined) ? 16 : 6;
+  const headerLen = (this.shortHeader === undefined) ? 16 : 6;
 
-  let len = packet.pcap.incl_len + hlen; // hlen = pcap header length
+  let len = packet.pcap.incl_len + headerLen;
   if (entire) {
-    pos += hlen; // Don't delete pcap header
-    len -= hlen;
+    pos += headerLen; // Don't delete pcap header
+    len -= headerLen;
   } else {
     switch (packet.ip.p) {
     case 1:
