@@ -7,7 +7,7 @@ if [ -d "/etc/systemd" ] && [ -x "/bin/systemctl" ]; then
     ln -sf /opt/$name/etc/arkimeparliament.systemd.service /etc/systemd/system/arkimeparliament.service
     ln -sf /opt/$name/etc/arkimeviewer.systemd.service /etc/systemd/system/arkimeviewer.service
     ln -sf /opt/$name/etc/arkimewise.systemd.service /etc/systemd/system/arkimewise.service
-    /sbin/systemctl daemon-reload
+    /usr/bin/systemctl daemon-reload
     echo "Arkime systemd files linked"
 fi
 
