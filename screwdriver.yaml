@@ -50,7 +50,7 @@ jobs:
                   scl enable devtoolset-9 rh-python36 'aws s3 cp moloch*.x86_64.rpm s3://files.molo.ch/moloch-${MOLOCH_FILE_NAME}.centos7.x86_64.rpm --acl public-read'
                   scl enable devtoolset-9 rh-python36 'aws s3api put-object-acl --bucket files.molo.ch --key moloch-${MOLOCH_FILE_NAME}.centos7.x86_64.rpm --acl public-read'
                 fi
-            - install-arkime: yum -y install arkime-${ARKIME_FILE_NAME}.centos7.x86_64.rpm
+            - install-arkime: yum -y install arkime*.x86_64.rpm
         secrets:
             - AWS_ACCESS_KEY_ID
             - AWS_SECRET_ACCESS_KEY
@@ -89,7 +89,7 @@ jobs:
                   aws s3 cp --quiet moloch*.x86_64.rpm s3://files.molo.ch/moloch-${MOLOCH_FILE_NAME}.centos8.x86_64.rpm --acl public-read
                   aws s3api put-object-acl --bucket files.molo.ch --key moloch-${MOLOCH_FILE_NAME}.centos8.x86_64.rpm --acl public-read
                 fi
-            - install-arkime: yum -y install arkime-${ARKIME_FILE_NAME}.centos8.x86_64.rpm
+            - install-arkime: yum -y install arkime*.x86_64.rpm
         secrets:
             - AWS_ACCESS_KEY_ID
             - AWS_SECRET_ACCESS_KEY
@@ -114,7 +114,7 @@ jobs:
                   aws s3 cp --quiet arkime*.x86_64.rpm s3://files.molo.ch/arkime-${ARKIME_FILE_NAME}.el9.x86_64.rpm --acl public-read
                   aws s3api put-object-acl --bucket files.molo.ch --key arkime-${ARKIME_FILE_NAME}.el9.x86_64.rpm --acl public-read
                 fi
-            - install-arkime: yum -y install arkime-${ARKIME_FILE_NAME}.el9.x86_64.rpm
+            - install-arkime: yum -y install arkime*.x86_64.rpm
         secrets:
             - AWS_ACCESS_KEY_ID
             - AWS_SECRET_ACCESS_KEY

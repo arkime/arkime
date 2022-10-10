@@ -176,20 +176,6 @@ if [ "$ARKIME_LOCALELASTICSEARCH" == "yes" ]; then
 fi
 
 ################################################################################
-if [ -d "/etc/logrotate.d" ] && [ ! -f "/etc/logrotate.d/$ARKIME_NAME" ]; then
-    echo "Arkime - Installing /etc/logrotate.d/$ARKIME_NAME to rotate files after 7 days"
-    cat << EOF > /etc/logrotate.d/$ARKIME_NAME
-$ARKIME_INSTALL_DIR/logs/capture.log
-$ARKIME_INSTALL_DIR/logs/viewer.log {
-    daily
-    rotate 7
-    notifempty
-    copytruncate
-}
-EOF
-fi
-
-################################################################################
 if [ -d "/etc/security/limits.d" ] && [ ! -f "/etc/security/limits.d/99-arkime.conf" ]; then
     echo "Arkime - Installing /etc/security/limits.d/99-arkime.conf to make core and memlock unlimited"
     cat << EOF > /etc/security/limits.d/99-arkime.conf
