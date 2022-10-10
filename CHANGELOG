@@ -1,6 +1,10 @@
 NOTICE: Please see https://arkime.com/faq#upgrading-moloch for upgrading info
 
-ES Versions:
+OpenSearch Versions:
+  * Arkime >= 3.0.0  supports OS >= 1.0 or 2.x
+
+Elasticsearch Versions:
+  * Arkime >= 4.0.0  supports ES >= 7.10.0 or 8.x, not 9.x
   * Moloch >= 3.0.0  supports ES >= 7.10.0, not 8.x or later
   * Moloch >= 2.7.0  supports ES >= 7.4.0
   * Moloch >= 2.2.0  supports ES >= 6.8.0 or >= 7.1.0

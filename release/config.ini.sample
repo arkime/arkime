@@ -42,10 +42,10 @@ rotateIndex=daily
 # Private key file to use, comment out to use http instead
 # keyFile=ARKIME_INSTALL_DIR/etc/arkime.key
 
-# Password Hash and S2S secret - Must be in default section. Since elasticsearch
+# Password Hash Secret - Must be in default section. Since elasticsearch
 # is wide open by default, we encrypt the stored password hashes with this
-# so a malicous person can't insert a working new account.  It is also used
-# for secure S2S communication. Comment out for no user authentication.
+# so a malicous person can't insert a working new account.
+# Comment out for no user authentication.
 # Changing the value will make all previously stored passwords no longer work.
 # Make this RANDOM, you never need to type in
 passwordSecret=ARKIME_PASSWORD
