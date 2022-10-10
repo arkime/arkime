@@ -36,9 +36,7 @@ if [ "$1" == "--wise" ]; then
     fi
 
     if [ -d "/etc/systemd" ] && [ -x "/bin/systemctl" ]; then
-        echo "Installing systemd start files, use systemctl"
-        sed -e "s,ARKIME_INSTALL_DIR,${ARKIME_INSTALL_DIR},g" < $ARKIME_INSTALL_DIR/etc/arkimewise.systemd.service > /etc/systemd/system/arkimewise.service
-        systemctl daemon-reload
+        echo "Enabling & Starting wise systemd files using "
         systemctl enable arkimewise
         systemctl start arkimewise
     else
@@ -51,9 +49,7 @@ fi
 
 if [ "$1" == "--parliament" ]; then
     if [ -d "/etc/systemd" ] && [ -x "/bin/systemctl" ]; then
-        echo "Installing systemd start files, use systemctl"
-        sed -e "s,ARKIME_INSTALL_DIR,${ARKIME_INSTALL_DIR},g" < $ARKIME_INSTALL_DIR/etc/arkimeparliament.systemd.service > /etc/systemd/system/arkimeparliament.service
-        systemctl daemon-reload
+        echo "Enabling & Starting parliament systemd files using "
         systemctl enable arkimeparliament
         systemctl start arkimeparliament
     else
@@ -73,9 +69,7 @@ if [ "$1" == "--cont3xt" ]; then
     fi
 
     if [ -d "/etc/systemd" ] && [ -x "/bin/systemctl" ]; then
-        echo "Installing systemd start files, use systemctl"
-        sed -e "s,ARKIME_INSTALL_DIR,${ARKIME_INSTALL_DIR},g" < $ARKIME_INSTALL_DIR/etc/arkimecont3xt.systemd.service > /etc/systemd/system/arkimecont3xt.service
-        systemctl daemon-reload
+        echo "Enabling & Starting cont3xt systemd files using "
         systemctl enable arkimecont3xt
         systemctl start arkimecont3xt
     else
@@ -179,20 +173,6 @@ if [ "$ARKIME_LOCALELASTICSEARCH" == "yes" ]; then
         dpkg -i elasticsearch-oss-${ES_VERSION}-$ARCHDEB.deb
         /bin/rm -f elasticsearch-oss-${ES_VERSION}-$ARCHDEB.deb
     fi
-fi
-
-################################################################################
-if [ -d "/etc/logrotate.d" ] && [ ! -f "/etc/logrotate.d/$ARKIME_NAME" ]; then
-    echo "Arkime - Installing /etc/logrotate.d/$ARKIME_NAME to rotate files after 7 days"
-    cat << EOF > /etc/logrotate.d/$ARKIME_NAME
-$ARKIME_INSTALL_DIR/logs/capture.log
-$ARKIME_INSTALL_DIR/logs/viewer.log {
-    daily
-    rotate 7
-    notifempty
-    copytruncate
-}
-EOF
 fi
 
 ################################################################################

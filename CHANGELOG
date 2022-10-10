@@ -1,6 +1,10 @@
 NOTICE: Please see https://arkime.com/faq#upgrading-moloch for upgrading info
 
-ES Versions:
+OpenSearch Versions:
+  * Arkime >= 3.0.0  supports OS >= 1.0 or 2.x
+
+Elasticsearch Versions:
+  * Arkime >= 4.0.0  supports ES >= 7.10.0 or 8.x, not 9.x
   * Moloch >= 3.0.0  supports ES >= 7.10.0, not 8.x or later
   * Moloch >= 2.7.0  supports ES >= 7.4.0
   * Moloch >= 2.2.0  supports ES >= 6.8.0 or >= 7.1.0
@@ -25,6 +29,7 @@ NOTICE: Cross-cluster Shortcuts require you to not restart all your viewers at o
 
 4.0.0 2022/08/xx
   - BREAKING - Must be 3.3.0+ to upgrade to 4.x
+  - BREAKING - systemd files auto installed, still need to enable
   - BREAKING - Move to roles for some permission checking,
                userAdmin role required to edit users
   - BREAKING - the version file lives in common directory now
@@ -34,7 +39,11 @@ NOTICE: Cross-cluster Shortcuts require you to not restart all your viewers at o
   - BREAKING - right-click changed to value-actions in config
   - BREAKING - the userId search in history for admin nolonger adds the surrounding wildcards automatically
   - release - cyberchef 9.46.5, node 16.16.0
-  - all - Support ES 8
+  - release - systemd files are delivered with /opt/arkime path instead of setting at install time
+  - release - CICD tests with OpenSearch
+  - all - Support ES 8 & OpenSearch
+  - all - check for missing users index or no users on startup
+  - all - update code/docs to mention OpenSearch
   - addUser.js - new --roles option, --admin creates superAdmin user
   - capture - New ecsEventDatset setting
   - capture - save sessions not saving packets for across restarts
@@ -43,14 +52,20 @@ NOTICE: Cross-cluster Shortcuts require you to not restart all your viewers at o
   - capture - make creating fields from config/parsers/wise/tagger use ES bulk call
   - capture/viewer - new outer fields replace gre fields (PR #1889)
   - capture/viewer - initial SLL2 support (issue #2002)
+  - capture/viewer - zstd pcap compression
   - cont3xt - new Cont3xt application, see https://arkime.com/cont3xt
   - cont3xt/viewer - share new user UI
   - db.pl - fix sync-files/add-missing trying to add non pcap files
   - db.pl - init/wipe clean up aliases that became indices
   - db.pl - determine data node using roles array (issue #2006)
+  - db.pl - fix warning: Smartmatch is experimental
+  - db.pl - ilm didn't work if no sessions2 indices
   - common - fix userAuthIps setting
+  - esproxy - check gzip traffic
+  - esproxy - improved bulk and url sanitization
   - parliament - added --insecure option
   - parliament/wise - can be configured to use shared user DB
+  - suricata - support char 127 in json better
   - viewer - fixed auth fallback to digest from header mode
   - viewer - field-actions to display configurable menu items on field labels
   - viewer - share shortcuts with specific users or roles ("arkimeUser" role = old shortcut sharing)

@@ -13,8 +13,21 @@ elasticsearch=ARKIME_ELASTICSEARCH
 # If using SSO change to the http header with the username in it
 userNameHeader=digest
 
+# Password Hash Secret - Must be in default section. Since elasticsearch
+# is wide open by default, we encrypt the stored password hashes with this
+# so a malicous person can't insert a working new account.
+# Changing the value will make all previously stored passwords no longer work.
+# Make this RANDOM, you never need to type in
+passwordSecret=ARKIME_PASSWORD
+
 # Port Cont3xt listens on
 #port=3218
+#
+# Cert file to use, comment out to use http instead
+# certFile=ARKIME_INSTALL_DIR/etc/arkime.cert
+
+# Private key file to use, comment out to use http instead
+# keyFile=ARKIME_INSTALL_DIR/etc/arkime.key
 
 # default cache timeout
 cacheTimeout=1d
