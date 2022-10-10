@@ -29,6 +29,7 @@ NOTICE: Cross-cluster Shortcuts require you to not restart all your viewers at o
 
 4.0.0 2022/08/xx
   - BREAKING - Must be 3.3.0+ to upgrade to 4.x
+  - BREAKING - systemd files auto installed, still need to enable
   - BREAKING - Move to roles for some permission checking,
                userAdmin role required to edit users
   - BREAKING - the version file lives in common directory now
