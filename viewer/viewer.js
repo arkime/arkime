@@ -2466,10 +2466,10 @@ function processArgs (argv) {
       console.log('');
       console.log('Options:');
       console.log('  -c <config file>      Config file to use');
-      console.log('  -host <host name>     Host name to use, default os hostname');
       console.log('  -n <node name>        Node name section to use in config file, default first part of hostname');
       console.log('  --debug               Increase debug level, multiple are supported');
       console.log('  --esprofile           Turn on profiling to es search queries');
+      console.log('  --host <host name>    Host name to use, default os hostname');
       console.log('  --insecure            Disable certificate verification for https calls');
 
       process.exit(0);
