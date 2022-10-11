@@ -510,9 +510,9 @@ LOCAL gboolean reader_libpcapfile_read()
     }
 
     // pause reading if too many packets are waiting to be processed
-    if (moloch_packet_outstanding() > 2048) {
+    if (moloch_packet_outstanding() > (int)(config.maxPacketsInQueue - offlineDispatchAfter)) {
         if (config.debug)
-            LOG("Waiting to process more packets, packet q: %d", moloch_packet_outstanding());
+            LOG("Waiting to process more packets, packet q: %d allow %d, try increasing maxPacketsInQueue (%d)", moloch_packet_outstanding(), (int)(config.maxPacketsInQueue - offlineDispatchAfter), config.maxPacketsInQueue);
         return G_SOURCE_CONTINUE;
     }
 
@@ -702,6 +702,10 @@ LOCAL void reader_libpcapfile_start() {
 void reader_libpcapfile_init(char *UNUSED(name))
 {
     offlineDispatchAfter        = moloch_config_int(NULL, "offlineDispatchAfter", 2500, 1, 0x7fff);
+
+    if (offlineDispatchAfter > (int)(config.maxPacketsInQueue + 1000)) {
+        CONFIGEXIT("offlineDispatchAfter (%d) must be greater then maxPacketsInQueue (%d) + 1000", offlineDispatchAfter, config.maxPacketsInQueue);
+    }
 
     moloch_reader_start         = reader_libpcapfile_start;
     moloch_reader_stats         = reader_libpcapfile_stats;
