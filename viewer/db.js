@@ -147,7 +147,8 @@ exports.initialize = async (info, cb) => {
       basicAuth: info.usersEsBasicAuth,
       prefix: internals.usersPrefix,
       debug: internals.debug,
-      getCurrentUserCB: info.getCurrentUserCB
+      getCurrentUserCB: info.getCurrentUserCB,
+      noUsersCheck: info.noUsersCheck
     });
   } else {
     User.initialize({
@@ -163,7 +164,8 @@ exports.initialize = async (info, cb) => {
       prefix: internals.prefix,
       debug: internals.debug,
       readOnly: internals.multiES,
-      getCurrentUserCB: info.getCurrentUserCB
+      getCurrentUserCB: info.getCurrentUserCB,
+      noUsersCheck: info.noUsersCheck
     });
   }
 
