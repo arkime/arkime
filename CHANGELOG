@@ -28,6 +28,10 @@ NOTICE: Restart wiseService before capture when upgrading
 NOTICE: Cross-cluster Shortcuts require you to not restart all your viewers at once after upgrading
 
 4.0.1 2022/10/xx
+  - addUser.js - remove WARNING adding first user
+  - capture - offline pcap allows more outstanding packetse based on maxPacketsInQueue
+  - db.pl - Fixed some OpenSearch compatibility
+  - db.pl - Fixed upgrading to 4.x with no _moloch_shared user
 
 4.0.0 2022/10/11
   - BREAKING - Must be 3.3.0+ to upgrade to 4.x
