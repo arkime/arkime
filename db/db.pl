@@ -5606,7 +5606,7 @@ esPut("/${PREFIX}notifiers_v40/_mapping?master_timeout=${ESTIMEOUT}s&pretty", $m
 sub notifiersMove
 {
 # add the notifiers from the _moloch_shared user to the new notifiers index
-    my $sharedUser = esGet("/${PREFIX}users/_doc/_moloch_shared/_source");
+    my $sharedUser = esGet("/${PREFIX}users/_source/_moloch_shared", 1);
     my @notifiers = keys %{$sharedUser->{notifiers}};
 
     foreach my $n (@notifiers) {
