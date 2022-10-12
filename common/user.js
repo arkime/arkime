@@ -675,6 +675,10 @@ class User {
       return res.serverError(403, 'Missing userId');
     }
 
+    if (userId.contains("\\")) {
+      return res.serverError(403, "Malformed UserID")
+    }
+
     const isRole = userId.startsWith('role:');
 
     if (userId === '_moloch_shared') {
