@@ -1,4 +1,4 @@
-use Test::More tests => 106;
+use Test::More tests => 107;
 use Cwd;
 use URI::Escape;
 use MolochTest;
@@ -31,6 +31,9 @@ my $json;
 
     $json = viewerPostToken("/user/update", '{"userId": "usersAdmin", "userName": "UserName", "enabled":true, "password":"password", "roles":["superAdmin"]}', $token);
     eq_or_diff($json, from_json('{"text": "User ID can\'t be a system role id", "success": false}'));
+
+    $json = viewerPostToken("/user/update", '{"userId": "usersAdmin\u001b", "userName": "UserName", "enabled":true, "password":"password", "roles":["arkimeUser"]}', $token);
+    eq_or_diff($json, from_json('{"text": "User not found", "success": false}'));
 
 # Add User 1
     $json = viewerPostToken("/user/create", '{"userId": "test1", "userName": "UserName", "enabled":true, "password":"password"}', $token);

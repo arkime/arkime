@@ -321,9 +321,9 @@ class Auth {
 
         User.setUser(userId, nuser, (err, info) => {
           if (err) {
-            console.log('OpenSearch/Elasticsearch error adding user: (' + userId + '):(' + JSON.stringify(nuser) + '):' + err);
+            console.log('OpenSearch/Elasticsearch error adding user: (%s):(%s):', userId, JSON.stringify(nuser), err);
           } else {
-            console.log('Added user:' + userId + ':' + JSON.stringify(nuser));
+            console.log('Added user: %s:%s', userId, JSON.stringify(nuser));
           }
           return User.getUserCache(userId, headerAuthCheck);
         });
@@ -342,7 +342,7 @@ class Auth {
     }
 
     if (obj.path !== req.url) {
-      console.log('ERROR - mismatch url', obj.path, req.url);
+      console.log('ERROR - mismatch url', obj.path, ArkimeUtil.sanitizeStr(req.url));
       return res.send('Unauthorized based on bad url');
     }
 
@@ -486,3 +486,4 @@ class Auth {
 module.exports = Auth;
 
 const User = require('../common/user');
+const ArkimeUtil = require('../common/arkimeUtil');
