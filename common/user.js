@@ -646,7 +646,12 @@ class User {
    * @returns {string} text - The success/error message to (optionally) display to the user.
    */
   static async apiDeleteUser (req, res) {
-    const userId = req.body.userId || req.params.id;
+    const userId = ArkimeUtil.sanitizeStr(req.body.userId || req.params.id);
+
+    if (!userId) {
+      return res.serverError(403, 'Missing userId');
+    }
+
     if (userId === req.user.userId) {
       return res.serverError(403, 'Can not delete yourself');
     }
@@ -655,7 +660,7 @@ class User {
       await User.deleteUser(userId);
       res.send({ success: true, text: 'User deleted successfully' });
     } catch (err) {
-      console.log(`ERROR - ${req.method} /api/user/${userId}`, util.inspect(err, false, 50));
+      console.log(`ERROR - ${req.method} /api/user/%s`, userId, util.inspect(err, false, 50));
       res.send({ success: false, text: 'User not deleted' });
     }
   };
@@ -669,7 +674,7 @@ class User {
    * @returns {string} text - The success/error message to (optionally) display to the user.
    */
   static apiUpdateUser (req, res) {
-    const userId = req.body.userId || req.params.id;
+    const userId = ArkimeUtil.sanitizeStr(req.body.userId || req.params.id);
 
     if (!userId) {
       return res.serverError(403, 'Missing userId');
@@ -705,7 +710,7 @@ class User {
 
     User.getUser(userId, (err, user) => {
       if (err || !user) {
-        console.log(`ERROR - ${req.method} /api/user/${userId}`, util.inspect(err, false, 50), user);
+        console.log(`ERROR - ${req.method} /api/user/%s`, userId, util.inspect(err, false, 50), user);
         return res.serverError(403, 'User not found');
       }
 
@@ -721,7 +726,7 @@ class User {
 
       if (req.body.userName !== undefined) {
         if (req.body.userName.match(/^\s*$/)) {
-          console.log(`ERROR - ${req.method} /api/user/${userId} empty username`, util.inspect(req.body));
+          console.log(`ERROR - ${req.method} /api/user/%s empty username`, userId, util.inspect(req.body));
           return res.serverError(403, 'Username can not be empty');
         } else {
           user.userName = req.body.userName;
@@ -747,7 +752,7 @@ class User {
         }
 
         if (err) {
-          console.log(`ERROR - ${req.method} /api/user/${userId}`, util.inspect(err, false, 50), user, info);
+          console.log(`ERROR - ${req.method} /api/user/%s`, userId, util.inspect(err, false, 50), user, info);
           return res.serverError(500, 'Error updating user:' + err);
         }
 
@@ -768,7 +773,7 @@ class User {
    * @returns {string} text - The success/error message to (optionally) display to the user.
    */
   static apiUpdateUserRole (req, res) {
-    const userId = req.params.id;
+    const userId = ArkimeUtil.sanitizeStr(req.body.userId || req.params.id);
     const roleId = req.body.roleId;
     const newRoleState = req.body.newRoleState;
 
@@ -790,7 +795,7 @@ class User {
 
     User.getUser(userId, (err, user) => {
       if (err || !user) {
-        console.log(`ERROR - ${req.method} /api/user/${userId}/assignment`, util.inspect(err, false, 50), user);
+        console.log(`ERROR - ${req.method} /api/user/%s/assignment`, userId, util.inspect(err, false, 50), user);
         return res.serverError(403, 'User not found');
       }
 
@@ -816,7 +821,7 @@ class User {
         }
 
         if (err) {
-          console.log(`ERROR - ${req.method} /api/user/${userId}/assignment`, util.inspect(err, false, 50), user, info);
+          console.log(`ERROR - ${req.method} /api/user/%s/assignment`, userId, util.inspect(err, false, 50), user, info);
           return res.serverError(500, 'Error updating user role:' + err);
         }
 

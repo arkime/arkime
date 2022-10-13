@@ -33,6 +33,13 @@ class ArkimeUtil {
   };
 
   // ----------------------------------------------------------------------------
+  static sanitizeStr (str) {
+    if (!str) { return str; }
+    // eslint-disable-next-line no-control-regex
+    return str.replace(/\u001b/g, '*ESC*');
+  }
+
+  // ----------------------------------------------------------------------------
   static noCacheJson (req, res, next) {
     res.header('Cache-Control', 'no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0');
     res.header('Content-Type', 'application/json');
@@ -47,11 +54,12 @@ class ArkimeUtil {
    * @params {string} section - The section this redis client is being created for
    */
   static createRedisClient (url, section) {
+    url = ArkimeUtil.sanitizeStr(url);
     // redis://[:pass]@host:port/db
     if (url.startsWith('redis://') || url.startsWith('rediss://')) {
       const match = url.match(/(rediss?):\/\/(:[^@]+@)?([^:/]+)(:[0-9]+)?\/([0-9]+)/);
       if (!match) {
-        console.log(`${section} - ERROR - can't parse redis url '${url}' should be of form //[:pass@]redishost[:redisport]/redisDbNum`);
+        console.log(`${section} - ERROR - can't parse redis url '%s' should be of form //[:pass@]redishost[:redisport]/redisDbNum`, url);
         process.exit(1);
       }
 
@@ -65,7 +73,7 @@ class ArkimeUtil {
     if (url.startsWith('redis-sentinel://')) {
       const match = url.match(/(redis-sentinel):\/\/(([^:]+)?:([^@]+)?@)?([^/]+)\/([^/]+)\/([0-9]+)(\/.+)?/);
       if (!match) {
-        console.log(`${section} - ERROR - can't parse redis-sentinel url '${url}' should be of form //[sentinelPassword:redisPassword@]sentinelHost[:sentinelPort][,sentinelPortN[:sentinelPortN]]/redisName/redisDbNum`);
+        console.log(`${section} - ERROR - can't parse redis-sentinel url '%s' should be of form //[sentinelPassword:redisPassword@]sentinelHost[:sentinelPort][,sentinelPortN[:sentinelPortN]]/redisName/redisDbNum`, url);
         process.exit(1);
       }
 
@@ -92,7 +100,7 @@ class ArkimeUtil {
     if (url.startsWith('redis-cluster://')) {
       const match = url.match(/(redis-cluster):\/\/(:([^@]+)@)?([^/]+)\/([0-9]+)(\/.+)?/);
       if (!match) {
-        console.log(`${section} - ERROR - can't parse redis-cluster url '${url}' should be of form //[:redisPassword@]redisHost[:redisPort][,redisHostN[:redisPortN]]/redisDbNum`);
+        console.log(`${section} - ERROR - can't parse redis-cluster url '%s' should be of form //[:redisPassword@]redisHost[:redisPort][,redisHostN[:redisPortN]]/redisDbNum`, url);
         process.exit(1);
       }
 
@@ -113,7 +121,7 @@ class ArkimeUtil {
       return new Redis.Cluster(hosts, { redisOptions: options });
     }
 
-    console.log(`${section} - Unknown redis url '${url}'`);
+    console.log(`${section} - Unknown redis url '%s'`, url);
     process.exit(1);
   }
 
@@ -123,6 +131,7 @@ class ArkimeUtil {
    * @params {string} section - The section this memcached client is being created for
    */
   static createMemcachedClient (url, section) {
+    url = ArkimeUtil.sanitizeStr(url);
     // memcached://[user:pass@]server1[:11211],[user:pass@]server2[:11211],...
     if (url.startsWith('memcached://')) {
       if (ArkimeUtil.debug > 0) {
@@ -131,7 +140,7 @@ class ArkimeUtil {
       return memjs.Client.create(url.substring(12));
     }
 
-    console.log(`${section} - Unknown memcached url '${url}'`);
+    console.log(`${section} - Unknown memcached url '%s'`, url);
     process.exit(1);
   }
 
@@ -210,7 +219,7 @@ class ArkimeUtil {
    */
   static missingResource (err, req, res, next) {
     res.status(404);
-    console.log(`Cannot locate resource requsted from ${req.path}`);
+    console.log('Cannot locate resource requsted from', ArkimeUtil.sanitizeStr(req.path));
     return res.send('Cannot locate resource');
   }
 
