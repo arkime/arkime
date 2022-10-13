@@ -940,7 +940,7 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
         text: 'Deleted hunt successfully'
       }));
     } catch (err) {
-      console.log(`ERROR - ${req.method} /api/hunt/${req.params.id}`, util.inspect(err, false, 50));
+      console.log(`ERROR - ${req.method} /api/hunt/%s`, ArkimeUtil.sanitizeStr(req.params.id), util.inspect(err, false, 50));
       return res.serverError(500, 'Error deleting hunt');
     }
   };
@@ -975,7 +975,7 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
       huntAPIs.processHuntJobs();
       return res.send(JSON.stringify({ success: true, text: 'Canceled hunt successfully' }));
     } catch (err) {
-      console.log(`ERROR - ${req.method} /api/hunt/${req.params.id}/cancel`, util.inspect(err, false, 50));
+      console.log(`ERROR - ${req.method} /api/hunt/%s/cancel`, ArkimeUtil.sanitizeStr(req.params.id), util.inspect(err, false, 50));
       return res.serverError(500, 'Error canceling hunt');
     }
   };
@@ -1062,7 +1062,7 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
         });
       });
     } catch (err) {
-      console.log(`ERROR - ${req.method} /api/hunt/${req.params.id}/removefromsessions`, util.inspect(err, false, 50));
+      console.log(`ERROR - ${req.method} /api/hunt/%s/removefromsessions`, ArkimeUtil.sanitizeStr(req.params.id), util.inspect(err, false, 50));
       return res.serverError(500, 'Unable to remove hunt name and ID from the matched sessions.');
     }
   };
@@ -1095,11 +1095,11 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
           text: 'Updated Hunt Succesfully!'
         }));
       } catch (err) {
-        console.log(`ERROR - ${req.method} /api/hunt/${req.params.id} (setHunt)`, util.inspect(err, false, 50));
+        console.log(`ERROR - ${req.method} /api/hunt/%s (setHunt)`, ArkimeUtil.sanitizeStr(req.params.id), util.inspect(err, false, 50));
         return res.serverError(500, 'Unable to update hunt');
       }
     } catch (err) {
-      console.log(`ERROR - ${req.method} /api/hunt/${req.params.id}/users (getHunt)`, util.inspect(err, false, 50));
+      console.log(`ERROR - ${req.method} /api/hunt/%s/users (getHunt)`, ArkimeUtil.sanitizeStr(req.params.id), util.inspect(err, false, 50));
       return res.serverError(500, 'Unable update hunt');
     }
   };
@@ -1147,15 +1147,15 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
             invalidUsers: users.invalidUsers
           }));
         } catch (err) {
-          console.log(`ERROR - ${req.method} /api/hunt/${req.params.id}/users (setHunt)`, util.inspect(err, false, 50));
+          console.log(`ERROR - ${req.method} /api/hunt/%s/users (setHunt)`, ArkimeUtil.sanitizeStr(req.params.id), util.inspect(err, false, 50));
           return res.serverError(500, 'Unable to add user(s)');
         }
       } catch (err) {
-        console.log(`ERROR - ${req.method} /api/hunt/${req.params.id}/users (validateUserIds)`, util.inspect(err, false, 50));
+        console.log(`ERROR - ${req.method} /api/hunt/%s/users (validateUserIds)`, ArkimeUtil.sanitizeStr(req.params.id), util.inspect(err, false, 50));
         return res.serverError(500, err);
       }
     } catch (err) {
-      console.log(`ERROR - ${req.method} /api/hunt/${req.params.id}/users (getHunt)`, util.inspect(err, false, 50));
+      console.log(`ERROR - ${req.method} /api/hunt/%s/users (getHunt)`, ArkimeUtil.sanitizeStr(req.params.id), util.inspect(err, false, 50));
       return res.serverError(500, 'Unable to add user(s)');
     }
   };
@@ -1189,11 +1189,11 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
         await Db.setHunt(req.params.id, hunt);
         res.send(JSON.stringify({ success: true, users: hunt.users }));
       } catch (err) {
-        console.log(`ERROR - ${req.method} /api/hunt/${req.params.id}/user/${req.params.user} (setHunt)`, util.inspect(err, false, 50));
+        console.log(`ERROR - ${req.method} /api/hunt/%s/user/%s (setHunt)`, ArkimeUtil.sanitizeStr(req.params.id), ArkimeUtil.sanitizeStr(req.params.user), util.inspect(err, false, 50));
         return res.serverError(500, 'Unable to remove user');
       }
     } catch (err) {
-      console.log(`ERROR - ${req.method} /api/hunt/${req.params.id}/user/${req.params.user} (getHunt)`, util.inspect(err, false, 50));
+      console.log(`ERROR - ${req.method} /api/hunt/%s/user/%s (getHunt)`, ArkimeUtil.sanitizeStr(req.params.id), ArkimeUtil.sanitizeStr(req.params.user), util.inspect(err, false, 50));
       return res.serverError(500, 'Unable to remove user');
     }
   };
@@ -1247,7 +1247,7 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
         if (!res.headersSent) { res.send({ matched }); }
       });
     }).catch((err) => {
-      console.log(`ERROR - ${req.method} /api/hunt/${req.params.nodeName}/${req.params.huntId}/remote/${req.params.sessionId}`, util.inspect(err, false, 50));
+      console.log(`ERROR - ${req.method} /api/hunt/%s/%s/remote/%s`, ArkimeUtil.sanitizeStr(req.params.nodeName), ArkimeUtil.sanitizeStr(req.params.huntId), ArkimeUtil.sanitizeStr(req.params.sessionId), util.inspect(err, false, 50));
       if (!res.headersSent) { res.send({ matched: false, error: err }); }
     });
   };

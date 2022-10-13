@@ -399,17 +399,17 @@ module.exports = (Db, internals) => {
             }));
           } catch (err) {
             shortcutMutex.unlock();
-            console.log(`ERROR - ${req.method} /api/shortcut/${req.params.id} (setShortcut)`, util.inspect(err, false, 50));
+            console.log(`ERROR - ${req.method} /api/shortcut/%s (setShortcut)`, ArkimeUtil.sanitizeStr(req.params.id), util.inspect(err, false, 50));
             return res.serverError(500, 'Error updating shortcut');
           }
         } catch (err) {
           shortcutMutex.unlock();
-          console.log(`ERROR - ${req.method} /api/shortcut/${req.params.id} (searchShortcuts)`, util.inspect(err, false, 50));
+          console.log(`ERROR - ${req.method} /api/shortcut/%s (searchShortcuts)`, ArkimeUtil.sanitizeStr(req.params.id), util.inspect(err, false, 50));
           return res.serverError(500, 'Error updating shortcut');
         }
       });
     } catch (err) {
-      console.log(`ERROR - ${req.method} /api/shortcut/${req.params.id} (getShortcut)`, util.inspect(err, false, 50));
+      console.log(`ERROR - ${req.method} /api/shortcut/%s (getShortcut)`, ArkimeUtil.sanitizeStr(req.params.id), util.inspect(err, false, 50));
       return res.serverError(500, 'Fetching shortcut to update failed');
     }
   };
@@ -442,11 +442,11 @@ module.exports = (Db, internals) => {
           text: 'Deleted shortcut successfully'
         }));
       } catch (err) {
-        console.log(`ERROR - ${req.method} /api/shortcut/${req.params.id} (deleteShortcut)`, util.inspect(err, false, 50));
+        console.log(`ERROR - ${req.method} /api/shortcut/%s (deleteShortcut)`, ArkimeUtil.sanitizeStr(req.params.id), util.inspect(err, false, 50));
         return res.serverError(500, 'Error deleting shortcut');
       }
     } catch (err) {
-      console.log(`ERROR - ${req.method} /api/shortcut/${req.params.id} (getShortcut)`, util.inspect(err, false, 50));
+      console.log(`ERROR - ${req.method} /api/shortcut/%s (getShortcut)`, ArkimeUtil.sanitizeStr(req.params.id), util.inspect(err, false, 50));
       return res.serverError(500, 'Fetching shortcut to delete failed');
     }
   };

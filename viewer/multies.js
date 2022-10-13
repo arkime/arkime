@@ -454,7 +454,7 @@ app.get(['/users/user/:user', '/users/_doc/:user'], async (req, res) => {
     });
     return res.send(user);
   } catch (err) {
-    console.log(`ERROR - GET /users/user/${req.params.user}`, err);
+    console.log('ERROR - GET /users/user/%s', ArkimeUtil.sanitizeStr(req.params.user), err);
     return res.send({});
   }
 });
@@ -466,7 +466,7 @@ app.post(['/users/user/:user', '/users/_doc/:user'], async (req, res) => {
     });
     return res.send(result);
   } catch (err) {
-    console.log(`ERROR - POST /users/user/${req.params.user}`, err);
+    console.log('ERROR - POST /users/user/%s', ArkimeUtil.sanitizeStr(req.params.user), err);
     return res.send({});
   }
 });
@@ -954,7 +954,7 @@ app.post(['/:index/:type/:id/_update', '/:index/_update/:id'], async (req, res) 
       const { body: result } = await clients[node].update(params);
       return res.send(result);
     } catch (err) {
-      console.log(`ERROR - /${req.params.index}/${req.params.type}/${req.params.id}/_update`, err);
+      console.log('ERROR - /%s/%s/%s/_update', ArkimeUtil.sanitizeStr(req.params.index), ArkimeUtil.sanitizeStr(req.params.type), ArkimeUtil.sanitizeStr(req.params.id), err);
       return res.send({});
     }
   } else {
