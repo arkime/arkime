@@ -25,6 +25,7 @@ const https = require('https');
 const fs = require('fs');
 const basicAuth = require('basic-auth');
 const zlib = require('zlib');
+const ArkimeUtil = require('../common/arkimeUtil');
 
 // express app
 const app = express();
@@ -208,7 +209,7 @@ function saveBody (req, res, next) {
 function doProxyFull (config, req, res) {
   let result = '';
   const esUrl = config.elasticsearch + req.url;
-  console.log(`URL ${req.method} ${esUrl}`);
+  console.log(`URL ${req.method} "%s"`, ArkimeUtil.sanitizeStr(esUrl));
   const url = new URL(esUrl);
   const options = { method: req.method };
   let client;
@@ -245,7 +246,7 @@ function doProxyFull (config, req, res) {
   }
 
   preq.on('error', (e) => {
-    console.log(`Request error ${url}`, e);
+    console.log('Request error "%s"', ArkimeUtil.sanitizeStr(url), e);
   });
   if (req._body) {
     preq.end(req.body);
@@ -283,7 +284,7 @@ app.get('*', (req, res) => {
   } else if (path.match(/^\/[^/]*sessions2-[^/]+\/_doc\/[^/]+$/)) {
   } else if (path.match(/^\/[^/]*sessions3-[^/]+\/_doc\/[^/]+$/)) {
   } else {
-    console.log(`GET failed node: ${req.sensor.node} path:${path}`);
+    console.log(`GET failed node: ${req.sensor.node} path:"%s"`, ArkimeUtil.sanitizeStr(path));
     return res.status(400).send('Not authorized for API');
   }
   doProxy(req, res);
@@ -306,7 +307,7 @@ function validateBulk (req) {
       return false;
     }
   } else {
-    console.log(`Invalid content-encoding ${req.headers['content-encoding']} for bulk`);
+    console.log('Invalid content-encoding "%s" for bulk', ArkimeUtil.sanitizeStr(req.headers['content-encoding']));
     return false;
   }
 
@@ -330,7 +331,7 @@ function validateBulk (req) {
         throw new Error('Missing create or index operation');
       }
     } catch (err) {
-      console.log('Bulk error', err, lines[i]);
+      console.log('Bulk error', err, ArkimeUtil.sanitizeStr(lines[i]));
       return false;
     }
     i++; // Skip object, must be there since we only support create/index
