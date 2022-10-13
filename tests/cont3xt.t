@@ -448,4 +448,4 @@ $json = cont3xtPut('/api/integration/settings', '{}');
 eq_or_diff($json, from_json('{"success": false, "text": "Missing token"}'));
 
 $json = cont3xtPutToken('/api/integration/settings', 'hi', $token);
-is (substr($json, 0, 5), "<!DOC");
+is ($json, "SyntaxError: Unexpected token h in JSON at position 0");
