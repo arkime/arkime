@@ -1796,6 +1796,9 @@ app.use((req, res, next) => {
   });
 });
 
+// Replace the default express error handler
+app.use(ArkimeUtil.expressErrorHandler);
+
 // ----------------------------------------------------------------------------
 // Main
 // ----------------------------------------------------------------------------
