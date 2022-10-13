@@ -168,7 +168,7 @@ class View {
         text: 'Deleted view successfully'
       }));
     } catch (err) {
-      console.log(`ERROR - ${req.method} /api/view/${req.params.id} (deleteView)`, util.inspect(err, false, 50));
+      console.log(`ERROR - ${req.method} /api/view/%s (deleteView)`, ArkimeUtil.sanitizeStr(req.params.id), util.inspect(err, false, 50));
       return res.serverError(500, 'Error deleting notifier');
     }
   }
@@ -222,11 +222,11 @@ class View {
           invalidUsers: users.invalidUsers
         }));
       } catch (err) {
-        console.log(`ERROR - ${req.method} /api/view/${req.params.id} (setView)`, util.inspect(err, false, 50));
+        console.log(`ERROR - ${req.method} /api/view/%s (setView)`, ArkimeUtil.sanitizeStr(req.params.id), util.inspect(err, false, 50));
         return res.serverError(500, 'Error updating view');
       }
     } catch (err) {
-      console.log(`ERROR - ${req.method} /api/view/${req.params.id} (getView)`, util.inspect(err, false, 50));
+      console.log(`ERROR - ${req.method} /api/view/%s (getView)`, ArkimeUtil.sanitizeStr(req.params.id), util.inspect(err, false, 50));
       return res.serverError(500, 'Fetching view to update failed');
     }
   }

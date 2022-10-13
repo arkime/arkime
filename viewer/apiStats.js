@@ -3,6 +3,7 @@
 const RE2 = require('re2');
 const util = require('util');
 const async = require('async');
+const ArkimeUtil = require('../common/arkimeUtil');
 
 module.exports = (Config, Db, internals, ViewerUtils) => {
   const statsAPIs = {};
@@ -596,7 +597,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
       await Db.deleteIndex([req.params.index], {});
       return res.send(JSON.stringify({ success: true }));
     } catch (err) {
-      console.log(`ERROR - ${req.method} /api/esindices/${req.params.index}`, util.inspect(err, false, 50));
+      console.log(`ERROR - ${req.method} /api/esindices/%s`, ArkimeUtil.sanitizeStr(req.params.index), util.inspect(err, false, 50));
       res.status(404);
       return res.send(JSON.stringify({ success: false, text: 'Error deleting index' }));
     }
@@ -613,7 +614,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
     try {
       Db.optimizeIndex([req.params.index], {});
     } catch (err) {
-      console.log(`ERROR - ${req.method} /api/esindices/${req.params.index}/optimize`, util.inspect(err, false, 50));
+      console.log(`ERROR - ${req.method} /api/esindices/%s/optimize`, ArkimeUtil.sanitizeStr(req.params.index), util.inspect(err, false, 50));
     }
 
     // always return successfully right away, optimizeIndex might block
@@ -633,7 +634,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
       await Db.closeIndex([req.params.index], {});
       return res.send(JSON.stringify({ success: true }));
     } catch (err) {
-      console.log(`ERROR - ${req.method} /api/esindices/${req.params.index}/close`, util.inspect(err, false, 50));
+      console.log(`ERROR - ${req.method} /api/esindices/%s/close`, ArkimeUtil.sanitizeStr(req.params.index), util.inspect(err, false, 50));
       res.status(404);
       return res.send(JSON.stringify({ success: false, text: 'Error closing index' }));
     }
@@ -650,7 +651,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
     try {
       Db.openIndex([req.params.index], {});
     } catch (err) {
-      console.log(`ERROR - ${req.method} /api/esindices/${req.params.index}/open`, util.inspect(err, false, 50));
+      console.log(`ERROR - ${req.method} /api/esindices/%s/open`, ArkimeUtil.sanitizeStr(req.params.index), util.inspect(err, false, 50));
     }
 
     // always return successfully right away, openIndex might block
@@ -707,7 +708,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
                 await Db.deleteIndex([req.params.index], {});
               }
             } catch (err) {
-              console.log(`ERROR - ${req.method} /api/esindices/${req.params.index}/shrink`, util.inspect(err, false, 50));
+              console.log(`ERROR - ${req.method} /api/esindices/%s/shrink`, ArkimeUtil.sanitizeStr(req.params.index), util.inspect(err, false, 50));
             }
           }
         });
@@ -836,7 +837,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
       const { body: result } = await Db.taskCancel(taskId);
       return res.send(JSON.stringify({ success: true, text: result }));
     } catch (err) {
-      console.log(`ERROR - ${req.method} /api/estasks/${taskId}/cancel`, util.inspect(err, false, 50));
+      console.log(`ERROR - ${req.method} /api/estasks/%s/cancel`, ArkimeUtil.sanitizeStr(taskId), util.inspect(err, false, 50));
       return res.serverError(500, err.toString());
     }
   };
@@ -864,7 +865,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
       const { body: result } = await Db.cancelByOpaqueId(`${req.user.userId}::${cancelId}`);
       return res.send(JSON.stringify({ success: true, text: result }));
     } catch (err) {
-      console.log(`ERROR - ${req.method} /api/estasks/${cancelId}/cancelwith`, util.inspect(err, false, 50));
+      console.log(`ERROR - ${req.method} /api/estasks/%s/cancelwith`, ArkimeUtil.sanitizeStr(cancelId), util.inspect(err, false, 50));
       return res.serverError(500, err.toString());
     }
   };
@@ -1344,7 +1345,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
         text: 'Successfully excluded node'
       }));
     } catch (err) {
-      console.log(`ERROR - ${req.method} /api/esshards/${req.params.type}/${req.params.value}/exclude`, util.inspect(err, false, 50));
+      console.log(`ERROR - ${req.method} /api/esshards/%s/%s/exclude`, ArkimeUtil.sanitizeStr(req.params.type), ArkimeUtil.sanitizeStr(req.params.value), util.inspect(err, false, 50));
       return res.serverError(500, 'Node exclusion failed');
     }
   };
@@ -1393,7 +1394,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
         text: 'Successfully included node'
       }));
     } catch (err) {
-      console.log(`ERROR - ${req.method} /api/esshards/${req.params.type}/${req.params.value}/include`, util.inspect(err, false, 50));
+      console.log(`ERROR - ${req.method} /api/esshards/%s/%s/include`, ArkimeUtil.sanitizeStr(req.params.type), ArkimeUtil.sanitizeStr(req.params.value), util.inspect(err, false, 50));
       return res.serverError(500, 'Node inclusion failed');
     }
   };

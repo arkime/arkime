@@ -423,7 +423,7 @@ module.exports = (Config, Db, internals, sessionAPIs, userAPIs, ViewerUtils) => 
   miscAPIs.cyberChef = (req, res) => {
     sessionAPIs.processSessionIdAndDecode(req.params.id, 10000, (err, session, results) => {
       if (err) {
-        console.log(`ERROR - ${req.method} /${req.params.nodeName}/session/${req.params.id}/cyberchef`, util.inspect(err, false, 50));
+        console.log(`ERROR - ${req.method} /%s/session/%s/cyberchef`, ArkimeUtil.sanitizeStr(req.params.nodeName), ArkimeUtil.sanitizeStr(req.params.id), util.inspect(err, false, 50));
         return res.end('Error - ' + err);
       }
 

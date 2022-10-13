@@ -1,6 +1,7 @@
 'use strict';
 
 const util = require('util');
+const ArkimeUtil = require('../common/arkimeUtil');
 
 module.exports = (Db) => {
   const historyAPIs = {};
@@ -180,7 +181,7 @@ module.exports = (Db) => {
         text: 'Deleted history item successfully'
       }));
     } catch (err) {
-      console.log(`ERROR - ${req.method} /api/history/${req.params.id}`, util.inspect(err, false, 50));
+      console.log(`ERROR - ${req.method} /api/history/%s`, ArkimeUtil.sanitizeStr(req.params.id), util.inspect(err, false, 50));
       return res.serverError(500, 'Error deleting history item');
     }
   };

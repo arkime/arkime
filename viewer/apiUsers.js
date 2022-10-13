@@ -4,6 +4,7 @@ const fs = require('fs');
 const util = require('util');
 const stylus = require('stylus');
 const User = require('../common/user');
+const ArkimeUtil = require('../common/arkimeUtil');
 
 module.exports = (Config, Db, internals, ViewerUtils) => {
   const userAPIs = {};
@@ -638,7 +639,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
   userAPIs.updateUserState = (req, res) => {
     User.getUser(req.user.userId, (err, user) => {
       if (err || !user) {
-        console.log(`ERROR - ${req.method} /api/user/state/${req.params.name} (getUser)`, util.inspect(err, false, 50), user);
+        console.log(`ERROR - ${req.method} /api/user/state/%s (getUser)`, ArkimeUtil.sanitizeStr(req.params.name), util.inspect(err, false, 50), user);
         return res.serverError(403, 'Unknown user');
       }
 
