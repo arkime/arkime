@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+const ArkimeUtil = require('../../../common/arkimeUtil');
 const Integration = require('../../integration.js');
 const axios = require('axios');
 
@@ -123,7 +124,7 @@ class ThreatstreamIntegration extends Integration {
 
       // https://www.oreilly.com/library/view/regular-expressions-cookbook/9781449327453/ch08s15.html + uppercase
       if (!host.match(/^([a-zA-Z0-9]+(-[a-zA-Z0-9]+)*\.)+[a-zA-Z]{2,}$/)) {
-        console.log(`userId: '${user.userId}' bad threatstream hostname: '${host}'`);
+        console.log(`userId: '${user.userId}' bad threatstream hostname: '%s'`, ArkimeUtil.sanitizeStr(host));
         return undefined;
       }
 

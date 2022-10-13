@@ -398,7 +398,7 @@ class Integration {
       try {
         normalizedQuery = ipaddr.parse(query).toNormalizedString();
       } catch (e) {
-        console.log(`WARNING - ${query} is not really an ip`);
+        console.log('WARNING - "%s" is not really an ip', query);
         shared.total -= integrations.length;
         return;
       }
@@ -565,7 +565,7 @@ class Integration {
       return res.send({ success: false, text: 'viewId must be a string when present' });
     }
 
-    const query = req.body.query.trim();
+    const query = ArkimeUtil.sanitizeStr(req.body.query.trim());
 
     const itype = Integration.classify(query);
 
@@ -634,7 +634,7 @@ class Integration {
     }
 
     const itype = req.params.itype;
-    const query = req.body.query.trim();
+    const query = ArkimeUtil.sanitizeStr(req.body.query.trim());
 
     const integration = Integration.integrationsByName[req.params.integration];
 
