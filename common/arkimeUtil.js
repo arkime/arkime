@@ -223,6 +223,15 @@ class ArkimeUtil {
     return res.send('Cannot locate resource');
   }
 
+  /**
+   * express error handler
+   */
+  static expressErrorHandler (err, req, res, next) {
+    console.error('Error', ArkimeUtil.sanitizeStr(err.stack));
+    res.status(500).send(err.toString());
+    next();
+  }
+
   // express middleware to set req.settingUser to who to work on, depending if admin or not
   // This returns fresh from db
   static getSettingUserDb (req, res, next) {

@@ -28,6 +28,7 @@ const http = require('http');
 const https = require('https');
 const fs = require('fs');
 const path = require('path');
+const ArkimeUtil = require('../common/arkimeUtil');
 
 const esSSLOptions = { rejectUnauthorized: !Config.insecure, ca: Config.getCaTrustCerts(Config.nodeName()) };
 const esClientKey = Config.get('esClientKey');
@@ -987,6 +988,9 @@ app.get(/./, function (req, res) {
 app.post(/./, function (req, res) {
   console.log('UNKNOWN', req.method, req.url, req.body);
 });
+
+// Replace the default express error handler
+app.use(ArkimeUtil.expressErrorHandler);
 
 /// ///////////////////////////////////////////////////////////////////////////////
 /// / Main

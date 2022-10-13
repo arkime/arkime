@@ -2079,6 +2079,9 @@ app.use(cspHeader, setCookie, (req, res) => {
   });
 });
 
+// Replace the default express error handler
+app.use(ArkimeUtil.expressErrorHandler);
+
 // ============================================================================
 // CRON QUERIES
 // ============================================================================

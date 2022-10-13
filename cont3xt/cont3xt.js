@@ -362,6 +362,9 @@ app.use(cspHeader, setCookie, (req, res, next) => {
   });
 });
 
+// Replace the default express error handler
+app.use(ArkimeUtil.expressErrorHandler);
+
 // ----------------------------------------------------------------------------
 // Command Line Parsing
 // ----------------------------------------------------------------------------

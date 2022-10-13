@@ -424,6 +424,9 @@ app.put('*', (req, res) => {
   doProxy(req, res);
 });
 
+// Replace the default express error handler
+app.use(ArkimeUtil.expressErrorHandler);
+
 // ============================================================================
 // MAIN
 // ===========================================================================
