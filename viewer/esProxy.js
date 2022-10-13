@@ -284,7 +284,7 @@ app.get('*', (req, res) => {
   } else if (path.match(/^\/[^/]*sessions2-[^/]+\/_doc\/[^/]+$/)) {
   } else if (path.match(/^\/[^/]*sessions3-[^/]+\/_doc\/[^/]+$/)) {
   } else {
-    console.log(`GET failed node: ${req.sensor.node} path:"%s"`, ArkimeUtil.sanitizeStr(path));
+    console.log(`GET failed node: ${req.sensor.node} path:>%s<:`, ArkimeUtil.sanitizeStr(path));
     return res.status(400).send('Not authorized for API');
   }
   doProxy(req, res);
@@ -388,10 +388,10 @@ app.post('*', saveBody, (req, res) => {
   } else if ((path.startsWith(`/${oldprefix}sessions2`) || path.startsWith(`/${prefix}sessions3`)) && path.endsWith('/_search') && validateSearchIds(req)) {
   } else if (path.match(/^\/[^/]*history_v[^/]*\/_doc$/)) {
   } else if (path.match(/^\/[^/]*sessions[23]-[^/]+\/_update\/[^/]+$/) && validateUpdate(req)) {
-    console.log(`UPDATE : ${req.sensor.node} path:>${path}<:`);
+    console.log(`UPDATE : ${req.sensor.node} path:>%s<:`, ArkimeUtil.sanitizeStr(path));
     console.log(req.body.toString('utf8'));
   } else {
-    console.log(`POST failed node: ${req.sensor.node} path:>${path}<:`);
+    console.log(`POST failed node: ${req.sensor.node} path:>%s<:`, ArkimeUtil.sanitizeStr(path));
     console.log(req.body.toString('utf8'));
     return res.status(400).send('Not authorized for API');
   }
@@ -405,7 +405,7 @@ app.delete('*', (req, res) => {
   // Empty IFs since those are allowed requests and will run code at end
   if (path.startsWith(`/${prefix}files/_doc/${req.sensor.node}-`)) {
   } else {
-    console.log(`DELETE failed node: ${req.sensor.node} path:${path}`);
+    console.log(`DELETE failed node: ${req.sensor.node} path:>%s<:`, ArkimeUtil.sanitizeStr(path));
     return res.status(400).send('Not authorized for API');
   }
   doProxy(req, res);
@@ -418,7 +418,7 @@ app.put('*', (req, res) => {
   // Empty IFs since those are allowed requests and will run code at end
   if (putExact[path]) {
   } else {
-    console.log(`PUT failed node: ${req.sensor.node} path:${path}`);
+    console.log(`PUT failed node: ${req.sensor.node} path:>%s<:`, ArkimeUtil.sanitizeStr(path));
     return res.status(400).send('Not authorized for API');
   }
   doProxy(req, res);
