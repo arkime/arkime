@@ -29,7 +29,8 @@ NOTICE: Cross-cluster Shortcuts require you to not restart all your viewers at o
 
 4.0.1 2022/10/xx
   - addUser.js - remove WARNING adding first user
-  - capture - offline pcap allows more outstanding packetse based on maxPacketsInQueue
+  - all - better console output sanitization
+  - capture - offline pcap allows more outstanding packets based on maxPacketsInQueue
   - db.pl - Fixed some OpenSearch compatibility
   - db.pl - Fixed upgrading to 4.x with no _moloch_shared user
 

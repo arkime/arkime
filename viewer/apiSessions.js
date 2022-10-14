@@ -655,7 +655,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
       } else if (!opcap.isOpen()) {
         Db.fileIdToFile(fields.node, fileNum, (file) => {
           if (!file) {
-            console.log("WARNING - Only have SPI data, PCAP file no longer available.  Couldn't look up in file table", fields.node + '-' + fileNum);
+            console.log("WARNING - Only have SPI data, PCAP file no longer available.  Couldn't look up %s-%s in files index", fields.node, fileNum);
             return nextCb('Only have SPI data, PCAP file no longer available for ' + fields.node + '-' + fileNum);
           }
           if (file.kekId) {
@@ -2557,7 +2557,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
     options.fields = ['*'];
     Db.getSession(req.params.id, options, (err, session) => {
       if (err || !session.found) {
-        console.log("Couldn't look up detail data, error for session " + ArkimeUtil.safeStr(req.params.id) + ' Error: ', err);
+        console.log("Couldn't look up detail data, error for session %s Error: ", ArkimeUtil.safeStr(req.params.id), err);
         return res.serverError(500, "Couldn't look up detail data, error for session " + ArkimeUtil.safeStr(req.params.id) + ' Error: ' + err);
       }
 
