@@ -368,9 +368,9 @@ router.use((req, res, next) => {
   next();
 });
 
-// Handle errors
+// Replace the default express error handler
 app.use((err, req, res, next) => {
-  console.log(err.stack);
+  console.log(ArkimeUtil.sanitizeStr(err.stack));
   res.status(err.httpStatusCode ?? 500).json({
     success: false,
     text: err.message ?? 'Error'
