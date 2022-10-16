@@ -89,7 +89,7 @@ processArgs();
 /// ///////////////////////////////////////////////////////////////////////////////
 
 if (!fs.existsSync(internals.configFile)) {
-  console.log("ERROR - Couldn't open config file '" + internals.configFile + "' maybe use the -c <configfile> option");
+  console.log("ERROR - Couldn't open config file '%s' maybe use the -c <configfile> option", internals.configFile);
   process.exit(1);
 }
 internals.config = ini.parseSync(internals.configFile);
@@ -232,7 +232,7 @@ function loadIncludes (includes) {
   }
   includes.split(';').forEach((file) => {
     if (!fs.existsSync(file)) {
-      console.log("ERROR - Couldn't open config includes file '" + file + "'");
+      console.log("ERROR - Couldn't open config includes file '%s'", file);
       process.exit(1);
     }
     const config = ini.parseSync(file);

@@ -869,7 +869,7 @@ function sendSessionWorker (options, cb) {
 
     const sobj = remoteClusters[options.cluster];
     if (!sobj) {
-      console.log('ERROR - [remote-clusters] does not contain ' + options.cluster);
+      console.log('ERROR - [remote-clusters] does not contain %s', ArkimeUtil.sanitizeStr(options.cluster));
       return cb();
     }
 

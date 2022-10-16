@@ -63,7 +63,7 @@ class SplunkSource extends WISESource {
         this.periodicRefresh(true);
       }
 
-      console.log(this.section, 'Login was successful: ' + success);
+      console.log(this.section, 'Login was successful:', success);
     });
 
     api.addSource(section, this, [this.type]);
