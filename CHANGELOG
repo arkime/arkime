@@ -45,6 +45,7 @@ NOTICE: Cross-cluster Shortcuts require you to not restart all your viewers at o
   - BREAKING - simpleGzipBlockSize renamed simpleCompressionBlockSize
   - BREAKING - right-click changed to value-actions in config
   - BREAKING - the userId search in history for admin nolonger adds the surrounding wildcards automatically
+  - BREAKING - views & notifiers are now their own indices
   - release - cyberchef 9.46.5, node 16.16.0
   - release - systemd files are delivered with /opt/arkime path instead of setting at install time
   - release - CICD tests with OpenSearch
