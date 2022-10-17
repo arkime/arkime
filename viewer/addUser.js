@@ -90,6 +90,7 @@ function main () {
 
     case '--webauthonly':
     case '-webauthonly':
+      nuser.headerAuthEnabled = true;
       nuser.passStore = Auth.pass2store(process.argv[2], cryptoLib.randomBytes(48));
       break;
 
