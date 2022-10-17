@@ -344,7 +344,9 @@ const singletonFields = {
 
 const dateFields = {
   firstPacket: true,
-  lastPacket: true
+  lastPacket: true,
+  'cert.notBefore': true,
+  'cert.notAfter': true
 };
 
 // Change foo.bar to foo: {bar:}
@@ -375,11 +377,13 @@ function fixSessionFields (fields, unflatten) {
 
     // Dot in name, will be moving
     let value = fields[f];
+    if (dateFields[f]) {
+      for (let v = 0; v < value.length; v++) {
+        value[v] = Date.parse(value[v]);
+      }
+    }
     if (singletonFields[f] || f.endsWith('Cnt') || f.endsWith('-cnt')) {
       value = value[0];
-    }
-    if (dateFields[f]) {
-      value = Date.parse(value);
     }
     if (!unflatten) {
       fields[f] = value;
