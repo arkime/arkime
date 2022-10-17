@@ -1864,7 +1864,7 @@ function buildConfigAndStart () {
           fs.writeFileSync(internals.configFile, '', 'utf8');
         }
       } catch (err) { // notify of error saving new config and exit
-        console.log('Error creating new WISE Config:\n\n', err.stack);
+        console.log('Error creating new WISE Config:\n\n', ArkimeUtil.sanitizeStr(err.stack));
         console.log(`
           You must fix this before you can run WISE UI.
           Try using arkime/tests/config.test.json as a starting point.

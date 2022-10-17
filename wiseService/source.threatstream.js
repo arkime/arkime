@@ -23,6 +23,7 @@ const WISESource = require('./wiseSource.js');
 const request = require('request');
 const exec = require('child_process').exec;
 const betterSqlite3 = require('better-sqlite3');
+const ArkimeUtil = require('../common/arkimeUtil');
 
 class ThreatStreamSource extends WISESource {
   // ----------------------------------------------------------------------------
@@ -167,7 +168,7 @@ class ThreatStreamSource extends WISESource {
                 );
               }
             } catch (e) {
-              console.log(this.section, 'ERROR -', entry.path, e, item, e.stack);
+              console.log(this.section, 'ERROR -', entry.path, e, item, ArkimeUtil.sanitizeStr(e.stack));
               return;
             }
 

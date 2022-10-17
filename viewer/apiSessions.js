@@ -527,7 +527,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
           pcap.decode(buffer, obj);
         } catch (e) {
           obj = { ip: { p: 'Error decoding' + e } };
-          console.trace('loadSessionDetail error', e.stack);
+          console.trace('loadSessionDetail error', ArkimeUtil.sanitizeStr(e.stack));
         }
       } else {
         obj = { ip: { p: 'Empty' } };
@@ -1772,7 +1772,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
             res.logCounts(response.data.length, response.recordsFiltered, response.recordsTotal);
             return res.send(response);
           } catch (e) {
-            console.trace(`ERROR - ${req.method} /api/sessions`, e.stack);
+            console.trace(`ERROR - ${req.method} /api/sessions`, ArkimeUtil.sanitizeStr(e.stack));
             response.error = e.toString();
             return res.send(response);
           }
@@ -1957,7 +1957,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
             res.logCounts(response.spi.count, response.recordsFiltered, response.total);
             return res.send(response);
           } catch (e) {
-            console.trace('fetch spiview error', e.stack);
+            console.trace('fetch spiview error', ArkimeUtil.sanitizeStr(e.stack));
             response.error = e.toString();
             return res.send(response);
           }

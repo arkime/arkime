@@ -185,7 +185,7 @@ try { // check if the file exists
     parliament = { version: MIN_PARLIAMENT_VERSION };
     fs.writeFileSync(app.get('file'), JSON.stringify(parliament, null, 2), 'utf8');
   } catch (err) { // notify of error saving new parliament and exit
-    console.log('Error creating new Parliament:\n\n', e.stack);
+    console.log('Error creating new Parliament:\n\n', ArkimeUtil.sanitizeStr(e.stack));
     console.log(parliamentReadError);
     process.exit(1);
   }
@@ -204,7 +204,7 @@ try { // get the parliament file or error out if it's unreadable
     app.set('password', parliament.password);
   }
 } catch (err) {
-  console.log(`Error reading ${app.get('file') ?? 'your parliament file'}:\n\n`, err.stack);
+  console.log(`Error reading ${app.get('file') ?? 'your parliament file'}:\n\n`, ArkimeUtil.sanitizeStr(err.stack));
   console.log(parliamentReadError);
   process.exit(1);
 }
@@ -859,7 +859,7 @@ function initializeParliament () {
           fs.writeFileSync(app.get('file'), JSON.stringify(parliament, null, 2), 'utf8');
         }
       } catch (e) { // notify of error saving upgraded parliament and exit
-        console.log('Error upgrading Parliament:\n\n', e.stack);
+        console.log('Error upgrading Parliament:\n\n', ArkimeUtil.sanitizeStr(e.stack));
         console.log(parliamentReadError);
         process.exit(1);
       }
