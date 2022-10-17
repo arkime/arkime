@@ -2585,11 +2585,11 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
           emailFields: Config.headers('headers-email')
         }, (err, data) => {
           if (err) {
-            console.trace(`ERROR - ${req.method} /api/session/${req.params.nodeName}/${req.params.id}/detail`, util.inspect(err, false, 50));
+            console.trace(`ERROR - ${req.method} /api/session/%s/%s/detail`, ArkimeUtil.sanitizeStr(req.params.nodeName), ArkimeUtil.sanitizeStr(req.params.id), util.inspect(err, false, 50));
             return req.next(err);
           }
           if (Config.debug > 1) {
-            console.log(`/api/session/${req.params.nodeName}/${req.params.id}/detail rendering`, data.replace(/>/g, '>\n'));
+            console.log('/api/session/%s/%s/detail rendering', ArkimeUtil.sanitizeStr(req.params.nodeName), ArkimeUtil.sanitizeStr(req.params.id), data.replace(/>/g, '>\n'));
           }
           res.send(data);
         });
@@ -2833,7 +2833,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
     };
 
     if (Config.debug) {
-      console.log(`/api/session/entire/${req.params.nodeName}/${req.params.id}/pcap query`, JSON.stringify(query, false, 2));
+      console.log('/api/session/entire/%s/%s/pcap query', ArkimeUtil.sanitizeStr(req.params.nodeName), ArkimeUtil.sanitizeStr(req.params.id), JSON.stringify(query, false, 2));
     }
 
     Db.searchSessions(['sessions2-*', 'sessions3-*'], query, null, (err, data) => {
@@ -2944,21 +2944,21 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
       query.fields = ['node'];
 
       if (Config.debug) {
-        console.log(`/api/sessions/bodyhash/${req.params.hash} ${indices} query`, JSON.stringify(query, null, 2));
+        console.log(`/api/sessions/bodyhash/%s ${indices} query`, ArkimeUtil.sanitizeStr(req.params.hash), JSON.stringify(query, null, 2));
       }
 
       Db.searchSessions(indices, query, {}, (err, sessions) => {
         if (err) {
-          console.log(`ERROR - ${req.method} /api/sessions/bodyhash/${req.params.hash}`, util.inspect(err, false, 50));
+          console.log(`ERROR - ${req.method} /api/sessions/bodyhash/%s`, ArkimeUtil.sanitizeStr(req.params.hash), util.inspect(err, false, 50));
           res.status(400);
           res.end(err);
         } else if (sessions.error) {
-          console.log(`ERROR - ${req.method} /api/sessions/bodyhash/${req.params.hash}`, util.inspect(sessions.error, false, 50));
+          console.log(`ERROR - ${req.method} /api/sessions/bodyhash/%s`, ArkimeUtil.sanitizeStr(req.params.hash), util.inspect(sessions.error, false, 50));
           res.status(400);
           res.end(sessions.error);
         } else {
           if (Config.debug) {
-            console.log(`/api/sessions/bodyhash/${req.params.hash} result`, util.inspect(sessions, false, 50));
+            console.log('/api/sessions/bodyhash/%s result', ArkimeUtil.sanitizeStr(req.params.hash), util.inspect(sessions, false, 50));
           }
 
           if (sessions.hits.hits.length > 0) {

@@ -598,7 +598,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
 
     User.getUser(req.params.userId, (err, user) => {
       if (err || !user) {
-        console.log(`ERROR - ${req.method} /api/user/${req.params.userId}/acknowledge (getUser)`, util.inspect(err, false, 50), user);
+        console.log(`ERROR - ${req.method} /api/user/%s/acknowledge (getUser)`, ArkimeUtil.sanitizeStr(req.params.userId), util.inspect(err, false, 50), user);
         return res.serverError(403, 'User not found');
       }
 
@@ -606,7 +606,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
 
       User.setUser(req.params.userId, user, (err, info) => {
         if (Config.debug) {
-          console.log(`ERROR - ${req.method} /api/user/${req.params.userId}/acknowledge (setUser)`, util.inspect(err, false, 50), user, info);
+          console.log(`ERROR - ${req.method} /api/user/%s/acknowledge (setUser)`, ArkimeUtil.sanitizeStr(req.params.userId), util.inspect(err, false, 50), user, info);
         }
 
         return res.send(JSON.stringify({
@@ -651,7 +651,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
 
       User.setUser(user.userId, user, (err, info) => {
         if (err) {
-          console.log(`ERROR - ${req.method} /api/user/state/${req.params.name} (setUser)`, util.inspect(err, false, 50), info);
+          console.log(`ERROR - ${req.method} /api/user/state/%s (setUser)`, ArkimeUtil.sanitizeStr(req.params.name), util.inspect(err, false, 50), info);
           return res.serverError(403, 'state update failed');
         }
 

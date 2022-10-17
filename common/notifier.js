@@ -386,11 +386,11 @@ class Notifier {
           text: 'Updated notifier successfully'
         }));
       } catch (err) {
-        console.log(`ERROR - ${req.method} /api/notifier/${req.params.id} (setNotifier)`, util.inspect(err, false, 50));
+        console.log(`ERROR - ${req.method} /api/notifier/%s (setNotifier)`, ArkimeUtil.sanitizeStr(req.params.id), util.inspect(err, false, 50));
         return res.serverError(500, 'Error updating notifier');
       }
     } catch (err) {
-      console.log(`ERROR - ${req.method} /api/notifier/${req.params.id} (getNotifier)`, util.inspect(err, false, 50));
+      console.log(`ERROR - ${req.method} /api/notifier/%s (getNotifier)`, ArkimeUtil.sanitizeStr(req.params.id), util.inspect(err, false, 50));
       return res.serverError(500, 'Fetching notifier to update failed');
     }
   }
@@ -418,11 +418,11 @@ class Notifier {
           text: 'Deleted notifier successfully'
         }));
       } catch (err) {
-        console.log(`ERROR - ${req.method} /api/notifier/${req.params.id} (deleteNotifier)`, util.inspect(err, false, 50));
+        console.log(`ERROR - ${req.method} /api/notifier/%s (deleteNotifier)`, ArkimeUtil.sanitizeStr(req.params.id), util.inspect(err, false, 50));
         return res.serverError(500, 'Error deleting notifier');
       }
     } catch (err) {
-      console.log(`ERROR - ${req.method} /api/notifier/${req.params.id} (deleteNotifier)`, util.inspect(err, false, 50));
+      console.log(`ERROR - ${req.method} /api/notifier/%s (deleteNotifier)`, ArkimeUtil.sanitizeStr(req.params.id), util.inspect(err, false, 50));
       return res.serverError(500, 'Fetching notifier to delete failed');
     }
   }
