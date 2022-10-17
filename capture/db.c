@@ -1228,8 +1228,10 @@ void moloch_db_save_session(MolochSession_t *session, int final)
 
                 SAVE_STRING_HEAD(certs->issuer.commonName, "issuerCN");
                 SAVE_STRING_HEAD(certs->issuer.orgName, "issuerON");
+                SAVE_STRING_HEAD(certs->issuer.orgUnitName, "issuerOUN");
                 SAVE_STRING_HEAD(certs->subject.commonName, "subjectCN");
                 SAVE_STRING_HEAD(certs->subject.orgName, "subjectON");
+                SAVE_STRING_HEAD(certs->subject.orgUnitName, "subjectOUN");
 
                 if (certs->serialNumber) {
                     int k;

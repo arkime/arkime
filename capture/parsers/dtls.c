@@ -55,6 +55,11 @@ LOCAL void dtls_certinfo_process(MolochCertInfo_t *ci, BSB *bsb)
                 element->utf8 = atag == 12;
                 element->str = g_strndup((char*)value, alen);
                 DLL_PUSH_TAIL(s_, &ci->orgName, element);
+            } else if (strcmp(lastOid, "2.5.4.11") == 0) {
+                MolochString_t *element = MOLOCH_TYPE_ALLOC0(MolochString_t);
+                element->utf8 = atag == 12;
+                element->str = g_strndup((char*)value, alen);
+                DLL_PUSH_TAIL(s_, &ci->orgUnitName, element);
             }
         }
     }
@@ -134,8 +139,10 @@ LOCAL void dtls_process_server_certificate(MolochSession_t *session, const unsig
         DLL_INIT(s_, &certs->alt);
         DLL_INIT(s_, &certs->subject.commonName);
         DLL_INIT(s_, &certs->subject.orgName);
+        DLL_INIT(s_, &certs->subject.orgUnitName);
         DLL_INIT(s_, &certs->issuer.commonName);
         DLL_INIT(s_, &certs->issuer.orgName);
+        DLL_INIT(s_, &certs->issuer.orgUnitName);
 
         uint32_t       atag, alen, apc;
         unsigned char *value;

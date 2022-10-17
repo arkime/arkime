@@ -1310,12 +1310,22 @@ void moloch_field_certsinfo_free (MolochCertsInfo_t *certs)
         MOLOCH_TYPE_FREE(MolochString_t, string);
     }
 
+    while (DLL_POP_HEAD(s_, &certs->issuer.orgUnitName, string)) {
+        g_free(string->str);
+        MOLOCH_TYPE_FREE(MolochString_t, string);
+    }
+
     while (DLL_POP_HEAD(s_, &certs->subject.commonName, string)) {
         g_free(string->str);
         MOLOCH_TYPE_FREE(MolochString_t, string);
     }
 
     while (DLL_POP_HEAD(s_, &certs->subject.orgName, string)) {
+        g_free(string->str);
+        MOLOCH_TYPE_FREE(MolochString_t, string);
+    }
+
+    while (DLL_POP_HEAD(s_, &certs->subject.orgUnitName, string)) {
         g_free(string->str);
         MOLOCH_TYPE_FREE(MolochString_t, string);
     }

@@ -9,6 +9,9 @@
                   "issuerON" : [
                      "Equifax"
                   ],
+                  "issuerOUN" : [
+                     "Equifax Secure Certificate Authority"
+                  ],
                   "notAfter" : 1534824000000,
                   "notBefore" : 1021953600000,
                   "publicAlgorithm" : "rsaEncryption",

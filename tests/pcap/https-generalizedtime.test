@@ -27,6 +27,9 @@
                   "issuerON" : [
                      "Unizeto Technologies S.A."
                   ],
+                  "issuerOUN" : [
+                     "Certum Certification Authority"
+                  ],
                   "notAfter" : 1451573263000,
                   "notBefore" : 1415717263000,
                   "publicAlgorithm" : "rsaEncryption",
@@ -37,6 +40,9 @@
                   ],
                   "subjectON" : [
                      "Yandex LLC"
+                  ],
+                  "subjectOUN" : [
+                     "ITO"
                   ],
                   "validDays" : 415
                },
@@ -58,6 +64,9 @@
                   ],
                   "subjectON" : [
                      "Unizeto Technologies S.A."
+                  ],
+                  "subjectOUN" : [
+                     "Certum Certification Authority"
                   ],
                   "validDays" : 5479
                }

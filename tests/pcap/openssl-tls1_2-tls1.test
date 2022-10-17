@@ -77,6 +77,10 @@
                   "issuerON" : [
                      "Entrust, Inc."
                   ],
+                  "issuerOUN" : [
+                     "www.entrust.net/rpa is incorporated by reference",
+                     "(c) 2009 Entrust, Inc."
+                  ],
                   "notAfter" : 1497242632000,
                   "notBefore" : 1402510723000,
                   "publicAlgorithm" : "rsaEncryption",
@@ -88,6 +92,9 @@
                   "subjectON" : [
                      "AOL Inc."
                   ],
+                  "subjectOUN" : [
+                     "Homepages"
+                  ],
                   "validDays" : 1096
                },
                {
@@ -97,6 +104,10 @@
                   ],
                   "issuerON" : [
                      "Entrust.net"
+                  ],
+                  "issuerOUN" : [
+                     "www.entrust.net/CPS_2048 incorp. by ref. (limits liab.)",
+                     "(c) 1999 Entrust.net Limited"
                   ],
                   "notAfter" : 1636685477000,
                   "notBefore" : 1321026040000,
@@ -108,6 +119,10 @@
                   ],
                   "subjectON" : [
                      "Entrust, Inc."
+                  ],
+                  "subjectOUN" : [
+                     "www.entrust.net/rpa is incorporated by reference",
+                     "(c) 2009 Entrust, Inc."
                   ],
                   "validDays" : 3653
                }

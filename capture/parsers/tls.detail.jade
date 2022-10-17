@@ -46,6 +46,15 @@ if (session.cert)
       - else if (cert.issuerON)
         strong.medium.ml-1 Issuer Org
         moloch-session-field.detail-field(:expr="'cert.issuer.on'", :value='"'+cert.issuerON+'"', :field="fields['cert.issuer.on']", :pull-left="true")
+      - if (cert.issuerOUN && Array.isArray(cert.issuerOUN))
+        strong.medium.ml-1 Issuer Org Unit
+        each oun,i in cert.issuerOUN
+          if (i > 0)
+            |,
+          moloch-session-field.detail-field(:expr="'cert.issuer.oun'", :value='"'+oun+'"', :field="fields['cert.issuer.oun']", :pull-left="true")
+      - else if (cert.issuerOUN)
+        strong.medium.ml-1 Issuer Org unit
+        moloch-session-field.detail-field(:expr="'cert.issuer.oun'", :value='"'+cert.issuerOUN+'"', :field="fields['cert.issuer.oun']", :pull-left="true")
       - if (cert.subjectCN && Array.isArray(cert.subjectCN))
         strong.medium.ml-1 Subject Common
         each cn,i in cert.subjectCN
@@ -64,6 +73,15 @@ if (session.cert)
       - else if (cert.subjectON)
         strong.medium.ml-1 Subject Org
         moloch-session-field.detail-field(:expr="'cert.subject.on'", :value='"'+cert.subjectON+'"', :field="fields['cert.subject.on']", :pull-left="true")
+      - if (cert.subjectOUN && Array.isArray(cert.subjectOUN))
+        strong.medium.ml-1 Subject Org Unit
+        each oun,i in cert.subjectOUN
+          if (i > 0)
+            |,
+          moloch-session-field.detail-field(:expr="'cert.subject.oun'", :value='"'+oun+'"', :field="fields['cert.subject.oun']", :pull-left="true")
+      - else if (cert.subjectOUN)
+        strong.medium.ml-1 Subject Org Unit
+        moloch-session-field.detail-field(:expr="'cert.subject.oun'", :value='"'+cert.subjectOUN+'"', :field="fields['cert.subject.oun']", :pull-left="true")
       - if (cert.alt)
         | [
         each alt,i in cert.alt

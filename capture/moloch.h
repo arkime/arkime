@@ -141,8 +141,9 @@ typedef struct moloch_trie {
  */
 
 typedef struct {
-    MolochStringHead_t  commonName; // 2.5.4.3
-    MolochStringHead_t  orgName;    // 2.5.4.10
+    MolochStringHead_t  commonName;  // 2.5.4.3
+    MolochStringHead_t  orgName;     // 2.5.4.10
+    MolochStringHead_t  orgUnitName; // 2.5.4.11
     char                orgUtf8;
 } MolochCertInfo_t;
 
