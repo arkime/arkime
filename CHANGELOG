@@ -27,6 +27,8 @@ Node Versions:
 NOTICE: Restart wiseService before capture when upgrading
 NOTICE: Cross-cluster Shortcuts require you to not restart all your viewers at once after upgrading
 
+4.0.2 2022/10/xx
+
 4.0.1 2022/10/18
   - addUser.js - remove WARNING adding first user
   - addUser.js - --webauthonly now sets header auth flag
