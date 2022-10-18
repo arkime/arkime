@@ -12,7 +12,7 @@
                   "issuerON" : [
                      "Snake Oil, Ltd"
                   ],
-                  "issuerOUN" : [
+                  "issuerOU" : [
                      "Certificate Authority"
                   ],
                   "notAfter" : 1204562865000,
@@ -25,7 +25,7 @@
                   "subjectON" : [
                      "Snake Oil, Ltd"
                   ],
-                  "subjectOUN" : [
+                  "subjectOU" : [
                      "Webserver Team"
                   ],
                   "validDays" : 1825

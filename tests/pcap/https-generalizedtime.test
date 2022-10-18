@@ -27,7 +27,7 @@
                   "issuerON" : [
                      "Unizeto Technologies S.A."
                   ],
-                  "issuerOUN" : [
+                  "issuerOU" : [
                      "Certum Certification Authority"
                   ],
                   "notAfter" : 1451573263000,
@@ -41,7 +41,7 @@
                   "subjectON" : [
                      "Yandex LLC"
                   ],
-                  "subjectOUN" : [
+                  "subjectOU" : [
                      "ITO"
                   ],
                   "validDays" : 415
@@ -65,7 +65,7 @@
                   "subjectON" : [
                      "Unizeto Technologies S.A."
                   ],
-                  "subjectOUN" : [
+                  "subjectOU" : [
                      "Certum Certification Authority"
                   ],
                   "validDays" : 5479

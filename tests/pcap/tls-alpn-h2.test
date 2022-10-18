@@ -18,7 +18,7 @@
                   "issuerON" : [
                      "DigiCert Inc"
                   ],
-                  "issuerOUN" : [
+                  "issuerOU" : [
                      "www.digicert.com"
                   ],
                   "notAfter" : 1604404800000,
@@ -43,7 +43,7 @@
                   "issuerON" : [
                      "DigiCert Inc"
                   ],
-                  "issuerOUN" : [
+                  "issuerOU" : [
                      "www.digicert.com"
                   ],
                   "notAfter" : 1939812867000,
@@ -57,7 +57,7 @@
                   "subjectON" : [
                      "DigiCert Inc"
                   ],
-                  "subjectOUN" : [
+                  "subjectOU" : [
                      "www.digicert.com"
                   ],
                   "validDays" : 5478

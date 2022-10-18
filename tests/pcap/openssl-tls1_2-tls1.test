@@ -77,7 +77,7 @@
                   "issuerON" : [
                      "Entrust, Inc."
                   ],
-                  "issuerOUN" : [
+                  "issuerOU" : [
                      "www.entrust.net/rpa is incorporated by reference",
                      "(c) 2009 Entrust, Inc."
                   ],
@@ -92,7 +92,7 @@
                   "subjectON" : [
                      "AOL Inc."
                   ],
-                  "subjectOUN" : [
+                  "subjectOU" : [
                      "Homepages"
                   ],
                   "validDays" : 1096
@@ -105,7 +105,7 @@
                   "issuerON" : [
                      "Entrust.net"
                   ],
-                  "issuerOUN" : [
+                  "issuerOU" : [
                      "www.entrust.net/CPS_2048 incorp. by ref. (limits liab.)",
                      "(c) 1999 Entrust.net Limited"
                   ],
@@ -120,7 +120,7 @@
                   "subjectON" : [
                      "Entrust, Inc."
                   ],
-                  "subjectOUN" : [
+                  "subjectOU" : [
                      "www.entrust.net/rpa is incorporated by reference",
                      "(c) 2009 Entrust, Inc."
                   ],

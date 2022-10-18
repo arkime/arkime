@@ -25,7 +25,7 @@
                   "issuerON" : [
                      "VeriSign, Inc."
                   ],
-                  "issuerOUN" : [
+                  "issuerOU" : [
                      "VeriSign Trust Network",
                      "Terms of use at https://www.verisign.com/rpa (c)06"
                   ],
@@ -40,7 +40,7 @@
                   "subjectON" : [
                      "Microsoft Corporation"
                   ],
-                  "subjectOUN" : [
+                  "subjectOU" : [
                      "Passport"
                   ],
                   "validDays" : 409
@@ -50,7 +50,7 @@
                   "issuerON" : [
                      "VeriSign, Inc."
                   ],
-                  "issuerOUN" : [
+                  "issuerOU" : [
                      "Class 3 Public Primary Certification Authority"
                   ],
                   "notAfter" : 1636329599000,
@@ -64,7 +64,7 @@
                   "subjectON" : [
                      "VeriSign, Inc."
                   ],
-                  "subjectOUN" : [
+                  "subjectOU" : [
                      "VeriSign Trust Network",
                      "(c) 2006 VeriSign, Inc. - For authorized use only"
                   ],
@@ -78,7 +78,7 @@
                   "issuerON" : [
                      "VeriSign, Inc."
                   ],
-                  "issuerOUN" : [
+                  "issuerOU" : [
                      "VeriSign Trust Network",
                      "(c) 2006 VeriSign, Inc. - For authorized use only"
                   ],
@@ -93,7 +93,7 @@
                   "subjectON" : [
                      "VeriSign, Inc."
                   ],
-                  "subjectOUN" : [
+                  "subjectOU" : [
                      "VeriSign Trust Network",
                      "Terms of use at https://www.verisign.com/rpa (c)06"
                   ],

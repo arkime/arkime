@@ -9,7 +9,7 @@
                   "issuerON" : [
                      "Equifax"
                   ],
-                  "issuerOUN" : [
+                  "issuerOU" : [
                      "Equifax Secure Certificate Authority"
                   ],
                   "notAfter" : 1534824000000,
