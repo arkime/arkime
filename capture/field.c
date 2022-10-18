@@ -1122,8 +1122,10 @@ int moloch_field_certsinfo_cmp(const void *keyv, const void *elementv)
            (memcmp(key->serialNumber, element->serialNumber, element->serialNumberLen) == 0) &&
            (key->issuer.commonName.s_count == element->issuer.commonName.s_count) &&
            (key->issuer.orgName.s_count == element->issuer.orgName.s_count) &&
+           (key->issuer.orgUnit.s_count == element->issuer.orgUnit.s_count) &&
            (key->subject.commonName.s_count == element->subject.commonName.s_count) &&
-           (key->subject.orgName.s_count == element->subject.orgName.s_count)
+           (key->subject.orgName.s_count == element->subject.orgName.s_count) &&
+           (key->subject.orgUnit.s_count == element->subject.orgUnit.s_count)
           )
        ) {
 
@@ -1149,6 +1151,14 @@ int moloch_field_certsinfo_cmp(const void *keyv, const void *elementv)
             return 0;
     }
 
+    for (kstr = key->issuer.orgUnit.s_next, estr = element->issuer.orgUnit.s_next;
+         kstr != (void *)&(key->issuer.orgUnit);
+         kstr = kstr->s_next, estr = estr->s_next) {
+
+        if (strcmp(kstr->str, estr->str) != 0)
+            return 0;
+    }
+
     for (kstr = key->subject.commonName.s_next, estr = element->subject.commonName.s_next;
          kstr != (void *)&(key->subject.commonName);
          kstr = kstr->s_next, estr = estr->s_next) {
@@ -1159,6 +1169,14 @@ int moloch_field_certsinfo_cmp(const void *keyv, const void *elementv)
 
     for (kstr = key->subject.orgName.s_next, estr = element->subject.orgName.s_next;
          kstr != (void *)&(key->subject.orgName);
+         kstr = kstr->s_next, estr = estr->s_next) {
+
+        if (strcmp(kstr->str, estr->str) != 0)
+            return 0;
+    }
+
+    for (kstr = key->subject.orgUnit.s_next, estr = element->subject.orgUnit.s_next;
+         kstr != (void *)&(key->subject.orgUnit);
          kstr = kstr->s_next, estr = estr->s_next) {
 
         if (strcmp(kstr->str, estr->str) != 0)
