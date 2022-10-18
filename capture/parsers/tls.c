@@ -843,13 +843,13 @@ void moloch_parser_init()
 
     moloch_field_define("cert", "termfield",
         "cert.issuer.ou", "Issuer Org Unit", "cert.issuerOU",
-        "Issuer's organizational unit name",
+        "Issuer's organizational unit",
         0, MOLOCH_FIELD_FLAG_FAKE,
         (char *)NULL);
 
     moloch_field_define("cert", "termfield",
         "cert.subject.ou", "Subject Org Unit", "cert.subjectOU",
-        "Subject's organizational unit name",
+        "Subject's organizational unit",
         0, MOLOCH_FIELD_FLAG_FAKE,
         (char *)NULL);
 
