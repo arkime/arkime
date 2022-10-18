@@ -18,6 +18,9 @@
                   "issuerON" : [
                      "DigiCert Inc"
                   ],
+                  "issuerOU" : [
+                     "www.digicert.com"
+                  ],
                   "notAfter" : 1604404800000,
                   "notBefore" : 1540857600000,
                   "publicAlgorithm" : "id-ecPublicKey",
@@ -40,6 +43,9 @@
                   "issuerON" : [
                      "DigiCert Inc"
                   ],
+                  "issuerOU" : [
+                     "www.digicert.com"
+                  ],
                   "notAfter" : 1939812867000,
                   "notBefore" : 1466513667000,
                   "publicAlgorithm" : "id-ecPublicKey",
@@ -50,6 +56,9 @@
                   ],
                   "subjectON" : [
                      "DigiCert Inc"
+                  ],
+                  "subjectOU" : [
+                     "www.digicert.com"
                   ],
                   "validDays" : 5478
                }
