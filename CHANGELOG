@@ -1,21 +1,21 @@
 NOTICE: Please see https://arkime.com/faq#upgrading-moloch for upgrading info
 
 OpenSearch Versions:
-  * Arkime >= 3.0.0  supports OS >= 1.0 or 2.x
+  * Arkime >= 3.0.0  supports 1.x or 2.x
 
 Elasticsearch Versions:
-  * Arkime >= 4.0.0  supports ES >= 7.10.0 or 8.x, not 9.x
+  * Arkime >= 4.0.0  supports ES >= 7.10.0 or 8.x, not 9.x or later
   * Moloch >= 3.0.0  supports ES >= 7.10.0, not 8.x or later
-  * Moloch >= 2.7.0  supports ES >= 7.4.0
-  * Moloch >= 2.2.0  supports ES >= 6.8.0 or >= 7.1.0
-  * Moloch >= 2.0.0  supports ES >= 6.7.0 or >= 7.1.0
+  * Moloch >= 2.7.0  supports ES >= 7.4.0, not 8.x or later
+  * Moloch >= 2.2.0  supports ES >= 6.8.0 or >= 7.1.0, not 8.x or later
+  * Moloch >= 2.0.0  supports ES >= 6.7.0 or >= 7.1.0, not 8.x or later
   * Moloch >= 1.5.0  supports ES >= 5.5.0, 6.x, not 7.x or later
   * Moloch >= 1.0.0  supports ES >= 5.5.0, 6.x (not prod tested, only for new installs), not 7.x or later
   * Moloch >= 0.50.0 supports ES >= 5.5.0, not 6.x or later
   * Moloch >= 0.18.1 supports ES 2.4.x, >= 5.3.1 not 6.x or later
 
 Node Versions:
-  * Moloch >= 3.4.0 requires NodeJS 16.x
+  * Moloch >= 3.4.0 requires NodeJS >= 16.0.0 and < 16.17.0
   * Moloch >= 3.0.0 requires NodeJS 14.x
   * Moloch >= 2.4.0 requires NodeJS 12.x
   * Moloch >= 2.0.0 requires NodeJS 10.x
@@ -27,7 +27,7 @@ Node Versions:
 NOTICE: Restart wiseService before capture when upgrading
 NOTICE: Cross-cluster Shortcuts require you to not restart all your viewers at once after upgrading
 
-4.0.1 2022/10/xx
+4.0.1 2022/10/18
   - addUser.js - remove WARNING adding first user
   - addUser.js - --webauthonly now sets header auth flag
   - all - better console output sanitization
