@@ -209,11 +209,11 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
         query.query.bool.filter.push(viewExpression);
         return continueBuildQueryCb(req, query, undefined, finalCb, queryOverride);
       } catch (err) {
-        console.log(`ERROR - User expression (${reqQuery.view}) doesn't compile -`, util.inspect(err, false, 50));
+        console.log('ERROR - User expression (%s) doesn\'t compile -', ArkimeUtil.sanitizeStr(reqQuery.view), util.inspect(err, false, 50));
         return continueBuildQueryCb(req, query, err, finalCb, queryOverride);
       }
     } catch (err) {
-      console.log(`ERROR - Can't find view (${reqQuery.view}) -`, util.inspect(err, false, 50));
+      console.log('ERROR - Can\'t find view (%s) -', ArkimeUtil.sanitizeStr(reqQuery.view), util.inspect(err, false, 50));
       return continueBuildQueryCb(req, query, err, finalCb, queryOverride);
     }
   }

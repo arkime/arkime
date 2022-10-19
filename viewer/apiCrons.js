@@ -272,7 +272,7 @@ class Cron {
       try {
         await Db.update('queries', 'query', key, doc, { refresh: true });
       } catch (err) {
-        console.log(`ERROR - ${req.method} /api/cron/${key}`, util.inspect(err, false, 50));
+        console.log(`ERROR - ${req.method} /api/cron/%s`, ArkimeUtil.sanitizeStr(key), util.inspect(err, false, 50));
       }
 
       if (Config.get('cronQueries', false)) { Cron.#process(); }
@@ -289,7 +289,7 @@ class Cron {
         invalidUsers: users.invalidUsers
       }));
     } catch (err) {
-      console.log(`ERROR - ${req.method} /api/cron/${key}`, util.inspect(err, false, 50));
+      console.log(`ERROR - ${req.method} /api/cron/%s`, ArkimeUtil.sanitizeStr(key), util.inspect(err, false, 50));
       return res.serverError(403, 'Periodic query update failed');
     }
   }
@@ -316,7 +316,7 @@ class Cron {
         text: 'Deleted periodic query successfully'
       }));
     } catch (err) {
-      console.log(`ERROR - ${req.method} /api/cron/${key}`, util.inspect(err, false, 50));
+      console.log(`ERROR - ${req.method} /api/cron/%s`, ArkimeUtil.sanitizeStr(key), util.inspect(err, false, 50));
       return res.serverError(500, 'Delete periodic query failed');
     }
   }

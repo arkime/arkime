@@ -369,7 +369,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
 
     User.setUser(user.userId, user, (err, info) => {
       if (err) {
-        console.log(`ERROR - ${req.method} /api/user/column/${colName}`, util.inspect(err, false, 50), info);
+        console.log(`ERROR - ${req.method} /api/user/column/%s`, colName, util.inspect(err, false, 50), info);
         return res.serverError(500, 'Update custom column configuration failed');
       }
 
@@ -413,7 +413,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
 
     User.setUser(user.userId, user, (err, info) => {
       if (err) {
-        console.log(`ERROR - ${req.method} /api/user/column/${colName}`, util.inspect(err, false, 50), info);
+        console.log(`ERROR - ${req.method} /api/user/column/%s`, colName, util.inspect(err, false, 50), info);
         return res.serverError(500, 'Delete custom column configuration failed');
       }
 
@@ -524,7 +524,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
 
     User.setUser(user.userId, user, (err, info) => {
       if (err) {
-        console.log(`ERROR - ${req.method} /api/user/spiview/${spiName}`, util.inspect(err, false, 50), info);
+        console.log(`ERROR - ${req.method} /api/user/spiview/%s`, spiName, util.inspect(err, false, 50), info);
         return res.serverError(500, 'Update SPI View fields configuration failed');
       }
 
@@ -568,7 +568,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
 
     User.setUser(user.userId, user, (err, info) => {
       if (err) {
-        console.log(`ERROR - ${req.method} /api/user/spiview/${spiName}`, util.inspect(err, false, 50), info);
+        console.log(`ERROR - ${req.method} /api/user/spiview/%s`, spiName, util.inspect(err, false, 50), info);
         return res.serverError(500, 'Delete custom SPI View fields configuration failed');
       }
 

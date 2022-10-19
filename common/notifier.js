@@ -168,7 +168,7 @@ class Notifier {
         return continueProcess(err, notifier.name);
       });
     } catch (err) {
-      console.log(`ERROR - Cannot find notifier (${id}):`, util.inspect(err, false, 50));
+      console.log('ERROR - Cannot find notifier (%s):', ArkimeUtil.sanitizeStr(id), util.inspect(err, false, 50));
       return continueProcess('Cannot find notifier, no alert can be issued');
     }
   }
