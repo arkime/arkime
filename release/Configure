@@ -133,15 +133,6 @@ else
     sleep 2
 fi
 
-
-if [ -d "/etc/systemd" ] && [ -x "/bin/systemctl" ]; then
-    echo "Installing systemd start files, use systemctl"
-    sed -e "s/ARKIME_INTERFACE/${ARKIME_INTERFACE}/g" -e "s,ARKIME_ELASTICSEARCH,${ARKIME_ELASTICSEARCH},g" -e "s/ARKIME_PASSWORD/${ARKIME_PASSWORD}/g" -e "s,ARKIME_INSTALL_DIR,${ARKIME_INSTALL_DIR},g" < $ARKIME_INSTALL_DIR/etc/arkimecapture.systemd.service > /etc/systemd/system/arkimecapture.service
-    sed -e "s/ARKIME_INTERFACE/${ARKIME_INTERFACE}/g" -e "s,ARKIME_ELASTICSEARCH,${ARKIME_ELASTICSEARCH},g" -e "s/ARKIME_PASSWORD/${ARKIME_PASSWORD}/g" -e "s,ARKIME_INSTALL_DIR,${ARKIME_INSTALL_DIR},g" < $ARKIME_INSTALL_DIR/etc/arkimeviewer.systemd.service > /etc/systemd/system/arkimeviewer.service
-else
-    echo "No startup scripts created for capture and viewer"
-fi
-
 ################################################################################
 # re-create these directories after installation so they are not part of the package manifest
 CREATEDIRS="logs raw"
