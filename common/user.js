@@ -1254,7 +1254,7 @@ class UserESImplementation {
       if (searchFilters.length) { esQuery.query.bool.should = searchFilters; }
     }
 
-    if (query.sortField) {
+    if (query.sortField && query.sortField !== '__proto__') {
       esQuery.sort = {};
       esQuery.sort[query.sortField] = { order: query.sortDescending === true ? 'desc' : 'asc' };
       esQuery.sort[query.sortField].missing = usersMissing[query.sortField];

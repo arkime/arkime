@@ -239,7 +239,7 @@ export default {
     },
     toggleLineNumbers: function () {
       // can only have line numbers in hex mode
-      if (!this.params.base === 'hex') { return; }
+      if (this.params.base !== 'hex') { return; }
       this.params.line = !this.params.line;
       this.getPackets();
     },

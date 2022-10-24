@@ -266,7 +266,7 @@ class ThreatStreamSource extends WISESource {
     request(options, (err, response, body) => {
       this.inProgress--;
       if (err) {
-        console.log(this.section, 'problem fetching ', options, err || response);
+        console.log(this.section, 'problem fetching ', options, err);
         return cb(null, WISESource.emptyResult);
       }
 
