@@ -43,6 +43,7 @@ const User = require('../common/user');
 const Auth = require('../common/auth');
 const ArkimeUtil = require('../common/arkimeUtil');
 const ArkimeCache = require('../common/arkimeCache');
+const RE2 = require('re2');
 
 const dayMs = 60000 * 60 * 24;
 
@@ -1465,11 +1466,16 @@ app.get('/stats', [ArkimeUtil.noCacheJson], (req, res) => {
 
   const stats = { types: [], sources: [], startTime: internals.startTime };
 
+  let re2;
+  if (req.query.search) {
+    re2 = new RE2(req.query.search.toLowerCase());
+  }
+
   for (const type of types) {
     const typeInfo = internals.types[type];
     let match = true;
-    if (req.query.search) {
-      match = type.toLowerCase().match(req.query.search.toLowerCase());
+    if (re2) {
+      match = type.toLowerCase().match(re2);
     }
     if (!match) { continue; }
     stats.types.push({
@@ -1486,8 +1492,8 @@ app.get('/stats', [ArkimeUtil.noCacheJson], (req, res) => {
   for (const section of sections) {
     const src = internals.sources[section];
     let match = true;
-    if (req.query.search) {
-      match = section.toLowerCase().match(req.query.search.toLowerCase());
+    if (re2) {
+      match = section.toLowerCase().match(re2);
     }
     if (!match) { continue; }
     stats.sources.push({
