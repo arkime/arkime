@@ -94,6 +94,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
       info.order.split(',').forEach((item) => {
         const parts = item.split(':');
         const field = parts[0];
+        if (field === '__proto__') { return; }
 
         const obj = {};
         if (field === 'firstPacket') {
@@ -220,8 +221,6 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
 
   function csvListWriter (req, res, list, fields, pcapWriter, extension) {
     if (list.length > 0 && list[0].fields) {
-      list = list.sort((a, b) => { return a.fields.lastPacket - b.fields.lastPacket; });
-    } else if (list.length > 0 && list[0].fields) {
       list = list.sort((a, b) => { return a.fields.lastPacket - b.fields.lastPacket; });
     }
 
@@ -3173,6 +3172,8 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
     if (!req.query.saveId) { return res.serverError(200, 'Missing saveId'); }
 
     req.query.saveId = req.query.saveId.replace(/[^-a-zA-Z0-9_]/g, '');
+
+    if (req.query.saveId.length === 0 || req.query.saveId === '__proto__') { return res.serverError(200, 'Bad saveId'); }
 
     // JS Static Variable :)
     this.saveIds = this.saveIds || {};

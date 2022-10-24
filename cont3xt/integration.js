@@ -672,7 +672,7 @@ class Integration {
           if (!response._cont3xt) { response._cont3xt = {}; }
           response._cont3xt.createTime = Date.now();
           res.send({ success: true, data: response, _query: query });
-          if (response && Integration.cache && integration.cacheable) {
+          if (Integration.cache && integration.cacheable) {
             const cacheKey = `${integration.sharedCache ? 'shared' : req.user.userId}-${integration.name}-${itype}-${query}`;
             Integration.cache.set(cacheKey, response);
           }

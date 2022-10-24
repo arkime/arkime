@@ -10,7 +10,7 @@ Basic Arkime Installation steps:
  5) Initialize/Upgrade OpenSearch/Elasticsearch Arkime configuration
   a) If this is the first install, or want to delete all data
       /opt/arkime/db/db.pl http://ESHOST:9200 init
-  b) If this is an update to a Arkime package
+  b) If this is an update to an Arkime package
       /opt/arkime/db/db.pl http://ESHOST:9200 upgrade
  6) Add an admin user if a new install or after an init
       /opt/arkime/bin/arkime_add_user.sh admin "Admin User" THEPASSWORD --admin

@@ -782,7 +782,7 @@ function globalAllowed (value) {
   for (let i = 0; i < this.excludes.length; i++) {
     if (value.match(this.excludes[i])) {
       if (internals.debug > 0) {
-        console.log(`Found in Global ${this.name} Exclude`, value);
+        console.log('Found in Global %s Exclude', this.name, value);
       }
       return false;
     }
@@ -895,6 +895,10 @@ function addType (type, newSrc) {
 }
 // ----------------------------------------------------------------------------
 function processQuery (req, query, cb) {
+  if (query.typeName === '__proto__') {
+    return cb('Bad typeName');
+  }
+
   let typeInfo = internals.types[query.typeName];
 
   // First time we've seen this typeName
@@ -1100,7 +1104,7 @@ app.post('/get', function (req, res) {
 
         const value = buf.toString('utf8', offset, offset + len);
         if (internals.debug > 1) {
-          console.log(typeName, value);
+          console.log('%s', typeName, value);
         }
         offset += len;
         queries.push({ typeName, value });
