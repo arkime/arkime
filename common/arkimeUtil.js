@@ -63,7 +63,7 @@ class ArkimeUtil {
         process.exit(1);
       }
 
-      if (ArkimeUtil.debug > 0) {
+      if (ArkimeUtil.debug > 1) {
         console.log('REDIS:', url);
       }
       return new Redis(url);
@@ -90,7 +90,7 @@ class ArkimeUtil {
         options.password = match[4];
       }
 
-      if (ArkimeUtil.debug > 0) {
+      if (ArkimeUtil.debug > 1) {
         console.log('REDIS-SENTINEL:', options);
       }
       return new Redis(options);

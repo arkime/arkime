@@ -1341,7 +1341,7 @@ app.get('/types/:source?', [ArkimeUtil.noCacheJson], (req, res) => {
 app.get('/:source/:typeName/:value', [ArkimeUtil.noCacheJson], function (req, res) {
   const source = internals.sources[req.params.source];
   if (!source) {
-    return res.end('Unknown source ' + req.params.source);
+    return res.end('Unknown source ' + req.params.source); // lgtm [js/reflected-xss]
   }
 
   const query = {
@@ -1361,7 +1361,7 @@ app.get('/:source/:typeName/:value', [ArkimeUtil.noCacheJson], function (req, re
 app.get('/dump/:source', [ArkimeUtil.noCacheJson], function (req, res) {
   const source = internals.sources[req.params.source];
   if (!source) {
-    return res.end('Unknown source ' + req.params.source);
+    return res.end('Unknown source ' + req.params.source); // lgtm [js/reflected-xss]
   }
 
   if (!source.dump) {

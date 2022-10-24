@@ -2473,7 +2473,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
     for (let i = 0; i < parts.length; i++) {
       const field = Config.getFieldsMap()[parts[i]];
       if (!field) {
-        return res.send(`Unknown expression ${parts[i]}\n`);
+        return res.send(`Unknown expression ${parts[i]}\n`); // lgtm [js/reflected-xss]
       }
       fields.push(field);
     }
@@ -2531,7 +2531,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
 
         if (doCounts) {
           for (let i = 0; i < results.length; i++) {
-            res.write(results[i].line + separator + results[i].count + '\n');
+            res.write(results[i].line + separator + results[i].count + '\n'); // lgtm [js/reflected-xss]
           }
         } else {
           for (let i = 0; i < results.length; i++) {

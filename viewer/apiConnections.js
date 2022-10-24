@@ -62,21 +62,18 @@ module.exports = (Config, Db, ViewerUtils, sessionAPIs) => {
     let baselineDate = 0;
     let baselineDateIsMultiplier = false;
 
-    if (((req.query.baselineDate !== undefined) && (req.query.baselineDate.length !== 0) && (String(req.query.baselineDate) !== '0') &&
+    if (((typeof req.query.baselineDate === 'string') && (req.query.baselineDate.length !== 0) && (req.query.baselineDate !== '0') &&
           (req.query.date !== '-1') && (req.query.startTime !== undefined) && (req.query.stopTime !== undefined)) ||
         (resultId > 1)) {
       doBaseline = true;
-    }
-
-    if (doBaseline) {
       let baselineDateTmpStr = req.query.baselineDate;
       if (baselineDateTmpStr.endsWith('x')) {
         baselineDateIsMultiplier = true;
         baselineDateTmpStr = baselineDateTmpStr.slice(0, -1);
       }
       baselineDate = parseInt(baselineDateTmpStr, 10);
-      doBaseline = (doBaseline && (baselineDate > 0));
-      baselineDateIsMultiplier = (doBaseline && baselineDateIsMultiplier && (baselineDate > 0));
+      doBaseline = baselineDate > 0;
+      baselineDateIsMultiplier = baselineDateIsMultiplier && (baselineDate > 0);
     }
 
     // use a copy of req.query as we will modify the startTime/stopTime if we are doing a baseline query
@@ -529,10 +526,10 @@ module.exports = (Config, Db, ViewerUtils, sessionAPIs) => {
       for (let i = 0, ilen = links.length; i < ilen; i++) {
         res.write('"' + nodes[links[i].source].id.replace('"', '""') + '"' + seperator +
                   '"' + nodes[links[i].target].id.replace('"', '""') + '"' + seperator +
-                       links[i].value + seperator);
+                       links[i].value + seperator); // lgtm [js/reflected-xss]
         for (let f = 0, flen = fields.length; f < flen; f++) {
           res.write(links[i][displayFields[fields[f]].dbField].toString());
-          if (f !== flen - 1) { res.write(seperator); }
+          if (f !== flen - 1) { res.write(seperator); } // lgtm [js/reflected-xss]
         }
         res.write('\r\n');
       }
