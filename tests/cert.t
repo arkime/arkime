@@ -60,8 +60,8 @@ my $files = "(file=$pwd/openssl-ssl3.pcap||file=$pwd/openssl-tls1.pcap||file=$pw
     countTest(0, "date=-1&expression=" . uri_escape("$files&&cert.subject.on==\"Foo\""));
 
 # cert.subject.ou
-    countTest(1, "date=-1&expression=" . uri_escape("$files&&cert.issuer.ou==\"*www.digicert.com*\""));
-    countTest(0, "date=-1&expression=" . uri_escape("$files&&cert.issuer.ou==\"*www.foo.com*\""));
+    countTest(1, "date=-1&expression=" . uri_escape("$files&&cert.subject.ou==\"*www.digicert.com*\""));
+    countTest(0, "date=-1&expression=" . uri_escape("$files&&cert.subject.ou==\"*www.foo.com*\""));
 
 # cert.validfor
     countTest(2, "date=-1&expression=" . uri_escape("$files&&cert.validfor==5936"));
