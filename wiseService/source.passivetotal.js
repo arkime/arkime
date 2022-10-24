@@ -78,8 +78,7 @@ class PassiveTotalSource extends WISESource {
       json: true
     };
 
-    // eslint-disable-next-line
-    const req = request(options, (err, im, results) => {
+    request(options, (err, im, results) => {
       if (err) {
         console.log(this.section, '- Error parsing for request:\n', options, '\nresults:\n', results);
         results = { results: {} };
