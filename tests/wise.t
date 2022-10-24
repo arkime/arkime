@@ -1,5 +1,5 @@
 # WISE tests
-use Test::More tests => 103;
+use Test::More tests => 106;
 use MolochTest;
 use Cwd;
 use URI::Escape;
@@ -226,6 +226,14 @@ eq_or_diff($wise, '["ip"]',"types reversedns");
 $wise = from_json($MolochTest::userAgent->get("http://$MolochTest::host:8081/stats")->content);
 ok (exists $wise->{"sources"});
 ok (exists $wise->{"types"});
+
+$wise = from_json($MolochTest::userAgent->get("http://$MolochTest::host:8081/stats?search=domain")->content);
+is (scalar @{$wise->{"sources"}}, 1);
+is (scalar @{$wise->{"types"}}, 1);
+
+my $wise2 = from_json($MolochTest::userAgent->get("http://$MolochTest::host:8081/stats?search=do.*n")->content);
+
+eq_or_diff($wise, $wise2);
 
 # Get
 $wise = $MolochTest::userAgent->post("http://$MolochTest::host:8081/get", Content => "XXX")->content;
