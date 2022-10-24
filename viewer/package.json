@@ -16,7 +16,7 @@
     "through2": "^2.0.1"
   },
   "devDependencies": {
-    "d3": "^5.16.0",
+    "d3": "^7.6.1",
     "jquery": "^3.6.0",
     "qs": "^6.9.4",
     "sanitize-html": "^2.3.2"
