@@ -115,7 +115,7 @@ class ArkimeUtil {
         options.password = match[3];
       }
 
-      if (ArkimeUtil.debug > 0) {
+      if (ArkimeUtil.debug > 1) {
         console.log('REDIS-CLUSTER: hosts', hosts, 'options', { redisOptions: options });
       }
       return new Redis.Cluster(hosts, { redisOptions: options });
