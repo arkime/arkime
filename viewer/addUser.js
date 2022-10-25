@@ -27,6 +27,7 @@ const User = require('../common/user');
 
 const escInfo = Config.getArray('elasticsearch', ',', 'http://localhost:9200');
 function help () {
+  console.log()
   console.log('addUser.js [<config options>] <user id> <user friendly name> <password> [<options>]');
   console.log('');
   console.log('Options:');
