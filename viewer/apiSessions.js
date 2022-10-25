@@ -3169,7 +3169,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * @param {saveId} saveId - The sessionId to save the session.
    */
   sessionAPIs.receiveSession = (req, res) => {
-    if (!req.query.saveId) { return res.serverError(200, 'Missing saveId'); }
+    if (typeof (req.query.saveId) !== 'string') { return res.serverError(200, 'Missing saveId'); }
 
     req.query.saveId = req.query.saveId.replace(/[^-a-zA-Z0-9_]/g, '');
 
