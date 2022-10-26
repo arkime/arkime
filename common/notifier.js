@@ -271,11 +271,11 @@ class Notifier {
    * @returns {Notifier} notifier - If successful, the notifier with name sanitized and created/user fields added.
    */
   static async apiCreateNotifier (req, res) {
-    if (!req.body.name) {
+    if (typeof req.body.name !== 'string') {
       return res.serverError(403, 'Missing a notifier name');
     }
 
-    if (!req.body.type) {
+    if (typeof req.body.type !== 'string') {
       return res.serverError(403, 'Missing notifier type');
     }
 
@@ -334,11 +334,11 @@ class Notifier {
    */
 
   static async apiUpdateNotifier (req, res) {
-    if (!req.body.name) {
+    if (typeof req.body.name !== 'string') {
       return res.serverError(403, 'Missing a notifier name');
     }
 
-    if (!req.body.type) {
+    if (typeof req.body.type !== 'string') {
       return res.serverError(403, 'Missing notifier type');
     }
 

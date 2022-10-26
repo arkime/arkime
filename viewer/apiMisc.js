@@ -291,7 +291,7 @@ module.exports = (Config, Db, internals, sessionAPIs, userAPIs, ViewerUtils) => 
     }
 
     let tags = '';
-    if (req.body.tags) {
+    if (typeof req.body.tags === 'string') {
       const t = req.body.tags.replace(/[^-a-zA-Z0-9_:,]/g, '').split(',');
       t.forEach((tag) => {
         if (tag.length > 0) {

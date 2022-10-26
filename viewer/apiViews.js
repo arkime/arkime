@@ -111,11 +111,11 @@ class View {
    * @returns {ArkimeView} view - The new view data.
    */
   static async apiCreateView (req, res) {
-    if (!req.body.name) {
+    if (typeof req.body.name !== 'string') {
       return res.serverError(403, 'Missing view name');
     }
 
-    if (!req.body.expression) {
+    if (typeof req.body.expression !== 'string') {
       return res.serverError(403, 'Missing view expression');
     }
 
@@ -183,11 +183,11 @@ class View {
    */
   static async apiUpdateView (req, res) {
     // make sure all the necessary data is included in the body
-    if (!req.body.name) {
+    if (typeof req.body.name !== 'string') {
       return res.serverError(403, 'Missing view name');
     }
 
-    if (!req.body.expression) {
+    if (typeof req.body.expression !== 'string') {
       return res.serverError(403, 'Missing view expression');
     }
 

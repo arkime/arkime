@@ -284,7 +284,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * @returns {string} name - The name of the new custom Sessions column configuration.
    */
   userAPIs.createUserColumns = (req, res) => {
-    if (!req.body.name) {
+    if (typeof req.body.name !== 'string') {
       return res.serverError(403, 'Missing custom column configuration name');
     }
     if (!req.body.columns) {
@@ -445,7 +445,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * @returns {string} name - The name of the new SPI View fields configuration.
    */
   userAPIs.createUserSpiviewFields = (req, res) => {
-    if (!req.body.name) {
+    if (req.body.name !== 'string') {
       return res.serverError(403, 'Missing custom SPI View fields configuration name');
     }
     if (!req.body.fields) {

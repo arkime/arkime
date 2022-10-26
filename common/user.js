@@ -442,11 +442,11 @@ class User {
    */
   static apiGetUsers (req, res, next) {
     const query = {
-      from: +req.body.start || 0,
-      size: +req.body.length || 10000
+      from: parseInt(req.body.start) || 0,
+      size: parseInt(req.body.length) || 10000
     };
 
-    if (req.body.filter) {
+    if (typeof req.body.filter === 'string') {
       query.filter = req.body.filter;
     }
     query.noRoles = false;
@@ -505,7 +505,7 @@ class User {
       sortField: 'userId',
       sortDescending: false
     };
-    if (req.body.filter) { query.filter = req.body.filter; }
+    if (typeof req.body.filter === 'string') { query.filter = req.body.filter; }
     query.searchFields = ['userId', 'userName'];
 
     User.searchUsers(query).then((users) => {
@@ -515,7 +515,7 @@ class User {
       //   (only ID and whether they have the managed role)
       const userInfo = users.users.map(u => {
         const providedUserInfo = { userId: u.userId, userName: u.userName };
-        if (req.body.roleId != null) {
+        if (typeof req.body.roleId === 'string') {
           providedUserInfo.hasRole = !!(u.roles?.includes(req.body.roleId));
         }
         return providedUserInfo;
@@ -543,7 +543,7 @@ class User {
    * @returns {string} text - The success/error message to (optionally) display to the user.
    */
   static apiCreateUser (req, res) {
-    if (!req.body || !req.body.userId || !req.body.userName) {
+    if (!req.body || typeof req.body.userId !== 'string' || typeof req.body.userName !== 'string') {
       return res.serverError(403, 'Missing/Empty required fields');
     }
 
@@ -556,7 +556,7 @@ class User {
     if (isRole) {
       userIdTest = userIdTest.slice(5);
       req.body.password = cryptoLib.randomBytes(48); // Reset role password to random
-    } else if (!req.body.password) {
+    } else if (typeof req.body.password !== 'string') {
       return res.serverError(403, 'Missing/Empty required fields');
     }
 
@@ -716,7 +716,7 @@ class User {
 
       user.enabled = req.body.enabled === true;
 
-      if (req.body.expression !== undefined) {
+      if (typeof req.body.expression === 'string') {
         if (req.body.expression.match(/^\s*$/)) {
           delete user.expression;
         } else {
@@ -724,7 +724,7 @@ class User {
         }
       }
 
-      if (req.body.userName !== undefined) {
+      if (typeof req.body.userName === 'string') {
         if (req.body.userName.match(/^\s*$/)) {
           console.log(`ERROR - ${req.method} /api/user/%s empty username`, userId, util.inspect(req.body));
           return res.serverError(403, 'Username can not be empty');
@@ -842,7 +842,7 @@ class User {
    * @returns {string} text - The success/error message to (optionally) display to the user.
    */
   static apiUpdateUserPassword (req, res) {
-    if (!req.body.newPassword || req.body.newPassword.length < 3) {
+    if (typeof req.body.newPassword !== 'string' || req.body.newPassword.length < 3) {
       return res.serverError(403, 'New password needs to be at least 3 characters');
     }
 

@@ -855,7 +855,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
         internals.sendSessionQueue.push(options, nextCb);
       }, () => {
         let sendPath = `api/session/${fields.node}/${sid}/send?saveId=${saveId}&cluster=${req.body.cluster}`;
-        if (req.body.tags) {
+        if (typeof req.body.tags === 'string') {
           sendPath += `&tags=${req.body.tags}`;
         }
 
@@ -2630,7 +2630,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    */
   sessionAPIs.addTags = (req, res) => {
     let tags = [];
-    if (req.body.tags) {
+    if (typeof req.body.tags === 'string') {
       tags = req.body.tags.replace(/[^-a-zA-Z0-9_:,]/g, '').split(',');
     }
 
@@ -2686,7 +2686,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    */
   sessionAPIs.removeTags = (req, res) => {
     let tags = [];
-    if (req.body.tags) {
+    if (typeof req.body.tags === 'string') {
       tags = req.body.tags.replace(/[^-a-zA-Z0-9_:,]/g, '').split(',');
     }
 

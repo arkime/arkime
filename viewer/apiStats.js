@@ -669,7 +669,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * @returns {string} text - The success/error message to (optionally) display to the user.
    */
   statsAPIs.shrinkESIndex = async (req, res) => {
-    if (!req.body || !req.body.target) {
+    if (!req.body || typeof req.body.target !== 'string') {
       return res.serverError(403, 'Missing target');
     }
 
@@ -827,7 +827,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
     let taskId;
     if (req.params.id) {
       taskId = req.params.id;
-    } else if (req.body && req.body.taskId) {
+    } else if (req.body && typeof req.body.taskId === 'string') {
       taskId = req.body.taskId;
     } else {
       return res.serverError(403, 'Missing ID of task to cancel');
@@ -855,7 +855,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
     let cancelId;
     if (req.params.id) {
       cancelId = req.params.id;
-    } else if (req.body && req.body.cancelId) {
+    } else if (req.body && typeof req.body.cancelId === 'string') {
       cancelId = req.body.cancelId;
     } else {
       return res.serverError(403, 'Missing ID of task to cancel');
@@ -1026,8 +1026,8 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * @returns {string} text - The success/error message to (optionally) display to the user.
    */
   statsAPIs.setESAdminSettings = async (req, res) => {
-    if (req.body.key === undefined) { return res.serverError(500, 'Missing key'); }
-    if (req.body.value === undefined) { return res.serverError(500, 'Missing value'); }
+    if (typeof req.body.key !== 'string') { return res.serverError(500, 'Missing key'); }
+    if (req.body.value !== 'string') { return res.serverError(500, 'Missing value'); }
 
     // Convert null string to null
     if (req.body.value === 'null') { req.body.value = null; }
