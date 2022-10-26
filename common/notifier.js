@@ -289,6 +289,10 @@ class Notifier {
 
     req.body.name = req.body.name.replace(/[^-a-zA-Z0-9_: ]/g, '');
 
+    if (req.body.name.length === 0) {
+      return res.serverError(403, 'Notifier name empty');
+    }
+
     const errorMsg = Notifier.#checkNotifierTypesAndFields(req.body.type, req.body.fields);
     if (errorMsg) {
       return res.serverError(403, errorMsg);
@@ -351,6 +355,10 @@ class Notifier {
     }
 
     req.body.name = req.body.name.replace(/[^-a-zA-Z0-9_: ]/g, '');
+
+    if (req.body.name.length === 0) {
+      return res.serverError(403, 'Notifier name empty');
+    }
 
     const errorMsg = Notifier.#checkNotifierTypesAndFields(req.body.type, req.body.fields);
     if (errorMsg) {

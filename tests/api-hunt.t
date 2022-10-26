@@ -1,4 +1,4 @@
-use Test::More tests => 316;
+use Test::More tests => 317;
 use Cwd;
 use URI::Escape;
 use MolochTest;
@@ -226,6 +226,10 @@ my $hToken = getTokenCookie('huntuser');
   is ($json->{invalidUsers}->[0], "unknownuser", "hunt should send back invalid users");
 
 # can't add empty users
+  $json = viewerPostToken("/api/hunt/$id7/users?molochRegressionUser=anonymous", '{}', $token);
+  eq_or_diff($json, from_json('{"success":false,"text":"You must provide users in a comma separated string"}'), "hunt can't add empty users");
+
+# can't add missing users
   $json = viewerPostToken("/api/hunt/$id7/users?molochRegressionUser=anonymous", '{"users":""}', $token);
   eq_or_diff($json, from_json('{"success":false,"text":"You must provide users in a comma separated string"}'), "hunt can't add empty users");
 

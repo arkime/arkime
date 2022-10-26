@@ -1,4 +1,4 @@
-use Test::More tests => 50;
+use Test::More tests => 51;
 use Cwd;
 use URI::Escape;
 use MolochTest;
@@ -33,6 +33,8 @@ my $notAdminToken = getTokenCookie('notadmin');
   is($json->{text}, "Missing notifier fields", "notifier fields required");
   $json = viewerPostToken("/notifiers", '{"name":"test1","type":"slack","fields":"badfields"}', $token);
   is($json->{text}, "Notifier fields must be an array", "notifier fields must be an array");
+  $json = viewerPostToken("/notifiers", '{"name":"<>","type":"slack","fields":[]}', $token);
+  is($json->{text}, "Notifier name empty");
 
 # create notifier requires token and admin access
   $json = viewerPost("/notifiers", '{}');

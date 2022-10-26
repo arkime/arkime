@@ -1027,7 +1027,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    */
   statsAPIs.setESAdminSettings = async (req, res) => {
     if (typeof req.body.key !== 'string') { return res.serverError(500, 'Missing key'); }
-    if (req.body.value !== 'string') { return res.serverError(500, 'Missing value'); }
+    if (typeof req.body.value !== 'string') { return res.serverError(500, 'Missing value'); }
 
     // Convert null string to null
     if (req.body.value === 'null') { req.body.value = null; }

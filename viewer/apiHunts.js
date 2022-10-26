@@ -1115,7 +1115,7 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
    * @returns {array} invalidUsers - The list of users that could not be added to the hunt because they were invalid or nonexitent.
    */
   huntAPIs.addUsers = async (req, res) => {
-    if (typeof req.body.users !== 'string') {
+    if (typeof req.body.users !== 'string' || req.body.users.length === 0) {
       return res.serverError(403, 'You must provide users in a comma separated string');
     }
 
