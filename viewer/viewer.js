@@ -542,7 +542,7 @@ async function checkCronAccess (req, res, next) {
     delete req.params.key;
   }
 
-  if (req.body.key === undefined) {
+  if (!ArkimeUtil.isString(req.body.key)) {
     return res.serverError(403, 'Missing cron key');
   }
 
@@ -754,7 +754,7 @@ function sanitizeViewName (req, res, next) {
     req.body.key = req.params.key;
     delete req.params.key;
   }
-  if (req.body.name) {
+  if (typeof req.body.name === 'string') {
     req.body.name = req.body.name.replace(/(^(shared:)+)|[^-a-zA-Z0-9_: ]/g, '');
   }
   next();

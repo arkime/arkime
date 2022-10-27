@@ -17,6 +17,8 @@
  */
 'use strict';
 
+const ArkimeUtil = require('../common/arkimeUtil');
+
 class LinkGroup {
   constructor (data) {
     Object.assign(this, data);
@@ -103,7 +105,7 @@ class LinkGroup {
 
   // Verify the link group, returns error msg on failure
   static verifyLinkGroup (lg) {
-    if (typeof (lg.name) !== 'string') {
+    if (!ArkimeUtil.isString(lg.name)) {
       return 'Missing name';
     }
 
@@ -117,7 +119,7 @@ class LinkGroup {
       }
 
       for (const viewRole of lg.viewRoles) {
-        if (typeof viewRole !== 'string') {
+        if (!ArkimeUtil.isString(viewRole)) {
           return 'viewRoles must contain strings';
         }
       }
@@ -129,7 +131,7 @@ class LinkGroup {
       }
 
       for (const editRole of lg.editRoles) {
-        if (typeof editRole !== 'string') {
+        if (!ArkimeUtil.isString(editRole)) {
           return 'editRoles must contain strings';
         }
       }
@@ -139,27 +141,27 @@ class LinkGroup {
       if (typeof link !== 'object') {
         return 'Link must be object';
       }
-      if (typeof (link.name) !== 'string') {
+      if (!ArkimeUtil.isString(link.name)) {
         return 'Link missing name';
       }
-      if (typeof (link.url) !== 'string') {
+      if (!ArkimeUtil.isString(link.url)) {
         return 'Link missing url';
       }
       if (!Array.isArray(link.itypes)) {
         return 'Link missing itypes';
       }
       for (const itype of link.itypes) {
-        if (typeof itype !== 'string') {
+        if (!ArkimeUtil.isString(itype)) {
           return 'Link itypes must be strings';
         }
       }
-      if (link.infoField !== undefined && typeof link.infoField !== 'string') {
+      if (link.infoField !== undefined && !ArkimeUtil.isString(link.infoField)) {
         return 'Link infoField must be a string';
       }
-      if (link.externalDocName !== undefined && typeof link.externalDocName !== 'string') {
+      if (link.externalDocName !== undefined && !ArkimeUtil.isString(link.externalDocName)) {
         return 'Link externalDocName must be a string';
       }
-      if (link.externalDocUrl !== undefined && typeof link.externalDocUrl !== 'string') {
+      if (link.externalDocUrl !== undefined && !ArkimeUtil.isString(link.externalDocUrl)) {
         return 'Link externalDocUrl must be a string';
       }
     }

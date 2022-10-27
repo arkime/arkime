@@ -442,11 +442,11 @@ class User {
    */
   static apiGetUsers (req, res, next) {
     const query = {
-      from: +req.body.start || 0,
-      size: +req.body.length || 10000
+      from: parseInt(req.body.start) || 0,
+      size: parseInt(req.body.length) || 10000
     };
 
-    if (req.body.filter) {
+    if (ArkimeUtil.isString(req.body.filter)) {
       query.filter = req.body.filter;
     }
     query.noRoles = false;
@@ -505,7 +505,10 @@ class User {
       sortField: 'userId',
       sortDescending: false
     };
-    if (req.body.filter) { query.filter = req.body.filter; }
+
+    if (ArkimeUtil.isString(req.body.filter)) {
+      query.filter = req.body.filter;
+    }
     query.searchFields = ['userId', 'userName'];
 
     User.searchUsers(query).then((users) => {
@@ -515,7 +518,7 @@ class User {
       //   (only ID and whether they have the managed role)
       const userInfo = users.users.map(u => {
         const providedUserInfo = { userId: u.userId, userName: u.userName };
-        if (req.body.roleId != null) {
+        if (ArkimeUtil.isString(req.body.roleId)) {
           providedUserInfo.hasRole = !!(u.roles?.includes(req.body.roleId));
         }
         return providedUserInfo;
@@ -543,8 +546,14 @@ class User {
    * @returns {string} text - The success/error message to (optionally) display to the user.
    */
   static apiCreateUser (req, res) {
-    if (!req.body || !req.body.userId || !req.body.userName) {
+    if (!req.body ||
+      !ArkimeUtil.isString(req.body.userId) ||
+      !ArkimeUtil.isString(req.body.userName)) {
       return res.serverError(403, 'Missing/Empty required fields');
+    }
+
+    if (req.body.userName.match(/^\s*$/)) {
+      return res.serverError(403, 'Username can not be empty');
     }
 
     if (systemRolesMapping[req.body.userId]) {
@@ -556,8 +565,8 @@ class User {
     if (isRole) {
       userIdTest = userIdTest.slice(5);
       req.body.password = cryptoLib.randomBytes(48); // Reset role password to random
-    } else if (!req.body.password) {
-      return res.serverError(403, 'Missing/Empty required fields');
+    } else if (!ArkimeUtil.isString(req.body.password, 3)) {
+      return res.serverError(403, 'Password needs to be at least 3 characters');
     }
 
     if (userIdTest.match(/[^@\w.-]/)) {
@@ -588,6 +597,10 @@ class User {
 
     if (req.body.roles.includes('superAdmin') && !req.user.hasRole('superAdmin')) {
       return res.serverError(403, 'Can not create superAdmin unless you are superAdmin');
+    }
+
+    if (req.body.expression !== undefined && !ArkimeUtil.isString(req.body.expression, 0)) {
+      return res.serverError(403, 'Expression must be a string when present');
     }
 
     req.body.roleAssigners ??= [];
@@ -716,7 +729,7 @@ class User {
 
       user.enabled = req.body.enabled === true;
 
-      if (req.body.expression !== undefined) {
+      if (ArkimeUtil.isString(req.body.expression, 0)) {
         if (req.body.expression.match(/^\s*$/)) {
           delete user.expression;
         } else {
@@ -724,9 +737,8 @@ class User {
         }
       }
 
-      if (req.body.userName !== undefined) {
+      if (ArkimeUtil.isString(req.body.userName)) {
         if (req.body.userName.match(/^\s*$/)) {
-          console.log(`ERROR - ${req.method} /api/user/%s empty username`, userId, util.inspect(req.body));
           return res.serverError(403, 'Username can not be empty');
         } else {
           user.userName = req.body.userName;
@@ -842,7 +854,7 @@ class User {
    * @returns {string} text - The success/error message to (optionally) display to the user.
    */
   static apiUpdateUserPassword (req, res) {
-    if (!req.body.newPassword || req.body.newPassword.length < 3) {
+    if (!ArkimeUtil.isString(req.body.newPassword, 3)) {
       return res.serverError(403, 'New password needs to be at least 3 characters');
     }
 

@@ -17,6 +17,8 @@
  */
 'use strict';
 
+const ArkimeUtil = require('../common/arkimeUtil');
+
 class View {
   constructor (data) {
     Object.assign(this, data);
@@ -64,7 +66,7 @@ class View {
    * Verify the view, returns error msg on failure
    */
   static verifyView (view) {
-    if (typeof (view.name) !== 'string') {
+    if (!ArkimeUtil.isString(view.name)) {
       return 'Missing name';
     }
 
@@ -72,7 +74,7 @@ class View {
       if (!Array.isArray(view.viewRoles)) { return 'viewRoles must be array'; }
 
       for (const viewRole of view.viewRoles) {
-        if (typeof viewRole !== 'string') {
+        if (!ArkimeUtil.isString(viewRole)) {
           return 'viewRoles must contain strings';
         }
       }
@@ -82,7 +84,7 @@ class View {
       if (!Array.isArray(view.editRoles)) { return 'editRoles must be array'; }
 
       for (const editRole of view.editRoles) {
-        if (typeof editRole !== 'string') {
+        if (!ArkimeUtil.isString(editRole)) {
           return 'editRoles must contain strings';
         }
       }
@@ -92,7 +94,7 @@ class View {
       if (!Array.isArray(view.integrations)) { return 'integrations must be array'; }
 
       for (const integration of view.integrations) {
-        if (typeof integration !== 'string') {
+        if (!ArkimeUtil.isString(integration)) {
           return 'integrations must contain strings';
         }
       }

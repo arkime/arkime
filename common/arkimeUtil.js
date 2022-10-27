@@ -49,6 +49,14 @@ class ArkimeUtil {
 
   // ----------------------------------------------------------------------------
   /**
+   * Is str a string and a length of at least len
+   */
+  static isString (str, len = 1) {
+    return typeof str === 'string' && str.length >= len;
+  }
+
+  // ----------------------------------------------------------------------------
+  /**
    * Create a redis client from the provided url
    * @params {string} url - The redis url to connect to.
    * @params {string} section - The section this redis client is being created for

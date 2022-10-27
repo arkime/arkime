@@ -89,10 +89,11 @@ class Notifier {
    * @returns {string|undefined} - String message to describe check error or undefined if all is good
    */
   static #checkNotifierTypesAndFields (type, fields) {
+    type = type.toLowerCase();
     let foundNotifier;
     for (const n in Notifier.notifierTypes) {
       const notifier = Notifier.notifierTypes[n];
-      if (notifier.type === type.toLowerCase()) {
+      if (notifier.type === type) {
         foundNotifier = notifier;
       }
     }
@@ -271,11 +272,11 @@ class Notifier {
    * @returns {Notifier} notifier - If successful, the notifier with name sanitized and created/user fields added.
    */
   static async apiCreateNotifier (req, res) {
-    if (!req.body.name) {
+    if (!ArkimeUtil.isString(req.body.name)) {
       return res.serverError(403, 'Missing a notifier name');
     }
 
-    if (!req.body.type) {
+    if (!ArkimeUtil.isString(req.body.type)) {
       return res.serverError(403, 'Missing notifier type');
     }
 
@@ -288,6 +289,10 @@ class Notifier {
     }
 
     req.body.name = req.body.name.replace(/[^-a-zA-Z0-9_: ]/g, '');
+
+    if (req.body.name.length === 0) {
+      return res.serverError(403, 'Notifier name empty');
+    }
 
     const errorMsg = Notifier.#checkNotifierTypesAndFields(req.body.type, req.body.fields);
     if (errorMsg) {
@@ -334,11 +339,11 @@ class Notifier {
    */
 
   static async apiUpdateNotifier (req, res) {
-    if (!req.body.name) {
+    if (!ArkimeUtil.isString(req.body.name)) {
       return res.serverError(403, 'Missing a notifier name');
     }
 
-    if (!req.body.type) {
+    if (!ArkimeUtil.isString(req.body.type)) {
       return res.serverError(403, 'Missing notifier type');
     }
 
@@ -351,6 +356,10 @@ class Notifier {
     }
 
     req.body.name = req.body.name.replace(/[^-a-zA-Z0-9_: ]/g, '');
+
+    if (req.body.name.length === 0) {
+      return res.serverError(403, 'Notifier name empty');
+    }
 
     const errorMsg = Notifier.#checkNotifierTypesAndFields(req.body.type, req.body.fields);
     if (errorMsg) {

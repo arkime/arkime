@@ -242,13 +242,13 @@ module.exports = (Db, internals) => {
    */
   shortcutAPIs.createShortcut = (req, res) => {
     // make sure all the necessary data is included in the post body
-    if (!req.body.name) {
+    if (!ArkimeUtil.isString(req.body.name)) {
       return res.serverError(403, 'Missing shortcut name');
     }
-    if (!req.body.type) {
+    if (!ArkimeUtil.isString(req.body.type)) {
       return res.serverError(403, 'Missing shortcut type');
     }
-    if (!req.body.value) {
+    if (!ArkimeUtil.isString(req.body.value)) {
       return res.serverError(403, 'Missing shortcut value');
     }
 
@@ -332,13 +332,13 @@ module.exports = (Db, internals) => {
    */
   shortcutAPIs.updateShortcut = async (req, res) => {
     // make sure all the necessary data is included in the post body
-    if (!req.body.name) {
+    if (!ArkimeUtil.isString(req.body.name)) {
       return res.serverError(403, 'Missing shortcut name');
     }
-    if (!req.body.type) {
+    if (!ArkimeUtil.isString(req.body.type)) {
       return res.serverError(403, 'Missing shortcut type');
     }
-    if (!req.body.value) {
+    if (!ArkimeUtil.isString(req.body.value)) {
       return res.serverError(403, 'Missing shortcut value');
     }
 

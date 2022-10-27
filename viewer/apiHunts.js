@@ -730,9 +730,9 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
   huntAPIs.createHunt = async (req, res) => {
     // make sure all the necessary data is included in the post body
     if (!req.body.totalSessions) { return res.serverError(403, 'This hunt does not apply to any sessions'); }
-    if (!req.body.name) { return res.serverError(403, 'Missing hunt name'); }
+    if (!ArkimeUtil.isString(req.body.name)) { return res.serverError(403, 'Missing hunt name'); }
     if (!req.body.size) { return res.serverError(403, 'Missing max mumber of packets to examine per session'); }
-    if (!req.body.search) { return res.serverError(403, 'Missing packet search text'); }
+    if (!ArkimeUtil.isString(req.body.search)) { return res.serverError(403, 'Missing packet search text'); }
     if (!req.body.src && !req.body.dst) {
       return res.serverError(403, 'The hunt must search source or destination packets (or both)');
     }
@@ -742,13 +742,13 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
     }
 
     const searchTypes = ['ascii', 'asciicase', 'hex', 'regex', 'hexregex'];
-    if (!req.body.searchType) {
+    if (!ArkimeUtil.isString(req.body.searchType)) {
       return res.serverError(403, 'Missing packet search text type');
     } else if (searchTypes.indexOf(req.body.searchType) === -1) {
       return res.serverError(403, 'Improper packet search text type. Must be "ascii", "asciicase", "hex", "hexregex", or "regex"');
     }
 
-    if (!req.body.type) {
+    if (!ArkimeUtil.isString(req.body.type)) {
       return res.serverError(403, 'Missing packet search type (raw or reassembled packets)');
     } else if (req.body.type !== 'raw' && req.body.type !== 'reassembled') {
       return res.serverError(403, 'Improper packet search type. Must be "raw" or "reassembled"');
@@ -1081,7 +1081,7 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
       const { body: { _source: hunt } } = await Db.getHunt(req.params.id);
 
       // update properties
-      if (req.body.description !== undefined) {
+      if (ArkimeUtil.isString(req.body.description)) {
         hunt.description = req.body.description;
       }
       if (req.body.roles) {
@@ -1115,7 +1115,7 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
    * @returns {array} invalidUsers - The list of users that could not be added to the hunt because they were invalid or nonexitent.
    */
   huntAPIs.addUsers = async (req, res) => {
-    if (!req.body.users) {
+    if (!ArkimeUtil.isString(req.body.users)) {
       return res.serverError(403, 'You must provide users in a comma separated string');
     }
 

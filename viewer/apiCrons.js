@@ -119,16 +119,16 @@ class Cron {
    * @returns {ArkimeQuery} query - The new query
    */
   static async createCron (req, res) {
-    if (!req.body.name) {
+    if (!ArkimeUtil.isString(req.body.name)) {
       return res.serverError(403, 'Missing query name');
     }
-    if (!req.body.query) {
+    if (!ArkimeUtil.isString(req.body.query)) {
       return res.serverError(403, 'Missing query expression');
     }
-    if (!req.body.action) {
+    if (!ArkimeUtil.isString(req.body.action)) {
       return res.serverError(403, 'Missing query action');
     }
-    if (!req.body.tags) {
+    if (!ArkimeUtil.isString(req.body.tags)) {
       return res.serverError(403, 'Missing query tag(s)');
     }
 
@@ -150,11 +150,11 @@ class Cron {
       }
     };
 
-    if (req.body.description) {
+    if (ArkimeUtil.isString(req.body.description)) {
       doc.doc.description = req.body.description;
     }
 
-    if (req.body.notifier) {
+    if (ArkimeUtil.isString(req.body.notifier)) {
       doc.doc.notifier = req.body.notifier;
     }
 
@@ -213,19 +213,19 @@ class Cron {
    */
   static async updateCron (req, res) {
     const key = req.body.key;
-    if (!key) {
+    if (!ArkimeUtil.isString(key)) {
       return res.serverError(403, 'Missing query key');
     }
-    if (!req.body.name) {
+    if (!ArkimeUtil.isString(req.body.name)) {
       return res.serverError(403, 'Missing query name');
     }
-    if (!req.body.query) {
+    if (!ArkimeUtil.isString(req.body.query)) {
       return res.serverError(403, 'Missing query expression');
     }
-    if (!req.body.action) {
+    if (!ArkimeUtil.isString(req.body.action)) {
       return res.serverError(403, 'Missing query action');
     }
-    if (!req.body.tags) {
+    if (!ArkimeUtil.isString(req.body.tags)) {
       return res.serverError(403, 'Missing query tag(s)');
     }
 
@@ -248,11 +248,11 @@ class Cron {
       }
     };
 
-    if (req.body.notifier) {
+    if (ArkimeUtil.isString(req.body.notifier)) {
       doc.doc.notifier = req.body.notifier;
     }
 
-    if (req.body.description) {
+    if (ArkimeUtil.isString(req.body.description)) {
       doc.doc.description = req.body.description;
     }
 
@@ -305,7 +305,7 @@ class Cron {
   static async deleteCron (req, res) {
     const key = req.body.key;
 
-    if (!key) {
+    if (!ArkimeUtil.isString(key)) {
       return res.serverError(403, 'Missing periodic query key');
     }
 
