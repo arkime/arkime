@@ -539,7 +539,7 @@ class Integration {
    * @returns {IntegrationChunk[]} results - An array data chunks with the data
    */
   static async apiSearch (req, res, next) {
-    if (typeof req.body.query !== 'string') {
+    if (!ArkimeUtil.isString(req.body.query)) {
       return res.send({ success: false, text: 'Missing query' });
     }
 
@@ -561,7 +561,7 @@ class Integration {
       }
     }
 
-    if (req.body.viewId !== undefined && typeof req.body.viewId !== 'string') {
+    if (req.body.viewId !== undefined && !ArkimeUtil.isString(req.body.viewId)) {
       return res.send({ success: false, text: 'viewId must be a string when present' });
     }
 
@@ -629,7 +629,7 @@ class Integration {
    * @returns {object} data - The data from the integration query. This varies based upon the integration. The IntegrationCard describes how to present this data to the user.
    */
   static async apiSingleSearch (req, res, next) {
-    if (typeof req.body.query !== 'string') {
+    if (!ArkimeUtil.isString(req.body.query)) {
       return res.send({ success: false, text: 'Missing query' });
     }
 

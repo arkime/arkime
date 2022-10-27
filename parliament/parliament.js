@@ -1230,7 +1230,7 @@ router.put('/auth/commonauth', [checkAuthUpdate], (req, res, next) => {
     return next(newError(403, 'Your Parliament is in dasboard only mode. You cannot setup auth.'));
   }
 
-  if (typeof req.body.commonAuth !== 'string') {
+  if (!ArkimeUtil.isString(req.body.commonAuth)) {
     return next(newError(422, 'Missing auth settings'));
   }
 
@@ -1263,14 +1263,14 @@ router.put('/auth/update', [checkAuthUpdate], (req, res, next) => {
     return next(newError(403, 'Your Parliament is in dasboard only mode. You cannot create a password.'));
   }
 
-  if (typeof req.body.newPassword !== 'string') {
+  if (!ArkimeUtil.isString(req.body.newPassword)) {
     return next(newError(422, 'You must provide a new password'));
   }
 
   const hasAuth = !!app.get('password');
   if (hasAuth) { // if the user has a password already set
     // check if the user has supplied their current password
-    if (typeof req.body.currentPassword !== 'string') {
+    if (!ArkimeUtil.isString(req.body.currentPassword)) {
       return next(newError(401, 'You must provide your current password'));
     }
     // check if password matches
@@ -1355,7 +1355,7 @@ router.put('/settings', [isAdmin, checkCookieToken], (req, res, next) => {
 });
 
 function verifyNotifierReqBody (req) {
-  if (typeof req.body.key !== 'string') {
+  if (!ArkimeUtil.isString(req.body.key)) {
     return 'Missing notifier key';
   }
 
@@ -1363,11 +1363,11 @@ function verifyNotifierReqBody (req) {
     return 'Missing notifier';
   }
 
-  if (typeof req.body.notifier.name !== 'string') {
+  if (!ArkimeUtil.isString(req.body.notifier.name)) {
     return 'Missing notifier name';
   }
 
-  if (typeof req.body.notifier.type !== 'string') {
+  if (!ArkimeUtil.isString(req.body.notifier.type)) {
     return 'Missing notifier type';
   }
 
@@ -1580,7 +1580,7 @@ router.put('/parliament', [isAdmin, checkCookieToken], (req, res, next) => {
 
 // Create a new group in the parliament
 router.post('/groups', [isAdmin, checkCookieToken], (req, res, next) => {
-  if (typeof req.body.title !== 'string') {
+  if (!ArkimeUtil.isString(req.body.title)) {
     return next(newError(422, 'A group must have a title'));
   }
 
@@ -1622,7 +1622,7 @@ router.delete('/groups/:id', [isAdmin, checkCookieToken], (req, res, next) => {
 
 // Update a group in the parliament
 router.put('/groups/:id', [isAdmin, checkCookieToken], (req, res, next) => {
-  if (typeof req.body.title !== 'string') {
+  if (!ArkimeUtil.isString(req.body.title)) {
     return next(newError(422, 'A group must have a title.'));
   }
 
@@ -1651,11 +1651,11 @@ router.put('/groups/:id', [isAdmin, checkCookieToken], (req, res, next) => {
 
 // Create a new cluster within an existing group
 router.post('/groups/:id/clusters', [isAdmin, checkCookieToken], (req, res, next) => {
-  if (typeof req.body.title !== 'string') {
+  if (!ArkimeUtil.isString(req.body.title)) {
     return next(newError(422, 'A cluster must have a title.'));
   }
 
-  if (typeof req.body.url !== 'string') {
+  if (!ArkimeUtil.isString(req.body.url)) {
     return next(newError(422, 'A cluster must have a url.'));
   }
 
@@ -1730,11 +1730,11 @@ router.delete('/groups/:groupId/clusters/:clusterId', [isAdmin, checkCookieToken
 
 // Update a cluster
 router.put('/groups/:groupId/clusters/:clusterId', [isAdmin, checkCookieToken], (req, res, next) => {
-  if (typeof req.body.title !== 'string') {
+  if (!ArkimeUtil.isString(req.body.title)) {
     return next(newError(422, 'A cluster must have a title.'));
   }
 
-  if (typeof req.body.url !== 'string') {
+  if (!ArkimeUtil.isString(req.body.url)) {
     return next(newError(422, 'A cluster must have a url.'));
   }
 
@@ -1962,7 +1962,7 @@ router.put('/removeIgnoreIssues', [isUser, checkCookieToken], (req, res, next) =
 
 // Remove an issue with a cluster
 router.put('/groups/:groupId/clusters/:clusterId/removeIssue', [isUser, checkCookieToken], (req, res, next) => {
-  if (typeof req.body.type !== 'string') {
+  if (!ArkimeUtil.isString(req.body.type)) {
     const message = 'Must specify the issue type to remove.';
     return next(newError(422, message));
   }
@@ -2052,7 +2052,7 @@ router.put('/removeSelectedAcknowledgedIssues', [isUser, checkCookieToken], (req
 
 // issue a test alert to a specified notifier
 router.post('/testAlert', [isAdmin, checkCookieToken], (req, res, next) => {
-  if (typeof req.body.notifier !== 'string') {
+  if (!ArkimeUtil.isString(req.body.notifier)) {
     return next(newError(422, 'Must specify the notifier.'));
   }
 

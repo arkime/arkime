@@ -2,6 +2,7 @@
 
 const async = require('async');
 const util = require('util');
+const ArkimeUtil = require('../common/arkimeUtil');
 
 let fieldsMap;
 
@@ -62,7 +63,7 @@ module.exports = (Config, Db, ViewerUtils, sessionAPIs) => {
     let baselineDate = 0;
     let baselineDateIsMultiplier = false;
 
-    if (((typeof req.query.baselineDate === 'string') && (req.query.baselineDate.length !== 0) && (req.query.baselineDate !== '0') &&
+    if ((ArkimeUtil.isString(req.query.baselineDate) && (req.query.baselineDate !== '0') &&
           (req.query.date !== '-1') && (req.query.startTime !== undefined) && (req.query.stopTime !== undefined)) ||
         (resultId > 1)) {
       doBaseline = true;

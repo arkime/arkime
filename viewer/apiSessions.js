@@ -855,7 +855,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
         internals.sendSessionQueue.push(options, nextCb);
       }, () => {
         let sendPath = `api/session/${fields.node}/${sid}/send?saveId=${saveId}&cluster=${req.body.cluster}`;
-        if (typeof req.body.tags === 'string') {
+        if (ArkimeUtil.isString(req.body.tags)) {
           sendPath += `&tags=${req.body.tags}`;
         }
 
@@ -2630,7 +2630,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    */
   sessionAPIs.addTags = (req, res) => {
     let tags = [];
-    if (typeof req.body.tags === 'string') {
+    if (ArkimeUtil.isString(req.body.tags)) {
       tags = req.body.tags.replace(/[^-a-zA-Z0-9_:,]/g, '').split(',');
     }
 
@@ -2686,7 +2686,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    */
   sessionAPIs.removeTags = (req, res) => {
     let tags = [];
-    if (typeof req.body.tags === 'string') {
+    if (ArkimeUtil.isString(req.body.tags)) {
       tags = req.body.tags.replace(/[^-a-zA-Z0-9_:,]/g, '').split(',');
     }
 
@@ -3169,7 +3169,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * @param {saveId} saveId - The sessionId to save the session.
    */
   sessionAPIs.receiveSession = (req, res) => {
-    if (typeof (req.query.saveId) !== 'string') { return res.serverError(200, 'Missing saveId'); }
+    if (!ArkimeUtil.isString(req.body.saveId)) { return res.serverError(200, 'Missing saveId'); }
 
     req.query.saveId = req.query.saveId.replace(/[^-a-zA-Z0-9_]/g, '');
 

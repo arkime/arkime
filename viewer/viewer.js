@@ -542,7 +542,7 @@ async function checkCronAccess (req, res, next) {
     delete req.params.key;
   }
 
-  if (typeof req.body.key !== 'string') {
+  if (!ArkimeUtil.isString(req.body.key)) {
     return res.serverError(403, 'Missing cron key');
   }
 

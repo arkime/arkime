@@ -1,4 +1,4 @@
-use Test::More tests => 107;
+use Test::More tests => 116;
 use Cwd;
 use URI::Escape;
 use MolochTest;
@@ -34,6 +34,34 @@ my $json;
 
     $json = viewerPostToken("/user/update", '{"userId": "usersAdmin\u001b", "userName": "UserName", "enabled":true, "password":"password", "roles":["arkimeUser"]}', $token);
     eq_or_diff($json, from_json('{"text": "User not found", "success": false}'));
+
+# Create Missing/Emptry fields
+    $json = viewerPostToken("/user/create", '{"userName": "UserName", "enabled":true, "password":"password"}', $token);
+    eq_or_diff($json, from_json('{"text": "Missing/Empty required fields", "success": false}'));
+
+    $json = viewerPostToken("/user/create", '{"userId": "", "userName": "UserName", "enabled":true, "password":"password"}', $token);
+    eq_or_diff($json, from_json('{"text": "Missing/Empty required fields", "success": false}'));
+
+    $json = viewerPostToken("/user/create", '{"userId": "<script>", "userName": "UserName", "enabled":true, "password":"password"}', $token);
+    eq_or_diff($json, from_json('{"text": "User ID must be word characters", "success": false}'));
+
+    $json = viewerPostToken("/user/create", '{"userId": "test1", "enabled":true, "password":"password"}', $token);
+    eq_or_diff($json, from_json('{"text": "Missing/Empty required fields", "success": false}'));
+
+    $json = viewerPostToken("/user/create", '{"userId": "test1", "userName": "", "enabled":true, "password":"password"}', $token);
+    eq_or_diff($json, from_json('{"text": "Missing/Empty required fields", "success": false}'));
+
+    $json = viewerPostToken("/user/create", '{"userId": "test1", "userName": " ", "enabled":true, "password":"password"}', $token);
+    eq_or_diff($json, from_json('{"text": "Username can not be empty", "success": false}'));
+
+    $json = viewerPostToken("/user/create", '{"userId": "test1", "userName": "UserName", "enabled":true}', $token);
+    eq_or_diff($json, from_json('{"text": "Password needs to be at least 3 characters", "success": false}'));
+
+    $json = viewerPostToken("/user/create", '{"userId": "test1", "userName": "UserName", "enabled":true, "password":""}', $token);
+    eq_or_diff($json, from_json('{"text": "Password needs to be at least 3 characters", "success": false}'));
+
+    $json = viewerPostToken("/user/create", '{"userId": "test1", "userName": "UserName", "enabled":true, "password":"ab"}', $token);
+    eq_or_diff($json, from_json('{"text": "Password needs to be at least 3 characters", "success": false}'));
 
 # Add User 1
     $json = viewerPostToken("/user/create", '{"userId": "test1", "userName": "UserName", "enabled":true, "password":"password"}', $token);

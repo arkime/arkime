@@ -271,11 +271,11 @@ class Notifier {
    * @returns {Notifier} notifier - If successful, the notifier with name sanitized and created/user fields added.
    */
   static async apiCreateNotifier (req, res) {
-    if (typeof req.body.name !== 'string') {
+    if (!ArkimeUtil.isString(req.body.name)) {
       return res.serverError(403, 'Missing a notifier name');
     }
 
-    if (typeof req.body.type !== 'string') {
+    if (!ArkimeUtil.isString(req.body.type)) {
       return res.serverError(403, 'Missing notifier type');
     }
 
@@ -338,11 +338,11 @@ class Notifier {
    */
 
   static async apiUpdateNotifier (req, res) {
-    if (typeof req.body.name !== 'string') {
+    if (!ArkimeUtil.isString(req.body.name)) {
       return res.serverError(403, 'Missing a notifier name');
     }
 
-    if (typeof req.body.type !== 'string') {
+    if (!ArkimeUtil.isString(req.body.type)) {
       return res.serverError(403, 'Missing notifier type');
     }
 
