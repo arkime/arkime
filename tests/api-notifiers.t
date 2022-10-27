@@ -1,4 +1,4 @@
-use Test::More tests => 51;
+use Test::More tests => 54;
 use Cwd;
 use URI::Escape;
 use MolochTest;
@@ -35,6 +35,8 @@ my $notAdminToken = getTokenCookie('notadmin');
   is($json->{text}, "Notifier fields must be an array", "notifier fields must be an array");
   $json = viewerPostToken("/notifiers", '{"name":"<>","type":"slack","fields":[]}', $token);
   is($json->{text}, "Notifier name empty");
+  $json = viewerPostToken("/api/notifier", '{"name":"test1","type":"foo", "fields": ["foo"]}', $token);
+  is($json->{text}, "Unknown notifier type");
 
 # create notifier requires token and admin access
   $json = viewerPost("/notifiers", '{}');
@@ -77,6 +79,10 @@ my $notAdminToken = getTokenCookie('notadmin');
   is($json->{text}, "Missing notifier fields", "notifier fields required");
   $json = viewerPutToken("/notifiers/$id1", '{"name":"test1a","type":"slack","fields":"badfields"}', $token);
   is($json->{text}, "Notifier fields must be an array", "notifier fields must be an array");
+  $json = viewerPutToken("/notifiers/$id1", '{"name":"<>","type":"slack","fields":[]}', $token);
+  is($json->{text}, "Notifier name empty");
+  $json = viewerPutToken("/notifiers/$id1", '{"name":"test1","type":"foo", "fields": ["foo"]}', $token);
+  is($json->{text}, "Unknown notifier type");
 
 # update notifier needs valid notifier type
   $json = viewerPutToken("/notifiers/$id1", '{"name":"test1a","type":"unknown","fields":[]}', $token);

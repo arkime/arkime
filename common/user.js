@@ -599,6 +599,10 @@ class User {
       return res.serverError(403, 'Can not create superAdmin unless you are superAdmin');
     }
 
+    if (req.body.expression !== undefined && !ArkimeUtil.isString(req.body.expression, 0)) {
+      return res.serverError(403, 'Expression must be a string when present');
+    }
+
     req.body.roleAssigners ??= [];
 
     User.getUser(req.body.userId, (err, user) => {
@@ -725,7 +729,7 @@ class User {
 
       user.enabled = req.body.enabled === true;
 
-      if (ArkimeUtil.isString(req.body.expression)) {
+      if (ArkimeUtil.isString(req.body.expression, 0)) {
         if (req.body.expression.match(/^\s*$/)) {
           delete user.expression;
         } else {

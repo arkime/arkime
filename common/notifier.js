@@ -89,10 +89,11 @@ class Notifier {
    * @returns {string|undefined} - String message to describe check error or undefined if all is good
    */
   static #checkNotifierTypesAndFields (type, fields) {
+    type = type.toLowerCase();
     let foundNotifier;
     for (const n in Notifier.notifierTypes) {
       const notifier = Notifier.notifierTypes[n];
-      if (notifier.type === type.toLowerCase()) {
+      if (notifier.type === type) {
         foundNotifier = notifier;
       }
     }
