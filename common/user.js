@@ -577,8 +577,8 @@ class User {
       return res.serverError(403, 'User ID cannot be the same as the shared user');
     }
 
-    if (req.body.roles && !Array.isArray(req.body.roles)) {
-      return res.serverError(403, 'Roles field must be an array');
+    if (req.body.roles !== undefined && !ArkimeUtil.isStringArray(req.body.roles)) {
+      return res.serverError(403, 'Roles field must be an array of strings');
     }
 
     req.body.roles ??= [];
@@ -591,8 +591,8 @@ class User {
       return res.serverError(403, 'User defined roles can\'t have usersAdmin');
     }
 
-    if (req.body.roleAssigners && !Array.isArray(req.body.roleAssigners)) {
-      return res.serverError(403, 'roleAssigners field must be an array');
+    if (req.body.roleAssigners && !ArkimeUtil.isStringArray(req.body.roleAssigners)) {
+      return res.serverError(403, 'roleAssigners field must be an array of strings');
     }
 
     if (req.body.roles.includes('superAdmin') && !req.user.hasRole('superAdmin')) {
@@ -661,7 +661,7 @@ class User {
   static async apiDeleteUser (req, res) {
     const userId = ArkimeUtil.sanitizeStr(req.body.userId || req.params.id);
 
-    if (!userId) {
+    if (!ArkimeUtil.isString(userId)) {
       return res.serverError(403, 'Missing userId');
     }
 
@@ -689,7 +689,7 @@ class User {
   static apiUpdateUser (req, res) {
     const userId = ArkimeUtil.sanitizeStr(req.body.userId || req.params.id);
 
-    if (!userId) {
+    if (!ArkimeUtil.isString(userId)) {
       return res.serverError(403, 'Missing userId');
     }
 
@@ -703,6 +703,10 @@ class User {
       return res.serverError(403, 'User ID can\'t be a system role id');
     }
 
+    if (req.body.roles !== undefined && !ArkimeUtil.isStringArray(req.body.roles)) {
+      return res.serverError(403, 'Roles field must be an array of strings');
+    }
+
     req.body.roles ??= [];
 
     if (isRole && req.body.roles.includes('superAdmin')) {
@@ -713,8 +717,8 @@ class User {
       return res.serverError(403, 'User defined roles can\'t have usersAdmin');
     }
 
-    if (req.body.roleAssigners && !Array.isArray(req.body.roleAssigners)) {
-      return res.serverError(403, 'roleAssigners field must be an array');
+    if (req.body.roleAssigners && !ArkimeUtil.isStringArray(req.body.roleAssigners)) {
+      return res.serverError(403, 'roleAssigners field must be an array of strings');
     }
 
     if (req.body.roles.includes('superAdmin') && !req.user.hasRole('superAdmin')) {
@@ -771,7 +775,7 @@ class User {
         return res.send(JSON.stringify({
           success: true,
           text: `User ${userId} updated successfully`
-        }));
+        })); // lgtm [js/reflected-xss]
       });
     });
   };
@@ -789,11 +793,11 @@ class User {
     const roleId = req.body.roleId;
     const newRoleState = req.body.newRoleState;
 
-    if (!userId) {
+    if (!ArkimeUtil.isString(userId)) {
       return res.serverError(403, 'Missing userId');
     }
 
-    if (!roleId) {
+    if (!ArkimeUtil.isString(roleId)) {
       return res.serverError(403, 'Missing roleId');
     }
 
@@ -840,7 +844,7 @@ class User {
         return res.send(JSON.stringify({
           success: true,
           text: `User ${userId}'s role ${roleId} updated successfully`
-        }));
+        })); // lgtm [js/reflected-xss]
       });
     });
   };

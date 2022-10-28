@@ -10,6 +10,8 @@ use strict;
 my $token = getTokenCookie();
 my $notAdminToken = getTokenCookie('notadmin');
 
+esPost("/tests_notifiers/_delete_by_query?conflicts=proceed&refresh", '{ "query": { "match_all": {} } }');
+
 # add users for sharing tests
   viewerPostToken("/user/create", '{"userId": "notadmin", "userName": "notadmin", "enabled":true, "password":"password", "roles":["arkimeUser"]}', $token);
   viewerPostToken("/user/create", '{"userId": "user2", "userName": "user2", "enabled":true, "password":"password", "roles":["arkimeUser"]}', $token);
