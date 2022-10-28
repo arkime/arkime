@@ -29,7 +29,7 @@ $json = cont3xtPutToken("/api/linkGroup", to_json({
     itypes => ["ip", "hash"]
   }]
 }), $token);
-eq_or_diff($json, from_json('{"success": false, "text": "viewRoles must be array"}'));
+eq_or_diff($json, from_json('{"success": false, "text": "viewRoles must be an array of strings"}'));
 
 $json = cont3xtPutToken("/api/linkGroup", to_json({
   name => "Links1",
@@ -41,7 +41,7 @@ $json = cont3xtPutToken("/api/linkGroup", to_json({
     itypes => ["ip", "hash"]
   }]
 }), $token);
-eq_or_diff($json, from_json('{"success": false, "text": "viewRoles must contain strings"}'));
+eq_or_diff($json, from_json('{"success": false, "text": "viewRoles must be an array of strings"}'));
 
 $json = cont3xtPutToken("/api/linkGroup", to_json({
   name => "Links1",
@@ -53,7 +53,7 @@ $json = cont3xtPutToken("/api/linkGroup", to_json({
     itypes => ["ip", "hash"]
   }]
 }), $token);
-eq_or_diff($json, from_json('{"success": false, "text": "editRoles must be array"}'));
+eq_or_diff($json, from_json('{"success": false, "text": "editRoles must be an array of strings"}'));
 
 $json = cont3xtPutToken("/api/linkGroup", to_json({
   name => "Links1",
@@ -65,7 +65,7 @@ $json = cont3xtPutToken("/api/linkGroup", to_json({
     itypes => ["ip", "hash"]
   }]
 }), $token);
-eq_or_diff($json, from_json('{"success": false, "text": "editRoles must contain strings"}'));
+eq_or_diff($json, from_json('{"success": false, "text": "editRoles must be an array of strings"}'));
 
 $json = cont3xtPutToken("/api/linkGroup", to_json({
   name => "Links1",

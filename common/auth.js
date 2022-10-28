@@ -378,14 +378,14 @@ class Auth {
     return crypto
       .createHash('md5')
       .update(str)
-      .digest(encoding || 'hex');
+      .digest(encoding || 'hex'); // lgtm [js/weak-cryptographic-algorithm]
   };
 
   // Hash (MD5) and encrypt the password before storing.
   // Encryption is used because OpenSearch/Elasticsearch is insecure by default and we don't want others adding accounts.
   static pass2store (userid, password) {
     // md5 is required because of http digest
-    const m = Auth.md5(userid + ':' + Auth.#httpRealm + ':' + password);
+    const m = Auth.md5(userid + ':' + Auth.#httpRealm + ':' + password); // lgtm [js/weak-cryptographic-algorithm]
 
     // New style with IV: IV.E
     const iv = crypto.randomBytes(16);

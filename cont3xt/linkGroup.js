@@ -113,16 +113,12 @@ class LinkGroup {
       return 'Missing list of links';
     }
 
-    if (lg.viewRoles !== undefined) {
-      if (!Array.isArray(lg.viewRoles)) {
-        return 'viewRoles must be array';
-      }
+    if (lg.viewRoles !== undefined && !ArkimeUtil.isStringArray(lg.viewRoles)) {
+      return 'viewRoles must be an array of strings';
+    }
 
-      for (const viewRole of lg.viewRoles) {
-        if (!ArkimeUtil.isString(viewRole)) {
-          return 'viewRoles must contain strings';
-        }
-      }
+    if (lg.editRoles !== undefined && !ArkimeUtil.isStringArray(lg.editRoles)) {
+      return 'editRoles must be an array of strings';
     }
 
     if (lg.editRoles !== undefined) {
