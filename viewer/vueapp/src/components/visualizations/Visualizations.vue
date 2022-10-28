@@ -261,8 +261,6 @@ let landColorLight;
 
 let timeout;
 let basePath;
-let plotCheck;
-let initialized;
 
 // bar width vars
 let barWidth;
@@ -274,7 +272,7 @@ export default {
   name: 'MolochVisualizations',
   props: {
     graphData: {
-      typte: Object,
+      type: Object,
       default: () => { return {}; }
     },
     mapData: {
@@ -306,7 +304,9 @@ export default {
       graph: undefined,
       graphOptions: {},
       showMap: undefined,
-      turnOffGraphDays: this.$constants.TURN_OFF_GRAPH_DAYS
+      turnOffGraphDays: this.$constants.TURN_OFF_GRAPH_DAYS,
+      initialized: false,
+      plotCheck: undefined
     };
   },
   computed: {
@@ -421,12 +421,12 @@ export default {
     },
     graphData: function (newVal, oldVal) {
       if (newVal && oldVal && !this.hideViz && !this.disabledAggregations) {
-        if (plotCheck) { clearInterval(plotCheck); }
-        plotCheck = setInterval(() => { // wait for plot func to be loaded
-          if ($.plot || initialized) {
-            clearInterval(plotCheck);
-            initialized = true;
-            plotCheck = undefined;
+        if (this.plotCheck) { clearInterval(this.plotCheck); }
+        this.plotCheck = setInterval(() => { // wait for plot func to be loaded
+          if ($.plot || this.initialized) {
+            clearInterval(this.plotCheck);
+            this.initialized = true;
+            this.plotCheck = undefined;
             // create map
             this.displayMap();
             // create graph
@@ -634,22 +634,26 @@ export default {
       if (times.startTime && times.stopTime) {
         this.$store.commit('setTimeRange', 0); // set time range to custom
         this.$store.commit('setTime', times); // set start/stop time
-        this.$router.push({ // issue a search with the new time params
-          query: {
-            ...this.$route.query,
-            date: undefined,
-            stopTime: times.stopTime,
-            startTime: times.startTime
-          }
-        });
+
+        if (this.$route.query.date !== undefined ||
+            this.$route.query.startTime !== times.startTime || this.$route.query.stopTime !== times.stopTime) {
+          this.$router.push({ // issue a search with the new time params
+            query: {
+              ...this.$route.query,
+              date: undefined,
+              stopTime: times.stopTime,
+              startTime: times.startTime
+            }
+          });
+        }
       }
     },
     setupGraphElement: function () {
-      plotCheck = setInterval(() => {
+      this.plotCheck = setInterval(() => {
         if ($.plot) {
-          clearInterval(plotCheck);
-          plotCheck = undefined;
-          initialized = true;
+          clearInterval(this.plotCheck);
+          this.plotCheck = undefined;
+          this.initialized = true;
         }
       }, 50);
 
