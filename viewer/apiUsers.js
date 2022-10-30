@@ -603,6 +603,9 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
       }
 
       user.welcomeMsgNum = parseInt(req.body.msgNum);
+      if (!Number.isInteger(user.welcomeMsgNum)) {
+        return res.serverError(403, 'welcomeMsgNum is not integer');
+      }
 
       User.setUser(req.params.userId, user, (err, info) => {
         if (Config.debug) {
@@ -611,7 +614,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
 
         return res.send(JSON.stringify({
           success: true,
-          text: `User, ${req.params.userId}, dismissed message ${req.body.msgNum}`
+          text: `User, ${req.user.userId}, dismissed message ${user.welcomeMsgNum}`
         }));
       });
     });

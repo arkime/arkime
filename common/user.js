@@ -772,10 +772,10 @@ class User {
           return res.serverError(500, 'Error updating user:' + err);
         }
 
-        return res.send(JSON.stringify({
+        return res.send(JSON.stringify({ // lgtm [js/reflected-xss]
           success: true,
           text: `User ${userId} updated successfully`
-        })); // lgtm [js/reflected-xss]
+        }));
       });
     });
   };
@@ -841,10 +841,10 @@ class User {
           return res.serverError(500, 'Error updating user role:' + err);
         }
 
-        return res.send(JSON.stringify({
+        return res.send(JSON.stringify({ // lgtm [js/reflected-xss]
           success: true,
           text: `User ${userId}'s role ${roleId} updated successfully`
-        })); // lgtm [js/reflected-xss]
+        }));
       });
     });
   };

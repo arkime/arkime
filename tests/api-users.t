@@ -1,4 +1,4 @@
-use Test::More tests => 121;
+use Test::More tests => 123;
 use Cwd;
 use URI::Escape;
 use MolochTest;
@@ -275,8 +275,16 @@ my $json;
 # Messages
     $info = viewerPutToken("/user/test1/acknowledgeMsg", '{"msgNum":2}', $token2);
     ok(!$info->{success}, "can't update welcome message number for another user");
+
+    $info = viewerPutToken("/api/user/test1/acknowledge?molochRegressionUser=test1", '{}', $test1Token);
+    eq_or_diff($info, from_json('{"text": "Message number required", "success": false}'));
+
+    $info = viewerPutToken("/api/user/test1/acknowledge?molochRegressionUser=test1", '{"msgNum":"foo"}', $test1Token);
+    eq_or_diff($info, from_json('{"text": "welcomeMsgNum is not integer", "success": false}'));
+
     $info = viewerPutToken("/api/user/test1/acknowledge?molochRegressionUser=test1", '{"msgNum":2}', $test1Token);
     ok($info->{success}, "update welcome message number");
+
     $info = viewerGet("/user/current?molochRegressionUser=test1");
     eq_or_diff($info->{welcomeMsgNum}, 2, "welcome message number is correct");
 
