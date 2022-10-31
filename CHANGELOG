@@ -31,6 +31,7 @@ NOTICE: Cross-cluster Shortcuts require you to not restart all your viewers at o
   - all - better console output sanitization
   - capture/viewer - Add TLS Certificate Organisational Unit field parsing (PR #2038)
   - capture - use arkime_update_geo.sh in error msg
+  - capture - log error and exit if fields loading fails
   - release - Stop Configure from destroying systemd files
 
 4.0.1 2022/10/18

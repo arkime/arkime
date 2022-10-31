@@ -2327,6 +2327,7 @@ LOCAL void moloch_db_load_fields()
     unsigned char     *data = moloch_http_get(esServer, key, key_len, &data_len);
 
     if (!data) {
+        LOGEXIT("ERROR - Couldn't download %sfields, database (%s) might be down or not initialized.", config.prefix, config.elasticsearch);
         return;
     }
 
@@ -2334,6 +2335,7 @@ LOCAL void moloch_db_load_fields()
     unsigned char     *hits = 0;
     hits = moloch_js0n_get(data, data_len, "hits", &hits_len);
     if (!hits) {
+        LOGEXIT("ERROR - Couldn't download %sfields, database (%s) might be down or not initialized.", config.prefix, config.elasticsearch);
         free(data);
         return;
     }
@@ -2343,6 +2345,7 @@ LOCAL void moloch_db_load_fields()
     ahits = moloch_js0n_get(hits, hits_len, "hits", &ahits_len);
 
     if (!ahits) {
+        LOGEXIT("ERROR - Couldn't download %sfields, database (%s) might be down or not initialized.", config.prefix, config.elasticsearch);
         free(data);
         return;
     }
