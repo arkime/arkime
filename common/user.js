@@ -73,7 +73,7 @@ class User {
    */
   static initialize (options) {
     if (options.debug > 1) {
-      console.log('User.initialize', options);
+      console.log('User.initialize', options); // lgtm [js/clear-text-logging]
     }
     User.#debug = options.debug ?? 0;
     readOnly = options.readOnly ?? false;

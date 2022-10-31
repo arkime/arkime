@@ -116,7 +116,7 @@ class ArkimeUtil {
       }
 
       if (ArkimeUtil.debug > 1) {
-        console.log('REDIS-SENTINEL:', options);
+        console.log('REDIS-SENTINEL:', options); // lgtm [js/clear-text-logging]
       }
       return new Redis(options);
     }
@@ -141,7 +141,7 @@ class ArkimeUtil {
       }
 
       if (ArkimeUtil.debug > 1) {
-        console.log('REDIS-CLUSTER: hosts', hosts, 'options', { redisOptions: options });
+        console.log('REDIS-CLUSTER: hosts', hosts, 'options', { redisOptions: options }); // lgtm [js/clear-text-logging]
       }
       return new Redis.Cluster(hosts, { redisOptions: options });
     }

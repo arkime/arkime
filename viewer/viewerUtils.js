@@ -57,7 +57,7 @@ module.exports = (Config, Db, internals) => {
   ViewerUtils.determineQueryTimes = (reqQuery) => {
     let startTimeSec = null;
     let stopTimeSec = null;
-    let interval = 60 * 60;
+    let interval;
 
     if (Config.debug) {
       console.log('determineQueryTimes <-', reqQuery);
