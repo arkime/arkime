@@ -294,8 +294,8 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
       return res.serverError(403, 'Missing sort order');
     }
 
-    req.body.name = req.body.name.replace(/[^-a-zA-Z0-9\s_:]/g, '');
-    if (req.body.name.length < 1) {
+    const configName = req.body.name.replace(/[^-a-zA-Z0-9\s_:]/g, '');
+    if (configName.length < 1) {
       return res.serverError(403, 'Invalid custom column configuration name');
     }
 
@@ -304,13 +304,13 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
 
     // don't let user use duplicate names
     for (const config of user.columnConfigs) {
-      if (req.body.name === config.name) {
+      if (configName === config.name) {
         return res.serverError(403, 'There is already a custom column with that name');
       }
     }
 
     user.columnConfigs.push({
-      name: req.body.name,
+      name: configName,
       columns: req.body.columns,
       order: req.body.order
     });
@@ -324,7 +324,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
       return res.send(JSON.stringify({
         success: true,
         text: 'Created custom column configuration successfully',
-        name: req.body.name
+        name: configName
       }));
     });
   };
@@ -452,9 +452,9 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
       return res.serverError(403, 'Missing fields');
     }
 
-    req.body.name = req.body.name.replace(/[^-a-zA-Z0-9\s_:]/g, '');
+    const configName = req.body.name.replace(/[^-a-zA-Z0-9\s_:]/g, '');
 
-    if (req.body.name.length < 1) {
+    if (configName.length < 1) {
       return res.serverError(403, 'Invalid custom SPI View fields configuration name');
     }
 
@@ -463,13 +463,13 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
 
     // don't let user use duplicate names
     for (const config of user.spiviewFieldConfigs) {
-      if (req.body.name === config.name) {
+      if (configName === config.name) {
         return res.serverError(403, 'There is already a custom SPI View fieldss configuration with that name');
       }
     }
 
     user.spiviewFieldConfigs.push({
-      name: req.body.name,
+      name: configName,
       fields: req.body.fields
     });
 
@@ -482,7 +482,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
       return res.send(JSON.stringify({
         success: true,
         text: 'Created custom SPI View fieldss configuration successfully',
-        name: req.body.name
+        name: configName
       }));
     });
   };
