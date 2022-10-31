@@ -42,7 +42,7 @@ class Auth {
 
   static initialize (options) {
     if (options.debug > 1) {
-      console.log('Auth.initialize', options);
+      console.log('Auth.initialize', options); // lgtm [js/clear-text-logging]
     }
 
     Auth.debug = options.debug ?? 0;

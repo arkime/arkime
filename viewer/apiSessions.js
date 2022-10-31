@@ -725,10 +725,6 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
       list = list.sort((a, b) => {
         return a.fields.lastPacket - b.fields.lastPacket;
       });
-    } else if (list.length > 0 && list[0].fields) {
-      list = list.sort((a, b) => {
-        return a.fields.lastPacket - b.fields.lastPacket;
-      });
     } else if (list.length === 0) {
       res.status(404);
       return res.end(JSON.stringify({ success: false, text: 'no sessions found' }));
@@ -1413,7 +1409,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
 
   sessionAPIs.sessionsListFromIds = (req, ids, fields, cb) => {
     let processSegments = false;
-    if (req && ((req.query.segments && req.query.segments.match(/^(time|all)$/)) || (req.query.segments && req.query.segments.match(/^(time|all)$/)))) {
+    if (req?.query && ArkimeUtil.isString(req.query.segments) && req.query.segments.match(/^(time|all)$/)) {
       if (fields.indexOf('rootId') === -1) { fields.push('rootId'); }
       processSegments = true;
     }

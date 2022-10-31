@@ -143,7 +143,7 @@ class WiseProxySource extends WISESource {
 
     request(options, (err, response, body) => {
       if (err) {
-        console.log(this.section, 'problem fetching /fields', this.section, err || response);
+        console.log(this.section, 'problem fetching /fields', this.section, err);
         return;
       }
       const buf = Buffer.from(body, 'binary');
@@ -168,7 +168,7 @@ class WiseProxySource extends WISESource {
     };
     request(options, (err, response, body) => {
       if (err) {
-        console.log(this.section, 'problem fetching /views', this.section, err || response);
+        console.log(this.section, 'problem fetching /views', this.section, err);
         return;
       }
       for (const viewName in body) {
@@ -183,7 +183,7 @@ class WiseProxySource extends WISESource {
     };
     request(options, (err, response, body) => {
       if (err) {
-        console.log(this.section, 'problem fetching /rightClicks', this.section, err || response);
+        console.log(this.section, 'problem fetching /rightClicks', this.section, err);
         return;
       }
       for (const viewName in body) {
