@@ -7361,7 +7361,7 @@ qq/ {
     }
 
     print "\n";
-    print "* You should also run ./db.pl update again\n";
+    print "* You should also run ./db.pl upgrade again\n";
     print "* If having fields issues make sure you restart 1 capture after running repair to see if it fixes\n";
 
     exit 0;
