@@ -525,9 +525,9 @@ module.exports = (Config, Db, ViewerUtils, sessionAPIs) => {
       res.write('\r\n');
 
       for (let i = 0, ilen = links.length; i < ilen; i++) {
-        res.write('"' + nodes[links[i].source].id.replace('"', '""') + '"' + seperator +
+        res.write('"' + nodes[links[i].source].id.replace('"', '""') + '"' + seperator + // lgtm [js/reflected-xss]
                   '"' + nodes[links[i].target].id.replace('"', '""') + '"' + seperator +
-                       links[i].value + seperator); // lgtm [js/reflected-xss]
+                       links[i].value + seperator);
         for (let f = 0, flen = fields.length; f < flen; f++) {
           res.write(links[i][displayFields[fields[f]].dbField].toString());
           if (f !== flen - 1) { res.write(seperator); } // lgtm [js/reflected-xss]

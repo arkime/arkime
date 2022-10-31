@@ -195,7 +195,12 @@ function saveBody (req, res, next) {
   req._body = true;
 
   // parse
-  const buf = Buffer.alloc(parseInt(req.headers['content-length'] || '1024'));
+  let contentLength = parseInt(req.headers['content-length'] || '1024');
+  if (contentLength > 11000000) {
+    contentLength = 11000000;
+  }
+
+  const buf = Buffer.alloc(contentLength);
   let pos = 0;
   req.on('data', (chunk) => { chunk.copy(buf, pos); pos += chunk.length; });
   req.on('end', () => {

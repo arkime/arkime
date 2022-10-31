@@ -196,7 +196,7 @@ function makeRequest (url, options, cb) {
   if (options.arkime_opaque !== undefined) {
     preq.setHeader('X-Opaque-Id', options.arkime_opaque);
   }
-  if (options.arkime_body !== undefined) {
+  if (options.arkime_body !== undefined && ArkimeUtil.isString(options.arkime_body, 0)) {
     if (options.method === 'DELETE') {
       preq.setHeader('content-length', options.arkime_body.length);
     }

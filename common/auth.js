@@ -377,8 +377,8 @@ class Auth {
   static md5 (str, encoding) {
     return crypto
       .createHash('md5')
-      .update(str)
-      .digest(encoding || 'hex'); // lgtm [js/weak-cryptographic-algorithm]
+      .update(str) // lgtm [js/weak-cryptographic-algorithm]
+      .digest(encoding || 'hex');
   };
 
   // Hash (MD5) and encrypt the password before storing.
