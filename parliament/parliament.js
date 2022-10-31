@@ -426,7 +426,7 @@ function checkAuthUpdate (req, res, next) {
     return isAdmin(req, res, next);
   }
 
-  if (req.body !== undefined && req.body.authSetupCode !== undefined && req.body.authSetupCode === internals.authSetupCode) {
+  if (req.body !== undefined && req.body.authSetupCode === internals.authSetupCode) {
     return next();
   } else {
     console.log(chalk.cyan(
@@ -1384,6 +1384,10 @@ function verifyNotifierReqBody (req) {
 
 // Update an existing notifier
 router.put('/notifiers/:name', [isAdmin, checkCookieToken], (req, res, next) => {
+  if (req.params.name === '__proto__') {
+    return next(newError(404, 'Bad name'));
+  }
+
   if (!parliament.settings.notifiers[req.params.name]) {
     return next(newError(404, `${req.params.name} not found.`));
   }
@@ -1499,14 +1503,16 @@ router.post('/notifiers', [isAdmin, checkCookieToken], (req, res, next) => {
 // Update the parliament general settings object to the defaults
 router.put('/settings/restoreDefaults', [isAdmin, checkCookieToken], (req, res, next) => {
   let type = 'all'; // default
-  if (req.body.type) {
+  if (ArkimeUtil.isString(req.body.type)) {
     type = req.body.type;
   }
 
   if (type === 'general') {
     parliament.settings.general = JSON.parse(JSON.stringify(settingsDefault.general));
-  } else {
+  } else if (type === 'all') {
     parliament.settings = JSON.parse(JSON.stringify(settingsDefault));
+  } else {
+    return next(newError(500, 'type must be general or all'));
   }
 
   const settings = JSON.parse(JSON.stringify(parliament.settings));
@@ -1584,7 +1590,7 @@ router.post('/groups', [isAdmin, checkCookieToken], (req, res, next) => {
     return next(newError(422, 'A group must have a title'));
   }
 
-  if (req.body.description && typeof req.body.description !== 'string') {
+  if (req.body.description && !ArkimeUtil.isString(req.body.description)) {
     return next(newError(422, 'A group must have a string description.'));
   }
 
@@ -1626,7 +1632,7 @@ router.put('/groups/:id', [isAdmin, checkCookieToken], (req, res, next) => {
     return next(newError(422, 'A group must have a title.'));
   }
 
-  if (req.body.description && typeof req.body.description !== 'string') {
+  if (req.body.description && !ArkimeUtil.isString(req.body.description)) {
     return next(newError(422, 'A group must have a string description.'));
   }
 
@@ -1659,15 +1665,15 @@ router.post('/groups/:id/clusters', [isAdmin, checkCookieToken], (req, res, next
     return next(newError(422, 'A cluster must have a url.'));
   }
 
-  if (req.body.description && typeof req.body.description !== 'string') {
+  if (req.body.description && !ArkimeUtil.isString(req.body.description)) {
     return next(newError(422, 'A cluster must have a string description.'));
   }
 
-  if (req.body.localUrl && typeof req.body.localUrl !== 'string') {
+  if (req.body.localUrl && !ArkimeUtil.isString(req.body.localUrl)) {
     return next(newError(422, 'A cluster must have a string localUrl.'));
   }
 
-  if (req.body.type && typeof req.body.type !== 'string') {
+  if (req.body.type && !ArkimeUtil.isString(req.body.type)) {
     return next(newError(422, 'A cluster must have a string type.'));
   }
 
@@ -1738,15 +1744,15 @@ router.put('/groups/:groupId/clusters/:clusterId', [isAdmin, checkCookieToken], 
     return next(newError(422, 'A cluster must have a url.'));
   }
 
-  if (req.body.description && typeof req.body.description !== 'string') {
+  if (req.body.description && !ArkimeUtil.isString(req.body.description)) {
     return next(newError(422, 'A cluster must have a string description.'));
   }
 
-  if (req.body.localUrl && typeof req.body.localUrl !== 'string') {
+  if (req.body.localUrl && !ArkimeUtil.isString(req.body.localUrl)) {
     return next(newError(422, 'A cluster must have a string localUrl.'));
   }
 
-  if (req.body.type && typeof req.body.type !== 'string') {
+  if (req.body.type && !ArkimeUtil.isString(req.body.type)) {
     return next(newError(422, 'A cluster must have a string type.'));
   }
 

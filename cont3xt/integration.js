@@ -552,7 +552,7 @@ class Integration {
       }
     }
 
-    if (req.body.doIntegrations) {
+    if (req.body.doIntegrations !== undefined) {
       if (!Array.isArray(req.body.doIntegrations)) {
         return res.send({ success: false, text: 'doIntegrations must be an array when present' });
       }
