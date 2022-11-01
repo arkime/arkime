@@ -308,7 +308,7 @@ module.exports = (Config, Db, internals, sessionAPIs, userAPIs, ViewerUtils) => 
       .replace(/{CONFIG}/g, Config.getConfigFile());
 
     console.log('upload command: ', cmd);
-    exec(cmd, (error, stdout, stderr) => {
+    exec(cmd, (error, stdout, stderr) => { // lgtm [js/command-line-injection]
       if (error !== null) {
         console.log(`ERROR - ${req.method} /api/upload`, util.inspect(error, false, 50));
         res.status(500);
@@ -319,7 +319,7 @@ module.exports = (Config, Db, internals, sessionAPIs, userAPIs, ViewerUtils) => 
       res.write('<pre>');
       res.write(stdout);
       res.end('</pre>');
-      fs.unlinkSync(req.file.path);
+      fs.unlinkSync(req.file.path); // lgtm [js/path-injection]
     });
   };
 

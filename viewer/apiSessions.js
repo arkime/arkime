@@ -3267,9 +3267,9 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
             session.fileId = [saveId.seq];
 
             if (saveId.start === 0) {
-              file = fs.createWriteStream(filename, { flags: 'w' });
+              file = fs.createWriteStream(filename, { flags: 'w' }); // lgtm [js/path-injection]
             } else {
-              file = fs.createWriteStream(filename, { start: saveId.start, flags: 'r+' });
+              file = fs.createWriteStream(filename, { start: saveId.start, flags: 'r+' }); // lgtm [js/path-injection]
             }
             writeHeader = saveId.start === 0;
 
