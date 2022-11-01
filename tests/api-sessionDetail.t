@@ -1,4 +1,4 @@
-use Test::More tests => 29;
+use Test::More tests => 32;
 
 use Cwd;
 use URI::Escape;
@@ -126,3 +126,11 @@ my $pwd = "*/pcap";
     $id = $sdId->{data}->[0]->{id};
     $sd = $MolochTest::userAgent->get("http://$MolochTest::host:8123/test/session/$id/detail")->content;
     ok($sd =~ m{Export Unique Src IP:Port}s, "ipv4 separator");
+
+# cyberchef
+    $sd = $MolochTest::userAgent->get("http://$MolochTest::host:8123/cyberchef.html")->content;
+    ok($sd =~ m{<base href="./cyberchef/" /><meta name="referrer" content="no-referrer">}s, "cyber chef header");
+    ok($sd =~ m{else if \(param.startsWith\('session'\)\)}s, "cyber chef script");
+
+    $sd = $MolochTest::userAgent->get("http://$MolochTest::host:8123/cyberchef/test/session/$id?type=src")->content;
+    is ($sd, '{"data":"000100100a0100010000010c0f0300040a010001000100100a0100010000010d0f0300040a010001000100100a0100010000010e0f0300040a010001000100100a0100010000010f0f0300040a010001000100100a010001000001100f0300040a010001000100100a010001000001110f0300040a010001"}');
