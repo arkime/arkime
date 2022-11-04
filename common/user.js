@@ -1362,7 +1362,10 @@ class UserESImplementation {
   async allRoles () {
     const response = await this.client.search({
       index: this.prefix + 'users',
-      body: { query: { prefix: { userId: 'role:' } } },
+      body: {
+        size: 1000,
+        query: { prefix: { userId: 'role:' } }
+      },
       rest_total_hits_as_int: true
     });
 
