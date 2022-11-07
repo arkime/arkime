@@ -1147,7 +1147,7 @@ exports.deleteHunt = async (id) => {
   });
 };
 exports.setHunt = async (id, doc) => {
-  exports.refresh('sessions*');
+  await exports.refresh('sessions*');
   return internals.client7.index({
     index: fixIndex('hunts'), body: doc, id, refresh: true, timeout: '10m'
   });
