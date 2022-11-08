@@ -1168,7 +1168,6 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
   huntAPIs.removeUsers = async (req, res) => {
     try {
       const { body: { _source: hunt } } = await Db.getHunt(req.params.id);
-      const huntBefore = JSON.stringify(hunt);
 
       if (!hunt.users || !hunt.users.length) {
         return res.serverError(404, 'There are no users that have access to view this hunt');
@@ -1182,10 +1181,9 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
 
       hunt.users.splice(userIdx, 1); // remove the user from the list
 
-      const huntAfter = JSON.stringify(hunt);
       try {
         await Db.updateHunt(req.params.id, { users: hunt.users });
-        res.send(JSON.stringify({ success: true, users: hunt.users, huntBefore, huntAfter }));
+        res.send(JSON.stringify({ success: true, users: hunt.users }));
       } catch (err) {
         console.log(`ERROR - ${req.method} /api/hunt/%s/user/%s (updateHunt)`, ArkimeUtil.sanitizeStr(req.params.id), ArkimeUtil.sanitizeStr(req.params.user), util.inspect(err, false, 50));
         return res.serverError(500, 'Unable to remove user');

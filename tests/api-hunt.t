@@ -196,7 +196,6 @@ my $hToken = getTokenCookie('huntuser');
 
 # add a hunt that is shared with another user
   $json = viewerPostToken("/hunt?molochRegressionUser=anonymous", '{"users":"huntuser","totalSessions":1,"name":"test hunt 13~`!@#$%^&*()[]{};<>?/`","size":"50","search":"test search text","searchType":"ascii","type":"raw","src":true,"dst":true,"query":{"startTime":18000,"stopTime":1536872891}}', $token);
-  diag Dumper($json);
   is ($json->{hunt}->{users}->[0], "huntuser", "hunt should have a user on creation");
   my $id7 = $json->{hunt}->{id};
 
@@ -205,7 +204,6 @@ my $hToken = getTokenCookie('huntuser');
   esGet("/_refresh");
   sleep(2); # Wait for user to be set or else test after next fails
   $json = viewerDeleteToken("/api/hunt/$id7/user/huntuser?molochRegressionUser=anonymous", $token);
-  diag Dumper($json);
   is (scalar @{$json->{users}}, 0, "hunt should have no users");
 
   sleep(2);
@@ -215,7 +213,6 @@ my $hToken = getTokenCookie('huntuser');
 
 # can't delete a user from an hunt with no users
   $json = viewerDeleteToken("/api/hunt/$id7/user/huntuser?molochRegressionUser=anonymous", $token);
-  diag Dumper($json);
   eq_or_diff($json, from_json('{"text": "There are no users that have access to view this hunt", "success": false}'), "can't delete a user from an hunt with no users");
 
 # add a user to a hunt
