@@ -1189,6 +1189,7 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
       const huntAfter = JSON.stringify(hunt);
       try {
         await Db.setHunt(req.params.id, hunt);
+        await Db.refresh('hunts');
         res.send(JSON.stringify({ success: true, users: hunt.users, huntBefore, huntAfter }));
       } catch (err) {
         console.log(`ERROR - ${req.method} /api/hunt/%s/user/%s (setHunt)`, ArkimeUtil.sanitizeStr(req.params.id), ArkimeUtil.sanitizeStr(req.params.user), util.inspect(err, false, 50));
