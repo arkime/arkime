@@ -2373,10 +2373,16 @@ LOCAL void moloch_db_load_fields()
 /******************************************************************************/
 LOCAL BSB   fieldBSB;
 LOCAL int   fieldBSBTimeout;
-LOCAL gboolean moloch_db_fieldsbsb_timeout(gpointer UNUSED(user_data))
+LOCAL gboolean moloch_db_fieldsbsb_timeout(gpointer user_data)
 {
     if (fieldBSB.buf && BSB_LENGTH(fieldBSB) > 0) {
-        moloch_http_schedule(esServer, "POST", "/_bulk", 6, (char *)fieldBSB.buf, BSB_LENGTH(fieldBSB), NULL, MOLOCH_HTTP_PRIORITY_BEST, NULL, NULL);
+        if (user_data == 0)
+            moloch_http_schedule(esServer, "POST", "/_bulk", 6, (char *)fieldBSB.buf, BSB_LENGTH(fieldBSB), NULL, MOLOCH_HTTP_PRIORITY_BEST, NULL, NULL);
+        else {
+            unsigned char *data = moloch_http_send_sync(esServer, "POST", "/_bulk", 6, (char *)fieldBSB.buf, BSB_LENGTH(fieldBSB), NULL, NULL);
+            if (data)
+                free(data);
+        }
         BSB_INIT(fieldBSB, moloch_http_get_buffer(config.dbBulkSize), config.dbBulkSize);
     }
     fieldBSBTimeout = 0;
@@ -2695,7 +2701,7 @@ void moloch_db_exit()
         if (fieldBSB.buf && BSB_LENGTH(fieldBSB) > 0) {
             if (fieldBSBTimeout)
                 g_source_remove(fieldBSBTimeout);
-            moloch_db_fieldsbsb_timeout(0);
+            moloch_db_fieldsbsb_timeout((gpointer)1);
         }
 
         for (int i = 0; timers[i]; i++) {

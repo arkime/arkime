@@ -28,8 +28,10 @@ NOTICE: Restart wiseService before capture when upgrading
 NOTICE: Cross-cluster Shortcuts require you to not restart all your viewers at once after upgrading
 
 4.0.3 2022/11/xx
+  - release - copy systemd files instead of soft linking
   - db.pl - fixed init not working with opensearch sometimes
   - viewer - fixed showing more than 10 roles
+  - capture - on short runs field definitions weren't getting updated
 
 4.0.2 2022/11/01
   - release - cyberchef 9.48.0
