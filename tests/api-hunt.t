@@ -176,6 +176,7 @@ my $hToken = getTokenCookie('huntuser');
   my $id6 = $json->{hunt}->{id};
 
   viewerGet("/regressionTests/processHuntJobs");
+  sleep(1); # Wait for it to finish processing
 
   $hunts = viewerGet("/hunt/list?all");
   my ($viewHunt, $badHunt);
@@ -196,20 +197,20 @@ my $hToken = getTokenCookie('huntuser');
 
 # add a hunt that is shared with another user
   $json = viewerPostToken("/hunt?molochRegressionUser=anonymous", '{"users":"huntuser","totalSessions":1,"name":"test hunt 13~`!@#$%^&*()[]{};<>?/`","size":"50","search":"test search text","searchType":"ascii","type":"raw","src":true,"dst":true,"query":{"startTime":18000,"stopTime":1536872891}}', $token);
-  esGet("/_flush");
-  esGet("/_refresh");
   is ($json->{hunt}->{users}->[0], "huntuser", "hunt should have a user on creation");
   my $id7 = $json->{hunt}->{id};
 
 # remove a user from a hunt
-  sleep(1); # Wait for user to be set or else test after next fails
+  esGet("/_flush");
+  esGet("/_refresh");
+  sleep(2); # Wait for user to be set or else test after next fails
   $json = viewerDeleteToken("/api/hunt/$id7/user/huntuser?molochRegressionUser=anonymous", $token);
   is (scalar @{$json->{users}}, 0, "hunt should have no users");
 
-  sleep(1);
+  sleep(2);
   esGet("/_flush");
   esGet("/_refresh");
-  sleep(1);
+  sleep(2);
 
 # can't delete a user from an hunt with no users
   $json = viewerDeleteToken("/api/hunt/$id7/user/huntuser?molochRegressionUser=anonymous", $token);

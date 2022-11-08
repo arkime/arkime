@@ -268,10 +268,9 @@ ${Config.arkimeWebURL()}hunt
 
       // clear the running hunt job if this is it
       if (hunt.status === 'running') { internals.runningHuntJob = undefined; }
-      hunt.status = huntStatus; // update the hunt job
 
       try {
-        await Db.setHunt(req.params.id, hunt);
+        await Db.updateHunt(req.params.id, { status: huntStatus });
         res.send(JSON.stringify({ success: true, text: successText }));
         huntAPIs.processHuntJobs();
       } catch (err) {
@@ -968,9 +967,7 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
         hunt.errors.push(error);
       }
 
-      hunt.status = 'finished';
-
-      await Db.setHunt(req.params.id, hunt);
+      await Db.updateHunt(req.params.id, { status: 'finished', errors: hunt.errors });
       internals.runningHuntJob = undefined;
       huntAPIs.processHuntJobs();
       return res.send(JSON.stringify({ success: true, text: 'Canceled hunt successfully' }));
@@ -1055,8 +1052,7 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
             Db.removeHuntFromSession(hit._index, hit._id, req.params.id, hunt.name, () => {});
           }
 
-          hunt.removed = true;
-          await Db.setHunt(req.params.id, hunt);
+          await Db.updateHunt(req.params.id, { removed: true });
 
           return res.send({ success: true, text: 'Succesfully removed the hunt name and ID from the matched sessions.' });
         });
@@ -1140,14 +1136,14 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
         hunt.users = [...new Set(hunt.users)];
 
         try {
-          await Db.setHunt(req.params.id, hunt);
+          await Db.updateHunt(req.params.id, { users: hunt.users });
           res.send(JSON.stringify({
             success: true,
             users: hunt.users,
             invalidUsers: users.invalidUsers
           }));
         } catch (err) {
-          console.log(`ERROR - ${req.method} /api/hunt/%s/users (setHunt)`, ArkimeUtil.sanitizeStr(req.params.id), util.inspect(err, false, 50));
+          console.log(`ERROR - ${req.method} /api/hunt/%s/users (updateHunt)`, ArkimeUtil.sanitizeStr(req.params.id), util.inspect(err, false, 50));
           return res.serverError(500, 'Unable to add user(s)');
         }
       } catch (err) {
@@ -1186,10 +1182,10 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
       hunt.users.splice(userIdx, 1); // remove the user from the list
 
       try {
-        await Db.setHunt(req.params.id, hunt);
+        await Db.updateHunt(req.params.id, { users: hunt.users });
         res.send(JSON.stringify({ success: true, users: hunt.users }));
       } catch (err) {
-        console.log(`ERROR - ${req.method} /api/hunt/%s/user/%s (setHunt)`, ArkimeUtil.sanitizeStr(req.params.id), ArkimeUtil.sanitizeStr(req.params.user), util.inspect(err, false, 50));
+        console.log(`ERROR - ${req.method} /api/hunt/%s/user/%s (updateHunt)`, ArkimeUtil.sanitizeStr(req.params.id), ArkimeUtil.sanitizeStr(req.params.user), util.inspect(err, false, 50));
         return res.serverError(500, 'Unable to remove user');
       }
     } catch (err) {
