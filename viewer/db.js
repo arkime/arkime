@@ -1152,6 +1152,18 @@ exports.setHunt = async (id, doc) => {
     index: fixIndex('hunts'), body: doc, id, refresh: true, timeout: '10m'
   });
 };
+exports.updateHunt = async (id, doc) => {
+  const params = {
+    refresh: true,
+    retry_on_conflict: 3,
+    index: fixIndex('hunts'),
+    body: { doc },
+    id,
+    timeout: '10m'
+  };
+
+  return internals.client7.update(params);
+};
 exports.getHunt = async (id) => {
   return internals.client7.get({ index: fixIndex('hunts'), id });
 };
