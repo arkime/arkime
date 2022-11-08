@@ -176,6 +176,7 @@ my $hToken = getTokenCookie('huntuser');
   my $id6 = $json->{hunt}->{id};
 
   viewerGet("/regressionTests/processHuntJobs");
+  sleep(1); # Wait for it to finish processing
 
   $hunts = viewerGet("/hunt/list?all");
   my ($viewHunt, $badHunt);
