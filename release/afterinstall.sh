@@ -2,13 +2,19 @@
 name="<%= name %>"
 ################################################################################
 if [ -d "/etc/systemd" ] && [ -x "/bin/systemctl" ]; then
-    ln -sf /opt/$name/etc/arkimecapture.systemd.service /etc/systemd/system/arkimecapture.service
-    ln -sf /opt/$name/etc/arkimecont3xt.systemd.service /etc/systemd/system/arkimecont3xt.service
-    ln -sf /opt/$name/etc/arkimeparliament.systemd.service /etc/systemd/system/arkimeparliament.service
-    ln -sf /opt/$name/etc/arkimeviewer.systemd.service /etc/systemd/system/arkimeviewer.service
-    ln -sf /opt/$name/etc/arkimewise.systemd.service /etc/systemd/system/arkimewise.service
+    /bin/unlink /etc/systemd/system/arkimecapture.service >/dev/null 2>&1
+    /bin/unlink /etc/systemd/system/arkimecont3xt.service >/dev/null 2>&1
+    /bin/unlink /etc/systemd/system/arkimeparliament.service >/dev/null 2>&1
+    /bin/unlink /etc/systemd/system/arkimeviewer.service >/dev/null 2>&1
+    /bin/unlink /etc/systemd/system/arkimewise.service >/dev/null 2>&1
+
+    /bin/cp -f /opt/$name/etc/arkimecapture.systemd.service /etc/systemd/system/arkimecapture.service
+    /bin/cp -f /opt/$name/etc/arkimecont3xt.systemd.service /etc/systemd/system/arkimecont3xt.service
+    /bin/cp -f /opt/$name/etc/arkimeparliament.systemd.service /etc/systemd/system/arkimeparliament.service
+    /bin/cp -f /opt/$name/etc/arkimeviewer.systemd.service /etc/systemd/system/arkimeviewer.service
+    /bin/cp -f /opt/$name/etc/arkimewise.systemd.service /etc/systemd/system/arkimewise.service
     /usr/bin/systemctl daemon-reload
-    echo "Arkime systemd files linked"
+    echo "Arkime systemd files copied"
 fi
 
 ################################################################################

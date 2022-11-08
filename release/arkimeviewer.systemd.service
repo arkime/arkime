@@ -1,6 +1,6 @@
 [Unit]
 Description=Arkime Viewer
-After=network.target
+After=network.target opensearch elasticsearch
 
 [Service]
 Type=simple
