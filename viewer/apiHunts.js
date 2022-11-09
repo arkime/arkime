@@ -758,6 +758,10 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
       return res.serverError(403, `This hunt applies to too many sessions. Narrow down your session search to less than ${limit} first.`);
     }
 
+    if (req.body.roles !== undefined && !ArkimeUtil.isStringArray(req.body.roles)) {
+      return res.serverError(403, 'Roles field must be an array of strings');
+    }
+
     const now = Math.floor(Date.now() / 1000);
 
     req.body.name = req.body.name.replace(/[^-a-zA-Z0-9_: ]/g, '');
@@ -1080,7 +1084,8 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
       if (ArkimeUtil.isString(req.body.description)) {
         hunt.description = req.body.description;
       }
-      if (req.body.roles) {
+
+      if (ArkimeUtil.isStringArray(req.body.roles)) {
         hunt.roles = req.body.roles;
       }
 

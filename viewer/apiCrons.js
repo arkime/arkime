@@ -132,6 +132,10 @@ class Cron {
       return res.serverError(403, 'Missing query tag(s)');
     }
 
+    if (req.body.roles !== undefined && !ArkimeUtil.isStringArray(req.body.roles)) {
+      return res.serverError(403, 'Roles field must be an array of strings');
+    }
+
     // comma/newline separated value -> array of values
     let users = ArkimeUtil.commaOrNewlineStringToArray(req.body.users || '');
     users = await User.validateUserIds(users);
@@ -227,6 +231,10 @@ class Cron {
     }
     if (!ArkimeUtil.isString(req.body.tags)) {
       return res.serverError(403, 'Missing query tag(s)');
+    }
+
+    if (req.body.roles !== undefined && !ArkimeUtil.isStringArray(req.body.roles)) {
+      return res.serverError(403, 'Roles field must be an array of strings');
     }
 
     // comma/newline separated value -> array of values

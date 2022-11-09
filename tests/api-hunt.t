@@ -1,4 +1,4 @@
-use Test::More tests => 317;
+use Test::More tests => 319;
 use Cwd;
 use URI::Escape;
 use MolochTest;
@@ -75,6 +75,13 @@ my $hToken = getTokenCookie('huntuser');
 
   $json = viewerPostToken("/hunt", '{"totalSessions":1,"name":"test hunt 12","size":"50","search":"test search text","searchType":"ascii","type":"raw","src":true,"dst":true,"query":{"stopTime":1536872891}}', $token);
   eq_or_diff($json, from_json('{"text": "Missing fully formed query (must include start time and stop time)", "success": false}'));
+
+# Bad roles
+  $json = viewerPostToken("/hunt?molochRegressionUser=anonymous", '{"totalSessions":1,"name":"test hunt 17","size":"50","search":"test search text","searchType":"ascii","type":"raw","src":true,"dst":true,"query":{"startTime":18000,"stopTime":1536872891}, "roles": false}', $token);
+  eq_or_diff($json, from_json('{"text": "Roles field must be an array of strings", "success": false}'));
+
+  $json = viewerPostToken("/hunt?molochRegressionUser=anonymous", '{"totalSessions":1,"name":"test hunt 18","size":"50","search":"test search text","searchType":"ascii","type":"raw","src":true,"dst":true,"query":{"startTime":18000,"stopTime":1536872891}, "roles": [false]}', $token);
+  eq_or_diff($json, from_json('{"text": "Roles field must be an array of strings", "success": false}'));
 
 # Make sure no hunts
   my $hunts = viewerGet("/api/hunts?all");
