@@ -762,6 +762,10 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
       return res.serverError(403, 'Roles field must be an array of strings');
     }
 
+    if (req.body.users !== undefined && !ArkimeUtil.isString(req.body.users, 0)) {
+      return res.serverError(403, 'Users field must be a string');
+    }
+
     const now = Math.floor(Date.now() / 1000);
 
     req.body.name = req.body.name.replace(/[^-a-zA-Z0-9_: ]/g, '');

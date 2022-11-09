@@ -136,6 +136,10 @@ class Cron {
       return res.serverError(403, 'Roles field must be an array of strings');
     }
 
+    if (req.body.users !== undefined && !ArkimeUtil.isString(req.body.users, 0)) {
+      return res.serverError(403, 'Users field must be a string');
+    }
+
     // comma/newline separated value -> array of values
     let users = ArkimeUtil.commaOrNewlineStringToArray(req.body.users || '');
     users = await User.validateUserIds(users);
@@ -235,6 +239,10 @@ class Cron {
 
     if (req.body.roles !== undefined && !ArkimeUtil.isStringArray(req.body.roles)) {
       return res.serverError(403, 'Roles field must be an array of strings');
+    }
+
+    if (req.body.users !== undefined && !ArkimeUtil.isString(req.body.users, 0)) {
+      return res.serverError(403, 'Users field must be a string');
     }
 
     // comma/newline separated value -> array of values

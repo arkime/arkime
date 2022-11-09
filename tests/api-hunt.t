@@ -1,4 +1,4 @@
-use Test::More tests => 319;
+use Test::More tests => 321;
 use Cwd;
 use URI::Escape;
 use MolochTest;
@@ -82,6 +82,13 @@ my $hToken = getTokenCookie('huntuser');
 
   $json = viewerPostToken("/hunt?molochRegressionUser=anonymous", '{"totalSessions":1,"name":"test hunt 18","size":"50","search":"test search text","searchType":"ascii","type":"raw","src":true,"dst":true,"query":{"startTime":18000,"stopTime":1536872891}, "roles": [false]}', $token);
   eq_or_diff($json, from_json('{"text": "Roles field must be an array of strings", "success": false}'));
+
+# Bad users
+  $json = viewerPostToken("/hunt?molochRegressionUser=anonymous", '{"totalSessions":1,"name":"test hunt 18","size":"50","search":"test search text","searchType":"ascii","type":"raw","src":true,"dst":true,"query":{"startTime":18000,"stopTime":1536872891}, "users": false}', $token);
+  eq_or_diff($json, from_json('{"text": "Users field must be a string", "success": false}'));
+
+  $json = viewerPostToken("/hunt?molochRegressionUser=anonymous", '{"totalSessions":1,"name":"test hunt 18","size":"50","search":"test search text","searchType":"ascii","type":"raw","src":true,"dst":true,"query":{"startTime":18000,"stopTime":1536872891}, "users": [false]}', $token);
+  eq_or_diff($json, from_json('{"text": "Users field must be a string", "success": false}'));
 
 # Make sure no hunts
   my $hunts = viewerGet("/api/hunts?all");
