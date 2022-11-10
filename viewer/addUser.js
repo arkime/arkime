@@ -173,7 +173,7 @@ if (Config.nodeName() === 'cont3xt') {
     clientKey: Config.get('esClientKey'),
     clientCert: Config.get('esClientCert'),
     clientKeyPass: Config.get('esClientKeyPass'),
-    prefix: Config.get('usersPrefix', ''),
+    prefix: Config.get('usersPrefix'),
     apiKey: Config.get('usersElasticsearchAPIKey'),
     basicAuth: Config.get('usersElasticsearchBasicAuth', Config.get('elasticsearchBasicAuth')),
     noUsersCheck: true

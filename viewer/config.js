@@ -522,7 +522,7 @@ Auth.initialize({
   debug: exports.debug,
   basePath: exports.basePath(),
   httpRealm: exports.get('httpRealm', 'Moloch'),
-  passwordSecret: exports.getFull('default', 'passwordSecret', 'password'),
+  passwordSecret: exports.getFull(internals.nodeName === 'cont3xt' ? 'cont3xt' : 'default', 'passwordSecret', 'password'),
   serverSecret: exports.getFull('default', 'serverSecret'),
   userNameHeader: exports.get('userNameHeader'),
   requiredAuthHeader: exports.get('requiredAuthHeader'),
