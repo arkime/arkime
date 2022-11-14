@@ -726,9 +726,13 @@ void writer_s3_init(char *UNUSED(name))
     s3TokenTime           = 0;
     s3Role                = NULL;
 
+    if (s3Compress && s3WriteGzip) {
+        LOG("Setting s3Compress to false since s3WriteGzip is true");
+        s3Compress = FALSE;
+    }
+
     if (!s3Bucket) {
-        printf("Must set s3Bucket to save to s3\n");
-        exit(1);
+        CONFIGEXIT("Must set s3Bucket to save to s3\n");
     }
 
     if (!s3AccessKeyId || !s3AccessKeyId[0]) {
@@ -754,8 +758,7 @@ void writer_s3_init(char *UNUSED(name))
     }
 
     if (!s3SecretAccessKey) {
-        printf("Must set s3SecretAccessKey to save to s3\n");
-        exit(1);
+        CONFIGEXIT("Must set s3SecretAccessKey to save to s3\n");
     }
 
     if (config.pcapWriteSize < 5242880) {
