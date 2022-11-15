@@ -11,7 +11,7 @@ module.exports = (app, Config) => {
   // build internals
   iModule.internals = {
     isProduction: app.get('env') === 'production',
-    CYBERCHEFVERSION: '9.48.0',
+    CYBERCHEFVERSION: '9.49.0',
     elasticBase: Config.getArray('elasticsearch', ',', 'http://localhost:9200'),
     remoteClusters: Config.configMap('remote-clusters', 'moloch-clusters'),
     esQueryTimeout: Config.get('elasticsearchTimeout', 5 * 60) + 's',

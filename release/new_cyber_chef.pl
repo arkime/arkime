@@ -78,6 +78,7 @@ close $fh;
 unlink "CyberChef_v$VERSION.html";
 
 system "perl -pi -e 's/v.*\\/CyberChef_v.*.zip/v$VERSION\\/CyberChef_v$VERSION.zip/g' ../Makefile.in";
+system qq{perl -pi -e "s/CYBERCHEFVERSION.*,/CYBERCHEFVERSION: '$VERSION',/g" ../internals.js};
 
 system "vim ../../CHANGELOG";
-print qq{When ready do "git commit -m 'Updated to cyberchef $VERSION' CHANGELOG viewer/Makefile.in viewer/public/cyberchef.html"\n}
+print qq{When ready do "git commit -m 'Updated to cyberchef $VERSION' CHANGELOG viewer/Makefile.in viewer/public/cyberchef.html viewer/internals.js"\n}
