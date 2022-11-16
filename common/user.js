@@ -441,6 +441,15 @@ class User {
    * @returns {number} recordsFiltered - The number of users returned in this result.
    */
   static apiGetUsers (req, res, next) {
+    if (Array.isArray(req.body.start) || Array.isArray(req.body.length)) {
+      return res.send({
+        success: false,
+        recordsTotal: 0,
+        recordsFiltered: 0,
+        data: []
+      });
+    }
+
     const query = {
       from: parseInt(req.body.start) || 0,
       size: parseInt(req.body.length) || 10000

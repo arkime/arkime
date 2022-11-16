@@ -63,6 +63,11 @@ module.exports = (Config, Db, ViewerUtils, sessionAPIs) => {
     let baselineDate = 0;
     let baselineDateIsMultiplier = false;
 
+    if (req.query.baselineDate !== undefined && !ArkimeUtil.isString(req.query.baselineDate, 0)) {
+      result.err = 'Bad query.baselineDate';
+      return cb([result]);
+    }
+
     if ((ArkimeUtil.isString(req.query.baselineDate) && (req.query.baselineDate !== '0') &&
           (req.query.date !== '-1') && (req.query.startTime !== undefined) && (req.query.stopTime !== undefined)) ||
         (resultId > 1)) {
