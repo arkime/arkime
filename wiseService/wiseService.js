@@ -91,8 +91,7 @@ const internals = {
   },
   configSchemes: {
   },
-  types: {
-  },
+  types: new Map(),
   views: {},
   fieldActions: {},
   valueActions: {},
@@ -838,9 +837,9 @@ function funcName (typeName) {
 // This function adds a new type to the internals.types map of types.
 // If newSrc is defined will add it to already defined types as src to query.
 function addType (type, newSrc) {
-  let typeInfo = internals.types[type];
+  let typeInfo = internals.types.get(type);
   if (!typeInfo) {
-    typeInfo = internals.types[type] = {
+    typeInfo = {
       name: type,
       excludeName: 'exclude' + type[0].toUpperCase() + type.slice(1) + 's',
       funcName: funcName(type),
@@ -855,6 +854,7 @@ function addType (type, newSrc) {
       globalAllowed,
       sourceAllowed
     };
+    internals.types.set(type, typeInfo);
 
     if (type === 'url') {
       typeInfo.excludeName = 'excludeURLs';
@@ -896,11 +896,7 @@ function addType (type, newSrc) {
 }
 // ----------------------------------------------------------------------------
 function processQuery (req, query, cb) {
-  if (query.typeName === '__proto__') {
-    return cb('Bad typeName');
-  }
-
-  let typeInfo = internals.types[query.typeName];
+  let typeInfo = internals.types.get(query.typeName);
 
   // First time we've seen this typeName
   if (!typeInfo) {
@@ -1027,7 +1023,7 @@ function processQueryResponse0 (req, res, queries, results) {
   res.write(buf);
   for (let r = 0; r < results.length; r++) {
     if (results[r][0] > 0) {
-      internals.types[queries[r].typeName].foundStats++;
+      internals.types.get(queries[r].typeName).foundStats++;
     }
     res.write(results[r]);
   }
@@ -1058,7 +1054,7 @@ function processQueryResponse2 (req, res, queries, results) {
   // Send the results
   for (let r = 0; r < results.length; r++) {
     if (results[r][0] > 0) {
-      internals.types[queries[r].typeName].foundStats++;
+      internals.types.get(queries[r].typeName).foundStats++;
     }
     res.write(results[r]);
   }
@@ -1326,7 +1322,7 @@ app.get('/types/:source?', [ArkimeUtil.noCacheJson], (req, res) => {
       return res.send([]);
     }
   } else {
-    return res.send(Object.keys(internals.types).sort());
+    return res.send([...internals.types.keys()].sort());
   }
 });
 // ----------------------------------------------------------------------------
@@ -1461,7 +1457,7 @@ app.get('/:typeName/:value', [ArkimeUtil.noCacheJson], function (req, res) {
  * @returns {object} - Object with array of stats per type and array of stats per source
  */
 app.get('/stats', [ArkimeUtil.noCacheJson], (req, res) => {
-  const types = Object.keys(internals.types).sort();
+  const types = [...internals.types.keys()].sort();
   const sections = Object.keys(internals.sources).sort();
 
   const stats = { types: [], sources: [], startTime: internals.startTime };
@@ -1472,7 +1468,7 @@ app.get('/stats', [ArkimeUtil.noCacheJson], (req, res) => {
   }
 
   for (const type of types) {
-    const typeInfo = internals.types[type];
+    const typeInfo = internals.types.get(type);
     let match = true;
     if (re2) {
       match = type.toLowerCase().match(re2);
@@ -1513,7 +1509,7 @@ app.get('/stats', [ArkimeUtil.noCacheJson], (req, res) => {
 
 // ----------------------------------------------------------------------------
 function printStats () {
-  const keys = Object.keys(internals.types).sort();
+  const keys = [...internals.types.keys()].sort();
   const lines = [];
   lines[0] = '                   ';
   lines[1] = 'REQUESTS:          ';
@@ -1523,7 +1519,7 @@ function printStats () {
   lines[5] = 'CACHE SRC REFRESH: ';
 
   for (const key of keys) {
-    const typeInfo = internals.types[key];
+    const typeInfo = internals.types.get(key);
     lines[0] += sprintf(' %11s', key);
     lines[1] += sprintf(' %11d', typeInfo.requestStats);
     lines[2] += sprintf(' %11d', typeInfo.foundStats);
