@@ -56,7 +56,7 @@ const internals = {
   fieldsTS: 0,
   fields: [],
   fieldsSize: 0,
-  sources: [],
+  sources: new Map(),
   configDefs: {
     wiseService: {
       description: 'General settings that apply to WISE and all wise sources',
@@ -100,8 +100,8 @@ const internals = {
   webconfig: false,
   configCode: cryptoLib.randomBytes(20).toString('base64').replace(/[=+/]/g, '').substr(0, 6),
   startTime: Date.now(),
-  options: {},
-  debugged: {}
+  options: new Map(),
+  debugged: new Map()
 };
 
 internals.type2Name = ['ip', 'domain', 'md5', 'email', 'url', 'tuple', 'ja3', 'sha256'];
@@ -122,7 +122,7 @@ function processArgs (argv) {
         process.exit(1);
       }
 
-      internals.options[process.argv[i].slice(0, equal)] = process.argv[i].slice(equal + 1);
+      internals.options.set(process.argv[i].slice(0, equal), process.argv[i].slice(equal + 1));
     } else if (argv[i] === '--insecure') {
       internals.insecure = true;
     } else if (argv[i] === '--debug') {
@@ -203,11 +203,11 @@ app.use(cspHeader);
 
 function getConfig (section, sectionKey, d) {
   const key = `${section}.${sectionKey}`;
-  const value = internals.options[key] ?? internals.config[section]?.[sectionKey] ?? d;
+  const value = internals.options.get(key) ?? internals.config[section]?.[sectionKey] ?? d;
 
-  if (internals.debug > 0 && internals.debugged[key] === undefined) {
+  if (internals.debug > 0 && !internals.debugged.has(key)) {
     console.log(`CONFIG - ${key} is ${value}`);
-    internals.debugged[key] = 1;
+    internals.debugged.set(key, true);
   }
 
   return value;
@@ -510,8 +510,8 @@ class WISESourceAPI {
       console.log(`ERROR - bad call to addSource for ${section}`);
       return;
     }
-    internals.sources[section] = src;
-    internals.sources[section].types = types;
+    src.types = types;
+    internals.sources.set(section, src);
 
     for (let i = 0; i < types.length; i++) {
       addType(types[i], src);
@@ -866,10 +866,11 @@ function addType (type, newSrc) {
       typeInfo.sourceAllowed = sourceIPAllowed;
     }
 
-    for (const src in internals.sources) {
-      if (internals.sources[src][typeInfo.funcName]) {
-        typeInfo.sources.push(internals.sources[src]);
-        internals.sources[src].srcInProgress[type] = [];
+    for (const src in internals.sources.keys()) {
+      const source = internals.sources.get(src);
+      if (source[typeInfo.funcName]) {
+        typeInfo.sources.push(source);
+        source.srcInProgress[type] = [];
       }
     }
 
@@ -1134,7 +1135,7 @@ app.post('/get', function (req, res) {
  * @returns {string|array} All the sources
  */
 app.get('/sources', [ArkimeUtil.noCacheJson], (req, res) => {
-  return res.send(Object.keys(internals.sources).sort());
+  return res.send([...internals.sources.keys()].sort());
 });
 // ----------------------------------------------------------------------------
 /**
@@ -1146,7 +1147,7 @@ app.get('/sources', [ArkimeUtil.noCacheJson], (req, res) => {
  * @returns {object} All the views
  */
 app.get('/source/:source/get', [isConfigWeb, Auth.doAuth, isWiseUser, ArkimeUtil.noCacheJson], (req, res) => {
-  const source = internals.sources[req.params.source];
+  const source = internals.sources.get(req.params.source);
   if (!source) {
     return res.send({ success: false, text: `Source ${req.params.source} not found` });
   }
@@ -1172,7 +1173,7 @@ app.get('/source/:source/get', [isConfigWeb, Auth.doAuth, isWiseUser, ArkimeUtil
  * @returns {object} All the views
  */
 app.put('/source/:source/put', [isConfigWeb, Auth.doAuth, isWiseAdmin, ArkimeUtil.noCacheJson, jsonParser], (req, res) => {
-  const source = internals.sources[req.params.source];
+  const source = internals.sources.get(req.params.source);
   if (!source) {
     return res.send({ success: false, text: `Source ${req.params.source} not found` });
   }
@@ -1316,8 +1317,9 @@ app.put('/config/save', [isConfigWeb, Auth.doAuth, isWiseAdmin, ArkimeUtil.noCac
  */
 app.get('/types/:source?', [ArkimeUtil.noCacheJson], (req, res) => {
   if (req.params.source) {
-    if (internals.sources[req.params.source]) {
-      return res.send(internals.sources[req.params.source].types.sort());
+    const source = internals.sources.get(req.params.source);
+    if (source) {
+      return res.send(source.types.sort());
     } else {
       return res.send([]);
     }
@@ -1336,7 +1338,7 @@ app.get('/types/:source?', [ArkimeUtil.noCacheJson], (req, res) => {
  * @returns {object|array} - The results for the query
  */
 app.get('/:source/:typeName/:value', [ArkimeUtil.noCacheJson], function (req, res) {
-  const source = internals.sources[req.params.source];
+  const source = internals.sources.get(req.params.source);
   if (!source) {
     return res.end('Unknown source ' + req.params.source); // lgtm [js/reflected-xss]
   }
@@ -1356,7 +1358,7 @@ app.get('/:source/:typeName/:value', [ArkimeUtil.noCacheJson], function (req, re
 });
 // ----------------------------------------------------------------------------
 app.get('/dump/:source', [ArkimeUtil.noCacheJson], function (req, res) {
-  const source = internals.sources[req.params.source];
+  const source = internals.sources.get(req.params.source);
   if (!source) {
     return res.end('Unknown source ' + req.params.source); // lgtm [js/reflected-xss]
   }
@@ -1458,7 +1460,7 @@ app.get('/:typeName/:value', [ArkimeUtil.noCacheJson], function (req, res) {
  */
 app.get('/stats', [ArkimeUtil.noCacheJson], (req, res) => {
   const types = [...internals.types.keys()].sort();
-  const sections = Object.keys(internals.sources).sort();
+  const sections = [...internals.sources.keys()].sort();
 
   const stats = { types: [], sources: [], startTime: internals.startTime };
 
@@ -1486,7 +1488,7 @@ app.get('/stats', [ArkimeUtil.noCacheJson], (req, res) => {
   }
 
   for (const section of sections) {
-    const src = internals.sources[section];
+    const src = internals.sources.get(section);
     let match = true;
     if (re2) {
       match = section.toLowerCase().match(re2);
@@ -1532,8 +1534,8 @@ function printStats () {
     console.log(lines[i]);
   }
 
-  for (const section of Object.keys(internals.sources).sort()) {
-    const src = internals.sources[section];
+  for (const section of [...internals.sources.keys()].sort()) {
+    const src = internals.sources.get(section);
     console.log(sprintf('SRC %-30s    cached: %7d lookup: %9d refresh: %7d dropped: %7d avgMS: %7d',
       section, src.cacheHitStat, src.cacheMissStat, src.cacheRefreshStat, src.requestDroppedStat, src.recentAverageMS));
   }

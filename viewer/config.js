@@ -37,8 +37,8 @@ const internals = {
   fields: [],
   fieldsMap: {},
   categories: {},
-  options: {},
-  debugged: {}
+  options: new Map(),
+  debugged: new Map()
 };
 
 function processArgs () {
@@ -61,7 +61,7 @@ function processArgs () {
         process.exit(1);
       }
 
-      internals.options[process.argv[i].slice(0, equal)] = process.argv[i].slice(equal + 1);
+      internals.options.set(process.argv[i].slice(0, equal), process.argv[i].slice(equal + 1));
     } else if (process.argv[i] === '--debug') {
       exports.debug++;
     } else if (process.argv[i] === '--insecure') {
@@ -120,8 +120,8 @@ exports.sectionGet = function (section, key, defaultValue) {
 
 exports.getFull = function (node, key, defaultValue) {
   let value;
-  if (internals.options[key] !== undefined && (node === 'default' || node === internals.nodeName)) {
-    value = internals.options[key];
+  if (internals.options.has(key) && (node === 'default' || node === internals.nodeName)) {
+    value = internals.options.get(key);
   } else if (internals.config[node] && internals.config[node][key] !== undefined) {
     value = internals.config[node][key];
   } else if (internals.config[node] && internals.config[node].nodeClass && internals.config[internals.config[node].nodeClass] && internals.config[internals.config[node].nodeClass][key]) {
@@ -132,9 +132,9 @@ exports.getFull = function (node, key, defaultValue) {
     value = defaultValue;
   }
 
-  if (exports.debug > 0 && internals.debugged[node + '::' + key] === undefined) {
+  if (exports.debug > 0 && !internals.debugged.has(node + '::' + key) === undefined) {
     console.log(`CONFIG - ${key} on node ${node} is ${value}`);
-    internals.debugged[node + '::' + key] = 1;
+    internals.debugged.set(node + '::' + key, true);
   }
 
   if (value === 'false') {
