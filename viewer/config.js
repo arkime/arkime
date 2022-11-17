@@ -132,7 +132,7 @@ exports.getFull = function (node, key, defaultValue) {
     value = defaultValue;
   }
 
-  if (exports.debug > 0 && !internals.debugged.has(node + '::' + key) === undefined) {
+  if (exports.debug > 0 && !internals.debugged.has(node + '::' + key)) {
     console.log(`CONFIG - ${key} on node ${node} is ${value}`);
     internals.debugged.set(node + '::' + key, true);
   }
