@@ -866,7 +866,7 @@ function addType (type, newSrc) {
       typeInfo.sourceAllowed = sourceIPAllowed;
     }
 
-    for (const src in internals.sources.keys()) {
+    for (const src of internals.sources.keys()) {
       const source = internals.sources.get(src);
       if (source[typeInfo.funcName]) {
         typeInfo.sources.push(source);
