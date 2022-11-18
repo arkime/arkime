@@ -1,5 +1,5 @@
 # WISE tests
-use Test::More tests => 106;
+use Test::More tests => 110;
 use MolochTest;
 use Cwd;
 use URI::Escape;
@@ -7,7 +7,6 @@ use Data::Dumper;
 use Test::Differences;
 use JSON -support_by_pp;
 use strict;
-
 
 my $wise;
 my @wise;
@@ -238,3 +237,19 @@ eq_or_diff($wise, $wise2);
 # Get
 $wise = $MolochTest::userAgent->post("http://$MolochTest::host:8081/get", Content => "XXX")->content;
 is ($wise, 'Received malformed packet');
+
+# Views
+$wise = $MolochTest::userAgent->get("http://$MolochTest::host:8081/views")->content;
+eq_or_diff($wise, '{"cloud":"if (session.cloud)\\n  div.sessionDetailMeta.bold Public Cloud\\n  dl.sessionDetailMeta\\n    +arrayList(session.cloud, \'service\', \'Service\', \'cloud.service\')\\n    +arrayList(session.cloud, \'region\', \'Region\', \'cloud.region\')\\n","file:email":"if (session.wise)\\n  div.sessionDetailMeta.bold Wise\\n  dl.sessionDetailMeta\\n    +arrayList(session.wise, \'str\', \'Str\', \'wise.str\')\\n    +arrayList(session.wise, \'int\', \'Int\', \'wise.int\')\\n    +arrayList(session.wise, \'float\', \'Float\', \'wise.float\')\\n"}');
+
+# Fields
+$wise = $MolochTest::userAgent->get("http://$MolochTest::host:8081/fields")->content;
+is(length($wise), 658);;
+
+# Field Actions
+$wise = $MolochTest::userAgent->get("http://$MolochTest::host:8081/fieldActions")->content;
+eq_or_diff($wise, '{"ASDF":{"url":"https://www.asdf.com?expression=%EXPRESSION%&date=%DATE%&field=%FIELD%&dbField=%DBFIELD%","name":"Field Action %FIELDNAME%!","category":"ip","users":{"admin":1,"test1":1}}}');
+
+# Value Actions
+$wise = $MolochTest::userAgent->get("http://$MolochTest::host:8081/valueActions")->content;
+eq_or_diff($wise, '{"VTIP":{"url":"https://www.virustotal.com/en/ip-address/%TEXT%/information/","name":"Virus Total IP","category":"ip"},"VTHOST":{"url":"https://www.virustotal.com/en/domain/%HOST%/information/","name":"Virus Total Host","category":"host"},"VTURL":{"url":"https://www.virustotal.com/latest-scan/%URL%","name":"Virus Total URL","category":"url"}}');
