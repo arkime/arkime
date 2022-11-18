@@ -2380,6 +2380,7 @@ LOCAL gboolean moloch_db_fieldsbsb_timeout(gpointer user_data)
             moloch_http_schedule(esServer, "POST", "/_bulk", 6, (char *)fieldBSB.buf, BSB_LENGTH(fieldBSB), NULL, MOLOCH_HTTP_PRIORITY_BEST, NULL, NULL);
         else {
             unsigned char *data = moloch_http_send_sync(esServer, "POST", "/_bulk", 6, (char *)fieldBSB.buf, BSB_LENGTH(fieldBSB), NULL, NULL);
+            moloch_http_free_buffer(fieldBSB.buf);
             if (data)
                 free(data);
         }
