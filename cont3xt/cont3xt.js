@@ -49,8 +49,8 @@ const internals = {
   debug: 0,
   insecure: false,
   regressionTests: false,
-  options: {},
-  debugged: {}
+  options: new Map(),
+  debugged: new Map()
 };
 
 // ----------------------------------------------------------------------------
@@ -381,7 +381,7 @@ function processArgs (argv) {
         process.exit(1);
       }
 
-      internals.options[process.argv[i].slice(0, equal)] = process.argv[i].slice(equal + 1);
+      internals.options.set(process.argv[i].slice(0, equal), process.argv[i].slice(equal + 1));
     } else if (argv[i] === '--insecure') {
       internals.insecure = true;
     } else if (argv[i] === '--debug') {
@@ -426,11 +426,11 @@ User.prototype.setCont3xtKeys = function (v) {
 
 function getConfig (section, sectionKey, d) {
   const key = `${section}.${sectionKey}`;
-  const value = internals.options[key] ?? internals.config[section]?.[sectionKey] ?? d;
+  const value = internals.options.get(key) ?? internals.config[section]?.[sectionKey] ?? d;
 
-  if (internals.debug > 0 && internals.debugged[key] === undefined) {
+  if (internals.debug > 0 && !internals.debugged.has(key)) {
     console.log(`CONFIG - ${key} is ${value}`);
-    internals.debugged[key] = 1;
+    internals.debugged.set(key, true);
   }
 
   return value;
