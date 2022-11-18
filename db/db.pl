@@ -6066,7 +6066,7 @@ sub dbCheck {
     my $nodeStats = esGet("/_nodes/stats");
 
     foreach my $key (sort {$nodes->{nodes}->{$a}->{name} cmp $nodes->{nodes}->{$b}->{name}} keys %{$nodes->{nodes}}) {
-        next if (!('data' ~~ @{$nodes->{nodes}->{$key}->{roles}}));
+        next if (!(/^(data|data_hot)$/ ~~ @{$nodes->{nodes}->{$key}->{roles}}));
         my $node = $nodes->{nodes}->{$key};
         my $nodeStat = $nodeStats->{nodes}->{$key};
         my $errstr;
@@ -7373,7 +7373,7 @@ my ($nodes) = @_;
     my $total = 0;
 
     foreach my $key (keys %{$nodes}) {
-        $total++ if ('data' ~~ @{$nodes->{$key}->{roles}});
+        $total++ if (/^(data|data_hot)$/ ~~ @{$nodes->{$key}->{roles}});
     }
     return $total;
 }
