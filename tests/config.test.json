@@ -115,5 +115,8 @@
  },
  "valueactions:test": {
   "file": "../tests/valueactions.ini"
+ },
+ "fieldactions:test": {
+  "file": "../tests/fieldactions.ini"
  }
 }

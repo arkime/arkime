@@ -92,9 +92,9 @@ const internals = {
   configSchemes: {
   },
   types: new Map(),
-  views: {},
-  fieldActions: {},
-  valueActions: {},
+  views: new Map(),
+  fieldActions: new Map(),
+  valueActions: new Map(),
   workers: 1,
   regressionTests: false,
   webconfig: false,
@@ -490,9 +490,9 @@ class WISESourceAPI {
         }
       }
 
-      internals.views[viewName] = output;
+      internals.views.set(viewName, output);
     } else {
-      internals.views[viewName] = view;
+      internals.views.set(viewName, view);
     }
   }
 
@@ -621,7 +621,7 @@ class WISESourceAPI {
    * @params {WISESourceAPI~ValueAction} action - The action
    */
   addValueAction (actionName, action) {
-    internals.valueActions[actionName] = action;
+    internals.valueActions.set(actionName, action);
   }
 
   /**
@@ -630,7 +630,7 @@ class WISESourceAPI {
    * @params {WISESourceAPI~ValueAction} action - The action
    */
   addFieldAction (actionName, action) {
-    internals.fieldActions[actionName] = action;
+    internals.fieldActions.set(actionName, action);
   }
 
   isWebConfig () {
@@ -754,7 +754,7 @@ app.get('/fields', [ArkimeUtil.noCacheJson], (req, res) => {
  * @returns {object} All the views
  */
 app.get('/views', [ArkimeUtil.noCacheJson], function (req, res) {
-  res.send(internals.views);
+  res.send(Object.fromEntries(internals.views));
 });
 // ----------------------------------------------------------------------------
 /**
@@ -764,7 +764,7 @@ app.get('/views', [ArkimeUtil.noCacheJson], function (req, res) {
  * @returns {object|array} All the actions
  */
 app.get(['/rightClicks', '/valueActions'], [ArkimeUtil.noCacheJson], function (req, res) {
-  res.send(internals.valueActions);
+  res.send(Object.fromEntries(internals.valueActions));
 });
 // ----------------------------------------------------------------------------
 /**
@@ -774,7 +774,7 @@ app.get(['/rightClicks', '/valueActions'], [ArkimeUtil.noCacheJson], function (r
  * @returns {object|array} All the field actions
  */
 app.get('/fieldActions', [ArkimeUtil.noCacheJson], function (req, res) {
-  res.send(internals.fieldActions);
+  res.send(Object.fromEntries(internals.fieldActions));
 });
 
 // ----------------------------------------------------------------------------
