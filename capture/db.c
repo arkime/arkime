@@ -2698,11 +2698,14 @@ void moloch_db_init()
 void moloch_db_exit()
 {
     if (!config.dryRun) {
+        if (fieldBSBTimeout)
+            g_source_remove(fieldBSBTimeout);
+
         if (fieldBSB.buf && BSB_LENGTH(fieldBSB) > 0) {
-            if (fieldBSBTimeout)
-                g_source_remove(fieldBSBTimeout);
             moloch_db_fieldsbsb_timeout((gpointer)1);
-        } else if (fieldBSB.buf) {
+        } 
+
+        if (fieldBSB.buf) {
             moloch_http_free_buffer(fieldBSB.buf);
             fieldBSB.buf = 0;
         }
