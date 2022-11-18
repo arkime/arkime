@@ -2702,6 +2702,9 @@ void moloch_db_exit()
             if (fieldBSBTimeout)
                 g_source_remove(fieldBSBTimeout);
             moloch_db_fieldsbsb_timeout((gpointer)1);
+        } else if (fieldBSB.buf) {
+            moloch_http_free_buffer(fieldBSB.buf);
+            fieldBSB.buf = 0;
         }
 
         for (int i = 0; timers[i]; i++) {
