@@ -2380,6 +2380,7 @@ LOCAL gboolean moloch_db_fieldsbsb_timeout(gpointer user_data)
             moloch_http_schedule(esServer, "POST", "/_bulk", 6, (char *)fieldBSB.buf, BSB_LENGTH(fieldBSB), NULL, MOLOCH_HTTP_PRIORITY_BEST, NULL, NULL);
         else {
             unsigned char *data = moloch_http_send_sync(esServer, "POST", "/_bulk", 6, (char *)fieldBSB.buf, BSB_LENGTH(fieldBSB), NULL, NULL);
+            moloch_http_free_buffer(fieldBSB.buf);
             if (data)
                 free(data);
         }
@@ -2698,10 +2699,16 @@ void moloch_db_init()
 void moloch_db_exit()
 {
     if (!config.dryRun) {
+        if (fieldBSBTimeout)
+            g_source_remove(fieldBSBTimeout);
+
         if (fieldBSB.buf && BSB_LENGTH(fieldBSB) > 0) {
-            if (fieldBSBTimeout)
-                g_source_remove(fieldBSBTimeout);
             moloch_db_fieldsbsb_timeout((gpointer)1);
+        } 
+
+        if (fieldBSB.buf) {
+            moloch_http_free_buffer(fieldBSB.buf);
+            fieldBSB.buf = 0;
         }
 
         for (int i = 0; timers[i]; i++) {
