@@ -24,8 +24,8 @@ elasticsearch=ARKIME_ELASTICSEARCH
 # usersElasticsearch=ARKIME_ELASTICSEARCH
 # usersElasticsearchBasicAuth=
 
-# How often to create a new elasticsearch index. hourly,hourly6,daily,weekly,monthly
-# Changing the value will cause previous sessions to be unreachable
+# How often to create a new elasticsearch index. hourly,hourly[23468],hourly12,daily,weekly,monthly
+# See https://arkime.com/settings#rotateindex
 rotateIndex=daily
 
 # Uncomment if this node should process the cron queries and packet search jobs, only ONE node should 
