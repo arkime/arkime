@@ -983,7 +983,7 @@ function processQuery (req, query, cb) {
             result = undefined;
           }
           const srcInProgress = src.srcInProgress[query.typeName].get(query.value);
-          delete src.srcInProgress[query.typeName].delete(query.value);
+          src.srcInProgress[query.typeName].delete(query.value);
           for (let i = 0, l = srcInProgress.length; i < l; i++) {
             srcInProgress[i](err, result);
           }
