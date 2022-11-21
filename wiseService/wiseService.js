@@ -870,7 +870,7 @@ function addType (type, newSrc) {
       const source = internals.sources.get(src);
       if (source[typeInfo.funcName]) {
         typeInfo.sources.push(source);
-        source.srcInProgress[type] = [];
+        source.srcInProgress[type] = new Map();
       }
     }
 
@@ -891,7 +891,7 @@ function addType (type, newSrc) {
     }
   } else if (newSrc !== undefined) {
     typeInfo.sources.push(newSrc);
-    newSrc.srcInProgress[type] = [];
+    newSrc.srcInProgress[type] = new Map();
   }
   return typeInfo;
 }
@@ -959,13 +959,13 @@ function processQuery (req, query, cb) {
         delete cacheResult[src.section];
 
         // If already in progress then add to the list and return, cb called later;
-        if (src.srcInProgress[query.typeName] && query.value in src.srcInProgress[query.typeName]) {
-          src.srcInProgress[query.typeName][query.value].push(mapCb);
+        if (src.srcInProgress[query.typeName] && src.srcInProgress[query.typeName].has(query.value)) {
+          src.srcInProgress[query.typeName].get(query.value).push(mapCb);
           return;
         }
 
         // First query for this value
-        src.srcInProgress[query.typeName][query.value] = [mapCb];
+        src.srcInProgress[query.typeName].set(query.value, [mapCb]);
         const startTime = Date.now();
         src[typeInfo.funcName](src.fullQuery === true ? query : query.value, (err, result) => {
           src.recentAverageMS = (999.0 * src.recentAverageMS + (Date.now() - startTime)) / 1000.0;
@@ -982,8 +982,8 @@ function processQuery (req, query, cb) {
             err = null;
             result = undefined;
           }
-          const srcInProgress = src.srcInProgress[query.typeName][query.value];
-          delete src.srcInProgress[query.typeName][query.value];
+          const srcInProgress = src.srcInProgress[query.typeName].get(query.value);
+          src.srcInProgress[query.typeName].delete(query.value);
           for (let i = 0, l = srcInProgress.length; i < l; i++) {
             srcInProgress[i](err, result);
           }

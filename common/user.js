@@ -63,7 +63,7 @@ class User {
   static lastUsedMinInterval = 60 * 1000;
 
   static #userCacheTimeout = 5 * 1000;
-  static #usersCache = {};
+  static #usersCache = new Map();
   static #rolesCache = { _timeStamp: 0 };
   static #debug = false;
   static #implementation;
@@ -103,12 +103,12 @@ class User {
    * Flush any in memory data
    */
   static flushCache () {
-    User.#usersCache = {};
+    User.#usersCache.clear();
     User.#rolesCache = { _timeStamp: 0 };
   }
 
   static deleteCache (userId) {
-    delete User.#usersCache[userId];
+    User.#usersCache.delete(userId);
   }
 
   // Get the ES client for viewer, will remove someday
@@ -124,11 +124,12 @@ class User {
    */
   static async getUserCache (userId, cb) {
     // If we have the cache just cb/return it
-    if (User.#usersCache[userId] && User.#usersCache[userId]._timeStamp > Date.now() - User.#userCacheTimeout) {
+    const entry = User.#usersCache.get(userId);
+    if (entry && entry._timeStamp > Date.now() - User.#userCacheTimeout) {
       if (cb) {
-        return cb(null, User.#usersCache[userId].user);
+        return cb(null, entry.user);
       } else {
-        return User.#usersCache[userId].user;
+        return entry.user;
       }
     }
 
@@ -139,7 +140,7 @@ class User {
           if (err) { return reject(err); }
           if (!user) { return resolve(user); }
 
-          User.#usersCache[userId] = { _timeStamp: Date.now(), user };
+          User.#usersCache.set(userId, { _timeStamp: Date.now(), user });
           return resolve(user);
         });
       });
@@ -151,10 +152,7 @@ class User {
         return cb(err, user);
       }
 
-      User.#usersCache[userId] = {
-        _timeStamp: Date.now(),
-        user
-      };
+      User.#usersCache.set(userId, { _timeStamp: Date.now(), user });
       cb(null, user);
     });
   };
@@ -229,7 +227,7 @@ class User {
    * Delete user
    */
   static deleteUser (userId) {
-    delete User.#usersCache[userId];
+    User.#usersCache.delete(userId);
     return User.#implementation.deleteUser(userId);
   };
 
@@ -251,7 +249,7 @@ class User {
       user.createEnabled = user.roles.includes('usersAdmin');
     }
 
-    delete User.#usersCache[userId];
+    User.#usersCache.delete(userId);
     User.#implementation.setUser(userId, user, (err, boo) => {
       cb(err, boo);
     });

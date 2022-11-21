@@ -27,7 +27,7 @@ class VirusTotalSource extends WISESource {
   constructor (api, section) {
     super(api, section, { fullQuery: true });
     this.waiting = [];
-    this.processing = {};
+    this.processing = new Map();
 
     this.key = this.api.getConfig('virustotal', 'key');
     if (this.key === undefined) {
@@ -96,11 +96,11 @@ class VirusTotalSource extends WISESource {
       if (err || im.statusCode !== 200 || results === undefined) {
         console.log(this.section, 'Error for request:\n', options, '\n', im, '\nresults:\n', results);
         sent.forEach((md5) => {
-          const cb = this.processing[md5];
+          const cb = this.processing.get(md5);
           if (!cb) {
             return;
           }
-          delete this.processing[md5];
+          this.processing.delete(md5);
           cb(undefined, undefined);
         });
         return;
@@ -111,11 +111,11 @@ class VirusTotalSource extends WISESource {
       }
 
       results.forEach((result) => {
-        const cb = this.processing[result.md5];
+        const cb = this.processing.get(result.md5);
         if (!cb) {
           return;
         }
-        delete this.processing[result.md5];
+        this.processing.delete(result.md5);
 
         let wiseResult;
         if (result.response_code === 0) {
@@ -147,7 +147,7 @@ class VirusTotalSource extends WISESource {
       return cb(null, undefined);
     }
 
-    this.processing[query.value] = cb;
+    this.processing.set(query.value, cb);
     if (this.waiting.length < this.maxOutstanding) {
       this.waiting.push(query.value);
     } else {
