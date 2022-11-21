@@ -1,5 +1,5 @@
 # WISE tests
-use Test::More tests => 110;
+use Test::More tests => 112;
 use MolochTest;
 use Cwd;
 use URI::Escape;
@@ -253,3 +253,10 @@ eq_or_diff($wise, '{"ASDF":{"url":"https://www.asdf.com?expression=%EXPRESSION%&
 # Value Actions
 $wise = $MolochTest::userAgent->get("http://$MolochTest::host:8081/valueActions")->content;
 eq_or_diff($wise, '{"VTIP":{"url":"https://www.virustotal.com/en/ip-address/%TEXT%/information/","name":"Virus Total IP","category":"ip"},"VTHOST":{"url":"https://www.virustotal.com/en/domain/%HOST%/information/","name":"Virus Total Host","category":"host"},"VTURL":{"url":"https://www.virustotal.com/latest-scan/%URL%","name":"Virus Total URL","category":"url"}}');
+
+# __proto__
+$wise = $MolochTest::userAgent->get("http://$MolochTest::host:8081/file:mac/__proto__/00:12:1e:f2:61:3d")->content;
+is($wise, 'Not found');
+
+$wise = $MolochTest::userAgent->get("http://$MolochTest::host:8081/__proto__/00:12:1e:f2:61:3d")->content;
+is($wise, 'Not found');

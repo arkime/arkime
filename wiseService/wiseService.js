@@ -897,6 +897,10 @@ function addType (type, newSrc) {
 }
 // ----------------------------------------------------------------------------
 function processQuery (req, query, cb) {
+  if (query.typeName === '__proto__') {
+    return cb('__proto__ invalid type name');
+  }
+
   let typeInfo = internals.types.get(query.typeName);
 
   // First time we've seen this typeName

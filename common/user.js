@@ -439,7 +439,7 @@ class User {
    * @returns {number} recordsFiltered - The number of users returned in this result.
    */
   static apiGetUsers (req, res, next) {
-    if (Array.isArray(req.body.start) || Array.isArray(req.body.length)) {
+    if (Array.isArray(req.body.start) || Array.isArray(req.body.length)) { // lgtm [js/type-confusion-through-parameter-tampering]
       return res.send({
         success: false,
         recordsTotal: 0,
@@ -450,7 +450,7 @@ class User {
 
     const query = {
       from: parseInt(req.body.start) || 0,
-      size: parseInt(req.body.length) || 10000
+      size: parseInt(req.body.length) || 10000 // lgtm [js/type-confusion-through-parameter-tampering]
     };
 
     if (ArkimeUtil.isString(req.body.filter)) {
