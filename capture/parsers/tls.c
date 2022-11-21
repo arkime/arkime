@@ -314,6 +314,7 @@ LOCAL void tls_process_server_hello(MolochSession_t *session, const unsigned cha
                     tls_session_version(session, supported_version);
                     add12Later = FALSE;
                 }
+                continue; // Already processed ebsb above
             }
 
             if (etype == 0x10) { // etype 0x10 is alpn

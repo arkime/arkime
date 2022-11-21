@@ -33,6 +33,7 @@ NOTICE: Cross-cluster Shortcuts require you to not restart all your viewers at o
   - releaes - capture/viewer systemd files now After opensearch/elasticsearch
   - capture - on short runs field definitions weren't getting updated
   - capture - s3 writer sets s3Compress to false with s3WriteGzip true
+  - capture - JA3s value was sometimes wrong
   - cont3xt - fixed digest mode fetching settings from config file
   - db.pl - fixed init not working with opensearch sometimes
   - db.pl - will now count data or data_hot node roles
