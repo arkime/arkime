@@ -27,6 +27,8 @@ Node Versions:
 NOTICE: Restart wiseService before capture when upgrading
 NOTICE: Cross-cluster Shortcuts require you to not restart all your viewers at once after upgrading
 
+4.1.0 2022/12/xx
+
 4.0.3 2022/11/28
   - release - cyberchef 9.54.0
   - release - copy systemd files instead of soft linking
