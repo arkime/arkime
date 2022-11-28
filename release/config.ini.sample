@@ -1,30 +1,30 @@
 # Latest settings documentation: https://arkime.com/settings
 #
-# Arkime capture/viewer uses a tiered system for configuration variables.  This allows Arkime
-# to share one config file for many machines.  The ordering of sections in this
+# Arkime capture/viewer uses a tiered system for configuration variables. This allows Arkime
+# to share one config file for many machines. The ordering of sections in this
 # file doesn't matter.
 #
 # Order of config variables use:
 # 1st) [optional] The section titled with the node name is used first.
 # 2nd) [optional] If a node has a nodeClass variable, the section titled with
-#      the nodeClass name is used next.  Sessions will be tagged with
+#      the nodeClass name is used next. Sessions will be tagged with
 #      class:<node class name> which may be useful if watching different networks.
 # 3rd) The section titled "default" is used last.
 
 [default]
-# Comma seperated list of elasticsearch host:port combinations.  If not using a
-# Elasticsearch load balancer, a different elasticsearch node in the cluster can be specified
-# for each Arkime node to help spread load on high volume clusters.  For user/password
-# use http://user:pass@host:port OR elasticsearchBasicAuth
+# Comma seperated list of OpenSearch/Elasticsearch host:port combinations. If not using a
+# Elasticsearch load balancer, a different OpenSearch/Elasticsearch node in the cluster can be 
+# specified for each Arkime node to help spread load on high volume clusters. For user/password
+# use https://user:pass@host:port OR elasticsearchBasicAuth
 elasticsearch=ARKIME_ELASTICSEARCH
 # elasticsearchBasicAuth=
 
 # Where the user database is, the above is used if not set
-# For user/password use http://user:pass@host:port OR usersElasticsearchBasicAuth
+# For user/password use https://user:pass@host:port OR usersElasticsearchBasicAuth
 # usersElasticsearch=ARKIME_ELASTICSEARCH
 # usersElasticsearchBasicAuth=
 
-# How often to create a new elasticsearch index. hourly,hourly[23468],hourly12,daily,weekly,monthly
+# How often to create a new OpenSearch/Elasticsearch index. hourly,hourly[23468],hourly12,daily,weekly,monthly
 # See https://arkime.com/settings#rotateindex
 rotateIndex=daily
 
@@ -42,7 +42,7 @@ rotateIndex=daily
 # Private key file to use, comment out to use http instead
 # keyFile=ARKIME_INSTALL_DIR/etc/arkime.key
 
-# Password Hash Secret - Must be in default section. Since elasticsearch
+# Password Hash Secret - Must be in default section. Since OpenSearch/Elasticsearch
 # is wide open by default, we encrypt the stored password hashes with this
 # so a malicous person can't insert a working new account.
 # Comment out for no user authentication.
@@ -51,10 +51,10 @@ rotateIndex=daily
 passwordSecret=ARKIME_PASSWORD
 
 # Use a different password for S2S communication then passwordSecret.
-# Must be in default section.  Make this RANDOM, you never need to type in
+# Must be in default section. Make this RANDOM, you never need to type in
 #serverSecret=
 
-# HTTP Digest Realm - Must be in default section.  Changing the value
+# HTTP Digest Realm - Must be in default section. Changing the value
 # will make all previously stored passwords no longer work
 httpRealm=Moloch
 
@@ -77,11 +77,11 @@ pcapDir=ARKIME_INSTALL_DIR/raw
 # The disk should have room for at least 10*maxFileSizeG
 maxFileSizeG=12
 
-# The max time in minutes between rotating pcap files.  Default is 0, which means
+# The max time in minutes between rotating pcap files. Default is 0, which means
 # only rotate based on current file size and the maxFileSizeG variable
 #maxFileTimeM=60
 
-# TCP timeout value.  Arkime writes a session record after this many seconds
+# TCP timeout value. Arkime writes a session record after this many seconds
 # of inactivity.
 tcpTimeout=600
 
@@ -89,11 +89,11 @@ tcpTimeout=600
 # active or inactive
 tcpSaveTimeout=720
 
-# UDP timeout value.  Arkime assumes the UDP session is ended after this
+# UDP timeout value. Arkime assumes the UDP session is ended after this
 # many seconds of inactivity.
 udpTimeout=30
 
-# ICMP timeout value.  Arkime assumes the ICMP session is ended after this
+# ICMP timeout value. Arkime assumes the ICMP session is ended after this
 # many seconds of inactivity.
 icmpTimeout=10
 
@@ -104,7 +104,7 @@ maxStreams=1000000
 maxPackets=10000
 
 # Delete pcap files when free space is lower then this in gigabytes OR it can be
-# expressed as a percentage (ex: 5%).  This does NOT delete the session records in
+# expressed as a percentage (ex: 5%). This does NOT delete the session records in
 # the database. It is recommended this value is between 5% and 10% of the disk.
 # Database deletes are done by the db.pl expire script
 freeSpaceG=5%
@@ -139,7 +139,7 @@ dropUser=nobody
 dropGroup=daemon
 
 # Header to use for determining the username to check in the database for instead of
-# using http digest.  Use this if apache or something else is doing the auth.
+# using http digest. Use this if apache or something else is doing the auth.
 # Set viewHost to localhost or use iptables
 # Might need something like this in the httpd.conf
 # RewriteRule .* - [E=ENV_RU:%{REMOTE_USER}]
@@ -149,7 +149,7 @@ dropGroup=daemon
 #
 # Headers to use to determine if user from `userNameHeader` is
 # authorized to use the system, and if so create a new user
-# in the Arkime user database.  This implementation expects that
+# in the Arkime user database. This implementation expects that
 # the users LDAP/AD groups (or similar) are populated into an
 # HTTP header by the Apache (or similar) referenced above.
 # The JSON in userAutoCreateTmpl is used to insert the new
@@ -158,9 +158,9 @@ dropGroup=daemon
 # to populate various fields.
 #
 # The example below pulls verifies that an HTTP header called `UserGroup`
-# is present, and contains the value "ARKIME_ACCESS".  If this authorization
+# is present, and contains the value "ARKIME_ACCESS". If this authorization
 # check passes, the user database is inspected for the user in `userNameHeader`
-# and if it is not present it is created.  The system uses the
+# and if it is not present it is created. The system uses the
 # `arkime_user` and `http_auth_mail` headers from the
 # request and uses them to populate `userId` and `userName`
 # fields for the new user record.
@@ -224,7 +224,7 @@ pluginsDir=ARKIME_INSTALL_DIR/plugins
 # ES will blow up if we allow the spiData to search too many indices.
 spiDataMaxIndices=4
 
-# Uncomment the following to allow direct uploads.  This is experimental
+# Uncomment the following to allow direct uploads. This is experimental
 #uploadCommand=ARKIME_INSTALL_DIR/bin/capture --copy -n {NODE} -r {TMPFILE} -c {CONFIG} {TAGS}
 
 # Title Template
@@ -241,24 +241,24 @@ spiDataMaxIndices=4
 # Number of threads processing packets
 packetThreads=2
 
-# ADVANCED - Semicolon ';' seperated list of files to load for config.  Files are loaded
+# ADVANCED - Semicolon ';' seperated list of files to load for config. Files are loaded
 # in order and can replace values set in this file or previous files.
 #includes=
 
 # ADVANCED - How is pcap written to disk
 #  simple          = use O_DIRECT if available, writes in pcapWriteSize chunks,
 #                    a file per packet thread.
-#  simple-nodirect = don't use O_DIRECT.  Required for zfs and others
+#  simple-nodirect = don't use O_DIRECT. Required for zfs and others
 pcapWriteMethod=simple
 
-# ADVANCED - Buffer size when writing pcap files.  Should be a multiple of the raid 5 or xfs
-# stripe size.  Defaults to 256k
+# ADVANCED - Buffer size when writing pcap files. Should be a multiple of the raid 5 or xfs
+# stripe size. Defaults to 256k
 pcapWriteSize=262143
 
 # ADVANCED - Number of bytes to bulk index at a time
 dbBulkSize=300000
 
-# ADVANCED - Max number of connections to elastic search
+# ADVANCED - Max number of connections to OpenSearch/Elasticsearch
 maxESConns=30
 
 # ADVANCED - Max number of es requests outstanding in q
@@ -269,7 +269,7 @@ maxESRequests=500
 # Decreasing may cause more dropped packets
 packetsPerPoll=50000
 
-# ADVANCED - The base path for Arkime web access.  Must end with a / or bad things will happen
+# ADVANCED - The base path for Arkime web access. Must end with a / or bad things will happen
 # Only set when using a reverse proxy
 # webBasePath=/arkime/
 
@@ -280,7 +280,7 @@ logEveryXPackets=100000
 # DEBUG - Write to stdout unknown protocols
 logUnknownProtocols=false
 
-# DEBUG - Write to stdout elastic search requests
+# DEBUG - Write to stdout OpenSearch/Elasticsearch requests
 logESRequests=true
 
 # DEBUG - Write to stdout file creation information
@@ -315,7 +315,7 @@ logFileCreation=true
 
 ##############################################################################
 # It is possible to define in the config file extra http/email headers
-# to index.  They are accessed using the expression http.<fieldname> and
+# to index. They are accessed using the expression http.<fieldname> and
 # email.<fieldname> with optional .cnt expressions
 #
 # Possible config atributes for all headers

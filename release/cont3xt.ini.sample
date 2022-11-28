@@ -2,10 +2,12 @@
 
 [cont3xt]
 # The OpenSearch/Elasticsearch where all the cont3xt data is stored
+# For user/password use https://user:pass@host:port OR elasticsearchBasicAuth
 elasticsearch=ARKIME_ELASTICSEARCH
 # elasticsearchBasicAuth=
 
 # Where the user database is, the above is used if not set
+# For user/password use https://user:pass@host:port OR usersElasticsearchBasicAuth
 # usersElasticsearch=ARKIME_ELASTICSEARCH
 # usersElasticsearchBasicAuth=
 
@@ -13,7 +15,7 @@ elasticsearch=ARKIME_ELASTICSEARCH
 # If using SSO change to the http header with the username in it
 userNameHeader=digest
 
-# Password Hash Secret - Must be in default section. Since elasticsearch
+# Password Hash Secret - Must be in default section. Since OpenSearch/Elasticsearch
 # is wide open by default, we encrypt the stored password hashes with this
 # so a malicous person can't insert a working new account.
 # Changing the value will make all previously stored passwords no longer work.

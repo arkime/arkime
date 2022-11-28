@@ -5,9 +5,18 @@ port = 8081
 # Global domains to never lookup
 excludeDomains=*.bl.barracudabrts.com;*.zen.spamhaus.org;*.in-addr.arpa;*.avts.mcafee.com;*.avqs.mcafee.com;*.bl.barracuda.com;*.lbl8.mailshell.net;*.dnsbl.sorbs.net;*.s.sophosxl.net;*.metric.gstatic.com;*.ip6.arpa
 
+# Where the user database is
+# For user/password use https://user:pass@host:port OR usersElasticsearchBasicAuth
+# usersElasticsearch=ARKIME_ELASTICSEARCH
+# usersElasticsearchBasicAuth=
+#
+# Use digest auth by default
+# If using SSO change to the http header with the username in it
+userNameHeader=digest
+
 ############## Redis Cache ##############
 
-# If you have many query sources, like elasticsearch or virustotal setup a redis server locally
+# If you have many query sources, like OpenSearch/Elasticsearch or virustotal setup a redis server locally
 #[cache]
 #type=redis
 #url=redis://localhost/0
@@ -44,7 +53,7 @@ excludeDomains=*.bl.barracudabrts.com;*.zen.spamhaus.org;*.in-addr.arpa;*.avts.m
 #dbFile=/srv/opticlink/ts.db
 
 
-# Lets say you have a json file with ipam information.  Reload the url every 60 minutes.  The CIDR field in the JSON document is what to match against.  The shortcuts in the field definition are the JSON field names.
+# Lets say you have a json file with ipam information. Reload the url every 60 minutes. The CIDR field in the JSON document is what to match against. The shortcuts in the field definition are the JSON field names.
 #[url:ipam]
 #type = ip
 #format = json
