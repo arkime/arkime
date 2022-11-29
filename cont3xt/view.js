@@ -70,6 +70,8 @@ class View {
       return 'Missing name';
     }
 
+    view.name = ArkimeUtil.removeSpecialChars(view.name);
+
     if (view.viewRoles !== undefined) {
       if (!Array.isArray(view.viewRoles)) { return 'viewRoles must be array'; }
 
