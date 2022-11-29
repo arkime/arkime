@@ -755,7 +755,8 @@ function sanitizeViewName (req, res, next) {
     delete req.params.key;
   }
   if (typeof req.body.name === 'string') {
-    req.body.name = req.body.name.replace(/(^(shared:)+)|[^-a-zA-Z0-9_: ]/g, '');
+    req.body.name = req.body.name.replace(/(^(shared:)+)/g, '');
+    req.body.name = ArkimeUtil.removeSpecialChars(req.body.name);
   }
   next();
 }
