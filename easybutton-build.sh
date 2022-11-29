@@ -212,7 +212,7 @@ else
       git clone https://github.com/ninja-build/ninja.git
       (echo $PATH; cd ninja; git checkout release; python3 configure.py --bootstrap)
       xzcat glib-$GLIB.tar.xz | tar xf -
-      (export PATH=$TPWD/ninja:$PATH; cd glib-$GLIB ; meson _build -Ddefault_library=static -Dselinux=disabled -Dxattr=false -Dlibmount=disabled -Dinternal_pcre=true; ninja -C _build)
+      (export PATH=$TPWD/ninja:$PATH; cd glib-$GLIB ; meson _build -Ddefault_library=static -Dselinux=disabled -Dxattr=false -Dlibmount=disabled; ninja -C _build)
       if [ $? -ne 0 ]; then
         echo "ARKIME: $MAKE failed"
         exit 1
