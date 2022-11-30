@@ -465,7 +465,10 @@ function setCookie (req, res, next) {
     overwrite: true
   };
 
-  if (Config.isHTTPS()) { cookieOptions.secure = true; }
+  if (Config.isHTTPS()) {
+    cookieOptions.secure = true;
+    cookieOptions.httpOnly = true;
+  }
 
   res.cookie( // send cookie for basic, non admin functions
     'ARKIME-COOKIE',
