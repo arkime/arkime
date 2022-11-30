@@ -5609,6 +5609,8 @@ sub notifiersMove
     my $sharedUser = esGet("/${PREFIX}users/_source/_moloch_shared", 1);
     my @notifiers = keys %{$sharedUser->{notifiers}};
 
+    return if ($sharedUser->{status} == 404);
+
     foreach my $n (@notifiers) {
         my $notifier = $sharedUser->{notifiers}{$n};
         $notifier->{users} = "";
@@ -5996,7 +5998,7 @@ my ($loud) = @_;
 
     logmsg "This is a fresh Arkime install\n" if ($loud);
     $main::versionNumber = -1;
-    if ($loud && $ARGV[1] !~ "init") {
+    if ($loud && $ARGV[1] !~ "init" && $ARGV[1] !~ "restore") {
         die "Looks like Arkime wasn't installed, must do init"
     }
 }
@@ -6357,11 +6359,10 @@ if ($ARGV[1] =~ /^(users-?import|import)$/) {
         close($fh);
     }
     logmsg "Exporting templates...\n";
-    my @templates = ("sessions3_template", "history_v1_template");
+    my @templates = ("sessions3_ecs",  "sessions3", "history_v1");
     foreach my $template (@templates) {
-        my $data = esGet("/_template/${PREFIX}${template}");
-        my @name = split(/_/, $template);
-        my $fh = bopen("template");
+        my $data = esGet("/_template/${PREFIX}${template}_template");
+        my $fh = bopen("$template.template");
         print $fh to_json($data);
         close($fh);
     }
@@ -7285,6 +7286,15 @@ qq/ {
         }
     }
 
+    my $templatesa = esGet("/_cat/templates/${PREFIX}*?format=json", 1);
+    my %templates = map { $_->{name} => $_ } @{$templatesa};
+
+    foreach my $t ("sessions3_ecs", "history_v1") {
+        if (!defined $templates{"${PREFIX}${t}_template"}) {
+            print "--> The ${PREFIX}$t template is missing, will recreate\n"
+        }
+    }
+
     waitFor("REPAIR", "Do you want to try and repair your install?");
     $verbose = 3 if ($verbose < 3);
 
@@ -7358,6 +7368,16 @@ qq/ {
         viewsUpdate();
     } else {
         viewsCreate();
+    }
+
+
+    if (!defined $templates{"${PREFIX}sessions3_ecs_template"}) {
+        sessions3ECSTemplate();
+    }
+
+    if (!defined $templates{"${PREFIX}history_v1_template"}) {
+        $UPGRADEALLSESSIONS = 0;
+        historyUpdate();
     }
 
     print "\n";
@@ -7480,7 +7500,7 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
         push(@filelist, "$ARGV[2].${PREFIX}${index}.settings.json\n") if (-e "$ARGV[2].${PREFIX}${index}.settings.json");
         push(@filelist, "$ARGV[2].${PREFIX}${index}.mappings.json\n") if (-e "$ARGV[2].${PREFIX}${index}.mappings.json");
     }
-    foreach my $index ("sessions2", "sessions3", "history") { # list of templates
+    foreach my $index ("sessions3_ecs", "sessions3", "history_v1") { # list of templates
         @filelist = (@filelist, "$ARGV[2].${PREFIX}${index}.template.json\n") if (-e "$ARGV[2].${PREFIX}${index}.template.json");
     }
 
@@ -7554,7 +7574,7 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
             my @index = keys %{$data};
             my $mappings = $data->{$index[0]}->{mappings};
             my @type = keys %{$mappings};
-            esPut("/$index[0]/$type[0]/_mapping?master_timeout=${ESTIMEOUT}s&pretty", to_json($mappings));
+            esPut("/$index[0]/_mapping?master_timeout=${ESTIMEOUT}s&pretty", to_json($mappings));
             close($fh);
         }
     }
@@ -7570,7 +7590,7 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
     }
 
     logmsg "Importing templates for Sessions and History...\n\n";
-    my @templates = ("sessions2", "sessions3", "history");
+    my @templates = ("sessions3_ecs", "sessions3", "history_v1");
     foreach my $template (@templates) { # import templates
         if (-e "$ARGV[2].${PREFIX}${template}.template.json") {
             open(my $fh, "<", "$ARGV[2].${PREFIX}${template}.template.json");
