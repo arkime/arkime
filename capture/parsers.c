@@ -929,22 +929,26 @@ typedef struct arkime_check_t
     char *value;
     char  len;
     char  op;
-} ArkimeClassifyCheck_t;
+} MolochClassifyStrCheck_t;
 
 typedef struct arkime_classify_t
 {
     char                  *name;
-    ArkimeClassifyCheck_t *checks;
+    MolochClassifyStrCheck_t *checks;
     char                   numChecks;
-} ArkimeClassify_t;
+} MolochClassifyStr_t;
 
 
 #define MOLOCH_CLASSIFY_NAME       0
 #define MOLOCH_CLASSIFY_PROTOCOL   1
 #define MOLOCH_CLASSIFY_STARTSWITH 2
 #define MOLOCH_CLASSIFY_CONTAINS   3
-#define MOLOCH_CLASSIFY_OFFSET     4
-#define MOLOCH_CLASSIFY_MAX        5
+#define MOLOCH_CLASSIFY_OMITS      4
+#define MOLOCH_CLASSIFY_OFFSET     5
+#define MOLOCH_CLASSIFY_MAX        6
+
+#define MOLOCH_CLASSIFY_OP_CONTAINS     1
+#define MOLOCH_CLASSIFY_OP_OMITS        2
 
 /******************************************************************************/
 LOCAL unsigned char *moloch_parsers_classify_match_expand(char *in, int inLen, int *outLen)
@@ -954,12 +958,11 @@ LOCAL unsigned char *moloch_parsers_classify_match_expand(char *in, int inLen, i
     int ini = 0;
 
     for (ini = 0; ini < inLen; ini++) {
-        // \xNN
-        if (in[ini] == '\\' && ini + 3 < inLen && in[ini + 1] == 'x') {
+        if (in[ini] == '\\' && ini + 3 < inLen && in[ini + 1] == 'x') { // \xNN => single hex byte
             out[outi] = moloch_hex_to_char[(int)(in[ini + 2])][(int)(in[ini + 3])];
             outi++;
             ini += 3;
-        } else if (in[ini] == '\\' && ini + 1 < inLen && in[ini + 1] == '\\') {
+        } else if (in[ini] == '\\' && ini + 1 < inLen && in[ini + 1] == '\\') { // \\ => \
             out[outi] = in[ini];
             outi++;
             ini++;
@@ -972,21 +975,32 @@ LOCAL unsigned char *moloch_parsers_classify_match_expand(char *in, int inLen, i
     return (unsigned char *)out;
 }
 /******************************************************************************/
-LOCAL void moloch_parsers_classify_ac(MolochSession_t *session, const unsigned char *data, int len, int UNUSED(which), void *uw)
+LOCAL void moloch_parsers_classify_mcs(MolochSession_t *session, const unsigned char *data, int len, int UNUSED(which), void *uw)
 {
-    LOG("enter");
-    ArkimeClassify_t *ac = (ArkimeClassify_t *)uw;
+    int hasContain = 0;
+    int contains = 0;
+    int omits = 1;
+    MolochClassifyStr_t *mcs = (MolochClassifyStr_t *)uw;
 
-    if (ac->numChecks == 0) {
-        moloch_session_add_protocol(session, ac->name);
+    if (mcs->numChecks == 0) {
+        moloch_session_add_protocol(session, mcs->name);
         return;
     }
 
-    for (int c = 0; c < ac->numChecks; c++) {
-        LOG("Looking for %.*s in %.*s", ac->checks[c].len, ac->checks[c].value, len, data);
-        if (moloch_memstr((char *)data, len, ac->checks[c].value, ac->checks[c].len) != NULL) {
-            moloch_session_add_protocol(session, ac->name);
+    for (int c = 0; c < mcs->numChecks; c++) {
+        switch (mcs->checks[c].op) {
+        case MOLOCH_CLASSIFY_OP_CONTAINS:
+            hasContain = 1;
+            contains |= moloch_memstr((char *)data, len, mcs->checks[c].value, mcs->checks[c].len) != NULL;
+            break;
+        case MOLOCH_CLASSIFY_OP_OMITS:
+            omits &= moloch_memstr((char *)data, len, mcs->checks[c].value, mcs->checks[c].len) == NULL;
+            break;
         }
+    }
+
+    if ((hasContain == 0 || contains) && omits) {
+        moloch_session_add_protocol(session, mcs->name);
     }
 }
 /******************************************************************************/
@@ -1028,7 +1042,7 @@ void moloch_parsers_classify_line(FILE *file, const char *filename)
         while (*pos && !isspace(*pos) && *pos != '#' && *pos != ':') pos++;
         if (*pos == '#' || *pos == 0) break;
         if (pos - key == 0) {
-            LOG("Missing key >%s<", orig);
+            LOG("In %s Missing key >%s<", filename, orig);
             return;
         }
 
@@ -1042,6 +1056,7 @@ void moloch_parsers_classify_line(FILE *file, const char *filename)
         else if (strcmp(key, "protocol") == 0) { string = MOLOCH_CLASSIFY_PROTOCOL; }
         else if (strcmp(key, "startsWith") == 0) { string = MOLOCH_CLASSIFY_STARTSWITH; }
         else if (strcmp(key, "contains") == 0) { string = MOLOCH_CLASSIFY_CONTAINS; }
+        else if (strcmp(key, "omits") == 0) { string = MOLOCH_CLASSIFY_OMITS; }
         else {
             LOG("In %s don't understand key %s >%s<", filename, key, orig);
         }
@@ -1084,6 +1099,7 @@ void moloch_parsers_classify_line(FILE *file, const char *filename)
         }
     }
 
+#ifdef DEBUG_PARSERS
     int i, j;
     for (i = 0; i < MOLOCH_CLASSIFY_MAX; i++) {
         printf("%d :", i);
@@ -1092,6 +1108,7 @@ void moloch_parsers_classify_line(FILE *file, const char *filename)
         }
         printf("\n");
     }
+#endif
 
     if (numStrings[MOLOCH_CLASSIFY_NAME] != 1) {
         LOG("In %s must have one name >%s<", filename, orig);
@@ -1114,18 +1131,26 @@ void moloch_parsers_classify_line(FILE *file, const char *filename)
         numStrings[MOLOCH_CLASSIFY_STARTSWITH] = 1;
     }
 
-    ArkimeClassify_t *ac = MOLOCH_TYPE_ALLOC0(ArkimeClassify_t);
-    ac->name = g_strdup(strings[MOLOCH_CLASSIFY_NAME][0]);
+    MolochClassifyStr_t *mcs = MOLOCH_TYPE_ALLOC0(MolochClassifyStr_t);
+    mcs->name = g_strdup(strings[MOLOCH_CLASSIFY_NAME][0]);
 
 
-    ac->checks = MOLOCH_SIZE_ALLOC0("checks", sizeof(ArkimeClassifyCheck_t) * numStrings[MOLOCH_CLASSIFY_CONTAINS]);
-    ac->numChecks = numStrings[MOLOCH_CLASSIFY_CONTAINS];
+    mcs->numChecks = numStrings[MOLOCH_CLASSIFY_CONTAINS] + numStrings[MOLOCH_CLASSIFY_OMITS];
+    mcs->checks = MOLOCH_SIZE_ALLOC0("checks", sizeof(MolochClassifyStrCheck_t) * mcs->numChecks);
     for (int c = 0; c < numStrings[MOLOCH_CLASSIFY_CONTAINS]; c++) {
-        ac->checks[c].len = stringsLen[MOLOCH_CLASSIFY_CONTAINS][c];
-        ac->checks[c].value = g_memdup(strings[MOLOCH_CLASSIFY_CONTAINS][c], ac->checks[c].len);
+        mcs->checks[c].op = MOLOCH_CLASSIFY_OP_CONTAINS;
+        mcs->checks[c].len = stringsLen[MOLOCH_CLASSIFY_CONTAINS][c];
+        mcs->checks[c].value = g_memdup(strings[MOLOCH_CLASSIFY_CONTAINS][c], mcs->checks[c].len);
     }
 
-    for (int sw = 0; sw < numStrings[MOLOCH_CLASSIFY_OFFSET]; sw++) {
+    int num = numStrings[MOLOCH_CLASSIFY_CONTAINS];
+    for (int c = 0; c < numStrings[MOLOCH_CLASSIFY_OMITS]; c++) {
+        mcs->checks[num + c].op = MOLOCH_CLASSIFY_OP_OMITS;
+        mcs->checks[num + c].len = stringsLen[MOLOCH_CLASSIFY_OMITS][c];
+        mcs->checks[num + c].value = g_memdup(strings[MOLOCH_CLASSIFY_OMITS][c], mcs->checks[num + c].len);
+    }
+
+    for (int sw = 0; sw < numStrings[MOLOCH_CLASSIFY_STARTSWITH]; sw++) {
         int matchLen;
         unsigned char *match = moloch_parsers_classify_match_expand(strings[MOLOCH_CLASSIFY_STARTSWITH][sw], stringsLen[MOLOCH_CLASSIFY_STARTSWITH][sw], &matchLen);
 
@@ -1135,9 +1160,9 @@ void moloch_parsers_classify_line(FILE *file, const char *filename)
             for (int p = 0; p < numStrings[MOLOCH_CLASSIFY_PROTOCOL]; p++) {
                 const char *protocol = strings[MOLOCH_CLASSIFY_PROTOCOL][p];
                 if (strcmp(protocol, "tcp") == 0) {
-                    moloch_parsers_classifier_register_tcp(ac->name, ac, offset, match, matchLen, moloch_parsers_classify_ac);
+                    moloch_parsers_classifier_register_tcp(mcs->name, mcs, offset, match, matchLen, moloch_parsers_classify_mcs);
                 } else if (strcmp(protocol, "udp") == 0) {
-                    moloch_parsers_classifier_register_udp(ac->name, ac, offset, match, matchLen, moloch_parsers_classify_ac);
+                    moloch_parsers_classifier_register_udp(mcs->name, mcs, offset, match, matchLen, moloch_parsers_classify_mcs);
                 }
             }
         }
@@ -1146,7 +1171,6 @@ void moloch_parsers_classify_line(FILE *file, const char *filename)
 /******************************************************************************/
 void moloch_parsers_classify_load(const char *filename)
 {
-    LOG("ALW %s", filename);
     FILE *input = fopen(filename, "rb");
 
     if (!input)
@@ -1156,6 +1180,10 @@ void moloch_parsers_classify_load(const char *filename)
         moloch_parsers_classify_line(input, filename);
     }
     fclose(input);
+
+    if (config.debug > 1) {
+        LOG("Loaded %s", filename);
+    }
 }
 /******************************************************************************/
 void moloch_parsers_init()
