@@ -30,6 +30,7 @@ LOCAL  gchar                 classTag[100];
 LOCAL  magic_t               cookie[MOLOCH_MAX_PACKET_THREADS];
 
 extern unsigned char         moloch_char_to_hexstr[256][3];
+extern unsigned char         moloch_hex_to_char[256][256];
 
 int    userField;
 
@@ -599,247 +600,6 @@ LOCAL int cstring_cmp(const void *a, const void *b)
    return strcmp(*(char **)a, *(char **)b);
 }
 /******************************************************************************/
-void moloch_parsers_init()
-{
-    if (config.nodeClass)
-        snprintf(classTag, sizeof(classTag), "class:%s", config.nodeClass);
-
-    moloch_field_define("general", "integer",
-        "session.segments", "Session Segments", "segmentCnt",
-        "Number of segments in session so far",
-        0,  MOLOCH_FIELD_FLAG_FAKE,
-        (char *)NULL);
-
-    moloch_field_define("general", "integer",
-        "session.length", "Session Length", "length",
-        "Session Length in milliseconds so far",
-        0,  MOLOCH_FIELD_FLAG_FAKE,
-        (char *)NULL);
-
-    userField = moloch_field_define("general", "lotermfield",
-        "user", "User", "user",
-        "External user set for session",
-        MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT | MOLOCH_FIELD_FLAG_LINKED_SESSIONS,
-        "category", "user",
-        (char *)NULL);
-
-    int flags = MAGIC_MIME;
-
-    char *strMagicMode = moloch_config_str(NULL, "magicMode", "both");
-
-    if (strcmp(strMagicMode, "libmagic") == 0) {
-        magicMode = MOLOCH_MAGICMODE_LIBMAGIC;
-    } else if (strcmp(strMagicMode, "libmagicnotext") == 0) {
-        magicMode = MOLOCH_MAGICMODE_LIBMAGIC;
-        flags |= MAGIC_NO_CHECK_TEXT;
-    } else if (strcmp(strMagicMode, "molochmagic") == 0) {
-        LOG("WARNING - magicMode of `molochmagic` no longer supported, switching to `both`");
-        magicMode = MOLOCH_MAGICMODE_BOTH;
-    } else if (strcmp(strMagicMode, "basic") == 0) {
-        magicMode = MOLOCH_MAGICMODE_BASIC;
-    } else if (strcmp(strMagicMode, "both") == 0) {
-        magicMode = MOLOCH_MAGICMODE_BOTH;
-    } else if (strcmp(strMagicMode, "none") == 0) {
-        magicMode = MOLOCH_MAGICMODE_NONE;
-    } else {
-        CONFIGEXIT("Unknown magicMode '%s'", strMagicMode);
-    }
-
-    g_free(strMagicMode);
-
-#ifdef MAGIC_NO_CHECK_COMPRESS
-    flags |= MAGIC_NO_CHECK_COMPRESS |
-             MAGIC_NO_CHECK_TAR      |
-             MAGIC_NO_CHECK_APPTYPE  |
-             MAGIC_NO_CHECK_ELF      |
-             MAGIC_NO_CHECK_TOKENS;
-#endif
-#ifdef MAGIC_NO_CHECK_CDF
-    flags |= MAGIC_NO_CHECK_CDF;
-#endif
-
-    if (magicMode == MOLOCH_MAGICMODE_LIBMAGIC || magicMode == MOLOCH_MAGICMODE_BOTH) {
-        int t;
-        for (t = 0; t < config.packetThreads; t++) {
-            cookie[t] = magic_open(flags);
-            if (!cookie[t]) {
-                LOG("Error with libmagic %s", magic_error(cookie[t]));
-            } else {
-                magic_load(cookie[t], NULL);
-            }
-        }
-    }
-
-    MolochStringHashStd_t loaded;
-    HASH_INIT(s_, loaded, moloch_string_hash, moloch_string_cmp);
-
-    MolochString_t *hstring;
-    int d;
-
-    char **disableParsers = moloch_config_str_list(NULL, "disableParsers", "arp.so");
-    for (d = 0; disableParsers[d]; d++) {
-        hstring = MOLOCH_TYPE_ALLOC0(MolochString_t);
-        hstring->str = disableParsers[d];
-        hstring->len = strlen(disableParsers[d]);
-        HASH_ADD(s_, loaded, hstring->str, hstring);
-    }
-
-    if (!config.parseSMTP) {
-        hstring = MOLOCH_TYPE_ALLOC0(MolochString_t);
-        hstring->str = g_strdup("smtp.so");
-        hstring->len = strlen(hstring->str);
-        HASH_ADD(s_, loaded, hstring->str, hstring);
-    }
-
-    if (!config.parseSMB) {
-        hstring = MOLOCH_TYPE_ALLOC0(MolochString_t);
-        hstring->str = g_strdup("smb.so");
-        hstring->len = strlen(hstring->str);
-        HASH_ADD(s_, loaded, hstring->str, hstring);
-    }
-
-    for (d = 0; config.parsersDir[d]; d++) {
-        GError      *error = 0;
-        GDir *dir = g_dir_open(config.parsersDir[d], 0, &error);
-
-        if (error) {
-            LOG("Error with %s: %s", config.parsersDir[d], error->message);
-            g_error_free(error);
-            if (dir)
-                g_dir_close(dir);
-            continue;
-        }
-
-        if (!dir)
-            continue;
-
-        const gchar *filename;
-        gchar *filenames[100];
-        int    flen = 0;
-
-        while ((filename = g_dir_read_name(dir)) && flen < 100) {
-            // Skip hidden files/directories
-            if (filename[0] == '.')
-                continue;
-
-            // If it doesn't end with .so we ignore it
-            if (strlen(filename) < 3 || strcasecmp(".so", filename + strlen(filename)-3) != 0) {
-                continue;
-            }
-
-            HASH_FIND(s_, loaded, filename, hstring);
-            if (hstring) {
-                if (config.debug) {
-                    LOG("Skipping %s in %s since already loaded", filename, config.parsersDir[d]);
-                }
-                continue; /* Already loaded */
-            }
-
-            filenames[flen] = g_strdup(filename);
-            flen++;
-        }
-
-        qsort((void *)filenames, (size_t)flen, sizeof(char *), cstring_cmp);
-
-        int i;
-        for (i = 0; i < flen; i++) {
-            gchar *path = g_build_filename (config.parsersDir[d], filenames[i], NULL);
-            GModule *parser = g_module_open (path, 0); /*G_MODULE_BIND_LAZY | G_MODULE_BIND_LOCAL);*/
-
-            if (!parser) {
-                LOG("ERROR - Couldn't load parser %s from '%s'\n%s", filenames[i], path, g_module_error());
-                g_free(filenames[i]);
-                g_free (path);
-                continue;
-            }
-
-            MolochPluginInitFunc parser_init;
-
-            if (!g_module_symbol(parser, "moloch_parser_init", (gpointer *)(char*)&parser_init) || parser_init == NULL) {
-                LOG("ERROR - Module %s doesn't have a moloch_parser_init", filenames[i]);
-                g_free(filenames[i]);
-                g_free (path);
-                continue;
-            }
-
-            if (config.debug > 1) {
-                LOG("Loaded %s", path);
-            }
-
-            parser_init();
-
-            hstring = MOLOCH_TYPE_ALLOC0(MolochString_t);
-            hstring->str = filenames[i];
-            hstring->len = strlen(filenames[i]);
-            HASH_ADD(s_, loaded, hstring->str, hstring);
-
-            if (config.debug)
-                LOG("Loaded %s", path);
-
-            g_free (path);
-        }
-        g_dir_close(dir);
-    }
-
-    if (loaded.count == 0) {
-        LOG("WARNING - No parsers loaded, is parsersDir set correctly");
-    }
-
-    HASH_FORALL_POP_HEAD(s_, loaded, hstring,
-        g_free(hstring->str);
-        MOLOCH_TYPE_FREE(MolochString_t, hstring);
-    );
-    g_free(disableParsers); // NOT, g_strfreev because using the pointers
-
-    // Set tags field up AFTER loading plugins
-    config.tagsStringField = moloch_field_define("general", "termfield",
-        "tags", "Tags", "tags",
-        "Tags set for session",
-        MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT | MOLOCH_FIELD_FLAG_LINKED_SESSIONS,
-        (char *)NULL);
-
-    moloch_field_define("general", "lotermfield",
-        "asset", "Asset", "asset",
-        "Asset name",
-        MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT | MOLOCH_FIELD_FLAG_LINKED_SESSIONS,
-        (char *)NULL);
-
-    gsize keys_len;
-    gchar **keys = moloch_config_section_keys(NULL, "custom-fields", &keys_len);
-
-    int i;
-    for (i = 0; i < (int)keys_len; i++) {
-        char *value = moloch_config_section_str(NULL, "custom-fields", keys[i], NULL);
-        moloch_field_define_text_full(keys[i], value, NULL);
-        g_free(value);
-    }
-    g_strfreev(keys);
-
-
-    if (config.extraOps) {
-        for (i = 0; config.extraOps[i]; i++) { }
-        moloch_field_ops_init(&config.ops, i, 0);
-        for (i = 0; config.extraOps[i]; i++) {
-            char *equal = strchr(config.extraOps[i], '=');
-            if (!equal) {
-                CONFIGEXIT("Must be FieldExpr=value, missing equal '%s'", config.extraOps[i]);
-            }
-            int len = strlen(equal+1);
-            if (!len) {
-                CONFIGEXIT("Must be FieldExpr=value, empty value for '%s'", config.extraOps[i]);
-            }
-            *equal = 0;
-            int fieldPos = moloch_field_by_exp(config.extraOps[i]);
-            if (fieldPos == -1) {
-                CONFIGEXIT("Must be FieldExpr=value, Unknown field expression '%s'", config.extraOps[i]);
-            }
-            moloch_field_ops_add(&config.ops, fieldPos, equal+1, len);
-        }
-    } else {
-        moloch_field_ops_init(&config.ops, 0, 0);
-    }
-}
-/******************************************************************************/
 void moloch_parsers_exit() {
     if (magicMode == MOLOCH_MAGICMODE_LIBMAGIC || magicMode == MOLOCH_MAGICMODE_BOTH) {
         int t;
@@ -1161,4 +921,488 @@ void moloch_parsers_classify_tcp(MolochSession_t *session, const unsigned char *
     moloch_rules_run_after_classify(session);
     if (config.yara && !config.yaraEveryPacket && !session->stopYara)
         moloch_yara_execute(session, data, remaining, 0);
+}
+/******************************************************************************/
+
+typedef struct arkime_check_t
+{
+    char *value;
+    char  len;
+    char  op;
+} ArkimeClassifyCheck_t;
+
+typedef struct arkime_classify_t
+{
+    char                  *name;
+    ArkimeClassifyCheck_t *checks;
+    char                   numChecks;
+} ArkimeClassify_t;
+
+
+#define MOLOCH_CLASSIFY_NAME       0
+#define MOLOCH_CLASSIFY_PROTOCOL   1
+#define MOLOCH_CLASSIFY_STARTSWITH 2
+#define MOLOCH_CLASSIFY_CONTAINS   3
+#define MOLOCH_CLASSIFY_OFFSET     4
+#define MOLOCH_CLASSIFY_MAX        5
+
+/******************************************************************************/
+LOCAL unsigned char *moloch_parsers_classify_match_expand(char *in, int inLen, int *outLen)
+{
+    char *out = g_malloc(inLen);
+    int outi = 0;
+    int ini = 0;
+
+    for (ini = 0; ini < inLen; ini++) {
+        // \xNN
+        if (in[ini] == '\\' && ini + 3 < inLen && in[ini + 1] == 'x') {
+            out[outi] = moloch_hex_to_char[(int)(in[ini + 2])][(int)(in[ini + 3])];
+            outi++;
+            ini += 3;
+        } else if (in[ini] == '\\' && ini + 1 < inLen && in[ini + 1] == '\\') {
+            out[outi] = in[ini];
+            outi++;
+            ini++;
+        } else {
+            out[outi] = in[ini];
+            outi++;
+        }
+    }
+    *outLen = outi;
+    return (unsigned char *)out;
+}
+/******************************************************************************/
+LOCAL void moloch_parsers_classify_ac(MolochSession_t *session, const unsigned char *data, int len, int UNUSED(which), void *uw)
+{
+    LOG("enter");
+    ArkimeClassify_t *ac = (ArkimeClassify_t *)uw;
+
+    if (ac->numChecks == 0) {
+        moloch_session_add_protocol(session, ac->name);
+        return;
+    }
+
+    for (int c = 0; c < ac->numChecks; c++) {
+        LOG("Looking for %.*s in %.*s", ac->checks[c].len, ac->checks[c].value, len, data);
+        if (moloch_memstr((char *)data, len, ac->checks[c].value, ac->checks[c].len) != NULL) {
+            moloch_session_add_protocol(session, ac->name);
+        }
+    }
+}
+/******************************************************************************/
+void moloch_parsers_classify_line(FILE *file, const char *filename)
+{
+    char orig[8192];
+    char line[8192];
+    char *strings[MOLOCH_CLASSIFY_MAX][10];
+    char stringsLen[MOLOCH_CLASSIFY_MAX][10];
+    char numStrings[MOLOCH_CLASSIFY_MAX] = { 0 };
+    int string;
+    char done = 0;
+
+    if (!fgets(line, 8192, file))
+        return;
+    g_strlcpy(orig, line, sizeof(orig));
+
+    char *pos = line;
+
+    while (isspace(*pos)) pos++;
+    if (!*pos || *pos == '#') return;
+
+    char *directive = pos;
+
+    while (*pos && !isspace(*pos) && *pos != '#' ) pos++;
+    if (*pos == '#' || *pos == 0) return;
+    *pos = 0; pos++;
+    if (strcmp(directive, "classify") != 0) {
+        LOG("In %s only understand 'classify' directive >%s<", filename, orig);
+        return;
+    }
+
+    while (*pos && !done) {
+        while (isspace(*pos)) pos++;
+        if (!*pos || *pos == '#') break;
+
+        char *key = pos;
+
+        while (*pos && !isspace(*pos) && *pos != '#' && *pos != ':') pos++;
+        if (*pos == '#' || *pos == 0) break;
+        if (pos - key == 0) {
+            LOG("Missing key >%s<", orig);
+            return;
+        }
+
+        if (*pos != ':') {
+            LOG("In %s key:%s must end with colon >%s<", filename, key, orig);
+            return;
+        }
+
+        *pos = 0; pos++;
+        if (strcmp(key, "name") == 0) { string = MOLOCH_CLASSIFY_NAME; }
+        else if (strcmp(key, "protocol") == 0) { string = MOLOCH_CLASSIFY_PROTOCOL; }
+        else if (strcmp(key, "startsWith") == 0) { string = MOLOCH_CLASSIFY_STARTSWITH; }
+        else if (strcmp(key, "contains") == 0) { string = MOLOCH_CLASSIFY_CONTAINS; }
+        else {
+            LOG("In %s don't understand key %s >%s<", filename, key, orig);
+        }
+
+        while (*pos) {
+            while (isspace(*pos)) pos++;
+            if (!*pos || *pos == '#') break;
+            char *value = pos;
+            char comma = 0;
+            if (*pos == '\'' || *pos == '"') {
+                char end = *pos;
+                value++;
+                pos++;
+                while (*pos && *pos != end) pos++;
+                if (*pos != end) {
+                    LOG("In %s key:%s couldn't find matching %c >%s<", filename, key, end, orig);
+                    return;
+                }
+            } else {
+                while (*pos && !isspace(*pos) && *pos != '#' && *pos != ',') pos++;
+                comma = *pos == ',';
+                if (*pos == 0) done = 1;
+            }
+
+            if (pos - value == 0) {
+                LOG("In %s empty value for key:%s >%s<\n", filename, key, orig);
+                return;
+            }
+            *pos = 0; pos++;
+            strings[string][(int)numStrings[string]] = value;
+            stringsLen[string][(int)numStrings[string]] = pos - value - 1;
+            numStrings[string]++;
+            if (comma) continue; // Already have the comma
+
+            if (done) break;
+            while (isspace(*pos)) pos++;
+            if (*pos == '#') {  return;}
+            if (*pos != ',') break;
+            pos++;
+        }
+    }
+
+    int i, j;
+    for (i = 0; i < MOLOCH_CLASSIFY_MAX; i++) {
+        printf("%d :", i);
+        for (j = 0; j < numStrings[i]; j++) {
+            printf("'%.*s' ", stringsLen[i][j], strings[i][j]);
+        }
+        printf("\n");
+    }
+
+    if (numStrings[MOLOCH_CLASSIFY_NAME] != 1) {
+        LOG("In %s must have one name >%s<", filename, orig);
+        return;
+    }
+
+    if (numStrings[MOLOCH_CLASSIFY_PROTOCOL] == 0) {
+        LOG("In %s must specify protocol >%s<", filename, orig);
+        return;
+    }
+
+    if (numStrings[MOLOCH_CLASSIFY_OFFSET] == 0) {
+        strings[MOLOCH_CLASSIFY_OFFSET][0] = "0";
+        numStrings[MOLOCH_CLASSIFY_OFFSET] = 1;
+    }
+
+    if (numStrings[MOLOCH_CLASSIFY_STARTSWITH] == 0) {
+        strings[MOLOCH_CLASSIFY_STARTSWITH][0] = "";
+        stringsLen[MOLOCH_CLASSIFY_STARTSWITH][0] = 0;
+        numStrings[MOLOCH_CLASSIFY_STARTSWITH] = 1;
+    }
+
+    ArkimeClassify_t *ac = MOLOCH_TYPE_ALLOC0(ArkimeClassify_t);
+    ac->name = g_strdup(strings[MOLOCH_CLASSIFY_NAME][0]);
+
+
+    ac->checks = MOLOCH_SIZE_ALLOC0("checks", sizeof(ArkimeClassifyCheck_t) * numStrings[MOLOCH_CLASSIFY_CONTAINS]);
+    ac->numChecks = numStrings[MOLOCH_CLASSIFY_CONTAINS];
+    for (int c = 0; c < numStrings[MOLOCH_CLASSIFY_CONTAINS]; c++) {
+        ac->checks[c].len = stringsLen[MOLOCH_CLASSIFY_CONTAINS][c];
+        ac->checks[c].value = g_memdup(strings[MOLOCH_CLASSIFY_CONTAINS][c], ac->checks[c].len);
+    }
+
+    for (int sw = 0; sw < numStrings[MOLOCH_CLASSIFY_OFFSET]; sw++) {
+        int matchLen;
+        unsigned char *match = moloch_parsers_classify_match_expand(strings[MOLOCH_CLASSIFY_STARTSWITH][sw], stringsLen[MOLOCH_CLASSIFY_STARTSWITH][sw], &matchLen);
+
+
+        for (int o = 0; o < numStrings[MOLOCH_CLASSIFY_OFFSET]; o++) {
+            const int offset = atoi(strings[MOLOCH_CLASSIFY_OFFSET][o]);
+            for (int p = 0; p < numStrings[MOLOCH_CLASSIFY_PROTOCOL]; p++) {
+                const char *protocol = strings[MOLOCH_CLASSIFY_PROTOCOL][p];
+                if (strcmp(protocol, "tcp") == 0) {
+                    moloch_parsers_classifier_register_tcp(ac->name, ac, offset, match, matchLen, moloch_parsers_classify_ac);
+                } else if (strcmp(protocol, "udp") == 0) {
+                    moloch_parsers_classifier_register_udp(ac->name, ac, offset, match, matchLen, moloch_parsers_classify_ac);
+                }
+            }
+        }
+    }
+}
+/******************************************************************************/
+void moloch_parsers_classify_load(const char *filename)
+{
+    LOG("ALW %s", filename);
+    FILE *input = fopen(filename, "rb");
+
+    if (!input)
+        CONFIGEXIT("can not open classify file %s", filename);
+
+    while (!feof(input)) {
+        moloch_parsers_classify_line(input, filename);
+    }
+    fclose(input);
+}
+/******************************************************************************/
+void moloch_parsers_init()
+{
+    if (config.nodeClass)
+        snprintf(classTag, sizeof(classTag), "class:%s", config.nodeClass);
+
+    moloch_field_define("general", "integer",
+        "session.segments", "Session Segments", "segmentCnt",
+        "Number of segments in session so far",
+        0,  MOLOCH_FIELD_FLAG_FAKE,
+        (char *)NULL);
+
+    moloch_field_define("general", "integer",
+        "session.length", "Session Length", "length",
+        "Session Length in milliseconds so far",
+        0,  MOLOCH_FIELD_FLAG_FAKE,
+        (char *)NULL);
+
+    userField = moloch_field_define("general", "lotermfield",
+        "user", "User", "user",
+        "External user set for session",
+        MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT | MOLOCH_FIELD_FLAG_LINKED_SESSIONS,
+        "category", "user",
+        (char *)NULL);
+
+    int flags = MAGIC_MIME;
+
+    char *strMagicMode = moloch_config_str(NULL, "magicMode", "both");
+
+    if (strcmp(strMagicMode, "libmagic") == 0) {
+        magicMode = MOLOCH_MAGICMODE_LIBMAGIC;
+    } else if (strcmp(strMagicMode, "libmagicnotext") == 0) {
+        magicMode = MOLOCH_MAGICMODE_LIBMAGIC;
+        flags |= MAGIC_NO_CHECK_TEXT;
+    } else if (strcmp(strMagicMode, "molochmagic") == 0) {
+        LOG("WARNING - magicMode of `molochmagic` no longer supported, switching to `both`");
+        magicMode = MOLOCH_MAGICMODE_BOTH;
+    } else if (strcmp(strMagicMode, "basic") == 0) {
+        magicMode = MOLOCH_MAGICMODE_BASIC;
+    } else if (strcmp(strMagicMode, "both") == 0) {
+        magicMode = MOLOCH_MAGICMODE_BOTH;
+    } else if (strcmp(strMagicMode, "none") == 0) {
+        magicMode = MOLOCH_MAGICMODE_NONE;
+    } else {
+        CONFIGEXIT("Unknown magicMode '%s'", strMagicMode);
+    }
+
+    g_free(strMagicMode);
+
+#ifdef MAGIC_NO_CHECK_COMPRESS
+    flags |= MAGIC_NO_CHECK_COMPRESS |
+             MAGIC_NO_CHECK_TAR      |
+             MAGIC_NO_CHECK_APPTYPE  |
+             MAGIC_NO_CHECK_ELF      |
+             MAGIC_NO_CHECK_TOKENS;
+#endif
+#ifdef MAGIC_NO_CHECK_CDF
+    flags |= MAGIC_NO_CHECK_CDF;
+#endif
+
+    if (magicMode == MOLOCH_MAGICMODE_LIBMAGIC || magicMode == MOLOCH_MAGICMODE_BOTH) {
+        int t;
+        for (t = 0; t < config.packetThreads; t++) {
+            cookie[t] = magic_open(flags);
+            if (!cookie[t]) {
+                LOG("Error with libmagic %s", magic_error(cookie[t]));
+            } else {
+                magic_load(cookie[t], NULL);
+            }
+        }
+    }
+
+    MolochStringHashStd_t loaded;
+    HASH_INIT(s_, loaded, moloch_string_hash, moloch_string_cmp);
+
+    MolochString_t *hstring;
+    int d;
+
+    char **disableParsers = moloch_config_str_list(NULL, "disableParsers", "arp.so");
+    for (d = 0; disableParsers[d]; d++) {
+        hstring = MOLOCH_TYPE_ALLOC0(MolochString_t);
+        hstring->str = disableParsers[d];
+        hstring->len = strlen(disableParsers[d]);
+        HASH_ADD(s_, loaded, hstring->str, hstring);
+    }
+
+    if (!config.parseSMTP) {
+        hstring = MOLOCH_TYPE_ALLOC0(MolochString_t);
+        hstring->str = g_strdup("smtp.so");
+        hstring->len = strlen(hstring->str);
+        HASH_ADD(s_, loaded, hstring->str, hstring);
+    }
+
+    if (!config.parseSMB) {
+        hstring = MOLOCH_TYPE_ALLOC0(MolochString_t);
+        hstring->str = g_strdup("smb.so");
+        hstring->len = strlen(hstring->str);
+        HASH_ADD(s_, loaded, hstring->str, hstring);
+    }
+
+    for (d = 0; config.parsersDir[d]; d++) {
+        GError      *error = 0;
+        GDir *dir = g_dir_open(config.parsersDir[d], 0, &error);
+
+        if (error) {
+            LOG("Error with %s: %s", config.parsersDir[d], error->message);
+            g_error_free(error);
+            if (dir)
+                g_dir_close(dir);
+            continue;
+        }
+
+        if (!dir)
+            continue;
+
+        const gchar *filename;
+        gchar *filenames[100];
+        int    flen = 0;
+
+        while ((filename = g_dir_read_name(dir)) && flen < 100) {
+            // Skip hidden files/directories
+            if (filename[0] == '.')
+                continue;
+
+            int filenameLen = strlen(filename);
+            // If it doesn't end with .so we ignore it
+            if ((filenameLen < 3 || strcasecmp(".so", filename + filenameLen - 3) != 0) &&
+                (filenameLen < 9 || strcasecmp(".classify", filename + filenameLen - 9) != 0)) {
+                continue;
+            }
+
+            HASH_FIND(s_, loaded, filename, hstring);
+            if (hstring) {
+                if (config.debug) {
+                    LOG("Skipping %s in %s since already loaded", filename, config.parsersDir[d]);
+                }
+                continue; /* Already loaded */
+            }
+
+            filenames[flen] = g_strdup(filename);
+            flen++;
+        }
+
+        qsort((void *)filenames, (size_t)flen, sizeof(char *), cstring_cmp);
+
+        int i;
+        for (i = 0; i < flen; i++) {
+            gchar *path = g_build_filename (config.parsersDir[d], filenames[i], NULL);
+
+            if (g_str_has_suffix(filenames[i], ".classify")) {
+                moloch_parsers_classify_load(path);
+                continue;
+            }
+
+            GModule *parser = g_module_open (path, 0); /*G_MODULE_BIND_LAZY | G_MODULE_BIND_LOCAL);*/
+
+            if (!parser) {
+                LOG("ERROR - Couldn't load parser %s from '%s'\n%s", filenames[i], path, g_module_error());
+                g_free(filenames[i]);
+                g_free (path);
+                continue;
+            }
+
+            MolochPluginInitFunc parser_init;
+
+            if (!g_module_symbol(parser, "moloch_parser_init", (gpointer *)(char*)&parser_init) || parser_init == NULL) {
+                LOG("ERROR - Module %s doesn't have a moloch_parser_init", filenames[i]);
+                g_free(filenames[i]);
+                g_free (path);
+                continue;
+            }
+
+            if (config.debug > 1) {
+                LOG("Loaded %s", path);
+            }
+
+            parser_init();
+
+            hstring = MOLOCH_TYPE_ALLOC0(MolochString_t);
+            hstring->str = filenames[i];
+            hstring->len = strlen(filenames[i]);
+            HASH_ADD(s_, loaded, hstring->str, hstring);
+
+            if (config.debug)
+                LOG("Loaded %s", path);
+
+            g_free (path);
+        }
+        g_dir_close(dir);
+    }
+
+    if (loaded.count == 0) {
+        LOG("WARNING - No parsers loaded, is parsersDir set correctly");
+    }
+
+    HASH_FORALL_POP_HEAD(s_, loaded, hstring,
+        g_free(hstring->str);
+        MOLOCH_TYPE_FREE(MolochString_t, hstring);
+    );
+    g_free(disableParsers); // NOT, g_strfreev because using the pointers
+
+    // Set tags field up AFTER loading plugins
+    config.tagsStringField = moloch_field_define("general", "termfield",
+        "tags", "Tags", "tags",
+        "Tags set for session",
+        MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT | MOLOCH_FIELD_FLAG_LINKED_SESSIONS,
+        (char *)NULL);
+
+    moloch_field_define("general", "lotermfield",
+        "asset", "Asset", "asset",
+        "Asset name",
+        MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT | MOLOCH_FIELD_FLAG_LINKED_SESSIONS,
+        (char *)NULL);
+
+    gsize keys_len;
+    gchar **keys = moloch_config_section_keys(NULL, "custom-fields", &keys_len);
+
+    int i;
+    for (i = 0; i < (int)keys_len; i++) {
+        char *value = moloch_config_section_str(NULL, "custom-fields", keys[i], NULL);
+        moloch_field_define_text_full(keys[i], value, NULL);
+        g_free(value);
+    }
+    g_strfreev(keys);
+
+
+    if (config.extraOps) {
+        for (i = 0; config.extraOps[i]; i++) { }
+        moloch_field_ops_init(&config.ops, i, 0);
+        for (i = 0; config.extraOps[i]; i++) {
+            char *equal = strchr(config.extraOps[i], '=');
+            if (!equal) {
+                CONFIGEXIT("Must be FieldExpr=value, missing equal '%s'", config.extraOps[i]);
+            }
+            int len = strlen(equal+1);
+            if (!len) {
+                CONFIGEXIT("Must be FieldExpr=value, empty value for '%s'", config.extraOps[i]);
+            }
+            *equal = 0;
+            int fieldPos = moloch_field_by_exp(config.extraOps[i]);
+            if (fieldPos == -1) {
+                CONFIGEXIT("Must be FieldExpr=value, Unknown field expression '%s'", config.extraOps[i]);
+            }
+            moloch_field_ops_add(&config.ops, fieldPos, equal+1, len);
+        }
+    } else {
+        moloch_field_ops_init(&config.ops, 0, 0);
+    }
 }
