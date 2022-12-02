@@ -97,7 +97,6 @@ function setCookie (req, res, next) {
 
   if (getConfig('cont3xt', 'keyFile') && getConfig('cont3xt', 'certFile')) {
     cookieOptions.secure = true;
-    cookieOptions.httpOnly = true;
   }
 
   res.cookie( // send cookie for basic, non admin functions
