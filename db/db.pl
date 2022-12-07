@@ -382,6 +382,7 @@ sub esCopy
 {
     my ($srci, $dsti) = @_;
 
+    my $status = esGet("/${srci}/_refresh", 1);
     $main::userAgent->timeout(7200);
 
     my $status = esGet("/_stats/docs", 1);
@@ -6253,7 +6254,7 @@ $PREFIX = "arkime_" if (! defined $PREFIX);
 
 showHelp("Help:") if ($ARGV[1] =~ /^help$/);
 showHelp("Missing arguments") if (@ARGV < 2);
-showHelp("Unknown command '$ARGV[1]'") if ($ARGV[1] !~ /^(init|initnoprompt|clean|info|wipe|upgrade|upgradenoprompt|disable-?users|set-?shortcut|users-?import|import|restore|restorenoprompt|users-?export|export|repair|backup|expire|rotate|optimize|optimize-admin|mv|rm|rm-?missing|rm-?node|add-?missing|field|force-?put-?version|sync-?files|hide-?node|unhide-?node|add-?alias|set-?replicas|set-?shards-?per-?node|set-?allocation-?enable|allocate-?empty|unflood-?stage|shrink|ilm|recreate-users|recreate-stats|recreate-dstats|recreate-fields|update-fields|update-history|reindex|force-sessions3-update|es-adduser|es-passwd|es-addapikey)$/);
+showHelp("Unknown command '$ARGV[1]'") if ($ARGV[1] !~ /^(init|initnoprompt|clean|info|wipe|upgrade|upgradenoprompt|disable-?users|set-?shortcut|users-?import|import|restore|restorenoprompt|users-?export|export|repair|backup|expire|rotate|optimize|optimize-admin|mv|rm|rm-?missing|rm-?node|add-?missing|field|force-?put-?version|sync-?files|hide-?node|unhide-?node|add-?alias|set-?replicas|set-?shards-?per-?node|set-?allocation-?enable|allocate-?empty|unflood-?stage|shrink|ilm|recreate-users|recreate-stats|recreate-dstats|recreate-fields|recreate-files|update-fields|update-history|reindex|force-sessions3-update|es-adduser|es-passwd|es-addapikey)$/);
 showHelp("Missing arguments") if (@ARGV < 3 && $ARGV[1] =~ /^(users-?import|import|users-?export|backup|restore|restorenoprompt|rm|rm-?missing|rm-?node|hide-?node|unhide-?node|set-?allocation-?enable|unflood-?stage|reindex|es-adduser|es-addapikey)$/);
 showHelp("Missing arguments") if (@ARGV < 4 && $ARGV[1] =~ /^(field|export|add-?missing|sync-?files|add-?alias|set-?replicas|set-?shards-?per-?node|set-?shortcut|ilm)$/);
 showHelp("Missing arguments") if (@ARGV < 5 && $ARGV[1] =~ /^(allocate-?empty|set-?shortcut|shrink)$/);
@@ -6712,27 +6713,41 @@ if ($ARGV[1] =~ /^(users-?import|import)$/) {
     exit 0;
 } elsif ($ARGV[1] eq "recreate-users") {
     waitFor("USERS", "This will delete and recreate the users index");
-    esDelete("/${PREFIX}users_*", 1);
+    esDelete("/${PREFIX}users_v*", 1);
     esDelete("/${PREFIX}users", 1);
     usersCreate();
     exit 0;
 } elsif ($ARGV[1] eq "recreate-stats") {
     waitFor("STATS", "This will delete and recreate the stats index, make sure no captures are running");
-    esDelete("/${PREFIX}stats_*", 1);
+    esDelete("/${PREFIX}stats_v*", 1);
     esDelete("/${PREFIX}stats", 1);
     statsCreate();
     exit 0;
 } elsif ($ARGV[1] eq "recreate-dstats") {
     waitFor("DSTATS", "This will delete and recreate the dstats index, make sure no captures are running");
-    esDelete("/${PREFIX}dstats_*", 1);
+    esDelete("/${PREFIX}dstats_v*", 1);
     esDelete("/${PREFIX}dstats", 1);
     dstatsCreate();
     exit 0;
 } elsif ($ARGV[1] eq "recreate-fields") {
     waitFor("FIELDS", "This will delete and recreate the fields index, make sure no captures are running");
-    esDelete("/${PREFIX}fields_*", 1);
+    esDelete("/${PREFIX}fields_v*", 1);
     esDelete("/${PREFIX}fields", 1);
     fieldsCreate();
+    exit 0;
+} elsif ($ARGV[1] eq "recreate-files") {
+    waitFor("FILES", "This will copy ${PREFIX}files to ${PREFIX}files-tmp, recreate the files index, copy ${PREFIX}files-tmp back, make sure no captures are running");
+    dbCheckForActivity($PREFIX);
+    esDelete("/${PREFIX}files-tmp", 1);
+    if (esCheckAlias("${PREFIX}files", "${PREFIX}files_v30") && esIndexExists("${PREFIX}files_v30")) {
+        esCopy("${PREFIX}files_v30", "${PREFIX}files-tmp");
+    } else {
+        esCopy("${PREFIX}files", "${PREFIX}files-tmp");
+    }
+    esDelete("/${PREFIX}files_v*", 1);
+    esDelete("/${PREFIX}files", 1);
+    filesCreate();
+    esCopy("${PREFIX}files-tmp", "${PREFIX}files_v30");
     exit 0;
 } elsif ($ARGV[1] eq "update-fields") {
     fieldsUpdate();
