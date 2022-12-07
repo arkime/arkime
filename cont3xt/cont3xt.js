@@ -461,7 +461,11 @@ function setupAuth () {
     userNameHeader,
     passwordSecret: getConfig('cont3xt', 'passwordSecret', 'password'),
     basePath: internals.webBasePath,
-    httpRealm: getConfig('cont3xt', 'httpRealm', 'Moloch')
+    httpRealm: getConfig('cont3xt', 'httpRealm', 'Moloch'),
+    requiredAuthHeader: getConfig('cont3xt', 'requiredAuthHeader'),
+    requiredAuthHeaderVal: getConfig('cont3xt', 'requiredAuthHeaderVal'),
+    userAutoCreateTmpl: getConfig('cont3xt', 'userAutoCreateTmpl'),
+    userAuthIps: getConfig('cont3xt', 'userAuthIps')
   });
 
   const dbUrl = getConfig('cont3xt', 'dbUrl');
