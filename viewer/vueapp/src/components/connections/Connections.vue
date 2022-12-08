@@ -467,22 +467,22 @@ const idRegex = /[\[\]:. ]/g;
 let pendingPromise; // save a pending promise to be able to cancel it
 
 // drag helpers
-function dragstarted (d) {
-  d3.event.sourceEvent.stopPropagation();
-  if (!d3.event.active) { simulation.alphaTarget(0.1).restart(); }
+function dragstarted (e, d) {
+  e.sourceEvent.stopPropagation();
+  if (!e.active) { simulation.alphaTarget(0.1).restart(); }
   draggingNode = d;
   d.fx = d.x;
   d.fy = d.y;
   itemFocus(d);
 }
 
-function dragged (d) {
-  d.fx = d3.event.x;
-  d.fy = d3.event.y;
+function dragged (e, d) {
+  d.fx = e.x;
+  d.fy = e.y;
 }
 
-function dragended (d) {
-  if (!d3.event.active) { simulation.alphaTarget(0).stop(); }
+function dragended (e, d) {
+  if (!e.active) { simulation.alphaTarget(0).stop(); }
   draggingNode = undefined;
   // keep the node where it was dragged
   d.fx = d.x;
@@ -1103,8 +1103,8 @@ export default {
       svg.call(
         zoom = d3.zoom()
           .scaleExtent([0.1, 4])
-          .on('zoom', () => {
-            container.attr('transform', d3.event.transform);
+          .on('zoom', (e) => {
+            container.attr('transform', e.transform);
           })
       );
 
@@ -1120,13 +1120,13 @@ export default {
         .attr('visibility', this.calculateLinkBaselineVisibility);
 
       // add link mouse listeners for showing popups
-      link.on('mouseover', (l) => {
+      link.on('mouseover', (e, l) => {
         if (draggingNode) { return; }
         if (popupTimer) { clearTimeout(popupTimer); }
         popupTimer = setTimeout(() => {
           this.showLinkPopup(l);
         }, 600);
-      }).on('mouseout', (l) => {
+      }).on('mouseout', () => {
         if (popupTimer) { clearTimeout(popupTimer); }
       });
 
@@ -1154,14 +1154,14 @@ export default {
         );
 
       // add node mouse listeners for showing focus and popups
-      node.on('mouseover', (d) => {
+      node.on('mouseover', (e, d) => {
         if (draggingNode) { return; }
         if (popupTimer) { clearTimeout(popupTimer); }
         popupTimer = setTimeout(() => {
           this.showNodePopup(d);
         }, 600);
         itemFocus(d);
-      }).on('mouseout', (d) => {
+      }).on('mouseout', (e, d) => {
         if (popupTimer) { clearTimeout(popupTimer); }
         unfocus(d);
       });
