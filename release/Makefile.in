@@ -26,6 +26,7 @@ install:
 	sed -e "s,BUILD_ARKIME_INSTALL_DIR,@prefix@,g" < arkime_config_interfaces.sh > @prefix@/bin/arkime_config_interfaces.sh
 	sed -e "s,BUILD_ARKIME_INSTALL_DIR,@prefix@,g" < Configure > @prefix@/bin/Configure
 	chmod 0755 @prefix@/bin/arkime_update_geo.sh @prefix@/bin/arkime_add_user.sh @prefix@/bin/Configure @prefix@/bin/arkime_config_interfaces.sh
+	/bin/bash release/afterinstall.sh
 
 installmoloch:
 	rm -f @prefix@/etc/arkime*

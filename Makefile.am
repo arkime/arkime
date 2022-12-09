@@ -13,4 +13,3 @@ check-local:
 
 config:
 	@prefix@/bin/Configure
-	/bin/bash release/afterinstall.sh
