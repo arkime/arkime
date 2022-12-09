@@ -477,12 +477,12 @@ export default {
     }
   },
   mounted: function () {
-    // lazy load flot so it loads after data
-    import(/* webpackChunkName: "flot" */ 'public/flot-0.7/jquery.flot.min');
-    import(/* webpackChunkName: "flot" */ 'public/flot-0.7/jquery.flot.selection.min');
-    import(/* webpackChunkName: "flot" */ 'public/flot-0.7/jquery.flot.navigate.min');
-    import(/* webpackChunkName: "flot" */ 'public/flot-0.7/jquery.flot.resize');
-    import(/* webpackChunkName: "flot" */ 'public/flot-0.7/jquery.flot.stack.min');
+    import(/* webpackChunkName: "flot" */ 'public/flot-0.8.3/jquery.flot.min');
+    import(/* webpackChunkName: "flot" */ 'public/flot-0.8.3/jquery.flot.selection.min');
+    import(/* webpackChunkName: "flot" */ 'public/flot-0.8.3/jquery.flot.navigate.min');
+    import(/* webpackChunkName: "flot" */ 'public/flot-0.8.3/jquery.flot.resize.min');
+    import(/* webpackChunkName: "flot" */ 'public/flot-0.8.3/jquery.flot.stack.min');
+    import(/* webpackChunkName: "flot" */ 'public/flot-0.8.3/jquery.flot.time.min');
 
     // lazy load jvector map so it loads after data
     import(/* webpackChunkName: "jvectormap" */ 'public/jquery-jvectormap-1.2.2.min.js');
