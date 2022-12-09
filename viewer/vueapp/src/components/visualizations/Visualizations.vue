@@ -255,6 +255,7 @@ let primaryColor;
 let srcColor;
 let dstColor;
 let highlightColor;
+let axisColor;
 let waterColor;
 let landColorDark;
 let landColorLight;
@@ -467,6 +468,7 @@ export default {
     srcColor = styles.getPropertyValue('--color-src').trim() || '#CA0404';
     dstColor = styles.getPropertyValue('--color-dst').trim() || '#0000FF';
     highlightColor = styles.getPropertyValue('--color-gray-darker').trim();
+    axisColor = styles.getPropertyValue('--color-gray-light').trim();
     waterColor = styles.getPropertyValue('--color-water').trim();
     landColorDark = styles.getPropertyValue('--color-land-dark').trim();
     landColorLight = styles.getPropertyValue('--color-land-light').trim();
@@ -797,9 +799,7 @@ export default {
         series: {
           stack: true,
           bars: { barWidth },
-          lines: {
-            fill: true
-          }
+          lines: { fill: true }
         },
         selection: {
           mode: 'x',
@@ -808,7 +808,7 @@ export default {
         xaxis: {
           mode: 'time',
           label: 'Datetime',
-          color: foregroundColor,
+          color: axisColor,
           min: this.graphData.xmin || null,
           max: this.graphData.xmax || null,
           tickFormatter: (v, axis) => {
@@ -819,7 +819,7 @@ export default {
         },
         yaxis: {
           min: 0,
-          color: foregroundColor,
+          color: axisColor,
           zoomRange: false,
           autoscaleMargin: 0.2,
           tickFormatter: (v) => {
@@ -832,7 +832,7 @@ export default {
         },
         grid: {
           borderWidth: 0,
-          color: foregroundColor,
+          color: axisColor,
           hoverable: true,
           clickable: true,
           markings: []
@@ -1181,8 +1181,9 @@ export default {
 }
 
 /* make graph labels smaller */
-.tickLabels .tickLabel {
+.tickLabel {
   font-size: smaller;
+  color: var(--color-foreground);
 }
 
 /* position the pan dropdown between the pan buttons */
