@@ -671,7 +671,21 @@ void wise_plugin_pre_save(MolochSession_t *session, int UNUSED(final))
                         g_free(communityId);
                     }
                     break;
+                case MOLOCH_FIELD_EXSPECIAL_DST_IP_PORT: {
+                    char ipstr[INET6_ADDRSTRLEN + 10];
+
+                    if (IN6_IS_ADDR_V4MAPPED(&session->addr2)) {
+                        uint32_t ip = MOLOCH_V6_TO_V4(session->addr2);
+                        snprintf(ipstr, sizeof(ipstr), "%u.%u.%u.%u:%d", ip & 0xff, (ip >> 8) & 0xff, (ip >> 16) & 0xff, (ip >> 24) & 0xff, session->port2);
+                    } else {
+                        inet_ntop(AF_INET6, &session->addr1, ipstr, sizeof(ipstr));
+                        int len = strlen(ipstr);
+                        snprintf(ipstr + len, sizeof(ipstr) - len, ".%d", session->port2);
+                    }
+                    wise_lookup(session, iRequest, ipstr, type);
+                    break;
                 }
+                } /* switch */
                 continue;
             }
 
@@ -919,7 +933,9 @@ LOCAL void wise_load_config()
                 CONFIGEXIT("wise-types '%s' has too man fields, max %d", keys[i], INTEL_TYPE_MAX_FIELDS);
 
             int pos;
-            if (strncmp("db:", values[v], 3) == 0)
+            if (strcmp("ip.dst:port", values[v]) == 0 || strcmp("dst.ip:port", values[v]) == 0) {
+                pos = MOLOCH_FIELD_EXSPECIAL_DST_IP_PORT;
+            } else if  (strncmp("db:", values[v], 3) == 0)
                 pos = moloch_field_by_db(values[v] + 3);
             else
                 pos = moloch_field_by_exp(values[v]);
