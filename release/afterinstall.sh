@@ -1,5 +1,11 @@
 #!/bin/bash
 name="<%= name %>"
+
+# Running from make config doesn't fill in template
+if [[ "${name::1}" == "<" ]]; then
+    name="arkime"
+fi
+
 ################################################################################
 if [ -d "/etc/systemd" ] && [ -x "/bin/systemctl" ]; then
     /bin/unlink /etc/systemd/system/arkimecapture.service >/dev/null 2>&1
