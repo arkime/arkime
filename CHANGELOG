@@ -33,6 +33,7 @@ NOTICE: Cross-cluster Shortcuts require you to not restart all your viewers at o
   - db.pl - upgrade failed if there was no moloch_shared user
   - db.pl - repair now fixes missing history/ecs templates
   - cont3xt - support missing auth and userTmpl settings
+  - capture - allow wise field dst.ip:port
 
 4.0.3 2022/11/28
   - release - cyberchef 9.54.0
