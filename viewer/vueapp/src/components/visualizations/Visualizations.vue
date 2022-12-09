@@ -424,7 +424,7 @@ export default {
       if (newVal && oldVal && !this.hideViz && !this.disabledAggregations) {
         if (this.plotCheck) { clearInterval(this.plotCheck); }
         this.plotCheck = setInterval(() => { // wait for plot func to be loaded
-          if ($.plot || this.initialized) {
+          if ($.plot && !this.initialized) {
             clearInterval(this.plotCheck);
             this.initialized = true;
             this.plotCheck = undefined;
