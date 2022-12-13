@@ -229,7 +229,7 @@
 
             <!-- graph -->
             <div v-if="graphData"
-              class="plot-container pr-4">
+              class="plot-container">
               <div class="plot-area"
                 :id="'plotArea' + id">
               </div>
@@ -1295,7 +1295,7 @@ export default {
 .map-visible .plot-container {
   position: relative;
   display: inline-block;
-  width: 75%;
+  width: 76%;
 }
 .map-invisible .plot-container {
   position: relative;
