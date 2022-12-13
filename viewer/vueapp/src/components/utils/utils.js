@@ -97,6 +97,7 @@ export default {
       (sessionStorage['force-aggregations'] && sessionStorage['force-aggregations'] !== 'false')
     ) {
       store.commit('setDisabledAggregations', false);
+      store.commit('setForcedAggregations', true);
       query.facets = 1;
       return;
     }

@@ -426,7 +426,6 @@ export default {
         this.plotCheck = setInterval(() => { // wait for plot func to be loaded
           if ($.plot && !this.initialized) {
             clearInterval(this.plotCheck);
-            this.initialized = true;
             this.plotCheck = undefined;
             // create map
             this.displayMap();
