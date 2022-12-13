@@ -27,6 +27,12 @@ LOCAL MolochPacketRC vxlan_packet_enqueue(MolochPacketBatch_t * batch, MolochPac
     if ((data[0] & 0x77) != 0 || (data[1] & 0xb7) != 0)
         return MOLOCH_PACKET_UNKNOWN;
 
+    if ((data[0] & 0x08) == 0x08) {
+        packet->vni = (data[4] << 16) | (data[5] << 8) | data[6];
+        LOG("ALW %02x%02x%02x = %u", data[4], data[5], data[6], packet->vni);
+
+    }
+
     packet->tunnel |= MOLOCH_PACKET_TUNNEL_VXLAN;
     return moloch_packet_run_ethernet_cb(batch, packet, data+8, len-8, MOLOCH_ETHERTYPE_ETHER, "vxlan");
 }

@@ -75,7 +75,11 @@
             ],
             "srcOuterOuiCnt" : 1,
             "srcRIR" : "ARIN",
-            "totDataBytes" : 0
+            "totDataBytes" : 0,
+            "vni" : [
+               123
+            ],
+            "vniCnt" : 1
          },
          "header" : {
             "index" : {
@@ -255,7 +259,11 @@
                   "16777226:0,33554442:0"
                ]
             },
-            "totDataBytes" : 512
+            "totDataBytes" : 512,
+            "vni" : [
+               123
+            ],
+            "vniCnt" : 1
          },
          "header" : {
             "index" : {

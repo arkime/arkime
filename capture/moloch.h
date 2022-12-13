@@ -56,7 +56,7 @@
 #define SUPPRESS_INT_CONVERSION
 #endif
 
-#define MOLOCH_API_VERSION 400
+#define MOLOCH_API_VERSION 410
 
 #define MOLOCH_SESSIONID_LEN 37
 
@@ -575,14 +575,15 @@ typedef struct molochpacket_t
     uint8_t        readerPos;           // position for filename/ops
     uint32_t       etherOffset:11;      // offset to current ethernet frame from start
     uint32_t       outerEtherOffset:11; // offset to previous ethernet frame from start
-    uint32_t       ipOffset:11;         // offset to ip header from start
-    uint32_t       outerIpOffset:11;    // offset to outer ip header from start
+    uint32_t       tunnel:8;            // tunnel type
     uint32_t       direction:1;         // direction of packet
     uint32_t       v6:1;                // v6 or not
     uint32_t       outerv6:1;           // outer v6 or not
     uint32_t       copied:1;            // don't need to copy
     uint32_t       wasfrag:1;           // was a fragment
-    uint32_t       tunnel:8;            // tunnel type
+    uint32_t       ipOffset:11;         // offset to ip header from start
+    uint32_t       outerIpOffset:11;    // offset to outer ip header from start
+    uint32_t       vni:24;              // vxlan id
 } MolochPacket_t;
 
 typedef struct

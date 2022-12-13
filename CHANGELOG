@@ -35,6 +35,7 @@ NOTICE: Cross-cluster Shortcuts require you to not restart all your viewers at o
   - cont3xt - support missing auth and userTmpl settings
   - capture - allow wise field dst.ip:port
   - viewer - fix es node stats for different node.roles
+  - capture - add VNI field
 
 4.0.3 2022/11/28
   - release - cyberchef 9.54.0

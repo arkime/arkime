@@ -218,8 +218,18 @@ dl
         b-dropdown-item(@click="openSpiGraph('vlan')")
           | Open VLan SPI Graph
         b-dropdown-item(@click="fieldExists('vlan', '==')")
-          | Add VLAN EXISTS! to query
+          | Add VLan EXISTS! to query
         +clickableFieldActions('vlan', false)
+        b-dropdown-divider
+        b-dropdown-item(@click="exportUnique('vni', 0)")
+          | Export Unique VNI
+        b-dropdown-item(@click="exportUnique('vni', 1)")
+          | Export Unique VNI with counts
+        b-dropdown-item(@click="openSpiGraph('vni')")
+          | Open VNI SPI Graph
+        b-dropdown-item(@click="fieldExists('vni', '==')")
+          | Add VNI EXISTS! to query
+        +clickableFieldActions('vni', false)
     dd
       strong.medium.ml-1 Src Mac
       +arrayPrint(session.source, "mac", "mac.src", true)
@@ -238,6 +248,10 @@ dl
       if (session.network.vlan)
         strong.medium.ml-4 VLan
         +arrayPrint(session.network.vlan, "id", "vlan")
+
+      if (session.network.vni)
+        strong.medium.ml-4 VNI
+        +arrayPrint(session, "vni", "vni")
 
   if (session.srcOuterMac ||session.dstOuterMac ||session.srcOuterIp||session.dstOuterIp )
     dt
