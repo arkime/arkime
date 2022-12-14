@@ -1,4 +1,4 @@
-use Test::More tests => 701;
+use Test::More tests => 709;
 use Cwd;
 use URI::Escape;
 use MolochTest;
@@ -344,6 +344,12 @@ if (0) {
 }
 
 # vlan tests
+    countTest(2, "date=-1&expression=" . uri_escape("(file=$pwd/vxlan.pcap||file=$pwd/dns-dnskey.pcap)&&vni=123"));
+    countTest(2, "date=-1&expression=" . uri_escape("(file=$pwd/vxlan.pcap||file=$pwd/dns-dnskey.pcap)&&vni.cnt=1"));
+    countTest(2, "date=-1&expression=" . uri_escape("(file=$pwd/vxlan.pcap||file=$pwd/dns-dnskey.pcap)&&vni<124"));
+    countTest(0, "date=-1&expression=" . uri_escape("(file=$pwd/vxlan.pcap||file=$pwd/dns-dnskey.pcap)&&vni>124"));
+
+# vni tests
     countTest(2, "date=-1&expression=" . uri_escape("(file=$pwd/dns-flags0110.pcap||file=$pwd/dns-dnskey.pcap)&&vlan=500"));
     countTest(2, "date=-1&expression=" . uri_escape("(file=$pwd/dns-flags0110.pcap||file=$pwd/dns-dnskey.pcap)&&vlan.cnt=1"));
     countTest(2, "date=-1&expression=" . uri_escape("(file=$pwd/dns-flags0110.pcap||file=$pwd/dns-dnskey.pcap)&&vlan<501"));

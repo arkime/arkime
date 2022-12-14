@@ -704,7 +704,7 @@ void reader_libpcapfile_init(char *UNUSED(name))
     offlineDispatchAfter        = moloch_config_int(NULL, "offlineDispatchAfter", 2500, 1, 0x7fff);
 
     if (offlineDispatchAfter > (int)(config.maxPacketsInQueue + 1000)) {
-        CONFIGEXIT("offlineDispatchAfter (%d) must be greater then maxPacketsInQueue (%d) + 1000", offlineDispatchAfter, config.maxPacketsInQueue);
+        CONFIGEXIT("offlineDispatchAfter (%d) must be less than maxPacketsInQueue (%d) + 1000", offlineDispatchAfter, config.maxPacketsInQueue);
     }
 
     moloch_reader_start         = reader_libpcapfile_start;

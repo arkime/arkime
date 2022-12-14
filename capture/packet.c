@@ -45,6 +45,7 @@ uint64_t                     unwrittenBytes;
 int                          mac1Field;
 int                          mac2Field;
 int                          vlanField;
+int                          vniField;
 LOCAL int                    oui1Field;
 LOCAL int                    oui2Field;
 LOCAL int                    outermac1Field;
@@ -352,6 +353,9 @@ LOCAL void moloch_packet_process(MolochPacket_t *packet, int thread)
 
         if (packet->vlan)
             moloch_field_int_add(vlanField, session, packet->vlan);
+
+        if (packet->vni)
+            moloch_field_int_add(vniField, session, packet->vni);
 
         if (packet->etherOffset!=0 && packet->outerEtherOffset!=packet->etherOffset) {
             moloch_field_macoui_add(session, outermac1Field, outeroui1Field, packet->pkt + packet->outerEtherOffset);
@@ -1640,6 +1644,12 @@ void moloch_packet_init()
         "vlan", "VLan", "network.vlan.id",
         "vlan value",
         MOLOCH_FIELD_TYPE_INT_GHASH,  MOLOCH_FIELD_FLAG_ECS_CNT | MOLOCH_FIELD_FLAG_LINKED_SESSIONS | MOLOCH_FIELD_FLAG_NOSAVE,
+        (char *)NULL);
+
+    vniField = moloch_field_define("general", "integer",
+        "vni", "VNI", "vni",
+        "vni value",
+        MOLOCH_FIELD_TYPE_INT_GHASH,  MOLOCH_FIELD_FLAG_CNT | MOLOCH_FIELD_FLAG_LINKED_SESSIONS,
         (char *)NULL);
 
 
