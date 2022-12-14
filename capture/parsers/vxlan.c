@@ -29,8 +29,6 @@ LOCAL MolochPacketRC vxlan_packet_enqueue(MolochPacketBatch_t * batch, MolochPac
 
     if ((data[0] & 0x08) == 0x08) {
         packet->vni = (data[4] << 16) | (data[5] << 8) | data[6];
-        LOG("ALW %02x%02x%02x = %u", data[4], data[5], data[6], packet->vni);
-
     }
 
     packet->tunnel |= MOLOCH_PACKET_TUNNEL_VXLAN;
