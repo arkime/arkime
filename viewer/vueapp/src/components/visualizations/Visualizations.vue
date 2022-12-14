@@ -251,7 +251,6 @@ import moment from 'moment-timezone';
 
 // color vars
 let foregroundColor;
-let primaryColor;
 let srcColor;
 let dstColor;
 let highlightColor;
@@ -306,8 +305,8 @@ export default {
       graphOptions: {},
       showMap: undefined,
       turnOffGraphDays: this.$constants.TURN_OFF_GRAPH_DAYS,
-      initialized: false,
-      plotCheck: undefined
+      plotCheck: undefined,
+      initialized: false
     };
   },
   computed: {
@@ -397,16 +396,16 @@ export default {
     xffGeo: function (newVal, oldVal) {
       this.setupMapData(this.mapData);
     },
-    graphType: function (newVal, oldVal) {
+    graphType: function () {
+      if (!this.initialized) { return; }
+
       function changeGraphType (that) {
         let interval = 0;
         // need to wait for graph to load initially if there is a req for cap times
         if (!that.graph) { interval = 100; }
         setTimeout(() => {
           that.setupGraphData();
-          that.plot.setData(that.graph);
-          that.plot.setupGrid();
-          that.plot.draw();
+          that.plot = $.plot(that.plotArea, that.graph, that.graphOptions);
         }, interval);
       }
       if (this.primary) {
@@ -416,7 +415,9 @@ export default {
         setTimeout(() => { changeGraphType(this); }, id * 100);
       }
     },
-    seriesType: function (newVal, oldVal) {
+    seriesType: function () {
+      if (!this.initialized) { return; }
+
       this.setupGraphData();
       this.plot = $.plot(this.plotArea, this.graph, this.graphOptions);
     },
@@ -424,7 +425,7 @@ export default {
       if (newVal && oldVal && !this.hideViz && !this.disabledAggregations) {
         if (this.plotCheck) { clearInterval(this.plotCheck); }
         this.plotCheck = setInterval(() => { // wait for plot func to be loaded
-          if ($.plot && !this.initialized) {
+          if ($.plot) {
             clearInterval(this.plotCheck);
             this.plotCheck = undefined;
             // create map
@@ -451,8 +452,8 @@ export default {
         }, id * 100);
       }
     },
-    capStartTimes (newVal, oldVal) {
-      if (!this.primary) {
+    capStartTimes () {
+      if (!this.primary && this.initialized) {
         this.setupGraphData();
         this.plot = $.plot(this.plotArea, this.graph, this.graphOptions);
       }
@@ -463,11 +464,10 @@ export default {
     const styles = window.getComputedStyle(document.body);
 
     foregroundColor = styles.getPropertyValue('--color-foreground').trim();
-    primaryColor = styles.getPropertyValue('--color-primary').trim();
     srcColor = styles.getPropertyValue('--color-src').trim() || '#CA0404';
     dstColor = styles.getPropertyValue('--color-dst').trim() || '#0000FF';
     highlightColor = styles.getPropertyValue('--color-gray-darker').trim();
-    axisColor = styles.getPropertyValue('--color-gray-light').trim();
+    axisColor = styles.getPropertyValue('--color-gray').trim();
     waterColor = styles.getPropertyValue('--color-water').trim();
     landColorDark = styles.getPropertyValue('--color-land-dark').trim();
     landColorLight = styles.getPropertyValue('--color-land-light').trim();
@@ -478,12 +478,8 @@ export default {
     }
   },
   mounted: function () {
-    import(/* webpackChunkName: "flot" */ 'public/flot-0.8.3/jquery.flot.min');
-    import(/* webpackChunkName: "flot" */ 'public/flot-0.8.3/jquery.flot.selection.min');
-    import(/* webpackChunkName: "flot" */ 'public/flot-0.8.3/jquery.flot.navigate.min');
-    import(/* webpackChunkName: "flot" */ 'public/flot-0.8.3/jquery.flot.resize.min');
-    import(/* webpackChunkName: "flot" */ 'public/flot-0.8.3/jquery.flot.stack.min');
-    import(/* webpackChunkName: "flot" */ 'public/flot-0.8.3/jquery.flot.time.min');
+    import(/* webpackChunkName: "flot" */ 'public/jquery.event.drag');
+    import(/* webpackChunkName: "flot" */ 'public/jquery.flot.min');
 
     // lazy load jvector map so it loads after data
     import(/* webpackChunkName: "jvectormap" */ 'public/jquery-jvectormap-1.2.2.min.js');
@@ -585,21 +581,21 @@ export default {
     },
     zoomOut: function () {
       this.plot.zoomOut();
-      this.debounce(this.updateResults, this.plot, 400);
+      this.debounce(this.updateResults, this.plot, 600);
     },
     zoomIn: function () {
       this.plot.zoom();
-      this.debounce(this.updateResults, this.plot, 400);
+      this.debounce(this.updateResults, this.plot, 600);
     },
     panLeft: function () {
       const panValue = Math.floor(this.plotWidth * this.plotPan) * -1;
       this.plot.pan({ left: panValue });
-      this.debounce(this.updateResults, this.plot, 400);
+      this.debounce(this.updateResults, this.plot, 600);
     },
     panRight: function () {
       const panValue = Math.floor(this.plotWidth * this.plotPan);
       this.plot.pan({ left: panValue });
-      this.debounce(this.updateResults, this.plot, 400);
+      this.debounce(this.updateResults, this.plot, 600);
     },
     plotPanChange: function (value) {
       this.plotPan = value;
@@ -654,12 +650,15 @@ export default {
         if ($.plot) {
           clearInterval(this.plotCheck);
           this.plotCheck = undefined;
-          this.initialized = true;
         }
       }, 50);
 
       this.plotArea = $('#plotArea' + this.id);
+
+      if (!this.plotArea[0]) { return; } // don't continue if graph is hidden
+
       this.plot = $.plot(this.plotArea, this.graph, this.graphOptions);
+      this.initialized = true;
 
       this.calculateHoverBarWidth();
 
@@ -783,7 +782,7 @@ export default {
         ];
         break;
       default:
-        this.graph = [{ data: this.graphData[this.graphType], color: primaryColor }];
+        this.graph = [{ data: this.graphData[this.graphType], color: foregroundColor }];
       } /* switch */
 
       const showBars = this.seriesType === 'bars';
@@ -797,8 +796,8 @@ export default {
       this.graphOptions = { // flot graph options
         series: {
           stack: true,
-          bars: { barWidth },
-          lines: { fill: true }
+          lines: { fill: true },
+          bars: { barWidth: [barWidth, true] }
         },
         selection: {
           mode: 'x',
@@ -820,7 +819,7 @@ export default {
           min: 0,
           color: axisColor,
           zoomRange: false,
-          autoscaleMargin: 0.2,
+          autoscaleMargin: 0.02,
           tickFormatter: (v) => {
             if (this.graphType === 'totBytesHisto' || this.graphType === 'totDataBytesHisto') {
               return this.$options.filters.humanReadableBytes(v);
@@ -1062,6 +1061,8 @@ export default {
     $(document).off('mouseup', this.isOutsideClick);
     $(this.mapEl).off('resize', this.onMapResize);
     $(this.mapEl).remove();
+
+    this.initialized = false;
   }
 };
 </script>
@@ -1181,8 +1182,8 @@ export default {
 
 /* make graph labels smaller */
 .tickLabel {
-  font-size: smaller;
-  color: var(--color-foreground);
+  font-size: 11px;
+  fill: var(--color-foreground);
 }
 
 /* position the pan dropdown between the pan buttons */
@@ -1288,8 +1289,9 @@ export default {
 
 /* graph styles -------------------- */
 .plot-area {
-  width: 100%;
+  width: 102%;
   height: 170px;
+  margin-left: -20px;
 }
 
 .map-visible .plot-container {
