@@ -132,7 +132,7 @@ LOCAL void *reader_tpacketv3_thread(gpointer infov)
         struct tpacket3_hdr *th;
 
         th = (struct tpacket3_hdr *) ((uint8_t *) tbd + tbd->hdr.bh1.offset_to_first_pkt);
-        uint16_t p;
+        uint32_t p;
 
         for (p = 0; p < tbd->hdr.bh1.num_pkts; p++) {
             if (unlikely(th->tp_snaplen != th->tp_len)) {
