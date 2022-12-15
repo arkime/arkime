@@ -788,10 +788,20 @@ export default {
         this.graph = [{ data: this.graphData[this.graphType], color: foregroundColor }];
       } /* switch */
 
-      const showBars = this.seriesType === 'bars';
-
       for (let i = 0, len = this.graph.length; i < len; ++i) {
-        this.graph[i].bars = { show: showBars };
+        this.graph[i].bars = { show: this.seriesType === 'bars' };
+
+        // if there's no value for the graph x min/max
+        // add it to the beginning/end of the data so that the graph
+        // shows the full time range (not just the data's time range)
+        if (!this.graphData.xmin) { continue; }
+        if (this.graph[i].data[0][0] !== this.graphData.xmin) {
+          this.graph[i].data.unshift([this.graphData.xmin, 0]);
+        }
+        if (!this.graphData.xmax) { continue; }
+        if (this.graph[i].data[this.graph[i].data.length - 1][0] !== this.graphData.xmax) {
+          this.graph[i].data.push([this.graphData.xmax, 0]);
+        }
       }
 
       barWidth = (this.graphData.interval * 1000) / 1.7;
@@ -810,9 +820,10 @@ export default {
           mode: 'time',
           label: 'Datetime',
           color: axisColor,
+          timeBase: 'milliseconds',
           min: this.graphData.xmin || null,
           max: this.graphData.xmax || null,
-          tickFormatter: (v, axis) => {
+          tickFormatter: (v) => {
             return this.$options.filters.timezoneDateString(
               v, this.timezone, false
             );
@@ -826,28 +837,17 @@ export default {
           tickFormatter: (v) => {
             if (this.graphType === 'totBytesHisto' || this.graphType === 'totDataBytesHisto') {
               return this.$options.filters.humanReadableBytes(v);
-            } else {
-              return this.$options.filters.humanReadableNumber(v);
             }
+            return this.$options.filters.humanReadableNumber(v);
           }
         },
         grid: {
           borderWidth: 0,
-          color: axisColor,
-          hoverable: true,
           clickable: true,
-          markings: []
+          color: axisColor
         },
-        zoom: {
-          interactive: false,
-          trigger: 'dblclick',
-          amount: 2
-        },
-        pan: {
-          interactive: false,
-          cursor: 'move',
-          frameRate: 20
-        }
+        pan: { interactive: false },
+        zoom: { interactive: false }
       };
 
       if (this.showCapStartTimes) {
