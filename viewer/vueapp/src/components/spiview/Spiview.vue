@@ -894,9 +894,7 @@ export default {
         query.map = true;
       }
       // set whether vizualizations are open on the spiview page
-      let hideViz = false;
       if (localStorage.getItem('spiview-hide-viz') === 'true') {
-        hideViz = true;
         query.facets = 0;
       }
 
@@ -911,11 +909,6 @@ export default {
         Vue.axios(options).then((response) => {
           if (response.data.bsqErr) {
             response.data.error = response.data.bsqErr;
-          }
-
-          if (hideViz || !query.forceAggregations) { // always set map/graph data so viz area shows up
-            this.mapData = {};
-            this.graphData = {};
           }
 
           resolve(response.data);
