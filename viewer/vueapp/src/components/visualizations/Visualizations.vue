@@ -794,10 +794,13 @@ export default {
         // if there's no value for the graph x min/max
         // add it to the beginning/end of the data so that the graph
         // shows the full time range (not just the data's time range)
+        if (!this.graph[i].data[0]) { continue; }
+
         if (!this.graphData.xmin) { continue; }
         if (this.graph[i].data[0][0] !== this.graphData.xmin) {
           this.graph[i].data.unshift([this.graphData.xmin, 0]);
         }
+
         if (!this.graphData.xmax) { continue; }
         if (this.graph[i].data[this.graph[i].data.length - 1][0] !== this.graphData.xmax) {
           this.graph[i].data.push([this.graphData.xmax, 0]);
@@ -842,6 +845,7 @@ export default {
           }
         },
         grid: {
+          markings: [],
           borderWidth: 0,
           clickable: true,
           color: axisColor
