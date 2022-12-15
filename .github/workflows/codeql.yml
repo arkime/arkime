@@ -58,7 +58,7 @@ jobs:
 
     - name: Install packages
       run: |
-        apt-get -qq install libpcap-dev libnghttp2-dev libyara-dev libglib2.0-dev libmaxminddb-dev
+        sudo apt-get -qq install libpcap-dev libnghttp2-dev libyara-dev libglib2.0-dev libmaxminddb-dev
 
     # Autobuild attempts to build any compiled languages  (C/C++, C#, Go, or Java).
     # If this step fails, then you should remove it and run the build manually (see below)
