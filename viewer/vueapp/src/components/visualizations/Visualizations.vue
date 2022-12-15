@@ -478,8 +478,11 @@ export default {
     }
   },
   mounted: function () {
+    // cannot be bundled with flot because of jquery magic and must be first
     import(/* webpackChunkName: "flot" */ 'public/jquery.event.drag');
     import(/* webpackChunkName: "flot" */ 'public/jquery.flot.min');
+    // cannot be bundled with flot because of inline jquery magic
+    import(/* webpackChunkName: "flot" */ 'public/jquery.flot.resize');
 
     // lazy load jvector map so it loads after data
     import(/* webpackChunkName: "jvectormap" */ 'public/jquery-jvectormap-1.2.2.min.js');
