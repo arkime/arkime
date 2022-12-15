@@ -460,34 +460,37 @@ export default {
     }
   },
   created: function () {
-    // set styles for graph and map
-    const styles = window.getComputedStyle(document.body);
-
-    foregroundColor = styles.getPropertyValue('--color-foreground').trim();
-    srcColor = styles.getPropertyValue('--color-src').trim() || '#CA0404';
-    dstColor = styles.getPropertyValue('--color-dst').trim() || '#0000FF';
-    highlightColor = styles.getPropertyValue('--color-gray-darker').trim();
-    axisColor = styles.getPropertyValue('--color-gray').trim();
-    waterColor = styles.getPropertyValue('--color-water').trim();
-    landColorDark = styles.getPropertyValue('--color-land-dark').trim();
-    landColorLight = styles.getPropertyValue('--color-land-light').trim();
-
-    if (!landColorDark || !landColorLight) {
-      landColorDark = styles.getPropertyValue('--color-primary-dark').trim();
-      landColorLight = styles.getPropertyValue('--color-primary-lightest').trim();
-    }
-  },
-  mounted: function () {
-    // cannot be bundled with flot because of jquery magic and must be first
-    import(/* webpackChunkName: "flot" */ 'public/jquery.event.drag');
-    import(/* webpackChunkName: "flot" */ 'public/jquery.flot.min');
-    // cannot be bundled with flot because of inline jquery magic
-    import(/* webpackChunkName: "flot" */ 'public/jquery.flot.resize');
-
-    // lazy load jvector map so it loads after data
-    import(/* webpackChunkName: "jvectormap" */ 'public/jquery-jvectormap-1.2.2.min.js');
+    // lazy loading graphing libs to reduce bundle size
+    import( // cannot be bundled with flot because of jquery magic and must be first
+      /* webpackChunkName: "graphing" */
+      /* webpackMode: "lazy" */
+      /* webpackPreload: true */
+      'public/jquery.event.drag'
+    );
     import(
-      /* webpackChunkName: "jvectormapworld" */ 'public/jquery-jvectormap-world-en.js'
+      /* webpackChunkName: "graphing" */
+      /* webpackMode: "lazy" */
+      /* webpackPreload: true */
+      'public/jquery.flot.min'
+    );
+    import( // cannot be bundled with flot because of inline jquery magic
+      /* webpackChunkName: "graphing" */
+      /* webpackMode: "lazy" */
+      /* webpackPreload: true */
+      'public/jquery.flot.resize'
+    );
+
+    import(
+      /* webpackChunkName: "graphing" */
+      /* webpackMode: "lazy" */
+      /* webpackPreload: true */
+      'public/jquery-jvectormap-1.2.2.min.js'
+    );
+    import(
+      /* webpackChunkName: "graphing" */
+      /* webpackMode: "lazy" */
+      /* webpackPreload: true */
+      'public/jquery-jvectormap-world-en.js'
     ).then(() => {
       function setupMapAndGraph (that) {
         // create map
@@ -497,6 +500,23 @@ export default {
         that.setupGraphData();
         // create flot graph
         that.setupGraphElement();
+      }
+
+      // set styles for graph and map
+      const styles = window.getComputedStyle(document.body);
+
+      foregroundColor = styles.getPropertyValue('--color-foreground').trim();
+      srcColor = styles.getPropertyValue('--color-src').trim() || '#CA0404';
+      dstColor = styles.getPropertyValue('--color-dst').trim() || '#0000FF';
+      highlightColor = styles.getPropertyValue('--color-gray-darker').trim();
+      axisColor = styles.getPropertyValue('--color-gray').trim();
+      waterColor = styles.getPropertyValue('--color-water').trim();
+      landColorDark = styles.getPropertyValue('--color-land-dark').trim();
+      landColorLight = styles.getPropertyValue('--color-land-light').trim();
+
+      if (!landColorDark || !landColorLight) {
+        landColorDark = styles.getPropertyValue('--color-primary-dark').trim();
+        landColorLight = styles.getPropertyValue('--color-primary-lightest').trim();
       }
 
       basePath = this.$route.path.split('/')[1];
@@ -847,6 +867,7 @@ export default {
         grid: {
           markings: [],
           borderWidth: 0,
+          hoverable: true,
           clickable: true,
           color: axisColor
         },
