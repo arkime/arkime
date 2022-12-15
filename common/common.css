@@ -456,6 +456,13 @@ body.dark .b-sidebar-body {
   background-color: #333;
 }
 
+/* dark alert */
+body.dark .alert-dark {
+  color: #EEE;
+  border-color: #444;
+  background-color: #333;
+}
+
 /* ANIMATIONS -------------------------------- */
 /* for transition groups (any block element)
    enters/exits items by moving them to the right */

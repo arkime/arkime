@@ -138,23 +138,77 @@
 
       <div class="cont3xt-content" :style="navMarginHeightStyle">
         <!-- welcome -->
-        <div class="whole-page-info container"
+        <div class="mr-2 ml-2"
           v-if="!initialized && !error.length && !getIntegrationsError.length">
-          <div class="well center-area">
-            <h1 class="text-muted">
-              <span class="fa fa-fw fa-rocket fa-2x" />
-            </h1>
-            <h1 class="text-warning display-4">
-              Welcome to Cont3xt!
-            </h1>
-            <h4 v-if="!searchTerm"
+          <b-alert
+            show
+            variant="dark"
+            class="text-center">
+            <span class="fa fa-rocket fa-2x fa-flip-horizontal mr-1 text-muted" />
+            <strong class="text-warning lead">
+              <strong>Welcome to Cont3xt!</strong>
+            </strong>
+            <span v-if="!searchTerm"
               class="text-success lead">
-              Search for IPs, domains, URLs, emails, phone numbers, or hashes.
-            </h4>
-            <h4 v-else
+              <strong>Search for IPs, domains, URLs, emails, phone numbers, or hashes.</strong>
+            </span>
+            <span v-else
               class="text-success lead">
               <strong>Hit enter to issue your search!</strong>
-            </h4>
+            </span>
+            <span class="fa fa-rocket fa-2x ml-1 text-muted" />
+          </b-alert>
+          <div class="results-container results-summary results-help-left pr-2">
+            <div class="pb-4">
+              <div class="well well-lg text-center pt-4 pb-4">
+                <h1>
+                  <span class="fa fa-2x fa-tree text-muted" />
+                </h1>
+                <h1 class="display-4">
+                  Indicator Result Tree
+                </h1>
+                <p class="lead">
+                  Top level indicators presented here
+                </p>
+                <p class="lead">
+                  Integration icons will display high level result
+                </p>
+                <p class="lead">
+                  Choose and configure integrations via Settings -> Integrations
+                </p>
+              </div>
+              <hr>
+              <div class="well well-lg text-center pt-4 pb-4 mt-1">
+                <h1>
+                  <span class="fa fa-2x fa-link text-muted" />
+                </h1>
+                <h1 class="display-4">
+                  Link Groups
+                </h1>
+                <p class="lead">
+                  Custom pivot links tailored to the top level indicator query
+                </p>
+                <p class="lead">
+                  Create/Configure links and link groups in Settings -> Link Groups
+                </p>
+              </div>
+            </div>
+          </div>
+          <div class="results-container results-summary results-help-right pull-right">
+            <div class="well well-lg text-center pt-4 pb-4 pl-1">
+              <h1>
+                <span class="fa fa-2x fa-id-card-o text-muted" />
+              </h1>
+              <h1 class="display-4">
+                Indicator Card Detail
+              </h1>
+              <p class="lead">
+                Displays configurable subset of API results
+              </p>
+              <p class="lead">
+                Optionally, access raw results for card display tuning
+              </p>
+            </div>
           </div>
         </div> <!-- /welcome -->
 
@@ -183,12 +237,12 @@
           {{ getIntegrationsError }}
         </div> <!-- /integration error -->
 
-        <!--    time range input for links    -->
+        <!-- time range input for links -->
         <time-range-input v-if="lastSearchedTerm && initialized"
           class="link-inputs w-50 mb-1"
           v-model="timeRangeInfo"
           :place-holder-tip="linkPlaceholderTip" />
-        <!--    /time range input for links    -->
+        <!-- /time range input for links -->
 
         <!-- results -->
         <template v-if="lastSearchedTerm">
@@ -893,6 +947,16 @@ body.dark {
   overflow-x: hidden;
   padding-right: 8px;
   padding-left: 0.5rem;
+}
+
+.results-container.results-summary.results-help-right > div {
+  height: calc(100vh - 210px);
+}
+.results-container.results-summary.results-help-left > div {
+  padding-left: 0;
+}
+.results-container.results-summary .well {
+  border-radius: 6px;
 }
 
 /* scroll to top btn for integration results */
