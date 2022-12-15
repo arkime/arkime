@@ -42,7 +42,7 @@ class Auth {
 
   static initialize (options) {
     if (options.debug > 1) {
-      console.log('Auth.initialize', options); // lgtm [js/clear-text-logging]
+      console.log('Auth.initialize', options);
     }
 
     Auth.debug = options.debug ?? 0;
@@ -377,7 +377,7 @@ class Auth {
   static md5 (str, encoding) {
     return crypto
       .createHash('md5')
-      .update(str) // lgtm [js/weak-cryptographic-algorithm] lgtm [js/insufficient-password-hash]
+      .update(str)
       .digest(encoding || 'hex');
   };
 
@@ -385,7 +385,7 @@ class Auth {
   // Encryption is used because OpenSearch/Elasticsearch is insecure by default and we don't want others adding accounts.
   static pass2store (userid, password) {
     // md5 is required because of http digest
-    const m = Auth.md5(userid + ':' + Auth.#httpRealm + ':' + password); // lgtm [js/weak-cryptographic-algorithm]
+    const m = Auth.md5(userid + ':' + Auth.#httpRealm + ':' + password);
 
     // New style with IV: IV.E
     const iv = crypto.randomBytes(16);
