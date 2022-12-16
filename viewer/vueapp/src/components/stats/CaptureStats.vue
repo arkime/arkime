@@ -279,7 +279,7 @@ export default {
     toggleStatDetail: function (stat) {
       if (!stat.opened) { return; }
       const self = this;
-      const id = stat.id.replace(/[.:]/g, '\\$&');
+      const id = stat.id.replace(/[\\.:]/g, '\\$&');
 
       const wrap = document.getElementById('moreInfo-' + id);
       while (wrap.firstChild) {
