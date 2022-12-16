@@ -172,7 +172,7 @@ class Integration {
       try {
         // Make sure we can construct a proper URL-object using this string
         // eslint-disable-next-line no-unused-vars
-        const url = new URL(str); // lgtm [js/unused-local-variable]
+        const url = new URL(str);
         return 'url';
       } catch (e) {
         // This looked like a URL but could not be parsed as such. Continue testing below.

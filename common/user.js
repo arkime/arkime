@@ -73,7 +73,7 @@ class User {
    */
   static initialize (options) {
     if (options.debug > 1) {
-      console.log('User.initialize', options); // lgtm [js/clear-text-logging]
+      console.log('User.initialize', options);
     }
     User.#debug = options.debug ?? 0;
     readOnly = options.readOnly ?? false;
@@ -439,7 +439,8 @@ class User {
    * @returns {number} recordsFiltered - The number of users returned in this result.
    */
   static apiGetUsers (req, res, next) {
-    if (Array.isArray(req.body.start) || Array.isArray(req.body.length)) { // lgtm [js/type-confusion-through-parameter-tampering]
+    if (typeof req.body !== 'object') { return; }
+    if (Array.isArray(req.body.start) || Array.isArray(req.body.length)) {
       return res.send({
         success: false,
         recordsTotal: 0,
@@ -450,7 +451,7 @@ class User {
 
     const query = {
       from: parseInt(req.body.start) || 0,
-      size: parseInt(req.body.length) || 10000 // lgtm [js/type-confusion-through-parameter-tampering]
+      size: parseInt(req.body.length) || 10000
     };
 
     if (ArkimeUtil.isString(req.body.filter)) {
@@ -779,7 +780,7 @@ class User {
           return res.serverError(500, 'Error updating user:' + err);
         }
 
-        return res.send(JSON.stringify({ // lgtm [js/reflected-xss]
+        return res.send(JSON.stringify({
           success: true,
           text: `User ${userId} updated successfully`
         }));
@@ -848,7 +849,7 @@ class User {
           return res.serverError(500, 'Error updating user role:' + err);
         }
 
-        return res.send(JSON.stringify({ // lgtm [js/reflected-xss]
+        return res.send(JSON.stringify({
           success: true,
           text: `User ${userId}'s role ${roleId} updated successfully`
         }));

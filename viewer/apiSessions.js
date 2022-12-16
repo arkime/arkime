@@ -2469,7 +2469,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
     for (let i = 0; i < parts.length; i++) {
       const field = Config.getFieldsMap()[parts[i]];
       if (!field) {
-        return res.send(`Unknown expression ${parts[i]}\n`); // lgtm [js/reflected-xss]
+        return res.send(`Unknown expression ${parts[i]}\n`);
       }
       fields.push(field);
     }
@@ -2527,7 +2527,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
 
         if (doCounts) {
           for (let i = 0; i < results.length; i++) {
-            res.write(results[i].line + separator + results[i].count + '\n'); // lgtm [js/reflected-xss]
+            res.write(results[i].line + separator + results[i].count + '\n');
           }
         } else {
           for (let i = 0; i < results.length; i++) {
@@ -3267,9 +3267,9 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
             session.fileId = [saveId.seq];
 
             if (saveId.start === 0) {
-              file = fs.createWriteStream(filename, { flags: 'w' }); // lgtm [js/path-injection]
+              file = fs.createWriteStream(filename, { flags: 'w' });
             } else {
-              file = fs.createWriteStream(filename, { start: saveId.start, flags: 'r+' }); // lgtm [js/path-injection]
+              file = fs.createWriteStream(filename, { start: saveId.start, flags: 'r+' });
             }
             writeHeader = saveId.start === 0;
 

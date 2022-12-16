@@ -686,7 +686,7 @@ app.use(favicon(path.join(__dirname, '/favicon.ico')));
 
 // using fallthrough: false because there is no 404 endpoint (client router
 // handles 404s) and sending index.html is confusing
-app.use('/font-awesome', express.static( // lgtm [js/exposure-of-private-files]
+app.use('/font-awesome', express.static(
   path.join(__dirname, '/../node_modules/font-awesome'),
   { maxAge: dayMs, fallthrough: false }
 ), ArkimeUtil.missingResource);
@@ -1344,7 +1344,7 @@ app.get('/types/:source?', [ArkimeUtil.noCacheJson], (req, res) => {
 app.get('/:source/:typeName/:value', [ArkimeUtil.noCacheJson], function (req, res) {
   const source = internals.sources.get(req.params.source);
   if (!source) {
-    return res.end('Unknown source ' + req.params.source); // lgtm [js/reflected-xss]
+    return res.end('Unknown source ' + ArkimeUtil.safeStr(req.params.source));
   }
 
   const query = {
@@ -1364,7 +1364,7 @@ app.get('/:source/:typeName/:value', [ArkimeUtil.noCacheJson], function (req, re
 app.get('/dump/:source', [ArkimeUtil.noCacheJson], function (req, res) {
   const source = internals.sources.get(req.params.source);
   if (!source) {
-    return res.end('Unknown source ' + req.params.source); // lgtm [js/reflected-xss]
+    return res.end('Unknown source ' + ArkimeUtil.safeStr(req.params.source));
   }
 
   if (!source.dump) {
