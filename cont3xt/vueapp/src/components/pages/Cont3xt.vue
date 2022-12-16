@@ -174,7 +174,11 @@
                   Integration icons will display high level result
                 </p>
                 <p class="lead">
-                  Choose and configure integrations via Settings -> Integrations
+                  Choose and configure integrations via
+                  <a class="no-decoration"
+                    href="settings#integrations">
+                    Settings -> Integrations
+                  </a>
                 </p>
               </div>
               <div class="well well-lg text-center pt-4 pb-4 mt-2 alert-dark">
@@ -188,7 +192,11 @@
                   Custom pivot links tailored to the top level indicator query
                 </p>
                 <p class="lead">
-                  Create/Configure links and link groups in Settings -> Link Groups
+                  Create/Configure links and link groups in
+                  <a class="no-decoration"
+                    href="settings#linkgroups">
+                    Settings -> Link Groups
+                  </a>
                 </p>
               </div>
             </div>
