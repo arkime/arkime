@@ -160,7 +160,7 @@
           </b-alert>
           <div class="results-container results-summary results-help pr-2">
             <div class="d-flex flex-column align-items-stretch">
-              <div class="well well-lg text-center pt-4 pb-4 flex-grow-1">
+              <div class="well well-lg text-center pt-4 pb-4 flex-grow-1 alert-dark">
                 <h1>
                   <span class="fa fa-2x fa-tree text-muted" />
                 </h1>
@@ -177,8 +177,7 @@
                   Choose and configure integrations via Settings -> Integrations
                 </p>
               </div>
-              <hr>
-              <div class="well well-lg text-center pt-4 pb-4 mt-1">
+              <div class="well well-lg text-center pt-4 pb-4 mt-2 alert-dark">
                 <h1>
                   <span class="fa fa-2x fa-link text-muted" />
                 </h1>
@@ -195,7 +194,7 @@
             </div>
           </div>
           <div class="results-container results-summary results-help pull-right">
-            <div class="well well-lg text-center pt-4 pb-4 pl-1">
+            <div class="well well-lg text-center pt-4 pb-4 pl-1 alert-dark">
               <h1>
                 <span class="fa fa-2x fa-id-card-o text-muted" />
               </h1>
