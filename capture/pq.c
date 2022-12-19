@@ -122,7 +122,7 @@ void moloch_pq_upsert(MolochPQ_t *pq, MolochSession_t *session, int timeout, voi
     MolochPQItem_t *item;
     HASH_FIND(pqh_, (pq->keys[session->thread]), session->sessionId, item);
     if (item) {
-        long int bucket = item->expire - pq->bucket0[session->thread];
+        int bucket = item->expire - pq->bucket0[session->thread];
         if (bucket < 0) bucket = 0;
         if (bucket > pq->maxSeconds) bucket = pq->maxSeconds;
 
@@ -156,7 +156,7 @@ void moloch_pq_remove(MolochPQ_t *pq, MolochSession_t *session)
     if (!item)
         return;
 
-    long int bucket = item->expire - pq->bucket0[session->thread];
+    int bucket = item->expire - pq->bucket0[session->thread];
     if (bucket < 0) bucket = 0;
     if (bucket > pq->maxSeconds) bucket = pq->maxSeconds;
     DLL_REMOVE(pql_, &pq->buckets[session->thread][bucket], item);
