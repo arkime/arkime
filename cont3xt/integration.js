@@ -23,8 +23,13 @@ const path = require('path');
 const extractDomain = require('extract-domain');
 const ipaddr = require('ipaddr.js');
 const Audit = require('./audit');
+const RE2 = require('re2');
 
 const itypeStats = {};
+
+// https://urlregex.com/
+// eslint-disable-next-line no-useless-escape
+const cont3xtUrlRegex = new RE2(/((([A-Za-z]{3,9}:(?:\/\/)?)(?:[\-;:&=\+\$,\w]+@)?[A-Za-z0-9\.\-]+|(?:www\.|[\-;:&=\+\$,\w]+@)[A-Za-z0-9\.\-]+)((?:\/[\+~%\/\.\w\-_]*)?\??(?:[\-\+=&;%@\.\w_]*)#?(?:[\.\!\/\\\w]*))?)/);
 
 class Integration {
   static NoResult = Symbol('NoResult');
@@ -166,9 +171,7 @@ class Integration {
       return 'email';
     }
 
-    // https://urlregex.com/
-    // eslint-disable-next-line no-useless-escape
-    if (str.match(/https?:\/\//) && str.match(/((([A-Za-z]{3,9}:(?:\/\/)?)(?:[\-;:&=\+\$,\w]+@)?[A-Za-z0-9\.\-]+|(?:www\.|[\-;:&=\+\$,\w]+@)[A-Za-z0-9\.\-]+)((?:\/[\+~%\/\.\w\-_]*)?\??(?:[\-\+=&;%@\.\w_]*)#?(?:[\.\!\/\\\w]*))?)/)) {
+    if (str.match(/https?:\/\//) && str.match(cont3xtUrlRegex)) {
       try {
         // Make sure we can construct a proper URL-object using this string
         // eslint-disable-next-line no-unused-vars
