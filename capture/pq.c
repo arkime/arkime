@@ -52,7 +52,7 @@ struct MolochPQ_t {
     MolochPQHash_t      keys[MOLOCH_MAX_PACKET_THREADS];
     MolochPQ_cb         cb;
     time_t              bucket0[MOLOCH_MAX_PACKET_THREADS];
-    int                 maxSeconds;
+    uint32_t            maxSeconds;
 };
 
 /******************************************************************************/
@@ -83,12 +83,12 @@ MolochPQ_t *moloch_pq_alloc(int maxSeconds, MolochPQ_cb cb)
 /******************************************************************************/
 LOCAL void moloch_pq_shift(MolochPQ_t *pq, int thread)
 {
-    int shift = lastPacketSecs[thread] - pq->bucket0[thread];
+    uint32_t shift = lastPacketSecs[thread] - pq->bucket0[thread];
 
     if (shift > pq->maxSeconds)
         shift = pq->maxSeconds;
 
-    for (int i = 1; i <= pq->maxSeconds; i++) {
+    for (uint32_t i = 1; i <= pq->maxSeconds; i++) {
         if (i <= shift) {
             DLL_PUSH_TAIL_DLL(pql_, &pq->buckets[thread][0], &pq->buckets[thread][i]);
         }
@@ -99,7 +99,7 @@ LOCAL void moloch_pq_shift(MolochPQ_t *pq, int thread)
     pq->bucket0[thread] = lastPacketSecs[thread];
 }
 /******************************************************************************/
-void moloch_pq_upsert(MolochPQ_t *pq, MolochSession_t *session, int timeout, void *uw)
+void moloch_pq_upsert(MolochPQ_t *pq, MolochSession_t *session, uint32_t timeout, void *uw)
 {
     // timeout is relative to lastPacketSecs, figure out time
     time_t expire = lastPacketSecs[session->thread] + timeout;
@@ -122,7 +122,7 @@ void moloch_pq_upsert(MolochPQ_t *pq, MolochSession_t *session, int timeout, voi
     MolochPQItem_t *item;
     HASH_FIND(pqh_, (pq->keys[session->thread]), session->sessionId, item);
     if (item) {
-        int bucket = item->expire - pq->bucket0[session->thread];
+        uint32_t bucket = item->expire - pq->bucket0[session->thread];
         if (bucket < 0) bucket = 0;
 
         // Same bucket
@@ -196,9 +196,8 @@ void moloch_pq_free(MolochSession_t *session)
 /* Reset the bucket0 time */
 void moloch_pq_flush(int thread)
 {
-    int i, b;
-    for (i = 0; i < numPQs; i++) {
-        for (b = 0; b < pqs[i]->maxSeconds; b++) {
+    for (int i = 0; i < numPQs; i++) {
+        for (uint32_t b = 0; b < pqs[i]->maxSeconds; b++) {
             MolochPQItem_t *item = 0;
             while (DLL_POP_HEAD(pql_, &pqs[i]->buckets[thread][b], item)) {
                 HASH_REMOVE(pqh_, pqs[i]->keys[thread], item);

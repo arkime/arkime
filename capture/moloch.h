@@ -1388,7 +1388,7 @@ struct MolochPQ_t;
 typedef struct MolochPQ_t MolochPQ_t;
 
 MolochPQ_t *moloch_pq_alloc(int maxSeconds, MolochPQ_cb cb);
-void moloch_pq_upsert(MolochPQ_t *pq, MolochSession_t *session, int seconds,  void *uw);
+void moloch_pq_upsert(MolochPQ_t *pq, MolochSession_t *session, uint32_t seconds,  void *uw);
 void moloch_pq_remove(MolochPQ_t *pq, MolochSession_t *session);
 void moloch_pq_run(int thread, int max);
 void moloch_pq_free(MolochSession_t *session);
