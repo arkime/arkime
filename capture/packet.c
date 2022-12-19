@@ -821,7 +821,7 @@ LOCAL MolochPacketRC moloch_packet_ip4(MolochPacketBatch_t *batch, MolochPacket_
                           ip4->ip_dst.s_addr, tcphdr->th_dport);
         packet->mProtocol = tcpMProtocol;
 
-        const int dropPort = (tcphdr->th_dport * tcphdr->th_sport) & 0xffff;
+        const int dropPort = ((uint32_t)tcphdr->th_dport * (uint32_t)tcphdr->th_sport) & 0xffff;
         if (packetDrop4S.drops[dropPort] &&
             moloch_drophash_should_drop(&packetDrop4, dropPort, sessionId+1, packet->ts.tv_sec)) {
 
@@ -1000,7 +1000,7 @@ LOCAL MolochPacketRC moloch_packet_ip6(MolochPacketBatch_t * batch, MolochPacket
             moloch_session_id6(sessionId, ip6->ip6_src.s6_addr, tcphdr->th_sport,
                                ip6->ip6_dst.s6_addr, tcphdr->th_dport);
 
-            const int dropPort = (tcphdr->th_dport * tcphdr->th_sport) & 0xffff;
+            const int dropPort = ((uint32_t)tcphdr->th_dport * (uint32_t)tcphdr->th_sport) & 0xffff;
             if (packetDrop6S.drops[dropPort] &&
                 moloch_drophash_should_drop(&packetDrop6, dropPort, sessionId+1, packet->ts.tv_sec)) {
 
