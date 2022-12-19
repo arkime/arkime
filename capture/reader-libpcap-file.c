@@ -487,7 +487,9 @@ LOCAL void reader_libpcapfile_pcap_cb(u_char *UNUSED(user), const struct pcap_pk
     }
 
     packet->pkt           = (u_char *)bytes;
-    packet->ts            = h->ts;
+    /* libpcap casts to int32_t which sign extends, undo that */
+    packet->ts.tv_sec     = (uint32_t)h->ts.tv_sec;
+    packet->ts.tv_usec    = h->ts.tv_usec;
     packet->readerFilePos = ftell(offlineFile) - 16 - h->len;
     packet->readerPos     = readerPos;
     moloch_packet_batch(&batch, packet);
