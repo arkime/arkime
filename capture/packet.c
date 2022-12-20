@@ -1111,7 +1111,7 @@ LOCAL MolochPacketRC moloch_packet_ether(MolochPacketBatch_t * batch, MolochPack
              data[4],
              data[5]);
 
-    LOG("moloch_packet_ether MAC A: %s, %d", str, packet->etherOffset );
+    LOG("moloch_packet_ether MAC A: %s, %u", str, packet->etherOffset);
     snprintf(str, sizeof(str), "%02x:%02x:%02x:%02x:%02x:%02x",
              data[6],
              data[7],
@@ -1119,7 +1119,7 @@ LOCAL MolochPacketRC moloch_packet_ether(MolochPacketBatch_t * batch, MolochPack
              data[9],
              data[10],
              data[11]);
-    LOG("moloch_packet_ether MAC B: %s, %d", str, packet->etherOffset );
+    LOG("moloch_packet_ether MAC B: %s, %u", str, packet->etherOffset);
 #endif
 
 

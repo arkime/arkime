@@ -83,7 +83,6 @@ LOCAL void *reader_libpcap_thread(gpointer posv)
         // Some kind of failure we quit
         if (unlikely(r < 0)) {
             moloch_quit();
-            pcap = 0;
             break;
         }
     }
