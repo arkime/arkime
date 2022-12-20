@@ -137,7 +137,7 @@ class View {
         success: true,
         view: req.body,
         text: 'Created view!',
-        invalidUsers: users.invalidUsers
+        invalidUsers: ArkimeUtil.safeStr(users.invalidUsers)
       }));
     } catch (err) {
       console.log(`ERROR - ${req.method} /api/view (createView)`, util.inspect(err, false, 50));
@@ -219,7 +219,7 @@ class View {
           view,
           success: true,
           text: 'Updated view!',
-          invalidUsers: users.invalidUsers
+          invalidUsers: ArkimeUtil.safeStr(users.invalidUsers)
         }));
       } catch (err) {
         console.log(`ERROR - ${req.method} /api/view/%s (setView)`, ArkimeUtil.sanitizeStr(req.params.id), util.inspect(err, false, 50));
