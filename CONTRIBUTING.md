@@ -18,9 +18,9 @@ First, checkout the main [Arkime README](README.md) for information on how to bu
 **Then, get some test data!**
 
 * If using a VM/docker make sure your dev host has at least 2-3G of memory
-* Make sure `node` is in your path, currently main only support Node version 16.
-* [Install Elasticsearch](https://www.elastic.co/downloads/past-releases#elasticsearch) (make sure you're installing a compatible ES version with the main branch of Arkime using the top entry of "ES Versions" in the [CHANGELOG](CHANGELOG))
-* Start Elasticsearch (see the bottom of the page you downloaded ES from)
+* Make sure `node` is in your path, currently main only supports Node version 16 (Use the latest version in "Node Versions" section of [CHANGELOG](CHANGELOG)), we recommend using [nvm](https://github.com/nvm-sh/nvm) to manage what version of node is installed
+* Install [OpenSearch](https://opensearch.org/downloads.html) OR [Elasticsearch](https://www.elastic.co/downloads/past-releases#elasticsearch) (Use the latest version in "OpenSearch Versions" or "Elasticsearch versions" section of [CHANGELOG](CHANGELOG))
+* Start OpenSearch/Elasticsearch
 * If on a Mac install either [Homebrew](https://brew.sh) or [MacPorts](https://www.macports.org/)
 * Run `./easybutton-build.sh`
 * Run `make check` from the top level directory, this will
