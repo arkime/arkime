@@ -29,6 +29,7 @@ NOTICE: Cross-cluster Shortcuts require you to not restart all your viewers at o
 
 4.1.0 2022/12/xx
   - release - glib 2.72.4
+  - release - cyberchef 9.55.0
   - db.pl - backup/restore wasn't dealing with templates correctly
   - db.pl - upgrade failed if there was no moloch_shared user
   - db.pl - repair now fixes missing history/ecs templates
