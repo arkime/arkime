@@ -177,9 +177,9 @@ unsigned char *moloch_get_instance_metadata(void *serverV, char *key, int key_le
 {
     char *requestHeaders[2];
     char  tokenHeader[200];
-    char *tokenRequestHeaders[2] = {"X-aws-ec2-metadata-token-ttl-seconds: 30", NULL};
     requestHeaders[1] = NULL;
     if (s3UseTokenForMetadata) {
+        char *tokenRequestHeaders[2] = {"X-aws-ec2-metadata-token-ttl-seconds: 30", NULL};
         if (config.debug)
             LOG("Requesting IMDSv2 metadata token");
         unsigned char *token = moloch_http_send_sync(serverV, "PUT", "/latest/api/token", -1, NULL, 0, tokenRequestHeaders, mlen);

@@ -185,7 +185,7 @@ void parse_args(int argc, char **argv)
 #ifdef HAVE_ZSTD
         extern unsigned ZSTD_versionNumber(void);
         unsigned zver = ZSTD_versionNumber();
-        printf("zstd: %d.%d.%d\n", zver/(100*100), (zver/100)%100, zver%100);
+        printf("zstd: %u.%u.%u\n", zver/(100*100), (zver/100)%100, zver%100);
 #endif
 
         exit(0);

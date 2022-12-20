@@ -36,7 +36,7 @@ if [ "$1" == "--wise" ]; then
     fi
 
     if [ -d "/etc/systemd" ] && [ -x "/bin/systemctl" ]; then
-        echo "Enabling & Starting wise systemd files using "
+        echo "Enabling & Starting wise systemd files"
         systemctl enable arkimewise
         systemctl start arkimewise
     else
@@ -49,7 +49,7 @@ fi
 
 if [ "$1" == "--parliament" ]; then
     if [ -d "/etc/systemd" ] && [ -x "/bin/systemctl" ]; then
-        echo "Enabling & Starting parliament systemd files using "
+        echo "Enabling & Starting parliament systemd files"
         systemctl enable arkimeparliament
         systemctl start arkimeparliament
     else
@@ -69,7 +69,7 @@ if [ "$1" == "--cont3xt" ]; then
     fi
 
     if [ -d "/etc/systemd" ] && [ -x "/bin/systemctl" ]; then
-        echo "Enabling & Starting cont3xt systemd files using "
+        echo "Enabling & Starting cont3xt systemd files"
         systemctl enable arkimecont3xt
         systemctl start arkimecont3xt
     else
