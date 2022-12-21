@@ -130,14 +130,16 @@ class View {
 
     try {
       const { body: { _id: id } } = await Db.createView(req.body);
+      const { body: { _source: view } } = await Db.getView(id);
 
-      req.body.id = id;
-      req.body.users = req.body.users.join(',');
+      view.id = id;
+      view.users = view.users.join(',');
+
       return res.send(JSON.stringify({
         success: true,
-        view: req.body,
+        view,
         text: 'Created view!',
-        invalidUsers: users.invalidUsers
+        invalidUsers: ArkimeUtil.safeStr(users.invalidUsers)
       }));
     } catch (err) {
       console.log(`ERROR - ${req.method} /api/view (createView)`, util.inspect(err, false, 50));
@@ -212,14 +214,15 @@ class View {
 
       try {
         await Db.setView(req.params.id, view);
-        view.users = view.users.join(',');
-        view.id = req.params.id;
+        const { body: { _source: newView } } = await Db.getView(req.params.id);
+        newView.users = newView.users.join(',');
+        newView.id = dbView._id;
 
         return res.send(JSON.stringify({
-          view,
+          view: newView,
           success: true,
           text: 'Updated view!',
-          invalidUsers: users.invalidUsers
+          invalidUsers: ArkimeUtil.safeStr(users.invalidUsers)
         }));
       } catch (err) {
         console.log(`ERROR - ${req.method} /api/view/%s (setView)`, ArkimeUtil.sanitizeStr(req.params.id), util.inspect(err, false, 50));

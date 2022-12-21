@@ -24,6 +24,8 @@ class ArkimeUtil {
   static debug = 0;
   // ----------------------------------------------------------------------------
   static safeStr (str) {
+    if (Array.isArray(str)) { return str.map(x => ArkimeUtil.safeStr(x)); }
+
     return str.replace(/&/g, '&amp;')
       .replace(/</g, '&lt;')
       .replace(/>/g, '&gt;')

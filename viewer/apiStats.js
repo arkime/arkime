@@ -723,7 +723,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
     } catch (err) {
       return res.send(JSON.stringify({
         success: false,
-        text: err
+        text: ArkimeUtil.safeStr(err.message)
       }));
     }
   };
