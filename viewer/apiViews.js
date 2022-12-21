@@ -130,12 +130,14 @@ class View {
 
     try {
       const { body: { _id: id } } = await Db.createView(req.body);
+      const { body: { _source: view } } = await Db.getView(id);
 
-      req.body.id = id;
-      req.body.users = req.body.users.join(',');
+      view.id = id;
+      view.users = view.users.join(',');
+
       return res.send(JSON.stringify({
         success: true,
-        view: req.body,
+        view,
         text: 'Created view!',
         invalidUsers: ArkimeUtil.safeStr(users.invalidUsers)
       }));
@@ -212,11 +214,12 @@ class View {
 
       try {
         await Db.setView(req.params.id, view);
-        view.users = view.users.join(',');
-        view.id = req.params.id;
+        const { body: { _source: newView } } = await Db.getView(req.params.id);
+        newView.users = newView.users.join(',');
+        newView.id = req.params.id;
 
         return res.send(JSON.stringify({
-          view,
+          view: newView,
           success: true,
           text: 'Updated view!',
           invalidUsers: ArkimeUtil.safeStr(users.invalidUsers)
