@@ -216,7 +216,7 @@ class View {
         await Db.setView(req.params.id, view);
         const { body: { _source: newView } } = await Db.getView(req.params.id);
         newView.users = newView.users.join(',');
-        newView.id = req.params.id;
+        newView.id = dbView._id;
 
         return res.send(JSON.stringify({
           view: newView,

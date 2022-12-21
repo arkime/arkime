@@ -1,9 +1,11 @@
-use Test::More tests => 31;
+use Test::More tests => 33;
 use MolochTest;
 use JSON;
 use Test::Differences;
 use Data::Dumper;
 use strict;
+
+esPost("/tests_views/_delete_by_query?conflicts=proceed&refresh", '{ "query": { "match_all": {} } }', 1);
 
 my $adminToken = getTokenCookie();
 my $token = getTokenCookie('test1');
@@ -48,6 +50,9 @@ eq_or_diff($info->{data}->[0], from_json('{"expression":"ip == 1.2.3.4","user":"
 
 # can update view and share it with arkimeUser roles
 $info = viewerPutToken("/api/view/${id1}?molochRegressionUser=test1", '{"name": "view1update", "expression": "ip == 4.3.2.1", "roles":["arkimeUser"]}', $token);
+is ($info->{view}->{id}, $id1);
+delete $info->{view}->{id};
+eq_or_diff($info->{view}, from_json('{"expression":"ip == 4.3.2.1","user":"test1","name":"view1update","roles":["arkimeUser"],"users":""}'), "view fields updated");
 ok($info->{success}, "update view success");
 $info = viewerGet("/api/views?molochRegressionUser=test1");
 delete $info->{data}->[0]->{id};
