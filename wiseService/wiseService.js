@@ -129,6 +129,9 @@ function processArgs (argv) {
       internals.debug++;
     } else if (argv[i] === '--regressionTests') {
       internals.regressionTests = true;
+    } else if (argv[i] === '--webcode') {
+      i++;
+      internals.configCode = argv[i];
     } else if (argv[i] === '--webconfig') {
       internals.webconfig = true;
       console.log(chalk.cyan(
