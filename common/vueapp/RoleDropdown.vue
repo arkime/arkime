@@ -3,17 +3,20 @@
     size="sm"
     class="roles-dropdown"
     :text="displayText || getRolesStr(localSelectedRoles)">
-    <b-dropdown-header>
+    <!-- roles search -->
+    <b-dropdown-header class="w-100 sticky-top">
       <b-form-input
+        size="sm"
         @input="searchRoles"
-        v-model.lazy="roleSearch"
+        v-model="searchTerm"
         placeholder="Search for roles..."
-        class="form-control-sm dropdown-typeahead"
       />
-    </b-dropdown-header>
-    <b-dropdown-divider />
-    <b-dropdown-form class="d-flex flex-column">
+      <b-dropdown-divider />
+    </b-dropdown-header> <!-- /roles search -->
+    <b-dropdown-form v-if="filteredRoles && filteredRoles.length">
+      <!-- role checkboxes -->
       <b-form-checkbox-group
+        class="d-flex flex-column"
         v-model="localSelectedRoles">
         <b-form-checkbox
           :key="role.value"
@@ -41,10 +44,10 @@
             />
           </b-form-checkbox>
         </template>
-      </b-form-checkbox-group>
+      </b-form-checkbox-group> <!-- /role checkboxes -->
     </b-dropdown-form>
     <b-dropdown-item disabled
-      v-if="filteredRoles && !filteredRoles.length && roleSearch">
+      v-if="filteredRoles && !filteredRoles.length && searchTerm">
       No roles match your search
     </b-dropdown-item>
   </b-dropdown>
@@ -61,7 +64,7 @@ export default {
   },
   data () {
     return {
-      roleSearch: '',
+      searchTerm: '',
       filteredRoles: this.roles,
       localSelectedRoles: this.selectedRoles || []
     };
@@ -94,23 +97,29 @@ export default {
       return allRoles.join(', ');
     },
     searchRoles () {
-      if (!this.roleSearch) {
-        this.filteredRoles = this.roles;
-        return;
-      }
-
-      this.filteredRoles = this.roles.filter((role) => {
-        return role.text.toLowerCase().includes(this.roleSearch.toLowerCase());
-      });
+      this.filteredRoles = this.$options.filters.searchRoles(this.roles, this.searchTerm);
     }
   }
 };
 </script>
 
 <style>
-.roles-dropdown .dropdown-header {
-  padding: 0.25rem 0.5rem 0;
+/* hides elements scrolling behind sticky search bar */
+.roles-dropdown .sticky-top {
+  top: -8px;
 }
+.roles-dropdown .dropdown-header {
+  padding: 0rem 0.5rem;
+  background-color: var(--color-background);
+}
+.roles-dropdown .dropdown-header > li {
+  padding-top: 10px;
+  background-color: var(--color-background);
+}
+.roles-dropdown .dropdown-divider {
+  margin-top: 0px;
+}
+
 .roles-dropdown .dropdown-item,
 .roles-dropdown .custom-control {
   padding-left: 0.5rem;
