@@ -1,12 +1,14 @@
 <template>
   <b-dropdown
     size="sm"
+    @shown="setFocus"
     class="roles-dropdown"
     :text="displayText || getRolesStr(localSelectedRoles)">
     <!-- roles search -->
     <b-dropdown-header class="w-100 sticky-top">
       <b-input-group size="sm">
         <b-form-input
+          v-focus="focus"
           @input="searchRoles"
           v-model="searchTerm"
           placeholder="Search for roles..."
@@ -64,8 +66,11 @@
 </template>
 
 <script>
+import Focus from './Focus.vue';
+
 export default {
   name: 'RoleDropdown',
+  directives: { Focus },
   props: {
     id: { type: String },
     displayText: { type: String },
@@ -74,6 +79,7 @@ export default {
   },
   data () {
     return {
+      focus: false,
       searchTerm: '',
       filteredRoles: this.roles,
       localSelectedRoles: this.selectedRoles || []
@@ -112,6 +118,13 @@ export default {
     clearSearchTerm () {
       this.searchTerm = '';
       this.searchRoles();
+      this.setFocus();
+    },
+    setFocus () {
+      this.focus = true;
+      setTimeout(() => {
+        this.focus = false;
+      }, 100);
     }
   }
 };

@@ -2,10 +2,11 @@
   <div class="d-inline-flex align-items-center">
     <label v-if="label" :for="`user-dropdown-${roleId}`" class="mb-0 mr-1">{{ label }}</label>
     <b-dropdown
-        :id="`user-dropdown-${roleId}`"
-        data-testid="user-dropdown"
         size="sm"
+        @shown="setFocus"
         class="users-dropdown"
+        data-testid="user-dropdown"
+        :id="`user-dropdown-${roleId}`"
         v-b-tooltip.topright="selectedTooltip ? getUsersStr() : ''">
 
       <!--   Text on dropdown (configurable via default slot)   -->
@@ -21,13 +22,14 @@
           <b-input-group size="sm">
             <b-form-input
               debounce="400"
+              v-focus="focus"
               v-model="searchTerm"
               placeholder="Begin typing to search for users by name or id"
             />
             <template #append>
               <b-button
                 :disabled="!searchTerm"
-                @click="searchTerm = ''"
+                @click="clearSearchTerm"
                 variant="outline-secondary"
                 v-b-tooltip.hover="'Clear search'">
                 <span class="fa fa-close" />
@@ -68,6 +70,10 @@
           </b-form-checkbox-group>
         </template> <!-- /user checkboxes -->
       </b-dropdown-form>
+    <b-dropdown-item disabled
+      v-if="users && !users.length && searchTerm">
+      No users match your search
+    </b-dropdown-item>
     </b-dropdown>
   </div>
 
@@ -75,9 +81,11 @@
 
 <script>
 import UserService from './UserService';
+import Focus from './Focus.vue';
 
 export default {
   name: 'UserDropdown',
+  directives: { Focus },
   props: {
     roleId: {
       type: String,
@@ -97,10 +105,11 @@ export default {
   },
   data () {
     return {
+      error: '',
+      focus: false,
+      loading: true,
       searchTerm: '',
       users: undefined,
-      loading: true,
-      error: '',
       localSelectedUsers: this.selectedUsers || []
     };
   },
@@ -144,6 +153,16 @@ export default {
         }
       };
       this.$emit('selected-users-updated', change, this.roleId);
+    },
+    clearSearchTerm () {
+      this.searchTerm = '';
+      this.setFocus();
+    },
+    setFocus () {
+      this.focus = true;
+      setTimeout(() => {
+        this.focus = false;
+      }, 100);
     }
   },
   mounted () {
