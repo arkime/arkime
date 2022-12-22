@@ -69,10 +69,11 @@ const internals = {
         { name: 'userNameHeader', required: true, help: 'How should auth be done: anonymous - no auth, digest - digest auth, any other value is the http header to use for username', regex: '.' },
         { name: 'httpRealm', ifField: 'userNameHeader', ifValue: 'digest', required: false, help: 'The realm to use for digest requests. Must be the same as viewer is using. Default Moloch' },
         { name: 'passwordSecret', ifField: 'userNameHeader', ifValue: 'digest', required: false, password: true, help: 'The secret used to encrypted password hashes. Must be the same as viewer is using. Default password' },
-        { name: 'usersElasticsearch', required: false, help: 'The URL to connect to elasticsearch. Default http://localhost:9200' },
-        { name: 'usersElasticsearchAPIKey', required: false, help: 'an Elastisearch API key for users DB access', password: true },
-        { name: 'userAuthIps', required: false, help: 'comma separated list of CIDRs to allow authed requests from' },
-        { name: 'usersPrefix', required: false, help: 'The prefix used with db.pl --prefix for users elasticsearch, if empty arkime_ is used' },
+        { name: 'usersElasticsearch', required: false, help: 'The URL to connect to OpenSearch/Elasticsearch. Default http://localhost:9200' },
+        { name: 'usersElasticsearchAPIKey', required: false, help: 'OpenSearch/Elastisearch API key for users DB access', password: true },
+        { name: 'usersElasticsearchBasicAuth', required: false, help: 'OpenSearch/Elastisearch Basic Auth', password: true },
+        { name: 'userAuthIps', required: false, help: 'Comma separated list of CIDRs to allow authed requests from' },
+        { name: 'usersPrefix', required: false, help: 'The prefix used with db.pl --prefix for users OpenSearch/Elasticsearch, if empty arkime_ is used' },
         { name: 'sourcePath', required: false, help: 'Where to look for the source files. Defaults to "./"' }
       ]
     },
@@ -81,11 +82,12 @@ const internals = {
       singleton: true,
       service: true,
       fields: [
-        { name: 'type', required: false, regex: '^(memory|redis|memcached)$', help: 'Where to cache results: memory (default), redis, memcached' },
+        { name: 'type', required: false, regex: '^(memory|redis|memcached|lmdb)$', help: 'Where to cache results: memory (default), redis, memcached, lmdb' },
         { name: 'cacheSize', required: false, help: 'How many elements to cache in memory. Defaults to 100000' },
         { name: 'redisURL', password: true, required: false, ifField: 'type', ifValue: 'redis', help: 'Format is redis://[:password@]host:port/db-number, redis-sentinel://[[sentinelPassword]:[password]@]host[:port]/redis-name/db-number, or redis-cluster://[:password@]host:port/db-number' },
         { name: 'redisFormat', required: false, ifField: 'type', ifValue: 'redis', help: 'Use 2 (default) if WISE 2.x & WISE 3.x in use or 3 if just WISE 3.x', regex: '[23]' },
-        { name: 'memcachedURL', password: true, required: false, ifField: 'type', ifValue: 'memcached', help: 'Format is memcached://[user:pass@]server1[:11211],[user:pass@]server2[:11211],...' }
+        { name: 'memcachedURL', password: true, required: false, ifField: 'type', ifValue: 'memcached', help: 'Format is memcached://[user:pass@]server1[:11211],[user:pass@]server2[:11211],...' },
+        { name: 'lmdbDir', password: false, required: false, ifField: 'type', ifValue: 'lmdb', help: 'Directory for lmdb cache' }
       ]
     }
   },
