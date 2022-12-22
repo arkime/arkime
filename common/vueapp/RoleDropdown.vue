@@ -3,13 +3,22 @@
     size="sm"
     class="roles-dropdown"
     :text="displayText || getRolesStr(localSelectedRoles)">
+    <b-dropdown-header>
+      <b-form-input
+        @input="searchRoles"
+        v-model.lazy="roleSearch"
+        placeholder="Search for roles..."
+        class="form-control-sm dropdown-typeahead"
+      />
+    </b-dropdown-header>
+    <b-dropdown-divider />
     <b-dropdown-form class="d-flex flex-column">
       <b-form-checkbox-group
         v-model="localSelectedRoles">
         <b-form-checkbox
           :key="role.value"
           :value="role.value"
-          v-for="role in roles"
+          v-for="role in filteredRoles"
           @change="updateRoles">
           {{ role.text }}
           <span
@@ -34,6 +43,10 @@
         </template>
       </b-form-checkbox-group>
     </b-dropdown-form>
+    <b-dropdown-item disabled
+      v-if="filteredRoles && !filteredRoles.length && roleSearch">
+      No roles match your search
+    </b-dropdown-item>
   </b-dropdown>
 </template>
 
@@ -48,6 +61,8 @@ export default {
   },
   data () {
     return {
+      roleSearch: '',
+      filteredRoles: this.roles,
       localSelectedRoles: this.selectedRoles || []
     };
   },
@@ -77,7 +92,27 @@ export default {
 
       const allRoles = userDefinedRoles.concat(roles);
       return allRoles.join(', ');
+    },
+    searchRoles () {
+      if (!this.roleSearch) {
+        this.filteredRoles = this.roles;
+        return;
+      }
+
+      this.filteredRoles = this.roles.filter((role) => {
+        return role.text.toLowerCase().includes(this.roleSearch.toLowerCase());
+      });
     }
   }
 };
 </script>
+
+<style>
+.roles-dropdown .dropdown-header {
+  padding: 0.25rem 0.5rem 0;
+}
+.roles-dropdown .dropdown-item,
+.roles-dropdown .custom-control {
+  padding-left: 0.5rem;
+}
+</style>
