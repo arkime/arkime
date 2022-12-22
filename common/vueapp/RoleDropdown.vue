@@ -5,12 +5,22 @@
     :text="displayText || getRolesStr(localSelectedRoles)">
     <!-- roles search -->
     <b-dropdown-header class="w-100 sticky-top">
-      <b-form-input
-        size="sm"
-        @input="searchRoles"
-        v-model="searchTerm"
-        placeholder="Search for roles..."
-      />
+      <b-input-group size="sm">
+        <b-form-input
+          @input="searchRoles"
+          v-model="searchTerm"
+          placeholder="Search for roles..."
+        />
+        <template #append>
+          <b-button
+            :disabled="!searchTerm"
+            @click="clearSearchTerm"
+            variant="outline-secondary"
+            v-b-tooltip.hover="'Clear search'">
+            <span class="fa fa-close" />
+          </b-button>
+        </template>
+      </b-input-group>
       <b-dropdown-divider />
     </b-dropdown-header> <!-- /roles search -->
     <b-dropdown-form v-if="filteredRoles && filteredRoles.length">
@@ -98,6 +108,10 @@ export default {
     },
     searchRoles () {
       this.filteredRoles = this.$options.filters.searchRoles(this.roles, this.searchTerm);
+    },
+    clearSearchTerm () {
+      this.searchTerm = '';
+      this.searchRoles();
     }
   }
 };

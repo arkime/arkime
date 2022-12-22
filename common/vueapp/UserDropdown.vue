@@ -18,13 +18,22 @@
       <b-dropdown-form>
         <!-- search bar -->
         <b-dropdown-header class="w-100 sticky-top">
-          <b-form-input
-            size="sm"
-            type="text"
-            debounce="400"
-            v-model="searchTerm"
-            placeholder="Begin typing to search for users by name or id"
-          />
+          <b-input-group size="sm">
+            <b-form-input
+              debounce="400"
+              v-model="searchTerm"
+              placeholder="Begin typing to search for users by name or id"
+            />
+            <template #append>
+              <b-button
+                :disabled="!searchTerm"
+                @click="searchTerm = ''"
+                variant="outline-secondary"
+                v-b-tooltip.hover="'Clear search'">
+                <span class="fa fa-close" />
+              </b-button>
+            </template>
+          </b-input-group>
           <b-dropdown-divider />
         </b-dropdown-header> <!-- /search bar -->
 
