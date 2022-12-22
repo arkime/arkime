@@ -3,15 +3,16 @@
 import Vue from 'vue';
 import '@testing-library/jest-dom';
 import BootstrapVue from 'bootstrap-vue';
-import { render, fireEvent } from '@testing-library/vue';
+import { render, fireEvent, waitFor } from '@testing-library/vue';
 import RoleDropdown from '../RoleDropdown';
 import { roles } from './consts';
+import '../vueFilters';
 
 Vue.use(BootstrapVue);
 
 test('roles dropdown render and update', async () => {
   const {
-    getByText, getByTitle, getByLabelText, emitted
+    getByText, getByTitle, getByLabelText, emitted, getByPlaceholderText, queryByText
   } = render(RoleDropdown, {
     props: {
       roles,
@@ -40,6 +41,15 @@ test('roles dropdown render and update', async () => {
   expect(emitted()).toHaveProperty('selected-roles-updated');
   expect(emitted()['selected-roles-updated'][0][0]).toStrictEqual(['userDefined']);
   expect(emitted()['selected-roles-updated'][0][1]).toBe('test_id');
+
+  // can search roles
+  const searchBar = getByPlaceholderText('Search for roles...');
+  await fireEvent.update(searchBar, 'arkimeAdmin');
+
+  await waitFor(() => { // should only show arkimeAdmin because others are filtered out
+    getByText('arkimeAdmin');
+    expect(queryByText('arkimeUser')).not.toBeInTheDocument(); // user removed
+  });
 });
 
 test('roles dropdown with selected roles', async () => {

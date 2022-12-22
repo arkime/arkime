@@ -1,11 +1,38 @@
 <template>
   <div class="container-fluid">
-    <span class="d-inline-flex align-items-center">
-      <h1>Role Management</h1>
-      <h5>
-        <span class="fa fa-info-circle ml-2" v-b-tooltip.hover.html="pageTip"/>
-      </h5>
-    </span>
+    <div class="d-flex justify-content-between mt-3 mb-2">
+      <div class="mr-2 flex-grow-1">
+        <b-input-group size="sm">
+          <template #prepend>
+            <b-input-group-text>
+              <span class="fa fa-search fa-fw" />
+            </b-input-group-text>
+          </template>
+          <b-form-input
+            autofocus
+            type="text"
+            debounce="400"
+            v-model="searchTerm"
+            placeholder="Begin typing to search for roles"
+          />
+          <template #append>
+            <b-button
+              :disabled="!searchTerm"
+              @click="searchTerm = ''"
+              variant="outline-secondary"
+              v-b-tooltip.hover="'Clear search'">
+              <span class="fa fa-close" />
+            </b-button>
+          </template>
+        </b-input-group>
+      </div>
+      <h4>
+        <span
+          v-b-tooltip.hover.html="pageTip"
+          class="fa fa-info-circle ml-2 cursor-help"
+        />
+      </h4>
+    </div>
     <b-overlay
         rounded="sm"
         blur="0.2rem"
@@ -33,9 +60,9 @@
         :items="roleData"
         :sort-by.sync="sortBy"
         :sort-desc.sync="sortDesc"
-        empty-text="No roles to manage"
+        :empty-text="emptyTableText"
       >
-        <!--   customize column sizes   -->
+        <!-- customize column sizes -->
         <template #table-colgroup="scope">
           <col
               v-for="field in scope.fields"
@@ -43,9 +70,9 @@
               :style="{ width: field.setWidth }"
           >
         </template>
-        <!--   /customize column sizes   -->
+        <!-- /customize column sizes -->
 
-        <!--   members cell     -->
+        <!-- members cell -->
         <template #cell(members)="data">
           <UserDropdown :selected-tooltip="true"
             :role-id="data.item.value" @selected-users-updated="updateUserRole"
@@ -53,7 +80,7 @@
             v-slot="{ count, filter, unknown }">
             {{ userCountMemberString(count, unknown) }} with <strong>{{ data.item.text }}</strong>{{ filter ? ` (that match${count === 1 ? 'es' : ''} filter: "${filter}")` : '' }}
           </UserDropdown>
-        </template> <!--   /members cell     -->
+        </template> <!-- /members cell -->
       </b-table>
     </b-overlay>
 
@@ -102,7 +129,8 @@ export default {
         }
       ],
       pageTip: 'These are roles you manage. Assign users to them with the dropdowns under <strong>Members</strong>.',
-      error: ''
+      error: '',
+      searchTerm: ''
     };
   },
   computed: {
@@ -111,7 +139,12 @@ export default {
     },
     roleData () {
       const assignableRoles = this.currentUser?.assignableRoles || [];
-      return this.$options.filters.parseRoles(assignableRoles);
+      const roles = this.$options.filters.parseRoles(assignableRoles);
+      return this.$options.filters.searchRoles(roles, this.searchTerm);
+    },
+    emptyTableText () {
+      if (!this.searchTerm) { return 'No roles to manage'; }
+      return 'No roles match your search';
     }
   },
   methods: {

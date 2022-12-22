@@ -2,10 +2,11 @@
   <div class="d-inline-flex align-items-center">
     <label v-if="label" :for="`user-dropdown-${roleId}`" class="mb-0 mr-1">{{ label }}</label>
     <b-dropdown
-        :id="`user-dropdown-${roleId}`"
-        data-testid="user-dropdown"
         size="sm"
+        @shown="setFocus"
         class="users-dropdown"
+        data-testid="user-dropdown"
+        :id="`user-dropdown-${roleId}`"
         v-b-tooltip.topright="selectedTooltip ? getUsersStr() : ''">
 
       <!--   Text on dropdown (configurable via default slot)   -->
@@ -16,63 +17,63 @@
       </template><!--   /Text on dropdown (configurable via default slot)   -->
 
       <b-dropdown-form>
-        <!--    search bar    -->
-        <div class="w-100 sticky-top dropdown-sticky-search-bar-container">
-          <b-input-group size="sm" class="hide-behind-search dropdown-sticky-search-bar">
-            <template #prepend>
-              <b-input-group-text>
-                <span class="fa fa-search fa-fw" />
-              </b-input-group-text>
-            </template>
+        <!-- search bar -->
+        <b-dropdown-header class="w-100 sticky-top">
+          <b-input-group size="sm">
             <b-form-input
-                autofocus
-                type="text"
-                debounce="400"
-                v-model="searchTerm"
-                placeholder="Begin typing to search for users by name or id"
+              debounce="400"
+              v-focus="focus"
+              v-model="searchTerm"
+              placeholder="Begin typing to search for users by name or id"
             />
             <template #append>
               <b-button
-                  :disabled="!searchTerm"
-                  @click="searchTerm = ''"
-                  variant="outline-secondary"
-                  v-b-tooltip.hover="'Clear search'">
+                :disabled="!searchTerm"
+                @click="clearSearchTerm"
+                variant="outline-secondary"
+                v-b-tooltip.hover="'Clear search'">
                 <span class="fa fa-close" />
               </b-button>
             </template>
           </b-input-group>
-        </div><!--    /search bar    -->
+          <b-dropdown-divider />
+        </b-dropdown-header> <!-- /search bar -->
 
-        <div class="w-100 dropdown-checkbox-pad">
-          <!-- loading -->
-          <template v-if="loading">
-            <div class="mt-3 text-center">
-              <span class="fa fa-circle-o-notch fa-spin fa-2x" />
-              <p>Loading users...</p>
-            </div>
-          </template> <!-- /loading -->
+        <!-- loading -->
+        <template v-if="loading">
+          <div class="mt-3 text-center">
+            <span class="fa fa-circle-o-notch fa-spin fa-2x" />
+            <p>Loading users...</p>
+          </div>
+        </template> <!-- /loading -->
 
-          <!--    error      -->
-          <template v-else-if="error">
-            <div class="mt-3 alert alert-warning">
-              <span class="fa fa-exclamation-triangle" />&nbsp;
-              {{ error }}
-            </div>
-          </template><!--    /error      -->
+        <!-- error -->
+        <template v-else-if="error">
+          <div class="mt-3 alert alert-warning">
+            <span class="fa fa-exclamation-triangle" />&nbsp;
+            {{ error }}
+          </div>
+        </template> <!-- /error -->
 
-          <!--     user checkboxes     -->
-          <b-form-checkbox-group v-else class="d-flex flex-column"
-                                 v-model="localSelectedUsers">
+        <!-- user checkboxes -->
+        <template v-else>
+          <b-form-checkbox-group
+            class="d-flex flex-column"
+            v-model="localSelectedUsers">
             <b-form-checkbox
-                :key="user.userId"
-                :value="user.userId"
-                v-for="user in users"
-                @change="updateUsers(user.userId, $event)">
+              :key="user.userId"
+              :value="user.userId"
+              v-for="user in users"
+              @change="updateUsers(user.userId, $event)">
               {{ user.userName }} ({{ user.userId }})
             </b-form-checkbox>
-          </b-form-checkbox-group><!--     /user checkboxes     -->
-        </div>
+          </b-form-checkbox-group>
+        </template> <!-- /user checkboxes -->
       </b-dropdown-form>
+    <b-dropdown-item disabled
+      v-if="users && !users.length && searchTerm">
+      No users match your search
+    </b-dropdown-item>
     </b-dropdown>
   </div>
 
@@ -80,9 +81,11 @@
 
 <script>
 import UserService from './UserService';
+import Focus from './Focus.vue';
 
 export default {
   name: 'UserDropdown',
+  directives: { Focus },
   props: {
     roleId: {
       type: String,
@@ -102,10 +105,11 @@ export default {
   },
   data () {
     return {
+      error: '',
+      focus: false,
+      loading: true,
       searchTerm: '',
       users: undefined,
-      loading: true,
-      error: '',
       localSelectedUsers: this.selectedUsers || []
     };
   },
@@ -149,6 +153,16 @@ export default {
         }
       };
       this.$emit('selected-users-updated', change, this.roleId);
+    },
+    clearSearchTerm () {
+      this.searchTerm = '';
+      this.setFocus();
+    },
+    setFocus () {
+      this.focus = true;
+      setTimeout(() => {
+        this.focus = false;
+      }, 100);
     }
   },
   mounted () {
@@ -159,13 +173,20 @@ export default {
 
 <style scoped>
 /* hides elements scrolling behind sticky search bar */
-.hide-behind-search {
-  padding-top: 0.5rem !important;
-  background-color: var(--color-background) !important;
+.users-dropdown .dropdown-header {
+  padding: 0rem 0.5rem;
+  background-color: var(--color-background);
+}
+.users-dropdown .dropdown-header > li {
+  padding-top: 10px;
+  background-color: var(--color-background);
+}
+.users-dropdown .dropdown-divider {
+  margin-top: 0px;
 }
 
-/* allows different apps to customize compactness of their user dropdowns */
-.dropdown-sticky-search-bar-container, .dropdown-checkbox-pad {
-  padding-inline: 1.5rem;
+.users-dropdown .dropdown-item,
+.users-dropdown .custom-control {
+  padding-left: 2rem;
 }
 </style>
