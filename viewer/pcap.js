@@ -860,7 +860,8 @@ Pcap.prototype.pcap = function (buffer, obj) {
     this.framerelay(buffer.slice(16, obj.pcap.incl_len + 16), obj, 16);
     break;
   case 113: // SLL
-    this.ip4(buffer.slice(32, obj.pcap.incl_len + 16), obj, 32);
+    obj.ether = {};
+    this.ethertype(buffer.slice(30, obj.pcap.incl_len + 16), obj, 30);
     break;
   case 127: // radiotap
     this.radiotap(buffer.slice(16, obj.pcap.incl_len + 16), obj, 16);
