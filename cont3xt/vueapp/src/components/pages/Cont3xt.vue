@@ -535,7 +535,7 @@ export default {
       return this.navHeightStyle + `margin-top: ${this.navMarginPixels}px;`;
     },
     hasLinkGroupWithItype () {
-      return this.getLinkGroups?.some(this.hasLinksWithItype);
+      return this.getLinkGroups?.some(this.hasLinkWithItype);
     },
     hasVisibleLinkGroup () {
       return this.getLinkGroups?.some(this.hasVisibleLink);
@@ -778,17 +778,14 @@ export default {
         }
       });
     },
-    hasLinksWithItype (linkGroup) {
-      for (const link of linkGroup.links) {
-        if (link.itypes.indexOf(this.searchItype) > -1) {
-          return true;
-        }
-      }
-      return false;
+    hasLinkWithItype (linkGroup) {
+      return linkGroup.links.some(link =>
+        link.url !== '----------' && link.itypes.includes(this.searchItype)
+      );
     },
     hasVisibleLink (linkGroup) {
       return linkGroup.links.some((link, i) =>
-        link.itypes.includes(this.searchItype) && !this.hideLinks[linkGroup._id]?.[i]
+        link.url !== '----------' && link.itypes.includes(this.searchItype) && !this.hideLinks[linkGroup._id]?.[i]
       );
     },
     shareLink () {
