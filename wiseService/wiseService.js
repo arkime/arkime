@@ -952,6 +952,10 @@ function processQuery (req, query, cb) {
         return setImmediate(mapCb, undefined);
       }
 
+      if (typeof src[typeInfo.funcName] !== 'function') {
+        return setImmediate(mapCb, undefined);
+      }
+
       src.requestStat++;
       if (cacheResult[src.section] === undefined || cacheResult[src.section].ts + src.cacheTimeout < now) {
         if (src.cacheTimeout === -1) {
