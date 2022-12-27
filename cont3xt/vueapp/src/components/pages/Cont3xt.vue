@@ -359,10 +359,10 @@
                   </template>
                   <!-- no link groups message -->
                   <span v-else-if="hasLinkGroupWithItype" class="p-1">
-                    No Link Groups match your search
+                    There are no Link Groups that match your search.
                   </span>
                   <span v-else class="p-1">
-                    No Link Groups for <strong>{{ this.searchItype }}</strong> iType
+                    There are no Link Groups for the <strong>{{ this.searchItype }}</strong> iType.
                     <a class="no-decoration" href="settings#linkgroups">Create one here!</a>
                   </span> <!-- /no link groups message -->
                 </div> <!-- /link groups -->
