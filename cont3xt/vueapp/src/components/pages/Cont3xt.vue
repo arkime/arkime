@@ -329,32 +329,42 @@
                 </b-input-group> <!-- /link search -->
                 <!-- link groups -->
                 <div class="d-flex flex-wrap align-items-start link-group-cards-wrapper">
-                  <template v-for="(linkGroup, index) in getLinkGroups">
-                    <reorder-list
-                      :index="index"
-                      @update="updateList"
-                      :key="linkGroup._id"
-                      :list="getLinkGroups"
-                      class="w-50 p-2 link-group"
-                      v-if="hasLinksWithItype(linkGroup)">
-                      <template slot="handle">
-                        <span class="fa fa-bars d-inline link-group-card-handle" />
-                      </template>
-                      <template slot="default">
-                        <link-group-card
-                          v-if="getLinkGroups.length"
-                          :query="lastSearchedTerm"
-                          :num-days="timeRangeInfo.numDays"
-                          :itype="searchItype"
-                          :num-hours="timeRangeInfo.numHours"
-                          :stop-date="timeRangeInfo.stopDate"
-                          :start-date="timeRangeInfo.startDate"
-                          :link-group="getLinkGroups[index]"
-                          :hide-links="hideLinks[linkGroup._id]"
-                        />
-                      </template>
-                    </reorder-list>
+                  <template v-if="hasVisibleLinkGroup">
+                    <template v-for="(linkGroup, index) in getLinkGroups">
+                      <reorder-list
+                          :index="index"
+                          @update="updateList"
+                          :key="linkGroup._id"
+                          :list="getLinkGroups"
+                          class="w-50 p-2 link-group"
+                          v-if="hasVisibleLink(linkGroup)">
+                        <template #handle>
+                          <span class="fa fa-bars d-inline link-group-card-handle" />
+                        </template>
+                        <template #default>
+                          <link-group-card
+                              v-if="getLinkGroups.length"
+                              :query="lastSearchedTerm"
+                              :num-days="timeRangeInfo.numDays"
+                              :itype="searchItype"
+                              :num-hours="timeRangeInfo.numHours"
+                              :stop-date="timeRangeInfo.stopDate"
+                              :start-date="timeRangeInfo.startDate"
+                              :link-group="getLinkGroups[index]"
+                              :hide-links="hideLinks[linkGroup._id]"
+                          />
+                        </template>
+                      </reorder-list>
+                    </template>
                   </template>
+                  <!-- no link groups message -->
+                  <span v-else-if="hasLinkGroupWithItype" class="p-1">
+                    No Link Groups match your search
+                  </span>
+                  <span v-else class="p-1">
+                    No Link Groups for <strong>{{ this.searchItype }}</strong> iType
+                    <a class="no-decoration" href="settings#linkgroups">Create one here!</a>
+                  </span> <!-- /no link groups message -->
                 </div> <!-- /link groups -->
               </div>
             </div>
@@ -523,6 +533,12 @@ export default {
     },
     navMarginHeightStyle () {
       return this.navHeightStyle + `margin-top: ${this.navMarginPixels}px;`;
+    },
+    hasLinkGroupWithItype () {
+      return this.getLinkGroups?.some(this.hasLinkWithItype);
+    },
+    hasVisibleLinkGroup () {
+      return this.getLinkGroups?.some(this.hasVisibleLink);
     }
   },
   watch: {
@@ -762,13 +778,15 @@ export default {
         }
       });
     },
-    hasLinksWithItype (linkGroup) {
-      for (const link of linkGroup.links) {
-        if (link.itypes.indexOf(this.searchItype) > -1) {
-          return true;
-        }
-      }
-      return false;
+    hasLinkWithItype (linkGroup) {
+      return linkGroup.links.some(link =>
+        link.url !== '----------' && link.itypes.includes(this.searchItype)
+      );
+    },
+    hasVisibleLink (linkGroup) {
+      return linkGroup.links.some((link, i) =>
+        link.url !== '----------' && link.itypes.includes(this.searchItype) && !this.hideLinks[linkGroup._id]?.[i]
+      );
     },
     shareLink () {
       let shareLink = window.location.href;
