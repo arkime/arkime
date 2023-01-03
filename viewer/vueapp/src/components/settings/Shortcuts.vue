@@ -400,7 +400,8 @@ export default {
       },
       createShortcutLoading: false,
       hasUsersES: this.$constants.MOLOCH_HASUSERSES,
-      showAll: false
+      showAll: false,
+      seeAll: false
     };
   },
   computed: {
