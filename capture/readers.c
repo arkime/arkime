@@ -27,6 +27,7 @@ void reader_libpcap_init(char*);
 void reader_tpacketv3_init(char*);
 void reader_null_init(char*);
 void reader_pcapoverip_init(char*);
+void reader_tzsp_init(char*);
 
 MolochReaderStart  moloch_reader_start;
 MolochReaderStats  moloch_reader_stats;
@@ -71,6 +72,7 @@ void moloch_readers_init()
     moloch_readers_add("pcap-over-ip-client", reader_pcapoverip_init);
     moloch_readers_add("pcapoveripserver", reader_pcapoverip_init);
     moloch_readers_add("pcap-over-ip-server", reader_pcapoverip_init);
+    moloch_readers_add("tzsp", reader_tzsp_init);
 }
 
 /******************************************************************************/
