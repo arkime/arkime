@@ -163,7 +163,6 @@ gboolean pcapoverip_client_read_cb(gint UNUSED(fd), GIOCondition cond, gpointer 
     if (pos > 0) { // We processed some of the buffer!
         if (poic->state == 1) {
             moloch_packet_batch_flush(&batch);
-            moloch_packet_batch_init(&batch);
         }
         memmove(poic->data, poic->data + pos, poic->len - pos);
         poic->len -= pos;
