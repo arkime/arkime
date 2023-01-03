@@ -36,8 +36,8 @@ LOCAL uint64_t              packets;
 
 LOCAL int                   port;
 
-struct bpf_program          bpfp;
-pcap_t                     *deadPcap;
+LOCAL struct bpf_program    bpfp;
+LOCAL pcap_t               *deadPcap;
 
 typedef struct {
     GSocket                *socket;

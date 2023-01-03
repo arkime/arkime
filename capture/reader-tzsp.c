@@ -31,8 +31,8 @@ LOCAL uint64_t              packets;
 
 LOCAL int                   tzspPort;
 
-struct bpf_program          bpfp;
-pcap_t                     *deadPcap;
+LOCAL struct bpf_program    bpfp;
+LOCAL pcap_t               *deadPcap;
 
 /******************************************************************************/
 LOCAL void *tzsp_thread(gpointer UNUSED(uw))
