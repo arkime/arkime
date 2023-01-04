@@ -79,4 +79,4 @@ rules:
       packets.src: 1
       packets.dst: 0
     ops:
-      _dontSaveSPI: 1
+      _dontSaveSPI: >1
