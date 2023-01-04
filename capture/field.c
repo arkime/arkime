@@ -1358,6 +1358,9 @@ int moloch_field_count(int pos, MolochSession_t *session)
 {
     MolochField_t         *field;
 
+    if (pos >= session->maxFields)
+        return 0;
+
     if (!session->fields[pos])
         return 0;
 
@@ -1474,9 +1477,15 @@ void moloch_field_ops_run(MolochSession_t *session, MolochFieldOps_t *ops)
         }
 
         switch (config.fields[op->fieldPos]->type) {
+        case MOLOCH_FIELD_TYPE_INT:
+            if (moloch_field_count(op->fieldPos, session) == 0 ||
+                moloch_field_ops_should_run_int_op(op, session->fields[op->fieldPos]->i)) {
+
+                moloch_field_int_add(op->fieldPos, session, op->strLenOrInt);
+            }
+            break;
         case MOLOCH_FIELD_TYPE_INT_HASH:
         case MOLOCH_FIELD_TYPE_INT_GHASH:
-        case MOLOCH_FIELD_TYPE_INT:
         case MOLOCH_FIELD_TYPE_INT_ARRAY:
             moloch_field_int_add(op->fieldPos, session, op->strLenOrInt);
             break;
