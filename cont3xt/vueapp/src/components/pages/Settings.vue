@@ -64,7 +64,8 @@
             </template>
           </reorder-list>
         </template>
-        <a class="nav-link cursor-pointer"
+        <a v-if="!disablePassword"
+          class="nav-link cursor-pointer"
           @click="openView('password')"
           :class="{'active':visibleTab === 'password'}">
           <span class="fa fa-fw fa-lock mr-1" />
@@ -361,7 +362,7 @@
       </div> <!-- /link group settings -->
 
       <!-- password settings -->
-      <div v-if="visibleTab === 'password'">
+      <div v-if="visibleTab === 'password' && !disablePassword">
         <h1>
           Change Password
         </h1>
@@ -523,6 +524,11 @@ export default {
       const entries = Object.entries(this.filteredIntegrationSettings);
       entries.sort(([aKey], [bKey]) => aKey.localeCompare(bKey));
       return entries;
+    },
+    disablePassword () {
+      if (!this.getUser) { return true; } // wait for user to be initialized
+      return !!this.$constants.DISABLE_USER_PASSWORD_UI &&
+        !!this.getUser.headerAuthEnabled && !this.getUser.roles.includes('usersAdmin');
     }
   },
   watch: {

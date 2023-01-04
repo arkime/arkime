@@ -342,7 +342,8 @@ app.use(cspHeader, setCookie, (req, res, next) => {
   const appContext = {
     nonce: res.locals.nonce,
     version: version.version,
-    path: getConfig('cont3xt', 'webBasePath', '/')
+    path: getConfig('cont3xt', 'webBasePath', '/'),
+    disableUserPasswordUI: getConfig('cont3xt', 'disableUserPasswordUI', true)
   };
 
   // Create a fresh Vue app instance
