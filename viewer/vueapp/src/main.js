@@ -77,6 +77,7 @@ new Vue({
       MOLOCH_BUSINESS_DAY_END,
       MOLOCH_BUSINESS_DAYS,
       TURN_OFF_GRAPH_DAYS,
+      DISABLE_USER_PASSWORD_UI,
       BUILD_VERSION, // from webpack.DefinePlugin
       BUILD_DATE // from webpack.DefinePlugin
     };

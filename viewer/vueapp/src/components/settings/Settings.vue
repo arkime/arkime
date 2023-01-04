@@ -76,7 +76,7 @@
             </span>&nbsp;
             Themes
           </a>
-          <a v-if="!multiviewer"
+          <a v-if="!multiviewer && !disablePassword"
             class="nav-link cursor-pointer"
             @click="openView('password')"
             :class="{'active':visibleTab === 'password'}">
@@ -1274,7 +1274,7 @@
         </form> <!-- /theme settings -->
 
         <!-- password settings -->
-        <form v-if="visibleTab === 'password' && !multiviewer"
+        <form v-if="visibleTab === 'password' && !multiviewer && !disablePassword"
           class="form-horizontal"
           @keyup.enter="changePassword"
           id="password">
@@ -1507,6 +1507,10 @@ export default {
     },
     notifiers () {
       return this.$store.state.notifiers;
+    },
+    disablePassword () {
+      return !!this.$constants.DISABLE_USER_PASSWORD_UI &&
+        !!this.user.headerAuthEnabled && !this.user.roles.includes('usersAdmin');
     }
   },
   created: function () {
