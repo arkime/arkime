@@ -1509,8 +1509,7 @@ export default {
       return this.$store.state.notifiers;
     },
     disablePassword () {
-      return !!this.$constants.DISABLE_USER_PASSWORD_UI &&
-        !!this.user.headerAuthEnabled && !this.user.roles.includes('usersAdmin');
+      return !!this.$constants.DISABLE_USER_PASSWORD_UI && !!this.user.headerAuthEnabled;
     }
   },
   created: function () {
