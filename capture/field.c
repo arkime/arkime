@@ -1542,6 +1542,7 @@ void moloch_field_ops_init(MolochFieldOps_t *ops, int numOps, uint16_t flags)
 /******************************************************************************/
 void moloch_field_ops_int_parse(MolochFieldOp_t *op, char *value)
 {
+    int len;
     switch(value[0]) {
     case '<':
         op->set = MOLOCH_FIELD_OP_SET_IF_LESS;
@@ -1554,6 +1555,22 @@ void moloch_field_ops_int_parse(MolochFieldOp_t *op, char *value)
     case '=':
         op->set = MOLOCH_FIELD_OP_SET;
         op->strLenOrInt = atoi(value + 1);
+        break;
+    case 'm':
+        len = strlen(value);
+        if (len < 5) {
+            op->set = MOLOCH_FIELD_OP_SET;
+            op->strLenOrInt = 0;
+        } else if (strncmp(value, "min ", 4) == 0) {
+            op->set = MOLOCH_FIELD_OP_SET_IF_LESS;
+            op->strLenOrInt = atoi(value + 4);
+        } else if (strncmp(value, "max ", 4) == 0) {
+            op->set = MOLOCH_FIELD_OP_SET_IF_MORE;
+            op->strLenOrInt = atoi(value + 4);
+        } else {
+            op->set = MOLOCH_FIELD_OP_SET;
+            op->strLenOrInt = 0;
+        }
         break;
     default:
         op->set = MOLOCH_FIELD_OP_SET;
