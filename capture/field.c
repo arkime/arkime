@@ -1358,6 +1358,9 @@ int moloch_field_count(int pos, MolochSession_t *session)
 {
     MolochField_t         *field;
 
+    if (pos >= session->maxFields)
+        return 0;
+
     if (!session->fields[pos])
         return 0;
 
@@ -1387,6 +1390,25 @@ int moloch_field_count(int pos, MolochSession_t *session)
     }
 }
 /******************************************************************************/
+int moloch_field_ops_should_run_int_op(MolochFieldOp_t *op, int value)
+{
+    switch (op->set) {
+    case MOLOCH_FIELD_OP_SET:
+        if (op->strLenOrInt == value)
+            return 0; // Don't run since value is the same
+        return 1;
+    case MOLOCH_FIELD_OP_SET_IF_MORE:
+        if (op->strLenOrInt > value)
+            return 1;
+        return 0;
+    case MOLOCH_FIELD_OP_SET_IF_LESS:
+        if (op->strLenOrInt < value)
+            return 1;
+        return 0;
+    }
+    return 0;
+}
+/******************************************************************************/
 void moloch_field_ops_run(MolochSession_t *session, MolochFieldOps_t *ops)
 {
     int i;
@@ -1398,15 +1420,20 @@ void moloch_field_ops_run(MolochSession_t *session, MolochFieldOps_t *ops)
         if (op->fieldPos < 0) {
             switch (op->fieldPos) {
             case MOLOCH_FIELD_SPECIAL_STOP_SPI:
-                moloch_session_set_stop_spi(session, op->strLenOrInt);
+                if (moloch_field_ops_should_run_int_op(op, session->stopSPI))
+                    moloch_session_set_stop_spi(session, op->strLenOrInt);
                 break;
             case MOLOCH_FIELD_SPECIAL_STOP_PCAP:
-                session->stopSaving = op->strLenOrInt;
-                if (session->packets[0] + session->packets[1] >=session->stopSaving)
-                    moloch_session_add_tag(session, "truncated-pcap");
+                if (moloch_field_ops_should_run_int_op(op, session->stopSaving)) {
+                    session->stopSaving = op->strLenOrInt;
+                    if (session->packets[0] + session->packets[1] >= session->stopSaving)
+                        moloch_session_add_tag(session, "truncated-pcap");
+                }
                 break;
             case MOLOCH_FIELD_SPECIAL_MIN_SAVE:
-                session->minSaving = op->strLenOrInt;
+                if (moloch_field_ops_should_run_int_op(op, session->minSaving)) {
+                    session->minSaving = op->strLenOrInt;
+                }
                 break;
             case MOLOCH_FIELD_SPECIAL_DROP_SRC:
                 moloch_packet_drophash_add(session, 0, op->strLenOrInt);
@@ -1418,7 +1445,9 @@ void moloch_field_ops_run(MolochSession_t *session, MolochFieldOps_t *ops)
                 moloch_packet_drophash_add(session, -1, op->strLenOrInt);
                 break;
             case MOLOCH_FIELD_SPECIAL_STOP_YARA:
-                session->stopYara = 1;
+                if (moloch_field_ops_should_run_int_op(op, session->stopYara)) {
+                    session->stopYara = op->strLenOrInt;
+                }
                 break;
             }
             continue;
@@ -1448,9 +1477,15 @@ void moloch_field_ops_run(MolochSession_t *session, MolochFieldOps_t *ops)
         }
 
         switch (config.fields[op->fieldPos]->type) {
+        case MOLOCH_FIELD_TYPE_INT:
+            if (moloch_field_count(op->fieldPos, session) == 0 ||
+                moloch_field_ops_should_run_int_op(op, session->fields[op->fieldPos]->i)) {
+
+                moloch_field_int_add(op->fieldPos, session, op->strLenOrInt);
+            }
+            break;
         case MOLOCH_FIELD_TYPE_INT_HASH:
         case MOLOCH_FIELD_TYPE_INT_GHASH:
-        case MOLOCH_FIELD_TYPE_INT:
         case MOLOCH_FIELD_TYPE_INT_ARRAY:
             moloch_field_int_add(op->fieldPos, session, op->strLenOrInt);
             break;
@@ -1505,6 +1540,45 @@ void moloch_field_ops_init(MolochFieldOps_t *ops, int numOps, uint16_t flags)
 
 
 /******************************************************************************/
+void moloch_field_ops_int_parse(MolochFieldOp_t *op, char *value)
+{
+    int len;
+    switch(value[0]) {
+    case '<':
+        op->set = MOLOCH_FIELD_OP_SET_IF_LESS;
+        op->strLenOrInt = atoi(value + 1);
+        break;
+    case '>':
+        op->set = MOLOCH_FIELD_OP_SET_IF_MORE;
+        op->strLenOrInt = atoi(value + 1);
+        break;
+    case '=':
+        op->set = MOLOCH_FIELD_OP_SET;
+        op->strLenOrInt = atoi(value + 1);
+        break;
+    case 'm':
+        len = strlen(value);
+        if (len < 5) {
+            op->set = MOLOCH_FIELD_OP_SET;
+            op->strLenOrInt = 0;
+        } else if (strncmp(value, "min ", 4) == 0) {
+            op->set = MOLOCH_FIELD_OP_SET_IF_LESS;
+            op->strLenOrInt = atoi(value + 4);
+        } else if (strncmp(value, "max ", 4) == 0) {
+            op->set = MOLOCH_FIELD_OP_SET_IF_MORE;
+            op->strLenOrInt = atoi(value + 4);
+        } else {
+            op->set = MOLOCH_FIELD_OP_SET;
+            op->strLenOrInt = 0;
+        }
+        break;
+    default:
+        op->set = MOLOCH_FIELD_OP_SET;
+        op->strLenOrInt = atoi(value);
+        break;
+    }
+}
+/******************************************************************************/
 void moloch_field_ops_add(MolochFieldOps_t *ops, int fieldPos, char *value, int valuelen)
 {
     if (ops->num >= ops->size || fieldPos == -1 || fieldPos > config.maxField) {
@@ -1519,19 +1593,19 @@ void moloch_field_ops_add(MolochFieldOps_t *ops, int fieldPos, char *value, int 
     if (fieldPos < 0) {
         switch (op->fieldPos) {
         case MOLOCH_FIELD_SPECIAL_STOP_SPI:
-            op->strLenOrInt = atoi(value);
+            moloch_field_ops_int_parse(op, value);
             if (op->strLenOrInt > 1) op->strLenOrInt = 1;
             if (op->strLenOrInt < 0) op->strLenOrInt = 0;
             op->str = 0;
             break;
         case MOLOCH_FIELD_SPECIAL_STOP_PCAP:
-            op->strLenOrInt = atoi(value);
+            moloch_field_ops_int_parse(op, value);
             if (op->strLenOrInt > 0xffff) op->strLenOrInt = 0xffff;
             if (op->strLenOrInt < 0) op->strLenOrInt = 0;
             op->str = 0;
             break;
         case MOLOCH_FIELD_SPECIAL_MIN_SAVE:
-            op->strLenOrInt = atoi(value);
+            moloch_field_ops_int_parse(op, value);
             if (op->strLenOrInt > 0xff) op->strLenOrInt = 0xff;
             if (op->strLenOrInt < 0) op->strLenOrInt = 0;
             op->str = 0;
@@ -1544,7 +1618,7 @@ void moloch_field_ops_add(MolochFieldOps_t *ops, int fieldPos, char *value, int 
             op->str = 0;
             break;
         case MOLOCH_FIELD_SPECIAL_STOP_YARA:
-            op->strLenOrInt = atoi(value);
+            moloch_field_ops_int_parse(op, value);
             if (op->strLenOrInt > 1) op->strLenOrInt = 1;
             if (op->strLenOrInt < 0) op->strLenOrInt = 0;
             op->str = 0;
@@ -1584,9 +1658,12 @@ void moloch_field_ops_add(MolochFieldOps_t *ops, int fieldPos, char *value, int 
         }
     } else {
         switch (config.fields[fieldPos]->type) {
+        case  MOLOCH_FIELD_TYPE_INT:
+            op->str = 0;
+            moloch_field_ops_int_parse(op, value);
+            break;
         case  MOLOCH_FIELD_TYPE_INT_HASH:
         case  MOLOCH_FIELD_TYPE_INT_GHASH:
-        case  MOLOCH_FIELD_TYPE_INT:
         case  MOLOCH_FIELD_TYPE_INT_ARRAY:
             op->str = 0;
             op->strLenOrInt = atoi(value);

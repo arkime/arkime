@@ -32,6 +32,8 @@
 #include "dll.h"
 #include "hash.h"
 #include "bsb.h"
+
+#define GLIB_DISABLE_DEPRECATION_WARNINGS
 #include "glib.h"
 
 #define UNUSED(x) x __attribute((unused))
@@ -268,7 +270,9 @@ typedef struct {
     uint32_t                   jsonSize;
 } MolochField_t;
 
-#define MOLOCH_FIELD_OPS_FLAGS_COPY 0x0001
+#define MOLOCH_FIELD_OP_SET           0
+#define MOLOCH_FIELD_OP_SET_IF_LESS   1
+#define MOLOCH_FIELD_OP_SET_IF_MORE   2
 
 typedef struct {
     char                 *str;
@@ -277,8 +281,10 @@ typedef struct {
       float               f;
     };
     int16_t               fieldPos;
+    int8_t                set;
 } MolochFieldOp_t;
 
+#define MOLOCH_FIELD_OPS_FLAGS_COPY 0x0001
 typedef struct {
     MolochFieldOp_t     *ops;
     uint16_t              size;
