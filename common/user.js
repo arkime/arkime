@@ -205,6 +205,14 @@ class User {
     User.#implementation.getUser(userId, async (err, data) => {
       if (err || !data) { return cb(err, null); }
 
+      // If passStore is using old form re-encrypt
+      if (data.passStore.split('.').length === 1) {
+        data.passStore = Auth.ha12store(Auth.store2ha1(data.passStore));
+        User.setUser(data.userId, data, (err, info) => {
+          console.log('Upgraded passStore for', data.userId);
+        });
+      }
+
       const user = Object.assign(new User(), data);
       cleanUser(user);
       user.settings = user.settings ?? {};
