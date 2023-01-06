@@ -381,21 +381,25 @@ class Auth {
       .digest(encoding || 'hex');
   };
 
+  // Encrypt the hashed password for storing
+  static ha12store (ha1) {
+    // IV.E
+    const iv = crypto.randomBytes(16);
+    const c = crypto.createCipheriv('aes-256-cbc', Auth.passwordSecret256, iv);
+    let e = c.update(ha1, 'binary', 'hex');
+    e += c.final('hex');
+    return iv.toString('hex') + '.' + e;
+  }
+
   // Hash (MD5) and encrypt the password before storing.
   // Encryption is used because OpenSearch/Elasticsearch is insecure by default and we don't want others adding accounts.
   static pass2store (userid, password) {
     // md5 is required because of http digest
-    const m = Auth.md5(userid + ':' + Auth.#httpRealm + ':' + password);
-
-    // New style with IV: IV.E
-    const iv = crypto.randomBytes(16);
-    const c = crypto.createCipheriv('aes-256-cbc', Auth.passwordSecret256, iv);
-    let e = c.update(m, 'binary', 'hex');
-    e += c.final('hex');
-    return iv.toString('hex') + '.' + e;
+    return Auth.ha12store(Auth.md5(userid + ':' + Auth.#httpRealm + ':' + password));
   };
 
   // Decrypt the encrypted hashed password, it is still hashed
+  // Support 2 styles of decryption
   static store2ha1 (passstore) {
     try {
       const parts = passstore.split('.');
@@ -420,8 +424,8 @@ class Auth {
   };
 
   // Encrypt an object into an auth string
+  // IV.E.H
   static obj2auth (obj, secret) {
-    // New style with IV: IV.E.H
     if (secret) {
       secret = crypto.createHash('sha256').update(secret).digest();
     } else {
@@ -438,6 +442,7 @@ class Auth {
   };
 
   // Decrypt the auth string into an object
+  // IV.E.H
   static auth2obj (auth, secret) {
     const parts = auth.split('.');
 
@@ -445,7 +450,6 @@ class Auth {
       throw new Error(`Unsupported auth2obj ${parts.length}`);
     }
 
-    // New style with IV: IV.E.H
     if (secret) {
       secret = crypto.createHash('sha256').update(secret).digest();
     } else {
