@@ -31,6 +31,7 @@ class PassiveTotalSource extends WISESource {
       console.log(this.section, '- No key defined');
       return;
     }
+    this.api.addValueAction('passivetotal', { name: 'Passive Total Search', url: 'https://community.riskiq.com/search/%TEXT%/resolutions', category: 'md5,email,url,domain,ip' });
     if (this.user === undefined) {
       console.log(this.section, '- No user defined');
       return;

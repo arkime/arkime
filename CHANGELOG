@@ -42,6 +42,7 @@ NOTICE: Cross-cluster Shortcuts require you to not restart all your viewers at o
   - capture - Integer ops in rules now support a leading < or > which only 
               sets the value if less than or greater than current value
   - wise - added usersElasticsearchBasicAuth setting and lmdb cache support
+  - wise - add passivetotal value action if at least key is defined
   - viewer - fix es node stats for different node.roles
   - viewer - reencrypt passStore on login for old style users
   - viewer/cont3xt - can now search roles
