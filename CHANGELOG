@@ -43,8 +43,10 @@ NOTICE: Cross-cluster Shortcuts require you to not restart all your viewers at o
               sets the value if less than or greater than current value
   - wise - added usersElasticsearchBasicAuth setting and lmdb cache support
   - viewer - fix es node stats for different node.roles
-  - viewer/cont3xt - can now search roles
   - viewer - reencrypt passStore on login for old style users
+  - viewer/cont3xt - can now search roles
+  - viewer/cont3xt - don't show change password menu item if web auth is enabled for
+             user and disableUserPasswordUI is true
 
 4.0.3 2022/11/28
   - release - cyberchef 9.54.0
