@@ -708,26 +708,4 @@ select {
   z-index: 5;
   margin-top: 10px;
 }
-
-/* confirm button animations */
-.buttons-enter-active {
-  animation: bounce-in .5s;
-}
-.buttons-leave-active {
-  transition: all .3s ease;
-}
-.buttons-enter, .buttons-leave-to {
-  opacity: 0;
-}
-@keyframes bounce-in {
-  0% {
-    transform: scale(0);
-  }
-  50% {
-    transform: scale(1.2);
-  }
-  100% {
-    transform: scale(1);
-  }
-}
 </style>

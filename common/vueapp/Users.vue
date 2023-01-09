@@ -170,14 +170,42 @@
               v-b-tooltip.hover="`History for ${data.item.userId}`">
               <span class="fa fa-history" />
             </b-button>
-            <b-button
-              size="sm"
-              variant="danger"
-              v-b-tooltip.hover
-              :title="`Delete ${data.item.userId}`"
-              @click="deleteUser(data.item, data.index)">
-              <span class="fa fa-trash-o" />
-            </b-button>
+            <!-- cancel confirm delete button -->
+            <transition name="buttons">
+              <b-button
+                size="sm"
+                title="Cancel"
+                variant="warning"
+                v-b-tooltip.hover
+                v-if="confirmDelete[data.item.userId]"
+                @click="toggleConfirmDeleteUser(data.item.userId)">
+                <span class="fa fa-ban" />
+              </b-button>
+            </transition> <!-- /cancel confirm delete button -->
+            <!-- confirm delete button -->
+            <transition name="buttons">
+              <b-button
+                size="sm"
+                variant="danger"
+                v-b-tooltip.hover
+                title="Are you sure?"
+                v-if="confirmDelete[data.item.userId]"
+                @click="deleteUser(data.item, data.index)">
+                <span class="fa fa-check" />
+              </b-button>
+            </transition> <!-- /confirm delete button -->
+            <!-- delete button -->
+            <transition name="buttons">
+              <b-button
+                size="sm"
+                variant="danger"
+                v-b-tooltip.hover.left
+                :title="`Delete ${data.item.userId}`"
+                v-if="!confirmDelete[data.item.userId]"
+                @click="toggleConfirmDeleteUser(data.item.userId)">
+                <span class="fa fa-trash-o" />
+              </b-button>
+            </transition> <!-- /delete button -->
           </div>
         </template> <!-- /action column -->
         <!-- user id column -->
@@ -432,7 +460,8 @@ export default {
       ],
       // password
       newPassword: '',
-      confirmNewPassword: ''
+      confirmNewPassword: '',
+      confirmDelete: {}
     };
   },
   computed: {
@@ -549,6 +578,9 @@ export default {
       }).catch((error) => {
         this.showMessage({ variant: 'danger', message: error.text });
       });
+    },
+    toggleConfirmDeleteUser (id) {
+      this.$set(this.confirmDelete, id, !this.confirmDelete[id]);
     },
     deleteUser (user, index) {
       UserService.deleteUser(user).then((response) => {
