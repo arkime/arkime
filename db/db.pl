@@ -6043,7 +6043,7 @@ sub dbCheck {
 
     if ($esversion->{version}->{distribution} eq "opensearch") {
         if ($main::esVersion < 1000) {
-            logmsg("Currently using Opensearch version ", $esversion->{version}->{number}, " which isn't supported\n",
+            logmsg("Currently using OpenSearch version ", $esversion->{version}->{number}, " which isn't supported\n",
                   "* < 1.0.0 is not supported\n"
                   );
             exit (1)
@@ -6307,8 +6307,8 @@ if ($ARGV[1] =~ /^(users-?import|import)$/) {
         open($fh, "<", $ARGV[2]) or die "cannot open < $ARGV[2]: $!";
     }
     my $data = do { local $/; <$fh> };
-    # Use version/version_type instead of _version/_version_type
-    $data =~ s/, "_version": (\d+), "_version_type"/, "version": \1, "version_type"/g;
+    # remove version stuff - /, "version": 2, "version_type": "external"/
+    $data =~ s/, "version": \d+, "version_type": "\w+"//g;
     # Remove type from older backups
     $data =~ s/, "_type": .*, "_id":/, "_id":/g;
     esPost("/_bulk", $data);
@@ -6399,7 +6399,7 @@ if ($ARGV[1] =~ /^(users-?import|import)$/) {
     open(my $fh, ">", $ARGV[2]) or die "cannot open > $ARGV[2]: $!";
     my $users = esGet("/${PREFIX}users/_search?size=1000");
     foreach my $hit (@{$users->{hits}->{hits}}) {
-        print $fh "{\"index\": {\"_index\": \"users\", \"_type\": \"user\", \"_id\": \"" . $hit->{_id} . "\"}}\n";
+        print $fh "{\"index\": {\"_index\": \"${PREFIX}users\", \"_id\": \"" . $hit->{_id} . "\"}}\n";
         print $fh to_json($hit->{_source}) . "\n";
     }
     close($fh);

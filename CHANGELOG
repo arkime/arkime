@@ -41,6 +41,7 @@ NOTICE: Cross-cluster Shortcuts require you to not restart all your viewers at o
   - capture - y2038 fixes
   - capture - Integer ops in rules now support a leading < or > which only 
               sets the value if less than or greater than current value
+  - db.pl - fix users-export/users-import
   - wise - added usersElasticsearchBasicAuth setting and lmdb cache support
   - wise - add passivetotal value action if at least key is defined
   - viewer - fix es node stats for different node.roles
@@ -52,12 +53,12 @@ NOTICE: Cross-cluster Shortcuts require you to not restart all your viewers at o
 4.0.3 2022/11/28
   - release - cyberchef 9.54.0
   - release - copy systemd files instead of soft linking
-  - releaes - capture/viewer systemd files now After opensearch/elasticsearch
+  - releaes - capture/viewer systemd files now After OpenSearch/Elasticsearch
   - capture - on short runs, field definitions weren't getting updated
   - capture - s3 writer sets s3Compress to false with s3WriteGzip true
   - capture - JA3s value was sometimes incorrect
   - cont3xt - fixed digest mode fetching settings from config file
-  - db.pl - fixed init not working with opensearch sometimes
+  - db.pl - fixed init not working with OpenSearch sometimes
   - db.pl - will now count data or data_hot node roles
   - viewer - fixed showing more than 10 roles
 
@@ -289,7 +290,7 @@ NOTICE: Cross-cluster Shortcuts require you to not restart all your viewers at o
   - esproxy - elasticsearchAPIKey and elasticsearchBasicAuth support
 
 3.0.0 2021/08/18
-  - BREAKING - elasticsearch - ES 7.10.0 or later required
+  - BREAKING - Elasticsearch - ES 7.10.0 or later required
   - BREAKING - if not using a ES prefix, the prefix arkime_ will now be used
   - BREAKING - multies - multiESNodes requires a name: and prefix: attribute per entry
   - BREAKING - wise - custom sources will need to be modified
@@ -349,7 +350,7 @@ NOTICE: Cross-cluster Shortcuts require you to not restart all your viewers at o
   - wise - new config UI, enable with --webconfig
   - wise - more moloch->arkime changes
   - wise - for json data can now set arrayPath for start of where to parse
-  - wise - new elasticsearchfile type
+  - wise - new nlasticsearchfile type
   - wise - threatstream results now cached
   - wise - support memcached for cache
   - wise - new urlinfile://filepath where config is the first line of filepath file
