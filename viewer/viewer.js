@@ -59,7 +59,6 @@ const logger = require('morgan');
 const favicon = require('serve-favicon');
 const bodyParser = require('body-parser');
 const multer = require('multer');
-const methodOverride = require('method-override');
 const compression = require('compression');
 
 // internal app deps
@@ -88,7 +87,6 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ limit: '5mb', extended: true }));
 
 app.use(compression());
-app.use(methodOverride());
 
 // Explicit sigint handler for running under docker
 // See https://github.com/nodejs/node/issues/4182
