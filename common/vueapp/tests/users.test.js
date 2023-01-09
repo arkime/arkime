@@ -131,6 +131,10 @@ test('users page user crud', async () => {
   const deleteBtn = getByTitle('Delete testuserid');
   await fireEvent.click(deleteBtn); // click the delete btn
 
+  // shows the confirm workflow
+  const confirmDeleteBtn = getByTitle('Are you sure?');
+  await fireEvent.click(confirmDeleteBtn); // click confirm delete
+
   expect(UserService.deleteUser).toHaveBeenCalled(); // delete user was called
 
   expect(queryByText('testuserid')).not.toBeInTheDocument(); // user removed
