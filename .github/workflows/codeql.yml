@@ -59,6 +59,7 @@ jobs:
     - name: Install packages
       if: ${{ matrix.language == 'cpp' }}
       run: |
+        sudo apt-get -qq update
         sudo apt-get -qq install libmaxminddb-dev libcurl4-openssl-dev libyara-dev libglib2.0-dev libpcap-dev libnghttp2-dev
 
     # Autobuild attempts to build any compiled languages  (C/C++, C#, Go, or Java).
