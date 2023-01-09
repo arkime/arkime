@@ -24,9 +24,6 @@ class LinkGroup {
     Object.assign(this, data);
   }
 
-  save () {
-  }
-
   /**
    * A Link object
    *

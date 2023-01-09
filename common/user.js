@@ -1,5 +1,5 @@
 /******************************************************************************/
-/* userDB.js  -- User Database interface
+/* user.js  -- common User interface and DB implementations
  *
  * Copyright Yahoo Inc.
  *
@@ -70,6 +70,12 @@ class User {
 
   /**
    * Initialize the User subsystem
+   * @param {boolean} options.debug=0 The debug level to use for User component
+   * @param {string} options.url The url that represents which DB implementation to use
+   * @param {boolean} options.readOnly=false If true don't set the last used time
+   * @param {function} options.getCurrentUserCB Optional function that can modify a user object when fetching
+   * @param {boolean} options.noUsersCheck=false If true don't check if the users DB is empty
+   *
    */
   static initialize (options) {
     if (options.debug > 1) {
@@ -107,11 +113,16 @@ class User {
     User.#rolesCache = { _timeStamp: 0 };
   }
 
+  /**
+   * Delete userId from cache
+   * @param {string} userId to delete from cache
+   */
   static deleteCache (userId) {
     User.#usersCache.delete(userId);
   }
 
   // Get the ES client for viewer, will remove someday
+  // Used for shortcuts and views index
   static getClient () {
     if (User.#implementation.getClient()) {
       return User.#implementation.getClient();
@@ -120,7 +131,9 @@ class User {
   }
 
   /**
-   * Return a user checking cache first
+   * Return a user checking cache first. Supports both promise and cb.
+   * @param userId the user to fetch
+   * @param cb the callback to use in cb mode
    */
   static async getUserCache (userId, cb) {
     // If we have the cache just cb/return it

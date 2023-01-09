@@ -35,11 +35,12 @@ class Integration {
   static NoResult = Symbol('NoResult');
 
   static debug = 0;
-  static cache;
   static getConfig;
-  static cont3xtStartTime = Date.now();
-  static integrationsByName = {};
-  static integrations = {
+
+  static #cache;
+  static #cont3xtStartTime = Date.now();
+  static #integrationsByName = {};
+  static #integrations = {
     all: [],
     ip: [],
     domain: [],
@@ -50,9 +51,17 @@ class Integration {
     text: []
   };
 
+  /**
+   * Initialize the Integrations subsystem
+   * @param {number} options.debug=0 The debug level to use for Integrations
+   * @param {object} options.cache The ArkimeCache implementation
+   * @param {function} options.getConfig function used to get configuration items
+   * @param {string} options.integrationsPath=__dirname/integrations/ Where to find the integrations
+   *
+   */
   static initialize (options) {
     Integration.debug = options.debug ?? 0;
-    Integration.cache = options.cache;
+    Integration.#cache = options.cache;
     Integration.getConfig = options.getConfig;
     options.integrationsPath ??= path.join(__dirname, '/integrations/');
 
@@ -64,7 +73,7 @@ class Integration {
 
     if (Integration.debug > 1) {
       setTimeout(() => {
-        const sorted = Integration.integrations.all.sort((a, b) => { return a.order - b.order; });
+        const sorted = Integration.#integrations.all.sort((a, b) => { return a.order - b.order; });
         console.log('ORDER:');
         for (const integration of sorted) {
           if (integration.card) {
@@ -75,6 +84,14 @@ class Integration {
     }
   }
 
+  /**
+   * Register an integration implementation
+   * @param {string} integration.name The name of the integration
+   * @param {object} integration.itypes An object of itypes to functions to call
+   * @param {boolean} integration.cacheable=true Should results be cache
+   * @param {boolean} integration.noStats=false Should we not save stats
+   * @param {number} integration.order=10000 What order should this integration be shown
+   */
   static register (integration) {
     if (typeof (integration.name) !== 'string') {
       console.log('Missing .name', integration);
@@ -143,10 +160,10 @@ class Integration {
     integration.normalizeTidbits();
     // console.log(integration.name, JSON.stringify(integration.card, false, 2));
 
-    Integration.integrationsByName[integration.name] = integration;
-    Integration.integrations.all.push(integration);
+    Integration.#integrationsByName[integration.name] = integration;
+    Integration.#integrations.all.push(integration);
     for (const itype in integration.itypes) {
-      Integration.integrations[itype].push(integration);
+      Integration.#integrations[itype].push(integration);
     }
   }
 
@@ -305,7 +322,7 @@ class Integration {
    */
   static async apiList (req, res, next) {
     const results = {};
-    const integrations = Integration.integrations.all;
+    const integrations = Integration.#integrations.all;
 
     const keys = req.user.getCont3xtKeys();
 
@@ -372,7 +389,7 @@ class Integration {
     const writeOne = (integration, response) => {
       if (integration.addMoreIntegrations) {
         integration.addMoreIntegrations(itype, response, (moreQuery, moreIType) => {
-          Integration.runIntegrationsList(shared, moreQuery, moreIType, Integration.integrations[moreIType], onFinish);
+          Integration.runIntegrationsList(shared, moreQuery, moreIType, Integration.#integrations[moreIType], onFinish);
         });
       }
 
@@ -445,11 +462,11 @@ class Integration {
       istats.total++;
 
       // if available, first try cache
-      if (!shared.skipCache && Integration.cache && integration.cacheable) {
+      if (!shared.skipCache && Integration.#cache && integration.cacheable) {
         stats.cacheLookup++;
         istats.cacheLookup++;
         const cStartTime = Date.now();
-        const response = await Integration.cache.get(cacheKey);
+        const response = await Integration.#cache.get(cacheKey);
         updateTime(stats, istats, Date.now() - cStartTime, 'cache');
         if (response) {
           stats.cacheFound++;
@@ -486,8 +503,8 @@ class Integration {
             shared.resultCount += response._cont3xt.count ?? 0;
             response._cont3xt.createTime = Date.now();
             writeOne(integration, response);
-            if (Integration.cache && integration.cacheable) {
-              Integration.cache.set(cacheKey, response);
+            if (Integration.#cache && integration.cacheable) {
+              Integration.#cache.set(cacheKey, response);
             }
           } else {
             // console.log('ALW null', integration.name, cacheKey);
@@ -572,7 +589,7 @@ class Integration {
 
     const itype = Integration.classify(query);
 
-    const integrations = Integration.integrations[itype];
+    const integrations = Integration.#integrations[itype];
     const shared = {
       skipCache: !!req.body.skipCache,
       doIntegrations: req.body.doIntegrations,
@@ -609,14 +626,14 @@ class Integration {
     Integration.runIntegrationsList(shared, query, itype, integrations, finishWrite);
     if (itype === 'email') {
       const dquery = query.slice(query.indexOf('@') + 1);
-      Integration.runIntegrationsList(shared, dquery, 'domain', Integration.integrations.domain, finishWrite);
+      Integration.runIntegrationsList(shared, dquery, 'domain', Integration.#integrations.domain, finishWrite);
     } else if (itype === 'url') {
       const url = new URL(query);
       if (Integration.classify(url.hostname) === 'ip') {
-        Integration.runIntegrationsList(shared, url.hostname, 'ip', Integration.integrations.ip, finishWrite);
+        Integration.runIntegrationsList(shared, url.hostname, 'ip', Integration.#integrations.ip, finishWrite);
       } else {
         const equery = extractDomain(query, { tld: true });
-        Integration.runIntegrationsList(shared, equery, 'domain', Integration.integrations.domain, finishWrite);
+        Integration.runIntegrationsList(shared, equery, 'domain', Integration.#integrations.domain, finishWrite);
       }
     }
   }
@@ -639,7 +656,7 @@ class Integration {
     const itype = req.params.itype;
     const query = ArkimeUtil.sanitizeStr(req.body.query.trim());
 
-    const integration = Integration.integrationsByName[req.params.integration];
+    const integration = Integration.#integrationsByName[req.params.integration];
 
     if (integration === undefined || integration.itypes[itype] === undefined) {
       return res.send({ success: false, text: `integration ${itype} ${req.params.integration} not found` });
@@ -675,9 +692,9 @@ class Integration {
           if (!response._cont3xt) { response._cont3xt = {}; }
           response._cont3xt.createTime = Date.now();
           res.send({ success: true, data: response, _query: query });
-          if (Integration.cache && integration.cacheable) {
+          if (Integration.#cache && integration.cacheable) {
             const cacheKey = `${integration.sharedCache ? 'shared' : req.user.userId}-${integration.name}-${itype}-${query}`;
-            Integration.cache.set(cacheKey, response);
+            Integration.#cache.set(cacheKey, response);
           }
         }
       })
@@ -711,7 +728,7 @@ class Integration {
    */
   static async apiGetSettings (req, res, next) {
     const result = {};
-    const integrations = Integration.integrations.all;
+    const integrations = Integration.#integrations.all;
     const keys = req.user.getCont3xtKeys();
     for (const integration of integrations) {
       if (!integration.settings) { continue; }
@@ -800,7 +817,7 @@ class Integration {
    */
   static async apiStats (req, res, next) {
     const result = [];
-    for (const integration of Integration.integrations.all) {
+    for (const integration of Integration.#integrations.all) {
       if (integration.noStats) { continue; }
       result.push({ ...integration.stats, name: integration.name });
     }
@@ -808,7 +825,7 @@ class Integration {
     for (const itype of Object.keys(itypeStats)) {
       iresult.push({ ...itypeStats[itype], name: itype });
     }
-    res.send({ success: true, startTime: Integration.cont3xtStartTime, stats: result, itypeStats: iresult });
+    res.send({ success: true, startTime: Integration.#cont3xtStartTime, stats: result, itypeStats: iresult });
   }
 
   getConfig (k, d) {

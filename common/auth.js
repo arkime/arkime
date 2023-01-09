@@ -40,6 +40,20 @@ class Auth {
   static #userAutoCreateTmpl;
   static #userAuthIps;
 
+  /**
+   * Initialize the Auth subsystem
+   * @param {boolean} options.debug=0 The debug level to use for Auth component
+   * @param {string} options.mode=anonymous What auth mode to run in
+   * @param {string} options.basePath=/ What the web base path is for the app
+   * @param {string} options.userNameHeader In header auth mode, which http header has the user id
+   * @param {string} options.httpRealm=Moloch For digest mode, what http realm to use
+   * @param {string} options.passwordSecret=password For digest mode, what password to use to encrypt the password hash
+   * @param {string} options.serverSecret=passwordSecret What password is used to encrypt S2S auth
+   * @param {string} options.requiredAuthHeader In header auth mode, another header can be required
+   * @param {string} options.requiredAuthHeaderVal In header auth mode, a comma separated list of values for requiredAuthHeader, if none are matched the user will not be authorized
+   * @param {string} options.userAutoCreateTmpl A javascript string function that is used to create users that don't exist
+   * @param {string} options.userAuthIps A comma separated list of CIDRs that users are allowed from
+   */
   static initialize (options) {
     if (options.debug > 1) {
       console.log('Auth.initialize', options);

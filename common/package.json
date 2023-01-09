@@ -1,5 +1,6 @@
 {
   "scripts": {
+    "doc": "cd ../ && npm run common:doc",
     "lint": "cd ../ && npm run common:lint"
   }
 }

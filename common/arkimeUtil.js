@@ -23,6 +23,9 @@ const Auth = require('./auth');
 class ArkimeUtil {
   static debug = 0;
   // ----------------------------------------------------------------------------
+  /**
+   * For both arrays and single values escape entities
+   */
   static safeStr (str) {
     if (Array.isArray(str)) { return str.map(x => ArkimeUtil.safeStr(x)); }
 
@@ -35,6 +38,10 @@ class ArkimeUtil {
   };
 
   // ----------------------------------------------------------------------------
+  /**
+   * Replace ESC character with ESC. This should be used when console.log of
+   * any user input to stop ESC 52 issues
+   */
   static sanitizeStr (str) {
     if (!str) { return str; }
     // eslint-disable-next-line no-control-regex
@@ -42,13 +49,18 @@ class ArkimeUtil {
   }
 
   // ----------------------------------------------------------------------------
-  // remove any special characters except ('-', '_', ':', and ' ')
+  /**
+   * Remove any special characters except ('-', '_', ':', and ' ')
+   */
   static removeSpecialChars (str) {
     if (!str) { return str; }
     return str.replace(/[^-a-zA-Z0-9_: ]/g, '');
   }
 
   // ----------------------------------------------------------------------------
+  /**
+   * Express middleware to set some common headers for json responses
+   */
   static noCacheJson (req, res, next) {
     res.header('Cache-Control', 'no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0');
     res.header('Content-Type', 'application/json');
