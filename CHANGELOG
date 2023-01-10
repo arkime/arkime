@@ -27,11 +27,12 @@ Node Versions:
 NOTICE: Restart wiseService before capture when upgrading
 NOTICE: Cross-cluster Shortcuts require you to not restart all your viewers at once after upgrading
 
-4.1.0 2023/01/xx
+4.1.0 2023/01/10
   - release - glib 2.72.4 cyberchef 9.55.0 flot 4.2.3 d3 7.7
   - db.pl - backup/restore wasn't dealing with templates correctly
   - db.pl - upgrade failed if there was no moloch_shared user
   - db.pl - repair now fixes missing history/ecs templates
+  - db.pl - fix users-export/users-import
   - cont3xt - support missing auth and userTmpl settings
   - cont3xt - Hide link group when no links match filter
   - cont3xt - Added landing page
@@ -39,13 +40,11 @@ NOTICE: Cross-cluster Shortcuts require you to not restart all your viewers at o
   - capture - add VNI field
   - capture - initial tzsp reader support
   - capture - y2038 fixes
-  - capture - Integer ops in rules now support a leading < or > which only 
+  - capture - Integer ops in rules now support a leading min or max which only 
               sets the value if less than or greater than current value
-  - db.pl - fix users-export/users-import
   - wise - added usersElasticsearchBasicAuth setting and lmdb cache support
   - wise - add passivetotal value action if at least key is defined
   - viewer - fix es node stats for different node.roles
-  - viewer - reencrypt passStore on login for old style users
   - viewer/cont3xt - can now search roles
   - viewer/cont3xt - don't show change password menu item if web auth is enabled for
              user and disableUserPasswordUI is true
