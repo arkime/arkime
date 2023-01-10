@@ -27,6 +27,8 @@ Node Versions:
 NOTICE: Restart wiseService before capture when upgrading
 NOTICE: Cross-cluster Shortcuts require you to not restart all your viewers at once after upgrading
 
+4.1.1 2023/02/xx
+
 4.1.0 2023/01/10
   - release - glib 2.72.4 cyberchef 9.55.0 flot 4.2.3 d3 7.7
   - db.pl - backup/restore wasn't dealing with templates correctly
