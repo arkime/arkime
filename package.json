@@ -43,7 +43,7 @@
     "splunk-sdk": "^1.11.0",
     "stylus": "^0.54.8",
     "unzipper": "^0.10.11",
-    "uuidv4": "^5.0.1",
+    "uuid": "^9.0.0",
     "vue": "^2.6.12",
     "vue-server-renderer": "^2.6.12"
   },
