@@ -41,7 +41,7 @@ const crypto = require('crypto');
 const logger = require('morgan');
 const favicon = require('serve-favicon');
 const helmet = require('helmet');
-const uuid = require('uuidv4').default;
+const uuid = require('uuid').v4;
 const dayMs = 60000 * 60 * 24;
 
 const internals = {
