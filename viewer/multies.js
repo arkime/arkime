@@ -1062,7 +1062,7 @@ nodes.forEach(async (node) => {
 
     if (data.version.distribution === 'opensearch') {
       if (data.version.number.match(/^[0]/)) {
-        console.log(`ERROR - Opensearch ${data.version.number} not supported, Opensearch 1.0.0 or later required.`);
+        console.log(`ERROR - OpenSearch ${data.version.number} not supported, OpenSearch 1.0.0 or later required.`);
         process.exit();
       }
     } else {
