@@ -1,4 +1,4 @@
-import uuid from 'uuidv4';
+import uuid from 'uuid';
 
 import store from '../../store';
 
@@ -9,7 +9,7 @@ export default {
    * @returns {string} The unique random string
    */
   createRandomString: function () {
-    return uuid();
+    return uuid.v4();
   },
 
   /** @returns the default sessions table state if none is defined by the user */
