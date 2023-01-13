@@ -96,13 +96,43 @@
     class="h-100 align-self-stretch">
     <template slot="header">
       <div class="w-100 d-flex justify-content-between">
-        <b-button
-          size="sm"
-          variant="danger"
-          v-b-tooltip.hover="'Delete this link group'"
-          @click="deleteLinkGroup(linkGroup._id)">
-          <span class="fa fa-trash" />
-        </b-button>
+        <div>
+          <!-- delete button -->
+          <transition name="buttons">
+            <b-button
+              size="sm"
+              variant="danger"
+              v-if="!confirmDelete"
+              @click="confirmDelete = true"
+              v-b-tooltip.hover="'Delete this link group'">
+              <span class="fa fa-trash" />
+            </b-button>
+          </transition> <!-- /delete button -->
+          <!-- cancel confirm delete button -->
+          <transition name="buttons">
+            <b-button
+              size="sm"
+              title="Cancel"
+              variant="warning"
+              v-b-tooltip.hover
+              v-if="confirmDelete"
+              @click="confirmDelete = false">
+              <span class="fa fa-ban" />
+            </b-button>
+          </transition> <!-- /cancel confirm delete button -->
+          <!-- confirm delete button -->
+          <transition name="buttons">
+            <b-button
+              size="sm"
+              variant="danger"
+              v-b-tooltip.hover
+              title="Are you sure?"
+              v-if="confirmDelete"
+              @click="deleteLinkGroup(linkGroup._id)">
+              <span class="fa fa-check" />
+            </b-button>
+          </transition> <!-- /confirm delete button -->
+        </div>
         <b-alert
           variant="success"
           :show="success"
@@ -142,13 +172,43 @@
     </b-card-body>
     <template slot="footer">
       <div class="w-100 d-flex justify-content-between align-items-start">
-        <b-button
-          size="sm"
-          variant="danger"
-          v-b-tooltip.hover="'Delete this link group'"
-          @click="deleteLinkGroup(linkGroup._id)">
-          <span class="fa fa-trash" />
-        </b-button>
+        <div>
+          <!-- delete button -->
+          <transition name="buttons">
+            <b-button
+              size="sm"
+              variant="danger"
+              v-if="!confirmDelete"
+              @click="confirmDelete = true"
+              v-b-tooltip.hover="'Delete this link group'">
+              <span class="fa fa-trash" />
+            </b-button>
+          </transition> <!-- /delete button -->
+          <!-- cancel confirm delete button -->
+          <transition name="buttons">
+            <b-button
+              size="sm"
+              title="Cancel"
+              variant="warning"
+              v-b-tooltip.hover
+              v-if="confirmDelete"
+              @click="confirmDelete = false">
+              <span class="fa fa-ban" />
+            </b-button>
+          </transition> <!-- /cancel confirm delete button -->
+          <!-- confirm delete button -->
+          <transition name="buttons">
+            <b-button
+              size="sm"
+              variant="danger"
+              v-b-tooltip.hover
+              title="Are you sure?"
+              v-if="confirmDelete"
+              @click="deleteLinkGroup(linkGroup._id)">
+              <span class="fa fa-check" />
+            </b-button>
+          </transition> <!-- /confirm delete button -->
+        </div>
         <b-alert
           variant="success"
           :show="success"
@@ -216,6 +276,7 @@ export default {
       success: false,
       rawEditMode: false,
       changesMade: false,
+      confirmDelete: false,
       collapsedLinkGroups: this.$store.state.collapsedLinkGroups,
       updatedLinkGroup: this.preUpdatedLinkGroup ?? JSON.parse(JSON.stringify(this.linkGroup))
     };
