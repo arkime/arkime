@@ -1,237 +1,247 @@
 <template>
-  <!-- form -->
-  <b-form v-if="lg">
-    <!-- group name -->
-    <b-input-group
+  <div>
+    <textarea
+      rows="20"
       size="sm"
-      class="mb-2">
-      <template #prepend>
-        <b-input-group-text>
-          Group Name
-        </b-input-group-text>
-      </template>
-      <b-form-input
-        trim
-        required
-        autofocus
-        v-model="lg.name"
-        :state="lg.name.length > 0"
+      v-if="rawEditMode"
+      :value="rawEditText"
+      @input="e => debounceRawEdit(e)"
+      class="form-control form-control-sm"
+    />
+    <!-- form -->
+    <b-form v-if="lg && !rawEditMode">
+      <!-- group name -->
+      <b-input-group
+        size="sm"
+        class="mb-2">
+        <template #prepend>
+          <b-input-group-text>
+            Group Name
+          </b-input-group-text>
+        </template>
+        <b-form-input
+          trim
+          required
+          autofocus
+          v-model="lg.name"
+          :state="lg.name.length > 0"
+        />
+      </b-input-group> <!-- /group name -->
+      <!-- group roles -->
+      <RoleDropdown
+        :roles="getRoles"
+        display-text="Who Can View"
+        :selected-roles="lg.viewRoles"
+        @selected-roles-updated="updateViewRoles"
       />
-    </b-input-group> <!-- /group name -->
-    <!-- group roles -->
-    <RoleDropdown
-      :roles="getRoles"
-      display-text="Who Can View"
-      :selected-roles="lg.viewRoles"
-      @selected-roles-updated="updateViewRoles"
-    />
-    <RoleDropdown
-      :roles="getRoles"
-      display-text="Who Can Edit"
-      :selected-roles="lg.editRoles"
-      @selected-roles-updated="updateEditRoles"
-    />
-    <span
-      class="fa fa-info-circle fa-lg cursor-help ml-2 mr-1"
-      v-b-tooltip.hover="'Creators will always be able to view and edit their link groups regardless of the roles selected here.'"
-    />
-    <span v-if="!lg.creator || lg.creator === getUser.userId">
-      As the creator, you can always view and edit your link groups.
-    </span>
-    <!-- /group roles -->
-    <!-- group links -->
-    <reorder-list
-      :key="i"
-      :index="i"
-      :list="lg.links"
-      @update="updateList"
-      v-for="(link, i) in lg.links">
-      <template slot="handle">
-        <span class="fa fa-bars d-inline link-handle" />
-      </template>
-      <template slot="default">
-        <b-card v-if="link.name !== '----------'">
-          <div class="d-flex justify-content-between align-items-center">
-            <div class="mr-4 flex-grow-1">
-              <b-input-group
-                size="sm"
-                class="mb-2">
-                <template #prepend>
-                  <b-input-group-text>
-                    Name
-                  </b-input-group-text>
-                </template>
-                <b-form-input
-                  trim
-                  v-model="link.name"
-                  :state="link.name.length > 0"
-                  @input="e => linkChange(i, { name: e })"
-                />
-                <template #append>
-                  <color-picker
-                    :index="i"
-                    :color="link.color"
-                    :link-name="link.name"
-                    @colorSelected="changeColor"
+      <RoleDropdown
+        :roles="getRoles"
+        display-text="Who Can Edit"
+        :selected-roles="lg.editRoles"
+        @selected-roles-updated="updateEditRoles"
+      />
+      <span
+        class="fa fa-info-circle fa-lg cursor-help ml-2 mr-1"
+        v-b-tooltip.hover="'Creators will always be able to view and edit their link groups regardless of the roles selected here.'"
+      />
+      <span v-if="!lg.creator || lg.creator === getUser.userId">
+        As the creator, you can always view and edit your link groups.
+      </span>
+      <!-- /group roles -->
+      <!-- group links -->
+      <reorder-list
+        :key="i"
+        :index="i"
+        :list="lg.links"
+        @update="updateList"
+        v-for="(link, i) in lg.links">
+        <template slot="handle">
+          <span class="fa fa-bars d-inline link-handle" />
+        </template>
+        <template slot="default">
+          <b-card v-if="link.name !== '----------'">
+            <div class="d-flex justify-content-between align-items-center">
+              <div class="mr-4 flex-grow-1">
+                <b-input-group
+                  size="sm"
+                  class="mb-2">
+                  <template #prepend>
+                    <b-input-group-text>
+                      Name
+                    </b-input-group-text>
+                  </template>
+                  <b-form-input
+                    trim
+                    v-model="link.name"
+                    :state="link.name.length > 0"
+                    @input="e => linkChange(i, { name: e })"
                   />
-                </template>
-              </b-input-group>
-            </div>
-            <div>
-              <LinkBtns
-                :index="i"
-                :link-group="lg"
-                @addLink="addLink"
-                @pushLink="pushLink"
-                @removeLink="removeLink"
-                @expandLink="expandLink"
-                @addSeparator="addSeparator"
-              />
-            </div>
-          </div>
-          <div v-show="link.expanded">
-            <b-form-checkbox-group
-              v-model="link.itypes"
-              :options="itypeOptions"
-              @change="e => linkChange(i, { itypes: e })"
-            />
-            <b-input-group
-              size="sm"
-              class="mb-2 mt-2">
-              <template #prepend>
-                <b-input-group-text>
-                  URL
-                </b-input-group-text>
-              </template>
-              <b-form-input
-                trim
-                v-model="link.url"
-                :state="link.url.length > 0"
-                @input="e => linkChange(i, { url: e })"
-              />
-              <template #append>
-                <b-input-group-text
-                  class="cursor-help"
-                  v-b-tooltip.hover.html="linkTip">
-                  <span class="fa fa-info-circle" />
-                </b-input-group-text>
-              </template>
-            </b-input-group>
-            <b-input-group
-                size="sm"
-                class="mb-2 mt-2">
-              <template #prepend>
-                <b-input-group-text>
-                  Description
-                </b-input-group-text>
-              </template>
-              <b-form-input
-                  trim
-                  v-model="link.infoField"
-                  :state="link.infoField ? true : undefined"
-                  @input="e => linkChange(i, { infoField: e })"
-              />
-              <template #append>
-                <b-input-group-text
-                    class="cursor-help"
-                    v-b-tooltip.hover.html="linkInfoTip">
-                  <span class="fa fa-info-circle" />
-                </b-input-group-text>
-              </template>
-            </b-input-group>
-            <div class="d-flex">
-              <b-input-group
-                  size="sm"
-                  class="mb-2 mt-2 w-40">
-                <template #prepend>
-                  <b-input-group-text>
-                    External Doc Name
-                  </b-input-group-text>
-                </template>
-                <b-form-input
-                    trim
-                    v-model="link.externalDocName"
-                    :state="link.externalDocName ? true : undefined"
-                    @input="e => linkChange(i, { externalDocName: e })"
+                  <template #append>
+                    <color-picker
+                      :index="i"
+                      :color="link.color"
+                      :link-name="link.name"
+                      @colorSelected="changeColor"
+                    />
+                  </template>
+                </b-input-group>
+              </div>
+              <div>
+                <LinkBtns
+                  :index="i"
+                  :link-group="lg"
+                  @addLink="addLink"
+                  @pushLink="pushLink"
+                  @removeLink="removeLink"
+                  @expandLink="expandLink"
+                  @addSeparator="addSeparator"
                 />
-                <template #append>
-                  <b-input-group-text
-                      class="cursor-help"
-                      v-b-tooltip.hover.html="linkExternalDocNameTip">
-                    <span class="fa fa-info-circle" />
-                  </b-input-group-text>
-                </template>
-              </b-input-group>
-              <b-input-group
-                  size="sm"
-                  class="mb-2 mt-2 ml-2">
-                <template #prepend>
-                  <b-input-group-text>
-                    External Doc URL
-                  </b-input-group-text>
-                </template>
-                <b-form-input
-                    trim
-                    v-model="link.externalDocUrl"
-                    :state="externalDocWarningSuccessState(link.externalDocName, link.externalDocUrl)"
-                    @change="e => linkChange(i, { externalDocUrl: e })"
-                />
-                <template #append>
-                  <b-input-group-text
-                      class="cursor-help"
-                      v-b-tooltip.hover.html="linkExternalDocUrlTip">
-                    <span class="fa fa-info-circle" />
-                  </b-input-group-text>
-                </template>
-              </b-input-group>
+              </div>
             </div>
-          </div>
-        </b-card>
-        <template v-else>
-          <div class="d-flex justify-content-between align-items-center mr-2">
-            <div class="mr-4 flex-grow-1">
-              <hr class="link-separator"
-                :style="`border-color: ${link.color || '#777'}`"
-              >
+            <div v-show="link.expanded">
               <b-form-checkbox-group
                 v-model="link.itypes"
-                v-show="link.expanded"
                 :options="itypeOptions"
                 @change="e => linkChange(i, { itypes: e })"
-                class="text-center link-separator-checkbox-group"
               />
+              <b-input-group
+                size="sm"
+                class="mb-2 mt-2">
+                <template #prepend>
+                  <b-input-group-text>
+                    URL
+                  </b-input-group-text>
+                </template>
+                <b-form-input
+                  trim
+                  v-model="link.url"
+                  :state="link.url.length > 0"
+                  @input="e => linkChange(i, { url: e })"
+                />
+                <template #append>
+                  <b-input-group-text
+                    class="cursor-help"
+                    v-b-tooltip.hover.html="linkTip">
+                    <span class="fa fa-info-circle" />
+                  </b-input-group-text>
+                </template>
+              </b-input-group>
+              <b-input-group
+                  size="sm"
+                  class="mb-2 mt-2">
+                <template #prepend>
+                  <b-input-group-text>
+                    Description
+                  </b-input-group-text>
+                </template>
+                <b-form-input
+                    trim
+                    v-model="link.infoField"
+                    :state="link.infoField ? true : undefined"
+                    @input="e => linkChange(i, { infoField: e })"
+                />
+                <template #append>
+                  <b-input-group-text
+                      class="cursor-help"
+                      v-b-tooltip.hover.html="linkInfoTip">
+                    <span class="fa fa-info-circle" />
+                  </b-input-group-text>
+                </template>
+              </b-input-group>
+              <div class="d-flex">
+                <b-input-group
+                    size="sm"
+                    class="mb-2 mt-2 w-40">
+                  <template #prepend>
+                    <b-input-group-text>
+                      External Doc Name
+                    </b-input-group-text>
+                  </template>
+                  <b-form-input
+                      trim
+                      v-model="link.externalDocName"
+                      :state="link.externalDocName ? true : undefined"
+                      @input="e => linkChange(i, { externalDocName: e })"
+                  />
+                  <template #append>
+                    <b-input-group-text
+                        class="cursor-help"
+                        v-b-tooltip.hover.html="linkExternalDocNameTip">
+                      <span class="fa fa-info-circle" />
+                    </b-input-group-text>
+                  </template>
+                </b-input-group>
+                <b-input-group
+                    size="sm"
+                    class="mb-2 mt-2 ml-2">
+                  <template #prepend>
+                    <b-input-group-text>
+                      External Doc URL
+                    </b-input-group-text>
+                  </template>
+                  <b-form-input
+                      trim
+                      v-model="link.externalDocUrl"
+                      :state="externalDocWarningSuccessState(link.externalDocName, link.externalDocUrl)"
+                      @change="e => linkChange(i, { externalDocUrl: e })"
+                  />
+                  <template #append>
+                    <b-input-group-text
+                        class="cursor-help"
+                        v-b-tooltip.hover.html="linkExternalDocUrlTip">
+                      <span class="fa fa-info-circle" />
+                    </b-input-group-text>
+                  </template>
+                </b-input-group>
+              </div>
             </div>
-            <div class="d-flex nowrap">
-              <color-picker
-                :index="i"
-                class="d-inline mr-4"
-                :link-name="link.name"
-                @colorSelected="changeColor"
-                :color="link.color || '#777'"
-              />
-              <LinkBtns
-                :index="i"
-                :link-group="lg"
-                @addLink="addLink"
-                @pushLink="pushLink"
-                @removeLink="removeLink"
-                @expandLink="expandLink"
-                @addSeparator="addSeparator"
-              />
+          </b-card>
+          <template v-else>
+            <div class="d-flex justify-content-between align-items-center mr-2">
+              <div class="mr-4 flex-grow-1">
+                <hr class="link-separator"
+                  :style="`border-color: ${link.color || '#777'}`"
+                >
+                <b-form-checkbox-group
+                  v-model="link.itypes"
+                  v-show="link.expanded"
+                  :options="itypeOptions"
+                  @change="e => linkChange(i, { itypes: e })"
+                  class="text-center link-separator-checkbox-group"
+                />
+              </div>
+              <div class="d-flex nowrap">
+                <color-picker
+                  :index="i"
+                  class="d-inline mr-4"
+                  :link-name="link.name"
+                  @colorSelected="changeColor"
+                  :color="link.color || '#777'"
+                />
+                <LinkBtns
+                  :index="i"
+                  :link-group="lg"
+                  @addLink="addLink"
+                  @pushLink="pushLink"
+                  @removeLink="removeLink"
+                  @expandLink="expandLink"
+                  @addSeparator="addSeparator"
+                />
+              </div>
             </div>
-          </div>
+          </template>
         </template>
-      </template>
-    </reorder-list> <!-- /group links -->
-    <div
-      class="mt-2"
-      v-if="lg.creator">
-      Created by
-      <span class="text-info">
-        {{ lg.creator }}
-      </span>
-    </div>
-  </b-form> <!-- /form -->
+      </reorder-list> <!-- /group links -->
+      <div
+        class="mt-2"
+        v-if="lg.creator">
+        Created by
+        <span class="text-info">
+          {{ lg.creator }}
+        </span>
+      </div>
+    </b-form> <!-- /form -->
+  </div>
 </template>
 
 <script>
@@ -243,6 +253,7 @@ import ReorderList from '@/utils/ReorderList';
 import LinkBtns from '@/components/links/LinkBtns';
 import RoleDropdown from '@../../../common/vueapp/RoleDropdown';
 
+let timeout;
 const defaultLink = {
   url: '',
   name: '',
@@ -259,10 +270,15 @@ export default {
     RoleDropdown
   },
   props: {
-    linkGroup: Object
+    linkGroup: Object,
+    rawEditMode: {
+      type: Boolean,
+      default: false
+    }
   },
   data () {
     return {
+      rawEditText: undefined,
       lg: !this.linkGroup ? undefined : JSON.parse(JSON.stringify(this.linkGroup)),
       itypeOptions: [
         { text: 'Domain', value: 'domain' },
@@ -307,6 +323,32 @@ export default {
     },
     'lg.name' () {
       this.$emit('update-link-group', this.lg);
+    },
+    rawEditMode (newVal) {
+      if (!newVal) {
+        try { // need to update local lg from json input
+          this.lg = JSON.parse(this.rawEditText);
+          if (this.linkGroup) { // preserve uneditable/system fields for parent
+            this.lg._id = this.linkGroup._id;
+            this.lg.creator = this.linkGroup.creator;
+            this.lg._editable = this.linkGroup._editable;
+          }
+        } catch (err) {
+          console.warn('Invalid JSON for raw link group', err);
+          this.$store.commit('SET_LINK_GROUPS_ERROR', 'Invalid JSON');
+        }
+        // clear rawEditText to be parsed again if rawEditMode triggered
+        this.rawEditText = undefined;
+        return;
+      }
+
+      // remove uneditable fields
+      const clone = JSON.parse(JSON.stringify(this.lg));
+      delete clone._id;
+      delete clone.creator;
+      delete clone._editable;
+
+      this.rawEditText = JSON.stringify(clone, null, 2);
     }
   },
   methods: {
@@ -362,6 +404,31 @@ export default {
     updateEditRoles (roles) {
       this.$set(this.lg, 'editRoles', roles);
       this.$emit('update-link-group', this.lg);
+    },
+    debounceRawEdit (e) {
+      this.rawEditText = e.target.value;
+      if (timeout) { clearTimeout(timeout); }
+      // debounce the textarea so it only updates the link group after keyups cease for 400ms
+      timeout = setTimeout(() => {
+        timeout = null;
+        this.updateRawLinkGroup();
+      }, 400);
+    },
+    // helper functions ---------------------------------------------------- */
+    updateRawLinkGroup () {
+      try {
+        const linkGroupFromRaw = JSON.parse(this.rawEditText);
+        this.$emit('update-link-group', {
+          ...this.lg,
+          name: linkGroupFromRaw.name,
+          links: linkGroupFromRaw.links,
+          viewRoles: linkGroupFromRaw.viewRoles,
+          editRoles: linkGroupFromRaw.editRoles
+        });
+      } catch (err) {
+        console.warn('Invalid JSON for raw link group', err);
+        this.$store.commit('SET_LINK_GROUPS_ERROR', 'Invalid JSON');
+      }
     }
   }
 };

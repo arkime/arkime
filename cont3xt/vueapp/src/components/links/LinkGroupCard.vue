@@ -95,7 +95,7 @@
   <b-card v-else
     class="h-100 align-self-stretch">
     <template slot="header">
-      <div class="w-100 d-flex justify-content-between align-items-start">
+      <div class="w-100 d-flex justify-content-between">
         <b-button
           size="sm"
           variant="danger"
@@ -111,35 +111,31 @@
           Saved!
         </b-alert>
         <div>
-          <b-button
-            size="sm"
-            variant="warning"
-            @click="rawConfigLinkGroup(linkGroup)"
-            v-b-tooltip.hover="'Edit the raw config for this link group'">
-            <span class="fa fa-pencil-square-o" />
-          </b-button>
-          <b-button
-            size="sm"
-            :class="{'invisible': !changesMade}"
-            variant="success"
-            @click="saveLinkGroup(linkGroup)"
-            v-b-tooltip.hover="'Save this link group'">
-            <span class="fa fa-save" />
-          </b-button>
+          <transition name="buttons">
+            <b-button
+              size="sm"
+              variant="warning"
+              @click="rawEditMode = !rawEditMode"
+              v-b-tooltip.hover="'Edit the raw config for this link group'">
+              <span class="fa fa-pencil-square-o" />
+            </b-button>
+          </transition>
+          <transition name="buttons">
+            <b-button
+              size="sm"
+              variant="success"
+              v-if="changesMade"
+              @click="saveLinkGroup(linkGroup)"
+              v-b-tooltip.hover="'Save this link group'">
+              <span class="fa fa-save" />
+            </b-button>
+          </transition>
         </div>
       </div>
     </template>
     <b-card-body>
-      <textarea
-        rows="20"
-        size="sm"
-        v-if="rawEditText !== undefined"
-        @input="e => debounceRawEdit(e)"
-        class="form-control form-control-sm"
-        :value="rawEditText"
-      />
       <link-group-form
-        v-else
+        :raw-edit-mode="rawEditMode"
         :link-group="updatedLinkGroup"
         @update-link-group="updateLinkGroup"
       />
@@ -161,21 +157,25 @@
           Saved!
         </b-alert>
         <div>
-          <b-button
-            size="sm"
-            variant="warning"
-            @click="rawConfigLinkGroup(linkGroup)"
-            v-b-tooltip.hover="'Edit the raw config for this link group'">
-            <span class="fa fa-pencil-square-o" />
-          </b-button>
-          <b-button
-            size="sm"
-            :class="{'invisible': !changesMade}"
-            variant="success"
-            @click="saveLinkGroup(linkGroup)"
-            v-b-tooltip.hover="'Save this link group'">
-            <span class="fa fa-save" />
-          </b-button>
+          <transition name="buttons">
+            <b-button
+              size="sm"
+              variant="warning"
+              @click="rawEditMode = !rawEditMode"
+              v-b-tooltip.hover="'Edit the raw config for this link group'">
+              <span class="fa fa-pencil-square-o" />
+            </b-button>
+          </transition>
+          <transition name="buttons">
+            <b-button
+              size="sm"
+              variant="success"
+              v-if="changesMade"
+              @click="saveLinkGroup(linkGroup)"
+              v-b-tooltip.hover="'Save this link group'">
+              <span class="fa fa-save" />
+            </b-button>
+          </transition>
         </div>
       </div>
     </template>
@@ -190,8 +190,6 @@ import { mapGetters } from 'vuex';
 import LinkService from '@/components/services/LinkService';
 import LinkGroupForm from '@/components/links/LinkGroupForm';
 import LinkGuidance from '@/utils/LinkGuidance';
-
-let timeout;
 
 export default {
   name: 'LinkGroupCard',
@@ -215,11 +213,11 @@ export default {
   },
   data () {
     return {
-      collapsedLinkGroups: this.$store.state.collapsedLinkGroups,
+      success: false,
+      rawEditMode: false,
       changesMade: false,
-      updatedLinkGroup: this.preUpdatedLinkGroup ?? JSON.parse(JSON.stringify(this.linkGroup)),
-      rawEditText: undefined,
-      success: false
+      collapsedLinkGroups: this.$store.state.collapsedLinkGroups,
+      updatedLinkGroup: this.preUpdatedLinkGroup ?? JSON.parse(JSON.stringify(this.linkGroup))
     };
   },
   computed: {
@@ -267,7 +265,6 @@ export default {
       LinkService.deleteLinkGroup(id);
     },
     saveLinkGroup () {
-      this.rawEditText = undefined;
       this.success = undefined;
 
       LinkService.updateLinkGroup(this.updatedLinkGroup).then(() => {
@@ -295,44 +292,6 @@ export default {
       normalizedLinkGroup.editRoles.sort();
 
       return normalizedLinkGroup;
-    },
-    rawConfigLinkGroup () {
-      if (this.rawEditText) {
-        this.rawEditText = undefined;
-        return;
-      }
-
-      // remove uneditable fields
-      const clone = JSON.parse(JSON.stringify(this.updatedLinkGroup));
-      delete clone._id;
-      delete clone.creator;
-      delete clone._editable;
-      delete clone._editable;
-
-      this.rawEditText = JSON.stringify(clone, null, 2);
-    },
-    debounceRawEdit (e) {
-      this.rawEditText = e.target.value;
-      if (timeout) { clearTimeout(timeout); }
-      // debounce the textarea so it only updates the link group after keyups cease for 400ms
-      timeout = setTimeout(() => {
-        timeout = null;
-        this.updateRawLinkGroup();
-      }, 400);
-    },
-    updateRawLinkGroup () { // TODO: add try catch + error
-      try {
-        const linkGroupFromRaw = JSON.parse(this.rawEditText);
-        this.updateLinkGroup({
-          ...this.updatedLinkGroup,
-          name: linkGroupFromRaw.name,
-          links: linkGroupFromRaw.links,
-          viewRoles: linkGroupFromRaw.viewRoles,
-          editRoles: linkGroupFromRaw.editRoles
-        });
-      } catch (err) {
-        console.warn('Invalid JSON for raw link group');
-      }
     },
     getUrl (url) {
       return url.replace(/\${indicator}/g, dr.refang(this.query))
