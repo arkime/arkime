@@ -1,5 +1,5 @@
 # WISE tests
-use Test::More tests => 113;
+use Test::More tests => 122;
 use MolochTest;
 use Cwd;
 use URI::Escape;
@@ -263,3 +263,34 @@ is($wise, 'Not found');
 
 $wise = $MolochTest::userAgent->get("http://$MolochTest::host:8081/__proto__/00:12:1e:f2:61:3d")->content;
 is($wise, 'Not found');
+
+# test code
+$wise = $MolochTest::userAgent->post("http://$MolochTest::host:8081/regressionTests/checkCode")->content;
+eq_or_diff($wise, '{"success":false,"text":"Not authorized, check log file"}');
+
+$wise = $MolochTest::userAgent->post("http://$MolochTest::host:8081/regressionTests/checkCode", Content => '{"configCode": ""}', "Content-Type" => "application/json;charset=UTF-8")->content;
+eq_or_diff($wise, '{"success":false,"text":"Not authorized, check log file"}');
+
+$wise = $MolochTest::userAgent->post("http://$MolochTest::host:8081/regressionTests/checkCode", Content => '{"configCode": "theCode"}', "Content-Type" => "application/json;charset=UTF-8")->content;
+eq_or_diff($wise, '{"success":false,"text":"Not authorized, check log file"}');
+
+$wise = $MolochTest::userAgent->post("http://$MolochTest::host:8081/regressionTests/checkCode", Content => '{"configCode": "thecode"}', "Content-Type" => "application/json;charset=UTF-8")->content;
+eq_or_diff($wise, '{"success":true,"text":"Authorized"}');
+
+# config defs
+$wise = from_json($MolochTest::userAgent->get("http://$MolochTest::host:8081/config/defs")->content);
+ok (exists $wise->{wiseService});
+
+# get config
+$wise = from_json($MolochTest::userAgent->get("http://$MolochTest::host:8081/config/get")->content);
+ok ($wise->{success});
+ok (exists $wise->{config});
+my $config = $wise->{config};
+
+# save config
+$wise = $MolochTest::userAgent->put("http://$MolochTest::host:8081/config/save", Content => to_json({configCode => "thecode"}), "Content-Type" => "application/json;charset=UTF-8")->content;
+eq_or_diff($wise, '{"success":false,"text":"Missing config"}');
+
+$wise = $MolochTest::userAgent->put("http://$MolochTest::host:8081/config/save", Content => to_json({config => $config, configCode => "thecode"}), "Content-Type" => "application/json;charset=UTF-8")->content;
+eq_or_diff($wise, '{"success":true,"text":"Would save, but regressionTests"}');
+
