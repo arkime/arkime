@@ -1,5 +1,5 @@
 # WISE tests
-use Test::More tests => 122;
+use Test::More tests => 124;
 use MolochTest;
 use Cwd;
 use URI::Escape;
@@ -294,3 +294,9 @@ eq_or_diff($wise, '{"success":false,"text":"Missing config"}');
 $wise = $MolochTest::userAgent->put("http://$MolochTest::host:8081/config/save", Content => to_json({config => $config, configCode => "thecode"}), "Content-Type" => "application/json;charset=UTF-8")->content;
 eq_or_diff($wise, '{"success":true,"text":"Would save, but regressionTests"}');
 
+# url
+$wise = from_json($MolochTest::userAgent->get("http://$MolochTest::host:8081/url:aws-ips/ip/3.2.34.0")->content);
+eq_or_diff($wise, from_json('[{"field":"cloud.service","len":3,"value":"ec2"}, {"field":"cloud.region","len":10,"value":"af-south-1"}]'));
+
+$wise = from_json($MolochTest::userAgent->get("http://$MolochTest::host:8081/url:azure-ips/ip/4.232.106.88")->content);
+eq_or_diff($wise, from_json('[{"field":"cloud.service","len":22,"value":"actiongroup.italynorth"}, {"field":"cloud.region","len":10,"value":"italynorth"}]'));

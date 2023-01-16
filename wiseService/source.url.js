@@ -18,7 +18,7 @@
 'use strict';
 
 const SimpleSource = require('./simpleSource.js');
-const request = require('request');
+const axios = require('axios');
 
 class URLSource extends SimpleSource {
 // ----------------------------------------------------------------------------
@@ -53,28 +53,30 @@ class URLSource extends SimpleSource {
       return;
     }
 
-    request(this.url, { headers: this.headers }, (err, response, body) => {
-      if (err || response.statusCode !== 200) {
-        return cb(err);
-      }
-
-      if (this.urlScrapeRedirect) {
-        const match = body.match(this.urlScrapeRedirect);
-        if (!match) {
-          return cb('URL Scrape not found');
+    axios.get(this.url, { headers: this.headers, transformResponse: x => x })
+      .then((response) => {
+        console.log(this.url, response.status);
+        if (response.status !== 200) {
+          return cb(response.status);
         }
-
-        request(match[0], { headers: this.headers }, (err, subResponse, subBody) => {
-          if (err || subResponse.statusCode !== 200) {
-            return cb(err);
+        if (this.urlScrapeRedirect) {
+          const match = response.data.match(this.urlScrapeRedirect);
+          if (!match) {
+            return cb('URL Scrape not found');
           }
 
-          return cb(null, subBody);
-        });
-      } else {
-        return cb(null, body);
-      }
-    });
+          axios.get(match[0], { headers: this.headers, transformResponse: x => x })
+            .then((subResponse) => {
+              return cb(null, subResponse.data);
+            }).catch((subError) => {
+              return cb(subError);
+            });
+        } else {
+          return cb(null, response.data);
+        }
+      }).catch((error) => {
+        return cb(error);
+      });
   }
 }
 
