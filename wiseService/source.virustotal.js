@@ -17,7 +17,7 @@
  */
 'use strict';
 
-const request = require('request');
+const axios = require('axios');
 const WISESource = require('./wiseSource.js');
 
 let source;
@@ -84,66 +84,67 @@ class VirusTotalSource extends WISESource {
 
     const options = {
       url: 'https://www.virustotal.com/vtapi/v2/file/report?',
-      qs: { apikey: this.key, resource: this.waiting.join(',') },
-      method: 'GET',
-      json: true
+      params: { apikey: this.key, resource: this.waiting.join(',') },
+      method: 'GET'
     };
     const sent = this.waiting;
 
     this.waiting = [];
 
-    request(options, (err, im, results) => {
-      if (err || im.statusCode !== 200 || results === undefined) {
-        console.log(this.section, 'Error for request:\n', options, '\n', im, '\nresults:\n', results);
-        sent.forEach((md5) => {
-          const cb = this.processing.get(md5);
+    axios(options)
+      .then((response) => {
+        let results = response.data;
+        if (response.status !== 200) {
+          console.log(this.section, 'Error for request:\n', options, '\n', '\nresults:\n', results);
+          sent.forEach((md5) => {
+            const cb = this.processing.get(md5);
+            if (!cb) {
+              return;
+            }
+            this.processing.delete(md5);
+            cb(undefined, undefined);
+          });
+          return;
+        }
+
+        if (!Array.isArray(results)) {
+          results = [results];
+        }
+
+        results.forEach((result) => {
+          const cb = this.processing.get(result.md5);
           if (!cb) {
             return;
           }
-          this.processing.delete(md5);
-          cb(undefined, undefined);
-        });
-        return;
-      }
+          this.processing.delete(result.md5);
 
-      if (!Array.isArray(results)) {
-        results = [results];
-      }
+          let wiseResult;
+          if (result.response_code === 0) {
+            wiseResult = WISESource.emptyResult;
+          } else {
+            const args = [this.hitsField, '' + result.positives, this.linksField, result.permalink];
 
-      results.forEach((result) => {
-        const cb = this.processing.get(result.md5);
-        if (!cb) {
-          return;
-        }
-        this.processing.delete(result.md5);
+            for (let i = 0; i < this.dataSources.length; i++) {
+              const uc = this.dataSources[i];
 
-        let wiseResult;
-        if (result.response_code === 0) {
-          wiseResult = WISESource.emptyResult;
-        } else {
-          const args = [this.hitsField, '' + result.positives, this.linksField, result.permalink];
-
-          for (let i = 0; i < this.dataSources.length; i++) {
-            const uc = this.dataSources[i];
-
-            if (result.scans[uc] && result.scans[uc].detected) {
-              args.push(this.dataFields[i], result.scans[uc].result);
+              if (result.scans[uc] && result.scans[uc].detected) {
+                args.push(this.dataFields[i], result.scans[uc].result);
+              }
             }
+
+            wiseResult = WISESource.encodeResult.apply(null, args);
           }
 
-          wiseResult = WISESource.encodeResult.apply(null, args);
-        }
-
-        cb(null, wiseResult);
+          cb(null, wiseResult);
+        });
+      }).catch((err) => {
+        console.log(this.section, err);
       });
-    }).on('error', (err) => {
-      console.log(this.section, err);
-    });
   };
 
   // ----------------------------------------------------------------------------
   getMd5 (query, cb) {
-    if (query.contentType === undefined || this.contentTypes[query.contentType] !== 1) {
+    if (query.contentType !== undefined && this.contentTypes[query.contentType] !== 1) {
       return cb(null, undefined);
     }
 
