@@ -5053,8 +5053,11 @@ sub sessions3Update
         "keyCnt" : {
           "type" : "long"
         },
-        "version" : {
-          "type" : "keyword"
+        "versionSrc" : {
+          "type": "keyword"
+        },
+        "versionDst" : {
+          "type": "keyword"
         },
         "versionCnt" : {
           "type" : "long"

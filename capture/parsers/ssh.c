@@ -25,7 +25,8 @@ typedef struct {
 } SSHInfo_t;
 
 extern MolochConfig_t        config;
-LOCAL  int verField;
+LOCAL  int verionSrcField;
+LOCAL  int versionDstField;
 LOCAL  int keyField;
 LOCAL  int hasshField;
 LOCAL  int hasshServerField;
@@ -152,8 +153,11 @@ LOCAL int ssh_parser(MolochSession_t *session, void *uw, const unsigned char *da
 
         if (n) {
             int len = (n - data);
+            if (which == 0)
+                moloch_field_string_add_lower(verionSrcField, session, (char *)data, len);
+            else
+                moloch_field_string_add_lower(versionDstField, session, (char *)data, len);
 
-            moloch_field_string_add_lower(verField, session, (char *)data, len);
         }
         return 0;
     }
@@ -224,9 +228,15 @@ LOCAL void ssh_classify(MolochSession_t *session, const unsigned char *UNUSED(da
 /******************************************************************************/
 void moloch_parser_init()
 {
-    verField = moloch_field_define("ssh", "lotermfield",
-        "ssh.ver", "Version", "ssh.version",
-        "SSH Software Version",
+    verionSrcField = moloch_field_define("ssh", "lotermfield",
+        "ssh.versionSrc", "Source Version", "ssh.versionSrc",
+        "SSH Software Source Version",
+        MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT,
+        (char *)NULL);
+
+    versionDstField = moloch_field_define("ssh", "lotermfield",
+        "ssh.versionDst", "Destination Version", "ssh.versionDst",
+        "SSH Software Destination Version",
         MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT,
         (char *)NULL);
 
