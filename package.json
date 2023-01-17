@@ -37,8 +37,6 @@
     "passport-http": "^0.3.0",
     "pug": "^3.0.1",
     "re2": "^1.17.7",
-    "request": "^2.88.2",
-    "request-promise": "^4.2.6",
     "serve-favicon": "^2.5.0",
     "splunk-sdk": "^1.11.0",
     "stylus": "^0.54.8",

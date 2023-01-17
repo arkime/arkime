@@ -18,45 +18,58 @@
 'use strict';
 
 const SimpleSource = require('./simpleSource.js');
-const request = require('request');
+const axios = require('axios');
 
 class ElasticsearchFileSource extends SimpleSource {
   // ----------------------------------------------------------------------------
   constructor (api, section) {
     super(api, section, { reload: true, formatSetting: 'json' });
     this.url = api.getConfig(section, 'url');
-    if (this.url === undefined) {
-      console.log(this.section, '- ERROR not loading since no url specified in config file');
-      return;
-    }
   }
 
   // ----------------------------------------------------------------------------
   simpleSourceLoad (cb) {
-    request(this.url, {}, (err, response, body) => {
-      if (err) {
-        return cb(err);
-      }
-      return cb(null, JSON.stringify(JSON.parse(body)._source, null, 2));
-    });
+    if (this.arrayPath === undefined || this.arrayPath === '') {
+      return cb('no arrayPath specified in config file');
+    }
+    if (this.keyPath === undefined || this.keyPath === 0 || this.keyPath === '') {
+      return cb('no keyPath specified in config file');
+    }
+
+    return this.getSourceRaw(cb);
   }
 
   // ----------------------------------------------------------------------------
   getSourceRaw (cb) {
-    request(this.url, {}, (err, response, body) => {
-      if (err) {
+    if (this.url === undefined) {
+      return cb('no url specified in config file');
+    }
+
+    axios.get(this.url, { validateStatus: (code) => { return code < 500; } })
+      .then((response) => {
+        if (response.status === 404 || response?.data?._source === undefined) {
+          return cb(null, '{}', null, 2);
+        }
+
+        return cb(null, JSON.stringify(response.data._source, null, 2));
+      }).catch((err) => {
         return cb(err);
-      }
-      return cb(null, JSON.stringify(JSON.parse(body)._source, null, 2));
-    });
+      });
   }
 
   // ----------------------------------------------------------------------------
   putSourceRaw (file, cb) {
-    request({ method: 'POST', url: this.url, headers: { 'Content-Type': 'application/json' }, body: file }, (err, response, body) => {
-      this.load();
-      return cb(err);
-    });
+    if (this.url === undefined) {
+      return cb('no url specified in config file');
+    }
+
+    axios.post(this.url, file, { headers: { 'Content-Type': 'application/json' } })
+      .then((response) => {
+        this.load();
+        return cb();
+      }).catch((err) => {
+        return cb(err);
+      });
   }
 }
 

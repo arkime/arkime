@@ -721,6 +721,9 @@ if (internals.regressionTests) {
   app.post('/regressionTests/shutdown', (req, res) => {
     process.exit(0);
   });
+  app.post('/regressionTests/checkCode', [jsonParser, checkConfigCode], (req, res) => {
+    return res.send(JSON.stringify({ success: true, text: 'Authorized' }));
+  });
 }
 // ----------------------------------------------------------------------------
 /**
@@ -1298,6 +1301,10 @@ app.put('/config/save', [isConfigWeb, Auth.doAuth, isWiseAdmin, ArkimeUtil.noCac
         }
       }
     };
+  }
+
+  if (internals.regressionTests) {
+    return res.send({ success: true, text: 'Would save, but regressionTests' });
   }
 
   // Make sure updateTime has increased incase of clock sku

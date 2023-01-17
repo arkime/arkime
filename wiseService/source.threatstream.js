@@ -20,7 +20,7 @@
 const fs = require('fs');
 const unzipper = require('unzipper');
 const WISESource = require('./wiseSource.js');
-const request = require('request');
+const axios = require('axios');
 const exec = require('child_process').exec;
 const betterSqlite3 = require('better-sqlite3');
 const ArkimeUtil = require('../common/arkimeUtil');
@@ -254,8 +254,7 @@ class ThreatStreamSource extends WISESource {
   getApi (type, value, cb) {
     const options = {
       url: `https://api.threatstream.com/api/v2/intelligence/?username=${this.user}&api_key=${this.key}&status=active&${type}=${value}&itype=${this.types[type]}`,
-      method: 'GET',
-      forever: true
+      method: 'GET'
     };
 
     if (this.inProgress > 50) {
@@ -263,43 +262,37 @@ class ThreatStreamSource extends WISESource {
     }
 
     this.inProgress++;
-    request(options, (err, response, body) => {
-      this.inProgress--;
-      if (err) {
+    axios(options)
+      .then((response) => {
+        this.inProgress--;
+        const body = response.data;
+
+        if (body.objects.length === 0) {
+          return cb(null, WISESource.emptyResult);
+        }
+
+        const args = [];
+        body.objects.forEach((item) => {
+          args.push(
+            this.confidenceField, '' + item.confidence,
+            this.idField, '' + item.id,
+            this.typeField, item.itype.toLowerCase(),
+            this.sourceField, item.source
+          );
+
+          if (item.maltype !== undefined && item.maltype !== 'null') {
+            args.push(this.maltypeField, item.maltype.toLowerCase());
+          }
+          if (item.severity !== undefined) {
+            args.push(this.severityField, item.severity.toLowerCase());
+          }
+        });
+        const result = WISESource.encodeResult.apply(null, args);
+        return cb(null, result);
+      }).catch((err) => {
         console.log(this.section, 'problem fetching ', options, err);
         return cb(null, WISESource.emptyResult);
-      }
-
-      try {
-        body = JSON.parse(body);
-      } catch (e) {
-        console.log(this.section, "Couldn't parse", body);
-        return cb(null, WISESource.emptyResult);
-      }
-
-      if (body.objects.length === 0) {
-        return cb(null, WISESource.emptyResult);
-      }
-
-      const args = [];
-      body.objects.forEach((item) => {
-        args.push(
-          this.confidenceField, '' + item.confidence,
-          this.idField, '' + item.id,
-          this.typeField, item.itype.toLowerCase(),
-          this.sourceField, item.source
-        );
-
-        if (item.maltype !== undefined && item.maltype !== 'null') {
-          args.push(this.maltypeField, item.maltype.toLowerCase());
-        }
-        if (item.severity !== undefined) {
-          args.push(this.severityField, item.severity.toLowerCase());
-        }
       });
-      const result = WISESource.encodeResult.apply(null, args);
-      return cb(null, result);
-    });
   };
 
   // ----------------------------------------------------------------------------
@@ -398,32 +391,31 @@ class ThreatStreamSource extends WISESource {
     // Threatstream doesn't have a way to just ask for type matches, so we need to figure out which itypes are various types.
     this.types = {};
     this.typesWithQuotes = {};
-    request({ url: 'https://api.threatstream.com/api/v1/impact/?username=' + this.user + '&api_key=' + this.key + '&limit=1000', forever: true }, (err, response, body) => {
-      if (err) {
+    axios({ url: 'https://api.threatstream.com/api/v1/impact/?username=' + this.user + '&api_key=' + this.key + '&limit=1000' })
+      .then((response) => {
+        const body = response.data;
+        body.objects.forEach((item) => {
+          if (this.types[item.value_type] === undefined) {
+            this.types[item.value_type] = [item.name];
+          } else {
+            this.types[item.value_type].push(item.name);
+          }
+        });
+        for (const key in this.types) {
+          this.typesWithQuotes[key] = this.types[key].map((v) => { return "'" + v + "'"; }).join(',');
+          this.types[key] = this.types[key].join(',');
+        }
+
+        // Wait to register until request is done
+        if (includeUrl) {
+          this.api.addSource('threatstream', this, ['domain', 'email', 'ip', 'md5', 'url']);
+        } else {
+          this.api.addSource('threatstream', this, ['domain', 'email', 'ip', 'md5']);
+        }
+      }).catch((err) => {
         console.log(this.section, 'ERROR - failed to load types', err);
         return;
-      }
-
-      body = JSON.parse(body);
-      body.objects.forEach((item) => {
-        if (this.types[item.value_type] === undefined) {
-          this.types[item.value_type] = [item.name];
-        } else {
-          this.types[item.value_type].push(item.name);
-        }
       });
-      for (const key in this.types) {
-        this.typesWithQuotes[key] = this.types[key].map((v) => { return "'" + v + "'"; }).join(',');
-        this.types[key] = this.types[key].join(',');
-      }
-
-      // Wait to register until request is done
-      if (includeUrl) {
-        this.api.addSource('threatstream', this, ['domain', 'email', 'ip', 'md5', 'url']);
-      } else {
-        this.api.addSource('threatstream', this, ['domain', 'email', 'ip', 'md5']);
-      }
-    });
   };
 
   // ----------------------------------------------------------------------------

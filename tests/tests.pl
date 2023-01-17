@@ -299,9 +299,9 @@ my ($cmd) = @_;
     if ($cmd ne "--viewernostart") {
         print ("Starting WISE\n");
         if ($main::debug) {
-            system("cd ../wiseService ; $node wiseService.js --regressionTests -c ../tests/config.test.json > /tmp/moloch.wise &");
+            system("cd ../wiseService ; $node wiseService.js --webcode thecode --webconfig --regressionTests -c ../tests/config.test.json > /tmp/moloch.wise &");
         } else {
-            system("cd ../wiseService ; $node wiseService.js --regressionTests -c ../tests/config.test.json > /dev/null &");
+            system("cd ../wiseService ; $node wiseService.js --webcode thecode --webconfig --regressionTests -c ../tests/config.test.json > /dev/null &");
         }
 
         waitFor($MolochTest::host, 8081, 1);

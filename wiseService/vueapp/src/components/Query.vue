@@ -242,7 +242,7 @@ export default {
       if (timeout) { clearTimeout(timeout); }
       timeout = setTimeout(() => {
         this.sendSearchQuery();
-      }, 400);
+      }, 600);
     },
     loadSourceOptions: function () {
       WiseService.getSources()
