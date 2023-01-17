@@ -11,6 +11,7 @@
     </template> <!-- /header -->
     <!-- form -->
     <link-group-form
+      :raw-edit-mode="rawEditMode"
       @update-link-group="update"
     />
     <!-- footer -->
@@ -27,6 +28,12 @@
           class="mb-0 alert-sm mr-1 ml-1">
           {{ error }}
         </b-alert>
+        <b-button
+          variant="warning"
+          @click="rawEditMode = !rawEditMode"
+          v-b-tooltip.hover="'Edit the raw config for this link group'">
+          <span class="fa fa-pencil-square-o" />
+        </b-button>
         <b-button
           @click="create"
           variant="success">
@@ -47,7 +54,8 @@ export default {
   data () {
     return {
       error: '',
-      linkGroup: {}
+      linkGroup: {},
+      rawEditMode: false
     };
   },
   methods: {
@@ -58,6 +66,7 @@ export default {
     close () {
       this.error = '';
       this.linkGroup = {};
+      this.rawEditMode = false;
       this.$bvModal.hide('link-group-form');
     },
     create () {
@@ -83,7 +92,7 @@ export default {
         }
       }
 
-      LinkService.createLinkGroup(this.linkGroup).then((response) => {
+      LinkService.createLinkGroup(this.linkGroup).then(() => {
         this.close();
       }).catch((err) => {
         this.error = err;

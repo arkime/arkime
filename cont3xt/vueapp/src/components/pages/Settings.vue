@@ -641,7 +641,7 @@ export default {
     },
     /* LINK GROUPS! -------------------------- */
     updateLinkGroup (linkGroup) {
-      this.updatedLinkGroupMap[linkGroup._id] = linkGroup;
+      this.$set(this.updatedLinkGroupMap, linkGroup._id, linkGroup);
     },
     openLinkGroupForm () {
       this.$bvModal.show('link-group-form');
