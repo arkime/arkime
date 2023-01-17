@@ -9,7 +9,7 @@ const http = require('http');
 const https = require('https');
 const fs = require('fs');
 const favicon = require('serve-favicon');
-const rp = require('request-promise');
+const axios = require('axios');
 const bp = require('body-parser');
 const logger = require('morgan');
 const jwt = require('jsonwebtoken');
@@ -166,6 +166,8 @@ const invalidTokens = {};
   // set optional config options that reqiure defaults
   app.set('port', port ?? 8008);
   app.set('file', file ?? './parliament.json');
+
+  internals.httpsAgent = new https.Agent({ rejectUnauthorized: !!internals.insecure });
 }());
 
 if (app.get('regressionTests')) {
@@ -660,17 +662,17 @@ function getHealth (cluster) {
     const options = {
       url: `${cluster.localUrl ?? cluster.url}/eshealth.json`,
       method: 'GET',
-      rejectUnauthorized: !internals.insecure,
+      httpsAgent: internals.httpsAgent,
       timeout
     };
 
-    rp(options)
+    axios(options)
       .then((response) => {
         cluster.healthError = undefined;
 
         let health;
         try {
-          health = JSON.parse(response);
+          health = response.data;
         } catch (e) {
           cluster.healthError = 'ES health parse failure';
           console.log('Bad response for es health', cluster.localUrl ?? cluster.url);
@@ -713,25 +715,25 @@ function getStats (cluster) {
     const options = {
       url: `${cluster.localUrl ?? cluster.url}/api/parliament`,
       method: 'GET',
-      rejectUnauthorized: !internals.insecure,
+      httpsAgent: internals.httpsAgent,
       timeout
     };
 
     // Get now before the query since we don't know how long query/response will take
     const now = Date.now() / 1000;
-    rp(options)
+    axios(options)
       .then((response) => {
         cluster.statsError = undefined;
 
-        if (response.bsqErr) {
-          cluster.statsError = response.bsqErr;
-          console.log('Get stats error', response.bsqErr);
+        if (response.data.bsqErr) {
+          cluster.statsError = response.data.bsqErr;
+          console.log('Get stats error', response.data.bsqErr);
           return resolve();
         }
 
         let stats;
         try {
-          stats = JSON.parse(response);
+          stats = response.data;
         } catch (e) {
           cluster.statsError = 'ES stats parse failure';
           console.log('Bad response for stats', cluster.localUrl ?? cluster.url);
