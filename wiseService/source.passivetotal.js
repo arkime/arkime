@@ -17,7 +17,7 @@
  */
 'use strict';
 
-const request = require('request');
+const axios = require('axios');
 const WISESource = require('./wiseSource.js');
 
 class PassiveTotalSource extends WISESource {
@@ -67,54 +67,50 @@ class PassiveTotalSource extends WISESource {
 
     const options = {
       url: 'https://api.passivetotal.org/v2/enrichment/bulk',
-      body: {
+      data: {
         additional: ['osint', 'malware'],
         query: this.waiting
       },
       auth: {
-        user: this.user,
-        pass: this.key
+        username: this.user,
+        password: this.key
       },
-      method: 'GET',
-      json: true
+      method: 'GET'
     };
 
-    request(options, (err, im, results) => {
-      if (err) {
-        console.log(this.section, '- Error parsing for request:\n', options, '\nresults:\n', results);
-        results = { results: {} };
-      }
+    axios(options)
+      .then((response) => {
+        const results = response.data;
+        for (const resultname in results.results) {
+          const result = results.results[resultname];
+          const cbs = this.processing[resultname];
+          if (!cbs) {
+            continue;
+          }
+          delete this.processing[resultname];
 
-      for (const resultname in results.results) {
-        const result = results.results[resultname];
-        const cbs = this.processing[resultname];
-        if (!cbs) {
-          return;
-        }
-        delete this.processing[resultname];
-
-        let wiseResult;
-        if (result.tags === undefined || result.tags.length === 0) {
-          wiseResult = WISESource.emptyResult;
-        } else {
-          const args = [];
-          for (let i = 0; i < result.tags.length; i++) {
-            if (typeof (result.tags[i]) === 'string') {
-              args.push(this.tagsField, result.tags[i]);
+          let wiseResult;
+          if (result.tags === undefined || result.tags.length === 0) {
+            wiseResult = WISESource.emptyResult;
+          } else {
+            const args = [];
+            for (let i = 0; i < result.tags.length; i++) {
+              if (typeof (result.tags[i]) === 'string') {
+                args.push(this.tagsField, result.tags[i]);
+              }
             }
+
+            wiseResult = WISESource.encodeResult.apply(null, args);
           }
 
-          wiseResult = WISESource.encodeResult.apply(null, args);
+          let cb;
+          while ((cb = cbs.shift())) {
+            cb(null, wiseResult);
+          }
         }
-
-        let cb;
-        while ((cb = cbs.shift())) {
-          cb(null, wiseResult);
-        }
-      }
-    }).on('error', (err) => {
-      console.log(this.section, err);
-    });
+      }).catch((err) => {
+        console.log(this.section, err);
+      });
 
     this.waiting.length = 0;
   };
