@@ -167,7 +167,7 @@ const invalidTokens = {};
   app.set('port', port ?? 8008);
   app.set('file', file ?? './parliament.json');
 
-  internals.httpsAgent = new https.Agent({ rejectUnauthorized: !!internals.insecure });
+  internals.httpsAgent = new https.Agent({ rejectUnauthorized: !internals.insecure });
 }());
 
 if (app.get('regressionTests')) {
