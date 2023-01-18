@@ -157,23 +157,17 @@ sub showHelp($)
     print "\n";
     print "General Commands:\n";
     print "  info                         - Information about the database\n";
-    print "  repair                       - Try and repair a corrupted cluster schema\n";
-    print "  init [<opts>]                - Clear ALL elasticsearch Arkime data and create schema\n";
+    print "  repair                       - Try and repair a corrupted Arkime cluster\n";
+    print "  init [<init opts>]           - Clear ALL OpenSearch/Elasticsearch Arkime data and create the mappings\n";
     print "    --shards <shards>          - Number of shards for sessions, default number of nodes\n";
     print "    --replicas <num>           - Number of replicas for sessions, default 0\n";
-    print "    --refresh <num>            - Number of seconds for ES refresh interval for sessions indices, default 60\n";
-    print "    --shardsPerNode <shards>   - Number of shards per node or use \"null\" to let ES decide, default shards*replicas/nodes\n";
+    print "    --refresh <num>            - Number of seconds for refresh interval for sessions indices, default 60\n";
+    print "    --shardsPerNode <shards>   - Number of shards per node or use \"null\" to let OpenSearch/Elasticsearch decide, default shards*replicas/nodes\n";
     print "    --hotwarm                  - Set 'hot' for 'node.attr.molochtype' on new indices, warm on non sessions indices\n";
     print "    --ilm                      - Use ilm to manage\n";
-    print "  wipe                         - Same as init, but leaves user database untouched\n";
-    print "  upgrade [<opts>]             - Upgrade Arkime's schema in elasticsearch from previous versions\n";
-    print "    --shards <shards>          - Number of shards for sessions, default number of nodes\n";
-    print "    --replicas <num>           - Number of replicas for sessions, default 0\n";
-    print "    --refresh <num>            - Number of seconds for ES refresh interval for sessions indices, default 60\n";
-    print "    --shardsPerNode <shards>   - Number of shards per node or use \"null\" to let ES decide, default shards*replicas/nodes\n";
-    print "    --hotwarm                  - Set 'hot' for 'node.attr.molochtype' on new indices, warm on non sessions indices\n";
-    print "    --ilm                      - Use ilm to manage\n";
-    print "  expire <type> <num> [<opts>] - Perform daily ES maintenance and optimize all indices in ES\n";
+    print "  wipe [<init opts>]           - Same as init, but leaves user database untouched\n";
+    print "  upgrade [<init opts>]        - Upgrade Arkime's mappings from previous version\n";
+    print "  expire <type> <num> [<opts>] - Perform daily OpenSearch/Elasticsearch maintenance and optimize all indices\n";
     print "       type                    - Same as rotateIndex in ini file = hourly,hourlyN,daily,weekly,monthly\n";
     print "       num                     - Number of indexes to keep\n";
     print "    --replicas <num>           - Number of replicas for older sessions indices, default 0\n";
@@ -182,12 +176,12 @@ sub showHelp($)
     print "    --segments <num>           - Number of segments to optimize sessions to, default 1\n";
     print "    --segmentsmin <num>        - Only optimize indices with at least <num> segments, default is <segments> \n";
     print "    --reverse                  - Optimize from most recent to oldest\n";
-    print "    --shardsPerNode <shards>   - Number of shards per node or use \"null\" to let ES decide, default shards*replicas/nodes\n";
+    print "    --shardsPerNode <shards>   - Number of shards per node or use \"null\" to let OpenSearch/Elasticsearch decide, default shards*replicas/nodes\n";
     print "    --warmafter <wafter>       - Set molochwarm on indices after <wafter> <type>\n";
     print "    --optmizewarm              - Only optimize warm green indices\n";
-    print "  optimize                     - Optimize all Arkime indices in ES\n";
+    print "  optimize                     - Optimize all Arkime indices in OpenSearch/Elasticsearch\n";
     print "    --segments <num>           - Number of segments to optimize sessions to, default 1\n";
-    print "  optimize-admin               - Optimize only admin indices in ES, use with ILM\n";
+    print "  optimize-admin               - Optimize only admin indices in OpenSearch/Elasticsearch, use with ILM\n";
     print "  disable-users <days>         - Disable user accounts that have not been active\n";
     print "      days                     - Number of days of inactivity (integer)\n";
     print "  set-shortcut <name> <userid> <file> [<opts>]\n";
@@ -203,7 +197,7 @@ sub showHelp($)
     print "      index                    - The session index to shrink\n";
     print "      node                     - The node to temporarily use for shrinking\n";
     print "      num                      - Number of shards to shrink to\n";
-    print "    --shardsPerNode <shards>   - Number of shards per node or use \"null\" to let ES decide, default 1\n";
+    print "    --shardsPerNode <shards>   - Number of shards per node or use \"null\" to let OpenSearch/Elasticsearch decide, default 1\n";
     print "  ilm <force> <delete>         - Create ILM profile\n";
     print "      force                    - Time in hours/days before (moving to warm) and force merge (number followed by h or d)\n";
     print "      delete                   - Time in hours/days before deleting index (number followed by h or d)\n";
@@ -211,7 +205,7 @@ sub showHelp($)
     print "    --segments <num>           - Number of segments to optimize sessions to, default 1\n";
     print "    --replicas <num>           - Number of replicas for older sessions indices, default 0\n";
     print "    --history <num>            - Number of weeks of history to keep, default 13\n";
-    print "  reindex <src> [<dst>]        - Reindex ES indices\n";
+    print "  reindex <src> [<dst>]        - Reindex OpenSearch/Elasticsearch indices\n";
     print "    --nopcap                   - Remove fields having to do with pcap files\n";
     print "\n";
     print "Backup and Restore Commands:\n";
@@ -241,7 +235,7 @@ sub showHelp($)
     print "  hide-node <node>             - Hide node in stats display\n";
     print "  unhide-node <node>           - Unhide node in stats display\n";
     print "\n";
-    print "ES maintenance\n";
+    print "OpenSearch/Elasticsearch maintenance\n";
     print "  set-replicas <pat> <num>              - Set the number of replicas for index pattern\n";
     print "  set-shards-per-node <pat> <num>       - Set the number of shards per node for index pattern\n";
     print "  set-allocation-enable <mode>          - Set the allocation mode (all, primaries, new_primaries, none, null)\n";
@@ -7440,7 +7434,7 @@ dbCheck();
 dbVersion(1);
 
 if ($ARGV[1] eq "wipe" && $main::versionNumber != $VERSION) {
-    die "Can only use wipe if schema is up to date.  Use upgrade first.";
+    die "Can only use wipe if mappings are up to date.  Use upgrade first.";
 }
 
 if ($ARGV[1] =~ /^(init|wipe|clean)/) {
