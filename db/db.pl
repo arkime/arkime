@@ -146,7 +146,7 @@ sub showHelp($)
     print "\n";
     print "Global Options:\n";
     print "  -v                           - Verbose, multiple increases level\n";
-    print "  --prefix <prefix>            - Prefix for table names\n";
+    print "  --prefix <prefix>            - Prefix for OpenSearch/Elasticsearch index names\n";
     print "  --clientkey <keypath>        - Path to key for client authentication.  Must not have a passphrase.\n";
     print "  --clientcert <certpath>      - Path to cert for client authentication\n";
     print "  --insecure                   - Disable certificate verification for https calls\n";
@@ -156,22 +156,22 @@ sub showHelp($)
     print "  --esapikey <key>             - Same key as elasticsearchAPIKey in your Arkime config file\n";
     print "\n";
     print "General Commands:\n";
-    print "  info                         - Information about the database\n";
+    print "  info                         - Information about the Arkime cluster\n";
     print "  repair                       - Try and repair a corrupted Arkime cluster\n";
-    print "  init [<init opts>]           - Clear ALL OpenSearch/Elasticsearch Arkime data and create the mappings\n";
-    print "    --shards <shards>          - Number of shards for sessions, default number of nodes\n";
+    print "  init [<init opts>]           - Delete ALL previous OpenSearch/Elasticsearch Arkime data and create the mappings\n";
+    print "    --shards <shards>          - Number of shards for sessions, default is the number of data nodes\n";
     print "    --replicas <num>           - Number of replicas for sessions, default 0\n";
-    print "    --refresh <num>            - Number of seconds for refresh interval for sessions indices, default 60\n";
+    print "    --refresh <num>            - Number of seconds the sessions indices use for refresh interval, default 60\n";
     print "    --shardsPerNode <shards>   - Number of shards per node or use \"null\" to let OpenSearch/Elasticsearch decide, default shards*replicas/nodes\n";
     print "    --hotwarm                  - Set 'hot' for 'node.attr.molochtype' on new indices, warm on non sessions indices\n";
     print "    --ilm                      - Use ilm to manage\n";
-    print "  wipe [<init opts>]           - Same as init, but leaves user database untouched\n";
-    print "  upgrade [<init opts>]        - Upgrade Arkime's mappings from previous version\n";
-    print "  expire <type> <num> [<opts>] - Perform daily OpenSearch/Elasticsearch maintenance and optimize all indices\n";
+    print "  wipe [<init opts>]           - Same as init, but leaves user index untouched\n";
+    print "  upgrade [<init opts>]        - Upgrade Arkime's mappings from a previous version or use to change settings\n";
+    print "  expire <type> <num> [<opts>] - Perform daily OpenSearch/Elasticsearch maintenance and optimize all indices, not needed with ILM\n";
     print "       type                    - Same as rotateIndex in ini file = hourly,hourlyN,daily,weekly,monthly\n";
-    print "       num                     - Number of indexes to keep\n";
+    print "       num                     - Number of indices to keep\n";
     print "    --replicas <num>           - Number of replicas for older sessions indices, default 0\n";
-    print "    --nooptimize               - Do not optimize session indexes during this operation\n";
+    print "    --nooptimize               - Do not optimize session indices during this operation\n";
     print "    --history <num>            - Number of weeks of history to keep, default 13\n";
     print "    --segments <num>           - Number of segments to optimize sessions to, default 1\n";
     print "    --segmentsmin <num>        - Only optimize indices with at least <num> segments, default is <segments> \n";
@@ -189,8 +189,8 @@ sub showHelp($)
     print "       userid                  - UserId of the user to add the shortcut for\n";
     print "       file                    - File that includes a comma or newline separated list of values\n";
     print "    --type <type>              - Type of shortcut = string, ip, number, default is string\n";
-    print "    --shareRoles               - Share to roles (comma separated list of roles)\n";
-    print "    --shareUsers               - Share to specific users (comma seprated list of userIds)\n";
+    print "    --shareRoles <roles>       - Share to roles (comma separated list of roles)\n";
+    print "    --shareUsers <users>       - Share to specific users (comma seprated list of userIds)\n";
     print "    --description <description>- Description of the shortcut\n";
     print "    --locked                   - Whether the shortcut is locked and cannot be modified by the web interface\n";
     print "  shrink <index> <node> <num>  - Shrink a session index\n";
@@ -6337,9 +6337,9 @@ if ($ARGV[1] =~ /^(users-?import|import)$/) {
         }
     }
 
-    my @indexes = ("users", "sequence", "stats", "queries", "files", "fields", "dstats", "hunts", "lookups", "notifiers", "views");
+    my @indices = ("users", "sequence", "stats", "queries", "files", "fields", "dstats", "hunts", "lookups", "notifiers", "views");
     logmsg "Exporting documents...\n";
-    foreach my $index (@indexes) {
+    foreach my $index (@indices) {
         my $data = esScroll($index, "", '{"version": true}');
         next if (scalar(@{$data}) == 0);
         my $fh = bopen($index);
@@ -6362,14 +6362,14 @@ if ($ARGV[1] =~ /^(users-?import|import)$/) {
         close($fh);
     }
     logmsg "Exporting settings...\n";
-    foreach my $index (@indexes) {
+    foreach my $index (@indices) {
         my $data = esGet("/${PREFIX}${index}/_settings");
         my $fh = bopen("${index}.settings");
         print $fh to_json($data);
         close($fh);
     }
     logmsg "Exporting mappings...\n";
-    foreach my $index (@indexes) {
+    foreach my $index (@indices) {
         my $data = esGet("/${PREFIX}${index}/_mappings");
         my $fh = bopen("${index}.mappings");
         print $fh to_json($data);
@@ -6377,11 +6377,11 @@ if ($ARGV[1] =~ /^(users-?import|import)$/) {
     }
     logmsg "Exporting aliaes...\n";
 
-    my @indexes_prefixed = ();
-    foreach my $index (@indexes) {
-        push(@indexes_prefixed, $PREFIX . $index);
+    my @indices_prefixed = ();
+    foreach my $index (@indices) {
+        push(@indices_prefixed, $PREFIX . $index);
     }
-    my $aliases = join(',', @indexes_prefixed);
+    my $aliases = join(',', @indices_prefixed);
     $aliases = "/_cat/aliases/${aliases}?format=json";
     my $data = esGet($aliases), "\n";
     my $fh = bopen("aliases");
@@ -6667,8 +6667,8 @@ if ($ARGV[1] =~ /^(users-?import|import)$/) {
 
     # increment the _meta version by 1
     my $mapping = esGet("/${PREFIX}lookups/_mapping");
-    my @indexes = keys %{$mapping};
-    my $index = @indexes[0];
+    my @indices = keys %{$mapping};
+    my $index = @indices[0];
     my $meta = $mapping->{$index}->{mappings}->{_meta};
 
 
@@ -7502,9 +7502,9 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
 
     dbCheckForActivity($PREFIX);
 
-    my @indexes = ("users", "sequence", "stats", "queries", "hunts", "files", "fields", "dstats", "lookups", "notifiers", "views");
+    my @indices = ("users", "sequence", "stats", "queries", "hunts", "files", "fields", "dstats", "lookups", "notifiers", "views");
     my @filelist = ();
-    foreach my $index (@indexes) { # list of data, settings, and mappings files
+    foreach my $index (@indices) { # list of data, settings, and mappings files
         push(@filelist, "$ARGV[2].${PREFIX}${index}.json\n") if (-e "$ARGV[2].${PREFIX}${index}.json");
         push(@filelist, "$ARGV[2].${PREFIX}${index}.settings.json\n") if (-e "$ARGV[2].${PREFIX}${index}.settings.json");
         push(@filelist, "$ARGV[2].${PREFIX}${index}.mappings.json\n") if (-e "$ARGV[2].${PREFIX}${index}.mappings.json");
@@ -7525,7 +7525,7 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
 
     logmsg "\nFollowing files will be used for restore\n\n@filelist\n\n";
 
-    waitFor("RESTORE", "do you want to restore? This will delete ALL data [@indexes] but sessions and history and restore from backups: files start with $basename in $path") if ($ARGV[1] ne "restorenoprompt");
+    waitFor("RESTORE", "do you want to restore? This will delete ALL data [@indices] but sessions and history and restore from backups: files start with $basename in $path") if ($ARGV[1] ne "restorenoprompt");
 
     logmsg "\nStarting Restore...\n\n";
 
@@ -7548,7 +7548,7 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
     esDelete("/_template/${PREFIX}history_v1_template", 1);
 
     logmsg "Importing settings...\n\n";
-    foreach my $index (@indexes) { # import settings
+    foreach my $index (@indices) { # import settings
         if (-e "$ARGV[2].${PREFIX}${index}.settings.json") {
             open(my $fh, "<", "$ARGV[2].${PREFIX}${index}.settings.json");
             my $data = do { local $/; <$fh> };
@@ -7575,7 +7575,7 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
     }
 
     logmsg "Importing mappings...\n\n";
-    foreach my $index (@indexes) { # import mappings
+    foreach my $index (@indices) { # import mappings
         if (-e "$ARGV[2].${PREFIX}${index}.mappings.json") {
             open(my $fh, "<", "$ARGV[2].${PREFIX}${index}.mappings.json");
             my $data = do { local $/; <$fh> };
@@ -7589,7 +7589,7 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
     }
 
     logmsg "Importing documents...\n\n";
-    foreach my $index (@indexes) { # import documents
+    foreach my $index (@indices) { # import documents
         if (-e "$ARGV[2].${PREFIX}${index}.json") {
             open(my $fh, "<", "$ARGV[2].${PREFIX}${index}.json");
             my $data = do { local $/; <$fh> };
