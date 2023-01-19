@@ -22,13 +22,22 @@ LOCAL MolochPacketRC erspan_packet_enqueue(MolochPacketBatch_t * UNUSED(batch), 
     if (unlikely(len) < 8 || unlikely(!data))
         return MOLOCH_PACKET_CORRUPT;
 
-    if ((*data >> 4) == 1)
-        return moloch_packet_run_ethernet_cb(batch, packet, data+8,len-8, MOLOCH_ETHERTYPE_ETHER, "ERSpan");
+    if ((*data >> 4) != 1) {
+        if (config.logUnknownProtocols)
+            LOG("Unknown ERSPAN protocol %d", (*data >> 4));
+        moloch_packet_save_ethernet(packet, 0x88be);
+        return MOLOCH_PACKET_UNKNOWN;
+    }
 
-    if (config.logUnknownProtocols)
-        LOG("Unknown ERSPAN protocol %d", *data >> 4);
-    moloch_packet_save_ethernet(packet, 0x88be);
-    return MOLOCH_PACKET_UNKNOWN;
+
+    BSB bsb;
+
+    BSB_INIT(bsb, data, len);
+
+    BSB_IMPORT_u16(bsb, packet->vlan);
+    packet->vlan &= 0x7f; // clear the version bits
+
+    return moloch_packet_run_ethernet_cb(batch, packet, data+8,len-8, MOLOCH_ETHERTYPE_ETHER, "ERSpan");
 }
 /******************************************************************************/
 void moloch_parser_init()
