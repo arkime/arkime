@@ -68,7 +68,13 @@
             "length" : 1,
             "network" : {
                "bytes" : 656,
-               "packets" : 4
+               "packets" : 4,
+               "vlan" : {
+                  "id" : [
+                     23
+                  ],
+                  "id-cnt" : 1
+               }
             },
             "node" : "test",
             "packetLen" : [
