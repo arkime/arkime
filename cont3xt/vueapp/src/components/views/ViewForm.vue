@@ -117,6 +117,11 @@ export default {
       this.localView.integrations = this.getSelectedIntegrations;
     }
   },
+  watch: {
+    view (newVal) {
+      this.localView = JSON.parse(JSON.stringify(newVal));
+    }
+  },
   computed: {
     ...mapGetters([
       'getRoles', 'getUser', 'getDoableIntegrations', 'getSortedIntegrations',
