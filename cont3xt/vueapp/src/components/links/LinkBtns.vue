@@ -1,53 +1,68 @@
 <template>
   <span>
-    <b-button
-      size="sm"
-      variant="primary"
-      @click="$emit('pushLink', { index, target: linkGroup.links.length })"
-      v-b-tooltip.hover="'Push to the BOTTOM'">
-      <span class="fa fa-arrow-circle-down fa-fw" />
-    </b-button>
-    <b-button
+    <b-dropdown
+      right
+      no-caret
       size="sm"
       variant="warning"
-      @click="$emit('pushLink', { index, target: 0 })"
-      v-b-tooltip.hover="'Push to the TOP'">
-      <span class="fa fa-arrow-circle-up fa-fw" />
-    </b-button>
-    <b-button
+      v-if="getLinkGroups.length > 1"
+      v-b-tooltip.hover="'Copy this link to another group'">
+      <template #button-content>
+        <span class="fa fa-copy fa-fw" />
+      </template>
+      <template
+        v-for="group in getLinkGroups">
+        <b-dropdown-item
+          class="small"
+          :key="group._id"
+          v-if="group._id !== linkGroup._id"
+          @click="$emit('copyLink', { link: linkGroup.links[index], groupId: group._id })">
+          {{ group.name }}
+        </b-dropdown-item>
+      </template>
+    </b-dropdown>
+    <b-dropdown
+      right
       size="sm"
-      variant="secondary"
-      @click="$emit('addSeparator', index)"
-      v-b-tooltip.hover="'Add a Separator after this Link'">
-      <span class="fa fa-underline fa-fw" />
-    </b-button>
-    <b-button
-      size="sm"
-      variant="info"
-      @click="$emit('addLink', index)"
-      v-b-tooltip.hover="'Add a Link after this one'">
-      <span class="fa fa-link fa-fw" />
-    </b-button>
-    <b-button
-      size="sm"
-      variant="danger"
-      @click="$emit('removeLink', index)"
-      v-b-tooltip.hover="'Remove this link'">
-      <span class="fa fa-times-circle" />
-    </b-button>
-    <b-button
-      size="sm"
-      variant="success"
-      @click="$emit('expandLink', index)"
-      v-b-tooltip.hover="linkGroup.links[index].expanded ? 'Collapse this link\'s details' : 'Expand this link\'s details'">
-      <span class="fa"
-        :class="linkGroup.links[index].expanded ? 'fa-chevron-up': 'fa-chevron-down'"
-      />
-    </b-button>
+      variant="primary"
+      v-b-tooltip.hover="'Actions'">
+      <b-dropdown-item
+        class="small"
+        @click="$emit('pushLink', { index, target: 0 })">
+        <span class="fa fa-arrow-circle-up fa-fw" />
+        Push to the TOP
+      </b-dropdown-item>
+      <b-dropdown-item
+        class="small"
+        @click="$emit('pushLink', { index, target: linkGroup.links.length })">
+        <span class="fa fa-arrow-circle-down fa-fw" />
+        Push to the BOTTOM
+      </b-dropdown-item>
+      <b-dropdown-item
+        class="small"
+        @click="$emit('addSeparator', index)">
+        <span class="fa fa-underline fa-fw" />
+        Add a Separator after this Link
+      </b-dropdown-item>
+      <b-dropdown-item
+        class="small"
+        @click="$emit('addLink', index)">
+        <span class="fa fa-link fa-fw" />
+        Add a Link after this one
+      </b-dropdown-item>
+      <b-dropdown-item
+        class="small"
+        @click="$emit('removeLink', index)">
+        <span class="fa fa-times-circle fa-fw" />
+        Remove this link
+      </b-dropdown-item>
+    </b-dropdown>
   </span>
 </template>
 
 <script>
+import { mapGetters } from 'vuex';
+
 export default {
   name: 'LinkBtns',
   props: {
@@ -59,6 +74,9 @@ export default {
       type: Object,
       required: true
     }
+  },
+  computed: {
+    ...mapGetters(['getLinkGroups'])
   }
 };
 </script>

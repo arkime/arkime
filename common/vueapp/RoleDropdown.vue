@@ -86,6 +86,9 @@ export default {
     };
   },
   watch: {
+    roles (newRoles) {
+      this.filteredRoles = newRoles;
+    },
     selectedRoles (newValue) { // localSelectedRoles must be changed whenever selectedRoles is (this syncs during sorting)
       this.localSelectedRoles = newValue || [];
     }

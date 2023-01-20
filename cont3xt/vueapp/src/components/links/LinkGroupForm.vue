@@ -61,10 +61,17 @@
         <template slot="default">
           <b-card v-if="link.name !== '----------'">
             <div class="d-flex justify-content-between align-items-center">
-              <div class="mr-4 flex-grow-1">
+              <div class="mr-2">
+                <ToggleBtn
+                  class="lg-toggle-btn"
+                  @toggle="expandLink(i)"
+                  :opened="lg.links[i].expanded"
+                  :class="{expanded: lg.links[i].expanded}"
+                />
+              </div>
+              <div class="mr-2 flex-grow-1">
                 <b-input-group
-                  size="sm"
-                  class="mb-2">
+                  size="sm">
                   <template #prepend>
                     <b-input-group-text>
                       Name
@@ -92,14 +99,15 @@
                   :link-group="lg"
                   @addLink="addLink"
                   @pushLink="pushLink"
+                  @copyLink="copyLink"
                   @removeLink="removeLink"
-                  @expandLink="expandLink"
                   @addSeparator="addSeparator"
                 />
               </div>
             </div>
             <div v-show="link.expanded">
               <b-form-checkbox-group
+                class="mt-1"
                 v-model="link.itypes"
                 :options="itypeOptions"
                 @change="e => linkChange(i, { itypes: e })"
@@ -207,7 +215,7 @@
                   v-show="link.expanded"
                   :options="itypeOptions"
                   @change="e => linkChange(i, { itypes: e })"
-                  class="text-center link-separator-checkbox-group"
+                  class="text-center link-separator-checkbox-group mt-1"
                 />
               </div>
               <div class="d-flex nowrap">
@@ -223,8 +231,8 @@
                   :link-group="lg"
                   @addLink="addLink"
                   @pushLink="pushLink"
+                  @copyLink="copyLink"
                   @removeLink="removeLink"
-                  @expandLink="expandLink"
                   @addSeparator="addSeparator"
                 />
               </div>
@@ -251,7 +259,9 @@ import ColorPicker from '@/utils/ColorPicker';
 import ReorderList from '@/utils/ReorderList';
 
 import LinkBtns from '@/components/links/LinkBtns';
+import LinkService from '@/components/services/LinkService';
 import RoleDropdown from '@../../../common/vueapp/RoleDropdown';
+import ToggleBtn from '../../../../../common/vueapp/ToggleBtn';
 
 let timeout;
 const defaultLink = {
@@ -265,6 +275,7 @@ export default {
   name: 'CreateLinkGroup',
   components: {
     LinkBtns,
+    ToggleBtn,
     ColorPicker,
     ReorderList,
     RoleDropdown
@@ -307,7 +318,7 @@ export default {
     };
   },
   computed: {
-    ...mapGetters(['getRoles', 'getUser'])
+    ...mapGetters(['getRoles', 'getUser', 'getLinkGroups'])
   },
   created () {
     if (!this.lg) { // creating new link group
@@ -316,6 +327,11 @@ export default {
     }
   },
   watch: {
+    linkGroup () {
+      if (this.linkGroup) { // link group updated from parent
+        this.lg = JSON.parse(JSON.stringify(this.linkGroup));
+      }
+    },
     'linkGroup._id' () {
       if (this.linkGroup) {
         this.lg = JSON.parse(JSON.stringify(this.linkGroup));
@@ -380,6 +396,16 @@ export default {
       // and replace it in the first position
       this.lg.links.splice(target, 0, link);
       this.updateList({ list: this.lg.links });
+    },
+    copyLink ({ link, groupId }) {
+      const linkGroup = this.getLinkGroups.find((group) => group._id === groupId);
+      linkGroup.links.push(link);
+
+      this.$store.commit('UPDATE_LINK_GROUP', linkGroup);
+
+      LinkService.updateLinkGroup(linkGroup).then(() => {
+        this.$emit('display-message', `Link added to the end of ${linkGroup.name}`);
+      }); // store deals with failure
     },
     removeLink (index) {
       this.lg.links.splice(index, 1);
@@ -457,5 +483,11 @@ export default {
 }
 .link-separator-checkbox-group {
   margin-bottom: -1.1rem;
+}
+
+.lg-toggle-btn {
+  font-size: 1rem;
+  line-height: 1.5;
+  padding: 0.1rem 0.5rem;
 }
 </style>
