@@ -146,6 +146,18 @@
                 <template #header>
                   <div class="w-100 d-flex justify-content-between align-items-start">
                     <div>
+                      <!-- delete button -->
+                      <transition name="buttons">
+                        <b-button
+                          size="sm"
+                          variant="danger"
+                          v-if="!confirmDeleteView[view._id]"
+                          v-b-tooltip.hover.top="'Delete this view.'"
+                          @click.stop.prevent="toggleDeleteView(view._id)">
+                          <span class="fa fa-trash-o" />
+                        </b-button>
+                      </transition> <!-- /delete button -->
+                      <!-- cancel confirm delete button -->
                       <transition name="buttons">
                         <b-button
                           size="sm"
@@ -169,17 +181,6 @@
                           <span class="fa fa-check" />
                         </b-button>
                       </transition> <!-- /confirm delete button -->
-                      <!-- delete button -->
-                      <transition name="buttons">
-                        <b-button
-                          size="sm"
-                          variant="danger"
-                          v-if="!confirmDeleteView[view._id]"
-                          v-b-tooltip.hover.top="'Delete this view.'"
-                          @click.stop.prevent="toggleDeleteView(view._id)">
-                          <span class="fa fa-trash-o" />
-                        </b-button>
-                      </transition> <!-- /delete button -->
                     </div>
                     <b-alert
                       variant="success"
@@ -759,7 +760,6 @@ export default {
       this.updateView(unchangedView);
     },
     saveView (view) {
-      this.updatedViewMap[view._id] = undefined;
       delete view.error;
       delete view.success;
       // NOTE: this function handles fetching the updated view list and storing it
@@ -771,6 +771,7 @@ export default {
         setTimeout(() => {
           delete view.error;
           delete view.success;
+          this.updatedViewMap[view._id] = undefined;
           this.setFilteredView(view);
         }, 4000);
       });
