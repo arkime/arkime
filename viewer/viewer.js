@@ -2238,7 +2238,7 @@ internals.processCronQueries = () => {
             return forQueriesCb(null);
           }
           if (!user.enabled) {
-            console.log(`CRON - User ${cq.creator} not enabled`);
+            console.log(`CRON - User '${cq.creator}' has been disabled on users tab, either delete their cron jobs or enable them`);
             return forQueriesCb();
           }
 
