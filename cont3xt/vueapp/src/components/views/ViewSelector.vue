@@ -49,14 +49,44 @@
             {{ view.name }}
           </div>
           <template v-if="view._editable">
-            <b-button
+            <!-- cancel confirm delete button -->
+            <transition name="buttons">
+              <b-button
+                size="xs"
+                title="Cancel"
+                variant="warning"
+                v-b-tooltip.hover
+                class="pull-right ml-1"
+                v-if="confirmDeleteView[view._id]"
+                @click.stop.prevent="toggleDeleteView(view._id)">
+                <span class="fa fa-ban" />
+              </b-button>
+            </transition> <!-- /cancel confirm delete button -->
+            <!-- confirm delete button -->
+            <transition name="buttons">
+              <b-button
+                size="xs"
+                variant="danger"
+                v-b-tooltip.hover
+                title="Are you sure?"
+                class="pull-right ml-1"
+                v-if="confirmDeleteView[view._id]"
+                @click.stop.prevent="deleteView(view)">
+                <span class="fa fa-check" />
+              </b-button>
+            </transition> <!-- /confirm delete button -->
+            <!-- delete button -->
+            <transition name="buttons">
+              <b-button
                 size="xs"
                 variant="danger"
                 class="pull-right ml-1"
-                @click.stop.prevent="deleteView(view)"
-                v-b-tooltip.hover.top="'Delete this view.'">
-              <span class="fa fa-trash-o" />
-            </b-button>
+                v-if="!confirmDeleteView[view._id]"
+                v-b-tooltip.hover.top="'Delete this view.'"
+                @click.stop.prevent="toggleDeleteView(view._id)">
+                <span class="fa fa-trash-o" />
+              </b-button>
+            </transition> <!-- /delete button -->
           </template>
         </div>
       </b-dropdown-item>
@@ -116,7 +146,8 @@ export default {
       filteredViews: [],
       barFocused: false,
       needsFocus: false,
-      dropdownVisible: false
+      dropdownVisible: false,
+      confirmDeleteView: {}
     };
   },
   created () {
@@ -163,6 +194,9 @@ export default {
     selectView (view) {
       this.$store.commit('SET_SELECTED_VIEW', view);
       this.$store.commit('SET_SELECTED_INTEGRATIONS', view.integrations);
+    },
+    toggleDeleteView (viewId) {
+      this.$set(this.confirmDeleteView, viewId, !this.confirmDeleteView[viewId]);
     },
     deleteView (view) {
       // NOTE: this function handles fetching the updated view list and storing it

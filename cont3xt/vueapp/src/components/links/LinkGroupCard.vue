@@ -134,20 +134,35 @@
           </transition> <!-- /confirm delete button -->
         </div>
         <b-alert
-          variant="success"
           :show="success"
+          variant="success"
           class="mb-0 mt-0 alert-sm mr-1 ml-1">
           <span class="fa fa-check mr-2" />
-          Saved!
+          <template v-if="message">
+            {{ message }}
+          </template>
+          <template v-else>
+            Saved!
+          </template>
         </b-alert>
         <div>
           <transition name="buttons">
             <b-button
               size="sm"
-              variant="warning"
+              variant="secondary"
               @click="rawEditMode = !rawEditMode"
-              v-b-tooltip.hover="'Edit the raw config for this link group'">
+              v-b-tooltip.hover="'Toggle raw configuration for this link group'">
               <span class="fa fa-pencil-square-o" />
+            </b-button>
+          </transition>
+          <transition name="buttons">
+            <b-button
+              size="sm"
+              variant="warning"
+              v-if="changesMade"
+              @click="cancelUpdateLinkGroup(linkGroup)"
+              v-b-tooltip.hover="'Cancel unsaved updates'">
+              <span class="fa fa-ban" />
             </b-button>
           </transition>
           <transition name="buttons">
@@ -167,6 +182,7 @@
       <link-group-form
         :raw-edit-mode="rawEditMode"
         :link-group="updatedLinkGroup"
+        @display-message="displayMessage"
         @update-link-group="updateLinkGroup"
       />
     </b-card-body>
@@ -220,10 +236,20 @@
           <transition name="buttons">
             <b-button
               size="sm"
-              variant="warning"
+              variant="secondary"
               @click="rawEditMode = !rawEditMode"
-              v-b-tooltip.hover="'Edit the raw config for this link group'">
+              v-b-tooltip.hover="'Toggle raw configuration for this link group'">
               <span class="fa fa-pencil-square-o" />
+            </b-button>
+          </transition>
+          <transition name="buttons">
+            <b-button
+              size="sm"
+              variant="warning"
+              v-if="changesMade"
+              @click="cancelUpdateLinkGroup(linkGroup)"
+              v-b-tooltip.hover="'Cancel unsaved updates'">
+              <span class="fa fa-ban" />
             </b-button>
           </transition>
           <transition name="buttons">
@@ -273,6 +299,7 @@ export default {
   },
   data () {
     return {
+      message: '',
       success: false,
       rawEditMode: false,
       changesMade: false,
@@ -283,7 +310,7 @@ export default {
   },
   computed: {
     ...mapGetters([
-      'getUser', 'getCheckedLinks', 'getLinkGroups'
+      'getUser', 'getCheckedLinks'
     ]),
     filteredLinks () {
       const links = [];
@@ -312,6 +339,15 @@ export default {
     }
   },
   methods: {
+    displayMessage (msg) {
+      this.message = msg;
+      this.success = true;
+
+      setTimeout(() => {
+        this.message = '';
+        this.success = false;
+      }, 4000);
+    },
     updateLinkGroup (updated) {
       this.updatedLinkGroup = JSON.parse(JSON.stringify(updated));
 
@@ -325,15 +361,17 @@ export default {
     deleteLinkGroup (id) {
       LinkService.deleteLinkGroup(id);
     },
+    cancelUpdateLinkGroup () {
+      this.updatedLinkGroup = JSON.parse(JSON.stringify(this.linkGroup));
+      this.$emit('update-link-group', this.updatedLinkGroup);
+      this.changesMade = false; // make sure save button is hidden
+    },
     saveLinkGroup () {
-      this.success = undefined;
+      this.success = false;
 
       LinkService.updateLinkGroup(this.updatedLinkGroup).then(() => {
+        this.displayMessage();
         this.changesMade = false;
-        this.success = true;
-        setTimeout(() => {
-          this.success = false;
-        }, 4000);
       }); // store deals with failure
     },
     normalizeLinkGroup (unNormalizedLinkGroup) {
