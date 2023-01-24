@@ -1,5 +1,5 @@
 # Test addUser.js and general authentication
-use Test::More tests => 35;
+use Test::More tests => 40;
 use Test::Differences;
 use Data::Dumper;
 use MolochTest;
@@ -66,7 +66,7 @@ is ($response->code, 401);
 is ($response->content, 'Unauthorized');
 
 $response = $MolochTest::userAgent->get("http://$MolochTest::host:8126/", ':arkime_user' => '');
-is ($response->code, 401);
+is ($response->code, 403);
 is ($response->content, '{"success":false,"text":"User name header is empty"}');
 
 $response = $MolochTest::userAgent->get("http://$MolochTest::host:8126/", ':arkime_user' => 'authtest1');
@@ -85,27 +85,35 @@ system("cd ../viewer ; node addUser.js $es -c ../tests/config.test.ini -n test3 
 $response = viewerGet("/regressionTests/getUser/authtest2");
 
 $response = $MolochTest::userAgent->get("http://$MolochTest::host:8126/", ':arkime_user' => 'authtest2');
-is ($response->code, 200);
+is ($response->content, '{"success":false,"text":"User header auth not enabled"}');
+is ($response->code, 403);
 
 # Bad password
 $MolochTest::userAgent->credentials( "$MolochTest::host:8126", 'Moloch', 'authtest2', 'authtest222' );
 $response = $MolochTest::userAgent->get("http://$MolochTest::host:8126/");
+is ($response->content, 'Unauthorized');
 is ($response->code, 401);
 
 # Bad password but username header
 $response = $MolochTest::userAgent->get("http://$MolochTest::host:8126/", ':arkime_user' => 'authtest2');
-is ($response->code, 200);
+is ($response->content, '{"success":false,"text":"User header auth not enabled"}');
+is ($response->code, 403);
 
 # Good password
 $MolochTest::userAgent->credentials( "$MolochTest::host:8126", 'Moloch', 'authtest2', 'authtest2' );
 $response = $MolochTest::userAgent->get("http://$MolochTest::host:8126/");
 is ($response->code, 200);
 
+# /receiveSession
+$response = $MolochTest::userAgent->get("http://$MolochTest::host:8126/receiveSession");
+is ($response->content, "receive session only allowed s2s");
+is ($response->code, 401);
+
 # No arkimeUser role
 $MolochTest::userAgent->credentials( "$MolochTest::host:8126", 'Moloch', 'test8', 'test8' );
 $response = $MolochTest::userAgent->get("http://$MolochTest::host:8126/");
 is ($response->content, "Need arkimeUser role assigned");
-is ($response->code, 200);
+is ($response->code, 403);
 
 # No role auth
 $MolochTest::userAgent->credentials( "$MolochTest::host:8126", 'Moloch', 'role:role', 'role:role' );
@@ -114,11 +122,11 @@ is ($response->code, 403);
 is ($response->content, '{"success":false,"text":"Can not authenticate with role"}');
 
 $response = $MolochTest::userAgent->get("http://$MolochTest::host:8126/", ':arkime_user' => 'role:role');
-is ($response->code, 401);
+is ($response->code, 403);
 is ($response->content, '{"success":false,"text":"Can not authenticate with role"}');
 
 $response = $MolochTest::userAgent->get("http://$MolochTest::host:8123/?molochRegressionUser=role:role");
-is ($response->code, 401);
+is ($response->code, 403);
 is ($response->content, '{"success":false,"text":"Can not authenticate with role"}');
 
 

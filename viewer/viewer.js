@@ -263,12 +263,12 @@ Auth.app(app);
 if (Config.get('passwordSecret')) {
   // check for arkimeUser
   app.use((req, res, next) => {
-    if (req.headers['x-arkime-auth'] !== undefined && (req.url.match(/^\/receiveSession/) || req.url.match(/^\/api\/sessions\/receive/))) {
-      return res.send('receive session only allowed s2s');
+    if (req.headers['x-arkime-auth'] === undefined && (req.url.match(/^\/receiveSession/) || req.url.match(/^\/api\/sessions\/receive/))) {
+      return res.status(401).send('receive session only allowed s2s');
     }
 
     if (!req.user.hasRole('arkimeUser')) {
-      return res.send('Need arkimeUser role assigned');
+      return res.status(403).send('Need arkimeUser role assigned');
     }
     next();
   });

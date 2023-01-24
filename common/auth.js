@@ -44,7 +44,7 @@ class Auth {
   // ----------------------------------------------------------------------------
   /**
    * Set up the app.use() calls for the express application. Call in chain where
-   * chain auth should be installed.
+   * auth should be installed.
    */
   static app (app, options) {
     app.use(passport.initialize());
@@ -130,9 +130,9 @@ class Auth {
     passport.use('header', new CustomStrategy((req, done) => {
       if (Auth.#userNameHeader !== undefined && req.headers[Auth.#userNameHeader] === undefined) {
         if (Auth.debug > 0) {
-          console.log(`AUTH: looking for header ${Auth.#userNameHeader} in the headers`, req.headers);
+          console.log(`AUTH: didn't find ${Auth.#userNameHeader} in the headers`, req.headers);
         }
-        return done(JSON.stringify({ success: false, text: 'Username not found' }));
+        return done(null, false);
       }
 
       if (Auth.#requiredAuthHeader !== undefined && Auth.#requiredAuthHeaderVal !== undefined) {
@@ -151,19 +151,19 @@ class Auth {
         }
       }
 
-      const userId = req.headers[Auth.#userNameHeader];
+      const userId = req.headers[Auth.#userNameHeader].trim();
       if (userId === '') {
-        return done(JSON.stringify({ success: false, text: 'User name header is empty' }));
+        return done('User name header is empty');
       }
 
       if (userId.startsWith('role:')) {
-        return done(JSON.stringify({ success: false, text: 'Can not authenticate with role' }));
+        return done('Can not authenticate with role');
       }
 
       async function headerAuthCheck (err, user) {
-        if (err || !user) { return done(JSON.stringify({ success: false, text: 'User not found' })); }
-        if (!user.enabled) { return done(JSON.stringify({ success: false, text: 'User not enabled' })); }
-        if (!user.headerAuthEnabled) { return done(JSON.stringify({ success: false, text: 'User header auth not enabled' })); }
+        if (err || !user) { return done('User not found'); }
+        if (!user.enabled) { return done('User not enabled'); }
+        if (!user.headerAuthEnabled) { return done('User header auth not enabled'); }
 
         await user.expandFromRoles();
         user.setLastUsed();
@@ -206,7 +206,7 @@ class Auth {
     passport.use('regressionTests', new CustomStrategy((req, done) => {
       const userId = req?.query?.molochRegressionUser ?? 'anonymous';
       if (userId.startsWith('role:')) {
-        return done(JSON.stringify({ success: false, text: 'Can not authenticate with role' }));
+        return done('Can not authenticate with role');
       }
 
       User.getUserCache(userId, (err, user) => {
