@@ -196,7 +196,8 @@ app.post('/regressionTests/shutdown', (req, res) => {
   res.send('NO!');
 });
 
-app.use(Auth.doAuth);
+// Set up auth, all APIs registered below will use passport
+Auth.app(app);
 
 // check for cont3xtUser
 app.use((req, res, next) => {

@@ -258,33 +258,6 @@ function setupAuth () {
     basicAuth: getConfig('wiseService', 'usersElasticsearchBasicAuth')
   });
 }
-// ----------------------------------------------------------------------------
-function isConfigWeb (req, res, next) {
-  if (!internals.webconfig) {
-    return res.send({ success: false, text: 'Must start wiseService with --webconfig option' });
-  }
-  return next();
-}
-
-// ----------------------------------------------------------------------------
-function isWiseAdmin (req, res, next) {
-  if (req.user.hasRole('wiseAdmin')) {
-    return next();
-  } else {
-    console.log(`${req.userId} is not wiseAdmin`);
-    return res.send(JSON.stringify({ success: false, text: 'Not authorized, check log file' }));
-  }
-}
-
-// ----------------------------------------------------------------------------
-function isWiseUser (req, res, next) {
-  if (req.user.hasRole('wiseUser')) {
-    return next();
-  } else {
-    console.log(`${req.userId} is not wiseUser`);
-    return res.send(JSON.stringify({ success: false, text: 'Not authorized, check log file' }));
-  }
-}
 
 // ----------------------------------------------------------------------------
 function checkConfigCode (req, res, next) {
@@ -1155,60 +1128,6 @@ app.get('/sources', [ArkimeUtil.noCacheJson], (req, res) => {
 });
 // ----------------------------------------------------------------------------
 /**
- * GET - Used by wise UI to retrieve the raw file being used by the section.
- *       This is an authenticated API and requires wiseService to be started with --webconfig.
- *
- * @name "/source/:source/get"
- * @param {string} :source - The source to get the raw data for
- * @returns {object} All the views
- */
-app.get('/source/:source/get', [isConfigWeb, Auth.doAuth, isWiseUser, ArkimeUtil.noCacheJson], (req, res) => {
-  const source = internals.sources.get(req.params.source);
-  if (!source) {
-    return res.send({ success: false, text: `Source ${req.params.source} not found` });
-  }
-
-  if (!source.getSourceRaw) {
-    return res.send({ success: false, text: 'Source does not support viewing' });
-  }
-
-  source.getSourceRaw((err, raw) => {
-    if (err) {
-      return res.send({ success: false, text: err });
-    }
-    return res.send({ success: true, raw: raw.toString('utf8') });
-  });
-});
-// ----------------------------------------------------------------------------
-/**
- * PUT - Used by wise UI to save the raw file being used by the source.
- *       This is an authenticated API and requires wiseService to be started with --webconfig.
- *
- * @name "/source/:source/put"
- * @param {string} :source - The source to put the raw data for
- * @returns {object} All the views
- */
-app.put('/source/:source/put', [isConfigWeb, Auth.doAuth, isWiseAdmin, ArkimeUtil.noCacheJson, jsonParser], (req, res) => {
-  const source = internals.sources.get(req.params.source);
-  if (!source) {
-    return res.send({ success: false, text: `Source ${req.params.source} not found` });
-  }
-
-  if (!source.putSourceRaw) {
-    return res.send({ success: false, text: 'Source does not support editing' });
-  }
-
-  const raw = req.body.raw;
-
-  source.putSourceRaw(raw, (err) => {
-    if (err) {
-      return res.send({ success: false, text: err });
-    }
-    return res.send({ success: true, text: 'Saved' });
-  });
-});
-// ----------------------------------------------------------------------------
-/**
  * GET - Used by wise UI to retrieve all the configuration definitions for the various sources.
  *
  * @name "/config/defs"
@@ -1216,109 +1135,6 @@ app.put('/source/:source/put', [isConfigWeb, Auth.doAuth, isWiseAdmin, ArkimeUti
  */
 app.get('/config/defs', [ArkimeUtil.noCacheJson], function (req, res) {
   return res.send(internals.configDefs);
-});
-// ----------------------------------------------------------------------------
-/**
- * GET - Used by wise UI to retrieve the current config.
- *       This is an authenticated API and requires wiseService to be started with --webconfig.
- *
- * @name "/config/get"
- * @returns {object}
- */
-app.get('/config/get', [isConfigWeb, Auth.doAuth, isWiseUser, ArkimeUtil.noCacheJson], (req, res) => {
-  const config = Object.keys(internals.config)
-    .sort()
-    .filter(key => internals.configDefs[key.split(':')[0]])
-    .reduce((obj, key) => {
-      // Deep Copy
-      obj[key] = JSON.parse(JSON.stringify(internals.config[key]));
-
-      // Replace passwords
-      internals.configDefs[key.split(':')[0]].fields.forEach((item) => {
-        if (item.password !== true) { return; }
-        if (obj[key][item.name] === undefined || obj[key][item.name].length === 0) { return; }
-        obj[key][item.name] = '********';
-      });
-      return obj;
-    }, {});
-
-  if (config.wiseService === undefined) { config.wiseService = {}; }
-  if (config.cache === undefined) { config.cache = {}; }
-
-  return res.send({
-    success: true,
-    config,
-    filePath: internals.configFile
-  });
-});
-// ----------------------------------------------------------------------------
-/**
- * PUT - Used by wise UI to save the current config.
- *       This is an authenticated API, requires the pin code, and requires wiseService to be started with --webconfig.
- *
- * @name "/config/save"
- */
-app.put('/config/save', [isConfigWeb, Auth.doAuth, isWiseAdmin, ArkimeUtil.noCacheJson, jsonParser, checkConfigCode], (req, res) => {
-  if (req.body.config === undefined) {
-    return res.send({ success: false, text: 'Missing config' });
-  }
-
-  const config = req.body.config;
-  if (internals.debug > 0) {
-    console.log(config);
-  }
-
-  for (const section in config) {
-    const sectionType = section.split(':')[0];
-    const configDef = internals.configDefs[sectionType];
-    if (configDef === undefined) {
-      return res.send({ success: false, text: `Unknown section type ${sectionType}` });
-    }
-    if (configDef.singleton !== true && sectionType === section) {
-      return res.send({ success: false, text: `Section ${section} must have a :uniquename` });
-    }
-    if (configDef.singleton === true && sectionType !== section) {
-      return res.send({ success: false, text: `Section ${section} must not have a :uniquename` });
-    }
-
-    // Create new source files
-    if (configDef.editable && config[section].file && !fs.existsSync(config[section].file)) {
-      try {
-        fs.writeFileSync(config[section].file, '');
-      } catch (e) {
-        return res.send({ success: false, text: 'New file could not be written to system' });
-      }
-    }
-
-    for (const key in config[section]) {
-      const field = configDef.fields.find(element => element.name === key);
-      if (field === undefined) {
-        console.log(`Section ${section} field ${key} unknown, deleting`);
-        delete config[section][key];
-      } else if (field.password === true) {
-        if (config[section][key] === '********') {
-          config[section][key] = internals.config[section][key];
-        }
-      }
-    };
-  }
-
-  if (internals.regressionTests) {
-    return res.send({ success: true, text: 'Would save, but regressionTests' });
-  }
-
-  // Make sure updateTime has increased incase of clock sku
-  config.wiseService.updateTime = Math.max(Date.now(), internals.updateTime + 1);
-  internals.configScheme.save(config, (err) => {
-    if (err) {
-      return res.send({ success: false, text: err });
-    } else {
-      res.send({ success: true, text: 'Saved & Restarting' });
-      // Because of nodemon
-      setTimeout(() => { process.kill(process.pid, 'SIGUSR2'); }, 500);
-      setTimeout(() => { process.exit(0); }, 1500);
-    }
-  });
 });
 // ----------------------------------------------------------------------------
 /**
@@ -1357,7 +1173,10 @@ app.get('/types/:source?', [ArkimeUtil.noCacheJson], (req, res) => {
  * @param {string} {:key} - The key to get the results for
  * @returns {object|array} - The results for the query
  */
-app.get('/:source/:typeName/:value', [ArkimeUtil.noCacheJson], function (req, res) {
+app.get('/:source/:typeName/:value', [ArkimeUtil.noCacheJson], function (req, res, next) {
+  // Poor route planning by ALW, shame
+  if (req.params.source === 'source' && req.params.value === 'get') { return next(); }
+
   const source = internals.sources.get(req.params.source);
   if (!source) {
     return res.end('Unknown source ' + ArkimeUtil.safeStr(req.params.source));
@@ -1458,7 +1277,10 @@ app.get("/bro/:type", [ArkimeUtil.noCacheJson], function(req, res) {
  * @param {string} {:key} - The key to get the results for
  * @returns {object|array} - The results for the query
  */
-app.get('/:typeName/:value', [ArkimeUtil.noCacheJson], function (req, res) {
+app.get('/:typeName/:value', [ArkimeUtil.noCacheJson], function (req, res, next) {
+  // Poor route planning by ALW, shame
+  if (req.params.typeName === 'config' && req.params.value === 'get') { return next(); }
+
   const query = {
     typeName: req.params.typeName,
     value: req.params.value
@@ -1794,8 +1616,8 @@ function createApp () {
   });
 }
 
-// always send the client html (it will deal with 404s)
-app.use((req, res, next) => {
+// Send back vue for page tabs
+app.get(['/', '/config', '/query', '/help'], (req, res, next) => {
   const renderer = vueServerRenderer.createRenderer({
     template: fs.readFileSync(path.join(__dirname, '/vueapp/dist/index.html'), 'utf-8')
   });
@@ -1823,6 +1645,197 @@ app.use((req, res, next) => {
     res.send(html);
   });
 });
+
+// ============================================================================
+// AUTHED ROUTES - only needed for webconfig, must be at bottom
+// ============================================================================
+function isWiseAdmin (req, res, next) {
+  if (req.user.hasRole('wiseAdmin')) {
+    return next();
+  } else {
+    console.log(`${req.userId} is not wiseAdmin`);
+    return res.send(JSON.stringify({ success: false, text: 'Not authorized, check log file' }));
+  }
+}
+
+// ----------------------------------------------------------------------------
+function isWiseUser (req, res, next) {
+  if (req.user.hasRole('wiseUser')) {
+    return next();
+  } else {
+    console.log(`${req.userId} is not wiseUser`);
+    return res.send(JSON.stringify({ success: false, text: 'Not authorized, check log file' }));
+  }
+}
+// ----------------------------------------------------------------------------
+if (internals.webconfig) {
+  // Set up auth, all APIs registered below will use passport
+  Auth.app(app);
+  // ----------------------------------------------------------------------------
+  /**
+   * GET - Used by wise UI to retrieve the raw file being used by the section.
+   *       This is an authenticated API and requires wiseService to be started with --webconfig.
+   *
+   * @name "/source/:source/get"
+   * @param {string} :source - The source to get the raw data for
+   * @returns {object} All the views
+   */
+  app.get('/source/:source/get', [isWiseUser, ArkimeUtil.noCacheJson], (req, res) => {
+    const source = internals.sources.get(req.params.source);
+    if (!source) {
+      return res.send({ success: false, text: `Source ${req.params.source} not found` });
+    }
+
+    if (!source.getSourceRaw) {
+      return res.send({ success: false, text: 'Source does not support viewing' });
+    }
+
+    source.getSourceRaw((err, raw) => {
+      if (err) {
+        return res.send({ success: false, text: err });
+      }
+      return res.send({ success: true, raw: raw.toString('utf8') });
+    });
+  });
+  // ----------------------------------------------------------------------------
+  /**
+   * PUT - Used by wise UI to save the raw file being used by the source.
+   *       This is an authenticated API and requires wiseService to be started with --webconfig.
+   *
+   * @name "/source/:source/put"
+   * @param {string} :source - The source to put the raw data for
+   * @returns {object} All the views
+   */
+  app.put('/source/:source/put', [isWiseAdmin, ArkimeUtil.noCacheJson, jsonParser], (req, res) => {
+    const source = internals.sources.get(req.params.source);
+    if (!source) {
+      return res.send({ success: false, text: `Source ${req.params.source} not found` });
+    }
+
+    if (!source.putSourceRaw) {
+      return res.send({ success: false, text: 'Source does not support editing' });
+    }
+
+    const raw = req.body.raw;
+
+    source.putSourceRaw(raw, (err) => {
+      if (err) {
+        return res.send({ success: false, text: err });
+      }
+      return res.send({ success: true, text: 'Saved' });
+    });
+  });
+  // ----------------------------------------------------------------------------
+  /**
+   * GET - Used by wise UI to retrieve the current config.
+   *       This is an authenticated API and requires wiseService to be started with --webconfig.
+   *
+   * @name "/config/get"
+   * @returns {object}
+   */
+  app.get('/config/get', [isWiseUser, ArkimeUtil.noCacheJson], (req, res) => {
+    const config = Object.keys(internals.config)
+      .sort()
+      .filter(key => internals.configDefs[key.split(':')[0]])
+      .reduce((obj, key) => {
+        // Deep Copy
+        obj[key] = JSON.parse(JSON.stringify(internals.config[key]));
+
+        // Replace passwords
+        internals.configDefs[key.split(':')[0]].fields.forEach((item) => {
+          if (item.password !== true) { return; }
+          if (obj[key][item.name] === undefined || obj[key][item.name].length === 0) { return; }
+          obj[key][item.name] = '********';
+        });
+        return obj;
+      }, {});
+
+    if (config.wiseService === undefined) { config.wiseService = {}; }
+    if (config.cache === undefined) { config.cache = {}; }
+
+    return res.send({
+      success: true,
+      config,
+      filePath: internals.configFile
+    });
+  });
+  // ----------------------------------------------------------------------------
+  /**
+   * PUT - Used by wise UI to save the current config.
+   *       This is an authenticated API, requires the pin code, and requires wiseService to be started with --webconfig.
+   *
+   * @name "/config/save"
+   */
+  app.put('/config/save', [isWiseAdmin, ArkimeUtil.noCacheJson, jsonParser, checkConfigCode], (req, res) => {
+    if (req.body.config === undefined) {
+      return res.send({ success: false, text: 'Missing config' });
+    }
+
+    const config = req.body.config;
+    if (internals.debug > 0) {
+      console.log(config);
+    }
+
+    for (const section in config) {
+      const sectionType = section.split(':')[0];
+      const configDef = internals.configDefs[sectionType];
+      if (configDef === undefined) {
+        return res.send({ success: false, text: `Unknown section type ${sectionType}` });
+      }
+      if (configDef.singleton !== true && sectionType === section) {
+        return res.send({ success: false, text: `Section ${section} must have a :uniquename` });
+      }
+      if (configDef.singleton === true && sectionType !== section) {
+        return res.send({ success: false, text: `Section ${section} must not have a :uniquename` });
+      }
+
+      // Create new source files
+      if (configDef.editable && config[section].file && !fs.existsSync(config[section].file)) {
+        try {
+          fs.writeFileSync(config[section].file, '');
+        } catch (e) {
+          return res.send({ success: false, text: 'New file could not be written to system' });
+        }
+      }
+
+      for (const key in config[section]) {
+        const field = configDef.fields.find(element => element.name === key);
+        if (field === undefined) {
+          console.log(`Section ${section} field ${key} unknown, deleting`);
+          delete config[section][key];
+        } else if (field.password === true) {
+          if (config[section][key] === '********') {
+            config[section][key] = internals.config[section][key];
+          }
+        }
+      };
+    }
+
+    if (internals.regressionTests) {
+      return res.send({ success: true, text: 'Would save, but regressionTests' });
+    }
+
+    // Make sure updateTime has increased incase of clock sku
+    config.wiseService.updateTime = Math.max(Date.now(), internals.updateTime + 1);
+    internals.configScheme.save(config, (err) => {
+      if (err) {
+        return res.send({ success: false, text: err });
+      } else {
+        res.send({ success: true, text: 'Saved & Restarting' });
+        // Because of nodemon
+        setTimeout(() => { process.kill(process.pid, 'SIGUSR2'); }, 500);
+        setTimeout(() => { process.exit(0); }, 1500);
+      }
+    });
+  });
+} else {
+  app.get(['/source/:source/get', '/config/get'], (req, res) => {
+    return res.send({ success: false, text: 'Must start wiseService with --webconfig option' });
+  });
+  app.put(['/source/:source/put', '/config/save'], (req, res) => {
+    return res.send({ success: false, text: 'Must start wiseService with --webconfig option' });
+  });
+}
 
 // Replace the default express error handler
 app.use(ArkimeUtil.expressErrorHandler);

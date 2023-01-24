@@ -259,35 +259,14 @@ app.get( // es health endpoint
 );
 
 // password, testing, or anonymous mode setup ---------------------------------
+Auth.app(app);
 if (Config.get('passwordSecret')) {
-  app.use(function (req, res, next) {
-    // S2S Auth
-    if (req.headers['x-arkime-auth'] || req.headers['x-moloch-auth']) {
-      return Auth.s2sAuth(req, res, next);
-    }
-
-    if (req.url.match(/^\/receiveSession/) || req.url.match(/^\/api\/sessions\/receive/)) {
+  // check for arkimeUser
+  app.use((req, res, next) => {
+    if (req.headers['x-arkime-auth'] !== undefined && (req.url.match(/^\/receiveSession/) || req.url.match(/^\/api\/sessions\/receive/))) {
       return res.send('receive session only allowed s2s');
     }
 
-    // Header auth
-    if (internals.userNameHeader !== undefined) {
-      if (req.headers[Auth.userNameHeader] === undefined) {
-        if (Auth.debug > 0) {
-          console.log('DEBUG - Couldn\'t find userNameHeader of', internals.userNameHeader, 'in', req.headers, 'for', req.url);
-        }
-      } else {
-        Auth.headerAuth(req, res, next);
-        return; // Don't try browser auth
-      }
-    }
-
-    // Browser auth
-    return Auth.digestAuth(req, res, next);
-  });
-
-  // check for arkimeUser
-  app.use((req, res, next) => {
     if (!req.user.hasRole('arkimeUser')) {
       return res.send('Need arkimeUser role assigned');
     }
@@ -296,12 +275,10 @@ if (Config.get('passwordSecret')) {
 } else if (Config.get('regressionTests', false)) {
   console.log('WARNING - The setting "regressionTests" is set to true, do NOT use in production, for testing only');
   internals.noPasswordSecret = true;
-  app.use(Auth.regressionTestsAuth);
 } else {
   /* Shared password isn't set, who cares about auth, db is only used for settings */
   console.log('WARNING - The setting "passwordSecret" is not set, all access is anonymous');
   internals.noPasswordSecret = true;
-  app.use(Auth.anonymousWithDBAuth);
 }
 
 // ============================================================================
