@@ -355,10 +355,9 @@ class Auth {
         return done('S2S bad user');
       }
 
-      if (typeof(obj.date) !== 'number') {
+      if (typeof (obj.date) !== 'number') {
         return done('S2S bad date');
       }
-
 
       if (obj.user.startsWith('role:')) {
         return done('Can not authenticate with role');
