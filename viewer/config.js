@@ -528,5 +528,7 @@ Auth.initialize({
   requiredAuthHeader: exports.get('requiredAuthHeader'),
   requiredAuthHeaderVal: exports.get('requiredAuthHeaderVal'),
   userAutoCreateTmpl: exports.get('userAutoCreateTmpl'),
-  userAuthIps: exports.get('userAuthIps')
+  userAuthIps: exports.get('userAuthIps'),
+  s2s: true,
+  s2sRegressionTests: !!exports.get('s2sRegressionTests')
 });
