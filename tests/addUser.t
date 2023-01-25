@@ -1,5 +1,5 @@
 # Test addUser.js and general authentication
-use Test::More tests => 40;
+use Test::More tests => 60;
 use Test::Differences;
 use Data::Dumper;
 use MolochTest;
@@ -128,6 +128,58 @@ is ($response->content, '{"success":false,"text":"Can not authenticate with role
 $response = $MolochTest::userAgent->get("http://$MolochTest::host:8123/?molochRegressionUser=role:role");
 is ($response->code, 403);
 is ($response->content, '{"success":false,"text":"Can not authenticate with role"}');
+
+# s2s
+
+# /receiveSession - empty
+$response = $MolochTest::userAgent->get("http://$MolochTest::host:8126/receiveSession", ':x-arkime-auth' => '');
+is ($response->content, '{"success":false,"text":"S2S auth header corrupt"}');
+is ($response->code, 403);
+
+# /receiveSession - garbage
+$response = $MolochTest::userAgent->get("http://$MolochTest::host:8126/receiveSession", ':x-arkime-auth' => 'garbage');
+is ($response->content, '{"success":false,"text":"S2S auth header corrupt"}');
+is ($response->code, 403);
+
+# /receiveSession - empty json
+$response = $MolochTest::userAgent->get("http://$MolochTest::host:8126/receiveSession", ':x-arkime-auth' => '{}');
+is ($response->content, '{"success":false,"text":"S2S bad path"}');
+is ($response->code, 403);
+
+# /receiveSession - bad path
+$response = $MolochTest::userAgent->get("http://$MolochTest::host:8126/receiveSession", ':x-arkime-auth' => '{"path": "/"}');
+is ($response->content, '{"success":false,"text":"S2S bad user"}');
+is ($response->code, 403);
+
+# /receiveSession - bad date
+$response = $MolochTest::userAgent->get("http://$MolochTest::host:8126/receiveSession", ':x-arkime-auth' => '{"path": "/", "user": "authtest2"}');
+is ($response->content, '{"success":false,"text":"S2S bad date"}');
+is ($response->code, 403);
+
+# /receiveSession - user role
+$response = $MolochTest::userAgent->get("http://$MolochTest::host:8126/receiveSession", ':x-arkime-auth' => '{"path": "/", "user": "role:authtest2", "date": 1}');
+is ($response->content, '{"success":false,"text":"Can not authenticate with role"}');
+is ($response->code, 403);
+
+# /receiveSession - url mismatch
+$response = $MolochTest::userAgent->get("http://$MolochTest::host:8126/receiveSession", ':x-arkime-auth' => '{"path": "/", "user": "authtest2", "date": 1}');
+is ($response->content, '{"success":false,"text":"Unauthorized based on bad url"}');
+is ($response->code, 403);
+
+# /receiveSession - url mismatch
+$response = $MolochTest::userAgent->get("http://$MolochTest::host:8126/receiveSession", ':x-arkime-auth' => '{"path": "/receiveSession", "user": "authtest2", "date": 1}');
+is ($response->content, '{"success":false,"text":"Unauthorized based on timestamp - check that all Arkime viewer machines have accurate clocks"}');
+is ($response->code, 403);
+
+# /receiveSession - good but wrong method
+$response = $MolochTest::userAgent->get("http://$MolochTest::host:8126/receiveSession", ':x-arkime-auth' => '{"path": "/receiveSession", "user": "authtest2", "date": ' . time() * 1000 .'}');
+is ($response->content, 'Permission denied');
+is ($response->code, 403);
+
+# /receiveSession - good
+$response = $MolochTest::userAgent->post("http://$MolochTest::host:8126/receiveSession", ':x-arkime-auth' => '{"path": "/receiveSession", "user": "authtest2", "date": ' . time() * 1000 .'}');
+is ($response->content, '{"success":false,"text":"Missing saveId"}');
+is ($response->code, 200);
 
 
 # cleanup

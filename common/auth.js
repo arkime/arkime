@@ -27,7 +27,7 @@ const CustomStrategy = require('passport-custom');
 class Auth {
   static debug;
   static mode;
-  static regressionTests;
+  static regressionTests = false;
   static passwordSecret;
   static passwordSecret256;
 
@@ -40,6 +40,7 @@ class Auth {
   static #userAutoCreateTmpl;
   static #userAuthIps;
   static #strategies;
+  static #s2sRegressionTests;
 
   // ----------------------------------------------------------------------------
   /**
@@ -52,6 +53,95 @@ class Auth {
     if (options?.doAuth !== false) {
       app.use(Auth.doAuth);
     }
+  }
+
+  // ----------------------------------------------------------------------------
+  /**
+   * Initialize the Auth subsystem
+   * @param {boolean} options.debug=0 The debug level to use for Auth component
+   * @param {string} options.mode=anonymous What auth mode to run in
+   * @param {string} options.basePath=/ What the web base path is for the app
+   * @param {string} options.userNameHeader In header auth mode, which http header has the user id
+   * @param {string} options.httpRealm=Moloch For digest mode, what http realm to use
+   * @param {string} options.passwordSecret=password For digest mode, what password to use to encrypt the password hash
+   * @param {string} options.serverSecret=passwordSecret What password is used to encrypt S2S auth
+   * @param {string} options.requiredAuthHeader In header auth mode, another header can be required
+   * @param {string} options.requiredAuthHeaderVal In header auth mode, a comma separated list of values for requiredAuthHeader, if none are matched the user will not be authorized
+   * @param {string} options.userAutoCreateTmpl A javascript string function that is used to create users that don't exist
+   * @param {string} options.userAuthIps A comma separated list of CIDRs that users are allowed from
+   * @param {boolean} options.s2s Support s2s auth also
+   */
+  static initialize (options) {
+    if (options.debug > 1) {
+      console.log('Auth.initialize', options);
+    }
+
+    Auth.debug = options.debug ?? 0;
+    Auth.mode = options.mode ?? 'anonymous';
+    Auth.#basePath = options.basePath ?? '/';
+    Auth.#userNameHeader = options.userNameHeader;
+    Auth.#httpRealm = options.httpRealm ?? 'Moloch';
+    Auth.passwordSecret = options.passwordSecret ?? 'password';
+    Auth.passwordSecret256 = crypto.createHash('sha256').update(Auth.passwordSecret).digest();
+    if (options.serverSecret) {
+      Auth.#serverSecret256 = crypto.createHash('sha256').update(options.serverSecret).digest();
+    } else {
+      Auth.#serverSecret256 = Auth.passwordSecret256;
+    }
+    Auth.#requiredAuthHeader = options.requiredAuthHeader;
+    Auth.#requiredAuthHeaderVal = options.requiredAuthHeaderVal;
+    Auth.#userAutoCreateTmpl = options.userAutoCreateTmpl;
+    Auth.#userAuthIps = new iptrie.IPTrie();
+    Auth.#s2sRegressionTests = options.s2sRegressionTests;
+
+    if (options.userAuthIps) {
+      for (const cidr of options.userAuthIps.split(',')) {
+        const parts = cidr.split('/');
+        if (parts[0].includes(':')) {
+          Auth.#userAuthIps.add(parts[0], +(parts[1] ?? 128), 1);
+        } else {
+          Auth.#userAuthIps.add(`::ffff:${parts[0]}`, 96 + +(parts[1] ?? 32), 1);
+        }
+      }
+    } else if (Auth.mode === 'header') {
+      Auth.#userAuthIps.add('::ffff:127.0.0.0', 96 + 8, 1);
+      Auth.#userAuthIps.add('::1', 128, 1);
+    } else {
+      Auth.#userAuthIps.add('::', 0, 1);
+    }
+
+    switch (Auth.mode) {
+    case 'anonymous':
+      Auth.#strategies = ['anonymous'];
+      break;
+    case 'anonymousWithDB':
+      Auth.#strategies = ['anonymousWithDB'];
+      break;
+    case 'digest':
+      Auth.#strategies = ['digest'];
+      break;
+    case 'header':
+      Auth.#strategies = ['header', 'digest'];
+      break;
+    case 'regressionTests':
+      Auth.#strategies = ['regressionTests'];
+      Auth.regressionTests = true;
+      break;
+    }
+    if (options.s2s) {
+      Auth.#strategies.unshift('s2s');
+    }
+
+    if (Auth.debug > 0) {
+      console.log('AUTH strategies', Auth.#strategies);
+    }
+
+    Auth.#registerStrategies();
+  }
+
+  // ----------------------------------------------------------------------------
+  static isAnonymousMode () {
+    return Auth.mode === 'anonymous' || Auth.mode === 'anonymousWithDB';
   }
 
   // ----------------------------------------------------------------------------
@@ -110,13 +200,13 @@ class Auth {
     // ----------------------------------------------------------------------------
     passport.use('digest', new DigestStrategy({ qop: 'auth', realm: Auth.#httpRealm }, (userId, done) => {
       if (userId.startsWith('role:')) {
-        console.log(`User ${userId} Can not authenticate with role`);
+        console.log(`AUTH: User ${userId} Can not authenticate with role`);
         return done('Can not authenticate with role');
       }
       User.getUserCache(userId, async (err, user) => {
         if (err) { return done(err); }
-        if (!user) { console.log('User', userId, "doesn't exist"); return done(null, false); }
-        if (!user.enabled) { console.log('User', userId, 'not enabled'); return done('Not enabled'); }
+        if (!user) { console.log('AUTH: User', userId, "doesn't exist"); return done(null, false); }
+        if (!user.enabled) { console.log('AUTH: User', userId, 'not enabled'); return done('Not enabled'); }
 
         await user.expandFromRoles();
         user.setLastUsed();
@@ -245,13 +335,36 @@ class Auth {
         return done(null, false);
       }
 
-      const obj = Auth.auth2obj(req.headers['x-arkime-auth']);
-      obj.path = obj.path.replace(Auth.#basePath, '/');
+      let obj;
+      try {
+        if (Auth.#s2sRegressionTests) {
+          obj = JSON.parse(req.headers['x-arkime-auth']);
+        } else {
+          obj = Auth.auth2obj(req.headers['x-arkime-auth']);
+        }
+      } catch (e) {
+        console.log('AUTH: x-arkime-auth corrupt', e);
+        return done('S2S auth header corrupt');
+      }
+
+      if (!ArkimeUtil.isString(obj.path)) {
+        return done('S2S bad path');
+      }
+
+      if (!ArkimeUtil.isString(obj.user)) {
+        return done('S2S bad user');
+      }
+
+      if (typeof(obj.date) !== 'number') {
+        return done('S2S bad date');
+      }
+
 
       if (obj.user.startsWith('role:')) {
         return done('Can not authenticate with role');
       }
 
+      obj.path = obj.path.replace(Auth.#basePath, '/');
       if (obj.path !== req.url) {
         console.log('ERROR - mismatch url', obj.path, ArkimeUtil.sanitizeStr(req.url));
         return done('Unauthorized based on bad url');
@@ -277,91 +390,6 @@ class Auth {
         return done(null, user);
       });
     }));
-  }
-
-  // ----------------------------------------------------------------------------
-  /**
-   * Initialize the Auth subsystem
-   * @param {boolean} options.debug=0 The debug level to use for Auth component
-   * @param {string} options.mode=anonymous What auth mode to run in
-   * @param {string} options.basePath=/ What the web base path is for the app
-   * @param {string} options.userNameHeader In header auth mode, which http header has the user id
-   * @param {string} options.httpRealm=Moloch For digest mode, what http realm to use
-   * @param {string} options.passwordSecret=password For digest mode, what password to use to encrypt the password hash
-   * @param {string} options.serverSecret=passwordSecret What password is used to encrypt S2S auth
-   * @param {string} options.requiredAuthHeader In header auth mode, another header can be required
-   * @param {string} options.requiredAuthHeaderVal In header auth mode, a comma separated list of values for requiredAuthHeader, if none are matched the user will not be authorized
-   * @param {string} options.userAutoCreateTmpl A javascript string function that is used to create users that don't exist
-   * @param {string} options.userAuthIps A comma separated list of CIDRs that users are allowed from
-   * @param {boolean} options.s2s Support s2s auth also
-   */
-  static initialize (options) {
-    if (options.debug > 1) {
-      console.log('Auth.initialize', options);
-    }
-
-    Auth.debug = options.debug ?? 0;
-    Auth.mode = options.mode ?? 'anonymous';
-    Auth.#basePath = options.basePath ?? '/';
-    Auth.#userNameHeader = options.userNameHeader;
-    Auth.#httpRealm = options.httpRealm ?? 'Moloch';
-    Auth.passwordSecret = options.passwordSecret ?? 'password';
-    Auth.passwordSecret256 = crypto.createHash('sha256').update(Auth.passwordSecret).digest();
-    if (options.serverSecret) {
-      Auth.#serverSecret256 = crypto.createHash('sha256').update(options.serverSecret).digest();
-    } else {
-      Auth.#serverSecret256 = Auth.passwordSecret256;
-    }
-    Auth.#requiredAuthHeader = options.requiredAuthHeader;
-    Auth.#requiredAuthHeaderVal = options.requiredAuthHeaderVal;
-    Auth.#userAutoCreateTmpl = options.userAutoCreateTmpl;
-    Auth.#userAuthIps = new iptrie.IPTrie();
-    Auth.regressionTests = false;
-
-    if (options.userAuthIps) {
-      for (const cidr of options.userAuthIps.split(',')) {
-        const parts = cidr.split('/');
-        if (parts[0].includes(':')) {
-          Auth.#userAuthIps.add(parts[0], +(parts[1] ?? 128), 1);
-        } else {
-          Auth.#userAuthIps.add(`::ffff:${parts[0]}`, 96 + +(parts[1] ?? 32), 1);
-        }
-      }
-    } else if (Auth.mode === 'header') {
-      Auth.#userAuthIps.add('::ffff:127.0.0.0', 96 + 8, 1);
-      Auth.#userAuthIps.add('::1', 128, 1);
-    } else {
-      Auth.#userAuthIps.add('::', 0, 1);
-    }
-
-    switch (Auth.mode) {
-    case 'anonymous':
-      Auth.#strategies = ['anonymous'];
-      break;
-    case 'anonymousWithDB':
-      Auth.#strategies = ['anonymousWithDB'];
-      break;
-    case 'digest':
-      Auth.#strategies = ['digest'];
-      break;
-    case 'header':
-      Auth.#strategies = ['header', 'digest'];
-      break;
-    case 'regressionTests':
-      Auth.#strategies = ['regressionTests'];
-      Auth.regressionTests = true;
-      break;
-    }
-    if (options.s2s) {
-      Auth.#strategies.unshift('s2s');
-    }
-
-    Auth.#registerStrategies();
-  }
-
-  // ----------------------------------------------------------------------------
-  static isAnonymousMode () {
-    return Auth.mode === 'anonymous' || Auth.mode === 'anonymousWithDB';
   }
 
   // ----------------------------------------------------------------------------
