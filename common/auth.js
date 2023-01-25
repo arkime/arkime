@@ -116,6 +116,13 @@ class Auth {
       Auth.#userAuthIps.add('::', 0, 1);
     }
 
+    function check (field, str) {
+      if (!ArkimeUtil.isString(Auth.#authConfig[field])) {
+        console.log(`ERROR - ${str} missing from config file`);
+        process.exit();
+      }
+    }
+
     let sessionAuth = false;
     switch (Auth.mode) {
     case 'anonymous':
@@ -125,9 +132,14 @@ class Auth {
       Auth.#strategies = ['anonymousWithDB'];
       break;
     case 'digest':
+      check('httpRealm');
       Auth.#strategies = ['digest'];
       break;
     case 'oidc':
+      check('userIdField', 'authUserIdField');
+      check('discoverURL', 'authDiscoverURL');
+      check('clientId', 'authClientId');
+      check('clientSecret', 'authClientSecret');
       Auth.#strategies = ['oidc'];
       sessionAuth = true;
       break;
@@ -153,6 +165,7 @@ class Auth {
     // If sessionAuth is required enable the express and passport sessions
     if (sessionAuth) {
       Auth.#passportAuthOptions = { session: true, successRedirect: '/', failureRedirect: '/fail' };
+      Auth.#authRouter.get('/fail', (req, res) => { res.send('User not found'); });
       Auth.#authRouter.use(expressSession({
         secret: uuid(),
         resave: false,
@@ -308,28 +321,7 @@ class Auth {
         if (Auth.#userAutoCreateTmpl === undefined) {
           return headerAuthCheck(err, user);
         } else if ((err && err.toString().includes('Not Found')) || (!user)) { // Try dynamic creation
-          const nuser = JSON.parse(new Function('return `' +
-                 Auth.#userAutoCreateTmpl + '`;').call(req.headers));
-          if (nuser.passStore === undefined) {
-            nuser.passStore = Auth.pass2store(nuser.userId, crypto.randomBytes(48));
-          }
-          if (nuser.userId !== userId) {
-            console.log(`WARNING - the userNameHeader (${Auth.#userNameHeader}) said to use '${userId}' while the userAutoCreateTmpl returned '${nuser.userId}', reseting to use '${userId}'`);
-            nuser.userId = userId;
-          }
-          if (nuser.userName === undefined || nuser.userName === 'undefined') {
-            console.log(`WARNING - The userAutoCreateTmpl didn't set a userName, using userId for ${nuser.userId}`);
-            nuser.userName = nuser.userId;
-          }
-
-          User.setUser(userId, nuser, (err, info) => {
-            if (err) {
-              console.log('OpenSearch/Elasticsearch error adding user: (%s):(%s):', userId, JSON.stringify(nuser), err);
-            } else {
-              console.log('Added user: %s:%s', userId, JSON.stringify(nuser));
-            }
-            return User.getUserCache(userId, headerAuthCheck);
-          });
+          Auth.#dynamicCreate(userId, req.headers, headerAuthCheck);
         } else {
           return headerAuthCheck(err, user);
         }
@@ -342,22 +334,32 @@ class Auth {
       const client = new issuer.Client({
         client_id: Auth.#authConfig.clientId,
         client_secret: Auth.#authConfig.clientSecret,
-        redirect_uris: ['http://localhost:3218/auth/login/callback'], // ALW FIX FIX FIX
+        redirect_uris: [`http://localhost:3218${Auth.#basePath}auth/login/callback`], // ALW FIX FIX FIX
         token_endpoint_auth_method: 'client_secret_post'
       });
 
       passport.use('oidc', new OIDC.Strategy({
         client
       }, (tokenSet, userinfo, done) => {
-        const userId = 'admin'; // ALW FIX FIX FIX
-        User.getUserCache(userId, async (err, user) => {
-          if (err) { return done(err); }
-          if (!user) { console.log('AUTH: User', userId, "doesn't exist"); return done(null, false); }
-          if (!user.enabled) { console.log('AUTH: User', userId, 'not enabled'); return done('Not enabled'); }
+        const userId = userinfo[Auth.#authConfig.userIdField];
+
+        async function oidcAuthCheck (err, user) {
+          if (err || !user) { return done('User not found'); }
+          if (!user.enabled) { return done('User not enabled'); }
 
           await user.expandFromRoles();
           user.setLastUsed();
-          return done(null, user, { ha1: Auth.store2ha1(user.passStore) });
+          return done(null, user);
+        }
+
+        User.getUserCache(userId, (err, user) => {
+          if (Auth.#userAutoCreateTmpl === undefined) {
+            return oidcAuthCheck(err, user);
+          } else if ((err && err.toString().includes('Not Found')) || (!user)) { // Try dynamic creation
+            Auth.#dynamicCreate(userId, userinfo, oidcAuthCheck);
+          } else {
+            return oidcAuthCheck(err, user);
+          }
         });
       }));
     }
@@ -480,6 +482,31 @@ class Auth {
     }
 
     return 0;
+  }
+
+  // ----------------------------------------------------------------------------
+  static #dynamicCreate (userId, vars, cb) {
+    const nuser = JSON.parse(new Function('return `' + Auth.#userAutoCreateTmpl + '`;').call(vars));
+    if (nuser.passStore === undefined) {
+      nuser.passStore = Auth.pass2store(nuser.userId, crypto.randomBytes(48));
+    }
+    if (nuser.userId !== userId) {
+      console.log(`WARNING - the userNameHeader (${Auth.#userNameHeader}) said to use '${userId}' while the userAutoCreateTmpl returned '${nuser.userId}', reseting to use '${userId}'`);
+      nuser.userId = userId;
+    }
+    if (nuser.userName === undefined || nuser.userName === 'undefined') {
+      console.log(`WARNING - The userAutoCreateTmpl didn't set a userName, using userId for ${nuser.userId}`);
+      nuser.userName = nuser.userId;
+    }
+
+    User.setUser(userId, nuser, (err, info) => {
+      if (err) {
+        console.log('OpenSearch/Elasticsearch error adding user: (%s):(%s):', userId, JSON.stringify(nuser), err);
+      } else {
+        console.log('Added user: %s:%s', userId, JSON.stringify(nuser));
+      }
+      return User.getUserCache(userId, cb);
+    });
   }
 
   // ----------------------------------------------------------------------------

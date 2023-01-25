@@ -535,6 +535,7 @@ Auth.initialize({
   s2sRegressionTests: !!exports.get('s2sRegressionTests'),
   authConfig: {
     httpRealm: exports.get('httpRealm', 'Moloch'),
+    userIdField: exports.get('authUserIdField'),
     discoverURL: exports.get('authDiscoverURL'),
     clientId: exports.get('authClientId'),
     clientSecret: exports.get('authClientSecret')

@@ -243,6 +243,7 @@ function setupAuth () {
     userAuthIps: getConfig('wiseService', 'userAuthIps'),
     authConfig: {
       httpRealm: getConfig('wiseService', 'httpRealm', 'Moloch'),
+      userIdField: getConfig('wiseService', 'authUserIdField'),
       discoverURL: getConfig('wiseService', 'authDiscoverURL'),
       clientId: getConfig('wiseService', 'authClientId'),
       clientSecret: getConfig('wiseService', 'authClientSecret')

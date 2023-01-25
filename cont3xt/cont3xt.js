@@ -469,6 +469,7 @@ function setupAuth () {
     userAuthIps: getConfig('cont3xt', 'userAuthIps'),
     authConfig: {
       httpRealm: getConfig('cont3xt', 'httpRealm', 'Moloch'),
+      userIdField: getConfig('cont3xt', 'authUserIdField'),
       discoverURL: getConfig('cont3xt', 'authDiscoverURL'),
       clientId: getConfig('cont3xt', 'authClientId'),
       clientSecret: getConfig('cont3xt', 'authClientSecret')
