@@ -23,6 +23,11 @@ const passport = require('passport');
 const DigestStrategy = require('passport-http').DigestStrategy;
 const iptrie = require('iptrie');
 const CustomStrategy = require('passport-custom');
+const express = require('express');
+const expressSession = require('express-session');
+const uuid = require('uuid').v4;
+const OIDC = require('openid-client');
+
 
 class Auth {
   static debug;
@@ -32,7 +37,6 @@ class Auth {
   static passwordSecret256;
 
   static #userNameHeader;
-  static #httpRealm;
   static #serverSecret256;
   static #basePath;
   static #requiredAuthHeader;
@@ -41,6 +45,9 @@ class Auth {
   static #userAuthIps;
   static #strategies;
   static #s2sRegressionTests;
+  static #authRouter = express.Router();
+  static #authConfig;
+  static #passportAuthOptions = { session: false };
 
   // ----------------------------------------------------------------------------
   /**
@@ -48,7 +55,7 @@ class Auth {
    * auth should be installed.
    */
   static app (app, options) {
-    app.use(passport.initialize());
+    app.use(Auth.#authRouter);
 
     if (options?.doAuth !== false) {
       app.use(Auth.doAuth);
@@ -62,7 +69,6 @@ class Auth {
    * @param {string} options.mode=anonymous What auth mode to run in
    * @param {string} options.basePath=/ What the web base path is for the app
    * @param {string} options.userNameHeader In header auth mode, which http header has the user id
-   * @param {string} options.httpRealm=Moloch For digest mode, what http realm to use
    * @param {string} options.passwordSecret=password For digest mode, what password to use to encrypt the password hash
    * @param {string} options.serverSecret=passwordSecret What password is used to encrypt S2S auth
    * @param {string} options.requiredAuthHeader In header auth mode, another header can be required
@@ -70,6 +76,7 @@ class Auth {
    * @param {string} options.userAutoCreateTmpl A javascript string function that is used to create users that don't exist
    * @param {string} options.userAuthIps A comma separated list of CIDRs that users are allowed from
    * @param {boolean} options.s2s Support s2s auth also
+   * @param {object} options.authConfig options specific to each auth mode;
    */
   static initialize (options) {
     if (options.debug > 1) {
@@ -80,7 +87,6 @@ class Auth {
     Auth.mode = options.mode ?? 'anonymous';
     Auth.#basePath = options.basePath ?? '/';
     Auth.#userNameHeader = options.userNameHeader;
-    Auth.#httpRealm = options.httpRealm ?? 'Moloch';
     Auth.passwordSecret = options.passwordSecret ?? 'password';
     Auth.passwordSecret256 = crypto.createHash('sha256').update(Auth.passwordSecret).digest();
     if (options.serverSecret) {
@@ -93,6 +99,7 @@ class Auth {
     Auth.#userAutoCreateTmpl = options.userAutoCreateTmpl;
     Auth.#userAuthIps = new iptrie.IPTrie();
     Auth.#s2sRegressionTests = options.s2sRegressionTests;
+    Auth.#authConfig = options.authConfig;
 
     if (options.userAuthIps) {
       for (const cidr of options.userAuthIps.split(',')) {
@@ -110,6 +117,7 @@ class Auth {
       Auth.#userAuthIps.add('::', 0, 1);
     }
 
+    let sessionAuth = true;
     switch (Auth.mode) {
     case 'anonymous':
       Auth.#strategies = ['anonymous'];
@@ -120,6 +128,10 @@ class Auth {
     case 'digest':
       Auth.#strategies = ['digest'];
       break;
+    case 'oidc':
+      Auth.#strategies = ['oidc'];
+      sessionAuth = true;
+      break;
     case 'header':
       Auth.#strategies = ['header', 'digest'];
       break;
@@ -128,6 +140,7 @@ class Auth {
       Auth.regressionTests = true;
       break;
     }
+
     if (options.s2s) {
       Auth.#strategies.unshift('s2s');
     }
@@ -137,6 +150,38 @@ class Auth {
     }
 
     Auth.#registerStrategies();
+
+    // If sessionAuth is required enable the express and passport sessions
+    if (sessionAuth) {
+      Auth.#passportAuthOptions = { session: true, successRedirect: '/', failureRedirect: '/fail' }
+      Auth.#authRouter.use(expressSession({
+        secret: uuid(),
+        resave: false,
+        saveUninitialized: true
+      }));
+      Auth.#authRouter.use(passport.initialize());
+      Auth.#authRouter.use(passport.session());
+
+      // only save the userId to passport session
+      passport.serializeUser(function(user, done) {
+        done(null, user.userId);
+      });
+
+      // load the user using the userid in the passport session
+      passport.deserializeUser(function(userId, done) {
+        User.getUserCache(userId, async (err, user) => {
+          if (err) { return done('ERROR - passport-session getUser - user: ' + obj.user + ' err:' + err); }
+          if (!user) { return done(obj.user + " doesn't exist"); }
+          if (!user.enabled) { return done(obj.user + ' not enabled'); }
+
+          await user.expandFromRoles();
+          user.setLastUsed();
+          return done(null, user);
+        });
+      });
+    } else {
+      Auth.#authRouter.use(passport.initialize());
+    }
   }
 
   // ----------------------------------------------------------------------------
@@ -146,7 +191,7 @@ class Auth {
 
   // ----------------------------------------------------------------------------
   /* Register all the strategies that are supported */
-  static #registerStrategies () {
+  static async #registerStrategies () {
     // ----------------------------------------------------------------------------
     passport.use('anonymous', new CustomStrategy((req, done) => {
       const user = Object.assign(new User(), {
@@ -198,7 +243,7 @@ class Auth {
     }));
 
     // ----------------------------------------------------------------------------
-    passport.use('digest', new DigestStrategy({ qop: 'auth', realm: Auth.#httpRealm }, (userId, done) => {
+    passport.use('digest', new DigestStrategy({ qop: 'auth', realm: Auth.#authConfig.httpRealm }, (userId, done) => {
       if (userId.startsWith('role:')) {
         console.log(`AUTH: User ${userId} Can not authenticate with role`);
         return done('Can not authenticate with role');
@@ -291,6 +336,32 @@ class Auth {
         }
       });
     }));
+
+    // ----------------------------------------------------------------------------
+    if (Auth.mode === 'oidc') {
+      const issuer = await OIDC.Issuer.discover(Auth.#authConfig.discoverURL);
+      const client = new issuer.Client({
+        client_id: Auth.#authConfig.clientId,
+        client_secret: Auth.#authConfig.clientSecret,
+        redirect_uris: [`http://localhost:3218/auth/login/callback`], // ALW FIX FIX FIX
+        token_endpoint_auth_method: 'client_secret_post'
+      });
+
+      passport.use('oidc', new OIDC.Strategy({
+        client
+      }, (tokenSet, userinfo, done) => {
+        const userId = 'admin'; // ALW FIX FIX FIX
+        User.getUserCache(userId, async (err, user) => {
+          if (err) { return done(err); }
+          if (!user) { console.log('AUTH: User', userId, "doesn't exist"); return done(null, false); }
+          if (!user.enabled) { console.log('AUTH: User', userId, 'not enabled'); return done('Not enabled'); }
+
+          await user.expandFromRoles();
+          user.setLastUsed();
+          return done(null, user, { ha1: Auth.store2ha1(user.passStore) });
+        });
+      }));
+    }
 
     // ----------------------------------------------------------------------------
     passport.use('regressionTests', new CustomStrategy((req, done) => {
@@ -418,11 +489,16 @@ class Auth {
       return;
     }
 
+    if (typeof (req.isAuthenticated) === 'function' && req.isAuthenticated()) {
+      console.log(req.user);
+      return next();
+    }
+
     if (Auth.#basePath !== '/') {
       req.url = req.url.replace('/', Auth.#basePath);
     }
 
-    passport.authenticate(Auth.#strategies, { session: false })(req, res, function (err) {
+    passport.authenticate(Auth.#strategies, Auth.#passportAuthOptions)(req, res, function (err) {
       if (Auth.#basePath !== '/') {
         req.url = req.url.replace(Auth.#basePath, '/');
       }
@@ -459,7 +535,7 @@ class Auth {
   // Encryption is used because OpenSearch/Elasticsearch is insecure by default and we don't want others adding accounts.
   static pass2store (userId, password) {
     // md5 is required because of http digest
-    return Auth.ha12store(Auth.md5(userId + ':' + Auth.#httpRealm + ':' + password));
+    return Auth.ha12store(Auth.md5(userId + ':' + Auth.authConfig.httpRealm + ':' + password));
   };
 
   // ----------------------------------------------------------------------------

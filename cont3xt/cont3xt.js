@@ -450,7 +450,7 @@ function setupAuth () {
     mode = 'regressionTests';
   } else if (userNameHeader === 'anonymous') {
     mode = 'anonymousWithDB';
-  } else if (userNameHeader === 'digest') {
+  } else if (userNameHeader === 'digest' || userNameHeader === 'oidc') {
     mode = userNameHeader;
     userNameHeader = undefined;
   } else {
@@ -463,11 +463,16 @@ function setupAuth () {
     userNameHeader,
     passwordSecret: getConfig('cont3xt', 'passwordSecret', 'password'),
     basePath: internals.webBasePath,
-    httpRealm: getConfig('cont3xt', 'httpRealm', 'Moloch'),
     requiredAuthHeader: getConfig('cont3xt', 'requiredAuthHeader'),
     requiredAuthHeaderVal: getConfig('cont3xt', 'requiredAuthHeaderVal'),
     userAutoCreateTmpl: getConfig('cont3xt', 'userAutoCreateTmpl'),
-    userAuthIps: getConfig('cont3xt', 'userAuthIps')
+    userAuthIps: getConfig('cont3xt', 'userAuthIps'),
+    authConfig: {
+      httpRealm: getConfig('cont3xt', 'httpRealm', 'Moloch'),
+      discoverURL: getConfig('cont3xt', 'authDiscoverURL'),
+      clientId: getConfig('cont3xt', 'authClientId'),
+      clientSecret: getConfig('cont3xt', 'authClientSecret'),
+    }
   });
 
   const dbUrl = getConfig('cont3xt', 'dbUrl');

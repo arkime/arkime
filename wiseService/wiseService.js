@@ -241,7 +241,12 @@ function setupAuth () {
     userNameHeader,
     passwordSecret: getConfig('wiseService', 'passwordSecret', 'password'),
     userAuthIps: getConfig('wiseService', 'userAuthIps'),
-    httpRealm: getConfig('wiseService', 'httpRealm')
+    authConfig: {
+      httpRealm: getConfig('wiseService', 'httpRealm', 'Moloch'),
+      discoverURL: getConfig('wiseService', 'authDiscoverURL'),
+      clientId: getConfig('wiseService', 'authClientId'),
+      clientSecret: getConfig('wiseService', 'authClientSecret'),
+    }
   });
 
   if (mode === 'anonymous') {

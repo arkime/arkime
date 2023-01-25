@@ -521,7 +521,6 @@ Auth.initialize({
   mode,
   debug: exports.debug,
   basePath: exports.basePath(),
-  httpRealm: exports.get('httpRealm', 'Moloch'),
   passwordSecret: exports.getFull(internals.nodeName === 'cont3xt' ? 'cont3xt' : 'default', 'passwordSecret', 'password'),
   serverSecret: exports.getFull('default', 'serverSecret'),
   userNameHeader: exports.get('userNameHeader'),
@@ -530,5 +529,11 @@ Auth.initialize({
   userAutoCreateTmpl: exports.get('userAutoCreateTmpl'),
   userAuthIps: exports.get('userAuthIps'),
   s2s: true,
-  s2sRegressionTests: !!exports.get('s2sRegressionTests')
+  s2sRegressionTests: !!exports.get('s2sRegressionTests'),
+  authConfig: {
+    httpRealm: exports.get('httpRealm', 'Moloch'),
+    discoverURL: exports.get('authDiscoverURL'),
+    clientId: exports.get('authClientId'),
+    clientSecret: exports.get('authClientSecret')
+  }
 });
