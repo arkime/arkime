@@ -116,7 +116,7 @@ class Auth {
       Auth.#userAuthIps.add('::', 0, 1);
     }
 
-    let sessionAuth = true;
+    let sessionAuth = false;
     switch (Auth.mode) {
     case 'anonymous':
       Auth.#strategies = ['anonymous'];
@@ -534,7 +534,7 @@ class Auth {
   // Encryption is used because OpenSearch/Elasticsearch is insecure by default and we don't want others adding accounts.
   static pass2store (userId, password) {
     // md5 is required because of http digest
-    return Auth.ha12store(Auth.md5(userId + ':' + Auth.authConfig.httpRealm + ':' + password));
+    return Auth.ha12store(Auth.md5(userId + ':' + Auth.#authConfig.httpRealm + ':' + password));
   };
 
   // ----------------------------------------------------------------------------
