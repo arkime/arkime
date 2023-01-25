@@ -508,10 +508,13 @@ exports.loadFields = function (data) {
 
 let mode = 'anonymousWithDB';
 if (exports.get('passwordSecret')) {
-  if (exports.get('userNameHeader')) {
-    mode = 'header';
-  } else {
+  const userNameHeader = exports.get('userNameHeader');
+  if (!userNameHeader || userNameHeader === 'digest') {
     mode = 'digest';
+  } else if (userNameHeader === 'oidc') {
+    mode = 'oidc';
+  } else {
+    mode = 'header';
   }
 } else if (exports.get('regressionTests')) {
   mode = 'regressionTests';

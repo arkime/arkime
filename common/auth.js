@@ -28,7 +28,6 @@ const expressSession = require('express-session');
 const uuid = require('uuid').v4;
 const OIDC = require('openid-client');
 
-
 class Auth {
   static debug;
   static mode;
@@ -153,7 +152,7 @@ class Auth {
 
     // If sessionAuth is required enable the express and passport sessions
     if (sessionAuth) {
-      Auth.#passportAuthOptions = { session: true, successRedirect: '/', failureRedirect: '/fail' }
+      Auth.#passportAuthOptions = { session: true, successRedirect: '/', failureRedirect: '/fail' };
       Auth.#authRouter.use(expressSession({
         secret: uuid(),
         resave: false,
@@ -163,16 +162,16 @@ class Auth {
       Auth.#authRouter.use(passport.session());
 
       // only save the userId to passport session
-      passport.serializeUser(function(user, done) {
+      passport.serializeUser(function (user, done) {
         done(null, user.userId);
       });
 
       // load the user using the userid in the passport session
-      passport.deserializeUser(function(userId, done) {
+      passport.deserializeUser(function (userId, done) {
         User.getUserCache(userId, async (err, user) => {
-          if (err) { return done('ERROR - passport-session getUser - user: ' + obj.user + ' err:' + err); }
-          if (!user) { return done(obj.user + " doesn't exist"); }
-          if (!user.enabled) { return done(obj.user + ' not enabled'); }
+          if (err) { return done('ERROR - passport-session getUser - user: ' + userId + ' err:' + err); }
+          if (!user) { return done(userId + " doesn't exist"); }
+          if (!user.enabled) { return done(userId + ' not enabled'); }
 
           await user.expandFromRoles();
           user.setLastUsed();
@@ -343,7 +342,7 @@ class Auth {
       const client = new issuer.Client({
         client_id: Auth.#authConfig.clientId,
         client_secret: Auth.#authConfig.clientSecret,
-        redirect_uris: [`http://localhost:3218/auth/login/callback`], // ALW FIX FIX FIX
+        redirect_uris: ['http://localhost:3218/auth/login/callback'], // ALW FIX FIX FIX
         token_endpoint_auth_method: 'client_secret_post'
       });
 

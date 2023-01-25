@@ -471,7 +471,7 @@ function setupAuth () {
       httpRealm: getConfig('cont3xt', 'httpRealm', 'Moloch'),
       discoverURL: getConfig('cont3xt', 'authDiscoverURL'),
       clientId: getConfig('cont3xt', 'authClientId'),
-      clientSecret: getConfig('cont3xt', 'authClientSecret'),
+      clientSecret: getConfig('cont3xt', 'authClientSecret')
     }
   });
 
