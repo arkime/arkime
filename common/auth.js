@@ -170,7 +170,8 @@ class Auth {
       Auth.#authRouter.use(expressSession({
         secret: uuid(),
         resave: false,
-        saveUninitialized: true
+        saveUninitialized: true,
+        cookie: { path: Auth.#basePath, secure: true }
       }));
       Auth.#authRouter.use(passport.initialize());
       Auth.#authRouter.use(passport.session());
