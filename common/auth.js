@@ -187,7 +187,6 @@ class Auth {
           if (!user) { return done(userId + " doesn't exist"); }
           if (!user.enabled) { return done(userId + ' not enabled'); }
 
-          await user.expandFromRoles();
           user.setLastUsed();
           return done(null, user);
         });
@@ -266,7 +265,6 @@ class Auth {
         if (!user) { console.log('AUTH: User', userId, "doesn't exist"); return done(null, false); }
         if (!user.enabled) { console.log('AUTH: User', userId, 'not enabled'); return done('Not enabled'); }
 
-        await user.expandFromRoles();
         user.setLastUsed();
         return done(null, user, { ha1: Auth.store2ha1(user.passStore) });
       });
@@ -313,7 +311,6 @@ class Auth {
         if (!user.enabled) { return done('User not enabled'); }
         if (!user.headerAuthEnabled) { return done('User header auth not enabled'); }
 
-        await user.expandFromRoles();
         user.setLastUsed();
         return done(null, user);
       }
@@ -347,8 +344,8 @@ class Auth {
         async function oidcAuthCheck (err, user) {
           if (err || !user) { return done('User not found'); }
           if (!user.enabled) { return done('User not enabled'); }
+          if (!user.headerAuthEnabled) { return done('User header auth not enabled'); }
 
-          await user.expandFromRoles();
           user.setLastUsed();
           return done(null, user);
         }
@@ -457,7 +454,6 @@ class Auth {
         if (!user) { return done(obj.user + " doesn't exist"); }
         if (!user.enabled) { return done(obj.user + ' not enabled'); }
 
-        await user.expandFromRoles();
         user.setLastUsed();
         return done(null, user);
       });
