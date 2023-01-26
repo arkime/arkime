@@ -1,4 +1,4 @@
-use Test::More tests => 123;
+use Test::More tests => 128;
 use Cwd;
 use URI::Escape;
 use MolochTest;
@@ -300,16 +300,33 @@ my $json;
 # valueActions tests
     $json = viewerGet("/api/valueactions?molochRegressionUser=test1");
     eq_or_diff($json->{reverseDNS}, from_json('{"url": "api/reversedns?ip=%TEXT%", "name": "Get Reverse DNS", "actionType": "fetch", "category": "ip"}'), 'test1 valueActions');
+    eq_or_diff($json->{USERTEST}, from_json('{"url": "https://example.com", "name": "usertest", "category": "url"}'), 'test1 valueActions');
 
+    # not web enabled
     $json = viewerGet("/api/valueactions?molochRegressionUser=test2");
     eq_or_diff($json, from_json('{"text": "You do not have permission to access this resource", "success": false}'), 'test2 valueActions');
+
+    $json = viewerGet("/api/valueactions?molochRegressionUser=test100");
+    ok(! exists $json->{USERTEST});
+
+    $json = viewerGet("/api/valueactions?molochRegressionUser=test101");
+    ok(! exists $json->{USERTEST});
 
 # fieldActions tests
     $json = viewerGet("/api/fieldActions?molochRegressionUser=test1");
     eq_or_diff($json->{ASDF}, from_json('{"url": "https://www.asdf.com?expression=%EXPRESSION%&date=%DATE%&field=%FIELD%&dbField=%DBFIELD%", "name": "Field Action %FIELDNAME%!", "category": "ip"}'), 'fetches field actions');
 
+    # not web enabled
     $json = viewerGet("/api/fieldActions?molochRegressionUser=test2");
     eq_or_diff($json, from_json('{"text": "You do not have permission to access this resource", "success": false}'), 'user cannot access field action');
+
+    # not a user:
+    $json = viewerGet("/api/fieldActions?molochRegressionUser=test100");
+    eq_or_diff($json, from_json('{}'), 'not a fieldActions user:');
+
+    # notUser:
+    $json = viewerGet("/api/fieldActions?molochRegressionUser=test101");
+    eq_or_diff($json, from_json('{}'), 'notUser fieldActions');
 
 # state tests
     $json = viewerPostToken("/api/user/state/state1?molochRegressionUser=test1", '{"order":"test","visibleHeaders":["firstPacket","lastPacket","src","srcPort","dst","dstPort","totPackets","dbby","node"]}', $test1Token);

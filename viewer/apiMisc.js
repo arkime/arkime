@@ -212,11 +212,16 @@ module.exports = (Config, Db, internals, sessionAPIs, userAPIs, ViewerUtils) => 
 
     for (const key in internals.rightClicks) {
       const rc = internals.rightClicks[key];
+      // If we are one of the notUsers, then we don't get the action
       if (rc.notUsers && rc.notUsers[req.user.userId]) {
         continue;
       }
+
+      // If we are one of the users that can see the action, add to our list and remove users so we don't leak
       if (!rc.users || rc.users[req.user.userId]) {
-        actions[key] = rc;
+        actions[key] = JSON.parse(JSON.stringify(rc));
+        delete actions[key].users;
+        delete actions[key].notUsers;
       }
     }
 
@@ -239,14 +244,17 @@ module.exports = (Config, Db, internals, sessionAPIs, userAPIs, ViewerUtils) => 
 
     for (const key in internals.fieldActions) {
       const action = internals.fieldActions[key];
+      // If we are one of the notUsers, then we don't get the action
       if (action.notUsers && action.notUsers[req.user.userId]) {
         continue;
       }
-      if (!action.users || action.users[req.user.userId]) {
-        actions[key] = action;
-      }
 
-      delete actions[key].users;
+      // If we are one of the users that can see the action, add to our list and remove users so we don't leak
+      if (!action.users || action.users[req.user.userId]) {
+        actions[key] = JSON.parse(JSON.stringify(action));
+        delete actions[key].users;
+        delete actions[key].notUsers;
+      }
     }
 
     return res.send(actions);
