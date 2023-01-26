@@ -538,6 +538,7 @@ Auth.initialize({
     userIdField: exports.get('authUserIdField'),
     discoverURL: exports.get('authDiscoverURL'),
     clientId: exports.get('authClientId'),
-    clientSecret: exports.get('authClientSecret')
+    clientSecret: exports.get('authClientSecret'),
+    redirectURIs: exports.get('authRedirectURIs')
   }
 });

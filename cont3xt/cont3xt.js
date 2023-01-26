@@ -472,7 +472,8 @@ function setupAuth () {
       userIdField: getConfig('cont3xt', 'authUserIdField'),
       discoverURL: getConfig('cont3xt', 'authDiscoverURL'),
       clientId: getConfig('cont3xt', 'authClientId'),
-      clientSecret: getConfig('cont3xt', 'authClientSecret')
+      clientSecret: getConfig('cont3xt', 'authClientSecret'),
+      redirectURIs: getConfig('cont3xt', 'authRedirectURIs')
     }
   });
 

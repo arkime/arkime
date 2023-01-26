@@ -246,7 +246,8 @@ function setupAuth () {
       userIdField: getConfig('wiseService', 'authUserIdField'),
       discoverURL: getConfig('wiseService', 'authDiscoverURL'),
       clientId: getConfig('wiseService', 'authClientId'),
-      clientSecret: getConfig('wiseService', 'authClientSecret')
+      clientSecret: getConfig('wiseService', 'authClientSecret'),
+      redirectURIs: getConfig('wiseService', 'authRedirectURIs')
     }
   });
 

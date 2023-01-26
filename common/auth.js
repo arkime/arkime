@@ -140,6 +140,7 @@ class Auth {
       check('discoverURL', 'authDiscoverURL');
       check('clientId', 'authClientId');
       check('clientSecret', 'authClientSecret');
+      check('redirectURIs', 'authRedirectURIs');
       Auth.#strategies = ['oidc'];
       sessionAuth = true;
       break;
@@ -334,7 +335,7 @@ class Auth {
       const client = new issuer.Client({
         client_id: Auth.#authConfig.clientId,
         client_secret: Auth.#authConfig.clientSecret,
-        redirect_uris: [`http://localhost:3218${Auth.#basePath}auth/login/callback`], // ALW FIX FIX FIX
+        redirect_uris: Auth.#authConfig.redirectURIs.split(','),
         token_endpoint_auth_method: 'client_secret_post'
       });
 
@@ -516,7 +517,6 @@ class Auth {
     }
 
     if (typeof (req.isAuthenticated) === 'function' && req.isAuthenticated()) {
-      console.log(req.user);
       return next();
     }
 
