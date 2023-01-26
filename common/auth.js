@@ -341,6 +341,13 @@ class Auth {
       }, (tokenSet, userinfo, done) => {
         const userId = userinfo[Auth.#authConfig.userIdField];
 
+        if (userId === undefined) {
+          if (Auth.debug > 0) {
+            console.log(`AUTH: didn't find ${Auth.#authConfig.userIdField} in the userinfo`, userinfo);
+          }
+          return done(null, false);
+        }
+
         async function oidcAuthCheck (err, user) {
           if (err || !user) { return done('User not found'); }
           if (!user.enabled) { return done('User not enabled'); }
