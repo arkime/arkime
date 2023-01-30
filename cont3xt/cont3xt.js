@@ -53,6 +53,10 @@ const internals = {
   debugged: new Map()
 };
 
+
+// Process args before routes
+processArgs(process.argv);
+
 // ----------------------------------------------------------------------------
 // Security
 // ----------------------------------------------------------------------------
@@ -186,15 +190,17 @@ app.use('/integrations', (req, res, next) => {
   return ArkimeUtil.missingResource('Not png', req, res);
 });
 
-app.use(favicon(path.join(__dirname, '/favicon.ico')));
-
-app.post('/regressionTests/shutdown', (req, res) => {
-  if (internals.regressionTests) {
+if (internals.regressionTests) {
+  app.post('/regressionTests/shutdown', (req, res) => {
     console.log('Shutting down');
     process.exit(0);
-  }
-  res.send('NO!');
-});
+  });
+
+  app.post('/regressionTests/classify', [jsonParser], (req, res) => {
+    console.log(req.body);
+    res.send(req.body.map(item => Integration.classify(item)));
+  });
+}
 
 // Set up auth, all APIs registered below will use passport
 Auth.app(app);
@@ -524,7 +530,6 @@ function setupAuth () {
 }
 
 async function main () {
-  processArgs(process.argv);
   try {
     internals.config = ini.parseSync(internals.configFile);
     if (internals.debug === 0) {
