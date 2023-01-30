@@ -228,7 +228,7 @@ process.on('SIGINT', function () {
 function setupAuth () {
   let userNameHeader = getConfig('wiseService', 'userNameHeader', 'anonymous');
   let mode;
-  if (userNameHeader === 'anonymous' || userNameHeader === 'digest') {
+  if (userNameHeader === 'anonymous' || userNameHeader === 'digest' || userNameHeader === 'digest') {
     mode = userNameHeader;
     userNameHeader = undefined;
   } else {
@@ -241,7 +241,14 @@ function setupAuth () {
     userNameHeader,
     passwordSecret: getConfig('wiseService', 'passwordSecret', 'password'),
     userAuthIps: getConfig('wiseService', 'userAuthIps'),
-    httpRealm: getConfig('wiseService', 'httpRealm')
+    authConfig: {
+      httpRealm: getConfig('wiseService', 'httpRealm', 'Moloch'),
+      userIdField: getConfig('wiseService', 'authUserIdField'),
+      discoverURL: getConfig('wiseService', 'authDiscoverURL'),
+      clientId: getConfig('wiseService', 'authClientId'),
+      clientSecret: getConfig('wiseService', 'authClientSecret'),
+      redirectURIs: getConfig('wiseService', 'authRedirectURIs')
+    }
   });
 
   if (mode === 'anonymous') {

@@ -508,10 +508,13 @@ exports.loadFields = function (data) {
 
 let mode = 'anonymousWithDB';
 if (exports.get('passwordSecret')) {
-  if (exports.get('userNameHeader')) {
-    mode = 'header';
-  } else {
+  const userNameHeader = exports.get('userNameHeader');
+  if (!userNameHeader || userNameHeader === 'digest') {
     mode = 'digest';
+  } else if (userNameHeader === 'oidc') {
+    mode = 'oidc';
+  } else {
+    mode = 'header';
   }
 } else if (exports.get('regressionTests')) {
   mode = 'regressionTests';
@@ -521,7 +524,6 @@ Auth.initialize({
   mode,
   debug: exports.debug,
   basePath: exports.basePath(),
-  httpRealm: exports.get('httpRealm', 'Moloch'),
   passwordSecret: exports.getFull(internals.nodeName === 'cont3xt' ? 'cont3xt' : 'default', 'passwordSecret', 'password'),
   serverSecret: exports.getFull('default', 'serverSecret'),
   userNameHeader: exports.get('userNameHeader'),
@@ -530,5 +532,13 @@ Auth.initialize({
   userAutoCreateTmpl: exports.get('userAutoCreateTmpl'),
   userAuthIps: exports.get('userAuthIps'),
   s2s: true,
-  s2sRegressionTests: !!exports.get('s2sRegressionTests')
+  s2sRegressionTests: !!exports.get('s2sRegressionTests'),
+  authConfig: {
+    httpRealm: exports.get('httpRealm', 'Moloch'),
+    userIdField: exports.get('authUserIdField'),
+    discoverURL: exports.get('authDiscoverURL'),
+    clientId: exports.get('authClientId'),
+    clientSecret: exports.get('authClientSecret'),
+    redirectURIs: exports.get('authRedirectURIs')
+  }
 });
