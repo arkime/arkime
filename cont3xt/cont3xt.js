@@ -198,7 +198,6 @@ if (internals.regressionTests) {
   });
 
   app.post('/regressionTests/classify', [jsonParser], (req, res) => {
-    console.log(req.body);
     res.send(req.body.map(item => Integration.classify(item)));
   });
 }
