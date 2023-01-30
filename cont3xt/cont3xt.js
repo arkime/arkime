@@ -53,7 +53,6 @@ const internals = {
   debugged: new Map()
 };
 
-
 // Process args before routes
 processArgs(process.argv);
 
@@ -189,6 +188,8 @@ app.use('/integrations', (req, res, next) => {
   }
   return ArkimeUtil.missingResource('Not png', req, res);
 });
+
+app.use(favicon(path.join(__dirname, '/favicon.ico')));
 
 if (internals.regressionTests) {
   app.post('/regressionTests/shutdown', (req, res) => {
