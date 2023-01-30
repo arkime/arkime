@@ -203,8 +203,8 @@ class Integration {
       return 'hash';
     }
 
-    // https://www.oreilly.com/library/view/regular-expressions-cookbook/9781449327453/ch08s15.html + uppercase
-    if (str.match(/^([a-zA-Z0-9]+(-[a-zA-Z0-9]+)*\.)+[a-zA-Z]{2,}$/)) {
+    // https://stackoverflow.com/questions/106179/regular-expression-to-match-dns-hostname-or-ip-address
+    if (str.match(/^([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9-]{0,61}[a-zA-Z0-9])(\.([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9-]{0,61}[a-zA-Z0-9]))+$/)) {
       return 'domain';
     }
 
