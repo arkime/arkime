@@ -1,5 +1,5 @@
 # Test cont3xt.js
-use Test::More tests => 87;
+use Test::More tests => 88;
 use Test::Differences;
 use Data::Dumper;
 use MolochTest;
@@ -453,3 +453,6 @@ is ($json, "SyntaxError: Unexpected token h in JSON at position 0");
 ### Classify
 $json = cont3xtPost('/regressionTests/classify', '["aol.com", "1.2.3.4", "a----b.com", "https://a----b.com", "703-867-5309", "text", "foo@example.com", "d07708229fb0d2d513c82f36e5cdc68f", "25425d55a6af7586bf68c3989f0d4d89ffbb1641"]');
 eq_or_diff($json, from_json('["domain", "ip", "domain", "url", "phone", "text", "email", "hash", "hash"]'));
+
+$json = cont3xtPost('/regressionTests/classify', '["415-123-4567", "415.123.4567","4151234567","+01133143122222", "+011.33.143122222", "+011-33-143122222", "+33143122222"]');
+eq_or_diff($json, from_json('["phone", "phone", "phone", "phone", "phone", "phone", "phone"]'));

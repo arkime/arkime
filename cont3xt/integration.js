@@ -168,7 +168,7 @@ class Integration {
   }
 
   static classify (str) {
-    if (str.match(/^(\d{3})[-. ]?(\d{3})[-. ]?(\d{4})$/)) {
+    if (str.match(/^(\d{3}[-. ]?\d{3}[-. ]?\d{4}|\+[\d-.]{9,17})$/)) {
       return 'phone';
     }
 
