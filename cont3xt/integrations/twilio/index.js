@@ -96,6 +96,7 @@ class TwilioIntegration extends Integration {
 
       query = query.replace(/[-. ]/g, '');
       query = query.replace(/^\+011/, '+');
+      query = query.replace(/^\+00/, '+');
       if (query[0] !== '+') {
         query = '+1' + query;
       }
