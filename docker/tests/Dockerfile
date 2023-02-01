@@ -9,7 +9,7 @@ RUN \
 # Previous line taken from easybutton-build.sh
 
 RUN \
-  curl -sL https://deb.nodesource.com/setup_14.x | sudo bash - ; \
+  curl -sL https://deb.nodesource.com/setup_16.x | sudo bash - ; \
   apt update && apt install -y nodejs
 
 COPY . /src

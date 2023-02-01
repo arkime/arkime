@@ -16,7 +16,7 @@ services:
       dockerfile: ./docker/tests/Dockerfile
       context: ../../.
     volumes:
-      - ../../capture/parsers:/src/capture/parsers
+      - ../../capture:/src/capture
       - ../../tests:/src/tests
       - ./config.test.ini:/src/tests/config.test.ini
     command: sleep 300000
