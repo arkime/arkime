@@ -94,7 +94,14 @@ class TwilioIntegration extends Integration {
         return undefined;
       }
 
-      const result = await axios.get(`https://lookups.twilio.com/v1/PhoneNumbers/+1${query}?Type=carrier&Type=caller-name`, {
+      query = query.replace(/[-. ]/g, '');
+      query = query.replace(/^\+011/, '+');
+      query = query.replace(/^\+00/, '+');
+      if (query[0] !== '+') {
+        query = '+1' + query;
+      }
+
+      const result = await axios.get(`https://lookups.twilio.com/v1/PhoneNumbers/${query}?Type=carrier&Type=caller-name`, {
         headers: {
           'User-Agent': this.userAgent()
         },
