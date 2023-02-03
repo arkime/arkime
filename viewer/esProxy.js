@@ -92,7 +92,7 @@ if (esAPIKeyTee) {
   if (!esBasicAuthTee.includes(':')) {
     authHeaderTee = `Basic ${esBasicAuthTee}`;
   } else {
-    authHeaderTee = `Basic ${Buffer.from(esBasicAuthTee, 'base64').toString()}`;
+    authHeaderTee = `Basic ${Buffer.from(esBasicAuthTee).toString('base64')}`;
   }
 }
 
