@@ -19,6 +19,7 @@
 const Redis = require('ioredis');
 const memjs = require('memjs');
 const Auth = require('./auth');
+const util = require('util');
 
 class ArkimeUtil {
   static debug = 0;
@@ -44,6 +45,7 @@ class ArkimeUtil {
    */
   static sanitizeStr (str) {
     if (!str) { return str; }
+    if (typeof str === 'object') { str = util.inspect(str); }
     // eslint-disable-next-line no-control-regex
     return str.replace(/\u001b/g, '*ESC*');
   }
