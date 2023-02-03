@@ -37,6 +37,7 @@ NOTICE: Cross-cluster Shortcuts require you to not restart all your viewers at o
   - cont3xt - two clicks to delete link groups or links
   - cont3xt - classify domains with multiple dashes correctly
   - cont3xt - added ability to copy links between link groups
+  - esproxy - fix converting basic auth to base64
   - viewer - fix field actions crash
 
 4.1.0 2023/01/10

@@ -75,7 +75,7 @@ if (esAPIKey) {
   if (!esBasicAuth.includes(':')) {
     authHeader = `Basic ${esBasicAuth}`;
   } else {
-    authHeader = `Basic ${Buffer.from(esBasicAuth, 'base64').toString()}`;
+    authHeader = `Basic ${Buffer.from(esBasicAuth).toString('base64')}`;
   }
 }
 
