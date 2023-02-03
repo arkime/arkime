@@ -105,5 +105,6 @@ Db.initialize({
   esApiKey: Config.get('elasticsearchAPIKey', null),
   usersEsApiKey: Config.get('usersElasticsearchAPIKey', null),
   esBasicAuth: Config.get('elasticsearchBasicAuth', null),
-  usersEsBasicAuth: Config.get('usersElasticsearchBasicAuth', null)
+  usersEsBasicAuth: Config.get('usersElasticsearchBasicAuth', null),
+  noUsersCheck: true
 }, main);
