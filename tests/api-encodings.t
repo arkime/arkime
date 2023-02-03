@@ -1,4 +1,4 @@
-use Test::More tests => 324;
+use Test::More tests => 325;
 use Cwd;
 use URI::Escape;
 use MolochTest;
@@ -93,4 +93,19 @@ foreach my $e (undef, "xor-2048", "aes-256-ctr") {
             }
         }
     }
+}
+
+# Test decode by find the last encrypted  non compressed file
+$json = esGet("/tests_files/_search?q=node:test&sort=num:desc&size=20");
+foreach my $item (@{$json->{hits}->{hits}}) {
+    next if (exists $item->{_source}->{uncompressedBits});
+    next if (!exists $item->{_source}->{dek});
+    my $cmd = "(cd ../viewer; node decryptPcap.js -n test -c ../tests/config.test.ini $item->{_source}->{name} > $item->{_source}->{name}.pcap)";
+    system($cmd);
+    open my $in, '<', "$item->{_source}->{name}.pcap" or die "error opening $item->{_source}->{name}.pcap $!";
+    read ($in, my $data, 4);
+    is(unpack("H*", $data), "d4c3b2a1");
+    close ($in);
+    unlink("$item->{_source}->{name}.pcap");
+    last;
 }
