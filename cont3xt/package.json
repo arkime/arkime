@@ -10,7 +10,7 @@
     "test": "cd ../ && npm run cont3xt:testui"
   },
   "engines": {
-    "node": ">= 6.0.0",
+    "node": ">= 16.0.0 < 18",
     "npm": ">= 3.0.0"
   },
   "nodemonConfig": {
