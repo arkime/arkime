@@ -117,32 +117,32 @@ test('search bar', async () => {
 
   // forms display --------------------------------------------------------- //
   await fireEvent.click(getByTitle('Export PCAP'));
-  expect(getAllByText('Export PCAP').length).toBe(2);
+  expect(getAllByText('Export PCAP')).toHaveLength(2);
 
   await fireEvent.click(getByTitle('Export CSV'));
-  expect(getAllByText('Export CSV').length).toBe(2);
+  expect(getAllByText('Export CSV')).toHaveLength(2);
 
   await fireEvent.click(getByTitle('Remove Data'));
-  expect(getAllByText('Remove Data').length).toBe(2);
+  expect(getAllByText('Remove Data')).toHaveLength(2);
 
   await fireEvent.click(getByTitle('Send to Test2')); // displays clusters
   getByText('Send Session(s)');
 
   await fireEvent.click(getByTitle('Export Intersection'));
-  expect(getAllByText('Export Intersection').length).toBe(2);
+  expect(getAllByText('Export Intersection')).toHaveLength(2);
 
   await fireEvent.click(getByTitle('Add Tags'));
-  expect(getAllByText('Add Tags').length).toBe(2);
+  expect(getAllByText('Add Tags')).toHaveLength(2);
 
   await fireEvent.click(getByTitle('Remove Tags'));
-  expect(getAllByText('Remove Tags').length).toBe(2);
+  expect(getAllByText('Remove Tags')).toHaveLength(2);
 
   // form closes  ---------------------------------------------------------- //
   await fireEvent.update(getByPlaceholderText('Enter a comma separated list of tags'), 'tag1,tag2');
   await fireEvent.click(getAllByText('Remove Tags')[1]);
   await waitFor(() => {
     getByText('did it!'); // displays message from server
-    expect(getAllByText('Remove Tags').length).toBe(1);
+    expect(getAllByText('Remove Tags')).toHaveLength(1);
   });
 
   // views ----------------------------------------------------------------- //

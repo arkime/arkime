@@ -122,7 +122,7 @@ test('Integration Card', async () => {
   });
 });
 
-test('Integration Card - empty card ', async () => {
+test('Integration Card - empty card', async () => {
   store.state.integrations = {
     Whois: {
       order: 100,
@@ -136,7 +136,7 @@ test('Integration Card - empty card ', async () => {
   getByText(/Missing information to render the data./);
 });
 
-test('Integration Card - empty data ', async () => {
+test('Integration Card - empty data', async () => {
   store.state.integrationsData = {
     _query: 'threatbutt.com',
     data: {

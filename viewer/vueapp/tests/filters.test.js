@@ -62,7 +62,7 @@ test('readableTime', () => {
   expect(filters.readableTime(450067000)).toBe('5 days 05:01:07');
 });
 
-test('readableTime', () => {
+test('readableTimeCompact', () => {
   expect(filters.readableTimeCompact('a')).toBe('?');
   expect(filters.readableTimeCompact(0)).toBe('0h');
   expect(filters.readableTimeCompact(100)).toBe('0h');
@@ -76,15 +76,15 @@ test('readableTime', () => {
 });
 
 test('searchFields', () => {
-  expect(filters.searchFields(null, fields).length).toBe(fields.length - 4);
-  expect(filters.searchFields('', fields).length).toBe(fields.length - 4);
+  expect(filters.searchFields(null, fields)).toHaveLength(fields.length - 4);
+  expect(filters.searchFields('', fields)).toHaveLength(fields.length - 4);
   expect(filters.searchFields('src bytes', fields)[0].exp).toBe('bytes.src');
   expect(filters.searchFields('ip.dst:port', fields)[0].exp).toBe('ip.dst');
   expect(filters.searchFields('Dst IP', fields)[0].exp).toBe('ip.dst');
   expect(filters.searchFields('host', fields)[0].exp).toBe('host.http.tokens');
-  expect(filters.searchFields('Hostname Tokens', fields, true).length).toBe(0);
-  expect(filters.searchFields('filename', fields, false, true).length).toBe(0);
-  expect(filters.searchFields('info', fields, false, false, true).length).toBe(0);
+  expect(filters.searchFields('Hostname Tokens', fields, true)).toHaveLength(0);
+  expect(filters.searchFields('filename', fields, false, true)).toHaveLength(0);
+  expect(filters.searchFields('info', fields, false, false, true)).toHaveLength(0);
 });
 
 test('buildExpression', () => {

@@ -95,7 +95,7 @@ test('views', async () => {
   expect(viewExpressionInput.value).toBe('');
 
   await waitFor(() => { // displays new view
-    expect(getAllByTitle("Copy this views's expression").length).toBe(4);
+    expect(getAllByTitle("Copy this views's expression")).toHaveLength(4);
   });
 
   // can update a view ----------------------------------------------------- //
