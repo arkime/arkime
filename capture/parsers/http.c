@@ -1038,8 +1038,8 @@ static const char *method_strings[] =
     moloch_config_add_header(&httpReqHeaders, "x-forwarded-for", xffField);
     moloch_config_add_header(&httpReqHeaders, "user-agent", uaField);
     moloch_config_add_header(&httpReqHeaders, "host", hostField);
-    moloch_config_load_header("headers-http-request", "http", "Request header ", "http.", "http.request-", &httpReqHeaders, 0);
-    moloch_config_load_header("headers-http-response", "http", "Response header ", "http.", "http.response-", &httpResHeaders, 0);
+    moloch_config_load_header("headers-http-request", "http", "Request header ", "http.", "http.request.", "http.request-", &httpReqHeaders, 0);
+    moloch_config_load_header("headers-http-response", "http", "Response header ", "http.", "http.response.", "http.response-", &httpResHeaders, 0);
 
     int i;
     for (i = 0; method_strings[i]; i++) {
