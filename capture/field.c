@@ -97,7 +97,6 @@ void moloch_field_define_json(unsigned char *expression, int expression_len, uns
             info->transform = g_strndup((char*)data + out[i+2], out[i+3]);
         } else if (strncmp("aliases", (char*)data + out[i], 7) == 0) {
             g_free(info->aliases);
-            LOG("ALW1 found aliases %d", out[i]);
             info->aliases = g_strndup((char*)data + out[i+2], out[i+3]);
         } else if (strncmp("disabled", (char*)data + out[i], 8) == 0) {
             if (strncmp((char *)data + out[i+2], "true", 4) == 0) {
