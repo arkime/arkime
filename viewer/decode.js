@@ -31,6 +31,7 @@ const cryptoLib = require('crypto');
 const ArkimeUtil = require('../common/arkimeUtil');
 
 const { HTTPParser } = require('http-parser-js');
+// eslint-disable-next-line no-unused-vars
 const onExecute = HTTPParser.kOnExecute;
 
 const internals = {
