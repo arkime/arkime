@@ -30,16 +30,8 @@ const async = require('async');
 const cryptoLib = require('crypto');
 const ArkimeUtil = require('../common/arkimeUtil');
 
-let HTTPParser;
-if (process.version.startsWith('v16')) {
-  HTTPParser = require('_http_common').HTTPParser;
-} else if (process.version.startsWith('v12')) {
-  // eslint-disable-next-line n/no-deprecated-api
-  HTTPParser = process.binding('http_parser_llhttp').HTTPParser;
-} else {
-  // eslint-disable-next-line n/no-deprecated-api
-  HTTPParser = process.binding('http_parser').HTTPParser;
-}
+const { HTTPParser } = require('http-parser-js');
+const onExecute = HTTPParser.kOnExecute;
 
 const internals = {
   registry: {},

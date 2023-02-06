@@ -24,6 +24,7 @@
     "font-awesome": "^4.7.0",
     "glob": "^7.2.3",
     "helmet": "^3.23.3",
+    "http-parser-js": "^0.5.8",
     "iniparser": "https://github.com/awick/node-iniparser/tarball/master",
     "ioredis": "^4.23.0",
     "ipaddr.js": "^2.0.0",
