@@ -22,8 +22,8 @@
 
 extern MolochConfig_t        config;
 
-HASH_VAR(d_, fieldsByDb, MolochFieldInfo_t, 307);
-HASH_VAR(e_, fieldsByExp, MolochFieldInfo_t, 307);
+LOCAL HASH_VAR(d_, fieldsByDb, MolochFieldInfo_t, 307);
+LOCAL HASH_VAR(e_, fieldsByExp, MolochFieldInfo_t, 307);
 
 #define MOLOCH_FIELD_SPECIAL_STOP_SPI      -2
 #define MOLOCH_FIELD_SPECIAL_STOP_PCAP     -3
@@ -95,6 +95,10 @@ void moloch_field_define_json(unsigned char *expression, int expression_len, uns
         } else if (strncmp("transform", (char*)data + out[i], 8) == 0) {
             g_free(info->transform);
             info->transform = g_strndup((char*)data + out[i+2], out[i+3]);
+        } else if (strncmp("aliases", (char*)data + out[i], 7) == 0) {
+            g_free(info->aliases);
+            LOG("ALW1 found aliases %d", out[i]);
+            info->aliases = g_strndup((char*)data + out[i+2], out[i+3]);
         } else if (strncmp("disabled", (char*)data + out[i], 8) == 0) {
             if (strncmp((char *)data + out[i+2], "true", 4) == 0) {
                 disabled = 1;
@@ -126,6 +130,7 @@ int moloch_field_define_text_full(char *field, char *text, int *shortcut)
     char *friendly = 0;
     char *category = 0;
     char *transform = 0;
+    char *aliases = 0;
 
     if (config.debug)
         LOG("Parsing %s", text);
@@ -159,6 +164,8 @@ int moloch_field_define_text_full(char *field, char *text, int *shortcut)
             category = colon;
         else if (strcmp(elements[e], "transform") == 0)
             transform = colon;
+        else if (strcmp(elements[e], "aliases") == 0)
+            aliases = colon;
         else if (strcmp(elements[e], "shortcut") == 0) {
             if (shortcut)
                 *shortcut = atoi(colon);
@@ -236,7 +243,7 @@ int moloch_field_define_text_full(char *field, char *text, int *shortcut)
     if (!noutf8 && type == MOLOCH_FIELD_TYPE_STR_HASH)
         flags |= MOLOCH_FIELD_FLAG_FORCE_UTF8;
 
-    int pos =  moloch_field_define(group, kind, field, friendly, db, help, type, flags, "category", category, "transform", transform, (char *)NULL);
+    int pos =  moloch_field_define(group, kind, field, friendly, db, help, type, flags, "category", category, "transform", transform, "aliases", aliases, (char *)NULL);
     g_strfreev(elements);
     return pos;
 }
@@ -288,6 +295,7 @@ int moloch_field_define(char *group, char *kind, char *expression, char *friendl
 
         char *category = NULL;
         char *transform = NULL;
+        char *aliases = NULL;
         if (strcmp(kind, minfo->kind) != 0) {
             LOG("WARNING - Field kind in db %s doesn't match field kind %s in capture for field %s", minfo->kind, kind, expression);
         }
@@ -301,6 +309,8 @@ int moloch_field_define(char *group, char *kind, char *expression, char *friendl
                 category = value;
             } else if (strcmp(field, "transform") == 0 && value) {
                 transform = value;
+            } else if (strcmp(field, "aliases") == 0 && value) {
+                aliases = value;
             }
         }
         va_end(args);
@@ -311,6 +321,10 @@ int moloch_field_define(char *group, char *kind, char *expression, char *friendl
         if (transform && (!minfo->transform || strcmp(transform, minfo->transform) != 0)) {
             LOG("UPDATING - Field transform in db %s doesn't match field transform %s in capture for field %s", minfo->transform, transform, expression);
             moloch_db_update_field(expression, "transform", transform);
+        }
+        if (aliases && (!minfo->aliases || strcmp(aliases, minfo->aliases) != 0)) {
+            LOG("UPDATING - Field aliases in db %s doesn't match field aliases %s in capture for field %s", minfo->aliases, aliases, expression);
+            moloch_db_update_field(expression, "aliases", aliases);
         }
     }
 
@@ -381,6 +395,7 @@ int moloch_field_define(char *group, char *kind, char *expression, char *friendl
         g_free(minfo->group);
         g_free(minfo->kind);
         g_free(minfo->transform);
+        g_free(minfo->aliases);
         HASH_REMOVE(d_, fieldsByDb, minfo);
         HASH_REMOVE(e_, fieldsByExp, minfo);
         MOLOCH_TYPE_FREE(MolochFieldInfo_t, minfo);
@@ -1742,6 +1757,7 @@ void moloch_field_exit()
         g_free(info->kind);
         g_free(info->category);
         g_free(info->transform);
+        g_free(info->aliases);
         MOLOCH_TYPE_FREE(MolochFieldInfo_t, info);
     );
 

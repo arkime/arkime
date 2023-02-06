@@ -58,7 +58,7 @@
 #define SUPPRESS_INT_CONVERSION
 #endif
 
-#define MOLOCH_API_VERSION 410
+#define MOLOCH_API_VERSION 420
 
 #define MOLOCH_SESSIONID_LEN 37
 
@@ -251,6 +251,7 @@ typedef struct moloch_field_info {
     uint16_t                  flags;
     char                      ruleEnabled;
     char                     *transform;
+    char                     *aliases;
 } MolochFieldInfo_t;
 
 typedef struct {
@@ -855,7 +856,7 @@ void moloch_config_init();
 void moloch_config_load_local_ips();
 void moloch_config_load_packet_ips();
 void moloch_config_add_header(MolochStringHashStd_t *hash, char *key, int pos);
-void moloch_config_load_header(char *section, char *group, char *helpBase, char *expBase, char *dbBase, MolochStringHashStd_t *hash, int flags);
+void moloch_config_load_header(char *section, char *group, char *helpBase, char *expBase, char *aliasBase, char *dbBase, MolochStringHashStd_t *hash, int flags);
 void moloch_config_exit();
 
 gchar **moloch_config_section_raw_str_list(GKeyFile *keyfile, char *section, char *key, char *d);
