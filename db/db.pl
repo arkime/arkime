@@ -7255,13 +7255,15 @@ qq/{"policy": {
     my $hprevious = esGet("/_plugins/_ism/policies/${PREFIX}history", 1);
     if (exists $hprevious->{policy}) {
       esPut("/_plugins/_ism/policies/${PREFIX}history?if_seq_no=$hprevious->{_seq_no}&if_primary_term=$hprevious->{_primary_term}", $hpolicy);
-      esPut("/_plugins/_ism/change_policy/${PREFIX}history_v*", qq/{"policy_id": "${PREFIX}history"}/, 1);
+      esPost("/_plugins/_ism/change_policy/${PREFIX}history_v*", qq/{"policy_id": "${PREFIX}history"}/, 1);
+      esPost("/_plugins/_ism/add/${PREFIX}history_v*", qq/{"policy_id": "${PREFIX}history"}/, 1);
     } else {
       esPut("/_plugins/_ism/policies/${PREFIX}history", $hpolicy);
-      esPut("/_plugins/_ism/add/${PREFIX}history_v*", qq/{"policy_id": "${PREFIX}history"}/, 1);
+      esPost("/_plugins/_ism/add/${PREFIX}history_v*", qq/{"policy_id": "${PREFIX}history"}/, 1);
     }
     print "History Policy:\n$hpolicy\n" if ($verbose > 1);
     sleep 5;
+    exit 0;
 
     #### SESSIONS ####
     my $policy;
@@ -7349,10 +7351,11 @@ $policy = qq/{
     my $previous = esGet("/_plugins/_ism/policies/${PREFIX}sessions", 1);
     if (exists $previous->{policy}) {
       esPut("/_plugins/_ism/policies/${PREFIX}sessions?if_seq_no=$previous->{_seq_no}&if_primary_term=$previous->{_primary_term}", $policy);
-      esPut("/_plugins/_ism/change_policy/${PREFIX}sessions3-*", qq/{"policy_id": "${PREFIX}sessions"}/, 1);
+      esPost("/_plugins/_ism/change_policy/${PREFIX}sessions3-*", qq/{"policy_id": "${PREFIX}sessions"}/, 1);
+      esPost("/_plugins/_ism/add/${PREFIX}sessions3-**", qq/{"policy_id": "${PREFIX}sessions"}/, 1);
     } else {
       esPut("/_plugins/_ism/policies/${PREFIX}sessions", $policy);
-      esPut("/_plugins/_ism/add/${PREFIX}sessions3-**", qq/{"policy_id": "${PREFIX}sessions"}/, 1);
+      esPost("/_plugins/_ism/add/${PREFIX}sessions3-**", qq/{"policy_id": "${PREFIX}sessions"}/, 1);
     }
 
     print "Policy:\n$policy\n" if ($verbose > 1);
