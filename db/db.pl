@@ -6276,17 +6276,28 @@ if ($ESAPIKEY ne "") {
     $main::userAgent->default_header('Authorization' => "Basic $USERPASS");
 }
 
+sub verify {
+  my ($ok) = @_;
+
+  return 1 if (!$SECURE || $ok);
+
+  print "\nThere is a problem verifying the certificate for OpenSearch/Elasticsearch. Most likely it has either expired or you are using a self signed cert. You will need to either replace the certificates, use the --insecure option, or https://arkime.com/faq#self-signed-ssl-tls-certificates might help.\n";
+  exit;
+}
+
 if ($CLIENTCERT ne "") {
     $main::userAgent->ssl_opts(
         SSL_verify_mode => $SECURE,
         verify_hostname=> $SECURE,
         SSL_cert_file => $CLIENTCERT,
-        SSL_key_file => $CLIENTKEY
+        SSL_key_file => $CLIENTKEY,
+        SSL_verify_callback => \&verify
     )
 } else {
     $main::userAgent->ssl_opts(
         SSL_verify_mode => $SECURE,
-        verify_hostname=> $SECURE
+        verify_hostname=> $SECURE,
+        SSL_verify_callback => \&verify
     )
 }
 
