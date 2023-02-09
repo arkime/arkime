@@ -1,6 +1,6 @@
 #!/usr/bin/perl
 # This script can initialize, upgrade or provide simple maintenance for the
-# Arkime elastic search db
+# Arkime OpenSearch/Elasticsearch db
 #
 # Schema Versions
 #  0 - Before this script existed
@@ -298,7 +298,7 @@ sub esGet
     logmsg "GET ${main::elasticsearch}$url\n" if ($verbose > 2);
     my $response = $main::userAgent->get("${main::elasticsearch}$url");
     if (($response->code == 500 && $ARGV[1] ne "init" && $ARGV[1] ne "shrink") || ($response->code != 200 && !$dontcheck)) {
-      die "Couldn't GET ${main::elasticsearch}$url  the http status code is " . $response->code . " are you sure elasticsearch is running/reachable?";
+      die "Couldn't GET ${main::elasticsearch}$url  the http status code is " . $response->code . " are you sure OpenSearch/Elasticsearch is running/reachable?";
     }
     my $json = from_json($response->content);
     logmsg "GET RESULT:", Dumper($json), "\n" if ($verbose > 3 || $response->code == 401);
@@ -322,7 +322,7 @@ sub esPost
       return from_json("{}") if ($dontcheck == 2);
 
       logmsg "POST RESULT:", $response->content, "\n" if ($response->code == 401 || $verbose > 3 || ($verbose > 0 && int($response->code / 100) == 4));
-      die "Couldn't POST ${main::elasticsearch}$url  the http status code is " . $response->code . " are you sure elasticsearch is running/reachable?";
+      die "Couldn't POST ${main::elasticsearch}$url  the http status code is " . $response->code . " are you sure OpenSearch/Elasticsearch is running/reachable?";
     }
 
     my $json = from_json($response->content);
@@ -345,7 +345,7 @@ sub esPut
     my $response = $main::userAgent->request(HTTP::Request::Common::PUT("${main::elasticsearch}$url", Content => $content, Content_Type => "application/json"));
     if ($response->code != 200 && $response->code != 201 && !$dontcheck) {
       logmsg Dumper($response);
-      die "Couldn't PUT ${main::elasticsearch}$url  the http status code is " . $response->code . " are you sure elasticsearch is running/reachable?\n" . $response->content;
+      die "Couldn't PUT ${main::elasticsearch}$url  the http status code is " . $response->code . " are you sure OpenSearch/Elasticsearch is running/reachable?\n" . $response->content;
     } elsif ($response->code == 500 && $dontcheck) {
       print "Ignoring following error\n";
       logmsg Dumper($response);
@@ -369,7 +369,7 @@ sub esDelete
     logmsg "DELETE ${main::elasticsearch}$url\n" if ($verbose > 2);
     my $response = $main::userAgent->request(HTTP::Request::Common::_simple_req("DELETE", "${main::elasticsearch}$url"));
     if ($response->code == 500 || ($response->code != 200 && !$dontcheck)) {
-      die "Couldn't DELETE ${main::elasticsearch}$url  the http status code is " . $response->code . " are you sure elasticsearch is running/reachable?";
+      die "Couldn't DELETE ${main::elasticsearch}$url  the http status code is " . $response->code . " are you sure OpenSearch/Elasticsearch is running/reachable?";
     }
     my $json = from_json($response->content);
     return $json
@@ -6029,7 +6029,7 @@ my ($prefix) = @_;
 sub dbCheckHealth {
     my $health = esGet("/_cluster/health");
     if ($health->{status} ne "green") {
-        logmsg("WARNING elasticsearch health is '$health->{status}' instead of 'green', things may be broken\n\n");
+        logmsg("WARNING OpenSearch/Elasticsearch health is '$health->{status}' instead of 'green', things may be broken\n\n");
     }
     return $health;
 }
@@ -7593,9 +7593,9 @@ my $nodes = esGet("/_nodes");
 $main::numberOfNodes = dataNodes($nodes->{nodes});
 logmsg "It is STRONGLY recommended that you stop ALL Arkime captures and viewers before proceeding.  Use 'db.pl ${main::elasticsearch} backup' to backup db first.\n\n";
 if ($main::numberOfNodes == 1) {
-    logmsg "There is $main::numberOfNodes elastic search data node, if you expect more please fix first before proceeding.\n\n";
+    logmsg "There is $main::numberOfNodes OpenSearch/Elasticsearch data node, if you expect more please fix first before proceeding.\n\n";
 } else {
-    logmsg "There are $main::numberOfNodes elastic search data nodes, if you expect more please fix first before proceeding.\n\n";
+    logmsg "There are $main::numberOfNodes OpenSearch/Elasticsearch data nodes, if you expect more please fix first before proceeding.\n\n";
 }
 
 if (int($SHARDS) > $main::numberOfNodes) {
@@ -7619,10 +7619,10 @@ if ($ARGV[1] eq "wipe" && $main::versionNumber != $VERSION) {
 if ($ARGV[1] =~ /^(init|wipe|clean)/) {
 
     if ($ARGV[1] eq "init" && $main::versionNumber >= 0) {
-        logmsg "It appears this elastic search cluster already has Arkime installed (version $main::versionNumber), this will delete ALL data in elastic search! (It does not delete the pcap files on disk.)\n\n";
+        logmsg "It appears this OpenSearch/Elasticsearch cluster already has Arkime installed (version $main::versionNumber), this will delete ALL data in OpenSearch/Elasticsearch! (It does not delete the pcap files on disk.)\n\n";
         waitFor("INIT", "do you want to erase everything?");
     } elsif ($ARGV[1] eq "wipe") {
-        logmsg "This will delete ALL session data in elastic search! (It does not delete the pcap files on disk or user info.)\n\n";
+        logmsg "This will delete ALL session data in OpenSearch/Elasticsearch! (It does not delete the pcap files on disk or user info.)\n\n";
         waitFor("WIPE", "do you want to wipe everything?");
     } elsif ($ARGV[1] eq "clean") {
         waitFor("CLEAN", "do you want to clean everything?");
@@ -7837,7 +7837,7 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
     }
 
     if ($health->{status} eq "red") {
-        logmsg "Not auto upgrading when elasticsearch status is red.\n\n";
+        logmsg "Not auto upgrading when OpenSearch/Elasticsearch status is red.\n\n";
         waitFor("RED", "do you want to really want to upgrade?");
     } elsif ($ARGV[1] ne "upgradenoprompt") {
         logmsg "Trying to upgrade from version $main::versionNumber to version $VERSION.\n\n";
