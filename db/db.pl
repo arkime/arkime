@@ -105,6 +105,7 @@ my $ESTIMEOUT=60;
 my $UPGRADEALLSESSIONS = 1;
 my $DOHOTWARM = 0;
 my $DOILM = 0;
+my $DOISM = 0;
 my $WARMAFTER = -1;
 my $WARMKIND = "daily";
 my $OPTIMIZEWARM = 0;
@@ -164,7 +165,8 @@ sub showHelp($)
     print "    --refresh <num>            - Number of seconds the sessions indices use for refresh interval, default 60\n";
     print "    --shardsPerNode <shards>   - Number of shards per node or use \"null\" to let OpenSearch/Elasticsearch decide, default shards*replicas/nodes\n";
     print "    --hotwarm                  - Set 'hot' for 'node.attr.molochtype' on new indices, warm on non sessions indices\n";
-    print "    --ilm                      - Use ilm to manage\n";
+    print "    --ilm                      - Use ilm (Elasticsearch) to manage\n";
+    print "    --ism                      - Use ism (OpenSearch) to manage\n";
     print "  wipe [<init opts>]           - Same as init, but leaves user index untouched\n";
     print "  upgrade [<init opts>]        - Upgrade Arkime's mappings from a previous version or use to change settings\n";
     print "  expire <type> <num> [<opts>] - Perform daily OpenSearch/Elasticsearch maintenance and optimize all indices, not needed with ILM\n";
@@ -198,13 +200,15 @@ sub showHelp($)
     print "      node                     - The node to temporarily use for shrinking\n";
     print "      num                      - Number of shards to shrink to\n";
     print "    --shardsPerNode <shards>   - Number of shards per node or use \"null\" to let OpenSearch/Elasticsearch decide, default 1\n";
-    print "  ilm <force> <delete>         - Create ILM profile\n";
+    print "  ilm <force> <delete>         - Create ILM profile for Elasticsearch\n";
     print "      force                    - Time in hours/days before (moving to warm) and force merge (number followed by h or d)\n";
     print "      delete                   - Time in hours/days before deleting index (number followed by h or d)\n";
     print "    --hotwarm                  - Set 'hot' for 'node.attr.molochtype' on new indices, warm on non sessions indices\n";
     print "    --segments <num>           - Number of segments to optimize sessions to, default 1\n";
     print "    --replicas <num>           - Number of replicas for older sessions indices, default 0\n";
     print "    --history <num>            - Number of weeks of history to keep, default 13\n";
+    print "  ism <force> <delete>         - Create ISM profile for OpenSearch\n";
+    print "     Same options as ilm command above\n";
     print "  reindex <src> [<dst>]        - Reindex OpenSearch/Elasticsearch indices\n";
     print "    --nopcap                   - Remove fields having to do with pcap files\n";
     print "\n";
@@ -339,7 +343,7 @@ sub esPut
     logmsg "PUT ${main::elasticsearch}$url\n" if ($verbose > 2);
     logmsg "PUT DATA:", Dumper($content), "\n" if ($verbose > 3);
     my $response = $main::userAgent->request(HTTP::Request::Common::PUT("${main::elasticsearch}$url", Content => $content, Content_Type => "application/json"));
-    if ($response->code != 200 && !$dontcheck) {
+    if ($response->code != 200 && $response->code != 201 && !$dontcheck) {
       logmsg Dumper($response);
       die "Couldn't PUT ${main::elasticsearch}$url  the http status code is " . $response->code . " are you sure elasticsearch is running/reachable?\n" . $response->content;
     } elsif ($response->code == 500 && $dontcheck) {
@@ -6172,6 +6176,10 @@ sub parseArgs {
             $DOHOTWARM = 1;
         } elsif ($ARGV[$pos] eq "--ilm") {
             $DOILM = 1;
+            die "Can't use both --ilm and --ism" if ($DOISM);
+        } elsif ($ARGV[$pos] eq "--ism") {
+            $DOISM = 1;
+            die "Can't use both --ilm and --ism" if ($DOILM);
         } elsif ($ARGV[$pos] eq "--warmafter") {
             $pos++;
             $WARMAFTER = int($ARGV[$pos]);
@@ -6248,7 +6256,7 @@ $PREFIX = "arkime_" if (! defined $PREFIX);
 
 showHelp("Help:") if ($ARGV[1] =~ /^help$/);
 showHelp("Missing arguments") if (@ARGV < 2);
-showHelp("Unknown command '$ARGV[1]'") if ($ARGV[1] !~ /^(init|initnoprompt|clean|info|wipe|upgrade|upgradenoprompt|disable-?users|set-?shortcut|users-?import|import|restore|restorenoprompt|users-?export|export|repair|backup|expire|rotate|optimize|optimize-admin|mv|rm|rm-?missing|rm-?node|add-?missing|field|force-?put-?version|sync-?files|hide-?node|unhide-?node|add-?alias|set-?replicas|set-?shards-?per-?node|set-?allocation-?enable|allocate-?empty|unflood-?stage|shrink|ilm|recreate-users|recreate-stats|recreate-dstats|recreate-fields|recreate-files|update-fields|update-history|reindex|force-sessions3-update|es-adduser|es-passwd|es-addapikey)$/);
+showHelp("Unknown command '$ARGV[1]'") if ($ARGV[1] !~ /^(init|initnoprompt|clean|info|wipe|upgrade|upgradenoprompt|disable-?users|set-?shortcut|users-?import|import|restore|restorenoprompt|users-?export|export|repair|backup|expire|rotate|optimize|optimize-admin|mv|rm|rm-?missing|rm-?node|add-?missing|field|force-?put-?version|sync-?files|hide-?node|unhide-?node|add-?alias|set-?replicas|set-?shards-?per-?node|set-?allocation-?enable|allocate-?empty|unflood-?stage|shrink|ilm|ism|recreate-users|recreate-stats|recreate-dstats|recreate-fields|recreate-files|update-fields|update-history|reindex|force-sessions3-update|es-adduser|es-passwd|es-addapikey)$/);
 showHelp("Missing arguments") if (@ARGV < 3 && $ARGV[1] =~ /^(users-?import|import|users-?export|backup|restore|restorenoprompt|rm|rm-?missing|rm-?node|hide-?node|unhide-?node|set-?allocation-?enable|unflood-?stage|reindex|es-adduser|es-addapikey)$/);
 showHelp("Missing arguments") if (@ARGV < 4 && $ARGV[1] =~ /^(field|export|add-?missing|sync-?files|add-?alias|set-?replicas|set-?shards-?per-?node|set-?shortcut|ilm)$/);
 showHelp("Missing arguments") if (@ARGV < 5 && $ARGV[1] =~ /^(allocate-?empty|set-?shortcut|shrink)$/);
@@ -6258,7 +6266,7 @@ showHelp("Must have both <type> and <num> arguments") if (@ARGV < 4 && $ARGV[1] 
 parseArgs(2) if ($ARGV[1] =~ /^(init|initnoprompt|upgrade|upgradenoprompt|clean|wipe|optimize)$/);
 parseArgs(3) if ($ARGV[1] =~ /^(restore|restorenoprompt|backup)$/);
 
-$ESTIMEOUT = 240 if ($ESTIMEOUT < 240 && $ARGV[1] =~ /^(init|initnoprompt|upgrade|upgradenoprompt|clean|shrink|ilm)$/);
+$ESTIMEOUT = 240 if ($ESTIMEOUT < 240 && $ARGV[1] =~ /^(init|initnoprompt|upgrade|upgradenoprompt|clean|shrink|ilm|ism)$/);
 
 $main::userAgent = LWP::UserAgent->new(timeout => $ESTIMEOUT + 5, keep_alive => 5);
 
@@ -6795,6 +6803,7 @@ if ($ARGV[1] =~ /^(users-?import|import)$/) {
     my $status = esGet("/_stats/docs,store", 1);
     my $minMax = esPost("/${OLDPREFIX}sessions2-*,${PREFIX}sessions3-*/_search?size=0", '{"aggs":{ "min" : { "min" : { "field" : "lastPacket" } }, "max" : { "max" : { "field" : "lastPacket" } } } }', 1);
     my $ilm = esGet("/_ilm/policy/${PREFIX}molochsessions", 1);
+    my $ism = esGet("/_plugins/_ism/policies/${PREFIX}molochsessions", 1);
 
     my $sessions = 0;
     my $sessionsBytes = 0;
@@ -6849,8 +6858,12 @@ if ($ARGV[1] =~ /^(users-?import|import)$/) {
         printf "Sessions Days:       %17.2f (%s - %s)\n", $days, $minMax->{aggregations}->{min}->{value_as_string}, $minMax->{aggregations}->{max}->{value_as_string};
         printf "Possible Sessions Days:  %13.2f\n", (0.95*$diskTotal)/($sessionsTotalBytes/$days) if ($days > 0);
 
-        if (exists $ilm->{molochsessions} && exists $ilm->{molochsessions}->{policy}->{phases}->{delete}) {
-            printf "ILM Delete Age:      %17s\n", $ilm->{molochsessions}->{policy}->{phases}->{delete}->{min_age};
+        if (exists $ilm->{"${PREFIX}molochsessions"} && exists $ilm->{"${PREFIX}molochsessions"}->{policy}->{phases}->{delete}) {
+            printf "ILM Delete Age:      %17s\n", $ilm->{"${PREFIX}molochsessions"}->{policy}->{phases}->{delete}->{min_age};
+        }
+
+        if (exists $ism->{policy} && exists $ism->{policy}->{states}->[0]) {
+            printf "ILM Delete Age:      %17s\n", $ism->{policy}->{stats}->[0]->{transitions}->{conditions}->{min_index_age};
         }
     }
     printf "History Indices:     %17s\n", commify(scalar(@historys));
@@ -7189,6 +7202,161 @@ qq/ {
     }
     esPut("/_ilm/policy/${PREFIX}molochsessions?master_timeout=${ESTIMEOUT}s", $policy);
     esPut("/${OLDPREFIX}sessions2-*,${PREFIX}sessions3-*/_settings?allow_no_indices=true&master_timeout=${ESTIMEOUT}s", qq/{"settings": {"index.lifecycle.name": "${PREFIX}molochsessions"}}/, 1);
+    print "Policy:\n$policy\n" if ($verbose > 1);
+    exit 0;
+} elsif ($ARGV[1] =~ /^ism$/) {
+    parseArgs(4);
+    my $forceTime = $ARGV[2];
+    die "force time must be num followed by h or d" if ($forceTime !~ /^\d+[hd]/);
+    my $deleteTime = $ARGV[3];
+    die "delete time must be num followed by h or d" if ($deleteTime !~ /^\d+[hd]/);
+    $REPLICAS = 0 if ($REPLICAS == -1);
+    $HISTORY = $HISTORY * 7;
+
+    print "Creating history ism policy '${PREFIX}history' with: deleteTime ${HISTORY}d\n";
+    print "Creating sessions ism policy '${PREFIX}sessions' with: forceTime: $forceTime deleteTime: $deleteTime segments: $SEGMENTS replicas: $REPLICAS\n";
+
+    #### HISTORY ####
+    my $hpolicy =
+qq/{"policy": {
+  "description" : "Delete Arkime history indices",
+  "default_state" : "warm",
+  "states" : [
+    {
+      "name" : "warm",
+      "transitions" : [
+        {
+          "state_name" : "delete",
+          "conditions" : {
+            "min_index_age" : "${HISTORY}d"
+          }
+        }
+      ]
+    },
+    {
+      "name" : "delete",
+      "actions" : [
+        {
+          "delete" : { }
+        }
+      ]
+    }
+  ],
+  "ism_template" : [
+    {
+      "index_patterns" : [
+        "${PREFIX}history_v*"
+      ],
+      "priority" : 95
+    }
+  ]
+}}/;
+
+    my $hprevious = esGet("/_plugins/_ism/policies/${PREFIX}history", 1);
+    if (exists $hprevious->{policy}) {
+      esPut("/_plugins/_ism/policies/${PREFIX}history?if_seq_no=$hprevious->{_seq_no}&if_primary_term=$hprevious->{_primary_term}", $hpolicy);
+      esPost("/_plugins/_ism/change_policy/${PREFIX}history_v*", qq/{"policy_id": "${PREFIX}history"}/, 1);
+      esPost("/_plugins/_ism/add/${PREFIX}history_v*", qq/{"policy_id": "${PREFIX}history"}/, 1);
+    } else {
+      esPut("/_plugins/_ism/policies/${PREFIX}history", $hpolicy);
+      esPost("/_plugins/_ism/add/${PREFIX}history_v*", qq/{"policy_id": "${PREFIX}history"}/, 1);
+    }
+    print "History Policy:\n$hpolicy\n" if ($verbose > 1);
+    sleep 5;
+
+    #### SESSIONS ####
+    my $policy;
+    my $allocation = "";
+    if ($DOHOTWARM) {
+      $allocation = qq/{"allocation" : {"require" : { "molochtype" : "warm" }, "wait_for" : true }},/;
+    } 
+
+$policy = qq/{
+  "policy" : {
+    "description" : "Arkime sessions3 Policy",
+    "default_state" : "hot",
+    "states" : [
+      {
+        "name" : "hot",
+        "transitions" : [
+          {
+            "state_name" : "warm",
+            "conditions" : {
+              "min_index_age" : "$forceTime"
+            }
+          }
+        ]
+      },
+      {
+        "name" : "warm",
+        "actions" : [
+          {
+            "retry" : {
+              "count" : 3,
+              "backoff" : "exponential",
+              "delay" : "1m"
+            },
+            "force_merge" : {
+              "max_num_segments" : $SEGMENTS
+            }
+          },
+          $allocation
+          {
+            "retry" : {
+              "count" : 3,
+              "backoff" : "exponential",
+              "delay" : "1m"
+            },
+            "replica_count" : {
+              "number_of_replicas" : $REPLICAS
+            }
+          }
+        ],
+        "transitions" : [
+          {
+            "state_name" : "delete",
+            "conditions" : {
+              "min_index_age" : "$forceTime"
+            }
+          }
+        ]
+      },
+      {
+        "name" : "delete",
+        "actions" : [
+          {
+            "retry" : {
+              "count" : 3,
+              "backoff" : "exponential",
+              "delay" : "1m"
+            },
+            "delete" : { }
+          }
+        ],
+        "transitions" : [ ]
+      }
+    ],
+    "ism_template" : [
+      {
+        "index_patterns" : [
+          "${PREFIX}sessions3-*"
+        ],
+        "priority" : 95
+      }
+    ]
+  }
+}/;
+
+    my $previous = esGet("/_plugins/_ism/policies/${PREFIX}sessions", 1);
+    if (exists $previous->{policy}) {
+      esPut("/_plugins/_ism/policies/${PREFIX}sessions?if_seq_no=$previous->{_seq_no}&if_primary_term=$previous->{_primary_term}", $policy);
+      esPost("/_plugins/_ism/change_policy/${PREFIX}sessions3-*", qq/{"policy_id": "${PREFIX}sessions"}/, 1);
+      esPost("/_plugins/_ism/add/${PREFIX}sessions3-*", qq/{"policy_id": "${PREFIX}sessions"}/, 1);
+    } else {
+      esPut("/_plugins/_ism/policies/${PREFIX}sessions", $policy);
+      esPost("/_plugins/_ism/add/${PREFIX}sessions3-*", qq/{"policy_id": "${PREFIX}sessions"}/, 1);
+    }
+
     print "Policy:\n$policy\n" if ($verbose > 1);
     exit 0;
 } elsif ($ARGV[1] =~ /^reindex$/) {
