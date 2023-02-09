@@ -7247,7 +7247,7 @@ qq/{"policy": {
       "index_patterns" : [
         "${PREFIX}history_v*"
       ],
-      "priority" : 1
+      "priority" : 95
     }
   ]
 }}/;
@@ -7263,7 +7263,6 @@ qq/{"policy": {
     }
     print "History Policy:\n$hpolicy\n" if ($verbose > 1);
     sleep 5;
-    exit 0;
 
     #### SESSIONS ####
     my $policy;
@@ -7342,7 +7341,7 @@ $policy = qq/{
         "index_patterns" : [
           "${PREFIX}sessions3-*"
         ],
-        "priority" : 1
+        "priority" : 95
       }
     ]
   }
@@ -7352,10 +7351,10 @@ $policy = qq/{
     if (exists $previous->{policy}) {
       esPut("/_plugins/_ism/policies/${PREFIX}sessions?if_seq_no=$previous->{_seq_no}&if_primary_term=$previous->{_primary_term}", $policy);
       esPost("/_plugins/_ism/change_policy/${PREFIX}sessions3-*", qq/{"policy_id": "${PREFIX}sessions"}/, 1);
-      esPost("/_plugins/_ism/add/${PREFIX}sessions3-**", qq/{"policy_id": "${PREFIX}sessions"}/, 1);
+      esPost("/_plugins/_ism/add/${PREFIX}sessions3-*", qq/{"policy_id": "${PREFIX}sessions"}/, 1);
     } else {
       esPut("/_plugins/_ism/policies/${PREFIX}sessions", $policy);
-      esPost("/_plugins/_ism/add/${PREFIX}sessions3-**", qq/{"policy_id": "${PREFIX}sessions"}/, 1);
+      esPost("/_plugins/_ism/add/${PREFIX}sessions3-*", qq/{"policy_id": "${PREFIX}sessions"}/, 1);
     }
 
     print "Policy:\n$policy\n" if ($verbose > 1);
