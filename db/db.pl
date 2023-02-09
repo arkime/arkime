@@ -208,7 +208,7 @@ sub showHelp($)
     print "    --replicas <num>           - Number of replicas for older sessions indices, default 0\n";
     print "    --history <num>            - Number of weeks of history to keep, default 13\n";
     print "  ism <force> <delete>         - Create ISM profile for OpenSearch\n";
-    print "     Sample Arguements as ilm command above\n";
+    print "     Same options as ilm command above\n";
     print "  reindex <src> [<dst>]        - Reindex OpenSearch/Elasticsearch indices\n";
     print "    --nopcap                   - Remove fields having to do with pcap files\n";
     print "\n";
@@ -6858,8 +6858,8 @@ if ($ARGV[1] =~ /^(users-?import|import)$/) {
         printf "Sessions Days:       %17.2f (%s - %s)\n", $days, $minMax->{aggregations}->{min}->{value_as_string}, $minMax->{aggregations}->{max}->{value_as_string};
         printf "Possible Sessions Days:  %13.2f\n", (0.95*$diskTotal)/($sessionsTotalBytes/$days) if ($days > 0);
 
-        if (exists $ilm->{molochsessions} && exists $ilm->{molochsessions}->{policy}->{phases}->{delete}) {
-            printf "ILM Delete Age:      %17s\n", $ilm->{molochsessions}->{policy}->{phases}->{delete}->{min_age};
+        if (exists $ilm->{"${PREFIX}molochsessions"} && exists $ilm->{"${PREFIX}molochsessions"}->{policy}->{phases}->{delete}) {
+            printf "ILM Delete Age:      %17s\n", $ilm->{"${PREFIX}molochsessions"}->{policy}->{phases}->{delete}->{min_age};
         }
 
         if (exists $ism->{policy} && exists $ism->{policy}->{states}->[0]) {
