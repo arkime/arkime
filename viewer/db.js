@@ -819,6 +819,19 @@ exports.indicesSettings = async (index) => {
 };
 
 exports.setIndexSettings = async (index, options) => {
+  // Users might be on a different cluster
+  if ((index === '*' || index.includes('users')) && internals.info.usersHost) {
+    try {
+      await internals.usersClient7.indices.putSettings({
+        index,
+        body: options.body,
+        timeout: '10m',
+        masterTimeout: '10m'
+      });
+    } catch (err) {
+    }
+  }
+
   try {
     const { body: response } = await internals.client7.indices.putSettings({
       index,
