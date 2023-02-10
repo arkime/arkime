@@ -1,4 +1,4 @@
-import uuid from 'uuidv4';
+import { v4 as uuidv4 } from 'uuid';
 
 import store from '../../store';
 
@@ -9,7 +9,7 @@ export default {
    * @returns {string} The unique random string
    */
   createRandomString: function () {
-    return uuid();
+    return uuidv4();
   },
 
   /** @returns the default sessions table state if none is defined by the user */
@@ -97,6 +97,7 @@ export default {
       (sessionStorage['force-aggregations'] && sessionStorage['force-aggregations'] !== 'false')
     ) {
       store.commit('setDisabledAggregations', false);
+      store.commit('setForcedAggregations', true);
       query.facets = 1;
       return;
     }

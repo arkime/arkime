@@ -31,7 +31,7 @@ const WISESource = require('./wiseSource.js');
 const cluster = require('cluster');
 const cryptoLib = require('crypto');
 const favicon = require('serve-favicon');
-const uuid = require('uuidv4').default;
+const uuid = require('uuid').v4;
 const helmet = require('helmet');
 const bp = require('body-parser');
 const jsonParser = bp.json();
@@ -43,6 +43,7 @@ const User = require('../common/user');
 const Auth = require('../common/auth');
 const ArkimeUtil = require('../common/arkimeUtil');
 const ArkimeCache = require('../common/arkimeCache');
+const RE2 = require('re2');
 
 const dayMs = 60000 * 60 * 24;
 
@@ -55,7 +56,7 @@ const internals = {
   fieldsTS: 0,
   fields: [],
   fieldsSize: 0,
-  sources: [],
+  sources: new Map(),
   configDefs: {
     wiseService: {
       description: 'General settings that apply to WISE and all wise sources',
@@ -68,10 +69,11 @@ const internals = {
         { name: 'userNameHeader', required: true, help: 'How should auth be done: anonymous - no auth, digest - digest auth, any other value is the http header to use for username', regex: '.' },
         { name: 'httpRealm', ifField: 'userNameHeader', ifValue: 'digest', required: false, help: 'The realm to use for digest requests. Must be the same as viewer is using. Default Moloch' },
         { name: 'passwordSecret', ifField: 'userNameHeader', ifValue: 'digest', required: false, password: true, help: 'The secret used to encrypted password hashes. Must be the same as viewer is using. Default password' },
-        { name: 'usersElasticsearch', required: false, help: 'The URL to connect to elasticsearch. Default http://localhost:9200' },
-        { name: 'usersElasticsearchAPIKey', required: false, help: 'an Elastisearch API key for users DB access', password: true },
-        { name: 'userAuthIps', required: false, help: 'comma separated list of CIDRs to allow authed requests from' },
-        { name: 'usersPrefix', required: false, help: 'The prefix used with db.pl --prefix for users elasticsearch, if empty arkime_ is used' },
+        { name: 'usersElasticsearch', required: false, help: 'The URL to connect to OpenSearch/Elasticsearch. Default http://localhost:9200' },
+        { name: 'usersElasticsearchAPIKey', required: false, help: 'OpenSearch/Elastisearch API key for users DB access', password: true },
+        { name: 'usersElasticsearchBasicAuth', required: false, help: 'OpenSearch/Elastisearch Basic Auth', password: true },
+        { name: 'userAuthIps', required: false, help: 'Comma separated list of CIDRs to allow authed requests from' },
+        { name: 'usersPrefix', required: false, help: 'The prefix used with db.pl --prefix for users OpenSearch/Elasticsearch, if empty arkime_ is used' },
         { name: 'sourcePath', required: false, help: 'Where to look for the source files. Defaults to "./"' }
       ]
     },
@@ -80,28 +82,28 @@ const internals = {
       singleton: true,
       service: true,
       fields: [
-        { name: 'type', required: false, regex: '^(memory|redis|memcached)$', help: 'Where to cache results: memory (default), redis, memcached' },
+        { name: 'type', required: false, regex: '^(memory|redis|memcached|lmdb)$', help: 'Where to cache results: memory (default), redis, memcached, lmdb' },
         { name: 'cacheSize', required: false, help: 'How many elements to cache in memory. Defaults to 100000' },
         { name: 'redisURL', password: true, required: false, ifField: 'type', ifValue: 'redis', help: 'Format is redis://[:password@]host:port/db-number, redis-sentinel://[[sentinelPassword]:[password]@]host[:port]/redis-name/db-number, or redis-cluster://[:password@]host:port/db-number' },
         { name: 'redisFormat', required: false, ifField: 'type', ifValue: 'redis', help: 'Use 2 (default) if WISE 2.x & WISE 3.x in use or 3 if just WISE 3.x', regex: '[23]' },
-        { name: 'memcachedURL', password: true, required: false, ifField: 'type', ifValue: 'memcached', help: 'Format is memcached://[user:pass@]server1[:11211],[user:pass@]server2[:11211],...' }
+        { name: 'memcachedURL', password: true, required: false, ifField: 'type', ifValue: 'memcached', help: 'Format is memcached://[user:pass@]server1[:11211],[user:pass@]server2[:11211],...' },
+        { name: 'lmdbDir', password: false, required: false, ifField: 'type', ifValue: 'lmdb', help: 'Directory for lmdb cache' }
       ]
     }
   },
   configSchemes: {
   },
-  types: {
-  },
-  views: {},
-  fieldActions: {},
-  valueActions: {},
+  types: new Map(),
+  views: new Map(),
+  fieldActions: new Map(),
+  valueActions: new Map(),
   workers: 1,
   regressionTests: false,
   webconfig: false,
   configCode: cryptoLib.randomBytes(20).toString('base64').replace(/[=+/]/g, '').substr(0, 6),
   startTime: Date.now(),
-  options: {},
-  debugged: {}
+  options: new Map(),
+  debugged: new Map()
 };
 
 internals.type2Name = ['ip', 'domain', 'md5', 'email', 'url', 'tuple', 'ja3', 'sha256'];
@@ -122,13 +124,16 @@ function processArgs (argv) {
         process.exit(1);
       }
 
-      internals.options[process.argv[i].slice(0, equal)] = process.argv[i].slice(equal + 1);
+      internals.options.set(process.argv[i].slice(0, equal), process.argv[i].slice(equal + 1));
     } else if (argv[i] === '--insecure') {
       internals.insecure = true;
     } else if (argv[i] === '--debug') {
       internals.debug++;
     } else if (argv[i] === '--regressionTests') {
       internals.regressionTests = true;
+    } else if (argv[i] === '--webcode') {
+      i++;
+      internals.configCode = argv[i];
     } else if (argv[i] === '--webconfig') {
       internals.webconfig = true;
       console.log(chalk.cyan(
@@ -203,11 +208,11 @@ app.use(cspHeader);
 
 function getConfig (section, sectionKey, d) {
   const key = `${section}.${sectionKey}`;
-  const value = internals.options[key] ?? internals.config[section]?.[sectionKey] ?? d;
+  const value = internals.options.get(key) ?? internals.config[section]?.[sectionKey] ?? d;
 
-  if (internals.debug > 0 && internals.debugged[key] === undefined) {
+  if (internals.debug > 0 && !internals.debugged.has(key)) {
     console.log(`CONFIG - ${key} is ${value}`);
-    internals.debugged[key] = 1;
+    internals.debugged.set(key, true);
   }
 
   return value;
@@ -223,7 +228,7 @@ process.on('SIGINT', function () {
 function setupAuth () {
   let userNameHeader = getConfig('wiseService', 'userNameHeader', 'anonymous');
   let mode;
-  if (userNameHeader === 'anonymous' || userNameHeader === 'digest') {
+  if (userNameHeader === 'anonymous' || userNameHeader === 'digest' || userNameHeader === 'digest') {
     mode = userNameHeader;
     userNameHeader = undefined;
   } else {
@@ -236,7 +241,14 @@ function setupAuth () {
     userNameHeader,
     passwordSecret: getConfig('wiseService', 'passwordSecret', 'password'),
     userAuthIps: getConfig('wiseService', 'userAuthIps'),
-    httpRealm: getConfig('wiseService', 'httpRealm')
+    authConfig: {
+      httpRealm: getConfig('wiseService', 'httpRealm', 'Moloch'),
+      userIdField: getConfig('wiseService', 'authUserIdField'),
+      discoverURL: getConfig('wiseService', 'authDiscoverURL'),
+      clientId: getConfig('wiseService', 'authClientId'),
+      clientSecret: getConfig('wiseService', 'authClientSecret'),
+      redirectURIs: getConfig('wiseService', 'authRedirectURIs')
+    }
   });
 
   if (mode === 'anonymous') {
@@ -252,33 +264,6 @@ function setupAuth () {
     apiKey: getConfig('wiseService', 'usersElasticsearchAPIKey'),
     basicAuth: getConfig('wiseService', 'usersElasticsearchBasicAuth')
   });
-}
-// ----------------------------------------------------------------------------
-function isConfigWeb (req, res, next) {
-  if (!internals.webconfig) {
-    return res.send({ success: false, text: 'Must start wiseService with --webconfig option' });
-  }
-  return next();
-}
-
-// ----------------------------------------------------------------------------
-function isWiseAdmin (req, res, next) {
-  if (req.user.hasRole('wiseAdmin')) {
-    return next();
-  } else {
-    console.log(`${req.userId} is not wiseAdmin`);
-    return res.send(JSON.stringify({ success: false, text: 'Not authorized, check log file' }));
-  }
-}
-
-// ----------------------------------------------------------------------------
-function isWiseUser (req, res, next) {
-  if (req.user.hasRole('wiseUser')) {
-    return next();
-  } else {
-    console.log(`${req.userId} is not wiseUser`);
-    return res.send(JSON.stringify({ success: false, text: 'Not authorized, check log file' }));
-  }
 }
 
 // ----------------------------------------------------------------------------
@@ -490,9 +475,9 @@ class WISESourceAPI {
         }
       }
 
-      internals.views[viewName] = output;
+      internals.views.set(viewName, output);
     } else {
-      internals.views[viewName] = view;
+      internals.views.set(viewName, view);
     }
   }
 
@@ -510,8 +495,8 @@ class WISESourceAPI {
       console.log(`ERROR - bad call to addSource for ${section}`);
       return;
     }
-    internals.sources[section] = src;
-    internals.sources[section].types = types;
+    src.types = types;
+    internals.sources.set(section, src);
 
     for (let i = 0; i < types.length; i++) {
       addType(types[i], src);
@@ -621,7 +606,7 @@ class WISESourceAPI {
    * @params {WISESourceAPI~ValueAction} action - The action
    */
   addValueAction (actionName, action) {
-    internals.valueActions[actionName] = action;
+    internals.valueActions.set(actionName, action);
   }
 
   /**
@@ -630,7 +615,7 @@ class WISESourceAPI {
    * @params {WISESourceAPI~ValueAction} action - The action
    */
   addFieldAction (actionName, action) {
-    internals.fieldActions[actionName] = action;
+    internals.fieldActions.set(actionName, action);
   }
 
   isWebConfig () {
@@ -716,6 +701,9 @@ if (internals.regressionTests) {
   app.post('/regressionTests/shutdown', (req, res) => {
     process.exit(0);
   });
+  app.post('/regressionTests/checkCode', [jsonParser, checkConfigCode], (req, res) => {
+    return res.send(JSON.stringify({ success: true, text: 'Authorized' }));
+  });
 }
 // ----------------------------------------------------------------------------
 /**
@@ -754,7 +742,7 @@ app.get('/fields', [ArkimeUtil.noCacheJson], (req, res) => {
  * @returns {object} All the views
  */
 app.get('/views', [ArkimeUtil.noCacheJson], function (req, res) {
-  res.send(internals.views);
+  res.send(Object.fromEntries(internals.views));
 });
 // ----------------------------------------------------------------------------
 /**
@@ -764,7 +752,7 @@ app.get('/views', [ArkimeUtil.noCacheJson], function (req, res) {
  * @returns {object|array} All the actions
  */
 app.get(['/rightClicks', '/valueActions'], [ArkimeUtil.noCacheJson], function (req, res) {
-  res.send(internals.valueActions);
+  res.send(Object.fromEntries(internals.valueActions));
 });
 // ----------------------------------------------------------------------------
 /**
@@ -774,7 +762,7 @@ app.get(['/rightClicks', '/valueActions'], [ArkimeUtil.noCacheJson], function (r
  * @returns {object|array} All the field actions
  */
 app.get('/fieldActions', [ArkimeUtil.noCacheJson], function (req, res) {
-  res.send(internals.fieldActions);
+  res.send(Object.fromEntries(internals.fieldActions));
 });
 
 // ----------------------------------------------------------------------------
@@ -782,7 +770,7 @@ function globalAllowed (value) {
   for (let i = 0; i < this.excludes.length; i++) {
     if (value.match(this.excludes[i])) {
       if (internals.debug > 0) {
-        console.log(`Found in Global ${this.name} Exclude`, value);
+        console.log('Found in Global %s Exclude', this.name, value);
       }
       return false;
     }
@@ -837,9 +825,9 @@ function funcName (typeName) {
 // This function adds a new type to the internals.types map of types.
 // If newSrc is defined will add it to already defined types as src to query.
 function addType (type, newSrc) {
-  let typeInfo = internals.types[type];
+  let typeInfo = internals.types.get(type);
   if (!typeInfo) {
-    typeInfo = internals.types[type] = {
+    typeInfo = {
       name: type,
       excludeName: 'exclude' + type[0].toUpperCase() + type.slice(1) + 's',
       funcName: funcName(type),
@@ -854,6 +842,7 @@ function addType (type, newSrc) {
       globalAllowed,
       sourceAllowed
     };
+    internals.types.set(type, typeInfo);
 
     if (type === 'url') {
       typeInfo.excludeName = 'excludeURLs';
@@ -865,10 +854,11 @@ function addType (type, newSrc) {
       typeInfo.sourceAllowed = sourceIPAllowed;
     }
 
-    for (const src in internals.sources) {
-      if (internals.sources[src][typeInfo.funcName]) {
-        typeInfo.sources.push(internals.sources[src]);
-        internals.sources[src].srcInProgress[type] = [];
+    for (const src of internals.sources.keys()) {
+      const source = internals.sources.get(src);
+      if (source[typeInfo.funcName]) {
+        typeInfo.sources.push(source);
+        source.srcInProgress[type] = new Map();
       }
     }
 
@@ -889,13 +879,17 @@ function addType (type, newSrc) {
     }
   } else if (newSrc !== undefined) {
     typeInfo.sources.push(newSrc);
-    newSrc.srcInProgress[type] = [];
+    newSrc.srcInProgress[type] = new Map();
   }
   return typeInfo;
 }
 // ----------------------------------------------------------------------------
 function processQuery (req, query, cb) {
-  let typeInfo = internals.types[query.typeName];
+  if (query.typeName === '__proto__') {
+    return cb('__proto__ invalid type name');
+  }
+
+  let typeInfo = internals.types.get(query.typeName);
 
   // First time we've seen this typeName
   if (!typeInfo) {
@@ -941,6 +935,10 @@ function processQuery (req, query, cb) {
         return setImmediate(mapCb, undefined);
       }
 
+      if (typeof src[typeInfo.funcName] !== 'function') {
+        return setImmediate(mapCb, undefined);
+      }
+
       src.requestStat++;
       if (cacheResult[src.section] === undefined || cacheResult[src.section].ts + src.cacheTimeout < now) {
         if (src.cacheTimeout === -1) {
@@ -957,13 +955,13 @@ function processQuery (req, query, cb) {
         delete cacheResult[src.section];
 
         // If already in progress then add to the list and return, cb called later;
-        if (src.srcInProgress[query.typeName] && query.value in src.srcInProgress[query.typeName]) {
-          src.srcInProgress[query.typeName][query.value].push(mapCb);
+        if (src.srcInProgress[query.typeName] && src.srcInProgress[query.typeName].has(query.value)) {
+          src.srcInProgress[query.typeName].get(query.value).push(mapCb);
           return;
         }
 
         // First query for this value
-        src.srcInProgress[query.typeName][query.value] = [mapCb];
+        src.srcInProgress[query.typeName].set(query.value, [mapCb]);
         const startTime = Date.now();
         src[typeInfo.funcName](src.fullQuery === true ? query : query.value, (err, result) => {
           src.recentAverageMS = (999.0 * src.recentAverageMS + (Date.now() - startTime)) / 1000.0;
@@ -980,8 +978,8 @@ function processQuery (req, query, cb) {
             err = null;
             result = undefined;
           }
-          const srcInProgress = src.srcInProgress[query.typeName][query.value];
-          delete src.srcInProgress[query.typeName][query.value];
+          const srcInProgress = src.srcInProgress[query.typeName].get(query.value);
+          src.srcInProgress[query.typeName].delete(query.value);
           for (let i = 0, l = srcInProgress.length; i < l; i++) {
             srcInProgress[i](err, result);
           }
@@ -1022,7 +1020,7 @@ function processQueryResponse0 (req, res, queries, results) {
   res.write(buf);
   for (let r = 0; r < results.length; r++) {
     if (results[r][0] > 0) {
-      internals.types[queries[r].typeName].foundStats++;
+      internals.types.get(queries[r].typeName).foundStats++;
     }
     res.write(results[r]);
   }
@@ -1053,7 +1051,7 @@ function processQueryResponse2 (req, res, queries, results) {
   // Send the results
   for (let r = 0; r < results.length; r++) {
     if (results[r][0] > 0) {
-      internals.types[queries[r].typeName].foundStats++;
+      internals.types.get(queries[r].typeName).foundStats++;
     }
     res.write(results[r]);
   }
@@ -1090,12 +1088,17 @@ app.post('/get', function (req, res) {
           typeName = internals.type2Name[type];
         }
 
+        if (!typeName) {
+          console.log('Couldn\'t find typeName');
+          throw new Error('Could not make out typeName from query');
+        }
+
         const len = buf.readUInt16BE(offset);
         offset += 2;
 
         const value = buf.toString('utf8', offset, offset + len);
         if (internals.debug > 1) {
-          console.log(typeName, value);
+          console.log('%s', typeName, value);
         }
         offset += len;
         queries.push({ typeName, value });
@@ -1128,61 +1131,7 @@ app.post('/get', function (req, res) {
  * @returns {string|array} All the sources
  */
 app.get('/sources', [ArkimeUtil.noCacheJson], (req, res) => {
-  return res.send(Object.keys(internals.sources).sort());
-});
-// ----------------------------------------------------------------------------
-/**
- * GET - Used by wise UI to retrieve the raw file being used by the section.
- *       This is an authenticated API and requires wiseService to be started with --webconfig.
- *
- * @name "/source/:source/get"
- * @param {string} :source - The source to get the raw data for
- * @returns {object} All the views
- */
-app.get('/source/:source/get', [isConfigWeb, Auth.doAuth, isWiseUser, ArkimeUtil.noCacheJson], (req, res) => {
-  const source = internals.sources[req.params.source];
-  if (!source) {
-    return res.send({ success: false, text: `Source ${req.params.source} not found` });
-  }
-
-  if (!source.getSourceRaw) {
-    return res.send({ success: false, text: 'Source does not support viewing' });
-  }
-
-  source.getSourceRaw((err, raw) => {
-    if (err) {
-      return res.send({ success: false, text: err });
-    }
-    return res.send({ success: true, raw: raw.toString('utf8') });
-  });
-});
-// ----------------------------------------------------------------------------
-/**
- * PUT - Used by wise UI to save the raw file being used by the source.
- *       This is an authenticated API and requires wiseService to be started with --webconfig.
- *
- * @name "/source/:source/put"
- * @param {string} :source - The source to put the raw data for
- * @returns {object} All the views
- */
-app.put('/source/:source/put', [isConfigWeb, Auth.doAuth, isWiseAdmin, ArkimeUtil.noCacheJson, jsonParser], (req, res) => {
-  const source = internals.sources[req.params.source];
-  if (!source) {
-    return res.send({ success: false, text: `Source ${req.params.source} not found` });
-  }
-
-  if (!source.putSourceRaw) {
-    return res.send({ success: false, text: 'Source does not support editing' });
-  }
-
-  const raw = req.body.raw;
-
-  source.putSourceRaw(raw, (err) => {
-    if (err) {
-      return res.send({ success: false, text: err });
-    }
-    return res.send({ success: true, text: 'Saved' });
-  });
+  return res.send([...internals.sources.keys()].sort());
 });
 // ----------------------------------------------------------------------------
 /**
@@ -1193,105 +1142,6 @@ app.put('/source/:source/put', [isConfigWeb, Auth.doAuth, isWiseAdmin, ArkimeUti
  */
 app.get('/config/defs', [ArkimeUtil.noCacheJson], function (req, res) {
   return res.send(internals.configDefs);
-});
-// ----------------------------------------------------------------------------
-/**
- * GET - Used by wise UI to retrieve the current config.
- *       This is an authenticated API and requires wiseService to be started with --webconfig.
- *
- * @name "/config/get"
- * @returns {object}
- */
-app.get('/config/get', [isConfigWeb, Auth.doAuth, isWiseUser, ArkimeUtil.noCacheJson], (req, res) => {
-  const config = Object.keys(internals.config)
-    .sort()
-    .filter(key => internals.configDefs[key.split(':')[0]])
-    .reduce((obj, key) => {
-      // Deep Copy
-      obj[key] = JSON.parse(JSON.stringify(internals.config[key]));
-
-      // Replace passwords
-      internals.configDefs[key.split(':')[0]].fields.forEach((item) => {
-        if (item.password !== true) { return; }
-        if (obj[key][item.name] === undefined || obj[key][item.name].length === 0) { return; }
-        obj[key][item.name] = '********';
-      });
-      return obj;
-    }, {});
-
-  if (config.wiseService === undefined) { config.wiseService = {}; }
-  if (config.cache === undefined) { config.cache = {}; }
-
-  return res.send({
-    success: true,
-    config,
-    filePath: internals.configFile
-  });
-});
-// ----------------------------------------------------------------------------
-/**
- * PUT - Used by wise UI to save the current config.
- *       This is an authenticated API, requires the pin code, and requires wiseService to be started with --webconfig.
- *
- * @name "/config/save"
- */
-app.put('/config/save', [isConfigWeb, Auth.doAuth, isWiseAdmin, ArkimeUtil.noCacheJson, jsonParser, checkConfigCode], (req, res) => {
-  if (req.body.config === undefined) {
-    return res.send({ success: false, text: 'Missing config' });
-  }
-
-  const config = req.body.config;
-  if (internals.debug > 0) {
-    console.log(config);
-  }
-
-  for (const section in config) {
-    const sectionType = section.split(':')[0];
-    const configDef = internals.configDefs[sectionType];
-    if (configDef === undefined) {
-      return res.send({ success: false, text: `Unknown section type ${sectionType}` });
-    }
-    if (configDef.singleton !== true && sectionType === section) {
-      return res.send({ success: false, text: `Section ${section} must have a :uniquename` });
-    }
-    if (configDef.singleton === true && sectionType !== section) {
-      return res.send({ success: false, text: `Section ${section} must not have a :uniquename` });
-    }
-
-    // Create new source files
-    if (configDef.editable && config[section].file && !fs.existsSync(config[section].file)) {
-      try {
-        fs.writeFileSync(config[section].file, '');
-      } catch (e) {
-        return res.send({ success: false, text: 'New file could not be written to system' });
-      }
-    }
-
-    for (const key in config[section]) {
-      const field = configDef.fields.find(element => element.name === key);
-      if (field === undefined) {
-        console.log(`Section ${section} field ${key} unknown, deleting`);
-        delete config[section][key];
-      } else if (field.password === true) {
-        if (config[section][key] === '********') {
-          config[section][key] = internals.config[section][key];
-        }
-      }
-    };
-  }
-
-  // Make sure updateTime has increased incase of clock sku
-  config.wiseService.updateTime = Math.max(Date.now(), internals.updateTime + 1);
-  internals.configScheme.save(config, (err) => {
-    if (err) {
-      return res.send({ success: false, text: err });
-    } else {
-      res.send({ success: true, text: 'Saved & Restarting' });
-      // Because of nodemon
-      setTimeout(() => { process.kill(process.pid, 'SIGUSR2'); }, 500);
-      setTimeout(() => { process.exit(0); }, 1500);
-    }
-  });
 });
 // ----------------------------------------------------------------------------
 /**
@@ -1310,13 +1160,14 @@ app.put('/config/save', [isConfigWeb, Auth.doAuth, isWiseAdmin, ArkimeUtil.noCac
  */
 app.get('/types/:source?', [ArkimeUtil.noCacheJson], (req, res) => {
   if (req.params.source) {
-    if (internals.sources[req.params.source]) {
-      return res.send(internals.sources[req.params.source].types.sort());
+    const source = internals.sources.get(req.params.source);
+    if (source) {
+      return res.send(source.types.sort());
     } else {
       return res.send([]);
     }
   } else {
-    return res.send(Object.keys(internals.types).sort());
+    return res.send([...internals.types.keys()].sort());
   }
 });
 // ----------------------------------------------------------------------------
@@ -1329,10 +1180,13 @@ app.get('/types/:source?', [ArkimeUtil.noCacheJson], (req, res) => {
  * @param {string} {:key} - The key to get the results for
  * @returns {object|array} - The results for the query
  */
-app.get('/:source/:typeName/:value', [ArkimeUtil.noCacheJson], function (req, res) {
-  const source = internals.sources[req.params.source];
+app.get('/:source/:typeName/:value', [ArkimeUtil.noCacheJson], function (req, res, next) {
+  // Poor route planning by ALW, shame
+  if (req.params.source === 'source' && req.params.value === 'get') { return next(); }
+
+  const source = internals.sources.get(req.params.source);
   if (!source) {
-    return res.end('Unknown source ' + req.params.source);
+    return res.end('Unknown source ' + ArkimeUtil.safeStr(req.params.source));
   }
 
   const query = {
@@ -1350,9 +1204,9 @@ app.get('/:source/:typeName/:value', [ArkimeUtil.noCacheJson], function (req, re
 });
 // ----------------------------------------------------------------------------
 app.get('/dump/:source', [ArkimeUtil.noCacheJson], function (req, res) {
-  const source = internals.sources[req.params.source];
+  const source = internals.sources.get(req.params.source);
   if (!source) {
-    return res.end('Unknown source ' + req.params.source);
+    return res.end('Unknown source ' + ArkimeUtil.safeStr(req.params.source));
   }
 
   if (!source.dump) {
@@ -1430,7 +1284,10 @@ app.get("/bro/:type", [ArkimeUtil.noCacheJson], function(req, res) {
  * @param {string} {:key} - The key to get the results for
  * @returns {object|array} - The results for the query
  */
-app.get('/:typeName/:value', [ArkimeUtil.noCacheJson], function (req, res) {
+app.get('/:typeName/:value', [ArkimeUtil.noCacheJson], function (req, res, next) {
+  // Poor route planning by ALW, shame
+  if (req.params.typeName === 'config' && req.params.value === 'get') { return next(); }
+
   const query = {
     typeName: req.params.typeName,
     value: req.params.value
@@ -1451,16 +1308,21 @@ app.get('/:typeName/:value', [ArkimeUtil.noCacheJson], function (req, res) {
  * @returns {object} - Object with array of stats per type and array of stats per source
  */
 app.get('/stats', [ArkimeUtil.noCacheJson], (req, res) => {
-  const types = Object.keys(internals.types).sort();
-  const sections = Object.keys(internals.sources).sort();
+  const types = [...internals.types.keys()].sort();
+  const sections = [...internals.sources.keys()].sort();
 
   const stats = { types: [], sources: [], startTime: internals.startTime };
 
+  let re2;
+  if (req.query.search) {
+    re2 = new RE2(req.query.search.toLowerCase());
+  }
+
   for (const type of types) {
-    const typeInfo = internals.types[type];
+    const typeInfo = internals.types.get(type);
     let match = true;
-    if (req.query.search) {
-      match = type.toLowerCase().match(req.query.search.toLowerCase());
+    if (re2) {
+      match = type.toLowerCase().match(re2);
     }
     if (!match) { continue; }
     stats.types.push({
@@ -1475,10 +1337,10 @@ app.get('/stats', [ArkimeUtil.noCacheJson], (req, res) => {
   }
 
   for (const section of sections) {
-    const src = internals.sources[section];
+    const src = internals.sources.get(section);
     let match = true;
-    if (req.query.search) {
-      match = section.toLowerCase().match(req.query.search.toLowerCase());
+    if (re2) {
+      match = section.toLowerCase().match(re2);
     }
     if (!match) { continue; }
     stats.sources.push({
@@ -1498,7 +1360,7 @@ app.get('/stats', [ArkimeUtil.noCacheJson], (req, res) => {
 
 // ----------------------------------------------------------------------------
 function printStats () {
-  const keys = Object.keys(internals.types).sort();
+  const keys = [...internals.types.keys()].sort();
   const lines = [];
   lines[0] = '                   ';
   lines[1] = 'REQUESTS:          ';
@@ -1508,7 +1370,7 @@ function printStats () {
   lines[5] = 'CACHE SRC REFRESH: ';
 
   for (const key of keys) {
-    const typeInfo = internals.types[key];
+    const typeInfo = internals.types.get(key);
     lines[0] += sprintf(' %11s', key);
     lines[1] += sprintf(' %11d', typeInfo.requestStats);
     lines[2] += sprintf(' %11d', typeInfo.foundStats);
@@ -1521,8 +1383,8 @@ function printStats () {
     console.log(lines[i]);
   }
 
-  for (const section of Object.keys(internals.sources).sort()) {
-    const src = internals.sources[section];
+  for (const section of [...internals.sources.keys()].sort()) {
+    const src = internals.sources.get(section);
     console.log(sprintf('SRC %-30s    cached: %7d lookup: %9d refresh: %7d dropped: %7d avgMS: %7d',
       section, src.cacheHitStat, src.cacheMissStat, src.cacheRefreshStat, src.requestDroppedStat, src.recentAverageMS));
   }
@@ -1761,8 +1623,8 @@ function createApp () {
   });
 }
 
-// always send the client html (it will deal with 404s)
-app.use((req, res, next) => {
+// Send back vue for page tabs
+app.get(['/', '/config', '/query', '/help'], (req, res, next) => {
   const renderer = vueServerRenderer.createRenderer({
     template: fs.readFileSync(path.join(__dirname, '/vueapp/dist/index.html'), 'utf-8')
   });
@@ -1790,6 +1652,200 @@ app.use((req, res, next) => {
     res.send(html);
   });
 });
+
+// ============================================================================
+// AUTHED ROUTES - only needed for webconfig, must be at bottom
+// ============================================================================
+function isWiseAdmin (req, res, next) {
+  if (req.user.hasRole('wiseAdmin')) {
+    return next();
+  } else {
+    console.log(`${req.userId} is not wiseAdmin`);
+    return res.send(JSON.stringify({ success: false, text: 'Not authorized, check log file' }));
+  }
+}
+
+// ----------------------------------------------------------------------------
+function isWiseUser (req, res, next) {
+  if (req.user.hasRole('wiseUser')) {
+    return next();
+  } else {
+    console.log(`${req.userId} is not wiseUser`);
+    return res.send(JSON.stringify({ success: false, text: 'Not authorized, check log file' }));
+  }
+}
+// ----------------------------------------------------------------------------
+if (internals.webconfig) {
+  // Set up auth, all APIs registered below will use passport
+  Auth.app(app);
+  // ----------------------------------------------------------------------------
+  /**
+   * GET - Used by wise UI to retrieve the raw file being used by the section.
+   *       This is an authenticated API and requires wiseService to be started with --webconfig.
+   *
+   * @name "/source/:source/get"
+   * @param {string} :source - The source to get the raw data for
+   * @returns {object} All the views
+   */
+  app.get('/source/:source/get', [isWiseUser, ArkimeUtil.noCacheJson], (req, res) => {
+    const source = internals.sources.get(req.params.source);
+    if (!source) {
+      return res.send({ success: false, text: `Source ${req.params.source} not found` });
+    }
+
+    if (!source.getSourceRaw) {
+      return res.send({ success: false, text: 'Source does not support viewing' });
+    }
+
+    source.getSourceRaw((err, raw) => {
+      if (err) {
+        return res.send({ success: false, text: err });
+      }
+      return res.send({ success: true, raw: raw.toString('utf8') });
+    });
+  });
+  // ----------------------------------------------------------------------------
+  /**
+   * PUT - Used by wise UI to save the raw file being used by the source.
+   *       This is an authenticated API and requires wiseService to be started with --webconfig.
+   *
+   * @name "/source/:source/put"
+   * @param {string} :source - The source to put the raw data for
+   * @returns {object} All the views
+   */
+  app.put('/source/:source/put', [isWiseAdmin, ArkimeUtil.noCacheJson, jsonParser], (req, res) => {
+    const source = internals.sources.get(req.params.source);
+    if (!source) {
+      return res.send({ success: false, text: `Source ${req.params.source} not found` });
+    }
+
+    if (!source.putSourceRaw) {
+      return res.send({ success: false, text: 'Source does not support editing' });
+    }
+
+    const raw = req.body.raw;
+
+    source.putSourceRaw(raw, (err) => {
+      if (err) {
+        return res.send({ success: false, text: err });
+      }
+      return res.send({ success: true, text: 'Saved' });
+    });
+  });
+  // ----------------------------------------------------------------------------
+  /**
+   * GET - Used by wise UI to retrieve the current config.
+   *       This is an authenticated API and requires wiseService to be started with --webconfig.
+   *
+   * @name "/config/get"
+   * @returns {object}
+   */
+  app.get('/config/get', [isWiseUser, ArkimeUtil.noCacheJson], (req, res) => {
+    const config = Object.keys(internals.config)
+      .sort()
+      .filter(key => internals.configDefs[key.split(':')[0]])
+      .reduce((obj, key) => {
+        // Deep Copy
+        obj[key] = JSON.parse(JSON.stringify(internals.config[key]));
+
+        // Replace passwords
+        internals.configDefs[key.split(':')[0]].fields.forEach((item) => {
+          if (item.password !== true) { return; }
+          if (obj[key][item.name] === undefined || obj[key][item.name].length === 0) { return; }
+          obj[key][item.name] = '********';
+        });
+        return obj;
+      }, {});
+
+    if (config.wiseService === undefined) { config.wiseService = {}; }
+    if (config.cache === undefined) { config.cache = {}; }
+
+    return res.send({
+      success: true,
+      config,
+      filePath: internals.configFile
+    });
+  });
+  // ----------------------------------------------------------------------------
+  /**
+   * PUT - Used by wise UI to save the current config.
+   *       This is an authenticated API, requires the pin code, and requires wiseService to be started with --webconfig.
+   *
+   * @name "/config/save"
+   */
+  app.put('/config/save', [isWiseAdmin, ArkimeUtil.noCacheJson, jsonParser, checkConfigCode], (req, res) => {
+    if (req.body.config === undefined) {
+      return res.send({ success: false, text: 'Missing config' });
+    }
+
+    const config = req.body.config;
+    if (internals.debug > 0) {
+      console.log(config);
+    }
+
+    for (const section in config) {
+      const sectionType = section.split(':')[0];
+      const configDef = internals.configDefs[sectionType];
+      if (configDef === undefined) {
+        return res.send({ success: false, text: `Unknown section type ${sectionType}` });
+      }
+      if (configDef.singleton !== true && sectionType === section) {
+        return res.send({ success: false, text: `Section ${section} must have a :uniquename` });
+      }
+      if (configDef.singleton === true && sectionType !== section) {
+        return res.send({ success: false, text: `Section ${section} must not have a :uniquename` });
+      }
+
+      // Create new source files
+      if (configDef.editable && config[section].file && !fs.existsSync(config[section].file)) {
+        try {
+          fs.writeFileSync(config[section].file, '');
+        } catch (e) {
+          return res.send({ success: false, text: 'New file could not be written to system' });
+        }
+      }
+
+      for (const key in config[section]) {
+        const field = configDef.fields.find(element => element.name === key);
+        if (field === undefined) {
+          console.log(`Section ${section} field ${key} unknown, deleting`);
+          delete config[section][key];
+        } else if (field.password === true) {
+          if (config[section][key] === '********') {
+            config[section][key] = internals.config[section][key];
+          }
+        }
+      };
+    }
+
+    if (internals.regressionTests) {
+      return res.send({ success: true, text: 'Would save, but regressionTests' });
+    }
+
+    // Make sure updateTime has increased incase of clock sku
+    config.wiseService.updateTime = Math.max(Date.now(), internals.updateTime + 1);
+    internals.configScheme.save(config, (err) => {
+      if (err) {
+        return res.send({ success: false, text: err });
+      } else {
+        res.send({ success: true, text: 'Saved & Restarting' });
+        // Because of nodemon
+        setTimeout(() => { process.kill(process.pid, 'SIGUSR2'); }, 500);
+        setTimeout(() => { process.exit(0); }, 1500);
+      }
+    });
+  });
+} else {
+  app.get(['/source/:source/get', '/config/get'], (req, res) => {
+    return res.send({ success: false, text: 'Must start wiseService with --webconfig option' });
+  });
+  app.put(['/source/:source/put', '/config/save'], (req, res) => {
+    return res.send({ success: false, text: 'Must start wiseService with --webconfig option' });
+  });
+}
+
+// Replace the default express error handler
+app.use(ArkimeUtil.expressErrorHandler);
 
 // ----------------------------------------------------------------------------
 // Main
@@ -1856,7 +1912,7 @@ function buildConfigAndStart () {
           fs.writeFileSync(internals.configFile, '', 'utf8');
         }
       } catch (err) { // notify of error saving new config and exit
-        console.log('Error creating new WISE Config:\n\n', err.stack);
+        console.log('Error creating new WISE Config:\n\n', ArkimeUtil.sanitizeStr(err.stack));
         console.log(`
           You must fix this before you can run WISE UI.
           Try using arkime/tests/config.test.json as a starting point.

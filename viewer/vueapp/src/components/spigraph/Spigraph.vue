@@ -166,7 +166,7 @@
         <template v-if="fieldObj">
           <div v-for="(item, index) in items"
             :key="item.name"
-            class="spi-graph-item pl-3 pr-3 pt-1">
+            class="spi-graph-item pl-1 pr-1 pt-1">
             <!-- field value -->
             <div class="row">
               <div class="col-md-12">

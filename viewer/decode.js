@@ -30,16 +30,9 @@ const async = require('async');
 const cryptoLib = require('crypto');
 const ArkimeUtil = require('../common/arkimeUtil');
 
-let HTTPParser;
-if (process.version.startsWith('v16')) {
-  HTTPParser = require('_http_common').HTTPParser;
-} else if (process.version.startsWith('v12')) {
-  // eslint-disable-next-line n/no-deprecated-api
-  HTTPParser = process.binding('http_parser_llhttp').HTTPParser;
-} else {
-  // eslint-disable-next-line n/no-deprecated-api
-  HTTPParser = process.binding('http_parser').HTTPParser;
-}
+const { HTTPParser } = require('http-parser-js');
+// eslint-disable-next-line no-unused-vars
+const onExecute = HTTPParser.kOnExecute;
 
 const internals = {
   registry: {},
@@ -788,12 +781,12 @@ exports.register('ITEM-LINKBODY', through.ctor({ objectMode: true }, function (i
     return callback(null, item);
   }
 
-  const url = `api/session/${this.options.nodeName}/${this.options.id}/body/${item.bodyType}/${item.bodyNum}/${item.bodyName}.pellet`;
+  const url = `api/session/${encodeURIComponent(this.options.nodeName)}/${encodeURIComponent(this.options.id)}/body/${encodeURIComponent(item.bodyType)}/${encodeURIComponent(item.bodyNum)}/${encodeURIComponent(item.bodyName)}.pellet`;
 
   if (item.bodyType === 'image') {
     item.html = '<img src="' + url + '">';
   } else {
-    item.html = "<a target='_blank' class='imagetag file' href=\"" + url + '">' + item.bodyName + '</a>';
+    item.html = "<a target='_blank' class='imagetag file' href=\"" + url + '">' + ArkimeUtil.safeStr(item.bodyName) + '</a>';
   }
   callback(null, item);
 }));
@@ -907,7 +900,7 @@ if (require.main === module) {
     const packets = [];
 
     async.whilst(
-      function () { return pos < stat.size; },
+      function (cb) { return cb(null, pos < stat.size); },
       function (callback) {
         pcap.readPacket(pos, function (packet) {
           const obj = {};

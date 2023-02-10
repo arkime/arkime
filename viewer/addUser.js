@@ -90,6 +90,7 @@ function main () {
 
     case '--webauthonly':
     case '-webauthonly':
+      nuser.headerAuthEnabled = true;
       nuser.passStore = Auth.pass2store(process.argv[2], cryptoLib.randomBytes(48));
       break;
 
@@ -145,7 +146,7 @@ function main () {
       if (err.meta.body.error.type === 'version_conflict_engine_exception') {
         console.log('User already exists');
       } else {
-        console.log('Elastic search error', JSON.stringify(err, false, 2));
+        console.log('OpenSearch/Elasticsearch error', JSON.stringify(err, false, 2));
       }
     } else {
       console.log('Added');
@@ -172,9 +173,10 @@ if (Config.nodeName() === 'cont3xt') {
     clientKey: Config.get('esClientKey'),
     clientCert: Config.get('esClientCert'),
     clientKeyPass: Config.get('esClientKeyPass'),
-    prefix: Config.get('usersPrefix', ''),
+    prefix: Config.get('usersPrefix'),
     apiKey: Config.get('usersElasticsearchAPIKey'),
-    basicAuth: Config.get('usersElasticsearchBasicAuth')
+    basicAuth: Config.get('usersElasticsearchBasicAuth', Config.get('elasticsearchBasicAuth')),
+    noUsersCheck: true
   });
   main();
 } else {
@@ -191,6 +193,7 @@ if (Config.nodeName() === 'cont3xt') {
     esApiKey: Config.get('elasticsearchAPIKey', null),
     usersEsApiKey: Config.get('usersElasticsearchAPIKey', null),
     esBasicAuth: Config.get('elasticsearchBasicAuth', null),
-    usersEsBasicAuth: Config.get('usersElasticsearchBasicAuth', null)
+    usersEsBasicAuth: Config.get('usersElasticsearchBasicAuth', null),
+    noUsersCheck: true
   }, main);
 }

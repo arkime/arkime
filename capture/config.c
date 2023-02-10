@@ -709,7 +709,7 @@ void moloch_config_add_header(MolochStringHashStd_t *hash, char *key, int pos)
     HASH_ADD(s_, *hash, hstring->str, hstring);
 }
 /******************************************************************************/
-void moloch_config_load_header(char *section, char *group, char *helpBase, char *expBase, char *dbBase, MolochStringHashStd_t *hash, int flags)
+void moloch_config_load_header(char *section, char *group, char *helpBase, char *expBase, char *aliasBase, char *dbBase, MolochStringHashStd_t *hash, int flags)
 {
     GError   *error = 0;
     char      name[100];
@@ -789,8 +789,10 @@ void moloch_config_load_header(char *section, char *group, char *helpBase, char 
         char expression[100];
         char field[100];
         char help[100];
+        char aliases[100];
 
         snprintf(expression, sizeof(expression), "%s%s", expBase, name);
+        snprintf(aliases, sizeof(aliases), "[\"%s%s\"]", aliasBase, name);
         snprintf(field, sizeof(field), "%s%s", dbBase, name);
         snprintf(help, sizeof(help), "%s%s", helpBase, name);
 
@@ -798,7 +800,7 @@ void moloch_config_load_header(char *section, char *group, char *helpBase, char 
         pos = moloch_field_define(group, kind,
                 expression, expression, field,
                 help,
-                t, f, (char *)NULL);
+                t, f, "aliases", aliasBase ? aliases : NULL, (char *)NULL);
         moloch_config_add_header(hash, g_strdup(keys[k]), pos);
         g_strfreev(values);
     }

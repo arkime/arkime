@@ -4,7 +4,6 @@
  */
 
 module.exports = {
-  name: 'unit',
   displayName: 'Cont3xt Unit Tests',
   rootDir: './',
   // A map from regular expressions to module names or to arrays of module names that allow to stub out resources with a single module
@@ -175,7 +174,7 @@ module.exports = {
   // A map from regular expressions to paths to transformers
   transform: {
     '.*\\.(js)$': 'babel-jest',
-    '.*\\.(vue)$': 'vue-jest'
+    '.*\\.(vue)$': '@vue/vue2-jest'
   }
 
   // An array of regexp pattern strings that are matched against all source file paths, matched files will skip transformation

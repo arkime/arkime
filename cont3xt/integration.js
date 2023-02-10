@@ -23,18 +23,24 @@ const path = require('path');
 const extractDomain = require('extract-domain');
 const ipaddr = require('ipaddr.js');
 const Audit = require('./audit');
+const RE2 = require('re2');
 
 const itypeStats = {};
+
+// https://urlregex.com/
+// eslint-disable-next-line no-useless-escape
+const cont3xtUrlRegex = new RE2(/((([A-Za-z]{3,9}:(?:\/\/)?)(?:[\-;:&=\+\$,\w]+@)?[A-Za-z0-9\.\-]+|(?:www\.|[\-;:&=\+\$,\w]+@)[A-Za-z0-9\.\-]+)((?:\/[\+~%\/\.\w\-_]*)?\??(?:[\-\+=&;%@\.\w_]*)#?(?:[\.\!\/\\\w]*))?)/);
 
 class Integration {
   static NoResult = Symbol('NoResult');
 
   static debug = 0;
-  static cache;
   static getConfig;
-  static cont3xtStartTime = Date.now();
-  static integrationsByName = {};
-  static integrations = {
+
+  static #cache;
+  static #cont3xtStartTime = Date.now();
+  static #integrationsByName = {};
+  static #integrations = {
     all: [],
     ip: [],
     domain: [],
@@ -45,9 +51,17 @@ class Integration {
     text: []
   };
 
+  /**
+   * Initialize the Integrations subsystem
+   * @param {number} options.debug=0 The debug level to use for Integrations
+   * @param {object} options.cache The ArkimeCache implementation
+   * @param {function} options.getConfig function used to get configuration items
+   * @param {string} options.integrationsPath=__dirname/integrations/ Where to find the integrations
+   *
+   */
   static initialize (options) {
     Integration.debug = options.debug ?? 0;
-    Integration.cache = options.cache;
+    Integration.#cache = options.cache;
     Integration.getConfig = options.getConfig;
     options.integrationsPath ??= path.join(__dirname, '/integrations/');
 
@@ -59,7 +73,7 @@ class Integration {
 
     if (Integration.debug > 1) {
       setTimeout(() => {
-        const sorted = Integration.integrations.all.sort((a, b) => { return a.order - b.order; });
+        const sorted = Integration.#integrations.all.sort((a, b) => { return a.order - b.order; });
         console.log('ORDER:');
         for (const integration of sorted) {
           if (integration.card) {
@@ -70,6 +84,14 @@ class Integration {
     }
   }
 
+  /**
+   * Register an integration implementation
+   * @param {string} integration.name The name of the integration
+   * @param {object} integration.itypes An object of itypes to functions to call
+   * @param {boolean} integration.cacheable=true Should results be cache
+   * @param {boolean} integration.noStats=false Should we not save stats
+   * @param {number} integration.order=10000 What order should this integration be shown
+   */
   static register (integration) {
     if (typeof (integration.name) !== 'string') {
       console.log('Missing .name', integration);
@@ -138,15 +160,15 @@ class Integration {
     integration.normalizeTidbits();
     // console.log(integration.name, JSON.stringify(integration.card, false, 2));
 
-    Integration.integrationsByName[integration.name] = integration;
-    Integration.integrations.all.push(integration);
+    Integration.#integrationsByName[integration.name] = integration;
+    Integration.#integrations.all.push(integration);
     for (const itype in integration.itypes) {
-      Integration.integrations[itype].push(integration);
+      Integration.#integrations[itype].push(integration);
     }
   }
 
   static classify (str) {
-    if (str.match(/^(\d{3})[-. ]?(\d{3})[-. ]?(\d{4})$/)) {
+    if (str.match(/^(\d{3}[-. ]?\d{3}[-. ]?\d{4}|\+[\d-.]{9,17})$/)) {
       return 'phone';
     }
 
@@ -166,18 +188,23 @@ class Integration {
       return 'email';
     }
 
-    // https://urlregex.com/
-    // eslint-disable-next-line no-useless-escape
-    if (str.match(/https?:\/\//) && str.match(/((([A-Za-z]{3,9}:(?:\/\/)?)(?:[\-;:&=\+\$,\w]+@)?[A-Za-z0-9\.\-]+|(?:www\.|[\-;:&=\+\$,\w]+@)[A-Za-z0-9\.\-]+)((?:\/[\+~%\/\.\w\-_]*)?\??(?:[\-\+=&;%@\.\w_]*)#?(?:[\.\!\/\\\w]*))?)/)) {
-      return 'url';
+    if (str.match(/https?:\/\//) && str.match(cont3xtUrlRegex)) {
+      try {
+        // Make sure we can construct a proper URL-object using this string
+        // eslint-disable-next-line no-unused-vars
+        const url = new URL(str);
+        return 'url';
+      } catch (e) {
+        // This looked like a URL but could not be parsed as such. Continue testing below.
+      }
     }
 
     if (str.match(/^[A-Fa-f0-9]{32}$/) || str.match(/^[A-Fa-f0-9]{40}$/) || str.match(/^[A-Fa-f0-9]{64}$/)) {
       return 'hash';
     }
 
-    // https://www.oreilly.com/library/view/regular-expressions-cookbook/9781449327453/ch08s15.html
-    if (str.match(/^([a-z0-9]+(-[a-z0-9]+)*\.)+[a-z]{2,}$/)) {
+    // https://stackoverflow.com/questions/106179/regular-expression-to-match-dns-hostname-or-ip-address
+    if (str.match(/^([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9-]{0,61}[a-zA-Z0-9])(\.([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9-]{0,61}[a-zA-Z0-9]))+$/)) {
       return 'domain';
     }
 
@@ -295,7 +322,7 @@ class Integration {
    */
   static async apiList (req, res, next) {
     const results = {};
-    const integrations = Integration.integrations.all;
+    const integrations = Integration.#integrations.all;
 
     const keys = req.user.getCont3xtKeys();
 
@@ -354,6 +381,7 @@ class Integration {
 
   static async runIntegrationsList (shared, query, itype, integrations, onFinish) {
     shared.total += integrations.length;
+
     if (Integration.debug > 0) {
       console.log('RUNNING', itype, query, integrations.map(integration => integration.name));
     }
@@ -361,7 +389,7 @@ class Integration {
     const writeOne = (integration, response) => {
       if (integration.addMoreIntegrations) {
         integration.addMoreIntegrations(itype, response, (moreQuery, moreIType) => {
-          Integration.runIntegrationsList(shared, moreQuery, moreIType, Integration.integrations[moreIType], onFinish);
+          Integration.runIntegrationsList(shared, moreQuery, moreIType, Integration.#integrations[moreIType], onFinish);
         });
       }
 
@@ -374,9 +402,13 @@ class Integration {
     };
 
     const checkWriteDone = () => {
-      if (shared.sent === shared.total) {
-        onFinish();
-      }
+      // setImmediate to ensure that any pending integration lists have a chance to start (and contribute to total)
+      setImmediate(() => {
+        if (shared.sent === shared.total && shared.finished !== true) {
+          shared.finished = true;
+          onFinish();
+        }
+      });
     };
 
     const keys = shared.user.getCont3xtKeys();
@@ -386,7 +418,7 @@ class Integration {
       try {
         normalizedQuery = ipaddr.parse(query).toNormalizedString();
       } catch (e) {
-        console.log(`WARNING - ${query} is not really an ip`);
+        console.log('WARNING - "%s" is not really an ip', query);
         shared.total -= integrations.length;
         return;
       }
@@ -396,8 +428,8 @@ class Integration {
       }
     }
 
-    // must finish in case of no integrations (text)
-    if (shared.total === 0) {
+    // must finish in case of no possible integrations (text)
+    if (integrations.length === 0) {
       checkWriteDone();
     }
 
@@ -430,11 +462,11 @@ class Integration {
       istats.total++;
 
       // if available, first try cache
-      if (!shared.skipCache && Integration.cache && integration.cacheable) {
+      if (!shared.skipCache && Integration.#cache && integration.cacheable) {
         stats.cacheLookup++;
         istats.cacheLookup++;
         const cStartTime = Date.now();
-        const response = await Integration.cache.get(cacheKey);
+        const response = await Integration.#cache.get(cacheKey);
         updateTime(stats, istats, Date.now() - cStartTime, 'cache');
         if (response) {
           stats.cacheFound++;
@@ -471,8 +503,8 @@ class Integration {
             shared.resultCount += response._cont3xt.count ?? 0;
             response._cont3xt.createTime = Date.now();
             writeOne(integration, response);
-            if (Integration.cache && integration.cacheable) {
-              Integration.cache.set(cacheKey, response);
+            if (Integration.#cache && integration.cacheable) {
+              Integration.#cache.set(cacheKey, response);
             }
           } else {
             // console.log('ALW null', integration.name, cacheKey);
@@ -527,23 +559,37 @@ class Integration {
    * @returns {IntegrationChunk[]} results - An array data chunks with the data
    */
   static async apiSearch (req, res, next) {
-    if (!req.body.query) {
+    if (!ArkimeUtil.isString(req.body.query)) {
       return res.send({ success: false, text: 'Missing query' });
     }
 
-    if (req.body.tags !== undefined && !Array.isArray(req.body.tags)) {
-      return res.send({ success: false, text: 'Tags must be an array when present' });
+    if (req.body.tags !== undefined) {
+      if (!Array.isArray(req.body.tags)) {
+        return res.send({ success: false, text: 'tags must be an array when present' });
+      }
+      if (req.body.tags.some(t => typeof t !== 'string')) {
+        return res.send({ success: false, text: 'every tag must be a string' });
+      }
     }
 
-    if (req.body.doIntegrations && !Array.isArray(req.body.doIntegrations)) {
-      return res.send({ success: false, text: 'doIntegrations bad format' });
+    if (req.body.doIntegrations !== undefined) {
+      if (!Array.isArray(req.body.doIntegrations)) {
+        return res.send({ success: false, text: 'doIntegrations must be an array when present' });
+      }
+      if (req.body.doIntegrations.some(i => typeof i !== 'string')) {
+        return res.send({ success: false, text: 'every doIntegration must be a string' });
+      }
     }
 
-    const query = req.body.query.trim();
+    if (req.body.viewId !== undefined && !ArkimeUtil.isString(req.body.viewId)) {
+      return res.send({ success: false, text: 'viewId must be a string when present' });
+    }
+
+    const query = ArkimeUtil.sanitizeStr(req.body.query.trim());
 
     const itype = Integration.classify(query);
 
-    const integrations = Integration.integrations[itype];
+    const integrations = Integration.#integrations[itype];
     const shared = {
       skipCache: !!req.body.skipCache,
       doIntegrations: req.body.doIntegrations,
@@ -554,7 +600,7 @@ class Integration {
       resultCount: 0 // sum of _cont3xt.count from results
     };
     res.write('[\n');
-    res.write(JSON.stringify({ success: true, itype, sent: shared.sent, total: integrations.length, text: 'more to follow' }));
+    res.write(JSON.stringify({ success: true, itype, query, sent: shared.sent, total: integrations.length, text: 'more to follow' }));
     res.write(',\n');
 
     const issuedAt = Date.now();
@@ -580,14 +626,14 @@ class Integration {
     Integration.runIntegrationsList(shared, query, itype, integrations, finishWrite);
     if (itype === 'email') {
       const dquery = query.slice(query.indexOf('@') + 1);
-      Integration.runIntegrationsList(shared, dquery, 'domain', Integration.integrations.domain, finishWrite);
+      Integration.runIntegrationsList(shared, dquery, 'domain', Integration.#integrations.domain, finishWrite);
     } else if (itype === 'url') {
       const url = new URL(query);
       if (Integration.classify(url.hostname) === 'ip') {
-        Integration.runIntegrationsList(shared, url.hostname, 'ip', Integration.integrations.ip, finishWrite);
+        Integration.runIntegrationsList(shared, url.hostname, 'ip', Integration.#integrations.ip, finishWrite);
       } else {
         const equery = extractDomain(query, { tld: true });
-        Integration.runIntegrationsList(shared, equery, 'domain', Integration.integrations.domain, finishWrite);
+        Integration.runIntegrationsList(shared, equery, 'domain', Integration.#integrations.domain, finishWrite);
       }
     }
   }
@@ -603,14 +649,14 @@ class Integration {
    * @returns {object} data - The data from the integration query. This varies based upon the integration. The IntegrationCard describes how to present this data to the user.
    */
   static async apiSingleSearch (req, res, next) {
-    if (!req.body.query) {
+    if (!ArkimeUtil.isString(req.body.query)) {
       return res.send({ success: false, text: 'Missing query' });
     }
 
     const itype = req.params.itype;
-    const query = req.body.query.trim();
+    const query = ArkimeUtil.sanitizeStr(req.body.query.trim());
 
-    const integration = Integration.integrationsByName[req.params.integration];
+    const integration = Integration.#integrationsByName[req.params.integration];
 
     if (integration === undefined || integration.itypes[itype] === undefined) {
       return res.send({ success: false, text: `integration ${itype} ${req.params.integration} not found` });
@@ -646,9 +692,9 @@ class Integration {
           if (!response._cont3xt) { response._cont3xt = {}; }
           response._cont3xt.createTime = Date.now();
           res.send({ success: true, data: response, _query: query });
-          if (response && Integration.cache && integration.cacheable) {
+          if (Integration.#cache && integration.cacheable) {
             const cacheKey = `${integration.sharedCache ? 'shared' : req.user.userId}-${integration.name}-${itype}-${query}`;
-            Integration.cache.set(cacheKey, response);
+            Integration.#cache.set(cacheKey, response);
           }
         }
       })
@@ -682,7 +728,7 @@ class Integration {
    */
   static async apiGetSettings (req, res, next) {
     const result = {};
-    const integrations = Integration.integrations.all;
+    const integrations = Integration.#integrations.all;
     const keys = req.user.getCont3xtKeys();
     for (const integration of integrations) {
       if (!integration.settings) { continue; }
@@ -733,7 +779,7 @@ class Integration {
    * @returns {IntegrationSetting[]} settings - The integration settings to update for the logged in user
    */
   static async apiPutSettings (req, res, next) {
-    if (!req.body?.settings) {
+    if (typeof req.body.settings !== 'object') {
       res.send({ success: false, text: 'Missing settings' });
     }
     req.user.setCont3xtKeys(req.body.settings);
@@ -771,7 +817,7 @@ class Integration {
    */
   static async apiStats (req, res, next) {
     const result = [];
-    for (const integration of Integration.integrations.all) {
+    for (const integration of Integration.#integrations.all) {
       if (integration.noStats) { continue; }
       result.push({ ...integration.stats, name: integration.name });
     }
@@ -779,7 +825,7 @@ class Integration {
     for (const itype of Object.keys(itypeStats)) {
       iresult.push({ ...itypeStats[itype], name: itype });
     }
-    res.send({ success: true, startTime: Integration.cont3xtStartTime, stats: result, itypeStats: iresult });
+    res.send({ success: true, startTime: Integration.#cont3xtStartTime, stats: result, itypeStats: iresult });
   }
 
   getConfig (k, d) {
@@ -829,6 +875,9 @@ class Integration {
           delete f.fieldRoot;
         }
       }
+
+      // disable filtering if not searchable
+      f.noSearch ??= f.type === 'externalLink';
 
       outFields.push(f);
     }

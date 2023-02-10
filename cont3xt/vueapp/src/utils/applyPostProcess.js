@@ -42,45 +42,50 @@ const wildcardRegex = (value) => {
   return new RegExp(`^${value?.replaceAll('*', '[\\s\\S]*?')}$`);
 };
 
-const map = (value, { param: postProcess }, uiSettings, data) => {
-  return value?.map(element => applyPostProcess(postProcess, element, data, uiSettings));
+const map = (value, { param: postProcess }, shared) => {
+  return value?.map(element => applyPostProcess(postProcess, element, shared));
 };
 
 const mapTo = (value, args) => {
   return value?.map(element => pathInto(element, args));
 };
 
-const filterFunc = (value, { param: condition }, uiSettings, data) => {
-  return value?.filter(element => applyPostProcess(condition, element, data, uiSettings));
+// transforms map of objects to an array of objects where the keys are inserted into the objects as [fieldName]
+const keyedToArrayWith = (value, { param: fieldName }) => {
+  return Object.entries(value).map(([key, val]) => ({ [fieldName]: key, ...val }));
 };
 
-const filterOutFunc = (value, { param: condition }, uiSettings, data) => {
-  return value?.filter(element => !applyPostProcess(condition, element, data, uiSettings));
+const filterFunc = (value, { param: condition }, shared) => {
+  return value?.filter(element => applyPostProcess(condition, element, shared));
 };
 
-const match = (value, { param: regex }) => {
+const filterOutFunc = (value, { param: condition }, shared) => {
+  return value?.filter(element => !applyPostProcess(condition, element, shared));
+};
+
+const matchRegex = (value, { param: regex }) => {
   return regex?.test(value);
 };
 
-const matchAny = (value, { param: regexes }) => {
+const matchAnyRegex = (value, { param: regexes }) => {
   return regexes?.some(regexValue => regexValue?.test(value));
 };
 
-const ifFunc = (value, { param: condition, then, else: other }, uiSettings, data) => {
-  return applyPostProcess(condition, value, data, uiSettings) ? then : other;
+const ifFunc = (value, { param: condition, then, else: other }, shared) => {
+  return applyPostProcess(condition, value, shared) ? then : other;
 };
 
 /* boolean ----------- */
-const not = (value, { param: condition }, uiSettings, data) => {
-  return !applyPostProcess(condition, value, data, uiSettings);
+const not = (value, { param: condition }, shared) => {
+  return !applyPostProcess(condition, value, shared);
 };
 
-const all = (value, { param: conditions }, uiSettings, data) => {
-  return conditions?.every(condition => applyPostProcess(condition, value, data, uiSettings));
+const all = (value, { param: conditions }, shared) => {
+  return conditions?.every(condition => applyPostProcess(condition, value, shared));
 };
 
-const any = (value, { param: conditions }, uiSettings, data) => {
-  return conditions?.some(condition => applyPostProcess(condition, value, data, uiSettings));
+const any = (value, { param: conditions }, shared) => {
+  return conditions?.some(condition => applyPostProcess(condition, value, shared));
 };
 
 const jsonEquals = (value, { param: to }) => {
@@ -89,14 +94,14 @@ const jsonEquals = (value, { param: to }) => {
 
 /* resolvable types are evaluated and replaced with their actual values at runtime */
 // get a field from data by path
-const dataFunc = (_, { postProcess, ...args }, uiSettings, data) => { // resolvable
-  const fieldValue = pathInto(data, args);
-  return applyPostProcess(postProcess, fieldValue, data, uiSettings);
+const dataFunc = (_, { postProcess, ...args }, shared) => { // resolvable
+  const fieldValue = pathInto(shared.data, args);
+  return applyPostProcess(postProcess, fieldValue, shared);
 };
 
 // get a setting by key
-const setting = (_, { param: key, postProcess }, uiSettings, data) => { // resolvable
-  return applyPostProcess(postProcess, uiSettings?.[key], data, uiSettings);
+const setting = (_, { param: key, postProcess }, shared) => { // resolvable
+  return applyPostProcess(postProcess, shared.uiSettings?.[key], shared);
 };
 
 // returns the value it is passed -- escapes objects containing resolved keys ('setting', 'data', 'with', 'escapeValue')
@@ -106,8 +111,8 @@ const escapeValue = (_, { param: escapedValue }) => { // resolvable
 
 // applies postProcess to current value -- used in 'value' key-pair to temporarily modify/access sub-fields
 //    for an operation without permanently modifying it
-const withFunc = (value, { param: postProcess }, uiSettings, data) => { // resolvable
-  return applyPostProcess(postProcess, value, uiSettings, data);
+const withFunc = (value, { param: postProcess }, shared) => { // resolvable
+  return applyPostProcess(postProcess, value, shared);
 };
 
 const customFilters = {
@@ -115,23 +120,25 @@ const customFilters = {
   restOfLineFollowing,
   countryEmoji: countryCodeEmoji,
   wildcardRegex,
-  matchAny,
+  matchAnyRegex,
   /* common operations -------------------------------------------------------------- */
   pathInto,
   flatten: (value) => value?.flat(),
   split: (value, { param: on }) => value?.split(on),
   mapTo,
   map,
+  keyedToArrayWith,
   setting,
   data: dataFunc,
   escapeValue,
-  match,
+  matchRegex,
   filter: filterFunc,
   filterOut: filterOutFunc,
   removeNullish: (value) => value?.filter(element => element != null),
   trim: (value) => value?.trim(),
   template,
   with: withFunc,
+  evaluate: withFunc,
   not,
   all,
   any,
@@ -142,14 +149,14 @@ const customFilters = {
   greaterThan: (value, { param: other }) => value > other
 };
 
-const resolvePostProcessorArgs = (args, value, data, uiSettings) => {
-  const resolvableTypes = ['data', 'setting', 'escapeValue', 'with'];
+const resolvePostProcessorArgs = (args, value, shared) => {
+  const resolvableTypes = ['data', 'setting', 'escapeValue', 'with', 'evaluate'];
   const resolvedArgs = { ...args };
   for (const [key, arg] of Object.entries(args)) {
     // check for resolvable type
     if (Object.keys(arg)?.some(argKey => resolvableTypes.includes(argKey))) {
       // resolve value
-      resolvedArgs[key] = applyPostProcess(arg, value, data, uiSettings);
+      resolvedArgs[key] = applyPostProcess(arg, value, shared);
     }
   }
   return resolvedArgs;
@@ -163,11 +170,13 @@ const resolvePostProcessorArgs = (args, value, data, uiSettings) => {
  *
  * @param {PostProcessor|PostProcessor[]} postProcess
  * @param {*} value
- * @param {*} data
- * @param {Object<string,*>} uiSettings
+ * @param {Object<string,*>} shared
  * @returns {*} the formatted displayValue (or intermediate value during recursive post-processing)
  */
-export const applyPostProcess = (postProcess, value, data, uiSettings) => {
+export const applyPostProcess = (postProcess, value, shared = {}) => {
+  shared.data ??= {};
+  shared.uiSettings ??= {};
+
   if (!postProcess) { return value; }
   const postProcessors = Array.isArray(postProcess) ? postProcess : [postProcess]; // ensure array
   for (const postProcessor of postProcessors) {
@@ -186,7 +195,7 @@ export const applyPostProcess = (postProcess, value, data, uiSettings) => {
         delete args[possiblePostProcessorName];
 
         // resolve values from settings, data, or escaping
-        args = resolvePostProcessorArgs(args, value, data, uiSettings);
+        args = resolvePostProcessorArgs(args, value, shared);
       } else {
         // not a valid postProcessor -- stringified for better debugging
         console.warn(`Invalid postProcess ${JSON.stringify(postProcessor)}`);
@@ -200,7 +209,7 @@ export const applyPostProcess = (postProcess, value, data, uiSettings) => {
     if (customFilterFunc) {
       // value used in a post-processor can be overridden with the 'value' field
       const inputValue = Object.keys(args)?.includes('value') ? args.value : value;
-      value = customFilterFunc(inputValue, args, uiSettings, data);
+      value = customFilterFunc(inputValue, args, shared);
     } else if (defaultFilterFunc) {
       value = defaultFilterFunc(value);
     } else {

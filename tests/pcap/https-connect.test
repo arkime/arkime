@@ -19,6 +19,9 @@
                   "issuerON" : [
                      "DigiCert Inc"
                   ],
+                  "issuerOU" : [
+                     "www.digicert.com"
+                  ],
                   "notAfter" : 1590753600000,
                   "notBefore" : 1495670400000,
                   "publicAlgorithm" : "rsaEncryption",
@@ -40,6 +43,9 @@
                   "issuerON" : [
                      "DigiCert Inc"
                   ],
+                  "issuerOU" : [
+                     "www.digicert.com"
+                  ],
                   "notAfter" : 1855828800000,
                   "notBefore" : 1382443200000,
                   "publicAlgorithm" : "rsaEncryption",
@@ -50,6 +56,9 @@
                   ],
                   "subjectON" : [
                      "DigiCert Inc"
+                  ],
+                  "subjectOU" : [
+                     "www.digicert.com"
                   ],
                   "validDays" : 5479
                }

@@ -50,6 +50,10 @@ class ArkimeCache {
   }
 
   // ----------------------------------------------------------------------------
+  /**
+   * Create a new cache based on type and options
+   * @param {string} options.type The type of cache: memory, redis, memcached, lmdb
+   */
   static createCache (options) {
     switch (options.type) {
     case 'memory':

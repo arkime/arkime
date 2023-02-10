@@ -57,7 +57,7 @@ module.exports = (Config, Db, internals) => {
   ViewerUtils.determineQueryTimes = (reqQuery) => {
     let startTimeSec = null;
     let stopTimeSec = null;
-    let interval = 60 * 60;
+    let interval;
 
     if (Config.debug) {
       console.log('determineQueryTimes <-', reqQuery);
@@ -254,14 +254,14 @@ module.exports = (Config, Db, internals) => {
     // queryOverride can supercede req.query if specified
     const reqQuery = queryOverride || req.query;
 
-    if (!err && req.user.expression && req.user.expression.length > 0) {
+    if (!err && req.user.getExpression()) {
       try {
         // Expression was set by admin, so assume email search ok
         molochparser.parser.yy.emailSearch = true;
-        const userExpression = molochparser.parse(req.user.expression);
+        const userExpression = molochparser.parse(req.user.getExpression());
         query.query.bool.filter.push(userExpression);
       } catch (e) {
-        console.log(`ERROR - Forced expression (${req.user.expression}) doesn't compile -`, e);
+        console.log(`ERROR - Forced expression (${req.user.getExpression()}) doesn't compile -`, e);
         err = e;
       }
     }
@@ -425,9 +425,9 @@ module.exports = (Config, Db, internals) => {
     }
 
     if (str.match('IndexMissingException')) {
-      return "Arkime's Elasticsearch database has no matching session indices for the timeframe selected.";
+      return "Arkime's OpenSearch/Elasticsearch database has no matching session indices for the timeframe selected.";
     } else {
-      return 'Elasticsearch error: ' + str;
+      return 'OpenSearch/Elasticsearch error: ' + str;
     }
   };
 
@@ -535,7 +535,7 @@ module.exports = (Config, Db, internals) => {
       }
 
       if (Config.debug > 1) {
-        console.log(`DEBUG: node:${node} is using ${stat.hostname} from elasticsearch stats index`);
+        console.log(`DEBUG: node:${node} is using ${stat.hostname} from OpenSearch/Elasticsearch stats index`);
       }
 
       if (Config.isHTTPS(node)) {

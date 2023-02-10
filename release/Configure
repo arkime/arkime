@@ -2,7 +2,8 @@
 # Simple capital C Configure script for rpm/deb, like the old days
 
 if [ "$1" == "--help" ]; then
-    echo "Configure (--wise|--parliament|)  = Only 1 option can be used"
+    echo "Configure (--wise|--parliament|--cont3xt|)  = Only 1 option can be used"
+    echo "--cont3xt      = install and start cont3xt"
     echo "--wise         = install and start wise"
     echo "--parliament   = install and start parliament"
     echo "               = install arkime capture and viewer"
@@ -27,6 +28,7 @@ fi
 
 if [ "$1" == "--wise" ]; then
     if [ ! -f "$ARKIME_INSTALL_DIR/etc/wise.ini" ]; then
+        echo "Installing sample $ARKIME_INSTALL_DIR/etc/wise.ini"
         sed -e "s,ARKIME_ELASTICSEARCH,${ARKIME_ELASTICSEARCH},g" -e "s,ARKIME_INSTALL_DIR,${ARKIME_INSTALL_DIR},g" < $ARKIME_INSTALL_DIR/etc/wise.ini.sample > $ARKIME_INSTALL_DIR/etc/wise.ini
     else
         echo "Not overwriting $ARKIME_INSTALL_DIR/etc/wise.ini, delete and run again if update required (usually not), or edit by hand"
@@ -34,9 +36,7 @@ if [ "$1" == "--wise" ]; then
     fi
 
     if [ -d "/etc/systemd" ] && [ -x "/bin/systemctl" ]; then
-        echo "Installing systemd start files, use systemctl"
-        sed -e "s,ARKIME_INSTALL_DIR,${ARKIME_INSTALL_DIR},g" < $ARKIME_INSTALL_DIR/etc/arkimewise.systemd.service > /etc/systemd/system/arkimewise.service
-        systemctl daemon-reload
+        echo "Enabling & Starting wise systemd files"
         systemctl enable arkimewise
         systemctl start arkimewise
     else
@@ -49,14 +49,33 @@ fi
 
 if [ "$1" == "--parliament" ]; then
     if [ -d "/etc/systemd" ] && [ -x "/bin/systemctl" ]; then
-        echo "Installing systemd start files, use systemctl"
-        sed -e "s,ARKIME_INSTALL_DIR,${ARKIME_INSTALL_DIR},g" < $ARKIME_INSTALL_DIR/etc/arkimeparliament.systemd.service > /etc/systemd/system/arkimeparliament.service
-        systemctl daemon-reload
+        echo "Enabling & Starting parliament systemd files"
         systemctl enable arkimeparliament
         systemctl start arkimeparliament
     else
         echo "No startup scripts created for parliament"
     fi
+
+    exit 0;
+fi
+
+if [ "$1" == "--cont3xt" ]; then
+    if [ ! -f "$ARKIME_INSTALL_DIR/etc/cont3xt.ini" ]; then
+        echo "Installing sample $ARKIME_INSTALL_DIR/etc/cont3xt.ini"
+        sed -e "s,ARKIME_ELASTICSEARCH,${ARKIME_ELASTICSEARCH},g" -e "s,ARKIME_INSTALL_DIR,${ARKIME_INSTALL_DIR},g" < $ARKIME_INSTALL_DIR/etc/cont3xt.ini.sample > $ARKIME_INSTALL_DIR/etc/cont3xt.ini
+    else
+        echo "Not overwriting $ARKIME_INSTALL_DIR/etc/cont3xt.ini, delete and run again if update required (usually not), or edit by hand"
+        sleep 1
+    fi
+
+    if [ -d "/etc/systemd" ] && [ -x "/bin/systemctl" ]; then
+        echo "Enabling & Starting cont3xt systemd files"
+        systemctl enable arkimecont3xt
+        systemctl start arkimecont3xt
+    else
+        echo "No startup scripts created for cont3xt"
+    fi
+
 
     exit 0;
 fi
@@ -106,20 +125,12 @@ ARKIME_PASSWORD=${ARKIME_PASSWORD//\//\\/}
 ################################################################################
 echo "Arkime - Creating configuration files"
 if [ ! -f "$ARKIME_INSTALL_DIR/etc/config.ini" ]; then
+    echo "Installing sample $ARKIME_INSTALL_DIR/etc/config.ini"
     echo sed -e "s/ARKIME_INTERFACE/${ARKIME_INTERFACE}/g" -e "s,ARKIME_ELASTICSEARCH,${ARKIME_ELASTICSEARCH},g" -e "s/ARKIME_PASSWORD/${ARKIME_PASSWORD}/g" -e "s,ARKIME_INSTALL_DIR,${ARKIME_INSTALL_DIR},g" < $ARKIME_INSTALL_DIR/etc/config.ini.sample > $ARKIME_INSTALL_DIR/etc/config.ini
     sed -e "s/ARKIME_INTERFACE/${ARKIME_INTERFACE}/g" -e "s,ARKIME_ELASTICSEARCH,${ARKIME_ELASTICSEARCH},g" -e "s/ARKIME_PASSWORD/${ARKIME_PASSWORD}/g" -e "s,ARKIME_INSTALL_DIR,${ARKIME_INSTALL_DIR},g" < $ARKIME_INSTALL_DIR/etc/config.ini.sample > $ARKIME_INSTALL_DIR/etc/config.ini
 else
     echo "Not overwriting $ARKIME_INSTALL_DIR/etc/config.ini, delete and run again if update required (usually not), or edit by hand"
     sleep 2
-fi
-
-
-if [ -d "/etc/systemd" ] && [ -x "/bin/systemctl" ]; then
-    echo "Installing systemd start files, use systemctl"
-    sed -e "s/ARKIME_INTERFACE/${ARKIME_INTERFACE}/g" -e "s,ARKIME_ELASTICSEARCH,${ARKIME_ELASTICSEARCH},g" -e "s/ARKIME_PASSWORD/${ARKIME_PASSWORD}/g" -e "s,ARKIME_INSTALL_DIR,${ARKIME_INSTALL_DIR},g" < $ARKIME_INSTALL_DIR/etc/arkimecapture.systemd.service > /etc/systemd/system/arkimecapture.service
-    sed -e "s/ARKIME_INTERFACE/${ARKIME_INTERFACE}/g" -e "s,ARKIME_ELASTICSEARCH,${ARKIME_ELASTICSEARCH},g" -e "s/ARKIME_PASSWORD/${ARKIME_PASSWORD}/g" -e "s,ARKIME_INSTALL_DIR,${ARKIME_INSTALL_DIR},g" < $ARKIME_INSTALL_DIR/etc/arkimeviewer.systemd.service > /etc/systemd/system/arkimeviewer.service
-else
-    echo "No startup scripts created for capture and viewer"
 fi
 
 ################################################################################
@@ -153,20 +164,6 @@ if [ "$ARKIME_LOCALELASTICSEARCH" == "yes" ]; then
         dpkg -i elasticsearch-oss-${ES_VERSION}-$ARCHDEB.deb
         /bin/rm -f elasticsearch-oss-${ES_VERSION}-$ARCHDEB.deb
     fi
-fi
-
-################################################################################
-if [ -d "/etc/logrotate.d" ] && [ ! -f "/etc/logrotate.d/$ARKIME_NAME" ]; then
-    echo "Arkime - Installing /etc/logrotate.d/$ARKIME_NAME to rotate files after 7 days"
-    cat << EOF > /etc/logrotate.d/$ARKIME_NAME
-$ARKIME_INSTALL_DIR/logs/capture.log
-$ARKIME_INSTALL_DIR/logs/viewer.log {
-    daily
-    rotate 7
-    notifempty
-    copytruncate
-}
-EOF
 fi
 
 ################################################################################

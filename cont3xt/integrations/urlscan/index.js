@@ -51,6 +51,17 @@ class URLScanIntegration extends Integration {
         type: 'table',
         fields: [
           {
+            label: 'report',
+            field: 'task.uuid',
+            type: 'externalLink',
+            postProcess: { template: 'https://urlscan.io/result/<value>' }
+          },
+          {
+            label: 'scan date',
+            field: 'task.time',
+            postProcess: 'removeTime'
+          },
+          {
             label: 'visibility',
             field: 'task.visibility'
           },
@@ -78,7 +89,7 @@ class URLScanIntegration extends Integration {
           {
             label: 'screenshot',
             field: 'screenshot',
-            type: 'url'
+            type: 'externalLink'
           }
         ]
       }

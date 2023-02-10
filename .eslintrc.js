@@ -7,8 +7,8 @@ module.exports = {
     requireConfigFile: false,
     babelOptions: {
       plugins: [
-        "@babel/plugin-proposal-class-properties",
-        "@babel/plugin-syntax-class-properties"
+        '@babel/plugin-proposal-class-properties',
+        '@babel/plugin-syntax-class-properties'
       ]
     }
   },
@@ -22,11 +22,13 @@ module.exports = {
     // consider switching to `plugin:vue/strongly-recommended` or `plugin:vue/recommended` for stricter rules.
     'plugin:vue/essential',
     // https://github.com/standard/standard/blob/master/docs/RULES-en.md
-    'standard'
+    'standard',
+    'plugin:jest/recommended'
   ],
   // required to lint *.vue files
   plugins: [
-    'vue'
+    'vue',
+    'jest'
   ],
   // add your custom rules here
   rules: {
@@ -47,6 +49,8 @@ module.exports = {
     'no-case-declarations': 'off',
     'no-empty': 'off',
     'default-case-last': 'off',
-    'no-shadow': ['error', { 'builtinGlobals': true, 'hoist': 'all', 'allow': ['err', 'req', 'res', 'stop', 'self'] }]
+    'no-shadow': ['error', { 'builtinGlobals': true, 'hoist': 'all', 'allow': ['err', 'req', 'res', 'stop', 'self'] }],
+    'jest/no-conditional-expect': 'off',
+    'jest/expect-expect': [ 'error', { 'assertFunctionNames': ['expect', 'getAllByText', 'getByText', 'getByPlaceholderText', 'getByTitle'] }],
   }
 }

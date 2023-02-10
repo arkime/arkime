@@ -1,6 +1,7 @@
 'use strict';
 
 const util = require('util');
+const ArkimeUtil = require('../common/arkimeUtil');
 
 module.exports = (Db) => {
   const historyAPIs = {};
@@ -84,7 +85,7 @@ module.exports = (Db) => {
 
       if (userId) { // filter on userId
         query.query.bool.filter.push({
-          wildcard: { userId: '*' + userId + '*' }
+          wildcard: { userId }
         });
       }
     }
@@ -164,7 +165,7 @@ module.exports = (Db) => {
    *
    * Deletes a history entry (admin only).
    * @name /history/:id
-   * @param {string} index - The Elasticsearch index that the history item was stored in.
+   * @param {string} index - The OpenSearch/Elasticsearch index that the history item was stored in.
    * @returns {boolean} success - Whether the delete history operation was successful.
    * @returns {string} text - The success/error message to (optionally) display to the user.
    */
@@ -180,7 +181,7 @@ module.exports = (Db) => {
         text: 'Deleted history item successfully'
       }));
     } catch (err) {
-      console.log(`ERROR - ${req.method} /api/history/${req.params.id}`, util.inspect(err, false, 50));
+      console.log(`ERROR - ${req.method} /api/history/%s`, ArkimeUtil.sanitizeStr(req.params.id), util.inspect(err, false, 50));
       return res.serverError(500, 'Error deleting history item');
     }
   };

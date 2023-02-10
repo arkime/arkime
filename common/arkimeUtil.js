@@ -19,11 +19,17 @@
 const Redis = require('ioredis');
 const memjs = require('memjs');
 const Auth = require('./auth');
+const util = require('util');
 
 class ArkimeUtil {
   static debug = 0;
   // ----------------------------------------------------------------------------
+  /**
+   * For both arrays and single values escape entities
+   */
   static safeStr (str) {
+    if (Array.isArray(str)) { return str.map(x => ArkimeUtil.safeStr(x)); }
+
     return str.replace(/&/g, '&amp;')
       .replace(/</g, '&lt;')
       .replace(/>/g, '&gt;')
@@ -33,6 +39,30 @@ class ArkimeUtil {
   };
 
   // ----------------------------------------------------------------------------
+  /**
+   * Replace ESC character with ESC. This should be used when console.log of
+   * any user input to stop ESC 52 issues
+   */
+  static sanitizeStr (str) {
+    if (!str) { return str; }
+    if (typeof str === 'object') { str = util.inspect(str); }
+    // eslint-disable-next-line no-control-regex
+    return str.replace(/\u001b/g, '*ESC*');
+  }
+
+  // ----------------------------------------------------------------------------
+  /**
+   * Remove any special characters except ('-', '_', ':', and ' ')
+   */
+  static removeSpecialChars (str) {
+    if (!str) { return str; }
+    return str.replace(/[^-a-zA-Z0-9_: ]/g, '');
+  }
+
+  // ----------------------------------------------------------------------------
+  /**
+   * Express middleware to set some common headers for json responses
+   */
   static noCacheJson (req, res, next) {
     res.header('Cache-Control', 'no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0');
     res.header('Content-Type', 'application/json');
@@ -42,20 +72,46 @@ class ArkimeUtil {
 
   // ----------------------------------------------------------------------------
   /**
+   * Is str a string and a length of at least len
+   */
+  static isString (str, minLen = 1) {
+    return typeof str === 'string' && str.length >= minLen;
+  }
+
+  // ----------------------------------------------------------------------------
+  /**
+   * Is arr an array of strings, with each string being at least minLen
+   */
+  static isStringArray (arr, minLen = 1) {
+    if (!Array.isArray(arr)) {
+      return false;
+    }
+
+    for (const str of arr) {
+      if (typeof str !== 'string' || str.length < minLen) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  // ----------------------------------------------------------------------------
+  /**
    * Create a redis client from the provided url
    * @params {string} url - The redis url to connect to.
    * @params {string} section - The section this redis client is being created for
    */
   static createRedisClient (url, section) {
+    url = ArkimeUtil.sanitizeStr(url);
     // redis://[:pass]@host:port/db
     if (url.startsWith('redis://') || url.startsWith('rediss://')) {
       const match = url.match(/(rediss?):\/\/(:[^@]+@)?([^:/]+)(:[0-9]+)?\/([0-9]+)/);
       if (!match) {
-        console.log(`${section} - ERROR - can't parse redis url '${url}' should be of form //[:pass@]redishost[:redisport]/redisDbNum`);
+        console.log(`${section} - ERROR - can't parse redis url '%s' should be of form //[:pass@]redishost[:redisport]/redisDbNum`, url);
         process.exit(1);
       }
 
-      if (ArkimeUtil.debug > 0) {
+      if (ArkimeUtil.debug > 1) {
         console.log('REDIS:', url);
       }
       return new Redis(url);
@@ -65,7 +121,7 @@ class ArkimeUtil {
     if (url.startsWith('redis-sentinel://')) {
       const match = url.match(/(redis-sentinel):\/\/(([^:]+)?:([^@]+)?@)?([^/]+)\/([^/]+)\/([0-9]+)(\/.+)?/);
       if (!match) {
-        console.log(`${section} - ERROR - can't parse redis-sentinel url '${url}' should be of form //[sentinelPassword:redisPassword@]sentinelHost[:sentinelPort][,sentinelPortN[:sentinelPortN]]/redisName/redisDbNum`);
+        console.log(`${section} - ERROR - can't parse redis-sentinel url '%s' should be of form //[sentinelPassword:redisPassword@]sentinelHost[:sentinelPort][,sentinelPortN[:sentinelPortN]]/redisName/redisDbNum`, url);
         process.exit(1);
       }
 
@@ -82,7 +138,7 @@ class ArkimeUtil {
         options.password = match[4];
       }
 
-      if (ArkimeUtil.debug > 0) {
+      if (ArkimeUtil.debug > 1) {
         console.log('REDIS-SENTINEL:', options);
       }
       return new Redis(options);
@@ -92,7 +148,7 @@ class ArkimeUtil {
     if (url.startsWith('redis-cluster://')) {
       const match = url.match(/(redis-cluster):\/\/(:([^@]+)@)?([^/]+)\/([0-9]+)(\/.+)?/);
       if (!match) {
-        console.log(`${section} - ERROR - can't parse redis-cluster url '${url}' should be of form //[:redisPassword@]redisHost[:redisPort][,redisHostN[:redisPortN]]/redisDbNum`);
+        console.log(`${section} - ERROR - can't parse redis-cluster url '%s' should be of form //[:redisPassword@]redisHost[:redisPort][,redisHostN[:redisPortN]]/redisDbNum`, url);
         process.exit(1);
       }
 
@@ -107,13 +163,13 @@ class ArkimeUtil {
         options.password = match[3];
       }
 
-      if (ArkimeUtil.debug > 0) {
+      if (ArkimeUtil.debug > 1) {
         console.log('REDIS-CLUSTER: hosts', hosts, 'options', { redisOptions: options });
       }
       return new Redis.Cluster(hosts, { redisOptions: options });
     }
 
-    console.log(`${section} - Unknown redis url '${url}'`);
+    console.log(`${section} - Unknown redis url '%s'`, url);
     process.exit(1);
   }
 
@@ -123,6 +179,7 @@ class ArkimeUtil {
    * @params {string} section - The section this memcached client is being created for
    */
   static createMemcachedClient (url, section) {
+    url = ArkimeUtil.sanitizeStr(url);
     // memcached://[user:pass@]server1[:11211],[user:pass@]server2[:11211],...
     if (url.startsWith('memcached://')) {
       if (ArkimeUtil.debug > 0) {
@@ -131,7 +188,7 @@ class ArkimeUtil {
       return memjs.Client.create(url.substring(12));
     }
 
-    console.log(`${section} - Unknown memcached url '${url}'`);
+    console.log(`${section} - Unknown memcached url '%s'`, url);
     process.exit(1);
   }
 
@@ -210,8 +267,17 @@ class ArkimeUtil {
    */
   static missingResource (err, req, res, next) {
     res.status(404);
-    console.log(`Cannot locate resource requsted from ${req.path}`);
+    console.log('Cannot locate resource requsted from', ArkimeUtil.sanitizeStr(req.path));
     return res.send('Cannot locate resource');
+  }
+
+  /**
+   * express error handler
+   */
+  static expressErrorHandler (err, req, res, next) {
+    console.error('Error', ArkimeUtil.sanitizeStr(err.stack));
+    res.status(500).send(err.toString());
+    next();
   }
 
   // express middleware to set req.settingUser to who to work on, depending if admin or not

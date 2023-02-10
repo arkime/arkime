@@ -681,8 +681,8 @@ export default {
         .attr('viewBox', `${-width / 2} ${-height / 2} ${width} ${height}`)
         .attr('width', width)
         .attr('height', height)
-        .call(d3.zoom().on('zoom', () => { // allow zooming of the pie graph
-          g.attr('transform', d3.event.transform);
+        .call(d3.zoom().on('zoom', (e) => { // allow zooming of the pie graph
+          g.attr('transform', e.transform);
         }))
         .append('g');
 
@@ -755,14 +755,14 @@ export default {
         .style('fill', fillColor); // apply the colors to the slices
 
       newSlice // hover functionality
-        .on('mouseover', function (d) {
+        .on('mouseover', function (e, d) {
           mouseover(d, this);
           if (popupTimer) { clearTimeout(popupTimer); }
           popupTimer = setTimeout(() => {
             vueSelf.showInfo(d);
           }, 400);
         })
-        .on('mouseleave', function (d) {
+        .on('mouseleave', function (e, d) {
           mouseleave(d, this);
           if (popupTimer) { clearTimeout(popupTimer); }
         });
@@ -852,14 +852,14 @@ export default {
         .attr('xlink:href', (d) => '#rect' + getUid(d));
 
       newBox // hover functionality
-        .on('mouseover', function (d) {
+        .on('mouseover', function (e, d) {
           mouseoverBox(d, this);
           if (popupTimer) { clearTimeout(popupTimer); }
           popupTimer = setTimeout(() => {
             vueSelf.showInfo(d);
           }, 400);
         })
-        .on('mouseleave', function (d) {
+        .on('mouseleave', function (e, d) {
           mouseleaveBox(d, this);
           if (popupTimer) { clearTimeout(popupTimer); }
         });

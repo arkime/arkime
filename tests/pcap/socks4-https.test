@@ -25,6 +25,10 @@
                   "issuerON" : [
                      "VeriSign, Inc."
                   ],
+                  "issuerOU" : [
+                     "VeriSign Trust Network",
+                     "Terms of use at https://www.verisign.com/rpa (c)06"
+                  ],
                   "notAfter" : 1448927999000,
                   "notBefore" : 1413504000000,
                   "publicAlgorithm" : "rsaEncryption",
@@ -36,12 +40,18 @@
                   "subjectON" : [
                      "Microsoft Corporation"
                   ],
+                  "subjectOU" : [
+                     "Passport"
+                  ],
                   "validDays" : 409
                },
                {
                   "hash" : "f4:a8:0a:0c:d1:e6:cf:19:0b:8c:bc:6f:bc:99:17:11:d4:82:c9:d0",
                   "issuerON" : [
                      "VeriSign, Inc."
+                  ],
+                  "issuerOU" : [
+                     "Class 3 Public Primary Certification Authority"
                   ],
                   "notAfter" : 1636329599000,
                   "notBefore" : 1162944000000,
@@ -54,6 +64,10 @@
                   "subjectON" : [
                      "VeriSign, Inc."
                   ],
+                  "subjectOU" : [
+                     "VeriSign Trust Network",
+                     "(c) 2006 VeriSign, Inc. - For authorized use only"
+                  ],
                   "validDays" : 5478
                },
                {
@@ -63,6 +77,10 @@
                   ],
                   "issuerON" : [
                      "VeriSign, Inc."
+                  ],
+                  "issuerOU" : [
+                     "VeriSign Trust Network",
+                     "(c) 2006 VeriSign, Inc. - For authorized use only"
                   ],
                   "notAfter" : 1478563199000,
                   "notBefore" : 1162944000000,
@@ -74,6 +92,10 @@
                   ],
                   "subjectON" : [
                      "VeriSign, Inc."
+                  ],
+                  "subjectOU" : [
+                     "VeriSign Trust Network",
+                     "Terms of use at https://www.verisign.com/rpa (c)06"
                   ],
                   "validDays" : 3652
                }

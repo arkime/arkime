@@ -26,10 +26,15 @@ if (( $? == 0 )) ; then
   mv "$FILENAME" "${DEST_DIR}/oui.txt"
 fi
 
-# Call the maxind geoipupdate program if available. See
+# Run the maxind geoipupdate program if available. See
 # https://blog.maxmind.com/2019/12/18/significant-changes-to-accessing-and-using-geolite2-databases/
 # https://dev.maxmind.com/geoip/geoipupdate/#For_Free_GeoLite2_Databases
 if [ -x "/usr/bin/geoipupdate" ]; then
     /usr/bin/geoipupdate
-    chmod a+r /usr/share/GeoIP/*.mmdb
+    if [ -d /usr/share/GeoIP ]; then
+      chmod a+r /usr/share/GeoIP/*.mmdb
+    fi
+    if [ -d /var/lib/GeoIP ]; then
+      chmod a+r /var/lib/GeoIP/*.mmdb
+    fi
 fi

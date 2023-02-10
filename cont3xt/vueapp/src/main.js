@@ -16,7 +16,7 @@ import HasRole from '@/../../../common/vueapp/HasRole';
 
 import '@/index.scss'; // includes boostrap(vue) scss
 // common css needs to be after ^ because it overrides some bootstrap styles
-import '@/../../../common.css';
+import '@/../../../common/common.css';
 // cont3xt css is applied after common.css because it modifies some of its styles
 import '@/cont3xt.css';
 
@@ -41,6 +41,7 @@ new Vue({
     Vue.prototype.$constants = {
       VERSION,
       WEB_PATH,
+      DISABLE_USER_PASSWORD_UI,
       BUILD_DATE, // from webpack.DefinePlugin
       BUILD_VERSION // from webpack.DefinePlugin
     };

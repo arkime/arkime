@@ -487,7 +487,9 @@ LOCAL void reader_libpcapfile_pcap_cb(u_char *UNUSED(user), const struct pcap_pk
     }
 
     packet->pkt           = (u_char *)bytes;
-    packet->ts            = h->ts;
+    /* libpcap casts to int32_t which sign extends, undo that */
+    packet->ts.tv_sec     = (uint32_t)h->ts.tv_sec;
+    packet->ts.tv_usec    = h->ts.tv_usec;
     packet->readerFilePos = ftell(offlineFile) - 16 - h->len;
     packet->readerPos     = readerPos;
     moloch_packet_batch(&batch, packet);
@@ -510,9 +512,9 @@ LOCAL gboolean reader_libpcapfile_read()
     }
 
     // pause reading if too many packets are waiting to be processed
-    if (moloch_packet_outstanding() > 2048) {
+    if (moloch_packet_outstanding() > (int)(config.maxPacketsInQueue - offlineDispatchAfter)) {
         if (config.debug)
-            LOG("Waiting to process more packets, packet q: %d", moloch_packet_outstanding());
+            LOG("Waiting to process more packets, packet q: %d allow %d, try increasing maxPacketsInQueue (%u)", moloch_packet_outstanding(), (int)(config.maxPacketsInQueue - offlineDispatchAfter), config.maxPacketsInQueue);
         return G_SOURCE_CONTINUE;
     }
 
@@ -702,6 +704,10 @@ LOCAL void reader_libpcapfile_start() {
 void reader_libpcapfile_init(char *UNUSED(name))
 {
     offlineDispatchAfter        = moloch_config_int(NULL, "offlineDispatchAfter", 2500, 1, 0x7fff);
+
+    if (offlineDispatchAfter > (int)(config.maxPacketsInQueue + 1000)) {
+        CONFIGEXIT("offlineDispatchAfter (%d) must be less than maxPacketsInQueue (%u) + 1000", offlineDispatchAfter, config.maxPacketsInQueue);
+    }
 
     moloch_reader_start         = reader_libpcapfile_start;
     moloch_reader_stats         = reader_libpcapfile_stats;

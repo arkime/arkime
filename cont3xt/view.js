@@ -17,6 +17,8 @@
  */
 'use strict';
 
+const ArkimeUtil = require('../common/arkimeUtil');
+
 class View {
   constructor (data) {
     Object.assign(this, data);
@@ -64,21 +66,40 @@ class View {
    * Verify the view, returns error msg on failure
    */
   static verifyView (view) {
-    // TODO: Check roles
-    if (typeof (view.name) !== 'string') {
+    if (!ArkimeUtil.isString(view.name)) {
       return 'Missing name';
     }
 
-    if (view.viewRoles !== undefined && !Array.isArray(view.viewRoles)) {
-      return 'viewRoles must be array';
+    view.name = ArkimeUtil.removeSpecialChars(view.name);
+
+    if (view.viewRoles !== undefined) {
+      if (!Array.isArray(view.viewRoles)) { return 'viewRoles must be array'; }
+
+      for (const viewRole of view.viewRoles) {
+        if (!ArkimeUtil.isString(viewRole)) {
+          return 'viewRoles must contain strings';
+        }
+      }
     }
 
-    if (view.editRoles !== undefined && !Array.isArray(view.editRoles)) {
-      return 'editRoles must be array';
+    if (view.editRoles !== undefined) {
+      if (!Array.isArray(view.editRoles)) { return 'editRoles must be array'; }
+
+      for (const editRole of view.editRoles) {
+        if (!ArkimeUtil.isString(editRole)) {
+          return 'editRoles must contain strings';
+        }
+      }
     }
 
-    if (view.integrations !== undefined && !Array.isArray(view.integrations)) {
-      return 'integrations must be array';
+    if (view.integrations !== undefined) {
+      if (!Array.isArray(view.integrations)) { return 'integrations must be array'; }
+
+      for (const integration of view.integrations) {
+        if (!ArkimeUtil.isString(integration)) {
+          return 'integrations must contain strings';
+        }
+      }
     }
 
     return null;

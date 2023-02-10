@@ -3,15 +3,18 @@
     :value="query"
     :itype="itype"
     :data="data"
+    :tidbits="tidbits"
     :children="domainChildren"
   />
 </template>
 
 <script>
 import BaseIType from '@/components/itypes/BaseIType';
+import { ITypeMixin } from './ITypeMixin';
 
 export default {
   name: 'Cont3xtEmail',
+  mixins: [ITypeMixin], // for tidbits
   components: {
     BaseIType
   },

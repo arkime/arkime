@@ -5,9 +5,6 @@
     "type": "git",
     "url": "https://github.com/arkime/arkime.git"
   },
-  "dependencies": {
-    "core-js": "^3.6.5"
-  },
   "scripts": {
     "bundle": "cd ../ && npm run wise:bundle",
     "bundle:min": "cd ../ && npm run wise:build",
@@ -17,7 +14,7 @@
     "lint": "cd ../ && npm run wise:lint"
   },
   "engines": {
-    "node": ">= 6.0.0",
+    "node": ">= 16.0.0 < 18",
     "npm": ">= 3.0.0"
   },
   "nodemonConfig": {

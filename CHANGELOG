@@ -1,17 +1,21 @@
 NOTICE: Please see https://arkime.com/faq#upgrading-moloch for upgrading info
 
-ES Versions:
+OpenSearch Versions:
+  * Arkime >= 3.0.0  supports 1.x or 2.x
+
+Elasticsearch Versions:
+  * Arkime >= 4.0.0  supports ES >= 7.10.0 or 8.x, not 9.x or later
   * Moloch >= 3.0.0  supports ES >= 7.10.0, not 8.x or later
-  * Moloch >= 2.7.0  supports ES >= 7.4.0
-  * Moloch >= 2.2.0  supports ES >= 6.8.0 or >= 7.1.0
-  * Moloch >= 2.0.0  supports ES >= 6.7.0 or >= 7.1.0
+  * Moloch >= 2.7.0  supports ES >= 7.4.0, not 8.x or later
+  * Moloch >= 2.2.0  supports ES >= 6.8.0 or >= 7.1.0, not 8.x or later
+  * Moloch >= 2.0.0  supports ES >= 6.7.0 or >= 7.1.0, not 8.x or later
   * Moloch >= 1.5.0  supports ES >= 5.5.0, 6.x, not 7.x or later
   * Moloch >= 1.0.0  supports ES >= 5.5.0, 6.x (not prod tested, only for new installs), not 7.x or later
   * Moloch >= 0.50.0 supports ES >= 5.5.0, not 6.x or later
   * Moloch >= 0.18.1 supports ES 2.4.x, >= 5.3.1 not 6.x or later
 
 Node Versions:
-  * Moloch >= 3.4.0 requires NodeJS 16.x
+  * Moloch >= 3.4.0 requires NodeJS >= 16.0.0 and < 17
   * Moloch >= 3.0.0 requires NodeJS 14.x
   * Moloch >= 2.4.0 requires NodeJS 12.x
   * Moloch >= 2.0.0 requires NodeJS 10.x
@@ -23,8 +27,74 @@ Node Versions:
 NOTICE: Restart wiseService before capture when upgrading
 NOTICE: Cross-cluster Shortcuts require you to not restart all your viewers at once after upgrading
 
-4.0.0 2022/06/xx
+4.1.1 2023/02/xx
+  - release - node 16.19.0
+  - all - OpenSearch/Elasticsearch name cleanup
+  - all - cleanup nodejs dependencies
+  - all - refactor how authentication is done, everything now uses passportjs
+  - all - support oidc authentication method
+  - capture - support ERSPAN Type I and vlan for Type II
+  - cont3xt - raw create link groups
+  - cont3xt - two clicks to delete link groups or links
+  - cont3xt - classify domains with multiple dashes correctly
+  - cont3xt - added ability to copy links between link groups
+  - esproxy - fix converting basic auth to base64
+  - viewer - fix field actions crash
+
+4.1.0 2023/01/10
+  - release - glib 2.72.4 cyberchef 9.55.0 flot 4.2.3 d3 7.7
+  - db.pl - backup/restore wasn't dealing with templates correctly
+  - db.pl - upgrade failed if there was no moloch_shared user
+  - db.pl - repair now fixes missing history/ecs templates
+  - db.pl - fix users-export/users-import
+  - cont3xt - support missing auth and userTmpl settings
+  - cont3xt - Hide link group when no links match filter
+  - cont3xt - Added landing page
+  - capture - allow wise field dst.ip:port
+  - capture - add VNI field
+  - capture - initial tzsp reader support
+  - capture - y2038 fixes
+  - capture - Integer ops in rules now support a leading min or max which only 
+              sets the value if less than or greater than current value
+  - wise - added usersElasticsearchBasicAuth setting and lmdb cache support
+  - wise - add passivetotal value action if at least key is defined
+  - viewer - fix es node stats for different node.roles
+  - viewer/cont3xt - can now search roles
+  - viewer/cont3xt - don't show change password menu item if web auth is enabled for
+             user and disableUserPasswordUI is true
+
+4.0.3 2022/11/28
+  - release - cyberchef 9.54.0
+  - release - copy systemd files instead of soft linking
+  - releaes - capture/viewer systemd files now After OpenSearch/Elasticsearch
+  - capture - on short runs, field definitions weren't getting updated
+  - capture - s3 writer sets s3Compress to false with s3WriteGzip true
+  - capture - JA3s value was sometimes incorrect
+  - cont3xt - fixed digest mode fetching settings from config file
+  - db.pl - fixed init not working with OpenSearch sometimes
+  - db.pl - will now count data or data_hot node roles
+  - viewer - fixed showing more than 10 roles
+
+4.0.2 2022/11/01
+  - release - cyberchef 9.48.0
+  - all - better console output sanitization
+  - capture/viewer - Add TLS Certificate Organisational Unit field parsing (PR #2038)
+  - capture - use arkime_update_geo.sh in error msg
+  - capture - log error and exit if fields loading fails
+  - release - Stop Configure from destroying systemd files
+
+4.0.1 2022/10/18
+  - addUser.js - remove WARNING adding first user
+  - addUser.js - --webauthonly now sets header auth flag
+  - all - better console output sanitization
+  - capture - offline pcap allows more outstanding packets based on maxPacketsInQueue
+  - db.pl - Fixed some OpenSearch compatibility
+  - db.pl - Fixed upgrading to 4.x with no _moloch_shared user
+  - viewer - Fix cert notbefore/notafter showing bad dates in sessions table
+
+4.0.0 2022/10/11
   - BREAKING - Must be 3.3.0+ to upgrade to 4.x
+  - BREAKING - systemd files auto installed, still need to enable
   - BREAKING - Move to roles for some permission checking,
                userAdmin role required to edit users
   - BREAKING - the version file lives in common directory now
@@ -32,21 +102,37 @@ NOTICE: Cross-cluster Shortcuts require you to not restart all your viewers at o
   - BREAKING - pcap compression is turned on by default, disable with simpleCompression=none
   - BREAKING - simpleGzipBlockSize renamed simpleCompressionBlockSize
   - BREAKING - right-click changed to value-actions in config
-  - release - cyberchef 9.46.0, node 16.16.0
-  - all - Support ES 8
+  - BREAKING - the userId search in history for admin nolonger adds the surrounding wildcards automatically
+  - BREAKING - views & notifiers are now their own indices
+  - release - cyberchef 9.46.5, node 16.16.0
+  - release - systemd files are delivered with /opt/arkime path instead of setting at install time
+  - release - CICD tests with OpenSearch
+  - all - Support ES 8 & OpenSearch
+  - all - check for missing users index or no users on startup
+  - all - update code/docs to mention OpenSearch
   - addUser.js - new --roles option, --admin creates superAdmin user
-  - capture - New ecsEventDatset setting
+  - capture - New ecsEventDataset setting
   - capture - save sessions not saving packets for across restarts
   - capture - afpacket rewrite, improve performance & less out of order packets
   - capture - fix quic crash
+  - capture - make creating fields from config/parsers/wise/tagger use ES bulk call
   - capture/viewer - new outer fields replace gre fields (PR #1889)
+  - capture/viewer - initial SLL2 support (issue #2002)
+  - capture/viewer - zstd pcap compression
+  - chad - new plugin
   - cont3xt - new Cont3xt application, see https://arkime.com/cont3xt
   - cont3xt/viewer - share new user UI
   - db.pl - fix sync-files/add-missing trying to add non pcap files
   - db.pl - init/wipe clean up aliases that became indices
+  - db.pl - determine data node using roles array (issue #2006)
+  - db.pl - fix warning: Smartmatch is experimental
+  - db.pl - ilm didn't work if no sessions2 indices
   - common - fix userAuthIps setting
+  - esproxy - check gzip traffic
+  - esproxy - improved bulk and url sanitization
   - parliament - added --insecure option
   - parliament/wise - can be configured to use shared user DB
+  - suricata - support char 127 in json better
   - viewer - fixed auth fallback to digest from header mode
   - viewer - field-actions to display configurable menu items on field labels
   - viewer - share shortcuts with specific users or roles ("arkimeUser" role = old shortcut sharing)
@@ -59,6 +145,7 @@ NOTICE: Cross-cluster Shortcuts require you to not restart all your viewers at o
   - viewer - configure auto-hiding map/graph on large queries using turnOffGraphDays (default = 30 days)
   - wise - fix some stats sorting
   - wise - fix UI saving of INI formatted config
+  - wise - can configure field-actions
 
 3.4.2 2022/03/31
   - release - node 16.14.2
@@ -216,7 +303,7 @@ NOTICE: Cross-cluster Shortcuts require you to not restart all your viewers at o
   - esproxy - elasticsearchAPIKey and elasticsearchBasicAuth support
 
 3.0.0 2021/08/18
-  - BREAKING - elasticsearch - ES 7.10.0 or later required
+  - BREAKING - Elasticsearch - ES 7.10.0 or later required
   - BREAKING - if not using a ES prefix, the prefix arkime_ will now be used
   - BREAKING - multies - multiESNodes requires a name: and prefix: attribute per entry
   - BREAKING - wise - custom sources will need to be modified
@@ -276,7 +363,7 @@ NOTICE: Cross-cluster Shortcuts require you to not restart all your viewers at o
   - wise - new config UI, enable with --webconfig
   - wise - more moloch->arkime changes
   - wise - for json data can now set arrayPath for start of where to parse
-  - wise - new elasticsearchfile type
+  - wise - new nlasticsearchfile type
   - wise - threatstream results now cached
   - wise - support memcached for cache
   - wise - new urlinfile://filepath where config is the first line of filepath file

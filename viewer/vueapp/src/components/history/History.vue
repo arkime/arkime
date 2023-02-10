@@ -141,13 +141,13 @@
               button
               size="sm"
               v-model="seeAll"
-              class="ml-2 all-btn"
+              class="ml-1 all-btn"
               @input="toggleSeeAll"
               v-b-tooltip.hover.bottom
               v-if="column.sort == 'userId'"
               :title="seeAll ? 'Just show your history' : 'See the history for all users (you can because you are an ADMIN!)'">
               <span class="fa fa-user-circle mr-1" />
-              See {{ seeAll ? ' MY ' : ' ALL ' }}
+              {{ seeAll ? 'MY' : 'ALL' }}
             </b-form-checkbox>
           </th>
         </tr>
@@ -640,7 +640,7 @@ export default {
   height: 18px;
   margin-top: -5px;
   font-size: 0.8rem;
-  line-height: 1rem;
+  line-height: 0.9rem;
   padding: 0.1rem 0.3rem;
 }
 </style>

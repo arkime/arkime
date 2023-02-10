@@ -9,7 +9,7 @@
         tabindex="-1"
         v-if="!hideLabel"
         @click="toggleValue"
-        :class="field.type === 'table' || field.type === 'array' ? 'flex-grow-1 cursor-pointer': 'pr-2'">
+        :class="(field.type === 'table' || field.type === 'array') ? 'flex-grow-1 cursor-pointer' : 'pr-2'">
         <span class="text-warning">
           {{ field.label }}
           <span
@@ -94,6 +94,19 @@
           </template>
         </b-overlay>
       </template> <!-- /array field -->
+      <!-- external link field -->
+      <template v-else-if="field.type === 'externalLink'">
+        <b-button
+          target="_blank"
+          :href="value.value"
+          size="xs"
+          class="integration-external-link-button"
+          variant="outline-primary"
+          v-b-tooltip.hover.noninteractive="field.altText != null ? field.altText : value.value"
+        >
+          <span class="fa fa-external-link" />
+        </b-button>
+      </template> <!-- /external link field -->
       <!-- url field -->
       <template v-else-if="field.type === 'url'">
         <a
@@ -137,7 +150,7 @@ import Cont3xtField from '@/utils/Field';
 import IntegrationArray from '@/components/integrations/IntegrationArray';
 import IntegrationTable from '@/components/integrations/IntegrationTable';
 import HighlightableText from '@/utils/HighlightableText';
-import { formatValue } from '@/utils/formatValue';
+import { formatPostProcessedValue } from '@/utils/formatValue';
 
 export default {
   name: 'IntegrationValue',
@@ -225,7 +238,7 @@ export default {
     },
     /* helpers ------------------------------------------------------------- */
     findValue (data, field) {
-      return formatValue(data, field);
+      return formatPostProcessedValue(data, field);
     },
     getTableData () {
       if (this.tableFilteredData) {

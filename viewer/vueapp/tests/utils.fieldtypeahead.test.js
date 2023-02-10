@@ -155,7 +155,7 @@ test('field typeahead can add field to history', async () => {
   await fireEvent.click(dropdownItem);
 
   await waitFor(async () => {
-    expect(getAllByText('All IP fields').length).toBe(2);
+    expect(getAllByText('All IP fields')).toHaveLength(2);
   });
 });
 

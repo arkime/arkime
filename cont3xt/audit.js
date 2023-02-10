@@ -1,5 +1,5 @@
 /******************************************************************************/
-/* audit.js  -- Deal with a audit logs
+/* audit.js  -- Cont3xt history
  *
  * Copyright Yahoo Inc.
  *
@@ -22,7 +22,11 @@ class Audit {
     Object.assign(this, data);
   }
 
-  // initialization sets up periodic cleaning of expired audit history logs
+  /**
+   * Initialization sets up periodic cleaning of expired audit history logs
+   * @param {number} options.debug=0 The debug level to use
+   * @param {number} options.expireHistoryDays How long to keep history
+   */
   static initialize (options) {
     if (options.debug > 1) {
       console.log('Audit.initialize', options);

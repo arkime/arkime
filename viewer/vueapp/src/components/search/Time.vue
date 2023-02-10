@@ -678,7 +678,7 @@ export default {
         let stop = stopTime;
         let start = startTime;
 
-        if (stop !== undefined && start !== undefined && !isNaN(stop) && !isNaN(start)) {
+        if (!isNaN(stop) && !isNaN(start)) {
           stop = parseInt(stop, 10);
           start = parseInt(start, 10);
 
@@ -709,7 +709,7 @@ export default {
         } else { // if we can't parse stop or start time, set default
           this.timeRange = '1'; // default to 1 hour
         }
-      } else if (!date) {
+      } else {
         // there are no time query parameters, so set defaults
         this.timeRange = '1'; // default to 1 hour
       }

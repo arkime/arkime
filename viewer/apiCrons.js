@@ -119,17 +119,25 @@ class Cron {
    * @returns {ArkimeQuery} query - The new query
    */
   static async createCron (req, res) {
-    if (!req.body.name) {
+    if (!ArkimeUtil.isString(req.body.name)) {
       return res.serverError(403, 'Missing query name');
     }
-    if (!req.body.query) {
+    if (!ArkimeUtil.isString(req.body.query)) {
       return res.serverError(403, 'Missing query expression');
     }
-    if (!req.body.action) {
+    if (!ArkimeUtil.isString(req.body.action)) {
       return res.serverError(403, 'Missing query action');
     }
-    if (!req.body.tags) {
+    if (!ArkimeUtil.isString(req.body.tags)) {
       return res.serverError(403, 'Missing query tag(s)');
+    }
+
+    if (req.body.roles !== undefined && !ArkimeUtil.isStringArray(req.body.roles)) {
+      return res.serverError(403, 'Roles field must be an array of strings');
+    }
+
+    if (req.body.users !== undefined && !ArkimeUtil.isString(req.body.users, 0)) {
+      return res.serverError(403, 'Users field must be a string');
     }
 
     // comma/newline separated value -> array of values
@@ -150,11 +158,11 @@ class Cron {
       }
     };
 
-    if (req.body.description) {
+    if (ArkimeUtil.isString(req.body.description)) {
       doc.doc.description = req.body.description;
     }
 
-    if (req.body.notifier) {
+    if (ArkimeUtil.isString(req.body.notifier)) {
       doc.doc.notifier = req.body.notifier;
     }
 
@@ -213,20 +221,28 @@ class Cron {
    */
   static async updateCron (req, res) {
     const key = req.body.key;
-    if (!key) {
+    if (!ArkimeUtil.isString(key)) {
       return res.serverError(403, 'Missing query key');
     }
-    if (!req.body.name) {
+    if (!ArkimeUtil.isString(req.body.name)) {
       return res.serverError(403, 'Missing query name');
     }
-    if (!req.body.query) {
+    if (!ArkimeUtil.isString(req.body.query)) {
       return res.serverError(403, 'Missing query expression');
     }
-    if (!req.body.action) {
+    if (!ArkimeUtil.isString(req.body.action)) {
       return res.serverError(403, 'Missing query action');
     }
-    if (!req.body.tags) {
+    if (!ArkimeUtil.isString(req.body.tags)) {
       return res.serverError(403, 'Missing query tag(s)');
+    }
+
+    if (req.body.roles !== undefined && !ArkimeUtil.isStringArray(req.body.roles)) {
+      return res.serverError(403, 'Roles field must be an array of strings');
+    }
+
+    if (req.body.users !== undefined && !ArkimeUtil.isString(req.body.users, 0)) {
+      return res.serverError(403, 'Users field must be a string');
     }
 
     // comma/newline separated value -> array of values
@@ -248,11 +264,11 @@ class Cron {
       }
     };
 
-    if (req.body.notifier) {
+    if (ArkimeUtil.isString(req.body.notifier)) {
       doc.doc.notifier = req.body.notifier;
     }
 
-    if (req.body.description) {
+    if (ArkimeUtil.isString(req.body.description)) {
       doc.doc.description = req.body.description;
     }
 
@@ -272,7 +288,7 @@ class Cron {
       try {
         await Db.update('queries', 'query', key, doc, { refresh: true });
       } catch (err) {
-        console.log(`ERROR - ${req.method} /api/cron/${key}`, util.inspect(err, false, 50));
+        console.log(`ERROR - ${req.method} /api/cron/%s`, ArkimeUtil.sanitizeStr(key), util.inspect(err, false, 50));
       }
 
       if (Config.get('cronQueries', false)) { Cron.#process(); }
@@ -289,7 +305,7 @@ class Cron {
         invalidUsers: users.invalidUsers
       }));
     } catch (err) {
-      console.log(`ERROR - ${req.method} /api/cron/${key}`, util.inspect(err, false, 50));
+      console.log(`ERROR - ${req.method} /api/cron/%s`, ArkimeUtil.sanitizeStr(key), util.inspect(err, false, 50));
       return res.serverError(403, 'Periodic query update failed');
     }
   }
@@ -305,7 +321,7 @@ class Cron {
   static async deleteCron (req, res) {
     const key = req.body.key;
 
-    if (!key) {
+    if (!ArkimeUtil.isString(key)) {
       return res.serverError(403, 'Missing periodic query key');
     }
 
@@ -316,7 +332,7 @@ class Cron {
         text: 'Deleted periodic query successfully'
       }));
     } catch (err) {
-      console.log(`ERROR - ${req.method} /api/cron/${key}`, util.inspect(err, false, 50));
+      console.log(`ERROR - ${req.method} /api/cron/%s`, ArkimeUtil.sanitizeStr(key), util.inspect(err, false, 50));
       return res.serverError(500, 'Delete periodic query failed');
     }
   }

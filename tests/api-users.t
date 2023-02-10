@@ -1,4 +1,4 @@
-use Test::More tests => 99;
+use Test::More tests => 128;
 use Cwd;
 use URI::Escape;
 use MolochTest;
@@ -32,6 +32,40 @@ my $json;
     $json = viewerPostToken("/user/update", '{"userId": "usersAdmin", "userName": "UserName", "enabled":true, "password":"password", "roles":["superAdmin"]}', $token);
     eq_or_diff($json, from_json('{"text": "User ID can\'t be a system role id", "success": false}'));
 
+    $json = viewerPostToken("/user/update", '{"userId": "usersAdmin\u001b", "userName": "UserName", "enabled":true, "password":"password", "roles":["arkimeUser"]}', $token);
+    eq_or_diff($json, from_json('{"text": "User not found", "success": false}'));
+
+# Create Missing/Emptry fields
+    $json = viewerPostToken("/user/create", '{"userName": "UserName", "enabled":true, "password":"password"}', $token);
+    eq_or_diff($json, from_json('{"text": "Missing/Empty required fields", "success": false}'));
+
+    $json = viewerPostToken("/user/create", '{"userId": "", "userName": "UserName", "enabled":true, "password":"password"}', $token);
+    eq_or_diff($json, from_json('{"text": "Missing/Empty required fields", "success": false}'));
+
+    $json = viewerPostToken("/user/create", '{"userId": "<script>", "userName": "UserName", "enabled":true, "password":"password"}', $token);
+    eq_or_diff($json, from_json('{"text": "User ID must be word characters", "success": false}'));
+
+    $json = viewerPostToken("/user/create", '{"userId": "test1", "enabled":true, "password":"password"}', $token);
+    eq_or_diff($json, from_json('{"text": "Missing/Empty required fields", "success": false}'));
+
+    $json = viewerPostToken("/user/create", '{"userId": "test1", "userName": "", "enabled":true, "password":"password"}', $token);
+    eq_or_diff($json, from_json('{"text": "Missing/Empty required fields", "success": false}'));
+
+    $json = viewerPostToken("/user/create", '{"userId": "test1", "userName": " ", "enabled":true, "password":"password"}', $token);
+    eq_or_diff($json, from_json('{"text": "Username can not be empty", "success": false}'));
+
+    $json = viewerPostToken("/user/create", '{"userId": "test1", "userName": "UserName", "enabled":true}', $token);
+    eq_or_diff($json, from_json('{"text": "Password needs to be at least 3 characters", "success": false}'));
+
+    $json = viewerPostToken("/user/create", '{"userId": "test1", "userName": "UserName", "enabled":true, "password":""}', $token);
+    eq_or_diff($json, from_json('{"text": "Password needs to be at least 3 characters", "success": false}'));
+
+    $json = viewerPostToken("/user/create", '{"userId": "test1", "userName": "UserName", "enabled":true, "password":"ab"}', $token);
+    eq_or_diff($json, from_json('{"text": "Password needs to be at least 3 characters", "success": false}'));
+
+    $json = viewerPostToken("/user/create", '{"userId": "test1", "userName": "UserName", "enabled":true, "password":"abc", "expression": false}', $token);
+    eq_or_diff($json, from_json('{"text": "Expression must be a string when present", "success": false}'));
+
 # Add User 1
     $json = viewerPostToken("/user/create", '{"userId": "test1", "userName": "UserName", "enabled":true, "password":"password"}', $token);
     eq_or_diff($json, from_json('{"text": "User created succesfully", "success": true}'));
@@ -59,6 +93,12 @@ my $json;
     delete $users->{data}->[0]->{lastUsed};
 
     eq_or_diff($users->{data}->[0], from_json('{"roles": [], "userId": "test1", "removeEnabled": false, "expression": "", "headerAuthEnabled": false, "userName": "UserName", "id": "test1", "emailSearch": false, "enabled": true, "webEnabled": false, "packetSearch": false, "welcomeMsgNum": 0, "disablePcapDownload": false, "hideFiles": false, "hidePcap": false, "hideStats": false, "roleAssigners": []}', {relaxed => 1}), "Test User Add", { context => 3 });
+
+# Check appinfo works
+    $json = viewerGetToken("/api/appInfo", $token);
+    eq_or_diff(sort($json->{roles}), from_json('["arkimeAdmin", "arkimeUser", "cont3xtAdmin", "cont3xtUser", "parliamentAdmin", "parliamentUser", "superAdmin", "usersAdmin", "wiseAdmin", "wiseUser"]'));
+    my @roles = sort @{$json->{user}->{roles}};
+    eq_or_diff(\@roles, from_json('["arkimeAdmin", "arkimeUser", "cont3xtUser", "parliamentUser", "usersAdmin", "wiseUser"]'));
 
 # Can we create superAdmin
     $json = viewerPostToken("/user/create", '{"userId": "testSuper", "userName": "SUserName", "enabled":true, "password":"password", "roles":["superAdmin"]}', $token);
@@ -150,17 +190,17 @@ my $json;
     eq_or_diff($users->{data}->[1], from_json('{"roles": [], "userId": "test2", "removeEnabled": false, "expression": "foo", "headerAuthEnabled": true, "userName": "UserNameUpdated2", "id": "test2", "emailSearch": true, "enabled": true, "webEnabled": true, "packetSearch": false, "disablePcapDownload": false, "hideFiles": false, "hidePcap": false, "hideStats": false, "welcomeMsgNum": 0, "roleAssigners": []}', {relaxed => 1}), "Test User Update", { context => 3 });
 
 # Reverse settings
-    $json = viewerPostToken2("/user/update", '{"userId":"test2","userName":"UserNameUpdated3", "enabled":false, "removeEnabled":true, "headerAuthEnabled":false, "expression":"foo3", "emailSearch":false, "webEnabled":false, "roles": [], "packetSearch": false}', $token2);
+    $json = viewerPostToken2("/user/update", '{"userId":"test2","userName":"UserNameUpdated3", "enabled":false, "removeEnabled":true, "headerAuthEnabled":false, "expression":"", "emailSearch":false, "webEnabled":false, "roles": [], "packetSearch": false}', $token2);
 
     $users = viewerPost("/user/list", "");
     is (@{$users->{data}}, 2, "Check second Update #1");
     delete $users->{data}->[1]->{lastUsed};
-    eq_or_diff($users->{data}->[1], from_json('{"roles": [], "userId": "test2", "removeEnabled": true, "expression": "foo3", "headerAuthEnabled": false, "userName": "UserNameUpdated3", "id": "test2", "emailSearch": false, "enabled": false, "webEnabled": false, "packetSearch": false, "disablePcapDownload": false, "hideFiles": false, "hidePcap": false, "hideStats": false, "welcomeMsgNum": 0, "roleAssigners": []}', {relaxed => 1}), "Test User Update", { context => 3 });
+    eq_or_diff($users->{data}->[1], from_json('{"roles": [], "userId": "test2", "removeEnabled": true, "expression": "", "headerAuthEnabled": false, "userName": "UserNameUpdated3", "id": "test2", "emailSearch": false, "enabled": false, "webEnabled": false, "packetSearch": false, "disablePcapDownload": false, "hideFiles": false, "hidePcap": false, "hideStats": false, "welcomeMsgNum": 0, "roleAssigners": []}', {relaxed => 1}), "Test User Update", { context => 3 });
 
     $users = viewerPost2("/user/list", "");
     is (@{$users->{data}}, 2, "Check second Update #2");
     delete $users->{data}->[1]->{lastUsed};
-    eq_or_diff($users->{data}->[1], from_json('{"roles": [], "userId": "test2", "removeEnabled": true, "expression": "foo3", "headerAuthEnabled": false, "userName": "UserNameUpdated3", "id": "test2", "emailSearch": false, "enabled": false, "webEnabled": false, "packetSearch": false, "disablePcapDownload": false, "hideFiles": false, "hidePcap": false, "hideStats": false, "welcomeMsgNum": 0, "roleAssigners": []}', {relaxed => 1}), "Test User Update", { context => 3 });
+    eq_or_diff($users->{data}->[1], from_json('{"roles": [], "userId": "test2", "removeEnabled": true, "expression": "", "headerAuthEnabled": false, "userName": "UserNameUpdated3", "id": "test2", "emailSearch": false, "enabled": false, "webEnabled": false, "packetSearch": false, "disablePcapDownload": false, "hideFiles": false, "hidePcap": false, "hideStats": false, "welcomeMsgNum": 0, "roleAssigners": []}', {relaxed => 1}), "Test User Update", { context => 3 });
 
 # Column
     my $info = viewerGet("/user/columns?molochRegressionUser=test1");
@@ -235,8 +275,16 @@ my $json;
 # Messages
     $info = viewerPutToken("/user/test1/acknowledgeMsg", '{"msgNum":2}', $token2);
     ok(!$info->{success}, "can't update welcome message number for another user");
+
+    $info = viewerPutToken("/api/user/test1/acknowledge?molochRegressionUser=test1", '{}', $test1Token);
+    eq_or_diff($info, from_json('{"text": "Message number required", "success": false}'));
+
+    $info = viewerPutToken("/api/user/test1/acknowledge?molochRegressionUser=test1", '{"msgNum":"foo"}', $test1Token);
+    eq_or_diff($info, from_json('{"text": "welcomeMsgNum is not integer", "success": false}'));
+
     $info = viewerPutToken("/api/user/test1/acknowledge?molochRegressionUser=test1", '{"msgNum":2}', $test1Token);
     ok($info->{success}, "update welcome message number");
+
     $info = viewerGet("/user/current?molochRegressionUser=test1");
     eq_or_diff($info->{welcomeMsgNum}, 2, "welcome message number is correct");
 
@@ -252,16 +300,33 @@ my $json;
 # valueActions tests
     $json = viewerGet("/api/valueactions?molochRegressionUser=test1");
     eq_or_diff($json->{reverseDNS}, from_json('{"url": "api/reversedns?ip=%TEXT%", "name": "Get Reverse DNS", "actionType": "fetch", "category": "ip"}'), 'test1 valueActions');
+    eq_or_diff($json->{USERTEST}, from_json('{"url": "https://example.com", "name": "usertest", "category": "url"}'), 'test1 valueActions');
 
+    # not web enabled
     $json = viewerGet("/api/valueactions?molochRegressionUser=test2");
     eq_or_diff($json, from_json('{"text": "You do not have permission to access this resource", "success": false}'), 'test2 valueActions');
+
+    $json = viewerGet("/api/valueactions?molochRegressionUser=test100");
+    ok(! exists $json->{USERTEST});
+
+    $json = viewerGet("/api/valueactions?molochRegressionUser=test101");
+    ok(! exists $json->{USERTEST});
 
 # fieldActions tests
     $json = viewerGet("/api/fieldActions?molochRegressionUser=test1");
     eq_or_diff($json->{ASDF}, from_json('{"url": "https://www.asdf.com?expression=%EXPRESSION%&date=%DATE%&field=%FIELD%&dbField=%DBFIELD%", "name": "Field Action %FIELDNAME%!", "category": "ip"}'), 'fetches field actions');
 
+    # not web enabled
     $json = viewerGet("/api/fieldActions?molochRegressionUser=test2");
     eq_or_diff($json, from_json('{"text": "You do not have permission to access this resource", "success": false}'), 'user cannot access field action');
+
+    # not a user:
+    $json = viewerGet("/api/fieldActions?molochRegressionUser=test100");
+    eq_or_diff($json, from_json('{}'), 'not a fieldActions user:');
+
+    # notUser:
+    $json = viewerGet("/api/fieldActions?molochRegressionUser=test101");
+    eq_or_diff($json, from_json('{}'), 'notUser fieldActions');
 
 # state tests
     $json = viewerPostToken("/api/user/state/state1?molochRegressionUser=test1", '{"order":"test","visibleHeaders":["firstPacket","lastPacket","src","srcPort","dst","dstPort","totPackets","dbby","node"]}', $test1Token);
@@ -274,21 +339,47 @@ my $json;
 
 # roles
     $json = viewerPostToken("/user/create", '{"userId": "role:test1", "userName": "UserName", "enabled":true, "roles":"bad"}', $token);
-    eq_or_diff($json, from_json('{"text": "Roles field must be an array", "success": false}'));
+    eq_or_diff($json, from_json('{"text": "Roles field must be an array of strings", "success": false}'));
+
+    $json = viewerPostToken("/user/create", '{"userId": "role:test1", "userName": "UserName", "enabled":true, "roles":[false]}', $token);
+    eq_or_diff($json, from_json('{"text": "Roles field must be an array of strings", "success": false}'));
 
     $json = viewerPostToken("/user/create", '{"userId": "role:test1", "userName": "UserName", "enabled":true}', $token);
     eq_or_diff($json, from_json('{"text": "Role created succesfully", "success": true}'));
 
+    $json = viewerPostToken("/user/create", '{"userId": "role:test2", "userName": "UserName", "enabled":true, "roles":["role:test1", "superAdmin"]}', $token);
+    eq_or_diff($json, from_json('{"text": "User defined roles can\'t have superAdmin", "success": false}'));
+
+    $json = viewerPostToken("/user/create", '{"userId": "role:test2", "userName": "UserName", "enabled":true, "roles":["role:test1", "usersAdmin"]}', $token);
+    eq_or_diff($json, from_json('{"text": "User defined roles can\'t have usersAdmin", "success": false}'));
+
     $json = viewerPostToken("/user/create", '{"userId": "role:test2", "userName": "UserName", "enabled":true, "roles":["role:test1"]}', $token);
+    eq_or_diff($json, from_json('{"text": "Role created succesfully", "success": true}'));
 
     $json = viewerPost("/user/list?molochRegressionUser=role:test1", "");
     eq_or_diff($json, from_json('{"text": "Can not authenticate with role", "success": false}'));
 
-# role assigner
-    $json = viewerPostToken("/user/update", '{"userId": "role:test1", "userName": "UserName", "enabled":true, "roles":"bad", "roleAssigners": "foo"}', $token);
-    eq_or_diff($json, from_json('{"text": "roleAssigners field must be an array", "success": false}'));
+# role tests
+    $json = viewerPostToken("/user/update", '{"userId": "role:test1", "roles":["superAdmin"]}', $token);
+    eq_or_diff($json, from_json('{"text": "User defined roles can\'t have superAdmin", "success": false}'));
 
-    $json = viewerPostToken("/user/update", '{"userId": "role:test1", "userName": "UserName", "enabled":true, "roles":"bad", "roleAssigners": ["test1"]}', $token);
+    $json = viewerPostToken("/user/update", '{"userId": "role:test1", "roles":["usersAdmin"]}', $token);
+    eq_or_diff($json, from_json('{"text": "User defined roles can\'t have usersAdmin", "success": false}'));
+
+    $json = viewerPostToken("/user/update", '{"userId": "role:test1", "roles":"usersAdmin"}', $token);
+    eq_or_diff($json, from_json('{"text": "Roles field must be an array of strings", "success": false}'));
+
+    $json = viewerPostToken("/user/update", '{"userId": "role:test1", "roles":[false]}', $token);
+    eq_or_diff($json, from_json('{"text": "Roles field must be an array of strings", "success": false}'));
+
+# role assigner
+    $json = viewerPostToken("/user/update", '{"userId": "role:test1", "userName": "UserName", "enabled":true, "roleAssigners": "foo"}', $token);
+    eq_or_diff($json, from_json('{"text": "roleAssigners field must be an array of strings", "success": false}'));
+
+    $json = viewerPostToken("/user/update", '{"userId": "role:test1", "userName": "UserName", "enabled":true, "roleAssigners": [false]}', $token);
+    eq_or_diff($json, from_json('{"text": "roleAssigners field must be an array of strings", "success": false}'));
+
+    $json = viewerPostToken("/user/update", '{"userId": "role:test1", "userName": "UserName", "enabled":true, "roleAssigners": ["test1"]}', $token);
     eq_or_diff($json, from_json('{"text": "User role:test1 updated successfully", "success": true}'));
 
     $json = viewerPost("/user/list", "filter=role:test1");

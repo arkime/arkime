@@ -3,6 +3,7 @@
 const RE2 = require('re2');
 const util = require('util');
 const async = require('async');
+const ArkimeUtil = require('../common/arkimeUtil');
 
 module.exports = (Config, Db, internals, ViewerUtils) => {
   const statsAPIs = {};
@@ -12,7 +13,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
   // --------------------------------------------------------------------------
   // ES HEALTH APIS -----------------------------------------------------------
   /**
-   * The Elasticsearch cluster health status and information.
+   * The OpenSearch/Elasticsearch cluster health status and information.
    * @typedef ESHealth
    * @type {object}
    * @property {number} active_primary_shards - The number of active primary shards.
@@ -41,7 +42,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
   /**
    * GET - /api/eshealth
    *
-   * Retrive Elasticsearch health and stats
+   * Retrive OpenSearch/Elasticsearch health and stats
    * There is no auth necessary to retrieve eshealth
    * @name /eshealth
    * @returns {ESHealth} health - The elasticsearch cluster health status and info
@@ -340,10 +341,10 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
   /**
    * GET - /api/esstats
    *
-   * Fetches a list of stats for each Elasticsearch cluster.
+   * Fetches a list of stats for each OpenSearch/Elasticsearch cluster.
    * @name /esstats
-   * @param {string} filter - Search text to filter the list of Elasticsearch clusters by.
-   * @param {string} sortField=nodeName - The field to sort the Elasticsearch clusters list by.
+   * @param {string} filter - Search text to filter the list of OpenSearch/Elasticsearch clusters by.
+   * @param {string} sortField=nodeName - The field to sort the OpenSearch/Elasticsearch clusters list by.
    * @param {string} desc=false - Whether to return the results in descending order. Defaults to "false".
    * @returns {array} data - List of ES clusters with their corresponding stats.
    * @returns {number} recordsTotal - The total number of ES clusters.
@@ -433,7 +434,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
           ipExcluded: ipExcludes.includes(ip),
           nodeExcluded: nodeExcludes.includes(node.name),
           storeSize: node.indices.store.size_in_bytes,
-          freeSize: node.roles.includes('data') ? node.fs.total.available_in_bytes : 0,
+          freeSize: node.roles.some(str => str.startsWith('data')) ? node.fs.total.available_in_bytes : 0,
           docs: node.indices.docs.count,
           searches: node.indices.search.query_current,
           searchesTime: node.indices.search.query_time_in_millis,
@@ -448,7 +449,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
           writesRejectedDelta: rejected,
           writesCompletedDelta: completed,
           writesQueueSize: threadpoolInfo.queue_size,
-          load: node.os.load_average !== undefined ? /* ES 2 */ node.os.load_average : /* ES 5 */ node.os.cpu.load_average['5m'],
+          load: node.os.cpu.load_average['5m'] ?? node.os.cpu.load_average['1m'],
           version,
           molochtype,
           molochzone,
@@ -498,10 +499,10 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
   /**
    * GET - /api/esindices
    *
-   * Fetches a list of Elasticsearch indices.
+   * Fetches a list of OpenSearch/Elasticsearch indices.
    * @name /esindices
-   * @param {string} filter - Search text to filter the list of Elasticsearch indices by.
-   * @param {string} sortField=index - The field to sort the Elasticsearch indices list by.
+   * @param {string} filter - Search text to filter the list of OpenSearch/Elasticsearch indices by.
+   * @param {string} sortField=index - The field to sort the OpenSearch/Elasticsearch indices list by.
    * @param {string} desc=false - Whether to return the results in descending order. Defaults to "false".
    * @returns {array} data - List of ES indices with their corresponding stats.
    * @returns {number} recordsTotal - The total number of ES indices.
@@ -586,7 +587,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
   /**
    * DELETE - /api/esindices/:index
    *
-   * Deletes an Elasticsearch index (admin and remove access only).
+   * Deletes an OpenSearch/Elasticsearch index (admin and remove access only).
    * @name /esindices/:index
    * @returns {boolean} success - Whether the delete index operation was successful.
    * @returns {string} text - The success/error message to (optionally) display to the user.
@@ -596,7 +597,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
       await Db.deleteIndex([req.params.index], {});
       return res.send(JSON.stringify({ success: true }));
     } catch (err) {
-      console.log(`ERROR - ${req.method} /api/esindices/${req.params.index}`, util.inspect(err, false, 50));
+      console.log(`ERROR - ${req.method} /api/esindices/%s`, ArkimeUtil.sanitizeStr(req.params.index), util.inspect(err, false, 50));
       res.status(404);
       return res.send(JSON.stringify({ success: false, text: 'Error deleting index' }));
     }
@@ -605,7 +606,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
   /**
    * POST - /api/esindices/:index/optimize
    *
-   * Optimizes an Elasticsearch index (admin only).
+   * Optimizes an OpenSearch/Elasticsearch index (admin only).
    * @name /esindices/:index/optimize
    * @returns {boolean} success - Always true, the optimizeIndex function might block. Check the logs for errors.
    */
@@ -613,7 +614,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
     try {
       Db.optimizeIndex([req.params.index], {});
     } catch (err) {
-      console.log(`ERROR - ${req.method} /api/esindices/${req.params.index}/optimize`, util.inspect(err, false, 50));
+      console.log(`ERROR - ${req.method} /api/esindices/%s/optimize`, ArkimeUtil.sanitizeStr(req.params.index), util.inspect(err, false, 50));
     }
 
     // always return successfully right away, optimizeIndex might block
@@ -623,7 +624,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
   /**
    * POST - /api/esindices/:index/close
    *
-   * Closes an Elasticsearch index (admin only).
+   * Closes an OpenSearch/Elasticsearch index (admin only).
    * @name /esindices/:index/close
    * @returns {boolean} success - Whether the close index operation was successful.
    * @returns {string} text - The success/error message to (optionally) display to the user.
@@ -633,7 +634,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
       await Db.closeIndex([req.params.index], {});
       return res.send(JSON.stringify({ success: true }));
     } catch (err) {
-      console.log(`ERROR - ${req.method} /api/esindices/${req.params.index}/close`, util.inspect(err, false, 50));
+      console.log(`ERROR - ${req.method} /api/esindices/%s/close`, ArkimeUtil.sanitizeStr(req.params.index), util.inspect(err, false, 50));
       res.status(404);
       return res.send(JSON.stringify({ success: false, text: 'Error closing index' }));
     }
@@ -642,7 +643,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
   /**
    * POST - /api/esindices/:index/open
    *
-   * Opens an Elasticsearch index (admin only).
+   * Opens an OpenSearch/Elasticsearch index (admin only).
    * @name /esindices/:index/open
    * @returns {boolean} success - Always true, the openIndex function might block. Check the logs for errors.
    */
@@ -650,7 +651,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
     try {
       Db.openIndex([req.params.index], {});
     } catch (err) {
-      console.log(`ERROR - ${req.method} /api/esindices/${req.params.index}/open`, util.inspect(err, false, 50));
+      console.log(`ERROR - ${req.method} /api/esindices/%s/open`, ArkimeUtil.sanitizeStr(req.params.index), util.inspect(err, false, 50));
     }
 
     // always return successfully right away, openIndex might block
@@ -660,7 +661,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
   /**
    * POST - /api/esindices/:index/shrink
    *
-   * Shrinks an Elasticsearch index (admin only).
+   * Shrinks an OpenSearch/Elasticsearch index (admin only).
    * @name /esindices/:index/shrink
    * @param {string} target - The index name to shrink the index to.
    * @param {number} numShards - The number of shards to shrink the index to.
@@ -668,7 +669,11 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * @returns {string} text - The success/error message to (optionally) display to the user.
    */
   statsAPIs.shrinkESIndex = async (req, res) => {
-    if (!req.body || !req.body.target) {
+    if (!req.body) {
+      return res.serverError(403, 'Missing body');
+    }
+
+    if (!ArkimeUtil.isString(req.body.target)) {
       return res.serverError(403, 'Missing target');
     }
 
@@ -707,7 +712,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
                 await Db.deleteIndex([req.params.index], {});
               }
             } catch (err) {
-              console.log(`ERROR - ${req.method} /api/esindices/${req.params.index}/shrink`, util.inspect(err, false, 50));
+              console.log(`ERROR - ${req.method} /api/esindices/%s/shrink`, ArkimeUtil.sanitizeStr(req.params.index), util.inspect(err, false, 50));
             }
           }
         });
@@ -718,7 +723,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
     } catch (err) {
       return res.send(JSON.stringify({
         success: false,
-        text: err
+        text: ArkimeUtil.safeStr(err.message)
       }));
     }
   };
@@ -727,7 +732,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
   /**
    * GET - /api/estasks
    *
-   * Fetches Elasticsearch tasks.
+   * Fetches OpenSearch/Elasticsearch tasks.
    * @name /estasks
    * @param {string} filter - Search text to filter the list of ES tasks by.
    * @param {string} cancellable=false - Whether to return only cancellable tasks. Default is "false".
@@ -817,7 +822,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
   /**
    * POST - /api/estasks/:id/cancel
    *
-   * Cancels an Elasticsearch task (admin only).
+   * Cancels an OpenSearch/Elasticsearch task (admin only).
    * @name /estasks/:id/cancel
    * @returns {boolean} success - Whether the cancel task operation was successful.
    * @returns {string} text - The success/error message to (optionally) display to the user.
@@ -826,7 +831,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
     let taskId;
     if (req.params.id) {
       taskId = req.params.id;
-    } else if (req.body && req.body.taskId) {
+    } else if (req.body && ArkimeUtil.isString(req.body.taskId)) {
       taskId = req.body.taskId;
     } else {
       return res.serverError(403, 'Missing ID of task to cancel');
@@ -836,7 +841,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
       const { body: result } = await Db.taskCancel(taskId);
       return res.send(JSON.stringify({ success: true, text: result }));
     } catch (err) {
-      console.log(`ERROR - ${req.method} /api/estasks/${taskId}/cancel`, util.inspect(err, false, 50));
+      console.log(`ERROR - ${req.method} /api/estasks/%s/cancel`, ArkimeUtil.sanitizeStr(taskId), util.inspect(err, false, 50));
       return res.serverError(500, err.toString());
     }
   };
@@ -844,7 +849,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
   /**
    * POST - /api/estasks/:id/cancelwith
    *
-   * Cancels an Elasticsearch task by opaque id. Used to cancel running tasks
+   * Cancels an OpenSearch/Elasticsearch task by opaque id. Used to cancel running tasks
    * that a user has created allowing a user to cancel their own tasks.
    * @name /estasks/:id/cancelwith
    * @returns {boolean} success - Whether the cancel task operation was successful.
@@ -854,7 +859,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
     let cancelId;
     if (req.params.id) {
       cancelId = req.params.id;
-    } else if (req.body && req.body.cancelId) {
+    } else if (req.body && ArkimeUtil.isString(req.body.cancelId)) {
       cancelId = req.body.cancelId;
     } else {
       return res.serverError(403, 'Missing ID of task to cancel');
@@ -864,7 +869,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
       const { body: result } = await Db.cancelByOpaqueId(`${req.user.userId}::${cancelId}`);
       return res.send(JSON.stringify({ success: true, text: result }));
     } catch (err) {
-      console.log(`ERROR - ${req.method} /api/estasks/${cancelId}/cancelwith`, util.inspect(err, false, 50));
+      console.log(`ERROR - ${req.method} /api/estasks/%s/cancelwith`, ArkimeUtil.sanitizeStr(cancelId), util.inspect(err, false, 50));
       return res.serverError(500, err.toString());
     }
   };
@@ -872,7 +877,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
   /**
    * POST - /api/estasks/cancelall
    *
-   * Cancels all running Elasticsearch tasks (admin only).
+   * Cancels all running OpenSearch/Elasticsearch tasks (admin only).
    * @name /estasks/cancelall
    * @returns {boolean} success - Whether the cancel all tasks operation was successful.
    * @returns {string} text - The success/error message to (optionally) display to the user.
@@ -891,7 +896,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
   /**
    * GET - /api/esadmin
    *
-   * Fetches all Elasticsearch settings that a user can change (es admin only - set in config with <a href="settings#esadminusers">esAdminUsers</a>).
+   * Fetches all OpenSearch/Elasticsearch settings that a user can change (es admin only - set in config with <a href="settings#esadminusers">esAdminUsers</a>).
    * @name /esadmin
    * @returns {array} settings - List of ES settings that a user can change
    */
@@ -1019,14 +1024,14 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
   /**
    * POST - /api/esadmin/set
    *
-   * Sets Elasticsearch settings (es admin only - set in config with <a href="settings#esadminusers">esAdminUsers</a>).
+   * Sets OpenSearch/Elasticsearch settings (es admin only - set in config with <a href="settings#esadminusers">esAdminUsers</a>).
    * @name /esadmin/set
    * @returns {boolean} success - Whether saving the settings was successful.
    * @returns {string} text - The success/error message to (optionally) display to the user.
    */
   statsAPIs.setESAdminSettings = async (req, res) => {
-    if (req.body.key === undefined) { return res.serverError(500, 'Missing key'); }
-    if (req.body.value === undefined) { return res.serverError(500, 'Missing value'); }
+    if (!ArkimeUtil.isString(req.body.key)) { return res.serverError(500, 'Missing key'); }
+    if (!ArkimeUtil.isString(req.body.value, 0)) { return res.serverError(500, 'Missing value'); }
 
     // Convert null string to null
     if (req.body.value === 'null') { req.body.value = null; }
@@ -1053,7 +1058,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
         await Db.putClusterSettings(query);
         return res.send(JSON.stringify({
           success: true,
-          text: 'Successfully set ES settings'
+          text: 'Successfully set settings'
         }));
       } catch (err) {
         console.log(`ERROR - ${req.method} /api/esadmin/set`, util.inspect(err, false, 50));
@@ -1119,7 +1124,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
           return res.serverError(500, 'Unknown field');
         }
         Db.putTemplate('sessions3_template', template[`${internals.prefix}sessions3_template`]);
-        return res.send(JSON.stringify({ success: true, text: 'Successfully set ES settings' }));
+        return res.send(JSON.stringify({ success: true, text: 'Successfully set settings' }));
       });
       return;
     }
@@ -1131,7 +1136,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
       await Db.putClusterSettings(clusterQuery);
       return res.send(JSON.stringify({
         success: true,
-        text: 'Successfully set ES settings'
+        text: 'Successfully set settings'
       }));
     } catch (err) {
       console.log(`ERROR - ${req.method} /api/esadmin/set`, util.inspect(err, false, 50));
@@ -1159,7 +1164,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
   /**
    * POST - /api/esadmin/flush
    *
-   * Flush and refresh any data waiting in Elasticsearch to disk (es admin only - set in config with <a href="settings#esadminusers">esAdminUsers</a>).
+   * Flush and refresh any data waiting in OpenSearch/Elasticsearch to disk (es admin only - set in config with <a href="settings#esadminusers">esAdminUsers</a>).
    * @name /esadmin/flush
    * @returns {boolean} success - Always true
    * @returns {string} text - The success message to (optionally) display to the user.
@@ -1210,9 +1215,9 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
   /**
    * GET - /api/esshards
    *
-   * Fetches all Elasticsearch shards
+   * Fetches all OpenSearch/Elasticsearch shards
    * @name /esshards
-   * @param {string} filter - Search text to filter the list of Elasticsearch shards by.
+   * @param {string} filter - Search text to filter the list of OpenSearch/Elasticsearch shards by.
    * @param {string} show=all - Which types of shard to show. Options include:
      all - show all shards.
      notstarted - show unstarted shards.
@@ -1304,7 +1309,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
   /**
    * POST - /api/esshards/:type/:value/exclude
    *
-   * Exclude Elasticsearch node by ip or name (admin only).
+   * Exclude OpenSearch/Elasticsearch node by ip or name (admin only).
    * @name /esshards/:type/:value/exclude
    * @returns {boolean} success - Whether exclude node operation was successful.
    * @returns {string} text - The success/error message to (optionally) display to the user.
@@ -1344,7 +1349,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
         text: 'Successfully excluded node'
       }));
     } catch (err) {
-      console.log(`ERROR - ${req.method} /api/esshards/${req.params.type}/${req.params.value}/exclude`, util.inspect(err, false, 50));
+      console.log(`ERROR - ${req.method} /api/esshards/%s/%s/exclude`, ArkimeUtil.sanitizeStr(req.params.type), ArkimeUtil.sanitizeStr(req.params.value), util.inspect(err, false, 50));
       return res.serverError(500, 'Node exclusion failed');
     }
   };
@@ -1352,7 +1357,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
   /**
    * POST - /api/esshards/:type/:value/include
    *
-   * Include Elasticsearch node by ip or name (admin only).
+   * Include OpenSearch/Elasticsearch node by ip or name (admin only).
    * @name /esshards/:type/:value/include
    * @returns {boolean} success - Whether include node operation was successful.
    * @returns {string} text - The success/error message to (optionally) display to the user.
@@ -1393,7 +1398,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
         text: 'Successfully included node'
       }));
     } catch (err) {
-      console.log(`ERROR - ${req.method} /api/esshards/${req.params.type}/${req.params.value}/include`, util.inspect(err, false, 50));
+      console.log(`ERROR - ${req.method} /api/esshards/%s/%s/include`, ArkimeUtil.sanitizeStr(req.params.type), ArkimeUtil.sanitizeStr(req.params.value), util.inspect(err, false, 50));
       return res.serverError(500, 'Node inclusion failed');
     }
   };

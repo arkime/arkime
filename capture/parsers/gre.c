@@ -77,6 +77,11 @@ LOCAL MolochPacketRC gre_packet_enqueue(MolochPacketBatch_t * UNUSED(batch), Mol
     if (BSB_IS_ERROR(bsb))
         return MOLOCH_PACKET_CORRUPT;
 
+    // Type I of ERSPAN doesn't have a ERSPAN header
+    if (type == 0x88be && (flags_version & 0x1000) == 0) {
+        type = MOLOCH_ETHERTYPE_ETHER;
+    }
+
     return moloch_packet_run_ethernet_cb(batch, packet, BSB_WORK_PTR(bsb), BSB_REMAINING(bsb), type, "GRE");
 }
 /******************************************************************************/

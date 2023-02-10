@@ -1,4 +1,4 @@
-use Test::More tests => 38;
+use Test::More tests => 43;
 use Cwd;
 use URI::Escape;
 use MolochTest;
@@ -54,6 +54,14 @@ eq_or_diff($result, from_json('{"tokenError":true,"success":false,"text":"Permis
 $result = parliamentPost("/parliament/api/groups", '{"token": "' . $token . '"}');
 eq_or_diff($result, from_json('{"success":false,"text":"A group must have a title"}'));
 
+# Bad title
+$result = parliamentPost("/parliament/api/groups", '{"token": "' . $token . '", "title": 1}');
+eq_or_diff($result, from_json('{"success":false,"text":"A group must have a title"}'));
+
+# Bad description
+$result = parliamentPost("/parliament/api/groups", '{"token": "' . $token . '", "title": "title", "description": 1}');
+eq_or_diff($result, from_json('{"success":false,"text":"A group must have a string description."}'));
+
 # Create group
 $result = parliamentPost("/parliament/api/groups", '{"token": "' . $token . '", "title": "the title"}');
 eq_or_diff($result, from_json('{"success":true,"text":"Successfully added new group.", "group": {"clusters": [], "id": 0, "title": "the title"}}'));
@@ -97,9 +105,21 @@ eq_or_diff($result, from_json('{"tokenError":true,"success":false,"text":"Permis
 $result = parliamentPut("/parliament/api/groups/1", '{"token": "token", "title": "UP the second title", "description": "UP description for 2"}');
 eq_or_diff($result, from_json('{"tokenError":true,"success":false,"text":"Permission Denied: Failed to authenticate token. Try logging in again."}'));
 
+# Update second group bad title
+$result = parliamentPut("/parliament/api/groups/1", '{"token": "' . $token . '", "title": 1, "description": "UP description for 2"}');
+eq_or_diff($result, from_json('{"success":false,"text":"A group must have a title."}'));
+
+# Update second group bad description
+$result = parliamentPut("/parliament/api/groups/1", '{"token": "' . $token . '", "title": "UP the second title", "description": 1}');
+eq_or_diff($result, from_json('{"success":false,"text":"A group must have a string description."}'));
+
 # Update second group
 $result = parliamentPut("/parliament/api/groups/1", '{"token": "' . $token . '", "title": "UP the second title", "description": "UP description for 2"}');
 eq_or_diff($result, from_json('{"success":true,"text":"Successfully updated the requested group."}'));
+
+# Restore defaults error
+$result = parliamentPut("/parliament/api/settings/restoreDefaults", '{"token": "' . $token . '", "type": "foo"}');
+eq_or_diff($result, from_json('{"success":false,"text":"type must be general or all"}'));
 
 # Get parliament
 $result = parliamentGet("/parliament/api/parliament");

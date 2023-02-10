@@ -51,12 +51,12 @@ function checkURLs (nodes) {
   if (Array.isArray(nodes)) {
     nodes.forEach(node => {
       if (!node.startsWith('http')) {
-        console.log(`ERROR - Elasticsearch endpoint url '${node}' must start with http:// or https://`);
+        console.log(`ERROR - OpenSearch/Elasticsearch endpoint url '${node}' must start with http:// or https://`);
         process.exit();
       }
     });
   } else if (!nodes.startsWith('http')) {
-    console.log(`ERROR - Elasticsearch endpoint url '${nodes}' must start with http:// or https://`);
+    console.log(`ERROR - OpenSearch/Elasticsearch endpoint url '${nodes}' must start with http:// or https://`);
     process.exit();
   }
 }
@@ -147,7 +147,8 @@ exports.initialize = async (info, cb) => {
       basicAuth: info.usersEsBasicAuth,
       prefix: internals.usersPrefix,
       debug: internals.debug,
-      getCurrentUserCB: info.getCurrentUserCB
+      getCurrentUserCB: info.getCurrentUserCB,
+      noUsersCheck: info.noUsersCheck
     });
   } else {
     User.initialize({
@@ -163,7 +164,8 @@ exports.initialize = async (info, cb) => {
       prefix: internals.prefix,
       debug: internals.debug,
       readOnly: internals.multiES,
-      getCurrentUserCB: info.getCurrentUserCB
+      getCurrentUserCB: info.getCurrentUserCB,
+      noUsersCheck: info.noUsersCheck
     });
   }
 
@@ -212,18 +214,18 @@ exports.initialize = async (info, cb) => {
     const { body: data } = await internals.client7.info();
     if (data.version.distribution === 'opensearch') {
       if (data.version.number.match(/^[0]/)) {
-        console.log(`ERROR - Opensearch ${data.version.number} not supported, Opensearch 1.0.0 or later required.`);
+        console.log(`ERROR - OpenSearch ${data.version.number} not supported, OpenSearch 1.0.0 or later required.`);
         process.exit();
       }
     } else {
       if (data.version.number.match(/^([0-6]|7\.[0-9]\.)/)) {
-        console.log(`ERROR - ES ${data.version.number} not supported, ES 7.10.0 or later required.`);
+        console.log(`ERROR - Elasticsearch ${data.version.number} not supported, Elasticsearch 7.10.0 or later required.`);
         process.exit();
       }
     }
     return cb();
   } catch (err) {
-    console.log('ERROR - getting ES client info, is ES running?', err);
+    console.log('ERROR - getting OpenSearch/Elasticsearch client info failed, is it running?', err);
     process.exit(1);
   }
 };
@@ -342,7 +344,9 @@ const singletonFields = {
 
 const dateFields = {
   firstPacket: true,
-  lastPacket: true
+  lastPacket: true,
+  'cert.notBefore': true,
+  'cert.notAfter': true
 };
 
 // Change foo.bar to foo: {bar:}
@@ -373,11 +377,13 @@ function fixSessionFields (fields, unflatten) {
 
     // Dot in name, will be moving
     let value = fields[f];
+    if (dateFields[f]) {
+      for (let v = 0; v < value.length; v++) {
+        value[v] = Date.parse(value[v]);
+      }
+    }
     if (singletonFields[f] || f.endsWith('Cnt') || f.endsWith('-cnt')) {
       value = value[0];
-    }
-    if (dateFields[f]) {
-      value = Date.parse(value);
     }
     if (!unflatten) {
       fields[f] = value;
@@ -396,7 +402,7 @@ function fixSessionFields (fields, unflatten) {
   }
 }
 
-// Get a session from ES and decode packetPos if requested
+// Get a session from OpenSearch/Elasticsearch and decode packetPos if requested
 exports.getSession = async (id, options, cb) => {
   if (internals.debug > 2) {
     console.log('GETSESSION -', id, options);
@@ -572,7 +578,7 @@ exports.search = async (index, type, query, options, cb) => {
 
     return cb ? cb(null, results) : results;
   } catch (err) {
-    console.trace(`ES Search Error - query: ${JSON.stringify(params, false, 2)} err:`, err);
+    console.trace(`OpenSearch/Elasticsearch Search Error - query: ${JSON.stringify(params, false, 2)} err:`, err);
     if (cb) { return cb(err, null); }
     throw err;
   }
@@ -598,10 +604,10 @@ exports.cancelByOpaqueId = async (cancelId) => {
   }
 
   if (!found) { // not found, return error
-    throw new Error('Cancel ID not found, cannot cancel ES task(s)');
+    throw new Error('Cancel ID not found, cannot cancel OpenSearch/Elasticsearch task(s)');
   }
 
-  return 'ES task cancelled succesfully';
+  return 'OpenSearch/Elasticsearch task cancelled succesfully';
 };
 
 exports.searchScroll = function (index, type, query, options, cb) {
@@ -1141,10 +1147,22 @@ exports.deleteHunt = async (id) => {
   });
 };
 exports.setHunt = async (id, doc) => {
-  exports.refresh('sessions*');
+  await exports.refresh('sessions*');
   return internals.client7.index({
     index: fixIndex('hunts'), body: doc, id, refresh: true, timeout: '10m'
   });
+};
+exports.updateHunt = async (id, doc) => {
+  const params = {
+    refresh: true,
+    retry_on_conflict: 3,
+    index: fixIndex('hunts'),
+    body: { doc },
+    id,
+    timeout: '10m'
+  };
+
+  return internals.client7.update(params);
 };
 exports.getHunt = async (id) => {
   return internals.client7.get({ index: fixIndex('hunts'), id });
@@ -1588,7 +1606,7 @@ exports.numberOfDocuments = async (index, options) => {
   return { count };
 };
 
-exports.checkVersion = async function (minVersion, checkUsers) {
+exports.checkVersion = async function (minVersion) {
   const match = process.versions.node.match(/^(\d+)\.(\d+)\.(\d+)/);
   const nodeVersion = parseInt(match[1], 10) * 10000 + parseInt(match[2], 10) * 100 + parseInt(match[3], 10);
   if (nodeVersion < 160000) {
@@ -1603,7 +1621,7 @@ exports.checkVersion = async function (minVersion, checkUsers) {
     try {
       await exports.indexStats(index);
     } catch (err) {
-      console.log(`ERROR - Issue with index ${index}. Make sure 'db/db.pl <eshost:esport> init' has been run`, err);
+      console.log(`ERROR - Issue with '${fixIndex(index)}' index, make sure 'db/db.pl <host:port> init' has been run.\n`, err);
       process.exit(1);
     }
   });
@@ -1629,15 +1647,8 @@ exports.checkVersion = async function (minVersion, checkUsers) {
       process.exit(0);
     }
   } catch (err) {
-    console.log("ERROR - Couldn't retrieve database version, is ES running?  Have you run ./db.pl host:port init?", err);
+    console.log("ERROR - Couldn't retrieve database version, is OpenSearch/Elasticsearch running?  Have you run ./db.pl host:port init?", err);
     process.exit(0);
-  }
-
-  if (checkUsers) {
-    const count = await User.numberOfUsers();
-    if (count === 0) {
-      console.log('WARNING - No users are defined, use node viewer/addUser.js to add one, or turn off auth by unsetting passwordSecret');
-    }
   }
 };
 

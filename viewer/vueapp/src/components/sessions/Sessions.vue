@@ -72,15 +72,15 @@
             <th class="ignore-element" style="width:85px;">
               <!-- table fit button -->
               <div class="fit-btn-container">
-                <button
-                  type="button"
-                  @click="openAll"
-                  v-if="!loading && sessions.data && sessions.data.length <= 50"
-                  class="btn btn-xs btn-theme-tertiary open-all-btn"
-                  v-b-tooltip.hover.right="'Open all visible sessions (up to 50)'">
-                  <span class="fa fa-plus-circle">
-                  </span>
-                </button>
+                <template v-if="sessions.data && sessions.data.length <= 50">
+                  <button
+                    type="button"
+                    @click="openAll"
+                    class="btn btn-xs btn-theme-tertiary open-all-btn"
+                    v-b-tooltip.hover.right="'Open all visible sessions (up to 50)'">
+                    <span class="fa fa-plus-circle" />
+                  </button>
+                </template>
                 <button
                   type="button"
                   @click="closeAll"

@@ -177,9 +177,9 @@ unsigned char *moloch_get_instance_metadata(void *serverV, char *key, int key_le
 {
     char *requestHeaders[2];
     char  tokenHeader[200];
-    char *tokenRequestHeaders[2] = {"X-aws-ec2-metadata-token-ttl-seconds: 30", NULL};
     requestHeaders[1] = NULL;
     if (s3UseTokenForMetadata) {
+        char *tokenRequestHeaders[2] = {"X-aws-ec2-metadata-token-ttl-seconds: 30", NULL};
         if (config.debug)
             LOG("Requesting IMDSv2 metadata token");
         unsigned char *token = moloch_http_send_sync(serverV, "PUT", "/latest/api/token", -1, NULL, 0, tokenRequestHeaders, mlen);
@@ -726,9 +726,13 @@ void writer_s3_init(char *UNUSED(name))
     s3TokenTime           = 0;
     s3Role                = NULL;
 
+    if (s3Compress && s3WriteGzip) {
+        LOG("Setting s3Compress to false since s3WriteGzip is true");
+        s3Compress = FALSE;
+    }
+
     if (!s3Bucket) {
-        printf("Must set s3Bucket to save to s3\n");
-        exit(1);
+        CONFIGEXIT("Must set s3Bucket to save to s3\n");
     }
 
     if (!s3AccessKeyId || !s3AccessKeyId[0]) {
@@ -754,8 +758,7 @@ void writer_s3_init(char *UNUSED(name))
     }
 
     if (!s3SecretAccessKey) {
-        printf("Must set s3SecretAccessKey to save to s3\n");
-        exit(1);
+        CONFIGEXIT("Must set s3SecretAccessKey to save to s3\n");
     }
 
     if (config.pcapWriteSize < 5242880) {

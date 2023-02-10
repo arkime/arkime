@@ -24,6 +24,8 @@ const http = require('http');
 const https = require('https');
 const fs = require('fs');
 const basicAuth = require('basic-auth');
+const zlib = require('zlib');
+const ArkimeUtil = require('../common/arkimeUtil');
 
 // express app
 const app = express();
@@ -73,7 +75,7 @@ if (esAPIKey) {
   if (!esBasicAuth.includes(':')) {
     authHeader = `Basic ${esBasicAuth}`;
   } else {
-    authHeader = `Basic ${Buffer.from(esBasicAuth, 'base64').toString()}`;
+    authHeader = `Basic ${Buffer.from(esBasicAuth).toString('base64')}`;
   }
 }
 
@@ -90,7 +92,7 @@ if (esAPIKeyTee) {
   if (!esBasicAuthTee.includes(':')) {
     authHeaderTee = `Basic ${esBasicAuthTee}`;
   } else {
-    authHeaderTee = `Basic ${Buffer.from(esBasicAuthTee, 'base64').toString()}`;
+    authHeaderTee = `Basic ${Buffer.from(esBasicAuthTee).toString('base64')}`;
   }
 }
 
@@ -170,6 +172,11 @@ app.use((req, res, next) => {
 // Proxy code to real ES
 // ===========================================================================
 
+function normalizeUrlPath (path) {
+  const normalizedUrl = new URL(path, 'https://0.0.0.0/');
+  return normalizedUrl.pathname;
+}
+
 // Save the post body
 
 function hasBody (req) {
@@ -188,7 +195,12 @@ function saveBody (req, res, next) {
   req._body = true;
 
   // parse
-  const buf = Buffer.alloc(parseInt(req.headers['content-length'] || '1024'));
+  let contentLength = parseInt(req.headers['content-length'] || '1024');
+  if (contentLength > 11000000) {
+    contentLength = 11000000;
+  }
+
+  const buf = Buffer.alloc(contentLength);
   let pos = 0;
   req.on('data', (chunk) => { chunk.copy(buf, pos); pos += chunk.length; });
   req.on('end', () => {
@@ -202,7 +214,7 @@ function saveBody (req, res, next) {
 function doProxyFull (config, req, res) {
   let result = '';
   const esUrl = config.elasticsearch + req.url;
-  console.log(`URL ${req.method} ${esUrl}`);
+  console.log(`URL ${req.method} "%s"`, ArkimeUtil.sanitizeStr(esUrl));
   const url = new URL(esUrl);
   const options = { method: req.method };
   let client;
@@ -239,7 +251,7 @@ function doProxyFull (config, req, res) {
   }
 
   preq.on('error', (e) => {
-    console.log(`Request error ${url}`, e);
+    console.log('Request error "%s"', ArkimeUtil.sanitizeStr(url), e);
   });
   if (req._body) {
     preq.end(req.body);
@@ -264,7 +276,7 @@ function doProxy (req, res) {
 
 // Get requests
 app.get('*', (req, res) => {
-  const path = req.params['0'];
+  const path = normalizeUrlPath(req.params['0']);
 
   // Empty IFs since those are allowed requests and will run code at end
   if (getExact[path]) {
@@ -277,25 +289,57 @@ app.get('*', (req, res) => {
   } else if (path.match(/^\/[^/]*sessions2-[^/]+\/_doc\/[^/]+$/)) {
   } else if (path.match(/^\/[^/]*sessions3-[^/]+\/_doc\/[^/]+$/)) {
   } else {
-    console.log(`GET failed node: ${req.sensor.node} path:${path}`);
+    console.log(`GET failed node: ${req.sensor.node} path:>%s<:`, ArkimeUtil.sanitizeStr(path));
     return res.status(400).send('Not authorized for API');
   }
   doProxy(req, res);
 });
 
 // Validate Bulk
-// TODO - work with inflate/defate
 function validateBulk (req) {
   if (!req._body) {
     return true;
   }
 
-  const index = req.body.toString('utf8').match(/{"_index": *"[^"]*"}/g);
-  for (const i in index) {
-    if (!index[i].includes('sessions2') && !index[i].includes('sessions2')) {
-      console.log(`Invalid index ${index[i]} for bulk`);
+  let body;
+  if (req.headers['content-encoding'] === undefined) {
+    body = req.body;
+  } else if (req.headers['content-encoding'] === 'gzip') {
+    try {
+      body = zlib.gunzipSync(req.body);
+    } catch (err) {
+      console.log('Error decoding gzip for bulk');
       return false;
     }
+  } else {
+    console.log('Invalid content-encoding "%s" for bulk', ArkimeUtil.sanitizeStr(req.headers['content-encoding']));
+    return false;
+  }
+
+  const lines = body.toString('utf8').split('\n');
+  for (let i = 0; i < lines.length; i++) {
+    // ES allows blank lines between pairs of meta/object
+    if (lines[i].trim() === '') { continue; }
+    try {
+      const json = JSON.parse(lines[i]);
+      if (Object.keys(json).length !== 1) { throw new Error('More than 1 bulk operation in object'); }
+      if (typeof json.index === 'object') {
+        if (typeof json.index._index !== 'string') { throw new Error('Missing index _index string'); }
+
+        // Eventually this should only allow fields
+        const _index = json.index._index;
+        if (!_index.includes('sessions2') && !_index.includes('sessions3') && !_index.includes('fields')) { throw new Error(`Bad index ${_index}`); }
+      } else if (typeof json.create === 'object') {
+        const _index = json.create._index;
+        if (!_index.includes('sessions2') && !_index.includes('sessions3')) { throw new Error(`Bad index ${_index}`); }
+      } else {
+        throw new Error('Missing create or index operation');
+      }
+    } catch (err) {
+      console.log('Bulk error', err, ArkimeUtil.sanitizeStr(lines[i]));
+      return false;
+    }
+    i++; // Skip object, must be there since we only support create/index
   }
 
   return true;
@@ -334,7 +378,7 @@ function validateUpdate (req) {
 
 // Post requests
 app.post('*', saveBody, (req, res) => {
-  const path = req.params['0'];
+  const path = normalizeUrlPath(req.params['0']);
 
   // Empty IFs since those are allowed requests and will run code at end
   if (postExact[path]) {
@@ -349,10 +393,10 @@ app.post('*', saveBody, (req, res) => {
   } else if ((path.startsWith(`/${oldprefix}sessions2`) || path.startsWith(`/${prefix}sessions3`)) && path.endsWith('/_search') && validateSearchIds(req)) {
   } else if (path.match(/^\/[^/]*history_v[^/]*\/_doc$/)) {
   } else if (path.match(/^\/[^/]*sessions[23]-[^/]+\/_update\/[^/]+$/) && validateUpdate(req)) {
-    console.log(`UPDATE : ${req.sensor.node} path:>${path}<:`);
+    console.log(`UPDATE : ${req.sensor.node} path:>%s<:`, ArkimeUtil.sanitizeStr(path));
     console.log(req.body.toString('utf8'));
   } else {
-    console.log(`POST failed node: ${req.sensor.node} path:>${path}<:`);
+    console.log(`POST failed node: ${req.sensor.node} path:>%s<:`, ArkimeUtil.sanitizeStr(path));
     console.log(req.body.toString('utf8'));
     return res.status(400).send('Not authorized for API');
   }
@@ -361,12 +405,12 @@ app.post('*', saveBody, (req, res) => {
 
 // Delete requests
 app.delete('*', (req, res) => {
-  const path = req.params['0'];
+  const path = normalizeUrlPath(req.params['0']);
 
   // Empty IFs since those are allowed requests and will run code at end
   if (path.startsWith(`/${prefix}files/_doc/${req.sensor.node}-`)) {
   } else {
-    console.log(`DELETE failed node: ${req.sensor.node} path:${path}`);
+    console.log(`DELETE failed node: ${req.sensor.node} path:>%s<:`, ArkimeUtil.sanitizeStr(path));
     return res.status(400).send('Not authorized for API');
   }
   doProxy(req, res);
@@ -374,16 +418,19 @@ app.delete('*', (req, res) => {
 
 // Put requests
 app.put('*', (req, res) => {
-  const path = req.params['0'];
+  const path = normalizeUrlPath(req.params['0']);
 
   // Empty IFs since those are allowed requests and will run code at end
   if (putExact[path]) {
   } else {
-    console.log(`PUT failed node: ${req.sensor.node} path:${path}`);
+    console.log(`PUT failed node: ${req.sensor.node} path:>%s<:`, ArkimeUtil.sanitizeStr(path));
     return res.status(400).send('Not authorized for API');
   }
   doProxy(req, res);
 });
+
+// Replace the default express error handler
+app.use(ArkimeUtil.expressErrorHandler);
 
 // ============================================================================
 // MAIN

@@ -19,6 +19,5 @@ rm -rf /thirdparty/glib*/*/tests /thirdparty/glib*/*/*/tests && \
 rm -rf arkime && \
 gem install --no-ri --no-rdoc fpm && \
 pip3 install awscli && \
-useradd -u 2000 elasticsearch && \
 yum -y clean all && \
 rm -rf /var/cache/yum

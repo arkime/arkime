@@ -95,64 +95,136 @@
   <b-card v-else
     class="h-100 align-self-stretch">
     <template slot="header">
-      <div class="w-100 d-flex justify-content-between align-items-start">
-        <b-button
-          size="sm"
-          variant="danger"
-          v-b-tooltip.hover="'Delete this link group'"
-          @click="deleteLinkGroup(linkGroup._id)">
-          <span class="fa fa-trash" />
-        </b-button>
+      <div class="w-100 d-flex justify-content-between">
+        <div>
+          <!-- delete button -->
+          <transition name="buttons">
+            <b-button
+              size="sm"
+              variant="danger"
+              v-if="!confirmDelete"
+              @click="confirmDelete = true"
+              v-b-tooltip.hover="'Delete this link group'">
+              <span class="fa fa-trash" />
+            </b-button>
+          </transition> <!-- /delete button -->
+          <!-- cancel confirm delete button -->
+          <transition name="buttons">
+            <b-button
+              size="sm"
+              title="Cancel"
+              variant="warning"
+              v-b-tooltip.hover
+              v-if="confirmDelete"
+              @click="confirmDelete = false">
+              <span class="fa fa-ban" />
+            </b-button>
+          </transition> <!-- /cancel confirm delete button -->
+          <!-- confirm delete button -->
+          <transition name="buttons">
+            <b-button
+              size="sm"
+              variant="danger"
+              v-b-tooltip.hover
+              title="Are you sure?"
+              v-if="confirmDelete"
+              @click="deleteLinkGroup(linkGroup._id)">
+              <span class="fa fa-check" />
+            </b-button>
+          </transition> <!-- /confirm delete button -->
+        </div>
         <b-alert
-          variant="success"
           :show="success"
+          variant="success"
           class="mb-0 mt-0 alert-sm mr-1 ml-1">
           <span class="fa fa-check mr-2" />
-          Saved!
+          <template v-if="message">
+            {{ message }}
+          </template>
+          <template v-else>
+            Saved!
+          </template>
         </b-alert>
         <div>
-          <b-button
-            size="sm"
-            variant="warning"
-            @click="rawConfigLinkGroup(linkGroup)"
-            v-b-tooltip.hover="'Edit the raw config for this link group'">
-            <span class="fa fa-pencil-square-o" />
-          </b-button>
-          <b-button
-            size="sm"
-            :class="{'invisible': !changesMade}"
-            variant="success"
-            @click="saveLinkGroup(linkGroup)"
-            v-b-tooltip.hover="'Save this link group'">
-            <span class="fa fa-save" />
-          </b-button>
+          <transition name="buttons">
+            <b-button
+              size="sm"
+              variant="secondary"
+              @click="rawEditMode = !rawEditMode"
+              v-b-tooltip.hover="'Toggle raw configuration for this link group'">
+              <span class="fa fa-pencil-square-o" />
+            </b-button>
+          </transition>
+          <transition name="buttons">
+            <b-button
+              size="sm"
+              variant="warning"
+              v-if="changesMade"
+              @click="cancelUpdateLinkGroup(linkGroup)"
+              v-b-tooltip.hover="'Cancel unsaved updates'">
+              <span class="fa fa-ban" />
+            </b-button>
+          </transition>
+          <transition name="buttons">
+            <b-button
+              size="sm"
+              variant="success"
+              v-if="changesMade"
+              @click="saveLinkGroup(linkGroup)"
+              v-b-tooltip.hover="'Save this link group'">
+              <span class="fa fa-save" />
+            </b-button>
+          </transition>
         </div>
       </div>
     </template>
     <b-card-body>
-      <textarea
-        rows="20"
-        size="sm"
-        v-if="rawEditText !== undefined"
-        @input="e => debounceRawEdit(e)"
-        class="form-control form-control-sm"
-        :value="rawEditText"
-      />
       <link-group-form
-        v-else
+        :raw-edit-mode="rawEditMode"
         :link-group="updatedLinkGroup"
+        @display-message="displayMessage"
         @update-link-group="updateLinkGroup"
       />
     </b-card-body>
     <template slot="footer">
       <div class="w-100 d-flex justify-content-between align-items-start">
-        <b-button
-          size="sm"
-          variant="danger"
-          v-b-tooltip.hover="'Delete this link group'"
-          @click="deleteLinkGroup(linkGroup._id)">
-          <span class="fa fa-trash" />
-        </b-button>
+        <div>
+          <!-- delete button -->
+          <transition name="buttons">
+            <b-button
+              size="sm"
+              variant="danger"
+              v-if="!confirmDelete"
+              @click="confirmDelete = true"
+              v-b-tooltip.hover="'Delete this link group'">
+              <span class="fa fa-trash" />
+            </b-button>
+          </transition> <!-- /delete button -->
+          <!-- cancel confirm delete button -->
+          <transition name="buttons">
+            <b-button
+              size="sm"
+              title="Cancel"
+              variant="warning"
+              v-b-tooltip.hover
+              v-if="confirmDelete"
+              @click="confirmDelete = false">
+              <span class="fa fa-ban" />
+            </b-button>
+          </transition> <!-- /cancel confirm delete button -->
+          <!-- confirm delete button -->
+          <transition name="buttons">
+            <b-button
+              size="sm"
+              variant="danger"
+              v-b-tooltip.hover
+              title="Are you sure?"
+              v-if="confirmDelete"
+              @click="deleteLinkGroup(linkGroup._id)">
+              <span class="fa fa-check" />
+            </b-button>
+          </transition> <!-- /confirm delete button -->
+        </div>
         <b-alert
           variant="success"
           :show="success"
@@ -161,21 +233,35 @@
           Saved!
         </b-alert>
         <div>
-          <b-button
-            size="sm"
-            variant="warning"
-            @click="rawConfigLinkGroup(linkGroup)"
-            v-b-tooltip.hover="'Edit the raw config for this link group'">
-            <span class="fa fa-pencil-square-o" />
-          </b-button>
-          <b-button
-            size="sm"
-            :class="{'invisible': !changesMade}"
-            variant="success"
-            @click="saveLinkGroup(linkGroup)"
-            v-b-tooltip.hover="'Save this link group'">
-            <span class="fa fa-save" />
-          </b-button>
+          <transition name="buttons">
+            <b-button
+              size="sm"
+              variant="secondary"
+              @click="rawEditMode = !rawEditMode"
+              v-b-tooltip.hover="'Toggle raw configuration for this link group'">
+              <span class="fa fa-pencil-square-o" />
+            </b-button>
+          </transition>
+          <transition name="buttons">
+            <b-button
+              size="sm"
+              variant="warning"
+              v-if="changesMade"
+              @click="cancelUpdateLinkGroup(linkGroup)"
+              v-b-tooltip.hover="'Cancel unsaved updates'">
+              <span class="fa fa-ban" />
+            </b-button>
+          </transition>
+          <transition name="buttons">
+            <b-button
+              size="sm"
+              variant="success"
+              v-if="changesMade"
+              @click="saveLinkGroup(linkGroup)"
+              v-b-tooltip.hover="'Save this link group'">
+              <span class="fa fa-save" />
+            </b-button>
+          </transition>
         </div>
       </div>
     </template>
@@ -190,8 +276,6 @@ import { mapGetters } from 'vuex';
 import LinkService from '@/components/services/LinkService';
 import LinkGroupForm from '@/components/links/LinkGroupForm';
 import LinkGuidance from '@/utils/LinkGuidance';
-
-let timeout;
 
 export default {
   name: 'LinkGroupCard',
@@ -215,16 +299,18 @@ export default {
   },
   data () {
     return {
-      collapsedLinkGroups: this.$store.state.collapsedLinkGroups,
+      message: '',
+      success: false,
+      rawEditMode: false,
       changesMade: false,
-      updatedLinkGroup: this.preUpdatedLinkGroup ?? JSON.parse(JSON.stringify(this.linkGroup)),
-      rawEditText: undefined,
-      success: false
+      confirmDelete: false,
+      collapsedLinkGroups: this.$store.state.collapsedLinkGroups,
+      updatedLinkGroup: this.preUpdatedLinkGroup ?? JSON.parse(JSON.stringify(this.linkGroup))
     };
   },
   computed: {
     ...mapGetters([
-      'getUser', 'getCheckedLinks', 'getLinkGroups'
+      'getUser', 'getCheckedLinks'
     ]),
     filteredLinks () {
       const links = [];
@@ -253,6 +339,15 @@ export default {
     }
   },
   methods: {
+    displayMessage (msg) {
+      this.message = msg;
+      this.success = true;
+
+      setTimeout(() => {
+        this.message = '';
+        this.success = false;
+      }, 4000);
+    },
     updateLinkGroup (updated) {
       this.updatedLinkGroup = JSON.parse(JSON.stringify(updated));
 
@@ -266,16 +361,17 @@ export default {
     deleteLinkGroup (id) {
       LinkService.deleteLinkGroup(id);
     },
+    cancelUpdateLinkGroup () {
+      this.updatedLinkGroup = JSON.parse(JSON.stringify(this.linkGroup));
+      this.$emit('update-link-group', this.updatedLinkGroup);
+      this.changesMade = false; // make sure save button is hidden
+    },
     saveLinkGroup () {
-      this.rawEditText = undefined;
-      this.success = undefined;
+      this.success = false;
 
       LinkService.updateLinkGroup(this.updatedLinkGroup).then(() => {
+        this.displayMessage();
         this.changesMade = false;
-        this.success = true;
-        setTimeout(() => {
-          this.success = false;
-        }, 4000);
       }); // store deals with failure
     },
     normalizeLinkGroup (unNormalizedLinkGroup) {
@@ -295,44 +391,6 @@ export default {
       normalizedLinkGroup.editRoles.sort();
 
       return normalizedLinkGroup;
-    },
-    rawConfigLinkGroup () {
-      if (this.rawEditText) {
-        this.rawEditText = undefined;
-        return;
-      }
-
-      // remove uneditable fields
-      const clone = JSON.parse(JSON.stringify(this.updatedLinkGroup));
-      delete clone._id;
-      delete clone.creator;
-      delete clone._editable;
-      delete clone._editable;
-
-      this.rawEditText = JSON.stringify(clone, null, 2);
-    },
-    debounceRawEdit (e) {
-      this.rawEditText = e.target.value;
-      if (timeout) { clearTimeout(timeout); }
-      // debounce the textarea so it only updates the link group after keyups cease for 400ms
-      timeout = setTimeout(() => {
-        timeout = null;
-        this.updateRawLinkGroup();
-      }, 400);
-    },
-    updateRawLinkGroup () { // TODO: add try catch + error
-      try {
-        const linkGroupFromRaw = JSON.parse(this.rawEditText);
-        this.updateLinkGroup({
-          ...this.updatedLinkGroup,
-          name: linkGroupFromRaw.name,
-          links: linkGroupFromRaw.links,
-          viewRoles: linkGroupFromRaw.viewRoles,
-          editRoles: linkGroupFromRaw.editRoles
-        });
-      } catch (err) {
-        console.warn('Invalid JSON for raw link group');
-      }
     },
     getUrl (url) {
       return url.replace(/\${indicator}/g, dr.refang(this.query))

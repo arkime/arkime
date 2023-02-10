@@ -1,14 +1,14 @@
 [Unit]
 Description=Arkime Viewer
-After=network.target
+After=network.target opensearch elasticsearch
 
 [Service]
 Type=simple
 Restart=on-failure
 StandardOutput=tty
-EnvironmentFile=-ARKIME_INSTALL_DIR/etc/viewer.env
-ExecStart=/bin/sh -c 'ARKIME_INSTALL_DIR/bin/node viewer.js -c ARKIME_INSTALL_DIR/etc/config.ini ${OPTIONS} >> ARKIME_INSTALL_DIR/logs/viewer.log 2>&1'
-WorkingDirectory=ARKIME_INSTALL_DIR/viewer
+EnvironmentFile=-BUILD_ARKIME_INSTALL_DIR/etc/viewer.env
+ExecStart=/bin/sh -c 'BUILD_ARKIME_INSTALL_DIR/bin/node viewer.js -c BUILD_ARKIME_INSTALL_DIR/etc/config.ini ${OPTIONS} >> BUILD_ARKIME_INSTALL_DIR/logs/viewer.log 2>&1'
+WorkingDirectory=BUILD_ARKIME_INSTALL_DIR/viewer
 
 [Install]
 WantedBy=multi-user.target

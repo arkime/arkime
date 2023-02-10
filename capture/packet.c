@@ -45,6 +45,7 @@ uint64_t                     unwrittenBytes;
 int                          mac1Field;
 int                          mac2Field;
 int                          vlanField;
+int                          vniField;
 LOCAL int                    oui1Field;
 LOCAL int                    oui2Field;
 LOCAL int                    outermac1Field;
@@ -355,6 +356,9 @@ LOCAL void moloch_packet_process(MolochPacket_t *packet, int thread)
 
         if (packet->vlan)
             moloch_field_int_add(vlanField, session, packet->vlan);
+
+        if (packet->vni)
+            moloch_field_int_add(vniField, session, packet->vni);
 
         if (packet->etherOffset!=0 && packet->outerEtherOffset!=packet->etherOffset) {
             moloch_field_macoui_add(session, outermac1Field, outeroui1Field, packet->pkt + packet->outerEtherOffset);
@@ -820,7 +824,7 @@ LOCAL MolochPacketRC moloch_packet_ip4(MolochPacketBatch_t *batch, MolochPacket_
                           ip4->ip_dst.s_addr, tcphdr->th_dport);
         packet->mProtocol = tcpMProtocol;
 
-        const int dropPort = (tcphdr->th_dport * tcphdr->th_sport) & 0xffff;
+        const int dropPort = ((uint32_t)tcphdr->th_dport * (uint32_t)tcphdr->th_sport) & 0xffff;
         if (packetDrop4S.drops[dropPort] &&
             moloch_drophash_should_drop(&packetDrop4, dropPort, sessionId+1, packet->ts.tv_sec)) {
 
@@ -999,7 +1003,7 @@ LOCAL MolochPacketRC moloch_packet_ip6(MolochPacketBatch_t * batch, MolochPacket
             moloch_session_id6(sessionId, ip6->ip6_src.s6_addr, tcphdr->th_sport,
                                ip6->ip6_dst.s6_addr, tcphdr->th_dport);
 
-            const int dropPort = (tcphdr->th_dport * tcphdr->th_sport) & 0xffff;
+            const int dropPort = ((uint32_t)tcphdr->th_dport * (uint32_t)tcphdr->th_sport) & 0xffff;
             if (packetDrop6S.drops[dropPort] &&
                 moloch_drophash_should_drop(&packetDrop6, dropPort, sessionId+1, packet->ts.tv_sec)) {
 
@@ -1110,7 +1114,7 @@ LOCAL MolochPacketRC moloch_packet_ether(MolochPacketBatch_t * batch, MolochPack
              data[4],
              data[5]);
 
-    LOG("moloch_packet_ether MAC A: %s, %d", str, packet->etherOffset );
+    LOG("moloch_packet_ether MAC A: %s, %u", str, packet->etherOffset);
     snprintf(str, sizeof(str), "%02x:%02x:%02x:%02x:%02x:%02x",
              data[6],
              data[7],
@@ -1118,7 +1122,7 @@ LOCAL MolochPacketRC moloch_packet_ether(MolochPacketBatch_t * batch, MolochPack
              data[9],
              data[10],
              data[11]);
-    LOG("moloch_packet_ether MAC B: %s, %d", str, packet->etherOffset );
+    LOG("moloch_packet_ether MAC B: %s, %u", str, packet->etherOffset);
 #endif
 
 
@@ -1165,6 +1169,19 @@ LOCAL MolochPacketRC moloch_packet_sll(MolochPacketBatch_t * batch, MolochPacket
         return moloch_packet_run_ethernet_cb(batch, packet, data+16,len-16, ethertype, "SLL");
     } // switch
     return MOLOCH_PACKET_CORRUPT;
+}
+/******************************************************************************/
+LOCAL MolochPacketRC moloch_packet_sll2(MolochPacketBatch_t * batch, MolochPacket_t * const packet, const uint8_t *data, int len)
+{
+    if (len < 20) {
+#ifdef DEBUG_PACKET
+        LOG("BAD PACKET: Too short %d", len);
+#endif
+        return MOLOCH_PACKET_CORRUPT;
+    }
+
+    int ethertype = data[0] << 8 | data[1];
+    return moloch_packet_run_ethernet_cb(batch, packet, data+20,len-20, ethertype, "SLL2");
 }
 /******************************************************************************/
 LOCAL MolochPacketRC moloch_packet_nflog(MolochPacketBatch_t * batch, MolochPacket_t * const packet, const uint8_t *data, int len)
@@ -1295,6 +1312,9 @@ void moloch_packet_batch(MolochPacketBatch_t * batch, MolochPacket_t * const pac
             rc = moloch_packet_sll(batch, packet, packet->pkt, packet->pktlen);
         else
             rc = moloch_packet_ip4(batch, packet, packet->pkt, packet->pktlen);
+        break;
+    case DLT_LINUX_SLL2: // SLL2
+        rc = moloch_packet_sll2(batch, packet, packet->pkt, packet->pktlen);
         break;
     case DLT_IEEE802_11_RADIO: // radiotap
         rc = moloch_packet_radiotap(batch, packet, packet->pkt, packet->pktlen);
@@ -1627,6 +1647,12 @@ void moloch_packet_init()
         "vlan", "VLan", "network.vlan.id",
         "vlan value",
         MOLOCH_FIELD_TYPE_INT_GHASH,  MOLOCH_FIELD_FLAG_ECS_CNT | MOLOCH_FIELD_FLAG_LINKED_SESSIONS | MOLOCH_FIELD_FLAG_NOSAVE,
+        (char *)NULL);
+
+    vniField = moloch_field_define("general", "integer",
+        "vni", "VNI", "vni",
+        "vni value",
+        MOLOCH_FIELD_TYPE_INT_GHASH,  MOLOCH_FIELD_FLAG_CNT | MOLOCH_FIELD_FLAG_LINKED_SESSIONS,
         (char *)NULL);
 
 

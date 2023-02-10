@@ -174,6 +174,7 @@ module.exports = (Config, Db, internals, sessionAPIs, userAPIs, ViewerUtils) => 
    * @returns {string} title - The title of the app based on the configured setting.
    */
   miscAPIs.getPageTitle = (req, res) => {
+    ViewerUtils.noCache(req, res, 'text/plain; charset=utf-8');
     let titleConfig = Config.get('titleTemplate', '_cluster_ - _page_ _-view_ _-expression_');
 
     titleConfig = titleConfig.replace(/_cluster_/g, internals.clusterName)
@@ -211,11 +212,16 @@ module.exports = (Config, Db, internals, sessionAPIs, userAPIs, ViewerUtils) => 
 
     for (const key in internals.rightClicks) {
       const rc = internals.rightClicks[key];
+      // If we are one of the notUsers, then we don't get the action
       if (rc.notUsers && rc.notUsers[req.user.userId]) {
         continue;
       }
+
+      // If we are one of the users that can see the action, add to our list and remove users so we don't leak
       if (!rc.users || rc.users[req.user.userId]) {
-        actions[key] = rc;
+        actions[key] = JSON.parse(JSON.stringify(rc));
+        delete actions[key].users;
+        delete actions[key].notUsers;
       }
     }
 
@@ -238,14 +244,17 @@ module.exports = (Config, Db, internals, sessionAPIs, userAPIs, ViewerUtils) => 
 
     for (const key in internals.fieldActions) {
       const action = internals.fieldActions[key];
+      // If we are one of the notUsers, then we don't get the action
       if (action.notUsers && action.notUsers[req.user.userId]) {
         continue;
       }
-      if (!action.users || action.users[req.user.userId]) {
-        actions[key] = action;
-      }
 
-      delete actions[key].users;
+      // If we are one of the users that can see the action, add to our list and remove users so we don't leak
+      if (!action.users || action.users[req.user.userId]) {
+        actions[key] = JSON.parse(JSON.stringify(action));
+        delete actions[key].users;
+        delete actions[key].notUsers;
+      }
     }
 
     return res.send(actions);
@@ -290,7 +299,7 @@ module.exports = (Config, Db, internals, sessionAPIs, userAPIs, ViewerUtils) => 
     }
 
     let tags = '';
-    if (req.body.tags) {
+    if (ArkimeUtil.isString(req.body.tags)) {
       const t = req.body.tags.replace(/[^-a-zA-Z0-9_:,]/g, '').split(',');
       t.forEach((tag) => {
         if (tag.length > 0) {
@@ -362,7 +371,7 @@ module.exports = (Config, Db, internals, sessionAPIs, userAPIs, ViewerUtils) => 
    * Retrieves information that the app uses on every page:
    * eshealth, currentuser, views, remoteclusters, clusters, fields, fieldsmap, fieldshistory
    * @name /appinfo
-   * @returns {ESHealth} eshealth - The Elasticsearch cluster health status and information.
+   * @returns {ESHealth} eshealth - The OpenSearch/Elasticsearch cluster health status and information.
    * @returns {ArkimeUser} currentuser - The currently logged in user
    * @returns {ArkimeView[]} views - A list of views accessible to the logged in user
    * @returns {Object} remoteclusters - A list of known remote Arkime clusters
@@ -422,7 +431,7 @@ module.exports = (Config, Db, internals, sessionAPIs, userAPIs, ViewerUtils) => 
   miscAPIs.cyberChef = (req, res) => {
     sessionAPIs.processSessionIdAndDecode(req.params.id, 10000, (err, session, results) => {
       if (err) {
-        console.log(`ERROR - ${req.method} /${req.params.nodeName}/session/${req.params.id}/cyberchef`, util.inspect(err, false, 50));
+        console.log(`ERROR - ${req.method} /%s/session/%s/cyberchef`, ArkimeUtil.sanitizeStr(req.params.nodeName), ArkimeUtil.sanitizeStr(req.params.id), util.inspect(err, false, 50));
         return res.end('Error - ' + err);
       }
 

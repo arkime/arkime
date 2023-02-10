@@ -64,7 +64,8 @@
             </template>
           </reorder-list>
         </template>
-        <a class="nav-link cursor-pointer"
+        <a v-if="!disablePassword"
+          class="nav-link cursor-pointer"
           @click="openView('password')"
           :class="{'active':visibleTab === 'password'}">
           <span class="fa fa-fw fa-lock mr-1" />
@@ -144,13 +145,43 @@
               <b-card>
                 <template #header>
                   <div class="w-100 d-flex justify-content-between align-items-start">
-                    <b-button
-                      size="sm"
-                      variant="danger"
-                      @click="deleteView(view)"
-                      v-b-tooltip.hover="'Delete this view'">
-                      <span class="fa fa-trash" />
-                    </b-button>
+                    <div>
+                      <!-- delete button -->
+                      <transition name="buttons">
+                        <b-button
+                          size="sm"
+                          variant="danger"
+                          v-if="!confirmDeleteView[view._id]"
+                          v-b-tooltip.hover.top="'Delete this view.'"
+                          @click.stop.prevent="toggleDeleteView(view._id)">
+                          <span class="fa fa-trash-o" />
+                        </b-button>
+                      </transition> <!-- /delete button -->
+                      <!-- cancel confirm delete button -->
+                      <transition name="buttons">
+                        <b-button
+                          size="sm"
+                          title="Cancel"
+                          variant="warning"
+                          v-b-tooltip.hover
+                          v-if="confirmDeleteView[view._id]"
+                          @click.stop.prevent="toggleDeleteView(view._id)">
+                          <span class="fa fa-ban" />
+                        </b-button>
+                      </transition> <!-- /cancel confirm delete button -->
+                      <!-- confirm delete button -->
+                      <transition name="buttons">
+                        <b-button
+                          size="sm"
+                          variant="danger"
+                          v-b-tooltip.hover
+                          title="Are you sure?"
+                          v-if="confirmDeleteView[view._id]"
+                          @click.stop.prevent="deleteView(view)">
+                          <span class="fa fa-check" />
+                        </b-button>
+                      </transition> <!-- /confirm delete button -->
+                    </div>
                     <b-alert
                       variant="success"
                       :show="view.success"
@@ -165,14 +196,28 @@
                       <span class="fa fa-check mr-2" />
                       Error!
                     </b-alert>
-                    <b-button
-                      :class="{'invisible': !updatedViewMap[view._id]}"
-                      size="sm"
-                      variant="success"
-                      @click="saveView(view)"
-                      v-b-tooltip.hover="'Save this view'">
-                      <span class="fa fa-save" />
-                    </b-button>
+                    <div>
+                      <transition name="buttons">
+                        <b-button
+                          :class="{'invisible': !updatedViewMap[view._id]}"
+                          size="sm"
+                          variant="warning"
+                          @click="cancelUpdateView(view)"
+                          v-b-tooltip.hover="'Cancel changes to this view'">
+                          <span class="fa fa-ban" />
+                        </b-button>
+                      </transition>
+                      <transition name="buttons">
+                        <b-button
+                          :class="{'invisible': !updatedViewMap[view._id]}"
+                          size="sm"
+                          variant="success"
+                          @click="saveView(view)"
+                          v-b-tooltip.hover="'Save this view'">
+                          <span class="fa fa-save" />
+                        </b-button>
+                      </transition>
+                    </div>
                   </div>
                 </template>
                 <ViewForm
@@ -361,7 +406,7 @@
       </div> <!-- /link group settings -->
 
       <!-- password settings -->
-      <div v-if="visibleTab === 'password'">
+      <div v-if="visibleTab === 'password' && !disablePassword">
         <h1>
           Change Password
         </h1>
@@ -467,6 +512,7 @@ export default {
       viewSearchTerm: '',
       viewForm: false,
       updatedViewMap: {},
+      confirmDeleteView: {},
       // password
       currentPassword: '',
       newPassword: '',
@@ -523,6 +569,10 @@ export default {
       const entries = Object.entries(this.filteredIntegrationSettings);
       entries.sort(([aKey], [bKey]) => aKey.localeCompare(bKey));
       return entries;
+    },
+    disablePassword () {
+      if (!this.getUser) { return true; } // wait for user to be initialized
+      return !!this.$constants.DISABLE_USER_PASSWORD_UI && !!this.getUser.headerAuthEnabled;
     }
   },
   watch: {
@@ -636,7 +686,7 @@ export default {
     },
     /* LINK GROUPS! -------------------------- */
     updateLinkGroup (linkGroup) {
-      this.updatedLinkGroupMap[linkGroup._id] = linkGroup;
+      this.$set(this.updatedLinkGroupMap, linkGroup._id, linkGroup);
     },
     openLinkGroupForm () {
       this.$bvModal.show('link-group-form');
@@ -704,8 +754,12 @@ export default {
       // update the filteredViews array with this value
       this.setFilteredView(view);
     },
+    cancelUpdateView (view) {
+      const unchangedView = this.getViews.find((v) => v._id === view._id);
+      this.updatedViewMap[view._id] = JSON.parse(JSON.stringify(unchangedView));
+      this.updateView(unchangedView);
+    },
     saveView (view) {
-      this.updatedViewMap[view._id] = undefined;
       delete view.error;
       delete view.success;
       // NOTE: this function handles fetching the updated view list and storing it
@@ -717,9 +771,13 @@ export default {
         setTimeout(() => {
           delete view.error;
           delete view.success;
+          this.updatedViewMap[view._id] = undefined;
           this.setFilteredView(view);
         }, 4000);
       });
+    },
+    toggleDeleteView (viewId) {
+      this.$set(this.confirmDeleteView, viewId, !this.confirmDeleteView[viewId]);
     },
     deleteView (view) {
       // NOTE: this function handles fetching the updated view list and storing it

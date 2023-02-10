@@ -1,9 +1,11 @@
-use Test::More tests => 30;
+use Test::More tests => 33;
 use MolochTest;
 use JSON;
 use Test::Differences;
 use Data::Dumper;
 use strict;
+
+esPost("/tests_views/_delete_by_query?conflicts=proceed&refresh", '{ "query": { "match_all": {} } }', 1);
 
 my $adminToken = getTokenCookie();
 my $token = getTokenCookie('test1');
@@ -48,6 +50,9 @@ eq_or_diff($info->{data}->[0], from_json('{"expression":"ip == 1.2.3.4","user":"
 
 # can update view and share it with arkimeUser roles
 $info = viewerPutToken("/api/view/${id1}?molochRegressionUser=test1", '{"name": "view1update", "expression": "ip == 4.3.2.1", "roles":["arkimeUser"]}', $token);
+is ($info->{view}->{id}, $id1);
+delete $info->{view}->{id};
+eq_or_diff($info->{view}, from_json('{"expression":"ip == 4.3.2.1","user":"test1","name":"view1update","roles":["arkimeUser"],"users":""}'), "view fields updated");
 ok($info->{success}, "update view success");
 $info = viewerGet("/api/views?molochRegressionUser=test1");
 delete $info->{data}->[0]->{id};
@@ -68,6 +73,10 @@ eq_or_diff($info->{recordsTotal}, 1, "returns 1 recordsTotal for test2 user");
 delete $info->{data}->[0]->{id};
 # and it doesn't show users and roles field because test2 is not the creator
 eq_or_diff($info->{data}->[0], from_json('{"expression":"ip == 4.3.2.1","user":"test1","name":"view1update"}'), "can't see roles and users fields");
+
+# can not delete view from other user
+$info = viewerDeleteToken("/api/view/${id1}?molochRegressionUser=test2", $token2);
+ok(!$info->{success}, "can't delete view created by an other user");
 
 # can delete view with id
 $info = viewerDeleteToken("/api/view/${id1}?molochRegressionUser=test1", $token);
@@ -101,7 +110,7 @@ $info = viewerGet("/api/views?molochRegressionUser=anonymous&all=true");
 eq_or_diff($info->{recordsTotal}, 2, "returns 2 recordsTotal with all flag");
 
 # cleanup views
-viewerDeleteToken("/api/view/${id2}?molochRegressionUser=test1", $token);
+viewerDeleteToken("/api/view/${id2}?molochRegressionUser=test2", $token2);
 viewerDeleteToken("/api/view/${id3}?molochRegressionUser=test1", $token);
 
 # views are empty

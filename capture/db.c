@@ -1242,8 +1242,10 @@ void moloch_db_save_session(MolochSession_t *session, int final)
 
                 SAVE_STRING_HEAD(certs->issuer.commonName, "issuerCN");
                 SAVE_STRING_HEAD(certs->issuer.orgName, "issuerON");
+                SAVE_STRING_HEAD(certs->issuer.orgUnit, "issuerOU");
                 SAVE_STRING_HEAD(certs->subject.commonName, "subjectCN");
                 SAVE_STRING_HEAD(certs->subject.orgName, "subjectON");
+                SAVE_STRING_HEAD(certs->subject.orgUnit, "subjectOU");
 
                 if (certs->serialNumber) {
                     int k;
@@ -2339,6 +2341,7 @@ LOCAL void moloch_db_load_fields()
     unsigned char     *data = moloch_http_get(esServer, key, key_len, &data_len);
 
     if (!data) {
+        LOGEXIT("ERROR - Couldn't download %sfields, database (%s) might be down or not initialized.", config.prefix, config.elasticsearch);
         return;
     }
 
@@ -2346,6 +2349,7 @@ LOCAL void moloch_db_load_fields()
     unsigned char     *hits = 0;
     hits = moloch_js0n_get(data, data_len, "hits", &hits_len);
     if (!hits) {
+        LOGEXIT("ERROR - Couldn't download %sfields, database (%s) might be down or not initialized.", config.prefix, config.elasticsearch);
         free(data);
         return;
     }
@@ -2355,6 +2359,7 @@ LOCAL void moloch_db_load_fields()
     ahits = moloch_js0n_get(hits, hits_len, "hits", &ahits_len);
 
     if (!ahits) {
+        LOGEXIT("ERROR - Couldn't download %sfields, database (%s) might be down or not initialized.", config.prefix, config.elasticsearch);
         free(data);
         return;
     }
@@ -2380,22 +2385,46 @@ LOCAL void moloch_db_load_fields()
     free(data);
 }
 /******************************************************************************/
+LOCAL BSB   fieldBSB;
+LOCAL int   fieldBSBTimeout;
+LOCAL gboolean moloch_db_fieldsbsb_timeout(gpointer user_data)
+{
+    if (fieldBSB.buf && BSB_LENGTH(fieldBSB) > 0) {
+        if (user_data == 0)
+            moloch_http_schedule(esServer, "POST", "/_bulk", 6, (char *)fieldBSB.buf, BSB_LENGTH(fieldBSB), NULL, MOLOCH_HTTP_PRIORITY_BEST, NULL, NULL);
+        else {
+            unsigned char *data = moloch_http_send_sync(esServer, "POST", "/_bulk", 6, (char *)fieldBSB.buf, BSB_LENGTH(fieldBSB), NULL, NULL);
+            moloch_http_free_buffer(fieldBSB.buf);
+            if (data)
+                free(data);
+        }
+        BSB_INIT(fieldBSB, moloch_http_get_buffer(config.dbBulkSize), config.dbBulkSize);
+    }
+    fieldBSBTimeout = 0;
+    return G_SOURCE_REMOVE;
+}
+/******************************************************************************/
+LOCAL void moloch_db_fieldbsb_make()
+{
+    if (!fieldBSB.buf) {
+        BSB_INIT(fieldBSB, moloch_http_get_buffer(config.dbBulkSize), config.dbBulkSize);
+        fieldBSBTimeout = g_timeout_add_seconds(1, moloch_db_fieldsbsb_timeout, 0);
+    } else if (BSB_REMAINING(fieldBSB) < 1000) {
+        g_source_remove(fieldBSBTimeout);
+        moloch_db_fieldsbsb_timeout(0);
+        fieldBSBTimeout = g_timeout_add_seconds(1, moloch_db_fieldsbsb_timeout, 0);
+    }
+}
+/******************************************************************************/
 void moloch_db_add_field(char *group, char *kind, char *expression, char *friendlyName, char *dbField, char *help, int haveap, va_list ap)
 {
-    char                   key[100];
-    int                    key_len;
-    BSB                    bsb;
-
     if (config.dryRun || config.agentMode)
         return;
 
-    char                  *json = moloch_http_get_buffer(10000);
+    moloch_db_fieldbsb_make();
 
-    BSB_INIT(bsb, json, 10000);
-
-    key_len = snprintf(key, sizeof(key), "/%sfields/_doc/%s", config.prefix, expression);
-
-    BSB_EXPORT_sprintf(bsb, "{\"friendlyName\": \"%s\", \"group\": \"%s\", \"help\": \"%s\", \"dbField2\": \"%s\", \"type\": \"%s\"",
+    BSB_EXPORT_sprintf(fieldBSB, "{\"index\": {\"_index\": \"%sfields\", \"_id\": \"%s\"}}\n", config.prefix, expression);
+    BSB_EXPORT_sprintf(fieldBSB, "{\"friendlyName\": \"%s\", \"group\": \"%s\", \"help\": \"%s\", \"dbField2\": \"%s\", \"type\": \"%s\"",
              friendlyName,
              group,
              help,
@@ -2412,41 +2441,33 @@ void moloch_db_add_field(char *group, char *kind, char *expression, char *friend
             if (!value)
                 break;
 
-            BSB_EXPORT_sprintf(bsb, ", \"%s\": ", field);
+            BSB_EXPORT_sprintf(fieldBSB, ", \"%s\": ", field);
             if (*value == '{' || *value == '[')
-                BSB_EXPORT_sprintf(bsb, "%s", value);
+                BSB_EXPORT_sprintf(fieldBSB, "%s", value);
             else
-                BSB_EXPORT_sprintf(bsb, "\"%s\"", value);
+                BSB_EXPORT_sprintf(fieldBSB, "\"%s\"", value);
         }
     }
 
-    BSB_EXPORT_u08(bsb, '}');
-    moloch_http_schedule(esServer, "POST", key, key_len, json, BSB_LENGTH(bsb), NULL, MOLOCH_HTTP_PRIORITY_NORMAL, NULL, NULL);
+    BSB_EXPORT_cstr(fieldBSB, "}\n");
 }
 /******************************************************************************/
 void moloch_db_update_field(char *expression, char *name, char *value)
 {
-    char                   key[1000];
-    int                    key_len;
-    BSB                    bsb;
-
     if (config.dryRun || config.agentMode)
         return;
 
-    char                  *json = moloch_http_get_buffer(1000);
+    moloch_db_fieldbsb_make();
 
-    BSB_INIT(bsb, json, 1000);
+    BSB_EXPORT_sprintf(fieldBSB, "{\"update\": {\"_index\": \"%sfields\", \"_id\": \"%s\"}}\n", config.prefix, expression);
 
-    key_len = snprintf(key, sizeof(key), "/%sfields/_update/%s", config.prefix, expression);
-
-    BSB_EXPORT_sprintf(bsb, "{\"doc\": {\"%s\":", name);
+    BSB_EXPORT_sprintf(fieldBSB, "{\"doc\": {\"%s\":", name);
     if (*value == '[') {
-        BSB_EXPORT_sprintf(bsb, "%s", value);
+        BSB_EXPORT_sprintf(fieldBSB, "%s", value);
     } else {
-        moloch_db_js0n_str(&bsb, (unsigned char*)value, TRUE);
+        moloch_db_js0n_str(&fieldBSB, (unsigned char*)value, TRUE);
     }
-    BSB_EXPORT_sprintf(bsb, "}}");
-    moloch_http_schedule(esServer, "POST", key, key_len, json, BSB_LENGTH(bsb), NULL, MOLOCH_HTTP_PRIORITY_NORMAL, NULL, NULL);
+    BSB_EXPORT_cstr(fieldBSB, "}}\n");
 }
 /******************************************************************************/
 void moloch_db_update_filesize(uint32_t fileid, uint64_t filesize, uint64_t packetsSize, uint32_t packets)
@@ -2664,9 +2685,9 @@ void moloch_db_init()
         }
     }
     if (config.ouiFile)
-        moloch_config_monitor_file_msg("oui file", config.ouiFile, moloch_db_load_oui, "ERROR - Maybe try running " CONFIG_PREFIX "/bin/moloch_update_geo.sh");
+        moloch_config_monitor_file_msg("oui file", config.ouiFile, moloch_db_load_oui, "- Maybe try running " CONFIG_PREFIX "/bin/" PACKAGE "_update_geo.sh");
     if (config.rirFile)
-        moloch_config_monitor_file_msg("rir file", config.rirFile, moloch_db_load_rir, "ERROR - Maybe try running " CONFIG_PREFIX "/bin/moloch_update_geo.sh");
+        moloch_config_monitor_file_msg("rir file", config.rirFile, moloch_db_load_rir, "- Maybe try running " CONFIG_PREFIX "/bin/" PACKAGE "_update_geo.sh");
 
     if (config.agentMode) {
         timers[0] = g_timeout_add_seconds(  1, moloch_db_flush_gfunc, 0);
@@ -2699,6 +2720,18 @@ void moloch_db_init()
 void moloch_db_exit()
 {
     if (!config.dryRun) {
+        if (fieldBSBTimeout)
+            g_source_remove(fieldBSBTimeout);
+
+        if (fieldBSB.buf && BSB_LENGTH(fieldBSB) > 0) {
+            moloch_db_fieldsbsb_timeout((gpointer)1);
+        } 
+
+        if (fieldBSB.buf) {
+            moloch_http_free_buffer(fieldBSB.buf);
+            fieldBSB.buf = 0;
+        }
+
         for (int i = 0; timers[i]; i++) {
             g_source_remove(timers[i]);
         }

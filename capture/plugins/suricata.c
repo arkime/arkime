@@ -285,7 +285,7 @@ LOCAL void suricata_process()
     int rc;
     if ((rc = js0n((unsigned char *)line, lineLen, out, sizeof(out))) != 0) {
         if (rc > 0)
-            LOG("ERROR: Parse error at character pos %d (%c) >%.*s<\n", rc-1, line[rc-1], lineLen, line);
+            LOG("ERROR: Parse error at character pos %d (%c)(%u) >%.*s<\n", rc-1, line[rc-1], (uint8_t)line[rc-1], lineLen, line);
         else
             LOG("ERROR: Parse error %d >%.*s<\n", rc, lineLen, line);
         fflush(stdout);

@@ -224,3 +224,22 @@ export const parseRoles = function (roleStrs) {
   return roles;
 };
 Vue.filter('parseRoles', parseRoles);
+
+/**
+ * Role Search
+ *
+ * @example
+ * '{{ roles | searchRoles("role2") }}'
+ * this.$options.filters.searchRoles(roles, 'role2');
+ *
+ * @param {Array} roles The role objects to search
+ * @param {string} term The search term to search roles for
+ * @returns {Array}     The roles that match the search term
+ */
+export const searchRoles = function (roles, term) {
+  if (!term) { return roles; }
+  return roles.filter((role) => {
+    return role.text.toLowerCase().includes(term.toLowerCase());
+  });
+};
+Vue.filter('searchRoles', searchRoles);

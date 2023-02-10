@@ -4,6 +4,7 @@ const fs = require('fs');
 const util = require('util');
 const stylus = require('stylus');
 const User = require('../common/user');
+const ArkimeUtil = require('../common/arkimeUtil');
 
 module.exports = (Config, Db, internals, ViewerUtils) => {
   const userAPIs = {};
@@ -283,7 +284,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * @returns {string} name - The name of the new custom Sessions column configuration.
    */
   userAPIs.createUserColumns = (req, res) => {
-    if (!req.body.name) {
+    if (!ArkimeUtil.isString(req.body.name)) {
       return res.serverError(403, 'Missing custom column configuration name');
     }
     if (!req.body.columns) {
@@ -293,8 +294,8 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
       return res.serverError(403, 'Missing sort order');
     }
 
-    req.body.name = req.body.name.replace(/[^-a-zA-Z0-9\s_:]/g, '');
-    if (req.body.name.length < 1) {
+    const configName = req.body.name.replace(/[^-a-zA-Z0-9\s_:]/g, '');
+    if (configName.length < 1) {
       return res.serverError(403, 'Invalid custom column configuration name');
     }
 
@@ -303,13 +304,13 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
 
     // don't let user use duplicate names
     for (const config of user.columnConfigs) {
-      if (req.body.name === config.name) {
+      if (configName === config.name) {
         return res.serverError(403, 'There is already a custom column with that name');
       }
     }
 
     user.columnConfigs.push({
-      name: req.body.name,
+      name: configName,
       columns: req.body.columns,
       order: req.body.order
     });
@@ -323,7 +324,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
       return res.send(JSON.stringify({
         success: true,
         text: 'Created custom column configuration successfully',
-        name: req.body.name
+        name: configName
       }));
     });
   };
@@ -368,7 +369,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
 
     User.setUser(user.userId, user, (err, info) => {
       if (err) {
-        console.log(`ERROR - ${req.method} /api/user/column/${colName}`, util.inspect(err, false, 50), info);
+        console.log(`ERROR - ${req.method} /api/user/column/%s`, colName, util.inspect(err, false, 50), info);
         return res.serverError(500, 'Update custom column configuration failed');
       }
 
@@ -412,7 +413,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
 
     User.setUser(user.userId, user, (err, info) => {
       if (err) {
-        console.log(`ERROR - ${req.method} /api/user/column/${colName}`, util.inspect(err, false, 50), info);
+        console.log(`ERROR - ${req.method} /api/user/column/%s`, colName, util.inspect(err, false, 50), info);
         return res.serverError(500, 'Delete custom column configuration failed');
       }
 
@@ -444,16 +445,16 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * @returns {string} name - The name of the new SPI View fields configuration.
    */
   userAPIs.createUserSpiviewFields = (req, res) => {
-    if (!req.body.name) {
+    if (!ArkimeUtil.isString(req.body.name)) {
       return res.serverError(403, 'Missing custom SPI View fields configuration name');
     }
     if (!req.body.fields) {
       return res.serverError(403, 'Missing fields');
     }
 
-    req.body.name = req.body.name.replace(/[^-a-zA-Z0-9\s_:]/g, '');
+    const configName = req.body.name.replace(/[^-a-zA-Z0-9\s_:]/g, '');
 
-    if (req.body.name.length < 1) {
+    if (configName.length < 1) {
       return res.serverError(403, 'Invalid custom SPI View fields configuration name');
     }
 
@@ -462,13 +463,13 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
 
     // don't let user use duplicate names
     for (const config of user.spiviewFieldConfigs) {
-      if (req.body.name === config.name) {
+      if (configName === config.name) {
         return res.serverError(403, 'There is already a custom SPI View fieldss configuration with that name');
       }
     }
 
     user.spiviewFieldConfigs.push({
-      name: req.body.name,
+      name: configName,
       fields: req.body.fields
     });
 
@@ -481,7 +482,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
       return res.send(JSON.stringify({
         success: true,
         text: 'Created custom SPI View fieldss configuration successfully',
-        name: req.body.name
+        name: configName
       }));
     });
   };
@@ -523,7 +524,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
 
     User.setUser(user.userId, user, (err, info) => {
       if (err) {
-        console.log(`ERROR - ${req.method} /api/user/spiview/${spiName}`, util.inspect(err, false, 50), info);
+        console.log(`ERROR - ${req.method} /api/user/spiview/%s`, spiName, util.inspect(err, false, 50), info);
         return res.serverError(500, 'Update SPI View fields configuration failed');
       }
 
@@ -567,7 +568,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
 
     User.setUser(user.userId, user, (err, info) => {
       if (err) {
-        console.log(`ERROR - ${req.method} /api/user/spiview/${spiName}`, util.inspect(err, false, 50), info);
+        console.log(`ERROR - ${req.method} /api/user/spiview/%s`, spiName, util.inspect(err, false, 50), info);
         return res.serverError(500, 'Delete custom SPI View fields configuration failed');
       }
 
@@ -597,20 +598,23 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
 
     User.getUser(req.params.userId, (err, user) => {
       if (err || !user) {
-        console.log(`ERROR - ${req.method} /api/user/${req.params.userId}/acknowledge (getUser)`, util.inspect(err, false, 50), user);
+        console.log(`ERROR - ${req.method} /api/user/%s/acknowledge (getUser)`, ArkimeUtil.sanitizeStr(req.params.userId), util.inspect(err, false, 50), user);
         return res.serverError(403, 'User not found');
       }
 
       user.welcomeMsgNum = parseInt(req.body.msgNum);
+      if (!Number.isInteger(user.welcomeMsgNum)) {
+        return res.serverError(403, 'welcomeMsgNum is not integer');
+      }
 
       User.setUser(req.params.userId, user, (err, info) => {
         if (Config.debug) {
-          console.log(`ERROR - ${req.method} /api/user/${req.params.userId}/acknowledge (setUser)`, util.inspect(err, false, 50), user, info);
+          console.log(`ERROR - ${req.method} /api/user/%s/acknowledge (setUser)`, ArkimeUtil.sanitizeStr(req.params.userId), util.inspect(err, false, 50), user, info);
         }
 
         return res.send(JSON.stringify({
           success: true,
-          text: `User, ${req.params.userId}, dismissed message ${req.body.msgNum}`
+          text: `User, ${req.user.userId}, dismissed message ${user.welcomeMsgNum}`
         }));
       });
     });
@@ -638,7 +642,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
   userAPIs.updateUserState = (req, res) => {
     User.getUser(req.user.userId, (err, user) => {
       if (err || !user) {
-        console.log(`ERROR - ${req.method} /api/user/state/${req.params.name} (getUser)`, util.inspect(err, false, 50), user);
+        console.log(`ERROR - ${req.method} /api/user/state/%s (getUser)`, ArkimeUtil.sanitizeStr(req.params.name), util.inspect(err, false, 50), user);
         return res.serverError(403, 'Unknown user');
       }
 
@@ -650,7 +654,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
 
       User.setUser(user.userId, user, (err, info) => {
         if (err) {
-          console.log(`ERROR - ${req.method} /api/user/state/${req.params.name} (setUser)`, util.inspect(err, false, 50), info);
+          console.log(`ERROR - ${req.method} /api/user/state/%s (setUser)`, ArkimeUtil.sanitizeStr(req.params.name), util.inspect(err, false, 50), info);
           return res.serverError(403, 'state update failed');
         }
 

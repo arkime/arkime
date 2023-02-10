@@ -299,9 +299,9 @@ my ($cmd) = @_;
     if ($cmd ne "--viewernostart") {
         print ("Starting WISE\n");
         if ($main::debug) {
-            system("cd ../wiseService ; $node wiseService.js --regressionTests -c ../tests/config.test.json > /tmp/moloch.wise &");
+            system("cd ../wiseService ; $node wiseService.js --webcode thecode --webconfig --regressionTests -c ../tests/config.test.json > /tmp/moloch.wise &");
         } else {
-            system("cd ../wiseService ; $node wiseService.js --regressionTests -c ../tests/config.test.json > /dev/null &");
+            system("cd ../wiseService ; $node wiseService.js --webcode thecode --webconfig --regressionTests -c ../tests/config.test.json > /dev/null &");
         }
 
         waitFor($MolochTest::host, 8081, 1);
@@ -346,7 +346,7 @@ my ($cmd) = @_;
             waitFor($MolochTest::host, 8200, 1);
             system("cd ../viewer ; $node --trace-warnings viewer.js $es $ues -c ../tests/config.test.ini -n test --debug $INSECURE > /tmp/moloch.test &");
             system("cd ../viewer ; $node --trace-warnings viewer.js $es $ues -c ../tests/config.test.ini -n test2 --debug $INSECURE > /tmp/moloch.test2 &");
-            system("cd ../viewer ; $node --trace-warnings viewer.js $es $ues -c ../tests/config.test.ini -n test3 --debug $INSECURE > /tmp/moloch.test3 &");
+            system("cd ../viewer ; $node --trace-warnings viewer.js $es $ues -c ../tests/config.test.ini -n test3 --debug -o s2sRegressionTests=true $INSECURE > /tmp/moloch.test3 &");
             system("cd ../viewer ; $node --trace-warnings viewer.js $ues -c ../tests/config.test.ini -n all --debug $INSECURE > /tmp/moloch.all &");
             system("cd ../parliament ; $node --trace-warnings parliament.js --regressionTests -c /dev/null --debug > /tmp/moloch.parliament 2>&1 &");
             system("cd ../cont3xt ; $node --trace-warnings cont3xt.js $ces $cues --regressionTests -c ../tests/cont3xt.tests.ini --debug $INSECURE > /tmp/moloch.cont3xt 2>&1 &");
@@ -355,7 +355,7 @@ my ($cmd) = @_;
             waitFor($MolochTest::host, 8200, 1);
             system("cd ../viewer ; $node viewer.js $es $ues -c ../tests/config.test.ini -n test $INSECURE > /dev/null &");
             system("cd ../viewer ; $node viewer.js $es $ues -c ../tests/config.test.ini -n test2 $INSECURE > /dev/null &");
-            system("cd ../viewer ; $node viewer.js $es $ues -c ../tests/config.test.ini -n test3 $INSECURE > /dev/null &");
+            system("cd ../viewer ; $node viewer.js $es $ues -c ../tests/config.test.ini -n test3 -o s2sRegressionTests=true $INSECURE > /dev/null &");
             system("cd ../viewer ; $node viewer.js $ues -c ../tests/config.test.ini -n all $INSECURE > /dev/null &");
             system("cd ../parliament ; $node parliament.js --regressionTests -c /dev/null > /dev/null 2>&1 &");
             system("cd ../cont3xt ; $node cont3xt.js $ces $cues --regressionTests -c ../tests/cont3xt.tests.ini $INSECURE > /dev/null 2>&1 &");

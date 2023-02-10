@@ -20,7 +20,7 @@ import { ITypeMixin } from './ITypeMixin';
 
 export default {
   name: 'Cont3xtIp',
-  mixins: [ITypeMixin], // gives enhancements
+  mixins: [ITypeMixin], // for tidbits
   components: {
     BaseIType,
     TtlTooltip

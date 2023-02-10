@@ -1069,7 +1069,7 @@ void moloch_parser_init()
     moloch_config_add_header(&emailHeaders, "user-agent", uaField);
     moloch_config_add_header(&emailHeaders, "mime-version", mvField);
     moloch_config_add_header(&emailHeaders, "received", receivedField);
-    moloch_config_load_header("headers-email", "email", "Email header ", "email.", "email.header-", &emailHeaders, 0);
+    moloch_config_load_header("headers-email", "email", "Email header ", "email.", NULL, "email.header-", &emailHeaders, 0);
 
     moloch_parsers_classifier_register_tcp("smtp", NULL, 0, (unsigned char*)"HELO", 4, smtp_classify);
     moloch_parsers_classifier_register_tcp("smtp", NULL, 0, (unsigned char*)"EHLO", 4, smtp_classify);

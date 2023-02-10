@@ -9,17 +9,24 @@ install:
 	$(INSTALL) README.txt @prefix@
 	$(INSTALL) ../LICENSE @prefix@
 	@mkdir -p $(etcdir) @prefix@/logs
-	$(INSTALL) arkimecapture.systemd.service $(etcdir)/
-	$(INSTALL) arkimeviewer.systemd.service $(etcdir)/
-	$(INSTALL) arkimewise.systemd.service $(etcdir)/
-	$(INSTALL) arkimeparliament.systemd.service $(etcdir)/
 	$(INSTALL) config.ini.sample $(etcdir)/
 	$(INSTALL) wise.ini.sample $(etcdir)/
+	$(INSTALL) cont3xt.ini.sample $(etcdir)/
+	$(INSTALL) parliament.env.example $(etcdir)/
+	$(INSTALL) env.example $(etcdir)/
+
+	sed -e "s,BUILD_ARKIME_INSTALL_DIR,@prefix@,g" < arkimecont3xt.systemd.service > @prefix@/etc/arkimecont3xt.systemd.service
+	sed -e "s,BUILD_ARKIME_INSTALL_DIR,@prefix@,g" < arkimecapture.systemd.service > @prefix@/etc/arkimecapture.systemd.service
+	sed -e "s,BUILD_ARKIME_INSTALL_DIR,@prefix@,g" < arkimeviewer.systemd.service > @prefix@/etc/arkimeviewer.systemd.service
+	sed -e "s,BUILD_ARKIME_INSTALL_DIR,@prefix@,g" < arkimewise.systemd.service > @prefix@/etc/arkimewise.systemd.service
+	sed -e "s,BUILD_ARKIME_INSTALL_DIR,@prefix@,g" < arkimeparliament.systemd.service > @prefix@/etc/arkimeparliament.systemd.service
+
 	sed -e "s,BUILD_ARKIME_INSTALL_DIR,@prefix@,g" < arkime_update_geo.sh > @prefix@/bin/arkime_update_geo.sh
 	sed -e "s,BUILD_ARKIME_INSTALL_DIR,@prefix@,g" < arkime_add_user.sh > @prefix@/bin/arkime_add_user.sh
 	sed -e "s,BUILD_ARKIME_INSTALL_DIR,@prefix@,g" < arkime_config_interfaces.sh > @prefix@/bin/arkime_config_interfaces.sh
 	sed -e "s,BUILD_ARKIME_INSTALL_DIR,@prefix@,g" < Configure > @prefix@/bin/Configure
 	chmod 0755 @prefix@/bin/arkime_update_geo.sh @prefix@/bin/arkime_add_user.sh @prefix@/bin/Configure @prefix@/bin/arkime_config_interfaces.sh
+	/bin/bash ./afterinstall.sh
 
 installmoloch:
 	rm -f @prefix@/etc/arkime*

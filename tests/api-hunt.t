@@ -1,4 +1,4 @@
-use Test::More tests => 316;
+use Test::More tests => 321;
 use Cwd;
 use URI::Escape;
 use MolochTest;
@@ -75,6 +75,20 @@ my $hToken = getTokenCookie('huntuser');
 
   $json = viewerPostToken("/hunt", '{"totalSessions":1,"name":"test hunt 12","size":"50","search":"test search text","searchType":"ascii","type":"raw","src":true,"dst":true,"query":{"stopTime":1536872891}}', $token);
   eq_or_diff($json, from_json('{"text": "Missing fully formed query (must include start time and stop time)", "success": false}'));
+
+# Bad roles
+  $json = viewerPostToken("/hunt?molochRegressionUser=anonymous", '{"totalSessions":1,"name":"test hunt 17","size":"50","search":"test search text","searchType":"ascii","type":"raw","src":true,"dst":true,"query":{"startTime":18000,"stopTime":1536872891}, "roles": false}', $token);
+  eq_or_diff($json, from_json('{"text": "Roles field must be an array of strings", "success": false}'));
+
+  $json = viewerPostToken("/hunt?molochRegressionUser=anonymous", '{"totalSessions":1,"name":"test hunt 18","size":"50","search":"test search text","searchType":"ascii","type":"raw","src":true,"dst":true,"query":{"startTime":18000,"stopTime":1536872891}, "roles": [false]}', $token);
+  eq_or_diff($json, from_json('{"text": "Roles field must be an array of strings", "success": false}'));
+
+# Bad users
+  $json = viewerPostToken("/hunt?molochRegressionUser=anonymous", '{"totalSessions":1,"name":"test hunt 18","size":"50","search":"test search text","searchType":"ascii","type":"raw","src":true,"dst":true,"query":{"startTime":18000,"stopTime":1536872891}, "users": false}', $token);
+  eq_or_diff($json, from_json('{"text": "Users field must be a string", "success": false}'));
+
+  $json = viewerPostToken("/hunt?molochRegressionUser=anonymous", '{"totalSessions":1,"name":"test hunt 18","size":"50","search":"test search text","searchType":"ascii","type":"raw","src":true,"dst":true,"query":{"startTime":18000,"stopTime":1536872891}, "users": [false]}', $token);
+  eq_or_diff($json, from_json('{"text": "Users field must be a string", "success": false}'));
 
 # Make sure no hunts
   my $hunts = viewerGet("/api/hunts?all");
@@ -176,6 +190,7 @@ my $hToken = getTokenCookie('huntuser');
   my $id6 = $json->{hunt}->{id};
 
   viewerGet("/regressionTests/processHuntJobs");
+  sleep(1); # Wait for it to finish processing
 
   $hunts = viewerGet("/hunt/list?all");
   my ($viewHunt, $badHunt);
@@ -196,14 +211,20 @@ my $hToken = getTokenCookie('huntuser');
 
 # add a hunt that is shared with another user
   $json = viewerPostToken("/hunt?molochRegressionUser=anonymous", '{"users":"huntuser","totalSessions":1,"name":"test hunt 13~`!@#$%^&*()[]{};<>?/`","size":"50","search":"test search text","searchType":"ascii","type":"raw","src":true,"dst":true,"query":{"startTime":18000,"stopTime":1536872891}}', $token);
-  esGet("/_refresh");
   is ($json->{hunt}->{users}->[0], "huntuser", "hunt should have a user on creation");
   my $id7 = $json->{hunt}->{id};
 
 # remove a user from a hunt
-  sleep(1); # Wait for user to be set or else test after next fails
+  esGet("/_flush");
+  esGet("/_refresh");
+  sleep(2); # Wait for user to be set or else test after next fails
   $json = viewerDeleteToken("/api/hunt/$id7/user/huntuser?molochRegressionUser=anonymous", $token);
   is (scalar @{$json->{users}}, 0, "hunt should have no users");
+
+  sleep(2);
+  esGet("/_flush");
+  esGet("/_refresh");
+  sleep(2);
 
 # can't delete a user from an hunt with no users
   $json = viewerDeleteToken("/api/hunt/$id7/user/huntuser?molochRegressionUser=anonymous", $token);
@@ -224,6 +245,10 @@ my $hToken = getTokenCookie('huntuser');
   is ($json->{invalidUsers}->[0], "unknownuser", "hunt should send back invalid users");
 
 # can't add empty users
+  $json = viewerPostToken("/api/hunt/$id7/users?molochRegressionUser=anonymous", '{}', $token);
+  eq_or_diff($json, from_json('{"success":false,"text":"You must provide users in a comma separated string"}'), "hunt can't add empty users");
+
+# can't add missing users
   $json = viewerPostToken("/api/hunt/$id7/users?molochRegressionUser=anonymous", '{"users":""}', $token);
   eq_or_diff($json, from_json('{"success":false,"text":"You must provide users in a comma separated string"}'), "hunt can't add empty users");
 

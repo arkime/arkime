@@ -1,5 +1,5 @@
 # WISE tests
-use Test::More tests => 102;
+use Test::More tests => 124;
 use MolochTest;
 use Cwd;
 use URI::Escape;
@@ -7,7 +7,6 @@ use Data::Dumper;
 use Test::Differences;
 use JSON -support_by_pp;
 use strict;
-
 
 my $wise;
 my @wise;
@@ -129,7 +128,7 @@ eq_or_diff(from_json($wise), from_json('[{"field":"email.dst","len":10,"value":"
 '),"ALL 12345678\@aol.com");
 
 $wise = $MolochTest::userAgent->get("http://$MolochTest::host:8081/rightClicks")->content;
-eq_or_diff(from_json($wise), from_json('{"VTIP":{"url":"https://www.virustotal.com/en/ip-address/%TEXT%/information/","name":"Virus Total IP","category":"ip"},"VTHOST":{"url":"https://www.virustotal.com/en/domain/%HOST%/information/","name":"Virus Total Host","category":"host"},"VTURL":{"url":"https://www.virustotal.com/latest-scan/%URL%","name":"Virus Total URL","category":"url"}}'),"right clicks");
+eq_or_diff(from_json($wise), from_json('{"USERTEST":{"url": "https://example.com", "name": "usertest", "category": "url","users":{"test1":1},"notUsers":{"test101":1}},"VTIP":{"url":"https://www.virustotal.com/en/ip-address/%TEXT%/information/","name":"Virus Total IP","category":"ip"},"VTHOST":{"url":"https://www.virustotal.com/en/domain/%HOST%/information/","name":"Virus Total Host","category":"host"},"VTURL":{"url":"https://www.virustotal.com/latest-scan/%URL%","name":"Virus Total URL","category":"url"}}'),"right clicks");
 
 my $pwd = "*/pcap";
 
@@ -207,7 +206,7 @@ eq_or_diff($wise, '[{"field":"tags","len":10,"value":"wisebymac1"},
 
 # Sources
 $wise = $MolochTest::userAgent->get("http://$MolochTest::host:8081/sources")->content;
-eq_or_diff($wise, '["file:domain","file:email","file:ip","file:ipcsv","file:ipjson","file:ja3","file:mac","file:md5","file:sha256","file:url","reversedns","url:aws-ips","url:azure-ips","url:gcloud-ips4","url:gcloud-ips6","valueactions:test"]',"/sources");
+eq_or_diff($wise, '["fieldactions:test","file:domain","file:email","file:ip","file:ipcsv","file:ipjson","file:ja3","file:mac","file:md5","file:sha256","file:url","reversedns","url:aws-ips","url:azure-ips","url:gcloud-ips4","url:gcloud-ips6","valueactions:test"]',"/sources");
 
 # Types
 $wise = $MolochTest::userAgent->get("http://$MolochTest::host:8081/types")->content;
@@ -226,3 +225,78 @@ eq_or_diff($wise, '["ip"]',"types reversedns");
 $wise = from_json($MolochTest::userAgent->get("http://$MolochTest::host:8081/stats")->content);
 ok (exists $wise->{"sources"});
 ok (exists $wise->{"types"});
+
+$wise = from_json($MolochTest::userAgent->get("http://$MolochTest::host:8081/stats?search=domain")->content);
+is (scalar @{$wise->{"sources"}}, 1);
+is (scalar @{$wise->{"types"}}, 1);
+
+my $wise2 = from_json($MolochTest::userAgent->get("http://$MolochTest::host:8081/stats?search=do.*n")->content);
+
+eq_or_diff($wise, $wise2);
+
+# Get
+$wise = $MolochTest::userAgent->post("http://$MolochTest::host:8081/get", Content => "XXX")->content;
+is ($wise, 'Received malformed packet');
+
+# Views
+$wise = $MolochTest::userAgent->get("http://$MolochTest::host:8081/views")->content;
+eq_or_diff($wise, '{"cloud":"if (session.cloud)\\n  div.sessionDetailMeta.bold Public Cloud\\n  dl.sessionDetailMeta\\n    +arrayList(session.cloud, \'service\', \'Service\', \'cloud.service\')\\n    +arrayList(session.cloud, \'region\', \'Region\', \'cloud.region\')\\n","file:email":"if (session.wise)\\n  div.sessionDetailMeta.bold Wise\\n  dl.sessionDetailMeta\\n    +arrayList(session.wise, \'str\', \'Str\', \'wise.str\')\\n    +arrayList(session.wise, \'int\', \'Int\', \'wise.int\')\\n    +arrayList(session.wise, \'float\', \'Float\', \'wise.float\')\\n"}');
+
+# Fields
+$wise = $MolochTest::userAgent->get("http://$MolochTest::host:8081/fields")->content;
+is(length($wise), 658);;
+
+my $info = viewerGet("/fields");
+eq_or_diff($info->{"wise.int.cnt"}, from_json('{"friendlyName":"Int Cnt","type":"integer","exp":"wise.int.cnt","help":"Unique number of Help Int","dbField":"wise.intCnt","group":"wise","dbField2":"wise.intCnt"}'));
+
+# Field Actions
+$wise = $MolochTest::userAgent->get("http://$MolochTest::host:8081/fieldActions")->content;
+eq_or_diff($wise, '{"ASDF":{"url":"https://www.asdf.com?expression=%EXPRESSION%&date=%DATE%&field=%FIELD%&dbField=%DBFIELD%","name":"Field Action %FIELDNAME%!","category":"ip","users":{"admin":1,"test1":1},"notUsers":{"test101":1}}}');
+
+# Value Actions
+$wise = $MolochTest::userAgent->get("http://$MolochTest::host:8081/valueActions")->content;
+eq_or_diff($wise, '{"VTIP":{"url":"https://www.virustotal.com/en/ip-address/%TEXT%/information/","name":"Virus Total IP","category":"ip"},"VTHOST":{"url":"https://www.virustotal.com/en/domain/%HOST%/information/","name":"Virus Total Host","category":"host"},"VTURL":{"url":"https://www.virustotal.com/latest-scan/%URL%","name":"Virus Total URL","category":"url"},"USERTEST":{"url":"https://example.com","name":"usertest","category":"url","users":{"test1":1},"notUsers":{"test101":1}}}');
+
+# __proto__
+$wise = $MolochTest::userAgent->get("http://$MolochTest::host:8081/file:mac/__proto__/00:12:1e:f2:61:3d")->content;
+is($wise, 'Not found');
+
+$wise = $MolochTest::userAgent->get("http://$MolochTest::host:8081/__proto__/00:12:1e:f2:61:3d")->content;
+is($wise, 'Not found');
+
+# test code
+$wise = $MolochTest::userAgent->post("http://$MolochTest::host:8081/regressionTests/checkCode")->content;
+eq_or_diff($wise, '{"success":false,"text":"Not authorized, check log file"}');
+
+$wise = $MolochTest::userAgent->post("http://$MolochTest::host:8081/regressionTests/checkCode", Content => '{"configCode": ""}', "Content-Type" => "application/json;charset=UTF-8")->content;
+eq_or_diff($wise, '{"success":false,"text":"Not authorized, check log file"}');
+
+$wise = $MolochTest::userAgent->post("http://$MolochTest::host:8081/regressionTests/checkCode", Content => '{"configCode": "theCode"}', "Content-Type" => "application/json;charset=UTF-8")->content;
+eq_or_diff($wise, '{"success":false,"text":"Not authorized, check log file"}');
+
+$wise = $MolochTest::userAgent->post("http://$MolochTest::host:8081/regressionTests/checkCode", Content => '{"configCode": "thecode"}', "Content-Type" => "application/json;charset=UTF-8")->content;
+eq_or_diff($wise, '{"success":true,"text":"Authorized"}');
+
+# config defs
+$wise = from_json($MolochTest::userAgent->get("http://$MolochTest::host:8081/config/defs")->content);
+ok (exists $wise->{wiseService});
+
+# get config
+$wise = from_json($MolochTest::userAgent->get("http://$MolochTest::host:8081/config/get")->content);
+ok ($wise->{success});
+ok (exists $wise->{config});
+my $config = $wise->{config};
+
+# save config
+$wise = $MolochTest::userAgent->put("http://$MolochTest::host:8081/config/save", Content => to_json({configCode => "thecode"}), "Content-Type" => "application/json;charset=UTF-8")->content;
+eq_or_diff($wise, '{"success":false,"text":"Missing config"}');
+
+$wise = $MolochTest::userAgent->put("http://$MolochTest::host:8081/config/save", Content => to_json({config => $config, configCode => "thecode"}), "Content-Type" => "application/json;charset=UTF-8")->content;
+eq_or_diff($wise, '{"success":true,"text":"Would save, but regressionTests"}');
+
+# url
+$wise = from_json($MolochTest::userAgent->get("http://$MolochTest::host:8081/url:aws-ips/ip/3.2.34.0")->content);
+eq_or_diff($wise, from_json('[{"field":"cloud.service","len":3,"value":"ec2"}, {"field":"cloud.region","len":10,"value":"af-south-1"}]'));
+
+$wise = from_json($MolochTest::userAgent->get("http://$MolochTest::host:8081/url:azure-ips/ip/4.232.106.88")->content);
+eq_or_diff($wise, from_json('[{"field":"cloud.service","len":11,"value":"actiongroup"}]'));

@@ -37,8 +37,8 @@ const internals = {
   fields: [],
   fieldsMap: {},
   categories: {},
-  options: {},
-  debugged: {}
+  options: new Map(),
+  debugged: new Map()
 };
 
 function processArgs () {
@@ -61,7 +61,7 @@ function processArgs () {
         process.exit(1);
       }
 
-      internals.options[process.argv[i].slice(0, equal)] = process.argv[i].slice(equal + 1);
+      internals.options.set(process.argv[i].slice(0, equal), process.argv[i].slice(equal + 1));
     } else if (process.argv[i] === '--debug') {
       exports.debug++;
     } else if (process.argv[i] === '--insecure') {
@@ -89,7 +89,7 @@ processArgs();
 /// ///////////////////////////////////////////////////////////////////////////////
 
 if (!fs.existsSync(internals.configFile)) {
-  console.log("ERROR - Couldn't open config file '" + internals.configFile + "' maybe use the -c <configfile> option");
+  console.log("ERROR - Couldn't open config file '%s' maybe use the -c <configfile> option", internals.configFile);
   process.exit(1);
 }
 internals.config = ini.parseSync(internals.configFile);
@@ -120,8 +120,8 @@ exports.sectionGet = function (section, key, defaultValue) {
 
 exports.getFull = function (node, key, defaultValue) {
   let value;
-  if (internals.options[key] !== undefined && (node === 'default' || node === internals.nodeName)) {
-    value = internals.options[key];
+  if (internals.options.has(key) && (node === 'default' || node === internals.nodeName)) {
+    value = internals.options.get(key);
   } else if (internals.config[node] && internals.config[node][key] !== undefined) {
     value = internals.config[node][key];
   } else if (internals.config[node] && internals.config[node].nodeClass && internals.config[internals.config[node].nodeClass] && internals.config[internals.config[node].nodeClass][key]) {
@@ -132,9 +132,9 @@ exports.getFull = function (node, key, defaultValue) {
     value = defaultValue;
   }
 
-  if (exports.debug > 0 && internals.debugged[node + '::' + key] === undefined) {
+  if (exports.debug > 0 && !internals.debugged.has(node + '::' + key)) {
     console.log(`CONFIG - ${key} on node ${node} is ${value}`);
-    internals.debugged[node + '::' + key] = 1;
+    internals.debugged.set(node + '::' + key, true);
   }
 
   if (value === 'false') {
@@ -232,7 +232,7 @@ function loadIncludes (includes) {
   }
   includes.split(';').forEach((file) => {
     if (!fs.existsSync(file)) {
-      console.log("ERROR - Couldn't open config includes file '" + file + "'");
+      console.log("ERROR - Couldn't open config includes file '%s'", file);
       process.exit(1);
     }
     const config = ini.parseSync(file);
@@ -508,10 +508,13 @@ exports.loadFields = function (data) {
 
 let mode = 'anonymousWithDB';
 if (exports.get('passwordSecret')) {
-  if (exports.get('userNameHeader')) {
-    mode = 'header';
-  } else {
+  const userNameHeader = exports.get('userNameHeader');
+  if (!userNameHeader || userNameHeader === 'digest') {
     mode = 'digest';
+  } else if (userNameHeader === 'oidc') {
+    mode = 'oidc';
+  } else {
+    mode = 'header';
   }
 } else if (exports.get('regressionTests')) {
   mode = 'regressionTests';
@@ -521,12 +524,21 @@ Auth.initialize({
   mode,
   debug: exports.debug,
   basePath: exports.basePath(),
-  httpRealm: exports.get('httpRealm', 'Moloch'),
-  passwordSecret: exports.getFull('default', 'passwordSecret', 'password'),
+  passwordSecret: exports.getFull(internals.nodeName === 'cont3xt' ? 'cont3xt' : 'default', 'passwordSecret', 'password'),
   serverSecret: exports.getFull('default', 'serverSecret'),
   userNameHeader: exports.get('userNameHeader'),
   requiredAuthHeader: exports.get('requiredAuthHeader'),
   requiredAuthHeaderVal: exports.get('requiredAuthHeaderVal'),
   userAutoCreateTmpl: exports.get('userAutoCreateTmpl'),
-  userAuthIps: exports.get('userAuthIps')
+  userAuthIps: exports.get('userAuthIps'),
+  s2s: true,
+  s2sRegressionTests: !!exports.get('s2sRegressionTests'),
+  authConfig: {
+    httpRealm: exports.get('httpRealm', 'Moloch'),
+    userIdField: exports.get('authUserIdField'),
+    discoverURL: exports.get('authDiscoverURL'),
+    clientId: exports.get('authClientId'),
+    clientSecret: exports.get('authClientSecret'),
+    redirectURIs: exports.get('authRedirectURIs')
+  }
 });

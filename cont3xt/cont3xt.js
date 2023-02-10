@@ -41,7 +41,7 @@ const crypto = require('crypto');
 const logger = require('morgan');
 const favicon = require('serve-favicon');
 const helmet = require('helmet');
-const uuid = require('uuidv4').default;
+const uuid = require('uuid').v4;
 const dayMs = 60000 * 60 * 24;
 
 const internals = {
@@ -49,9 +49,12 @@ const internals = {
   debug: 0,
   insecure: false,
   regressionTests: false,
-  options: {},
-  debugged: {}
+  options: new Map(),
+  debugged: new Map()
 };
+
+// Process args before routes
+processArgs(process.argv);
 
 // ----------------------------------------------------------------------------
 // Security
@@ -95,7 +98,9 @@ function setCookie (req, res, next) {
     overwrite: true
   };
 
-  if (getConfig('cont3xt', 'keyFile') && getConfig('cont3xt', 'certFile')) { cookieOptions.secure = true; }
+  if (getConfig('cont3xt', 'keyFile') && getConfig('cont3xt', 'certFile')) {
+    cookieOptions.secure = true;
+  }
 
   res.cookie( // send cookie for basic, non admin functions
     'CONT3XT-COOKIE',
@@ -176,7 +181,7 @@ const integrationsStatic = express.static(
   { maxAge: dayMs, fallthrough: false }
 );
 app.use('/integrations', (req, res, next) => {
-  if (req.url.endsWith('png')) {
+  if (req.path.endsWith('.png')) {
     return integrationsStatic(req, res, (err) => {
       ArkimeUtil.missingResource(err, req, res);
     });
@@ -186,15 +191,19 @@ app.use('/integrations', (req, res, next) => {
 
 app.use(favicon(path.join(__dirname, '/favicon.ico')));
 
-app.post('/regressionTests/shutdown', (req, res) => {
-  if (internals.regressionTests) {
+if (internals.regressionTests) {
+  app.post('/regressionTests/shutdown', (req, res) => {
     console.log('Shutting down');
     process.exit(0);
-  }
-  res.send('NO!');
-});
+  });
 
-app.use(Auth.doAuth);
+  app.post('/regressionTests/classify', [jsonParser], (req, res) => {
+    res.send(req.body.map(item => Integration.classify(item)));
+  });
+}
+
+// Set up auth, all APIs registered below will use passport
+Auth.app(app);
 
 // check for cont3xtUser
 app.use((req, res, next) => {
@@ -340,7 +349,8 @@ app.use(cspHeader, setCookie, (req, res, next) => {
   const appContext = {
     nonce: res.locals.nonce,
     version: version.version,
-    path: getConfig('cont3xt', 'webBasePath', '/')
+    path: getConfig('cont3xt', 'webBasePath', '/'),
+    disableUserPasswordUI: getConfig('cont3xt', 'disableUserPasswordUI', true)
   };
 
   // Create a fresh Vue app instance
@@ -362,6 +372,9 @@ app.use(cspHeader, setCookie, (req, res, next) => {
   });
 });
 
+// Replace the default express error handler
+app.use(ArkimeUtil.expressErrorHandler);
+
 // ----------------------------------------------------------------------------
 // Command Line Parsing
 // ----------------------------------------------------------------------------
@@ -378,7 +391,7 @@ function processArgs (argv) {
         process.exit(1);
       }
 
-      internals.options[process.argv[i].slice(0, equal)] = process.argv[i].slice(equal + 1);
+      internals.options.set(process.argv[i].slice(0, equal), process.argv[i].slice(equal + 1));
     } else if (argv[i] === '--insecure') {
       internals.insecure = true;
     } else if (argv[i] === '--debug') {
@@ -423,11 +436,11 @@ User.prototype.setCont3xtKeys = function (v) {
 
 function getConfig (section, sectionKey, d) {
   const key = `${section}.${sectionKey}`;
-  const value = internals.options[key] ?? internals.config[section]?.[sectionKey] ?? d;
+  const value = internals.options.get(key) ?? internals.config[section]?.[sectionKey] ?? d;
 
-  if (internals.debug > 0 && internals.debugged[key] === undefined) {
+  if (internals.debug > 0 && !internals.debugged.has(key)) {
     console.log(`CONFIG - ${key} is ${value}`);
-    internals.debugged[key] = 1;
+    internals.debugged.set(key, true);
   }
 
   return value;
@@ -443,7 +456,7 @@ function setupAuth () {
     mode = 'regressionTests';
   } else if (userNameHeader === 'anonymous') {
     mode = 'anonymousWithDB';
-  } else if (userNameHeader === 'digest') {
+  } else if (userNameHeader === 'digest' || userNameHeader === 'oidc') {
     mode = userNameHeader;
     userNameHeader = undefined;
   } else {
@@ -456,7 +469,18 @@ function setupAuth () {
     userNameHeader,
     passwordSecret: getConfig('cont3xt', 'passwordSecret', 'password'),
     basePath: internals.webBasePath,
-    httpRealm: getConfig('cont3xt', 'httpRealm')
+    requiredAuthHeader: getConfig('cont3xt', 'requiredAuthHeader'),
+    requiredAuthHeaderVal: getConfig('cont3xt', 'requiredAuthHeaderVal'),
+    userAutoCreateTmpl: getConfig('cont3xt', 'userAutoCreateTmpl'),
+    userAuthIps: getConfig('cont3xt', 'userAuthIps'),
+    authConfig: {
+      httpRealm: getConfig('cont3xt', 'httpRealm', 'Moloch'),
+      userIdField: getConfig('cont3xt', 'authUserIdField'),
+      discoverURL: getConfig('cont3xt', 'authDiscoverURL'),
+      clientId: getConfig('cont3xt', 'authClientId'),
+      clientSecret: getConfig('cont3xt', 'authClientSecret'),
+      redirectURIs: getConfig('cont3xt', 'authRedirectURIs')
+    }
   });
 
   const dbUrl = getConfig('cont3xt', 'dbUrl');
@@ -490,7 +514,7 @@ function setupAuth () {
     clientKeyPass: getConfig('cont3xt', 'esClientKeyPass'),
     prefix: getConfig('cont3xt', 'usersPrefix'),
     apiKey: getConfig('cont3xt', 'usersElasticsearchAPIKey'),
-    basicAuth: getConfig('cont3xt', 'usersElasticsearchBasicAuth')
+    basicAuth: getConfig('cont3xt', 'usersElasticsearchBasicAuth', getConfig('cont3xt', 'elasticsearchBasicAuth'))
   });
 
   Audit.initialize({
@@ -513,7 +537,6 @@ function setupAuth () {
 }
 
 async function main () {
-  processArgs(process.argv);
   try {
     internals.config = ini.parseSync(internals.configFile);
     if (internals.debug === 0) {

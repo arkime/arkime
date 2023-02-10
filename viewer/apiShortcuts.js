@@ -102,12 +102,13 @@ module.exports = (Db, internals) => {
    * @returns {number} recordsTotal - The total number of shortcut results stored.
    * @returns {number} recordsFiltered - The number of shortcut items returned in this result.
    */
-  shortcutAPIs.getShortcuts = (req, res) => {
+  shortcutAPIs.getShortcuts = async (req, res) => {
     // return nothing if we can't find the user
     const user = req.settingUser;
     if (!user) { return res.send({}); }
 
-    const roles = [...user._allRoles.keys()]; // es requries an array for terms search
+    const allRoles = await user.getRoles();
+    const roles = [...allRoles.keys()]; // es requries an array for terms search
 
     const map = req.query.map && req.query.map === 'true';
 
@@ -241,13 +242,13 @@ module.exports = (Db, internals) => {
    */
   shortcutAPIs.createShortcut = (req, res) => {
     // make sure all the necessary data is included in the post body
-    if (!req.body.name) {
+    if (!ArkimeUtil.isString(req.body.name)) {
       return res.serverError(403, 'Missing shortcut name');
     }
-    if (!req.body.type) {
+    if (!ArkimeUtil.isString(req.body.type)) {
       return res.serverError(403, 'Missing shortcut type');
     }
-    if (!req.body.value) {
+    if (!ArkimeUtil.isString(req.body.value)) {
       return res.serverError(403, 'Missing shortcut value');
     }
 
@@ -331,13 +332,13 @@ module.exports = (Db, internals) => {
    */
   shortcutAPIs.updateShortcut = async (req, res) => {
     // make sure all the necessary data is included in the post body
-    if (!req.body.name) {
+    if (!ArkimeUtil.isString(req.body.name)) {
       return res.serverError(403, 'Missing shortcut name');
     }
-    if (!req.body.type) {
+    if (!ArkimeUtil.isString(req.body.type)) {
       return res.serverError(403, 'Missing shortcut type');
     }
-    if (!req.body.value) {
+    if (!ArkimeUtil.isString(req.body.value)) {
       return res.serverError(403, 'Missing shortcut value');
     }
 
@@ -398,17 +399,17 @@ module.exports = (Db, internals) => {
             }));
           } catch (err) {
             shortcutMutex.unlock();
-            console.log(`ERROR - ${req.method} /api/shortcut/${req.params.id} (setShortcut)`, util.inspect(err, false, 50));
+            console.log(`ERROR - ${req.method} /api/shortcut/%s (setShortcut)`, ArkimeUtil.sanitizeStr(req.params.id), util.inspect(err, false, 50));
             return res.serverError(500, 'Error updating shortcut');
           }
         } catch (err) {
           shortcutMutex.unlock();
-          console.log(`ERROR - ${req.method} /api/shortcut/${req.params.id} (searchShortcuts)`, util.inspect(err, false, 50));
+          console.log(`ERROR - ${req.method} /api/shortcut/%s (searchShortcuts)`, ArkimeUtil.sanitizeStr(req.params.id), util.inspect(err, false, 50));
           return res.serverError(500, 'Error updating shortcut');
         }
       });
     } catch (err) {
-      console.log(`ERROR - ${req.method} /api/shortcut/${req.params.id} (getShortcut)`, util.inspect(err, false, 50));
+      console.log(`ERROR - ${req.method} /api/shortcut/%s (getShortcut)`, ArkimeUtil.sanitizeStr(req.params.id), util.inspect(err, false, 50));
       return res.serverError(500, 'Fetching shortcut to update failed');
     }
   };
@@ -441,11 +442,11 @@ module.exports = (Db, internals) => {
           text: 'Deleted shortcut successfully'
         }));
       } catch (err) {
-        console.log(`ERROR - ${req.method} /api/shortcut/${req.params.id} (deleteShortcut)`, util.inspect(err, false, 50));
+        console.log(`ERROR - ${req.method} /api/shortcut/%s (deleteShortcut)`, ArkimeUtil.sanitizeStr(req.params.id), util.inspect(err, false, 50));
         return res.serverError(500, 'Error deleting shortcut');
       }
     } catch (err) {
-      console.log(`ERROR - ${req.method} /api/shortcut/${req.params.id} (getShortcut)`, util.inspect(err, false, 50));
+      console.log(`ERROR - ${req.method} /api/shortcut/%s (getShortcut)`, ArkimeUtil.sanitizeStr(req.params.id), util.inspect(err, false, 50));
       return res.serverError(500, 'Fetching shortcut to delete failed');
     }
   };

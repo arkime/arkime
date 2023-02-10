@@ -354,7 +354,6 @@ LOCAL void moloch_http_add_request(MolochHttpServer_t *server, MolochHttpRequest
 
         if (!requestsTimer)
             requestsTimer = g_timeout_add(0, moloch_http_send_timer_callback, NULL);
-        } else {
     }
 }
 /******************************************************************************/

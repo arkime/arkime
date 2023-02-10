@@ -34,11 +34,10 @@
           v-model="perPage"
           @change="perPageChange"
           :options="[
-            { value: 10, text: '10 per page'},
-            { value: 20, text: '20 per page'},
             { value: 50, text: '50 per page'},
             { value: 100, text: '100 per page'},
-            { value: 200, text: '200 per page'}
+            { value: 200, text: '200 per page'},
+            { value: 500, text: '500 per page'}
           ]"
         />
       </div>
@@ -159,7 +158,7 @@
               variant="primary"
               @click="openSettings(data.item.userId)"
               v-has-role="{user:currentUser,roles:'arkimeAdmin'}"
-              v-if="parentApp === 'Arkime' && !data.item.userId.startsWith('role:')"
+              v-if="parentApp === 'Arkime' && isUser(data.item)"
               v-b-tooltip.hover="`Arkime settings for ${data.item.userId}`">
               <span class="fa fa-gear" />
             </b-button>
@@ -171,14 +170,42 @@
               v-b-tooltip.hover="`History for ${data.item.userId}`">
               <span class="fa fa-history" />
             </b-button>
-            <b-button
-              size="sm"
-              variant="danger"
-              v-b-tooltip.hover
-              :title="`Delete ${data.item.userId}`"
-              @click="deleteUser(data.item, data.index)">
-              <span class="fa fa-trash-o" />
-            </b-button>
+            <!-- cancel confirm delete button -->
+            <transition name="buttons">
+              <b-button
+                size="sm"
+                title="Cancel"
+                variant="warning"
+                v-b-tooltip.hover
+                v-if="confirmDelete[data.item.userId]"
+                @click="toggleConfirmDeleteUser(data.item.userId)">
+                <span class="fa fa-ban" />
+              </b-button>
+            </transition> <!-- /cancel confirm delete button -->
+            <!-- confirm delete button -->
+            <transition name="buttons">
+              <b-button
+                size="sm"
+                variant="danger"
+                v-b-tooltip.hover
+                title="Are you sure?"
+                v-if="confirmDelete[data.item.userId]"
+                @click="deleteUser(data.item, data.index)">
+                <span class="fa fa-check" />
+              </b-button>
+            </transition> <!-- /confirm delete button -->
+            <!-- delete button -->
+            <transition name="buttons">
+              <b-button
+                size="sm"
+                variant="danger"
+                v-b-tooltip.hover.left
+                :title="`Delete ${data.item.userId}`"
+                v-if="!confirmDelete[data.item.userId]"
+                @click="toggleConfirmDeleteUser(data.item.userId)">
+                <span class="fa fa-trash-o" />
+              </b-button>
+            </transition> <!-- /delete button -->
           </div>
         </template> <!-- /action column -->
         <!-- user id column -->
@@ -205,7 +232,7 @@
           />
           <template v-else-if="data.field.type === 'select' && roles && roles.length">
             <RoleDropdown
-              :roles="roles"
+              :roles="isUser(data.item) ? roles : roleAssignableRoles"
               :id="data.item.userId"
               :selected-roles="data.item.roles"
               @selected-roles-updated="updateRoles"
@@ -219,42 +246,49 @@
             <b-form-checkbox inline
               data-testid="checkbox"
               :checked="!data.item.emailSearch"
+              v-if="isUser(data.item)"
               @input="newVal => negativeToggle(newVal, data.item, 'emailSearch', true)">
               Disable Arkime Email Search
             </b-form-checkbox>
             <b-form-checkbox inline
               data-testid="checkbox"
               :checked="!data.item.removeEnabled"
+              v-if="isUser(data.item)"
               @input="newVal => negativeToggle(newVal, data.item, 'removeEnabled', true)">
               Disable Arkime Data Removal
             </b-form-checkbox>
             <b-form-checkbox inline
               data-testid="checkbox"
               :checked="!data.item.packetSearch"
+              v-if="isUser(data.item)"
               @input="newVal => negativeToggle(newVal, data.item, 'packetSearch', true)">
               Disable Arkime Hunting
             </b-form-checkbox>
             <b-form-checkbox inline
               data-testid="checkbox"
               v-model="data.item.hideStats"
+              v-if="isUser(data.item)"
               @input="userHasChanged(data.item.userId)">
               Hide Arkime Stats Page
             </b-form-checkbox>
             <b-form-checkbox inline
               data-testid="checkbox"
               v-model="data.item.hideFiles"
+              v-if="isUser(data.item)"
               @input="userHasChanged(data.item.userId)">
               Hide Arkime Files Page
             </b-form-checkbox>
             <b-form-checkbox inline
               data-testid="checkbox"
               v-model="data.item.hidePcap"
+              v-if="isUser(data.item)"
               @input="userHasChanged(data.item.userId)">
               Hide Arkime PCAP
             </b-form-checkbox>
             <b-form-checkbox inline
               data-testid="checkbox"
               v-model="data.item.disablePcapDownload"
+              v-if="isUser(data.item)"
               @input="userHasChanged(data.item.userId)">
               Disable Arkime PCAP Download
             </b-form-checkbox>
@@ -305,7 +339,7 @@
                  we're in cont3xt or arkime
                  (assumes user is a usersAdmin since only usersAdmin can see this page) -->
             <template v-if="parentApp === 'Cont3xt' || parentApp === 'Arkime'">
-              <form class="row" v-if="!data.item.userId.startsWith('role:')">
+              <form class="row" v-if="isUser(data.item)">
                 <div class="col-9 mt-4">
                   <!-- new password -->
                   <b-input-group
@@ -357,7 +391,7 @@
 
     <!-- create user -->
     <UserCreate
-      :roles="roles"
+      :roles="createMode === 'user' ? roles : roleAssignableRoles"
       :create-mode="createMode"
       @user-created="userCreated"
     />
@@ -426,8 +460,14 @@ export default {
       ],
       // password
       newPassword: '',
-      confirmNewPassword: ''
+      confirmNewPassword: '',
+      confirmDelete: {}
     };
+  },
+  computed: {
+    roleAssignableRoles () {
+      return this.roles.filter(({ value }) => value !== 'superAdmin' && value !== 'usersAdmin');
+    }
   },
   created () {
     this.loadUsers();
@@ -436,30 +476,12 @@ export default {
     searchTerm () {
       this.loadUsers();
     },
-    currentPage (newPage) {
+    currentPage () {
       this.loadUsers();
     }
   },
   methods: {
     /* exposed page functions ---------------------------------------------- */
-    getRolesStr (userRoles) {
-      let userDefinedRoles = [];
-      let roles = [];
-      for (let role of userRoles) {
-        if (role.startsWith('role:')) {
-          role = role.slice(5);
-          userDefinedRoles.push(role);
-          continue;
-        }
-        roles.push(role);
-      }
-
-      userDefinedRoles = userDefinedRoles.sort();
-      roles = roles.sort();
-
-      const allRoles = userDefinedRoles.concat(roles);
-      return allRoles.join(', ');
-    },
     tzDateStr (date, tz, ms) {
       return timezoneDateString(date, tz, ms);
     },
@@ -525,6 +547,9 @@ export default {
       user.lastUsed = undefined; // don't compare lastUsed, it might be different if the user is using the UI
       return user;
     },
+    isUser (userOrRoleObj) {
+      return !userOrRoleObj.userId.startsWith('role:');
+    },
     userHasChanged (userId) {
       const newUser = this.users.find(u => u.userId === userId);
       const oldUser = this.dbUserList.find(u => u.userId === userId);
@@ -553,6 +578,9 @@ export default {
       }).catch((error) => {
         this.showMessage({ variant: 'danger', message: error.text });
       });
+    },
+    toggleConfirmDeleteUser (id) {
+      this.$set(this.confirmDelete, id, !this.confirmDelete[id]);
     },
     deleteUser (user, index) {
       UserService.deleteUser(user).then((response) => {

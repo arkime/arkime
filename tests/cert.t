@@ -1,4 +1,4 @@
-use Test::More tests => 72;
+use Test::More tests => 82;
 use Cwd;
 use URI::Escape;
 use MolochTest;
@@ -24,11 +24,16 @@ my $files = "(file=$pwd/openssl-ssl3.pcap||file=$pwd/openssl-tls1.pcap||file=$pw
     countTest(2, "date=-1&expression=" . uri_escape("$files&&cert.issuer.cn==\"google internet authority g2\""));
     countTest(0, "date=-1&expression=" . uri_escape("$files&&cert.issuer.cn==\"google internet authority g3\""));
 
-# cert.issuer.cn
+# cert.issuer.on
     countTest(2, "date=-1&expression=" . uri_escape("$files&&cert.issuer.on==\"*Google Inc*\""));
     countTest(0, "date=-1&expression=" . uri_escape("$files&&cert.issuer.on==\"*Foo Inc*\""));
     countTest(2, "date=-1&expression=" . uri_escape("$files&&cert.issuer.on==\"*Google*\""));
     countTest(0, "date=-1&expression=" . uri_escape("$files&&cert.issuer.on==\"*Foo*\""));
+
+# cert.issuer.ou
+    countTest(2, "date=-1&expression=" . uri_escape("$files&&cert.issuer.ou==\"*Equifax Secure Certificate Authority*\""));
+    countTest(1, "date=-1&expression=" . uri_escape("$files&&cert.issuer.ou==\"*www.digicert.com*\""));
+    countTest(0, "date=-1&expression=" . uri_escape("$files&&cert.issuer.ou==\"*www.foo.com*\""));
 
 # cert.notafter
     countTest(2, "date=-1&expression=" . uri_escape("$files&&cert.notafter==\"2018/08/21 00:00:00\""));
@@ -48,11 +53,15 @@ my $files = "(file=$pwd/openssl-ssl3.pcap||file=$pwd/openssl-tls1.pcap||file=$pw
     countTest(2, "date=-1&expression=" . uri_escape("$files&&cert.subject.cn==\"google internet authority g2\""));
     countTest(0, "date=-1&expression=" . uri_escape("$files&&cert.subject.cn==\"google internet authority g3\""));
 
-# cert.subject.cn
+# cert.subject.on
     countTest(2, "date=-1&expression=" . uri_escape("$files&&cert.subject.on==\"Google Inc\""));
     countTest(0, "date=-1&expression=" . uri_escape("$files&&cert.subject.on==\"Foo Inc\""));
     countTest(2, "date=-1&expression=" . uri_escape("$files&&cert.subject.on==\"*Google*\""));
     countTest(0, "date=-1&expression=" . uri_escape("$files&&cert.subject.on==\"Foo\""));
+
+# cert.subject.ou
+    countTest(1, "date=-1&expression=" . uri_escape("$files&&cert.subject.ou==\"*www.digicert.com*\""));
+    countTest(0, "date=-1&expression=" . uri_escape("$files&&cert.subject.ou==\"*www.foo.com*\""));
 
 # cert.validfor
     countTest(2, "date=-1&expression=" . uri_escape("$files&&cert.validfor==5936"));

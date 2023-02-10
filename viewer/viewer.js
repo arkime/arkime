@@ -35,7 +35,7 @@ const http = require('http');
 const https = require('https');
 const onHeaders = require('on-headers');
 const helmet = require('helmet');
-const uuid = require('uuidv4').default;
+const uuid = require('uuid').v4;
 const path = require('path');
 const dayMs = 60000 * 60 * 24;
 const User = require('../common/user');
@@ -59,7 +59,6 @@ const logger = require('morgan');
 const favicon = require('serve-favicon');
 const bodyParser = require('body-parser');
 const multer = require('multer');
-const methodOverride = require('method-override');
 const compression = require('compression');
 
 // internal app deps
@@ -88,7 +87,6 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ limit: '5mb', extended: true }));
 
 app.use(compression());
-app.use(methodOverride());
 
 // Explicit sigint handler for running under docker
 // See https://github.com/nodejs/node/issues/4182
@@ -140,7 +138,10 @@ const cyberchefCspHeader = helmet.contentSecurityPolicy({
     defaultSrc: ["'self'"],
     styleSrc: ["'self'", "'unsafe-inline'"],
     scriptSrc: ["'self'", "'unsafe-eval'", "'unsafe-inline'"],
-    objectSrc: ["'self'", 'data:']
+    objectSrc: ["'self'", 'data:'],
+    workerSrc: ["'self'", 'blob:'],
+    frameSrc: ["'self'"],
+    imgSrc: ["'self'", 'data:']
   }
 });
 
@@ -233,7 +234,6 @@ if (Config.get('regressionTests')) {
     User.getUser(req.params.user, (err, user) => {
       // Shallow copy
       const cuser = Object.assign({}, user);
-      delete cuser._allRoles;
       res.send(cuser);
     });
   });
@@ -254,53 +254,36 @@ app.get(
 // stats apis - no auth -------------------------------------------------------
 app.get( // es health endpoint
   ['/api/eshealth', '/eshealth.json'],
+  [ArkimeUtil.noCacheJson],
   statsAPIs.getESHealth
 );
 
 // password, testing, or anonymous mode setup ---------------------------------
+Auth.app(app);
 if (Config.get('passwordSecret')) {
-  app.use(function (req, res, next) {
-    // S2S Auth
-    if (req.headers['x-arkime-auth'] || req.headers['x-moloch-auth']) {
-      return Auth.s2sAuth(req, res, next);
-    }
-
+  // check for arkimeUser
+  app.use((req, res, next) => {
+    // For receiveSession there is no user (so no role check can be done) AND must be s2s
     if (req.url.match(/^\/receiveSession/) || req.url.match(/^\/api\/sessions\/receive/)) {
-      return res.send('receive session only allowed s2s');
-    }
-
-    // Header auth
-    if (internals.userNameHeader !== undefined) {
-      if (req.headers[Auth.userNameHeader] === undefined) {
-        if (Auth.debug > 0) {
-          console.log('DEBUG - Couldn\'t find userNameHeader of', internals.userNameHeader, 'in', req.headers, 'for', req.url);
-        }
+      if (req.headers['x-arkime-auth'] === undefined) {
+        return res.status(401).send('receive session only allowed s2s');
       } else {
-        Auth.headerAuth(req, res, next);
-        return; // Don't try browser auth
+        return next();
       }
     }
 
-    // Browser auth
-    return Auth.digestAuth(req, res, next);
-  });
-
-  // check for arkimeUser
-  app.use((req, res, next) => {
     if (!req.user.hasRole('arkimeUser')) {
-      return res.send('Need arkimeUser role assigned');
+      return res.status(403).send('Need arkimeUser role assigned');
     }
     next();
   });
 } else if (Config.get('regressionTests', false)) {
   console.log('WARNING - The setting "regressionTests" is set to true, do NOT use in production, for testing only');
   internals.noPasswordSecret = true;
-  app.use(Auth.regressionTestsAuth);
 } else {
   /* Shared password isn't set, who cares about auth, db is only used for settings */
   console.log('WARNING - The setting "passwordSecret" is not set, all access is anonymous');
   internals.noPasswordSecret = true;
-  app.use(Auth.anonymousWithDBAuth);
 }
 
 // ============================================================================
@@ -425,6 +408,7 @@ function createActions (configKey, emitter, internalsKey) {
       mrc[key].users = users;
     }
   }
+
   const makers = internals.pluginEmitter.listeners(emitter);
   async.each(makers, function (cb, nextCb) {
     cb(function (err, items) {
@@ -461,7 +445,9 @@ function setCookie (req, res, next) {
     overwrite: true
   };
 
-  if (Config.isHTTPS()) { cookieOptions.secure = true; }
+  if (Config.isHTTPS()) {
+    cookieOptions.secure = true;
+  }
 
   res.cookie( // send cookie for basic, non admin functions
     'ARKIME-COOKIE',
@@ -495,7 +481,7 @@ function checkCookieToken (req, res, next) {
 
 // use for APIs that can be used from places other than just the UI
 function checkHeaderToken (req, res, next) {
-  if (req.headers.cookie) { // if there's a cookie, check header
+  if (req.headers.cookie || req.headers.referer) { // if there's a cookie or referer, check for token
     return checkCookieToken(req, res, next);
   } else { // if there's no cookie, just continue so the API still works
     return next();
@@ -538,7 +524,7 @@ async function checkCronAccess (req, res, next) {
     delete req.params.key;
   }
 
-  if (req.body.key === undefined) {
+  if (!ArkimeUtil.isString(req.body.key)) {
     return res.serverError(403, 'Missing cron key');
   }
 
@@ -597,8 +583,8 @@ function logAction (uiPage) {
     }
     log.query = log.query.slice(0, -1);
 
-    if (req.user.expression) {
-      log.forcedExpression = req.user.expression;
+    if (req.user.getExpression()) {
+      log.forcedExpression = req.user.getExpression();
     }
 
     if (uiPage) { log.uiPage = uiPage; }
@@ -750,8 +736,9 @@ function sanitizeViewName (req, res, next) {
     req.body.key = req.params.key;
     delete req.params.key;
   }
-  if (req.body.name) {
-    req.body.name = req.body.name.replace(/(^(shared:)+)|[^-a-zA-Z0-9_: ]/g, '');
+  if (typeof req.body.name === 'string') {
+    req.body.name = req.body.name.replace(/(^(shared:)+)/g, '');
+    req.body.name = ArkimeUtil.removeSpecialChars(req.body.name);
   }
   next();
 }
@@ -865,7 +852,7 @@ function sendSessionWorker (options, cb) {
 
     const sobj = remoteClusters[options.cluster];
     if (!sobj) {
-      console.log('ERROR - [remote-clusters] does not contain ' + options.cluster);
+      console.log('ERROR - [remote-clusters] does not contain %s', ArkimeUtil.sanitizeStr(options.cluster));
       return cb();
     }
 
@@ -1204,7 +1191,7 @@ app.get('/about', User.checkPermissions(['webEnabled']), (req, res) => {
 // user apis ------------------------------------------------------------------
 app.get( // current user endpoint
   ['/api/user', '/user/current'],
-  User.checkPermissions(['webEnabled']),
+  [ArkimeUtil.noCacheJson, User.checkPermissions(['webEnabled'])],
   User.apiGetUser
 );
 
@@ -1414,13 +1401,13 @@ app.post( // update cron endpoint
 // notifier apis --------------------------------------------------------------
 app.get( // notifier types endpoint
   ['/api/notifiertypes', '/notifierTypes'],
-  [User.checkRole('arkimeAdmin'), checkCookieToken],
+  [ArkimeUtil.noCacheJson, User.checkRole('arkimeAdmin'), checkCookieToken],
   Notifier.apiGetNotifierTypes
 );
 
 app.get( // notifiers endpoint
   ['/api/notifiers', '/notifiers'],
-  [checkCookieToken],
+  [ArkimeUtil.noCacheJson, checkCookieToken],
   Notifier.apiGetNotifiers
 );
 
@@ -1475,128 +1462,128 @@ app.get( // detailed stats endpoint
   statsAPIs.getDetailedStats
 );
 
-app.get( // elasticsearch stats endpoint
+app.get( // OpenSearch/Elasticsearch stats endpoint
   ['/api/esstats', '/esstats.json'],
   [ArkimeUtil.noCacheJson, recordResponseTime, User.checkPermissions(['hideStats']), setCookie],
   statsAPIs.getESStats
 );
 
-app.get( // elasticsearch indices endpoint
+app.get( // OpenSearch/Elasticsearch indices endpoint
   ['/api/esindices', '/esindices/list'],
   [ArkimeUtil.noCacheJson, recordResponseTime, User.checkPermissions(['hideStats']), setCookie],
   statsAPIs.getESIndices
 );
 
-app.delete( // delete elasticsearch index endpoint
+app.delete( // delete OpenSearch/Elasticsearch index endpoint
   ['/api/esindices/:index', '/esindices/:index'],
   [ArkimeUtil.noCacheJson, recordResponseTime, User.checkRole('arkimeAdmin'), User.checkPermissions(['removeEnabled']), setCookie],
   statsAPIs.deleteESIndex
 );
 
-app.post( // optimize elasticsearch index endpoint
+app.post( // optimize OpenSearch/Elasticsearch index endpoint
   ['/api/esindices/:index/optimize', '/esindices/:index/optimize'],
   [ArkimeUtil.noCacheJson, logAction(), checkCookieToken, User.checkRole('arkimeAdmin')],
   statsAPIs.optimizeESIndex
 );
 
-app.post( // close elasticsearch index endpoint
+app.post( // close OpenSearch/Elasticsearch index endpoint
   ['/api/esindices/:index/close', '/esindices/:index/close'],
   [ArkimeUtil.noCacheJson, logAction(), checkCookieToken, User.checkRole('arkimeAdmin')],
   statsAPIs.closeESIndex
 );
 
-app.post( // open elasticsearch index endpoint
+app.post( // open OpenSearch/Elasticsearch index endpoint
   ['/api/esindices/:index/open', '/esindices/:index/open'],
   [ArkimeUtil.noCacheJson, logAction(), checkCookieToken, User.checkRole('arkimeAdmin')],
   statsAPIs.openESIndex
 );
 
-app.post( // shrink elasticsearch index endpoint
+app.post( // shrink OpenSearch/Elasticsearch index endpoint
   ['/api/esindices/:index/shrink', '/esindices/:index/shrink'],
   [ArkimeUtil.noCacheJson, logAction(), checkCookieToken, User.checkRole('arkimeAdmin')],
   statsAPIs.shrinkESIndex
 );
 
-app.get( // elasticsearch tasks endpoint
+app.get( // OpenSearch/Elasticsearch tasks endpoint
   ['/api/estasks', '/estask/list'],
   [ArkimeUtil.noCacheJson, recordResponseTime, User.checkPermissions(['hideStats']), setCookie],
   statsAPIs.getESTasks
 );
 
-app.post( // cancel elasticsearch task endpoint
+app.post( // cancel OpenSearch/Elasticsearch task endpoint
   ['/api/estasks/:id/cancel', '/estask/cancel'],
   [ArkimeUtil.noCacheJson, logAction(), checkCookieToken, User.checkRole('arkimeAdmin')],
   statsAPIs.cancelESTask
 );
 
-app.post( // cancel elasticsearch task by opaque id endpoint
+app.post( // cancel OpenSearch/Elasticsearch task by opaque id endpoint
   ['/api/estasks/:id/cancelwith', '/estask/cancelById'],
   // should not have admin check so users can use, each user is name spaced
   [ArkimeUtil.noCacheJson, logAction(), checkCookieToken],
   statsAPIs.cancelUserESTask
 );
 
-app.post( // cancel all elasticsearch tasks endpoint
+app.post( // cancel all OpenSearch/Elasticsearch tasks endpoint
   ['/api/estasks/cancelall', '/estask/cancelAll'],
   [ArkimeUtil.noCacheJson, logAction(), checkCookieToken, User.checkRole('arkimeAdmin')],
   statsAPIs.cancelAllESTasks
 );
 
-app.get( // elasticsearch admin settings endpoint
+app.get( // OpenSearch/Elasticsearch admin settings endpoint
   ['/api/esadmin', '/esadmin/list'],
   [ArkimeUtil.noCacheJson, recordResponseTime, checkEsAdminUser, setCookie],
   statsAPIs.getESAdminSettings
 );
 
-app.post( // set elasticsearch admin setting endpoint
+app.post( // set OpenSearch/Elasticsearch admin setting endpoint
   ['/api/esadmin/set', '/esadmin/set'],
   [ArkimeUtil.noCacheJson, recordResponseTime, checkEsAdminUser, checkCookieToken],
   statsAPIs.setESAdminSettings
 );
 
-app.post( // reroute elasticsearch admin endpoint
+app.post( // reroute OpenSearch/Elasticsearch admin endpoint
   ['/api/esadmin/reroute', '/esadmin/reroute'],
   [ArkimeUtil.noCacheJson, recordResponseTime, checkEsAdminUser, checkCookieToken],
   statsAPIs.rerouteES
 );
 
-app.post( // flush elasticsearch admin endpoint
+app.post( // flush OpenSearch/Elasticsearch admin endpoint
   ['/api/esadmin/flush', '/esadmin/flush'],
   [ArkimeUtil.noCacheJson, recordResponseTime, checkEsAdminUser, checkCookieToken],
   statsAPIs.flushES
 );
 
-app.post( // unflood elasticsearch admin endpoint
+app.post( // unflood OpenSearch/Elasticsearch admin endpoint
   ['/api/esadmin/unflood', '/esadmin/unflood'],
   [ArkimeUtil.noCacheJson, recordResponseTime, checkEsAdminUser, checkCookieToken],
   statsAPIs.unfloodES
 );
 
-app.post( // unflood elasticsearch admin endpoint
+app.post( // unflood OpenSearch/Elasticsearch admin endpoint
   ['/api/esadmin/clearcache', '/esadmin/clearcache'],
   [ArkimeUtil.noCacheJson, recordResponseTime, checkEsAdminUser, checkCookieToken],
   statsAPIs.clearCacheES
 );
 
-app.get( // elasticsearch shards endpoint
+app.get( // OpenSearch/Elasticsearch shards endpoint
   ['/api/esshards', '/esshard/list'],
   [ArkimeUtil.noCacheJson, recordResponseTime, User.checkPermissions(['hideStats']), setCookie],
   statsAPIs.getESShards
 );
 
-app.post( // exclude elasticsearch shard endpoint
+app.post( // exclude OpenSearch/Elasticsearch shard endpoint
   ['/api/esshards/:type/:value/exclude', '/esshard/exclude/:type/:value'],
   [ArkimeUtil.noCacheJson, logAction(), checkCookieToken, User.checkRole('arkimeAdmin')],
   statsAPIs.excludeESShard
 );
 
-app.post( // include elasticsearch shard endpoint
+app.post( // include OpenSearch/Elasticsearch shard endpoint
   ['/api/esshards/:type/:value/include', '/esshard/include/:type/:value'],
   [ArkimeUtil.noCacheJson, logAction(), checkCookieToken, User.checkRole('arkimeAdmin')],
   statsAPIs.includeESShard
 );
 
-app.get( // elasticsearch recovery endpoint
+app.get( // OpenSearch/Elasticsearch recovery endpoint
   ['/api/esrecovery', '/esrecovery/list'],
   [ArkimeUtil.noCacheJson, recordResponseTime, User.checkPermissions(['hideStats']), setCookie],
   statsAPIs.getESRecovery
@@ -1900,6 +1887,7 @@ app.get( // sync shortcuts endpoint
 // file apis ------------------------------------------------------------------
 app.get( // fields endpoint
   ['/api/fields', '/fields'],
+  [ArkimeUtil.noCacheJson],
   miscAPIs.getFields
 );
 
@@ -1952,11 +1940,13 @@ app.post(
 // clusters apis --------------------------------------------------------------
 app.get(
   ['/api/clusters', '/clusters'],
+  [ArkimeUtil.noCacheJson],
   miscAPIs.getClusters
 );
 
 app.get(
   ['/remoteclusters', '/molochclusters'],
+  [ArkimeUtil.noCacheJson],
   miscAPIs.getRemoteClusters
 );
 
@@ -1968,10 +1958,10 @@ app.get(
 );
 
 // cyberchef apis -------------------------------------------------------------
-app.get('/cyberchef.html', express.static( // cyberchef client file endpoint
+app.get('/cyberchef.html', [cyberchefCspHeader], express.static( // cyberchef client file endpoint
   path.join(__dirname, '/public'),
   { maxAge: dayMs, fallthrough: false }
-), ArkimeUtil.missingResource, cyberchefCspHeader);
+), ArkimeUtil.missingResource);
 
 app.get( // cyberchef endpoint
   '/cyberchef/:nodeName/session/:id',
@@ -2050,7 +2040,8 @@ app.use(cspHeader, setCookie, (req, res) => {
     businesDayStart: Config.get('businessDayStart', false),
     businessDayEnd: Config.get('businessDayEnd', false),
     businessDays: Config.get('businessDays', '1,2,3,4,5'),
-    turnOffGraphDays: Config.get('turnOffGraphDays', 30)
+    turnOffGraphDays: Config.get('turnOffGraphDays', 30),
+    disableUserPasswordUI: Config.get('disableUserPasswordUI', true)
   };
 
   // Create a fresh Vue app instance
@@ -2071,6 +2062,9 @@ app.use(cspHeader, setCookie, (req, res) => {
     res.send(html);
   });
 });
+
+// Replace the default express error handler
+app.use(ArkimeUtil.expressErrorHandler);
 
 // ============================================================================
 // CRON QUERIES
@@ -2226,7 +2220,7 @@ internals.processCronQueries = () => {
             return forQueriesCb(null);
           }
           if (!user.enabled) {
-            console.log(`CRON - User ${cq.creator} not enabled`);
+            console.log(`CRON - User '${cq.creator}' has been disabled on users tab, either delete their cron jobs or enable them`);
             return forQueriesCb();
           }
 
@@ -2270,14 +2264,14 @@ internals.processCronQueries = () => {
             return forQueriesCb();
           }
 
-          if (user.expression && user.expression.length > 0) {
+          if (user.getExpression()) {
             try {
               // Expression was set by admin, so assume email search ok
               molochparser.parser.yy.emailSearch = true;
-              const userExpression = molochparser.parse(user.expression);
+              const userExpression = molochparser.parse(user.getExpression());
               query.query.bool.filter.push(userExpression);
             } catch (e) {
-              console.log("CRON - Couldn't compile user forced expression", user.expression, e);
+              console.log("CRON - Couldn't compile user forced expression", user.getExpression(), e);
               return forQueriesCb();
             }
           }
@@ -2287,7 +2281,7 @@ internals.processCronQueries = () => {
               if (Config.debug > 1) {
                 console.log('CRON - setting lpValue', new Date(lpValue * 1000));
               }
-              // Do the ES update
+              // Do the OpenSearch/Elasticsearch update
               const doc = {
                 doc: {
                   lpValue,
@@ -2369,13 +2363,13 @@ async function main () {
     console.log('WARNING - ./vueapp/dist/index.html missing - The viewer app must be run from inside the viewer directory');
   }
 
-  Db.checkVersion(MIN_DB_VERSION, Config.get('passwordSecret') !== undefined);
+  Db.checkVersion(MIN_DB_VERSION);
 
   try {
     const health = await Db.healthCache();
     internals.clusterName = health.cluster_name;
   } catch (err) {
-    console.log('ERROR - fetching ES health', err);
+    console.log('ERROR - fetching OpenSearch/Elasticsearch health', err);
   }
 
   try {
@@ -2385,7 +2379,7 @@ async function main () {
     info.nodes.timestamp = new Date().getTime();
     internals.previousNodesStats.push(info.nodes);
   } catch (err) {
-    console.log('ERROR - fetching ES nodes stats', err);
+    console.log('ERROR - fetching OpenSearch/Elasticsearch nodes stats', err);
   }
 
   setFieldLocals();
@@ -2400,8 +2394,8 @@ async function main () {
     setInterval(expireCheckAll, 60 * 1000);
   }
 
-  createActions('value-actions', 'makeRightClick', 'rightClick');
-  setInterval(() => createActions('value-actions', 'makeRightClick', 'rightClick'), 150 * 1000); // Check every 2.5 minutes
+  createActions('value-actions', 'makeRightClick', 'rightClicks');
+  setInterval(() => createActions('value-actions', 'makeRightClick', 'rightClicks'), 150 * 1000); // Check every 2.5 minutes
   createActions('field-actions', 'makeFieldActions', 'fieldActions');
   setInterval(() => createActions('field-actions', 'makeFieldActions', 'fieldActions'), 150 * 1000); // Check every 2.5 minutes
 
@@ -2459,10 +2453,10 @@ function processArgs (argv) {
       console.log('');
       console.log('Options:');
       console.log('  -c <config file>      Config file to use');
-      console.log('  -host <host name>     Host name to use, default os hostname');
       console.log('  -n <node name>        Node name section to use in config file, default first part of hostname');
       console.log('  --debug               Increase debug level, multiple are supported');
       console.log('  --esprofile           Turn on profiling to es search queries');
+      console.log('  --host <host name>    Host name to use, default os hostname');
       console.log('  --insecure            Disable certificate verification for https calls');
 
       process.exit(0);

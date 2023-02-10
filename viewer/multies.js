@@ -28,6 +28,7 @@ const http = require('http');
 const https = require('https');
 const fs = require('fs');
 const path = require('path');
+const ArkimeUtil = require('../common/arkimeUtil');
 
 const esSSLOptions = { rejectUnauthorized: !Config.insecure, ca: Config.getCaTrustCerts(Config.nodeName()) };
 const esClientKey = Config.get('esClientKey');
@@ -195,7 +196,7 @@ function makeRequest (url, options, cb) {
   if (options.arkime_opaque !== undefined) {
     preq.setHeader('X-Opaque-Id', options.arkime_opaque);
   }
-  if (options.arkime_body !== undefined) {
+  if (options.arkime_body !== undefined && ArkimeUtil.isString(options.arkime_body, 0)) {
     if (options.method === 'DELETE') {
       preq.setHeader('content-length', options.arkime_body.length);
     }
@@ -453,7 +454,7 @@ app.get(['/users/user/:user', '/users/_doc/:user'], async (req, res) => {
     });
     return res.send(user);
   } catch (err) {
-    console.log(`ERROR - GET /users/user/${req.params.user}`, err);
+    console.log('ERROR - GET /users/user/%s', ArkimeUtil.sanitizeStr(req.params.user), err);
     return res.send({});
   }
 });
@@ -465,7 +466,7 @@ app.post(['/users/user/:user', '/users/_doc/:user'], async (req, res) => {
     });
     return res.send(result);
   } catch (err) {
-    console.log(`ERROR - POST /users/user/${req.params.user}`, err);
+    console.log('ERROR - POST /users/user/%s', ArkimeUtil.sanitizeStr(req.params.user), err);
     return res.send({});
   }
 });
@@ -953,7 +954,7 @@ app.post(['/:index/:type/:id/_update', '/:index/_update/:id'], async (req, res) 
       const { body: result } = await clients[node].update(params);
       return res.send(result);
     } catch (err) {
-      console.log(`ERROR - /${req.params.index}/${req.params.type}/${req.params.id}/_update`, err);
+      console.log('ERROR - /%s/%s/%s/_update', ArkimeUtil.sanitizeStr(req.params.index), ArkimeUtil.sanitizeStr(req.params.type), ArkimeUtil.sanitizeStr(req.params.id), err);
       return res.send({});
     }
   } else {
@@ -987,6 +988,9 @@ app.get(/./, function (req, res) {
 app.post(/./, function (req, res) {
   console.log('UNKNOWN', req.method, req.url, req.body);
 });
+
+// Replace the default express error handler
+app.use(ArkimeUtil.expressErrorHandler);
 
 /// ///////////////////////////////////////////////////////////////////////////////
 /// / Main
@@ -1058,7 +1062,7 @@ nodes.forEach(async (node) => {
 
     if (data.version.distribution === 'opensearch') {
       if (data.version.number.match(/^[0]/)) {
-        console.log(`ERROR - Opensearch ${data.version.number} not supported, Opensearch 1.0.0 or later required.`);
+        console.log(`ERROR - OpenSearch ${data.version.number} not supported, OpenSearch 1.0.0 or later required.`);
         process.exit();
       }
     } else {
@@ -1101,7 +1105,7 @@ function enumerateActiveNodes () {
         let host = values[i].node.split('://');
         host = host[host.length > 1 ? 1 : 0].split('@'); // user:pass@elastic.com:9200
         host = host[host.length > 1 ? host.length - 1 : 0];
-        console.log('Elasticsearch is down at ', host);
+        console.log('OpenSearch/Elasticsearch is down at ', host);
       }
     }
     activeESNodes = activeNodes.slice();

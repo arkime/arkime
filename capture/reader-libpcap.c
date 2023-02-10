@@ -57,7 +57,9 @@ void reader_libpcap_pcap_cb(u_char *batch, const struct pcap_pkthdr *h, const u_
     MolochPacket_t *packet = MOLOCH_TYPE_ALLOC0(MolochPacket_t);
 
     packet->pkt           = (u_char *)bytes;
-    packet->ts            = h->ts;
+    /* libpcap casts to int32_t which sign extends, undo that */
+    packet->ts.tv_sec     = (uint32_t)h->ts.tv_sec;
+    packet->ts.tv_usec    = h->ts.tv_usec;
     packet->pktlen        = h->len;
     packet->readerPos     = ((MolochPacketBatch_t *)batch)->readerPos;
 
@@ -81,7 +83,6 @@ LOCAL void *reader_libpcap_thread(gpointer posv)
         // Some kind of failure we quit
         if (unlikely(r < 0)) {
             moloch_quit();
-            pcap = 0;
             break;
         }
     }

@@ -138,23 +138,84 @@
 
       <div class="cont3xt-content" :style="navMarginHeightStyle">
         <!-- welcome -->
-        <div class="whole-page-info container"
+        <div class="mr-2 ml-2"
           v-if="!initialized && !error.length && !getIntegrationsError.length">
-          <div class="well center-area">
-            <h1 class="text-muted">
-              <span class="fa fa-fw fa-rocket fa-2x" />
-            </h1>
-            <h1 class="text-warning display-4">
-              Welcome to Cont3xt!
-            </h1>
-            <h4 v-if="!searchTerm"
+          <b-alert
+            show
+            variant="dark"
+            class="text-center">
+            <span class="fa fa-rocket fa-2x fa-flip-horizontal mr-1 text-muted" />
+            <strong class="text-warning lead">
+              <strong>Welcome to Cont3xt!</strong>
+            </strong>
+            <span v-if="!searchTerm"
               class="text-success lead">
-              Search for IPs, domains, URLs, emails, phone numbers, or hashes.
-            </h4>
-            <h4 v-else
+              <strong>Search for IPs, domains, URLs, emails, phone numbers, or hashes.</strong>
+            </span>
+            <span v-else
               class="text-success lead">
               <strong>Hit enter to issue your search!</strong>
-            </h4>
+            </span>
+            <span class="fa fa-rocket fa-2x ml-1 text-muted" />
+          </b-alert>
+          <div class="results-container results-summary results-help pr-2">
+            <div class="d-flex flex-column align-items-stretch">
+              <div class="well well-lg text-center pt-4 pb-4 flex-grow-1 alert-dark">
+                <h1>
+                  <span class="fa fa-2x fa-tree text-muted" />
+                </h1>
+                <h1 class="display-4">
+                  Indicator Result Tree
+                </h1>
+                <p class="lead">
+                  Top level indicators presented here
+                </p>
+                <p class="lead">
+                  Integration icons will display high level result
+                </p>
+                <p class="lead">
+                  Choose and configure integrations via
+                  <a class="no-decoration"
+                    href="settings#integrations">
+                    Settings -> Integrations
+                  </a>
+                </p>
+              </div>
+              <div class="well well-lg text-center pt-4 pb-4 mt-2 alert-dark">
+                <h1>
+                  <span class="fa fa-2x fa-link text-muted" />
+                </h1>
+                <h1 class="display-4">
+                  Link Groups
+                </h1>
+                <p class="lead">
+                  Custom pivot links tailored to the top level indicator query
+                </p>
+                <p class="lead">
+                  Create/Configure links and link groups in
+                  <a class="no-decoration"
+                    href="settings#linkgroups">
+                    Settings -> Link Groups
+                  </a>
+                </p>
+              </div>
+            </div>
+          </div>
+          <div class="results-container results-summary results-help pull-right">
+            <div class="well well-lg text-center pt-4 pb-4 pl-1 alert-dark">
+              <h1>
+                <span class="fa fa-2x fa-id-card-o text-muted" />
+              </h1>
+              <h1 class="display-4">
+                Indicator Card Detail
+              </h1>
+              <p class="lead">
+                Displays configurable subset of API results
+              </p>
+              <p class="lead">
+                Optionally, access raw results for card display tuning
+              </p>
+            </div>
           </div>
         </div> <!-- /welcome -->
 
@@ -183,12 +244,12 @@
           {{ getIntegrationsError }}
         </div> <!-- /integration error -->
 
-        <!--    time range input for links    -->
+        <!-- time range input for links -->
         <time-range-input v-if="lastSearchedTerm && initialized"
           class="link-inputs w-50 mb-1"
           v-model="timeRangeInfo"
           :place-holder-tip="linkPlaceholderTip" />
-        <!--    /time range input for links    -->
+        <!-- /time range input for links -->
 
         <!-- results -->
         <template v-if="lastSearchedTerm">
@@ -268,32 +329,42 @@
                 </b-input-group> <!-- /link search -->
                 <!-- link groups -->
                 <div class="d-flex flex-wrap align-items-start link-group-cards-wrapper">
-                  <template v-for="(linkGroup, index) in getLinkGroups">
-                    <reorder-list
-                      :index="index"
-                      @update="updateList"
-                      :key="linkGroup._id"
-                      :list="getLinkGroups"
-                      class="w-50 p-2 link-group"
-                      v-if="hasLinksWithItype(linkGroup)">
-                      <template slot="handle">
-                        <span class="fa fa-bars d-inline link-group-card-handle" />
-                      </template>
-                      <template slot="default">
-                        <link-group-card
-                          v-if="getLinkGroups.length"
-                          :query="lastSearchedTerm"
-                          :num-days="timeRangeInfo.numDays"
-                          :itype="searchItype"
-                          :num-hours="timeRangeInfo.numHours"
-                          :stop-date="timeRangeInfo.stopDate"
-                          :start-date="timeRangeInfo.startDate"
-                          :link-group="getLinkGroups[index]"
-                          :hide-links="hideLinks[linkGroup._id]"
-                        />
-                      </template>
-                    </reorder-list>
+                  <template v-if="hasVisibleLinkGroup">
+                    <template v-for="(linkGroup, index) in getLinkGroups">
+                      <reorder-list
+                          :index="index"
+                          @update="updateList"
+                          :key="linkGroup._id"
+                          :list="getLinkGroups"
+                          class="w-50 p-2 link-group"
+                          v-if="hasVisibleLink(linkGroup)">
+                        <template #handle>
+                          <span class="fa fa-bars d-inline link-group-card-handle" />
+                        </template>
+                        <template #default>
+                          <link-group-card
+                              v-if="getLinkGroups.length"
+                              :query="lastSearchedTerm"
+                              :num-days="timeRangeInfo.numDays"
+                              :itype="searchItype"
+                              :num-hours="timeRangeInfo.numHours"
+                              :stop-date="timeRangeInfo.stopDate"
+                              :start-date="timeRangeInfo.startDate"
+                              :link-group="getLinkGroups[index]"
+                              :hide-links="hideLinks[linkGroup._id]"
+                          />
+                        </template>
+                      </reorder-list>
+                    </template>
                   </template>
+                  <!-- no link groups message -->
+                  <span v-else-if="hasLinkGroupWithItype" class="p-1">
+                    There are no Link Groups that match your search.
+                  </span>
+                  <span v-else class="p-1">
+                    There are no Link Groups for the <strong>{{ this.searchItype }}</strong> iType.
+                    <a class="no-decoration" href="settings#linkgroups">Create one here!</a>
+                  </span> <!-- /no link groups message -->
                 </div> <!-- /link groups -->
               </div>
             </div>
@@ -462,6 +533,12 @@ export default {
     },
     navMarginHeightStyle () {
       return this.navHeightStyle + `margin-top: ${this.navMarginPixels}px;`;
+    },
+    hasLinkGroupWithItype () {
+      return this.getLinkGroups?.some(this.hasLinkWithItype);
+    },
+    hasVisibleLinkGroup () {
+      return this.getLinkGroups?.some(this.hasVisibleLink);
     }
   },
   watch: {
@@ -642,14 +719,13 @@ export default {
           }
         });
       }
-      const termSearched = this.searchTerm;
       const viewId = this.getSelectedView?._id;
-      Cont3xtService.search({ searchTerm: termSearched, skipCache: this.skipCache, tags: this.tags, viewId }).subscribe({
+      Cont3xtService.search({ searchTerm: this.searchTerm, skipCache: this.skipCache, tags: this.tags, viewId }).subscribe({
         next: (data) => {
           if (data.itype && !this.searchItype) {
             // determine the search type and save the search term
             // based of the first itype seen
-            this.lastSearchedTerm = termSearched;
+            this.lastSearchedTerm = data.query;
             this.searchItype = data.itype;
             this.filterLinks(this.linkSearchTerm);
           }
@@ -702,13 +778,15 @@ export default {
         }
       });
     },
-    hasLinksWithItype (linkGroup) {
-      for (const link of linkGroup.links) {
-        if (link.itypes.indexOf(this.searchItype) > -1) {
-          return true;
-        }
-      }
-      return false;
+    hasLinkWithItype (linkGroup) {
+      return linkGroup.links.some(link =>
+        link.url !== '----------' && link.itypes.includes(this.searchItype)
+      );
+    },
+    hasVisibleLink (linkGroup) {
+      return linkGroup.links.some((link, i) =>
+        link.url !== '----------' && link.itypes.includes(this.searchItype) && !this.hideLinks[linkGroup._id]?.[i]
+      );
     },
     shareLink () {
       let shareLink = window.location.href;
@@ -779,7 +857,7 @@ export default {
               } else {
                 break;
               }
-              x = x - 2;
+              x -= 2;
             }
             if (leftHeight > rightHeight) {
               delta = Math.abs(leftHeight - rightHeight);
@@ -795,7 +873,7 @@ export default {
               } else {
                 break;
               }
-              x = x - 2;
+              x -= 2;
             }
             if (rightHeight > leftHeight) {
               delta = Math.abs(rightHeight - leftHeight);
@@ -894,6 +972,14 @@ body.dark {
   overflow-x: hidden;
   padding-right: 8px;
   padding-left: 0.5rem;
+}
+
+.results-container.results-summary.results-help > div {
+  height: calc(100vh - 210px);
+  padding-left: 0;
+}
+.results-container.results-summary .well {
+  border-radius: 6px;
 }
 
 /* scroll to top btn for integration results */

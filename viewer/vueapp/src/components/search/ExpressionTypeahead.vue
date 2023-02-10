@@ -581,7 +581,7 @@ export default {
         }
         this.$http.get(url).then((response) => {
           this.loadingValues = false;
-          const escapedToken = lastToken.replace('$', '\\$');
+          const escapedToken = lastToken.replaceAll('$', '\\$');
           this.results = this.findMatch(escapedToken, response.data);
         }).catch((error) => {
           this.loadingValues = false;

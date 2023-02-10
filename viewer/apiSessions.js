@@ -94,6 +94,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
       info.order.split(',').forEach((item) => {
         const parts = item.split(':');
         const field = parts[0];
+        if (field === '__proto__') { return; }
 
         const obj = {};
         if (field === 'firstPacket') {
@@ -209,19 +210,17 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
         query.query.bool.filter.push(viewExpression);
         return continueBuildQueryCb(req, query, undefined, finalCb, queryOverride);
       } catch (err) {
-        console.log(`ERROR - User expression (${reqQuery.view}) doesn't compile -`, util.inspect(err, false, 50));
+        console.log('ERROR - User expression (%s) doesn\'t compile -', ArkimeUtil.sanitizeStr(reqQuery.view), util.inspect(err, false, 50));
         return continueBuildQueryCb(req, query, err, finalCb, queryOverride);
       }
     } catch (err) {
-      console.log(`ERROR - Can't find view (${reqQuery.view}) -`, util.inspect(err, false, 50));
+      console.log('ERROR - Can\'t find view (%s) -', ArkimeUtil.sanitizeStr(reqQuery.view), util.inspect(err, false, 50));
       return continueBuildQueryCb(req, query, err, finalCb, queryOverride);
     }
   }
 
   function csvListWriter (req, res, list, fields, pcapWriter, extension) {
     if (list.length > 0 && list[0].fields) {
-      list = list.sort((a, b) => { return a.fields.lastPacket - b.fields.lastPacket; });
-    } else if (list.length > 0 && list[0].fields) {
       list = list.sort((a, b) => { return a.fields.lastPacket - b.fields.lastPacket; });
     }
 
@@ -527,7 +526,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
           pcap.decode(buffer, obj);
         } catch (e) {
           obj = { ip: { p: 'Error decoding' + e } };
-          console.trace('loadSessionDetail error', e.stack);
+          console.trace('loadSessionDetail error', ArkimeUtil.sanitizeStr(e.stack));
         }
       } else {
         obj = { ip: { p: 'Empty' } };
@@ -655,7 +654,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
       } else if (!opcap.isOpen()) {
         Db.fileIdToFile(fields.node, fileNum, (file) => {
           if (!file) {
-            console.log("WARNING - Only have SPI data, PCAP file no longer available.  Couldn't look up in file table", fields.node + '-' + fileNum);
+            console.log("WARNING - Only have SPI data, PCAP file no longer available.  Couldn't look up %s-%s in files index", fields.node, fileNum);
             return nextCb('Only have SPI data, PCAP file no longer available for ' + fields.node + '-' + fileNum);
           }
           if (file.kekId) {
@@ -723,10 +722,6 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
 
   function sessionsPcapList (req, res, list, pcapWriter, extension) {
     if (list.length > 0 && list[0].fields) {
-      list = list.sort((a, b) => {
-        return a.fields.lastPacket - b.fields.lastPacket;
-      });
-    } else if (list.length > 0 && list[0].fields) {
       list = list.sort((a, b) => {
         return a.fields.lastPacket - b.fields.lastPacket;
       });
@@ -856,7 +851,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
         internals.sendSessionQueue.push(options, nextCb);
       }, () => {
         let sendPath = `api/session/${fields.node}/${sid}/send?saveId=${saveId}&cluster=${req.body.cluster}`;
-        if (req.body.tags) {
+        if (ArkimeUtil.isString(req.body.tags)) {
           sendPath += `&tags=${req.body.tags}`;
         }
 
@@ -1113,9 +1108,9 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
     }, (err) => {
       let text;
       if (whatToRemove === 'all') {
-        text = `Deletion PCAP and SPI of ${list.length} sessions complete. Give Elasticsearch 60 seconds to complete SPI deletion.`;
+        text = `Deletion PCAP and SPI of ${list.length} sessions complete. Give OpenSearch/Elasticsearch 60 seconds to complete SPI deletion.`;
       } else if (whatToRemove === 'spi') {
-        text = `Deletion SPI of ${list.length} sessions complete. Give Elasticsearch 60 seconds to complete SPI deletion.`;
+        text = `Deletion SPI of ${list.length} sessions complete. Give OpenSearch/Elasticsearch 60 seconds to complete SPI deletion.`;
       } else {
         text = `Scrubbing PCAP of ${list.length} sessions complete`;
       }
@@ -1195,7 +1190,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
   };
 
   /**
-   * The query params to build an Elasticsearch sessions query.
+   * The query params to build an OpenSearch/Elasticsearch sessions query.
    *
    * For long expressions use POST for client requests to the server.
    * When using POST the request body and request query are merged. Any duplicate parameters use the request body parameter.
@@ -1414,7 +1409,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
 
   sessionAPIs.sessionsListFromIds = (req, ids, fields, cb) => {
     let processSegments = false;
-    if (req && ((req.query.segments && req.query.segments.match(/^(time|all)$/)) || (req.query.segments && req.query.segments.match(/^(time|all)$/)))) {
+    if (req?.query && ArkimeUtil.isString(req.query.segments) && req.query.segments.match(/^(time|all)$/)) {
       if (fields.indexOf('rootId') === -1) { fields.push('rootId'); }
       processSegments = true;
     }
@@ -1772,7 +1767,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
             res.logCounts(response.data.length, response.recordsFiltered, response.recordsTotal);
             return res.send(response);
           } catch (e) {
-            console.trace(`ERROR - ${req.method} /api/sessions`, e.stack);
+            console.trace(`ERROR - ${req.method} /api/sessions`, ArkimeUtil.sanitizeStr(e.stack));
             response.error = e.toString();
             return res.send(response);
           }
@@ -1957,7 +1952,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
             res.logCounts(response.spi.count, response.recordsFiltered, response.total);
             return res.send(response);
           } catch (e) {
-            console.trace('fetch spiview error', e.stack);
+            console.trace('fetch spiview error', ArkimeUtil.sanitizeStr(e.stack));
             response.error = e.toString();
             return res.send(response);
           }
@@ -2557,7 +2552,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
     options.fields = ['*'];
     Db.getSession(req.params.id, options, (err, session) => {
       if (err || !session.found) {
-        console.log("Couldn't look up detail data, error for session " + ArkimeUtil.safeStr(req.params.id) + ' Error: ', err);
+        console.log("Couldn't look up detail data, error for session %s Error: ", ArkimeUtil.safeStr(req.params.id), err);
         return res.serverError(500, "Couldn't look up detail data, error for session " + ArkimeUtil.safeStr(req.params.id) + ' Error: ' + err);
       }
 
@@ -2585,11 +2580,11 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
           emailFields: Config.headers('headers-email')
         }, (err, data) => {
           if (err) {
-            console.trace(`ERROR - ${req.method} /api/session/${req.params.nodeName}/${req.params.id}/detail`, util.inspect(err, false, 50));
+            console.trace(`ERROR - ${req.method} /api/session/%s/%s/detail`, ArkimeUtil.sanitizeStr(req.params.nodeName), ArkimeUtil.sanitizeStr(req.params.id), util.inspect(err, false, 50));
             return req.next(err);
           }
           if (Config.debug > 1) {
-            console.log(`/api/session/${req.params.nodeName}/${req.params.id}/detail rendering`, data.replace(/>/g, '>\n'));
+            console.log('/api/session/%s/%s/detail rendering', ArkimeUtil.sanitizeStr(req.params.nodeName), ArkimeUtil.sanitizeStr(req.params.id), data.replace(/>/g, '>\n'));
           }
           res.send(data);
         });
@@ -2631,7 +2626,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    */
   sessionAPIs.addTags = (req, res) => {
     let tags = [];
-    if (req.body.tags) {
+    if (ArkimeUtil.isString(req.body.tags)) {
       tags = req.body.tags.replace(/[^-a-zA-Z0-9_:,]/g, '').split(',');
     }
 
@@ -2687,7 +2682,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    */
   sessionAPIs.removeTags = (req, res) => {
     let tags = [];
-    if (req.body.tags) {
+    if (ArkimeUtil.isString(req.body.tags)) {
       tags = req.body.tags.replace(/[^-a-zA-Z0-9_:,]/g, '').split(',');
     }
 
@@ -2833,7 +2828,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
     };
 
     if (Config.debug) {
-      console.log(`/api/session/entire/${req.params.nodeName}/${req.params.id}/pcap query`, JSON.stringify(query, false, 2));
+      console.log('/api/session/entire/%s/%s/pcap query', ArkimeUtil.sanitizeStr(req.params.nodeName), ArkimeUtil.sanitizeStr(req.params.id), JSON.stringify(query, false, 2));
     }
 
     Db.searchSessions(['sessions2-*', 'sessions3-*'], query, null, (err, data) => {
@@ -2944,21 +2939,21 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
       query.fields = ['node'];
 
       if (Config.debug) {
-        console.log(`/api/sessions/bodyhash/${req.params.hash} ${indices} query`, JSON.stringify(query, null, 2));
+        console.log(`/api/sessions/bodyhash/%s ${indices} query`, ArkimeUtil.sanitizeStr(req.params.hash), JSON.stringify(query, null, 2));
       }
 
       Db.searchSessions(indices, query, {}, (err, sessions) => {
         if (err) {
-          console.log(`ERROR - ${req.method} /api/sessions/bodyhash/${req.params.hash}`, util.inspect(err, false, 50));
+          console.log(`ERROR - ${req.method} /api/sessions/bodyhash/%s`, ArkimeUtil.sanitizeStr(req.params.hash), util.inspect(err, false, 50));
           res.status(400);
           res.end(err);
         } else if (sessions.error) {
-          console.log(`ERROR - ${req.method} /api/sessions/bodyhash/${req.params.hash}`, util.inspect(sessions.error, false, 50));
+          console.log(`ERROR - ${req.method} /api/sessions/bodyhash/%s`, ArkimeUtil.sanitizeStr(req.params.hash), util.inspect(sessions.error, false, 50));
           res.status(400);
           res.end(sessions.error);
         } else {
           if (Config.debug) {
-            console.log(`/api/sessions/bodyhash/${req.params.hash} result`, util.inspect(sessions, false, 50));
+            console.log('/api/sessions/bodyhash/%s result', ArkimeUtil.sanitizeStr(req.params.hash), util.inspect(sessions, false, 50));
           }
 
           if (sessions.hits.hits.length > 0) {
@@ -3170,9 +3165,11 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * @param {saveId} saveId - The sessionId to save the session.
    */
   sessionAPIs.receiveSession = (req, res) => {
-    if (!req.query.saveId) { return res.serverError(200, 'Missing saveId'); }
+    if (!ArkimeUtil.isString(req.query.saveId)) { return res.serverError(200, 'Missing saveId'); }
 
     req.query.saveId = req.query.saveId.replace(/[^-a-zA-Z0-9_]/g, '');
+
+    if (req.query.saveId.length === 0 || req.query.saveId === '__proto__') { return res.serverError(200, 'Bad saveId'); }
 
     // JS Static Variable :)
     this.saveIds = this.saveIds || {};

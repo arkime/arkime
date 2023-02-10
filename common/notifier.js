@@ -89,10 +89,11 @@ class Notifier {
    * @returns {string|undefined} - String message to describe check error or undefined if all is good
    */
   static #checkNotifierTypesAndFields (type, fields) {
+    type = type.toLowerCase();
     let foundNotifier;
     for (const n in Notifier.notifierTypes) {
       const notifier = Notifier.notifierTypes[n];
-      if (notifier.type === type.toLowerCase()) {
+      if (notifier.type === type) {
         foundNotifier = notifier;
       }
     }
@@ -168,7 +169,7 @@ class Notifier {
         return continueProcess(err, notifier.name);
       });
     } catch (err) {
-      console.log(`ERROR - Cannot find notifier (${id}):`, util.inspect(err, false, 50));
+      console.log('ERROR - Cannot find notifier (%s):', ArkimeUtil.sanitizeStr(id), util.inspect(err, false, 50));
       return continueProcess('Cannot find notifier, no alert can be issued');
     }
   }
@@ -208,8 +209,9 @@ class Notifier {
    * @name /notifiers
    * @returns {Notifier[]} notifiers - The notifiers that have been created.
    */
-  static apiGetNotifiers (req, res) {
-    const roles = [...req.user._allRoles.keys()]; // es requries an array for terms search
+  static async apiGetNotifiers (req, res) {
+    const allRoles = await req.user.getRoles();
+    const roles = [...allRoles.keys()]; // es requries an array for terms search
 
     const query = {
       sort: { created: { order: 'asc' } }
@@ -270,11 +272,11 @@ class Notifier {
    * @returns {Notifier} notifier - If successful, the notifier with name sanitized and created/user fields added.
    */
   static async apiCreateNotifier (req, res) {
-    if (!req.body.name) {
+    if (!ArkimeUtil.isString(req.body.name)) {
       return res.serverError(403, 'Missing a notifier name');
     }
 
-    if (!req.body.type) {
+    if (!ArkimeUtil.isString(req.body.type)) {
       return res.serverError(403, 'Missing notifier type');
     }
 
@@ -287,6 +289,10 @@ class Notifier {
     }
 
     req.body.name = req.body.name.replace(/[^-a-zA-Z0-9_: ]/g, '');
+
+    if (req.body.name.length === 0) {
+      return res.serverError(403, 'Notifier name empty');
+    }
 
     const errorMsg = Notifier.#checkNotifierTypesAndFields(req.body.type, req.body.fields);
     if (errorMsg) {
@@ -333,11 +339,11 @@ class Notifier {
    */
 
   static async apiUpdateNotifier (req, res) {
-    if (!req.body.name) {
+    if (!ArkimeUtil.isString(req.body.name)) {
       return res.serverError(403, 'Missing a notifier name');
     }
 
-    if (!req.body.type) {
+    if (!ArkimeUtil.isString(req.body.type)) {
       return res.serverError(403, 'Missing notifier type');
     }
 
@@ -350,6 +356,10 @@ class Notifier {
     }
 
     req.body.name = req.body.name.replace(/[^-a-zA-Z0-9_: ]/g, '');
+
+    if (req.body.name.length === 0) {
+      return res.serverError(403, 'Notifier name empty');
+    }
 
     const errorMsg = Notifier.#checkNotifierTypesAndFields(req.body.type, req.body.fields);
     if (errorMsg) {
@@ -385,11 +395,11 @@ class Notifier {
           text: 'Updated notifier successfully'
         }));
       } catch (err) {
-        console.log(`ERROR - ${req.method} /api/notifier/${req.params.id} (setNotifier)`, util.inspect(err, false, 50));
+        console.log(`ERROR - ${req.method} /api/notifier/%s (setNotifier)`, ArkimeUtil.sanitizeStr(req.params.id), util.inspect(err, false, 50));
         return res.serverError(500, 'Error updating notifier');
       }
     } catch (err) {
-      console.log(`ERROR - ${req.method} /api/notifier/${req.params.id} (getNotifier)`, util.inspect(err, false, 50));
+      console.log(`ERROR - ${req.method} /api/notifier/%s (getNotifier)`, ArkimeUtil.sanitizeStr(req.params.id), util.inspect(err, false, 50));
       return res.serverError(500, 'Fetching notifier to update failed');
     }
   }
@@ -417,11 +427,11 @@ class Notifier {
           text: 'Deleted notifier successfully'
         }));
       } catch (err) {
-        console.log(`ERROR - ${req.method} /api/notifier/${req.params.id} (deleteNotifier)`, util.inspect(err, false, 50));
+        console.log(`ERROR - ${req.method} /api/notifier/%s (deleteNotifier)`, ArkimeUtil.sanitizeStr(req.params.id), util.inspect(err, false, 50));
         return res.serverError(500, 'Error deleting notifier');
       }
     } catch (err) {
-      console.log(`ERROR - ${req.method} /api/notifier/${req.params.id} (deleteNotifier)`, util.inspect(err, false, 50));
+      console.log(`ERROR - ${req.method} /api/notifier/%s (deleteNotifier)`, ArkimeUtil.sanitizeStr(req.params.id), util.inspect(err, false, 50));
       return res.serverError(500, 'Fetching notifier to delete failed');
     }
   }

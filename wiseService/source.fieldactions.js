@@ -28,7 +28,7 @@ class FieldActionsSource extends WISESource {
   constructor (api, section) {
     super(api, section, { });
 
-    if (section === 'right-click') {
+    if (section === 'field-actions') {
       this.process(api.getConfigSection(section));
       return;
     }
@@ -265,7 +265,7 @@ exports.initSource = function (api) {
     ]
   });
 
-  const sections = api.getConfigSections().filter((e) => { return e.match(/^(right-click$|right-click:|fieldactions:)/); });
+  const sections = api.getConfigSections().filter((e) => { return e.match(/^(field-actions$|fieldactions:)/); });
   sections.forEach((section) => {
     return new FieldActionsSource(api, section);
   });

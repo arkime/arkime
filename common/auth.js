@@ -22,24 +22,61 @@ const crypto = require('crypto');
 const passport = require('passport');
 const DigestStrategy = require('passport-http').DigestStrategy;
 const iptrie = require('iptrie');
+const CustomStrategy = require('passport-custom');
+const express = require('express');
+const expressSession = require('express-session');
+const uuid = require('uuid').v4;
+const OIDC = require('openid-client');
 
 class Auth {
-  static authFunc;
   static debug;
   static mode;
-  static userNameHeader;
-  static regressionTests;
+  static regressionTests = false;
   static passwordSecret;
   static passwordSecret256;
 
-  static #httpRealm;
+  static #userNameHeader;
   static #serverSecret256;
   static #basePath;
   static #requiredAuthHeader;
   static #requiredAuthHeaderVal;
   static #userAutoCreateTmpl;
   static #userAuthIps;
+  static #strategies;
+  static #s2sRegressionTests;
+  static #authRouter = express.Router();
+  static #authConfig;
+  static #passportAuthOptions = { session: false };
 
+  // ----------------------------------------------------------------------------
+  /**
+   * Set up the app.use() calls for the express application. Call in chain where
+   * auth should be installed.
+   */
+  static app (app, options) {
+    app.use(Auth.#authRouter);
+
+    if (options?.doAuth !== false) {
+      app.use(Auth.doAuth);
+    }
+  }
+
+  // ----------------------------------------------------------------------------
+  /**
+   * Initialize the Auth subsystem
+   * @param {boolean} options.debug=0 The debug level to use for Auth component
+   * @param {string} options.mode=anonymous What auth mode to run in
+   * @param {string} options.basePath=/ What the web base path is for the app
+   * @param {string} options.userNameHeader In header auth mode, which http header has the user id
+   * @param {string} options.passwordSecret=password For digest mode, what password to use to encrypt the password hash
+   * @param {string} options.serverSecret=passwordSecret What password is used to encrypt S2S auth
+   * @param {string} options.requiredAuthHeader In header auth mode, another header can be required
+   * @param {string} options.requiredAuthHeaderVal In header auth mode, a comma separated list of values for requiredAuthHeader, if none are matched the user will not be authorized
+   * @param {string} options.userAutoCreateTmpl A javascript string function that is used to create users that don't exist
+   * @param {string} options.userAuthIps A comma separated list of CIDRs that users are allowed from
+   * @param {boolean} options.s2s Support s2s auth also
+   * @param {object} options.authConfig options specific to each auth mode;
+   */
   static initialize (options) {
     if (options.debug > 1) {
       console.log('Auth.initialize', options);
@@ -48,8 +85,7 @@ class Auth {
     Auth.debug = options.debug ?? 0;
     Auth.mode = options.mode ?? 'anonymous';
     Auth.#basePath = options.basePath ?? '/';
-    Auth.userNameHeader = options.userNameHeader;
-    Auth.#httpRealm = options.httpRealm ?? 'Moloch';
+    Auth.#userNameHeader = options.userNameHeader;
     Auth.passwordSecret = options.passwordSecret ?? 'password';
     Auth.passwordSecret256 = crypto.createHash('sha256').update(Auth.passwordSecret).digest();
     if (options.serverSecret) {
@@ -61,7 +97,8 @@ class Auth {
     Auth.#requiredAuthHeaderVal = options.requiredAuthHeaderVal;
     Auth.#userAutoCreateTmpl = options.userAutoCreateTmpl;
     Auth.#userAuthIps = new iptrie.IPTrie();
-    Auth.regressionTests = false;
+    Auth.#s2sRegressionTests = options.s2sRegressionTests;
+    Auth.#authConfig = options.authConfig;
 
     if (options.userAuthIps) {
       for (const cidr of options.userAuthIps.split(',')) {
@@ -79,55 +116,359 @@ class Auth {
       Auth.#userAuthIps.add('::', 0, 1);
     }
 
-    // Initialize passport in both digest and header mode since header mode will fallback to digest
-    if (Auth.mode === 'digest' || Auth.mode === 'header') {
-      passport.use(new DigestStrategy({ qop: 'auth', realm: Auth.#httpRealm },
-        function (userid, done) {
-          if (userid.startsWith('role:')) {
-            console.log(`User ${userid} Can not authenticate with role`);
-            return done('Can not authenticate with role');
-          }
-          User.getUserCache(userid, async (err, user) => {
-            if (err) { return done(err); }
-            if (!user) { console.log('User', userid, "doesn't exist"); return done(null, false); }
-            if (!user.enabled) { console.log('User', userid, 'not enabled'); return done('Not enabled'); }
-
-            await user.expandRoles();
-            user.setLastUsed();
-            return done(null, user, { ha1: Auth.store2ha1(user.passStore) });
-          });
-        },
-        function (poptions, done) {
-          // TODO:  Should check nonce here
-          return done(null, true);
-        }
-      ));
+    function check (field, str) {
+      if (!ArkimeUtil.isString(Auth.#authConfig[field])) {
+        console.log(`ERROR - ${str} missing from config file`);
+        process.exit();
+      }
     }
 
+    let sessionAuth = false;
     switch (Auth.mode) {
     case 'anonymous':
-      Auth.authFunc = Auth.anonymousAuth;
+      Auth.#strategies = ['anonymous'];
       break;
     case 'anonymousWithDB':
-      Auth.authFunc = Auth.anonymousWithDBAuth;
+      Auth.#strategies = ['anonymousWithDB'];
       break;
     case 'digest':
-      Auth.authFunc = Auth.digestAuth;
+      check('httpRealm');
+      Auth.#strategies = ['digest'];
+      break;
+    case 'oidc':
+      check('userIdField', 'authUserIdField');
+      check('discoverURL', 'authDiscoverURL');
+      check('clientId', 'authClientId');
+      check('clientSecret', 'authClientSecret');
+      check('redirectURIs', 'authRedirectURIs');
+      Auth.#strategies = ['oidc'];
+      sessionAuth = true;
       break;
     case 'header':
-      Auth.authFunc = Auth.headerAuth;
+      Auth.#strategies = ['header', 'digest'];
       break;
     case 'regressionTests':
-      Auth.authFunc = Auth.regressionTestsAuth;
+      Auth.#strategies = ['regressionTests'];
       Auth.regressionTests = true;
       break;
     }
+
+    if (options.s2s) {
+      Auth.#strategies.unshift('s2s');
+    }
+
+    if (Auth.debug > 0) {
+      console.log('AUTH strategies', Auth.#strategies);
+    }
+
+    Auth.#registerStrategies();
+
+    // If sessionAuth is required enable the express and passport sessions
+    if (sessionAuth) {
+      Auth.#passportAuthOptions = { session: true, successRedirect: '/', failureRedirect: '/fail' };
+      Auth.#authRouter.get('/fail', (req, res) => { res.send('User not found'); });
+      Auth.#authRouter.use(expressSession({
+        secret: uuid(),
+        resave: false,
+        saveUninitialized: true,
+        cookie: { path: Auth.#basePath, secure: true }
+      }));
+      Auth.#authRouter.use(passport.initialize());
+      Auth.#authRouter.use(passport.session());
+
+      // only save the userId to passport session
+      passport.serializeUser(function (user, done) {
+        done(null, user.userId);
+      });
+
+      // load the user using the userid in the passport session
+      passport.deserializeUser(function (userId, done) {
+        User.getUserCache(userId, async (err, user) => {
+          if (err) { return done('ERROR - passport-session getUser - user: ' + userId + ' err:' + err); }
+          if (!user) { return done(userId + " doesn't exist"); }
+          if (!user.enabled) { return done(userId + ' not enabled'); }
+
+          user.setLastUsed();
+          return done(null, user);
+        });
+      });
+    } else {
+      Auth.#authRouter.use(passport.initialize());
+    }
   }
 
+  // ----------------------------------------------------------------------------
   static isAnonymousMode () {
     return Auth.mode === 'anonymous' || Auth.mode === 'anonymousWithDB';
   }
 
+  // ----------------------------------------------------------------------------
+  /* Register all the strategies that are supported */
+  static async #registerStrategies () {
+    // ----------------------------------------------------------------------------
+    passport.use('anonymous', new CustomStrategy((req, done) => {
+      const user = Object.assign(new User(), {
+        userId: 'anonymous',
+        enabled: true,
+        webEnabled: true,
+        headerAuthEnabled: false,
+        emailSearch: true,
+        removeEnabled: true,
+        packetSearch: true,
+        settings: {},
+        welcomeMsgNum: 1,
+        roles: ['superAdmin']
+      });
+      user.expandFromRoles();
+      return done(null, user);
+    }));
+
+    // ----------------------------------------------------------------------------
+    passport.use('anonymousWithDB', new CustomStrategy((req, done) => {
+      // Setup anonymous user
+      const user = Object.assign(new User(), {
+        userId: 'anonymous',
+        enabled: true,
+        webEnabled: true,
+        headerAuthEnabled: false,
+        emailSearch: true,
+        removeEnabled: true,
+        packetSearch: true,
+        settings: {},
+        welcomeMsgNum: 1,
+        roles: ['superAdmin']
+      });
+      user.expandFromRoles();
+
+      User.getUserCache('anonymous', (err, dbUser) => {
+        // Replace certain fields if available from db
+        if (user) {
+          user.setLastUsed();
+          user.settings = dbUser.settings;
+          user.views = dbUser.views;
+          user.columnConfigs = dbUser.columnConfigs;
+          user.spiviewFieldConfigs = dbUser.spiviewFieldConfigs;
+          user.tableStates = dbUser.tableStates;
+          user.cont3xt = dbUser.cont3xt;
+        }
+        return done(null, user);
+      });
+    }));
+
+    // ----------------------------------------------------------------------------
+    passport.use('digest', new DigestStrategy({ qop: 'auth', realm: Auth.#authConfig.httpRealm }, (userId, done) => {
+      if (userId.startsWith('role:')) {
+        console.log(`AUTH: User ${userId} Can not authenticate with role`);
+        return done('Can not authenticate with role');
+      }
+      User.getUserCache(userId, async (err, user) => {
+        if (err) { return done(err); }
+        if (!user) { console.log('AUTH: User', userId, "doesn't exist"); return done(null, false); }
+        if (!user.enabled) { console.log('AUTH: User', userId, 'not enabled'); return done('Not enabled'); }
+
+        user.setLastUsed();
+        return done(null, user, { ha1: Auth.store2ha1(user.passStore) });
+      });
+    }, (poptions, done) => {
+      return done(null, true);
+    }));
+
+    // ----------------------------------------------------------------------------
+    passport.use('header', new CustomStrategy((req, done) => {
+      if (Auth.#userNameHeader !== undefined && req.headers[Auth.#userNameHeader] === undefined) {
+        if (Auth.debug > 0) {
+          console.log(`AUTH: didn't find ${Auth.#userNameHeader} in the headers`, req.headers);
+        }
+        return done(null, false);
+      }
+
+      if (Auth.#requiredAuthHeader !== undefined && Auth.#requiredAuthHeaderVal !== undefined) {
+        const authHeader = req.headers[Auth.#requiredAuthHeader];
+        if (authHeader === undefined) {
+          return done('Missing authorization header');
+        }
+        let authorized = false;
+        authHeader.split(',').forEach(headerVal => {
+          if (headerVal.trim() === Auth.#requiredAuthHeaderVal) {
+            authorized = true;
+          }
+        });
+        if (!authorized) {
+          return done('Not authorized');
+        }
+      }
+
+      const userId = req.headers[Auth.#userNameHeader].trim();
+      if (userId === '') {
+        return done('User name header is empty');
+      }
+
+      if (userId.startsWith('role:')) {
+        return done('Can not authenticate with role');
+      }
+
+      async function headerAuthCheck (err, user) {
+        if (err || !user) { return done('User not found'); }
+        if (!user.enabled) { return done('User not enabled'); }
+        if (!user.headerAuthEnabled) { return done('User header auth not enabled'); }
+
+        user.setLastUsed();
+        return done(null, user);
+      }
+
+      User.getUserCache(userId, (err, user) => {
+        if (Auth.#userAutoCreateTmpl === undefined) {
+          return headerAuthCheck(err, user);
+        } else if ((err && err.toString().includes('Not Found')) || (!user)) { // Try dynamic creation
+          Auth.#dynamicCreate(userId, req.headers, headerAuthCheck);
+        } else {
+          return headerAuthCheck(err, user);
+        }
+      });
+    }));
+
+    // ----------------------------------------------------------------------------
+    if (Auth.mode === 'oidc') {
+      const issuer = await OIDC.Issuer.discover(Auth.#authConfig.discoverURL);
+      const client = new issuer.Client({
+        client_id: Auth.#authConfig.clientId,
+        client_secret: Auth.#authConfig.clientSecret,
+        redirect_uris: Auth.#authConfig.redirectURIs.split(','),
+        token_endpoint_auth_method: 'client_secret_post'
+      });
+
+      passport.use('oidc', new OIDC.Strategy({
+        client
+      }, (tokenSet, userinfo, done) => {
+        const userId = userinfo[Auth.#authConfig.userIdField];
+
+        if (userId === undefined) {
+          if (Auth.debug > 0) {
+            console.log(`AUTH: didn't find ${Auth.#authConfig.userIdField} in the userinfo`, userinfo);
+          }
+          return done(null, false);
+        }
+
+        async function oidcAuthCheck (err, user) {
+          if (err || !user) { return done('User not found'); }
+          if (!user.enabled) { return done('User not enabled'); }
+          if (!user.headerAuthEnabled) { return done('User header auth not enabled'); }
+
+          user.setLastUsed();
+          return done(null, user);
+        }
+
+        User.getUserCache(userId, (err, user) => {
+          if (Auth.#userAutoCreateTmpl === undefined) {
+            return oidcAuthCheck(err, user);
+          } else if ((err && err.toString().includes('Not Found')) || (!user)) { // Try dynamic creation
+            Auth.#dynamicCreate(userId, userinfo, oidcAuthCheck);
+          } else {
+            return oidcAuthCheck(err, user);
+          }
+        });
+      }));
+    }
+
+    // ----------------------------------------------------------------------------
+    passport.use('regressionTests', new CustomStrategy((req, done) => {
+      const userId = req?.query?.molochRegressionUser ?? 'anonymous';
+      if (userId.startsWith('role:')) {
+        return done('Can not authenticate with role');
+      }
+
+      User.getUserCache(userId, (err, user) => {
+        if (user) {
+          user.setLastUsed();
+          return done(null, user);
+        }
+        user = Object.assign(new User(), {
+          userId,
+          enabled: true,
+          webEnabled: true,
+          headerAuthEnabled: false,
+          emailSearch: true,
+          removeEnabled: true,
+          packetSearch: true,
+          settings: {},
+          welcomeMsgNum: 1
+        });
+
+        if (userId === 'superAdmin') {
+          user.roles = ['superAdmin'];
+        } else if (userId === 'anonymous') {
+          user.roles = ['arkimeAdmin', 'cont3xtUser', 'parliamentUser', 'usersAdmin', 'wiseUser'];
+        } else {
+          user.roles = ['arkimeUser', 'cont3xtUser', 'parliamentUser', 'wiseUser'];
+        }
+
+        user.expandFromRoles();
+        return done(null, user);
+      });
+    }));
+
+    // ----------------------------------------------------------------------------
+    passport.use('s2s', new CustomStrategy((req, done) => {
+      if (req.headers['x-arkime-auth'] === undefined) {
+        return done(null, false);
+      }
+
+      let obj;
+      try {
+        if (Auth.#s2sRegressionTests) {
+          obj = JSON.parse(req.headers['x-arkime-auth']);
+        } else {
+          obj = Auth.auth2obj(req.headers['x-arkime-auth']);
+        }
+      } catch (e) {
+        console.log('AUTH: x-arkime-auth corrupt', e);
+        return done('S2S auth header corrupt');
+      }
+
+      if (!ArkimeUtil.isString(obj.path)) {
+        return done('S2S bad path');
+      }
+
+      if (!ArkimeUtil.isString(obj.user)) {
+        return done('S2S bad user');
+      }
+
+      if (typeof (obj.date) !== 'number') {
+        return done('S2S bad date');
+      }
+
+      if (obj.user.startsWith('role:')) {
+        return done('Can not authenticate with role');
+      }
+
+      obj.path = obj.path.replace(Auth.#basePath, '/');
+      if (obj.path !== req.url) {
+        console.log('ERROR - mismatch url', obj.path, ArkimeUtil.sanitizeStr(req.url));
+        return done('Unauthorized based on bad url');
+      }
+
+      if (Math.abs(Date.now() - obj.date) > 120000) { // Request has to be +- 2 minutes
+        console.log('ERROR - Denying server to server based on timestamp, are clocks out of sync?', Date.now(), obj.date);
+        return done('Unauthorized based on timestamp - check that all Arkime viewer machines have accurate clocks');
+      }
+
+      // Don't look up user for receiveSession
+      if (req.url.match(/^\/receiveSession/) || req.url.match(/^\/api\/sessions\/receive/)) {
+        return done(null, {});
+      }
+
+      User.getUserCache(obj.user, async (err, user) => {
+        if (err) { return done('ERROR - x-arkime getUser - user: ' + obj.user + ' err:' + err); }
+        if (!user) { return done(obj.user + " doesn't exist"); }
+        if (!user.enabled) { return done(obj.user + ' not enabled'); }
+
+        user.setLastUsed();
+        return done(null, user);
+      });
+    }));
+  }
+
+  // ----------------------------------------------------------------------------
   static #checkIps (req, res) {
     if (req.ip.includes(':')) {
       if (!Auth.#userAuthIps.find(req.ip)) {
@@ -148,98 +489,46 @@ class Auth {
     return 0;
   }
 
-  static anonymousAuth (req, res, next) {
-    req.user = Object.assign(new User(), {
-      userId: 'anonymous',
-      enabled: true,
-      webEnabled: true,
-      headerAuthEnabled: false,
-      emailSearch: true,
-      removeEnabled: true,
-      packetSearch: true,
-      settings: {},
-      welcomeMsgNum: 1,
-      roles: ['superAdmin']
-    });
-    req.user.expandRoles();
-    return next();
-  }
-
-  static anonymousWithDBAuth (req, res, next) {
-    req.user = Object.assign(new User(), {
-      userId: 'anonymous',
-      enabled: true,
-      webEnabled: true,
-      headerAuthEnabled: false,
-      emailSearch: true,
-      removeEnabled: true,
-      packetSearch: true,
-      settings: {},
-      welcomeMsgNum: 1,
-      roles: ['superAdmin']
-    });
-    req.user.expandRoles();
-    User.getUserCache('anonymous', (err, user) => {
-      if (user) {
-        req.user.setLastUsed();
-        req.user.settings = user.settings;
-        req.user.views = user.views;
-        req.user.columnConfigs = user.columnConfigs;
-        req.user.spiviewFieldConfigs = user.spiviewFieldConfigs;
-        req.user.tableStates = user.tableStates;
-        req.user.cont3xt = user.cont3xt;
-      }
-      return next();
-    });
-  }
-
-  static regressionTestsAuth (req, res, next) {
-    const userId = req.query.molochRegressionUser ?? 'anonymous';
-
-    if (userId.startsWith('role:')) {
-      return res.status(401).send(JSON.stringify({ success: false, text: 'Can not authenticate with role' }));
+  // ----------------------------------------------------------------------------
+  static #dynamicCreate (userId, vars, cb) {
+    const nuser = JSON.parse(new Function('return `' + Auth.#userAutoCreateTmpl + '`;').call(vars));
+    if (nuser.passStore === undefined) {
+      nuser.passStore = Auth.pass2store(nuser.userId, crypto.randomBytes(48));
+    }
+    if (nuser.userId !== userId) {
+      console.log(`WARNING - the userNameHeader (${Auth.#userNameHeader}) said to use '${userId}' while the userAutoCreateTmpl returned '${nuser.userId}', reseting to use '${userId}'`);
+      nuser.userId = userId;
+    }
+    if (nuser.userName === undefined || nuser.userName === 'undefined') {
+      console.log(`WARNING - The userAutoCreateTmpl didn't set a userName, using userId for ${nuser.userId}`);
+      nuser.userName = nuser.userId;
     }
 
-    User.getUserCache(userId, (err, user) => {
-      if (user) {
-        req.user = user;
-        req.user.setLastUsed();
-        return next();
-      }
-      req.user = Object.assign(new User(), {
-        userId,
-        enabled: true,
-        webEnabled: true,
-        headerAuthEnabled: false,
-        emailSearch: true,
-        removeEnabled: true,
-        packetSearch: true,
-        settings: {},
-        welcomeMsgNum: 1
-      });
-
-      if (userId === 'superAdmin') {
-        req.user.roles = ['superAdmin'];
-      } else if (userId === 'anonymous') {
-        req.user.roles = ['arkimeAdmin', 'cont3xtUser', 'parliamentUser', 'usersAdmin', 'wiseUser'];
+    User.setUser(userId, nuser, (err, info) => {
+      if (err) {
+        console.log('OpenSearch/Elasticsearch error adding user: (%s):(%s):', userId, JSON.stringify(nuser), err);
       } else {
-        req.user.roles = ['arkimeUser', 'cont3xtUser', 'parliamentUser', 'wiseUser'];
+        console.log('Added user: %s:%s', userId, JSON.stringify(nuser));
       }
-
-      req.user.expandRoles();
-      return next();
+      return User.getUserCache(userId, cb);
     });
   }
 
-  static digestAuth (req, res, next) {
+  // ----------------------------------------------------------------------------
+  static doAuth (req, res, next) {
     if (Auth.#checkIps(req, res)) {
       return;
+    }
+
+    if (typeof (req.isAuthenticated) === 'function' && req.isAuthenticated()) {
+      return next();
     }
 
     if (Auth.#basePath !== '/') {
       req.url = req.url.replace('/', Auth.#basePath);
     }
-    passport.authenticate('digest', { session: false })(req, res, function (err) {
+
+    passport.authenticate(Auth.#strategies, Auth.#passportAuthOptions)(req, res, function (err) {
       if (Auth.#basePath !== '/') {
         req.url = req.url.replace(Auth.#basePath, '/');
       }
@@ -252,128 +541,7 @@ class Auth {
     });
   }
 
-  static headerAuth (req, res, next) {
-    if (Auth.#checkIps(req, res)) {
-      return;
-    }
-
-    if (req.headers[Auth.userNameHeader] === undefined) {
-      if (Auth.debug > 0) {
-        console.log(`AUTH: looking for header ${Auth.userNameHeader} in the headers`, req.headers);
-      }
-      res.status(403);
-      return res.send(JSON.stringify({ success: false, text: 'Username not found' }));
-    }
-
-    if (Auth.#requiredAuthHeader !== undefined && Auth.#requiredAuthHeaderVal !== undefined) {
-      const authHeader = req.headers[Auth.#requiredAuthHeader];
-      if (authHeader === undefined) {
-        return res.send('Missing authorization header');
-      }
-      let authorized = false;
-      authHeader.split(',').forEach(headerVal => {
-        if (headerVal.trim() === Auth.#requiredAuthHeaderVal) {
-          authorized = true;
-        }
-      });
-      if (!authorized) {
-        return res.send('Not authorized');
-      }
-    }
-
-    const userId = req.headers[Auth.userNameHeader];
-    if (userId === '') {
-      return res.status(401).send(JSON.stringify({ success: false, text: 'User name header is empty' }));
-    }
-
-    if (userId.startsWith('role:')) {
-      return res.status(401).send(JSON.stringify({ success: false, text: 'Can not authenticate with role' }));
-    }
-
-    async function headerAuthCheck (err, user) {
-      if (err || !user) { return res.send(JSON.stringify({ success: false, text: 'User not found' })); }
-      if (!user.enabled) { return res.send(JSON.stringify({ success: false, text: 'User not enabled' })); }
-      if (!user.headerAuthEnabled) { return res.send(JSON.stringify({ success: false, text: 'User header auth not enabled' })); }
-
-      req.user = user;
-      await req.user.expandRoles();
-      req.user.setLastUsed();
-      return next();
-    }
-
-    User.getUserCache(userId, (err, user) => {
-      if (Auth.#userAutoCreateTmpl === undefined) {
-        return headerAuthCheck(err, user);
-      } else if ((err && err.toString().includes('Not Found')) || (!user)) { // Try dynamic creation
-        const nuser = JSON.parse(new Function('return `' +
-               Auth.#userAutoCreateTmpl + '`;').call(req.headers));
-        if (nuser.passStore === undefined) {
-          nuser.passStore = Auth.pass2store(nuser.userId, crypto.randomBytes(48));
-        }
-        if (nuser.userId !== userId) {
-          console.log(`WARNING - the userNameHeader (${Auth.userNameHeader}) said to use '${userId}' while the userAutoCreateTmpl returned '${nuser.userId}', reseting to use '${userId}'`);
-          nuser.userId = userId;
-        }
-        if (nuser.userName === undefined || nuser.userName === 'undefined') {
-          console.log(`WARNING - The userAutoCreateTmpl didn't set a userName, using userId for ${nuser.userId}`);
-          nuser.userName = nuser.userId;
-        }
-
-        User.setUser(userId, nuser, (err, info) => {
-          if (err) {
-            console.log('Elastic search error adding user: (' + userId + '):(' + JSON.stringify(nuser) + '):' + err);
-          } else {
-            console.log('Added user:' + userId + ':' + JSON.stringify(nuser));
-          }
-          return User.getUserCache(userId, headerAuthCheck);
-        });
-      } else {
-        return headerAuthCheck(err, user);
-      }
-    });
-  }
-
-  static s2sAuth (req, res, next) {
-    const obj = Auth.auth2obj(req.headers['x-arkime-auth'] || req.headers['x-moloch-auth']);
-    obj.path = obj.path.replace(Auth.#basePath, '/');
-
-    if (obj.user.startsWith('role:')) {
-      return res.send('Can not authenticate with role');
-    }
-
-    if (obj.path !== req.url) {
-      console.log('ERROR - mismatch url', obj.path, req.url);
-      return res.send('Unauthorized based on bad url');
-    }
-
-    if (Math.abs(Date.now() - obj.date) > 120000) { // Request has to be +- 2 minutes
-      console.log('ERROR - Denying server to server based on timestamp, are clocks out of sync?', Date.now(), obj.date);
-      return res.send('Unauthorized based on timestamp - check that all Arkime viewer machines have accurate clocks');
-    }
-
-    // Don't look up user for receiveSession
-    if (req.url.match(/^\/receiveSession/) || req.url.match(/^\/api\/sessions\/receive/)) {
-      return next();
-    }
-
-    User.getUserCache(obj.user, async (err, user) => {
-      if (err) { return res.send('ERROR - x-arkime getUser - user: ' + obj.user + ' err:' + err); }
-      if (!user) { return res.send(obj.user + " doesn't exist"); }
-      if (!user.enabled) { return res.send(obj.user + ' not enabled'); }
-
-      await user.expandRoles();
-      req.user = user;
-      req.user.setLastUsed();
-      return next();
-    });
-    return;
-  }
-
-  // Need this wrapper because app.use seems to save the value and not the array
-  static doAuth (req, res, next) {
-    return Auth.authFunc(req, res, next);
-  }
-
+  // ----------------------------------------------------------------------------
   static md5 (str, encoding) {
     return crypto
       .createHash('md5')
@@ -381,21 +549,28 @@ class Auth {
       .digest(encoding || 'hex');
   };
 
-  // Hash (MD5) and encrypt the password before storing.
-  // Encryption is used because ES is insecure by default and we don't want others adding accounts.
-  static pass2store (userid, password) {
-    // md5 is required because of http digest
-    const m = Auth.md5(userid + ':' + Auth.#httpRealm + ':' + password);
-
-    // New style with IV: IV.E
+  // ----------------------------------------------------------------------------
+  // Encrypt the hashed password for storing
+  static ha12store (ha1) {
+    // IV.E
     const iv = crypto.randomBytes(16);
     const c = crypto.createCipheriv('aes-256-cbc', Auth.passwordSecret256, iv);
-    let e = c.update(m, 'binary', 'hex');
+    let e = c.update(ha1, 'binary', 'hex');
     e += c.final('hex');
     return iv.toString('hex') + '.' + e;
+  }
+
+  // ----------------------------------------------------------------------------
+  // Hash (MD5) and encrypt the password before storing.
+  // Encryption is used because OpenSearch/Elasticsearch is insecure by default and we don't want others adding accounts.
+  static pass2store (userId, password) {
+    // md5 is required because of http digest
+    return Auth.ha12store(Auth.md5(userId + ':' + Auth.#authConfig.httpRealm + ':' + password));
   };
 
+  // ----------------------------------------------------------------------------
   // Decrypt the encrypted hashed password, it is still hashed
+  // Support 2 styles of decryption
   static store2ha1 (passstore) {
     try {
       const parts = passstore.split('.');
@@ -419,9 +594,10 @@ class Auth {
     }
   };
 
+  // ----------------------------------------------------------------------------
   // Encrypt an object into an auth string
+  // IV.E.H
   static obj2auth (obj, secret) {
-    // New style with IV: IV.E.H
     if (secret) {
       secret = crypto.createHash('sha256').update(secret).digest();
     } else {
@@ -430,14 +606,16 @@ class Auth {
 
     const iv = crypto.randomBytes(16);
     const c = crypto.createCipheriv('aes-256-cbc', secret, iv);
-    let e = c.update(JSON.stringify(obj), 'binary', 'hex');
+    let e = c.update(JSON.stringify(obj), 'utf8', 'hex');
     e += c.final('hex');
     e = iv.toString('hex') + '.' + e;
     const h = crypto.createHmac('sha256', secret).update(e).digest('hex');
     return e + '.' + h;
   };
 
+  // ----------------------------------------------------------------------------
   // Decrypt the auth string into an object
+  // IV.E.H
   static auth2obj (auth, secret) {
     const parts = auth.split('.');
 
@@ -445,7 +623,6 @@ class Auth {
       throw new Error(`Unsupported auth2obj ${parts.length}`);
     }
 
-    // New style with IV: IV.E.H
     if (secret) {
       secret = crypto.createHash('sha256').update(secret).digest();
     } else {
@@ -461,8 +638,8 @@ class Auth {
 
     try {
       const c = crypto.createDecipheriv('aes-256-cbc', secret, Buffer.from(parts[0], 'hex'));
-      let d = c.update(parts[1], 'hex', 'binary');
-      d += c.final('binary');
+      let d = c.update(parts[1], 'hex', 'utf8');
+      d += c.final('utf8');
       return JSON.parse(d);
     } catch (error) {
       console.log(error);
@@ -470,6 +647,7 @@ class Auth {
     }
   };
 
+  // ----------------------------------------------------------------------------
   static addS2SAuth (options, user, node, path, secret) {
     if (!options.headers) {
       options.headers = {};
@@ -483,6 +661,8 @@ class Auth {
   }
 }
 
+// ----------------------------------------------------------------------------
 module.exports = Auth;
 
 const User = require('../common/user');
+const ArkimeUtil = require('../common/arkimeUtil');

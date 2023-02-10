@@ -13,12 +13,12 @@
 #define BSB_INIT(b, buffer, size)                 \
 do {                                              \
     (b).buf = (unsigned char*)buffer;             \
-    (b).ptr = (unsigned char*)buffer;             \
+    (b).ptr = (b).buf;                            \
     int s = (int)size;                            \
-    if ((buffer == NULL) || (s < 0))              \
+    if (((b).buf == NULL) || (s < 0))             \
         (b).end = 0;                              \
     else                                          \
-        (b).end = (unsigned char*)buffer + size;  \
+        (b).end = (b).buf + size;                 \
 } while (0)
 
 #define BSB_SET_ERROR(b) ((b).end = NULL)

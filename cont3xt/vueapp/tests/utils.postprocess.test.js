@@ -19,6 +19,8 @@ test('applyPostProcess', () => {
     settingsTestValue: ['test1', 'test2', 'test3']
   };
 
+  const shared = { data, uiSettings };
+
   const ifAndSettingsPostProcess = [
     {
       if: {
@@ -31,7 +33,7 @@ test('applyPostProcess', () => {
       else: 'failed >:O'
     }
   ];
-  expect(applyPostProcess(ifAndSettingsPostProcess, data.settingsTestValue, data, uiSettings)).toBe('passed :)');
+  expect(applyPostProcess(ifAndSettingsPostProcess, data.settingsTestValue, shared)).toBe('passed :)');
 
   const mapFilterTemplateAndDataPostProcess = [
     { filter: { value: { with: { pathInto: 'age' } }, greaterThan: { data: 'nested.personAgeMinimumTestValue' } } },
@@ -39,6 +41,6 @@ test('applyPostProcess', () => {
       map: { template: '<value.name> - <value.age>' }
     }
   ];
-  expect(applyPostProcess(mapFilterTemplateAndDataPostProcess, data.peopleTestValue, data, uiSettings))
+  expect(applyPostProcess(mapFilterTemplateAndDataPostProcess, data.peopleTestValue, shared))
     .toEqual(['jimmy - 22', 'bob - 23']);
 });

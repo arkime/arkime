@@ -18,7 +18,7 @@
 'use strict';
 
 const csv = require('csv');
-const request = require('request');
+const axios = require('axios');
 const fs = require('fs');
 const iptrie = require('iptrie');
 
@@ -522,21 +522,21 @@ class WISESource {
         headers['If-Modified-Since'] = stat.mtime.toUTCString();
       }
     }
-    let statusCode;
-    console.log(url);
-    request({ url, headers })
-      .on('response', function (response) {
-        statusCode = response.statusCode;
-        if (response.statusCode === 200) {
-          this.pipe(fs.createWriteStream(file));
-        }
-      })
-      .on('error', (error) => {
-        console.log(error);
-      })
-      .on('end', () => {
-        setTimeout(cb, 100, statusCode);
+    axios({
+      method: 'GET',
+      url,
+      responseType: 'stream',
+      headers
+    }).then((response) => {
+      response.data.pipe(fs.createWriteStream(file)).on('close', () => {
+        setTimeout(cb, 100, 200);
       });
+    }).catch((err) => {
+      if (err?.response?.status !== 304) {
+        console.log(err);
+      }
+      setTimeout(cb, 100, err?.response?.status ?? 404);
+    });
   };
 
   // ----------------------------------------------------------------------------

@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+const ArkimeUtil = require('../../../common/arkimeUtil');
 const Integration = require('../../integration.js');
 const axios = require('axios');
 
@@ -71,7 +72,7 @@ class ThreatstreamIntegration extends Integration {
           'removeNullish',
           {
             filterOut: {
-              matchAny: { // filter out using regexes created from Threatstream 'hide tags' setting
+              matchAnyRegex: { // filter out using regexes created from Threatstream 'hide tags' setting
                 setting: 'hide tags',
                 postProcess: [
                   { split: ',' },
@@ -120,6 +121,13 @@ class ThreatstreamIntegration extends Integration {
   async fetch (user, query) {
     try {
       const host = this.getUserConfig(user, 'Threatstream', 'host', 'api.threatstream.com');
+
+      // https://www.oreilly.com/library/view/regular-expressions-cookbook/9781449327453/ch08s15.html + uppercase
+      if (!host.match(/^([a-zA-Z0-9]+(-[a-zA-Z0-9]+)*\.)+[a-zA-Z]{2,}$/)) {
+        console.log(`userId: '${user.userId}' bad threatstream hostname: '%s'`, ArkimeUtil.sanitizeStr(host));
+        return undefined;
+      }
+
       const tuser = this.getUserConfig(user, 'Threatstream', 'user');
       const tkey = this.getUserConfig(user, 'Threatstream', 'key');
       if (!tkey || !tuser) {

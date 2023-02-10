@@ -32,13 +32,15 @@
 #include "dll.h"
 #include "hash.h"
 #include "bsb.h"
+
+#define GLIB_DISABLE_DEPRECATION_WARNINGS
 #include "glib.h"
 
 #define UNUSED(x) x __attribute((unused))
 
 #if defined(__clang__)
-#define SUPPRESS_SIGNED_INTEGER_OVERFLOW __attribute__((no_sanitize("signed-integer-overflow")))
-#define SUPPRESS_UNSIGNED_INTEGER_OVERFLOW __attribute__((no_sanitize("unsigned-integer-overflow")))
+#define SUPPRESS_SIGNED_INTEGER_OVERFLOW __attribute__((no_sanitize("integer")))
+#define SUPPRESS_UNSIGNED_INTEGER_OVERFLOW __attribute__((no_sanitize("integer")))
 #define SUPPRESS_SHIFT __attribute__((no_sanitize("shift")))
 #define SUPPRESS_ALIGNMENT __attribute__((no_sanitize("alignment")))
 #define SUPPRESS_INT_CONVERSION __attribute__((no_sanitize("implicit-integer-sign-change")))
@@ -56,7 +58,7 @@
 #define SUPPRESS_INT_CONVERSION
 #endif
 
-#define MOLOCH_API_VERSION 400
+#define MOLOCH_API_VERSION 420
 
 #define MOLOCH_SESSIONID_LEN 37
 
@@ -143,6 +145,7 @@ typedef struct moloch_trie {
 typedef struct {
     MolochStringHead_t  commonName; // 2.5.4.3
     MolochStringHead_t  orgName;    // 2.5.4.10
+    MolochStringHead_t  orgUnit;    // 2.5.4.11
     char                orgUtf8;
 } MolochCertInfo_t;
 
@@ -248,6 +251,7 @@ typedef struct moloch_field_info {
     uint16_t                  flags;
     char                      ruleEnabled;
     char                     *transform;
+    char                     *aliases;
 } MolochFieldInfo_t;
 
 typedef struct {
@@ -267,7 +271,9 @@ typedef struct {
     uint32_t                   jsonSize;
 } MolochField_t;
 
-#define MOLOCH_FIELD_OPS_FLAGS_COPY 0x0001
+#define MOLOCH_FIELD_OP_SET           0
+#define MOLOCH_FIELD_OP_SET_IF_LESS   1
+#define MOLOCH_FIELD_OP_SET_IF_MORE   2
 
 typedef struct {
     char                 *str;
@@ -276,8 +282,10 @@ typedef struct {
       float               f;
     };
     int16_t               fieldPos;
+    int8_t                set;
 } MolochFieldOp_t;
 
+#define MOLOCH_FIELD_OPS_FLAGS_COPY 0x0001
 typedef struct {
     MolochFieldOp_t     *ops;
     uint16_t              size;
@@ -377,7 +385,8 @@ enum MolochRotate {
 #define MOLOCH_FIELD_EXSPECIAL_DATABYTES_SRC    (MOLOCH_FIELDS_CNT_MAX+13)
 #define MOLOCH_FIELD_EXSPECIAL_DATABYTES_DST    (MOLOCH_FIELDS_CNT_MAX+14)
 #define MOLOCH_FIELD_EXSPECIAL_COMMUNITYID      (MOLOCH_FIELDS_CNT_MAX+15)
-#define MOLOCH_FIELDS_MAX                       (MOLOCH_FIELDS_CNT_MAX+16)
+#define MOLOCH_FIELD_EXSPECIAL_DST_IP_PORT      (MOLOCH_FIELDS_CNT_MAX+16)
+#define MOLOCH_FIELDS_MAX                       (MOLOCH_FIELDS_CNT_MAX+17)
 
 typedef struct moloch_config {
     gboolean  quitting;
@@ -574,14 +583,15 @@ typedef struct molochpacket_t
     uint8_t        readerPos;           // position for filename/ops
     uint32_t       etherOffset:11;      // offset to current ethernet frame from start
     uint32_t       outerEtherOffset:11; // offset to previous ethernet frame from start
-    uint32_t       ipOffset:11;         // offset to ip header from start
-    uint32_t       outerIpOffset:11;    // offset to outer ip header from start
+    uint32_t       tunnel:8;            // tunnel type
     uint32_t       direction:1;         // direction of packet
     uint32_t       v6:1;                // v6 or not
     uint32_t       outerv6:1;           // outer v6 or not
     uint32_t       copied:1;            // don't need to copy
     uint32_t       wasfrag:1;           // was a fragment
-    uint32_t       tunnel:8;            // tunnel type
+    uint32_t       ipOffset:11;         // offset to ip header from start
+    uint32_t       outerIpOffset:11;    // offset to outer ip header from start
+    uint32_t       vni:24;              // vxlan id
 } MolochPacket_t;
 
 typedef struct
@@ -858,7 +868,7 @@ void moloch_config_init();
 void moloch_config_load_local_ips();
 void moloch_config_load_packet_ips();
 void moloch_config_add_header(MolochStringHashStd_t *hash, char *key, int pos);
-void moloch_config_load_header(char *section, char *group, char *helpBase, char *expBase, char *dbBase, MolochStringHashStd_t *hash, int flags);
+void moloch_config_load_header(char *section, char *group, char *helpBase, char *expBase, char *aliasBase, char *dbBase, MolochStringHashStd_t *hash, int flags);
 void moloch_config_exit();
 
 gchar **moloch_config_section_raw_str_list(GKeyFile *keyfile, char *section, char *key, char *d);
@@ -1397,7 +1407,7 @@ struct MolochPQ_t;
 typedef struct MolochPQ_t MolochPQ_t;
 
 MolochPQ_t *moloch_pq_alloc(int maxSeconds, MolochPQ_cb cb);
-void moloch_pq_upsert(MolochPQ_t *pq, MolochSession_t *session, int seconds,  void *uw);
+void moloch_pq_upsert(MolochPQ_t *pq, MolochSession_t *session, uint32_t seconds,  void *uw);
 void moloch_pq_remove(MolochPQ_t *pq, MolochSession_t *session);
 void moloch_pq_run(int thread, int max);
 void moloch_pq_free(MolochSession_t *session);

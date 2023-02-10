@@ -1,6 +1,6 @@
 #!/usr/bin/perl
 # This script can initialize, upgrade or provide simple maintenance for the
-# Arkime elastic search db
+# Arkime OpenSearch/Elasticsearch db
 #
 # Schema Versions
 #  0 - Before this script existed
@@ -82,6 +82,7 @@ use POSIX;
 use IO::Compress::Gzip qw(gzip $GzipError);
 use IO::Uncompress::Gunzip qw(gunzip $GunzipError);
 use strict;
+no if ($] >= 5.018), 'warnings' => 'experimental';
 
 my $VERSION = 78;
 my $verbose = 0;
@@ -104,6 +105,7 @@ my $ESTIMEOUT=60;
 my $UPGRADEALLSESSIONS = 1;
 my $DOHOTWARM = 0;
 my $DOILM = 0;
+my $DOISM = 0;
 my $WARMAFTER = -1;
 my $WARMKIND = "daily";
 my $OPTIMIZEWARM = 0;
@@ -145,7 +147,7 @@ sub showHelp($)
     print "\n";
     print "Global Options:\n";
     print "  -v                           - Verbose, multiple increases level\n";
-    print "  --prefix <prefix>            - Prefix for table names\n";
+    print "  --prefix <prefix>            - Prefix for OpenSearch/Elasticsearch index names\n";
     print "  --clientkey <keypath>        - Path to key for client authentication.  Must not have a passphrase.\n";
     print "  --clientcert <certpath>      - Path to cert for client authentication\n";
     print "  --insecure                   - Disable certificate verification for https calls\n";
@@ -155,38 +157,33 @@ sub showHelp($)
     print "  --esapikey <key>             - Same key as elasticsearchAPIKey in your Arkime config file\n";
     print "\n";
     print "General Commands:\n";
-    print "  info                         - Information about the database\n";
-    print "  repair                       - Try and repair a corrupted cluster schema\n";
-    print "  init [<opts>]                - Clear ALL elasticsearch Arkime data and create schema\n";
-    print "    --shards <shards>          - Number of shards for sessions, default number of nodes\n";
+    print "  info                         - Information about the Arkime cluster\n";
+    print "  repair                       - Try and repair a corrupted Arkime cluster\n";
+    print "  init [<init opts>]           - Delete ALL previous OpenSearch/Elasticsearch Arkime data and create the mappings\n";
+    print "    --shards <shards>          - Number of shards for sessions, default is the number of data nodes\n";
     print "    --replicas <num>           - Number of replicas for sessions, default 0\n";
-    print "    --refresh <num>            - Number of seconds for ES refresh interval for sessions indices, default 60\n";
-    print "    --shardsPerNode <shards>   - Number of shards per node or use \"null\" to let ES decide, default shards*replicas/nodes\n";
+    print "    --refresh <num>            - Number of seconds the sessions indices use for refresh interval, default 60\n";
+    print "    --shardsPerNode <shards>   - Number of shards per node or use \"null\" to let OpenSearch/Elasticsearch decide, default shards*replicas/nodes\n";
     print "    --hotwarm                  - Set 'hot' for 'node.attr.molochtype' on new indices, warm on non sessions indices\n";
-    print "    --ilm                      - Use ilm to manage\n";
-    print "  wipe                         - Same as init, but leaves user database untouched\n";
-    print "  upgrade [<opts>]             - Upgrade Arkime's schema in elasticsearch from previous versions\n";
-    print "    --shards <shards>          - Number of shards for sessions, default number of nodes\n";
-    print "    --replicas <num>           - Number of replicas for sessions, default 0\n";
-    print "    --refresh <num>            - Number of seconds for ES refresh interval for sessions indices, default 60\n";
-    print "    --shardsPerNode <shards>   - Number of shards per node or use \"null\" to let ES decide, default shards*replicas/nodes\n";
-    print "    --hotwarm                  - Set 'hot' for 'node.attr.molochtype' on new indices, warm on non sessions indices\n";
-    print "    --ilm                      - Use ilm to manage\n";
-    print "  expire <type> <num> [<opts>] - Perform daily ES maintenance and optimize all indices in ES\n";
+    print "    --ilm                      - Use ilm (Elasticsearch) to manage\n";
+    print "    --ism                      - Use ism (OpenSearch) to manage\n";
+    print "  wipe [<init opts>]           - Same as init, but leaves user index untouched\n";
+    print "  upgrade [<init opts>]        - Upgrade Arkime's mappings from a previous version or use to change settings\n";
+    print "  expire <type> <num> [<opts>] - Perform daily OpenSearch/Elasticsearch maintenance and optimize all indices, not needed with ILM\n";
     print "       type                    - Same as rotateIndex in ini file = hourly,hourlyN,daily,weekly,monthly\n";
-    print "       num                     - Number of indexes to keep\n";
+    print "       num                     - Number of indices to keep\n";
     print "    --replicas <num>           - Number of replicas for older sessions indices, default 0\n";
-    print "    --nooptimize               - Do not optimize session indexes during this operation\n";
+    print "    --nooptimize               - Do not optimize session indices during this operation\n";
     print "    --history <num>            - Number of weeks of history to keep, default 13\n";
     print "    --segments <num>           - Number of segments to optimize sessions to, default 1\n";
     print "    --segmentsmin <num>        - Only optimize indices with at least <num> segments, default is <segments> \n";
     print "    --reverse                  - Optimize from most recent to oldest\n";
-    print "    --shardsPerNode <shards>   - Number of shards per node or use \"null\" to let ES decide, default shards*replicas/nodes\n";
+    print "    --shardsPerNode <shards>   - Number of shards per node or use \"null\" to let OpenSearch/Elasticsearch decide, default shards*replicas/nodes\n";
     print "    --warmafter <wafter>       - Set molochwarm on indices after <wafter> <type>\n";
     print "    --optmizewarm              - Only optimize warm green indices\n";
-    print "  optimize                     - Optimize all Arkime indices in ES\n";
+    print "  optimize                     - Optimize all Arkime indices in OpenSearch/Elasticsearch\n";
     print "    --segments <num>           - Number of segments to optimize sessions to, default 1\n";
-    print "  optimize-admin               - Optimize only admin indices in ES, use with ILM\n";
+    print "  optimize-admin               - Optimize only admin indices in OpenSearch/Elasticsearch, use with ILM\n";
     print "  disable-users <days>         - Disable user accounts that have not been active\n";
     print "      days                     - Number of days of inactivity (integer)\n";
     print "  set-shortcut <name> <userid> <file> [<opts>]\n";
@@ -194,23 +191,25 @@ sub showHelp($)
     print "       userid                  - UserId of the user to add the shortcut for\n";
     print "       file                    - File that includes a comma or newline separated list of values\n";
     print "    --type <type>              - Type of shortcut = string, ip, number, default is string\n";
-    print "    --shareRoles               - Share to roles (comma separated list of roles)\n";
-    print "    --shareUsers               - Share to specific users (comma seprated list of userIds)\n";
+    print "    --shareRoles <roles>       - Share to roles (comma separated list of roles)\n";
+    print "    --shareUsers <users>       - Share to specific users (comma seprated list of userIds)\n";
     print "    --description <description>- Description of the shortcut\n";
     print "    --locked                   - Whether the shortcut is locked and cannot be modified by the web interface\n";
     print "  shrink <index> <node> <num>  - Shrink a session index\n";
     print "      index                    - The session index to shrink\n";
     print "      node                     - The node to temporarily use for shrinking\n";
     print "      num                      - Number of shards to shrink to\n";
-    print "    --shardsPerNode <shards>   - Number of shards per node or use \"null\" to let ES decide, default 1\n";
-    print "  ilm <force> <delete>         - Create ILM profile\n";
+    print "    --shardsPerNode <shards>   - Number of shards per node or use \"null\" to let OpenSearch/Elasticsearch decide, default 1\n";
+    print "  ilm <force> <delete>         - Create ILM profile for Elasticsearch\n";
     print "      force                    - Time in hours/days before (moving to warm) and force merge (number followed by h or d)\n";
     print "      delete                   - Time in hours/days before deleting index (number followed by h or d)\n";
     print "    --hotwarm                  - Set 'hot' for 'node.attr.molochtype' on new indices, warm on non sessions indices\n";
     print "    --segments <num>           - Number of segments to optimize sessions to, default 1\n";
     print "    --replicas <num>           - Number of replicas for older sessions indices, default 0\n";
     print "    --history <num>            - Number of weeks of history to keep, default 13\n";
-    print "  reindex <src> [<dst>]        - Reindex ES indices\n";
+    print "  ism <force> <delete>         - Create ISM profile for OpenSearch\n";
+    print "     Same options as ilm command above\n";
+    print "  reindex <src> [<dst>]        - Reindex OpenSearch/Elasticsearch indices\n";
     print "    --nopcap                   - Remove fields having to do with pcap files\n";
     print "\n";
     print "Backup and Restore Commands:\n";
@@ -240,7 +239,7 @@ sub showHelp($)
     print "  hide-node <node>             - Hide node in stats display\n";
     print "  unhide-node <node>           - Unhide node in stats display\n";
     print "\n";
-    print "ES maintenance\n";
+    print "OpenSearch/Elasticsearch maintenance\n";
     print "  set-replicas <pat> <num>              - Set the number of replicas for index pattern\n";
     print "  set-shards-per-node <pat> <num>       - Set the number of shards per node for index pattern\n";
     print "  set-allocation-enable <mode>          - Set the allocation mode (all, primaries, new_primaries, none, null)\n";
@@ -299,7 +298,7 @@ sub esGet
     logmsg "GET ${main::elasticsearch}$url\n" if ($verbose > 2);
     my $response = $main::userAgent->get("${main::elasticsearch}$url");
     if (($response->code == 500 && $ARGV[1] ne "init" && $ARGV[1] ne "shrink") || ($response->code != 200 && !$dontcheck)) {
-      die "Couldn't GET ${main::elasticsearch}$url  the http status code is " . $response->code . " are you sure elasticsearch is running/reachable?";
+      die "Couldn't GET ${main::elasticsearch}$url  the http status code is " . $response->code . " are you sure OpenSearch/Elasticsearch is running/reachable?";
     }
     my $json = from_json($response->content);
     logmsg "GET RESULT:", Dumper($json), "\n" if ($verbose > 3 || $response->code == 401);
@@ -323,7 +322,7 @@ sub esPost
       return from_json("{}") if ($dontcheck == 2);
 
       logmsg "POST RESULT:", $response->content, "\n" if ($response->code == 401 || $verbose > 3 || ($verbose > 0 && int($response->code / 100) == 4));
-      die "Couldn't POST ${main::elasticsearch}$url  the http status code is " . $response->code . " are you sure elasticsearch is running/reachable?";
+      die "Couldn't POST ${main::elasticsearch}$url  the http status code is " . $response->code . " are you sure OpenSearch/Elasticsearch is running/reachable?";
     }
 
     my $json = from_json($response->content);
@@ -344,9 +343,9 @@ sub esPut
     logmsg "PUT ${main::elasticsearch}$url\n" if ($verbose > 2);
     logmsg "PUT DATA:", Dumper($content), "\n" if ($verbose > 3);
     my $response = $main::userAgent->request(HTTP::Request::Common::PUT("${main::elasticsearch}$url", Content => $content, Content_Type => "application/json"));
-    if ($response->code != 200 && !$dontcheck) {
+    if ($response->code != 200 && $response->code != 201 && !$dontcheck) {
       logmsg Dumper($response);
-      die "Couldn't PUT ${main::elasticsearch}$url  the http status code is " . $response->code . " are you sure elasticsearch is running/reachable?\n" . $response->content;
+      die "Couldn't PUT ${main::elasticsearch}$url  the http status code is " . $response->code . " are you sure OpenSearch/Elasticsearch is running/reachable?\n" . $response->content;
     } elsif ($response->code == 500 && $dontcheck) {
       print "Ignoring following error\n";
       logmsg Dumper($response);
@@ -370,7 +369,7 @@ sub esDelete
     logmsg "DELETE ${main::elasticsearch}$url\n" if ($verbose > 2);
     my $response = $main::userAgent->request(HTTP::Request::Common::_simple_req("DELETE", "${main::elasticsearch}$url"));
     if ($response->code == 500 || ($response->code != 200 && !$dontcheck)) {
-      die "Couldn't DELETE ${main::elasticsearch}$url  the http status code is " . $response->code . " are you sure elasticsearch is running/reachable?";
+      die "Couldn't DELETE ${main::elasticsearch}$url  the http status code is " . $response->code . " are you sure OpenSearch/Elasticsearch is running/reachable?";
     }
     my $json = from_json($response->content);
     return $json
@@ -381,6 +380,7 @@ sub esCopy
 {
     my ($srci, $dsti) = @_;
 
+    my $status = esGet("/${srci}/_refresh", 1);
     $main::userAgent->timeout(7200);
 
     my $status = esGet("/_stats/docs", 1);
@@ -5605,8 +5605,10 @@ esPut("/${PREFIX}notifiers_v40/_mapping?master_timeout=${ESTIMEOUT}s&pretty", $m
 sub notifiersMove
 {
 # add the notifiers from the _moloch_shared user to the new notifiers index
-    my $sharedUser = esGet("/${PREFIX}users/_doc/_moloch_shared/_source");
+    my $sharedUser = esGet("/${PREFIX}users/_source/_moloch_shared", 1);
     my @notifiers = keys %{$sharedUser->{notifiers}};
+
+    return if ($sharedUser->{status} == 404);
 
     foreach my $n (@notifiers) {
         my $notifier = $sharedUser->{notifiers}{$n};
@@ -5995,7 +5997,7 @@ my ($loud) = @_;
 
     logmsg "This is a fresh Arkime install\n" if ($loud);
     $main::versionNumber = -1;
-    if ($loud && $ARGV[1] !~ "init") {
+    if ($loud && $ARGV[1] !~ "init" && $ARGV[1] !~ "restore") {
         die "Looks like Arkime wasn't installed, must do init"
     }
 }
@@ -6027,7 +6029,7 @@ my ($prefix) = @_;
 sub dbCheckHealth {
     my $health = esGet("/_cluster/health");
     if ($health->{status} ne "green") {
-        logmsg("WARNING elasticsearch health is '$health->{status}' instead of 'green', things may be broken\n\n");
+        logmsg("WARNING OpenSearch/Elasticsearch health is '$health->{status}' instead of 'green', things may be broken\n\n");
     }
     return $health;
 }
@@ -6039,7 +6041,7 @@ sub dbCheck {
 
     if ($esversion->{version}->{distribution} eq "opensearch") {
         if ($main::esVersion < 1000) {
-            logmsg("Currently using Opensearch version ", $esversion->{version}->{number}, " which isn't supported\n",
+            logmsg("Currently using OpenSearch version ", $esversion->{version}->{number}, " which isn't supported\n",
                   "* < 1.0.0 is not supported\n"
                   );
             exit (1)
@@ -6065,7 +6067,7 @@ sub dbCheck {
     my $nodeStats = esGet("/_nodes/stats");
 
     foreach my $key (sort {$nodes->{nodes}->{$a}->{name} cmp $nodes->{nodes}->{$b}->{name}} keys %{$nodes->{nodes}}) {
-        next if (exists $nodes->{$key}->{attributes} && exists $nodes->{$key}->{attributes}->{data} && $nodes->{$key}->{attributes}->{data} eq "false");
+        next if (!(/^(data|data_hot)$/ ~~ @{$nodes->{nodes}->{$key}->{roles}}));
         my $node = $nodes->{nodes}->{$key};
         my $nodeStat = $nodeStats->{nodes}->{$key};
         my $errstr;
@@ -6174,6 +6176,10 @@ sub parseArgs {
             $DOHOTWARM = 1;
         } elsif ($ARGV[$pos] eq "--ilm") {
             $DOILM = 1;
+            die "Can't use both --ilm and --ism" if ($DOISM);
+        } elsif ($ARGV[$pos] eq "--ism") {
+            $DOISM = 1;
+            die "Can't use both --ilm and --ism" if ($DOILM);
         } elsif ($ARGV[$pos] eq "--warmafter") {
             $pos++;
             $WARMAFTER = int($ARGV[$pos]);
@@ -6250,17 +6256,17 @@ $PREFIX = "arkime_" if (! defined $PREFIX);
 
 showHelp("Help:") if ($ARGV[1] =~ /^help$/);
 showHelp("Missing arguments") if (@ARGV < 2);
-showHelp("Unknown command '$ARGV[1]'") if ($ARGV[1] !~ /^(init|initnoprompt|clean|info|wipe|upgrade|upgradenoprompt|disable-?users|set-?shortcut|users-?import|import|restore|users-?export|export|repair|backup|expire|rotate|optimize|optimize-admin|mv|rm|rm-?missing|rm-?node|add-?missing|field|force-?put-?version|sync-?files|hide-?node|unhide-?node|add-?alias|set-?replicas|set-?shards-?per-?node|set-?allocation-?enable|allocate-?empty|unflood-?stage|shrink|ilm|recreate-users|recreate-stats|recreate-dstats|recreate-fields|update-fields|update-history|reindex|force-sessions3-update|es-adduser|es-passwd|es-addapikey)$/);
-showHelp("Missing arguments") if (@ARGV < 3 && $ARGV[1] =~ /^(users-?import|import|users-?export|backup|restore|rm|rm-?missing|rm-?node|hide-?node|unhide-?node|set-?allocation-?enable|unflood-?stage|reindex|es-adduser|es-addapikey)$/);
+showHelp("Unknown command '$ARGV[1]'") if ($ARGV[1] !~ /^(init|initnoprompt|clean|info|wipe|upgrade|upgradenoprompt|disable-?users|set-?shortcut|users-?import|import|restore|restorenoprompt|users-?export|export|repair|backup|expire|rotate|optimize|optimize-admin|mv|rm|rm-?missing|rm-?node|add-?missing|field|force-?put-?version|sync-?files|hide-?node|unhide-?node|add-?alias|set-?replicas|set-?shards-?per-?node|set-?allocation-?enable|allocate-?empty|unflood-?stage|shrink|ilm|ism|recreate-users|recreate-stats|recreate-dstats|recreate-fields|recreate-files|update-fields|update-history|reindex|force-sessions3-update|es-adduser|es-passwd|es-addapikey)$/);
+showHelp("Missing arguments") if (@ARGV < 3 && $ARGV[1] =~ /^(users-?import|import|users-?export|backup|restore|restorenoprompt|rm|rm-?missing|rm-?node|hide-?node|unhide-?node|set-?allocation-?enable|unflood-?stage|reindex|es-adduser|es-addapikey)$/);
 showHelp("Missing arguments") if (@ARGV < 4 && $ARGV[1] =~ /^(field|export|add-?missing|sync-?files|add-?alias|set-?replicas|set-?shards-?per-?node|set-?shortcut|ilm)$/);
 showHelp("Missing arguments") if (@ARGV < 5 && $ARGV[1] =~ /^(allocate-?empty|set-?shortcut|shrink)$/);
 showHelp("Must have both <old fn> and <new fn>") if (@ARGV < 4 && $ARGV[1] =~ /^(mv)$/);
 showHelp("Must have both <type> and <num> arguments") if (@ARGV < 4 && $ARGV[1] =~ /^(rotate|expire)$/);
 
 parseArgs(2) if ($ARGV[1] =~ /^(init|initnoprompt|upgrade|upgradenoprompt|clean|wipe|optimize)$/);
-parseArgs(3) if ($ARGV[1] =~ /^(restore|backup)$/);
+parseArgs(3) if ($ARGV[1] =~ /^(restore|restorenoprompt|backup)$/);
 
-$ESTIMEOUT = 240 if ($ESTIMEOUT < 240 && $ARGV[1] =~ /^(init|initnoprompt|upgrade|upgradenoprompt|clean|shrink|ilm)$/);
+$ESTIMEOUT = 240 if ($ESTIMEOUT < 240 && $ARGV[1] =~ /^(init|initnoprompt|upgrade|upgradenoprompt|clean|shrink|ilm|ism)$/);
 
 $main::userAgent = LWP::UserAgent->new(timeout => $ESTIMEOUT + 5, keep_alive => 5);
 
@@ -6270,17 +6276,28 @@ if ($ESAPIKEY ne "") {
     $main::userAgent->default_header('Authorization' => "Basic $USERPASS");
 }
 
+sub verify {
+  my ($ok) = @_;
+
+  return 1 if (!$SECURE || $ok);
+
+  print "\nThere is a problem verifying the certificate for OpenSearch/Elasticsearch. Most likely it has either expired or you are using a self signed cert. You will need to either replace the certificates, use the --insecure option, or https://arkime.com/faq#self-signed-ssl-tls-certificates might help.\n";
+  exit;
+}
+
 if ($CLIENTCERT ne "") {
     $main::userAgent->ssl_opts(
         SSL_verify_mode => $SECURE,
         verify_hostname=> $SECURE,
         SSL_cert_file => $CLIENTCERT,
-        SSL_key_file => $CLIENTKEY
+        SSL_key_file => $CLIENTKEY,
+        SSL_verify_callback => \&verify
     )
 } else {
     $main::userAgent->ssl_opts(
         SSL_verify_mode => $SECURE,
-        verify_hostname=> $SECURE
+        verify_hostname=> $SECURE,
+        SSL_verify_callback => \&verify
     )
 }
 
@@ -6303,8 +6320,8 @@ if ($ARGV[1] =~ /^(users-?import|import)$/) {
         open($fh, "<", $ARGV[2]) or die "cannot open < $ARGV[2]: $!";
     }
     my $data = do { local $/; <$fh> };
-    # Use version/version_type instead of _version/_version_type
-    $data =~ s/, "_version": (\d+), "_version_type"/, "version": \1, "version_type"/g;
+    # remove version stuff - /, "version": 2, "version_type": "external"/
+    $data =~ s/, "version": \d+, "version_type": "\w+"//g;
     # Remove type from older backups
     $data =~ s/, "_type": .*, "_id":/, "_id":/g;
     esPost("/_bulk", $data);
@@ -6339,9 +6356,9 @@ if ($ARGV[1] =~ /^(users-?import|import)$/) {
         }
     }
 
-    my @indexes = ("users", "sequence", "stats", "queries", "files", "fields", "dstats", "hunts", "lookups", "notifiers", "views");
+    my @indices = ("users", "sequence", "stats", "queries", "files", "fields", "dstats", "hunts", "lookups", "notifiers", "views");
     logmsg "Exporting documents...\n";
-    foreach my $index (@indexes) {
+    foreach my $index (@indices) {
         my $data = esScroll($index, "", '{"version": true}');
         next if (scalar(@{$data}) == 0);
         my $fh = bopen($index);
@@ -6356,23 +6373,22 @@ if ($ARGV[1] =~ /^(users-?import|import)$/) {
         close($fh);
     }
     logmsg "Exporting templates...\n";
-    my @templates = ("sessions3_template", "history_v1_template");
+    my @templates = ("sessions3_ecs",  "sessions3", "history_v1");
     foreach my $template (@templates) {
-        my $data = esGet("/_template/${PREFIX}${template}");
-        my @name = split(/_/, $template);
-        my $fh = bopen("template");
+        my $data = esGet("/_template/${PREFIX}${template}_template");
+        my $fh = bopen("$template.template");
         print $fh to_json($data);
         close($fh);
     }
     logmsg "Exporting settings...\n";
-    foreach my $index (@indexes) {
+    foreach my $index (@indices) {
         my $data = esGet("/${PREFIX}${index}/_settings");
         my $fh = bopen("${index}.settings");
         print $fh to_json($data);
         close($fh);
     }
     logmsg "Exporting mappings...\n";
-    foreach my $index (@indexes) {
+    foreach my $index (@indices) {
         my $data = esGet("/${PREFIX}${index}/_mappings");
         my $fh = bopen("${index}.mappings");
         print $fh to_json($data);
@@ -6380,11 +6396,11 @@ if ($ARGV[1] =~ /^(users-?import|import)$/) {
     }
     logmsg "Exporting aliaes...\n";
 
-    my @indexes_prefixed = ();
-    foreach my $index (@indexes) {
-        push(@indexes_prefixed, $PREFIX . $index);
+    my @indices_prefixed = ();
+    foreach my $index (@indices) {
+        push(@indices_prefixed, $PREFIX . $index);
     }
-    my $aliases = join(',', @indexes_prefixed);
+    my $aliases = join(',', @indices_prefixed);
     $aliases = "/_cat/aliases/${aliases}?format=json";
     my $data = esGet($aliases), "\n";
     my $fh = bopen("aliases");
@@ -6396,7 +6412,7 @@ if ($ARGV[1] =~ /^(users-?import|import)$/) {
     open(my $fh, ">", $ARGV[2]) or die "cannot open > $ARGV[2]: $!";
     my $users = esGet("/${PREFIX}users/_search?size=1000");
     foreach my $hit (@{$users->{hits}->{hits}}) {
-        print $fh "{\"index\": {\"_index\": \"users\", \"_type\": \"user\", \"_id\": \"" . $hit->{_id} . "\"}}\n";
+        print $fh "{\"index\": {\"_index\": \"${PREFIX}users\", \"_id\": \"" . $hit->{_id} . "\"}}\n";
         print $fh to_json($hit->{_source}) . "\n";
     }
     close($fh);
@@ -6670,8 +6686,8 @@ if ($ARGV[1] =~ /^(users-?import|import)$/) {
 
     # increment the _meta version by 1
     my $mapping = esGet("/${PREFIX}lookups/_mapping");
-    my @indexes = keys %{$mapping};
-    my $index = @indexes[0];
+    my @indices = keys %{$mapping};
+    my $index = @indices[0];
     my $meta = $mapping->{$index}->{mappings}->{_meta};
 
 
@@ -6710,27 +6726,41 @@ if ($ARGV[1] =~ /^(users-?import|import)$/) {
     exit 0;
 } elsif ($ARGV[1] eq "recreate-users") {
     waitFor("USERS", "This will delete and recreate the users index");
-    esDelete("/${PREFIX}users_*", 1);
+    esDelete("/${PREFIX}users_v*", 1);
     esDelete("/${PREFIX}users", 1);
     usersCreate();
     exit 0;
 } elsif ($ARGV[1] eq "recreate-stats") {
     waitFor("STATS", "This will delete and recreate the stats index, make sure no captures are running");
-    esDelete("/${PREFIX}stats_*", 1);
+    esDelete("/${PREFIX}stats_v*", 1);
     esDelete("/${PREFIX}stats", 1);
     statsCreate();
     exit 0;
 } elsif ($ARGV[1] eq "recreate-dstats") {
     waitFor("DSTATS", "This will delete and recreate the dstats index, make sure no captures are running");
-    esDelete("/${PREFIX}dstats_*", 1);
+    esDelete("/${PREFIX}dstats_v*", 1);
     esDelete("/${PREFIX}dstats", 1);
     dstatsCreate();
     exit 0;
 } elsif ($ARGV[1] eq "recreate-fields") {
     waitFor("FIELDS", "This will delete and recreate the fields index, make sure no captures are running");
-    esDelete("/${PREFIX}fields_*", 1);
+    esDelete("/${PREFIX}fields_v*", 1);
     esDelete("/${PREFIX}fields", 1);
     fieldsCreate();
+    exit 0;
+} elsif ($ARGV[1] eq "recreate-files") {
+    waitFor("FILES", "This will copy ${PREFIX}files to ${PREFIX}files-tmp, recreate the files index, copy ${PREFIX}files-tmp back, make sure no captures are running");
+    dbCheckForActivity($PREFIX);
+    esDelete("/${PREFIX}files-tmp", 1);
+    if (esCheckAlias("${PREFIX}files", "${PREFIX}files_v30") && esIndexExists("${PREFIX}files_v30")) {
+        esCopy("${PREFIX}files_v30", "${PREFIX}files-tmp");
+    } else {
+        esCopy("${PREFIX}files", "${PREFIX}files-tmp");
+    }
+    esDelete("/${PREFIX}files_v*", 1);
+    esDelete("/${PREFIX}files", 1);
+    filesCreate();
+    esCopy("${PREFIX}files-tmp", "${PREFIX}files_v30");
     exit 0;
 } elsif ($ARGV[1] eq "update-fields") {
     fieldsUpdate();
@@ -6784,6 +6814,7 @@ if ($ARGV[1] =~ /^(users-?import|import)$/) {
     my $status = esGet("/_stats/docs,store", 1);
     my $minMax = esPost("/${OLDPREFIX}sessions2-*,${PREFIX}sessions3-*/_search?size=0", '{"aggs":{ "min" : { "min" : { "field" : "lastPacket" } }, "max" : { "max" : { "field" : "lastPacket" } } } }', 1);
     my $ilm = esGet("/_ilm/policy/${PREFIX}molochsessions", 1);
+    my $ism = esGet("/_plugins/_ism/policies/${PREFIX}molochsessions", 1);
 
     my $sessions = 0;
     my $sessionsBytes = 0;
@@ -6838,8 +6869,12 @@ if ($ARGV[1] =~ /^(users-?import|import)$/) {
         printf "Sessions Days:       %17.2f (%s - %s)\n", $days, $minMax->{aggregations}->{min}->{value_as_string}, $minMax->{aggregations}->{max}->{value_as_string};
         printf "Possible Sessions Days:  %13.2f\n", (0.95*$diskTotal)/($sessionsTotalBytes/$days) if ($days > 0);
 
-        if (exists $ilm->{molochsessions} && exists $ilm->{molochsessions}->{policy}->{phases}->{delete}) {
-            printf "ILM Delete Age:      %17s\n", $ilm->{molochsessions}->{policy}->{phases}->{delete}->{min_age};
+        if (exists $ilm->{"${PREFIX}molochsessions"} && exists $ilm->{"${PREFIX}molochsessions"}->{policy}->{phases}->{delete}) {
+            printf "ILM Delete Age:      %17s\n", $ilm->{"${PREFIX}molochsessions"}->{policy}->{phases}->{delete}->{min_age};
+        }
+
+        if (exists $ism->{policy} && exists $ism->{policy}->{states}->[0]) {
+            printf "ILM Delete Age:      %17s\n", $ism->{policy}->{stats}->[0]->{transitions}->{conditions}->{min_index_age};
         }
     }
     printf "History Indices:     %17s\n", commify(scalar(@historys));
@@ -7177,7 +7212,162 @@ qq/ {
 }/;
     }
     esPut("/_ilm/policy/${PREFIX}molochsessions?master_timeout=${ESTIMEOUT}s", $policy);
-    esPut("/${OLDPREFIX}sessions2-*,${PREFIX}sessions3-*/_settings?master_timeout=${ESTIMEOUT}s", qq/{"settings": {"index.lifecycle.name": "${PREFIX}molochsessions"}}/, 1);
+    esPut("/${OLDPREFIX}sessions2-*,${PREFIX}sessions3-*/_settings?allow_no_indices=true&master_timeout=${ESTIMEOUT}s", qq/{"settings": {"index.lifecycle.name": "${PREFIX}molochsessions"}}/, 1);
+    print "Policy:\n$policy\n" if ($verbose > 1);
+    exit 0;
+} elsif ($ARGV[1] =~ /^ism$/) {
+    parseArgs(4);
+    my $forceTime = $ARGV[2];
+    die "force time must be num followed by h or d" if ($forceTime !~ /^\d+[hd]/);
+    my $deleteTime = $ARGV[3];
+    die "delete time must be num followed by h or d" if ($deleteTime !~ /^\d+[hd]/);
+    $REPLICAS = 0 if ($REPLICAS == -1);
+    $HISTORY = $HISTORY * 7;
+
+    print "Creating history ism policy '${PREFIX}history' with: deleteTime ${HISTORY}d\n";
+    print "Creating sessions ism policy '${PREFIX}sessions' with: forceTime: $forceTime deleteTime: $deleteTime segments: $SEGMENTS replicas: $REPLICAS\n";
+
+    #### HISTORY ####
+    my $hpolicy =
+qq/{"policy": {
+  "description" : "Delete Arkime history indices",
+  "default_state" : "warm",
+  "states" : [
+    {
+      "name" : "warm",
+      "transitions" : [
+        {
+          "state_name" : "delete",
+          "conditions" : {
+            "min_index_age" : "${HISTORY}d"
+          }
+        }
+      ]
+    },
+    {
+      "name" : "delete",
+      "actions" : [
+        {
+          "delete" : { }
+        }
+      ]
+    }
+  ],
+  "ism_template" : [
+    {
+      "index_patterns" : [
+        "${PREFIX}history_v*"
+      ],
+      "priority" : 95
+    }
+  ]
+}}/;
+
+    my $hprevious = esGet("/_plugins/_ism/policies/${PREFIX}history", 1);
+    if (exists $hprevious->{policy}) {
+      esPut("/_plugins/_ism/policies/${PREFIX}history?if_seq_no=$hprevious->{_seq_no}&if_primary_term=$hprevious->{_primary_term}", $hpolicy);
+      esPost("/_plugins/_ism/change_policy/${PREFIX}history_v*", qq/{"policy_id": "${PREFIX}history"}/, 1);
+      esPost("/_plugins/_ism/add/${PREFIX}history_v*", qq/{"policy_id": "${PREFIX}history"}/, 1);
+    } else {
+      esPut("/_plugins/_ism/policies/${PREFIX}history", $hpolicy);
+      esPost("/_plugins/_ism/add/${PREFIX}history_v*", qq/{"policy_id": "${PREFIX}history"}/, 1);
+    }
+    print "History Policy:\n$hpolicy\n" if ($verbose > 1);
+    sleep 5;
+
+    #### SESSIONS ####
+    my $policy;
+    my $allocation = "";
+    if ($DOHOTWARM) {
+      $allocation = qq/{"allocation" : {"require" : { "molochtype" : "warm" }, "wait_for" : true }},/;
+    } 
+
+$policy = qq/{
+  "policy" : {
+    "description" : "Arkime sessions3 Policy",
+    "default_state" : "hot",
+    "states" : [
+      {
+        "name" : "hot",
+        "transitions" : [
+          {
+            "state_name" : "warm",
+            "conditions" : {
+              "min_index_age" : "$forceTime"
+            }
+          }
+        ]
+      },
+      {
+        "name" : "warm",
+        "actions" : [
+          {
+            "retry" : {
+              "count" : 3,
+              "backoff" : "exponential",
+              "delay" : "1m"
+            },
+            "force_merge" : {
+              "max_num_segments" : $SEGMENTS
+            }
+          },
+          $allocation
+          {
+            "retry" : {
+              "count" : 3,
+              "backoff" : "exponential",
+              "delay" : "1m"
+            },
+            "replica_count" : {
+              "number_of_replicas" : $REPLICAS
+            }
+          }
+        ],
+        "transitions" : [
+          {
+            "state_name" : "delete",
+            "conditions" : {
+              "min_index_age" : "$forceTime"
+            }
+          }
+        ]
+      },
+      {
+        "name" : "delete",
+        "actions" : [
+          {
+            "retry" : {
+              "count" : 3,
+              "backoff" : "exponential",
+              "delay" : "1m"
+            },
+            "delete" : { }
+          }
+        ],
+        "transitions" : [ ]
+      }
+    ],
+    "ism_template" : [
+      {
+        "index_patterns" : [
+          "${PREFIX}sessions3-*"
+        ],
+        "priority" : 95
+      }
+    ]
+  }
+}/;
+
+    my $previous = esGet("/_plugins/_ism/policies/${PREFIX}sessions", 1);
+    if (exists $previous->{policy}) {
+      esPut("/_plugins/_ism/policies/${PREFIX}sessions?if_seq_no=$previous->{_seq_no}&if_primary_term=$previous->{_primary_term}", $policy);
+      esPost("/_plugins/_ism/change_policy/${PREFIX}sessions3-*", qq/{"policy_id": "${PREFIX}sessions"}/, 1);
+      esPost("/_plugins/_ism/add/${PREFIX}sessions3-*", qq/{"policy_id": "${PREFIX}sessions"}/, 1);
+    } else {
+      esPut("/_plugins/_ism/policies/${PREFIX}sessions", $policy);
+      esPost("/_plugins/_ism/add/${PREFIX}sessions3-*", qq/{"policy_id": "${PREFIX}sessions"}/, 1);
+    }
+
     print "Policy:\n$policy\n" if ($verbose > 1);
     exit 0;
 } elsif ($ARGV[1] =~ /^reindex$/) {
@@ -7284,6 +7474,15 @@ qq/ {
         }
     }
 
+    my $templatesa = esGet("/_cat/templates/${PREFIX}*?format=json", 1);
+    my %templates = map { $_->{name} => $_ } @{$templatesa};
+
+    foreach my $t ("sessions3_ecs", "history_v1") {
+        if (!defined $templates{"${PREFIX}${t}_template"}) {
+            print "--> The ${PREFIX}$t template is missing, will recreate\n"
+        }
+    }
+
     waitFor("REPAIR", "Do you want to try and repair your install?");
     $verbose = 3 if ($verbose < 3);
 
@@ -7359,8 +7558,18 @@ qq/ {
         viewsCreate();
     }
 
+
+    if (!defined $templates{"${PREFIX}sessions3_ecs_template"}) {
+        sessions3ECSTemplate();
+    }
+
+    if (!defined $templates{"${PREFIX}history_v1_template"}) {
+        $UPGRADEALLSESSIONS = 0;
+        historyUpdate();
+    }
+
     print "\n";
-    print "* You should also run ./db.pl update again\n";
+    print "* You should also run ./db.pl upgrade again\n";
     print "* If having fields issues make sure you restart 1 capture after running repair to see if it fixes\n";
 
     exit 0;
@@ -7372,9 +7581,7 @@ my ($nodes) = @_;
     my $total = 0;
 
     foreach my $key (keys %{$nodes}) {
-        next if (exists $nodes->{$key}->{attributes} && exists $nodes->{$key}->{attributes}->{data} && $nodes->{$key}->{attributes}->{data} eq "false");
-        next if (exists $nodes->{$key}->{settings} && exists $nodes->{$key}->{settings}->{node} && $nodes->{$key}->{settings}->{node}->{data} eq "false");
-        $total++;
+        $total++ if (/^(data|data_hot)$/ ~~ @{$nodes->{$key}->{roles}});
     }
     return $total;
 }
@@ -7386,9 +7593,9 @@ my $nodes = esGet("/_nodes");
 $main::numberOfNodes = dataNodes($nodes->{nodes});
 logmsg "It is STRONGLY recommended that you stop ALL Arkime captures and viewers before proceeding.  Use 'db.pl ${main::elasticsearch} backup' to backup db first.\n\n";
 if ($main::numberOfNodes == 1) {
-    logmsg "There is $main::numberOfNodes elastic search data node, if you expect more please fix first before proceeding.\n\n";
+    logmsg "There is $main::numberOfNodes OpenSearch/Elasticsearch data node, if you expect more please fix first before proceeding.\n\n";
 } else {
-    logmsg "There are $main::numberOfNodes elastic search data nodes, if you expect more please fix first before proceeding.\n\n";
+    logmsg "There are $main::numberOfNodes OpenSearch/Elasticsearch data nodes, if you expect more please fix first before proceeding.\n\n";
 }
 
 if (int($SHARDS) > $main::numberOfNodes) {
@@ -7406,16 +7613,16 @@ dbCheck();
 dbVersion(1);
 
 if ($ARGV[1] eq "wipe" && $main::versionNumber != $VERSION) {
-    die "Can only use wipe if schema is up to date.  Use upgrade first.";
+    die "Can only use wipe if mappings are up to date.  Use upgrade first.";
 }
 
 if ($ARGV[1] =~ /^(init|wipe|clean)/) {
 
     if ($ARGV[1] eq "init" && $main::versionNumber >= 0) {
-        logmsg "It appears this elastic search cluster already has Arkime installed (version $main::versionNumber), this will delete ALL data in elastic search! (It does not delete the pcap files on disk.)\n\n";
+        logmsg "It appears this OpenSearch/Elasticsearch cluster already has Arkime installed (version $main::versionNumber), this will delete ALL data in OpenSearch/Elasticsearch! (It does not delete the pcap files on disk.)\n\n";
         waitFor("INIT", "do you want to erase everything?");
     } elsif ($ARGV[1] eq "wipe") {
-        logmsg "This will delete ALL session data in elastic search! (It does not delete the pcap files on disk or user info.)\n\n";
+        logmsg "This will delete ALL session data in OpenSearch/Elasticsearch! (It does not delete the pcap files on disk or user info.)\n\n";
         waitFor("WIPE", "do you want to wipe everything?");
     } elsif ($ARGV[1] eq "clean") {
         waitFor("CLEAN", "do you want to clean everything?");
@@ -7468,20 +7675,20 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
         usersCreate();
         queriesCreate();
     }
-} elsif ($ARGV[1] =~ /^restore$/) {
+} elsif ($ARGV[1] =~ /^(restore|restorenoprompt)$/) {
 
     logmsg "It is STRONGLY recommended that you stop ALL Arkime captures and viewers before proceeding.\n";
 
     dbCheckForActivity($PREFIX);
 
-    my @indexes = ("users", "sequence", "stats", "queries", "hunts", "files", "fields", "dstats", "lookups", "notifiers", "views");
+    my @indices = ("users", "sequence", "stats", "queries", "hunts", "files", "fields", "dstats", "lookups", "notifiers", "views");
     my @filelist = ();
-    foreach my $index (@indexes) { # list of data, settings, and mappings files
+    foreach my $index (@indices) { # list of data, settings, and mappings files
         push(@filelist, "$ARGV[2].${PREFIX}${index}.json\n") if (-e "$ARGV[2].${PREFIX}${index}.json");
         push(@filelist, "$ARGV[2].${PREFIX}${index}.settings.json\n") if (-e "$ARGV[2].${PREFIX}${index}.settings.json");
         push(@filelist, "$ARGV[2].${PREFIX}${index}.mappings.json\n") if (-e "$ARGV[2].${PREFIX}${index}.mappings.json");
     }
-    foreach my $index ("sessions2", "sessions3", "history") { # list of templates
+    foreach my $index ("sessions3_ecs", "sessions3", "history_v1") { # list of templates
         @filelist = (@filelist, "$ARGV[2].${PREFIX}${index}.template.json\n") if (-e "$ARGV[2].${PREFIX}${index}.template.json");
     }
 
@@ -7497,7 +7704,7 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
 
     logmsg "\nFollowing files will be used for restore\n\n@filelist\n\n";
 
-    waitFor("RESTORE", "do you want to restore? This will delete ALL data [@indexes] but sessions and history and restore from backups: files start with $basename in $path");
+    waitFor("RESTORE", "do you want to restore? This will delete ALL data [@indices] but sessions and history and restore from backups: files start with $basename in $path") if ($ARGV[1] ne "restorenoprompt");
 
     logmsg "\nStarting Restore...\n\n";
 
@@ -7520,7 +7727,7 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
     esDelete("/_template/${PREFIX}history_v1_template", 1);
 
     logmsg "Importing settings...\n\n";
-    foreach my $index (@indexes) { # import settings
+    foreach my $index (@indices) { # import settings
         if (-e "$ARGV[2].${PREFIX}${index}.settings.json") {
             open(my $fh, "<", "$ARGV[2].${PREFIX}${index}.settings.json");
             my $data = do { local $/; <$fh> };
@@ -7547,7 +7754,7 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
     }
 
     logmsg "Importing mappings...\n\n";
-    foreach my $index (@indexes) { # import mappings
+    foreach my $index (@indices) { # import mappings
         if (-e "$ARGV[2].${PREFIX}${index}.mappings.json") {
             open(my $fh, "<", "$ARGV[2].${PREFIX}${index}.mappings.json");
             my $data = do { local $/; <$fh> };
@@ -7555,13 +7762,13 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
             my @index = keys %{$data};
             my $mappings = $data->{$index[0]}->{mappings};
             my @type = keys %{$mappings};
-            esPut("/$index[0]/$type[0]/_mapping?master_timeout=${ESTIMEOUT}s&pretty", to_json($mappings));
+            esPut("/$index[0]/_mapping?master_timeout=${ESTIMEOUT}s&pretty", to_json($mappings));
             close($fh);
         }
     }
 
     logmsg "Importing documents...\n\n";
-    foreach my $index (@indexes) { # import documents
+    foreach my $index (@indices) { # import documents
         if (-e "$ARGV[2].${PREFIX}${index}.json") {
             open(my $fh, "<", "$ARGV[2].${PREFIX}${index}.json");
             my $data = do { local $/; <$fh> };
@@ -7571,7 +7778,7 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
     }
 
     logmsg "Importing templates for Sessions and History...\n\n";
-    my @templates = ("sessions2", "sessions3", "history");
+    my @templates = ("sessions3_ecs", "sessions3", "history_v1");
     foreach my $template (@templates) { # import templates
         if (-e "$ARGV[2].${PREFIX}${template}.template.json") {
             open(my $fh, "<", "$ARGV[2].${PREFIX}${template}.template.json");
@@ -7630,7 +7837,7 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
     }
 
     if ($health->{status} eq "red") {
-        logmsg "Not auto upgrading when elasticsearch status is red.\n\n";
+        logmsg "Not auto upgrading when OpenSearch/Elasticsearch status is red.\n\n";
         waitFor("RED", "do you want to really want to upgrade?");
     } elsif ($ARGV[1] ne "upgradenoprompt") {
         logmsg "Trying to upgrade from version $main::versionNumber to version $VERSION.\n\n";
@@ -7676,9 +7883,9 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
 }
 
 if ($DOHOTWARM) {
-    esPut("/${PREFIX}stats_v30,${PREFIX}dstats_v30,${PREFIX}fields_v30,${PREFIX}files_v30,${PREFIX}sequence_v30,${PREFIX}users_v30,${PREFIX}queries_v30,${PREFIX}hunts_v30,${PREFIX}history*,${PREFIX}lookups_v30,${PREFIX}notifiers_v40/_settings?master_timeout=${ESTIMEOUT}s&allow_no_indices=true&ignore_unavailable=true,${PREFIX}views_v40/_settings?master_timeout=${ESTIMEOUT}s&allow_no_indices=true&ignore_unavailable=true", "{\"index.routing.allocation.require.molochtype\": \"warm\"}");
+    esPut("/${PREFIX}stats_v30,${PREFIX}dstats_v30,${PREFIX}fields_v30,${PREFIX}files_v30,${PREFIX}sequence_v30,${PREFIX}users_v30,${PREFIX}queries_v30,${PREFIX}hunts_v30,${PREFIX}history*,${PREFIX}lookups_v30,${PREFIX}notifiers_v40,${PREFIX}views_v40/_settings?master_timeout=${ESTIMEOUT}s&allow_no_indices=true&ignore_unavailable=true", "{\"index.routing.allocation.require.molochtype\": \"warm\"}");
 } else {
-    esPut("/${PREFIX}stats_v30,${PREFIX}dstats_v30,${PREFIX}fields_v30,${PREFIX}files_v30,${PREFIX}sequence_v30,${PREFIX}users_v30,${PREFIX}queries_v30,${PREFIX}hunts_v30,${PREFIX}history*,${PREFIX}lookups_v30,${PREFIX}notifiers_v40/_settings?master_timeout=${ESTIMEOUT}s&allow_no_indices=true&ignore_unavailable=true,${PREFIX}views_v40/_settings?master_timeout=${ESTIMEOUT}s&allow_no_indices=true&ignore_unavailable=true", "{\"index.routing.allocation.require.molochtype\": null}");
+    esPut("/${PREFIX}stats_v30,${PREFIX}dstats_v30,${PREFIX}fields_v30,${PREFIX}files_v30,${PREFIX}sequence_v30,${PREFIX}users_v30,${PREFIX}queries_v30,${PREFIX}hunts_v30,${PREFIX}history*,${PREFIX}lookups_v30,${PREFIX}notifiers_v40,${PREFIX}views_v40/_settings?master_timeout=${ESTIMEOUT}s&allow_no_indices=true&ignore_unavailable=true", "{\"index.routing.allocation.require.molochtype\": null}");
 }
 
 logmsg "Finished\n";

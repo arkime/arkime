@@ -111,11 +111,11 @@ class View {
    * @returns {ArkimeView} view - The new view data.
    */
   static async apiCreateView (req, res) {
-    if (!req.body.name) {
+    if (!ArkimeUtil.isString(req.body.name)) {
       return res.serverError(403, 'Missing view name');
     }
 
-    if (!req.body.expression) {
+    if (!ArkimeUtil.isString(req.body.expression)) {
       return res.serverError(403, 'Missing view expression');
     }
 
@@ -130,14 +130,16 @@ class View {
 
     try {
       const { body: { _id: id } } = await Db.createView(req.body);
+      const { body: { _source: view } } = await Db.getView(id);
 
-      req.body.id = id;
-      req.body.users = req.body.users.join(',');
+      view.id = id;
+      view.users = view.users.join(',');
+
       return res.send(JSON.stringify({
         success: true,
-        view: req.body,
+        view,
         text: 'Created view!',
-        invalidUsers: users.invalidUsers
+        invalidUsers: ArkimeUtil.safeStr(users.invalidUsers)
       }));
     } catch (err) {
       console.log(`ERROR - ${req.method} /api/view (createView)`, util.inspect(err, false, 50));
@@ -155,13 +157,20 @@ class View {
    */
   static async apiDeleteView (req, res) {
     try {
+      const { body: dbView } = await Db.getView(req.params.id);
+
+      // only allow admins or view creator to delete view
+      if (!req.user.hasRole('arkimeAdmin') && req.settingUser.userId !== dbView._source.user) {
+        return res.serverError(403, 'Permission denied');
+      }
+
       await Db.deleteView(req.params.id);
       res.send(JSON.stringify({
         success: true,
         text: 'Deleted view successfully'
       }));
     } catch (err) {
-      console.log(`ERROR - ${req.method} /api/view/${req.params.id} (deleteView)`, util.inspect(err, false, 50));
+      console.log(`ERROR - ${req.method} /api/view/%s (deleteView)`, ArkimeUtil.sanitizeStr(req.params.id), util.inspect(err, false, 50));
       return res.serverError(500, 'Error deleting notifier');
     }
   }
@@ -176,11 +185,11 @@ class View {
    */
   static async apiUpdateView (req, res) {
     // make sure all the necessary data is included in the body
-    if (!req.body.name) {
+    if (!ArkimeUtil.isString(req.body.name)) {
       return res.serverError(403, 'Missing view name');
     }
 
-    if (!req.body.expression) {
+    if (!ArkimeUtil.isString(req.body.expression)) {
       return res.serverError(403, 'Missing view expression');
     }
 
@@ -205,21 +214,22 @@ class View {
 
       try {
         await Db.setView(req.params.id, view);
-        view.users = view.users.join(',');
-        view.id = req.params.id;
+        const { body: { _source: newView } } = await Db.getView(req.params.id);
+        newView.users = newView.users.join(',');
+        newView.id = dbView._id;
 
         return res.send(JSON.stringify({
-          view,
+          view: newView,
           success: true,
           text: 'Updated view!',
-          invalidUsers: users.invalidUsers
+          invalidUsers: ArkimeUtil.safeStr(users.invalidUsers)
         }));
       } catch (err) {
-        console.log(`ERROR - ${req.method} /api/view/${req.params.id} (setView)`, util.inspect(err, false, 50));
+        console.log(`ERROR - ${req.method} /api/view/%s (setView)`, ArkimeUtil.sanitizeStr(req.params.id), util.inspect(err, false, 50));
         return res.serverError(500, 'Error updating view');
       }
     } catch (err) {
-      console.log(`ERROR - ${req.method} /api/view/${req.params.id} (getView)`, util.inspect(err, false, 50));
+      console.log(`ERROR - ${req.method} /api/view/%s (getView)`, ArkimeUtil.sanitizeStr(req.params.id), util.inspect(err, false, 50));
       return res.serverError(500, 'Fetching view to update failed');
     }
   }

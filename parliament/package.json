@@ -6,8 +6,8 @@
     "url": "https://github.com/arkime/arkime.git"
   },
   "dependencies": {
-    "bcrypt": "^5.0.0",
-    "jsonwebtoken": "^8.3.0"
+    "bcrypt": "^5.1.0",
+    "jsonwebtoken": "^9.0.0"
   },
   "scripts": {
     "bundle": "cd ../ && npm run parliament:bundle",
@@ -17,7 +17,7 @@
     "lint": "cd ../ && npm run parliament:lint"
   },
   "engines": {
-    "node": ">= 6.0.0",
+    "node": ">= 16.0.0 < 18",
     "npm": ">= 3.0.0"
   },
   "nodemonConfig": {
