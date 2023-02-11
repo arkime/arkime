@@ -333,7 +333,7 @@ class Auth {
     // ----------------------------------------------------------------------------
     if (Auth.mode === 'oidc') {
       if (Auth.#caTrustCerts !== undefined) {
-        OIDC.custom.setHttpOptionsDefaults({ca: Auth.#caTrustCerts});
+        OIDC.custom.setHttpOptionsDefaults({ ca: Auth.#caTrustCerts });
       }
       const issuer = await OIDC.Issuer.discover(Auth.#authConfig.discoverURL);
       const client = new issuer.Client({
