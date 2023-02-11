@@ -47,6 +47,7 @@ class Auth {
   static #authRouter = express.Router();
   static #authConfig;
   static #passportAuthOptions = { session: false };
+  static #caTrustCerts;
 
   // ----------------------------------------------------------------------------
   /**
@@ -75,7 +76,8 @@ class Auth {
    * @param {string} options.userAutoCreateTmpl A javascript string function that is used to create users that don't exist
    * @param {string} options.userAuthIps A comma separated list of CIDRs that users are allowed from
    * @param {boolean} options.s2s Support s2s auth also
-   * @param {object} options.authConfig options specific to each auth mode;
+   * @param {object} options.authConfig options specific to each auth mode
+   * @param {object} options.caTrustCerts Optional data of CA certificates to use for external authentication
    */
   static initialize (options) {
     if (options.debug > 1) {
@@ -99,6 +101,7 @@ class Auth {
     Auth.#userAuthIps = new iptrie.IPTrie();
     Auth.#s2sRegressionTests = options.s2sRegressionTests;
     Auth.#authConfig = options.authConfig;
+    Auth.#caTrustCerts = options.caTrustCerts;
 
     if (options.userAuthIps) {
       for (const cidr of options.userAuthIps.split(',')) {
@@ -329,6 +332,9 @@ class Auth {
 
     // ----------------------------------------------------------------------------
     if (Auth.mode === 'oidc') {
+      if (Auth.#caTrustCerts !== undefined) {
+        OIDC.custom.setHttpOptionsDefaults({ca: Auth.#caTrustCerts});
+      }
       const issuer = await OIDC.Issuer.discover(Auth.#authConfig.discoverURL);
       const client = new issuer.Client({
         client_id: Auth.#authConfig.clientId,
