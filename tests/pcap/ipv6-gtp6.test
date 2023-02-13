@@ -107,7 +107,25 @@
                "status" : [
                   "NOERROR"
                ],
-               "statusCnt" : 1
+               "statusCnt" : 1,
+               "ttl" : [
+                   37,
+                   37,
+                   37,
+                   37,
+                   37,
+                   37,
+                   37,
+                   37,
+                   37,
+                   37,
+                   37,
+                   37,
+                   37,
+                   37,
+                   37
+               ],
+               "ttlCnt" : 15
             },
             "dstOui" : [
                "Juniper Networks"

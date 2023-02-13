@@ -101,7 +101,12 @@
                "status" : [
                   "NOERROR"
                ],
-               "statusCnt" : 1
+               "statusCnt" : 1,
+               "ttl" : [
+                   3600,
+                   3600
+               ],
+               "ttlCnt" : 2
             },
             "dstOui" : [
                "3Com"
@@ -652,7 +657,14 @@
                "status" : [
                   "NOERROR"
                ],
-               "statusCnt" : 1
+               "statusCnt" : 1,
+               "ttl" : [
+                   3425,
+                   3425,
+                   3425,
+                   3425
+               ],
+               "ttlCnt" : 4
             },
             "dstOui" : [
                "3Com"
@@ -995,7 +1007,14 @@
                "status" : [
                   "NOERROR"
                ],
-               "statusCnt" : 1
+               "statusCnt" : 1,
+               "ttl" : [
+                   3414,
+                   3414,
+                   3414,
+                   3414
+               ],
+               "ttlCnt" : 4
             },
             "dstOui" : [
                "3Com"
@@ -2642,7 +2661,12 @@
                "status" : [
                   "NOERROR"
                ],
-               "statusCnt" : 1
+               "statusCnt" : 1,
+               "ttl" : [
+                   3600,
+                   3600
+               ],
+               "ttlCnt" : 2
             },
             "dstOui" : [
                "3Com"
@@ -3364,7 +3388,12 @@
                "status" : [
                   "NOERROR"
                ],
-               "statusCnt" : 1
+               "statusCnt" : 1,
+               "ttl" : [
+                   3600,
+                   3600
+               ],
+               "ttlCnt" : 2
             },
             "dstOui" : [
                "3Com"

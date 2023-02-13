@@ -77,7 +77,12 @@
                "status" : [
                   "NOERROR"
                ],
-               "statusCnt" : 1
+               "statusCnt" : 1,
+               "ttl" : [
+                   4159,
+                   4159
+               ],
+               "ttlCnt" : 2
             },
             "dstOuterASN" : [
                "---",
@@ -407,7 +412,12 @@
                "status" : [
                   "NOERROR"
                ],
-               "statusCnt" : 1
+               "statusCnt" : 1,
+               "ttl" : [
+                   4158,
+                   4158
+               ],
+               "ttlCnt" : 2
             },
             "dstOuterASN" : [
                "---",
@@ -1365,7 +1375,12 @@
                "status" : [
                   "NOERROR"
                ],
-               "statusCnt" : 1
+               "statusCnt" : 1,
+               "ttl" : [
+                   4078,
+                   4078
+               ],
+               "ttlCnt" : 2
             },
             "dstOuterASN" : [
                "---",

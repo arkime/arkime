@@ -62,7 +62,18 @@
                "status" : [
                   "NOERROR"
                ],
-               "statusCnt" : 1
+               "statusCnt" : 1,
+               "ttl" : [
+                   188,
+                   188,
+                   188,
+                   188,
+                   188,
+                   188,
+                   188,
+                   188
+               ],
+               "ttlCnt" : 8
             },
             "dstPayload8" : "ac66818000010002",
             "dstRIR" : "ARIN",

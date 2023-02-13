@@ -71,7 +71,12 @@
                "status" : [
                   "NOERROR"
                ],
-               "statusCnt" : 1
+               "statusCnt" : 1,
+               "ttl" : [
+                   4,
+                   4
+               ],
+               "ttlCnt" : 2
             },
             "dstOui" : [
                "Cisco Systems, Inc",
@@ -204,7 +209,12 @@
                "status" : [
                   "NOERROR"
                ],
-               "statusCnt" : 1
+               "statusCnt" : 1,
+               "ttl" : [
+                   30,
+                   30
+               ],
+               "ttlCnt" : 2
             },
             "dstOui" : [
                "Cisco Systems, Inc"

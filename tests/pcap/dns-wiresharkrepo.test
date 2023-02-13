@@ -117,7 +117,20 @@
                   "NOERROR",
                   "NXDOMAIN"
                ],
-               "statusCnt" : 2
+               "statusCnt" : 2,
+               "ttl" : [
+                   600,
+                   600,
+                   600,
+                   600,
+                   82159,
+                   82159,
+                   86340,
+                   86340,
+                   86400,
+                   86400
+               ],
+               "ttlCnt" : 10
             },
             "dstOui" : [
                "Quanta Computer Inc"

@@ -30,6 +30,7 @@ LOCAL  int                   hostMailServerField;
 LOCAL  int                   punyField;
 LOCAL  int                   queryTypeField;
 LOCAL  int                   queryClassField;
+LOCAL  int                   ttlField;
 LOCAL  int                   statusField;
 LOCAL  int                   opCodeField;
 
@@ -316,7 +317,8 @@ LOCAL void dns_parser(MolochSession_t *session, int kind, const unsigned char *d
             BSB_IMPORT_u16 (bsb, antype);
             uint16_t anclass = 0;
             BSB_IMPORT_u16 (bsb, anclass);
-            BSB_IMPORT_skip(bsb, 4); // ttl
+            uint32_t ttl = 0;
+            BSB_IMPORT_u32(bsb, ttl);
             uint16_t rdlength = 0;
             BSB_IMPORT_u16 (bsb, rdlength);
 
@@ -343,6 +345,9 @@ LOCAL void dns_parser(MolochSession_t *session, int kind, const unsigned char *d
                 } else {
                     if (dns_find_host(hostField, session, (char *)name, namelen)) { // IP for looked-up hostname
                         moloch_field_ip4_add(ipField, session, in.s_addr);
+                        if (recordType == RESULT_RECORD_ANSWER) {
+                            moloch_field_int_add(ttlField, session, ttl);
+                        }
                     }
 
                     if (config.parseDNSRecordAll) {
@@ -418,6 +423,9 @@ LOCAL void dns_parser(MolochSession_t *session, int kind, const unsigned char *d
                 } else {
                     if (dns_find_host(hostField, session, (char *)name, namelen)) { // IP for looked-up hostname
                         moloch_field_ip6_add(ipField, session, ptr);
+                        if (recordType == RESULT_RECORD_ANSWER) {
+                            moloch_field_int_add(ttlField, session, ttl);
+                        }
                     }
 
                     if (config.parseDNSRecordAll) {
@@ -613,6 +621,12 @@ void moloch_parser_init()
         "DNS lookup query class",
         MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT,
         (char *)NULL);
+
+     ttlField = moloch_field_define("dns", "integer",
+         "dns.ttl", "Query TTL", "dns.ttl",
+         "DNS answer ttl",
+         MOLOCH_FIELD_TYPE_INT_ARRAY, MOLOCH_FIELD_FLAG_CNT,
+         (char *)NULL);
 
     qclasses[1]   = "IN";
     qclasses[2]   = "CS";
