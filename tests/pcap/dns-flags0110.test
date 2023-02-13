@@ -68,7 +68,13 @@
                "status" : [
                   "NOERROR"
                ],
-               "statusCnt" : 1
+               "statusCnt" : 1,
+               "ttl" : [
+                   491,
+                   491,
+                   491
+               ],
+               "ttlCnt" : 3
             },
             "dstOui" : [
                "Cisco Systems, Inc"
