@@ -461,7 +461,7 @@ else
     if [ ! -f "/usr/local/include/librdkafka/rdkafka.h" ]; then
       tar zxf librdkafka-$KAFKA.tar.gz
       echo "ARKIME: Building librddkafka";
-      (cd librdkafka-$KAFKA; ./configure --install-deps; $MAKE; $MAKE install)
+      (cd librdkafka-$KAFKA; ./configure --disable-sasl --install-deps; $MAKE; $MAKE install)
       if [ $? -ne 0 ]; then
         echo "ARKIME: $MAKE failed"
         exit 1
