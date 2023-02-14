@@ -21,10 +21,13 @@ DAQ=2.0.7
 NODE=16.19.0
 NGHTTP2=1.44.0
 ZSTD=1.5.2
+KAFKA=1.5.3
 
 TDIR="/opt/arkime"
 DOPFRING=0
 DODAQ=0
+DOKAFKA=0
+BUILDKAFKA=0
 DOCLEAN=0
 DONODE=1
 DOINSTALL=0
@@ -45,6 +48,11 @@ do
     ;;
   --daq)
     DODAQ=1
+    shift
+    ;;
+  --kafka)
+    DOKAFKA=1
+    BUILDKAFKA=1
     shift
     ;;
   --clean)
@@ -77,6 +85,7 @@ do
     echo "--pfring            = Build pfring support"
     echo "--daq               = Build daq support"
     echo "--nothirdparty      = Use OS packages instead of building thirdparty"
+    echo "--kafka             = Build kafka support"
     exit 0;
     ;;
   -*)
@@ -135,7 +144,7 @@ if [ -f "/etc/debian_version" ]; then
 
   # Just use OS packages, currently for Ubuntu 22
   if [ $DOTHIRDPARTY -eq 0 ]; then
-      apt-get -qq install libmaxminddb-dev libcurl4-openssl-dev libyara-dev libglib2.0-dev libpcap-dev libnghttp2-dev liblua5.4-dev
+      apt-get -qq install libmaxminddb-dev libcurl4-openssl-dev libyara-dev libglib2.0-dev libpcap-dev libnghttp2-dev liblua5.4-dev librdkafka-dev
       if [ $? -ne 0 ]; then
         echo "ARKIME: apt-get failed"
         exit 1
@@ -143,6 +152,10 @@ if [ -f "/etc/debian_version" ]; then
       export LUA_CFLAGS="-I/usr/include/lua5.4/"
       export LUA_LIBS="-llua5.4"
       with_lua=no
+
+      export KAFKA_CFLAGS="-I/usr/include/librdkafka/"
+      export KAFKA_LIBS="-lrdkafka"
+      with_kafka=no
   fi
 fi
 
@@ -150,9 +163,9 @@ if [ "$UNAME" = "Darwin" ]; then
   DONODE=0
   DOINSTALL=0
   if [ -x "/opt/local/bin/port" ]; then
-    sudo port install libpcap yara glib2 jansson ossp-uuid libmaxminddb libmagic pcre lua libyaml wget nghttp2
+    sudo port install libpcap yara glib2 jansson ossp-uuid libmaxminddb libmagic pcre lua libyaml wget nghttp2 librdkafka zstd
   elif [ -x "/usr/local/bin/brew" ] || [ -x "/opt/homebrew/bin/brew" ]; then
-    brew install libpcap yara glib jansson ossp-uuid libmaxminddb libmagic pcre lua libyaml openssl wget autoconf automake nghttp2 zstd
+    brew install libpcap yara glib jansson ossp-uuid libmaxminddb libmagic pcre lua libyaml openssl wget autoconf automake nghttp2 zstd librdkafka
   else
     echo "ARKIME: Please install MacPorts or Homebrew"
     exit 1
@@ -170,21 +183,99 @@ fi
 if [ "$UNAME" = "Darwin" ]; then
   echo "ARKIME: Building capture"
   if [ -x "/opt/local/bin/port" ]; then
-    echo './configure --with-maxminddb=/opt/local --with-libpcap=/opt/local --with-yara=/opt/local LDFLAGS="-L/opt/local/lib" --with-glib2=no GLIB2_CFLAGS="-I/opt/local/include/glib-2.0 -I/opt/local/lib/glib-2.0/include" GLIB2_LIBS="-L/opt/local/lib -lglib-2.0 -lgmodule-2.0 -lgobject-2.0 -lgio-2.0" --with-pfring=no --with-curl=yes --with-nghttp2=yes --with-lua=no LUA_CFLAGS="-I/opt/local/include" LUA_LIBS="-L/opt/local/lib -llua"'
-    ./configure --with-maxminddb=/opt/local --with-libpcap=/opt/local --with-yara=/opt/local LDFLAGS="-L/opt/local/lib" --with-glib2=no GLIB2_CFLAGS="-I/opt/local/include/glib-2.0 -I/opt/local/lib/glib-2.0/include" GLIB2_LIBS="-L/opt/local/lib -lglib-2.0 -lgmodule-2.0 -lgobject-2.0 -lgio-2.0" --with-pfring=no --with-curl=yes --with-nghttp2=yes --with-lua=no LUA_CFLAGS="-I/opt/local/include" LUA_LIBS="-L/opt/local/lib -llua"
+    echo './configure \
+      --with-maxminddb=/opt/local \
+      --with-libpcap=/opt/local \
+      --with-yara=/opt/local LDFLAGS="-L/opt/local/lib" \
+      --with-glib2=no GLIB2_CFLAGS="-I/opt/local/include/glib-2.0 -I/opt/local/lib/glib-2.0/include" GLIB2_LIBS="-L/opt/local/lib -lglib-2.0 -lgmodule-2.0 -lgobject-2.0 -lgio-2.0" \
+      --with-pfring=no \
+      --with-curl=yes \
+      --with-nghttp2=yes \
+      --with-lua=no LUA_CFLAGS="-I/opt/local/include" LUA_LIBS="-L/opt/local/lib -llua"'
+
+    ./configure \
+      --with-maxminddb=/opt/local \
+      --with-libpcap=/opt/local \
+      --with-yara=/opt/local LDFLAGS="-L/opt/local/lib" \
+      --with-glib2=no GLIB2_CFLAGS="-I/opt/local/include/glib-2.0 -I/opt/local/lib/glib-2.0/include" GLIB2_LIBS="-L/opt/local/lib -lglib-2.0 -lgmodule-2.0 -lgobject-2.0 -lgio-2.0" \
+      --with-pfring=no \
+      --with-curl=yes \
+      --with-nghttp2=yes \
+      --with-lua=no LUA_CFLAGS="-I/opt/local/include" LUA_LIBS="-L/opt/local/lib -llua"
   elif [ -x "/usr/local/bin/brew" ]; then
-    echo './configure --with-libpcap=/usr/local/opt/libpcap --with-yara=/usr/local LDFLAGS="-L/usr/local/lib" --with-glib2=no GLIB2_CFLAGS="-I/usr/local/include/glib-2.0 -I/usr/local/lib/glib-2.0/include -I/usr/local/opt/openssl@1.1/include" GLIB2_LIBS="-L/usr/local/lib -lglib-2.0 -lgmodule-2.0 -lgobject-2.0 -lgio-2.0 -L/usr/local/opt/openssl@1.1/lib" --with-pfring=no --with-curl=yes --with-nghttp2=yes --with-lua=no LUA_CFLAGS="-I/usr/local/include/lua" LUA_LIBS="-L/usr/local/lib -llua" --with-zstd=yes'
-          ./configure --with-libpcap=/usr/local/opt/libpcap --with-yara=/usr/local LDFLAGS="-L/usr/local/lib" --with-glib2=no GLIB2_CFLAGS="-I/usr/local/include/glib-2.0 -I/usr/local/lib/glib-2.0/include -I/usr/local/opt/openssl@1.1/include" GLIB2_LIBS="-L/usr/local/lib -lglib-2.0 -lgmodule-2.0 -lgobject-2.0 -lgio-2.0 -L/usr/local/opt/openssl@1.1/lib" --with-pfring=no --with-curl=yes --with-nghttp2=yes --with-lua=no LUA_CFLAGS="-I/usr/local/include/lua" LUA_LIBS="-L/usr/local/lib -llua" --with-zstd=yes
+    echo './configure \
+      --with-libpcap=/usr/local/opt/libpcap \
+      --with-yara=/usr/local LDFLAGS="-L/usr/local/lib" \
+      --with-glib2=no GLIB2_CFLAGS="-I/usr/local/include/glib-2.0 -I/usr/local/lib/glib-2.0/include -I/usr/local/opt/openssl@1.1/include" GLIB2_LIBS="-L/usr/local/lib -lglib-2.0 -lgmodule-2.0 -lgobject-2.0 -lgio-2.0 -L/usr/local/opt/openssl@1.1/lib" \
+      --with-pfring=no \
+      --with-curl=yes \
+      --with-nghttp2=yes \
+      --with-lua=no LUA_CFLAGS="-I/usr/local/include/lua" LUA_LIBS="-L/usr/local/lib -llua" \
+      --with-zstd=yes \
+      --with-kafka=no KAFKA_CFLAGS="-I/opt/homebrew/Cellar/librdkafka/2.0.2/include/librdkafka" KAFKA_LIBS="-L/opt/homebrew/lib -lrdkafka"'
+
+    ./configure \
+      --with-libpcap=/usr/local/opt/libpcap \
+      --with-yara=/usr/local LDFLAGS="-L/usr/local/lib" \
+      --with-glib2=no GLIB2_CFLAGS="-I/usr/local/include/glib-2.0 -I/usr/local/lib/glib-2.0/include -I/usr/local/opt/openssl@1.1/include" GLIB2_LIBS="-L/usr/local/lib -lglib-2.0 -lgmodule-2.0 -lgobject-2.0 -lgio-2.0 -L/usr/local/opt/openssl@1.1/lib" \
+      --with-pfring=no \
+      --with-curl=yes \
+      --with-nghttp2=yes \
+      --with-lua=no LUA_CFLAGS="-I/usr/local/include/lua" LUA_LIBS="-L/usr/local/lib -llua" \
+      --with-zstd=yes \
+      --with-kafka=no KAFKA_CFLAGS="-I/usr/local/Cellar/librdkafka/2.0.2/include/librdkafka" KAFKA_LIBS="-L/opt/homebrew/lib -lrdkafka"
+
   elif [ -x "/opt/homebrew/bin/brew" ]; then
-    echo './configure --with-libpcap=/opt/homebrew/opt/libpcap --with-maxminddb=/opt/homebrew --with-yara=/opt/homebrew CFLAGS="-I/opt/homebrew/include" LDFLAGS="-L/opt/homebrew/lib" --with-glib2=no GLIB2_CFLAGS="-I/opt/homebrew/include/glib-2.0 -I/opt/homebrew/lib/glib-2.0/include -I/opt/homebrew/opt/openssl@1.1/include" GLIB2_LIBS="-L/opt/homebrew/lib -lglib-2.0 -lgmodule-2.0 -lgobject-2.0 -lgio-2.0 -L/opt/homebrew/opt/openssl@1.1/lib" --with-pfring=no --with-curl=yes --with-nghttp2=yes --with-lua=no LUA_CFLAGS="-I/opt/homebrew/include/lua" LUA_LIBS="-L/opt/homebrew/lib -llua" --with-zstd=yes'
-         ./configure --with-libpcap=/opt/homebrew/opt/libpcap --with-maxminddb=/opt/homebrew --with-yara=/opt/homebrew CFLAGS="-I/opt/homebrew/include" LDFLAGS="-L/opt/homebrew/lib" --with-glib2=no GLIB2_CFLAGS="-I/opt/homebrew/include/glib-2.0 -I/opt/homebrew/lib/glib-2.0/include -I/opt/homebrew/opt/openssl@1.1/include" GLIB2_LIBS="-L/opt/homebrew/lib -lglib-2.0 -lgmodule-2.0 -lgobject-2.0 -lgio-2.0 -L/opt/homebrew/opt/openssl@1.1/lib" --with-pfring=no --with-curl=yes --with-nghttp2=yes --with-lua=no LUA_CFLAGS="-I/opt/homebrew/include/lua" LUA_LIBS="-L/opt/homebrew/lib -llua" --with-zstd=yes
+    echo './configure \
+      --with-libpcap=/opt/homebrew/opt/libpcap \
+      --with-maxminddb=/opt/homebrew \
+      --with-yara=/opt/homebrew CFLAGS="-I/opt/homebrew/include" LDFLAGS="-L/opt/homebrew/lib" \
+      --with-glib2=no GLIB2_CFLAGS="-I/opt/homebrew/include/glib-2.0 -I/opt/homebrew/lib/glib-2.0/include -I/opt/homebrew/opt/openssl@1.1/include" GLIB2_LIBS="-L/opt/homebrew/lib -lglib-2.0 -lgmodule-2.0 -lgobject-2.0 -lgio-2.0 -L/opt/homebrew/opt/openssl@1.1/lib" \
+      --with-pfring=no \
+      --with-curl=yes \
+      --with-nghttp2=yes \
+      --with-lua=no LUA_CFLAGS="-I/opt/homebrew/include/lua" LUA_LIBS="-L/opt/homebrew/lib -llua" \
+      --with-zstd=yes \
+      --with-kafka=no KAFKA_CFLAGS="-I/opt/homebrew/Cellar/librdkafka/2.0.2/include/librdkafka" KAFKA_LIBS="-L/opt/homebrew/lib -lrdkafka"'
+
+    ./configure \
+      --with-libpcap=/opt/homebrew/opt/libpcap \
+      --with-maxminddb=/opt/homebrew \
+      --with-yara=/opt/homebrew CFLAGS="-I/opt/homebrew/include" LDFLAGS="-L/opt/homebrew/lib" \
+      --with-glib2=no GLIB2_CFLAGS="-I/opt/homebrew/include/glib-2.0 -I/opt/homebrew/lib/glib-2.0/include -I/opt/homebrew/opt/openssl@1.1/include" GLIB2_LIBS="-L/opt/homebrew/lib -lglib-2.0 -lgmodule-2.0 -lgobject-2.0 -lgio-2.0 -L/opt/homebrew/opt/openssl@1.1/lib" \
+      --with-pfring=no \
+      --with-curl=yes \
+      --with-nghttp2=yes \
+      --with-lua=no LUA_CFLAGS="-I/opt/homebrew/include/lua" LUA_LIBS="-L/opt/homebrew/lib -llua" \
+      --with-zstd=yes \
+      --with-kafka=no KAFKA_CFLAGS="-I/opt/homebrew/Cellar/librdkafka/2.0.2/include/librdkafka" KAFKA_LIBS="-L/opt/homebrew/lib -lrdkafka"
   fi
 elif [ -f "/etc/arch-release" ]; then
-    sudo pacman -Sy --noconfirm gcc ruby make python-pip git perl perl-test-differences sudo wget gawk lua geoip yara file libpcap libmaxminddb libnet lua libtool autoconf gettext automake perl-http-message perl-lwp-protocol-https perl-json perl-socket6 zstd openssl-1.1 pcre
-    echo './configure --with-zstd=yes --with-libpcap=no --with-yara=no --with-glib2=no --with-pfring=no --with-curl=no --with-lua=no LIBS="-lpcap -lyara -llua -lcurl" GLIB2_CFLAGS="-I/usr/include/glib-2.0 -I/usr/lib/glib-2.0/include" GLIB2_LIBS="-lglib-2.0 -lgmodule-2.0 -lgobject-2.0 -lgio-2.0"'
-    ./configure --with-zstd=yes --with-libpcap=no --with-yara=no --with-glib2=no --with-pfring=no --with-curl=no --with-lua=no LIBS="-lpcap -lyara -llua -lcurl" GLIB2_CFLAGS="-I/usr/include/glib-2.0 -I/usr/lib/glib-2.0/include" GLIB2_LIBS="-lglib-2.0 -lgmodule-2.0 -lgobject-2.0 -lgio-2.0"
+    sudo pacman -Sy --noconfirm gcc ruby make python-pip git perl perl-test-differences sudo wget gawk lua geoip yara file libpcap libmaxminddb libnet lua libtool autoconf gettext automake perl-http-message perl-lwp-protocol-https perl-json perl-socket6 zstd openssl-1.1 pcre librdkafka
+
+    DOKAFKA=1
+    BUILDKAFKA=0
+
+    echo './configure \
+      --with-zstd=yes \
+      --with-libpcap=no \
+      --with-yara=no \
+      --with-glib2=no \
+      --with-pfring=no \
+      --with-curl=no \
+      --with-lua=no LIBS="-lpcap -lyara -llua -lcurl" GLIB2_CFLAGS="-I/usr/include/glib-2.0 -I/usr/lib/glib-2.0/include" GLIB2_LIBS="-lglib-2.0 -lgmodule-2.0 -lgobject-2.0 -lgio-2.0 -lrdkafka"\
+      --with-kafka=no'
+    ./configure \
+      --with-zstd=yes \
+      --with-libpcap=no \
+      --with-yara=no \
+      --with-glib2=no \
+      --with-pfring=no \
+      --with-curl=no \
+      --with-lua=no LIBS="-lpcap -lyara -llua -lcurl" GLIB2_CFLAGS="-I/usr/include/glib-2.0 -I/usr/lib/glib-2.0/include" GLIB2_LIBS="-lglib-2.0 -lgmodule-2.0 -lgobject-2.0 -lgio-2.0 -lrdkafka" \
+      --with-kafka=no
 elif [ $DOTHIRDPARTY -eq 0 ]; then
-    ./configure --with-lua=$with_lua
+    ./configure --with-lua=$with_lua --with-kafka=$with_kafka
 else
   echo "ARKIME: Downloading and building static thirdparty libraries"
   if [ ! -d "thirdparty" ]; then
@@ -366,12 +457,32 @@ else
     WITHZSTD=""
   fi
 
+    # kafka
+  if [ $BUILDKAFKA -eq 1 ]; then
+    if [ ! -f "librdkafka-$KAFKA.tar.gz" ]; then
+      wget https://github.com/edenhill/librdkafka/archive/v$KAFKA.tar.gz -O librdkafka-$KAFKA.tar.gz
+    fi
+    if [ ! -f "/usr/local/include/librdkafka/rdkafka.h" ]; then
+      tar zxf librdkafka-$KAFKA.tar.gz
+      echo "ARKIME: Building librddkafka";
+      (cd librdkafka-$KAFKA; ./configure --disable-sasl --install-deps; $MAKE; $MAKE install)
+      if [ $? -ne 0 ]; then
+        echo "ARKIME: $MAKE failed"
+        exit 1
+      fi
+    else
+      echo "ARKIME: NOT rebuilding librdkafka";
+    fi
+    KAFKALIBDIR=$TPWD/librdkafka-$KAFKA
+    KAFKALIBDIR=/usr/local/include/librdkafka
+    KAFKABUILD="--with-kafka=$KAFKALIBDIR"
+  fi
 
   # Now build arkime
   echo "ARKIME: Building capture"
   cd ..
-  echo "./configure --prefix=$TDIR $PCAPBUILD --with-yara=thirdparty/yara/yara-$YARA --with-maxminddb=thirdparty/libmaxminddb-$MAXMIND $WITHGLIB $WITHCURL --with-nghttp2=thirdparty/nghttp2-$NGHTTP2 --with-lua=thirdparty/lua-$LUA $WITHZSTD"
-        ./configure --prefix=$TDIR $PCAPBUILD --with-yara=thirdparty/yara/yara-$YARA --with-maxminddb=thirdparty/libmaxminddb-$MAXMIND $WITHGLIB $WITHCURL --with-nghttp2=thirdparty/nghttp2-$NGHTTP2 --with-lua=thirdparty/lua-$LUA $WITHZSTD
+  echo "./configure --prefix=$TDIR $PCAPBUILD --with-yara=thirdparty/yara/yara-$YARA --with-maxminddb=thirdparty/libmaxminddb-$MAXMIND $WITHGLIB $WITHCURL --with-nghttp2=thirdparty/nghttp2-$NGHTTP2 --with-lua=thirdparty/lua-$LUA $WITHZSTD $KAFKABUILD"
+        ./configure --prefix=$TDIR $PCAPBUILD --with-yara=thirdparty/yara/yara-$YARA --with-maxminddb=thirdparty/libmaxminddb-$MAXMIND $WITHGLIB $WITHCURL --with-nghttp2=thirdparty/nghttp2-$NGHTTP2 --with-lua=thirdparty/lua-$LUA $WITHZSTD $KAFKABUILD
 fi
 
 if [ $DOCLEAN -eq 1 ]; then
@@ -397,6 +508,14 @@ fi
 
 if [ -f "/opt/snf/lib/libsnf.so" ]; then
     (cd capture/plugins/snf; $MAKE)
+fi
+
+if [ $DOKAFKA -eq 1 ]; then
+    (cd capture/plugins/kafka; $MAKE)
+    if [ $? -ne 0 ]; then
+      echo "ARKIME: Kafka plugin failed"
+      exit 1
+    fi
 fi
 
 # Remove old install dir
