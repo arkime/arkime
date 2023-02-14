@@ -252,7 +252,7 @@ jobs:
         image: andywick/arkime-build-arch:3.0.1-2
         steps:
             - (cd / ; curl https://s3.amazonaws.com/files.molo.ch/snfmin.tar.gz | tar -zxvf -)
-            - build: ./easybutton-build.sh --rminstall
+            - build: ./easybutton-build.sh --rminstall --kafka
             - test-capture: (cd tests ; ./tests.pl)
             - export PATH=/opt/arkime/bin:$PATH
             - npm -g config set user root
@@ -280,7 +280,7 @@ jobs:
         steps:
             - (cd / ; curl https://s3.amazonaws.com/files.molo.ch/snfmin.tar.gz | tar -zxvf -)
             - ln -s /thirdparty .
-            - build: scl enable devtoolset-9 rh-python36 "./easybutton-build.sh --daq --pfring --rminstall --dir /data/moloch"
+            - build: scl enable devtoolset-9 rh-python36 "./easybutton-build.sh --daq --pfring --rminstall --dir /data/moloch --kafka"
             - yum -y install libasan-static devtoolset-9-libasan-devel libasan4 devtoolset-9-libubsan-devel libubsan which
             - build-sanitize: (cd capture; scl enable devtoolset-9 rh-python36 "make SANITIZE_LDFLAGS='-fno-common -fsanitize=address -fsanitize=undefined -fno-omit-frame-pointer' sanitize")
             - test-capture: (cd tests ; ./tests.pl)
