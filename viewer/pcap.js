@@ -854,7 +854,11 @@ Pcap.prototype.pcap = function (buffer, obj) {
     break;
   case 12: // LOOP
   case 101: // RAW
-    this.ip4(buffer.slice(16, obj.pcap.incl_len + 16), obj, 16);
+    if ((buffer[16] & 0xF0) === 0x60) {
+      this.ip6(buffer.slice(16, obj.pcap.incl_len + 16), obj, 16);
+    } else {
+      this.ip4(buffer.slice(16, obj.pcap.incl_len + 16), obj, 16);
+    }
     break;
   case 107: // Frame Relay
     this.framerelay(buffer.slice(16, obj.pcap.incl_len + 16), obj, 16);
