@@ -51,7 +51,7 @@ If you prefer using containers for building and testing, in the `docker/testing`
 that can be used to build Arkime and run the tests easily without polluting your system.
 
 Depending on what you are developing or testing, make sure to include the folder where the source files are as a volume to the `arkime` container defined in
-the `docker-compose.yaml` file. The default is to have the `capture/parsers` and `tests` directories mounted as volumes, allowing development within those directories
+the `docker-compose.yaml` file. The default is to have the `capture` and `tests` directories mounted as volumes, allowing development within those directories
 and then recompiling/retesting without having to rebuild the container image. The last volume needs to stay the same, since it as the correct configuration values to work
 within the docker compose environment defined by the accompanying `docker-compose.yaml` file.
 
@@ -64,7 +64,7 @@ services:
       context: ../../.
     volumes:
       # Change the following 2 lines to whatever folder you are developing in, make sure to leave the last line as is
-      - ../../capture/parsers:/src/capture/parsers
+      - ../../capture:/src/capture
       - ../../tests:/src/tests
       - ./config.test.ini:/src/tests/config.test.ini
     command: sleep 300000
