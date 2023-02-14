@@ -21,10 +21,12 @@ DAQ=2.0.7
 NODE=16.19.0
 NGHTTP2=1.44.0
 ZSTD=1.5.2
+KAFKA=1.5.3
 
 TDIR="/opt/arkime"
 DOPFRING=0
 DODAQ=0
+DOKAFKA=0
 DOCLEAN=0
 DONODE=1
 DOINSTALL=0
@@ -45,6 +47,10 @@ do
     ;;
   --daq)
     DODAQ=1
+    shift
+    ;;
+  --kafka)
+    DOKAFKA=1
     shift
     ;;
   --clean)
@@ -77,6 +83,7 @@ do
     echo "--pfring            = Build pfring support"
     echo "--daq               = Build daq support"
     echo "--nothirdparty      = Use OS packages instead of building thirdparty"
+    echo "--kafka             = Build kafka support"
     exit 0;
     ;;
   -*)
@@ -366,12 +373,32 @@ else
     WITHZSTD=""
   fi
 
+    # kafka
+  if [ $DOKAFKA -eq 1 ]; then
+    if [ ! -f "librdkafka-$KAFKA.tar.gz" ]; then
+      wget https://github.com/edenhill/librdkafka/archive/v$KAFKA.tar.gz -O librdkafka-$KAFKA.tar.gz
+    fi
+    if [ ! -f "/usr/local/include/librdkafka/rdkafka.h" ]; then
+      tar zxf librdkafka-$KAFKA.tar.gz
+      echo "ARKIME: Building librddkafka";
+      (cd librdkafka-$KAFKA; ./configure --install-deps; $MAKE; $MAKE install)
+      if [ $? -ne 0 ]; then
+        echo "ARKIME: $MAKE failed"
+        exit 1
+      fi
+    else
+      echo "ARKIME: NOT rebuilding librdkafka";
+    fi
+    KAFKALIBDIR=$TPWD/librdkafka-$KAFKA
+    KAFKALIBDIR=/usr/local/include/librdkafka
+    KAFKABUILD="--with-kafka=$KAFKALIBDIR"
+  fi
 
   # Now build arkime
   echo "ARKIME: Building capture"
   cd ..
-  echo "./configure --prefix=$TDIR $PCAPBUILD --with-yara=thirdparty/yara/yara-$YARA --with-maxminddb=thirdparty/libmaxminddb-$MAXMIND $WITHGLIB $WITHCURL --with-nghttp2=thirdparty/nghttp2-$NGHTTP2 --with-lua=thirdparty/lua-$LUA $WITHZSTD"
-        ./configure --prefix=$TDIR $PCAPBUILD --with-yara=thirdparty/yara/yara-$YARA --with-maxminddb=thirdparty/libmaxminddb-$MAXMIND $WITHGLIB $WITHCURL --with-nghttp2=thirdparty/nghttp2-$NGHTTP2 --with-lua=thirdparty/lua-$LUA $WITHZSTD
+  echo "./configure --prefix=$TDIR $PCAPBUILD --with-yara=thirdparty/yara/yara-$YARA --with-maxminddb=thirdparty/libmaxminddb-$MAXMIND $WITHGLIB $WITHCURL --with-nghttp2=thirdparty/nghttp2-$NGHTTP2 --with-lua=thirdparty/lua-$LUA $WITHZSTD $KAFKABUILD"
+        ./configure --prefix=$TDIR $PCAPBUILD --with-yara=thirdparty/yara/yara-$YARA --with-maxminddb=thirdparty/libmaxminddb-$MAXMIND $WITHGLIB $WITHCURL --with-nghttp2=thirdparty/nghttp2-$NGHTTP2 --with-lua=thirdparty/lua-$LUA $WITHZSTD $KAFKABUILD
 fi
 
 if [ $DOCLEAN -eq 1 ]; then
@@ -397,6 +424,14 @@ fi
 
 if [ -f "/opt/snf/lib/libsnf.so" ]; then
     (cd capture/plugins/snf; $MAKE)
+fi
+
+if [ $DOKAFKA -eq 1 ]; then
+    (cd capture/plugins/kafka; $MAKE)
+    if [ $? -ne 0 ]; then
+      echo "ARKIME: Kafka plugin failed"
+      exit 1
+    fi
 fi
 
 # Remove old install dir
