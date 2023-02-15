@@ -141,7 +141,7 @@ char *moloch_session_id_string (uint8_t *sessionId, char *buf)
     return moloch_sprint_hex_string(buf, sessionId, sessionId[0]);
 }
 /******************************************************************************/
-char *moloch_session_pretty_string (MolochSession_t *session, char *buf, int len)
+char *moloch_session_pretty_string (const MolochSession_t * const session, char *buf, int len)
 {
     BSB bsb;
     BSB_INIT(bsb, buf, len);
