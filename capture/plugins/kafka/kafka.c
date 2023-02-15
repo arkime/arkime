@@ -80,7 +80,6 @@ LOCAL void kafka_msg_delivered_bulk_cb(rd_kafka_t *UNUSED(rk), const rd_kafka_me
  */
 LOCAL void kafka_msg_delivered_shared_cb(rd_kafka_t *UNUSED(rk), const rd_kafka_message_t *rkmessage, void *UNUSED(opaque))
 {
-
     if (rkmessage->err) {
         LOG("Message delivery failed (broker %"PRId32"): %s",
             rd_kafka_message_broker_id(rkmessage),
@@ -108,50 +107,45 @@ LOCAL void kafka_msg_delivered_shared_cb(rd_kafka_t *UNUSED(rk), const rd_kafka_
 /******************************************************************************/
 LOCAL void kafka_send_session_bulk(char *json, int len)
 {
-
-    rd_kafka_resp_err_t err;
-
     if (config.debug)
         LOG("About to send %d bytes in kafka %s, opaque=%p", len, topic, json);
 
-retry:
-    err = rd_kafka_producev(
-        /* Producer handle */
-        rk,
-        /* Topic name */
-        RD_KAFKA_V_TOPIC(topic),
-        /* Message value and length */
-        RD_KAFKA_V_VALUE(json, len),
-        /* Per-Message opaque, provided in
-         * delivery report callback as
-         * msg_opaque. */
-        RD_KAFKA_V_OPAQUE(json),
-        /* End sentinel */
-        RD_KAFKA_V_END);
+    // We will retry up to 5 times if RD_KAFKA_RESP_ERR__QUEUE_FULL error
+    for (int i = 0; i < 5; i++) {
+        rd_kafka_resp_err_t err;
+        err = rd_kafka_producev(
+            rk,
+            RD_KAFKA_V_TOPIC(topic),
+            RD_KAFKA_V_VALUE(json, len),
+            RD_KAFKA_V_OPAQUE(json),
+            RD_KAFKA_V_END);
 
-    if (err) {
-        /*
-         * Failed to *enqueue* message for producing.
-         */
-        LOG("Failed to produce to topic %s: %s", topic, rd_kafka_err2str(err));
+        if (err) {
+            /* Failed to *enqueue* message for producing. */
+            LOG("Failed to produce to topic %s: %s", topic, rd_kafka_err2str(err));
 
-        if (err == RD_KAFKA_RESP_ERR__QUEUE_FULL) {
-            /* If the internal queue is full, wait for
-             * messages to be delivered and then retry.
-             * The internal queue represents both
-             * messages to be sent and messages that have
-             * been sent or failed, awaiting their
-             * delivery report callback to be called.
-             *
-             * The internal queue is limited by the
-             * configuration property
-             * queue.buffering.max.messages */
-            rd_kafka_poll(rk, 1000 /*block for max 1000ms*/);
-            goto retry;
+            if (err == RD_KAFKA_RESP_ERR__QUEUE_FULL) {
+                /* If the internal queue is full, wait for
+                 * messages to be delivered and then retry.
+                 * The internal queue represents both
+                 * messages to be sent and messages that have
+                 * been sent or failed, awaiting their
+                 * delivery report callback to be called.
+                 *
+                 * The internal queue is limited by the
+                 * configuration property
+                 * queue.buffering.max.messages */
+                rd_kafka_poll(rk, 100 /*block for max 100ms*/);
+                continue;
+            }
+
+            // Not retrying, free buffer
+            moloch_http_free_buffer(json);
+        } else {
+            if (config.debug)
+                LOG("Enqueued message (%d bytes) for topic %s", len, topic);
         }
-    } else {
-        if (config.debug)
-            LOG("Enqueued message (%d bytes) for topic %s", len, topic);
+        break;
     }
 
     /* A producer application should continually serve
@@ -176,7 +170,6 @@ LOCAL void kafka_send_session_bulk1(char *json, int len)
     shared->json = json;
 
     while (json < end) {
-
         char *newline1 = memchr(json, '\n', end - json);
         if (!newline1) // Shouldn't happen
             break;
@@ -185,51 +178,44 @@ LOCAL void kafka_send_session_bulk1(char *json, int len)
         if (!newline2) // Shouldn't happen
             break;
 
-        rd_kafka_resp_err_t err;
-
-        shared->count++;
-
         if (config.debug)
             LOG("About to send #%d %d bytes in kafka %s, opaque=%p", shared->count, len, topic, json);
 
-    retry:
-        err = rd_kafka_producev(
-            /* Producer handle */
-            rk,
-            /* Topic name */
-            RD_KAFKA_V_TOPIC(topic),
-            /* Message value and length */
-            RD_KAFKA_V_VALUE(json, (int)(newline2 - json + 1)), // [bulk header]\n[doc]\n - 2 newlines
-            /* Per-Message opaque, provided in
-             * delivery report callback as
-             * msg_opaque. */
-            RD_KAFKA_V_OPAQUE(shared),
-            /* End sentinel */
-            RD_KAFKA_V_END);
 
-        if (err) {
-            /*
-             * Failed to *enqueue* message for producing.
-             */
-            LOG("Failed to produce to topic %s: %s", topic, rd_kafka_err2str(err));
+        // We will retry up to 5 times if RD_KAFKA_RESP_ERR__QUEUE_FULL error
+        for (int i = 0; i < 5; i++) {
+            rd_kafka_resp_err_t err;
+            err = rd_kafka_producev(
+                rk,
+                RD_KAFKA_V_TOPIC(topic),
+                RD_KAFKA_V_VALUE(json, (int)(newline2 - json + 1)), // [bulk header]\n[doc]\n - 2 newlines
+                RD_KAFKA_V_OPAQUE(shared),
+                RD_KAFKA_V_END);
 
-            if (err == RD_KAFKA_RESP_ERR__QUEUE_FULL) {
-                /* If the internal queue is full, wait for
-                 * messages to be delivered and then retry.
-                 * The internal queue represents both
-                 * messages to be sent and messages that have
-                 * been sent or failed, awaiting their
-                 * delivery report callback to be called.
-                 *
-                 * The internal queue is limited by the
-                 * configuration property
-                 * queue.buffering.max.messages */
-                rd_kafka_poll(rk, 1000 /*block for max 1000ms*/);
-                goto retry;
+            if (err) {
+                /* Failed to *enqueue* message for producing. */
+                LOG("Failed to produce to topic %s: %s", topic, rd_kafka_err2str(err));
+
+                if (err == RD_KAFKA_RESP_ERR__QUEUE_FULL) {
+                    /* If the internal queue is full, wait for
+                     * messages to be delivered and then retry.
+                     * The internal queue represents both
+                     * messages to be sent and messages that have
+                     * been sent or failed, awaiting their
+                     * delivery report callback to be called.
+                     *
+                     * The internal queue is limited by the
+                     * configuration property
+                     * queue.buffering.max.messages */
+                    rd_kafka_poll(rk, 100 /*block for max 100ms*/);
+                    continue;
+                }
+            } else {
+                if (config.debug)
+                    LOG("Enqueued message (%d bytes) for topic %s", len, topic);
+                shared->count++;
             }
-        } else {
-            if (config.debug)
-                LOG("Enqueued message (%d bytes) for topic %s", len, topic);
+            break;
         }
 
         /* A producer application should continually serve
@@ -247,6 +233,12 @@ LOCAL void kafka_send_session_bulk1(char *json, int len)
 
         json = newline2 + 1;
     }
+
+    // nothing was produced
+    if (shared->count == 0) {
+        moloch_http_free_buffer(shared->json);
+        MOLOCH_TYPE_FREE(KafkaShared_t, shared);
+    }
 }
 
 /******************************************************************************/
@@ -258,58 +250,50 @@ LOCAL void kafka_send_session_doc(char *json, int len)
 
     while (json < end) {
         char *newline1 = memchr(json, '\n', end - json);
-        if (!newline1) // Shouldn't happen
+        if (unlikely(!newline1)) // Shouldn't happen
             break;
 
         char *newline2 = memchr(newline1 + 1, '\n', end - newline1 - 1);
-        if (!newline2) // Shouldn't happen
+        if (unlikely(!newline2)) // Shouldn't happen
             break;
-
-        rd_kafka_resp_err_t err;
-
-        shared->count++;
 
         if (config.debug)
             LOG("About to send #%d %d bytes in kafka %s, opaque=%p", shared->count, len, topic, json);
 
-    retry:
-        err = rd_kafka_producev(
-            /* Producer handle */
-            rk,
-            /* Topic name */
-            RD_KAFKA_V_TOPIC(topic),
-            /* Message value and length */
-            RD_KAFKA_V_VALUE(newline1 + 1, (int)(newline2 - newline1 - 1)), // [doc] - No newlines
-            /* Per-Message opaque, provided in
-             * delivery report callback as
-             * msg_opaque. */
-            RD_KAFKA_V_OPAQUE(shared),
-            /* End sentinel */
-            RD_KAFKA_V_END);
+        // We will retry up to 5 times if RD_KAFKA_RESP_ERR__QUEUE_FULL error
+        for (int i = 0; i < 5; i++) {
+            rd_kafka_resp_err_t err;
+            err = rd_kafka_producev(
+                rk,
+                RD_KAFKA_V_TOPIC(topic),
+                RD_KAFKA_V_VALUE(newline1 + 1, (int)(newline2 - newline1 - 1)), // [doc] - No newlines
+                RD_KAFKA_V_OPAQUE(shared),
+                RD_KAFKA_V_END);
 
-        if (err) {
-            /*
-             * Failed to *enqueue* message for producing.
-             */
-            LOG("Failed to produce to topic %s: %s", topic, rd_kafka_err2str(err));
+            if (err) {
+                /* Failed to *enqueue* message for producing. */
+                LOG("Failed to produce to topic %s: %s", topic, rd_kafka_err2str(err));
 
-            if (err == RD_KAFKA_RESP_ERR__QUEUE_FULL) {
-                /* If the internal queue is full, wait for
-                 * messages to be delivered and then retry.
-                 * The internal queue represents both
-                 * messages to be sent and messages that have
-                 * been sent or failed, awaiting their
-                 * delivery report callback to be called.
-                 *
-                 * The internal queue is limited by the
-                 * configuration property
-                 * queue.buffering.max.messages */
-                rd_kafka_poll(rk, 1000 /*block for max 1000ms*/);
-                goto retry;
+                if (err == RD_KAFKA_RESP_ERR__QUEUE_FULL) {
+                    /* If the internal queue is full, wait for
+                     * messages to be delivered and then retry.
+                     * The internal queue represents both
+                     * messages to be sent and messages that have
+                     * been sent or failed, awaiting their
+                     * delivery report callback to be called.
+                     *
+                     * The internal queue is limited by the
+                     * configuration property
+                     * queue.buffering.max.messages */
+                    rd_kafka_poll(rk, 100 /*block for max 100ms*/);
+                    continue;
+                }
+            } else {
+                if (config.debug)
+                    LOG("Enqueued message (%d bytes) for topic %s", len, topic);
+                shared->count++;
             }
-        } else {
-            if (config.debug)
-                LOG("Enqueued message (%d bytes) for topic %s", len, topic);
+            break;
         }
 
         /* A producer application should continually serve
@@ -326,6 +310,12 @@ LOCAL void kafka_send_session_doc(char *json, int len)
         rd_kafka_poll(rk, 0 /*non-blocking*/);
 
         json = newline2 + 1;
+    }
+
+    // nothing was produced
+    if (shared->count == 0) {
+        moloch_http_free_buffer(shared->json);
+        MOLOCH_TYPE_FREE(KafkaShared_t, shared);
     }
 }
 
