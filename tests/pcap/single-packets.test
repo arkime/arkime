@@ -53,6 +53,7 @@
                "method" : [
                   "GET"
                ],
+               "method-GET" : 1,
                "methodCnt" : 1,
                "path" : [
                   "/activityi;src=4378683;type=Shang0;cat=Conte0;ord=8420330732348;gtm=G7g;u4=undefined;~oref=http%3A%2F%2Fwww.shangri-la.com%2F"
@@ -237,6 +238,7 @@
                "method" : [
                   "GET"
                ],
+               "method-GET" : 1,
                "methodCnt" : 1,
                "path" : [
                   "/HotelBookableDateJson.json"
@@ -397,6 +399,7 @@
                "method" : [
                   "GET"
                ],
+               "method-GET" : 1,
                "methodCnt" : 1,
                "path" : [
                   "/usersync"
@@ -560,6 +563,7 @@
                "method" : [
                   "POST"
                ],
+               "method-POST" : 1,
                "methodCnt" : 1,
                "path" : [
                   "/RT"
@@ -748,6 +752,7 @@
                "method" : [
                   "GET"
                ],
+               "method-GET" : 1,
                "methodCnt" : 1,
                "path" : [
                   "/"
@@ -930,6 +935,7 @@
                "method" : [
                   "GET"
                ],
+               "method-GET" : 1,
                "methodCnt" : 1,
                "path" : [
                   "/r/collect"
@@ -1104,6 +1110,7 @@
                "method" : [
                   "GET"
                ],
+               "method-GET" : 1,
                "methodCnt" : 1,
                "path" : [
                   "/maps/api/js/QuotaService.RecordEvent"
@@ -1277,6 +1284,7 @@
                "method" : [
                   "GET"
                ],
+               "method-GET" : 1,
                "methodCnt" : 1,
                "path" : [
                   "/analytics"
