@@ -44,6 +44,7 @@
                "method" : [
                   "POST"
                ],
+               "method-POST" : 1,
                "methodCnt" : 1,
                "path" : [
                   "/re/abcdefghijklmnopqrstuvwxyz123456"

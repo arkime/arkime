@@ -20,6 +20,8 @@
 
 #define MAX_URL_LENGTH 4096
 
+#define HTTP_MAX_METHOD 25
+
 typedef struct {
     MolochSession_t *session;
     GString         *urlString;
@@ -33,6 +35,7 @@ typedef struct {
     char             header[2][40];
     short            pos[2];
     http_parser      parsers[2];
+    uint16_t         methodCounts[HTTP_MAX_METHOD+2];
 
     GChecksum       *checksum[4];
     const char      *magicString[2];
@@ -79,6 +82,7 @@ LOCAL  int headerReqField;
 LOCAL  int headerReqValue;
 LOCAL  int headerResField;
 LOCAL  int headerResValue;
+LOCAL  int methodCountFields[HTTP_MAX_METHOD+1];
 
 LOCAL  int parseHTTPHeaderValueMaxLen;
 
@@ -563,6 +567,8 @@ LOCAL int moloch_hp_cb_on_headers_complete (http_parser *parser)
     int len = snprintf(version, sizeof(version), "%d.%d", parser->http_major, parser->http_minor);
 
     if (parser->status_code == 0) {
+        if (parser->method <= HTTP_MAX_METHOD)
+            http->methodCounts[parser->method]++;
         moloch_field_string_add(methodField, session, http_method_str(parser->method), -1, TRUE);
         moloch_field_string_add(verReqField, session, version, len, TRUE);
     } else {
@@ -748,12 +754,19 @@ LOCAL int http_parse(MolochSession_t *session, void *uw, const unsigned char *da
     return 0;
 }
 /******************************************************************************/
-void http_save(MolochSession_t UNUSED(*session), void *uw, int final)
+void http_save(MolochSession_t *session, void *uw, int final)
 {
+    HTTPInfo_t            *http          = uw;
+
+    for (int i = 0; i <= HTTP_MAX_METHOD; i++) {
+        if (!http->methodCounts[i])
+            continue;
+
+        moloch_field_int_add(methodCountFields[i], session, http->methodCounts[i]);
+        http->methodCounts[i] = 0;
+    }
     if (!final)
         return;
-
-    HTTPInfo_t            *http          = uw;
 
 #ifdef HTTPDEBUG
     LOG("Save callback %d", final);
@@ -1031,6 +1044,23 @@ static const char *method_strings[] =
         "HTTP Request Body",
         MOLOCH_FIELD_TYPE_STR_HASH, 0,
         (char *)NULL);
+
+    for (int i = 0; i <= HTTP_MAX_METHOD; i++) {
+        char exp[100];
+        char name[100];
+        char db[100];
+        char help[100];
+        snprintf(exp, sizeof(exp), "http.method.%s", http_method_str(i));
+        snprintf(name, sizeof(name), "Method %s Count", http_method_str(i));
+        snprintf(db, sizeof(db), "http.method-%s", http_method_str(i));
+        snprintf(help, sizeof(help), "Number of %s method calls in session", http_method_str(i));
+
+        methodCountFields[i] = moloch_field_define("http", "integer",
+            exp, name, db,
+            help,
+            MOLOCH_FIELD_TYPE_INT,  0,
+            (char *)NULL);
+    }
 
     HASH_INIT(s_, httpReqHeaders, moloch_string_hash, moloch_string_cmp);
     HASH_INIT(s_, httpResHeaders, moloch_string_hash, moloch_string_cmp);

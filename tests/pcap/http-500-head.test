@@ -35,6 +35,7 @@
                "method" : [
                   "HEAD"
                ],
+               "method-HEAD" : 1,
                "methodCnt" : 1,
                "path" : [
                   "/UpdataConfig.dat"
