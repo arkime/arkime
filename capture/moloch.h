@@ -729,15 +729,7 @@ typedef struct moloch_session_head {
 } MolochSessionHead_t;
 
 
-#ifdef MOLOCH_USE_MALLOC
-#define MOLOCH_TYPE_ALLOC(type) (type *)(malloc(sizeof(type)))
-#define MOLOCH_TYPE_ALLOC0(type) (type *)(calloc(1, sizeof(type)))
-#define MOLOCH_TYPE_FREE(type,mem) free(mem)
-
-#define MOLOCH_SIZE_ALLOC(name, s)  malloc(s)
-#define MOLOCH_SIZE_ALLOC0(name, s) calloc(s, 1)
-#define MOLOCH_SIZE_FREE(name, mem) free(mem)
-#else
+#ifdef MOLOCH_USE_GSLICE
 #define MOLOCH_TYPE_ALLOC(type) (type *)(g_slice_alloc(sizeof(type)))
 #define MOLOCH_TYPE_ALLOC0(type) (type *)(g_slice_alloc0(sizeof(type)))
 #define MOLOCH_TYPE_FREE(type,mem) g_slice_free1(sizeof(type),mem)
@@ -747,6 +739,14 @@ int   moloch_size_free(void *mem);
 #define MOLOCH_SIZE_ALLOC(name, s)  moloch_size_alloc(s, 0)
 #define MOLOCH_SIZE_ALLOC0(name, s) moloch_size_alloc(s, 1)
 #define MOLOCH_SIZE_FREE(name, mem) moloch_size_free(mem)
+#else
+#define MOLOCH_TYPE_ALLOC(type) (type *)(malloc(sizeof(type)))
+#define MOLOCH_TYPE_ALLOC0(type) (type *)(calloc(1, sizeof(type)))
+#define MOLOCH_TYPE_FREE(type,mem) free(mem)
+
+#define MOLOCH_SIZE_ALLOC(name, s)  malloc(s)
+#define MOLOCH_SIZE_ALLOC0(name, s) calloc(s, 1)
+#define MOLOCH_SIZE_FREE(name, mem) free(mem)
 #endif
 
 // pcap_file_header
