@@ -17,7 +17,7 @@
     "lint": "cd ../ && npm run parliament:lint"
   },
   "engines": {
-    "node": ">= 16.0.0 < 18",
+    "node": ">= 16.0.0 < 19",
     "npm": ">= 3.0.0"
   },
   "nodemonConfig": {

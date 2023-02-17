@@ -1625,8 +1625,8 @@ exports.checkVersion = async function (minVersion) {
   if (nodeVersion < 160000) {
     console.log(`ERROR - Need node 16.x, currently using ${process.version}`);
     process.exit(1);
-  } else if (nodeVersion >= 180000) {
-    console.log(`ERROR - Node version ${process.version} is not supported, please use node 16.x`);
+  } else if (nodeVersion >= 190000) {
+    console.log(`ERROR - Node version ${process.version} is not supported, please use node 16.x or 18.x`);
     process.exit(1);
   }
 
