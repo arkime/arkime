@@ -166,9 +166,8 @@ LOCAL void tls_alt_names(MolochSession_t *session, MolochCertsInfo_t *certs, BSB
             tls_alt_names(session, certs, &tbsb, lastOid);
             return;
         } else if (lastOid[0] && atag == 2) {
-            MolochString_t *element = MOLOCH_TYPE_ALLOC0(MolochString_t);
-
             if (g_utf8_validate((char *)value, alen, NULL)) {
+                MolochString_t *element = MOLOCH_TYPE_ALLOC0(MolochString_t);
                 element->str = g_ascii_strdown((char *)value, alen);
                 element->len = alen;
                 element->utf8 = 1;
@@ -418,7 +417,7 @@ LOCAL void tls_process_server_certificate(MolochSession_t *session, const unsign
         memcpy(certs->serialNumber, value, alen);
 
         /* signature */
-        if (!(value = moloch_parsers_asn_get_tlv(&bsb, &apc, &atag, &alen)))
+        if (!moloch_parsers_asn_get_tlv(&bsb, &apc, &atag, &alen))
             {badreason = 5; goto bad_cert;}
 
         /* issuer */

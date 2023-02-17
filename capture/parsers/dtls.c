@@ -189,7 +189,7 @@ LOCAL void dtls_process_server_certificate(MolochSession_t *session, const unsig
         memcpy(certs->serialNumber, value, alen);
 
         /* signature */
-        if (!(value = moloch_parsers_asn_get_tlv(&bsb, &apc, &atag, &alen)))
+        if (!moloch_parsers_asn_get_tlv(&bsb, &apc, &atag, &alen))
             {badreason = 5; goto bad_cert;}
 
         /* issuer */
@@ -219,7 +219,7 @@ LOCAL void dtls_process_server_certificate(MolochSession_t *session, const unsig
         dtls_certinfo_process(&certs->subject, &tbsb);
 
         /* subjectPublicKeyInfo */
-        if (!(value = moloch_parsers_asn_get_tlv(&bsb, &apc, &atag, &alen)))
+        if (!moloch_parsers_asn_get_tlv(&bsb, &apc, &atag, &alen))
             {badreason = 9; goto bad_cert;}
 
         /* extensions */
