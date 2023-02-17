@@ -210,7 +210,7 @@ class ArkimeLMDBCache extends ArkimeCache {
     super(options);
 
     // eslint-disable-next-line no-shadow
-    const { open } = require('lmdb-store');
+    const { open } = require('lmdb');
 
     const path = options.getConfig('lmdbDir');
 
