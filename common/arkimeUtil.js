@@ -199,7 +199,7 @@ class ArkimeUtil {
    */
   static createLMDBStore (url, section) {
     // eslint-disable-next-line no-shadow
-    const { open } = require('lmdb-store');
+    const { open } = require('lmdb');
 
     try {
       const store = open({
