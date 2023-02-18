@@ -18,10 +18,14 @@ PCAP=1.10.1
 CURL=7.78.0
 LUA=5.3.6
 DAQ=2.0.7
-NODE=16.19.0
 NGHTTP2=1.44.0
 ZSTD=1.5.2
 KAFKA=1.5.3
+
+# node v18 doesn't support RHEL 7
+# RHEL 7 EOL is July 1, 2024
+# node v16 EOL is Sept 11, 2023
+NODE=16.19.0
 
 TDIR="/opt/arkime"
 DOPFRING=0
