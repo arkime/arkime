@@ -897,6 +897,10 @@ gchar   *moloch_db_community_id(MolochSession_t *session);
 // Replace how SPI data is sent to ES.
 // The implementation must either call a moloch_http_free_buffer or another moloch_http routine that frees the buffer
 typedef void (* MolochDbSendBulkFunc) (char *json, int len);
+// bulkHeader - include the bulk header
+// indexInDoc - add sessionIndex field to doc where arkime would index doc
+// maxDocs - max docs per call
+void     moloch_db_set_send_bulk2(MolochDbSendBulkFunc func, gboolean bulkHeader, gboolean indexInDoc, uint16_t maxDocs);
 void     moloch_db_set_send_bulk(MolochDbSendBulkFunc func);
 
 /******************************************************************************/

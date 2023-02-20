@@ -349,11 +349,23 @@ LOCAL void moloch_db_send_bulk(char *json, int len)
         LOG("Sending Bulk:>%.*s<", len, json);
     moloch_http_schedule(esServer, "POST", esBulkQuery, esBulkQueryLen, json, len, NULL, MOLOCH_HTTP_PRIORITY_NORMAL, moloch_db_send_bulk_cb, NULL);
 }
+/******************************************************************************/
 LOCAL MolochDbSendBulkFunc sendBulkFunc = moloch_db_send_bulk;
+LOCAL gboolean sendBulkHeader = TRUE;
+LOCAL gboolean sendIndexInDoc = FALSE;
+LOCAL uint16_t sendMaxDocs = 0xffff;
 /******************************************************************************/
 void moloch_db_set_send_bulk(MolochDbSendBulkFunc func)
 {
     sendBulkFunc = func;
+}
+/******************************************************************************/
+void moloch_db_set_send_bulk2(MolochDbSendBulkFunc func, gboolean bulkHeader, gboolean indexInDoc, uint16_t maxDocs)
+{
+    sendBulkFunc = func;
+    sendBulkHeader = bulkHeader;
+    sendIndexInDoc = indexInDoc;
+    sendMaxDocs = maxDocs;
 }
 /******************************************************************************/
 gchar *moloch_db_community_id(MolochSession_t *session)
@@ -415,13 +427,14 @@ gchar *moloch_db_community_id(MolochSession_t *session)
 }
 /******************************************************************************/
 LOCAL struct {
-    char   *json;
-    BSB     bsb;
-    time_t  lastSave;
-    char    prefix[100];
-    time_t  prefixTime;
-    short   sortedFieldsIndex[MOLOCH_FIELDS_DB_MAX];
-    short   sortedFieldsIndexCnt;
+    char    *json;
+    BSB      bsb;
+    time_t   lastSave;
+    char     prefix[100];
+    time_t   prefixTime;
+    short    sortedFieldsIndex[MOLOCH_FIELDS_DB_MAX];
+    uint16_t sortedFieldsIndexCnt;
+    uint16_t cnt;
     MOLOCH_LOCK_EXTERN(lock);
 } dbInfo[MOLOCH_MAX_PACKET_THREADS];
 
@@ -603,15 +616,17 @@ void moloch_db_save_session(MolochSession_t *session, int final)
 
     MOLOCH_LOCK(dbInfo[thread].lock);
     /* If no room left to add, send the buffer */
-    if (dbInfo[thread].json && (uint32_t)BSB_REMAINING(dbInfo[thread].bsb) < jsonSize) {
+    if (dbInfo[thread].json && ((uint32_t)BSB_REMAINING(dbInfo[thread].bsb) < jsonSize || dbInfo[thread].cnt >= sendMaxDocs)) {
         if (BSB_LENGTH(dbInfo[thread].bsb) > 0) {
             sendBulkFunc(dbInfo[thread].json, BSB_LENGTH(dbInfo[thread].bsb));
         } else {
             moloch_http_free_buffer(dbInfo[thread].json);
         }
         dbInfo[thread].json = 0;
+        dbInfo[thread].cnt = 0;
         dbInfo[thread].lastSave = currentTime.tv_sec;
     }
+    dbInfo[thread].cnt++;
 
     /* Allocate a new buffer using the max of the bulk size or estimated size. */
     if (!dbInfo[thread].json) {
@@ -627,10 +642,12 @@ void moloch_db_save_session(MolochSession_t *session, int final)
 
     startPtr = BSB_WORK_PTR(jbsb);
 
-    if (config.autoGenerateId) {
-        BSB_EXPORT_sprintf(jbsb, "{\"index\": {\"_index\": \"%ssessions3-%s\"}}\n", config.prefix, dbInfo[thread].prefix);
-    } else {
-        BSB_EXPORT_sprintf(jbsb, "{\"index\": {\"_index\": \"%ssessions3-%s\", \"_id\": \"%s\"}}\n", config.prefix, dbInfo[thread].prefix, id);
+    if (sendBulkHeader) {
+        if (config.autoGenerateId) {
+            BSB_EXPORT_sprintf(jbsb, "{\"index\":{\"_index\":\"%ssessions3-%s\"}}\n", config.prefix, dbInfo[thread].prefix);
+        } else {
+            BSB_EXPORT_sprintf(jbsb, "{\"index\":{\"_index\":\"%ssessions3-%s\", \"_id\": \"%s\"}}\n", config.prefix, dbInfo[thread].prefix, id);
+        }
     }
 
     dataPtr = BSB_WORK_PTR(jbsb);
@@ -644,6 +661,10 @@ void moloch_db_save_session(MolochSession_t *session, int final)
                       ((uint64_t)session->lastPacket.tv_sec)*1000 + ((uint64_t)session->lastPacket.tv_usec)/1000,
                       timediff,
                       session->ipProtocol);
+
+    if (sendIndexInDoc) {
+        BSB_EXPORT_sprintf(jbsb, "\"index\":\"%ssessions3-%s\",", config.prefix, dbInfo[thread].prefix);
+    }
 
     if (session->ipProtocol == IPPROTO_TCP) {
         BSB_EXPORT_sprintf(jbsb,
