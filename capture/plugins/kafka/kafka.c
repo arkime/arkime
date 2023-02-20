@@ -43,11 +43,6 @@ LOCAL const char *kafkaSSLKeyPassword;
 
 extern MolochConfig_t config;
 
-typedef struct {
-    char *json;
-    int   count;
-} KafkaShared_t;
-
 /******************************************************************************
  * Message delivery report callback using the richer rd_kafka_message_t object.
  */
@@ -73,35 +68,6 @@ LOCAL void kafka_msg_delivered_bulk_cb(rd_kafka_t *UNUSED(rk), const rd_kafka_me
     if (config.debug > 2)
         LOG("opaque=%p", json);
     moloch_http_free_buffer(json);
-}
-
-/******************************************************************************
- * Message delivery report callback using the richer rd_kafka_message_t object.
- */
-LOCAL void kafka_msg_delivered_shared_cb(rd_kafka_t *UNUSED(rk), const rd_kafka_message_t *rkmessage, void *UNUSED(opaque))
-{
-    if (rkmessage->err) {
-        LOG("Message delivery failed (broker %"PRId32"): %s",
-            rd_kafka_message_broker_id(rkmessage),
-            rd_kafka_err2str(rkmessage->err));
-    } else if (config.debug) {
-        LOG("Message delivered in %.2fms (%zd bytes, offset %"PRId64", "
-            "partition %"PRId32", broker %"PRId32")",
-            (float)rd_kafka_message_latency(rkmessage) / 1000.0,
-            rkmessage->len, rkmessage->offset,
-            rkmessage->partition,
-            rd_kafka_message_broker_id(rkmessage));
-        if (config.debug > 3) {
-            LOG("Payload: %.*s", (int)rkmessage->len, (const char *)rkmessage->payload);
-        }
-    }
-
-    KafkaShared_t *shared  = (KafkaShared_t *)rkmessage->_private; /* V_OPAQUE */
-    shared->count--;
-    if (shared->count == 0) {
-        moloch_http_free_buffer(shared->json);
-        MOLOCH_TYPE_FREE(KafkaShared_t, shared);
-    }
 }
 
 /******************************************************************************/
@@ -160,163 +126,6 @@ LOCAL void kafka_send_session_bulk(char *json, int len)
      * delivery report callback served (and any other callbacks
      * you register). */
     rd_kafka_poll(rk, 0 /*non-blocking*/);
-}
-
-/******************************************************************************/
-LOCAL void kafka_send_session_bulk1(char *json, int len)
-{
-    char *end = json + len;
-    KafkaShared_t *shared = MOLOCH_TYPE_ALLOC0(KafkaShared_t);
-    shared->json = json;
-
-    while (json < end) {
-        char *newline1 = memchr(json, '\n', end - json);
-        if (!newline1) // Shouldn't happen
-            break;
-
-        char *newline2 = memchr(newline1 + 1, '\n', end - newline1 - 1);
-        if (!newline2) // Shouldn't happen
-            break;
-
-        if (config.debug)
-            LOG("About to send #%d %d bytes in kafka %s, opaque=%p", shared->count, len, topic, json);
-
-
-        // We will retry up to 5 times if RD_KAFKA_RESP_ERR__QUEUE_FULL error
-        for (int i = 0; i < 5; i++) {
-            rd_kafka_resp_err_t err;
-            err = rd_kafka_producev(
-                rk,
-                RD_KAFKA_V_TOPIC(topic),
-                RD_KAFKA_V_VALUE(json, (int)(newline2 - json + 1)), // [bulk header]\n[doc]\n - 2 newlines
-                RD_KAFKA_V_OPAQUE(shared),
-                RD_KAFKA_V_END);
-
-            if (err) {
-                /* Failed to *enqueue* message for producing. */
-                LOG("Failed to produce to topic %s: %s", topic, rd_kafka_err2str(err));
-
-                if (err == RD_KAFKA_RESP_ERR__QUEUE_FULL) {
-                    /* If the internal queue is full, wait for
-                     * messages to be delivered and then retry.
-                     * The internal queue represents both
-                     * messages to be sent and messages that have
-                     * been sent or failed, awaiting their
-                     * delivery report callback to be called.
-                     *
-                     * The internal queue is limited by the
-                     * configuration property
-                     * queue.buffering.max.messages */
-                    rd_kafka_poll(rk, 100 /*block for max 100ms*/);
-                    continue;
-                }
-            } else {
-                if (config.debug)
-                    LOG("Enqueued message (%d bytes) for topic %s", len, topic);
-                shared->count++;
-            }
-            break;
-        }
-
-        /* A producer application should continually serve
-         * the delivery report queue by calling rd_kafka_poll()
-         * at frequent intervals.
-         * Either put the poll call in your main loop, or in a
-         * dedicated thread, or call it after every
-         * rd_kafka_produce() call.
-         * Just make sure that rd_kafka_poll() is still called
-         * during periods where you are not producing any messages
-         * to make sure previously produced messages have their
-         * delivery report callback served (and any other callbacks
-         * you register). */
-        rd_kafka_poll(rk, 0 /*non-blocking*/);
-
-        json = newline2 + 1;
-    }
-
-    // nothing was produced
-    if (shared->count == 0) {
-        moloch_http_free_buffer(shared->json);
-        MOLOCH_TYPE_FREE(KafkaShared_t, shared);
-    }
-}
-
-/******************************************************************************/
-LOCAL void kafka_send_session_doc(char *json, int len)
-{
-    char *end = json + len;
-    KafkaShared_t *shared = MOLOCH_TYPE_ALLOC0(KafkaShared_t);
-    shared->json = json;
-
-    while (json < end) {
-        char *newline1 = memchr(json, '\n', end - json);
-        if (unlikely(!newline1)) // Shouldn't happen
-            break;
-
-        char *newline2 = memchr(newline1 + 1, '\n', end - newline1 - 1);
-        if (unlikely(!newline2)) // Shouldn't happen
-            break;
-
-        if (config.debug)
-            LOG("About to send #%d %d bytes in kafka %s, opaque=%p", shared->count, len, topic, json);
-
-        // We will retry up to 5 times if RD_KAFKA_RESP_ERR__QUEUE_FULL error
-        for (int i = 0; i < 5; i++) {
-            rd_kafka_resp_err_t err;
-            err = rd_kafka_producev(
-                rk,
-                RD_KAFKA_V_TOPIC(topic),
-                RD_KAFKA_V_VALUE(newline1 + 1, (int)(newline2 - newline1 - 1)), // [doc] - No newlines
-                RD_KAFKA_V_OPAQUE(shared),
-                RD_KAFKA_V_END);
-
-            if (err) {
-                /* Failed to *enqueue* message for producing. */
-                LOG("Failed to produce to topic %s: %s", topic, rd_kafka_err2str(err));
-
-                if (err == RD_KAFKA_RESP_ERR__QUEUE_FULL) {
-                    /* If the internal queue is full, wait for
-                     * messages to be delivered and then retry.
-                     * The internal queue represents both
-                     * messages to be sent and messages that have
-                     * been sent or failed, awaiting their
-                     * delivery report callback to be called.
-                     *
-                     * The internal queue is limited by the
-                     * configuration property
-                     * queue.buffering.max.messages */
-                    rd_kafka_poll(rk, 100 /*block for max 100ms*/);
-                    continue;
-                }
-            } else {
-                if (config.debug)
-                    LOG("Enqueued message (%d bytes) for topic %s", len, topic);
-                shared->count++;
-            }
-            break;
-        }
-
-        /* A producer application should continually serve
-         * the delivery report queue by calling rd_kafka_poll()
-         * at frequent intervals.
-         * Either put the poll call in your main loop, or in a
-         * dedicated thread, or call it after every
-         * rd_kafka_produce() call.
-         * Just make sure that rd_kafka_poll() is still called
-         * during periods where you are not producing any messages
-         * to make sure previously produced messages have their
-         * delivery report callback served (and any other callbacks
-         * you register). */
-        rd_kafka_poll(rk, 0 /*non-blocking*/);
-
-        json = newline2 + 1;
-    }
-
-    // nothing was produced
-    if (shared->count == 0) {
-        moloch_http_free_buffer(shared->json);
-        MOLOCH_TYPE_FREE(KafkaShared_t, shared);
-    }
 }
 
 /******************************************************************************/
@@ -427,16 +236,15 @@ void moloch_plugin_init()
     }
 
 
+    rd_kafka_conf_set_dr_msg_cb(conf, kafka_msg_delivered_bulk_cb);
+
     char *kafkaMsgFormat = moloch_config_str(NULL, "kafkaMsgFormat", "bulk");
     if (strcmp(kafkaMsgFormat, "bulk") == 0) {
-        rd_kafka_conf_set_dr_msg_cb(conf, kafka_msg_delivered_bulk_cb);
-        moloch_db_set_send_bulk(kafka_send_session_bulk);
+        moloch_db_set_send_bulk2(kafka_send_session_bulk, TRUE, FALSE, 0xffff);
     } else if (strcmp(kafkaMsgFormat, "bulk1") == 0) {
-        rd_kafka_conf_set_dr_msg_cb(conf, kafka_msg_delivered_shared_cb);
-        moloch_db_set_send_bulk(kafka_send_session_bulk1);
+        moloch_db_set_send_bulk2(kafka_send_session_bulk, TRUE, FALSE, 1);
     } else if (strcmp(kafkaMsgFormat, "doc") == 0) {
-        rd_kafka_conf_set_dr_msg_cb(conf, kafka_msg_delivered_shared_cb);
-        moloch_db_set_send_bulk(kafka_send_session_doc);
+        moloch_db_set_send_bulk2(kafka_send_session_bulk, FALSE, TRUE, 1);
     } else {
         LOGEXIT("Unknown config kafkaMsgFormat value '%s'", kafkaMsgFormat);
     }
