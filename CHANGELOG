@@ -15,6 +15,7 @@ Elasticsearch Versions:
   * Moloch >= 0.18.1 supports ES 2.4.x, >= 5.3.1 not 6.x or later
 
 Node Versions:
+  * Arkime >= 4.2.0 requires NodeJS >= 16.0.0 and < 19
   * Moloch >= 3.4.0 requires NodeJS >= 16.0.0 and < 17
   * Moloch >= 3.0.0 requires NodeJS 14.x
   * Moloch >= 2.4.0 requires NodeJS 12.x
@@ -27,19 +28,31 @@ Node Versions:
 NOTICE: Restart wiseService before capture when upgrading
 NOTICE: Cross-cluster Shortcuts require you to not restart all your viewers at once after upgrading
 
-4.1.1 2023/02/xx
-  - release - node 16.19.0
+4.2.0 2023/02/xx
+  - release - node 16.19.0, support node v18
+  - release - fix arch build issues
   - all - OpenSearch/Elasticsearch name cleanup
   - all - cleanup nodejs dependencies
   - all - refactor how authentication is done, everything now uses passportjs
   - all - support oidc authentication method
   - capture - support ERSPAN Type I and vlan for Type II
+  - capture - new kafka plugin for sessions
+  - capture - use malloc instead of GSlice
+  - capture - corrupt DNS alt name memory leak fixed
   - cont3xt - raw create link groups
   - cont3xt - two clicks to delete link groups or links
   - cont3xt - classify domains with multiple dashes correctly
   - cont3xt - added ability to copy links between link groups
+  - cont3xt - support intl phonenumbers
+  - db.pl - Initial OpenSearch ISM support
+  - db.pl - Better error text for cert verify failure
   - esproxy - fix converting basic auth to base64
   - viewer - fix field actions crash
+  - viewer - can now use expression  http.request.FIELD or http.response.FIELD
+             with headers-http-request, headers-http-response defined fields
+  - viewer - support viewing ipv6 DLT_RAW (#1293)
+  - viewer - ESAdmin -> Unflood works on users cluster now also
+
 
 4.1.0 2023/01/10
   - release - glib 2.72.4 cyberchef 9.55.0 flot 4.2.3 d3 7.7
