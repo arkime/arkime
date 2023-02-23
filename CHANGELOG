@@ -39,6 +39,7 @@ NOTICE: Cross-cluster Shortcuts require you to not restart all your viewers at o
   - capture - new kafka plugin for sessions
   - capture - use malloc instead of GSlice
   - capture - corrupt DNS alt name memory leak fixed
+  - capture - Added simpleFreeOutputBuffers setting
   - cont3xt - raw create link groups
   - cont3xt - two clicks to delete link groups or links
   - cont3xt - classify domains with multiple dashes correctly

@@ -58,7 +58,6 @@ LOCAL void *tzsp_thread(gpointer UNUSED(uw))
     MolochPacketBatch_t   batch;
     moloch_packet_batch_init(&batch);
     while (TRUE) {
-        GError           *error = NULL;
         gchar             buf[0xffff];
 
         gsize len = g_socket_receive(socket, buf, sizeof(buf), NULL, &error);

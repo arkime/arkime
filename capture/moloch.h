@@ -476,7 +476,6 @@ typedef struct moloch_config {
     uint32_t  pcapBufferSize;
     uint32_t  pcapWriteSize;
     uint32_t  maxWriteBuffers;
-    uint32_t  maxFreeOutputBuffers;
     uint32_t  fragsTimeout;
     uint32_t  maxFrags;
     uint32_t  snapLen;
