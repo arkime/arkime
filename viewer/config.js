@@ -506,6 +506,7 @@ exports.loadFields = function (data) {
 // Initialize Auth
 /// ///////////////////////////////////////////////////////////////////////////////
 
+let mode;
 if (exports.get('passwordSecret')) {
   const userNameHeader = exports.get('userNameHeader');
   if (!userNameHeader || userNameHeader === 'digest') {
