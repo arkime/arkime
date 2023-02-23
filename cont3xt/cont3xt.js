@@ -473,6 +473,7 @@ function setupAuth () {
     requiredAuthHeaderVal: getConfig('cont3xt', 'requiredAuthHeaderVal'),
     userAutoCreateTmpl: getConfig('cont3xt', 'userAutoCreateTmpl'),
     userAuthIps: getConfig('cont3xt', 'userAuthIps'),
+    caTrustCerts: getConfig('cont3xt', 'caTrustFile'),
     authConfig: {
       httpRealm: getConfig('cont3xt', 'httpRealm', 'Moloch'),
       userIdField: getConfig('cont3xt', 'authUserIdField'),
