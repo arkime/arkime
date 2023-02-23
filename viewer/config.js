@@ -27,6 +27,7 @@ const os = require('os');
 const fs = require('fs');
 const version = require('../common/version');
 const Auth = require('../common/auth');
+const ArkimeUtil = require('../common/arkimeUtil');
 
 exports.debug = 0;
 exports.insecure = false;
@@ -198,32 +199,7 @@ exports.getObj = function (key, defaultValue) {
 
 exports.getCaTrustCerts = function (node) {
   const caTrustFile = exports.getFull(node, 'caTrustFile');
-
-  if (caTrustFile && caTrustFile.length > 0) {
-    const certs = [];
-
-    const caTrustFileLines = fs.readFileSync(caTrustFile, 'utf8').split('\n');
-
-    let foundCert = [];
-
-    for (let i = 0, ilen = caTrustFileLines.length; i < ilen; i++) {
-      const line = caTrustFileLines[i];
-      if (line.length === 0) {
-        continue;
-      }
-      foundCert.push(line);
-      if (line.match(/-END CERTIFICATE-/)) {
-        certs.push(foundCert.join('\n'));
-        foundCert = [];
-      }
-    }
-
-    if (certs.length > 0) {
-      return certs;
-    }
-  }
-
-  return undefined;
+  return ArkimeUtil.certificateFileToArray(caTrustFile);
 };
 
 function loadIncludes (includes) {

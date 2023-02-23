@@ -20,6 +20,7 @@ const Redis = require('ioredis');
 const memjs = require('memjs');
 const Auth = require('./auth');
 const util = require('util');
+const fs = require('fs');
 
 class ArkimeUtil {
   static debug = 0;
@@ -332,6 +333,38 @@ class ArkimeUtil {
 
     return values;
   }
+
+  /**
+   * Breaks file of certificates into an array of separate certificates
+   * @param {string} string - The file containing certificates
+   * @returns {Array} The array of values parsed from the string
+   */
+  static certificateFileToArray (certificateFile) {
+    if (certificateFile && certificateFile.length > 0) {
+      const certs = [];
+      const certificateFileLines = fs.readFileSync(certificateFile, 'utf8').split('\n');
+
+      let foundCert = [];
+
+      for (let i = 0, ilen = certificateFileLines.length; i < ilen; i++) {
+        const line = certificateFileLines[i];
+        if (line.length === 0) {
+          continue;
+        }
+        foundCert.push(line);
+        if (line.match(/-END CERTIFICATE-/)) {
+          certs.push(foundCert.join('\n'));
+          foundCert = [];
+        }
+      }
+
+      if (certs.length > 0) {
+        return certs;
+      }
+    }
+
+    return undefined;
+  };
 }
 
 module.exports = ArkimeUtil;
