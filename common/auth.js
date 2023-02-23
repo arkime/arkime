@@ -147,13 +147,19 @@ class Auth {
     case 'header':
       Auth.#strategies = ['header', 'digest'];
       break;
+    case 's2s':
+      Auth.#strategies = ['s2s'];
+      break;
     case 'regressionTests':
       Auth.#strategies = ['regressionTests'];
       Auth.regressionTests = true;
       break;
+    default:
+      console.log('ERROR - unknown authMode', ArkimeUtil.sanitizeStr(Auth.mode));
+      process.exit(1);
     }
 
-    if (options.s2s) {
+    if (options.s2s && !Auth.#strategies.includes('s2s')) {
       Auth.#strategies.unshift('s2s');
     }
 
