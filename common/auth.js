@@ -159,7 +159,7 @@ class Auth {
       process.exit(1);
     }
 
-    if (options.s2s && !Auth.#strategies.contains('s2s')) {
+    if (options.s2s && !Auth.#strategies.includes('s2s')) {
       Auth.#strategies.unshift('s2s');
     }
 
