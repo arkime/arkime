@@ -31,6 +31,7 @@ NOTICE: Cross-cluster Shortcuts require you to not restart all your viewers at o
 4.2.0 2023/02/xx
   - release - node 16.19.0, support node v18
   - release - fix arch build issues
+  - release - EL9 build uses sha256 digest
   - all - OpenSearch/Elasticsearch name cleanup
   - all - cleanup nodejs dependencies
   - all - refactor how authentication is done, everything now uses passportjs
