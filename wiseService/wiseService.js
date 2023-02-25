@@ -228,7 +228,7 @@ process.on('SIGINT', function () {
 function setupAuth () {
   let userNameHeader = getConfig('wiseService', 'userNameHeader', 'anonymous');
   let mode;
-  if (userNameHeader === 'anonymous' || userNameHeader === 'digest' || userNameHeader === 'digest') {
+  if (userNameHeader === 'anonymous' || userNameHeader === 'digest' || userNameHeader === 'oidc') {
     mode = userNameHeader;
     userNameHeader = undefined;
   } else {
