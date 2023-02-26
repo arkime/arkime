@@ -1219,7 +1219,8 @@ class UserESImplementation {
       this.prefix = options.prefix + '_';
     }
 
-    const esSSLOptions = { rejectUnauthorized: !options.insecure, ca: options.ca };
+    const esSSLOptions = { rejectUnauthorized: !options.insecure };
+    if (options.ca) { esSSLOptions.ca = ArkimeUtil.certificateFileToArray(options.ca); };
     if (options.clientKey) {
       esSSLOptions.key = fs.readFileSync(options.clientKey);
       esSSLOptions.cert = fs.readFileSync(options.clientCert);

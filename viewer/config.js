@@ -197,11 +197,6 @@ exports.getObj = function (key, defaultValue) {
   return obj;
 };
 
-exports.getCaTrustCerts = function (node) {
-  const caTrustFile = exports.getFull(node, 'caTrustFile');
-  return ArkimeUtil.certificateFileToArray(caTrustFile);
-};
-
 function loadIncludes (includes) {
   if (!includes) {
     return;
@@ -513,7 +508,7 @@ Auth.initialize({
   userAuthIps: exports.get('userAuthIps'),
   s2s: true,
   s2sRegressionTests: !!exports.get('s2sRegressionTests'),
-  caTrustCerts: exports.getCaTrustCerts(internals.nodeName),
+  caTrustCerts: exports.getFull(internals.nodeName, 'caTrustFile'),
   authConfig: {
     httpRealm: exports.get('httpRealm', 'Moloch'),
     userIdField: exports.get('authUserIdField'),

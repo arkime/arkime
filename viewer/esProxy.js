@@ -53,9 +53,11 @@ const oldprefix = prefix === 'arkime_' ? '' : prefix;
 
 console.log(`PREFIX: ${prefix} OLDPREFIX: ${oldprefix}`);
 
-const esSSLOptions = { rejectUnauthorized: !Config.insecure, ca: Config.getCaTrustCerts(Config.nodeName()) };
+const esSSLOptions = { rejectUnauthorized: !Config.insecure };
 const esClientKey = Config.get('esClientKey');
 const esClientCert = Config.get('esClientCert');
+const caTrustFile = Config.getFull(Config.nodeName(), 'caTrustFile');
+if (caTrustFile) { esSSLOptions.ca = ArkimeUtil.certificateFileToArray(caTrustFile); };
 if (esClientKey) {
   esSSLOptions.key = fs.readFileSync(esClientKey);
   esSSLOptions.cert = fs.readFileSync(esClientCert);

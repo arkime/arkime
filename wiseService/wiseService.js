@@ -262,6 +262,7 @@ function setupAuth () {
   User.initialize({
     insecure: internals.insecure,
     node: es,
+    ca: getConfig('wiseService', 'caTrustFile'),
     prefix: getConfig('wiseService', 'usersPrefix'),
     apiKey: getConfig('wiseService', 'usersElasticsearchAPIKey'),
     basicAuth: getConfig('wiseService', 'usersElasticsearchBasicAuth')
