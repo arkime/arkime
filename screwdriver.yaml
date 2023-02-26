@@ -21,7 +21,7 @@ jobs:
         steps:
             - (cd / ; curl https://s3.amazonaws.com/files.molo.ch/snfmin.tar.gz | tar -zxvf -)
             - ln -s /thirdparty .
-            - build: scl enable devtoolset-9 rh-python36 "./easybutton-build.sh --daq --pfring --rminstall"
+            - build: scl enable devtoolset-9 rh-python36 "./easybutton-build.sh --daq --pfring --kafka --rminstall"
             - test-capture: (cd tests ; ./tests.pl)
             - export PATH=/opt/arkime/bin:/data/moloch/bin:$PATH
             - npm -g config set user root; npm -g config set cache-min 9999999
@@ -39,7 +39,7 @@ jobs:
             - build-moloch-package: |
                 rm -rf /data/moloch; mkdir -p /data
                 mv /opt/arkime /data/moloch
-                scl enable devtoolset-9 rh-python36 "./easybutton-build.sh --daq --pfring --dir /data/moloch"
+                scl enable devtoolset-9 rh-python36 "./easybutton-build.sh --daq --pfring --kafka --dir /data/moloch"
                 scl enable devtoolset-9 rh-python36 "cd capture ; make clean; make; make install"
                 (cd release ; make installmoloch)
                 mv /data/moloch/bin/capture /data/moloch/bin/moloch-capture
@@ -61,7 +61,7 @@ jobs:
         steps:
             - (cd / ; curl https://s3.amazonaws.com/files.molo.ch/snfmin.tar.gz | tar -zxvf -)
             - ln -s /thirdparty .
-            - build: ./easybutton-build.sh --daq --pfring --rminstall
+            - build: ./easybutton-build.sh --daq --pfring --kafka --rminstall
             - test-capture: (cd tests ; ./tests.pl)
             - export PATH=/opt/arkime/bin:/data/moloch/bin:$PATH
             - npm -g config set user root; npm -g config set cache-min 9999999
@@ -78,7 +78,7 @@ jobs:
             - build-moloch-package: |
                 rm -rf /data/moloch; mkdir -p /data
                 mv /opt/arkime /data/moloch
-                ./easybutton-build.sh --daq --pfring --dir /data/moloch
+                ./easybutton-build.sh --daq --pfring --kafka --dir /data/moloch
                 (cd capture ; make clean; make; make install)
                 (cd release ; make installmoloch)
                 mv /data/moloch/bin/capture /data/moloch/bin/moloch-capture
@@ -109,7 +109,7 @@ jobs:
             - cp -r capture/plugins/lua/samples /opt/arkime/lua
             - build-package: |
                 export ARKIME_VERSION=`sed 's/.*"\(.*\)\".*$/\1/' /opt/arkime/common/version.js | head -n 1 | tr "-" "_"`
-                fpm -s dir -t rpm -n arkime -x opt/arkime/logs -x opt/arkime/raw -v $ARKIME_VERSION --iteration $SD_BUILD_ID --template-scripts --after-install "release/afterinstall.sh" --url "https://arkime.com" --description "Arkime Full Packet System" -d perl-libwww-perl -d perl-JSON -d ethtool -d libyaml -d perl-LWP-Protocol-https -d libzstd --rpm-rpmbuild-define "_build_id_links none" /opt/arkime
+                fpm -s dir -t rpm --rpm-digest sha256 -n arkime -x opt/arkime/logs -x opt/arkime/raw -v $ARKIME_VERSION --iteration $SD_BUILD_ID --template-scripts --after-install "release/afterinstall.sh" --url "https://arkime.com" --description "Arkime Full Packet System" -d perl-libwww-perl -d perl-JSON -d ethtool -d libyaml -d perl-LWP-Protocol-https -d libzstd --rpm-rpmbuild-define "_build_id_links none" /opt/arkime
                 if [ "$GIT_BRANCH" = "$MOLOCH_COPY_BRANCH" ]; then
                   aws s3 cp --quiet arkime*.x86_64.rpm s3://files.molo.ch/arkime-${ARKIME_FILE_NAME}.el9.x86_64.rpm --acl public-read
                   aws s3api put-object-acl --bucket files.molo.ch --key arkime-${ARKIME_FILE_NAME}.el9.x86_64.rpm --acl public-read
@@ -126,7 +126,7 @@ jobs:
             - (cd / ; curl https://s3.amazonaws.com/files.molo.ch/snfmin.tar.gz | tar -zxvf -)
             - apt-get update
             - ln -s /thirdparty .
-            - build: ./easybutton-build.sh --daq --pfring --rminstall
+            - build: ./easybutton-build.sh --daq --pfring --kafka --rminstall
             - test-capture: (cd tests ; ./tests.pl)
             - export PATH=/opt/arkime/bin:/data/moloch/bin:$PATH
             - npm -g config set user root
@@ -154,7 +154,7 @@ jobs:
             - build-moloch-package: |
                 rm -rf /data/moloch; mkdir -p /data
                 mv /opt/arkime /data/moloch
-                ./easybutton-build.sh --daq --pfring --dir /data/moloch
+                ./easybutton-build.sh --daq --pfring --kafka --dir /data/moloch
                 (cd capture ; make clean; make; make install)
                 (cd release ; make installmoloch)
                 mv /data/moloch/bin/capture /data/moloch/bin/moloch-capture
@@ -177,7 +177,7 @@ jobs:
             - (cd / ; curl https://s3.amazonaws.com/files.molo.ch/snfmin.tar.gz | tar -zxvf -)
             - apt-get update
             - ln -s /thirdparty .
-            - build: ./easybutton-build.sh --daq --pfring --rminstall
+            - build: ./easybutton-build.sh --daq --pfring --kafka --rminstall
             - test-capture: (cd tests ; ./tests.pl)
             - export PATH=/opt/arkime/bin:/data/moloch/bin:$PATH
             - npm -g config set user root
@@ -206,7 +206,7 @@ jobs:
             - build-moloch-package: |
                 rm -rf /data/moloch; mkdir -p /data
                 mv /opt/arkime /data/moloch
-                ./easybutton-build.sh --daq --pfring --dir /data/moloch
+                ./easybutton-build.sh --daq --pfring --kafka --dir /data/moloch
                 (cd capture ; make clean; make; make install)
                 (cd release ; make installmoloch)
                 mv /data/moloch/bin/capture /data/moloch/bin/moloch-capture
@@ -228,7 +228,7 @@ jobs:
         steps:
             - apt-get update
             - ln -s /thirdparty .
-            - build: ./easybutton-build.sh --nothirdparty --pfring --rminstall
+            - build: ./easybutton-build.sh --nothirdparty --pfring --kafka --rminstall
             - test-capture: (cd tests ; ./tests.pl)
             - export PATH=/opt/arkime/bin:/data/moloch/bin:$PATH
             - npm -g config set user root
@@ -252,7 +252,7 @@ jobs:
         image: andywick/arkime-build-arch:3.0.1-2
         steps:
             - (cd / ; curl https://s3.amazonaws.com/files.molo.ch/snfmin.tar.gz | tar -zxvf -)
-            - build: ./easybutton-build.sh --rminstall
+            - build: ./easybutton-build.sh --rminstall --kafka
             - test-capture: (cd tests ; ./tests.pl)
             - export PATH=/opt/arkime/bin:$PATH
             - npm -g config set user root
@@ -280,7 +280,7 @@ jobs:
         steps:
             - (cd / ; curl https://s3.amazonaws.com/files.molo.ch/snfmin.tar.gz | tar -zxvf -)
             - ln -s /thirdparty .
-            - build: scl enable devtoolset-9 rh-python36 "./easybutton-build.sh --daq --pfring --rminstall --dir /data/moloch"
+            - build: scl enable devtoolset-9 rh-python36 "./easybutton-build.sh --daq --pfring --kafka --rminstall --dir /data/moloch"
             - yum -y install libasan-static devtoolset-9-libasan-devel libasan4 devtoolset-9-libubsan-devel libubsan which
             - build-sanitize: (cd capture; scl enable devtoolset-9 rh-python36 "make SANITIZE_LDFLAGS='-fno-common -fsanitize=address -fsanitize=undefined -fno-omit-frame-pointer' sanitize")
             - test-capture: (cd tests ; ./tests.pl)
@@ -340,7 +340,7 @@ jobs:
         steps:
             - (cd / ; curl https://s3.amazonaws.com/files.molo.ch/snfmin.tar.gz | tar -zxvf -)
             - ln -s /thirdparty .
-            - build: scl enable devtoolset-9 rh-python36 "./easybutton-build.sh --daq --pfring --rminstall"
+            - build: scl enable devtoolset-9 rh-python36 "./easybutton-build.sh --daq --pfring --kafka --rminstall"
             - export PATH=/opt/arkime/bin:/data/moloch/bin:$PATH:$PWD/node_modules/.bin
             - npm -g config set user root; npm -g config set cache-min 9999999
             - installing: scl enable devtoolset-9 rh-python36 'make install'
@@ -353,7 +353,7 @@ jobs:
             - build-moloch-package: |
                 rm -rf /data/moloch; mkdir -p /data
                 mv /opt/arkime /data/moloch
-                scl enable devtoolset-9 rh-python36 "./easybutton-build.sh --daq --pfring --dir /data/moloch"
+                scl enable devtoolset-9 rh-python36 "./easybutton-build.sh --daq --pfring --kafka --dir /data/moloch"
                 scl enable devtoolset-9 rh-python36 "cd capture ; make clean; make; make install"
                 (cd release ; make installmoloch)
                 mv /data/moloch/bin/capture /data/moloch/bin/moloch-capture
@@ -371,7 +371,7 @@ jobs:
         steps:
             - (cd / ; curl https://s3.amazonaws.com/files.molo.ch/snfmin.tar.gz | tar -zxvf -)
             - ln -s /thirdparty .
-            - build: ./easybutton-build.sh --daq --pfring --rminstall
+            - build: ./easybutton-build.sh --daq --pfring --kafka --rminstall
             - export PATH=/opt/arkime/bin:/data/moloch/bin:$PATH:$PWD/node_modules/.bin
             - npm -g config set user root; npm -g config set cache-min 9999999
             - installing: make install
@@ -384,7 +384,7 @@ jobs:
             - build-moloch-package: |
                 rm -rf /data/moloch; mkdir -p /data
                 mv /opt/arkime /data/moloch
-                ./easybutton-build.sh --daq --pfring --dir /data/moloch
+                ./easybutton-build.sh --daq --pfring --kafka --dir /data/moloch
                 (cd capture ; make clean; make; make install)
                 (cd release ; make installmoloch)
                 mv /data/moloch/bin/capture /data/moloch/bin/moloch-capture
@@ -404,7 +404,7 @@ jobs:
         steps:
             - (cd / ; curl https://s3.amazonaws.com/files.molo.ch/snfmin.tar.gz | tar -zxvf -)
             - ln -s /thirdparty .
-            - build: ./easybutton-build.sh --daq --pfring --rminstall
+            - build: ./easybutton-build.sh --daq --pfring --kafka --rminstall
             - export PATH=/opt/arkime/bin:/data/moloch/bin:$PATH:$PWD/node_modules/.bin
             - npm -g config set user root; npm -g config set cache-min 9999999
             - installing: make install
@@ -412,7 +412,7 @@ jobs:
             - npm install license-checker; release/notice.txt.pl /opt/arkime NOTICE release/CAPTURENOTICE > /opt/arkime/NOTICE.txt
             - build-package: |
                 export ARKIME_VERSION=`sed 's/.*"\(.*\)\".*$/\1/' /opt/arkime/common/version.js | head -n 1 | tr "-" "_"`
-                fpm -s dir -t rpm -n arkime -x opt/arkime/logs -x opt/arkime/raw -v $ARKIME_VERSION --iteration $RELEASE_ITERATION --template-scripts --after-install "release/afterinstall.sh" --url "https://arkime.com" --description "Arkime Full Packet System" -d perl-libwww-perl -d perl-JSON -d ethtool -d libyaml -d perl-LWP-Protocol-https -d libzstd /opt/arkime
+                fpm -s dir -t rpm --rpm-digest sha256 -n arkime -x opt/arkime/logs -x opt/arkime/raw -v $ARKIME_VERSION --iteration $RELEASE_ITERATION --template-scripts --after-install "release/afterinstall.sh" --url "https://arkime.com" --description "Arkime Full Packet System" -d perl-libwww-perl -d perl-JSON -d ethtool -d libyaml -d perl-LWP-Protocol-https -d libzstd /opt/arkime
                 aws s3 cp arkime-${ARKIME_VERSION}-${RELEASE_ITERATION}.x86_64.rpm s3://files.molo.ch/builds/el-9/ --acl public-read
             - ls -l *.rpm
 
@@ -427,7 +427,7 @@ jobs:
             - (cd / ; curl https://s3.amazonaws.com/files.molo.ch/snfmin.tar.gz | tar -zxvf -)
             - apt-get update
             - ln -s /thirdparty .
-            - build: ./easybutton-build.sh --daq --pfring --rminstall
+            - build: ./easybutton-build.sh --daq --pfring --kafka --rminstall
             - export PATH=/opt/arkime/bin:/data/moloch/bin:$PATH:$PWD/node_modules/.bin
             - npm -g config set user root
             - installing: make install
@@ -441,7 +441,7 @@ jobs:
             - build-moloch-package: |
                 rm -rf /data/moloch; mkdir -p /data
                 mv /opt/arkime /data/moloch
-                ./easybutton-build.sh --daq --pfring --dir /data/moloch
+                ./easybutton-build.sh --daq --pfring --kafka --dir /data/moloch
                 (cd capture ; make clean; make; make install)
                 (cd release ; make installmoloch)
                 mv /data/moloch/bin/capture /data/moloch/bin/moloch-capture
@@ -461,7 +461,7 @@ jobs:
             - (cd / ; curl https://s3.amazonaws.com/files.molo.ch/snfmin.tar.gz | tar -zxvf -)
             - apt-get update
             - ln -s /thirdparty .
-            - build: ./easybutton-build.sh --daq --pfring --rminstall
+            - build: ./easybutton-build.sh --daq --pfring --kafka --rminstall
             - export PATH=/opt/arkime/bin:/data/moloch/bin:$PATH:$PWD/node_modules/.bin
             - npm -g config set user root
             - installing: make install
@@ -475,7 +475,7 @@ jobs:
             - build-moloch-package: |
                 rm -rf /data/moloch; mkdir -p /data
                 mv /opt/arkime /data/moloch
-                ./easybutton-build.sh --daq --pfring --dir /data/moloch
+                ./easybutton-build.sh --daq --pfring --kafka --dir /data/moloch
                 (cd capture ; make clean; make; make install)
                 (cd release ; make installmoloch)
                 mv /data/moloch/bin/capture /data/moloch/bin/moloch-capture
@@ -494,7 +494,7 @@ jobs:
         steps:
             - apt-get update
             - ln -s /thirdparty .
-            - build: ./easybutton-build.sh --nothirdparty --pfring --rminstall
+            - build: ./easybutton-build.sh --nothirdparty --pfring --kafka --rminstall
             - export PATH=/opt/arkime/bin:/data/moloch/bin:$PATH
             - npm -g config set user root
             - installing: make install

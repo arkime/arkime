@@ -525,7 +525,6 @@ void moloch_config_load()
     config.logEveryXPackets      = moloch_config_int(keyfile, "logEveryXPackets", 50000, 1000, 0xffffffff);
     config.pcapBufferSize        = moloch_config_int(keyfile, "pcapBufferSize", 300000000, 100000, 0xffffffff);
     config.pcapWriteSize         = moloch_config_int(keyfile, "pcapWriteSize", 0x40000, 0x10000, 0x8000000);
-    config.maxFreeOutputBuffers  = moloch_config_int(keyfile, "maxFreeOutputBuffers", 50, 0, 0xffff);
     config.fragsTimeout          = moloch_config_int(keyfile, "fragsTimeout", 60*8, 60, 0xffff);
     config.maxFrags              = moloch_config_int(keyfile, "maxFrags", 10000, 100, 0xffffff);
     config.snapLen               = moloch_config_int(keyfile, "snapLen", 16384, 1, MOLOCH_PACKET_MAX_LEN);

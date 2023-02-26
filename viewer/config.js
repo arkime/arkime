@@ -482,18 +482,22 @@ exports.loadFields = function (data) {
 // Initialize Auth
 /// ///////////////////////////////////////////////////////////////////////////////
 
-let mode = 'anonymousWithDB';
+let mode;
 if (exports.get('passwordSecret')) {
   const userNameHeader = exports.get('userNameHeader');
   if (!userNameHeader || userNameHeader === 'digest') {
     mode = 'digest';
-  } else if (userNameHeader === 'oidc') {
-    mode = 'oidc';
+  } else if (userNameHeader === 'anonymous') {
+    mode = 'anonymousWithDB';
+  } else if (userNameHeader === 'oidc' || userNameHeader === 's2s') {
+    mode = userNameHeader;
   } else {
     mode = 'header';
   }
 } else if (exports.get('regressionTests')) {
   mode = 'regressionTests';
+} else {
+  mode = 'anonymousWithDB';
 }
 
 Auth.initialize({

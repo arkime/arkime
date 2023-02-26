@@ -1,4 +1,4 @@
-AC_INIT([arkime], [4.1.1-GIT])
+AC_INIT([arkime], [4.2.0-GIT])
 AM_INIT_AUTOMAKE([-Wall -Werror foreign])
 AC_PROG_CC
 AC_PROG_CXX
@@ -14,6 +14,7 @@ AC_CONFIG_FILES([
   capture/plugins/pfring/Makefile
   capture/plugins/snf/Makefile
   capture/plugins/lua/Makefile
+  capture/plugins/kafka/Makefile
   capture/parsers/Makefile
   db/Makefile
   tests/plugins/Makefile
@@ -541,6 +542,40 @@ esac ], [
 AC_MSG_RESULT(yes) ])
 AC_SUBST(ZSTD_CFLAGS)
 AC_SUBST(ZSTD_LIBS)
+
+dnl Checks for kafka
+AC_MSG_CHECKING(for kafka)
+AC_ARG_WITH(kafka,
+[ --with-kafka=DIR use kafka (librdkafka) build directory],
+[ case "$withval" in
+  no)
+     AC_MSG_RESULT(no)
+     ;;
+  *)
+
+  if test "x$withval" = xyes; then
+    withval=/usr/local/include/librdkafka/
+  fi
+
+  AC_MSG_RESULT($withval)
+    if test -f $withval/src/rdkafka.h -a -f $withval/src/librdkafka.a; then
+      KAFKA_CFLAGS="-I$withval/src"
+      #KAFKA_LIBS=$withval/src/librdkafka.a
+      KAFKA_LIBS=""
+      #cp $withval/src/librdkafka.so capture/plugins/
+    elif test -f $withval/rdkafka.h; then
+      KAFKA_CFLAGS="-I$withval"
+      KAFKA_LIBS="-lrdkafka"
+    else
+      AC_ERROR(rdkafka.h or librdkafka.a not found in $withval)
+    fi
+    ;;
+esac ], [
+  KAFKA_CFLAGS=
+  KAFKA_LIBS=
+AC_MSG_RESULT(no) ])
+AC_SUBST(KAFKA_CFLAGS)
+AC_SUBST(KAFKA_LIBS)
 
 AS_IF([test "$prefix" == "NONE"],
     [AC_DEFINE_UNQUOTED(CONFIG_PREFIX,"$ac_default_prefix", [config prefix directory])],

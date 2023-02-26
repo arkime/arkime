@@ -50,6 +50,7 @@ LOCAL  MolochCompressionMode compressionMode = MOLOCH_COMPRESSION_NONE;
 LOCAL  gboolean              simpleShortHeader;
 LOCAL  int                   simpleGzipLevel;
 LOCAL  int                   simpleZstdLevel;
+LOCAL  int                   simpleFreeOutputBuffers;
 
 // Information about the current file being written to, all items that are constant per file should be here
 typedef struct {
@@ -191,7 +192,7 @@ LOCAL void writer_simple_free(MolochSimple_t *info)
     }
     info->file = 0;
 
-    if (DLL_COUNT(simple_, &freeList[thread]) < 16) {
+    if (DLL_COUNT(simple_, &freeList[thread]) < simpleFreeOutputBuffers) {
         MOLOCH_LOCK(freeList[thread].lock);
         DLL_PUSH_TAIL(simple_, &freeList[thread], info);
         MOLOCH_UNLOCK(freeList[thread].lock);
@@ -1018,6 +1019,8 @@ void writer_simple_init(char *name)
         config.gapPacketPos = FALSE;
         moloch_writer_index = writer_simple_index;
     }
+
+    simpleFreeOutputBuffers  = moloch_config_int(NULL, "simpleFreeOutputBuffers", 16, 0, 0xffff);
 
     DLL_INIT(simple_, &simpleQ);
 
