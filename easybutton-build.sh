@@ -268,7 +268,7 @@ elif [ -f "/etc/arch-release" ]; then
       --with-pfring=no \
       --with-curl=no \
       --with-lua=no LIBS="-lpcap -lyara -llua -lcurl" GLIB2_CFLAGS="-I/usr/include/glib-2.0 -I/usr/lib/glib-2.0/include" GLIB2_LIBS="-lglib-2.0 -lgmodule-2.0 -lgobject-2.0 -lgio-2.0"
-      KAFKA_LIBS="" KAFKA_FLAGS="-I/usr/include/librdkafka" \
+      KAFKA_LIBS="" KAFKA_CFLAGS="-I/usr/include/librdkafka" \
       --with-kafka=no'
     ./configure \
       --with-zstd=yes \
@@ -278,7 +278,7 @@ elif [ -f "/etc/arch-release" ]; then
       --with-pfring=no \
       --with-curl=no \
       --with-lua=no LIBS="-lpcap -lyara -llua -lcurl" GLIB2_CFLAGS="-I/usr/include/glib-2.0 -I/usr/lib/glib-2.0/include" GLIB2_LIBS="-lglib-2.0 -lgmodule-2.0 -lgobject-2.0 -lgio-2.0" \
-      KAFKA_LIBS="" KAFKA_FLAGS="-I/usr/include/librdkafka" \
+      KAFKA_LIBS="" KAFKA_CFLAGS="-I/usr/include/librdkafka" \
       --with-kafka=no
 elif [ $DOTHIRDPARTY -eq 0 ]; then
     ./configure --with-lua=$with_lua --with-kafka=$with_kafka
