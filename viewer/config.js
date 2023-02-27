@@ -27,7 +27,6 @@ const os = require('os');
 const fs = require('fs');
 const version = require('../common/version');
 const Auth = require('../common/auth');
-const ArkimeUtil = require('../common/arkimeUtil');
 
 exports.debug = 0;
 exports.insecure = false;
