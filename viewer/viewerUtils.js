@@ -3,6 +3,7 @@
 const async = require('async');
 const http = require('http');
 const https = require('https');
+const ArkimeUtil = require('../common/arkimeUtil');
 const Auth = require('../common/auth');
 const User = require('../common/user');
 const molochparser = require('./molochparser.js');
@@ -20,7 +21,8 @@ module.exports = (Config, Db, internals) => {
       return;
     }
 
-    internals.caTrustCerts[node] = Config.getCaTrustCerts(node);
+    const caTrustFile = exports.getFull(node, 'caTrustFile');
+    internals.caTrustCerts[node] = ArkimeUtil.certificateFileToArray(caTrustFile);
 
     if (internals.caTrustCerts[node] !== undefined && internals.caTrustCerts[node].length > 0) {
       options.ca = internals.caTrustCerts[node];

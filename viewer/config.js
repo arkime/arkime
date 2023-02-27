@@ -196,36 +196,6 @@ exports.getObj = function (key, defaultValue) {
   return obj;
 };
 
-exports.getCaTrustCerts = function (node) {
-  const caTrustFile = exports.getFull(node, 'caTrustFile');
-
-  if (caTrustFile && caTrustFile.length > 0) {
-    const certs = [];
-
-    const caTrustFileLines = fs.readFileSync(caTrustFile, 'utf8').split('\n');
-
-    let foundCert = [];
-
-    for (let i = 0, ilen = caTrustFileLines.length; i < ilen; i++) {
-      const line = caTrustFileLines[i];
-      if (line.length === 0) {
-        continue;
-      }
-      foundCert.push(line);
-      if (line.match(/-END CERTIFICATE-/)) {
-        certs.push(foundCert.join('\n'));
-        foundCert = [];
-      }
-    }
-
-    if (certs.length > 0) {
-      return certs;
-    }
-  }
-
-  return undefined;
-};
-
 function loadIncludes (includes) {
   if (!includes) {
     return;
@@ -537,6 +507,7 @@ Auth.initialize({
   userAuthIps: exports.get('userAuthIps'),
   s2s: true,
   s2sRegressionTests: !!exports.get('s2sRegressionTests'),
+  caTrustFile: exports.getFull(internals.nodeName, 'caTrustFile'),
   authConfig: {
     httpRealm: exports.get('httpRealm', 'Moloch'),
     userIdField: exports.get('authUserIdField'),

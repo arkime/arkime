@@ -473,6 +473,7 @@ function setupAuth () {
     requiredAuthHeaderVal: getConfig('cont3xt', 'requiredAuthHeaderVal'),
     userAutoCreateTmpl: getConfig('cont3xt', 'userAutoCreateTmpl'),
     userAuthIps: getConfig('cont3xt', 'userAuthIps'),
+    caTrustFile: getConfig('cont3xt', 'caTrustFile'),
     authConfig: {
       httpRealm: getConfig('cont3xt', 'httpRealm', 'Moloch'),
       userIdField: getConfig('cont3xt', 'authUserIdField'),
@@ -493,6 +494,7 @@ function setupAuth () {
     debug: internals.debug,
     url: dbUrl,
     node: es,
+    caTrustFile: getConfig('cont3xt', 'caTrustFile'),
     apiKey: getConfig('cont3xt', 'elasticsearchAPIKey'),
     basicAuth: getConfig('cont3xt', 'elasticsearchBasicAuth')
   });
@@ -509,6 +511,7 @@ function setupAuth () {
     debug: internals.debug,
     url: usersUrl,
     node: usersEs,
+    caTrustFile: getConfig('cont3xt', 'caTrustFile'),
     clientKey: getConfig('cont3xt', 'esClientKey'),
     clientCert: getConfig('cont3xt', 'esClientCert'),
     clientKeyPass: getConfig('cont3xt', 'esClientKeyPass'),

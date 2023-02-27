@@ -66,6 +66,7 @@ const internals = {
         { name: 'port', required: false, regex: '^[0-9]+$', help: 'Port that the wiseService runs on. Defaults to 8081' },
         { name: 'keyFile', required: false, help: 'Path to PEM encoded key file' },
         { name: 'certFile', required: false, help: 'Path to PEM encoded cert file' },
+        { name: 'caTrustFile', required: false, help: 'Path to PEM encoded CA file' },
         { name: 'userNameHeader', required: true, help: 'How should auth be done: anonymous - no auth, digest - digest auth, any other value is the http header to use for username', regex: '.' },
         { name: 'httpRealm', ifField: 'userNameHeader', ifValue: 'digest', required: false, help: 'The realm to use for digest requests. Must be the same as viewer is using. Default Moloch' },
         { name: 'passwordSecret', ifField: 'userNameHeader', ifValue: 'digest', required: false, password: true, help: 'The secret used to encrypted password hashes. Must be the same as viewer is using. Default password' },
@@ -241,6 +242,7 @@ function setupAuth () {
     userNameHeader,
     passwordSecret: getConfig('wiseService', 'passwordSecret', 'password'),
     userAuthIps: getConfig('wiseService', 'userAuthIps'),
+    caTrustFile: getConfig('wiseService', 'caTrustFile'),
     authConfig: {
       httpRealm: getConfig('wiseService', 'httpRealm', 'Moloch'),
       userIdField: getConfig('wiseService', 'authUserIdField'),
@@ -260,6 +262,7 @@ function setupAuth () {
   User.initialize({
     insecure: internals.insecure,
     node: es,
+    caTrustFile: getConfig('wiseService', 'caTrustFile'),
     prefix: getConfig('wiseService', 'usersPrefix'),
     apiKey: getConfig('wiseService', 'usersElasticsearchAPIKey'),
     basicAuth: getConfig('wiseService', 'usersElasticsearchBasicAuth')

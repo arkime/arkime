@@ -23,6 +23,7 @@ const fs = require('fs');
 const async = require('async');
 const { Client } = require('@elastic/elasticsearch');
 const User = require('../common/user');
+const ArkimeUtil = require('../common/arkimeUtil');
 
 const internals = {
   fileId2File: {},
@@ -100,7 +101,8 @@ exports.initialize = async (info, cb) => {
   internals.esProfile = info.esProfile || false;
   delete info.esProfile;
 
-  const esSSLOptions = { rejectUnauthorized: !internals.info.insecure, ca: internals.info.ca };
+  const esSSLOptions = { rejectUnauthorized: !internals.info.insecure };
+  if (internals.info.caTrustFile) { esSSLOptions.ca = ArkimeUtil.certificateFileToArray(internals.info.caTrustFile); };
   if (info.esClientKey) {
     esSSLOptions.key = fs.readFileSync(info.esClientKey);
     esSSLOptions.cert = fs.readFileSync(info.esClientCert);
@@ -137,7 +139,7 @@ exports.initialize = async (info, cb) => {
   if (info.usersHost) {
     User.initialize({
       insecure: info.insecure,
-      ca: info.ca,
+      caTrustFile: info.caTrustFile,
       requestTimeout: info.requestTimeout,
       node: info.usersHost,
       clientKey: info.esClientKey,
@@ -153,7 +155,7 @@ exports.initialize = async (info, cb) => {
   } else {
     User.initialize({
       insecure: info.insecure,
-      ca: info.ca,
+      caTrustFile: info.caTrustFile,
       requestTimeout: info.requestTimeout,
       node: info.host,
       clientKey: info.esClientKey,
