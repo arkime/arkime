@@ -12,6 +12,10 @@ my $pwd = "*/pcap";
 sub testMulti {
    my ($json, $mjson, $url) = @_;
 
+   diag $url;
+   diag Dumper($json);
+   diag Dumper($mjson);
+
    my @items = sort({$a->{name} cmp $b->{name}} @{$json->{items}});
    my @mitems = sort({$a->{name} cmp $b->{name}} @{$mjson->{items}});
 
