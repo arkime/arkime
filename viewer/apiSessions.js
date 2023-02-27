@@ -1392,11 +1392,15 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
     };
 
     if (reqQuery.expression) {
-      // reqQuery.expression = reqQuery.expression.replace(/\\/g, "\\\\");
-      try {
-        query.query.bool.filter.push(molochparser.parse(reqQuery.expression));
-      } catch (e) {
-        err = e;
+      if (!ArkimeUtil.isString(reqQuery.expression)) {
+        err = 'Expression need to be a string';
+      } else {
+        // reqQuery.expression = reqQuery.expression.replace(/\\/g, "\\\\");
+        try {
+          query.query.bool.filter.push(molochparser.parse(reqQuery.expression));
+        } catch (e) {
+          err = e;
+        }
       }
     }
 
@@ -1996,7 +2000,8 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * Builds an elasticsearch session query. Gets a list of values for a field with counts and graph data and returns them to the client.
    * @name /spigraph
    * @param {SessionsQuery} query - The request query to filter sessions
-   * @param {string} field=node - The database field to get data for. Defaults to "node".
+   * @param {string} exp - The expression field to return data for. Either exp or field is required, field is given priority if both are present.
+   * @param {string} field=node - The database field to return data for. Either exp or field is required, field is given priority if both are present.
    * @returns {object} map - The data to populate the main/aggregate spigraph sessions map
    * @returns {object} graph - The data to populate the main/aggregate spigraph sessions timeline graph
    * @returns {array} items - The list of field values with their corresponding timeline graph and map data
@@ -2005,6 +2010,12 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    */
   sessionAPIs.getSPIGraph = (req, res) => {
     req.query.facets = 1;
+
+    // req.query.exp -> req.query.field by viewer.js:expToField
+
+    if (req.query.field !== undefined && !ArkimeUtil.isString(req.query.field, 0)) {
+      return res.serverError(403, 'Bad \'field\' parameter');
+    }
 
     sessionAPIs.buildSessionQuery(req, (bsqErr, query, indices) => {
       const results = { items: [], graph: {}, map: {} };
@@ -2317,13 +2328,16 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * @name /unique
    * @param {SessionsQuery} query - The request query to filter sessions
    * @param {number} counts=0 - Whether to return counts with he list of unique field values. Defaults to 0. 0 = no counts, 1 - counts.
-   * @param {string} exp - Comma separated list of expression field names to return.
+   * @param {string} exp - The expression field to return unique data for. Either exp or field is required, field is given priority if both are present.
+   * @param {string} field - The database field to return unique data for. Either exp or field is required, field is given priority if both are present.
    * @returns {string} The list of unique fields (with counts if requested)
    */
   sessionAPIs.getUnique = (req, res) => {
     ViewerUtils.noCache(req, res, 'text/plain; charset=utf-8');
 
-    if (req.query.field === undefined && req.query.exp === undefined) {
+    // req.query.exp -> req.query.field by viewer.js:expToField
+
+    if (!ArkimeUtil.isString(req.query.field)) {
       return res.send('Missing field or exp parameter');
     }
 
@@ -2453,14 +2467,13 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * @name /multiunique
    * @param {SessionsQuery} query - The request query to filter sessions
    * @param {number} counts=0 - Whether to return counts with he list of unique field values. Defaults to 0. 0 = no counts, 1 - counts.
-   * @param {string} exp - The expression field to return unique data for. Either exp or field is required, field is given priority if both are present.
-   * @param {string} field - The database field to return unique data for. Either exp or field is required, field is given priority if both are present.
+   * @param {string} exp - Comma separated list of expression fields to return unique data for.
    * @returns {string} The list of an intersection of unique fields (with counts if requested)
    */
   sessionAPIs.getMultiunique = (req, res) => {
     ViewerUtils.noCache(req, res, 'text/plain; charset=utf-8');
 
-    if (req.query.exp === undefined) {
+    if (!ArkimeUtil.isString(req.query.exp)) {
       return res.send('Missing exp parameter');
     }
 

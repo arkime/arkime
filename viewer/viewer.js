@@ -647,8 +647,8 @@ function logAction (uiPage) {
   };
 }
 
-// field to exp middleware ----------------------------------------------------
-function fieldToExp (req, res, next) {
+// exp to field middleware ----------------------------------------------------
+function expToField (req, res, next) {
   if (req.query.exp && !req.query.field) {
     const field = Config.getFieldsMap()[req.query.exp];
     if (field) {
@@ -1607,7 +1607,7 @@ app.getpost( // spiview endpoint (POST or GET) - uses fillQueryFromBody to
 app.getpost( // spigraph endpoint (POST or GET) - uses fillQueryFromBody to
   // fill the query parameters if the client uses POST to support POST and GET
   ['/api/spigraph', '/spigraph.json'],
-  [ArkimeUtil.noCacheJson, recordResponseTime, fillQueryFromBody, logAction('spigraph'), setCookie, fieldToExp],
+  [ArkimeUtil.noCacheJson, recordResponseTime, fillQueryFromBody, logAction('spigraph'), setCookie, expToField],
   sessionAPIs.getSPIGraph
 );
 
@@ -1635,14 +1635,14 @@ app.getpost( // sessions csv endpoint (POST or GET) - uses fillQueryFromBody to
 app.getpost( // unique endpoint (POST or GET) - uses fillQueryFromBody to
   // fill the query parameters if the client uses POST to support POST and GET
   ['/api/unique', '/unique.txt'],
-  [fillQueryFromBody, logAction('unique'), fieldToExp],
+  [fillQueryFromBody, logAction('unique'), expToField],
   sessionAPIs.getUnique
 );
 
 app.getpost( // multiunique endpoint (POST or GET) - uses fillQueryFromBody to
   // fill the query parameters if the client uses POST to support POST and GET
   ['/api/multiunique', '/multiunique.txt'],
-  [fillQueryFromBody, logAction('multiunique'), fieldToExp],
+  [fillQueryFromBody, logAction('multiunique')],
   sessionAPIs.getMultiunique
 );
 

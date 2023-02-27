@@ -1,4 +1,4 @@
-use Test::More tests => 26;
+use Test::More tests => 38;
 use Cwd;
 use URI::Escape;
 use MolochTest;
@@ -23,24 +23,55 @@ my ($param) = @_;
     return join("\n", @lines) . "\n";
 }
 
+sub post {
+    my ($content) = @_;
+
+    my $txt = $MolochTest::userAgent->post("http://$MolochTest::host:8123/multiunique.txt", Content => $content, "Content-Type" => "application/json;charset=UTF-8")->content;
+    my $mtxt = $MolochTest::userAgent->post("http://$MolochTest::host:8125/multiunique.txt", Content => $content, "Content-Type" => "application/json;charset=UTF-8")->content;
+    my @lines = split(/\n/, $txt);
+    my @mlines = split(/\n/, $mtxt);
+
+    # Sort since the server returns any order with the same counts
+    @lines = sort @lines;
+    @mlines = sort @mlines;
+
+    eq_or_diff(\@mlines, \@lines, "single doesn't match multi", { context => 3 });
+
+    return join("\n", @lines) . "\n";
+}
+
 my $pwd = "*/pcap";
 my $filestr = "(file=$pwd/socks-http-example.pcap||file=$pwd/socks-http-pass.pcap||file=$pwd/socks-https-example.pcap||file=$pwd/socks5-http-302.pcap||file=$pwd/socks5-rdp.pcap||file=$pwd/socks5-reverse.pcap||file=$pwd/socks5-smtp-503.pcap||file=$pwd/v6-http.pcap)";
 my $files = uri_escape($filestr);
 
-
-
-#
+# empty
 my $txt = get("");
+my $ptxt = post('{}');
 is ($txt, "Missing exp parameter\n", "unique.txt node exp parameter");
+eq_or_diff($txt, $ptxt, "GET and POST versions of multiunique endpoint are not the same");
 
 
-#
+# empty exp
+$txt = get("exp=");
+$ptxt = post('{"exp": ""}');
+is ($txt, "Missing exp parameter\n", "unique.txt node exp empty");
+eq_or_diff($txt, $ptxt, "GET and POST versions of multiunique endpoint are not the same");
+
+# bad post - exp
+my $ptxt = post('{"exp": {}}');
+is ($ptxt, "Missing exp parameter\n");
+
+# node
 $txt = get("date=-1&exp=node");
+$ptxt = post('{"date": -1, "exp": "node"}');
 eq_or_diff($txt, "test\n", "Nodes", { context => 3 });
+eq_or_diff($txt, $ptxt, "GET and POST versions of multiunique endpoint are not the same");
 
 #
 $txt = get("date=-1&exp=node&expression=$files&counts=1");
+$ptxt = post(qq/{"date": -1, "exp": "node", "expression": "$filestr", "counts": 1}/);
 eq_or_diff($txt, "test, 19\n", "Nodes count", { context => 3 });
+eq_or_diff($txt, $ptxt, "GET and POST versions of multiunique endpoint are not the same");
 
 #
 $txt = get("date=-1&exp=ip.src&expression=$files&counts=1");
