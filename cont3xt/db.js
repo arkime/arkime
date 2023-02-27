@@ -141,7 +141,7 @@ class DbESImplementation {
 
   constructor (options) {
     const esSSLOptions = { rejectUnauthorized: !options.insecure };
-    if (options.ca) { esSSLOptions.ca = ArkimeUtil.certificateFileToArray(options.ca); };
+    if (options.caTrustFile) { esSSLOptions.ca = ArkimeUtil.certificateFileToArray(options.caTrustFile); };
     if (options.clientKey) {
       esSSLOptions.key = fs.readFileSync(options.clientKey);
       esSSLOptions.cert = fs.readFileSync(options.clientCert);

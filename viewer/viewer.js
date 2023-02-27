@@ -2486,7 +2486,7 @@ Db.initialize({
   esClientKeyPass: Config.get('esClientKeyPass', null),
   multiES: Config.get('multiES', false),
   insecure: Config.insecure,
-  ca: Config.get('caTrustFile', null),
+  caTrustFile: Config.get('caTrustFile', null),
   requestTimeout: Config.get('elasticsearchTimeout', 300),
   esProfile: Config.esProfile,
   debug: Config.debug,

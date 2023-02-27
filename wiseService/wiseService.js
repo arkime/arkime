@@ -242,7 +242,7 @@ function setupAuth () {
     userNameHeader,
     passwordSecret: getConfig('wiseService', 'passwordSecret', 'password'),
     userAuthIps: getConfig('wiseService', 'userAuthIps'),
-    caTrustCerts: getConfig('wiseService', 'caTrustFile'),
+    caTrustFile: getConfig('wiseService', 'caTrustFile'),
     authConfig: {
       httpRealm: getConfig('wiseService', 'httpRealm', 'Moloch'),
       userIdField: getConfig('wiseService', 'authUserIdField'),
@@ -262,7 +262,7 @@ function setupAuth () {
   User.initialize({
     insecure: internals.insecure,
     node: es,
-    ca: getConfig('wiseService', 'caTrustFile'),
+    caTrustFile: getConfig('wiseService', 'caTrustFile'),
     prefix: getConfig('wiseService', 'usersPrefix'),
     apiKey: getConfig('wiseService', 'usersElasticsearchAPIKey'),
     basicAuth: getConfig('wiseService', 'usersElasticsearchBasicAuth')

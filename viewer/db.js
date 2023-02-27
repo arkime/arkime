@@ -102,7 +102,7 @@ exports.initialize = async (info, cb) => {
   delete info.esProfile;
 
   const esSSLOptions = { rejectUnauthorized: !internals.info.insecure };
-  if (internals.info.ca) { esSSLOptions.ca = ArkimeUtil.certificateFileToArray(internals.info.ca); };
+  if (internals.info.caTrustFile) { esSSLOptions.ca = ArkimeUtil.certificateFileToArray(internals.info.caTrustFile); };
   if (info.esClientKey) {
     esSSLOptions.key = fs.readFileSync(info.esClientKey);
     esSSLOptions.cert = fs.readFileSync(info.esClientCert);
@@ -139,7 +139,7 @@ exports.initialize = async (info, cb) => {
   if (info.usersHost) {
     User.initialize({
       insecure: info.insecure,
-      ca: info.ca,
+      caTrustFile: info.caTrustFile,
       requestTimeout: info.requestTimeout,
       node: info.usersHost,
       clientKey: info.esClientKey,
@@ -155,7 +155,7 @@ exports.initialize = async (info, cb) => {
   } else {
     User.initialize({
       insecure: info.insecure,
-      ca: info.ca,
+      caTrustFile: info.caTrustFile,
       requestTimeout: info.requestTimeout,
       node: info.host,
       clientKey: info.esClientKey,

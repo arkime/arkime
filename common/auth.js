@@ -77,7 +77,7 @@ class Auth {
    * @param {string} options.userAuthIps A comma separated list of CIDRs that users are allowed from
    * @param {boolean} options.s2s Support s2s auth also
    * @param {object} options.authConfig options specific to each auth mode
-   * @param {object} options.caTrustCerts Optional path to CA certificate file to use for external authentication
+   * @param {object} options.caTrustFile Optional path to CA certificate file to use for external authentication
    */
   static initialize (options) {
     if (options.debug > 1) {
@@ -101,7 +101,7 @@ class Auth {
     Auth.#userAuthIps = new iptrie.IPTrie();
     Auth.#s2sRegressionTests = options.s2sRegressionTests;
     Auth.#authConfig = options.authConfig;
-    Auth.#caTrustCerts = ArkimeUtil.certificateFileToArray(options.caTrustCerts);
+    Auth.#caTrustCerts = ArkimeUtil.certificateFileToArray(options.caTrustFile);
 
     if (options.userAuthIps) {
       for (const cidr of options.userAuthIps.split(',')) {

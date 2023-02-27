@@ -1220,7 +1220,7 @@ class UserESImplementation {
     }
 
     const esSSLOptions = { rejectUnauthorized: !options.insecure };
-    if (options.ca) { esSSLOptions.ca = ArkimeUtil.certificateFileToArray(options.ca); };
+    if (options.caCertFile) { esSSLOptions.ca = ArkimeUtil.certificateFileToArray(options.caCertFile); };
     if (options.clientKey) {
       esSSLOptions.key = fs.readFileSync(options.clientKey);
       esSSLOptions.cert = fs.readFileSync(options.clientCert);

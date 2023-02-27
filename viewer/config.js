@@ -507,7 +507,7 @@ Auth.initialize({
   userAuthIps: exports.get('userAuthIps'),
   s2s: true,
   s2sRegressionTests: !!exports.get('s2sRegressionTests'),
-  caTrustCerts: exports.getFull(internals.nodeName, 'caTrustFile'),
+  caTrustFile: exports.getFull(internals.nodeName, 'caTrustFile'),
   authConfig: {
     httpRealm: exports.get('httpRealm', 'Moloch'),
     userIdField: exports.get('authUserIdField'),
