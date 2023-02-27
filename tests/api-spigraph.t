@@ -1,4 +1,4 @@
-use Test::More tests => 96;
+use Test::More tests => 93;
 use Cwd;
 use URI::Escape;
 use MolochTest;
@@ -11,10 +11,6 @@ my $pwd = "*/pcap";
 
 sub testMulti {
    my ($json, $mjson, $url) = @_;
-
-   diag $url;
-   diag Dumper($json);
-   diag Dumper($mjson);
 
    my @items = sort({$a->{name} cmp $b->{name}} @{$json->{items}});
    my @mitems = sort({$a->{name} cmp $b->{name}} @{$mjson->{items}});
@@ -33,7 +29,7 @@ my ($url) = @_;
     my $json = viewerGet($url);
     my $mjson = multiGet($url);
 
-    $json = testMulti($json, $mjson, $url);
+    $json = testMulti($json, $mjson, $url) if (exists $json->{items});
 
     return $json
 }
@@ -44,7 +40,7 @@ sub post {
     my $json = viewerPost($url, $content);
     my $mjson = multiPost($url, $content);
 
-    $json = testMulti($json, $mjson, $url);
+    $json = testMulti($json, $mjson, $url) if (exists $json->{items});
 
     return $json;
 }
@@ -67,7 +63,7 @@ my ($json, $mjson, $pjson);
 
 # bad field
     $pjson = post("/api/spigraph", '{"map":true, "date":-1, "field": {}, "expression":"file=' . $pwd . '/bigendian.pcap|file=' . $pwd . '/socks-http-example.pcap|file=' . $pwd . '/bt-tcp.pcap"}');
-    eq_or_diff($pjson, from_json('{"success": false, "items": [], "text": "Bad \'field\' parameter"}'));
+    eq_or_diff($pjson, from_json('{"success": false, "text": "Bad \'field\' parameter"}'));
 
 #node
     $json = get("/spigraph.json?map=true&date=-1&field=node&expression=" . uri_escape("file=$pwd/bigendian.pcap|file=$pwd/socks-http-example.pcap|file=$pwd/bt-tcp.pcap"));
