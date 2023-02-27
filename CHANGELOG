@@ -36,6 +36,7 @@ NOTICE: Cross-cluster Shortcuts require you to not restart all your viewers at o
   - all - cleanup nodejs dependencies
   - all - refactor how authentication is done, everything now uses passportjs
   - all - support oidc authentication method
+  - all - caTrustFile setting should work everywhere
   - capture - support ERSPAN Type I and vlan for Type II
   - capture - new kafka plugin for sessions
   - capture - use malloc instead of GSlice
