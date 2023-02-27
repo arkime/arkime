@@ -788,7 +788,7 @@ void moloch_config_load_header(char *section, char *group, char *helpBase, char 
         char expression[100];
         char field[100];
         char help[100];
-        char aliases[100];
+        char aliases[205];
 
         snprintf(expression, sizeof(expression), "%s%s", expBase, name);
         snprintf(aliases, sizeof(aliases), "[\"%s%s\"]", aliasBase, name);

@@ -1,4 +1,4 @@
-use Test::More tests => 32;
+use Test::More tests => 40;
 use Cwd;
 use URI::Escape;
 use MolochTest;
@@ -41,6 +41,13 @@ my $files = uri_escape($filestr);
 my $txt = get("");
 is ($txt, "Missing field or exp parameter\n", "unique.txt node field parameter");
 
+#
+$txt = get("date=-1&field=");
+is ($txt, "Missing field or exp parameter\n", "unique.txt node field parameter");
+
+#
+$txt = get("date=-1&exp=");
+is ($txt, "Missing field or exp parameter\n", "unique.txt node field parameter");
 
 #
 $txt = get("date=-1&field=node");
@@ -52,6 +59,14 @@ eq_or_diff($txt, "[\"test\"]\n", "Autocomplete Nodes", { context => 3 });
 
 #
 $txt = get("date=-1&field=node&expression=$files&counts=1");
+eq_or_diff($txt, "test, 19\n", "Nodes count", { context => 3 });
+
+#
+$txt = get("date=-1&exp=node&expression=$files&counts=1");
+eq_or_diff($txt, "test, 19\n", "Nodes count", { context => 3 });
+
+#
+$txt = get("date=-1&exp=NONE&field=node&expression=$files&counts=1");
 eq_or_diff($txt, "test, 19\n", "Nodes count", { context => 3 });
 
 #
