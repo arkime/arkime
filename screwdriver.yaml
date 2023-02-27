@@ -17,7 +17,7 @@ shared:
 jobs:
     centos-7:
         requires: [~pr, ~commit]
-        image: andywick/arkime-build-7:4.0.0-4
+        image: andywick/arkime-build-7:4.2.0-1
         steps:
             - (cd / ; curl https://s3.amazonaws.com/files.molo.ch/snfmin.tar.gz | tar -zxvf -)
             - ln -s /thirdparty .
@@ -276,7 +276,7 @@ jobs:
             screwdriver.cd/cpu: TURBO
             screwdriver.cd/ram: TURBO
         requires: [~pr, ~commit]
-        image: andywick/arkime-build-7:4.0.0-7
+        image: andywick/arkime-build-7:4.2.0-1
         steps:
             - (cd / ; curl https://s3.amazonaws.com/files.molo.ch/snfmin.tar.gz | tar -zxvf -)
             - ln -s /thirdparty .
@@ -336,7 +336,7 @@ jobs:
 
     release-centos-7:
         requires: [release-build]
-        image: andywick/arkime-build-7:4.0.0-4
+        image: andywick/arkime-build-7:4.2.0-1
         steps:
             - (cd / ; curl https://s3.amazonaws.com/files.molo.ch/snfmin.tar.gz | tar -zxvf -)
             - ln -s /thirdparty .
