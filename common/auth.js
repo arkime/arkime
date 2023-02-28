@@ -421,16 +421,17 @@ class Auth {
 
     // ----------------------------------------------------------------------------
     passport.use('s2s', new CustomStrategy((req, done) => {
-      if (req.headers['x-arkime-auth'] === undefined) {
+      let obj = req.headers['x-arkime-auth'] ?? req.headers['x-moloch-auth'];
+
+      if (obj === undefined) {
         return done(null, false);
       }
 
-      let obj;
       try {
         if (Auth.#s2sRegressionTests) {
-          obj = JSON.parse(req.headers['x-arkime-auth']);
+          obj = JSON.parse(obj);
         } else {
-          obj = Auth.auth2obj(req.headers['x-arkime-auth']);
+          obj = Auth.auth2obj(obj);
         }
       } catch (e) {
         console.log('AUTH: x-arkime-auth corrupt', e);
@@ -664,7 +665,7 @@ class Auth {
     if (!options.headers) {
       options.headers = {};
     }
-    options.headers['x-moloch-auth'] = Auth.obj2auth({
+    options.headers['x-arkime-auth'] = Auth.obj2auth({
       date: Date.now(),
       user: user.userId,
       node,
