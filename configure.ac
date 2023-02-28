@@ -560,9 +560,7 @@ AC_ARG_WITH(kafka,
   AC_MSG_RESULT($withval)
     if test -f $withval/src/rdkafka.h -a -f $withval/src/librdkafka.a; then
       KAFKA_CFLAGS="-I$withval/src"
-      #KAFKA_LIBS=$withval/src/librdkafka.a
-      KAFKA_LIBS=""
-      #cp $withval/src/librdkafka.so capture/plugins/
+      KAFKA_LIBS=$withval/src/librdkafka.a
     elif test -f $withval/rdkafka.h; then
       KAFKA_CFLAGS="-I$withval"
       KAFKA_LIBS="-lrdkafka"

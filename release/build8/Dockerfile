@@ -13,7 +13,7 @@ dnf config-manager --set-enabled remi && \
 yum -y clean all && \
 yum -y install pfring && \
 git clone https://github.com/arkime/arkime && \
-(cd arkime; git checkout main; ./easybutton-build.sh --daq --pfring) && \
+(cd arkime; git checkout main; ./easybutton-build.sh --daq --pfring --kafka) && \
 mv arkime/thirdparty / && \
 rm -rf /thirdparty/glib*/*/tests /thirdparty/glib*/*/*/tests && \
 rm -rf arkime && \
