@@ -158,7 +158,7 @@ if [ -f "/etc/debian_version" ]; then
       with_lua=no
 
       export KAFKA_CFLAGS="-I/usr/include/librdkafka/"
-      export KAFKA_LIBS=""
+      export KAFKA_LIBS="-lrdkafka"
       with_kafka=no
   fi
 fi
@@ -216,7 +216,7 @@ if [ "$UNAME" = "Darwin" ]; then
       --with-nghttp2=yes \
       --with-lua=no LUA_CFLAGS="-I/usr/local/include/lua" LUA_LIBS="-L/usr/local/lib -llua" \
       --with-zstd=yes \
-      --with-kafka=no KAFKA_CFLAGS="-I/opt/homebrew/Cellar/librdkafka/2.0.2/include/librdkafka" KAFKA_LIBS="-L/opt/homebrew/lib"'
+      --with-kafka=no KAFKA_CFLAGS="-I/opt/homebrew/Cellar/librdkafka/2.0.2/include/librdkafka" KAFKA_LIBS="-L/opt/homebrew/lib -lrdkafka"'
 
     ./configure \
       --with-libpcap=/usr/local/opt/libpcap \
@@ -227,7 +227,7 @@ if [ "$UNAME" = "Darwin" ]; then
       --with-nghttp2=yes \
       --with-lua=no LUA_CFLAGS="-I/usr/local/include/lua" LUA_LIBS="-L/usr/local/lib -llua" \
       --with-zstd=yes \
-      --with-kafka=no KAFKA_CFLAGS="-I/usr/local/Cellar/librdkafka/2.0.2/include/librdkafka" KAFKA_LIBS="-L/opt/homebrew/lib"
+      --with-kafka=no KAFKA_CFLAGS="-I/usr/local/Cellar/librdkafka/2.0.2/include/librdkafka" KAFKA_LIBS="-L/opt/homebrew/lib -lrdkafka"
 
   elif [ -x "/opt/homebrew/bin/brew" ]; then
     echo './configure \
@@ -240,7 +240,7 @@ if [ "$UNAME" = "Darwin" ]; then
       --with-nghttp2=yes \
       --with-lua=no LUA_CFLAGS="-I/opt/homebrew/include/lua" LUA_LIBS="-L/opt/homebrew/lib -llua" \
       --with-zstd=yes \
-      --with-kafka=no KAFKA_CFLAGS="-I/opt/homebrew/Cellar/librdkafka/2.0.2/include/librdkafka" KAFKA_LIBS="-L/opt/homebrew/lib"'
+      --with-kafka=no KAFKA_CFLAGS="-I/opt/homebrew/Cellar/librdkafka/2.0.2/include/librdkafka" KAFKA_LIBS="-L/opt/homebrew/lib -lrdkafka"'
 
     ./configure \
       --with-libpcap=/opt/homebrew/opt/libpcap \
@@ -252,7 +252,7 @@ if [ "$UNAME" = "Darwin" ]; then
       --with-nghttp2=yes \
       --with-lua=no LUA_CFLAGS="-I/opt/homebrew/include/lua" LUA_LIBS="-L/opt/homebrew/lib -llua" \
       --with-zstd=yes \
-      --with-kafka=no KAFKA_CFLAGS="-I/opt/homebrew/Cellar/librdkafka/2.0.2/include/librdkafka" KAFKA_LIBS="-L/opt/homebrew/lib"
+      --with-kafka=no KAFKA_CFLAGS="-I/opt/homebrew/Cellar/librdkafka/2.0.2/include/librdkafka" KAFKA_LIBS="-L/opt/homebrew/lib -lrdkafka"
   fi
 elif [ -f "/etc/arch-release" ]; then
     sudo pacman -Sy --noconfirm gcc ruby make python-pip git perl perl-test-differences sudo wget gawk lua geoip yara file libpcap libmaxminddb libnet lua libtool autoconf gettext automake perl-http-message perl-lwp-protocol-https perl-json perl-socket6 zstd openssl-1.1 pcre librdkafka
@@ -268,7 +268,7 @@ elif [ -f "/etc/arch-release" ]; then
       --with-pfring=no \
       --with-curl=no \
       --with-lua=no LIBS="-lpcap -lyara -llua -lcurl" GLIB2_CFLAGS="-I/usr/include/glib-2.0 -I/usr/lib/glib-2.0/include" GLIB2_LIBS="-lglib-2.0 -lgmodule-2.0 -lgobject-2.0 -lgio-2.0"
-      KAFKA_LIBS="" KAFKA_CFLAGS="-I/usr/include/librdkafka" \
+      KAFKA_LIBS="-lrdkafka" KAFKA_CFLAGS="-I/usr/include/librdkafka" \
       --with-kafka=no'
     ./configure \
       --with-zstd=yes \
@@ -278,7 +278,7 @@ elif [ -f "/etc/arch-release" ]; then
       --with-pfring=no \
       --with-curl=no \
       --with-lua=no LIBS="-lpcap -lyara -llua -lcurl" GLIB2_CFLAGS="-I/usr/include/glib-2.0 -I/usr/lib/glib-2.0/include" GLIB2_LIBS="-lglib-2.0 -lgmodule-2.0 -lgobject-2.0 -lgio-2.0" \
-      KAFKA_LIBS="" KAFKA_CFLAGS="-I/usr/include/librdkafka" \
+      KAFKA_LIBS="-lrdkafka" KAFKA_CFLAGS="-I/usr/include/librdkafka" \
       --with-kafka=no
 elif [ $DOTHIRDPARTY -eq 0 ]; then
     ./configure --with-lua=$with_lua --with-kafka=$with_kafka
@@ -463,12 +463,12 @@ else
     WITHZSTD=""
   fi
 
-    # kafka
+  # kafka
   if [ $BUILDKAFKA -eq 1 ]; then
     if [ ! -f "librdkafka-$KAFKA.tar.gz" ]; then
       wget https://github.com/edenhill/librdkafka/archive/v$KAFKA.tar.gz -O librdkafka-$KAFKA.tar.gz
     fi
-    if [ ! -f "/usr/local/include/librdkafka/rdkafka.h" ]; then
+    if [ ! -f "librdkafka-$KAFKA/src/librdkafka.a" ]; then
       tar zxf librdkafka-$KAFKA.tar.gz
       echo "ARKIME: Building librddkafka";
       (cd librdkafka-$KAFKA; ./configure --disable-sasl --install-deps; $MAKE)
