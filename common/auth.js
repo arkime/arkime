@@ -251,7 +251,7 @@ class Auth {
 
       User.getUserCache('anonymous', (err, dbUser) => {
         // Replace certain fields if available from db
-        if (user) {
+        if (dbUser) {
           user.setLastUsed();
           user.settings = dbUser.settings;
           user.views = dbUser.views;
