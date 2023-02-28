@@ -470,6 +470,23 @@ class Auth {
         return done(null, {});
       }
 
+      // s2s && regressionTests for anonymous user we just fake
+      if (Auth.regressionTests && obj.user === 'anonymous') {
+        const user = Object.assign(new User(), {
+          userId: obj.user,
+          enabled: true,
+          webEnabled: true,
+          headerAuthEnabled: false,
+          emailSearch: true,
+          removeEnabled: true,
+          packetSearch: true,
+          settings: {},
+          welcomeMsgNum: 1,
+          roles: ['arkimeAdmin', 'cont3xtUser', 'parliamentUser', 'usersAdmin', 'wiseUser']
+        });
+        return done(null, user);
+      }
+
       User.getUserCache(obj.user, async (err, user) => {
         if (err) { return done('ERROR - x-arkime getUser - user: ' + obj.user + ' err:' + err); }
         if (!user) { return done(obj.user + " doesn't exist"); }
