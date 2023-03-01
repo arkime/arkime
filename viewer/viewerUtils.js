@@ -21,7 +21,7 @@ module.exports = (Config, Db, internals) => {
       return;
     }
 
-    const caTrustFile = exports.getFull(node, 'caTrustFile');
+    const caTrustFile = Config.getFull(node, 'caTrustFile');
     internals.caTrustCerts[node] = ArkimeUtil.certificateFileToArray(caTrustFile);
 
     if (internals.caTrustCerts[node] !== undefined && internals.caTrustCerts[node].length > 0) {
