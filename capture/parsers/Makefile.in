@@ -14,7 +14,7 @@ PARSERSDIR = @prefix@/parsers
 SRCS=$(wildcard *.c)
 SOS=$(SRCS:.c=.so)
 
-%.so : %.c ../moloch.h ../hash.h ../dll.h
+%.so : %.c ../moloch.h ../hash.h ../dll.h ../bsb.h
 	$(CC) -pthread @SHARED_FLAGS@ $(EXTRA_CFLAGS) -o $@ @CFLAGS@ -Wall -Wextra -D_GNU_SOURCE -std=gnu99 -fno-strict-aliasing -fPIC $(INCLUDE_PCAP) $(INCLUDE_OTHER) $<
 
 all:$(SOS)

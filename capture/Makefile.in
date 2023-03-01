@@ -42,7 +42,7 @@ SANITIZE_CFLAGS  = $(SANITIZE_LDFLAGS)
 FUZZ_LDFLAGS     = -fno-common -fsanitize=fuzzer,address -fstack-protector-all -fsanitize-address-use-after-scope
 FUZZ_CFLAGS      = -DFUZZLOCH $(FUZZ_LDFLAGS)
 
-%.o : %.c moloch.h hash.h dll.h
+%.o : %.c moloch.h hash.h dll.h bsb.h
 	$(CC) -fno-strict-aliasing -pthread -fPIC -g -O2 $(EXTRA_CFLAGS) -Wall -Wextra -D_GNU_SOURCE -std=gnu99 -c $< \
             $(INCLUDE_PCAP) \
             $(INCLUDE_OTHER) \
