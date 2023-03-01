@@ -5,7 +5,7 @@ OpenSearch Versions:
 
 Elasticsearch Versions:
   * Arkime >= 4.0.0  supports ES >= 7.10.0 or 8.x, not 9.x or later
-  * Moloch >= 3.0.0  supports ES >= 7.10.0, not 8.x or later
+  * Arkime >= 3.0.0  supports ES >= 7.10.0, not 8.x or later
   * Moloch >= 2.7.0  supports ES >= 7.4.0, not 8.x or later
   * Moloch >= 2.2.0  supports ES >= 6.8.0 or >= 7.1.0, not 8.x or later
   * Moloch >= 2.0.0  supports ES >= 6.7.0 or >= 7.1.0, not 8.x or later
@@ -16,8 +16,8 @@ Elasticsearch Versions:
 
 Node Versions:
   * Arkime >= 4.2.0 requires NodeJS >= 16.0.0 and < 19
-  * Moloch >= 3.4.0 requires NodeJS >= 16.0.0 and < 17
-  * Moloch >= 3.0.0 requires NodeJS 14.x
+  * Arkime >= 3.4.0 requires NodeJS >= 16.0.0 and < 17
+  * Arkime >= 3.0.0 requires NodeJS 14.x
   * Moloch >= 2.4.0 requires NodeJS 12.x
   * Moloch >= 2.0.0 requires NodeJS 10.x
   * Moloch >= 1.6.0 requires NodeJS 8.x, 8.12 or later
@@ -28,8 +28,8 @@ Node Versions:
 NOTICE: Restart wiseService before capture when upgrading
 NOTICE: Cross-cluster Shortcuts require you to not restart all your viewers at once after upgrading
 
-4.2.0 2023/02/xx
-  - release - node 16.19.0, support node v18
+4.2.0 2023/03/01
+  - release - node 16.19.1, support node v18
   - release - fix arch build issues
   - release - EL9 build uses sha256 digest
   - all - OpenSearch/Elasticsearch name cleanup
@@ -55,6 +55,7 @@ NOTICE: Cross-cluster Shortcuts require you to not restart all your viewers at o
              with headers-http-request, headers-http-response defined fields
   - viewer - support viewing ipv6 DLT_RAW (#1293)
   - viewer - ESAdmin -> Unflood works on users cluster now also
+  - viewer - support running in s2s auth mode only
 
 
 4.1.0 2023/01/10
