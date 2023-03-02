@@ -394,9 +394,9 @@ class Integration {
       }
 
       if (response === Integration.NoResult) {
-        shared.res.write(JSON.stringify({ sent: shared.sent, total: shared.total, name: integration.name, itype, query, data: { _cont3xt: { createTime: Date.now() } } }));
+        shared.res.write(JSON.stringify({ sent: shared.sent, total: shared.total, name: integration.name, itype, query: ArkimeUtil.safeStr(query), data: { _cont3xt: { createTime: Date.now() } } }));
       } else {
-        shared.res.write(JSON.stringify({ sent: shared.sent, total: shared.total, name: integration.name, itype, query, data: response }));
+        shared.res.write(JSON.stringify({ sent: shared.sent, total: shared.total, name: integration.name, itype, query: ArkimeUtil.safeStr(query), data: response }));
       }
       shared.res.write(',\n');
     };
@@ -516,7 +516,7 @@ class Integration {
           shared.sent++;
           stats.directError++;
           istats.directError++;
-          shared.res.write(JSON.stringify({ sent: shared.sent, total: shared.total, name: integration.name, itype, query, failed: true }));
+          shared.res.write(JSON.stringify({ sent: shared.sent, total: shared.total, name: integration.name, itype, query: ArkimeUtil.safeStr(query), failed: true }));
           shared.res.write(',\n');
         });
     }
@@ -600,7 +600,7 @@ class Integration {
       resultCount: 0 // sum of _cont3xt.count from results
     };
     res.write('[\n');
-    res.write(JSON.stringify({ success: true, itype, query, sent: shared.sent, total: integrations.length, text: 'more to follow' }));
+    res.write(JSON.stringify({ success: true, itype, query: ArkimeUtil.safeStr(query), sent: shared.sent, total: integrations.length, text: 'more to follow' }));
     res.write(',\n');
 
     const issuedAt = Date.now();
