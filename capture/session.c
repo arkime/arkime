@@ -37,6 +37,7 @@ typedef HASHP_VAR(h_, MolochSessionHash_t, MolochSessionHead_t);
 LOCAL MolochSessionHead_t   sessionsQ[MOLOCH_MAX_PACKET_THREADS][SESSION_MAX];
 LOCAL MolochSessionHash_t   sessions[MOLOCH_MAX_PACKET_THREADS][SESSION_MAX];
 LOCAL int needSave[MOLOCH_MAX_PACKET_THREADS];
+LOCAL int tcpClosingTimeout;
 
 typedef struct molochsescmd {
     struct molochsescmd *cmd_next, *cmd_prev;
@@ -275,7 +276,7 @@ void moloch_session_mark_for_close (MolochSession_t *session, SessionTypes ses)
         return;
 
     session->closingQ = 1;
-    session->saveTime = session->lastPacket.tv_sec + 5;
+    session->saveTime = session->lastPacket.tv_sec + tcpClosingTimeout;
     DLL_REMOVE(q_, &sessionsQ[session->thread][ses], session);
     DLL_PUSH_TAIL(q_, &closingQ[session->thread], session);
 
@@ -810,6 +811,8 @@ void moloch_session_init()
         "Protocols set for session",
         MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT | MOLOCH_FIELD_FLAG_LINKED_SESSIONS,
         (char *)NULL);
+
+    tcpClosingTimeout = moloch_config_int(NULL, "tcpClosingTimeout", 5, 1, 255);
 
     int primes[SESSION_MAX];
     int s;

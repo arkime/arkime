@@ -29,6 +29,8 @@ NOTICE: Restart wiseService before capture when upgrading
 NOTICE: Cross-cluster Shortcuts require you to not restart all your viewers at once after upgrading
 
 4.2.1 2023/03/XX
+  - capture - tcpClosingTimeout setting controls delay before saving tcp
+              sessions after close
 
 4.2.0 2023/03/01
   - release - node 16.19.1, support node v18
