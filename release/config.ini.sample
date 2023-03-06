@@ -255,9 +255,6 @@ pcapWriteMethod=simple
 # stripe size. Defaults to 256k
 pcapWriteSize=262143
 
-# ADVANCED - Number of bytes to bulk index at a time
-dbBulkSize=300000
-
 # ADVANCED - Max number of connections to OpenSearch/Elasticsearch
 maxESConns=30
 
