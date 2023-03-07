@@ -2112,23 +2112,33 @@ function setupAuth () {
 
   if (!parliament?.settings?.commonAuth?.userNameHeader) { return; }
 
-  parliament.authMode = parliament.settings.commonAuth.userNameHeader === 'digest' ? 'digest' : 'header';
+  const commonAuth = parliament.settings.commonAuth;
+
+  parliament.authMode = commonAuth.userNameHeader === 'digest' ? 'digest' : 'header';
 
   Auth.initialize({
     debug: app.get('debug'),
     mode: parliament.authMode,
-    userNameHeader: parliament.authMode === 'digest' ? undefined : parliament.settings.commonAuth.userNameHeader,
-    passwordSecret: parliament.settings.commonAuth.passwordSecret ?? 'password',
+    userNameHeader: parliament.authMode === 'digest' ? undefined : commonAuth.userNameHeader,
+    passwordSecret: commonAuth.passwordSecret ?? 'password',
     userAuthIps: undefined,
-    basePath: '/parliament/api/'
+    basePath: '/parliament/api/',
+    authConfig: {
+      httpRealm: commonAuth.httpRealm ?? 'Moloch',
+      userIdField: commonAuth.authUserIdField,
+      discoverURL: commonAuth.authDiscoverURL,
+      clientId: commonAuth.authClientId,
+      clientSecret: commonAuth.authClientSecret,
+      redirectURIs: commonAuth.authRedirectURIs
+    }
   });
 
   User.initialize({
     insecure: internals.insecure,
-    node: parliament.settings.commonAuth.usersElasticsearch ?? 'http://localhost:9200',
-    prefix: parliament.settings.commonAuth.usersPrefix,
-    apiKey: parliament.settings.commonAuth.usersElasticsearchAPIKey,
-    basicAuth: parliament.settings.commonAuth.usersElasticsearchBasicAuth
+    node: commonAuth.usersElasticsearch ?? 'http://localhost:9200',
+    prefix: commonAuth.usersPrefix,
+    apiKey: commonAuth.usersElasticsearchAPIKey,
+    basicAuth: commonAuth.usersElasticsearchBasicAuth
   });
 }
 

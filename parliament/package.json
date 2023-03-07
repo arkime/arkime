@@ -25,6 +25,10 @@
       "node_modules",
       "vueapp",
       "*.json"
+    ],
+    "watch": [
+      ".",
+      "../common"
     ]
   },
   "browserslist": [

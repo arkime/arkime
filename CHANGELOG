@@ -34,6 +34,7 @@ NOTICE: Cross-cluster Shortcuts require you to not restart all your viewers at o
   - capture - default dbBulkSize to 1M, min 500K, max 15M and removed 
               from sample config file
   - db.pl - new --ifneeded option to init/upgrade that will just exit if not needed
+  - parliament - fix digest auth
 
 4.2.0 2023/03/01
   - release - node 16.19.1, support node v18
