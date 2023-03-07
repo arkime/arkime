@@ -479,8 +479,7 @@ else
     else
       echo "ARKIME: NOT rebuilding librdkafka";
     fi
-    rm -f $TPWD/librdkafka-$KAFKA/*.so
-    ls -l $TPWD/librdkafka-$KAFKA/
+    rm -f $TPWD/librdkafka-$KAFKA/src/*.so
     KAFKALIBDIR=$TPWD/librdkafka-$KAFKA
     KAFKABUILD="--with-kafka=$KAFKALIBDIR"
   fi
