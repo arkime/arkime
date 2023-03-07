@@ -118,6 +118,7 @@ my $GZ = 0;
 my $REFRESH = 60;
 my $ESAPIKEY = "";
 my $USERPASS;
+my $IFNEEDED = 0;
 
 #use LWP::ConsoleLogger::Everywhere ();
 
@@ -167,6 +168,7 @@ sub showHelp($)
     print "    --hotwarm                  - Set 'hot' for 'node.attr.molochtype' on new indices, warm on non sessions indices\n";
     print "    --ilm                      - Use ilm (Elasticsearch) to manage\n";
     print "    --ism                      - Use ism (OpenSearch) to manage\n";
+    print "    --ifneeded                 - Only init or upgrade if needed, otherwise just exit\n";
     print "  wipe [<init opts>]           - Same as init, but leaves user index untouched\n";
     print "  upgrade [<init opts>]        - Upgrade Arkime's mappings from a previous version or use to change settings\n";
     print "  expire <type> <num> [<opts>] - Perform daily OpenSearch/Elasticsearch maintenance and optimize all indices, not needed with ILM\n";
@@ -6174,6 +6176,8 @@ sub parseArgs {
             }
         } elsif ($ARGV[$pos] eq "--hotwarm") {
             $DOHOTWARM = 1;
+        } elsif ($ARGV[$pos] eq "--ifneeded") {
+            $IFNEEDED = 1;
         } elsif ($ARGV[$pos] eq "--ilm") {
             $DOILM = 1;
             die "Can't use both --ilm and --ism" if ($DOISM);
@@ -7618,6 +7622,10 @@ if ($ARGV[1] eq "wipe" && $main::versionNumber != $VERSION) {
 
 if ($ARGV[1] =~ /^(init|wipe|clean)/) {
 
+    if ($ARGV[1] eq "init" && $IFNEEDED && $main::versionNumber == $VERSION) {
+        exit 0;
+    }
+
     if ($ARGV[1] eq "init" && $main::versionNumber >= 0) {
         logmsg "It appears this OpenSearch/Elasticsearch cluster already has Arkime installed (version $main::versionNumber), this will delete ALL data in OpenSearch/Elasticsearch! (It does not delete the pcap files on disk.)\n\n";
         waitFor("INIT", "do you want to erase everything?");
@@ -7834,6 +7842,10 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
     if ($main::versionNumber < 72) {
         logmsg "Can not upgrade directly, please upgrade to Moloch 3.3.0+ first. (Db version $main::versionNumber)\n\n";
         exit 1;
+    }
+
+    if ($IFNEEDED && $main::versionNumber == $VERSION) {
+        exit 0;
     }
 
     if ($health->{status} eq "red") {
