@@ -476,10 +476,11 @@ else
         echo "ARKIME: $MAKE failed"
         exit 1
       fi
-      rm -f $TPWD/librdkafka-$KAFKA/*.so
     else
       echo "ARKIME: NOT rebuilding librdkafka";
     fi
+    rm -f $TPWD/librdkafka-$KAFKA/*.so
+    ls -l $TPWD/librdkafka-$KAFKA/
     KAFKALIBDIR=$TPWD/librdkafka-$KAFKA
     KAFKABUILD="--with-kafka=$KAFKALIBDIR"
   fi
