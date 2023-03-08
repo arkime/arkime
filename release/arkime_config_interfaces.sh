@@ -1,12 +1,5 @@
 #!/bin/sh
 
-# Check presence of arguments
-if [ $# -eq 0 ]; then
-	echo "Usage: ./arkime_config_interfaces.sh -c <Arkime config.ini file> [-n <node>]"
-	echo "Run $0 -h for help !"
-	exit 0
-fi
-
 # Set default value. Will be overwrite with options.
 node="default"
 file="/opt/arkime/etc/config.ini"
@@ -46,7 +39,7 @@ fi
 # Apply settings
 for interface in $interfaces ; do
 	# Verif NIC existence.
-	checkNic=$(ip a | grep $interface)
+	checkNic=$(/usr/sbin/ip a | grep $interface)
 	if [ ! -z "$checkNic" ]; then
 		/usr/sbin/ip link set $interface up || true
 		/usr/sbin/ip link set $interface promisc on || true
