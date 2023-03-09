@@ -69,17 +69,12 @@ SavepcapS3File_t            *currentFiles[MOLOCH_MAX_PACKET_THREADS];
 LOCAL  MOLOCH_LOCK_DEFINE(fileQ);
 LOCAL  SavepcapS3File_t      fileQ;
 
-
 LOCAL  void *                s3Server = 0;
 LOCAL  void *                metadataServer = 0;
 LOCAL  char                  *s3Region;
 LOCAL  char                  *s3Host;
 LOCAL  char                  *s3Bucket;
 LOCAL  char                  s3PathAccessStyle;
-LOCAL  char                  *s3AccessKeyId;
-LOCAL  char                  *s3SecretAccessKey;
-LOCAL  char                  *s3Token;
-LOCAL  time_t                 s3TokenTime;
 LOCAL  char                  *s3Role;
 LOCAL  char                   s3Compress;
 LOCAL  char                  *s3StorageClass;
@@ -98,6 +93,15 @@ typedef enum {
     MOLOCH_COMPRESSION_GZIP,
     MOLOCH_COMPRESSION_ZSTD
 } S3CompressionMode;
+
+typedef struct {
+    char                  *s3AccessKeyId;
+    char                  *s3SecretAccessKey;
+    char                  *s3Token;
+} S3Credentials;
+
+LOCAL S3Credentials *s3MetaCreds;   // Creds from meta service, use if non NULL
+LOCAL S3Credentials  s3ConfigCreds; // Creds from config file
 
 LOCAL S3CompressionMode compressionMode = MOLOCH_COMPRESSION_NONE;
 
@@ -215,52 +219,46 @@ unsigned char *moloch_get_instance_metadata(void *serverV, char *key, int key_le
     return moloch_http_send_sync(serverV, "GET", key, key_len, NULL, 0, requestHeaders, mlen);
 }
 /******************************************************************************/
-void writer_s3_refresh_s3credentials(void)
+void writer_s3_free_creds(S3Credentials *creds)
+{
+    g_free(creds->s3AccessKeyId);
+    g_free(creds->s3SecretAccessKey);
+    g_free(creds->s3Token);
+    MOLOCH_TYPE_FREE(S3Credentials, creds);
+}
+/******************************************************************************/
+/* Timer callback to refresh our creds. We fetch them into new structure
+ * and free the old structure later incase a thread is using them.
+ */
+LOCAL gboolean writer_s3_refresh_creds_gfunc (gpointer UNUSED(user_data))
 {
     char role_url[1000];
     size_t rlen;
-    struct timeval now;
-
-    gettimeofday(&now, 0);
-
-    if (now.tv_sec < s3TokenTime + 290) {
-        // Nothing to be done -- token is still valid
-        return;
-    }
 
     snprintf(role_url, sizeof(role_url), "/latest/meta-data/iam/security-credentials/%s", s3Role);
 
-    unsigned char *credentials = moloch_get_instance_metadata(metadataServer, role_url, -1, &rlen);
+    S3Credentials *newCreds = MOLOCH_TYPE_ALLOC0(S3Credentials);
 
-    char *newS3AccessKeyId = NULL;
-    char *newS3SecretAccessKey = NULL;
-    char *newS3Token = NULL;
+    unsigned char *credentials = moloch_get_instance_metadata(metadataServer, role_url, -1, &rlen);
 
     if (credentials && rlen) {
         // Now need to extract access key, secret key and token
-        newS3AccessKeyId = moloch_js0n_get_str(credentials, rlen, "AccessKeyId");
-        newS3SecretAccessKey = moloch_js0n_get_str(credentials, rlen, "SecretAccessKey");
-        newS3Token = moloch_js0n_get_str(credentials, rlen, "Token");
+        newCreds->s3AccessKeyId = moloch_js0n_get_str(credentials, rlen, "AccessKeyId");
+        newCreds->s3SecretAccessKey = moloch_js0n_get_str(credentials, rlen, "SecretAccessKey");
+        newCreds->s3Token = moloch_js0n_get_str(credentials, rlen, "Token");
     }
 
-    if (newS3AccessKeyId && newS3SecretAccessKey && newS3Token) {
-        free(s3AccessKeyId);
-        free(s3SecretAccessKey);
-        free(s3Token);
-
-        s3AccessKeyId = newS3AccessKeyId;
-        s3SecretAccessKey = newS3SecretAccessKey;
-        s3Token = newS3Token;
-
-        s3TokenTime = now.tv_sec;
-    }
-
-    if (!s3AccessKeyId || !s3SecretAccessKey || !s3Token) {
+    if (newCreds->s3AccessKeyId && newCreds->s3SecretAccessKey && newCreds->s3Token) {
+        moloch_free_later(s3MetaCreds, (GDestroyNotify)writer_s3_free_creds);
+        s3MetaCreds = newCreds;
+    } else {
         printf("Cannot retrieve credentials from metadata service at %s\n", role_url);
         exit(1);
     }
 
     free(credentials);
+
+    return G_SOURCE_CONTINUE;
 }
 /******************************************************************************/
 void writer_s3_init_cb (int code, unsigned char *data, int len, gpointer uw)
@@ -355,11 +353,11 @@ void writer_s3_request(char *method, char *path, char *qs, unsigned char *data, 
             gm.tm_min,
             gm.tm_sec);
 
+    S3Credentials *creds = s3MetaCreds ? s3MetaCreds : &s3ConfigCreds;
 
     snprintf(storageClassHeader, sizeof(storageClassHeader), "x-amz-storage-class:%s\n", s3StorageClass);
-    if (s3Token) {
-      writer_s3_refresh_s3credentials();
-      snprintf(tokenHeader, sizeof(tokenHeader), "x-amz-security-token:%s\n", s3Token);
+    if (creds->s3Token) {
+      snprintf(tokenHeader, sizeof(tokenHeader), "x-amz-security-token:%s\n", creds->s3Token);
     }
 
     g_checksum_reset(checksum);
@@ -392,9 +390,9 @@ void writer_s3_request(char *method, char *path, char *qs, unsigned char *data, 
             s3Host,
             bodyHash,
             datetime,
-            (s3Token?tokenHeader:""),
+            (creds->s3Token?tokenHeader:""),
             (specifyStorageClass?storageClassHeader:""),
-            (s3Token?";x-amz-security-token":""),
+            (creds->s3Token?";x-amz-security-token":""),
             (specifyStorageClass?";x-amz-storage-class":""),
             bodyHash);
     //LOG("canonicalRequest: %s", canonicalRequest);
@@ -416,7 +414,7 @@ void writer_s3_request(char *method, char *path, char *qs, unsigned char *data, 
     //LOG("stringToSign: %s", stringToSign);
 
     char kSecret[1000];
-    snprintf(kSecret, sizeof(kSecret), "AWS4%s", s3SecretAccessKey);
+    snprintf(kSecret, sizeof(kSecret), "AWS4%s", creds->s3SecretAccessKey);
 
     char  kDate[65];
     gsize kDateLen = sizeof(kDate);
@@ -469,8 +467,8 @@ void writer_s3_request(char *method, char *path, char *qs, unsigned char *data, 
     snprintf(strs[0], sizeof(strs[0]),
             "Authorization: AWS4-HMAC-SHA256 Credential=%s/%8.8s/%s/s3/aws4_request,SignedHeaders=host;x-amz-content-sha256;x-amz-date%s%s,Signature=%s"
             ,
-            s3AccessKeyId, datetime, s3Region,
-            (s3Token?";x-amz-security-token":""),
+            creds->s3AccessKeyId, datetime, s3Region,
+            (creds->s3Token?";x-amz-security-token":""),
             (specifyStorageClass?";x-amz-storage-class":""),
             signature
             );
@@ -478,8 +476,8 @@ void writer_s3_request(char *method, char *path, char *qs, unsigned char *data, 
     snprintf(strs[1], sizeof(strs[1]), "x-amz-content-sha256: %s" , bodyHash);
     snprintf(strs[2], sizeof(strs[2]), "x-amz-date: %s", datetime);
 
-    if (s3Token) {
-        snprintf(tokenHeader, sizeof(tokenHeader), "x-amz-security-token: %s", s3Token);
+    if (creds->s3Token) {
+        snprintf(tokenHeader, sizeof(tokenHeader), "x-amz-security-token: %s", creds->s3Token);
         headers[nextHeader++] = tokenHeader;
     }
 
@@ -737,8 +735,6 @@ void writer_s3_init(char *UNUSED(name))
     s3Host                = moloch_config_str(NULL, "s3Host", NULL);
     s3Bucket              = moloch_config_str(NULL, "s3Bucket", NULL);
     s3PathAccessStyle     = moloch_config_boolean(NULL, "s3PathAccessStyle", strchr(s3Bucket, '.') != NULL);
-    s3AccessKeyId         = moloch_config_str(NULL, "s3AccessKeyId", NULL);
-    s3SecretAccessKey     = moloch_config_str(NULL, "s3SecretAccessKey", NULL);
     s3Compress            = moloch_config_boolean(NULL, "s3Compress", FALSE);
     char s3WriteGzip      = moloch_config_boolean(NULL, "s3WriteGzip", FALSE);
     char *s3Compression   = moloch_config_str(NULL, "s3Compression", NULL);
@@ -747,9 +743,13 @@ void writer_s3_init(char *UNUSED(name))
     s3MaxRequests         = moloch_config_int(NULL, "s3MaxRequests", 500, 10, 5000);
     s3UseHttp             = moloch_config_boolean(NULL, "s3UseHttp", FALSE);
     s3UseTokenForMetadata = moloch_config_boolean(NULL, "s3UseTokenForMetadata", TRUE);
-    s3Token               = NULL;
-    s3TokenTime           = 0;
-    s3Role                = NULL;
+
+    s3ConfigCreds.s3AccessKeyId     = moloch_config_str(NULL, "s3AccessKeyId", NULL);
+    s3ConfigCreds.s3SecretAccessKey = moloch_config_str(NULL, "s3SecretAccessKey", NULL);
+
+    if (!s3Bucket) {
+        CONFIGEXIT("Must set s3Bucket to save to s3\n");
+    }
 
     if (s3Compression != NULL) {
         if (strcmp(s3Compression, "none") == 0) {
@@ -774,18 +774,14 @@ void writer_s3_init(char *UNUSED(name))
         s3Compress = FALSE;
     }
 
-    if (!s3Bucket) {
-        CONFIGEXIT("Must set s3Bucket to save to s3\n");
-    }
-
-    if (!s3AccessKeyId || !s3AccessKeyId[0]) {
+    if (!s3ConfigCreds.s3AccessKeyId || !s3ConfigCreds.s3AccessKeyId[0]) {
         // Fetch the data from the EC2 metadata service
         size_t rlen;
 
         metadataServer = moloch_http_create_server("http://169.254.169.254", 10, 10, 0);
         moloch_http_set_print_errors(metadataServer);
 
-        s3AccessKeyId = 0;
+        s3ConfigCreds.s3AccessKeyId = NULL;
 
         unsigned char *rolename = moloch_get_instance_metadata(metadataServer, "/latest/meta-data/iam/security-credentials/", -1, &rlen);
 
@@ -797,10 +793,9 @@ void writer_s3_init(char *UNUSED(name))
         s3Role = g_strndup((const char *) rolename, rlen);
         free(rolename);
 
-        writer_s3_refresh_s3credentials();
-    }
-
-    if (!s3SecretAccessKey) {
+        g_timeout_add_seconds( 280, writer_s3_refresh_creds_gfunc, 0);
+        writer_s3_refresh_creds_gfunc(NULL);
+    } else if (s3ConfigCreds.s3AccessKeyId && !s3ConfigCreds.s3SecretAccessKey) {
         CONFIGEXIT("Must set s3SecretAccessKey to save to s3\n");
     }
 
