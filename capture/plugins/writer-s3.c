@@ -24,11 +24,15 @@
 #include <sys/stat.h>
 #include <sys/mman.h>
 #include "moloch.h"
+#include "arkimeconfig.h"
+#ifdef HAVE_ZSTD
+#include <zstd.h>
+#endif
 
 extern MolochConfig_t        config;
 
 typedef struct writer_s3_output {
-    struct writer_s3_output *os3_next, *os3_prev;
+    struct writer_s3_output   *os3_next, *os3_prev;
     uint16_t                   os3_count;
 
     unsigned char             *buf;
@@ -48,19 +52,21 @@ typedef struct writer_s3_file {
     int                        partNumberResponses;
     char                       doClose;
     char                      *partNumbers[2001];
+
+    char                      *outputBuffer;
+    uint32_t                   outputPos;
+    uint32_t                   outputId;
+    uint64_t                   outputFilePos;
+    uint64_t                   outputActualFilePos;
+    uint64_t                   outputLastBlockStart;
+    uint32_t                   outputOffsetInBlock;
+    uint32_t                   outputDataSinceLastMiniBlock;
+    z_stream                   z_strm;
 } SavepcapS3File_t;
 
-LOCAL  char                 *outputBuffer;
-LOCAL  uint32_t              outputPos;
-LOCAL  uint32_t              outputId;
-LOCAL  uint64_t              outputFilePos = 0;
-LOCAL  uint64_t              outputActualFilePos = 0;
-LOCAL  uint64_t              outputLastBlockStart = 0;
-LOCAL  uint32_t              outputOffsetInBlock = 0;
-LOCAL  uint32_t              outputDataSinceLastMiniBlock = 0;
-LOCAL  z_stream              z_strm;
+SavepcapS3File_t            *currentFiles[MOLOCH_MAX_PACKET_THREADS];
 
-SavepcapS3File_t            *currentFile;
+LOCAL  MOLOCH_LOCK_DEFINE(fileQ);
 LOCAL  SavepcapS3File_t      fileQ;
 
 
@@ -76,7 +82,6 @@ LOCAL  char                  *s3Token;
 LOCAL  time_t                 s3TokenTime;
 LOCAL  char                  *s3Role;
 LOCAL  char                   s3Compress;
-LOCAL  char                   s3WriteGzip;
 LOCAL  char                  *s3StorageClass;
 LOCAL  uint32_t               s3MaxConns;
 LOCAL  uint32_t               s3MaxRequests;
@@ -86,8 +91,15 @@ LOCAL  char                   s3UseTokenForMetadata;
 LOCAL  int                    inprogress;
 
 
-void writer_s3_flush(gboolean all);
+void writer_s3_flush(SavepcapS3File_t *s3file, gboolean all);
 
+typedef enum {
+    MOLOCH_COMPRESSION_NONE,
+    MOLOCH_COMPRESSION_GZIP,
+    MOLOCH_COMPRESSION_ZSTD
+} S3CompressionMode;
+
+LOCAL S3CompressionMode compressionMode = MOLOCH_COMPRESSION_NONE;
 
 // These must agree with the index.js
 #define COMPRESSED_BLOCK_SIZE  100000
@@ -96,12 +108,12 @@ void writer_s3_flush(gboolean all);
 
 
 void writer_s3_request(char *method, char *path, char *qs, unsigned char *data, int len, gboolean specifyStorageClass, MolochHttpResponse_cb cb, gpointer uw);
-
-LOCAL  MOLOCH_LOCK_DEFINE(output);
 /******************************************************************************/
 uint32_t writer_s3_queue_length()
 {
     int q = 0;
+
+    MOLOCH_LOCK(fileQ);
 
     SavepcapS3File_t *file;
     DLL_FOREACH(fs3_, &fileQ, file)
@@ -111,14 +123,20 @@ uint32_t writer_s3_queue_length()
         q += DLL_COUNT(os3_, &file->outputQ);
     }
 
-    if (config.debug)
+    if (config.debug) {
         LOG("queue length: http Q:%d in progress: %d waiting:%d", moloch_http_queue_length(s3Server), inprogress, q);
+    }
 
-    return q + moloch_http_queue_length(s3Server) + inprogress;
+    q += moloch_http_queue_length(s3Server) + inprogress;
+    MOLOCH_UNLOCK(fileQ);
+
+    return q;
 }
 /******************************************************************************/
 void writer_s3_complete_cb (int code, unsigned char *data, int len, gpointer uw)
 {
+    MOLOCH_LOCK(fileQ);
+
     SavepcapS3File_t  *file = uw;
     inprogress--;
 
@@ -134,6 +152,8 @@ void writer_s3_complete_cb (int code, unsigned char *data, int len, gpointer uw)
         g_free(file->uploadId);
     g_free(file->outputFileName);
     MOLOCH_TYPE_FREE(SavepcapS3File_t, file);
+
+    MOLOCH_LOCK(fileQ);
 }
 /******************************************************************************/
 void writer_s3_part_cb (int code, unsigned char *data, int len, gpointer uw)
@@ -475,193 +495,197 @@ void writer_s3_request(char *method, char *path, char *qs, unsigned char *data, 
     moloch_http_send(s3Server, method, fullpath, strlen(fullpath), (char*)data, len, headers, FALSE, cb, uw);
 }
 /******************************************************************************/
-LOCAL void make_new_block(void) {
-    if (s3WriteGzip) {
+LOCAL void make_new_block(SavepcapS3File_t *s3file) {
+    if (compressionMode == MOLOCH_COMPRESSION_GZIP) {
         // We need to make a new block
 
         while (TRUE) {
-            deflate(&z_strm, Z_FULL_FLUSH);
-            if (z_strm.avail_out > 0) {
+            deflate(&s3file->z_strm, Z_FULL_FLUSH);
+            if (s3file->z_strm.avail_out > 0) {
                 break;
             }
-            writer_s3_flush(FALSE);
+            writer_s3_flush(s3file, FALSE);
         }
 
-        outputActualFilePos = z_strm.total_out;
-        outputLastBlockStart = outputActualFilePos;
-        outputOffsetInBlock = 0;
-        outputDataSinceLastMiniBlock = 0;
+        s3file->outputActualFilePos = s3file->z_strm.total_out;
+        s3file->outputLastBlockStart = s3file->outputActualFilePos;
+        s3file->outputOffsetInBlock = 0;
+        s3file->outputDataSinceLastMiniBlock = 0;
 
-        outputFilePos = (outputLastBlockStart << COMPRESSED_WITHIN_BLOCK_BITS) + outputOffsetInBlock;
+        s3file->outputFilePos = (s3file->outputLastBlockStart << COMPRESSED_WITHIN_BLOCK_BITS) + s3file->outputOffsetInBlock;
     }
 }
 /******************************************************************************/
-LOCAL void ensure_space_for_output(size_t space) {
-    if (s3WriteGzip) {
-        size_t max_need_space = outputActualFilePos - outputLastBlockStart + 64 + deflateBound(&z_strm, space + outputDataSinceLastMiniBlock);
+LOCAL void ensure_space_for_output(SavepcapS3File_t *s3file, size_t space) {
+    if (compressionMode == MOLOCH_COMPRESSION_GZIP) {
+        size_t max_need_space = s3file->outputActualFilePos - s3file->outputLastBlockStart + 64 + deflateBound(&s3file->z_strm, space + s3file->outputDataSinceLastMiniBlock);
         if (max_need_space >= COMPRESSED_BLOCK_SIZE) {
             // Might not fit.
             // Do a normal flush
             while (TRUE) {
-                deflate(&z_strm, Z_BLOCK);
-                if (z_strm.avail_out > 0) {
-                    outputActualFilePos = z_strm.total_out;
-                    outputDataSinceLastMiniBlock = 0;
+                deflate(&s3file->z_strm, Z_BLOCK);
+                if (s3file->z_strm.avail_out > 0) {
+                    s3file->outputActualFilePos = s3file->z_strm.total_out;
+                    s3file->outputDataSinceLastMiniBlock = 0;
                     break;
                 }
-                writer_s3_flush(FALSE);
+                writer_s3_flush(s3file, FALSE);
             }
             // Recompute after the flush
-            max_need_space = outputActualFilePos - outputLastBlockStart + 64 + deflateBound(&z_strm, space + outputDataSinceLastMiniBlock);
+            max_need_space = s3file->outputActualFilePos - s3file->outputLastBlockStart + 64 + deflateBound(&s3file->z_strm, space + s3file->outputDataSinceLastMiniBlock);
             if (max_need_space >= 3 * COMPRESSED_BLOCK_SIZE / 4) {
-                make_new_block();
+                make_new_block(s3file);
             }
         }
     }
 }
 /******************************************************************************/
-LOCAL void append_to_output(void *data, size_t length, gboolean packetHeader, size_t extra_space) {
-    if (s3WriteGzip) {
+LOCAL void append_to_output(SavepcapS3File_t *s3file, void *data, size_t length, gboolean packetHeader, size_t extra_space) {
+    if (compressionMode == MOLOCH_COMPRESSION_GZIP) {
         // outputActualFilePos is the offset in the compressed file
         // outputLastBLockStart is the offset in the compressed file of the most recent block
         // outputFilePos is the offset in the current decompressed block plus outputLastBlockStart << COMPRESSED_WITHIN_BLOCK_BITS
         // outputOffsetInBlock is the offset within the current decompressed block
-        if (outputActualFilePos == 0) {
-            memset(&z_strm, 0, sizeof(z_strm));
-            z_strm.next_out = (Bytef *) outputBuffer;
-            z_strm.avail_out = config.pcapWriteSize + MOLOCH_PACKET_MAX_LEN;
-            z_strm.zalloc = Z_NULL;
-            z_strm.zfree = Z_NULL;
+        if (s3file->outputActualFilePos == 0) {
+            memset(&s3file->z_strm, 0, sizeof(s3file->z_strm));
+            s3file->z_strm.next_out = (Bytef *) s3file->outputBuffer;
+            s3file->z_strm.avail_out = config.pcapWriteSize + MOLOCH_PACKET_MAX_LEN;
+            s3file->z_strm.zalloc = Z_NULL;
+            s3file->z_strm.zfree = Z_NULL;
 
-            deflateInit2(&z_strm, Z_DEFAULT_COMPRESSION, Z_DEFLATED, 16 + 15, 8, Z_DEFAULT_STRATEGY);
+            deflateInit2(&s3file->z_strm, Z_DEFAULT_COMPRESSION, Z_DEFLATED, 16 + 15, 8, Z_DEFAULT_STRATEGY);
         }
 
         // See if we can output this
         if (packetHeader) {
-            ensure_space_for_output(length + extra_space);
+            ensure_space_for_output(s3file, length + extra_space);
         }
 
-        z_strm.next_in = data;
-        z_strm.avail_in = length;
+        s3file->z_strm.next_in = data;
+        s3file->z_strm.avail_in = length;
 
-        while (z_strm.avail_in != 0) {
-            if (z_strm.avail_out == 0) {
-                writer_s3_flush(FALSE);
+        while (s3file->z_strm.avail_in != 0) {
+            if (s3file->z_strm.avail_out == 0) {
+                writer_s3_flush(s3file, FALSE);
             }
 
-            deflate(&z_strm, Z_NO_FLUSH);
-            outputActualFilePos = z_strm.total_out;
+            deflate(&s3file->z_strm, Z_NO_FLUSH);
+            s3file->outputActualFilePos = s3file->z_strm.total_out;
         }
 
-        outputOffsetInBlock += length;
-        outputDataSinceLastMiniBlock += length;
+        s3file->outputOffsetInBlock += length;
+        s3file->outputDataSinceLastMiniBlock += length;
 
         if (!packetHeader &&
-                (outputOffsetInBlock >= (1 << COMPRESSED_WITHIN_BLOCK_BITS) - 16 ||
-                outputActualFilePos > outputLastBlockStart + COMPRESSED_BLOCK_SIZE)) {
+                (s3file->outputOffsetInBlock >= (1 << COMPRESSED_WITHIN_BLOCK_BITS) - 16 ||
+                s3file->outputActualFilePos > s3file->outputLastBlockStart + COMPRESSED_BLOCK_SIZE)) {
             // We need to make a new block
-            make_new_block();
+            make_new_block(s3file);
         }
 
-        outputFilePos = (outputLastBlockStart << COMPRESSED_WITHIN_BLOCK_BITS) + outputOffsetInBlock;
+        s3file->outputFilePos = (s3file->outputLastBlockStart << COMPRESSED_WITHIN_BLOCK_BITS) + s3file->outputOffsetInBlock;
     } else {
-        memcpy(outputBuffer + outputPos, data, length);
-        outputFilePos += length;
-        outputActualFilePos += length;
-        outputPos += length;
+        memcpy(s3file->outputBuffer + s3file->outputPos, data, length);
+        s3file->outputFilePos += length;
+        s3file->outputActualFilePos += length;
+        s3file->outputPos += length;
 
-        if (outputPos > config.pcapWriteSize) {
-            writer_s3_flush(FALSE);
+        if (s3file->outputPos > config.pcapWriteSize) {
+            writer_s3_flush(s3file, FALSE);
         }
     }
 }
 /******************************************************************************/
-void writer_s3_flush(gboolean all)
+void writer_s3_flush(SavepcapS3File_t *s3file, gboolean all)
 {
-    if (!currentFile)
+    if (!s3file)
         return;
 
-    if (s3WriteGzip) {
+    if (compressionMode == MOLOCH_COMPRESSION_GZIP) {
       if (all) {
-        deflate(&z_strm, Z_FINISH);
+        deflate(&s3file->z_strm, Z_FINISH);
 
-        if (z_strm.avail_out == 0) {
-          writer_s3_flush(FALSE);
-          deflate(&z_strm, Z_FINISH);
+        if (s3file->z_strm.avail_out == 0) {
+          writer_s3_flush(s3file, FALSE);
+          deflate(&s3file->z_strm, Z_FINISH);
         }
       }
 
-      outputPos = z_strm.next_out - (Bytef *) outputBuffer;
+      s3file->outputPos = s3file->z_strm.next_out - (Bytef *) s3file->outputBuffer;
     }
 
-    if (currentFile->uploadId) {
+    if (s3file->uploadId) {
         char qs[1000];
 
-        snprintf(qs, sizeof(qs), "partNumber=%d&uploadId=%s", currentFile->partNumber, currentFile->uploadId);
-        writer_s3_request("PUT", currentFile->outputPath, qs, (unsigned char *)outputBuffer, outputPos, FALSE, writer_s3_part_cb, currentFile);
+        snprintf(qs, sizeof(qs), "partNumber=%d&uploadId=%s", s3file->partNumber, s3file->uploadId);
+        writer_s3_request("PUT", s3file->outputPath, qs, (unsigned char *)s3file->outputBuffer, s3file->outputPos, FALSE, writer_s3_part_cb, s3file);
         if (config.debug)
-            LOG("Part-Request: %s %s", currentFile->outputFileName, qs);
-        currentFile->partNumber++;
+            LOG("Part-Request: %s %s", s3file->outputFileName, qs);
+        s3file->partNumber++;
     } else {
         SavepcapS3Output_t *output = MOLOCH_TYPE_ALLOC0(SavepcapS3Output_t);
-        output->buf = (unsigned char *)outputBuffer;
-        output->len = outputPos;
-        DLL_PUSH_TAIL(os3_, &currentFile->outputQ, output);
+        output->buf = (unsigned char *)s3file->outputBuffer;
+        output->len = s3file->outputPos;
+        DLL_PUSH_TAIL(os3_, &s3file->outputQ, output);
     }
 
     if (all) {
-        currentFile->doClose = TRUE;
-        currentFile = NULL;
+        s3file->doClose = TRUE;
     } else {
-        outputBuffer = moloch_http_get_buffer(config.pcapWriteSize + MOLOCH_PACKET_MAX_LEN);
-        outputPos = 0;
+        s3file->outputBuffer = moloch_http_get_buffer(config.pcapWriteSize + MOLOCH_PACKET_MAX_LEN);
+        s3file->outputPos = 0;
 
-        if (s3WriteGzip) {
-          z_strm.next_out = (Bytef *) outputBuffer;
-          z_strm.avail_out = config.pcapWriteSize + MOLOCH_PACKET_MAX_LEN;
+        if (compressionMode == MOLOCH_COMPRESSION_GZIP) {
+          s3file->z_strm.next_out = (Bytef *) s3file->outputBuffer;
+          s3file->z_strm.avail_out = config.pcapWriteSize + MOLOCH_PACKET_MAX_LEN;
         }
     }
 }
 /******************************************************************************/
 void writer_s3_exit()
 {
-    writer_s3_flush(TRUE);
+    for (int thread = 0; thread < config.packetThreads; thread++) {
+        if (currentFiles[thread]) {
+            writer_s3_flush(currentFiles[thread], TRUE);
+            currentFiles[thread] = NULL;
+        }
+    }
 }
 /******************************************************************************/
 extern MolochPcapFileHdr_t pcapFileHeader;
-void writer_s3_create(const MolochPacket_t *packet)
+SavepcapS3File_t *writer_s3_create(const MolochPacket_t *packet)
 {
     char               filename[1000];
+    static char       *extension[3] = {"", ".gz", ".zstd"};
     struct tm          tmp;
     int                offset = 6 + strlen(s3Region) + strlen(s3Bucket);
 
     localtime_r(&packet->ts.tv_sec, &tmp);
-    snprintf(filename, sizeof(filename), "s3://%s/%s/%s/#NUMHEX#-%02d%02d%02d-#NUM#.pcap%s", s3Region, s3Bucket, config.nodeName, tmp.tm_year%100, tmp.tm_mon+1, tmp.tm_mday, s3WriteGzip ? ".gz" : "");
+    snprintf(filename, sizeof(filename), "s3://%s/%s/%s/#NUMHEX#-%02d%02d%02d-#NUM#.pcap%s", s3Region, s3Bucket, config.nodeName, tmp.tm_year%100, tmp.tm_mon+1, tmp.tm_mday, extension[compressionMode]);
 
-    currentFile = MOLOCH_TYPE_ALLOC0(SavepcapS3File_t);
-    DLL_INIT(os3_, &currentFile->outputQ);
-    DLL_PUSH_TAIL(fs3_, &fileQ, currentFile);
+    SavepcapS3File_t *s3file = MOLOCH_TYPE_ALLOC0(SavepcapS3File_t);
+    DLL_INIT(os3_, &s3file->outputQ);
 
-    currentFile->outputFileName = moloch_db_create_file(packet->ts.tv_sec, filename, 0, 0, &outputId);
-    currentFile->outputPath = currentFile->outputFileName + offset;
-    clock_gettime(CLOCK_REALTIME_COARSE, &currentFile->outputFileTime);
-    outputFilePos = 0;
-    outputActualFilePos = 0;
-    outputLastBlockStart = 0;
-    outputLastBlockStart = 0;
-    outputDataSinceLastMiniBlock = 0;
+    MOLOCH_LOCK(fileQ);
+    DLL_PUSH_TAIL(fs3_, &fileQ, s3file);
+    MOLOCH_UNLOCK(fileQ);
 
-    outputBuffer = moloch_http_get_buffer(config.pcapWriteSize + MOLOCH_PACKET_MAX_LEN);
-    outputPos = 0;
+    s3file->outputFileName = moloch_db_create_file(packet->ts.tv_sec, filename, 0, 0, &s3file->outputId);
+    s3file->outputPath = s3file->outputFileName + offset;
+    clock_gettime(CLOCK_REALTIME_COARSE, &s3file->outputFileTime);
+
+    s3file->outputBuffer = moloch_http_get_buffer(config.pcapWriteSize + MOLOCH_PACKET_MAX_LEN);
+    s3file->outputPos = 0;
     uint32_t linktype = moloch_packet_dlt_to_linktype(pcapFileHeader.dlt);
-    append_to_output(&pcapFileHeader, 20, FALSE, 0);
-    append_to_output(&linktype, 4, FALSE, 0);
-    make_new_block();                   // So we can read the header in a small amount of data fetched
+    append_to_output(s3file, &pcapFileHeader, 20, FALSE, 0);
+    append_to_output(s3file, &linktype, 4, FALSE, 0);
+    make_new_block(s3file);                   // So we can read the header in a small amount of data fetched
 
     if (config.debug)
-        LOG("Init-Request: %s", currentFile->outputFileName);
+        LOG("Init-Request: %s", s3file->outputFileName);
 
-    writer_s3_request("POST", currentFile->outputPath, "uploads=", 0, 0, TRUE, writer_s3_init_cb, currentFile);
+    writer_s3_request("POST", s3file->outputPath, "uploads=", 0, 0, TRUE, writer_s3_init_cb, s3file);
+    return s3file;
 }
 
 /******************************************************************************/
@@ -675,7 +699,7 @@ struct pcap_sf_pkthdr {
     uint32_t len;               /* length this packet (off wire) */
 };
 void
-writer_s3_write(const MolochSession_t *const UNUSED(session), MolochPacket_t * const packet)
+writer_s3_write(const MolochSession_t *const session, MolochPacket_t * const packet)
 {
     struct pcap_sf_pkthdr hdr;
 
@@ -684,22 +708,22 @@ writer_s3_write(const MolochSession_t *const UNUSED(session), MolochPacket_t * c
     hdr.caplen     = packet->pktlen;
     hdr.len        = packet->pktlen;
 
-    MOLOCH_LOCK(output);
-    if (!currentFile) {
-        writer_s3_create(packet);
+    SavepcapS3File_t *s3file = currentFiles[session->thread];
+    if (!s3file) {
+        currentFiles[session->thread] = s3file = writer_s3_create(packet);
     }
 
-    packet->writerFileNum = outputId;
-    packet->writerFilePos = outputFilePos;
+    packet->writerFileNum = s3file->outputId;
+    packet->writerFilePos = s3file->outputFilePos;
 
-    append_to_output(&hdr, sizeof(hdr), TRUE, packet->pktlen);
+    append_to_output(s3file, &hdr, sizeof(hdr), TRUE, packet->pktlen);
 
-    append_to_output(packet->pkt, packet->pktlen, FALSE, 0);
+    append_to_output(s3file, packet->pkt, packet->pktlen, FALSE, 0);
 
-    if (outputActualFilePos >= config.maxFileSizeB) {
-        writer_s3_flush(TRUE);
+    if (s3file->outputActualFilePos >= config.maxFileSizeB) {
+        writer_s3_flush(s3file, TRUE);
+        currentFiles[session->thread] = NULL;
     }
-    MOLOCH_UNLOCK(output);
 }
 
 /******************************************************************************/
@@ -716,7 +740,8 @@ void writer_s3_init(char *UNUSED(name))
     s3AccessKeyId         = moloch_config_str(NULL, "s3AccessKeyId", NULL);
     s3SecretAccessKey     = moloch_config_str(NULL, "s3SecretAccessKey", NULL);
     s3Compress            = moloch_config_boolean(NULL, "s3Compress", FALSE);
-    s3WriteGzip           = moloch_config_boolean(NULL, "s3WriteGzip", FALSE);
+    char s3WriteGzip      = moloch_config_boolean(NULL, "s3WriteGzip", FALSE);
+    char *s3Compression   = moloch_config_str(NULL, "s3Compression", NULL);
     s3StorageClass        = moloch_config_str(NULL, "s3StorageClass", "STANDARD");
     s3MaxConns            = moloch_config_int(NULL, "s3MaxConns", 20, 5, 1000);
     s3MaxRequests         = moloch_config_int(NULL, "s3MaxRequests", 500, 10, 5000);
@@ -726,8 +751,26 @@ void writer_s3_init(char *UNUSED(name))
     s3TokenTime           = 0;
     s3Role                = NULL;
 
-    if (s3Compress && s3WriteGzip) {
-        LOG("Setting s3Compress to false since s3WriteGzip is true");
+    if (s3Compression != NULL) {
+        if (strcmp(s3Compression, "none") == 0) {
+            compressionMode = MOLOCH_COMPRESSION_NONE;
+        } else if (strcmp(s3Compression, "gzip") == 0) {
+            compressionMode = MOLOCH_COMPRESSION_GZIP;
+        } else if (strcmp(s3Compression, "zstd") == 0) {
+#ifdef HAVE_ZSTD
+            compressionMode = MOLOCH_COMPRESSION_ZSTD;
+#else
+            CONFIGEXIT("Arkime capture was not compiled with zstd support");
+#endif
+        } else {
+            CONFIGEXIT("Unknown s3Compression value %s", s3Compression);
+        }
+    } else if (s3WriteGzip) {
+        compressionMode = MOLOCH_COMPRESSION_GZIP;
+    }
+
+    if (s3Compress && compressionMode != MOLOCH_COMPRESSION_NONE) {
+        LOG("Setting s3Compress to false since compressing pcap");
         s3Compress = FALSE;
     }
 
@@ -803,16 +846,30 @@ void writer_s3_init(char *UNUSED(name))
     DLL_INIT(fs3_, &fileQ);
 }
 /******************************************************************************/
+// Called inside each packet thread
+LOCAL void writer_s3_file_time_check(MolochSession_t *session, void *UNUSED(uw1), void *UNUSED(uw2))
+{
+    struct timespec ts;
+    clock_gettime(CLOCK_REALTIME_COARSE, &ts);
+
+    SavepcapS3File_t *s3file = currentFiles[session->thread];
+    if (s3file && s3file->outputFilePos > 24 && (ts.tv_sec - s3file->outputFileTime.tv_sec) >= config.maxFileTimeM*60) {
+        writer_s3_flush(s3file, TRUE);
+        currentFiles[session->thread] = NULL;
+    }
+}
+/******************************************************************************/
+/* This function is called every 30 second on the main thread. It
+ * schedules writer_s3_check to be called on the packet thread
+ */
 LOCAL gboolean writer_s3_file_time_gfunc (gpointer UNUSED(user_data))
 {
     struct timespec ts;
     clock_gettime(CLOCK_REALTIME_COARSE, &ts);
 
-    MOLOCH_LOCK(output);
-    if (currentFile && outputFilePos > 24 && (ts.tv_sec - currentFile->outputFileTime.tv_sec) >= config.maxFileTimeM*60) {
-        writer_s3_flush(TRUE);
+    for (int thread = 0; thread < config.packetThreads; thread++) {
+        moloch_session_add_cmd_thread(thread, NULL, NULL, writer_s3_file_time_check);
     }
-    MOLOCH_UNLOCK(output);
 
     return G_SOURCE_CONTINUE;
 }
