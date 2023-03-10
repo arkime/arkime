@@ -735,7 +735,7 @@ extern MolochPcapFileHdr_t pcapFileHeader;
 SavepcapS3File_t *writer_s3_create(const MolochPacket_t *packet)
 {
     char               filename[1000];
-    static char       *extension[3] = {"", ".gz", ".zstd"};
+    static char       *extension[3] = {"", ".gz", ".zst"};
     struct tm          tmp;
     int                offset = 6 + strlen(s3Region) + strlen(s3Bucket);
 

@@ -20,6 +20,7 @@
 const AWS = require('aws-sdk');
 const async = require('async');
 const zlib = require('zlib');
+const { decompressSync } = require('@xingrz/cppzst');
 const S3s = {};
 const LRU = require('lru-cache');
 const CacheInProgress = {};
@@ -121,6 +122,8 @@ function processSessionIdS3 (session, headerCb, packetCb, endCb, limit) {
         }
         if (params.Key.endsWith('.gz')) {
           header = zlib.gunzipSync(data.Body, { finishFlush: zlib.constants.Z_SYNC_FLUSH });
+        } else if (params.Key.endsWith('.zst')) {
+          header = decompressSync(data.Body);
         } else {
           header = data.Body;
         }
@@ -197,8 +200,12 @@ function processSessionIdS3 (session, headerCb, packetCb, endCb, limit) {
               const sp = data.subPackets[i];
               if (!decompressed[sp.rangeStart]) {
                 const offset = sp.rangeStart - data.rangeStart;
-                decompressed[sp.rangeStart] = zlib.inflateRawSync(s3data.Body.subarray(offset, offset + COMPRESSED_BLOCK_SIZE),
-                  { finishFlush: zlib.constants.Z_SYNC_FLUSH });
+                if (data.compressed === 1) {
+                  decompressed[sp.rangeStart] = zlib.inflateRawSync(s3data.Body.subarray(offset, offset + COMPRESSED_BLOCK_SIZE),
+                    { finishFlush: zlib.constants.Z_SYNC_FLUSH });
+                } else if (data.compressed === 2) {
+                  decompressed[sp.rangeStart] = decompressSync(s3data.Body.subarray(offset, offset + COMPRESSED_BLOCK_SIZE));
+                }
                 const decompressedCacheKey = 'data:' + data.params.Bucket + ':' + data.params.Key + ':' + sp.rangeStart;
                 lru.set(decompressedCacheKey, decompressed[sp.rangeStart]);
                 const cip = CacheInProgress[decompressedCacheKey];
@@ -241,7 +248,12 @@ function processSessionIdS3 (session, headerCb, packetCb, endCb, limit) {
         Db.fileIdToFile(fields.node, pos * -1, function (info) {
           const parts = splitRemain(info.name, '/', 4);
           p = parseInt(p);
-          const compressed = info.name.endsWith('.gz');
+          let compressed = 0;
+          if (info.name.endsWith('.gz')) {
+            compressed = 1;
+          } else if (info.name.endsWith('.zst')) {
+            compressed = 2;
+          }
           for (let pp = p + 1; pp < fields.packetPos.length && fields.packetPos[pp] >= 0; pp++) {
             const packetPos = fields.packetPos[pp];
             let len = 65536;
