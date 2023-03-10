@@ -169,9 +169,13 @@ void writer_s3_complete_cb (int code, unsigned char *data, int len, gpointer uw)
     if (file->uploadId)
         g_free(file->uploadId);
     g_free(file->outputFileName);
+#ifdef HAVE_ZSTD
+    if (file->zstd_strm)
+        ZSTD_freeCStream(file->zstd_strm);
+#endif
     MOLOCH_TYPE_FREE(SavepcapS3File_t, file);
 
-    MOLOCH_LOCK(fileQ);
+    MOLOCH_UNLOCK(fileQ);
 }
 /******************************************************************************/
 void writer_s3_part_cb (int code, unsigned char *data, int len, gpointer uw)
@@ -618,7 +622,7 @@ LOCAL void append_to_output(SavepcapS3File_t *s3file, void *data, size_t length,
 
         s3file->outputFilePos = (s3file->outputLastBlockStart << COMPRESSED_WITHIN_BLOCK_BITS) + s3file->outputOffsetInBlock;
     } else if (compressionMode == MOLOCH_COMPRESSION_ZSTD) {
-        if (s3file->outputActualFilePos == 0) {
+        if (!s3file->zstd_strm) {
             s3file->zstd_strm = ZSTD_createCStream();
             //ZSTD_CCtx_setParameter(s3file->zstd_strm, ZSTD_c_compressionLevel, simpleZstdLevel);
             s3file->zstd_out.dst = s3file->outputBuffer;
