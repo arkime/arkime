@@ -656,6 +656,7 @@ LOCAL void append_to_output(SavepcapS3File_t *s3file, void *data, size_t length,
             make_new_block(s3file);
         }
 
+        s3file->outputFilePos = (s3file->outputLastBlockStart << COMPRESSED_WITHIN_BLOCK_BITS) + s3file->outputOffsetInBlock;
     } else {
         memcpy(s3file->outputBuffer + s3file->outputPos, data, length);
         s3file->outputFilePos += length;
