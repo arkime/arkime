@@ -96,6 +96,7 @@ LOCAL  uint32_t               s3MaxConns;
 LOCAL  uint32_t               s3MaxRequests;
 LOCAL  char                   s3UseHttp;
 LOCAL  char                   s3UseTokenForMetadata;
+LOCAL  int                    s3CompressionLevel;
 
 LOCAL  int                    inprogress;
 
@@ -533,7 +534,7 @@ LOCAL void make_new_block(SavepcapS3File_t *s3file) {
 #ifdef HAVE_ZSTD
         ZSTD_compressStream2(s3file->zstd_strm, &s3file->zstd_out, &s3file->zstd_in, ZSTD_e_end);
 
-        s3file->outputActualFilePos = s3file->outputLastBlockStart + s3file->zstd_out.pos;
+        s3file->outputActualFilePos = s3file->outputLastBlockStart + s3file->zstd_out.pos - s3file->zstd_bufpos;
         s3file->outputLastBlockStart = s3file->outputActualFilePos;
         s3file->outputOffsetInBlock = 0;
         s3file->outputDataSinceLastMiniBlock = 0;
@@ -574,6 +575,15 @@ LOCAL void ensure_space_for_output(SavepcapS3File_t *s3file, size_t space) {
         if (max_need_space >= COMPRESSED_BLOCK_SIZE) {
             make_new_block(s3file);
         }
+
+        if (s3file->zstd_out.pos + 64 + ZSTD_compressBound(space) > s3file->zstd_out.size)
+            writer_s3_flush(s3file, FALSE);
+
+            // Recompute after the flush
+        max_need_space = s3file->outputActualFilePos - s3file->outputLastBlockStart + 64 + ZSTD_compressBound(space + s3file->outputDataSinceLastMiniBlock);
+        if (max_need_space >= COMPRESSED_BLOCK_SIZE) {
+            make_new_block(s3file);
+        }
     }
 }
 /******************************************************************************/
@@ -590,7 +600,10 @@ LOCAL void append_to_output(SavepcapS3File_t *s3file, void *data, size_t length,
             s3file->z_strm.zalloc = Z_NULL;
             s3file->z_strm.zfree = Z_NULL;
 
-            deflateInit2(&s3file->z_strm, Z_DEFAULT_COMPRESSION, Z_DEFLATED, 16 + 15, 8, Z_DEFAULT_STRATEGY);
+            if (s3CompressionLevel == 0)
+                deflateInit2(&s3file->z_strm, Z_DEFAULT_COMPRESSION, Z_DEFLATED, 16 + 15, 8, Z_DEFAULT_STRATEGY);
+            else
+                deflateInit2(&s3file->z_strm, MIN(s3CompressionLevel, Z_BEST_COMPRESSION), Z_DEFLATED, 16 + 15, 9, Z_DEFAULT_STRATEGY);
         }
 
         // See if we can output this
@@ -624,7 +637,8 @@ LOCAL void append_to_output(SavepcapS3File_t *s3file, void *data, size_t length,
     } else if (compressionMode == MOLOCH_COMPRESSION_ZSTD) {
         if (!s3file->zstd_strm) {
             s3file->zstd_strm = ZSTD_createCStream();
-            //ZSTD_CCtx_setParameter(s3file->zstd_strm, ZSTD_c_compressionLevel, simpleZstdLevel);
+            if (s3CompressionLevel != 0)
+              ZSTD_CCtx_setParameter(s3file->zstd_strm, ZSTD_c_compressionLevel, MIN(s3CompressionLevel, ZSTD_maxCLevel()));
             s3file->zstd_out.dst = s3file->outputBuffer;
             s3file->zstd_out.size = config.pcapWriteSize + MOLOCH_PACKET_MAX_LEN;
             s3file->zstd_out.pos = 0;
@@ -824,6 +838,7 @@ void writer_s3_init(char *UNUSED(name))
     s3Compress            = moloch_config_boolean(NULL, "s3Compress", FALSE);
     char s3WriteGzip      = moloch_config_boolean(NULL, "s3WriteGzip", FALSE);
     char *s3Compression   = moloch_config_str(NULL, "s3Compression", NULL);
+    s3CompressionLevel    = moloch_config_int(NULL, "s3CompressionLevel", 0, 0, 22);
     s3StorageClass        = moloch_config_str(NULL, "s3StorageClass", "STANDARD");
     s3MaxConns            = moloch_config_int(NULL, "s3MaxConns", 20, 5, 1000);
     s3MaxRequests         = moloch_config_int(NULL, "s3MaxRequests", 500, 10, 5000);
