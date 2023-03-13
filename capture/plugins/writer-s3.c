@@ -57,12 +57,10 @@ typedef struct writer_s3_file {
     uint32_t                   outputPos;
     uint32_t                   outputId;
 
-    // outputFilePos is the offset in the current decompressed block plus outputLastBlockStart << COMPRESSED_WITHIN_BLOCK_BITS
     // outputActualFilePos is the offset in the compressed file
     // outputLastBLockStart is the offset in the compressed file of the most recent block
     // outputOffsetInBlock is the offset within the current decompressed block
 
-    uint64_t                   outputFilePos;
     uint64_t                   outputActualFilePos;
     uint64_t                   outputLastBlockStart;
     uint32_t                   outputOffsetInBlock;
@@ -513,10 +511,12 @@ void writer_s3_request(char *method, char *path, char *qs, unsigned char *data, 
     moloch_http_send(s3Server, method, fullpath, strlen(fullpath), (char*)data, len, headers, FALSE, cb, uw);
 }
 /******************************************************************************/
+/* Make a new encryption full block/frame.
+ * This will cause the encryption to fully flush any waiting data
+ * and the next data written will cause a new block header.
+ */
 LOCAL void make_new_block(SavepcapS3File_t *s3file) {
     if (compressionMode == MOLOCH_COMPRESSION_GZIP) {
-        // We need to make a new block
-
         while (TRUE) {
             deflate(&s3file->z_strm, Z_FULL_FLUSH);
             if (s3file->z_strm.avail_out > 0) {
@@ -529,11 +529,13 @@ LOCAL void make_new_block(SavepcapS3File_t *s3file) {
         s3file->outputLastBlockStart = s3file->outputActualFilePos;
         s3file->outputOffsetInBlock = 0;
         s3file->outputDataSinceLastMiniBlock = 0;
-
-        s3file->outputFilePos = (s3file->outputLastBlockStart << COMPRESSED_WITHIN_BLOCK_BITS) + s3file->outputOffsetInBlock;
     } else if (compressionMode == MOLOCH_COMPRESSION_ZSTD) {
 #ifdef HAVE_ZSTD
-        while (ZSTD_compressStream2(s3file->zstd_strm, &s3file->zstd_out, &s3file->zstd_in, ZSTD_e_end) != 0) {
+        while (TRUE) {
+            ZSTD_compressStream2(s3file->zstd_strm, &s3file->zstd_out, &s3file->zstd_in, ZSTD_e_end);
+            if (s3file->zstd_out.pos < s3file->zstd_out.size)
+                break;
+
             // Out of space, flush and try again
             writer_s3_flush(s3file, FALSE);
         }
@@ -542,18 +544,19 @@ LOCAL void make_new_block(SavepcapS3File_t *s3file) {
         s3file->outputLastBlockStart = s3file->outputActualFilePos;
         s3file->outputOffsetInBlock = 0;
         s3file->outputDataSinceLastMiniBlock = 0;
-
-        s3file->outputFilePos = (s3file->outputLastBlockStart << COMPRESSED_WITHIN_BLOCK_BITS) + s3file->outputOffsetInBlock;
 #endif
     }
 }
 /******************************************************************************/
+/* Make sure there is enough space in encryption buffers for incoming data and
+ * data that is waiting to be written out. Because encryption lib does its
+ * own buffer we do our best guess here. 
+ */
 LOCAL void ensure_space_for_output(SavepcapS3File_t *s3file, size_t space) {
     if (compressionMode == MOLOCH_COMPRESSION_GZIP) {
         size_t max_need_space = s3file->outputActualFilePos - s3file->outputLastBlockStart + 64 + deflateBound(&s3file->z_strm, space + s3file->outputDataSinceLastMiniBlock);
+
         if (max_need_space >= s3CompressionBlockSize) {
-            // Might not fit.
-            // Do a normal flush
             while (TRUE) {
                 deflate(&s3file->z_strm, Z_BLOCK);
                 if (s3file->z_strm.avail_out > 0) {
@@ -572,29 +575,38 @@ LOCAL void ensure_space_for_output(SavepcapS3File_t *s3file, size_t space) {
     } else if (compressionMode == MOLOCH_COMPRESSION_ZSTD) {
 #ifdef HAVE_ZSTD
         size_t max_need_space = s3file->outputActualFilePos - s3file->outputLastBlockStart + 64 + ZSTD_compressBound(space + s3file->outputDataSinceLastMiniBlock);
+
         if (max_need_space >= s3CompressionBlockSize) {
-            make_new_block(s3file);
-        }
-
-        if (s3file->zstd_out.pos + 64 + ZSTD_compressBound(space) >= s3file->zstd_out.size) {
-            writer_s3_flush(s3file, FALSE);
-        }
-
-        // Recompute after the flush
-        max_need_space = s3file->outputActualFilePos - s3file->outputLastBlockStart + 64 + ZSTD_compressBound(space + s3file->outputDataSinceLastMiniBlock);
-        if (max_need_space >= 3 * s3CompressionBlockSize / 4) {
-            make_new_block(s3file);
+            while (TRUE) {
+                ZSTD_compressStream2(s3file->zstd_strm, &s3file->zstd_out, &s3file->zstd_in, ZSTD_e_flush);
+                if (s3file->zstd_out.pos < s3file->zstd_out.size) {
+                    s3file->outputActualFilePos = s3file->zstd_saved + s3file->zstd_out.pos;
+                    s3file->outputDataSinceLastMiniBlock = 0;
+                    break;
+                }
+                writer_s3_flush(s3file, FALSE);
+            }
+            // Recompute after the flush
+            max_need_space = s3file->outputActualFilePos - s3file->outputLastBlockStart + 64 + ZSTD_compressBound(space + s3file->outputDataSinceLastMiniBlock);
+            if (max_need_space >= 3 * s3CompressionBlockSize / 4) {
+                make_new_block(s3file);
+            }
         }
 #endif
     }
 }
 /******************************************************************************/
-LOCAL void append_to_output(SavepcapS3File_t *s3file, void *data, size_t length, gboolean packetHeader, size_t extra_space) {
+/* Add data:length to the output.
+ * This is call for file headers and packets. If for packets it will be called twice,
+ * once with packetHeader true (with the header) and a second time with packetHeader false and the packet.
+ *
+ * When packetHeader is true the return value is where the writerFilePos of the start of the packetHeader.
+ * This value might be encoded if using encryption.
+ */
+LOCAL uint64_t append_to_output(SavepcapS3File_t *s3file, void *data, size_t length, gboolean packetHeader, size_t extra_space) {
+    uint64_t pos;
+
     if (compressionMode == MOLOCH_COMPRESSION_GZIP) {
-        // outputActualFilePos is the offset in the compressed file
-        // outputLastBLockStart is the offset in the compressed file of the most recent block
-        // outputFilePos is the offset in the current decompressed block plus outputLastBlockStart << COMPRESSED_WITHIN_BLOCK_BITS
-        // outputOffsetInBlock is the offset within the current decompressed block
         if (s3file->outputActualFilePos == 0) {
             memset(&s3file->z_strm, 0, sizeof(s3file->z_strm));
             s3file->z_strm.next_out = (Bytef *) s3file->outputBuffer;
@@ -608,10 +620,12 @@ LOCAL void append_to_output(SavepcapS3File_t *s3file, void *data, size_t length,
                 deflateInit2(&s3file->z_strm, MIN(s3CompressionLevel, Z_BEST_COMPRESSION), Z_DEFLATED, 16 + 15, 9, Z_DEFAULT_STRATEGY);
         }
 
-        // See if we can output this
+        // Make room for the header and packet
         if (packetHeader) {
             ensure_space_for_output(s3file, length + extra_space);
         }
+
+        pos = (s3file->outputLastBlockStart << COMPRESSED_WITHIN_BLOCK_BITS) + s3file->outputOffsetInBlock;
 
         s3file->z_strm.next_in = data;
         s3file->z_strm.avail_in = length;
@@ -629,13 +643,11 @@ LOCAL void append_to_output(SavepcapS3File_t *s3file, void *data, size_t length,
         s3file->outputDataSinceLastMiniBlock += length;
 
         if (!packetHeader &&
-                (s3file->outputOffsetInBlock >= (1 << COMPRESSED_WITHIN_BLOCK_BITS) - 16 ||
+               (s3file->outputOffsetInBlock >= (1 << COMPRESSED_WITHIN_BLOCK_BITS) - 16 ||
                 s3file->outputActualFilePos > s3file->outputLastBlockStart + s3CompressionBlockSize)) {
             // We need to make a new block
             make_new_block(s3file);
         }
-
-        s3file->outputFilePos = (s3file->outputLastBlockStart << COMPRESSED_WITHIN_BLOCK_BITS) + s3file->outputOffsetInBlock;
     } else if (compressionMode == MOLOCH_COMPRESSION_ZSTD) {
 #ifdef HAVE_ZSTD
         if (!s3file->zstd_strm) {
@@ -647,35 +659,41 @@ LOCAL void append_to_output(SavepcapS3File_t *s3file, void *data, size_t length,
             s3file->zstd_out.pos = 0;
         }
 
-        // See if we can output this
+        // Make room for the header and packet
         if (packetHeader) {
             ensure_space_for_output(s3file, length + extra_space);
         }
+
+        pos = (s3file->outputLastBlockStart << COMPRESSED_WITHIN_BLOCK_BITS) + s3file->outputOffsetInBlock;
 
         s3file->zstd_in.src = (Bytef *)data;
         s3file->zstd_in.size = length;
         s3file->zstd_in.pos = 0;
 
-        while (ZSTD_compressStream2(s3file->zstd_strm, &s3file->zstd_out, &s3file->zstd_in, ZSTD_e_continue) != 0 || s3file->zstd_in.pos != s3file->zstd_in.size) {
+        while (s3file->zstd_in.pos < s3file->zstd_in.size) {
+            if (s3file->zstd_out.pos == s3file->zstd_out.size) {
+                writer_s3_flush(s3file, FALSE);
+            }
+            ZSTD_compressStream2(s3file->zstd_strm, &s3file->zstd_out, &s3file->zstd_in, ZSTD_e_continue);
+            s3file->outputActualFilePos = s3file->zstd_saved + s3file->zstd_out.pos;
         }
 
-        s3file->outputActualFilePos = s3file->zstd_saved + s3file->zstd_out.pos;
 
         s3file->outputOffsetInBlock += length;
         s3file->outputDataSinceLastMiniBlock += length;
 
         if (!packetHeader &&
-                (s3file->outputOffsetInBlock >= (1 << COMPRESSED_WITHIN_BLOCK_BITS) - 16 ||
+               (s3file->outputOffsetInBlock >= (1 << COMPRESSED_WITHIN_BLOCK_BITS) - 16 ||
                 s3file->outputActualFilePos > s3file->outputLastBlockStart + s3CompressionBlockSize)) {
             // We need to make a new block
             make_new_block(s3file);
         }
-
-        s3file->outputFilePos = (s3file->outputLastBlockStart << COMPRESSED_WITHIN_BLOCK_BITS) + s3file->outputOffsetInBlock;
 #endif
     } else {
         memcpy(s3file->outputBuffer + s3file->outputPos, data, length);
-        s3file->outputFilePos += length;
+
+        pos = s3file->outputActualFilePos;
+
         s3file->outputActualFilePos += length;
         s3file->outputPos += length;
 
@@ -683,8 +701,15 @@ LOCAL void append_to_output(SavepcapS3File_t *s3file, void *data, size_t length,
             writer_s3_flush(s3file, FALSE);
         }
     }
+
+    if (packetHeader)
+        return pos;
+    return 0;
 }
 /******************************************************************************/
+/* Called when the buffer we are saving to is full and needs to be
+ * sent along. Encryption blocks can cross buffers.
+ */
 void writer_s3_flush(SavepcapS3File_t *s3file, gboolean end)
 {
     if (!s3file)
@@ -705,6 +730,10 @@ void writer_s3_flush(SavepcapS3File_t *s3file, gboolean end)
 #ifdef HAVE_ZSTD
         if (end) {
             ZSTD_endStream(s3file->zstd_strm, &s3file->zstd_out);
+            if (s3file->zstd_out.pos == s3file->zstd_out.size) {
+                writer_s3_flush(s3file, FALSE);
+                ZSTD_endStream(s3file->zstd_strm, &s3file->zstd_out);
+            }
         }
 
       s3file->outputPos = s3file->zstd_out.pos;
@@ -825,12 +854,11 @@ writer_s3_write(const MolochSession_t *const session, MolochPacket_t * const pac
         currentFiles[session->thread] = s3file = writer_s3_create(packet);
     }
 
-    packet->writerFileNum = s3file->outputId;
-    packet->writerFilePos = s3file->outputFilePos;
-
-    append_to_output(s3file, &hdr, sizeof(hdr), TRUE, packet->pktlen);
-
+    uint64_t pos = append_to_output(s3file, &hdr, sizeof(hdr), TRUE, packet->pktlen);
     append_to_output(s3file, packet->pkt, packet->pktlen, FALSE, 0);
+
+    packet->writerFileNum = s3file->outputId;
+    packet->writerFilePos = pos;
 
     if (s3file->outputActualFilePos >= config.maxFileSizeB) {
         writer_s3_flush(s3file, TRUE);
@@ -853,7 +881,7 @@ void writer_s3_init(char *UNUSED(name))
     char s3WriteGzip      = moloch_config_boolean(NULL, "s3WriteGzip", FALSE);
     char *s3Compression   = moloch_config_str(NULL, "s3Compression", NULL);
     s3CompressionLevel    = moloch_config_int(NULL, "s3CompressionLevel", 0, 0, 22);
-    s3CompressionBlockSize= moloch_config_int(NULL, "s3CompressionBlockSize", 100000, 8192, 0x7ffff);
+    s3CompressionBlockSize= moloch_config_int(NULL, "s3CompressionBlockSize", 100000, 0xffff, 0x7ffff);
     s3StorageClass        = moloch_config_str(NULL, "s3StorageClass", "STANDARD");
     s3MaxConns            = moloch_config_int(NULL, "s3MaxConns", 20, 5, 1000);
     s3MaxRequests         = moloch_config_int(NULL, "s3MaxRequests", 500, 10, 5000);
@@ -965,7 +993,7 @@ LOCAL void writer_s3_file_time_check(MolochSession_t *session, void *UNUSED(uw1)
     clock_gettime(CLOCK_REALTIME_COARSE, &ts);
 
     SavepcapS3File_t *s3file = currentFiles[session->thread];
-    if (s3file && s3file->outputFilePos > 24 && (ts.tv_sec - s3file->outputFileTime.tv_sec) >= config.maxFileTimeM*60) {
+    if (s3file && s3file->outputActualFilePos > 24 && (ts.tv_sec - s3file->outputFileTime.tv_sec) >= config.maxFileTimeM*60) {
         writer_s3_flush(s3file, TRUE);
         currentFiles[session->thread] = NULL;
     }
