@@ -792,6 +792,7 @@ SavepcapS3File_t *writer_s3_create(const MolochPacket_t *packet)
     int                offset = 6 + strlen(s3Region) + strlen(s3Bucket);
     char              *compressionBlockSizeArg = MOLOCH_VAR_ARG_SKIP;
     char               compressionBlockSize[100];
+    char              *packetPosEncoding = MOLOCH_VAR_ARG_SKIP;
 
     localtime_r(&packet->ts.tv_sec, &tmp);
     snprintf(filename, sizeof(filename), "s3://%s/%s/%s/#NUMHEX#-%02d%02d%02d-#NUM#.pcap%s", s3Region, s3Bucket, config.nodeName, tmp.tm_year%100, tmp.tm_mon+1, tmp.tm_mday, extension[compressionMode]);
@@ -808,8 +809,12 @@ SavepcapS3File_t *writer_s3_create(const MolochPacket_t *packet)
         compressionBlockSizeArg = compressionBlockSize;
     }
 
+    if (config.gapPacketPos) {
+        packetPosEncoding = "gap0";
+    }
 
     s3file->outputFileName = moloch_db_create_file_full(packet->ts.tv_sec, filename, 0, 0, &s3file->outputId,
+            "packetPosEncoding", packetPosEncoding,
             "compressionBlockSize", compressionBlockSizeArg,
             NULL);
     s3file->outputPath = s3file->outputFileName + offset;
@@ -890,6 +895,8 @@ void writer_s3_init(char *UNUSED(name))
 
     s3ConfigCreds.s3AccessKeyId     = moloch_config_str(NULL, "s3AccessKeyId", NULL);
     s3ConfigCreds.s3SecretAccessKey = moloch_config_str(NULL, "s3SecretAccessKey", NULL);
+
+    config.gapPacketPos = moloch_config_boolean(NULL, "s3GapPacketPos", FALSE);
 
     if (!s3Bucket) {
         CONFIGEXIT("Must set s3Bucket to save to s3\n");
