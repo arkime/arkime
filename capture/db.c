@@ -2071,11 +2071,16 @@ char *moloch_db_create_file_full(time_t firstPacket, const char *name, uint64_t 
             BSB_EXPORT_sprintf(jbsb, "\"%s\"", value1);
             g_free(value1);
         } else if ((long)value < 32) {
+            // If pointer is < 32 treat as number
             BSB_EXPORT_sprintf(jbsb, "%ld", (long)value);
-        } else if (*value == '{' || *value == '[')
+        } else if (*value == '{' || *value == '[') {
             BSB_EXPORT_sprintf(jbsb, "%s", value);
-        else
+        } else if (value[0] == '#' && value[1] == '#' && value[2] == '#') {
+            // Start with ### means its actually a number
+            BSB_EXPORT_sprintf(jbsb, "%s", value + 3);
+        } else {
             BSB_EXPORT_sprintf(jbsb, "\"%s\"", value);
+        }
     }
     va_end(args);
 

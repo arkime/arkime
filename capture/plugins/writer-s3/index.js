@@ -28,7 +28,6 @@ let Config;
 let Db;
 let Pcap;
 
-const COMPRESSED_BLOCK_SIZE = 100000;
 const COMPRESSED_WITHIN_BLOCK_BITS = 20;
 
 const S3DEBUG = false;
@@ -93,6 +92,7 @@ function processSessionIdS3 (session, headerCb, packetCb, endCb, limit) {
   let header, pcap, s3;
   Db.fileIdToFile(fields.node, fields.packetPos[0] * -1, function (info) {
     const parts = splitRemain(info.name, '/', 4);
+    info.compressionBlockSize ??= 100000;
 
     // Make s3 for this request, all will be in same region
     s3 = makeS3(fields.node, parts[2]);
@@ -201,10 +201,10 @@ function processSessionIdS3 (session, headerCb, packetCb, endCb, limit) {
               if (!decompressed[sp.rangeStart]) {
                 const offset = sp.rangeStart - data.rangeStart;
                 if (data.compressed === 1) {
-                  decompressed[sp.rangeStart] = zlib.inflateRawSync(s3data.Body.subarray(offset, offset + COMPRESSED_BLOCK_SIZE),
+                  decompressed[sp.rangeStart] = zlib.inflateRawSync(s3data.Body.subarray(offset, offset + data.info.compressionBlockSize),
                     { finishFlush: zlib.constants.Z_SYNC_FLUSH });
                 } else if (data.compressed === 2) {
-                  decompressed[sp.rangeStart] = decompressSync(s3data.Body.subarray(offset, offset + COMPRESSED_BLOCK_SIZE));
+                  decompressed[sp.rangeStart] = decompressSync(s3data.Body.subarray(offset, offset + data.info.compressionBlockSize));
                 }
                 const decompressedCacheKey = 'data:' + data.params.Bucket + ':' + data.params.Key + ':' + sp.rangeStart;
                 lru.set(decompressedCacheKey, decompressed[sp.rangeStart]);
@@ -271,7 +271,7 @@ function processSessionIdS3 (session, headerCb, packetCb, endCb, limit) {
             };
             if (compressed) {
               pd.rangeStart = Math.floor(packetPos / (1 << COMPRESSED_WITHIN_BLOCK_BITS));
-              pd.rangeEnd = pd.rangeStart + COMPRESSED_BLOCK_SIZE;
+              pd.rangeEnd = pd.rangeStart + info.compressionBlockSize;
               pd.packetStart = packetPos & ((1 << COMPRESSED_WITHIN_BLOCK_BITS) - 1);
               pd.packetEnd = pd.packetStart + len;
             } else {
