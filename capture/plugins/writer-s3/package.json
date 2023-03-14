@@ -1,9 +1,0 @@
-{
-  "name": "writer-s3",
-  "version": "0.11.0",
-  "description": "",
-  "main": "index.js",
-  "dependencies": {
-    "aws-sdk": "^2.188.0"
-  }
-}

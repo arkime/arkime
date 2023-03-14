@@ -27,8 +27,7 @@ install:
 	@mkdir -p "$(PLUGINDIR)"
 	$(INSTALL) *.so *.jade *.js $(PLUGINDIR)
 	@mkdir -p "$(PLUGINDIR)/writer-s3"
-	$(INSTALL) writer-s3/*.js writer-s3/package.json $(PLUGINDIR)/writer-s3
-	(cd $(PLUGINDIR)/writer-s3 ; npm install --production)
+	$(INSTALL) writer-s3/*.js $(PLUGINDIR)/writer-s3
 
 distclean realclean clean:
 	rm -f *.o *.so
