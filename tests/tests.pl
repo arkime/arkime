@@ -312,6 +312,7 @@ my ($cmd) = @_;
     my $ues = "-o 'usersElasticsearch=$ELASTICSEARCH'";
     my $cues = "-o 'cont3xt.usersElasticsearch=$ELASTICSEARCH'";
     my $mes = "-o 'multiESNodes=$ELASTICSEARCH,prefix:tests,name:test;$ELASTICSEARCH,prefix:tests2_,name:test2'";
+    my $s3 = "-o 's3AccessKeyId=$ENV{s3AccessKeyId}' -o 's3SecretAccessKey=$ENV{s3SecretAccessKey}'";
 
     if ($cmd ne "--viewernostart" && $cmd ne "--viewerstart" && $cmd ne "--viewerhang") {
         $main::userAgent->get("$ELASTICSEARCH/_flush");
@@ -345,7 +346,7 @@ my ($cmd) = @_;
             system("cd ../viewer ; $node --trace-warnings multies.js $mes -c ../tests/config.test.ini -n all --debug $INSECURE > /tmp/multies.all &");
             waitFor($MolochTest::host, 8200, 1);
             system("cd ../viewer ; $node --trace-warnings viewer.js $es $ues -c ../tests/config.test.ini -n test --debug $INSECURE > /tmp/moloch.test &");
-            system("cd ../viewer ; $node --trace-warnings viewer.js $es $ues -c ../tests/config.test.ini -n test2 --debug $INSECURE > /tmp/moloch.test2 &");
+            system("cd ../viewer ; $node --trace-warnings viewer.js $es $ues -c ../tests/config.test.ini -n test2 --debug $INSECURE $s3 > /tmp/moloch.test2 &");
             system("cd ../viewer ; $node --trace-warnings viewer.js $es $ues -c ../tests/config.test.ini -n test3 --debug -o s2sRegressionTests=true $INSECURE > /tmp/moloch.test3 &");
             system("cd ../viewer ; $node --trace-warnings viewer.js $ues -c ../tests/config.test.ini -n all --debug $INSECURE > /tmp/moloch.all &");
             system("cd ../parliament ; $node --trace-warnings parliament.js --regressionTests -c /dev/null --debug > /tmp/moloch.parliament 2>&1 &");
@@ -354,7 +355,7 @@ my ($cmd) = @_;
             system("cd ../viewer ; $node multies.js $mes -c ../tests/config.test.ini -n all $INSECURE > /dev/null &");
             waitFor($MolochTest::host, 8200, 1);
             system("cd ../viewer ; $node viewer.js $es $ues -c ../tests/config.test.ini -n test $INSECURE > /dev/null &");
-            system("cd ../viewer ; $node viewer.js $es $ues -c ../tests/config.test.ini -n test2 $INSECURE > /dev/null &");
+            system("cd ../viewer ; $node viewer.js $es $ues -c ../tests/config.test.ini -n test2 $INSECURE $s3 > /dev/null &");
             system("cd ../viewer ; $node viewer.js $es $ues -c ../tests/config.test.ini -n test3 -o s2sRegressionTests=true $INSECURE > /dev/null &");
             system("cd ../viewer ; $node viewer.js $ues -c ../tests/config.test.ini -n all $INSECURE > /dev/null &");
             system("cd ../parliament ; $node parliament.js --regressionTests -c /dev/null > /dev/null 2>&1 &");

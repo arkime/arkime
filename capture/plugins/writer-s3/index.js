@@ -47,7 +47,7 @@ function splitRemain (str, separator, limit) {
 }
 /// ///////////////////////////////////////////////////////////////////////////////
 function makeS3 (node, region) {
-  const key = Config.getFull(node, 's3AccessKeyId');
+  const key = Config.getFull(node, 's3AccessKeyId') ?? Config.get('s3AccessKeyId');
 
   const s3 = S3s[region + key];
   if (s3) {
@@ -57,7 +57,7 @@ function makeS3 (node, region) {
   const s3Params = { region };
 
   if (key) {
-    const secret = Config.getFull(node, 's3SecretAccessKey');
+    const secret = Config.getFull(node, 's3SecretAccessKey') ?? Config.get('s3SecretAccessKey');
     if (!secret) {
       console.log('ERROR - No s3SecretAccessKey set for ', node);
     }
