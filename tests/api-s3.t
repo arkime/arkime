@@ -20,7 +20,6 @@ sub run {
 my ($tag, $compression) = @_;
 
     my $cmd = "../capture/capture -o 's3AccessKeyId=$s3AccessKeyId' -o 's3SecretAccessKey=$s3SecretAccessKey' -c config.test.ini -n s3 --copy -R pcap --tag $tag -o s3Compression=$compression";
-    diag "$cmd\n";
     system($cmd);
 
     # Test 1
