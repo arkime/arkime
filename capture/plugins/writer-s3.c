@@ -971,7 +971,7 @@ void writer_s3_init(char *UNUSED(name))
     }
 
     // Support up to 1000 S3 parts
-    config.maxFileSizeB = MIN(config.maxFileSizeB, config.pcapWriteSize*1000);
+    config.maxFileSizeB = MIN(config.maxFileSizeB, config.pcapWriteSize * 1000LL);
 
     if (s3WriteGzip) {
       // We only have 33 bits of offset to play with. Limit the file size to that
