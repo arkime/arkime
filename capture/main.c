@@ -342,6 +342,11 @@ void reload(int UNUSED(sig))
     moloch_plugins_reload();
 }
 /******************************************************************************/
+void flush_sessions(int UNUSED(sig))
+{
+    moloch_session_flush();
+}
+/******************************************************************************/
 uint32_t moloch_get_next_prime(uint32_t v)
 {
     static uint32_t primes[] = {1009, 10007, 49999, 99991, 199799, 400009, 500009, 732209,
@@ -853,6 +858,7 @@ int main(int argc, char **argv)
     signal(SIGINT, controlc);
     signal(SIGTERM, terminate);
     signal(SIGUSR1, exit);
+    signal(SIGUSR2, flush_sessions);
     signal(SIGCHLD, SIG_IGN);
 
     mainLoop = g_main_loop_new(NULL, FALSE);
