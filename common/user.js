@@ -980,8 +980,11 @@ class User {
       allRoles.add(r);
 
       if (role.expression && role.expression.trim().length > 0) {
-        if (!this.#allExpression) { this.#allExpression = ''; }
-        this.#allExpression += ' && (' + role.expression.trim() + ')';
+        if (!this.#allExpression) {
+          this.#allExpression = '(' + role.expression.trim() + ')';
+        } else {
+          this.#allExpression += ' && (' + role.expression.trim() + ')';
+        }
       }
 
       if (role.timeLimit !== undefined) {
