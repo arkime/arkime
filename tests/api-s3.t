@@ -17,9 +17,9 @@ if($s3AccessKeyId eq "" || $s3SecretAccessKey eq "") {
 }
 
 sub run {
-my ($tag, $compression, $extension) = @_;
+my ($tag, $compression, $extension, $gap) = @_;
 
-    my $cmd = "../capture/capture -o 's3AccessKeyId=$s3AccessKeyId' -o 's3SecretAccessKey=$s3SecretAccessKey' -c config.test.ini -n s3 --copy -R pcap --tag $tag -o s3Compression=$compression";
+    my $cmd = "../capture/capture -o 's3AccessKeyId=$s3AccessKeyId' -o 's3SecretAccessKey=$s3SecretAccessKey' -o s3GapPacketPos=$gap -c config.test.ini -n s3 --copy -R pcap --tag $tag -o s3Compression=$compression";
     system($cmd);
 
     # Test 1
@@ -43,20 +43,20 @@ my ($tag, $compression, $extension) = @_;
     my @parts = split("/", $json->{data}->[0]->{name}, 4);
     splice @parts, 2, 1;
     my $s3url = join('/', @parts);
-    unlink("/tmp/arkime.file.$compression");
-    unlink("/tmp/arkime.file.$compression$extension");
-    system("AWS_ACCESS_KEY_ID='$s3AccessKeyId'  AWS_SECRET_ACCESS_KEY='$s3SecretAccessKey' aws s3 cp $s3url /tmp/arkime.file.$compression$extension");
+    unlink("/tmp/arkime.file.$compression.$gap");
+    unlink("/tmp/arkime.file.$compression.$gap$extension");
+    system("AWS_ACCESS_KEY_ID='$s3AccessKeyId'  AWS_SECRET_ACCESS_KEY='$s3SecretAccessKey' aws s3 cp $s3url /tmp/arkime.file.$compression.$gap$extension");
 }
 
 my $value = int(rand()*1000000);
 
-run("none-$value", "none", "");
-run("gzip-$value", "gzip", ".gz");
-run("zstd-$value", "zstd", ".zst");
+run("none-$value", "none", "", "true");
+run("gzip-$value", "gzip", ".gz", "true");
+run("zstd-$value", "zstd", ".zst", "false");
 
-system("gzip -d /tmp/arkime.file.gzip.gz");
-system("zstd -d /tmp/arkime.file.zstd.zst");
+system("gzip -d /tmp/arkime.file.gzip.true.gz");
+system("zstd -d /tmp/arkime.file.zstd.false.zst");
 
 # Make sure all 3 downloads are the same
-is (system("diff /tmp/arkime.file.none /tmp/arkime.file.zstd"), 0);
-is (system("diff /tmp/arkime.file.none /tmp/arkime.file.gzip"), 0);
+is (system("diff /tmp/arkime.file.none.true /tmp/arkime.file.zstd.false"), 0);
+is (system("diff /tmp/arkime.file.none.true /tmp/arkime.file.gzip.true"), 0);
