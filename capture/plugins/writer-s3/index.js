@@ -28,7 +28,10 @@ let Config;
 let Db;
 let Pcap;
 
+const DEFAULT_COMPRESSED_BLOCK_SIZE = 100000;
 const COMPRESSED_WITHIN_BLOCK_BITS = 20;
+const COMPRESSED_GZIP = 1;
+const COMPRESSED_ZSTD = 2;
 
 const S3DEBUG = false;
 // Store up to 100 items
@@ -92,7 +95,7 @@ function processSessionIdS3 (session, headerCb, packetCb, endCb, limit) {
   let header, pcap, s3;
   Db.fileIdToFile(fields.node, fields.packetPos[0] * -1, function (info) {
     const parts = splitRemain(info.name, '/', 4);
-    info.compressionBlockSize ??= 100000;
+    info.compressionBlockSize ??= DEFAULT_COMPRESSED_BLOCK_SIZE;
 
     // Make s3 for this request, all will be in same region
     s3 = makeS3(fields.node, parts[2]);
@@ -200,10 +203,10 @@ function processSessionIdS3 (session, headerCb, packetCb, endCb, limit) {
               const sp = data.subPackets[i];
               if (!decompressed[sp.rangeStart]) {
                 const offset = sp.rangeStart - data.rangeStart;
-                if (data.compressed === 1) {
+                if (data.compressed === COMPRESSED_GZIP) {
                   decompressed[sp.rangeStart] = zlib.inflateRawSync(s3data.Body.subarray(offset, offset + data.info.compressionBlockSize),
                     { finishFlush: zlib.constants.Z_SYNC_FLUSH });
-                } else if (data.compressed === 2) {
+                } else if (data.compressed === COMPRESSED_ZSTD) {
                   decompressed[sp.rangeStart] = decompressSync(s3data.Body.subarray(offset, offset + data.info.compressionBlockSize));
                 }
                 const decompressedCacheKey = 'data:' + data.params.Bucket + ':' + data.params.Key + ':' + sp.rangeStart;
@@ -250,9 +253,9 @@ function processSessionIdS3 (session, headerCb, packetCb, endCb, limit) {
           p = parseInt(p);
           let compressed = 0;
           if (info.name.endsWith('.gz')) {
-            compressed = 1;
+            compressed = COMPRESSED_GZIP;
           } else if (info.name.endsWith('.zst')) {
-            compressed = 2;
+            compressed = COMPRESSED_ZSTD;
           }
           for (let pp = p + 1; pp < fields.packetPos.length && fields.packetPos[pp] >= 0; pp++) {
             const packetPos = fields.packetPos[pp];
