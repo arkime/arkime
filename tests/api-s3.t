@@ -13,11 +13,11 @@ my $s3SecretAccessKey=$ENV{s3SecretAccessKey};
 if($s3AccessKeyId eq "" || $s3SecretAccessKey eq "") {
     plan skip_all => 'S3 info not set';
 } else {
-    plan tests => 18;
+    plan tests => 20;
 }
 
 sub run {
-my ($tag, $compression) = @_;
+my ($tag, $compression, $extension) = @_;
 
     my $cmd = "../capture/capture -o 's3AccessKeyId=$s3AccessKeyId' -o 's3SecretAccessKey=$s3SecretAccessKey' -c config.test.ini -n s3 --copy -R pcap --tag $tag -o s3Compression=$compression";
     system($cmd);
@@ -37,10 +37,26 @@ my ($tag, $compression) = @_;
 
     # Test string crosses 2 packets
     ok ($content =~ /NWIXML:notificationSequence xmlns:/);
+
+    $json = viewerGet2('/api/files?length=10&start=0&filter=&sortField=num&desc=true');
+
+    my @parts = split("/", $json->{data}->[0]->{name}, 4);
+    splice @parts, 2, 1;
+    my $s3url = join('/', @parts);
+    unlink("/tmp/arkime.file.$compression");
+    unlink("/tmp/arkime.file.$compression$extension");
+    system("AWS_ACCESS_KEY_ID='$s3AccessKeyId'  AWS_SECRET_ACCESS_KEY='$s3SecretAccessKey' aws s3 cp $s3url /tmp/arkime.file.$compression$extension");
 }
 
 my $value = int(rand()*1000000);
 
-run("none-$value", "none");
-run("gzip-$value", "gzip");
-run("zstd-$value", "zstd");
+run("none-$value", "none", "");
+run("gzip-$value", "gzip", ".gz");
+run("zstd-$value", "zstd", ".zst");
+
+system("gzip -d /tmp/arkime.file.gzip.gz");
+system("zstd -d /tmp/arkime.file.zstd.zst");
+
+# Make sure all 3 downloads are the same
+is (system("diff /tmp/arkime.file.none /tmp/arkime.file.zstd"), 0);
+is (system("diff /tmp/arkime.file.none /tmp/arkime.file.gzip"), 0);
