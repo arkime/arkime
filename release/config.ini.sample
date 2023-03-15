@@ -190,7 +190,7 @@ supportSha256=false
 maxReqBody=64
 
 # Only store request bodies that Utf-8?
-config.reqBodyOnlyUtf8=true
+reqBodyOnlyUtf8=true
 
 # Semicolon ';' seperated list of SMTP Headers that have ips, need to have the terminating colon ':'
 smtpIpHeaders=X-Originating-IP:;X-Barracuda-Apparent-Source-IP:
