@@ -933,7 +933,11 @@ void writer_simple_init(char *name)
     } else if (strcmp(compression, "gzip") == 0) {
         compressionMode = MOLOCH_COMPRESSION_GZIP;
     } else if (strcmp(compression, "zstd") == 0) {
+#ifdef HAVE_ZSTD
         compressionMode = MOLOCH_COMPRESSION_ZSTD;
+#else
+        CONFIGEXIT("Arkime capture was not compiled with zstd support");
+#endif
     } else {
         CONFIGEXIT("Unknown simpleCompression value %s", compression);
     }
