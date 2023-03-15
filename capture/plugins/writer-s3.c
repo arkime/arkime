@@ -836,8 +836,8 @@ SavepcapS3File_t *writer_s3_create(const MolochPacket_t *packet)
 
 /******************************************************************************/
 struct pcap_timeval {
-    int32_t tv_sec;             /* seconds */
-    int32_t tv_usec;            /* microseconds */
+    uint32_t tv_sec;             /* seconds */
+    uint32_t tv_usec;            /* microseconds */
 };
 struct pcap_sf_pkthdr {
     struct pcap_timeval ts;     /* time stamp */
@@ -973,7 +973,10 @@ void writer_s3_init(char *UNUSED(name))
     // Support up to 1000 S3 parts
     config.maxFileSizeB = MIN(config.maxFileSizeB, config.pcapWriteSize * 1000LL);
 
-    if (s3WriteGzip) {
+    // S3 has a 5TiB max size
+    config.maxFileSizeB = MIN(config.maxFileSizeB, 0x50000000000LL);
+
+    if (compressionMode != MOLOCH_COMPRESSION_NONE) {
       // We only have 33 bits of offset to play with. Limit the file size to that
       // minus a bit to allow for the last compressed chunk to be emitted
       config.maxFileSizeB = MIN(config.maxFileSizeB, 0x1fff00000LL);
