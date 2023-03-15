@@ -29,11 +29,18 @@ NOTICE: Restart wiseService before capture when upgrading
 NOTICE: Cross-cluster Shortcuts require you to not restart all your viewers at once after upgrading
 
 4.2.1 2023/03/XX
+  - release - fix kafka library linking
   - capture - tcpClosingTimeout setting controls delay before saving tcp
               sessions after close
   - capture - default dbBulkSize to 1M, min 500K, max 15M and removed 
               from sample config file
-  - db.pl - new --ifneeded option to init/upgrade that will just exit if not needed
+  - capture - s3 writer now writes multiple files based on packetThreads
+  - capture - s3 writer supports zstd, s3Compression setting
+  - capture - s3 writer compression level, s3CompressionBlockSize setting
+  - capture - s3 writer block size, s3CompressionBlockSize setting
+  - capture - s3 writer gap encoding, s3GapPacketPos setting
+  - capture/viewer - includes setting ignore missing file starting with -
+  - db.pl - new --ifneeded option to init/upgrade that will exit if not needed
   - parliament - fix digest auth
 
 4.2.0 2023/03/01
