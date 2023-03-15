@@ -201,7 +201,15 @@ function loadIncludes (includes) {
     return;
   }
   includes.split(';').forEach((file) => {
+    const ignoreError = file[0] === '-';
+    if (ignoreError) {
+      file = file.substring(1);
+    }
+
     if (!fs.existsSync(file)) {
+      if (ignoreError) {
+        return;
+      }
       console.log("ERROR - Couldn't open config includes file '%s'", file);
       process.exit(1);
     }

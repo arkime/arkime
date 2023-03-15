@@ -346,9 +346,19 @@ void moloch_config_load_includes(char **includes)
     for (i = 0; includes[i]; i++) {
         GKeyFile *keyFile = g_key_file_new();
         GError *error = 0;
-        gboolean status = g_key_file_load_from_file(keyFile, includes[i], G_KEY_FILE_NONE, &error);
+        char *fn = includes[i];
+        if (*fn == '-')
+            fn++;
+
+        gboolean status = g_key_file_load_from_file(keyFile, fn, G_KEY_FILE_NONE, &error);
         if (!status || error) {
-            CONFIGEXIT("Couldn't load config includes file (%s) %s\n", includes[i], (error?error->message:""));
+            if (includes[i][0] == '-') {
+                if (error)
+                    g_error_free(error);
+                continue;
+            } else {
+                CONFIGEXIT("Couldn't load config includes file (%s) %s\n", fn, (error?error->message:""));
+            }
         }
 
         gchar **groups = g_key_file_get_groups (keyFile, NULL);
