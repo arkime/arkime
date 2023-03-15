@@ -766,9 +766,11 @@ void writer_s3_flush(SavepcapS3File_t *s3file, gboolean end)
             s3file->z_strm.next_out = (Bytef *) s3file->outputBuffer;
             s3file->z_strm.avail_out = config.pcapWriteSize + MOLOCH_PACKET_MAX_LEN;
         } else if (compressionMode == MOLOCH_COMPRESSION_ZSTD) {
+#ifdef HAVE_ZSTD
             s3file->zstd_out.dst = s3file->outputBuffer;
             s3file->zstd_out.size = config.pcapWriteSize + MOLOCH_PACKET_MAX_LEN;
             s3file->zstd_out.pos = 0;
+#endif
         }
     }
 }
