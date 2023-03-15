@@ -267,6 +267,9 @@ void parse_args(int argc, char **argv)
 /******************************************************************************/
 void moloch_free_later(void *ptr, GDestroyNotify cb)
 {
+    if (!ptr)
+        return;
+
     struct timespec currentTime;
     clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &currentTime);
 

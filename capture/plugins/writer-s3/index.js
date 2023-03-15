@@ -20,6 +20,7 @@
 const AWS = require('aws-sdk');
 const async = require('async');
 const zlib = require('zlib');
+const { decompressSync } = require('@xingrz/cppzst');
 const S3s = {};
 const LRU = require('lru-cache');
 const CacheInProgress = {};
@@ -27,8 +28,10 @@ let Config;
 let Db;
 let Pcap;
 
-const COMPRESSED_BLOCK_SIZE = 100000;
+const DEFAULT_COMPRESSED_BLOCK_SIZE = 100000;
 const COMPRESSED_WITHIN_BLOCK_BITS = 20;
+const COMPRESSED_GZIP = 1;
+const COMPRESSED_ZSTD = 2;
 
 const S3DEBUG = false;
 // Store up to 100 items
@@ -47,7 +50,7 @@ function splitRemain (str, separator, limit) {
 }
 /// ///////////////////////////////////////////////////////////////////////////////
 function makeS3 (node, region) {
-  const key = Config.getFull(node, 's3AccessKeyId');
+  const key = Config.getFull(node, 's3AccessKeyId') ?? Config.get('s3AccessKeyId');
 
   const s3 = S3s[region + key];
   if (s3) {
@@ -57,7 +60,7 @@ function makeS3 (node, region) {
   const s3Params = { region };
 
   if (key) {
-    const secret = Config.getFull(node, 's3SecretAccessKey');
+    const secret = Config.getFull(node, 's3SecretAccessKey') ?? Config.get('s3SecretAccessKey');
     if (!secret) {
       console.log('ERROR - No s3SecretAccessKey set for ', node);
     }
@@ -92,6 +95,7 @@ function processSessionIdS3 (session, headerCb, packetCb, endCb, limit) {
   let header, pcap, s3;
   Db.fileIdToFile(fields.node, fields.packetPos[0] * -1, function (info) {
     const parts = splitRemain(info.name, '/', 4);
+    info.compressionBlockSize ??= DEFAULT_COMPRESSED_BLOCK_SIZE;
 
     // Make s3 for this request, all will be in same region
     s3 = makeS3(fields.node, parts[2]);
@@ -121,6 +125,8 @@ function processSessionIdS3 (session, headerCb, packetCb, endCb, limit) {
         }
         if (params.Key.endsWith('.gz')) {
           header = zlib.gunzipSync(data.Body, { finishFlush: zlib.constants.Z_SYNC_FLUSH });
+        } else if (params.Key.endsWith('.zst')) {
+          header = decompressSync(data.Body);
         } else {
           header = data.Body;
         }
@@ -197,8 +203,12 @@ function processSessionIdS3 (session, headerCb, packetCb, endCb, limit) {
               const sp = data.subPackets[i];
               if (!decompressed[sp.rangeStart]) {
                 const offset = sp.rangeStart - data.rangeStart;
-                decompressed[sp.rangeStart] = zlib.inflateRawSync(s3data.Body.subarray(offset, offset + COMPRESSED_BLOCK_SIZE),
-                  { finishFlush: zlib.constants.Z_SYNC_FLUSH });
+                if (data.compressed === COMPRESSED_GZIP) {
+                  decompressed[sp.rangeStart] = zlib.inflateRawSync(s3data.Body.subarray(offset, offset + data.info.compressionBlockSize),
+                    { finishFlush: zlib.constants.Z_SYNC_FLUSH });
+                } else if (data.compressed === COMPRESSED_ZSTD) {
+                  decompressed[sp.rangeStart] = decompressSync(s3data.Body.subarray(offset, offset + data.info.compressionBlockSize));
+                }
                 const decompressedCacheKey = 'data:' + data.params.Bucket + ':' + data.params.Key + ':' + sp.rangeStart;
                 lru.set(decompressedCacheKey, decompressed[sp.rangeStart]);
                 const cip = CacheInProgress[decompressedCacheKey];
@@ -241,7 +251,12 @@ function processSessionIdS3 (session, headerCb, packetCb, endCb, limit) {
         Db.fileIdToFile(fields.node, pos * -1, function (info) {
           const parts = splitRemain(info.name, '/', 4);
           p = parseInt(p);
-          const compressed = info.name.endsWith('.gz');
+          let compressed = 0;
+          if (info.name.endsWith('.gz')) {
+            compressed = COMPRESSED_GZIP;
+          } else if (info.name.endsWith('.zst')) {
+            compressed = COMPRESSED_ZSTD;
+          }
           for (let pp = p + 1; pp < fields.packetPos.length && fields.packetPos[pp] >= 0; pp++) {
             const packetPos = fields.packetPos[pp];
             let len = 65536;
@@ -259,7 +274,7 @@ function processSessionIdS3 (session, headerCb, packetCb, endCb, limit) {
             };
             if (compressed) {
               pd.rangeStart = Math.floor(packetPos / (1 << COMPRESSED_WITHIN_BLOCK_BITS));
-              pd.rangeEnd = pd.rangeStart + COMPRESSED_BLOCK_SIZE;
+              pd.rangeEnd = pd.rangeStart + info.compressionBlockSize;
               pd.packetStart = packetPos & ((1 << COMPRESSED_WITHIN_BLOCK_BITS) - 1);
               pd.packetEnd = pd.packetStart + len;
             } else {
