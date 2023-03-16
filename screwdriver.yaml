@@ -138,6 +138,7 @@ jobs:
                 if [ "$GIT_BRANCH" = "$MOLOCH_COPY_BRANCH" ]; then
                   aws s3 cp --quiet arkime*.x86_64.rpm s3://files.molo.ch/arkime-${ARKIME_FILE_NAME}.al2023.x86_64.rpm --acl public-read
                   aws s3api put-object-acl --bucket files.molo.ch --key arkime-${ARKIME_FILE_NAME}.al2023.x86_64.rpm --acl public-read
+                  aws s3api get-object-acl --bucket files.molo.ch --key arkime-${ARKIME_FILE_NAME}.al2023.x86_64.rpm
                 fi
             - install-arkime: yum -y install arkime*.x86_64.rpm
         secrets:
