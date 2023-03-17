@@ -700,13 +700,22 @@ class User {
       return res.serverError(403, 'Can not delete yourself');
     }
 
-    try {
-      await User.deleteUser(userId);
-      res.send({ success: true, text: 'User deleted successfully' });
-    } catch (err) {
-      console.log(`ERROR - ${req.method} /api/user/%s`, userId, util.inspect(err, false, 50));
-      res.send({ success: false, text: 'User not deleted' });
-    }
+    User.getUser(userId, async (err, user) => {
+      if (err || !user) {
+        console.log(`ERROR - ${req.method} /api/user/%s`, userId, util.inspect(err, false, 50), user);
+        return res.serverError(404, 'User not found');
+      }
+      if (user.hasRole('superAdmin') && !req.user.hasRole('superAdmin')) {
+        return res.serverError(403, 'Can not delete superAdmin unless you are superAdmin');
+      }
+      try {
+        await User.deleteUser(userId);
+        res.send({ success: true, text: 'User deleted successfully' });
+      } catch (err) {
+        console.log(`ERROR - ${req.method} /api/user/%s`, userId, util.inspect(err, false, 50));
+        res.send({ success: false, text: 'User not deleted' });
+      }
+    });
   };
 
   /**
