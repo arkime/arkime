@@ -203,6 +203,8 @@ my $users = viewerPost("/user/list", "");
 is (@{$users->{data}}, 2, "Two supers left");
 
 viewerGet("/regressionTests/deleteAllUsers");
+sleep(1);
+esGet("/_flush");
 esGet("/_refresh");
 
 my $users = viewerPost("/user/list", "");
