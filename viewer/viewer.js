@@ -1165,7 +1165,7 @@ if (Config.get('demoMode', false)) {
     return res.serverError(403, 'Disabled in demo mode.');
   });
 
-  app.post(['/user/password/change', '/changePassword', '/tableState/:tablename'], (req, res) => {
+  app.post(['/user/password/change', '/changePassword', '/api/user/password', '/tableState/:tablename'], (req, res) => {
     return res.serverError(403, 'Disabled in demo mode.');
   });
 }
