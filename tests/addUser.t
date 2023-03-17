@@ -1,5 +1,5 @@
 # Test addUser.js and general authentication
-use Test::More tests => 60;
+use Test::More tests => 63;
 use Test::Differences;
 use Data::Dumper;
 use MolochTest;
@@ -7,6 +7,7 @@ use JSON;
 use strict;
 
 viewerGet("/regressionTests/deleteAllUsers");
+esGet("/_refresh");
 my $token = getTokenCookie();
 my $es = "-o 'elasticsearch=$MolochTest::elasticsearch' -o 'usersElasticsearch=$MolochTest::elasticsearch' $ENV{INSECURE}";
 
@@ -183,8 +184,10 @@ is ($response->code, 200);
 
 
 # cleanup
-viewerDeleteToken("/api/user/role:role", $token);
-viewerDeleteToken("/api/user/admin", $token);
+$response = viewerDeleteToken("/api/user/role:role", $token);
+eq_or_diff($response, from_json('{"success": false, "text": "Can not delete superAdmin unless you are superAdmin"}'));
+$response = viewerDeleteToken("/api/user/admin", $token);
+eq_or_diff($response, from_json('{"success": false, "text": "Can not delete superAdmin unless you are superAdmin"}'));
 viewerDeleteToken("/api/user/test1", $token);
 viewerDeleteToken("/api/user/test2", $token);
 viewerDeleteToken("/api/user/test3", $token);
@@ -195,6 +198,12 @@ viewerDeleteToken("/api/user/test7", $token);
 viewerDeleteToken("/api/user/test8", $token);
 viewerDeleteToken("/api/user/authtest1", $token);
 viewerDeleteToken("/api/user/authtest2", $token);
+
+my $users = viewerPost("/user/list", "");
+is (@{$users->{data}}, 2, "Two supers left");
+
+viewerGet("/regressionTests/deleteAllUsers");
+esGet("/_refresh");
 
 my $users = viewerPost("/user/list", "");
 is (@{$users->{data}}, 0, "Empty users table");
