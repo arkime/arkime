@@ -347,7 +347,6 @@ void writer_s3_header_cb (char *url, const char *field, const char *value, int v
         LOG("Part-Etag: %s %d", file->outputFileName, pn);
 }
 /******************************************************************************/
-GChecksum *checksum;
 void writer_s3_request(char *method, char *path, char *qs, unsigned char *data, int len, gboolean specifyStorageClass, MolochHttpResponse_cb cb, gpointer uw)
 {
     char           canonicalRequest[20000];
@@ -378,7 +377,7 @@ void writer_s3_request(char *method, char *path, char *qs, unsigned char *data, 
       snprintf(tokenHeader, sizeof(tokenHeader), "x-amz-security-token:%s\n", creds->s3Token);
     }
 
-    g_checksum_reset(checksum);
+    GChecksum *checksum = g_checksum_new(G_CHECKSUM_SHA256);
     g_checksum_update(checksum, data, len);
     g_strlcpy(bodyHash, g_checksum_get_string(checksum), sizeof(bodyHash));
 
@@ -471,6 +470,7 @@ void writer_s3_request(char *method, char *path, char *qs, unsigned char *data, 
     //LOG("signature: %s", signature);
 
     snprintf(fullpath, sizeof(fullpath), "%s?%s", objectkey, qs);
+    //LOG("fullpath: %s", fullpath);
 
     char strs[3][1000];
     char *headers[8];
@@ -509,6 +509,7 @@ void writer_s3_request(char *method, char *path, char *qs, unsigned char *data, 
 
     inprogress++;
     moloch_http_send(s3Server, method, fullpath, strlen(fullpath), (char*)data, len, headers, FALSE, cb, uw);
+    g_checksum_free(checksum);
 }
 /******************************************************************************/
 /* Make a new encryption full block/frame.
@@ -994,7 +995,6 @@ void writer_s3_init(char *UNUSED(name))
     moloch_http_set_print_errors(s3Server);
     moloch_http_set_header_cb(s3Server, writer_s3_header_cb);
 
-    checksum = g_checksum_new(G_CHECKSUM_SHA256);
     DLL_INIT(fs3_, &fileQ);
 }
 /******************************************************************************/
