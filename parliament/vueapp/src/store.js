@@ -5,6 +5,7 @@ Vue.use(Vuex);
 
 const store = new Vuex.Store({
   state: {
+    theme: 'light',
     isUser: false,
     isAdmin: false,
     hasAuth: false,
@@ -14,6 +15,9 @@ const store = new Vuex.Store({
     refreshInterval: 15000
   },
   mutations: {
+    setTheme (state, value) {
+      state.theme = value;
+    },
     setIsUser (state, value) {
       state.isUser = value;
     },

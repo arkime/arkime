@@ -212,6 +212,8 @@ export default {
         document.body.classList = [];
       }
     }
+
+    this.$store.commit('setTheme', this.theme);
   },
   methods: {
     /* page functions -------------------------------------------------------- */
@@ -260,6 +262,7 @@ export default {
       }
 
       localStorage.setItem('parliamentTheme', this.theme);
+      this.$store.commit('setTheme', this.theme);
     }
   }
 };
