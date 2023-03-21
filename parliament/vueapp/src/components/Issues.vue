@@ -135,8 +135,23 @@
       </div>
     </div> <!-- /search & paging -->
 
+    <!-- table loading -->
+    <b-overlay
+      no-wrap
+      opacity=".8"
+      rounded="lg"
+      :show="loading"
+      :variant="theme"
+      class="issues-loading">
+      <template #overlay>
+        <div class="text-center">
+          <span class="fa fa-spin fa-circle-o-notch fa-2x"></span>
+          <h4>Loading issues...</h4>
+        </div>
+      </template>
+    </b-overlay> <!-- /table loading -->
+
     <!-- issues table -->
-    <!-- note: need position relative for loading overlay -->
     <table
       style="position:relative"
       v-if="issues && issues.length"
@@ -313,14 +328,6 @@
           </th>
         </tr>
       </thead>
-
-      <!-- table loading -->
-      <b-overlay
-        no-wrap
-        opacity=".5"
-        :show="loading"
-        :variant="theme">
-      </b-overlay> <!-- /table loading -->
 
       <transition-group name="list" tag="tbody">
         <template v-for="(issue, index) of issues">
@@ -802,6 +809,15 @@ select.page-select {
   margin-left: -6px;
   border-radius: 0 var(--px-sm) var(--px-sm) 0;
   background-color: #FFFFFF;
+}
+
+/* loading overlay */
+.issues-loading {
+  width: 400px;
+  height: 200px;
+  border-radius: 4px;
+  top: 30% !important;
+  left: calc(50% - 200px) !important;
 }
 
 /* button animation */
