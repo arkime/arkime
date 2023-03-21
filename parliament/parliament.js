@@ -1798,8 +1798,29 @@ router.get('/issues', (req, res, next) => {
   // filter out provisional issues
   issuesClone = issuesClone.filter((issue) => !issue.provisional);
 
-  if (req.query.hideIgnored) {
+  // filter ack'd issues
+  if (req.query.hideAckd === 'true') {
+    issuesClone = issuesClone.filter((issue) => !issue.acknowledged);
+  }
+  // filter ignored issues
+  if (req.query.hideIgnored === 'true') {
     issuesClone = issuesClone.filter((issue) => !issue.ignoreUntil);
+  }
+  // filter issues by type
+  if (req.query.hideEsRed === 'true') {
+    issuesClone = issuesClone.filter((issue) => issue.type !== 'esRed');
+  }
+  if (req.query.hideEsDown === 'true') {
+    issuesClone = issuesClone.filter((issue) => issue.type !== 'esDown');
+  }
+  if (req.query.hideEsDropped === 'true') {
+    issuesClone = issuesClone.filter((issue) => issue.type !== 'esDropped');
+  }
+  if (req.query.hideOutOfDate === 'true') {
+    issuesClone = issuesClone.filter((issue) => issue.type !== 'outOfDate');
+  }
+  if (req.query.hideNoPackets === 'true') {
+    issuesClone = issuesClone.filter((issue) => issue.type !== 'noPackets');
   }
 
   if (req.query.filter) { // simple search for issues
