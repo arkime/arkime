@@ -16,112 +16,130 @@
     </div> <!-- /page error -->
 
     <!-- search & paging -->
-    <div>
-      <!-- page size -->
-      <select number
-        class="form-control page-select"
-        v-model="query.length"
-        @change="updatePaging">
-        <option value="10">
-          10 per page
-        </option>
-        <option value="50">
-          50 per page
-        </option>
-        <option value="100">
-          100 per page
-        </option>
-        <option value="200">
-          200 per page
-        </option>
-        <option value="500">
-          500 per page
-        </option>
-        <option value="1000">
-          1000 per page
-        </option>
-      </select> <!-- /page size -->
-      <!-- paging -->
-      <b-pagination size="sm"
-        v-model="currentPage"
-        :limit="5"
-        hide-ellipsis
-        :total-rows="recordsFiltered"
-        :per-page="parseInt(query.length)"
-        @input="updatePaging">
-      </b-pagination> <!-- paging -->
-      <!-- page info -->
-      <div class="pagination-info"
-        v-b-tooltip.hover>
-        Showing
-        <span v-if="recordsFiltered">
-          {{ start + 1 }}
-        </span>
-        <span v-else>
-          {{ start }}
-        </span>
-        <span v-if="recordsFiltered">
-          - {{ Math.min((start + query.length), recordsFiltered) }}
-        </span>
-        of {{ recordsFiltered }} entries
-      </div>
-      <!-- /page info -->
-      <template v-if="isUser">
-        <!-- remove/cancel all issues button -->
-        <button v-if="loggedIn && issues && issues.length"
-          class="btn btn-outline-danger btn-sm cursor-pointer"
-          v-b-tooltip.hover.bottom
-          title="Remove ALL acknowledged issues across the ENTIRE Parliament"
-          @click="removeAllAcknowledgedIssues">
-          <span class="fa fa-trash fa-fw">
+    <div class="d-flex align-items-center mb-1">
+      <div>
+        <!-- page size -->
+        <select number
+          class="form-control page-select"
+          v-model="query.length"
+          @change="updatePaging">
+          <option value="10">
+            10 per page
+          </option>
+          <option value="50">
+            50 per page
+          </option>
+          <option value="100">
+            100 per page
+          </option>
+          <option value="200">
+            200 per page
+          </option>
+          <option value="500">
+            500 per page
+          </option>
+          <option value="1000">
+            1000 per page
+          </option>
+        </select> <!-- /page size -->
+        <!-- paging -->
+        <b-pagination
+          size="sm"
+          :limit="5"
+          hide-ellipsis
+          @input="updatePaging"
+          v-model="currentPage"
+          :total-rows="recordsFiltered"
+          :per-page="parseInt(query.length)">
+        </b-pagination> <!-- paging -->
+        <!-- page info -->
+        <div class="pagination-info"
+          v-b-tooltip.hover>
+          Showing
+          <span v-if="recordsFiltered">
+            {{ start + 1 }}
           </span>
-          <transition name="visibility">
-            <span v-if="removeAllAcknowledgedIssuesConfirm">
-              Click to confirm
-            </span>
-          </transition>
-        </button>
-        <transition name="slide-fade">
-          <button class="btn btn-outline-warning btn-sm cursor-pointer"
-            v-if="isUser && loggedIn && issues && issues.length && removeAllAcknowledgedIssuesConfirm"
-            v-b-tooltip.hover.bottom
-            title="Cancel removing ALL acknowledged issues"
-            @click="cancelRemoveAllAcknowledgedIssues">
-            <span class="fa fa-ban fa-fw">
-            </span>&nbsp;
-            Cancel
-          </button>
-        </transition>
-        <!-- /remove/cancel all issues button -->
-      </template>
-      <!-- search -->
-      <div class="input-group input-group-sm pull-right issue-search">
-        <div class="input-group-prepend">
-          <span class="input-group-text input-group-text-fw">
-            <span class="fa fa-search fa-fw">
-            </span>
+          <span v-else>
+            {{ start }}
           </span>
+          <span v-if="recordsFiltered">
+            - {{ Math.min((start + query.length), recordsFiltered) }}
+          </span>
+          of {{ recordsFiltered }} entries
         </div>
-        <input type="text"
-          class="form-control"
-          v-model="searchTerm"
-          @input="debounceSearchInput"
-          @keyup.enter="debounceSearchInput"
-          placeholder="Begin typing to search for issues"
-        />
-        <span class="input-group-append">
-          <button type="button"
-            @click="clear"
-            class="btn btn-outline-secondary">
-            <span class="fa fa-close">
+        <!-- /page info -->
+        <template v-if="isUser">
+          <!-- remove/cancel all issues button -->
+          <button v-if="loggedIn && issues && issues.length"
+            class="btn btn-outline-danger btn-sm cursor-pointer"
+            v-b-tooltip.hover.bottom
+            title="Remove ALL acknowledged issues across the ENTIRE Parliament"
+            @click="removeAllAcknowledgedIssues">
+            <span class="fa fa-trash fa-fw">
             </span>
+            <transition name="visibility">
+              <span v-if="removeAllAcknowledgedIssuesConfirm">
+                Click to confirm
+              </span>
+            </transition>
           </button>
-        </span>
-      </div> <!-- /search -->
+          <transition name="slide-fade">
+            <button class="btn btn-outline-warning btn-sm cursor-pointer"
+              v-if="isUser && loggedIn && issues && issues.length && removeAllAcknowledgedIssuesConfirm"
+              v-b-tooltip.hover.bottom
+              title="Cancel removing ALL acknowledged issues"
+              @click="cancelRemoveAllAcknowledgedIssues">
+              <span class="fa fa-ban fa-fw">
+              </span>&nbsp;
+              Cancel
+            </button>
+          </transition>
+          <!-- /remove/cancel all issues button -->
+        </template>
+      </div>
+      <b-btn
+        size="sm"
+        class="ml-1"
+        v-b-tooltip.hover
+        @click="toggleFilterIgnored"
+        :variant="filterIgnored ? 'secondary' : 'outline-secondary'"
+        :title="filterIgnored ? 'Click to include ignored issues' : 'Click to remove ignored issues'">
+        <span class="fa fa-filter"></span>
+      </b-btn>
+      <div class="flex-grow-1 ml-1">
+        <!-- search -->
+        <div class="input-group input-group-sm">
+          <div class="input-group-prepend">
+            <span class="input-group-text input-group-text-fw">
+              <span class="fa fa-search fa-fw">
+              </span>
+            </span>
+          </div>
+          <input type="text"
+            class="form-control"
+            v-model="searchTerm"
+            @input="debounceSearchInput"
+            @keyup.enter="debounceSearchInput"
+            placeholder="Begin typing to search for issues"
+          />
+          <span class="input-group-append">
+            <button
+              type="button"
+              @click="clear"
+              class="btn btn-outline-secondary">
+              <span class="fa fa-close">
+              </span>
+            </button>
+          </span>
+        </div> <!-- /search -->
+      </div>
     </div> <!-- /search & paging -->
 
     <!-- issues table -->
-    <table v-if="issues && issues.length"
+    <!-- note: need position relative for loading overlay -->
+    <table
+      style="position:relative"
+      v-if="issues && issues.length"
       class="table table-hover table-sm">
       <thead>
         <tr>
@@ -295,14 +313,24 @@
           </th>
         </tr>
       </thead>
-      <tbody>
-        <template v-for="issue of issues">
+
+      <!-- table loading -->
+      <b-overlay
+        no-wrap
+        opacity=".5"
+        :show="loading"
+        :variant="theme">
+      </b-overlay> <!-- /table loading -->
+
+      <transition-group name="list" tag="tbody">
+        <template v-for="(issue, index) of issues">
           <tr :key="getIssueTrackingId(issue)"
             :class="getIssueRowClass(issue)">
             <td v-if="isUser && loggedIn">
-              <input type="checkbox"
+              <input
+                type="checkbox"
                 v-model="issue.selected"
-                @change="toggleIssue(issue)"
+                @change="toggleIssue(issue, index)"
               />
             </td>
             <td>
@@ -344,7 +372,7 @@
             </td>
           </tr>
         </template>
-      </tbody>
+      </transition-group>
     </table> <!-- /issues table -->
 
     <!-- no issues -->
@@ -376,6 +404,7 @@ import IssueActions from './IssueActions';
 
 let interval;
 let searchInputTimeout;
+let lastChecked = -1;
 
 export default {
   name: 'Issues',
@@ -398,11 +427,27 @@ export default {
       recordsFiltered: 0,
       // searching
       searchTerm: undefined,
+      filterIgnored: false,
       // remove ALL ack issues confirm (double click)
-      removeAllAcknowledgedIssuesConfirm: false
+      removeAllAcknowledgedIssuesConfirm: false,
+      // shift hold for issue multiselect
+      shiftHold: false
     };
   },
+  mounted () {
+    this.startAutoRefresh();
+    this.loadData();
+
+    // watch for shift key for multiselecting issues
+    window.addEventListener('keyup', this.watchForShiftUp);
+    window.addEventListener('keydown', this.watchForShiftDown);
+    // if the user focus is not in the web page, remove shift hold
+    window.addEventListener('blur', this.onBlur);
+  },
   computed: {
+    theme () {
+      return this.$store.state.theme;
+    },
     isUser: function () {
       return this.$store.state.isUser;
     },
@@ -443,12 +488,12 @@ export default {
       newVal ? this.stopAutoRefresh() : this.startAutoRefresh();
     }
   },
-  mounted: function () {
-    this.startAutoRefresh();
-    this.loadData();
-  },
   methods: {
     /* page functions ------------------------------------------------------ */
+    toggleFilterIgnored () {
+      this.filterIgnored = !this.filterIgnored;
+      this.loadData();
+    },
     issueChange: function (changeEvent) {
       this.error = changeEvent.success ? '' : changeEvent.message;
 
@@ -528,7 +573,26 @@ export default {
           this.error = error.text || `Unable to remove ${selectedIssues.length} issues`;
         });
     },
-    toggleIssue: function (issue) {
+    toggleIssue (issue, index) {
+      let begin = lastChecked;
+      let end = index;
+
+      // shift click (un)selects multiple issues
+      if (this.shiftHold && lastChecked > -1) {
+        const selected = issue.selected;
+
+        if (lastChecked > index) { // reverse
+          end = lastChecked;
+          begin = index;
+        }
+
+        for (let i = begin; i < end; i++) {
+          this.$set(this.issues[i], 'selected', selected);
+        }
+      }
+
+      lastChecked = index;
+
       // determine if at least one issue has been selected
       if (issue.selected) {
         this.atLeastOneIssueSelected = true;
@@ -620,6 +684,7 @@ export default {
       if (searchInputTimeout) { clearTimeout(searchInputTimeout); }
       // debounce the input so it only issues a request after keyups cease for 400ms
       searchInputTimeout = setTimeout(() => {
+        clearTimeout(searchInputTimeout);
         searchInputTimeout = null;
         this.loadData();
       }, 400);
@@ -630,6 +695,9 @@ export default {
     },
     /* helper functions ---------------------------------------------------- */
     loadData: function () {
+      this.error = '';
+      this.loading = true;
+
       const query = { // set up query parameters (order, sort, paging)
         start: this.start,
         length: this.query.length
@@ -642,6 +710,10 @@ export default {
 
       if (this.searchTerm) {
         query.filter = this.searchTerm;
+      }
+
+      if (this.filterIgnored) {
+        query.hideIgnored = true;
       }
 
       ParliamentService.getIssues(query)
@@ -675,16 +747,34 @@ export default {
       }
 
       return selectedIssues;
+    },
+    onBlur () {
+      this.shiftHold = false;
+    },
+    watchForShiftUp (e) {
+      if (e.key === 'Shift') { // shift
+        this.shiftHold = false;
+        return;
+      }
+    },
+    watchForShiftDown (e) {
+      if (e.key === 'Shift') { // shift
+        this.shiftHold = true;
+      }
     }
   },
   beforeDestroy: function () {
     this.stopAutoRefresh();
+    window.removeEventListener('blur', this.onBlur);
+    window.removeEventListener('keyup', this.watchForShiftUp);
+    window.removeEventListener('keydown', this.watchForShiftDown);
   }
 };
 </script>
 
 <style scoped>
 .pagination {
+  margin-bottom: 0px;
   display: inline-flex;
 }
 
@@ -714,12 +804,6 @@ select.page-select {
   background-color: #FFFFFF;
 }
 
-.input-group.issue-search {
-  flex-wrap: none;
-  width: auto;
-  min-width: 40%;
-}
-
 /* button animation */
 .slide-fade-enter-active {
   transition: all .5s ease;
@@ -739,5 +823,17 @@ select.page-select {
 }
 .visibility-enter, .visibility-leave-to {
   opacity: 0;
+}
+
+/* issues table animation */
+.list-enter-active, .list-leave-active {
+  transition: all .5s;
+}
+.list-enter, .list-leave-to {
+  opacity: 0;
+  transform: translateX(30px);
+}
+.list-move {
+  transition: transform 1s;
 }
 </style>

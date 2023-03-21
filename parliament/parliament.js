@@ -1798,6 +1798,10 @@ router.get('/issues', (req, res, next) => {
   // filter out provisional issues
   issuesClone = issuesClone.filter((issue) => !issue.provisional);
 
+  if (req.query.hideIgnored) {
+    issuesClone = issuesClone.filter((issue) => !issue.ignoreUntil);
+  }
+
   if (req.query.filter) { // simple search for issues
     const searchTerm = req.query.filter.toLowerCase();
     issuesClone = issuesClone.filter((issue) => {
