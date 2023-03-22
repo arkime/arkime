@@ -1795,45 +1795,51 @@ router.put('/groups/:groupId/clusters/:clusterId', [isAdmin, checkCookieToken], 
 router.get('/issues', (req, res, next) => {
   let issuesClone = JSON.parse(JSON.stringify(issues));
 
-  // filter out provisional issues
-  issuesClone = issuesClone.filter((issue) => !issue.provisional);
+  issuesClone = issuesClone.filter((issue) => {
+    // always filter out provisional issues
+    if (issue.provisional) { return false; }
 
-  // filter ack'd issues
-  if (req.query.hideAckd === 'true') {
-    issuesClone = issuesClone.filter((issue) => !issue.acknowledged);
-  }
-  // filter ignored issues
-  if (req.query.hideIgnored === 'true') {
-    issuesClone = issuesClone.filter((issue) => !issue.ignoreUntil);
-  }
-  // filter issues by type
-  if (req.query.hideEsRed === 'true') {
-    issuesClone = issuesClone.filter((issue) => issue.type !== 'esRed');
-  }
-  if (req.query.hideEsDown === 'true') {
-    issuesClone = issuesClone.filter((issue) => issue.type !== 'esDown');
-  }
-  if (req.query.hideEsDropped === 'true') {
-    issuesClone = issuesClone.filter((issue) => issue.type !== 'esDropped');
-  }
-  if (req.query.hideOutOfDate === 'true') {
-    issuesClone = issuesClone.filter((issue) => issue.type !== 'outOfDate');
-  }
-  if (req.query.hideNoPackets === 'true') {
-    issuesClone = issuesClone.filter((issue) => issue.type !== 'noPackets');
-  }
+    // filter ack'd issues
+    if (req.query.hideAckd && req.query.hideAckd === 'true' && issue.acknowledged) {
+      return false;
+    }
 
-  if (req.query.filter) { // simple search for issues
-    const searchTerm = req.query.filter.toLowerCase();
-    issuesClone = issuesClone.filter((issue) => {
+    // filter ignored issues
+    if (req.query.hideIgnored && req.query.hideIgnored === 'true' && issue.ignoreUntil) {
+      return false;
+    }
+
+    // filter issues by type
+    if (req.query.hideEsRed && req.query.hideEsRed === 'true' && issue.type === 'esRed') {
+      return false;
+    }
+    if (req.query.hideEsDown && req.query.hideEsDown === 'true' && issue.type === 'esDown') {
+      return false;
+    }
+    if (req.query.hideEsDropped && req.query.hideEsDropped === 'true' && issue.type === 'esDropped') {
+      return false;
+    }
+    if (req.query.hideOutOfDate && req.query.hideOutOfDate === 'true' && issue.type === 'outOfDate') {
+      return false;
+    }
+    if (req.query.hideNoPackets && req.query.hideNoPackets === 'true' && issue.type === 'noPackets') {
+      return false;
+    }
+
+    // filter by search term
+    if (req.query.filter) {
+      const searchTerm = req.query.filter.toLowerCase();
       return issue.severity.toLowerCase().includes(searchTerm) ||
-        (issue.node && issue.node.toLowerCase().includes(searchTerm)) ||
-        issue.cluster.toLowerCase().includes(searchTerm) ||
-        issue.message.toLowerCase().includes(searchTerm) ||
-        issue.title.toLowerCase().includes(searchTerm) ||
-        issue.text.toLowerCase().includes(searchTerm);
-    });
-  }
+          (issue.node && issue.node.toLowerCase().includes(searchTerm)) ||
+          issue.cluster.toLowerCase().includes(searchTerm) ||
+          issue.message.toLowerCase().includes(searchTerm) ||
+          issue.title.toLowerCase().includes(searchTerm) ||
+          issue.text.toLowerCase().includes(searchTerm);
+    }
+
+    // we got past all the filters! include this issue in the results
+    return true;
+  });
 
   let type = 'string';
   const sortBy = req.query.sort;

@@ -109,37 +109,37 @@
         </template>
         <b-dropdown-item
           :active="!filterIgnored"
-          @click="toggleFilter('filterIgnored')">
+          @click.native.capture.stop.prevent="toggleFilter('filterIgnored')">
           Ignored Issues
         </b-dropdown-item>
         <b-dropdown-item
           :active="!filterAckd"
-          @click="toggleFilter('filterAckd')">
+          @click.native.capture.stop.prevent="toggleFilter('filterAckd')">
           Acknowledged Issues
         </b-dropdown-item>
         <b-dropdown-item
           :active="!filterEsRed"
-          @click="toggleFilter('filterEsRed')">
+          @click.native.capture.stop.prevent="toggleFilter('filterEsRed')">
           ES Red Issues
         </b-dropdown-item>
         <b-dropdown-item
           :active="!filterEsDown"
-          @click="toggleFilter('filterEsDown')">
+          @click.native.capture.stop.prevent="toggleFilter('filterEsDown')">
           ES Down Issues
         </b-dropdown-item>
         <b-dropdown-item
           :active="!filterEsDropped"
-          @click="toggleFilter('filterEsDropped')">
+          @click.native.capture.stop.prevent="toggleFilter('filterEsDropped')">
           ES Dropped Issues
         </b-dropdown-item>
         <b-dropdown-item
           :active="!filterOutOfDate"
-          @click="toggleFilter('filterOutOfDate')">
+          @click.native.capture.stop.prevent="toggleFilter('filterOutOfDate')">
           Out of Date Issues
         </b-dropdown-item>
         <b-dropdown-item
           :active="!filterNoPackets"
-          @click="toggleFilter('filterNoPackets')">
+          @click.native.capture.stop.prevent="toggleFilter('filterNoPackets')">
           No Packets Issues
         </b-dropdown-item>
       </b-dropdown>
