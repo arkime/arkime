@@ -2,17 +2,20 @@
 
   <div class="container-fluid">
     <!-- page error -->
-    <div v-if="error"
-      class="alert alert-danger">
-      <span class="fa fa-exclamation-triangle">
-      </span>&nbsp;
+    <b-alert
+      :show="!!error"
+      variant="danger"
+      style="z-index: 2000;"
+      class="position-fixed fixed-bottom m-0 rounded-0">
+      <span class="fa fa-exclamation-triangle mr-2"></span>
       {{ error }}
-      <button type="button"
-        class="close cursor-pointer"
-        @click="error = false">
+      <button
+        type="button"
+        @click="error = false"
+        class="close cursor-pointer">
         <span>&times;</span>
       </button>
-    </div> <!-- /page error -->
+    </b-alert> <!-- /page error -->
 
     <!-- search & create group -->
     <div class="row">

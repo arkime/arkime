@@ -97,15 +97,52 @@
           <!-- /remove/cancel all issues button -->
         </template>
       </div>
-      <b-btn
+      <b-dropdown
+        no-caret
         size="sm"
         class="ml-1"
         v-b-tooltip.hover
-        @click="toggleFilterIgnored"
-        :variant="filterIgnored ? 'secondary' : 'outline-secondary'"
-        :title="filterIgnored ? 'Click to include ignored issues' : 'Click to remove ignored issues'">
-        <span class="fa fa-filter"></span>
-      </b-btn>
+        variant="secondary"
+        title="Filter issues">
+        <template #button-content>
+          <span class="fa fa-filter fa-fw"></span>
+        </template>
+        <b-dropdown-item
+          :active="!filterIgnored"
+          @click.native.capture.stop.prevent="toggleFilter('filterIgnored')">
+          Ignored Issues
+        </b-dropdown-item>
+        <b-dropdown-item
+          :active="!filterAckd"
+          @click.native.capture.stop.prevent="toggleFilter('filterAckd')">
+          Acknowledged Issues
+        </b-dropdown-item>
+        <b-dropdown-item
+          :active="!filterEsRed"
+          @click.native.capture.stop.prevent="toggleFilter('filterEsRed')">
+          ES Red Issues
+        </b-dropdown-item>
+        <b-dropdown-item
+          :active="!filterEsDown"
+          @click.native.capture.stop.prevent="toggleFilter('filterEsDown')">
+          ES Down Issues
+        </b-dropdown-item>
+        <b-dropdown-item
+          :active="!filterEsDropped"
+          @click.native.capture.stop.prevent="toggleFilter('filterEsDropped')">
+          ES Dropped Issues
+        </b-dropdown-item>
+        <b-dropdown-item
+          :active="!filterOutOfDate"
+          @click.native.capture.stop.prevent="toggleFilter('filterOutOfDate')">
+          Out of Date Issues
+        </b-dropdown-item>
+        <b-dropdown-item
+          :active="!filterNoPackets"
+          @click.native.capture.stop.prevent="toggleFilter('filterNoPackets')">
+          No Packets Issues
+        </b-dropdown-item>
+      </b-dropdown>
       <div class="flex-grow-1 ml-1">
         <!-- search -->
         <div class="input-group input-group-sm">
@@ -387,7 +424,7 @@
       <hr>
       <div class="info-area vertical-center text-center">
         <div class="text-muted mt-5">
-          <span v-if="!searchTerm">
+          <span v-if="!searchTerm && !filterIgnored && !filterAckd && !filterEsRed && !filterEsDown && !filterEsDropped && !filterOutOfDate && !filterNoPackets">
             <span class="fa fa-3x fa-smile-o text-muted-more">
             </span>
             No issues in your Parliament
@@ -395,7 +432,7 @@
           <span v-else>
             <span class="fa fa-3x fa-folder-open-o text-muted-more">
             </span>
-            No issues match your search
+            No issues match your search and filters
           </span>
         </div>
       </div>
@@ -435,6 +472,12 @@ export default {
       // searching
       searchTerm: undefined,
       filterIgnored: false,
+      filterAckd: false,
+      filterEsRed: false,
+      filterEsDown: false,
+      filterEsDropped: false,
+      filterOutOfDate: false,
+      filterNoPackets: false,
       // remove ALL ack issues confirm (double click)
       removeAllAcknowledgedIssuesConfirm: false,
       // shift hold for issue multiselect
@@ -497,8 +540,8 @@ export default {
   },
   methods: {
     /* page functions ------------------------------------------------------ */
-    toggleFilterIgnored () {
-      this.filterIgnored = !this.filterIgnored;
+    toggleFilter (key) {
+      this[key] = !this[key];
       this.loadData();
     },
     issueChange: function (changeEvent) {
@@ -705,9 +748,15 @@ export default {
       this.error = '';
       this.loading = true;
 
-      const query = { // set up query parameters (order, sort, paging)
+      const query = { // set up query parameters (order, sort, paging, filters)
         start: this.start,
-        length: this.query.length
+        length: this.query.length,
+        hideAckd: this.filterAckd,
+        hideEsRed: this.filterEsRed,
+        hideEsDown: this.filterEsDown,
+        hideIgnored: this.filterIgnored,
+        hideEsDropped: this.filterEsDropped,
+        hideNoPackets: this.filterNoPackets
       };
 
       if (this.query.sort) {
@@ -719,21 +768,15 @@ export default {
         query.filter = this.searchTerm;
       }
 
-      if (this.filterIgnored) {
-        query.hideIgnored = true;
-      }
-
-      ParliamentService.getIssues(query)
-        .then((data) => {
-          this.error = '';
-          this.loading = false;
-          this.issues = data.issues;
-          this.recordsFiltered = data.recordsFiltered;
-        })
-        .catch((error) => {
-          this.loading = false;
-          this.error = error.text || 'Error fetching issues. The issues below are likely out of date';
-        });
+      ParliamentService.getIssues(query).then((data) => {
+        this.error = '';
+        this.loading = false;
+        this.issues = data.issues;
+        this.recordsFiltered = data.recordsFiltered;
+      }).catch((error) => {
+        this.loading = false;
+        this.error = error.text || 'Error fetching issues. The issues below are likely out of date';
+      });
     },
     startAutoRefresh: function () {
       if (!this.refreshInterval) { return; }
