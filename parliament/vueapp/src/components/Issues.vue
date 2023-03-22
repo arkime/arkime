@@ -755,6 +755,7 @@ export default {
         hideEsRed: this.filterEsRed,
         hideEsDown: this.filterEsDown,
         hideIgnored: this.filterIgnored,
+        hideOutOfDate: this.filterOutOfDate,
         hideEsDropped: this.filterEsDropped,
         hideNoPackets: this.filterNoPackets
       };
