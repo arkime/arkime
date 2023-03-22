@@ -2030,6 +2030,11 @@ table.sessions-table.sticky-header > tbody > tr {
   display: table;
   table-layout: fixed;
 }
+/* need this when reloading the page with sticky headers */
+table.sessions-table.sticky-header > tbody {
+  display: block;
+  margin-top: 53px;
+}
 
 /* table column headers -------------------- */
 .moloch-col-header {

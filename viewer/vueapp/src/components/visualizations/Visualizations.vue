@@ -1396,7 +1396,7 @@ export default {
   padding-bottom: 0px;
 }
 .hide-viz.sticky-viz .viz-container {
-  z-index: 5;
+  z-index: 4;
   overflow: visible;
   box-shadow: none !important;
   background-color: transparent;
