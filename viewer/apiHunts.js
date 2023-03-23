@@ -884,8 +884,9 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
 
     Promise.all([
       Db.searchHunt(query),
-      Db.countHunts()
-    ]).then(([{ body: { hits: hunts } }, { body: { count: total } }]) => {
+      Db.countHunts(),
+      Db.getQueriesNode()
+    ]).then(([{ body: { hits: hunts } }, { body: { count: total } }, nodeInfo]) => {
       let runningJob;
 
       const results = { total: hunts.total, results: [] };
@@ -923,7 +924,8 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
         recordsTotal: total,
         recordsFiltered: results.total,
         data: results.results,
-        runningJob
+        runningJob,
+        nodeInfo
       });
     }).catch(err => {
       console.log(`ERROR - ${req.method} /api/hunts`, util.inspect(err, false, 50));

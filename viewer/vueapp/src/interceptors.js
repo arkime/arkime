@@ -28,7 +28,7 @@ export default function setup () {
         reject(error);
       }
 
-      reject(error.response.data);
+      reject({ ...error.response.data, status: error.response.status });
     });
   });
 }
