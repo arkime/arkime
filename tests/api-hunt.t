@@ -17,6 +17,7 @@ my $json;
 
 # Make sure no hunts
   my $hunts = viewerGet("/hunt/list?all");
+  delete $hunts->{nodeInfo};
   eq_or_diff($hunts, from_json('{"recordsTotal": 0, "data": [], "recordsFiltered": 0}'));
 
 # Create huntuser
@@ -92,6 +93,7 @@ my $hToken = getTokenCookie('huntuser');
 
 # Make sure no hunts
   my $hunts = viewerGet("/api/hunts?all");
+  delete $hunts->{nodeInfo};
   eq_or_diff($hunts, from_json('{"recordsTotal": 0, "data": [], "recordsFiltered": 0}'));
 
 ##### GOOD
