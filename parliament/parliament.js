@@ -1236,6 +1236,10 @@ router.put('/auth/commonauth', [checkAuthUpdate], (req, res, next) => {
     return next(newError(403, 'Your Parliament is in dasboard only mode. You cannot setup auth.'));
   }
 
+  if (!req.body.commonAuth || typeof req.body.commonAuth !== 'object' || req.body.commonAuth === null) {
+    return next(newError(422, 'Missing auth settings'));
+  }
+
   // Go thru the secret fields and if the save still has ******** that means the user didn't change, so save what we have
   for (const s of ['passwordSecret', 'usersElasticsearchAPIKey', 'usersElasticsearchBasicAuth']) {
     if (req.body.commonAuth[s] === '********') {
@@ -1246,16 +1250,13 @@ router.put('/auth/commonauth', [checkAuthUpdate], (req, res, next) => {
   for (const s in req.body.commonAuth) {
     let setting = req.body.commonAuth[s];
 
-    if (!ArkimeUtil.isString(setting)) {
-      continue;
-    }
-
     if (setting === '') {
       setting = undefined;
     }
     if (!parliament.settings.commonAuth) {
       parliament.settings.commonAuth = {};
     }
+
     parliament.settings.commonAuth[s] = setting;
   }
 
