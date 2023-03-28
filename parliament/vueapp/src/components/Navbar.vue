@@ -98,7 +98,7 @@
           </div>
         </span> <!-- /refresh interval select -->
         <!-- password input -->
-        <template v-if="!commonAuth">
+        <template v-if="!commonAuth && isUser">
           <form>
             <input type="text"
               name="username"
@@ -167,6 +167,9 @@ export default {
   },
   computed: {
     // auth vars
+    isUser: function () {
+      return this.$store.state.isUser;
+    },
     isAdmin: function () {
       return this.$store.state.isAdmin;
     },

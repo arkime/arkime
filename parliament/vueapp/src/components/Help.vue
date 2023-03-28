@@ -72,8 +72,8 @@
             The Parliament dashboard includes links, ES health, and issues for each Arkime cluster.
           </p>
           <p>
-            The dashboard page allows users to view and interact with the Molochs in your Parliament.
-            You can search for Molochs in your Parliament, change the data refresh time
+            The dashboard page allows users to view and interact with the Arkimes in your Parliament.
+            You can search for Arkimes in your Parliament, change the data refresh time
             (15 seconds is the default),
             and hover over issues and ES health statuses for more information.
           </p>

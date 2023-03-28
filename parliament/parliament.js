@@ -440,28 +440,32 @@ function checkAuthUpdate (req, res, next) {
 
 function isUser (req, res, next) {
   if (!parliament.authMode) { return verifyToken(req, res, next); }
+
   Auth.doAuth(req, res, () => {
     if (req.user.hasRole('parliamentUser')) {
       return next();
     }
+
     res.status(403).json({
       tokenError: true,
       success: false,
-      text: 'Permission Denied: Not a user'
+      text: 'Permission Denied: Not a Parliament user'
     });
   });
 }
 
 function isAdmin (req, res, next) {
   if (!parliament.authMode) { return verifyToken(req, res, next); }
+
   Auth.doAuth(req, res, () => {
     if (req.user.hasRole('parliamentAdmin')) {
       return next();
     }
+
     res.status(403).json({
       tokenError: true,
       success: false,
-      text: 'Permission Denied: Not an admin'
+      text: 'Permission Denied: Not a Parliament admin'
     });
   });
 }
@@ -1232,10 +1236,6 @@ router.put('/auth/commonauth', [checkAuthUpdate], (req, res, next) => {
     return next(newError(403, 'Your Parliament is in dasboard only mode. You cannot setup auth.'));
   }
 
-  if (!ArkimeUtil.isString(req.body.commonAuth)) {
-    return next(newError(422, 'Missing auth settings'));
-  }
-
   // Go thru the secret fields and if the save still has ******** that means the user didn't change, so save what we have
   for (const s of ['passwordSecret', 'usersElasticsearchAPIKey', 'usersElasticsearchBasicAuth']) {
     if (req.body.commonAuth[s] === '********') {
@@ -1245,6 +1245,11 @@ router.put('/auth/commonauth', [checkAuthUpdate], (req, res, next) => {
 
   for (const s in req.body.commonAuth) {
     let setting = req.body.commonAuth[s];
+
+    if (!ArkimeUtil.isString(setting)) {
+      continue;
+    }
+
     if (setting === '') {
       setting = undefined;
     }
