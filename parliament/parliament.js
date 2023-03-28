@@ -1236,7 +1236,8 @@ router.put('/auth/commonauth', [checkAuthUpdate], (req, res, next) => {
     return next(newError(403, 'Your Parliament is in dasboard only mode. You cannot setup auth.'));
   }
 
-  if (!req.body.commonAuth || typeof req.body.commonAuth !== 'object' || req.body.commonAuth === null) {
+  // if (!req.body.commonAuth || typeof req.body.commonAuth !== 'object' || req.body.commonAuth === null) {
+  if (!ArkimeUtil.isObject(req.body.commonAuth)) {
     return next(newError(422, 'Missing auth settings'));
   }
 
@@ -1248,11 +1249,12 @@ router.put('/auth/commonauth', [checkAuthUpdate], (req, res, next) => {
   }
 
   for (const s in req.body.commonAuth) {
-    let setting = req.body.commonAuth[s];
+    const setting = req.body.commonAuth[s];
 
-    if (setting === '') {
-      setting = undefined;
+    if (!ArkimeUtil.isString(setting)) {
+      continue;
     }
+
     if (!parliament.settings.commonAuth) {
       parliament.settings.commonAuth = {};
     }

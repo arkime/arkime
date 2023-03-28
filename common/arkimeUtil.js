@@ -98,6 +98,14 @@ class ArkimeUtil {
 
   // ----------------------------------------------------------------------------
   /**
+   * Is obj an object
+   */
+  static isObject (obj) {
+    return typeof obj === 'object' && obj !== null;
+  }
+
+  // ----------------------------------------------------------------------------
+  /**
    * Create a redis client from the provided url
    * @params {string} url - The redis url to connect to.
    * @params {string} section - The section this redis client is being created for
