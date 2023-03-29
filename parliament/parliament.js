@@ -244,16 +244,6 @@ let globalClusterId = 0;
 // was encounterd exceeds the noPacketsLength user setting)
 const noPacketsMap = {};
 
-// set up rate limiter: maximum of 30 requests per minute
-const RateLimit = require('express-rate-limit');
-const limiter = RateLimit({
-  windowMs: 60000, // 1 minute
-  max: 30
-});
-
-// apply rate limiter to all requests
-app.use(limiter);
-
 // super secret
 app.use(helmet.hidePoweredBy());
 app.use(helmet.xssFilter());

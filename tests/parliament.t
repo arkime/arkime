@@ -185,49 +185,49 @@ ok(exists $result->{issues});
 
 # non parliament user cannot update issues
 $result = parliamentPutToken2("/parliament/api/acknowledgeIssues", '{}', $arkimeUserToken);
-ok(!$result->{success});
+eq_or_diff($result, from_json('{"success": false, "tokenError": true, "text": "Permission Denied: Not a Parliament user"}'));
 $result = parliamentPutToken2("/parliament/api/ignoreIssues", '{}', $arkimeUserToken);
-ok(!$result->{success});
+eq_or_diff($result, from_json('{"success": false, "tokenError": true, "text": "Permission Denied: Not a Parliament user"}'));
 $result = parliamentPutToken2("/parliament/api/removeIgnoreIssues", '{}', $arkimeUserToken);
-ok(!$result->{success});
+eq_or_diff($result, from_json('{"success": false, "tokenError": true, "text": "Permission Denied: Not a Parliament user"}'));
 $result = parliamentPutToken2("/parliament/api/groups/0/clusters/0/removeIssue", '{}', $arkimeUserToken);
-ok(!$result->{success});
+eq_or_diff($result, from_json('{"success": false, "tokenError": true, "text": "Permission Denied: Not a Parliament user"}'));
 $result = parliamentPutToken2("/parliament/api/issues/removeAllAcknowledgedIssues", '{}', $arkimeUserToken);
-ok(!$result->{success});
+eq_or_diff($result, from_json('{"success": false, "tokenError": true, "text": "Permission Denied: Not a Parliament user"}'));
 $result = parliamentPutToken2("/parliament/api/removeSelectedAcknowledgedIssues", '{}', $arkimeUserToken);
-ok(!$result->{success});
+eq_or_diff($result, from_json('{"success": false, "tokenError": true, "text": "Permission Denied: Not a Parliament user"}'));
 
 # non parliamet user cannot access/udpate settings/parliament
 $result = parliamentGetToken2("/parliament/api/settings", $arkimeUserToken);
-ok(!$result->{success});
+eq_or_diff($result, from_json('{"success": false, "tokenError": true, "text": "Permission Denied: Not a Parliament admin"}'));
 $result = parliamentPutToken2("/parliament/api/settings", '{}', $arkimeUserToken);
-ok(!$result->{success});
+eq_or_diff($result, from_json('{"success": false, "tokenError": true, "text": "Permission Denied: Not a Parliament admin"}'));
 $result = parliamentPutToken2("/parliament/api/settings/restoreDefaults", '{}', $arkimeUserToken);
-ok(!$result->{success});
+eq_or_diff($result, from_json('{"success": false, "tokenError": true, "text": "Permission Denied: Not a Parliament admin"}'));
 $result = parliamentGetToken2("/parliament/api/notifierTypes", $arkimeUserToken);
-ok(!$result->{success});
+eq_or_diff($result, from_json('{"success": false, "tokenError": true, "text": "Permission Denied: Not a Parliament admin"}'));
 $result = parliamentPutToken2("/parliament/api/notifiers/test", '{}', $arkimeUserToken);
-ok(!$result->{success});
+eq_or_diff($result, from_json('{"success": false, "tokenError": true, "text": "Permission Denied: Not a Parliament admin"}'));
 $result = parliamentPostToken2("/parliament/api/notifiers", '{}', $arkimeUserToken);
-ok(!$result->{success});
+eq_or_diff($result, from_json('{"success": false, "tokenError": true, "text": "Permission Denied: Not a Parliament admin"}'));
 $result = parliamentDeleteToken2("/parliament/api/notifiers/test", $arkimeUserToken);
-ok(!$result->{success});
+eq_or_diff($result, from_json('{"success": false, "tokenError": true, "text": "Permission Denied: Not a Parliament admin"}'));
 $result = parliamentPostToken2("/parliament/api/testAlert", '{}', $arkimeUserToken);
-ok(!$result->{success});
+eq_or_diff($result, from_json('{"success": false, "tokenError": true, "text": "Permission Denied: Not a Parliament admin"}'));
 $result = parliamentPutToken2("/parliament/api/parliament", '{}', $arkimeUserToken);
-ok(!$result->{success});
+eq_or_diff($result, from_json('{"success": false, "tokenError": true, "text": "Permission Denied: Not a Parliament admin"}'));
 $result = parliamentPostToken2("/parliament/api/groups", '{}', $arkimeUserToken);
-ok(!$result->{success});
+eq_or_diff($result, from_json('{"success": false, "tokenError": true, "text": "Permission Denied: Not a Parliament admin"}'));
 $result = parliamentDeleteToken2("/parliament/api/groups/0", $arkimeUserToken);
-ok(!$result->{success});
+eq_or_diff($result, from_json('{"success": false, "tokenError": true, "text": "Permission Denied: Not a Parliament admin"}'));
 $result = parliamentPutToken2("/parliament/api/groups/0", '{}', $arkimeUserToken);
-ok(!$result->{success});
+eq_or_diff($result, from_json('{"success": false, "tokenError": true, "text": "Permission Denied: Not a Parliament admin"}'));
 $result = parliamentPostToken2("/parliament/api/groups/0/clusters", '{}', $arkimeUserToken);
-ok(!$result->{success});
+eq_or_diff($result, from_json('{"success": false, "tokenError": true, "text": "Permission Denied: Not a Parliament admin"}'));
 $result = parliamentDeleteToken2("/parliament/api/groups/0/clusters/0", $arkimeUserToken);
-ok(!$result->{success});
+eq_or_diff($result, from_json('{"success": false, "tokenError": true, "text": "Permission Denied: Not a Parliament admin"}'));
 $result = parliamentPutToken2("/parliament/api/groups/0/clusters/0", '{}', $arkimeUserToken);
-ok(!$result->{success});
+eq_or_diff($result, from_json('{"success": false, "tokenError": true, "text": "Permission Denied: Not a Parliament admin"}'));
 
 # authenticate parliament user
 $MolochTest::userAgent->credentials( "$MolochTest::host:8009", 'Moloch', 'parliamentUserP', 'parliamentUserP' );
@@ -257,35 +257,35 @@ eq_or_diff($result, from_json('{"text": "Must specify the acknowledged issue(s) 
 
 # parliament user cannot access/udpate settings/parliament
 $result = parliamentGetToken2("/parliament/api/settings", $parliamentUserToken);
-ok(!$result->{success});
+eq_or_diff($result, from_json('{"success": false, "tokenError": true, "text": "Permission Denied: Not a Parliament admin"}'));
 $result = parliamentPutToken2("/parliament/api/settings", '{}', $parliamentUserToken);
-ok(!$result->{success});
+eq_or_diff($result, from_json('{"success": false, "tokenError": true, "text": "Permission Denied: Not a Parliament admin"}'));
 $result = parliamentPutToken2("/parliament/api/settings/restoreDefaults", '{}', $parliamentUserToken);
-ok(!$result->{success});
+eq_or_diff($result, from_json('{"success": false, "tokenError": true, "text": "Permission Denied: Not a Parliament admin"}'));
 $result = parliamentGetToken2("/parliament/api/notifierTypes", $parliamentUserToken);
-ok(!$result->{success});
+eq_or_diff($result, from_json('{"success": false, "tokenError": true, "text": "Permission Denied: Not a Parliament admin"}'));
 $result = parliamentPutToken2("/parliament/api/notifiers/test", '{}', $parliamentUserToken);
-ok(!$result->{success});
+eq_or_diff($result, from_json('{"success": false, "tokenError": true, "text": "Permission Denied: Not a Parliament admin"}'));
 $result = parliamentPostToken2("/parliament/api/notifiers", '{}', $parliamentUserToken);
-ok(!$result->{success});
+eq_or_diff($result, from_json('{"success": false, "tokenError": true, "text": "Permission Denied: Not a Parliament admin"}'));
 $result = parliamentDeleteToken2("/parliament/api/notifiers/test", $parliamentUserToken);
-ok(!$result->{success});
+eq_or_diff($result, from_json('{"success": false, "tokenError": true, "text": "Permission Denied: Not a Parliament admin"}'));
 $result = parliamentPostToken2("/parliament/api/testAlert", '{}', $parliamentUserToken);
-ok(!$result->{success});
+eq_or_diff($result, from_json('{"success": false, "tokenError": true, "text": "Permission Denied: Not a Parliament admin"}'));
 $result = parliamentPutToken2("/parliament/api/parliament", '{}', $parliamentUserToken);
-ok(!$result->{success});
+eq_or_diff($result, from_json('{"success": false, "tokenError": true, "text": "Permission Denied: Not a Parliament admin"}'));
 $result = parliamentPostToken2("/parliament/api/groups", '{}', $parliamentUserToken);
-ok(!$result->{success});
+eq_or_diff($result, from_json('{"success": false, "tokenError": true, "text": "Permission Denied: Not a Parliament admin"}'));
 $result = parliamentDeleteToken2("/parliament/api/groups/0", $parliamentUserToken);
-ok(!$result->{success});
+eq_or_diff($result, from_json('{"success": false, "tokenError": true, "text": "Permission Denied: Not a Parliament admin"}'));
 $result = parliamentPutToken2("/parliament/api/groups/0", '{}', $parliamentUserToken);
-ok(!$result->{success});
+eq_or_diff($result, from_json('{"success": false, "tokenError": true, "text": "Permission Denied: Not a Parliament admin"}'));
 $result = parliamentPostToken2("/parliament/api/groups/0/clusters", '{}', $parliamentUserToken);
-ok(!$result->{success});
+eq_or_diff($result, from_json('{"success": false, "tokenError": true, "text": "Permission Denied: Not a Parliament admin"}'));
 $result = parliamentDeleteToken2("/parliament/api/groups/0/clusters/0", $parliamentUserToken);
-ok(!$result->{success});
+eq_or_diff($result, from_json('{"success": false, "tokenError": true, "text": "Permission Denied: Not a Parliament admin"}'));
 $result = parliamentPutToken2("/parliament/api/groups/0/clusters/0", '{}', $parliamentUserToken);
-ok(!$result->{success});
+eq_or_diff($result, from_json('{"success": false, "tokenError": true, "text": "Permission Denied: Not a Parliament admin"}'));
 
 # authenticate parliament admin
 $MolochTest::userAgent->credentials( "$MolochTest::host:8009", 'Moloch', 'parliamentAdminP', 'parliamentAdminP' );
@@ -351,3 +351,5 @@ $result = parliamentDeleteToken2("/parliament/api/groups/0/clusters/0", $parliam
 ok($result->{success});
 $result = parliamentDeleteToken2("/parliament/api/groups/0", $parliamentAdminToken);
 ok($result->{success});
+
+viewerGet("/regressionTests/deleteAllUsers");
