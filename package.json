@@ -21,6 +21,7 @@
     "console-stamp": "^3.0.2",
     "csv": "^5.3.2",
     "express": "^4.17.3",
+    "express-rate-limit": "^6.7.0",
     "express-session": "^1.17.3",
     "font-awesome": "^4.7.0",
     "glob": "^7.2.3",
