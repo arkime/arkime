@@ -1,4 +1,4 @@
-use Test::More tests => 43;
+use Test::More tests => 115;
 use Cwd;
 use URI::Escape;
 use MolochTest;
@@ -11,7 +11,7 @@ my $result;
 
 my $version = 3;
 
-
+# OLD JWT AUTH ################################################################
 # Get parliament, empty
 $result = parliamentGet("/parliament/api/parliament");
 eq_or_diff($result, from_json('{"authMode": false, "groups": [], "version": ' . $version . '}'));
@@ -160,3 +160,194 @@ eq_or_diff($result, from_json('{"tokenError":true,"success":false,"text":"Permis
 # Delete cluster
 $result = parliamentDeleteToken("/parliament/api/groups/0/clusters/0", $token);
 ok ($result->{success});
+
+
+# DIGEST AUTH ################################################################
+my $es = "-o 'elasticsearch=$MolochTest::elasticsearch' -o 'usersElasticsearch=$MolochTest::elasticsearch' $ENV{INSECURE}";
+# create user without parliament role
+system("cd ../viewer ; node addUser.js $es -c ../tests/config.test.ini -n testuser arkimeUserP arkimeUserP arkimeUserP --roles 'arkimeUser' ");
+# create user with parliament role
+system("cd ../viewer ; node addUser.js $es -c ../tests/config.test.ini -n testuser parliamentUserP parliamentUserP parliamentUserP --roles 'parliamentUser' ");
+# create user with parliament admin role
+system("cd ../viewer ; node addUser.js $es -c ../tests/config.test.ini -n testuser parliamentAdminP parliamentAdminP parliamentAdminP --roles 'parliamentAdmin' ");
+
+# authenticate non parliament user
+$MolochTest::userAgent->credentials( "$MolochTest::host:8009", 'Moloch', 'arkimeUserP', 'arkimeUserP' );
+my $arkimeUserToken = getParliamentTokenCookie('arkimeUserP');
+
+# non parliament user can view parliament
+$result = parliamentGetToken2("/parliament/api/parliament", $arkimeUserToken);
+eq_or_diff($result, from_json('{"authMode": "digest", "groups": [], "version": ' . $version . '}'));
+
+# non parliament user can view issues
+$result = parliamentGetToken2("/parliament/api/issues", $arkimeUserToken);
+ok(exists $result->{issues});
+
+# non parliament user cannot update issues
+$result = parliamentPutToken2("/parliament/api/acknowledgeIssues", '{}', $arkimeUserToken);
+ok(!$result->{success});
+$result = parliamentPutToken2("/parliament/api/ignoreIssues", '{}', $arkimeUserToken);
+ok(!$result->{success});
+$result = parliamentPutToken2("/parliament/api/removeIgnoreIssues", '{}', $arkimeUserToken);
+ok(!$result->{success});
+$result = parliamentPutToken2("/parliament/api/groups/0/clusters/0/removeIssue", '{}', $arkimeUserToken);
+ok(!$result->{success});
+$result = parliamentPutToken2("/parliament/api/issues/removeAllAcknowledgedIssues", '{}', $arkimeUserToken);
+ok(!$result->{success});
+$result = parliamentPutToken2("/parliament/api/removeSelectedAcknowledgedIssues", '{}', $arkimeUserToken);
+ok(!$result->{success});
+
+# non parliamet user cannot access/udpate settings/parliament
+$result = parliamentGetToken2("/parliament/api/settings", $arkimeUserToken);
+ok(!$result->{success});
+$result = parliamentPutToken2("/parliament/api/settings", '{}', $arkimeUserToken);
+ok(!$result->{success});
+$result = parliamentPutToken2("/parliament/api/settings/restoreDefaults", '{}', $arkimeUserToken);
+ok(!$result->{success});
+$result = parliamentGetToken2("/parliament/api/notifierTypes", $arkimeUserToken);
+ok(!$result->{success});
+$result = parliamentPutToken2("/parliament/api/notifiers/test", '{}', $arkimeUserToken);
+ok(!$result->{success});
+$result = parliamentPostToken2("/parliament/api/notifiers", '{}', $arkimeUserToken);
+ok(!$result->{success});
+$result = parliamentDeleteToken2("/parliament/api/notifiers/test", $arkimeUserToken);
+ok(!$result->{success});
+$result = parliamentPostToken2("/parliament/api/testAlert", '{}', $arkimeUserToken);
+ok(!$result->{success});
+$result = parliamentPutToken2("/parliament/api/parliament", '{}', $arkimeUserToken);
+ok(!$result->{success});
+$result = parliamentPostToken2("/parliament/api/groups", '{}', $arkimeUserToken);
+ok(!$result->{success});
+$result = parliamentDeleteToken2("/parliament/api/groups/0", $arkimeUserToken);
+ok(!$result->{success});
+$result = parliamentPutToken2("/parliament/api/groups/0", '{}', $arkimeUserToken);
+ok(!$result->{success});
+$result = parliamentPostToken2("/parliament/api/groups/0/clusters", '{}', $arkimeUserToken);
+ok(!$result->{success});
+$result = parliamentDeleteToken2("/parliament/api/groups/0/clusters/0", $arkimeUserToken);
+ok(!$result->{success});
+$result = parliamentPutToken2("/parliament/api/groups/0/clusters/0", '{}', $arkimeUserToken);
+ok(!$result->{success});
+
+# authenticate parliament user
+$MolochTest::userAgent->credentials( "$MolochTest::host:8009", 'Moloch', 'parliamentUserP', 'parliamentUserP' );
+my $parliamentUserToken = getParliamentTokenCookie('parliamentUserP');
+
+# parliament user can view parliament
+$result = parliamentGetToken2("/parliament/api/parliament", $parliamentUserToken);
+eq_or_diff($result, from_json('{"authMode": "digest", "groups": [], "version": ' . $version . '}'));
+
+# parliament user can view issues
+$result = parliamentGetToken2("/parliament/api/issues", $parliamentUserToken);
+ok(exists $result->{issues});
+
+# parliament user can access update issues endpoints
+$result = parliamentPutToken2("/parliament/api/acknowledgeIssues", '{}', $parliamentUserToken);
+eq_or_diff($result, from_json('{"text": "Must specify the issue(s) to acknowledge.", "success": false}'));
+$result = parliamentPutToken2("/parliament/api/ignoreIssues", '{}', $parliamentUserToken);
+eq_or_diff($result, from_json('{"text": "Must specify the issue(s) to ignore.", "success": false}'));
+$result = parliamentPutToken2("/parliament/api/removeIgnoreIssues", '{}', $parliamentUserToken);
+eq_or_diff($result, from_json('{"text": "Must specify the issue(s) to unignore.", "success": false}'));
+$result = parliamentPutToken2("/parliament/api/groups/0/clusters/0/removeIssue", '{}', $parliamentUserToken);
+eq_or_diff($result, from_json('{"text": "Must specify the issue type to remove.", "success": false}'));
+$result = parliamentPutToken2("/parliament/api/issues/removeAllAcknowledgedIssues", '{}', $parliamentUserToken);
+eq_or_diff($result, from_json('{"text": "There are no acknowledged issues to remove.", "success": false}'));
+$result = parliamentPutToken2("/parliament/api/removeSelectedAcknowledgedIssues", '{}', $parliamentUserToken);
+eq_or_diff($result, from_json('{"text": "Must specify the acknowledged issue(s) to remove.", "success": false}'));
+
+# parliament user cannot access/udpate settings/parliament
+$result = parliamentGetToken2("/parliament/api/settings", $parliamentUserToken);
+ok(!$result->{success});
+$result = parliamentPutToken2("/parliament/api/settings", '{}', $parliamentUserToken);
+ok(!$result->{success});
+$result = parliamentPutToken2("/parliament/api/settings/restoreDefaults", '{}', $parliamentUserToken);
+ok(!$result->{success});
+$result = parliamentGetToken2("/parliament/api/notifierTypes", $parliamentUserToken);
+ok(!$result->{success});
+$result = parliamentPutToken2("/parliament/api/notifiers/test", '{}', $parliamentUserToken);
+ok(!$result->{success});
+$result = parliamentPostToken2("/parliament/api/notifiers", '{}', $parliamentUserToken);
+ok(!$result->{success});
+$result = parliamentDeleteToken2("/parliament/api/notifiers/test", $parliamentUserToken);
+ok(!$result->{success});
+$result = parliamentPostToken2("/parliament/api/testAlert", '{}', $parliamentUserToken);
+ok(!$result->{success});
+$result = parliamentPutToken2("/parliament/api/parliament", '{}', $parliamentUserToken);
+ok(!$result->{success});
+$result = parliamentPostToken2("/parliament/api/groups", '{}', $parliamentUserToken);
+ok(!$result->{success});
+$result = parliamentDeleteToken2("/parliament/api/groups/0", $parliamentUserToken);
+ok(!$result->{success});
+$result = parliamentPutToken2("/parliament/api/groups/0", '{}', $parliamentUserToken);
+ok(!$result->{success});
+$result = parliamentPostToken2("/parliament/api/groups/0/clusters", '{}', $parliamentUserToken);
+ok(!$result->{success});
+$result = parliamentDeleteToken2("/parliament/api/groups/0/clusters/0", $parliamentUserToken);
+ok(!$result->{success});
+$result = parliamentPutToken2("/parliament/api/groups/0/clusters/0", '{}', $parliamentUserToken);
+ok(!$result->{success});
+
+# authenticate parliament admin
+$MolochTest::userAgent->credentials( "$MolochTest::host:8009", 'Moloch', 'parliamentAdminP', 'parliamentAdminP' );
+my $parliamentAdminToken = getParliamentTokenCookie('parliamentAdminP');
+
+# parliament admin can view parliament
+$result = parliamentGetToken2("/parliament/api/parliament", $parliamentAdminToken);
+eq_or_diff($result, from_json('{"authMode": "digest", "groups": [], "version": ' . $version . '}'));
+
+# parliament admin can view issues
+$result = parliamentGetToken2("/parliament/api/issues", $parliamentAdminToken);
+ok(exists $result->{issues});
+
+# parliament admin can access update issues endpoints
+$result = parliamentPutToken2("/parliament/api/acknowledgeIssues", '{}', $parliamentAdminToken);
+eq_or_diff($result, from_json('{"text": "Must specify the issue(s) to acknowledge.", "success": false}'));
+$result = parliamentPutToken2("/parliament/api/ignoreIssues", '{}', $parliamentAdminToken);
+eq_or_diff($result, from_json('{"text": "Must specify the issue(s) to ignore.", "success": false}'));
+$result = parliamentPutToken2("/parliament/api/removeIgnoreIssues", '{}', $parliamentAdminToken);
+eq_or_diff($result, from_json('{"text": "Must specify the issue(s) to unignore.", "success": false}'));
+$result = parliamentPutToken2("/parliament/api/groups/0/clusters/0/removeIssue", '{}', $parliamentAdminToken);
+eq_or_diff($result, from_json('{"text": "Must specify the issue type to remove.", "success": false}'));
+$result = parliamentPutToken2("/parliament/api/issues/removeAllAcknowledgedIssues", '{}', $parliamentAdminToken);
+eq_or_diff($result, from_json('{"text": "There are no acknowledged issues to remove.", "success": false}'));
+$result = parliamentPutToken2("/parliament/api/removeSelectedAcknowledgedIssues", '{}', $parliamentAdminToken);
+eq_or_diff($result, from_json('{"text": "Must specify the acknowledged issue(s) to remove.", "success": false}'));
+
+# parliament admin can access/update settings/parliament
+$result = parliamentGetToken2("/parliament/api/settings", $parliamentAdminToken);
+ok(exists $result->{commonAuth});
+ok(exists $result->{notifiers});
+ok(exists $result->{general});
+
+$result = parliamentPutToken2("/parliament/api/settings", '{"settings": { "general": { "noPacketsLength": 100 } } }', $parliamentAdminToken);
+ok($result->{success});
+
+$result = parliamentGetToken2("/parliament/api/settings", $parliamentAdminToken);
+eq_or_diff($result->{general}->{noPacketsLength}, 100);
+
+$result = parliamentGetToken2("/parliament/api/notifierTypes", $parliamentAdminToken);
+ok(exists $result->{slack});
+ok(exists $result->{email});
+ok(exists $result->{twilio});
+
+$result = parliamentPostToken2("/parliament/api/notifiers", '{"notifier":{"name":"Slack","type":"slack","fields":{"slackWebhookUrl":{"name":"slackWebhookUrl","required":true,"type":"secret","description":"Incoming Webhooks are a simple way to post messages from external sources into Slack.","value":"https://hooks.slack.com/services/asdf"}},"alerts":{"esRed":true,"esDown":true,"esDropped":true,"outOfDate":true,"noPackets":true}}}', $parliamentAdminToken);
+ok($result->{success});
+$result = parliamentPutToken2("/parliament/api/notifiers/Slack", '{"key":"Slack","notifier":{"name":"Slack","type":"slack","fields":{"slackWebhookUrl":{"name":"slackWebhookUrl","required":true,"type":"secret","description":"Incoming Webhooks are a simple way to post messages from external sources into Slack.","value":"https://hooks.slack.com/services/asdfasdf"}},"alerts":{"esRed":true,"esDown":true,"esDropped":true,"outOfDate":true,"noPackets":true}}}', $parliamentAdminToken);
+ok($result->{success});
+$result = parliamentPostToken2("/parliament/api/testAlert", '{"notifier":"Slack"}', $parliamentAdminToken);
+ok($result->{success});
+$result = parliamentDeleteToken2("/parliament/api/notifiers/Slack", $parliamentAdminToken);
+ok($result->{success});
+
+$result = parliamentPostToken2("/parliament/api/groups", '{"title":"Group 1","description":""}', $parliamentAdminToken);
+ok($result->{success});
+$result = parliamentPostToken2("/parliament/api/groups/0/clusters", '{"title":"Cluster 1","url":"localhost:8123"}', $parliamentAdminToken);
+ok($result->{success});
+$result = parliamentPutToken2("/parliament/api/groups/0", '{"title":"Group 1a"}', $parliamentAdminToken);
+ok($result->{success});
+$result = parliamentPutToken2("/parliament/api/groups/0/clusters/0", '{"url":"localhost:8123","title":"Cluster 1a"}', $parliamentAdminToken);
+ok($result->{success});
+$result = parliamentDeleteToken2("/parliament/api/groups/0/clusters/0", $parliamentAdminToken);
+ok($result->{success});
+$result = parliamentDeleteToken2("/parliament/api/groups/0", $parliamentAdminToken);
+ok($result->{success});

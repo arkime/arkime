@@ -48,6 +48,7 @@ parliament/parliament.dev.json
 parliament/parliament.issues.json
 parliament/parliament.dev.issues.json
 parliament/vueapp/dist
+tests/parliament.dev.issues.json
 
 # wiseservice
 wiseService/vueapp/dist

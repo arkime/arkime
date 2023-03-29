@@ -551,7 +551,7 @@ function buildAlert (cluster, issue) {
     const setNotifier = parliament.settings.notifiers[n];
 
     // keep looking for notifiers if the notifier is off
-    if (!setNotifier.on) { continue; }
+    if (!setNotifier || !setNotifier.on) { continue; }
 
     // quit before sending the alert if the alert is off
     if (!setNotifier.alerts[issue.type]) { continue; }
@@ -840,7 +840,7 @@ function buildNotifierTypes () {
     notifier.fields = fieldsMap;
   }
 
-  if (app.get('debug')) {
+  if (app.get('debug') > 1) {
     console.log('Built notifier alerts:', JSON.stringify(internals.notifierTypes, null, 2));
   }
 }
@@ -1170,6 +1170,16 @@ function writeIssues (req, res, next, successObj, errorText, sendIssues) {
 }
 
 /* APIs -------------------------------------------------------------------- */
+if (app.get('regressionTests')) {
+  router.get('/makeToken', (req, res, next) => {
+    req.user = {
+      userId: req.query.molochRegressionUser ?? 'anonymous'
+    };
+    setCookie(req, res, next);
+    return res.end();
+  });
+}
+
 // Authenticate user
 router.post('/auth', (req, res, next) => {
   if (app.get('dashboardOnly')) {
@@ -1364,10 +1374,6 @@ router.put('/settings', [isAdmin, checkCookieToken], (req, res, next) => {
 });
 
 function verifyNotifierReqBody (req) {
-  if (!ArkimeUtil.isString(req.body.key)) {
-    return 'Missing notifier key';
-  }
-
   if (typeof req.body.notifier !== 'object') {
     return 'Missing notifier';
   }
@@ -1399,6 +1405,10 @@ router.put('/notifiers/:name', [isAdmin, checkCookieToken], (req, res, next) => 
 
   if (!parliament.settings.notifiers[req.params.name]) {
     return next(newError(404, `${req.params.name} not found.`));
+  }
+
+  if (!ArkimeUtil.isString(req.body.key)) {
+    return next(newError(422, 'Missing notifier key'));
   }
 
   const verifyMsg = verifyNotifierReqBody(req);
