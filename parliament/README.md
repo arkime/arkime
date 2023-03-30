@@ -98,7 +98,7 @@ You can also run the app by building then starting the app. Like so:
 
 | Parameter       | Default | Description |
 | --------------- | ------- | ----------- |
-| --pass          | EMPTY   | **Deprecated!** Please see the Arkime User Authetication section below. Password will be used to login to update the parliament. If it is not set, the app runs in read only mode. **IMPORTANT:** passing in a password will overwrite any password already configured in your parliament. You can always configure a password later in the UI. |
+| --pass          | EMPTY   | **Deprecated!** Please see the [Arkime User Authetication](#arkime-user-authetication) section below. Password will be used to login to update the parliament. If it is not set, the app runs in read only mode. **IMPORTANT:** passing in a password will overwrite any password already configured in your parliament. You can always configure a password later in the UI. |
 | --port          | 8008    | Port for the web app to listen on. |
 | -c, --config    | ./parliament.json | Absolute path to the JSON file to store your parliament information. |
 | --key           | EMPTY   | Private certificate to use for https, if not set then http will be used. **certfile** must also be set. |
@@ -109,7 +109,7 @@ _Note: if you do not pass in the port or file arguments, the defaults are used._
 
 Now browse to the app at `http://localhost:8765`, or whichever port you passed into the `npm start` command.
 
-To login, use the password (**deprecated**) that you passed into the `npm start` command. If you did not supply a password, you can view the parliament in read only mode and configure Arkime User Authentication in the Auth section on the Settings page (see below).
+To login, use the password (**deprecated**) that you passed into the `npm start` command. If you did not supply a password, you can view the parliament in read only mode and configure Arkime User Authentication in the Auth section on the Settings page (see section below).
 
 ##### Arkime User Authetication
 Parliament passwords are being deprecated. You can configure Parliament access using the Auth section on the Settings page. Auth uses the Arkime User's database for Parliament access.
