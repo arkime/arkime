@@ -331,25 +331,27 @@ ok(exists $result->{email});
 ok(exists $result->{twilio});
 
 $result = parliamentPostToken2("/parliament/api/notifiers", '{"notifier":{"name":"Slack","type":"slack","fields":{"slackWebhookUrl":{"name":"slackWebhookUrl","required":true,"type":"secret","description":"Incoming Webhooks are a simple way to post messages from external sources into Slack.","value":"https://hooks.slack.com/services/asdf"}},"alerts":{"esRed":true,"esDown":true,"esDropped":true,"outOfDate":true,"noPackets":true}}}', $parliamentAdminToken);
-ok($result->{success});
+eq_or_diff($result, from_json('{"text": "Successfully added Slack notifier.", "success": true, "name": "Slack"}'));
 $result = parliamentPutToken2("/parliament/api/notifiers/Slack", '{"key":"Slack","notifier":{"name":"Slack","type":"slack","fields":{"slackWebhookUrl":{"name":"slackWebhookUrl","required":true,"type":"secret","description":"Incoming Webhooks are a simple way to post messages from external sources into Slack.","value":"https://hooks.slack.com/services/asdfasdf"}},"alerts":{"esRed":true,"esDown":true,"esDropped":true,"outOfDate":true,"noPackets":true}}}', $parliamentAdminToken);
-ok($result->{success});
+eq_or_diff($result, from_json('{"text": "Successfully updated Slack notifier.", "success": true, "newKey": "Slack"}'));
 $result = parliamentPostToken2("/parliament/api/testAlert", '{"notifier":"Slack"}', $parliamentAdminToken);
-ok($result->{success});
+eq_or_diff($result, from_json('{"text": "Successfully issued alert using the Slack notifier.", "success": true}'));
 $result = parliamentDeleteToken2("/parliament/api/notifiers/Slack", $parliamentAdminToken);
-ok($result->{success});
+eq_or_diff($result, from_json('{"text": "Successfully removed Slack notifier.", "success": true}'));
 
 $result = parliamentPostToken2("/parliament/api/groups", '{"title":"Group 1","description":""}', $parliamentAdminToken);
-ok($result->{success});
+eq_or_diff($result, from_json('{"text": "Successfully added new group.", "success": true, "group": {"clusters":[],"id":0,"title":"Group 1"}}'));
 $result = parliamentPostToken2("/parliament/api/groups/0/clusters", '{"title":"Cluster 1","url":"localhost:8123"}', $parliamentAdminToken);
-ok($result->{success});
+delete $result->{cluster}->{healthError};
+delete $result->{cluster}->{statsError};
+eq_or_diff($result, from_json('{"text": "Successfully added the requested cluster.", "success": true, "cluster": { "title":"Cluster 1", "url":"localhost:8123", "id":0}}'));
 $result = parliamentPutToken2("/parliament/api/groups/0", '{"title":"Group 1a"}', $parliamentAdminToken);
-ok($result->{success});
+eq_or_diff($result, from_json('{"text": "Successfully updated the requested group.", "success": true}'));
 $result = parliamentPutToken2("/parliament/api/groups/0/clusters/0", '{"url":"localhost:8123","title":"Cluster 1a"}', $parliamentAdminToken);
-ok($result->{success});
+eq_or_diff($result, from_json('{"text": "Successfully updated the requested cluster.", "success": true}'));
 $result = parliamentDeleteToken2("/parliament/api/groups/0/clusters/0", $parliamentAdminToken);
-ok($result->{success});
+eq_or_diff($result, from_json('{"text": "Successfully removed the requested cluster.", "success": true}'));
 $result = parliamentDeleteToken2("/parliament/api/groups/0", $parliamentAdminToken);
-ok($result->{success});
+eq_or_diff($result, from_json('{"text": "Successfully removed the requested group.", "success": true}'));
 
 viewerGet("/regressionTests/deleteAllUsers");
