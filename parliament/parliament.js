@@ -1171,7 +1171,7 @@ function writeIssues (req, res, next, successObj, errorText, sendIssues) {
 
 /* APIs -------------------------------------------------------------------- */
 if (app.get('regressionTests')) {
-  router.get('/makeToken', (req, res, next) => {
+  router.get('/regressionTests/makeToken', (req, res, next) => {
     req.user = {
       userId: req.query.molochRegressionUser ?? 'anonymous'
     };

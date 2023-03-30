@@ -366,9 +366,9 @@ my ($userId) = @_;
 
     my $setCookie;
     if ($userId) {
-        $setCookie = $MolochTest::userAgent->get("http://$MolochTest::host:8009/parliament/api/makeToken?molochRegressionUser=$userId")->{"_headers"}->{"set-cookie"};
+        $setCookie = $MolochTest::userAgent->get("http://$MolochTest::host:8009/parliament/api/regressionTests/makeToken/?molochRegressionUser=$userId")->{"_headers"}->{"set-cookie"};
     } else {
-        $setCookie = $MolochTest::userAgent->get("http://$MolochTest::host:8009/parliament/api/makeToken")->{"_headers"}->{"set-cookie"};
+        $setCookie = $MolochTest::userAgent->get("http://$MolochTest::host:8009/parliament/api/regressionTests/makeToken")->{"_headers"}->{"set-cookie"};
     }
 
     $setCookie =~ /PARLIAMENT-COOKIE=([^;]*)/;

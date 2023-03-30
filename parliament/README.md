@@ -35,7 +35,9 @@ The settings page has 3 sections as described below:
 4. The `remove all issues after` setting controls when an issue is removed if it has not occurred again. The issue is removed from the cluster after this time expires as long as the issue has not occurred again. _The default for this setting is 60 minutes._
 5. The `remove acknowledged issues after` setting controls when an acknowledged issue is removed. The issue is removed from the cluster after this time expires (so you don't have to remove issues manually with the trashcan button). _The default for this setting is 15 minutes._
 
-**Password:** this section allows a user to update the Parliament password or create a new password if the Parliament was started without one.
+**Password:** **Deprecated!** Use the Auth section to configure Arkime user's authentication. This section allows a user to update the Parliament password or create a new password if the Parliament was started without one.
+
+**Auth:** Here you can configure Parliament access using the Arkime User's database. See the [Arkime User Authetication](#arkime-user-authetication) section for more information.
 
 **Notifiers:** this section provides the ability to configure alerts for your Parliament. Users can be alerted via:
 1. Slack
@@ -110,7 +112,7 @@ Now browse to the app at `http://localhost:8765`, or whichever port you passed i
 To login, use the password (**deprecated**) that you passed into the `npm start` command. If you did not supply a password, you can view the parliament in read only mode and configure Arkime User Authentication in the Auth section on the Settings page (see below).
 
 ##### Arkime User Authetication
-Parliament passwords are being deprecated. You can configure Parliament access using the Auth section on the Settings page. Auth uses the the Arkime User's database for Parliament access.
+Parliament passwords are being deprecated. You can configure Parliament access using the Auth section on the Settings page. Auth uses the Arkime User's database for Parliament access.
 
 - **All** Arkime users can view the Parliament (dashboard only mode).
 - Users with the "parliamentUser" role can ack, ignore, and delete issues within the Parliament.
