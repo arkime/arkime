@@ -9,8 +9,8 @@ This project was generated with [Vue CLI][vuecli].
 The Parliament dashboard contains a grouped list of your Arkime clusters with links, ES health, and issues for each. You can search for Arkimes in your Parliament, change the data refresh time (15 seconds is the default), and hover over issues and ES health statuses for more information.
 
 The app can be run in three ways:
-1. with a password
-2. read only mode (without a password, but it can be configured later)
+1. with a password (**deprecated!**)
+2. read only mode (without a password, but Arkime User Authentication can be configured later)
 3. dashboard only mode (no password or ability to configure one)
 
 _**If your Parliament has a password (via option 1 or 2), you can interact with it in the ways enumerated below.**_
@@ -35,7 +35,9 @@ The settings page has 3 sections as described below:
 4. The `remove all issues after` setting controls when an issue is removed if it has not occurred again. The issue is removed from the cluster after this time expires as long as the issue has not occurred again. _The default for this setting is 60 minutes._
 5. The `remove acknowledged issues after` setting controls when an acknowledged issue is removed. The issue is removed from the cluster after this time expires (so you don't have to remove issues manually with the trashcan button). _The default for this setting is 15 minutes._
 
-**Password:** this section allows a user to update the Parliament password or create a new password if the Parliament was started without one.
+**Password:** **Deprecated!** Use the Auth section to configure Arkime user's authentication. This section allows a user to update the Parliament password or create a new password if the Parliament was started without one.
+
+**Auth:** Here you can configure Parliament access using the Arkime User's database. See the [Arkime User Authetication](#arkime-user-authetication) section for more information.
 
 **Notifiers:** this section provides the ability to configure alerts for your Parliament. Users can be alerted via:
 1. Slack
@@ -96,7 +98,7 @@ You can also run the app by building then starting the app. Like so:
 
 | Parameter       | Default | Description |
 | --------------- | ------- | ----------- |
-| --pass          | EMPTY   | Password will be used to login to update the parliament. If it is not set, the app runs in read only mode. **IMPORTANT:** passing in a password will overwrite any password already configured in your parliament. You can always configure a password later in the UI. |
+| --pass          | EMPTY   | **Deprecated!** Please see the [Arkime User Authetication](#arkime-user-authetication) section below. Password will be used to login to update the parliament. If it is not set, the app runs in read only mode. **IMPORTANT:** passing in a password will overwrite any password already configured in your parliament. You can always configure a password later in the UI. |
 | --port          | 8008    | Port for the web app to listen on. |
 | -c, --config    | ./parliament.json | Absolute path to the JSON file to store your parliament information. |
 | --key           | EMPTY   | Private certificate to use for https, if not set then http will be used. **certfile** must also be set. |
@@ -107,7 +109,14 @@ _Note: if you do not pass in the port or file arguments, the defaults are used._
 
 Now browse to the app at `http://localhost:8765`, or whichever port you passed into the `npm start` command.
 
-To login, use the password that you passed into the `npm start` command. If you did not supply a password, you can view the parliament in read only mode or configure one by navigating to the settings page.
+To login, use the password (**deprecated**) that you passed into the `npm start` command. If you did not supply a password, you can view the parliament in read only mode and configure Arkime User Authentication in the Auth section on the Settings page (see section below).
+
+##### Arkime User Authetication
+Parliament passwords are being deprecated. You can configure Parliament access using the Auth section on the Settings page. Auth uses the Arkime User's database for Parliament access.
+
+- **All** Arkime users can view the Parliament (dashboard only mode).
+- Users with the "parliamentUser" role can ack, ignore, and delete issues within the Parliament.
+- Users with the "parliamentAdmin" role can do everything a "parliamentUser" can, plus they can configure the Parliament by adding/removing/updating groups/clusters and manage the Parliament settings.
 
 #### Development
 

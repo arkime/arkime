@@ -3,7 +3,7 @@ use Exporter;
 use strict;
 use Test::More;
 @MolochTest::ISA = qw(Exporter);
-@MolochTest::EXPORT = qw (esGet esPost esPut esDelete esCopy viewerGet viewerGetToken viewerGet2 viewerDelete viewerDeleteToken viewerPost viewerPost2 viewerPostToken viewerPostToken2 countTest countTestToken countTest2 countTestMulti errTest bin2hex mesGet mesPost multiGet multiPost getTokenCookie getTokenCookie2 parliamentGet parliamentGetToken parliamentPost parliamentPut parliamentDelete parliamentDeleteToken waitFor viewerPutToken viewerPut getCont3xtTokenCookie cont3xtGet cont3xtGetToken cont3xtPut cont3xtPutToken cont3xtDelete cont3xtDeleteToken cont3xtPost cont3xtPostToken);
+@MolochTest::EXPORT = qw (esGet esPost esPut esDelete esCopy viewerGet viewerGetToken viewerGet2 viewerDelete viewerDeleteToken viewerPost viewerPost2 viewerPostToken viewerPostToken2 countTest countTestToken countTest2 countTestMulti errTest bin2hex mesGet mesPost multiGet multiPost getTokenCookie getTokenCookie2 parliamentGet parliamentGetToken parliamentGetToken2 parliamentPost parliamentPostToken2 parliamentPut parliamentPutToken2 parliamentDelete parliamentDeleteToken parliamentDeleteToken2 getParliamentTokenCookie waitFor viewerPutToken viewerPut getCont3xtTokenCookie cont3xtGet cont3xtGetToken cont3xtPut cont3xtPutToken cont3xtDelete cont3xtDeleteToken cont3xtPost cont3xtPostToken);
 
 use LWP::UserAgent;
 use HTTP::Request::Common;
@@ -361,6 +361,20 @@ my ($userId) = @_;
     return $1;
 }
 ################################################################################
+sub getParliamentTokenCookie {
+my ($userId) = @_;
+
+    my $setCookie;
+    if ($userId) {
+        $setCookie = $MolochTest::userAgent->get("http://$MolochTest::host:8009/parliament/api/regressionTests/makeToken/?molochRegressionUser=$userId")->{"_headers"}->{"set-cookie"};
+    } else {
+        $setCookie = $MolochTest::userAgent->get("http://$MolochTest::host:8009/parliament/api/regressionTests/makeToken")->{"_headers"}->{"set-cookie"};
+    }
+
+    $setCookie =~ /PARLIAMENT-COOKIE=([^;]*)/;
+    return $1;
+}
+################################################################################
 sub parliamentGet {
 my ($url, $debug) = @_;
     my $response = $MolochTest::userAgent->get("http://$MolochTest::host:8008$url");
@@ -377,6 +391,14 @@ my ($url, $token, $debug) = @_;
     return ($json);
 }
 ################################################################################
+sub parliamentGetToken2 {
+my ($url, $token, $debug) = @_;
+    my $response = $MolochTest::userAgent->get("http://$MolochTest::host:8009$url", "x-access-token" => $token);
+    diag $url, " response:", $response->content if ($debug);
+    my $json = from_json($response->content);
+    return ($json);
+}
+################################################################################
 sub parliamentPost {
 my ($url, $content, $debug) = @_;
     my $response = $MolochTest::userAgent->post("http://$MolochTest::host:8008$url", Content => $content, "Content-Type" => "application/json;charset=UTF-8");
@@ -385,9 +407,34 @@ my ($url, $content, $debug) = @_;
     return ($json);
 }
 ################################################################################
+sub parliamentPostToken2 {
+my ($url, $content, $token, $debug) = @_;
+    my $response;
+    if (substr($content, 0, 2) eq '{"') {
+        $response = $MolochTest::userAgent->post("http://$MolochTest::host:8009$url", Content => $content, "Content-Type" => "application/json;charset=UTF-8", "x-parliament-cookie" => $token);
+    } else {
+        $response = $MolochTest::userAgent->post("http://$MolochTest::host:8009$url", Content => $content, "x-parliament-cookie" => $token);
+    }
+    my $json = from_json($response->content);
+    return ($json);
+}
+################################################################################
 sub parliamentPut {
 my ($url, $content, $debug) = @_;
     my $response = $MolochTest::userAgent->request(HTTP::Request::Common::PUT("http://$MolochTest::host:8008$url", Content => $content, "Content-Type" => "application/json;charset=UTF-8"));
+    diag $url, " response:", $response->content if ($debug);
+    my $json = from_json($response->content);
+    return ($json);
+}
+################################################################################
+sub parliamentPutToken2 {
+my ($url, $content, $token, $debug) = @_;
+    my $response;
+    if (substr($content, 0, 2) eq '{"') {
+        $response = $MolochTest::userAgent->put("http://$MolochTest::host:8009$url", Content => $content, "Content-Type" => "application/json;charset=UTF-8", "x-parliament-cookie" => $token);
+    } else {
+        $response = $MolochTest::userAgent->put("http://$MolochTest::host:8009$url", Content => $content, "x-parliament-cookie" => $token);
+    }
     diag $url, " response:", $response->content if ($debug);
     my $json = from_json($response->content);
     return ($json);
@@ -404,6 +451,14 @@ my ($url, $debug) = @_;
 sub parliamentDeleteToken {
 my ($url, $token, $debug) = @_;
     my $response = $MolochTest::userAgent->request(HTTP::Request::Common::DELETE("http://$MolochTest::host:8008$url", "x-access-token" => $token));
+    diag $url, " response:", $response->content if ($debug);
+    my $json = from_json($response->content);
+    return ($json);
+}
+################################################################################
+sub parliamentDeleteToken2 {
+my ($url, $token, $debug) = @_;
+    my $response = $MolochTest::userAgent->request(HTTP::Request::Common::_simple_req("DELETE", "http://$MolochTest::host:8009$url", "x-parliament-cookie" => $token));
     diag $url, " response:", $response->content if ($debug);
     my $json = from_json($response->content);
     return ($json);

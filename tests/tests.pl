@@ -350,6 +350,7 @@ my ($cmd) = @_;
             system("cd ../viewer ; $node --trace-warnings viewer.js $es $ues -c ../tests/config.test.ini -n test3 --debug -o s2sRegressionTests=true $INSECURE > /tmp/moloch.test3 &");
             system("cd ../viewer ; $node --trace-warnings viewer.js $ues -c ../tests/config.test.ini -n all --debug $INSECURE > /tmp/moloch.all &");
             system("cd ../parliament ; $node --trace-warnings parliament.js --regressionTests -c /dev/null --debug > /tmp/moloch.parliament 2>&1 &");
+            system("cd ../parliament ; $node --trace-warnings parliament.js --regressionTests -c ../tests/parliament.dev.json --port 8009 --debug > /tmp/moloch.parliament.commonAuth 2>&1 &");
             system("cd ../cont3xt ; $node --trace-warnings cont3xt.js $ces $cues --regressionTests -c ../tests/cont3xt.tests.ini --debug $INSECURE > /tmp/moloch.cont3xt 2>&1 &");
         } else {
             system("cd ../viewer ; $node multies.js $mes -c ../tests/config.test.ini -n all $INSECURE > /dev/null &");
@@ -359,6 +360,7 @@ my ($cmd) = @_;
             system("cd ../viewer ; $node viewer.js $es $ues -c ../tests/config.test.ini -n test3 -o s2sRegressionTests=true $INSECURE > /dev/null &");
             system("cd ../viewer ; $node viewer.js $ues -c ../tests/config.test.ini -n all $INSECURE > /dev/null &");
             system("cd ../parliament ; $node parliament.js --regressionTests -c /dev/null > /dev/null 2>&1 &");
+            system("cd ../parliament ; $node parliament.js --regressionTests -c ../tests/parliament.dev.json --port 8009 > /dev/null 2>&1 &");
             system("cd ../cont3xt ; $node cont3xt.js $ces $cues --regressionTests -c ../tests/cont3xt.tests.ini $INSECURE > /dev/null 2>&1 &");
         }
         sleep (10000) if ($cmd eq "--viewerhang");
@@ -368,6 +370,7 @@ my ($cmd) = @_;
     waitFor($MolochTest::host, 8124);
     waitFor($MolochTest::host, 8125);
     waitFor($MolochTest::host, 8008);
+    waitFor($MolochTest::host, 8009);
     sleep 1;
 
     $main::userAgent->get("$ELASTICSEARCH/_flush");
@@ -389,6 +392,7 @@ my ($cmd) = @_;
         $main::userAgent->post("http://localhost:8200/regressionTests/shutdown");
         $main::userAgent->post("http://localhost:8081/regressionTests/shutdown");
         $main::userAgent->post("http://localhost:8008/regressionTests/shutdown");
+        $main::userAgent->post("http://localhost:8009/regressionTests/shutdown");
         $main::userAgent->post("http://localhost:3218/regressionTests/shutdown");
     }
 

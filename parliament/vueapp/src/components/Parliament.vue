@@ -46,10 +46,11 @@
           </span>
         </div>
       </div> <!-- /search -->
-      <div v-if="loggedIn"
+      <div
+        v-if="loggedIn"
         class="col-md-4">
         <!-- edit mode toggle -->
-        <span v-if="isUser"
+        <span v-if="isAdmin"
           @click="toggleEditMode"
           class="fa fa-toggle-off fa-2x pull-right cursor-pointer mt-1 pl-2"
           :class="{'fa-toggle-off':!editMode, 'fa-toggle-on text-success':editMode}"
@@ -212,17 +213,6 @@
             <p class="mb-2">
               {{ group.description }}
             </p>
-            <div v-if="group.error"
-              class="alert alert-danger alert-sm mt-3">
-              <span class="fa fa-exclamation-triangle">
-              </span>&nbsp;
-              {{ group.error }}
-              <button type="button"
-                class="close cursor-pointer"
-                @click="group.error = false">
-                <span>&times;</span>
-              </button>
-            </div>
           </div>
         </div> <!-- /group title/description -->
 
@@ -426,18 +416,6 @@
                   v-if="cluster.description">
                   {{ cluster.description }}
                 </p> <!-- /cluster description -->
-                <!-- cluster error -->
-                <div v-if="cluster.error"
-                  class="alert alert-danger alert-sm">
-                  <button type="button"
-                    class="close cursor-pointer"
-                    @click="cluster.error = false">
-                    <span>&times;</span>
-                  </button>
-                  <span class="fa fa-exclamation-triangle">
-                  </span>&nbsp;
-                  {{ cluster.error }}
-                </div> <!-- /cluster error -->
                 <!-- cluster stats -->
                 <small v-if="(!cluster.statsError && cluster.id !== clusterBeingEdited && cluster.type !== 'disabled' && cluster.type !== 'multiviewer') || (cluster.id === clusterBeingEdited && cluster.newType !== 'disabled' && cluster.newType !== 'multiviewer')">
                   <div class="row cluster-stats-row pt-1">
@@ -773,6 +751,9 @@ export default {
     isUser: function () {
       return this.$store.state.isUser;
     },
+    isAdmin: function () {
+      return this.$store.state.isAdmin;
+    },
     loggedIn: function () {
       return this.$store.state.loggedIn;
     },
@@ -875,10 +856,8 @@ export default {
       this.focusGroupInput = true;
     },
     editGroup: function (group) {
-      this.$set(group, 'error', '');
-
       if (!group.newTitle) {
-        this.$set(group, 'error', 'A group must have a title');
+        this.error = 'A group must have a title';
         return;
       }
 
@@ -890,19 +869,16 @@ export default {
       ParliamentService.editGroup(group.id, updatedGroup)
         .then((data) => {
           // update group with new values and close form
-          this.$set(group, 'error', '');
           group.title = group.newTitle;
           group.description = group.newDescription;
           this.groupBeingEdited = undefined;
           this.focusGroupInput = false;
         })
         .catch((error) => {
-          this.$set(group, 'error', error.text || 'Unable to udpate this group');
+          this.error = error.text || 'Unable to udpate this group';
         });
     },
     deleteGroup: function (group) {
-      this.$set(group, 'error', '');
-
       ParliamentService.deleteGroup(group.id)
         .then((data) => {
           let index = 0; // remove the group from the parliament
@@ -915,11 +891,10 @@ export default {
           }
         })
         .catch((error) => {
-          this.$set(group, 'error', error.text || 'Unable to delete this group');
+          this.error = error.text || 'Unable to delete this group';
         });
     },
     cancelUpdateGroup: function (group) {
-      this.$set(group, 'error', '');
       this.groupBeingEdited = undefined;
       this.groupAddingCluster = undefined;
       this.focusGroupInput = false;
@@ -935,14 +910,14 @@ export default {
       this.focusClusterInput = true;
     },
     createNewCluster: function (group) {
-      this.$set(group, 'error', '');
+      this.error = '';
 
       if (!group.newClusterTitle) {
-        this.$set(group, 'error', 'A cluster must have a title');
+        this.error = 'A cluster must have a title';
         return;
       }
       if (!group.newClusterUrl) {
-        this.$set(group, 'error', 'A cluster must have a url');
+        this.error = 'A cluster must have a url';
         return;
       }
 
@@ -956,13 +931,12 @@ export default {
 
       ParliamentService.createCluster(group.id, newCluster)
         .then((data) => {
-          this.$set(group, 'error', '');
           group.clusters.push(data.cluster);
           this.cancelUpdateGroup(group);
           this.filterClusters();
         })
         .catch((error) => {
-          this.$set(group, 'error', error.text || 'Unable to add a cluster to this group');
+          this.error = error.text || 'Unable to add a cluster to this group';
         });
     },
     displayEditClusterForm: function (cluster) {
@@ -979,14 +953,13 @@ export default {
       this.clusterBeingEdited = undefined;
     },
     editCluster: function (group, cluster) {
-      this.$set(cluster, 'error', '');
-
       if (!cluster.newTitle) {
-        this.$set(cluster, 'error', 'A cluster must have a title');
+        this.error = 'A cluster must have a title';
         return;
       }
+
       if (!cluster.newUrl) {
-        this.$set(cluster, 'error', 'A cluster must have a url');
+        this.error = 'A cluster must have a url';
         return;
       }
 
@@ -1010,7 +983,6 @@ export default {
       ParliamentService.editCluster(group.id, cluster.id, updatedCluster)
         .then((data) => {
           this.focusClusterInput = false;
-          this.$set(cluster, 'error', '');
           cluster.url = cluster.newUrl;
           cluster.type = cluster.newType;
           cluster.title = cluster.newTitle;
@@ -1019,15 +991,12 @@ export default {
           this.cancelEditCluster();
         })
         .catch((error) => {
-          this.$set(cluster, 'error', error.text || 'Unable to update this cluster');
+          this.error = error.text || 'Unable to update this cluster';
         });
     },
     deleteCluster: function (group, cluster) {
-      this.$set(group, 'error', '');
-
       ParliamentService.deleteCluster(group.id, cluster.id)
         .then((data) => {
-          this.$set(group, 'error', '');
           let index = 0;
           for (const c of group.clusters) {
             if (c.id === cluster.id) {
@@ -1039,7 +1008,7 @@ export default {
           this.filterClusters();
         })
         .catch((error) => {
-          this.$set(group, 'error', error.text || 'Unable to remove cluster from this group');
+          this.error = error.text || 'Unable to remove cluster from this group';
         });
     },
     showMoreIssues: function (cluster) {
@@ -1066,19 +1035,12 @@ export default {
       }
     },
     issueChange: function (changeEvent) {
-      // find the cluster to display/hide error
-      const cluster = this.getCluster(changeEvent.groupId, changeEvent.clusterId);
-
-      if (!cluster && !changeEvent.success) {
-        this.error = changeEvent.message;
-        return;
-      }
-
       if (changeEvent.success) {
-        this.$set(cluster, 'error', '');
+        // find the cluster to remove the issue
+        const cluster = this.getCluster(changeEvent.groupId, changeEvent.clusterId);
         cluster.activeIssues.splice(changeEvent.index, 1);
-      } else {
-        this.$set(cluster, 'error', changeEvent.message);
+      } else { // show a global error
+        this.error = changeEvent.message;
       }
     },
     /* helper functions ---------------------------------------------------- */
@@ -1092,7 +1054,7 @@ export default {
         })
         .catch((error) => {
           this.error = error.text ||
-            `Error fetching information about Molochs in your parliament.
+            `Error fetching information about Arkimes in your parliament.
              The information displayed below is likely out of date.`;
         });
     },
@@ -1118,7 +1080,6 @@ export default {
         const newGroup = data.groups[g];
         const oldGroup = this.parliament.groups[g];
 
-        newGroup.error = oldGroup.error;
         newGroup.newTitle = oldGroup.newTitle;
         newGroup.newDescription = oldGroup.newDescription;
         newGroup.filteredClusters = oldGroup.filteredClusters;
@@ -1132,7 +1093,6 @@ export default {
           const newCluster = newGroup.clusters[c];
           const oldCluster = oldGroup.clusters[c];
 
-          newCluster.error = oldCluster.error;
           newCluster.newTitle = oldCluster.newTitle;
           newCluster.newDescription = oldCluster.newDescription;
           newCluster.newUrl = oldCluster.newUrl;
@@ -1146,7 +1106,6 @@ export default {
     // Remove UI only properties from groups and clusters in a parliament
     sanitizeParliament: function (data) {
       for (const group of data.groups) {
-        group.error = undefined;
         group.newTitle = undefined;
         group.newClusterUrl = undefined;
         group.newClusterType = undefined;
@@ -1157,7 +1116,6 @@ export default {
         group.filteredClusters = group.clusters;
 
         for (const cluster of group.clusters) {
-          cluster.error = undefined;
           cluster.newUrl = undefined;
           cluster.newType = undefined;
           cluster.newTitle = undefined;

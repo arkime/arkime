@@ -434,6 +434,24 @@
                 The secret used to encrypt the md5 of the users information.
               </p>
             </div> <!-- /passwordSecret-->
+            <!-- http realm -->
+            <div class="col-xl-9 col-lg-12 form-group">
+              <div class="input-group">
+                <span class="input-group-prepend">
+                  <span class="input-group-text">
+                    HTTP Realm
+                  </span>
+                </span>
+                <input type="string"
+                  class="form-control"
+                  id="httpRealm"
+                  v-model="settings.commonAuth.httpRealm"
+                />
+              </div>
+              <p class="form-text small text-muted">
+                The HTTP Realm for user authentication. Set this to the same realm as your Akime clusters to share credentials. By default "Moloch" if not set.
+              </p>
+            </div> <!-- /http realm-->
           </div>
         </div>
         <!-- /auth -->
