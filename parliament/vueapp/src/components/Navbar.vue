@@ -98,7 +98,7 @@
           </div>
         </span> <!-- /refresh interval select -->
         <!-- password input -->
-        <template v-if="!commonAuth && isUser">
+        <template v-if="!commonAuth">
           <form>
             <input type="text"
               name="username"
