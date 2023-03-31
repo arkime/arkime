@@ -82,6 +82,7 @@ export const ITypeMixin = {
         : tooltip;
     },
     applyTidbitPostProcess (value, data, integration, postProcess, template) {
+      if (!value) { return; }
       // first fill template, if existent
       if (template?.length) {
         value = applyTemplate(template, { value, data });

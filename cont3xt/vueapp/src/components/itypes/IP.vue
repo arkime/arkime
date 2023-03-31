@@ -12,8 +12,6 @@
 </template>
 
 <script>
-import { countryCodeEmoji } from 'country-code-emoji';
-
 import TtlTooltip from '@/utils/TtlTooltip';
 import BaseIType from '@/components/itypes/BaseIType';
 import { ITypeMixin } from './ITypeMixin';
@@ -43,11 +41,6 @@ export default {
     return {
       itype: 'ip'
     };
-  },
-  methods: {
-    countryEmoji (code) {
-      return countryCodeEmoji(code);
-    }
   }
 };
 </script>

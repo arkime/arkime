@@ -131,14 +131,14 @@ class VirusTotalDomainIntegration extends Integration {
         field: 'whois',
         postProcess: [{ restOfLineFollowing: 'Creation Date: ' }, 'removeTime'],
         purpose: 'registered',
-        precedence: 2,
+        precedence: 1,
         order: 100
       },
       {
         field: 'whois',
         postProcess: { restOfLineFollowing: 'Registrar: ' },
         purpose: 'registrar',
-        precedence: 2,
+        precedence: 1,
         order: 110
       }
     ]
