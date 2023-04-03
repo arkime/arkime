@@ -35,6 +35,10 @@ class WhoisIntegration extends Integration {
         label: 'creationDate',
         type: 'date'
       },
+      {
+        label: 'createdDate',
+        type: 'date'
+      },
       'registrar',
       'registrantOrganization',
       'adminCountry'
@@ -45,6 +49,14 @@ class WhoisIntegration extends Integration {
     fields: [
       {
         field: 'creationDate',
+        postProcess: 'removeTime',
+        tooltipTemplate: '<value>',
+        purpose: 'registered',
+        precedence: 3,
+        order: 100
+      },
+      {
+        field: 'createdDate',
         postProcess: 'removeTime',
         tooltipTemplate: '<value>',
         purpose: 'registered',
