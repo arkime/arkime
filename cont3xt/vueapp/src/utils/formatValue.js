@@ -15,7 +15,6 @@ export const formatValue = (data, field) => {
 
   for (const p of field.path) {
     if (!value) {
-      // console.warn(`Can't resolve path: ${field.path.join('.')}`);
       return '';
     }
     value = value[p];
@@ -49,10 +48,13 @@ export const formatValue = (data, field) => {
 
   switch (field.type) {
   case 'ms':
+    if (value === undefined) { return value; }
     return dateString(value);
   case 'seconds':
+    if (value === undefined) { return value; }
     return dateString(value * 1000);
   case 'date':
+    if (value === undefined) { return value; }
     return reDateString(value);
   case 'json':
     return JSON.stringify(value, null, 2);
