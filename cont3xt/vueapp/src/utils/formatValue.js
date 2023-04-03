@@ -51,6 +51,7 @@ export const formatValue = (data, field) => {
     if (value === undefined) { return value; }
     return dateString(value);
   case 'seconds':
+    if (value === undefined) { return value; }
     return dateString(value * 1000);
   case 'date':
     if (value === undefined) { return value; }
