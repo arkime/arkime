@@ -306,27 +306,42 @@
               </b-alert>
               <!-- link search -->
               <div v-if="searchItype && initialized" class="mb-5">
-                <b-input-group size="sm">
-                  <template #prepend>
-                    <b-input-group-text>
-                      <span v-if="!getShiftKeyHold"
-                        class="fa fa-search fa-fw"
+                <div class="d-flex justify-content-between">
+                  <div class="flex-grow-1">
+                    <b-input-group size="sm">
+                      <template #prepend>
+                        <b-input-group-text>
+                          <span v-if="!getShiftKeyHold"
+                            class="fa fa-search fa-fw"
+                          />
+                          <span v-else
+                            class="lg-query-shortcut">
+                            F
+                          </span>
+                        </b-input-group-text>
+                      </template>
+                      <b-form-input
+                        tabindex="0"
+                        debounce="400"
+                        ref="linkSearch"
+                        v-model="linkSearchTerm"
+                        v-focus="getFocusLinkSearch"
+                        placeholder="Search links below"
                       />
-                      <span v-else
-                        class="lg-query-shortcut">
-                        F
-                      </span>
-                    </b-input-group-text>
-                  </template>
-                  <b-form-input
-                    tabindex="0"
-                    debounce="400"
-                    ref="linkSearch"
-                    v-model="linkSearchTerm"
-                    v-focus="getFocusLinkSearch"
-                    placeholder="Search links below"
-                  />
-                </b-input-group> <!-- /link search -->
+                    </b-input-group> <!-- /link search -->
+                  </div>
+                  <b-button
+                    size="sm"
+                    class="ml-1"
+                    v-b-tooltip.hover
+                    variant="outline-secondary"
+                    @click="toggleAllLinkGroups"
+                    :title="`${!allLinkGroupsClosed ? 'Collapse' : 'Expand'} ALL Link Groups`">
+                    <span class="fa fa-fw"
+                      :class="`${!allLinkGroupsClosed ? 'fa-chevron-up' : 'fa-chevron-down'}`">
+                    </span>
+                  </b-button>
+                </div>
                 <!-- link groups -->
                 <div class="d-flex flex-wrap align-items-start link-group-cards-wrapper">
                   <template v-if="hasVisibleLinkGroup">
@@ -339,7 +354,15 @@
                           class="w-50 p-2 link-group"
                           v-if="hasVisibleLink(linkGroup)">
                         <template #handle>
-                          <span class="fa fa-bars d-inline link-group-card-handle" />
+                          <span
+                            :id="`${linkGroup._id}-tt`"
+                            class="fa fa-bars d-inline link-group-card-handle">
+                          </span>
+                          <b-tooltip
+                            noninteractive
+                            :target="`${linkGroup._id}-tt`">
+                            Drag &amp; drop to reorder Link Groups
+                          </b-tooltip>
                         </template>
                         <template #default>
                           <link-group-card
@@ -539,6 +562,19 @@ export default {
     },
     hasVisibleLinkGroup () {
       return this.getLinkGroups?.some(this.hasVisibleLink);
+    },
+    allLinkGroupsClosed () {
+      let allClosed = false;
+      if (Object.keys(this.collapsedLinkGroups).length > 0) {
+        allClosed = true;
+        for (const lg in this.collapsedLinkGroups) {
+          if (!this.collapsedLinkGroups[lg]) {
+            allClosed = false;
+            break;
+          }
+        }
+      }
+      return allClosed;
     }
   },
   watch: {
@@ -796,6 +832,15 @@ export default {
         shareLink = `${window.location.origin}/${paramStr(allSharedQueryParams)}`;
       }
       this.$copyText(shareLink);
+    },
+    toggleAllLinkGroups () {
+      // if all are collapsed, open them all
+      // if even one is open, close them all
+      const allClosed = this.allLinkGroupsClosed;
+      for (const linkGroup of this.getLinkGroups) {
+        this.$set(this.collapsedLinkGroups, linkGroup._id, !allClosed);
+      }
+      this.$store.commit('SET_COLLAPSED_LINK_GROUPS', this.collapsedLinkGroups);
     },
     generateReport () {
       if (!this.searchComplete) { return; }

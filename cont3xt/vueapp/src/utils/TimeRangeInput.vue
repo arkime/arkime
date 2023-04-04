@@ -22,6 +22,8 @@
           :style="`width:${inputWidth}`"
           placeholder="Start Date"
           v-focus="getFocusStartDate"
+          @keyup.up="startKeyUp(1)"
+          @keyup.down="startKeyUp(-1)"
           @change="updateStopStart('startDate')"
       />
     </b-input-group>
@@ -39,6 +41,8 @@
           v-model="localStopDate"
           :style="`width:${inputWidth}`"
           placeholder="Stop Date"
+          @keyup.up="stopKeyUp(1)"
+          @keyup.down="stopKeyUp(-1)"
           @change="updateStopStart('stopDate')"
       />
     </b-input-group>
@@ -101,6 +105,18 @@ export default {
     }
   },
   methods: { /* component methods ------------------------------------------- */
+    startKeyUp (days) {
+      const date = new Date(this.localStartDate);
+      const startMs = date.setDate(date.getDate() + days);
+      this.localStartDate = new Date(startMs).toISOString().slice(0, -5) + 'Z';
+      this.updateStopStart('startDate');
+    },
+    stopKeyUp (days) {
+      const date = new Date(this.localStopDate);
+      const stopMs = date.setDate(date.getDate() + days);
+      this.localStopDate = new Date(stopMs).toISOString().slice(0, -5) + 'Z';
+      this.updateStopStart('stopDate');
+    },
     updateStopStart (updated) {
       let startMs = new Date(this.localStartDate).getTime();
       let stopMs = new Date(this.localStopDate).getTime();
