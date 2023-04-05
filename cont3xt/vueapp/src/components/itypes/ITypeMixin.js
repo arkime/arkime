@@ -86,8 +86,9 @@ export const ITypeMixin = {
       if (template?.length) {
         value = applyTemplate(template, { value, data });
       }
+      const uiSettings = this.getIntegrations[integration].uiSettings;
       // apply any post processors
-      return applyPostProcess(postProcess, value, data, this.getIntegrations[integration].uiSettings);
+      return applyPostProcess(postProcess, value, { data, uiSettings });
     },
     gatherIntegrationData (data, itype, query) { // restructures data into the shape {[integrationName]: data}
       const iTypeStub = data?.[itype] || {};
