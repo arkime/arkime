@@ -48,11 +48,19 @@
             :index="i"
             :key="lg._id"
             @update="updateList"
-            :list="linkGroups"
-            v-for="(lg, i) in linkGroups"
+            :list="getLinkGroups"
+            v-for="(lg, i) in getLinkGroups"
             style="position:relative; max-width:calc(100% - 1rem); margin-left:1rem;">
             <template slot="handle">
-              <span class="fa fa-bars d-inline sub-nav-handle" />
+              <span
+                :id="`${lg._id}-tt`"
+                class="fa fa-bars d-inline sub-nav-handle">
+              </span>
+              <b-tooltip
+                noninteractive
+                :target="`${lg._id}-tt`">
+                Drag &amp; drop to reorder Link Groups
+              </b-tooltip>
             </template>
             <template slot="default">
               <a :title="lg.name"
@@ -384,16 +392,16 @@
         </b-alert> <!-- /link group error -->
         <!-- link groups -->
         <link-group-card
-          v-if="linkGroups && linkGroups.length"
-          :link-group="linkGroups[selectedLinkGroup]"
-          :key="linkGroups[selectedLinkGroup]._id"
-          :pre-updated-link-group="updatedLinkGroupMap[linkGroups[selectedLinkGroup]._id]"
+          v-if="getLinkGroups && getLinkGroups.length && getLinkGroups[selectedLinkGroup]"
+          :link-group="getLinkGroups[selectedLinkGroup]"
+          :key="getLinkGroups[selectedLinkGroup]._id"
+          :pre-updated-link-group="updatedLinkGroupMap[getLinkGroups[selectedLinkGroup]._id]"
           @update-link-group="updateLinkGroup"
         /> <!-- /link groups -->
         <!-- no link groups -->
         <div
           class="row lead mt-4"
-          v-if="linkGroups && !linkGroups.length">
+          v-if="getLinkGroups && !getLinkGroups.length">
           <div class="col">
             No Link Groups are configured.
             <b-button
@@ -555,12 +563,6 @@ export default {
       set () {
         this.$store.commit('SET_LINK_GROUPS_ERROR', '');
       }
-    },
-    linkGroups () {
-      if (this.getLinkGroups == null) { return undefined; }
-      const sortedLinkGroups = [...this.getLinkGroups];
-      sortedLinkGroups.sort((a, b) => a.name.localeCompare(b.name));
-      return sortedLinkGroups;
     },
     roles () {
       return this.getUser?.roles ?? [];

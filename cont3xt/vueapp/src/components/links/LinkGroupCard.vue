@@ -304,7 +304,6 @@ export default {
       rawEditMode: false,
       changesMade: false,
       confirmDelete: false,
-      collapsedLinkGroups: this.$store.state.collapsedLinkGroups,
       updatedLinkGroup: this.preUpdatedLinkGroup ?? JSON.parse(JSON.stringify(this.linkGroup))
     };
   },
@@ -312,6 +311,9 @@ export default {
     ...mapGetters([
       'getUser', 'getCheckedLinks'
     ]),
+    collapsedLinkGroups () {
+      return this.$store.state.collapsedLinkGroups;
+    },
     filteredLinks () {
       const links = [];
 
