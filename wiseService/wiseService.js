@@ -205,7 +205,6 @@ const cspDirectives = {
 const cspHeader = helmet.contentSecurityPolicy({
   directives: cspDirectives
 });
-app.use(cspHeader);
 
 function getConfig (section, sectionKey, d) {
   const key = `${section}.${sectionKey}`;
@@ -1614,49 +1613,6 @@ internals.configSchemes.ini = {
 };
 
 // ============================================================================
-// VUE APP
-// ============================================================================
-const Vue = require('vue');
-const vueServerRenderer = require('vue-server-renderer');
-
-// Factory function to create fresh Vue apps
-function createApp () {
-  return new Vue({
-    template: '<div id="app"></div>'
-  });
-}
-
-// Send back vue for page tabs
-app.get(['/', '/config', '/query', '/help'], (req, res, next) => {
-  const renderer = vueServerRenderer.createRenderer({
-    template: fs.readFileSync(path.join(__dirname, '/vueapp/dist/index.html'), 'utf-8')
-  });
-
-  const appContext = {
-    nonce: res.locals.nonce,
-    version: version.version
-  };
-
-  // Create a fresh Vue app instance
-  const vueApp = createApp();
-
-  // Render the Vue instance to HTML
-  renderer.renderToString(vueApp, appContext, (err, html) => {
-    if (err) {
-      console.log('ERROR - fetching vue index page:', err);
-      if (err.code === 404) {
-        res.status(404).end('Page not found');
-      } else {
-        res.status(500).end('Internal Server Error');
-      }
-      return;
-    }
-
-    res.send(html);
-  });
-});
-
-// ============================================================================
 // AUTHED ROUTES - only needed for webconfig, must be at bottom
 // ============================================================================
 function isWiseAdmin (req, res, next) {
@@ -1849,6 +1805,49 @@ if (internals.webconfig) {
 
 // Replace the default express error handler
 app.use(ArkimeUtil.expressErrorHandler);
+
+// ============================================================================
+// VUE APP
+// ============================================================================
+const Vue = require('vue');
+const vueServerRenderer = require('vue-server-renderer');
+
+// Factory function to create fresh Vue apps
+function createApp () {
+  return new Vue({
+    template: '<div id="app"></div>'
+  });
+}
+
+// Send back vue for every other request
+app.use(cspHeader, (req, res, next) => {
+  const renderer = vueServerRenderer.createRenderer({
+    template: fs.readFileSync(path.join(__dirname, '/vueapp/dist/index.html'), 'utf-8')
+  });
+
+  const appContext = {
+    nonce: res.locals.nonce,
+    version: version.version
+  };
+
+  // Create a fresh Vue app instance
+  const vueApp = createApp();
+
+  // Render the Vue instance to HTML
+  renderer.renderToString(vueApp, appContext, (err, html) => {
+    if (err) {
+      console.log('ERROR - fetching vue index page:', err);
+      if (err.code === 404) {
+        res.status(404).end('Page not found');
+      } else {
+        res.status(500).end('Internal Server Error');
+      }
+      return;
+    }
+
+    res.send(html);
+  });
+});
 
 // ----------------------------------------------------------------------------
 // Main
