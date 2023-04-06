@@ -90,6 +90,16 @@ class URLScanIntegration extends Integration {
             label: 'screenshot',
             field: 'screenshot',
             type: 'externalLink'
+          },
+          {
+            label: 'malicious?',
+            field: 'verdicts.malicious'
+          },
+          {
+            label: 'brand',
+            field: 'brand',
+            type: 'array',
+            fieldRoot: 'key'
           }
         ]
       }
