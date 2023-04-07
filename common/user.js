@@ -893,6 +893,7 @@ class User {
    * POST - /api/user/password
    *
    * Update user password.
+   * NOTE: currentPassword is not required so that a usersAdmin can update anyone user's password.
    * @name /user/password
    * @returns {boolean} success - Whether the update password operation was successful.
    * @returns {string} text - The success/error message to (optionally) display to the user.
