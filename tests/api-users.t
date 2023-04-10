@@ -1,4 +1,4 @@
-use Test::More tests => 128;
+use Test::More tests => 131;
 use Cwd;
 use URI::Escape;
 use MolochTest;
@@ -132,6 +132,14 @@ my $json;
     is (exists $users->{data}->[0]->{lastUsed}, 1, "last used exists #3");
     delete $users->{data}->[0]->{lastUsed};
     eq_or_diff($users->{data}->[0], from_json('{"roles": ["usersAdmin"], "userId": "test1", "removeEnabled": true, "expression": "foo", "headerAuthEnabled": true, "userName": "UserNameUpdated", "id": "test1", "emailSearch": true, "enabled": false, "webEnabled": true, "packetSearch": false, "disablePcapDownload": false, "hideFiles": false, "hidePcap": false, "hideStats": false, "welcomeMsgNum": 0, "roleAssigners": []}', {relaxed => 1}), "Test User Update", { context => 3 });
+
+# update user settings
+    $json = viewerPostToken("/api/user/settings?molochRegressionUser=test1", '{"logo":"testlogo.png","__proto":{"bad":"stuff"}}', $test1Token);
+    eq_or_diff($json, from_json('{"text": "Updated user settings successfully", "success": true}'));
+
+    $json = viewerGetToken("/api/user/settings?molochRegressionUser=test1", $test1Token);
+    ok(!exists $json->{__proto__}, "no prototype pollution");
+    eq_or_diff($json->{logo}, "testlogo.png");
 
 # Add User 2
     my $json = viewerPostToken2("/api/user", '{"userId": "test2", "userName": "UserName2", "enabled":true, "password":"password"}', $token2);

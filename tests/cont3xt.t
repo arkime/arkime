@@ -210,7 +210,8 @@ $json = cont3xtPutToken('/api/linkGroup', to_json({
     name => "foo1",
     url => "http://www.foo.com",
     itypes => ["ip", "domain"]
-  }]
+  }],
+  __proto__ => { bad => "stuff" }
 }), $token);
 eq_or_diff($json, from_json('{"success": true, "text": "Success"}'));
 
@@ -396,11 +397,10 @@ $json = cont3xtPostToken('/api/view', to_json({
 }), $token);
 eq_or_diff($json, from_json('{"success": false, "text": "integrations must contain strings"}'));
 
-
-
 # Good
 $json = cont3xtPostToken('/api/view', to_json({
-  name => "view1"
+  name => "view1",
+  __proto__ => { bad => "stuff" }
 }), $token);
 delete $json->{view}->{_id};
 eq_or_diff($json, from_json('{"view":{"_viewable":true,"name":"view1","_editable":true,"creator":"anonymous"},"success":true,"text":"Success"}'));

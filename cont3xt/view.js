@@ -74,7 +74,7 @@ class View {
     )(view);
 
     if (!ArkimeUtil.isString(view.name)) {
-      return 'Missing name';
+      return { msg: 'Missing name' };
     }
 
     view.name = ArkimeUtil.removeSpecialChars(view.name);
