@@ -793,9 +793,8 @@ SavepcapS3File_t *writer_s3_create(const MolochPacket_t *packet)
     static char       *extension[3] = {"", ".gz", ".zst"};
     struct tm          tmp;
     int                offset = 6 + strlen(s3Region) + strlen(s3Bucket);
-    char              *compressionBlockSizeArg = MOLOCH_VAR_ARG_SKIP;
-    char               compressionBlockSize[100];
-    char              *packetPosEncoding = MOLOCH_VAR_ARG_SKIP;
+    char              *compressionBlockSizeArg = MOLOCH_VAR_ARG_INT_SKIP;
+    char              *packetPosEncoding = MOLOCH_VAR_ARG_STR_SKIP;
 
     localtime_r(&packet->ts.tv_sec, &tmp);
     snprintf(filename, sizeof(filename), "s3://%s/%s/%s/#NUMHEX#-%02d%02d%02d-#NUM#.pcap%s", s3Region, s3Bucket, config.nodeName, tmp.tm_year%100, tmp.tm_mon+1, tmp.tm_mday, extension[compressionMode]);
@@ -808,8 +807,7 @@ SavepcapS3File_t *writer_s3_create(const MolochPacket_t *packet)
     MOLOCH_UNLOCK(fileQ);
 
     if (compressionMode != MOLOCH_COMPRESSION_NONE) {
-        snprintf(compressionBlockSize, sizeof(compressionBlockSize), "###%d", s3CompressionBlockSize);
-        compressionBlockSizeArg = compressionBlockSize;
+        compressionBlockSizeArg = (char *)(uint64_t)s3CompressionBlockSize;
     }
 
     if (config.gapPacketPos) {
@@ -818,7 +816,7 @@ SavepcapS3File_t *writer_s3_create(const MolochPacket_t *packet)
 
     s3file->outputFileName = moloch_db_create_file_full(packet->ts.tv_sec, filename, 0, 0, &s3file->outputId,
             "packetPosEncoding", packetPosEncoding,
-            "compressionBlockSize", compressionBlockSizeArg,
+            "#compressionBlockSize", compressionBlockSizeArg,
             NULL);
     s3file->outputPath = s3file->outputFileName + offset;
     clock_gettime(CLOCK_REALTIME_COARSE, &s3file->outputFileTime);
@@ -1016,9 +1014,6 @@ LOCAL void writer_s3_file_time_check(MolochSession_t *session, void *UNUSED(uw1)
  */
 LOCAL gboolean writer_s3_file_time_gfunc (gpointer UNUSED(user_data))
 {
-    struct timespec ts;
-    clock_gettime(CLOCK_REALTIME_COARSE, &ts);
-
     for (int thread = 0; thread < config.packetThreads; thread++) {
         moloch_session_add_cmd_thread(thread, NULL, NULL, writer_s3_file_time_check);
     }

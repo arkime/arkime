@@ -2059,25 +2059,27 @@ char *moloch_db_create_file_full(time_t firstPacket, const char *name, uint64_t 
         if (!value)
             break;
 
-        if (value == MOLOCH_VAR_ARG_SKIP)
-            continue;
 
 
-        BSB_EXPORT_sprintf(jbsb, ", \"%s\": ", field);
+        if (field[0] == '#') {
+            if (value == MOLOCH_VAR_ARG_INT_SKIP)
+                continue;
+            BSB_EXPORT_sprintf(jbsb, ", \"%s\": ", field + 1);
+        } else {
+            if (value == MOLOCH_VAR_ARG_STR_SKIP)
+                continue;
+            BSB_EXPORT_sprintf(jbsb, ", \"%s\": ", field);
+        }
 
         // HACK: But need num as we create this
         if (strcmp(field, "indexFilename") == 0) {
             char *value1 = g_regex_replace_literal(numRegex, value, -1, 0, numstr, 0, NULL);
             BSB_EXPORT_sprintf(jbsb, "\"%s\"", value1);
             g_free(value1);
-        } else if ((long)value < 32) {
-            // If pointer is < 32 treat as number
+        } else if (field[0] == '#') {
             BSB_EXPORT_sprintf(jbsb, "%ld", (long)value);
         } else if (*value == '{' || *value == '[') {
             BSB_EXPORT_sprintf(jbsb, "%s", value);
-        } else if (value[0] == '#' && value[1] == '#' && value[2] == '#') {
-            // Start with ### means its actually a number
-            BSB_EXPORT_sprintf(jbsb, "%s", value + 3);
         } else {
             BSB_EXPORT_sprintf(jbsb, "\"%s\"", value);
         }
@@ -2730,7 +2732,7 @@ void moloch_db_exit()
 
         if (fieldBSB.buf && BSB_LENGTH(fieldBSB) > 0) {
             moloch_db_fieldsbsb_timeout((gpointer)1);
-        } 
+        }
 
         if (fieldBSB.buf) {
             moloch_http_free_buffer(fieldBSB.buf);
