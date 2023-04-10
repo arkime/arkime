@@ -44,7 +44,7 @@ LOCAL void gh0st_classify(MolochSession_t *session, const unsigned char *data, i
     if (len < 15)
         return;
 
-    if (data[13] == 0x78 &&
+    if (data[13] == 0x78 && data[14] == 0x9c &&
         (((data[8] == 0) && (data[7] == 0) && (((data[6]&0xff) << (uint32_t)8 | (data[5]&0xff)) == len)) ||  // Windows
          ((data[5] == 0) && (data[6] == 0) && (((data[7]&0xff) << (uint32_t)8 | (data[8]&0xff)) == len)))) { // Mac
         moloch_session_add_protocol(session, "gh0st");
