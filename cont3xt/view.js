@@ -66,43 +66,50 @@ class View {
    * Verify the view, returns error msg on failure
    */
   static verifyView (view) {
+    view = (
+      ({ // only allow these properties in views
+        // eslint-disable-next-line no-shadow
+        name, integrations, viewRoles, editRoles, creator
+      }) => ({ name, integrations, viewRoles, editRoles, creator })
+    )(view);
+
     if (!ArkimeUtil.isString(view.name)) {
-      return 'Missing name';
+      return { msg: 'Missing name' };
     }
 
     view.name = ArkimeUtil.removeSpecialChars(view.name);
 
     if (view.viewRoles !== undefined) {
-      if (!Array.isArray(view.viewRoles)) { return 'viewRoles must be array'; }
+      if (!Array.isArray(view.viewRoles)) { return { msg: 'viewRoles must be array' }; }
 
       for (const viewRole of view.viewRoles) {
         if (!ArkimeUtil.isString(viewRole)) {
-          return 'viewRoles must contain strings';
+          return { msg: 'viewRoles must contain strings' };
         }
       }
     }
 
     if (view.editRoles !== undefined) {
-      if (!Array.isArray(view.editRoles)) { return 'editRoles must be array'; }
+      if (!Array.isArray(view.editRoles)) { return { msg: 'editRoles must be array' }; }
 
       for (const editRole of view.editRoles) {
         if (!ArkimeUtil.isString(editRole)) {
-          return 'editRoles must contain strings';
+          return { msg: 'editRoles must contain strings' };
         }
       }
     }
 
     if (view.integrations !== undefined) {
-      if (!Array.isArray(view.integrations)) { return 'integrations must be array'; }
+      if (!Array.isArray(view.integrations)) { return { msg: 'integrations must be array' }; }
 
       for (const integration of view.integrations) {
         if (!ArkimeUtil.isString(integration)) {
-          return 'integrations must contain strings';
+          return { msg: 'integrations must contain strings' };
         }
       }
     }
 
-    return null;
+    return { view };
   }
 
   /**
@@ -115,10 +122,10 @@ class View {
    * @returns {string} text - The success/error message to (optionally) display to the user
    */
   static async apiCreate (req, res, next) {
-    const view = req.body;
-    view.creator = req.user.userId;
+    const receivedView = req.body;
+    receivedView.creator = req.user.userId;
 
-    const msg = View.verifyView(view);
+    const { view, msg } = View.verifyView(receivedView);
     if (msg) {
       return res.send({ success: false, text: msg });
     }
@@ -154,10 +161,10 @@ class View {
       return res.send({ success: false, text: 'Permission denied' });
     }
 
-    const view = req.body;
-    view.creator = dbView.creator; // Make sure the creator doesn't get changed
+    const receivedView = req.body;
+    receivedView.creator = dbView.creator; // Make sure the creator doesn't get changed
 
-    const msg = View.verifyView(view);
+    const { view, msg } = View.verifyView(receivedView);
     if (msg) {
       return res.send({ success: false, text: msg });
     }

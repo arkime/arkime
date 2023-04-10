@@ -1242,7 +1242,7 @@ app.get( // user settings endpoint
   userAPIs.getUserSettings
 );
 
-app.post( // udpate user settings endpoint
+app.post( // update user settings endpoint
   ['/api/user/settings', '/user/settings/update'],
   [ArkimeUtil.noCacheJson, checkCookieToken, logAction(), ArkimeUtil.getSettingUserDb],
   userAPIs.updateUserSettings
