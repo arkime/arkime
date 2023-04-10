@@ -83,7 +83,8 @@
 
 #define MOLOCH_SESSION_v6(s) ((s)->sessionId[0] == 37)
 
-#define MOLOCH_VAR_ARG_SKIP (char *)1LL
+#define MOLOCH_VAR_ARG_STR_SKIP (char *)1LL
+#define MOLOCH_VAR_ARG_INT_SKIP (char *)0x7fffffffffffffffLL
 
 #define POINTER_TO_FLOAT(p) *(float *)&p
 

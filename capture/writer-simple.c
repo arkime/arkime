@@ -464,9 +464,9 @@ LOCAL void writer_simple_write(const MolochSession_t * const session, MolochPack
         char  dekhex[1024];
         char *name = 0;
         char *kekId;
-        char *packetPosEncoding = MOLOCH_VAR_ARG_SKIP;
-        char *uncompressedBitsArg = MOLOCH_VAR_ARG_SKIP;
-        char *compressionArg = MOLOCH_VAR_ARG_SKIP;
+        char *packetPosEncoding = MOLOCH_VAR_ARG_STR_SKIP;
+        char *uncompressedBitsArg = MOLOCH_VAR_ARG_INT_SKIP;
+        char *compressionArg = MOLOCH_VAR_ARG_STR_SKIP;
         char  indexFilename[1024];
 
         indexFilename[0] = 0;
@@ -519,9 +519,9 @@ LOCAL void writer_simple_write(const MolochSession_t * const session, MolochPack
                 name = ".pcap";
             name = moloch_db_create_file_full(packet->ts.tv_sec, name, 0, 0, &info->file->id,
                                               "packetPosEncoding", packetPosEncoding,
-                                              "uncompressedBits", uncompressedBitsArg,
+                                              "#uncompressedBits", uncompressedBitsArg,
                                               "compression", compressionArg,
-                                              "indexFilename", indexFilename[0] ? indexFilename : MOLOCH_VAR_ARG_SKIP,
+                                              "indexFilename", indexFilename[0] ? indexFilename : MOLOCH_VAR_ARG_STR_SKIP,
                                               (char *)NULL);
             break;
         case MOLOCH_SIMPLE_XOR2048:
@@ -534,9 +534,9 @@ LOCAL void writer_simple_write(const MolochSession_t * const session, MolochPack
                                               "dek", dekhex,
                                               "kekId", kekId,
                                               "packetPosEncoding", packetPosEncoding,
-                                              "uncompressedBits", uncompressedBitsArg,
+                                              "#uncompressedBits", uncompressedBitsArg,
                                               "compression", compressionArg,
-                                              "indexFilename", indexFilename[0] ? indexFilename : MOLOCH_VAR_ARG_SKIP,
+                                              "indexFilename", indexFilename[0] ? indexFilename : MOLOCH_VAR_ARG_STR_SKIP,
                                               (char *)NULL);
             g_free(kekId);
             break;
@@ -559,9 +559,9 @@ LOCAL void writer_simple_write(const MolochSession_t * const session, MolochPack
                                               "dek", dekhex,
                                               "kekId", kekId,
                                               "packetPosEncoding", packetPosEncoding,
-                                              "uncompressedBits", uncompressedBitsArg,
+                                              "#uncompressedBits", uncompressedBitsArg,
                                               "compression", compressionArg,
-                                              "indexFilename", indexFilename[0] ? indexFilename : MOLOCH_VAR_ARG_SKIP,
+                                              "indexFilename", indexFilename[0] ? indexFilename : MOLOCH_VAR_ARG_STR_SKIP,
                                               (char *)NULL);
             g_free(kekId);
             break;
