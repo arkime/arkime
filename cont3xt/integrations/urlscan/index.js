@@ -106,6 +106,25 @@ class URLScanIntegration extends Integration {
     ]
   };
 
+  tidbits = {
+    order: 1000,
+    fields: [
+      {
+        field: 'results',
+        fieldRoot: 'verdicts.malicious',
+        type: 'array',
+        postProcess: [
+          'removeNullish',
+          { filter: false },
+          'dedupeArray',
+          { replaceValues: 'Malicious' }
+        ],
+        display: 'dangerGroup',
+        tooltip: 'malicious?'
+      }
+    ]
+  };
+
   constructor () {
     super();
 
