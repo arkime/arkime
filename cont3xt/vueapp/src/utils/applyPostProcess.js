@@ -55,6 +55,14 @@ const keyedToArrayWith = (value, { param: fieldName }) => {
   return Object.entries(value).map(([key, val]) => ({ [fieldName]: key, ...val }));
 };
 
+const dedupeArray = (value) => {
+  return [...new Set(value)];
+};
+
+const replaceValues = (value, { param: condition }, shared) => {
+  return value.map(v => { return condition; });
+};
+
 const filterFunc = (value, { param: condition }, shared) => {
   return value?.filter(element => applyPostProcess(condition, element, shared));
 };
@@ -128,6 +136,8 @@ const customFilters = {
   mapTo,
   map,
   keyedToArrayWith,
+  dedupeArray,
+  replaceValues,
   setting,
   data: dataFunc,
   escapeValue,
