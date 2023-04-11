@@ -33,6 +33,10 @@
             class="nav-link nested">
             General
           </a>
+          <a href="help#auth"
+            class="nav-link nested">
+            Auth
+          </a>
           <a href="help#password"
             class="nav-link nested">
             Password
@@ -55,7 +59,7 @@
             Parliament contains a grouped list of your Arkime clusters.
           </strong></p>
           <p class="lead">
-            Parliament allows users to view your Arkime cluster's status and
+            Parliament allows users to view each Arkime cluster's status and
             navigate to each cluster.
           </p>
           <!-- /about -->
@@ -78,8 +82,8 @@
             and hover over issues and ES health statuses for more information.
           </p>
           <p>
-            <strong>Once logged in</strong>, a user can acknowledge and ignore issues for each cluster as well as update
-            the Parliament when in Edit Mode. To enter this mode, toggle the switch on the top right
+            <strong>Once logged in</strong>, a parliamentUser can acknowledge and ignore issues for each cluster.
+            A parliamentAdmin can update the Parliament when in Edit Mode. To enter this mode, toggle the switch on the top right
             (below the navbar). Now you can add, update, delete, and reorder groups and clusters in your Parliament.
           </p>
           <!-- /dashboard -->
@@ -96,8 +100,8 @@
             The issues page contains a list of issues that your Parliament is experiencing.
           </p>
           <p>
-            <strong>Once logged in</strong>, a user can ignore, acknowledge, and remove
-            acknowledged issues for every cluster.
+            <strong>Once logged in</strong>, a parliamentUser and a parliamentAdmin
+            can ignore, acknowledge, and remove acknowledged issues for every cluster.
           </p>
           <p>
             <span class="fa fa-check">
@@ -114,7 +118,6 @@
             (via the ignore dropdown button or automatically after the set ignore time has expired).
           </p>
 
-          <!-- TODO describe issue types -->
           <p>
             Issue types include:
           </p>
@@ -228,20 +231,47 @@
 
             <!-- password -->
             <h6 id="password">
-              <span class="fa fa-fw fa-lock">
-              </span>&nbsp;
-              Password
+              <span class="fa fa-fw fa-lock mr-2"></span>
+              Password (<strong>deprecated</strong>)
             </h6>
+            <p>
+              <strong>These passwords are being deprecated</strong>, please use the Auth section
+              to configure access to your Parliament. Auth uses the the Arkime
+              User's database for Parliament access.
+            </p>
             <p>
               The password section allows a user to update the Parliament password or create
               a new password if the Parliament was started without one.
             </p>
             <!-- /password -->
 
+            <!-- auth -->
+            <h6 id="auth">
+              <span class="fa fa-fw fa-key mr-2"></span>
+              Auth
+            </h6>
+            <p>
+              Auth uses the the Arkime User's database for Parliament access.
+            </p>
+            <ul>
+              <li>
+                All Arkime users can view the Parliament (like dashboard only mode).
+              </li>
+              <li>
+                Users with the "parliamentUser" role can ack, ignore, and delete
+                issues within the Parliament.
+              </li>
+              <li>
+                Users with the "parliamentAdmin" role can do everything a "parliamentUser"
+                can, plus they can configure the Parliament by adding/removing/updating
+                groups/clusters and manage the Parliament settings.
+              </li>
+            </ul>
+            <!-- /auth -->
+
             <!-- notifiers -->
             <h6 id="notifiers">
-              <span class="fa fa-fw fa-bell">
-              </span>&nbsp;
+              <span class="fa fa-fw fa-bell mr-2"></span>
               Notifiers
             </h6>
             <p>
