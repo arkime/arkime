@@ -58,6 +58,11 @@ void tcp_server(void) {
                 LOG("Error establishing new connection: %d", client_fd);
             }
             else {
+                if (config.debug) {
+                    char str[INET6_ADDRSTRLEN];
+                    inet_ntop(AF_INET, &client.sin_addr, str, sizeof(str));
+                    LOG("Incomding health check %s:%d", str, client.sin_port);
+                }
                 close(client_fd);
             }
     }
@@ -79,7 +84,7 @@ void *tcp_listener(void *vargp)
  */
 void moloch_plugin_init()
 {
-  	pthread_t thread_id;
+    pthread_t thread_id;
 
     tcp_port = moloch_config_int(NULL, "tcpHealthCheckPort", 0, 0, 65535);
     if (tcp_port) {
