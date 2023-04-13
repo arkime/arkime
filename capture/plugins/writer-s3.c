@@ -954,6 +954,9 @@ void writer_s3_init(char *UNUSED(name))
             LOG("metadata base: %s cred uri: %s", uri, credURL);
         }
         g_free(uri);
+
+        g_timeout_add_seconds( 280, writer_s3_refresh_creds_gfunc, 0);
+        writer_s3_refresh_creds_gfunc(NULL);
     } else if (!s3ConfigCreds.s3AccessKeyId || !s3ConfigCreds.s3AccessKeyId[0]) {
         // Fetch the data from the EC2 metadata service
         size_t rlen;
