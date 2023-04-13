@@ -88,7 +88,6 @@ LOCAL  char                  *s3Region;
 LOCAL  char                  *s3Host;
 LOCAL  char                  *s3Bucket;
 LOCAL  char                  s3PathAccessStyle;
-LOCAL  char                  *s3Role;
 LOCAL  char                   s3Compress;
 LOCAL  char                  *s3StorageClass;
 LOCAL  uint32_t               s3MaxConns;
@@ -96,6 +95,8 @@ LOCAL  uint32_t               s3MaxRequests;
 LOCAL  char                   s3UseHttp;
 LOCAL  char                   s3UseTokenForMetadata;
 LOCAL  int                    s3CompressionLevel;
+
+LOCAL  char                   credURL[1024];
 
 LOCAL  int                    inprogress;
 
@@ -253,17 +254,17 @@ LOCAL gboolean writer_s3_refresh_creds_gfunc (gpointer UNUSED(user_data))
     char role_url[1000];
     size_t rlen;
 
-    snprintf(role_url, sizeof(role_url), "/latest/meta-data/iam/security-credentials/%s", s3Role);
-
     S3Credentials *newCreds = MOLOCH_TYPE_ALLOC0(S3Credentials);
 
-    unsigned char *credentials = moloch_get_instance_metadata(metadataServer, role_url, -1, &rlen);
+    unsigned char *credentials = moloch_get_instance_metadata(metadataServer, credURL, -1, &rlen);
 
     if (credentials && rlen) {
         // Now need to extract access key, secret key and token
         newCreds->s3AccessKeyId = moloch_js0n_get_str(credentials, rlen, "AccessKeyId");
         newCreds->s3SecretAccessKey = moloch_js0n_get_str(credentials, rlen, "SecretAccessKey");
         newCreds->s3Token = moloch_js0n_get_str(credentials, rlen, "Token");
+        if (config.debug)
+            LOG("Found AccessKeyId %s", newCreds->s3AccessKeyId);
     }
 
     if (newCreds->s3AccessKeyId && newCreds->s3SecretAccessKey && newCreds->s3Token) {
@@ -893,6 +894,7 @@ void writer_s3_init(char *UNUSED(name))
     s3MaxRequests         = moloch_config_int(NULL, "s3MaxRequests", 500, 10, 5000);
     s3UseHttp             = moloch_config_boolean(NULL, "s3UseHttp", FALSE);
     s3UseTokenForMetadata = moloch_config_boolean(NULL, "s3UseTokenForMetadata", TRUE);
+    int s3UseECSEnv       = moloch_config_boolean(NULL, "s3UseECSEnv", FALSE);
 
     s3ConfigCreds.s3AccessKeyId     = moloch_config_str(NULL, "s3AccessKeyId", NULL);
     s3ConfigCreds.s3SecretAccessKey = moloch_config_str(NULL, "s3SecretAccessKey", NULL);
@@ -926,7 +928,33 @@ void writer_s3_init(char *UNUSED(name))
         s3Compress = FALSE;
     }
 
-    if (!s3ConfigCreds.s3AccessKeyId || !s3ConfigCreds.s3AccessKeyId[0]) {
+    if (s3UseECSEnv) {
+        char *uri = getenv("ECS_CONTAINER_METADATA_URI_V4");
+        if (!uri)
+            LOGEXIT("ECS_CONTAINER_METADATA_URI_V4 not set");
+        uri = g_strdup(uri);
+
+        // Find slash after https://
+        char *slash = strchr(uri + 8, '/');
+
+        if (slash) {
+            *slash = 0;
+        }
+
+
+        char *relativeURI = getenv("AWS_CONTAINER_CREDENTIALS_RELATIVE_URI");
+        if (!relativeURI)
+            LOGEXIT("AWS_CONTAINER_CREDENTIALS_RELATIVE_URI not set");
+
+        g_strlcpy(credURL, relativeURI, sizeof(credURL));
+
+        metadataServer = moloch_http_create_server(uri, 10, 10, 0);
+
+        if (config.debug) {
+            LOG("metadata base: %s cred uri: %s", uri, credURL);
+        }
+        g_free(uri);
+    } else if (!s3ConfigCreds.s3AccessKeyId || !s3ConfigCreds.s3AccessKeyId[0]) {
         // Fetch the data from the EC2 metadata service
         size_t rlen;
 
@@ -942,7 +970,7 @@ void writer_s3_init(char *UNUSED(name))
             exit(1);
         }
 
-        s3Role = g_strndup((const char *) rolename, rlen);
+        snprintf(credURL, sizeof(credURL), "/latest/meta-data/iam/security-credentials/%.*s", (int)rlen, rolename);
         free(rolename);
 
         g_timeout_add_seconds( 280, writer_s3_refresh_creds_gfunc, 0);
