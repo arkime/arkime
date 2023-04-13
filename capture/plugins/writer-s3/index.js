@@ -49,7 +49,7 @@ function splitRemain (str, separator, limit) {
   return ret;
 }
 /// ///////////////////////////////////////////////////////////////////////////////
-function makeS3 (node, region) {
+function makeS3 (node, region, bucket) {
   const key = Config.getFull(node, 's3AccessKeyId') ?? Config.get('s3AccessKeyId');
 
   const s3 = S3s[region + key];
@@ -73,7 +73,7 @@ function makeS3 (node, region) {
     s3Params.endpoint = Config.getFull(node, 's3Host');
   }
 
-  const bucket = Config.getFull(node, 's3Bucket');
+  bucket ??= Config.getFull(node, 's3Bucket');
   const bucketHasDot = bucket.indexOf('.') >= 0;
   if (Config.getBoolFull(node, 's3PathAccessStyle', bucketHasDot) === true) {
     s3Params.s3ForcePathStyle = true;
@@ -98,7 +98,7 @@ function processSessionIdS3 (session, headerCb, packetCb, endCb, limit) {
     info.compressionBlockSize ??= DEFAULT_COMPRESSED_BLOCK_SIZE;
 
     // Make s3 for this request, all will be in same region
-    s3 = makeS3(fields.node, parts[2]);
+    s3 = makeS3(fields.node, parts[2], parts[3]);
 
     const params = {
       Bucket: parts[3],
@@ -349,7 +349,7 @@ function s3Expire () {
 
     data.hits.hits.forEach((item) => {
       const parts = splitRemain(item._source.name, '/', 4);
-      const s3 = makeS3(item._source.node, parts[2]);
+      const s3 = makeS3(item._source.node, parts[2], parts[3]);
       s3.deleteObject({ Bucket: parts[3], Key: parts[4] }, (err) => {
         if (err) {
           console.log('Couldn\'t delete from S3', item._id, item._source);
