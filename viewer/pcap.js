@@ -508,6 +508,17 @@ Pcap.prototype.udp = function (buffer, obj, pos) {
   if ((obj.udp.dport === 0x12b5) && (obj.udp.data.length > 8) && ((obj.udp.data[0] & 0x77) === 0) && ((obj.udp.data[1] & 0xb7) === 0)) {
     this.ether(buffer.slice(16), obj, pos + 16);
   }
+
+  // geneve
+  if ((obj.udp.dport === 6081) && (obj.udp.data.length > 8) && ((obj.udp.data[0] & 0xc0) === 0) && ((obj.udp.data[1] & 0x3f) === 0)) {
+    const optlen = obj.udp.data[0] & 0x3f;
+    const protocol = (obj.udp.data[2] << 8) | obj.udp.data[3];
+    const offset = 8 + optlen * 4;
+
+    if (8 + offset < buffer.length) {
+      this.ethertyperun(protocol, buffer.slice(8 + offset), obj, pos + 8 + offset);
+    }
+  }
 };
 
 Pcap.prototype.sctp = function (buffer, obj, pos) {
@@ -567,27 +578,11 @@ Pcap.prototype.gre = function (buffer, obj, pos) {
     bpos += 4;
   }
 
+  if (this.ethertyperun(obj.gre.type, buffer.slice(bpos), obj, pos + bpos)) { return; }
+
   switch (obj.gre.type) {
-  case 0x0800:
-    this.ip4(buffer.slice(bpos), obj, pos + bpos);
-    break;
-  case 0x86dd:
-    this.ip6(buffer.slice(bpos), obj, pos + bpos);
-    break;
-  case 0x6558:
-    this.ether(buffer.slice(bpos), obj, pos + bpos);
-    break;
-  case 0x6559:
-    this.framerelay(buffer.slice(bpos), obj, pos + bpos);
-    break;
-  case 0x880b:
-    this.ppp(buffer.slice(bpos), obj, pos + bpos);
-    break;
   case 0x88be:
     this.ether(buffer.slice(bpos + 8), obj, pos + bpos + 8);
-    break;
-  case 0x8847:
-    this.mpls(buffer.slice(bpos), obj, pos + bpos);
     break;
   default:
     console.log('gre Unknown type', obj.gre.type);
@@ -746,22 +741,41 @@ Pcap.prototype.mpls = function (buffer, obj, pos) {
   }
 };
 
+Pcap.prototype.ethertyperun = function (type, buffer, obj, pos) {
+  switch (type) {
+  case 0x0800:
+    this.ip4(buffer, obj, pos);
+    break;
+  case 0x86dd:
+    this.ip6(buffer, obj, pos);
+    break;
+  case 0x8864:
+    this.pppoe(buffer, obj, pos);
+    break;
+  case 0x8847:
+    this.mpls(buffer, obj, pos);
+    break;
+  case 0x6558:
+    this.ether(buffer, obj, pos);
+    break;
+  case 0x6559:
+    this.framerelay(buffer, obj, pos);
+    break;
+  case 0x880b:
+    this.ppp(buffer, obj, pos);
+    break;
+  default:
+    return false;
+  }
+  return true;
+};
+
 Pcap.prototype.ethertype = function (buffer, obj, pos) {
   obj.ether.type = buffer.readUInt16BE(0);
 
+  if (this.ethertyperun(obj.ether.type, buffer.slice(2), obj, pos + 2)) { return; }
+
   switch (obj.ether.type) {
-  case 0x0800:
-    this.ip4(buffer.slice(2), obj, pos + 2);
-    break;
-  case 0x86dd:
-    this.ip6(buffer.slice(2), obj, pos + 2);
-    break;
-  case 0x8864:
-    this.pppoe(buffer.slice(2), obj, pos + 2);
-    break;
-  case 0x8847:
-    this.mpls(buffer.slice(2), obj, pos + 2);
-    break;
   case 0x8100: // VLAN
   case 0x88a8: // Q-in-Q
     this.ethertype(buffer.slice(4), obj, pos + 4);
