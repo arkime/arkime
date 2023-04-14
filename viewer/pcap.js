@@ -578,11 +578,7 @@ Pcap.prototype.gre = function (buffer, obj, pos) {
     bpos += 4;
   }
 
-  const ran = this.ethertyperun(obj.gre.type, buffer.slice(bpos), obj, pos + bpos);
-
-  if (ran) {
-    return;
-  }
+  if (this.ethertyperun(obj.gre.type, buffer.slice(bpos), obj, pos + bpos)) { return; }
 
   switch (obj.gre.type) {
   case 0x88be:
@@ -777,11 +773,7 @@ Pcap.prototype.ethertyperun = function (type, buffer, obj, pos) {
 Pcap.prototype.ethertype = function (buffer, obj, pos) {
   obj.ether.type = buffer.readUInt16BE(0);
 
-  const ran = this.ethertyperun(obj.ether.type, buffer.slice(2), obj, pos + 2);
-
-  if (ran) {
-    return;
-  }
+  if (this.ethertyperun(obj.ether.type, buffer.slice(2), obj, pos + 2)) { return; }
 
   switch (obj.ether.type) {
   case 0x8100: // VLAN
