@@ -344,8 +344,8 @@ LOCAL void dns_parser(MolochSession_t *session, int kind, const unsigned char *d
                     dns_add_host(hostField, session, (char *)name, namelen);
                 } else {
                     if (dns_find_host(hostField, session, (char *)name, namelen)) { // IP for looked-up hostname
-                        moloch_field_ip4_add(ipField, session, in.s_addr);
-                        if (recordType == RESULT_RECORD_ANSWER) {
+                        gboolean fieldAdded = moloch_field_ip4_add(ipField, session, in.s_addr);
+                        if (recordType == RESULT_RECORD_ANSWER && fieldAdded) {
                             moloch_field_int_add(ttlField, session, ttl);
                         }
                     }
@@ -422,8 +422,8 @@ LOCAL void dns_parser(MolochSession_t *session, int kind, const unsigned char *d
                     dns_add_host(hostField, session, (char *)name, namelen);
                 } else {
                     if (dns_find_host(hostField, session, (char *)name, namelen)) { // IP for looked-up hostname
-                        moloch_field_ip6_add(ipField, session, ptr);
-                        if (recordType == RESULT_RECORD_ANSWER) {
+                        gboolean fieldAdded = moloch_field_ip6_add(ipField, session, ptr);
+                        if (recordType == RESULT_RECORD_ANSWER && fieldAdded) {
                             moloch_field_int_add(ttlField, session, ttl);
                         }
                     }
