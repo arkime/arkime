@@ -56,6 +56,8 @@ typedef struct writer_s3_file {
     char                      *outputBuffer;
     uint32_t                   outputPos;
     uint32_t                   outputId;
+    uint32_t                   packets;
+    uint64_t                   packetBytesWritten;
 
     // outputActualFilePos is the offset in the compressed file
     // outputLastBLockStart is the offset in the compressed file of the most recent block
@@ -166,6 +168,24 @@ void writer_s3_complete_cb (int code, unsigned char *data, int len, gpointer uw)
     if (config.debug)
         LOG("Complete-Response: %s %d %.*s", file->outputFileName, len, len, data);
 
+    uint64_t size;
+    switch (compressionMode) {
+    case MOLOCH_COMPRESSION_NONE:
+        size = file->outputActualFilePos;
+        break;
+    case MOLOCH_COMPRESSION_GZIP:
+        size = file->z_strm.total_out;
+        break;
+    case MOLOCH_COMPRESSION_ZSTD:
+#ifdef HAVE_ZSTD
+        size = file->zstd_saved;
+#endif
+        break;
+    }
+
+    moloch_db_update_filesize(file->outputId, size, file->packetBytesWritten, file->packets);
+
+
     DLL_REMOVE(fs3_, &fileQ, file);
     if (file->uploadId)
         g_free(file->uploadId);
@@ -174,6 +194,8 @@ void writer_s3_complete_cb (int code, unsigned char *data, int len, gpointer uw)
     if (file->zstd_strm)
         ZSTD_freeCStream(file->zstd_strm);
 #endif
+
+
     MOLOCH_TYPE_FREE(SavepcapS3File_t, file);
 
     MOLOCH_UNLOCK(fileQ);
@@ -837,6 +859,32 @@ SavepcapS3File_t *writer_s3_create(const MolochPacket_t *packet)
 }
 
 /******************************************************************************/
+// Called inside each packet thread
+LOCAL void writer_s3_file_time_check(MolochSession_t *session, void *UNUSED(uw1), void *UNUSED(uw2))
+{
+    struct timespec ts;
+    clock_gettime(CLOCK_REALTIME_COARSE, &ts);
+
+    SavepcapS3File_t *s3file = currentFiles[session->thread];
+    if (s3file && s3file->outputActualFilePos > 24 && (ts.tv_sec - s3file->outputFileTime.tv_sec) >= config.maxFileTimeM*60) {
+        writer_s3_flush(s3file, TRUE);
+        currentFiles[session->thread] = NULL;
+    }
+}
+/******************************************************************************/
+/* This function is called every 30 second on the main thread. It
+ * schedules writer_s3_check to be called on the packet thread
+ */
+LOCAL gboolean writer_s3_file_time_gfunc (gpointer UNUSED(user_data))
+{
+    for (int thread = 0; thread < config.packetThreads; thread++) {
+        moloch_session_add_cmd_thread(thread, NULL, NULL, writer_s3_file_time_check);
+    }
+
+    return G_SOURCE_CONTINUE;
+}
+
+/******************************************************************************/
 struct pcap_timeval {
     uint32_t tv_sec;             /* seconds */
     uint32_t tv_usec;            /* microseconds */
@@ -860,6 +908,9 @@ writer_s3_write(const MolochSession_t *const session, MolochPacket_t * const pac
     if (!s3file) {
         currentFiles[session->thread] = s3file = writer_s3_create(packet);
     }
+
+    s3file->packets++;
+    s3file->packetBytesWritten += packet->pktlen;
 
     uint64_t pos = append_to_output(s3file, &hdr, sizeof(hdr), TRUE, packet->pktlen);
     append_to_output(s3file, packet->pkt, packet->pktlen, FALSE, 0);
@@ -1025,39 +1076,13 @@ void writer_s3_init(char *UNUSED(name))
     moloch_http_set_header_cb(s3Server, writer_s3_header_cb);
 
     DLL_INIT(fs3_, &fileQ);
-}
-/******************************************************************************/
-// Called inside each packet thread
-LOCAL void writer_s3_file_time_check(MolochSession_t *session, void *UNUSED(uw1), void *UNUSED(uw2))
-{
-    struct timespec ts;
-    clock_gettime(CLOCK_REALTIME_COARSE, &ts);
-
-    SavepcapS3File_t *s3file = currentFiles[session->thread];
-    if (s3file && s3file->outputActualFilePos > 24 && (ts.tv_sec - s3file->outputFileTime.tv_sec) >= config.maxFileTimeM*60) {
-        writer_s3_flush(s3file, TRUE);
-        currentFiles[session->thread] = NULL;
-    }
-}
-/******************************************************************************/
-/* This function is called every 30 second on the main thread. It
- * schedules writer_s3_check to be called on the packet thread
- */
-LOCAL gboolean writer_s3_file_time_gfunc (gpointer UNUSED(user_data))
-{
-    for (int thread = 0; thread < config.packetThreads; thread++) {
-        moloch_session_add_cmd_thread(thread, NULL, NULL, writer_s3_file_time_check);
-    }
-
-    return G_SOURCE_CONTINUE;
-}
-
-/******************************************************************************/
-void moloch_plugin_init()
-{
-    moloch_writers_add("s3", writer_s3_init);
 
     if (config.maxFileTimeM > 0) {
         g_timeout_add_seconds( 30, writer_s3_file_time_gfunc, 0);
     }
+}
+/******************************************************************************/
+void moloch_plugin_init()
+{
+    moloch_writers_add("s3", writer_s3_init);
 }
