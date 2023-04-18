@@ -73,10 +73,10 @@ class ArkimeUtil {
 
   // ----------------------------------------------------------------------------
   /**
-   * Does the array include any of the values from find
+   * Is there any intersection between the two arrays
    */
-  static arrayIncludes(arr, find) {
-    return find.some(v => arr.includes(v));
+  static arrayIncludes (arr1, arr2) {
+    return arr2.some(v => arr1.includes(v));
   }
 
   // ----------------------------------------------------------------------------
