@@ -73,6 +73,14 @@ class ArkimeUtil {
 
   // ----------------------------------------------------------------------------
   /**
+   * Is there any intersection between the two arrays
+   */
+  static arrayIncludes (arr1, arr2) {
+    return arr2.some(v => arr1.includes(v));
+  }
+
+  // ----------------------------------------------------------------------------
+  /**
    * Is str a string and a length of at least len
    */
   static isString (str, minLen = 1) {
