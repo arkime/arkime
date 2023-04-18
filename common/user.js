@@ -34,6 +34,8 @@ const systemRolesMapping = {
   cont3xtUser: []
 };
 
+const adminRoles = ['usersAdmin', 'arkimeAdmin', 'parliamentAdmin', 'wiseAdmin', 'cont3xtAdmin'];
+
 const usersMissing = {
   userId: '',
   userName: '',
@@ -576,7 +578,7 @@ class User {
    * @returns {boolean} success - Whether the add user operation was successful.
    * @returns {string} text - The success/error message to (optionally) display to the user.
    */
-  static apiCreateUser (req, res) {
+  static async apiCreateUser (req, res) {
     if (!req.body ||
       !ArkimeUtil.isString(req.body.userId) ||
       !ArkimeUtil.isString(req.body.userName)) {
@@ -614,24 +616,31 @@ class User {
 
     req.body.roles ??= [];
 
+    const rolesSet = await User.roles2ExpandedSet(req.body.roles);
+    const iamSuperAdmin = req.user.hasRole('superAdmin');
+
     if (isRole && req.body.roles.includes('superAdmin')) {
       return res.serverError(403, 'User defined roles can\'t have superAdmin');
     }
 
-    if (isRole && req.body.roles.includes('usersAdmin')) {
-      return res.serverError(403, 'User defined roles can\'t have usersAdmin');
+    if (isRole && ArkimeUtil.arrayIncludes(req.body.roles, adminRoles)) {
+      return res.serverError(403, 'User defined roles can\'t have a system Admin role');
     }
 
     if (req.body.roleAssigners && !ArkimeUtil.isStringArray(req.body.roleAssigners)) {
       return res.serverError(403, 'roleAssigners field must be an array of strings');
     }
 
-    if (req.body.roles.includes('superAdmin') && !req.user.hasRole('superAdmin')) {
+    if (req.body.roles.includes('superAdmin') && !iamSuperAdmin) {
       return res.serverError(403, 'Can not create superAdmin unless you are superAdmin');
     }
 
     if (req.body.expression !== undefined && !ArkimeUtil.isString(req.body.expression, 0)) {
       return res.serverError(403, 'Expression must be a string when present');
+    }
+
+    if (!iamSuperAdmin && adminRoles.some(v => rolesSet.has(v))) {
+      return res.serverError(403, 'Only superAdmin user can enable Admin roles on a user');
     }
 
     req.body.roleAssigners ??= [];
@@ -726,7 +735,7 @@ class User {
    * @returns {boolean} success - Whether the update user operation was successful.
    * @returns {string} text - The success/error message to (optionally) display to the user.
    */
-  static apiUpdateUser (req, res) {
+  static async apiUpdateUser (req, res) {
     const userId = ArkimeUtil.sanitizeStr(req.body.userId || req.params.id);
 
     if (!ArkimeUtil.isString(userId)) {
@@ -749,26 +758,38 @@ class User {
 
     req.body.roles ??= [];
 
+    const rolesSet = await User.roles2ExpandedSet(req.body.roles);
+    const iamSuperAdmin = req.user.hasRole('superAdmin');
+
     if (isRole && req.body.roles.includes('superAdmin')) {
       return res.serverError(403, 'User defined roles can\'t have superAdmin');
     }
 
-    if (isRole && req.body.roles.includes('usersAdmin')) {
-      return res.serverError(403, 'User defined roles can\'t have usersAdmin');
+    if (isRole && ArkimeUtil.arrayIncludes(req.body.roles, adminRoles)) {
+      return res.serverError(403, 'User defined roles can\'t have a system Admin role');
     }
 
     if (req.body.roleAssigners && !ArkimeUtil.isStringArray(req.body.roleAssigners)) {
       return res.serverError(403, 'roleAssigners field must be an array of strings');
     }
 
-    if (req.body.roles.includes('superAdmin') && !req.user.hasRole('superAdmin')) {
-      return res.serverError(403, 'Can not enable superAdmin unless you are superAdmin');
+    if (req.body.roles.includes('superAdmin') && !iamSuperAdmin) {
+      return res.serverError(403, 'Can not modify superAdmin unless you are superAdmin');
     }
 
-    User.getUser(userId, (err, user) => {
+    User.getUser(userId, async (err, user) => {
       if (err || !user) {
         console.log(`ERROR - ${req.method} /api/user/%s`, userId, util.inspect(err, false, 50), user);
         return res.serverError(403, 'User not found');
+      }
+
+      if (user.hasRole('superAdmin') && !req.body.roles.includes('superAdmin') && !iamSuperAdmin) {
+        return res.serverError(403, 'Can not disable superAdmin unless you are superAdmin');
+      }
+
+      // userAdmin can disable Admin roles but can not enable new ones
+      if (!iamSuperAdmin && adminRoles.some(v => rolesSet.has(v) && !user.hasRole(v))) {
+        return res.serverError(403, 'Only superAdmin user can enable Admin roles on a user');
       }
 
       user.enabled = req.body.enabled === true;
@@ -940,6 +961,44 @@ class User {
     User.#implementation.deleteAllUsers();
     User.flushCache();
     return res.send({ success: true });
+  }
+
+  /**
+   * Convert array of roles to set of fully expanded roles
+   */
+  static async roles2ExpandedSet (roles) {
+    const allRoles = new Set();
+
+    // The roles we need to process to see if any subroles
+    const rolesQ = [...roles ?? []];
+
+    while (rolesQ.length) {
+      const r = rolesQ.pop();
+
+      // Deal with system roles first, they are easy
+      if (systemRolesMapping[r]) {
+        allRoles.add(r);
+        systemRolesMapping[r].forEach(allRoles.add, allRoles);
+        continue;
+      }
+
+      // Already processed
+      if (allRoles.has(r)) { continue; }
+
+      // See if role actually exists
+      const role = await User.getUserCache(r);
+      if (!role || !role.enabled) { continue; }
+      allRoles.add(r);
+
+      // schedule any sub roles
+      if (!role.roles) { continue; }
+      role.roles.forEach(r2 => {
+        if (allRoles.has(r2)) { return; } // Already processed
+        rolesQ.push(r2);
+      });
+    }
+
+    return allRoles;
   }
 
   /******************************************************************************/
@@ -1260,9 +1319,10 @@ class UserESImplementation {
       }
       basicAuth = basicAuth.split(':');
       esOptions.auth = {
-        username: basicAuth[0],
-        password: basicAuth[1]
+        username: basicAuth[0]
       };
+      basicAuth.shift();
+      esOptions.auth.password = basicAuth.join(':');
     }
 
     this.client = new Client(esOptions);

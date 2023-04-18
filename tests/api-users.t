@@ -1,4 +1,4 @@
-use Test::More tests => 131;
+use Test::More tests => 140;
 use Cwd;
 use URI::Escape;
 use MolochTest;
@@ -17,6 +17,7 @@ my $json;
     my $token2 = getTokenCookie2();
     my $test1Token = getTokenCookie('test1');
     my $test2Token = getTokenCookie('test2');
+    my $superAdminToken = getTokenCookie('superAdmin');
 
 # clean old crons
     esPost("/tests_queries/_delete_by_query?conflicts=proceed&refresh", '{ "query": { "match_all": {} } }');
@@ -106,10 +107,13 @@ my $json;
 
 # Can we update superAdmin
     $json = viewerPostToken("/user/update", '{"userId":"test1", "userName":"UserNameUpdated", "removeEnabled":true, "headerAuthEnabled":true, "expression":"foo", "emailSearch":true, "webEnabled":true, "roles":["superAdmin"], "packetSearch": false}', $token);
-    eq_or_diff($json, from_json('{"text": "Can not enable superAdmin unless you are superAdmin", "success": false}'));
+    eq_or_diff($json, from_json('{"text": "Can not modify superAdmin unless you are superAdmin", "success": false}'));
 
-# Update User Server 1
     $json = viewerPostToken("/user/update", '{"userId":"test1", "userName":"UserNameUpdated", "removeEnabled":true, "headerAuthEnabled":true, "expression":"foo", "emailSearch":true, "webEnabled":true, "roles":["usersAdmin"], "packetSearch": false}', $token);
+    eq_or_diff($json, from_json('{"text": "Only superAdmin user can enable Admin roles on a user", "success": false}'));
+# Update User Server 1
+    $json = viewerPostToken("/user/update?molochRegressionUser=superAdmin", '{"userId":"test1", "userName":"UserNameUpdated", "removeEnabled":true, "headerAuthEnabled":true, "expression":"foo", "emailSearch":true, "webEnabled":true, "roles":["usersAdmin"], "packetSearch": false}', $superAdminToken);
+    eq_or_diff($json, from_json('{"text": "User test1 updated successfully", "success": true}'));
 
     $users = viewerPost("/user/list?molochRegressionUser=test1", "");
     is (@{$users->{data}}, 1, "Check Update #1");
@@ -359,7 +363,7 @@ my $json;
     eq_or_diff($json, from_json('{"text": "User defined roles can\'t have superAdmin", "success": false}'));
 
     $json = viewerPostToken("/user/create", '{"userId": "role:test2", "userName": "UserName", "enabled":true, "roles":["role:test1", "usersAdmin"]}', $token);
-    eq_or_diff($json, from_json('{"text": "User defined roles can\'t have usersAdmin", "success": false}'));
+    eq_or_diff($json, from_json('{"text": "User defined roles can\'t have a system Admin role", "success": false}'));
 
     $json = viewerPostToken("/user/create", '{"userId": "role:test2", "userName": "UserName", "enabled":true, "roles":["role:test1"]}', $token);
     eq_or_diff($json, from_json('{"text": "Role created succesfully", "success": true}'));
@@ -372,7 +376,7 @@ my $json;
     eq_or_diff($json, from_json('{"text": "User defined roles can\'t have superAdmin", "success": false}'));
 
     $json = viewerPostToken("/user/update", '{"userId": "role:test1", "roles":["usersAdmin"]}', $token);
-    eq_or_diff($json, from_json('{"text": "User defined roles can\'t have usersAdmin", "success": false}'));
+    eq_or_diff($json, from_json('{"text": "User defined roles can\'t have a system Admin role", "success": false}'));
 
     $json = viewerPostToken("/user/update", '{"userId": "role:test1", "roles":"usersAdmin"}', $token);
     eq_or_diff($json, from_json('{"text": "Roles field must be an array of strings", "success": false}'));
@@ -415,3 +419,43 @@ my $json;
     is (@{$users->{data}}, 0, "Removed user #1");
     $users = viewerPost2("/user/list", "");
     is (@{$users->{data}}, 0, "Removed user #2");
+
+#####
+# Roles Tests - Some of these are repeats
+my $es = "-o 'elasticsearch=$MolochTest::elasticsearch' -o 'usersElasticsearch=$MolochTest::elasticsearch' $ENV{INSECURE}";
+system("cd ../viewer ; node addUser.js $es -c ../tests/config.test.ini -n testuser testsuperadmin testsuperadmin testsuperadmin --roles superAdmin");
+system("cd ../viewer ; node addUser.js $es -c ../tests/config.test.ini -n testuser testusersadmin testusersadmin testusersadmin --roles usersAdmin");
+system("cd ../viewer ; node addUser.js $es -c ../tests/config.test.ini -n testuser testuser testuser testuser");
+
+my $saToken = getTokenCookie('testsuperadmin');
+my $uaToken = getTokenCookie('testusersadmin');
+
+# Make sure only superadmin can create superadmin
+    $json = viewerPostToken("/user/create?molochRegressionUser=testsuperadmin", '{"userId": "testsuperadmin1", "userName": "testsuperadmin1", "enabled":true, "password":"password", "roles": ["superAdmin"]}', $saToken);
+    eq_or_diff($json, from_json('{"text": "User created succesfully", "success": true}'));
+
+    $json = viewerPostToken("/user/create?molochRegressionUser=testusersadmin", '{"userId": "testsuperadmin2", "userName": "testsuperadmin2", "enabled":true, "password":"password", "roles": ["superAdmin"]}', $uaToken);
+    eq_or_diff($json, from_json('{"text": "Can not create superAdmin unless you are superAdmin", "success": false}'));
+
+
+# Add super admin - only superadmin can add
+    $json = viewerPostToken("/user/update?molochRegressionUser=testusersadmin", '{"userId": "testuser", "userName": "testuser", "enabled":true, "password":"password", "roles": ["superAdmin"]}', $uaToken);
+    eq_or_diff($json, from_json('{"text": "Can not modify superAdmin unless you are superAdmin", "success": false}'));
+
+    $json = viewerPostToken("/user/update?molochRegressionUser=testsuperadmin", '{"userId": "testuser", "userName": "testuser", "enabled":true, "password":"password", "roles": ["superAdmin"]}', $saToken);
+    eq_or_diff($json, from_json('{"text": "User testuser updated successfully", "success": true}'));
+
+
+# Remove super admin - only superadmin can remove
+    $json = viewerPostToken("/user/update?molochRegressionUser=testusersadmin", '{"userId": "testsuperadmin", "userName": "testsuperadmin", "enabled":true, "password":"password", "roles": ["arkimeAdmin"]}', $uaToken);
+    eq_or_diff($json, from_json('{"text": "Can not disable superAdmin unless you are superAdmin", "success": false}'));
+
+    $json = viewerPostToken("/user/update?molochRegressionUser=testusersadmin", '{"userId": "testuser", "userName": "testuser", "enabled":true, "password":"password", "roles": ["arkimeAdmin"]}', $uaToken);
+    eq_or_diff($json, from_json('{"text": "Can not disable superAdmin unless you are superAdmin", "success": false}'));
+
+    $json = viewerPostToken("/user/update?molochRegressionUser=testsuperadmin", '{"userId": "testuser", "userName": "testuser", "enabled":true, "password":"password", "roles": ["arkimeAdmin"]}', $saToken);
+    eq_or_diff($json, from_json('{"text": "User testuser updated successfully", "success": true}'));
+
+
+# clean old users
+    esPost("/tests_users/_delete_by_query?conflicts=proceed&refresh", '{ "query": { "match_all": {} } }', 1);

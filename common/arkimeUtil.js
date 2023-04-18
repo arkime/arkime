@@ -73,6 +73,14 @@ class ArkimeUtil {
 
   // ----------------------------------------------------------------------------
   /**
+   * Does the array include any of the values from find
+   */
+  static arrayIncludes(arr, find) {
+    return find.some(v => arr.includes(v));
+  }
+
+  // ----------------------------------------------------------------------------
+  /**
    * Is str a string and a length of at least len
    */
   static isString (str, minLen = 1) {
