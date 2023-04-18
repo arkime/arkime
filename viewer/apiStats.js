@@ -773,7 +773,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
         }
 
         if (task.headers['X-Opaque-Id']) {
-          const parts = ViewerUtils.splitRemain(task.headers['X-Opaque-Id'], '::', 1);
+          const parts = ArkimeUtil.splitRemain(task.headers['X-Opaque-Id'], '::', 1);
           task.user = (parts.length === 1 ? '' : parts[0]);
         } else {
           task.user = '';

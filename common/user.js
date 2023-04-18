@@ -1317,12 +1317,11 @@ class UserESImplementation {
       if (!basicAuth.includes(':')) {
         basicAuth = Buffer.from(basicAuth, 'base64').toString();
       }
-      basicAuth = basicAuth.split(':');
+      basicAuth = ArkimeUtil.splitRemain(basicAuth, ':', 1);
       esOptions.auth = {
-        username: basicAuth[0]
+        username: basicAuth[0],
+        password: basicAuth[1]
       };
-      basicAuth.shift();
-      esOptions.auth.password = basicAuth.join(':');
     }
 
     this.client = new Client(esOptions);
