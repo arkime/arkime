@@ -28,8 +28,14 @@ Node Versions:
 NOTICE: Restart wiseService before capture when upgrading
 NOTICE: Cross-cluster Shortcuts require you to not restart all your viewers at once after upgrading
 
-4.2.1 2023/03/XX
+4.2.1 2023/04/XX
+  - BREAKING - Only SuperAdmin can assign *Admin roles now
   - release - fix kafka library linking
+  - release - al2023 support
+  - release - improve arkime_config_interfaces.sh
+  - all - support colon in OpenSearch/Elasticsearch password
+  - all - fix some prototype pollution
+  - all - improve roles enforcement
   - capture - tcpClosingTimeout setting controls delay before saving tcp
               sessions after close
   - capture - default dbBulkSize to 1M, min 500K, max 15M and removed 
@@ -39,9 +45,23 @@ NOTICE: Cross-cluster Shortcuts require you to not restart all your viewers at o
   - capture - s3 writer compression level, s3CompressionBlockSize setting
   - capture - s3 writer block size, s3CompressionBlockSize setting
   - capture - s3 writer gap encoding, s3GapPacketPos setting
+  - capture - s3 writer when s3UseECSEnv is true use container env vars to find 
+              the id/key/token for s3 auth
+  - capture - improve Gh0st parser (#2225)
   - capture/viewer - includes setting ignore missing file starting with -
+  - cont3xt - add malicious tidbit from urlscan results
+  - cont3xt - add malicious and brand columns to results table for urlscan
+  - cont3xt - link group UI improvements
+  - cont3xt - add createDate for whois data
   - db.pl - new --ifneeded option to init/upgrade that will exit if not needed
   - parliament - fix digest auth
+  - parliament - better auth support
+  - parliament - improve issue page and filters
+  - viewer - display errors when cronQueries isn't configured
+  - viewer - fix first sessions table row obscured sometimes
+  - viewer - disable more apis in demo mode
+  - viewer - allow roles forced expression without user forced expression (#2213)
+  - wise - only send csp headers in initial request for wise page
 
 4.2.0 2023/03/01
   - release - node 16.19.1, support node v18
