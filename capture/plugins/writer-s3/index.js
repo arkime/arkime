@@ -94,6 +94,9 @@ function processSessionIdS3 (session, headerCb, packetCb, endCb, limit) {
   // Get first pcap header
   let header, pcap, s3;
   Db.fileIdToFile(fields.node, fields.packetPos[0] * -1, function (info) {
+    if (Config.debug) {
+      console.log(`File Info for ${fields.node}-${fields.packetPos[0] * -1}`, info);
+    }
     const parts = splitRemain(info.name, '/', 4);
     info.compressionBlockSize ??= DEFAULT_COMPRESSED_BLOCK_SIZE;
 
