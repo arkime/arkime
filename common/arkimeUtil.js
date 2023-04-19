@@ -79,6 +79,20 @@ class ArkimeUtil {
     return arr2.some(v => arr1.includes(v));
   }
 
+  /**
+   * Only split up to limit items and add the remaining as one element at the end of array
+   */
+  // https://coderwall.com/p/pq0usg/javascript-string-split-that-ll-return-the-remainder
+  static splitRemain (str, separator, limit) {
+    str = str.split(separator);
+    if (str.length <= limit) { return str; }
+
+    const ret = str.splice(0, limit);
+    ret.push(str.join(separator));
+
+    return ret;
+  };
+
   // ----------------------------------------------------------------------------
   /**
    * Is str a string and a length of at least len

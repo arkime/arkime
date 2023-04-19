@@ -166,7 +166,7 @@ class DbESImplementation {
       if (!basicAuth.includes(':')) {
         basicAuth = Buffer.from(basicAuth, 'base64').toString();
       }
-      basicAuth = basicAuth.split(':');
+      basicAuth = ArkimeUtil.splitRemain(basicAuth, ':', 1);
       esOptions.auth = {
         username: basicAuth[0],
         password: basicAuth[1]

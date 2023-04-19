@@ -21,6 +21,7 @@ const csv = require('csv');
 const axios = require('axios');
 const fs = require('fs');
 const iptrie = require('iptrie');
+const ArkimeUtil = require('../common/arkimeUtil');
 
 /**
  * All sources need to have the WISESource as their top base class.
@@ -231,7 +232,7 @@ class WISESource {
       const args = [];
       const parts = lines[l].split(';');
       for (let p = 1; p < parts.length; p++) {
-        const kv = splitRemain(parts[p], '=', 1);
+        const kv = ArkimeUtil.splitRemain(parts[p], '=', 1);
         if (kv.length !== 2) {
           console.log('WARNING -', this.section, "- ignored extra piece '" + parts[p] + "' from line '" + lines[l] + "'");
           continue;
@@ -601,15 +602,3 @@ class WISESource {
  */
 
 module.exports = WISESource;
-
-// ----------------------------------------------------------------------------
-// https://coderwall.com/p/pq0usg/javascript-string-split-that-ll-return-the-remainder
-function splitRemain (str, separator, limit) {
-  str = str.split(separator);
-  if (str.length <= limit) { return str; }
-
-  const ret = str.splice(0, limit);
-  ret.push(str.join(separator));
-
-  return ret;
-}
