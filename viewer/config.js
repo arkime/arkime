@@ -522,6 +522,7 @@ Auth.initialize({
     discoverURL: exports.get('authDiscoverURL'),
     clientId: exports.get('authClientId'),
     clientSecret: exports.get('authClientSecret'),
-    redirectURIs: exports.get('authRedirectURIs')
+    redirectURIs: exports.get('authRedirectURIs'),
+    trustProxy: exports.get('authTrustProxy')
   }
 });

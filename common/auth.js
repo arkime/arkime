@@ -48,6 +48,7 @@ class Auth {
   static #authConfig;
   static #passportAuthOptions = { session: false };
   static #caTrustCerts;
+  static #app;
 
   // ----------------------------------------------------------------------------
   /**
@@ -55,6 +56,7 @@ class Auth {
    * auth should be installed.
    */
   static app (app, options) {
+    Auth.#app = app;
     app.use(Auth.#authRouter);
 
     if (options?.doAuth !== false) {
@@ -102,6 +104,18 @@ class Auth {
     Auth.#s2sRegressionTests = options.s2sRegressionTests;
     Auth.#authConfig = options.authConfig;
     Auth.#caTrustCerts = ArkimeUtil.certificateFileToArray(options.caTrustFile);
+
+    if (Auth.#app && options.trustProxy !== undefined) {
+      if (options.trustProxy === true || options.trustProxy === 'true') {
+        Auth.#app.set('trust proxy', true);
+      } else if (options.trustProxy === false || options.trustProxy === 'false') {
+        Auth.#app.set('trust proxy', false);
+      } else if (!isNaN(options.trustProxy)) {
+        Auth.#app.set('trust proxy', parseInt(options.trustProxy));
+      } else {
+        Auth.#app.set('trust proxy', options.trustProxy);
+      }
+    }
 
     if (options.userAuthIps) {
       for (const cidr of options.userAuthIps.split(',')) {

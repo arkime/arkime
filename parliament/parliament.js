@@ -2177,7 +2177,8 @@ function setupAuth () {
       discoverURL: commonAuth.authDiscoverURL,
       clientId: commonAuth.authClientId,
       clientSecret: commonAuth.authClientSecret,
-      redirectURIs: commonAuth.authRedirectURIs
+      redirectURIs: commonAuth.authRedirectURIs,
+      trustProxy: commonAuth.authTrustProxy
     }
   });
 
