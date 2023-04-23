@@ -3,10 +3,10 @@
 
 if [ "$1" == "--help" ]; then
     echo "Configure (--wise|--parliament|--cont3xt|)  = Only 1 option can be used"
-    echo "--cont3xt      = install and start cont3xt"
-    echo "--wise         = install and start wise"
-    echo "--parliament   = install and start parliament"
-    echo "               = install arkime capture and viewer"
+    echo "--cont3xt      = install and start Cont3xt"
+    echo "--wise         = install and start Wise"
+    echo "--parliament   = install and start Parliament"
+    echo "[no option]    = install Arkime capture and viewer"
     echo "--help         = this help"
     exit 0
 fi
@@ -94,13 +94,18 @@ if [ -z "$ARKIME_INTERFACE" ]; then
 fi
 if [ -z "$ARKIME_INTERFACE" ]; then ARKIME_INTERFACE="eth1"; fi
 
-ARKIME_LOCALELASTICSEARCH=not-set
-until [ "$ARKIME_LOCALELASTICSEARCH" == "yes" ] || [ "$ARKIME_LOCALELASTICSEARCH" == "no" ] || [ "$ARKIME_LOCALELASTICSEARCH" == "" ]; do
+# If Arch don't offer demo install, if variable not set then ask the question
+if [ -f "/etc/arch-release" ]; then
+    ARKIME_INSTALLELASTICSEARCH=no
+elif [ -z "$ARKIME_INSTALLELASTICSEARCH" ]; then
+    ARKIME_INSTALLELASTICSEARCH=not-set
+fi
+until [ "$ARKIME_INSTALLELASTICSEARCH" == "yes" ] || [ "$ARKIME_INSTALLELASTICSEARCH" == "no" ] || [ "$ARKIME_INSTALLELASTICSEARCH" == "" ]; do
     echo -n "Install Elasticsearch server locally for demo, must have at least 3G of memory, NOT recommended for production use (yes or no) [no] "
-    read -r ARKIME_LOCALELASTICSEARCH
+    read -r ARKIME_INSTALLELASTICSEARCH
 done
 
-if [ "$ARKIME_LOCALELASTICSEARCH" == "yes" ]; then
+if [ "$ARKIME_INSTALLELASTICSEARCH" == "yes" ]; then
     ARKIME_ELASTICSEARCH="http://localhost:9200"
     which java
     JAVA_VAL=$?
@@ -154,7 +159,7 @@ case $ARCHRPM in
         ;;
 esac
 
-if [ "$ARKIME_LOCALELASTICSEARCH" == "yes" ]; then
+if [ "$ARKIME_INSTALLELASTICSEARCH" == "yes" ]; then
     echo "Arkime - Downloading and installing demo OSS version of Elasticsearch"
     ES_VERSION=7.10.2
     if [ -f "/etc/redhat-release" ] || [ -f "/etc/system-release" ]; then
