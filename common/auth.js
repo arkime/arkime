@@ -49,6 +49,7 @@ class Auth {
   static #passportAuthOptions = { session: false };
   static #caTrustCerts;
   static #app;
+  static #trustProxy;
 
   // ----------------------------------------------------------------------------
   /**
@@ -61,6 +62,10 @@ class Auth {
 
     if (options?.doAuth !== false) {
       app.use(Auth.doAuth);
+    }
+
+    if (Auth.#app && Auth.#trustProxy !== undefined) {
+      Auth.#doTrustProxy();
     }
   }
 
@@ -104,17 +109,10 @@ class Auth {
     Auth.#s2sRegressionTests = options.s2sRegressionTests;
     Auth.#authConfig = options.authConfig;
     Auth.#caTrustCerts = ArkimeUtil.certificateFileToArray(options.caTrustFile);
+    Auth.#trustProxy = options.trustProxy;
 
-    if (Auth.#app && options.trustProxy !== undefined) {
-      if (options.trustProxy === true || options.trustProxy === 'true') {
-        Auth.#app.set('trust proxy', true);
-      } else if (options.trustProxy === false || options.trustProxy === 'false') {
-        Auth.#app.set('trust proxy', false);
-      } else if (!isNaN(options.trustProxy)) {
-        Auth.#app.set('trust proxy', parseInt(options.trustProxy));
-      } else {
-        Auth.#app.set('trust proxy', options.trustProxy);
-      }
+    if (Auth.#app && Auth.#trustProxy !== undefined) {
+      Auth.#doTrustProxy();
     }
 
     if (options.userAuthIps) {
@@ -194,7 +192,7 @@ class Auth {
         secret: uuid(),
         resave: false,
         saveUninitialized: true,
-        cookie: { path: Auth.#basePath, secure: true }
+        cookie: { path: Auth.#basePath, secure: true, sameSite: 'Strict' }
       }));
       Auth.#authRouter.use(passport.initialize());
       Auth.#authRouter.use(passport.session());
@@ -217,6 +215,19 @@ class Auth {
       });
     } else {
       Auth.#authRouter.use(passport.initialize());
+    }
+  }
+
+  // ----------------------------------------------------------------------------
+  static #doTrustProxy () {
+    if (Auth.#trustProxy === true || Auth.#trustProxy === 'true') {
+      Auth.#app.set('trust proxy', true);
+    } else if (Auth.#trustProxy === false || Auth.#trustProxy === 'false') {
+      Auth.#app.set('trust proxy', false);
+    } else if (!isNaN(Auth.#trustProxy)) {
+      Auth.#app.set('trust proxy', parseInt(Auth.#trustProxy));
+    } else {
+      Auth.#app.set('trust proxy', Auth.#trustProxy);
     }
   }
 
