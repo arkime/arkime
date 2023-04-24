@@ -1212,23 +1212,23 @@
         System Roles:
         <dl class="dl-horizontal dl-horizontal-wide">
           <dt>superAdmin</dt>
-          <dd>Has all system roles assigned. Can only be assigned by another superAdmin.</dd>
+          <dd>Has all system roles assigned. Can only be assigned by another superAdmin. Users with superAdmin assigned are the only ones that can assign Admin roles to other users.</dd>
           <dt>usersAdmin</dt>
-          <dd>Can use the Users page to add/modify/delete users</dd>
+          <dd>Can use the Users page to add/modify/delete users, except superAdmin users. Users with usersAdmin assigned can unassign Admin roles, but not assign them to other users.</dd>
           <dt>arkimeAdmin</dt>
-          <dd>Can perform arkime configuration, automatically a arkimeUser also.</dd>
+          <dd>Can perform Arkime configuration, view data for other Arkime users, and automatically assigned the arkimeUser role.</dd>
           <dt>arkimeUser</dt>
           <dd>Can use the Arkime viewer application</dd>
           <dt>cont3xtAdmin</dt>
-          <dd>Can perform cont3xt configuration, automatically a cont3xtUser also.</dd>
+          <dd>Can perform cont3xt configuration, view data for other Cont3xt users, and automatically assigned the cont3xtUser role.</dd>
           <dt>contx3tUser</dt>
           <dd>Can use the Cont3xt application</dd>
           <dt>parliamentAdmin</dt>
-          <dd>Can perform parliament configuration, automatically a parliamentUser also.</dd>
+          <dd>Can perform parliament configuration, automatically assigned the parliamentUser role.</dd>
           <dt>parliamentUser</dt>
           <dd>Can dismiss parliament issues and notifications. Unlike other roles parliament doesn't require a role to be set to use as a dashboard</dd>
           <dt>wiseAdmin</dt>
-          <dd>Can perform wise configuration, automatically a wiseUser also.</dd>
+          <dd>Can perform wise configuration, automatically assigned the wiseUser.</dd>
           <dt>wiseUser</dt>
           <dd>Can use the WISE UI to do queries and viewer stats</dd>
         </dl>
