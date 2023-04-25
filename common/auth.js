@@ -49,7 +49,6 @@ class Auth {
   static #passportAuthOptions = { session: false };
   static #caTrustCerts;
   static #app;
-  static #trustProxy;
 
   // ----------------------------------------------------------------------------
   /**
@@ -64,7 +63,7 @@ class Auth {
       app.use(Auth.doAuth);
     }
 
-    if (Auth.#app && Auth.#trustProxy !== undefined) {
+    if (Auth.#app && Auth.#authConfig.trustProxy !== undefined) {
       Auth.#doTrustProxy();
     }
   }
@@ -109,9 +108,8 @@ class Auth {
     Auth.#s2sRegressionTests = options.s2sRegressionTests;
     Auth.#authConfig = options.authConfig;
     Auth.#caTrustCerts = ArkimeUtil.certificateFileToArray(options.caTrustFile);
-    Auth.#trustProxy = options.trustProxy;
 
-    if (Auth.#app && Auth.#trustProxy !== undefined) {
+    if (Auth.#app && Auth.#authConfig.trustProxy !== undefined) {
       Auth.#doTrustProxy();
     }
 
@@ -220,14 +218,16 @@ class Auth {
 
   // ----------------------------------------------------------------------------
   static #doTrustProxy () {
-    if (Auth.#trustProxy === true || Auth.#trustProxy === 'true') {
+    const trustProxy = Auth.#authConfig.trustProxy;
+
+    if (trustProxy === true || trustProxy === 'true') {
       Auth.#app.set('trust proxy', true);
-    } else if (Auth.#trustProxy === false || Auth.#trustProxy === 'false') {
+    } else if (trustProxy === false || trustProxy === 'false') {
       Auth.#app.set('trust proxy', false);
-    } else if (!isNaN(Auth.#trustProxy)) {
-      Auth.#app.set('trust proxy', parseInt(Auth.#trustProxy));
+    } else if (!isNaN(trustProxy)) {
+      Auth.#app.set('trust proxy', parseInt(trustProxy));
     } else {
-      Auth.#app.set('trust proxy', Auth.#trustProxy);
+      Auth.#app.set('trust proxy', trustProxy);
     }
   }
 
