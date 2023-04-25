@@ -63,7 +63,7 @@ class Auth {
       app.use(Auth.doAuth);
     }
 
-    if (Auth.#app && Auth.#authConfig.trustProxy !== undefined) {
+    if (Auth.#app && Auth.#authConfig?.trustProxy !== undefined) {
       Auth.#doTrustProxy();
     }
   }
@@ -109,7 +109,7 @@ class Auth {
     Auth.#authConfig = options.authConfig;
     Auth.#caTrustCerts = ArkimeUtil.certificateFileToArray(options.caTrustFile);
 
-    if (Auth.#app && Auth.#authConfig.trustProxy !== undefined) {
+    if (Auth.#app && Auth.#authConfig?.trustProxy !== undefined) {
       Auth.#doTrustProxy();
     }
 
