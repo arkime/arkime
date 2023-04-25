@@ -248,7 +248,8 @@ function setupAuth () {
       discoverURL: getConfig('wiseService', 'authDiscoverURL'),
       clientId: getConfig('wiseService', 'authClientId'),
       clientSecret: getConfig('wiseService', 'authClientSecret'),
-      redirectURIs: getConfig('wiseService', 'authRedirectURIs')
+      redirectURIs: getConfig('wiseService', 'authRedirectURIs'),
+      trustProxy: getConfig('wiseService', 'authTrustProxy')
     }
   });
 

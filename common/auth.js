@@ -48,6 +48,7 @@ class Auth {
   static #authConfig;
   static #passportAuthOptions = { session: false };
   static #caTrustCerts;
+  static #app;
 
   // ----------------------------------------------------------------------------
   /**
@@ -55,10 +56,15 @@ class Auth {
    * auth should be installed.
    */
   static app (app, options) {
+    Auth.#app = app;
     app.use(Auth.#authRouter);
 
     if (options?.doAuth !== false) {
       app.use(Auth.doAuth);
+    }
+
+    if (Auth.#app && Auth.#authConfig?.trustProxy !== undefined) {
+      Auth.#doTrustProxy();
     }
   }
 
@@ -102,6 +108,10 @@ class Auth {
     Auth.#s2sRegressionTests = options.s2sRegressionTests;
     Auth.#authConfig = options.authConfig;
     Auth.#caTrustCerts = ArkimeUtil.certificateFileToArray(options.caTrustFile);
+
+    if (Auth.#app && Auth.#authConfig?.trustProxy !== undefined) {
+      Auth.#doTrustProxy();
+    }
 
     if (options.userAuthIps) {
       for (const cidr of options.userAuthIps.split(',')) {
@@ -180,7 +190,7 @@ class Auth {
         secret: uuid(),
         resave: false,
         saveUninitialized: true,
-        cookie: { path: Auth.#basePath, secure: true }
+        cookie: { path: Auth.#basePath, secure: true, sameSite: 'Strict' }
       }));
       Auth.#authRouter.use(passport.initialize());
       Auth.#authRouter.use(passport.session());
@@ -203,6 +213,21 @@ class Auth {
       });
     } else {
       Auth.#authRouter.use(passport.initialize());
+    }
+  }
+
+  // ----------------------------------------------------------------------------
+  static #doTrustProxy () {
+    const trustProxy = Auth.#authConfig.trustProxy;
+
+    if (trustProxy === true || trustProxy === 'true') {
+      Auth.#app.set('trust proxy', true);
+    } else if (trustProxy === false || trustProxy === 'false') {
+      Auth.#app.set('trust proxy', false);
+    } else if (!isNaN(trustProxy)) {
+      Auth.#app.set('trust proxy', parseInt(trustProxy));
+    } else {
+      Auth.#app.set('trust proxy', trustProxy);
     }
   }
 
