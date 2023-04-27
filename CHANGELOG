@@ -28,14 +28,17 @@ Node Versions:
 NOTICE: Restart wiseService before capture when upgrading
 NOTICE: Cross-cluster Shortcuts require you to not restart all your viewers at once after upgrading
 
-4.2.1 2023/04/XX
+4.3.0 2023/04/27
   - BREAKING - Only SuperAdmin can assign *Admin roles now
   - release - fix kafka library linking
   - release - al2023 support
   - release - improve arkime_config_interfaces.sh
+  - release - Configure doesn't offer demo Elasticsearch on Arch
+  - release - reqBodyOnlyUtf8=true in sample config file
   - all - support colon in OpenSearch/Elasticsearch password
   - all - fix some prototype pollution
   - all - improve roles enforcement
+  - all - New authTrustProxy setting
   - capture - tcpClosingTimeout setting controls delay before saving tcp
               sessions after close
   - capture - default dbBulkSize to 1M, min 500K, max 15M and removed 
@@ -48,7 +51,9 @@ NOTICE: Cross-cluster Shortcuts require you to not restart all your viewers at o
   - capture - s3 writer when s3UseECSEnv is true use container env vars to find 
               the id/key/token for s3 auth
   - capture - improve Gh0st parser (#2225)
-  - capture/viewer - includes setting ignore missing file starting with -
+  - capture - new dnp3 & finger classifier
+  - capture - tcphealthcheck adding debugging
+  - capture/viewer - includes setting ignores missing files starting with -
   - cont3xt - add malicious tidbit from urlscan results
   - cont3xt - add malicious and brand columns to results table for urlscan
   - cont3xt - link group UI improvements
@@ -61,6 +66,7 @@ NOTICE: Cross-cluster Shortcuts require you to not restart all your viewers at o
   - viewer - fix first sessions table row obscured sometimes
   - viewer - disable more apis in demo mode
   - viewer - allow roles forced expression without user forced expression (#2213)
+  - viewer - s3 now use each file's bucket to determine access style
   - wise - only send csp headers in initial request for wise page
 
 4.2.0 2023/03/01
