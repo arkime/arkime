@@ -8,13 +8,13 @@ const User = require('../common/user');
 const ArkimeUtil = require('../common/arkimeUtil');
 const async = require('async');
 const internals = require('./internals');
-const sessionAPIs = require('./apiSessions')();
+const SessionAPIs = require('./apiSessions');
 const ViewerUtils = require('./viewerUtils');
 const http = require('http');
 const molochparser = require('./molochparser.js');
 const Notifier = require('../common/notifier');
 
-class Cron {
+class CronAPIs {
   static initialize (options) {
   }
 
@@ -197,7 +197,7 @@ class Cron {
       const { body: info } = await Db.indexNow('queries', 'query', null, doc.doc);
 
       if (Config.get('cronQueries', false)) {
-        Cron.processCronQueries();
+        CronAPIs.processCronQueries();
       }
 
       doc.doc.key = info._id;
@@ -299,7 +299,7 @@ class Cron {
         console.log(`ERROR - ${req.method} /api/cron/%s`, ArkimeUtil.sanitizeStr(key), util.inspect(err, false, 50));
       }
 
-      if (Config.get('cronQueries', false)) { Cron.processCronQueries(); }
+      if (Config.get('cronQueries', false)) { CronAPIs.processCronQueries(); }
 
       query.key = key;
       if (query.users) {
@@ -365,7 +365,7 @@ class Cron {
     const keys = Object.keys(nodes);
 
     async.eachLimit(keys, 15, function (node, nextCb) {
-      sessionAPIs.isLocalView(node, function () {
+      SessionAPIs.isLocalView(node, function () {
         let sent = 0;
         nodes[node].forEach(function (item) {
           const options = {
@@ -399,15 +399,15 @@ class Cron {
 
           const preq = client.request(url, reqOptions, (pres) => {
             pres.on('data', (chunk) => {
-              Cron.#qlworking[url.path] = 'data';
+              CronAPIs.#qlworking[url.path] = 'data';
             });
             pres.on('end', () => {
-              delete Cron.#qlworking[url.path];
+              delete CronAPIs.#qlworking[url.path];
               setImmediate(nextCb);
             });
           });
           preq.on('error', (e) => {
-            delete Cron.#qlworking[url.path];
+            delete CronAPIs.#qlworking[url.path];
             console.log("ERROR - Couldn't proxy sendSession request=", url, '\nerror=', e);
             setImmediate(nextCb);
           });
@@ -415,7 +415,7 @@ class Cron {
           preq.write('ids=');
           preq.write(nodes[node].join(','));
           preq.end();
-          Cron.#qlworking[url.path] = 'sent';
+          CronAPIs.#qlworking[url.path] = 'sent';
         });
       });
     }, (err) => {
@@ -490,7 +490,7 @@ class Cron {
             ids.push({ id: Db.session2Sid(hits[i]), node: hits[i]._source.node });
           }
 
-          Cron.#sendSessionsListQL(options, ids, doNext);
+          CronAPIs.#sendSessionsListQL(options, ids, doNext);
         } else if (cq.action.indexOf('tag') === 0) {
           for (i = 0, ilen = hits.length; i < ilen; i++) {
             ids.push(Db.session2Sid(hits[i]));
@@ -501,8 +501,8 @@ class Cron {
           }
 
           const tags = options.tags.split(',');
-          sessionAPIs.sessionsListFromIds(null, ids, ['tags', 'node'], (err, list) => {
-            sessionAPIs.addTagsList(tags, list, doNext);
+          SessionAPIs.sessionsListFromIds(null, ids, ['tags', 'node'], (err, list) => {
+            SessionAPIs.addTagsList(tags, list, doNext);
           });
         } else {
           console.log('CRON - Unknown action', cq);
@@ -524,7 +524,7 @@ class Cron {
   static processCronQueries () {
     Db.setQueriesNode(Config.nodeName());
     if (internals.cronRunning) {
-      console.log('CRON - processQueries already running', Cron.#qlworking);
+      console.log('CRON - processQueries already running', CronAPIs.#qlworking);
       return;
     }
     internals.cronRunning = true;
@@ -633,7 +633,7 @@ class Cron {
             }
 
             ViewerUtils.lookupQueryItems(query.query.bool.filter, (lerr) => {
-              Cron.#processCronQuery(cq, options, query, endTime, (count, lpValue) => {
+              CronAPIs.#processCronQuery(cq, options, query, endTime, (count, lpValue) => {
                 if (Config.debug > 1) {
                   console.log('CRON - setting lpValue', new Date(lpValue * 1000));
                 }
@@ -707,4 +707,4 @@ class Cron {
   };
 }
 
-module.exports = Cron;
+module.exports = CronAPIs;

@@ -19,18 +19,16 @@ const molochparser = require('./molochparser.js');
 const internals = require('./internals');
 const ViewerUtils = require('./viewerUtils');
 
-module.exports = () => {
-  const sessionAPIs = {};
-
+class SessionAPIs {
   // --------------------------------------------------------------------------
   // INTERNAL HELPERS
   // --------------------------------------------------------------------------
-  function sessionsListFromQuery (req, res, fields, cb) {
+  static #sessionsListFromQuery (req, res, fields, cb) {
     if (req.query.segments && req.query.segments.match(/^(time|all)$/) && fields.indexOf('rootId') === -1) {
       fields.push('rootId');
     }
 
-    sessionAPIs.buildSessionQuery(req, (err, query, indices) => {
+    SessionAPIs.buildSessionQuery(req, (err, query, indices) => {
       if (err) {
         return res.send('Could not build query.  Err: ' + err);
       }
@@ -48,7 +46,7 @@ module.exports = () => {
         }
         const list = result.hits.hits;
         if (req.query.segments && req.query.segments.match(/^(time|all)$/)) {
-          sessionsListAddSegments(req, indices, query, list, (err, addSegmentsList) => {
+          SessionAPIs.#sessionsListAddSegments(req, indices, query, list, (err, addSegmentsList) => {
             cb(err, addSegmentsList);
           });
         } else {
@@ -58,6 +56,7 @@ module.exports = () => {
     });
   };
 
+  // --------------------------------------------------------------------------
   /**
    * Adds the sort options to the elasticsearch query
    * @ignore
@@ -66,7 +65,7 @@ module.exports = () => {
    * @param {object} info - the query params from the client
    * @param {string} defaultSort - the default sort
    */
-  function addSortToQuery (query, info, defaultSort) {
+  static #addSortToQuery (query, info, defaultSort) {
     function addSortDefault () {
       if (defaultSort) {
         if (!query.sort) {
@@ -154,6 +153,7 @@ module.exports = () => {
     }
   }
 
+  // --------------------------------------------------------------------------
   /**
    * Adds the view search expression to the elasticsearch query
    * @ignore
@@ -165,7 +165,7 @@ module.exports = () => {
    * @param {boolean} queryOverride=null - override the client query with overriding query
    * @returns {function} - the callback to call once the session query is built or an error occurs
    */
-  async function addViewToQuery (req, query, continueBuildQueryCb, finalCb, queryOverride = null) {
+  static async #addViewToQuery (req, query, continueBuildQueryCb, finalCb, queryOverride = null) {
     // queryOverride can supercede req.query if specified
     const reqQuery = queryOverride || req.query;
 
@@ -223,7 +223,8 @@ module.exports = () => {
     }
   }
 
-  function csvListWriter (req, res, list, fields, pcapWriter, extension) {
+  // --------------------------------------------------------------------------
+  static #csvListWriter (req, res, list, fields, pcapWriter, extension) {
     if (list.length > 0 && list[0].fields) {
       list = list.sort((a, b) => { return a.fields.lastPacket - b.fields.lastPacket; });
     }
@@ -277,7 +278,8 @@ module.exports = () => {
     res.end();
   }
 
-  function sessionsListAddSegments (req, indices, query, list, cb) {
+  // --------------------------------------------------------------------------
+  static #sessionsListAddSegments (req, indices, query, list, cb) {
     const processedRo = {};
 
     // Index all the ids we have, so we don't include them again
@@ -324,7 +326,8 @@ module.exports = () => {
     });
   }
 
-  function sortFields (session) {
+  // --------------------------------------------------------------------------
+  static #sortFields (session) {
     if (session.tags) {
       session.tags = session.tags.sort();
     }
@@ -344,8 +347,9 @@ module.exports = () => {
     }
   }
 
-  function reqGetRawBody (req, cb) {
-    sessionAPIs.processSessionIdAndDecode(req.params.id, 10000, (err, session, incoming) => {
+  // --------------------------------------------------------------------------
+  static #reqGetRawBody (req, cb) {
+    SessionAPIs.processSessionIdAndDecode(req.params.id, 10000, (err, session, incoming) => {
       if (err) {
         return cb(err);
       }
@@ -395,7 +399,8 @@ module.exports = () => {
     });
   };
 
-  function localSessionDetailReturnFull (req, res, session, incoming) {
+  // --------------------------------------------------------------------------
+  static #localSessionDetailReturnFull (req, res, session, incoming) {
     if (req.packetsOnly) { // only return packets
       res.render('sessionPackets.pug', {
         filename: 'sessionPackets',
@@ -424,7 +429,8 @@ module.exports = () => {
     }
   }
 
-  function localSessionDetailReturn (req, res, session, incoming) {
+  // --------------------------------------------------------------------------
+  static #localSessionDetailReturn (req, res, session, incoming) {
     // console.log("ALW", JSON.stringify(incoming));
     const numPackets = req.query.packets || 200;
     if (incoming.length > numPackets) {
@@ -432,7 +438,7 @@ module.exports = () => {
     }
 
     if (incoming.length === 0) {
-      return localSessionDetailReturnFull(req, res, session, []);
+      return SessionAPIs.#localSessionDetailReturnFull(req, res, session, []);
     }
 
     const options = {
@@ -491,7 +497,7 @@ module.exports = () => {
     }
     options.order.push('ITEM-CB');
     options['ITEM-CB'].cb = (err, outgoing) => {
-      localSessionDetailReturnFull(req, res, session, outgoing);
+      SessionAPIs.#localSessionDetailReturnFull(req, res, session, outgoing);
     };
 
     if (Config.debug) {
@@ -501,7 +507,8 @@ module.exports = () => {
     decode.createPipeline(options, options.order, new decode.Pcap2ItemStream(options, incoming));
   }
 
-  function localSessionDetail (req, res) {
+  // --------------------------------------------------------------------------
+  static #localSessionDetail (req, res) {
     if (!req.query) {
       req.query = { gzip: false, line: false, base: 'natural', packets: 200 };
     }
@@ -523,7 +530,7 @@ module.exports = () => {
     }
 
     const packets = [];
-    sessionAPIs.processSessionId(req.params.id, !req.packetsOnly, null, (pcap, buffer, cb, i) => {
+    SessionAPIs.processSessionId(req.params.id, !req.packetsOnly, null, (pcap, buffer, cb, i) => {
       let obj = {};
       if (buffer.length > 16) {
         try {
@@ -542,7 +549,7 @@ module.exports = () => {
         return res.end('Problem loading packets for ' + ArkimeUtil.safeStr(req.params.id) + ' Error: ' + err);
       }
       session.id = req.params.id;
-      sortFields(session);
+      SessionAPIs.#sortFields(session);
 
       if (session.source?.ip) {
         const sep = session.source.ip.includes(':') ? '.' : ':';
@@ -558,58 +565,58 @@ module.exports = () => {
           session._err = err;
           session.sourceKey = sourceKey;
           session.destinationKey = destinationKey;
-          localSessionDetailReturn(req, res, session, results || []);
+          SessionAPIs.#localSessionDetailReturn(req, res, session, results || []);
         });
       } else if (packets.length === 0) {
         session._err = 'No pcap data found';
-        localSessionDetailReturn(req, res, session, []);
+        SessionAPIs.#localSessionDetailReturn(req, res, session, []);
       } else if (packets[0].ether !== undefined && packets[0].ether.data !== undefined) {
         Pcap.reassemble_generic_ether(packets, +req.query.packets || 200, (err, results) => {
           session._err = err;
-          localSessionDetailReturn(req, res, session, results || []);
+          SessionAPIs.#localSessionDetailReturn(req, res, session, results || []);
         });
       } else if (packets[0].ip === undefined) {
         session._err = "Couldn't decode pcap file, check viewer log";
-        localSessionDetailReturn(req, res, session, []);
+        SessionAPIs.#localSessionDetailReturn(req, res, session, []);
       } else if (packets[0].ip.p === 1) {
         Pcap.reassemble_icmp(packets, +req.query.packets || 200, (err, results) => {
           session._err = err;
-          localSessionDetailReturn(req, res, session, results || []);
+          SessionAPIs.#localSessionDetailReturn(req, res, session, results || []);
         });
       } else if (packets[0].ip.p === 6) {
         const key = session.source.ip;
         Pcap.reassemble_tcp(packets, +req.query.packets || 200, key + ':' + session.source.port, (err, results) => {
           session._err = err;
-          localSessionDetailReturn(req, res, session, results || []);
+          SessionAPIs.#localSessionDetailReturn(req, res, session, results || []);
         });
       } else if (packets[0].ip.p === 17) {
         Pcap.reassemble_udp(packets, +req.query.packets || 200, (err, results) => {
           session._err = err;
-          localSessionDetailReturn(req, res, session, results || []);
+          SessionAPIs.#localSessionDetailReturn(req, res, session, results || []);
         });
       } else if (packets[0].ip.p === 132) {
         Pcap.reassemble_sctp(packets, +req.query.packets || 200, (err, results) => {
           session._err = err;
-          localSessionDetailReturn(req, res, session, results || []);
+          SessionAPIs.#localSessionDetailReturn(req, res, session, results || []);
         });
       } else if (packets[0].ip.p === 50) {
         Pcap.reassemble_esp(packets, +req.query.packets || 200, (err, results) => {
           session._err = err;
-          localSessionDetailReturn(req, res, session, results || []);
+          SessionAPIs.#localSessionDetailReturn(req, res, session, results || []);
         });
       } else if (packets[0].ip.p === 58) {
         Pcap.reassemble_icmp(packets, +req.query.packets || 200, (err, results) => {
           session._err = err;
-          localSessionDetailReturn(req, res, session, results || []);
+          SessionAPIs.#localSessionDetailReturn(req, res, session, results || []);
         });
       } else if (packets[0].ip.data !== undefined) {
         Pcap.reassemble_generic_ip(packets, +req.query.packets || 200, (err, results) => {
           session._err = err;
-          localSessionDetailReturn(req, res, session, results || []);
+          SessionAPIs.#localSessionDetailReturn(req, res, session, results || []);
         });
       } else {
         session._err = 'Unknown ip.p=' + packets[0].ip.p;
-        localSessionDetailReturn(req, res, session, []);
+        SessionAPIs.#localSessionDetailReturn(req, res, session, []);
       }
     },
     // *2 because the packets can be out of order, we truncate again
@@ -617,7 +624,8 @@ module.exports = () => {
     +req.query.packets * 2, 10);
   }
 
-  function processSessionIdDisk (session, headerCb, packetCb, endCb, limit) {
+  // --------------------------------------------------------------------------
+  static #processSessionIdDisk (session, headerCb, packetCb, endCb, limit) {
     function processFile (pcap, pos, i, nextCb) {
       pcap.ref();
 
@@ -724,7 +732,8 @@ module.exports = () => {
     });
   }
 
-  function sessionsPcapList (req, res, list, pcapWriter, extension) {
+  // --------------------------------------------------------------------------
+  static #sessionsPcapList (req, res, list, pcapWriter, extension) {
     if (list.length > 0 && list[0].fields) {
       list = list.sort((a, b) => {
         return a.fields.lastPacket - b.fields.lastPacket;
@@ -738,7 +747,7 @@ module.exports = () => {
 
     async.eachLimit(list, 10, (item, nextCb) => {
       const fields = item.fields;
-      sessionAPIs.isLocalView(fields.node, () => {
+      SessionAPIs.isLocalView(fields.node, () => {
         // Get from our DISK
         pcapWriter(res, Db.session2Sid(item), writerOptions, nextCb);
       }, () => {
@@ -789,8 +798,9 @@ module.exports = () => {
     });
   }
 
-  function localGetItemByHash (nodeName, sessionID, hash, cb) {
-    sessionAPIs.processSessionIdAndDecode(sessionID, 10000, (err, session, incoming) => {
+  // --------------------------------------------------------------------------
+  static #localGetItemByHash (nodeName, sessionID, hash, cb) {
+    SessionAPIs.processSessionIdAndDecode(sessionID, 10000, (err, session, incoming) => {
       if (err) {
         return cb(err);
       }
@@ -834,7 +844,8 @@ module.exports = () => {
     });
   }
 
-  function sendSessionsList (req, res, list) {
+  // --------------------------------------------------------------------------
+  static #sendSessionsList (req, res, list) {
     if (!list) { return res.serverError(200, 'Missing list of sessions'); }
 
     const saveId = Config.nodeName() + '-' + new Date().getTime().toString(36);
@@ -842,7 +853,7 @@ module.exports = () => {
     async.eachLimit(list, 10, (item, nextCb) => {
       const fields = item.fields;
       const sid = Db.session2Sid(item);
-      sessionAPIs.isLocalView(fields.node, () => {
+      SessionAPIs.isLocalView(fields.node, () => {
         const options = {
           user: req.user,
           cluster: req.body.cluster,
@@ -871,30 +882,32 @@ module.exports = () => {
     });
   }
 
-  function sessionsPcap (req, res, pcapWriter, extension) {
+  // --------------------------------------------------------------------------
+  static #sessionsPcap (req, res, pcapWriter, extension) {
     ViewerUtils.noCache(req, res, 'application/vnd.tcpdump.pcap');
 
     const fields = ['lastPacket', 'node', 'network.bytes', 'network.packets', 'rootId'];
 
     if (req.query.ids) {
       const ids = ViewerUtils.queryValueToArray(req.query.ids);
-      sessionAPIs.sessionsListFromIds(req, ids, fields, (err, list) => {
-        sessionsPcapList(req, res, list, pcapWriter, extension);
+      SessionAPIs.sessionsListFromIds(req, ids, fields, (err, list) => {
+        SessionAPIs.#sessionsPcapList(req, res, list, pcapWriter, extension);
       });
     } else {
-      sessionsListFromQuery(req, res, fields, (err, list) => {
-        sessionsPcapList(req, res, list, pcapWriter, extension);
+      SessionAPIs.#sessionsListFromQuery(req, res, fields, (err, list) => {
+        SessionAPIs.#sessionsPcapList(req, res, list, pcapWriter, extension);
       });
     }
   }
 
-  function writePcap (res, id, writerOptions, doneCb) {
+  // --------------------------------------------------------------------------
+  static #writePcap (res, id, writerOptions, doneCb) {
     let b = Buffer.alloc(0xfffe);
     let nextPacket = 0;
     let boffset = 0;
     const packets = {};
 
-    sessionAPIs.processSessionId(id, false, (pcap, buffer) => {
+    SessionAPIs.processSessionId(id, false, (pcap, buffer) => {
       if (writerOptions.writeHeader) {
         res.write(buffer);
         writerOptions.writeHeader = false;
@@ -931,11 +944,12 @@ module.exports = () => {
     }, undefined, 10);
   }
 
-  function writePcapNg (res, id, writerOptions, doneCb) {
+  // --------------------------------------------------------------------------
+  static #writePcapNg (res, id, writerOptions, doneCb) {
     let b = Buffer.alloc(0xfffe);
     let boffset = 0;
 
-    sessionAPIs.processSessionId(id, true, (pcap, buffer) => {
+    SessionAPIs.processSessionId(id, true, (pcap, buffer) => {
       if (writerOptions.writeHeader) {
         res.write(pcap.getHeaderNg());
         writerOptions.writeHeader = false;
@@ -994,14 +1008,16 @@ module.exports = () => {
     });
   }
 
-  function pcapScrub (req, res, sid, whatToRemove, endCb) {
-    if (pcapScrub.scrubbingBuffers === undefined) {
-      pcapScrub.scrubbingBuffers = [Buffer.alloc(5000), Buffer.alloc(5000), Buffer.alloc(5000)];
-      pcapScrub.scrubbingBuffers[0].fill(0);
-      pcapScrub.scrubbingBuffers[1].fill(1);
+  // --------------------------------------------------------------------------
+  static #scrubbingBuffers;
+  static #pcapScrub (req, res, sid, whatToRemove, endCb) {
+    if (SessionAPIs.#scrubbingBuffers === undefined) {
+      SessionAPIs.#scrubbingBuffers = [Buffer.alloc(5000), Buffer.alloc(5000), Buffer.alloc(5000)];
+      SessionAPIs.#scrubbingBuffers[0].fill(0);
+      SessionAPIs.#scrubbingBuffers[1].fill(1);
       const str = 'Scrubbed! Hoot! ';
       for (let i = 0; i < 5000;) {
-        i += pcapScrub.scrubbingBuffers[2].write(str, i);
+        i += SessionAPIs.#scrubbingBuffers[2].write(str, i);
       }
     }
 
@@ -1014,9 +1030,9 @@ module.exports = () => {
             try {
               const obj = {};
               pcap.decode(packet, obj);
-              pcap.scrubPacket(obj, pos, pcapScrub.scrubbingBuffers[0], whatToRemove === 'all');
-              pcap.scrubPacket(obj, pos, pcapScrub.scrubbingBuffers[1], whatToRemove === 'all');
-              pcap.scrubPacket(obj, pos, pcapScrub.scrubbingBuffers[2], whatToRemove === 'all');
+              pcap.scrubPacket(obj, pos, SessionAPIs.#scrubbingBuffers[0], whatToRemove === 'all');
+              pcap.scrubPacket(obj, pos, SessionAPIs.#scrubbingBuffers[1], whatToRemove === 'all');
+              pcap.scrubPacket(obj, pos, SessionAPIs.#scrubbingBuffers[2], whatToRemove === 'all');
             } catch (e) {
               console.log(`ERROR - Couldn't scrub packet at ${pos} -`, util.inspect(e, false, 50));
             }
@@ -1093,15 +1109,16 @@ module.exports = () => {
     });
   }
 
-  function scrubList (req, res, whatToRemove, list) {
+  // --------------------------------------------------------------------------
+  static #scrubList (req, res, whatToRemove, list) {
     if (!list) { return res.serverError(200, 'Missing list of sessions'); }
 
     async.eachLimit(list, 10, (item, nextCb) => {
       const fields = item.fields;
 
-      sessionAPIs.isLocalView(fields.node, () => {
+      SessionAPIs.isLocalView(fields.node, () => {
         // Get from our DISK
-        pcapScrub(req, res, Db.session2Sid(item), whatToRemove, nextCb);
+        SessionAPIs.#pcapScrub(req, res, Db.session2Sid(item), whatToRemove, nextCb);
       }, () => {
         // Get from remote DISK
         const scrubPath = `${fields.node}/delete/${whatToRemove}/${Db.session2Sid(item)}`;
@@ -1125,7 +1142,7 @@ module.exports = () => {
   // --------------------------------------------------------------------------
   // EXPOSED HELPERS
   // --------------------------------------------------------------------------
-  sessionAPIs.processSessionId = (id, fullSession, headerCb, packetCb, endCb, maxPackets, limit) => {
+  static processSessionId (id, fullSession, headerCb, packetCb, endCb, maxPackets, limit) {
     let options;
     if (!fullSession) {
       options = { _source: false, fields: 'node,network.packets,packetPos,source.ip,source.port,destination.ip,destination.port,ipProtocol,packetLen'.split(',') };
@@ -1172,7 +1189,7 @@ module.exports = () => {
 
       function readyToProcess () {
         const pcapWriteMethod = Config.getFull(fields.node, 'pcapWriteMethod');
-        let psid = processSessionIdDisk;
+        let psid = SessionAPIs.#processSessionIdDisk;
         const writer = internals.writers[pcapWriteMethod];
         if (writer && writer.processSessionId) {
           psid = writer.processSessionId;
@@ -1193,6 +1210,7 @@ module.exports = () => {
     });
   };
 
+  // --------------------------------------------------------------------------
   /**
    * The query params to build an OpenSearch/Elasticsearch sessions query.
    *
@@ -1220,6 +1238,7 @@ module.exports = () => {
    * @param {boolean} strictly=false - When set the entire session must be inside the date range to be observed, otherwise if it overlaps it is displayed. Overwrites the bounding parameter, sets bonding to 'both'
    */
 
+  // --------------------------------------------------------------------------
   /**
    * Builds the session query based on req.query
    * @ignore
@@ -1229,7 +1248,7 @@ module.exports = () => {
    * @param {boolean} queryOverride=null - override the client query with overriding query
    * @returns {function} - the callback to call once the session query is built or an error occurs
    */
-  sessionAPIs.buildSessionQuery = async (req, buildCb, queryOverride = null) => {
+  static async buildSessionQuery (req, buildCb, queryOverride = null) {
     // validate time limit is not exceeded
     let timeLimitExceeded = false;
 
@@ -1373,7 +1392,7 @@ module.exports = () => {
       }
     }
 
-    addSortToQuery(query, reqQuery, 'firstPacket');
+    SessionAPIs.#addSortToQuery(query, reqQuery, 'firstPacket');
 
     let shortcuts;
     try { // try to fetch shortcuts
@@ -1409,13 +1428,14 @@ module.exports = () => {
     }
 
     if (!err && reqQuery.view) {
-      addViewToQuery(req, query, ViewerUtils.continueBuildQuery, buildCb, queryOverride);
+      SessionAPIs.#addViewToQuery(req, query, ViewerUtils.continueBuildQuery, buildCb, queryOverride);
     } else {
       ViewerUtils.continueBuildQuery(req, query, err, buildCb, queryOverride);
     }
   };
 
-  sessionAPIs.sessionsListFromIds = (req, ids, fields, cb) => {
+  // --------------------------------------------------------------------------
+  static sessionsListFromIds (req, ids, fields, cb) {
     let processSegments = false;
     if (req?.query && ArkimeUtil.isString(req.query.segments) && req.query.segments.match(/^(time|all)$/)) {
       if (fields.indexOf('rootId') === -1) { fields.push('rootId'); }
@@ -1446,10 +1466,10 @@ module.exports = () => {
       });
     }, (err) => {
       if (processSegments) {
-        sessionAPIs.buildSessionQuery(req, (err, query, indices) => {
+        SessionAPIs.buildSessionQuery(req, (err, query, indices) => {
           query.fields = fields;
           query._source = false;
-          sessionsListAddSegments(req, indices, query, list, (err, addSegmentsList) => {
+          SessionAPIs.#sessionsListAddSegments(req, indices, query, list, (err, addSegmentsList) => {
             cb(err, addSegmentsList);
           });
         });
@@ -1459,7 +1479,8 @@ module.exports = () => {
     });
   };
 
-  sessionAPIs.isLocalView = (node, yesCb, noCb) => {
+  // --------------------------------------------------------------------------
+  static isLocalView (node, yesCb, noCb) {
     if (internals.isLocalViewRegExp && node.match(internals.isLocalViewRegExp)) {
       if (Config.debug > 1) {
         console.log(`DEBUG: node:${node} is local view because matches ${internals.isLocalViewRegExp}`);
@@ -1478,7 +1499,8 @@ module.exports = () => {
     return Db.isLocalView(node, yesCb, noCb);
   };
 
-  sessionAPIs.proxyRequest = (req, res, errCb) => {
+  // --------------------------------------------------------------------------
+  static proxyRequest (req, res, errCb) {
     ViewerUtils.noCache(req, res);
 
     ViewerUtils.getViewUrl(req.params.nodeName, (err, viewUrl, client) => {
@@ -1525,7 +1547,8 @@ module.exports = () => {
     });
   };
 
-  sessionAPIs.addTagsList = (allTagNames, sessionList, doneCb) => {
+  // --------------------------------------------------------------------------
+  static addTagsList (allTagNames, sessionList, doneCb) {
     if (!sessionList.length) {
       console.log(`No sessions to add tags (${allTagNames}) to`);
       return doneCb(null);
@@ -1548,7 +1571,8 @@ module.exports = () => {
     }, doneCb);
   };
 
-  sessionAPIs.removeTagsList = (res, allTagNames, sessionList) => {
+  // --------------------------------------------------------------------------
+  static removeTagsList (res, allTagNames, sessionList) {
     if (!sessionList.length) {
       return res.serverError(200, 'No sessions to remove tags from');
     }
@@ -1576,9 +1600,10 @@ module.exports = () => {
     });
   };
 
-  sessionAPIs.processSessionIdAndDecode = (id, numPackets, doneCb) => {
+  // --------------------------------------------------------------------------
+  static processSessionIdAndDecode (id, numPackets, doneCb) {
     let packets = [];
-    sessionAPIs.processSessionId(id, true, null, (pcap, buffer, cb, i) => {
+    SessionAPIs.processSessionId(id, true, null, (pcap, buffer, cb, i) => {
       let obj = {};
       if (buffer.length > 16) {
         pcap.decode(buffer, obj);
@@ -1632,8 +1657,8 @@ module.exports = () => {
    * @returns {object} query - The elasticsearch query
    * @returns {object} indices - The elasticsearch indices that contain sessions in this query
    */
-  sessionAPIs.getQuery = (req, res) => {
-    sessionAPIs.buildSessionQuery(req, (bsqErr, query, indices) => {
+  static getQuery (req, res) {
+    SessionAPIs.buildSessionQuery(req, (bsqErr, query, indices) => {
       if (bsqErr) {
         return res.send({
           recordsTotal: 0,
@@ -1651,6 +1676,7 @@ module.exports = () => {
     });
   };
 
+  // --------------------------------------------------------------------------
   /**
    * POST/GET - /api/sessions
    *
@@ -1663,7 +1689,7 @@ module.exports = () => {
    * @returns {number} recordsTotal - The total number of sessions Arkime knows about
    * @returns {number} recordsFiltered - The number of sessions matching query
    */
-  sessionAPIs.getSessions = (req, res) => {
+  static getSessions (req, res) {
     let map = {};
     let graph = {};
 
@@ -1682,7 +1708,7 @@ module.exports = () => {
       recordsFiltered: 0
     };
 
-    sessionAPIs.buildSessionQuery(req, (bsqErr, query, indices) => {
+    SessionAPIs.buildSessionQuery(req, (bsqErr, query, indices) => {
       if (bsqErr) {
         response.error = bsqErr.toString();
         return res.send(response);
@@ -1788,6 +1814,7 @@ module.exports = () => {
     });
   };
 
+  // --------------------------------------------------------------------------
   /**
    * POST/GET - /api/sessions/csv OR /api/sessions.csv
    *
@@ -1796,7 +1823,7 @@ module.exports = () => {
    * @param {SessionsQuery} query - The request query to filter sessions
    * @returns {csv} csv - The csv with the sessions requested
    */
-  sessionAPIs.getSessionsCSV = (req, res) => {
+  static getSessionsCSV (req, res) {
     ViewerUtils.noCache(req, res, 'text/csv');
 
     // default fields to display in csv
@@ -1815,16 +1842,17 @@ module.exports = () => {
 
     if (req.query.ids) {
       const ids = ViewerUtils.queryValueToArray(req.query.ids);
-      sessionAPIs.sessionsListFromIds(req, ids, fields, (err, list) => {
-        csvListWriter(req, res, list, reqFields);
+      SessionAPIs.sessionsListFromIds(req, ids, fields, (err, list) => {
+        SessionAPIs.#csvListWriter(req, res, list, reqFields);
       });
     } else {
-      sessionsListFromQuery(req, res, fields, (err, list) => {
-        csvListWriter(req, res, list, reqFields);
+      SessionAPIs.#sessionsListFromQuery(req, res, fields, (err, list) => {
+        SessionAPIs.#csvListWriter(req, res, list, reqFields);
       });
     }
   };
 
+  // --------------------------------------------------------------------------
   /**
    * POST/GET - /api/spiview
    *
@@ -1839,7 +1867,7 @@ module.exports = () => {
    * @returns {number} recordsTotal - The total number of sessions Arkime knows about
    * @returns {number} recordsFiltered - The number of sessions matching query
    */
-  sessionAPIs.getSPIView = (req, res) => {
+  static getSPIView (req, res) {
     if (req.query.spi === undefined) {
       return res.send({ spi: {}, recordsTotal: 0, recordsFiltered: 0 });
     }
@@ -1852,7 +1880,7 @@ module.exports = () => {
 
     const response = { spi: {} };
 
-    sessionAPIs.buildSessionQuery(req, (bsqErr, query, indices) => {
+    SessionAPIs.buildSessionQuery(req, (bsqErr, query, indices) => {
       if (bsqErr) {
         response.error = bsqErr.toString();
         return res.send(response);
@@ -1998,6 +2026,7 @@ module.exports = () => {
     });
   };
 
+  // --------------------------------------------------------------------------
   /**
    * POST/GET - /api/spigraph
    *
@@ -2012,7 +2041,7 @@ module.exports = () => {
    * @returns {number} recordsTotal - The total number of sessions Arkime knows about
    * @returns {number} recordsFiltered - The number of sessions matching query
    */
-  sessionAPIs.getSPIGraph = (req, res) => {
+  static getSPIGraph (req, res) {
     req.query.facets = 1;
 
     // req.query.exp -> req.query.field by viewer.js:expToField
@@ -2021,7 +2050,7 @@ module.exports = () => {
       return res.serverError(403, 'Bad \'field\' parameter');
     }
 
-    sessionAPIs.buildSessionQuery(req, (bsqErr, query, indices) => {
+    SessionAPIs.buildSessionQuery(req, (bsqErr, query, indices) => {
       const results = { items: [], graph: {}, map: {} };
       if (bsqErr) {
         return res.serverError(403, bsqErr.toString());
@@ -2200,6 +2229,7 @@ module.exports = () => {
     });
   };
 
+  // --------------------------------------------------------------------------
   /**
    * POST/GET - /api/spigraphhierarchy
    *
@@ -2211,7 +2241,7 @@ module.exports = () => {
    * @returns {object} hierarchicalResults - The nested data to populate the treemap or pie
    * @returns {array} tableResults - The list data to populate the table
    */
-  sessionAPIs.getSPIGraphHierarchy = (req, res) => {
+  static getSPIGraphHierarchy (req, res) {
     if (req.query.exp === undefined) {
       return res.serverError(403, 'Missing exp parameter');
     }
@@ -2230,7 +2260,7 @@ module.exports = () => {
       fields.push(field);
     }
 
-    sessionAPIs.buildSessionQuery(req, (err, query, indices) => {
+    SessionAPIs.buildSessionQuery(req, (err, query, indices) => {
       query.size = 0; // Don't need any real results, just aggregations
       delete query.sort;
       delete query.aggregations;
@@ -2325,6 +2355,7 @@ module.exports = () => {
     });
   };
 
+  // --------------------------------------------------------------------------
   /**
    * POST/GET - /api/unique
    *
@@ -2336,7 +2367,7 @@ module.exports = () => {
    * @param {string} field - The database field to return unique data for. Either exp or field is required, field is given priority if both are present.
    * @returns {string} The list of unique fields (with counts if requested)
    */
-  sessionAPIs.getUnique = (req, res) => {
+  static getUnique (req, res) {
     ViewerUtils.noCache(req, res, 'text/plain; charset=utf-8');
 
     // req.query.exp -> req.query.field by viewer.js:expToField
@@ -2396,7 +2427,7 @@ module.exports = () => {
       };
     }
 
-    sessionAPIs.buildSessionQuery(req, (err, query, indices) => {
+    SessionAPIs.buildSessionQuery(req, (err, query, indices) => {
       delete query.sort;
       delete query.aggregations;
 
@@ -2464,6 +2495,7 @@ module.exports = () => {
     });
   };
 
+  // --------------------------------------------------------------------------
   /**
    * POST/GET - /api/multiunique
    *
@@ -2474,7 +2506,7 @@ module.exports = () => {
    * @param {string} exp - Comma separated list of expression fields to return unique data for.
    * @returns {string} The list of an intersection of unique fields (with counts if requested)
    */
-  sessionAPIs.getMultiunique = (req, res) => {
+  static getMultiunique (req, res) {
     ViewerUtils.noCache(req, res, 'text/plain; charset=utf-8');
 
     if (!ArkimeUtil.isString(req.query.exp)) {
@@ -2505,7 +2537,7 @@ module.exports = () => {
       }
     }
 
-    sessionAPIs.buildSessionQuery(req, (err, query, indices) => {
+    SessionAPIs.buildSessionQuery(req, (err, query, indices) => {
       delete query.sort;
       delete query.aggregations;
       query.size = 0;
@@ -2556,6 +2588,7 @@ module.exports = () => {
     });
   };
 
+  // --------------------------------------------------------------------------
   /**
    * GET - /api/session/:nodeName/:id/detail
    *
@@ -2563,7 +2596,7 @@ module.exports = () => {
    * @name /session/:nodeName/:id/detail
    * @returns {html} The html to display as session detail
    */
-  sessionAPIs.getDetail = (req, res) => {
+  static getDetail (req, res) {
     const options = ViewerUtils.addCluster(req.query.cluster);
     options._source = 'cert';
     options.fields = ['*'];
@@ -2577,7 +2610,7 @@ module.exports = () => {
 
       session.id = req.params.id;
 
-      sortFields(session);
+      SessionAPIs.#sortFields(session);
 
       const hidePackets = (session.fileId === undefined || session.fileId.length === 0) ? 'true' : 'false';
       ViewerUtils.fixFields(session, () => {
@@ -2609,6 +2642,7 @@ module.exports = () => {
     });
   };
 
+  // --------------------------------------------------------------------------
   /**
    * GET - /api/session/:nodeName/:id/packets
    *
@@ -2616,16 +2650,17 @@ module.exports = () => {
    * @name /session/:nodeName/:id/packets
    * @returns {html} The html to display as session packets
    */
-  sessionAPIs.getPackets = (req, res) => {
-    sessionAPIs.isLocalView(req.params.nodeName, () => {
+  static getPackets (req, res) {
+    SessionAPIs.isLocalView(req.params.nodeName, () => {
       ViewerUtils.noCache(req, res);
       req.packetsOnly = true;
-      localSessionDetail(req, res);
+      SessionAPIs.#localSessionDetail(req, res);
     }, () => {
-      return sessionAPIs.proxyRequest(req, res);
+      return SessionAPIs.proxyRequest(req, res);
     });
   };
 
+  // --------------------------------------------------------------------------
   /**
    * POST - /api/sessions/addtags
    *
@@ -2641,7 +2676,7 @@ module.exports = () => {
    * @returns {boolean} success - Whether the add tags operation was successful
    * @returns {string} text - The success/error message to (optionally) display to the user
    */
-  sessionAPIs.addTags = (req, res) => {
+  static addTags (req, res) {
     let tags = [];
     if (ArkimeUtil.isString(req.body.tags)) {
       tags = req.body.tags.replace(/[^-a-zA-Z0-9_:,]/g, '').split(',');
@@ -2654,11 +2689,11 @@ module.exports = () => {
     if (req.body.ids) {
       const ids = ViewerUtils.queryValueToArray(req.body.ids);
 
-      sessionAPIs.sessionsListFromIds(req, ids, ['tags', 'node'], (err, list) => {
+      SessionAPIs.sessionsListFromIds(req, ids, ['tags', 'node'], (err, list) => {
         if (!list.length) {
           return res.serverError(200, 'No sessions to add tags to');
         }
-        sessionAPIs.addTagsList(tags, list, async () => {
+        SessionAPIs.addTagsList(tags, list, async () => {
           await Db.refresh('sessions*');
           return res.send(JSON.stringify({
             success: true,
@@ -2667,11 +2702,11 @@ module.exports = () => {
         });
       });
     } else {
-      sessionsListFromQuery(req, res, ['tags', 'node'], (err, list) => {
+      SessionAPIs.#sessionsListFromQuery(req, res, ['tags', 'node'], (err, list) => {
         if (!list.length) {
           return res.serverError(200, 'No sessions to add tags to');
         }
-        sessionAPIs.addTagsList(tags, list, async () => {
+        SessionAPIs.addTagsList(tags, list, async () => {
           await Db.refresh('sessions*');
           return res.send(JSON.stringify({
             success: true,
@@ -2682,6 +2717,7 @@ module.exports = () => {
     }
   };
 
+  // --------------------------------------------------------------------------
   /**
    * POST - /api/sessions/removetags
    *
@@ -2697,7 +2733,7 @@ module.exports = () => {
    * @returns {boolean} success - Whether the remove tags operation was successful
    * @returns {string} text - The success/error message to (optionally) display to the user
    */
-  sessionAPIs.removeTags = (req, res) => {
+  static removeTags (req, res) {
     let tags = [];
     if (ArkimeUtil.isString(req.body.tags)) {
       tags = req.body.tags.replace(/[^-a-zA-Z0-9_:,]/g, '').split(',');
@@ -2710,16 +2746,17 @@ module.exports = () => {
     if (req.body.ids) {
       const ids = ViewerUtils.queryValueToArray(req.body.ids);
 
-      sessionAPIs.sessionsListFromIds(req, ids, ['tags'], (err, list) => {
-        sessionAPIs.removeTagsList(res, tags, list);
+      SessionAPIs.sessionsListFromIds(req, ids, ['tags'], (err, list) => {
+        SessionAPIs.removeTagsList(res, tags, list);
       });
     } else {
-      sessionsListFromQuery(req, res, ['tags'], (err, list) => {
-        sessionAPIs.removeTagsList(res, tags, list);
+      SessionAPIs.#sessionsListFromQuery(req, res, ['tags'], (err, list) => {
+        SessionAPIs.removeTagsList(res, tags, list);
       });
     }
   };
 
+  // --------------------------------------------------------------------------
   /**
    * GET - /api/session/:nodeName/:id/body/:bodyType/:bodyNum/:bodyName
    *
@@ -2727,8 +2764,8 @@ module.exports = () => {
    * @name /session/:nodeName/:id/body/:bodyType/:bodyNum/:bodyName
    * @returns {file} file - The file in the session
    */
-  sessionAPIs.getRawBody = (req, res) => {
-    reqGetRawBody(req, (err, data) => {
+  static getRawBody (req, res) {
+    SessionAPIs.#reqGetRawBody(req, (err, data) => {
       if (err) {
         console.trace(err);
         return res.end('Error');
@@ -2741,6 +2778,7 @@ module.exports = () => {
     });
   };
 
+  // --------------------------------------------------------------------------
   /**
    * GET - /api/session/:nodeName/:id/bodypng/:bodyType/:bodyNum/:bodyName
    *
@@ -2748,8 +2786,8 @@ module.exports = () => {
    * @name /session/:nodeName/:id/bodypng/:bodyType/:bodyNum/:bodyName
    * @returns {image/png} image - The bitmap image.
    */
-  sessionAPIs.getFilePNG = (req, res) => {
-    reqGetRawBody(req, (err, data) => {
+  static getFilePNG (req, res) {
+    SessionAPIs.#reqGetRawBody(req, (err, data) => {
       if (err || data === null || data.length === 0) {
         return res.send(internals.emptyPNG);
       }
@@ -2767,6 +2805,7 @@ module.exports = () => {
     });
   };
 
+  // --------------------------------------------------------------------------
   /**
    * GET - /api/sessions/pcap OR /api/sessions.pcap
    *
@@ -2777,10 +2816,11 @@ module.exports = () => {
    * @param {boolean} segments=false - When set return linked segments
    * @returns {pcap} A PCAP file with the sessions requested
    */
-  sessionAPIs.getPCAP = (req, res) => {
-    return sessionsPcap(req, res, writePcap, 'pcap');
+  static getPCAP (req, res) {
+    return SessionAPIs.#sessionsPcap(req, res, SessionAPIs.#writePcap, 'pcap');
   };
 
+  // --------------------------------------------------------------------------
   /**
    * GET - /api/sessions/pcapng OR /api/sessions.pcapng
    *
@@ -2791,10 +2831,11 @@ module.exports = () => {
    * @param {boolean} segments=false - When set return linked segments
    * @returns {pcap} A PCAPNG file with the sessions requested
    */
-  sessionAPIs.getPCAPNG = (req, res) => {
-    return sessionsPcap(req, res, writePcapNg, 'pcapng');
+  static getPCAPNG (req, res) {
+    return SessionAPIs.#sessionsPcap(req, res, SessionAPIs.#writePcapNg, 'pcapng');
   };
 
+  // --------------------------------------------------------------------------
   /**
    * GET - /api/session/:nodeName/:id/pcap OR /api/session/:nodeName/:id.pcap
    *
@@ -2802,14 +2843,15 @@ module.exports = () => {
    * @name /session/:nodeName/:id/pcap
    * @returns {pcap} A PCAP file with the session requested
    */
-  sessionAPIs.getPCAPFromNode = (req, res) => {
+  static getPCAPFromNode (req, res) {
     ViewerUtils.noCache(req, res, 'application/vnd.tcpdump.pcap');
     const writeHeader = !req.query || !req.query.noHeader || req.query.noHeader !== 'true';
-    writePcap(res, req.params.id, { writeHeader }, () => {
+    SessionAPIs.#writePcap(res, req.params.id, { writeHeader }, () => {
       res.end();
     });
   };
 
+  // --------------------------------------------------------------------------
   /**
    * GET - /api/session/:nodeName/:id/pcapng OR /api/session/:nodeName/:id.pcapng
    *
@@ -2817,14 +2859,15 @@ module.exports = () => {
    * @name /session/:nodeName/:id/pcapng
    * @returns {pcap} A PCAPNG file with the session requested
    */
-  sessionAPIs.getPCAPNGFromNode = (req, res) => {
+  static getPCAPNGFromNode (req, res) {
     ViewerUtils.noCache(req, res, 'application/vnd.tcpdump.pcap');
     const writeHeader = !req.query || !req.query.noHeader || req.query.noHeader !== 'true';
-    writePcapNg(res, req.params.id, { writeHeader }, () => {
+    SessionAPIs.#writePcapNg(res, req.params.id, { writeHeader }, () => {
       res.end();
     });
   };
 
+  // --------------------------------------------------------------------------
   /**
    * GET - /api/session/entire/:nodeName/:id/pcap OR /api/session/entire/:nodeName/:id.pcap
    *
@@ -2832,7 +2875,7 @@ module.exports = () => {
    * @name /session/entire/:nodeName/:id/pcap
    * @returns {pcap} A PCAP file with the session requested
    */
-  sessionAPIs.getEntirePCAP = (req, res) => {
+  static getEntirePCAP (req, res) {
     ViewerUtils.noCache(req, res, 'application/vnd.tcpdump.pcap');
 
     const writerOptions = { writeHeader: true };
@@ -2850,13 +2893,14 @@ module.exports = () => {
 
     Db.searchSessions(['sessions2-*', 'sessions3-*'], query, null, (err, data) => {
       async.forEachSeries(data.hits.hits, (item, nextCb) => {
-        writePcap(res, Db.session2Sid(item), writerOptions, nextCb);
+        SessionAPIs.#writePcap(res, Db.session2Sid(item), writerOptions, nextCb);
       }, (err) => {
         res.end();
       });
     });
   };
 
+  // --------------------------------------------------------------------------
   /**
    * GET - /api/session/raw/:nodeName/:id/png OR /api/session/raw/:nodeName/:id.png
    *
@@ -2865,10 +2909,10 @@ module.exports = () => {
    * @param {string} type=src - Whether to retrieve the src (source) or dst (desintation) packets bitmap image. Defaults to src.
    * @returns {image/png} image - The bitmap image.
    */
-  sessionAPIs.getPacketPNG = (req, res) => {
+  static getPacketPNG (req, res) {
     ViewerUtils.noCache(req, res, 'image/png');
 
-    sessionAPIs.processSessionIdAndDecode(req.params.id, 1000, (err, session, results) => {
+    SessionAPIs.processSessionIdAndDecode(req.params.id, 1000, (err, session, results) => {
       if (err) {
         return res.send(internals.emptyPNG);
       }
@@ -2907,6 +2951,7 @@ module.exports = () => {
     });
   };
 
+  // --------------------------------------------------------------------------
   /**
    * GET - /api/session/raw/:nodeName/:id
    *
@@ -2915,10 +2960,10 @@ module.exports = () => {
    * @param {string} type=src - Whether to retrieve the src (source) or dst (desintation) raw packets. Defaults to src.
    * @returns {string} The source or destination packet text.
    */
-  sessionAPIs.getRawPackets = (req, res) => {
+  static getRawPackets (req, res) {
     ViewerUtils.noCache(req, res, 'application/vnd.tcpdump.pcap');
 
-    sessionAPIs.processSessionIdAndDecode(req.params.id, 10000, (err, session, results) => {
+    SessionAPIs.processSessionIdAndDecode(req.params.id, 10000, (err, session, results) => {
       if (err) {
         return res.send('Error');
       }
@@ -2931,6 +2976,7 @@ module.exports = () => {
     });
   };
 
+  // --------------------------------------------------------------------------
   /**
    * GET - /api/sessions/bodyhash/:hash
    *
@@ -2939,12 +2985,12 @@ module.exports = () => {
    * @param {SessionsQuery} query - The request query to filter sessions
    * @returns {file} file - The file that matches the hash
    */
-  sessionAPIs.getBodyHash = (req, res) => {
+  static getBodyHash (req, res) {
     let hash = null;
     let nodeName = null;
     let sessionID = null;
 
-    sessionAPIs.buildSessionQuery(req, (bsqErr, query, indices) => {
+    SessionAPIs.buildSessionQuery(req, (bsqErr, query, indices) => {
       if (bsqErr) {
         res.status(400);
         return res.end(bsqErr);
@@ -2978,8 +3024,8 @@ module.exports = () => {
             sessionID = Db.session2Sid(sessions.hits.hits[0]);
             hash = req.params.hash;
 
-            sessionAPIs.isLocalView(nodeName, () => { // get file from the local disk
-              localGetItemByHash(nodeName, sessionID, hash, (err, item) => {
+            SessionAPIs.isLocalView(nodeName, () => { // get file from the local disk
+              SessionAPIs.#localGetItemByHash(nodeName, sessionID, hash, (err, item) => {
                 if (err) {
                   res.status(400);
                   return res.end(err);
@@ -2998,7 +3044,7 @@ module.exports = () => {
               preq.params.id = sessionID;
               preq.params.hash = hash;
               preq.url = `api/session/${Config.basePath(nodeName) + nodeName}/${sessionID}/bodyhash/${hash}`;
-              return sessionAPIs.proxyRequest(preq, res);
+              return SessionAPIs.proxyRequest(preq, res);
             });
           } else {
             res.status(400);
@@ -3009,6 +3055,7 @@ module.exports = () => {
     });
   };
 
+  // --------------------------------------------------------------------------
   /**
    * @ignore
    * POST - /api/sessions/decodings
@@ -3016,10 +3063,11 @@ module.exports = () => {
    * Retrieve decodings.
    * @name /sessions/decodings
    */
-  sessionAPIs.getDecodings = (req, res) => {
+  static getDecodings (req, res) {
     res.send(JSON.stringify(decode.settings()));
   };
 
+  // --------------------------------------------------------------------------
   /**
    * GET - /api/session/:nodeName/:id/bodyhash/:hash
    *
@@ -3028,8 +3076,8 @@ module.exports = () => {
    * @param {SessionsQuery} query - The request query to filter sessions
    * @returns {file} file - The file that matches the hash
    */
-  sessionAPIs.getBodyHashFromNode = (req, res) => {
-    localGetItemByHash(req.params.nodeName, req.params.id, req.params.hash, (err, item) => {
+  static getBodyHashFromNode (req, res) {
+    SessionAPIs.#localGetItemByHash(req.params.nodeName, req.params.id, req.params.hash, (err, item) => {
       if (err) {
         res.status(400);
         return res.end(err);
@@ -3044,6 +3092,7 @@ module.exports = () => {
     });
   };
 
+  // --------------------------------------------------------------------------
   /**
    * GET - /api/delete
    *
@@ -3054,7 +3103,7 @@ module.exports = () => {
    * @returns {boolean} success - Whether the operation was successful
    * @returns {string} text - The success/error message to (optionally) display to the user
    */
-  sessionAPIs.deleteData = (req, res) => {
+  static deleteData (req, res) {
     if (req.query.removeSpi !== 'true' && req.query.removePcap !== 'true') {
       return res.serverError(403, 'You can\'t delete nothing');
     }
@@ -3070,18 +3119,19 @@ module.exports = () => {
 
     if (req.body.ids) {
       const ids = ViewerUtils.queryValueToArray(req.body.ids);
-      sessionAPIs.sessionsListFromIds(req, ids, ['node'], (err, list) => {
-        scrubList(req, res, whatToRemove, list);
+      SessionAPIs.sessionsListFromIds(req, ids, ['node'], (err, list) => {
+        SessionAPIs.#scrubList(req, res, whatToRemove, list);
       });
     } else if (req.query.expression) {
-      sessionsListFromQuery(req, res, ['node'], (err, list) => {
-        scrubList(req, res, whatToRemove, list);
+      SessionAPIs.#sessionsListFromQuery(req, res, ['node'], (err, list) => {
+        SessionAPIs.#scrubList(req, res, whatToRemove, list);
       });
     } else {
       return res.serverError(403, 'Error: Missing expression. An expression is required so you don\'t delete everything.');
     }
   };
 
+  // --------------------------------------------------------------------------
   /**
    * @ignore
    * GET - /api/session/:nodeName/:id/send
@@ -3089,7 +3139,7 @@ module.exports = () => {
    * Sends a session to a node.
    * @name /session/:nodeName/:id/send
    */
-  sessionAPIs.sendSessionToNode = (req, res) => {
+  static sendSessionToNode (req, res) {
     ViewerUtils.noCache(req, res);
     res.statusCode = 200;
 
@@ -3107,6 +3157,7 @@ module.exports = () => {
     });
   };
 
+  // --------------------------------------------------------------------------
   /**
    * @ignore
    * POST - /api/sessions/:nodeName/send
@@ -3118,7 +3169,7 @@ module.exports = () => {
    * @param {string} cluster - The name of the Arkime cluster to send the sessions.
    * @param {saveId} saveId - The sessionId to use on the remote side.
    */
-  sessionAPIs.sendSessionsToNode = (req, res) => {
+  static sendSessionsToNode (req, res) {
     ViewerUtils.noCache(req, res);
     res.statusCode = 200;
 
@@ -3151,6 +3202,7 @@ module.exports = () => {
     });
   };
 
+  // --------------------------------------------------------------------------
   /**
    * @ignore
    * POST - /api/sessions/send
@@ -3159,20 +3211,21 @@ module.exports = () => {
    * @name /sessions/send
    * @param {string} ids - Comma separated list of session ids.
    */
-  sessionAPIs.sendSessions = (req, res) => {
+  static sendSessions (req, res) {
     if (req.body.ids) {
       const ids = ViewerUtils.queryValueToArray(req.body.ids);
 
-      sessionAPIs.sessionsListFromIds(req, ids, ['node'], (err, list) => {
-        sendSessionsList(req, res, list);
+      SessionAPIs.sessionsListFromIds(req, ids, ['node'], (err, list) => {
+        SessionAPIs.#sendSessionsList(req, res, list);
       });
     } else {
-      sessionsListFromQuery(req, res, ['node'], (err, list) => {
-        sendSessionsList(req, res, list);
+      SessionAPIs.#sessionsListFromQuery(req, res, ['node'], (err, list) => {
+        SessionAPIs.#sendSessionsList(req, res, list);
       });
     }
   };
 
+  // --------------------------------------------------------------------------
   /**
    * @ignore
    * POST - /api/sessions/receive
@@ -3181,7 +3234,7 @@ module.exports = () => {
    * @name /sessions/receive
    * @param {saveId} saveId - The sessionId to save the session.
    */
-  sessionAPIs.receiveSession = (req, res) => {
+  static receiveSession (req, res) {
     if (!ArkimeUtil.isString(req.query.saveId)) { return res.serverError(200, 'Missing saveId'); }
 
     req.query.saveId = req.query.saveId.replace(/[^-a-zA-Z0-9_]/g, '');
@@ -3323,6 +3376,5 @@ module.exports = () => {
       return res.send({ success: true });
     });
   };
-
-  return sessionAPIs;
 };
+module.exports = SessionAPIs;

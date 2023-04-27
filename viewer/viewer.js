@@ -65,16 +65,16 @@ const internals = require('./internals');
 internals.initialize(app);
 const ViewerUtils = require('./viewerUtils');
 const Notifier = require('../common/notifier');
-const View = require('./apiViews');
-const Cron = require('./apiCrons');
-const sessionAPIs = require('./apiSessions')();
-const connectionAPIs = require('./apiConnections')(sessionAPIs);
+const ViewAPIs = require('./apiViews');
+const CronAPIs = require('./apiCrons');
+const SessionAPIs = require('./apiSessions');
+const ConnectionAPIs = require('./apiConnections');
 const StatsAPIs = require('./apiStats');
-const huntAPIs = require('./apiHunts')(sessionAPIs);
+const HuntAPIs = require('./apiHunts');
 const UserAPIs = require('./apiUsers');
 const HistoryAPIs = require('./apiHistory');
 const ShortcutAPIs = require('./apiShortcuts');
-const miscAPIs = require('./apiMisc')(sessionAPIs);
+const MiscAPIs = require('./apiMisc');
 
 // registers a get and a post
 app.getpost = (route, mw, func) => { app.get(route, mw, func); app.post(route, mw, func); };
@@ -203,14 +203,14 @@ if (Config.get('regressionTests')) {
     res.send('{}');
   });
   app.get('/regressionTests/processCronQueries', function (req, res) {
-    Cron.processCronQueries();
+    CronAPIs.processCronQueries();
     res.send('{}');
   });
   // Make sure all jobs have run and return
   app.get('/regressionTests/processHuntJobs', async function (req, res) {
     await Db.flush();
     await Db.refresh();
-    huntAPIs.processHuntJobs();
+    HuntAPIs.processHuntJobs();
 
     setTimeout(function checkHuntFinished () {
       if (internals.runningHuntJob) {
@@ -218,7 +218,7 @@ if (Config.get('regressionTests')) {
       } else {
         Db.search('hunts', 'hunt', { query: { terms: { status: ['running', 'queued'] } } }, async function (err, result) {
           if (result.hits.total > 0) {
-            huntAPIs.processHuntJobs();
+            HuntAPIs.processHuntJobs();
             await Db.refresh();
             setTimeout(checkHuntFinished, 1000);
           } else {
@@ -430,11 +430,11 @@ function createActions (configKey, emitter, internalsKey) {
 // ============================================================================
 // security/access middleware -------------------------------------------------
 function checkProxyRequest (req, res, next) {
-  sessionAPIs.isLocalView(req.params.nodeName, function () {
+  SessionAPIs.isLocalView(req.params.nodeName, function () {
     return next();
   },
   function () {
-    return sessionAPIs.proxyRequest(req, res);
+    return SessionAPIs.proxyRequest(req, res);
   });
 }
 
@@ -805,7 +805,7 @@ function sendSessionWorker (options, cb) {
     return cb({ success: false, text: 'Missing cluster' });
   }
 
-  sessionAPIs.processSessionId(options.id, true, function (pcap, header) {
+  SessionAPIs.processSessionId(options.id, true, function (pcap, header) {
     packetshdr = header;
   }, function (pcap, packet, pcb, i) {
     packetslen += packet.length;
@@ -1266,60 +1266,60 @@ app.get( // user roles endpoint
 app.get( // get views endpoint
   ['/api/user/views', '/user/views', '/api/views'],
   [ArkimeUtil.noCacheJson, getSettingUserCache],
-  View.apiGetViews
+  ViewAPIs.apiGetViews
 );
 
 app.post( // create view endpoint
   ['/api/user/view', '/user/views/create', '/api/view'],
   [ArkimeUtil.noCacheJson, checkCookieToken, logAction(), ArkimeUtil.getSettingUserDb, sanitizeViewName],
-  View.apiCreateView
+  ViewAPIs.apiCreateView
 );
 
 app.deletepost( // delete view endpoint
   ['/api/user/view/:id', '/user/views/delete', '/api/view/:id'],
   [ArkimeUtil.noCacheJson, checkCookieToken, logAction(), ArkimeUtil.getSettingUserDb, sanitizeViewName],
-  View.apiDeleteView
+  ViewAPIs.apiDeleteView
 );
 
 app.put( // update view endpoint
   ['/api/user/view/:id', '/user/views/update', '/api/view/:id'],
   [ArkimeUtil.noCacheJson, checkCookieToken, logAction(), ArkimeUtil.getSettingUserDb, sanitizeViewName],
-  View.apiUpdateView
+  ViewAPIs.apiUpdateView
 );
 app.post( // update view endpoint for backwards compatibility with API 0.x-2.x
   ['/user/views/update'],
   [ArkimeUtil.noCacheJson, checkCookieToken, logAction(), ArkimeUtil.getSettingUserDb, sanitizeViewName],
-  View.apiUpdateView
+  ViewAPIs.apiUpdateView
 );
 
 // cron apis ------------------------------------------------------------------
 app.get( // get cron queries endpoint
   ['/api/user/crons', '/user/cron', '/api/crons'],
   [ArkimeUtil.noCacheJson, getSettingUserCache],
-  Cron.getCrons
+  CronAPIs.getCrons
 );
 
 app.post( // create cron query endpoint
   ['/api/user/cron', '/user/cron/create', '/api/cron'],
   [ArkimeUtil.noCacheJson, checkCookieToken, logAction(), ArkimeUtil.getSettingUserDb],
-  Cron.createCron
+  CronAPIs.createCron
 );
 
 app.delete( // delete cron endpoint
   ['/api/user/cron/:key', '/user/cron/delete', '/api/cron/:key'],
   [ArkimeUtil.noCacheJson, checkCookieToken, logAction(), ArkimeUtil.getSettingUserDb, checkCronAccess],
-  Cron.deleteCron
+  CronAPIs.deleteCron
 );
 app.post( // delete cron endpoint for backwards compatibility with API 0.x-2.x
   '/user/cron/delete',
   [ArkimeUtil.noCacheJson, checkCookieToken, logAction(), ArkimeUtil.getSettingUserDb, checkCronAccess],
-  Cron.deleteCron
+  CronAPIs.deleteCron
 );
 
 app.post( // update cron endpoint
   ['/api/user/cron/:key', '/user/cron/update', '/api/cron/:key'],
   [ArkimeUtil.noCacheJson, checkCookieToken, logAction(), ArkimeUtil.getSettingUserDb, checkCronAccess],
-  Cron.updateCron
+  CronAPIs.updateCron
 );
 
 // notifier apis --------------------------------------------------------------
@@ -1518,181 +1518,181 @@ app.getpost( // sessions endpoint (POST or GET) - uses fillQueryFromBody to
   // fill the query parameters if the client uses POST to support POST and GET
   ['/api/sessions', '/sessions.json'],
   [ArkimeUtil.noCacheJson, recordResponseTime, fillQueryFromBody, logAction('sessions'), setCookie],
-  sessionAPIs.getSessions
+  SessionAPIs.getSessions
 );
 
 app.getpost( // spiview endpoint (POST or GET) - uses fillQueryFromBody to
   // fill the query parameters if the client uses POST to support POST and GET
   ['/api/spiview', '/spiview.json'],
   [ArkimeUtil.noCacheJson, recordResponseTime, fillQueryFromBody, logAction('spiview'), setCookie],
-  sessionAPIs.getSPIView
+  SessionAPIs.getSPIView
 );
 
 app.getpost( // spigraph endpoint (POST or GET) - uses fillQueryFromBody to
   // fill the query parameters if the client uses POST to support POST and GET
   ['/api/spigraph', '/spigraph.json'],
   [ArkimeUtil.noCacheJson, recordResponseTime, fillQueryFromBody, logAction('spigraph'), setCookie, expToField],
-  sessionAPIs.getSPIGraph
+  SessionAPIs.getSPIGraph
 );
 
 app.getpost( // spigraph hierarchy endpoint (POST or GET) - uses fillQueryFromBody to
   // fill the query parameters if the client uses POST to support POST and GET
   ['/api/spigraphhierarchy', '/spigraphhierarchy'],
   [ArkimeUtil.noCacheJson, recordResponseTime, fillQueryFromBody, logAction('spigraphhierarchy'), setCookie],
-  sessionAPIs.getSPIGraphHierarchy
+  SessionAPIs.getSPIGraphHierarchy
 );
 
 app.getpost( // build query endoint (POST or GET) - uses fillQueryFromBody to
   // fill the query parameters if the client uses POST to support POST and GET
   ['/api/buildquery', '/buildQuery.json'],
   [ArkimeUtil.noCacheJson, fillQueryFromBody, logAction('query')],
-  sessionAPIs.getQuery
+  SessionAPIs.getQuery
 );
 
 app.getpost( // sessions csv endpoint (POST or GET) - uses fillQueryFromBody to
   // fill the query parameters if the client uses POST to support POST and GET
   ['/api/sessions[/.]csv', /\/sessions.csv.*/],
   [fillQueryFromBody, logAction('sessions.csv')],
-  sessionAPIs.getSessionsCSV
+  SessionAPIs.getSessionsCSV
 );
 
 app.getpost( // unique endpoint (POST or GET) - uses fillQueryFromBody to
   // fill the query parameters if the client uses POST to support POST and GET
   ['/api/unique', '/unique.txt'],
   [fillQueryFromBody, logAction('unique'), expToField],
-  sessionAPIs.getUnique
+  SessionAPIs.getUnique
 );
 
 app.getpost( // multiunique endpoint (POST or GET) - uses fillQueryFromBody to
   // fill the query parameters if the client uses POST to support POST and GET
   ['/api/multiunique', '/multiunique.txt'],
   [fillQueryFromBody, logAction('multiunique')],
-  sessionAPIs.getMultiunique
+  SessionAPIs.getMultiunique
 );
 
 app.get( // session detail (SPI) endpoint
   ['/api/session/:nodeName/:id/detail', '/:nodeName/session/:id/detail'],
   [logAction()],
-  sessionAPIs.getDetail
+  SessionAPIs.getDetail
 );
 
 app.get( // session packets endpoint
   ['/api/session/:nodeName/:id/packets', '/:nodeName/session/:id/packets'],
   [logAction(), User.checkPermissions(['hidePcap'])],
-  sessionAPIs.getPackets
+  SessionAPIs.getPackets
 );
 
 app.post( // add tags endpoint
   ['/api/sessions/addtags', '/addTags'],
   [ArkimeUtil.noCacheJson, checkHeaderToken, logAction('addTags')],
-  sessionAPIs.addTags
+  SessionAPIs.addTags
 );
 
 app.post( // remove tags endpoint
   ['/api/sessions/removetags', '/removeTags'],
   [ArkimeUtil.noCacheJson, checkHeaderToken, logAction('removeTags'), User.checkPermissions(['removeEnabled'])],
-  sessionAPIs.removeTags
+  SessionAPIs.removeTags
 );
 
 app.get( // session body file endpoint
   ['/api/session/:nodeName/:id/body/:bodyType/:bodyNum/:bodyName', '/:nodeName/:id/body/:bodyType/:bodyNum/:bodyName'],
   [checkProxyRequest],
-  sessionAPIs.getRawBody
+  SessionAPIs.getRawBody
 );
 
 app.get( // session body file image endpoint
   ['/api/session/:nodeName/:id/bodypng/:bodyType/:bodyNum/:bodyName', '/:nodeName/:id/bodypng/:bodyType/:bodyNum/:bodyName'],
   [checkProxyRequest],
-  sessionAPIs.getFilePNG
+  SessionAPIs.getFilePNG
 );
 
 app.get( // session pcap endpoint
   ['/api/sessions[/.]pcap', /\/sessions.pcap.*/],
   [logAction(), User.checkPermissions(['disablePcapDownload'])],
-  sessionAPIs.getPCAP
+  SessionAPIs.getPCAP
 );
 
 app.get( // session pcapng endpoint
   ['/api/sessions[/.]pcapng', /\/sessions.pcapng.*/],
   [logAction(), User.checkPermissions(['disablePcapDownload'])],
-  sessionAPIs.getPCAPNG
+  SessionAPIs.getPCAPNG
 );
 
 app.get( // session node pcap endpoint
   ['/api/session/:nodeName/:id[/.]pcap*', '/:nodeName/pcap/:id.pcap'],
   [checkProxyRequest, User.checkPermissions(['disablePcapDownload'])],
-  sessionAPIs.getPCAPFromNode
+  SessionAPIs.getPCAPFromNode
 );
 
 app.get( // session node pcapng endpoint
   ['/api/session/:nodeName/:id[/.]pcapng', '/:nodeName/pcapng/:id.pcapng'],
   [checkProxyRequest, User.checkPermissions(['disablePcapDownload'])],
-  sessionAPIs.getPCAPNGFromNode
+  SessionAPIs.getPCAPNGFromNode
 );
 
 app.get( // session entire pcap endpoint
   ['/api/session/entire/:nodeName/:id[/.]pcap', '/:nodeName/entirePcap/:id.pcap'],
   [checkProxyRequest, User.checkPermissions(['disablePcapDownload'])],
-  sessionAPIs.getEntirePCAP
+  SessionAPIs.getEntirePCAP
 );
 
 app.get( // session packets file image endpoint
   ['/api/session/raw/:nodeName/:id[/.]png', '/:nodeName/raw/:id.png'],
   [checkProxyRequest, User.checkPermissions(['disablePcapDownload'])],
-  sessionAPIs.getPacketPNG
+  SessionAPIs.getPacketPNG
 );
 
 app.get( // session raw packets endpoint
   ['/api/session/raw/:nodeName/:id', '/:nodeName/raw/:id'],
   [checkProxyRequest, User.checkPermissions(['disablePcapDownload'])],
-  sessionAPIs.getRawPackets
+  SessionAPIs.getRawPackets
 );
 
 app.get( // session file bodyhash endpoint
   ['/api/sessions/bodyhash/:hash', '/bodyHash/:hash'],
   [logAction('bodyhash')],
-  sessionAPIs.getBodyHash
+  SessionAPIs.getBodyHash
 );
 
 app.get( // session file bodyhash endpoint
   ['/api/session/:nodeName/:id/bodyhash/:hash', '/:nodeName/:id/bodyHash/:hash'],
   [checkProxyRequest],
-  sessionAPIs.getBodyHashFromNode
+  SessionAPIs.getBodyHashFromNode
 );
 
 app.get( // sessions get decodings endpoint
   ['/api/sessions/decodings', '/decodings'],
   [ArkimeUtil.noCacheJson],
-  sessionAPIs.getDecodings
+  SessionAPIs.getDecodings
 );
 
 app.get( // session send to node endpoint
   ['/api/session/:nodeName/:id/send', '/:nodeName/sendSession/:id'],
   [checkProxyRequest],
-  sessionAPIs.sendSessionToNode
+  SessionAPIs.sendSessionToNode
 );
 
 app.post( // sessions send to node endpoint
   ['/api/sessions/:nodeName/send', '/:nodeName/sendSessions'],
   [checkProxyRequest],
-  sessionAPIs.sendSessionsToNode
+  SessionAPIs.sendSessionsToNode
 );
 
 app.post( // sessions send endpoint
   ['/api/sessions/send', '/sendSessions'],
-  sessionAPIs.sendSessions
+  SessionAPIs.sendSessions
 );
 
 app.post( // sessions recieve endpoint
   ['/api/sessions/receive', '/receiveSession'],
   [ArkimeUtil.noCacheJson],
-  sessionAPIs.receiveSession
+  SessionAPIs.receiveSession
 );
 
 app.post( // delete data endpoint
   ['/api/delete', '/delete'],
   [ArkimeUtil.noCacheJson, checkCookieToken, logAction(), User.checkPermissions(['removeEnabled'])],
-  sessionAPIs.deleteData
+  SessionAPIs.deleteData
 );
 
 // connections apis -----------------------------------------------------------
@@ -1700,81 +1700,81 @@ app.getpost( // connections endpoint (POST or GET) - uses fillQueryFromBody to
   // fill the query parameters if the client uses POST to support POST and GET
   ['/api/connections', '/connections.json'],
   [ArkimeUtil.noCacheJson, recordResponseTime, fillQueryFromBody, logAction('connections'), setCookie],
-  connectionAPIs.getConnections
+  ConnectionAPIs.getConnections
 );
 
 app.getpost( // connections csv endpoint (POST or GET) - uses fillQueryFromBody to
   // fill the query parameters if the client uses POST to support POST and GET
   ['/api/connections[/.]csv', '/connections.csv'],
   [fillQueryFromBody, logAction('connections.csv')],
-  connectionAPIs.getConnectionsCSV
+  ConnectionAPIs.getConnectionsCSV
 );
 
 // hunt apis ------------------------------------------------------------------
 app.get( // hunts endpoint
   ['/api/hunts', '/hunt/list'],
   [ArkimeUtil.noCacheJson, disableInMultiES, recordResponseTime, User.checkPermissions(['packetSearch']), setCookie],
-  huntAPIs.getHunts
+  HuntAPIs.getHunts
 );
 
 app.post( // create hunt endpoint
   ['/api/hunt', '/hunt'],
   [ArkimeUtil.noCacheJson, disableInMultiES, logAction('hunt'), checkCookieToken, User.checkPermissions(['packetSearch'])],
-  huntAPIs.createHunt
+  HuntAPIs.createHunt
 );
 
 app.delete( // delete hunt endpoint
   ['/api/hunt/:id', '/hunt/:id'],
   [ArkimeUtil.noCacheJson, disableInMultiES, logAction('hunt/:id'), checkCookieToken, User.checkPermissions(['packetSearch']), checkHuntAccess],
-  huntAPIs.deleteHunt
+  HuntAPIs.deleteHunt
 );
 
 app.put( // update hunt endpoint
   ['/api/hunt/:id', '/hunt/:id'],
   [ArkimeUtil.noCacheJson, disableInMultiES, logAction('hunt/:id'), checkCookieToken, User.checkPermissions(['packetSearch']), checkHuntAccess],
-  huntAPIs.updateHunt
+  HuntAPIs.updateHunt
 );
 
 app.put( // cancel hunt endpoint
   ['/api/hunt/:id/cancel', '/hunt/:id/cancel'],
   [ArkimeUtil.noCacheJson, disableInMultiES, logAction('hunt/:id/cancel'), checkCookieToken, User.checkPermissions(['packetSearch']), checkHuntAccess],
-  huntAPIs.cancelHunt
+  HuntAPIs.cancelHunt
 );
 
 app.put( // pause hunt endpoint
   ['/api/hunt/:id/pause', '/hunt/:id/pause'],
   [ArkimeUtil.noCacheJson, disableInMultiES, logAction('hunt/:id/pause'), checkCookieToken, User.checkPermissions(['packetSearch']), checkHuntAccess],
-  huntAPIs.pauseHunt
+  HuntAPIs.pauseHunt
 );
 
 app.put( // play hunt endpoint
   ['/api/hunt/:id/play', '/hunt/:id/play'],
   [ArkimeUtil.noCacheJson, disableInMultiES, logAction('hunt/:id/play'), checkCookieToken, User.checkPermissions(['packetSearch']), checkHuntAccess],
-  huntAPIs.playHunt
+  HuntAPIs.playHunt
 );
 
 app.put( // remove from sessions hunt endpoint
   ['/api/hunt/:id/removefromsessions', '/hunt/:id/removefromsessions'],
   [ArkimeUtil.noCacheJson, disableInMultiES, logAction('hunt/:id/removefromsessions'), checkCookieToken, User.checkPermissions(['packetSearch', 'removeEnabled']), checkHuntAccess],
-  huntAPIs.removeFromSessions
+  HuntAPIs.removeFromSessions
 );
 
 app.post( // add users to hunt endpoint
   ['/api/hunt/:id/users', '/hunt/:id/users'],
   [ArkimeUtil.noCacheJson, disableInMultiES, logAction('hunt/:id/users'), checkCookieToken, User.checkPermissions(['packetSearch']), checkHuntAccess],
-  huntAPIs.addUsers
+  HuntAPIs.addUsers
 );
 
 app.delete( // remove users from hunt endpoint
   ['/api/hunt/:id/user/:user', '/hunt/:id/users/:user'],
   [ArkimeUtil.noCacheJson, disableInMultiES, logAction('hunt/:id/user/:user'), checkCookieToken, User.checkPermissions(['packetSearch']), checkHuntAccess],
-  huntAPIs.removeUsers
+  HuntAPIs.removeUsers
 );
 
 app.get( // remote hunt endpoint
   ['/api/hunt/:nodeName/:huntId/remote/:sessionId', '/:nodeName/hunt/:huntId/remote/:sessionId'],
   [ArkimeUtil.noCacheJson],
-  huntAPIs.remoteHunt
+  HuntAPIs.remoteHunt
 );
 
 // shortcut apis ----------------------------------------------------------------
@@ -1812,73 +1812,73 @@ app.get( // sync shortcuts endpoint
 app.get( // fields endpoint
   ['/api/fields', '/fields'],
   [ArkimeUtil.noCacheJson],
-  miscAPIs.getFields
+  MiscAPIs.getFields
 );
 
 app.get( // files endpoint
   ['/api/files', '/file/list'],
   [ArkimeUtil.noCacheJson, recordResponseTime, logAction('files'), User.checkPermissions(['hideFiles']), setCookie],
-  miscAPIs.getFiles
+  MiscAPIs.getFiles
 );
 
 app.get( // filesize endpoint
   ['/api/:nodeName/:fileNum/filesize', '/:nodeName/:fileNum/filesize.json'],
   [ArkimeUtil.noCacheJson, User.checkPermissions(['hideFiles'])],
-  miscAPIs.getFileSize
+  MiscAPIs.getFileSize
 );
 
 // title apis -----------------------------------------------------------------
 app.get( // titleconfig endpoint
   ['/api/title', '/titleconfig'],
   User.checkPermissions(['webEnabled']),
-  miscAPIs.getPageTitle
+  MiscAPIs.getPageTitle
 );
 
 // menu actions apis ---------------------------------------------------------
 app.get( // value actions endpoint
   ['/api/valueactions', '/api/valueActions', '/molochRightClick'],
   [ArkimeUtil.noCacheJson, User.checkPermissions(['webEnabled'])],
-  miscAPIs.getValueActions
+  MiscAPIs.getValueActions
 );
 
 app.get( // field actions endpoint
   ['/api/fieldactions', '/api/fieldActions'],
   [ArkimeUtil.noCacheJson, User.checkPermissions(['webEnabled'])],
-  miscAPIs.getFieldActions
+  MiscAPIs.getFieldActions
 );
 
 // reverse dns apis -----------------------------------------------------------
 app.get( // reverse dns endpoint
   ['/api/reversedns', '/reverseDNS.txt'],
   [ArkimeUtil.noCacheJson, logAction()],
-  miscAPIs.getReverseDNS
+  MiscAPIs.getReverseDNS
 );
 
 // uploads apis ---------------------------------------------------------------
 app.post(
   ['/api/upload', '/upload'],
   [checkCookieToken, multer({ dest: '/tmp', limits: internals.uploadLimits }).single('file')],
-  miscAPIs.upload
+  MiscAPIs.upload
 );
 
 // clusters apis --------------------------------------------------------------
 app.get(
   ['/api/clusters', '/clusters'],
   [ArkimeUtil.noCacheJson],
-  miscAPIs.getClusters
+  MiscAPIs.getClusters
 );
 
 app.get(
   ['/remoteclusters', '/molochclusters'],
   [ArkimeUtil.noCacheJson],
-  miscAPIs.getRemoteClusters
+  MiscAPIs.getRemoteClusters
 );
 
 // app apis -------------------------------------------------------------------
 app.get(
   '/api/appinfo',
   [ArkimeUtil.noCacheJson, checkCookieToken, getSettingUserCache, User.checkPermissions(['webEnabled'])],
-  miscAPIs.getAppInfo
+  MiscAPIs.getAppInfo
 );
 
 // cyberchef apis -------------------------------------------------------------
@@ -1890,13 +1890,13 @@ app.get('/cyberchef.html', [cyberchefCspHeader], express.static( // cyberchef cl
 app.get( // cyberchef endpoint
   '/cyberchef/:nodeName/session/:id',
   [User.checkPermissions(['webEnabled']), checkProxyRequest, cyberchefCspHeader],
-  miscAPIs.cyberChef
+  MiscAPIs.cyberChef
 );
 
 app.use( // cyberchef UI endpoint
   ['/cyberchef/', '/modules/'],
   cyberchefCspHeader,
-  miscAPIs.getCyberChefUI
+  MiscAPIs.getCyberChefUI
 );
 
 // ============================================================================
@@ -2041,9 +2041,9 @@ async function main () {
 
   if (Config.get('cronQueries', false)) { // this viewer will process the cron queries
     console.log('This node will process Periodic Queries (CRON), delayed by', internals.cronTimeout, 'seconds');
-    setInterval(Cron.processCronQueries, 60 * 1000);
-    setTimeout(Cron.processCronQueries, 1000);
-    setInterval(huntAPIs.processHuntJobs, 10000);
+    setInterval(CronAPIs.processCronQueries, 60 * 1000);
+    setTimeout(CronAPIs.processCronQueries, 1000);
+    setInterval(HuntAPIs.processHuntJobs, 10000);
   } else if (!Config.get('multiES', false)) {
     const info = await Db.getQueriesNode();
     if (info.node === undefined) {
@@ -2145,5 +2145,5 @@ Notifier.initialize({
   esclient: User.getClient()
 });
 
-Cron.initialize({
+CronAPIs.initialize({
 });
