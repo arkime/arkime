@@ -1,5 +1,7 @@
 'use strict';
 
+const Config = require('./config.js');
+const Db = require('./db.js');
 const dns = require('dns');
 const fs = require('fs');
 const unzipper = require('unzipper');
@@ -7,8 +9,11 @@ const util = require('util');
 const ArkimeUtil = require('../common/arkimeUtil');
 const User = require('../common/user');
 const View = require('./apiViews');
+const internals = require('./internals');
+const ViewerUtils = require('./viewerUtils');
+const UserAPIs = require('./apiUsers');
 
-module.exports = (Config, Db, internals, sessionAPIs, userAPIs, ViewerUtils) => {
+module.exports = (sessionAPIs) => {
   const miscAPIs = {};
 
   // --------------------------------------------------------------------------
@@ -392,7 +397,7 @@ module.exports = (Config, Db, internals, sessionAPIs, userAPIs, ViewerUtils) => 
       // these always returns something and never return an error
       const clusters = await getClusters(); // { active: [], inactive: [] }
       const remoteclusters = remoteClusters(); // {}
-      const fieldhistory = userAPIs.findUserState('fieldHistory', req.user); // {}
+      const fieldhistory = UserAPIs.findUserState('fieldHistory', req.user); // {}
       const { data: views } = await View.getViews(req);
       const roles = await User.getRoles();
 

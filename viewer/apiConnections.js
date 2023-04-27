@@ -1,12 +1,15 @@
 'use strict';
 
+const Config = require('./config.js');
+const Db = require('./db.js');
 const async = require('async');
 const util = require('util');
 const ArkimeUtil = require('../common/arkimeUtil');
+const ViewerUtils = require('./viewerUtils');
 
 let fieldsMap;
 
-module.exports = (Config, Db, ViewerUtils, sessionAPIs) => {
+module.exports = (sessionAPIs) => {
   const connectionAPIs = {};
 
   if (!fieldsMap) {

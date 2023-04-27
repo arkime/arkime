@@ -1,5 +1,7 @@
 'use strict';
 
+const Config = require('./config.js');
+const Db = require('./db.js');
 const async = require('async');
 const RE2 = require('re2');
 const util = require('util');
@@ -7,8 +9,10 @@ const Pcap = require('./pcap.js');
 const ArkimeUtil = require('../common/arkimeUtil');
 const Notifier = require('../common/notifier');
 const User = require('../common/user');
+const internals = require('./internals');
+const ViewerUtils = require('./viewerUtils');
 
-module.exports = (Config, Db, internals, sessionAPIs, ViewerUtils) => {
+module.exports = (sessionAPIs) => {
   const huntAPIs = {};
 
   // --------------------------------------------------------------------------

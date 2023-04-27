@@ -1,5 +1,7 @@
 'use strict';
 
+const Config = require('./config.js');
+const Db = require('./db.js');
 const async = require('async');
 const contentDisposition = require('content-disposition');
 const fs = require('fs');
@@ -14,8 +16,10 @@ const Auth = require('../common/auth');
 const Pcap = require('./pcap.js');
 const version = require('../common/version');
 const molochparser = require('./molochparser.js');
+const internals = require('./internals');
+const ViewerUtils = require('./viewerUtils');
 
-module.exports = (Config, Db, internals, ViewerUtils) => {
+module.exports = () => {
   const sessionAPIs = {};
 
   // --------------------------------------------------------------------------

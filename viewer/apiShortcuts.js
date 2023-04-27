@@ -1,45 +1,47 @@
 'use strict';
 
+const Db = require('./db.js');
 const util = require('util');
 const ArkimeUtil = require('../common/arkimeUtil');
 const User = require('../common/user');
+const internals = require('./internals');
 
-module.exports = (Db, internals) => {
-  const shortcutAPIs = {};
+class Mutex {
+  constructor () {
+    this.queue = [];
+    this.locked = false;
+  }
 
+  lock () {
+    return new Promise((resolve, reject) => {
+      if (this.locked) {
+        this.queue.push(resolve);
+      } else {
+        this.locked = true;
+        resolve();
+      }
+    });
+  }
+
+  unlock () {
+    if (this.queue.length > 0) {
+      const resolve = this.queue.shift();
+      resolve();
+    } else {
+      this.locked = false;
+    }
+  }
+}
+
+class ShortcutAPIs {
   // --------------------------------------------------------------------------
   // HELPERS
   // --------------------------------------------------------------------------
   // https://stackoverflow.com/a/48569020
-  class Mutex {
-    constructor () {
-      this.queue = [];
-      this.locked = false;
-    }
 
-    lock () {
-      return new Promise((resolve, reject) => {
-        if (this.locked) {
-          this.queue.push(resolve);
-        } else {
-          this.locked = true;
-          resolve();
-        }
-      });
-    }
+  static #shortcutMutex = new Mutex();
 
-    unlock () {
-      if (this.queue.length > 0) {
-        const resolve = this.queue.shift();
-        resolve();
-      } else {
-        this.locked = false;
-      }
-    }
-  }
-
-  const shortcutMutex = new Mutex();
-
+  // --------------------------------------------------------------------------
   /**
    * Normalizes the data in a shortcut by turning values and users string to arrays
    * and removing the type parameter and replacing it with `type: values`
@@ -49,7 +51,7 @@ module.exports = (Db, internals) => {
    * @returns {Object} {type, values, invalidusers} - The shortcut type (ip, string, number),
    *                                                  array of values, and list of invalid users
    */
-  async function normalizeShortcut (shortcut) {
+  static async #normalizeShortcut (shortcut) {
     // comma/newline separated value -> array of values
     const values = ArkimeUtil.commaOrNewlineStringToArray(shortcut.value);
     shortcut[shortcut.type] = values;
@@ -85,6 +87,7 @@ module.exports = (Db, internals) => {
    * @param {boolean} locked=false - Whether the shortcut is locked and must be updated using the db.pl script (can't be updated in the web application user interface).
    */
 
+  // --------------------------------------------------------------------------
   /**
    * GET - /api/shortcuts
    *
@@ -102,7 +105,7 @@ module.exports = (Db, internals) => {
    * @returns {number} recordsTotal - The total number of shortcut results stored.
    * @returns {number} recordsFiltered - The number of shortcut items returned in this result.
    */
-  shortcutAPIs.getShortcuts = async (req, res) => {
+  static async getShortcuts (req, res) {
     // return nothing if we can't find the user
     const user = req.settingUser;
     if (!user) { return res.send({}); }
@@ -226,6 +229,7 @@ module.exports = (Db, internals) => {
     });
   };
 
+  // --------------------------------------------------------------------------
   /**
    * POST - /api/shortcut
    *
@@ -240,7 +244,7 @@ module.exports = (Db, internals) => {
    * @returns {Shortcut} shortcut - The new shortcut object.
    * @returns {boolean} success - Whether the create shortcut operation was successful.
    */
-  shortcutAPIs.createShortcut = (req, res) => {
+  static createShortcut (req, res) {
     // make sure all the necessary data is included in the post body
     if (!ArkimeUtil.isString(req.body.name)) {
       return res.serverError(403, 'Missing shortcut name');
@@ -268,7 +272,7 @@ module.exports = (Db, internals) => {
       }
     };
 
-    shortcutMutex.lock().then(async () => {
+    ShortcutAPIs.#shortcutMutex.lock().then(async () => {
       try {
         const { body: { hits: shortcuts } } = await Db.searchShortcuts(query);
 
@@ -276,7 +280,7 @@ module.exports = (Db, internals) => {
         for (const hit of shortcuts.hits) {
           const shortcut = hit._source;
           if (shortcut.name === req.body.name) {
-            shortcutMutex.unlock();
+            ShortcutAPIs.#shortcutMutex.unlock();
             return res.serverError(403, `A shortcut with the name, ${req.body.name}, already exists`);
           }
         }
@@ -284,7 +288,7 @@ module.exports = (Db, internals) => {
         const newShortcut = req.body;
         newShortcut.userId = user.userId;
 
-        const { type, values, invalidUsers } = await normalizeShortcut(newShortcut);
+        const { type, values, invalidUsers } = await ShortcutAPIs.#normalizeShortcut(newShortcut);
 
         try {
           const { body: result } = await Db.createShortcut(newShortcut);
@@ -294,7 +298,7 @@ module.exports = (Db, internals) => {
           delete newShortcut.ip;
           delete newShortcut.string;
           delete newShortcut.number;
-          shortcutMutex.unlock();
+          ShortcutAPIs.#shortcutMutex.unlock();
 
           return res.send(JSON.stringify({
             invalidUsers,
@@ -303,18 +307,19 @@ module.exports = (Db, internals) => {
             text: 'Created new shortcut!'
           }));
         } catch (err) {
-          shortcutMutex.unlock();
+          ShortcutAPIs.#shortcutMutex.unlock();
           console.log(`ERROR - ${req.method} /api/shortcut (createShortcut)`, util.inspect(err, false, 50));
           return res.serverError(500, 'Error creating shortcut');
         }
       } catch (err) {
-        shortcutMutex.unlock();
+        ShortcutAPIs.#shortcutMutex.unlock();
         console.log(`ERROR - ${req.method} /api/shortcut (searchShortcuts)`, util.inspect(err, false, 50));
         return res.serverError(500, 'Error creating shortcut');
       }
     });
   };
 
+  // --------------------------------------------------------------------------
   /**
    * PUT - /api/shortcut/:id
    *
@@ -330,7 +335,7 @@ module.exports = (Db, internals) => {
    * @returns {boolean} success - Whether the upate shortcut operation was successful.
    * @returns {string} text - The success/error message to (optionally) display to the user.
    */
-  shortcutAPIs.updateShortcut = async (req, res) => {
+  static async updateShortcut (req, res) {
     // make sure all the necessary data is included in the post body
     if (!ArkimeUtil.isString(req.body.name)) {
       return res.serverError(403, 'Missing shortcut name');
@@ -369,7 +374,7 @@ module.exports = (Db, internals) => {
         }
       };
 
-      shortcutMutex.lock().then(async () => {
+      ShortcutAPIs.#shortcutMutex.lock().then(async () => {
         try {
           const { body: { hits: shortcuts } } = await Db.searchShortcuts(query);
 
@@ -377,17 +382,17 @@ module.exports = (Db, internals) => {
           for (const hit of shortcuts.hits) {
             const shortcut = hit._source;
             if (shortcut.name === req.body.name) {
-              shortcutMutex.unlock();
+              ShortcutAPIs.#shortcutMutex.unlock();
               return res.serverError(403, `A shortcut with the name, ${req.body.name}, already exists`);
             }
           }
 
-          const { values, invalidUsers } = await normalizeShortcut(sentShortcut);
+          const { values, invalidUsers } = await ShortcutAPIs.#normalizeShortcut(sentShortcut);
           sentShortcut.userId = fetchedShortcut._source.userId;
 
           try {
             await Db.setShortcut(req.params.id, sentShortcut);
-            shortcutMutex.unlock();
+            ShortcutAPIs.#shortcutMutex.unlock();
             sentShortcut.value = values.join('\n');
             sentShortcut.users = sentShortcut.users.join(',');
 
@@ -398,12 +403,12 @@ module.exports = (Db, internals) => {
               text: 'Updated shortcut!'
             }));
           } catch (err) {
-            shortcutMutex.unlock();
+            ShortcutAPIs.#shortcutMutex.unlock();
             console.log(`ERROR - ${req.method} /api/shortcut/%s (setShortcut)`, ArkimeUtil.sanitizeStr(req.params.id), util.inspect(err, false, 50));
             return res.serverError(500, 'Error updating shortcut');
           }
         } catch (err) {
-          shortcutMutex.unlock();
+          ShortcutAPIs.#shortcutMutex.unlock();
           console.log(`ERROR - ${req.method} /api/shortcut/%s (searchShortcuts)`, ArkimeUtil.sanitizeStr(req.params.id), util.inspect(err, false, 50));
           return res.serverError(500, 'Error updating shortcut');
         }
@@ -414,6 +419,7 @@ module.exports = (Db, internals) => {
     }
   };
 
+  // --------------------------------------------------------------------------
   /**
    * DELETE - /api/shortcut/:id
    *
@@ -422,7 +428,7 @@ module.exports = (Db, internals) => {
    * @returns {boolean} success - Whether the delete shortcut operation was successful.
    * @returns {string} text - The success/error message to (optionally) display to the user.
    */
-  shortcutAPIs.deleteShortcut = async (req, res) => {
+  static async deleteShortcut (req, res) {
     try {
       const { body: shortcut } = await Db.getShortcut(req.params.id);
 
@@ -451,6 +457,7 @@ module.exports = (Db, internals) => {
     }
   };
 
+  // --------------------------------------------------------------------------
   /**
    * GET - /api/syncshortcuts
    *
@@ -461,10 +468,10 @@ module.exports = (Db, internals) => {
    * @ignore
    * @returns {boolean} success - Always true.
    */
-  shortcutAPIs.syncShortcuts = (req, res) => {
+  static syncShortcuts (req, res) {
     Db.updateLocalShortcuts();
     return res.send(JSON.stringify({ success: true }));
   };
-
-  return shortcutAPIs;
 };
+
+module.exports = ShortcutAPIs;
