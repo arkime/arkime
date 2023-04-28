@@ -1,13 +1,15 @@
 'use strict';
 
+const Config = require('./config.js');
+const Db = require('./db.js');
 const RE2 = require('re2');
 const util = require('util');
 const async = require('async');
 const ArkimeUtil = require('../common/arkimeUtil');
+const internals = require('./internals');
+const ViewerUtils = require('./viewerUtils');
 
-module.exports = (Config, Db, internals, ViewerUtils) => {
-  const statsAPIs = {};
-
+class StatsAPIs {
   // --------------------------------------------------------------------------
   // APIs
   // --------------------------------------------------------------------------
@@ -39,6 +41,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * @property {number} _timeStamp - timestamps in ms from unix epoc
    */
 
+  // --------------------------------------------------------------------------
   /**
    * GET - /api/eshealth
    *
@@ -47,7 +50,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * @name /eshealth
    * @returns {ESHealth} health - The elasticsearch cluster health status and info
    */
-  statsAPIs.getESHealth = async (req, res) => {
+  static async getESHealth (req, res) {
     try {
       const health = await Db.healthCache();
       return res.send(health);
@@ -76,7 +79,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * @returns {number} recordsTotal - The total number of nodes.
    * @returns {number} recordsFiltered - The number of nodes returned in this result.
    */
-  statsAPIs.getStats = (req, res) => {
+  static getStats (req, res) {
     const query = {
       from: 0,
       size: 10000,
@@ -209,6 +212,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
     });
   };
 
+  // --------------------------------------------------------------------------
   /**
    * GET - /api/dstats
    *
@@ -224,7 +228,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * @param {number} size=1440 - The size of the cubism graph. Defaults to 1440.
    * @returns {array} List of values to populate the cubism graph.
    */
-  statsAPIs.getDetailedStats = (req, res) => {
+  static getDetailedStats (req, res) {
     if (req.query.name === undefined) {
       return res.send('{}');
     }
@@ -338,6 +342,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
     });
   };
 
+  // --------------------------------------------------------------------------
   /**
    * GET - /api/esstats
    *
@@ -350,7 +355,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * @returns {number} recordsTotal - The total number of ES clusters.
    * @returns {number} recordsFiltered - The number of ES clusters returned in this result.
    */
-  statsAPIs.getESStats = (req, res) => {
+  static getESStats (req, res) {
     let stats = [];
 
     Promise.all([
@@ -508,7 +513,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * @returns {number} recordsTotal - The total number of ES indices.
    * @returns {number} recordsFiltered - The number of ES indices returned in this result.
    */
-  statsAPIs.getESIndices = (req, res) => {
+  static getESIndices (req, res) {
     async.parallel({
       indices: Db.indicesCache,
       indicesSettings: Db.indicesSettingsCache
@@ -584,6 +589,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
     });
   };
 
+  // --------------------------------------------------------------------------
   /**
    * DELETE - /api/esindices/:index
    *
@@ -592,7 +598,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * @returns {boolean} success - Whether the delete index operation was successful.
    * @returns {string} text - The success/error message to (optionally) display to the user.
    */
-  statsAPIs.deleteESIndex = async (req, res) => {
+  static async deleteESIndex (req, res) {
     try {
       await Db.deleteIndex([req.params.index], {});
       return res.send(JSON.stringify({ success: true }));
@@ -603,6 +609,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
     }
   };
 
+  // --------------------------------------------------------------------------
   /**
    * POST - /api/esindices/:index/optimize
    *
@@ -610,7 +617,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * @name /esindices/:index/optimize
    * @returns {boolean} success - Always true, the optimizeIndex function might block. Check the logs for errors.
    */
-  statsAPIs.optimizeESIndex = (req, res) => {
+  static optimizeESIndex (req, res) {
     try {
       Db.optimizeIndex([req.params.index], {});
     } catch (err) {
@@ -621,6 +628,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
     return res.send(JSON.stringify({ success: true }));
   };
 
+  // --------------------------------------------------------------------------
   /**
    * POST - /api/esindices/:index/close
    *
@@ -629,7 +637,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * @returns {boolean} success - Whether the close index operation was successful.
    * @returns {string} text - The success/error message to (optionally) display to the user.
    */
-  statsAPIs.closeESIndex = async (req, res) => {
+  static async closeESIndex (req, res) {
     try {
       await Db.closeIndex([req.params.index], {});
       return res.send(JSON.stringify({ success: true }));
@@ -640,6 +648,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
     }
   };
 
+  // --------------------------------------------------------------------------
   /**
    * POST - /api/esindices/:index/open
    *
@@ -647,7 +656,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * @name /esindices/:index/open
    * @returns {boolean} success - Always true, the openIndex function might block. Check the logs for errors.
    */
-  statsAPIs.openESIndex = (req, res) => {
+  static openESIndex (req, res) {
     try {
       Db.openIndex([req.params.index], {});
     } catch (err) {
@@ -658,6 +667,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
     return res.send(JSON.stringify({ success: true }));
   };
 
+  // --------------------------------------------------------------------------
   /**
    * POST - /api/esindices/:index/shrink
    *
@@ -668,7 +678,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * @returns {boolean} success - Whether the close shrink operation was successful.
    * @returns {string} text - The success/error message to (optionally) display to the user.
    */
-  statsAPIs.shrinkESIndex = async (req, res) => {
+  static async shrinkESIndex (req, res) {
     if (!req.body) {
       return res.serverError(403, 'Missing body');
     }
@@ -743,7 +753,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * @returns {number} recordsTotal - The total number of ES tasks.
    * @returns {number} recordsFiltered - The number of ES tasks returned in this result.
    */
-  statsAPIs.getESTasks = async (req, res) => {
+  static async getESTasks (req, res) {
     try {
       const { body: { tasks } } = await Db.tasks();
 
@@ -819,6 +829,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
     }
   };
 
+  // --------------------------------------------------------------------------
   /**
    * POST - /api/estasks/:id/cancel
    *
@@ -827,7 +838,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * @returns {boolean} success - Whether the cancel task operation was successful.
    * @returns {string} text - The success/error message to (optionally) display to the user.
    */
-  statsAPIs.cancelESTask = async (req, res) => {
+  static async cancelESTask (req, res) {
     let taskId;
     if (req.params.id) {
       taskId = req.params.id;
@@ -846,6 +857,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
     }
   };
 
+  // --------------------------------------------------------------------------
   /**
    * POST - /api/estasks/:id/cancelwith
    *
@@ -855,7 +867,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * @returns {boolean} success - Whether the cancel task operation was successful.
    * @returns {string} text - The success/error message to (optionally) display to the user.
    */
-  statsAPIs.cancelUserESTask = async (req, res) => {
+  static async cancelUserESTask (req, res) {
     let cancelId;
     if (req.params.id) {
       cancelId = req.params.id;
@@ -874,6 +886,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
     }
   };
 
+  // --------------------------------------------------------------------------
   /**
    * POST - /api/estasks/cancelall
    *
@@ -882,7 +895,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * @returns {boolean} success - Whether the cancel all tasks operation was successful.
    * @returns {string} text - The success/error message to (optionally) display to the user.
    */
-  statsAPIs.cancelAllESTasks = async (req, res) => {
+  static async cancelAllESTasks (req, res) {
     try {
       const { body: result } = await Db.taskCancel();
       return res.send(JSON.stringify({ success: true, text: result }));
@@ -900,7 +913,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * @name /esadmin
    * @returns {array} settings - List of ES settings that a user can change
    */
-  statsAPIs.getESAdminSettings = (req, res) => {
+  static getESAdminSettings (req, res) {
     Promise.all([
       Db.getClusterSettings({ flatSettings: true, include_defaults: true }),
       Db.getILMPolicy(),
@@ -1021,6 +1034,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
     });
   };
 
+  // --------------------------------------------------------------------------
   /**
    * POST - /api/esadmin/set
    *
@@ -1029,7 +1043,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * @returns {boolean} success - Whether saving the settings was successful.
    * @returns {string} text - The success/error message to (optionally) display to the user.
    */
-  statsAPIs.setESAdminSettings = async (req, res) => {
+  static async setESAdminSettings (req, res) {
     if (!ArkimeUtil.isString(req.body.key)) { return res.serverError(500, 'Missing key'); }
     if (!ArkimeUtil.isString(req.body.value, 0)) { return res.serverError(500, 'Missing value'); }
 
@@ -1144,6 +1158,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
     }
   };
 
+  // --------------------------------------------------------------------------
   /**
    * POST - /api/esadmin/reroute
    *
@@ -1152,7 +1167,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * @returns {boolean} success - Whether the reroute was successful.
    * @returns {string} text - The success/error message to (optionally) display to the user.
    */
-  statsAPIs.rerouteES = async (req, res) => {
+  static async rerouteES (req, res) {
     try {
       await Db.reroute();
       return res.send(JSON.stringify({ success: true, text: 'Reroute successful' }));
@@ -1161,6 +1176,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
     }
   };
 
+  // --------------------------------------------------------------------------
   /**
    * POST - /api/esadmin/flush
    *
@@ -1169,12 +1185,13 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * @returns {boolean} success - Always true
    * @returns {string} text - The success message to (optionally) display to the user.
    */
-  statsAPIs.flushES = (req, res) => {
+  static flushES (req, res) {
     Db.refresh('*');
     Db.flush('*');
     return res.send(JSON.stringify({ success: true, text: 'Flushed' }));
   };
 
+  // --------------------------------------------------------------------------
   /**
    * POST - /api/esadmin/unflood
    *
@@ -1183,13 +1200,14 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * @returns {boolean} success - Always true
    * @returns {string} text - The success message to (optionally) display to the user.
    */
-  statsAPIs.unfloodES = (req, res) => {
+  static unfloodES (req, res) {
     Db.setIndexSettings('*', {
       body: { 'index.blocks.read_only_allow_delete': null }
     });
     return res.send(JSON.stringify({ success: true, text: 'Unflooded' }));
   };
 
+  // --------------------------------------------------------------------------
   /**
    * POST - /api/esadmin/clearcache
    *
@@ -1198,7 +1216,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * @returns {boolean} success - Whether clearing the cache was successful.
    * @returns {string} text - The success/error message to (optionally) display to the user.
    */
-  statsAPIs.clearCacheES = async (req, res) => {
+  static async clearCacheES (req, res) {
     try {
       const { body: data } = await Db.clearCache();
       return res.send(JSON.stringify({
@@ -1230,7 +1248,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * @returns {array} nodeExcludes - List of node names that disallow the allocation of shards.
    * @returns {array} ipExcludes - List of node ips that disallow the allocation of shards.
    */
-  statsAPIs.getESShards = (req, res) => {
+  static getESShards (req, res) {
     Promise.all([
       Db.shards(),
       Db.getClusterSettings({ flatSettings: true })
@@ -1306,6 +1324,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
     });
   };
 
+  // --------------------------------------------------------------------------
   /**
    * POST - /api/esshards/:type/:value/exclude
    *
@@ -1314,7 +1333,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * @returns {boolean} success - Whether exclude node operation was successful.
    * @returns {string} text - The success/error message to (optionally) display to the user.
    */
-  statsAPIs.excludeESShard = async (req, res) => {
+  static async excludeESShard (req, res) {
     if (Config.get('multiES', false)) {
       return res.serverError(401, 'Not supported in multies');
     }
@@ -1354,6 +1373,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
     }
   };
 
+  // --------------------------------------------------------------------------
   /**
    * POST - /api/esshards/:type/:value/include
    *
@@ -1362,7 +1382,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * @returns {boolean} success - Whether include node operation was successful.
    * @returns {string} text - The success/error message to (optionally) display to the user.
    */
-  statsAPIs.includeESShard = async (req, res) => {
+  static async includeESShard (req, res) {
     if (Config.get('multiES', false)) {
       return res.serverError(401, 'Not supported in multies');
     }
@@ -1417,7 +1437,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * @returns {number} recordsTotal - The total number of indices.
    * @returns {number} recordsFiltered - The number of indices returned in this result.
    */
-  statsAPIs.getESRecovery = async (req, res) => {
+  static async getESRecovery (req, res) {
     const sortField = (req.query.sortField || 'index') + (req.query.desc === 'true' ? ':desc' : '');
 
     try {
@@ -1480,7 +1500,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * @returns {number} recordsTotal - The total number of stats.
    * @returns {number} recordsFiltered - The number of stats returned in this result.
    */
-  statsAPIs.getParliament = (req, res) => {
+  static getParliament (req, res) {
     const query = {
       size: 1000,
       query: {
@@ -1537,6 +1557,6 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
       res.send({ recordsTotal: 0, recordsFiltered: 0, data: [] });
     });
   };
-
-  return statsAPIs;
 };
+
+module.exports = StatsAPIs;

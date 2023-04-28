@@ -5,7 +5,7 @@ const util = require('util');
 const User = require('../common/user');
 const ArkimeUtil = require('../common/arkimeUtil');
 
-class View {
+class ViewAPIs {
   static async getViews (req) {
     const user = req.settingUser;
     if (!user) { return { data: [], recordsTotal: 0, recordsFiltered: 0 }; }
@@ -96,7 +96,7 @@ class View {
    * @returns {ArkimeView[]} views - A list of views a user has configured or has been shared.
    */
   static async apiGetViews (req, res) {
-    const views = await View.getViews(req);
+    const views = await ViewAPIs.getViews(req);
     res.send(views);
   }
 
@@ -235,4 +235,4 @@ class View {
   }
 }
 
-module.exports = View;
+module.exports = ViewAPIs;

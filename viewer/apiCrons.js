@@ -1,16 +1,21 @@
 'use strict';
 
+const Config = require('./config');
 const util = require('util');
 const Db = require('./db');
-const Config = require('./config');
+const Auth = require('../common/auth');
 const User = require('../common/user');
 const ArkimeUtil = require('../common/arkimeUtil');
+const async = require('async');
+const internals = require('./internals');
+const SessionAPIs = require('./apiSessions');
+const ViewerUtils = require('./viewerUtils');
+const http = require('http');
+const molochparser = require('./molochparser.js');
+const Notifier = require('../common/notifier');
 
-class Cron {
-  static #process;
-
+class CronAPIs {
   static initialize (options) {
-    Cron.#process = options.processCronQueries;
   }
 
   /**
@@ -37,6 +42,7 @@ class Cron {
    * @param {string} lastToggledBy - The user who last enabled or disabled this query.
    */
 
+  // --------------------------------------------------------------------------
   /**
    * GET - /api/crons
    *
@@ -109,6 +115,7 @@ class Cron {
     });
   }
 
+  // --------------------------------------------------------------------------
   /**
    * POST - /api/cron
    *
@@ -190,7 +197,7 @@ class Cron {
       const { body: info } = await Db.indexNow('queries', 'query', null, doc.doc);
 
       if (Config.get('cronQueries', false)) {
-        Cron.#process();
+        CronAPIs.processCronQueries();
       }
 
       doc.doc.key = info._id;
@@ -210,6 +217,7 @@ class Cron {
     }
   }
 
+  // --------------------------------------------------------------------------
   /**
    * POST - /api/cron/:key
    *
@@ -291,7 +299,7 @@ class Cron {
         console.log(`ERROR - ${req.method} /api/cron/%s`, ArkimeUtil.sanitizeStr(key), util.inspect(err, false, 50));
       }
 
-      if (Config.get('cronQueries', false)) { Cron.#process(); }
+      if (Config.get('cronQueries', false)) { CronAPIs.processCronQueries(); }
 
       query.key = key;
       if (query.users) {
@@ -310,6 +318,7 @@ class Cron {
     }
   }
 
+  // --------------------------------------------------------------------------
   /**
    * DELETE - /api/cron/:key
    *
@@ -335,7 +344,367 @@ class Cron {
       console.log(`ERROR - ${req.method} /api/cron/%s`, ArkimeUtil.sanitizeStr(key), util.inspect(err, false, 50));
       return res.serverError(500, 'Delete periodic query failed');
     }
+  };
+
+  // --------------------------------------------------------------------------
+  static #qlworking = {};
+  static #sendSessionsListQL (pOptions, list, nextQLCb) {
+    if (!list) {
+      return;
+    }
+
+    const nodes = {};
+
+    list.forEach(function (item) {
+      if (!nodes[item.node]) {
+        nodes[item.node] = [];
+      }
+      nodes[item.node].push(item.id);
+    });
+
+    const keys = Object.keys(nodes);
+
+    async.eachLimit(keys, 15, function (node, nextCb) {
+      SessionAPIs.isLocalView(node, function () {
+        let sent = 0;
+        nodes[node].forEach(function (item) {
+          const options = {
+            id: item,
+            nodeName: node
+          };
+          Db.merge(options, pOptions);
+
+          // Get from our DISK
+          internals.sendSessionQueue.push(options, function () {
+            sent++;
+            if (sent === nodes[node].length) {
+              nextCb();
+            }
+          });
+        });
+      },
+      function () {
+        // Get from remote DISK
+        ViewerUtils.getViewUrl(node, (err, viewUrl, client) => {
+          let sendPath = `${Config.basePath(node) + node}/sendSessions?saveId=${pOptions.saveId}&cluster=${pOptions.cluster}`;
+          if (pOptions.tags) { sendPath += `&tags=${pOptions.tags}`; }
+          const url = new URL(sendPath, viewUrl);
+          const reqOptions = {
+            method: 'POST',
+            agent: client === http ? internals.httpAgent : internals.httpsAgent
+          };
+
+          Auth.addS2SAuth(reqOptions, pOptions.user, node, sendPath);
+          ViewerUtils.addCaTrust(reqOptions, node);
+
+          const preq = client.request(url, reqOptions, (pres) => {
+            pres.on('data', (chunk) => {
+              CronAPIs.#qlworking[url.path] = 'data';
+            });
+            pres.on('end', () => {
+              delete CronAPIs.#qlworking[url.path];
+              setImmediate(nextCb);
+            });
+          });
+          preq.on('error', (e) => {
+            delete CronAPIs.#qlworking[url.path];
+            console.log("ERROR - Couldn't proxy sendSession request=", url, '\nerror=', e);
+            setImmediate(nextCb);
+          });
+          preq.setHeader('content-type', 'application/x-www-form-urlencoded');
+          preq.write('ids=');
+          preq.write(nodes[node].join(','));
+          preq.end();
+          CronAPIs.#qlworking[url.path] = 'sent';
+        });
+      });
+    }, (err) => {
+      nextQLCb();
+    });
   }
+
+  // --------------------------------------------------------------------------
+  /* Process a single cron query.  At max it will process 24 hours worth of data
+   * to give other queries a chance to run.  Because its timestamp based and not
+   * lastPacket based since 1.0 it now search all indices each time.
+   */
+  static #processCronQuery (cq, options, query, endTime, cb) {
+    if (Config.debug > 2) {
+      console.log('CRON', cq.name, cq.creator, '- processCronQuery(', cq, options, query, endTime, ')');
+    }
+
+    let singleEndTime;
+    let count = 0;
+    async.doWhilst((whilstCb) => {
+      // Process at most 24 hours
+      singleEndTime = Math.min(endTime, cq.lpValue + 24 * 60 * 60);
+      query.query.bool.filter[0] = { range: { '@timestamp': { gte: cq.lpValue * 1000, lt: singleEndTime * 1000 } } };
+
+      if (Config.debug > 2) {
+        console.log('CRON', cq.name, cq.creator, '- start:', new Date(cq.lpValue * 1000), 'stop:', new Date(singleEndTime * 1000), 'end:', new Date(endTime * 1000), 'remaining runs:', ((endTime - singleEndTime) / (24 * 60 * 60.0)));
+      }
+
+      Db.searchSessions(['sessions2-*', 'sessions3-*'], query, { scroll: internals.esScrollTimeout }, function getMoreUntilDone (err, result) {
+        async function doNext () {
+          count += result.hits.hits.length;
+
+          // No more data, all done
+          if (result.hits.hits.length === 0) {
+            Db.clearScroll({ body: { scroll_id: result._scroll_id } });
+            return setImmediate(whilstCb, 'DONE');
+          } else {
+            const doc = { doc: { count: (query.count || 0) + count } };
+            try {
+              Db.update('queries', 'query', options.qid, doc, { refresh: true });
+            } catch (err) {
+              console.log('ERROR CRON - updating query', err);
+            }
+          }
+
+          query = {
+            body: {
+              scroll_id: result._scroll_id
+            },
+            scroll: internals.esScrollTimeout
+          };
+
+          try {
+            const { body: results } = await Db.scroll(query);
+            return getMoreUntilDone(null, results);
+          } catch (err) {
+            console.log('ERROR CRON - issuing scroll for cron job', err);
+            return getMoreUntilDone(err, {});
+          }
+        }
+
+        if (err || result.error) {
+          console.log('CRON - cronQuery error', err, (result ? result.error : null), 'for', cq);
+          return setImmediate(whilstCb, 'ERR');
+        }
+
+        const ids = [];
+        const hits = result.hits.hits;
+        let i, ilen;
+        if (cq.action.indexOf('forward:') === 0) {
+          for (i = 0, ilen = hits.length; i < ilen; i++) {
+            ids.push({ id: Db.session2Sid(hits[i]), node: hits[i]._source.node });
+          }
+
+          CronAPIs.#sendSessionsListQL(options, ids, doNext);
+        } else if (cq.action.indexOf('tag') === 0) {
+          for (i = 0, ilen = hits.length; i < ilen; i++) {
+            ids.push(Db.session2Sid(hits[i]));
+          }
+
+          if (Config.debug > 1) {
+            console.log('CRON', cq.name, cq.creator, '- Updating tags:', ids.length);
+          }
+
+          const tags = options.tags.split(',');
+          SessionAPIs.sessionsListFromIds(null, ids, ['tags', 'node'], (err, list) => {
+            SessionAPIs.addTagsList(tags, list, doNext);
+          });
+        } else {
+          console.log('CRON - Unknown action', cq);
+          doNext();
+        }
+      });
+    }, (testCb) => {
+      Db.refresh('sessions*');
+      if (Config.debug > 1) {
+        console.log('CRON', cq.name, cq.creator, '- Continue process', singleEndTime, endTime);
+      }
+      return setImmediate(testCb, null, singleEndTime !== endTime);
+    }, (err) => {
+      cb(count, singleEndTime);
+    });
+  }
+
+  // --------------------------------------------------------------------------
+  static processCronQueries () {
+    Db.setQueriesNode(Config.nodeName());
+    if (internals.cronRunning) {
+      console.log('CRON - processQueries already running', CronAPIs.#qlworking);
+      return;
+    }
+    internals.cronRunning = true;
+    if (Config.debug) {
+      console.log('CRON - cronRunning set to true');
+    }
+
+    let repeat;
+    async.doWhilst(function (whilstCb) {
+      repeat = false;
+      Db.search('queries', 'query', { size: 1000 }, (err, data) => {
+        if (err) {
+          internals.cronRunning = false;
+          console.log('CRON - processCronQueries', err);
+          return setImmediate(whilstCb, err);
+        }
+
+        const queries = {};
+        data.hits.hits.forEach(function (item) {
+          queries[item._id] = item._source;
+        });
+
+        // Delayed by the max Timeout
+        const endTime = Math.floor(Date.now() / 1000) - internals.cronTimeout;
+
+        // Go thru the queries, fetch the user, make the query
+        async.eachSeries(Object.keys(queries), (qid, forQueriesCb) => {
+          const cq = queries[qid];
+          let cluster = null;
+
+          if (Config.debug > 1) {
+            console.log('CRON - Running', qid, cq);
+          }
+
+          if (!cq.enabled || endTime < cq.lpValue) {
+            return forQueriesCb();
+          }
+
+          if (cq.action.indexOf('forward:') === 0) {
+            cluster = cq.action.substring(8);
+          }
+
+          ViewerUtils.getUserCacheIncAnon(cq.creator, async (err, user) => {
+            if (err && !user) {
+              return forQueriesCb();
+            }
+            if (!user) {
+              console.log(`CRON - User ${cq.creator} doesn't exist`);
+              return forQueriesCb(null);
+            }
+            if (!user.enabled) {
+              console.log(`CRON - User '${cq.creator}' has been disabled on users tab, either delete their cron jobs or enable them`);
+              return forQueriesCb();
+            }
+
+            const options = {
+              user,
+              cluster,
+              saveId: Config.nodeName() + '-' + new Date().getTime().toString(36),
+              tags: cq.tags.replace(/[^-a-zA-Z0-9_:,]/g, ''),
+              qid
+            };
+
+            let shortcuts;
+            try { // try to fetch shortcuts
+              shortcuts = await Db.getShortcutsCache(user);
+            } catch (err) { // don't need to do anything, there will just be no
+              // shortcuts sent to the parser. but still log the error.
+              console.log('ERROR CRON - fetching shortcuts cache when processing periodic query', err);
+            }
+
+            // always complete building the query regardless of shortcuts
+            molochparser.parser.yy = {
+              emailSearch: user.emailSearch === true,
+              fieldsMap: Config.getFieldsMap(),
+              dbFieldsMap: Config.getDBFieldsMap(),
+              prefix: internals.prefix,
+              shortcuts,
+              shortcutTypeMap: internals.shortcutTypeMap
+            };
+
+            const query = {
+              from: 0,
+              size: 1000,
+              query: { bool: { filter: [{}] } },
+              _source: ['_id', 'node']
+            };
+
+            try {
+              query.query.bool.filter.push(molochparser.parse(cq.query));
+            } catch (e) {
+              console.log("CRON - Couldn't compile periodic query expression", cq, e);
+              return forQueriesCb();
+            }
+
+            if (user.getExpression()) {
+              try {
+                // Expression was set by admin, so assume email search ok
+                molochparser.parser.yy.emailSearch = true;
+                const userExpression = molochparser.parse(user.getExpression());
+                query.query.bool.filter.push(userExpression);
+              } catch (e) {
+                console.log("CRON - Couldn't compile user forced expression", user.getExpression(), e);
+                return forQueriesCb();
+              }
+            }
+
+            ViewerUtils.lookupQueryItems(query.query.bool.filter, (lerr) => {
+              CronAPIs.#processCronQuery(cq, options, query, endTime, (count, lpValue) => {
+                if (Config.debug > 1) {
+                  console.log('CRON - setting lpValue', new Date(lpValue * 1000));
+                }
+                // Do the OpenSearch/Elasticsearch update
+                const doc = {
+                  doc: {
+                    lpValue,
+                    lastRun: Math.floor(Date.now() / 1000),
+                    count: (cq.count || 0) + count,
+                    lastCount: count
+                  }
+                };
+
+                async function continueProcess () {
+                  try {
+                    await Db.update('queries', 'query', qid, doc, { refresh: true });
+                  } catch (err) {
+                    console.log('ERROR CRON - updating query', err);
+                  }
+                  if (lpValue !== endTime) { repeat = true; }
+                  return forQueriesCb();
+                }
+
+                // issue alert via notifier if the count has changed and it has been at least 10 minutes
+                if (cq.notifier && count && cq.count !== doc.doc.count &&
+                  (!cq.lastNotified || (Math.floor(Date.now() / 1000) - cq.lastNotified >= 600))) {
+                  const newMatchCount = cq.lastNotifiedCount ? (doc.doc.count - cq.lastNotifiedCount) : doc.doc.count;
+                  doc.doc.lastNotifiedCount = doc.doc.count;
+
+                  let urlPath = 'sessions?expression=';
+                  const tags = cq.tags.split(',');
+                  for (let t = 0, tlen = tags.length; t < tlen; t++) {
+                    const tag = tags[t];
+                    urlPath += `tags%20%3D%3D%20${tag}`; // encoded ' == '
+                    if (t !== tlen - 1) { urlPath += '%20%26%26%20'; } // encoded ' && '
+                  }
+
+                  const message = `
+  *${cq.name}* periodic query match alert:
+  *${newMatchCount} new* matches
+  *${doc.doc.count} total* matches
+  ${Config.arkimeWebURL()}${urlPath}${cq.description ? '\n' + cq.description : ''}
+                  `;
+
+                  Db.refresh('*'); // Before sending alert make sure everything has been refreshed
+                  Notifier.issueAlert(cq.notifier, message, continueProcess);
+                } else {
+                  return continueProcess();
+                }
+              });
+            });
+          });
+        }, (err) => {
+          if (Config.debug > 1) {
+            console.log('CRON - Finished one pass of all crons');
+          }
+          return setImmediate(whilstCb, err);
+        });
+      });
+    }, (testCb) => {
+      if (Config.debug > 1) {
+        console.log('CRON - Process again: ', repeat);
+      }
+      return setImmediate(testCb, null, repeat);
+    }, (err) => {
+      if (Config.debug) {
+        console.log('CRON - Should be up to date');
+      }
+      internals.cronRunning = false;
+    });
+  };
 }
 
-module.exports = Cron;
+module.exports = CronAPIs;

@@ -1,23 +1,25 @@
 'use strict';
 
+const Config = require('./config.js');
+const Db = require('./db.js');
 const async = require('async');
 const util = require('util');
 const ArkimeUtil = require('../common/arkimeUtil');
+const ViewerUtils = require('./viewerUtils');
+const SessionAPIs = require('./apiSessions');
 
 let fieldsMap;
 
-module.exports = (Config, Db, ViewerUtils, sessionAPIs) => {
-  const connectionAPIs = {};
+if (!fieldsMap) {
+  setTimeout(() => { // make sure db.js loads before fetching fields
+    ViewerUtils.loadFields()
+      .then((result) => {
+        fieldsMap = result.fieldsMap;
+      });
+  });
+}
 
-  if (!fieldsMap) {
-    setTimeout(() => { // make sure db.js loads before fetching fields
-      ViewerUtils.loadFields()
-        .then((result) => {
-          fieldsMap = result.fieldsMap;
-        });
-    });
-  }
-
+class ConnectionAPIs {
   // --------------------------------------------------------------------------
   // HELPERS
   // --------------------------------------------------------------------------
@@ -34,7 +36,7 @@ module.exports = (Config, Db, ViewerUtils, sessionAPIs) => {
   //
   // This code was factored out from buildConnections.
   // --------------------------------------------------------------------------
-  function buildConnectionQuery (req, fields, options, fsrc, fdst, dstipport, resultId, cb) {
+  static #buildConnectionQuery (req, fields, options, fsrc, fdst, dstipport, resultId, cb) {
     const result = {
       resultId,
       err: null,
@@ -107,7 +109,7 @@ module.exports = (Config, Db, ViewerUtils, sessionAPIs) => {
       }
     } // resultId > 1 (calculating baseline query time frame)
 
-    sessionAPIs.buildSessionQuery(req, (bsqErr, query, indices) => {
+    SessionAPIs.buildSessionQuery(req, (bsqErr, query, indices) => {
       if (bsqErr) {
         console.log('ERROR - buildConnectionQuery -> buildSessionQuery', resultId, util.inspect(bsqErr, false, 50));
         result.err = bsqErr;
@@ -128,7 +130,7 @@ module.exports = (Config, Db, ViewerUtils, sessionAPIs) => {
         result.indices = JSON.parse(JSON.stringify(indices));
 
         if ((resultId === 1) && (doBaseline)) {
-          buildConnectionQuery(req, fields, options, fsrc, fdst, dstipport, resultId + 1, (baselineResult) => {
+          ConnectionAPIs.#buildConnectionQuery(req, fields, options, fsrc, fdst, dstipport, resultId + 1, (baselineResult) => {
             return cb([result].concat(baselineResult));
           });
         } else {
@@ -150,7 +152,7 @@ module.exports = (Config, Db, ViewerUtils, sessionAPIs) => {
   //
   // This code was factored out from buildConnections.
   // --------------------------------------------------------------------------
-  function dbConnectionQuerySearch (connQueries, cb) {
+  static #dbConnectionQuerySearch (connQueries, cb) {
     const resultSet = {
       resultId: null,
       err: null,
@@ -173,7 +175,7 @@ module.exports = (Config, Db, ViewerUtils, sessionAPIs) => {
           }
           resultSet.graph = graph;
           if (connQueries.length > 1) {
-            dbConnectionQuerySearch(connQueries.slice(1), (baselineResultSet) => {
+            ConnectionAPIs.#dbConnectionQuerySearch(connQueries.slice(1), (baselineResultSet) => {
               return cb([resultSet].concat(baselineResultSet));
             });
           } else {
@@ -203,7 +205,7 @@ module.exports = (Config, Db, ViewerUtils, sessionAPIs) => {
   // 4. processResultSets callback - distill nodesHash/connects hashes into
   //                                 nodes/links arrays and return
   // --------------------------------------------------------------------------
-  function buildConnections (req, res, cb) {
+  static #buildConnections (req, res, cb) {
     let dstipport;
     if (req.query.dstField === 'ip.dst:port' || req.query.dstField === 'destination.ip:port') {
       dstipport = true;
@@ -368,7 +370,7 @@ module.exports = (Config, Db, ViewerUtils, sessionAPIs) => {
 
     // ------------------------------------------------------------------------
     // call to build the session query|queries and indices
-    buildConnectionQuery(req, reqFields, options, fsrc, fdst, dstipport, 1, (connQueries) => {
+    ConnectionAPIs.#buildConnectionQuery(req, reqFields, options, fsrc, fdst, dstipport, 1, (connQueries) => {
       if (Config.debug) {
         console.log('buildConnections.connQueries', connQueries.length, JSON.stringify(connQueries, null, 2));
       }
@@ -382,7 +384,7 @@ module.exports = (Config, Db, ViewerUtils, sessionAPIs) => {
 
       // prepare and execute the Db.searchSessions query|queries
       if (connQueries.length > 0) {
-        dbConnectionQuerySearch(connQueries, (connResultSets) => {
+        ConnectionAPIs.#dbConnectionQuerySearch(connQueries, (connResultSets) => {
           if (Config.debug) {
             console.log('buildConnections.connResultSets', connResultSets.length, JSON.stringify(connResultSets, null, 2));
           }
@@ -481,8 +483,8 @@ module.exports = (Config, Db, ViewerUtils, sessionAPIs) => {
    * @returns {array} links - The list of links
    * @returns {array} nodes - The list of nodes
    */
-  connectionAPIs.getConnections = (req, res) => {
-    buildConnections(req, res, (err, nodes, links, total) => {
+  static getConnections (req, res) {
+    ConnectionAPIs.#buildConnections(req, res, (err, nodes, links, total) => {
       if (err) { return res.serverError(403, err.toString()); }
       res.send({
         nodes,
@@ -492,6 +494,7 @@ module.exports = (Config, Db, ViewerUtils, sessionAPIs) => {
     });
   };
 
+  // --------------------------------------------------------------------------
   /**
    * POST/GET - /api/connections/csv OR /api/connections.csv
    *
@@ -502,11 +505,11 @@ module.exports = (Config, Db, ViewerUtils, sessionAPIs) => {
    * @param {string} dstField=ip.dst:port - The destination database field name
    * @returns {csv} csv - The csv with the connections requested
    */
-  connectionAPIs.getConnectionsCSV = (req, res) => {
+  static getConnectionsCSV (req, res) {
     ViewerUtils.noCache(req, res, 'text/csv');
 
     const seperator = req.query.seperator ?? ',';
-    buildConnections(req, res, (err, nodes, links, total) => {
+    ConnectionAPIs.#buildConnections(req, res, (err, nodes, links, total) => {
       if (err) {
         return res.send(err);
       }
@@ -543,6 +546,6 @@ module.exports = (Config, Db, ViewerUtils, sessionAPIs) => {
       res.end();
     });
   };
-
-  return connectionAPIs;
 };
+
+module.exports = ConnectionAPIs;

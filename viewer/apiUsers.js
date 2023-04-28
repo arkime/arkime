@@ -1,18 +1,19 @@
 'use strict';
 
+const Config = require('./config.js');
 const fs = require('fs');
 const util = require('util');
 const stylus = require('stylus');
 const User = require('../common/user');
 const ArkimeUtil = require('../common/arkimeUtil');
+const internals = require('./internals');
+const ViewerUtils = require('./viewerUtils');
 
-module.exports = (Config, Db, internals, ViewerUtils) => {
-  const userAPIs = {};
-
+class UserAPIs {
   // --------------------------------------------------------------------------
   // HELPERS
   // --------------------------------------------------------------------------
-  function userColumns (user) {
+  static #userColumns (user) {
     if (!user) { return []; }
 
     // Fix for new names
@@ -29,12 +30,14 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
     return user.columnConfigs || [];
   }
 
-  function userSpiview (user) {
+  // --------------------------------------------------------------------------
+  static #userSpiview (user) {
     if (!user) { return []; }
     return user.spiviewFieldConfigs || [];
   }
 
-  userAPIs.getCurrentUserCB = (user, clone) => {
+  // --------------------------------------------------------------------------
+  static getCurrentUserCB (user, clone) {
     clone.canUpload = internals.allowUploads;
 
     // If esAdminUser is set use that, other wise use arkimeAdmin privilege
@@ -57,7 +60,8 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
     return clone;
   };
 
-  userAPIs.findUserState = (stateName, user) => {
+  // --------------------------------------------------------------------------
+  static findUserState (stateName, user) {
     if (!user.tableStates || !user.tableStates[stateName]) {
       return {};
     }
@@ -157,6 +161,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * @param {Array} visibleHeaders=["firstPacket","lastPacket","src","source.port","dst","destination.port","network.packets","dbby","node"] - The list of Sessions table columns.
    */
 
+  // --------------------------------------------------------------------------
   /**
    * GET - /api/user/css OR /api/user.css
    *
@@ -164,7 +169,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * @name /user/css
    * @returns {css} css - The css file that includes user configured styles.
    */
-  userAPIs.getUserCSS = (req, res) => {
+  static getUserCSS (req, res) {
     fs.readFile('./views/user.styl', 'utf8', (err, str) => {
       function error (msg) {
         console.log(`ERROR - ${req.method} /api/user/css`, msg);
@@ -223,6 +228,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
     });
   };
 
+  // --------------------------------------------------------------------------
   /**
    * GET - /api/user/settings
    *
@@ -230,7 +236,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * @name /user/settings
    * @returns {ArkimeSettings} settings - The user's configured settings
    */
-  userAPIs.getUserSettings = (req, res) => {
+  static getUserSettings (req, res) {
     const settings = (req.settingUser.settings)
       ? Object.assign(JSON.parse(JSON.stringify(internals.settingDefaults)), JSON.parse(JSON.stringify(req.settingUser.settings)))
       : JSON.parse(JSON.stringify(internals.settingDefaults));
@@ -238,6 +244,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
     return res.send(settings);
   };
 
+  // --------------------------------------------------------------------------
   /**
    * POST - /api/user/settings
    *
@@ -246,7 +253,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * @returns {boolean} success - Whether the update user settings operation was successful.
    * @returns {string} text - The success/error message to (optionally) display to the user.
    */
-  userAPIs.updateUserSettings = (req, res) => {
+  static updateUserSettings (req, res) {
     req.settingUser.settings = (
       ({ // only allow these properties in the settings
         logo, theme, timezone, spiGraph, numPackets, infoFields, manualQuery, detailFormat,
@@ -268,6 +275,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
     });
   };
 
+  // --------------------------------------------------------------------------
   /**
    * GET - /api/user/columns
    *
@@ -275,10 +283,11 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * @name /user/columns
    * @returns {ArkimeColumnConfig[]} columnConfigs - The custom Sessions column configurations.
    */
-  userAPIs.getUserColumns = (req, res) => {
-    return res.send(userColumns(req.settingUser));
+  static getUserColumns (req, res) {
+    return res.send(UserAPIs.#userColumns(req.settingUser));
   };
 
+  // --------------------------------------------------------------------------
   /**
    * POST - /api/user/column
    *
@@ -288,7 +297,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * @returns {string} text - The success/error message to (optionally) display to the user.
    * @returns {string} name - The name of the new custom Sessions column configuration.
    */
-  userAPIs.createUserColumns = (req, res) => {
+  static createUserColumns (req, res) {
     if (!ArkimeUtil.isString(req.body.name)) {
       return res.serverError(403, 'Missing custom column configuration name');
     }
@@ -334,6 +343,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
     });
   };
 
+  // --------------------------------------------------------------------------
   /**
    * PUT - /api/user/column/:name
    *
@@ -343,7 +353,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * @returns {string} text - The success/error message to (optionally) display to the user.
    * @returns {ArkimeColumnConfig} colConfig - The udpated custom Sessions column configuration.
    */
-  userAPIs.updateUserColumns = (req, res) => {
+  static updateUserColumns (req, res) {
     const colName = req.body.name || req.params.name;
     if (!colName) {
       return res.serverError(403, 'Missing custom column configuration name');
@@ -386,6 +396,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
     });
   };
 
+  // --------------------------------------------------------------------------
   /**
    * DELETE - /api/user/column/:name
    *
@@ -394,7 +405,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * @returns {boolean} success - Whether the delete Sessions column configuration operation was successful.
    * @returns {string} text - The success/error message to (optionally) display to the user.
    */
-  userAPIs.deleteUserColumns = (req, res) => {
+  static deleteUserColumns (req, res) {
     const colName = req.body.name || req.params.name;
     if (!colName) {
       return res.serverError(403, 'Missing custom column configuration name');
@@ -429,6 +440,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
     });
   };
 
+  // --------------------------------------------------------------------------
   /**
    * GET - /api/user/spiview
    *
@@ -436,10 +448,11 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * @name /user/spiview
    * @returns {Array} spiviewFieldConfigs - User configured SPI View field configuration.
    */
-  userAPIs.getUserSpiviewFields = (req, res) => {
-    return res.send(userSpiview(req.settingUser));
+  static getUserSpiviewFields (req, res) {
+    return res.send(UserAPIs.#userSpiview(req.settingUser));
   };
 
+  // --------------------------------------------------------------------------
   /**
    * POST - /api/user/spiview
    *
@@ -449,7 +462,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * @returns {string} text - The success/error message to (optionally) display to the user.
    * @returns {string} name - The name of the new SPI View fields configuration.
    */
-  userAPIs.createUserSpiviewFields = (req, res) => {
+  static createUserSpiviewFields (req, res) {
     if (!ArkimeUtil.isString(req.body.name)) {
       return res.serverError(403, 'Missing custom SPI View fields configuration name');
     }
@@ -492,6 +505,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
     });
   };
 
+  // --------------------------------------------------------------------------
   /**
    * PUT - /api/user/spiview/:name
    *
@@ -501,7 +515,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * @returns {string} text - The success/error message to (optionally) display to the user.
    * @returns {object} colConfig - The udpated SPI View fields configuration.
    */
-  userAPIs.updateUserSpiviewFields = (req, res) => {
+  static updateUserSpiviewFields (req, res) {
     const spiName = req.body.name || req.params.name;
     if (!spiName) {
       return res.serverError(403, 'Missing custom SPI View fields configuration name');
@@ -541,6 +555,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
     });
   };
 
+  // --------------------------------------------------------------------------
   /**
    * DELETE - /api/user/spiview/:name
    *
@@ -549,7 +564,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * @returns {boolean} success - Whether the delete SPI View fields configuration operation was successful.
    * @returns {string} text - The success/error message to (optionally) display to the user.
    */
-  userAPIs.deleteUserSpiviewFields = (req, res) => {
+  static deleteUserSpiviewFields (req, res) {
     const spiName = req.params.name || req.body.name;
     if (!spiName) {
       return res.serverError(403, 'Missing custom SPI View fields configuration name');
@@ -584,6 +599,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
     });
   };
 
+  // --------------------------------------------------------------------------
   /**
    * PUT - /api/user/:userId/acknowledge
    *
@@ -592,7 +608,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * @returns {boolean} success - Whether the operation was successful.
    * @returns {string} text - The success/error message to (optionally) display to the user.
    */
-  userAPIs.acknowledgeMsg = (req, res) => {
+  static acknowledgeMsg (req, res) {
     if (!req.body.msgNum) {
       return res.serverError(403, 'Message number required');
     }
@@ -625,6 +641,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
     });
   };
 
+  // --------------------------------------------------------------------------
   /**
    * GET - /api/user/state/:name
    *
@@ -632,10 +649,11 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * @name /user/state/:name
    * @returns {object} tableState - The table state requested.
    */
-  userAPIs.getUserState = (req, res) => {
-    return res.send(userAPIs.findUserState(req.params.name, req.user));
+  static getUserState (req, res) {
+    return res.send(UserAPIs.findUserState(req.params.name, req.user));
   };
 
+  // --------------------------------------------------------------------------
   /**
    * POST - /api/user/state/:name
    *
@@ -644,7 +662,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * @returns {boolean} success - Whether the operation was successful.
    * @returns {string} text - The success/error message to (optionally) display to the user.
    */
-  userAPIs.updateUserState = (req, res) => {
+  static updateUserState (req, res) {
     User.getUser(req.user.userId, (err, user) => {
       if (err || !user) {
         console.log(`ERROR - ${req.method} /api/user/state/%s (getUser)`, ArkimeUtil.sanitizeStr(req.params.name), util.inspect(err, false, 50), user);
@@ -671,6 +689,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
     });
   };
 
+  // --------------------------------------------------------------------------
   /**
    * GET - /api/user/config/:page
    *
@@ -678,58 +697,58 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * @name /user/config/:page
    * @returns {object} config The configuration data for the page
    */
-  userAPIs.getPageConfig = (req, res) => {
+  static getPageConfig (req, res) {
     switch (req.params.page) {
     case 'sessions': {
-      const colConfigs = userColumns(req.settingUser);
-      const tableState = userAPIs.findUserState('sessionsNew', req.user);
-      const colWidths = userAPIs.findUserState('sessionsColWidths', req.user);
+      const colConfigs = UserAPIs.#userColumns(req.settingUser);
+      const tableState = UserAPIs.findUserState('sessionsNew', req.user);
+      const colWidths = UserAPIs.findUserState('sessionsColWidths', req.user);
       return res.send({ colWidths, tableState, colConfigs });
     }
     case 'spiview': {
-      const fieldConfigs = userSpiview(req.settingUser);
-      const spiviewFields = userAPIs.findUserState('spiview', req.user);
+      const fieldConfigs = UserAPIs.#userSpiview(req.settingUser);
+      const spiviewFields = UserAPIs.findUserState('spiview', req.user);
       return res.send({ fieldConfigs, spiviewFields });
     }
     case 'connections': {
-      const fieldHistoryConnectionsSrc = userAPIs.findUserState('fieldHistoryConnectionsSrc', req.user);
-      const fieldHistoryConnectionsDst = userAPIs.findUserState('fieldHistoryConnectionsDst', req.user);
+      const fieldHistoryConnectionsSrc = UserAPIs.findUserState('fieldHistoryConnectionsSrc', req.user);
+      const fieldHistoryConnectionsDst = UserAPIs.findUserState('fieldHistoryConnectionsDst', req.user);
       return res.send({ fieldHistoryConnectionsSrc, fieldHistoryConnectionsDst });
     }
     case 'files': {
-      const tableState = userAPIs.findUserState('fieldsCols', req.user);
-      const columnWidths = userAPIs.findUserState('filesColWidths', req.user);
+      const tableState = UserAPIs.findUserState('fieldsCols', req.user);
+      const columnWidths = UserAPIs.findUserState('filesColWidths', req.user);
       return res.send({ tableState, columnWidths });
     }
     case 'captureStats': {
-      const tableState = userAPIs.findUserState('captureStatsCols', req.user);
-      const columnWidths = userAPIs.findUserState('captureStatsColWidths', req.user);
+      const tableState = UserAPIs.findUserState('captureStatsCols', req.user);
+      const columnWidths = UserAPIs.findUserState('captureStatsColWidths', req.user);
       return res.send({ tableState, columnWidths });
     }
     case 'esIndices': {
-      const tableState = userAPIs.findUserState('esIndicesCols', req.user);
-      const columnWidths = userAPIs.findUserState('esIndicesColWidths', req.user);
+      const tableState = UserAPIs.findUserState('esIndicesCols', req.user);
+      const columnWidths = UserAPIs.findUserState('esIndicesColWidths', req.user);
       return res.send({ tableState, columnWidths });
     }
     case 'esNodes': {
-      const tableState = userAPIs.findUserState('esNodesCols', req.user);
-      const columnWidths = userAPIs.findUserState('esNodesColWidths', req.user);
+      const tableState = UserAPIs.findUserState('esNodesCols', req.user);
+      const columnWidths = UserAPIs.findUserState('esNodesColWidths', req.user);
       return res.send({ tableState, columnWidths });
     }
     case 'esRecovery': {
-      const tableState = userAPIs.findUserState('esRecoveryCols', req.user);
-      const columnWidths = userAPIs.findUserState('esRecoveryColWidths', req.user);
+      const tableState = UserAPIs.findUserState('esRecoveryCols', req.user);
+      const columnWidths = UserAPIs.findUserState('esRecoveryColWidths', req.user);
       return res.send({ tableState, columnWidths });
     }
     case 'esTasks': {
-      const tableState = userAPIs.findUserState('esTasksCols', req.user);
-      const columnWidths = userAPIs.findUserState('esTasksColWidths', req.user);
+      const tableState = UserAPIs.findUserState('esTasksCols', req.user);
+      const columnWidths = UserAPIs.findUserState('esTasksColWidths', req.user);
       return res.send({ tableState, columnWidths });
     }
     default:
       return res.serverError(501, 'Requested page is not supported');
     }
   };
-
-  return userAPIs;
 };
+
+module.exports = UserAPIs;

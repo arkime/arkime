@@ -1,5 +1,7 @@
 'use strict';
 
+const Config = require('./config.js');
+const Db = require('./db.js');
 const async = require('async');
 const RE2 = require('re2');
 const util = require('util');
@@ -7,14 +9,15 @@ const Pcap = require('./pcap.js');
 const ArkimeUtil = require('../common/arkimeUtil');
 const Notifier = require('../common/notifier');
 const User = require('../common/user');
+const internals = require('./internals');
+const ViewerUtils = require('./viewerUtils');
+const SessionAPIs = require('./apiSessions');
 
-module.exports = (Config, Db, internals, sessionAPIs, ViewerUtils) => {
-  const huntAPIs = {};
-
+class HuntAPIs {
   // --------------------------------------------------------------------------
   // HELPERS
   // --------------------------------------------------------------------------
-  function packetSearch (packet, options) {
+  static #packetSearch (packet, options) {
     let found = false;
 
     switch (options.searchType) {
@@ -50,9 +53,10 @@ module.exports = (Config, Db, internals, sessionAPIs, ViewerUtils) => {
     return found;
   }
 
-  function sessionHunt (sessionId, options, cb) {
+  // --------------------------------------------------------------------------
+  static #sessionHunt (sessionId, options, cb) {
     if (options.type === 'reassembled') {
-      sessionAPIs.processSessionIdAndDecode(sessionId, options.size || 10000, (err, session, packets) => {
+      SessionAPIs.processSessionIdAndDecode(sessionId, options.size || 10000, (err, session, packets) => {
         if (err) {
           return cb(null, false);
         }
@@ -69,14 +73,14 @@ module.exports = (Config, Db, internals, sessionAPIs, ViewerUtils) => {
         }
 
         for (i; i < len; i += increment) {
-          if (packetSearch(packets[i].data, options)) { return cb(null, true); }
+          if (HuntAPIs.#packetSearch(packets[i].data, options)) { return cb(null, true); }
         }
 
         return cb(null, false);
       });
     } else if (options.type === 'raw') {
       const packets = [];
-      sessionAPIs.processSessionId(sessionId, true, null, (pcap, buffer, processSessionIdCb, i) => {
+      SessionAPIs.processSessionId(sessionId, true, null, (pcap, buffer, processSessionIdCb, i) => {
         if (options.src === options.dst) {
           packets.push(buffer);
         } else {
@@ -95,7 +99,7 @@ module.exports = (Config, Db, internals, sessionAPIs, ViewerUtils) => {
         if (options.src === options.dst) {
           // If search both src/dst don't need to check key
           for (let i = 0; i < len; i++) {
-            if (packetSearch(packets[i], options)) { return cb(null, true); }
+            if (HuntAPIs.#packetSearch(packets[i], options)) { return cb(null, true); }
           }
         } else {
           // If searching src NOR dst need to check key
@@ -104,9 +108,9 @@ module.exports = (Config, Db, internals, sessionAPIs, ViewerUtils) => {
             const key = Pcap.key(packets[i]);
             const isSrc = key === skey;
             if (options.src && isSrc) {
-              if (packetSearch(packets[i].data, options)) { return cb(null, true); }
+              if (HuntAPIs.#packetSearch(packets[i].data, options)) { return cb(null, true); }
             } else if (options.dst && !isSrc) {
-              if (packetSearch(packets[i].data, options)) { return cb(null, true); }
+              if (HuntAPIs.#packetSearch(packets[i].data, options)) { return cb(null, true); }
             }
           }
         }
@@ -116,7 +120,8 @@ module.exports = (Config, Db, internals, sessionAPIs, ViewerUtils) => {
     }
   }
 
-  function pauseHuntJobWithError (huntId, hunt, error, node) {
+  // --------------------------------------------------------------------------
+  static #pauseHuntJobWithError (huntId, hunt, error, node) {
     let errorMsg = `${hunt.name} (${huntId}) hunt ERROR: ${error.value}.`;
     if (node) {
       errorMsg += ` On ${node} node`;
@@ -149,7 +154,7 @@ module.exports = (Config, Db, internals, sessionAPIs, ViewerUtils) => {
           console.log('HUNT - pauseHuntJobWithError - cleared running');
         }
         internals.runningHuntJob = undefined;
-        huntAPIs.processHuntJobs();
+        HuntAPIs.processHuntJobs();
       } catch (err) {
         return console.log('ERROR - pauseHuntJobWithError - could not update hunt with errors:', util.inspect(err, false, 50));
       }
@@ -164,7 +169,8 @@ ${Config.arkimeWebURL()}hunt
     Notifier.issueAlert(hunt.notifier, message, continueProcess);
   }
 
-  async function updateHuntStats (hunt, huntId, session, searchedSessions, cb) {
+  // --------------------------------------------------------------------------
+  static async #updateHuntStats (hunt, huntId, session, searchedSessions, cb) {
     // update the hunt with number of matchedSessions and searchedSessions
     // and the date of the first packet of the last searched session
     const lastPacketTime = session.lastPacket;
@@ -191,7 +197,7 @@ ${Config.arkimeWebURL()}hunt
         }
       } catch (err) {
         const errorText = `Error finding hunt: ${hunt.name} (${huntId}): ${err}`;
-        pauseHuntJobWithError(huntId, hunt, { value: errorText });
+        HuntAPIs.#pauseHuntJobWithError(huntId, hunt, { value: errorText });
         return cb({ success: false, text: errorText });
       }
     } else {
@@ -199,7 +205,8 @@ ${Config.arkimeWebURL()}hunt
     }
   }
 
-  function updateSessionWithHunt (session, sessionId, hunt, huntId) {
+  // --------------------------------------------------------------------------
+  static #updateSessionWithHunt (session, sessionId, hunt, huntId) {
     Db.addHuntToSession(Db.sid2Index(sessionId), Db.sid2Id(sessionId), huntId, hunt.name, (err, data) => {
       if (err) {
         console.log('ERROR - updateSessionWithHunt - could not add hunt info to session:', session, util.inspect(err, false, 50), data);
@@ -207,7 +214,8 @@ ${Config.arkimeWebURL()}hunt
     });
   }
 
-  function buildHuntOptions (huntId, hunt) {
+  // --------------------------------------------------------------------------
+  static #buildHuntOptions (huntId, hunt) {
     const options = {
       src: hunt.src,
       dst: hunt.dst,
@@ -221,7 +229,7 @@ ${Config.arkimeWebURL()}hunt
       try {
         options.regex = new RE2(hunt.search);
       } catch (e) {
-        pauseHuntJobWithError(huntId, hunt, {
+        HuntAPIs.#pauseHuntJobWithError(huntId, hunt, {
           value: `Fatal Error: Regex parse error. Fix this issue with your regex and create a new hunt: ${e}`,
           unrunnable: true
         });
@@ -231,15 +239,16 @@ ${Config.arkimeWebURL()}hunt
     return options;
   }
 
+  // --------------------------------------------------------------------------
   // if we couldn't retrieve the seession, skip it but add it to failedSessionIds
   // so that we can go back and search for it at the end of the hunt
-  function continueHuntSkipSession (hunt, huntId, session, sessionId, searchedSessions, cb) {
+  static #continueHuntSkipSession (hunt, huntId, session, sessionId, searchedSessions, cb) {
     if (!hunt.failedSessionIds) {
       hunt.failedSessionIds = [sessionId];
     } else {
       // pause the hunt if there are more than 10k failed sessions
       if (hunt.failedSessionIds.length > 10000) {
-        return pauseHuntJobWithError(huntId, hunt, {
+        return HuntAPIs.#pauseHuntJobWithError(huntId, hunt, {
           value: 'Error hunting: Too many sessions are unreachable. Please contact your administrator.'
         });
       }
@@ -250,10 +259,11 @@ ${Config.arkimeWebURL()}hunt
       }
     }
 
-    return updateHuntStats(hunt, huntId, session, searchedSessions, cb);
+    return HuntAPIs.#updateHuntStats(hunt, huntId, session, searchedSessions, cb);
   }
 
-  async function updateHuntStatus (req, res, huntStatus, successText, errorText) {
+  // --------------------------------------------------------------------------
+  static async #updateHuntStatus (req, res, huntStatus, successText, errorText) {
     try {
       const { body: { _source: hunt } } = await Db.getHunt(req.params.id);
       // don't let a user play a hunt job if one is already running
@@ -272,7 +282,7 @@ ${Config.arkimeWebURL()}hunt
       try {
         await Db.updateHunt(req.params.id, { status: huntStatus });
         res.send(JSON.stringify({ success: true, text: successText }));
-        huntAPIs.processHuntJobs();
+        HuntAPIs.processHuntJobs();
       } catch (err) {
         console.log('ERROR - updateHuntStatus -', errorText, util.inspect(err, false, 50));
         return res.serverError(500, errorText);
@@ -283,11 +293,12 @@ ${Config.arkimeWebURL()}hunt
     }
   }
 
+  // --------------------------------------------------------------------------
   // if there are failed sessions, go through them one by one and do a packet search
   // if there are no failed sessions left at the end then the hunt is done
   // if there are still failed sessions, but some sessions were searched during the last pass, try again
   // if there are still failed sessions, but no new sessions coudl be searched, pause the job with an error
-  function huntFailedSessions (hunt, huntId, options, searchedSessions, user) {
+  static #huntFailedSessions (hunt, huntId, options, searchedSessions, user) {
     if (!hunt.failedSessionIds && !hunt.failedSessionIds.length) { return; }
 
     let changesSearchingFailedSessions = false;
@@ -300,7 +311,7 @@ ${Config.arkimeWebURL()}hunt
     async.forEachLimit(failedSessions, 3, (sessionId, cb) => {
       Db.getSession(sessionId, { arkime_unflatten: true, _source: false, fields: 'node,huntName,huntId,lastPacket,field'.split(',') }, (err, session) => {
         if (err) {
-          return continueHuntSkipSession(hunt, huntId, session, sessionId, searchedSessions, cb);
+          return HuntAPIs.#continueHuntSkipSession(hunt, huntId, session, sessionId, searchedSessions, cb);
         }
 
         session = session.fields;
@@ -315,14 +326,14 @@ ${Config.arkimeWebURL()}hunt
             console.log('HUNT - remote response', huntRemotePath, err, response);
           }
           if (err) {
-            return continueHuntSkipSession(hunt, huntId, session, sessionId, searchedSessions, cb);
+            return HuntAPIs.#continueHuntSkipSession(hunt, huntId, session, sessionId, searchedSessions, cb);
           }
 
           const json = JSON.parse(response);
 
           if (json.error) {
             console.log(`ERROR - huntFailedSessions - hunting on remote viewer: ${huntRemotePath}`, util.inspect(json.error, false, 50));
-            return continueHuntSkipSession(hunt, huntId, session, sessionId, searchedSessions, cb);
+            return HuntAPIs.#continueHuntSkipSession(hunt, huntId, session, sessionId, searchedSessions, cb);
           }
 
           // remove from failedSessionIds if it was found
@@ -331,7 +342,7 @@ ${Config.arkimeWebURL()}hunt
           changesSearchingFailedSessions = true;
 
           if (json.matched) { hunt.matchedSessions++; }
-          return updateHuntStats(hunt, huntId, session, searchedSessions, cb);
+          return HuntAPIs.#updateHuntStats(hunt, huntId, session, searchedSessions, cb);
         });
       });
     }, (err) => { // done running a pass of the failed sessions
@@ -342,7 +353,7 @@ ${Config.arkimeWebURL()}hunt
             console.log('HUNT - huntFailedSessions - cleared running');
           }
           internals.runningHuntJob = undefined;
-          huntAPIs.processHuntJobs(); // start new hunt
+          HuntAPIs.processHuntJobs(); // start new hunt
         } catch (err) {
           console.log(`ERROR - huntFailedSessions - could not update hunt (${huntId})`, util.inspect(err, false, 50));
         }
@@ -374,27 +385,28 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
         options.searchingFailedSessions = false; // no longer searching failed sessions
         // there were no changes, we're still struggling to connect to one or
         // more renote nodes, so error out
-        return pauseHuntJobWithError(huntId, hunt, {
+        return HuntAPIs.#pauseHuntJobWithError(huntId, hunt, {
           value: 'Error hunting previously unreachable sessions. There is likely a node down. Please contact your administrator.'
         });
       }
     });
   }
 
+  // --------------------------------------------------------------------------
   // Actually do the search against ES and process the results.
-  function runHuntJob (huntId, hunt, query, user) {
-    const options = buildHuntOptions(huntId, hunt);
+  static #runHuntJob (huntId, hunt, query, user) {
+    const options = HuntAPIs.#buildHuntOptions(huntId, hunt);
     let searchedSessions;
 
     // look for failed sessions if we're done searching sessions normally
     if (!options.searchingFailedSessions && hunt.searchedSessions === hunt.totalSessions && hunt.failedSessionIds && hunt.failedSessionIds.length) {
       options.searchingFailedSessions = true;
-      return huntFailedSessions(hunt, huntId, options, searchedSessions, user);
+      return HuntAPIs.#huntFailedSessions(hunt, huntId, options, searchedSessions, user);
     }
 
     Db.searchSessions(['sessions2-*', 'sessions3-*'], query, { scroll: internals.esScrollTimeout }, function getMoreUntilDone (err, result) {
       if (err || result.error) {
-        pauseHuntJobWithError(huntId, hunt, { value: `Hunt error searching sessions: ${err}` });
+        HuntAPIs.#pauseHuntJobWithError(huntId, hunt, { value: `Hunt error searching sessions: ${err}` });
         return;
       }
 
@@ -416,21 +428,21 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
 
         // There are no files, this is a fake session, don't hunt it
         if (session.fileId === undefined || session.fileId.length === 0) {
-          return updateHuntStats(hunt, huntId, session, searchedSessions, cb);
+          return HuntAPIs.#updateHuntStats(hunt, huntId, session, searchedSessions, cb);
         }
 
-        sessionAPIs.isLocalView(node, () => {
-          sessionHunt(sessionId, options, (err, matched) => {
+        SessionAPIs.isLocalView(node, () => {
+          HuntAPIs.#sessionHunt(sessionId, options, (err, matched) => {
             if (err) {
-              return pauseHuntJobWithError(huntId, hunt, { value: `Hunt error searching session (${sessionId}): ${err}` }, node);
+              return HuntAPIs.#pauseHuntJobWithError(huntId, hunt, { value: `Hunt error searching session (${sessionId}): ${err}` }, node);
             }
 
             if (matched) {
               hunt.matchedSessions++;
-              updateSessionWithHunt(session, sessionId, hunt, huntId);
+              HuntAPIs.#updateSessionWithHunt(session, sessionId, hunt, huntId);
             }
 
-            updateHuntStats(hunt, huntId, session, searchedSessions, cb);
+            HuntAPIs.#updateHuntStats(hunt, huntId, session, searchedSessions, cb);
           });
         }, () => { // Check Remotely
           const huntRemotePath = `api/hunt/${node}/${huntId}/remote/${sessionId}`;
@@ -443,15 +455,15 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
               console.log('HUNT - failed remote response', huntRemotePath, err, response);
             }
             if (err) {
-              return continueHuntSkipSession(hunt, huntId, session, sessionId, searchedSessions, cb);
+              return HuntAPIs.#continueHuntSkipSession(hunt, huntId, session, sessionId, searchedSessions, cb);
             }
             const json = JSON.parse(response);
             if (json.error) {
               console.log(`ERROR - runHuntJob - hunting on remote viewer: ${huntRemotePath}`, util.inspect(json.error, false, 50));
-              return pauseHuntJobWithError(huntId, hunt, { value: `Error hunting on remote viewer: ${json.error}` }, node);
+              return HuntAPIs.#pauseHuntJobWithError(huntId, hunt, { value: `Error hunting on remote viewer: ${json.error}` }, node);
             }
             if (json.matched) { hunt.matchedSessions++; }
-            return updateHuntStats(hunt, huntId, session, searchedSessions, cb);
+            return HuntAPIs.#updateHuntStats(hunt, huntId, session, searchedSessions, cb);
           });
         });
       }, async (err) => { // done running this section of hunt job
@@ -491,7 +503,7 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
             if (Config.debug) {
               console.log('HUNT - runHuntJob - cleared running', huntId, hunt.name);
             }
-            huntAPIs.processHuntJobs(); // start new hunt or go back over failedSessionIds
+            HuntAPIs.processHuntJobs(); // start new hunt or go back over failedSessionIds
           } catch (err) {
             console.log(`ERROR - runHuntJob - updating hunt (${huntId})`, util.inspect(err, false, 50));
           }
@@ -522,8 +534,9 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
     });
   }
 
+  // --------------------------------------------------------------------------
   // Do the house keeping before actually running the hunt job
-  function processHuntJob (huntId, hunt) {
+  static #processHuntJob (huntId, hunt) {
     const now = Math.floor(Date.now() / 1000);
 
     hunt.lastUpdated = now;
@@ -532,20 +545,20 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
     try {
       Db.setHunt(huntId, hunt);
     } catch (err) {
-      pauseHuntJobWithError(huntId, hunt, { value: `Error starting hunt job: ${err}` });
+      HuntAPIs.#pauseHuntJobWithError(huntId, hunt, { value: `Error starting hunt job: ${err}` });
     }
 
     ViewerUtils.getUserCacheIncAnon(hunt.userId, (err, user) => {
       if (err && !user) {
-        pauseHuntJobWithError(huntId, hunt, { value: err });
+        HuntAPIs.#pauseHuntJobWithError(huntId, hunt, { value: err });
         return;
       }
       if (!user) {
-        pauseHuntJobWithError(huntId, hunt, { value: `User ${hunt.userId} doesn't exist` });
+        HuntAPIs.#pauseHuntJobWithError(huntId, hunt, { value: `User ${hunt.userId} doesn't exist` });
         return;
       }
       if (!user.enabled) {
-        pauseHuntJobWithError(huntId, hunt, { value: `User ${hunt.userId} is not enabled` });
+        HuntAPIs.#pauseHuntJobWithError(huntId, hunt, { value: `User ${hunt.userId} is not enabled` });
         return;
       }
 
@@ -567,9 +580,9 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
         fakeReq.query.view = hunt.query.view;
       }
 
-      sessionAPIs.buildSessionQuery(fakeReq, (err, query, indices) => {
+      SessionAPIs.buildSessionQuery(fakeReq, (err, query, indices) => {
         if (err) {
-          pauseHuntJobWithError(huntId, hunt, {
+          HuntAPIs.#pauseHuntJobWithError(huntId, hunt, {
             value: 'Fatal Error: Session query expression parse error. Fix your search expression and create a new hunt.',
             unrunnable: true
           });
@@ -593,15 +606,16 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
           }
 
           // do sessions query
-          runHuntJob(huntId, hunt, query, user);
+          HuntAPIs.#runHuntJob(huntId, hunt, query, user);
         });
       });
     });
   }
 
+  // --------------------------------------------------------------------------
   // Kick off the process of running a hunt job
   // cb is optional and is called either when a job has been started or end of function
-  huntAPIs.processHuntJobs = async (cb) => {
+  static async processHuntJobs (cb) {
     if (!Config.get('cronQueries', false)) {
       return;
     }
@@ -636,13 +650,13 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
           if (!internals.proccessHuntJobsInitialized) {
             internals.proccessHuntJobsInitialized = true;
             // restart the abandoned or incomplete hunt
-            processHuntJob(id, hunt);
+            HuntAPIs.#processHuntJob(id, hunt);
           }
           return (cb ? cb() : null);
         } else if (hunt.status === 'queued') { // get the first queued hunt
           internals.runningHuntJob = hunt;
           hunt.status = 'running'; // update the hunt job
-          processHuntJob(id, hunt);
+          HuntAPIs.#processHuntJob(id, hunt);
           return (cb ? cb() : null);
         }
       }
@@ -701,6 +715,7 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
    * @property {boolean} removed - Whether the hunt name and ID fields have been removed from the matched sessions.
    */
 
+  // --------------------------------------------------------------------------
   /**
    * POST - /api/hunt
    *
@@ -726,7 +741,7 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
    * @returns {Hunt} hunt - The newly created hunt object.
    * @returns {array} invalidUsers - The list of users that could not be added to the hunt because they were invalid or nonexitent.
    */
-  huntAPIs.createHunt = async (req, res) => {
+  static async createHunt (req, res) {
     // make sure all the necessary data is included in the post body
     if (!req.body.totalSessions) { return res.serverError(403, 'This hunt does not apply to any sessions'); }
     if (!ArkimeUtil.isString(req.body.name)) { return res.serverError(403, 'Missing hunt name'); }
@@ -799,7 +814,7 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
       try {
         const { body: result } = await Db.createHunt(doneHunt);
         doneHunt.id = result._id;
-        huntAPIs.processHuntJobs(() => {
+        HuntAPIs.processHuntJobs(() => {
           const response = {
             success: true,
             hunt: doneHunt
@@ -834,6 +849,7 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
     }
   };
 
+  // --------------------------------------------------------------------------
   /**
    * GET - /api/hunts
    *
@@ -850,7 +866,7 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
    * @returns {number} recordsTotal - The total number of hunts Arkime has.
    * @returns {number} recordsFiltered - The number of hunts returned in this result.
    */
-  huntAPIs.getHunts = (req, res) => {
+  static getHunts (req, res) {
     const query = {
       sort: {},
       from: parseInt(req.query.start) || 0,
@@ -933,6 +949,7 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
     });
   };
 
+  // --------------------------------------------------------------------------
   /**
    * DELETE - /api/hunt/:id
    *
@@ -941,7 +958,7 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
    * @returns {boolean} success - Whether the delete hunt operation was successful.
    * @returns {string} text - The success/error message to (optionally) display to the user.
    */
-  huntAPIs.deleteHunt = async (req, res) => {
+  static async deleteHunt (req, res) {
     try {
       await Db.deleteHunt(req.params.id);
       return res.send(JSON.stringify({
@@ -954,6 +971,7 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
     }
   };
 
+  // --------------------------------------------------------------------------
   /**
    * PUT - /api/hunt/:id/cancel
    *
@@ -962,7 +980,7 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
    * @returns {boolean} success - Whether the cancel hunt operation was successful.
    * @returns {string} text - The success/error message to (optionally) display to the user.
    */
-  huntAPIs.cancelHunt = async (req, res) => {
+  static async cancelHunt (req, res) {
     try {
       const { body: { _source: hunt } } = await Db.getHunt(req.params.id);
 
@@ -979,7 +997,7 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
 
       await Db.updateHunt(req.params.id, { status: 'finished', errors: hunt.errors });
       internals.runningHuntJob = undefined;
-      huntAPIs.processHuntJobs();
+      HuntAPIs.processHuntJobs();
       return res.send(JSON.stringify({ success: true, text: 'Canceled hunt successfully' }));
     } catch (err) {
       console.log(`ERROR - ${req.method} /api/hunt/%s/cancel`, ArkimeUtil.sanitizeStr(req.params.id), util.inspect(err, false, 50));
@@ -987,6 +1005,7 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
     }
   };
 
+  // --------------------------------------------------------------------------
   /**
    * PUT - /api/hunt/:id/pause
    *
@@ -995,10 +1014,11 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
    * @returns {boolean} success - Whether the pause hunt operation was successful.
    * @returns {string} text - The success/error message to (optionally) display to the user.
    */
-  huntAPIs.pauseHunt = (req, res) => {
-    updateHuntStatus(req, res, 'paused', 'Paused hunt successfully', 'Error pausing hunt');
+  static pauseHunt (req, res) {
+    HuntAPIs.#updateHuntStatus(req, res, 'paused', 'Paused hunt successfully', 'Error pausing hunt');
   };
 
+  // --------------------------------------------------------------------------
   /**
    * PUT - /api/hunt/:id/play
    *
@@ -1007,10 +1027,11 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
    * @returns {boolean} success - Whether the play hunt operation was successful.
    * @returns {string} text - The success/error message to (optionally) display to the user.
    */
-  huntAPIs.playHunt = (req, res) => {
-    updateHuntStatus(req, res, 'queued', 'Queued hunt successfully', 'Error starting hunt');
+  static playHunt (req, res) {
+    HuntAPIs.#updateHuntStatus(req, res, 'queued', 'Queued hunt successfully', 'Error starting hunt');
   };
 
+  // --------------------------------------------------------------------------
   /**
    * PUT - /api/hunt/:id/removefromsessions
    *
@@ -1019,7 +1040,7 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
    * @returns {boolean} success - Whether the operation was successful.
    * @returns {string} text - The success/error message to (optionally) display to the user.
    */
-  huntAPIs.removeFromSessions = async (req, res) => {
+  static async removeFromSessions (req, res) {
     try {
       const { body: { _source: hunt } } = await Db.getHunt(req.params.id);
 
@@ -1038,7 +1059,7 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
 
       fakeReq.query.expression = `huntId == ${req.params.id}`;
 
-      sessionAPIs.buildSessionQuery(fakeReq, (err, query, indices) => {
+      SessionAPIs.buildSessionQuery(fakeReq, (err, query, indices) => {
         if (err) {
           return res.serverError(500, 'Unable to build sessions query to fetch sessions that matched this hunt.');
         }
@@ -1073,6 +1094,7 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
     }
   };
 
+  // --------------------------------------------------------------------------
   /**
    * PUT - /api/hunt/:id
    *
@@ -1082,7 +1104,7 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
    * @returns {boolean} success - Whether the operation was successful.
    * @returns {string} text - The success/error message to (optionally) display to the user.
    */
-  huntAPIs.updateHunt = async (req, res) => {
+  static async updateHunt (req, res) {
     try {
       const { body: { _source: hunt } } = await Db.getHunt(req.params.id);
 
@@ -1111,6 +1133,7 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
     }
   };
 
+  // --------------------------------------------------------------------------
   /**
    * POST - /api/hunt/:id/users
    *
@@ -1121,7 +1144,7 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
    * @returns {array} users - The list of users that were added to the hunt.
    * @returns {array} invalidUsers - The list of users that could not be added to the hunt because they were invalid or nonexitent.
    */
-  huntAPIs.addUsers = async (req, res) => {
+  static async addUsers (req, res) {
     if (!ArkimeUtil.isString(req.body.users)) {
       return res.serverError(403, 'You must provide users in a comma separated string');
     }
@@ -1167,6 +1190,7 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
     }
   };
 
+  // --------------------------------------------------------------------------
   /**
    * DELETE - /api/hunt/:id/user/:user
    *
@@ -1176,7 +1200,7 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
    * @returns {array} users - The list of users who have access to the hunt.
    * @returns {array} invalidUsers - The list of users that could not be removed from the hunt because they were invalid or nonexitent.
    */
-  huntAPIs.removeUsers = async (req, res) => {
+  static async removeUsers (req, res) {
     try {
       const { body: { _source: hunt } } = await Db.getHunt(req.params.id);
 
@@ -1205,6 +1229,7 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
     }
   };
 
+  // --------------------------------------------------------------------------
   /**
    * @ignore
    * GET - /api/hunt/:nodeName/:huntId/remote/:sessionId
@@ -1214,7 +1239,7 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
    * @returns {boolean} matched - Whether searching the session packets resulted in a match with the search text.
    * @returns {string} error - If an error occurred, describes the error.
    */
-  huntAPIs.remoteHunt = async (req, res) => {
+  static async remoteHunt (req, res) {
     const huntId = req.params.huntId;
     const sessionId = req.params.sessionId;
 
@@ -1236,9 +1261,9 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
       hunt = hunt._source;
       session = session._source;
 
-      const options = buildHuntOptions(huntId, hunt);
+      const options = HuntAPIs.#buildHuntOptions(huntId, hunt);
 
-      sessionHunt(sessionId, options, (err, matched) => {
+      HuntAPIs.#sessionHunt(sessionId, options, (err, matched) => {
         if (Config.debug > 1) {
           console.log('HUNT - result', huntId, sessionId, err, matched);
         }
@@ -1248,7 +1273,7 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
         }
 
         if (matched) {
-          updateSessionWithHunt(session, sessionId, hunt, huntId);
+          HuntAPIs.#updateSessionWithHunt(session, sessionId, hunt, huntId);
         }
 
         if (!res.headersSent) { res.send({ matched }); }
@@ -1258,6 +1283,6 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
       if (!res.headersSent) { res.send({ matched: false, error: err }); }
     });
   };
-
-  return huntAPIs;
 };
+
+module.exports = HuntAPIs;

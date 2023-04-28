@@ -1,5 +1,7 @@
 'use strict';
 
+const Config = require('./config.js');
+const Db = require('./db.js');
 const async = require('async');
 const http = require('http');
 const https = require('https');
@@ -7,11 +9,11 @@ const ArkimeUtil = require('../common/arkimeUtil');
 const Auth = require('../common/auth');
 const User = require('../common/user');
 const molochparser = require('./molochparser.js');
+const internals = require('./internals');
 
-module.exports = (Config, Db, internals) => {
-  const ViewerUtils = {};
-
-  ViewerUtils.addCaTrust = (options, node) => {
+class ViewerUtils {
+  // ----------------------------------------------------------------------------
+  static addCaTrust (options, node) {
     if (!Config.isHTTPS(node)) {
       return;
     }
@@ -29,7 +31,8 @@ module.exports = (Config, Db, internals) => {
     }
   };
 
-  ViewerUtils.noCache = (req, res, ct) => {
+  // ----------------------------------------------------------------------------
+  static noCache (req, res, ct) {
     res.header('Cache-Control', 'no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0');
     if (ct) {
       res.setHeader('Content-Type', ct);
@@ -37,7 +40,8 @@ module.exports = (Config, Db, internals) => {
     }
   };
 
-  ViewerUtils.queryValueToArray = (val) => {
+  // ----------------------------------------------------------------------------
+  static queryValueToArray (val) {
     if (val === undefined || val === null) {
       return [];
     }
@@ -56,7 +60,7 @@ module.exports = (Config, Db, internals) => {
   //
   // This code was factored out from buildSessionQuery.
   // -------------------------------------------------------------------------
-  ViewerUtils.determineQueryTimes = (reqQuery) => {
+  static determineQueryTimes (reqQuery) {
     let startTimeSec = null;
     let stopTimeSec = null;
     let interval;
@@ -126,12 +130,13 @@ module.exports = (Config, Db, internals) => {
     return [startTimeSec, stopTimeSec, interval];
   };
 
+  // ----------------------------------------------------------------------------
   /* This method fixes up parts of the query that jison builds to what ES actually
    * understands.  This includes using the collapse function and the filename mapping.
    */
-  ViewerUtils.lookupQueryItems = (query, doneCb) => {
+  static lookupQueryItems (query, doneCb) {
     // console.log('BEFORE', JSON.stringify(query, false, 2));
-    collapseQuery(query);
+    ViewerUtils.#collapseQuery(query);
     // console.log('AFTER', JSON.stringify(query, false, 2));
     if (Config.get('multiES', false)) {
       return doneCb(null);
@@ -184,10 +189,11 @@ module.exports = (Config, Db, internals) => {
     finished = 1;
   };
 
+  // ----------------------------------------------------------------------------
   /* This method collapses cascading bool should/must into one. I couldn't figure
    * out how to do this in jison.
    */
-  function collapseQuery (query) {
+  static #collapseQuery (query) {
     function newArray (items, kind) {
       let newItems = [];
       const len = items.length;
@@ -211,16 +217,16 @@ module.exports = (Config, Db, internals) => {
         if (query.bool?.must_not?.bool?.should) {
           // most_not: { - when just NOTing one thing
           query.bool.must_not = query.bool.must_not.bool.should;
-          collapseQuery(query);
+          ViewerUtils.#collapseQuery(query);
         } else if (query.bool?.must_not?.length > 0) {
           // We can collapse both must_not: most_not: and most_not: should:
           const len = query.bool.must_not.length;
           const newItems = newArray(newArray(query.bool.must_not, 'must_not'), 'should');
           query.bool.must_not = newItems;
           if (newItems.length !== len) {
-            collapseQuery(query);
+            ViewerUtils.#collapseQuery(query);
           } else {
-            collapseQuery(query.bool.must_not);
+            ViewerUtils.#collapseQuery(query.bool.must_not);
           }
         } else if (query.bool?.should?.length > 0) {
           // Collapse should: should:
@@ -228,9 +234,9 @@ module.exports = (Config, Db, internals) => {
           const newItems = newArray(query.bool.should, 'should');
           query.bool.should = newItems;
           if (newItems.length !== len) {
-            collapseQuery(query);
+            ViewerUtils.#collapseQuery(query);
           } else {
-            collapseQuery(query.bool.should);
+            ViewerUtils.#collapseQuery(query.bool.should);
           }
         } else if (query.bool?.filter?.length > 0) {
           // Collapse filter: filter:
@@ -238,21 +244,22 @@ module.exports = (Config, Db, internals) => {
           const newItems = newArray(query.bool.filter, 'filter');
           query.bool.filter = newItems;
           if (newItems.length !== len) {
-            collapseQuery(query);
+            ViewerUtils.#collapseQuery(query);
           } else {
-            collapseQuery(query.bool.filter);
+            ViewerUtils.#collapseQuery(query.bool.filter);
           }
         } else {
           // Just recurse
-          collapseQuery(query.bool);
+          ViewerUtils.#collapseQuery(query.bool);
         }
       } else if (typeof query[prop] === 'object') {
-        collapseQuery(query[prop]);
+        ViewerUtils.#collapseQuery(query[prop]);
       }
     }
   };
 
-  ViewerUtils.continueBuildQuery = (req, query, err, finalCb, queryOverride = null) => {
+  // ----------------------------------------------------------------------------
+  static continueBuildQuery (req, query, err, finalCb, queryOverride = null) {
     // queryOverride can supercede req.query if specified
     const reqQuery = queryOverride || req.query;
 
@@ -289,7 +296,8 @@ module.exports = (Config, Db, internals) => {
     });
   };
 
-  ViewerUtils.mapMerge = (aggregations) => {
+  // ----------------------------------------------------------------------------
+  static mapMerge (aggregations) {
     const map = { src: {}, dst: {}, xffGeo: {} };
 
     if (!aggregations || !aggregations.mapG1) {
@@ -311,7 +319,8 @@ module.exports = (Config, Db, internals) => {
     return map;
   };
 
-  ViewerUtils.graphMerge = (req, query, aggregations) => {
+  // ----------------------------------------------------------------------------
+  static graphMerge (req, query, aggregations) {
     let filters = req.user.settings.timelineDataFilters || internals.settingDefaults.timelineDataFilters;
 
     // Convert old names to names locally
@@ -392,7 +401,8 @@ module.exports = (Config, Db, internals) => {
     return graph;
   };
 
-  ViewerUtils.fixFields = (fields, fixCb) => {
+  // ----------------------------------------------------------------------------
+  static fixFields (fields, fixCb) {
     if (!fields.fileId) {
       fields.fileId = [];
       return fixCb(null, fields);
@@ -413,7 +423,8 @@ module.exports = (Config, Db, internals) => {
     });
   };
 
-  ViewerUtils.errorString = (err, result) => {
+  // ----------------------------------------------------------------------------
+  static errorString (err, result) {
     let str;
     if (err && typeof err === 'string') {
       str = err;
@@ -433,7 +444,8 @@ module.exports = (Config, Db, internals) => {
     }
   };
 
-  ViewerUtils.loadFields = async () => {
+  // ----------------------------------------------------------------------------
+  static async loadFields () {
     try {
       let data = await Db.loadFields();
       data = data.hits.hits;
@@ -472,12 +484,14 @@ module.exports = (Config, Db, internals) => {
     }
   };
 
-  ViewerUtils.oldDB2newDB = (x) => {
+  // ----------------------------------------------------------------------------
+  static oldDB2newDB (x) {
     if (!internals.oldDBFields[x]) { return x; }
     return internals.oldDBFields[x].dbFieldECS || internals.oldDBFields[x].dbField2;
   };
 
-  ViewerUtils.mergeUnarray = (to, from) => {
+  // ----------------------------------------------------------------------------
+  static mergeUnarray (to, from) {
     for (const key in from) {
       if (Array.isArray(from[key])) {
         to[key] = from[key][0];
@@ -487,15 +501,17 @@ module.exports = (Config, Db, internals) => {
     }
   };
 
+  // ----------------------------------------------------------------------------
   // https://medium.com/dailyjs/rewriting-javascript-converting-an-array-of-objects-to-an-object-ec579cafbfc7
-  ViewerUtils.arrayToObject = (array, key) => {
+  static arrayToObject (array, key) {
     return array.reduce((obj, item) => {
       obj[item[key]] = item;
       return obj;
     }, {});
   };
 
-  ViewerUtils.arrayZeroFill = (n) => {
+  // ----------------------------------------------------------------------------
+  static arrayZeroFill (n) {
     const a = [];
 
     while (n > 0) {
@@ -506,7 +522,8 @@ module.exports = (Config, Db, internals) => {
     return a;
   };
 
-  ViewerUtils.getViewUrl = (node, cb) => {
+  // ----------------------------------------------------------------------------
+  static getViewUrl (node, cb) {
     if (Array.isArray(node)) {
       node = node[0];
     }
@@ -537,7 +554,8 @@ module.exports = (Config, Db, internals) => {
     });
   };
 
-  ViewerUtils.makeRequest = (node, path, user, cb) => {
+  // ----------------------------------------------------------------------------
+  static makeRequest (node, path, user, cb) {
     ViewerUtils.getViewUrl(node, (err, viewUrl, client) => {
       if (err) {
         return cb(err);
@@ -577,7 +595,8 @@ module.exports = (Config, Db, internals) => {
     });
   };
 
-  ViewerUtils.addCluster = (cluster, options) => {
+  // ----------------------------------------------------------------------------
+  static addCluster (cluster, options) {
     if (!options) options = {};
     if (cluster && Config.get('multiES', false)) {
       options.cluster = cluster;
@@ -585,9 +604,10 @@ module.exports = (Config, Db, internals) => {
     return options;
   };
 
+  // ----------------------------------------------------------------------------
   // check for anonymous mode before fetching user cache and return anonymous
   // user or the user requested by the userId
-  ViewerUtils.getUserCacheIncAnon = (userId, cb) => {
+  static getUserCacheIncAnon (userId, cb) {
     if (internals.noPasswordSecret) { // user is anonymous
       User.getUserCache('anonymous', (err, anonUser) => {
         const anon = Object.assign(new User(), internals.anonymousUser);
@@ -602,6 +622,6 @@ module.exports = (Config, Db, internals) => {
       User.getUserCache(userId, cb);
     }
   };
+}
 
-  return ViewerUtils;
-};
+module.exports = ViewerUtils;
