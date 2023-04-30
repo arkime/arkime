@@ -15,7 +15,53 @@ const molochparser = require('./molochparser.js');
 const Notifier = require('../common/notifier');
 
 class CronAPIs {
-  static initialize (options) {
+  // --------------------------------------------------------------------------
+  static #primaryViewer = false;
+  static isPrimaryViewer () {
+    return CronAPIs.#primaryViewer;
+  }
+
+  // --------------------------------------------------------------------------
+  static #runPrimaryViewer () {
+    if (!CronAPIs.#primaryViewer) { return; }
+    CronAPIs.processCronQueries();
+    HuntAPIs.processHuntJobs();
+    Db.updateLocalShortcuts();
+  }
+
+  // --------------------------------------------------------------------------
+  static async #updatePrimaryViewer (force) {
+    const previous = CronAPIs.#primaryViewer;
+    CronAPIs.#primaryViewer = await Db.setQueriesNode(Config.nodeName(), force);
+    if (previous !== CronAPIs.#primaryViewer) {
+      if (!previous) {
+        console.log('This node will process Periodic Queries (CRON) & Hunts, delayed by', internals.cronTimeout, 'seconds');
+      } else {
+        console.log('This node will no longer process Periodic Queries (CRON) & Hunts');
+      }
+    }
+  }
+
+  // --------------------------------------------------------------------------
+  static async initialize (options) {
+    if (Config.get('cronQueries') === 'auto') {
+      setTimeout(CronAPIs.#updatePrimaryViewer, 1000, false);
+      setInterval(CronAPIs.#updatePrimaryViewer, 45 * 1000, false);
+      setInterval(CronAPIs.#runPrimaryViewer, 60 * 1000);
+    } else if (Config.get('cronQueries') === true) {
+      CronAPIs.#primaryViewer = true;
+      console.log('This node will process Periodic Queries (CRON), delayed by', internals.cronTimeout, 'seconds');
+      setTimeout(CronAPIs.#updatePrimaryViewer, 1000, true);
+      setInterval(CronAPIs.#updatePrimaryViewer, 120 * 1000, true);
+      setInterval(CronAPIs.#runPrimaryViewer, 60 * 1000);
+    } else if (!Config.get('multiES', false)) {
+      const info = await Db.getQueriesNode();
+      if (info.node === undefined) {
+        console.log(`WARNING - No cronQueries=true found in ${Config.getConfigFile()}, one and only one node MUST have cronQueries=true set for cron/hunts to work`);
+      } else if (Date.now() - info.updateTime > 2 * 60 * 1000) {
+        console.log(`WARNING - cronQueries=true node '${info.node}' hasn't checked in lately, cron/hunts might be broken`);
+      }
+    }
   }
 
   /**
@@ -65,6 +111,9 @@ class CronAPIs {
       sort: { created: { order: 'asc' } },
       query: {
         bool: {
+          must_not: [
+            { ids: { values: ['primary-viewer'] } }
+          ],
           filter: [
             {
               bool: {
@@ -196,9 +245,7 @@ class CronAPIs {
     try {
       const { body: info } = await Db.indexNow('queries', 'query', null, doc.doc);
 
-      if (Config.get('cronQueries', false)) {
-        CronAPIs.processCronQueries();
-      }
+      if (CronAPIs.#primaryViewer) { CronAPIs.processCronQueries(); }
 
       doc.doc.key = info._id;
       if (doc.doc.users) {
@@ -229,6 +276,9 @@ class CronAPIs {
    */
   static async updateCron (req, res) {
     const key = req.body.key;
+    if (key === 'primary-viewer') {
+      return res.serverError(403, 'Bad query key');
+    }
     if (!ArkimeUtil.isString(key)) {
       return res.serverError(403, 'Missing query key');
     }
@@ -299,7 +349,7 @@ class CronAPIs {
         console.log(`ERROR - ${req.method} /api/cron/%s`, ArkimeUtil.sanitizeStr(key), util.inspect(err, false, 50));
       }
 
-      if (Config.get('cronQueries', false)) { CronAPIs.processCronQueries(); }
+      if (CronAPIs.#primaryViewer) { CronAPIs.processCronQueries(); }
 
       query.key = key;
       if (query.users) {
@@ -329,6 +379,10 @@ class CronAPIs {
    */
   static async deleteCron (req, res) {
     const key = req.body.key;
+
+    if (key === 'primary-viewer') {
+      return res.serverError(403, 'Bad query key');
+    }
 
     if (!ArkimeUtil.isString(key)) {
       return res.serverError(403, 'Missing periodic query key');
@@ -522,7 +576,6 @@ class CronAPIs {
 
   // --------------------------------------------------------------------------
   static processCronQueries () {
-    Db.setQueriesNode(Config.nodeName());
     if (internals.cronRunning) {
       console.log('CRON - processQueries already running', CronAPIs.#qlworking);
       return;
@@ -544,6 +597,7 @@ class CronAPIs {
 
         const queries = {};
         data.hits.hits.forEach(function (item) {
+          if (item._id === 'primary-viewer') { return; }
           queries[item._id] = item._source;
         });
 
@@ -708,3 +762,4 @@ class CronAPIs {
 }
 
 module.exports = CronAPIs;
+const HuntAPIs = require('./apiHunts');

@@ -2039,20 +2039,6 @@ async function main () {
   createActions('field-actions', 'makeFieldActions', 'fieldActions');
   setInterval(() => createActions('field-actions', 'makeFieldActions', 'fieldActions'), 150 * 1000); // Check every 2.5 minutes
 
-  if (Config.get('cronQueries', false)) { // this viewer will process the cron queries
-    console.log('This node will process Periodic Queries (CRON), delayed by', internals.cronTimeout, 'seconds');
-    setInterval(CronAPIs.processCronQueries, 60 * 1000);
-    setTimeout(CronAPIs.processCronQueries, 1000);
-    setInterval(HuntAPIs.processHuntJobs, 10000);
-  } else if (!Config.get('multiES', false)) {
-    const info = await Db.getQueriesNode();
-    if (info.node === undefined) {
-      console.log(`WARNING - No cronQueries=true found in ${Config.getConfigFile()}, one and only one node MUST have cronQueries=true set for cron/hunts to work`);
-    } else if (Date.now() - info.updateTime > 2 * 60 * 1000) {
-      console.log(`WARNING - cronQueries=true node '${info.node}' hasn't checked in lately, cron/hunts might be broken`);
-    }
-  }
-
   let server;
   if (Config.isHTTPS()) {
     const cryptoOption = require('crypto').constants.SSL_OP_NO_TLSv1;
@@ -2134,7 +2120,7 @@ Db.initialize({
   usersEsApiKey: Config.get('usersElasticsearchAPIKey', null),
   esBasicAuth: Config.get('elasticsearchBasicAuth', null),
   usersEsBasicAuth: Config.get('usersElasticsearchBasicAuth', null),
-  cronQueries: Config.get('cronQueries', false),
+  isPrimaryViewer: CronAPIs.isPrimaryViewer,
   getCurrentUserCB: UserAPIs.getCurrentUserCB,
   maxConcurrentShardRequests: Config.get('esMaxConcurrentShardRequests')
 }, main);

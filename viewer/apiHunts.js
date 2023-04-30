@@ -12,6 +12,7 @@ const User = require('../common/user');
 const internals = require('./internals');
 const ViewerUtils = require('./viewerUtils');
 const SessionAPIs = require('./apiSessions');
+const CronAPIs = require('./apiCrons');
 
 class HuntAPIs {
   // --------------------------------------------------------------------------
@@ -616,7 +617,7 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
   // Kick off the process of running a hunt job
   // cb is optional and is called either when a job has been started or end of function
   static async processHuntJobs (cb) {
-    if (!Config.get('cronQueries', false)) {
+    if (!CronAPIs.isPrimaryViewer()) {
       return;
     }
 
@@ -927,7 +928,7 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
         }
 
         // don't add the running job to the queue
-        if (hunt.status === 'running' && (!Config.get('cronQueries', false) || internals.runningHuntJob)) {
+        if (hunt.status === 'running' && (!CronAPIs.isPrimaryViewer() || internals.runningHuntJob)) {
           runningJob = hunt;
           if (req.query.all !== undefined) {
             continue;

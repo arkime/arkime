@@ -29,7 +29,12 @@ NOTICE: Restart wiseService before capture when upgrading
 NOTICE: Cross-cluster Shortcuts require you to not restart all your viewers at once after upgrading
 
 4.3.1 2023/05/xx
+  - BREAKING - If running mixed versions of Arkime, broken cron queries error
+               might show on OLD version
   - release - fix ubuntu22 kafka dep
+  - viewer - new auto cronQueries setting
+  - viewer - change where primary viewer info is stored to not cause constant 
+             mapping change
 
 4.3.0 2023/04/27
   - BREAKING - Only SuperAdmin can assign *Admin roles now

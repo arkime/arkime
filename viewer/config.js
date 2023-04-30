@@ -140,6 +140,9 @@ exports.getFull = function (node, key, defaultValue) {
   if (value === 'false') {
     return false;
   }
+  if (value === 'true') {
+    return true;
+  }
   return value;
 };
 
