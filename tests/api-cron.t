@@ -1,4 +1,4 @@
-use Test::More tests => 24;
+use Test::More tests => 26;
 use Cwd;
 use MolochTest;
 use JSON;
@@ -81,6 +81,14 @@ ok(!$json->{success}, "shared user cannot delete query");
 # can delete periodic queries
 $json = viewerDeleteToken("/api/cron/$key", $token);
 ok($json->{success}, "query can be deleted");
+
+# can not update primary-viewer periodic query
+$json = viewerPostToken("/api/cron/primary-viewer", '{"name":"test1update","query":"protocols == tls","action":"tag","tags":"tls","users":"test2,test3"}', $token);
+eq_or_diff($json, from_json('{"text": "Bad query key", "success": false}'));
+
+# can not delete primary-viewer periodic queries
+$json = viewerDeleteToken("/api/cron/primary-viewer", $token);
+eq_or_diff($json, from_json('{"text": "Bad query key", "success": false}'));
 
 # cleanup
 $json = viewerDeleteToken("/api/cron/$key2?molochRegressionUser=test1", $test1Token);
