@@ -49,8 +49,6 @@ class CronAPIs {
       setInterval(CronAPIs.#updatePrimaryViewer, 45 * 1000, false);
       setInterval(CronAPIs.#runPrimaryViewer, 60 * 1000);
     } else if (Config.get('cronQueries') === true) {
-      CronAPIs.#primaryViewer = true;
-      console.log('This node will process Periodic Queries (CRON), delayed by', internals.cronTimeout, 'seconds');
       setTimeout(CronAPIs.#updatePrimaryViewer, 1000, true);
       setInterval(CronAPIs.#updatePrimaryViewer, 120 * 1000, true);
       setInterval(CronAPIs.#runPrimaryViewer, 60 * 1000);

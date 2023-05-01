@@ -189,7 +189,6 @@ exports.initialize = async (info, cb) => {
   }
 
   internals.localShortcutsIndex = fixIndex('lookups');
-
   if (internals.info.usersHost && internals.usersPrefix !== undefined) {
     internals.remoteShortcutsIndex = `${internals.usersPrefix}lookups`;
   } else { // there is no remote shorcuts index, just set it to local
@@ -1194,8 +1193,10 @@ async function setShortcutsVersion () {
 // if there's a users es set, then the shortcuts are saved in the remote db
 // so they need to be periodically updated in the local db for searching by shortcuts to work
 exports.updateLocalShortcuts = async () => {
-  if (!internals.info.usersHost || !internals.info.isPrimaryViewer || !internals.info.isPrimaryViewer() ||
-    !(internals.info.host !== internals.info.usersHost && internals.info.prefix !== internals.info.usersPrefix)) {
+  if (!internals.info.usersHost ||
+     !internals.info.isPrimaryViewer || // If no isPrimaryViewer then we aren't actually viewer, dont do this
+    !internals.info.isPrimaryViewer() ||
+    internals.info.host === internals.info.usersHost) {
     return;
   }
 
