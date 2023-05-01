@@ -38,7 +38,6 @@ const internals = {
   masterCache: {},
   qInProgress: 0,
   q: [],
-  doShortcutsUpdates: false,
   remoteShortcutsIndex: undefined,
   localShortcutsIndex: undefined,
   localShortcutsVersion: -1 // always start with -1 so there's an initial sync of shortcuts from user's es db
@@ -189,20 +188,8 @@ exports.initialize = async (info, cb) => {
     setInterval(() => { exports.getAliasesCache(['sessions2-*', 'sessions3-*']); }, 2 * 60 * 1000);
   }
 
-  // if there's a user's db and cronQueries is set, sync shortcuts from user's
-  // to local db so they can be used for sessions search
-  // (can't use remote db for searching via shortcuts)
   internals.localShortcutsIndex = fixIndex('lookups');
-  if (internals.info.usersHost && internals.info.cronQueries) {
-    internals.remoteShortcutsIndex = `${internals.usersPrefix}lookups`;
-    // make sure the remote es is not the same as local es
-    if (info.host !== info.usersHost && info.prefix !== info.usersPrefix) {
-      // only need to sync and update if the es' are different
-      internals.doShortcutsUpdates = true; // for updating if editing shortcuts locally
-      exports.updateLocalShortcuts(); // immediately update shortcuts
-      setInterval(() => { exports.updateLocalShortcuts(); }, 60000); // and every minute
-    }
-  } else if (internals.info.usersHost && internals.usersPrefix !== undefined) {
+  if (internals.info.usersHost && internals.usersPrefix !== undefined) {
     internals.remoteShortcutsIndex = `${internals.usersPrefix}lookups`;
   } else { // there is no remote shorcuts index, just set it to local
     internals.remoteShortcutsIndex = internals.localShortcutsIndex;
@@ -1206,6 +1193,13 @@ async function setShortcutsVersion () {
 // if there's a users es set, then the shortcuts are saved in the remote db
 // so they need to be periodically updated in the local db for searching by shortcuts to work
 exports.updateLocalShortcuts = async () => {
+  if (!internals.info.usersHost ||
+     !internals.info.isPrimaryViewer || // If no isPrimaryViewer then we aren't actually viewer, dont do this
+    !internals.info.isPrimaryViewer() ||
+    internals.info.host === internals.info.usersHost) {
+    return;
+  }
+
   if (internals.multiES) { return; } // don't sync shortcuts for multies
 
   const msg = `updating local shortcuts (${internals.info.host}/${internals.localShortcutsIndex}) from remote (${internals.info.usersHost}/${internals.remoteShortcutsIndex})`;
@@ -1313,7 +1307,7 @@ exports.createShortcut = async (doc) => {
   const response = await internals.usersClient7.index({
     index: internals.remoteShortcutsIndex, body: doc, refresh: 'wait_for', timeout: '10m'
   });
-  if (internals.doShortcutsUpdates) { exports.updateLocalShortcuts(); }
+  exports.updateLocalShortcuts();
   return response;
 };
 exports.deleteShortcut = async (id) => {
@@ -1322,7 +1316,7 @@ exports.deleteShortcut = async (id) => {
   const response = await internals.usersClient7.delete({
     index: internals.remoteShortcutsIndex, id, refresh: true
   });
-  if (internals.doShortcutsUpdates) { exports.updateLocalShortcuts(); }
+  exports.updateLocalShortcuts();
   return response;
 };
 exports.setShortcut = async (id, doc) => {
@@ -1331,7 +1325,7 @@ exports.setShortcut = async (id, doc) => {
   const response = await internals.usersClient7.index({
     index: internals.remoteShortcutsIndex, body: doc, id, refresh: true, timeout: '10m'
   });
-  if (internals.doShortcutsUpdates) { exports.updateLocalShortcuts(); }
+  exports.updateLocalShortcuts();
   return response;
 };
 exports.getShortcut = async (id) => {
@@ -1897,23 +1891,86 @@ exports.putTemplate = async (templateName, body) => {
   return internals.client7.indices.putTemplate({ name: fixIndex(templateName), body });
 };
 
-exports.setQueriesNode = async (node) => {
-  internals.client7.indices.putMapping({
-    index: fixIndex('queries'),
-    body: { _meta: { node, updateTime: Date.now() } }
-  });
+exports.setQueriesNode = async (node, force) => {
+  const namePid = `node-${process.pid}`;
+
+  // force is true we just rewrite the primary-viewer entry everytime
+  if (force) {
+    internals.client7.index({
+      id: 'primary-viewer',
+      index: fixIndex('queries'),
+      body: { name: namePid, lastRun: Date.now(), enabled: false }
+    });
+    return true;
+  }
+
+  // force is false. Try and update the previous record. If our record
+  // just update the time stamp. If not our record then take the record if
+  // timestamp is 1 min old. Otherwise noop.
+
+  const script = `
+    if (ctx._source.name == params.name) {
+      ctx._source.lastRun = ctx['_now'];
+    } else if (ctx['_now'] - ctx._source.lastRun >= 60000) {
+      ctx._source.lastRun = ctx['_now'];
+      ctx._source.name = params.name;
+    } else {
+      ctx.op = "none";
+    }
+  `;
+
+  const body = {
+    script: {
+      source: script,
+      lang: 'painless',
+      params: {
+        name: namePid
+      }
+    }
+  };
+  try {
+    const result = await internals.client7.update({
+      id: 'primary-viewer',
+      index: fixIndex('queries'),
+      body
+    });
+    return result.body.result === 'updated';
+  } catch (e) {
+    // There was no entry to update, just try and create a new record as ourself
+    try {
+      const result = await internals.client7.index({
+        id: 'primary-viewer',
+        index: fixIndex('queries'),
+        body: { name: namePid, lastRun: Date.now(), enabled: false },
+        op_type: 'create'
+      });
+      return result.body.result === 'created';
+    } catch (e2) {
+      return false;
+    }
+  }
 };
 
 exports.getQueriesNode = async () => {
-  const { body: doc } = await internals.client7.indices.getMapping({
-    index: fixIndex('queries')
-  });
+  try {
+    const { body: doc } = await internals.client7.get({
+      id: 'primary-viewer',
+      index: fixIndex('queries')
+    });
+    return {
+      node: doc._source?.name,
+      updateTime: doc._source?.lastRun
+    };
+  } catch (e) {
+    const { body: doc } = await internals.client7.indices.getMapping({
+      index: fixIndex('queries')
+    });
+    // Since queries is an alias we dont't know the real index name here
+    const meta = doc[Object.keys(doc)[0]].mappings._meta;
 
-  // Since queries is an alias we dont't know the real index name here
-  const meta = doc[Object.keys(doc)[0]].mappings._meta;
-
-  return {
-    node: meta?.node,
-    updateTime: meta?.updateTime
-  };
+    return {
+      node: meta?.node,
+      updateTime: meta?.updateTime
+    };
+  }
 };
