@@ -1,4 +1,4 @@
-use Test::More tests => 163;
+use Test::More tests => 168;
 use Cwd;
 use URI::Escape;
 use MolochTest;
@@ -120,6 +120,13 @@ doTest('ip.src != [1.2.3.4,$ipshortcut1,2.3.4.5:80]', qq({"bool":{"must_not":[{"
 doTest('ip.src != [$ipshortcut1,1.2.3.4,$ipshortcut2]', qq({"bool":{"must_not":[{"term":{"source.ip":"1.2.3.4"}},{"terms":{"source.ip":{"index":"tests_lookups","path":"ip","id":"$ipshortcut1"}}},{"terms":{"source.ip":{"index":"tests_lookups","path":"ip","id":"$ipshortcut2"}}}]}}));
 
 doTest('ip.src == ]$ipshortcut1[', q(]$ipshortcut1[ - AND array not supported with shortcuts));
+
+doTest('ip.src == 1::2', qq({"term":{"source.ip":"1::2"}}));
+doTest('ip.src == 1::2.80', qq({"bool":{"filter":[{"term":{"source.ip":"1::2"}},{"term":{"source.port":"80"}}]}}));
+doTest('ip.src == 1::2/8.80', qq({"bool":{"filter":[{"term":{"source.ip":"1::2/8"}},{"term":{"source.port":"80"}}]}}));
+doTest('ip.src == 1:2:3', qq({"term":{"source.ip":"1:2:3::/48"}}));
+doTest('ip.src == 1:2:3.80', qq({"bool":{"filter":[{"term":{"source.ip":"1:2:3::/48"}},{"term":{"source.port":"80"}}]}}));
+
 
 #### IP
 
