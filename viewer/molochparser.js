@@ -454,8 +454,7 @@ function parseIpPort (yy, field, ipPortStr) {
   let port = -1;
   const colons = ipPortStr.split(':');
 
-  // More then 1 colon is ip 6
-  if (colons.length > 2) {
+  if (ipPortStr.includes('::')) { // Double colon is ip6 with 0 filled
     // Everything after . is port
     const dots = ipPortStr.split('.');
     if (dots.length > 1 && dots[1] !== '') {
@@ -463,6 +462,37 @@ function parseIpPort (yy, field, ipPortStr) {
     }
     // Everything before . is ip and slash
     ip = dots[0];
+  } else if (colons.length > 2) { // More than 1 colon is ip6 
+    // Everything after . is port
+    const dots = ipPortStr.split('.');
+    if (dots.length > 1 && dots[1] !== '') {
+      port = dots[1];
+    }
+
+    const slash = dots[0].split('/');
+    const colons2 = slash[0].split(':');
+
+    // If the last one is empty just pretend : isn't there, for auto complete
+    if (colons2[colons2.length - 1] === '') {
+      colons2.length--;
+    }
+
+    if (slash[1] === undefined) {
+      console.log(colons2.length, colons2, colons2.length, 16*colons2.length);
+      slash[1] = `${16*colons2.length}`;
+    }
+
+    if (colons2.length < 8) {
+      ip = colons2.join(':') + '::';
+    } else {
+      ip = colons2.join(':');
+    }
+
+
+    // Add the slash back to the ip
+    if (slash[1] && slash[1] !== '128') {
+      ip = `${ip}/${slash[1]}`;
+    }
   } else {
     // everything after : is port
     if (colons.length > 1 && colons[1] !== '') {
