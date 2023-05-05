@@ -12,7 +12,7 @@ shared:
         ARKIME_FILE_NAME: "main"
         GIT_SHALLOW_CLONE: false
         ASAN_OPTIONS: "fast_unwind_on_malloc=0"
-        RELEASE_ITERATION: 1
+        RELEASE_ITERATION: 2
 
 jobs:
     centos-7:
@@ -526,7 +526,7 @@ jobs:
             - cp -r capture/plugins/lua/samples /opt/arkime/lua
             - build-package: |
                 export ARKIME_VERSION=`sed 's/.*"\(.*\)\".*$/\1/' /opt/arkime/common/version.js | head -n 1`
-                fpm -s dir -t deb -n arkime -x opt/arkime/logs -x opt/arkime/raw -v $ARKIME_VERSION --iteration $RELEASE_ITERATION --template-scripts --after-install "release/afterinstall.sh" --url "https://arkime.com" --description "Arkime Full Packet System" -d libwww-perl -d libjson-perl -d ethtool -d libyaml-dev -d liblua5.4-0 -d libmaxminddb0 -d libcurl4 -d libpcap0.8 -d libglib2.0-0 -d libnghttp2-14 -d libyara8 -d libzstd1 -d librdkafka /opt/arkime
+                fpm -s dir -t deb -n arkime -x opt/arkime/logs -x opt/arkime/raw -v $ARKIME_VERSION --iteration $RELEASE_ITERATION --template-scripts --after-install "release/afterinstall.sh" --url "https://arkime.com" --description "Arkime Full Packet System" -d libwww-perl -d libjson-perl -d ethtool -d libyaml-dev -d liblua5.4-0 -d libmaxminddb0 -d libcurl4 -d libpcap0.8 -d libglib2.0-0 -d libnghttp2-14 -d libyara8 -d libzstd1 -d librdkafka1 /opt/arkime
                 aws s3 cp arkime_${ARKIME_VERSION}-${RELEASE_ITERATION}_amd64.deb s3://files.molo.ch/builds/ubuntu-22.04/ --acl public-read
 
         secrets:
