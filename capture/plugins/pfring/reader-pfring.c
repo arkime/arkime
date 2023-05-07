@@ -80,7 +80,7 @@ LOCAL void *reader_pfring_thread(void *posv)
         // Some kind of failure we quit
         if (unlikely(r <= 0)) {
             moloch_quit();
-            ring = 0;
+            rings[pos] = 0;
             break;
         }
     }

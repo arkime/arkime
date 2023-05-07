@@ -7,6 +7,7 @@ Type=simple
 Restart=on-failure
 StandardOutput=tty
 EnvironmentFile=-BUILD_ARKIME_INSTALL_DIR/etc/cont3xt.env
+# Modify BUILD_ARKIME_INSTALL_DIR/etc/cont3xt.env instead of ExecStart
 ExecStart=/bin/sh -c 'BUILD_ARKIME_INSTALL_DIR/bin/node cont3xt.js -c BUILD_ARKIME_INSTALL_DIR/etc/cont3xt.ini ${OPTIONS} >> BUILD_ARKIME_INSTALL_DIR/logs/cont3xt.log 2>&1'
 WorkingDirectory=BUILD_ARKIME_INSTALL_DIR/cont3xt
 

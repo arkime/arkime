@@ -60,7 +60,9 @@
 
 #define MOLOCH_API_VERSION 420
 
-#define MOLOCH_SESSIONID_LEN 37
+#define MOLOCH_SESSIONID_LEN  37
+#define MOLOCH_SESSIONID6_LEN 37
+#define MOLOCH_SESSIONID4_LEN 13
 
 #define MOLOCH_V6_TO_V4(_addr) (((uint32_t *)(_addr).s6_addr)[3])
 
@@ -80,8 +82,7 @@
 #define MOLOCH_IPPROTO_UNKNOWN 255
 #define MOLOCH_IPPROTO_CORRUPT 256
 #define MOLOCH_IPPROTO_MAX     257
-
-#define MOLOCH_SESSION_v6(s) ((s)->sessionId[0] == 37)
+#define MOLOCH_SESSION_v6(s) ((s)->sessionId[0] == MOLOCH_SESSIONID6_LEN)
 
 #define MOLOCH_VAR_ARG_STR_SKIP (char *)1LL
 #define MOLOCH_VAR_ARG_INT_SKIP (char *)0x7fffffffffffffffLL

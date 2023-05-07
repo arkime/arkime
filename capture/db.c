@@ -378,7 +378,7 @@ gchar *moloch_db_community_id(MolochSession_t *session)
 
     g_checksum_update(checksum, (guchar *)&seed, 2);
 
-    if (session->sessionId[0] == 37) {
+    if (MOLOCH_SESSION_v6(session)) {
         cmp = memcmp(session->sessionId+1, session->sessionId+19, 16);
 
         if (cmp < 0 || (cmp == 0 && session->port1 < session->port2)) {
