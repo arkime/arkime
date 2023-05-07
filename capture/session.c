@@ -70,21 +70,21 @@ LOCAL char                 stoppedFilename[PATH_MAX];
 extern uint64_t fuzzloch_sessionid;
 void moloch_session_id (uint8_t *buf, uint32_t UNUSED(addr1), uint16_t UNUSED(port1), uint32_t UNUSED(addr2), uint16_t UNUSED(port2))
 {
-    buf[0] = 13;
+    buf[0] = MOLOCH_SESSIONID4_LEN;
     memcpy(buf + 1, &fuzzloch_sessionid, sizeof(fuzzloch_sessionid));
-    memset(buf + 1 + sizeof(fuzzloch_sessionid), 0, 13 - 1 - sizeof(fuzzloch_sessionid));
+    memset(buf + 1 + sizeof(fuzzloch_sessionid), 0, MOLOCH_SESSIONID4_LEN - 1 - sizeof(fuzzloch_sessionid));
 }
 void moloch_session_id6 (uint8_t *buf, uint8_t UNUSED(*addr1), uint16_t UNUSED(port1), uint8_t UNUSED(*addr2), uint16_t UNUSED(port2))
 {
-    buf[0] = 37;
+    buf[0] = MOLOCH_SESSIONID6_LEN;
     memcpy(buf + 1, &fuzzloch_sessionid, sizeof(fuzzloch_sessionid));
-    memset(buf + 1 + sizeof(fuzzloch_sessionid), 0, 37 - 1 - sizeof(fuzzloch_sessionid));
+    memset(buf + 1 + sizeof(fuzzloch_sessionid), 0, MOLOCH_SESSIONID6_LEN - 1 - sizeof(fuzzloch_sessionid));
 }
 #else
 /******************************************************************************/
 void moloch_session_id (uint8_t *buf, uint32_t addr1, uint16_t port1, uint32_t addr2, uint16_t port2)
 {
-    buf[0] = 13;
+    buf[0] = MOLOCH_SESSIONID4_LEN;
     if (addr1 < addr2) {
         memcpy(buf+1, &addr1, 4);
         memcpy(buf+5, &port1, 2);
@@ -110,7 +110,7 @@ void moloch_session_id (uint8_t *buf, uint32_t addr1, uint16_t port1, uint32_t a
 /******************************************************************************/
 void moloch_session_id6 (uint8_t *buf, uint8_t *addr1, uint16_t port1, uint8_t *addr2, uint16_t port2)
 {
-    buf[0] = 37;
+    buf[0] = MOLOCH_SESSIONID6_LEN;
     int cmp = memcmp(addr1, addr2, 16);
     if (cmp < 0) {
         memcpy(buf+1, addr1, 16);
