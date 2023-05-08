@@ -2169,6 +2169,7 @@ function setupAuth () {
     mode: parliament.authMode,
     userNameHeader: parliament.authMode === 'digest' ? undefined : commonAuth.userNameHeader,
     passwordSecret: commonAuth.passwordSecret ?? 'password',
+    passwordSecretSection: 'parliament',
     userAuthIps: undefined,
     basePath: '/parliament/api/',
     authConfig: {

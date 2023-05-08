@@ -240,6 +240,7 @@ function setupAuth () {
     mode,
     userNameHeader,
     passwordSecret: getConfig('wiseService', 'passwordSecret', 'password'),
+    passwordSecretSection: 'wiseService',
     userAuthIps: getConfig('wiseService', 'userAuthIps'),
     caTrustFile: getConfig('wiseService', 'caTrustFile'),
     authConfig: {
