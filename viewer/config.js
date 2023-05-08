@@ -510,6 +510,7 @@ Auth.initialize({
   debug: exports.debug,
   basePath: exports.basePath(),
   passwordSecret: exports.getFull(internals.nodeName === 'cont3xt' ? 'cont3xt' : 'default', 'passwordSecret', 'password'),
+  passwordSecretSection: internals.nodeName === 'cont3xt' ? 'cont3xt' : 'default',
   serverSecret: exports.getFull('default', 'serverSecret'),
   userNameHeader: exports.get('userNameHeader'),
   requiredAuthHeader: exports.get('requiredAuthHeader'),
