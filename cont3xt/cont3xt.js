@@ -468,6 +468,7 @@ function setupAuth () {
     mode,
     userNameHeader,
     passwordSecret: getConfig('cont3xt', 'passwordSecret', 'password'),
+    passwordSecretSection: 'cont3xt',
     basePath: internals.webBasePath,
     requiredAuthHeader: getConfig('cont3xt', 'requiredAuthHeader'),
     requiredAuthHeaderVal: getConfig('cont3xt', 'requiredAuthHeaderVal'),

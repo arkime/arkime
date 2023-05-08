@@ -48,6 +48,7 @@ class Auth {
   static #authConfig;
   static #passportAuthOptions = { session: false };
   static #caTrustCerts;
+  static #passwordSecretSection;
   static #app;
 
   // ----------------------------------------------------------------------------
@@ -94,6 +95,7 @@ class Auth {
     Auth.mode = options.mode ?? 'anonymous';
     Auth.#basePath = options.basePath ?? '/';
     Auth.#userNameHeader = options.userNameHeader;
+    Auth.#passwordSecretSection = options.passwordSecretSection ?? 'default';
     Auth.passwordSecret = options.passwordSecret ?? 'password';
     Auth.passwordSecret256 = crypto.createHash('sha256').update(Auth.passwordSecret).digest();
     if (options.serverSecret) {
@@ -644,7 +646,7 @@ class Auth {
         return d;
       }
     } catch (e) {
-      console.log("passwordSecret set in the [default] section can not decrypt information.  Make sure passwordSecret is the same for all nodes. You may need to re-add users if you've changed the secret.", e);
+      console.log(`passwordSecret set in the [${Auth.#passwordSecretSection}] section can not decrypt information.  Make sure passwordSecret is the same for all nodes/applications. You may need to re-add users if you've changed the secret.`, e);
       process.exit(1);
     }
   };
