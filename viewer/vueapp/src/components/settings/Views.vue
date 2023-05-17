@@ -119,7 +119,7 @@
             </span>
           </td>
           <td>
-            <span class="pull-right">
+            <span class="pull-right no-wrap">
               <b-button
                 size="sm"
                 v-b-tooltip.hover
