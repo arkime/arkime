@@ -72,6 +72,13 @@ class TwilioIntegration extends Integration {
       {
         tooltip: 'carrier type',
         field: 'carrier.type'
+      },
+      {
+        field: 'country_code',
+        postProcess: [
+          'countryEmoji',
+          { template: '<value> <data.country_code>' }
+        ]
       }
     ]
   };

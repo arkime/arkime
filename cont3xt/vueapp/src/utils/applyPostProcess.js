@@ -34,8 +34,8 @@ const pathInto = (value, { param: fieldOrPath }) => {
   return value;
 };
 
-const template = (value, { param: templateStr }, _, data) => {
-  return applyTemplate(templateStr, { value, data });
+const template = (value, { param: templateStr }, shared) => {
+  return applyTemplate(templateStr, { value, data: shared.data });
 };
 
 const wildcardRegex = (value) => {
