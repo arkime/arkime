@@ -363,7 +363,7 @@ my ($cmd) = @_;
             system("cd ../parliament ; $node parliament.js --regressionTests -c /dev/null > /dev/null 2>&1 &");
             system("cd ../parliament ; $node parliament.js --regressionTests -c ../tests/parliament.dev.json --port 8009 > /dev/null 2>&1 &");
             system("cd ../cont3xt ; $node cont3xt.js $ces $cues --regressionTests -c ../tests/cont3xt.tests.ini $INSECURE > /dev/null 2>&1 &");
-            system("cd ../viewer ; $node --trace-warnings esProxy.js --regressionTests $es -c ../tests/config.test.ini -n esproxy --debug $INSECURE > > /dev/null 2>&1 &");
+            system("cd ../viewer ; $node --trace-warnings esProxy.js --regressionTests $es -c ../tests/config.test.ini -n esproxy --debug $INSECURE >> /dev/null 2>&1 &");
         }
         sleep (10000) if ($cmd eq "--viewerhang");
     }
@@ -372,7 +372,6 @@ my ($cmd) = @_;
     waitFor($MolochTest::host, 8124);
     waitFor($MolochTest::host, 8125);
     waitFor($MolochTest::host, 8008);
-    waitFor($MolochTest::host, 8009);
     waitFor($MolochTest::host, 3218);
     waitFor($MolochTest::host, 7200);
     sleep 1;
