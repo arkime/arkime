@@ -934,7 +934,7 @@ class SessionAPIs {
     }, (err, session) => {
       if (err) {
         res.status(500);
-        if (!Config.get('regressionTests', false)) {
+        if (!Config.regressionTests) {
           console.trace('writePcap', err);
         }
         return doneCb(err);

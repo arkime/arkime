@@ -190,7 +190,7 @@ app.use(['/assets', '/logos'], express.static(
 ), ArkimeUtil.missingResource);
 
 // regression test methods, before auth checks --------------------------------
-if (Config.get('regressionTests')) {
+if (Config.regressionTests) {
   // Override default lastUsed min write internal for tests
   User.lastUsedMinInterval = 1000;
 
@@ -277,8 +277,8 @@ if (Config.get('passwordSecret')) {
     }
     next();
   });
-} else if (Config.get('regressionTests', false)) {
-  console.log('WARNING - The setting "regressionTests" is set to true, do NOT use in production, for testing only');
+} else if (Config.regressionTests) {
+  console.log('WARNING - Option --regressionTests was used, do NOT use in production, for testing only');
   internals.noPasswordSecret = true;
 } else {
   /* Shared password isn't set, who cares about auth, db is only used for settings */
@@ -1960,7 +1960,7 @@ app.use(cspHeader, setCookie, (req, res) => {
     huntWarn: Config.get('huntWarn', 100000),
     huntLimit: limit,
     nonce: res.locals.nonce,
-    anonymousMode: !!internals.noPasswordSecret && !Config.get('regressionTests', false),
+    anonymousMode: !!internals.noPasswordSecret && !Config.regressionTests,
     businesDayStart: Config.get('businessDayStart', false),
     businessDayEnd: Config.get('businessDayEnd', false),
     businessDays: Config.get('businessDays', '1,2,3,4,5'),
