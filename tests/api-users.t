@@ -334,11 +334,11 @@ my $json;
 
     # not a user:
     $json = viewerGet("/api/fieldActions?molochRegressionUser=test100");
-    eq_or_diff($json, from_json('{}'), 'not a fieldActions user:');
+    eq_or_diff($json, from_json('{"ALLTESTWISE":{"url":"http:/www.example.com","all":true,"name":"AllWiseTest"},"ALLTEST":{"name":"All Field Action %FIELDNAME%!","url":"https://www.asdf.com?expression=%EXPRESSION%&date=%DATE%&field=%FIELD%&dbField=%DBFIELD%","all":true}}'), 'not a fieldActions user:');
 
     # notUser:
     $json = viewerGet("/api/fieldActions?molochRegressionUser=test101");
-    eq_or_diff($json, from_json('{}'), 'notUser fieldActions');
+    eq_or_diff($json, from_json('{"ALLTEST":{"url":"https://www.asdf.com?expression=%EXPRESSION%&date=%DATE%&field=%FIELD%&dbField=%DBFIELD%","all":true,"name":"All Field Action %FIELDNAME%!"},"ALLTESTWISE":{"url":"http:/www.example.com","all":true,"name":"AllWiseTest"}}'), 'notUser fieldActions');
 
 # state tests
     $json = viewerPostToken("/api/user/state/state1?molochRegressionUser=test1", '{"order":"test","visibleHeaders":["firstPacket","lastPacket","src","srcPort","dst","dstPort","totPackets","dbby","node"]}', $test1Token);

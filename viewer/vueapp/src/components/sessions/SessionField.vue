@@ -523,7 +523,8 @@ export default {
       for (const key in this.molochClickables) {
         if (this.molochClickables[key]) {
           const rc = this.molochClickables[key];
-          if ((!rc.category || !info.category || info.category.filter(x => rc.category.includes(x)).length === 0) &&
+          if (rc.all !== true &&
+             (!rc.category || !info.category || info.category.filter(x => rc.category.includes(x)).length === 0) &&
              (!rc.fields || rc.fields.indexOf(info.field) === -1)) {
             continue;
           }
