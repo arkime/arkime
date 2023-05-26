@@ -689,7 +689,7 @@ function fillQueryFromBody (req, res, next) {
     req.query = query;
   }
   if (Config.debug > 1) {
-    console.log(`${req.url} query`, req.query);
+    console.log('%s query: %s', ArkimeUtil.sanitizeStr(req.url), ArkimeUtil.sanitizeStr(req.query));
   }
   next();
 }
