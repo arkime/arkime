@@ -403,7 +403,7 @@ class ConnectionAPIs {
             }
 
             let nodeKeys = Object.keys(nodesHash);
-            if (Config.get('regressionTests', false)) {
+            if (Config.regressionTests) {
               nodeKeys = nodeKeys.sort((a, b) => {
                 return nodesHash[a].id.localeCompare(nodesHash[b].id);
               });
