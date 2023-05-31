@@ -29,8 +29,13 @@ NOTICE: Restart wiseService before capture when upgrading
 NOTICE: Cross-cluster Shortcuts require you to not restart all your viewers at once after upgrading
 
 4.3.2 2023/05/xx
-  - release - cyberchef 10.4.0
+  - release - cyberchef 10.4.0 libpcap 1.10.4
+  - cont3xt - add twilio country code tidbit
+  - cont3xt - add httpRealm to sample config
+  - esproxy - add tests
   - viewer/wise - Field/Value actions now support all:true to show on every instance
+  - viewer - Fix Src/Dst mouse over for packets/bytes
+  - viewer - Field Actions didn't work in expanded meta
 
 4.3.1 2023/05/08
   - BREAKING - If running mixed versions of Arkime, broken cron queries error
