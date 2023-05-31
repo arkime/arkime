@@ -9,7 +9,7 @@ const RE2 = require('re2');
 // build internals
 const internals = {
   isProduction: false,
-  CYBERCHEFVERSION: '9.55.0',
+  CYBERCHEFVERSION: '10.4.0',
   elasticBase: Config.getArray('elasticsearch', ',', 'http://localhost:9200'),
   remoteClusters: Config.configMap('remote-clusters', 'moloch-clusters'),
   esQueryTimeout: Config.get('elasticsearchTimeout', 5 * 60) + 's',
