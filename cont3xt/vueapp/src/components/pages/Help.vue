@@ -102,6 +102,10 @@
           Most integrations require API keys (and some require more data) in order to use them.
           Integrations are configured per user, not per Cont3xt application.
           Therefore <strong>every user must update this page for the application to work as intended.</strong>
+          Alternatively, it is possible to set keys globally in the config file (<code>cont3xt.ini</code>).
+          In that case a globe (<span class="fa fa-globe"></span>) will appear.
+          This method is not recommended as some integrations have a maximum number of API requests
+          and this could burn through them quickly if you have many users.
         </p>
         <p>
           Check the disabled checkbox to disable integrations.
