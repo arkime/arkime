@@ -274,6 +274,12 @@
         </div>
         <div class="d-flex flex-wrap">
           <template v-if="!rawIntegrationSettings">
+            <div class="row lead mt-4"
+              v-if="Object.keys(sortedFilteredIntegrationSettings).length === 0">
+              <div class="col">
+                No Integrations match your search.
+              </div>
+            </div>
             <div
               :key="key"
               class="w-25 p-2"
@@ -479,6 +485,7 @@
 </template>
 
 <script>
+import Vue from 'vue';
 import { mapGetters } from 'vuex';
 
 import ReorderList from '@/utils/ReorderList';
@@ -588,10 +595,10 @@ export default {
 
       for (const key in this.integrationSettings) {
         if (key.toString().toLowerCase().match(query)?.length > 0) {
-          this.filteredIntegrationSettings[key] = JSON.parse(JSON.stringify(this.integrationSettings[key]));
+          this.$set(this.filteredIntegrationSettings, key, JSON.parse(JSON.stringify(this.integrationSettings[key])));
           continue;
         }
-        delete this.filteredIntegrationSettings[key];
+        Vue.delete(this.filteredIntegrationSettings, key);
       }
     },
     viewSearchTerm (searchTerm) {

@@ -465,6 +465,8 @@
             <li>Send the selected data to another system for further analysis.</li>
             <li>Scrub packet data by overwriting the packets (if a user has data removal privileges).</li>
             <li>Delete SPI and PCAP data entirely (if a user has data removal privileges).</li>
+            <li>Export an intersection of fields that runs an aggregation of multiple unique fields. This opens a new tab with text results.</li>
+            <li>Create Periodic Query opens a new tab directly to the periodic query section of the settings page.</li>
           </ol>
           Each of these options may be applied to the sessions which have been opened (by clicking the sessions + box),
           any items visible (on the current page), or all items which have matched the query string.
@@ -571,6 +573,10 @@
         as well as deep dive analysis. For example, if you wanted to chart all of the currently recorded http.users within your current time window, select http.user from the SPI Graph selection typeahead.
         Data will be displayed based upon count of observances over the time period. Increasing the Max Elements setting will allow an analyst to see additional items if the investigated SPI type is noisy.
         An analyst can sort by either the noisiest value (graph) or by alphabetical order (name). This page also has the ability to update every X seconds.
+      </p>e name of the hun
+      <p>
+        This page also includes pie, table, and treemap views of the data. This data can be layered similar to the export intersection functionality in the action menu dropdown.
+        This runs an aggregation of multiple unique fields and displays the data in the visualization of your choice.
       </p>
 
       <hr>
@@ -699,6 +705,8 @@
         <dl class="dl-horizontal dl-horizontal-wide">
           <dt>Name</dt>
           <dd>The name of the hunt (multiple hunts can have the same name)</dd>
+          <dt>Description</dt>
+          <dd>The description of the hunt (useful when sharing)</dd>
           <dt>Max number of packets to examine per session</dt>
           <dd>The maximum number of packets that the hunt will search within each session</dd>
           <dt>Notify</dt>
@@ -709,6 +717,8 @@
           <dd>Whether to search source or destination packets, or both. Must select at least one.</dd>
           <dt>Search raw/reassembled packets</dt>
           <dd>Whether to search raw or reassembled packets</dd>
+          <dt>Roles</dt>
+          <dd>The roles that can view the results.</dd>
           <dt>Users</dt>
           <dd>A comma separated list of users to be added to the hunt so they can view the results.</dd>
         </dl>
@@ -1105,7 +1115,6 @@
         </h6>
         <p>
           Here, a user can manage their saved views by updating, deleting, or sharing them.
-          Sharing a view allows all other users to use that view (only admins can edit it).
           A user can also create a new view in this section.
           See the <a href="help#views" class="no-decoration">Views</a> section for more information.
         </p>
