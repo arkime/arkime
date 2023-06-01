@@ -196,8 +196,6 @@ export default {
     }
   },
   mounted: function () {
-    AuthService.hasAuth();
-    AuthService.isLoggedIn();
     this.loadRefreshInterval();
 
     if (localStorage.getItem('parliamentTheme')) {

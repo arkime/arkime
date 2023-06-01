@@ -1181,7 +1181,7 @@ if (app.get('regressionTests')) {
 }
 
 // Authenticate user
-router.post('/auth', setCookie, (req, res, next) => {
+router.post('/auth', (req, res, next) => {
   if (app.get('dashboardOnly')) {
     return next(newError(403, 'Your Parliament is in dashboard only mode. You cannot login.'));
   }
