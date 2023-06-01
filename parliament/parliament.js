@@ -277,7 +277,7 @@ app.use(cspHeader);
 function setCookie (req, res, next) {
   if (parliament.authMode) {
     const cookieOptions = {
-      path: '/parliament',
+      path: '/',
       sameSite: 'Strict',
       overwrite: true
     };
@@ -1181,7 +1181,7 @@ if (app.get('regressionTests')) {
 }
 
 // Authenticate user
-router.post('/auth', (req, res, next) => {
+router.post('/auth', setCookie, (req, res, next) => {
   if (app.get('dashboardOnly')) {
     return next(newError(403, 'Your Parliament is in dashboard only mode. You cannot login.'));
   }
