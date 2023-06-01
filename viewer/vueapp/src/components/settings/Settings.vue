@@ -1389,6 +1389,7 @@
 </template>
 
 <script>
+import CommonUserService from '../../../../../common/vueapp/UserService';
 import UserService from '../users/UserService';
 import FieldService from '../search/FieldService';
 import SettingsService from './SettingsService';
@@ -1901,7 +1902,7 @@ export default {
         currentPassword: this.currentPassword
       };
 
-      UserService.changePassword(data, this.userId).then((response) => {
+      CommonUserService.changePassword(data, this.userId).then((response) => {
         this.changePasswordError = false;
         this.currentPassword = null;
         this.newPassword = null;

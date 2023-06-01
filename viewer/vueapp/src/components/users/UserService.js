@@ -68,29 +68,6 @@ export default {
   },
 
   /**
-   * Determines whether a user has role to perform a specific task
-   * @param {string} role The role in question.
-   * @returns {boolean} true if all roles are included
-   */
-  hasRole (role) {
-    const user = store.state.user;
-    if (!user) { return false; }
-    const roles = role.split(',');
-    for (let r of roles) {
-      let reverse = false;
-      if (r.startsWith('!')) {
-        reverse = true;
-        r = r.substr(1);
-      }
-      if ((!reverse && !user.roles.includes(r)) ||
-        (reverse && user.roles.includes(r))) {
-        return false;
-      }
-    }
-    return true;
-  },
-
-  /**
    * Gets a user's settings
    * @param {string} userId     The unique identifier for a user
    *                            (only required if not the current user)
@@ -370,33 +347,6 @@ export default {
           resolve(response.data);
         }, (error) => {
           reject(error.data);
-        });
-    });
-  },
-
-  /**
-   * Changes current user's password
-   * @param {object} data       The data to send to the server
-   *                            { userId, currentPassword, newPassword }
-   * @param {string} userId     The unique identifier for a user
-   *                            (only required if not the current user)
-   * @returns {Promise} Promise A promise object that signals the completion
-   *                            or rejection of the request.
-   */
-  changePassword (data, userId) {
-    return new Promise((resolve, reject) => {
-      const options = {
-        url: 'api/user/password',
-        method: 'POST',
-        data,
-        params: { userId }
-      };
-
-      Vue.axios(options)
-        .then((response) => {
-          resolve(response.data);
-        }, (error) => {
-          reject(error);
         });
     });
   },
