@@ -277,7 +277,7 @@ app.use(cspHeader);
 function setCookie (req, res, next) {
   if (parliament.authMode) {
     const cookieOptions = {
-      path: '/',
+      path: '/parliament',
       sameSite: 'Strict',
       overwrite: true
     };
