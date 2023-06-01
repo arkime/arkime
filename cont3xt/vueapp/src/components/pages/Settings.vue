@@ -496,6 +496,7 @@ import CreateViewModal from '@/components/views/CreateViewModal';
 import Cont3xtService from '@/components/services/Cont3xtService';
 import CreateLinkGroupModal from '@/components/links/CreateLinkGroupModal';
 import LinkService from '@/components/services/LinkService';
+import CommonUserService from '../../../../../common/vueapp/UserService';
 
 let timeout;
 
@@ -839,7 +840,7 @@ export default {
         currentPassword: this.currentPassword
       };
 
-      UserService.changePassword(data).then((response) => {
+      CommonUserService.changePassword(data).then((response) => {
         this.newPassword = null;
         this.currentPassword = null;
         this.confirmNewPassword = null;

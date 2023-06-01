@@ -157,7 +157,7 @@ export default {
       let reverse = false;
       if (r.startsWith('!')) {
         reverse = true;
-        r = r.substr(1);
+        r = r.substring(1);
       }
       if ((!reverse && !user.roles.includes(r)) ||
         (reverse && user.roles.includes(r))) {
