@@ -23,6 +23,7 @@
 #include <fcntl.h>
 #include <inttypes.h>
 #include <errno.h>
+#include <limits.h>
 
 extern MolochConfig_t        config;
 
@@ -471,7 +472,7 @@ void moloch_config_load()
 
     config.prefix           = moloch_config_str(keyfile, "prefix", "arkime_");
     int len = strlen(config.prefix);
-    if (len > 0 && config.prefix[len - 1] != '_') {
+    if (len > 0 && len < INT_MAX && config.prefix[len - 1] != '_') {
         char *tmp  = malloc(len + 2);
         memcpy(tmp, config.prefix, len);
         tmp[len] = '_';
