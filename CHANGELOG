@@ -28,8 +28,9 @@ Node Versions:
 NOTICE: Restart wiseService before capture when upgrading
 NOTICE: Cross-cluster Shortcuts require you to not restart all your viewers at once after upgrading
 
-4.3.2 2023/05/xx
+4.3.2 2023/06/xx
   - release - cyberchef 10.4.0 libpcap 1.10.4
+  - all - config 'prefix' can be at most 50 characters
   - cont3xt - add twilio country code tidbit
   - cont3xt - add httpRealm to sample config
   - esproxy - add tests

@@ -471,6 +471,8 @@ void moloch_config_load()
 
     config.prefix           = moloch_config_str(keyfile, "prefix", "arkime_");
     int len = strlen(config.prefix);
+    if (len > 50)
+        CONFIGEXIT("prefix can be at most 50 characters long");
     if (len > 0 && config.prefix[len - 1] != '_') {
         char *tmp  = malloc(len + 2);
         memcpy(tmp, config.prefix, len);
