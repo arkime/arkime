@@ -49,16 +49,7 @@ const store = new Vuex.Store({
     tagDisplayCollapsed: true,
     seeAllViews: false,
     seeAllLinkGroups: false,
-    overviewCardMap: {
-      domain: {
-        title: 'Overview of %{query}',
-        fields: [
-          { from: 'Whois', field: 'updatedDate' },
-          { from: 'Whois', field: 'aa' },
-          { from: 'Whois', field: 'createdDate' }
-        ]
-      }
-    }
+    overviewCardMap: {}
   },
   mutations: {
     SET_USER (state, data) {
@@ -264,7 +255,7 @@ const store = new Vuex.Store({
       return state.renderingCard;
     },
     getWaitRendering (state) {
-      return state.getWaitRendering;
+      return state.waitRendering;
     },
     getRenderingTable (state) {
       return state.renderingTable;
@@ -401,7 +392,6 @@ const store = new Vuex.Store({
     paths: [ // only these state variables are persisted to localstorage
       'checkedLinks', 'selectedIntegrations', 'sidebarKeepOpen',
       'collapsedLinkGroups', 'integrationsPanelHoverDelay', 'theme'
-      // 'overviewCardMap' TODO toby
     ]
   })]
 });

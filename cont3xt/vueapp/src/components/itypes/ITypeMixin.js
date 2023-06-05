@@ -2,6 +2,7 @@ import { formatValue } from '@/utils/formatValue';
 import { mapGetters } from 'vuex';
 import { applyTemplate } from '@/utils/applyTemplate';
 import { applyPostProcess } from '@/utils/applyPostProcess';
+import { gatherIntegrationData } from '@/utils/gatherIntegrationData';
 
 export const ITypeMixin = {
   computed: {
@@ -71,7 +72,7 @@ export const ITypeMixin = {
       return uniqueTidbits;
     },
     integrationData () {
-      return this.gatherIntegrationData(this.data, this.itype, this.query);
+      return gatherIntegrationData(this.data, this.itype, this.query);
     }
   },
   methods: {
@@ -90,15 +91,6 @@ export const ITypeMixin = {
       const uiSettings = this.getIntegrations[integration].uiSettings;
       // apply any post processors
       return applyPostProcess(postProcess, value, { data, uiSettings });
-    },
-    gatherIntegrationData (data, itype, query) { // restructures data into the shape {[integrationName]: data}
-      const iTypeStub = data?.[itype] || {};
-      const integrationPairs = Object.entries(iTypeStub)
-        .filter(([key, _]) => key !== '_query')
-        .map(([integrationName, dataEntryArray]) => [integrationName, dataEntryArray?.find(dataEntry => dataEntry._query === query)?.data])
-        .filter(([_, val]) => val != null);
-
-      return Object.fromEntries(integrationPairs);
     }
   }
 };

@@ -1,7 +1,44 @@
 <template>
   <b-card class="w-100">
     <template #header>
-      <div class="w-100 d-flex justify-content-end">
+      <div class="w-100 d-flex justify-content-between">
+        <div>
+          <!-- delete button -->
+          <transition name="buttons">
+            <b-button
+                size="sm"
+                variant="danger"
+                v-if="!confirmDelete"
+                @click="confirmDelete = true"
+                v-b-tooltip.hover="'Delete this link group'">
+              <span class="fa fa-trash" />
+            </b-button>
+          </transition> <!-- /delete button -->
+          <!-- cancel confirm delete button -->
+          <transition name="buttons">
+            <b-button
+                size="sm"
+                title="Cancel"
+                variant="warning"
+                v-b-tooltip.hover
+                v-if="confirmDelete"
+                @click="confirmDelete = false">
+              <span class="fa fa-ban" />
+            </b-button>
+          </transition> <!-- /cancel confirm delete button -->
+          <!-- confirm delete button -->
+          <transition name="buttons">
+            <b-button
+                size="sm"
+                variant="danger"
+                v-b-tooltip.hover
+                title="Are you sure?"
+                v-if="confirmDelete"
+                @click="deleteOverview">
+              <span class="fa fa-check" />
+            </b-button>
+          </transition> <!-- /confirm delete button -->
+        </div>
         <div>
           <transition name="buttons">
             <b-button
@@ -164,7 +201,13 @@
                   class="small"
                   @click="insertFieldRef(i + 1)">
                 <span class="fa fa-plus-circle fa-fw" />
-                Add a Field after this one
+                Add a field after this one
+              </b-dropdown-item>
+              <b-dropdown-item
+                  class="small"
+                  @click="deleteFieldRef(i)">
+                <span class="fa fa-times-circle fa-fw" />
+                Remove this field
               </b-dropdown-item>
             </b-dropdown>
           </b-form>
@@ -186,7 +229,7 @@ import ReorderList from '@/utils/ReorderList.vue';
 import { mapGetters } from 'vuex';
 
 export default {
-  name: 'Cont3xtSettings',
+  name: 'OverviewCardForm',
   components: {
     ReorderList
   },
@@ -204,6 +247,7 @@ export default {
       localOverviewCard: JSON.parse(JSON.stringify(this.modifiedOverviewCard)),
       changesMade: false,
       rawEditMode: false,
+      confirmDelete: false,
       titleTip: {
         title: 'Set the title to display for this card. <code>%{query}</code> will be replaced by the queried indicator.'
       },
@@ -250,14 +294,21 @@ export default {
       this.$emit('save-overview');
       this.changesMade = false;
     },
+    deleteOverview () {
+      this.$emit('delete-overview');
+    },
     cancelOverviewModification () {
       this.localOverviewCard = JSON.parse(JSON.stringify(this.overviewCard));
-      this.updateOverview(); // TODO: toby, watch instead??
+      this.updateOverview();
     },
     insertFieldRef (index) {
       this.localOverviewCard.fields.splice(index, 0, {
         from: '', field: ''
       });
+      this.updateOverview();
+    },
+    deleteFieldRef (index) {
+      this.localOverviewCard.fields.splice(index, 1);
       this.updateOverview();
     },
     appendFieldRef () {

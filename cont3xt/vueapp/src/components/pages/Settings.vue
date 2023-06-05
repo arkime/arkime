@@ -381,13 +381,14 @@
           </h1>
         </div>
         <div class="d-flex flex-wrap">
-          <overview-card
+          <overview-card-form
               v-if="overviewCardMap[overviewIType]"
               :key="overviewIType"
               :overviewCard="overviewCardMap[overviewIType]"
               :modifiedOverviewCard="modifiedOverviewCard"
               @update-modified-overview="updateModifiedOverview"
               @save-overview="saveOverview"
+              @delete-overview="deleteOverview"
           />
           <div v-else
                class="d-flex flex-column">
@@ -539,7 +540,7 @@ import CreateViewModal from '@/components/views/CreateViewModal';
 import Cont3xtService from '@/components/services/Cont3xtService';
 import CreateLinkGroupModal from '@/components/links/CreateLinkGroupModal';
 import LinkService from '@/components/services/LinkService';
-import OverviewCard from '@/components/overviews/OverviewCard';
+import OverviewCardForm from '@/components/overviews/OverviewCardForm';
 import Vue from 'vue';
 
 let timeout;
@@ -552,7 +553,7 @@ export default {
     LinkGroupCard,
     CreateViewModal,
     CreateLinkGroupModal,
-    OverviewCard
+    OverviewCardForm
   },
   data () {
     return {
@@ -771,7 +772,11 @@ export default {
       this.modifiedOverviewCardMap[this.overviewIType] = JSON.parse(JSON.stringify(newOverview));
     },
     saveOverview () {
-      this.overviewCardMap[this.overviewIType] = JSON.parse(JSON.stringify(this.modifiedOverviewCard));
+      Vue.set(this.overviewCardMap, this.overviewIType, JSON.parse(JSON.stringify(this.modifiedOverviewCard)));
+    },
+    deleteOverview () {
+      Vue.set(this.overviewCardMap, this.overviewIType, undefined);
+      Vue.set(this.modifiedOverviewCard, this.overviewIType, undefined);
     },
     /* LINK GROUPS! -------------------------- */
     updateLinkGroup (linkGroup) {

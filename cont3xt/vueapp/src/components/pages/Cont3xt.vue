@@ -405,14 +405,25 @@
                 variant="transparent"
                 :show="getWaitRendering || getRendering">
                 <div>
-                  <!--        TODO: toby fix it appearing in between swaps!          -->
-                  <default-card
-                      :data="results"
-                      :query="lastSearchedTerm"
-                      :itype="searchItype"
-                      @update-results="updateData"
-                  />
+                  <template v-if="showOverview">
+                    <default-card
+                        v-if="getOverviewCardMap[searchItype]"
+                        :fullData="results"
+                        :query="lastSearchedTerm"
+                        :itype="searchItype"
+                        :card="getOverviewCardMap[searchItype]"
+                    />
+                    <b-alert
+                        v-else
+                        show
+                        variant="dark"
+                        class="text-center">
+                      There is no overview configured for the <strong>{{ this.searchItype }}</strong> iType.
+                      <a class="no-decoration" href="settings#overviews">Create one here!</a>
+                    </b-alert>
+                  </template>
                   <integration-card
+                      v-else
                       @update-results="updateData"
                   />
                 </div>
@@ -496,6 +507,7 @@ export default {
       initialized: false,
       searchTerm: this.$route.query.q ? this.$route.query.q : (this.$route.query.b ? window.atob(this.$route.query.b) : ''),
       lastSearchedTerm: '',
+      showOverview: true,
       skipCache: false,
       searchComplete: false,
       linkSearchTerm: this.$route.query.linkSearch || '',
@@ -539,7 +551,8 @@ export default {
       'getIssueSearch', 'getFocusLinkSearch', 'getFocusTagInput',
       'getToggleCache', 'getDownloadReport', 'getCopyShareLink',
       'getAllViews', 'getImmediateSubmissionReady', 'getSelectedView',
-      'getTags', 'getTagDisplayCollapsed', 'getSeeAllViews', 'getSeeAllLinkGroups'
+      'getTags', 'getTagDisplayCollapsed', 'getSeeAllViews', 'getSeeAllLinkGroups',
+      'getOverviewCardMap'
     ]),
     tags: {
       get () { return this.getTags; },
@@ -590,6 +603,7 @@ export default {
   },
   watch: {
     displayIntegration (newIntegration) {
+      this.showOverview = false;
       this.$store.commit('SET_INTEGRATION_DATA', {});
       this.$store.commit('SET_RENDERING_CARD', true);
       // need wait rendering to tell the card that we aren't rendering yet
@@ -751,6 +765,7 @@ export default {
       this.searchComplete = false;
       this.$store.commit('RESET_LOADING');
       this.$store.commit('SET_INTEGRATION_DATA', {});
+      this.showOverview = true;
 
       let failed = 0;
 
