@@ -474,7 +474,7 @@ void moloch_config_load()
     if (len > 50)
         CONFIGEXIT("prefix can be at most 50 characters long");
     if (len > 0 && config.prefix[len - 1] != '_') {
-        char *tmp  = malloc(len + 2);
+        char *tmp  = g_malloc(len + 2);
         memcpy(tmp, config.prefix, len);
         tmp[len] = '_';
         tmp[len+1] = 0;
