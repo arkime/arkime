@@ -48,7 +48,17 @@ const store = new Vuex.Store({
     tags: [],
     tagDisplayCollapsed: true,
     seeAllViews: false,
-    seeAllLinkGroups: false
+    seeAllLinkGroups: false,
+    overviewCardMap: {
+      domain: {
+        title: 'Overview of %{query}',
+        fields: [
+          { from: 'Whois', field: 'updatedDate' },
+          { from: 'Whois', field: 'aa' },
+          { from: 'Whois', field: 'createdDate' }
+        ]
+      }
+    }
   },
   mutations: {
     SET_USER (state, data) {
@@ -235,6 +245,9 @@ const store = new Vuex.Store({
     },
     SET_SEE_ALL_LINK_GROUPS (state, data) {
       state.seeAllLinkGroups = data;
+    },
+    SET_OVERVIEW_CARD_MAP (state, data) {
+      state.overviewCardMap = data;
     }
   },
   getters: {
@@ -379,12 +392,16 @@ const store = new Vuex.Store({
     },
     getSeeAllLinkGroups (state) {
       return state.seeAllLinkGroups;
+    },
+    getOverviewCardMap (state) {
+      return state.overviewCardMap;
     }
   },
   plugins: [createPersistedState({
     paths: [ // only these state variables are persisted to localstorage
       'checkedLinks', 'selectedIntegrations', 'sidebarKeepOpen',
       'collapsedLinkGroups', 'integrationsPanelHoverDelay', 'theme'
+      // 'overviewCardMap' TODO toby
     ]
   })]
 });

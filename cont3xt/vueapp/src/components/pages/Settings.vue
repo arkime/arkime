@@ -28,6 +28,26 @@
           <span class="fa fa-fw fa-key mr-1" />
           Integrations
         </a>
+        <a @click="openView('overviews')"
+           class="nav-link cursor-pointer mb-1"
+           :class="{'active':visibleTab === 'overviews'}">
+          <span class="fa fa-fw fa-key mr-1" />
+          Overviews
+        </a>
+        <template v-if="visibleTab === 'overviews'">
+          <div
+              v-for="itype in ['domain', 'ip', 'url', 'email', 'phone', 'hash', 'text']"
+              :key="itype"
+              style="position:relative; max-width:calc(100% - 1rem); margin-left:1rem;">
+            <a
+                :title="itype"
+                @click="overviewIType = itype"
+                :class="{'active':overviewIType === itype}"
+                class="nav-link sub-nav-link cursor-pointer">
+              {{ itype }}
+            </a>
+          </div>
+        </template>
         <a @click="openView('linkgroups')"
           class="nav-link cursor-pointer mb-1"
           :class="{'active':visibleTab === 'linkgroups'}">
@@ -353,6 +373,36 @@
         </div>
       </div> <!-- /integrations settings -->
 
+      <!-- overviews settings -->
+      <div v-if="visibleTab === 'overviews'">
+        <div class="ml-2 mr-3 w-100 d-flex justify-content-between align-items-center">
+          <h1>
+            Overviews
+          </h1>
+        </div>
+        <div class="d-flex flex-wrap">
+          <overview-card
+              v-if="overviewCardMap[overviewIType]"
+              :key="overviewIType"
+              :overviewCard="overviewCardMap[overviewIType]"
+              :modifiedOverviewCard="modifiedOverviewCard"
+              @update-modified-overview="updateModifiedOverview"
+              @save-overview="saveOverview"
+          />
+          <div v-else
+               class="d-flex flex-column">
+            <span>
+              No Overview configured for the <strong>{{ overviewIType }}</strong> iType.
+            </span>
+            <b-button
+                variant="outline-primary"
+                @click="createOverview">
+              Create one!
+            </b-button>
+          </div>
+        </div>
+      </div> <!-- /overviews settings -->
+
       <!-- link group settings -->
       <div v-if="visibleTab === 'linkgroups'">
         <!-- link group create form -->
@@ -489,6 +539,8 @@ import CreateViewModal from '@/components/views/CreateViewModal';
 import Cont3xtService from '@/components/services/Cont3xtService';
 import CreateLinkGroupModal from '@/components/links/CreateLinkGroupModal';
 import LinkService from '@/components/services/LinkService';
+import OverviewCard from '@/components/overviews/OverviewCard';
+import Vue from 'vue';
 
 let timeout;
 
@@ -499,7 +551,8 @@ export default {
     ReorderList,
     LinkGroupCard,
     CreateViewModal,
-    CreateLinkGroupModal
+    CreateLinkGroupModal,
+    OverviewCard
   },
   data () {
     return {
@@ -512,6 +565,9 @@ export default {
       integrationSearchTerm: '',
       filteredIntegrationSettings: {},
       rawIntegrationSettings: undefined,
+      // overviews
+      overviewIType: 'domain',
+      modifiedOverviewCardMap: undefined,
       // link groups
       selectedLinkGroup: 0,
       updatedLinkGroupMap: {},
@@ -531,7 +587,7 @@ export default {
     let tab = window.location.hash;
     if (tab) { // if there is a tab specified and it's a valid tab
       tab = tab.replace(/^#/, '');
-      if (tab === 'views' || tab === 'integrations' || tab === 'linkgroups' ||
+      if (tab === 'views' || tab === 'integrations' || tab === 'overviews' || tab === 'linkgroups' ||
         tab === 'password') {
         this.visibleTab = tab;
       }
@@ -545,6 +601,8 @@ export default {
     });
 
     this.filterViews(this.viewSearchTerm);
+
+    this.modifiedOverviewCardMap = JSON.parse(JSON.stringify(this.overviewCardMap));
   },
   computed: {
     ...mapGetters(['getLinkGroups', 'getLinkGroupsError', 'getIntegrations', 'getViews', 'getUser']),
@@ -563,6 +621,17 @@ export default {
       set () {
         this.$store.commit('SET_LINK_GROUPS_ERROR', '');
       }
+    },
+    overviewCardMap: {
+      get () {
+        return this.$store.state.overviewCardMap;
+      },
+      set (value) {
+        this.$store.commit('SET_OVERVIEW_CARD_MAP', value);
+      }
+    },
+    modifiedOverviewCard () {
+      return this.modifiedOverviewCardMap?.[this.overviewIType];
     },
     roles () {
       return this.getUser?.roles ?? [];
@@ -685,6 +754,24 @@ export default {
       }
 
       return setting.values[sname] ? setting.values[sname].length > 0 : false;
+    },
+    /* OVERVIEWS! ---------------------------- */
+    createDefaultOverviewCard () {
+      return {
+        title: 'Overview of %{query}',
+        fields: []
+      };
+    },
+    createOverview () {
+      const newOverview = this.createDefaultOverviewCard();
+      Vue.set(this.overviewCardMap, this.overviewIType, newOverview);
+      Vue.set(this.modifiedOverviewCardMap, this.overviewIType, JSON.parse(JSON.stringify(newOverview)));
+    },
+    updateModifiedOverview (newOverview) {
+      this.modifiedOverviewCardMap[this.overviewIType] = JSON.parse(JSON.stringify(newOverview));
+    },
+    saveOverview () {
+      this.overviewCardMap[this.overviewIType] = JSON.parse(JSON.stringify(this.modifiedOverviewCard));
     },
     /* LINK GROUPS! -------------------------- */
     updateLinkGroup (linkGroup) {

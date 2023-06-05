@@ -404,9 +404,18 @@
                 opacity="0.9"
                 variant="transparent"
                 :show="getWaitRendering || getRendering">
-                <integration-card
-                  @update-results="updateData"
-                />
+                <div>
+                  <!--        TODO: toby fix it appearing in between swaps!          -->
+                  <default-card
+                      :data="results"
+                      :query="lastSearchedTerm"
+                      :itype="searchItype"
+                      @update-results="updateData"
+                  />
+                  <integration-card
+                      @update-results="updateData"
+                  />
+                </div>
                 <template #overlay>
                   <div class="overlay-loading">
                     <span class="fa fa-circle-o-notch fa-spin fa-2x" />
@@ -451,6 +460,7 @@ import LinkGroupCard from '@/components/links/LinkGroupCard';
 import CreateViewModal from '@/components/views/CreateViewModal';
 import Cont3xtService from '@/components/services/Cont3xtService';
 import IntegrationCard from '@/components/integrations/IntegrationCard';
+import DefaultCard from '@/components/integrations/DefaultCard';
 import IntegrationPanel from '@/components/integrations/IntegrationPanel';
 import TagDisplayLine from '@/utils/TagDisplayLine';
 import { paramStr } from '@/utils/paramStr';
@@ -471,6 +481,7 @@ export default {
     LinkGroupCard,
     CreateViewModal,
     IntegrationCard,
+    DefaultCard,
     IntegrationPanel,
     TimeRangeInput,
     TagDisplayLine
