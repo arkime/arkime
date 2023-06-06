@@ -452,12 +452,12 @@
             <!-- confirm new password -->
             <b-input-group
               class="mt-2"
-              prepend="Current Password">
+              prepend="New Password">
               <b-form-input
                 type="password"
                 v-model="confirmNewPassword"
                 @keydown.enter="changePassword"
-                placeholder="Enter your new password"
+                placeholder="Confirm your new password"
               />
             </b-input-group>
             <!-- change password button -->
