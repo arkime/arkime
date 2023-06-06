@@ -1,5 +1,5 @@
 # WISE tests
-use Test::More tests => 124;
+use Test::More tests => 126;
 use MolochTest;
 use Cwd;
 use URI::Escape;
@@ -10,6 +10,12 @@ use strict;
 
 my $wise;
 my @wise;
+
+my $es = "-o 'elasticsearch=$MolochTest::elasticsearch' -o 'usersElasticsearch=$MolochTest::elasticsearch' $ENV{INSECURE}";
+system("cd ../viewer ; node addUser.js $es -c ../tests/config.test.ini -n testuser wiseUser wiseUser wiseUser --roles 'wiseUser' ");
+system("cd ../viewer ; node addUser.js $es -c ../tests/config.test.ini -n testuser wiseAdmin wiseAdmin wiseAdmin --roles 'wiseAdmin' ");
+
+$MolochTest::userAgent->credentials( "$MolochTest::host:8081", 'Moloch', 'wiseUser', 'wiseUser' );
 
 # IP Query
 $wise = $MolochTest::userAgent->get("http://$MolochTest::host:8081/ip/10.0.0.3")->content;
@@ -182,6 +188,7 @@ my $pwd = "*/pcap";
     countTest(1, "date=-1&expression=" . uri_escape("(file=$pwd/6-4-gre-ppp-udp-4-dns.pcap||file=$pwd/http-wrapped-header.pcap)&&tags=wisebymac1"));
     countTest(1, "date=-1&expression=" . uri_escape("(file=$pwd/6-4-gre-ppp-udp-4-dns.pcap||file=$pwd/http-wrapped-header.pcap)&&tags=wisebymac2"));
 
+
 $wise = "[" . $MolochTest::userAgent->get("http://$MolochTest::host:8081/dump/file:mac")->content . "]";
 my @wise = sort { $a->{key} cmp $b->{key}} @{from_json($wise, {relaxed=>1})};
 eq_or_diff(\@wise,
@@ -287,7 +294,15 @@ ok ($wise->{success});
 ok (exists $wise->{config});
 my $config = $wise->{config};
 
-# save config
+# save config - wiseUser
+$wise = $MolochTest::userAgent->put("http://$MolochTest::host:8081/config/save", Content => to_json({configCode => "thecode"}), "Content-Type" => "application/json;charset=UTF-8")->content;
+eq_or_diff($wise, '{"success":false,"text":"Not authorized, check log file"}');
+
+$wise = $MolochTest::userAgent->put("http://$MolochTest::host:8081/config/save", Content => to_json({config => $config, configCode => "thecode"}), "Content-Type" => "application/json;charset=UTF-8")->content;
+eq_or_diff($wise, '{"success":false,"text":"Not authorized, check log file"}');
+
+# save config - wiseAdmin
+$MolochTest::userAgent->credentials( "$MolochTest::host:8081", 'Moloch', 'wiseAdmin', 'wiseAdmin' );
 $wise = $MolochTest::userAgent->put("http://$MolochTest::host:8081/config/save", Content => to_json({configCode => "thecode"}), "Content-Type" => "application/json;charset=UTF-8")->content;
 eq_or_diff($wise, '{"success":false,"text":"Missing config"}');
 
