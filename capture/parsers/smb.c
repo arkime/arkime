@@ -505,7 +505,7 @@ LOCAL int smb_parser(MolochSession_t *session, void *uw, const unsigned char *da
 
         if (*state != SMB_SKIP && *remlen > MAX_SMB_BUFFER) {
 #ifndef FUZZLOCH
-            LOG("ERROR - Not enough room for SMB packet %u", *remlen);
+            LOG("WARNING - Not enough room to parse SMB packet of size %u", *remlen);
 #endif
             moloch_parsers_unregister(session, smb);
             return 0;
@@ -561,7 +561,7 @@ LOCAL int smb_parser(MolochSession_t *session, void *uw, const unsigned char *da
             //LOG("  Moving data %ld %s", BSB_REMAINING(bsb), moloch_session_id_string(session->protocol, session->addr1, session->port1, session->addr2, session->port2));
 #endif
             if (BSB_REMAINING(bsb) > MAX_SMB_BUFFER) {
-                LOG("ERROR - Not enough room for SMB packet %u", (uint32_t)BSB_REMAINING(bsb));
+                LOG("WARNING - Not enough room to parse SMB packet of size %u", (uint32_t)BSB_REMAINING(bsb));
                 moloch_parsers_unregister(session, smb);
                 return 0;
             }
