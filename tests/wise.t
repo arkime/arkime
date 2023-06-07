@@ -1,5 +1,5 @@
 # WISE tests
-use Test::More tests => 126;
+use Test::More tests => 137;
 use MolochTest;
 use Cwd;
 use URI::Escape;
@@ -14,8 +14,6 @@ my @wise;
 my $es = "-o 'elasticsearch=$MolochTest::elasticsearch' -o 'usersElasticsearch=$MolochTest::elasticsearch' $ENV{INSECURE}";
 system("cd ../viewer ; node addUser.js $es -c ../tests/config.test.ini -n testuser wiseUser wiseUser wiseUser --roles 'wiseUser' ");
 system("cd ../viewer ; node addUser.js $es -c ../tests/config.test.ini -n testuser wiseAdmin wiseAdmin wiseAdmin --roles 'wiseAdmin' ");
-
-$MolochTest::userAgent->credentials( "$MolochTest::host:8081", 'Moloch', 'wiseUser', 'wiseUser' );
 
 # IP Query
 $wise = $MolochTest::userAgent->get("http://$MolochTest::host:8081/ip/10.0.0.3")->content;
@@ -284,9 +282,31 @@ eq_or_diff($wise, '{"success":false,"text":"Not authorized, check log file"}');
 $wise = $MolochTest::userAgent->post("http://$MolochTest::host:8081/regressionTests/checkCode", Content => '{"configCode": "thecode"}', "Content-Type" => "application/json;charset=UTF-8")->content;
 eq_or_diff($wise, '{"success":true,"text":"Authorized"}');
 
+#### Web
+
 # config defs
 $wise = from_json($MolochTest::userAgent->get("http://$MolochTest::host:8081/config/defs")->content);
 ok (exists $wise->{wiseService});
+
+# get config before adding credentials
+$wise = $MolochTest::userAgent->get("http://$MolochTest::host:8081/config/get");
+is ($wise->code, 401);
+is ($wise->content, 'Unauthorized');
+
+$wise = $MolochTest::userAgent->put("http://$MolochTest::host:8081/config/save", Content => to_json({configCode => "thecode"}), "Content-Type" => "application/json;charset=UTF-8");
+is ($wise->code, 401);
+is ($wise->content, 'Unauthorized');
+
+$wise = $MolochTest::userAgent->get("http://$MolochTest::host:8081/source/file:ip/get");
+is ($wise->code, 401);
+is ($wise->content, 'Unauthorized');
+
+$wise = $MolochTest::userAgent->put("http://$MolochTest::host:8081/source/file:ip/put", Content => to_json({configCode => "thecode"}), "Content-Type" => "application/json;charset=UTF-8");
+is ($wise->code, 401);
+is ($wise->content, 'Unauthorized');
+
+##### wiseUser
+$MolochTest::userAgent->credentials( "$MolochTest::host:8081", 'Moloch', 'wiseUser', 'wiseUser' );
 
 # get config
 $wise = from_json($MolochTest::userAgent->get("http://$MolochTest::host:8081/config/get")->content);
@@ -301,13 +321,24 @@ eq_or_diff($wise, '{"success":false,"text":"Not authorized, check log file"}');
 $wise = $MolochTest::userAgent->put("http://$MolochTest::host:8081/config/save", Content => to_json({config => $config, configCode => "thecode"}), "Content-Type" => "application/json;charset=UTF-8")->content;
 eq_or_diff($wise, '{"success":false,"text":"Not authorized, check log file"}');
 
-# save config - wiseAdmin
+##### wiseAdmin
 $MolochTest::userAgent->credentials( "$MolochTest::host:8081", 'Moloch', 'wiseAdmin', 'wiseAdmin' );
+
+# save config - wiseAdmin
 $wise = $MolochTest::userAgent->put("http://$MolochTest::host:8081/config/save", Content => to_json({configCode => "thecode"}), "Content-Type" => "application/json;charset=UTF-8")->content;
 eq_or_diff($wise, '{"success":false,"text":"Missing config"}');
 
 $wise = $MolochTest::userAgent->put("http://$MolochTest::host:8081/config/save", Content => to_json({config => $config, configCode => "thecode"}), "Content-Type" => "application/json;charset=UTF-8")->content;
 eq_or_diff($wise, '{"success":true,"text":"Would save, but regressionTests"}');
+
+$wise = $MolochTest::userAgent->get("http://$MolochTest::host:8081/source/file:ip/get")->content;
+is($wise, '{"success":true,"raw":"10.0.0.3;tags=wisebyip1;irc.channel=wisebyip1channel;email.x-priority=999\\n192.168.177.160;tags=wisebyip2;mysql.ver=wisebyip2mysqlversion;test.ip=21.21.21.21\\n128.128.128.0/24;tags=wisebyip2;mysql.ver=wisebyip2mysqlversion;test.ip=21.21.21.21\\nfe80::211:25ff:fe82:95b5;tags=wisebyip3;mysql.ver=wisebyip3mysqlversion;test.ip=22.22.22.22\\n"}');
+
+$wise = $MolochTest::userAgent->get("http://$MolochTest::host:8081/source/notfound/get")->content;
+is($wise, '{"success":false,"text":"Source notfound not found"}');
+
+$wise = $MolochTest::userAgent->put("http://$MolochTest::host:8081/source/notfound/put", Content => to_json({configCode => "thecode"}), "Content-Type" => "application/json;charset=UTF-8");
+is($wise->content, '{"success":false,"text":"Source notfound not found"}');
 
 # url
 $wise = from_json($MolochTest::userAgent->get("http://$MolochTest::host:8081/url:aws-ips/ip/3.2.34.0")->content);
