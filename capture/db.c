@@ -650,11 +650,12 @@ void moloch_db_save_session(MolochSession_t *session, int final)
         }
     }
 
-    if (session->firstPacket.tv_sec < 10)
+    if (session->firstPacket.tv_sec < 10) {
         session->firstPacket.tv_sec += 10;
-
-    if (session->lastPacket.tv_sec < 10)
         session->lastPacket.tv_sec += 10;
+    } else if (session->lastPacket.tv_sec < 10) {
+        session->lastPacket.tv_sec += 10;
+    }
 
     dataPtr = BSB_WORK_PTR(jbsb);
 
