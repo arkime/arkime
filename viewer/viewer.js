@@ -842,6 +842,7 @@ function sendSessionWorker (options, cb) {
         session.tags = [];
       }
       session.tags = session.tags.concat(tags);
+      session.tagsCnt = session.tags.length;
     }
 
     const remoteClusters = internals.remoteClusters;

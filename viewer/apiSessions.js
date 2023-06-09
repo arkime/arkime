@@ -3220,7 +3220,7 @@ class SessionAPIs {
    */
   static sendSessions (req, res) {
     if (!ArkimeUtil.isString(req.body.cluster)) { return res.serverError(200, 'Missing cluster'); }
-    if (!internals.remoteClusters || !internals.remoteClusters[req.query.cluster]) { return res.serverError(200, 'Unknown cluster'); }
+    if (!internals.remoteClusters || !internals.remoteClusters[req.body.cluster]) { return res.serverError(200, 'Unknown cluster'); }
     if (req.body.tags !== undefined && !ArkimeUtil.isString(req.body.tags, 0)) { return res.serverError(200, 'When present tags must be a string'); }
 
     if (req.body.ids) {
