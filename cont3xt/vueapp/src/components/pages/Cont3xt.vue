@@ -102,6 +102,7 @@
               <span class="fa fa-eye" />
             </template>
           </ViewSelector>
+          <OverviewSelector />
           <b-dropdown
               class="ml-1"
               tabindex="-1"
@@ -407,11 +408,11 @@
                 <div>
                   <template v-if="showOverview">
                     <default-card
-                        v-if="getOverviewCardMap[searchItype]"
+                        v-if="getSelectedOverviewMap[searchItype]"
                         :fullData="results"
                         :query="lastSearchedTerm"
                         :itype="searchItype"
-                        :card="getOverviewCardMap[searchItype]"
+                        :card="getSelectedOverviewMap[searchItype]"
                     />
                     <b-alert
                         v-else
@@ -476,10 +477,13 @@ import IntegrationPanel from '@/components/integrations/IntegrationPanel';
 import TagDisplayLine from '@/utils/TagDisplayLine';
 import { paramStr } from '@/utils/paramStr';
 import LinkService from '@/components/services/LinkService';
+import OverviewService from '@/components/services/OverviewService';
+import OverviewSelector from '../overviews/OverviewSelector.vue';
 
 export default {
   name: 'Cont3xt',
   components: {
+    OverviewSelector,
     Cont3xtIp,
     Cont3xtUrl,
     ReorderList,
@@ -536,6 +540,10 @@ export default {
       this.$store.commit('SET_SEE_ALL_LINK_GROUPS', false);
       LinkService.getLinkGroups();
     }
+    if (this.getSeeAllOverviews) {
+      this.$store.commit('SET_SEE_ALL_OVERVIEWS', false);
+      OverviewService.getOverviews();
+    }
 
     // no need to parse start/stopDate query params here -- that is handled by TimeRangeInput
     // submit, view, and tags query params are handled in watcher
@@ -552,7 +560,7 @@ export default {
       'getToggleCache', 'getDownloadReport', 'getCopyShareLink',
       'getAllViews', 'getImmediateSubmissionReady', 'getSelectedView',
       'getTags', 'getTagDisplayCollapsed', 'getSeeAllViews', 'getSeeAllLinkGroups',
-      'getOverviewCardMap'
+      'getSeeAllOverviews', 'getSelectedOverviewMap'
     ]),
     tags: {
       get () { return this.getTags; },
@@ -789,6 +797,7 @@ export default {
             // based of the first itype seen
             this.lastSearchedTerm = data.query;
             this.searchItype = data.itype;
+            this.$store.commit('SET_OVERVIEW_SELECTOR_ACTIVE_ITYPE', data.itype);
             this.filterLinks(this.linkSearchTerm);
           }
 

@@ -31,20 +31,22 @@
         <a @click="openView('overviews')"
            class="nav-link cursor-pointer mb-1"
            :class="{'active':visibleTab === 'overviews'}">
-          <span class="fa fa-fw fa-key mr-1" />
+          <span class="fa fa-fw fa-file-o mr-1" />
           Overviews
         </a>
         <template v-if="visibleTab === 'overviews'">
           <div
-              v-for="itype in ['domain', 'ip', 'url', 'email', 'phone', 'hash', 'text']"
-              :key="itype"
+              v-for="overview in getSortedOverviews"
+              :key="overview._id"
               style="position:relative; max-width:calc(100% - 1rem); margin-left:1rem;">
             <a
-                :title="itype"
-                @click="overviewIType = itype"
-                :class="{'active':overviewIType === itype}"
-                class="nav-link sub-nav-link cursor-pointer">
-              {{ itype }}
+                :title="overview.name"
+                @click="setActiveOverviewId(overview._id)"
+                :class="{ 'active':activeOverviewId === overview._id }"
+                class="nav-link cursor-pointer">
+              <span class="fa fa-fw mr-1" style="color: black"
+                :class="[ iTypeIconMap[overview.iType] ]"
+              />{{ overview.name }}
             </a>
           </div>
         </template>
@@ -379,13 +381,44 @@
           <h1>
             Overviews
           </h1>
+          <span class="pull-right">
+            <b-button
+                variant="outline-primary"
+                @click="createOverview">
+              <span class="fa fa-plus-circle" />
+              New Overview
+            </b-button>
+            <b-form-checkbox
+                button
+                class="ml-2 no-wrap"
+                v-model="seeAllOverviews"
+                v-b-tooltip.hover
+                @input="seeAllOverviewsChanged"
+                v-if="roles.includes('cont3xtAdmin')"
+                :title="seeAllOverviews ? 'Just show the overviews created from your activity or shared with you' : 'See all the overviews that exist for all users (you can because you are an ADMIN!)'">
+              <span class="fa fa-user-circle mr-1" />
+              See {{ seeAllOverviews ? ' MY ' : ' ALL ' }} Overviews
+            </b-form-checkbox>
+          </span>
         </div>
+
+        <!-- overview error -->
+        <b-alert
+            dismissible
+            variant="danger"
+            style="z-index: 2000;"
+            v-model="overviewsError"
+            class="position-fixed fixed-bottom m-0 rounded-0">
+          {{ getOverviewsError }}
+        </b-alert> <!-- /overview error -->
+
         <div class="d-flex flex-wrap">
+          <!-- overview-card-form uses :key to reset form when swapping active overview -->
           <overview-card-form
-              v-if="overviewCardMap[overviewIType]"
-              :key="overviewIType"
-              :overviewCard="overviewCardMap[overviewIType]"
-              :modifiedOverviewCard="modifiedOverviewCard"
+              v-if="activeOverviewId && activeUnModifiedOverview"
+              :key="activeOverviewId"
+              :overview="activeUnModifiedOverview"
+              :modifiedOverview="activeModifiedOverview"
               @update-modified-overview="updateModifiedOverview"
               @save-overview="saveOverview"
               @delete-overview="deleteOverview"
@@ -393,7 +426,7 @@
           <div v-else
                class="d-flex flex-column">
             <span>
-              No Overview configured for the <strong>{{ overviewIType }}</strong> iType.
+              No Overviews configured.
             </span>
             <b-button
                 variant="outline-primary"
@@ -540,6 +573,7 @@ import CreateViewModal from '@/components/views/CreateViewModal';
 import Cont3xtService from '@/components/services/Cont3xtService';
 import CreateLinkGroupModal from '@/components/links/CreateLinkGroupModal';
 import LinkService from '@/components/services/LinkService';
+import OverviewService from '@/components/services/OverviewService';
 import OverviewCardForm from '@/components/overviews/OverviewCardForm';
 import Vue from 'vue';
 
@@ -567,8 +601,18 @@ export default {
       filteredIntegrationSettings: {},
       rawIntegrationSettings: undefined,
       // overviews
-      overviewIType: 'domain',
-      modifiedOverviewCardMap: undefined,
+      iTypes: ['domain', 'ip', 'url', 'email', 'phone', 'hash', 'text'],
+      iTypeIconMap: {
+        domain: 'fa-globe',
+        ip: 'fa-rocket',
+        url: 'fa-link',
+        email: 'fa-at',
+        phone: 'fa-phone',
+        hash: 'fa-hashtag',
+        text: 'fa-font'
+      },
+      activeOverviewId: undefined,
+      modifiedOverviewMap: {},
       // link groups
       selectedLinkGroup: 0,
       updatedLinkGroupMap: {},
@@ -603,10 +647,15 @@ export default {
 
     this.filterViews(this.viewSearchTerm);
 
-    this.modifiedOverviewCardMap = JSON.parse(JSON.stringify(this.overviewCardMap));
+    if (this.getOverviews != null) {
+      this.setActiveOverviewToFirst();
+    }
   },
   computed: {
-    ...mapGetters(['getLinkGroups', 'getLinkGroupsError', 'getIntegrations', 'getViews', 'getUser']),
+    ...mapGetters([
+      'getLinkGroups', 'getLinkGroupsError', 'getIntegrations', 'getViews', 'getUser',
+      'getOverviews', 'getOverviewsError', 'getSortedOverviews'
+    ]),
     seeAllViews: {
       get () { return this.$store.state.seeAllViews; },
       set (value) { this.$store.commit('SET_SEE_ALL_VIEWS', value); }
@@ -614,6 +663,10 @@ export default {
     seeAllLinkGroups: {
       get () { return this.$store.state.seeAllLinkGroups; },
       set (value) { this.$store.commit('SET_SEE_ALL_LINK_GROUPS', value); }
+    },
+    seeAllOverviews: {
+      get () { return this.$store.state.seeAllOverviews; },
+      set (value) { this.$store.commit('SET_SEE_ALL_OVERVIEWS', value); }
     },
     linkGroupsError: {
       get () {
@@ -623,16 +676,19 @@ export default {
         this.$store.commit('SET_LINK_GROUPS_ERROR', '');
       }
     },
-    overviewCardMap: {
+    overviewsError: {
       get () {
-        return this.$store.state.overviewCardMap;
+        return !!this.$store.state.overviewsError;
       },
-      set (value) {
-        this.$store.commit('SET_OVERVIEW_CARD_MAP', value);
+      set () {
+        this.$store.commit('SET_OVERVIEWS_ERROR', '');
       }
     },
-    modifiedOverviewCard () {
-      return this.modifiedOverviewCardMap?.[this.overviewIType];
+    activeUnModifiedOverview () {
+      return this.getOverviews?.find(overview => overview._id === this.activeOverviewId);
+    },
+    activeModifiedOverview () {
+      return this.modifiedOverviewMap?.[this.activeOverviewId];
     },
     roles () {
       return this.getUser?.roles ?? [];
@@ -693,6 +749,11 @@ export default {
     },
     getViews () {
       this.filterViews(this.viewSearchTerm);
+    },
+    getOverviews (newValue, oldValue) {
+      if (oldValue == null) {
+        this.setActiveOverviewToFirst();
+      }
     }
   },
   methods: {
@@ -757,26 +818,51 @@ export default {
       return setting.values[sname] ? setting.values[sname].length > 0 : false;
     },
     /* OVERVIEWS! ---------------------------- */
+    setActiveOverviewToFirst () {
+      this.setActiveOverviewId(this.getSortedOverviews[0]?._id);
+    },
+    setActiveOverviewId (newActiveOverviewId) {
+      const newActiveOverview = this.getOverviews?.find(overview => overview._id === newActiveOverviewId);
+      if (newActiveOverview == null) { return; }
+
+      if (this.modifiedOverviewMap[newActiveOverviewId] == null) {
+        Vue.set(this.modifiedOverviewMap, newActiveOverviewId, JSON.parse(JSON.stringify(newActiveOverview)));
+      }
+      this.activeOverviewId = newActiveOverviewId;
+    },
     createDefaultOverviewCard () {
       return {
-        title: 'Overview of %{query}',
-        fields: []
+        name: 'Untitled',
+        title: 'Untitled Overview of %{query}',
+        iType: 'domain',
+        fields: [],
+        viewRoles: [],
+        editRoles: []
       };
     },
     createOverview () {
-      const newOverview = this.createDefaultOverviewCard();
-      Vue.set(this.overviewCardMap, this.overviewIType, newOverview);
-      Vue.set(this.modifiedOverviewCardMap, this.overviewIType, JSON.parse(JSON.stringify(newOverview)));
+      const oldOverviews = JSON.parse(JSON.stringify(this.getOverviews));
+      OverviewService.createOverview(this.createDefaultOverviewCard(), () => {
+        // set the newly-created overview as the actively edited one
+        const newOverview = this.getOverviews
+          .find(overview => !oldOverviews.some(oldOverview => overview._id === oldOverview._id));
+
+        if (newOverview != null) {
+          this.setActiveOverviewId(newOverview._id);
+        }
+      });
     },
     updateModifiedOverview (newOverview) {
-      this.modifiedOverviewCardMap[this.overviewIType] = JSON.parse(JSON.stringify(newOverview));
+      Vue.set(this.modifiedOverviewMap, this.activeOverviewId, newOverview);
     },
     saveOverview () {
-      Vue.set(this.overviewCardMap, this.overviewIType, JSON.parse(JSON.stringify(this.modifiedOverviewCard)));
+      OverviewService.updateOverview(this.activeModifiedOverview); // TODO: toby, move into component, with changesMade, set here!
     },
     deleteOverview () {
-      Vue.set(this.overviewCardMap, this.overviewIType, undefined);
-      Vue.set(this.modifiedOverviewCard, this.overviewIType, undefined);
+      OverviewService.deleteOverview(this.activeOverviewId).then((res) => {
+        Vue.set(this.modifiedOverviewMap, this.activeOverviewId, undefined);
+        this.setActiveOverviewToFirst(); // TODO: set to next index toby
+      });
     },
     /* LINK GROUPS! -------------------------- */
     updateLinkGroup (linkGroup) {
@@ -788,6 +874,10 @@ export default {
     // re-fetch link groups when changing see-all for link groups
     seeAllLinkGroupsChanged () {
       LinkService.getLinkGroups(this.seeAllLinkGroups);
+    },
+    // re-fetch overviews when changing see-all for overviews
+    seeAllOverviewsChanged () {
+      OverviewService.getOverviews();
     },
     updateList ({ list, from, to }) {
       const ids = [];
@@ -982,7 +1072,7 @@ export default {
           const match = line.match(regex.section);
           json[match[1]] = {};
           section = match[1];
-        };
+        }
       });
       return json;
     },

@@ -1,6 +1,7 @@
 import Vue from 'vue';
 import Vuex from 'vuex';
 import createPersistedState from 'vuex-persistedstate';
+import { iTypes, iTypeIndexMap } from '@/utils/iTypes';
 
 Vue.use(Vuex);
 
@@ -49,7 +50,11 @@ const store = new Vuex.Store({
     tagDisplayCollapsed: true,
     seeAllViews: false,
     seeAllLinkGroups: false,
-    overviewCardMap: {}
+    seeAllOverviews: false,
+    overviews: undefined,
+    overviewsError: '',
+    selectedOverviewIdMap: {},
+    overviewSelectorActiveIType: 'any'
   },
   mutations: {
     SET_USER (state, data) {
@@ -237,8 +242,35 @@ const store = new Vuex.Store({
     SET_SEE_ALL_LINK_GROUPS (state, data) {
       state.seeAllLinkGroups = data;
     },
-    SET_OVERVIEW_CARD_MAP (state, data) {
-      state.overviewCardMap = data;
+    SET_SEE_ALL_OVERVIEWS (state, data) {
+      state.seeAllOverviews = data;
+    },
+    SET_OVERVIEWS (state, data) {
+      state.overviews = data;
+    },
+    SET_OVERVIEWS_ERROR (state, data) {
+      state.overviewsError = data;
+    },
+    SET_SELECTED_OVERVIEW_ID_MAP (state, data) {
+      state.selectedOverviewIdMap = data;
+    },
+    SET_SELECTED_OVERVIEW_ID_FOR_ITYPE (state, { iType, id }) {
+      Vue.set(state.selectedOverviewIdMap, iType, id);
+    },
+    REMOVE_OVERVIEW (state, id) {
+      const index = state.overviews.findIndex(overview => overview._id === id);
+      if (index !== -1) {
+        state.overviews.splice(index, 1);
+      }
+    },
+    UPDATE_OVERVIEW (state, data) {
+      const index = state.overviews.findIndex(overview => overview._id === data._id);
+      if (index !== -1) {
+        Vue.set(state.overviews, index, data);
+      }
+    },
+    SET_OVERVIEW_SELECTOR_ACTIVE_ITYPE (state, value) {
+      state.overviewSelectorActiveIType = value;
     }
   },
   getters: {
@@ -384,8 +416,52 @@ const store = new Vuex.Store({
     getSeeAllLinkGroups (state) {
       return state.seeAllLinkGroups;
     },
-    getOverviewCardMap (state) {
-      return state.overviewCardMap;
+    getSeeAllOverviews (state) {
+      return state.seeAllOverviews;
+    },
+    getOverviews (state) {
+      return state.overviews;
+    },
+    getOverviewMap (state) { // { [overviewId]: overview }
+      return Object.fromEntries(
+        (state.overviews ?? []).map(overview => [overview._id, overview])
+      );
+    },
+    getSortedOverviews (state) {
+      const overviews = [...(state.overviews ?? [])];
+      overviews.sort((a, b) => {
+        const iTypeDiff = iTypeIndexMap[a.iType] - iTypeIndexMap[b.iType];
+        return (iTypeDiff === 0) ? a.name.localeCompare(b.name) : iTypeDiff;
+      });
+      return overviews;
+    },
+    getOverviewsError (state) {
+      return state.overviewsError;
+    },
+    getSelectedOverviewIdMap (state) {
+      return state.selectedOverviewIdMap;
+    },
+    getCorrectedSelectedOverviewIdMap (state, getters) {
+      return Object.fromEntries(
+        iTypes.map(iType => {
+          let selectedId = state.selectedOverviewIdMap[iType];
+          // fallback to default overview (id == iType) for undefined or incorrectly-iTyped
+          if (selectedId == null || getters.getOverviewMap[selectedId]?.iType !== iType) {
+            selectedId = iType;
+          }
+          return [iType, selectedId];
+        })
+      );
+    },
+    getSelectedOverviewMap (state, getters) {
+      return Object.fromEntries(
+        Object.entries(getters.getCorrectedSelectedOverviewIdMap).map(([iType, id]) => [
+          iType, getters.getOverviewMap[id]
+        ])
+      );
+    },
+    getOverviewSelectorActiveIType (state) {
+      return state.overviewSelectorActiveIType;
     }
   },
   plugins: [createPersistedState({
