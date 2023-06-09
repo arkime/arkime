@@ -3146,6 +3146,10 @@ class SessionAPIs {
     ViewerUtils.noCache(req, res);
     res.statusCode = 200;
 
+    if (!ArkimeUtil.isString(req.query.saveId)) { return res.serverError(200, 'Missing saveId'); }
+    if (!ArkimeUtil.isString(req.query.cluster)) { return res.serverError(200, 'Missing cluster'); }
+    if (!internals.remoteClusters || !internals.remoteClusters[req.query.cluster]) { return res.serverError(200, 'Unknown cluster'); }
+
     const options = {
       user: req.user,
       cluster: req.query.cluster,
@@ -3177,12 +3181,10 @@ class SessionAPIs {
     ViewerUtils.noCache(req, res);
     res.statusCode = 200;
 
-    if (req.body.ids === undefined ||
-      req.query.cluster === undefined ||
-      req.query.saveId === undefined ||
-      req.body.tags === undefined) {
-      return res.end();
-    }
+    if (!ArkimeUtil.isString(req.query.saveId)) { return res.serverError(200, 'Missing saveId'); }
+    if (!ArkimeUtil.isString(req.query.cluster)) { return res.serverError(200, 'Missing cluster'); }
+    if (!internals.remoteClusters || !internals.remoteClusters[req.query.cluster]) { return res.serverError(200, 'Unknown cluster'); }
+    if (req.body.tags !== undefined && !ArkimeUtil.isString(req.body.tags, 0)) { return res.serverError(200, 'When present tags must be a string'); }
 
     let count = 0;
     const ids = ViewerUtils.queryValueToArray(req.body.ids);
@@ -3217,6 +3219,10 @@ class SessionAPIs {
    * @param {SessionsQuery} query - The request query to filter sessions, only used if ids isn't provided
    */
   static sendSessions (req, res) {
+    if (!ArkimeUtil.isString(req.body.cluster)) { return res.serverError(200, 'Missing cluster'); }
+    if (!internals.remoteClusters || !internals.remoteClusters[req.query.cluster]) { return res.serverError(200, 'Unknown cluster'); }
+    if (req.body.tags !== undefined && !ArkimeUtil.isString(req.body.tags, 0)) { return res.serverError(200, 'When present tags must be a string'); }
+
     if (req.body.ids) {
       const ids = ViewerUtils.queryValueToArray(req.body.ids);
 
@@ -3239,6 +3245,7 @@ class SessionAPIs {
    * @name /sessions/receive
    * @param {saveId} saveId - The sessionId to save the session.
    */
+  static #saveIds = {};
   static receiveSession (req, res) {
     if (!ArkimeUtil.isString(req.query.saveId)) { return res.serverError(200, 'Missing saveId'); }
 
@@ -3246,12 +3253,9 @@ class SessionAPIs {
 
     if (req.query.saveId.length === 0 || req.query.saveId === '__proto__') { return res.serverError(200, 'Bad saveId'); }
 
-    // JS Static Variable :)
-    this.saveIds = this.saveIds || {};
-
-    let saveId = this.saveIds[req.query.saveId];
+    let saveId = SessionAPIs.#saveIds[req.query.saveId];
     if (!saveId) {
-      saveId = this.saveIds[req.query.saveId] = { start: 0 };
+      saveId = SessionAPIs.#saveIds[req.query.saveId] = { start: 0 };
     }
 
     let sessionlen = -1;
