@@ -262,7 +262,7 @@ app.get( // es health endpoint
 Auth.app(app);
 if (Config.get('passwordSecret')) {
   // check for arkimeUser
-  app.use((req, res, next) => {
+  app.use(async (req, res, next) => {
     // For receiveSession there is no user (so no role check can be done) AND must be s2s
     if (req.url.match(/^\/receiveSession/) || req.url.match(/^\/api\/sessions\/receive/)) {
       if (req.headers['x-arkime-auth'] === undefined) {
@@ -273,6 +273,9 @@ if (Config.get('passwordSecret')) {
     }
 
     if (!req.user.hasRole('arkimeUser')) {
+      if (Config.debug) {
+        console.log('Missing arkimeUser userId: %s roles: %s expanded roles: %s', req.user.userId, req.user.roles, await req.user.getRoles());
+      }
       return res.status(403).send('Need arkimeUser role assigned');
     }
     next();
