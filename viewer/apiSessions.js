@@ -3185,6 +3185,7 @@ class SessionAPIs {
     if (!ArkimeUtil.isString(req.query.cluster)) { return res.serverError(200, 'Missing cluster'); }
     if (!internals.remoteClusters || !internals.remoteClusters[req.query.cluster]) { return res.serverError(200, 'Unknown cluster'); }
     if (req.body.tags !== undefined && !ArkimeUtil.isString(req.body.tags, 0)) { return res.serverError(200, 'When present tags must be a string'); }
+    if (req.body.ids === undefined) { return res.serverError(200, 'Missing ids'); }
 
     let count = 0;
     const ids = ViewerUtils.queryValueToArray(req.body.ids);

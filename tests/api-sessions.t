@@ -1,4 +1,4 @@
-use Test::More tests => 90;
+use Test::More tests => 91;
 use Cwd;
 use URI::Escape;
 use MolochTest;
@@ -231,6 +231,9 @@ tcp,1386004309468,1386004309478,10.180.156.185,53533,US,10.180.156.249,1080,US,2
 
     $json = viewerPost("/api/sessions/test/send?saveId=id&cluster=unknown", '{}');
     eq_or_diff($json, from_json('{"success":false,"text":"Unknown cluster"}'));
+
+    $json = viewerPost("/api/sessions/test/send?saveId=id&cluster=test2", '{}');
+    eq_or_diff($json, from_json('{"success":false,"text":"Missing ids"}'));
 
 # Test errors for /api/sessions/send
     $json = viewerPost("/api/sessions/send", '');
