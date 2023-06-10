@@ -202,9 +202,17 @@ if (Config.regressionTests) {
     Db.flushCache();
     res.send('{}');
   });
-  app.get('/regressionTests/processCronQueries', function (req, res) {
+  app.get('/regressionTests/processCronQueries', async function (req, res) {
+    await Db.refresh();
     CronAPIs.processCronQueries();
-    res.send('{}');
+    setTimeout(async function checkCronFinished () {
+      if (internals.cronRunning) {
+        setTimeout(checkCronFinished, 500);
+      } else {
+        await Db.refresh();
+        res.send('{}');
+      }
+    }, 500);
   });
   // Make sure all jobs have run and return
   app.get('/regressionTests/processHuntJobs', async function (req, res) {
