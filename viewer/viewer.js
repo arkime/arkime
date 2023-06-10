@@ -842,6 +842,7 @@ function sendSessionWorker (options, cb) {
         session.tags = [];
       }
       session.tags = session.tags.concat(tags);
+      session.tagsCnt = session.tags.length;
     }
 
     const remoteClusters = internals.remoteClusters;
@@ -1666,19 +1667,19 @@ app.get( // sessions get decodings endpoint
   SessionAPIs.getDecodings
 );
 
-app.get( // session send to node endpoint
+app.get( // session send to node endpoint - used by SessionAPIs.#sendSessionsList
   ['/api/session/:nodeName/:id/send', '/:nodeName/sendSession/:id'],
   [checkProxyRequest],
   SessionAPIs.sendSessionToNode
 );
 
-app.post( // sessions send to node endpoint
+app.post( // sessions send to node endpoint - used by CronAPIs.#sendSessionsListQL
   ['/api/sessions/:nodeName/send', '/:nodeName/sendSessions'],
   [checkProxyRequest],
   SessionAPIs.sendSessionsToNode
 );
 
-app.post( // sessions send endpoint
+app.post( // sessions send endpoint - used by vueapp
   ['/api/sessions/send', '/sendSessions'],
   SessionAPIs.sendSessions
 );
