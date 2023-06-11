@@ -73,7 +73,8 @@ $json = viewerGet("/api/crons?molochRegressionUser=anonymous&all=true");
 is (@{$json}, 2, "returns 2 queries with all flag");
 
 # shared user cannot update query
-$json = viewerPostToken("/api/cron/$key?molochRegressionUser=test1", '{"name":"bad name","query":"protocols == tls","action":"tag","tags":"tls","users":"test2,test3", "roles":["arkimeUser"]}', $test1Token);
+my $files = '(file == */https-connect.pcap || file == */https-generalizedtime.pcap || file == */https2-301-get.pcap || file == */https3-301-get.pcap)';
+$json = viewerPostToken("/api/cron/$key?molochRegressionUser=test1", '{"name":"bad name","query":"protocols == tls && $files","action":"tag","tags":"tls","users":"test2,test3", "roles":["arkimeUser"]}', $test1Token);
 ok(!$json->{success}, "shared user cannot update query");
 
 # shared user cannot delete query
@@ -96,8 +97,8 @@ eq_or_diff($json, from_json('{"text": "Bad query key", "success": false}'));
 viewerGet("/regressionTests/processCronQueries");
 viewerGet("/regressionTests/processCronQueries");
 
-countTest(8, "date=-1&expression=" . uri_escape("file=*https*&&protocols==tls"));
-countTest(8, "date=-1&expression=" . uri_escape("file=*https*&&tags=test${suffix}"));
+countTest(4, "date=-1&expression=" . uri_escape("${files} && protocols==tls"));
+countTest(4, "date=-1&expression=" . uri_escape("${files} && tags=test${suffix}"));
 
 # cleanup
 $json = viewerDeleteToken("/api/cron/$key2?molochRegressionUser=test1", $test1Token);
