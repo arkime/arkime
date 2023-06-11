@@ -1,13 +1,15 @@
-use Test::More tests => 26;
+use Test::More tests => 34;
 use Cwd;
 use MolochTest;
 use JSON;
 use Test::Differences;
 use Data::Dumper;
+use URI::Escape;
 use strict;
 
 my $json;
 my $token = getTokenCookie();
+my $suffix = int(rand()*1000000);
 
 $json = viewerPostToken("/user/create", '{"userId": "test1", "userName": "UserName", "enabled":true, "password":"password", "roles":["arkimeUser"]}', $token);
 $json = viewerPostToken("/user/create", '{"userId": "test2", "userName": "UserName", "enabled":true, "password":"password", "roles":["cont3xtUser"]}', $token);
@@ -63,7 +65,8 @@ ok(!exists $json->[0]->{users}, "test1 user cannot see users");
 ok(!exists $json->[0]->{roles}, "test1 user cannot see roles");
 
 # admin can view all periodic queries when all param is supplied
-$json = viewerPostToken("/api/cron?molochRegressionUser=test1", '{"name":"asdf","query":"protocols == tls","action":"tag","tags":"test"}', $test1Token);
+my $files = '(file == */https-connect.pcap || file == */https-generalizedtime.pcap || file == */https2-301-get.pcap || file == */https3-301-get.pcap)';
+$json = viewerPostToken("/api/cron?molochRegressionUser=test1", qq({"name":"asdf","since":-1,"query":"protocols == tls && $files","action":"tag","tags":"test$suffix"}), $test1Token);
 my $key2 = $json->{query}->{key};
 $json = viewerGet("/api/crons?molochRegressionUser=anonymous");
 is (@{$json}, 1, "returns 1 query without all flag");
@@ -89,6 +92,20 @@ eq_or_diff($json, from_json('{"text": "Bad query key", "success": false}'));
 # can not delete primary-viewer periodic queries
 $json = viewerDeleteToken("/api/cron/primary-viewer", $token);
 eq_or_diff($json, from_json('{"text": "Bad query key", "success": false}'));
+
+# Run crons
+viewerGet("/regressionTests/processCronQueries");
+viewerGet("/regressionTests/processCronQueries");
+
+# Check result
+$json = viewerGet("/api/crons?molochRegressionUser=anonymous&all=true");
+is ($json->[0]->{creator}, "test1");
+is ($json->[0]->{name}, "asdf");
+is ($json->[0]->{key}, $key2);
+is ($json->[0]->{count}, "4");
+
+countTest(4, "date=-1&expression=" . uri_escape("${files} && protocols==tls"));
+countTest(4, "date=-1&expression=" . uri_escape("${files} && tags=test${suffix}"));
 
 # cleanup
 $json = viewerDeleteToken("/api/cron/$key2?molochRegressionUser=test1", $test1Token);
