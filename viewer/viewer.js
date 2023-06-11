@@ -191,6 +191,7 @@ app.use(['/assets', '/logos'], express.static(
 
 // regression test methods, before auth checks --------------------------------
 if (Config.regressionTests) {
+  internals.cronTimeout = 0;
   // Override default lastUsed min write internal for tests
   User.lastUsedMinInterval = 1000;
 

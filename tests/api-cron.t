@@ -1,4 +1,4 @@
-use Test::More tests => 28;
+use Test::More tests => 30;
 use Cwd;
 use MolochTest;
 use JSON;
@@ -96,6 +96,7 @@ eq_or_diff($json, from_json('{"text": "Bad query key", "success": false}'));
 viewerGet("/regressionTests/processCronQueries");
 viewerGet("/regressionTests/processCronQueries");
 
+countTest(8, "date=-1&expression=" . uri_escape("file=*https*&&protocols==tls"));
 countTest(8, "date=-1&expression=" . uri_escape("file=*https*&&tags=test${suffix}"));
 
 # cleanup
