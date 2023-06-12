@@ -27,6 +27,7 @@ const express = require('express');
 const expressSession = require('express-session');
 const uuid = require('uuid').v4;
 const OIDC = require('openid-client');
+const LRU = require('lru-cache');
 
 class Auth {
   static debug;
@@ -51,6 +52,7 @@ class Auth {
   static #caTrustCerts;
   static #passwordSecretSection;
   static #app;
+  static #keyCache = new LRU({ max: 1000, maxAge: 1000 * 60 * 5 });
 
   // ----------------------------------------------------------------------------
   /**
@@ -659,9 +661,16 @@ class Auth {
   static obj2authNext (obj, secret) {
     secret ??= Auth.#serverSecret;
 
-    // ALW TODO: cache this salt/key for X period of time instead of recalculating every time
-    const salt = crypto.randomBytes(16);
-    const key = crypto.pbkdf2Sync(secret, salt, 100000, 32, 'sha256');
+    let entry, key, salt;
+    if ((entry = Auth.#keyCache.get(secret))) {
+      salt = entry.salt;
+      key = entry.key;
+    } else {
+      salt = crypto.randomBytes(16);
+      key = crypto.pbkdf2Sync(secret, salt, 300000, 32, 'sha256');
+      Auth.#keyCache.set(secret, { key, salt });
+      Auth.#keyCache.set(`${secret}:${salt.toString('hex')}`, key);
+    }
 
     const iv = crypto.randomBytes(12);
     const cipher = crypto.createCipheriv('aes-256-gcm', key, iv);
@@ -685,7 +694,8 @@ class Auth {
   // Encrypt an object into an auth string
   // IV.E.H
   static obj2auth (obj, secret) {
-    // ALW TODO: Need to call obj2authNext based on config
+    // HACK: Remove in future, for cookies use Next since local
+    if (obj.pid !== undefined) { return Auth.obj2authNext(obj, secret); }
 
     if (secret) {
       secret = crypto.createHash('sha256').update(secret).digest();
@@ -709,8 +719,11 @@ class Auth {
     try {
       const { iv, salt, data, tag } = JSON.parse(auth);
 
-      // ALW TODO: Check secret/salt cache
-      const key = crypto.pbkdf2Sync(secret, Buffer.from(salt, 'hex'), 100000, 32, 'sha256');
+      let key = Auth.#keyCache.get(`${secret}:${salt}`);
+      if (!key) {
+        key = crypto.pbkdf2Sync(secret, Buffer.from(salt, 'hex'), 300000, 32, 'sha256');
+        Auth.#keyCache.set(`${secret}:${salt}`, key);
+      }
 
       const decipher = crypto.createDecipheriv('aes-256-gcm', key, Buffer.from(iv, 'hex'));
       decipher.setAuthTag(Buffer.from(tag, 'hex'));
