@@ -7332,7 +7332,7 @@ $policy = qq/{
           {
             "state_name" : "delete",
             "conditions" : {
-              "min_index_age" : "$forceTime"
+              "min_index_age" : "$deleteTime"
             }
           }
         ]
