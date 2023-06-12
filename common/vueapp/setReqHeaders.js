@@ -25,11 +25,11 @@ export default function setReqHeaders (headers) {
   const cont3xtCookie = getCookie('CONT3XT-COOKIE');
 
   if (cont3xtCookie) {
-    combinedHeaders['x-cont3xt-cookie'] = cont3xtCookie;
+    combinedHeaders['x-cont3xt-cookie'] = decodeURIComponent(cont3xtCookie);
   }
 
   if (arkimeCookie) {
-    combinedHeaders['x-arkime-cookie'] = arkimeCookie;
+    combinedHeaders['x-arkime-cookie'] = decodeURIComponent(arkimeCookie);
   }
 
   return combinedHeaders;
