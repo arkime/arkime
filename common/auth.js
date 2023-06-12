@@ -36,6 +36,7 @@ class Auth {
   static passwordSecret256;
 
   static #userNameHeader;
+  static #serverSecret;
   static #serverSecret256;
   static #basePath;
   static #requiredAuthHeader;
@@ -99,8 +100,10 @@ class Auth {
     Auth.passwordSecret = options.passwordSecret ?? 'password';
     Auth.passwordSecret256 = crypto.createHash('sha256').update(Auth.passwordSecret).digest();
     if (options.serverSecret) {
+      Auth.#serverSecret = options.serverSecret;
       Auth.#serverSecret256 = crypto.createHash('sha256').update(options.serverSecret).digest();
     } else {
+      Auth.#serverSecret = options.passwordSecret;
       Auth.#serverSecret256 = Auth.passwordSecret256;
     }
     Auth.#requiredAuthHeader = options.requiredAuthHeader;
@@ -653,8 +656,37 @@ class Auth {
 
   // ----------------------------------------------------------------------------
   // Encrypt an object into an auth string
+  static obj2authNext (obj, secret) {
+    secret ??= Auth.#serverSecret;
+
+    // ALW TODO: cache this salt/key for X period of time instead of recalculating every time
+    const salt = crypto.randomBytes(16);
+    const key = crypto.pbkdf2Sync(secret, salt, 100000, 32, 'sha256');
+
+    const iv = crypto.randomBytes(12);
+    const cipher = crypto.createCipheriv('aes-256-gcm', key, iv);
+
+    let data = cipher.update(JSON.stringify(obj), 'utf8', 'hex');
+    data += cipher.final('hex');
+
+    const tag = cipher.getAuthTag();
+
+    const dataToStore = {
+      iv: iv.toString('hex'),
+      salt: salt.toString('hex'),
+      data, // already hex
+      tag: tag.toString('hex')
+    };
+
+    return JSON.stringify(dataToStore);
+  }
+
+  // ----------------------------------------------------------------------------
+  // Encrypt an object into an auth string
   // IV.E.H
   static obj2auth (obj, secret) {
+    // ALW TODO: Need to call obj2authNext based on config
+
     if (secret) {
       secret = crypto.createHash('sha256').update(secret).digest();
     } else {
@@ -672,8 +704,32 @@ class Auth {
 
   // ----------------------------------------------------------------------------
   // Decrypt the auth string into an object
+  static auth2objNext (obj, secret) {
+    secret ??= Auth.#serverSecret;
+    try {
+      const { iv, salt, data, tag } = JSON.parse(obj);
+
+      // ALW TODO: Check secret/salt cache
+      const key = crypto.pbkdf2Sync(secret, Buffer.from(salt, 'hex'), 100000, 32, 'sha256');
+
+      const decipher = crypto.createDecipheriv('aes-256-gcm', key, Buffer.from(iv, 'hex'));
+      decipher.setAuthTag(Buffer.from(tag, 'hex'));
+
+      let decrypted = decipher.update(data, 'hex', 'utf8');
+      decrypted += decipher.final('utf8');
+
+      return JSON.parse(decrypted);
+    } catch (error) {
+      console.log(error);
+      throw new Error('Incorrect auth supplied');
+    }
+  }
+
+  // ----------------------------------------------------------------------------
+  // Decrypt the auth string into an object
   // IV.E.H
   static auth2obj (auth, secret) {
+    if (auth[0] === '{') { return Auth.auth2objNext(auth, secret); }
     const parts = auth.split('.');
 
     if (parts.length !== 3) {
