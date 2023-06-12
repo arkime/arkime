@@ -671,14 +671,14 @@ class Auth {
 
     const tag = cipher.getAuthTag();
 
-    const dataToStore = {
+    const auth = {
       iv: iv.toString('hex'),
       salt: salt.toString('hex'),
       data, // already hex
       tag: tag.toString('hex')
     };
 
-    return JSON.stringify(dataToStore);
+    return JSON.stringify(auth);
   }
 
   // ----------------------------------------------------------------------------
@@ -704,10 +704,10 @@ class Auth {
 
   // ----------------------------------------------------------------------------
   // Decrypt the auth string into an object
-  static auth2objNext (obj, secret) {
+  static auth2objNext (auth, secret) {
     secret ??= Auth.#serverSecret;
     try {
-      const { iv, salt, data, tag } = JSON.parse(obj);
+      const { iv, salt, data, tag } = JSON.parse(auth);
 
       // ALW TODO: Check secret/salt cache
       const key = crypto.pbkdf2Sync(secret, Buffer.from(salt, 'hex'), 100000, 32, 'sha256');
