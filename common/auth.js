@@ -97,9 +97,9 @@ class Auth {
     Auth.#userNameHeader = options.userNameHeader;
     Auth.#passwordSecretSection = options.passwordSecretSection ?? 'default';
     Auth.passwordSecret = options.passwordSecret ?? 'password';
-    Auth.passwordSecret256 = crypto.createHash('sha256').update(Auth.passwordSecret).digest();
+    Auth.passwordSecret256 = crypto.pbkdf2Sync(Auth.passwordSecret, 'salt', 1000000, 32, 'sha256');
     if (options.serverSecret) {
-      Auth.#serverSecret256 = crypto.createHash('sha256').update(options.serverSecret).digest();
+      Auth.#serverSecret256 = crypto.pbkdf2Sync(options.serverSecret, 'salt', 1000000, 32, 'sha256');
     } else {
       Auth.#serverSecret256 = Auth.passwordSecret256;
     }
@@ -632,11 +632,20 @@ class Auth {
     try {
       const parts = passstore.split('.');
       if (parts.length === 2) {
-        // New style with IV: IV.E
-        const c = crypto.createDecipheriv('aes-256-cbc', Auth.passwordSecret256, Buffer.from(parts[0], 'hex'));
-        let d = c.update(parts[1], 'hex', 'binary');
-        d += c.final('binary');
-        return d;
+	try {
+          // New style with IV: IV.E
+          const c = crypto.createDecipheriv('aes-256-cbc', Auth.passwordSecret256, Buffer.from(parts[0], 'hex'));
+          let d = c.update(parts[1], 'hex', 'binary');
+          d += c.final('binary');
+          return d;
+	} catch (e) {
+	  //Password may be encrypted with old key derivation scheme, try old one
+	  const key = crypto.createHash('sha256').update(Auth.passwordSecret).digest();
+          const c = crypto.createDecipheriv('aes-256-cbc', key, Buffer.from(parts[0], 'hex'));
+          let d = c.update(parts[1], 'hex', 'binary');
+          d += c.final('binary');
+	  return d;
+        }
       } else {
         // Old style without IV: E
         // eslint-disable-next-line n/no-deprecated-api
