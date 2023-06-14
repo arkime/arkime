@@ -406,7 +406,7 @@ class UserAPIs {
    * @returns {string} text - The success/error message to (optionally) display to the user.
    */
   static deleteUserColumns (req, res) {
-    const colName = req.body.name || req.params.name;
+    const colName = req.params.name;
     if (!colName) {
       return res.serverError(403, 'Missing custom column configuration name');
     }

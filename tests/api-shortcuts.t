@@ -10,7 +10,7 @@ use strict;
 my $token = getTokenCookie();
 my $otherToken = getTokenCookie('user2');
 
-viewerPostToken("/user/create", '{"userId": "user2", "userName": "user2", "enabled":true, "password":"password", "roles":["arkimeUser"]}', $token);
+viewerPostToken("/api/user", '{"userId": "user2", "userName": "user2", "enabled":true, "password":"password", "roles":["arkimeUser"]}', $token);
 
 esPost("/tests_lookups/_delete_by_query?conflicts=proceed&refresh", '{ "query": { "match_all": {} } }');
 esPost("/tests2_lookups/_delete_by_query?conflicts=proceed&refresh", '{ "query": { "match_all": {} } }');
@@ -251,7 +251,5 @@ for (my $i=0; $i < scalar(@{$testsCluster}); $i++) { # indexes are different
 
 eq_or_diff($testsCluster, $tests2Cluster, "cluster sync failed", { context => 2 });
 
-# remove shared user that gets added when creating shared shortcuts
-viewerPostToken("/user/delete", "userId=_moloch_shared", $token);
 # remove user2
-viewerPostToken("/user/delete", "userId=user2", $token);
+viewerDeleteToken("/api/user/user2", $token);

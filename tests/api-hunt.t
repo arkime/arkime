@@ -21,7 +21,7 @@ my $json;
   eq_or_diff($hunts, from_json('{"recordsTotal": 0, "data": [], "recordsFiltered": 0}'));
 
 # Create huntuser
-  $json = viewerPostToken("/user/create", '{"userId": "huntuser", "userName": "UserName", "enabled":true, "password":"password", "packetSearch":true}', $token);
+  $json = viewerPostToken("/api/user", '{"userId": "huntuser", "userName": "UserName", "enabled":true, "password":"password", "packetSearch":true}', $token);
 
 my $hToken = getTokenCookie('huntuser');
 
@@ -444,7 +444,7 @@ my $hToken = getTokenCookie('huntuser');
   is ($result->{matchedSessions}, 0, "raw-regex-both-(.*a){25}x match check");
 
 # cleanup
-  $json = viewerPostToken("/user/delete", "userId=huntuser", $token);
+  $json = viewerDeleteToken("/api/user/huntuser", $token);
   viewerDeleteToken("/hunt/$id1?molochRegressionUser=anonymous", $token);
   viewerDeleteToken("/hunt/$id3?molochRegressionUser=anonymous", $token);
   esPost("/tests_hunts/_delete_by_query?conflicts=proceed&refresh", '{ "query": { "match_all": {} } }');

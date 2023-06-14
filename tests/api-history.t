@@ -1,4 +1,4 @@
-use Test::More tests => 49;
+use Test::More tests => 47;
 use Cwd;
 use URI::Escape;
 use MolochTest;
@@ -136,7 +136,7 @@ my ($url) = @_;
 
 # An admin user should see forced expressions for users
     # create a user with a forced expression
-    $json = viewerPostToken("/user/create", '{"userId": "historytest2", "userName": "UserName", "enabled":true, "password":"password","expression":"protocols == udp"}', $token);
+    $json = viewerPostToken("/api/user", '{"userId": "historytest2", "userName": "UserName", "enabled":true, "password":"password","expression":"protocols == udp"}', $token);
     sleep(1);
     esGet("/_refresh");
     esGet("/_flush");
@@ -180,12 +180,12 @@ my ($url) = @_;
   $json = viewerDeleteToken("/history/list/$item->{id}?index=$item->{index}", $token);
 
 # Delete Users
-    $json = viewerPostToken("/user/delete", "userId=historytest1&password=a&newPassword=b&currentPassword=c&test=1", $token);
+    $json = viewerDeleteToken("/api/user/historytest1", $token);
     sleep(1);
     esGet("/_refresh");
     esGet("/_flush");
 
-    $json = viewerPostToken("/user/delete", "userId=historytest2&password=a&newPassword=b&currentPassword=c&test=1", $token);
+    $json = viewerDeleteToken("/api/user/historytest2", $token);
     sleep(1);
     esGet("/_refresh");
     esGet("/_flush");
@@ -194,10 +194,8 @@ my ($url) = @_;
     $json = viewerGet("/api/histories?molochRegressionUser=anonymous&sortField=timestamp&desc=true");
     is ($json->{recordsFiltered}, 2, "Delete: recordsFiltered");
     $item = $json->{data}->[0];
-    is ($item->{api}, "/user/delete", "Delete: api");
+    is ($item->{api}, "/api/user/historytest2", "Delete: api");
     is ($item->{userId}, "anonymous", "Delete: userId");
     ok (!exists $item->{body}->{password}, "Delete: should have no password item");
     ok (!exists $item->{body}->{newPassword}, "Delete: should have no newPassword item");
     ok (!exists $item->{body}->{currentPassword}, "Delete: should have no currentPassword item");
-    is ($item->{body}->{userId}, "historytest2", "Delete: correct userId item");
-    is ($item->{body}->{test}, "1", "Delete: correct test item");

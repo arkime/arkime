@@ -13,8 +13,8 @@ my $notAdminToken = getTokenCookie('notadmin');
 esPost("/tests_notifiers/_delete_by_query?conflicts=proceed&refresh", '{ "query": { "match_all": {} } }');
 
 # add users for sharing tests
-  viewerPostToken("/user/create", '{"userId": "notadmin", "userName": "notadmin", "enabled":true, "password":"password", "roles":["arkimeUser"]}', $token);
-  viewerPostToken("/user/create", '{"userId": "user2", "userName": "user2", "enabled":true, "password":"password", "roles":["arkimeUser"]}', $token);
+  viewerPostToken("/api/user", '{"userId": "notadmin", "userName": "notadmin", "enabled":true, "password":"password", "roles":["arkimeUser"]}', $token);
+  viewerPostToken("/api/user", '{"userId": "user2", "userName": "user2", "enabled":true, "password":"password", "roles":["arkimeUser"]}', $token);
 
 # notifier types
   my $notifierTypes = viewerGetToken("/api/notifiertypes", $token);
@@ -155,5 +155,5 @@ esPost("/tests_notifiers/_delete_by_query?conflicts=proceed&refresh", '{ "query"
   $notifiers = viewerGetToken("/notifiers", $token);
   is (@{$notifiers}, 0, "Removed notifiers");
   # remove added users
-  viewerPostToken("/user/delete", "userId=notadmin", $token);
-  viewerPostToken("/user/delete", "userId=user2", $token);
+  viewerDeleteToken("/api/user/notadmin", $token);
+  viewerDeleteToken("/api/user/user2", $token);

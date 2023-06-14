@@ -699,7 +699,7 @@ class User {
    * @returns {string} text - The success/error message to (optionally) display to the user.
    */
   static async apiDeleteUser (req, res) {
-    const userId = ArkimeUtil.sanitizeStr(req.body.userId || req.params.id);
+    const userId = ArkimeUtil.sanitizeStr(req.params.id);
 
     if (!ArkimeUtil.isString(userId)) {
       return res.serverError(403, 'Missing userId');
@@ -736,7 +736,7 @@ class User {
    * @returns {string} text - The success/error message to (optionally) display to the user.
    */
   static async apiUpdateUser (req, res) {
-    const userId = ArkimeUtil.sanitizeStr(req.body.userId || req.params.id);
+    const userId = ArkimeUtil.sanitizeStr(req.params.id);
 
     if (!ArkimeUtil.isString(userId)) {
       return res.serverError(403, 'Missing userId');
