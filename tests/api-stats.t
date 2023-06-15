@@ -52,10 +52,10 @@ my $test1Token = getTokenCookie("test1");
     cmp_ok (@{$indices->{data}}, ">=", 30, "indices array size");
     cmp_ok ($indices->{data}->[0]->{index} cmp $indices->{data}->[1]->{index}, "<", 0, "indices index sorted");
 
-    $indices = viewerGet("/esindices/list?desc=true");
+    $indices = viewerGet("/api/esindices?desc=true");
     cmp_ok ($indices->{data}->[0]->{index} cmp $indices->{data}->[1]->{index}, ">", 0, "indices index sorted reverse");
 
-    $indices = viewerGet("/esindices/list?sortField=store.size");
+    $indices = viewerGet("/api/esindices?sortField=store.size");
     cmp_ok ($indices->{data}->[0]->{"store.size"}, "<=", $indices->{data}->[1]->{"store.size"}, "indices store.size sorted");
 
     $indices = viewerGet("/api/esindices?desc=true&sortField=store.size");
@@ -72,29 +72,29 @@ my $test1Token = getTokenCookie("test1");
     eq_or_diff($shards->{nodeExcludes}, [], "esshard: nodeExcludes empty");
     eq_or_diff($shards->{ipExcludes}, [], "esshard: ipExcludes empty");
 
-    $shards = viewerGet("/esshard/list?show=notdone");
+    $shards = viewerGet("/api/esshards?show=notdone");
     cmp_ok (@{$shards->{indices}}, "==", 0, "esshards: indices array size");
 
     my $result = viewerPost("/api/esshards/ip/1.2.3.4/exclude", "");
     eq_or_diff($result, from_json('{"success": false, "text": "Missing token"}'), "esshard: exclude no token");
 
-    $result = viewerPostToken("/esshard/exclude/ip/1.2.3.4", "", $token);
+    $result = viewerPostToken("/api/esshards/ip/1.2.3.4/exclude", "", $token);
     eq_or_diff($result, from_json('{"success": true, "text": "Successfully excluded node"}'), "esshard: exclude ip");
 
     $result = viewerPostToken("/api/esshards/name/thenode/exclude", "", $token);
     eq_or_diff($result, from_json('{"success": true, "text": "Successfully excluded node"}'), "esshard: exclude node");
 
-    $result = viewerPostToken("/esshard/exclude/foobar/1.2.3.4", "", $token);
+    $result = viewerPostToken("/api/esshards/foobar/1.2.3.4/exclude", "", $token);
     eq_or_diff($result, from_json('{"success": false, "text": "Unknown exclude type"}'), "esshard: exclude foobar");
 
-    $result = viewerPostToken("/esshard/exclude/foobar/1.2.3.4?molochRegressionUser=test1", "", $test1Token);
+    $result = viewerPostToken("/api/esshards/foobar/1.2.3.4/exclude?molochRegressionUser=test1", "", $test1Token);
     eq_or_diff($result, from_json('{"success": false, "text": "You do not have permission to access this resource"}'), "esshard: exclude not admin");
 
     $shards = viewerGet("/api/esshards");
     eq_or_diff($shards->{nodeExcludes}, ["thenode"], "esshard: nodeExcludes empty");
     eq_or_diff($shards->{ipExcludes}, ["1.2.3.4"], "esshard: ipExcludes empty");
 
-    $result = viewerPost("/esshard/include/ip/1.2.3.4", "");
+    $result = viewerPost("/api/esshards/ip/1.2.3.4/include", "");
     eq_or_diff($result, from_json('{"success": false, "text": "Missing token"}'), "esshard: include no token");
 
     $result = viewerPostToken("/api/esshards/ip/1.2.3.4/include", "", $token);
@@ -103,13 +103,13 @@ my $test1Token = getTokenCookie("test1");
     $result = viewerPostToken("/api/esshards/name/thenode/include", "", $token);
     eq_or_diff($result, from_json('{"success": true, "text": "Successfully included node"}'), "esshard: include node");
 
-    $result = viewerPostToken("/esshard/include/foobar/1.2.3.4", "", $token);
+    $result = viewerPostToken("/api/esshards/foobar/1.2.3.4/include", "", $token);
     eq_or_diff($result, from_json('{"success": false, "text": "Unknown include type"}'), "esshard: include foodbar");
 
-    $result = viewerPostToken("/esshard/include/foobar/1.2.3.4?molochRegressionUser=test1", "", $test1Token);
+    $result = viewerPostToken("/api/esshards/foobar/1.2.3.4/include?molochRegressionUser=test1", "", $test1Token);
     eq_or_diff($result, from_json('{"success": false, "text": "You do not have permission to access this resource"}'), "esshard: include not admin");
 
-    $shards = viewerGet("/esshard/list");
+    $shards = viewerGet("/api/esshards");
     eq_or_diff($shards->{nodeExcludes}, [], "esshard: nodeExcludes empty");
     eq_or_diff($shards->{ipExcludes}, [], "esshard: ipExcludes empty");
 
@@ -117,10 +117,10 @@ my $test1Token = getTokenCookie("test1");
     my $recovery = viewerGet("/api/esrecovery?show=all");
     cmp_ok (@{$recovery->{data}}, ">=", 100, "tasks array size");
 
-    $recovery = viewerGet("/esrecovery/list");
+    $recovery = viewerGet("/api/esrecovery");
     cmp_ok (@{$recovery->{data}}, "==", 0, "tasks array size");
 
-    $recovery = viewerGet("/esrecovery/list?show=notdone");
+    $recovery = viewerGet("/api/esrecovery?show=notdone");
     cmp_ok (@{$recovery->{data}}, "==", 0, "tasks array size");
 
 # parliament.json

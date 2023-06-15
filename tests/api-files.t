@@ -27,7 +27,7 @@ my ($url) = @_;
 
 
 # Basic list
-$json = get("/file/list");
+$json = get("/api/files");
 
 cmp_ok ($json->{recordsTotal}, ">=", 108);
 cmp_ok ($json->{recordsFiltered}, ">=", 108);
@@ -35,17 +35,17 @@ delete $json->{data}->[0]->{first};
 cmp_ok ($json->{data}->[0]->{num}, "<", $json->{data}->[1]->{num});
 
 # name sort
-$json = get("/file/list?sortField=name");
+$json = get("/api/files?sortField=name");
 
 cmp_ok ($json->{data}->[0]->{name}, "lt", $json->{data}->[1]->{name});
 
 # reverse name sort
-$json = get("/file/list?sortField=name&desc=true");
+$json = get("/api/files?sortField=name&desc=true");
 
 cmp_ok ($json->{data}->[0]->{name}, "gt", $json->{data}->[1]->{name});
 
 # filter
-$json = get("/file/list?sortField=name&desc=true&filter=v6-http");
+$json = get("/api/files?sortField=name&desc=true&filter=v6-http");
 
 cmp_ok ($json->{recordsTotal}, ">=", 108);
 cmp_ok ($json->{recordsFiltered}, "==", 1);
@@ -55,7 +55,7 @@ delete $json->{data}->[0]->{first};
 eq_or_diff($json->{data}->[0], from_json('{"locked":1,"filesize":9159,"node":"test","name":"/DIR/tests/pcap/v6-http.pcap","cratio":0}'));
 
 # filter 2
-$json = get("/file/list?sortField=name&desc=true&filter=/v6");
+$json = get("/api/files?sortField=name&desc=true&filter=/v6");
 
 cmp_ok ($json->{recordsTotal}, ">=", 108);
 cmp_ok ($json->{recordsFiltered}, "==", 2);
@@ -69,7 +69,7 @@ eq_or_diff($json->{data}, from_json('[{"locked":1,"filesize":28251,"node":"test"
                                      '{"locked":1,"filesize":9159,"node":"test","name":"/DIR/tests/pcap/v6-http.pcap","cratio":0}]'));
 
 # filter emptry
-$json = get("/file/list?sortField=name&desc=true&filter=sillyname");
+$json = get("/api/files?sortField=name&desc=true&filter=sillyname");
 
 cmp_ok ($json->{recordsTotal}, ">=", 108);
 cmp_ok ($json->{recordsFiltered}, "==", 0);

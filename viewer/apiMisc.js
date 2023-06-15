@@ -170,26 +170,6 @@ class MiscAPIs {
     });
   };
 
-  // title apis ---------------------------------------------------------------
-  /**
-   * GET - /api/title
-   *
-   * Retrieves the browser page title for the Arkime app.
-   * Configure it using <a href="https://arkime.com/settings#titletemplate">the titleTemplate setting</a>
-   * @name /title
-   * @returns {string} title - The title of the app based on the configured setting.
-   */
-  static getPageTitle (req, res) {
-    ViewerUtils.noCache(req, res, 'text/plain; charset=utf-8');
-    let titleConfig = Config.get('titleTemplate', '_cluster_ - _page_ _-view_ _-expression_');
-
-    titleConfig = titleConfig.replace(/_cluster_/g, internals.clusterName)
-      .replace(/_userId_/g, req.user ? req.user.userId : '-')
-      .replace(/_userName_/g, req.user ? req.user.userName : '-');
-
-    res.send(titleConfig);
-  };
-
   // value actions apis -------------------------------------------------------
   /**
    * GET - /api/valueactions

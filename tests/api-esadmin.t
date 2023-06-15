@@ -19,16 +19,16 @@ use strict;
     $json = viewerGet("/api/esadmin?molochRegressionUser=notadmin");
     eq_or_diff($json, from_json('{"text": "You do not have permission to access this resource", "success": false}'));
 
-    $json = viewerPost("/esadmin/set?molochRegressionUser=notadmin");
+    $json = viewerPost("/api/esadmin/set?molochRegressionUser=notadmin");
     eq_or_diff($json, from_json('{"text": "You do not have permission to access this resource", "success": false}'));
 
-    $json = viewerPost("/esadmin/reroute?molochRegressionUser=notadmin");
+    $json = viewerPost("/api/esadmin/reroute?molochRegressionUser=notadmin");
     eq_or_diff($json, from_json('{"text": "You do not have permission to access this resource", "success": false}'));
 
-    $json = viewerPost("/esadmin/flush?molochRegressionUser=notadmin");
+    $json = viewerPost("/api/esadmin/flush?molochRegressionUser=notadmin");
     eq_or_diff($json, from_json('{"text": "You do not have permission to access this resource", "success": false}'));
 
-    $json = viewerPost("/esadmin/unflood?molochRegressionUser=notadmin");
+    $json = viewerPost("/api/esadmin/unflood?molochRegressionUser=notadmin");
     eq_or_diff($json, from_json('{"text": "You do not have permission to access this resource", "success": false}'));
 
 # Missing token
@@ -45,35 +45,35 @@ use strict;
     eq_or_diff($json, from_json('{"text": "Missing token", "success": false}'));
 
 # good
-    $json = viewerPostToken("/esadmin/reroute?molochRegressionUser=adminuser1", "", $token);
+    $json = viewerPostToken("/api/esadmin/reroute?molochRegressionUser=adminuser1", "", $token);
     eq_or_diff($json, from_json('{"text": "Reroute successful", "success": true}'));
 
-    $json = viewerPostToken("/esadmin/flush?molochRegressionUser=adminuser1", "", $token);
+    $json = viewerPostToken("/api/esadmin/flush?molochRegressionUser=adminuser1", "", $token);
     eq_or_diff($json, from_json('{"text": "Flushed", "success": true}'));
 
-    $json = viewerPostToken("/esadmin/unflood?molochRegressionUser=adminuser1", "", $token);
+    $json = viewerPostToken("/api/esadmin/unflood?molochRegressionUser=adminuser1", "", $token);
     eq_or_diff($json, from_json('{"text": "Unflooded", "success": true}'));
 
 # set tests
-    $json = viewerPostToken("/esadmin/set?molochRegressionUser=adminuser1", "", $token);
+    $json = viewerPostToken("/api/esadmin/set?molochRegressionUser=adminuser1", "", $token);
     eq_or_diff($json, from_json('{"text": "Missing key", "success": false}'));
 
-    $json = viewerPostToken("/esadmin/set?molochRegressionUser=adminuser1", "key=foo", $token);
+    $json = viewerPostToken("/api/esadmin/set?molochRegressionUser=adminuser1", "key=foo", $token);
     eq_or_diff($json, from_json('{"text": "Missing value", "success": false}'));
 
-    $json = viewerPostToken("/esadmin/set?molochRegressionUser=adminuser1", "key=foo&value=bar", $token);
+    $json = viewerPostToken("/api/esadmin/set?molochRegressionUser=adminuser1", "key=foo&value=bar", $token);
     eq_or_diff($json, from_json('{"text": "Set failed", "success": false}'));
 
 
     # set to 1234
-    $json = viewerPostToken("/esadmin/set?molochRegressionUser=adminuser1", "key=cluster.max_shards_per_node&value=1234", $token);
+    $json = viewerPostToken("/api/esadmin/set?molochRegressionUser=adminuser1", "key=cluster.max_shards_per_node&value=1234", $token);
     eq_or_diff($json, from_json('{"text": "Successfully set settings", "success": true}'));
 
     $json = esGet("/_cluster/settings?flat_settings");
     is ($json->{persistent}->{'cluster.max_shards_per_node'}, 1234);
 
     # clear with space
-    $json = viewerPostToken("/esadmin/set?molochRegressionUser=adminuser1", "key=cluster.max_shards_per_node&value=", $token);
+    $json = viewerPostToken("/api/esadmin/set?molochRegressionUser=adminuser1", "key=cluster.max_shards_per_node&value=", $token);
     eq_or_diff($json, from_json('{"text": "Successfully set settings", "success": true}'));
 
     $json = esGet("/_cluster/settings?flat_settings");
