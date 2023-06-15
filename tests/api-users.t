@@ -1,4 +1,4 @@
-use Test::More tests => 140;
+use Test::More tests => 146;
 use Cwd;
 use URI::Escape;
 use MolochTest;
@@ -408,6 +408,27 @@ my $json;
 
     $json = viewerPostToken("/api/users/min?molochRegressionUser=test2", '{"roleId": "role:test1"}', $test2Token);
     eq_or_diff($json, from_json('{"text": "You do not have permission to access this resource","success":false}'));
+
+    $json = viewerPostToken("/api/user/test1/assignment?molochRegressionUser=test1", '{"roleId": "role:test1", "newRoleState": true}', $test1Token);
+    eq_or_diff($json, from_json('{"text": "User test1\'s role role:test1 updated successfully","success":true}'));
+
+    $json = viewerPostToken("/api/user/test1/assignment?molochRegressionUser=test1", '{"roleId": "role:test1", "newRoleState": true}', $test1Token);
+
+    $json = viewerPostToken("/api/user/test1/assignment?molochRegressionUser=test1", '{"roleId": "role:test1", "newRoleState": false}', $test1Token);
+    eq_or_diff($json, from_json('{"text": "User test1\'s role role:test1 updated successfully","success":true}'));
+
+    $json = viewerPostToken("/api/user/test1/assignment?molochRegressionUser=test1", '{"roleId": "role:test1", "newRoleState": false}', $test1Token);
+    eq_or_diff($json, from_json('{"text": "Can not remove a role that the user does not have","success":false}'));
+
+    $json = viewerPostToken("/api/user/test1/assignment?molochRegressionUser=test1", '{"roleId": "role:test1", "newRoleState": "true"}', $test1Token);
+    eq_or_diff($json, from_json('{"text": "Missing boolean newRoleState","success":false}'));
+
+    $json = viewerPostToken("/api/user/test1/assignment?molochRegressionUser=test1", '{"roleId": "role:unknown", "newRoleState": true}', $test1Token);
+    eq_or_diff($json, from_json('{"text": "You do not have permission to access this resource","success":false}'));
+
+    $json = viewerPostToken("/api/user/test1/assignment?molochRegressionUser=test1", '{"roleId": false, "newRoleState": true}', $test1Token);
+    eq_or_diff($json, from_json('{"text": "You do not have permission to access this resource","success":false}'));
+
 
 # Delete Users
     $json = viewerDeleteToken("/api/user/test1", $token);

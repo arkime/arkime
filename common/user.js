@@ -850,7 +850,7 @@ class User {
    * @returns {string} text - The success/error message to (optionally) display to the user.
    */
   static apiUpdateUserRole (req, res) {
-    const userId = ArkimeUtil.sanitizeStr(req.body.userId || req.params.id);
+    const userId = ArkimeUtil.sanitizeStr(req.params.id);
     const roleId = req.body.roleId;
     const newRoleState = req.body.newRoleState;
 
