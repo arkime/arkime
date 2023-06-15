@@ -1144,7 +1144,25 @@ app.all([
   '/user/spiview/fields/delete',
   '/user/:userId/acknowledgeMsg',
   '/user/update',
-  '/state/:name'
+  '/state/:name',
+  '/api/user/views',
+  '/user/views',
+  '/api/user/view',
+  '/user/views/create',
+  '/api/user/view/:id',
+  '/user/views/delete',
+  '/user/views/update',
+  '/api/user/crons',
+  '/user/cron',
+  '/api/user/cron',
+  '/user/cron/create',
+  '/api/user/cron/:key',
+  '/user/cron/delete',
+  '/user/cron/update',
+  '/notifierTypes',
+  '/notifiers',
+  '/notifiers/:id',
+  '/notifiers/:id/test'
 ], (req, res) => {
   res.status(404).end('Old API');
 });
@@ -1295,97 +1313,87 @@ app.get( // user roles endpoint
 
 // view apis ------------------------------------------------------------------
 app.get( // get views endpoint
-  ['/api/user/views', '/user/views', '/api/views'],
+  ['/api/views'],
   [ArkimeUtil.noCacheJson, getSettingUserCache],
   ViewAPIs.apiGetViews
 );
 
 app.post( // create view endpoint
-  ['/api/user/view', '/user/views/create', '/api/view'],
+  ['/api/view'],
   [ArkimeUtil.noCacheJson, checkCookieToken, logAction(), ArkimeUtil.getSettingUserDb, sanitizeViewName],
   ViewAPIs.apiCreateView
 );
 
-app.deletepost( // delete view endpoint
-  ['/api/user/view/:id', '/user/views/delete', '/api/view/:id'],
+app.delete( // delete view endpoint
+  ['/api/view/:id'],
   [ArkimeUtil.noCacheJson, checkCookieToken, logAction(), ArkimeUtil.getSettingUserDb, sanitizeViewName],
   ViewAPIs.apiDeleteView
 );
 
 app.put( // update view endpoint
-  ['/api/user/view/:id', '/user/views/update', '/api/view/:id'],
-  [ArkimeUtil.noCacheJson, checkCookieToken, logAction(), ArkimeUtil.getSettingUserDb, sanitizeViewName],
-  ViewAPIs.apiUpdateView
-);
-app.post( // update view endpoint for backwards compatibility with API 0.x-2.x
-  ['/user/views/update'],
+  ['/api/view/:id'],
   [ArkimeUtil.noCacheJson, checkCookieToken, logAction(), ArkimeUtil.getSettingUserDb, sanitizeViewName],
   ViewAPIs.apiUpdateView
 );
 
 // cron apis ------------------------------------------------------------------
 app.get( // get cron queries endpoint
-  ['/api/user/crons', '/user/cron', '/api/crons'],
+  ['/api/crons'],
   [ArkimeUtil.noCacheJson, getSettingUserCache],
   CronAPIs.getCrons
 );
 
 app.post( // create cron query endpoint
-  ['/api/user/cron', '/user/cron/create', '/api/cron'],
+  ['/api/cron'],
   [ArkimeUtil.noCacheJson, checkCookieToken, logAction(), ArkimeUtil.getSettingUserDb],
   CronAPIs.createCron
 );
 
 app.delete( // delete cron endpoint
-  ['/api/user/cron/:key', '/user/cron/delete', '/api/cron/:key'],
-  [ArkimeUtil.noCacheJson, checkCookieToken, logAction(), ArkimeUtil.getSettingUserDb, checkCronAccess],
-  CronAPIs.deleteCron
-);
-app.post( // delete cron endpoint for backwards compatibility with API 0.x-2.x
-  '/user/cron/delete',
+  ['/api/cron/:key'],
   [ArkimeUtil.noCacheJson, checkCookieToken, logAction(), ArkimeUtil.getSettingUserDb, checkCronAccess],
   CronAPIs.deleteCron
 );
 
 app.post( // update cron endpoint
-  ['/api/user/cron/:key', '/user/cron/update', '/api/cron/:key'],
+  ['/api/cron/:key'],
   [ArkimeUtil.noCacheJson, checkCookieToken, logAction(), ArkimeUtil.getSettingUserDb, checkCronAccess],
   CronAPIs.updateCron
 );
 
 // notifier apis --------------------------------------------------------------
 app.get( // notifier types endpoint
-  ['/api/notifiertypes', '/notifierTypes'],
+  ['/api/notifiertypes'],
   [ArkimeUtil.noCacheJson, User.checkRole('arkimeAdmin'), checkCookieToken],
   Notifier.apiGetNotifierTypes
 );
 
 app.get( // notifiers endpoint
-  ['/api/notifiers', '/notifiers'],
+  ['/api/notifiers'],
   [ArkimeUtil.noCacheJson, checkCookieToken],
   Notifier.apiGetNotifiers
 );
 
 app.post( // create notifier endpoint
-  ['/api/notifier', '/notifiers'],
+  ['/api/notifier'],
   [ArkimeUtil.noCacheJson, ArkimeUtil.getSettingUserDb, User.checkRole('arkimeAdmin'), checkCookieToken],
   Notifier.apiCreateNotifier
 );
 
 app.put( // update notifier endpoint
-  ['/api/notifier/:id', '/notifiers/:id'],
+  ['/api/notifier/:id'],
   [ArkimeUtil.noCacheJson, ArkimeUtil.getSettingUserDb, User.checkRole('arkimeAdmin'), checkCookieToken],
   Notifier.apiUpdateNotifier
 );
 
 app.delete( // delete notifier endpoint
-  ['/api/notifier/:id', '/notifiers/:id'],
+  ['/api/notifier/:id'],
   [ArkimeUtil.noCacheJson, ArkimeUtil.getSettingUserDb, User.checkRole('arkimeAdmin'), checkCookieToken],
   Notifier.apiDeleteNotifier
 );
 
 app.post( // test notifier endpoint
-  ['/api/notifier/:id/test', '/notifiers/:id/test'],
+  ['/api/notifier/:id/test'],
   [ArkimeUtil.noCacheJson, getSettingUserCache, User.checkRole('arkimeAdmin'), checkCookieToken],
   Notifier.apiTestNotifier
 );

@@ -311,7 +311,7 @@ my $hToken = getTokenCookie('huntuser');
   viewerDeleteToken("/hunt/$id6?molochRegressionUser=anonymous", $token);
   viewerDeleteToken("/hunt/$id7?molochRegressionUser=anonymous", $token);
   viewerDeleteToken("/hunt/$id8?molochRegressionUser=anonymous", $token);
-  viewerPostToken("/user/views/delete?molochRegressionUser=user2", '{"expression":"protocols == tls","user":"user2","shared":true,"name":"tls"}', $otherToken);
+  viewerDeleteToken("/api/view/$viewId?molochRegressionUser=user2", $otherToken);
 
 
 # multiget should return an error

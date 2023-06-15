@@ -114,7 +114,7 @@ viewerDeleteToken("/api/view/${id2}?molochRegressionUser=test2", $token2);
 viewerDeleteToken("/api/view/${id3}?molochRegressionUser=test1", $token);
 
 # views are empty
-$info = viewerGet("/user/views?molochRegressionUser=test1");
+$info = viewerGet("/api/views?molochRegressionUser=test1");
 eq_or_diff($info->{recordsTotal}, 0, "returns 0 recordsTotal");
 eq_or_diff($info->{recordsFiltered}, 0, "returns 0 recordsFiltered");
 eq_or_diff($info->{data}, from_json("[]"), "empty views");
