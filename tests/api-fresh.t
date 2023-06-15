@@ -30,7 +30,7 @@ my $json;
     $json = viewerGet2("/dstats.json");
     is (scalar %{$json}, 0, "Empty dstats");
 
-    $json = viewerGet2("/file/list");
+    $json = viewerGet2("/api/files");
     is ($json->{recordsTotal}, 0, "Correct stats.json recordsTotal");
 
     $json = viewerGet2("/sessions.json?map=true&date=-1");

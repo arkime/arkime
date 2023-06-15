@@ -1162,7 +1162,35 @@ app.all([
   '/notifierTypes',
   '/notifiers',
   '/notifiers/:id',
-  '/notifiers/:id/test'
+  '/notifiers/:id/test',
+  '/history/list',
+  '/history/list/:id',
+  '/esindices/list',
+  '/esindices/:index',
+  '/esindices/:index/optimize',
+  '/esindices/:index/close',
+  '/esindices/:index/open',
+  '/esindices/:index/shrink',
+  '/estask/list',
+  '/estask/cancel',
+  '/estask/cancelById',
+  '/estask/cancelAll',
+  '/esadmin/list',
+  '/esadmin/set',
+  '/esadmin/reroute',
+  '/esadmin/flush',
+  '/esadmin/unflood',
+  '/esadmin/clearcache',
+  '/esshard/list',
+  '/esshard/exclude/:type/:value',
+  '/esshard/include/:type/:value',
+  '/esrecovery/list',
+  '/api/title',
+  '/titleconfig',
+  '/molochRightClick',
+  '/file/list',
+  '/api/:nodeName/:fileNum/filesize',
+  '/:nodeName/:fileNum/filesize.json'
 ], (req, res) => {
   res.status(404).end('Old API');
 });
@@ -1400,13 +1428,13 @@ app.post( // test notifier endpoint
 
 // history apis ---------------------------------------------------------------
 app.get( // get histories endpoint
-  ['/api/histories', '/history/list'],
+  ['/api/histories'],
   [ArkimeUtil.noCacheJson, recordResponseTime, setCookie],
   HistoryAPIs.getHistories
 );
 
 app.delete( // delete history endpoint
-  ['/api/history/:id', '/history/list/:id'],
+  ['/api/history/:id'],
   [ArkimeUtil.noCacheJson, checkCookieToken, User.checkRole('arkimeAdmin'), User.checkPermissions(['removeEnabled'])],
   HistoryAPIs.deleteHistory
 );
@@ -1432,122 +1460,122 @@ app.get( // OpenSearch/Elasticsearch stats endpoint
 );
 
 app.get( // OpenSearch/Elasticsearch indices endpoint
-  ['/api/esindices', '/esindices/list'],
+  ['/api/esindices'],
   [ArkimeUtil.noCacheJson, recordResponseTime, User.checkPermissions(['hideStats']), setCookie],
   StatsAPIs.getESIndices
 );
 
 app.delete( // delete OpenSearch/Elasticsearch index endpoint
-  ['/api/esindices/:index', '/esindices/:index'],
+  ['/api/esindices/:index'],
   [ArkimeUtil.noCacheJson, recordResponseTime, User.checkRole('arkimeAdmin'), User.checkPermissions(['removeEnabled']), setCookie],
   StatsAPIs.deleteESIndex
 );
 
 app.post( // optimize OpenSearch/Elasticsearch index endpoint
-  ['/api/esindices/:index/optimize', '/esindices/:index/optimize'],
+  ['/api/esindices/:index/optimize'],
   [ArkimeUtil.noCacheJson, logAction(), checkCookieToken, User.checkRole('arkimeAdmin')],
   StatsAPIs.optimizeESIndex
 );
 
 app.post( // close OpenSearch/Elasticsearch index endpoint
-  ['/api/esindices/:index/close', '/esindices/:index/close'],
+  ['/api/esindices/:index/close'],
   [ArkimeUtil.noCacheJson, logAction(), checkCookieToken, User.checkRole('arkimeAdmin')],
   StatsAPIs.closeESIndex
 );
 
 app.post( // open OpenSearch/Elasticsearch index endpoint
-  ['/api/esindices/:index/open', '/esindices/:index/open'],
+  ['/api/esindices/:index/open'],
   [ArkimeUtil.noCacheJson, logAction(), checkCookieToken, User.checkRole('arkimeAdmin')],
   StatsAPIs.openESIndex
 );
 
 app.post( // shrink OpenSearch/Elasticsearch index endpoint
-  ['/api/esindices/:index/shrink', '/esindices/:index/shrink'],
+  ['/api/esindices/:index/shrink'],
   [ArkimeUtil.noCacheJson, logAction(), checkCookieToken, User.checkRole('arkimeAdmin')],
   StatsAPIs.shrinkESIndex
 );
 
 app.get( // OpenSearch/Elasticsearch tasks endpoint
-  ['/api/estasks', '/estask/list'],
+  ['/api/estasks'],
   [ArkimeUtil.noCacheJson, recordResponseTime, User.checkPermissions(['hideStats']), setCookie],
   StatsAPIs.getESTasks
 );
 
 app.post( // cancel OpenSearch/Elasticsearch task endpoint
-  ['/api/estasks/:id/cancel', '/estask/cancel'],
+  ['/api/estasks/:id/cancel'],
   [ArkimeUtil.noCacheJson, logAction(), checkCookieToken, User.checkRole('arkimeAdmin')],
   StatsAPIs.cancelESTask
 );
 
 app.post( // cancel OpenSearch/Elasticsearch task by opaque id endpoint
-  ['/api/estasks/:id/cancelwith', '/estask/cancelById'],
+  ['/api/estasks/:id/cancelwith'],
   // should not have admin check so users can use, each user is name spaced
   [ArkimeUtil.noCacheJson, logAction(), checkCookieToken],
   StatsAPIs.cancelUserESTask
 );
 
 app.post( // cancel all OpenSearch/Elasticsearch tasks endpoint
-  ['/api/estasks/cancelall', '/estask/cancelAll'],
+  ['/api/estasks/cancelall'],
   [ArkimeUtil.noCacheJson, logAction(), checkCookieToken, User.checkRole('arkimeAdmin')],
   StatsAPIs.cancelAllESTasks
 );
 
 app.get( // OpenSearch/Elasticsearch admin settings endpoint
-  ['/api/esadmin', '/esadmin/list'],
+  ['/api/esadmin'],
   [ArkimeUtil.noCacheJson, recordResponseTime, checkEsAdminUser, setCookie],
   StatsAPIs.getESAdminSettings
 );
 
 app.post( // set OpenSearch/Elasticsearch admin setting endpoint
-  ['/api/esadmin/set', '/esadmin/set'],
+  ['/api/esadmin/set'],
   [ArkimeUtil.noCacheJson, recordResponseTime, checkEsAdminUser, checkCookieToken],
   StatsAPIs.setESAdminSettings
 );
 
 app.post( // reroute OpenSearch/Elasticsearch admin endpoint
-  ['/api/esadmin/reroute', '/esadmin/reroute'],
+  ['/api/esadmin/reroute'],
   [ArkimeUtil.noCacheJson, recordResponseTime, checkEsAdminUser, checkCookieToken],
   StatsAPIs.rerouteES
 );
 
 app.post( // flush OpenSearch/Elasticsearch admin endpoint
-  ['/api/esadmin/flush', '/esadmin/flush'],
+  ['/api/esadmin/flush'],
   [ArkimeUtil.noCacheJson, recordResponseTime, checkEsAdminUser, checkCookieToken],
   StatsAPIs.flushES
 );
 
 app.post( // unflood OpenSearch/Elasticsearch admin endpoint
-  ['/api/esadmin/unflood', '/esadmin/unflood'],
+  ['/api/esadmin/unflood'],
   [ArkimeUtil.noCacheJson, recordResponseTime, checkEsAdminUser, checkCookieToken],
   StatsAPIs.unfloodES
 );
 
 app.post( // unflood OpenSearch/Elasticsearch admin endpoint
-  ['/api/esadmin/clearcache', '/esadmin/clearcache'],
+  ['/api/esadmin/clearcache'],
   [ArkimeUtil.noCacheJson, recordResponseTime, checkEsAdminUser, checkCookieToken],
   StatsAPIs.clearCacheES
 );
 
 app.get( // OpenSearch/Elasticsearch shards endpoint
-  ['/api/esshards', '/esshard/list'],
+  ['/api/esshards'],
   [ArkimeUtil.noCacheJson, recordResponseTime, User.checkPermissions(['hideStats']), setCookie],
   StatsAPIs.getESShards
 );
 
 app.post( // exclude OpenSearch/Elasticsearch shard endpoint
-  ['/api/esshards/:type/:value/exclude', '/esshard/exclude/:type/:value'],
+  ['/api/esshards/:type/:value/exclude'],
   [ArkimeUtil.noCacheJson, logAction(), checkCookieToken, User.checkRole('arkimeAdmin')],
   StatsAPIs.excludeESShard
 );
 
 app.post( // include OpenSearch/Elasticsearch shard endpoint
-  ['/api/esshards/:type/:value/include', '/esshard/include/:type/:value'],
+  ['/api/esshards/:type/:value/include'],
   [ArkimeUtil.noCacheJson, logAction(), checkCookieToken, User.checkRole('arkimeAdmin')],
   StatsAPIs.includeESShard
 );
 
 app.get( // OpenSearch/Elasticsearch recovery endpoint
-  ['/api/esrecovery', '/esrecovery/list'],
+  ['/api/esrecovery'],
   [ArkimeUtil.noCacheJson, recordResponseTime, User.checkPermissions(['hideStats']), setCookie],
   StatsAPIs.getESRecovery
 );
@@ -1855,27 +1883,14 @@ app.get( // fields endpoint
 );
 
 app.get( // files endpoint
-  ['/api/files', '/file/list'],
+  ['/api/files'],
   [ArkimeUtil.noCacheJson, recordResponseTime, logAction('files'), User.checkPermissions(['hideFiles']), setCookie],
   MiscAPIs.getFiles
 );
 
-app.get( // filesize endpoint
-  ['/api/:nodeName/:fileNum/filesize', '/:nodeName/:fileNum/filesize.json'],
-  [ArkimeUtil.noCacheJson, User.checkPermissions(['hideFiles'])],
-  MiscAPIs.getFileSize
-);
-
-// title apis -----------------------------------------------------------------
-app.get( // titleconfig endpoint
-  ['/api/title', '/titleconfig'],
-  User.checkPermissions(['webEnabled']),
-  MiscAPIs.getPageTitle
-);
-
 // menu actions apis ---------------------------------------------------------
 app.get( // value actions endpoint
-  ['/api/valueactions', '/api/valueActions', '/molochRightClick'],
+  ['/api/valueactions', '/api/valueActions'],
   [ArkimeUtil.noCacheJson, User.checkPermissions(['webEnabled'])],
   MiscAPIs.getValueActions
 );
