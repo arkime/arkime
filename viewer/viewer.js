@@ -1125,38 +1125,56 @@ app.get('/about', User.checkPermissions(['webEnabled']), (req, res) => {
 // ============================================================================
 // APIS
 // ============================================================================
+app.all([
+  '/user/current',
+  '/user/create',
+  '/user/delete',
+  '/user.css',
+  '/user/list',
+  '/user/password/change',
+  '/user/settings',
+  '/user/settings/update',
+  '/user/columns',
+  '/user/columns/create',
+  '/user/columns/:name',
+  '/user/columns/delete',
+  '/user/spiview/fields',
+  '/user/spiview/fields/create',
+  '/user/spiview/fields/:name',
+  '/user/spiview/fields/delete',
+  '/user/:userId/acknowledgeMsg',
+  '/user/update',
+  '/state/:name'
+], (req, res) => {
+  res.status(404).end('Old API');
+});
+
 // user apis ------------------------------------------------------------------
 app.get( // current user endpoint
-  ['/api/user', '/user/current'],
+  ['/api/user'],
   [ArkimeUtil.noCacheJson, User.checkPermissions(['webEnabled'])],
   User.apiGetUser
 );
 
 app.post( // create user endpoint
-  ['/api/user', '/user/create'],
+  ['/api/user'],
   [ArkimeUtil.noCacheJson, logAction(), checkCookieToken, User.checkRole('usersAdmin')],
   User.apiCreateUser
 );
 
 app.delete( // user delete endpoint
-  ['/api/user/:id', '/user/delete'],
+  ['/api/user/:id'],
   [ArkimeUtil.noCacheJson, logAction(), checkCookieToken, User.checkRole('usersAdmin')],
   User.apiDeleteUser
 );
-app.post( // user delete endpoint for backwards compatibility with API 0.x-2.x
-  ['/user/delete'],
-  [ArkimeUtil.noCacheJson, logAction(), checkCookieToken, User.checkRole('usersAdmin')],
-  User.apiDeleteUser
-);
-
 app.get( // user css endpoint
-  ['/api/user[/.]css', '/user.css'],
+  ['/api/user[/.]css'],
   User.checkPermissions(['webEnabled']),
   UserAPIs.getUserCSS
 );
 
 app.post( // get users endpoint
-  ['/api/users', '/user/list'],
+  ['/api/users'],
   [ArkimeUtil.noCacheJson, recordResponseTime, logAction('users'), User.checkRole('usersAdmin')],
   User.apiGetUsers
 );
@@ -1168,79 +1186,79 @@ app.post( // (non-admin) list users (with role status for roleAssigners)
 );
 
 app.post( // update user password endpoint
-  ['/api/user/password', '/user/password/change'],
+  ['/api/user/password'],
   [ArkimeUtil.noCacheJson, checkCookieToken, logAction(), ArkimeUtil.getSettingUserDb],
   User.apiUpdateUserPassword
 );
 
 app.get( // user settings endpoint
-  ['/api/user/settings', '/user/settings'],
+  ['/api/user/settings'],
   [ArkimeUtil.noCacheJson, recordResponseTime, ArkimeUtil.getSettingUserDb, User.checkPermissions(['webEnabled']), setCookie],
   UserAPIs.getUserSettings
 );
 
 app.post( // update user settings endpoint
-  ['/api/user/settings', '/user/settings/update'],
+  ['/api/user/settings'],
   [ArkimeUtil.noCacheJson, checkCookieToken, logAction(), ArkimeUtil.getSettingUserDb],
   UserAPIs.updateUserSettings
 );
 
 app.get( // user custom columns endpoint
-  ['/api/user/columns', '/user/columns'],
+  ['/api/user/columns'],
   [ArkimeUtil.noCacheJson, getSettingUserCache, User.checkPermissions(['webEnabled'])],
   UserAPIs.getUserColumns
 );
 
 app.post( // create user custom columns endpoint
-  ['/api/user/column', '/user/columns/create'],
+  ['/api/user/column'],
   [ArkimeUtil.noCacheJson, checkCookieToken, logAction(), ArkimeUtil.getSettingUserDb],
   UserAPIs.createUserColumns
 );
 
 app.put( // update user custom column endpoint
-  ['/api/user/column/:name', '/user/columns/:name'],
+  ['/api/user/column/:name'],
   [ArkimeUtil.noCacheJson, checkCookieToken, logAction(), ArkimeUtil.getSettingUserDb],
   UserAPIs.updateUserColumns
 );
 
-app.deletepost( // delete user custom column endpoint (DELETE and POST)
-  ['/api/user/column/:name', '/user/columns/delete'],
+app.delete( // delete user custom column endpoint
+  ['/api/user/column/:name'],
   [ArkimeUtil.noCacheJson, checkCookieToken, logAction(), ArkimeUtil.getSettingUserDb],
   UserAPIs.deleteUserColumns
 );
 
 app.get( // user spiview fields endpoint
-  ['/api/user/spiview', '/user/spiview/fields'],
+  ['/api/user/spiview'],
   [ArkimeUtil.noCacheJson, getSettingUserCache, User.checkPermissions(['webEnabled'])],
   UserAPIs.getUserSpiviewFields
 );
 
 app.post( // create spiview fields endpoint
-  ['/api/user/spiview', '/user/spiview/fields/create'],
+  ['/api/user/spiview'],
   [ArkimeUtil.noCacheJson, checkCookieToken, logAction(), ArkimeUtil.getSettingUserDb],
   UserAPIs.createUserSpiviewFields
 );
 
 app.put( // update user spiview fields endpoint
-  ['/api/user/spiview/:name', '/user/spiview/fields/:name'],
+  ['/api/user/spiview/:name'],
   [ArkimeUtil.noCacheJson, checkCookieToken, logAction(), ArkimeUtil.getSettingUserDb],
   UserAPIs.updateUserSpiviewFields
 );
 
-app.deletepost( // delete user spiview fields endpoint (DELETE and POST)
-  ['/api/user/spiview/:name', '/user/spiview/fields/delete'],
+app.delete( // delete user spiview fields endpoint
+  ['/api/user/spiview/:name'],
   [ArkimeUtil.noCacheJson, checkCookieToken, logAction(), ArkimeUtil.getSettingUserDb],
   UserAPIs.deleteUserSpiviewFields
 );
 
 app.put( // acknowledge message endoint
-  ['/api/user/:userId/acknowledge', '/user/:userId/acknowledgeMsg'],
+  ['/api/user/:userId/acknowledge'],
   [ArkimeUtil.noCacheJson, logAction(), checkCookieToken],
   UserAPIs.acknowledgeMsg
 );
 
 app.post( // update user endpoint
-  ['/api/user/:id', '/user/update'],
+  ['/api/user/:id'],
   [ArkimeUtil.noCacheJson, logAction(), checkCookieToken, User.checkRole('usersAdmin')],
   User.apiUpdateUser
 );
@@ -1252,13 +1270,13 @@ app.post( // assign or un-assign role from a user
 );
 
 app.get( // user state endpoint
-  ['/api/user/state/:name', '/state/:name'],
+  ['/api/user/state/:name'],
   [ArkimeUtil.noCacheJson, checkCookieToken, logAction()],
   UserAPIs.getUserState
 );
 
 app.post( // update/create user state endpoint
-  ['/api/user/state/:name', '/state/:name'],
+  ['/api/user/state/:name'],
   [ArkimeUtil.noCacheJson, checkCookieToken, logAction()],
   UserAPIs.updateUserState
 );
