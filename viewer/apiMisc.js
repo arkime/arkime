@@ -10,7 +10,6 @@ const ArkimeUtil = require('../common/arkimeUtil');
 const User = require('../common/user');
 const View = require('./apiViews');
 const internals = require('./internals');
-const ViewerUtils = require('./viewerUtils');
 const UserAPIs = require('./apiUsers');
 const SessionAPIs = require('./apiSessions');
 
