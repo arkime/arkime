@@ -1211,7 +1211,7 @@ app.all([
   '/:nodeName/hunt/:huntId/remote/:sessionId',
   '/spigraphhierarchy',
   '/addTags',
-  '/removeTags',
+  '/removeTags'
 ], (req, res) => {
   res.status(404).end('Old API');
 });
