@@ -56,7 +56,7 @@ sub doTest {
     $json = countTest(1, "date=-1&expression=" . uri_escape("tags=$stag && port.src == 54068"));
     my $sid = $json->{data}->[0]->{id};
 
-    $content = $MolochTest::userAgent->get("http://$MolochTest::host:8123/test/session/$id/packets?line=false&ts=false&base=ascii")->content;
+    $content = $MolochTest::userAgent->get("http://$MolochTest::host:8123/api/session/test/$id/packets?line=false&ts=false&base=ascii")->content;
 
     # Test string crosses 2 packets
     ok ($content =~ /domain in examples without prior coordination or asking for permission/);
@@ -66,7 +66,7 @@ sub doTest {
     #diag Dumper($result);
 
     # Test again, not the same that was scrubbed
-    $content = $MolochTest::userAgent->get("http://$MolochTest::host:8123/test/session/$id/packets?line=false&ts=false&base=ascii")->content;
+    $content = $MolochTest::userAgent->get("http://$MolochTest::host:8123/api/session/test/$id/packets?line=false&ts=false&base=ascii")->content;
     #diag $content;
 
     # Test string crosses 2 packets
@@ -77,7 +77,7 @@ sub doTest {
     $json = countTest(1, "date=-1&expression=" . uri_escape("tags=$btag"));
     $id = $json->{data}->[0]->{id};
 
-    $content = $MolochTest::userAgent->get("http://$MolochTest::host:8123/test/session/$id/packets?line=false&ts=false&base=ascii")->content;
+    $content = $MolochTest::userAgent->get("http://$MolochTest::host:8123/api/session/test/$id/packets?line=false&ts=false&base=ascii")->content;
     #diag $content;
 
     # Test string crosses 2 packets (/s matches across lines)

@@ -756,7 +756,7 @@ class SessionAPIs {
           let buffer = Buffer.alloc(Math.min(16200000, fields['network.packets'] * 20 + fields['network.bytes']));
           let bufpos = 0;
 
-          const sessionPath = Config.basePath(fields.node) + fields.node + '/' + extension + '/' + Db.session2Sid(item) + '.' + extension;
+          const sessionPath = Config.basePath(fields.node) + 'api/session/' + fields.node + '/' + Db.session2Sid(item) + '.' + extension;
           const url = new URL(sessionPath, viewUrl);
           const options = {
             agent: client === http ? internals.httpAgent : internals.httpsAgent

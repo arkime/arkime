@@ -1190,7 +1190,28 @@ app.all([
   '/molochRightClick',
   '/file/list',
   '/api/:nodeName/:fileNum/filesize',
-  '/:nodeName/:fileNum/filesize.json'
+  '/:nodeName/:fileNum/filesize.json',
+  '/fields',
+  '/molochclusters',
+  '/remoteclusters',
+  '/clusters',
+  '/upload',
+  '/reverseDNS.txt',
+  '/lookups',
+  '/lookups/:id',
+  '/hunt/list',
+  '/hunt',
+  '/hunt/:id',
+  '/hunt/:id/cancel',
+  '/hunt/:id/pause',
+  '/hunt/:id/play',
+  '/hunt/:id/removefromsessions',
+  '/hunt/:id/users',
+  '/hunt/:id/users/:user',
+  '/:nodeName/hunt/:huntId/remote/:sessionId',
+  '/spigraphhierarchy',
+  '/addTags',
+  '/removeTags'
 ], (req, res) => {
   res.status(404).end('Old API');
 });
@@ -1604,7 +1625,7 @@ app.getpost( // spigraph endpoint (POST or GET) - uses fillQueryFromBody to
 
 app.getpost( // spigraph hierarchy endpoint (POST or GET) - uses fillQueryFromBody to
   // fill the query parameters if the client uses POST to support POST and GET
-  ['/api/spigraphhierarchy', '/spigraphhierarchy'],
+  ['/api/spigraphhierarchy'],
   [ArkimeUtil.noCacheJson, recordResponseTime, fillQueryFromBody, logAction('spigraphhierarchy'), setCookie],
   SessionAPIs.getSPIGraphHierarchy
 );
@@ -1638,25 +1659,25 @@ app.getpost( // multiunique endpoint (POST or GET) - uses fillQueryFromBody to
 );
 
 app.get( // session detail (SPI) endpoint
-  ['/api/session/:nodeName/:id/detail', '/:nodeName/session/:id/detail'],
+  ['/api/session/:nodeName/:id/detail'],
   [logAction()],
   SessionAPIs.getDetail
 );
 
 app.get( // session packets endpoint
-  ['/api/session/:nodeName/:id/packets', '/:nodeName/session/:id/packets'],
+  ['/api/session/:nodeName/:id/packets'],
   [logAction(), User.checkPermissions(['hidePcap'])],
   SessionAPIs.getPackets
 );
 
 app.post( // add tags endpoint
-  ['/api/sessions/addtags', '/addTags'],
+  ['/api/sessions/addtags'],
   [ArkimeUtil.noCacheJson, checkHeaderToken, logAction('addTags')],
   SessionAPIs.addTags
 );
 
 app.post( // remove tags endpoint
-  ['/api/sessions/removetags', '/removeTags'],
+  ['/api/sessions/removetags'],
   [ArkimeUtil.noCacheJson, checkHeaderToken, logAction('removeTags'), User.checkPermissions(['removeEnabled'])],
   SessionAPIs.removeTags
 );
@@ -1686,25 +1707,25 @@ app.get( // session pcapng endpoint
 );
 
 app.get( // session node pcap endpoint
-  ['/api/session/:nodeName/:id[/.]pcap*', '/:nodeName/pcap/:id.pcap'],
+  ['/api/session/:nodeName/:id[/.]pcap*'],
   [checkProxyRequest, User.checkPermissions(['disablePcapDownload'])],
   SessionAPIs.getPCAPFromNode
 );
 
 app.get( // session node pcapng endpoint
-  ['/api/session/:nodeName/:id[/.]pcapng', '/:nodeName/pcapng/:id.pcapng'],
+  ['/api/session/:nodeName/:id[/.]pcapng'],
   [checkProxyRequest, User.checkPermissions(['disablePcapDownload'])],
   SessionAPIs.getPCAPNGFromNode
 );
 
 app.get( // session entire pcap endpoint
-  ['/api/session/entire/:nodeName/:id[/.]pcap', '/:nodeName/entirePcap/:id.pcap'],
+  ['/api/session/entire/:nodeName/:id[/.]pcap'],
   [checkProxyRequest, User.checkPermissions(['disablePcapDownload'])],
   SessionAPIs.getEntirePCAP
 );
 
 app.get( // session packets file image endpoint
-  ['/api/session/raw/:nodeName/:id[/.]png', '/:nodeName/raw/:id.png'],
+  ['/api/session/raw/:nodeName/:id[/.]png'],
   [checkProxyRequest, User.checkPermissions(['disablePcapDownload'])],
   SessionAPIs.getPacketPNG
 );
@@ -1722,7 +1743,7 @@ app.get( // session file bodyhash endpoint
 );
 
 app.get( // session file bodyhash endpoint
-  ['/api/session/:nodeName/:id/bodyhash/:hash', '/:nodeName/:id/bodyHash/:hash'],
+  ['/api/session/:nodeName/:id/bodyhash/:hash'],
   [checkProxyRequest],
   SessionAPIs.getBodyHashFromNode
 );
@@ -1779,92 +1800,92 @@ app.getpost( // connections csv endpoint (POST or GET) - uses fillQueryFromBody 
 
 // hunt apis ------------------------------------------------------------------
 app.get( // hunts endpoint
-  ['/api/hunts', '/hunt/list'],
+  ['/api/hunts'],
   [ArkimeUtil.noCacheJson, disableInMultiES, recordResponseTime, User.checkPermissions(['packetSearch']), setCookie],
   HuntAPIs.getHunts
 );
 
 app.post( // create hunt endpoint
-  ['/api/hunt', '/hunt'],
+  ['/api/hunt'],
   [ArkimeUtil.noCacheJson, disableInMultiES, logAction('hunt'), checkCookieToken, User.checkPermissions(['packetSearch'])],
   HuntAPIs.createHunt
 );
 
 app.delete( // delete hunt endpoint
-  ['/api/hunt/:id', '/hunt/:id'],
+  ['/api/hunt/:id'],
   [ArkimeUtil.noCacheJson, disableInMultiES, logAction('hunt/:id'), checkCookieToken, User.checkPermissions(['packetSearch']), checkHuntAccess],
   HuntAPIs.deleteHunt
 );
 
 app.put( // update hunt endpoint
-  ['/api/hunt/:id', '/hunt/:id'],
+  ['/api/hunt/:id'],
   [ArkimeUtil.noCacheJson, disableInMultiES, logAction('hunt/:id'), checkCookieToken, User.checkPermissions(['packetSearch']), checkHuntAccess],
   HuntAPIs.updateHunt
 );
 
 app.put( // cancel hunt endpoint
-  ['/api/hunt/:id/cancel', '/hunt/:id/cancel'],
+  ['/api/hunt/:id/cancel'],
   [ArkimeUtil.noCacheJson, disableInMultiES, logAction('hunt/:id/cancel'), checkCookieToken, User.checkPermissions(['packetSearch']), checkHuntAccess],
   HuntAPIs.cancelHunt
 );
 
 app.put( // pause hunt endpoint
-  ['/api/hunt/:id/pause', '/hunt/:id/pause'],
+  ['/api/hunt/:id/pause'],
   [ArkimeUtil.noCacheJson, disableInMultiES, logAction('hunt/:id/pause'), checkCookieToken, User.checkPermissions(['packetSearch']), checkHuntAccess],
   HuntAPIs.pauseHunt
 );
 
 app.put( // play hunt endpoint
-  ['/api/hunt/:id/play', '/hunt/:id/play'],
+  ['/api/hunt/:id/play'],
   [ArkimeUtil.noCacheJson, disableInMultiES, logAction('hunt/:id/play'), checkCookieToken, User.checkPermissions(['packetSearch']), checkHuntAccess],
   HuntAPIs.playHunt
 );
 
 app.put( // remove from sessions hunt endpoint
-  ['/api/hunt/:id/removefromsessions', '/hunt/:id/removefromsessions'],
+  ['/api/hunt/:id/removefromsessions'],
   [ArkimeUtil.noCacheJson, disableInMultiES, logAction('hunt/:id/removefromsessions'), checkCookieToken, User.checkPermissions(['packetSearch', 'removeEnabled']), checkHuntAccess],
   HuntAPIs.removeFromSessions
 );
 
 app.post( // add users to hunt endpoint
-  ['/api/hunt/:id/users', '/hunt/:id/users'],
+  ['/api/hunt/:id/users'],
   [ArkimeUtil.noCacheJson, disableInMultiES, logAction('hunt/:id/users'), checkCookieToken, User.checkPermissions(['packetSearch']), checkHuntAccess],
   HuntAPIs.addUsers
 );
 
 app.delete( // remove users from hunt endpoint
-  ['/api/hunt/:id/user/:user', '/hunt/:id/users/:user'],
+  ['/api/hunt/:id/user/:user'],
   [ArkimeUtil.noCacheJson, disableInMultiES, logAction('hunt/:id/user/:user'), checkCookieToken, User.checkPermissions(['packetSearch']), checkHuntAccess],
   HuntAPIs.removeUsers
 );
 
 app.get( // remote hunt endpoint
-  ['/api/hunt/:nodeName/:huntId/remote/:sessionId', '/:nodeName/hunt/:huntId/remote/:sessionId'],
+  ['/api/hunt/:nodeName/:huntId/remote/:sessionId'],
   [ArkimeUtil.noCacheJson],
   HuntAPIs.remoteHunt
 );
 
 // shortcut apis ----------------------------------------------------------------
 app.get( // get shortcuts endpoint
-  ['/api/shortcuts', '/lookups'],
+  ['/api/shortcuts'],
   [ArkimeUtil.noCacheJson, getSettingUserCache, recordResponseTime],
   ShortcutAPIs.getShortcuts
 );
 
 app.post( // create shortcut endpoint
-  ['/api/shortcut', '/lookups'],
+  ['/api/shortcut'],
   [ArkimeUtil.noCacheJson, ArkimeUtil.getSettingUserDb, logAction('shortcut'), checkCookieToken],
   ShortcutAPIs.createShortcut
 );
 
 app.put( // update shortcut endpoint
-  ['/api/shortcut/:id', '/lookups/:id'],
+  ['/api/shortcut/:id'],
   [ArkimeUtil.noCacheJson, ArkimeUtil.getSettingUserDb, logAction('shortcut/:id'), checkCookieToken],
   ShortcutAPIs.updateShortcut
 );
 
 app.delete( // delete shortcut endpoint
-  ['/api/shortcut/:id', '/lookups/:id'],
+  ['/api/shortcut/:id'],
   [ArkimeUtil.noCacheJson, ArkimeUtil.getSettingUserDb, logAction('shortcut/:id'), checkCookieToken],
   ShortcutAPIs.deleteShortcut
 );
@@ -1877,7 +1898,7 @@ app.get( // sync shortcuts endpoint
 
 // file apis ------------------------------------------------------------------
 app.get( // fields endpoint
-  ['/api/fields', '/fields'],
+  ['/api/fields'],
   [ArkimeUtil.noCacheJson],
   MiscAPIs.getFields
 );
@@ -1903,27 +1924,27 @@ app.get( // field actions endpoint
 
 // reverse dns apis -----------------------------------------------------------
 app.get( // reverse dns endpoint
-  ['/api/reversedns', '/reverseDNS.txt'],
+  ['/api/reversedns'],
   [ArkimeUtil.noCacheJson, logAction()],
   MiscAPIs.getReverseDNS
 );
 
 // uploads apis ---------------------------------------------------------------
 app.post(
-  ['/api/upload', '/upload'],
+  ['/api/upload'],
   [checkCookieToken, multer({ dest: '/tmp', limits: internals.uploadLimits }).single('file')],
   MiscAPIs.upload
 );
 
 // clusters apis --------------------------------------------------------------
 app.get(
-  ['/api/clusters', '/clusters'],
+  ['/api/clusters'],
   [ArkimeUtil.noCacheJson],
   MiscAPIs.getClusters
 );
 
 app.get(
-  ['/remoteclusters', '/molochclusters'],
+  ['/api/remoteclusters'],
   [ArkimeUtil.noCacheJson],
   MiscAPIs.getRemoteClusters
 );

@@ -299,9 +299,9 @@ export default {
           propsData: {
             session: this.session,
             fields: this.$store.state.fieldsMap,
-            molochclusters: this.$store.state.remoteclusters
+            remoteclusters: this.$store.state.remoteclusters
           },
-          props: ['session', 'fields', 'molochclusters'],
+          props: ['session', 'fields', 'remoteclusters'],
           data: function () {
             return {
               form: undefined,

@@ -17,21 +17,21 @@ esPost("/tests2_lookups/_delete_by_query?conflicts=proceed&refresh", '{ "query":
 multiPost("/regressionTests/flushCache");
 
 # empty shortcuts
-my $shortcuts = viewerGet("/lookups");
+my $shortcuts = viewerGet("/api/shortcuts");
 is(@{$shortcuts->{data}}, 0, "Empty shortcuts");
 is($shortcuts->{recordsTotal}, 0, "Empty shortcuts with records total");
 is($shortcuts->{recordsFiltered}, 0, "Empty shortcuts with records filtered");
 
 # create shortcut required fields
-my $json = viewerPostToken("/lookups", '{}', $token);
+my $json = viewerPostToken("/api/shortcut", '{}', $token);
 is($json->{text}, "Missing shortcut name", "shortcut name required");
-$json = viewerPostToken("/lookups", '{"name":"test_shortcut"}', $token);
+$json = viewerPostToken("/api/shortcut", '{"name":"test_shortcut"}', $token);
 is($json->{text}, "Missing shortcut type", "shortcut type required");
 $json = viewerPostToken("/api/shortcut", '{"name":"test_shortcut","type":"string"}', $token);
 is($json->{text}, "Missing shortcut value", "shortcut value required");
 
 # create shortcut requires token
-$json = viewerPost("/lookups", '{"name":"test_shortcut","type":"string","value":"udp"}');
+$json = viewerPost("/api/shortcut", '{"name":"test_shortcut","type":"string","value":"udp"}');
 is($json->{text}, "Missing token", "create shortcut requires token");
 
 # create shortcut
@@ -44,17 +44,17 @@ my $shortcut1Id = $json->{shortcut}->{id}; # save id for cleanup later
 is($json->{shortcut}->{name}, "test_shortcut", "returns shortcut");
 
 # shortcut names must be unique
-$json = viewerPostToken("/lookups", '{"name":"test_shortcut","type":"string","value":"udp"}', $token);
+$json = viewerPostToken("/api/shortcut", '{"name":"test_shortcut","type":"string","value":"udp"}', $token);
 ok(!$json->{success}, "unique shortcut names");
 
 # update shortcut requires token
-$json = viewerPut("/lookups/$shortcut1Id", "{}");
+$json = viewerPut("/api/shortcut/$shortcut1Id", "{}");
 is($json->{text}, "Missing token", "update shortcut requires token");
 
 # update shortcut required fields
-$json = viewerPutToken("/lookups/$shortcut1Id", '{}', $token);
+$json = viewerPutToken("/api/shortcut/$shortcut1Id", '{}', $token);
 is($json->{text}, "Missing shortcut name", "shortcut name required");
-$json = viewerPutToken("/lookups/$shortcut1Id", '{"name":"test_shortcut"}', $token);
+$json = viewerPutToken("/api/shortcut/$shortcut1Id", '{"name":"test_shortcut"}', $token);
 is($json->{text}, "Missing shortcut type", "shortcut type required");
 $json = viewerPutToken("/api/shortcut/$shortcut1Id", '{"name":"test_shortcut","type":"string"}', $token);
 is($json->{text}, "Missing shortcut value", "shortcut value required");
@@ -116,7 +116,7 @@ $shortcuts = multiGet("/api/shortcuts?molochRegressionUser=user2");
 is(@{$shortcuts->{data}}, 1, "1 shortcut for this user");
 
 # create a shortcut by another user
-$json = viewerPostToken("/lookups?molochRegressionUser=user2", '{"name":"other_test_shortcut_2","type":"string","value":"udp"}', $otherToken);
+$json = viewerPostToken("/api/shortcut?molochRegressionUser=user2", '{"name":"other_test_shortcut_2","type":"string","value":"udp"}', $otherToken);
 ok($json->{success}, "create shortcut success");
 my $shortcut3Id = $json->{shortcut}->{id}; # save id for cleanup later
 
@@ -129,7 +129,7 @@ $shortcuts = viewerGet('/api/shortcuts?molochRegressionUser=user3');
 is(@{$shortcuts->{data}}, 0, "user3 has no shortcuts shared with them");
 
 # can share shortcut with users
-$json = viewerPostToken("/lookups", '{"name":"user_shared_shortcut","type":"string","value":"udp","users":"user2"}', $token);
+$json = viewerPostToken("/api/shortcut", '{"name":"user_shared_shortcut","type":"string","value":"udp","users":"user2"}', $token);
 ok($json->{success}, "create shortcut with users success");
 is($json->{shortcut}->{users}->[0], "user2", "create user shared shortcut");
 my $shortcut4Id = $json->{shortcut}->{id}; # save id for cleanup later
@@ -172,7 +172,7 @@ $shortcuts = viewerGet("/api/shortcuts?molochRegressionUser=anonymous&all=true")
 eq_or_diff($shortcuts->{recordsTotal}, 4, "returns 4 recordsTotal with all flag");
 
 # get only shortcuts of a specific type
-$shortcuts = viewerGet("/lookups?fieldType=string");
+$shortcuts = viewerGet("/api/shortcuts?fieldType=string");
 is(@{$shortcuts->{data}}, 2, "should be 2 shortcuts of type string");
 is($shortcuts->{data}->[0]->{type}, 'string', 'shortcut should be of type string');
 $shortcuts = viewerGet("/api/shortcuts?fieldType=ip");
@@ -180,7 +180,7 @@ is(@{$shortcuts->{data}}, 1, "should be 1 shortcuts of type ip");
 is($shortcuts->{data}->[0]->{type}, 'ip', 'shortcut should be of type ip');
 
 # get shortcuts map
-$shortcuts = viewerGet("/lookups?map=true");
+$shortcuts = viewerGet("/api/shortcuts?map=true");
 ok(exists $shortcuts->{$shortcut1Id} && exists $shortcuts->{$shortcut4Id}, "Request lookup map");
 
 # get shortcuts formatted for typeahead
@@ -208,11 +208,11 @@ for (my $i=0; $i < scalar(@{$testsCluster}); $i++) { # indexes are different
 eq_or_diff($testsCluster, $tests2Cluster, "cluster sync failed", { context => 2 });
 
 # delete shortcut requires token
-$json = viewerDelete("/lookups/$shortcut1Id");
+$json = viewerDelete("/api/shortcut/$shortcut1Id");
 is($json->{text}, "Missing token", "delete shortcut requires token");
 
 # can't delete another user's shortcuts
-$json = viewerDeleteToken("/lookups/$shortcut1Id?molochRegressionUser=user2", $otherToken);
+$json = viewerDeleteToken("/api/shortcut/$shortcut1Id?molochRegressionUser=user2", $otherToken);
 ok(!$json->{success}, "can't delete another user's shortcut");
 is($json->{text}, "Permission denied");
 
@@ -226,12 +226,12 @@ $json = viewerDeleteToken("/api/shortcut/$shortcut1Id", $token);
 ok($json->{success}, "delete shortcut success");
 
 # cleanup
-$json = viewerDeleteToken("/lookups/$shortcut2Id", $token);
-$json = viewerDeleteToken("/lookups/$shortcut3Id", $token);
-$json = viewerDeleteToken("/lookups/$shortcut4Id", $token);
+$json = viewerDeleteToken("/api/shortcut/$shortcut2Id", $token);
+$json = viewerDeleteToken("/api/shortcut/$shortcut3Id", $token);
+$json = viewerDeleteToken("/api/shortcut/$shortcut4Id", $token);
 
 # make sure cleanup worked
-$shortcuts = viewerGet("/lookups");
+$shortcuts = viewerGet("/api/shortcuts");
 is(@{$shortcuts->{data}}, 0, "Empty shortcuts after cleanup");
 $shortcuts = viewerGet("/api/shortcuts?molochRegressionUser=user2");
 is(@{$shortcuts->{data}}, 0, "Empty shortcuts for user2 after cleanup");
