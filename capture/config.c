@@ -567,7 +567,7 @@ void arkime_config_load()
     config.yaraEveryPacket       = arkime_config_boolean(keyfile, "yaraEveryPacket", TRUE);
     config.autoGenerateId        = arkime_config_boolean(keyfile, "autoGenerateId", FALSE);
     config.enablePacketLen       = arkime_config_boolean(NULL, "enablePacketLen", FALSE);
-    config.enablePacketDedup     = arkime_config_boolean(NULL, "enablePacketDedup", FALSE);
+    config.enablePacketDedup     = arkime_config_boolean(NULL, "enablePacketDedup", TRUE);
 
     config.maxStreams[SESSION_TCP] = MAX(100, maxStreams/config.packetThreads*1.25);
     config.maxStreams[SESSION_UDP] = MAX(100, maxStreams/config.packetThreads/20);
