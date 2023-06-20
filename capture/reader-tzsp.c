@@ -22,9 +22,9 @@
 #include "gio/gio.h"
 #include "glib-object.h"
 #include "pcap.h"
-#include "moloch.h"
-extern MolochPcapFileHdr_t   pcapFileHeader;
-extern MolochConfig_t        config;
+#include "arkime.h"
+extern ArkimePcapFileHdr_t   pcapFileHeader;
+extern ArkimeConfig_t        config;
 
 LOCAL uint64_t              dropped;
 LOCAL uint64_t              packets;
@@ -55,8 +55,8 @@ LOCAL void *tzsp_thread(gpointer UNUSED(uw))
 
     g_object_unref (addr);
 
-    MolochPacketBatch_t   batch;
-    moloch_packet_batch_init(&batch);
+    ArkimePacketBatch_t   batch;
+    arkime_packet_batch_init(&batch);
     while (TRUE) {
         gchar             buf[0xffff];
 
@@ -123,14 +123,14 @@ LOCAL void *tzsp_thread(gpointer UNUSED(uw))
             continue;
         }
 
-        MolochPacket_t *packet = MOLOCH_TYPE_ALLOC0(MolochPacket_t);
+        ArkimePacket_t *packet = ARKIME_TYPE_ALLOC0(ArkimePacket_t);
         packet->pktlen        = BSB_REMAINING(bsb);
         packet->pkt           = BSB_WORK_PTR(bsb);
         packet->readerPos     = 0;
         gettimeofday(&packet->ts, NULL);
 
-        moloch_packet_batch(&batch, packet);
-        moloch_packet_batch_flush(&batch);
+        arkime_packet_batch(&batch, packet);
+        arkime_packet_batch_flush(&batch);
     }
 }
 
@@ -140,7 +140,7 @@ LOCAL void tzsp_server_start()
     g_thread_unref(g_thread_new("reader-tzsp", &tzsp_thread, NULL));
 }
 /******************************************************************************/
-LOCAL int tzsp_stats(MolochReaderStats_t *stats)
+LOCAL int tzsp_stats(ArkimeReaderStats_t *stats)
 {
     stats->dropped = dropped;
     stats->total = packets;
@@ -149,10 +149,10 @@ LOCAL int tzsp_stats(MolochReaderStats_t *stats)
 /******************************************************************************/
 void reader_tzsp_init(char *UNUSED(name))
 {
-    tzspPort = moloch_config_int(NULL, "tzspPort", 37008, 1, 0xffff);
+    tzspPort = arkime_config_int(NULL, "tzspPort", 37008, 1, 0xffff);
 
-    moloch_reader_start         = tzsp_server_start;
-    moloch_reader_stats         = tzsp_stats;
+    arkime_reader_start         = tzsp_server_start;
+    arkime_reader_stats         = tzsp_stats;
     deadPcap = pcap_open_dead(DLT_EN10MB, config.snapLen);
     if (config.bpf) {
         if (pcap_compile(deadPcap, &bpfp, config.bpf, 1, PCAP_NETMASK_UNKNOWN) == -1) {
@@ -160,5 +160,5 @@ void reader_tzsp_init(char *UNUSED(name))
         }
     }
 
-    moloch_packet_set_dltsnap(DLT_EN10MB, config.snapLen);
+    arkime_packet_set_dltsnap(DLT_EN10MB, config.snapLen);
 }

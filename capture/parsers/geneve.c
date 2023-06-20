@@ -12,20 +12,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include "moloch.h"
+#include "arkime.h"
 #include <net/ethernet.h>
 
-extern MolochConfig_t        config;
+extern ArkimeConfig_t        config;
 
 /******************************************************************************/
 SUPPRESS_ALIGNMENT
-LOCAL MolochPacketRC geneve_packet_enqueue(MolochPacketBatch_t * batch, MolochPacket_t * const packet, const uint8_t *data, int len)
+LOCAL ArkimePacketRC geneve_packet_enqueue(ArkimePacketBatch_t * batch, ArkimePacket_t * const packet, const uint8_t *data, int len)
 {
     if (len <= 8)
-        return MOLOCH_PACKET_UNKNOWN;
+        return ARKIME_PACKET_UNKNOWN;
 
     if ((data[0] & 0xc0) != 0 || (data[1] & 0x3f) != 0)
-        return MOLOCH_PACKET_UNKNOWN;
+        return ARKIME_PACKET_UNKNOWN;
 
     uint8_t  veroptlen = 0;
     uint16_t protocol;
@@ -39,22 +39,22 @@ LOCAL MolochPacketRC geneve_packet_enqueue(MolochPacketBatch_t * batch, MolochPa
     BSB_IMPORT_skip(bsb, 4);
 
     if (BSB_IS_ERROR(bsb)) {
-        return MOLOCH_PACKET_UNKNOWN;
+        return ARKIME_PACKET_UNKNOWN;
     }
 
     veroptlen &= 0x3f;
     BSB_IMPORT_skip(bsb, veroptlen * 4);
 
     if (BSB_IS_ERROR(bsb)) {
-        return MOLOCH_PACKET_UNKNOWN;
+        return ARKIME_PACKET_UNKNOWN;
     }
 
-    packet->tunnel |= MOLOCH_PACKET_TUNNEL_GENEVE;
+    packet->tunnel |= ARKIME_PACKET_TUNNEL_GENEVE;
 
-    return moloch_packet_run_ethernet_cb(batch, packet, BSB_WORK_PTR(bsb), BSB_REMAINING(bsb), protocol, "geneve");
+    return arkime_packet_run_ethernet_cb(batch, packet, BSB_WORK_PTR(bsb), BSB_REMAINING(bsb), protocol, "geneve");
 }
 /******************************************************************************/
-void moloch_parser_init()
+void arkime_parser_init()
 {
-    moloch_packet_set_udpport_enqueue_cb(6081, geneve_packet_enqueue);
+    arkime_packet_set_udpport_enqueue_cb(6081, geneve_packet_enqueue);
 }

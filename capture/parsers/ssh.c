@@ -12,7 +12,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include "moloch.h"
+#include "arkime.h"
 
 #define MAX_SSH_BUFFER 8196
 
@@ -24,14 +24,14 @@ typedef struct {
     uint16_t   done;
 } SSHInfo_t;
 
-extern MolochConfig_t        config;
+extern ArkimeConfig_t        config;
 LOCAL  int verField;
 LOCAL  int keyField;
 LOCAL  int hasshField;
 LOCAL  int hasshServerField;
 
 /******************************************************************************/
-LOCAL void ssh_parse_keyinit(MolochSession_t *session, const unsigned char *data, int remaining, int isDst)
+LOCAL void ssh_parse_keyinit(ArkimeSession_t *session, const unsigned char *data, int remaining, int isDst)
 {
     BSB   bsb;
     char  hbuf[30000];
@@ -108,7 +108,7 @@ LOCAL void ssh_parse_keyinit(MolochSession_t *session, const unsigned char *data
 
     if (!BSB_IS_ERROR(bsb) && !BSB_IS_ERROR(hbsb)) {
         gchar *md5 = g_compute_checksum_for_data(G_CHECKSUM_MD5, (guchar *)hbuf, BSB_LENGTH(hbsb));
-        if (!moloch_field_string_add(isDst?hasshServerField:hasshField, session, md5, 32, FALSE)) {
+        if (!arkime_field_string_add(isDst?hasshServerField:hasshField, session, md5, 32, FALSE)) {
             g_free(md5);
         }
 
@@ -116,7 +116,7 @@ LOCAL void ssh_parse_keyinit(MolochSession_t *session, const unsigned char *data
 }
 
 /******************************************************************************/
-LOCAL int ssh_parser(MolochSession_t *session, void *uw, const unsigned char *data, int remaining, int which)
+LOCAL int ssh_parser(ArkimeSession_t *session, void *uw, const unsigned char *data, int remaining, int which)
 {
     SSHInfo_t *ssh = uw;
 
@@ -132,10 +132,10 @@ LOCAL int ssh_parser(MolochSession_t *session, void *uw, const unsigned char *da
 
         if (ssh->packets[which] > 15) {
             if (ssh->counts[0][1] > ssh->counts[0][0] && ssh->counts[1][1] > ssh->counts[1][0]) {
-                moloch_session_add_tag(session, "ssh-reverse-shell");
+                arkime_session_add_tag(session, "ssh-reverse-shell");
             }
 
-            moloch_parsers_unregister(session, uw);
+            arkime_parsers_unregister(session, uw);
             return 0;
         }
     }
@@ -153,7 +153,7 @@ LOCAL int ssh_parser(MolochSession_t *session, void *uw, const unsigned char *da
         if (n) {
             int len = (n - data);
 
-            moloch_field_string_add_lower(verField, session, (char *)data, len);
+            arkime_field_string_add_lower(verField, session, (char *)data, len);
         }
         return 0;
     }
@@ -191,7 +191,7 @@ LOCAL int ssh_parser(MolochSession_t *session, void *uw, const unsigned char *da
 
             if (!BSB_IS_ERROR(bsb) && BSB_REMAINING(bsb) >= keyLen) {
                 char *str = g_base64_encode(BSB_WORK_PTR(bsb), keyLen);
-                if (!moloch_field_string_add(keyField, session, str, (keyLen/3+1)*4, FALSE)) {
+                if (!arkime_field_string_add(keyField, session, str, (keyLen/3+1)*4, FALSE)) {
                     g_free(str);
                 }
             }
@@ -203,51 +203,51 @@ LOCAL int ssh_parser(MolochSession_t *session, void *uw, const unsigned char *da
     return 0;
 }
 /******************************************************************************/
-LOCAL void ssh_free(MolochSession_t UNUSED(*session), void *uw)
+LOCAL void ssh_free(ArkimeSession_t UNUSED(*session), void *uw)
 {
     SSHInfo_t            *ssh          = uw;
 
-    MOLOCH_TYPE_FREE(SSHInfo_t, ssh);
+    ARKIME_TYPE_FREE(SSHInfo_t, ssh);
 }
 /******************************************************************************/
-LOCAL void ssh_classify(MolochSession_t *session, const unsigned char *UNUSED(data), int UNUSED(len), int UNUSED(which), void *UNUSED(uw))
+LOCAL void ssh_classify(ArkimeSession_t *session, const unsigned char *UNUSED(data), int UNUSED(len), int UNUSED(which), void *UNUSED(uw))
 {
-    if (moloch_session_has_protocol(session, "ssh"))
+    if (arkime_session_has_protocol(session, "ssh"))
         return;
 
-    moloch_session_add_protocol(session, "ssh");
+    arkime_session_add_protocol(session, "ssh");
 
-    SSHInfo_t            *ssh          = MOLOCH_TYPE_ALLOC0(SSHInfo_t);
+    SSHInfo_t            *ssh          = ARKIME_TYPE_ALLOC0(SSHInfo_t);
 
-    moloch_parsers_register(session, ssh_parser, ssh, ssh_free);
+    arkime_parsers_register(session, ssh_parser, ssh, ssh_free);
 }
 /******************************************************************************/
-void moloch_parser_init()
+void arkime_parser_init()
 {
-    verField = moloch_field_define("ssh", "lotermfield",
+    verField = arkime_field_define("ssh", "lotermfield",
         "ssh.ver", "Version", "ssh.version",
         "SSH Software Version",
-        MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT,
+        ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT,
         (char *)NULL);
 
-    keyField = moloch_field_define("ssh", "termfield",
+    keyField = arkime_field_define("ssh", "termfield",
         "ssh.key", "Key", "ssh.key",
         "SSH Key",
-        MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT,
+        ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT,
         (char *)NULL);
 
-    hasshField = moloch_field_define("ssh", "lotermfield",
+    hasshField = arkime_field_define("ssh", "lotermfield",
         "ssh.hassh", "HASSH", "ssh.hassh",
         "SSH HASSH field",
-        MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT,
+        ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT,
         (char *)NULL);
 
-    hasshServerField = moloch_field_define("ssh", "lotermfield",
+    hasshServerField = arkime_field_define("ssh", "lotermfield",
         "ssh.hasshServer", "HASSH Server", "ssh.hasshServer",
         "SSH HASSH Server field",
-        MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT,
+        ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT,
         (char *)NULL);
 
-    moloch_parsers_classifier_register_tcp("ssh", NULL, 0, (unsigned char*)"SSH", 3, ssh_classify);
+    arkime_parsers_classifier_register_tcp("ssh", NULL, 0, (unsigned char*)"SSH", 3, ssh_classify);
 }
 

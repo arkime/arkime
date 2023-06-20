@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-#include "moloch.h"
+#include "arkime.h"
 #include <errno.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
@@ -24,7 +24,7 @@
 #include "pcap.h"
 
 
-extern MolochConfig_t        config;
+extern ArkimeConfig_t        config;
 
 #define MAX_RINGS 10
 #define MAX_PROCS 10
@@ -38,7 +38,7 @@ LOCAL int                    snfProcNum;
 LOCAL uint64_t               totalPktsRead[MAX_INTERFACES][MAX_RINGS];
 
 /******************************************************************************/
-int reader_snf_stats(MolochReaderStats_t *stats)
+int reader_snf_stats(ArkimeReaderStats_t *stats)
 {
     struct snf_ring_stats ss;
 
@@ -87,19 +87,19 @@ LOCAL void *reader_snf_thread(gpointer posv)
     gpointer ring = rings[pos][offset];
     struct snf_recv_req req;
 
-    MolochPacketBatch_t batch;
-    moloch_packet_batch_init(&batch);
+    ArkimePacketBatch_t batch;
+    arkime_packet_batch_init(&batch);
     while (!config.quitting) {
         int err = snf_ring_recv(ring, -1, &req);
         if (err) {
             if (err == EBUSY || err == EAGAIN || err == EINTR)
                 continue;
             LOG("SNF quiting %d", err);
-            moloch_quit();
+            arkime_quit();
             break;
         }
 
-        MolochPacket_t *packet = MOLOCH_TYPE_ALLOC0(MolochPacket_t);
+        ArkimePacket_t *packet = ARKIME_TYPE_ALLOC0(ArkimePacket_t);
 
         packet->pkt           = (u_char *)req.pkt_addr;
         packet->ts.tv_sec     = req.timestamp / 1000000000;
@@ -111,17 +111,17 @@ LOCAL void *reader_snf_thread(gpointer posv)
         // Add a packet read to the stats accumulator for this ring.
         totalPktsRead[pos][offset] += 1;
 
-        moloch_packet_batch(&batch, packet);
+        arkime_packet_batch(&batch, packet);
 
         if (batch.count > 10000)
-            moloch_packet_batch_flush(&batch);
+            arkime_packet_batch_flush(&batch);
     }
-    moloch_packet_batch_flush(&batch);
+    arkime_packet_batch_flush(&batch);
     return NULL;
 }
 /******************************************************************************/
 void reader_snf_start() {
-    moloch_packet_set_dltsnap(DLT_EN10MB, config.snapLen);
+    arkime_packet_set_dltsnap(DLT_EN10MB, config.snapLen);
 
     int ringStartOffset = (snfProcNum-1)*snfNumRings;
     int i, r;
@@ -131,7 +131,7 @@ void reader_snf_start() {
             totalPktsRead[i][r] = 0;
 
             char name[100];
-            snprintf(name, sizeof(name), "moloch-snf%d-%d", i, r);
+            snprintf(name, sizeof(name), "arkime-snf%d-%d", i, r);
             g_thread_unref(g_thread_new(name, &reader_snf_thread, (gpointer)(long)(i | r << 8)));
         }
         snf_start(handles[i]);
@@ -142,9 +142,9 @@ void reader_snf_init(char *UNUSED(name))
 {
     struct snf_ifaddrs *ifaddrs;
 
-    snfNumRings = moloch_config_int(NULL, "snfNumRings", 1, 1, MAX_RINGS);
-    snfNumProcs = moloch_config_int(NULL, "snfNumProcs", 1, 1, MAX_PROCS);
-    snfProcNum  = moloch_config_int(NULL, "snfProcNum", 0, 0, MAX_PROCS);
+    snfNumRings = arkime_config_int(NULL, "snfNumRings", 1, 1, MAX_RINGS);
+    snfNumProcs = arkime_config_int(NULL, "snfNumProcs", 1, 1, MAX_PROCS);
+    snfProcNum  = arkime_config_int(NULL, "snfProcNum", 0, 0, MAX_PROCS);
 
     // Quick config sanity check for clustered processes
     if (snfNumProcs > 1 && snfProcNum == 0) {
@@ -153,8 +153,8 @@ void reader_snf_init(char *UNUSED(name))
        snfProcNum = 1;
     }
 
-    int snfDataRingSize = moloch_config_int(NULL, "snfDataRingSize", 0, 0, 0x7fffffff);
-    int snfFlags = moloch_config_int(NULL, "snfFlags", -1, 0, -1);
+    int snfDataRingSize = arkime_config_int(NULL, "snfDataRingSize", 0, 0, 0x7fffffff);
+    int snfFlags = arkime_config_int(NULL, "snfFlags", -1, 0, -1);
 
     int err;
     if ( (err = snf_init(SNF_VERSION_API)) != 0) {
@@ -199,11 +199,11 @@ void reader_snf_init(char *UNUSED(name))
 
     snf_freeifaddrs(ifaddrs);
 
-    moloch_reader_start         = reader_snf_start;
-    moloch_reader_stats         = reader_snf_stats;
+    arkime_reader_start         = reader_snf_start;
+    arkime_reader_stats         = reader_snf_stats;
 }
 /******************************************************************************/
-void moloch_plugin_init()
+void arkime_plugin_init()
 {
-    moloch_readers_add("snf", reader_snf_init);
+    arkime_readers_add("snf", reader_snf_init);
 }

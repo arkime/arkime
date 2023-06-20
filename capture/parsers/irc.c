@@ -12,9 +12,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include "moloch.h"
+#include "arkime.h"
 
-extern MolochConfig_t        config;
+extern ArkimeConfig_t        config;
 
 typedef struct {
     int ircState;
@@ -24,7 +24,7 @@ LOCAL  int channelsField;
 LOCAL  int nickField;
 
 /******************************************************************************/
-LOCAL int irc_parser(MolochSession_t *session, void *uw, const unsigned char *data, int remaining, int which)
+LOCAL int irc_parser(ArkimeSession_t *session, void *uw, const unsigned char *data, int remaining, int which)
 {
     IRCInfo_t *irc = uw;
 
@@ -60,7 +60,7 @@ LOCAL int irc_parser(MolochSession_t *session, void *uw, const unsigned char *da
             unsigned char *end = BSB_WORK_PTR(bsb);
 
             if (!BSB_IS_ERROR(bsb) && start != end) {
-                moloch_field_string_add(channelsField, session, (char*)start, end - start, TRUE);
+                arkime_field_string_add(channelsField, session, (char*)start, end - start, TRUE);
             }
         }
 
@@ -73,7 +73,7 @@ LOCAL int irc_parser(MolochSession_t *session, void *uw, const unsigned char *da
             unsigned char *end = BSB_WORK_PTR(bsb);
 
             if (!BSB_IS_ERROR(bsb) && start != end) {
-                moloch_field_string_add(nickField, session, (char*)start, end - start, TRUE);
+                arkime_field_string_add(nickField, session, (char*)start, end - start, TRUE);
             }
         }
 
@@ -85,56 +85,56 @@ LOCAL int irc_parser(MolochSession_t *session, void *uw, const unsigned char *da
     return 0;
 }
 /******************************************************************************/
-LOCAL void irc_free(MolochSession_t UNUSED(*session), void *uw)
+LOCAL void irc_free(ArkimeSession_t UNUSED(*session), void *uw)
 {
     IRCInfo_t            *irc          = uw;
 
-    MOLOCH_TYPE_FREE(IRCInfo_t, irc);
+    ARKIME_TYPE_FREE(IRCInfo_t, irc);
 }
 /******************************************************************************/
-LOCAL void irc_classify(MolochSession_t *session, const unsigned char *data, int len, int which, void *UNUSED(uw))
+LOCAL void irc_classify(ArkimeSession_t *session, const unsigned char *data, int len, int which, void *UNUSED(uw))
 {
     if (len < 8)
         return;
 
-    if (data[0] == ':' && !moloch_memstr((char *)data, len, " NOTICE ", 8))
+    if (data[0] == ':' && !arkime_memstr((char *)data, len, " NOTICE ", 8))
         return;
 
     //If a USER packet must have NICK or +iw with it so we don't pickup FTP
-    if (data[0] == 'U' && !moloch_memstr((char *)data, len, "\nNICK ", 6) && !moloch_memstr((char *)data, len, " +iw ", 5)) {
+    if (data[0] == 'U' && !arkime_memstr((char *)data, len, "\nNICK ", 6) && !arkime_memstr((char *)data, len, " +iw ", 5)) {
         return;
     }
 
-    if (moloch_session_has_protocol(session, "irc"))
+    if (arkime_session_has_protocol(session, "irc"))
         return;
 
-    moloch_session_add_protocol(session, "irc");
+    arkime_session_add_protocol(session, "irc");
 
-    IRCInfo_t            *irc          = MOLOCH_TYPE_ALLOC0(IRCInfo_t);
+    IRCInfo_t            *irc          = ARKIME_TYPE_ALLOC0(IRCInfo_t);
 
-    moloch_parsers_register(session, irc_parser, irc, irc_free);
+    arkime_parsers_register(session, irc_parser, irc, irc_free);
     irc_parser(session, irc, data, len, which);
 }
 /******************************************************************************/
-void moloch_parser_init()
+void arkime_parser_init()
 {
-    nickField = moloch_field_define("irc", "termfield",
+    nickField = arkime_field_define("irc", "termfield",
         "irc.nick", "Nickname", "irc.nick",
         "Nicknames set",
-        MOLOCH_FIELD_TYPE_STR_GHASH, MOLOCH_FIELD_FLAG_CNT,
+        ARKIME_FIELD_TYPE_STR_GHASH, ARKIME_FIELD_FLAG_CNT,
         "category", "user",
         (char *)NULL);
 
-    channelsField = moloch_field_define("irc", "termfield",
+    channelsField = arkime_field_define("irc", "termfield",
         "irc.channel", "Channel", "irc.channel",
         "Channels joined",
-        MOLOCH_FIELD_TYPE_STR_GHASH, MOLOCH_FIELD_FLAG_CNT,
+        ARKIME_FIELD_TYPE_STR_GHASH, ARKIME_FIELD_FLAG_CNT,
         (char *)NULL);
 
-    moloch_parsers_classifier_register_tcp("irc", NULL, 0, (unsigned char*)":", 1, irc_classify);
-    moloch_parsers_classifier_register_tcp("irc", NULL, 0, (unsigned char*)"NOTICE AUTH", 11, irc_classify);
-    moloch_parsers_classifier_register_tcp("irc", NULL, 0, (unsigned char*)"NICK ", 5, irc_classify);
-    moloch_parsers_classifier_register_tcp("irc", NULL, 0, (unsigned char*)"USER ", 5, irc_classify);
-    moloch_parsers_classifier_register_tcp("irc", NULL, 0, (unsigned char*)"CAP REQ ", 8, irc_classify);
+    arkime_parsers_classifier_register_tcp("irc", NULL, 0, (unsigned char*)":", 1, irc_classify);
+    arkime_parsers_classifier_register_tcp("irc", NULL, 0, (unsigned char*)"NOTICE AUTH", 11, irc_classify);
+    arkime_parsers_classifier_register_tcp("irc", NULL, 0, (unsigned char*)"NICK ", 5, irc_classify);
+    arkime_parsers_classifier_register_tcp("irc", NULL, 0, (unsigned char*)"USER ", 5, irc_classify);
+    arkime_parsers_classifier_register_tcp("irc", NULL, 0, (unsigned char*)"CAP REQ ", 8, irc_classify);
 }
 

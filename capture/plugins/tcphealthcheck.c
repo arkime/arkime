@@ -11,12 +11,12 @@ Listens on a TCP socket and immediately closes it to confirm that the capture se
 #include <stdlib.h>
 #include <ctype.h>
 #include <pthread.h>
-#include "moloch.h"
+#include "arkime.h"
 
 
 /******************************************************************************/
 
-extern MolochConfig_t        config;
+extern ArkimeConfig_t        config;
 
 LOCAL  int                   tcp_port;
 
@@ -82,16 +82,16 @@ void *tcp_listener(void *vargp)
 /*
  * Called by arkime when the plugin is loaded
  */
-void moloch_plugin_init()
+void arkime_plugin_init()
 {
     pthread_t thread_id;
 
-    tcp_port = moloch_config_int(NULL, "tcpHealthCheckPort", 0, 0, 65535);
+    tcp_port = arkime_config_int(NULL, "tcpHealthCheckPort", 0, 0, 65535);
     if (tcp_port) {
         LOG("tcpHealthCheckPort set to %d", tcp_port);
         pthread_create(&thread_id, NULL, tcp_listener, NULL);
         LOG("TCP listener thread created"); 
-        moloch_plugins_register("tcphealthcheck", FALSE);
+        arkime_plugins_register("tcphealthcheck", FALSE);
     }
     else {
       LOG("To use TCP health checks, set tcpHealthCheckPort to a value between 1 and 65535");

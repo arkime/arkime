@@ -12,7 +12,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include "moloch.h"
+#include "arkime.h"
 
 //#define DNSDEBUG 1
 
@@ -68,10 +68,10 @@ typedef struct {
     uint16_t            len[2];
 } DNSInfo_t;
 
-extern MolochConfig_t        config;
+extern ArkimeConfig_t        config;
 
 /******************************************************************************/
-LOCAL void dns_free(MolochSession_t *UNUSED(session), void *uw)
+LOCAL void dns_free(ArkimeSession_t *UNUSED(session), void *uw)
 {
     DNSInfo_t            *info          = uw;
 
@@ -79,7 +79,7 @@ LOCAL void dns_free(MolochSession_t *UNUSED(session), void *uw)
         free(info->data[0]);
     if (info->data[1])
         free(info->data[1]);
-    MOLOCH_TYPE_FREE(DNSInfo_t, info);
+    ARKIME_TYPE_FREE(DNSInfo_t, info);
 }
 /******************************************************************************/
 LOCAL int dns_name_element(BSB *nbsb, BSB *bsb)
@@ -157,21 +157,21 @@ LOCAL unsigned char *dns_name(const unsigned char *full, int fulllen, BSB *inbsb
     return name;
 }
 /******************************************************************************/
-LOCAL void dns_add_host(int field, MolochSession_t *session, char *string, int len)
+LOCAL void dns_add_host(int field, ArkimeSession_t *session, char *string, int len)
 {
-    moloch_field_string_add_host(field, session, string, len);
-    if (moloch_memstr((const char *)string, len, "xn--", 4)) {
-        moloch_field_string_add_lower(punyField, session, string, len);
+    arkime_field_string_add_host(field, session, string, len);
+    if (arkime_memstr((const char *)string, len, "xn--", 4)) {
+        arkime_field_string_add_lower(punyField, session, string, len);
     }
 }
 /******************************************************************************/
-LOCAL int dns_find_host(int pos, MolochSession_t *session, char *string, int len) {
+LOCAL int dns_find_host(int pos, ArkimeSession_t *session, char *string, int len) {
 
     char *host = 0;
-    MolochField_t *field = 0;
-    MolochString_t *hstring = 0;
+    ArkimeField_t *field = 0;
+    ArkimeString_t *hstring = 0;
 
-    if (config.fields[pos]->flags & MOLOCH_FIELD_FLAG_DISABLED || pos >= session->maxFields)
+    if (config.fields[pos]->flags & ARKIME_FIELD_FLAG_DISABLED || pos >= session->maxFields)
         return FALSE;
 
     if (!session->fields[pos]) // Hash list has not been created
@@ -206,7 +206,7 @@ LOCAL int dns_find_host(int pos, MolochSession_t *session, char *string, int len
     return FALSE;
 }
 /******************************************************************************/
-LOCAL void dns_parser(MolochSession_t *session, int kind, const unsigned char *data, int len)
+LOCAL void dns_parser(ArkimeSession_t *session, int kind, const unsigned char *data, int len)
 {
 
     if (len < 17)
@@ -269,27 +269,27 @@ LOCAL void dns_parser(MolochSession_t *session, int kind, const unsigned char *d
           continue;
 
         if (qclass <= 255 && qclasses[qclass]) {
-            moloch_field_string_add(queryClassField, session, qclasses[qclass], -1, TRUE);
+            arkime_field_string_add(queryClassField, session, qclasses[qclass], -1, TRUE);
         }
 
         if (qtype <= 255 && qtypes[qtype]) {
-            moloch_field_string_add(queryTypeField, session, qtypes[qtype], -1, TRUE);
+            arkime_field_string_add(queryTypeField, session, qtypes[qtype], -1, TRUE);
         }
 
         if (namelen > 0) {
             dns_add_host(hostField, session, (char *)name, namelen);
         }
     }
-    moloch_field_string_add(opCodeField, session, opcodes[opcode], -1, TRUE);
+    arkime_field_string_add(opCodeField, session, opcodes[opcode], -1, TRUE);
     switch(kind) {
     case 0:
-        moloch_session_add_protocol(session, "dns");
+        arkime_session_add_protocol(session, "dns");
         break;
     case 1:
-        moloch_session_add_protocol(session, "llmnr");
+        arkime_session_add_protocol(session, "llmnr");
         break;
     case 2:
-        moloch_session_add_protocol(session, "mdns");
+        arkime_session_add_protocol(session, "mdns");
         break;
     }
 
@@ -298,7 +298,7 @@ LOCAL void dns_parser(MolochSession_t *session, int kind, const unsigned char *d
 
     if (qr != 0) {
         int rcode      = data[3] & 0xf;
-        moloch_field_string_add(statusField, session, statuses[rcode], -1, TRUE);
+        arkime_field_string_add(statusField, session, statuses[rcode], -1, TRUE);
     }
     int recordType = 0;
     for (recordType= RESULT_RECORD_ANSWER; recordType <= RESULT_RECORD_ADDITIONAL; recordType++) {
@@ -338,20 +338,20 @@ LOCAL void dns_parser(MolochSession_t *session, int kind, const unsigned char *d
                 in.s_addr = ((uint32_t)(ptr[3])) << 24 | ((uint32_t)(ptr[2])) << 16 | ((uint32_t)(ptr[1])) << 8 | ptr[0];
 
                 if (opcode == 5) { // update
-                    moloch_field_ip4_add(ipField, session, in.s_addr);
+                    arkime_field_ip4_add(ipField, session, in.s_addr);
                     dns_add_host(hostField, session, (char *)name, namelen);
                 } else {
                     if (dns_find_host(hostField, session, (char *)name, namelen)) { // IP for looked-up hostname
-                        moloch_field_ip4_add(ipField, session, in.s_addr);
+                        arkime_field_ip4_add(ipField, session, in.s_addr);
                     }
 
                     if (config.parseDNSRecordAll) {
                         if (dns_find_host(hostNameServerField, session, (char *)name, namelen)){ // IP for name-server
-                            moloch_field_ip4_add(ipNameServerField, session, in.s_addr);
+                            arkime_field_ip4_add(ipNameServerField, session, in.s_addr);
                         }
 
                         if (dns_find_host(hostMailServerField, session, (char *)name, namelen)){ // IP for mail-exchange
-                            moloch_field_ip4_add(ipMailServerField, session, in.s_addr);
+                            arkime_field_ip4_add(ipMailServerField, session, in.s_addr);
                         }
                     }
                 }
@@ -413,20 +413,20 @@ LOCAL void dns_parser(MolochSession_t *session, int kind, const unsigned char *d
                 unsigned char *ptr = BSB_WORK_PTR(bsb);
 
                 if (opcode == 5) { // update
-                    moloch_field_ip6_add(ipField, session, ptr);
+                    arkime_field_ip6_add(ipField, session, ptr);
                     dns_add_host(hostField, session, (char *)name, namelen);
                 } else {
                     if (dns_find_host(hostField, session, (char *)name, namelen)) { // IP for looked-up hostname
-                        moloch_field_ip6_add(ipField, session, ptr);
+                        arkime_field_ip6_add(ipField, session, ptr);
                     }
 
                     if (config.parseDNSRecordAll) {
                         if (dns_find_host(hostNameServerField, session, (char *)name, namelen)){ // IP for name-server
-                            moloch_field_ip6_add(ipNameServerField, session, ptr);
+                            arkime_field_ip6_add(ipNameServerField, session, ptr);
                         }
 
                         if (dns_find_host(hostMailServerField, session, (char *)name, namelen)){ // IP for mail-server
-                            moloch_field_ip6_add(ipMailServerField, session, ptr);
+                            arkime_field_ip6_add(ipMailServerField, session, ptr);
                         }
                     }
                 }
@@ -438,7 +438,7 @@ LOCAL void dns_parser(MolochSession_t *session, int kind, const unsigned char *d
     }
 }
 /******************************************************************************/
-LOCAL int dns_tcp_parser(MolochSession_t *session, void *uw, const unsigned char *data, int len, int which)
+LOCAL int dns_tcp_parser(ArkimeSession_t *session, void *uw, const unsigned char *data, int len, int which)
 {
     DNSInfo_t *info = uw;
     while (len >= 2) {
@@ -448,7 +448,7 @@ LOCAL int dns_tcp_parser(MolochSession_t *session, void *uw, const unsigned char
             int dnslength = ((data[0]&0xff) << 8) | (data[1] & 0xff);
 
             if (dnslength < 18) {
-                moloch_parsers_unregister(session, uw);
+                arkime_parsers_unregister(session, uw);
                 return 0;
             }
 
@@ -467,7 +467,7 @@ LOCAL int dns_tcp_parser(MolochSession_t *session, void *uw, const unsigned char
             } else if (info->size[which] < dnslength) {
                 info->data[which] = realloc(info->data[which], dnslength);
                 if (!info->data[which]) {
-                    moloch_parsers_unregister(session, uw);
+                    arkime_parsers_unregister(session, uw);
                     return 0;
                 }
                 info->size[which] = dnslength;
@@ -495,16 +495,16 @@ LOCAL int dns_tcp_parser(MolochSession_t *session, void *uw, const unsigned char
     return 0;
 }
 /******************************************************************************/
-LOCAL void dns_tcp_classify(MolochSession_t *session, const unsigned char *UNUSED(data), int UNUSED(len), int UNUSED(which), void *UNUSED(uw))
+LOCAL void dns_tcp_classify(ArkimeSession_t *session, const unsigned char *UNUSED(data), int UNUSED(len), int UNUSED(which), void *UNUSED(uw))
 {
-    if (/*which == 0 &&*/ session->port2 == 53 && !moloch_session_has_protocol(session, "dns")) {
-        moloch_session_add_protocol(session, "dns");
-        DNSInfo_t  *info= MOLOCH_TYPE_ALLOC0(DNSInfo_t);
-        moloch_parsers_register(session, dns_tcp_parser, info, dns_free);
+    if (/*which == 0 &&*/ session->port2 == 53 && !arkime_session_has_protocol(session, "dns")) {
+        arkime_session_add_protocol(session, "dns");
+        DNSInfo_t  *info= ARKIME_TYPE_ALLOC0(DNSInfo_t);
+        arkime_parsers_register(session, dns_tcp_parser, info, dns_free);
     }
 }
 /******************************************************************************/
-LOCAL int dns_udp_parser(MolochSession_t *session, void *uw, const unsigned char *data, int len, int UNUSED(which))
+LOCAL int dns_udp_parser(ArkimeSession_t *session, void *uw, const unsigned char *data, int len, int UNUSED(which))
 {
     if (uw == 0 || (session->port1 != 53 && session->port2 != 53)) {
         dns_parser(session, (long)uw, data, len);
@@ -512,106 +512,106 @@ LOCAL int dns_udp_parser(MolochSession_t *session, void *uw, const unsigned char
     return 0;
 }
 /******************************************************************************/
-LOCAL void dns_udp_classify(MolochSession_t *session, const unsigned char *UNUSED(data), int UNUSED(len), int UNUSED(which), void *UNUSED(uw))
+LOCAL void dns_udp_classify(ArkimeSession_t *session, const unsigned char *UNUSED(data), int UNUSED(len), int UNUSED(which), void *UNUSED(uw))
 {
-    moloch_parsers_register(session, dns_udp_parser, uw, 0);
+    arkime_parsers_register(session, dns_udp_parser, uw, 0);
 }
 /******************************************************************************/
-void moloch_parser_init()
+void arkime_parser_init()
 {
-    ipField = moloch_field_define("dns", "ip",
+    ipField = arkime_field_define("dns", "ip",
         "ip.dns", "IP",  "dns.ip",
         "IP from DNS result",
-        MOLOCH_FIELD_TYPE_IP_GHASH, MOLOCH_FIELD_FLAG_CNT | MOLOCH_FIELD_FLAG_IPPRE,
+        ARKIME_FIELD_TYPE_IP_GHASH, ARKIME_FIELD_FLAG_CNT | ARKIME_FIELD_FLAG_IPPRE,
         "aliases", "[\"dns.ip\"]",
         "category", "ip",
         (char *)NULL);
 
-    ipNameServerField = moloch_field_define("dns", "ip",
+    ipNameServerField = arkime_field_define("dns", "ip",
         "ip.dns.nameserver", "IP",  "dns.nameserverIp",
         "IPs for nameservers",
-        MOLOCH_FIELD_TYPE_IP_GHASH, MOLOCH_FIELD_FLAG_CNT | MOLOCH_FIELD_FLAG_IPPRE,
+        ARKIME_FIELD_TYPE_IP_GHASH, ARKIME_FIELD_FLAG_CNT | ARKIME_FIELD_FLAG_IPPRE,
         "category", "ip",
         (char *)NULL);
 
-    ipMailServerField = moloch_field_define("dns", "ip",
+    ipMailServerField = arkime_field_define("dns", "ip",
         "ip.dns.mailserver", "IP",  "dns.mailserverIp",
         "IPs for mailservers",
-        MOLOCH_FIELD_TYPE_IP_GHASH, MOLOCH_FIELD_FLAG_CNT | MOLOCH_FIELD_FLAG_IPPRE,
+        ARKIME_FIELD_TYPE_IP_GHASH, ARKIME_FIELD_FLAG_CNT | ARKIME_FIELD_FLAG_IPPRE,
         "category", "ip",
         (char *)NULL);
 
-    moloch_field_define("dns", "ip",
+    arkime_field_define("dns", "ip",
         "ip.dns.all", "IP", "dnsipall",
         "Shorthand for ip.dns or ip.dns.nameserver",
-        0, MOLOCH_FIELD_FLAG_FAKE,
+        0, ARKIME_FIELD_FLAG_FAKE,
         "regex", "^ip\\\\.dns(?:(?!\\\\.(cnt|all)$).)*$",
         (char *)NULL);
 
-    hostField = moloch_field_define("dns", "lotermfield",
+    hostField = arkime_field_define("dns", "lotermfield",
         "host.dns", "Host", "dns.host",
         "DNS lookup hostname",
-        MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT | MOLOCH_FIELD_FLAG_FORCE_UTF8,
+        ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT | ARKIME_FIELD_FLAG_FORCE_UTF8,
         "aliases", "[\"dns.host\"]",
         "category", "host",
         (char *)NULL);
 
-    moloch_field_define("dns", "lotextfield",
+    arkime_field_define("dns", "lotextfield",
         "host.dns.tokens", "Hostname Tokens", "dns.hostTokens",
         "DNS lookup hostname tokens",
-        MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_FAKE,
+        ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_FAKE,
         "aliases", "[\"dns.host.tokens\"]",
         (char *)NULL);
 
-    hostNameServerField = moloch_field_define("dns", "lotermfield",
+    hostNameServerField = arkime_field_define("dns", "lotermfield",
         "host.dns.nameserver", "NS Host", "dns.nameserverHost",
         "Hostnames for Name Server",
-        MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT | MOLOCH_FIELD_FLAG_FORCE_UTF8,
+        ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT | ARKIME_FIELD_FLAG_FORCE_UTF8,
         "category", "host",
         (char *)NULL);
 
-    hostMailServerField = moloch_field_define("dns", "lotermfield",
+    hostMailServerField = arkime_field_define("dns", "lotermfield",
         "host.dns.mailserver", "MX Host", "dns.mailserverHost",
         "Hostnames for Mail Exchange Server",
-        MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT | MOLOCH_FIELD_FLAG_FORCE_UTF8,
+        ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT | ARKIME_FIELD_FLAG_FORCE_UTF8,
         "category", "host",
         (char *)NULL);
 
-    moloch_field_define("dns", "lotermfield",
+    arkime_field_define("dns", "lotermfield",
         "host.dns.all", "All Host", "dnshostall",
         "Shorthand for host.dns or host.dns.nameserver",
-        0, MOLOCH_FIELD_FLAG_FAKE,
+        0, ARKIME_FIELD_FLAG_FAKE,
         "regex",  "^host\\\\.dns(?:(?!\\\\.(cnt|all)$).)*$",
         (char *)NULL);
 
-    punyField = moloch_field_define("dns", "lotermfield",
+    punyField = arkime_field_define("dns", "lotermfield",
         "dns.puny", "Puny", "dns.puny",
         "DNS lookup punycode",
-        MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT,
+        ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT,
         (char *)NULL);
 
-    statusField = moloch_field_define("dns", "uptermfield",
+    statusField = arkime_field_define("dns", "uptermfield",
         "dns.status", "Status Code", "dns.status",
         "DNS lookup return code",
-        MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT,
+        ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT,
         (char *)NULL);
 
-    opCodeField = moloch_field_define("dns", "uptermfield",
+    opCodeField = arkime_field_define("dns", "uptermfield",
         "dns.opcode", "Op Code", "dns.opcode",
         "DNS lookup op code",
-        MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT,
+        ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT,
         (char *)NULL);
 
-    queryTypeField = moloch_field_define("dns", "uptermfield",
+    queryTypeField = arkime_field_define("dns", "uptermfield",
         "dns.query.type", "Query Type", "dns.qt",
         "DNS lookup query type",
-        MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT,
+        ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT,
         (char *)NULL);
 
-    queryClassField = moloch_field_define("dns", "uptermfield",
+    queryClassField = arkime_field_define("dns", "uptermfield",
         "dns.query.class", "Query Class", "dns.qc",
         "DNS lookup query class",
-        MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT,
+        ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT,
         (char *)NULL);
 
     qclasses[1]   = "IN";
@@ -681,10 +681,10 @@ void moloch_parser_init()
     qtypes[254] = "MAILA";
     qtypes[255] = "ANY";
 
-    moloch_parsers_classifier_register_port("dns", NULL, 53, MOLOCH_PARSERS_PORT_TCP_DST, dns_tcp_classify);
+    arkime_parsers_classifier_register_port("dns", NULL, 53, ARKIME_PARSERS_PORT_TCP_DST, dns_tcp_classify);
 
-    moloch_parsers_classifier_register_port("dns",   (void*)(long)0,   53, MOLOCH_PARSERS_PORT_UDP, dns_udp_classify);
-    moloch_parsers_classifier_register_port("llmnr", (void*)(long)1, 5355, MOLOCH_PARSERS_PORT_UDP, dns_udp_classify);
-    moloch_parsers_classifier_register_port("mdns",  (void*)(long)2, 5353, MOLOCH_PARSERS_PORT_UDP, dns_udp_classify);
+    arkime_parsers_classifier_register_port("dns",   (void*)(long)0,   53, ARKIME_PARSERS_PORT_UDP, dns_udp_classify);
+    arkime_parsers_classifier_register_port("llmnr", (void*)(long)1, 5355, ARKIME_PARSERS_PORT_UDP, dns_udp_classify);
+    arkime_parsers_classifier_register_port("mdns",  (void*)(long)2, 5353, ARKIME_PARSERS_PORT_UDP, dns_udp_classify);
 
 }

@@ -12,11 +12,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include "moloch.h"
+#include "arkime.h"
 
 //#define KRB5_DEBUG 1
 
-extern MolochConfig_t        config;
+extern ArkimeConfig_t        config;
 
 LOCAL  int realmField;
 LOCAL  int cnameField;
@@ -35,29 +35,29 @@ typedef struct {
 --      name-string[1]          SEQUENCE OF GeneralString
 --}
  */
-LOCAL void krb5_parse_principal_name(MolochSession_t *session, int field, const unsigned char *data, int len)
+LOCAL void krb5_parse_principal_name(ArkimeSession_t *session, int field, const unsigned char *data, int len)
 {
-    MolochASNSeq_t seq[10];
+    ArkimeASNSeq_t seq[10];
 
-    int num = moloch_parsers_asn_get_sequence(seq, 2, data, len, TRUE);
+    int num = arkime_parsers_asn_get_sequence(seq, 2, data, len, TRUE);
 
     if (num < 2 || seq[1].tag != 1)
         return;
 
-    num = moloch_parsers_asn_get_sequence(seq, 2, seq[1].value, seq[1].len, TRUE);
+    num = arkime_parsers_asn_get_sequence(seq, 2, seq[1].value, seq[1].len, TRUE);
 
     int len0, len1;
     const char *value0, *value1;
     if (num == 1) {
-        value0 = moloch_parsers_asn_sequence_to_string(&seq[0], &len0);
+        value0 = arkime_parsers_asn_sequence_to_string(&seq[0], &len0);
         if (value0 && len0 > 0)
-            moloch_field_string_add(field, session, value0, len0, TRUE);
+            arkime_field_string_add(field, session, value0, len0, TRUE);
     } else if (num == 2) {
         char str[255];
-        value0 = moloch_parsers_asn_sequence_to_string(&seq[0], &len0);
-        value1 = moloch_parsers_asn_sequence_to_string(&seq[1], &len1);
+        value0 = arkime_parsers_asn_sequence_to_string(&seq[0], &len0);
+        value1 = arkime_parsers_asn_sequence_to_string(&seq[1], &len1);
         snprintf(str, 255, "%.*s/%.*s", len0, value0, len1, value1);
-        moloch_field_string_add(field, session, str, len0 + 1 + len1, TRUE);
+        arkime_field_string_add(field, session, str, len0 + 1 + len1, TRUE);
     }
 }
 /******************************************************************************/
@@ -80,11 +80,11 @@ LOCAL void krb5_parse_principal_name(MolochSession_t *session, int field, const 
 --      additional-tickets[11]  SEQUENCE OF Ticket OPTIONAL
 --}
 */
-LOCAL void krb5_parse_req_body(MolochSession_t *session, const unsigned char *data, int len)
+LOCAL void krb5_parse_req_body(ArkimeSession_t *session, const unsigned char *data, int len)
 {
-    MolochASNSeq_t seq[12];
+    ArkimeASNSeq_t seq[12];
 
-    int num = moloch_parsers_asn_get_sequence(seq, 12, data, len, TRUE);
+    int num = arkime_parsers_asn_get_sequence(seq, 12, data, len, TRUE);
     if (num < 2)
         return;
     int i;
@@ -96,9 +96,9 @@ LOCAL void krb5_parse_req_body(MolochSession_t *session, const unsigned char *da
             krb5_parse_principal_name(session, cnameField, seq[i].value, seq[i].len);
             break;
         case 2:
-            value = moloch_parsers_asn_sequence_to_string(&seq[i], &vlen);
+            value = arkime_parsers_asn_sequence_to_string(&seq[i], &vlen);
             if (value && vlen > 0)
-                moloch_field_string_add(realmField, session, value, vlen, TRUE);
+                arkime_field_string_add(realmField, session, value, vlen, TRUE);
             break;
         case 3:
             krb5_parse_principal_name(session, snameField, seq[i].value, seq[i].len);
@@ -116,11 +116,11 @@ LOCAL void krb5_parse_req_body(MolochSession_t *session, const unsigned char *da
 --      req-body[4]             KDC-REQ-BODY
 --}
 */
-LOCAL void krb5_parse_req(MolochSession_t *session, const unsigned char *data, int len)
+LOCAL void krb5_parse_req(ArkimeSession_t *session, const unsigned char *data, int len)
 {
-    MolochASNSeq_t seq[5];
+    ArkimeASNSeq_t seq[5];
 
-    int num = moloch_parsers_asn_get_sequence(seq, 5, data, len, TRUE);
+    int num = arkime_parsers_asn_get_sequence(seq, 5, data, len, TRUE);
     if (num < 3 || seq[0].len == 0 || seq[1].len == 0)
         return;
 
@@ -133,7 +133,7 @@ LOCAL void krb5_parse_req(MolochSession_t *session, const unsigned char *data, i
         return;
     }
 
-    moloch_session_add_protocol(session, "krb5");
+    arkime_session_add_protocol(session, "krb5");
 
     if (seq[2].pc && seq[2].tag == 4) {
         krb5_parse_req_body(session, seq[2].value, seq[2].len);
@@ -153,7 +153,7 @@ LOCAL void krb5_parse_req(MolochSession_t *session, const unsigned char *data, i
 --      enc-part[6]             EncryptedData
 --}
 */
-LOCAL void krb5_parse_rep(MolochSession_t *UNUSED(session), const unsigned char *UNUSED(data), int UNUSED(len))
+LOCAL void krb5_parse_rep(ArkimeSession_t *UNUSED(session), const unsigned char *UNUSED(data), int UNUSED(len))
 {
 }
 /******************************************************************************/
@@ -174,18 +174,18 @@ LOCAL void krb5_parse_rep(MolochSession_t *UNUSED(session), const unsigned char 
 --      e-data[12]              OCTET STRING OPTIONAL
 --}
 */
-LOCAL void krb5_parse_error(MolochSession_t *UNUSED(session), const unsigned char *UNUSED(data), int UNUSED(len))
+LOCAL void krb5_parse_error(ArkimeSession_t *UNUSED(session), const unsigned char *UNUSED(data), int UNUSED(len))
 {
 }
 /******************************************************************************/
-LOCAL void krb5_parse(MolochSession_t *session, const unsigned char *data, int len)
+LOCAL void krb5_parse(ArkimeSession_t *session, const unsigned char *data, int len)
 {
     BSB obsb;
     uint32_t opc, msgType, olen;
     unsigned char *ovalue;
 
     BSB_INIT(obsb, data, len);
-    ovalue = moloch_parsers_asn_get_tlv(&obsb, &opc, &msgType, &olen);
+    ovalue = arkime_parsers_asn_get_tlv(&obsb, &opc, &msgType, &olen);
 #ifdef KRB5_DEBUG
     LOG("DEBUG1 - opc:%u msgType:%u olen:%u", opc, msgType, olen);
 #endif
@@ -207,38 +207,38 @@ LOCAL void krb5_parse(MolochSession_t *session, const unsigned char *data, int l
     }
 }
 /******************************************************************************/
-LOCAL int krb5_udp_parser(MolochSession_t *session, void *UNUSED(uw), const unsigned char *data, int len, int UNUSED(which))
+LOCAL int krb5_udp_parser(ArkimeSession_t *session, void *UNUSED(uw), const unsigned char *data, int len, int UNUSED(which))
 {
     krb5_parse(session, data, len);
     return 0;
 }
 /******************************************************************************/
-LOCAL void krb5_udp_classify(MolochSession_t *session, const unsigned char *data, int len, int UNUSED(which), void *UNUSED(uw))
+LOCAL void krb5_udp_classify(ArkimeSession_t *session, const unsigned char *data, int len, int UNUSED(which), void *UNUSED(uw))
 {
-    if (moloch_session_has_protocol(session, "krb5"))
+    if (arkime_session_has_protocol(session, "krb5"))
         return;
 
     BSB obsb;
     uint32_t opc, otag, olen;
 
     BSB_INIT(obsb, data, len);
-    moloch_parsers_asn_get_tlv(&obsb, &opc, &otag, &olen);
+    arkime_parsers_asn_get_tlv(&obsb, &opc, &otag, &olen);
 #ifdef KRB5_DEBUG
     LOG("enter %u %u %u", opc, otag, olen);
 #endif
     if (opc && (otag == 10 || otag == 12 || otag == 30) && len >= (int)olen) {
-        moloch_parsers_register(session, krb5_udp_parser, 0, 0);
+        arkime_parsers_register(session, krb5_udp_parser, 0, 0);
     }
 }
 /******************************************************************************/
-LOCAL void krb5_free(MolochSession_t UNUSED(*session), void *uw)
+LOCAL void krb5_free(ArkimeSession_t UNUSED(*session), void *uw)
 {
     KRB5Info_t            *krb5          = uw;
 
-    MOLOCH_TYPE_FREE(KRB5Info_t, krb5);
+    ARKIME_TYPE_FREE(KRB5Info_t, krb5);
 }
 /******************************************************************************/
-LOCAL int krb5_tcp_parser(MolochSession_t *session, void *uw, const unsigned char *data, int remaining, int which)
+LOCAL int krb5_tcp_parser(ArkimeSession_t *session, void *uw, const unsigned char *data, int remaining, int which)
 {
     KRB5Info_t *krb5 = uw;
 
@@ -258,41 +258,41 @@ LOCAL int krb5_tcp_parser(MolochSession_t *session, void *uw, const unsigned cha
     return 0;
 }
 /******************************************************************************/
-LOCAL void krb5_tcp_classify(MolochSession_t *session, const unsigned char *data, int UNUSED(len), int UNUSED(which), void *UNUSED(uw))
+LOCAL void krb5_tcp_classify(ArkimeSession_t *session, const unsigned char *data, int UNUSED(len), int UNUSED(which), void *UNUSED(uw))
 {
     if (len < 2 || which != 0 || data[0] != 0 || data[1] != 0)
         return;
 
-    KRB5Info_t            *krb5          = MOLOCH_TYPE_ALLOC(KRB5Info_t);
+    KRB5Info_t            *krb5          = ARKIME_TYPE_ALLOC(KRB5Info_t);
     krb5->pos[0] = krb5->pos[1] = 0;
 
-    moloch_parsers_register(session, krb5_tcp_parser, krb5, krb5_free);
+    arkime_parsers_register(session, krb5_tcp_parser, krb5, krb5_free);
 }
 /******************************************************************************/
-void moloch_parser_init()
+void arkime_parser_init()
 {
 
-    realmField = moloch_field_define("krb5", "termfield",
+    realmField = arkime_field_define("krb5", "termfield",
         "krb5.realm", "Realm", "krb5.realm",
         "Kerberos 5 Realm",
-        MOLOCH_FIELD_TYPE_STR_GHASH,  MOLOCH_FIELD_FLAG_CNT,
+        ARKIME_FIELD_TYPE_STR_GHASH,  ARKIME_FIELD_FLAG_CNT,
         (char *)NULL);
 
-    cnameField = moloch_field_define("krb5", "termfield",
+    cnameField = arkime_field_define("krb5", "termfield",
         "krb5.cname", "cname", "krb5.cname",
         "Kerberos 5 cname",
-        MOLOCH_FIELD_TYPE_STR_GHASH,  MOLOCH_FIELD_FLAG_CNT,
+        ARKIME_FIELD_TYPE_STR_GHASH,  ARKIME_FIELD_FLAG_CNT,
         (char *)NULL);
 
-    snameField = moloch_field_define("krb5", "termfield",
+    snameField = arkime_field_define("krb5", "termfield",
         "krb5.sname", "sname", "krb5.sname",
         "Kerberos 5 sname",
-        MOLOCH_FIELD_TYPE_STR_GHASH,  MOLOCH_FIELD_FLAG_CNT,
+        ARKIME_FIELD_TYPE_STR_GHASH,  ARKIME_FIELD_FLAG_CNT,
         (char *)NULL);
 
-    moloch_parsers_classifier_register_udp("krb5", 0, 7, (unsigned char*)"\x03\x02\x01\x05", 4, krb5_udp_classify);
-    moloch_parsers_classifier_register_udp("krb5", 0, 9, (unsigned char*)"\x03\x02\x01\x05", 4, krb5_udp_classify);
-    moloch_parsers_classifier_register_tcp("krb5", 0, 11, (unsigned char*)"\x03\x02\x01\x05", 4, krb5_tcp_classify);
-    moloch_parsers_classifier_register_tcp("krb5", 0, 13, (unsigned char*)"\x03\x02\x01\x05", 4, krb5_tcp_classify);
+    arkime_parsers_classifier_register_udp("krb5", 0, 7, (unsigned char*)"\x03\x02\x01\x05", 4, krb5_udp_classify);
+    arkime_parsers_classifier_register_udp("krb5", 0, 9, (unsigned char*)"\x03\x02\x01\x05", 4, krb5_udp_classify);
+    arkime_parsers_classifier_register_tcp("krb5", 0, 11, (unsigned char*)"\x03\x02\x01\x05", 4, krb5_tcp_classify);
+    arkime_parsers_classifier_register_tcp("krb5", 0, 13, (unsigned char*)"\x03\x02\x01\x05", 4, krb5_tcp_classify);
 }
 

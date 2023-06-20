@@ -12,7 +12,7 @@ WISEDIR = @prefix@/wiseService
 SRCS=$(wildcard *.c)
 SOS=$(patsubst %.c,../%.so,$(SRCS))
 
-../%.so : %.c ../../moloch.h ../../hash.h ../../dll.h
+../%.so : %.c ../../arkime.h ../../hash.h ../../dll.h
 	$(CC) -pthread @SHARED_FLAGS@ -o $@ @CFLAGS@ -Wall -Wextra -D_GNU_SOURCE -fPIC $(INCLUDE_OTHER) $(INCLUDE_PCAP) $< -lpfring
 
 all:$(SOS)

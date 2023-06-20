@@ -51,8 +51,8 @@ while (<>) {
 }
 
 print <<EOF;
-#ifndef MOLOCH_TLS_CIPHER_H
-#define MOLOCH_TLS_CIPHER_H
+#ifndef ARKIME_TLS_CIPHER_H
+#define ARKIME_TLS_CIPHER_H
 EOF
 
 for (my $i = 0; $i < 256; $i++) {
