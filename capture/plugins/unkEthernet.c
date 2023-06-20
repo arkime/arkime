@@ -12,18 +12,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include "moloch.h"
+#include "arkime.h"
 
 //#define UNKETHERNETDEBUG 1
 
-extern MolochConfig_t        config;
+extern ArkimeConfig_t        config;
 
-LOCAL MolochPQ_t *unkEthernetPq;
+LOCAL ArkimePQ_t *unkEthernetPq;
 
 LOCAL int unkEthernetMProtocol;
 
 /******************************************************************************/
-LOCAL void unkEthernet_create_sessionid(uint8_t *sessionId, MolochPacket_t * const UNUSED (packet))
+LOCAL void unkEthernet_create_sessionid(uint8_t *sessionId, ArkimePacket_t * const UNUSED (packet))
 {
     // uint8_t *data = packet->pkt + packet->payloadOffset;
 
@@ -34,21 +34,21 @@ LOCAL void unkEthernet_create_sessionid(uint8_t *sessionId, MolochPacket_t * con
     // for now, lump all unkEthernet into the same session
 }
 /******************************************************************************/
-LOCAL int unkEthernet_pre_process(MolochSession_t *session, MolochPacket_t * const UNUSED(packet), int isNewSession)
+LOCAL int unkEthernet_pre_process(ArkimeSession_t *session, ArkimePacket_t * const UNUSED(packet), int isNewSession)
 {
     if (isNewSession)
-        moloch_session_add_protocol(session, "unkEthernet");
+        arkime_session_add_protocol(session, "unkEthernet");
     return 0;
 }
 /******************************************************************************/
-LOCAL int unkEthernet_process(MolochSession_t *UNUSED(session), MolochPacket_t * const UNUSED(packet))
+LOCAL int unkEthernet_process(ArkimeSession_t *UNUSED(session), ArkimePacket_t * const UNUSED(packet))
 {
     return 1;
 }
 /******************************************************************************/
-LOCAL MolochPacketRC unkEthernet_packet_enqueue(MolochPacketBatch_t * UNUSED(batch), MolochPacket_t * const packet, const uint8_t *data, int len)
+LOCAL ArkimePacketRC unkEthernet_packet_enqueue(ArkimePacketBatch_t * UNUSED(batch), ArkimePacket_t * const packet, const uint8_t *data, int len)
 {
-    uint8_t sessionId[MOLOCH_SESSIONID_LEN];
+    uint8_t sessionId[ARKIME_SESSIONID_LEN];
 
     // no sanity checks until we parse.  the thinking is that it will make sense to 
     // high level parse to determine unkEthernet packet type (eg hello, csnp/psnp, lsp) and
@@ -59,22 +59,22 @@ LOCAL MolochPacketRC unkEthernet_packet_enqueue(MolochPacketBatch_t * UNUSED(bat
 
     unkEthernet_create_sessionid(sessionId, packet);
 
-    packet->hash = moloch_session_hash(sessionId);
+    packet->hash = arkime_session_hash(sessionId);
     packet->mProtocol = unkEthernetMProtocol;
 
-    return MOLOCH_PACKET_DO_PROCESS;
+    return ARKIME_PACKET_DO_PROCESS;
 }
 /******************************************************************************/
-LOCAL void unkEthernet_pq_cb(MolochSession_t *session, void UNUSED(*uw))
+LOCAL void unkEthernet_pq_cb(ArkimeSession_t *session, void UNUSED(*uw))
 {
     session->midSave = 1;
 }
 /******************************************************************************/
-void moloch_plugin_init()
+void arkime_plugin_init()
 {
-    moloch_packet_set_ethernet_cb(MOLOCH_ETHERTYPE_UNKNOWN, unkEthernet_packet_enqueue);
-    unkEthernetPq = moloch_pq_alloc(10, unkEthernet_pq_cb);
-    unkEthernetMProtocol = moloch_mprotocol_register("unkEthernet",
+    arkime_packet_set_ethernet_cb(ARKIME_ETHERTYPE_UNKNOWN, unkEthernet_packet_enqueue);
+    unkEthernetPq = arkime_pq_alloc(10, unkEthernet_pq_cb);
+    unkEthernetMProtocol = arkime_mprotocol_register("unkEthernet",
                                              SESSION_OTHER,
                                              unkEthernet_create_sessionid,
                                              unkEthernet_pre_process,

@@ -12,9 +12,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include "moloch.h"
+#include "arkime.h"
 
-extern MolochConfig_t        config;
+extern ArkimeConfig_t        config;
 
 LOCAL  int bindNameField;
 LOCAL  int authTypeField;
@@ -24,7 +24,7 @@ typedef struct {
     int                 len[2];
 } LDAPInfo_t;
 /******************************************************************************/
-LOCAL void ldap_process(MolochSession_t *session, LDAPInfo_t *ldap, int which)
+LOCAL void ldap_process(ArkimeSession_t *session, LDAPInfo_t *ldap, int which)
 {
     BSB obsb, ibsb;
     uint32_t opc, otag, olen;
@@ -35,35 +35,35 @@ LOCAL void ldap_process(MolochSession_t *session, LDAPInfo_t *ldap, int which)
     ldap->len[which] = -1; // stop any calls for this direction
 
     while (BSB_REMAINING(obsb) > 5) {
-        uint8_t *ovalue = moloch_parsers_asn_get_tlv(&obsb, &opc, &otag, &olen);
+        uint8_t *ovalue = arkime_parsers_asn_get_tlv(&obsb, &opc, &otag, &olen);
 
         BSB_INIT(ibsb, ovalue, olen);
 
         // messageID
-        moloch_parsers_asn_get_tlv(&ibsb, &ipc, &itag, &ilen);
+        arkime_parsers_asn_get_tlv(&ibsb, &ipc, &itag, &ilen);
         if (ipc != 0 || itag != 2)
             return;
 
         // protocolOp
-        uint8_t *ivalue = moloch_parsers_asn_get_tlv(&ibsb, &ipc, &protocolOp, &ilen);
+        uint8_t *ivalue = arkime_parsers_asn_get_tlv(&ibsb, &ipc, &protocolOp, &ilen);
         if (ipc != 1 || protocolOp > 25)
             return;
 
         if (protocolOp == 0) {
             BSB_INIT(ibsb, ivalue, ilen);
-            ivalue = moloch_parsers_asn_get_tlv(&ibsb, &ipc, &itag, &ilen); // version
+            ivalue = arkime_parsers_asn_get_tlv(&ibsb, &ipc, &itag, &ilen); // version
             if (!ivalue)
                 continue;
 
-            ivalue = moloch_parsers_asn_get_tlv(&ibsb, &ipc, &itag, &ilen); // name
+            ivalue = arkime_parsers_asn_get_tlv(&ibsb, &ipc, &itag, &ilen); // name
             if (!ivalue)
                 continue;
             if (ilen == 0) {
-                moloch_field_string_add(bindNameField, session, "<ROOT>", 6, TRUE);
+                arkime_field_string_add(bindNameField, session, "<ROOT>", 6, TRUE);
             } else {
-                moloch_field_string_add(bindNameField, session, (const char*)ivalue, ilen, TRUE);
+                arkime_field_string_add(bindNameField, session, (const char*)ivalue, ilen, TRUE);
             }
-            ivalue = moloch_parsers_asn_get_tlv(&ibsb, &ipc, &itag, &ilen); // auth
+            ivalue = arkime_parsers_asn_get_tlv(&ibsb, &ipc, &itag, &ilen); // auth
             if (!ivalue)
                 continue;
 
@@ -71,37 +71,37 @@ LOCAL void ldap_process(MolochSession_t *session, LDAPInfo_t *ldap, int which)
             switch (itag) {
             case 0:
                 if (ilen == 0)
-                    moloch_field_string_add(authTypeField, session, "none", 4, TRUE);
+                    arkime_field_string_add(authTypeField, session, "none", 4, TRUE);
                 else
-                    moloch_field_string_add(authTypeField, session, "simple", 6, TRUE);
+                    arkime_field_string_add(authTypeField, session, "simple", 6, TRUE);
                 break;
             case 3:
-                moloch_field_string_add(authTypeField, session, "sasl", 4, TRUE);
+                arkime_field_string_add(authTypeField, session, "sasl", 4, TRUE);
                 break;
             case 10:
-                moloch_field_string_add(authTypeField, session, "ntlmsspNegotiate", 16, TRUE); // from wireshark
+                arkime_field_string_add(authTypeField, session, "ntlmsspNegotiate", 16, TRUE); // from wireshark
                 break;
             case 11:
-                moloch_field_string_add(authTypeField, session, "ntlmsspAuth", 11, TRUE); // from wireshark
+                arkime_field_string_add(authTypeField, session, "ntlmsspAuth", 11, TRUE); // from wireshark
                 break;
             default:
                 snprintf(str, sizeof(str), "%d", (int)itag);
-                moloch_field_string_add(authTypeField, session, str, -1, TRUE);
+                arkime_field_string_add(authTypeField, session, str, -1, TRUE);
 
             }
         } else if (protocolOp == 23) {
             int len = BSB_SIZE(obsb) - olen - 2;
-            moloch_parsers_classify_tcp(session, ldap->buf[which] + olen + 2, len, which);
-            moloch_packet_process_data(session, ldap->buf[which] + olen + 2, len, which);
+            arkime_parsers_classify_tcp(session, ldap->buf[which] + olen + 2, len, which);
+            arkime_packet_process_data(session, ldap->buf[which] + olen + 2, len, which);
             return;
         } else if (protocolOp == 24) {
             int len = BSB_SIZE(obsb) - olen - 2;
-            moloch_packet_process_data(session, ldap->buf[which] + olen + 2, len, which);
+            arkime_packet_process_data(session, ldap->buf[which] + olen + 2, len, which);
         }
     }
 }
 /******************************************************************************/
-LOCAL int ldap_parser(MolochSession_t *session, void *uw, const unsigned char *data, int remaining, int which)
+LOCAL int ldap_parser(ArkimeSession_t *session, void *uw, const unsigned char *data, int remaining, int which)
 {
     LDAPInfo_t            *ldap          = uw;
 
@@ -116,13 +116,13 @@ LOCAL int ldap_parser(MolochSession_t *session, void *uw, const unsigned char *d
     if (ldap->len[which] > 6000) {
         ldap_process(session, ldap, which);
         if (ldap->len[(which + 1) %2] == -1) // If other direction is finished then unregister
-            moloch_parsers_unregister(session, ldap);
+            arkime_parsers_unregister(session, ldap);
     }
 
     return 0;
 }
 /******************************************************************************/
-LOCAL void ldap_save(MolochSession_t *session, void *uw, int UNUSED(final))
+LOCAL void ldap_save(ArkimeSession_t *session, void *uw, int UNUSED(final))
 {
     LDAPInfo_t            *ldap          = uw;
 
@@ -135,59 +135,59 @@ LOCAL void ldap_save(MolochSession_t *session, void *uw, int UNUSED(final))
     }
 }
 /******************************************************************************/
-LOCAL void ldap_free(MolochSession_t *UNUSED(session), void *uw)
+LOCAL void ldap_free(ArkimeSession_t *UNUSED(session), void *uw)
 {
     LDAPInfo_t            *ldap          = uw;
 
-    MOLOCH_TYPE_FREE(LDAPInfo_t, ldap);
+    ARKIME_TYPE_FREE(LDAPInfo_t, ldap);
 }
 /******************************************************************************/
-LOCAL void ldap_classify(MolochSession_t *session, const unsigned char *data, int len, int UNUSED(which), void *UNUSED(uw))
+LOCAL void ldap_classify(ArkimeSession_t *session, const unsigned char *data, int len, int UNUSED(which), void *UNUSED(uw))
 {
-    if (moloch_session_has_protocol(session, "ldap"))
+    if (arkime_session_has_protocol(session, "ldap"))
         return;
 
     BSB bsb;
     BSB_INIT(bsb, data, len);
 
     uint32_t apc, atag, alen;
-    unsigned char *value = moloch_parsers_asn_get_tlv(&bsb, &apc, &atag, &alen);
+    unsigned char *value = arkime_parsers_asn_get_tlv(&bsb, &apc, &atag, &alen);
     if (value && apc && atag == 16) {
         BSB_INIT(bsb, value, alen);
 
         // messageID
-        value = moloch_parsers_asn_get_tlv(&bsb, &apc, &atag, &alen);
+        value = arkime_parsers_asn_get_tlv(&bsb, &apc, &atag, &alen);
         if (!value || apc != 0 || atag != 2)
             return;
 
         // protocolOp
-        value = moloch_parsers_asn_get_tlv(&bsb, &apc, &atag, &alen);
+        value = arkime_parsers_asn_get_tlv(&bsb, &apc, &atag, &alen);
         if (!value || apc != 1 || atag > 25)
             return;
 
-        moloch_session_add_protocol(session, "ldap");
-        LDAPInfo_t  *ldap = MOLOCH_TYPE_ALLOC(LDAPInfo_t);
+        arkime_session_add_protocol(session, "ldap");
+        LDAPInfo_t  *ldap = ARKIME_TYPE_ALLOC(LDAPInfo_t);
         ldap->len[0]         = 0;
         ldap->len[1]         = 0;
 
-        moloch_parsers_register2(session, ldap_parser, ldap, ldap_free, ldap_save);
+        arkime_parsers_register2(session, ldap_parser, ldap, ldap_free, ldap_save);
     }
 }
 /******************************************************************************/
-void moloch_parser_init()
+void arkime_parser_init()
 {
-    moloch_parsers_classifier_register_tcp("ldap", NULL, 0, (unsigned char*)"\x30", 1, ldap_classify);
-    moloch_parsers_classifier_register_udp("ldap", NULL, 0, (unsigned char*)"\x30", 1, ldap_classify);
+    arkime_parsers_classifier_register_tcp("ldap", NULL, 0, (unsigned char*)"\x30", 1, ldap_classify);
+    arkime_parsers_classifier_register_udp("ldap", NULL, 0, (unsigned char*)"\x30", 1, ldap_classify);
 
-    authTypeField = moloch_field_define("ldap", "termfield",
+    authTypeField = arkime_field_define("ldap", "termfield",
         "ldap.authtype", "Auth Type", "ldap.authtype",
         "The auth type of ldap bind",
-        MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT,
+        ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT,
         (char *)NULL);
 
-    bindNameField = moloch_field_define("ldap", "termfield",
+    bindNameField = arkime_field_define("ldap", "termfield",
         "ldap.bindname", "Bind Name", "ldap.bindname",
         "The bind name of ldap bind",
-        MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT,
+        ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT,
         (char *)NULL);
 }

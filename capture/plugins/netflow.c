@@ -28,7 +28,7 @@
 #include <netdb.h>
 #include <ctype.h>
 #include <errno.h>
-#include "moloch.h"
+#include "arkime.h"
 #include "bsb.h"
 
 extern struct timeval initialPacket;
@@ -49,13 +49,13 @@ LOCAL int           headerSize;
 
 /******************************************************************************/
 
-extern MolochConfig_t        config;
+extern ArkimeConfig_t        config;
 
-LOCAL struct timeval lastTime[MOLOCH_MAX_PACKET_THREADS];
-LOCAL char           buf[MOLOCH_MAX_PACKET_THREADS][1500];
-LOCAL BSB            bsb[MOLOCH_MAX_PACKET_THREADS];
-LOCAL int            bufCount[MOLOCH_MAX_PACKET_THREADS];
-LOCAL uint32_t       totalFlows[MOLOCH_MAX_PACKET_THREADS];
+LOCAL struct timeval lastTime[ARKIME_MAX_PACKET_THREADS];
+LOCAL char           buf[ARKIME_MAX_PACKET_THREADS][1500];
+LOCAL BSB            bsb[ARKIME_MAX_PACKET_THREADS];
+LOCAL int            bufCount[ARKIME_MAX_PACKET_THREADS];
+LOCAL uint32_t       totalFlows[ARKIME_MAX_PACKET_THREADS];
 
 /******************************************************************************/
 LOCAL void netflow_send(const int thread)
@@ -103,7 +103,7 @@ LOCAL void netflow_send(const int thread)
 /* 
  * Called by arkime when a session is about to be saved
  */
-LOCAL void netflow_plugin_save(MolochSession_t *session, int UNUSED(final))
+LOCAL void netflow_plugin_save(ArkimeSession_t *session, int UNUSED(final))
 {
     static char zero[8] = {0, 0, 0, 0, 0, 0, 0, 0};
     const int thread = session->thread;
@@ -130,8 +130,8 @@ LOCAL void netflow_plugin_save(MolochSession_t *session, int UNUSED(final))
 
     if (session->packets[0]) {
         /* Body */
-        BSB_EXPORT_ptr(bsb[thread], &MOLOCH_V6_TO_V4(session->addr1), 4);
-        BSB_EXPORT_ptr(bsb[thread], &MOLOCH_V6_TO_V4(session->addr2), 4);
+        BSB_EXPORT_ptr(bsb[thread], &ARKIME_V6_TO_V4(session->addr1), 4);
+        BSB_EXPORT_ptr(bsb[thread], &ARKIME_V6_TO_V4(session->addr2), 4);
         BSB_EXPORT_u32(bsb[thread], 0); // nexthop
         BSB_EXPORT_u16(bsb[thread], netflowSNMPInput); // snmp input
         BSB_EXPORT_u16(bsb[thread], netflowSNMPOutput); // snmp output
@@ -179,8 +179,8 @@ LOCAL void netflow_plugin_save(MolochSession_t *session, int UNUSED(final))
 
     if (session->packets[1]) {
         /* Body */
-        BSB_EXPORT_ptr(bsb[thread], &MOLOCH_V6_TO_V4(session->addr2), 4);
-        BSB_EXPORT_ptr(bsb[thread], &MOLOCH_V6_TO_V4(session->addr1), 4);
+        BSB_EXPORT_ptr(bsb[thread], &ARKIME_V6_TO_V4(session->addr2), 4);
+        BSB_EXPORT_ptr(bsb[thread], &ARKIME_V6_TO_V4(session->addr1), 4);
         BSB_EXPORT_u32(bsb[thread], 0); // nexthop
         BSB_EXPORT_u16(bsb[thread], netflowSNMPInput); // snmp input
         BSB_EXPORT_u16(bsb[thread], netflowSNMPOutput); // snmp output
@@ -243,11 +243,11 @@ LOCAL void netflow_plugin_exit()
 /*
  * Called by arkime when the plugin is loaded
  */
-void moloch_plugin_init()
+void arkime_plugin_init()
 {
-    moloch_plugins_register("netflow", FALSE);
+    arkime_plugins_register("netflow", FALSE);
 
-    moloch_plugins_set_cb("netflow",
+    arkime_plugins_set_cb("netflow",
       NULL,
       NULL,
       NULL,
@@ -258,9 +258,9 @@ void moloch_plugin_init()
       NULL
     );
 
-    netflowSNMPInput = moloch_config_int(NULL, "netflowSNMPInput", 0, 0, 0xffffffff);
-    netflowSNMPOutput = moloch_config_int(NULL, "netflowSNMPOutput", 0, 0, 0xffffffff);
-    netflowVersion = moloch_config_int(NULL, "netflowVersion", 5, 1, 7);
+    netflowSNMPInput = arkime_config_int(NULL, "netflowSNMPInput", 0, 0, 0xffffffff);
+    netflowSNMPOutput = arkime_config_int(NULL, "netflowSNMPOutput", 0, 0, 0xffffffff);
+    netflowVersion = arkime_config_int(NULL, "netflowVersion", 5, 1, 7);
     LOG("version = %d", netflowVersion);
     if (netflowVersion != 1 && netflowVersion != 5 && netflowVersion != 7) {
         CONFIGEXIT("Unsupported netflowVersion: %d", netflowVersion);
@@ -271,7 +271,7 @@ void moloch_plugin_init()
     else 
         headerSize = 24;
 
-    char **dsts = moloch_config_str_list(NULL, "netflowDestinations", NULL);
+    char **dsts = arkime_config_str_list(NULL, "netflowDestinations", NULL);
     if (dsts == NULL || dsts[0] == NULL || dsts[0][0] == 0){
         CONFIGEXIT("netflowDestinations must be set");
     }

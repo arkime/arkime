@@ -16,18 +16,18 @@
  * limitations under the License.
  */
 #define _FILE_OFFSET_BITS 64
-#include "moloch.h"
+#include "arkime.h"
 #include <errno.h>
 #include <sys/stat.h>
 #include <gio/gio.h>
 #include "pcap.h"
 
-extern MolochConfig_t        config;
+extern ArkimeConfig_t        config;
 
 LOCAL  pcap_t               *pcaps[MAX_INTERFACES];
 
 /******************************************************************************/
-int reader_libpcap_stats(MolochReaderStats_t *stats)
+int reader_libpcap_stats(ArkimeReaderStats_t *stats)
 {
     stats->dropped = 0;
     stats->total = 0;
@@ -50,20 +50,20 @@ void reader_libpcap_pcap_cb(u_char *batch, const struct pcap_pkthdr *h, const u_
 {
     if (unlikely(h->caplen != h->len)) {
         LOGEXIT("ERROR - Arkime requires full packet captures caplen: %d pktlen: %d\n"
-            "See https://arkime.com/faq#moloch_requires_full_packet_captures_error",
+            "See https://arkime.com/faq#arkime_requires_full_packet_captures_error",
             h->caplen, h->len);
     }
 
-    MolochPacket_t *packet = MOLOCH_TYPE_ALLOC0(MolochPacket_t);
+    ArkimePacket_t *packet = ARKIME_TYPE_ALLOC0(ArkimePacket_t);
 
     packet->pkt           = (u_char *)bytes;
     /* libpcap casts to int32_t which sign extends, undo that */
     packet->ts.tv_sec     = (uint32_t)h->ts.tv_sec;
     packet->ts.tv_usec    = h->ts.tv_usec;
     packet->pktlen        = h->len;
-    packet->readerPos     = ((MolochPacketBatch_t *)batch)->readerPos;
+    packet->readerPos     = ((ArkimePacketBatch_t *)batch)->readerPos;
 
-    moloch_packet_batch((MolochPacketBatch_t *)batch, packet);
+    arkime_packet_batch((ArkimePacketBatch_t *)batch, packet);
 }
 /******************************************************************************/
 LOCAL void *reader_libpcap_thread(gpointer posv)
@@ -73,16 +73,16 @@ LOCAL void *reader_libpcap_thread(gpointer posv)
     if (config.debug)
         LOG("THREAD %p", (gpointer)pthread_self());
 
-    MolochPacketBatch_t   batch;
-    moloch_packet_batch_init(&batch);
+    ArkimePacketBatch_t   batch;
+    arkime_packet_batch_init(&batch);
     batch.readerPos = pos;
     while (1) {
         int r = pcap_dispatch(pcap, 10000, reader_libpcap_pcap_cb, (u_char*)&batch);
-        moloch_packet_batch_flush(&batch);
+        arkime_packet_batch_flush(&batch);
 
         // Some kind of failure we quit
         if (unlikely(r < 0)) {
-            moloch_quit();
+            arkime_quit();
             break;
         }
     }
@@ -93,7 +93,7 @@ LOCAL void *reader_libpcap_thread(gpointer posv)
 /******************************************************************************/
 void reader_libpcap_start() {
     //ALW - Bug: assumes all linktypes are the same
-    moloch_packet_set_dltsnap(pcap_datalink(pcaps[0]), pcap_snapshot(pcaps[0]));
+    arkime_packet_set_dltsnap(pcap_datalink(pcaps[0]), pcap_snapshot(pcaps[0]));
 
     int i;
     for (i = 0; i < MAX_INTERFACES && config.interface[i]; i++) {
@@ -111,7 +111,7 @@ void reader_libpcap_start() {
         }
 
         char name[100];
-        snprintf(name, sizeof(name), "moloch-pcap%d", i);
+        snprintf(name, sizeof(name), "arkime-pcap%d", i);
         g_thread_unref(g_thread_new(name, &reader_libpcap_thread, (gpointer)(long)i));
     }
 }
@@ -196,7 +196,7 @@ void reader_libpcap_init(char *UNUSED(name))
         CONFIGEXIT("Only support up to %d interfaces", MAX_INTERFACES);
     }
 
-    moloch_reader_start         = reader_libpcap_start;
-    moloch_reader_stop          = reader_libpcap_stop;
-    moloch_reader_stats         = reader_libpcap_stats;
+    arkime_reader_start         = reader_libpcap_start;
+    arkime_reader_stop          = reader_libpcap_stop;
+    arkime_reader_stats         = reader_libpcap_stats;
 }

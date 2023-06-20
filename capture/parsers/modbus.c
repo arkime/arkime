@@ -1,9 +1,9 @@
 #include <string.h>
 #include <ctype.h>
 #include "arkimeconfig.h"
-#include "moloch.h"
+#include "arkime.h"
 
-extern MolochConfig_t        config;
+extern ArkimeConfig_t        config;
 
 #define MAX_MODBUS_BUFFER 0xFF
 
@@ -23,10 +23,10 @@ LOCAL  int exceptionCodeField;
 #define MODBUS_TCP_HEADER_LEN 7
 
 /******************************************************************************/
-LOCAL int modbus_tcp_parser(MolochSession_t *session, void *uw, const unsigned char *data, int len, int which) {
+LOCAL int modbus_tcp_parser(ArkimeSession_t *session, void *uw, const unsigned char *data, int len, int which) {
 
     if (len < MODBUS_TCP_HEADER_LEN || data[3] != 0) {
-        return MOLOCH_PARSER_UNREGISTER;
+        return ARKIME_PARSER_UNREGISTER;
     }
 
     ModbusInfo_t *modbus = uw;
@@ -48,7 +48,7 @@ LOCAL int modbus_tcp_parser(MolochSession_t *session, void *uw, const unsigned c
 
         if (protocolId != 0) {
             // Protocol ID should always be 0
-            return MOLOCH_PARSER_UNREGISTER;
+            return ARKIME_PARSER_UNREGISTER;
         }
 
         uint16_t modbusLen = 0;
@@ -72,17 +72,17 @@ LOCAL int modbus_tcp_parser(MolochSession_t *session, void *uw, const unsigned c
             functionCode = functionCode & 0x7f;
             uint8_t exceptionCode = 0;
             BSB_IMPORT_u08(bsb, exceptionCode);
-            moloch_field_int_add(exceptionCodeField, session, exceptionCode);
+            arkime_field_int_add(exceptionCodeField, session, exceptionCode);
         }
 
         if (which == 0) {
-            moloch_field_int_add(transactionIdField, session, transactionId);
-            moloch_field_int_add(functionCodeField, session, functionCode);
+            arkime_field_int_add(transactionIdField, session, transactionId);
+            arkime_field_int_add(functionCodeField, session, functionCode);
         }
 
         if (modbus->packets[which] == 1) {
-            moloch_field_int_add(unitIdField, session, unitId);
-            moloch_field_int_add(protocolIdField, session, protocolId);
+            arkime_field_int_add(unitIdField, session, unitId);
+            arkime_field_int_add(protocolIdField, session, protocolId);
         }
 
         modbus->len[which] -= 6 + modbusLen;
@@ -92,14 +92,14 @@ LOCAL int modbus_tcp_parser(MolochSession_t *session, void *uw, const unsigned c
     return 0;
 }
 /******************************************************************************/
-LOCAL void modbus_tcp_free(MolochSession_t UNUSED(*session), void *uw)
+LOCAL void modbus_tcp_free(ArkimeSession_t UNUSED(*session), void *uw)
 {
     ModbusInfo_t *info = uw;
 
-    MOLOCH_TYPE_FREE(ModbusInfo_t, info);
+    ARKIME_TYPE_FREE(ModbusInfo_t, info);
 }
 /******************************************************************************/
-LOCAL void modbus_tcp_classify(MolochSession_t *session, const unsigned char *data, int len, int UNUSED(which), void UNUSED(*uw))
+LOCAL void modbus_tcp_classify(ArkimeSession_t *session, const unsigned char *data, int len, int UNUSED(which), void UNUSED(*uw))
 {
     // Checks that the Modbus data has at least the length of a full header
     if (len < MODBUS_TCP_HEADER_LEN) {
@@ -118,47 +118,47 @@ LOCAL void modbus_tcp_classify(MolochSession_t *session, const unsigned char *da
         return;
     }
 
-    if (moloch_session_has_protocol(session, "modbus")) {
+    if (arkime_session_has_protocol(session, "modbus")) {
         return;
     }
-    moloch_session_add_protocol(session, "modbus");
+    arkime_session_add_protocol(session, "modbus");
 
-    ModbusInfo_t *info = MOLOCH_TYPE_ALLOC0(ModbusInfo_t);
-    moloch_parsers_register(session, modbus_tcp_parser, info, modbus_tcp_free);
+    ModbusInfo_t *info = ARKIME_TYPE_ALLOC0(ModbusInfo_t);
+    arkime_parsers_register(session, modbus_tcp_parser, info, modbus_tcp_free);
 }
 /******************************************************************************/
-void moloch_parser_init()
+void arkime_parser_init()
 {
     // All packets to/from port 502 likely to be Modbus TCP, can cause false positives
-    moloch_parsers_classifier_register_port("modbus", NULL, 502, MOLOCH_PARSERS_PORT_TCP, modbus_tcp_classify);
+    arkime_parsers_classifier_register_port("modbus", NULL, 502, ARKIME_PARSERS_PORT_TCP, modbus_tcp_classify);
 
-    unitIdField = moloch_field_define("modbus", "integer",
+    unitIdField = arkime_field_define("modbus", "integer",
         "modbus.unitid", "Modbus Unit ID", "modbus.unitid",
         "Modbus Unit ID",
-        MOLOCH_FIELD_TYPE_INT, 0,
+        ARKIME_FIELD_TYPE_INT, 0,
         (char *) NULL);
 
-    transactionIdField = moloch_field_define("modbus", "integer",
+    transactionIdField = arkime_field_define("modbus", "integer",
         "modbus.transactionid", "Modbus Transaction IDs", "modbus.transactionid",
         "Modbus Transaction IDs",
-        MOLOCH_FIELD_TYPE_INT_GHASH, MOLOCH_FIELD_FLAG_CNT,
+        ARKIME_FIELD_TYPE_INT_GHASH, ARKIME_FIELD_FLAG_CNT,
         (char *) NULL);
 
-    protocolIdField = moloch_field_define("modbus", "integer",
+    protocolIdField = arkime_field_define("modbus", "integer",
         "modbus.protocolid", "Modbus Protocol ID", "modbus.protocolid",
         "Modbus Protocol ID (should always be 0)",
-        MOLOCH_FIELD_TYPE_INT, 0,
+        ARKIME_FIELD_TYPE_INT, 0,
         (char *) NULL);
 
-    functionCodeField = moloch_field_define("modbus", "integer",
+    functionCodeField = arkime_field_define("modbus", "integer",
         "modbus.funccode", "Modbus Function Code", "modbus.funccode",
         "Modbus Function Codes",
-        MOLOCH_FIELD_TYPE_INT_GHASH, MOLOCH_FIELD_FLAG_CNT,
+        ARKIME_FIELD_TYPE_INT_GHASH, ARKIME_FIELD_FLAG_CNT,
         (char *)NULL);
 
-    exceptionCodeField = moloch_field_define("modbus", "integer",
+    exceptionCodeField = arkime_field_define("modbus", "integer",
         "modbus.exccode", "Modbus Exception Code", "modbus.exccode",
         "Modbus Exception Codes",
-        MOLOCH_FIELD_TYPE_INT_GHASH, MOLOCH_FIELD_FLAG_CNT,
+        ARKIME_FIELD_TYPE_INT_GHASH, ARKIME_FIELD_FLAG_CNT,
         (char *)NULL);
 }

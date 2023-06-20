@@ -12,7 +12,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include "moloch.h"
+#include "arkime.h"
 
 /******************************************************************************/
 typedef struct socksinfo {
@@ -37,7 +37,7 @@ LOCAL  int hostField;
 /******************************************************************************/
 #define SOCKS4_STATE_REPLY        0
 #define SOCKS4_STATE_DATA         1
-LOCAL int socks4_parser(MolochSession_t *session, void *uw, const unsigned char *data, int remaining, int which)
+LOCAL int socks4_parser(ArkimeSession_t *session, void *uw, const unsigned char *data, int remaining, int which)
 {
     SocksInfo_t            *socks          = uw;
 
@@ -47,23 +47,23 @@ LOCAL int socks4_parser(MolochSession_t *session, void *uw, const unsigned char 
             return 0;
         if (remaining >= 8 && data[0] == 0 && data[1] >= 0x5a && data[1] <= 0x5d) {
             if (socks->ip)
-                moloch_field_ip4_add(ipField, session, socks->ip);
-            moloch_field_int_add(portField, session, socks->port);
-            moloch_session_add_protocol(session, "socks");
+                arkime_field_ip4_add(ipField, session, socks->ip);
+            arkime_field_int_add(portField, session, socks->port);
+            arkime_session_add_protocol(session, "socks");
 
             if (socks->user) {
-                if (!moloch_field_string_add(userField, session, socks->user, socks->userlen, FALSE)) {
+                if (!arkime_field_string_add(userField, session, socks->user, socks->userlen, FALSE)) {
                     g_free(socks->user);
                 }
                 socks->user = 0;
             }
             if (socks->host) {
-                if (!moloch_field_string_add(hostField, session, socks->host, socks->hostlen, FALSE)) {
+                if (!arkime_field_string_add(hostField, session, socks->host, socks->hostlen, FALSE)) {
                     g_free(socks->host);
                 }
                 socks->host = 0;
             }
-            moloch_parsers_classify_tcp(session, data+8, remaining-8, which);
+            arkime_parsers_classify_tcp(session, data+8, remaining-8, which);
             socks->state4 = SOCKS4_STATE_DATA;
             return 8;
         }
@@ -71,8 +71,8 @@ LOCAL int socks4_parser(MolochSession_t *session, void *uw, const unsigned char 
     case SOCKS4_STATE_DATA:
         /*if (which != socks->which)
             return 0;*/
-        moloch_parsers_classify_tcp(session, data, remaining, which);
-        moloch_parsers_unregister(session, uw);
+        arkime_parsers_classify_tcp(session, data, remaining, which);
+        arkime_parsers_unregister(session, uw);
         break;
     }
 
@@ -86,18 +86,18 @@ LOCAL int socks4_parser(MolochSession_t *session, void *uw, const unsigned char 
 #define SOCKS5_STATE_CONN_REQUEST   5
 #define SOCKS5_STATE_CONN_REPLY     6
 #define SOCKS5_STATE_CONN_DATA      7
-LOCAL int socks5_parser(MolochSession_t *session, void *uw, const unsigned char *data, int remaining, int which)
+LOCAL int socks5_parser(ArkimeSession_t *session, void *uw, const unsigned char *data, int remaining, int which)
 {
     SocksInfo_t            *socks          = uw;
     int                     consumed;
 
     //LOG("%d %d %d", which, socks->which, socks->state5[which]);
-    //moloch_print_hex_string(data, remaining);
+    //arkime_print_hex_string(data, remaining);
 
     switch(socks->state5[which]) {
     case SOCKS5_STATE_VER_REQUEST:
         if (remaining < 3) {
-            moloch_parsers_unregister(session, uw);
+            arkime_parsers_unregister(session, uw);
             return 0;
         }
 
@@ -110,11 +110,11 @@ LOCAL int socks5_parser(MolochSession_t *session, void *uw, const unsigned char 
         break;
     case SOCKS5_STATE_VER_REPLY:
         if (remaining != 2 || data[0] != 5 || data[1] > 2) {
-            moloch_parsers_unregister(session, uw);
+            arkime_parsers_unregister(session, uw);
             return 0;
         }
 
-        moloch_session_add_protocol(session, "socks");
+        arkime_session_add_protocol(session, "socks");
 
         if (socks->state5[socks->which] == SOCKS5_STATE_CONN_DATA) {
             // Other side of connection already in data state
@@ -127,19 +127,19 @@ LOCAL int socks5_parser(MolochSession_t *session, void *uw, const unsigned char 
             socks->state5[which] = SOCKS5_STATE_USER_REPLY;
         } else {
             // We don't handle other auth methods
-            moloch_parsers_unregister(session, uw);
+            arkime_parsers_unregister(session, uw);
         }
 
 
         return 2;
     case SOCKS5_STATE_USER_REQUEST:
         if (remaining < 2 || (3 + data[1] > (int)remaining) || (2 + data[1] + 1 + data[data[1]+2]  > (int)remaining)) {
-            moloch_parsers_unregister(session, uw);
+            arkime_parsers_unregister(session, uw);
             return 0;
         }
 
-        moloch_field_string_add(userField, session, (char *)data + 2, data[1], TRUE);
-        moloch_session_add_tag(session, "socks:password");
+        arkime_field_string_add(userField, session, (char *)data + 2, data[1], TRUE);
+        arkime_session_add_tag(session, "socks:password");
         socks->state5[which] = SOCKS5_STATE_CONN_REQUEST;
         return data[1] + 1 + data[data[1]+2];
     case SOCKS5_STATE_USER_REPLY:
@@ -147,34 +147,34 @@ LOCAL int socks5_parser(MolochSession_t *session, void *uw, const unsigned char 
         return 2;
     case SOCKS5_STATE_CONN_REQUEST:
         if (remaining < 6 || data[0] != 5 || data[1] != 1 || data[2] != 0) {
-            moloch_parsers_unregister(session, uw);
+            arkime_parsers_unregister(session, uw);
             return 0;
         }
 
         socks->state5[which] = SOCKS5_STATE_CONN_DATA;
         if (data[3] == 1) { // IPV4
             if (remaining < 10) {
-                moloch_parsers_unregister(session, uw);
+                arkime_parsers_unregister(session, uw);
                 return 0;
             }
             socks->port = (data[8]&0xff) << 8 | (data[9]&0xff);
             memcpy(&socks->ip, data+4, 4);
-            moloch_field_ip4_add(ipField, session, socks->ip);
-            moloch_field_int_add(portField, session, socks->port);
+            arkime_field_ip4_add(ipField, session, socks->ip);
+            arkime_field_int_add(portField, session, socks->port);
             consumed = 4 + 4 + 2;
         } else if (data[3] == 3) { // Domain Name
             if (remaining < data[4] + 7) {
-                moloch_parsers_unregister(session, uw);
+                arkime_parsers_unregister(session, uw);
                 return 0;
             }
             socks->port = (data[5+data[4]]&0xff) << 8 | (data[6+data[4]]&0xff);
 
-            moloch_field_string_add_lower(hostField, session, (char *)data+5, data[4]);
-            moloch_field_int_add(portField, session, socks->port);
+            arkime_field_string_add_lower(hostField, session, (char *)data+5, data[4]);
+            arkime_field_int_add(portField, session, socks->port);
             consumed = 4 + 1 + data[4] + 2;
         } else if (data[3] == 4) { // IPV6
             if (remaining < 22) {
-                moloch_parsers_unregister(session, uw);
+                arkime_parsers_unregister(session, uw);
                 return 0;
             }
             consumed = 4 + 16 + 2;
@@ -182,11 +182,11 @@ LOCAL int socks5_parser(MolochSession_t *session, void *uw, const unsigned char 
             break;
         }
 
-        moloch_parsers_classify_tcp(session, data+consumed, remaining-consumed, which);
+        arkime_parsers_classify_tcp(session, data+consumed, remaining-consumed, which);
         return consumed;
     case SOCKS5_STATE_CONN_REPLY: {
         if (remaining < 6) {
-            moloch_parsers_unregister(session, uw);
+            arkime_parsers_unregister(session, uw);
             return 0;
         }
 
@@ -202,26 +202,26 @@ LOCAL int socks5_parser(MolochSession_t *session, void *uw, const unsigned char 
         }
 
         if (remaining < consumed) {
-            moloch_parsers_unregister(session, uw);
+            arkime_parsers_unregister(session, uw);
             return 0;
         }
 
-        moloch_parsers_classify_tcp(session, data+consumed, remaining-consumed, which);
+        arkime_parsers_classify_tcp(session, data+consumed, remaining-consumed, which);
         return consumed;
     }
     case SOCKS5_STATE_CONN_DATA:
-        moloch_parsers_classify_tcp(session, data, remaining, which);
-        moloch_parsers_unregister(session, uw);
+        arkime_parsers_classify_tcp(session, data, remaining, which);
+        arkime_parsers_unregister(session, uw);
         return 0;
     default:
-        moloch_parsers_unregister(session, uw);
+        arkime_parsers_unregister(session, uw);
     }
 
     return 0;
 }
 
 /******************************************************************************/
-LOCAL void socks_free(MolochSession_t UNUSED(*session), void *uw)
+LOCAL void socks_free(ArkimeSession_t UNUSED(*session), void *uw)
 {
     SocksInfo_t            *socks          = uw;
 
@@ -229,10 +229,10 @@ LOCAL void socks_free(MolochSession_t UNUSED(*session), void *uw)
         g_free(socks->user);
     if (socks->host)
         g_free(socks->host);
-    MOLOCH_TYPE_FREE(SocksInfo_t, socks);
+    ARKIME_TYPE_FREE(SocksInfo_t, socks);
 }
 /******************************************************************************/
-LOCAL void socks4_classify(MolochSession_t *session, const unsigned char *data, int len, int which, void *UNUSED(uw))
+LOCAL void socks4_classify(ArkimeSession_t *session, const unsigned char *data, int len, int which, void *UNUSED(uw))
 {
 #ifdef SOCKSDEBUG
     LOG("SOCKSDEBUG: enter %d %d", data[0], len);
@@ -243,7 +243,7 @@ LOCAL void socks4_classify(MolochSession_t *session, const unsigned char *data, 
 
     SocksInfo_t *socks;
 
-    socks = MOLOCH_TYPE_ALLOC0(SocksInfo_t);
+    socks = ARKIME_TYPE_ALLOC0(SocksInfo_t);
     socks->which = which;
     socks->port = (data[2]&0xff) << 8 | (data[3]&0xff);
     if (data[4] == 0 && data[5] == 0 && data[6] == 0 && data[7] != 0) {
@@ -269,11 +269,11 @@ LOCAL void socks4_classify(MolochSession_t *session, const unsigned char *data, 
         }
     }
 
-    moloch_parsers_register(session, socks4_parser, socks, socks_free);
+    arkime_parsers_register(session, socks4_parser, socks, socks_free);
 }
 
 /******************************************************************************/
-LOCAL void socks5_classify(MolochSession_t *session, const unsigned char *data, int len, int which, void *UNUSED(uw))
+LOCAL void socks5_classify(ArkimeSession_t *session, const unsigned char *data, int len, int which, void *UNUSED(uw))
 {
 #ifdef SOCKSDEBUG
     LOG("SOCKSDEBUG: enter %d %d", data[0], len);
@@ -282,59 +282,59 @@ LOCAL void socks5_classify(MolochSession_t *session, const unsigned char *data, 
     if ((len >=3 && len <= 5) && data[1] == len - 2 && data[2] <= 3) {
         SocksInfo_t *socks;
 
-        socks = MOLOCH_TYPE_ALLOC0(SocksInfo_t);
+        socks = ARKIME_TYPE_ALLOC0(SocksInfo_t);
         socks->which = which;
         socks->state5[which] = SOCKS5_STATE_VER_REQUEST;
-        moloch_parsers_register(session, socks5_parser, socks, socks_free);
+        arkime_parsers_register(session, socks5_parser, socks, socks_free);
         return;
     }
     return;
 }
 /******************************************************************************/
-void moloch_parser_init()
+void arkime_parser_init()
 {
-    ipField = moloch_field_define("socks", "ip",
+    ipField = arkime_field_define("socks", "ip",
         "ip.socks", "IP", "socks.ip",
         "SOCKS destination IP",
-        MOLOCH_FIELD_TYPE_IP, MOLOCH_FIELD_FLAG_IPPRE,
+        ARKIME_FIELD_TYPE_IP, ARKIME_FIELD_FLAG_IPPRE,
         "aliases", "[\"socks.ip\"]",
         "portField", "sockspo",
         "portField2", "socks.port",
         (char *)NULL);
 
-    hostField = moloch_field_define("socks", "lotermfield",
+    hostField = arkime_field_define("socks", "lotermfield",
         "host.socks", "Host", "socks.host",
         "SOCKS destination host",
-        MOLOCH_FIELD_TYPE_STR,       0,
+        ARKIME_FIELD_TYPE_STR,       0,
         "aliases", "[\"socks.host\"]",
         "category", "host",
         (char *)NULL);
 
-    moloch_field_define("socks", "lotextfield",
+    arkime_field_define("socks", "lotextfield",
         "host.socks.tokens", "Hostname Tokens", "socks.hostTokens",
         "SOCKS Hostname Tokens",
-        MOLOCH_FIELD_TYPE_STR,       MOLOCH_FIELD_FLAG_FAKE,
+        ARKIME_FIELD_TYPE_STR,       ARKIME_FIELD_FLAG_FAKE,
         "aliases", "[\"socks.host.tokens\"]",
         (char *)NULL);
 
-    portField = moloch_field_define("socks", "integer",
+    portField = arkime_field_define("socks", "integer",
         "port.socks", "Port", "socks.port",
         "SOCKS destination port",
-        MOLOCH_FIELD_TYPE_INT,       0,
+        ARKIME_FIELD_TYPE_INT,       0,
         "aliases", "[\"socks.port\"]",
         "category", "port",
         (char *)NULL);
 
-    userField = moloch_field_define("socks", "termfield",
+    userField = arkime_field_define("socks", "termfield",
         "socks.user", "User", "socks.user",
         "SOCKS authenticated user",
-        MOLOCH_FIELD_TYPE_STR,     0,
+        ARKIME_FIELD_TYPE_STR,     0,
         "aliases", "[\"socksuser\"]",
         "category", "user",
         (char *)NULL);
 
-    moloch_parsers_classifier_register_tcp("socks5", NULL, 0, (unsigned char*)"\005", 1, socks5_classify);
-    moloch_parsers_classifier_register_tcp("socks4", NULL, 0, (unsigned char*)"\004\000", 2, socks4_classify);
-    moloch_parsers_classifier_register_tcp("socks4", NULL, 0, (unsigned char*)"\004\001", 2, socks4_classify);
+    arkime_parsers_classifier_register_tcp("socks5", NULL, 0, (unsigned char*)"\005", 1, socks5_classify);
+    arkime_parsers_classifier_register_tcp("socks4", NULL, 0, (unsigned char*)"\004\000", 2, socks4_classify);
+    arkime_parsers_classifier_register_tcp("socks4", NULL, 0, (unsigned char*)"\004\001", 2, socks4_classify);
 }
 

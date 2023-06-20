@@ -21,4 +21,4 @@ function httpEntropy(session,data)
   session:add_string("entropy.http",math.floor(c+0.5))
 end
 
-MolochSession.register_body_feed("http","httpEntropy")
+ArkimeSession.register_body_feed("http","httpEntropy")

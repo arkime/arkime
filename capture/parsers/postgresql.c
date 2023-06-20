@@ -12,9 +12,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include "moloch.h"
+#include "arkime.h"
 
-extern MolochConfig_t        config;
+extern ArkimeConfig_t        config;
 
 typedef struct {
     int       which;
@@ -25,14 +25,14 @@ LOCAL  int dbField;
 LOCAL  int appField;
 
 /******************************************************************************/
-LOCAL int postgresql_parser(MolochSession_t *session, void *uw, const unsigned char *data, int len, int which)
+LOCAL int postgresql_parser(ArkimeSession_t *session, void *uw, const unsigned char *data, int len, int which)
 {
     Info_t *info = uw;
     if (which != info->which)
         return 0;
 
     if (len == 8 && memcmp(data, "\x00\x00\x00\x08\x04\xd2\x16\x2f", 8) == 0) {
-        moloch_session_add_protocol(session, "postgresql");
+        arkime_session_add_protocol(session, "postgresql");
         return 0;
     }
 
@@ -68,61 +68,61 @@ LOCAL int postgresql_parser(MolochSession_t *session, void *uw, const unsigned c
             break;
 
         if (strcmp(key, "user") == 0) {
-            moloch_field_string_add(userField, session, value, vlen, TRUE);
-            moloch_session_add_protocol(session, "postgresql");
+            arkime_field_string_add(userField, session, value, vlen, TRUE);
+            arkime_session_add_protocol(session, "postgresql");
         } else if (strcmp(key, "database") == 0)
-            moloch_field_string_add(dbField, session, value, vlen, TRUE);
+            arkime_field_string_add(dbField, session, value, vlen, TRUE);
         else if (strcmp(key, "application_name") == 0)
-            moloch_field_string_add(appField, session, value, vlen, TRUE);
+            arkime_field_string_add(appField, session, value, vlen, TRUE);
     }
 
 cleanup:
-    moloch_parsers_unregister(session, info);
+    arkime_parsers_unregister(session, info);
     return 0;
 }
 /******************************************************************************/
-LOCAL void postgresql_free(MolochSession_t UNUSED(*session), void *uw)
+LOCAL void postgresql_free(ArkimeSession_t UNUSED(*session), void *uw)
 {
     Info_t *info = uw;
 
-    MOLOCH_TYPE_FREE(Info_t, info);
+    ARKIME_TYPE_FREE(Info_t, info);
 }
 /******************************************************************************/
-LOCAL void postgresql_classify(MolochSession_t *session, const unsigned char UNUSED(*data), int UNUSED(len), int which, void *UNUSED(uw))
+LOCAL void postgresql_classify(ArkimeSession_t *session, const unsigned char UNUSED(*data), int UNUSED(len), int which, void *UNUSED(uw))
 {
-    if (moloch_session_has_protocol(session, "postgresql"))
+    if (arkime_session_has_protocol(session, "postgresql"))
         return;
 
     if ((len == 8 && memcmp(data+3, "\x08\x04\xd2\x16\x2f", 5) == 0) ||
         (len > 8 && data[3] <= len && data[4] == 0 && data[5] == 3 && data[6] == 0)) {
 
-        Info_t *info = MOLOCH_TYPE_ALLOC0(Info_t);
+        Info_t *info = ARKIME_TYPE_ALLOC0(Info_t);
         info->which = which;
-        moloch_parsers_register(session, postgresql_parser, info, postgresql_free);
+        arkime_parsers_register(session, postgresql_parser, info, postgresql_free);
     }
 }
 /******************************************************************************/
-void moloch_parser_init()
+void arkime_parser_init()
 {
-    moloch_parsers_classifier_register_tcp("postgresql", NULL, 0, (unsigned char*)"\x00\x00\x00", 3, postgresql_classify);
+    arkime_parsers_classifier_register_tcp("postgresql", NULL, 0, (unsigned char*)"\x00\x00\x00", 3, postgresql_classify);
 
-    userField = moloch_field_define("postgresql", "termfield",
+    userField = arkime_field_define("postgresql", "termfield",
         "postgresql.user", "User", "postgresql.user",
         "Postgresql user name",
-        MOLOCH_FIELD_TYPE_STR,  MOLOCH_FIELD_FLAG_LINKED_SESSIONS,
+        ARKIME_FIELD_TYPE_STR,  ARKIME_FIELD_FLAG_LINKED_SESSIONS,
         "category", "user",
         (char *)NULL);
 
-    dbField = moloch_field_define("postgresql", "termfield",
+    dbField = arkime_field_define("postgresql", "termfield",
         "postgresql.db", "Database", "postgresql.db",
         "Postgresql database",
-        MOLOCH_FIELD_TYPE_STR,  MOLOCH_FIELD_FLAG_LINKED_SESSIONS,
+        ARKIME_FIELD_TYPE_STR,  ARKIME_FIELD_FLAG_LINKED_SESSIONS,
         (char *)NULL);
 
-    appField = moloch_field_define("postgresql", "termfield",
+    appField = arkime_field_define("postgresql", "termfield",
         "postgresql.app", "Application", "postgresql.app",
         "Postgresql application",
-        MOLOCH_FIELD_TYPE_STR,  MOLOCH_FIELD_FLAG_LINKED_SESSIONS,
+        ARKIME_FIELD_TYPE_STR,  ARKIME_FIELD_FLAG_LINKED_SESSIONS,
         (char *)NULL);
 }
 

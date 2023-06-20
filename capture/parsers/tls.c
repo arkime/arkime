@@ -12,11 +12,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include "moloch.h"
+#include "arkime.h"
 #include "tls-cipher.h"
 #include "openssl/objects.h"
 
-extern MolochConfig_t        config;
+extern ArkimeConfig_t        config;
 LOCAL  int                   certsField;
 LOCAL  int                   hostField;
 LOCAL  int                   verField;
@@ -34,19 +34,19 @@ typedef struct {
     char                which;
 } TLSInfo_t;
 
-extern unsigned char    moloch_char_to_hexstr[256][3];
+extern unsigned char    arkime_char_to_hexstr[256][3];
 
-LOCAL GChecksum *checksums[MOLOCH_MAX_PACKET_THREADS];
+LOCAL GChecksum *checksums[ARKIME_MAX_PACKET_THREADS];
 
 /******************************************************************************/
-LOCAL void tls_certinfo_process(MolochCertInfo_t *ci, BSB *bsb)
+LOCAL void tls_certinfo_process(ArkimeCertInfo_t *ci, BSB *bsb)
 {
     uint32_t apc, atag, alen;
     char lastOid[1000];
     lastOid[0] = 0;
 
     while (BSB_REMAINING(*bsb)) {
-        unsigned char *value = moloch_parsers_asn_get_tlv(bsb, &apc, &atag, &alen);
+        unsigned char *value = arkime_parsers_asn_get_tlv(bsb, &apc, &atag, &alen);
         if (!value)
             return;
 
@@ -55,14 +55,14 @@ LOCAL void tls_certinfo_process(MolochCertInfo_t *ci, BSB *bsb)
             BSB_INIT(tbsb, value, alen);
             tls_certinfo_process(ci, &tbsb);
         } else if (atag  == 6) {
-            moloch_parsers_asn_decode_oid(lastOid, sizeof(lastOid), value, alen);
+            arkime_parsers_asn_decode_oid(lastOid, sizeof(lastOid), value, alen);
         } else if (lastOid[0] && (atag == 20 || atag == 19 || atag == 12)) {
             /* 20 == BER_UNI_TAG_TeletexString
              * 19 == BER_UNI_TAG_PrintableString
              * 12 == BER_UNI_TAG_UTF8String
              */
             if (strcmp(lastOid, "2.5.4.3") == 0) {
-                MolochString_t *element = MOLOCH_TYPE_ALLOC0(MolochString_t);
+                ArkimeString_t *element = ARKIME_TYPE_ALLOC0(ArkimeString_t);
                 element->utf8 = atag == 12;
                 if (element->utf8)
                     element->str = g_utf8_strdown((char*)value, alen);
@@ -70,12 +70,12 @@ LOCAL void tls_certinfo_process(MolochCertInfo_t *ci, BSB *bsb)
                     element->str = g_ascii_strdown((char*)value, alen);
                 DLL_PUSH_TAIL(s_, &ci->commonName, element);
             } else if (strcmp(lastOid, "2.5.4.10") == 0) {
-                MolochString_t *element = MOLOCH_TYPE_ALLOC0(MolochString_t);
+                ArkimeString_t *element = ARKIME_TYPE_ALLOC0(ArkimeString_t);
                 element->utf8 = atag == 12;
                 element->str = g_strndup((char*)value, alen);
                 DLL_PUSH_TAIL(s_, &ci->orgName, element);
             } else if (strcmp(lastOid, "2.5.4.11") == 0) {
-                MolochString_t *element = MOLOCH_TYPE_ALLOC0(MolochString_t);
+                ArkimeString_t *element = ARKIME_TYPE_ALLOC0(ArkimeString_t);
                 element->utf8 = atag == 12;
                 element->str = g_strndup((char*)value, alen);
                 DLL_PUSH_TAIL(s_, &ci->orgUnit, element);
@@ -84,23 +84,23 @@ LOCAL void tls_certinfo_process(MolochCertInfo_t *ci, BSB *bsb)
     }
 }
 /******************************************************************************/
-LOCAL void tls_certinfo_process_publickey(MolochCertsInfo_t *certs, unsigned char *data, uint32_t len)
+LOCAL void tls_certinfo_process_publickey(ArkimeCertsInfo_t *certs, unsigned char *data, uint32_t len)
 {
     BSB bsb, tbsb;
     BSB_INIT(bsb, data, len);
     char oid[1000];
 
     uint32_t apc, atag, alen;
-    unsigned char *value = moloch_parsers_asn_get_tlv(&bsb, &apc, &atag, &alen);
+    unsigned char *value = arkime_parsers_asn_get_tlv(&bsb, &apc, &atag, &alen);
 
     BSB_INIT(tbsb, value, alen);
-    value = moloch_parsers_asn_get_tlv(&tbsb, &apc, &atag, &alen);
+    value = arkime_parsers_asn_get_tlv(&tbsb, &apc, &atag, &alen);
     if (BSB_IS_ERROR(bsb) || BSB_IS_ERROR(tbsb) || !value) {
         certs->publicAlgorithm = "corrupt";
         return;
     }
     oid[0] = 0;
-    moloch_parsers_asn_decode_oid(oid, sizeof(oid), value, alen);
+    arkime_parsers_asn_decode_oid(oid, sizeof(oid), value, alen);
 
     int nid = OBJ_txt2nid(oid);
     if (nid == 0)
@@ -109,12 +109,12 @@ LOCAL void tls_certinfo_process_publickey(MolochCertsInfo_t *certs, unsigned cha
         certs->publicAlgorithm = OBJ_nid2sn(nid);
 
     if (nid == NID_X9_62_id_ecPublicKey) {
-        value = moloch_parsers_asn_get_tlv(&tbsb, &apc, &atag, &alen);
+        value = arkime_parsers_asn_get_tlv(&tbsb, &apc, &atag, &alen);
         if (BSB_IS_ERROR(tbsb) || !value || alen > 12)
             certs->curve = "corrupt";
         else {
             oid[0] = 0;
-            moloch_parsers_asn_decode_oid(oid, sizeof(oid), value, alen);
+            arkime_parsers_asn_decode_oid(oid, sizeof(oid), value, alen);
             nid = OBJ_txt2nid(oid);
             if (nid == 0)
                 certs->curve = "unknown";
@@ -124,24 +124,24 @@ LOCAL void tls_certinfo_process_publickey(MolochCertsInfo_t *certs, unsigned cha
     }
 }
 /******************************************************************************/
-LOCAL void tls_key_usage (MolochCertsInfo_t *certs, BSB *bsb)
+LOCAL void tls_key_usage (ArkimeCertsInfo_t *certs, BSB *bsb)
 {
     uint32_t apc, atag, alen;
 
     while (BSB_REMAINING(*bsb) >= 2) {
-        unsigned char *value = moloch_parsers_asn_get_tlv(bsb, &apc, &atag, &alen);
+        unsigned char *value = arkime_parsers_asn_get_tlv(bsb, &apc, &atag, &alen);
 
         if (value && atag == 4 && alen == 4)
             certs->isCA = (value[3] & 0x02);
     }
 }
 /******************************************************************************/
-LOCAL void tls_alt_names(MolochSession_t *session, MolochCertsInfo_t *certs, BSB *bsb, char *lastOid)
+LOCAL void tls_alt_names(ArkimeSession_t *session, ArkimeCertsInfo_t *certs, BSB *bsb, char *lastOid)
 {
     uint32_t apc, atag, alen;
 
     while (BSB_REMAINING(*bsb) >= 2) {
-        unsigned char *value = moloch_parsers_asn_get_tlv(bsb, &apc, &atag, &alen);
+        unsigned char *value = arkime_parsers_asn_get_tlv(bsb, &apc, &atag, &alen);
 
         if (!value)
             return;
@@ -154,7 +154,7 @@ LOCAL void tls_alt_names(MolochSession_t *session, MolochCertsInfo_t *certs, BSB
                 return;
             }
         } else if (atag == 6) {
-            moloch_parsers_asn_decode_oid(lastOid, 100, value, alen);
+            arkime_parsers_asn_decode_oid(lastOid, 100, value, alen);
             if (strcmp(lastOid, "2.5.29.15") == 0) {
                 tls_key_usage(certs, bsb);
             }
@@ -167,13 +167,13 @@ LOCAL void tls_alt_names(MolochSession_t *session, MolochCertsInfo_t *certs, BSB
             return;
         } else if (lastOid[0] && atag == 2) {
             if (g_utf8_validate((char *)value, alen, NULL)) {
-                MolochString_t *element = MOLOCH_TYPE_ALLOC0(MolochString_t);
+                ArkimeString_t *element = ARKIME_TYPE_ALLOC0(ArkimeString_t);
                 element->str = g_ascii_strdown((char *)value, alen);
                 element->len = alen;
                 element->utf8 = 1;
                 DLL_PUSH_TAIL(s_, &certs->alt, element);
             } else {
-                moloch_session_add_tag(session, "bad-altname");
+                arkime_session_add_tag(session, "bad-altname");
             }
         }
     }
@@ -193,37 +193,37 @@ LOCAL int tls_is_grease_value(uint32_t val)
     return 1;
 }
 /******************************************************************************/
-LOCAL void tls_session_version(MolochSession_t *session, uint16_t ver)
+LOCAL void tls_session_version(ArkimeSession_t *session, uint16_t ver)
 {
     char str[100];
 
     switch (ver) {
     case 0x0300:
-        moloch_field_string_add(verField, session, "SSLv3", 5, TRUE);
+        arkime_field_string_add(verField, session, "SSLv3", 5, TRUE);
         break;
     case 0x0301:
-        moloch_field_string_add(verField, session, "TLSv1", 5, TRUE);
+        arkime_field_string_add(verField, session, "TLSv1", 5, TRUE);
         break;
     case 0x0302:
-        moloch_field_string_add(verField, session, "TLSv1.1", 7, TRUE);
+        arkime_field_string_add(verField, session, "TLSv1.1", 7, TRUE);
         break;
     case 0x0303:
-        moloch_field_string_add(verField, session, "TLSv1.2", 7, TRUE);
+        arkime_field_string_add(verField, session, "TLSv1.2", 7, TRUE);
         break;
     case 0x0304:
-        moloch_field_string_add(verField, session, "TLSv1.3", 7, TRUE);
+        arkime_field_string_add(verField, session, "TLSv1.3", 7, TRUE);
         break;
     case 0x7f00 ... 0x7fff:
         snprintf(str, sizeof(str), "TLSv1.3-draft-%02d", ver & 0xff);
-        moloch_field_string_add(verField, session, str, -1, TRUE);
+        arkime_field_string_add(verField, session, str, -1, TRUE);
         break;
     default:
         snprintf(str, sizeof(str), "0x%04x", ver);
-        moloch_field_string_add(verField, session, str, 6, TRUE);
+        arkime_field_string_add(verField, session, str, 6, TRUE);
     }
 }
 /******************************************************************************/
-LOCAL void tls_process_server_hello(MolochSession_t *session, const unsigned char *data, int len)
+LOCAL void tls_process_server_hello(ArkimeSession_t *session, const unsigned char *data, int len)
 {
     BSB bsb;
     BSB_INIT(bsb, data, len);
@@ -252,11 +252,11 @@ LOCAL void tls_process_server_hello(MolochSession_t *session, const unsigned cha
             char sessionId[513];
             int  i;
             for(i=0; i < skiplen; i++) {
-                sessionId[i*2] = moloch_char_to_hexstr[ptr[i]][0];
-                sessionId[i*2+1] = moloch_char_to_hexstr[ptr[i]][1];
+                sessionId[i*2] = arkime_char_to_hexstr[ptr[i]][0];
+                sessionId[i*2+1] = arkime_char_to_hexstr[ptr[i]][1];
             }
             sessionId[skiplen*2] = 0;
-            moloch_field_string_add(dstIdField, session, sessionId, skiplen*2, TRUE);
+            arkime_field_string_add(dstIdField, session, sessionId, skiplen*2, TRUE);
         }
         BSB_IMPORT_skip(bsb, skiplen);  // Session Id
     }
@@ -267,11 +267,11 @@ LOCAL void tls_process_server_hello(MolochSession_t *session, const unsigned cha
     /* Parse cipher */
     char *cipherStr = ciphers[cipher >> 8][cipher & 0xff];
     if (cipherStr)
-        moloch_field_string_add(cipherField, session, cipherStr, -1, TRUE);
+        arkime_field_string_add(cipherField, session, cipherStr, -1, TRUE);
     else {
         char str[100];
         snprintf(str, sizeof(str), "0x%04x", cipher);
-        moloch_field_string_add(cipherField, session, str, 6, TRUE);
+        arkime_field_string_add(cipherField, session, str, 6, TRUE);
     }
 
     BSB_IMPORT_skip(bsb, 1);
@@ -318,7 +318,7 @@ LOCAL void tls_process_server_hello(MolochSession_t *session, const unsigned cha
 
             if (etype == 0x10) { // etype 0x10 is alpn
                 if (elen == 5 && BSB_REMAINING(ebsb) >= 5 && memcmp(BSB_WORK_PTR(ebsb), "\x00\x03\x02\x68\x32", 5) == 0) {
-                    moloch_session_add_protocol(session, "http2");
+                    arkime_session_add_protocol(session, "http2");
                 }
             }
 
@@ -333,20 +333,20 @@ LOCAL void tls_process_server_hello(MolochSession_t *session, const unsigned cha
     BSB_EXPORT_sprintf(ja3bsb, "%d,%d,%.*s", ver, cipher, (int)BSB_LENGTH(eja3bsb), eja3);
 
     if (config.ja3Strings) {
-        moloch_field_string_add(ja3sStrField, session, ja3, strlen(ja3), TRUE);
+        arkime_field_string_add(ja3sStrField, session, ja3, strlen(ja3), TRUE);
     }
 
     gchar *md5 = g_compute_checksum_for_data(G_CHECKSUM_MD5, (guchar *)ja3, BSB_LENGTH(ja3bsb));
     if (config.debug > 1) {
         LOG("JA3s: %s => %s", ja3, md5);
     }
-    if (!moloch_field_string_add(ja3sField, session, md5, 32, FALSE)) {
+    if (!arkime_field_string_add(ja3sField, session, md5, 32, FALSE)) {
         g_free(md5);
     }
 }
 
 /******************************************************************************/
-LOCAL void tls_process_server_certificate(MolochSession_t *session, const unsigned char *data, int len)
+LOCAL void tls_process_server_certificate(ArkimeSession_t *session, const unsigned char *data, int len)
 {
 
     BSB cbsb;
@@ -363,7 +363,7 @@ LOCAL void tls_process_server_certificate(MolochSession_t *session, const unsign
         int            clen = MIN(BSB_REMAINING(cbsb) - 3, (cdata[0] << 16 | cdata[1] << 8 | cdata[2]));
 
 
-        MolochCertsInfo_t *certs = MOLOCH_TYPE_ALLOC0(MolochCertsInfo_t);
+        ArkimeCertsInfo_t *certs = ARKIME_TYPE_ALLOC0(ArkimeCertsInfo_t);
         DLL_INIT(s_, &certs->alt);
         DLL_INIT(s_, &certs->subject.commonName);
         DLL_INIT(s_, &certs->subject.orgName);
@@ -386,8 +386,8 @@ LOCAL void tls_process_server_certificate(MolochSession_t *session, const unsign
         if (dlen > 0) {
             int i;
             for(i = 0; i < 20; i++) {
-                certs->hash[i*3] = moloch_char_to_hexstr[digest[i]][0];
-                certs->hash[i*3+1] = moloch_char_to_hexstr[digest[i]][1];
+                certs->hash[i*3] = arkime_char_to_hexstr[digest[i]][0];
+                certs->hash[i*3+1] = arkime_char_to_hexstr[digest[i]][1];
                 certs->hash[i*3+2] = ':';
             }
         }
@@ -395,21 +395,21 @@ LOCAL void tls_process_server_certificate(MolochSession_t *session, const unsign
         g_checksum_reset(checksum);
 
         /* Certificate */
-        if (!(value = moloch_parsers_asn_get_tlv(&bsb, &apc, &atag, &alen)))
+        if (!(value = arkime_parsers_asn_get_tlv(&bsb, &apc, &atag, &alen)))
             {badreason = 1; goto bad_cert;}
         BSB_INIT(bsb, value, alen);
 
         /* signedCertificate */
-        if (!(value = moloch_parsers_asn_get_tlv(&bsb, &apc, &atag, &alen)))
+        if (!(value = arkime_parsers_asn_get_tlv(&bsb, &apc, &atag, &alen)))
             {badreason = 2; goto bad_cert;}
         BSB_INIT(bsb, value, alen);
 
         /* serialNumber or version*/
-        if (!(value = moloch_parsers_asn_get_tlv(&bsb, &apc, &atag, &alen)))
+        if (!(value = arkime_parsers_asn_get_tlv(&bsb, &apc, &atag, &alen)))
             {badreason = 3; goto bad_cert;}
 
         if (apc) {
-            if (!(value = moloch_parsers_asn_get_tlv(&bsb, &apc, &atag, &alen)))
+            if (!(value = arkime_parsers_asn_get_tlv(&bsb, &apc, &atag, &alen)))
                 {badreason = 4; goto bad_cert;}
         }
         certs->serialNumberLen = alen;
@@ -417,43 +417,43 @@ LOCAL void tls_process_server_certificate(MolochSession_t *session, const unsign
         memcpy(certs->serialNumber, value, alen);
 
         /* signature */
-        if (!moloch_parsers_asn_get_tlv(&bsb, &apc, &atag, &alen))
+        if (!arkime_parsers_asn_get_tlv(&bsb, &apc, &atag, &alen))
             {badreason = 5; goto bad_cert;}
 
         /* issuer */
-        if (!(value = moloch_parsers_asn_get_tlv(&bsb, &apc, &atag, &alen)))
+        if (!(value = arkime_parsers_asn_get_tlv(&bsb, &apc, &atag, &alen)))
             {badreason = 6; goto bad_cert;}
         BSB tbsb;
         BSB_INIT(tbsb, value, alen);
         tls_certinfo_process(&certs->issuer, &tbsb);
 
         /* validity */
-        if (!(value = moloch_parsers_asn_get_tlv(&bsb, &apc, &atag, &alen)))
+        if (!(value = arkime_parsers_asn_get_tlv(&bsb, &apc, &atag, &alen)))
             {badreason = 7; goto bad_cert;}
 
         BSB_INIT(tbsb, value, alen);
-        if (!(value = moloch_parsers_asn_get_tlv(&tbsb, &apc, &atag, &alen)))
+        if (!(value = arkime_parsers_asn_get_tlv(&tbsb, &apc, &atag, &alen)))
             {badreason = 7; goto bad_cert;}
-        certs->notBefore = moloch_parsers_asn_parse_time(session, atag, value, alen);
+        certs->notBefore = arkime_parsers_asn_parse_time(session, atag, value, alen);
 
-        if (!(value = moloch_parsers_asn_get_tlv(&tbsb, &apc, &atag, &alen)))
+        if (!(value = arkime_parsers_asn_get_tlv(&tbsb, &apc, &atag, &alen)))
             {badreason = 7; goto bad_cert;}
-        certs->notAfter = moloch_parsers_asn_parse_time(session, atag, value, alen);
+        certs->notAfter = arkime_parsers_asn_parse_time(session, atag, value, alen);
 
         /* subject */
-        if (!(value = moloch_parsers_asn_get_tlv(&bsb, &apc, &atag, &alen)))
+        if (!(value = arkime_parsers_asn_get_tlv(&bsb, &apc, &atag, &alen)))
             {badreason = 8; goto bad_cert;}
         BSB_INIT(tbsb, value, alen);
         tls_certinfo_process(&certs->subject, &tbsb);
 
         /* subjectPublicKeyInfo */
-        if (!(value = moloch_parsers_asn_get_tlv(&bsb, &apc, &atag, &alen)))
+        if (!(value = arkime_parsers_asn_get_tlv(&bsb, &apc, &atag, &alen)))
             {badreason = 9; goto bad_cert;}
         tls_certinfo_process_publickey(certs, value, alen);
 
         /* extensions */
         if (BSB_REMAINING(bsb)) {
-            if (!(value = moloch_parsers_asn_get_tlv(&bsb, &apc, &atag, &alen)))
+            if (!(value = arkime_parsers_asn_get_tlv(&bsb, &apc, &atag, &alen)))
                 {badreason = 10; goto bad_cert;}
             BSB_INIT(tbsb, value, alen);
             char lastOid[100];
@@ -470,12 +470,12 @@ LOCAL void tls_process_server_certificate(MolochSession_t *session, const unsign
             certs->issuer.commonName.s_count == 1 &&
             strcmp(certs->subject.commonName.s_next->str, certs->issuer.commonName.s_next->str) == 0) {
 
-            moloch_session_add_tag(session, "cert:self-signed");
+            arkime_session_add_tag(session, "cert:self-signed");
         }
 
 
-        if (!moloch_field_certsinfo_add(certsField, session, certs, clen*2)) {
-            moloch_field_certsinfo_free(certs);
+        if (!arkime_field_certsinfo_add(certsField, session, certs, clen*2)) {
+            arkime_field_certsinfo_free(certs);
         }
 
         BSB_IMPORT_skip(cbsb, clen + 3);
@@ -485,7 +485,7 @@ LOCAL void tls_process_server_certificate(MolochSession_t *session, const unsign
     bad_cert:
         if (config.debug)
             LOG("bad cert %d - %d", badreason, clen);
-        moloch_field_certsinfo_free(certs);
+        arkime_field_certsinfo_free(certs);
         break;
     }
 }
@@ -493,7 +493,7 @@ LOCAL void tls_process_server_certificate(MolochSession_t *session, const unsign
 /* @data the data inside the record layer
  * @len  the length of data inside record layer
  */
-LOCAL int tls_process_server_handshake_record(MolochSession_t *session, const unsigned char *data, int len)
+LOCAL int tls_process_server_handshake_record(ArkimeSession_t *session, const unsigned char *data, int len)
 {
     BSB rbsb;
 
@@ -519,7 +519,7 @@ LOCAL int tls_process_server_handshake_record(MolochSession_t *session, const un
     return 0;
 }
 /******************************************************************************/
-void tls_process_client_hello_data(MolochSession_t *session, const unsigned char *data, int len)
+void tls_process_client_hello_data(ArkimeSession_t *session, const unsigned char *data, int len)
 {
     if (len < 7)
         return;
@@ -564,11 +564,11 @@ void tls_process_client_hello_data(MolochSession_t *session, const unsigned char
             int  i;
 
             for(i=0; i < skiplen; i++) {
-                sessionId[i*2] = moloch_char_to_hexstr[ptr[i]][0];
-                sessionId[i*2+1] = moloch_char_to_hexstr[ptr[i]][1];
+                sessionId[i*2] = arkime_char_to_hexstr[ptr[i]][0];
+                sessionId[i*2+1] = arkime_char_to_hexstr[ptr[i]][1];
             }
             sessionId[skiplen*2] = 0;
-            moloch_field_string_add(srcIdField, session, sessionId, skiplen*2, TRUE);
+            arkime_field_string_add(srcIdField, session, sessionId, skiplen*2, TRUE);
         }
         BSB_IMPORT_skip(cbsb, skiplen);  // Session Id
 
@@ -626,7 +626,7 @@ void tls_process_client_hello_data(MolochSession_t *session, const unsigned char
                     if (sni != BSB_REMAINING(snibsb))
                         continue;
 
-                    moloch_field_string_add(hostField, session, (char *)BSB_WORK_PTR(snibsb), sni, TRUE);
+                    arkime_field_string_add(hostField, session, (char *)BSB_WORK_PTR(snibsb), sni, TRUE);
                 } else if (etype == 0x000a) { // Elliptic Curves
                     BSB bsb;
                     BSB_INIT(bsb, BSB_WORK_PTR(ebsb), elen);
@@ -669,7 +669,7 @@ void tls_process_client_hello_data(MolochSession_t *session, const unsigned char
         BSB_EXPORT_sprintf(ja3bsb, "%.*s,%.*s,%.*s", (int)BSB_LENGTH(eja3bsb), eja3, (int)BSB_LENGTH(ecja3bsb), ecja3, (int)BSB_LENGTH(ecfja3bsb), ecfja3);
 
         if (config.ja3Strings) {
-            moloch_field_string_add(ja3StrField, session, ja3, strlen(ja3), TRUE);
+            arkime_field_string_add(ja3StrField, session, ja3, strlen(ja3), TRUE);
         }
 
         gchar *md5 = g_compute_checksum_for_data(G_CHECKSUM_MD5, (guchar *)ja3, BSB_LENGTH(ja3bsb));
@@ -677,13 +677,13 @@ void tls_process_client_hello_data(MolochSession_t *session, const unsigned char
         if (config.debug > 1) {
             LOG("JA3: %s => %s", ja3, md5);
         }
-        if (!moloch_field_string_add(ja3Field, session, md5, 32, FALSE)) {
+        if (!arkime_field_string_add(ja3Field, session, md5, 32, FALSE)) {
             g_free(md5);
         }
     }
 }
 /******************************************************************************/
-LOCAL void tls_process_client(MolochSession_t *session, const unsigned char *data, int len)
+LOCAL void tls_process_client(ArkimeSession_t *session, const unsigned char *data, int len)
 {
     BSB sslbsb;
 
@@ -699,7 +699,7 @@ LOCAL void tls_process_client(MolochSession_t *session, const unsigned char *dat
 }
 
 /******************************************************************************/
-LOCAL int tls_parser(MolochSession_t *session, void *uw, const unsigned char *data, int remaining, int which)
+LOCAL int tls_parser(ArkimeSession_t *session, void *uw, const unsigned char *data, int remaining, int which)
 {
     TLSInfo_t            *tls          = uw;
 
@@ -718,7 +718,7 @@ LOCAL int tls_parser(MolochSession_t *session, void *uw, const unsigned char *da
     // Not handshake protocol, stop looking
     if (tls->buf[0] != 0x16) {
         tls->len = 0;
-        moloch_parsers_unregister(session, uw);
+        arkime_parsers_unregister(session, uw);
         return 0;
     }
 
@@ -729,7 +729,7 @@ LOCAL int tls_parser(MolochSession_t *session, void *uw, const unsigned char *da
 
     if (tls_process_server_handshake_record(session, tls->buf + 5, need - 5)) {
         tls->len = 0;
-        moloch_parsers_unregister(session, uw);
+        arkime_parsers_unregister(session, uw);
         return 0;
     }
     tls->len -= need;
@@ -743,7 +743,7 @@ LOCAL int tls_parser(MolochSession_t *session, void *uw, const unsigned char *da
     return 0;
 }
 /******************************************************************************/
-LOCAL void tls_save(MolochSession_t *session, void *uw, int UNUSED(final))
+LOCAL void tls_save(ArkimeSession_t *session, void *uw, int UNUSED(final))
 {
     TLSInfo_t            *tls          = uw;
 
@@ -753,19 +753,19 @@ LOCAL void tls_save(MolochSession_t *session, void *uw, int UNUSED(final))
     }
 }
 /******************************************************************************/
-LOCAL void tls_free(MolochSession_t *UNUSED(session), void *uw)
+LOCAL void tls_free(ArkimeSession_t *UNUSED(session), void *uw)
 {
     TLSInfo_t            *tls          = uw;
 
-    MOLOCH_TYPE_FREE(TLSInfo_t, tls);
+    ARKIME_TYPE_FREE(TLSInfo_t, tls);
 }
 /******************************************************************************/
-LOCAL void tls_classify(MolochSession_t *session, const unsigned char *data, int len, int which, void *UNUSED(uw))
+LOCAL void tls_classify(ArkimeSession_t *session, const unsigned char *data, int len, int which, void *UNUSED(uw))
 {
     if (len < 6 || data[2] > 0x03)
         return;
 
-    if (moloch_session_has_protocol(session, "tls"))
+    if (arkime_session_has_protocol(session, "tls"))
         return;
 
 
@@ -775,12 +775,12 @@ LOCAL void tls_classify(MolochSession_t *session, const unsigned char *data, int
      * 1 Message Type 1 - Client Hello, 2 Server Hello
      */
     if (data[2] <= 0x03 && (data[5] == 1 || data[5] == 2)) {
-        moloch_session_add_protocol(session, "tls");
+        arkime_session_add_protocol(session, "tls");
 
-        TLSInfo_t  *tls = MOLOCH_TYPE_ALLOC(TLSInfo_t);
+        TLSInfo_t  *tls = ARKIME_TYPE_ALLOC(TLSInfo_t);
         tls->len        = 0;
 
-        moloch_parsers_register2(session, tls_parser, tls, tls_free, tls_save);
+        arkime_parsers_register2(session, tls_parser, tls, tls_free, tls_save);
 
         if (data[5] == 1) {
             tls_process_client(session, data, (int)len);
@@ -791,170 +791,170 @@ LOCAL void tls_classify(MolochSession_t *session, const unsigned char *data, int
     }
 }
 /******************************************************************************/
-void moloch_parser_init()
+void arkime_parser_init()
 {
-    certsField = moloch_field_define("cert", "notreal",
+    certsField = arkime_field_define("cert", "notreal",
         "cert", "cert", "cert",
         "CERT Info",
-        MOLOCH_FIELD_TYPE_CERTSINFO,  MOLOCH_FIELD_FLAG_CNT | MOLOCH_FIELD_FLAG_NODB,
+        ARKIME_FIELD_TYPE_CERTSINFO,  ARKIME_FIELD_FLAG_CNT | ARKIME_FIELD_FLAG_NODB,
         (char *)NULL);
 
-    moloch_field_define("cert", "integer",
+    arkime_field_define("cert", "integer",
         "cert.cnt", "Cert Cnt", "certCnt",
         "Count of certificates",
-        0, MOLOCH_FIELD_FLAG_FAKE,
+        0, ARKIME_FIELD_FLAG_FAKE,
         (char *)NULL);
 
-    moloch_field_define("cert", "lotermfield",
+    arkime_field_define("cert", "lotermfield",
         "cert.alt", "Alt Name", "cert.alt",
         "Certificate alternative names",
-        0,  MOLOCH_FIELD_FLAG_CNT | MOLOCH_FIELD_FLAG_FAKE,
+        0,  ARKIME_FIELD_FLAG_CNT | ARKIME_FIELD_FLAG_FAKE,
         (char *)NULL);
 
-    moloch_field_define("cert", "lotermfield",
+    arkime_field_define("cert", "lotermfield",
         "cert.serial", "Serial Number", "cert.serial",
         "Serial Number",
-        0, MOLOCH_FIELD_FLAG_FAKE,
+        0, ARKIME_FIELD_FLAG_FAKE,
         (char *)NULL);
 
-    moloch_field_define("cert", "lotermfield",
+    arkime_field_define("cert", "lotermfield",
         "cert.issuer.cn", "Issuer CN", "cert.issuerCN",
         "Issuer's common name",
-        0, MOLOCH_FIELD_FLAG_FAKE,
+        0, ARKIME_FIELD_FLAG_FAKE,
         (char *)NULL);
 
-    moloch_field_define("cert", "lotermfield",
+    arkime_field_define("cert", "lotermfield",
         "cert.subject.cn", "Subject CN", "cert.subjectCN",
         "Subject's common name",
-        0, MOLOCH_FIELD_FLAG_FAKE,
+        0, ARKIME_FIELD_FLAG_FAKE,
         (char *)NULL);
 
-    moloch_field_define("cert", "termfield",
+    arkime_field_define("cert", "termfield",
         "cert.issuer.on", "Issuer ON", "cert.issuerON",
         "Issuer's organization name",
-        0, MOLOCH_FIELD_FLAG_FAKE,
+        0, ARKIME_FIELD_FLAG_FAKE,
         (char *)NULL);
 
-    moloch_field_define("cert", "termfield",
+    arkime_field_define("cert", "termfield",
         "cert.subject.on", "Subject ON", "cert.subjectON",
         "Subject's organization name",
-        0, MOLOCH_FIELD_FLAG_FAKE,
+        0, ARKIME_FIELD_FLAG_FAKE,
         (char *)NULL);
 
-    moloch_field_define("cert", "termfield",
+    arkime_field_define("cert", "termfield",
         "cert.issuer.ou", "Issuer Org Unit", "cert.issuerOU",
         "Issuer's organizational unit",
-        0, MOLOCH_FIELD_FLAG_FAKE,
+        0, ARKIME_FIELD_FLAG_FAKE,
         (char *)NULL);
 
-    moloch_field_define("cert", "termfield",
+    arkime_field_define("cert", "termfield",
         "cert.subject.ou", "Subject Org Unit", "cert.subjectOU",
         "Subject's organizational unit",
-        0, MOLOCH_FIELD_FLAG_FAKE,
+        0, ARKIME_FIELD_FLAG_FAKE,
         (char *)NULL);
 
-    moloch_field_define("cert", "lotermfield",
+    arkime_field_define("cert", "lotermfield",
         "cert.hash", "Hash", "cert.hash",
         "SHA1 hash of entire certificate",
-        0, MOLOCH_FIELD_FLAG_FAKE,
+        0, ARKIME_FIELD_FLAG_FAKE,
         (char *)NULL);
 
-    moloch_field_define("cert", "date",
+    arkime_field_define("cert", "date",
         "cert.notbefore", "Not Before", "cert.notBefore",
         "Certificate is not valid before this date",
-        0, MOLOCH_FIELD_FLAG_FAKE,
+        0, ARKIME_FIELD_FLAG_FAKE,
         (char *)NULL);
 
-    moloch_field_define("cert", "date",
+    arkime_field_define("cert", "date",
         "cert.notafter", "Not After", "cert.notAfter",
         "Certificate is not valid after this date",
-        0, MOLOCH_FIELD_FLAG_FAKE,
+        0, ARKIME_FIELD_FLAG_FAKE,
         (char *)NULL);
 
-    moloch_field_define("cert", "integer",
+    arkime_field_define("cert", "integer",
         "cert.validfor", "Days Valid For", "cert.validDays",
         "Certificate is valid for this many days total",
-        0, MOLOCH_FIELD_FLAG_FAKE,
+        0, ARKIME_FIELD_FLAG_FAKE,
         (char *)NULL);
 
-    moloch_field_define("cert", "integer",
+    arkime_field_define("cert", "integer",
         "cert.remainingDays", "Days remaining", "cert.remainingDays",
         "Certificate is still valid for this many days",
-        0, MOLOCH_FIELD_FLAG_FAKE,
+        0, ARKIME_FIELD_FLAG_FAKE,
         (char *)NULL);
 
-    moloch_field_define("cert", "termfield",
+    arkime_field_define("cert", "termfield",
         "cert.curve", "Curve", "cert.curve",
         "Curve Algorithm",
-        0, MOLOCH_FIELD_FLAG_FAKE,
+        0, ARKIME_FIELD_FLAG_FAKE,
         (char *)NULL);
 
-    moloch_field_define("cert", "termfield",
+    arkime_field_define("cert", "termfield",
         "cert.publicAlgorithm", "Public Algorithm", "cert.publicAlgorithm",
         "Public Key Algorithm",
-        0, MOLOCH_FIELD_FLAG_FAKE,
+        0, ARKIME_FIELD_FLAG_FAKE,
         (char *)NULL);
 
-    hostField = moloch_field_by_exp("host.http");
+    hostField = arkime_field_by_exp("host.http");
 
-    verField = moloch_field_define("tls", "termfield",
+    verField = arkime_field_define("tls", "termfield",
         "tls.version", "Version", "tls.version",
         "SSL/TLS version field",
-        MOLOCH_FIELD_TYPE_STR_GHASH,  MOLOCH_FIELD_FLAG_CNT,
+        ARKIME_FIELD_TYPE_STR_GHASH,  ARKIME_FIELD_FLAG_CNT,
         (char *)NULL);
 
-    cipherField = moloch_field_define("tls", "uptermfield",
+    cipherField = arkime_field_define("tls", "uptermfield",
         "tls.cipher", "Cipher", "tls.cipher",
         "SSL/TLS cipher field",
-        MOLOCH_FIELD_TYPE_STR_GHASH,  MOLOCH_FIELD_FLAG_CNT,
+        ARKIME_FIELD_TYPE_STR_GHASH,  ARKIME_FIELD_FLAG_CNT,
         (char *)NULL);
 
-    ja3Field = moloch_field_define("tls", "lotermfield",
+    ja3Field = arkime_field_define("tls", "lotermfield",
         "tls.ja3", "JA3", "tls.ja3",
         "SSL/TLS JA3 field",
-        MOLOCH_FIELD_TYPE_STR_GHASH,  MOLOCH_FIELD_FLAG_CNT,
+        ARKIME_FIELD_TYPE_STR_GHASH,  ARKIME_FIELD_FLAG_CNT,
         (char *)NULL);
 
-    ja3sField = moloch_field_define("tls", "lotermfield",
+    ja3sField = arkime_field_define("tls", "lotermfield",
         "tls.ja3s", "JA3S", "tls.ja3s",
         "SSL/TLS JA3S field",
-        MOLOCH_FIELD_TYPE_STR_GHASH,  MOLOCH_FIELD_FLAG_CNT,
+        ARKIME_FIELD_TYPE_STR_GHASH,  ARKIME_FIELD_FLAG_CNT,
         (char *)NULL);
 
-    dstIdField = moloch_field_define("tls", "lotermfield",
+    dstIdField = arkime_field_define("tls", "lotermfield",
         "tls.sessionid.dst", "Dst Session Id", "tls.dstSessionId",
         "SSL/TLS Dst Session Id",
-        MOLOCH_FIELD_TYPE_STR_GHASH,  0,
+        ARKIME_FIELD_TYPE_STR_GHASH,  0,
         (char *)NULL);
 
-    srcIdField = moloch_field_define("tls", "lotermfield",
+    srcIdField = arkime_field_define("tls", "lotermfield",
         "tls.sessionid.src", "Src Session Id", "tls.srcSessionId",
         "SSL/TLS Src Session Id",
-        MOLOCH_FIELD_TYPE_STR_GHASH,  0,
+        ARKIME_FIELD_TYPE_STR_GHASH,  0,
         (char *)NULL);
 
-    moloch_field_define("general", "lotermfield",
+    arkime_field_define("general", "lotermfield",
         "tls.sessionid", "Src or Dst Session Id", "tlsidall",
         "Shorthand for tls.sessionid.src or tls.sessionid.dst",
-        0,  MOLOCH_FIELD_FLAG_FAKE,
+        0,  ARKIME_FIELD_FLAG_FAKE,
         "regex", "^tls\\\\.sessionid\\\\.(?:(?!\\\\.cnt$).)*$",
         (char *)NULL);
 
     if (config.ja3Strings) {
-        ja3sStrField = moloch_field_define("tls","lotermfield",
+        ja3sStrField = arkime_field_define("tls","lotermfield",
             "tls.ja3sstring", "JA3SSTR", "tls.ja3sstring",
             "SSL/TLS JA3S String field",
-            MOLOCH_FIELD_TYPE_STR_GHASH, MOLOCH_FIELD_FLAG_CNT,
+            ARKIME_FIELD_TYPE_STR_GHASH, ARKIME_FIELD_FLAG_CNT,
             (char *)NULL);
 
-        ja3StrField = moloch_field_define("tls","lotermfield",
+        ja3StrField = arkime_field_define("tls","lotermfield",
             "tls.ja3string", "JA3STR", "tls.ja3string",
             "SSL/TLS JA3 String field",
-            MOLOCH_FIELD_TYPE_STR_GHASH, MOLOCH_FIELD_FLAG_CNT,
+            ARKIME_FIELD_TYPE_STR_GHASH, ARKIME_FIELD_FLAG_CNT,
             (char *)NULL);
     }
 
-    moloch_parsers_classifier_register_tcp("tls", NULL, 0, (unsigned char*)"\x16\x03", 2, tls_classify);
+    arkime_parsers_classifier_register_tcp("tls", NULL, 0, (unsigned char*)"\x16\x03", 2, tls_classify);
 
     int t;
     for (t = 0; t < config.packetThreads; t++) {

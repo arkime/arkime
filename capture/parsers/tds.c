@@ -12,7 +12,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include "moloch.h"
+#include "arkime.h"
 
 #define TDS_MAX_SIZE 4096
 typedef struct {
@@ -20,11 +20,11 @@ typedef struct {
     int            pos[2];
 } TDSInfo_t;
 
-extern MolochConfig_t        config;
+extern ArkimeConfig_t        config;
 LOCAL  int userField;
 
 /******************************************************************************/
-LOCAL int tds_parser(MolochSession_t *session, void *uw, const unsigned char *data, int remaining, int which)
+LOCAL int tds_parser(ArkimeSession_t *session, void *uw, const unsigned char *data, int remaining, int which)
 {
     TDSInfo_t *tds = uw;
 
@@ -46,37 +46,37 @@ LOCAL int tds_parser(MolochSession_t *session, void *uw, const unsigned char *da
                 tds->data[0][480], tds->data[0] + 470
                 );
 #endif
-        moloch_field_string_add_lower(userField, session, (const char *)tds->data[0] + 39, tds->data[0][69]);
-        moloch_parsers_unregister(session, uw);
+        arkime_field_string_add_lower(userField, session, (const char *)tds->data[0] + 39, tds->data[0][69]);
+        arkime_parsers_unregister(session, uw);
     }
 
     return 0;
 }
 /******************************************************************************/
-LOCAL void tds_free(MolochSession_t UNUSED(*session), void *uw)
+LOCAL void tds_free(ArkimeSession_t UNUSED(*session), void *uw)
 {
     TDSInfo_t            *tds          = uw;
 
-    MOLOCH_TYPE_FREE(TDSInfo_t, tds);
+    ARKIME_TYPE_FREE(TDSInfo_t, tds);
 }
 /******************************************************************************/
-LOCAL void tds_classify(MolochSession_t *session, const unsigned char *UNUSED(data), int len, int which, void *UNUSED(uw))
+LOCAL void tds_classify(ArkimeSession_t *session, const unsigned char *UNUSED(data), int len, int which, void *UNUSED(uw))
 {
-    if (which != 0 || len < 512 || moloch_session_has_protocol(session, "tds"))
+    if (which != 0 || len < 512 || arkime_session_has_protocol(session, "tds"))
         return;
 
-    moloch_session_add_protocol(session, "tds");
+    arkime_session_add_protocol(session, "tds");
 
-    TDSInfo_t            *tds          = MOLOCH_TYPE_ALLOC(TDSInfo_t);
+    TDSInfo_t            *tds          = ARKIME_TYPE_ALLOC(TDSInfo_t);
     tds->pos[0] = tds->pos[1] = 0;
 
-    moloch_parsers_register(session, tds_parser, tds, tds_free);
+    arkime_parsers_register(session, tds_parser, tds, tds_free);
 }
 /******************************************************************************/
-void moloch_parser_init()
+void arkime_parser_init()
 {
 
-    userField = moloch_field_by_db("user");
-    moloch_parsers_classifier_register_tcp("tds", NULL, 0, (unsigned char*)"\x02\x00\x02\x00\x00\x00\x01\x00", 8, tds_classify);
+    userField = arkime_field_by_db("user");
+    arkime_parsers_classifier_register_tcp("tds", NULL, 0, (unsigned char*)"\x02\x00\x02\x00\x00\x00\x01\x00", 8, tds_classify);
 }
 

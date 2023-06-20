@@ -12,22 +12,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include "moloch.h"
+#include "arkime.h"
 
 //#define DTLSDEBUG 1
 
-extern MolochConfig_t        config;
+extern ArkimeConfig_t        config;
 LOCAL  int                   certsField;
 
 /******************************************************************************/
-LOCAL void dtls_certinfo_process(MolochCertInfo_t *ci, BSB *bsb)
+LOCAL void dtls_certinfo_process(ArkimeCertInfo_t *ci, BSB *bsb)
 {
     uint32_t apc, atag, alen;
     char lastOid[1000];
     lastOid[0] = 0;
 
     while (BSB_REMAINING(*bsb)) {
-        unsigned char *value = moloch_parsers_asn_get_tlv(bsb, &apc, &atag, &alen);
+        unsigned char *value = arkime_parsers_asn_get_tlv(bsb, &apc, &atag, &alen);
         if (!value)
             return;
 
@@ -36,14 +36,14 @@ LOCAL void dtls_certinfo_process(MolochCertInfo_t *ci, BSB *bsb)
             BSB_INIT(tbsb, value, alen);
             dtls_certinfo_process(ci, &tbsb);
         } else if (atag  == 6) {
-            moloch_parsers_asn_decode_oid(lastOid, sizeof(lastOid), value, alen);
+            arkime_parsers_asn_decode_oid(lastOid, sizeof(lastOid), value, alen);
         } else if (lastOid[0] && (atag == 20 || atag == 19 || atag == 12)) {
             /* 20 == BER_UNI_TAG_TeletexString
              * 19 == BER_UNI_TAG_PrintableString
              * 12 == BER_UNI_TAG_UTF8String
              */
             if (strcmp(lastOid, "2.5.4.3") == 0) {
-                MolochString_t *element = MOLOCH_TYPE_ALLOC0(MolochString_t);
+                ArkimeString_t *element = ARKIME_TYPE_ALLOC0(ArkimeString_t);
                 element->utf8 = atag == 12;
                 if (element->utf8)
                     element->str = g_utf8_strdown((char*)value, alen);
@@ -51,12 +51,12 @@ LOCAL void dtls_certinfo_process(MolochCertInfo_t *ci, BSB *bsb)
                     element->str = g_ascii_strdown((char*)value, alen);
                 DLL_PUSH_TAIL(s_, &ci->commonName, element);
             } else if (strcmp(lastOid, "2.5.4.10") == 0) {
-                MolochString_t *element = MOLOCH_TYPE_ALLOC0(MolochString_t);
+                ArkimeString_t *element = ARKIME_TYPE_ALLOC0(ArkimeString_t);
                 element->utf8 = atag == 12;
                 element->str = g_strndup((char*)value, alen);
                 DLL_PUSH_TAIL(s_, &ci->orgName, element);
             } else if (strcmp(lastOid, "2.5.4.11") == 0) {
-                MolochString_t *element = MOLOCH_TYPE_ALLOC0(MolochString_t);
+                ArkimeString_t *element = ARKIME_TYPE_ALLOC0(ArkimeString_t);
                 element->utf8 = atag == 12;
                 element->str = g_strndup((char*)value, alen);
                 DLL_PUSH_TAIL(s_, &ci->orgUnit, element);
@@ -65,24 +65,24 @@ LOCAL void dtls_certinfo_process(MolochCertInfo_t *ci, BSB *bsb)
     }
 }
 /******************************************************************************/
-LOCAL void dtls_key_usage (MolochCertsInfo_t *certs, BSB *bsb)
+LOCAL void dtls_key_usage (ArkimeCertsInfo_t *certs, BSB *bsb)
 {
     uint32_t apc, atag, alen;
 
     while (BSB_REMAINING(*bsb) >= 2) {
-        unsigned char *value = moloch_parsers_asn_get_tlv(bsb, &apc, &atag, &alen);
+        unsigned char *value = arkime_parsers_asn_get_tlv(bsb, &apc, &atag, &alen);
 
         if (value && atag == 4 && alen == 4)
             certs->isCA = (value[3] & 0x02);
     }
 }
 /******************************************************************************/
-LOCAL void dtls_alt_names(MolochCertsInfo_t *certs, BSB *bsb, char *lastOid)
+LOCAL void dtls_alt_names(ArkimeCertsInfo_t *certs, BSB *bsb, char *lastOid)
 {
     uint32_t apc, atag, alen;
 
     while (BSB_REMAINING(*bsb) >= 2) {
-        unsigned char *value = moloch_parsers_asn_get_tlv(bsb, &apc, &atag, &alen);
+        unsigned char *value = arkime_parsers_asn_get_tlv(bsb, &apc, &atag, &alen);
 
         if (!value)
             return;
@@ -95,7 +95,7 @@ LOCAL void dtls_alt_names(MolochCertsInfo_t *certs, BSB *bsb, char *lastOid)
                 return;
             }
         } else if (atag == 6) {
-            moloch_parsers_asn_decode_oid(lastOid, 100, value, alen);
+            arkime_parsers_asn_decode_oid(lastOid, 100, value, alen);
             if (strcmp(lastOid, "2.5.29.15") == 0) {
                 dtls_key_usage(certs, bsb);
             }
@@ -107,7 +107,7 @@ LOCAL void dtls_alt_names(MolochCertsInfo_t *certs, BSB *bsb, char *lastOid)
             dtls_alt_names(certs, &tbsb, lastOid);
             return;
         } else if (lastOid[0] && atag == 2) {
-            MolochString_t *element = MOLOCH_TYPE_ALLOC0(MolochString_t);
+            ArkimeString_t *element = ARKIME_TYPE_ALLOC0(ArkimeString_t);
             element->str = g_ascii_strdown((char*)value, alen);
             element->len = alen;
             element->utf8 = 1;
@@ -118,7 +118,7 @@ LOCAL void dtls_alt_names(MolochCertsInfo_t *certs, BSB *bsb, char *lastOid)
     return;
 }
 /******************************************************************************/
-LOCAL void dtls_process_server_certificate(MolochSession_t *session, const unsigned char *data, int len)
+LOCAL void dtls_process_server_certificate(ArkimeSession_t *session, const unsigned char *data, int len)
 {
 
     BSB cbsb;
@@ -135,7 +135,7 @@ LOCAL void dtls_process_server_certificate(MolochSession_t *session, const unsig
         int            clen = MIN(BSB_REMAINING(cbsb) - 3, (cdata[0] << 16 | cdata[1] << 8 | cdata[2]));
 
 
-        MolochCertsInfo_t *certs = MOLOCH_TYPE_ALLOC0(MolochCertsInfo_t);
+        ArkimeCertsInfo_t *certs = ARKIME_TYPE_ALLOC0(ArkimeCertsInfo_t);
         DLL_INIT(s_, &certs->alt);
         DLL_INIT(s_, &certs->subject.commonName);
         DLL_INIT(s_, &certs->subject.orgName);
@@ -158,8 +158,8 @@ LOCAL void dtls_process_server_certificate(MolochSession_t *session, const unsig
         if (len > 0) {
             int i;
             for(i = 0; i < 20; i++) {
-                certs->hash[i*3] = moloch_char_to_hexstr[digest[i]][0];
-                certs->hash[i*3+1] = moloch_char_to_hexstr[digest[i]][1];
+                certs->hash[i*3] = arkime_char_to_hexstr[digest[i]][0];
+                certs->hash[i*3+1] = arkime_char_to_hexstr[digest[i]][1];
                 certs->hash[i*3+2] = ':';
             }
         }
@@ -167,21 +167,21 @@ LOCAL void dtls_process_server_certificate(MolochSession_t *session, const unsig
         g_checksum_reset(checksum);*/
 
         /* Certificate */
-        if (!(value = moloch_parsers_asn_get_tlv(&bsb, &apc, &atag, &alen)))
+        if (!(value = arkime_parsers_asn_get_tlv(&bsb, &apc, &atag, &alen)))
             {badreason = 1; goto bad_cert;}
         BSB_INIT(bsb, value, alen);
 
         /* signedCertificate */
-        if (!(value = moloch_parsers_asn_get_tlv(&bsb, &apc, &atag, &alen)))
+        if (!(value = arkime_parsers_asn_get_tlv(&bsb, &apc, &atag, &alen)))
             {badreason = 2; goto bad_cert;}
         BSB_INIT(bsb, value, alen);
 
         /* serialNumber or version*/
-        if (!(value = moloch_parsers_asn_get_tlv(&bsb, &apc, &atag, &alen)))
+        if (!(value = arkime_parsers_asn_get_tlv(&bsb, &apc, &atag, &alen)))
             {badreason = 3; goto bad_cert;}
 
         if (apc) {
-            if (!(value = moloch_parsers_asn_get_tlv(&bsb, &apc, &atag, &alen)))
+            if (!(value = arkime_parsers_asn_get_tlv(&bsb, &apc, &atag, &alen)))
                 {badreason = 4; goto bad_cert;}
         }
         certs->serialNumberLen = alen;
@@ -189,42 +189,42 @@ LOCAL void dtls_process_server_certificate(MolochSession_t *session, const unsig
         memcpy(certs->serialNumber, value, alen);
 
         /* signature */
-        if (!moloch_parsers_asn_get_tlv(&bsb, &apc, &atag, &alen))
+        if (!arkime_parsers_asn_get_tlv(&bsb, &apc, &atag, &alen))
             {badreason = 5; goto bad_cert;}
 
         /* issuer */
-        if (!(value = moloch_parsers_asn_get_tlv(&bsb, &apc, &atag, &alen)))
+        if (!(value = arkime_parsers_asn_get_tlv(&bsb, &apc, &atag, &alen)))
             {badreason = 6; goto bad_cert;}
         BSB tbsb;
         BSB_INIT(tbsb, value, alen);
         dtls_certinfo_process(&certs->issuer, &tbsb);
 
         /* validity */
-        if (!(value = moloch_parsers_asn_get_tlv(&bsb, &apc, &atag, &alen)))
+        if (!(value = arkime_parsers_asn_get_tlv(&bsb, &apc, &atag, &alen)))
             {badreason = 7; goto bad_cert;}
 
         BSB_INIT(tbsb, value, alen);
-        if (!(value = moloch_parsers_asn_get_tlv(&tbsb, &apc, &atag, &alen)))
+        if (!(value = arkime_parsers_asn_get_tlv(&tbsb, &apc, &atag, &alen)))
             {badreason = 7; goto bad_cert;}
-        certs->notBefore = moloch_parsers_asn_parse_time(session, atag, value, alen);
+        certs->notBefore = arkime_parsers_asn_parse_time(session, atag, value, alen);
 
-        if (!(value = moloch_parsers_asn_get_tlv(&tbsb, &apc, &atag, &alen)))
+        if (!(value = arkime_parsers_asn_get_tlv(&tbsb, &apc, &atag, &alen)))
             {badreason = 7; goto bad_cert;}
-        certs->notAfter = moloch_parsers_asn_parse_time(session, atag, value, alen);
+        certs->notAfter = arkime_parsers_asn_parse_time(session, atag, value, alen);
 
         /* subject */
-        if (!(value = moloch_parsers_asn_get_tlv(&bsb, &apc, &atag, &alen)))
+        if (!(value = arkime_parsers_asn_get_tlv(&bsb, &apc, &atag, &alen)))
             {badreason = 8; goto bad_cert;}
         BSB_INIT(tbsb, value, alen);
         dtls_certinfo_process(&certs->subject, &tbsb);
 
         /* subjectPublicKeyInfo */
-        if (!moloch_parsers_asn_get_tlv(&bsb, &apc, &atag, &alen))
+        if (!arkime_parsers_asn_get_tlv(&bsb, &apc, &atag, &alen))
             {badreason = 9; goto bad_cert;}
 
         /* extensions */
         if (BSB_REMAINING(bsb)) {
-            if (!(value = moloch_parsers_asn_get_tlv(&bsb, &apc, &atag, &alen)))
+            if (!(value = arkime_parsers_asn_get_tlv(&bsb, &apc, &atag, &alen)))
                 {badreason = 10; goto bad_cert;}
             BSB_INIT(tbsb, value, alen);
             char lastOid[100];
@@ -241,12 +241,12 @@ LOCAL void dtls_process_server_certificate(MolochSession_t *session, const unsig
             certs->issuer.commonName.s_count == 1 &&
             strcmp(certs->subject.commonName.s_next->str, certs->issuer.commonName.s_next->str) == 0) {
 
-            moloch_session_add_tag(session, "cert:self-signed");
+            arkime_session_add_tag(session, "cert:self-signed");
         }
 
 
-        if (!moloch_field_certsinfo_add(certsField, session, certs, clen*2)) {
-            moloch_field_certsinfo_free(certs);
+        if (!arkime_field_certsinfo_add(certsField, session, certs, clen*2)) {
+            arkime_field_certsinfo_free(certs);
         }
 
         BSB_IMPORT_skip(cbsb, clen + 3);
@@ -256,18 +256,18 @@ LOCAL void dtls_process_server_certificate(MolochSession_t *session, const unsig
     bad_cert:
         if (config.debug)
             LOG("bad cert %d - %d", badreason, clen);
-        moloch_field_certsinfo_free(certs);
+        arkime_field_certsinfo_free(certs);
         break;
     }
 }
 /******************************************************************************/
-LOCAL int dtls_udp_parser(MolochSession_t *session, void *UNUSED(uw), const unsigned char *data, int len, int UNUSED(which))
+LOCAL int dtls_udp_parser(ArkimeSession_t *session, void *UNUSED(uw), const unsigned char *data, int len, int UNUSED(which))
 {
     BSB bbuf;
 
     // 22 is handshake
     if (data[0] != 22) {
-        moloch_parsers_unregister(session, uw);
+        arkime_parsers_unregister(session, uw);
         return 0;
     }
 
@@ -318,24 +318,24 @@ LOCAL int dtls_udp_parser(MolochSession_t *session, void *UNUSED(uw), const unsi
     return 0;
 }
 /******************************************************************************/
-LOCAL void dtls_udp_classify(MolochSession_t *session, const unsigned char *data, int len, int UNUSED(which), void *UNUSED(uw))
+LOCAL void dtls_udp_classify(ArkimeSession_t *session, const unsigned char *data, int len, int UNUSED(which), void *UNUSED(uw))
 {
     if (len < 100 || data[13] != 1)
         return;
-    moloch_session_add_protocol(session, "dtls");
-    moloch_parsers_register(session, dtls_udp_parser, uw, 0);
+    arkime_session_add_protocol(session, "dtls");
+    arkime_parsers_register(session, dtls_udp_parser, uw, 0);
 }
 /******************************************************************************/
-void moloch_parser_init()
+void arkime_parser_init()
 {
-    moloch_parsers_classifier_register_udp("dtls", NULL, 0, (const unsigned char *)"\x16\x01\x00", 3, dtls_udp_classify);
-    moloch_parsers_classifier_register_udp("dtls", NULL, 0, (const unsigned char *)"\x16\xfe\xff", 3, dtls_udp_classify);
-    moloch_parsers_classifier_register_udp("dtls", NULL, 0, (const unsigned char *)"\x16\xfe\xfe", 3, dtls_udp_classify);
-    moloch_parsers_classifier_register_udp("dtls", NULL, 0, (const unsigned char *)"\x16\xfe\xfd", 3, dtls_udp_classify);
+    arkime_parsers_classifier_register_udp("dtls", NULL, 0, (const unsigned char *)"\x16\x01\x00", 3, dtls_udp_classify);
+    arkime_parsers_classifier_register_udp("dtls", NULL, 0, (const unsigned char *)"\x16\xfe\xff", 3, dtls_udp_classify);
+    arkime_parsers_classifier_register_udp("dtls", NULL, 0, (const unsigned char *)"\x16\xfe\xfe", 3, dtls_udp_classify);
+    arkime_parsers_classifier_register_udp("dtls", NULL, 0, (const unsigned char *)"\x16\xfe\xfd", 3, dtls_udp_classify);
 
-    certsField = moloch_field_define("cert", "notreal",
+    certsField = arkime_field_define("cert", "notreal",
         "cert", "cert", "cert",
         "CERT Info",
-        MOLOCH_FIELD_TYPE_CERTSINFO,  MOLOCH_FIELD_FLAG_CNT | MOLOCH_FIELD_FLAG_NODB,
+        ARKIME_FIELD_TYPE_CERTSINFO,  ARKIME_FIELD_FLAG_CNT | ARKIME_FIELD_FLAG_NODB,
         (char *)NULL);
 }

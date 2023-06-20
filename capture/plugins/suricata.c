@@ -27,19 +27,19 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <sys/stat.h>
-#include "moloch.h"
+#include "arkime.h"
 #include "bsb.h"
 
 /******************************************************************************/
 
-extern MolochConfig_t        config;
+extern ArkimeConfig_t        config;
 
 LOCAL GRegex     *slashslashRegex;
 
 typedef struct suricataitem_t SuricataItem_t;
 struct suricataitem_t {
     SuricataItem_t *items_next;
-    uint8_t         sessionId[MOLOCH_SESSIONID_LEN];
+    uint8_t         sessionId[ARKIME_SESSIONID_LEN];
     time_t          timestamp;
     char           *flow_id;
     char           *action;
@@ -62,7 +62,7 @@ struct suricataitem_t {
 typedef struct suricatahead_t SuricataHead_t;
 struct suricatahead_t {
     SuricataItem_t  *items[SURICATA_HASH_SIZE];
-    MOLOCH_LOCK_EXTERN(lock);
+    ARKIME_LOCK_EXTERN(lock);
     uint32_t         cnt;
     uint16_t         num;
 };
@@ -94,16 +94,16 @@ LOCAL void suricata_item_free(SuricataItem_t *item);
 LOCAL void suricata_alerts_init()
 {
     alerts.num = SURICATA_HASH_SIZE;
-    MOLOCH_LOCK_INIT(alerts.lock);
+    ARKIME_LOCK_INIT(alerts.lock);
 }
 /******************************************************************************/
 LOCAL int suricata_alerts_add(SuricataItem_t *item)
 {
     SuricataItem_t *check;
 
-    item->hash = moloch_session_hash(item->sessionId);
+    item->hash = arkime_session_hash(item->sessionId);
     int h = item->hash % alerts.num;
-    MOLOCH_LOCK(alerts.lock);
+    ARKIME_LOCK(alerts.lock);
 
     // Dup is same hash, signature_id, timestamp, ses, and sessionId
     for (check = alerts.items[h]; check; check = check->items_next) {
@@ -114,14 +114,14 @@ LOCAL int suricata_alerts_add(SuricataItem_t *item)
             memcmp(check->sessionId, item->sessionId, item->sessionId[0]) == 0) {
 
             // Dup
-            MOLOCH_UNLOCK(alerts.lock);
+            ARKIME_UNLOCK(alerts.lock);
             return 0;
         }
     }
     item->items_next = alerts.items[h];
     alerts.items[h] = item;
     alerts.cnt++;
-    MOLOCH_UNLOCK(alerts.lock);
+    ARKIME_UNLOCK(alerts.lock);
     return 1;
 }
 /******************************************************************************/
@@ -131,7 +131,7 @@ LOCAL void suricata_alerts_del(SuricataItem_t *item)
 
     int h = item->hash % alerts.num;
 
-    MOLOCH_LOCK(alerts.lock);
+    ARKIME_LOCK(alerts.lock);
 
     for (check = alerts.items[h]; check; parent = check, check = check->items_next) {
         if (check != item) {
@@ -143,17 +143,17 @@ LOCAL void suricata_alerts_del(SuricataItem_t *item)
             alerts.items[h] = check->items_next;
         }
 
-        moloch_free_later(check, (GDestroyNotify)suricata_item_free);
+        arkime_free_later(check, (GDestroyNotify)suricata_item_free);
         alerts.cnt--;
         break;
     }
-    MOLOCH_UNLOCK(alerts.lock);
+    ARKIME_UNLOCK(alerts.lock);
 }
 /******************************************************************************/
 /*
  * Called by arkime when a session is about to be saved
  */
-LOCAL void suricata_plugin_save(MolochSession_t *session, int UNUSED(final))
+LOCAL void suricata_plugin_save(ArkimeSession_t *session, int UNUSED(final))
 {
     SuricataItem_t *item;
     int h = session->h_hash % alerts.num;
@@ -175,16 +175,16 @@ LOCAL void suricata_plugin_save(MolochSession_t *session, int UNUSED(final))
         }
 
         if (item->signature)
-            moloch_field_string_add(signatureField, session, item->signature, item->signature_len, TRUE);
+            arkime_field_string_add(signatureField, session, item->signature, item->signature_len, TRUE);
         if (item->category)
-            moloch_field_string_add(categoryField, session, item->category, item->category_len, TRUE);
+            arkime_field_string_add(categoryField, session, item->category, item->category_len, TRUE);
         if (item->flow_id)
-            moloch_field_string_add(flowIdField, session, item->flow_id, item->flow_id_len, TRUE);
+            arkime_field_string_add(flowIdField, session, item->flow_id, item->flow_id_len, TRUE);
         if (item->action)
-            moloch_field_string_add(actionField, session, item->action, item->action_len, TRUE);
-        moloch_field_int_add(gidField, session, item->gid);
-        moloch_field_int_add(signatureIdField, session, item->signature_id);
-        moloch_field_int_add(severityField, session, item->severity);
+            arkime_field_string_add(actionField, session, item->action, item->action_len, TRUE);
+        arkime_field_int_add(gidField, session, item->gid);
+        arkime_field_int_add(signatureIdField, session, item->signature_id);
+        arkime_field_int_add(severityField, session, item->severity);
     }
 }
 
@@ -206,7 +206,7 @@ LOCAL void suricata_item_free(SuricataItem_t *item)
         g_free(item->category);
     if (item->flow_id)
         g_free(item->flow_id);
-    MOLOCH_TYPE_FREE(SuricataItem_t, item);
+    ARKIME_TYPE_FREE(SuricataItem_t, item);
 }
 /******************************************************************************/
 LOCAL gboolean suricata_parse_ip(char *str, int len, struct in6_addr *v)
@@ -295,7 +295,7 @@ LOCAL void suricata_process()
     struct timespec currentTime;
     clock_gettime(CLOCK_REALTIME_COARSE, &currentTime);
 
-    SuricataItem_t *item = MOLOCH_TYPE_ALLOC0(SuricataItem_t);
+    SuricataItem_t *item = ARKIME_TYPE_ALLOC0(SuricataItem_t);
 
     struct in6_addr srcIp;
     struct in6_addr dstIp;
@@ -372,9 +372,9 @@ LOCAL void suricata_process()
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wstrict-aliasing"
     if (IN6_IS_ADDR_V4MAPPED(&srcIp)) {
-        moloch_session_id(item->sessionId, MOLOCH_V6_TO_V4(srcIp), htons(srcPort), MOLOCH_V6_TO_V4(dstIp), htons(dstPort));
+        arkime_session_id(item->sessionId, ARKIME_V6_TO_V4(srcIp), htons(srcPort), ARKIME_V6_TO_V4(dstIp), htons(dstPort));
     } else {
-        moloch_session_id6(item->sessionId, srcIp.s6_addr, htons(srcPort), dstIp.s6_addr, htons(dstPort));
+        arkime_session_id6(item->sessionId, srcIp.s6_addr, htons(srcPort), dstIp.s6_addr, htons(dstPort));
     }
 #pragma GCC diagnostic pop
 
@@ -483,21 +483,21 @@ LOCAL gboolean suricata_timer(gpointer UNUSED(user_data))
 /*
  * Called by arkime when the plugin is loaded
  */
-void moloch_plugin_init()
+void arkime_plugin_init()
 {
     line = malloc(lineSize);
 
-    suricataAlertFile     = moloch_config_str(NULL, "suricataAlertFile", NULL);
-    suricataExpireSeconds = moloch_config_int(NULL, "suricataExpireMinutes", 60, 10, 0xffffff) * 60;
+    suricataAlertFile     = arkime_config_str(NULL, "suricataAlertFile", NULL);
+    suricataExpireSeconds = arkime_config_int(NULL, "suricataExpireMinutes", 60, 10, 0xffffff) * 60;
 
     suricata_alerts_init();
 
     if (!suricataAlertFile)
         CONFIGEXIT("No suricataAlertFile set");
 
-    moloch_plugins_register("suricata", FALSE);
+    arkime_plugins_register("suricata", FALSE);
 
-    moloch_plugins_set_cb("suricata",
+    arkime_plugins_set_cb("suricata",
       NULL,
       NULL,
       NULL,
@@ -508,46 +508,46 @@ void moloch_plugin_init()
       NULL
     );
 
-    flowIdField = moloch_field_define("suricata", "termfield",
+    flowIdField = arkime_field_define("suricata", "termfield",
         "suricata.flowId", "Flow Id", "suricata.flowId",
         "Suricata Flow Id",
-        MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT,
+        ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT,
         (char *)NULL);
 
-    actionField = moloch_field_define("suricata", "termfield",
+    actionField = arkime_field_define("suricata", "termfield",
         "suricata.action", "Action", "suricata.action",
         "Suricata Action",
-        MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT,
+        ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT,
         (char *)NULL);
 
-    signatureField = moloch_field_define("suricata", "termfield",
+    signatureField = arkime_field_define("suricata", "termfield",
         "suricata.signature", "Signature", "suricata.signature",
         "Suricata Signature",
-        MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT,
+        ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT,
         (char *)NULL);
 
-    categoryField = moloch_field_define("suricata", "termfield",
+    categoryField = arkime_field_define("suricata", "termfield",
         "suricata.category", "Category", "suricata.category",
         "Suricata Category",
-        MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT,
+        ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT,
         (char *)NULL);
 
-    gidField = moloch_field_define("suricata", "integer",
+    gidField = arkime_field_define("suricata", "integer",
         "suricata.gid", "Gid", "suricata.gid",
         "Suricata Gid",
-        MOLOCH_FIELD_TYPE_INT_GHASH,  MOLOCH_FIELD_FLAG_CNT,
+        ARKIME_FIELD_TYPE_INT_GHASH,  ARKIME_FIELD_FLAG_CNT,
         (char *)NULL);
 
-    signatureIdField = moloch_field_define("suricata", "integer",
+    signatureIdField = arkime_field_define("suricata", "integer",
         "suricata.signatureId", "Signature Id", "suricata.signatureId",
         "Suricata Signature Id",
-        MOLOCH_FIELD_TYPE_INT_GHASH,  MOLOCH_FIELD_FLAG_CNT,
+        ARKIME_FIELD_TYPE_INT_GHASH,  ARKIME_FIELD_FLAG_CNT,
         (char *)NULL);
 
-    severityField = moloch_field_define("suricata", "integer",
+    severityField = arkime_field_define("suricata", "integer",
         "suricata.severity", "Severity", "suricata.severity",
         "Suricata Severity",
-        MOLOCH_FIELD_TYPE_INT_GHASH,  MOLOCH_FIELD_FLAG_CNT,
+        ARKIME_FIELD_TYPE_INT_GHASH,  ARKIME_FIELD_FLAG_CNT,
         (char *)NULL);
 
     slashslashRegex = g_regex_new("\\\\/", 0, 0, 0);
