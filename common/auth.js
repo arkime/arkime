@@ -453,7 +453,7 @@ class Auth {
 
     // ----------------------------------------------------------------------------
     passport.use('s2s', new CustomStrategy((req, done) => {
-      let obj = req.headers['x-arkime-auth'] ?? req.headers['x-moloch-auth'];
+      let obj = req.headers['x-arkime-auth'];
 
       if (obj === undefined) {
         return done(null, false);
