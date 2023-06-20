@@ -926,7 +926,7 @@ void writer_simple_init(char *name)
 
     simpleMaxQ = arkime_config_int(NULL, "simpleMaxQ", 2000, 50, 0xffff);
     char *mode = arkime_config_str(NULL, "simpleEncoding", NULL);
-    char *compression = arkime_config_str(NULL, "simpleCompression", "gzip");
+    char *compression = arkime_config_str(NULL, "simpleCompression", "zstd");
 
     if (!compression || compression[0] == 0 || strcmp(compression, "none") == 0) {
         compressionMode = ARKIME_COMPRESSION_NONE;

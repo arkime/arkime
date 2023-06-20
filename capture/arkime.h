@@ -800,6 +800,7 @@ extern ARKIME_LOCK_EXTERN(LOG);
 
 #define LOGEXIT(...) do { config.quiet = FALSE; LOG(__VA_ARGS__); exit(1); } while(0) /* no trailing ; */
 #define CONFIGEXIT(...) do { printf("FATAL CONFIG ERROR - " __VA_ARGS__); printf("\n"); exit(1); } while(0) /* no trailing ; */
+#define REMOVEDCONFIG(_var,_help) do { if (arkime_config_str(NULL, _var, NULL) != NULL) CONFIGEXIT("Setting '" _var "' removed - " _help); } while (0) /* no trailing ; */
 
 
 /******************************************************************************/

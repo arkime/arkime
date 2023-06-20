@@ -936,8 +936,8 @@ void writer_s3_init(char *UNUSED(name))
     s3Bucket              = arkime_config_str(NULL, "s3Bucket", NULL);
     s3PathAccessStyle     = arkime_config_boolean(NULL, "s3PathAccessStyle", strchr(s3Bucket, '.') != NULL);
     s3Compress            = arkime_config_boolean(NULL, "s3Compress", FALSE);
-    char s3WriteGzip      = arkime_config_boolean(NULL, "s3WriteGzip", FALSE);
-    char *s3Compression   = arkime_config_str(NULL, "s3Compression", NULL);
+    REMOVEDCONFIG("s3WriteGzip", "use s3Compression=gzip");
+    char *s3Compression   = arkime_config_str(NULL, "s3Compression", "zstd");
     s3CompressionLevel    = arkime_config_int(NULL, "s3CompressionLevel", 0, 0, 22);
     s3CompressionBlockSize= arkime_config_int(NULL, "s3CompressionBlockSize", 100000, 0xffff, 0x7ffff);
     s3StorageClass        = arkime_config_str(NULL, "s3StorageClass", "STANDARD");
@@ -950,7 +950,7 @@ void writer_s3_init(char *UNUSED(name))
     s3ConfigCreds.s3AccessKeyId     = arkime_config_str(NULL, "s3AccessKeyId", NULL);
     s3ConfigCreds.s3SecretAccessKey = arkime_config_str(NULL, "s3SecretAccessKey", NULL);
 
-    config.gapPacketPos = arkime_config_boolean(NULL, "s3GapPacketPos", FALSE);
+    config.gapPacketPos = arkime_config_boolean(NULL, "s3GapPacketPos", TRUE);
 
     if (!s3Bucket) {
         CONFIGEXIT("Must set s3Bucket to save to s3\n");
@@ -970,8 +970,6 @@ void writer_s3_init(char *UNUSED(name))
         } else {
             CONFIGEXIT("Unknown s3Compression value %s", s3Compression);
         }
-    } else if (s3WriteGzip) {
-        compressionMode = ARKIME_COMPRESSION_GZIP;
     }
 
     if (s3Compress && compressionMode != ARKIME_COMPRESSION_NONE) {
