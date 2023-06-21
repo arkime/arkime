@@ -511,6 +511,69 @@ class User {
   };
 
   /**
+   * POST - /api/users/csv
+   *
+   * Retrieves a list of users (admin only).
+   * @name /users/csv
+   */
+  static apiGetUsersCSV (req, res, next) {
+    ArkimeUtil.noCache(req, res, 'text/csv');
+
+    if (typeof req.body !== 'object') { return res.send('Invalid'); }
+    if (Array.isArray(req.body.start) || Array.isArray(req.body.length)) {
+      return res.send('Invalid');
+    }
+
+    const query = {
+      from: parseInt(req.body.start) || 0,
+      size: parseInt(req.body.length) || 10000
+    };
+
+    if (ArkimeUtil.isString(req.body.filter)) {
+      query.filter = req.body.filter;
+    }
+    query.noRoles = false;
+
+    query.sortField = req.body.sortField || 'userId';
+    query.sortDescending = req.body.desc === true;
+    query.searchFields = ['userId', 'userName', 'roles'];
+
+    Promise.all([
+      User.searchUsers(query),
+      User.numberOfUsers()
+    ]).then(([users, total]) => {
+      if (users.error) { throw users.error; }
+      const columns = 'userId,userName,enabled,webEnabled,headerAuthEnabled,roles,emailSearch,removeEnabled,packetSearch,hideStats,hideFiles,hidePcap,disablePcapDownload,expression,timeLimit'.split(',');
+      res.write(columns.join(', '));
+      res.write('\r\n');
+      users = users.users;
+      for (let u = 0; u < users.length; u++) {
+        const values = [];
+        for (let c = 0; c < columns.length; c++) {
+          let value = users[u][columns[c]];
+          if (value === undefined) {
+            value = '';
+          } else if (Array.isArray(value)) {
+            value = '"' + value.join(', ') + '"';
+          } else if (typeof (value) === 'string' && value.includes(',')) {
+            if (value.includes('"')) {
+              value = value.replace(/"/g, '""');
+            }
+            value = '"' + value + '"';
+          }
+          values.push(value);
+        }
+        res.write(values.join(','));
+        res.write('\r\n');
+      }
+      res.end();
+    }).catch((err) => {
+      console.log(`ERROR - ${req.method} /api/users`, util.inspect(err, false, 50));
+      return res.send('Error');
+    });
+  };
+
+  /**
    * The Arkime user-info object (information provided to roleAssigners or non-admin users).
    *
    * @typedef ArkimeUserInfo

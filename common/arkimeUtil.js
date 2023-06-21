@@ -72,6 +72,15 @@ class ArkimeUtil {
   }
 
   // ----------------------------------------------------------------------------
+  static noCache (req, res, ct) {
+    res.header('Cache-Control', 'no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0');
+    if (ct) {
+      res.setHeader('Content-Type', ct);
+      res.header('X-Content-Type-Options', 'nosniff');
+    }
+  };
+
+  // ----------------------------------------------------------------------------
   /**
    * Is there any intersection between the two arrays
    */
