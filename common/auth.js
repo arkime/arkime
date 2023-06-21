@@ -21,6 +21,7 @@
 const crypto = require('crypto');
 const passport = require('passport');
 const DigestStrategy = require('passport-http').DigestStrategy;
+const BasicStrategy = require('passport-http').BasicStrategy;
 const iptrie = require('iptrie');
 const CustomStrategy = require('passport-custom');
 const express = require('express');
@@ -76,10 +77,10 @@ class Auth {
   /**
    * Initialize the Auth subsystem
    * @param {boolean} options.debug=0 The debug level to use for Auth component
-   * @param {string} options.mode=anonymous What auth mode to run in
+   * @param {string} options.mode=digest What auth mode to run in
    * @param {string} options.basePath=/ What the web base path is for the app
    * @param {string} options.userNameHeader In header auth mode, which http header has the user id
-   * @param {string} options.passwordSecret=password For digest mode, what password to use to encrypt the password hash
+   * @param {string} options.passwordSecret=password For basic/digest mode, what password to use to encrypt the password hash
    * @param {string} options.serverSecret=passwordSecret What password is used to encrypt S2S auth
    * @param {string} options.requiredAuthHeader In header auth mode, another header can be required
    * @param {string} options.requiredAuthHeaderVal In header auth mode, a comma separated list of values for requiredAuthHeader, if none are matched the user will not be authorized
@@ -94,8 +95,18 @@ class Auth {
       console.log('Auth.initialize', options);
     }
 
+    if (options.userNameHeader && options.userNameHeader.match(/^(digest|basic|anonymous|oidc)$/)) {
+      console.log(`ERROR - Use new authMode setting instead of userNameHeader to ${options.userNameHeader}`);
+      process.exit();
+    }
+
+    if (options.mode === undefined) {
+      console.log('ERROR - authMode missing from config file');
+      process.exit();
+    }
+
     Auth.debug = options.debug ?? 0;
-    Auth.mode = options.mode ?? 'anonymous';
+    Auth.mode = options.mode ?? 'digest';
     Auth.#basePath = options.basePath ?? '/';
     Auth.#userNameHeader = options.userNameHeader;
     Auth.#passwordSecretSection = options.passwordSecretSection ?? 'default';
@@ -146,10 +157,11 @@ class Auth {
     let sessionAuth = false;
     switch (Auth.mode) {
     case 'anonymous':
-      Auth.#strategies = ['anonymous'];
-      break;
-    case 'anonymousWithDB':
       Auth.#strategies = ['anonymousWithDB'];
+      break;
+    case 'basic':
+      check('httpRealm');
+      Auth.#strategies = ['basic'];
       break;
     case 'digest':
       check('httpRealm');
@@ -293,6 +305,26 @@ class Auth {
           user.cont3xt = dbUser.cont3xt;
         }
         return done(null, user);
+      });
+    }));
+
+    // ----------------------------------------------------------------------------
+    passport.use('basic', new BasicStrategy((userId, password, done) => {
+      if (userId.startsWith('role:')) {
+        console.log(`AUTH: User ${userId} Can not authenticate with role`);
+        return done('Can not authenticate with role');
+      }
+      User.getUserCache(userId, async (err, user) => {
+        if (err) { return done(err); }
+        if (!user) { console.log('AUTH: User', userId, "doesn't exist"); return done(null, false); }
+        if (!user.enabled) { console.log('AUTH: User', userId, 'not enabled'); return done('Not enabled'); }
+
+        const storeHa1 = Auth.store2ha1(user.passStore);
+        const ha1 = Auth.pass2ha1(userId, password);
+        if (storeHa1 !== ha1) return done(null, false);
+
+        user.setLastUsed();
+        return done(null, user, { ha1: Auth.store2ha1(user.passStore) });
       });
     }));
 
@@ -623,11 +655,17 @@ class Auth {
   }
 
   // ----------------------------------------------------------------------------
+  // Hash (MD5) the password
+  static pass2ha1 (userId, password) {
+    return Auth.md5(userId + ':' + Auth.#authConfig.httpRealm + ':' + password);
+  }
+
+  // ----------------------------------------------------------------------------
   // Hash (MD5) and encrypt the password before storing.
   // Encryption is used because OpenSearch/Elasticsearch is insecure by default and we don't want others adding accounts.
   static pass2store (userId, password) {
     // md5 is required because of http digest
-    return Auth.ha12store(Auth.md5(userId + ':' + Auth.#authConfig.httpRealm + ':' + password));
+    return Auth.ha12store(Auth.pass2ha1(userId, password));
   };
 
   // ----------------------------------------------------------------------------

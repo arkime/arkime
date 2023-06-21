@@ -67,9 +67,10 @@ const internals = {
         { name: 'keyFile', required: false, help: 'Path to PEM encoded key file' },
         { name: 'certFile', required: false, help: 'Path to PEM encoded cert file' },
         { name: 'caTrustFile', required: false, help: 'Path to PEM encoded CA file' },
-        { name: 'userNameHeader', required: true, help: 'How should auth be done: anonymous - no auth, digest - digest auth, any other value is the http header to use for username', regex: '.' },
-        { name: 'httpRealm', ifField: 'userNameHeader', ifValue: 'digest', required: false, help: 'The realm to use for digest requests. Must be the same as viewer is using. Default Moloch' },
-        { name: 'passwordSecret', ifField: 'userNameHeader', ifValue: 'digest', required: false, password: true, help: 'The secret used to encrypted password hashes. Must be the same as viewer is using. Default password' },
+        { name: 'authmode', required: true, help: 'How should auth be done: anonymous - no auth, basic - basic auth, digest - digest auth, header - http header auth, oidc - oidc auth', regex: '(anonymous|basic|digest|header|oidc)' },
+        { name: 'userNameHeader', required: true, help: 'the http header to use for username', ifField: 'authMode', ifValue: 'header' },
+        { name: 'httpRealm', ifField: 'authMode', ifValue: 'digest', required: false, help: 'The realm to use for digest requests. Must be the same as viewer is using. Default Moloch' },
+        { name: 'passwordSecret', ifField: 'authMode', ifValue: 'digest', required: false, password: true, help: 'The secret used to encrypted password hashes. Must be the same as viewer is using. Default password' },
         { name: 'usersElasticsearch', required: false, help: 'The URL to connect to OpenSearch/Elasticsearch. Default http://localhost:9200' },
         { name: 'usersElasticsearchAPIKey', required: false, help: 'OpenSearch/Elastisearch API key for users DB access', password: true },
         { name: 'usersElasticsearchBasicAuth', required: false, help: 'OpenSearch/Elastisearch Basic Auth', password: true },
@@ -226,19 +227,10 @@ process.on('SIGINT', function () {
 
 // ----------------------------------------------------------------------------
 function setupAuth () {
-  let userNameHeader = getConfig('wiseService', 'userNameHeader', 'anonymous');
-  let mode;
-  if (userNameHeader === 'anonymous' || userNameHeader === 'digest' || userNameHeader === 'oidc') {
-    mode = userNameHeader;
-    userNameHeader = undefined;
-  } else {
-    mode = 'header';
-  }
-
   Auth.initialize({
     debug: internals.debug,
-    mode,
-    userNameHeader,
+    mode: getConfig('wiseService', 'authMode', 'digest'),
+    userNameHeader: getConfig('wiseService', 'userNameHeader'),
     passwordSecret: getConfig('wiseService', 'passwordSecret', 'password'),
     passwordSecretSection: 'wiseService',
     userAuthIps: getConfig('wiseService', 'userAuthIps'),
@@ -254,7 +246,7 @@ function setupAuth () {
     }
   });
 
-  if (mode === 'anonymous') {
+  if (Auth.mode === 'anonymous') {
     return;
   }
 

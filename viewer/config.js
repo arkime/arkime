@@ -490,32 +490,14 @@ exports.loadFields = function (data) {
 // Initialize Auth
 /// ///////////////////////////////////////////////////////////////////////////////
 
-let mode;
-if (exports.get('passwordSecret')) {
-  const userNameHeader = exports.get('userNameHeader');
-  if (!userNameHeader || userNameHeader === 'digest') {
-    mode = 'digest';
-  } else if (userNameHeader === 'anonymous') {
-    mode = 'anonymousWithDB';
-  } else if (userNameHeader === 'oidc' || userNameHeader === 's2s') {
-    mode = userNameHeader;
-  } else {
-    mode = 'header';
-  }
-} else if (exports.regressionTests) {
-  mode = 'regressionTests';
-} else {
-  mode = 'anonymousWithDB';
-}
-
 Auth.initialize({
-  mode,
+  mode: exports.get('authMode', 'digest'),
+  userNameHeader: exports.get('userNameHeader'),
   debug: exports.debug,
   basePath: exports.basePath(),
   passwordSecret: exports.getFull(internals.nodeName === 'cont3xt' ? 'cont3xt' : 'default', 'passwordSecret', 'password'),
   passwordSecretSection: internals.nodeName === 'cont3xt' ? 'cont3xt' : 'default',
   serverSecret: exports.getFull('default', 'serverSecret'),
-  userNameHeader: exports.get('userNameHeader'),
   requiredAuthHeader: exports.get('requiredAuthHeader'),
   requiredAuthHeaderVal: exports.get('requiredAuthHeaderVal'),
   userAutoCreateTmpl: exports.get('userAutoCreateTmpl'),

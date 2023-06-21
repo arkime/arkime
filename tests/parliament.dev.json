@@ -12,7 +12,7 @@
       "hostname": "W9JK0922LK"
     },
     "commonAuth": {
-      "userNameHeader": "digest",
+      "authMode": "digest",
       "usersPrefix": "tests",
       "passwordSecret": "password",
       "httpRealm": "Moloch"
