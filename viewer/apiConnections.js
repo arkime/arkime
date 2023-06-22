@@ -506,7 +506,7 @@ class ConnectionAPIs {
    * @returns {csv} csv - The csv with the connections requested
    */
   static getConnectionsCSV (req, res) {
-    ViewerUtils.noCache(req, res, 'text/csv');
+    ArkimeUtil.noCache(req, res, 'text/csv');
 
     const seperator = req.query.seperator ?? ',';
     ConnectionAPIs.#buildConnections(req, res, (err, nodes, links, total) => {
