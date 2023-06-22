@@ -453,25 +453,10 @@ class User {
     return res.send(clone);
   };
 
-  /**
-   * POST - /api/users
-   *
-   * Retrieves a list of users (admin only).
-   * @name /users
-   * @returns {boolean} success - True if the request was successful, false otherwise
-   * @returns {ArkimeUser[]} data - The list of users configured.
-   * @returns {number} recordsTotal - The total number of users.
-   * @returns {number} recordsFiltered - The number of users returned in this result.
-   */
-  static apiGetUsers (req, res, next) {
-    if (typeof req.body !== 'object') { return; }
+  static #apiGetUsersCommon (req) {
+    if (typeof req.body !== 'object') { return undefined; }
     if (Array.isArray(req.body.start) || Array.isArray(req.body.length)) {
-      return res.send({
-        success: false,
-        recordsTotal: 0,
-        recordsFiltered: 0,
-        data: []
-      });
+      return undefined;
     }
 
     const query = {
@@ -487,6 +472,30 @@ class User {
     query.sortField = req.body.sortField || 'userId';
     query.sortDescending = req.body.desc === true;
     query.searchFields = ['userId', 'userName', 'roles'];
+
+    return query;
+  }
+
+  /**
+   * POST - /api/users
+   *
+   * Retrieves a list of users (admin only).
+   * @name /users
+   * @returns {boolean} success - True if the request was successful, false otherwise
+   * @returns {ArkimeUser[]} data - The list of users configured.
+   * @returns {number} recordsTotal - The total number of users.
+   * @returns {number} recordsFiltered - The number of users returned in this result.
+   */
+  static apiGetUsers (req, res, next) {
+    const query = User.#apiGetUsersCommon(req);
+    if (query === undefined) {
+      res.send({
+        success: false,
+        recordsTotal: 0,
+        recordsFiltered: 0,
+        data: []
+      });
+    }
 
     Promise.all([
       User.searchUsers(query),
@@ -507,6 +516,60 @@ class User {
         recordsFiltered: 0,
         data: []
       });
+    });
+  };
+
+  /**
+   * POST - /api/users/csv
+   *
+   * Retrieves a list of users (admin only).
+   * @name /users/csv
+   */
+  static apiGetUsersCSV (req, res, next) {
+    ArkimeUtil.noCache(req, res, 'text/csv');
+
+    const query = User.#apiGetUsersCommon(req);
+    if (query === undefined) {
+      res.send({
+        success: false,
+        recordsTotal: 0,
+        recordsFiltered: 0,
+        data: []
+      });
+    }
+
+    Promise.all([
+      User.searchUsers(query),
+      User.numberOfUsers()
+    ]).then(([users, total]) => {
+      if (users.error) { throw users.error; }
+      const columns = 'userId,userName,enabled,webEnabled,headerAuthEnabled,roles,emailSearch,removeEnabled,packetSearch,hideStats,hideFiles,hidePcap,disablePcapDownload,expression,timeLimit'.split(',');
+      res.write(columns.join(', '));
+      res.write('\r\n');
+      users = users.users;
+      for (let u = 0; u < users.length; u++) {
+        const values = [];
+        for (let c = 0; c < columns.length; c++) {
+          let value = users[u][columns[c]];
+          if (value === undefined) {
+            value = '';
+          } else if (Array.isArray(value)) {
+            value = '"' + value.join(', ') + '"';
+          } else if (typeof (value) === 'string' && value.includes(',')) {
+            if (value.includes('"')) {
+              value = value.replace(/"/g, '""');
+            }
+            value = '"' + value + '"';
+          }
+          values.push(value);
+        }
+        res.write(values.join(','));
+        res.write('\r\n');
+      }
+      res.end();
+    }).catch((err) => {
+      console.log(`ERROR - ${req.method} /api/users`, util.inspect(err, false, 50));
+      return res.send('Error');
     });
   };
 

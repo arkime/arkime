@@ -1,4 +1,4 @@
-use Test::More tests => 146;
+use Test::More tests => 148;
 use Cwd;
 use URI::Escape;
 use MolochTest;
@@ -25,6 +25,12 @@ my $json;
 # users
     my $users = viewerPost("/api/users", "");
     is (@{$users->{data}}, 0, "Empty users table");
+
+# csv
+    my $csv = $MolochTest::userAgent->post("http://$MolochTest::host:8123/api/users.csv", Content => "")->content;
+    $csv =~ s/\r//g;
+    eq_or_diff ($csv, 'userId, userName, enabled, webEnabled, headerAuthEnabled, roles, emailSearch, removeEnabled, packetSearch, hideStats, hideFiles, hidePcap, disablePcapDownload, expression, timeLimit
+', "CSV Users");
 
 # Can't create system rule
     $json = viewerPostToken("/api/user", '{"userId": "usersAdmin", "userName": "UserName", "enabled":true, "password":"password"}', $token);
@@ -429,6 +435,15 @@ my $json;
     $json = viewerPostToken("/api/user/test1/assignment?molochRegressionUser=test1", '{"roleId": false, "newRoleState": true}', $test1Token);
     eq_or_diff($json, from_json('{"text": "You do not have permission to access this resource","success":false}'));
 
+# csv
+    my $csv = $MolochTest::userAgent->post("http://$MolochTest::host:8123/api/users.csv", Content => "")->content;
+    $csv =~ s/\r//g;
+    eq_or_diff ($csv, 'userId, userName, enabled, webEnabled, headerAuthEnabled, roles, emailSearch, removeEnabled, packetSearch, hideStats, hideFiles, hidePcap, disablePcapDownload, expression, timeLimit
+role:test1,UserName,true,false,false,"",false,false,false,false,false,false,false,,
+role:test2,UserName,true,false,false,"role:test1",false,false,false,false,false,false,false,,
+test1,UserNameUpdated,false,true,true,"usersAdmin",true,true,false,false,false,false,false,foo,
+test2,UserNameUpdated3,false,false,false,"",false,false,false,false,false,false,false,,72
+', "CSV Users 2");
 
 # Delete Users
     $json = viewerDeleteToken("/api/user/test1", $token);

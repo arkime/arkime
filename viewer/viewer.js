@@ -1094,7 +1094,7 @@ function expireCheckAll () {
 // APIs disabled in demoMode, needs to be before real callbacks
 if (Config.get('demoMode', false)) {
   console.log('WARNING - Starting in demo mode, some APIs disabled');
-  app.all(['/settings', '/users', '/history/list'], (req, res) => {
+  app.all(['/settings', '/users', '/users[./].csv', '/history/list'], (req, res) => {
     return res.send('Disabled in demo mode.');
   });
 
@@ -1244,6 +1244,12 @@ app.post( // get users endpoint
   ['/api/users'],
   [ArkimeUtil.noCacheJson, recordResponseTime, logAction('users'), User.checkRole('usersAdmin')],
   User.apiGetUsers
+);
+
+app.post( // get users endpoint
+  ['/api/users[./]csv'],
+  [logAction('users.csv'), User.checkRole('usersAdmin')],
+  User.apiGetUsersCSV
 );
 
 app.post( // (non-admin) list users (with role status for roleAssigners)
