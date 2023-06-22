@@ -33,6 +33,9 @@ NOTICE: Cross-cluster Shortcuts require you to not restart all your viewers at o
   - BREAKING - s3WriteGzip removed, use s3Compression=gzip
   - BREAKING - s3GapPacketPos defaults to TRUE
   - BREAKING - enablePacketDedup defaults to TRUE
+  - BREAKING - authMode must be set, userNameHeader not used for mode
+  - BREAKING - authMode defaults to digest now
+  - all - authMode=basic added
 
 
 4.3.3 2023/07/xx

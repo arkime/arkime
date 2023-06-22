@@ -2158,16 +2158,16 @@ router.post('/testAlert', [isAdmin, checkCookieToken], (req, res, next) => {
 function setupAuth () {
   parliament.authMode = false;
 
-  if (!parliament?.settings?.commonAuth?.userNameHeader) { return; }
+  if (!parliament?.settings?.commonAuth?.authMode) { return; }
 
   const commonAuth = parliament.settings.commonAuth;
 
-  parliament.authMode = commonAuth.userNameHeader === 'digest' ? 'digest' : 'header';
+  parliament.authMode = commonAuth.authMode;
 
   Auth.initialize({
     debug: app.get('debug'),
     mode: parliament.authMode,
-    userNameHeader: parliament.authMode === 'digest' ? undefined : commonAuth.userNameHeader,
+    userNameHeader: commonAuth.userNameHeader,
     passwordSecret: commonAuth.passwordSecret ?? 'password',
     passwordSecretSection: 'parliament',
     userAuthIps: undefined,

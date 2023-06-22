@@ -450,23 +450,10 @@ function getConfig (section, sectionKey, d) {
 // Initialize stuff
 // ----------------------------------------------------------------------------
 function setupAuth () {
-  let userNameHeader = getConfig('cont3xt', 'userNameHeader', 'anonymous');
-  let mode;
-  if (internals.regressionTests) {
-    mode = 'regressionTests';
-  } else if (userNameHeader === 'anonymous') {
-    mode = 'anonymousWithDB';
-  } else if (userNameHeader === 'digest' || userNameHeader === 'oidc') {
-    mode = userNameHeader;
-    userNameHeader = undefined;
-  } else {
-    mode = 'header';
-  }
-
   Auth.initialize({
     debug: internals.debug,
-    mode,
-    userNameHeader,
+    mode: getConfig('cont3xt', 'authMode', 'digest'),
+    userNameHeader: getConfig('cont3xt', 'userNameHeader', undefined),
     passwordSecret: getConfig('cont3xt', 'passwordSecret', 'password'),
     passwordSecretSection: 'cont3xt',
     basePath: internals.webBasePath,
@@ -568,10 +555,9 @@ async function main () {
     server = http.createServer(app);
   }
 
-  const userNameHeader = getConfig('cont3xt', 'userNameHeader', 'anonymous');
   const cont3xtHost = getConfig('cont3xt', 'cont3xtHost', undefined);
-  if (userNameHeader !== 'anonymous' && cont3xtHost !== 'localhost' && cont3xtHost !== '127.0.0.1') {
-    console.log('SECURITY WARNING - when userNameHeader is set, cont3xtHost should be localhost or use iptables');
+  if (Auth.mode === 'header' && cont3xtHost !== 'localhost' && cont3xtHost !== '127.0.0.1') {
+    console.log('SECURITY WARNING - When using header auth, cont3xtHost should be localhost or use iptables');
   }
 
   server
