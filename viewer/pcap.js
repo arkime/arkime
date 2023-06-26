@@ -746,6 +746,9 @@ Pcap.prototype.ethertyperun = function (type, buffer, obj, pos) {
   case 0x0800:
     this.ip4(buffer, obj, pos);
     break;
+  case 0x0806: // arp
+    obj.ether ??= { data: buffer };
+    break;
   case 0x86dd:
     this.ip6(buffer, obj, pos);
     break;
@@ -797,12 +800,10 @@ Pcap.prototype.ether = function (buffer, obj, pos) {
 };
 
 Pcap.prototype.radiotap = function (buffer, obj, pos) {
-  const l = buffer[2] + 24;
-  if (buffer[l + 6] === 0x08 && buffer[l + 7] === 0x00) {
-    this.ip4(buffer.slice(l + 8), obj, pos + l + 8);
-  } else if (buffer[l + 6] === 0x86 && buffer[l + 7] === 0xdd) {
-    this.ip6(buffer.slice(l + 8), obj, pos + l + 8);
-  }
+  const l = buffer[2] + 24 + 6;
+  const ethertype = buffer.readUInt16BE(l);
+
+  if (this.ethertyperun(ethertype, buffer.slice(l + 2), obj, pos + l + 2)) { return; }
 };
 
 Pcap.prototype.nflog = function (buffer, obj, pos) {
