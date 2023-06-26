@@ -491,7 +491,7 @@ exports.loadFields = function (data) {
 /// ///////////////////////////////////////////////////////////////////////////////
 
 Auth.initialize({
-  mode: exports.get('authMode', 'digest'),
+  mode: exports.get('authMode'),
   userNameHeader: exports.get('userNameHeader'),
   debug: exports.debug,
   basePath: exports.basePath(),

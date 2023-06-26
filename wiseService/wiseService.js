@@ -229,7 +229,7 @@ process.on('SIGINT', function () {
 function setupAuth () {
   Auth.initialize({
     debug: internals.debug,
-    mode: getConfig('wiseService', 'authMode', 'digest'),
+    mode: getConfig('wiseService', 'authMode'),
     userNameHeader: getConfig('wiseService', 'userNameHeader'),
     passwordSecret: getConfig('wiseService', 'passwordSecret', 'password'),
     passwordSecretSection: 'wiseService',

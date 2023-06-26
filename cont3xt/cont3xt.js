@@ -453,8 +453,8 @@ function getConfig (section, sectionKey, d) {
 function setupAuth () {
   Auth.initialize({
     debug: internals.debug,
-    mode: getConfig('cont3xt', 'authMode', 'digest'),
-    userNameHeader: getConfig('cont3xt', 'userNameHeader', undefined),
+    mode: getConfig('cont3xt', 'authMode'),
+    userNameHeader: getConfig('cont3xt', 'userNameHeader'),
     passwordSecret: getConfig('cont3xt', 'passwordSecret', 'password'),
     passwordSecretSection: 'cont3xt',
     basePath: internals.webBasePath,
