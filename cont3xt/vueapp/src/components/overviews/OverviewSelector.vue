@@ -1,7 +1,10 @@
 <template>
-  <b-dropdown size="sm" class="ml-1 overview-dropdown" no-caret>
+  <b-dropdown size="sm" class="ml-1 overview-dropdown" no-caret v-b-tooltip.hover.top="'Select overview'">
     <template #button-content>
-      <span class="fa fa-fw fa-file-o" />
+      <div class="no-wrap d-inline-flex align-items-center">
+        <span class="fa fa-fw fa-file-o" />
+        <div class="toby-stuff">{{ selectedOverview.name }}</div>
+      </div>
     </template>
 
     <div class="ml-1 mr-1 mb-2">
@@ -15,35 +18,17 @@
             v-model="query"
         />
       </b-input-group>
-      <b-input-group size="sm">
-        <template #prepend>
-          <b-input-group-text>
-            iType
-          </b-input-group-text>
-        </template>
-        <b-form-select
-            v-model="activeIType"
-            :options="anyOrITypes"
-        />
-      </b-input-group>
     </div>
 
     <div>
-      <template v-for="({ name, iType, _id }, i) in filteredOverviews">
+      <template v-for="(overview, i) in filteredOverviews">
         <b-dropdown-item-btn :key="i"
-          @click="selectOverview(iType, _id)"
-          button-class="p-0"
+          @click="selectOverview(overview._id)"
+          button-class="px-1 py-0"
         >
-          <div class="d-flex flex-row align-items-center w-100">
-            <!--      TODO: toby, clean up styling please      -->
-            <div class="pull-left" style="width: 10px; height: 30px" :style="iTypeColorStyleMap[iType]"></div>
-            <span :class="{ 'text-success': getCorrectedSelectedOverviewIdMap[iType] === _id }">
-              <span class="fa fa-fw" :class="[iTypeIconMap[iType]]" />{{ name }}
-            </span>
-          </div>
+          <overview-selector-line :overview="overview"
+              :show-i-type-icon="false" />
         </b-dropdown-item-btn>
-        <hr v-if="i < filteredOverviews.length - 1 && iType !== filteredOverviews[i + 1].iType"
-            :key="`hr-${i}`" class="border-secondary my-0">
       </template>
     </div>
   </b-dropdown>
@@ -51,11 +36,22 @@
 
 <script>
 import { mapGetters } from 'vuex';
-import { iTypes, iTypeIconMap, iTypeColorStyleMap } from '@/utils/iTypes';
-import UserService from '@/components/services/UserService';
+import { iTypeIconMap, iTypeColorStyleMap } from '@/utils/iTypes';
+import OverviewSelectorLine from '@/components/overviews/OverviewSelectorLine';
 
 export default {
   name: 'OverviewSelector',
+  components: { OverviewSelectorLine },
+  props: {
+    iType: {
+      type: String,
+      required: true
+    },
+    selectedOverview: {
+      type: Object,
+      required: true
+    }
+  },
   data () {
     return {
       query: ''
@@ -65,8 +61,8 @@ export default {
     ...mapGetters(['getSortedOverviews', 'getCorrectedSelectedOverviewIdMap']),
     filteredOverviews () {
       return this.getSortedOverviews.filter(overview => {
-        if (this.activeIType !== 'any' && overview.iType !== this.activeIType) { return false; }
-        return !this.query.length || overview.name.toLowerCase().match(this.query)?.length > 0;
+        return overview.iType === this.iType &&
+            (!this.query.length || overview.name.toLowerCase().match(this.query.toLowerCase())?.length > 0);
       });
     },
     iTypeColorStyleMap () {
@@ -74,19 +70,11 @@ export default {
     },
     iTypeIconMap () {
       return iTypeIconMap;
-    },
-    anyOrITypes () {
-      return ['any'].concat(iTypes);
-    },
-    activeIType: {
-      get () { return this.$store.state.overviewSelectorActiveIType; },
-      set (value) { this.$store.commit('SET_OVERVIEW_SELECTOR_ACTIVE_ITYPE', value); }
     }
   },
   methods: {
-    selectOverview (iType, id) {
-      this.$store.commit('SET_SELECTED_OVERVIEW_ID_FOR_ITYPE', { iType, id });
-      UserService.setUserSettings({ selectedOverviews: this.getCorrectedSelectedOverviewIdMap });
+    selectOverview (id) {
+      this.$emit('set-override-overview', id);
     }
   }
 };
@@ -96,5 +84,12 @@ export default {
 .overview-dropdown .dropdown-menu {
   width: 240px;
   overflow: hidden;
+}
+
+.toby-stuff {
+  max-width: 6rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 </style>

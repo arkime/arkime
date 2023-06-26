@@ -6,7 +6,7 @@ export const iTypeIndexMap = Object.fromEntries(iTypes.map((iType, i) => [iType,
 
 export const iTypeIconMap = {
   domain: 'fa-globe',
-  ip: 'fa-rocket',
+  ip: 'fa-map-marker',
   url: 'fa-link',
   email: 'fa-at',
   phone: 'fa-phone',
@@ -26,6 +26,6 @@ export const iTypeColorMap = {
 
 export const iTypeColorStyleMap = Object.fromEntries(
   Object.entries(iTypeColorMap).map(([iType, color]) => [
-    iType, { 'background-color': color }
+    iType, { color }
   ])
 );

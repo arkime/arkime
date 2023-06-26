@@ -1,116 +1,13 @@
 <template>
-  <!-- view (for settings page users who can view but not edit) -->
-  <b-card
-      v-if="!(getUser && (getUser.userId === localOverview.creator || localOverview._editable || (getUser.roles && getUser.roles.includes('cont3xtAdmin'))))"
-      class="w-100">
-    <template #header>
-      <h6 class="mb-0 link-header">
-        <span
-            class="fa fa-share-alt mr-1 cursor-help"
-            v-b-tooltip.hover="`Shared with you by ${localOverview.creator}`"
-        />
-        {{ localOverview.name }}
-        <small class="pull-right">
-          You can only view this Link Group
-        </small>
-      </h6>
-    </template>
-    <b-card-body>
-      <div class="d-flex flex-row">
-        <h6>Title:</h6><span class="ml-1">{{ localOverview.title }}</span>
-      </div>
-      <div class="d-flex flex-row">
-        <h6>iType:</h6><span class="ml-1">{{ localOverview.iType }}</span>
-      </div>
-      <div class="d-flex flex-row">
-        <h6>Fields:</h6><b-badge v-if="!localOverview.fields.length" class="ml-1">None</b-badge>
-      </div>
-      <div class="d-flex flex-column">
-        <b-card v-for="(field, i) in localOverview.fields" :key="i"
-                class="mb-1"
-        >
-          <span class="text-warning bold">{{ field.from }}</span> <span class="text-primary">{{ field.field }}</span>
-          <span v-if="field.alias">as <span class="text-info">"{{ field.alias }}"</span></span>
-        </b-card>
-      </div>
-    </b-card-body>
-  </b-card> <!-- /view -->
-  <b-card v-else class="w-100">
-    <template #header>
-      <div class="w-100 d-flex justify-content-between">
-        <div>
-          <!-- delete button -->
-          <transition name="buttons">
-            <b-button
-                size="sm"
-                variant="danger"
-                v-if="!confirmDelete && !isDefaultOverview"
-                @click="confirmDelete = true"
-                v-b-tooltip.hover="'Delete this overview'">
-              <span class="fa fa-trash" />
-            </b-button>
-          </transition> <!-- /delete button -->
-          <!-- cancel confirm delete button -->
-          <transition name="buttons">
-            <b-button
-                size="sm"
-                title="Cancel"
-                variant="warning"
-                v-b-tooltip.hover
-                :disabled="isDefaultOverview"
-                v-if="confirmDelete"
-                @click="confirmDelete = false">
-              <span class="fa fa-ban" />
-            </b-button>
-          </transition> <!-- /cancel confirm delete button -->
-          <!-- confirm delete button -->
-          <transition name="buttons">
-            <b-button
-                size="sm"
-                variant="danger"
-                v-b-tooltip.hover
-                title="Are you sure?"
-                :disabled="isDefaultOverview"
-                v-if="confirmDelete"
-                @click="deleteOverview">
-              <span class="fa fa-check" />
-            </b-button>
-          </transition> <!-- /confirm delete button -->
-        </div>
-        <div>
-          <transition name="buttons">
-            <b-button
-                size="sm"
-                variant="secondary"
-                @click="rawEditMode = !rawEditMode"
-                v-b-tooltip.hover="'Toggle raw configuration for this link group'">
-              <span class="fa fa-pencil-square-o" />
-            </b-button>
-          </transition>
-          <transition name="buttons">
-            <b-button
-                size="sm"
-                variant="warning"
-                v-if="changesMade"
-                @click="cancelOverviewModification"
-                v-b-tooltip.hover="'Cancel unsaved updates'">
-              <span class="fa fa-ban" />
-            </b-button>
-          </transition>
-          <transition name="buttons">
-            <b-button
-                size="sm"
-                variant="success"
-                v-if="changesMade"
-                @click="saveOverview"
-                v-b-tooltip.hover="'Save this link group'">
-              <span class="fa fa-save" />
-            </b-button>
-          </transition>
-        </div>
-      </div>
-    </template>
-
+  <textarea
+      rows="20"
+      size="sm"
+      v-if="rawEditMode"
+      :value="rawEditText"
+      @input="e => debounceRawEdit(e)"
+      class="form-control form-control-sm"
+  />
+  <b-form v-else>
     <b-input-group
         size="sm"
         class="mb-2">
@@ -147,7 +44,6 @@
       <b-form-input
           trim
           required
-          autofocus
           v-model="localOverview.title"
           :state="!!localOverview.title"
           @input="updateOverview"
@@ -171,7 +67,8 @@
       </template>
       <b-form-select
           v-model="localOverview.iType"
-          :options="['domain', 'ip', 'url', 'email', 'phone', 'hash', 'text']"
+          :options="iTypes"
+          :state="isDefaultOverview ? undefined : iTypes.includes(localOverview.iType)"
           :disabled="isDefaultOverview"
           @input="updateOverview"
       />
@@ -199,10 +96,10 @@
     />
     <span
         class="fa fa-info-circle fa-lg cursor-help ml-2 mr-1"
-        v-b-tooltip.hover="'Creators will always be able to view and edit their link groups regardless of the roles selected here.'"
+        v-b-tooltip.hover="'Creators will always be able to view and edit their overviews regardless of the roles selected here.'"
     />
     <span v-if="!localOverview.creator || (getUser && localOverview.creator === getUser.userId)">
-      As the creator, you can always view and edit your link groups.
+      As the creator, you can always view and edit your overviews.
     </span>
     <div
         class="mt-2"
@@ -331,13 +228,13 @@
       </template>
     </reorder-list>
     <b-button
-      variant="outline-primary"
-      class="mt-4 w-100"
-      @click="appendFieldRef"
+        variant="outline-primary"
+        class="mt-4 w-100"
+        @click="appendFieldRef"
     >
       Add Field
     </b-button>
-  </b-card>
+  </b-form>
 </template>
 
 <script>
@@ -346,27 +243,33 @@ import { mapGetters } from 'vuex';
 import RoleDropdown from '@../../../common/vueapp/RoleDropdown';
 import { iTypes } from '@/utils/iTypes';
 
+let timeout;
+
 export default {
-  name: 'OverviewCardForm',
+  name: 'OverviewForm',
   components: {
     ReorderList,
     RoleDropdown
   },
   props: {
-    overview: {
-      type: Object
-    },
     modifiedOverview: {
       type: Object,
       required: true
+    },
+    rawEditMode: {
+      type: Boolean,
+      required: true
+    },
+    isDefaultOverview: {
+      type: Boolean,
+      default: false
     }
   },
   data () {
     return {
       localOverview: JSON.parse(JSON.stringify(this.modifiedOverview)),
-      changesMade: false,
-      rawEditMode: false,
       confirmDelete: false,
+      rawEditText: undefined,
       nameTip: {
         title: 'This name will be used to identify this overview in the Overview Selector and will be viewable by those you share this with.'
       },
@@ -384,24 +287,36 @@ export default {
       },
       fieldRefAliasTip: {
         title: 'Optionally, change the label that will be displayed with this field.'
-      }
+      },
+      iTypes
     };
   },
   computed: {
-    ...mapGetters(['getIntegrations', 'getRoles', 'getUser']),
-    isDefaultOverview () {
-      return iTypes.includes(this.localOverview._id);
+    ...mapGetters(['getIntegrations', 'getRoles', 'getUser'])
+  },
+  watch: {
+    modifiedOverview () {
+      if (this.modifiedOverview) { // sync with parent (important for change cancellation)
+        this.localOverview = JSON.parse(JSON.stringify(this.modifiedOverview));
+      }
+    },
+    rawEditMode (newVal) {
+      if (!newVal) {
+        this.rawEditText = undefined;
+        return;
+      }
+
+      // remove un-editable fields
+      const clone = JSON.parse(JSON.stringify(this.localOverview));
+      delete clone._id;
+      delete clone.creator;
+      delete clone._editable;
+      delete clone._viewable;
+
+      this.rawEditText = JSON.stringify(clone, null, 2);
     }
   },
   methods: {
-    normalizeOverview (unNormalizedOverview) {
-      const normalizedOverview = JSON.parse(JSON.stringify(unNormalizedOverview));
-      // sort roles, as their order should not matter
-      normalizedOverview.viewRoles.sort();
-      normalizedOverview.editRoles.sort();
-
-      return normalizedOverview;
-    },
     updateViewRoles (roles) {
       this.$set(this.localOverview, 'viewRoles', roles);
       this.updateOverview();
@@ -411,27 +326,7 @@ export default {
       this.updateOverview();
     },
     updateOverview () {
-      const normalizedFinal = this.normalizeOverview(this.localOverview);
-
-      if (!this.overview) {
-        this.changesMade = true;
-      } else {
-        const normalizedInitial = this.normalizeOverview(this.overview);
-        this.changesMade = JSON.stringify(normalizedInitial) !== JSON.stringify(normalizedFinal);
-      }
-
-      this.$emit('update-modified-overview', JSON.parse(JSON.stringify(normalizedFinal)));
-    },
-    saveOverview () {
-      this.$emit('save-overview');
-      this.changesMade = false;
-    },
-    deleteOverview () {
-      this.$emit('delete-overview');
-    },
-    cancelOverviewModification () {
-      this.localOverview = JSON.parse(JSON.stringify(this.overview));
-      this.updateOverview();
+      this.$emit('update-modified-overview', JSON.parse(JSON.stringify(this.localOverview)));
     },
     insertFieldRef (index) {
       this.localOverview.fields.splice(index, 0, {
@@ -472,6 +367,34 @@ export default {
     updateOverviewFieldsList ({ list }) {
       this.localOverview.fields = list;
       this.updateOverview();
+    },
+    debounceRawEdit (e) {
+      this.rawEditText = e.target.value;
+      if (timeout) { clearTimeout(timeout); }
+      // debounce the textarea so that it only updates the overview after keyups cease for 400ms
+      timeout = setTimeout(() => {
+        timeout = null;
+        this.updateRawOverview();
+      }, 400);
+    },
+    updateRawOverview () {
+      try {
+        const overviewFromRaw = JSON.parse(this.rawEditText);
+
+        this.localOverview = {
+          ...this.localOverview,
+          name: overviewFromRaw.name,
+          title: overviewFromRaw.title,
+          iType: overviewFromRaw.iType,
+          fields: overviewFromRaw.fields,
+          viewRoles: overviewFromRaw.viewRoles,
+          editRoles: overviewFromRaw.editRoles
+        };
+        this.updateOverview();
+      } catch (err) {
+        console.warn('Invalid JSON for raw overview', err);
+        this.$store.commit('SET_OVERVIEWS_ERROR', 'Invalid JSON');
+      }
     }
   }
 };

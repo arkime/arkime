@@ -352,7 +352,7 @@ class DbESImplementation {
       }
     }
 
-    await this.client.indices.putMapping({ // TODO: toby, better mapping?
+    await this.client.indices.putMapping({
       index: 'cont3xt_overviews',
       body: {
         dynamic_templates: [

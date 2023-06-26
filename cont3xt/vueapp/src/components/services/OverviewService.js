@@ -32,10 +32,9 @@ export default {
   /**
    * Creates an overview.
    * @param {Object} overview - The overview data
-   * @param {Function} onReFetchCb - Optional callback after successful creation and getOverviews
    * @returns {Promise} - The promise that either resolves the request or rejects in error
    */
-  createOverview (overview, onReFetchCb) {
+  createOverview (overview) {
     return new Promise((resolve, reject) => {
       fetch('api/overview', {
         method: 'PUT',
@@ -45,7 +44,7 @@ export default {
         return response.json();
       }).then((response) => {
         if (response.success) {
-          this.getOverviews().then(() => onReFetchCb?.());
+          this.getOverviews();
           return resolve(response);
         } else {
           return reject(response.text);

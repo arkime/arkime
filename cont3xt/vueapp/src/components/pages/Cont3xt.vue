@@ -102,7 +102,11 @@
               <span class="fa fa-eye" />
             </template>
           </ViewSelector>
-          <OverviewSelector />
+          <overview-selector
+              v-if="searchItype"
+              :i-type="searchItype"
+              :selected-overview="currentOverviewCard"
+              @set-override-overview="setOverrideOverview" />
           <b-dropdown
               class="ml-1"
               tabindex="-1"
@@ -408,11 +412,11 @@
                 <div>
                   <template v-if="showOverview">
                     <default-card
-                        v-if="getSelectedOverviewMap[searchItype]"
+                        v-if="currentOverviewCard"
                         :fullData="results"
                         :query="lastSearchedTerm"
                         :itype="searchItype"
-                        :card="getSelectedOverviewMap[searchItype]"
+                        :card="currentOverviewCard"
                     />
                     <b-alert
                         v-else
@@ -512,6 +516,7 @@ export default {
       searchTerm: this.$route.query.q ? this.$route.query.q : (this.$route.query.b ? window.atob(this.$route.query.b) : ''),
       lastSearchedTerm: '',
       showOverview: true,
+      overrideOverviewId: undefined,
       skipCache: false,
       searchComplete: false,
       linkSearchTerm: this.$route.query.linkSearch || '',
@@ -560,7 +565,7 @@ export default {
       'getToggleCache', 'getDownloadReport', 'getCopyShareLink',
       'getAllViews', 'getImmediateSubmissionReady', 'getSelectedView',
       'getTags', 'getTagDisplayCollapsed', 'getSeeAllViews', 'getSeeAllLinkGroups',
-      'getSeeAllOverviews', 'getSelectedOverviewMap'
+      'getSeeAllOverviews', 'getSelectedOverviewMap', 'getOverviewMap'
     ]),
     tags: {
       get () { return this.getTags; },
@@ -607,6 +612,12 @@ export default {
         }
       }
       return allClosed;
+    },
+    currentOverviewCard () {
+      if (this.overrideOverviewId) {
+        return this.getOverviewMap[this.overrideOverviewId];
+      }
+      return this.getSelectedOverviewMap[this.searchItype];
     }
   },
   watch: {
@@ -774,6 +785,7 @@ export default {
       this.$store.commit('RESET_LOADING');
       this.$store.commit('SET_INTEGRATION_DATA', {});
       this.showOverview = true;
+      this.overrideOverviewId = undefined;
 
       let failed = 0;
 
@@ -797,7 +809,6 @@ export default {
             // based of the first itype seen
             this.lastSearchedTerm = data.query;
             this.searchItype = data.itype;
-            this.$store.commit('SET_OVERVIEW_SELECTOR_ACTIVE_ITYPE', data.itype);
             this.filterLinks(this.linkSearchTerm);
           }
 
@@ -848,6 +859,10 @@ export default {
           }, 2000);
         }
       });
+    },
+    setOverrideOverview (id) {
+      this.showOverview = true;
+      this.overrideOverviewId = id;
     },
     hasLinkWithItype (linkGroup) {
       return linkGroup.links.some(link =>

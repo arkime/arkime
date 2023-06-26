@@ -109,6 +109,10 @@ class Overview {
       return { msg: 'Missing iType' };
     }
 
+    if (!iTypes.includes(overview.iType)) {
+      return { msg: 'Invalid iType' };
+    }
+
     if (overview.fields === undefined) {
       return { msg: 'Missing fields array' };
     }
@@ -242,8 +246,6 @@ class Overview {
       overview._editable = overview.creator === req.user.userId || req.user.hasRole(overview.editRoles);
       overview._viewable = overview.creator === req.user.userId || req.user.hasRole(overview.viewRoles);
     }
-
-    // TODO: toby, use req.user.cont3xt as settings!
 
     res.send({ success: true, overviews });
   }

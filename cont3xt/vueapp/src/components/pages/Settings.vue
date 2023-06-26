@@ -33,20 +33,31 @@
            :class="{'active':visibleTab === 'overviews'}">
           <span class="fa fa-fw fa-file-o mr-1" />
           Overviews
+          <b-button
+              size="xs"
+              class="float-right"
+              variant="secondary"
+              v-if="visibleTab === 'overviews'"
+              @click.stop.prevent="openOverviewForm"
+              v-b-tooltip.hover="'Create a new overview'">
+            <span class="fa fa-fw fa-plus-circle" />
+          </b-button>
         </a>
         <template v-if="visibleTab === 'overviews'">
-          <div
-              v-for="overview in getSortedOverviews"
-              :key="overview._id"
-              style="position:relative; max-width:calc(100% - 1rem); margin-left:1rem;">
+          <!-- link group create form -->
+          <create-overview-modal />
+          <!-- overviews -->
+          <div v-for="iType in iTypes" :key="iType"
+            style="position:relative; max-width:calc(100% - 1rem); margin-left:1rem; border-left-width: 2px; border-left-style: solid; border-radius: 5px; padding-left: 4px; margin-bottom: 4px" :style="{ 'border-color': iTypeColorMap[iType] }"
+          >
             <a
+                v-for="overview in getSortedOverviews.filter(o => o.iType === iType)"
+                :key="overview._id"
                 :title="overview.name"
                 @click="setActiveOverviewId(overview._id)"
                 :class="{ 'active':activeOverviewId === overview._id }"
-                class="nav-link cursor-pointer">
-              <span class="fa fa-fw mr-1" style="color: black"
-                :class="[ iTypeIconMap[overview.iType] ]"
-              />{{ overview.name }}
+                class="nav-link cursor-pointer w-100">
+              <overview-selector-line :overview="overview" />
             </a>
           </div>
         </template>
@@ -384,7 +395,8 @@
           <span class="pull-right">
             <b-button
                 variant="outline-primary"
-                @click="createOverview">
+                v-b-modal.overview-form
+            >
               <span class="fa fa-plus-circle" />
               New Overview
             </b-button>
@@ -413,15 +425,14 @@
         </b-alert> <!-- /overview error -->
 
         <div class="d-flex flex-wrap">
-          <!-- overview-card-form uses :key to reset form when swapping active overview -->
-          <overview-card-form
+          <!-- overview-form-card uses :key to reset form when swapping active overview -->
+          <overview-form-card
               v-if="activeOverviewId && activeUnModifiedOverview"
               :key="activeOverviewId"
               :overview="activeUnModifiedOverview"
               :modifiedOverview="activeModifiedOverview"
               @update-modified-overview="updateModifiedOverview"
-              @save-overview="saveOverview"
-              @delete-overview="deleteOverview"
+              @overview-deleted="activeOverviewDeleted"
           />
           <div v-else
                class="d-flex flex-column">
@@ -430,7 +441,7 @@
             </span>
             <b-button
                 variant="outline-primary"
-                @click="createOverview">
+                v-b-modal.overview-form>
               Create one!
             </b-button>
           </div>
@@ -574,20 +585,25 @@ import Cont3xtService from '@/components/services/Cont3xtService';
 import CreateLinkGroupModal from '@/components/links/CreateLinkGroupModal';
 import LinkService from '@/components/services/LinkService';
 import OverviewService from '@/components/services/OverviewService';
-import OverviewCardForm from '@/components/overviews/OverviewCardForm';
+import OverviewFormCard from '@/components/overviews/OverviewFormCard';
+import CreateOverviewModal from '@/components/overviews/CreateOverviewModal.vue';
+import OverviewSelectorLine from '@/components/overviews/OverviewSelectorLine.vue';
 import Vue from 'vue';
+import { iTypes, iTypeIconMap, iTypeColorMap } from '@/utils/iTypes';
 
 let timeout;
 
 export default {
   name: 'Cont3xtSettings',
   components: {
+    OverviewSelectorLine,
+    CreateOverviewModal,
+    OverviewFormCard,
     ViewForm,
     ReorderList,
     LinkGroupCard,
     CreateViewModal,
-    CreateLinkGroupModal,
-    OverviewCardForm
+    CreateLinkGroupModal
   },
   data () {
     return {
@@ -601,16 +617,9 @@ export default {
       filteredIntegrationSettings: {},
       rawIntegrationSettings: undefined,
       // overviews
-      iTypes: ['domain', 'ip', 'url', 'email', 'phone', 'hash', 'text'],
-      iTypeIconMap: {
-        domain: 'fa-globe',
-        ip: 'fa-rocket',
-        url: 'fa-link',
-        email: 'fa-at',
-        phone: 'fa-phone',
-        hash: 'fa-hashtag',
-        text: 'fa-font'
-      },
+      iTypes,
+      iTypeIconMap,
+      iTypeColorMap,
       activeOverviewId: undefined,
       modifiedOverviewMap: {},
       // link groups
@@ -654,7 +663,7 @@ export default {
   computed: {
     ...mapGetters([
       'getLinkGroups', 'getLinkGroupsError', 'getIntegrations', 'getViews', 'getUser',
-      'getOverviews', 'getOverviewsError', 'getSortedOverviews'
+      'getOverviews', 'getOverviewsError', 'getSortedOverviews', 'getCorrectedSelectedOverviewIdMap'
     ]),
     seeAllViews: {
       get () { return this.$store.state.seeAllViews; },
@@ -754,6 +763,11 @@ export default {
       if (oldValue == null) {
         this.setActiveOverviewToFirst();
       }
+    },
+    activeUnModifiedOverview () {
+      if (this.activeUnModifiedOverview === undefined) {
+        this.setActiveOverviewToFirst();
+      }
     }
   },
   methods: {
@@ -830,39 +844,19 @@ export default {
       }
       this.activeOverviewId = newActiveOverviewId;
     },
-    createDefaultOverviewCard () {
-      return {
-        name: 'Untitled',
-        title: 'Untitled Overview of %{query}',
-        iType: 'domain',
-        fields: [],
-        viewRoles: [],
-        editRoles: []
-      };
-    },
-    createOverview () {
-      const oldOverviews = JSON.parse(JSON.stringify(this.getOverviews));
-      OverviewService.createOverview(this.createDefaultOverviewCard(), () => {
-        // set the newly-created overview as the actively edited one
-        const newOverview = this.getOverviews
-          .find(overview => !oldOverviews.some(oldOverview => overview._id === oldOverview._id));
-
-        if (newOverview != null) {
-          this.setActiveOverviewId(newOverview._id);
-        }
-      });
+    setDefaultOverview (id, iType) {
+      this.$store.commit('SET_SELECTED_OVERVIEW_ID_FOR_ITYPE', { iType, id });
+      UserService.setUserSettings({ selectedOverviews: this.getCorrectedSelectedOverviewIdMap });
     },
     updateModifiedOverview (newOverview) {
       Vue.set(this.modifiedOverviewMap, this.activeOverviewId, newOverview);
     },
-    saveOverview () {
-      OverviewService.updateOverview(this.activeModifiedOverview); // TODO: toby, move into component, with changesMade, set here!
+    activeOverviewDeleted () {
+      Vue.set(this.modifiedOverviewMap, this.activeOverviewId, undefined);
+      this.setActiveOverviewToFirst();
     },
-    deleteOverview () {
-      OverviewService.deleteOverview(this.activeOverviewId).then((res) => {
-        Vue.set(this.modifiedOverviewMap, this.activeOverviewId, undefined);
-        this.setActiveOverviewToFirst(); // TODO: set to next index toby
-      });
+    openOverviewForm () {
+      this.$bvModal.show('overview-form');
     },
     /* LINK GROUPS! -------------------------- */
     updateLinkGroup (linkGroup) {
