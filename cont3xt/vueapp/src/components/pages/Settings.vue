@@ -44,7 +44,7 @@
           </b-button>
         </a>
         <template v-if="visibleTab === 'overviews'">
-          <!-- link group create form -->
+          <!-- overview create form -->
           <create-overview-modal />
           <!-- overviews -->
           <div v-for="iType in iTypes" :key="iType"

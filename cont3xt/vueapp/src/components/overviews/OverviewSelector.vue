@@ -3,7 +3,7 @@
     <template #button-content>
       <div class="no-wrap d-inline-flex align-items-center">
         <span class="fa fa-fw fa-file-o" />
-        <div class="toby-stuff">{{ selectedOverview.name }}</div>
+        <div class="overview-name-shorten">{{ selectedOverview.name }}</div>
       </div>
     </template>
 
@@ -86,7 +86,7 @@ export default {
   overflow: hidden;
 }
 
-.toby-stuff {
+.overview-name-shorten {
   max-width: 6rem;
   overflow: hidden;
   text-overflow: ellipsis;
