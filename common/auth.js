@@ -95,20 +95,26 @@ class Auth {
       console.log('Auth.initialize', options);
     }
 
-    if (options.userNameHeader && options.userNameHeader.match(/^(digest|basic|anonymous|oidc)$/)) {
-      console.log(`ERROR - Use new authMode setting instead of userNameHeader to ${options.userNameHeader}`);
-      process.exit();
-    }
-
     if (options.mode === undefined) {
-      console.log('ERROR - authMode missing from config file');
-      process.exit();
+      if (options.userNameHeader) {
+        if (options.userNameHeader.match(/^(digest|basic|anonymous|oidc)$/)) {
+          console.log(`WARNING - Using authMode=${options.userNameHeader} setting since userNameHeader set, add to config file to silence this warning.`);
+          options.mode = options.userNameHeader;
+          delete options.userNameHeader;
+        } else {
+          console.log('WARNING - Using authMode=header since not set, add to config file to silence this warning.');
+          options.mode = 'header';
+        }
+      } else {
+        console.log('WARNING - Using authMode=digest since not set, add to config file to silence this warning.');
+        options.mode = 'digest';
+      }
     }
 
     Auth.debug = options.debug ?? 0;
-    Auth.mode = options.mode ?? 'digest';
-    Auth.#basePath = options.basePath ?? '/';
+    Auth.mode = options.mode;
     Auth.#userNameHeader = options.userNameHeader;
+    Auth.#basePath = options.basePath ?? '/';
     Auth.#passwordSecretSection = options.passwordSecretSection ?? 'default';
     Auth.passwordSecret = options.passwordSecret ?? 'password';
     Auth.passwordSecret256 = crypto.createHash('sha256').update(Auth.passwordSecret).digest();
