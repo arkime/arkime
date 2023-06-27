@@ -595,7 +595,6 @@ import OverviewService from '@/components/services/OverviewService';
 import OverviewFormCard from '@/components/overviews/OverviewFormCard';
 import CreateOverviewModal from '@/components/overviews/CreateOverviewModal.vue';
 import OverviewSelectorLine from '@/components/overviews/OverviewSelectorLine.vue';
-import Vue from 'vue';
 import { iTypes, iTypeIconMap, iTypeColorMap } from '@/utils/iTypes';
 import CommonUserService from '../../../../../common/vueapp/UserService';
 

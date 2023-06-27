@@ -411,7 +411,7 @@
                 :show="getWaitRendering || getRendering">
                 <div>
                   <template v-if="showOverview">
-                    <default-card
+                    <overview-card
                         v-if="currentOverviewCard"
                         :fullData="results"
                         :query="lastSearchedTerm"
@@ -476,7 +476,7 @@ import LinkGroupCard from '@/components/links/LinkGroupCard';
 import CreateViewModal from '@/components/views/CreateViewModal';
 import Cont3xtService from '@/components/services/Cont3xtService';
 import IntegrationCard from '@/components/integrations/IntegrationCard';
-import DefaultCard from '@/components/integrations/DefaultCard';
+import OverviewCard from '@/components/overviews/OverviewCard';
 import IntegrationPanel from '@/components/integrations/IntegrationPanel';
 import TagDisplayLine from '@/utils/TagDisplayLine';
 import { paramStr } from '@/utils/paramStr';
@@ -500,7 +500,7 @@ export default {
     LinkGroupCard,
     CreateViewModal,
     IntegrationCard,
-    DefaultCard,
+    OverviewCard,
     IntegrationPanel,
     TimeRangeInput,
     TagDisplayLine

@@ -56,12 +56,12 @@ import { gatherIntegrationData } from '@/utils/gatherIntegrationData';
 
 import IntegrationValue from '@/components/integrations/IntegrationValue';
 
-// NOTE: DefaultCard displays IntegrationValues AND IntegrationTables
+// NOTE: OverviewCard displays IntegrationValues AND IntegrationTables
 // IntegrationTables can ALSO display IntegrationValues, so:
-// DefaultCard -> IntegrationValue
-// DefaultCard -> IntegrationValue -> IntegrationTable -> IntegrationValue
+// OverviewCard -> IntegrationValue
+// OverviewCard -> IntegrationValue -> IntegrationTable -> IntegrationValue
 export default {
-  name: 'DefaultCard',
+  name: 'OverviewCard',
   components: { IntegrationValue },
   props: {
     fullData: { // the data returned from cont3xt search
