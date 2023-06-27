@@ -48,7 +48,7 @@
           <create-overview-modal />
           <!-- overviews -->
           <div v-for="iType in iTypes" :key="iType"
-            style="position:relative; max-width:calc(100% - 1rem); margin-left:1rem; border-left-width: 2px; border-left-style: solid; border-radius: 5px; padding-left: 4px; margin-bottom: 4px" :style="{ 'border-color': iTypeColorMap[iType] }"
+            class="itype-group-container" :style="{ 'border-color': iTypeColorMap[iType] }"
           >
             <a
                 v-for="overview in getSortedOverviews.filter(o => o.iType === iType)"
@@ -1144,5 +1144,16 @@ export default {
 .integration-setting-img {
   height:27px;
   margin-left: -8px;
+}
+
+.itype-group-container {
+  position: relative;
+  max-width: calc(100% - 1rem);
+  margin-left: 1rem;
+  border-left-width: 2px;
+  border-left-style: solid;
+  border-radius: 5px;
+  padding-left: 4px;
+  margin-bottom: 4px
 }
 </style>

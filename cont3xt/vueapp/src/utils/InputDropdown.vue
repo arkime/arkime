@@ -7,15 +7,11 @@
       <b-form-input
           ref="integrationViewDropdownSearch"
           @keydown.enter="selectTopOption"
-          @focusin="setBarFocused"
-          @focusout="setBarUnfocused"
           v-model="filter"
       />
     </b-input-group>
 
-<!--    <b-dropdown-item v-for="option in options">-->
-
-<!--    </b-dropdown-item>-->
+    <!--  TODO: implement as auto-complete dropdown (for use in OverviewFormCard)  -->
   </b-dropdown>
 </template>
 
