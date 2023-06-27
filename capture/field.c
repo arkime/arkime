@@ -18,6 +18,7 @@
 #include "arkime.h"
 #include <stdarg.h>
 #include <arpa/inet.h>
+#include <math.h>
 #include "patricia.h"
 
 extern ArkimeConfig_t        config;
@@ -1595,7 +1596,12 @@ void arkime_field_ops_int_parse(ArkimeFieldOp_t *op, char *value)
 /******************************************************************************/
 void arkime_field_ops_add(ArkimeFieldOps_t *ops, int fieldPos, char *value, int valuelen)
 {
-    if (ops->num >= ops->size || fieldPos == -1 || fieldPos > config.maxField) {
+    if (ops->num >= ops->size) {
+        ops->size = ceil (ops->size * 1.6);
+        ops->ops = realloc(ops->ops, ops->size * sizeof(ArkimeFieldOp_t));
+    }
+
+    if (fieldPos == -1 || fieldPos > config.maxField) {
         LOG("WARNING - Not adding %d %s %d", fieldPos, value, valuelen);
         return;
     }

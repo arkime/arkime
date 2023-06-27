@@ -514,13 +514,14 @@ typedef struct arkime_config {
 } ArkimeConfig_t;
 
 typedef struct {
-    char     *tagsStr[10];
-    char     *country;
-    char     *asStr;
-    char     *rir;
-    uint32_t  asNum;
-    int       asLen;
-    int       numtags;
+    ArkimeFieldOps_t *ops;
+    char             *tagsStr[10];
+    char             *country;
+    char             *asStr;
+    char             *rir;
+    uint32_t          asNum;
+    char              asLen;
+    char              numtags;
 } ArkimeIpInfo_t;
 
 /******************************************************************************/

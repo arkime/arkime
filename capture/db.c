@@ -129,6 +129,10 @@ LOCAL ArkimeIpInfo_t *arkime_db_get_local_ip6(ArkimeSession_t *session, struct i
         arkime_field_string_add(config.tagsStringField, session, ii->tagsStr[t], -1, TRUE);
     }
 
+    if (ii->ops) {
+        arkime_field_ops_run(session, ii->ops);
+    }
+
     return ii;
 }
 
