@@ -190,7 +190,8 @@ app.use(['/assets', '/logos'], express.static(
 ), ArkimeUtil.missingResource);
 
 // regression test methods, before auth checks --------------------------------
-if (Config.get('regressionTests')) {
+if (Config.regressionTests) {
+  internals.cronTimeout = 0;
   // Override default lastUsed min write internal for tests
   User.lastUsedMinInterval = 1000;
 
@@ -202,9 +203,17 @@ if (Config.get('regressionTests')) {
     Db.flushCache();
     res.send('{}');
   });
-  app.get('/regressionTests/processCronQueries', function (req, res) {
+  app.get('/regressionTests/processCronQueries', async function (req, res) {
+    await Db.refresh();
     CronAPIs.processCronQueries();
-    res.send('{}');
+    setTimeout(async function checkCronFinished () {
+      if (internals.cronRunning) {
+        setTimeout(checkCronFinished, 500);
+      } else {
+        await Db.refresh();
+        res.send('{}');
+      }
+    }, 500);
   });
   // Make sure all jobs have run and return
   app.get('/regressionTests/processHuntJobs', async function (req, res) {
@@ -262,7 +271,7 @@ app.get( // es health endpoint
 Auth.app(app);
 if (Config.get('passwordSecret')) {
   // check for arkimeUser
-  app.use((req, res, next) => {
+  app.use(async (req, res, next) => {
     // For receiveSession there is no user (so no role check can be done) AND must be s2s
     if (req.url.match(/^\/receiveSession/) || req.url.match(/^\/api\/sessions\/receive/)) {
       if (req.headers['x-arkime-auth'] === undefined) {
@@ -273,12 +282,15 @@ if (Config.get('passwordSecret')) {
     }
 
     if (!req.user.hasRole('arkimeUser')) {
+      if (Config.debug) {
+        console.log('Missing arkimeUser userId: %s roles: %s expanded roles: %s', req.user.userId, req.user.roles, await req.user.getRoles());
+      }
       return res.status(403).send('Need arkimeUser role assigned');
     }
     next();
   });
-} else if (Config.get('regressionTests', false)) {
-  console.log('WARNING - The setting "regressionTests" is set to true, do NOT use in production, for testing only');
+} else if (Config.regressionTests) {
+  console.log('WARNING - Option --regressionTests was used, do NOT use in production, for testing only');
   internals.noPasswordSecret = true;
 } else {
   /* Shared password isn't set, who cares about auth, db is only used for settings */
@@ -689,7 +701,7 @@ function fillQueryFromBody (req, res, next) {
     req.query = query;
   }
   if (Config.debug > 1) {
-    console.log(`${req.url} query`, req.query);
+    console.log('%s query: %s', ArkimeUtil.sanitizeStr(req.url), ArkimeUtil.sanitizeStr(req.query));
   }
   next();
 }
@@ -842,6 +854,7 @@ function sendSessionWorker (options, cb) {
         session.tags = [];
       }
       session.tags = session.tags.concat(tags);
+      session.tagsCnt = session.tags.length;
     }
 
     const remoteClusters = internals.remoteClusters;
@@ -1666,19 +1679,19 @@ app.get( // sessions get decodings endpoint
   SessionAPIs.getDecodings
 );
 
-app.get( // session send to node endpoint
+app.get( // session send to node endpoint - used by SessionAPIs.#sendSessionsList
   ['/api/session/:nodeName/:id/send', '/:nodeName/sendSession/:id'],
   [checkProxyRequest],
   SessionAPIs.sendSessionToNode
 );
 
-app.post( // sessions send to node endpoint
+app.post( // sessions send to node endpoint - used by CronAPIs.#sendSessionsListQL
   ['/api/sessions/:nodeName/send', '/:nodeName/sendSessions'],
   [checkProxyRequest],
   SessionAPIs.sendSessionsToNode
 );
 
-app.post( // sessions send endpoint
+app.post( // sessions send endpoint - used by vueapp
   ['/api/sessions/send', '/sendSessions'],
   SessionAPIs.sendSessions
 );
@@ -1960,7 +1973,7 @@ app.use(cspHeader, setCookie, (req, res) => {
     huntWarn: Config.get('huntWarn', 100000),
     huntLimit: limit,
     nonce: res.locals.nonce,
-    anonymousMode: !!internals.noPasswordSecret && !Config.get('regressionTests', false),
+    anonymousMode: !!internals.noPasswordSecret && !Config.regressionTests,
     businesDayStart: Config.get('businessDayStart', false),
     businessDayEnd: Config.get('businessDayEnd', false),
     businessDays: Config.get('businessDays', '1,2,3,4,5'),

@@ -934,7 +934,7 @@ class SessionAPIs {
     }, (err, session) => {
       if (err) {
         res.status(500);
-        if (!Config.get('regressionTests', false)) {
+        if (!Config.regressionTests) {
           console.trace('writePcap', err);
         }
         return doneCb(err);
@@ -1820,7 +1820,8 @@ class SessionAPIs {
    *
    * Builds an elasticsearch session query. Gets a list of sessions and returns them as CSV to the client.
    * @name /sessions/csv
-   * @param {SessionsQuery} query - The request query to filter sessions
+   * @param {string} ids - Comma separated list of sessions to retrieve
+   * @param {SessionsQuery} query - The request query to filter sessions, only used if ids isn't provided
    * @returns {csv} csv - The csv with the sessions requested
    */
   static getSessionsCSV (req, res) {
@@ -2666,9 +2667,9 @@ class SessionAPIs {
    *
    * Add tag(s) to individual session(s) by id or by query.
    * @name /sessions/addtags
-   * @param {SessionsQuery} query - The request query to filter sessions
    * @param {string} tags - Comma separated list of tags to add to session(s)
    * @param {string} ids - Comma separated list of sessions to add tag(s) to
+   * @param {SessionsQuery} query - The request query to filter sessions, only used if ids isn't provided
    * @param {string} segments=no - Whether to add tags to linked session segments. Default is no. Options include:
      no - Don't add tags to linked segments
      all - Add tags to all linked segments
@@ -2723,9 +2724,9 @@ class SessionAPIs {
    *
    * Removes tag(s) from individual session(s) by id or by query.
    * @name /sessions/removetags
-   * @param {SessionsQuery} query - The request query to filter sessions
    * @param {string} tags - Comma separated list of tags to remove from session(s)
    * @param {string} ids - Comma separated list of sessions to remove tag(s) from
+   * @param {SessionsQuery} query - The request query to filter sessions, only used if ids is provided
    * @param {string} segments=no - Whether to remove tags from linked session segments. Default is no. Options include:
      no - Don't remove tags from linked segments
      all - Remove tags from all linked segments
@@ -2811,8 +2812,8 @@ class SessionAPIs {
    *
    * Retrieve the raw session data in pcap format.
    * @name /sessions/pcap
-   * @param {SessionsQuery} query - The request query to filter sessions
-   * @param {string} ids - The list of ids to return
+   * @param {string} ids - The list of ids to return sessions for
+   * @param {SessionsQuery} query - The request query to filter sessions, only used if ids isn't provided
    * @param {boolean} segments=false - When set return linked segments
    * @returns {pcap} A PCAP file with the sessions requested
    */
@@ -2826,8 +2827,8 @@ class SessionAPIs {
    *
    * Retrieve the raw session data in pcapng format.
    * @name /sessions/pcapng
-   * @param {SessionsQuery} query - The request query to filter sessions
-   * @param {string} ids - The list of ids to return
+   * @param {string} ids - The list of ids to return sessions for
+   * @param {SessionsQuery} query - The request query to filter sessions, only used if ids isn't provided
    * @param {boolean} segments=false - When set return linked segments
    * @returns {pcap} A PCAPNG file with the sessions requested
    */
@@ -3098,6 +3099,8 @@ class SessionAPIs {
    *
    * Delete SPI and/or scrub PCAP data (remove persmission required).
    * @name /delete
+   * @param {string} ids - Comma separated list of sessions to delete
+   * @param {SessionsQuery} query - The request query to filter sessions, only used if ids isn't provided
    * @param {string} removeSpi=false - Whether to remove the SPI data.
    * @param {string} removePcap=true - Whether to remove the PCAP data.
    * @returns {boolean} success - Whether the operation was successful
@@ -3143,6 +3146,10 @@ class SessionAPIs {
     ViewerUtils.noCache(req, res);
     res.statusCode = 200;
 
+    if (!ArkimeUtil.isString(req.query.saveId)) { return res.serverError(200, 'Missing saveId'); }
+    if (!ArkimeUtil.isString(req.query.cluster)) { return res.serverError(200, 'Missing cluster'); }
+    if (!internals.remoteClusters || !internals.remoteClusters[req.query.cluster]) { return res.serverError(200, 'Unknown cluster'); }
+
     const options = {
       user: req.user,
       cluster: req.query.cluster,
@@ -3164,6 +3171,7 @@ class SessionAPIs {
    *
    * Sends sessions to a node.
    * @name /sessions/:nodeName/send
+   * @param {SessionsQuery} query - The request query to filter sessions, only used if ids isn't provided
    * @param {string} ids - Comma separated list of session ids.
    * @param {string} tags - Commas separated list of tags to tag the sent sessions with.
    * @param {string} cluster - The name of the Arkime cluster to send the sessions.
@@ -3173,12 +3181,11 @@ class SessionAPIs {
     ViewerUtils.noCache(req, res);
     res.statusCode = 200;
 
-    if (req.body.ids === undefined ||
-      req.query.cluster === undefined ||
-      req.query.saveId === undefined ||
-      req.body.tags === undefined) {
-      return res.end();
-    }
+    if (!ArkimeUtil.isString(req.query.saveId)) { return res.serverError(200, 'Missing saveId'); }
+    if (!ArkimeUtil.isString(req.query.cluster)) { return res.serverError(200, 'Missing cluster'); }
+    if (!internals.remoteClusters || !internals.remoteClusters[req.query.cluster]) { return res.serverError(200, 'Unknown cluster'); }
+    if (req.body.tags !== undefined && !ArkimeUtil.isString(req.body.tags, 0)) { return res.serverError(200, 'When present tags must be a string'); }
+    if (req.body.ids === undefined) { return res.serverError(200, 'Missing ids'); }
 
     let count = 0;
     const ids = ViewerUtils.queryValueToArray(req.body.ids);
@@ -3210,8 +3217,13 @@ class SessionAPIs {
    * Sends sessions.
    * @name /sessions/send
    * @param {string} ids - Comma separated list of session ids.
+   * @param {SessionsQuery} query - The request query to filter sessions, only used if ids isn't provided
    */
   static sendSessions (req, res) {
+    if (!ArkimeUtil.isString(req.body.cluster)) { return res.serverError(200, 'Missing cluster'); }
+    if (!internals.remoteClusters || !internals.remoteClusters[req.body.cluster]) { return res.serverError(200, 'Unknown cluster'); }
+    if (req.body.tags !== undefined && !ArkimeUtil.isString(req.body.tags, 0)) { return res.serverError(200, 'When present tags must be a string'); }
+
     if (req.body.ids) {
       const ids = ViewerUtils.queryValueToArray(req.body.ids);
 
@@ -3234,6 +3246,7 @@ class SessionAPIs {
    * @name /sessions/receive
    * @param {saveId} saveId - The sessionId to save the session.
    */
+  static #saveIds = {};
   static receiveSession (req, res) {
     if (!ArkimeUtil.isString(req.query.saveId)) { return res.serverError(200, 'Missing saveId'); }
 
@@ -3241,12 +3254,9 @@ class SessionAPIs {
 
     if (req.query.saveId.length === 0 || req.query.saveId === '__proto__') { return res.serverError(200, 'Bad saveId'); }
 
-    // JS Static Variable :)
-    this.saveIds = this.saveIds || {};
-
-    let saveId = this.saveIds[req.query.saveId];
+    let saveId = SessionAPIs.#saveIds[req.query.saveId];
     if (!saveId) {
-      saveId = this.saveIds[req.query.saveId] = { start: 0 };
+      saveId = SessionAPIs.#saveIds[req.query.saveId] = { start: 0 };
     }
 
     let sessionlen = -1;

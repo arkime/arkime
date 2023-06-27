@@ -6222,6 +6222,7 @@ while (@ARGV > 0 && substr($ARGV[0], 0, 1) eq "-") {
          $verbose += ($ARGV[0] =~ tr/v//);
     } elsif ($ARGV[0] =~ /--prefix$/) {
         $PREFIX = $ARGV[1];
+        die "--prefix can be at most 50 characters long" if (length($PREFIX) > 50);
         shift @ARGV;
         $PREFIX .= "_" if ($PREFIX ne "" && $PREFIX !~ /_$/);
         $OLDPREFIX = $PREFIX;
@@ -7331,7 +7332,7 @@ $policy = qq/{
           {
             "state_name" : "delete",
             "conditions" : {
-              "min_index_age" : "$forceTime"
+              "min_index_age" : "$deleteTime"
             }
           }
         ]

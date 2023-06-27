@@ -31,6 +31,7 @@ const Auth = require('../common/auth');
 exports.debug = 0;
 exports.insecure = false;
 exports.esProfile = false;
+exports.regressionTests = false;
 const internals = {
   configFile: `${version.config_prefix}/etc/config.ini`,
   hostName: os.hostname(),
@@ -68,6 +69,8 @@ function processArgs () {
       exports.insecure = true;
     } else if (process.argv[i] === '--esprofile') {
       exports.esProfile = true;
+    } else if (process.argv[i] === '--regressionTests') {
+      exports.regressionTests = true;
     } else {
       args.push(process.argv[i]);
     }
@@ -499,7 +502,7 @@ if (exports.get('passwordSecret')) {
   } else {
     mode = 'header';
   }
-} else if (exports.get('regressionTests')) {
+} else if (exports.regressionTests) {
   mode = 'regressionTests';
 } else {
   mode = 'anonymousWithDB';

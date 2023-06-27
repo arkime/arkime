@@ -34,7 +34,7 @@ const pathInto = (value, { param: fieldOrPath }) => {
   return value;
 };
 
-const template = (value, { param: templateStr }, _, data) => {
+const template = (value, { param: templateStr }, { data }) => {
   return applyTemplate(templateStr, { value, data });
 };
 

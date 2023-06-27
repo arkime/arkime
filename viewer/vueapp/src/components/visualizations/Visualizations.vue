@@ -720,7 +720,9 @@ export default {
             };
 
             let type;
-            if (this.graphType === 'totPacketsHisto' || this.graphType === 'totBytesHisto' || this.graphType === 'totDataBytesHisto') {
+            if (this.graphType === 'totPacketsHisto' || this.graphType === 'network.packetsHisto' ||
+                this.graphType === 'totBytesHisto' || this.graphType === 'network.bytesHisto' ||
+                this.graphType === 'totDataBytesHisto') {
               type = item.seriesIndex === 0 ? 'Src' : 'Dst';
             }
 

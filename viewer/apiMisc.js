@@ -289,7 +289,9 @@ class MiscAPIs {
   /**
    * POST - /api/upload
    *
-   * Uploads PCAP files.
+   * Uploads PCAP files to Arkime. This API is really only useful for demo sites and very special cases.
+   * Instead you almost always should just run capture locally, which will be much more
+   * efficient and not duplicate the PCAP. See https://arkime.com/faq#how-do-i-import-existing-pcaps
    * @name /upload
    * @param {string} tags - A comma separated list of tags to add to each session created.
    */

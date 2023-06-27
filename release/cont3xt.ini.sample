@@ -22,6 +22,11 @@ userNameHeader=digest
 # Make this RANDOM, you never need to type in
 passwordSecret=ARKIME_PASSWORD
 
+# HTTP Digest Realm - Must be in default section. Changing the value
+# will make all previously stored passwords no longer work
+# This must be the same setting as Arkime uses, specified in config.ini
+httpRealm=Moloch
+
 # Port Cont3xt listens on
 #port=3218
 #

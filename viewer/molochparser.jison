@@ -264,7 +264,7 @@ function parseIpPort (yy, field, ipPortStr) {
     }
     // Everything before . is ip and slash
     ip = dots[0];
-  } else if (colons.length > 2) { // More than 1 colon is ip6 
+  } else if (colons.length > 2) { // More than 1 colon is ip6
     // Everything after . is port
     const dots = ipPortStr.split('.');
     if (dots.length > 1 && dots[1] !== '') {

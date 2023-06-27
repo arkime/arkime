@@ -93,11 +93,33 @@
 
       <!-- integrations -->
       <div v-if="visibleTab === 'integrations'">
-        <div class="text-center">
-          <b-card>
-            <h1>Coming soon!</h1>
-          </b-card>
-        </div>
+        <h3>
+          <span class="fa fa-fw fa-key mr-2"></span>
+          Integrations
+        </h3>
+        <p>
+          You must use this page to configure your integations.
+          Most integrations require API keys (and some require more data) in order to use them.
+          Integrations are configured per user, not per Cont3xt application.
+          Therefore <strong>every user must update this page for the application to work as intended.</strong>
+          Alternatively, it is possible to set keys globally in the config file (<code>cont3xt.ini</code>).
+          In that case a globe (<span class="fa fa-globe"></span>) will appear.
+          This method is not recommended as some integrations have a maximum number of API requests
+          and this could burn through them quickly if you have many users.
+        </p>
+        <p>
+          Check the disabled checkbox to disable integrations.
+          Disabled integrations will not show up in the integrations panel on the main Cont3xt page
+          and no API requests will ever be issued for these integrations.
+        </p>
+        <p>
+          The home (<span class="fa fa-home"></span>) button navigates to the home page
+          of the integration (if applicable). This helps provide documentation and understanding
+          for users who might not be familiar with the integration.
+        </p>
+        <p>
+          Use the search bar to search for integrations by name.
+        </p>
       </div> <!-- /integrations -->
 
       <!-- linkgroups -->

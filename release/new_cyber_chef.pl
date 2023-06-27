@@ -1,5 +1,5 @@
 #!/usr/bin/perl
-# This script will update the viewer/public/cyberchef.html and viewer/Makefile.in file for 
+# This script will update the viewer/public/cyberchef.html and viewer/Makefile.in file for
 # a new cyberchef release. It will also launch CHANGELOG to be edited and print out the
 # git command to use after testing.
 
@@ -47,7 +47,7 @@ my $script = q|
       })
       .then((result) => {
         interval = setInterval(() => {
-          if (app) {
+          if (typeof app !== 'undefined') {
             app.manager.recipe.addOperation('From Hex');
             app.setInput(result.data);
             clearInterval(interval);

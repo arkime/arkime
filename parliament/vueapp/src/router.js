@@ -5,10 +5,11 @@ import Issues from '@/components/Issues';
 import Settings from '@/components/Settings';
 import Parliament404 from '@/components/404';
 import Help from '@/components/Help';
+import AuthService from '@/auth';
 
 Vue.use(Router);
 
-export default new Router({
+const router = new Router({
   mode: 'history',
   base: '/parliament/',
   scrollBehavior: function (to, from, savedPosition) {
@@ -47,3 +48,11 @@ export default new Router({
     }
   ]
 });
+
+router.beforeEach((to, from, next) => {
+  AuthService.hasAuth();
+  AuthService.isLoggedIn();
+  next();
+});
+
+export default router;

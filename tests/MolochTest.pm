@@ -338,13 +338,13 @@ my ($userId) = @_;
     }
 
     $setCookie =~ /ARKIME-COOKIE=([^;]*)/;
-    return $1;
+    return uri_unescape($1);
 }
 ################################################################################
 sub getTokenCookie2 {
     my $setCookie = $MolochTest::userAgent->get("http://$MolochTest::host:8124/users")->{"_headers"}->{"set-cookie"};
     $setCookie =~ /ARKIME-COOKIE=([^;]*)/;
-    return $1;
+    return uri_unescape($1);
 }
 ################################################################################
 sub getCont3xtTokenCookie {
@@ -358,7 +358,7 @@ my ($userId) = @_;
     }
 
     $setCookie =~ /CONT3XT-COOKIE=([^;]*)/;
-    return $1;
+    return uri_unescape($1);
 }
 ################################################################################
 sub getParliamentTokenCookie {
@@ -372,7 +372,7 @@ my ($userId) = @_;
     }
 
     $setCookie =~ /PARLIAMENT-COOKIE=([^;]*)/;
-    return $1;
+    return uri_unescape($1);
 }
 ################################################################################
 sub parliamentGet {
