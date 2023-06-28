@@ -856,7 +856,7 @@ uint32_t arkime_get_next_powerof2(uint32_t v);
  */
 
 void arkime_config_init();
-void arkime_config_load_local_ips();
+void arkime_config_load_override_ips();
 void arkime_config_load_packet_ips();
 void arkime_config_add_header(ArkimeStringHashStd_t *hash, char *key, int pos);
 void arkime_config_load_header(char *section, char *group, char *helpBase, char *expBase, char *aliasBase, char *dbBase, ArkimeStringHashStd_t *hash, int flags);
@@ -887,7 +887,8 @@ void     arkime_db_init();
 char    *arkime_db_create_file(time_t firstPacket, const char *name, uint64_t size, int locked, uint32_t *id);
 char    *arkime_db_create_file_full(time_t firstPacket, const char *name, uint64_t size, int locked, uint32_t *id, ...);
 void     arkime_db_save_session(ArkimeSession_t *session, int final);
-void     arkime_db_add_local_ip(char *str, ArkimeIpInfo_t *ii);
+void     arkime_db_add_override_ip(char *str, ArkimeIpInfo_t *ii);
+void     arkime_db_install_override_ip();
 void     arkime_db_add_field(char *group, char *kind, char *expression, char *friendlyName, char *dbField, char *help, int haveap, va_list ap);
 void     arkime_db_update_field(char *expression, char *name, char *value);
 void     arkime_db_update_filesize(uint32_t fileid, uint64_t filesize, uint64_t packetsSize, uint32_t packets);

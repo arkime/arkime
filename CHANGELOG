@@ -34,8 +34,13 @@ NOTICE: Cross-cluster Shortcuts require you to not restart all your viewers at o
   - BREAKING - s3GapPacketPos defaults to TRUE
   - BREAKING - enablePacketDedup defaults to TRUE
   - BREAKING - authMode defaults to digest now
+  - BREAKING - removed old v1 APIs
   - all - authMode setting added
   - all - authMode=basic added
+  - capture - moloch converted to arkime
+  - capture - override ips can now set any field
+  - capture - overrideIpFiles setting
+  - viewer - removed x-moloch-auth
 
 
 4.3.3 2023/07/xx
