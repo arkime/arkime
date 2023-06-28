@@ -795,12 +795,12 @@ LLVMFuzzerInitialize(int *UNUSED(argc), char ***UNUSED(argv))
     arkime_http_init();
     arkime_db_init();
     arkime_packet_init();
-    arkime_config_load_local_ips();
     arkime_config_load_packet_ips();
     arkime_yara_init();
     arkime_parsers_init();
     arkime_session_init();
     arkime_plugins_load(config.plugins);
+    arkime_config_load_local_ips();
     arkime_rules_init();
     arkime_packet_batch_init(&batch);
     return 0;
@@ -891,12 +891,12 @@ int main(int argc, char **argv)
     arkime_http_init();
     arkime_db_init();
     arkime_packet_init();
-    arkime_config_load_local_ips();
     arkime_config_load_packet_ips();
     arkime_yara_init();
     arkime_parsers_init();
     arkime_session_init();
     arkime_plugins_load(config.plugins);
+    arkime_config_load_local_ips();
     arkime_rules_init();
     g_timeout_add(1, arkime_ready_gfunc, 0);
 

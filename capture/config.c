@@ -658,11 +658,22 @@ void arkime_config_load_local_ips()
                 ii->rir = g_strdup(values[v]+4);
             } else if (strncmp(values[v], "tag:", 4) == 0) {
                 if (ii->numtags < 10) {
-                    ii->tagsStr[ii->numtags] = strdup(values[v]+4);
+                    ii->tagsStr[(int)ii->numtags] = strdup(values[v]+4);
                     ii->numtags++;
                 }
             } else if (strncmp(values[v], "country:", 8) == 0) {
                 ii->country = g_strdup(values[v]+8);
+            } else {
+                char *colon = strchr(values[v], ':');
+                *colon = 0; // remove :
+                int pos = arkime_field_by_exp(values[v]);
+                if (pos != -1) {
+                    if (!ii->ops) {
+                        ii->ops = ARKIME_TYPE_ALLOC0(ArkimeFieldOps_t);
+                        arkime_field_ops_init(ii->ops, 1, ARKIME_FIELD_OPS_FLAGS_COPY);
+                    }
+                    arkime_field_ops_add(ii->ops, pos, colon + 1, strlen(colon + 1));
+                }
             }
         }
         arkime_db_add_local_ip(keys[k], ii);
