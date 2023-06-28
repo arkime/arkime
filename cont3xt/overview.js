@@ -130,6 +130,10 @@ class Overview {
     }
 
     for (let i = 0; i < overview.fields.length; i++) {
+      if (typeof overview.fields[i] !== 'object') {
+        return { msg: 'Field must be object' };
+      }
+
       overview.fields[i] = (
         ({ // only allow these properties in fields
           // eslint-disable-next-line no-shadow
@@ -138,9 +142,6 @@ class Overview {
       )(overview.fields[i]);
       const field = overview.fields[i];
 
-      if (typeof field !== 'object') {
-        return { msg: 'Field must be object' };
-      }
       if (!ArkimeUtil.isString(field.from)) {
         return { msg: 'Field missing from' };
       }
