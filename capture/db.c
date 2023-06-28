@@ -55,6 +55,9 @@ void *                  esServer = 0;
 LOCAL patricia_tree_t  *ipTree4 = 0;
 LOCAL patricia_tree_t  *ipTree6 = 0;
 
+LOCAL patricia_tree_t  *newipTree4 = 0;
+LOCAL patricia_tree_t  *newipTree6 = 0;
+
 LOCAL patricia_tree_t  *ouiTree = 0;
 
 extern char            *arkime_char_to_hex;
@@ -79,22 +82,22 @@ extern uint64_t         packetStats[ARKIME_PACKET_MAX];
 extern ArkimeConfig_t        config;
 
 /******************************************************************************/
-void arkime_db_add_local_ip(char *str, ArkimeIpInfo_t *ii)
+void arkime_db_add_override_ip(char *str, ArkimeIpInfo_t *ii)
 {
     patricia_node_t *node;
-    if (!ipTree4) {
-        ipTree4 = New_Patricia(32);
-        ipTree6 = New_Patricia(128);
+    if (!newipTree4) {
+        newipTree4 = New_Patricia(32);
+        newipTree6 = New_Patricia(128);
     }
     if (strchr(str, '.') != 0) {
-        node = make_and_lookup(ipTree4, str);
+        node = make_and_lookup(newipTree4, str);
     } else {
-        node = make_and_lookup(ipTree6, str);
+        node = make_and_lookup(newipTree6, str);
     }
     node->data = ii;
 }
 /******************************************************************************/
-void arkime_db_free_local_ip(ArkimeIpInfo_t *ii)
+LOCAL void arkime_db_free_override_ip(ArkimeIpInfo_t *ii)
 {
     if (ii->country)
         g_free(ii->country);
@@ -106,10 +109,31 @@ void arkime_db_free_local_ip(ArkimeIpInfo_t *ii)
     int i;
     for (i = 0; i < ii->numtags; i++)
         g_free(ii->tagsStr[i]);
+
+    if (ii->ops)
+        arkime_field_ops_free(ii->ops);
+
     ARKIME_TYPE_FREE(ArkimeIpInfo_t, ii);
 }
 /******************************************************************************/
-LOCAL ArkimeIpInfo_t *arkime_db_get_local_ip6(ArkimeSession_t *session, struct in6_addr *ip)
+LOCAL void arkime_db_free_override_ips(patricia_tree_t *tree)
+{
+    Destroy_Patricia(tree, arkime_db_free_override_ip);
+}
+/******************************************************************************/
+void arkime_db_install_override_ip()
+{
+    if (ipTree4) {
+        arkime_free_later(ipTree4, (GDestroyNotify) arkime_db_free_override_ips);
+        arkime_free_later(ipTree6, (GDestroyNotify) arkime_db_free_override_ips);
+    }
+    ipTree4 = newipTree4;
+    ipTree6 = newipTree6;
+    newipTree4 = 0;
+    newipTree6 = 0;
+}
+/******************************************************************************/
+LOCAL ArkimeIpInfo_t *arkime_db_get_override_ip6(ArkimeSession_t *session, struct in6_addr *ip)
 {
     patricia_node_t *node;
 
@@ -277,7 +301,7 @@ void arkime_db_geo_lookup6(ArkimeSession_t *session, struct in6_addr addr, char 
 
     if (ipTree4) {
         ArkimeIpInfo_t *ii;
-        if ((ii = arkime_db_get_local_ip6(session, &addr))) {
+        if ((ii = arkime_db_get_override_ip6(session, &addr))) {
             *g = ii->country;
             *asNum = ii->asNum;
             *asStr = ii->asStr;
@@ -2774,8 +2798,8 @@ void arkime_db_exit()
     }
 
     if (ipTree4) {
-        Destroy_Patricia(ipTree4, arkime_db_free_local_ip);
-        Destroy_Patricia(ipTree6, arkime_db_free_local_ip);
+        arkime_db_free_override_ips(ipTree4);
+        arkime_db_free_override_ips(ipTree6);
         ipTree4 = 0;
         ipTree6 = 0;
     }

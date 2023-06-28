@@ -27,6 +27,7 @@
 extern ArkimeConfig_t        config;
 
 LOCAL GKeyFile             *arkimeKeyFile;
+LOCAL char                **overrideIpFiles;
 
 /******************************************************************************/
 gchar **arkime_config_section_raw_str_list(GKeyFile *keyfile, char *section, char *key, char *d)
@@ -621,15 +622,15 @@ void arkime_config_load()
 
 }
 /******************************************************************************/
-void arkime_config_load_local_ips()
+void arkime_config_parse_override_ips(GKeyFile *keyFile)
 {
     GError   *error = 0;
 
-    if (!g_key_file_has_group(arkimeKeyFile, "override-ips"))
+    if (!g_key_file_has_group(keyFile, "override-ips"))
         return;
 
     gsize keys_len;
-    gchar **keys = g_key_file_get_keys (arkimeKeyFile, "override-ips", &keys_len, &error);
+    gchar **keys = g_key_file_get_keys (keyFile, "override-ips", &keys_len, &error);
     if (error) {
         CONFIGEXIT("Error with override-ips: %s", error->message);
     }
@@ -638,7 +639,7 @@ void arkime_config_load_local_ips()
     gsize k, v;
     for (k = 0 ; k < keys_len; k++) {
         gsize values_len;
-        gchar **values = g_key_file_get_string_list(arkimeKeyFile,
+        gchar **values = g_key_file_get_string_list(keyFile,
                                                    "override-ips",
                                                    keys[k],
                                                   &values_len,
@@ -665,6 +666,8 @@ void arkime_config_load_local_ips()
                 ii->country = g_strdup(values[v]+8);
             } else {
                 char *colon = strchr(values[v], ':');
+                if (!colon)
+                    continue;
                 *colon = 0; // remove :
                 int pos = arkime_field_by_exp(values[v]);
                 if (pos != -1) {
@@ -676,11 +679,42 @@ void arkime_config_load_local_ips()
                 }
             }
         }
-        arkime_db_add_local_ip(keys[k], ii);
+        arkime_db_add_override_ip(keys[k], ii);
         g_strfreev(values);
     }
     g_regex_unref(asnRegex);
     g_strfreev(keys);
+}
+/******************************************************************************/
+void arkime_config_load_override_ips()
+{
+    gboolean  status;
+    GError   *error = 0;
+
+    if (g_key_file_has_group(arkimeKeyFile, "override-ips")) {
+        arkime_config_parse_override_ips(arkimeKeyFile);
+    }
+
+    overrideIpFiles = arkime_config_str_list(NULL, "overrideIpFiles", NULL);
+    if (overrideIpFiles) {
+        for (int i = 0; overrideIpFiles[i]; i++) {
+            GKeyFile *keyfile = g_key_file_new();
+            status = g_key_file_load_from_file(keyfile, overrideIpFiles[i], G_KEY_FILE_NONE, &error);
+            if (!status || error) {
+                if (overrideIpFiles[i][0] == '-') {
+                    if (error)
+                        g_error_free(error);
+                    continue;
+                } else {
+                    CONFIGEXIT("Couldn't load overrideIpFiles file (%s) %s\n", overrideIpFiles[i], (error?error->message:""));
+                }
+            }
+            arkime_config_parse_override_ips(keyfile);
+            g_key_file_free(keyfile);
+        }
+    }
+
+    arkime_db_install_override_ip();
 }
 /******************************************************************************/
 void arkime_config_load_packet_ips()
@@ -1001,4 +1035,6 @@ void arkime_config_exit()
         g_strfreev(config.rootPlugins);
     if (config.smtpIpHeaders)
         g_strfreev(config.smtpIpHeaders);
+
+    g_strfreev(overrideIpFiles);
 }
