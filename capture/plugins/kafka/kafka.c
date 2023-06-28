@@ -102,29 +102,22 @@ LOCAL void kafka_send_session_bulk(char *json, int len)
                  * configuration property
                  * queue.buffering.max.messages */
                 rd_kafka_poll(rk, 100 /*block for max 100ms*/);
-                continue;
+                continue; // Maybe Retry
             }
 
-            // Not retrying, free buffer
-            arkime_http_free_buffer(json);
-        } else {
-            if (config.debug)
-                LOG("Enqueued message (%d bytes) for topic %s", len, topic);
+            break; // Not retrying
         }
-        break;
+
+        // Success
+        if (config.debug)
+            LOG("Enqueued message (%d bytes) for topic %s", len, topic);
+
+        rd_kafka_poll(rk, 0 /*non-blocking*/);
+        return;
     }
 
-    /* A producer application should continually serve
-     * the delivery report queue by calling rd_kafka_poll()
-     * at frequent intervals.
-     * Either put the poll call in your main loop, or in a
-     * dedicated thread, or call it after every
-     * rd_kafka_produce() call.
-     * Just make sure that rd_kafka_poll() is still called
-     * during periods where you are not producing any messages
-     * to make sure previously produced messages have their
-     * delivery report callback served (and any other callbacks
-     * you register). */
+    // Didn't send
+    arkime_http_free_buffer(json);
     rd_kafka_poll(rk, 0 /*non-blocking*/);
 }
 
