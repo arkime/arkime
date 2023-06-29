@@ -1116,6 +1116,7 @@ void     arkime_packet_thread_wake(int thread);
 void     arkime_packet_flush();
 void     arkime_packet_process_data(ArkimeSession_t *session, const uint8_t *data, int len, int which);
 void     arkime_packet_add_packet_ip(char *ipstr, int mode);
+void     arkime_packet_install_packet_ip();
 
 void     arkime_packet_batch_init(ArkimePacketBatch_t *batch);
 void     arkime_packet_batch_flush(ArkimePacketBatch_t *batch);

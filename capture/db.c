@@ -123,13 +123,12 @@ LOCAL void arkime_db_free_override_ips(patricia_tree_t *tree)
 /******************************************************************************/
 void arkime_db_install_override_ip()
 {
-    if (ipTree4) {
-        arkime_free_later(ipTree4, (GDestroyNotify) arkime_db_free_override_ips);
-        arkime_free_later(ipTree6, (GDestroyNotify) arkime_db_free_override_ips);
-    }
+    arkime_free_later(ipTree4, (GDestroyNotify) arkime_db_free_override_ips);
     ipTree4 = newipTree4;
-    ipTree6 = newipTree6;
     newipTree4 = 0;
+
+    arkime_free_later(ipTree6, (GDestroyNotify) arkime_db_free_override_ips);
+    ipTree6 = newipTree6;
     newipTree6 = 0;
 }
 /******************************************************************************/

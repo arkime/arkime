@@ -64,6 +64,8 @@ LOCAL int                    inProgress[ARKIME_MAX_PACKET_THREADS];
 
 LOCAL patricia_tree_t       *ipTree4 = 0;
 LOCAL patricia_tree_t       *ipTree6 = 0;
+LOCAL patricia_tree_t       *newipTree4 = 0;
+LOCAL patricia_tree_t       *newipTree6 = 0;
 
 extern ArkimeFieldOps_t      readerFieldOps[256];
 
@@ -1810,14 +1812,30 @@ void arkime_packet_add_packet_ip(char *ipstr, int mode)
     patricia_node_t *node;
     if (strchr(ipstr, '.') != 0) {
         if (!ipTree4)
-            ipTree4 = New_Patricia(32);
-        node = make_and_lookup(ipTree4, ipstr);
+            newipTree4 = New_Patricia(32);
+        node = make_and_lookup(newipTree4, ipstr);
     } else {
         if (!ipTree6)
-            ipTree6 = New_Patricia(128);
-        node = make_and_lookup(ipTree6, ipstr);
+            newipTree6 = New_Patricia(128);
+        node = make_and_lookup(newipTree6, ipstr);
     }
     node->data = (void *)(long)mode;
+}
+/******************************************************************************/
+LOCAL void arkime_packet_free_packet_ips(patricia_tree_t *tree)
+{
+    Destroy_Patricia(tree, NULL);
+}
+/******************************************************************************/
+void arkime_packet_install_packet_ip()
+{
+    arkime_free_later(ipTree4, (GDestroyNotify) arkime_packet_free_packet_ips);
+    ipTree4 = newipTree4;
+    newipTree4 = 0;
+
+    arkime_free_later(ipTree6, (GDestroyNotify) arkime_packet_free_packet_ips);
+    ipTree6 = newipTree6;
+    newipTree6 = 0;
 }
 /******************************************************************************/
 void arkime_packet_set_dltsnap(int dlt, int snaplen)
