@@ -102,6 +102,11 @@
               <span class="fa fa-eye" />
             </template>
           </ViewSelector>
+          <overview-selector
+              v-if="searchItype"
+              :i-type="searchItype"
+              :selected-overview="currentOverviewCard"
+              @set-override-overview="setOverrideOverview" />
           <b-dropdown
               class="ml-1"
               tabindex="-1"
@@ -404,9 +409,29 @@
                 opacity="0.9"
                 variant="transparent"
                 :show="getWaitRendering || getRendering">
-                <integration-card
-                  @update-results="updateData"
-                />
+                <div>
+                  <template v-if="showOverview">
+                    <overview-card
+                        v-if="currentOverviewCard"
+                        :fullData="results"
+                        :query="lastSearchedTerm"
+                        :itype="searchItype"
+                        :card="currentOverviewCard"
+                    />
+                    <b-alert
+                        v-else
+                        show
+                        variant="dark"
+                        class="text-center">
+                      There is no overview configured for the <strong>{{ this.searchItype }}</strong> iType.
+                      <a class="no-decoration" href="settings#overviews">Create one here!</a>
+                    </b-alert>
+                  </template>
+                  <integration-card
+                      v-else
+                      @update-results="updateData"
+                  />
+                </div>
                 <template #overlay>
                   <div class="overlay-loading">
                     <span class="fa fa-circle-o-notch fa-spin fa-2x" />
@@ -451,14 +476,18 @@ import LinkGroupCard from '@/components/links/LinkGroupCard';
 import CreateViewModal from '@/components/views/CreateViewModal';
 import Cont3xtService from '@/components/services/Cont3xtService';
 import IntegrationCard from '@/components/integrations/IntegrationCard';
+import OverviewCard from '@/components/overviews/OverviewCard';
 import IntegrationPanel from '@/components/integrations/IntegrationPanel';
 import TagDisplayLine from '@/utils/TagDisplayLine';
 import { paramStr } from '@/utils/paramStr';
 import LinkService from '@/components/services/LinkService';
+import OverviewService from '@/components/services/OverviewService';
+import OverviewSelector from '../overviews/OverviewSelector.vue';
 
 export default {
   name: 'Cont3xt',
   components: {
+    OverviewSelector,
     Cont3xtIp,
     Cont3xtUrl,
     ReorderList,
@@ -471,6 +500,7 @@ export default {
     LinkGroupCard,
     CreateViewModal,
     IntegrationCard,
+    OverviewCard,
     IntegrationPanel,
     TimeRangeInput,
     TagDisplayLine
@@ -485,6 +515,8 @@ export default {
       initialized: false,
       searchTerm: this.$route.query.q ? this.$route.query.q : (this.$route.query.b ? window.atob(this.$route.query.b) : ''),
       lastSearchedTerm: '',
+      showOverview: true,
+      overrideOverviewId: undefined,
       skipCache: false,
       searchComplete: false,
       linkSearchTerm: this.$route.query.linkSearch || '',
@@ -513,6 +545,10 @@ export default {
       this.$store.commit('SET_SEE_ALL_LINK_GROUPS', false);
       LinkService.getLinkGroups();
     }
+    if (this.getSeeAllOverviews) {
+      this.$store.commit('SET_SEE_ALL_OVERVIEWS', false);
+      OverviewService.getOverviews();
+    }
 
     // no need to parse start/stopDate query params here -- that is handled by TimeRangeInput
     // submit, view, and tags query params are handled in watcher
@@ -528,7 +564,8 @@ export default {
       'getIssueSearch', 'getFocusLinkSearch', 'getFocusTagInput',
       'getToggleCache', 'getDownloadReport', 'getCopyShareLink',
       'getAllViews', 'getImmediateSubmissionReady', 'getSelectedView',
-      'getTags', 'getTagDisplayCollapsed', 'getSeeAllViews', 'getSeeAllLinkGroups'
+      'getTags', 'getTagDisplayCollapsed', 'getSeeAllViews', 'getSeeAllLinkGroups',
+      'getSeeAllOverviews', 'getSelectedOverviewMap', 'getOverviewMap'
     ]),
     tags: {
       get () { return this.getTags; },
@@ -575,10 +612,17 @@ export default {
         }
       }
       return allClosed;
+    },
+    currentOverviewCard () {
+      if (this.overrideOverviewId) {
+        return this.getOverviewMap[this.overrideOverviewId];
+      }
+      return this.getSelectedOverviewMap[this.searchItype];
     }
   },
   watch: {
     displayIntegration (newIntegration) {
+      this.showOverview = false;
       this.$store.commit('SET_INTEGRATION_DATA', {});
       this.$store.commit('SET_RENDERING_CARD', true);
       // need wait rendering to tell the card that we aren't rendering yet
@@ -740,6 +784,8 @@ export default {
       this.searchComplete = false;
       this.$store.commit('RESET_LOADING');
       this.$store.commit('SET_INTEGRATION_DATA', {});
+      this.showOverview = true;
+      this.overrideOverviewId = undefined;
 
       let failed = 0;
 
@@ -813,6 +859,10 @@ export default {
           }, 2000);
         }
       });
+    },
+    setOverrideOverview (id) {
+      this.showOverview = true;
+      this.overrideOverviewId = id;
     },
     hasLinkWithItype (linkGroup) {
       return linkGroup.links.some(link =>

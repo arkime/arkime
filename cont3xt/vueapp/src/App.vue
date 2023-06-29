@@ -55,6 +55,7 @@ import { mapGetters } from 'vuex';
 import Cont3xtNavbar from '@/utils/Navbar';
 import UserService from '@/components/services/UserService';
 import LinkService from '@/components/services/LinkService';
+import OverviewService from '@/components/services/OverviewService';
 import Cont3xtService from '@/components/services/Cont3xtService';
 import Cont3xtUpgradeBrowser from '@/components/pages/UpgradeBrowser';
 import KeyboardShortcuts from '../../../common/vueapp/KeyboardShortcuts';
@@ -91,8 +92,12 @@ export default {
       this.$store.commit('SET_IMMEDIATE_SUBMISSION_READY', true);
     });
     LinkService.getLinkGroups();
+    OverviewService.getOverviews();
     UserService.getUser();
     UserService.getRoles();
+    UserService.getUserSettings().then((response) => {
+      this.$store.commit('SET_SELECTED_OVERVIEW_ID_MAP', response.selectedOverviews ?? {});
+    });
 
     // watch for keyup/down events for the entire app
     // the rest of the app should compute necessary values with:
