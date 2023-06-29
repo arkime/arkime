@@ -40,6 +40,7 @@ NOTICE: Cross-cluster Shortcuts require you to not restart all your viewers at o
   - capture - moloch converted to arkime
   - capture - override ips can now set any field
   - capture - overrideIpFiles setting
+  - capture - packetIpFiles setting
   - viewer - removed x-moloch-auth
 
 
