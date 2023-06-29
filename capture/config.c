@@ -28,7 +28,7 @@ extern ArkimeConfig_t        config;
 
 LOCAL GKeyFile             *arkimeKeyFile;
 LOCAL char                **overrideIpFiles;
-LOCAL char                **packetIpFiles;
+LOCAL char                **packetDropIpFiles;
 
 /******************************************************************************/
 gchar **arkime_config_section_raw_str_list(GKeyFile *keyfile, char *section, char *key, char *d)
@@ -764,18 +764,18 @@ void arkime_config_load_packet_ips()
         arkime_config_parse_packet_ips(arkimeKeyFile);
     }
 
-    packetIpFiles = arkime_config_str_list(NULL, "packetIpFiles", NULL);
-    if (packetIpFiles) {
-        for (int i = 0; packetIpFiles[i]; i++) {
+    packetDropIpFiles = arkime_config_str_list(NULL, "packetDropIpFiles", NULL);
+    if (packetDropIpFiles) {
+        for (int i = 0; packetDropIpFiles[i]; i++) {
             GKeyFile *keyfile = g_key_file_new();
-            status = g_key_file_load_from_file(keyfile, packetIpFiles[i], G_KEY_FILE_NONE, &error);
+            status = g_key_file_load_from_file(keyfile, packetDropIpFiles[i], G_KEY_FILE_NONE, &error);
             if (!status || error) {
-                if (packetIpFiles[i][0] == '-') {
+                if (packetDropIpFiles[i][0] == '-') {
                     if (error)
                         g_error_free(error);
                     continue;
                 } else {
-                    CONFIGEXIT("Couldn't load packetIpFiles file (%s) %s\n", packetIpFiles[i], (error?error->message:""));
+                    CONFIGEXIT("Couldn't load packetDropIpFiles file (%s) %s\n", packetDropIpFiles[i], (error?error->message:""));
                 }
             }
             arkime_config_parse_packet_ips(keyfile);
@@ -1069,5 +1069,5 @@ void arkime_config_exit()
         g_strfreev(config.smtpIpHeaders);
 
     g_strfreev(overrideIpFiles);
-    g_strfreev(packetIpFiles);
+    g_strfreev(packetDropIpFiles);
 }
