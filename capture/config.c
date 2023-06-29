@@ -27,8 +27,8 @@
 extern ArkimeConfig_t        config;
 
 LOCAL GKeyFile             *arkimeKeyFile;
-LOCAL char                **overrideIpFiles;
-LOCAL char                **packetDropIpFiles;
+LOCAL char                **overrideIpsFiles;
+LOCAL char                **packetDropIpsFiles;
 
 /******************************************************************************/
 gchar **arkime_config_section_raw_str_list(GKeyFile *keyfile, char *section, char *key, char *d)
@@ -696,18 +696,18 @@ void arkime_config_load_override_ips()
         arkime_config_parse_override_ips(arkimeKeyFile);
     }
 
-    overrideIpFiles = arkime_config_str_list(NULL, "overrideIpFiles", NULL);
-    if (overrideIpFiles) {
-        for (int i = 0; overrideIpFiles[i]; i++) {
+    overrideIpsFiles = arkime_config_str_list(NULL, "overrideIpsFiles", NULL);
+    if (overrideIpsFiles) {
+        for (int i = 0; overrideIpsFiles[i]; i++) {
             GKeyFile *keyfile = g_key_file_new();
-            status = g_key_file_load_from_file(keyfile, overrideIpFiles[i], G_KEY_FILE_NONE, &error);
+            status = g_key_file_load_from_file(keyfile, overrideIpsFiles[i], G_KEY_FILE_NONE, &error);
             if (!status || error) {
-                if (overrideIpFiles[i][0] == '-') {
+                if (overrideIpsFiles[i][0] == '-') {
                     if (error)
                         g_error_free(error);
                     continue;
                 } else {
-                    CONFIGEXIT("Couldn't load overrideIpFiles file (%s) %s\n", overrideIpFiles[i], (error?error->message:""));
+                    CONFIGEXIT("Couldn't load overrideIpsFiles file (%s) %s\n", overrideIpsFiles[i], (error?error->message:""));
                 }
             }
             arkime_config_parse_override_ips(keyfile);
@@ -764,18 +764,18 @@ void arkime_config_load_packet_ips()
         arkime_config_parse_packet_ips(arkimeKeyFile);
     }
 
-    packetDropIpFiles = arkime_config_str_list(NULL, "packetDropIpFiles", NULL);
-    if (packetDropIpFiles) {
-        for (int i = 0; packetDropIpFiles[i]; i++) {
+    packetDropIpsFiles = arkime_config_str_list(NULL, "packetDropIpsFiles", NULL);
+    if (packetDropIpsFiles) {
+        for (int i = 0; packetDropIpsFiles[i]; i++) {
             GKeyFile *keyfile = g_key_file_new();
-            status = g_key_file_load_from_file(keyfile, packetDropIpFiles[i], G_KEY_FILE_NONE, &error);
+            status = g_key_file_load_from_file(keyfile, packetDropIpsFiles[i], G_KEY_FILE_NONE, &error);
             if (!status || error) {
-                if (packetDropIpFiles[i][0] == '-') {
+                if (packetDropIpsFiles[i][0] == '-') {
                     if (error)
                         g_error_free(error);
                     continue;
                 } else {
-                    CONFIGEXIT("Couldn't load packetDropIpFiles file (%s) %s\n", packetDropIpFiles[i], (error?error->message:""));
+                    CONFIGEXIT("Couldn't load packetDropIpsFiles file (%s) %s\n", packetDropIpsFiles[i], (error?error->message:""));
                 }
             }
             arkime_config_parse_packet_ips(keyfile);
@@ -1068,6 +1068,6 @@ void arkime_config_exit()
     if (config.smtpIpHeaders)
         g_strfreev(config.smtpIpHeaders);
 
-    g_strfreev(overrideIpFiles);
-    g_strfreev(packetDropIpFiles);
+    g_strfreev(overrideIpsFiles);
+    g_strfreev(packetDropIpsFiles);
 }
