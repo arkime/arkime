@@ -32,6 +32,7 @@ const ArkimeUtil = require('../common/arkimeUtil');
 const LinkGroup = require('./linkGroup');
 const Integration = require('./integration');
 const Audit = require('./audit');
+const Overview = require('./overview');
 const View = require('./view');
 const Db = require('./db');
 const bp = require('body-parser');
@@ -246,6 +247,11 @@ app.delete('/api/view/:id', [jsonParser, checkCookieToken], View.apiDelete);
 app.get('/api/audits', Audit.apiGet);
 app.delete('/api/audit/:id', [jsonParser, checkCookieToken], Audit.apiDelete);
 
+app.get('/api/overview', Overview.apiGet);
+app.put('/api/overview', [jsonParser, checkCookieToken], Overview.apiCreate);
+app.put('/api/overview/:id', [jsonParser, checkCookieToken], Overview.apiUpdate);
+app.delete('/api/overview/:id', [jsonParser, checkCookieToken], Overview.apiDelete);
+
 app.get('/api/health', (req, res) => { res.send({ success: true }); });
 
 // ----------------------------------------------------------------------------
@@ -260,14 +266,37 @@ app.get('/api/health', (req, res) => { res.send({ success: true }); });
  * @returns {boolean} success - True if the request was successful, false otherwise
  * @returns {object} settings - General cont3xt settings
  * @returns {LinkGroup[]} linkGroups - An array of link groups that the logged in user can view/edit
+ * @returns {object} selectedOverviews - A mapping of the selected overview per iType, of shape {[iType]: overviewId}
  */
 function apiGetSettings (req, res, next) {
   const cont3xt = req.user.cont3xt ?? {};
   res.send({
     success: true,
     settings: cont3xt.settings ?? {},
-    linkGroup: cont3xt.linkGroup ?? {}
+    linkGroup: cont3xt.linkGroup ?? {},
+    selectedOverviews: cont3xt.selectedOverviews ?? {}
   });
+}
+
+// verify selectedOverviews, on error returns { msg: <errorMsg> }, on success returns { selectedOverviews }
+function verifySelectedOverviews (selectedOverviews) {
+  selectedOverviews = (
+    ({ // only allow these properties in selectedOverviews
+      domain, ip, url, email, phone, hash, text
+    }) => ({ domain, ip, url, email, phone, hash, text })
+  )(selectedOverviews);
+
+  if (typeof selectedOverviews !== 'object') {
+    return { msg: 'selectedOverviews must be an object' };
+  }
+
+  for (const selectedId of Object.values(selectedOverviews)) {
+    if (!ArkimeUtil.isString(selectedId)) {
+      return { msg: 'values in selectedOverviews must be string ids' };
+    }
+  }
+
+  return { selectedOverviews };
 }
 
 /**
@@ -295,6 +324,14 @@ function apiPutSettings (req, res, next) {
 
     if (req.body?.linkGroup) {
       user.cont3xt.linkGroup = req.body.linkGroup;
+      save = true;
+    }
+
+    if (req.body?.selectedOverviews) {
+      const { msg, selectedOverviews } = verifySelectedOverviews(req.body.selectedOverviews);
+      if (msg) { return res.send({ success: false, text: msg }); }
+
+      user.cont3xt.selectedOverviews = selectedOverviews;
       save = true;
     }
 
@@ -514,6 +551,8 @@ function setupAuth () {
     debug: internals.debug,
     expireHistoryDays: getConfig('cont3xt', 'expireHistoryDays', 180)
   });
+
+  Overview.initialize();
 
   const cache = ArkimeCache.createCache({
     type: getConfig('cache', 'type', 'memory'),

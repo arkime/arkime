@@ -28,6 +28,39 @@
           <span class="fa fa-fw fa-key mr-1" />
           Integrations
         </a>
+        <a @click="openView('overviews')"
+           class="nav-link cursor-pointer mb-1"
+           :class="{'active':visibleTab === 'overviews'}">
+          <span class="fa fa-fw fa-file-o mr-1" />
+          Overviews
+          <b-button
+              size="xs"
+              class="float-right"
+              variant="secondary"
+              v-if="visibleTab === 'overviews'"
+              @click.stop.prevent="openOverviewForm"
+              v-b-tooltip.hover="'Create a new overview'">
+            <span class="fa fa-fw fa-plus-circle" />
+          </b-button>
+        </a>
+        <template v-if="visibleTab === 'overviews'">
+          <!-- overview create form -->
+          <create-overview-modal />
+          <!-- overviews -->
+          <div v-for="iType in iTypes" :key="iType"
+            class="itype-group-container" :style="{ 'border-color': iTypeColorMap[iType] }"
+          >
+            <a
+                v-for="overview in getSortedOverviews.filter(o => o.iType === iType)"
+                :key="overview._id"
+                :title="overview.name"
+                @click="setActiveOverviewId(overview._id)"
+                :class="{ 'active':activeOverviewId === overview._id }"
+                class="nav-link cursor-pointer w-100">
+              <overview-selector-line :overview="overview" />
+            </a>
+          </div>
+        </template>
         <a @click="openView('linkgroups')"
           class="nav-link cursor-pointer mb-1"
           :class="{'active':visibleTab === 'linkgroups'}">
@@ -359,6 +392,68 @@
         </div>
       </div> <!-- /integrations settings -->
 
+      <!-- overviews settings -->
+      <div v-if="visibleTab === 'overviews'">
+        <div class="ml-2 mr-3 w-100 d-flex justify-content-between align-items-center">
+          <h1>
+            Overviews
+          </h1>
+          <span class="pull-right">
+            <b-button
+                variant="outline-primary"
+                v-b-modal.overview-form
+            >
+              <span class="fa fa-plus-circle" />
+              New Overview
+            </b-button>
+            <b-form-checkbox
+                button
+                class="ml-2 no-wrap"
+                v-model="seeAllOverviews"
+                v-b-tooltip.hover
+                @input="seeAllOverviewsChanged"
+                v-if="roles.includes('cont3xtAdmin')"
+                :title="seeAllOverviews ? 'Just show the overviews created from your activity or shared with you' : 'See all the overviews that exist for all users (you can because you are an ADMIN!)'">
+              <span class="fa fa-user-circle mr-1" />
+              See {{ seeAllOverviews ? ' MY ' : ' ALL ' }} Overviews
+            </b-form-checkbox>
+          </span>
+        </div>
+
+        <!-- overview error -->
+        <b-alert
+            dismissible
+            variant="danger"
+            style="z-index: 2000;"
+            v-model="overviewsError"
+            class="position-fixed fixed-bottom m-0 rounded-0">
+          {{ getOverviewsError }}
+        </b-alert> <!-- /overview error -->
+
+        <div class="d-flex flex-wrap">
+          <!-- overview-form-card uses :key to reset form when swapping active overview -->
+          <overview-form-card
+              v-if="activeOverviewId && activeUnModifiedOverview"
+              :key="activeOverviewId"
+              :overview="activeUnModifiedOverview"
+              :modifiedOverview="activeModifiedOverview"
+              @update-modified-overview="updateModifiedOverview"
+              @overview-deleted="activeOverviewDeleted"
+          />
+          <div v-else
+               class="d-flex flex-column">
+            <span>
+              No Overviews configured.
+            </span>
+            <b-button
+                variant="outline-primary"
+                v-b-modal.overview-form>
+              Create one!
+            </b-button>
+          </div>
+        </div>
+      </div> <!-- /overviews settings -->
+
       <!-- link group settings -->
       <div v-if="visibleTab === 'linkgroups'">
         <!-- link group create form -->
@@ -496,6 +591,11 @@ import CreateViewModal from '@/components/views/CreateViewModal';
 import Cont3xtService from '@/components/services/Cont3xtService';
 import CreateLinkGroupModal from '@/components/links/CreateLinkGroupModal';
 import LinkService from '@/components/services/LinkService';
+import OverviewService from '@/components/services/OverviewService';
+import OverviewFormCard from '@/components/overviews/OverviewFormCard';
+import CreateOverviewModal from '@/components/overviews/CreateOverviewModal.vue';
+import OverviewSelectorLine from '@/components/overviews/OverviewSelectorLine.vue';
+import { iTypes, iTypeIconMap, iTypeColorMap } from '@/utils/iTypes';
 import CommonUserService from '../../../../../common/vueapp/UserService';
 
 let timeout;
@@ -503,6 +603,9 @@ let timeout;
 export default {
   name: 'Cont3xtSettings',
   components: {
+    OverviewSelectorLine,
+    CreateOverviewModal,
+    OverviewFormCard,
     ViewForm,
     ReorderList,
     LinkGroupCard,
@@ -520,6 +623,12 @@ export default {
       integrationSearchTerm: '',
       filteredIntegrationSettings: {},
       rawIntegrationSettings: undefined,
+      // overviews
+      iTypes,
+      iTypeIconMap,
+      iTypeColorMap,
+      activeOverviewId: undefined,
+      modifiedOverviewMap: {},
       // link groups
       selectedLinkGroup: 0,
       updatedLinkGroupMap: {},
@@ -539,7 +648,7 @@ export default {
     let tab = window.location.hash;
     if (tab) { // if there is a tab specified and it's a valid tab
       tab = tab.replace(/^#/, '');
-      if (tab === 'views' || tab === 'integrations' || tab === 'linkgroups' ||
+      if (tab === 'views' || tab === 'integrations' || tab === 'overviews' || tab === 'linkgroups' ||
         tab === 'password') {
         this.visibleTab = tab;
       }
@@ -553,9 +662,16 @@ export default {
     });
 
     this.filterViews(this.viewSearchTerm);
+
+    if (this.getOverviews != null) {
+      this.setActiveOverviewToFirst();
+    }
   },
   computed: {
-    ...mapGetters(['getLinkGroups', 'getLinkGroupsError', 'getIntegrations', 'getViews', 'getUser']),
+    ...mapGetters([
+      'getLinkGroups', 'getLinkGroupsError', 'getIntegrations', 'getViews', 'getUser',
+      'getOverviews', 'getOverviewsError', 'getSortedOverviews', 'getCorrectedSelectedOverviewIdMap'
+    ]),
     seeAllViews: {
       get () { return this.$store.state.seeAllViews; },
       set (value) { this.$store.commit('SET_SEE_ALL_VIEWS', value); }
@@ -564,6 +680,10 @@ export default {
       get () { return this.$store.state.seeAllLinkGroups; },
       set (value) { this.$store.commit('SET_SEE_ALL_LINK_GROUPS', value); }
     },
+    seeAllOverviews: {
+      get () { return this.$store.state.seeAllOverviews; },
+      set (value) { this.$store.commit('SET_SEE_ALL_OVERVIEWS', value); }
+    },
     linkGroupsError: {
       get () {
         return !!this.$store.state.linkGroupsError;
@@ -571,6 +691,20 @@ export default {
       set () {
         this.$store.commit('SET_LINK_GROUPS_ERROR', '');
       }
+    },
+    overviewsError: {
+      get () {
+        return !!this.$store.state.overviewsError;
+      },
+      set () {
+        this.$store.commit('SET_OVERVIEWS_ERROR', '');
+      }
+    },
+    activeUnModifiedOverview () {
+      return this.getOverviews?.find(overview => overview._id === this.activeOverviewId);
+    },
+    activeModifiedOverview () {
+      return this.modifiedOverviewMap?.[this.activeOverviewId];
     },
     roles () {
       return this.getUser?.roles ?? [];
@@ -631,6 +765,16 @@ export default {
     },
     getViews () {
       this.filterViews(this.viewSearchTerm);
+    },
+    getOverviews (newValue, oldValue) {
+      if (oldValue == null) {
+        this.setActiveOverviewToFirst();
+      }
+    },
+    activeUnModifiedOverview () {
+      if (this.activeUnModifiedOverview === undefined) {
+        this.setActiveOverviewToFirst();
+      }
     }
   },
   methods: {
@@ -694,6 +838,33 @@ export default {
 
       return setting.values[sname] ? setting.values[sname].length > 0 : false;
     },
+    /* OVERVIEWS! ---------------------------- */
+    setActiveOverviewToFirst () {
+      this.setActiveOverviewId(this.getSortedOverviews[0]?._id);
+    },
+    setActiveOverviewId (newActiveOverviewId) {
+      const newActiveOverview = this.getOverviews?.find(overview => overview._id === newActiveOverviewId);
+      if (newActiveOverview == null) { return; }
+
+      if (this.modifiedOverviewMap[newActiveOverviewId] == null) {
+        Vue.set(this.modifiedOverviewMap, newActiveOverviewId, JSON.parse(JSON.stringify(newActiveOverview)));
+      }
+      this.activeOverviewId = newActiveOverviewId;
+    },
+    setDefaultOverview (id, iType) {
+      this.$store.commit('SET_SELECTED_OVERVIEW_ID_FOR_ITYPE', { iType, id });
+      UserService.setUserSettings({ selectedOverviews: this.getCorrectedSelectedOverviewIdMap });
+    },
+    updateModifiedOverview (newOverview) {
+      Vue.set(this.modifiedOverviewMap, this.activeOverviewId, newOverview);
+    },
+    activeOverviewDeleted () {
+      Vue.set(this.modifiedOverviewMap, this.activeOverviewId, undefined);
+      this.setActiveOverviewToFirst();
+    },
+    openOverviewForm () {
+      this.$bvModal.show('overview-form');
+    },
     /* LINK GROUPS! -------------------------- */
     updateLinkGroup (linkGroup) {
       this.$set(this.updatedLinkGroupMap, linkGroup._id, linkGroup);
@@ -704,6 +875,10 @@ export default {
     // re-fetch link groups when changing see-all for link groups
     seeAllLinkGroupsChanged () {
       LinkService.getLinkGroups(this.seeAllLinkGroups);
+    },
+    // re-fetch overviews when changing see-all for overviews
+    seeAllOverviewsChanged () {
+      OverviewService.getOverviews();
     },
     updateList ({ list, from, to }) {
       const ids = [];
@@ -898,7 +1073,7 @@ export default {
           const match = line.match(regex.section);
           json[match[1]] = {};
           section = match[1];
-        };
+        }
       });
       return json;
     },
@@ -969,5 +1144,16 @@ export default {
 .integration-setting-img {
   height:27px;
   margin-left: -8px;
+}
+
+.itype-group-container {
+  position: relative;
+  max-width: calc(100% - 1rem);
+  margin-left: 1rem;
+  border-left-width: 2px;
+  border-left-style: solid;
+  border-radius: 5px;
+  padding-left: 4px;
+  margin-bottom: 4px
 }
 </style>

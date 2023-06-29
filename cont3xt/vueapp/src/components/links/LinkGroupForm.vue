@@ -465,16 +465,6 @@ export default {
   padding: 0.4rem 0.8rem;
 }
 
-.link-handle {
-  top: 18px;
-  left: -9px;
-  z-index: 10;
-  padding: 5px 6px;
-  position: relative;
-  border-radius: 14px;
-  background: var(--secondary);
-}
-
 .link-separator {
   border: 0;
   margin-top: -12px;
