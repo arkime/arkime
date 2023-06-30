@@ -1094,7 +1094,7 @@ function expireCheckAll () {
 // APIs disabled in demoMode, needs to be before real callbacks
 if (Config.get('demoMode', false)) {
   console.log('WARNING - Starting in demo mode, some APIs disabled');
-  app.all(['/settings', '/users', '/history/list', '*/user/cron*', '/api/cron*'], (req, res) => {
+  app.all(['/settings', '/users', '*/user/cron*', '/api/cron*'], (req, res) => {
     return res.send('Disabled in demo mode.');
   });
 
