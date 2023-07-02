@@ -698,12 +698,12 @@
             "firstPacket" : 1415985412100,
             "initRTT" : 15,
             "ipProtocol" : 6,
-            "lastPacket" : 1415985444983,
-            "length" : 32883,
+            "lastPacket" : 1415985412532,
+            "length" : 432,
             "network" : {
-               "bytes" : 4030,
+               "bytes" : 3894,
                "community_id" : "1:LfVtLs2VX3xOzzzdeOeVLCh7SOw=",
-               "packets" : 13
+               "packets" : 12
             },
             "node" : "test",
             "packetLen" : [
@@ -718,8 +718,7 @@
                140,
                140,
                140,
-               140,
-               152
+               140
             ],
             "packetPos" : [
                1606,
@@ -733,8 +732,7 @@
                5132,
                5272,
                5412,
-               5552,
-               5896
+               5552
             ],
             "protocol" : [
                "gtp",
@@ -747,9 +745,9 @@
                "bytes" : 689
             },
             "source" : {
-               "bytes" : 2713,
+               "bytes" : 2577,
                "ip" : "fd00:183:1:1:1886:9040:8605:32b8",
-               "packets" : 8,
+               "packets" : 7,
                "port" : 5060
             },
             "srcOuterASN" : [
@@ -777,7 +775,7 @@
                "psh" : 2,
                "rst" : 0,
                "srcZero" : 0,
-               "syn" : 2,
+               "syn" : 1,
                "syn-ack" : 1,
                "urg" : 0
             },
@@ -820,10 +818,11 @@
             ],
             "dstPayload8" : "5349502f322e3020",
             "fileId" : [],
-            "firstPacket" : 1415985444984,
+            "firstPacket" : 1415985444983,
+            "initRTT" : 16,
             "ipProtocol" : 6,
-            "lastPacket" : 1415985484900,
-            "length" : 39917,
+            "lastPacket" : 1415985446023,
+            "length" : 1041,
             "network" : {
                "bytes" : 4033,
                "community_id" : "1:LfVtLs2VX3xOzzzdeOeVLCh7SOw=",
@@ -831,6 +830,7 @@
             },
             "node" : "test",
             "packetLen" : [
+               152,
                148,
                140,
                1478,
@@ -841,10 +841,10 @@
                140,
                140,
                140,
-               140,
-               152
+               140
             ],
             "packetPos" : [
+               5896,
                6048,
                6196,
                6336,
@@ -855,8 +855,7 @@
                9561,
                10575,
                10715,
-               11405,
-               11545
+               11405
             ],
             "protocol" : [
                "gtp",
@@ -1038,9 +1037,10 @@
             "dstPayload8" : "5349502f322e3020",
             "fileId" : [],
             "firstPacket" : 1415985484900,
+            "initRTT" : 20,
             "ipProtocol" : 6,
-            "lastPacket" : 1415985559780,
-            "length" : 74880,
+            "lastPacket" : 1415985533136,
+            "length" : 48237,
             "network" : {
                "bytes" : 7565,
                "community_id" : "1:LfVtLs2VX3xOzzzdeOeVLCh7SOw=",
@@ -1048,6 +1048,7 @@
             },
             "node" : "test",
             "packetLen" : [
+               152,
                148,
                140,
                1478,
@@ -1068,10 +1069,10 @@
                140,
                140,
                140,
-               140,
-               152
+               140
             ],
             "packetPos" : [
+               11545,
                11697,
                11845,
                11985,
@@ -1092,8 +1093,7 @@
                24379,
                26209,
                26349,
-               26489,
-               26629
+               26489
             ],
             "protocol" : [
                "gtp",
@@ -1652,16 +1652,18 @@
             "dstPayload8" : "5349502f322e3020",
             "fileId" : [],
             "firstPacket" : 1415985559780,
+            "initRTT" : 19,
             "ipProtocol" : 6,
             "lastPacket" : 1415985559931,
             "length" : 151,
             "network" : {
-               "bytes" : 3550,
+               "bytes" : 3686,
                "community_id" : "1:LfVtLs2VX3xOzzzdeOeVLCh7SOw=",
-               "packets" : 11
+               "packets" : 12
             },
             "node" : "test",
             "packetLen" : [
+               152,
                148,
                140,
                1478,
@@ -1675,6 +1677,7 @@
                140
             ],
             "packetPos" : [
+               26629,
                26781,
                26929,
                27069,
@@ -1698,9 +1701,9 @@
                "bytes" : 425
             },
             "source" : {
-               "bytes" : 2497,
+               "bytes" : 2633,
                "ip" : "fd00:183:1:1:1886:9040:8605:32b8",
-               "packets" : 6,
+               "packets" : 7,
                "port" : 5060
             },
             "srcOuterASN" : [
@@ -1728,7 +1731,7 @@
                "psh" : 2,
                "rst" : 0,
                "srcZero" : 0,
-               "syn" : 0,
+               "syn" : 1,
                "syn-ack" : 1,
                "urg" : 0
             },
