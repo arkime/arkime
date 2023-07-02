@@ -540,10 +540,10 @@ Pcap.prototype.udp = function (buffer, obj, pos) {
       offset++;
     }
 
-    if ((data[offset] & 0xf0) == 0x60) {
-      this.ip6(data.slice(offset), obj, pos + offset );
+    if ((data[offset] & 0xf0) === 0x60) {
+      this.ip6(data.slice(offset), obj, pos + offset);
     } else {
-      this.ip4(data.slice(offset), obj, pos + offset );
+      this.ip4(data.slice(offset), obj, pos + offset);
     }
   }
 };
