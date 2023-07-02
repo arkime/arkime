@@ -45,6 +45,10 @@ NOTICE: Cross-cluster Shortcuts require you to not restart all your viewers at o
 
 
 4.3.3 2023/07/xx
+  - capture - handle port reuse better
+  - capture - fix kafka memory leak when produce fails
+  - cont3xt - New overview cards
+  - viewer - gtp decoding
 
 4.3.2 2023/06/13
   - release - cyberchef 10.4.0 libpcap 1.10.4

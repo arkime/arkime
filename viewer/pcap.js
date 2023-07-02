@@ -505,18 +505,45 @@ Pcap.prototype.udp = function (buffer, obj, pos) {
   };
 
   obj.udp.data = buffer.slice(8);
-  if ((obj.udp.dport === 0x12b5) && (obj.udp.data.length > 8) && ((obj.udp.data[0] & 0x77) === 0) && ((obj.udp.data[1] & 0xb7) === 0)) {
+  const data = obj.udp.data;
+
+  // vxlan
+  if ((obj.udp.dport === 4789) && (data.length > 8) && ((data[0] & 0x77) === 0) && ((data[1] & 0xb7) === 0)) {
     this.ether(buffer.slice(16), obj, pos + 16);
   }
 
   // geneve
-  if ((obj.udp.dport === 6081) && (obj.udp.data.length > 8) && ((obj.udp.data[0] & 0xc0) === 0) && ((obj.udp.data[1] & 0x3f) === 0)) {
-    const optlen = obj.udp.data[0] & 0x3f;
-    const protocol = (obj.udp.data[2] << 8) | obj.udp.data[3];
+  if ((obj.udp.dport === 6081) && (data.length > 8) && ((data[0] & 0xc0) === 0) && ((data[1] & 0x3f) === 0)) {
+    const optlen = data[0] & 0x3f;
+    const protocol = (data[2] << 8) | data[3];
     const offset = 8 + optlen * 4;
 
     if (8 + offset < buffer.length) {
       this.ethertyperun(protocol, buffer.slice(8 + offset), obj, pos + 8 + offset);
+    }
+  }
+
+  // gtp
+  if ((obj.udp.dport === 2152) && (data.length > 8) && ((data[0] & 0xf0) === 0x30) && (data[1] === 0xff)) {
+    let offset = 8;
+    let next = 0;
+    if (data[0] & 0x7) {
+      offset += 3;
+      next = data[offset];
+      offset++;
+    }
+    while (next !== 0) {
+      const extlen = data[offset];
+      offset++;
+      offset += extlen * 4 - 2;
+      next = data[offset];
+      offset++;
+    }
+
+    if ((data[offset] & 0xf0) === 0x60) {
+      this.ip6(data.slice(offset), obj, pos + offset);
+    } else {
+      this.ip4(data.slice(offset), obj, pos + offset);
     }
   }
 };
