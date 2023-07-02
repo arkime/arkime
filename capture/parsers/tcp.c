@@ -365,7 +365,8 @@ int tcp_pre_process(MolochSession_t *session, MolochPacket_t * const packet, int
     struct tcphdr       *tcphdr = (struct tcphdr *)(packet->pkt + packet->payloadOffset);
 
     // If this is an old session that hash RSTs and we get a syn, probably a port reuse, close old session
-    if (!isNewSession && (tcphdr->th_flags & TH_SYN) && ((tcphdr->th_flags & TH_ACK) == 0) && session->tcpFlagCnt[MOLOCH_TCPFLAG_RST]) {
+    if (!isNewSession && (tcphdr->th_flags & TH_SYN) && ((tcphdr->th_flags & TH_ACK) == 0) && 
+            (session->tcpFlagCnt[MOLOCH_TCPFLAG_RST] || session->tcpFlagCnt[MOLOCH_TCPFLAG_FIN])) {
         return 1;
     }
 
