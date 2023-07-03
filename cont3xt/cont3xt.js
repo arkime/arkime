@@ -18,7 +18,6 @@
 'use strict';
 
 const express = require('express');
-const ini = require('iniparser');
 const fs = require('fs');
 const app = express();
 const http = require('http');
@@ -29,6 +28,7 @@ const User = require('../common/user');
 const Auth = require('../common/auth');
 const ArkimeCache = require('../common/arkimeCache');
 const ArkimeUtil = require('../common/arkimeUtil');
+const ArkimeConfig = require('../common/arkimeConfig');
 const LinkGroup = require('./linkGroup');
 const Integration = require('./integration');
 const Audit = require('./audit');
@@ -49,9 +49,7 @@ const internals = {
   configFile: `${version.config_prefix}/etc/cont3xt.ini`,
   debug: 0,
   insecure: false,
-  regressionTests: false,
-  options: new Map(),
-  debugged: new Map()
+  regressionTests: false
 };
 
 // Process args before routes
@@ -428,8 +426,7 @@ function processArgs (argv) {
         console.log('Missing equal sign in', process.argv[i]);
         process.exit(1);
       }
-
-      internals.options.set(process.argv[i].slice(0, equal), process.argv[i].slice(equal + 1));
+      ArkimeConfig.setOverride(process.argv[i].slice(0, equal), process.argv[i].slice(equal + 1));
     } else if (argv[i] === '--insecure') {
       internals.insecure = true;
     } else if (argv[i] === '--debug') {
@@ -472,17 +469,7 @@ User.prototype.setCont3xtKeys = function (v) {
   this.save((err) => { console.log('SAVED', err); });
 };
 
-function getConfig (section, sectionKey, d) {
-  const key = `${section}.${sectionKey}`;
-  const value = internals.options.get(key) ?? internals.config[section]?.[sectionKey] ?? d;
-
-  if (internals.debug > 0 && !internals.debugged.has(key)) {
-    console.log(`CONFIG - ${key} is ${value}`);
-    internals.debugged.set(key, true);
-  }
-
-  return value;
-}
+const getConfig = ArkimeConfig.get;
 
 // ----------------------------------------------------------------------------
 // Initialize stuff
@@ -570,9 +557,11 @@ function setupAuth () {
 
 async function main () {
   try {
-    internals.config = ini.parseSync(internals.configFile);
+    await ArkimeConfig.initialize({ debug: internals.debug, configFile: internals.configFile });
+
     if (internals.debug === 0) {
       internals.debug = parseInt(getConfig('cont3xt', 'debug', 0));
+      ArkimeConfig.setDebug(internals.debug);
     }
     if (internals.debug) {
       console.log('Debug Level', internals.debug);

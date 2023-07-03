@@ -18,7 +18,6 @@
  */
 'use strict';
 
-const ini = require('iniparser');
 const express = require('express');
 const fs = require('fs');
 const http = require('http');
@@ -38,11 +37,11 @@ const uuid = require('uuid').v4;
 const helmet = require('helmet');
 const bp = require('body-parser');
 const jsonParser = bp.json();
-const axios = require('axios');
 const chalk = require('chalk');
 const version = require('../common/version');
 const path = require('path');
 const ArkimeCache = require('../common/arkimeCache');
+const ArkimeConfig = require('../common/arkimeConfig');
 const RE2 = require('re2');
 
 const dayMs = 60000 * 60 * 24;
@@ -93,8 +92,6 @@ const internals = {
       ]
     }
   },
-  configSchemes: {
-  },
   types: new Map(),
   views: new Map(),
   fieldActions: new Map(),
@@ -103,9 +100,7 @@ const internals = {
   regressionTests: false,
   webconfig: false,
   configCode: cryptoLib.randomBytes(20).toString('base64').replace(/[=+/]/g, '').substr(0, 6),
-  startTime: Date.now(),
-  options: new Map(),
-  debugged: new Map()
+  startTime: Date.now()
 };
 
 internals.type2Name = ['ip', 'domain', 'md5', 'email', 'url', 'tuple', 'ja3', 'sha256'];
@@ -126,11 +121,12 @@ function processArgs (argv) {
         process.exit(1);
       }
 
-      internals.options.set(process.argv[i].slice(0, equal), process.argv[i].slice(equal + 1));
+      ArkimeConfig.setOverride(process.argv[i].slice(0, equal), process.argv[i].slice(equal + 1));
     } else if (argv[i] === '--insecure') {
       internals.insecure = true;
     } else if (argv[i] === '--debug') {
       internals.debug++;
+      ArkimeConfig.setDebug(internals.debug);
     } else if (argv[i] === '--regressionTests') {
       internals.regressionTests = true;
     } else if (argv[i] === '--webcode') {
@@ -207,17 +203,7 @@ const cspHeader = helmet.contentSecurityPolicy({
   directives: cspDirectives
 });
 
-function getConfig (section, sectionKey, d) {
-  const key = `${section}.${sectionKey}`;
-  const value = internals.options.get(key) ?? internals.config[section]?.[sectionKey] ?? d;
-
-  if (internals.debug > 0 && !internals.debugged.has(key)) {
-    console.log(`CONFIG - ${key} is ${value}`);
-    internals.debugged.set(key, true);
-  }
-
-  return value;
-}
+const getConfig = ArkimeConfig.get;
 
 // Explicit sigint handler for running under docker
 // See https://github.com/nodejs/node/issues/4182
@@ -311,9 +297,7 @@ class WISESourceAPI {
    * @param {string} [default] - the default value to return if key is not found in section
    * @returns {string} - The value found or the default value
    */
-  getConfig (section, sectionKey, d) {
-    return getConfig(section, sectionKey, d);
-  }
+  getConfig = ArkimeConfig.get;
 
   // ----------------------------------------------------------------------------
   /**
@@ -321,9 +305,7 @@ class WISESourceAPI {
    *
    * @returns {string|Array} - A list of all the sections in the config file
    */
-  getConfigSections () {
-    return Object.keys(internals.config);
-  }
+  getConfigSections = ArkimeConfig.getSections;
 
   // ----------------------------------------------------------------------------
   /**
@@ -332,9 +314,7 @@ class WISESourceAPI {
    * @param {string} section - The section of the config file to return
    * @returns {object} - A list of all the sections in the config file
    */
-  getConfigSection (section) {
-    return internals.config[section];
-  }
+  getConfigSection = ArkimeConfig.getSection;
 
   // ----------------------------------------------------------------------------
   /**
@@ -1405,207 +1385,6 @@ RegExp.fromWildExp=function(c,a){for(var d=a&&a.indexOf("o")>-1,f,b,e="",g=a&&a.
 b=="?"||b=="_"?".":b=="#"?"\\d":d&&b.charAt(0)=="{"?b+g:b=="<"?"\\b(?=\\w)":b==">"?"(?:\\b$|(?=\\W)\\b)":"\\"+b,c=c.substring(f+b.length);e+=c;a&&(/[ab]/.test(a)&&(e="^"+e),/[ae]/.test(a)&&(e+="$"));return RegExp(e,a?a.replace(/[^gim]/g,""):"")};
 /* eslint-enable */
 
-// ----------------------------------------------------------------------------
-// Config Schemes - For each scheme supported implement a load/save function
-// ----------------------------------------------------------------------------
-
-// redis://[:pass]@host:port/db/key
-internals.configSchemes.redis = {
-  load: function (cb) {
-    const redisParts = internals.configFile.split('/');
-    if (redisParts.length !== 5) {
-      throw new Error(`Invalid redis url - ${redisParts[0]}//[:pass@]redishost[:redisport]/redisDbNum/key`);
-    }
-    internals.configRedisKey = redisParts.pop();
-    internals.configRedis = ArkimeUtil.createRedisClient(redisParts.join('/'), 'config');
-
-    internals.configRedis.get(internals.configRedisKey, function (err, result) {
-      if (err) {
-        return cb(err);
-      }
-
-      if (result === null) {
-        return cb(null, {});
-      } else {
-        return cb(null, JSON.parse(result));
-      }
-    });
-  },
-  save: function (config, cb) {
-    internals.configRedis.set(internals.configRedisKey, JSON.stringify(config), function (err, result) {
-      cb(err);
-    });
-  }
-};
-
-// ----------------------------------------------------------------------------
-// rediss://pass@host:port/db/key
-internals.configSchemes.rediss = internals.configSchemes.redis;
-
-// redis-sentinel://sentinelPassword:redisPassword@host:port/name/db/key
-internals.configSchemes['redis-sentinel'] = {
-  load: function (cb) {
-    const redisParts = internals.configFile.split('/');
-    redisParts[1] = 'stoperror';
-    if (redisParts.length !== 6 || redisParts.some(p => p === '')) {
-      throw new Error(`Invalid redis-sentinel url - ${redisParts[0]}//[sentinelPassword:redisPassword@]sentinelHost[:sentinelPort][,sentinelPortN:sentinelPortN]/redisName/redisDbNum`);
-    }
-    internals.configRedisKey = redisParts[5];
-    internals.configRedis = ArkimeUtil.createRedisClient(internals.configFile, 'config');
-
-    internals.configRedis.get(internals.configRedisKey, function (err, result) {
-      if (err) {
-        return cb(err);
-      }
-      if (result === null) {
-        return cb(null, {});
-      } else {
-        return cb(JSON.parse(result));
-      }
-    });
-  },
-  save: function (config, cb) {
-    internals.configRedis.set(internals.configRedisKey, JSON.stringify(config), function (err, result) {
-      cb(err);
-    });
-  }
-};
-
-// ----------------------------------------------------------------------------
-// redis-cluster://[:pass]@host:port/db/key
-internals.configSchemes['redis-cluster'] = {
-  load: function (cb) {
-    const redisParts = internals.configFile.split('/');
-    redisParts[1] = 'stoperror';
-    if (redisParts.length !== 5 || redisParts.some(p => p === '')) {
-      throw new Error(`Invalid redis-cluster url - ${redisParts[0]}//[:redisPassword@]redishost[:redisport]/redisDbNum/key`);
-    }
-    internals.configRedisKey = redisParts[4];
-    internals.configRedis = ArkimeUtil.createRedisClient(internals.configFile, 'config');
-
-    internals.configRedis.get(internals.configRedisKey, function (err, result) {
-      if (err) {
-        return cb(err);
-      }
-      if (result === null) {
-        return cb(null, {});
-      } else {
-        return cb(null, JSON.parse(result));
-      }
-    });
-  },
-  save: function (config, cb) {
-    internals.configRedis.set(internals.configRedisKey, JSON.stringify(config), function (err, result) {
-      cb(err);
-    });
-  }
-};
-
-// ----------------------------------------------------------------------------
-internals.configSchemes.elasticsearch = {
-  load: function (cb) {
-    const url = internals.configFile.replace('elasticsearch', 'http');
-    if (!url.includes('/_doc/')) {
-      throw new Error('Missing _doc in url, should be format elasticsearch://user:pass@host:port/INDEX/_doc/DOC');
-    }
-
-    axios.get(url)
-      .then((response) => {
-        cb(null, response.data._source);
-      })
-      .catch((error) => {
-        if (error.response && error.response.status === 404) {
-          return cb(null, {});
-        }
-        return cb(error);
-      });
-  },
-  save: function (config, cb) {
-    const url = internals.configFile.replace('elasticsearch', 'http');
-
-    axios.post(url, JSON.stringify(config), { headers: { 'Content-Type': 'application/json' } })
-      .then((response) => {
-        cb(null);
-      })
-      .catch((error) => {
-        cb(error);
-      });
-  }
-};
-
-// ----------------------------------------------------------------------------
-internals.configSchemes.elasticsearchs = {
-  load: function (cb) {
-    const url = internals.configFile.replace('elasticsearchs', 'https');
-    if (!url.includes('/_doc/')) {
-      throw new Error('Missing _doc in url, should be format elasticsearch://user:pass@host:port/INDEX/_doc/DOC');
-    }
-
-    axios.get(url)
-      .then((response) => {
-        return cb(null, response.data._source);
-      })
-      .catch((error) => {
-        if (error.response && error.response.status === 404) {
-          return cb(null, {});
-        }
-        return cb(error);
-      });
-  },
-  save: function (config, cb) {
-    const url = internals.configFile.replace('elasticsearchs', 'https');
-
-    axios.post(url, JSON.stringify(config), { headers: { 'Content-Type': 'application/json' } })
-      .then((response) => {
-        cb();
-      })
-      .catch((error) => {
-        cb(error);
-      });
-  }
-};
-
-// ----------------------------------------------------------------------------
-internals.configSchemes.json = {
-  load: function (cb) {
-    return cb(null, JSON.parse(fs.readFileSync(internals.configFile, 'utf8')));
-  },
-  save: function (config, cb) {
-    try {
-      fs.writeFileSync(internals.configFile, JSON.stringify(config, null, 1));
-      cb();
-    } catch (e) {
-      cb(e.message);
-    }
-  }
-};
-
-// ----------------------------------------------------------------------------
-internals.configSchemes.ini = {
-  load: function (cb) {
-    return cb(null, ini.parseSync(internals.configFile));
-  },
-  save: function (config, cb) {
-    function encode (str) {
-      return typeof (str) === 'string' ? str.replace(/[\n\r]/g, '\\n') : str;
-    }
-    let output = '';
-    Object.keys(config).forEach((section) => {
-      output += `[${encode(section)}]\n`;
-      Object.keys(config[section]).forEach((key) => {
-        output += `${key}=${encode(config[section][key])}\n`;
-      });
-    });
-
-    try {
-      fs.writeFileSync(internals.configFile, output);
-      cb(null);
-    } catch (e) {
-      cb(e.message);
-    }
-  }
-};
-
 // ============================================================================
 // AUTHED ROUTES - only needed for webconfig, must be at bottom
 // ============================================================================
@@ -1694,12 +1473,12 @@ if (internals.webconfig) {
    * @returns {object}
    */
   app.get('/config/get', [isWiseUser, ArkimeUtil.noCacheJson], (req, res) => {
-    const config = Object.keys(internals.config)
+    const config = ArkimeConfig.getSections()
       .sort()
       .filter(key => internals.configDefs[key.split(':')[0]])
       .reduce((obj, key) => {
         // Deep Copy
-        obj[key] = JSON.parse(JSON.stringify(internals.config[key]));
+        obj[key] = JSON.parse(JSON.stringify(ArkimeConfig.getSection(key)));
 
         // Replace passwords
         internals.configDefs[key.split(':')[0]].fields.forEach((item) => {
@@ -1710,8 +1489,8 @@ if (internals.webconfig) {
         return obj;
       }, {});
 
-    if (config.wiseService === undefined) { config.wiseService = {}; }
-    if (config.cache === undefined) { config.cache = {}; }
+    config.wiseService ??= {};
+    config.cache ??= {};
 
     return res.send({
       success: true,
@@ -1765,7 +1544,7 @@ if (internals.webconfig) {
           delete config[section][key];
         } else if (field.password === true) {
           if (config[section][key] === '********') {
-            config[section][key] = internals.config[section][key];
+            config[section][key] = ArkimeConfig.getFull(section, key);
           }
         }
       };
@@ -1777,7 +1556,9 @@ if (internals.webconfig) {
 
     // Make sure updateTime has increased incase of clock sku
     config.wiseService.updateTime = Math.max(Date.now(), internals.updateTime + 1);
-    internals.configScheme.save(config, (err) => {
+
+    ArkimeConfig.replace(config);
+    ArkimeConfig.save((err) => {
       if (err) {
         return res.send({ success: false, text: err });
       } else {
@@ -1885,7 +1666,7 @@ function main () {
   }, 2000);
 }
 
-function buildConfigAndStart () {
+async function buildConfigAndStart () {
   // The config is actually hidden
   if (internals.configFile.endsWith('.hiddenconfig')) {
     internals.configFile = fs.readFileSync(internals.configFile).toString().split('\n')[0].trim();
@@ -1894,77 +1675,26 @@ function buildConfigAndStart () {
     internals.configFile = fs.readFileSync(internals.configFile.substring(12)).toString().split('\n')[0].trim();
   }
 
-  const parts = internals.configFile.split('://');
-
-  // If there is only 1 part, then this is actually a file on disk
-  if (parts.length === 1) {
-    try { // check if the file exists
-      fs.accessSync(internals.configFile, fs.constants.F_OK);
-    } catch (err) { // if the file doesn't exist, create it
-      try { // write the new file
-        if (internals.configFile.endsWith('json')) {
-          fs.writeFileSync(internals.configFile, JSON.stringify({}, null, 2), 'utf8');
-        } else {
-          fs.writeFileSync(internals.configFile, '', 'utf8');
-        }
-      } catch (err) { // notify of error saving new config and exit
-        console.log('Error creating new WISE Config:\n\n', ArkimeUtil.sanitizeStr(err.stack));
-        console.log(`
-          You must fix this before you can run WISE UI.
-          Try using arkime/tests/config.test.json as a starting point.
-        `);
-        process.exit(1);
-      }
-    }
-
-    if (internals.configFile.endsWith('json')) {
-      internals.configScheme = internals.configSchemes.json;
-    } else {
-      internals.configScheme = internals.configSchemes.ini;
-    }
-  } else {
-    internals.configScheme = internals.configSchemes[parts[0]];
-  }
-
-  if (internals.configScheme === undefined) {
-    throw new Error('Unknown scheme');
-  }
-
-  internals.configScheme.load((err, config) => {
-    if (err) {
-      console.log(`Error reading ${internals.configFile}:\n\n`, err);
-      process.exit(1);
-    }
-    if (config.wiseService === undefined) { config.wiseService = {}; }
-
-    internals.config = config;
-    if (internals.debug > 1) {
-      console.log('Config', internals.config);
-    }
-
-    internals.updateTime = internals.config.wiseService.updateTime || 0;
-    delete internals.config.wiseService.updateTime;
-
-    setupAuth();
-    if (internals.workers <= 1 || cluster.isWorker) {
-      main();
-    }
-  });
+  // Load config
+  await ArkimeConfig.initialize({ configFile: internals.configFile });
+  internals.updateTime = getConfig('wiseService', 'updateTime', 0);
 
   // Check if we need to restart, this is if there are multiple instances
-  setInterval(() => {
-    internals.configScheme.load((err, config) => {
-      if (err) { return; }
-      if (config.wiseService === undefined) { config.wiseService = {}; }
-      const updateTime = config.wiseService.updateTime || 0;
-      if (updateTime > internals.updateTime) {
-        console.log('New config file, restarting');
-        // Because of nodemon
-        setTimeout(() => { process.kill(process.pid, 'SIGUSR2'); }, 500);
-        setTimeout(() => { process.exit(0); }, 1500);
-      }
-    });
+  setInterval(async () => {
+    await ArkimeConfig.reload();
+    const updateTime = getConfig('wiseService', 'updateTime', 0);
+    if (updateTime > internals.updateTime) {
+      console.log('New config file, restarting');
+      // Because of nodemon
+      setTimeout(() => { process.kill(process.pid, 'SIGUSR2'); }, 500);
+      setTimeout(() => { process.exit(0); }, 1500);
+    }
   }, ((3000 * 60) + (Math.random() * 3000 * 60))); // Check 3min + 0-3min
+
+  setupAuth();
+  if (internals.workers <= 1 || cluster.isWorker) {
+    main();
+  }
 }
 
 buildConfigAndStart();
