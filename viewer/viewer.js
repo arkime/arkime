@@ -1786,7 +1786,7 @@ app.delete( // remove users from hunt endpoint
 
 app.get( // remote hunt endpoint
   ['/api/hunt/:nodeName/:huntId/remote/:sessionId', '/:nodeName/hunt/:huntId/remote/:sessionId'],
-  [ArkimeUtil.noCacheJson],
+  [ArkimeUtil.noCacheJson], User.checkPermissions(['packetSearch'],
   HuntAPIs.remoteHunt
 );
 
