@@ -1098,7 +1098,7 @@ if (Config.get('demoMode', false)) {
     return res.send('Disabled in demo mode.');
   });
 
-  app.get(['/user/cron', '/api/cron', '/api/user/cron', '/history/list'], (req, res) => {
+  app.get(['/user/cron', '/api/cron', '/api/user/cron', '/history/list', '/api/histories'], (req, res) => {
     return res.serverError(403, 'Disabled in demo mode.');
   });
 
