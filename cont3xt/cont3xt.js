@@ -315,7 +315,11 @@ function apiPutSettings (req, res, next) {
     }
 
     if (user.cont3xt === undefined) { user.cont3xt = {}; }
-
+    
+    if (req.body.hasOwnProperty('__proto__')) {
+      return res.send({ success: false, text: '__proto__ not allowed' });
+    }
+    
     if (req.body?.settings) {
       user.cont3xt.settings = req.body.settings;
       save = true;
