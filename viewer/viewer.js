@@ -83,7 +83,7 @@ app.enable('jsonp callback');
 app.set('views', path.join(__dirname, '/views'));
 app.set('view engine', 'pug');
 
-app.use(bodyParser.json());
+app.use(ArkimeUtil.jsonParser);
 app.use(bodyParser.urlencoded({ limit: '5mb', extended: true }));
 
 app.use(compression());
