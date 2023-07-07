@@ -776,13 +776,12 @@ export default {
         next: (data) => {
           switch (data.purpose) {
           case 'init':
-            if (!data.success) {
-              this.error = `ERROR: ${data.text}`;
-            }
-
             // determine the search type and save the search term
             this.activeIndicator = data.indicator;
             this.filterLinks(this.linkSearchTerm);
+            break;
+          case 'error':
+            this.error = `ERROR: ${data.text}`;
             break;
           case 'data':
             if (data.failed) {

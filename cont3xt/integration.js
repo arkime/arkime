@@ -398,9 +398,9 @@ class Integration {
     }
 
     const writeOne = (integration, response) => {
-      if (integration.addMoreIntegrations) { // TODO: make addMoreIntegrations take indicator
+      if (integration.addMoreIntegrations) {
         integration.addMoreIntegrations(itype, response, (moreIndicator, enhanceInfo = undefined) => {
-          if (enhanceInfo != null && typeof enhanceInfo === 'object') {
+          if (moreIndicator != null && enhanceInfo != null && typeof enhanceInfo === 'object') {
             shared.res.write(JSON.stringify({ purpose: 'enhance', indicator: moreIndicator, enhanceInfo }));
             shared.res.write(',\n');
           }
@@ -549,18 +549,17 @@ class Integration {
   /**
    * The classification of the data chunk
    *
-   * @typedef {'init' | 'data' | 'link' | 'enhance' | 'finish'} DataChunkPurpose
+   * @typedef {'init' | 'error' | 'data' | 'link' | 'enhance' | 'finish'} DataChunkPurpose
    */
 
-  /** TODO: toby update these docs!
+  /**
    * Integration Data Chunk object
    *
    * An chunk of data returned from searching integrations
    * @typedef IntegrationChunk
    * @type {object}
    * @param {DataChunkPurpose} purpose - String discriminator to indicate the use of this data chunk
-   * @param {boolean} success - Whether the search was successful (sent in first chunk only, purpose: 'init')
-   * @param {string} text - The message describing the error (on success: false)
+   * @param {string} text - The message describing the error (on purpose: 'error')
    * @param {Cont3xtIndicator} indicator - The itype and query that correspond to this chunk of data (all purposes except: 'finish')
    * @param {number} total - The total number of integrations to query
    * @param {number} sent - The number of integration results that have completed and been sent to the client
@@ -584,29 +583,29 @@ class Integration {
    */
   static async apiSearch (req, res, next) {
     if (!ArkimeUtil.isString(req.body.query)) {
-      return res.send({ purpose: 'init', success: false, text: 'Missing query' });
+      return res.send({ purpose: 'error', text: 'Missing query' });
     }
 
     if (req.body.tags !== undefined) {
       if (!Array.isArray(req.body.tags)) {
-        return res.send({ purpose: 'init', success: false, text: 'tags must be an array when present' });
+        return res.send({ purpose: 'error', text: 'tags must be an array when present' });
       }
       if (req.body.tags.some(t => typeof t !== 'string')) {
-        return res.send({ purpose: 'init', success: false, text: 'every tag must be a string' });
+        return res.send({ purpose: 'error', text: 'every tag must be a string' });
       }
     }
 
     if (req.body.doIntegrations !== undefined) {
       if (!Array.isArray(req.body.doIntegrations)) {
-        return res.send({ purpose: 'init', success: false, text: 'doIntegrations must be an array when present' });
+        return res.send({ purpose: 'error', text: 'doIntegrations must be an array when present' });
       }
       if (req.body.doIntegrations.some(i => typeof i !== 'string')) {
-        return res.send({ purpose: 'init', success: false, text: 'every doIntegration must be a string' });
+        return res.send({ purpose: 'error', text: 'every doIntegration must be a string' });
       }
     }
 
     if (req.body.viewId !== undefined && !ArkimeUtil.isString(req.body.viewId)) {
-      return res.send({ purpose: 'init', success: false, text: 'viewId must be a string when present' });
+      return res.send({ purpose: 'error', text: 'viewId must be a string when present' });
     }
 
     const query = ArkimeUtil.sanitizeStr(req.body.query.trim());
@@ -625,7 +624,7 @@ class Integration {
       queriedSet: new Set()
     };
     res.write('[\n');
-    res.write(JSON.stringify({ purpose: 'init', success: true, indicator: { itype, query }, sent: shared.sent, total: integrations.length, text: 'more to follow' }));
+    res.write(JSON.stringify({ purpose: 'init', indicator: { itype, query }, sent: shared.sent, total: integrations.length, text: 'more to follow' }));
     res.write(',\n');
 
     const issuedAt = Date.now();
