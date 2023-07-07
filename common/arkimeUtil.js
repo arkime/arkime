@@ -21,10 +21,22 @@ const memjs = require('memjs');
 const Auth = require('./auth');
 const util = require('util');
 const fs = require('fs');
+const bodyParser = require('body-parser');
+const sjson = require('secure-json-parse');
 
 class ArkimeUtil {
   static debug = 0;
   // ----------------------------------------------------------------------------
+  /**
+   * A json body parser that doesn't allow anything that looks like "__proto__": or "constructor":
+   */
+  static jsonParser = bodyParser.json({
+    verify: function (req, res, buf, encoding) {
+      sjson.parse(buf);
+    }
+  });
+
+  // ---------------------------------------------------------------------------
   /**
    * For both arrays and single values escape entities
    */

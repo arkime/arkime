@@ -1,5 +1,5 @@
 # Test cont3xt.js
-use Test::More tests => 112;
+use Test::More tests => 113;
 use Test::Differences;
 use Data::Dumper;
 use MolochTest;
@@ -213,8 +213,7 @@ $json = cont3xtPutToken('/api/linkGroup', to_json({
     name => "foo1",
     url => "http://www.foo.com",
     itypes => ["ip", "domain"]
-  }],
-  __proto__ => { bad => "stuff" }
+  }]
 }), $token);
 eq_or_diff($json, from_json('{"success": true, "text": "Success"}'));
 
@@ -449,8 +448,7 @@ $json = cont3xtPutToken('/api/overview', to_json({
     fields => [{
         from  => "Foo",
         field => "foo_field"
-    }],
-    __proto__ => { bad => "stuff" }
+    }]
 }), $token);
 eq_or_diff($json, from_json('{"success": true, "text": "Success"}'));
 
@@ -639,8 +637,7 @@ eq_or_diff($json, from_json('{"success": false, "text": "integrations must conta
 
 # Good
 $json = cont3xtPostToken('/api/view', to_json({
-  name => "view1",
-  __proto__ => { bad => "stuff" }
+  name => "view1"
 }), $token);
 delete $json->{view}->{_id};
 eq_or_diff($json, from_json('{"view":{"_viewable":true,"name":"view1","_editable":true,"creator":"anonymous"},"success":true,"text":"Success"}'));
@@ -689,6 +686,9 @@ eq_or_diff($json, from_json('{"success": false, "text": "Missing token"}'));
 
 $json = cont3xtPutToken('/api/integration/settings', 'hi', $token);
 is ($json, "SyntaxError: Unexpected token h in JSON at position 0");
+
+$json = cont3xtPutToken('/api/integration/settings', '{"__proto__": {"foo": 1}}', $token);
+is ($json, "SyntaxError: Object contains forbidden prototype property");
 
 ### Classify
 $json = cont3xtPost('/regressionTests/classify', '["aol.com", "1.2.3.4", "a----b.com", "https://a----b.com", "703-867-5309", "text", "foo@example.com", "d07708229fb0d2d513c82f36e5cdc68f", "25425d55a6af7586bf68c3989f0d4d89ffbb1641"]');
