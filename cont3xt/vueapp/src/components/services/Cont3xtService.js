@@ -139,17 +139,18 @@ export default {
 
   /**
    * Refreshes data for an integration card
-   * @param {String} itype - The itype of the integration card
+   * @param {Cont3xtIndicator} indicator - Contains the query/itype shown in the integration card
    * @param {String} source - The integration that was displayed in the card
-   * @param {String} value - The value of the query that was presented in the card
    * @returns {Promise} - The promise that either resovles the or rejects in error
    */
-  refresh ({ itype, source, value }) {
+  refresh ({ indicator, source }) {
     return new Promise((resolve, reject) => {
+      const { itype, query } = indicator;
+
       fetch(`api/integration/${itype}/${source}/search`, {
         method: 'POST',
         headers: setReqHeaders({ 'Content-Type': 'application/json' }),
-        body: JSON.stringify({ query: value })
+        body: JSON.stringify({ query })
       }).then((response) => {
         if (!response.ok) { // test for bad response code
           throw new Error(response.statusText);

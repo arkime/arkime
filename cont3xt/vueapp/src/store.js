@@ -23,8 +23,6 @@ const store = new Vuex.Store({
     integrations: {},
     integrationsError: '',
     integrationsArray: [],
-    displayIntegration: {},
-    integrationData: {},
     linkGroups: undefined,
     linkGroupsError: '',
     collapsedLinkGroups: {},
@@ -54,7 +52,15 @@ const store = new Vuex.Store({
     overviews: undefined,
     overviewsError: '',
     selectedOverviewIdMap: {},
-    overviewSelectorActiveIType: 'any'
+    queuedIntegration: undefined,
+    activeIndicator: undefined,
+    activeSource: undefined,
+    /** @type {{ [itype: string]: { [query: string]: { [integrationName: string]: object } } }} */
+    results: {}, // results[<itype>][<query>][<integration_name>] yields the data for an integration
+    /** @type {{ [query: string]: Cont3xtIndicatorNode }} */
+    indicatorGraph: {}, // maps every query to its corresponding indicator node
+    /** @type {{ [query: string]: object }} */
+    enhanceInfoTable: {} // maps every query to any enhancement info it may have
   },
   mutations: {
     SET_USER (state, data) {
@@ -107,12 +113,6 @@ const store = new Vuex.Store({
     },
     SET_INTEGRATIONS_ERROR (state, data) {
       state.integrationsError = data;
-    },
-    SET_DISPLAY_INTEGRATION (state, data) {
-      state.displayIntegration = data;
-    },
-    SET_INTEGRATION_DATA (state, data) {
-      state.integrationData = Object.freeze(data);
     },
     SET_LINK_GROUPS (state, data) {
       state.linkGroups = data;
@@ -269,8 +269,61 @@ const store = new Vuex.Store({
         Vue.set(state.overviews, index, data);
       }
     },
-    SET_OVERVIEW_SELECTOR_ACTIVE_ITYPE (state, value) {
-      state.overviewSelectorActiveIType = value;
+    SET_INTEGRATION_RESULT (state, { indicator, source, result }) {
+      const { itype, query } = indicator;
+
+      if (!state.results[itype]) {
+        Vue.set(state.results, itype, {});
+      }
+      if (!state.results[itype][query]) {
+        Vue.set(state.results[itype], query, {});
+      }
+
+      Vue.set(state.results[itype][query], source, Object.freeze(result));
+    },
+    SET_ACTIVE_INDICATOR (state, data) {
+      state.activeIndicator = data;
+    },
+    SET_QUEUED_INTEGRATION (state, data) {
+      state.queuedIntegration = data;
+    },
+    SET_ACTIVE_SOURCE (state, data) {
+      state.activeSource = data;
+    },
+    ADD_ENHANCE_INFO (state, { indicator, enhanceInfo }) {
+      state.enhanceInfoTable[indicator.query] ??= {};
+      for (const key in enhanceInfo) {
+        Vue.set(state.enhanceInfoTable[indicator.query], key, enhanceInfo[key]);
+      }
+    },
+    UPDATE_INDICATOR_GRAPH (state, { indicator, parentQuery }) {
+      if (!state.indicatorGraph[indicator.query]) {
+        state.enhanceInfoTable[indicator.query] ??= {};
+
+        const indicatorNode = {
+          indicator,
+          parentQueries: new Set([parentQuery]),
+          // handle case where child(ren) exist before parent
+          children: Object.values(state.indicatorGraph).filter(node => node.parentQuery === indicator.query),
+          enhanceInfo: state.enhanceInfoTable[indicator.query]
+        };
+        Vue.set(state.indicatorGraph, indicator.query, indicatorNode);
+      } else {
+        state.indicatorGraph[indicator.query].parentQueries.add(parentQuery);
+      }
+
+      // handle case where parent already exists in the tree
+      if (parentQuery && state.indicatorGraph[parentQuery]) {
+        const alreadyAChild = state.indicatorGraph[parentQuery].children.some(child => child.indicator.query === indicator.query);
+        if (!alreadyAChild) {
+          state.indicatorGraph[parentQuery].children.push(state.indicatorGraph[indicator.query]);
+        }
+      }
+    },
+    CLEAR_CONT3XT_RESULTS (state) {
+      state.results = {};
+      state.indicatorGraph = {};
+      state.enhanceInfoTable = {};
     }
   },
   getters: {
@@ -323,9 +376,6 @@ const store = new Vuex.Store({
     },
     getIntegrationsArray (state) {
       return state.integrationsArray;
-    },
-    getIntegrationData (state) {
-      return state.integrationData;
     },
     getLinkGroups (state) {
       return state.linkGroups;
@@ -460,8 +510,20 @@ const store = new Vuex.Store({
         ])
       );
     },
-    getOverviewSelectorActiveIType (state) {
-      return state.overviewSelectorActiveIType;
+    getResults (state) {
+      return state.results;
+    },
+    getActiveIndicator (state) {
+      return state.activeIndicator;
+    },
+    getQueuedIntegration (state) {
+      return state.queuedIntegration;
+    },
+    getActiveSource (state) {
+      return state.activeSource;
+    },
+    getIndicatorGraph (state) {
+      return state.indicatorGraph;
     }
   },
   plugins: [createPersistedState({
