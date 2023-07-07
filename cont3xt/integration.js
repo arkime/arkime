@@ -531,7 +531,7 @@ class Integration {
           shared.sent++;
           stats.directError++;
           istats.directError++;
-          shared.res.write(JSON.stringify({ purpose: 'data', sent: shared.sent, total: shared.total, name: integration.name, indicator, failed: true }));
+          shared.res.write(JSON.stringify({ purpose: 'fail', sent: shared.sent, total: shared.total, name: integration.name, indicator }));
           shared.res.write(',\n');
         });
     }
@@ -549,7 +549,7 @@ class Integration {
   /**
    * The classification of the data chunk
    *
-   * @typedef {'init' | 'error' | 'data' | 'link' | 'enhance' | 'finish'} DataChunkPurpose
+   * @typedef {'init' | 'error' | 'data' | 'fail' | 'link' | 'enhance' | 'finish'} DataChunkPurpose
    */
 
   /**
@@ -560,7 +560,7 @@ class Integration {
    * @type {object}
    * @param {DataChunkPurpose} purpose - String discriminator to indicate the use of this data chunk
    * @param {string} text - The message describing the error (on purpose: 'error')
-   * @param {Cont3xtIndicator} indicator - The itype and query that correspond to this chunk of data (all purposes except: 'finish')
+   * @param {Cont3xtIndicator} indicator - The itype and query that correspond to this chunk of data (all purposes except: 'finish' and 'error')
    * @param {number} total - The total number of integrations to query
    * @param {number} sent - The number of integration results that have completed and been sent to the client
    * @param {string} name - The name of the integration result within the chunk (purpose: 'data')
@@ -611,6 +611,7 @@ class Integration {
     const query = ArkimeUtil.sanitizeStr(req.body.query.trim());
 
     const itype = Integration.classify(query);
+    const indicator = { itype, query };
 
     const integrations = Integration.#integrations[itype];
     const shared = {
@@ -624,13 +625,13 @@ class Integration {
       queriedSet: new Set()
     };
     res.write('[\n');
-    res.write(JSON.stringify({ purpose: 'init', indicator: { itype, query }, sent: shared.sent, total: integrations.length, text: 'more to follow' }));
+    res.write(JSON.stringify({ purpose: 'init', indicator, sent: shared.sent, total: integrations.length, text: 'more to follow' }));
     res.write(',\n');
 
     const issuedAt = Date.now();
     // end data write and create audit log when finished
     const finishWrite = () => {
-      res.write(JSON.stringify({ purpose: 'finish', finished: true, resultCount: shared.resultCount }));
+      res.write(JSON.stringify({ purpose: 'finish', resultCount: shared.resultCount }));
       res.end(']\n');
 
       Audit.create({
@@ -647,7 +648,7 @@ class Integration {
       });
     };
 
-    Integration.runIntegrationsList(shared, { query, itype }, undefined, integrations, finishWrite);
+    Integration.runIntegrationsList(shared, indicator, undefined, integrations, finishWrite);
     if (itype === 'email') {
       const dquery = query.slice(query.indexOf('@') + 1);
       Integration.runIntegrationsList(shared, { query: dquery, itype: 'domain' }, query, Integration.#integrations.domain, finishWrite);
@@ -668,28 +669,27 @@ class Integration {
    * Fetches integration data about a single itype/integration
    * @name /integration/:itype/:integration/search
    * @param {string} query - The string to query the integration
-   * @returns {boolean} success - True if the request was successful, false otherwise
-   * @returns {string} _query - The query that was run against the integration to retrieve data
-   * @returns {object} data - The data from the integration query. This varies based upon the integration. The IntegrationCard describes how to present this data to the user.
+   * @returns {IntegrationChunk} - The chunk with either: purpose:data, purpose:fail, or purpose:error
    */
   static async apiSingleSearch (req, res, next) {
     if (!ArkimeUtil.isString(req.body.query)) {
-      return res.send({ success: false, text: 'Missing query' });
+      return res.send({ purpose: 'error', text: 'Missing query' });
     }
 
     const itype = req.params.itype;
     const query = ArkimeUtil.sanitizeStr(req.body.query.trim());
+    const indicator = { itype, query };
 
     const integration = Integration.#integrationsByName[req.params.integration];
 
     if (integration === undefined || integration.itypes[itype] === undefined) {
-      return res.send({ success: false, text: `integration ${itype} ${req.params.integration} not found` });
+      return res.send({ purpose: 'error', text: `integration ${itype} ${req.params.integration} not found` });
     }
 
     const keys = req.user.getCont3xtKeys();
     const disabled = keys?.[integration.name]?.disabled;
     if (disabled === true || disabled === 'true') {
-      return res.send({ success: false, text: `integration ${itype} ${req.params.integration} disabled` });
+      return res.send({ purpose: 'error', text: `integration ${itype} ${req.params.integration} disabled` });
     }
 
     const stats = integration.stats;
@@ -709,13 +709,13 @@ class Integration {
         stats.directFound++;
         istats.directFound++;
         if (response === Integration.NoResult) {
-          res.send({ success: true, data: { _cont3xt: { createTime: Date.now() } }, _query: query });
+          res.send({ purpose: 'data', indicator, name: integration.name, data: { _cont3xt: { createTime: Date.now() } } });
         } else if (response) {
           stats.directGood++;
           istats.directGood++;
           if (!response._cont3xt) { response._cont3xt = {}; }
           response._cont3xt.createTime = Date.now();
-          res.send({ success: true, data: response, _query: query });
+          res.send({ purpose: 'data', indicator, name: integration.name, data: response });
           if (Integration.#cache && integration.cacheable) {
             const cacheKey = `${integration.sharedCache ? 'shared' : req.user.userId}-${integration.name}-${itype}-${query}`;
             Integration.#cache.set(cacheKey, response);
@@ -726,7 +726,7 @@ class Integration {
         console.log(integration.name, itype, query, err);
         stats.directError++;
         istats.directError++;
-        res.status(500).send({ success: false, _query: query });
+        res.status(500).send({ purpose: 'fail', indicator, name: integration.name });
       });
   }
 

@@ -743,6 +743,63 @@ export default {
         behavior: 'smooth'
       });
     },
+    handleIntegrationChunk (chunk) {
+      switch (chunk.purpose) {
+      case 'init':
+        // determine the search type and save the search term
+        this.activeIndicator = chunk.indicator;
+        this.filterLinks(this.linkSearchTerm);
+        break;
+      case 'error':
+        this.error = `ERROR: ${chunk.text}`;
+        break;
+      case 'data':
+        if (chunk.name && chunk.indicator) {
+          this.$store.commit('SET_INTEGRATION_RESULT', {
+            indicator: chunk.indicator,
+            source: chunk.name,
+            result: chunk.data
+          });
+        }
+        break;
+      case 'fail':
+        // TODO: in the future, visually show result for integration as a failure
+        if (chunk.sent && chunk.total) { // add failure to the progress bar
+          this.loading.failed++;
+          this.loading.failure = chunk.name;
+        }
+        break;
+      case 'link':
+        this.$store.commit('UPDATE_INDICATOR_GRAPH', {
+          indicator: chunk.indicator,
+          parentQuery: chunk.parentQuery
+        });
+        break;
+      case 'enhance':
+        this.$store.commit('ADD_ENHANCE_INFO', {
+          indicator: chunk.indicator,
+          enhanceInfo: chunk.enhanceInfo
+        });
+        break;
+      case 'finish': {
+        const leftover = this.loading.total - this.loading.failed - this.loading.received;
+        if (leftover) {
+          this.loading = { // complete the progress bar
+            received: this.loading.received + leftover
+          };
+        }
+        break;
+      }
+      default:
+        this.error = `ERROR: Unknown purpose '${chunk.purpose}' in data chunk`;
+        break;
+      }
+
+      if (chunk.sent && chunk.total) { // update the progress bar
+        this.loading.total = chunk.total;
+        this.loading.received = chunk.sent;
+      }
+    },
     search () {
       if (this.searchTerm == null || this.searchTerm === '') {
         return; // do NOT search if the query is empty
@@ -756,8 +813,6 @@ export default {
       this.searchComplete = false;
       this.$store.commit('RESET_LOADING');
       this.overrideOverviewId = undefined;
-
-      let failed = 0;
 
       // only match on b because we remove the q param
       if (!this.$route.query.b ||
@@ -773,66 +828,7 @@ export default {
       }
       const viewId = this.getSelectedView?._id;
       Cont3xtService.search({ searchTerm: this.searchTerm, skipCache: this.skipCache, tags: this.tags, viewId }).subscribe({
-        next: (data) => {
-          switch (data.purpose) {
-          case 'init':
-            // determine the search type and save the search term
-            this.activeIndicator = data.indicator;
-            this.filterLinks(this.linkSearchTerm);
-            break;
-          case 'error':
-            this.error = `ERROR: ${data.text}`;
-            break;
-          case 'data':
-            if (data.failed) {
-              // TODO: in the future, visually show result for integration as a failure
-              break;
-            }
-
-            if (data.name && data.indicator) {
-              this.$store.commit('SET_INTEGRATION_RESULT', {
-                indicator: data.indicator,
-                source: data.name,
-                result: data.data
-              });
-            }
-            break;
-          case 'link':
-            this.$store.commit('UPDATE_INDICATOR_GRAPH', {
-              indicator: data.indicator,
-              parentQuery: data.parentQuery
-            });
-            break;
-          case 'enhance':
-            this.$store.commit('ADD_ENHANCE_INFO', {
-              indicator: data.indicator,
-              enhanceInfo: data.enhanceInfo
-            });
-            break;
-          case 'finish': {
-            const leftover = this.loading.total - this.loading.failed - this.loading.received;
-            if (leftover) {
-              this.loading = { // complete the progress bar
-                received: this.loading.received + leftover
-              };
-            }
-            break;
-          }
-          default:
-            this.error = `ERROR: Unknown purpose '${data.purpose}' in data chunk`;
-            break;
-          }
-
-          if (data.sent && data.total) { // update the progress bar
-            failed = data.failed ? ++failed : failed;
-            this.loading = {
-              failed,
-              total: data.total,
-              received: data.sent,
-              failure: data.failed && data.name ? data.name : null
-            };
-          }
-        },
+        next: this.handleIntegrationChunk,
         error: (e) => {
           this.error = e;
         },
@@ -888,12 +884,19 @@ export default {
       URL.revokeObjectURL(a.href);
     },
     /* helpers ------------------------------------------------------------- */
-    updateData ({ indicator, source, data }) {
-      this.$store.commit('SET_INTEGRATION_RESULT', {
-        indicator,
-        source,
-        result: data.data
-      });
+    updateData (chunk) {
+      if (chunk.purpose !== 'data') {
+        // error/fail, so we stop buffering, else it would continue forever!
+        this.$store.commit('SET_RENDERING_CARD', false);
+      }
+
+      if (chunk.purpose === 'fail') {
+        // we don't want to overwrite good data with a failure
+        this.error = 'ERROR: Failed to refresh data';
+        return;
+      }
+      // handle purpose:data and purpose:error
+      this.handleIntegrationChunk(chunk);
     },
     filterLinks (searchTerm) {
       if (!searchTerm) { return; }

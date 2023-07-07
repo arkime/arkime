@@ -147,7 +147,7 @@ export default {
       Cont3xtService.refresh({ indicator: this.indicator, source: this.source }).then((response) => {
         // update the results in the parent so subsequent clicks on this
         // integration value's button has the updated results
-        this.$emit('update-results', { indicator: this.indicator, source: this.source, data: response });
+        this.$emit('update-results', response);
       }).catch((err) => {
         this.error = err;
       });
