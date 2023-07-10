@@ -1,5 +1,5 @@
 # Test cont3xt.js
-use Test::More tests => 112;
+use Test::More tests => 132;
 use Test::Differences;
 use Data::Dumper;
 use MolochTest;
@@ -506,10 +506,11 @@ $json = cont3xtPost('/api/integration/search', to_json({
   query => "example.com"
 }));
 
+is($json->[0]->{purpose}, "init");
 is($json->[0]->{sent}, 0);
 is($json->[0]->{text}, "more to follow");
-is($json->[0]->{itype}, "domain");
-is($json->[0]->{success}, 1);
+is($json->[0]->{indicator}->{itype}, "domain");
+is($json->[0]->{indicator}->{query}, "example.com");
 cmp_ok (scalar @{$json}, ">", 10);
 
 $json = cont3xtPost('/api/integration/search', to_json({
@@ -517,13 +518,18 @@ $json = cont3xtPost('/api/integration/search', to_json({
   doIntegrations => ["dns"]
 }));
 
+is($json->[0]->{purpose}, "init");
 is($json->[0]->{sent}, 0);
 is($json->[0]->{text}, "more to follow");
-is($json->[0]->{itype}, "domain");
-is($json->[0]->{success}, 1);
-is($json->[1]->{finished}, 1);
-is($json->[1]->{resultCount}, 0);
-is (scalar @{$json}, 2);
+is($json->[0]->{indicator}->{itype}, "domain");
+is($json->[0]->{indicator}->{query}, "example.com");
+is($json->[1]->{purpose}, "link");
+is($json->[1]->{parentIndicator}, undef);
+is($json->[1]->{indicator}->{itype}, "domain");
+is($json->[1]->{indicator}->{query}, "example.com");
+is($json->[2]->{purpose}, "finish");
+is($json->[2]->{resultCount}, 0);
+is (scalar @{$json}, 3);
 
 $json = cont3xtPost('/api/integration/search', to_json({
   query => "example.com",
@@ -531,45 +537,63 @@ $json = cont3xtPost('/api/integration/search', to_json({
   doIntegrations => ["DNS"]
 }));
 
+is($json->[0]->{purpose}, "init"); # initial integration chunk
 is($json->[0]->{sent}, 0);
 is($json->[0]->{text}, "more to follow");
-is($json->[0]->{itype}, "domain");
-is($json->[0]->{success}, 1);
-is($json->[2]->{finished}, 1);
-is($json->[2]->{resultCount}, 0);
-is (scalar @{$json}, 3);
+is($json->[0]->{indicator}->{query}, "example.com");
+is($json->[0]->{indicator}->{itype}, "domain");
+
+is($json->[1]->{purpose}, "link");
+is($json->[1]->{indicator}->{query}, "example.com");
+is($json->[1]->{indicator}->{itype}, "domain");
+is($json->[1]->{parentIndicator}, undef);
+
+is($json->[2]->{purpose}, "enhance");
+is($json->[2]->{indicator}->{itype}, "ip");
+is($json->[3]->{purpose}, "link");
+is($json->[3]->{indicator}->{itype}, "ip");
+is($json->[3]->{parentIndicator}->{query}, "example.com");
+is($json->[3]->{parentIndicator}->{itype}, "domain");
+
+is($json->[6]->{purpose}, "data");
+is($json->[6]->{indicator}->{query}, "example.com");
+is($json->[6]->{indicator}->{itype}, "domain");
+
+is($json->[7]->{purpose}, "finish"); # last integration chunk
+is($json->[7]->{resultCount}, 0);
+is (scalar @{$json}, 8);
 
 $json = cont3xtPost('/api/integration/search', to_json({
   query => "example.com",
   tags => "badtag",
   doIntegrations => ["DNS"]
 }));
-eq_or_diff($json, from_json('{"success": false, "text": "tags must be an array when present"}'));
+eq_or_diff($json, from_json('{"purpose": "error", "text": "tags must be an array when present"}'));
 
 $json = cont3xtPost('/api/integration/search', to_json({
   query => "example.com",
   tags => [1],
   doIntegrations => ["DNS"]
 }));
-eq_or_diff($json, from_json('{"success": false, "text": "every tag must be a string"}'));
+eq_or_diff($json, from_json('{"purpose": "error", "text": "every tag must be a string"}'));
 
 $json = cont3xtPost('/api/integration/search', to_json({
   query => "example.com",
   doIntegrations => 1
 }));
-eq_or_diff($json, from_json('{"success": false, "text": "doIntegrations must be an array when present"}'));
+eq_or_diff($json, from_json('{"purpose": "error", "text": "doIntegrations must be an array when present"}'));
 
 $json = cont3xtPost('/api/integration/search', to_json({
   query => "example.com",
   doIntegrations => [1]
 }));
-eq_or_diff($json, from_json('{"success": false, "text": "every doIntegration must be a string"}'));
+eq_or_diff($json, from_json('{"purpose": "error", "text": "every doIntegration must be a string"}'));
 
 $json = cont3xtPost('/api/integration/search', to_json({
   query => "example.com",
   viewId => 1
 }));
-eq_or_diff($json, from_json('{"success": false, "text": "viewId must be a string when present"}'));
+eq_or_diff($json, from_json('{"purpose": "error", "text": "viewId must be a string when present"}'));
 
 esGet("/_flush");
 esGet("/_refresh");
