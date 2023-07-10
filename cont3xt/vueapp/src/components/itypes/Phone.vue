@@ -1,8 +1,6 @@
 <template>
   <base-i-type
-      :value="query"
-      :itype="itype"
-      :data="data"
+      :indicator="indicator"
       :tidbits="tidbits"
   />
 </template>
@@ -10,6 +8,7 @@
 <script>
 import BaseIType from '@/components/itypes/BaseIType';
 import { ITypeMixin } from './ITypeMixin';
+import { Cont3xtIndicatorProp } from '@/utils/cont3xtUtil';
 
 export default {
   name: 'Cont3xtPhone',
@@ -18,21 +17,11 @@ export default {
     BaseIType
   },
   props: {
-    data: { // the data returned from cont3xt search
-      type: Object,
-      required: true
-    },
-    query: { // the query string to display (needed because phones don't get
-      // searched so there is no data.phone)
-      type: String,
+    indicator: Cont3xtIndicatorProp,
+    children: {
+      type: Array,
       required: true
     }
-  },
-  data () {
-    return {
-      itype: 'phone',
-      initialQuery: this.query
-    };
   }
 };
 </script>

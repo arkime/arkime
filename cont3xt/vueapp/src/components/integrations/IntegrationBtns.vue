@@ -7,10 +7,10 @@
         tabindex="0"
         variant="outline-dark"
         class="ml-1 mt-1 float-right no-wrap"
-        :id="`${itype}-${integration.name}-${value}`"
+        :id="`${indicator.itype}-${integration.name}-${indicator.query}`"
         :key="integration.name"
-        v-if="instanceData[integration.name] && integration.icon"
-        @click="$store.commit('SET_DISPLAY_INTEGRATION', { source: integration.name, itype, value })">
+        v-if="integrationDataMap[integration.name] && integration.icon"
+        @click="setAsActive(integration)">
         <img
           :alt="integration.name"
           :src="integration.icon"
@@ -19,9 +19,9 @@
         />
         <b-badge
           class="btn-badge"
-          v-if="instanceData[integration.name]._cont3xt.count !== undefined"
-          :variant="countBadgeColor(instanceData[integration.name])">
-          {{ instanceData[integration.name]._cont3xt.count | humanReadableNumber }}
+          v-if="integrationDataMap[integration.name]._cont3xt.count !== undefined"
+          :variant="countBadgeColor(integrationDataMap[integration.name])">
+          {{ integrationDataMap[integration.name]._cont3xt.count | humanReadableNumber }}
         </b-badge>
       </b-button>
     </template>
@@ -30,6 +30,7 @@
 
 <script>
 import { mapGetters } from 'vuex';
+import { Cont3xtIndicatorProp, getIntegrationDataMap } from '@/utils/cont3xtUtil';
 
 // Clicking an integration button commits to the store which integration, itype,
 // and value to display integration data for. The Cont3xt component watches for
@@ -38,45 +39,31 @@ import { mapGetters } from 'vuex';
 export default {
   name: 'IntegrationBtns',
   props: {
-    data: { // the configured integrations
-      type: Object,
-      required: true
-    },
-    itype: { // the itype to display the integration data for (if clicked)
-      type: String,
-      required: true
-    },
-    value: { // the value of the query to display the integration data for
-      type: String, // (there may be multiple IPs for instance, so the value
-      required: true // indicates which IP to display information for)
-    }
+    /**
+     * object of { itype, query }
+     * * itype - the itype to display the integration data for (if clicked)
+     * * query - the value of the query to display the integration data for
+     * *     (there may be multiple IPs for instance, so the value
+     * *     indicates which IP to display information for)
+     */
+    indicator: Cont3xtIndicatorProp
   },
   computed: {
-    ...mapGetters(['getIntegrationsArray', 'getLoading']),
+    ...mapGetters(['getIntegrationsArray', 'getLoading', 'getResults']),
     integrations () {
       return this.getIntegrationsArray.slice().sort((a, b) => {
         return a.order - b.order;
       });
     },
     /** @returns a map of integration names to integration data objects */
-    instanceData () {
-      const instanceDataMap = {};
-      for (const integration of this.integrations) {
-        const dataArrayForIntegration = this.data?.[this.itype]?.[integration.name];
-        if (dataArrayForIntegration == null) { continue; }
-
-        // look for data object matching query in the integration's data-array
-        for (const queryElement of dataArrayForIntegration) {
-          if (this.value === queryElement?._query) {
-            instanceDataMap[integration.name] = queryElement.data;
-            break;
-          }
-        }
-      }
-      return instanceDataMap;
+    integrationDataMap () {
+      return getIntegrationDataMap(this.getResults, this.indicator);
     }
   },
   methods: {
+    setAsActive (integration) {
+      this.$store.commit('SET_QUEUED_INTEGRATION', { indicator: this.indicator, source: integration.name });
+    },
     countBadgeColor (data) {
       if (data._cont3xt.count === 0) {
         return 'secondary';

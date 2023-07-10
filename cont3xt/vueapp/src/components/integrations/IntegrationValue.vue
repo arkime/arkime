@@ -191,7 +191,7 @@ export default {
     };
   },
   computed: {
-    ...mapGetters(['getRenderingTable', 'getRenderingArray', 'getIntegrationData']),
+    ...mapGetters(['getRenderingTable', 'getRenderingArray', 'getActiveIndicator', 'getActiveSource']),
     value () {
       let full;
       let value = this.findValue(this.data, this.field);
@@ -227,9 +227,8 @@ export default {
       const a = document.createElement('a');
       const file = new Blob([this.generateCSVString()], { type: 'text/csv' });
       a.href = URL.createObjectURL(file);
-      let { source } = this.$store.state.displayIntegration;
-      source = source.replaceAll(' ', '_');
-      a.download = `${new Date().toISOString()}_${source}_${this.field.path.join('.')}_${this.getIntegrationData._query}.csv`;
+      const source = this.getActiveSource.replaceAll(' ', '_');
+      a.download = `${new Date().toISOString()}_${source}_${this.field.path.join('.')}_${this.getActiveIndicator.query}.csv`;
       a.click();
       URL.revokeObjectURL(a.href);
     },

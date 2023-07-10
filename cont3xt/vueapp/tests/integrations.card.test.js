@@ -14,17 +14,20 @@ Vue.use(VueMoment, { moment });
 
 jest.mock('../src/components/services/Cont3xtService');
 
-const integrationsData = {
-  _query: 'threatbutt.com',
-  data: {
-    registrar: 'DNC Holdings, Inc',
-    updatedDate: '2022-03-07T01:16:37Z',
-    nested: {
-      test: 'value!'
-    },
-    _cont3xt: {
-      count: 1,
-      createTime: 1652796469956
+const results = {
+  domain: {
+    'threatbutt.com': {
+      Whois: {
+        registrar: 'DNC Holdings, Inc',
+        updatedDate: '2022-03-07T01:16:37Z',
+        nested: {
+          test: 'value!'
+        },
+        _cont3xt: {
+          count: 1,
+          createTime: 1652796469956
+        }
+      }
     }
   }
 };
@@ -56,33 +59,36 @@ const integrations = {
 const store = {
   state: {
     integrations,
-    integrationsData,
-    displayIntegration: {
-      source: 'Whois',
-      itype: 'domain',
-      value: integrations.Whois
-    }
+    results
   },
   mutations: {
     SET_RENDERING_CARD: jest.fn(),
-    SET_INTEGRATION_DATA: jest.fn()
+    SET_INTEGRATION_RESULT: jest.fn()
   },
   getters: {
     getIntegrations (state) {
       return state.integrations;
     },
-    getIntegrationData (state) {
-      return state.integrationsData;
+    getResults (state) {
+      return state.results;
     }
   }
 };
 
+const indicator = { itype: 'domain', query: 'threatbutt.com' };
+
 test('Integration Card', async () => {
-  Cont3xtService.refresh = jest.fn().mockResolvedValue(integrationsData);
+  Cont3xtService.refresh = jest.fn().mockResolvedValue({ purpose: 'data', indicator, data: results.domain['threatbutt.com'].Whois, name: 'Whois' });
 
   const {
     getByTitle, getByText, emitted
-  } = render(IntegrationCard, { store });
+  } = render(IntegrationCard, {
+    store,
+    props: {
+      indicator,
+      source: 'Whois'
+    }
+  });
 
   // displays labels & values
   getByText('registrar');
@@ -100,18 +106,16 @@ test('Integration Card', async () => {
   await fireEvent.click(refreshBtn);
   expect(store.mutations.SET_RENDERING_CARD).toHaveBeenCalledWith(store.state, true);
   expect(Cont3xtService.refresh).toHaveBeenCalledWith({
-    value: store.state.displayIntegration.value,
-    itype: store.state.displayIntegration.itype,
-    source: store.state.displayIntegration.source
+    indicator,
+    source: 'Whois'
   });
 
   // and emits update-results with the appropriate values
   await waitFor(() => {
     expect(emitted()).toHaveProperty('update-results');
-    expect(emitted()['update-results'][0][0].data).toBe(integrationsData);
-    expect(emitted()['update-results'][0][0].value).toBe(store.state.displayIntegration.value);
-    expect(emitted()['update-results'][0][0].itype).toBe(store.state.displayIntegration.itype);
-    expect(emitted()['update-results'][0][0].source).toBe(store.state.displayIntegration.source);
+    expect(emitted()['update-results'][0][0].indicator).toBe(indicator);
+    expect(emitted()['update-results'][0][0].name).toBe('Whois');
+    expect(emitted()['update-results'][0][0].data).toBe(results.domain['threatbutt.com'].Whois);
   });
 
   // error display
@@ -131,23 +135,38 @@ test('Integration Card - empty card', async () => {
     }
   };
 
-  const { getByText } = render(IntegrationCard, { store });
+  const { getByText } = render(IntegrationCard, {
+    store,
+    props: {
+      indicator,
+      source: 'Whois'
+    }
+  });
 
   getByText(/Missing information to render the data./);
 });
 
 test('Integration Card - empty data', async () => {
-  store.state.integrationsData = {
-    _query: 'threatbutt.com',
-    data: {
-      _cont3xt: {
-        count: 1,
-        createTime: 1652796469956
+  store.state.results = {
+    domain: {
+      'threatbutt.com': {
+        Whois: {
+          _cont3xt: {
+            count: 1,
+            createTime: 1652796469956
+          }
+        }
       }
     }
   };
 
-  const { getByText } = render(IntegrationCard, { store });
+  const { getByText } = render(IntegrationCard, {
+    store,
+    props: {
+      indicator,
+      source: 'Whois'
+    }
+  });
 
   getByText('No data');
 });

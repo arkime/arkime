@@ -276,13 +276,13 @@ import { mapGetters } from 'vuex';
 import LinkService from '@/components/services/LinkService';
 import LinkGroupForm from '@/components/links/LinkGroupForm';
 import LinkGuidance from '@/utils/LinkGuidance';
+import { Cont3xtIndicatorProp } from '@/utils/cont3xtUtil';
 
 export default {
   name: 'LinkGroupCard',
   components: { LinkGroupForm, LinkGuidance },
   props: {
-    itype: String, // the itype of the search to display links for
-    query: String, // the query in the search bar to apply to urls
+    indicator: Cont3xtIndicatorProp, // the indicator { query, itype } to display links for
     numDays: [Number, String], // the number of days to apply to urls
     numHours: [Number, String], // the number of hours to apply to urls
     stopDate: String, // the stop date to apply to urls
@@ -311,6 +311,12 @@ export default {
     ...mapGetters([
       'getUser', 'getCheckedLinks'
     ]),
+    itype () {
+      return this.indicator?.itype;
+    },
+    query () {
+      return this.indicator?.query;
+    },
     collapsedLinkGroups () {
       return this.$store.state.collapsedLinkGroups;
     },
