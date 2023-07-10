@@ -2,6 +2,7 @@ import Vue from 'vue';
 import Vuex from 'vuex';
 import createPersistedState from 'vuex-persistedstate';
 import { iTypes, iTypeIndexMap } from '@/utils/iTypes';
+import { indicatorId } from '@/utils/cont3xtUtil';
 
 Vue.use(Vuex);
 
@@ -57,10 +58,10 @@ const store = new Vuex.Store({
     activeSource: undefined,
     /** @type {{ [itype: string]: { [query: string]: { [integrationName: string]: object } } }} */
     results: {}, // results[<itype>][<query>][<integration_name>] yields the data for an integration
-    /** @type {{ [query: string]: Cont3xtIndicatorNode }} */
-    indicatorGraph: {}, // maps every query to its corresponding indicator node
-    /** @type {{ [query: string]: object }} */
-    enhanceInfoTable: {} // maps every query to any enhancement info it may have
+    /** @type {{ [indicatorId: string]: Cont3xtIndicatorNode }} */
+    indicatorGraph: {}, // maps every `${query}-${itype}` to its corresponding indicator node
+    /** @type {{ [indicatorId: string]: object }} */
+    enhanceInfoTable: {} // maps every `${query}-${itype}` to any enhancement info it may have
   },
   mutations: {
     SET_USER (state, data) {
@@ -291,32 +292,42 @@ const store = new Vuex.Store({
       state.activeSource = data;
     },
     ADD_ENHANCE_INFO (state, { indicator, enhanceInfo }) {
-      state.enhanceInfoTable[indicator.query] ??= {};
+      const id = indicatorId(indicator);
+
+      if (!state.enhanceInfoTable[id]) {
+        Vue.set(state.enhanceInfoTable, id, {});
+      }
       for (const key in enhanceInfo) {
-        Vue.set(state.enhanceInfoTable[indicator.query], key, enhanceInfo[key]);
+        Vue.set(state.enhanceInfoTable[id], key, enhanceInfo[key]);
       }
     },
-    UPDATE_INDICATOR_GRAPH (state, { indicator, parentQuery }) {
-      if (!state.indicatorGraph[indicator.query]) {
-        state.enhanceInfoTable[indicator.query] ??= {};
+    UPDATE_INDICATOR_GRAPH (state, { indicator, parentIndicator }) {
+      const id = indicatorId(indicator);
+
+      // a parentId of undefined means that the indicator is root-level
+      const parentId = parentIndicator ? indicatorId(parentIndicator) : undefined;
+      if (!state.indicatorGraph[id]) {
+        if (!state.enhanceInfoTable[id]) {
+          Vue.set(state.enhanceInfoTable, id, {});
+        }
 
         const indicatorNode = {
           indicator,
-          parentQueries: new Set([parentQuery]),
+          parentIds: new Set([parentId]),
           // handle case where child(ren) exist before parent
-          children: Object.values(state.indicatorGraph).filter(node => node.parentQuery === indicator.query),
-          enhanceInfo: state.enhanceInfoTable[indicator.query]
+          children: Object.values(state.indicatorGraph).filter(node => node.parentIds.has(id)),
+          enhanceInfo: state.enhanceInfoTable[id]
         };
-        Vue.set(state.indicatorGraph, indicator.query, indicatorNode);
+        Vue.set(state.indicatorGraph, id, indicatorNode);
       } else {
-        state.indicatorGraph[indicator.query].parentQueries.add(parentQuery);
+        state.indicatorGraph[id].parentIds.add(parentId);
       }
 
       // handle case where parent already exists in the tree
-      if (parentQuery && state.indicatorGraph[parentQuery]) {
-        const alreadyAChild = state.indicatorGraph[parentQuery].children.some(child => child.indicator.query === indicator.query);
+      if (parentId && state.indicatorGraph[parentId]) {
+        const alreadyAChild = state.indicatorGraph[parentId].children.some(child => indicatorId(child.indicator) === id);
         if (!alreadyAChild) {
-          state.indicatorGraph[parentQuery].children.push(state.indicatorGraph[indicator.query]);
+          state.indicatorGraph[parentId].children.push(state.indicatorGraph[id]);
         }
       }
     },

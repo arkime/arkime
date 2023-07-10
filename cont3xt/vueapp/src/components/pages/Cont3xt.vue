@@ -576,7 +576,7 @@ export default {
     },
     /** @returns {Cont3xtIndicatorNode[]} */
     indicatorTreeRoots () {
-      return Object.values(this.getIndicatorGraph).filter(node => node.parentQuery == null);
+      return Object.values(this.getIndicatorGraph).filter(node => node.parentIds.has(undefined));
     },
     /** @returns {Cont3xtIndicatorNode | undefined} */
     indicatorTreeRoot () {
@@ -772,7 +772,7 @@ export default {
       case 'link':
         this.$store.commit('UPDATE_INDICATOR_GRAPH', {
           indicator: chunk.indicator,
-          parentQuery: chunk.parentQuery
+          parentIndicator: chunk.parentIndicator
         });
         break;
       case 'enhance':

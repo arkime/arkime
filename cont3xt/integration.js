@@ -379,16 +379,16 @@ class Integration {
     return res.send({ success: true, integrations: results });
   }
 
-  static async runIntegrationsList (shared, indicator, parentQuery, integrations, onFinish) {
+  static async runIntegrationsList (shared, indicator, parentIndicator, integrations, onFinish) {
     const { query, itype } = indicator;
 
     // initial write (ensures dependable tracking of indicator tree)
-    shared.res.write(JSON.stringify({ purpose: 'link', indicator, parentQuery }));
+    shared.res.write(JSON.stringify({ purpose: 'link', indicator, parentIndicator }));
     shared.res.write(',\n');
 
     // do not reissue integrations if they have been started by a matching query reached via different descendants
-    if (shared.queriedSet.has(query)) { return; }
-    shared.queriedSet.add(query);
+    if (shared.queriedSet.has(`${query}-${itype}`)) { return; }
+    shared.queriedSet.add(`${query}-${itype}`);
 
     // update integration total
     shared.total += integrations.length;
@@ -404,7 +404,7 @@ class Integration {
             shared.res.write(JSON.stringify({ purpose: 'enhance', indicator: moreIndicator, enhanceInfo }));
             shared.res.write(',\n');
           }
-          Integration.runIntegrationsList(shared, moreIndicator, query, Integration.#integrations[moreIndicator.itype], onFinish);
+          Integration.runIntegrationsList(shared, moreIndicator, indicator, Integration.#integrations[moreIndicator.itype], onFinish);
         });
       }
 
@@ -565,7 +565,7 @@ class Integration {
    * @param {number} sent - The number of integration results that have completed and been sent to the client
    * @param {string} name - The name of the integration result within the chunk (purpose: 'data')
    * @param {object} data - The data from the integration query (purpose: 'data'). This varies based upon the integration. The <a href="#integrationcard-type">IntegrationCard</a> describes how to present this data to the user.
-   * @param {string} parentQuery - The query that caused this integration/query to be run, or undefined if this is a root-level query (purpose: 'link')
+   * @param {Cont3xtIndicator} parentIndicator - The indicator that caused this integration/query to be run, or undefined if this is a root-level query (purpose: 'link')
    * @param {object} enhanceInfo - Curated data contributed from an integration to an indicator of a separate query (purpose: 'enhance')
    */
 
@@ -651,14 +651,14 @@ class Integration {
     Integration.runIntegrationsList(shared, indicator, undefined, integrations, finishWrite);
     if (itype === 'email') {
       const dquery = query.slice(query.indexOf('@') + 1);
-      Integration.runIntegrationsList(shared, { query: dquery, itype: 'domain' }, query, Integration.#integrations.domain, finishWrite);
+      Integration.runIntegrationsList(shared, { query: dquery, itype: 'domain' }, indicator, Integration.#integrations.domain, finishWrite);
     } else if (itype === 'url') {
       const url = new URL(query);
       if (Integration.classify(url.hostname) === 'ip') {
-        Integration.runIntegrationsList(shared, { query: url.hostname, itype: 'ip' }, query, Integration.#integrations.ip, finishWrite);
+        Integration.runIntegrationsList(shared, { query: url.hostname, itype: 'ip' }, indicator, Integration.#integrations.ip, finishWrite);
       } else {
         const equery = extractDomain(query, { tld: true });
-        Integration.runIntegrationsList(shared, { query: equery, itype: 'domain' }, query, Integration.#integrations.domain, finishWrite);
+        Integration.runIntegrationsList(shared, { query: equery, itype: 'domain' }, indicator, Integration.#integrations.domain, finishWrite);
       }
     }
   }
