@@ -114,7 +114,7 @@ export default {
 
   /**
    * Fetches the list of integrations that are configured.
-   * @returns {Promise} - The promise that either resovles the or rejects in error
+   * @returns {Promise} - The promise that either resolves the request or rejects in error
    */
   getIntegrations () {
     return new Promise((resolve, reject) => {
@@ -141,7 +141,7 @@ export default {
    * Refreshes data for an integration card
    * @param {Cont3xtIndicator} indicator - Contains the query/itype shown in the integration card
    * @param {String} source - The integration that was displayed in the card
-   * @returns {Promise} - The promise that either resovles the or rejects in error
+   * @returns {Promise} - The promise that either resolves the request or rejects in error
    */
   refresh ({ indicator, source }) {
     return new Promise((resolve, reject) => {
@@ -166,7 +166,7 @@ export default {
 
   /**
    * Retrieves integration stats
-   * @returns {Promise} - The promise that either resovles the or rejects in error
+   * @returns {Promise} - The promise that either resolves the request or rejects in error
    */
   getStats () {
     return new Promise((resolve, reject) => {

@@ -78,7 +78,7 @@ const store = {
 const indicator = { itype: 'domain', query: 'threatbutt.com' };
 
 test('Integration Card', async () => {
-  Cont3xtService.refresh = jest.fn().mockResolvedValue(results.domain['threatbutt.com'].Whois);
+  Cont3xtService.refresh = jest.fn().mockResolvedValue({ purpose: 'data', indicator, data: results.domain['threatbutt.com'].Whois, name: 'Whois' });
 
   const {
     getByTitle, getByText, emitted
@@ -113,9 +113,9 @@ test('Integration Card', async () => {
   // and emits update-results with the appropriate values
   await waitFor(() => {
     expect(emitted()).toHaveProperty('update-results');
-    expect(emitted()['update-results'][0][0].data).toBe(results.domain['threatbutt.com'].Whois);
     expect(emitted()['update-results'][0][0].indicator).toBe(indicator);
-    expect(emitted()['update-results'][0][0].source).toBe('Whois');
+    expect(emitted()['update-results'][0][0].name).toBe('Whois');
+    expect(emitted()['update-results'][0][0].data).toBe(results.domain['threatbutt.com'].Whois);
   });
 
   // error display
