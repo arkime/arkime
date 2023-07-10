@@ -2,13 +2,13 @@ import { formatValue } from '@/utils/formatValue';
 import { mapGetters } from 'vuex';
 import { applyTemplate } from '@/utils/applyTemplate';
 import { applyPostProcess } from '@/utils/applyPostProcess';
-import { gatherIntegrationData } from '@/utils/gatherIntegrationData';
+import { getIntegrationDataMap } from '@/utils/cont3xtUtil';
 
 export const ITypeMixin = {
   computed: {
-    ...mapGetters(['getIntegrations']),
+    ...mapGetters(['getIntegrations', 'getResults']),
     tidbits () {
-      const validTidbits = Object.entries(this.integrationData)
+      const validTidbits = Object.entries(this.integrationDataMap)
         .flatMap(([integration, data]) => (
           this.getIntegrations[integration].tidbits.map(tidbit => {
             const value = formatValue(data, tidbit);
@@ -71,8 +71,8 @@ export const ITypeMixin = {
 
       return uniqueTidbits;
     },
-    integrationData () {
-      return gatherIntegrationData(this.data, this.itype, this.query);
+    integrationDataMap () {
+      return getIntegrationDataMap(this.getResults, this.indicator);
     }
   },
   methods: {

@@ -1,10 +1,9 @@
 <template>
   <b-card
-    class="mb-2"
-    v-if="Object.keys(getIntegrationData).length">
+    class="mb-2">
     <h5 class="text-warning mb-3"
-      v-if="card && card.title && getIntegrationData._query">
-      {{ card.title.replace('%{query}', getIntegrationData._query) }}
+      v-if="card && card.title">
+      {{ card.title.replace('%{query}', this.indicator.query) }}
       <div class="float-right mt-1">
         <b-button
           size="sm"
@@ -30,7 +29,7 @@
           @click="refresh"
           v-b-tooltip.hover
           variant="outline-info"
-          :title="`Queried ${$options.filters.moment(getIntegrationData.data._cont3xt.createTime, 'from')}\n${$options.filters.dateString(getIntegrationData.data._cont3xt.createTime)}`">
+          :title="`Queried ${$options.filters.moment(integrationData._cont3xt.createTime, 'from')}\n${$options.filters.dateString(integrationData._cont3xt.createTime)}`">
           <span class="fa fa-refresh fa-fw" />
         </b-button>
       </div>
@@ -62,7 +61,7 @@
       </div>
     </b-alert> <!-- no template -->
     <!-- no data -->
-    <template v-if="Object.keys(getIntegrationData.data).length === 1 && getIntegrationData.data._cont3xt.createTime">
+    <template v-if="Object.keys(integrationData).length === 1 && integrationData._cont3xt.createTime">
       <h5 class="display-4 text-center mt-4 mb-4 text-muted">
         <span class="fa fa-folder-open" />
         <br>
@@ -77,8 +76,8 @@
           :key="field.label">
           <integration-value
             :field="field"
-            v-if="getIntegrationData.data"
-            :data="getIntegrationData.data"
+            v-if="integrationData"
+            :data="integrationData"
           />
         </div>
       </template> <!-- /card template -->
@@ -97,7 +96,7 @@
           class="mt-2"
           tabindex="-1"
           id="collapse-raw">
-          <pre class="text-info">{{ getIntegrationData.data }}</pre>
+          <pre class="text-info">{{ integrationData }}</pre>
         </b-collapse>
       </b-card> <!-- /raw -->
     </template> <!-- /data -->
@@ -109,6 +108,7 @@ import { mapGetters } from 'vuex';
 
 import Cont3xtService from '@/components/services/Cont3xtService';
 import IntegrationValue from '@/components/integrations/IntegrationValue';
+import { Cont3xtIndicatorProp, getIntegrationData } from '@/utils/cont3xtUtil';
 
 // NOTE: IntegrationCard displays IntegrationValues AND IntegrationTables
 // IntegrationTables can ALSO display IntegrationValues, so:
@@ -117,6 +117,13 @@ import IntegrationValue from '@/components/integrations/IntegrationValue';
 export default {
   name: 'IntegrationCard',
   components: { IntegrationValue },
+  props: {
+    source: { // the name of the integration to display data from
+      type: String,
+      required: true
+    },
+    indicator: Cont3xtIndicatorProp // the indicator to display data for
+  },
   data () {
     return {
       error: '',
@@ -124,23 +131,23 @@ export default {
     };
   },
   computed: {
-    ...mapGetters(['getIntegrationData', 'getIntegrations']),
+    ...mapGetters(['getIntegrations', 'getResults']),
     card () {
-      const { source } = this.$store.state.displayIntegration;
-      if (!this.getIntegrations[source]) { return {}; }
-      return this.getIntegrations[source].card;
+      if (!this.getIntegrations[this.source]) { return {}; }
+      return this.getIntegrations[this.source].card;
+    },
+    integrationData () {
+      return getIntegrationData(this.getResults, this.indicator, this.source);
     }
   },
   methods: {
     refresh () {
       // display loading overload (parent update hides overlay)
       this.$store.commit('SET_RENDERING_CARD', true);
-      const { itype, source, value } = this.$store.state.displayIntegration;
-      Cont3xtService.refresh({ itype, source, value }).then((response) => {
-        this.$store.commit('SET_INTEGRATION_DATA', response);
+      Cont3xtService.refresh({ indicator: this.indicator, source: this.source }).then((response) => {
         // update the results in the parent so subsequent clicks on this
         // integration value's button has the updated results
-        this.$emit('update-results', { itype, source, value, data: response });
+        this.$emit('update-results', response);
       }).catch((err) => {
         this.error = err;
       });
@@ -148,27 +155,25 @@ export default {
     copy () {
       this.error = '';
 
-      if (!this.getIntegrationData.data) {
+      if (!this.integrationData) {
         this.error = 'No raw data to copy!';
         return;
       }
 
-      this.$copyText(JSON.stringify(this.getIntegrationData.data, false, 2));
+      this.$copyText(JSON.stringify(this.integrationData, false, 2));
     },
     download () {
       this.error = '';
 
-      if (!this.getIntegrationData.data) {
+      if (!this.integrationData) {
         this.error = 'No raw data to copy!';
         return;
       }
 
       const a = document.createElement('a');
-      const file = new Blob([JSON.stringify(this.getIntegrationData.data, false, 2)], { type: 'application/json' });
+      const file = new Blob([JSON.stringify(this.integrationData, false, 2)], { type: 'application/json' });
       a.href = URL.createObjectURL(file);
-      let { source } = this.$store.state.displayIntegration;
-      source = source.replaceAll(' ', '_');
-      a.download = `${new Date().toISOString()}_${source}_${this.getIntegrationData._query}.json`;
+      a.download = `${new Date().toISOString()}_${this.source.replaceAll(' ', '_')}_${this.indicator.query}.json`;
       a.click();
       URL.revokeObjectURL(a.href);
     }

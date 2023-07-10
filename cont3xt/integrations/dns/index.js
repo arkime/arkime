@@ -37,7 +37,7 @@ class DNSIntegration extends Integration {
       const A = [];
       for (const answer of response.A.Answer) {
         if (answer.type === 1) {
-          addMore(answer.data, 'ip');
+          addMore({ query: answer.data, itype: 'ip' }, { ttl: answer.TTL });
           A.push(answer);
         } else if (answer.type === 5) {
           if (!CNAME.find(element => element.data === answer.data)) {
@@ -51,7 +51,7 @@ class DNSIntegration extends Integration {
       const AAAA = [];
       for (const answer of response.AAAA.Answer) {
         if (answer.type === 28) {
-          addMore(answer.data, 'ip');
+          addMore({ query: answer.data, itype: 'ip' }, { ttl: answer.TTL });
           AAAA.push(answer);
         } else if (answer.type === 5) {
           if (!CNAME.find(element => element.data === answer.data)) {

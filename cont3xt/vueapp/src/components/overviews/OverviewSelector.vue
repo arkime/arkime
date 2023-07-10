@@ -74,6 +74,7 @@ export default {
   },
   methods: {
     selectOverview (id) {
+      this.$store.commit('SET_ACTIVE_SOURCE', undefined);
       this.$emit('set-override-overview', id);
     }
   }

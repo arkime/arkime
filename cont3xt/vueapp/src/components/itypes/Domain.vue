@@ -1,18 +1,16 @@
 <template>
   <base-i-type
-      :itype="itype"
-      :value="query"
-      :data="data"
+      :indicator="indicator"
       :tidbits="tidbits"
-      :children="dnsIpChildren"
+      :children="children"
   >
     <!--  non-ip dns records  -->
     <template #after-children>
-      <template v-if="integrationData.DNS">
+      <template v-if="integrationDataMap.DNS">
         <div
             :key="key"
             class="row medium"
-            v-for="(value, key) in integrationData.DNS">
+            v-for="(value, key) in integrationDataMap.DNS">
           <div class="col"
                v-if="value.Answer && value.Answer.length">
             <dl v-if="key !== 'A' && key !== 'AAAA'"
@@ -51,6 +49,7 @@ import Cont3xtField from '@/utils/Field';
 import TtlTooltip from '@/utils/TtlTooltip';
 import BaseIType from '@/components/itypes/BaseIType';
 import { ITypeMixin } from './ITypeMixin';
+import { Cont3xtIndicatorProp } from '@/utils/cont3xtUtil';
 
 export default {
   name: 'Cont3xtDomain',
@@ -61,30 +60,11 @@ export default {
     BaseIType
   },
   props: {
-    data: { // the data returned from cont3xt search
-      type: Object,
+    indicator: Cont3xtIndicatorProp,
+    children: {
+      type: Array,
       required: true
-    },
-    query: { // fallback in case data is non-existent
-      type: String,
-      required: false // not necessary when domain is sub-element (from url) -- as it is then guaranteed data
     }
-  },
-  computed: {
-    dnsIpChildren () {
-      return Object.entries(this.integrationData.DNS || [])
-        .filter(([key, value]) => (key === 'A' || key === 'AAAA') && value.Answer?.length)
-        .flatMap(([_, value]) => {
-          return value.Answer.map(item => (
-            { query: item.data, itype: 'ip', ttl: item.TTL }
-          ));
-        });
-    }
-  },
-  data () {
-    return {
-      itype: 'domain'
-    };
   },
   methods: {
     // splits the elements of an Answer into groups to have horizontal rules in between

@@ -1,8 +1,8 @@
 <template>
   <b-card class="mb-2">
     <h5 class="text-warning mb-3"
-        v-if="card.title && query">
-    {{ card.title.replace('%{query}', query) }}
+        v-if="card.title && indicator.query">
+    {{ card.title.replace('%{query}', indicator.query) }}
     </h5>
 
     <!-- field errors -->
@@ -44,7 +44,7 @@
         class="mt-2"
         tabindex="-1"
         id="collapse-raw">
-        <pre class="text-info">{{ integrationData }}</pre>
+        <pre class="text-info">{{ integrationDataMap }}</pre>
       </b-collapse>
     </b-card> <!-- /raw -->
   </b-card>
@@ -52,9 +52,9 @@
 
 <script>
 import { mapGetters } from 'vuex';
-import { gatherIntegrationData } from '@/utils/gatherIntegrationData';
 
 import IntegrationValue from '@/components/integrations/IntegrationValue';
+import { Cont3xtIndicatorProp, getIntegrationDataMap } from '@/utils/cont3xtUtil';
 
 // NOTE: OverviewCard displays IntegrationValues AND IntegrationTables
 // IntegrationTables can ALSO display IntegrationValues, so:
@@ -64,31 +64,20 @@ export default {
   name: 'OverviewCard',
   components: { IntegrationValue },
   props: {
-    fullData: { // the data returned from cont3xt search
-      type: Object,
-      required: true
-    },
-    query: { // the indicator to be overviewed
-      type: String,
-      required: true
-    },
-    itype: { // the itype of the indicator to be overviewed
-      type: String,
-      required: true
-    },
+    indicator: Cont3xtIndicatorProp, // the indicator to be overviewed
     card: { // the configuration for this overview card
       type: Object,
       required: true
     }
   },
   computed: {
-    ...mapGetters(['getIntegrations']),
+    ...mapGetters(['getIntegrations', 'getResults']),
     cardDataFields () {
       if (this.card.fields == null) { return []; }
 
       const dataFields = this.card.fields.map(fieldRef => {
         let field = this.fieldFor(fieldRef, this.getIntegrations);
-        const fieldData = this.dataFor(fieldRef, this.integrationData);
+        const fieldData = this.dataFor(fieldRef, this.integrationDataMap);
 
         if (field && fieldRef.alias) { // re-label fields with aliases
           field = { ...field, label: fieldRef.alias };
@@ -106,8 +95,8 @@ export default {
     fillableCardDataFields () {
       return this.cardDataFields.filter(({ fieldData }) => fieldData != null);
     },
-    integrationData () {
-      return gatherIntegrationData(this.fullData, this.itype, this.query);
+    integrationDataMap () {
+      return getIntegrationDataMap(this.getResults, this.indicator);
     }
   },
   methods: {
@@ -115,8 +104,8 @@ export default {
       const integrationCard = integrations?.[fieldReference.from]?.card;
       return integrationCard?.fields?.find(field => field?.label === fieldReference.field);
     },
-    dataFor (fieldReference, integrationData) {
-      return integrationData?.[fieldReference.from];
+    dataFor (fieldReference, integrationDataMap) {
+      return integrationDataMap?.[fieldReference.from];
     }
   }
 };
