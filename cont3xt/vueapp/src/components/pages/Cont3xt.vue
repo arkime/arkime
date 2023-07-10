@@ -103,8 +103,8 @@
             </template>
           </ViewSelector>
           <overview-selector
-              v-if="searchItype"
-              :i-type="searchItype"
+              v-if="activeIndicator"
+              :i-type="activeIndicator.itype"
               :selected-overview="currentOverviewCard"
               @set-override-overview="setOverrideOverview" />
           <b-dropdown
@@ -250,59 +250,22 @@
         </div> <!-- /integration error -->
 
         <!-- time range input for links -->
-        <time-range-input v-if="lastSearchedTerm && initialized"
+        <time-range-input v-if="rootIndicator"
           class="link-inputs w-50 mb-1"
           v-model="timeRangeInfo"
           :place-holder-tip="linkPlaceholderTip" />
         <!-- /time range input for links -->
 
         <!-- results -->
-        <template v-if="lastSearchedTerm">
+        <template v-if="indicatorTreeRoot">
           <!-- itype results summary -->
           <div class="results-container results-summary">
             <div :style="navHeightStyle">
-              <cont3xt-domain
-                :data="results"
-                :query="lastSearchedTerm"
-                v-if="searchItype === 'domain'"
-              />
-              <cont3xt-ip
-                :data="results"
-                :query="lastSearchedTerm"
-                v-else-if="searchItype === 'ip'"
-              />
-              <cont3xt-url
-                :data="results"
-                :query="lastSearchedTerm"
-                v-else-if="searchItype === 'url'"
-              />
-              <cont3xt-email
-                :data="results"
-                :query="lastSearchedTerm"
-                v-else-if="searchItype === 'email'"
-              />
-              <cont3xt-hash
-                :data="results"
-                :query="lastSearchedTerm"
-                v-else-if="searchItype === 'hash'"
-              />
-              <cont3xt-phone
-                :data="results"
-                :query="lastSearchedTerm"
-                v-else-if="searchItype === 'phone'"
-              />
-              <cont3xt-text
-                :data="results"
-                :query="lastSearchedTerm"
-                v-else-if="searchItype === 'text'"
-              />
-              <div v-else-if="searchItype">
-                <h3 class="text-warning">
-                  No display for {{ searchItype }}
-                </h3>
-                <pre class="text-info"><code>{{ results }}</code></pre>
-              </div>
-              <hr v-if="searchItype && initialized">
+              <!-- indicator result tree -->
+              <i-type-node :node="indicatorTreeRoot" />
+              <!-- /indicator result tree -->
+
+              <hr v-if="rootIndicator">
               <!-- link groups error -->
               <b-alert
                 variant="danger"
@@ -310,7 +273,7 @@
                 {{ getLinkGroupsError }}
               </b-alert>
               <!-- link search -->
-              <div v-if="searchItype && initialized" class="mb-5">
+              <div v-if="rootIndicator" class="mb-5">
                 <div class="d-flex justify-content-between">
                   <div class="flex-grow-1">
                     <b-input-group size="sm">
@@ -372,9 +335,8 @@
                         <template #default>
                           <link-group-card
                               v-if="getLinkGroups.length"
-                              :query="lastSearchedTerm"
+                              :indicator="rootIndicator"
                               :num-days="timeRangeInfo.numDays"
-                              :itype="searchItype"
                               :num-hours="timeRangeInfo.numHours"
                               :stop-date="timeRangeInfo.stopDate"
                               :start-date="timeRangeInfo.startDate"
@@ -390,7 +352,7 @@
                     There are no Link Groups that match your search.
                   </span>
                   <span v-else class="p-1">
-                    There are no Link Groups for the <strong>{{ this.searchItype }}</strong> iType.
+                    There are no Link Groups for the <strong>{{ this.rootIndicator.itype }}</strong> iType.
                     <a class="no-decoration" href="settings#linkgroups">Create one here!</a>
                   </span> <!-- /no link groups message -->
                 </div> <!-- /link groups -->
@@ -413,9 +375,7 @@
                   <template v-if="showOverview">
                     <overview-card
                         v-if="currentOverviewCard"
-                        :fullData="results"
-                        :query="lastSearchedTerm"
-                        :itype="searchItype"
+                        :indicator="activeIndicator"
                         :card="currentOverviewCard"
                     />
                     <b-alert
@@ -423,12 +383,14 @@
                         show
                         variant="dark"
                         class="text-center">
-                      There is no overview configured for the <strong>{{ this.searchItype }}</strong> iType.
+                      There is no overview configured for the <strong>{{ this.activeIndicator.itype }}</strong> iType.
                       <a class="no-decoration" href="settings#overviews">Create one here!</a>
                     </b-alert>
                   </template>
                   <integration-card
-                      v-else
+                      v-else-if="activeSource && activeIndicator"
+                      :source="activeSource"
+                      :indicator="activeIndicator"
                       @update-results="updateData"
                   />
                 </div>
@@ -462,14 +424,7 @@ import { mapGetters } from 'vuex';
 
 import ReorderList from '@/utils/ReorderList';
 import TimeRangeInput from '@/utils/TimeRangeInput';
-import Cont3xtIp from '@/components/itypes/IP';
-import Cont3xtUrl from '@/components/itypes/URL';
-import Cont3xtHash from '@/components/itypes/Hash';
-import Cont3xtText from '@/components/itypes/Text';
 import Focus from '@/../../../common/vueapp/Focus';
-import Cont3xtEmail from '@/components/itypes/Email';
-import Cont3xtPhone from '@/components/itypes/Phone';
-import Cont3xtDomain from '@/components/itypes/Domain';
 import ViewSelector from '@/components/views/ViewSelector';
 import UserService from '@/components/services/UserService';
 import LinkGroupCard from '@/components/links/LinkGroupCard';
@@ -483,20 +438,15 @@ import { paramStr } from '@/utils/paramStr';
 import LinkService from '@/components/services/LinkService';
 import OverviewService from '@/components/services/OverviewService';
 import OverviewSelector from '../overviews/OverviewSelector.vue';
+import ITypeNode from '@/components/itypes/ITypeNode.vue';
 
 export default {
   name: 'Cont3xt',
   components: {
+    ITypeNode,
     OverviewSelector,
-    Cont3xtIp,
-    Cont3xtUrl,
     ReorderList,
-    Cont3xtHash,
-    Cont3xtText,
-    Cont3xtEmail,
-    Cont3xtPhone,
     ViewSelector,
-    Cont3xtDomain,
     LinkGroupCard,
     CreateViewModal,
     IntegrationCard,
@@ -509,13 +459,9 @@ export default {
   data () {
     return {
       error: '',
-      results: {},
       scrollPx: 0,
-      searchItype: '',
       initialized: false,
       searchTerm: this.$route.query.q ? this.$route.query.q : (this.$route.query.b ? window.atob(this.$route.query.b) : ''),
-      lastSearchedTerm: '',
-      showOverview: true,
       overrideOverviewId: undefined,
       skipCache: false,
       searchComplete: false,
@@ -558,14 +504,15 @@ export default {
   },
   computed: {
     ...mapGetters([
-      'getRendering', 'getWaitRendering', 'getIntegrationData',
+      'getRendering', 'getWaitRendering', 'getQueuedIntegration',
       'getIntegrationsError', 'getLinkGroupsError', 'getLinkGroups',
       'getSidebarKeepOpen', 'getShiftKeyHold', 'getFocusSearch',
       'getIssueSearch', 'getFocusLinkSearch', 'getFocusTagInput',
       'getToggleCache', 'getDownloadReport', 'getCopyShareLink',
       'getAllViews', 'getImmediateSubmissionReady', 'getSelectedView',
       'getTags', 'getTagDisplayCollapsed', 'getSeeAllViews', 'getSeeAllLinkGroups',
-      'getSeeAllOverviews', 'getSelectedOverviewMap', 'getOverviewMap'
+      'getSeeAllOverviews', 'getSelectedOverviewMap', 'getOverviewMap', 'getResults',
+      'getIndicatorGraph'
     ]),
     tags: {
       get () { return this.getTags; },
@@ -579,8 +526,16 @@ export default {
       get () { return this.$store.state.loading; },
       set (val) { this.$store.commit('SET_LOADING', val); }
     },
-    displayIntegration () {
-      return this.$store.state.displayIntegration;
+    activeIndicator: {
+      get () { return this.$store.state.activeIndicator; },
+      set (val) { this.$store.commit('SET_ACTIVE_INDICATOR', val); }
+    },
+    activeSource: {
+      get () { return this.$store.state.activeSource; },
+      set (val) { this.$store.commit('SET_ACTIVE_SOURCE', val); }
+    },
+    results () {
+      return this.$store.state.results;
     },
     collapsedLinkGroups () {
       return this.$store.state.collapsedLinkGroups;
@@ -617,26 +572,42 @@ export default {
       if (this.overrideOverviewId) {
         return this.getOverviewMap[this.overrideOverviewId];
       }
-      return this.getSelectedOverviewMap[this.searchItype];
+      return this.getSelectedOverviewMap[this.activeIndicator.itype];
+    },
+    /** @returns {Cont3xtIndicatorNode[]} */
+    indicatorTreeRoots () {
+      return Object.values(this.getIndicatorGraph).filter(node => node.parentIds.has(undefined));
+    },
+    /** @returns {Cont3xtIndicatorNode | undefined} */
+    indicatorTreeRoot () {
+      // since we don't yet have bulk, there can only be one root, so we grab it here
+      // TODO: this should be removed when bulk is added
+      return this.indicatorTreeRoots?.[0];
+    },
+    rootIndicator () {
+      return this.indicatorTreeRoot?.indicator;
+    },
+    showOverview () {
+      return this.activeSource == null && !(this.getWaitRendering || this.getRendering);
     }
   },
   watch: {
-    displayIntegration (newIntegration) {
-      this.showOverview = false;
-      this.$store.commit('SET_INTEGRATION_DATA', {});
+    getQueuedIntegration (newQueuedIntegration) {
+      this.activeSource = undefined;
       this.$store.commit('SET_RENDERING_CARD', true);
       // need wait rendering to tell the card that we aren't rendering yet
       // or else the data will be stale when it updates the integration type
       this.$store.commit('SET_WAIT_RENDERING', true);
       setTimeout(() => { // need timeout for SET_RENDERING_CARD to take effect
-        const { itype, source, value } = newIntegration;
-        for (const data of this.results[itype][source]) {
-          if (data._query === value) {
-            this.$store.commit('SET_INTEGRATION_DATA', data);
-          }
-        }
+        this.activeIndicator = newQueuedIntegration.indicator;
+        this.activeSource = newQueuedIntegration.source;
         this.$store.commit('SET_WAIT_RENDERING', false);
       }, 100);
+    },
+    activeIndicator (newIndicator, oldIndicator) {
+      if (newIndicator?.query !== oldIndicator?.query || newIndicator?.itype !== oldIndicator?.itype) {
+        this.overrideOverviewId = undefined;
+      }
     },
     linkSearchTerm (searchTerm) {
       this.hideLinks = {};
@@ -772,22 +743,76 @@ export default {
         behavior: 'smooth'
       });
     },
+    handleIntegrationChunk (chunk) {
+      switch (chunk.purpose) {
+      case 'init':
+        // determine the search type and save the search term
+        this.activeIndicator = chunk.indicator;
+        this.filterLinks(this.linkSearchTerm);
+        break;
+      case 'error':
+        this.error = `ERROR: ${chunk.text}`;
+        break;
+      case 'data':
+        if (chunk.name && chunk.indicator) {
+          this.$store.commit('SET_INTEGRATION_RESULT', {
+            indicator: chunk.indicator,
+            source: chunk.name,
+            result: chunk.data
+          });
+        }
+        break;
+      case 'fail':
+        // TODO: in the future, visually show result for integration as a failure
+        if (chunk.sent && chunk.total) { // add failure to the progress bar
+          this.loading.failed++;
+          this.loading.failure = chunk.name;
+        }
+        break;
+      case 'link':
+        this.$store.commit('UPDATE_INDICATOR_GRAPH', {
+          indicator: chunk.indicator,
+          parentIndicator: chunk.parentIndicator
+        });
+        break;
+      case 'enhance':
+        this.$store.commit('ADD_ENHANCE_INFO', {
+          indicator: chunk.indicator,
+          enhanceInfo: chunk.enhanceInfo
+        });
+        break;
+      case 'finish': {
+        const leftover = this.loading.total - this.loading.failed - this.loading.received;
+        if (leftover) {
+          this.loading = { // complete the progress bar
+            received: this.loading.received + leftover
+          };
+        }
+        break;
+      }
+      default:
+        this.error = `ERROR: Unknown purpose '${chunk.purpose}' in data chunk`;
+        break;
+      }
+
+      if (chunk.sent && chunk.total) { // update the progress bar
+        this.loading.total = chunk.total;
+        this.loading.received = chunk.sent;
+      }
+    },
     search () {
       if (this.searchTerm == null || this.searchTerm === '') {
         return; // do NOT search if the query is empty
       }
 
       this.error = '';
-      this.results = {};
-      this.searchItype = '';
+      this.$store.commit('CLEAR_CONT3XT_RESULTS');
+      this.activeIndicator = undefined;
+      this.activeSource = undefined;
       this.initialized = true;
       this.searchComplete = false;
       this.$store.commit('RESET_LOADING');
-      this.$store.commit('SET_INTEGRATION_DATA', {});
-      this.showOverview = true;
       this.overrideOverviewId = undefined;
-
-      let failed = 0;
 
       // only match on b because we remove the q param
       if (!this.$route.query.b ||
@@ -803,50 +828,7 @@ export default {
       }
       const viewId = this.getSelectedView?._id;
       Cont3xtService.search({ searchTerm: this.searchTerm, skipCache: this.skipCache, tags: this.tags, viewId }).subscribe({
-        next: (data) => {
-          if (data.itype && !this.searchItype) {
-            // determine the search type and save the search term
-            // based of the first itype seen
-            this.lastSearchedTerm = data.query;
-            this.searchItype = data.itype;
-            this.filterLinks(this.linkSearchTerm);
-          }
-
-          if (data.itype && data.name) { // add the data to the page per itype
-            if (!this.results[data.itype]) {
-              this.$set(this.results, data.itype, {});
-            }
-            if (!this.results[data.itype][data.name]) {
-              this.$set(this.results[data.itype], data.name, []);
-            }
-            if (!this.results[data.itype]._query) {
-              this.$set(this.results[data.itype], '_query', data.query);
-            }
-            this.results[data.itype][data.name].push({
-              data: data.data,
-              _query: data.query
-            });
-          }
-
-          if (data.sent && data.total) { // update the progress bar
-            failed = data.failed ? ++failed : failed;
-            this.loading = {
-              failed,
-              total: data.total,
-              received: data.sent,
-              failure: data.failed && data.name ? data.name : null
-            };
-          }
-
-          if (data.finished) { // we finished receiving results
-            const leftover = this.loading.total - this.loading.failed - this.loading.received;
-            if (leftover) {
-              this.loading = { // complete the progress bar
-                received: this.loading.received + leftover
-              };
-            }
-          }
-        },
+        next: this.handleIntegrationChunk,
         error: (e) => {
           this.error = e;
         },
@@ -861,17 +843,16 @@ export default {
       });
     },
     setOverrideOverview (id) {
-      this.showOverview = true;
       this.overrideOverviewId = id;
     },
     hasLinkWithItype (linkGroup) {
       return linkGroup.links.some(link =>
-        link.url !== '----------' && link.itypes.includes(this.searchItype)
+        link.url !== '----------' && link.itypes.includes(this.rootIndicator.itype)
       );
     },
     hasVisibleLink (linkGroup) {
       return linkGroup.links.some((link, i) =>
-        link.url !== '----------' && link.itypes.includes(this.searchItype) && !this.hideLinks[linkGroup._id]?.[i]
+        link.url !== '----------' && link.itypes.includes(this.rootIndicator.itype) && !this.hideLinks[linkGroup._id]?.[i]
       );
     },
     shareLink () {
@@ -903,14 +884,19 @@ export default {
       URL.revokeObjectURL(a.href);
     },
     /* helpers ------------------------------------------------------------- */
-    updateData ({ itype, source, value, data }) {
-      if (this.results[itype] && this.results[itype][source]) {
-        for (const item of this.results[itype][source]) {
-          if (item._query === value) {
-            item.data = data.data;
-          }
-        }
+    updateData (chunk) {
+      if (chunk.purpose !== 'data') {
+        // error/fail, so we stop buffering, else it would continue forever!
+        this.$store.commit('SET_RENDERING_CARD', false);
       }
+
+      if (chunk.purpose === 'fail') {
+        // we don't want to overwrite good data with a failure
+        this.error = 'ERROR: Failed to refresh data';
+        return;
+      }
+      // handle purpose:data and purpose:error
+      this.handleIntegrationChunk(chunk);
     },
     filterLinks (searchTerm) {
       if (!searchTerm) { return; }
@@ -1016,7 +1002,6 @@ export default {
   },
   beforeDestroy () {
     this.$store.commit('RESET_LOADING');
-    this.$store.commit('SET_INTEGRATION_DATA', {});
   }
 };
 </script>

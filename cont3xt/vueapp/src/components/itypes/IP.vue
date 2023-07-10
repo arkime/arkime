@@ -1,12 +1,10 @@
 <template>
   <base-i-type
-    :value="query"
-    :itype="itype"
-    :data="data"
+    :indicator="indicator"
     :tidbits="tidbits"
   >
     <template #after-field>
-      <ttl-tooltip v-if="ttl" :ttl="ttl" :target="`${query}-ip`"/>
+      <ttl-tooltip v-if="enhanceInfo.ttl" :ttl="enhanceInfo.ttl" :target="`${indicator.query}-ip`"/>
     </template>
   </base-i-type>
 </template>
@@ -15,6 +13,7 @@
 import TtlTooltip from '@/utils/TtlTooltip';
 import BaseIType from '@/components/itypes/BaseIType';
 import { ITypeMixin } from './ITypeMixin';
+import { Cont3xtIndicatorProp } from '@/utils/cont3xtUtil';
 
 export default {
   name: 'Cont3xtIp',
@@ -24,23 +23,15 @@ export default {
     TtlTooltip
   },
   props: {
-    data: { // the data returned from cont3xt search
-      type: Object,
+    indicator: Cont3xtIndicatorProp,
+    children: {
+      type: Array,
       required: true
     },
-    query: { // the value to display as the IP (used if there are multiple ip
-      type: String,
-      required: false // fallback in case of no results -- not required since DNS IPs are guaranteed results of some kind
-    },
-    ttl: {
-      type: Number,
-      required: false // TTL property on A/AAAA records
+    enhanceInfo: {
+      type: Object,
+      required: true
     }
-  },
-  data () {
-    return {
-      itype: 'ip'
-    };
   }
 };
 </script>

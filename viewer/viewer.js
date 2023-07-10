@@ -83,7 +83,7 @@ app.enable('jsonp callback');
 app.set('views', path.join(__dirname, '/views'));
 app.set('view engine', 'pug');
 
-app.use(bodyParser.json());
+app.use(ArkimeUtil.jsonParser);
 app.use(bodyParser.urlencoded({ limit: '5mb', extended: true }));
 
 app.use(compression());
@@ -1094,15 +1094,15 @@ function expireCheckAll () {
 // APIs disabled in demoMode, needs to be before real callbacks
 if (Config.get('demoMode', false)) {
   console.log('WARNING - Starting in demo mode, some APIs disabled');
-  app.all(['/settings', '/users', '/users[./].csv', '/history/list'], (req, res) => {
-    return res.send('Disabled in demo mode.');
-  });
-
-  app.get(['/user/cron', '/api/cron', '/api/user/cron', '/history/list'], (req, res) => {
-    return res.serverError(403, 'Disabled in demo mode.');
-  });
-
-  app.post(['/user/password/change', '/changePassword', '/api/user/password', '/tableState/:tablename'], (req, res) => {
+  app.all([
+    '/api/histories',
+    '/api/history/*',
+    '/api/cron*',
+    '/api/user/password*'
+  ], (req, res, next) => {
+    if (req.user.hasRole('arkimeAdmin')) {
+      return next();
+    }
     return res.serverError(403, 'Disabled in demo mode.');
   });
 }
@@ -2010,7 +2010,7 @@ app.use(cspHeader, setCookie, (req, res) => {
     return res.status(403).send('Permission denied');
   }
 
-  if (req.path === '/settings' && Config.get('demoMode', false)) {
+  if (req.path === '/settings' && Config.get('demoMode', false) && !req.user.hasRole('usersAdmin')) {
     return res.status(403).send('Permission denied');
   }
 

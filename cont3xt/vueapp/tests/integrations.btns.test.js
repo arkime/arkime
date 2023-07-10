@@ -21,38 +21,31 @@ const integrationsArray = [{
   icon: 'integrations/passivetotal/iconWhois.png'
 }];
 
-const data = {
+const results = {
   domain: {
-    Whois: [{
-      data: {
+    'threatbutt.com': {
+      Whois: {
         _cont3xt: {
           count: 1
         }
       },
-      name: 'Whois',
-      itype: 'domain',
-      _query: 'threatbutt.com'
-    }],
-    'PT Whois': [{
-      data: {
+      'PT Whois': {
         _cont3xt: {
           count: 2
         }
-      },
-      itype: 'domain',
-      name: 'PT Whois',
-      _query: 'threatbutt.com'
-    }]
+      }
+    }
   }
 };
 
 const store = {
   state: {
     loading: false,
-    integrationsArray
+    integrationsArray,
+    results
   },
   mutations: {
-    SET_DISPLAY_INTEGRATION: jest.fn()
+    SET_QUEUED_INTEGRATION: jest.fn()
   },
   getters: {
     getLoading (state) {
@@ -60,6 +53,9 @@ const store = {
     },
     getIntegrationsArray (state) {
       return state.integrationsArray;
+    },
+    getResults (state) {
+      return state.results;
     }
   }
 };
@@ -70,9 +66,10 @@ test('Integration Btns', async () => {
   } = render(IntegrationBtns, {
     store,
     props: {
-      data,
-      itype: 'domain',
-      value: 'threatbutt.com'
+      indicator: {
+        query: 'threatbutt.com',
+        itype: 'domain'
+      }
     }
   });
 
@@ -91,13 +88,13 @@ test('Integration Btns', async () => {
   await fireEvent.click(btns[0]);
 
   // calls display integration mutation
-  expect(store.mutations.SET_DISPLAY_INTEGRATION).toHaveBeenCalledWith(store.state, {
-    source: 'Whois', itype: 'domain', value: 'threatbutt.com'
+  expect(store.mutations.SET_QUEUED_INTEGRATION).toHaveBeenCalledWith(store.state, {
+    source: 'Whois', indicator: { itype: 'domain', query: 'threatbutt.com' }
   });
 
   // second button emits different values
   await fireEvent.click(btns[1]);
-  expect(store.mutations.SET_DISPLAY_INTEGRATION).toHaveBeenCalledWith(store.state, {
-    source: 'PT Whois', itype: 'domain', value: 'threatbutt.com'
+  expect(store.mutations.SET_QUEUED_INTEGRATION).toHaveBeenCalledWith(store.state, {
+    source: 'PT Whois', indicator: { itype: 'domain', query: 'threatbutt.com' }
   });
 });
