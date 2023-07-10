@@ -35,8 +35,7 @@ const Audit = require('./audit');
 const Overview = require('./overview');
 const View = require('./view');
 const Db = require('./db');
-const bp = require('body-parser');
-const jsonParser = bp.json();
+const jsonParser = ArkimeUtil.jsonParser;
 // eslint-disable-next-line no-shadow
 const crypto = require('crypto');
 const logger = require('morgan');

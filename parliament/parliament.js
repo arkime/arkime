@@ -333,7 +333,7 @@ app.use(favicon(path.join(__dirname, '/favicon.ico')));
 
 // define router to mount api related functions
 app.use('/parliament/api', router);
-router.use(bp.json());
+router.use(ArkimeUtil.jsonParser);
 router.use(bp.urlencoded({ extended: true }));
 
 // Load notifier plugins for Parliament alerting
