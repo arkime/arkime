@@ -25,8 +25,6 @@ const Db = require('./db.js');
 const cryptoLib = require('crypto');
 const fs = require('fs');
 
-const escInfo = Config.getArray('elasticsearch', ',', 'http://localhost:9200');
-
 function main () {
   const query = { size: 100, query: { term: { name: process.argv[2] } }, sort: [{ num: { order: 'desc' } }] };
   Db.search('files', 'file', query, (err, data) => {
@@ -93,18 +91,25 @@ if (process.argv.length < 3) {
   process.exit();
 }
 
-Db.initialize({
-  host: escInfo,
-  prefix: Config.get('prefix', 'arkime_'),
-  esClientKey: Config.get('esClientKey', null),
-  esClientCert: Config.get('esClientCert', null),
-  esClientKeyPass: Config.get('esClientKeyPass', null),
-  insecure: Config.insecure,
-  usersHost: Config.getArray('usersElasticsearch', ','),
-  usersPrefix: Config.get('usersPrefix'),
-  esApiKey: Config.get('elasticsearchAPIKey', null),
-  usersEsApiKey: Config.get('usersElasticsearchAPIKey', null),
-  esBasicAuth: Config.get('elasticsearchBasicAuth', null),
-  usersEsBasicAuth: Config.get('usersElasticsearchBasicAuth', null),
-  noUsersCheck: true
-}, main);
+async function premain () {
+  await Config.initialize();
+
+  const escInfo = Config.getArray('elasticsearch', ',', 'http://localhost:9200');
+  Db.initialize({
+    host: escInfo,
+    prefix: Config.get('prefix', 'arkime_'),
+    esClientKey: Config.get('esClientKey', null),
+    esClientCert: Config.get('esClientCert', null),
+    esClientKeyPass: Config.get('esClientKeyPass', null),
+    insecure: Config.insecure,
+    usersHost: Config.getArray('usersElasticsearch', ','),
+    usersPrefix: Config.get('usersPrefix'),
+    esApiKey: Config.get('elasticsearchAPIKey', null),
+    usersEsApiKey: Config.get('usersElasticsearchAPIKey', null),
+    esBasicAuth: Config.get('elasticsearchBasicAuth', null),
+    usersEsBasicAuth: Config.get('usersElasticsearchBasicAuth', null),
+    noUsersCheck: true
+  }, main);
+}
+
+premain();

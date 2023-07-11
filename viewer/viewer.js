@@ -2180,37 +2180,43 @@ process.on('unhandledRejection', (reason, p) => {
   // application specific logging, throwing an error, or other logic here
 });
 
-Db.initialize({
-  host: internals.elasticBase,
-  prefix: internals.prefix,
-  usersHost: Config.getArray('usersElasticsearch', ','),
-  // The default for usersPrefix should be '' if this is a multiviewer, otherwise Db.initialize will figure out
-  usersPrefix: Config.get('usersPrefix', Config.get('multiES', false) ? '' : undefined),
-  nodeName: Config.nodeName(),
-  hostName: Config.hostName(),
-  esClientKey: Config.get('esClientKey', null),
-  esClientCert: Config.get('esClientCert', null),
-  esClientKeyPass: Config.get('esClientKeyPass', null),
-  multiES: Config.get('multiES', false),
-  insecure: Config.insecure,
-  caTrustFile: Config.get('caTrustFile', null),
-  requestTimeout: Config.get('elasticsearchTimeout', 300),
-  esProfile: Config.esProfile,
-  debug: Config.debug,
-  esApiKey: Config.get('elasticsearchAPIKey', null),
-  usersEsApiKey: Config.get('usersElasticsearchAPIKey', null),
-  esBasicAuth: Config.get('elasticsearchBasicAuth', null),
-  usersEsBasicAuth: Config.get('usersElasticsearchBasicAuth', null),
-  isPrimaryViewer: CronAPIs.isPrimaryViewer,
-  getCurrentUserCB: UserAPIs.getCurrentUserCB,
-  maxConcurrentShardRequests: Config.get('esMaxConcurrentShardRequests')
-}, main);
+async function premain () {
+  await Config.initialize();
 
-Notifier.initialize({
-  debug: Config.debug,
-  prefix: internals.prefix,
-  esclient: User.getClient()
-});
+  Db.initialize({
+    host: internals.elasticBase,
+    prefix: internals.prefix,
+    usersHost: Config.getArray('usersElasticsearch', ','),
+    // The default for usersPrefix should be '' if this is a multiviewer, otherwise Db.initialize will figure out
+    usersPrefix: Config.get('usersPrefix', Config.get('multiES', false) ? '' : undefined),
+    nodeName: Config.nodeName(),
+    hostName: Config.hostName(),
+    esClientKey: Config.get('esClientKey', null),
+    esClientCert: Config.get('esClientCert', null),
+    esClientKeyPass: Config.get('esClientKeyPass', null),
+    multiES: Config.get('multiES', false),
+    insecure: Config.insecure,
+    caTrustFile: Config.get('caTrustFile', null),
+    requestTimeout: Config.get('elasticsearchTimeout', 300),
+    esProfile: Config.esProfile,
+    debug: Config.debug,
+    esApiKey: Config.get('elasticsearchAPIKey', null),
+    usersEsApiKey: Config.get('usersElasticsearchAPIKey', null),
+    esBasicAuth: Config.get('elasticsearchBasicAuth', null),
+    usersEsBasicAuth: Config.get('usersElasticsearchBasicAuth', null),
+    isPrimaryViewer: CronAPIs.isPrimaryViewer,
+    getCurrentUserCB: UserAPIs.getCurrentUserCB,
+    maxConcurrentShardRequests: Config.get('esMaxConcurrentShardRequests')
+  }, main);
 
-CronAPIs.initialize({
-});
+  Notifier.initialize({
+    debug: Config.debug,
+    prefix: internals.prefix,
+    esclient: User.getClient()
+  });
+
+  CronAPIs.initialize({
+  });
+}
+
+premain();

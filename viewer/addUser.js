@@ -25,7 +25,6 @@ const cryptoLib = require('crypto');
 const Auth = require('../common/auth');
 const User = require('../common/user');
 
-const escInfo = Config.getArray('elasticsearch', ',', 'http://localhost:9200');
 function help () {
   console.log('addUser.js [<config options>] <user id> <user friendly name> <password> [<options>]');
   console.log('');
@@ -161,40 +160,46 @@ if (process.argv.length < 5) {
   help();
 }
 
-if (Config.nodeName() === 'cont3xt') {
-  const usersUrl = Config.get('usersUrl');
-  const usersEs = Config.get('usersElasticsearch', Config.get('elasticsearch', 'http://localhost:9200')).split(',');
-  User.initialize({
-    insecure: Config.insecure,
-    requestTimeout: Config.get('elasticsearchTimeout', 300),
-    debug: Config.debug,
-    url: usersUrl,
-    node: usersEs,
-    caTrustFile: Config.get('caTrustFile'),
-    clientKey: Config.get('esClientKey'),
-    clientCert: Config.get('esClientCert'),
-    clientKeyPass: Config.get('esClientKeyPass'),
-    prefix: Config.get('usersPrefix'),
-    apiKey: Config.get('usersElasticsearchAPIKey'),
-    basicAuth: Config.get('usersElasticsearchBasicAuth', Config.get('elasticsearchBasicAuth')),
-    noUsersCheck: true
-  });
-  main();
-} else {
-  Db.initialize({
-    host: escInfo,
-    prefix: Config.get('prefix', 'arkime_'),
-    esClientKey: Config.get('esClientKey', null),
-    esClientCert: Config.get('esClientCert', null),
-    esClientKeyPass: Config.get('esClientKeyPass', null),
-    insecure: Config.insecure,
-    caTrustFile: Config.getFull(Config.nodeName(), 'caTrustFile'),
-    usersHost: Config.getArray('usersElasticsearch', ','),
-    usersPrefix: Config.get('usersPrefix'),
-    esApiKey: Config.get('elasticsearchAPIKey', null),
-    usersEsApiKey: Config.get('usersElasticsearchAPIKey', null),
-    esBasicAuth: Config.get('elasticsearchBasicAuth', null),
-    usersEsBasicAuth: Config.get('usersElasticsearchBasicAuth', null),
-    noUsersCheck: true
-  }, main);
+async function premain () {
+  await Config.initialize();
+
+  if (Config.nodeName() === 'cont3xt') {
+    const usersUrl = Config.get('usersUrl');
+    const usersEs = Config.get('usersElasticsearch', Config.get('elasticsearch', 'http://localhost:9200')).split(',');
+    User.initialize({
+      insecure: Config.insecure,
+      requestTimeout: Config.get('elasticsearchTimeout', 300),
+      debug: Config.debug,
+      url: usersUrl,
+      node: usersEs,
+      caTrustFile: Config.get('caTrustFile'),
+      clientKey: Config.get('esClientKey'),
+      clientCert: Config.get('esClientCert'),
+      clientKeyPass: Config.get('esClientKeyPass'),
+      prefix: Config.get('usersPrefix'),
+      apiKey: Config.get('usersElasticsearchAPIKey'),
+      basicAuth: Config.get('usersElasticsearchBasicAuth', Config.get('elasticsearchBasicAuth')),
+      noUsersCheck: true
+    });
+    main();
+  } else {
+    const escInfo = Config.getArray('elasticsearch', ',', 'http://localhost:9200');
+    Db.initialize({
+      host: escInfo,
+      prefix: Config.get('prefix', 'arkime_'),
+      esClientKey: Config.get('esClientKey', null),
+      esClientCert: Config.get('esClientCert', null),
+      esClientKeyPass: Config.get('esClientKeyPass', null),
+      insecure: Config.insecure,
+      caTrustFile: Config.getFull(Config.nodeName(), 'caTrustFile'),
+      usersHost: Config.getArray('usersElasticsearch', ','),
+      usersPrefix: Config.get('usersPrefix'),
+      esApiKey: Config.get('elasticsearchAPIKey', null),
+      usersEsApiKey: Config.get('usersElasticsearchAPIKey', null),
+      esBasicAuth: Config.get('elasticsearchBasicAuth', null),
+      usersEsBasicAuth: Config.get('usersElasticsearchBasicAuth', null),
+      noUsersCheck: true
+    }, main);
+  }
 }
+premain();

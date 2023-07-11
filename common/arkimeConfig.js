@@ -71,11 +71,14 @@ class ArkimeConfig {
 
   static get (section, sectionKey, d) {
     const key = `${section}.${sectionKey}`;
-    const value = ArkimeConfig.#override.get(key) ?? ArkimeConfig.#config[section]?.[sectionKey] ?? d;
+    const value = ArkimeConfig.#override.get(key) ?? ArkimeConfig.#config?.[section]?.[sectionKey] ?? d;
 
     if (ArkimeConfig.#debug > 0 && !ArkimeConfig.#debugged.has(key)) {
       ArkimeConfig.#debugged.set(key, true);
     }
+
+    if (value === 'false') { return false; }
+    if (value === 'true') { return true; }
 
     return value;
   }
@@ -90,6 +93,36 @@ class ArkimeConfig {
 
   static save (cb) {
     ArkimeConfig.#configImpl.save(ArkimeConfig.#uri, ArkimeConfig.#config, cb);
+  }
+
+  static loadIncludes (includes) {
+    if (!includes) {
+      return;
+    }
+    includes.split(';').forEach((file) => {
+      const ignoreError = file[0] === '-';
+      if (ignoreError) {
+        file = file.substring(1);
+      }
+
+      if (!fs.existsSync(file)) {
+        if (ignoreError) {
+          return;
+        }
+        console.log("ERROR - Couldn't open config includes file '%s'", file);
+        process.exit(1);
+      }
+      const config = ini.parseSync(file);
+      for (const group in config) {
+        if (!ArkimeConfig.#config[group]) {
+          ArkimeConfig.#config[group] = config[group];
+        } else {
+          for (const key in config[group]) {
+            ArkimeConfig.#config[group][key] = config[group][key];
+          }
+        }
+      }
+    });
   }
 
   // ----------------------------------------------------------------------------
