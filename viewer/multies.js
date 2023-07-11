@@ -31,18 +31,20 @@ const path = require('path');
 const ArkimeUtil = require('../common/arkimeUtil');
 
 const esSSLOptions = { rejectUnauthorized: !Config.insecure };
-const esClientKey = Config.get('esClientKey');
-const esClientCert = Config.get('esClientCert');
-const caTrustFile = Config.get('caTrustFile');
-if (caTrustFile) { esSSLOptions.ca = ArkimeUtil.certificateFileToArray(caTrustFile); };
-if (esClientKey) {
-  esSSLOptions.key = fs.readFileSync(esClientKey);
-  esSSLOptions.cert = fs.readFileSync(esClientCert);
-  const esClientKeyPass = Config.get('esClientKeyPass');
-  if (esClientKeyPass) {
-    esSSLOptions.passphrase = esClientKeyPass;
+Config.loaded(() => {
+  const esClientKey = Config.get('esClientKey');
+  const esClientCert = Config.get('esClientCert');
+  const caTrustFile = Config.get('caTrustFile');
+  if (caTrustFile) { esSSLOptions.ca = ArkimeUtil.certificateFileToArray(caTrustFile); };
+  if (esClientKey) {
+    esSSLOptions.key = fs.readFileSync(esClientKey);
+    esSSLOptions.cert = fs.readFileSync(esClientCert);
+    const esClientKeyPass = Config.get('esClientKeyPass');
+    if (esClientKeyPass) {
+      esSSLOptions.passphrase = esClientKeyPass;
+    }
   }
-}
+});
 
 const clients = {};
 let nodes = [];

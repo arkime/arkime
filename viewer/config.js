@@ -69,8 +69,13 @@ class Config {
           process.exit(1);
         }
 
-        ArkimeConfig.setOverride(process.argv[i].slice(0, equal), process.argv[i].slice(equal + 1));
-        // ALW internals.options.set(process.argv[i].slice(0, equal), process.argv[i].slice(equal + 1));
+        const key = process.argv[i].slice(0, equal);
+        const value = process.argv[i].slice(equal+1);
+        if (key.includes('.')) {
+          ArkimeConfig.setOverride(key, value);
+        } else {
+          ArkimeConfig.setOverride('default.' + key, value);
+        }
       } else if (process.argv[i] === '--debug') {
         Config.debug++;
       } else if (process.argv[i] === '--insecure') {
@@ -413,12 +418,13 @@ class Config {
     */
 
     await ArkimeConfig.initialize({ debug: internals.debug, configFile: internals.configFile });
-    ArkimeConfig.loadIncludes(Config.get('includes', null));
+    ArkimeConfig.loadIncludes(Config.get('includes'));
 
-    for (const cb of Config.#loadedCbs) {
+    const loadedCbs = Config.#loadedCbs;
+    Config.#loadedCbs = undefined; // Mark as loaded
+    for (const cb of loadedCbs) {
       cb();
     }
-    Config.#loadedCbs = undefined; // Mark as loaded
 
     if (Config.debug === 0) {
       Config.debug = parseInt(Config.get('debug', 0));

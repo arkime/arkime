@@ -62,7 +62,7 @@ class ArkimeConfig {
   }
 
   static setOverride (key, value) {
-    ArkimeConfig.#override[key] = value;
+    ArkimeConfig.#override.set(key, value);
   }
 
   static setDebug (debug) {
