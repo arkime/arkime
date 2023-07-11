@@ -70,7 +70,7 @@ class Config {
         }
 
         const key = process.argv[i].slice(0, equal);
-        const value = process.argv[i].slice(equal+1);
+        const value = process.argv[i].slice(equal + 1);
         if (key.includes('.')) {
           ArkimeConfig.setOverride(key, value);
         } else {
