@@ -998,89 +998,6 @@ app.use(ArkimeUtil.expressErrorHandler);
 /// / Main
 /// ///////////////////////////////////////////////////////////////////////////////
 
-nodes = Config.get('multiESNodes', '').split(';');
-if (nodes.length === 0 || nodes[0] === '') {
-  console.log('ERROR - Empty multiESNodes');
-  process.exit(1);
-}
-
-for (let i = 0; i < nodes.length; i++) {
-  const nodeName = node2Name(nodes[i]);
-  if (!nodeName) {
-    console.log('ERROR - name is missing in multiESNodes for', nodes[i], 'Set node name as multiESNodes=http://example1:9200,name:<friendly-name-11>;http://example2:9200,name:<friendly-name-2>');
-    process.exit(1);
-  }
-  clusterList[i] = nodeName; // name
-
-  // Maintain a mapping of node to cluster and cluster to node
-  clusters[nodes[i]] = clusterList[i]; // node -> cluster
-  clusters[clusterList[i]] = nodes[i]; // cluster -> node
-}
-
-// First connect
-nodes.forEach((node) => {
-  if (node.toLowerCase().includes(',http')) {
-    console.log('WARNING - multiESNodes may be using a comma as a host delimiter, change to semicolon');
-  }
-
-  let esNode = node.split(',')[0];
-  esNode = esNode.startsWith('http') ? esNode : `http://${esNode}`;
-
-  const esClientOptions = {
-    node: esNode,
-    requestTimeout: 300000,
-    maxRetries: 2,
-    ssl: esSSLOptions
-  };
-
-  const nodeName = node2Name(node);
-  const esAPIKey = node2ESAPIKey(node);
-  let esBasicAuth = node2ESBasicAuth(node);
-  if (esAPIKey) {
-    esClientOptions.auth = {
-      apiKey: esAPIKey
-    };
-    authHeader[nodeName] = `ApiKey ${esAPIKey}`;
-  } else if (esBasicAuth) {
-    if (!esBasicAuth.includes(':')) {
-      esBasicAuth = Buffer.from(esBasicAuth, 'base64').toString();
-    }
-    esBasicAuth = esBasicAuth.split(':');
-    esClientOptions.auth = {
-      username: esBasicAuth[0],
-      password: esBasicAuth[1]
-    };
-    const b64 = Buffer.from(esBasicAuth.join(':')).toString('base64');
-    authHeader[nodeName] = `Basic ${b64}`;
-  }
-
-  clients[node] = new Client(esClientOptions);
-});
-
-// Now check version numbers
-nodes.forEach(async (node) => {
-  try {
-    const { body: data } = await clients[node].info();
-
-    if (data.version.distribution === 'opensearch') {
-      if (data.version.number.match(/^[0]/)) {
-        console.log(`ERROR - OpenSearch ${data.version.number} not supported, OpenSearch 1.0.0 or later required.`);
-        process.exit();
-      }
-    } else {
-      if (data.version.number.match(/^([0-6]|7\.[0-9]\.)/)) {
-        console.log(`ERROR - ES ${data.version.number} not supported, ES 7.10.0 or later required.`);
-        process.exit();
-      }
-    }
-  } catch (err) {
-    console.log(err);
-  }
-});
-
-// list of active nodes
-activeESNodes = nodes.slice();
-
 // Ping (HEAD /) periodically to maintian a list of active ES nodes
 function pingESNode (client, node) {
   return new Promise((resolve, reject) => {
@@ -1116,18 +1033,106 @@ function enumerateActiveNodes () {
 
 setInterval(enumerateActiveNodes, 1 * 60 * 1000); // 1*60*1000 ms
 
-console.log(nodes);
+async function premain () {
+  await Config.initialize();
 
-console.log('Listen on ', Config.get('multiESPort', '8200'));
+  nodes = Config.get('multiESNodes', '').split(';');
+  if (nodes.length === 0 || nodes[0] === '') {
+    console.log('ERROR - Empty multiESNodes');
+    process.exit(1);
+  }
 
-if (Config.isHTTPS()) {
-  const cryptoOption = require('crypto').constants.SSL_OP_NO_TLSv1;
-  const server = https.createServer({
-    key: Config.keyFileData,
-    cert: Config.certFileData,
-    secureOptions: cryptoOption
-  }, app).listen(Config.get('multiESPort', '8200'), Config.get('multiESHost', undefined));
-  Config.setServerToReloadCerts(server, cryptoOption);
-} else {
-  http.createServer(app).listen(Config.get('multiESPort', '8200'), Config.get('multiESHost', undefined));
+  for (let i = 0; i < nodes.length; i++) {
+    const nodeName = node2Name(nodes[i]);
+    if (!nodeName) {
+      console.log('ERROR - name is missing in multiESNodes for', nodes[i], 'Set node name as multiESNodes=http://example1:9200,name:<friendly-name-11>;http://example2:9200,name:<friendly-name-2>');
+      process.exit(1);
+    }
+    clusterList[i] = nodeName; // name
+
+    // Maintain a mapping of node to cluster and cluster to node
+    clusters[nodes[i]] = clusterList[i]; // node -> cluster
+    clusters[clusterList[i]] = nodes[i]; // cluster -> node
+  }
+
+  // First connect
+  nodes.forEach((node) => {
+    if (node.toLowerCase().includes(',http')) {
+      console.log('WARNING - multiESNodes may be using a comma as a host delimiter, change to semicolon');
+    }
+
+    let esNode = node.split(',')[0];
+    esNode = esNode.startsWith('http') ? esNode : `http://${esNode}`;
+
+    const esClientOptions = {
+      node: esNode,
+      requestTimeout: 300000,
+      maxRetries: 2,
+      ssl: esSSLOptions
+    };
+
+    const nodeName = node2Name(node);
+    const esAPIKey = node2ESAPIKey(node);
+    let esBasicAuth = node2ESBasicAuth(node);
+    if (esAPIKey) {
+      esClientOptions.auth = {
+        apiKey: esAPIKey
+      };
+      authHeader[nodeName] = `ApiKey ${esAPIKey}`;
+    } else if (esBasicAuth) {
+      if (!esBasicAuth.includes(':')) {
+        esBasicAuth = Buffer.from(esBasicAuth, 'base64').toString();
+      }
+      esBasicAuth = esBasicAuth.split(':');
+      esClientOptions.auth = {
+        username: esBasicAuth[0],
+        password: esBasicAuth[1]
+      };
+      const b64 = Buffer.from(esBasicAuth.join(':')).toString('base64');
+      authHeader[nodeName] = `Basic ${b64}`;
+    }
+
+    clients[node] = new Client(esClientOptions);
+  });
+
+  // Now check version numbers
+  nodes.forEach(async (node) => {
+    try {
+      const { body: data } = await clients[node].info();
+
+      if (data.version.distribution === 'opensearch') {
+        if (data.version.number.match(/^[0]/)) {
+          console.log(`ERROR - OpenSearch ${data.version.number} not supported, OpenSearch 1.0.0 or later required.`);
+          process.exit();
+        }
+      } else {
+        if (data.version.number.match(/^([0-6]|7\.[0-9]\.)/)) {
+          console.log(`ERROR - ES ${data.version.number} not supported, ES 7.10.0 or later required.`);
+          process.exit();
+        }
+      }
+    } catch (err) {
+      console.log(err);
+    }
+  });
+
+  // list of active nodes
+  activeESNodes = nodes.slice();
+  console.log(nodes);
+
+  console.log('Listen on ', Config.get('multiESPort', '8200'));
+
+  if (Config.isHTTPS()) {
+    const cryptoOption = require('crypto').constants.SSL_OP_NO_TLSv1;
+    const server = https.createServer({
+      key: Config.keyFileData,
+      cert: Config.certFileData,
+      secureOptions: cryptoOption
+    }, app).listen(Config.get('multiESPort', '8200'), Config.get('multiESHost', undefined));
+    Config.setServerToReloadCerts(server, cryptoOption);
+  } else {
+    http.createServer(app).listen(Config.get('multiESPort', '8200'), Config.get('multiESHost', undefined));
+  }
 }
+
+premain();
