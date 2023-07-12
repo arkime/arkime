@@ -785,6 +785,7 @@ LLVMFuzzerInitialize(int *UNUSED(argc), char ***UNUSED(argv))
 
     arkime_free_later_init();
     arkime_hex_init();
+    arkime_http_init();
     arkime_config_init();
     arkime_writers_init();
     arkime_writers_start("null");
@@ -792,7 +793,6 @@ LLVMFuzzerInitialize(int *UNUSED(argc), char ***UNUSED(argv))
     arkime_readers_set("null");
     arkime_plugins_init();
     arkime_field_init();
-    arkime_http_init();
     arkime_db_init();
     arkime_packet_init();
     arkime_config_load_packet_ips();
@@ -872,6 +872,7 @@ int main(int argc, char **argv)
 
     arkime_free_later_init();
     arkime_hex_init();
+    arkime_http_init();
     arkime_config_init();
     arkime_dedup_init();
     arkime_writers_init();
@@ -888,7 +889,6 @@ int main(int argc, char **argv)
         arkime_mlockall_init();
     }
     arkime_field_init();
-    arkime_http_init();
     arkime_db_init();
     arkime_packet_init();
     arkime_config_load_packet_ips();

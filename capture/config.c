@@ -411,7 +411,25 @@ void arkime_config_load()
         arkime_config_load_hidden(config.configFile);
     }
 
-    status = g_key_file_load_from_file(keyfile, config.configFile, G_KEY_FILE_NONE, &error);
+    if (g_str_has_prefix(config.configFile, "http://") || g_str_has_prefix(config.configFile, "https://")) {
+        char *end = config.configFile + 8;
+        while (*end != 0 && *end != '/' && *end != '?') end++;
+
+        char *host = g_strndup(config.configFile, end - config.configFile);
+
+        void *server = arkime_http_create_server(host, 5, 5, TRUE);
+        g_free(host);
+
+        unsigned char *data = arkime_http_send_sync(server, "GET", end, strlen(end), NULL, 0, NULL, NULL);
+        if (!data)
+            CONFIGEXIT("Couldn't download from host: %s url: %s", host, end);
+        status = g_key_file_load_from_data(keyfile, (gchar *)data, -1, G_KEY_FILE_NONE, &error);
+        free(data);
+        arkime_http_free_server(server);
+    } else {
+        status = g_key_file_load_from_file(keyfile, config.configFile, G_KEY_FILE_NONE, &error);
+    }
+
     if (!status || error) {
         CONFIGEXIT("Couldn't load config file (%s) %s\n", config.configFile, (error?error->message:""));
     }
