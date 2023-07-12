@@ -32,6 +32,15 @@ class ArkimeConfig {
 
   static async initialize (options) {
     ArkimeConfig.#debug = options.debug ?? 0;
+
+    // The config is actually hidden
+    if (options.configFile.endsWith('.hiddenconfig')) {
+      options.configFile = fs.readFileSync(options.configFile).toString().split('\n')[0].trim();
+    }
+    if (options.configFile.startsWith('urlinfile://')) {
+      options.configFile = fs.readFileSync(options.configFile.substring(12)).toString().split('\n')[0].trim();
+    }
+
     ArkimeConfig.#uri = options.configFile;
 
     const parts = ArkimeConfig.#uri.split('://');

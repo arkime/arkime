@@ -1666,14 +1666,6 @@ function main () {
 }
 
 async function buildConfigAndStart () {
-  // The config is actually hidden
-  if (internals.configFile.endsWith('.hiddenconfig')) {
-    internals.configFile = fs.readFileSync(internals.configFile).toString().split('\n')[0].trim();
-  }
-  if (internals.configFile.startsWith('urlinfile://')) {
-    internals.configFile = fs.readFileSync(internals.configFile.substring(12)).toString().split('\n')[0].trim();
-  }
-
   // Load config
   await ArkimeConfig.initialize({ configFile: internals.configFile });
   internals.updateTime = getConfig('wiseService', 'updateTime', 0);
