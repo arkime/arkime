@@ -52,7 +52,7 @@ class Config {
   static processArgs () {
     const args = [];
     for (let i = 0, ilen = process.argv.length; i < ilen; i++) {
-      if (process.argv[i] === '-c') {
+      if (process.argv[i] === '-c' || process.argv[i] === '--config') {
         i++;
         internals.configFile = process.argv[i];
       } else if (process.argv[i] === '--host') {

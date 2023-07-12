@@ -29,21 +29,21 @@ function help () {
   console.log('addUser.js [<config options>] <user id> <user friendly name> <password> [<options>]');
   console.log('');
   console.log('Options:');
-  console.log('  --admin               Has admin privileges');
-  console.log('  --apionly             Can only use api, not web pages');
-  console.log('  --email               Can do email searches');
-  console.log('  --expression  <expr>  Forced user expression');
-  console.log('  --remove              Can remove data (scrub, delete tags)');
-  console.log('  --webauth             Can auth using the web auth header or password');
-  console.log('  --webauthonly         Can auth using the web auth header only, password ignored');
-  console.log('  --packetSearch        Can create a packet search job (hunt)');
-  console.log('  --createOnly          Only create the user if it doesn\'t exist');
-  console.log('  --roles               Comma seperated list of roles');
+  console.log('  --admin                 Has admin privileges');
+  console.log('  --apionly               Can only use api, not web pages');
+  console.log('  --email                 Can do email searches');
+  console.log('  --expression  <expr>    Forced user expression');
+  console.log('  --remove                Can remove data (scrub, delete tags)');
+  console.log('  --webauth               Can auth using the web auth header or password');
+  console.log('  --webauthonly           Can auth using the web auth header only, password ignored');
+  console.log('  --packetSearch          Can create a packet search job (hunt)');
+  console.log('  --createOnly            Only create the user if it doesn\'t exist');
+  console.log('  --roles                 Comma seperated list of roles');
   console.log('');
   console.log('Config Options:');
-  console.log('  -c <config file>      Config file to use');
-  console.log('  -n <node name>        Node name section to use in config file');
-  console.log('  --insecure            Disable certificate verification for https calls');
+  console.log('  -c, --config <file|url> Where to fetch the config file from');
+  console.log('  -n <node name>          Node name section to use in config file');
+  console.log('  --insecure              Disable certificate verification for https calls');
 
   process.exit(0);
 }

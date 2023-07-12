@@ -109,7 +109,7 @@ internals.type2Name = ['ip', 'domain', 'md5', 'email', 'url', 'tuple', 'ja3', 's
 // ----------------------------------------------------------------------------
 function processArgs (argv) {
   for (let i = 0, ilen = argv.length; i < ilen; i++) {
-    if (argv[i] === '-c') {
+    if (argv[i] === '-c' || argv[i] === '--config') {
       i++;
       internals.configFile = argv[i];
     } else if (process.argv[i] === '-o') {
@@ -143,7 +143,7 @@ function processArgs (argv) {
       console.log('wiseService.js [<options>]');
       console.log('');
       console.log('Options:');
-      console.log('  -c <file|url>               Where to fetch the config file from');
+      console.log('  -c, --config <file|url>     Where to fetch the config file from');
       console.log('  -o <section>.<key>=<value>  Override the config file');
       console.log('  --debug                     Increase debug level, multiple are supported');
       console.log('  --webconfig                 Allow the config to be edited from web page');
