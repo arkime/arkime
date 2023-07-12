@@ -298,7 +298,7 @@ app.use(async (req, res, next) => {
 });
 
 Config.loaded(() => {
-  if (!Config.get('passwordSecret')) {
+  if (Config.get('passwordSecret')) {
   } else if (Config.regressionTests) {
     console.log('WARNING - Option --regressionTests was used, do NOT use in production, for testing only');
     internals.noPasswordSecret = true;
