@@ -195,7 +195,6 @@ app.use(['/assets', '/logos'], express.static(
 
 // regression test methods, before auth checks --------------------------------
 if (Config.regressionTests) {
-  internals.cronTimeout = 0;
   // Override default lastUsed min write internal for tests
   User.lastUsedMinInterval = 1000;
 
@@ -208,6 +207,7 @@ if (Config.regressionTests) {
     res.send('{}');
   });
   app.get('/regressionTests/processCronQueries', async function (req, res) {
+    internals.cronTimeout = 0;
     await Db.refresh();
     CronAPIs.processCronQueries();
     setTimeout(async function checkCronFinished () {
