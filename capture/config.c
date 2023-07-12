@@ -380,6 +380,19 @@ void arkime_config_load_includes(char **includes)
     }
 }
 /******************************************************************************/
+void arkime_config_load_hidden(char *configFile)
+{
+    char line[1000];
+    FILE *file = fopen(configFile, "r");
+    if (!file)
+        CONFIGEXIT("Couldn't open %s", configFile);
+    if (!fgets(line, sizeof(line), file))
+        CONFIGEXIT("Couldn't read %s", configFile);
+    g_free(config.configFile);
+    g_strchomp(line);
+    config.configFile = g_strdup(line);
+}
+/******************************************************************************/
 void arkime_config_load()
 {
 
@@ -389,6 +402,14 @@ void arkime_config_load()
     int       i;
 
     keyfile = arkimeKeyFile = g_key_file_new();
+
+    if (g_str_has_prefix(config.configFile, "urlinfile://")) {
+        arkime_config_load_hidden(config.configFile + 12);
+
+    } else if (g_str_has_suffix(config.configFile, ".hiddenconfig")) {
+        config.configFile[strlen(config.configFile) - 13] = 0;
+        arkime_config_load_hidden(config.configFile);
+    }
 
     status = g_key_file_load_from_file(keyfile, config.configFile, G_KEY_FILE_NONE, &error);
     if (!status || error) {
