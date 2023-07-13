@@ -393,6 +393,33 @@ void arkime_config_load_hidden(char *configFile)
     config.configFile = g_strdup(line);
 }
 /******************************************************************************/
+gboolean arkime_config_load_json(GKeyFile *keyfile, char *data, GError **UNUSED(error))
+{
+    uint32_t sections[4*100]; // Can have up to 100 sections
+    memset(sections, 0, sizeof(sections));
+    js0n((unsigned char*)data, strlen(data), sections, sizeof(sections));
+
+    for (int s = 0; sections[s]; s+= 4) {
+        char *section = g_strndup(data + sections[s], sections[s+1]);
+
+        uint32_t keys[4*500]; // Can have up to 500 keys
+        memset(keys, 0, sizeof(keys));
+        js0n((unsigned char*)data + sections[s+2], sections[s+3], keys, sizeof(keys));
+
+        for (int k = 0; keys[k]; k += 4) {
+            char *key = g_strndup(data + sections[s+2] + keys[k], keys[k+1]);
+            char *value = g_strndup(data + sections[s+2] + keys[k+2], keys[k+3]);
+
+            g_key_file_set_string(keyfile, section, key, value);
+            g_free(key);
+            g_free(value);
+        }
+        g_free(section);
+    }
+
+    return TRUE;
+}
+/******************************************************************************/
 void arkime_config_load()
 {
 
@@ -423,11 +450,22 @@ void arkime_config_load()
         unsigned char *data = arkime_http_send_sync(server, "GET", end, strlen(end), NULL, 0, NULL, NULL);
         if (!data)
             CONFIGEXIT("Couldn't download from host: %s url: %s", host, end);
-        status = g_key_file_load_from_data(keyfile, (gchar *)data, -1, G_KEY_FILE_NONE, &error);
+
+        if (g_str_has_suffix(config.configFile, ".ini"))
+            status = g_key_file_load_from_data(keyfile, (gchar *)data, -1, G_KEY_FILE_NONE, &error);
+        else
+            status = arkime_config_load_json(keyfile, (char *)data, &error);
         free(data);
         arkime_http_free_server(server);
     } else {
-        status = g_key_file_load_from_file(keyfile, config.configFile, G_KEY_FILE_NONE, &error);
+        if (g_str_has_suffix(config.configFile, ".json")) {
+            gchar *data;
+            if (!g_file_get_contents(config.configFile, &data, NULL, &error))
+                CONFIGEXIT("Couldn't load config file (%s) %s\n", config.configFile, (error?error->message:""));
+            status = arkime_config_load_json(keyfile, data, &error);
+            g_free(data);
+        } else
+            status = g_key_file_load_from_file(keyfile, config.configFile, G_KEY_FILE_NONE, &error);
     }
 
     if (!status || error) {
