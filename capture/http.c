@@ -163,7 +163,7 @@ LOCAL size_t arkime_http_curl_write_callback(void *contents, size_t size, size_t
     return sz;
 }
 /******************************************************************************/
-unsigned char *arkime_http_send_sync(void *serverV, const char *method, const char *key, int32_t key_len, char *data, uint32_t data_len, char **headers, size_t *return_len)
+unsigned char *arkime_http_send_sync(void *serverV, const char *method, const char *key, int32_t key_len, char *data, uint32_t data_len, char **headers, size_t *return_len, int *code)
 {
     ArkimeHttpServer_t        *server = serverV;
     struct curl_slist         *headerList = NULL;
@@ -286,6 +286,8 @@ unsigned char *arkime_http_send_sync(void *serverV, const char *method, const ch
 
     long responseCode;
     curl_easy_getinfo(easy, CURLINFO_RESPONSE_CODE, &responseCode);
+    if (code)
+        *code = responseCode;
 
     if (config.logESRequests || (server->printErrors && responseCode/100 != 2)) {
         double totalTime;
@@ -893,7 +895,7 @@ gboolean arkime_http_schedule(void *serverV, const char *method, const char *key
 /******************************************************************************/
 unsigned char *arkime_http_get(void *serverV, char *key, int key_len, size_t *mlen)
 {
-    return arkime_http_send_sync(serverV, "GET", key, key_len, NULL, 0, NULL, mlen);
+    return arkime_http_send_sync(serverV, "GET", key, key_len, NULL, 0, NULL, mlen, NULL);
 }
 
 /******************************************************************************/

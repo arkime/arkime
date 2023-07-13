@@ -1723,7 +1723,7 @@ LOCAL void arkime_db_update_stats(int n, gboolean sync)
             stats_key_len = snprintf(stats_key, sizeof(stats_key), "/%sstats/_doc/%s?version_type=external&version=%" PRIu64, config.prefix, config.nodeName, dbVersion);
         }
         if (sync) {
-            unsigned char *data = arkime_http_send_sync(esServer, "POST", stats_key, stats_key_len, json, json_len, NULL, NULL);
+            unsigned char *data = arkime_http_send_sync(esServer, "POST", stats_key, stats_key_len, json, json_len, NULL, NULL, NULL);
             if (data)
                 free(data);
             arkime_http_free_buffer(json);
@@ -1860,7 +1860,7 @@ uint32_t arkime_db_get_sequence_number_sync(char *name)
         int key_len = snprintf(key, sizeof(key), "/%ssequence/_doc/%s", config.prefix, name);
 
         size_t data_len;
-        uint8_t *data = arkime_http_send_sync(esServer, "POST", key, key_len, "{}", 2, NULL, &data_len);
+        uint8_t *data = arkime_http_send_sync(esServer, "POST", key, key_len, "{}", 2, NULL, &data_len, NULL);
 
         uint32_t version_len;
         uint8_t *version = arkime_js0n_get(data, data_len, "_version", &version_len);
@@ -1908,7 +1908,7 @@ LOCAL void arkime_db_load_file_num()
         free(data);
 
         key_len = snprintf(key, sizeof(key), "/%ssequence/_doc/fn-%s?version_type=external&version=100", config.prefix, config.nodeName);
-        data = arkime_http_send_sync(esServer, "POST", key, key_len, "{}", 2, NULL, NULL);
+        data = arkime_http_send_sync(esServer, "POST", key, key_len, "{}", 2, NULL, NULL, NULL);
     }
     if (data)
         free(data);
@@ -2441,7 +2441,7 @@ LOCAL gboolean arkime_db_fieldsbsb_timeout(gpointer user_data)
         if (user_data == 0)
             arkime_http_schedule(esServer, "POST", "/_bulk", 6, (char *)fieldBSB.buf, BSB_LENGTH(fieldBSB), NULL, ARKIME_HTTP_PRIORITY_BEST, NULL, NULL);
         else {
-            unsigned char *data = arkime_http_send_sync(esServer, "POST", "/_bulk", 6, (char *)fieldBSB.buf, BSB_LENGTH(fieldBSB), NULL, NULL);
+            unsigned char *data = arkime_http_send_sync(esServer, "POST", "/_bulk", 6, (char *)fieldBSB.buf, BSB_LENGTH(fieldBSB), NULL, NULL, NULL);
             arkime_http_free_buffer(fieldBSB.buf);
             if (data)
                 free(data);

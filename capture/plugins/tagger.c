@@ -285,7 +285,7 @@ LOCAL void tagger_plugin_save(ArkimeSession_t *session, int UNUSED(final))
 }
 
 /******************************************************************************/
-LOCAL void tagger_free_ip (TaggerIP_t *tip) 
+LOCAL void tagger_free_ip (TaggerIP_t *tip)
 {
     g_ptr_array_free(tip->infos, TRUE);
     ARKIME_TYPE_FREE(TaggerIP_t, tip);
@@ -549,7 +549,7 @@ LOCAL void tagger_load_file_cb(int UNUSED(code), unsigned char *data, int data_l
         default:
             LOG("ERROR - Unknown tagger type %s for %s", file->type, file->str);
             continue;
-        } 
+        }
 
         TaggerString_t *tstring;
 
@@ -650,7 +650,7 @@ LOCAL gboolean tagger_fetch_files (gpointer sync)
     /* Need to copy the data since sync uses a static buffer, should fix that */
     if (sync) {
         size_t         data_len;
-        unsigned char *data = arkime_http_send_sync(esServer, "GET", key, key_len, NULL, 0, NULL, &data_len);;
+        unsigned char *data = arkime_http_send_sync(esServer, "GET", key, key_len, NULL, 0, NULL, &data_len, NULL);
         tagger_fetch_files_cb(200, data, data_len, NULL);
         free(data);
     } else {

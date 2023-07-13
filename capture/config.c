@@ -438,6 +438,11 @@ void arkime_config_load()
         arkime_config_load_hidden(config.configFile);
     }
 
+    if (g_str_has_prefix(config.configFile, "elasticsearch://") || g_str_has_prefix(config.configFile, "elasticsearchs://")) {
+        memcpy(config.configFile, "http", 4);
+        memmove(config.configFile+4, config.configFile+STRLEN("elasticsearch"), strlen(config.configFile)-STRLEN("elasticsearch") + 1);
+    }
+
     if (g_str_has_prefix(config.configFile, "http://") || g_str_has_prefix(config.configFile, "https://")) {
         char *end = config.configFile + 8;
         while (*end != 0 && *end != '/' && *end != '?') end++;
@@ -447,9 +452,11 @@ void arkime_config_load()
         void *server = arkime_http_create_server(host, 5, 5, TRUE);
         g_free(host);
 
-        unsigned char *data = arkime_http_send_sync(server, "GET", end, strlen(end), NULL, 0, NULL, NULL);
-        if (!data)
-            CONFIGEXIT("Couldn't download from host: %s url: %s", host, end);
+        int code;
+        unsigned char *data = arkime_http_send_sync(server, "GET", end, strlen(end), NULL, 0, NULL, NULL, &code);
+
+        if (!data || code != 200)
+            CONFIGEXIT("Couldn't download from code: %d host: %s url: %s", code, host, end);
 
         if (g_str_has_suffix(config.configFile, ".ini"))
             status = g_key_file_load_from_data(keyfile, (gchar *)data, -1, G_KEY_FILE_NONE, &error);

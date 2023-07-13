@@ -988,6 +988,8 @@ void  arkime_parsers_classifier_register_port_internal(const char *name, void *u
 void  arkime_print_hex_string(const unsigned char* data, unsigned int length);
 char *arkime_sprint_hex_string(char *buf, const unsigned char* data, unsigned int length);
 
+#define STRLEN(str) (sizeof(str)-1)
+
 #define CLASSIFY_TCP(name, offset, bytes, cb) arkime_parsers_classifier_register_tcp(name, name, offset, (unsigned char*)bytes, sizeof(bytes)-1, cb);
 #define CLASSIFY_UDP(name, offset, bytes, cb) arkime_parsers_classifier_register_udp(name, name, offset, (unsigned char*)bytes, sizeof(bytes)-1, cb);
 
@@ -1003,7 +1005,7 @@ typedef void (*ArkimeHttpHeader_cb)(char *url, const char *field, const char *va
 
 void arkime_http_init();
 
-unsigned char *arkime_http_send_sync(void *serverV, const char *method, const char *key, int32_t key_len, char *data, uint32_t data_len, char **headers, size_t *return_len);
+unsigned char *arkime_http_send_sync(void *serverV, const char *method, const char *key, int32_t key_len, char *data, uint32_t data_len, char **headers, size_t *return_len, int *code);
 gboolean arkime_http_send(void *serverV, const char *method, const char *key, int32_t key_len, char *data, uint32_t data_len, char **headers, gboolean dropable, ArkimeHttpResponse_cb func, gpointer uw);
 
 #define ARKIME_HTTP_PRIORITY_BEST      0
