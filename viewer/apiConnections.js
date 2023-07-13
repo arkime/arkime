@@ -10,14 +10,16 @@ const SessionAPIs = require('./apiSessions');
 
 let fieldsMap;
 
-if (!fieldsMap) {
-  setTimeout(() => { // make sure db.js loads before fetching fields
-    ViewerUtils.loadFields()
-      .then((result) => {
-        fieldsMap = result.fieldsMap;
-      });
-  });
-}
+Config.loaded(() => {
+  if (!fieldsMap) {
+    setTimeout(() => { // make sure db.js loads before fetching fields
+      ViewerUtils.loadFields()
+        .then((result) => {
+          fieldsMap = result.fieldsMap;
+        });
+    });
+  }
+});
 
 class ConnectionAPIs {
   // --------------------------------------------------------------------------

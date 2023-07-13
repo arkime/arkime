@@ -217,17 +217,12 @@ class ConfigRedis {
     ConfigRedis.#redisKey = redisParts.pop();
     ConfigRedis.#redis = ArkimeUtil.createRedisClient(redisParts.join('/'), 'config');
 
-    ConfigRedis.#redis.get(ConfigRedis.#redisKey, function (err, result) {
-      if (err) {
-        throw err;
-      }
-
-      if (result === null) {
-        return {};
-      } else {
-        return JSON.parse(result);
-      }
-    });
+    const result = await ConfigRedis.#redis.get(ConfigRedis.#redisKey);
+    if (result === null) {
+      return {};
+    } else {
+      return JSON.parse(result);
+    }
   }
 
   save (uri, config, cb) {
@@ -255,16 +250,12 @@ class ConfigRedisSentinel {
     ConfigRedisSentinel.#redisKey = redisParts[5];
     ConfigRedisSentinel.#redis = ArkimeUtil.createRedisClient(uri, 'config');
 
-    ConfigRedisSentinel.#redis.get(ConfigRedisSentinel.#redisKey, function (err, result) {
-      if (err) {
-        throw err;
-      }
-      if (result === null) {
-        return {};
-      } else {
-        return JSON.parse(result);
-      }
-    });
+    const result = await ConfigRedisSentinel.#redis.get(ConfigRedisSentinel.#redisKey);
+    if (result === null) {
+      return {};
+    } else {
+      return JSON.parse(result);
+    }
   }
 
   save (uri, config, cb) {
@@ -289,16 +280,12 @@ class ConfigRedisCluster {
     ConfigRedisCluster.#redisKey = redisParts[4];
     ConfigRedisCluster.#redis = ArkimeUtil.createRedisClient(uri, 'config');
 
-    ConfigRedisCluster.#redis.get(ConfigRedisCluster.#redisKey, function (err, result) {
-      if (err) {
-        throw err;
-      }
-      if (result === null) {
-        return {};
-      } else {
-        return JSON.parse(result);
-      }
-    });
+    const result = await ConfigRedisCluster.#redis.get(ConfigRedisCluster.#redisKey);
+    if (result === null) {
+      return {};
+    } else {
+      return JSON.parse(result);
+    }
   }
 
   save (uri, config, cb) {
@@ -318,7 +305,7 @@ class ConfigElasticsearch {
     }
 
     try {
-      const response = axios.get(url);
+      const response = await axios.get(url);
       return response.data._source;
     } catch (error) {
       if (error.response && error.response.status === 404) {
@@ -344,5 +331,31 @@ ArkimeConfig.registerParser('elasticsearch', ConfigElasticsearch);
 ArkimeConfig.registerParser('opensearch', ConfigElasticsearch);
 ArkimeConfig.registerParser('elasticsearchs', ConfigElasticsearch);
 ArkimeConfig.registerParser('opensearchs', ConfigElasticsearch);
+
+// ----------------------------------------------------------------------------
+class ConfigHttp {
+  static async load (uri) {
+    try {
+      const response = await axios.get(uri);
+      console.log('response.data', response.data);
+      if (uri.endsWith('.ini')) {
+        return ini.parseString(response.data);
+      } else {
+        return JSON.parse(response.data);
+      }
+    } catch (error) {
+      if (error.response && error.response.status === 404) {
+        return {};
+      }
+      throw error;
+    }
+  }
+
+  static save (uri, config, cb) {
+    console.log('ERROR - Can not SAVE to', uri);
+  }
+};
+ArkimeConfig.registerParser('http', ConfigHttp);
+ArkimeConfig.registerParser('https', ConfigHttp);
 
 module.exports = ArkimeConfig;

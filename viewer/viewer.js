@@ -41,11 +41,6 @@ const User = require('../common/user');
 const Auth = require('../common/auth');
 const ArkimeUtil = require('../common/arkimeUtil');
 
-if (typeof express !== 'function') {
-  console.log("ERROR - Need to run 'npm update' in viewer directory");
-  process.exit(1);
-}
-
 // express app
 const app = express();
 
