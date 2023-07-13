@@ -62,7 +62,7 @@ class Overview {
         iType,
         name: `Default ${iType}`,
         title: 'Overview of %{query}',
-        fields: [],
+        fields: defaultOverviewFieldsForIType[iType] ?? [],
         viewRoles: ['cont3xtUser'],
         editRoles: ['superAdmin'],
         creator: '!__cont3xt__!'
@@ -280,6 +280,159 @@ class Overview {
     return res.send({ success: true, text: 'Success' });
   }
 }
+
+const defaultOverviewFieldsForIType = {
+  domain: [
+    {
+      from: 'VT Domain',
+      field: 'Forcepoint ThreatSeeker category',
+      alias: 'VT Forcepoint'
+    },
+    {
+      from: 'VT Domain',
+      field: 'Webutation domain info',
+      alias: 'VT Webutation'
+    },
+    {
+      from: 'VT Domain',
+      field: 'Sophos category',
+      alias: 'VT Sophos'
+    },
+    {
+      from: 'PT DNS',
+      field: 'firstSeen',
+      alias: 'PT PDNS First Seen'
+    },
+    {
+      from: 'PT Whois',
+      field: 'expiresAt',
+      alias: 'Domain Expiry date'
+    },
+    {
+      from: 'PT Whois',
+      field: 'contactEmail',
+      alias: 'PT contact email'
+    },
+    {
+      from: 'PT Whois',
+      field: 'organization',
+      alias: 'PT organization'
+    },
+    {
+      from: 'Threatstream',
+      field: 'Objects',
+      alias: 'ThreatStream events'
+    },
+    {
+      from: 'AlienVaultOTX',
+      field: 'Pulses:',
+      alias: 'OTX Pulses'
+    },
+    {
+      from: 'URLScan',
+      field: 'results',
+      alias: 'URLScan results'
+    },
+    {
+      from: 'VT Domain',
+      field: 'detected_urls',
+      alias: 'VT detected urls'
+    }
+  ],
+  ip: [
+    {
+      from: 'AbuseIPDB',
+      field: 'usageType',
+      alias: 'AbuseIPDB classification'
+    },
+    {
+      from: 'Spur',
+      field: 'infrastructure',
+      alias: 'Spur Infra:'
+    },
+    {
+      from: 'GreyNoise',
+      field: 'classification',
+      alias: 'GreyNoise classification'
+    },
+    {
+      from: 'Censys',
+      field: 'Services',
+      alias: 'Censys Open Port info'
+    },
+    {
+      from: 'Censys',
+      field: 'Certificates',
+      alias: 'Censys Certificates'
+    },
+    {
+      from: 'Shodan',
+      field: 'Service/Port info',
+      alias: 'Shodan Open Port info'
+    },
+    {
+      from: 'Shodan',
+      field: 'Certificates',
+      alias: 'Shodan Certificates'
+    },
+    {
+      from: 'AbuseIPDB',
+      field: 'Reports:',
+      alias: 'AbuseIPDB reports'
+    },
+    {
+      from: 'BGPView',
+      field: 'Prefixes',
+      alias: 'BGPView prefixes'
+    },
+    {
+      from: 'URLScan',
+      field: 'results',
+      alias: 'URLScan results'
+    },
+    {
+      from: 'VT IP',
+      field: 'detected_urls',
+      alias: 'VT detected urls'
+    },
+    {
+      from: 'Threatstream',
+      field: 'Objects',
+      alias: 'Threatstream tags'
+    }
+  ],
+  url: [],
+  email: [],
+  phone: [],
+  hash: [
+    {
+      from: 'VT Hash',
+      field: 'positives',
+      alias: 'VT Hash malicious scan count'
+    },
+    {
+      from: 'VT Hash',
+      field: 'scan_date',
+      alias: 'VT scan date'
+    },
+    {
+      from: 'VT Hash',
+      field: 'permalink',
+      alias: 'VT link'
+    },
+    {
+      from: 'VT Hash',
+      field: 'scans',
+      alias: 'VT scan results'
+    },
+    {
+      from: 'Threatstream',
+      field: 'Objects',
+      alias: 'Threatstream tags'
+    }
+  ],
+  text: []
+};
 
 module.exports = Overview;
 
