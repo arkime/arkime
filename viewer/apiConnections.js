@@ -5,6 +5,7 @@ const Db = require('./db.js');
 const async = require('async');
 const util = require('util');
 const ArkimeUtil = require('../common/arkimeUtil');
+const ArkimeConfig = require('../common/arkimeConfig');
 const ViewerUtils = require('./viewerUtils');
 const SessionAPIs = require('./apiSessions');
 
@@ -405,7 +406,7 @@ class ConnectionAPIs {
             }
 
             let nodeKeys = Object.keys(nodesHash);
-            if (Config.regressionTests) {
+            if (ArkimeConfig.regressionTests) {
               nodeKeys = nodeKeys.sort((a, b) => {
                 return nodesHash[a].id.localeCompare(nodesHash[b].id);
               });

@@ -29,8 +29,9 @@ const https = require('https');
 const fs = require('fs');
 const path = require('path');
 const ArkimeUtil = require('../common/arkimeUtil');
+const ArkimeConfig = require('../common/arkimeConfig');
 
-const esSSLOptions = { rejectUnauthorized: !Config.insecure };
+const esSSLOptions = { rejectUnauthorized: !ArkimeConfig.insecure };
 Config.loaded(() => {
   const esClientKey = Config.get('esClientKey');
   const esClientCert = Config.get('esClientCert');
@@ -977,7 +978,7 @@ app.post('/:index/_count', simpleGatherAdd);
 app.get('/:index/:type/_count', simpleGatherAdd);
 app.post('/:index/:type/_count', simpleGatherAdd);
 
-if (Config.regressionTests) {
+if (ArkimeConfig.regressionTests) {
   app.post('/regressionTests/shutdown', function (req, res) {
     process.exit(0);
   });

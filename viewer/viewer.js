@@ -40,6 +40,7 @@ const dayMs = 60000 * 60 * 24;
 const User = require('../common/user');
 const Auth = require('../common/auth');
 const ArkimeUtil = require('../common/arkimeUtil');
+const ArkimeConfig = require('../common/arkimeConfig');
 
 // express app
 const app = express();
@@ -189,7 +190,7 @@ app.use(['/assets', '/logos'], express.static(
 ), ArkimeUtil.missingResource);
 
 // regression test methods, before auth checks --------------------------------
-if (Config.regressionTests) {
+if (ArkimeConfig.regressionTests) {
   // Override default lastUsed min write internal for tests
   User.lastUsedMinInterval = 1000;
 
@@ -294,7 +295,7 @@ app.use(async (req, res, next) => {
 
 Config.loaded(() => {
   if (Config.get('passwordSecret')) {
-  } else if (Config.regressionTests) {
+  } else if (ArkimeConfig.regressionTests) {
     console.log('WARNING - Option --regressionTests was used, do NOT use in production, for testing only');
     internals.noPasswordSecret = true;
   } else {
@@ -2198,7 +2199,7 @@ async function premain () {
     esClientCert: Config.get('esClientCert', null),
     esClientKeyPass: Config.get('esClientKeyPass', null),
     multiES: Config.get('multiES', false),
-    insecure: Config.insecure,
+    insecure: ArkimeConfig.insecure,
     caTrustFile: Config.get('caTrustFile', null),
     requestTimeout: Config.get('elasticsearchTimeout', 300),
     esProfile: Config.esProfile,

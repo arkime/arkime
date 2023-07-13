@@ -26,6 +26,7 @@ const fs = require('fs');
 const basicAuth = require('basic-auth');
 const zlib = require('zlib');
 const ArkimeUtil = require('../common/arkimeUtil');
+const ArkimeConfig = require('../common/arkimeConfig');
 
 // express app
 const app = express();
@@ -38,7 +39,7 @@ let elasticsearch;
 let sensors;
 let oldprefix;
 let prefix;
-const esSSLOptions = { rejectUnauthorized: !Config.insecure };
+const esSSLOptions = { rejectUnauthorized: !ArkimeConfig.insecure };
 let authHeader;
 
 Config.loaded(() => {
@@ -144,7 +145,7 @@ const putExact = {
 // ============================================================================
 // RegressionTests
 // ===========================================================================
-if (Config.regressionTests) {
+if (ArkimeConfig.regressionTests) {
   app.post('/regressionTests/shutdown', function (req, res) {
     process.exit(0);
   });

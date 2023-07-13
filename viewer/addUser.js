@@ -24,6 +24,7 @@ const Db = require('./db.js');
 const cryptoLib = require('crypto');
 const Auth = require('../common/auth');
 const User = require('../common/user');
+const ArkimeConfig = require('../common/arkimeConfig');
 
 function help () {
   console.log('addUser.js [<config options>] <user id> <user friendly name> <password> [<options>]');
@@ -167,7 +168,7 @@ async function premain () {
     const usersUrl = Config.get('usersUrl');
     const usersEs = Config.get('usersElasticsearch', Config.get('elasticsearch', 'http://localhost:9200')).split(',');
     User.initialize({
-      insecure: Config.insecure,
+      insecure: ArkimeConfig.insecure,
       requestTimeout: Config.get('elasticsearchTimeout', 300),
       debug: Config.debug,
       url: usersUrl,
@@ -190,7 +191,7 @@ async function premain () {
       esClientKey: Config.get('esClientKey', null),
       esClientCert: Config.get('esClientCert', null),
       esClientKeyPass: Config.get('esClientKeyPass', null),
-      insecure: Config.insecure,
+      insecure: ArkimeConfig.insecure,
       caTrustFile: Config.getFull(Config.nodeName(), 'caTrustFile'),
       usersHost: Config.getArray('usersElasticsearch', ','),
       usersPrefix: Config.get('usersPrefix'),

@@ -24,6 +24,7 @@ const Config = require('./config.js');
 const Db = require('./db.js');
 const cryptoLib = require('crypto');
 const fs = require('fs');
+const ArkimeConfig = require('../common/arkimeConfig');
 
 function main () {
   const query = { size: 100, query: { term: { name: process.argv[2] } }, sort: [{ num: { order: 'desc' } }] };
@@ -101,7 +102,7 @@ async function premain () {
     esClientKey: Config.get('esClientKey', null),
     esClientCert: Config.get('esClientCert', null),
     esClientKeyPass: Config.get('esClientKeyPass', null),
-    insecure: Config.insecure,
+    insecure: ArkimeConfig.insecure,
     usersHost: Config.getArray('usersElasticsearch', ','),
     usersPrefix: Config.get('usersPrefix'),
     esApiKey: Config.get('elasticsearchAPIKey', null),

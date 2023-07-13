@@ -48,9 +48,6 @@ const dayMs = 60000 * 60 * 24;
 require('console-stamp')(console, '[HH:MM:ss.l]');
 
 const internals = {
-  configFile: `${version.config_prefix}/etc/wiseService.ini`,
-  debug: 0,
-  insecure: false,
   fieldsTS: 0,
   fields: [],
   fieldsSize: 0,
@@ -96,7 +93,6 @@ const internals = {
   fieldActions: new Map(),
   valueActions: new Map(),
   workers: 1,
-  regressionTests: false,
   webconfig: false,
   configCode: cryptoLib.randomBytes(20).toString('base64').replace(/[=+/]/g, '').substr(0, 6),
   startTime: Date.now()
@@ -109,10 +105,7 @@ internals.type2Name = ['ip', 'domain', 'md5', 'email', 'url', 'tuple', 'ja3', 's
 // ----------------------------------------------------------------------------
 function processArgs (argv) {
   for (let i = 0, ilen = argv.length; i < ilen; i++) {
-    if (argv[i] === '-c' || argv[i] === '--config') {
-      i++;
-      internals.configFile = argv[i];
-    } else if (process.argv[i] === '-o') {
+    if (process.argv[i] === '-o') {
       i++;
       const equal = process.argv[i].indexOf('=');
       if (equal === -1) {
@@ -121,13 +114,6 @@ function processArgs (argv) {
       }
 
       ArkimeConfig.setOverride(process.argv[i].slice(0, equal), process.argv[i].slice(equal + 1));
-    } else if (argv[i] === '--insecure') {
-      internals.insecure = true;
-    } else if (argv[i] === '--debug') {
-      internals.debug++;
-      ArkimeConfig.setDebug(internals.debug);
-    } else if (argv[i] === '--regressionTests') {
-      internals.regressionTests = true;
     } else if (argv[i] === '--webcode') {
       i++;
       internals.configCode = argv[i];
@@ -213,7 +199,7 @@ process.on('SIGINT', function () {
 // ----------------------------------------------------------------------------
 function setupAuth () {
   Auth.initialize({
-    debug: internals.debug,
+    debug: ArkimeConfig.debug,
     mode: getConfig('wiseService', 'authMode'),
     userNameHeader: getConfig('wiseService', 'userNameHeader'),
     passwordSecret: getConfig('wiseService', 'passwordSecret', 'password'),
@@ -238,7 +224,7 @@ function setupAuth () {
   const es = getConfig('wiseService', 'usersElasticsearch', 'http://localhost:9200');
 
   User.initialize({
-    insecure: internals.insecure,
+    insecure: ArkimeConfig.insecure,
     node: es,
     caTrustFile: getConfig('wiseService', 'caTrustFile'),
     prefix: getConfig('wiseService', 'usersPrefix'),
@@ -278,13 +264,13 @@ class WISESourceAPI {
    * Current debug level of wiseService
    * @type {integer}
    */
-  debug = internals.debug;
+  debug = ArkimeConfig.debug;
 
   /**
    * Is wiseService running in insecure mode
    * @type {boolean}
    */
-  insecure = internals.insecure;
+  insecure = ArkimeConfig.insecure;
 
   app = app;
 
@@ -339,7 +325,7 @@ class WISESourceAPI {
       return WISESource.field2Pos[fieldName];
     }
 
-    if (internals.debug > 1) {
+    if (ArkimeConfig.debug > 1) {
       console.log(`Adding field name:${fieldName} db:${db} friendly:${friendly} from '${field}'`);
     }
 
@@ -672,7 +658,7 @@ app.use(['/app.js.map', '/vueapp/app.js.map'], express.static(
 ), ArkimeUtil.missingResource);
 
 // ----------------------------------------------------------------------------
-if (internals.regressionTests) {
+if (ArkimeConfig.regressionTests) {
   app.post('/regressionTests/shutdown', (req, res) => {
     process.exit(0);
   });
@@ -744,7 +730,7 @@ app.get('/fieldActions', [ArkimeUtil.noCacheJson], function (req, res) {
 function globalAllowed (value) {
   for (let i = 0; i < this.excludes.length; i++) {
     if (value.match(this.excludes[i])) {
-      if (internals.debug > 0) {
+      if (ArkimeConfig.debug > 0) {
         console.log('Found in Global %s Exclude', this.name, value);
       }
       return false;
@@ -755,7 +741,7 @@ function globalAllowed (value) {
 // ----------------------------------------------------------------------------
 function globalIPAllowed (value) {
   if (this.excludes.find(value)) {
-    if (internals.debug > 0) {
+    if (ArkimeConfig.debug > 0) {
       console.log('Found in Global IP Exclude', value);
     }
     return false;
@@ -767,7 +753,7 @@ function sourceAllowed (src, value) {
   const excludes = src[this.excludeName] || [];
   for (let i = 0; i < excludes.length; i++) {
     if (value.match(excludes[i])) {
-      if (internals.debug > 0) {
+      if (ArkimeConfig.debug > 0) {
         console.log('Found in', src.section, this.name, 'exclude', value);
       }
       return false;
@@ -778,7 +764,7 @@ function sourceAllowed (src, value) {
 // ----------------------------------------------------------------------------
 function sourceIPAllowed (src, value) {
   if (src.excludeIPs.find(value)) {
-    if (internals.debug > 0) {
+    if (ArkimeConfig.debug > 0) {
       console.log('Found in', src.section, 'IP Exclude', value);
     }
     return false;
@@ -970,7 +956,7 @@ function processQuery (req, query, cb) {
       if (err) {
         return cb(err);
       }
-      if (internals.debug > 2) {
+      if (ArkimeConfig.debug > 2) {
         console.log('RESULT', typeInfo.funcName, query.value, WISESource.result2JSON(WISESource.combineResults(results)));
       }
 
@@ -1072,7 +1058,7 @@ app.post('/get', function (req, res) {
         offset += 2;
 
         const value = buf.toString('utf8', offset, offset + len);
-        if (internals.debug > 1) {
+        if (ArkimeConfig.debug > 1) {
           console.log('%s', typeName, value);
         }
         offset += len;
@@ -1494,7 +1480,7 @@ if (internals.webconfig) {
     return res.send({
       success: true,
       config,
-      filePath: internals.configFile
+      filePath: ArkimeConfig.configFile
     });
   });
   // ----------------------------------------------------------------------------
@@ -1510,7 +1496,7 @@ if (internals.webconfig) {
     }
 
     const config = req.body.config;
-    if (internals.debug > 0) {
+    if (ArkimeConfig.debug > 0) {
       console.log(config);
     }
 
@@ -1549,7 +1535,7 @@ if (internals.webconfig) {
       };
     }
 
-    if (internals.regressionTests) {
+    if (ArkimeConfig.regressionTests) {
       return res.send({ success: true, text: 'Would save, but regressionTests' });
     }
 
@@ -1638,7 +1624,7 @@ function main () {
   internals.sourceApi.addField('field:tags'); // Always add tags field so we have at least 1 field
   loadSources();
 
-  if (internals.debug > 0) {
+  if (ArkimeConfig.debug > 0) {
     setInterval(printStats, 60 * 1000);
   }
 
@@ -1667,7 +1653,7 @@ function main () {
 
 async function buildConfigAndStart () {
   // Load config
-  await ArkimeConfig.initialize({ configFile: internals.configFile });
+  await ArkimeConfig.initialize({ defaultConfigFile: `${version.config_prefix}/etc/wiseService.ini` });
   internals.updateTime = getConfig('wiseService', 'updateTime', 0);
 
   // Check if we need to restart, this is if there are multiple instances

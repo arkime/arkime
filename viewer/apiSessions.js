@@ -12,6 +12,7 @@ const pug = require('pug');
 const util = require('util');
 const decode = require('./decode.js');
 const ArkimeUtil = require('../common/arkimeUtil');
+const ArkimeConfig = require('../common/arkimeConfig');
 const Auth = require('../common/auth');
 const Pcap = require('./pcap.js');
 const version = require('../common/version');
@@ -934,7 +935,7 @@ class SessionAPIs {
     }, (err, session) => {
       if (err) {
         res.status(500);
-        if (!Config.regressionTests) {
+        if (!ArkimeConfig.regressionTests) {
           console.trace('writePcap', err);
         }
         return doneCb(err);

@@ -22,26 +22,30 @@ const axios = require('axios');
 const ini = require('iniparser');
 
 class ArkimeConfig {
-  static #debug = 0;
+  static debug = 0;
+  static regressionTests = false;
+  static insecure = false;
+
   static #override = new Map();
   static #debugged = new Map();
   static #config;
   static #configImpl;
   static #parsers = {};
+  static #configFile;
   static #uri;
 
   static async initialize (options) {
-    ArkimeConfig.#debug = options.debug ?? 0;
+    ArkimeConfig.#configFile ??= options.defaultConfigFile;
 
     // The config is actually hidden
-    if (options.configFile.endsWith('.hiddenconfig')) {
-      options.configFile = fs.readFileSync(options.configFile).toString().split('\n')[0].trim();
+    if (ArkimeConfig.#configFile.endsWith('.hiddenconfig')) {
+      ArkimeConfig.#configFile = fs.readFileSync(ArkimeConfig.#configFile).toString().split('\n')[0].trim();
     }
-    if (options.configFile.startsWith('urlinfile://')) {
-      options.configFile = fs.readFileSync(options.configFile.substring(12)).toString().split('\n')[0].trim();
+    if (ArkimeConfig.#configFile.startsWith('urlinfile://')) {
+      ArkimeConfig.#configFile = fs.readFileSync(ArkimeConfig.#configFile.substring(12)).toString().split('\n')[0].trim();
     }
 
-    ArkimeConfig.#uri = options.configFile;
+    ArkimeConfig.#uri = ArkimeConfig.#configFile;
 
     const parts = ArkimeConfig.#uri.split('://');
 
@@ -74,15 +78,12 @@ class ArkimeConfig {
     ArkimeConfig.#override.set(key, value);
   }
 
-  static setDebug (debug) {
-    ArkimeConfig.#debug = debug;
-  }
-
   static get (section, sectionKey, d) {
     const key = `${section}.${sectionKey}`;
     const value = ArkimeConfig.#override.get(key) ?? ArkimeConfig.#config?.[section]?.[sectionKey] ?? d;
 
-    if (ArkimeConfig.#debug > 0 && !ArkimeConfig.#debugged.has(key)) {
+    if (ArkimeConfig.debug > 0 && !ArkimeConfig.#debugged.has(key)) {
+      console.log(`CONFIG - ${key} is ${value}`);
       ArkimeConfig.#debugged.set(key, true);
     }
 
@@ -100,8 +101,16 @@ class ArkimeConfig {
     ArkimeConfig.#config = config;
   }
 
+  static canSave (cb) {
+    return ArkimeConfig.#configImpl.save !== undefined;
+  }
+
   static save (cb) {
-    ArkimeConfig.#configImpl.save(ArkimeConfig.#uri, ArkimeConfig.#config, cb);
+    if (ArkimeConfig.#configImpl.save) {
+      ArkimeConfig.#configImpl.save(ArkimeConfig.#uri, ArkimeConfig.#config, cb);
+    } else {
+      console.log('WARNING - Saving config is not supported by', ArkimeConfig.#uri);
+    }
   }
 
   static loadIncludes (includes) {
@@ -154,7 +163,32 @@ class ArkimeConfig {
   static getSection (section) {
     return ArkimeConfig.#config[section];
   }
+
+  static processArgs () {
+    const args = [];
+    for (let i = 0, ilen = process.argv.length; i < ilen; i++) {
+      if (process.argv[i] === '-c' || process.argv[i] === '--config') {
+        i++;
+        ArkimeConfig.#configFile = process.argv[i];
+      } else if (process.argv[i] === '--debug') {
+        ArkimeConfig.debug++;
+      } else if (process.argv[i] === '--insecure') {
+        ArkimeConfig.insecure = true;
+      } else if (process.argv[i] === '--regressionTests') {
+        ArkimeConfig.regressionTests = true;
+      } else {
+        args.push(process.argv[i]);
+      }
+    }
+    process.argv = args;
+
+    if (ArkimeConfig.debug > 0) {
+      console.log('Debug Level', ArkimeConfig.debug);
+    }
+  }
 }
+
+ArkimeConfig.processArgs();
 
 // ----------------------------------------------------------------------------
 // Config Schemes - For each scheme supported implement a load/save function
@@ -349,10 +383,6 @@ class ConfigHttp {
       }
       throw error;
     }
-  }
-
-  static save (uri, config, cb) {
-    console.log('ERROR - Can not SAVE to', uri);
   }
 };
 ArkimeConfig.registerParser('http', ConfigHttp);

@@ -29,7 +29,6 @@ const Auth = require('../common/auth');
 const ArkimeConfig = require('../common/arkimeConfig');
 
 const internals = {
-  configFile: `${version.config_prefix}/etc/config.ini`,
   hostName: os.hostname(),
   fields: [],
   fieldsMap: {},
@@ -39,10 +38,11 @@ const internals = {
 };
 
 class Config {
-  static debug = 0;
-  static insecure = false;
+  static get debug () {
+    return ArkimeConfig.debug;
+  }
+
   static esProfile = false;
-  static regressionTests = false;
 
   static #keyFileLocation;
   static #certFileLocation;
@@ -52,10 +52,7 @@ class Config {
   static processArgs () {
     const args = [];
     for (let i = 0, ilen = process.argv.length; i < ilen; i++) {
-      if (process.argv[i] === '-c' || process.argv[i] === '--config') {
-        i++;
-        internals.configFile = process.argv[i];
-      } else if (process.argv[i] === '--host') {
+      if (process.argv[i] === '--host') {
         i++;
         internals.hostName = process.argv[i];
       } else if (process.argv[i] === '-n') {
@@ -76,14 +73,8 @@ class Config {
         } else {
           ArkimeConfig.setOverride('default.' + key, value);
         }
-      } else if (process.argv[i] === '--debug') {
-        Config.debug++;
-      } else if (process.argv[i] === '--insecure') {
-        Config.insecure = true;
       } else if (process.argv[i] === '--esprofile') {
         Config.esProfile = true;
-      } else if (process.argv[i] === '--regressionTests') {
-        Config.regressionTests = true;
       } else {
         args.push(process.argv[i]);
       }
@@ -92,10 +83,6 @@ class Config {
 
     if (!internals.nodeName) {
       internals.nodeName = internals.hostName.split('.')[0];
-    }
-
-    if (Config.debug > 0) {
-      console.log('Debug Level', Config.debug);
     }
   }
 
@@ -179,7 +166,7 @@ class Config {
   }
 
   static getConfigFile () {
-    return internals.configFile;
+    return ArkimeConfig.configFile;
   };
 
   static isHTTPS (node) {
@@ -417,7 +404,7 @@ class Config {
     }
     */
 
-    await ArkimeConfig.initialize({ debug: internals.debug, configFile: internals.configFile });
+    await ArkimeConfig.initialize({ defaultConfigFile: `${version.config_prefix}/etc/wiseService.ini` });
     ArkimeConfig.loadIncludes(Config.get('includes'));
 
     const loadedCbs = Config.#loadedCbs;
@@ -427,7 +414,7 @@ class Config {
     }
 
     if (Config.debug === 0) {
-      Config.debug = parseInt(Config.get('debug', 0));
+      ArkimeConfig.debug = parseInt(Config.get('debug', 0));
       if (Config.debug) {
         console.log('Debug Level', Config.debug);
       }
