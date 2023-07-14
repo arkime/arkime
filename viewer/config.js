@@ -49,13 +49,15 @@ class Config {
   static keyFileData;
   static certFileData;
 
+  // ----------------------------------------------------------------------------
   static processArgs () {
     const args = [];
+    const doverrides = [];
     for (let i = 0, ilen = process.argv.length; i < ilen; i++) {
       if (process.argv[i] === '--host') {
         i++;
         internals.hostName = process.argv[i];
-      } else if (process.argv[i] === '-n') {
+      } else if (process.argv[i] === '-n' || process.argv[i] === '--node') {
         i++;
         internals.nodeName = process.argv[i];
       } else if (process.argv[i] === '-o' || process.argv[i] === '--option') {
@@ -71,7 +73,8 @@ class Config {
         if (key.includes('.')) {
           ArkimeConfig.setOverride(key, value);
         } else {
-          ArkimeConfig.setOverride('default.' + key, value);
+          // Need to do later since nodeName can change
+          doverrides.push({ key, value });
         }
       } else if (process.argv[i] === '--esprofile') {
         Config.esProfile = true;
@@ -84,22 +87,31 @@ class Config {
     if (!internals.nodeName) {
       internals.nodeName = internals.hostName.split('.')[0];
     }
+
+    for (const obj of doverrides) {
+      ArkimeConfig.setOverride(`default.${obj.key}`, obj.value);
+      ArkimeConfig.setOverride(`${internals.nodeName}.${obj.key}`, obj.value);
+    }
   }
 
   /// ///////////////////////////////////////////////////////////////////////////////
   // Config File & Dropping Privileges
   /// ///////////////////////////////////////////////////////////////////////////////
 
+  // ----------------------------------------------------------------------------
   static sectionGet = ArkimeConfig.get;
 
+  // ----------------------------------------------------------------------------
   static getFull (node, key, defaultValue) {
-    return ArkimeConfig.get(node, key) ?? ArkimeConfig.get('default', key, defaultValue);
+    return ArkimeConfig.get([node, 'default'], key, defaultValue);
   }
 
+  // ----------------------------------------------------------------------------
   static get (key, defaultValue) {
-    return ArkimeConfig.get(internals.nodeName, key) ?? ArkimeConfig.get('default', key, defaultValue);
+    return ArkimeConfig.get([internals.nodeName, 'default'], key, defaultValue);
   };
 
+  // ----------------------------------------------------------------------------
   static getBoolFull (node, key, defaultValue) {
     const value = Config.getFull(node, key);
     if (value !== undefined) {
@@ -114,10 +126,12 @@ class Config {
     return defaultValue;
   };
 
+  // ----------------------------------------------------------------------------
   static getBool (key, defaultValue) {
     return Config.getBoolFull(internals.nodeName, key, defaultValue);
   };
 
+  // ----------------------------------------------------------------------------
   // Return an array split on separator, remove leading/trailing spaces, remove empty elements
   static getArray (key, separator, defaultValue) {
     const value = Config.get(key, defaultValue);
@@ -128,6 +142,7 @@ class Config {
     }
   };
 
+  // ----------------------------------------------------------------------------
   static getObj (key, defaultValue) {
     const full = Config.getFull(internals.nodeName, key, defaultValue);
     if (!full) {
@@ -149,6 +164,7 @@ class Config {
     return obj;
   };
 
+  // ----------------------------------------------------------------------------
   static #dropPrivileges () {
     if (process.getuid() !== 0) {
       return;
@@ -165,27 +181,33 @@ class Config {
     }
   }
 
+  // ----------------------------------------------------------------------------
   static getConfigFile () {
     return ArkimeConfig.configFile;
   };
 
+  // ----------------------------------------------------------------------------
   static isHTTPS (node) {
     return Config.getFull(node || internals.nodeName, 'keyFile') &&
            Config.getFull(node || internals.nodeName, 'certFile');
   };
 
+  // ----------------------------------------------------------------------------
   static basePath (node) {
     return Config.getFull(node || internals.nodeName, 'webBasePath', '/');
   };
 
+  // ----------------------------------------------------------------------------
   static nodeName () {
     return internals.nodeName;
   };
 
+  // ----------------------------------------------------------------------------
   static hostName () {
     return internals.hostName;
   };
 
+  // ----------------------------------------------------------------------------
   static arkimeWebURL () {
     let webUrl = Config.get('arkimeWebURL', `${Config.hostName()}${Config.basePath()}`);
     if (!webUrl.startsWith('http')) {
@@ -194,10 +216,12 @@ class Config {
     return webUrl;
   };
 
+  // ----------------------------------------------------------------------------
   static keys (section) {
     return Object.keys(ArkimeConfig.getSection(section) ?? {});
   };
 
+  // ----------------------------------------------------------------------------
   static headers (section) {
     const csection = ArkimeConfig.getSection(section);
     if (csection === undefined) { return []; }
@@ -225,6 +249,7 @@ class Config {
     return headers;
   };
 
+  // ----------------------------------------------------------------------------
   static configMap (section, dSection, d) {
     const data = ArkimeConfig.getSection(section) ?? ArkimeConfig.getSection(dSection) ?? d;
     if (data === undefined) { return {}; }
@@ -253,6 +278,7 @@ class Config {
     return map;
   };
 
+  // ----------------------------------------------------------------------------
   static #fsWait = null;
   static #httpsServer = null;
   static #httpsCryptoOption = null;
@@ -290,6 +316,7 @@ class Config {
     }
   }
 
+  // ----------------------------------------------------------------------------
   static setServerToReloadCerts (server, cryptoOption) {
     if (!Config.isHTTPS()) { return; } // only used in https mode
 
@@ -301,6 +328,7 @@ class Config {
     Config.#httpsCryptoOption = cryptoOption;
   };
 
+  // ----------------------------------------------------------------------------
   static #loadCertData () {
     Config.#keyFileLocation = Config.get('keyFile');
     Config.#certFileLocation = Config.get('certFile');
@@ -315,24 +343,29 @@ class Config {
     return internals.fields;
   };
 
+  // ----------------------------------------------------------------------------
   static getFieldsMap () {
     return internals.fieldsMap;
   };
 
+  // ----------------------------------------------------------------------------
   static getDBFieldsMap () {
     return internals.dbFieldsMap;
   };
 
+  // ----------------------------------------------------------------------------
   static getDBField (field, property) {
     if (internals.dbFieldsMap[field] === undefined) { return undefined; }
     if (property === undefined) { return internals.dbFieldsMap[field]; }
     return internals.dbFieldsMap[field][property];
   };
 
+  // ----------------------------------------------------------------------------
   static getCategories () {
     return internals.categories;
   };
 
+  // ----------------------------------------------------------------------------
   static loadFields (data) {
     internals.fields = [];
     internals.fieldsMap = {};
@@ -380,6 +413,7 @@ class Config {
     }
   };
 
+  // ----------------------------------------------------------------------------
   static #loadedCbs = [];
   static loaded (cb) {
     if (Config.#loadedCbs === undefined) {

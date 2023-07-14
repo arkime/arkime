@@ -26,14 +26,22 @@ class ArkimeConfig {
   static regressionTests = false;
   static insecure = false;
 
+  // ----------------------------------------------------------------------------
+
   static #override = new Map();
   static #debugged = new Map();
   static #config;
   static #configImpl;
-  static #parsers = {};
+  static #schemes = {};
   static #configFile;
   static #uri;
+  static #dumpConfig;
 
+  // ----------------------------------------------------------------------------
+  /**
+   * Initialize the ArkimeConfig subsystem
+   * @param {string} options.defaultConfigFile what the default config file path is
+   */
   static async initialize (options) {
     ArkimeConfig.#configFile ??= options.defaultConfigFile;
 
@@ -59,28 +67,62 @@ class ArkimeConfig {
       }
 
       if (ArkimeConfig.#uri.endsWith('json')) {
-        ArkimeConfig.#configImpl = ArkimeConfig.#parsers.json;
+        ArkimeConfig.#configImpl = ArkimeConfig.#schemes.json;
       } else {
-        ArkimeConfig.#configImpl = ArkimeConfig.#parsers.ini;
+        ArkimeConfig.#configImpl = ArkimeConfig.#schemes.ini;
       }
     } else {
-      ArkimeConfig.#configImpl = ArkimeConfig.#parsers[parts[0]];
+      ArkimeConfig.#configImpl = ArkimeConfig.#schemes[parts[0]];
     }
 
-    ArkimeConfig.#config = await ArkimeConfig.#configImpl.load(ArkimeConfig.#uri);
+    ArkimeConfig.reload();
   }
 
+  // ----------------------------------------------------------------------------
+  /**
+   * Reload the config file
+   */
   static async reload () {
     ArkimeConfig.#config = await ArkimeConfig.#configImpl.load(ArkimeConfig.#uri);
+    if (ArkimeConfig.#dumpConfig) {
+      console.error('OVERRIDE', ArkimeConfig.#override);
+      console.error('CONFIG', ArkimeConfig.#config);
+    }
   }
 
+  // ----------------------------------------------------------------------------
+  /**
+   * Set a config override value
+   * @param {string} key The section.key to override
+   * @param {string} value The value for the key
+   */
   static setOverride (key, value) {
     ArkimeConfig.#override.set(key, value);
   }
 
-  static get (section, sectionKey, d) {
-    const key = `${section}.${sectionKey}`;
-    const value = ArkimeConfig.#override.get(key) ?? ArkimeConfig.#config?.[section]?.[sectionKey] ?? d;
+  // ----------------------------------------------------------------------------
+  /**
+   * Get a config value
+   * @param {string[] | string} sections The sections the key lives in, can also be a string
+   * @param {string} sectionKey The key in the section to get the value for
+   * @param {string} d=undefined The default value to return if sectionKey isn't found
+   */
+  static get (sections, sectionKey, d) {
+    if (!Array.isArray(sections)) { sections = [sections]; }
+
+    let value;
+    let key;
+
+    for (const section of sections) {
+      key = `${section}.${sectionKey}`;
+      value = ArkimeConfig.#override.get(key) ?? ArkimeConfig.#config?.[section]?.[sectionKey];
+      if (value !== undefined) { break; }
+    }
+
+    if (value === undefined) {
+      key = `default ${sectionKey}`;
+      value = d;
+    }
 
     if (ArkimeConfig.debug > 0 && !ArkimeConfig.#debugged.has(key)) {
       console.log(`CONFIG - ${key} is ${value}`);
@@ -93,18 +135,28 @@ class ArkimeConfig {
     return value;
   }
 
-  static registerParser (str, parser) {
-    ArkimeConfig.#parsers[str] = parser;
+  // ----------------------------------------------------------------------------
+  static registerScheme (str, parser) {
+    ArkimeConfig.#schemes[str] = parser;
   }
 
+  // ----------------------------------------------------------------------------
   static replace (config) {
     ArkimeConfig.#config = config;
   }
 
-  static canSave (cb) {
+  // ----------------------------------------------------------------------------
+  /**
+   * Does the config implementation support saving
+   */
+  static canSave () {
     return ArkimeConfig.#configImpl.save !== undefined;
   }
 
+  // ----------------------------------------------------------------------------
+  /**
+   * Save the config
+   */
   static save (cb) {
     if (ArkimeConfig.#configImpl.save) {
       ArkimeConfig.#configImpl.save(ArkimeConfig.#uri, ArkimeConfig.#config, cb);
@@ -113,6 +165,10 @@ class ArkimeConfig {
     }
   }
 
+  // ----------------------------------------------------------------------------
+  /**
+   * Load include files, currently these must be local in ini format
+   */
   static loadIncludes (includes) {
     if (!includes) {
       return;
@@ -164,6 +220,7 @@ class ArkimeConfig {
     return ArkimeConfig.#config[section];
   }
 
+  // ----------------------------------------------------------------------------
   static processArgs () {
     const args = [];
     for (let i = 0, ilen = process.argv.length; i < ilen; i++) {
@@ -176,6 +233,8 @@ class ArkimeConfig {
         ArkimeConfig.insecure = true;
       } else if (process.argv[i] === '--regressionTests') {
         ArkimeConfig.regressionTests = true;
+      } else if (process.argv[i] === '--dumpConfig') {
+        ArkimeConfig.#dumpConfig = true;
       } else {
         args.push(process.argv[i]);
       }
@@ -218,7 +277,7 @@ class ConfigIni {
     }
   }
 }
-ArkimeConfig.registerParser('ini', ConfigIni);
+ArkimeConfig.registerScheme('ini', ConfigIni);
 
 // ----------------------------------------------------------------------------
 
@@ -236,7 +295,7 @@ class ConfigJson {
     }
   }
 }
-ArkimeConfig.registerParser('json', ConfigJson);
+ArkimeConfig.registerScheme('json', ConfigJson);
 
 // ----------------------------------------------------------------------------
 // redis://[:pass]@host:port/db/key
@@ -265,11 +324,11 @@ class ConfigRedis {
     });
   }
 };
-ArkimeConfig.registerParser('redis', ConfigRedis);
+ArkimeConfig.registerScheme('redis', ConfigRedis);
 
 // ----------------------------------------------------------------------------
 // rediss://pass@host:port/db/key
-ArkimeConfig.registerParser('rediss', ConfigRedis);
+ArkimeConfig.registerScheme('rediss', ConfigRedis);
 
 // redis-sentinel://sentinelPassword:redisPassword@host:port/name/db/key
 class ConfigRedisSentinel {
@@ -298,7 +357,7 @@ class ConfigRedisSentinel {
     });
   }
 };
-ArkimeConfig.registerParser('redis-sentinel', ConfigRedisSentinel);
+ArkimeConfig.registerScheme('redis-sentinel', ConfigRedisSentinel);
 
 // ----------------------------------------------------------------------------
 // redis-cluster://[:pass]@host:port/db/key
@@ -328,7 +387,7 @@ class ConfigRedisCluster {
     });
   }
 };
-ArkimeConfig.registerParser('redis-cluster', ConfigRedisCluster);
+ArkimeConfig.registerScheme('redis-cluster', ConfigRedisCluster);
 
 // ----------------------------------------------------------------------------
 class ConfigElasticsearch {
@@ -361,10 +420,10 @@ class ConfigElasticsearch {
       });
   }
 };
-ArkimeConfig.registerParser('elasticsearch', ConfigElasticsearch);
-ArkimeConfig.registerParser('opensearch', ConfigElasticsearch);
-ArkimeConfig.registerParser('elasticsearchs', ConfigElasticsearch);
-ArkimeConfig.registerParser('opensearchs', ConfigElasticsearch);
+ArkimeConfig.registerScheme('elasticsearch', ConfigElasticsearch);
+ArkimeConfig.registerScheme('opensearch', ConfigElasticsearch);
+ArkimeConfig.registerScheme('elasticsearchs', ConfigElasticsearch);
+ArkimeConfig.registerScheme('opensearchs', ConfigElasticsearch);
 
 // ----------------------------------------------------------------------------
 class ConfigHttp {
@@ -385,7 +444,7 @@ class ConfigHttp {
     }
   }
 };
-ArkimeConfig.registerParser('http', ConfigHttp);
-ArkimeConfig.registerParser('https', ConfigHttp);
+ArkimeConfig.registerScheme('http', ConfigHttp);
+ArkimeConfig.registerScheme('https', ConfigHttp);
 
 module.exports = ArkimeConfig;
