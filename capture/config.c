@@ -420,6 +420,11 @@ gboolean arkime_config_load_json(GKeyFile *keyfile, char *data, GError **UNUSED(
     return TRUE;
 }
 /******************************************************************************/
+LOCAL void arkime_config_override_print(gpointer key, gpointer value, gpointer UNUSED(user_data))
+{
+    fprintf(stderr, "%s=%s\n", (char *)key, (char *)value);
+}
+/******************************************************************************/
 void arkime_config_load()
 {
 
@@ -442,6 +447,11 @@ void arkime_config_load()
         int len = strlen(config.configFile);
         memcpy(config.configFile, "http", 4);
         memmove(config.configFile+4, config.configFile+STRLEN("elasticsearch"), strlen(config.configFile)-STRLEN("elasticsearch") + 1);
+        g_strlcat(config.configFile, "/_source", len);
+    } else if (g_str_has_prefix(config.configFile, "opensearch://") || g_str_has_prefix(config.configFile, "opensearchs://")) {
+        int len = strlen(config.configFile);
+        memcpy(config.configFile, "http", 4);
+        memmove(config.configFile+4, config.configFile+STRLEN("opensearch"), strlen(config.configFile)-STRLEN("opensearch") + 1);
         g_strlcat(config.configFile, "/_source", len);
     }
 
@@ -481,15 +491,26 @@ void arkime_config_load()
         CONFIGEXIT("Couldn't load config file (%s) %s\n", config.configFile, (error?error->message:""));
     }
 
-    if (config.debug == 0) {
-        config.debug = arkime_config_int(keyfile, "debug", 0, 0, 128);
-    }
-
     char **includes = arkime_config_str_list(keyfile, "includes", NULL);
     if (includes) {
         arkime_config_load_includes(includes);
         g_strfreev(includes);
-        //LOG("KEYFILE:\n%s", g_key_file_to_data(arkimeKeyFile, NULL, NULL));
+    }
+
+    if (config.dumpConfig) {
+        if (config.override) {
+            fprintf(stderr, "OVERRIDE:\n");
+            g_hash_table_foreach(config.override, arkime_config_override_print, NULL);
+        }
+        fprintf(stderr, "CONFIG:\n%s", g_key_file_to_data(arkimeKeyFile, NULL, NULL));
+        if (config.regressionTests) {
+            exit(0);
+        }
+    }
+
+
+    if (config.debug == 0) {
+        config.debug = arkime_config_int(keyfile, "debug", 0, 0, 128);
     }
 
     char *rotateIndex       = arkime_config_str(keyfile, "rotateIndex", "daily");

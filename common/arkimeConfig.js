@@ -63,6 +63,12 @@ class ArkimeConfig {
       } catch (err) { // if the file doesn't exist, create it
         console.log(`WARNING - ${ArkimeConfig.#uri} doesn't exist`);
         ArkimeConfig.#config = {};
+
+        if (ArkimeConfig.#dumpConfig) {
+          console.error('OVERRIDE', ArkimeConfig.#override);
+          console.error('CONFIG', ArkimeConfig.#config);
+          if (ArkimeConfig.regressionTests) { process.exit(); }
+        }
         return;
       }
 
@@ -75,7 +81,7 @@ class ArkimeConfig {
       ArkimeConfig.#configImpl = ArkimeConfig.#schemes[parts[0]];
     }
 
-    ArkimeConfig.reload();
+    await ArkimeConfig.reload();
   }
 
   // ----------------------------------------------------------------------------
@@ -87,6 +93,7 @@ class ArkimeConfig {
     if (ArkimeConfig.#dumpConfig) {
       console.error('OVERRIDE', ArkimeConfig.#override);
       console.error('CONFIG', ArkimeConfig.#config);
+      if (ArkimeConfig.regressionTests) { process.exit(); }
     }
   }
 
@@ -430,8 +437,9 @@ class ConfigHttp {
   static async load (uri) {
     try {
       const response = await axios.get(uri);
-      console.log('response.data', response.data);
-      if (uri.endsWith('.ini')) {
+      if (typeof response.data === 'object') {
+        return response.data;
+      } else if (uri.endsWith('.ini')) {
         return ini.parseString(response.data);
       } else {
         return JSON.parse(response.data);

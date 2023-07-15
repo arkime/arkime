@@ -403,7 +403,9 @@ typedef struct arkime_config {
     gchar   **extraOps;
     ArkimeFieldOps_t ops;
     gchar     debug;
-    gchar     insecure;
+    gboolean  insecure;
+    gboolean  dumpConfig;
+    gboolean  regressionTests;
     gboolean  quiet;
     gboolean  dryRun;
     gboolean  noSPI;
