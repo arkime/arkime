@@ -451,13 +451,13 @@ void arkime_config_load()
         g_string_replace(string, "elasticsearch", "http", 1);
         g_string_replace(string, "_doc", "_source", 1);
         g_free(config.configFile);
-        config.configFile = g_string_free_and_steal(string);
+        config.configFile = g_string_free(string, FALSE);
     } else if (g_str_has_prefix(config.configFile, "opensearch://") || g_str_has_prefix(config.configFile, "opensearchs://")) {
         GString *string = g_string_new(config.configFile);
         g_string_replace(string, "opensearch", "http", 1);
         g_string_replace(string, "_doc", "_source", 1);
         g_free(config.configFile);
-        config.configFile = g_string_free_and_steal(string);
+        config.configFile = g_string_free(string, FALSE);
     }
 
     if (g_str_has_prefix(config.configFile, "http://") || g_str_has_prefix(config.configFile, "https://")) {
