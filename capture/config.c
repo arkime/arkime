@@ -388,8 +388,11 @@ void arkime_config_load_hidden(char *configFile)
         CONFIGEXIT("Couldn't open %s", configFile);
     if (!fgets(line, sizeof(line), file))
         CONFIGEXIT("Couldn't read %s", configFile);
-    g_free(config.configFile);
+    fclose(file);
+
     g_strchomp(line);
+
+    g_free(config.configFile);
     config.configFile = g_strdup(line);
 }
 /******************************************************************************/
@@ -444,15 +447,17 @@ void arkime_config_load()
     }
 
     if (g_str_has_prefix(config.configFile, "elasticsearch://") || g_str_has_prefix(config.configFile, "elasticsearchs://")) {
-        int len = strlen(config.configFile);
-        memcpy(config.configFile, "http", 4);
-        memmove(config.configFile+4, config.configFile+STRLEN("elasticsearch"), strlen(config.configFile)-STRLEN("elasticsearch") + 1);
-        g_strlcat(config.configFile, "/_source", len);
+        GString *string = g_string_new(config.configFile);
+        g_string_replace(string, "elasticsearch", "http", 1);
+        g_string_replace(string, "_doc", "_source", 1);
+        g_free(config.configFile);
+        config.configFile = g_string_free_and_steal(string);
     } else if (g_str_has_prefix(config.configFile, "opensearch://") || g_str_has_prefix(config.configFile, "opensearchs://")) {
-        int len = strlen(config.configFile);
-        memcpy(config.configFile, "http", 4);
-        memmove(config.configFile+4, config.configFile+STRLEN("opensearch"), strlen(config.configFile)-STRLEN("opensearch") + 1);
-        g_strlcat(config.configFile, "/_source", len);
+        GString *string = g_string_new(config.configFile);
+        g_string_replace(string, "opensearch", "http", 1);
+        g_string_replace(string, "_doc", "_source", 1);
+        g_free(config.configFile);
+        config.configFile = g_string_free_and_steal(string);
     }
 
     if (g_str_has_prefix(config.configFile, "http://") || g_str_has_prefix(config.configFile, "https://")) {

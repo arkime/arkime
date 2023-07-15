@@ -167,7 +167,7 @@ eq_or_diff($out, "");
 
 #### HTTP JSON
 
-$url = "${MolochTest::elasticsearch}/testconfig/_doc/testconfig/_source";
+$url = "${MolochTest::elasticsearch}/testconfig/_source/testconfig";
 
 $out = `node ../viewer/viewer.js -c $url -o foo=bar -n test --regressionTests --dumpConfig 2>&1 1>/dev/null`;
 eq_or_diff($out, "OVERRIDE Map(2) { \'default.foo\' => \'bar\', \'test.foo\' => \'bar\' }
@@ -198,7 +198,7 @@ var=2
 
 #### NOTFOUND HTTP JSON
 
-$url = "${MolochTest::elasticsearch}/testconfig/_doc/notfound/_source";
+$url = "${MolochTest::elasticsearch}/testconfig/_source/notfound";
 
 $out = `node ../viewer/viewer.js -c $url -o foo=bar -n test --regressionTests --dumpConfig 2>&1 1>/dev/null`;
 eq_or_diff($out, "OVERRIDE Map(2) { \'default.foo\' => \'bar\', \'test.foo\' => \'bar\' }
