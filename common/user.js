@@ -35,6 +35,7 @@ const systemRolesMapping = {
 };
 
 const adminRoles = ['usersAdmin', 'arkimeAdmin', 'parliamentAdmin', 'wiseAdmin', 'cont3xtAdmin'];
+const adminRolesWithSuper = ['superAdmin', 'usersAdmin', 'arkimeAdmin', 'parliamentAdmin', 'wiseAdmin', 'cont3xtAdmin'];
 
 const usersMissing = {
   userId: '',
@@ -927,11 +928,17 @@ class User {
     if (!req.user.hasRole('usersAdmin') && (Auth.store2ha1(req.user.passStore) !==
       Auth.store2ha1(Auth.pass2store(req.token.userId, req.body.currentPassword)) ||
       req.token.userId !== req.user.userId)) {
-      return res.serverError(403, 'New password mismatch');
+      return res.serverError(403, 'Password mismatch');
     }
 
-    if (!req.user.hasRole('superAdmin') && req.settingUser.hasRole('superAdmin')) {
-      return res.serverError(403, 'Not allowed to change superAdmin password');
+    // Skip this check if we are a superAdmin
+    if (!req.user.hasRole('superAdmin')) {
+      // Only change the password if we have the same admin roles(s)
+      for (const role of adminRolesWithSuper) {
+        if (!req.user.hasRole(role) && req.settingUser.hasRole(role)) {
+          return res.serverError(403, `Not allowed to change ${role} password`);
+        }
+      }
     }
 
     const user = req.settingUser;
