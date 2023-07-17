@@ -45,10 +45,13 @@ NOTICE: Cross-cluster Shortcuts require you to not restart all your viewers at o
 
 
 4.3.3 2023/07/xx
+  - all - improved json verification
+  - all - fix password changing permission checks
   - capture - handle port reuse better
   - capture - fix kafka memory leak when produce fails
   - cont3xt - New overview cards
   - viewer - gtp decoding
+  - viewer - demo mode improvements, arkimeAdmin can use normally
 
 4.3.2 2023/06/13
   - release - cyberchef 10.4.0 libpcap 1.10.4
@@ -74,9 +77,9 @@ NOTICE: Cross-cluster Shortcuts require you to not restart all your viewers at o
   - all - passwordSecret log message now has the right [section]
   - capture - --tags option now works as well as --tag
   - viewer - new auto cronQueries setting
-  - viewer - change where primary viewer info is stored to not cause constant 
+  - viewer - change where primary viewer info is stored to not cause constant
              mapping change
-  - viewer - fixed ipv6 not working, now assumes zero filled with mask (if 
+  - viewer - fixed ipv6 not working, now assumes zero filled with mask (if
              not provided)
   - viewer - code refactor into javascript classes
 
@@ -93,14 +96,14 @@ NOTICE: Cross-cluster Shortcuts require you to not restart all your viewers at o
   - all - New authTrustProxy setting
   - capture - tcpClosingTimeout setting controls delay before saving tcp
               sessions after close
-  - capture - default dbBulkSize to 1M, min 500K, max 15M and removed 
+  - capture - default dbBulkSize to 1M, min 500K, max 15M and removed
               from sample config file
   - capture - s3 writer now writes multiple files based on packetThreads
   - capture - s3 writer supports zstd, s3Compression setting
   - capture - s3 writer compression level, s3CompressionBlockSize setting
   - capture - s3 writer block size, s3CompressionBlockSize setting
   - capture - s3 writer gap encoding, s3GapPacketPos setting
-  - capture - s3 writer when s3UseECSEnv is true use container env vars to find 
+  - capture - s3 writer when s3UseECSEnv is true use container env vars to find
               the id/key/token for s3 auth
   - capture - improve Gh0st parser (#2225)
   - capture - new dnp3 & finger classifier
@@ -164,7 +167,7 @@ NOTICE: Cross-cluster Shortcuts require you to not restart all your viewers at o
   - capture - add VNI field
   - capture - initial tzsp reader support
   - capture - y2038 fixes
-  - capture - Integer ops in rules now support a leading min or max which only 
+  - capture - Integer ops in rules now support a leading min or max which only
               sets the value if less than or greater than current value
   - wise - added usersElasticsearchBasicAuth setting and lmdb cache support
   - wise - add passivetotal value action if at least key is defined

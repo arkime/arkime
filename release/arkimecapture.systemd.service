@@ -1,6 +1,6 @@
 [Unit]
 Description=Arkime Capture
-After=network.target opensearch elasticsearch
+After=network.target opensearch.service elasticsearch.service
 
 [Service]
 Type=simple

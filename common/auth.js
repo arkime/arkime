@@ -373,7 +373,8 @@ class Auth {
           }
         });
         if (!authorized) {
-          return done('Not authorized');
+          console.log(`The required auth header '${Auth.#requiredAuthHeader}' expected '${Auth.#requiredAuthHeaderVal}' and has `, ArkimeUtil.sanitizeStr(authHeader));
+          return done('Bad authorization header');
         }
       }
 

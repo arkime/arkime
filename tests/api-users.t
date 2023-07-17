@@ -1,4 +1,4 @@
-use Test::More tests => 148;
+use Test::More tests => 158;
 use Cwd;
 use URI::Escape;
 use MolochTest;
@@ -460,11 +460,47 @@ test2,UserNameUpdated3,false,false,false,"",false,false,false,false,false,false,
 # Roles Tests - Some of these are repeats
 my $es = "-o 'elasticsearch=$MolochTest::elasticsearch' -o 'usersElasticsearch=$MolochTest::elasticsearch' $ENV{INSECURE}";
 system("cd ../viewer ; node addUser.js $es -c ../tests/config.test.ini -n testuser testsuperadmin testsuperadmin testsuperadmin --roles superAdmin");
-system("cd ../viewer ; node addUser.js $es -c ../tests/config.test.ini -n testuser testusersadmin testusersadmin testusersadmin --roles usersAdmin");
+system("cd ../viewer ; node addUser.js $es -c ../tests/config.test.ini -n testuser testusersadmin testusersadmin testusersadmin --roles usersAdmin,cont3xtAdmin");
+system("cd ../viewer ; node addUser.js $es -c ../tests/config.test.ini -n testuser testarkimeadmin testarkimeadmin testarkimeadmin --roles arkimeAdmin");
+system("cd ../viewer ; node addUser.js $es -c ../tests/config.test.ini -n testuser testcont3xtadmin testcont3xtadmin testcont3xtadmin --roles cont3xtAdmin");
 system("cd ../viewer ; node addUser.js $es -c ../tests/config.test.ini -n testuser testuser testuser testuser");
 
+my $tuToken = getTokenCookie('testuser');
 my $saToken = getTokenCookie('testsuperadmin');
 my $uaToken = getTokenCookie('testusersadmin');
+
+# Password changing - by user
+    $json = viewerPostToken('/api/user/password?molochRegressionUser=testuser', '{"newPassword": "wrong"}', $tuToken);
+    eq_or_diff($json, from_json('{"text": "Password mismatch", "success": false}'));
+
+    $json = viewerPostToken('/api/user/password?molochRegressionUser=testuser', '{"currentPassword": "wrong", "newPassword": "wrong"}', $tuToken);
+    eq_or_diff($json, from_json('{"text": "Password mismatch", "success": false}'));
+
+    $json = viewerPostToken('/api/user/password?molochRegressionUser=testuser', '{"currentPassword": "testuser"}', $tuToken);
+    eq_or_diff($json, from_json('{"text": "New password needs to be at least 3 characters", "success": false}'));
+
+    $json = viewerPostToken('/api/user/password?molochRegressionUser=testuser', '{"currentPassword": "testuser", "newPassword": "testuserpass"}', $tuToken);
+    eq_or_diff($json, from_json('{"text": "Changed password successfully", "success": true}'));
+
+# Password changing - by usersAdmin
+    $json = viewerPostToken('/api/user/password?molochRegressionUser=testusersadmin&userId=testuser', '{"newPassword": "test1"}', $uaToken);
+    eq_or_diff($json, from_json('{"text": "Changed password successfully", "success": true}'));
+
+    $json = viewerPostToken('/api/user/password?molochRegressionUser=testusersadmin&userId=testarkimeadmin', '{"newPassword": "test2"}', $uaToken);
+    eq_or_diff($json, from_json('{"text": "Not allowed to change arkimeAdmin password", "success": false}'));
+
+    $json = viewerPostToken('/api/user/password?molochRegressionUser=testusersadmin&userId=testcont3xtadmin', '{"newPassword": "test3"}', $uaToken);
+    eq_or_diff($json, from_json('{"text": "Changed password successfully", "success": true}'));
+
+# Password changing - by superAdmin
+    $json = viewerPostToken('/api/user/password?molochRegressionUser=testsuperadmin&userId=testuser', '{"newPassword": "test4"}', $saToken);
+    eq_or_diff($json, from_json('{"text": "Changed password successfully", "success": true}'));
+
+    $json = viewerPostToken('/api/user/password?molochRegressionUser=testsuperadmin&userId=testarkimeadmin', '{"newPassword": "test5"}', $saToken);
+    eq_or_diff($json, from_json('{"text": "Changed password successfully", "success": true}'));
+
+    $json = viewerPostToken('/api/user/password?molochRegressionUser=testsuperadmin&userId=testcont3xtadmin', '{"newPassword": "test6"}', $saToken);
+    eq_or_diff($json, from_json('{"text": "Changed password successfully", "success": true}'));
 
 # Make sure only superadmin can create superadmin
     $json = viewerPostToken("/api/user?molochRegressionUser=testsuperadmin", '{"userId": "testsuperadmin1", "userName": "testsuperadmin1", "enabled":true, "password":"password", "roles": ["superAdmin"]}', $saToken);
