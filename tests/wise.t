@@ -345,4 +345,4 @@ $wise = from_json($MolochTest::userAgent->get("http://$MolochTest::host:8081/url
 eq_or_diff($wise, from_json('[{"field":"cloud.service","len":3,"value":"ec2"}, {"field":"cloud.region","len":10,"value":"af-south-1"}]'));
 
 $wise = from_json($MolochTest::userAgent->get("http://$MolochTest::host:8081/url:azure-ips/ip/4.232.106.88")->content);
-eq_or_diff($wise, from_json('[{"field":"cloud.service","len":11,"value":"actiongroup"}]'));
+eq_or_diff($wise, from_json('[{"value":"actiongroup.italynorth","field":"cloud.service","len":22},{"field":"cloud.region","value":"italynorth","len":10}]'));
