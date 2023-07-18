@@ -317,8 +317,7 @@
                   </span>
                 </span>
                 <input class="form-control"
-                  @keyup.enter="updatePassword"
-                  name="currentPassword"
+                  name="authSetupCode"
                   @input="passwordChanged = true"
                   v-model="authSetupCode"
                   autocomplete="current-password"

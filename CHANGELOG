@@ -48,9 +48,11 @@ NOTICE: Cross-cluster Shortcuts require you to not restart all your viewers at o
   - release - cyberchef 10.5.2
   - all - improved json verification
   - all - fix password changing permission checks
+  - all - better logging when requiredAuthHeader fails
   - capture - handle port reuse better
   - capture - fix kafka memory leak when produce fails
   - cont3xt - New overview cards
+  - parliament - fix parliament clean start not letting auth be set up
   - viewer - gtp decoding
   - viewer - demo mode improvements, arkimeAdmin can use normally
 
