@@ -1546,7 +1546,7 @@ app.post( // cancel OpenSearch/Elasticsearch task endpoint
 app.post( // cancel OpenSearch/Elasticsearch task by opaque id endpoint
   ['/api/estasks/:id/cancelwith'],
   // should not have admin check so users can use, each user is name spaced
-  [ArkimeUtil.noCacheJson, logAction(), checkCookieToken],
+  [ArkimeUtil.noCacheJson, logAction(), checkCookieToken, User.checkPermissions(['hideStats'])],
   StatsAPIs.cancelUserESTask
 );
 
