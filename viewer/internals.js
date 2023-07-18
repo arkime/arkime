@@ -10,7 +10,7 @@ const ArkimeConfig = require('../common/arkimeConfig');
 // build internals
 const internals = {
   isProduction: false,
-  CYBERCHEFVERSION: '10.4.0',
+  CYBERCHEFVERSION: '10.5.2',
   httpAgent: new http.Agent({ keepAlive: true, keepAliveMsecs: 5000, maxSockets: 40 }),
   previousNodesStats: [],
   caTrustCerts: {},

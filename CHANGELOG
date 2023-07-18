@@ -45,6 +45,7 @@ NOTICE: Cross-cluster Shortcuts require you to not restart all your viewers at o
 
 
 4.3.3 2023/07/xx
+  - release - cyberchef 10.5.2
   - all - improved json verification
   - all - fix password changing permission checks
   - capture - handle port reuse better
