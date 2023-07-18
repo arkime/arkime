@@ -1221,7 +1221,7 @@ router.post('/logout', (req, res, next) => {
 
 // Get whether authentication or dashboardOnly mode is set
 router.get('/auth', (req, res, next) => {
-  const hasAuth = !!app.get('password') || !!parliament.settings.commonAuth;
+  const hasAuth = !!app.get('password') || Object.keys(parliament?.settings?.commonAuth).length > 0;
   const dashboardOnly = !!app.get('dashboardOnly');
   return res.json({
     hasAuth,
