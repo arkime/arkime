@@ -150,7 +150,7 @@
     "sanitize-html": "^2.8.1",
     "sass": "~1.26.11",
     "sass-loader": "^12.4.0",
-    "semver": "^7.3.2",
+    "semver": "^7.5.2",
     "sortablejs": "^1.13.0",
     "style-loader": "^3.2.1",
     "terser-webpack-plugin": "^5.1.1",
