@@ -94,7 +94,7 @@ LOCAL  GOptionEntry entries[] =
     { "pcapfile",  'r',                    0, G_OPTION_ARG_FILENAME_ARRAY, &config.pcapReadFiles, "Offline pcap file", NULL },
     { "pcapdir",   'R',                    0, G_OPTION_ARG_FILENAME_ARRAY, &config.pcapReadDirs,  "Offline pcap directory, all *.pcap files will be processed", NULL },
     { "monitor",   'm',                    0, G_OPTION_ARG_NONE,           &config.pcapMonitor,   "Used with -R option monitors the directory for closed files", NULL },
-    { "packetcnt",   0,                    0, G_OPTION_ARG_INT,            &config.pktsToRead,    "Number of packets to read from each offline file", NULL},
+    { "packetcnt",   0,                    0, G_OPTION_ARG_INT,            &config.pktsToRead,    "Number of packets to read from each offline file", NULL },
     { "delete",      0,                    0, G_OPTION_ARG_NONE,           &config.pcapDelete,    "In offline mode delete files once processed, requires --copy", NULL },
     { "skip",      's',                    0, G_OPTION_ARG_NONE,           &config.pcapSkip,      "Used with -R option and without --copy, skip files already processed", NULL },
     { "reprocess",   0,                    0, G_OPTION_ARG_NONE,           &config.pcapReprocess, "In offline mode reprocess files, use the same files table entry", NULL },
@@ -105,7 +105,7 @@ LOCAL  GOptionEntry entries[] =
     { "tags",        0, G_OPTION_FLAG_HIDDEN, G_OPTION_ARG_STRING_ARRAY,   &config.extraTags,     "Extra tag to add to all packets, can be used multiple times", NULL },
     { "filelist",  'F',                    0, G_OPTION_ARG_STRING_ARRAY,   &config.pcapFileLists, "File that has a list of pcap file names, 1 per line", NULL },
     { "op",          0,                    0, G_OPTION_ARG_STRING_ARRAY,   &config.extraOps,      "FieldExpr=Value to set on all session, can be used multiple times", NULL},
-    { "option",    'o',                    0, G_OPTION_ARG_CALLBACK,       arkime_cmdline_option, "Key=Value to override config.ini", NULL},
+    { "option",    'o',                    0, G_OPTION_ARG_CALLBACK,       arkime_cmdline_option, "Key=Value to override config.ini", NULL },
     { "version",   'v',                    0, G_OPTION_ARG_NONE,           &showVersion,          "Show version number", NULL },
     { "debug",     'd', G_OPTION_FLAG_NO_ARG, G_OPTION_ARG_CALLBACK,       arkime_debug_flag,     "Turn on all debugging", NULL },
     { "quiet",     'q',                    0, G_OPTION_ARG_NONE,           &config.quiet,         "Turn off regular logging", NULL },
@@ -118,6 +118,8 @@ LOCAL  GOptionEntry entries[] =
     { "insecure",    0,                    0, G_OPTION_ARG_NONE,           &config.insecure,      "Disable certificate verification for https calls", NULL },
     { "nolockpcap",  0,                    0, G_OPTION_ARG_NONE,           &config.noLockPcap,    "Don't lock offline pcap files (ie., allow deletion)", NULL },
     { "ignoreerrors",0, G_OPTION_FLAG_HIDDEN, G_OPTION_ARG_NONE,           &config.ignoreErrors,  "Ignore most errors and continue", NULL },
+    { "dumpConfig",  0, G_OPTION_FLAG_HIDDEN, G_OPTION_ARG_NONE,           &config.dumpConfig,    "Display the config.", NULL },
+    { "regressionTests",  0, G_OPTION_FLAG_HIDDEN, G_OPTION_ARG_NONE,      &config.regressionTests, "Regression Tests", NULL },
     { NULL,          0, 0,                                    0,           NULL, NULL, NULL }
 };
 
@@ -785,6 +787,7 @@ LLVMFuzzerInitialize(int *UNUSED(argc), char ***UNUSED(argv))
 
     arkime_free_later_init();
     arkime_hex_init();
+    arkime_http_init();
     arkime_config_init();
     arkime_writers_init();
     arkime_writers_start("null");
@@ -792,7 +795,6 @@ LLVMFuzzerInitialize(int *UNUSED(argc), char ***UNUSED(argv))
     arkime_readers_set("null");
     arkime_plugins_init();
     arkime_field_init();
-    arkime_http_init();
     arkime_db_init();
     arkime_packet_init();
     arkime_config_load_packet_ips();
@@ -872,6 +874,7 @@ int main(int argc, char **argv)
 
     arkime_free_later_init();
     arkime_hex_init();
+    arkime_http_init();
     arkime_config_init();
     arkime_dedup_init();
     arkime_writers_init();
@@ -888,7 +891,6 @@ int main(int argc, char **argv)
         arkime_mlockall_init();
     }
     arkime_field_init();
-    arkime_http_init();
     arkime_db_init();
     arkime_packet_init();
     arkime_config_load_packet_ips();

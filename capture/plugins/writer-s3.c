@@ -247,7 +247,7 @@ unsigned char *arkime_get_instance_metadata(void *serverV, char *key, int key_le
         char *tokenRequestHeaders[2] = {"X-aws-ec2-metadata-token-ttl-seconds: 30", NULL};
         if (config.debug)
             LOG("Requesting IMDSv2 metadata token");
-        unsigned char *token = arkime_http_send_sync(serverV, "PUT", "/latest/api/token", -1, NULL, 0, tokenRequestHeaders, mlen);
+        unsigned char *token = arkime_http_send_sync(serverV, "PUT", "/latest/api/token", -1, NULL, 0, tokenRequestHeaders, mlen, NULL);
         if (config.debug)
             LOG("IMDSv2 metadata token received");
         snprintf(tokenHeader, sizeof(tokenHeader), "X-aws-ec2-metadata-token: %s", token);
@@ -257,7 +257,7 @@ unsigned char *arkime_get_instance_metadata(void *serverV, char *key, int key_le
             LOG("Using IMDSv1");
         requestHeaders[0] = NULL;
     }
-    return arkime_http_send_sync(serverV, "GET", key, key_len, NULL, 0, requestHeaders, mlen);
+    return arkime_http_send_sync(serverV, "GET", key, key_len, NULL, 0, requestHeaders, mlen, NULL);
 }
 /******************************************************************************/
 void writer_s3_free_creds(S3Credentials *creds)
@@ -574,7 +574,7 @@ LOCAL void make_new_block(SavepcapS3File_t *s3file) {
 /******************************************************************************/
 /* Make sure there is enough space in encryption buffers for incoming data and
  * data that is waiting to be written out. Because encryption lib does its
- * own buffer we do our best guess here. 
+ * own buffer we do our best guess here.
  */
 LOCAL void ensure_space_for_output(SavepcapS3File_t *s3file, size_t space) {
     if (compressionMode == ARKIME_COMPRESSION_GZIP) {

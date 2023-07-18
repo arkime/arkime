@@ -40,11 +40,7 @@ const dayMs = 60000 * 60 * 24;
 const User = require('../common/user');
 const Auth = require('../common/auth');
 const ArkimeUtil = require('../common/arkimeUtil');
-
-if (typeof express !== 'function') {
-  console.log("ERROR - Need to run 'npm update' in viewer directory");
-  process.exit(1);
-}
+const ArkimeConfig = require('../common/arkimeConfig');
 
 // express app
 const app = express();
@@ -94,32 +90,6 @@ process.on('SIGINT', function () {
   process.exit();
 });
 
-// app security options -------------------------------------------------------
-const iframeOption = Config.get('iframe', 'deny');
-if (iframeOption === 'sameorigin' || iframeOption === 'deny') {
-  app.use(helmet.frameguard({ action: iframeOption }));
-} else {
-  app.use(helmet.frameguard({
-    action: 'allow-from',
-    domain: iframeOption
-  }));
-}
-
-app.use(helmet.hidePoweredBy());
-app.use(helmet.xssFilter());
-if (Config.get('hstsHeader', false) && Config.isHTTPS()) {
-  app.use(helmet.hsts({
-    maxAge: 31536000,
-    includeSubDomains: true
-  }));
-}
-
-// calculate nonce
-app.use((req, res, next) => {
-  res.locals.nonce = Buffer.from(uuid()).toString('base64');
-  next();
-});
-
 // define csp headers
 const cspDirectives = {
   defaultSrc: ["'self'"],
@@ -145,27 +115,57 @@ const cyberchefCspHeader = helmet.contentSecurityPolicy({
   }
 });
 
-// logging --------------------------------------------------------------------
-// send req to access log file or stdout
-let _stream = process.stdout;
-const _accesslogfile = Config.get('accessLogFile');
-if (_accesslogfile) {
-  _stream = fs.createWriteStream(_accesslogfile, { flags: 'a' });
-}
+const securityApp = express.Router();
+app.use(securityApp);
+Config.loaded(() => {
+  // app security options -------------------------------------------------------
+  const iframeOption = Config.get('iframe', 'deny');
+  if (iframeOption === 'sameorigin' || iframeOption === 'deny') {
+    securityApp.use(helmet.frameguard({ action: iframeOption }));
+  } else {
+    securityApp.use(helmet.frameguard({
+      action: 'allow-from',
+      domain: iframeOption
+    }));
+  }
 
-const _loggerFormat = decodeURIComponent(Config.get(
-  'accessLogFormat',
-  ':date :username %1b[1m:method%1b[0m %1b[33m:url%1b[0m :status :res[content-length] bytes :response-time ms'
-));
-const _suppressPaths = Config.getArray('accessLogSuppressPaths', ';', '');
+  securityApp.use(helmet.hidePoweredBy());
+  securityApp.use(helmet.xssFilter());
+  if (Config.get('hstsHeader', false) && Config.isHTTPS()) {
+    securityApp.use(helmet.hsts({
+      maxAge: 31536000,
+      includeSubDomains: true
+    }));
+  }
 
-app.use(logger(_loggerFormat, {
-  stream: _stream,
-  skip: (req, res) => { return _suppressPaths.includes(req.path); }
-}));
+  // calculate nonce
+  securityApp.use((req, res, next) => {
+    res.locals.nonce = Buffer.from(uuid()).toString('base64');
+    next();
+  });
 
-logger.token('username', (req, res) => {
-  return req.user ? req.user.userId : '-';
+  // logging --------------------------------------------------------------------
+  // send req to access log file or stdout
+  let _stream = process.stdout;
+  const _accesslogfile = Config.get('accessLogFile');
+  if (_accesslogfile) {
+    _stream = fs.createWriteStream(_accesslogfile, { flags: 'a' });
+  }
+
+  const _loggerFormat = decodeURIComponent(Config.get(
+    'accessLogFormat',
+    ':date :username %1b[1m:method%1b[0m %1b[33m:url%1b[0m :status :res[content-length] bytes :response-time ms'
+  ));
+  const _suppressPaths = Config.getArray('accessLogSuppressPaths', ';', '');
+
+  securityApp.use(logger(_loggerFormat, {
+    stream: _stream,
+    skip: (req, res) => { return _suppressPaths.includes(req.path); }
+  }));
+
+  logger.token('username', (req, res) => {
+    return req.user ? req.user.userId : '-';
+  });
 });
 
 // appwide middleware ---------------------------------------------------------
@@ -190,8 +190,7 @@ app.use(['/assets', '/logos'], express.static(
 ), ArkimeUtil.missingResource);
 
 // regression test methods, before auth checks --------------------------------
-if (Config.regressionTests) {
-  internals.cronTimeout = 0;
+if (ArkimeConfig.regressionTests) {
   // Override default lastUsed min write internal for tests
   User.lastUsedMinInterval = 1000;
 
@@ -204,6 +203,7 @@ if (Config.regressionTests) {
     res.send('{}');
   });
   app.get('/regressionTests/processCronQueries', async function (req, res) {
+    internals.cronTimeout = 0;
     await Db.refresh();
     CronAPIs.processCronQueries();
     setTimeout(async function checkCronFinished () {
@@ -269,34 +269,41 @@ app.get( // es health endpoint
 
 // password, testing, or anonymous mode setup ---------------------------------
 Auth.app(app);
-if (Config.get('passwordSecret')) {
-  // check for arkimeUser
-  app.use(async (req, res, next) => {
-    // For receiveSession there is no user (so no role check can be done) AND must be s2s
-    if (req.url.match(/^\/receiveSession/) || req.url.match(/^\/api\/sessions\/receive/)) {
-      if (req.headers['x-arkime-auth'] === undefined) {
-        return res.status(401).send('receive session only allowed s2s');
-      } else {
-        return next();
-      }
-    }
 
-    if (!req.user.hasRole('arkimeUser')) {
-      if (Config.debug) {
-        console.log('Missing arkimeUser userId: %s roles: %s expanded roles: %s', req.user.userId, req.user.roles, await req.user.getRoles());
-      }
-      return res.status(403).send('Need arkimeUser role assigned');
+// check for arkimeUser
+app.use(async (req, res, next) => {
+  if (!Config.get('passwordSecret')) {
+    return next();
+  }
+  // For receiveSession there is no user (so no role check can be done) AND must be s2s
+  if (req.url.match(/^\/receiveSession/) || req.url.match(/^\/api\/sessions\/receive/)) {
+    if (req.headers['x-arkime-auth'] === undefined) {
+      return res.status(401).send('receive session only allowed s2s');
+    } else {
+      return next();
     }
-    next();
-  });
-} else if (Config.regressionTests) {
-  console.log('WARNING - Option --regressionTests was used, do NOT use in production, for testing only');
-  internals.noPasswordSecret = true;
-} else {
-  /* Shared password isn't set, who cares about auth, db is only used for settings */
-  console.log('WARNING - The setting "passwordSecret" is not set, all access is anonymous');
-  internals.noPasswordSecret = true;
-}
+  }
+
+  if (!req.user.hasRole('arkimeUser')) {
+    if (Config.debug) {
+      console.log('Missing arkimeUser userId: %s roles: %s expanded roles: %s', req.user.userId, req.user.roles, await req.user.getRoles());
+    }
+    return res.status(403).send('Need arkimeUser role assigned');
+  }
+  next();
+});
+
+Config.loaded(() => {
+  if (Config.get('passwordSecret')) {
+  } else if (ArkimeConfig.regressionTests) {
+    console.log('WARNING - Option --regressionTests was used, do NOT use in production, for testing only');
+    internals.noPasswordSecret = true;
+  } else {
+    /* Shared password isn't set, who cares about auth, db is only used for settings */
+    console.log('WARNING - The setting "passwordSecret" is not set, all access is anonymous');
+    internals.noPasswordSecret = true;
+  }
+});
 
 // ============================================================================
 // UTILITY
@@ -1092,20 +1099,22 @@ function expireCheckAll () {
 // REDIRECTS & DEMO SETUP
 // ============================================================================
 // APIs disabled in demoMode, needs to be before real callbacks
-if (Config.get('demoMode', false)) {
-  console.log('WARNING - Starting in demo mode, some APIs disabled');
-  app.all([
-    '/api/histories',
-    '/api/history/*',
-    '/api/cron*',
-    '/api/user/password*'
-  ], (req, res, next) => {
-    if (req.user.hasRole('arkimeAdmin')) {
-      return next();
-    }
-    return res.serverError(403, 'Disabled in demo mode.');
-  });
-}
+Config.loaded(() => {
+  if (Config.get('demoMode', false)) {
+    console.log('WARNING - Starting in demo mode, some APIs disabled');
+    securityApp.all([
+      '/api/histories',
+      '/api/history/*',
+      '/api/cron*',
+      '/api/user/password*'
+    ], (req, res, next) => {
+      if (req.user.hasRole('arkimeAdmin')) {
+        return next();
+      }
+      return res.serverError(403, 'Disabled in demo mode.');
+    });
+  }
+});
 
 // redirect to sessions page and conserve params
 app.get(['/', '/app'], (req, res) => {
@@ -1986,13 +1995,6 @@ app.use( // cyberchef UI endpoint
 const Vue = require('vue');
 const vueServerRenderer = require('vue-server-renderer');
 
-// Factory function to create fresh Vue apps
-function createApp () {
-  return new Vue({
-    template: '<div id="app"></div>'
-  });
-}
-
 // using fallthrough: false because there is no 404 endpoint (client router
 // handles 404s) and sending index.html is confusing
 // expose vue bundles
@@ -2050,7 +2052,9 @@ app.use(cspHeader, setCookie, (req, res) => {
   };
 
   // Create a fresh Vue app instance
-  const vueApp = createApp();
+  const vueApp = new Vue({
+    template: '<div id="app"></div>'
+  });
 
   // Render the Vue instance to HTML
   renderer.renderToString(vueApp, appContext, (err, html) => {
@@ -2159,12 +2163,12 @@ function processArgs (argv) {
       console.log('node.js [<options>]');
       console.log('');
       console.log('Options:');
-      console.log('  -c <config file>      Config file to use');
-      console.log('  -n <node name>        Node name section to use in config file, default first part of hostname');
-      console.log('  --debug               Increase debug level, multiple are supported');
-      console.log('  --esprofile           Turn on profiling to es search queries');
-      console.log('  --host <host name>    Host name to use, default os hostname');
-      console.log('  --insecure            Disable certificate verification for https calls');
+      console.log('  -c, --config <file|url>  Where to fetch the config file from');
+      console.log('  -n <node name>           Node name section to use in config file, default first part of hostname');
+      console.log('  --debug                  Increase debug level, multiple are supported');
+      console.log('  --esprofile              Turn on profiling to es search queries');
+      console.log('  --host <host name>       Host name to use, default os hostname');
+      console.log('  --insecure               Disable certificate verification for https calls');
 
       process.exit(0);
     }
@@ -2180,37 +2184,43 @@ process.on('unhandledRejection', (reason, p) => {
   // application specific logging, throwing an error, or other logic here
 });
 
-Db.initialize({
-  host: internals.elasticBase,
-  prefix: internals.prefix,
-  usersHost: Config.getArray('usersElasticsearch', ','),
-  // The default for usersPrefix should be '' if this is a multiviewer, otherwise Db.initialize will figure out
-  usersPrefix: Config.get('usersPrefix', Config.get('multiES', false) ? '' : undefined),
-  nodeName: Config.nodeName(),
-  hostName: Config.hostName(),
-  esClientKey: Config.get('esClientKey', null),
-  esClientCert: Config.get('esClientCert', null),
-  esClientKeyPass: Config.get('esClientKeyPass', null),
-  multiES: Config.get('multiES', false),
-  insecure: Config.insecure,
-  caTrustFile: Config.get('caTrustFile', null),
-  requestTimeout: Config.get('elasticsearchTimeout', 300),
-  esProfile: Config.esProfile,
-  debug: Config.debug,
-  esApiKey: Config.get('elasticsearchAPIKey', null),
-  usersEsApiKey: Config.get('usersElasticsearchAPIKey', null),
-  esBasicAuth: Config.get('elasticsearchBasicAuth', null),
-  usersEsBasicAuth: Config.get('usersElasticsearchBasicAuth', null),
-  isPrimaryViewer: CronAPIs.isPrimaryViewer,
-  getCurrentUserCB: UserAPIs.getCurrentUserCB,
-  maxConcurrentShardRequests: Config.get('esMaxConcurrentShardRequests')
-}, main);
+async function premain () {
+  await Config.initialize();
 
-Notifier.initialize({
-  debug: Config.debug,
-  prefix: internals.prefix,
-  esclient: User.getClient()
-});
+  Db.initialize({
+    host: internals.elasticBase,
+    prefix: internals.prefix,
+    usersHost: Config.getArray('usersElasticsearch', ','),
+    // The default for usersPrefix should be '' if this is a multiviewer, otherwise Db.initialize will figure out
+    usersPrefix: Config.get('usersPrefix', Config.get('multiES', false) ? '' : undefined),
+    nodeName: Config.nodeName(),
+    hostName: Config.hostName(),
+    esClientKey: Config.get('esClientKey', null),
+    esClientCert: Config.get('esClientCert', null),
+    esClientKeyPass: Config.get('esClientKeyPass', null),
+    multiES: Config.get('multiES', false),
+    insecure: ArkimeConfig.insecure,
+    caTrustFile: Config.get('caTrustFile', null),
+    requestTimeout: Config.get('elasticsearchTimeout', 300),
+    esProfile: Config.esProfile,
+    debug: Config.debug,
+    esApiKey: Config.get('elasticsearchAPIKey', null),
+    usersEsApiKey: Config.get('usersElasticsearchAPIKey', null),
+    esBasicAuth: Config.get('elasticsearchBasicAuth', null),
+    usersEsBasicAuth: Config.get('usersElasticsearchBasicAuth', null),
+    isPrimaryViewer: CronAPIs.isPrimaryViewer,
+    getCurrentUserCB: UserAPIs.getCurrentUserCB,
+    maxConcurrentShardRequests: Config.get('esMaxConcurrentShardRequests')
+  }, main);
 
-CronAPIs.initialize({
-});
+  Notifier.initialize({
+    debug: Config.debug,
+    prefix: internals.prefix,
+    esclient: User.getClient()
+  });
+
+  CronAPIs.initialize({
+  });
+}
+
+premain();

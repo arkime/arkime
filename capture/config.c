@@ -380,6 +380,54 @@ void arkime_config_load_includes(char **includes)
     }
 }
 /******************************************************************************/
+void arkime_config_load_hidden(char *configFile)
+{
+    char line[1000];
+    FILE *file = fopen(configFile, "r");
+    if (!file)
+        CONFIGEXIT("Couldn't open %s", configFile);
+    if (!fgets(line, sizeof(line), file))
+        CONFIGEXIT("Couldn't read %s", configFile);
+    fclose(file);
+
+    g_strchomp(line);
+
+    g_free(config.configFile);
+    config.configFile = g_strdup(line);
+}
+/******************************************************************************/
+gboolean arkime_config_load_json(GKeyFile *keyfile, char *data, GError **UNUSED(error))
+{
+    uint32_t sections[4*100]; // Can have up to 100 sections
+    memset(sections, 0, sizeof(sections));
+    js0n((unsigned char*)data, strlen(data), sections, sizeof(sections));
+
+    for (int s = 0; sections[s]; s+= 4) {
+        char *section = g_strndup(data + sections[s], sections[s+1]);
+
+        uint32_t keys[4*500]; // Can have up to 500 keys
+        memset(keys, 0, sizeof(keys));
+        js0n((unsigned char*)data + sections[s+2], sections[s+3], keys, sizeof(keys));
+
+        for (int k = 0; keys[k]; k += 4) {
+            char *key = g_strndup(data + sections[s+2] + keys[k], keys[k+1]);
+            char *value = g_strndup(data + sections[s+2] + keys[k+2], keys[k+3]);
+
+            g_key_file_set_string(keyfile, section, key, value);
+            g_free(key);
+            g_free(value);
+        }
+        g_free(section);
+    }
+
+    return TRUE;
+}
+/******************************************************************************/
+LOCAL void arkime_config_override_print(gpointer key, gpointer value, gpointer UNUSED(user_data))
+{
+    fprintf(stderr, "%s=%s\n", (char *)key, (char *)value);
+}
+/******************************************************************************/
 void arkime_config_load()
 {
 
@@ -390,20 +438,84 @@ void arkime_config_load()
 
     keyfile = arkimeKeyFile = g_key_file_new();
 
-    status = g_key_file_load_from_file(keyfile, config.configFile, G_KEY_FILE_NONE, &error);
-    if (!status || error) {
-        CONFIGEXIT("Couldn't load config file (%s) %s\n", config.configFile, (error?error->message:""));
+    if (g_str_has_prefix(config.configFile, "urlinfile://")) {
+        arkime_config_load_hidden(config.configFile + 12);
+
+    } else if (g_str_has_suffix(config.configFile, ".hiddenconfig")) {
+        config.configFile[strlen(config.configFile) - 13] = 0;
+        arkime_config_load_hidden(config.configFile);
     }
 
-    if (config.debug == 0) {
-        config.debug = arkime_config_int(keyfile, "debug", 0, 0, 128);
+    if (g_str_has_prefix(config.configFile, "elasticsearch://") || g_str_has_prefix(config.configFile, "elasticsearchs://")) {
+        GString *string = g_string_new(config.configFile);
+        g_string_replace(string, "elasticsearch", "http", 1);
+        g_string_replace(string, "_doc", "_source", 1);
+        g_free(config.configFile);
+        config.configFile = g_string_free(string, FALSE);
+    } else if (g_str_has_prefix(config.configFile, "opensearch://") || g_str_has_prefix(config.configFile, "opensearchs://")) {
+        GString *string = g_string_new(config.configFile);
+        g_string_replace(string, "opensearch", "http", 1);
+        g_string_replace(string, "_doc", "_source", 1);
+        g_free(config.configFile);
+        config.configFile = g_string_free(string, FALSE);
+    }
+
+    if (g_str_has_prefix(config.configFile, "http://") || g_str_has_prefix(config.configFile, "https://")) {
+        char *end = config.configFile + 8;
+        while (*end != 0 && *end != '/' && *end != '?') end++;
+
+        char *host = g_strndup(config.configFile, end - config.configFile);
+
+        void *server = arkime_http_create_server(host, 5, 5, TRUE);
+
+        int code;
+        unsigned char *data = arkime_http_send_sync(server, "GET", end, strlen(end), NULL, 0, NULL, NULL, &code);
+
+        if (!data || code != 200)
+            CONFIGEXIT("Couldn't download from code: %d host: %s url: %s", code, host, end);
+
+        if (g_str_has_suffix(config.configFile, ".ini"))
+            status = g_key_file_load_from_data(keyfile, (gchar *)data, -1, G_KEY_FILE_NONE, &error);
+        else
+            status = arkime_config_load_json(keyfile, (char *)data, &error);
+        g_free(host);
+        free(data);
+        arkime_http_free_server(server);
+    } else {
+        if (g_str_has_suffix(config.configFile, ".json")) {
+            gchar *data;
+            if (!g_file_get_contents(config.configFile, &data, NULL, &error))
+                CONFIGEXIT("Couldn't load config file (%s) %s\n", config.configFile, (error?error->message:""));
+            status = arkime_config_load_json(keyfile, data, &error);
+            g_free(data);
+        } else
+            status = g_key_file_load_from_file(keyfile, config.configFile, G_KEY_FILE_NONE, &error);
+    }
+
+    if (!status || error) {
+        CONFIGEXIT("Couldn't load config file (%s) %s\n", config.configFile, (error?error->message:""));
     }
 
     char **includes = arkime_config_str_list(keyfile, "includes", NULL);
     if (includes) {
         arkime_config_load_includes(includes);
         g_strfreev(includes);
-        //LOG("KEYFILE:\n%s", g_key_file_to_data(arkimeKeyFile, NULL, NULL));
+    }
+
+    if (config.dumpConfig) {
+        if (config.override) {
+            fprintf(stderr, "OVERRIDE:\n");
+            g_hash_table_foreach(config.override, arkime_config_override_print, NULL);
+        }
+        fprintf(stderr, "CONFIG:\n%s", g_key_file_to_data(arkimeKeyFile, NULL, NULL));
+        if (config.regressionTests) {
+            exit(0);
+        }
+    }
+
+
+    if (config.debug == 0) {
+        config.debug = arkime_config_int(keyfile, "debug", 0, 0, 128);
     }
 
     char *rotateIndex       = arkime_config_str(keyfile, "rotateIndex", "daily");

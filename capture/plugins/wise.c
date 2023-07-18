@@ -171,7 +171,7 @@ LOCAL void wise_load_fields()
 
     key_len = snprintf(key, sizeof(key), "/fields?ver=1");
     size_t         data_len;
-    unsigned char *data = arkime_http_send_sync(wiseService, "GET", key, key_len, NULL, 0, NULL, &data_len);;
+    unsigned char *data = arkime_http_send_sync(wiseService, "GET", key, key_len, NULL, 0, NULL, &data_len, NULL);
 
     BSB bsb;
     BSB_INIT(bsb, data, data_len);
