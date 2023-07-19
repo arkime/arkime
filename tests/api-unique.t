@@ -1,10 +1,13 @@
-use Test::More tests => 40;
+use Test::More tests => 42;
 use Cwd;
 use URI::Escape;
 use MolochTest;
 use Test::Differences;
 use strict;
 
+# creat user with time limit
+my $token = getTokenCookie();
+viewerPostToken("/user/create", '{"userId": "test1", "userName": "test1", "enabled":true, "password":"password", "timeLimit":"72"}', $token);
 
 sub get {
 my ($param) = @_;
@@ -212,3 +215,8 @@ eq_or_diff($txt,
 /DIR/tests/pcap/socks5-smtp-503.pcap, 1
 /DIR/tests/pcap/v6-http.pcap, 6
 ", "filename counts");
+
+$txt = get("date=-1&field=node&expression=$files&counts=1&molochRegressionUser=test1");
+eq_or_diff($txt, "User time limit (72 hours) exceeded\n");
+
+viewerDeleteToken("/api/user/test1", $token);
