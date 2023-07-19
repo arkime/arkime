@@ -34,14 +34,11 @@ class Db {
 
     Db.debug = options.debug;
 
-    if (!options.url) {
-      Db.implementation = new DbESImplementation(options);
-    } else if (options.url.startsWith('lmdb')) {
+    if (options.url?.startsWith('lmdb')) {
       Db.implementation = new DbLMDBImplementation(options);
-    // } else if (options.url.startsWith('redis')) {
-    //  Db.implementation = new DbRedisImplementation(options);
     } else {
       Db.implementation = new DbESImplementation(options);
+      await Db.implementation.initialize();
     }
   };
 
@@ -203,16 +200,21 @@ class DbESImplementation {
     }
 
     this.client = new Client(esOptions);
-
-    // Create the cont3xt_links index
-    this.createLinksIndex();
-    // Create the cont3xt_views index
-    this.createViewsIndex();
-    // Create the cont3xt_history index
-    this.createHistoryIndex();
-    // Create the cont3xt_overviews index
-    this.createOverviewIndex();
   };
+
+  async initialize () {
+    // create all ES indices simultaneously
+    await Promise.all([
+      // Create the cont3xt_links index
+      this.createLinksIndex(),
+      // Create the cont3xt_views index
+      this.createViewsIndex(),
+      // Create the cont3xt_history index
+      this.createHistoryIndex(),
+      // Create the cont3xt_overviews index
+      this.createOverviewIndex()
+    ]);
+  }
 
   async createLinksIndex () {
     try {
@@ -355,6 +357,22 @@ class DbESImplementation {
     await this.client.indices.putMapping({
       index: 'cont3xt_overviews',
       body: {
+        properties: {
+          creator: { type: 'keyword' },
+          name: { type: 'keyword' },
+          title: { type: 'keyword' },
+          iType: { type: 'keyword' },
+          viewRoles: { type: 'keyword' },
+          editRoles: { type: 'keyword' },
+          fields: {
+            properties: {
+              from: { type: 'keyword' },
+              type: { type: 'keyword' },
+              field: { type: 'keyword' },
+              custom: { type: 'keyword' }
+            }
+          }
+        },
         dynamic_templates: [
           {
             string_template: {
