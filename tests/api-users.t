@@ -1,4 +1,4 @@
-use Test::More tests => 150;
+use Test::More tests => 152;
 use Cwd;
 use URI::Escape;
 use MolochTest;
@@ -356,6 +356,9 @@ my $json;
     $json = viewerPostToken("/user/create", '{"userId": "role:test1", "userName": "UserName", "enabled":true, "roles":[false]}', $token);
     eq_or_diff($json, from_json('{"text": "Roles field must be an array of strings", "success": false}'));
 
+    $json = viewerPostToken("/user/create", '{"userId": "role:test1", "userName": "UserName", "enabled":true, "roles": ["role:test1"]}', $token);
+    eq_or_diff($json, from_json('{"text": "Can\'t have circular role dependancies", "success": false}'));
+
     $json = viewerPostToken("/user/create", '{"userId": "role:test1", "userName": "UserName", "enabled":true}', $token);
     eq_or_diff($json, from_json('{"text": "Role created succesfully", "success": true}'));
 
@@ -383,6 +386,9 @@ my $json;
 
     $json = viewerPostToken("/user/update", '{"userId": "role:test1", "roles":[false]}', $token);
     eq_or_diff($json, from_json('{"text": "Roles field must be an array of strings", "success": false}'));
+
+    $json = viewerPostToken("/user/update", '{"userId": "role:test1", "roles":["role:test1"]}', $token);
+    eq_or_diff($json, from_json('{"text": "Can\'t have circular role dependancies", "success": false}'));
 
 # role assigner
     $json = viewerPostToken("/user/update", '{"userId": "role:test1", "userName": "UserName", "enabled":true, "roleAssigners": "foo"}', $token);
