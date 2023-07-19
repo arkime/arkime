@@ -364,7 +364,14 @@ class DbESImplementation {
           iType: { type: 'keyword' },
           viewRoles: { type: 'keyword' },
           editRoles: { type: 'keyword' },
-          custom: { type: 'keyword' }
+          fields: {
+            properties: {
+              from: { type: 'keyword' },
+              type: { type: 'keyword' },
+              field: { type: 'keyword' },
+              custom: { type: 'keyword' }
+            }
+          }
         },
         dynamic_templates: [
           {
