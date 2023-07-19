@@ -5,7 +5,7 @@ use MolochTest;
 use Test::Differences;
 use strict;
 
-# creat user with time limit
+# create user with time limit
 my $token = getTokenCookie();
 viewerPostToken("/user/create", '{"userId": "test1", "userName": "test1", "enabled":true, "password":"password", "timeLimit":"72"}', $token);
 
