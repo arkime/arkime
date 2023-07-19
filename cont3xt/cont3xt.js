@@ -459,7 +459,7 @@ const getConfig = ArkimeConfig.get;
 // ----------------------------------------------------------------------------
 // Initialize stuff
 // ----------------------------------------------------------------------------
-function setupAuth () {
+async function setupAuth () {
   Auth.initialize({
     debug: ArkimeConfig.debug,
     mode: getConfig('cont3xt', 'authMode'),
@@ -488,7 +488,7 @@ function setupAuth () {
   const usersUrl = getConfig('cont3xt', 'usersUrl');
   let usersEs = getConfig('cont3xt', 'usersElasticsearch');
 
-  Db.initialize({
+  await Db.initialize({
     insecure: ArkimeConfig.insecure,
     debug: ArkimeConfig.debug,
     url: dbUrl,
@@ -555,7 +555,7 @@ async function main () {
     console.log(err);
     process.exit();
   }
-  setupAuth();
+  await setupAuth();
   setupHSTS();
 
   let server;

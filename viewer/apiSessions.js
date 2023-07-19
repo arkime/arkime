@@ -2430,6 +2430,11 @@ class SessionAPIs {
     }
 
     SessionAPIs.buildSessionQuery(req, (err, query, indices) => {
+      if (err) {
+        res.status(403);
+        return res.end(err);
+      }
+
       delete query.sort;
       delete query.aggregations;
 
