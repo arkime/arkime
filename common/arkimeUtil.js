@@ -337,7 +337,7 @@ class ArkimeUtil {
       }
 
       userId = req.user.userId;
-    } else if (!req.user.hasRole('usersAdmin') || (ArkimeUtil.adminRole && !req.user.hasRole(ArkimeUtil.adminRole))) {
+    } else if (!req.user.hasRole('usersAdmin') || (!req.url.startsWith('/api/user/password') && ArkimeUtil.adminRole && !req.user.hasRole(ArkimeUtil.adminRole))) {
       // user is trying to get another user's settings without admin privilege
       return res.serverError(403, 'Need admin privileges');
     } else {
