@@ -527,6 +527,10 @@ async function setupAuth () {
   const usersUrl = getConfig('cont3xt', 'usersUrl');
   let usersEs = getConfig('cont3xt', 'usersElasticsearch');
 
+  // ALW - 5.0 Fix
+  ArkimeUtil.debug = internals.debug;
+  ArkimeUtil.adminRole = 'cont3xtAdmin';
+
   await Db.initialize({
     insecure: internals.insecure,
     debug: internals.debug,
