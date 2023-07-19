@@ -485,7 +485,7 @@ function getConfig (section, sectionKey, d) {
 // ----------------------------------------------------------------------------
 // Initialize stuff
 // ----------------------------------------------------------------------------
-function setupAuth () {
+async function setupAuth () {
   let userNameHeader = getConfig('cont3xt', 'userNameHeader', 'anonymous');
   let mode;
   if (internals.regressionTests) {
@@ -527,7 +527,7 @@ function setupAuth () {
   const usersUrl = getConfig('cont3xt', 'usersUrl');
   let usersEs = getConfig('cont3xt', 'usersElasticsearch');
 
-  Db.initialize({
+  await Db.initialize({
     insecure: internals.insecure,
     debug: internals.debug,
     url: dbUrl,
@@ -593,7 +593,7 @@ async function main () {
     console.log(err);
     process.exit();
   }
-  setupAuth();
+  await setupAuth();
   setupHSTS();
 
   let server;
