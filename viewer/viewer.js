@@ -717,7 +717,7 @@ function getSettingUserCache (req, res, next) {
   }
 
   // user is trying to get another user's settings without admin privilege
-  if (!req.user.hasRole('usersAdmin')) { return res.serverError(403, 'Need admin privileges'); }
+  if (!req.user.hasRole('usersAdmin') || !req.user.hasRole('arkimeAdmin')) { return res.serverError(403, 'Need admin privileges'); }
 
   User.getUserCache(req.query.userId, (err, user) => {
     if (err || !user) {
@@ -2115,6 +2115,10 @@ process.on('unhandledRejection', (reason, p) => {
   console.trace('Unhandled Rejection at: Promise', p, 'reason:', reason, JSON.stringify(reason, false, 2));
   // application specific logging, throwing an error, or other logic here
 });
+
+// ALW - 5.0 Fix
+ArkimeUtil.debug = Config.debug;
+ArkimeUtil.adminRole = 'arkimeAdmin';
 
 Db.initialize({
   host: internals.elasticBase,
