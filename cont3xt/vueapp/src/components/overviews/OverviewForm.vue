@@ -87,6 +87,7 @@
         display-text="Who Can View"
         :selected-roles="localOverview.viewRoles"
         @selected-roles-updated="updateViewRoles"
+        :disabled="isDefaultOverview"
     />
     <RoleDropdown
         :roles="getRoles"
@@ -127,16 +128,25 @@
             class="d-flex"
         >
           <b-form inline>
+            <ToggleBtn
+                class="overview-toggle-btn mr-2"
+                @toggle="toggleExpanded(fieldRef)"
+                :opened="fieldRef.expanded"
+                :class="{expanded: fieldRef.expanded, invisible: !isCustom(fieldRef)}"
+            />
+
             <b-input-group
                 size="sm">
               <template #prepend>
                 <b-input-group-text>
-                  Integration Name
+                  Source
                 </b-input-group-text>
               </template>
-              <b-form-input
+              <b-form-select
                   trim
-                  v-model="fieldRef.from"
+                  :value="fieldRef.from"
+                  @change="e => setFrom(fieldRef, e)"
+                  :options="sourceOptions"
                   :state="validateFieldRefFrom(fieldRef)"
                   @input="updateOverview"
               />
@@ -153,12 +163,14 @@
                 class="ml-2 flex-grow-1">
               <template #prepend>
                 <b-input-group-text>
-                  Field Label
+                  Field
                 </b-input-group-text>
               </template>
-              <b-form-input
+              <b-form-select
                   trim
-                  v-model="fieldRef.field"
+                  :value="getField(fieldRef)"
+                  @change="e => setField(fieldRef, e)"
+                  :options="fieldOptionsFor(fieldRef)"
                   :state="validateFieldRef(fieldRef)"
                   @input="updateOverview"
               />
@@ -171,11 +183,12 @@
               </template>
             </b-input-group>
             <b-input-group
+                v-if="!isCustom(fieldRef)"
                 size="sm"
                 class="ml-2">
               <template #prepend>
                 <b-input-group-text>
-                  Alias
+                  Label
                 </b-input-group-text>
               </template>
               <b-form-input
@@ -224,6 +237,22 @@
               </b-dropdown-item>
             </b-dropdown>
           </b-form>
+          <template v-if="fieldRef.expanded">
+            <textarea
+                rows="5"
+                size="sm"
+                :value="getOrInitCustomText(fieldRef)"
+                @input="e => debounceCustomRawEdit(fieldRef, e)"
+                class="form-control form-control-sm mt-2"
+            />
+            <b-alert
+                variant="warning"
+                :show="!!fieldRef._error"
+                class="alert-sm mt-2 mb-0">
+              <span class="fa fa-exclamation-triangle fa-fw pr-2" />
+              {{ fieldRef._error }}
+            </b-alert>
+          </template>
         </b-card>
       </template>
     </reorder-list>
@@ -242,12 +271,14 @@ import ReorderList from '@/utils/ReorderList.vue';
 import { mapGetters } from 'vuex';
 import RoleDropdown from '@../../../common/vueapp/RoleDropdown';
 import { iTypes } from '@/utils/iTypes';
+import ToggleBtn from '../../../../../common/vueapp/ToggleBtn.vue';
 
 let timeout;
 
 export default {
   name: 'OverviewForm',
   components: {
+    ToggleBtn,
     ReorderList,
     RoleDropdown
   },
@@ -280,10 +311,10 @@ export default {
         title: 'The indicator type to display this overview for... Can be either: <code>domain</code>, <code>ip</code>, <code>url</code>, <code>email</code>, <code>phone</code>, <code>hash</code>, or <code>text</code>.'
       },
       fieldRefFromTip: {
-        title: 'Enter the <code>name</code> of the Integration you would like to show a field from.'
+        title: 'Select the <code>name</code> of the Integration you would like to show a field from.'
       },
       fieldRefFieldTip: {
-        title: 'Enter the <code>label</code> of the field you would like to show from the given Integration.'
+        title: 'Select the <code>label</code> of the field you would like to show from the given Integration, or <code>Custom</code> to make your own.'
       },
       fieldRefAliasTip: {
         title: 'Optionally, change the label that will be displayed with this field.'
@@ -292,7 +323,12 @@ export default {
     };
   },
   computed: {
-    ...mapGetters(['getIntegrations', 'getRoles', 'getUser'])
+    ...mapGetters(['getIntegrations', 'getRoles', 'getUser']),
+    sourceOptions () {
+      const sources = Object.keys(this.getIntegrations);
+      sources.sort();
+      return sources;
+    }
   },
   watch: {
     modifiedOverview () {
@@ -313,6 +349,18 @@ export default {
       delete clone._editable;
       delete clone._viewable;
 
+      clone.fields ??= [];
+      for (const fieldRef of clone.fields) {
+        if (!this.isCustom(fieldRef) || !fieldRef.expanded) {
+          // expanded is only necessary to keep open currently expanded custom fields
+          delete fieldRef.expanded;
+        }
+        delete fieldRef._customRawEdit;
+        // type can be inferred from other fields (field vs custom existence)
+        //     so we don't need it for raw edit to avoid verbosity
+        delete fieldRef.type;
+      }
+
       this.rawEditText = JSON.stringify(clone, null, 2);
     }
   },
@@ -330,7 +378,7 @@ export default {
     },
     insertFieldRef (index) {
       this.localOverview.fields.splice(index, 0, {
-        from: '', field: ''
+        type: 'linked', from: '', field: ''
       });
       this.updateOverview();
     },
@@ -353,16 +401,70 @@ export default {
     sendToBottom (fromIndex) {
       this.moveFieldRef(fromIndex, this.localOverview.fields.length - 1);
     },
+    fieldOptionsFor (fieldRef) {
+      if (!this.validateFieldRefFrom(fieldRef)) { return []; }
+
+      return (this.getIntegrations[fieldRef.from]?.card?.fields?.map(field => field.label) ?? []).concat(['Custom']);
+    },
+    isCustom (fieldRef) {
+      return fieldRef.type === 'custom';
+    },
+    getOrInitCustomText (fieldRef) {
+      if (fieldRef._customRawEdit == null) {
+        this.$set(fieldRef, '_customRawEdit', JSON.stringify(fieldRef.custom ?? {}, null, 2));
+      }
+      return fieldRef._customRawEdit;
+    },
+    debounceCustomRawEdit (fieldRef, e) {
+      fieldRef._customRawEdit = e.target.value;
+      if (timeout) { clearTimeout(timeout); }
+      // debounce the textarea so that it only updates the overview after keyups cease for 400ms
+      timeout = setTimeout(() => {
+        timeout = null;
+        this.updateCustomRawEdit(fieldRef);
+      }, 400);
+    },
+    updateCustomRawEdit (fieldRef) {
+      try {
+        fieldRef.custom = JSON.parse(fieldRef._customRawEdit);
+        delete fieldRef._error;
+      } catch (err) {
+        this.$set(fieldRef, '_error', 'ERROR: Invalid JSON');
+      }
+      this.updateOverview();
+    },
     validateFieldRefFrom (fieldRef) {
-      return Object.keys(this.getIntegrations)?.includes(fieldRef.from);
+      return this.sourceOptions.includes(fieldRef.from);
     },
     validateFieldRef (fieldRef) {
-      if (!this.validateFieldRefFrom(fieldRef)) { return false; }
-
-      const integrationFields = this.getIntegrations[fieldRef.from]?.card?.fields;
-      const matchingField = integrationFields?.find(field => field.label === fieldRef.field);
-
-      return matchingField != null;
+      return this.validateFieldRefFrom(fieldRef) &&
+          (this.fieldOptionsFor(fieldRef)?.includes(fieldRef.field) || this.isCustom(fieldRef));
+    },
+    setFrom (fieldRef, from) {
+      fieldRef.from = from;
+      this.updateOverview();
+    },
+    getField (fieldRef) {
+      return this.isCustom(fieldRef) ? 'Custom' : fieldRef.field;
+    },
+    setField (fieldRef, field) {
+      if (field === 'Custom') {
+        fieldRef.type = 'custom';
+        this.$set(fieldRef, 'custom', { field: '', label: fieldRef.alias ?? '' });
+        this.$set(fieldRef, 'expanded', true);
+        delete fieldRef.field;
+      } else {
+        fieldRef.type = 'linked';
+        this.$set(fieldRef, 'field', field);
+        delete fieldRef.custom;
+        delete fieldRef._customRawEdit;
+        delete fieldRef.expanded;
+      }
+      this.updateOverview();
+    },
+    toggleExpanded (fieldRef) {
+      this.$set(fieldRef, 'expanded', !fieldRef.expanded);
+      this.updateOverview();
     },
     updateOverviewFieldsList ({ list }) {
       this.localOverview.fields = list;
@@ -380,6 +482,10 @@ export default {
     updateRawOverview () {
       try {
         const overviewFromRaw = JSON.parse(this.rawEditText);
+        overviewFromRaw.fields ??= [];
+        for (const fieldRef of overviewFromRaw.fields) {
+          fieldRef.type = (fieldRef.custom == null) ? 'linked' : 'custom';
+        }
 
         this.localOverview = {
           ...this.localOverview,
@@ -399,3 +505,10 @@ export default {
   }
 };
 </script>
+
+<style scoped>
+.overview-toggle-btn {
+  font-size: 1rem;
+  padding: 0.1rem 0.5rem;
+}
+</style>

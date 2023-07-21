@@ -24,6 +24,7 @@ const extractDomain = require('extract-domain');
 const ipaddr = require('ipaddr.js');
 const Audit = require('./audit');
 const RE2 = require('re2');
+const normalizeCardField = require('./vueapp/src/normalizeCardField');
 
 const itypeStats = {};
 
@@ -870,45 +871,6 @@ class Integration {
     Integration.getConfig('cont3xt', 'userAgent', 'cont3xt');
   }
 
-  normalizeCardFields (inFields) {
-    const outFields = [];
-    for (const f of inFields) {
-      if (typeof f === 'string') {
-        outFields.push({
-          label: f,
-          path: f.split('.'),
-          type: 'string'
-        });
-        continue;
-      }
-      if (f.field === undefined) { f.field = f.label; }
-      if (typeof f.field === 'string') { f.path = f.field.split('.'); }
-      delete f.field;
-
-      if (f.type === undefined) { f.type = 'string'; }
-
-      if (f.type === 'table') {
-        f.fields = this.normalizeCardFields(f.fields);
-      }
-
-      if (f.type === 'array' || f.type === 'table') { // array-like types
-        if (f.filterEmpty === undefined) { f.filterEmpty = true; }
-
-        if (f.fieldRoot !== undefined) {
-          f.fieldRootPath = f.fieldRoot.split('.');
-          delete f.fieldRoot;
-        }
-      }
-
-      // disable filtering if not searchable
-      f.noSearch ??= f.type === 'externalLink';
-
-      outFields.push(f);
-    }
-
-    return outFields;
-  }
-
   normalizeCard () {
     const card = this.card;
     if (!card) { return; }
@@ -917,7 +879,7 @@ class Integration {
       this.card.title = `${this.name} for %{query}`;
     }
     if (card.fields === undefined) { card.fields = []; }
-    card.fields = this.normalizeCardFields(card.fields);
+    card.fields = card.fields.map(f => normalizeCardField(f));
   }
 
   normalizeTidbits () {

@@ -8,7 +8,7 @@ Card Description - an object of the following
   * title - title of the card
   * fields - an array of fields.
     * If the element is just a string that means
-      * both "name" and "field" are that string
+      * both "label" and "field" are that string
       * type is string
     * otherwise it can be an object with
       * label - the field label to show the user

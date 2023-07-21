@@ -76,12 +76,87 @@ class Overview {
         Db.putOverview(iType, createDefaultForIType(iType)).then(() => {
 
         }).catch((err) => {
-          console.log(`ERROR - failed to create default overview for ${iType} iType... skipping`, err);
+          console.log(`WARNING - failed to create default overview for ${iType} iType... skipping`, err);
         });
       }).catch((err) => {
-        console.log(`ERROR - failed to check existence of ${iType} iType default overview... skipping:`, err);
+        console.log(`WARNING - failed to check existence of ${iType} iType default overview... skipping:`, err);
       });
     }
+  }
+
+  // Verify the given overview, returns error { msg: string } on failure, { custom } otherwise
+  static verifyOverviewCustomField (custom) {
+    // non-empty strings are always valid (they're applied as both label and field)
+    if (ArkimeUtil.isString(custom)) { return { custom }; }
+
+    if (custom == null || typeof custom !== 'object') {
+      return { msg: 'Custom field must be a string or object' };
+    }
+    custom = (
+      ({ // only allow these properties in custom fields
+        // eslint-disable-next-line no-shadow
+        label, field, type, path, fields, defang, pivot, join, fieldRoot, fieldRootPath, filterEmpty, defaultSortField, defaultSortDirection, altText, noSearch, postProcess
+      }) => ({
+        label, field, type, path, fields, defang, pivot, join, fieldRoot, fieldRootPath, filterEmpty, defaultSortField, defaultSortDirection, altText, noSearch, postProcess
+      })
+    )(custom);
+
+    if (custom.label != null && !ArkimeUtil.isString(custom.label)) {
+      return { msg: 'Custom label must be a string when present' };
+    }
+    if (custom.field != null && !ArkimeUtil.isString(custom.field)) {
+      return { msg: 'Custom field must be a string when present' };
+    }
+    if (custom.fieldRoot != null && !ArkimeUtil.isString(custom.fieldRoot)) {
+      return { msg: 'Custom fieldRoot must be a string when present' };
+    }
+    if (custom.type != null && !ArkimeUtil.isString(custom.type)) {
+      return { msg: 'Custom type must be a string when present' };
+    }
+    if (custom.defaultSortField != null && !ArkimeUtil.isString(custom.defaultSortField)) {
+      return { msg: 'Custom defaultSortField must be a string when present' };
+    }
+    if (custom.defaultSortDirection != null && !ArkimeUtil.isString(custom.defaultSortDirection)) {
+      return { msg: 'Custom defaultSortDirection must be a string when present' };
+    }
+    if (custom.altText != null && !ArkimeUtil.isString(custom.altText)) {
+      return { msg: 'Custom altText must be a string when present' };
+    }
+    if (custom.path != null && !ArkimeUtil.isStringArray(custom.path)) {
+      return { msg: 'Custom path must be a string array when present' };
+    }
+    if (custom.fieldRootPath != null && !ArkimeUtil.isStringArray(custom.fieldRootPath)) {
+      return { msg: 'Custom fieldRootPath must be a string array when present' };
+    }
+    if (custom.defang != null && typeof custom.defang !== 'boolean') {
+      return { msg: 'Custom defang must be a boolean when present' };
+    }
+    if (custom.pivot != null && typeof custom.pivot !== 'boolean') {
+      return { msg: 'Custom pivot must be a boolean when present' };
+    }
+    if (custom.join != null && typeof custom.join !== 'boolean') {
+      return { msg: 'Custom join must be a boolean when present when present' };
+    }
+    if (custom.filterEmpty != null && typeof custom.filterEmpty !== 'boolean') {
+      return { msg: 'Custom filterEmpty must be a boolean when present' };
+    }
+    if (custom.noSearch != null && typeof custom.noSearch !== 'boolean') {
+      return { msg: 'Custom noSearch must be a boolean when present' };
+    }
+    if (custom.postProcess != null && !(typeof custom.postProcess === 'string' || Array.isArray(custom.postProcess) || typeof custom.postProcess === 'object')) {
+      return { msg: 'Custom postProcess must be a string, object, or array when present' };
+    }
+
+    if (custom.fields != null) {
+      for (let i = 0; i < custom.fields.length; i++) {
+        const { custom: customSubField, msg } = this.verifyOverviewCustomField(custom.fields[i]);
+        if (msg) { return { msg }; }
+
+        custom.fields[i] = customSubField;
+      }
+    }
+
+    return { custom };
   }
 
   // Verify the given overview, returns error { msg: string } on failure, { overview } otherwise
@@ -137,24 +212,43 @@ class Overview {
       overview.fields[i] = (
         ({ // only allow these properties in fields
           // eslint-disable-next-line no-shadow
-          from, field, alias
-        }) => ({ from, field, alias })
+          from, type, field, alias, custom
+        }) => ({ from, type, field, alias, custom })
       )(overview.fields[i]);
       const field = overview.fields[i];
 
       if (!ArkimeUtil.isString(field.from)) {
         return { msg: 'Field missing from' };
       }
-      if (!ArkimeUtil.isString(field.field)) {
-        return { msg: 'Field missing field' };
-      }
 
-      if (field.alias === '') {
-        field.alias = undefined;
-      }
+      switch (field.type) {
+      case 'linked': // enforce shape { type: 'linked', from, field, alias? }
+        if (!ArkimeUtil.isString(field.field)) {
+          return { msg: 'Linked field missing field' };
+        }
+        if (field.alias === '') { field.alias = undefined; }
+        if (field.alias !== undefined && !ArkimeUtil.isString(field.alias)) {
+          return { msg: 'Linked field alias must be a string or undefined' };
+        }
+        break;
+      case 'custom': { // enforce shape { type: 'custom', from, custom }
+        if (field.field !== undefined) {
+          return { msg: 'Custom field must not have field' };
+        }
+        if (field.alias !== undefined) {
+          return { msg: 'Custom field must not have alias' };
+        }
 
-      if (field.alias !== undefined && !ArkimeUtil.isString(field.alias)) {
-        return { msg: 'Field alias must be a string or undefined' };
+        // fail if the custom field is invalid
+        const { msg, custom } = this.verifyOverviewCustomField(field.custom);
+        if (msg) { return { msg }; }
+
+        // we store custom as a json string for storage in db
+        field.custom = JSON.stringify(custom);
+        break;
+      }
+      default:
+        return { msg: 'Field type must be either "linked" or "custom"' };
       }
     }
 
@@ -209,13 +303,19 @@ class Overview {
     const reqOverview = req.body;
     reqOverview.creator = oOverview.creator; // Make sure the creator doesn't get changed
 
-    if (iTypes.includes(req.params.id) && reqOverview.iType !== req.params.id) {
-      return res.send({ success: false, text: 'Can not change iType of a default overview' });
-    }
-
     const { overview, msg } = Overview.verifyOverview(reqOverview);
     if (msg) {
       return res.send({ success: false, text: msg });
+    }
+
+    if (iTypes.includes(req.params.id)) { // iType default overviews
+      if (overview.iType !== req.params.id) {
+        return res.send({ success: false, text: 'Can not change iType of a default overview' });
+      }
+
+      if (overview.viewRoles?.length !== 1 || reqOverview.viewRoles[0] !== 'cont3xtUser') {
+        return res.send({ success: false, text: 'Can not change viewRoles of a default overview' });
+      }
     }
 
     try {
@@ -246,6 +346,20 @@ class Overview {
     for (const overview of overviews) {
       overview._editable = overview.creator === req.user.userId || req.user.hasRole(overview.editRoles);
       overview._viewable = overview.creator === req.user.userId || req.user.hasRole(overview.viewRoles);
+      for (const field of overview.fields) {
+        // take best guess at type in case it is missing
+        field.type ??= field.custom == null ? 'linked' : 'custom';
+
+        // custom is stored as a json string, so we parse it before sending back
+        if (field.type === 'custom') {
+          try {
+            field.custom = JSON.parse(field.custom);
+          } catch {
+            // we'd rather not crash the service if the custom field is somehow invalid
+            field.custom = '_cont3xt_INVALID_CUSTOM_FIELD';
+          }
+        }
+      }
     }
 
     res.send({ success: true, overviews });
