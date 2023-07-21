@@ -198,12 +198,18 @@ export default {
       normalizedOverview.viewRoles.sort();
       normalizedOverview.editRoles.sort();
 
+      normalizedOverview.fields ??= [];
+      for (const field of normalizedOverview.fields) { // delete temporary field properties
+        delete field.expanded;
+        delete field._customRawEdit;
+      }
+
       return normalizedOverview;
     },
     updateOverview (updatedOverview) {
-      this.localOverview = this.normalizeOverview(updatedOverview);
+      this.localOverview = JSON.parse(JSON.stringify(updatedOverview));
 
-      this.$emit('update-modified-overview', JSON.parse(JSON.stringify(this.localOverview)));
+      this.$emit('update-modified-overview', this.normalizeOverview(updatedOverview));
     },
     saveOverview () {
       OverviewService.updateOverview(this.localOverview);

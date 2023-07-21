@@ -3,7 +3,8 @@
     size="sm"
     @shown="setFocus"
     class="roles-dropdown"
-    :text="displayText || getRolesStr(localSelectedRoles)">
+    :text="displayText || getRolesStr(localSelectedRoles)"
+    :disabled="disabled">
     <!-- roles search -->
     <b-dropdown-header class="w-100 sticky-top">
       <b-input-group size="sm">
@@ -75,7 +76,8 @@ export default {
     id: { type: String },
     displayText: { type: String },
     selectedRoles: { type: Array },
-    roles: { type: Array, required: true }
+    roles: { type: Array, required: true },
+    disabled: { type: Boolean, default: false }
   },
   data () {
     return {
