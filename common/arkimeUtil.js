@@ -120,16 +120,9 @@ class ArkimeUtil {
    * Is arr an array of strings, with each string being at least minLen
    */
   static isStringArray (arr, minLen = 1) {
-    if (!Array.isArray(arr)) {
-      return false;
-    }
-
-    for (const str of arr) {
-      if (typeof str !== 'string' || str.length < minLen) {
-        return false;
-      }
-    }
-    return true;
+    return Array.isArray(arr) && arr.every(str => {
+      return typeof str === 'string' && str.length < minLen
+    })
   }
 
   // ----------------------------------------------------------------------------
