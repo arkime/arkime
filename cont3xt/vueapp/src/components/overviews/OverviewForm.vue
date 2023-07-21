@@ -404,7 +404,10 @@ export default {
     fieldOptionsFor (fieldRef) {
       if (!this.validateFieldRefFrom(fieldRef)) { return []; }
 
-      return (this.getIntegrations[fieldRef.from]?.card?.fields?.map(field => field.label) ?? []).concat(['Custom']);
+      const integrationFields = this.getIntegrations[fieldRef.from]?.card?.fields?.map(field => field.label) ?? [];
+      integrationFields.sort();
+
+      return integrationFields.concat(['Custom']);
     },
     isCustom (fieldRef) {
       return fieldRef.type === 'custom';
