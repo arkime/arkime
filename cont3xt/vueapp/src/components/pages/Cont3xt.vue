@@ -501,6 +501,11 @@ export default {
 
     // needs to be unfocused to focus again later with hotkey (subsequent focuses are unfocused in store)
     this.$store.commit('SET_FOCUS_SEARCH', false);
+
+    // clear existing results from the store (in case the user made a search and then came back to this page from another)
+    this.$store.commit('CLEAR_CONT3XT_RESULTS');
+    this.activeSource = undefined;
+    this.activeIndicator = undefined;
   },
   computed: {
     ...mapGetters([
