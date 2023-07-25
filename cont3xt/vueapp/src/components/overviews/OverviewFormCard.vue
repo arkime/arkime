@@ -159,7 +159,7 @@ import { mapGetters } from 'vuex';
 import OverviewService from '@/components/services/OverviewService';
 import UserService from '@/components/services/UserService';
 import OverviewForm from '@/components/overviews/OverviewForm';
-import normalizeCardField from '../../normalizeCardField';
+import normalizeCardField from '../../../../normalizeCardField';
 
 export default {
   name: 'OverviewFormCard',
