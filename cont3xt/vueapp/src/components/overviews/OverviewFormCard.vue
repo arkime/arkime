@@ -43,8 +43,14 @@
         <b-card v-for="(field, i) in localOverview.fields" :key="i"
                 class="mb-1"
         >
-          <span class="text-warning bold">{{ field.from }}</span> <span class="text-primary">{{ field.field }}</span>
-          <span v-if="field.alias">as <span class="text-info">"{{ field.alias }}"</span></span>
+          <span class="text-warning bold">{{ field.from }}</span>
+          <template v-if="field.type === 'custom'">
+            <span class="text-primary">Custom</span>:<span class="text-info">"{{ normalizeCardField(field.custom).label }}"</span>
+          </template>
+          <template v-else>
+            <span class="text-primary">{{ field.field }}</span>
+            <span v-if="field.alias">as <span class="text-info">"{{ field.alias }}"</span></span>
+          </template>
         </b-card>
       </div>
     </b-card-body>
@@ -153,6 +159,7 @@ import { mapGetters } from 'vuex';
 import OverviewService from '@/components/services/OverviewService';
 import UserService from '@/components/services/UserService';
 import OverviewForm from '@/components/overviews/OverviewForm';
+import normalizeCardField from '../../normalizeCardField';
 
 export default {
   name: 'OverviewFormCard',
@@ -192,6 +199,7 @@ export default {
     }
   },
   methods: {
+    normalizeCardField,
     normalizeOverview (unNormalizedOverview) {
       const normalizedOverview = JSON.parse(JSON.stringify(unNormalizedOverview));
       // sort roles, as their order should not matter
