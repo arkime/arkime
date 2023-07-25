@@ -617,7 +617,7 @@ class User {
 
     req.body.roles ??= [];
 
-    if (!User.hasValidRoles(req.body.roles)) {
+    if (!User.validateRoles(req.body.roles)) {
       return res.serverError(403, 'User roles must be system roles or start with "role:"');
     }
 
@@ -766,7 +766,7 @@ class User {
 
     req.body.roles ??= [];
 
-    if (!User.hasValidRoles(req.body.roles)) {
+    if (!User.validateRoles(req.body.roles)) {
       return res.serverError(403, 'User roles must be system roles or start with "role:"');
     }
 
@@ -1027,7 +1027,7 @@ class User {
    * Valid roles are system roles or roles that start with 'role:'
    * @returns {boolean} true if the roles are valid, false otherwise.
    */
-  static hasValidRoles (roles) {
+  static validateRoles (roles) {
     for (const r of roles) {
       if (!systemRolesMapping[r] && !r.startsWith('role:')) {
         return false;
