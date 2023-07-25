@@ -24,7 +24,7 @@ const extractDomain = require('extract-domain');
 const ipaddr = require('ipaddr.js');
 const Audit = require('./audit');
 const RE2 = require('re2');
-const normalizeCardField = require('./vueapp/src/normalizeCardField');
+const normalizeCardField = require('./normalizeCardField');
 
 const itypeStats = {};
 
