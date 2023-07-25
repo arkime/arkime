@@ -125,6 +125,10 @@
             :content="value.value"
             :highlights="highlights"/></code></pre>
       </template> <!-- /json field -->
+      <!-- DnsRecords field -->
+      <template v-else-if="field.type === 'dnsRecords'">
+        <DnsRecords :data="value.value" />
+      </template> <!-- /DnsRecords field -->
       <!-- /default string, ms, seconds, & date field -->
       <template v-else>
         <template v-if="field.pivot">
@@ -151,10 +155,12 @@ import IntegrationArray from '@/components/integrations/IntegrationArray';
 import IntegrationTable from '@/components/integrations/IntegrationTable';
 import HighlightableText from '@/utils/HighlightableText';
 import { formatPostProcessedValue } from '@/utils/formatValue';
+import DnsRecords from '@/utils/DnsRecords.vue';
 
 export default {
   name: 'IntegrationValue',
   components: {
+    DnsRecords,
     Cont3xtField,
     IntegrationArray,
     IntegrationTable,
@@ -197,7 +203,7 @@ export default {
       let value = this.findValue(this.data, this.field);
 
       // truncate long values
-      if (this.truncate && value && value.length > (this.field.len || 100)) {
+      if (this.truncate && value && typeof value === 'string' && value.length > (this.field.len || 100)) {
         full = value;
         value = `${value.substring(0, this.field.len || 100)}...`;
       }

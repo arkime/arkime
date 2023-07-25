@@ -9,7 +9,7 @@ const normalizeCardField = (inField) => {
     };
   }
   if (f.field === undefined) { f.field = f.label; }
-  if (typeof f.field === 'string') { f.path = f.field.split('.'); }
+  if (typeof f.field === 'string') { f.path ??= f.field.split('.'); }
   delete f.field;
 
   if (f.type === undefined) { f.type = 'string'; }
@@ -22,7 +22,7 @@ const normalizeCardField = (inField) => {
     if (f.filterEmpty === undefined) { f.filterEmpty = true; }
 
     if (f.fieldRoot !== undefined) {
-      f.fieldRootPath = f.fieldRoot.split('.');
+      f.fieldRootPath ??= f.fieldRoot.split('.');
       delete f.fieldRoot;
     }
   }
