@@ -11,7 +11,6 @@ const store = new Vuex.Store({
     hasAuth: false,
     loggedIn: false,
     commonAuth: false,
-    dashboardOnly: false,
     refreshInterval: 15000
   },
   mutations: {
@@ -32,9 +31,6 @@ const store = new Vuex.Store({
     },
     setCommonAuth (state, value) {
       state.commonAuth = value;
-    },
-    setDashboardOnly (state, value) {
-      state.dashboardOnly = value;
     },
     setRefreshInterval (state, value) {
       value = parseInt(value) || 0;

@@ -8,10 +8,9 @@ This project was generated with [Vue CLI][vuecli].
 
 The Parliament dashboard contains a grouped list of your Arkime clusters with links, ES health, and issues for each. You can search for Arkimes in your Parliament, change the data refresh time (15 seconds is the default), and hover over issues and ES health statuses for more information.
 
-The app can be run in three ways:
+The app can be run:
 1. with a password (**deprecated!**)
 2. read only mode (without a password, but Arkime User Authentication can be configured later)
-3. dashboard only mode (no password or ability to configure one)
 
 _**If your Parliament has a password (via option 1 or 2), you can interact with it in the ways enumerated below.**_
 
@@ -103,7 +102,6 @@ You can also run the app by building then starting the app. Like so:
 | -c, --config    | ./parliament.json | Absolute path to the JSON file to store your parliament information. |
 | --key           | EMPTY   | Private certificate to use for https, if not set then http will be used. **certfile** must also be set. |
 | --cert          | EMPTY   | Public certificate to use for https, if not set then http will be used. **keyFile** must also be set. |
-| --dashboardOnly | EMPTY   | This flag runs the parliament in dashboard only mode. A user will not be allowed to configure settings, a password, or interact with the parliament via the UI. |
 
 _Note: if you do not pass in the port or file arguments, the defaults are used._
 
@@ -114,7 +112,7 @@ To login, use the password (**deprecated**) that you passed into the `npm start`
 ##### Arkime User Authetication
 Parliament passwords are being deprecated. You can configure Parliament access using the Auth section on the Settings page. Auth uses the Arkime User's database for Parliament access.
 
-- **All** Arkime users can view the Parliament (dashboard only mode).
+- **All** Arkime users can view the Parliament.
 - Users with the "parliamentUser" role can ack, ignore, and delete issues within the Parliament.
 - Users with the "parliamentAdmin" role can do everything a "parliamentUser" can, plus they can configure the Parliament by adding/removing/updating groups/clusters and manage the Parliament settings.
 

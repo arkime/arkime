@@ -33,7 +33,7 @@
           </router-link>
         </li>
         <li class="nav-item mr-2"
-          v-if="(hasAuth && loggedIn && isAdmin) || (!hasAuth && !dashboardOnly)">
+          v-if="(hasAuth && loggedIn && isAdmin) || !hasAuth">
           <router-link to="settings"
             active-class="active"
             class="nav-link">
@@ -121,7 +121,7 @@
             class="btn btn-outline-success cursor-pointer ml-1"
             @click="login"
             tabindex="3"
-            v-if="!loggedIn && hasAuth && !dashboardOnly">
+            v-if="!loggedIn && hasAuth">
             <span class="fa fa-unlock">
             </span>&nbsp;
             Login
@@ -181,9 +181,6 @@ export default {
     },
     commonAuth: function () {
       return this.$store.state.commonAuth;
-    },
-    dashboardOnly: function () {
-      return this.$store.state.dashboardOnly;
     },
     // data load interval
     refreshInterval: {

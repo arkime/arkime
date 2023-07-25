@@ -124,10 +124,6 @@ const invalidTokens = {};
       i++;
       break;
 
-    case '--dashboardOnly':
-      app.set('dashboardOnly', true);
-      break;
-
     case '--regressionTests':
       app.set('regressionTests', 1);
       break;
@@ -212,8 +208,7 @@ try { // get the parliament file or error out if it's unreadable
 }
 
 // optional config code for setting up auth
-if (!app.get('dashboardOnly') && !app.get('hasPass')) {
-  // if we're not in dashboardOnly mode and we don't have a password
+if (!app.get('hasPass')) {
   console.log(chalk.cyan(
     `${chalk.bgCyan.black('IMPORTANT')} - Auth setup pin code is: ${internals.authSetupCode}`
   ));
@@ -420,10 +415,6 @@ function verifyToken (req, res, next) {
 }
 
 function checkAuthUpdate (req, res, next) {
-  if (app.get('dashboardOnly')) {
-    return next(newError(403, 'Your Parliament is in dasboard only mode.'));
-  }
-
   if (app.get('password') ?? parliament.authMode) {
     return isAdmin(req, res, next);
   }
@@ -1182,10 +1173,6 @@ if (app.get('regressionTests')) {
 
 // Authenticate user
 router.post('/auth', (req, res, next) => {
-  if (app.get('dashboardOnly')) {
-    return next(newError(403, 'Your Parliament is in dashboard only mode. You cannot login.'));
-  }
-
   const hasAuth = !!app.get('password');
   if (!hasAuth) {
     return next(newError(401, 'No password set.'));
@@ -1219,13 +1206,10 @@ router.post('/logout', (req, res, next) => {
   return res.json({ loggedin: false });
 });
 
-// Get whether authentication or dashboardOnly mode is set
+// Get whether authentication is set
 router.get('/auth', (req, res, next) => {
-  const hasAuth = !!app.get('password') || Object.keys(parliament?.settings?.commonAuth).length > 0;
-  const dashboardOnly = !!app.get('dashboardOnly');
   return res.json({
-    hasAuth,
-    dashboardOnly
+    hasAuth: !!app.get('password') || Object.keys(parliament?.settings?.commonAuth).length > 0
   });
 });
 
@@ -1242,10 +1226,6 @@ router.get('/auth/loggedin', [isUser, setCookie], (req, res, next) => {
 
 // Update (or create) common auth settings for the parliament
 router.put('/auth/commonauth', [checkAuthUpdate], (req, res, next) => {
-  if (app.get('dashboardOnly')) {
-    return next(newError(403, 'Your Parliament is in dasboard only mode. You cannot setup auth.'));
-  }
-
   if (!ArkimeUtil.isObject(req.body.commonAuth)) {
     return next(newError(422, 'Missing auth settings'));
   }
@@ -1278,10 +1258,6 @@ router.put('/auth/commonauth', [checkAuthUpdate], (req, res, next) => {
 
 // Update (or create) a password for the parliament
 router.put('/auth/update', [checkAuthUpdate], (req, res, next) => {
-  if (app.get('dashboardOnly')) {
-    return next(newError(403, 'Your Parliament is in dasboard only mode. You cannot create a password.'));
-  }
-
   if (!ArkimeUtil.isString(req.body.newPassword)) {
     return next(newError(422, 'You must provide a new password'));
   }
@@ -2281,9 +2257,6 @@ server
       console.log('Debug Level', app.get('debug'));
       console.log('Parliament file:', app.get('file'));
       console.log('Issues file:', issuesFilename);
-      if (app.get('dashboardOnly')) {
-        console.log('Opening in dashboard only mode');
-      }
     }
   })
   .listen(app.get('port'), () => {

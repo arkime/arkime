@@ -91,7 +91,6 @@
     "parliament:lint": "eslint --ext .js,.vue parliament",
     "parliament:lint-fix": "eslint --fix --ext .js,.vue parliament",
     "parliament:noauth": "(cd parliament && NODE_ENV=development nodemon parliament.js --port 8008 -c ./parliament.dev.json) & webpack --watch --progress --config parliament/vueapp/build/webpack.dev.conf.js",
-    "parliament:dashboard": "(cd parliament && NODE_ENV=development nodemon parliament.js --port 8008 -c ./parliament.dev.json --dashboardOnly) & webpack --watch --progress --config parliament/vueapp/build/webpack.dev.conf.js",
     "wise:build": "cd wiseService && node vueapp/build/build.js",
     "wise:bundle": "webpack --progress --config wiseService/vueapp/build/webpack.dev.conf.js",
     "wise:start": "cd wiseService && node wiseService.js -c ../tests/config.test.ini",

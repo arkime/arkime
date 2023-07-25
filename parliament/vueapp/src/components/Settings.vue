@@ -2,8 +2,7 @@
 
   <div class="settings-content">
 
-    <div v-if="!dashboardOnly"
-      class="container-fluid">
+    <div class="container-fluid">
 
       <!-- page error -->
       <div v-if="error"
@@ -901,15 +900,6 @@
 
     </div>
 
-    <div v-else
-      class="container-fluid">
-      <div class="alert alert-danger">
-        <span class="fa fa-exclamation-triangle">
-        </span>&nbsp;
-        This Parliament is for display only! You shouldn't be here.
-      </div>
-    </div>
-
   </div>
 
 </template>
@@ -958,9 +948,6 @@ export default {
     },
     commonAuth: function () {
       return this.$store.state.commonAuth;
-    },
-    dashboardOnly: function () {
-      return this.$store.state.dashboardOnly;
     }
   },
   watch: {

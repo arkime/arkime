@@ -48,10 +48,8 @@ export default {
   hasAuth: function () {
     Vue.axios.get('api/auth').then((response) => {
       store.commit('setHasAuth', response.data.hasAuth);
-      store.commit('setDashboardOnly', response.data.dashboardOnly);
     }).catch((error) => {
       store.commit('setHasAuth', false);
-      store.commit('setDashboardOnly', false);
     });
   },
 
