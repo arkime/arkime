@@ -1,5 +1,5 @@
 <template>
-  <b-card v-if="indicator.query">
+  <b-card v-if="indicator.query" class="cursor-pointer" :class="{ 'border-danger': isActiveIndicator }" @click.stop="setSelfAsActiveIndicator">
     <div class="d-xl-flex mb-2">
       <div class="d-xl-flex flex-grow-1 flex-wrap mt-1">
         <h4 class="text-warning">
@@ -17,12 +17,6 @@
           <integration-tidbit :tidbit="tidbit" :key="index"
                               :id="`${indicator.query}-tidbit-${index}`"/>
         </template><!--    /unlabeled tidbits    -->
-
-      </div>
-      <div class="d-flex align-self-center justify-content-end">
-        <integration-btns
-          :indicator="indicator"
-        />
       </div>
     </div>
 
@@ -42,7 +36,6 @@
 
 <script>
 import Cont3xtField from '@/utils/Field';
-import IntegrationBtns from '@/components/integrations/IntegrationBtns';
 import IntegrationTidbit from '@/components/integrations/IntegrationTidbit';
 import { mapGetters } from 'vuex';
 import { Cont3xtIndicatorProp } from '@/utils/cont3xtUtil';
@@ -55,7 +48,6 @@ export default {
     // see: vuejs.org/v2/guide/components.html#Circular-References-Between-Components
     ITypeNode: () => import('@/components/itypes/ITypeNode'),
     Cont3xtField,
-    IntegrationBtns,
     IntegrationTidbit
   },
   props: {
@@ -70,12 +62,23 @@ export default {
     }
   },
   computed: {
-    ...mapGetters(['getResults']),
+    ...mapGetters(['getResults', 'getActiveIndicator']),
     labeledTidbits () {
       return this.tidbits.filter(tidbit => tidbit.label?.length);
     },
     unlabeledTidbits () {
       return this.tidbits.filter(tidbit => !tidbit.label?.length);
+    },
+    isActiveIndicator () {
+      return this.indicator.query === this.getActiveIndicator.query && this.indicator.itype === this.getActiveIndicator.itype;
+    }
+  },
+  methods: {
+    setSelfAsActiveIndicator () {
+      if (this.isActiveIndicator) { return; }
+
+      this.$store.commit('SET_ACTIVE_INDICATOR', this.indicator);
+      this.$store.commit('SET_ACTIVE_SOURCE', undefined);
     }
   }
 };

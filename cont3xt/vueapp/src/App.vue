@@ -1,8 +1,8 @@
 <template>
   <div id="app">
-    <div v-if="compatibleBrowser">
+    <div v-if="compatibleBrowser" class="d-flex flex-column h-100">
       <cont3xt-navbar />
-      <router-view class="margin-for-nav-and-progress" />
+      <router-view />
       <keyboard-shortcuts
         @shift-hold-change="shiftHoldChange"
         shortcuts-class="cont3xt-shortcuts"
@@ -179,6 +179,9 @@ export default {
           this.routeTo('/help');
         }
         break;
+      case 51: // 3 TODO: toby!
+        this.$store.commit('TOGGLE_LINK_GROUPS_PANEL');
+        break;
       case 13: // enter
         // trigger search/refresh
         this.$store.commit('SET_ISSUE_SEARCH', true);
@@ -202,6 +205,15 @@ export default {
 </script>
 
 <style>
+/* todo toby move this? or address reason (users page overflow) */
+body {
+  overflow-y: hidden;
+}
+
+#app {
+  height: 100vh;
+}
+
 .cont3xt-shortcuts {
   right: 0;
   top: 140px;

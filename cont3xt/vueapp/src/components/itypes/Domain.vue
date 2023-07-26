@@ -3,50 +3,12 @@
       :indicator="indicator"
       :tidbits="tidbits"
       :children="children"
-  >
-    <!--  non-ip dns records  -->
-    <template #after-children>
-      <template v-if="integrationDataMap.DNS">
-        <div
-            :key="key"
-            class="row medium"
-            v-for="(value, key) in integrationDataMap.DNS">
-          <div class="col"
-               v-if="value.Answer && value.Answer.length">
-            <dl v-if="key !== 'A' && key !== 'AAAA'"
-                class="dl-horizontal">
-              <dt>
-                {{ key }}
-                ({{ value.Answer.length }})
-              </dt>
-              <dd>
-                <div v-for="(group, groupIndex) in answerGroups(key, value.Answer)" :key="`${key}-${groupIndex}`">
-                  <hr v-if="groupIndex > 0" class="m-0 bg-secondary">
-                  <template v-for="(item, index) in group">
-                    <cont3xt-field
-                        :id="`${key}-${groupIndex}-${index}`"
-                        :key="`${key}-${groupIndex}-${index}`"
-                        :value="item.data"
-                    />
-                    <ttl-tooltip
-                      :ttl="item.TTL"
-                      :key="`${key}-${groupIndex}-${index}-ttl`"
-                      :target="`${key}-${groupIndex}-${index}`"
-                    />
-                  </template>
-                </div>
-              </dd>
-            </dl>
-          </div>
-        </div>
-      </template>
-    </template><!--  /non-ip dns records  -->
-  </base-i-type>
+  />
 </template>
 
 <script>
-import Cont3xtField from '@/utils/Field';
-import TtlTooltip from '@/utils/TtlTooltip';
+// TODO: Toby, revert this file to merge! :0
+
 import BaseIType from '@/components/itypes/BaseIType';
 import { ITypeMixin } from './ITypeMixin';
 import { Cont3xtIndicatorProp } from '@/utils/cont3xtUtil';
@@ -55,8 +17,6 @@ export default {
   name: 'Cont3xtDomain',
   mixins: [ITypeMixin], // for tidbits
   components: {
-    Cont3xtField,
-    TtlTooltip,
     BaseIType
   },
   props: {

@@ -43,7 +43,7 @@
       <!-- loading overlay template -->
       <template #overlay>
         <slot name="loading">
-          <div class="text-center margin-for-nav-and-progress">
+          <div class="text-center">
             <span class="fa fa-circle-o-notch fa-spin fa-2x" />
             <p>Loading roles...</p>
           </div>

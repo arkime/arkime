@@ -1,8 +1,8 @@
 <template>
-  <b-dropdown size="sm" class="ml-1 overview-dropdown" no-caret v-b-tooltip.hover.top="'Select overview'">
+  <b-dropdown size="sm" class="overview-dropdown" no-caret v-b-tooltip.hover.top="'Select overview'">
     <template #button-content>
       <div class="no-wrap d-inline-flex align-items-center">
-        <span class="fa fa-fw fa-file-o" />
+        <span class="fa fa-fw fa-file-o mr-1" />
         <div class="overview-name-shorten">{{ selectedOverview.name }}</div>
       </div>
     </template>

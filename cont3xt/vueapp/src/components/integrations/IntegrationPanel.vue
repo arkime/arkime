@@ -1,19 +1,13 @@
 <template>
-  <span>
+  <div class="sidebar-container d-flex flex-row" :class="{'sidebar-expand': sidebarOpen}">
     <!-- open search panel on hover button -->
-    <div
-      class="sidebar-btn"
-      @mouseenter="mouseEnterSidebar">
-      <div class="mt-3 pt-1">
-        <!--    dynamic margin counteracts the shift caused by the change in cont3xt-content margin on tag open/close    -->
-        <div :style="`margin-top: ${tagsOpen ? -14 : 6}px`">
-          <span
-              @click="toggleSidebar"
-              class="fa fa-chevron-right cursor-pointer"
-          />
-        </div>
-      </div>
-    </div> <!-- /open search panel on hover button -->
+    <div class="sidebar-btn-container h-100" @mouseenter="mouseEnterSidebar">
+        <div
+            @click="toggleSidebar"
+            class="sidebar-btn fa fa-chevron-right py-1 pr-1 mt-2 cursor-pointer"
+        />
+    </div>
+    <!-- /open search panel on hover button -->
 
     <!-- integrations panel -->
     <div @mouseleave="mouseLeaveSidebar">
@@ -101,7 +95,7 @@
         </b-row> <!-- /hover delay -->
       </b-sidebar>
     </div> <!-- integrations panel -->
-  </span>
+  </div>
 </template>
 
 <script>
@@ -221,38 +215,35 @@ export default {
 <style>
 /* margin for navbar and progress bar height */
 #integrations-sidebar {
-  margin-top: 60px !important;
-  height: calc(100vh - 60px);
+  margin-top: 62px !important;
+  height: calc(100vh - 62px);
+}
+</style>
+
+<style scoped>
+
+/* width-having container with transition to play nice with the rest of the page */
+.sidebar-container {
+  transition: width 0.5s;
+  width: 16px;
+}
+.sidebar-expand {
+  width: 252px;
 }
 
-/* sidebar button is full height to the left of the content */
-.sidebar-btn {
-  left: -3px;
-  z-index: 4;
-  color: black;
-  height: 100%;
-  position: fixed;
-  padding: 0.2rem;
-  margin-top: -5rem;
+.sidebar-btn-container {
   background-color: #ececec;
+  color: black;
 }
-
-/* darken sidebar btn */
-body.dark .sidebar-btn {
+body.dark .sidebar-btn-container {
   color: #EEE;
   background-color: #555;
 }
 
-/* margin to flank content associated with sidebar
-   transition to side it over when opening sidebar */
-.main-content,
-.main-content .search-nav {
-  margin-left: 1rem;
-  transition: 0.5s;
-}
-/* push over the content if there sidebar is open and not just hovering */
-.main-content.with-sidebar,
-.main-content.with-sidebar .search-nav {
-  margin-left: 252px;
+.sidebar-btn {
+  /* fix obscured hit-box */
+  z-index: 4;
+  position: relative;
+  padding-left: 2px;
 }
 </style>

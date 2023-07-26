@@ -1,7 +1,7 @@
 <template>
-  <div>
+  <div class="d-flex flex-column">
     <!-- cont3xt navbar -->
-    <nav class="navbar navbar-expand navbar-dark bg-dark justify-content-between fixed-top">
+    <nav class="navbar navbar-expand navbar-dark bg-dark justify-content-between">
       <router-link
         exact
         to="help"
@@ -127,22 +127,24 @@
         </button>
       </div> <!-- /dark/light mode -->
     </nav> <!-- /cont3xt nav -->
-    <b-progress
-      height="8px"
-      class="mt-2 cursor-help"
-      :max="getLoading.total"
-      :animated="getLoading.total != getLoading.received + getLoading.failed">
-      <b-progress-bar
-        variant="success"
-        :value="getLoading.received"
-        v-b-tooltip.hover="`${getLoading.received}/${getLoading.total} fetched successfully`"
-      />
-      <b-progress-bar
-        variant="danger"
-        :value="getLoading.failed"
-        v-b-tooltip.hover="`${getLoading.failed}/${getLoading.total} failed: ${getLoading.failures.join(', ')}`"
-      />
-    </b-progress>
+    <div class="progress-container">
+      <b-progress
+          height="8px"
+          class="cursor-help"
+          :max="getLoading.total"
+          :animated="getLoading.total != getLoading.received + getLoading.failed">
+        <b-progress-bar
+            variant="success"
+            :value="getLoading.received"
+            v-b-tooltip.hover="`${getLoading.received}/${getLoading.total} fetched successfully`"
+        />
+        <b-progress-bar
+            variant="danger"
+            :value="getLoading.failed"
+            v-b-tooltip.hover="`${getLoading.failed}/${getLoading.total} failed: ${getLoading.failures.join(', ')}`"
+        />
+      </b-progress>
+    </div>
   </div>
 </template>
 
@@ -214,14 +216,10 @@ export default {
 </script>
 
 <style scoped>
-div.progress {
-  top: 44px;
-  width: 100%;
-  z-index: 1030;
-  position: fixed;
+.progress-container .progress {
   border-radius: 0;
 }
-body.dark div.progress {
+body.dark .progress-container .progress {
   background-color: #404040;
 }
 
