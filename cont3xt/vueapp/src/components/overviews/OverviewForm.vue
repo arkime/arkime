@@ -4,6 +4,7 @@
       size="sm"
       v-if="rawEditMode"
       :value="rawEditText"
+      :disabled="noEdit"
       @input="e => debounceRawEdit(e)"
       class="form-control form-control-sm"
   />
@@ -294,6 +295,10 @@ export default {
     isDefaultOverview: {
       type: Boolean,
       default: false
+    },
+    noEdit: { // for use of disabled raw edit (for view-only privileged users)
+      type: Boolean,
+      default: false
     }
   },
   data () {
@@ -336,32 +341,34 @@ export default {
         this.localOverview = JSON.parse(JSON.stringify(this.modifiedOverview));
       }
     },
-    rawEditMode (newVal) {
-      if (!newVal) {
-        this.rawEditText = undefined;
-        return;
-      }
-
-      // remove un-editable fields
-      const clone = JSON.parse(JSON.stringify(this.localOverview));
-      delete clone._id;
-      delete clone.creator;
-      delete clone._editable;
-      delete clone._viewable;
-
-      clone.fields ??= [];
-      for (const fieldRef of clone.fields) {
-        if (!this.isCustom(fieldRef) || !fieldRef.expanded) {
-          // expanded is only necessary to keep open currently expanded custom fields
-          delete fieldRef.expanded;
+    rawEditMode: {
+      handler (newVal) {
+        if (!newVal) {
+          this.rawEditText = undefined;
+          return;
         }
-        delete fieldRef._customRawEdit;
-        // type can be inferred from other fields (field vs custom existence)
-        //     so we don't need it for raw edit to avoid verbosity
-        delete fieldRef.type;
-      }
 
-      this.rawEditText = JSON.stringify(clone, null, 2);
+        // remove un-editable fields
+        const clone = JSON.parse(JSON.stringify(this.localOverview));
+        delete clone._id;
+        delete clone.creator;
+        delete clone._editable;
+        delete clone._viewable;
+
+        clone.fields ??= [];
+        for (const fieldRef of clone.fields) {
+          if (!this.isCustom(fieldRef) || !fieldRef.expanded) {
+            // expanded is only necessary to keep open currently expanded custom fields
+            delete fieldRef.expanded;
+          }
+          delete fieldRef._customRawEdit;
+          // type can be inferred from other fields (field vs custom existence)
+          //     so we don't need it for raw edit to avoid verbosity
+          delete fieldRef.type;
+        }
+        this.rawEditText = JSON.stringify(clone, null, 2);
+      },
+      immediate: true
     }
   },
   methods: {
