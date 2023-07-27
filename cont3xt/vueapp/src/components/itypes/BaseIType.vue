@@ -1,5 +1,5 @@
 <template>
-  <b-card v-if="indicator.query" class="cursor-pointer" :class="{ 'border-danger': isActiveIndicator }" @click.stop="setSelfAsActiveIndicator">
+  <b-card v-if="indicator.query" class="cursor-pointer itype-card" :class="{ 'border-danger': isActiveIndicator }" @click.stop="setSelfAsActiveIndicator">
     <div class="d-xl-flex mb-2">
       <div class="d-xl-flex flex-grow-1 flex-wrap mt-1">
         <h4 class="text-warning">
@@ -85,5 +85,11 @@ export default {
 </script>
 
 <style scoped>
-
+/* effects only the directly-hovered itype-card */
+.itype-card:hover:not(:has(.itype-card:hover)) {
+  background-color: #d9dbde;
+}
+body.dark .itype-card:hover:not(:has(.itype-card:hover)) {
+  background-color: #3d3d3d;
+}
 </style>
