@@ -1,8 +1,8 @@
 <template>
-  <div class="sidebar-container d-flex flex-row" :class="{'sidebar-expand': sidebarOpen}">
+  <div class="sidebar-container d-flex flex-row" :class="{'sidebar-expand': sidebarKeepOpen}">
     <!-- open search panel on hover button -->
     <div class="sidebar-btn-container h-100"
-         @mouseenter="mouseEnterSidebar"
+         @mouseenter="mouseEnterSidebarStub"
          @mouseleave="mouseLeaveSidebarStub"
     >
         <div
@@ -159,20 +159,20 @@ export default {
   },
   methods: {
     /* page functions ------------------------------------------------------ */
-    mouseEnterSidebar () {
+    mouseEnterSidebarStub () {
       this.openTimeout = setTimeout(() => {
         this.sidebarOpen = true;
       }, this.hoverDelay || 400);
     },
+    mouseLeaveSidebarStub () {
+      // cancel the timeout to open sidebar if the user leaves the stub before it opens
+      if (this.openTimeout != null) {
+        clearTimeout(this.openTimeout);
+      }
+    },
     mouseLeaveSidebar () {
       if (!this.sidebarKeepOpen) {
         this.sidebarOpen = false;
-      }
-    },
-    mouseLeaveSidebarStub () {
-      // cancel the timeout to open sidebar if the user leaves the stub before it opens
-      if (!this.sidebarOpen && this.openTimeout != null) {
-        clearTimeout(this.openTimeout);
       }
     },
     toggleSidebar () {
@@ -233,11 +233,11 @@ export default {
 
 /* width-having container with transition to play nice with the rest of the page */
 .sidebar-container {
-  transition: width 0.5s;
-  width: 16px;
+  transition: min-width 0.5s;
+  min-width: 16px;
 }
 .sidebar-expand {
-  width: 252px;
+  min-width: 252px !important;
 }
 
 .sidebar-btn-container {

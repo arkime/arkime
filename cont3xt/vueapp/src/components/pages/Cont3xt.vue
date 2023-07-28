@@ -385,7 +385,7 @@
                             @update="updateList"
                             :key="linkGroup._id"
                             :list="getLinkGroups"
-                            class="w-100 p-2"
+                            class="w-100"
                             v-if="hasVisibleLink(linkGroup)">
                           <template #handle>
                         <span
@@ -401,6 +401,7 @@
                           <template #default>
                             <link-group-card
                                 v-if="getLinkGroups.length"
+                                class="w-100"
                                 :indicator="rootIndicator"
                                 :num-days="timeRangeInfo.numDays"
                                 :num-hours="timeRangeInfo.numHours"
@@ -1002,10 +1003,10 @@ body.dark {
 }
 
 .link-group-card-handle {
-  top: 1rem;
+  top: 2rem;
   z-index: 2;
   float: right;
-  right: 1.5rem;
+  right: 1rem;
   position: relative;
 }
 
