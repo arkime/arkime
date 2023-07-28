@@ -363,22 +363,21 @@
                         />
                       </b-input-group> <!-- /link search -->
                     </div>
-                    <!--                  TODO: toby, disabled for no lg ! -->
                     <b-button
                         size="sm"
                         class="ml-1"
                         v-b-tooltip.hover
                         variant="outline-secondary"
                         :disabled="!hasVisibleLinkGroup"
-                        @click="toggleAllLinkGroups"
-                        :title="`${!allLinkGroupsClosed ? 'Collapse' : 'Expand'} ALL Link Groups`">
+                        @click="toggleAllVisibleLinkGroupsCollapse"
+                        :title="`${!allVisibleLinkGroupsCollapsed ? 'Collapse' : 'Expand'} ALL Link Groups`">
                     <span class="fa fa-fw"
-                          :class="[!allLinkGroupsClosed ? 'fa-chevron-up' : 'fa-chevron-down']">
+                          :class="[!allVisibleLinkGroupsCollapsed ? 'fa-chevron-up' : 'fa-chevron-down']">
                     </span>
                     </b-button>
                   </div>
                   <!-- link groups -->
-                  <div class="d-flex flex-wrap align-items-start">
+                  <div class="d-flex flex-column align-items-start">
                     <template v-if="hasVisibleLinkGroup">
                       <template v-for="(linkGroup, index) in getLinkGroups">
                         <reorder-list
@@ -386,7 +385,7 @@
                             @update="updateList"
                             :key="linkGroup._id"
                             :list="getLinkGroups"
-                            class="w-50 p-2 link-group"
+                            class="w-100 p-2"
                             v-if="hasVisibleLink(linkGroup)">
                           <template #handle>
                         <span
@@ -559,22 +558,14 @@ export default {
     hasLinkGroupWithItype () {
       return this.getLinkGroups?.some(this.hasLinkWithItype);
     },
-    hasVisibleLinkGroup () {
-      return this.getLinkGroups?.some(this.hasVisibleLink);
+    visibleLinkGroups () {
+      return (this.getLinkGroups ?? []).filter(this.hasVisibleLink);
     },
-    allLinkGroupsClosed () {
-      console.log('hi toby, is this right', this.collapsedLinkGroups);
-      let allClosed = false;
-      if (Object.keys(this.collapsedLinkGroups).length > 0) {
-        allClosed = true;
-        for (const lg in this.collapsedLinkGroups) {
-          if (!this.collapsedLinkGroups[lg]) {
-            allClosed = false;
-            break;
-          }
-        }
-      }
-      return allClosed;
+    hasVisibleLinkGroup () {
+      return this.visibleLinkGroups.length > 0;
+    },
+    allVisibleLinkGroupsCollapsed () {
+      return this.visibleLinkGroups.every(lg => this.collapsedLinkGroups[lg._id]);
     },
     currentOverviewCard () {
       if (this.overrideOverviewId) {
@@ -632,12 +623,6 @@ export default {
       }
 
       this.filterLinks(searchTerm);
-    },
-    collapsedLinkGroups: {
-      deep: true,
-      handler () {
-        this.arrangeLinkGroups();
-      }
     },
     getIssueSearch (val) {
       if (val) { this.search(); }
@@ -872,14 +857,13 @@ export default {
       }
       this.$copyText(shareLink);
     },
-    toggleAllLinkGroups () {
+    toggleAllVisibleLinkGroupsCollapse () {
       // if all are collapsed, open them all
       // if even one is open, close them all
-      const allClosed = this.allLinkGroupsClosed;
-      for (const linkGroup of this.getLinkGroups) {
-        this.$set(this.collapsedLinkGroups, linkGroup._id, !allClosed);
+      const allCollapsed = this.allVisibleLinkGroupsCollapsed;
+      for (const lg of this.visibleLinkGroups) {
+        this.$set(this.collapsedLinkGroups, lg._id, !allCollapsed);
       }
-      this.$store.commit('SET_COLLAPSED_LINK_GROUPS', this.collapsedLinkGroups);
     },
     generateReport () {
       if (!this.searchComplete) { return; }
@@ -920,58 +904,6 @@ export default {
           }
         }
       }
-
-      this.arrangeLinkGroups();
-    },
-    arrangeLinkGroups () {
-      this.$nextTick(() => { // wait for render
-        const lgElements = document.getElementsByClassName('link-group');
-
-        for (let i = 0, len = lgElements.length; i < len; i++) {
-          let delta = 0;
-          const even = i % 2 === 0;
-
-          if (i < 2) { continue; }
-
-          const target = lgElements[i];
-
-          if (!even) { // right side
-            let x = i;
-            let leftHeight = 0;
-            let rightHeight = 0;
-            while (x > -1) { // sum heights of upper sibling elements
-              if (lgElements[x - 3]) {
-                leftHeight += lgElements[x - 3].clientHeight;
-                rightHeight += lgElements[x - 2].clientHeight;
-              } else {
-                break;
-              }
-              x -= 2;
-            }
-            if (leftHeight > rightHeight) {
-              delta = Math.abs(leftHeight - rightHeight);
-            }
-          } else { // left side
-            let x = i;
-            let leftHeight = 0;
-            let rightHeight = 0;
-            while (x > -1) {
-              if (lgElements[x - 2]) { // sum heights of upper sibling elements
-                leftHeight += lgElements[x - 2].clientHeight;
-                rightHeight += lgElements[x - 1].clientHeight;
-              } else {
-                break;
-              }
-              x -= 2;
-            }
-            if (rightHeight > leftHeight) {
-              delta = Math.abs(rightHeight - leftHeight);
-            }
-          }
-
-          target.style = `margin-top: -${delta}px`;
-        }
-      });
     },
     setViewByQueryParam (viewParam) {
       const removeViewParam = () => {
@@ -1027,13 +959,6 @@ body.dark {
   background-color: #222;
 }
 
-/* TODO toby remove ! */
-.cont3xt-content {
-  /*overflow: hidden; */
-  /*margin-left: -7px; */
-  /*margin-right: -7px; */
-}
-
 /* side by side scrolling results containers */
 .results-container {
   width: 50%;
@@ -1076,22 +1001,12 @@ body.dark {
   color: var(--info);
 }
 
-/* TOBY remove? */
-.link-group-cards-wrapper {
-  margin-right: -1.25rem !important;
-  margin-left: -0.5rem !important;
-}
-
 .link-group-card-handle {
   top: 1rem;
   z-index: 2;
   float: right;
   right: 1.5rem;
   position: relative;
-}
-
-.link-group {
-  transition: margin-top 0.5s ease-out;
 }
 
 /* enter icon for search/refresh button to be displayed on shift hold */

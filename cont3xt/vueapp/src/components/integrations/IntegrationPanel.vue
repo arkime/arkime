@@ -1,7 +1,10 @@
 <template>
   <div class="sidebar-container d-flex flex-row" :class="{'sidebar-expand': sidebarOpen}">
     <!-- open search panel on hover button -->
-    <div class="sidebar-btn-container h-100" @mouseenter="mouseEnterSidebar">
+    <div class="sidebar-btn-container h-100"
+         @mouseenter="mouseEnterSidebar"
+         @mouseleave="mouseLeaveSidebarStub"
+    >
         <div
             @click="toggleSidebar"
             class="sidebar-btn fa fa-chevron-right py-1 pr-1 mt-2 cursor-pointer"
@@ -107,14 +110,14 @@ export default {
   name: 'IntegrationPanel',
   components: { ViewSelector },
   props: {
-    sidebarHover: Boolean,
-    tagsOpen: Boolean // allows for correct positioning of sidebar button
+    sidebarHover: Boolean
   },
   data () {
     return {
       allSelected: false,
       indeterminate: false,
-      sidebarOpen: this.$store.state.sidebarKeepOpen
+      sidebarOpen: this.$store.state.sidebarKeepOpen,
+      openTimeout: undefined
     };
   },
   computed: {
@@ -157,13 +160,19 @@ export default {
   methods: {
     /* page functions ------------------------------------------------------ */
     mouseEnterSidebar () {
-      setTimeout(() => {
+      this.openTimeout = setTimeout(() => {
         this.sidebarOpen = true;
       }, this.hoverDelay || 400);
     },
     mouseLeaveSidebar () {
       if (!this.sidebarKeepOpen) {
         this.sidebarOpen = false;
+      }
+    },
+    mouseLeaveSidebarStub () {
+      // cancel the timeout to open sidebar if the user leaves the stub before it opens
+      if (!this.sidebarOpen && this.openTimeout != null) {
+        clearTimeout(this.openTimeout);
       }
     },
     toggleSidebar () {
