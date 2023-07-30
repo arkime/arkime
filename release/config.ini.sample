@@ -13,7 +13,7 @@
 
 [default]
 # Comma seperated list of OpenSearch/Elasticsearch host:port combinations. If not using a
-# Elasticsearch load balancer, a different OpenSearch/Elasticsearch node in the cluster can be 
+# Elasticsearch load balancer, a different OpenSearch/Elasticsearch node in the cluster can be
 # specified for each Arkime node to help spread load on high volume clusters. For user/password
 # use https://user:pass@host:port OR elasticsearchBasicAuth
 elasticsearch=ARKIME_ELASTICSEARCH
@@ -28,7 +28,7 @@ elasticsearch=ARKIME_ELASTICSEARCH
 # See https://arkime.com/settings#rotateindex
 rotateIndex=daily
 
-# Uncomment if this node should process the cron queries and packet search jobs, only ONE node should 
+# Uncomment if this node should process the cron queries and packet search jobs, only ONE node should
 # process cron queries and packet search jobs
 # cronQueries=true
 
@@ -125,10 +125,10 @@ freeSpaceG=5%
 rirFile=ARKIME_INSTALL_DIR/etc/ipv4-address-space.csv
 
 # Path of the OUI file from whareshark
-#  https://raw.githubusercontent.com/wireshark/wireshark/master/manuf
+#  https://raw.githubusercontent.com/wireshark/wireshark/release-4.0/manuf
 ouiFile=ARKIME_INSTALL_DIR/etc/oui.txt
 
-# Arkime rules to allow you specify actions to perform when criteria are met with certain fields or state. 
+# Arkime rules to allow you specify actions to perform when criteria are met with certain fields or state.
 # See https://arkime.com/rulesformat
 #rulesFiles=ARKIME_INSTALL_DIR/etc/arkime.rules
 
