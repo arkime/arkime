@@ -394,6 +394,11 @@ class Auth {
           return done(null, false);
         }
 
+        if (userId.startsWith('role:')) {
+          console.log(`AUTH: User ${userId} Can not authenticate with role`);
+          return done('Can not authenticate with role');
+        }
+
         async function oidcAuthCheck (err, user) {
           if (err || !user) { return done('User not found'); }
           if (!user.enabled) { return done('User not enabled'); }
