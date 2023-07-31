@@ -50,8 +50,7 @@ const router = new Router({
 });
 
 router.beforeEach((to, from, next) => {
-  AuthService.hasAuth();
-  AuthService.isLoggedIn();
+  AuthService.getAuthInfo();
   next();
 });
 

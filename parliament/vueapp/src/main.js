@@ -23,7 +23,7 @@ Vue.use(VueAxios, axios);
 Vue.use(VueMoment);
 Vue.use(BootstrapVue);
 
-// setup axios http interceptor to add token to reqs
+// setup axios http interceptor to add cookie to reqs
 interceptorSetup();
 
 /* eslint-disable no-new */

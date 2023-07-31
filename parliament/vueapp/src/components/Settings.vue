@@ -2,8 +2,7 @@
 
   <div class="settings-content">
 
-    <div v-if="!dashboardOnly"
-      class="container-fluid">
+    <div class="container-fluid">
 
       <!-- page error -->
       <div v-if="error"
@@ -11,7 +10,7 @@
         <span class="fa fa-exclamation-triangle">
         </span>&nbsp;
         {{ error }}
-        <span v-if="!settings && loggedIn && !networkError">
+        <span v-if="!settings && !networkError">
           If the problem persists, try
           <a class="no-decoration"
             href="javascript:void(0)"
@@ -26,26 +25,16 @@
         </button>
       </div> <!-- /page error -->
 
-      <!-- password set but user is not logged in -->
-      <div v-if="!error && hasAuth && !loggedIn"
-        class="alert alert-danger">
-        <span class="fa fa-exclamation-triangle">
-        </span>&nbsp;
-        This page requires admin privileges. Please login.
-      </div> <!-- /password set but user is not logged in -->
-
       <!-- page content -->
-      <div class="row">
+      <div class="row" v-if="isAdmin">
 
         <!-- navigation -->
         <div class="col-xl-2 col-lg-3 col-md-3 col-sm-4">
 
-          <div v-if="!hasAuth || loggedIn"
-            class="nav flex-column nav-pills">
+          <div class="nav flex-column nav-pills">
             <a class="nav-link cursor-pointer"
               @click="openView('general')"
-              :class="{'active':visibleTab === 'general'}"
-              v-if="hasAuth && loggedIn">
+              :class="{'active':visibleTab === 'general'}">
               <span class="fa fa-fw fa-cog">
               </span>&nbsp;
               General
@@ -57,18 +46,9 @@
               </span>&nbsp;
               Auth
             </a>
-            <a v-if="!commonAuth"
-              class="nav-link cursor-pointer"
-              @click="openView('password')"
-              :class="{'active':visibleTab === 'password'}">
-              <span class="fa fa-fw fa-lock">
-              </span>&nbsp;
-              Password
-            </a>
             <a class="nav-link cursor-pointer"
               @click="openView('notifiers')"
-              :class="{'active':visibleTab === 'notifiers'}"
-              v-if="hasAuth && loggedIn">
+              :class="{'active':visibleTab === 'notifiers'}">
               <span class="fa fa-fw fa-bell">
               </span>&nbsp;
               Notifiers
@@ -104,7 +84,7 @@
         </div> <!-- /navigation -->
 
         <!-- general -->
-        <div v-if="visibleTab === 'general' && hasAuth && loggedIn && settings"
+        <div v-if="visibleTab === 'general' && settings"
           class="col">
           <div class="row">
             <h3 class="col-xl-9 col-lg-12 form-group">
@@ -285,7 +265,7 @@
         <!-- /general -->
 
         <!-- auth -->
-        <div v-if="(visibleTab === 'auth' && hasAuth && loggedIn) || (visibleTab === 'auth' && !hasAuth)"
+        <div v-if="visibleTab === 'auth'"
           class="col">
           <div class="row">
             <h3 class="col-xl-9 col-lg-12 form-group">
@@ -308,7 +288,7 @@
                 After changing these settings, you must restart Parliament for them to take affect.
               </div>
             </div>
-            <div v-if="!hasAuth || !loggedIn"
+            <div v-if="!hasAuth"
               class="col-xl-9 col-lg-12 form-group">
               <div class="input-group mb-2">
                 <span class="input-group-prepend">
@@ -318,9 +298,7 @@
                 </span>
                 <input class="form-control"
                   name="authSetupCode"
-                  @input="passwordChanged = true"
                   v-model="authSetupCode"
-                  autocomplete="current-password"
                   type="password"
                 />
               </div>
@@ -473,125 +451,8 @@
         </div>
         <!-- /auth -->
 
-        <!-- password -->
-        <div v-if="(visibleTab === 'password' && hasAuth && loggedIn) || (visibleTab === 'password' && !hasAuth)"
-          class="col">
-          <!-- common auth -->
-          <div v-if="commonAuth"
-            class="alert alert-danger">
-            <span class="fa fa-exclamation-triangle">
-            </span>&nbsp;
-            This Parliament uses the Arkime user's authentication, this tab is disabled.
-          </div> <!-- /common auth -->
-          <template v-else>
-            <h3 class="mb-3">
-              Password
-              <span v-if="passwordChanged"
-                class="pull-right">
-                <!-- cancel password update button -->
-                <a @click="cancelChangePassword"
-                  class="btn btn-outline-warning cursor-pointer">
-                  <span class="fa fa-ban">
-                  </span>&nbsp;
-                  Cancel
-                </a> <!-- /cancel password update button -->
-                <!-- update/create password button -->
-                <a v-if="(hasAuth && loggedIn) || !hasAuth"
-                  @click="updatePassword"
-                  class="btn btn-outline-success cursor-pointer mr-1 ml-1">
-                  <span class="fa fa-key"></span>
-                  <span v-if="hasAuth && loggedIn">
-                    Update
-                  </span>
-                  <span v-if="!hasAuth">
-                    Create
-                  </span>
-                  Password
-                </a> <!-- /update/create password button -->
-              </span>
-            </h3>
-            <hr>
-            <div class="alert alert-warning">
-              <span class="fa fa-info-circle mr-2" />
-              These passwords are being deprecated, please use the Auth section
-              to configure access to your Parliament. Auth uses the the Arkime
-              User's database for Parliament access.
-            </div>
-            <form>
-              <input type="text"
-                name="username"
-                value="..."
-                autocomplete="username"
-                class="d-none"
-              />
-              <div v-if="hasAuth && loggedIn"
-                class="input-group mb-2">
-                <span class="input-group-prepend">
-                  <span class="input-group-text">
-                    Current Password
-                  </span>
-                </span>
-                <input class="form-control"
-                  @keyup.enter="updatePassword"
-                  name="currentPassword"
-                  @input="passwordChanged = true"
-                  v-model="currentPassword"
-                  autocomplete="current-password"
-                  type="password"
-                />
-              </div>
-              <div v-else
-                class="input-group mb-2">
-                <span class="input-group-prepend">
-                  <span class="input-group-text">
-                    Auth Setup Code
-                  </span>
-                </span>
-                <input class="form-control"
-                  @keyup.enter="updatePassword"
-                  name="currentPassword"
-                  @input="passwordChanged = true"
-                  v-model="authSetupCode"
-                  autocomplete="current-password"
-                  type="password"
-                />
-              </div>
-              <div class="input-group mb-2">
-                <span class="input-group-prepend">
-                  <span class="input-group-text">
-                    New Password
-                  </span>
-                </span>
-                <input class="form-control"
-                  name="newPassword"
-                  @keyup.enter="updatePassword"
-                  @input="passwordChanged = true"
-                  v-model="newPassword"
-                  autocomplete="new-password"
-                  type="password"
-                />
-              </div>
-              <div class="input-group mb-2">
-                <span class="input-group-prepend">
-                  <span class="input-group-text">
-                    Confirm New Password
-                  </span>
-                </span>
-                <input class="form-control"
-                  name="newPasswordConfirm"
-                  @keyup.enter="updatePassword"
-                  @input="passwordChanged = true"
-                  v-model="newPasswordConfirm"
-                  autocomplete="confirm-new-password"
-                  type="password"
-                />
-              </div>
-            </form>
-          </template>
-        </div> <!-- /password -->
-
         <!-- notifiers tab -->
-        <div v-if="visibleTab === 'notifiers' && hasAuth && loggedIn && settings"
+        <div v-if="visibleTab === 'notifiers' && settings"
           class="col">
           <h3>
             Notifiers
@@ -919,15 +780,6 @@
 
     </div>
 
-    <div v-else
-      class="container-fluid">
-      <div class="alert alert-danger">
-        <span class="fa fa-exclamation-triangle">
-        </span>&nbsp;
-        This Parliament is for display only! You shouldn't be here.
-      </div>
-    </div>
-
   </div>
 
 </template>
@@ -936,7 +788,6 @@
 import AuthService from '../auth';
 import SettingsService from './settings.service';
 
-let initialized;
 let inputDebounce;
 let successCloseTimeout;
 
@@ -955,11 +806,7 @@ export default {
       settings: { general: {}, commonAuth: {} },
       // settings error
       settingsError: '',
-      // password settings
-      currentPassword: '',
-      newPassword: '',
-      newPasswordConfirm: '',
-      passwordChanged: false,
+      // auth settings
       authSetupCode: '',
       // notifier settings
       notifierTypes: undefined,
@@ -971,22 +818,8 @@ export default {
     hasAuth: function () {
       return this.$store.state.hasAuth;
     },
-    loggedIn: function () {
-      return this.$store.state.loggedIn;
-    },
-    commonAuth: function () {
-      return this.$store.state.commonAuth;
-    },
-    dashboardOnly: function () {
-      return this.$store.state.dashboardOnly;
-    }
-  },
-  watch: {
-    loggedIn: function (newVal) {
-      if (newVal && initialized) {
-        this.loadNotifierTypes();
-        this.loadData();
-      }
+    isAdmin: function () {
+      return this.$store.state.isAdmin;
     }
   },
   mounted: function () {
@@ -994,7 +827,7 @@ export default {
     let tab = window.location.hash;
     if (tab) { // if there is a tab specified and it's a valid tab
       tab = tab.replace(/^#/, '');
-      if (tab === 'general' || tab === 'notifiers' || tab === 'password' || tab === 'auth') {
+      if (tab === 'general' || tab === 'notifiers' || tab === 'auth') {
         this.visibleTab = tab;
       }
     }
@@ -1165,12 +998,6 @@ export default {
         return 'text';
       }
     },
-    cancelChangePassword: function () {
-      this.currentPassword = '';
-      this.newPassword = '';
-      this.newPasswordConfirm = '';
-      this.passwordChanged = false;
-    },
     updateCommonAuth: function () {
       const data = {
         commonAuth: {
@@ -1186,43 +1013,6 @@ export default {
         this.closeSuccess();
       }).catch((error) => {
         this.settingsError = error.text || 'Error saving auth settings.';
-      });
-    },
-    updatePassword: function () {
-      this.settingsError = '';
-
-      if (!this.currentPassword && this.hasAuth) {
-        this.settingsError = 'You must provide your current password.';
-      }
-
-      if (!this.newPassword) {
-        this.settingsError = 'You must provide a new password.';
-        return;
-      }
-
-      if (!this.newPasswordConfirm) {
-        this.settingsError = 'You must confirm your new password.';
-        return;
-      }
-
-      if (this.newPassword !== this.newPasswordConfirm) {
-        this.settingsError = 'Passwords must match.';
-        this.newPassword = '';
-        this.newPasswordConfirm = '';
-        return;
-      }
-
-      let success = 'Password successfully ';
-      success += this.hasAuth ? 'updated' : 'created';
-
-      AuthService.updatePassword(this.currentPassword, this.newPassword, this.authSetupCode).then((response) => {
-        this.settingsError = '';
-        this.success = success;
-        this.closeSuccess();
-        this.cancelChangePassword();
-      }).catch((error) => {
-        this.settingsError = error.text || 'Error saving password.';
-        this.cancelChangePassword();
       });
     },
     debounceInput: function () {
@@ -1252,18 +1042,15 @@ export default {
       this.settingsError = '';
 
       SettingsService.getSettings().then((data) => {
-        initialized = true;
         this.error = '';
         this.settings = data;
-      }).catch((error) => {
-        initialized = true;
-        if (this.hasAuth) {
-          this.error = error.text || 'Error fetching settings.';
-          this.networkError = error.networkError;
-        } else {
-          this.error = 'No password set for your Parliament. Set a password so you can do more stuff!';
-          this.openView('auth'); // redirect the user to possibly create a password
+        if (!this.hasAuth) {
+          this.error = 'No authentication set for your Parliament. Set up auth so you can do more stuff!';
+          this.openView('auth'); // redirect the user to possibly configure auth
         }
+      }).catch((error) => {
+        this.error = error.text || 'Error fetching settings.';
+        this.networkError = error.networkError;
       });
     },
     loadNotifierTypes: function () {

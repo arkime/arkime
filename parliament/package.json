@@ -5,10 +5,6 @@
     "type": "git",
     "url": "https://github.com/arkime/arkime.git"
   },
-  "dependencies": {
-    "bcrypt": "^5.1.0",
-    "jsonwebtoken": "^9.0.0"
-  },
   "scripts": {
     "bundle": "cd ../ && npm run parliament:bundle",
     "bundle:min": "cd ../ && npm run parliament:build",

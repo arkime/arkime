@@ -3,7 +3,7 @@
   <div class="alert alert-sm"
     :class="{'alert-warning':issue.severity==='yellow','alert-danger':issue.severity==='red'}">
     <issue-actions
-      v-if="isUser && loggedIn"
+      v-if="isUser"
       class="issue-btns"
       :issue="issue"
       :groupId="groupId"
@@ -44,8 +44,7 @@ export default {
     index: {
       type: Number,
       required: true
-    },
-    loggedIn: Boolean
+    }
   },
   computed: {
     isUser () {
