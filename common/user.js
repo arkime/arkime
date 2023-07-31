@@ -617,6 +617,10 @@ class User {
 
     req.body.roles ??= [];
 
+    if (!User.validateRoles(req.body.roles)) {
+      return res.serverError(403, 'User roles must be system roles or start with "role:"');
+    }
+
     const rolesSet = await User.roles2ExpandedSet(req.body.roles);
     const iamSuperAdmin = req.user.hasRole('superAdmin');
     if (isRole && (rolesSet.has(req.body.userId) || req.body.roles.includes(req.body.userId))) {
@@ -761,6 +765,10 @@ class User {
     }
 
     req.body.roles ??= [];
+
+    if (!User.validateRoles(req.body.roles)) {
+      return res.serverError(403, 'User roles must be system roles or start with "role:"');
+    }
 
     const rolesSet = await User.roles2ExpandedSet(req.body.roles);
     const iamSuperAdmin = req.user.hasRole('superAdmin');
@@ -1012,6 +1020,21 @@ class User {
     }
 
     return allRoles;
+  }
+
+  /**
+   * Determines whether the roles are valid.
+   * Valid roles are system roles or roles that start with 'role:'
+   * @returns {boolean} true if the roles are valid, false otherwise.
+   */
+  static validateRoles (roles) {
+    for (const r of roles) {
+      if (!systemRolesMapping[r] && !r.startsWith('role:')) {
+        return false;
+      }
+    }
+
+    return true;
   }
 
   /******************************************************************************/
