@@ -35,6 +35,8 @@
           <br>
           <code>'H'</code> - jump to the Help page
           <br>
+          <code>'>'</code> - toggle the link group panel
+          <br>
           <code>'shift + enter'</code> - issue search/refresh
           <br>
           <code>'esc'</code> - remove focus from any input and close this dialog
@@ -179,7 +181,7 @@ export default {
           this.routeTo('/help');
         }
         break;
-      case 51: // 3 TODO: toby, finalize key-bind!
+      case 190: // . (seen as `>`, since shift is required)
         this.$store.commit('TOGGLE_LINK_GROUPS_PANEL');
         break;
       case 13: // enter
