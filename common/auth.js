@@ -559,6 +559,9 @@ class Auth {
 
   // ----------------------------------------------------------------------------
   static #dynamicCreate (userId, vars, cb) {
+    if (Auth.debug > 0) {
+      console.log('AUTH - #dynamicCreate', ArkimeUtil.sanitizeStr(userId));
+    }
     const nuser = JSON.parse(new Function('return `' + Auth.#userAutoCreateTmpl + '`;').call(vars));
     if (nuser.passStore === undefined) {
       nuser.passStore = Auth.pass2store(nuser.userId, crypto.randomBytes(48));
@@ -601,6 +604,9 @@ class Auth {
         req.url = req.url.replace(Auth.#basePath, '/');
       }
       if (err) {
+        if (Auth.debug > 0) {
+          console.log('AUTH: passport.authenticate fail', err);
+        }
         res.status(403);
         return res.send(JSON.stringify({ success: false, text: err }));
       } else {
