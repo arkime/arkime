@@ -546,7 +546,7 @@ const store = new Vuex.Store({
   },
   plugins: [createPersistedState({
     paths: [ // only these state variables are persisted to localstorage
-      'checkedLinks', 'selectedIntegrations', 'sidebarKeepOpen',
+      'checkedLinks', 'selectedIntegrations', 'sidebarKeepOpen', 'linkGroupsPanelOpen',
       'collapsedLinkGroups', 'integrationsPanelHoverDelay', 'theme'
     ]
   })]

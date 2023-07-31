@@ -5,9 +5,9 @@
     <!-- integration selection panel -->
     <IntegrationPanel />
     <!-- page content -->
-    <div class="flex-grow-1 d-flex flex-column mx-3">
+    <div class="flex-grow-1 d-flex flex-column">
       <!-- search -->
-      <div class="d-flex justify-content-center mt-2">
+      <div class="d-flex justify-content-center mt-2 mx-3">
         <div class="w-100 pb-1 d-flex justify-content-between">
           <!--    tag input      -->
           <b-input-group style="max-width: 150px" class="mr-2">
@@ -134,12 +134,12 @@
 
       <div class="flex-grow-1 d-flex overflow-hidden pt-1">
         <!-- welcome -->
-        <div class="w-100"
+        <div class="w-100 h-100 d-flex flex-column mt-1"
              v-if="!initialized && !error.length && !getIntegrationsError.length">
           <b-alert
               show
               variant="dark"
-              class="text-center">
+              class="text-center mx-3">
             <span class="fa fa-rocket fa-2x fa-flip-horizontal mr-1 text-muted" />
             <strong class="text-warning lead">
               <strong>Welcome to Cont3xt!</strong>
@@ -154,68 +154,71 @@
             </span>
             <span class="fa fa-rocket fa-2x ml-1 text-muted" />
           </b-alert>
-          <div class="results-container results-summary results-help pr-2">
-            <div class="d-flex flex-column align-items-stretch">
-              <div class="well well-lg text-center pt-4 pb-4 flex-grow-1 alert-dark">
-                <h1>
-                  <span class="fa fa-2x fa-tree text-muted" />
-                </h1>
-                <h1 class="display-4">
-                  Indicator Result Tree
-                </h1>
-                <p class="lead">
-                  Top level indicators presented here
-                </p>
-                <p class="lead">
-                  Integration icons will display high level result
-                </p>
-                <p class="lead">
-                  Choose and configure integrations via
-                  <a class="no-decoration"
-                     href="settings#integrations">
-                    Settings -> Integrations
-                  </a>
-                </p>
+          <div class="cont3xt-result-grid-container">
+            <div class="cont3xt-result-grid cont3xt-welcome">
+              <div class="indicator-tree-pane">
+                <div class="well well-lg text-center p-4 alert-dark h-100 mb-3 mx-2">
+                  <h1>
+                    <span class="fa fa-2x fa-tree text-muted" />
+                  </h1>
+                  <h1 class="display-4">
+                    Indicator Result Tree
+                  </h1>
+                  <p class="lead">
+                    Top level indicators presented here
+                  </p>
+                  <p class="lead">
+                    Integration icons will display high level result
+                  </p>
+                  <p class="lead">
+                    Choose and configure integrations via
+                    <a class="no-decoration"
+                       href="settings#integrations">
+                      Settings -> Integrations
+                    </a>
+                  </p>
+                </div>
               </div>
-              <div class="well well-lg text-center pt-4 pb-4 mt-2 alert-dark">
-                <h1>
-                  <span class="fa fa-2x fa-link text-muted" />
-                </h1>
-                <h1 class="display-4">
-                  Link Groups
-                </h1>
-                <p class="lead">
-                  Custom pivot links tailored to the top level indicator query
-                </p>
-                <p class="lead">
-                  Create/Configure links and link groups in
-                  <a class="no-decoration"
-                     href="settings#linkgroups">
-                    Settings -> Link Groups
-                  </a>
-                </p>
+              <div class="result-card-pane">
+                <div class="well well-lg text-center p-4 alert-dark h-100 mb-3 mx-2">
+                  <h1>
+                    <span class="fa fa-2x fa-id-card-o text-muted" />
+                  </h1>
+                  <h1 class="display-4">
+                    Indicator Card Detail
+                  </h1>
+                  <p class="lead">
+                    Displays configurable subset of API results
+                  </p>
+                  <p class="lead">
+                    Optionally, access raw results for card display tuning
+                  </p>
+                </div>
               </div>
-            </div>
-          </div>
-          <div class="results-container results-summary results-help pull-right">
-            <div class="well well-lg text-center pt-4 pb-4 pl-1 alert-dark">
-              <h1>
-                <span class="fa fa-2x fa-id-card-o text-muted" />
-              </h1>
-              <h1 class="display-4">
-                Indicator Card Detail
-              </h1>
-              <p class="lead">
-                Displays configurable subset of API results
-              </p>
-              <p class="lead">
-                Optionally, access raw results for card display tuning
-              </p>
+              <div class="link-group-pane">
+                <div class="well well-lg text-center p-4 alert-dark h-100 mb-3 mx-2">
+                  <h1>
+                    <span class="fa fa-2x fa-link text-muted" />
+                  </h1>
+                  <h1 class="display-4">
+                    Link Groups
+                  </h1>
+                  <p class="lead">
+                    Custom pivot links tailored to the top level indicator query
+                  </p>
+                  <p class="lead">
+                    Create/Configure links and link groups in
+                    <a class="no-decoration"
+                       href="settings#linkgroups">
+                      Settings -> Link Groups
+                    </a>
+                  </p>
+                </div>
+              </div>
             </div>
           </div>
         </div> <!-- /welcome -->
 
-        <!--        TODO: toby figure out where to put these errors-->
         <!-- search error -->
         <div
             v-if="error.length"
@@ -241,23 +244,22 @@
           {{ getIntegrationsError }}
         </div> <!-- /integration error -->
 
-        <!--   TOBY TODO  condition for exist?   -->
-        <div v-if="rootIndicator" class="flex-grow-1 overflow-hidden">
-          <div class="cont3xt-result-grid w-100 h-100 overflow-hidden">
-            <div class="indicator-tree-grid-slot">
+        <div v-if="rootIndicator" class="cont3xt-result-grid-container">
+          <div class="cont3xt-result-grid">
+            <div class="indicator-tree-pane">
               <!-- tags line -->
               <div v-if="!tagDisplayCollapsed" class="d-flex justify-content-start mb-1">
                 <tag-display-line :tags="tags" :remove-tag="removeTag" :clear-tags="clearTags"/>
               </div>
               <!-- /tags line -->
-              <div class="grid-slot-content pb-3">
+              <div class="pane-scroll-content pb-5">
                 <!-- indicator result tree -->
                 <i-type-node :node="indicatorTreeRoot" />
                 <!-- /indicator result tree -->
               </div>
             </div>
-            <div class="result-card-grid-slot" :class="{ 'result-card-expand-grid-slot': !getLinkGroupsPanelOpen }">
-              <div class="d-flex justify-content-between mb-1">
+            <div class="result-card-pane position-relative" :class="{ 'result-card-pane-expanded': !getLinkGroupsPanelOpen }">
+              <div class="d-flex justify-content-between mb-1 mx-2">
                 <integration-btns
                     :indicator="activeIndicator"
                 />
@@ -267,163 +269,162 @@
                     :selected-overview="currentOverviewCard"
                     @set-override-overview="setOverrideOverview" />
               </div>
-              <div class="grid-slot-content">
+              <div class="pane-scroll-content" @scroll="handleScroll" ref="resultsIntegration">
                 <!-- integration results -->
-                <div @scroll="handleScroll"
-                     ref="resultsIntegration">
-                  <b-overlay
-                      no-center
-                      rounded="sm"
-                      blur="0.2rem"
-                      opacity="0.9"
-                      variant="transparent"
-                      :show="getWaitRendering || getRendering">
-                    <div>
-                      <template v-if="showOverview">
-                        <overview-card
-                            v-if="currentOverviewCard"
-                            :indicator="activeIndicator"
-                            :card="currentOverviewCard"
-                        />
-                        <b-alert
-                            v-else
-                            show
-                            variant="dark"
-                            class="text-center">
-                          There is no overview configured for the <strong>{{ this.activeIndicator.itype }}</strong> iType.
-                          <a class="no-decoration" href="settings#overviews">Create one here!</a>
-                        </b-alert>
-                      </template>
-                      <integration-card
-                          v-else-if="activeSource && activeIndicator"
-                          :source="activeSource"
+                <b-overlay
+                    no-center
+                    rounded="sm"
+                    blur="0.2rem"
+                    opacity="0.9"
+                    variant="transparent"
+                    :show="getWaitRendering || getRendering">
+                  <div class="mb-5">
+                    <template v-if="showOverview">
+                      <overview-card
+                          v-if="currentOverviewCard"
                           :indicator="activeIndicator"
-                          @update-results="updateData"
+                          :card="currentOverviewCard"
                       />
-                    </div>
-                    <template #overlay>
-                      <div class="overlay-loading">
-                        <span class="fa fa-circle-o-notch fa-spin fa-2x" />
-                        <p>Rendering data...</p>
-                      </div>
+                      <b-alert
+                          v-else
+                          show
+                          variant="dark"
+                          class="text-center">
+                        There is no overview configured for the <strong>{{ this.activeIndicator.itype }}</strong> iType.
+                        <a class="no-decoration" href="settings#overviews">Create one here!</a>
+                      </b-alert>
                     </template>
-                  </b-overlay>
-                  <b-button
-                      size="sm"
-                      @click="toTop"
-                      title="Go to top"
-                      class="to-top-btn"
-                      variant="btn-link"
-                      v-show="scrollPx > 100">
-                    <span class="fa fa-lg fa-arrow-circle-up" />
-                  </b-button>
-                </div>
+                    <integration-card
+                        v-else-if="activeSource && activeIndicator"
+                        :source="activeSource"
+                        :indicator="activeIndicator"
+                        @update-results="updateData"
+                    />
+                  </div>
+                  <template #overlay>
+                    <div class="overlay-loading">
+                      <span class="fa fa-circle-o-notch fa-spin fa-2x" />
+                      <p>Rendering data...</p>
+                    </div>
+                  </template>
+                </b-overlay>
                 <!-- /integration results -->
               </div>
+              <b-button
+                  v-if="scrollPx > 100"
+                  size="sm"
+                  @click="toTop"
+                  title="Go to top"
+                  class="to-top-btn"
+                  variant="btn-link"
+                  v-show="scrollPx > 100">
+                <span class="fa fa-lg fa-arrow-circle-up" />
+              </b-button>
             </div>
-            <div v-if="getLinkGroupsPanelOpen" class="link-group-grid-slot">
-              <div class="grid-slot-content">
+            <div v-if="getLinkGroupsPanelOpen" class="link-group-pane">
+              <div v-if="rootIndicator" class="mb-1 mx-2">
                 <!-- link groups error -->
                 <b-alert
                     variant="danger"
                     :show="!!getLinkGroupsError.length">
                   {{ getLinkGroupsError }}
                 </b-alert>
+                <!-- /link groups error -->
 
                 <!-- time range input for links -->
-                <time-range-input v-if="rootIndicator"
-                                  class="mb-1"
+                <time-range-input class="mb-1"
                                   v-model="timeRangeInfo"
                                   :place-holder-tip="linkPlaceholderTip" />
                 <!-- /time range input for links -->
 
                 <!-- link search -->
-                <div v-if="rootIndicator" class="mb-5">
-                  <div class="d-flex justify-content-between">
-                    <div class="flex-grow-1">
-                      <b-input-group size="sm">
-                        <template #prepend>
-                          <b-input-group-text>
+                <div class="d-flex justify-content-between">
+                  <div class="flex-grow-1">
+                    <b-input-group size="sm">
+                      <template #prepend>
+                        <b-input-group-text>
                           <span v-if="!getShiftKeyHold"
                                 class="fa fa-search fa-fw"
                           />
-                            <span v-else
-                                  class="lg-query-shortcut">
+                          <span v-else
+                                class="lg-query-shortcut">
                             F
                           </span>
-                          </b-input-group-text>
-                        </template>
-                        <b-form-input
-                            tabindex="0"
-                            debounce="400"
-                            ref="linkSearch"
-                            v-model="linkSearchTerm"
-                            v-focus="getFocusLinkSearch"
-                            placeholder="Search links below"
-                        />
-                      </b-input-group> <!-- /link search -->
-                    </div>
-                    <b-button
-                        size="sm"
-                        class="ml-1"
-                        v-b-tooltip.hover
-                        variant="outline-secondary"
-                        :disabled="!hasVisibleLinkGroup"
-                        @click="toggleAllVisibleLinkGroupsCollapse"
-                        :title="`${!allVisibleLinkGroupsCollapsed ? 'Collapse' : 'Expand'} ALL Link Groups`">
+                        </b-input-group-text>
+                      </template>
+                      <b-form-input
+                          tabindex="0"
+                          debounce="400"
+                          ref="linkSearch"
+                          v-model="linkSearchTerm"
+                          v-focus="getFocusLinkSearch"
+                          placeholder="Search links below"
+                      />
+                    </b-input-group>
+                  </div>
+                  <b-button
+                      size="sm"
+                      class="ml-1"
+                      v-b-tooltip.hover
+                      variant="outline-secondary"
+                      :disabled="!hasVisibleLinkGroup"
+                      @click="toggleAllVisibleLinkGroupsCollapse"
+                      :title="`${!allVisibleLinkGroupsCollapsed ? 'Collapse' : 'Expand'} ALL Link Groups`">
                     <span class="fa fa-fw"
                           :class="[!allVisibleLinkGroupsCollapsed ? 'fa-chevron-up' : 'fa-chevron-down']">
                     </span>
-                    </b-button>
-                  </div>
-                  <!-- link groups -->
-                  <div class="d-flex flex-column align-items-start">
-                    <template v-if="hasVisibleLinkGroup">
-                      <template v-for="(linkGroup, index) in getLinkGroups">
-                        <reorder-list
-                            :index="index"
-                            @update="updateList"
-                            :key="linkGroup._id"
-                            :list="getLinkGroups"
-                            class="w-100"
-                            v-if="hasVisibleLink(linkGroup)">
-                          <template #handle>
+                  </b-button>
+                </div>
+                <!-- /link search -->
+              </div>
+              <div v-if="rootIndicator" class="pane-scroll-content">
+                <!-- link groups -->
+                <div class="d-flex flex-column align-items-start mb-5">
+                  <template v-if="hasVisibleLinkGroup">
+                    <template v-for="(linkGroup, index) in getLinkGroups">
+                      <reorder-list
+                          :index="index"
+                          @update="updateList"
+                          :key="linkGroup._id"
+                          :list="getLinkGroups"
+                          class="w-100"
+                          v-if="hasVisibleLink(linkGroup)">
+                        <template #handle>
                         <span
                             :id="`${linkGroup._id}-tt`"
                             class="fa fa-bars d-inline link-group-card-handle">
                         </span>
-                            <b-tooltip
-                                noninteractive
-                                :target="`${linkGroup._id}-tt`">
-                              Drag &amp; drop to reorder Link Groups
-                            </b-tooltip>
-                          </template>
-                          <template #default>
-                            <link-group-card
-                                v-if="getLinkGroups.length"
-                                class="w-100"
-                                :indicator="rootIndicator"
-                                :num-days="timeRangeInfo.numDays"
-                                :num-hours="timeRangeInfo.numHours"
-                                :stop-date="timeRangeInfo.stopDate"
-                                :start-date="timeRangeInfo.startDate"
-                                :link-group="getLinkGroups[index]"
-                                :hide-links="hideLinks[linkGroup._id]"
-                            />
-                          </template>
-                        </reorder-list>
-                      </template>
+                          <b-tooltip
+                              noninteractive
+                              :target="`${linkGroup._id}-tt`">
+                            Drag &amp; drop to reorder Link Groups
+                          </b-tooltip>
+                        </template>
+                        <template #default>
+                          <link-group-card
+                              v-if="getLinkGroups.length"
+                              class="w-100"
+                              :indicator="rootIndicator"
+                              :num-days="timeRangeInfo.numDays"
+                              :num-hours="timeRangeInfo.numHours"
+                              :stop-date="timeRangeInfo.stopDate"
+                              :start-date="timeRangeInfo.startDate"
+                              :link-group="getLinkGroups[index]"
+                              :hide-links="hideLinks[linkGroup._id]"
+                          />
+                        </template>
+                      </reorder-list>
                     </template>
-                    <!-- no link groups message -->
-                    <span v-else-if="hasLinkGroupWithItype" class="p-1">
+                  </template>
+                  <!-- no link groups message -->
+                  <span v-else-if="hasLinkGroupWithItype" class="p-1">
                     There are no Link Groups that match your search.
                   </span>
-                    <span v-else class="p-1">
+                  <span v-else class="p-1">
                     There are no Link Groups for the <strong>{{ this.rootIndicator.itype }}</strong> iType.
                     <a class="no-decoration" href="settings#linkgroups">Create one here!</a>
                   </span> <!-- /no link groups message -->
-                  </div> <!-- /link groups -->
-                </div>
+                </div> <!-- /link groups -->
               </div>
             </div>
           </div>
@@ -960,45 +961,21 @@ body.dark {
   background-color: #222;
 }
 
-/* side by side scrolling results containers */
-.results-container {
-  width: 50%;
-  overflow: hidden;
-  display: inline-block;
-}
-.results-container.results-integration {
-  margin-top: -28px;
-}
-/* toby get rid of calc?? */
-.results-container.results-summary > div {
-  /* total height - margin for search - height of link inputs */
-  height: calc(100vh - 153px);
-  overflow-y: auto;
-  overflow-x: hidden;
-  padding-left: 8px;
-  padding-right: 0.5rem;
-}
-.results-container.results-integration > div {
-  overflow-y: auto;
-  overflow-x: hidden;
-  padding-right: 8px;
-  padding-left: 0.5rem;
-}
-
-.results-container.results-summary.results-help > div {
-  height: calc(100vh - 210px);
-  padding-left: 0;
-}
-.results-container.results-summary .well {
+.cont3xt-welcome .well {
   border-radius: 6px;
+}
+/* better text-wrapping on the welcome screen for browsers that support it */
+/*noinspection CssInvalidPropertyValue*/
+.cont3xt-welcome .well h1, .cont3xt-welcome .well p {
+  text-wrap: balance;
 }
 
 /* scroll to top btn for integration results */
 .to-top-btn, .to-top-btn:hover {
   z-index: 99;
-  right: 2px;
-  bottom: 0px;
-  position: fixed;
+  right: 8px;
+  bottom: 0;
+  position: absolute;
   color: var(--info);
 }
 
@@ -1024,6 +1001,50 @@ body.dark {
   display: inline-block;
   background-color: #FFF;
 }
+
+.cont3xt-result-grid-container {
+  flex-grow: 1;
+  overflow: hidden;
+  padding-inline: 0.5rem;
+}
+
+.cont3xt-result-grid {
+  display: grid;
+  grid-template-columns: 25% 1fr 33%;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+.indicator-tree-pane, .result-card-pane, .result-card-pane-expanded, .link-group-pane {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  height: 100%;
+}
+
+.indicator-tree-pane {
+  grid-column: 1;
+}
+
+.result-card-pane {
+  grid-column: 2;
+}
+
+.result-card-pane-expanded {
+  grid-column: 2 / span 2;
+}
+
+.link-group-pane {
+  grid-column: 3;
+}
+
+.pane-scroll-content {
+  flex-grow: 1;
+  overflow-y: auto;
+  width: 100%;
+  padding-inline: 0.5rem;
+}
 </style>
 
 <style>
@@ -1038,46 +1059,5 @@ body.dark {
 .integration-select .custom-control {
   font-size: 0.8rem;
   padding: 0.1rem 0.5rem;
-}
-
-/* TOBY explain */
-.cont3xt-result-grid {
-  display: grid;
-  grid-template-columns: 25% 1fr 33%;
-  height: 100%;
-  column-gap: 12px;
-}
-
-.indicator-tree-grid-slot, .result-card-grid-slot, .result-card-expand-grid-slot, .link-group-grid-slot {
-  display: flex;
-  flex-direction: column;
-  overflow-y: auto;
-  height: 100%;
-}
-
-/* TOBY explain */
-.indicator-tree-grid-slot {
-  grid-column: 1;
-}
-
-/* TOBY explain */
-.result-card-grid-slot {
-  grid-column: 2;
-}
-
-.result-card-expand-grid-slot {
-  grid-column: 2 / span 2;
-}
-
-/* TOBY explain */
-.link-group-grid-slot {
-  grid-column: 3;
-}
-
-.grid-slot-content {
-  flex-grow: 1;
-  overflow-y: auto;
-  width: 100%;
-  height: 100%;
 }
 </style>

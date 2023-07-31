@@ -179,7 +179,7 @@ export default {
           this.routeTo('/help');
         }
         break;
-      case 51: // 3 TODO: toby!
+      case 51: // 3 TODO: toby, finalize key-bind!
         this.$store.commit('TOGGLE_LINK_GROUPS_PANEL');
         break;
       case 13: // enter
@@ -205,7 +205,7 @@ export default {
 </script>
 
 <style>
-/* todo toby move this? or address reason (users page overflow) */
+/* don't allow the entire page to scroll with the navbar */
 body {
   overflow-y: hidden;
 }
