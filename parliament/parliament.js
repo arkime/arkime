@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 'use strict';
 
-const MIN_PARLIAMENT_VERSION = 3;
+const MIN_PARLIAMENT_VERSION = 4;
 
 /* dependencies ------------------------------------------------------------- */
 const express = require('express');
@@ -2074,20 +2074,25 @@ async function main () {
     server = http.createServer(app);
   }
 
+  const parliamentHost = parliament.settings?.commonAuth?.parliamentHost || undefined;
+  if (Auth.mode === 'header' && parliamentHost !== 'localhost' && parliamentHost !== '127.0.0.1') {
+    console.log('SECURITY WARNING - When using header auth, parliamentHost should be localhost or use iptables');
+  }
+
   server
     .on('error', function (e) {
-      console.log(`ERROR - couldn't listen on port ${app.get('port')}, is Parliament already running?`);
+      console.log("ERROR - couldn't listen on host %s port %d is cont3xt already running?", parliamentHost, app.get('port'));
       process.exit(1);
     })
     .on('listening', function (e) {
-      console.log(`Express server listening on port ${server.address().port} in ${app.settings.env} mode`);
+      console.log('Express server listening on host %s port %d in %s mode', server.address().address, server.address().port, app.settings.env);
       if (app.get('debug')) {
         console.log('Debug Level', app.get('debug'));
         console.log('Parliament file:', app.get('file'));
         console.log('Issues file:', issuesFilename);
       }
     })
-    .listen(app.get('port'), () => {
+    .listen(app.get('port'), parliamentHost, () => {
       initializeParliament()
         .then(() => {
           updateParliament();

@@ -4,8 +4,9 @@
 // 1 - first version of parliament
 // 2 - cluster.type instead of cluster.disabled/multiviewer
 // 3 - more than one of each type of notifier
+// 4 - remove parliament password
 
-const version = 3;
+const version = 4;
 
 module.exports = {
   /**
@@ -55,6 +56,11 @@ module.exports = {
         // if the notifier has no values, it's not being used, so remove it
         if (!hasValues) { parliament.settings.notifiers[n] = undefined; }
       }
+    }
+
+    // remove parliament password
+    if (parliament.password) {
+      delete parliament.password;
     }
 
     // update version

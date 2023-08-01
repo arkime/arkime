@@ -288,21 +288,6 @@
                 After changing these settings, you must restart Parliament for them to take affect.
               </div>
             </div>
-            <div v-if="!hasAuth"
-              class="col-xl-9 col-lg-12 form-group">
-              <div class="input-group mb-2">
-                <span class="input-group-prepend">
-                  <span class="input-group-text">
-                    Auth Setup Code
-                  </span>
-                </span>
-                <input class="form-control"
-                  name="authSetupCode"
-                  v-model="authSetupCode"
-                  type="password"
-                />
-              </div>
-            </div> <!-- /auth setup code -->
             <!-- authMode -->
             <div class="col-xl-9 col-lg-12 form-group">
               <div class="input-group">
@@ -445,6 +430,24 @@
               </div>
               <p class="form-text small text-muted">
                 The HTTP Realm for user authentication. Set this to the same realm as your Akime clusters to share credentials. By default "Moloch" if not set.
+              </p>
+            </div> <!-- /http realm-->
+            <!-- parliament host -->
+            <div class="col-xl-9 col-lg-12 form-group">
+              <div class="input-group">
+                <span class="input-group-prepend">
+                  <span class="input-group-text">
+                    Parliament Host
+                  </span>
+                </span>
+                <input type="string"
+                  class="form-control"
+                  id="httpRealm"
+                  v-model="settings.commonAuth.parliamentHost"
+                />
+              </div>
+              <p class="form-text small text-muted">
+                The ip used to listen for traffic, usually localhost for just the localhost or 0.0.0.0 for all ips (default).
               </p>
             </div> <!-- /http realm-->
           </div>
@@ -806,8 +809,6 @@ export default {
       settings: { general: {}, commonAuth: {} },
       // settings error
       settingsError: '',
-      // auth settings
-      authSetupCode: '',
       // notifier settings
       notifierTypes: undefined,
       newNotifier: undefined
@@ -1004,8 +1005,6 @@ export default {
           ...this.settings.commonAuth
         }
       };
-
-      if (this.authSetupCode) { data.authSetupCode = this.authSetupCode; }
 
       AuthService.updateCommonAuth(data).then((response) => {
         this.success = 'Updated auth!';
