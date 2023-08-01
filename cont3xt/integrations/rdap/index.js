@@ -32,9 +32,8 @@ class RDAPIntegration extends Integration {
         display: 'cont3xtCopyLink'
       },
       {
-        label: 'Name',
-        field: 'name',
-        display: 'cont3xtField'
+        tooltip: 'name',
+        field: 'name'
       }
     ]
   };

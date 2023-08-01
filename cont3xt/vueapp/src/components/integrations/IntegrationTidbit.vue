@@ -6,12 +6,12 @@
 
     </b-tooltip><!--  /tooltip  -->
 
-    <label v-if="labeled" :for="id" class="text-warning">
+    <label v-if="labeled" :for="id" class="text-warning m-0">
       {{ tidbit.label }}
     </label>
 
     <template v-if="tidbit.display === 'badge'">
-      <h5 class="mr-1 align-self-end" :id="id">
+      <h5 class="my-0 mr-1" :id="id">
         <b-badge variant="light">
           {{ tidbit.displayValue || tidbit.value }}
         </b-badge>

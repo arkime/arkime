@@ -1,8 +1,8 @@
 <template>
   <b-card v-if="indicator.query" class="cursor-pointer itype-card" :class="{ 'border-danger': isActiveIndicator }" @click.stop="setSelfAsActiveIndicator">
-    <div class="d-xl-flex mb-2">
+    <div class="d-xl-flex">
       <div class="d-xl-flex flex-grow-1 flex-wrap mt-1">
-        <h4 class="text-warning">
+        <h4 class="text-warning m-0">
           {{ indicator.itype.toUpperCase() }}
         </h4>
         <cont3xt-field
@@ -10,8 +10,6 @@
             class="align-self-center mr-1"
             :id="`${indicator.query}-${indicator.itype}`"
         />
-        <slot name="after-field"></slot>
-
         <!--    unlabeled tidbits    -->
         <template v-for="(tidbit, index) in unlabeledTidbits">
           <integration-tidbit :tidbit="tidbit" :key="index"
@@ -20,17 +18,21 @@
       </div>
     </div>
 
-        <!--  labeled tidbits  -->
-    <div v-for="(tidbit, index) in labeledTidbits" class="row ml-3" :key="index">
-      <div class="col">
-        <integration-tidbit :tidbit="tidbit" :id="`${indicator.query}-labeled-tidbit-${index}`"/>
+    <!--  labeled tidbits  -->
+    <div v-if="labeledTidbits.length > 0"  class="mt-1">
+      <div v-for="(tidbit, index) in labeledTidbits" :key="index" class="row ml-3" :class="{ 'mt-1': index > 0 }">
+        <div class="col">
+          <integration-tidbit :tidbit="tidbit" :id="`${indicator.query}-labeled-tidbit-${index}`"/>
+        </div>
       </div>
     </div><!--  /labeled tidbits  -->
 
-    <span v-for="(child, index) in children" :key="index">
-      <i-type-node :node="child" />
-    </span>
-    <slot name="after-children"></slot>
+    <!--  children  -->
+    <div v-if="children.length > 0" class="mt-2">
+      <span v-for="(child, index) in children" :key="index">
+        <i-type-node :node="child" />
+      </span>
+    </div> <!--  /children  -->
   </b-card>
 </template>
 
