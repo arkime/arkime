@@ -285,8 +285,8 @@ class Overview {
 
 const defaultOverviewPropertiesForIType = {
   domain: {
-    name: 'Domain_card',
-    title: 'Domain info for %{query}',
+    name: 'Default Domain Overview',
+    title: 'Domain Overview for %{query}',
     fields: [
       {
         type: 'linked',
@@ -363,7 +363,7 @@ const defaultOverviewPropertiesForIType = {
     ]
   },
   ip: {
-    name: 'IP_card',
+    name: 'Default IP Overview',
     title: 'IP Overview for %{query}',
     fields: [
       {
@@ -441,8 +441,8 @@ const defaultOverviewPropertiesForIType = {
     ]
   },
   url: {
-    name: 'URL_card',
-    title: 'URL info for:  %{query}',
+    name: 'Default URL Overview',
+    title: 'URL Overview for %{query}',
     fields: [
       {
         type: 'linked',
@@ -453,8 +453,8 @@ const defaultOverviewPropertiesForIType = {
     ]
   },
   email: {
-    name: 'Email_card',
-    title: 'Email info for  %{query}',
+    name: 'Default Email Overview',
+    title: 'Email Overview for %{query}',
     fields: [
       {
         type: 'linked',
@@ -465,8 +465,8 @@ const defaultOverviewPropertiesForIType = {
     ]
   },
   phone: {
-    name: 'Phone_card',
-    title: 'Phone info for %{query}',
+    name: 'Default Phone Overview',
+    title: 'Phone Overview for %{query}',
     fields: [
       {
         type: 'linked',
@@ -483,7 +483,7 @@ const defaultOverviewPropertiesForIType = {
     ]
   },
   hash: {
-    name: 'Hash_card',
+    name: 'Default Hash Overview',
     title: 'Hash Overview for %{query}',
     fields: [
       {
@@ -519,7 +519,7 @@ const defaultOverviewPropertiesForIType = {
     ]
   },
   text: {
-    name: 'Text_card',
+    name: 'Default Text Overview',
     title: 'Text Overview for %{query}',
     fields: []
   }
