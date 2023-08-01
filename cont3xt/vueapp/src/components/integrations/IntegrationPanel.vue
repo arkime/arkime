@@ -1,7 +1,7 @@
 <template>
   <div class="sidebar-container d-flex flex-row" :class="{'sidebar-expand': sidebarKeepOpen}">
     <!-- open search panel on hover button -->
-    <div class="sidebar-btn-container h-100"
+    <div class="side-panel-stub h-100"
          @mouseenter="mouseEnterSidebarStub"
          @mouseleave="mouseLeaveSidebarStub"
     >
@@ -33,7 +33,7 @@
               @click="toggleSidebar"
               title="Toggle integration panel visibility">
               <span v-if="!sidebarKeepOpen" class="fa fa-chevron-right" />
-              <span v-else class="fa fa-chevron-left" />
+              <span v-else class="fa fa-lg fa-angle-double-left" />
             </b-button>
           </h4> <!-- /header/toggle open -->
           <hr>
@@ -238,15 +238,6 @@ export default {
 }
 .sidebar-expand {
   min-width: 252px !important;
-}
-
-.sidebar-btn-container {
-  background-color: #ececec;
-  color: black;
-}
-body.dark .sidebar-btn-container {
-  color: #EEE;
-  background-color: #555;
 }
 
 .sidebar-btn {

@@ -50,7 +50,7 @@
       <span class="fa fa-lg fa-question-circle cursor-help mt-1"
             v-b-tooltip.hover.html="placeHolderTip"
       />
-      <span class="pl-2">
+      <span class="pl-1">
         {{ timeRangeInfo.numDays }} days | {{ timeRangeInfo.numHours }} hours
       </span>
     </span>

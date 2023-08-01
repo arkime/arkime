@@ -322,62 +322,74 @@
               </b-button>
             </div>
             <div v-if="getLinkGroupsPanelOpen" class="link-group-pane">
-              <div v-if="activeIndicator" class="mb-1 mx-2">
-                <!-- link groups error -->
-                <b-alert
-                    variant="danger"
-                    :show="!!getLinkGroupsError.length">
-                  {{ getLinkGroupsError }}
-                </b-alert>
-                <!-- /link groups error -->
+              <div class="flex-grow-1 d-flex flex-column link-group-panel-shadow ml-3 overflow-hidden">
+                <div v-if="activeIndicator" class="mb-1 mx-2">
+                  <!-- link groups error -->
+                  <b-alert
+                      variant="danger"
+                      :show="!!getLinkGroupsError.length">
+                    {{ getLinkGroupsError }}
+                  </b-alert>
+                  <!-- /link groups error -->
 
-                <!-- time range input for links -->
-                <time-range-input class="mb-1"
-                                  v-model="timeRangeInfo"
-                                  :place-holder-tip="linkPlaceholderTip" />
-                <!-- /time range input for links -->
-
-                <!-- link search -->
-                <div class="d-flex justify-content-between">
-                  <div class="flex-grow-1">
-                    <b-input-group size="sm">
-                      <template #prepend>
-                        <b-input-group-text>
-                          <span v-if="!getShiftKeyHold"
-                                class="fa fa-search fa-fw"
-                          />
-                          <span v-else
-                                class="lg-query-shortcut">
-                            F
-                          </span>
-                        </b-input-group-text>
-                      </template>
-                      <b-form-input
-                          tabindex="0"
-                          debounce="400"
-                          ref="linkSearch"
-                          v-model="linkSearchTerm"
-                          v-focus="getFocusLinkSearch"
-                          placeholder="Search links below"
-                      />
-                    </b-input-group>
+                  <!-- link search -->
+                  <div class="d-flex justify-content-between mb-1">
+                    <div class="flex-grow-1">
+                      <b-input-group size="sm">
+                        <template #prepend>
+                          <b-input-group-text>
+                            <span v-if="!getShiftKeyHold"
+                                  class="fa fa-search fa-fw"
+                            />
+                            <span v-else
+                                  class="lg-query-shortcut">
+                              F
+                            </span>
+                          </b-input-group-text>
+                        </template>
+                        <b-form-input
+                            tabindex="0"
+                            debounce="400"
+                            ref="linkSearch"
+                            v-model="linkSearchTerm"
+                            v-focus="getFocusLinkSearch"
+                            placeholder="Search links below"
+                        />
+                      </b-input-group>
+                    </div>
+                    <b-button
+                        size="sm"
+                        class="mx-1"
+                        v-b-tooltip.hover
+                        variant="outline-secondary"
+                        :disabled="!hasVisibleLinkGroup"
+                        @click="toggleAllVisibleLinkGroupsCollapse"
+                        :title="`${!allVisibleLinkGroupsCollapsed ? 'Collapse' : 'Expand'} ALL Link Groups`">
+                      <span class="fa fa-fw"
+                            :class="[!allVisibleLinkGroupsCollapsed ? 'fa-chevron-up' : 'fa-chevron-down']">
+                      </span>
+                    </b-button>
+                    <!-- toggle link groups panel button -->
+                    <b-button
+                        size="sm"
+                        tabindex="-1"
+                        variant="link"
+                        class="float-right"
+                        @click="toggleLinkGroupsPanel"
+                        v-b-tooltip.hover.top
+                        title="Hide Link Groups Panel">
+                      <span class="fa fa-lg fa-angle-double-right" />
+                    </b-button>
+                    <!-- /toggle link groups panel button -->
                   </div>
-                  <b-button
-                      size="sm"
-                      class="ml-1"
-                      v-b-tooltip.hover
-                      variant="outline-secondary"
-                      :disabled="!hasVisibleLinkGroup"
-                      @click="toggleAllVisibleLinkGroupsCollapse"
-                      :title="`${!allVisibleLinkGroupsCollapsed ? 'Collapse' : 'Expand'} ALL Link Groups`">
-                    <span class="fa fa-fw"
-                          :class="[!allVisibleLinkGroupsCollapsed ? 'fa-chevron-up' : 'fa-chevron-down']">
-                    </span>
-                  </b-button>
+                  <!-- /link search -->
+
+                  <!-- time range input for links -->
+                  <time-range-input v-model="timeRangeInfo"
+                                    :place-holder-tip="linkPlaceholderTip" />
+                  <!-- /time range input for links -->
                 </div>
-                <!-- /link search -->
-              </div>
-              <div v-if="activeIndicator" class="pane-scroll-content">
+                <div v-if="activeIndicator" class="pane-scroll-content">
                 <!-- link groups -->
                 <div class="d-flex flex-column align-items-start mb-5">
                   <template v-if="hasVisibleLinkGroup">
@@ -426,8 +438,17 @@
                   </span> <!-- /no link groups message -->
                 </div> <!-- /link groups -->
               </div>
+              </div>
             </div>
           </div>
+        </div>
+        <div v-if="rootIndicator && !getLinkGroupsPanelOpen" class="side-panel-stub link-group-panel-stub h-100 cursor-pointer d-flex flex-column"
+             v-b-tooltip.hover.top="'Show Link Groups Panel'"
+             @click="toggleLinkGroupsPanel"
+        >
+          <span
+              class="fa fa-link p-1 mt-1"
+          />
         </div>
       </div>
     </div> <!-- /page content -->
@@ -687,6 +708,9 @@ export default {
   },
   methods: {
     /* page functions ------------------------------------------------------ */
+    toggleLinkGroupsPanel () {
+      this.$store.commit('TOGGLE_LINK_GROUPS_PANEL');
+    },
     toggleCollapseTagDisplay () {
       this.tagDisplayCollapsed = !this.tagDisplayCollapsed;
     },
@@ -1059,5 +1083,13 @@ body.dark {
 .integration-select .custom-control {
   font-size: 0.8rem;
   padding: 0.1rem 0.5rem;
+}
+
+.link-group-panel-stub {
+  border-top-left-radius: 5px;
+}
+.link-group-panel-shadow {
+  -webkit-box-shadow: -2px 0 1rem 0 rgba(0, 0, 0, 0.175) !important;
+  box-shadow: -2px 0 1rem 0 rgba(0, 0, 0, 0.175) !important;
 }
 </style>

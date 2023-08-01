@@ -263,4 +263,12 @@ body {
   color: var(--warning);
   padding-inline: 2px;
 }
+.side-panel-stub {
+  background-color: #ececec;
+  color: black;
+}
+body.dark .side-panel-stub {
+  color: #EEE;
+  background-color: #555;
+}
 </style>
