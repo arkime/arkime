@@ -322,7 +322,7 @@
               </b-button>
             </div>
             <div v-if="getLinkGroupsPanelOpen" class="link-group-pane">
-              <div v-if="rootIndicator" class="mb-1 mx-2">
+              <div v-if="activeIndicator" class="mb-1 mx-2">
                 <!-- link groups error -->
                 <b-alert
                     variant="danger"
@@ -377,7 +377,7 @@
                 </div>
                 <!-- /link search -->
               </div>
-              <div v-if="rootIndicator" class="pane-scroll-content">
+              <div v-if="activeIndicator" class="pane-scroll-content">
                 <!-- link groups -->
                 <div class="d-flex flex-column align-items-start mb-5">
                   <template v-if="hasVisibleLinkGroup">
@@ -404,7 +404,7 @@
                           <link-group-card
                               v-if="getLinkGroups.length"
                               class="w-100"
-                              :indicator="rootIndicator"
+                              :indicator="activeIndicator"
                               :num-days="timeRangeInfo.numDays"
                               :num-hours="timeRangeInfo.numHours"
                               :stop-date="timeRangeInfo.stopDate"
@@ -842,12 +842,12 @@ export default {
     },
     hasLinkWithItype (linkGroup) {
       return linkGroup.links.some(link =>
-        link.url !== '----------' && link.itypes.includes(this.rootIndicator.itype)
+        link.url !== '----------' && link.itypes.includes(this.activeIndicator.itype)
       );
     },
     hasVisibleLink (linkGroup) {
       return linkGroup.links.some((link, i) =>
-        link.url !== '----------' && link.itypes.includes(this.rootIndicator.itype) && !this.hideLinks[linkGroup._id]?.[i]
+        link.url !== '----------' && link.itypes.includes(this.activeIndicator.itype) && !this.hideLinks[linkGroup._id]?.[i]
       );
     },
     shareLink () {
