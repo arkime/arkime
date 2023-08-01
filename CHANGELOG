@@ -28,17 +28,29 @@ Node Versions:
 NOTICE: Restart wiseService before capture when upgrading
 NOTICE: Cross-cluster Shortcuts require you to not restart all your viewers at once after upgrading
 
-4.3.3 2023/07/xx
+4.4.0 2023/08/xx
   - release - cyberchef 10.5.2
+  - release - update arkime_update_geo.sh to use different manuf location
   - all - improved json verification
-  - all - fix password changing permission checks
   - all - better logging when requiredAuthHeader fails
-  - capture - handle port reuse better
+  - all - better role creation/usage validation
+  - all - don't allow circular role dependencies
+  - all - now need to be an userAdmin and *Admin to update *Admin change
+          settings for another user
+  - all - more auth debugging
+  - all - can now change the password of another *Admin user if you have
+          userAdmin and all the same *Admin
+  - all - hide webEnable, headerAuthEnable checkboxes for roles
+  - all - oidc now uses sameSite: Lax instead of sameSite: Strict for cookies
+  - capture - handle tcp port reuse better
   - capture - fix kafka memory leak when produce fails
   - cont3xt - New overview cards
+  - cont3xt - fix startup race condition with db init
+  - cont3xt - new search protocol to prepare for bulk
   - parliament - fix parliament clean start not letting auth be set up
   - viewer - gtp decoding
   - viewer - demo mode improvements, arkimeAdmin can use normally
+  - viewer - fix unique endpoint not enforcing user time limit
 
 4.3.2 2023/06/13
   - release - cyberchef 10.4.0 libpcap 1.10.4
