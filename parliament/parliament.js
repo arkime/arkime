@@ -248,7 +248,7 @@ function setCookie (req, res, next) {
 
 function checkCookieToken (req, res, next) {
   if (!req.headers['x-parliament-cookie']) {
-    return next(newError(500, 'Missing token'));
+    return res.serverError(500, 'Missing token');
   }
 
   const cookie = req.headers['x-parliament-cookie'];
@@ -256,7 +256,7 @@ function checkCookieToken (req, res, next) {
   const diff = Math.abs(Date.now() - req.token.date);
   if (diff > 2400000 || req.token.userId !== req.user.userId) {
     console.trace('bad token', req.token, diff, req.token.userId, req.user.userId);
-    return next(newError(500, 'Timeout - Please try reloading page and repeating the action'));
+    return res.serverError(500, 'Timeout - Please try reloading page and repeating the action');
   }
 
   return next();
@@ -312,7 +312,7 @@ function newError (code, msg) {
 // App should always have parliament data
 app.use((req, res, next) => {
   if (!parliament) {
-    return next(newError(500, 'Unable to fetch parliament data.'));
+    return res.serverError(500, 'Unable to fetch parliament data.');
   }
 
   next();
@@ -325,6 +325,11 @@ app.use((err, req, res, next) => {
     success: false,
     text: err.message ?? 'Error'
   });
+});
+
+app.use((req, res, next) => {
+  res.serverError = ArkimeUtil.serverError;
+  return next();
 });
 
 function checkAuthUpdate (req, res, next) {
@@ -993,7 +998,7 @@ function writeParliament (req, res, next, successObj, errorText, sendParliament)
       if (err) {
         const errorMsg = `Unable to write parliament data: ${err.message ?? err}`;
         console.log(errorMsg);
-        return next(newError(500, errorMsg));
+        return res.serverError(500, errorMsg);
       }
 
       updateParliament()
@@ -1005,7 +1010,7 @@ function writeParliament (req, res, next, successObj, errorText, sendParliament)
           return res.json(successObj);
         })
         .catch((err) => {
-          return next(newError(500, errorText ?? 'Error updating parliament.'));
+          return res.serverError(500, errorText ?? 'Error updating parliament.');
         });
     }
   );
@@ -1043,7 +1048,7 @@ function writeIssues (req, res, next, successObj, errorText, sendIssues) {
       if (err) {
         const errorMsg = `Unable to write issue data: ${err.message ?? err}`;
         console.log(errorMsg);
-        return next(newError(500, errorMsg));
+        return res.serverError(500, errorMsg);
       }
 
       // send the updated issues with the response
@@ -1084,7 +1089,7 @@ app.get('/parliament/api/auth', (req, res, next) => {
 // Update (or create) common auth settings for the parliament
 app.put('/parliament/api/auth/commonauth', [checkAuthUpdate], (req, res, next) => {
   if (!ArkimeUtil.isObject(req.body.commonAuth)) {
-    return next(newError(422, 'Missing auth settings'));
+    return res.serverError(422, 'Missing auth settings');
   }
 
   // Go thru the secret fields and if the save still has ******** that means the user didn't change, so save what we have
@@ -1120,7 +1125,7 @@ app.get('/parliament/api/notifierTypes', [isAdmin, setCookie], (req, res) => {
 // Get the parliament settings object
 app.get('/parliament/api/settings', [isAdmin, setCookie], (req, res, next) => {
   if (!parliament.settings) {
-    return next(newError(500, 'Your settings are empty. Try restarting Parliament.'));
+    return res.serverError(500, 'Your settings are empty. Try restarting Parliament.');
   }
 
   const settings = JSON.parse(JSON.stringify(parliament.settings));
@@ -1151,7 +1156,7 @@ app.put('/parliament/api/settings', [isAdmin, checkCookieToken], (req, res, next
 
     if (s !== 'hostname' && s !== 'includeUrl') {
       if (isNaN(setting)) {
-        return next(newError(422, `${s} must be a number.`));
+        return res.serverError(422, `${s} must be a number.`);
       } else {
         setting = parseInt(setting);
       }
@@ -1192,25 +1197,25 @@ function verifyNotifierReqBody (req) {
 // Update an existing notifier
 app.put('/parliament/api/notifiers/:name', [isAdmin, checkCookieToken], (req, res, next) => {
   if (req.params.name === '__proto__') {
-    return next(newError(404, 'Bad name'));
+    return res.serverError(404, 'Bad name');
   }
 
   if (!parliament.settings.notifiers[req.params.name]) {
-    return next(newError(404, `${req.params.name} not found.`));
+    return res.serverError(404, `${req.params.name} not found.`);
   }
 
   if (!ArkimeUtil.isString(req.body.key)) {
-    return next(newError(422, 'Missing notifier key'));
+    return res.serverError(422, 'Missing notifier key');
   }
 
   const verifyMsg = verifyNotifierReqBody(req);
-  if (verifyMsg) { return next(newError(422, verifyMsg)); }
+  if (verifyMsg) { return res.serverError(422, verifyMsg); }
 
   req.body.notifier.name = req.body.notifier.name.replace(/[^-a-zA-Z0-9_: ]/g, '');
 
   if (req.body.notifier.name !== req.body.key &&
     parliament.settings.notifiers[req.body.notifier.name]) {
-    return next(newError(403, `${req.body.notifier.name} already exists. Notifier names must be unique`));
+    return res.serverError(403, `${req.body.notifier.name} already exists. Notifier names must be unique`);
   }
 
   let foundNotifier;
@@ -1222,7 +1227,7 @@ app.put('/parliament/api/notifiers/:name', [isAdmin, checkCookieToken], (req, re
   }
 
   if (!foundNotifier) {
-    return next(newError(403, 'Unknown notifier type'));
+    return res.serverError(403, 'Unknown notifier type');
   }
 
   // check that required notifier fields exist
@@ -1231,7 +1236,7 @@ app.put('/parliament/api/notifiers/:name', [isAdmin, checkCookieToken], (req, re
     for (const sf in req.body.notifier.fields) {
       const sentField = req.body.notifier.fields[sf];
       if (sentField.name === field.name && field.required && !sentField.value) {
-        return next(newError(403, `Missing a value for ${field.name}`));
+        return res.serverError(403, `Missing a value for ${field.name}`);
       }
     }
   }
@@ -1256,7 +1261,7 @@ app.put('/parliament/api/notifiers/:name', [isAdmin, checkCookieToken], (req, re
 // Remove a notifier
 app.delete('/parliament/api/notifiers/:name', [isAdmin, checkCookieToken], (req, res, next) => {
   if (!parliament.settings.notifiers[req.params.name]) {
-    return next(newError(403, `Cannot find ${req.params.name} notifier to remove`));
+    return res.serverError(403, `Cannot find ${req.params.name} notifier to remove`);
   }
 
   parliament.settings.notifiers[req.params.name] = undefined;
@@ -1269,12 +1274,12 @@ app.delete('/parliament/api/notifiers/:name', [isAdmin, checkCookieToken], (req,
 // Create a new notifier
 app.post('/parliament/api/notifiers', [isAdmin, checkCookieToken], (req, res, next) => {
   const verifyMsg = verifyNotifierReqBody(req);
-  if (verifyMsg) { return next(newError(422, verifyMsg)); }
+  if (verifyMsg) { return res.serverError(422, verifyMsg); }
 
   req.body.notifier.name = req.body.notifier.name.replace(/[^-a-zA-Z0-9_: ]/g, '');
 
   if (parliament.settings.notifiers[req.body.notifier.name]) {
-    return next(newError(403, `${req.body.notifier.name} already exists. Notifier names must be unique`));
+    return res.serverError(403, `${req.body.notifier.name} already exists. Notifier names must be unique`);
   }
 
   let foundNotifier;
@@ -1286,7 +1291,7 @@ app.post('/parliament/api/notifiers', [isAdmin, checkCookieToken], (req, res, ne
   }
 
   if (!foundNotifier) {
-    return next(newError(403, 'Unknown notifier type'));
+    return res.serverError(403, 'Unknown notifier type');
   }
 
   // check that required notifier fields exist
@@ -1295,7 +1300,7 @@ app.post('/parliament/api/notifiers', [isAdmin, checkCookieToken], (req, res, ne
     for (const sf in req.body.notifier.fields) {
       const sentField = req.body.notifier.fields[sf];
       if (sentField.name === field.name && field.required && !sentField.value) {
-        return next(newError(403, `Missing a value for ${field.name}`));
+        return res.serverError(403, `Missing a value for ${field.name}`);
       }
     }
   }
@@ -1323,7 +1328,7 @@ app.put('/parliament/api/settings/restoreDefaults', [isAdmin, checkCookieToken],
   } else if (type === 'all') {
     parliament.settings = JSON.parse(JSON.stringify(settingsDefault));
   } else {
-    return next(newError(500, 'type must be general or all'));
+    return res.serverError(500, 'type must be general or all');
   }
 
   const settings = JSON.parse(JSON.stringify(parliament.settings));
@@ -1338,7 +1343,7 @@ app.put('/parliament/api/settings/restoreDefaults', [isAdmin, checkCookieToken],
       if (err) {
         const errorMsg = `Unable to write parliament data: ${err.message ?? err}`;
         console.log(errorMsg);
-        return next(newError(500, errorMsg));
+        return res.serverError(500, errorMsg);
       }
 
       return res.json({
@@ -1374,7 +1379,7 @@ app.get('/parliament/api/parliament', (req, res, next) => {
 // Updates the parliament order of clusters and groups
 app.put('/parliament/api/parliament', [isAdmin, checkCookieToken], (req, res, next) => {
   if (typeof req.body.reorderedParliament !== 'object') {
-    return next(newError(422, 'You must provide the new parliament order'));
+    return res.serverError(422, 'You must provide the new parliament order');
   }
 
   // remove any client only stuff
@@ -1397,11 +1402,11 @@ app.put('/parliament/api/parliament', [isAdmin, checkCookieToken], (req, res, ne
 // Create a new group in the parliament
 app.post('/parliament/api/groups', [isAdmin, checkCookieToken], (req, res, next) => {
   if (!ArkimeUtil.isString(req.body.title)) {
-    return next(newError(422, 'A group must have a title'));
+    return res.serverError(422, 'A group must have a title');
   }
 
   if (req.body.description && !ArkimeUtil.isString(req.body.description)) {
-    return next(newError(422, 'A group must have a string description.'));
+    return res.serverError(422, 'A group must have a string description.');
   }
 
   const newGroup = { title: req.body.title, id: globalGroupId++, clusters: [] };
@@ -1428,7 +1433,7 @@ app.delete('/parliament/api/groups/:id', [isAdmin, checkCookieToken], (req, res,
   }
 
   if (!foundGroup) {
-    return next(newError(500, 'Unable to find group to delete.'));
+    return res.serverError(500, 'Unable to find group to delete.');
   }
 
   const successObj = { success: true, text: 'Successfully removed the requested group.' };
@@ -1439,11 +1444,11 @@ app.delete('/parliament/api/groups/:id', [isAdmin, checkCookieToken], (req, res,
 // Update a group in the parliament
 app.put('/parliament/api/groups/:id', [isAdmin, checkCookieToken], (req, res, next) => {
   if (!ArkimeUtil.isString(req.body.title)) {
-    return next(newError(422, 'A group must have a title.'));
+    return res.serverError(422, 'A group must have a title.');
   }
 
   if (req.body.description && !ArkimeUtil.isString(req.body.description)) {
-    return next(newError(422, 'A group must have a string description.'));
+    return res.serverError(422, 'A group must have a string description.');
   }
 
   let foundGroup = false;
@@ -1457,7 +1462,7 @@ app.put('/parliament/api/groups/:id', [isAdmin, checkCookieToken], (req, res, ne
   }
 
   if (!foundGroup) {
-    return next(newError(500, 'Unable to find group to edit.'));
+    return res.serverError(500, 'Unable to find group to edit.');
   }
 
   const successObj = { success: true, text: 'Successfully updated the requested group.' };
@@ -1468,23 +1473,23 @@ app.put('/parliament/api/groups/:id', [isAdmin, checkCookieToken], (req, res, ne
 // Create a new cluster within an existing group
 app.post('/parliament/api/groups/:id/clusters', [isAdmin, checkCookieToken], (req, res, next) => {
   if (!ArkimeUtil.isString(req.body.title)) {
-    return next(newError(422, 'A cluster must have a title.'));
+    return res.serverError(422, 'A cluster must have a title.');
   }
 
   if (!ArkimeUtil.isString(req.body.url)) {
-    return next(newError(422, 'A cluster must have a url.'));
+    return res.serverError(422, 'A cluster must have a url.');
   }
 
   if (req.body.description && !ArkimeUtil.isString(req.body.description)) {
-    return next(newError(422, 'A cluster must have a string description.'));
+    return res.serverError(422, 'A cluster must have a string description.');
   }
 
   if (req.body.localUrl && !ArkimeUtil.isString(req.body.localUrl)) {
-    return next(newError(422, 'A cluster must have a string localUrl.'));
+    return res.serverError(422, 'A cluster must have a string localUrl.');
   }
 
   if (req.body.type && !ArkimeUtil.isString(req.body.type)) {
-    return next(newError(422, 'A cluster must have a string type.'));
+    return res.serverError(422, 'A cluster must have a string type.');
   }
 
   const newCluster = {
@@ -1506,7 +1511,7 @@ app.post('/parliament/api/groups/:id/clusters', [isAdmin, checkCookieToken], (re
   }
 
   if (!foundGroup) {
-    return next(newError(500, 'Unable to find group to place cluster.'));
+    return res.serverError(500, 'Unable to find group to place cluster.');
   }
 
   const successObj = {
@@ -1536,7 +1541,7 @@ app.delete('/parliament/api/groups/:groupId/clusters/:clusterId', [isAdmin, chec
   }
 
   if (!foundCluster) {
-    return next(newError(500, 'Unable to find cluster to delete.'));
+    return res.serverError(500, 'Unable to find cluster to delete.');
   }
 
   const successObj = { success: true, text: 'Successfully removed the requested cluster.' };
@@ -1547,23 +1552,23 @@ app.delete('/parliament/api/groups/:groupId/clusters/:clusterId', [isAdmin, chec
 // Update a cluster
 app.put('/parliament/api/groups/:groupId/clusters/:clusterId', [isAdmin, checkCookieToken], (req, res, next) => {
   if (!ArkimeUtil.isString(req.body.title)) {
-    return next(newError(422, 'A cluster must have a title.'));
+    return res.serverError(422, 'A cluster must have a title.');
   }
 
   if (!ArkimeUtil.isString(req.body.url)) {
-    return next(newError(422, 'A cluster must have a url.'));
+    return res.serverError(422, 'A cluster must have a url.');
   }
 
   if (req.body.description && !ArkimeUtil.isString(req.body.description)) {
-    return next(newError(422, 'A cluster must have a string description.'));
+    return res.serverError(422, 'A cluster must have a string description.');
   }
 
   if (req.body.localUrl && !ArkimeUtil.isString(req.body.localUrl)) {
-    return next(newError(422, 'A cluster must have a string localUrl.'));
+    return res.serverError(422, 'A cluster must have a string localUrl.');
   }
 
   if (req.body.type && !ArkimeUtil.isString(req.body.type)) {
-    return next(newError(422, 'A cluster must have a string type.'));
+    return res.serverError(422, 'A cluster must have a string type.');
   }
 
   let foundCluster = false;
@@ -1591,7 +1596,7 @@ app.put('/parliament/api/groups/:groupId/clusters/:clusterId', [isAdmin, checkCo
   }
 
   if (!foundCluster) {
-    return next(newError(500, 'Unable to find cluster to update.'));
+    return res.serverError(500, 'Unable to find cluster to update.');
   }
 
   const successObj = { success: true, text: 'Successfully updated the requested cluster.' };
@@ -1699,8 +1704,7 @@ app.get('/parliament/api/issues', (req, res, next) => {
 // acknowledge one or more issues
 app.put('/parliament/api/acknowledgeIssues', [isUser, checkCookieToken], (req, res, next) => {
   if (!Array.isArray(req.body.issues) || !req.body.issues.length) {
-    const message = 'Must specify the issue(s) to acknowledge.';
-    return next(newError(422, message));
+    return res.serverError(422, 'Must specify the issue(s) to acknowledge.');
   }
 
   const now = Date.now();
@@ -1718,7 +1722,7 @@ app.put('/parliament/api/acknowledgeIssues', [isUser, checkCookieToken], (req, r
   if (!count) {
     errorText = 'Unable to acknowledge requested issue';
     if (req.body.issues.length > 1) { errorText += 's'; }
-    return next(newError(500, errorText));
+    return res.serverError(500, errorText);
   }
 
   let successText = `Successfully acknowledged ${count} requested issue`;
@@ -1736,7 +1740,7 @@ app.put('/parliament/api/acknowledgeIssues', [isUser, checkCookieToken], (req, r
 app.put('/parliament/api/ignoreIssues', [isUser, checkCookieToken], (req, res, next) => {
   if (!Array.isArray(req.body.issues) || !req.body.issues.length) {
     const message = 'Must specify the issue(s) to ignore.';
-    return next(newError(422, message));
+    return res.serverError(422, message);
   }
 
   const ms = req.body.ms ?? 3600000; // Default to 1 hour
@@ -1757,7 +1761,7 @@ app.put('/parliament/api/ignoreIssues', [isUser, checkCookieToken], (req, res, n
   if (!count) {
     errorText = 'Unable to ignore requested issue';
     if (req.body.issues.length > 1) { errorText += 's'; }
-    return next(newError(500, errorText));
+    return res.serverError(500, errorText);
   }
 
   let successText = `Successfully ignored ${count} requested issue`;
@@ -1775,7 +1779,7 @@ app.put('/parliament/api/ignoreIssues', [isUser, checkCookieToken], (req, res, n
 app.put('/parliament/api/removeIgnoreIssues', [isUser, checkCookieToken], (req, res, next) => {
   if (!Array.isArray(req.body.issues) || !req.body.issues.length) {
     const message = 'Must specify the issue(s) to unignore.';
-    return next(newError(422, message));
+    return res.serverError(422, message);
   }
 
   let count = 0;
@@ -1793,7 +1797,7 @@ app.put('/parliament/api/removeIgnoreIssues', [isUser, checkCookieToken], (req, 
   if (!count) {
     errorText = 'Unable to unignore requested issue';
     if (req.body.issues.length > 1) { errorText += 's'; }
-    return next(newError(500, errorText));
+    return res.serverError(500, errorText);
   }
 
   let successText = `Successfully unignored ${count} requested issue`;
@@ -1811,13 +1815,13 @@ app.put('/parliament/api/removeIgnoreIssues', [isUser, checkCookieToken], (req, 
 app.put('/parliament/api/groups/:groupId/clusters/:clusterId/removeIssue', [isUser, checkCookieToken], (req, res, next) => {
   if (!ArkimeUtil.isString(req.body.type)) {
     const message = 'Must specify the issue type to remove.';
-    return next(newError(422, message));
+    return res.serverError(422, message);
   }
 
   const foundIssue = removeIssue(req.body.type, req.params.clusterId, req.body.node);
 
   if (!foundIssue) {
-    return next(newError(500, 'Unable to find issue to remove. Maybe it was already removed.'));
+    return res.serverError(500, 'Unable to find issue to remove. Maybe it was already removed.');
   }
 
   const successObj = { success: true, text: 'Successfully removed the requested issue.' };
@@ -1839,7 +1843,7 @@ app.put('/parliament/api/issues/removeAllAcknowledgedIssues', [isUser, checkCook
   }
 
   if (!count) {
-    return next(newError(400, 'There are no acknowledged issues to remove.'));
+    return res.serverError(400, 'There are no acknowledged issues to remove.');
   }
 
   const successObj = { success: true, text: `Successfully removed ${count} acknowledged issues.` };
@@ -1851,7 +1855,7 @@ app.put('/parliament/api/issues/removeAllAcknowledgedIssues', [isUser, checkCook
 app.put('/parliament/api/removeSelectedAcknowledgedIssues', [isUser, checkCookieToken], (req, res, next) => {
   if (!Array.isArray(req.body.issues) || !req.body.issues.length) {
     const message = 'Must specify the acknowledged issue(s) to remove.';
-    return next(newError(422, message));
+    return res.serverError(422, message);
   }
 
   let count = 0;
@@ -1866,7 +1870,7 @@ app.put('/parliament/api/removeSelectedAcknowledgedIssues', [isUser, checkCookie
   }
 
   if (!count) {
-    return next(newError(400, 'There are no acknowledged issues to remove.'));
+    return res.serverError(400, 'There are no acknowledged issues to remove.');
   }
 
   count = 0;
@@ -1883,7 +1887,7 @@ app.put('/parliament/api/removeSelectedAcknowledgedIssues', [isUser, checkCookie
   if (!count) {
     errorText = 'Unable to remove requested issue';
     if (req.body.issues.length > 1) { errorText += 's'; }
-    return next(newError(500, errorText));
+    return res.serverError(500, errorText);
   }
 
   let successText = `Successfully removed ${count} requested issue`;
@@ -1900,14 +1904,14 @@ app.put('/parliament/api/removeSelectedAcknowledgedIssues', [isUser, checkCookie
 // issue a test alert to a specified notifier
 app.post('/parliament/api/testAlert', [isAdmin, checkCookieToken], (req, res, next) => {
   if (!ArkimeUtil.isString(req.body.notifier)) {
-    return next(newError(422, 'Must specify the notifier.'));
+    return res.serverError(422, 'Must specify the notifier.');
   }
 
   const notifier = parliament.settings.notifiers[req.body.notifier];
 
   if (!notifier) {
     const errorText = 'Unable to find the requested notifier';
-    return next(newError(500, errorText));
+    return res.serverError(500, errorText);
   }
 
   const config = {};
@@ -1919,7 +1923,7 @@ app.post('/parliament/api/testAlert', [isAdmin, checkCookieToken], (req, res, ne
       const message = `Missing the ${f} field for the ${notifier.name} notifier. Add it on the settings page.`;
       console.log(message);
 
-      return next(newError(422, message));
+      return res.serverError(422, message);
     }
     config[f] = field.value;
   }
@@ -1934,7 +1938,7 @@ app.post('/parliament/api/testAlert', [isAdmin, checkCookieToken], (req, res, ne
       if (response.errors) {
         // eslint-disable-next-line no-unreachable-loop
         for (const e in response.errors) {
-          return next(newError(500, response.errors[e]));
+          return res.serverError(500, response.errors[e]);
         }
       }
 
@@ -2027,7 +2031,7 @@ function createApp () {
   });
 }
 
-app.use(setCookie, (req, res, next) => {
+app.use((req, res, next) => {
   const renderer = vueServerRenderer.createRenderer({
     template: fs.readFileSync(path.join(__dirname, '/vueapp/dist/index.html'), 'utf-8')
   });
