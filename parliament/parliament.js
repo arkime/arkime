@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 'use strict';
 
-const MIN_PARLIAMENT_VERSION = 3;
+const MIN_PARLIAMENT_VERSION = 4;
 
 /* dependencies ------------------------------------------------------------- */
 const express = require('express');
@@ -12,16 +12,12 @@ const favicon = require('serve-favicon');
 const axios = require('axios');
 const bp = require('body-parser');
 const logger = require('morgan');
-const jwt = require('jsonwebtoken');
-const bcrypt = require('bcrypt');
-const cryptoLib = require('crypto');
 const glob = require('glob');
 const os = require('os');
 const helmet = require('helmet');
 const uuid = require('uuid').v4;
 const upgrade = require('./upgrade');
 const path = require('path');
-const chalk = require('chalk');
 const dayMs = 60000 * 60 * 24;
 const User = require('../common/user');
 const Auth = require('../common/auth');
@@ -30,9 +26,6 @@ const ArkimeUtil = require('../common/arkimeUtil');
 
 /* app setup --------------------------------------------------------------- */
 const app = express();
-const router = express.Router();
-
-const saltrounds = 13;
 
 const issueTypes = {
   esRed: { on: true, name: 'ES Red', text: 'ES is red', severity: 'red', description: 'ES status is red' },
@@ -57,35 +50,21 @@ const settingsDefault = {
 
 const internals = {
   notifierTypes: {},
-  authSetupCode: cryptoLib.randomBytes(20).toString('base64').replace(/[=+/]/g, '').substr(0, 10),
   insecure: false
 };
 
 const parliamentReadError = `\nYou must fix this before you can run Parliament.
   Try using parliament.example.json as a starting point`;
 
-// keep a map of invalid tokens for when a user logs out before jwt expires
-const invalidTokens = {};
-
 (function () { // parse arguments
   const appArgs = process.argv.slice(2);
   let file, port;
   let debug = 0;
 
-  function setPasswordHash (err, hash) {
-    if (err) {
-      console.log(`Error hashing password: ${err}`);
-      return;
-    }
-
-    app.set('password', hash);
-  }
-
   function help () {
     console.log('parliament.js [<config options>]\n');
     console.log('Config Options:');
     console.log('  -c, --config   Parliament config file to use');
-    console.log('  --pass         Password for updating the parliament');
     console.log('  --port         Port for the web app to listen on');
     console.log('  --cert         Public certificate to use for https');
     console.log('  --key          Private certificate to use for https');
@@ -103,12 +82,6 @@ const invalidTokens = {};
       i++;
       break;
 
-    case '--pass':
-      bcrypt.hash(appArgs[i + 1], saltrounds, setPasswordHash);
-      app.set('hasPass', true);
-      i++;
-      break;
-
     case '--port':
       port = appArgs[i + 1];
       i++;
@@ -122,10 +95,6 @@ const invalidTokens = {};
     case '--key':
       app.set('keyFile', appArgs[i + 1]);
       i++;
-      break;
-
-    case '--dashboardOnly':
-      app.set('dashboardOnly', true);
       break;
 
     case '--regressionTests':
@@ -174,7 +143,6 @@ if (app.get('regressionTests')) {
   app.post('/regressionTests/shutdown', function (req, res) {
     process.exit(0);
   });
-  internals.authSetupCode = '0000000000';
 }
 
 // parliament object!
@@ -195,28 +163,10 @@ try { // check if the file exists
 
 try { // get the parliament file or error out if it's unreadable
   parliament = require(`${app.get('file')}`);
-  // set the password if passed in when starting the server
-  // IMPORTANT! this will overwrite any password in the parliament json file
-  if (app.get('password')) {
-    parliament.password = app.get('password');
-  } else if (parliament.password) {
-    // if the password is not supplied when starting the server,
-    // use any existing password in the parliament json file
-    app.set('hasPass', true);
-    app.set('password', parliament.password);
-  }
 } catch (err) {
   console.log(`Error reading ${app.get('file') ?? 'your parliament file'}:\n\n`, ArkimeUtil.sanitizeStr(err.stack));
   console.log(parliamentReadError);
   process.exit(1);
-}
-
-// optional config code for setting up auth
-if (!app.get('dashboardOnly') && !app.get('hasPass')) {
-  // if we're not in dashboardOnly mode and we don't have a password
-  console.log(chalk.cyan(
-    `${chalk.bgCyan.black('IMPORTANT')} - Auth setup pin code is: ${internals.authSetupCode}`
-  ));
 }
 
 // construct the issues file name
@@ -275,41 +225,38 @@ const cspHeader = helmet.contentSecurityPolicy({
 app.use(cspHeader);
 
 function setCookie (req, res, next) {
-  if (parliament.authMode) {
-    const cookieOptions = {
-      path: '/parliament',
-      sameSite: 'Strict',
-      overwrite: true
-    };
-    // make cookie secure on https
-    if (app.get('keyFile') && app.get('certFile')) { cookieOptions.secure = true; }
+  const cookieOptions = {
+    path: '/',
+    sameSite: 'Strict',
+    overwrite: true
+  };
+  // make cookie secure on https
+  if (app.get('keyFile') && app.get('certFile')) { cookieOptions.secure = true; }
 
-    res.cookie( // send cookie for basic, non admin functions
-      'PARLIAMENT-COOKIE',
-      Auth.obj2auth({
-        date: Date.now(),
-        pid: process.pid,
-        userId: req.user.userId
-      }),
-      cookieOptions
-    );
-  }
+  res.cookie( // send cookie for basic, non admin functions
+    'PARLIAMENT-COOKIE',
+    Auth.obj2auth({
+      date: Date.now(),
+      pid: process.pid,
+      userId: req.user.userId
+    }),
+    cookieOptions
+  );
+
   return next();
 }
 
 function checkCookieToken (req, res, next) {
-  if (parliament.authMode) {
-    if (!req.headers['x-parliament-cookie']) {
-      return next(newError(500, 'Missing token'));
-    }
+  if (!req.headers['x-parliament-cookie']) {
+    return res.serverError(500, 'Missing token');
+  }
 
-    const cookie = req.headers['x-parliament-cookie'];
-    req.token = Auth.auth2obj(cookie);
-    const diff = Math.abs(Date.now() - req.token.date);
-    if (diff > 2400000 || req.token.userId !== req.user.userId) {
-      console.trace('bad token', req.token, diff, req.token.userId, req.user.userId);
-      return next(newError(500, 'Timeout - Please try reloading page and repeating the action'));
-    }
+  const cookie = req.headers['x-parliament-cookie'];
+  req.token = Auth.auth2obj(cookie);
+  const diff = Math.abs(Date.now() - req.token.date);
+  if (diff > 2400000 || req.token.userId !== req.user.userId) {
+    console.trace('bad token', req.token, diff, req.token.userId, req.user.userId);
+    return res.serverError(500, 'Timeout - Please try reloading page and repeating the action');
   }
 
   return next();
@@ -331,10 +278,11 @@ app.use(logger(':date \x1b[1m:method\x1b[0m \x1b[33m:url\x1b[0m :status :res[con
 
 app.use(favicon(path.join(__dirname, '/favicon.ico')));
 
-// define router to mount api related functions
-app.use('/parliament/api', router);
-router.use(ArkimeUtil.jsonParser);
-router.use(bp.urlencoded({ extended: true }));
+// Set up auth, all APIs registered below will use passport
+Auth.app(app);
+
+app.use(ArkimeUtil.jsonParser);
+app.use(bp.urlencoded({ extended: true }));
 
 // Load notifier plugins for Parliament alerting
 function loadNotifiers () {
@@ -362,9 +310,9 @@ function newError (code, msg) {
 
 /* Middleware -------------------------------------------------------------- */
 // App should always have parliament data
-router.use((req, res, next) => {
+app.use((req, res, next) => {
   if (!parliament) {
-    return next(newError(500, 'Unable to fetch parliament data.'));
+    return res.serverError(500, 'Unable to fetch parliament data.');
   }
 
   next();
@@ -379,75 +327,22 @@ app.use((err, req, res, next) => {
   });
 });
 
-// Verify token
-function verifyToken (req, res, next) {
-  function tokenError (req, res, errorText) {
-    errorText = errorText ?? 'Token Error!';
-    res.status(403).json({
-      tokenError: true,
-      success: false,
-      text: `Permission Denied: ${errorText}`
-    });
-  }
-
-  const hasAuth = !!app.get('password');
-  if (!hasAuth) {
-    return tokenError(req, res, 'No password set.');
-  }
-
-  // check for token in header, url parameters, or post parameters
-  const token = req.body.token ?? req.query.token ?? req.headers['x-access-token'];
-
-  if (!token) {
-    return tokenError(req, res, 'No token provided.');
-  }
-
-  // check for invalid token
-  if (invalidTokens[token]) {
-    return tokenError(req, res, 'You\'ve been logged out. Please login again.');
-  }
-
-  // verifies token and expiration
-  jwt.verify(token, app.get('password'), (err, decoded) => {
-    if (err) {
-      return tokenError(req, res, 'Failed to authenticate token. Try logging in again.');
-    } else {
-      // if everything is good, save to request for use in other routes
-      req.decoded = decoded;
-      next();
-    }
-  });
-}
+app.use((req, res, next) => {
+  res.serverError = ArkimeUtil.serverError;
+  return next();
+});
 
 function checkAuthUpdate (req, res, next) {
-  if (app.get('dashboardOnly')) {
-    return next(newError(403, 'Your Parliament is in dasboard only mode.'));
-  }
-
-  if (app.get('password') ?? parliament.authMode) {
-    return isAdmin(req, res, next);
-  }
-
-  if (req.body !== undefined && req.body.authSetupCode === internals.authSetupCode) {
-    return next();
-  } else {
-    console.log(chalk.cyan(
-      `${chalk.bgCyan.black('IMPORTANT')} - Incorrect auth setup code used! Code is: ${internals.authSetupCode}`
-    ));
-    return res.status(403).send(JSON.stringify({ success: false, text: 'Not authorized, check log file' })); // not specific error
-  }
+  return isAdmin(req, res, next);
 }
 
 function isUser (req, res, next) {
-  if (!parliament.authMode) { return verifyToken(req, res, next); }
-
   Auth.doAuth(req, res, () => {
     if (req.user.hasRole('parliamentUser')) {
       return next();
     }
 
     res.status(403).json({
-      tokenError: true,
       success: false,
       text: 'Permission Denied: Not a Parliament user'
     });
@@ -455,15 +350,12 @@ function isUser (req, res, next) {
 }
 
 function isAdmin (req, res, next) {
-  if (!parliament.authMode) { return verifyToken(req, res, next); }
-
   Auth.doAuth(req, res, () => {
     if (req.user.hasRole('parliamentAdmin')) {
       return next();
     }
 
     res.status(403).json({
-      tokenError: true,
       success: false,
       text: 'Permission Denied: Not a Parliament admin'
     });
@@ -1106,7 +998,7 @@ function writeParliament (req, res, next, successObj, errorText, sendParliament)
       if (err) {
         const errorMsg = `Unable to write parliament data: ${err.message ?? err}`;
         console.log(errorMsg);
-        return next(newError(500, errorMsg));
+        return res.serverError(500, errorMsg);
       }
 
       updateParliament()
@@ -1118,7 +1010,7 @@ function writeParliament (req, res, next, successObj, errorText, sendParliament)
           return res.json(successObj);
         })
         .catch((err) => {
-          return next(newError(500, errorText ?? 'Error updating parliament.'));
+          return res.serverError(500, errorText ?? 'Error updating parliament.');
         });
     }
   );
@@ -1156,7 +1048,7 @@ function writeIssues (req, res, next, successObj, errorText, sendIssues) {
       if (err) {
         const errorMsg = `Unable to write issue data: ${err.message ?? err}`;
         console.log(errorMsg);
-        return next(newError(500, errorMsg));
+        return res.serverError(500, errorMsg);
       }
 
       // send the updated issues with the response
@@ -1171,7 +1063,7 @@ function writeIssues (req, res, next, successObj, errorText, sendIssues) {
 
 /* APIs -------------------------------------------------------------------- */
 if (app.get('regressionTests')) {
-  router.get('/regressionTests/makeToken', (req, res, next) => {
+  app.get('/parliament/api/regressionTests/makeToken', (req, res, next) => {
     req.user = {
       userId: req.query.molochRegressionUser ?? 'anonymous'
     };
@@ -1180,74 +1072,24 @@ if (app.get('regressionTests')) {
   });
 }
 
-// Authenticate user
-router.post('/auth', (req, res, next) => {
-  if (app.get('dashboardOnly')) {
-    return next(newError(403, 'Your Parliament is in dashboard only mode. You cannot login.'));
+// Get whether authentication is set
+app.get('/parliament/api/auth', setCookie, (req, res, next) => {
+  let hasAuth = false;
+  if (parliament?.settings?.commonAuth) {
+    hasAuth = Object.keys(parliament?.settings?.commonAuth).length > 0;
   }
 
-  const hasAuth = !!app.get('password');
-  if (!hasAuth) {
-    return next(newError(401, 'No password set.'));
-  }
-
-  // check if password matches
-  if (!bcrypt.compareSync(req.body.password, app.get('password'))) {
-    return next(newError(401, 'Authentication failed.'));
-  }
-
-  const payload = { admin: true };
-
-  const token = jwt.sign(payload, app.get('password'), {
-    expiresIn: 60 * 60 * 24 // expires in 24 hours
-  });
-
-  res.json({ // return the information including token as JSON
-    success: true,
-    text: 'Here\'s your token!',
-    token
-  });
-});
-
-// logout a "session" by invalidating the token
-router.post('/logout', (req, res, next) => {
-  // check for token in header, url parameters, or post parameters
-  const token = req.body.token ?? req.query.token ?? req.headers['x-access-token'];
-  // add token to invalid token map
-  if (token) { invalidTokens[token] = true; }
-
-  return res.json({ loggedin: false });
-});
-
-// Get whether authentication or dashboardOnly mode is set
-router.get('/auth', (req, res, next) => {
-  const hasAuth = !!app.get('password') || Object.keys(parliament?.settings?.commonAuth).length > 0;
-  const dashboardOnly = !!app.get('dashboardOnly');
   return res.json({
     hasAuth,
-    dashboardOnly
-  });
-});
-
-// Get whether the user is logged in
-// If it passes the verifyToken middleware, the user is logged in
-router.get('/auth/loggedin', [isUser, setCookie], (req, res, next) => {
-  return res.json({
-    loggedin: true,
-    commonAuth: !!parliament.authMode,
-    isUser: !parliament.authMode ? true : req.user.hasRole('parliamentUser'),
-    isAdmin: !parliament.authMode ? true : req.user.hasRole('parliamentAdmin')
+    isUser: req.user.hasRole('parliamentUser'),
+    isAdmin: req.user.hasRole('parliamentAdmin')
   });
 });
 
 // Update (or create) common auth settings for the parliament
-router.put('/auth/commonauth', [checkAuthUpdate], (req, res, next) => {
-  if (app.get('dashboardOnly')) {
-    return next(newError(403, 'Your Parliament is in dasboard only mode. You cannot setup auth.'));
-  }
-
+app.put('/parliament/api/auth/commonauth', [checkAuthUpdate], (req, res, next) => {
   if (!ArkimeUtil.isObject(req.body.commonAuth)) {
-    return next(newError(422, 'Missing auth settings'));
+    return res.serverError(422, 'Missing auth settings');
   }
 
   // Go thru the secret fields and if the save still has ******** that means the user didn't change, so save what we have
@@ -1276,59 +1118,14 @@ router.put('/auth/commonauth', [checkAuthUpdate], (req, res, next) => {
   writeParliament(req, res, next, successObj, errorText);
 });
 
-// Update (or create) a password for the parliament
-router.put('/auth/update', [checkAuthUpdate], (req, res, next) => {
-  if (app.get('dashboardOnly')) {
-    return next(newError(403, 'Your Parliament is in dasboard only mode. You cannot create a password.'));
-  }
-
-  if (!ArkimeUtil.isString(req.body.newPassword)) {
-    return next(newError(422, 'You must provide a new password'));
-  }
-
-  const hasAuth = !!app.get('password');
-  if (hasAuth) { // if the user has a password already set
-    // check if the user has supplied their current password
-    if (!ArkimeUtil.isString(req.body.currentPassword)) {
-      return next(newError(401, 'You must provide your current password'));
-    }
-    // check if password matches
-    if (!bcrypt.compareSync(req.body.currentPassword, app.get('password'))) {
-      return next(newError(401, 'Authentication failed.'));
-    }
-  }
-
-  bcrypt.hash(req.body.newPassword, saltrounds, (err, hash) => {
-    if (err) {
-      console.log(`Error hashing password: ${err}`);
-      return next(newError(401, 'Hashing password failed.'));
-    }
-
-    app.set('password', hash);
-
-    parliament.password = hash;
-
-    const payload = { admin: true };
-
-    const token = jwt.sign(payload, hash, {
-      expiresIn: 60 * 60 * 24 // expires in 24 hours
-    });
-
-    // return the information including token as JSON
-    const successObj = { success: true, text: 'Here\'s your new token!', token };
-    const errorText = 'Unable to update your password.';
-    writeParliament(req, res, next, successObj, errorText);
-  });
-});
-
-router.get('/notifierTypes', [isAdmin, setCookie], (req, res) => {
+app.get('/parliament/api/notifierTypes', [isAdmin, setCookie], (req, res) => {
   return res.json(internals.notifierTypes ?? {});
 });
 
 // Get the parliament settings object
-router.get('/settings', [isAdmin, setCookie], (req, res, next) => {
+app.get('/parliament/api/settings', [isAdmin, setCookie], (req, res, next) => {
   if (!parliament.settings) {
-    return next(newError(500, 'Your settings are empty. Try restarting Parliament.'));
+    return res.serverError(500, 'Your settings are empty. Try restarting Parliament.');
   }
 
   const settings = JSON.parse(JSON.stringify(parliament.settings));
@@ -1352,14 +1149,14 @@ router.get('/settings', [isAdmin, setCookie], (req, res, next) => {
 });
 
 // Update the parliament general settings object
-router.put('/settings', [isAdmin, checkCookieToken], (req, res, next) => {
+app.put('/parliament/api/settings', [isAdmin, checkCookieToken], (req, res, next) => {
   // save general settings
   for (const s in req.body.settings.general) {
     let setting = req.body.settings.general[s];
 
     if (s !== 'hostname' && s !== 'includeUrl') {
       if (isNaN(setting)) {
-        return next(newError(422, `${s} must be a number.`));
+        return res.serverError(422, `${s} must be a number.`);
       } else {
         setting = parseInt(setting);
       }
@@ -1398,27 +1195,27 @@ function verifyNotifierReqBody (req) {
 }
 
 // Update an existing notifier
-router.put('/notifiers/:name', [isAdmin, checkCookieToken], (req, res, next) => {
+app.put('/parliament/api/notifiers/:name', [isAdmin, checkCookieToken], (req, res, next) => {
   if (req.params.name === '__proto__') {
-    return next(newError(404, 'Bad name'));
+    return res.serverError(404, 'Bad name');
   }
 
   if (!parliament.settings.notifiers[req.params.name]) {
-    return next(newError(404, `${req.params.name} not found.`));
+    return res.serverError(404, `${req.params.name} not found.`);
   }
 
   if (!ArkimeUtil.isString(req.body.key)) {
-    return next(newError(422, 'Missing notifier key'));
+    return res.serverError(422, 'Missing notifier key');
   }
 
   const verifyMsg = verifyNotifierReqBody(req);
-  if (verifyMsg) { return next(newError(422, verifyMsg)); }
+  if (verifyMsg) { return res.serverError(422, verifyMsg); }
 
   req.body.notifier.name = req.body.notifier.name.replace(/[^-a-zA-Z0-9_: ]/g, '');
 
   if (req.body.notifier.name !== req.body.key &&
     parliament.settings.notifiers[req.body.notifier.name]) {
-    return next(newError(403, `${req.body.notifier.name} already exists. Notifier names must be unique`));
+    return res.serverError(403, `${req.body.notifier.name} already exists. Notifier names must be unique`);
   }
 
   let foundNotifier;
@@ -1430,7 +1227,7 @@ router.put('/notifiers/:name', [isAdmin, checkCookieToken], (req, res, next) => 
   }
 
   if (!foundNotifier) {
-    return next(newError(403, 'Unknown notifier type'));
+    return res.serverError(403, 'Unknown notifier type');
   }
 
   // check that required notifier fields exist
@@ -1439,7 +1236,7 @@ router.put('/notifiers/:name', [isAdmin, checkCookieToken], (req, res, next) => 
     for (const sf in req.body.notifier.fields) {
       const sentField = req.body.notifier.fields[sf];
       if (sentField.name === field.name && field.required && !sentField.value) {
-        return next(newError(403, `Missing a value for ${field.name}`));
+        return res.serverError(403, `Missing a value for ${field.name}`);
       }
     }
   }
@@ -1462,9 +1259,9 @@ router.put('/notifiers/:name', [isAdmin, checkCookieToken], (req, res, next) => 
 });
 
 // Remove a notifier
-router.delete('/notifiers/:name', [isAdmin, checkCookieToken], (req, res, next) => {
+app.delete('/parliament/api/notifiers/:name', [isAdmin, checkCookieToken], (req, res, next) => {
   if (!parliament.settings.notifiers[req.params.name]) {
-    return next(newError(403, `Cannot find ${req.params.name} notifier to remove`));
+    return res.serverError(403, `Cannot find ${req.params.name} notifier to remove`);
   }
 
   parliament.settings.notifiers[req.params.name] = undefined;
@@ -1475,14 +1272,14 @@ router.delete('/notifiers/:name', [isAdmin, checkCookieToken], (req, res, next) 
 });
 
 // Create a new notifier
-router.post('/notifiers', [isAdmin, checkCookieToken], (req, res, next) => {
+app.post('/parliament/api/notifiers', [isAdmin, checkCookieToken], (req, res, next) => {
   const verifyMsg = verifyNotifierReqBody(req);
-  if (verifyMsg) { return next(newError(422, verifyMsg)); }
+  if (verifyMsg) { return res.serverError(422, verifyMsg); }
 
   req.body.notifier.name = req.body.notifier.name.replace(/[^-a-zA-Z0-9_: ]/g, '');
 
   if (parliament.settings.notifiers[req.body.notifier.name]) {
-    return next(newError(403, `${req.body.notifier.name} already exists. Notifier names must be unique`));
+    return res.serverError(403, `${req.body.notifier.name} already exists. Notifier names must be unique`);
   }
 
   let foundNotifier;
@@ -1494,7 +1291,7 @@ router.post('/notifiers', [isAdmin, checkCookieToken], (req, res, next) => {
   }
 
   if (!foundNotifier) {
-    return next(newError(403, 'Unknown notifier type'));
+    return res.serverError(403, 'Unknown notifier type');
   }
 
   // check that required notifier fields exist
@@ -1503,7 +1300,7 @@ router.post('/notifiers', [isAdmin, checkCookieToken], (req, res, next) => {
     for (const sf in req.body.notifier.fields) {
       const sentField = req.body.notifier.fields[sf];
       if (sentField.name === field.name && field.required && !sentField.value) {
-        return next(newError(403, `Missing a value for ${field.name}`));
+        return res.serverError(403, `Missing a value for ${field.name}`);
       }
     }
   }
@@ -1520,7 +1317,7 @@ router.post('/notifiers', [isAdmin, checkCookieToken], (req, res, next) => {
 });
 
 // Update the parliament general settings object to the defaults
-router.put('/settings/restoreDefaults', [isAdmin, checkCookieToken], (req, res, next) => {
+app.put('/parliament/api/settings/restoreDefaults', [isAdmin, checkCookieToken], (req, res, next) => {
   let type = 'all'; // default
   if (ArkimeUtil.isString(req.body.type)) {
     type = req.body.type;
@@ -1531,7 +1328,7 @@ router.put('/settings/restoreDefaults', [isAdmin, checkCookieToken], (req, res, 
   } else if (type === 'all') {
     parliament.settings = JSON.parse(JSON.stringify(settingsDefault));
   } else {
-    return next(newError(500, 'type must be general or all'));
+    return res.serverError(500, 'type must be general or all');
   }
 
   const settings = JSON.parse(JSON.stringify(parliament.settings));
@@ -1546,7 +1343,7 @@ router.put('/settings/restoreDefaults', [isAdmin, checkCookieToken], (req, res, 
       if (err) {
         const errorMsg = `Unable to write parliament data: ${err.message ?? err}`;
         console.log(errorMsg);
-        return next(newError(500, errorMsg));
+        return res.serverError(500, errorMsg);
       }
 
       return res.json({
@@ -1558,7 +1355,7 @@ router.put('/settings/restoreDefaults', [isAdmin, checkCookieToken], (req, res, 
 });
 
 // Get parliament with stats
-router.get('/parliament', (req, res, next) => {
+app.get('/parliament/api/parliament', (req, res, next) => {
   const parliamentClone = JSON.parse(JSON.stringify(parliament));
 
   for (const group of parliamentClone.groups) {
@@ -1575,15 +1372,14 @@ router.get('/parliament', (req, res, next) => {
   }
 
   delete parliamentClone.settings;
-  delete parliamentClone.password;
 
   return res.json(parliamentClone);
 });
 
 // Updates the parliament order of clusters and groups
-router.put('/parliament', [isAdmin, checkCookieToken], (req, res, next) => {
+app.put('/parliament/api/parliament', [isAdmin, checkCookieToken], (req, res, next) => {
   if (typeof req.body.reorderedParliament !== 'object') {
-    return next(newError(422, 'You must provide the new parliament order'));
+    return res.serverError(422, 'You must provide the new parliament order');
   }
 
   // remove any client only stuff
@@ -1604,13 +1400,13 @@ router.put('/parliament', [isAdmin, checkCookieToken], (req, res, next) => {
 });
 
 // Create a new group in the parliament
-router.post('/groups', [isAdmin, checkCookieToken], (req, res, next) => {
+app.post('/parliament/api/groups', [isAdmin, checkCookieToken], (req, res, next) => {
   if (!ArkimeUtil.isString(req.body.title)) {
-    return next(newError(422, 'A group must have a title'));
+    return res.serverError(422, 'A group must have a title');
   }
 
   if (req.body.description && !ArkimeUtil.isString(req.body.description)) {
-    return next(newError(422, 'A group must have a string description.'));
+    return res.serverError(422, 'A group must have a string description.');
   }
 
   const newGroup = { title: req.body.title, id: globalGroupId++, clusters: [] };
@@ -1624,7 +1420,7 @@ router.post('/groups', [isAdmin, checkCookieToken], (req, res, next) => {
 });
 
 // Delete a group in the parliament
-router.delete('/groups/:id', [isAdmin, checkCookieToken], (req, res, next) => {
+app.delete('/parliament/api/groups/:id', [isAdmin, checkCookieToken], (req, res, next) => {
   let index = 0;
   let foundGroup = false;
   for (const group of parliament.groups) {
@@ -1637,7 +1433,7 @@ router.delete('/groups/:id', [isAdmin, checkCookieToken], (req, res, next) => {
   }
 
   if (!foundGroup) {
-    return next(newError(500, 'Unable to find group to delete.'));
+    return res.serverError(500, 'Unable to find group to delete.');
   }
 
   const successObj = { success: true, text: 'Successfully removed the requested group.' };
@@ -1646,13 +1442,13 @@ router.delete('/groups/:id', [isAdmin, checkCookieToken], (req, res, next) => {
 });
 
 // Update a group in the parliament
-router.put('/groups/:id', [isAdmin, checkCookieToken], (req, res, next) => {
+app.put('/parliament/api/groups/:id', [isAdmin, checkCookieToken], (req, res, next) => {
   if (!ArkimeUtil.isString(req.body.title)) {
-    return next(newError(422, 'A group must have a title.'));
+    return res.serverError(422, 'A group must have a title.');
   }
 
   if (req.body.description && !ArkimeUtil.isString(req.body.description)) {
-    return next(newError(422, 'A group must have a string description.'));
+    return res.serverError(422, 'A group must have a string description.');
   }
 
   let foundGroup = false;
@@ -1666,7 +1462,7 @@ router.put('/groups/:id', [isAdmin, checkCookieToken], (req, res, next) => {
   }
 
   if (!foundGroup) {
-    return next(newError(500, 'Unable to find group to edit.'));
+    return res.serverError(500, 'Unable to find group to edit.');
   }
 
   const successObj = { success: true, text: 'Successfully updated the requested group.' };
@@ -1675,25 +1471,25 @@ router.put('/groups/:id', [isAdmin, checkCookieToken], (req, res, next) => {
 });
 
 // Create a new cluster within an existing group
-router.post('/groups/:id/clusters', [isAdmin, checkCookieToken], (req, res, next) => {
+app.post('/parliament/api/groups/:id/clusters', [isAdmin, checkCookieToken], (req, res, next) => {
   if (!ArkimeUtil.isString(req.body.title)) {
-    return next(newError(422, 'A cluster must have a title.'));
+    return res.serverError(422, 'A cluster must have a title.');
   }
 
   if (!ArkimeUtil.isString(req.body.url)) {
-    return next(newError(422, 'A cluster must have a url.'));
+    return res.serverError(422, 'A cluster must have a url.');
   }
 
   if (req.body.description && !ArkimeUtil.isString(req.body.description)) {
-    return next(newError(422, 'A cluster must have a string description.'));
+    return res.serverError(422, 'A cluster must have a string description.');
   }
 
   if (req.body.localUrl && !ArkimeUtil.isString(req.body.localUrl)) {
-    return next(newError(422, 'A cluster must have a string localUrl.'));
+    return res.serverError(422, 'A cluster must have a string localUrl.');
   }
 
   if (req.body.type && !ArkimeUtil.isString(req.body.type)) {
-    return next(newError(422, 'A cluster must have a string type.'));
+    return res.serverError(422, 'A cluster must have a string type.');
   }
 
   const newCluster = {
@@ -1715,7 +1511,7 @@ router.post('/groups/:id/clusters', [isAdmin, checkCookieToken], (req, res, next
   }
 
   if (!foundGroup) {
-    return next(newError(500, 'Unable to find group to place cluster.'));
+    return res.serverError(500, 'Unable to find group to place cluster.');
   }
 
   const successObj = {
@@ -1728,7 +1524,7 @@ router.post('/groups/:id/clusters', [isAdmin, checkCookieToken], (req, res, next
 });
 
 // Delete a cluster
-router.delete('/groups/:groupId/clusters/:clusterId', [isAdmin, checkCookieToken], (req, res, next) => {
+app.delete('/parliament/api/groups/:groupId/clusters/:clusterId', [isAdmin, checkCookieToken], (req, res, next) => {
   let clusterIndex = 0;
   let foundCluster = false;
   for (const group of parliament.groups) {
@@ -1745,7 +1541,7 @@ router.delete('/groups/:groupId/clusters/:clusterId', [isAdmin, checkCookieToken
   }
 
   if (!foundCluster) {
-    return next(newError(500, 'Unable to find cluster to delete.'));
+    return res.serverError(500, 'Unable to find cluster to delete.');
   }
 
   const successObj = { success: true, text: 'Successfully removed the requested cluster.' };
@@ -1754,25 +1550,25 @@ router.delete('/groups/:groupId/clusters/:clusterId', [isAdmin, checkCookieToken
 });
 
 // Update a cluster
-router.put('/groups/:groupId/clusters/:clusterId', [isAdmin, checkCookieToken], (req, res, next) => {
+app.put('/parliament/api/groups/:groupId/clusters/:clusterId', [isAdmin, checkCookieToken], (req, res, next) => {
   if (!ArkimeUtil.isString(req.body.title)) {
-    return next(newError(422, 'A cluster must have a title.'));
+    return res.serverError(422, 'A cluster must have a title.');
   }
 
   if (!ArkimeUtil.isString(req.body.url)) {
-    return next(newError(422, 'A cluster must have a url.'));
+    return res.serverError(422, 'A cluster must have a url.');
   }
 
   if (req.body.description && !ArkimeUtil.isString(req.body.description)) {
-    return next(newError(422, 'A cluster must have a string description.'));
+    return res.serverError(422, 'A cluster must have a string description.');
   }
 
   if (req.body.localUrl && !ArkimeUtil.isString(req.body.localUrl)) {
-    return next(newError(422, 'A cluster must have a string localUrl.'));
+    return res.serverError(422, 'A cluster must have a string localUrl.');
   }
 
   if (req.body.type && !ArkimeUtil.isString(req.body.type)) {
-    return next(newError(422, 'A cluster must have a string type.'));
+    return res.serverError(422, 'A cluster must have a string type.');
   }
 
   let foundCluster = false;
@@ -1800,7 +1596,7 @@ router.put('/groups/:groupId/clusters/:clusterId', [isAdmin, checkCookieToken], 
   }
 
   if (!foundCluster) {
-    return next(newError(500, 'Unable to find cluster to update.'));
+    return res.serverError(500, 'Unable to find cluster to update.');
   }
 
   const successObj = { success: true, text: 'Successfully updated the requested cluster.' };
@@ -1809,7 +1605,7 @@ router.put('/groups/:groupId/clusters/:clusterId', [isAdmin, checkCookieToken], 
 });
 
 // Get a list of issues
-router.get('/issues', (req, res, next) => {
+app.get('/parliament/api/issues', (req, res, next) => {
   let issuesClone = JSON.parse(JSON.stringify(issues));
 
   issuesClone = issuesClone.filter((issue) => {
@@ -1906,10 +1702,9 @@ router.get('/issues', (req, res, next) => {
 });
 
 // acknowledge one or more issues
-router.put('/acknowledgeIssues', [isUser, checkCookieToken], (req, res, next) => {
+app.put('/parliament/api/acknowledgeIssues', [isUser, checkCookieToken], (req, res, next) => {
   if (!Array.isArray(req.body.issues) || !req.body.issues.length) {
-    const message = 'Must specify the issue(s) to acknowledge.';
-    return next(newError(422, message));
+    return res.serverError(422, 'Must specify the issue(s) to acknowledge.');
   }
 
   const now = Date.now();
@@ -1927,7 +1722,7 @@ router.put('/acknowledgeIssues', [isUser, checkCookieToken], (req, res, next) =>
   if (!count) {
     errorText = 'Unable to acknowledge requested issue';
     if (req.body.issues.length > 1) { errorText += 's'; }
-    return next(newError(500, errorText));
+    return res.serverError(500, errorText);
   }
 
   let successText = `Successfully acknowledged ${count} requested issue`;
@@ -1942,10 +1737,10 @@ router.put('/acknowledgeIssues', [isUser, checkCookieToken], (req, res, next) =>
 });
 
 // ignore one or more issues
-router.put('/ignoreIssues', [isUser, checkCookieToken], (req, res, next) => {
+app.put('/parliament/api/ignoreIssues', [isUser, checkCookieToken], (req, res, next) => {
   if (!Array.isArray(req.body.issues) || !req.body.issues.length) {
     const message = 'Must specify the issue(s) to ignore.';
-    return next(newError(422, message));
+    return res.serverError(422, message);
   }
 
   const ms = req.body.ms ?? 3600000; // Default to 1 hour
@@ -1966,7 +1761,7 @@ router.put('/ignoreIssues', [isUser, checkCookieToken], (req, res, next) => {
   if (!count) {
     errorText = 'Unable to ignore requested issue';
     if (req.body.issues.length > 1) { errorText += 's'; }
-    return next(newError(500, errorText));
+    return res.serverError(500, errorText);
   }
 
   let successText = `Successfully ignored ${count} requested issue`;
@@ -1981,10 +1776,10 @@ router.put('/ignoreIssues', [isUser, checkCookieToken], (req, res, next) => {
 });
 
 // unignore one or more issues
-router.put('/removeIgnoreIssues', [isUser, checkCookieToken], (req, res, next) => {
+app.put('/parliament/api/removeIgnoreIssues', [isUser, checkCookieToken], (req, res, next) => {
   if (!Array.isArray(req.body.issues) || !req.body.issues.length) {
     const message = 'Must specify the issue(s) to unignore.';
-    return next(newError(422, message));
+    return res.serverError(422, message);
   }
 
   let count = 0;
@@ -2002,7 +1797,7 @@ router.put('/removeIgnoreIssues', [isUser, checkCookieToken], (req, res, next) =
   if (!count) {
     errorText = 'Unable to unignore requested issue';
     if (req.body.issues.length > 1) { errorText += 's'; }
-    return next(newError(500, errorText));
+    return res.serverError(500, errorText);
   }
 
   let successText = `Successfully unignored ${count} requested issue`;
@@ -2017,16 +1812,16 @@ router.put('/removeIgnoreIssues', [isUser, checkCookieToken], (req, res, next) =
 });
 
 // Remove an issue with a cluster
-router.put('/groups/:groupId/clusters/:clusterId/removeIssue', [isUser, checkCookieToken], (req, res, next) => {
+app.put('/parliament/api/groups/:groupId/clusters/:clusterId/removeIssue', [isUser, checkCookieToken], (req, res, next) => {
   if (!ArkimeUtil.isString(req.body.type)) {
     const message = 'Must specify the issue type to remove.';
-    return next(newError(422, message));
+    return res.serverError(422, message);
   }
 
   const foundIssue = removeIssue(req.body.type, req.params.clusterId, req.body.node);
 
   if (!foundIssue) {
-    return next(newError(500, 'Unable to find issue to remove. Maybe it was already removed.'));
+    return res.serverError(500, 'Unable to find issue to remove. Maybe it was already removed.');
   }
 
   const successObj = { success: true, text: 'Successfully removed the requested issue.' };
@@ -2035,7 +1830,7 @@ router.put('/groups/:groupId/clusters/:clusterId/removeIssue', [isUser, checkCoo
 });
 
 // Remove all acknowledged all issues
-router.put('/issues/removeAllAcknowledgedIssues', [isUser, checkCookieToken], (req, res, next) => {
+app.put('/parliament/api/issues/removeAllAcknowledgedIssues', [isUser, checkCookieToken], (req, res, next) => {
   let count = 0;
 
   let len = issues.length;
@@ -2048,7 +1843,7 @@ router.put('/issues/removeAllAcknowledgedIssues', [isUser, checkCookieToken], (r
   }
 
   if (!count) {
-    return next(newError(400, 'There are no acknowledged issues to remove.'));
+    return res.serverError(400, 'There are no acknowledged issues to remove.');
   }
 
   const successObj = { success: true, text: `Successfully removed ${count} acknowledged issues.` };
@@ -2057,10 +1852,10 @@ router.put('/issues/removeAllAcknowledgedIssues', [isUser, checkCookieToken], (r
 });
 
 // remove one or more acknowledged issues
-router.put('/removeSelectedAcknowledgedIssues', [isUser, checkCookieToken], (req, res, next) => {
+app.put('/parliament/api/removeSelectedAcknowledgedIssues', [isUser, checkCookieToken], (req, res, next) => {
   if (!Array.isArray(req.body.issues) || !req.body.issues.length) {
     const message = 'Must specify the acknowledged issue(s) to remove.';
-    return next(newError(422, message));
+    return res.serverError(422, message);
   }
 
   let count = 0;
@@ -2075,7 +1870,7 @@ router.put('/removeSelectedAcknowledgedIssues', [isUser, checkCookieToken], (req
   }
 
   if (!count) {
-    return next(newError(400, 'There are no acknowledged issues to remove.'));
+    return res.serverError(400, 'There are no acknowledged issues to remove.');
   }
 
   count = 0;
@@ -2092,7 +1887,7 @@ router.put('/removeSelectedAcknowledgedIssues', [isUser, checkCookieToken], (req
   if (!count) {
     errorText = 'Unable to remove requested issue';
     if (req.body.issues.length > 1) { errorText += 's'; }
-    return next(newError(500, errorText));
+    return res.serverError(500, errorText);
   }
 
   let successText = `Successfully removed ${count} requested issue`;
@@ -2107,16 +1902,16 @@ router.put('/removeSelectedAcknowledgedIssues', [isUser, checkCookieToken], (req
 });
 
 // issue a test alert to a specified notifier
-router.post('/testAlert', [isAdmin, checkCookieToken], (req, res, next) => {
+app.post('/parliament/api/testAlert', [isAdmin, checkCookieToken], (req, res, next) => {
   if (!ArkimeUtil.isString(req.body.notifier)) {
-    return next(newError(422, 'Must specify the notifier.'));
+    return res.serverError(422, 'Must specify the notifier.');
   }
 
   const notifier = parliament.settings.notifiers[req.body.notifier];
 
   if (!notifier) {
     const errorText = 'Unable to find the requested notifier';
-    return next(newError(500, errorText));
+    return res.serverError(500, errorText);
   }
 
   const config = {};
@@ -2128,7 +1923,7 @@ router.post('/testAlert', [isAdmin, checkCookieToken], (req, res, next) => {
       const message = `Missing the ${f} field for the ${notifier.name} notifier. Add it on the settings page.`;
       console.log(message);
 
-      return next(newError(422, message));
+      return res.serverError(422, message);
     }
     config[f] = field.value;
   }
@@ -2143,7 +1938,7 @@ router.post('/testAlert', [isAdmin, checkCookieToken], (req, res, next) => {
       if (response.errors) {
         // eslint-disable-next-line no-unreachable-loop
         for (const e in response.errors) {
-          return next(newError(500, response.errors[e]));
+          return res.serverError(500, response.errors[e]);
         }
       }
 
@@ -2155,23 +1950,31 @@ router.post('/testAlert', [isAdmin, checkCookieToken], (req, res, next) => {
   );
 });
 
-function setupAuth () {
-  parliament.authMode = false;
+async function setupAuth () {
+  const commonAuth = parliament.settings?.commonAuth || {};
 
-  if (!parliament?.settings?.commonAuth?.authMode) { return; }
+  let userNameHeader = commonAuth?.userNameHeader || 'anonymous';
 
-  const commonAuth = parliament.settings.commonAuth;
-
-  parliament.authMode = commonAuth.authMode;
+  let mode;
+  if (app.get('regressionTests')) {
+    mode = 'regressionTests';
+  } else if (userNameHeader === 'anonymous') {
+    mode = 'anonymous';
+  } else if (userNameHeader === 'digest' || userNameHeader === 'oidc') {
+    mode = userNameHeader;
+    userNameHeader = undefined;
+  } else {
+    mode = 'header';
+  }
 
   Auth.initialize({
+    mode,
+    userNameHeader,
     debug: app.get('debug'),
-    mode: parliament.authMode,
-    userNameHeader: commonAuth.userNameHeader,
     passwordSecret: commonAuth.passwordSecret ?? 'password',
     passwordSecretSection: 'parliament',
-    userAuthIps: undefined,
-    basePath: '/parliament/api/',
+    basePath: '/',
+    userAuthIps: commonAuth.userAuthIps,
     authConfig: {
       httpRealm: commonAuth.httpRealm ?? 'Moloch',
       userIdField: commonAuth.authUserIdField,
@@ -2257,47 +2060,53 @@ app.use((req, res, next) => {
   });
 });
 
-let server;
-if (app.get('keyFile') && app.get('certFile')) {
-  const certOptions = {
-    key: fs.readFileSync(app.get('keyFile')),
-    cert: fs.readFileSync(app.get('certFile'))
-  };
-  server = https.createServer(certOptions, app);
-} else {
-  server = http.createServer(app);
+async function main () {
+  await setupAuth();
+
+  let server;
+  if (app.get('keyFile') && app.get('certFile')) {
+    const certOptions = {
+      key: fs.readFileSync(app.get('keyFile')),
+      cert: fs.readFileSync(app.get('certFile'))
+    };
+    server = https.createServer(certOptions, app);
+  } else {
+    server = http.createServer(app);
+  }
+
+  const parliamentHost = parliament.settings?.commonAuth?.parliamentHost || undefined;
+  if (Auth.mode === 'header' && parliamentHost !== 'localhost' && parliamentHost !== '127.0.0.1') {
+    console.log('SECURITY WARNING - When using header auth, parliamentHost should be localhost or use iptables');
+  }
+
+  server
+    .on('error', function (e) {
+      console.log("ERROR - couldn't listen on host %s port %d is cont3xt already running?", parliamentHost, app.get('port'));
+      process.exit(1);
+    })
+    .on('listening', function (e) {
+      console.log('Express server listening on host %s port %d in %s mode', server.address().address, server.address().port, app.settings.env);
+      if (app.get('debug')) {
+        console.log('Debug Level', app.get('debug'));
+        console.log('Parliament file:', app.get('file'));
+        console.log('Issues file:', issuesFilename);
+      }
+    })
+    .listen(app.get('port'), parliamentHost, () => {
+      initializeParliament()
+        .then(() => {
+          updateParliament();
+        })
+        .catch((err) => {
+          console.log('ERROR - never mind, couldn\'t initialize Parliament\n', err);
+          process.exit(1);
+        });
+
+      setInterval(() => {
+        updateParliament();
+        processAlerts();
+      }, 10000);
+    });
 }
 
-setupAuth();
-
-server
-  .on('error', function (e) {
-    console.log(`ERROR - couldn't listen on port ${app.get('port')}, is Parliament already running?`);
-    process.exit(1);
-  })
-  .on('listening', function (e) {
-    console.log(`Express server listening on port ${server.address().port} in ${app.settings.env} mode`);
-    if (app.get('debug')) {
-      console.log('Debug Level', app.get('debug'));
-      console.log('Parliament file:', app.get('file'));
-      console.log('Issues file:', issuesFilename);
-      if (app.get('dashboardOnly')) {
-        console.log('Opening in dashboard only mode');
-      }
-    }
-  })
-  .listen(app.get('port'), () => {
-    initializeParliament()
-      .then(() => {
-        updateParliament();
-      })
-      .catch((err) => {
-        console.log('ERROR - never mind, couldn\'t initialize Parliament\n', err);
-        process.exit(1);
-      });
-
-    setInterval(() => {
-      updateParliament();
-      processAlerts();
-    }, 10000);
-  });
+main();

@@ -47,10 +47,10 @@
         </div>
       </div> <!-- /search -->
       <div
-        v-if="loggedIn"
+        v-if="isAdmin"
         class="col-md-4">
         <!-- edit mode toggle -->
-        <span v-if="isAdmin"
+        <span
           @click="toggleEditMode"
           class="fa fa-toggle-off fa-2x pull-right cursor-pointer mt-1 pl-2"
           :class="{'fa-toggle-off':!editMode, 'fa-toggle-on text-success':editMode}"
@@ -84,7 +84,7 @@
     <hr>
 
     <!-- new group form -->
-    <div v-if="showNewGroupForm && loggedIn && editMode"
+    <div v-if="showNewGroupForm && isAdmin && editMode"
       class="row">
       <div class="col-md-12">
         <div @keyup.enter="createNewGroup">
@@ -139,7 +139,7 @@
         <span class="fa fa-3x fa-folder-open text-muted-more">
         </span>
         No groups in your parliament.
-        <a v-if="loggedIn && editMode"
+        <a v-if="isAdmin && editMode"
           @click="showNewGroupForm = true"
           class="cursor-pointer no-href no-decoration">
           Create one
@@ -159,11 +159,11 @@
           v-if="group.filteredClusters.length > 0 || (!group.clusters.length && !searchTerm)">
           <div class="col-md-12">
             <h5 class="mb-1 pb-1">
-              <span v-if="loggedIn && !searchTerm && editMode"
+              <span v-if="isAdmin && !searchTerm && editMode"
                 class="group-handle fa fa-th">
               </span>
               <!-- group action buttons -->
-              <span v-if="loggedIn && editMode">
+              <span v-if="isAdmin && editMode">
                 <a v-if="groupAddingCluster !== group.id && groupBeingEdited !== group.id"
                   @click="displayNewClusterForm(group)"
                   class="btn btn-sm btn-outline-info pull-right cursor-pointer mb-1">
@@ -201,7 +201,7 @@
                 </a>
               </span> <!-- /group action buttons -->
               {{ group.title }}&nbsp;
-              <a v-if="loggedIn && groupAddingCluster !== group.id && groupBeingEdited === group.id && editMode"
+              <a v-if="isAdmin && groupAddingCluster !== group.id && groupBeingEdited === group.id && editMode"
                 @click="deleteGroup(group)"
                 v-b-tooltip.hover.top
                 title="Delete Group"
@@ -217,7 +217,7 @@
         </div> <!-- /group title/description -->
 
         <!-- edit group form -->
-        <div v-if="loggedIn && groupBeingEdited === group.id && editMode"
+        <div v-if="isAdmin && groupBeingEdited === group.id && editMode"
           class="row">
           <div class="col-md-12">
             <form>
@@ -256,7 +256,7 @@
         </div> <!-- /edit group form -->
 
         <!-- create cluster form -->
-        <div v-if="loggedIn && groupAddingCluster === group.id && editMode">
+        <div v-if="isAdmin && groupAddingCluster === group.id && editMode">
           <div class="col-md-12">
             <hr>
             <form @keyup.enter="createCluster">
@@ -375,7 +375,7 @@
                   </span>
                 </a>
                 <h6>
-                  <span v-if="loggedIn && !searchTerm && editMode"
+                  <span v-if="isAdmin && !searchTerm && editMode"
                     class="cluster-handle">
                     <span class="fa fa-th">
                     </span>
@@ -422,7 +422,7 @@
                     <div v-if="cluster.id === clusterBeingEdited || !cluster.hideDeltaBPS"
                       class="col-6">
                       <label :class="{'form-check-label':cluster.id === clusterBeingEdited}">
-                        <input v-if="loggedIn && cluster.id === clusterBeingEdited && editMode"
+                        <input v-if="isAdmin && cluster.id === clusterBeingEdited && editMode"
                           type="checkbox"
                           :checked="!cluster.hideDeltaBPS"
                           @change="cluster.hideDeltaBPS = !cluster.hideDeltaBPS"
@@ -438,7 +438,7 @@
                     <div v-if="cluster.id === clusterBeingEdited || !cluster.hideDeltaTDPS"
                       class="col-6">
                       <label :class="{'form-check-label':cluster.id === clusterBeingEdited}">
-                        <input v-if="loggedIn && cluster.id === clusterBeingEdited && editMode"
+                        <input v-if="isAdmin && cluster.id === clusterBeingEdited && editMode"
                           type="checkbox"
                           :checked="!cluster.hideDeltaTDPS"
                           @change="cluster.hideDeltaTDPS = !cluster.hideDeltaTDPS"
@@ -454,7 +454,7 @@
                     <div v-if="cluster.id === clusterBeingEdited || !cluster.hideMonitoring"
                       class="col-6">
                       <label :class="{'form-check-label':cluster.id === clusterBeingEdited}">
-                        <input v-if="loggedIn && cluster.id === clusterBeingEdited && editMode"
+                        <input v-if="isAdmin && cluster.id === clusterBeingEdited && editMode"
                           type="checkbox"
                           :checked="!cluster.hideMonitoring"
                           @change="cluster.hideMonitoring = !cluster.hideMonitoring"
@@ -470,7 +470,7 @@
                     <div v-if="cluster.id === clusterBeingEdited || !cluster.hideMolochNodes"
                       class="col-6">
                       <label :class="{'form-check-label':cluster.id === clusterBeingEdited}">
-                        <input v-if="loggedIn && cluster.id === clusterBeingEdited && editMode"
+                        <input v-if="isAdmin && cluster.id === clusterBeingEdited && editMode"
                           type="checkbox"
                           :checked="!cluster.hideMolochNodes"
                           @change="cluster.hideMolochNodes = !cluster.hideMolochNodes"
@@ -486,7 +486,7 @@
                     <div v-if="cluster.id === clusterBeingEdited || !cluster.hideDataNodes"
                       class="col-6">
                       <label :class="{'form-check-label':cluster.id === clusterBeingEdited}">
-                        <input v-if="loggedIn && cluster.id === clusterBeingEdited && editMode"
+                        <input v-if="isAdmin && cluster.id === clusterBeingEdited && editMode"
                           type="checkbox"
                           :checked="!cluster.hideDataNodes"
                           @change="cluster.hideDataNodes = !cluster.hideDataNodes"
@@ -502,7 +502,7 @@
                     <div v-if="cluster.id === clusterBeingEdited || !cluster.hideTotalNodes"
                       class="col-6">
                       <label :class="{'form-check-label':cluster.id === clusterBeingEdited}">
-                        <input v-if="loggedIn && cluster.id === clusterBeingEdited && editMode"
+                        <input v-if="isAdmin && cluster.id === clusterBeingEdited && editMode"
                           type="checkbox"
                           :checked="!cluster.hideTotalNodes"
                           @change="cluster.hideTotalNodes = !cluster.hideTotalNodes"
@@ -525,7 +525,6 @@
                       <issue :issue="issue"
                         :group-id="group.id"
                         :cluster-id="cluster.id"
-                        :logged-in="loggedIn"
                         :index="index"
                         @issueChange="issueChange">
                       </issue>
@@ -544,7 +543,6 @@
                       <issue :issue="issue"
                         :group-id="group.id"
                         :cluster-id="cluster.id"
-                        :logged-in="loggedIn"
                         :index="index"
                         @issueChange="issueChange">
                       </issue>
@@ -558,7 +556,7 @@
                   </template>
                 </small> <!-- /cluster issues -->
                 <!-- edit cluster form -->
-                <div v-if="loggedIn && cluster.id === clusterBeingEdited && editMode"
+                <div v-if="isAdmin && cluster.id === clusterBeingEdited && editMode"
                   class="small">
                   <hr class="mt-2">
                   <form class="edit-cluster">
@@ -632,7 +630,7 @@
                 </div> <!-- /edit cluster form -->
               </div>
               <!-- edit cluster buttons -->
-              <div v-if="isUser && ((loggedIn && cluster.activeIssues && cluster.activeIssues.length && cluster.id !== clusterBeingEdited) || (loggedIn && editMode))"
+              <div v-if="isUser && ((isUser && cluster.activeIssues && cluster.activeIssues.length && cluster.id !== clusterBeingEdited) || (isAdmin && editMode))"
                 class="card-footer small">
                 <a v-if="cluster.activeIssues && cluster.activeIssues.length && cluster.id !== clusterBeingEdited"
                   @click="acknowledgeAllIssues(cluster)"
@@ -642,8 +640,8 @@
                   <span class="fa fa-check">
                   </span>
                 </a>
-                <span v-if="(loggedIn && cluster.aciveIssues && cluster.activeIssues.length) || (loggedIn && editMode)">
-                  <a v-show="cluster.id !== clusterBeingEdited && editMode"
+                <span v-if="(isUser && cluster.aciveIssues && cluster.activeIssues.length) || (isAdmin && editMode)">
+                  <a v-show="cluster.id !== clusterBeingEdited && editMode && isAdmin"
                     class="btn btn-sm btn-outline-warning cursor-pointer"
                     @click="displayEditClusterForm(cluster)"
                     title="Edit cluster"
@@ -651,7 +649,7 @@
                     <span class="fa fa-pencil">
                     </span>
                   </a>
-                  <span v-show="cluster.id === clusterBeingEdited && editMode">
+                  <span v-show="cluster.id === clusterBeingEdited && editMode && isAdmin">
                     <a class="btn btn-sm btn-outline-success pull-right cursor-pointer"
                       @click="editCluster(group, cluster)"
                       title="Save cluster"
@@ -686,7 +684,7 @@
           <strong>
             No clusters in this group.
             <a @click="displayNewClusterForm(group)"
-              v-if="loggedIn && editMode"
+              v-if="isAdmin && editMode"
               class="no-decoration cursor-pointer no-href">
               Create one
             </a>
@@ -753,9 +751,6 @@ export default {
     },
     isAdmin: function () {
       return this.$store.state.isAdmin;
-    },
-    loggedIn: function () {
-      return this.$store.state.loggedIn;
     },
     // data refresh interval
     refreshInterval: function () {
@@ -1183,8 +1178,8 @@ export default {
         animation: 100,
         handle: '.group-handle',
         onMove: (e) => { // don't allow drag/drop if clusters are filtered
-          // or when the user is not logged in
-          if (this.searchTerm || !this.loggedIn) { return false; }
+          // or when the user is not a parliament admin
+          if (this.searchTerm || !this.isAdmin) { return false; }
           this.stopAutoRefresh();
         },
         onEnd: (e) => { // dragged group was dropped
@@ -1223,8 +1218,8 @@ export default {
           handle: '.cluster-handle',
           animation: 100,
           onMove: (e) => { // don't allow drag/drop if clusters are filtered
-            // or when the user is not logged in
-            if (this.searchTerm || !this.loggedIn) { return false; }
+            // or when the user is not a parliament admin
+            if (this.searchTerm || !this.isAdmin) { return false; }
             this.stopAutoRefresh();
           },
           onEnd: (e) => { // dragged cluster was dropped
