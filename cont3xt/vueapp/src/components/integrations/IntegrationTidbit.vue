@@ -12,7 +12,7 @@
 
     <template v-if="tidbit.display === 'badge'">
       <h5 class="my-0 mr-1 mw-100" :id="id">
-        <b-badge variant="light">
+        <b-badge variant="light" class="mw-100 overflow-hidden">
           {{ tidbit.displayValue || tidbit.value }}
         </b-badge>
       </h5>
