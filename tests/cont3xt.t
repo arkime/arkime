@@ -767,6 +767,14 @@ $json = cont3xtPostToken('/api/view', to_json({
 }), $token);
 delete $json->{view}->{_id};
 eq_or_diff($json, from_json('{"view":{"_viewable":true,"name":"view1","_editable":true,"creator":"anonymous"},"success":true,"text":"Success"}'));
+# for (my $i = 0; $i < 5000; $i++) {
+#     diag $i;
+#     $json = cont3xtPostToken('/api/view', to_json({
+#       name => "view-$i",
+#       integrations =>  ["BGPView","Cymru","DNS","EmailVerify","GreyNoise","MalwareBazaar","Maxmind","PT Whois","PT Subdomains","PT DNS","RDAP","ThreatFox","URLHaus","VT Domain","VT IP","VT Hash","Whois"]
+#     }), $token);
+#     diag Dumper($json);
+# }
 
 $json = cont3xtPostToken('/api/view', to_json({
   name => "view2"

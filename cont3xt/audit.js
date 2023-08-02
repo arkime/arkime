@@ -132,7 +132,7 @@ class Audit {
   /**
    * DELETE - /api/audit/:id
    *
-   * Delete a log from history
+   * Delete a log from history. Users can delete their own logs. Admins can delete any log.
    * @name /audit/:id
    * @returns {boolean} success - Whether the delete history log operation was successful.
    * @returns {string} text - The success/error message to (optionally) display.
