@@ -1073,7 +1073,7 @@ if (app.get('regressionTests')) {
 }
 
 // Get whether authentication is set
-app.get('/parliament/api/auth', (req, res, next) => {
+app.get('/parliament/api/auth', setCookie, (req, res, next) => {
   let hasAuth = false;
   if (parliament?.settings?.commonAuth) {
     hasAuth = Object.keys(parliament?.settings?.commonAuth).length > 0;
@@ -1959,7 +1959,7 @@ async function setupAuth () {
   if (app.get('regressionTests')) {
     mode = 'regressionTests';
   } else if (userNameHeader === 'anonymous') {
-    mode = 'anonymousWithDB';
+    mode = 'anonymous';
   } else if (userNameHeader === 'digest' || userNameHeader === 'oidc') {
     mode = userNameHeader;
     userNameHeader = undefined;

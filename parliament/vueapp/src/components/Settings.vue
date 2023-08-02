@@ -447,7 +447,7 @@
                 />
               </div>
               <p class="form-text small text-muted">
-                The ip used to listen for traffic, usually localhost for just the localhost or 0.0.0.0 for all ips (default).
+                The IP used to listen for traffic, usually localhost or 0.0.0.0 for all ips (default).
               </p>
             </div> <!-- /http realm-->
           </div>
@@ -1044,7 +1044,7 @@ export default {
         this.error = '';
         this.settings = data;
         if (!this.hasAuth) {
-          this.error = 'No authentication set for your Parliament. Set up auth so you can do more stuff!';
+          this.error = 'No authentication set for your Parliament!';
           this.openView('auth'); // redirect the user to possibly configure auth
         }
       }).catch((error) => {

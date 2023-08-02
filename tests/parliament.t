@@ -9,7 +9,7 @@ use strict;
 
 my $result;
 
-my $version = 3;
+my $version = 4;
 
 my $es = "-o 'elasticsearch=$MolochTest::elasticsearch' -o 'usersElasticsearch=$MolochTest::elasticsearch' $ENV{INSECURE}";
 # create user without parliament role
