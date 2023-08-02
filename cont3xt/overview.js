@@ -58,11 +58,13 @@ class Overview {
    */
   static initialize () {
     const createDefaultForIType = (iType) => {
+      const { name: defaultName, title, fields } = defaultOverviewPropertiesForIType[iType];
+
       return {
         iType,
-        name: `Default ${iType}`,
-        title: 'Overview of %{query}',
-        fields: [],
+        name: defaultName,
+        title,
+        fields,
         viewRoles: ['cont3xtUser'],
         editRoles: ['superAdmin'],
         creator: '!__cont3xt__!'
@@ -394,6 +396,248 @@ class Overview {
     return res.send({ success: true, text: 'Success' });
   }
 }
+
+const defaultOverviewPropertiesForIType = {
+  domain: {
+    name: 'Default Domain Overview',
+    title: 'Domain Overview for %{query}',
+    fields: [
+      {
+        type: 'linked',
+        from: 'VT Domain',
+        field: 'Forcepoint ThreatSeeker category',
+        alias: 'VT Forcepoint'
+      },
+      {
+        type: 'linked',
+        from: 'VT Domain',
+        field: 'Webutation domain info',
+        alias: 'VT Webutation'
+      },
+      {
+        type: 'linked',
+        from: 'VT Domain',
+        field: 'Sophos category',
+        alias: 'VT Sophos'
+      },
+      {
+        type: 'linked',
+        from: 'PT DNS',
+        field: 'firstSeen',
+        alias: 'PT PDNS First Seen'
+      },
+      {
+        type: 'linked',
+        from: 'PT Whois',
+        field: 'expiresAt',
+        alias: 'Domain Expiry date'
+      },
+      {
+        type: 'linked',
+        from: 'PT Whois',
+        field: 'contactEmail',
+        alias: 'PT contact email'
+      },
+      {
+        type: 'linked',
+        from: 'PT Whois',
+        field: 'organization',
+        alias: 'PT organization'
+      },
+      {
+        type: 'linked',
+        from: 'Threatstream',
+        field: 'Objects',
+        alias: 'ThreatStream events'
+      },
+      {
+        type: 'linked',
+        from: 'AlienVaultOTX',
+        field: 'Pulses:',
+        alias: 'OTX Pulses'
+      },
+      {
+        type: 'linked',
+        from: 'URLScan',
+        field: 'results',
+        alias: 'URLScan results'
+      },
+      {
+        type: 'linked',
+        from: 'VT Domain',
+        field: 'detected_urls',
+        alias: 'VT detected urls'
+      },
+      {
+        type: 'linked',
+        from: 'PT DNS',
+        field: 'results',
+        alias: 'PT PDNS'
+      }
+    ]
+  },
+  ip: {
+    name: 'Default IP Overview',
+    title: 'IP Overview for %{query}',
+    fields: [
+      {
+        type: 'linked',
+        from: 'AbuseIPDB',
+        field: 'usageType',
+        alias: 'AbuseIPDB classification'
+      },
+      {
+        type: 'linked',
+        from: 'Spur',
+        field: 'infrastructure',
+        alias: 'Spur Infra:'
+      },
+      {
+        type: 'linked',
+        from: 'GreyNoise',
+        field: 'classification',
+        alias: 'GreyNoise classification'
+      },
+      {
+        type: 'linked',
+        from: 'BGPView',
+        field: 'Prefixes',
+        alias: 'BGPView prefixes'
+      },
+      {
+        type: 'linked',
+        from: 'Censys',
+        field: 'Services',
+        alias: 'Censys Open Port info'
+      },
+      {
+        type: 'linked',
+        from: 'Censys',
+        field: 'Certificates',
+        alias: 'Censys Certificates'
+      },
+      {
+        type: 'linked',
+        from: 'Shodan',
+        field: 'Service/Port info',
+        alias: 'Shodan Open Port info'
+      },
+      {
+        type: 'linked',
+        from: 'Shodan',
+        field: 'Certificates',
+        alias: 'Shodan Certificates'
+      },
+      {
+        type: 'linked',
+        from: 'AbuseIPDB',
+        field: 'Reports:',
+        alias: 'AbuseIPDB reports'
+      },
+      {
+        type: 'linked',
+        from: 'URLScan',
+        field: 'results',
+        alias: 'URLScan results'
+      },
+      {
+        type: 'linked',
+        from: 'VT IP',
+        field: 'detected_urls',
+        alias: 'VT detected urls'
+      },
+      {
+        type: 'linked',
+        from: 'Threatstream',
+        field: 'Objects',
+        alias: 'Threatstream tags'
+      }
+    ]
+  },
+  url: {
+    name: 'Default URL Overview',
+    title: 'URL Overview for %{query}',
+    fields: [
+      {
+        type: 'linked',
+        from: 'Threatstream',
+        field: 'Objects',
+        alias: 'ThreatStream imports'
+      }
+    ]
+  },
+  email: {
+    name: 'Default Email Overview',
+    title: 'Email Overview for %{query}',
+    fields: [
+      {
+        type: 'linked',
+        from: 'Threatstream',
+        field: 'Objects',
+        alias: 'Threatstream imports'
+      }
+    ]
+  },
+  phone: {
+    name: 'Default Phone Overview',
+    title: 'Phone Overview for %{query}',
+    fields: [
+      {
+        type: 'linked',
+        from: 'Twilio',
+        field: 'caller_name',
+        alias: 'Caller Name'
+      },
+      {
+        type: 'linked',
+        from: 'Twilio',
+        field: 'carrier',
+        alias: 'Carrier'
+      }
+    ]
+  },
+  hash: {
+    name: 'Default Hash Overview',
+    title: 'Hash Overview for %{query}',
+    fields: [
+      {
+        type: 'linked',
+        from: 'VT Hash',
+        field: 'positives',
+        alias: 'VT Hash malicious scan count'
+      },
+      {
+        type: 'linked',
+        from: 'VT Hash',
+        field: 'scan_date',
+        alias: 'VT scan date'
+      },
+      {
+        type: 'linked',
+        from: 'VT Hash',
+        field: 'permalink',
+        alias: 'VT link'
+      },
+      {
+        type: 'linked',
+        from: 'VT Hash',
+        field: 'scans',
+        alias: 'VT scan results'
+      },
+      {
+        type: 'linked',
+        from: 'Threatstream',
+        field: 'Objects',
+        alias: 'Threatstream tags'
+      }
+    ]
+  },
+  text: {
+    name: 'Default Text Overview',
+    title: 'Text Overview for %{query}',
+    fields: []
+  }
+};
 
 module.exports = Overview;
 

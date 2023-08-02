@@ -215,7 +215,7 @@ class Auth {
         secret: uuid(),
         resave: false,
         saveUninitialized: true,
-        cookie: { path: Auth.#basePath, secure: true, sameSite: 'Strict' }
+        cookie: { path: Auth.#basePath, secure: true, sameSite: Auth.#authConfig.cookieSameSite ?? 'Lax' }
       }));
       Auth.#authRouter.use(passport.initialize());
       Auth.#authRouter.use(passport.session());
@@ -432,6 +432,11 @@ class Auth {
           return done(null, false);
         }
 
+        if (userId.startsWith('role:')) {
+          console.log(`AUTH: User ${userId} Can not authenticate with role`);
+          return done('Can not authenticate with role');
+        }
+
         async function oidcAuthCheck (err, user) {
           if (err || !user) { return done('User not found'); }
           if (!user.enabled) { return done('User not enabled'); }
@@ -592,6 +597,9 @@ class Auth {
 
   // ----------------------------------------------------------------------------
   static #dynamicCreate (userId, vars, cb) {
+    if (Auth.debug > 0) {
+      console.log('AUTH - #dynamicCreate', ArkimeUtil.sanitizeStr(userId));
+    }
     const nuser = JSON.parse(new Function('return `' + Auth.#userAutoCreateTmpl + '`;').call(vars));
     if (nuser.passStore === undefined) {
       nuser.passStore = Auth.pass2store(nuser.userId, crypto.randomBytes(48));
@@ -634,6 +642,9 @@ class Auth {
         req.url = req.url.replace(Auth.#basePath, '/');
       }
       if (err) {
+        if (Auth.debug > 0) {
+          console.log('AUTH: passport.authenticate fail', err);
+        }
         res.status(403);
         return res.send(JSON.stringify({ success: false, text: err }));
       } else {

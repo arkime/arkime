@@ -4,8 +4,8 @@
       v-if="!(getUser && (getUser.userId === localOverview.creator || localOverview._editable || (getUser.roles && getUser.roles.includes('cont3xtAdmin'))))"
       class="w-100">
     <template #header>
-      <h6 class="mb-0 link-header d-flex justify-content-between">
-        <div>
+      <h6 class="mb-0 d-flex justify-content-between">
+        <div class="overview-header">
           <span
               class="fa fa-share-alt mr-1 cursor-help"
               v-b-tooltip.hover="`Shared with you by ${localOverview.creator}`"
@@ -24,29 +24,55 @@
                 Set as default for {{ overview.iType }} iType
               </span>
         </b-button>
-        <small class="pull-right">
-          You can only view this Link Group
-        </small>
+        <div>
+          <small>
+            You can only view this Overview
+          </small>
+          <b-button
+              class="ml-1"
+              size="sm"
+              variant="secondary"
+              @click="rawEditMode = !rawEditMode"
+              v-b-tooltip.hover="`View ${rawEditMode ? 'form' : 'raw'} configuration for this overview`">
+            <span class="fa fa-fw" :class="{'fa-file-text-o': rawEditMode, 'fa-pencil-square-o': !rawEditMode}" />
+          </b-button>
+        </div>
       </h6>
     </template>
     <b-card-body>
-      <div class="d-flex flex-row">
-        <h6>Title:</h6><span class="ml-1">{{ localOverview.title }}</span>
-      </div>
-      <div class="d-flex flex-row">
-        <h6>iType:</h6><span class="ml-1">{{ localOverview.iType }}</span>
-      </div>
-      <div class="d-flex flex-row">
-        <h6>Fields:</h6><b-badge v-if="!localOverview.fields.length" class="ml-1">None</b-badge>
-      </div>
-      <div class="d-flex flex-column">
-        <b-card v-for="(field, i) in localOverview.fields" :key="i"
-                class="mb-1"
-        >
-          <span class="text-warning bold">{{ field.from }}</span> <span class="text-primary">{{ field.field }}</span>
-          <span v-if="field.alias">as <span class="text-info">"{{ field.alias }}"</span></span>
-        </b-card>
-      </div>
+      <template v-if="!rawEditMode">
+        <div class="d-flex flex-row">
+          <h6>Title:</h6><span class="ml-1">{{ localOverview.title }}</span>
+        </div>
+        <div class="d-flex flex-row">
+          <h6>iType:</h6><span class="ml-1">{{ localOverview.iType }}</span>
+        </div>
+        <div class="d-flex flex-row">
+          <h6>Fields:</h6><b-badge v-if="!localOverview.fields.length" class="ml-1">None</b-badge>
+        </div>
+        <div class="d-flex flex-column">
+          <b-card v-for="(field, i) in localOverview.fields" :key="i"
+                  class="mb-1"
+          >
+            <span class="text-warning bold">{{ field.from }}</span>
+            <template v-if="field.type === 'custom'">
+              <span class="text-primary">Custom</span>:<span class="text-info">"{{ normalizeCardField(field.custom).label }}"</span>
+            </template>
+            <template v-else>
+              <span class="text-primary">{{ field.field }}</span>
+              <span v-if="field.alias">as <span class="text-info">"{{ field.alias }}"</span></span>
+            </template>
+          </b-card>
+        </div>
+      </template>
+      <overview-form
+          v-else
+          :no-edit="true"
+          :modifiedOverview="localOverview"
+          :raw-edit-mode="rawEditMode"
+          :is-default-overview="isDefaultOverview"
+          @update-modified-overview="updateOverview"
+      />
     </b-card-body>
   </b-card> <!-- /view -->
   <!-- edit -->
@@ -110,8 +136,8 @@
                 size="sm"
                 variant="secondary"
                 @click="rawEditMode = !rawEditMode"
-                v-b-tooltip.hover="'Toggle raw configuration for this overview'">
-              <span class="fa fa-pencil-square-o" />
+                v-b-tooltip.hover="`Edit ${rawEditMode ? 'form' : 'raw'} configuration for this overview`">
+              <span class="fa fa-fw" :class="{'fa-file-text-o': rawEditMode, 'fa-pencil-square-o': !rawEditMode}" />
             </b-button>
           </transition>
           <transition name="buttons">
@@ -130,7 +156,7 @@
                 variant="success"
                 v-if="changesMade"
                 @click="saveOverview"
-                v-b-tooltip.hover="'Save this link group'">
+                v-b-tooltip.hover="'Save this overview'">
               <span class="fa fa-save" />
             </b-button>
           </transition>
@@ -153,6 +179,7 @@ import { mapGetters } from 'vuex';
 import OverviewService from '@/components/services/OverviewService';
 import UserService from '@/components/services/UserService';
 import OverviewForm from '@/components/overviews/OverviewForm';
+import normalizeCardField from '../../../../normalizeCardField';
 
 export default {
   name: 'OverviewFormCard',
@@ -192,6 +219,7 @@ export default {
     }
   },
   methods: {
+    normalizeCardField,
     normalizeOverview (unNormalizedOverview) {
       const normalizedOverview = JSON.parse(JSON.stringify(unNormalizedOverview));
       // sort roles, as their order should not matter
@@ -231,3 +259,12 @@ export default {
   }
 };
 </script>
+
+<style scoped>
+.overview-header {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  max-width: 33%;
+}
+</style>

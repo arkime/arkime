@@ -5,6 +5,7 @@
       size="sm"
       v-if="rawEditMode"
       :value="rawEditText"
+      :disabled="noEdit"
       @input="e => debounceRawEdit(e)"
       class="form-control form-control-sm"
     />
@@ -285,6 +286,10 @@ export default {
     rawEditMode: {
       type: Boolean,
       default: false
+    },
+    noEdit: { // for use of disabled raw edit (for view-only privileged users)
+      type: Boolean,
+      default: false
     }
   },
   data () {
@@ -340,31 +345,37 @@ export default {
     'lg.name' () {
       this.$emit('update-link-group', this.lg);
     },
-    rawEditMode (newVal) {
-      if (!newVal) {
-        try { // need to update local lg from json input
-          this.lg = JSON.parse(this.rawEditText);
-          if (this.linkGroup) { // preserve uneditable/system fields for parent
-            this.lg._id = this.linkGroup._id;
-            this.lg.creator = this.linkGroup.creator;
-            this.lg._editable = this.linkGroup._editable;
+    rawEditMode: {
+      handler (newVal) {
+        if (!newVal) {
+          // nothing to parse (initial load)
+          if (this.rawEditText == null) { return; }
+
+          try { // need to update local lg from json input
+            this.lg = JSON.parse(this.rawEditText);
+            if (this.linkGroup) { // preserve uneditable/system fields for parent
+              this.lg._id = this.linkGroup._id;
+              this.lg.creator = this.linkGroup.creator;
+              this.lg._editable = this.linkGroup._editable;
+            }
+          } catch (err) {
+            console.warn('Invalid JSON for raw link group', err);
+            this.$store.commit('SET_LINK_GROUPS_ERROR', 'Invalid JSON');
           }
-        } catch (err) {
-          console.warn('Invalid JSON for raw link group', err);
-          this.$store.commit('SET_LINK_GROUPS_ERROR', 'Invalid JSON');
+          // clear rawEditText to be parsed again if rawEditMode triggered
+          this.rawEditText = undefined;
+          return;
         }
-        // clear rawEditText to be parsed again if rawEditMode triggered
-        this.rawEditText = undefined;
-        return;
-      }
 
-      // remove uneditable fields
-      const clone = JSON.parse(JSON.stringify(this.lg));
-      delete clone._id;
-      delete clone.creator;
-      delete clone._editable;
+        // remove uneditable fields
+        const clone = JSON.parse(JSON.stringify(this.lg));
+        delete clone._id;
+        delete clone.creator;
+        delete clone._editable;
 
-      this.rawEditText = JSON.stringify(clone, null, 2);
+        this.rawEditText = JSON.stringify(clone, null, 2);
+      },
+      immediate: true
     }
   },
   methods: {

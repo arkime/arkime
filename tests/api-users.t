@@ -1,4 +1,4 @@
-use Test::More tests => 160;
+use Test::More tests => 162;
 use Cwd;
 use URI::Escape;
 use MolochTest;
@@ -395,6 +395,12 @@ my $json;
 
     $json = viewerPostToken("/api/user/role:test1", '{"userId": "role:test1", "roles":["role:test1"]}', $token);
     eq_or_diff($json, from_json('{"text": "Can\'t have circular role dependencies", "success": false}'));
+
+    $json = viewerPostToken("/api/user/role:test1", '{"userId": "test1", "userName": "test1", "enabled":true, "password":"password", "roles": ["arkimeUser","user"]}', $token);
+    eq_or_diff($json, from_json('{"text": "User roles must be system roles or start with \"role:\"", "success": false}'));
+
+    $json = viewerPostToken("/api/user", '{"userId": "asdf", "userName": "asdf", "enabled":true, "password":"password", "roles":["role:test1","user"]}', $token);
+    eq_or_diff($json, from_json('{"text": "User roles must be system roles or start with \"role:\"", "success": false}'));
 
 # role assigner
     $json = viewerPostToken("/api/user/role:test1", '{"userId": "role:test1", "userName": "UserName", "enabled":true, "roleAssigners": "foo"}', $token);
