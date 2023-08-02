@@ -37,3 +37,7 @@ td .integration-external-link-button {
     border-radius: 14px;
     background: var(--secondary);
 }
+
+.gap-1 {
+    gap: 0.25rem;
+}

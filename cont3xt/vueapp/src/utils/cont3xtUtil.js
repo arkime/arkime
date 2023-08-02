@@ -30,3 +30,21 @@ export function getIntegrationData (results, indicator, source) {
 export function indicatorId (indicator) {
   return `${indicator.query}-${indicator.itype}`;
 }
+
+export function shouldDisplayIntegrationBtn (integration, integrationData) {
+  return integrationData != null && integration?.icon != null;
+}
+
+export function shouldDisplayCountedIntegrationBtn (integration, integrationData) {
+  return shouldDisplayIntegrationBtn(integration, integrationData) && integrationData?._cont3xt?.count != null;
+}
+
+export function integrationCountColor (integrationData) {
+  if (integrationData._cont3xt.count === 0) {
+    return 'secondary';
+  } else if (integrationData._cont3xt.severity === 'high') {
+    return 'danger';
+  } else {
+    return 'success';
+  }
+}

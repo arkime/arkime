@@ -10,6 +10,9 @@
             class="align-self-center mr-1"
             :id="`${indicator.query}-${indicator.itype}`"
         />
+
+        <integration-severity-counts :indicator="indicator" />
+
         <!--    unlabeled tidbits    -->
         <template v-for="(tidbit, index) in unlabeledTidbits">
           <integration-tidbit :tidbit="tidbit" :key="index"
@@ -41,10 +44,12 @@ import Cont3xtField from '@/utils/Field';
 import IntegrationTidbit from '@/components/integrations/IntegrationTidbit';
 import { mapGetters } from 'vuex';
 import { Cont3xtIndicatorProp } from '@/utils/cont3xtUtil';
+import IntegrationSeverityCounts from '@/components/integrations/IntegrationSeverityCounts.vue';
 
 export default {
   name: 'BaseIType',
   components: {
+    IntegrationSeverityCounts,
     // NOTE: need async import here because there's a circular dependency
     //       between BaseIType and the different implementation types (which are contained in ITypeNode)
     // see: vuejs.org/v2/guide/components.html#Circular-References-Between-Components
