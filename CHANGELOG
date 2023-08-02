@@ -28,7 +28,7 @@ Node Versions:
 NOTICE: Restart wiseService before capture when upgrading
 NOTICE: Cross-cluster Shortcuts require you to not restart all your viewers at once after upgrading
 
-4.4.0 2023/08/xx
+4.4.0 2023/08/02
   - release - cyberchef 10.5.2
   - release - update arkime_update_geo.sh to use different manuf location
   - all - improved json verification
