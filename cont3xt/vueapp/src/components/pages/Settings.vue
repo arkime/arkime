@@ -1,12 +1,12 @@
 <template>
-  <div class="container-fluid mb-4 row">
+  <div class="d-flex flex-row flex-grow-1 overflow-hidden">
 
     <!-- navigation -->
     <div
       role="tablist"
       aria-orientation="vertical"
-      class="col-xl-2 col-lg-3 col-md-3 col-sm-4 col-xs-12 no-overflow">
-      <div class="nav flex-column nav-pills">
+      class="col-xl-2 col-lg-3 col-md-3 col-sm-4 col-xs-12 h-100 overflow-auto no-overflow-x">
+      <div class="nav d-flex flex-column nav-pills pt-3 pb-4">
         <a @click="openView('views')"
           class="nav-link cursor-pointer"
           :class="{'active':visibleTab === 'views'}">
@@ -115,7 +115,7 @@
       </div>
     </div> <!-- /navigation -->
 
-    <div class="col-xl-10 col-lg-9 col-md-9 col-sm-8 col-xs-12 settings-right-panel">
+    <div class="col-xl-10 col-lg-9 col-md-9 col-sm-8 col-xs-12 settings-right-panel overflow-auto h-100 pt-3 pb-4 pr-4">
       <!-- view settings -->
       <div v-if="visibleTab === 'views'">
         <!-- view create form -->

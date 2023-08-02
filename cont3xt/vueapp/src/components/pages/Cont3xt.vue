@@ -1,15 +1,14 @@
 <template>
-  <div class="container-fluid">
-    <!-- integration selection panel -->
-    <IntegrationPanel :tagsOpen="!tagDisplayCollapsed"/>
+  <div class="d-flex flex-row flex-grow-1 no-overflow-x">
     <!-- view create form -->
     <create-view-modal />
+    <!-- integration selection panel -->
+    <IntegrationPanel />
     <!-- page content -->
-    <div class="main-content"
-      :class="{'with-sidebar': getSidebarKeepOpen}">
+    <div class="flex-grow-1 d-flex flex-column">
       <!-- search -->
-      <div class="fixed-top search-nav d-flex row">
-        <div class="pad-full-width py-1 d-flex justify-content-between">
+      <div class="d-flex justify-content-center mt-2 mx-3">
+        <div class="w-100 pb-1 d-flex justify-content-between">
           <!--    tag input      -->
           <b-input-group style="max-width: 150px" class="mr-2">
             <b-form-input
@@ -102,11 +101,6 @@
               <span class="fa fa-eye" />
             </template>
           </ViewSelector>
-          <overview-selector
-              v-if="activeIndicator"
-              :i-type="activeIndicator.itype"
-              :selected-overview="currentOverviewCard"
-              @set-override-overview="setOverrideOverview" />
           <b-dropdown
               class="ml-1"
               tabindex="-1"
@@ -136,182 +130,268 @@
           </b-dropdown>
 
         </div>
-        <div class="pad-full-width d-flex justify-content-start">
-          <tag-display-line v-if="!tagDisplayCollapsed" :tags="tags" :remove-tag="removeTag" :clear-tags="clearTags"/>
-        </div>
       </div> <!-- /search -->
 
-      <div class="cont3xt-content" :style="navMarginHeightStyle">
+      <div class="flex-grow-1 d-flex overflow-hidden pt-1">
         <!-- welcome -->
-        <div class="mr-2 ml-2"
-          v-if="!initialized && !error.length && !getIntegrationsError.length">
+        <div class="w-100 h-100 d-flex flex-column mt-1"
+             v-if="!initialized && !error.length && !getIntegrationsError.length">
           <b-alert
-            show
-            variant="dark"
-            class="text-center">
+              show
+              variant="dark"
+              class="text-center mx-3">
             <span class="fa fa-rocket fa-2x fa-flip-horizontal mr-1 text-muted" />
             <strong class="text-warning lead">
               <strong>Welcome to Cont3xt!</strong>
             </strong>
             <span v-if="!searchTerm"
-              class="text-success lead">
+                  class="text-success lead">
               <strong>Search for IPs, domains, URLs, emails, phone numbers, or hashes.</strong>
             </span>
             <span v-else
-              class="text-success lead">
+                  class="text-success lead">
               <strong>Hit enter to issue your search!</strong>
             </span>
             <span class="fa fa-rocket fa-2x ml-1 text-muted" />
           </b-alert>
-          <div class="results-container results-summary results-help pr-2">
-            <div class="d-flex flex-column align-items-stretch">
-              <div class="well well-lg text-center pt-4 pb-4 flex-grow-1 alert-dark">
-                <h1>
-                  <span class="fa fa-2x fa-tree text-muted" />
-                </h1>
-                <h1 class="display-4">
-                  Indicator Result Tree
-                </h1>
-                <p class="lead">
-                  Top level indicators presented here
-                </p>
-                <p class="lead">
-                  Integration icons will display high level result
-                </p>
-                <p class="lead">
-                  Choose and configure integrations via
-                  <a class="no-decoration"
-                    href="settings#integrations">
-                    Settings -> Integrations
-                  </a>
-                </p>
+          <div class="cont3xt-result-grid-container">
+            <div class="cont3xt-result-grid cont3xt-welcome">
+              <div class="indicator-tree-pane">
+                <div class="well well-lg text-center p-4 alert-dark h-100 mb-3 mx-2">
+                  <h1>
+                    <span class="fa fa-2x fa-tree text-muted" />
+                  </h1>
+                  <h1 class="display-4">
+                    Indicator Result Tree
+                  </h1>
+                  <p class="lead">
+                    Top level indicators presented here
+                  </p>
+                  <p class="lead">
+                    Integration icons will display high level result
+                  </p>
+                  <p class="lead">
+                    Choose and configure integrations via
+                    <a class="no-decoration"
+                       href="settings#integrations">
+                      Settings -> Integrations
+                    </a>
+                  </p>
+                </div>
               </div>
-              <div class="well well-lg text-center pt-4 pb-4 mt-2 alert-dark">
-                <h1>
-                  <span class="fa fa-2x fa-link text-muted" />
-                </h1>
-                <h1 class="display-4">
-                  Link Groups
-                </h1>
-                <p class="lead">
-                  Custom pivot links tailored to the top level indicator query
-                </p>
-                <p class="lead">
-                  Create/Configure links and link groups in
-                  <a class="no-decoration"
-                    href="settings#linkgroups">
-                    Settings -> Link Groups
-                  </a>
-                </p>
+              <div class="result-card-pane">
+                <div class="well well-lg text-center p-4 alert-dark h-100 mb-3 mx-2">
+                  <h1>
+                    <span class="fa fa-2x fa-id-card-o text-muted" />
+                  </h1>
+                  <h1 class="display-4">
+                    Indicator Card Detail
+                  </h1>
+                  <p class="lead">
+                    Displays configurable subset of API results
+                  </p>
+                  <p class="lead">
+                    Optionally, access raw results for card display tuning
+                  </p>
+                </div>
               </div>
-            </div>
-          </div>
-          <div class="results-container results-summary results-help pull-right">
-            <div class="well well-lg text-center pt-4 pb-4 pl-1 alert-dark">
-              <h1>
-                <span class="fa fa-2x fa-id-card-o text-muted" />
-              </h1>
-              <h1 class="display-4">
-                Indicator Card Detail
-              </h1>
-              <p class="lead">
-                Displays configurable subset of API results
-              </p>
-              <p class="lead">
-                Optionally, access raw results for card display tuning
-              </p>
+              <div class="link-group-pane">
+                <div class="well well-lg text-center p-4 alert-dark h-100 mb-3 mx-2">
+                  <h1>
+                    <span class="fa fa-2x fa-link text-muted" />
+                  </h1>
+                  <h1 class="display-4">
+                    Link Groups
+                  </h1>
+                  <p class="lead">
+                    Custom pivot links tailored to the top level indicator query
+                  </p>
+                  <p class="lead">
+                    Create/Configure links and link groups in
+                    <a class="no-decoration"
+                       href="settings#linkgroups">
+                      Settings -> Link Groups
+                    </a>
+                  </p>
+                </div>
+              </div>
             </div>
           </div>
         </div> <!-- /welcome -->
 
         <!-- search error -->
         <div
-          v-if="error.length"
-          class="mt-2 alert alert-warning">
+            v-if="error.length"
+            class="mt-2 alert alert-warning">
           <span class="fa fa-exclamation-triangle" />&nbsp;
           {{ error }}
           <button
-            tabindex="-1"
-            type="button"
-            @click="error = ''"
-            class="close cursor-pointer">
+              tabindex="-1"
+              type="button"
+              @click="error = ''"
+              class="close cursor-pointer">
             <span>&times;</span>
           </button>
         </div> <!-- /search error -->
 
         <!-- integration error -->
         <div
-          v-if="getIntegrationsError.length"
-          class="mt-2 alert alert-danger">
+            v-if="getIntegrationsError.length"
+            class="mt-2 alert alert-danger">
           <span class="fa fa-exclamation-triangle" />&nbsp;
           Error fetching integrations. Viewing data for integrations will not work!
           <br>
           {{ getIntegrationsError }}
         </div> <!-- /integration error -->
 
-        <!-- time range input for links -->
-        <time-range-input v-if="rootIndicator"
-          class="link-inputs w-50 mb-1"
-          v-model="timeRangeInfo"
-          :place-holder-tip="linkPlaceholderTip" />
-        <!-- /time range input for links -->
-
-        <!-- results -->
-        <template v-if="indicatorTreeRoot">
-          <!-- itype results summary -->
-          <div class="results-container results-summary">
-            <div :style="navHeightStyle">
-              <!-- indicator result tree -->
-              <i-type-node :node="indicatorTreeRoot" />
-              <!-- /indicator result tree -->
-
-              <hr v-if="rootIndicator">
-              <!-- link groups error -->
-              <b-alert
-                variant="danger"
-                :show="!!getLinkGroupsError.length">
-                {{ getLinkGroupsError }}
-              </b-alert>
-              <!-- link search -->
-              <div v-if="rootIndicator" class="mb-5">
-                <div class="d-flex justify-content-between">
-                  <div class="flex-grow-1">
-                    <b-input-group size="sm">
-                      <template #prepend>
-                        <b-input-group-text>
-                          <span v-if="!getShiftKeyHold"
-                            class="fa fa-search fa-fw"
-                          />
-                          <span v-else
-                            class="lg-query-shortcut">
-                            F
-                          </span>
-                        </b-input-group-text>
-                      </template>
-                      <b-form-input
-                        tabindex="0"
-                        debounce="400"
-                        ref="linkSearch"
-                        v-model="linkSearchTerm"
-                        v-focus="getFocusLinkSearch"
-                        placeholder="Search links below"
+        <div v-if="rootIndicator" class="cont3xt-result-grid-container">
+          <div class="cont3xt-result-grid">
+            <div class="indicator-tree-pane">
+              <!-- tags line -->
+              <div v-if="!tagDisplayCollapsed" class="d-flex justify-content-start mb-1">
+                <tag-display-line :tags="tags" :remove-tag="removeTag" :clear-tags="clearTags"/>
+              </div>
+              <!-- /tags line -->
+              <div class="pane-scroll-content pb-5">
+                <!-- indicator result tree -->
+                <i-type-node :node="indicatorTreeRoot" />
+                <!-- /indicator result tree -->
+              </div>
+            </div>
+            <div class="result-card-pane position-relative" :class="{ 'result-card-pane-expanded': !getLinkGroupsPanelOpen }">
+              <div class="d-flex justify-content-between mb-1 mx-2">
+                <integration-btns
+                    :indicator="activeIndicator"
+                />
+                <overview-selector
+                    v-if="activeIndicator"
+                    :i-type="activeIndicator.itype"
+                    :selected-overview="currentOverviewCard"
+                    @set-override-overview="setOverrideOverview" />
+              </div>
+              <div class="pane-scroll-content" @scroll="handleScroll" ref="resultsIntegration">
+                <!-- integration results -->
+                <b-overlay
+                    no-center
+                    rounded="sm"
+                    blur="0.2rem"
+                    opacity="0.9"
+                    variant="transparent"
+                    :show="getWaitRendering || getRendering">
+                  <div class="mb-5">
+                    <template v-if="showOverview">
+                      <overview-card
+                          v-if="currentOverviewCard"
+                          :indicator="activeIndicator"
+                          :card="currentOverviewCard"
                       />
-                    </b-input-group> <!-- /link search -->
+                      <b-alert
+                          v-else
+                          show
+                          variant="dark"
+                          class="text-center">
+                        There is no overview configured for the <strong>{{ this.activeIndicator.itype }}</strong> iType.
+                        <a class="no-decoration" href="settings#overviews">Create one here!</a>
+                      </b-alert>
+                    </template>
+                    <integration-card
+                        v-else-if="activeSource && activeIndicator"
+                        :source="activeSource"
+                        :indicator="activeIndicator"
+                        @update-results="updateData"
+                    />
                   </div>
-                  <b-button
-                    size="sm"
-                    class="ml-1"
-                    v-b-tooltip.hover
-                    variant="outline-secondary"
-                    @click="toggleAllLinkGroups"
-                    :title="`${!allLinkGroupsClosed ? 'Collapse' : 'Expand'} ALL Link Groups`">
-                    <span class="fa fa-fw"
-                      :class="`${!allLinkGroupsClosed ? 'fa-chevron-up' : 'fa-chevron-down'}`">
-                    </span>
-                  </b-button>
+                  <template #overlay>
+                    <div class="overlay-loading">
+                      <span class="fa fa-circle-o-notch fa-spin fa-2x" />
+                      <p>Rendering data...</p>
+                    </div>
+                  </template>
+                </b-overlay>
+                <!-- /integration results -->
+              </div>
+              <b-button
+                  v-if="scrollPx > 100"
+                  size="sm"
+                  @click="toTop"
+                  title="Go to top"
+                  class="to-top-btn"
+                  variant="btn-link"
+                  v-show="scrollPx > 100">
+                <span class="fa fa-lg fa-arrow-circle-up" />
+              </b-button>
+            </div>
+            <div v-if="getLinkGroupsPanelOpen" class="link-group-pane">
+              <div class="flex-grow-1 d-flex flex-column link-group-panel-shadow ml-3 overflow-hidden">
+                <div v-if="activeIndicator" class="mb-1 mx-2">
+                  <!-- link groups error -->
+                  <b-alert
+                      variant="danger"
+                      :show="!!getLinkGroupsError.length">
+                    {{ getLinkGroupsError }}
+                  </b-alert>
+                  <!-- /link groups error -->
+
+                  <!-- link search -->
+                  <div class="d-flex justify-content-between mb-1">
+                    <div class="flex-grow-1">
+                      <b-input-group size="sm">
+                        <template #prepend>
+                          <b-input-group-text>
+                            <span v-if="!getShiftKeyHold"
+                                  class="fa fa-search fa-fw"
+                            />
+                            <span v-else
+                                  class="lg-query-shortcut">
+                              F
+                            </span>
+                          </b-input-group-text>
+                        </template>
+                        <b-form-input
+                            tabindex="0"
+                            debounce="400"
+                            ref="linkSearch"
+                            v-model="linkSearchTerm"
+                            v-focus="getFocusLinkSearch"
+                            placeholder="Search links below"
+                        />
+                      </b-input-group>
+                    </div>
+                    <b-button
+                        size="sm"
+                        class="mx-1"
+                        v-b-tooltip.hover
+                        variant="outline-secondary"
+                        :disabled="!hasVisibleLinkGroup"
+                        @click="toggleAllVisibleLinkGroupsCollapse"
+                        :title="`${!allVisibleLinkGroupsCollapsed ? 'Collapse' : 'Expand'} ALL Link Groups`">
+                      <span class="fa fa-fw"
+                            :class="[!allVisibleLinkGroupsCollapsed ? 'fa-chevron-up' : 'fa-chevron-down']">
+                      </span>
+                    </b-button>
+                    <!-- toggle link groups panel button -->
+                    <b-button
+                        size="sm"
+                        tabindex="-1"
+                        variant="link"
+                        class="float-right"
+                        @click="toggleLinkGroupsPanel"
+                        v-b-tooltip.hover.top
+                        title="Hide Link Groups Panel">
+                      <span class="fa fa-lg fa-angle-double-right" />
+                    </b-button>
+                    <!-- /toggle link groups panel button -->
+                  </div>
+                  <!-- /link search -->
+
+                  <!-- time range input for links -->
+                  <time-range-input v-model="timeRangeInfo"
+                                    :place-holder-tip="linkPlaceholderTip" />
+                  <!-- /time range input for links -->
                 </div>
+                <div v-if="activeIndicator" class="pane-scroll-content">
                 <!-- link groups -->
-                <div class="d-flex flex-wrap align-items-start link-group-cards-wrapper">
+                <div class="d-flex flex-column align-items-start mb-5">
                   <template v-if="hasVisibleLinkGroup">
                     <template v-for="(linkGroup, index) in getLinkGroups">
                       <reorder-list
@@ -319,23 +399,24 @@
                           @update="updateList"
                           :key="linkGroup._id"
                           :list="getLinkGroups"
-                          class="w-50 p-2 link-group"
+                          class="w-100"
                           v-if="hasVisibleLink(linkGroup)">
                         <template #handle>
-                          <span
+                        <span
                             :id="`${linkGroup._id}-tt`"
                             class="fa fa-bars d-inline link-group-card-handle">
-                          </span>
+                        </span>
                           <b-tooltip
-                            noninteractive
-                            :target="`${linkGroup._id}-tt`">
+                              noninteractive
+                              :target="`${linkGroup._id}-tt`">
                             Drag &amp; drop to reorder Link Groups
                           </b-tooltip>
                         </template>
                         <template #default>
                           <link-group-card
                               v-if="getLinkGroups.length"
-                              :indicator="rootIndicator"
+                              class="w-100"
+                              :indicator="activeIndicator"
                               :num-days="timeRangeInfo.numDays"
                               :num-hours="timeRangeInfo.numHours"
                               :stop-date="timeRangeInfo.stopDate"
@@ -357,63 +438,18 @@
                   </span> <!-- /no link groups message -->
                 </div> <!-- /link groups -->
               </div>
+              </div>
             </div>
-          </div> <!-- /itype results summary -->
-          <!-- integration results -->
-          <div class="results-container results-integration pull-right">
-            <div :style="navHeightStyle"
-              @scroll="handleScroll"
-              ref="resultsIntegration">
-              <b-overlay
-                no-center
-                rounded="sm"
-                blur="0.2rem"
-                opacity="0.9"
-                variant="transparent"
-                :show="getWaitRendering || getRendering">
-                <div>
-                  <template v-if="showOverview">
-                    <overview-card
-                        v-if="currentOverviewCard"
-                        :indicator="activeIndicator"
-                        :card="currentOverviewCard"
-                    />
-                    <b-alert
-                        v-else
-                        show
-                        variant="dark"
-                        class="text-center">
-                      There is no overview configured for the <strong>{{ this.activeIndicator.itype }}</strong> iType.
-                      <a class="no-decoration" href="settings#overviews">Create one here!</a>
-                    </b-alert>
-                  </template>
-                  <integration-card
-                      v-else-if="activeSource && activeIndicator"
-                      :source="activeSource"
-                      :indicator="activeIndicator"
-                      @update-results="updateData"
-                  />
-                </div>
-                <template #overlay>
-                  <div class="overlay-loading">
-                    <span class="fa fa-circle-o-notch fa-spin fa-2x" />
-                    <p>Rendering data...</p>
-                  </div>
-                </template>
-              </b-overlay>
-              <b-button
-                size="sm"
-                @click="toTop"
-                title="Go to top"
-                class="to-top-btn"
-                variant="btn-link"
-                v-show="scrollPx > 100">
-                <span class="fa fa-lg fa-arrow-circle-up" />
-              </b-button>
-            </div>
-          </div> <!-- /integration results -->
-        </template> <!-- /results -->
-
+          </div>
+        </div>
+        <div v-if="rootIndicator && !getLinkGroupsPanelOpen" class="side-panel-stub link-group-panel-stub h-100 cursor-pointer d-flex flex-column"
+             v-b-tooltip.hover.top="'Show Link Groups Panel'"
+             @click="toggleLinkGroupsPanel"
+        >
+          <span
+              class="fa fa-link p-1 mt-1"
+          />
+        </div>
       </div>
     </div> <!-- /page content -->
   </div>
@@ -439,10 +475,12 @@ import LinkService from '@/components/services/LinkService';
 import OverviewService from '@/components/services/OverviewService';
 import OverviewSelector from '../overviews/OverviewSelector.vue';
 import ITypeNode from '@/components/itypes/ITypeNode.vue';
+import IntegrationBtns from '@/components/integrations/IntegrationBtns.vue';
 
 export default {
   name: 'Cont3xt',
   components: {
+    IntegrationBtns,
     ITypeNode,
     OverviewSelector,
     ReorderList,
@@ -469,7 +507,7 @@ export default {
       hideLinks: {},
       linkPlaceholderTip: {
         title: 'These values are used to fill in <a href="help#linkgroups" class="no-decoration">link placeholders</a>.<br>' +
-          'Try using <a href="help#general" class="no-decoration">relative times</a> like -5d or -1h.'
+            'Try using <a href="help#general" class="no-decoration">relative times</a> like -5d or -1h.'
       },
       activeShareLink: false,
       timeRangeInfo: {
@@ -512,7 +550,7 @@ export default {
       'getAllViews', 'getImmediateSubmissionReady', 'getSelectedView',
       'getTags', 'getTagDisplayCollapsed', 'getSeeAllViews', 'getSeeAllLinkGroups',
       'getSeeAllOverviews', 'getSelectedOverviewMap', 'getOverviewMap', 'getResults',
-      'getIndicatorGraph'
+      'getIndicatorGraph', 'getLinkGroupsPanelOpen'
     ]),
     tags: {
       get () { return this.getTags; },
@@ -540,33 +578,17 @@ export default {
     collapsedLinkGroups () {
       return this.$store.state.collapsedLinkGroups;
     },
-    navMarginPixels () {
-      return this.tagDisplayCollapsed ? 120 : 140;
-    },
-    navHeightStyle () {
-      return `height: calc(100vh - ${this.navMarginPixels}px);`;
-    },
-    navMarginHeightStyle () {
-      return this.navHeightStyle + `margin-top: ${this.navMarginPixels}px;`;
-    },
     hasLinkGroupWithItype () {
       return this.getLinkGroups?.some(this.hasLinkWithItype);
     },
-    hasVisibleLinkGroup () {
-      return this.getLinkGroups?.some(this.hasVisibleLink);
+    visibleLinkGroups () {
+      return (this.getLinkGroups ?? []).filter(this.hasVisibleLink);
     },
-    allLinkGroupsClosed () {
-      let allClosed = false;
-      if (Object.keys(this.collapsedLinkGroups).length > 0) {
-        allClosed = true;
-        for (const lg in this.collapsedLinkGroups) {
-          if (!this.collapsedLinkGroups[lg]) {
-            allClosed = false;
-            break;
-          }
-        }
-      }
-      return allClosed;
+    hasVisibleLinkGroup () {
+      return this.visibleLinkGroups.length > 0;
+    },
+    allVisibleLinkGroupsCollapsed () {
+      return this.visibleLinkGroups.every(lg => this.collapsedLinkGroups[lg._id]);
     },
     currentOverviewCard () {
       if (this.overrideOverviewId) {
@@ -624,12 +646,6 @@ export default {
       }
 
       this.filterLinks(searchTerm);
-    },
-    collapsedLinkGroups: {
-      deep: true,
-      handler () {
-        this.arrangeLinkGroups();
-      }
     },
     getIssueSearch (val) {
       if (val) { this.search(); }
@@ -692,6 +708,9 @@ export default {
   },
   methods: {
     /* page functions ------------------------------------------------------ */
+    toggleLinkGroupsPanel () {
+      this.$store.commit('TOGGLE_LINK_GROUPS_PANEL');
+    },
     toggleCollapseTagDisplay () {
       this.tagDisplayCollapsed = !this.tagDisplayCollapsed;
     },
@@ -816,7 +835,7 @@ export default {
 
       // only match on b because we remove the q param
       if (!this.$route.query.b ||
-        (this.$route.query.b && window.atob(this.$route.query.b) !== this.searchTerm)
+          (this.$route.query.b && window.atob(this.$route.query.b) !== this.searchTerm)
       ) {
         this.$router.push({
           query: {
@@ -847,12 +866,12 @@ export default {
     },
     hasLinkWithItype (linkGroup) {
       return linkGroup.links.some(link =>
-        link.url !== '----------' && link.itypes.includes(this.rootIndicator.itype)
+        link.url !== '----------' && link.itypes.includes(this.activeIndicator.itype)
       );
     },
     hasVisibleLink (linkGroup) {
       return linkGroup.links.some((link, i) =>
-        link.url !== '----------' && link.itypes.includes(this.rootIndicator.itype) && !this.hideLinks[linkGroup._id]?.[i]
+        link.url !== '----------' && link.itypes.includes(this.activeIndicator.itype) && !this.hideLinks[linkGroup._id]?.[i]
       );
     },
     shareLink () {
@@ -864,14 +883,13 @@ export default {
       }
       this.$copyText(shareLink);
     },
-    toggleAllLinkGroups () {
+    toggleAllVisibleLinkGroupsCollapse () {
       // if all are collapsed, open them all
       // if even one is open, close them all
-      const allClosed = this.allLinkGroupsClosed;
-      for (const linkGroup of this.getLinkGroups) {
-        this.$set(this.collapsedLinkGroups, linkGroup._id, !allClosed);
+      const allCollapsed = this.allVisibleLinkGroupsCollapsed;
+      for (const lg of this.visibleLinkGroups) {
+        this.$set(this.collapsedLinkGroups, lg._id, !allCollapsed);
       }
-      this.$store.commit('SET_COLLAPSED_LINK_GROUPS', this.collapsedLinkGroups);
     },
     generateReport () {
       if (!this.searchComplete) { return; }
@@ -912,58 +930,6 @@ export default {
           }
         }
       }
-
-      this.arrangeLinkGroups();
-    },
-    arrangeLinkGroups () {
-      this.$nextTick(() => { // wait for render
-        const lgElements = document.getElementsByClassName('link-group');
-
-        for (let i = 0, len = lgElements.length; i < len; i++) {
-          let delta = 0;
-          const even = i % 2 === 0;
-
-          if (i < 2) { continue; }
-
-          const target = lgElements[i];
-
-          if (!even) { // right side
-            let x = i;
-            let leftHeight = 0;
-            let rightHeight = 0;
-            while (x > -1) { // sum heights of upper sibling elements
-              if (lgElements[x - 3]) {
-                leftHeight += lgElements[x - 3].clientHeight;
-                rightHeight += lgElements[x - 2].clientHeight;
-              } else {
-                break;
-              }
-              x -= 2;
-            }
-            if (leftHeight > rightHeight) {
-              delta = Math.abs(leftHeight - rightHeight);
-            }
-          } else { // left side
-            let x = i;
-            let leftHeight = 0;
-            let rightHeight = 0;
-            while (x > -1) {
-              if (lgElements[x - 2]) { // sum heights of upper sibling elements
-                leftHeight += lgElements[x - 2].clientHeight;
-                rightHeight += lgElements[x - 1].clientHeight;
-              } else {
-                break;
-              }
-              x -= 2;
-            }
-            if (rightHeight > leftHeight) {
-              delta = Math.abs(rightHeight - leftHeight);
-            }
-          }
-
-          target.style = `margin-top: -${delta}px`;
-        }
-      });
     },
     setViewByQueryParam (viewParam) {
       const removeViewParam = () => {
@@ -1024,73 +990,30 @@ body.dark {
   background-color: #222;
 }
 
-.cont3xt-content {
-  overflow: hidden;
-  margin-left: -7px;
-  margin-right: -7px;
-}
-
-.link-inputs {
-  padding-left: 10px;
-}
-
-/* side by side scrolling results containers */
-.results-container {
-  width: 50%;
-  height: 100%;
-  overflow: hidden;
-  display: inline-block;
-}
-.results-container.results-integration {
-  margin-top: -28px;
-}
-.results-container.results-summary > div {
-  /* total height - margin for search - height of link inputs */
-  height: calc(100vh - 153px);
-  overflow-y: auto;
-  overflow-x: hidden;
-  padding-left: 8px;
-  padding-right: 0.5rem;
-}
-.results-container.results-integration > div {
-  overflow-y: auto;
-  overflow-x: hidden;
-  padding-right: 8px;
-  padding-left: 0.5rem;
-}
-
-.results-container.results-summary.results-help > div {
-  height: calc(100vh - 210px);
-  padding-left: 0;
-}
-.results-container.results-summary .well {
+.cont3xt-welcome .well {
   border-radius: 6px;
+}
+/* better text-wrapping on the welcome screen for browsers that support it */
+/*noinspection CssInvalidPropertyValue*/
+.cont3xt-welcome .well h1, .cont3xt-welcome .well p {
+  text-wrap: balance;
 }
 
 /* scroll to top btn for integration results */
 .to-top-btn, .to-top-btn:hover {
   z-index: 99;
-  right: 2px;
-  bottom: 0px;
-  position: fixed;
+  right: 8px;
+  bottom: 0;
+  position: absolute;
   color: var(--info);
 }
 
-.link-group-cards-wrapper {
-  margin-right: -1.25rem !important;
-  margin-left: -0.5rem !important;
-}
-
 .link-group-card-handle {
-  top: 1rem;
-  z-index: 10;
+  top: 2rem;
+  z-index: 2;
   float: right;
-  right: 1.5rem;
+  right: 1rem;
   position: relative;
-}
-
-.link-group {
-  transition: margin-top 0.5s ease-out;
 }
 
 /* enter icon for search/refresh button to be displayed on shift hold */
@@ -1107,6 +1030,50 @@ body.dark {
   display: inline-block;
   background-color: #FFF;
 }
+
+.cont3xt-result-grid-container {
+  flex-grow: 1;
+  overflow: hidden;
+  padding-inline: 0.5rem;
+}
+
+.cont3xt-result-grid {
+  display: grid;
+  grid-template-columns: 25% 1fr 33%;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+.indicator-tree-pane, .result-card-pane, .result-card-pane-expanded, .link-group-pane {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  height: 100%;
+}
+
+.indicator-tree-pane {
+  grid-column: 1;
+}
+
+.result-card-pane {
+  grid-column: 2;
+}
+
+.result-card-pane-expanded {
+  grid-column: 2 / span 2;
+}
+
+.link-group-pane {
+  grid-column: 3;
+}
+
+.pane-scroll-content {
+  flex-grow: 1;
+  overflow-y: auto;
+  width: 100%;
+  padding-inline: 0.5rem;
+}
 </style>
 
 <style>
@@ -1122,8 +1089,12 @@ body.dark {
   font-size: 0.8rem;
   padding: 0.1rem 0.5rem;
 }
-/* stops search bar/tag display from hitting edge of screen */
-.pad-full-width {
-  width: calc(100% - 20px);
+
+.link-group-panel-stub {
+  border-top-left-radius: 5px;
+}
+.link-group-panel-shadow {
+  -webkit-box-shadow: -2px 0 1rem 0 rgba(0, 0, 0, 0.175) !important;
+  box-shadow: -2px 0 1rem 0 rgba(0, 0, 0, 0.175) !important;
 }
 </style>

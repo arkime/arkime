@@ -1,8 +1,8 @@
 <template>
-  <b-card v-if="indicator.query">
-    <div class="d-xl-flex mb-2">
-      <div class="d-xl-flex flex-grow-1 flex-wrap mt-1">
-        <h4 class="text-warning">
+  <b-card v-if="indicator.query" class="cursor-pointer itype-card" :class="{ 'border-danger': isActiveIndicator }" @click.stop="setSelfAsActiveIndicator">
+    <div class="d-xl-flex">
+      <div class="d-xl-flex flex-grow-1 flex-wrap mt-1 mw-100">
+        <h4 class="text-warning m-0">
           {{ indicator.itype.toUpperCase() }}
         </h4>
         <cont3xt-field
@@ -10,39 +10,34 @@
             class="align-self-center mr-1"
             :id="`${indicator.query}-${indicator.itype}`"
         />
-        <slot name="after-field"></slot>
-
         <!--    unlabeled tidbits    -->
         <template v-for="(tidbit, index) in unlabeledTidbits">
           <integration-tidbit :tidbit="tidbit" :key="index"
                               :id="`${indicator.query}-tidbit-${index}`"/>
         </template><!--    /unlabeled tidbits    -->
-
-      </div>
-      <div class="d-flex align-self-center justify-content-end">
-        <integration-btns
-          :indicator="indicator"
-        />
       </div>
     </div>
 
-        <!--  labeled tidbits  -->
-    <div v-for="(tidbit, index) in labeledTidbits" class="row ml-3" :key="index">
-      <div class="col">
-        <integration-tidbit :tidbit="tidbit" :id="`${indicator.query}-labeled-tidbit-${index}`"/>
+    <!--  labeled tidbits  -->
+    <div v-if="labeledTidbits.length > 0"  class="mt-1">
+      <div v-for="(tidbit, index) in labeledTidbits" :key="index" class="row ml-3" :class="{ 'mt-1': index > 0 }">
+        <div class="col">
+          <integration-tidbit :tidbit="tidbit" :id="`${indicator.query}-labeled-tidbit-${index}`"/>
+        </div>
       </div>
     </div><!--  /labeled tidbits  -->
 
-    <span v-for="(child, index) in children" :key="index">
-      <i-type-node :node="child" />
-    </span>
-    <slot name="after-children"></slot>
+    <!--  children  -->
+    <div v-if="children.length > 0" class="mt-2">
+      <span v-for="(child, index) in children" :key="index">
+        <i-type-node :node="child" />
+      </span>
+    </div> <!--  /children  -->
   </b-card>
 </template>
 
 <script>
 import Cont3xtField from '@/utils/Field';
-import IntegrationBtns from '@/components/integrations/IntegrationBtns';
 import IntegrationTidbit from '@/components/integrations/IntegrationTidbit';
 import { mapGetters } from 'vuex';
 import { Cont3xtIndicatorProp } from '@/utils/cont3xtUtil';
@@ -55,7 +50,6 @@ export default {
     // see: vuejs.org/v2/guide/components.html#Circular-References-Between-Components
     ITypeNode: () => import('@/components/itypes/ITypeNode'),
     Cont3xtField,
-    IntegrationBtns,
     IntegrationTidbit
   },
   props: {
@@ -70,17 +64,34 @@ export default {
     }
   },
   computed: {
-    ...mapGetters(['getResults']),
+    ...mapGetters(['getResults', 'getActiveIndicator']),
     labeledTidbits () {
       return this.tidbits.filter(tidbit => tidbit.label?.length);
     },
     unlabeledTidbits () {
       return this.tidbits.filter(tidbit => !tidbit.label?.length);
+    },
+    isActiveIndicator () {
+      return this.indicator.query === this.getActiveIndicator.query && this.indicator.itype === this.getActiveIndicator.itype;
+    }
+  },
+  methods: {
+    setSelfAsActiveIndicator () {
+      if (this.isActiveIndicator) { return; }
+
+      this.$store.commit('SET_ACTIVE_INDICATOR', this.indicator);
+      this.$store.commit('SET_ACTIVE_SOURCE', undefined);
     }
   }
 };
 </script>
 
 <style scoped>
-
+/* effects only the directly-hovered itype-card */
+.itype-card:hover:not(:has(.itype-card:hover)) {
+  background-color: #d9dbde;
+}
+body.dark .itype-card:hover:not(:has(.itype-card:hover)) {
+  background-color: #3d3d3d;
+}
 </style>

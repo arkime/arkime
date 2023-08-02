@@ -61,7 +61,8 @@ const store = new Vuex.Store({
     /** @type {{ [indicatorId: string]: Cont3xtIndicatorNode }} */
     indicatorGraph: {}, // maps every `${query}-${itype}` to its corresponding indicator node
     /** @type {{ [indicatorId: string]: object }} */
-    enhanceInfoTable: {} // maps every `${query}-${itype}` to any enhancement info it may have
+    enhanceInfoTable: {}, // maps every `${query}-${itype}` to any enhancement info it may have
+    linkGroupsPanelOpen: true
   },
   mutations: {
     SET_USER (state, data) {
@@ -335,6 +336,9 @@ const store = new Vuex.Store({
       state.results = {};
       state.indicatorGraph = {};
       state.enhanceInfoTable = {};
+    },
+    TOGGLE_LINK_GROUPS_PANEL (state) {
+      state.linkGroupsPanelOpen = !state.linkGroupsPanelOpen;
     }
   },
   getters: {
@@ -535,11 +539,14 @@ const store = new Vuex.Store({
     },
     getIndicatorGraph (state) {
       return state.indicatorGraph;
+    },
+    getLinkGroupsPanelOpen (state) {
+      return state.linkGroupsPanelOpen;
     }
   },
   plugins: [createPersistedState({
     paths: [ // only these state variables are persisted to localstorage
-      'checkedLinks', 'selectedIntegrations', 'sidebarKeepOpen',
+      'checkedLinks', 'selectedIntegrations', 'sidebarKeepOpen', 'linkGroupsPanelOpen',
       'collapsedLinkGroups', 'integrationsPanelHoverDelay', 'theme'
     ]
   })]

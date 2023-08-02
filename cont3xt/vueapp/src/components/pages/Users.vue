@@ -1,5 +1,5 @@
 <template>
-  <div class="container-fluid">
+  <div class="container-fluid overflow-auto">
     <UsersCommon
       v-if="getUser"
       :roles="getRoles"

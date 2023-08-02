@@ -1,5 +1,5 @@
 <template>
-  <div class="container-fluid">
+  <div class="container-fluid overflow-auto pt-3">
     <div class="d-flex align-items-center mb-2">
       <div class="flex-grow-1">
         <!--  search bar form  -->

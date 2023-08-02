@@ -1,8 +1,10 @@
 <template>
-  <RolesCommon
-    :currentUser="getUser"
-    :cont3xt-dark-theme="getDarkThemeEnabled"
-    @update-current-user="updateCurrentUser" />
+  <div class="overflow-auto">
+    <RolesCommon
+        :currentUser="getUser"
+        :cont3xt-dark-theme="getDarkThemeEnabled"
+        @update-current-user="updateCurrentUser" />
+  </div>
 </template>
 
 <script>

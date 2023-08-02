@@ -1,8 +1,8 @@
 <template>
   <div id="app">
-    <div v-if="compatibleBrowser">
+    <div v-if="compatibleBrowser" class="d-flex flex-column h-100">
       <cont3xt-navbar />
-      <router-view class="margin-for-nav-and-progress" />
+      <router-view />
       <keyboard-shortcuts
         @shift-hold-change="shiftHoldChange"
         shortcuts-class="cont3xt-shortcuts"
@@ -34,6 +34,8 @@
           <code>'Y'</code> - jump to the History page
           <br>
           <code>'H'</code> - jump to the Help page
+          <br>
+          <code>'>'</code> - toggle the link group panel
           <br>
           <code>'shift + enter'</code> - issue search/refresh
           <br>
@@ -179,6 +181,9 @@ export default {
           this.routeTo('/help');
         }
         break;
+      case 190: // . (seen as `>`, since shift is required)
+        this.$store.commit('TOGGLE_LINK_GROUPS_PANEL');
+        break;
       case 13: // enter
         // trigger search/refresh
         this.$store.commit('SET_ISSUE_SEARCH', true);
@@ -202,6 +207,15 @@ export default {
 </script>
 
 <style>
+/* don't allow the entire page to scroll with the navbar */
+body {
+  overflow-y: hidden;
+}
+
+#app {
+  height: 100vh;
+}
+
 .cont3xt-shortcuts {
   right: 0;
   top: 140px;
@@ -248,5 +262,13 @@ export default {
 .tag-shortcut {
   color: var(--warning);
   padding-inline: 2px;
+}
+.side-panel-stub {
+  background-color: #ececec;
+  color: black;
+}
+body.dark .side-panel-stub {
+  color: #EEE;
+  background-color: #555;
 }
 </style>

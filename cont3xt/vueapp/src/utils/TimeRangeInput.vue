@@ -46,11 +46,13 @@
           @change="updateStopStart('stopDate')"
       />
     </b-input-group>
-    <span class="fa fa-lg fa-question-circle cursor-help mt-1"
-          v-b-tooltip.hover.html="placeHolderTip"
-    />
-    <span class="pl-2">
-      {{ timeRangeInfo.numDays }} days | {{ timeRangeInfo.numHours }} hours
+    <span class="text-nowrap">
+      <span class="fa fa-lg fa-question-circle cursor-help mt-1"
+            v-b-tooltip.hover.html="placeHolderTip"
+      />
+      <span class="pl-1">
+        {{ timeRangeInfo.numDays }} days | {{ timeRangeInfo.numHours }} hours
+      </span>
     </span>
   </b-form>
 </template>

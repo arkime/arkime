@@ -1,15 +1,20 @@
 <template>
   <div class="wrap-btns">
-    <template v-for="integration in integrations">
+    <template v-if="!buttonIntegrations.length">
+      <b-badge
+          variant="light" class="d-flex align-items-center">
+        <span>No Integrations</span>
+      </b-badge>
+    </template>
+    <template v-for="integration in buttonIntegrations">
       <b-button
         v-b-tooltip.hover.noninteractive="integration.name"
         size="xs"
         tabindex="0"
         variant="outline-dark"
-        class="ml-1 mt-1 float-right no-wrap"
+        class="mr-1 float-right no-wrap"
         :id="`${indicator.itype}-${integration.name}-${indicator.query}`"
         :key="integration.name"
-        v-if="integrationDataMap[integration.name] && integration.icon"
         @click="setAsActive(integration)">
         <img
           :alt="integration.name"
@@ -54,6 +59,11 @@ export default {
       return this.getIntegrationsArray.slice().sort((a, b) => {
         return a.order - b.order;
       });
+    },
+    buttonIntegrations () {
+      return this.integrations.filter(integration =>
+        this.integrationDataMap[integration.name] && integration.icon
+      );
     },
     /** @returns a map of integration names to integration data objects */
     integrationDataMap () {
