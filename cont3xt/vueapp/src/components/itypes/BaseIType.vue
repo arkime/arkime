@@ -1,7 +1,7 @@
 <template>
   <b-card v-if="indicator.query" class="cursor-pointer itype-card" :class="{ 'border-danger': isActiveIndicator }" @click.stop="setSelfAsActiveIndicator">
     <div class="d-xl-flex">
-      <div class="d-xl-flex flex-grow-1 flex-wrap mt-1">
+      <div class="d-xl-flex flex-grow-1 flex-wrap mt-1 mw-100">
         <h4 class="text-warning m-0">
           {{ indicator.itype.toUpperCase() }}
         </h4>

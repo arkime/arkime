@@ -11,7 +11,7 @@
     </label>
 
     <template v-if="tidbit.display === 'badge'">
-      <h5 class="my-0 mr-1" :id="id">
+      <h5 class="my-0 mr-1 mw-100" :id="id">
         <b-badge variant="light">
           {{ tidbit.displayValue || tidbit.value }}
         </b-badge>
@@ -31,7 +31,7 @@
       />
     </template>
     <template v-else-if="groupColorNames.includes(tidbit.display)">
-      <h5 :id="id" class="align-self-end mr-1">
+      <h5 :id="id" class="align-self-end mr-1 mw-100">
         <b-badge variant="light" class="d-inline-flex flex-wrap group-container mw-100 overflow-auto"
           :class="groupClassMap(tidbit.display)"
         >
