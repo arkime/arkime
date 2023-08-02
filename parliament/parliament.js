@@ -1221,7 +1221,7 @@ router.post('/logout', (req, res, next) => {
 
 // Get whether authentication or dashboardOnly mode is set
 router.get('/auth', (req, res, next) => {
-  const hasAuth = !!app.get('password') || !!parliament.settings.commonAuth;
+  const hasAuth = !!app.get('password') || Object.keys(parliament?.settings?.commonAuth).length > 0;
   const dashboardOnly = !!app.get('dashboardOnly');
   return res.json({
     hasAuth,
@@ -2158,16 +2158,16 @@ router.post('/testAlert', [isAdmin, checkCookieToken], (req, res, next) => {
 function setupAuth () {
   parliament.authMode = false;
 
-  if (!parliament?.settings?.commonAuth?.userNameHeader) { return; }
+  if (!parliament?.settings?.commonAuth?.authMode) { return; }
 
   const commonAuth = parliament.settings.commonAuth;
 
-  parliament.authMode = commonAuth.userNameHeader === 'digest' ? 'digest' : 'header';
+  parliament.authMode = commonAuth.authMode;
 
   Auth.initialize({
     debug: app.get('debug'),
     mode: parliament.authMode,
-    userNameHeader: parliament.authMode === 'digest' ? undefined : commonAuth.userNameHeader,
+    userNameHeader: commonAuth.userNameHeader,
     passwordSecret: commonAuth.passwordSecret ?? 'password',
     passwordSecretSection: 'parliament',
     userAuthIps: undefined,

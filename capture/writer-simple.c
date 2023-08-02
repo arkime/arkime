@@ -19,7 +19,7 @@
  * limitations under the License.
  */
 #define _FILE_OFFSET_BITS 64
-#include "moloch.h"
+#include "arkime.h"
 #include "arkimeconfig.h"
 #include <fcntl.h>
 #include <errno.h>
@@ -38,15 +38,15 @@
 #endif
 
 typedef enum {
-    MOLOCH_COMPRESSION_NONE,
-    MOLOCH_COMPRESSION_GZIP,
-    MOLOCH_COMPRESSION_ZSTD
-} MolochCompressionMode;
+    ARKIME_COMPRESSION_NONE,
+    ARKIME_COMPRESSION_GZIP,
+    ARKIME_COMPRESSION_ZSTD
+} ArkimeCompressionMode;
 
-extern MolochConfig_t        config;
-extern MolochPcapFileHdr_t   pcapFileHeader;
+extern ArkimeConfig_t        config;
+extern ArkimePcapFileHdr_t   pcapFileHeader;
 LOCAL  gboolean              localPcapIndex;
-LOCAL  MolochCompressionMode compressionMode = MOLOCH_COMPRESSION_NONE;
+LOCAL  ArkimeCompressionMode compressionMode = ARKIME_COMPRESSION_NONE;
 LOCAL  gboolean              simpleShortHeader;
 LOCAL  int                   simpleGzipLevel;
 LOCAL  int                   simpleZstdLevel;
@@ -71,46 +71,46 @@ typedef struct {
     ZSTD_inBuffer        zstd_in;
     uint64_t             zstd_completedBlockStart;
 #endif
-} MolochSimpleFile_t;
+} ArkimeSimpleFile_t;
 
 // Information about the current buffer being written to, there can be multiple buffers per file
 // NOTE this points to the file structure, kind of backwards
-typedef struct molochsimple {
-    struct molochsimple *simple_next, *simple_prev;
-    char                *buf;     // mmap buffer, config.pcapWriteSize + MOLOCH_PACKET_MAX_LEN
-    MolochSimpleFile_t  *file;
+typedef struct arkimesimple {
+    struct arkimesimple *simple_next, *simple_prev;
+    char                *buf;     // mmap buffer, config.pcapWriteSize + ARKIME_PACKET_MAX_LEN
+    ArkimeSimpleFile_t  *file;
     uint32_t             bufpos;  // Where in buf we are writing to
     uint8_t              closing; // This is the last block, close file when done
-} MolochSimple_t;
+} ArkimeSimple_t;
 
 typedef struct {
-    struct molochsimple *simple_next, *simple_prev;
+    struct arkimesimple *simple_next, *simple_prev;
     int                  simple_count;
-    MOLOCH_LOCK_EXTERN(lock);
-} MolochSimpleHead_t;
+    ARKIME_LOCK_EXTERN(lock);
+} ArkimeSimpleHead_t;
 
-LOCAL  MolochSimpleHead_t simpleQ;
-LOCAL  MOLOCH_LOCK_DEFINE(simpleQ);
-LOCAL  MOLOCH_COND_DEFINE(simpleQ);
+LOCAL  ArkimeSimpleHead_t simpleQ;
+LOCAL  ARKIME_LOCK_DEFINE(simpleQ);
+LOCAL  ARKIME_COND_DEFINE(simpleQ);
 
-enum MolochSimpleMode { MOLOCH_SIMPLE_NORMAL, MOLOCH_SIMPLE_XOR2048, MOLOCH_SIMPLE_AES256CTR};
+enum ArkimeSimpleMode { ARKIME_SIMPLE_NORMAL, ARKIME_SIMPLE_XOR2048, ARKIME_SIMPLE_AES256CTR};
 
-LOCAL MolochSimple_t        *currentInfo[MOLOCH_MAX_PACKET_THREADS];
-LOCAL MolochSimpleHead_t     freeList[MOLOCH_MAX_PACKET_THREADS];
+LOCAL ArkimeSimple_t        *currentInfo[ARKIME_MAX_PACKET_THREADS];
+LOCAL ArkimeSimpleHead_t     freeList[ARKIME_MAX_PACKET_THREADS];
 LOCAL uint32_t               pageSize;
-LOCAL enum MolochSimpleMode  simpleMode;
+LOCAL enum ArkimeSimpleMode  simpleMode;
 LOCAL int                    simpleMaxQ;
 LOCAL const EVP_CIPHER      *cipher;
 LOCAL int                    openOptions;
-LOCAL struct timeval         lastSave[MOLOCH_MAX_PACKET_THREADS];
-LOCAL struct timeval         fileAge[MOLOCH_MAX_PACKET_THREADS];
-LOCAL uint32_t               firstPacket[MOLOCH_MAX_PACKET_THREADS];
+LOCAL struct timeval         lastSave[ARKIME_MAX_PACKET_THREADS];
+LOCAL struct timeval         fileAge[ARKIME_MAX_PACKET_THREADS];
+LOCAL uint32_t               firstPacket[ARKIME_MAX_PACKET_THREADS];
 
-#define INDEX_FILES_CACHE_SIZE (MOLOCH_MAX_PACKET_THREADS-1)
+#define INDEX_FILES_CACHE_SIZE (ARKIME_MAX_PACKET_THREADS-1)
 struct {
     int64_t  fileNum;
     FILE    *fp;
-} indexFiles[MOLOCH_MAX_PACKET_THREADS][INDEX_FILES_CACHE_SIZE];
+} indexFiles[ARKIME_MAX_PACKET_THREADS][INDEX_FILES_CACHE_SIZE];
 
 /*
  * Compression design inspired by Philip Gladstone and others.
@@ -137,17 +137,17 @@ LOCAL uint32_t writer_simple_queue_length()
 /*
  * Get a new buffer structure, and copy the old file pointer if needed
  */
-LOCAL MolochSimple_t *writer_simple_alloc(int thread, MolochSimple_t *previous)
+LOCAL ArkimeSimple_t *writer_simple_alloc(int thread, ArkimeSimple_t *previous)
 {
-    MolochSimple_t *info;
+    ArkimeSimple_t *info;
 
-    MOLOCH_LOCK(freeList[thread].lock);
+    ARKIME_LOCK(freeList[thread].lock);
     DLL_POP_HEAD(simple_, &freeList[thread], info);
-    MOLOCH_UNLOCK(freeList[thread].lock);
+    ARKIME_UNLOCK(freeList[thread].lock);
 
     if (!info) {
-        info = MOLOCH_TYPE_ALLOC0(MolochSimple_t);
-        info->buf = mmap (0, config.pcapWriteSize + MOLOCH_PACKET_MAX_LEN, PROT_READ|PROT_WRITE, MAP_ANON|MAP_PRIVATE, -1, 0);
+        info = ARKIME_TYPE_ALLOC0(ArkimeSimple_t);
+        info->buf = mmap (0, config.pcapWriteSize + ARKIME_PACKET_MAX_LEN, PROT_READ|PROT_WRITE, MAP_ANON|MAP_PRIVATE, -1, 0);
         if (unlikely(info->buf == MAP_FAILED)) {
             LOGEXIT("ERROR - MMap failure in writer_simple_alloc, %d: %s", errno, strerror(errno));
         }
@@ -162,50 +162,50 @@ LOCAL MolochSimple_t *writer_simple_alloc(int thread, MolochSimple_t *previous)
     return info;
 }
 /******************************************************************************/
-LOCAL void writer_simple_free(MolochSimple_t *info)
+LOCAL void writer_simple_free(ArkimeSimple_t *info)
 {
     int thread = info->file->thread;
 
     if (info->closing) {
         switch(simpleMode) {
-        case MOLOCH_SIMPLE_NORMAL:
+        case ARKIME_SIMPLE_NORMAL:
             break;
-        case MOLOCH_SIMPLE_XOR2048:
+        case ARKIME_SIMPLE_XOR2048:
             break;
-        case MOLOCH_SIMPLE_AES256CTR:
+        case ARKIME_SIMPLE_AES256CTR:
             EVP_CIPHER_CTX_free(info->file->cipher_ctx);
             break;
         }
         switch(compressionMode) {
-        case MOLOCH_COMPRESSION_GZIP:
+        case ARKIME_COMPRESSION_GZIP:
             deflateEnd(&info->file->z_strm);
             break;
 #ifdef HAVE_ZSTD
-        case MOLOCH_COMPRESSION_ZSTD:
+        case ARKIME_COMPRESSION_ZSTD:
             ZSTD_freeCStream(info->file->zstd_strm);
             break;
 #endif
         default:
             break;
         }
-        MOLOCH_TYPE_FREE(MolochSimpleFile_t, info->file);
+        ARKIME_TYPE_FREE(ArkimeSimpleFile_t, info->file);
     }
     info->file = 0;
 
     if (DLL_COUNT(simple_, &freeList[thread]) < simpleFreeOutputBuffers) {
-        MOLOCH_LOCK(freeList[thread].lock);
+        ARKIME_LOCK(freeList[thread].lock);
         DLL_PUSH_TAIL(simple_, &freeList[thread], info);
-        MOLOCH_UNLOCK(freeList[thread].lock);
+        ARKIME_UNLOCK(freeList[thread].lock);
     } else {
-        munmap(info->buf, config.pcapWriteSize + MOLOCH_PACKET_MAX_LEN);
-        MOLOCH_TYPE_FREE(MolochSimple_t, info);
+        munmap(info->buf, config.pcapWriteSize + ARKIME_PACKET_MAX_LEN);
+        ARKIME_TYPE_FREE(ArkimeSimple_t, info);
     }
 }
 
 /******************************************************************************/
 LOCAL void writer_simple_process_buf(int thread, int closing)
 {
-    MolochSimple_t *info = currentInfo[thread];
+    ArkimeSimple_t *info = currentInfo[thread];
     static uint32_t lastError;
 
     info->closing = closing;
@@ -214,20 +214,20 @@ LOCAL void writer_simple_process_buf(int thread, int closing)
         int writeSize = (info->bufpos/pageSize) * pageSize;
 
         // Create next buffer
-        MolochSimple_t *ninfo = currentInfo[thread] = writer_simple_alloc(thread, info);
+        ArkimeSimple_t *ninfo = currentInfo[thread] = writer_simple_alloc(thread, info);
 
         // Copy what we aren't going to write to next buffer
         memcpy(ninfo->buf, info->buf + writeSize, info->bufpos - writeSize);
         ninfo->bufpos = info->bufpos - writeSize;
 
         switch(compressionMode) {
-        case MOLOCH_COMPRESSION_GZIP:
+        case ARKIME_COMPRESSION_GZIP:
             // Start the gzip buffer after what we copied from previous buffer.
             ninfo->file->z_strm.next_out = (Bytef *) ninfo->buf + ninfo->bufpos;
-            ninfo->file->z_strm.avail_out = config.pcapWriteSize + MOLOCH_PACKET_MAX_LEN - ninfo->bufpos;
+            ninfo->file->z_strm.avail_out = config.pcapWriteSize + ARKIME_PACKET_MAX_LEN - ninfo->bufpos;
             break;
 #ifdef HAVE_ZSTD
-        case MOLOCH_COMPRESSION_ZSTD:
+        case ARKIME_COMPRESSION_ZSTD:
             info->file->zstd_completedBlockStart += writeSize;
             ninfo->file->zstd_out.dst = ninfo->buf;
             ninfo->file->zstd_out.pos = ninfo->bufpos;
@@ -240,11 +240,11 @@ LOCAL void writer_simple_process_buf(int thread, int closing)
         info->bufpos = writeSize;
 
         switch(compressionMode) {
-        case MOLOCH_COMPRESSION_GZIP:
+        case ARKIME_COMPRESSION_GZIP:
             info->file->pos += info->bufpos;
             break;
 #ifdef HAVE_ZSTD
-        case MOLOCH_COMPRESSION_ZSTD:
+        case ARKIME_COMPRESSION_ZSTD:
             info->file->pos += info->bufpos;
             break;
 #endif
@@ -254,13 +254,13 @@ LOCAL void writer_simple_process_buf(int thread, int closing)
 
     } else {
         switch(compressionMode) {
-        case MOLOCH_COMPRESSION_GZIP:
+        case ARKIME_COMPRESSION_GZIP:
             deflate(&info->file->z_strm, Z_FINISH);
             info->bufpos = (char *)info->file->z_strm.next_out - info->buf;
             info->file->pos += info->bufpos;
             break;
 #ifdef HAVE_ZSTD
-        case MOLOCH_COMPRESSION_ZSTD:
+        case ARKIME_COMPRESSION_ZSTD:
             ZSTD_endStream(info->file->zstd_strm, &info->file->zstd_out);
             info->bufpos = (char *)info->file->zstd_out.dst + info->file->zstd_out.pos - info->buf;
             info->file->pos += info->bufpos;
@@ -273,15 +273,15 @@ LOCAL void writer_simple_process_buf(int thread, int closing)
     }
 
     // Send to write q to actually write to disk
-    MOLOCH_LOCK(simpleQ);
+    ARKIME_LOCK(simpleQ);
     gettimeofday(&lastSave[thread], NULL);
     DLL_PUSH_TAIL(simple_, &simpleQ, info);
     if (DLL_COUNT(simple_, &simpleQ) > 100 && lastSave[thread].tv_sec > lastError + 60) {
         lastError = lastSave[thread].tv_sec;
         LOG("WARNING - Disk Q of %d is too large, check the Arkime FAQ about (https://arkime.com/faq#why-am-i-dropping-packets) testing disk speed", DLL_COUNT(simple_, &simpleQ));
     }
-    MOLOCH_COND_SIGNAL(simpleQ);
-    MOLOCH_UNLOCK(simpleQ);
+    ARKIME_COND_SIGNAL(simpleQ);
+    ARKIME_UNLOCK(simpleQ);
 }
 /******************************************************************************/
 LOCAL void writer_simple_encrypt_key(char *kekId, uint8_t *dek, int deklen, char *outkeyhex)
@@ -295,7 +295,7 @@ LOCAL void writer_simple_encrypt_key(char *kekId, uint8_t *dek, int deklen, char
     if (!kekId)
         CONFIGEXIT("simpleKEKId must be set");
 
-   char *kekstr = moloch_config_section_str(NULL, "keks", kekId, NULL);
+   char *kekstr = arkime_config_section_str(NULL, "keks", kekId, NULL);
    if (!kekstr)
        CONFIGEXIT("No kek with id '%s' found in keks config section", kekId);
 
@@ -311,12 +311,12 @@ LOCAL void writer_simple_encrypt_key(char *kekId, uint8_t *dek, int deklen, char
     ciphertext_len += len;
     EVP_CIPHER_CTX_free(ctx);
 
-    moloch_sprint_hex_string(outkeyhex, ciphertext, ciphertext_len);
+    arkime_sprint_hex_string(outkeyhex, ciphertext, ciphertext_len);
 }
 /******************************************************************************/
 LOCAL char *writer_simple_get_kekId ()
 {
-    char *kek = moloch_config_str(NULL, "simpleKEKId", NULL);
+    char *kek = arkime_config_str(NULL, "simpleKEKId", NULL);
 
     if(!kek) {
         return NULL;
@@ -385,16 +385,16 @@ LOCAL char *writer_simple_get_kekId ()
     return g_strndup(okek, j);
 }
 /******************************************************************************/
-LOCAL void writer_simple_write_output(MolochSimple_t *info, const unsigned char *data, int len)
+LOCAL void writer_simple_write_output(ArkimeSimple_t *info, const unsigned char *data, int len)
 {
     switch(compressionMode) {
-    case MOLOCH_COMPRESSION_NONE:
+    case ARKIME_COMPRESSION_NONE:
         memcpy(info->buf + info->bufpos, data, len);
         info->bufpos += len;
         info->file->pos += len;
         break;
 
-    case MOLOCH_COMPRESSION_GZIP:
+    case ARKIME_COMPRESSION_GZIP:
         info->file->z_strm.next_in = (Bytef *)data;
         info->file->z_strm.avail_in = len;
 
@@ -405,7 +405,7 @@ LOCAL void writer_simple_write_output(MolochSimple_t *info, const unsigned char 
         info->bufpos = (char *)info->file->z_strm.next_out - info->buf;
         break;
 #ifdef HAVE_ZSTD
-    case MOLOCH_COMPRESSION_ZSTD:
+    case ARKIME_COMPRESSION_ZSTD:
         info->file->zstd_in.src = (Bytef *)data;
         info->file->zstd_in.size = len;
         info->file->zstd_in.pos = 0;
@@ -423,7 +423,7 @@ LOCAL void writer_simple_write_output(MolochSimple_t *info, const unsigned char 
     info->file->packetBytesWritten += len;
 }
 /******************************************************************************/
-LOCAL void writer_simple_gzip_make_new_block(MolochSimple_t *info)
+LOCAL void writer_simple_gzip_make_new_block(ArkimeSimple_t *info)
 {
     deflate(&info->file->z_strm, Z_FULL_FLUSH);
     info->bufpos = (char *)info->file->z_strm.next_out - info->buf;
@@ -431,7 +431,7 @@ LOCAL void writer_simple_gzip_make_new_block(MolochSimple_t *info)
     info->file->posInBlock = 0;
 }
 /******************************************************************************/
-LOCAL void writer_simple_zstd_make_new_block(MolochSimple_t *info)
+LOCAL void writer_simple_zstd_make_new_block(ArkimeSimple_t *info)
 {
 #ifdef HAVE_ZSTD
     ZSTD_compressStream2(info->file->zstd_strm, &info->file->zstd_out, &info->file->zstd_in, ZSTD_e_end);
@@ -441,9 +441,9 @@ LOCAL void writer_simple_zstd_make_new_block(MolochSimple_t *info)
 #endif
 }
 /******************************************************************************/
-LOCAL void writer_simple_write(const MolochSession_t * const session, MolochPacket_t * const packet)
+LOCAL void writer_simple_write(const ArkimeSession_t * const session, ArkimePacket_t * const packet)
 {
-    MolochSimple_t *info;
+    ArkimeSimple_t *info;
 
     if (DLL_COUNT(simple_, &simpleQ) > simpleMaxQ) {
         static uint32_t lastError;
@@ -464,9 +464,9 @@ LOCAL void writer_simple_write(const MolochSession_t * const session, MolochPack
         char  dekhex[1024];
         char *name = 0;
         char *kekId;
-        char *packetPosEncoding = MOLOCH_VAR_ARG_STR_SKIP;
-        char *uncompressedBitsArg = MOLOCH_VAR_ARG_INT_SKIP;
-        char *compressionArg = MOLOCH_VAR_ARG_STR_SKIP;
+        char *packetPosEncoding = ARKIME_VAR_ARG_STR_SKIP;
+        char *uncompressedBitsArg = ARKIME_VAR_ARG_INT_SKIP;
+        char *compressionArg = ARKIME_VAR_ARG_STR_SKIP;
         char  indexFilename[1024];
 
         indexFilename[0] = 0;
@@ -478,27 +478,27 @@ LOCAL void writer_simple_write(const MolochSession_t * const session, MolochPack
         }
 
         info = currentInfo[thread] = writer_simple_alloc(thread, NULL);
-        info->file = MOLOCH_TYPE_ALLOC0(MolochSimpleFile_t);
+        info->file = ARKIME_TYPE_ALLOC0(ArkimeSimpleFile_t);
         info->file->thread = thread;
 
         switch(compressionMode) {
-        case MOLOCH_COMPRESSION_GZIP:
+        case ARKIME_COMPRESSION_GZIP:
             uncompressedBitsArg = (gpointer)(long)uncompressedBits;
             compressionArg = "gzip";
 
             info->file->z_strm.next_out = (Bytef *) info->buf;
-            info->file->z_strm.avail_out = config.pcapWriteSize + MOLOCH_PACKET_MAX_LEN;
+            info->file->z_strm.avail_out = config.pcapWriteSize + ARKIME_PACKET_MAX_LEN;
             deflateInit2(&info->file->z_strm, simpleGzipLevel, Z_DEFLATED, 16 + 15, 9, Z_DEFAULT_STRATEGY);
             break;
 #ifdef HAVE_ZSTD
-        case MOLOCH_COMPRESSION_ZSTD:
+        case ARKIME_COMPRESSION_ZSTD:
             info->file->zstd_strm = ZSTD_createCStream();
             ZSTD_CCtx_setParameter(info->file->zstd_strm, ZSTD_c_compressionLevel, simpleZstdLevel);
             uncompressedBitsArg = (gpointer)(long)uncompressedBits;
             compressionArg = "zstd";
 
             info->file->zstd_out.dst = info->buf;
-            info->file->zstd_out.size = config.pcapWriteSize + MOLOCH_PACKET_MAX_LEN;
+            info->file->zstd_out.size = config.pcapWriteSize + ARKIME_PACKET_MAX_LEN;
             info->file->zstd_out.pos = 0;
             info->file->zstd_completedBlockStart = 0;
             break;
@@ -508,39 +508,39 @@ LOCAL void writer_simple_write(const MolochSession_t * const session, MolochPack
         }
 
         switch(simpleMode) {
-        case MOLOCH_SIMPLE_NORMAL:
+        case ARKIME_SIMPLE_NORMAL:
             if (simpleShortHeader)
                 name = ".arkime";
-            else if (compressionMode == MOLOCH_COMPRESSION_GZIP)
+            else if (compressionMode == ARKIME_COMPRESSION_GZIP)
                 name = ".pcap.gz";
-            else if (compressionMode == MOLOCH_COMPRESSION_ZSTD)
+            else if (compressionMode == ARKIME_COMPRESSION_ZSTD)
                 name = ".pcap.zst";
             else
                 name = ".pcap";
-            name = moloch_db_create_file_full(packet->ts.tv_sec, name, 0, 0, &info->file->id,
+            name = arkime_db_create_file_full(packet->ts.tv_sec, name, 0, 0, &info->file->id,
                                               "packetPosEncoding", packetPosEncoding,
                                               "#uncompressedBits", uncompressedBitsArg,
                                               "compression", compressionArg,
-                                              "indexFilename", indexFilename[0] ? indexFilename : MOLOCH_VAR_ARG_STR_SKIP,
+                                              "indexFilename", indexFilename[0] ? indexFilename : ARKIME_VAR_ARG_STR_SKIP,
                                               (char *)NULL);
             break;
-        case MOLOCH_SIMPLE_XOR2048:
+        case ARKIME_SIMPLE_XOR2048:
             name = ".arkime";
             kekId = writer_simple_get_kekId();
             RAND_bytes(info->file->dek, 256);
             writer_simple_encrypt_key(kekId, info->file->dek, 256, dekhex);
-            name = moloch_db_create_file_full(packet->ts.tv_sec, name, 0, 0, &info->file->id,
+            name = arkime_db_create_file_full(packet->ts.tv_sec, name, 0, 0, &info->file->id,
                                               "encoding", "xor-2048",
                                               "dek", dekhex,
                                               "kekId", kekId,
                                               "packetPosEncoding", packetPosEncoding,
                                               "#uncompressedBits", uncompressedBitsArg,
                                               "compression", compressionArg,
-                                              "indexFilename", indexFilename[0] ? indexFilename : MOLOCH_VAR_ARG_STR_SKIP,
+                                              "indexFilename", indexFilename[0] ? indexFilename : ARKIME_VAR_ARG_STR_SKIP,
                                               (char *)NULL);
             g_free(kekId);
             break;
-        case MOLOCH_SIMPLE_AES256CTR: {
+        case ARKIME_SIMPLE_AES256CTR: {
             info->file->cipher_ctx = EVP_CIPHER_CTX_new();
             name = ".arkime";
             uint8_t dek[32];
@@ -551,9 +551,9 @@ LOCAL void writer_simple_write(const MolochSession_t * const session, MolochPack
             memset(iv+12, 0, 4);
             kekId = writer_simple_get_kekId();
             writer_simple_encrypt_key(kekId, dek, 32, dekhex);
-            moloch_sprint_hex_string(ivhex, iv, 12);
+            arkime_sprint_hex_string(ivhex, iv, 12);
             EVP_EncryptInit(info->file->cipher_ctx, cipher, dek, iv);
-            name = moloch_db_create_file_full(packet->ts.tv_sec, name, 0, 0, &info->file->id,
+            name = arkime_db_create_file_full(packet->ts.tv_sec, name, 0, 0, &info->file->id,
                                               "encoding", "aes-256-ctr",
                                               "iv", ivhex,
                                               "dek", dekhex,
@@ -561,7 +561,7 @@ LOCAL void writer_simple_write(const MolochSession_t * const session, MolochPack
                                               "packetPosEncoding", packetPosEncoding,
                                               "#uncompressedBits", uncompressedBitsArg,
                                               "compression", compressionArg,
-                                              "indexFilename", indexFilename[0] ? indexFilename : MOLOCH_VAR_ARG_STR_SKIP,
+                                              "indexFilename", indexFilename[0] ? indexFilename : ARKIME_VAR_ARG_STR_SKIP,
                                               (char *)NULL);
             g_free(kekId);
             break;
@@ -582,7 +582,7 @@ LOCAL void writer_simple_write(const MolochSession_t * const session, MolochPack
 
         if (simpleShortHeader) {
             firstPacket[thread] = packet->ts.tv_sec - 60; // Allow slightly out of sync clocks
-            MolochPcapFileHdr_t   pcapFileHeader2;
+            ArkimePcapFileHdr_t   pcapFileHeader2;
             memcpy(&pcapFileHeader2, &pcapFileHeader, 24);
             pcapFileHeader2.magic = 0xa1b2c3d5;
             pcapFileHeader2.thiszone = firstPacket[thread];
@@ -591,16 +591,16 @@ LOCAL void writer_simple_write(const MolochSession_t * const session, MolochPack
             writer_simple_write_output(info, (unsigned char *)&pcapFileHeader, 20);
         }
 
-        uint32_t linktype = moloch_packet_dlt_to_linktype(pcapFileHeader.dlt);
+        uint32_t linktype = arkime_packet_dlt_to_linktype(pcapFileHeader.dlt);
         writer_simple_write_output(info, (unsigned char *)&linktype, 4);
         if (config.debug)
             LOG("opened %d %s %d", thread, name, info->file->fd);
         g_free(name);
 
         // Make a new block for start of packets
-        if (compressionMode == MOLOCH_COMPRESSION_GZIP)
+        if (compressionMode == ARKIME_COMPRESSION_GZIP)
             writer_simple_gzip_make_new_block(info);
-        else if (compressionMode == MOLOCH_COMPRESSION_ZSTD)
+        else if (compressionMode == ARKIME_COMPRESSION_ZSTD)
             writer_simple_zstd_make_new_block(info);
         gettimeofday(&fileAge[thread], NULL);
     } else {
@@ -609,13 +609,13 @@ LOCAL void writer_simple_write(const MolochSession_t * const session, MolochPack
 
     packet->writerFileNum = info->file->id;
 
-    if (compressionMode == MOLOCH_COMPRESSION_GZIP) {
+    if (compressionMode == ARKIME_COMPRESSION_GZIP) {
         if (info->file->posInBlock >= simpleCompressionBlockSize) {
             writer_simple_gzip_make_new_block(info);
         }
 
         packet->writerFilePos = (info->file->blockStart << uncompressedBits) + info->file->posInBlock;
-    } else if (compressionMode == MOLOCH_COMPRESSION_ZSTD) {
+    } else if (compressionMode == ARKIME_COMPRESSION_ZSTD) {
         if (info->file->posInBlock >= simpleCompressionBlockSize) {
             writer_simple_zstd_make_new_block(info);
         }
@@ -645,7 +645,7 @@ LOCAL void writer_simple_write(const MolochSession_t * const session, MolochPack
 
         writer_simple_write_output(info, (unsigned char *)&header, 6);
     } else {
-        struct moloch_pcap_sf_pkthdr hdr;
+        struct arkime_pcap_sf_pkthdr hdr;
 
         hdr.ts.tv_sec  = packet->ts.tv_sec;
         hdr.ts.tv_usec = packet->ts.tv_usec;
@@ -664,18 +664,18 @@ LOCAL void writer_simple_write(const MolochSession_t * const session, MolochPack
 /******************************************************************************/
 LOCAL void *writer_simple_thread(void *UNUSED(arg))
 {
-    MolochSimple_t *info;
+    ArkimeSimple_t *info;
 
     if (config.debug)
         LOG("THREAD %p", (gpointer)pthread_self());
 
     while (1) {
-        MOLOCH_LOCK(simpleQ);
+        ARKIME_LOCK(simpleQ);
         while (DLL_COUNT(simple_, &simpleQ) == 0) {
-            MOLOCH_COND_WAIT(simpleQ);
+            ARKIME_COND_WAIT(simpleQ);
         }
         DLL_POP_HEAD(simple_, &simpleQ, info);
-        MOLOCH_UNLOCK(simpleQ);
+        ARKIME_UNLOCK(simpleQ);
 
         uint32_t pos = 0;
         uint32_t total = info->bufpos;
@@ -686,15 +686,15 @@ LOCAL void *writer_simple_thread(void *UNUSED(arg))
         }
 
         switch(simpleMode) {
-        case MOLOCH_SIMPLE_NORMAL:
+        case ARKIME_SIMPLE_NORMAL:
             break;
-        case MOLOCH_SIMPLE_XOR2048: {
+        case ARKIME_SIMPLE_XOR2048: {
             uint32_t i;
             for (i = 0; i < total; i++)
                 info->buf[i] ^= info->file->dek[i % 256];
             break;
         }
-        case MOLOCH_SIMPLE_AES256CTR: {
+        case ARKIME_SIMPLE_AES256CTR: {
             int outl;
             if (!EVP_EncryptUpdate(info->file->cipher_ctx, (uint8_t *)info->buf, &outl, (uint8_t *)info->buf, total))
                 LOGEXIT("ERROR - Encrypting data failed");
@@ -716,7 +716,7 @@ LOCAL void *writer_simple_thread(void *UNUSED(arg))
             if (ftruncate(info->file->fd, info->file->pos) < 0 && config.debug)
                 LOG("Truncate failed");
             close(info->file->fd);
-            moloch_db_update_filesize(info->file->id, info->file->pos, info->file->packetBytesWritten, info->file->packets);
+            arkime_db_update_filesize(info->file->id, info->file->pos, info->file->packetBytesWritten, info->file->packets);
         }
 
         writer_simple_free(info);
@@ -750,7 +750,7 @@ LOCAL void writer_simple_exit()
 }
 /******************************************************************************/
 // Called inside each packet thread
-LOCAL void writer_simple_check(MolochSession_t *session, void *UNUSED(uw1), void *UNUSED(uw2))
+LOCAL void writer_simple_check(ArkimeSession_t *session, void *UNUSED(uw1), void *UNUSED(uw2))
 {
     struct timeval now;
     gettimeofday(&now, NULL);
@@ -771,7 +771,7 @@ LOCAL void writer_simple_check(MolochSession_t *session, void *UNUSED(uw1), void
         return;
 
     // Don't force writes for gzip for now
-    if (compressionMode != MOLOCH_COMPRESSION_GZIP) {
+    if (compressionMode != ARKIME_COMPRESSION_GZIP) {
         writer_simple_process_buf(session->thread, 0);
     }
 }
@@ -785,14 +785,14 @@ LOCAL gboolean writer_simple_check_gfunc (gpointer UNUSED(user_data))
     struct timeval now;
     gettimeofday(&now, NULL);
 
-    MOLOCH_LOCK(simpleQ);
+    ARKIME_LOCK(simpleQ);
     int thread;
     for (thread = 0; thread < config.packetThreads; thread++) {
         if (now.tv_sec - lastSave[thread].tv_sec >= 10) {
-            moloch_session_add_cmd_thread(thread, NULL, NULL, writer_simple_check);
+            arkime_session_add_cmd_thread(thread, NULL, NULL, writer_simple_check);
         }
     }
-    MOLOCH_UNLOCK(simpleQ);
+    ARKIME_UNLOCK(simpleQ);
 
     return G_SOURCE_CONTINUE;
 }
@@ -825,7 +825,7 @@ FILE *writer_simple_get_index(int thread, int64_t fileNum)
     return indexFiles[thread][p].fp;
 }
 /******************************************************************************/
-void writer_simple_index (MolochSession_t * session)
+void writer_simple_index (ArkimeSession_t * session)
 {
     uint8_t  buf[0xffff*5];
     BSB      bsb;
@@ -920,21 +920,21 @@ void writer_simple_index (MolochSession_t * session)
 /******************************************************************************/
 void writer_simple_init(char *name)
 {
-    moloch_writer_queue_length = writer_simple_queue_length;
-    moloch_writer_exit         = writer_simple_exit;
-    moloch_writer_write        = writer_simple_write;
+    arkime_writer_queue_length = writer_simple_queue_length;
+    arkime_writer_exit         = writer_simple_exit;
+    arkime_writer_write        = writer_simple_write;
 
-    simpleMaxQ = moloch_config_int(NULL, "simpleMaxQ", 2000, 50, 0xffff);
-    char *mode = moloch_config_str(NULL, "simpleEncoding", NULL);
-    char *compression = moloch_config_str(NULL, "simpleCompression", "gzip");
+    simpleMaxQ = arkime_config_int(NULL, "simpleMaxQ", 2000, 50, 0xffff);
+    char *mode = arkime_config_str(NULL, "simpleEncoding", NULL);
+    char *compression = arkime_config_str(NULL, "simpleCompression", "zstd");
 
     if (!compression || compression[0] == 0 || strcmp(compression, "none") == 0) {
-        compressionMode = MOLOCH_COMPRESSION_NONE;
+        compressionMode = ARKIME_COMPRESSION_NONE;
     } else if (strcmp(compression, "gzip") == 0) {
-        compressionMode = MOLOCH_COMPRESSION_GZIP;
+        compressionMode = ARKIME_COMPRESSION_GZIP;
     } else if (strcmp(compression, "zstd") == 0) {
 #ifdef HAVE_ZSTD
-        compressionMode = MOLOCH_COMPRESSION_ZSTD;
+        compressionMode = ARKIME_COMPRESSION_ZSTD;
 #else
         CONFIGEXIT("Arkime capture was not compiled with zstd support");
 #endif
@@ -943,12 +943,12 @@ void writer_simple_init(char *name)
     }
     g_free(compression);
 
-    if (compressionMode != MOLOCH_COMPRESSION_NONE) {
-        simpleGzipLevel = moloch_config_int(NULL, "simpleGzipLevel", 3, 1, 9);
+    if (compressionMode != ARKIME_COMPRESSION_NONE) {
+        simpleGzipLevel = arkime_config_int(NULL, "simpleGzipLevel", 3, 1, 9);
 #ifdef HAVE_ZSTD
-        simpleZstdLevel = moloch_config_int(NULL, "simpleZstdLevel", 0, 0, ZSTD_maxCLevel());
+        simpleZstdLevel = arkime_config_int(NULL, "simpleZstdLevel", 0, 0, ZSTD_maxCLevel());
 #endif
-        simpleCompressionBlockSize = moloch_config_int(NULL, "simpleCompressionBlockSize", 32000, 8191, 0xfffff);
+        simpleCompressionBlockSize = arkime_config_int(NULL, "simpleCompressionBlockSize", 32000, 8191, 0xfffff);
         uncompressedBits = ceil(log2(simpleCompressionBlockSize));
 
         // simpleCompressionBlockSize can't be a power of 2
@@ -966,7 +966,7 @@ void writer_simple_init(char *name)
 
     if (mode == NULL || !mode[0]) {
     } else if (strcmp(mode, "aes-256-ctr") == 0) {
-        simpleMode = MOLOCH_SIMPLE_AES256CTR;
+        simpleMode = ARKIME_SIMPLE_AES256CTR;
         cipher = EVP_aes_256_ctr();
         if (config.maxFileSizeB > 64*1024LL*1024LL*1024LL) {
             LOG ("INFO: Reseting maxFileSizeG since %lf is greater then the max 64G in aes-256-ctr mode", config.maxFileSizeG);
@@ -975,7 +975,7 @@ void writer_simple_init(char *name)
         }
     } else if (strcmp(mode, "xor-2048") == 0) {
         LOG("WARNING - simpleEncoding of xor-2048 is NOT actually secure");
-        simpleMode = MOLOCH_SIMPLE_XOR2048;
+        simpleMode = ARKIME_SIMPLE_XOR2048;
     } else {
         CONFIGEXIT("Unknown simpleEncoding '%s'", mode);
     }
@@ -1002,29 +1002,29 @@ void writer_simple_init(char *name)
         LOG("Not using O_DIRECT by config");
     }
 
-    config.gapPacketPos = moloch_config_boolean(NULL, "gapPacketPos", TRUE);
+    config.gapPacketPos = arkime_config_boolean(NULL, "gapPacketPos", TRUE);
 
-    simpleShortHeader = moloch_config_boolean(NULL, "simpleShortHeader", FALSE);
+    simpleShortHeader = arkime_config_boolean(NULL, "simpleShortHeader", FALSE);
     if (simpleShortHeader && config.maxFileTimeM > 60) {
         config.maxFileTimeM = 60;
         LOG ("INFO: Reseting maxFileTimeM to 60 since using simpleShortHeader");
     }
 
-    localPcapIndex = moloch_config_boolean(NULL, "localPcapIndex", FALSE);
+    localPcapIndex = arkime_config_boolean(NULL, "localPcapIndex", FALSE);
     if (localPcapIndex) {
         if (config.pcapDir[1]) {
             LOG("WARNING - Will always use first pcap directory for local index");
         }
 
-        if (compressionMode == MOLOCH_COMPRESSION_GZIP || compressionMode == MOLOCH_COMPRESSION_ZSTD) {
+        if (compressionMode == ARKIME_COMPRESSION_GZIP || compressionMode == ARKIME_COMPRESSION_ZSTD) {
             config.maxFileSizeB = MIN(config.maxFileSizeB, 0xffffffffffffffUL >> (uncompressedBits + 1));
         }
 
         config.gapPacketPos = FALSE;
-        moloch_writer_index = writer_simple_index;
+        arkime_writer_index = writer_simple_index;
     }
 
-    simpleFreeOutputBuffers  = moloch_config_int(NULL, "simpleFreeOutputBuffers", 16, 0, 0xffff);
+    simpleFreeOutputBuffers  = arkime_config_int(NULL, "simpleFreeOutputBuffers", 16, 0, 0xffff);
 
     DLL_INIT(simple_, &simpleQ);
 
@@ -1036,10 +1036,10 @@ void writer_simple_init(char *name)
         lastSave[thread] = now;
         fileAge[thread] = now;
         DLL_INIT(simple_, &freeList[thread]);
-        MOLOCH_LOCK_INIT(freeList[thread].lock);
+        ARKIME_LOCK_INIT(freeList[thread].lock);
     }
 
-    g_thread_unref(g_thread_new("moloch-simple", &writer_simple_thread, NULL));
+    g_thread_unref(g_thread_new("arkime-simple", &writer_simple_thread, NULL));
 
     g_timeout_add_seconds(1, writer_simple_check_gfunc, 0);
 }

@@ -18,7 +18,6 @@
 'use strict';
 
 const express = require('express');
-const ini = require('iniparser');
 const fs = require('fs');
 const app = express();
 const http = require('http');
@@ -29,6 +28,7 @@ const User = require('../common/user');
 const Auth = require('../common/auth');
 const ArkimeCache = require('../common/arkimeCache');
 const ArkimeUtil = require('../common/arkimeUtil');
+const ArkimeConfig = require('../common/arkimeConfig');
 const LinkGroup = require('./linkGroup');
 const Integration = require('./integration');
 const Audit = require('./audit');
@@ -44,14 +44,7 @@ const helmet = require('helmet');
 const uuid = require('uuid').v4;
 const dayMs = 60000 * 60 * 24;
 
-const internals = {
-  configFile: `${version.config_prefix}/etc/cont3xt.ini`,
-  debug: 0,
-  insecure: false,
-  regressionTests: false,
-  options: new Map(),
-  debugged: new Map()
-};
+const internals = {};
 
 // Process args before routes
 processArgs(process.argv);
@@ -191,7 +184,7 @@ app.use('/integrations', (req, res, next) => {
 
 app.use(favicon(path.join(__dirname, '/favicon.ico')));
 
-if (internals.regressionTests) {
+if (ArkimeConfig.regressionTests) {
   app.post('/regressionTests/shutdown', (req, res) => {
     console.log('Shutting down');
     process.exit(0);
@@ -221,6 +214,7 @@ app.delete('/api/linkGroup/:id', [jsonParser, checkCookieToken], LinkGroup.apiDe
 app.get('/api/roles', [checkCookieToken], User.apiRoles);
 app.get('/api/user', User.apiGetUser);
 app.post('/api/users', [jsonParser, User.checkRole('usersAdmin'), setCookie], User.apiGetUsers);
+app.post('/api/users/csv', [jsonParser, User.checkRole('usersAdmin'), setCookie], User.apiGetUsersCSV);
 app.post('/api/users/min', [jsonParser, checkCookieToken, User.checkAssignableRole], User.apiGetUsersMin);
 app.post('/api/user', [jsonParser, checkCookieToken, User.checkRole('usersAdmin')], User.apiCreateUser);
 app.post('/api/user/password', [jsonParser, checkCookieToken, ArkimeUtil.getSettingUserDb], User.apiUpdateUserPassword);
@@ -416,29 +410,19 @@ app.use(ArkimeUtil.expressErrorHandler);
 // ----------------------------------------------------------------------------
 function processArgs (argv) {
   for (let i = 0, ilen = argv.length; i < ilen; i++) {
-    if (argv[i] === '-c') {
-      i++;
-      internals.configFile = argv[i];
-    } else if (process.argv[i] === '-o') {
+    if (process.argv[i] === '-o') {
       i++;
       const equal = process.argv[i].indexOf('=');
       if (equal === -1) {
         console.log('Missing equal sign in', process.argv[i]);
         process.exit(1);
       }
-
-      internals.options.set(process.argv[i].slice(0, equal), process.argv[i].slice(equal + 1));
-    } else if (argv[i] === '--insecure') {
-      internals.insecure = true;
-    } else if (argv[i] === '--debug') {
-      internals.debug++;
-    } else if (argv[i] === '--regressionTests') {
-      internals.regressionTests = true;
+      ArkimeConfig.setOverride(process.argv[i].slice(0, equal), process.argv[i].slice(equal + 1));
     } else if (argv[i] === '--help') {
       console.log('cont3xt.js [<options>]');
       console.log('');
       console.log('Options:');
-      console.log('  -c <file>                   Where to fetch the config file from');
+      console.log('  -c, --config <file|url>     Where to fetch the config file from');
       console.log('  -o <section>.<key>=<value>  Override the config file');
       console.log('  --debug                     Increase debug level, multiple are supported');
       console.log('  --insecure                  Disable certificate verification for https calls');
@@ -470,39 +454,16 @@ User.prototype.setCont3xtKeys = function (v) {
   this.save((err) => { console.log('SAVED', err); });
 };
 
-function getConfig (section, sectionKey, d) {
-  const key = `${section}.${sectionKey}`;
-  const value = internals.options.get(key) ?? internals.config[section]?.[sectionKey] ?? d;
-
-  if (internals.debug > 0 && !internals.debugged.has(key)) {
-    console.log(`CONFIG - ${key} is ${value}`);
-    internals.debugged.set(key, true);
-  }
-
-  return value;
-}
+const getConfig = ArkimeConfig.get;
 
 // ----------------------------------------------------------------------------
 // Initialize stuff
 // ----------------------------------------------------------------------------
-function setupAuth () {
-  let userNameHeader = getConfig('cont3xt', 'userNameHeader', 'anonymous');
-  let mode;
-  if (internals.regressionTests) {
-    mode = 'regressionTests';
-  } else if (userNameHeader === 'anonymous') {
-    mode = 'anonymousWithDB';
-  } else if (userNameHeader === 'digest' || userNameHeader === 'oidc') {
-    mode = userNameHeader;
-    userNameHeader = undefined;
-  } else {
-    mode = 'header';
-  }
-
+async function setupAuth () {
   Auth.initialize({
-    debug: internals.debug,
-    mode,
-    userNameHeader,
+    debug: ArkimeConfig.debug,
+    mode: getConfig('cont3xt', 'authMode'),
+    userNameHeader: getConfig('cont3xt', 'userNameHeader'),
     passwordSecret: getConfig('cont3xt', 'passwordSecret', 'password'),
     passwordSecretSection: 'cont3xt',
     basePath: internals.webBasePath,
@@ -527,9 +488,13 @@ function setupAuth () {
   const usersUrl = getConfig('cont3xt', 'usersUrl');
   let usersEs = getConfig('cont3xt', 'usersElasticsearch');
 
-  Db.initialize({
-    insecure: internals.insecure,
-    debug: internals.debug,
+  // ALW - 5.0 Fix
+  ArkimeUtil.debug = internals.debug;
+  ArkimeUtil.adminRole = 'cont3xtAdmin';
+
+  await Db.initialize({
+    insecure: ArkimeConfig.insecure,
+    debug: ArkimeConfig.debug,
     url: dbUrl,
     node: es,
     caTrustFile: getConfig('cont3xt', 'caTrustFile'),
@@ -544,9 +509,9 @@ function setupAuth () {
   }
 
   User.initialize({
-    insecure: internals.insecure,
+    insecure: ArkimeConfig.insecure,
     requestTimeout: getConfig('cont3xt', 'elasticsearchTimeout', 300),
-    debug: internals.debug,
+    debug: ArkimeConfig.debug,
     url: usersUrl,
     node: usersEs,
     caTrustFile: getConfig('cont3xt', 'caTrustFile'),
@@ -559,7 +524,7 @@ function setupAuth () {
   });
 
   Audit.initialize({
-    debug: internals.debug,
+    debug: ArkimeConfig.debug,
     expireHistoryDays: getConfig('cont3xt', 'expireHistoryDays', 180)
   });
 
@@ -573,7 +538,7 @@ function setupAuth () {
   });
 
   Integration.initialize({
-    debug: internals.debug,
+    debug: ArkimeConfig.debug,
     cache,
     getConfig
   });
@@ -581,19 +546,20 @@ function setupAuth () {
 
 async function main () {
   try {
-    internals.config = ini.parseSync(internals.configFile);
-    if (internals.debug === 0) {
-      internals.debug = parseInt(getConfig('cont3xt', 'debug', 0));
+    await ArkimeConfig.initialize({ defaultConfigFile: `${version.config_prefix}/etc/cont3xt.ini` });
+
+    if (ArkimeConfig.debug === 0) {
+      ArkimeConfig.debug = parseInt(getConfig('cont3xt', 'debug', 0));
     }
-    if (internals.debug) {
-      console.log('Debug Level', internals.debug);
+    if (ArkimeConfig.debug) {
+      console.log('Debug Level', ArkimeConfig.debug);
     }
     internals.webBasePath = getConfig('cont3xt', 'webBasePath', '/');
   } catch (err) {
     console.log(err);
     process.exit();
   }
-  setupAuth();
+  await setupAuth();
   setupHSTS();
 
   let server;
@@ -606,10 +572,9 @@ async function main () {
     server = http.createServer(app);
   }
 
-  const userNameHeader = getConfig('cont3xt', 'userNameHeader', 'anonymous');
   const cont3xtHost = getConfig('cont3xt', 'cont3xtHost', undefined);
-  if (userNameHeader !== 'anonymous' && cont3xtHost !== 'localhost' && cont3xtHost !== '127.0.0.1') {
-    console.log('SECURITY WARNING - when userNameHeader is set, cont3xtHost should be localhost or use iptables');
+  if (Auth.mode === 'header' && cont3xtHost !== 'localhost' && cont3xtHost !== '127.0.0.1') {
+    console.log('SECURITY WARNING - When using header auth, cont3xtHost should be localhost or use iptables');
   }
 
   server

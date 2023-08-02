@@ -199,7 +199,7 @@ viewerDeleteToken("/api/user/test8", $token);
 viewerDeleteToken("/api/user/authtest1", $token);
 viewerDeleteToken("/api/user/authtest2", $token);
 
-my $users = viewerPost("/user/list", "");
+my $users = viewerPost("/api/users", "");
 is (@{$users->{data}}, 2, "Two supers left");
 
 viewerGet("/regressionTests/deleteAllUsers");
@@ -207,5 +207,5 @@ sleep(1);
 esGet("/_flush");
 esGet("/_refresh");
 
-my $users = viewerPost("/user/list", "");
+my $users = viewerPost("/api/users", "");
 is (@{$users->{data}}, 0, "Empty users table");

@@ -12,17 +12,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include "moloch.h"
+#include "arkime.h"
 #include <arpa/inet.h>
 
-extern MolochConfig_t        config;
+extern ArkimeConfig_t        config;
 LOCAL  int userField;
 LOCAL  int macField;
 LOCAL  int endpointIpField;
 LOCAL  int framedIpField;
 
 /******************************************************************************/
-LOCAL int radius_udp_parser(MolochSession_t *session, void *UNUSED(uw), const unsigned char *data, int len, int UNUSED(which))
+LOCAL int radius_udp_parser(ArkimeSession_t *session, void *UNUSED(uw), const unsigned char *data, int len, int UNUSED(which))
 {
     BSB bsb;
 
@@ -48,7 +48,7 @@ LOCAL int radius_udp_parser(MolochSession_t *session, void *UNUSED(uw), const un
         }
         switch (type) {
         case 1:
-            moloch_field_string_add(userField, session, (char *)value, length, TRUE);
+            arkime_field_string_add(userField, session, (char *)value, length, TRUE);
             break;
     /*    case 4:
             LOG("NAS-IP-Address: %d %d %u.%u.%u.%u", type, length, value[0], value[1], value[2], value[3]);
@@ -57,7 +57,7 @@ LOCAL int radius_udp_parser(MolochSession_t *session, void *UNUSED(uw), const un
             if (length != 4)
                 return 0;
             memcpy(&in.s_addr, value, 4);
-            moloch_field_ip4_add(framedIpField, session, in.s_addr);
+            arkime_field_ip4_add(framedIpField, session, in.s_addr);
             break;
         case 31:
             if (length == 12) {
@@ -72,13 +72,13 @@ LOCAL int radius_udp_parser(MolochSession_t *session, void *UNUSED(uw), const un
                     if (isupper (str[i]))
                       str[i] = tolower (str[i]);
                 }
-                moloch_field_string_add(macField, session, str, 17, TRUE);
+                arkime_field_string_add(macField, session, str, 17, TRUE);
             }
             break;
         case 66:
             memcpy(str, value, length);
             str[length] = 0;
-            moloch_field_ip_add_str(endpointIpField, session, str);
+            arkime_field_ip_add_str(endpointIpField, session, str);
             break;
 
 /*        default:
@@ -88,7 +88,7 @@ LOCAL int radius_udp_parser(MolochSession_t *session, void *UNUSED(uw), const un
     return 0;
 }
 /******************************************************************************/
-LOCAL void radius_udp_classify(MolochSession_t *session, const unsigned char *UNUSED(data), int len, int UNUSED(which), void *UNUSED(uw))
+LOCAL void radius_udp_classify(ArkimeSession_t *session, const unsigned char *UNUSED(data), int len, int UNUSED(which), void *UNUSED(uw))
 {
     if (len < 4 || len != ((data[2] << 8) | data[3])) {
         return;
@@ -98,42 +98,42 @@ LOCAL void radius_udp_classify(MolochSession_t *session, const unsigned char *UN
         (session->port1 >= 1645 && session->port1 <= 1646) ||
         (session->port2 >= 1812 && session->port2 <= 1813) ||
         (session->port2 >= 1645 && session->port2 <= 1646)) {
-        moloch_parsers_register(session, radius_udp_parser, 0, 0);
-        moloch_session_add_protocol(session, "radius");
+        arkime_parsers_register(session, radius_udp_parser, 0, 0);
+        arkime_session_add_protocol(session, "radius");
     }
 }
 /******************************************************************************/
-void moloch_parser_init()
+void arkime_parser_init()
 {
-    userField = moloch_field_define("radius", "termfield",
+    userField = arkime_field_define("radius", "termfield",
         "radius.user", "User", "radius.user",
         "RADIUS user",
-        MOLOCH_FIELD_TYPE_STR_GHASH,  0,
+        ARKIME_FIELD_TYPE_STR_GHASH,  0,
         "category", "user",
         (char *)NULL);
 
-    macField = moloch_field_define("radius", "lotermfield",
+    macField = arkime_field_define("radius", "lotermfield",
         "radius.mac", "MAC", "radius.mac",
         "Radius Mac",
-        MOLOCH_FIELD_TYPE_STR_GHASH,  MOLOCH_FIELD_FLAG_CNT,
+        ARKIME_FIELD_TYPE_STR_GHASH,  ARKIME_FIELD_FLAG_CNT,
         (char *)NULL);
 
-    endpointIpField = moloch_field_define("radius", "ip",
+    endpointIpField = arkime_field_define("radius", "ip",
         "radius.endpoint-ip", "Endpoint IP", "radius.endpointIp",
         "Radius endpoint ip addresses for session",
-        MOLOCH_FIELD_TYPE_IP_GHASH,  MOLOCH_FIELD_FLAG_CNT,
+        ARKIME_FIELD_TYPE_IP_GHASH,  ARKIME_FIELD_FLAG_CNT,
         (char *)NULL);
 
-    framedIpField = moloch_field_define("radius", "ip",
+    framedIpField = arkime_field_define("radius", "ip",
         "radius.framed-ip", "Framed IP", "radius.framedIp",
         "Radius framed ip addresses for session",
-        MOLOCH_FIELD_TYPE_IP_GHASH,  MOLOCH_FIELD_FLAG_CNT,
+        ARKIME_FIELD_TYPE_IP_GHASH,  ARKIME_FIELD_FLAG_CNT,
         (char *)NULL);
 
 
-    moloch_parsers_classifier_register_udp("radius", NULL, 0, (const unsigned char *)"\x01", 1, radius_udp_classify);
-    moloch_parsers_classifier_register_udp("radius", NULL, 0, (const unsigned char *)"\x02", 1, radius_udp_classify);
-    moloch_parsers_classifier_register_udp("radius", NULL, 0, (const unsigned char *)"\x03", 1, radius_udp_classify);
-    moloch_parsers_classifier_register_udp("radius", NULL, 0, (const unsigned char *)"\x04", 1, radius_udp_classify);
-    moloch_parsers_classifier_register_udp("radius", NULL, 0, (const unsigned char *)"\x05", 1, radius_udp_classify);
+    arkime_parsers_classifier_register_udp("radius", NULL, 0, (const unsigned char *)"\x01", 1, radius_udp_classify);
+    arkime_parsers_classifier_register_udp("radius", NULL, 0, (const unsigned char *)"\x02", 1, radius_udp_classify);
+    arkime_parsers_classifier_register_udp("radius", NULL, 0, (const unsigned char *)"\x03", 1, radius_udp_classify);
+    arkime_parsers_classifier_register_udp("radius", NULL, 0, (const unsigned char *)"\x04", 1, radius_udp_classify);
+    arkime_parsers_classifier_register_udp("radius", NULL, 0, (const unsigned char *)"\x05", 1, radius_udp_classify);
 }

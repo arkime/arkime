@@ -12,21 +12,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include "moloch.h"
+#include "arkime.h"
 
-extern MolochConfig_t        config;
+extern ArkimeConfig_t        config;
 
 /******************************************************************************/
-LOCAL MolochPacketRC erspan_packet_enqueue(MolochPacketBatch_t * UNUSED(batch), MolochPacket_t * const packet, const uint8_t *data, int len)
+LOCAL ArkimePacketRC erspan_packet_enqueue(ArkimePacketBatch_t * UNUSED(batch), ArkimePacket_t * const packet, const uint8_t *data, int len)
 {
     if (unlikely(len) < 8 || unlikely(!data))
-        return MOLOCH_PACKET_CORRUPT;
+        return ARKIME_PACKET_CORRUPT;
 
     if ((*data >> 4) != 1) {
         if (config.logUnknownProtocols)
             LOG("Unknown ERSPAN protocol %d", (*data >> 4));
-        moloch_packet_save_ethernet(packet, 0x88be);
-        return MOLOCH_PACKET_UNKNOWN;
+        arkime_packet_save_ethernet(packet, 0x88be);
+        return ARKIME_PACKET_UNKNOWN;
     }
 
 
@@ -37,10 +37,10 @@ LOCAL MolochPacketRC erspan_packet_enqueue(MolochPacketBatch_t * UNUSED(batch), 
     BSB_IMPORT_u16(bsb, packet->vlan);
     packet->vlan &= 0x7f; // clear the version bits
 
-    return moloch_packet_run_ethernet_cb(batch, packet, data+8,len-8, MOLOCH_ETHERTYPE_ETHER, "ERSpan");
+    return arkime_packet_run_ethernet_cb(batch, packet, data+8,len-8, ARKIME_ETHERTYPE_ETHER, "ERSpan");
 }
 /******************************************************************************/
-void moloch_parser_init()
+void arkime_parser_init()
 {
-    moloch_packet_set_ethernet_cb(0x88be, erspan_packet_enqueue);
+    arkime_packet_set_ethernet_cb(0x88be, erspan_packet_enqueue);
 }

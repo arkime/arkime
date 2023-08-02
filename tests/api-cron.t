@@ -11,8 +11,8 @@ my $json;
 my $token = getTokenCookie();
 my $suffix = int(rand()*1000000);
 
-$json = viewerPostToken("/user/create", '{"userId": "test1", "userName": "UserName", "enabled":true, "password":"password", "roles":["arkimeUser"]}', $token);
-$json = viewerPostToken("/user/create", '{"userId": "test2", "userName": "UserName", "enabled":true, "password":"password", "roles":["cont3xtUser"]}', $token);
+$json = viewerPostToken("/api/user", '{"userId": "test1", "userName": "UserName", "enabled":true, "password":"password", "roles":["arkimeUser"]}', $token);
+$json = viewerPostToken("/api/user", '{"userId": "test2", "userName": "UserName", "enabled":true, "password":"password", "roles":["cont3xtUser"]}', $token);
 
 my $test1Token = getTokenCookie("test1");
 my $test2Token = getTokenCookie("test2");

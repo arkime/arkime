@@ -49,6 +49,17 @@
           :total-rows="recordsTotal"
         />
       </div>
+      <div>
+        <b-button
+          size="sm"
+          class="ml-2"
+          @click="download"
+          variant="primary"
+          v-b-tooltip.hover
+          title="Download CSV">
+          <span class="fa fa-download" />
+        </b-button>
+      </div>
     </div> <!-- /search -->
 
     <!-- error -->
@@ -228,6 +239,12 @@
             data-testid="checkbox"
             v-model="data.item[data.field.key]"
             v-else-if="data.field.type === 'checkbox'"
+            @input="userHasChanged(data.item.userId)"
+          />
+          <b-form-checkbox
+            data-testid="checkbox"
+            v-model="data.item[data.field.key]"
+            v-else-if="data.field.type === 'checkbox-notrole' && !data.item.userId.startsWith('role:')"
             @input="userHasChanged(data.item.userId)"
           />
           <template v-else-if="data.field.type === 'select' && roles && roles.length">
@@ -452,8 +469,8 @@ export default {
         { label: 'ID', key: 'userId', sortable: true, required: true, help: 'The ID used for login (cannot be changed once created)', thStyle: 'white-space:nowrap;text-overflow:ellipsis;vertical-align:middle;' },
         { label: 'Name', key: 'userName', sortable: true, type: 'text', required: true, help: 'Friendly/readable name', thStyle: 'width:250px;white-space:nowrap;text-overflow:ellipsis;vertical-align:middle;' },
         { name: 'Enabled', key: 'enabled', sortable: true, type: 'checkbox', help: 'Is the account currently enabled for anything?', thStyle: 'white-space:nowrap;text-overflow:ellipsis;vertical-align:middle;' },
-        { name: 'Web Interface', key: 'webEnabled', sortable: true, type: 'checkbox', help: 'Can access the web interface. When off only APIs can be used', thStyle: 'white-space:nowrap;text-overflow:ellipsis;vertical-align:middle;' },
-        { name: 'Web Auth Header', key: 'headerAuthEnabled', sortable: true, type: 'checkbox', help: 'Can login using the web auth header. This setting doesn\'t disable the password so it should be scrambled', thStyle: 'white-space:nowrap;text-overflow:ellipsis;vertical-align:middle;' },
+        { name: 'Web Interface', key: 'webEnabled', sortable: true, type: 'checkbox-notrole', help: 'Can access the web interface. When off only APIs can be used', thStyle: 'white-space:nowrap;text-overflow:ellipsis;vertical-align:middle;' },
+        { name: 'Web Auth Header', key: 'headerAuthEnabled', sortable: true, type: 'checkbox-notrole', help: 'Can login using the web auth header. This setting doesn\'t disable the password so it should be scrambled', thStyle: 'white-space:nowrap;text-overflow:ellipsis;vertical-align:middle;' },
         { name: 'Roles', key: 'roles', sortable: false, type: 'select', help: 'Roles assigned', thStyle: 'white-space:nowrap;text-overflow:ellipsis;vertical-align:middle;' },
         { name: 'Last Used', key: 'lastUsed', sortable: true, type: 'checkbox', help: 'The last time Arkime was used by this account', thStyle: 'white-space:nowrap;text-overflow:ellipsis;vertical-align:middle;' },
         { label: '', key: 'action', sortable: false, thStyle: 'width:190px;white-space:nowrap;text-overflow:ellipsis;vertical-align:middle;' }
@@ -667,6 +684,17 @@ export default {
       this.$bvModal.hide('create-user-modal');
       this.showMessage({ variant: 'success', message });
     },
+    download () {
+      const query = this.getUsersQuery();
+
+      UserService.downloadCSV(query).then((response) => {
+        // display success message to user
+        this.showMessage({ variant: 'success', message: response.text || 'Downloaded!' });
+      }).catch((error) => {
+        // display error message to user
+        this.showMessage({ variant: 'danger', message: error.text || error });
+      });
+    },
     /* helper functions ---------------------------------------------------- */
     emitCurrentUserUpdate () {
       this.$emit('update-current-user');
@@ -679,14 +707,17 @@ export default {
         this.msgType = '';
       }, 10000);
     },
-    loadUsers () {
-      const query = {
+    getUsersQuery () {
+      return {
         desc: this.desc,
         length: this.perPage,
         filter: this.searchTerm,
         sortField: this.sortField,
         start: (this.currentPage - 1) * this.perPage
       };
+    },
+    loadUsers () {
+      const query = this.getUsersQuery();
 
       UserService.searchUsers(query).then((response) => {
         this.error = '';

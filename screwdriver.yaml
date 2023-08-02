@@ -7,9 +7,9 @@ shared:
         screwdriver.cd/ram: HIGH
 
     environment:
-        MOLOCH_COPY_BRANCH: "origin/main"
-        MOLOCH_FILE_NAME: "master"
-        ARKIME_FILE_NAME: "main"
+        MOLOCH_COPY_BRANCH: "origin/dev5"
+        MOLOCH_FILE_NAME: "dev5"
+        ARKIME_FILE_NAME: "dev5"
         GIT_SHALLOW_CLONE: false
         ASAN_OPTIONS: "fast_unwind_on_malloc=0"
         RELEASE_ITERATION: 1
@@ -575,3 +575,4 @@ jobs:
         secrets:
             - AWS_ACCESS_KEY_ID
             - AWS_SECRET_ACCESS_KEY
+

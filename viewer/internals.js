@@ -5,20 +5,13 @@ const EventEmitter = require('events').EventEmitter;
 const http = require('http');
 const https = require('https');
 const RE2 = require('re2');
+const ArkimeConfig = require('../common/arkimeConfig');
 
 // build internals
 const internals = {
   isProduction: false,
-  CYBERCHEFVERSION: '10.4.0',
-  elasticBase: Config.getArray('elasticsearch', ',', 'http://localhost:9200'),
-  remoteClusters: Config.configMap('remote-clusters', 'moloch-clusters'),
-  esQueryTimeout: Config.get('elasticsearchTimeout', 5 * 60) + 's',
-  esScrollTimeout: Config.get('elasticsearchScrollTimeout', 5 * 60) + 's',
-  userNameHeader: Config.get('userNameHeader'),
-  esAdminUsersSet: Config.get('esAdminUsers', false) !== false,
-  esAdminUsers: Config.get('multiES', false) ? [] : Config.getArray('esAdminUsers', ',', ''),
+  CYBERCHEFVERSION: '10.5.2',
   httpAgent: new http.Agent({ keepAlive: true, keepAliveMsecs: 5000, maxSockets: 40 }),
-  httpsAgent: new https.Agent({ keepAlive: true, keepAliveMsecs: 5000, maxSockets: 40, rejectUnauthorized: !Config.insecure }),
   previousNodesStats: [],
   caTrustCerts: {},
   cronRunning: false,
@@ -27,12 +20,7 @@ const internals = {
   pluginEmitter: new EventEmitter(),
   writers: {},
   oldDBFields: {},
-  isLocalViewRegExp: Config.get('isLocalViewRegExp') ? new RE2(Config.get('isLocalViewRegExp')) : undefined,
   uploadLimits: {},
-  allowUploads: !!Config.get('uploadCommand'),
-  cronTimeout: +Config.get('dbFlushTimeout', 5) + // How long capture holds items
-               60 + // How long before ES reindexs
-               20, // Transmit and extra time
 
   // http://garethrees.org/2007/11/14/pngcrush/
   emptyPNG: Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAACklEQVR4nGMAAQAABQABDQottAAAAABJRU5ErkJggg==', 'base64'),
@@ -40,7 +28,6 @@ const internals = {
   runningHuntJob: undefined,
   proccessHuntJobsInitialized: false,
   notifiers: undefined,
-  prefix: Config.get('prefix', 'arkime_'),
   shortcutTypeMap: {
     ip: 'ip',
     integer: 'number',
@@ -95,21 +82,39 @@ internals.scriptAggs['ip.dst:port'] = {
   dbField: 'destination.ip'
 };
 
-// make sure there's an _ after the prefix
-if (internals.prefix && !internals.prefix.endsWith('_')) {
-  internals.prefix = `${internals.prefix}_`;
-}
-
-if (Config.get('uploadFileSizeLimit')) {
-  internals.uploadLimits.fileSize = parseInt(Config.get('uploadFileSizeLimit'));
-}
-
-if (!internals.elasticBase[0].startsWith('http')) {
-  internals.elasticBase[0] = 'http://' + internals.elasticBase[0];
-}
-
 internals.initialize = (app) => {
   internals.isProduction = app.get('env') === 'production';
 };
+
+Config.loaded(() => {
+// build internals
+  internals.elasticBase = Config.getArray('elasticsearch', ',', 'http://localhost:9200');
+  internals.remoteClusters = Config.configMap('remote-clusters', 'moloch-clusters');
+  internals.esQueryTimeout = Config.get('elasticsearchTimeout', 5 * 60) + 's';
+  internals.esScrollTimeout = Config.get('elasticsearchScrollTimeout', 5 * 60) + 's';
+  internals.userNameHeader = Config.get('userNameHeader');
+  internals.esAdminUsersSet = Config.get('esAdminUsers', false) !== false;
+  internals.esAdminUsers = Config.get('multiES', false) ? [] : Config.getArray('esAdminUsers', ',', '');
+  internals.httpsAgent = new https.Agent({ keepAlive: true, keepAliveMsecs: 5000, maxSockets: 40, rejectUnauthorized: !ArkimeConfig.insecure });
+  internals.isLocalViewRegExp = Config.get('isLocalViewRegExp') ? new RE2(Config.get('isLocalViewRegExp')) : undefined;
+  internals.allowUploads = !!Config.get('uploadCommand');
+  internals.cronTimeout = +Config.get('dbFlushTimeout', 5) + // How long capture holds items
+                           60 + // How long before ES reindexs
+                           20; // Transmit and extra time
+  internals.prefix = Config.get('prefix', 'arkime_');
+
+  // make sure there's an _ after the prefix
+  if (internals.prefix && !internals.prefix.endsWith('_')) {
+    internals.prefix = `${internals.prefix}_`;
+  }
+
+  if (Config.get('uploadFileSizeLimit')) {
+    internals.uploadLimits.fileSize = parseInt(Config.get('uploadFileSizeLimit'));
+  }
+
+  if (!internals.elasticBase[0].startsWith('http')) {
+    internals.elasticBase[0] = 'http://' + internals.elasticBase[0];
+  }
+});
 
 module.exports = internals;

@@ -22,18 +22,13 @@
 /// ///////////////////////////////////////////////////////////////////////////////
 /// / Command Line Parsing
 /// ///////////////////////////////////////////////////////////////////////////////
-const ini = require('iniparser');
 const os = require('os');
 const fs = require('fs');
 const version = require('../common/version');
 const Auth = require('../common/auth');
+const ArkimeConfig = require('../common/arkimeConfig');
 
-exports.debug = 0;
-exports.insecure = false;
-exports.esProfile = false;
-exports.regressionTests = false;
 const internals = {
-  configFile: `${version.config_prefix}/etc/config.ini`,
   hostName: os.hostname(),
   fields: [],
   fieldsMap: {},
@@ -42,494 +37,465 @@ const internals = {
   debugged: new Map()
 };
 
-function processArgs () {
-  const args = [];
-  for (let i = 0, ilen = process.argv.length; i < ilen; i++) {
-    if (process.argv[i] === '-c') {
-      i++;
-      internals.configFile = process.argv[i];
-    } else if (process.argv[i] === '--host') {
-      i++;
-      internals.hostName = process.argv[i];
-    } else if (process.argv[i] === '-n') {
-      i++;
-      internals.nodeName = process.argv[i];
-    } else if (process.argv[i] === '-o' || process.argv[i] === '--option') {
-      i++;
-      const equal = process.argv[i].indexOf('=');
-      if (equal === -1) {
-        console.log('Missing equal sign in', process.argv[i]);
-        process.exit(1);
-      }
-
-      internals.options.set(process.argv[i].slice(0, equal), process.argv[i].slice(equal + 1));
-    } else if (process.argv[i] === '--debug') {
-      exports.debug++;
-    } else if (process.argv[i] === '--insecure') {
-      exports.insecure = true;
-    } else if (process.argv[i] === '--esprofile') {
-      exports.esProfile = true;
-    } else if (process.argv[i] === '--regressionTests') {
-      exports.regressionTests = true;
-    } else {
-      args.push(process.argv[i]);
-    }
-  }
-  process.argv = args;
-
-  if (!internals.nodeName) {
-    internals.nodeName = internals.hostName.split('.')[0];
+class Config {
+  static get debug () {
+    return ArkimeConfig.debug;
   }
 
-  if (exports.debug > 0) {
-    console.log('Debug Level', exports.debug);
-  }
-}
-processArgs();
+  static esProfile = false;
 
-/// ///////////////////////////////////////////////////////////////////////////////
-// Config File & Dropping Privileges
-/// ///////////////////////////////////////////////////////////////////////////////
+  static #keyFileLocation;
+  static #certFileLocation;
+  static keyFileData;
+  static certFileData;
 
-if (!fs.existsSync(internals.configFile)) {
-  console.log("ERROR - Couldn't open config file '%s' maybe use the -c <configfile> option", internals.configFile);
-  process.exit(1);
-}
-internals.config = ini.parseSync(internals.configFile);
-
-if (internals.config.default === undefined) {
-  if (internals.nodeName !== 'cont3xt') {
-    console.log('ERROR - [default] section missing from', internals.configFile);
-    process.exit(1);
-  }
-  internals.config.default = {};
-}
-
-exports.sectionGet = function (section, key, defaultValue) {
-  let value;
-
-  if (internals.config[section] && internals.config[section][key] !== undefined) {
-    value = internals.config[section][key];
-  } else {
-    value = defaultValue;
-  }
-
-  if (value === 'false') {
-    return false;
-  }
-
-  return value;
-};
-
-exports.getFull = function (node, key, defaultValue) {
-  let value;
-  if (internals.options.has(key) && (node === 'default' || node === internals.nodeName)) {
-    value = internals.options.get(key);
-  } else if (internals.config[node] && internals.config[node][key] !== undefined) {
-    value = internals.config[node][key];
-  } else if (internals.config[node] && internals.config[node].nodeClass && internals.config[internals.config[node].nodeClass] && internals.config[internals.config[node].nodeClass][key]) {
-    value = internals.config[internals.config[node].nodeClass][key];
-  } else if (internals.config.default[key] !== undefined) {
-    value = internals.config.default[key];
-  } else {
-    value = defaultValue;
-  }
-
-  if (exports.debug > 0 && !internals.debugged.has(node + '::' + key)) {
-    console.log(`CONFIG - ${key} on node ${node} is ${value}`);
-    internals.debugged.set(node + '::' + key, true);
-  }
-
-  if (value === 'false') {
-    return false;
-  }
-  if (value === 'true') {
-    return true;
-  }
-  return value;
-};
-
-exports.get = function (key, defaultValue) {
-  return exports.getFull(internals.nodeName, key, defaultValue);
-};
-
-exports.getBoolFull = function (node, key, defaultValue) {
-  const value = exports.getFull(node, key);
-  if (value !== undefined) {
-    if (value === 'true' || value === '1') {
-      return true;
-    } else if (value === 'false' || value === '0') {
-      return false;
-    } else {
-      console.log('ERROR - invalid value for ', key);
-    }
-  }
-  return defaultValue;
-};
-
-exports.getBool = function (key, defaultValue) {
-  return exports.getBoolFull(internals.nodeName, key, defaultValue);
-};
-
-// Return an array split on separator, remove leading/trailing spaces, remove empty elements
-exports.getArray = function (key, separator, defaultValue) {
-  const value = exports.get(key, defaultValue);
-  if (typeof value === 'string') {
-    return value.split(separator).map(s => s.trim()).filter(s => s.match(/^\S+$/));
-  } else {
-    return value;
-  }
-};
-
-exports.getObj = function (key, defaultValue) {
-  const full = exports.getFull(internals.nodeName, key, defaultValue);
-  if (!full) {
-    return null;
-  }
-
-  const obj = {};
-  full.split(';').forEach((element) => {
-    const parts = element.split('=');
-    if (parts && parts.length === 2) {
-      if (parts[1] === 'true') {
-        parts[1] = true;
-      } else if (parts[1] === 'false') {
-        parts[1] = false;
-      }
-      obj[parts[0]] = parts[1];
-    }
-  });
-  return obj;
-};
-
-function loadIncludes (includes) {
-  if (!includes) {
-    return;
-  }
-  includes.split(';').forEach((file) => {
-    const ignoreError = file[0] === '-';
-    if (ignoreError) {
-      file = file.substring(1);
-    }
-
-    if (!fs.existsSync(file)) {
-      if (ignoreError) {
-        return;
-      }
-      console.log("ERROR - Couldn't open config includes file '%s'", file);
-      process.exit(1);
-    }
-    const config = ini.parseSync(file);
-    for (const group in config) {
-      if (!internals.config[group]) {
-        internals.config[group] = config[group];
-      } else {
-        for (const key in config[group]) {
-          internals.config[group][key] = config[group][key];
+  // ----------------------------------------------------------------------------
+  static processArgs () {
+    const args = [];
+    const doverrides = [];
+    for (let i = 0, ilen = process.argv.length; i < ilen; i++) {
+      if (process.argv[i] === '--host') {
+        i++;
+        internals.hostName = process.argv[i];
+      } else if (process.argv[i] === '-n' || process.argv[i] === '--node') {
+        i++;
+        internals.nodeName = process.argv[i];
+      } else if (process.argv[i] === '-o' || process.argv[i] === '--option') {
+        i++;
+        const equal = process.argv[i].indexOf('=');
+        if (equal === -1) {
+          console.log('Missing equal sign in', process.argv[i]);
+          process.exit(1);
         }
+
+        const key = process.argv[i].slice(0, equal);
+        const value = process.argv[i].slice(equal + 1);
+        if (key.includes('.')) {
+          ArkimeConfig.setOverride(key, value);
+        } else {
+          // Need to do later since nodeName can change
+          doverrides.push({ key, value });
+        }
+      } else if (process.argv[i] === '--esprofile') {
+        Config.esProfile = true;
+      } else {
+        args.push(process.argv[i]);
       }
     }
-  });
-}
+    process.argv = args;
 
-loadIncludes(exports.get('includes', null));
+    if (!internals.nodeName) {
+      internals.nodeName = internals.hostName.split('.')[0];
+    }
 
-function dropPrivileges () {
-  if (process.getuid() !== 0) {
-    return;
+    for (const obj of doverrides) {
+      ArkimeConfig.setOverride(`default.${obj.key}`, obj.value);
+      ArkimeConfig.setOverride(`${internals.nodeName}.${obj.key}`, obj.value);
+    }
   }
 
-  const group = exports.get('dropGroup', null);
-  if (group !== null) {
-    process.setgid(group);
+  /// ///////////////////////////////////////////////////////////////////////////////
+  // Config File & Dropping Privileges
+  /// ///////////////////////////////////////////////////////////////////////////////
+
+  // ----------------------------------------------------------------------------
+  static sectionGet = ArkimeConfig.get;
+
+  // ----------------------------------------------------------------------------
+  static getFull (node, key, defaultValue) {
+    return ArkimeConfig.get([node, 'default'], key, defaultValue);
   }
 
-  const user = exports.get('dropUser', null);
-  if (user !== null) {
-    process.setuid(user);
-  }
-}
+  // ----------------------------------------------------------------------------
+  static get (key, defaultValue) {
+    return ArkimeConfig.get([internals.nodeName, 'default'], key, defaultValue);
+  };
 
-exports.getConfigFile = function () {
-  return internals.configFile;
-};
-
-exports.isHTTPS = function (node) {
-  return exports.getFull(node || internals.nodeName, 'keyFile') &&
-         exports.getFull(node || internals.nodeName, 'certFile');
-};
-
-exports.basePath = function (node) {
-  return exports.getFull(node || internals.nodeName, 'webBasePath', '/');
-};
-
-exports.nodeName = function () {
-  return internals.nodeName;
-};
-
-exports.hostName = function () {
-  return internals.hostName;
-};
-
-exports.arkimeWebURL = () => {
-  let webUrl = exports.get('arkimeWebURL', `${exports.hostName()}${exports.basePath()}`);
-  if (!webUrl.startsWith('http')) {
-    webUrl = exports.isHTTPS() ? `https://${webUrl}` : `http://${webUrl}`;
-  }
-  return webUrl;
-};
-
-exports.keys = function (section) {
-  if (internals.config[section] === undefined) { return []; }
-  return Object.keys(internals.config[section]);
-};
-
-exports.headers = function (section) {
-  if (internals.config[section] === undefined) { return []; }
-  const keys = Object.keys(internals.config[section]);
-  if (!keys) { return []; }
-  const headers = Object.keys(internals.config[section]).map((key) => {
-    const obj = { name: key };
-    internals.config[section][key].split(';').forEach((element) => {
-      const i = element.indexOf(':');
-      if (i === -1) {
-        return;
+  // ----------------------------------------------------------------------------
+  static getBoolFull (node, key, defaultValue) {
+    const value = Config.getFull(node, key);
+    if (value !== undefined) {
+      if (value === 'true' || value === '1') {
+        return true;
+      } else if (value === 'false' || value === '0') {
+        return false;
+      } else {
+        console.log('ERROR - invalid value for ', key);
       }
+    }
+    return defaultValue;
+  };
 
-      const parts = [element.slice(0, i), element.slice(i + 1)];
-      if (parts[1] === 'true') {
-        parts[1] = true;
-      } else if (parts[1] === 'false') {
-        parts[1] = false;
+  // ----------------------------------------------------------------------------
+  static getBool (key, defaultValue) {
+    return Config.getBoolFull(internals.nodeName, key, defaultValue);
+  };
+
+  // ----------------------------------------------------------------------------
+  // Return an array split on separator, remove leading/trailing spaces, remove empty elements
+  static getArray (key, separator, defaultValue) {
+    const value = Config.get(key, defaultValue);
+    if (typeof value === 'string') {
+      return value.split(separator).map(s => s.trim()).filter(s => s.match(/^\S+$/));
+    } else {
+      return value;
+    }
+  };
+
+  // ----------------------------------------------------------------------------
+  static getObj (key, defaultValue) {
+    const full = Config.getFull(internals.nodeName, key, defaultValue);
+    if (!full) {
+      return null;
+    }
+
+    const obj = {};
+    full.split(';').forEach((element) => {
+      const parts = element.split('=');
+      if (parts && parts.length === 2) {
+        if (parts[1] === 'true') {
+          parts[1] = true;
+        } else if (parts[1] === 'false') {
+          parts[1] = false;
+        }
+        obj[parts[0]] = parts[1];
       }
-      obj[parts[0]] = parts[1];
     });
     return obj;
-  });
+  };
 
-  return headers;
-};
+  // ----------------------------------------------------------------------------
+  static #dropPrivileges () {
+    if (process.getuid() !== 0) {
+      return;
+    }
 
-exports.configMap = function (section, dSection, d) {
-  const data = internals.config[section] || internals.config[dSection] || d;
-  if (data === undefined) { return {}; }
-  const keys = Object.keys(data);
-  if (!keys) { return {}; }
-  const map = {};
-  keys.forEach((key) => {
-    const obj = {};
-    data[key].split(';').forEach((element) => {
-      const i = element.indexOf(':');
-      if (i === -1) {
-        return;
-      }
+    const group = Config.get('dropGroup', null);
+    if (group !== null) {
+      process.setgid(group);
+    }
 
-      const parts = [element.slice(0, i), element.slice(i + 1)];
-      if (parts[1] === 'true') {
-        parts[1] = true;
-      } else if (parts[1] === 'false') {
-        parts[1] = false;
-      }
-      obj[parts[0]] = parts[1];
-    });
-    map[key] = obj;
-  });
-
-  return map;
-};
-
-let fsWait = null;
-let httpsServer = null;
-let httpsCryptoOption = null;
-function watchFile (e, filename) {
-  if (!httpsServer || !httpsCryptoOption) {
-    return;
+    const user = Config.get('dropUser', null);
+    if (user !== null) {
+      process.setuid(user);
+    }
   }
 
-  if (filename) { // 10s timeout for file changes (including file name changes)
-    if (fsWait) { clearTimeout(fsWait); };
+  // ----------------------------------------------------------------------------
+  static getConfigFile () {
+    return ArkimeConfig.configFile;
+  };
 
-    fsWait = setTimeout(() => {
-      fsWait = null;
-      try { // try to get the new cert files
-        loadCertData();
-      } catch (err) { // don't continue if we can't read them
-        console.log('Missing cert or key files. Cannot reload cert.');
-        return;
+  // ----------------------------------------------------------------------------
+  static isHTTPS (node) {
+    return Config.getFull(node || internals.nodeName, 'keyFile') &&
+           Config.getFull(node || internals.nodeName, 'certFile');
+  };
+
+  // ----------------------------------------------------------------------------
+  static basePath (node) {
+    return Config.getFull(node || internals.nodeName, 'webBasePath', '/');
+  };
+
+  // ----------------------------------------------------------------------------
+  static nodeName () {
+    return internals.nodeName;
+  };
+
+  // ----------------------------------------------------------------------------
+  static hostName () {
+    return internals.hostName;
+  };
+
+  // ----------------------------------------------------------------------------
+  static arkimeWebURL () {
+    let webUrl = Config.get('arkimeWebURL', `${Config.hostName()}${Config.basePath()}`);
+    if (!webUrl.startsWith('http')) {
+      webUrl = Config.isHTTPS() ? `https://${webUrl}` : `http://${webUrl}`;
+    }
+    return webUrl;
+  };
+
+  // ----------------------------------------------------------------------------
+  static keys (section) {
+    return Object.keys(ArkimeConfig.getSection(section) ?? {});
+  };
+
+  // ----------------------------------------------------------------------------
+  static headers (section) {
+    const csection = ArkimeConfig.getSection(section);
+    if (csection === undefined) { return []; }
+    const keys = Object.keys(csection);
+    if (!keys) { return []; }
+    const headers = Object.keys(csection).map((key) => {
+      const obj = { name: key };
+      csection[key].split(';').forEach((element) => {
+        const i = element.indexOf(':');
+        if (i === -1) {
+          return;
+        }
+
+        const parts = [element.slice(0, i), element.slice(i + 1)];
+        if (parts[1] === 'true') {
+          parts[1] = true;
+        } else if (parts[1] === 'false') {
+          parts[1] = false;
+        }
+        obj[parts[0]] = parts[1];
+      });
+      return obj;
+    });
+
+    return headers;
+  };
+
+  // ----------------------------------------------------------------------------
+  static configMap (section, dSection, d) {
+    const data = ArkimeConfig.getSection(section) ?? ArkimeConfig.getSection(dSection) ?? d;
+    if (data === undefined) { return {}; }
+    const keys = Object.keys(data);
+    if (!keys) { return {}; }
+    const map = {};
+    keys.forEach((key) => {
+      const obj = {};
+      data[key].split(';').forEach((element) => {
+        const i = element.indexOf(':');
+        if (i === -1) {
+          return;
+        }
+
+        const parts = [element.slice(0, i), element.slice(i + 1)];
+        if (parts[1] === 'true') {
+          parts[1] = true;
+        } else if (parts[1] === 'false') {
+          parts[1] = false;
+        }
+        obj[parts[0]] = parts[1];
+      });
+      map[key] = obj;
+    });
+
+    return map;
+  };
+
+  // ----------------------------------------------------------------------------
+  static #fsWait = null;
+  static #httpsServer = null;
+  static #httpsCryptoOption = null;
+  static watchFile (e, filename) {
+    if (!Config.#httpsServer || !Config.#httpsCryptoOption) {
+      return;
+    }
+
+    if (filename) { // 10s timeout for file changes (including file name changes)
+      if (Config.#fsWait) { clearTimeout(Config.#fsWait); };
+
+      Config.#fsWait = setTimeout(() => {
+        Config.#fsWait = null;
+        try { // try to get the new cert files
+          Config.#loadCertData();
+        } catch (err) { // don't continue if we can't read them
+          console.log('Missing cert or key files. Cannot reload cert.');
+          return;
+        }
+
+        console.log('Reloading cert...');
+
+        const options = { // set new server cert options
+          key: Config.keyFileData,
+          cert: Config.certFileData,
+          secureOptions: Config.#httpsCryptoOption
+        };
+
+        try {
+          Config.#httpsServer.setSecureContext(options);
+        } catch (err) {
+          console.log('ERROR cert not reloaded: ', err.toString());
+        }
+      }, 10000);
+    }
+  }
+
+  // ----------------------------------------------------------------------------
+  static setServerToReloadCerts (server, cryptoOption) {
+    if (!Config.isHTTPS()) { return; } // only used in https mode
+
+    if (Config.debug > 0) {
+      console.log('Watching cert and key files. If either is changed, the server will be updated with the new files.');
+    }
+
+    Config.#httpsServer = server;
+    Config.#httpsCryptoOption = cryptoOption;
+  };
+
+  // ----------------------------------------------------------------------------
+  static #loadCertData () {
+    Config.#keyFileLocation = Config.get('keyFile');
+    Config.#certFileLocation = Config.get('certFile');
+    Config.keyFileData = fs.readFileSync(Config.#keyFileLocation);
+    Config.certFileData = fs.readFileSync(Config.#certFileLocation);
+  }
+
+  /// ///////////////////////////////////////////////////////////////////////////////
+  // Fields
+  /// ///////////////////////////////////////////////////////////////////////////////
+  static getFields () {
+    return internals.fields;
+  };
+
+  // ----------------------------------------------------------------------------
+  static getFieldsMap () {
+    return internals.fieldsMap;
+  };
+
+  // ----------------------------------------------------------------------------
+  static getDBFieldsMap () {
+    return internals.dbFieldsMap;
+  };
+
+  // ----------------------------------------------------------------------------
+  static getDBField (field, property) {
+    if (internals.dbFieldsMap[field] === undefined) { return undefined; }
+    if (property === undefined) { return internals.dbFieldsMap[field]; }
+    return internals.dbFieldsMap[field][property];
+  };
+
+  // ----------------------------------------------------------------------------
+  static getCategories () {
+    return internals.categories;
+  };
+
+  // ----------------------------------------------------------------------------
+  static loadFields (data) {
+    internals.fields = [];
+    internals.fieldsMap = {};
+    internals.dbFieldsMap = {};
+    internals.categories = {};
+    data.forEach((field) => {
+      const source = field._source;
+      source.exp = field._id;
+
+      // Add some transforms
+      if (!source.transform) {
+        if (source.exp === 'http.uri' || source.exp === 'http.uri.tokens') {
+          source.transform = 'removeProtocol';
+        }
+        if (source.exp === 'host' || source.exp.startsWith('host.')) {
+          source.transform = 'removeProtocolAndURI';
+        }
       }
 
-      console.log('Reloading cert...');
+      internals.fieldsMap[field._id] = source;
+      internals.dbFieldsMap[source.dbField] = source;
+      if (source.dbField2 !== undefined) {
+        internals.dbFieldsMap[source.dbField2] = source;
+      }
+      if (source.fieldECS !== undefined) {
+        internals.dbFieldsMap[source.fieldECS] = source;
+        internals.fieldsMap[source.fieldECS] = source;
+      }
+      internals.fields.push(source);
+      if (!internals.categories[source.group]) {
+        internals.categories[source.group] = [];
+      }
+      internals.categories[source.group].push(source);
+      (source.aliases || []).forEach((alias) => {
+        internals.fieldsMap[alias] = source;
+      });
+    });
 
-      const options = { // set new server cert options
-        key: exports.keyFileData,
-        cert: exports.certFileData,
-        secureOptions: httpsCryptoOption
-      };
+    function sortFunc (a, b) {
+      return a.exp.localeCompare(b.exp);
+    }
 
+    for (const cat in internals.categories) {
+      internals.categories[cat] = internals.categories[cat].sort(sortFunc);
+    }
+  };
+
+  // ----------------------------------------------------------------------------
+  static #loadedCbs = [];
+  static loaded (cb) {
+    if (Config.#loadedCbs === undefined) {
+      cb(); // Loaded already, call right away
+    } else {
+      Config.#loadedCbs.push(cb);
+    }
+  }
+
+  /// ///////////////////////////////////////////////////////////////////////////////
+  // Initialize Auth
+  /// ///////////////////////////////////////////////////////////////////////////////
+
+  static async initialize () {
+    /*
+    if (internals.config.default === undefined) {
+      if (internals.nodeName !== 'cont3xt') {
+        console.log('ERROR - [default] section missing from', internals.configFile);
+        process.exit(1);
+      }
+      internals.config.default = {};
+    }
+    */
+
+    await ArkimeConfig.initialize({ defaultConfigFile: `${version.config_prefix}/etc/wiseService.ini` });
+    ArkimeConfig.loadIncludes(Config.get('includes'));
+
+    const loadedCbs = Config.#loadedCbs;
+    Config.#loadedCbs = undefined; // Mark as loaded
+    for (const cb of loadedCbs) {
+      cb();
+    }
+
+    if (Config.debug === 0) {
+      ArkimeConfig.debug = parseInt(Config.get('debug', 0));
+      if (Config.debug) {
+        console.log('Debug Level', Config.debug);
+      }
+    }
+
+    if (Config.isHTTPS()) {
       try {
-        httpsServer.setSecureContext(options);
+        Config.#loadCertData();
+
+        // watch the cert and key files
+        fs.watch(Config.#certFileLocation, { persistent: false }, Config.watchFile);
+        fs.watch(Config.#keyFileLocation, { persistent: false }, Config.watchFile);
       } catch (err) {
-        console.log('ERROR cert not reloaded: ', err.toString());
-      }
-    }, 10000);
-  }
-}
-
-exports.setServerToReloadCerts = function (server, cryptoOption) {
-  if (!exports.isHTTPS()) { return; } // only used in https mode
-
-  if (exports.debug > 0) {
-    console.log('Watching cert and key files. If either is changed, the server will be updated with the new files.');
-  }
-
-  httpsServer = server;
-  httpsCryptoOption = cryptoOption;
-};
-
-function loadCertData () {
-  exports.keyFileLocation = exports.get('keyFile');
-  exports.certFileLocation = exports.get('certFile');
-  exports.keyFileData = fs.readFileSync(exports.keyFileLocation);
-  exports.certFileData = fs.readFileSync(exports.certFileLocation);
-}
-
-if (exports.debug === 0) {
-  exports.debug = parseInt(exports.get('debug', 0));
-  if (exports.debug) {
-    console.log('Debug Level', exports.debug);
-  }
-}
-
-if (exports.isHTTPS()) {
-  try {
-    loadCertData();
-
-    // watch the cert and key files
-    fs.watch(exports.certFileLocation, { persistent: false }, watchFile);
-    fs.watch(exports.keyFileLocation, { persistent: false }, watchFile);
-  } catch (err) {
-    console.log('ERROR loading cert or key files:', err.toString());
-  }
-}
-
-dropPrivileges();
-
-/// ///////////////////////////////////////////////////////////////////////////////
-// Fields
-/// ///////////////////////////////////////////////////////////////////////////////
-exports.getFields = function () {
-  return internals.fields;
-};
-
-exports.getFieldsMap = function () {
-  return internals.fieldsMap;
-};
-
-exports.getDBFieldsMap = function () {
-  return internals.dbFieldsMap;
-};
-
-exports.getDBField = function (field, property) {
-  if (internals.dbFieldsMap[field] === undefined) { return undefined; }
-  if (property === undefined) { return internals.dbFieldsMap[field]; }
-  return internals.dbFieldsMap[field][property];
-};
-
-exports.getCategories = function () {
-  return internals.categories;
-};
-
-exports.loadFields = function (data) {
-  internals.fields = [];
-  internals.fieldsMap = {};
-  internals.dbFieldsMap = {};
-  internals.categories = {};
-  data.forEach((field) => {
-    const source = field._source;
-    source.exp = field._id;
-
-    // Add some transforms
-    if (!source.transform) {
-      if (source.exp === 'http.uri' || source.exp === 'http.uri.tokens') {
-        source.transform = 'removeProtocol';
-      }
-      if (source.exp === 'host' || source.exp.startsWith('host.')) {
-        source.transform = 'removeProtocolAndURI';
+        console.log('ERROR loading cert or key files:', err.toString());
       }
     }
 
-    internals.fieldsMap[field._id] = source;
-    internals.dbFieldsMap[source.dbField] = source;
-    if (source.dbField2 !== undefined) {
-      internals.dbFieldsMap[source.dbField2] = source;
-    }
-    if (source.fieldECS !== undefined) {
-      internals.dbFieldsMap[source.fieldECS] = source;
-      internals.fieldsMap[source.fieldECS] = source;
-    }
-    internals.fields.push(source);
-    if (!internals.categories[source.group]) {
-      internals.categories[source.group] = [];
-    }
-    internals.categories[source.group].push(source);
-    (source.aliases || []).forEach((alias) => {
-      internals.fieldsMap[alias] = source;
+    Config.#dropPrivileges();
+
+    Auth.initialize({
+      mode: Config.get('authMode'),
+      userNameHeader: Config.get('userNameHeader'),
+      debug: Config.debug,
+      basePath: Config.basePath(),
+      passwordSecret: Config.getFull(internals.nodeName === 'cont3xt' ? 'cont3xt' : 'default', 'passwordSecret', 'password'),
+      passwordSecretSection: internals.nodeName === 'cont3xt' ? 'cont3xt' : 'default',
+      serverSecret: Config.getFull('default', 'serverSecret'),
+      requiredAuthHeader: Config.get('requiredAuthHeader'),
+      requiredAuthHeaderVal: Config.get('requiredAuthHeaderVal'),
+      userAutoCreateTmpl: Config.get('userAutoCreateTmpl'),
+      userAuthIps: Config.get('userAuthIps'),
+      s2s: true,
+      s2sRegressionTests: !!Config.get('s2sRegressionTests'),
+      caTrustFile: Config.getFull(internals.nodeName, 'caTrustFile'),
+      authConfig: {
+        httpRealm: Config.get('httpRealm', 'Moloch'),
+        userIdField: Config.get('authUserIdField'),
+        discoverURL: Config.get('authDiscoverURL'),
+        clientId: Config.get('authClientId'),
+        clientSecret: Config.get('authClientSecret'),
+        redirectURIs: Config.get('authRedirectURIs'),
+        trustProxy: Config.get('authTrustProxy')
+      }
     });
-  });
-
-  function sortFunc (a, b) {
-    return a.exp.localeCompare(b.exp);
   }
-
-  for (const cat in internals.categories) {
-    internals.categories[cat] = internals.categories[cat].sort(sortFunc);
-  }
-};
-
-/// ///////////////////////////////////////////////////////////////////////////////
-// Initialize Auth
-/// ///////////////////////////////////////////////////////////////////////////////
-
-let mode;
-if (exports.get('passwordSecret')) {
-  const userNameHeader = exports.get('userNameHeader');
-  if (!userNameHeader || userNameHeader === 'digest') {
-    mode = 'digest';
-  } else if (userNameHeader === 'anonymous') {
-    mode = 'anonymousWithDB';
-  } else if (userNameHeader === 'oidc' || userNameHeader === 's2s') {
-    mode = userNameHeader;
-  } else {
-    mode = 'header';
-  }
-} else if (exports.regressionTests) {
-  mode = 'regressionTests';
-} else {
-  mode = 'anonymousWithDB';
 }
 
-Auth.initialize({
-  mode,
-  debug: exports.debug,
-  basePath: exports.basePath(),
-  passwordSecret: exports.getFull(internals.nodeName === 'cont3xt' ? 'cont3xt' : 'default', 'passwordSecret', 'password'),
-  passwordSecretSection: internals.nodeName === 'cont3xt' ? 'cont3xt' : 'default',
-  serverSecret: exports.getFull('default', 'serverSecret'),
-  userNameHeader: exports.get('userNameHeader'),
-  requiredAuthHeader: exports.get('requiredAuthHeader'),
-  requiredAuthHeaderVal: exports.get('requiredAuthHeaderVal'),
-  userAutoCreateTmpl: exports.get('userAutoCreateTmpl'),
-  userAuthIps: exports.get('userAuthIps'),
-  s2s: true,
-  s2sRegressionTests: !!exports.get('s2sRegressionTests'),
-  caTrustFile: exports.getFull(internals.nodeName, 'caTrustFile'),
-  authConfig: {
-    httpRealm: exports.get('httpRealm', 'Moloch'),
-    userIdField: exports.get('authUserIdField'),
-    discoverURL: exports.get('authDiscoverURL'),
-    clientId: exports.get('authClientId'),
-    clientSecret: exports.get('authClientSecret'),
-    redirectURIs: exports.get('authRedirectURIs'),
-    trustProxy: exports.get('authTrustProxy')
-  }
-});
+Config.processArgs();
+
+module.exports = Config;

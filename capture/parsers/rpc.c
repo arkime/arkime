@@ -12,10 +12,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include "moloch.h"
+#include "arkime.h"
 
 /******************************************************************************/
-LOCAL void rpc_classify_udp(MolochSession_t *session, const unsigned char *data, int len, int UNUSED(which), void *UNUSED(uw))
+LOCAL void rpc_classify_udp(ArkimeSession_t *session, const unsigned char *data, int len, int UNUSED(which), void *UNUSED(uw))
 {
     if (len < 16)
         return;
@@ -60,13 +60,13 @@ LOCAL void rpc_classify_udp(MolochSession_t *session, const unsigned char *data,
         return;
     }
 
-    if (moloch_session_has_protocol(session, name))
+    if (arkime_session_has_protocol(session, name))
         return;
-    moloch_session_add_protocol(session, name);
+    arkime_session_add_protocol(session, name);
 }
 /******************************************************************************/
-void moloch_parser_init()
+void arkime_parser_init()
 {
-    moloch_parsers_classifier_register_udp("rpc", NULL, 4, (unsigned char *)"\x00\x00\x00\x00\x00\x00\x00\x02\x00\x01\x86", 11, rpc_classify_udp);
+    arkime_parsers_classifier_register_udp("rpc", NULL, 4, (unsigned char *)"\x00\x00\x00\x00\x00\x00\x00\x02\x00\x01\x86", 11, rpc_classify_udp);
 }
 

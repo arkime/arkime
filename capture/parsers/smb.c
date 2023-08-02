@@ -12,11 +12,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include "moloch.h"
+#include "arkime.h"
 
 //#define SMBDEBUG
 
-extern MolochConfig_t   config;
+extern ArkimeConfig_t   config;
 
 LOCAL  int domainField;
 LOCAL  int userField;
@@ -57,7 +57,7 @@ typedef struct {
 #define SMB2_FLAGS_SERVER_TO_REDIR 0x00000001
 
 /******************************************************************************/
-LOCAL void smb_add_string(MolochSession_t *session, int field, char *buf, int len, int useunicode)
+LOCAL void smb_add_string(ArkimeSession_t *session, int field, char *buf, int len, int useunicode)
 {
     if (len == 0)
         return;
@@ -72,41 +72,41 @@ LOCAL void smb_add_string(MolochSession_t *session, int field, char *buf, int le
                 LOG("ERROR %s", error->message);
             g_error_free(error);
         } else {
-            if (!moloch_field_string_add(field, session, out, -1, FALSE)) {
+            if (!arkime_field_string_add(field, session, out, -1, FALSE)) {
                 g_free(out);
             }
         }
     } else {
-        moloch_field_string_add(field, session, buf, len, TRUE);
+        arkime_field_string_add(field, session, buf, len, TRUE);
     }
 }
 /******************************************************************************/
 // 2.2.13 AUTHENTICATE_MESSAGE from  http://download.microsoft.com/download/9/5/E/95EF66AF-9026-4BB0-A41D-A4F81802D92C/[MS-NLMP].pdf
-LOCAL void smb_security_blob(MolochSession_t *session, unsigned char *data, int len)
+LOCAL void smb_security_blob(ArkimeSession_t *session, unsigned char *data, int len)
 {
     BSB bsb;
 
     BSB_INIT(bsb, data, len);
 
     uint32_t apc, atag, alen;
-    unsigned char *value = moloch_parsers_asn_get_tlv(&bsb, &apc, &atag, &alen);
+    unsigned char *value = arkime_parsers_asn_get_tlv(&bsb, &apc, &atag, &alen);
 
     if (atag != 1)
         return;
 
     BSB_INIT(bsb, value, alen);
-    value = moloch_parsers_asn_get_tlv(&bsb, &apc, &atag, &alen);
+    value = arkime_parsers_asn_get_tlv(&bsb, &apc, &atag, &alen);
 
     if (atag != 16)
         return;
 
     BSB_INIT(bsb, value, alen);
-    value = moloch_parsers_asn_get_tlv(&bsb, &apc, &atag, &alen);
+    value = arkime_parsers_asn_get_tlv(&bsb, &apc, &atag, &alen);
     if (atag != 2)
         return;
 
     BSB_INIT(bsb, value, alen);
-    value = moloch_parsers_asn_get_tlv(&bsb, &apc, &atag, &alen);
+    value = arkime_parsers_asn_get_tlv(&bsb, &apc, &atag, &alen);
 
     if (atag != 4 || alen < 7 || memcmp("NTLMSSP", value, 7) != 0)
         return;
@@ -129,7 +129,7 @@ LOCAL void smb_security_blob(MolochSession_t *session, unsigned char *data, int 
         BSB_LIMPORT_u32(bsb, offsets[i]);
 
         if (BSB_IS_ERROR(bsb) || offsets[i] > BSB_SIZE(bsb) || lens[i] > BSB_SIZE(bsb) || offsets[i] + lens[i] > BSB_SIZE(bsb)) {
-            moloch_session_add_tag(session, "smb:bad-security-blob");
+            arkime_session_add_tag(session, "smb:bad-security-blob");
             return;
         }
     }
@@ -162,7 +162,7 @@ LOCAL void smb1_str_null_split(char *buf, int len, char **out, int max)
     }
 }
 /******************************************************************************/
-LOCAL void smb1_parse_osverdomain(MolochSession_t *session, char *buf, int len, int useunicode)
+LOCAL void smb1_parse_osverdomain(ArkimeSession_t *session, char *buf, int len, int useunicode)
 {
     char        *out;
     gsize        bread, bwritten;
@@ -186,18 +186,18 @@ LOCAL void smb1_parse_osverdomain(MolochSession_t *session, char *buf, int len, 
     smb1_str_null_split(out, bwritten, outs, 3);
 
     if (outs[0] && *outs[0])
-        moloch_field_string_add(osField, session, outs[0], -1, TRUE);
+        arkime_field_string_add(osField, session, outs[0], -1, TRUE);
     if (outs[1] && *outs[1])
-        moloch_field_string_add(verField, session, outs[1], -1, TRUE);
+        arkime_field_string_add(verField, session, outs[1], -1, TRUE);
     if (outs[2] && *outs[2])
-        moloch_field_string_add(domainField, session, outs[2], -1, TRUE);
+        arkime_field_string_add(domainField, session, outs[2], -1, TRUE);
 
     if (useunicode) {
         g_free(out);
     }
 }
 /******************************************************************************/
-LOCAL void smb1_parse_userdomainosver(MolochSession_t *session, char *buf, int len, int useunicode)
+LOCAL void smb1_parse_userdomainosver(ArkimeSession_t *session, char *buf, int len, int useunicode)
 {
     char        *out;
     gsize        bread, bwritten;
@@ -221,20 +221,20 @@ LOCAL void smb1_parse_userdomainosver(MolochSession_t *session, char *buf, int l
     smb1_str_null_split(out, bwritten, outs, 4);
 
     if (outs[0] && *outs[0])
-        moloch_field_string_add(userField, session, outs[0], -1, TRUE);
+        arkime_field_string_add(userField, session, outs[0], -1, TRUE);
     if (outs[1] && *outs[1])
-        moloch_field_string_add(domainField, session, outs[1], -1, TRUE);
+        arkime_field_string_add(domainField, session, outs[1], -1, TRUE);
     if (outs[2] && *outs[2])
-        moloch_field_string_add(osField, session, outs[2], -1, TRUE);
+        arkime_field_string_add(osField, session, outs[2], -1, TRUE);
     if (outs[3] && *outs[3])
-        moloch_field_string_add(verField, session, outs[3], -1, TRUE);
+        arkime_field_string_add(verField, session, outs[3], -1, TRUE);
 
     if (useunicode) {
         g_free(out);
     }
 }
 /******************************************************************************/
-LOCAL int smb1_parse(MolochSession_t *session, SMBInfo_t *smb, BSB *bsb, char *state, uint32_t *remlen, int which)
+LOCAL int smb1_parse(ArkimeSession_t *session, SMBInfo_t *smb, BSB *bsb, char *state, uint32_t *remlen, int which)
 {
     unsigned char *start = BSB_WORK_PTR(*bsb);
 
@@ -379,7 +379,7 @@ LOCAL int smb1_parse(MolochSession_t *session, SMBInfo_t *smb, BSB *bsb, char *s
     return 0;
 }
 /******************************************************************************/
-LOCAL int smb2_parse(MolochSession_t *session, SMBInfo_t *UNUSED(smb), BSB *bsb, char *state, uint32_t *remlen, int UNUSED(which))
+LOCAL int smb2_parse(ArkimeSession_t *session, SMBInfo_t *UNUSED(smb), BSB *bsb, char *state, uint32_t *remlen, int UNUSED(which))
 {
     unsigned char *start = BSB_WORK_PTR(*bsb);
 
@@ -459,7 +459,7 @@ LOCAL int smb2_parse(MolochSession_t *session, SMBInfo_t *UNUSED(smb), BSB *bsb,
                 LOG("ERROR %s", error->message);
                 g_error_free(error);
             } else {
-                if (!moloch_field_string_add(fnField, session, out, -1, FALSE)) {
+                if (!arkime_field_string_add(fnField, session, out, -1, FALSE)) {
                     g_free(out);
                 }
             }
@@ -474,7 +474,7 @@ LOCAL int smb2_parse(MolochSession_t *session, SMBInfo_t *UNUSED(smb), BSB *bsb,
     return 0;
 }
 /******************************************************************************/
-LOCAL int smb_parser(MolochSession_t *session, void *uw, const unsigned char *data, int remaining, int which)
+LOCAL int smb_parser(ArkimeSession_t *session, void *uw, const unsigned char *data, int remaining, int which)
 {
     SMBInfo_t            *smb          = uw;
     char                 *state        = &smb->state[which];
@@ -507,7 +507,7 @@ LOCAL int smb_parser(MolochSession_t *session, void *uw, const unsigned char *da
 #ifndef FUZZLOCH
             LOG("WARNING - Not enough room to parse SMB packet of size %u", *remlen);
 #endif
-            moloch_parsers_unregister(session, smb);
+            arkime_parsers_unregister(session, smb);
             return 0;
         }
 
@@ -552,17 +552,17 @@ LOCAL int smb_parser(MolochSession_t *session, void *uw, const unsigned char *da
         }
 
         if (BSB_IS_ERROR(bsb)) {
-            moloch_parsers_unregister(session, smb);
+            arkime_parsers_unregister(session, smb);
             return 0;
         }
 
         if (BSB_REMAINING(bsb) > 0 && BSB_WORK_PTR(bsb) != (unsigned char *)buf) {
 #ifdef SMBDEBUG
-            //LOG("  Moving data %ld %s", BSB_REMAINING(bsb), moloch_session_id_string(session->protocol, session->addr1, session->port1, session->addr2, session->port2));
+            //LOG("  Moving data %ld %s", BSB_REMAINING(bsb), arkime_session_id_string(session->protocol, session->addr1, session->port1, session->addr2, session->port2));
 #endif
             if (BSB_REMAINING(bsb) > MAX_SMB_BUFFER) {
                 LOG("WARNING - Not enough room to parse SMB packet of size %u", (uint32_t)BSB_REMAINING(bsb));
-                moloch_parsers_unregister(session, smb);
+                arkime_parsers_unregister(session, smb);
                 return 0;
             }
             memmove(buf, BSB_WORK_PTR(bsb), BSB_REMAINING(bsb));
@@ -572,81 +572,81 @@ LOCAL int smb_parser(MolochSession_t *session, void *uw, const unsigned char *da
     return 0;
 }
 /******************************************************************************/
-LOCAL void smb_free(MolochSession_t UNUSED(*session), void *uw)
+LOCAL void smb_free(ArkimeSession_t UNUSED(*session), void *uw)
 {
     SMBInfo_t            *smb          = uw;
 
-    MOLOCH_TYPE_FREE(SMBInfo_t, smb);
+    ARKIME_TYPE_FREE(SMBInfo_t, smb);
 }
 /******************************************************************************/
-LOCAL void smb_classify(MolochSession_t *session, const unsigned char *data, int UNUSED(len), int UNUSED(which), void *UNUSED(uw))
+LOCAL void smb_classify(ArkimeSession_t *session, const unsigned char *data, int UNUSED(len), int UNUSED(which), void *UNUSED(uw))
 {
     if (data[4] != 0xff && data[4] != 0xfe)
         return;
 
-    if (moloch_session_has_protocol(session, "smb"))
+    if (arkime_session_has_protocol(session, "smb"))
         return;
 
-    moloch_session_add_protocol(session, "smb");
+    arkime_session_add_protocol(session, "smb");
 
-    SMBInfo_t            *smb          = MOLOCH_TYPE_ALLOC0(SMBInfo_t);
+    SMBInfo_t            *smb          = ARKIME_TYPE_ALLOC0(SMBInfo_t);
 
-    moloch_parsers_register(session, smb_parser, smb, smb_free);
+    arkime_parsers_register(session, smb_parser, smb, smb_free);
 }
 /******************************************************************************/
-void moloch_parser_init()
+void arkime_parser_init()
 {
-    shareField =moloch_field_define("smb", "termfield",
+    shareField =arkime_field_define("smb", "termfield",
         "smb.share", "Share", "smb.share",
         "SMB shares connected to",
-        MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT,
+        ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT,
         (char *)NULL);
 
-    fnField = moloch_field_define("smb", "termfield",
+    fnField = arkime_field_define("smb", "termfield",
         "smb.fn", "Filename", "smb.filename",
         "SMB files opened, created, deleted",
-        MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT,
+        ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT,
         (char *)NULL);
 
-    osField = moloch_field_define("smb", "termfield",
+    osField = arkime_field_define("smb", "termfield",
         "smb.os", "OS", "smb.os",
         "SMB OS information",
-        MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT,
+        ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT,
         (char *)NULL);
 
-    domainField = moloch_field_define("smb", "termfield",
+    domainField = arkime_field_define("smb", "termfield",
         "smb.domain", "Domain", "smb.domain",
         "SMB domain",
-        MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT,
+        ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT,
         (char *)NULL);
 
-    verField = moloch_field_define("smb", "termfield",
+    verField = arkime_field_define("smb", "termfield",
         "smb.ver", "Version", "smb.version",
         "SMB Version information",
-        MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT,
+        ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT,
         (char *)NULL);
 
-    userField = moloch_field_define("smb", "termfield",
+    userField = arkime_field_define("smb", "termfield",
         "smb.user", "User", "smb.user",
         "SMB User",
-        MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT,
+        ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT,
         "category", "user",
         (char *)NULL);
 
-    hostField = moloch_field_define("smb", "termfield",
+    hostField = arkime_field_define("smb", "termfield",
         "host.smb", "Hostname", "smb.host",
         "SMB Host name",
-        MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT,
+        ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT,
         "category", "host",
         "aliases", "[\"smb.host\"]",
         (char *)NULL);
 
-    moloch_field_define("smb", "lotextfield",
+    arkime_field_define("smb", "lotextfield",
         "host.smb.tokens", "Hostname Tokens", "smb.hostTokens",
         "SMB Host Tokens",
-        MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_FAKE,
+        ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_FAKE,
         "aliases", "[\"smb.host.tokens\"]",
         (char *)NULL);
 
-    moloch_parsers_classifier_register_tcp("smb", NULL, 5, (unsigned char*)"SMB", 3, smb_classify);
+    arkime_parsers_classifier_register_tcp("smb", NULL, 5, (unsigned char*)"SMB", 3, smb_classify);
 }

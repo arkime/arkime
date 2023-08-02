@@ -26,6 +26,7 @@ const fs = require('fs');
 const basicAuth = require('basic-auth');
 const zlib = require('zlib');
 const ArkimeUtil = require('../common/arkimeUtil');
+const ArkimeConfig = require('../common/arkimeConfig');
 
 // express app
 const app = express();
@@ -34,69 +35,78 @@ const app = express();
 // Config
 // ============================================================================
 
-const elasticsearch = Config.get('elasticsearch');
-const sensors = Config.configMap('esproxy-sensors');
-console.log('sensors', sensors);
-
-for (const sensor in sensors) {
-  sensors[sensor].node = sensor;
-  if (sensors[sensor].ip) {
-    sensors[sensor].ip = sensors[sensor].ip.split(',');
-  }
-}
-let prefix = Config.get('prefix', 'arkime_');
-if (prefix !== '' && prefix.charAt(prefix.length - 1) !== '_') {
-  prefix += '_';
-}
-
-const oldprefix = prefix === 'arkime_' ? '' : prefix;
-
-console.log(`PREFIX: ${prefix} OLDPREFIX: ${oldprefix}`);
-
-const esSSLOptions = { rejectUnauthorized: !Config.insecure };
-const esClientKey = Config.get('esClientKey');
-const esClientCert = Config.get('esClientCert');
-const caTrustFile = Config.getFull(Config.nodeName(), 'caTrustFile');
-if (caTrustFile) { esSSLOptions.ca = ArkimeUtil.certificateFileToArray(caTrustFile); };
-if (esClientKey) {
-  esSSLOptions.key = fs.readFileSync(esClientKey);
-  esSSLOptions.cert = fs.readFileSync(esClientCert);
-  const esClientKeyPass = Config.get('esClientKeyPass');
-  if (esClientKeyPass) {
-    esSSLOptions.passphrase = esClientKeyPass;
-  }
-}
-
-const esAPIKey = Config.get('elasticsearchAPIKey');
-const esBasicAuth = Config.get('elasticsearchBasicAuth');
-
+let elasticsearch;
+let sensors;
+let oldprefix;
+let prefix;
+const esSSLOptions = { rejectUnauthorized: !ArkimeConfig.insecure };
 let authHeader;
-if (esAPIKey) {
-  authHeader = `ApiKey ${esAPIKey}`;
-} else if (esBasicAuth) {
-  if (!esBasicAuth.includes(':')) {
-    authHeader = `Basic ${esBasicAuth}`;
-  } else {
-    authHeader = `Basic ${Buffer.from(esBasicAuth).toString('base64')}`;
+
+Config.loaded(() => {
+  elasticsearch = Config.get('elasticsearch');
+  sensors = Config.configMap('esproxy-sensors');
+  oldprefix = prefix === 'arkime_' ? '' : prefix;
+  console.log('sensors', sensors);
+
+  for (const sensor in sensors) {
+    sensors[sensor].node = sensor;
+    if (sensors[sensor].ip) {
+      sensors[sensor].ip = sensors[sensor].ip.split(',');
+    }
   }
-}
+  prefix = Config.get('prefix', 'arkime_');
+  if (prefix !== '' && prefix.charAt(prefix.length - 1) !== '_') {
+    prefix += '_';
+  }
+  console.log(`PREFIX: ${prefix} OLDPREFIX: ${oldprefix}`);
+
+  const esClientKey = Config.get('esClientKey');
+  const esClientCert = Config.get('esClientCert');
+  const caTrustFile = Config.getFull(Config.nodeName(), 'caTrustFile');
+  if (caTrustFile) { esSSLOptions.ca = ArkimeUtil.certificateFileToArray(caTrustFile); };
+  if (esClientKey) {
+    esSSLOptions.key = fs.readFileSync(esClientKey);
+    esSSLOptions.cert = fs.readFileSync(esClientCert);
+    const esClientKeyPass = Config.get('esClientKeyPass');
+    if (esClientKeyPass) {
+      esSSLOptions.passphrase = esClientKeyPass;
+    }
+  }
+
+  const esAPIKey = Config.get('elasticsearchAPIKey');
+  const esBasicAuth = Config.get('elasticsearchBasicAuth');
+
+  if (esAPIKey) {
+    authHeader = `ApiKey ${esAPIKey}`;
+  } else if (esBasicAuth) {
+    if (!esBasicAuth.includes(':')) {
+      authHeader = `Basic ${esBasicAuth}`;
+    } else {
+      authHeader = `Basic ${Buffer.from(esBasicAuth).toString('base64')}`;
+    }
+  }
+});
 
 // ============================================================================
 // Optional tee stuff
-const elasticsearchTee = Config.sectionGet('tee', 'elasticsearch');
-const esAPIKeyTee = Config.sectionGet('tee', 'elasticsearchAPIKey');
-const esBasicAuthTee = Config.sectionGet('tee', 'elasticsearchBasicAuth');
-
+let elasticsearchTee;
 let authHeaderTee;
-if (esAPIKeyTee) {
-  authHeaderTee = `ApiKey ${esAPIKeyTee}`;
-} else if (esBasicAuthTee) {
-  if (!esBasicAuthTee.includes(':')) {
-    authHeaderTee = `Basic ${esBasicAuthTee}`;
-  } else {
-    authHeaderTee = `Basic ${Buffer.from(esBasicAuthTee).toString('base64')}`;
+
+Config.loaded(() => {
+  elasticsearchTee = Config.sectionGet('tee', 'elasticsearch');
+  const esAPIKeyTee = Config.sectionGet('tee', 'elasticsearchAPIKey');
+  const esBasicAuthTee = Config.sectionGet('tee', 'elasticsearchBasicAuth');
+
+  if (esAPIKeyTee) {
+    authHeaderTee = `ApiKey ${esAPIKeyTee}`;
+  } else if (esBasicAuthTee) {
+    if (!esBasicAuthTee.includes(':')) {
+      authHeaderTee = `Basic ${esBasicAuthTee}`;
+    } else {
+      authHeaderTee = `Basic ${Buffer.from(esBasicAuthTee).toString('base64')}`;
+    }
   }
-}
+});
 
 // ============================================================================
 // GET calls we can match exactly
@@ -135,7 +145,7 @@ const putExact = {
 // ============================================================================
 // RegressionTests
 // ===========================================================================
-if (Config.regressionTests) {
+if (ArkimeConfig.regressionTests) {
   app.post('/regressionTests/shutdown', function (req, res) {
     process.exit(0);
   });
@@ -449,15 +459,21 @@ app.use(ArkimeUtil.expressErrorHandler);
 const httpAgent = new http.Agent({ keepAlive: true, keepAliveMsecs: 5000, maxSockets: 100 });
 const httpsAgent = new https.Agent(Object.assign({ keepAlive: true, keepAliveMsecs: 5000, maxSockets: 100 }, esSSLOptions));
 
-console.log('Listen on ', Config.get('esProxyPort', '7200'));
-if (Config.isHTTPS()) {
-  const cryptoOption = require('crypto').constants.SSL_OP_NO_TLSv1;
-  const server = https.createServer({
-    key: Config.keyFileData,
-    cert: Config.certFileData,
-    secureOptions: cryptoOption
-  }, app).listen(Config.get('esProxyPort', '7200'), Config.get('esProxyHost', undefined));
-  Config.setServerToReloadCerts(server, cryptoOption);
-} else {
-  http.createServer(app).listen(Config.get('esProxyPort', '7200'), Config.get('esProxyHost', undefined));
+async function main () {
+  await Config.initialize();
+
+  console.log('Listen on ', Config.get('esProxyPort', '7200'));
+  if (Config.isHTTPS()) {
+    const cryptoOption = require('crypto').constants.SSL_OP_NO_TLSv1;
+    const server = https.createServer({
+      key: Config.keyFileData,
+      cert: Config.certFileData,
+      secureOptions: cryptoOption
+    }, app).listen(Config.get('esProxyPort', '7200'), Config.get('esProxyHost', undefined));
+    Config.setServerToReloadCerts(server, cryptoOption);
+  } else {
+    http.createServer(app).listen(Config.get('esProxyPort', '7200'), Config.get('esProxyHost', undefined));
+  }
 }
+
+main();

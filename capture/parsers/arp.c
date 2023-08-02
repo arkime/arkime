@@ -12,18 +12,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include "moloch.h"
+#include "arkime.h"
 
 //#define ARPDEBUG 1
 
-extern MolochConfig_t        config;
+extern ArkimeConfig_t        config;
 
-LOCAL MolochPQ_t *arpPq;
+LOCAL ArkimePQ_t *arpPq;
 
 LOCAL int arpMProtocol;
 
 /******************************************************************************/
-LOCAL void arp_create_sessionid(uint8_t *sessionId, MolochPacket_t *packet)
+LOCAL void arp_create_sessionid(uint8_t *sessionId, ArkimePacket_t *packet)
 {
     uint8_t *data = packet->pkt + packet->payloadOffset;
 
@@ -38,50 +38,50 @@ LOCAL void arp_create_sessionid(uint8_t *sessionId, MolochPacket_t *packet)
         memcpy(sessionId+5, data+14, 4);
 }
 /******************************************************************************/
-LOCAL int arp_pre_process(MolochSession_t *session, MolochPacket_t * const UNUSED(packet), int isNewSession)
+LOCAL int arp_pre_process(ArkimeSession_t *session, ArkimePacket_t * const UNUSED(packet), int isNewSession)
 {
     if (isNewSession)
-        moloch_session_add_protocol(session, "arp");
+        arkime_session_add_protocol(session, "arp");
 
     return 0;
 }
 /******************************************************************************/
-LOCAL int arp_process(MolochSession_t *UNUSED(session), MolochPacket_t * const UNUSED(packet))
+LOCAL int arp_process(ArkimeSession_t *UNUSED(session), ArkimePacket_t * const UNUSED(packet))
 {
     return 1;
 }
 /******************************************************************************/
-LOCAL MolochPacketRC arp_packet_enqueue(MolochPacketBatch_t * UNUSED(batch), MolochPacket_t * const packet, const uint8_t *data, int len)
+LOCAL ArkimePacketRC arp_packet_enqueue(ArkimePacketBatch_t * UNUSED(batch), ArkimePacket_t * const packet, const uint8_t *data, int len)
 {
-    uint8_t sessionId[MOLOCH_SESSIONID_LEN];
+    uint8_t sessionId[ARKIME_SESSIONID_LEN];
 
     if (len < 28)
-        return MOLOCH_PACKET_CORRUPT;
+        return ARKIME_PACKET_CORRUPT;
 
     if (data[7] > 2)
-        return MOLOCH_PACKET_CORRUPT;
+        return ARKIME_PACKET_CORRUPT;
 
     packet->payloadOffset = data - packet->pkt;
     packet->payloadLen = len;
 
     arp_create_sessionid(sessionId, packet);
 
-    packet->hash = moloch_session_hash(sessionId);
+    packet->hash = arkime_session_hash(sessionId);
     packet->mProtocol = arpMProtocol;
 
-    return MOLOCH_PACKET_DO_PROCESS;
+    return ARKIME_PACKET_DO_PROCESS;
 }
 /******************************************************************************/
-LOCAL void arp_pq_cb(MolochSession_t *session, void UNUSED(*uw))
+LOCAL void arp_pq_cb(ArkimeSession_t *session, void UNUSED(*uw))
 {
     session->midSave = 1;
 }
 /******************************************************************************/
-void moloch_parser_init()
+void arkime_parser_init()
 {
-    moloch_packet_set_ethernet_cb(0x0806, arp_packet_enqueue);
-    arpPq = moloch_pq_alloc(10, arp_pq_cb);
-    arpMProtocol = moloch_mprotocol_register("arp",
+    arkime_packet_set_ethernet_cb(0x0806, arp_packet_enqueue);
+    arpPq = arkime_pq_alloc(10, arp_pq_cb);
+    arpMProtocol = arkime_mprotocol_register("arp",
                                              SESSION_OTHER,
                                              arp_create_sessionid,
                                              arp_pre_process,

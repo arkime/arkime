@@ -5787,16 +5787,6 @@ sub usersUpdate
       "type": "object",
       "dynamic": "true"
     },
-    "views": {
-      "type": "object",
-      "dynamic": "true",
-      "enabled": "false"
-    },
-    "notifiers": {
-      "type": "object",
-      "dynamic": "true",
-      "enabled": "false"
-    },
     "columnConfigs": {
       "type": "object",
       "dynamic": "true",

@@ -19,10 +19,10 @@
 #include "molua.h"
 /******************************************************************************/
 
-extern MolochConfig_t        config;
+extern ArkimeConfig_t        config;
 
-lua_State *Ls[MOLOCH_MAX_PACKET_THREADS];
-MolochSession_t moluaFakeSessions[MOLOCH_MAX_PACKET_THREADS];
+lua_State *Ls[ARKIME_MAX_PACKET_THREADS];
+ArkimeSession_t moluaFakeSessions[ARKIME_MAX_PACKET_THREADS];
 
 int molua_pluginIndex;
 
@@ -63,13 +63,13 @@ LOCAL int M_expression_to_fieldId(lua_State *L)
         return luaL_error(L, "usage: <field expression>");
     }
 
-    int pos = moloch_field_by_exp(lua_tostring(L, 1));
+    int pos = arkime_field_by_exp(lua_tostring(L, 1));
     lua_pushinteger(L, pos);
 
     return 1;
 }
 /******************************************************************************/
-void luaopen_moloch(lua_State *L)
+void luaopen_arkime(lua_State *L)
 {
     static const struct luaL_Reg methods[] = {
         { NULL, NULL }
@@ -80,15 +80,15 @@ void luaopen_moloch(lua_State *L)
         { NULL, NULL }
     };
 
-    luaL_newmetatable(L, "Moloch");
+    luaL_newmetatable(L, "Arkime");
     lua_pushvalue(L, -1);
     lua_setfield(L, -2, "__index");
     luaL_setfuncs(L, methods, 0);
     luaL_newlib(L, functions);
-    lua_setglobal(L, "Moloch");
+    lua_setglobal(L, "Arkime");
 }
 /******************************************************************************/
-void molua_session_save(MolochSession_t *session, int final)
+void molua_session_save(ArkimeSession_t *session, int final)
 {
     if (final && session->pluginData[molua_pluginIndex]) {
         MoluaPlugin_t *mp = session->pluginData[molua_pluginIndex];
@@ -96,19 +96,19 @@ void molua_session_save(MolochSession_t *session, int final)
         if (mp->table) {
             luaL_unref(Ls[session->thread], LUA_REGISTRYINDEX, mp->table);
         }
-        MOLOCH_TYPE_FREE(MoluaPlugin_t, mp);
+        ARKIME_TYPE_FREE(MoluaPlugin_t, mp);
         session->pluginData[molua_pluginIndex] = 0;
     }
 }
 /******************************************************************************/
-void moloch_plugin_init()
+void arkime_plugin_init()
 {
     int thread;
-    char **names = moloch_config_str_list(NULL, "luaFiles", "moloch.lua");
+    char **names = arkime_config_str_list(NULL, "luaFiles", "moloch.lua");
 
-    molua_pluginIndex = moloch_plugins_register("lua", TRUE);
+    molua_pluginIndex = arkime_plugins_register("lua", TRUE);
 
-    moloch_plugins_set_cb("lua", NULL, NULL, NULL, NULL, molua_session_save, NULL, NULL, NULL);
+    arkime_plugins_set_cb("lua", NULL, NULL, NULL, NULL, molua_session_save, NULL, NULL, NULL);
 
 
     for (thread = 0; thread < config.packetThreads; thread++) {
@@ -119,10 +119,10 @@ void moloch_plugin_init()
         int i;
         for (i = 0; names[i]; i++) {
 
-            luaopen_moloch(L);
-            luaopen_molochhttpservice(L);
-            luaopen_molochsession(L);
-            luaopen_molochdata(L);
+            luaopen_arkime(L);
+            luaopen_arkimehttpservice(L);
+            luaopen_arkimesession(L);
+            luaopen_arkimedata(L);
 
             if (luaL_loadfile(L, names[i])) {
                 CONFIGEXIT("Error loading %s: %s", names[i], lua_tostring(L, -1));

@@ -1,5 +1,5 @@
 # Test cont3xt.js
-use Test::More tests => 133;
+use Test::More tests => 138;
 use Test::Differences;
 use Data::Dumper;
 use MolochTest;
@@ -263,6 +263,7 @@ $json = cont3xtPutToken("/api/overview", to_json({
     viewRoles => ["cont3xtUser"],
     editRoles => ["superAdmin"],
     fields => [{
+        type => "linked",
         from => "Foo",
         field => "foo_field"
     }]
@@ -275,6 +276,7 @@ $json = cont3xtPutToken("/api/overview", to_json({
     viewRoles => ["cont3xtUser"],
     editRoles => ["superAdmin"],
     fields => [{
+        type => "linked",
         from => "Foo",
         field => "foo_field"
     }]
@@ -287,6 +289,7 @@ $json = cont3xtPutToken("/api/overview", to_json({
     viewRoles => ["cont3xtUser"],
     editRoles => ["superAdmin"],
     fields => [{
+        type => "linked",
         from => "Foo",
         field => "foo_field"
     }]
@@ -300,6 +303,7 @@ $json = cont3xtPutToken("/api/overview", to_json({
     viewRoles => ["cont3xtUser"],
     editRoles => ["superAdmin"],
     fields => [{
+        type => "linked",
         from => "Foo",
         field => "foo_field"
     }]
@@ -342,6 +346,20 @@ $json = cont3xtPutToken("/api/overview", to_json({
     viewRoles => ["cont3xtUser"],
     editRoles => ["superAdmin"],
     fields => [{
+        from => "Foo",
+        field => "foo_field"
+    }]
+}), $token);
+eq_or_diff($json, from_json('{"success": false, "text": "Field type must be either \"linked\" or \"custom\""}'));
+
+$json = cont3xtPutToken("/api/overview", to_json({
+    name => "Overview1",
+    title => "Overview of %{query}",
+    iType => "domain",
+    viewRoles => ["cont3xtUser"],
+    editRoles => ["superAdmin"],
+    fields => [{
+        type => "linked",
         field => "foo_field"
     }]
 }), $token);
@@ -354,10 +372,11 @@ $json = cont3xtPutToken("/api/overview", to_json({
     viewRoles => ["cont3xtUser"],
     editRoles => ["superAdmin"],
     fields => [{
+        type => "linked",
         from => "Foo"
     }]
 }), $token);
-eq_or_diff($json, from_json('{"success": false, "text": "Field missing field"}'));
+eq_or_diff($json, from_json('{"success": false, "text": "Linked field missing field"}'));
 
 $json = cont3xtPutToken("/api/overview", to_json({
     name => "Overview1",
@@ -366,12 +385,76 @@ $json = cont3xtPutToken("/api/overview", to_json({
     viewRoles => ["cont3xtUser"],
     editRoles => ["superAdmin"],
     fields => [{
+        type => "linked",
         from => "Foo",
         field => "foo_field",
         alias => 1
     }]
 }), $token);
-eq_or_diff($json, from_json('{"success": false, "text": "Field alias must be a string or undefined"}'));
+eq_or_diff($json, from_json('{"success": false, "text": "Linked field alias must be a string or undefined"}'));
+
+$json = cont3xtPutToken("/api/overview", to_json({
+    name => "Overview1",
+    title => "Overview of %{query}",
+    iType => "domain",
+    viewRoles => ["cont3xtUser"],
+    editRoles => ["superAdmin"],
+    fields => [{
+        type => "custom",
+        from => "Foo"
+    }]
+}), $token);
+eq_or_diff($json, from_json('{"success": false, "text": "Custom field must be a string or object"}'));
+
+$json = cont3xtPutToken("/api/overview", to_json({
+    name => "Overview1",
+    title => "Overview of %{query}",
+    iType => "domain",
+    viewRoles => ["cont3xtUser"],
+    editRoles => ["superAdmin"],
+    fields => [{
+        type   => "custom",
+        from => "Foo",
+        custom => 1
+    }]
+}), $token);
+eq_or_diff($json, from_json('{"success": false, "text": "Custom field must be a string or object"}'));
+
+$json = cont3xtPutToken("/api/overview", to_json({
+    name => "Overview1",
+    title => "Overview of %{query}",
+    iType => "domain",
+    viewRoles => ["cont3xtUser"],
+    editRoles => ["superAdmin"],
+    fields => [{
+        type   => "custom",
+        from => "Foo",
+        custom => {
+            label => "foo name",
+            field => "foo.bar"
+        },
+        field  => "baz"
+    }]
+}), $token);
+eq_or_diff($json, from_json('{"success": false, "text": "Custom field must not have field"}'));
+
+$json = cont3xtPutToken("/api/overview", to_json({
+    name => "Overview1",
+    title => "Overview of %{query}",
+    iType => "domain",
+    viewRoles => ["cont3xtUser"],
+    editRoles => ["superAdmin"],
+    fields => [{
+        type   => "custom",
+        from => "Foo",
+        custom => {
+            label => "foo name",
+            field => "foo.bar"
+        },
+        alias  => "foo-ier name"
+    }]
+}), $token);
+eq_or_diff($json, from_json('{"success": false, "text": "Custom field must not have alias"}'));
 
 $json = cont3xtPutToken("/api/overview", to_json({
     name => "Overview1",
@@ -380,6 +463,7 @@ $json = cont3xtPutToken("/api/overview", to_json({
     viewRoles => 1,
     editRoles => ["superAdmin"],
     fields => [{
+        type => "linked",
         from => "Foo",
         field => "foo_field"
     }]
@@ -393,6 +477,7 @@ $json = cont3xtPutToken("/api/overview", to_json({
     viewRoles => [1],
     editRoles => ["superAdmin"],
     fields => [{
+        type => "linked",
         from => "Foo",
         field => "foo_field"
     }]
@@ -406,6 +491,7 @@ $json = cont3xtPutToken("/api/overview", to_json({
     viewRoles => ["cont3xtUser"],
     editRoles => 1,
     fields => [{
+        type => "linked",
         from => "Foo",
         field => "foo_field"
     }]
@@ -419,6 +505,7 @@ $json = cont3xtPutToken("/api/overview", to_json({
     viewRoles => ["cont3xtUser"],
     editRoles => [1],
     fields => [{
+        type => "linked",
         from => "Foo",
         field => "foo_field"
     }]
@@ -433,6 +520,7 @@ $json = cont3xtPut('/api/overview', to_json({
     viewRoles => ["cont3xtUser"],
     editRoles => ["superAdmin"],
     fields => [{
+        type => "linked",
         from  => "Foo",
         field => "foo_field"
     }]
@@ -446,8 +534,17 @@ $json = cont3xtPutToken('/api/overview', to_json({
     viewRoles => ["superAdmin"],
     editRoles => ["superAdmin"],
     fields => [{
+        type => "linked",
         from  => "Foo",
         field => "foo_field"
+    }, {
+        type => "custom",
+        from => "Foo",
+        custom => {
+            field  => "foo.bar",
+            label  => "Foo Bar",
+            type   => "array"
+        }
     }]
 }), $token);
 eq_or_diff($json, from_json('{"success": true, "text": "Success"}'));
@@ -455,7 +552,7 @@ eq_or_diff($json, from_json('{"success": true, "text": "Success"}'));
 $json = cont3xtGet('/api/overview');
 my $id = $json->{overviews}->[0]->{_id};
 delete $json->{overviews}->[0]->{_id};
-eq_or_diff($json, from_json('{"overviews":[{"creator":"anonymous","_editable":true,"_viewable": true, "viewRoles":["superAdmin"],"fields":[{"from":"Foo","field":"foo_field"}],"name":"Overview1","title":"Overview of %{query}","iType":"domain","editRoles":["superAdmin"]}],"success":true}'));
+eq_or_diff($json, from_json('{"overviews":[{"creator":"anonymous","_editable":true,"_viewable": true, "viewRoles":["superAdmin"],"fields":[{"type":"linked","from":"Foo","field":"foo_field"},{"type":"custom","from":"Foo","custom":{"field":"foo.bar","label":"Foo Bar","type":"array"}}],"name":"Overview1","title":"Overview of %{query}","iType":"domain","editRoles":["superAdmin"]}],"success":true}'));
 
 $json = cont3xtPutToken("/api/overview/$id", to_json({
     name => "Overview1 v2",
@@ -464,8 +561,13 @@ $json = cont3xtPutToken("/api/overview/$id", to_json({
     viewRoles => ["cont3xtUser"],
     editRoles => ["superAdmin"],
     fields => [{
+        type => "linked",
         from  => "Foo",
         field => "bar_field"
+    }, {
+        type   => "custom",
+        from  => "Foo",
+        custom => "foo.bar"
     }]
 }), $token);
 eq_or_diff($json, from_json('{"success": true, "text": "Success"}'));
@@ -473,7 +575,7 @@ eq_or_diff($json, from_json('{"success": true, "text": "Success"}'));
 $json = cont3xtGet('/api/overview');
 my $id = $json->{overviews}->[0]->{_id};
 delete $json->{overviews}->[0]->{_id};
-eq_or_diff($json, from_json('{"overviews":[{"creator":"anonymous","_editable":true,"_viewable": true, "viewRoles":["cont3xtUser"],"fields":[{"from":"Foo","field":"bar_field"}],"name":"Overview1 v2","title":"Overview v2 of %{query}","iType":"ip","editRoles":["superAdmin"]}],"success":true}'));
+eq_or_diff($json, from_json('{"overviews":[{"creator":"anonymous","_editable":true,"_viewable": true, "viewRoles":["cont3xtUser"],"fields":[{"type":"linked","from":"Foo","field":"bar_field"},{"type":"custom","from":"Foo","custom":"foo.bar"}],"name":"Overview1 v2","title":"Overview v2 of %{query}","iType":"ip","editRoles":["superAdmin"]}],"success":true}'));
 
 # delete overview requires token
 $json = cont3xtDelete("/api/overview/$id", "{}");

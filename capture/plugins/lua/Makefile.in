@@ -10,7 +10,7 @@ LUA_LIBS = @LUA_LIBS@
 
 SRCS=$(wildcard *.c)
 
-../lua.so : $(SRCS) ../../moloch.h ../../hash.h ../../dll.h
+../lua.so : $(SRCS) ../../arkime.h ../../hash.h ../../dll.h
 	$(CC) -pthread @SHARED_FLAGS@ -o $@ @CFLAGS@ -Wall -Wextra -D_GNU_SOURCE -std=gnu99 -fPIC $(INCLUDE_OTHER) $(LUA_CFLAGS) $(SRCS) $(LUA_LIBS)
 
 all:$(SOS)

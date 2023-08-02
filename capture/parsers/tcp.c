@@ -17,7 +17,7 @@
  * limitations under the License.
  */
 
-#include "moloch.h"
+#include "arkime.h"
 #include "patricia.h"
 #include <inttypes.h>
 #include <arpa/inet.h>
@@ -25,33 +25,33 @@
 
 
 /******************************************************************************/
-extern MolochConfig_t        config;
+extern ArkimeConfig_t        config;
 
 extern int                   tcpMProtocol;
 
-extern MolochSessionHead_t   tcpWriteQ[MOLOCH_MAX_PACKET_THREADS];
+extern ArkimeSessionHead_t   tcpWriteQ[ARKIME_MAX_PACKET_THREADS];
 LOCAL int                    maxTcpOutOfOrderPackets;
 extern uint32_t              pluginsCbs;
 
-void moloch_packet_free(MolochPacket_t *packet);
+void arkime_packet_free(ArkimePacket_t *packet);
 
 /******************************************************************************/
-void tcp_session_free(MolochSession_t *session)
+void tcp_session_free(ArkimeSession_t *session)
 {
-    if (session->tcpData.td_count == 1 && session->tcpFlagCnt[MOLOCH_TCPFLAG_PSH] == 1) {
-        MolochTcpData_t *ftd = DLL_PEEK_HEAD(td_, &session->tcpData);
+    if (session->tcpData.td_count == 1 && session->tcpFlagCnt[ARKIME_TCPFLAG_PSH] == 1) {
+        ArkimeTcpData_t *ftd = DLL_PEEK_HEAD(td_, &session->tcpData);
         const int which = ftd->packet->direction;
         const uint8_t *data = ftd->packet->pkt + ftd->dataOffset;
         const int len = ftd->len;
 
-        moloch_parsers_classify_tcp(session, data, len, which);
-        moloch_packet_process_data(session, data, len, which);
+        arkime_parsers_classify_tcp(session, data, len, which);
+        arkime_packet_process_data(session, data, len, which);
     }
 
-    MolochTcpData_t *td;
+    ArkimeTcpData_t *td;
     while (DLL_POP_HEAD(td_, &session->tcpData, td)) {
-        moloch_packet_free(td->packet);
-        MOLOCH_TYPE_FREE(MolochTcpData_t, td);
+        arkime_packet_free(td->packet);
+        ARKIME_TYPE_FREE(ArkimeTcpData_t, td);
     }
 }
 
@@ -68,12 +68,12 @@ LOCAL int64_t tcp_sequence_diff (int64_t a, int64_t b)
     return b - a;
 }
 /******************************************************************************/
-void tcp_packet_finish(MolochSession_t *session)
+void tcp_packet_finish(ArkimeSession_t *session)
 {
-    MolochTcpData_t            *ftd;
-    MolochTcpData_t            *next;
+    ArkimeTcpData_t            *ftd;
+    ArkimeTcpData_t            *next;
 
-    MolochTcpDataHead_t * const tcpData = &session->tcpData;
+    ArkimeTcpDataHead_t * const tcpData = &session->tcpData;
 
 #ifdef DEBUG_TCP
     LOG("START %u %u", session->tcpSeq[0], session->tcpSeq[1]);
@@ -92,8 +92,8 @@ void tcp_packet_finish(MolochSession_t *session)
             /* The sequence number we are looking for is past the end of the packet, free it */
             if (tcpSeq >= ftd->seq + ftd->len) {
                 DLL_REMOVE(td_, tcpData, ftd);
-                moloch_packet_free(ftd->packet);
-                MOLOCH_TYPE_FREE(MolochTcpData_t, ftd);
+                arkime_packet_free(ftd->packet);
+                ARKIME_TYPE_FREE(ArkimeTcpData_t, ftd);
                 continue;
             }
 
@@ -109,24 +109,24 @@ void tcp_packet_finish(MolochSession_t *session)
             }
 
             if (session->totalDatabytes[which] == session->consumed[which]) {
-                moloch_parsers_classify_tcp(session, data, len, which);
+                arkime_parsers_classify_tcp(session, data, len, which);
             }
 
-            moloch_packet_process_data(session, data, len, which);
+            arkime_packet_process_data(session, data, len, which);
             session->tcpSeq[which] += len;
             session->databytes[which] += len;
             session->totalDatabytes[which] += len;
 
             if (config.yara && config.yaraEveryPacket && !session->stopYara) {
-                moloch_yara_execute(session, data, len, 0);
+                arkime_yara_execute(session, data, len, 0);
             }
 
-            if (pluginsCbs & MOLOCH_PLUGIN_TCP)
-                moloch_plugins_cb_tcp(session, data, len, which);
+            if (pluginsCbs & ARKIME_PLUGIN_TCP)
+                arkime_plugins_cb_tcp(session, data, len, which);
 
             DLL_REMOVE(td_, tcpData, ftd);
-            moloch_packet_free(ftd->packet);
-            MOLOCH_TYPE_FREE(MolochTcpData_t, ftd);
+            arkime_packet_free(ftd->packet);
+            ARKIME_TYPE_FREE(ArkimeTcpData_t, ftd);
         } else {
             return;
         }
@@ -134,7 +134,7 @@ void tcp_packet_finish(MolochSession_t *session)
 }
 /******************************************************************************/
 SUPPRESS_ALIGNMENT
-int tcp_packet_process(MolochSession_t * const session, MolochPacket_t * const packet)
+int tcp_packet_process(ArkimeSession_t * const session, ArkimePacket_t * const packet)
 {
     struct tcphdr       *tcphdr = (struct tcphdr *)(packet->pkt + packet->payloadOffset);
 
@@ -148,14 +148,14 @@ int tcp_packet_process(MolochSession_t * const session, MolochPacket_t * const p
 #endif
 
     if (tcphdr->th_win == 0 && (tcphdr->th_flags & TH_RST) == 0) {
-        session->tcpFlagCnt[MOLOCH_TCPFLAG_SRC_ZERO + packet->direction]++;
+        session->tcpFlagCnt[ARKIME_TCPFLAG_SRC_ZERO + packet->direction]++;
     }
 
     if (len < 0)
         return 1;
 
     if (tcphdr->th_flags & TH_URG) {
-        session->tcpFlagCnt[MOLOCH_TCPFLAG_URG]++;
+        session->tcpFlagCnt[ARKIME_TCPFLAG_URG]++;
     }
 
     // add to the long open
@@ -165,7 +165,7 @@ int tcp_packet_process(MolochSession_t * const session, MolochPacket_t * const p
 
     if (tcphdr->th_flags & TH_SYN) {
         if (tcphdr->th_flags & TH_ACK) {
-            session->tcpFlagCnt[MOLOCH_TCPFLAG_SYN_ACK]++;
+            session->tcpFlagCnt[ARKIME_TCPFLAG_SYN_ACK]++;
 
             if (!session->haveTcpSession && config.antiSynDrop) {
 #ifdef DEBUG_TCP
@@ -174,7 +174,7 @@ int tcp_packet_process(MolochSession_t * const session, MolochPacket_t * const p
                 session->tcpSeq[(packet->direction+1)%2] = ntohl(tcphdr->th_ack);
             }
         } else {
-            session->tcpFlagCnt[MOLOCH_TCPFLAG_SYN]++;
+            session->tcpFlagCnt[ARKIME_TCPFLAG_SYN]++;
             if (session->synTime == 0) {
                 session->synTime = (packet->ts.tv_sec - session->firstPacket.tv_sec) * 1000000 +
                                    (packet->ts.tv_usec - session->firstPacket.tv_usec) + 1;
@@ -193,25 +193,25 @@ int tcp_packet_process(MolochSession_t * const session, MolochPacket_t * const p
     }
 
     if (tcphdr->th_flags & TH_RST) {
-        session->tcpFlagCnt[MOLOCH_TCPFLAG_RST]++;
+        session->tcpFlagCnt[ARKIME_TCPFLAG_RST]++;
         int64_t diff = tcp_sequence_diff(seq, session->tcpSeq[packet->direction]);
         if (diff  <= 0) {
             if (diff == 0 && !session->closingQ) {
-                moloch_session_mark_for_close(session, SESSION_TCP);
+                arkime_session_mark_for_close(session, SESSION_TCP);
             }
             return 1;
         }
 
-        session->tcpState[packet->direction] = MOLOCH_TCP_STATE_FIN_ACK;
+        session->tcpState[packet->direction] = ARKIME_TCP_STATE_FIN_ACK;
     }
 
     if (tcphdr->th_flags & TH_FIN) {
-        session->tcpFlagCnt[MOLOCH_TCPFLAG_FIN]++;
-        session->tcpState[packet->direction] = MOLOCH_TCP_STATE_FIN;
+        session->tcpFlagCnt[ARKIME_TCPFLAG_FIN]++;
+        session->tcpState[packet->direction] = ARKIME_TCP_STATE_FIN;
     }
 
     if ((tcphdr->th_flags & (TH_FIN | TH_RST | TH_PUSH | TH_SYN | TH_ACK)) == TH_ACK) {
-        session->tcpFlagCnt[MOLOCH_TCPFLAG_ACK]++;
+        session->tcpFlagCnt[ARKIME_TCPFLAG_ACK]++;
         if (session->ackTime == 0) {
             session->ackTime = (packet->ts.tv_sec - session->firstPacket.tv_sec) * 1000000 +
                                (packet->ts.tv_usec - session->firstPacket.tv_usec) + 1;
@@ -219,35 +219,35 @@ int tcp_packet_process(MolochSession_t * const session, MolochPacket_t * const p
     }
 
     if (tcphdr->th_flags & TH_PUSH) {
-        session->tcpFlagCnt[MOLOCH_TCPFLAG_PSH]++;
+        session->tcpFlagCnt[ARKIME_TCPFLAG_PSH]++;
     }
 
     if (session->stopTCP)
         return 1;
 
     // If we've seen SYN but no SYN_ACK and no tcpSeq set, then just assume we've missed the syn-ack
-    if (session->haveTcpSession && session->tcpFlagCnt[MOLOCH_TCPFLAG_SYN_ACK] == 0 && session->tcpSeq[packet->direction] == 0) {
-        moloch_session_add_tag(session, "no-syn-ack");
+    if (session->haveTcpSession && session->tcpFlagCnt[ARKIME_TCPFLAG_SYN_ACK] == 0 && session->tcpSeq[packet->direction] == 0) {
+        arkime_session_add_tag(session, "no-syn-ack");
         session->tcpSeq[packet->direction] = seq;
     }
 
-    MolochTcpDataHead_t * const tcpData = &session->tcpData;
+    ArkimeTcpDataHead_t * const tcpData = &session->tcpData;
 
     if (DLL_COUNT(td_, tcpData) > maxTcpOutOfOrderPackets) {
         tcp_session_free(session);
-        moloch_session_add_tag(session, "incomplete-tcp");
+        arkime_session_add_tag(session, "incomplete-tcp");
         session->stopTCP = 1;
         return 1;
     }
 
     if (tcphdr->th_flags & (TH_ACK | TH_RST)) {
         int owhich = (packet->direction + 1) & 1;
-        if (session->tcpState[owhich] == MOLOCH_TCP_STATE_FIN) {
-            session->tcpState[owhich] = MOLOCH_TCP_STATE_FIN_ACK;
-            if (session->tcpState[packet->direction] == MOLOCH_TCP_STATE_FIN_ACK) {
+        if (session->tcpState[owhich] == ARKIME_TCP_STATE_FIN) {
+            session->tcpState[owhich] = ARKIME_TCP_STATE_FIN_ACK;
+            if (session->tcpState[packet->direction] == ARKIME_TCP_STATE_FIN_ACK) {
 
                 if (!session->closingQ) {
-                    moloch_session_mark_for_close(session, SESSION_TCP);
+                    arkime_session_mark_for_close(session, SESSION_TCP);
                 }
                 return 1;
             }
@@ -261,7 +261,7 @@ int tcp_packet_process(MolochSession_t * const session, MolochPacket_t * const p
             (tcp_sequence_diff(session->tcpSeq[(packet->direction+1)%2], ntohl(tcphdr->th_ack)) > 1)) { // more then one byte missing
 
                 static const char *tags[2] = {"acked-unseen-segment-src", "acked-unseen-segment-dst"};
-                moloch_session_add_tag(session, tags[packet->direction]);
+                arkime_session_add_tag(session, tags[packet->direction]);
                 session->ackedUnseenSegment |= (1 << packet->direction);
         }
     }
@@ -275,7 +275,7 @@ int tcp_packet_process(MolochSession_t * const session, MolochPacket_t * const p
     if (session->haveTcpSession && diff <= 0)
         return 1;
 
-    MolochTcpData_t *ftd, *td = MOLOCH_TYPE_ALLOC(MolochTcpData_t);
+    ArkimeTcpData_t *ftd, *td = ARKIME_TYPE_ALLOC(ArkimeTcpData_t);
     const uint32_t ack = ntohl(tcphdr->th_ack);
 
     td->packet = packet;
@@ -308,11 +308,11 @@ int tcp_packet_process(MolochSession_t * const session, MolochPacket_t * const p
                         DLL_ADD_AFTER(td_, tcpData, ftd, td);
 
                         DLL_REMOVE(td_, tcpData, ftd);
-                        moloch_packet_free(ftd->packet);
-                        MOLOCH_TYPE_FREE(MolochTcpData_t, ftd);
+                        arkime_packet_free(ftd->packet);
+                        ARKIME_TYPE_FREE(ArkimeTcpData_t, ftd);
                         ftd = td;
                     } else {
-                        MOLOCH_TYPE_FREE(MolochTcpData_t, td);
+                        ARKIME_TYPE_FREE(ArkimeTcpData_t, td);
                         return 1;
                     }
                     break;
@@ -332,7 +332,7 @@ int tcp_packet_process(MolochSession_t * const session, MolochPacket_t * const p
 
         if (session->haveTcpSession && (session->outOfOrder & (1 << packet->direction)) == 0) {
             static const char *tags[2] = {"out-of-order-src", "out-of-order-dst"};
-            moloch_session_add_tag(session, tags[packet->direction]);
+            arkime_session_add_tag(session, tags[packet->direction]);
             session->outOfOrder |= (1 << packet->direction);
         }
     }
@@ -342,23 +342,23 @@ int tcp_packet_process(MolochSession_t * const session, MolochPacket_t * const p
 
 /******************************************************************************/
 SUPPRESS_ALIGNMENT
-void tcp_create_sessionid(uint8_t *sessionId, MolochPacket_t *packet)
+void tcp_create_sessionid(uint8_t *sessionId, ArkimePacket_t *packet)
 {
     struct ip           *ip4 = (struct ip*)(packet->pkt + packet->ipOffset);
     struct ip6_hdr      *ip6 = (struct ip6_hdr*)(packet->pkt + packet->ipOffset);
     struct tcphdr       *tcphdr = (struct tcphdr *)(packet->pkt + packet->payloadOffset);
 
     if (packet->v6) {
-        moloch_session_id6(sessionId, ip6->ip6_src.s6_addr, tcphdr->th_sport,
+        arkime_session_id6(sessionId, ip6->ip6_src.s6_addr, tcphdr->th_sport,
                            ip6->ip6_dst.s6_addr, tcphdr->th_dport);
     } else {
-        moloch_session_id(sessionId, ip4->ip_src.s_addr, tcphdr->th_sport,
+        arkime_session_id(sessionId, ip4->ip_src.s_addr, tcphdr->th_sport,
                           ip4->ip_dst.s_addr, tcphdr->th_dport);
     }
 }
 /******************************************************************************/
 SUPPRESS_ALIGNMENT
-int tcp_pre_process(MolochSession_t *session, MolochPacket_t * const packet, int isNewSession)
+int tcp_pre_process(ArkimeSession_t *session, ArkimePacket_t * const packet, int isNewSession)
 {
     struct ip           *ip4 = (struct ip*)(packet->pkt + packet->ipOffset);
     struct ip6_hdr      *ip6 = (struct ip6_hdr*)(packet->pkt + packet->ipOffset);
@@ -366,7 +366,7 @@ int tcp_pre_process(MolochSession_t *session, MolochPacket_t * const packet, int
 
     // If this is an old session that hash RSTs and we get a syn, probably a port reuse, close old session
     if (!isNewSession && (tcphdr->th_flags & TH_SYN) && ((tcphdr->th_flags & TH_ACK) == 0) && 
-            (session->tcpFlagCnt[MOLOCH_TCPFLAG_RST] || session->tcpFlagCnt[MOLOCH_TCPFLAG_FIN])) {
+            (session->tcpFlagCnt[ARKIME_TCPFLAG_RST] || session->tcpFlagCnt[ARKIME_TCPFLAG_FIN])) {
         return 1;
     }
 
@@ -384,20 +384,20 @@ int tcp_pre_process(MolochSession_t *session, MolochPacket_t * const packet, int
             session->port1 = ntohs(tcphdr->th_sport);
             session->port2 = ntohs(tcphdr->th_dport);
         }
-        if (moloch_http_is_moloch(session->h_hash, session->sessionId)) {
+        if (arkime_http_is_arkime(session->h_hash, session->sessionId)) {
             if (config.debug) {
                 char buf[1000];
-                LOG("Ignoring connection %s", moloch_session_id_string(session->sessionId, buf));
+                LOG("Ignoring connection %s", arkime_session_id_string(session->sessionId, buf));
             }
             session->stopSPI = 1;
         }
-        moloch_session_add_protocol(session, "tcp");
+        arkime_session_add_protocol(session, "tcp");
     }
 
     int dir;
     if (ip4->ip_v == 4) {
-        dir = (MOLOCH_V6_TO_V4(session->addr1) == ip4->ip_src.s_addr &&
-               MOLOCH_V6_TO_V4(session->addr2) == ip4->ip_dst.s_addr);
+        dir = (ARKIME_V6_TO_V4(session->addr1) == ip4->ip_src.s_addr &&
+               ARKIME_V6_TO_V4(session->addr2) == ip4->ip_dst.s_addr);
     } else {
         dir = (memcmp(session->addr1.s6_addr, ip6->ip6_src.s6_addr, 16) == 0 &&
                memcmp(session->addr2.s6_addr, ip6->ip6_dst.s6_addr, 16) == 0);
@@ -411,18 +411,18 @@ int tcp_pre_process(MolochSession_t *session, MolochPacket_t * const packet, int
     return 0;
 }
 /******************************************************************************/
-int tcp_process(MolochSession_t *session, MolochPacket_t * const packet)
+int tcp_process(ArkimeSession_t *session, ArkimePacket_t * const packet)
 {
     int freePacket = tcp_packet_process(session, packet);
     tcp_packet_finish(session);
     return freePacket;
 }
 /******************************************************************************/
-void moloch_parser_init()
+void arkime_parser_init()
 {
-    maxTcpOutOfOrderPackets = moloch_config_int(NULL, "maxTcpOutOfOrderPackets", 256, 64, 10000);
+    maxTcpOutOfOrderPackets = arkime_config_int(NULL, "maxTcpOutOfOrderPackets", 256, 64, 10000);
 
-    tcpMProtocol = moloch_mprotocol_register("tcp",
+    tcpMProtocol = arkime_mprotocol_register("tcp",
                                              SESSION_TCP,
                                              tcp_create_sessionid,
                                              tcp_pre_process,

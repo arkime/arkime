@@ -1,5 +1,5 @@
 # Tests on a fresh install
-use Test::More tests => 41;
+use Test::More tests => 42;
 use Cwd;
 use URI::Escape;
 use MolochTest;
@@ -30,7 +30,7 @@ my $json;
     $json = viewerGet2("/dstats.json");
     is (scalar %{$json}, 0, "Empty dstats");
 
-    $json = viewerGet2("/file/list");
+    $json = viewerGet2("/api/files");
     is ($json->{recordsTotal}, 0, "Correct stats.json recordsTotal");
 
     $json = viewerGet2("/sessions.json?map=true&date=-1");
@@ -78,5 +78,8 @@ my $json;
     my $txt = $MolochTest::userAgent->get("http://$MolochTest::host:8124/unique.txt?field=tags")->content;
     is ($txt, "", "Empty unique.txt");
 
-    $json = viewerGet2("/remoteclusters");
+    $json = viewerGet2("/api/remoteclusters");
     eq_or_diff($json, from_json('{"test2": {"name": "Test2", "url": "http://localhost:8124" }}'));
+
+    $json = multiGet("/api/clusters");
+    eq_or_diff($json, from_json('{"inactive": [], "active": ["test", "test2"]}'));

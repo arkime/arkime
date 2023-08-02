@@ -21,6 +21,7 @@
 const crypto = require('crypto');
 const passport = require('passport');
 const DigestStrategy = require('passport-http').DigestStrategy;
+const BasicStrategy = require('passport-http').BasicStrategy;
 const iptrie = require('iptrie');
 const CustomStrategy = require('passport-custom');
 const express = require('express');
@@ -76,10 +77,10 @@ class Auth {
   /**
    * Initialize the Auth subsystem
    * @param {boolean} options.debug=0 The debug level to use for Auth component
-   * @param {string} options.mode=anonymous What auth mode to run in
+   * @param {string} options.mode=digest What auth mode to run in
    * @param {string} options.basePath=/ What the web base path is for the app
    * @param {string} options.userNameHeader In header auth mode, which http header has the user id
-   * @param {string} options.passwordSecret=password For digest mode, what password to use to encrypt the password hash
+   * @param {string} options.passwordSecret=password For basic/digest mode, what password to use to encrypt the password hash
    * @param {string} options.serverSecret=passwordSecret What password is used to encrypt S2S auth
    * @param {string} options.requiredAuthHeader In header auth mode, another header can be required
    * @param {string} options.requiredAuthHeaderVal In header auth mode, a comma separated list of values for requiredAuthHeader, if none are matched the user will not be authorized
@@ -94,10 +95,26 @@ class Auth {
       console.log('Auth.initialize', options);
     }
 
+    if (options.mode === undefined) {
+      if (options.userNameHeader) {
+        if (options.userNameHeader.match(/^(digest|basic|anonymous|oidc)$/)) {
+          console.log(`WARNING - Using authMode=${options.userNameHeader} setting since userNameHeader set, add to config file to silence this warning.`);
+          options.mode = options.userNameHeader;
+          delete options.userNameHeader;
+        } else {
+          console.log('WARNING - Using authMode=header since not set, add to config file to silence this warning.');
+          options.mode = 'header';
+        }
+      } else {
+        console.log('WARNING - Using authMode=digest since not set, add to config file to silence this warning.');
+        options.mode = 'digest';
+      }
+    }
+
     Auth.debug = options.debug ?? 0;
-    Auth.mode = options.mode ?? 'anonymous';
-    Auth.#basePath = options.basePath ?? '/';
+    Auth.mode = options.mode;
     Auth.#userNameHeader = options.userNameHeader;
+    Auth.#basePath = options.basePath ?? '/';
     Auth.#passwordSecretSection = options.passwordSecretSection ?? 'default';
     Auth.passwordSecret = options.passwordSecret ?? 'password';
     Auth.passwordSecret256 = crypto.createHash('sha256').update(Auth.passwordSecret).digest();
@@ -146,10 +163,11 @@ class Auth {
     let sessionAuth = false;
     switch (Auth.mode) {
     case 'anonymous':
-      Auth.#strategies = ['anonymous'];
-      break;
-    case 'anonymousWithDB':
       Auth.#strategies = ['anonymousWithDB'];
+      break;
+    case 'basic':
+      check('httpRealm');
+      Auth.#strategies = ['basic'];
       break;
     case 'digest':
       check('httpRealm');
@@ -197,7 +215,7 @@ class Auth {
         secret: uuid(),
         resave: false,
         saveUninitialized: true,
-        cookie: { path: Auth.#basePath, secure: true, sameSite: 'Strict' }
+        cookie: { path: Auth.#basePath, secure: true, sameSite: Auth.#authConfig.cookieSameSite ?? 'Lax' }
       }));
       Auth.#authRouter.use(passport.initialize());
       Auth.#authRouter.use(passport.session());
@@ -297,6 +315,26 @@ class Auth {
     }));
 
     // ----------------------------------------------------------------------------
+    passport.use('basic', new BasicStrategy((userId, password, done) => {
+      if (userId.startsWith('role:')) {
+        console.log(`AUTH: User ${userId} Can not authenticate with role`);
+        return done('Can not authenticate with role');
+      }
+      User.getUserCache(userId, async (err, user) => {
+        if (err) { return done(err); }
+        if (!user) { console.log('AUTH: User', userId, "doesn't exist"); return done(null, false); }
+        if (!user.enabled) { console.log('AUTH: User', userId, 'not enabled'); return done('Not enabled'); }
+
+        const storeHa1 = Auth.store2ha1(user.passStore);
+        const ha1 = Auth.pass2ha1(userId, password);
+        if (storeHa1 !== ha1) return done(null, false);
+
+        user.setLastUsed();
+        return done(null, user, { ha1: Auth.store2ha1(user.passStore) });
+      });
+    }));
+
+    // ----------------------------------------------------------------------------
     passport.use('digest', new DigestStrategy({ qop: 'auth', realm: Auth.#authConfig.httpRealm }, (userId, done) => {
       if (userId.startsWith('role:')) {
         console.log(`AUTH: User ${userId} Can not authenticate with role`);
@@ -335,7 +373,8 @@ class Auth {
           }
         });
         if (!authorized) {
-          return done('Not authorized');
+          console.log(`The required auth header '${Auth.#requiredAuthHeader}' expected '${Auth.#requiredAuthHeaderVal}' and has `, ArkimeUtil.sanitizeStr(authHeader));
+          return done('Bad authorization header');
         }
       }
 
@@ -391,6 +430,11 @@ class Auth {
             console.log(`AUTH: didn't find ${Auth.#authConfig.userIdField} in the userinfo`, userinfo);
           }
           return done(null, false);
+        }
+
+        if (userId.startsWith('role:')) {
+          console.log(`AUTH: User ${userId} Can not authenticate with role`);
+          return done('Can not authenticate with role');
         }
 
         async function oidcAuthCheck (err, user) {
@@ -453,7 +497,7 @@ class Auth {
 
     // ----------------------------------------------------------------------------
     passport.use('s2s', new CustomStrategy((req, done) => {
-      let obj = req.headers['x-arkime-auth'] ?? req.headers['x-moloch-auth'];
+      let obj = req.headers['x-arkime-auth'];
 
       if (obj === undefined) {
         return done(null, false);
@@ -553,6 +597,9 @@ class Auth {
 
   // ----------------------------------------------------------------------------
   static #dynamicCreate (userId, vars, cb) {
+    if (Auth.debug > 0) {
+      console.log('AUTH - #dynamicCreate', ArkimeUtil.sanitizeStr(userId));
+    }
     const nuser = JSON.parse(new Function('return `' + Auth.#userAutoCreateTmpl + '`;').call(vars));
     if (nuser.passStore === undefined) {
       nuser.passStore = Auth.pass2store(nuser.userId, crypto.randomBytes(48));
@@ -595,6 +642,9 @@ class Auth {
         req.url = req.url.replace(Auth.#basePath, '/');
       }
       if (err) {
+        if (Auth.debug > 0) {
+          console.log('AUTH: passport.authenticate fail', err);
+        }
         res.status(403);
         return res.send(JSON.stringify({ success: false, text: err }));
       } else {
@@ -623,11 +673,17 @@ class Auth {
   }
 
   // ----------------------------------------------------------------------------
+  // Hash (MD5) the password
+  static pass2ha1 (userId, password) {
+    return Auth.md5(userId + ':' + Auth.#authConfig.httpRealm + ':' + password);
+  }
+
+  // ----------------------------------------------------------------------------
   // Hash (MD5) and encrypt the password before storing.
   // Encryption is used because OpenSearch/Elasticsearch is insecure by default and we don't want others adding accounts.
   static pass2store (userId, password) {
     // md5 is required because of http digest
-    return Auth.ha12store(Auth.md5(userId + ':' + Auth.#authConfig.httpRealm + ':' + password));
+    return Auth.ha12store(Auth.pass2ha1(userId, password));
   };
 
   // ----------------------------------------------------------------------------

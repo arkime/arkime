@@ -12,24 +12,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include "moloch.h"
+#include "arkime.h"
 #include <net/ethernet.h>
 
-extern MolochConfig_t        config;
+extern ArkimeConfig_t        config;
 
 /******************************************************************************/
 SUPPRESS_ALIGNMENT
-LOCAL MolochPacketRC ciscometadata_packet_enqueue(MolochPacketBatch_t * UNUSED(batch), MolochPacket_t * const packet, const uint8_t *data, int len)
+LOCAL ArkimePacketRC ciscometadata_packet_enqueue(ArkimePacketBatch_t * UNUSED(batch), ArkimePacket_t * const packet, const uint8_t *data, int len)
 {
     if (len < 8)
-        return MOLOCH_PACKET_CORRUPT;
+        return ARKIME_PACKET_CORRUPT;
 
     // Just ignore 6 bytes for now
 
-    return moloch_packet_run_ethernet_cb(batch, packet, data+6, len-6, MOLOCH_ETHERTYPE_DETECT, "CISCOMETADATA");
+    return arkime_packet_run_ethernet_cb(batch, packet, data+6, len-6, ARKIME_ETHERTYPE_DETECT, "CISCOMETADATA");
 }
 /******************************************************************************/
-void moloch_parser_init()
+void arkime_parser_init()
 {
-    moloch_packet_set_ethernet_cb(0x8909, ciscometadata_packet_enqueue);
+    arkime_packet_set_ethernet_cb(0x8909, ciscometadata_packet_enqueue);
 }

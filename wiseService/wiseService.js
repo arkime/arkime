@@ -18,7 +18,6 @@
  */
 'use strict';
 
-const ini = require('iniparser');
 const express = require('express');
 const fs = require('fs');
 const http = require('http');
@@ -37,11 +36,11 @@ const favicon = require('serve-favicon');
 const uuid = require('uuid').v4;
 const helmet = require('helmet');
 const jsonParser = ArkimeUtil.jsonParser;
-const axios = require('axios');
 const chalk = require('chalk');
 const version = require('../common/version');
 const path = require('path');
 const ArkimeCache = require('../common/arkimeCache');
+const ArkimeConfig = require('../common/arkimeConfig');
 const RE2 = require('re2');
 
 const dayMs = 60000 * 60 * 24;
@@ -49,9 +48,6 @@ const dayMs = 60000 * 60 * 24;
 require('console-stamp')(console, '[HH:MM:ss.l]');
 
 const internals = {
-  configFile: `${version.config_prefix}/etc/wiseService.ini`,
-  debug: 0,
-  insecure: false,
   fieldsTS: 0,
   fields: [],
   fieldsSize: 0,
@@ -66,9 +62,10 @@ const internals = {
         { name: 'keyFile', required: false, help: 'Path to PEM encoded key file' },
         { name: 'certFile', required: false, help: 'Path to PEM encoded cert file' },
         { name: 'caTrustFile', required: false, help: 'Path to PEM encoded CA file' },
-        { name: 'userNameHeader', required: true, help: 'How should auth be done: anonymous - no auth, digest - digest auth, any other value is the http header to use for username', regex: '.' },
-        { name: 'httpRealm', ifField: 'userNameHeader', ifValue: 'digest', required: false, help: 'The realm to use for digest requests. Must be the same as viewer is using. Default Moloch' },
-        { name: 'passwordSecret', ifField: 'userNameHeader', ifValue: 'digest', required: false, password: true, help: 'The secret used to encrypted password hashes. Must be the same as viewer is using. Default password' },
+        { name: 'authmode', required: true, help: 'How should auth be done: anonymous - no auth, basic - basic auth, digest - digest auth, header - http header auth, oidc - oidc auth', regex: '(anonymous|basic|digest|header|oidc)' },
+        { name: 'userNameHeader', required: true, help: 'the http header to use for username', ifField: 'authMode', ifValue: 'header' },
+        { name: 'httpRealm', ifField: 'authMode', ifValue: 'digest', required: false, help: 'The realm to use for digest requests. Must be the same as viewer is using. Default Moloch' },
+        { name: 'passwordSecret', ifField: 'authMode', ifValue: 'digest', required: false, password: true, help: 'The secret used to encrypted password hashes. Must be the same as viewer is using. Default password' },
         { name: 'usersElasticsearch', required: false, help: 'The URL to connect to OpenSearch/Elasticsearch. Default http://localhost:9200' },
         { name: 'usersElasticsearchAPIKey', required: false, help: 'OpenSearch/Elastisearch API key for users DB access', password: true },
         { name: 'usersElasticsearchBasicAuth', required: false, help: 'OpenSearch/Elastisearch Basic Auth', password: true },
@@ -91,19 +88,14 @@ const internals = {
       ]
     }
   },
-  configSchemes: {
-  },
   types: new Map(),
   views: new Map(),
   fieldActions: new Map(),
   valueActions: new Map(),
   workers: 1,
-  regressionTests: false,
   webconfig: false,
   configCode: cryptoLib.randomBytes(20).toString('base64').replace(/[=+/]/g, '').substr(0, 6),
-  startTime: Date.now(),
-  options: new Map(),
-  debugged: new Map()
+  startTime: Date.now()
 };
 
 internals.type2Name = ['ip', 'domain', 'md5', 'email', 'url', 'tuple', 'ja3', 'sha256'];
@@ -113,10 +105,7 @@ internals.type2Name = ['ip', 'domain', 'md5', 'email', 'url', 'tuple', 'ja3', 's
 // ----------------------------------------------------------------------------
 function processArgs (argv) {
   for (let i = 0, ilen = argv.length; i < ilen; i++) {
-    if (argv[i] === '-c') {
-      i++;
-      internals.configFile = argv[i];
-    } else if (process.argv[i] === '-o') {
+    if (process.argv[i] === '-o') {
       i++;
       const equal = process.argv[i].indexOf('=');
       if (equal === -1) {
@@ -124,13 +113,7 @@ function processArgs (argv) {
         process.exit(1);
       }
 
-      internals.options.set(process.argv[i].slice(0, equal), process.argv[i].slice(equal + 1));
-    } else if (argv[i] === '--insecure') {
-      internals.insecure = true;
-    } else if (argv[i] === '--debug') {
-      internals.debug++;
-    } else if (argv[i] === '--regressionTests') {
-      internals.regressionTests = true;
+      ArkimeConfig.setOverride(process.argv[i].slice(0, equal), process.argv[i].slice(equal + 1));
     } else if (argv[i] === '--webcode') {
       i++;
       internals.configCode = argv[i];
@@ -146,7 +129,7 @@ function processArgs (argv) {
       console.log('wiseService.js [<options>]');
       console.log('');
       console.log('Options:');
-      console.log('  -c <file|url>               Where to fetch the config file from');
+      console.log('  -c, --config <file|url>     Where to fetch the config file from');
       console.log('  -o <section>.<key>=<value>  Override the config file');
       console.log('  --debug                     Increase debug level, multiple are supported');
       console.log('  --webconfig                 Allow the config to be edited from web page');
@@ -205,17 +188,7 @@ const cspHeader = helmet.contentSecurityPolicy({
   directives: cspDirectives
 });
 
-function getConfig (section, sectionKey, d) {
-  const key = `${section}.${sectionKey}`;
-  const value = internals.options.get(key) ?? internals.config[section]?.[sectionKey] ?? d;
-
-  if (internals.debug > 0 && !internals.debugged.has(key)) {
-    console.log(`CONFIG - ${key} is ${value}`);
-    internals.debugged.set(key, true);
-  }
-
-  return value;
-}
+const getConfig = ArkimeConfig.get;
 
 // Explicit sigint handler for running under docker
 // See https://github.com/nodejs/node/issues/4182
@@ -225,19 +198,10 @@ process.on('SIGINT', function () {
 
 // ----------------------------------------------------------------------------
 function setupAuth () {
-  let userNameHeader = getConfig('wiseService', 'userNameHeader', 'anonymous');
-  let mode;
-  if (userNameHeader === 'anonymous' || userNameHeader === 'digest' || userNameHeader === 'oidc') {
-    mode = userNameHeader;
-    userNameHeader = undefined;
-  } else {
-    mode = 'header';
-  }
-
   Auth.initialize({
-    debug: internals.debug,
-    mode,
-    userNameHeader,
+    debug: ArkimeConfig.debug,
+    mode: getConfig('wiseService', 'authMode'),
+    userNameHeader: getConfig('wiseService', 'userNameHeader'),
     passwordSecret: getConfig('wiseService', 'passwordSecret', 'password'),
     passwordSecretSection: 'wiseService',
     userAuthIps: getConfig('wiseService', 'userAuthIps'),
@@ -253,14 +217,14 @@ function setupAuth () {
     }
   });
 
-  if (mode === 'anonymous') {
+  if (Auth.mode === 'anonymous') {
     return;
   }
 
   const es = getConfig('wiseService', 'usersElasticsearch', 'http://localhost:9200');
 
   User.initialize({
-    insecure: internals.insecure,
+    insecure: ArkimeConfig.insecure,
     node: es,
     caTrustFile: getConfig('wiseService', 'caTrustFile'),
     prefix: getConfig('wiseService', 'usersPrefix'),
@@ -300,13 +264,13 @@ class WISESourceAPI {
    * Current debug level of wiseService
    * @type {integer}
    */
-  debug = internals.debug;
+  debug = ArkimeConfig.debug;
 
   /**
    * Is wiseService running in insecure mode
    * @type {boolean}
    */
-  insecure = internals.insecure;
+  insecure = ArkimeConfig.insecure;
 
   app = app;
 
@@ -318,9 +282,7 @@ class WISESourceAPI {
    * @param {string} [default] - the default value to return if key is not found in section
    * @returns {string} - The value found or the default value
    */
-  getConfig (section, sectionKey, d) {
-    return getConfig(section, sectionKey, d);
-  }
+  getConfig = ArkimeConfig.get;
 
   // ----------------------------------------------------------------------------
   /**
@@ -328,9 +290,7 @@ class WISESourceAPI {
    *
    * @returns {string|Array} - A list of all the sections in the config file
    */
-  getConfigSections () {
-    return Object.keys(internals.config);
-  }
+  getConfigSections = ArkimeConfig.getSections;
 
   // ----------------------------------------------------------------------------
   /**
@@ -339,9 +299,7 @@ class WISESourceAPI {
    * @param {string} section - The section of the config file to return
    * @returns {object} - A list of all the sections in the config file
    */
-  getConfigSection (section) {
-    return internals.config[section];
-  }
+  getConfigSection = ArkimeConfig.getSection;
 
   // ----------------------------------------------------------------------------
   /**
@@ -367,7 +325,7 @@ class WISESourceAPI {
       return WISESource.field2Pos[fieldName];
     }
 
-    if (internals.debug > 1) {
+    if (ArkimeConfig.debug > 1) {
       console.log(`Adding field name:${fieldName} db:${db} friendly:${friendly} from '${field}'`);
     }
 
@@ -700,7 +658,7 @@ app.use(['/app.js.map', '/vueapp/app.js.map'], express.static(
 ), ArkimeUtil.missingResource);
 
 // ----------------------------------------------------------------------------
-if (internals.regressionTests) {
+if (ArkimeConfig.regressionTests) {
   app.post('/regressionTests/shutdown', (req, res) => {
     process.exit(0);
   });
@@ -772,7 +730,7 @@ app.get('/fieldActions', [ArkimeUtil.noCacheJson], function (req, res) {
 function globalAllowed (value) {
   for (let i = 0; i < this.excludes.length; i++) {
     if (value.match(this.excludes[i])) {
-      if (internals.debug > 0) {
+      if (ArkimeConfig.debug > 0) {
         console.log('Found in Global %s Exclude', this.name, value);
       }
       return false;
@@ -783,7 +741,7 @@ function globalAllowed (value) {
 // ----------------------------------------------------------------------------
 function globalIPAllowed (value) {
   if (this.excludes.find(value)) {
-    if (internals.debug > 0) {
+    if (ArkimeConfig.debug > 0) {
       console.log('Found in Global IP Exclude', value);
     }
     return false;
@@ -795,7 +753,7 @@ function sourceAllowed (src, value) {
   const excludes = src[this.excludeName] || [];
   for (let i = 0; i < excludes.length; i++) {
     if (value.match(excludes[i])) {
-      if (internals.debug > 0) {
+      if (ArkimeConfig.debug > 0) {
         console.log('Found in', src.section, this.name, 'exclude', value);
       }
       return false;
@@ -806,7 +764,7 @@ function sourceAllowed (src, value) {
 // ----------------------------------------------------------------------------
 function sourceIPAllowed (src, value) {
   if (src.excludeIPs.find(value)) {
-    if (internals.debug > 0) {
+    if (ArkimeConfig.debug > 0) {
       console.log('Found in', src.section, 'IP Exclude', value);
     }
     return false;
@@ -998,7 +956,7 @@ function processQuery (req, query, cb) {
       if (err) {
         return cb(err);
       }
-      if (internals.debug > 2) {
+      if (ArkimeConfig.debug > 2) {
         console.log('RESULT', typeInfo.funcName, query.value, WISESource.result2JSON(WISESource.combineResults(results)));
       }
 
@@ -1100,7 +1058,7 @@ app.post('/get', function (req, res) {
         offset += 2;
 
         const value = buf.toString('utf8', offset, offset + len);
-        if (internals.debug > 1) {
+        if (ArkimeConfig.debug > 1) {
           console.log('%s', typeName, value);
         }
         offset += len;
@@ -1412,207 +1370,6 @@ RegExp.fromWildExp=function(c,a){for(var d=a&&a.indexOf("o")>-1,f,b,e="",g=a&&a.
 b=="?"||b=="_"?".":b=="#"?"\\d":d&&b.charAt(0)=="{"?b+g:b=="<"?"\\b(?=\\w)":b==">"?"(?:\\b$|(?=\\W)\\b)":"\\"+b,c=c.substring(f+b.length);e+=c;a&&(/[ab]/.test(a)&&(e="^"+e),/[ae]/.test(a)&&(e+="$"));return RegExp(e,a?a.replace(/[^gim]/g,""):"")};
 /* eslint-enable */
 
-// ----------------------------------------------------------------------------
-// Config Schemes - For each scheme supported implement a load/save function
-// ----------------------------------------------------------------------------
-
-// redis://[:pass]@host:port/db/key
-internals.configSchemes.redis = {
-  load: function (cb) {
-    const redisParts = internals.configFile.split('/');
-    if (redisParts.length !== 5) {
-      throw new Error(`Invalid redis url - ${redisParts[0]}//[:pass@]redishost[:redisport]/redisDbNum/key`);
-    }
-    internals.configRedisKey = redisParts.pop();
-    internals.configRedis = ArkimeUtil.createRedisClient(redisParts.join('/'), 'config');
-
-    internals.configRedis.get(internals.configRedisKey, function (err, result) {
-      if (err) {
-        return cb(err);
-      }
-
-      if (result === null) {
-        return cb(null, {});
-      } else {
-        return cb(null, JSON.parse(result));
-      }
-    });
-  },
-  save: function (config, cb) {
-    internals.configRedis.set(internals.configRedisKey, JSON.stringify(config), function (err, result) {
-      cb(err);
-    });
-  }
-};
-
-// ----------------------------------------------------------------------------
-// rediss://pass@host:port/db/key
-internals.configSchemes.rediss = internals.configSchemes.redis;
-
-// redis-sentinel://sentinelPassword:redisPassword@host:port/name/db/key
-internals.configSchemes['redis-sentinel'] = {
-  load: function (cb) {
-    const redisParts = internals.configFile.split('/');
-    redisParts[1] = 'stoperror';
-    if (redisParts.length !== 6 || redisParts.some(p => p === '')) {
-      throw new Error(`Invalid redis-sentinel url - ${redisParts[0]}//[sentinelPassword:redisPassword@]sentinelHost[:sentinelPort][,sentinelPortN:sentinelPortN]/redisName/redisDbNum`);
-    }
-    internals.configRedisKey = redisParts[5];
-    internals.configRedis = ArkimeUtil.createRedisClient(internals.configFile, 'config');
-
-    internals.configRedis.get(internals.configRedisKey, function (err, result) {
-      if (err) {
-        return cb(err);
-      }
-      if (result === null) {
-        return cb(null, {});
-      } else {
-        return cb(JSON.parse(result));
-      }
-    });
-  },
-  save: function (config, cb) {
-    internals.configRedis.set(internals.configRedisKey, JSON.stringify(config), function (err, result) {
-      cb(err);
-    });
-  }
-};
-
-// ----------------------------------------------------------------------------
-// redis-cluster://[:pass]@host:port/db/key
-internals.configSchemes['redis-cluster'] = {
-  load: function (cb) {
-    const redisParts = internals.configFile.split('/');
-    redisParts[1] = 'stoperror';
-    if (redisParts.length !== 5 || redisParts.some(p => p === '')) {
-      throw new Error(`Invalid redis-cluster url - ${redisParts[0]}//[:redisPassword@]redishost[:redisport]/redisDbNum/key`);
-    }
-    internals.configRedisKey = redisParts[4];
-    internals.configRedis = ArkimeUtil.createRedisClient(internals.configFile, 'config');
-
-    internals.configRedis.get(internals.configRedisKey, function (err, result) {
-      if (err) {
-        return cb(err);
-      }
-      if (result === null) {
-        return cb(null, {});
-      } else {
-        return cb(null, JSON.parse(result));
-      }
-    });
-  },
-  save: function (config, cb) {
-    internals.configRedis.set(internals.configRedisKey, JSON.stringify(config), function (err, result) {
-      cb(err);
-    });
-  }
-};
-
-// ----------------------------------------------------------------------------
-internals.configSchemes.elasticsearch = {
-  load: function (cb) {
-    const url = internals.configFile.replace('elasticsearch', 'http');
-    if (!url.includes('/_doc/')) {
-      throw new Error('Missing _doc in url, should be format elasticsearch://user:pass@host:port/INDEX/_doc/DOC');
-    }
-
-    axios.get(url)
-      .then((response) => {
-        cb(null, response.data._source);
-      })
-      .catch((error) => {
-        if (error.response && error.response.status === 404) {
-          return cb(null, {});
-        }
-        return cb(error);
-      });
-  },
-  save: function (config, cb) {
-    const url = internals.configFile.replace('elasticsearch', 'http');
-
-    axios.post(url, JSON.stringify(config), { headers: { 'Content-Type': 'application/json' } })
-      .then((response) => {
-        cb(null);
-      })
-      .catch((error) => {
-        cb(error);
-      });
-  }
-};
-
-// ----------------------------------------------------------------------------
-internals.configSchemes.elasticsearchs = {
-  load: function (cb) {
-    const url = internals.configFile.replace('elasticsearchs', 'https');
-    if (!url.includes('/_doc/')) {
-      throw new Error('Missing _doc in url, should be format elasticsearch://user:pass@host:port/INDEX/_doc/DOC');
-    }
-
-    axios.get(url)
-      .then((response) => {
-        return cb(null, response.data._source);
-      })
-      .catch((error) => {
-        if (error.response && error.response.status === 404) {
-          return cb(null, {});
-        }
-        return cb(error);
-      });
-  },
-  save: function (config, cb) {
-    const url = internals.configFile.replace('elasticsearchs', 'https');
-
-    axios.post(url, JSON.stringify(config), { headers: { 'Content-Type': 'application/json' } })
-      .then((response) => {
-        cb();
-      })
-      .catch((error) => {
-        cb(error);
-      });
-  }
-};
-
-// ----------------------------------------------------------------------------
-internals.configSchemes.json = {
-  load: function (cb) {
-    return cb(null, JSON.parse(fs.readFileSync(internals.configFile, 'utf8')));
-  },
-  save: function (config, cb) {
-    try {
-      fs.writeFileSync(internals.configFile, JSON.stringify(config, null, 1));
-      cb();
-    } catch (e) {
-      cb(e.message);
-    }
-  }
-};
-
-// ----------------------------------------------------------------------------
-internals.configSchemes.ini = {
-  load: function (cb) {
-    return cb(null, ini.parseSync(internals.configFile));
-  },
-  save: function (config, cb) {
-    function encode (str) {
-      return typeof (str) === 'string' ? str.replace(/[\n\r]/g, '\\n') : str;
-    }
-    let output = '';
-    Object.keys(config).forEach((section) => {
-      output += `[${encode(section)}]\n`;
-      Object.keys(config[section]).forEach((key) => {
-        output += `${key}=${encode(config[section][key])}\n`;
-      });
-    });
-
-    try {
-      fs.writeFileSync(internals.configFile, output);
-      cb(null);
-    } catch (e) {
-      cb(e.message);
-    }
-  }
-};
-
 // ============================================================================
 // AUTHED ROUTES - only needed for webconfig, must be at bottom
 // ============================================================================
@@ -1701,12 +1458,12 @@ if (internals.webconfig) {
    * @returns {object}
    */
   app.get('/config/get', [isWiseUser, ArkimeUtil.noCacheJson], (req, res) => {
-    const config = Object.keys(internals.config)
+    const config = ArkimeConfig.getSections()
       .sort()
       .filter(key => internals.configDefs[key.split(':')[0]])
       .reduce((obj, key) => {
         // Deep Copy
-        obj[key] = JSON.parse(JSON.stringify(internals.config[key]));
+        obj[key] = JSON.parse(JSON.stringify(ArkimeConfig.getSection(key)));
 
         // Replace passwords
         internals.configDefs[key.split(':')[0]].fields.forEach((item) => {
@@ -1717,13 +1474,13 @@ if (internals.webconfig) {
         return obj;
       }, {});
 
-    if (config.wiseService === undefined) { config.wiseService = {}; }
-    if (config.cache === undefined) { config.cache = {}; }
+    config.wiseService ??= {};
+    config.cache ??= {};
 
     return res.send({
       success: true,
       config,
-      filePath: internals.configFile
+      filePath: ArkimeConfig.configFile
     });
   });
   // ----------------------------------------------------------------------------
@@ -1739,7 +1496,7 @@ if (internals.webconfig) {
     }
 
     const config = req.body.config;
-    if (internals.debug > 0) {
+    if (ArkimeConfig.debug > 0) {
       console.log(config);
     }
 
@@ -1772,19 +1529,21 @@ if (internals.webconfig) {
           delete config[section][key];
         } else if (field.password === true) {
           if (config[section][key] === '********') {
-            config[section][key] = internals.config[section][key];
+            config[section][key] = ArkimeConfig.getFull(section, key);
           }
         }
       };
     }
 
-    if (internals.regressionTests) {
+    if (ArkimeConfig.regressionTests) {
       return res.send({ success: true, text: 'Would save, but regressionTests' });
     }
 
     // Make sure updateTime has increased incase of clock sku
     config.wiseService.updateTime = Math.max(Date.now(), internals.updateTime + 1);
-    internals.configScheme.save(config, (err) => {
+
+    ArkimeConfig.replace(config);
+    ArkimeConfig.save((err) => {
       if (err) {
         return res.send({ success: false, text: err });
       } else {
@@ -1865,7 +1624,7 @@ function main () {
   internals.sourceApi.addField('field:tags'); // Always add tags field so we have at least 1 field
   loadSources();
 
-  if (internals.debug > 0) {
+  if (ArkimeConfig.debug > 0) {
     setInterval(printStats, 60 * 1000);
   }
 
@@ -1892,86 +1651,27 @@ function main () {
   }, 2000);
 }
 
-function buildConfigAndStart () {
-  // The config is actually hidden
-  if (internals.configFile.endsWith('.hiddenconfig')) {
-    internals.configFile = fs.readFileSync(internals.configFile).toString().split('\n')[0].trim();
-  }
-  if (internals.configFile.startsWith('urlinfile://')) {
-    internals.configFile = fs.readFileSync(internals.configFile.substring(12)).toString().split('\n')[0].trim();
-  }
-
-  const parts = internals.configFile.split('://');
-
-  // If there is only 1 part, then this is actually a file on disk
-  if (parts.length === 1) {
-    try { // check if the file exists
-      fs.accessSync(internals.configFile, fs.constants.F_OK);
-    } catch (err) { // if the file doesn't exist, create it
-      try { // write the new file
-        if (internals.configFile.endsWith('json')) {
-          fs.writeFileSync(internals.configFile, JSON.stringify({}, null, 2), 'utf8');
-        } else {
-          fs.writeFileSync(internals.configFile, '', 'utf8');
-        }
-      } catch (err) { // notify of error saving new config and exit
-        console.log('Error creating new WISE Config:\n\n', ArkimeUtil.sanitizeStr(err.stack));
-        console.log(`
-          You must fix this before you can run WISE UI.
-          Try using arkime/tests/config.test.json as a starting point.
-        `);
-        process.exit(1);
-      }
-    }
-
-    if (internals.configFile.endsWith('json')) {
-      internals.configScheme = internals.configSchemes.json;
-    } else {
-      internals.configScheme = internals.configSchemes.ini;
-    }
-  } else {
-    internals.configScheme = internals.configSchemes[parts[0]];
-  }
-
-  if (internals.configScheme === undefined) {
-    throw new Error('Unknown scheme');
-  }
-
-  internals.configScheme.load((err, config) => {
-    if (err) {
-      console.log(`Error reading ${internals.configFile}:\n\n`, err);
-      process.exit(1);
-    }
-    if (config.wiseService === undefined) { config.wiseService = {}; }
-
-    internals.config = config;
-    if (internals.debug > 1) {
-      console.log('Config', internals.config);
-    }
-
-    internals.updateTime = internals.config.wiseService.updateTime || 0;
-    delete internals.config.wiseService.updateTime;
-
-    setupAuth();
-    if (internals.workers <= 1 || cluster.isWorker) {
-      main();
-    }
-  });
+async function buildConfigAndStart () {
+  // Load config
+  await ArkimeConfig.initialize({ defaultConfigFile: `${version.config_prefix}/etc/wiseService.ini` });
+  internals.updateTime = getConfig('wiseService', 'updateTime', 0);
 
   // Check if we need to restart, this is if there are multiple instances
-  setInterval(() => {
-    internals.configScheme.load((err, config) => {
-      if (err) { return; }
-      if (config.wiseService === undefined) { config.wiseService = {}; }
-      const updateTime = config.wiseService.updateTime || 0;
-      if (updateTime > internals.updateTime) {
-        console.log('New config file, restarting');
-        // Because of nodemon
-        setTimeout(() => { process.kill(process.pid, 'SIGUSR2'); }, 500);
-        setTimeout(() => { process.exit(0); }, 1500);
-      }
-    });
+  setInterval(async () => {
+    await ArkimeConfig.reload();
+    const updateTime = getConfig('wiseService', 'updateTime', 0);
+    if (updateTime > internals.updateTime) {
+      console.log('New config file, restarting');
+      // Because of nodemon
+      setTimeout(() => { process.kill(process.pid, 'SIGUSR2'); }, 500);
+      setTimeout(() => { process.exit(0); }, 1500);
+    }
   }, ((3000 * 60) + (Math.random() * 3000 * 60))); // Check 3min + 0-3min
+
+  setupAuth();
+  if (internals.workers <= 1 || cluster.isWorker) {
+    main();
+  }
 }
 
 buildConfigAndStart();

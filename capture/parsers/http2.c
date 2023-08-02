@@ -14,7 +14,7 @@
  *
  * https://http2.github.io/http2-spec/
  */
-#include "moloch.h"
+#include "arkime.h"
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include "nghttp2/nghttp2.h"
@@ -57,7 +57,7 @@ LOCAL const char *http2_frameNames[] = {"DATA", "HEADERS", "PRIORITY", "RST_STRE
 #endif
 
 
-extern MolochConfig_t        config;
+extern ArkimeConfig_t        config;
 
 LOCAL  int statuscodeField;
 LOCAL  int methodField;
@@ -67,9 +67,9 @@ LOCAL  int md5Field;
 LOCAL  int sha256Field;
 
 
-void http_common_parse_cookie(MolochSession_t *session, char *cookie, int len);
-void http_common_add_header(MolochSession_t *session, int pos, int isReq, const char *name, int namelen, const char *value, int valuelen);
-void http_common_parse_url(MolochSession_t *session, char *url, int len);
+void http_common_parse_cookie(ArkimeSession_t *session, char *cookie, int len);
+void http_common_add_header(ArkimeSession_t *session, int pos, int isReq, const char *name, int namelen, const char *value, int valuelen);
+void http_common_parse_url(ArkimeSession_t *session, char *url, int len);
 
 /******************************************************************************/
 LOCAL int http2_spos_get(HTTP2Info_t *http2, uint32_t streamId, int create)
@@ -121,7 +121,7 @@ LOCAL void http2_spos_free(HTTP2Info_t *http2, uint32_t streamId)
     }
 }
 /******************************************************************************/
-LOCAL void http2_parse_header_block(MolochSession_t *session, HTTP2Info_t *http2, int which, uint8_t flags, uint32_t streamId, unsigned char *in, int inlen)
+LOCAL void http2_parse_header_block(ArkimeSession_t *session, HTTP2Info_t *http2, int which, uint8_t flags, uint32_t streamId, unsigned char *in, int inlen)
 {
     int spos = http2_spos_get(http2, streamId, TRUE);
     if (spos == -1)
@@ -134,7 +134,7 @@ LOCAL void http2_parse_header_block(MolochSession_t *session, HTTP2Info_t *http2
 
 #ifdef HTTPDEBUG
     LOG("%u,%d: which:%d inlen:%d final:%d %.*s", streamId, spos, which, inlen, final, inlen, in);
-    //moloch_print_hex_string(in, inlen);
+    //arkime_print_hex_string(in, inlen);
 #endif
 
     // https://nghttp2.org/documentation/nghttp2_hd_inflate_hd2.html
@@ -156,18 +156,18 @@ LOCAL void http2_parse_header_block(MolochSession_t *session, HTTP2Info_t *http2
         if(inflate_flags & NGHTTP2_HD_INFLATE_EMIT) {
             if (nv.name[0] == ':') {
                 if (nv.namelen == 7 && memcmp(nv.name, ":method", 7) == 0) {
-                    moloch_field_string_add(methodField, session, (char *)nv.value, nv.valuelen, TRUE);
+                    arkime_field_string_add(methodField, session, (char *)nv.value, nv.valuelen, TRUE);
                 } else if (nv.namelen == 10 && memcmp(nv.name, ":authority", 10) == 0) {
                     uint8_t *colon = memchr(nv.value, ':', nv.valuelen);
                     if (colon) {
-                        moloch_field_string_add(hostField, session, (char *)nv.value, colon - nv.value, TRUE);
+                        arkime_field_string_add(hostField, session, (char *)nv.value, colon - nv.value, TRUE);
                     } else {
-                        moloch_field_string_add(hostField, session, (char *)nv.value, nv.valuelen, TRUE);
+                        arkime_field_string_add(hostField, session, (char *)nv.value, nv.valuelen, TRUE);
                     }
                 } else if (nv.namelen == 5 && memcmp(nv.name, ":path", 5) == 0) {
                     http_common_parse_url(session, (char *)nv.value, nv.valuelen);
                 } else if (nv.namelen == 7 && memcmp(nv.name, ":status", 7) == 0) {
-                    moloch_field_int_add(statuscodeField, session, atoi((const char *)nv.value));
+                    arkime_field_int_add(statuscodeField, session, atoi((const char *)nv.value));
                 }
             } else {
                 http_common_add_header(session, 0, which == http2->which, (const char *)nv.name, nv.namelen, (const char *)nv.value, nv.valuelen);
@@ -208,7 +208,7 @@ LOCAL void http2_parse_header_block(MolochSession_t *session, HTTP2Info_t *http2
  * |                           Padding (*)                       ...
  * +---------------------------------------------------------------+
  */
-LOCAL void http2_parse_frame_headers(MolochSession_t *session, HTTP2Info_t *http2, int which, uint8_t flags, uint32_t streamId, unsigned char *in, int inlen)
+LOCAL void http2_parse_frame_headers(ArkimeSession_t *session, HTTP2Info_t *http2, int which, uint8_t flags, uint32_t streamId, unsigned char *in, int inlen)
 {
     if (flags & NGHTTP2_FLAG_PADDED) {
         uint8_t padding = in[0];
@@ -237,7 +237,7 @@ LOCAL void http2_parse_frame_headers(MolochSession_t *session, HTTP2Info_t *http
  * |                           Padding (*)                       ...
  * +---------------------------------------------------------------+
  */
-LOCAL void http2_parse_frame_push_promise(MolochSession_t *session, HTTP2Info_t *http2, int which, uint8_t flags, uint32_t streamId, unsigned char *in, int inlen)
+LOCAL void http2_parse_frame_push_promise(ArkimeSession_t *session, HTTP2Info_t *http2, int which, uint8_t flags, uint32_t streamId, unsigned char *in, int inlen)
 {
     if (flags & NGHTTP2_FLAG_PADDED) {
         uint8_t padding = in[0];
@@ -264,7 +264,7 @@ LOCAL void http2_parse_frame_push_promise(MolochSession_t *session, HTTP2Info_t 
  * |                           Padding (*)                       ...
  * +---------------------------------------------------------------+
  */
-LOCAL void http2_parse_frame_data(MolochSession_t *session, HTTP2Info_t *http2, int which, uint8_t flags, uint32_t streamId, const unsigned char *in, int inlen, int initial)
+LOCAL void http2_parse_frame_data(ArkimeSession_t *session, HTTP2Info_t *http2, int which, uint8_t flags, uint32_t streamId, const unsigned char *in, int inlen, int initial)
 {
     // If first packet check for padding/end and save it for when dataneeded is 0
     if (initial) {
@@ -288,13 +288,13 @@ LOCAL void http2_parse_frame_data(MolochSession_t *session, HTTP2Info_t *http2, 
 
     int spos = http2_spos_get(http2, streamId, FALSE);
     if (spos == -1) {
-        moloch_session_add_tag(session, "http2:data-frame-after-close");
+        arkime_session_add_tag(session, "http2:data-frame-after-close");
         return;
     }
 
     // Only get magic string on first frame
     if (initial) {
-        http2->streams[spos].magicString[which] = moloch_parsers_magic(session, magicField, (char *)in, inlen);
+        http2->streams[spos].magicString[which] = arkime_parsers_magic(session, magicField, (char *)in, inlen);
     }
 
     // Check if checksums are allocated and update with new data
@@ -313,17 +313,17 @@ LOCAL void http2_parse_frame_data(MolochSession_t *session, HTTP2Info_t *http2, 
     // If the first packet in the frame said this is end and we've read them all, set the md5/sha fields
     if (http2->isEnd[which] && http2->dataNeeded[which] == 0) {
         const char *md5 = g_checksum_get_string(http2->streams[spos].checksum[which]);
-        moloch_field_string_uw_add(md5Field, session, (char*)md5, 32, (gpointer)http2->streams[spos].magicString[which], TRUE);
+        arkime_field_string_uw_add(md5Field, session, (char*)md5, 32, (gpointer)http2->streams[spos].magicString[which], TRUE);
         g_checksum_reset(http2->streams[spos].checksum[which]);
         if (config.supportSha256) {
             const char *sha256 = g_checksum_get_string(http2->streams[spos].checksum[which+2]);
-            moloch_field_string_uw_add(sha256Field, session, (char*)sha256, 64, (gpointer)http2->streams[spos].magicString[which], TRUE);
+            arkime_field_string_uw_add(sha256Field, session, (char*)sha256, 64, (gpointer)http2->streams[spos].magicString[which], TRUE);
             g_checksum_reset(http2->streams[spos].checksum[which+2]);
         }
     }
 }
 /******************************************************************************/
-LOCAL int http2_parse_frame(MolochSession_t *session, HTTP2Info_t *http2, int which)
+LOCAL int http2_parse_frame(ArkimeSession_t *session, HTTP2Info_t *http2, int which)
 {
     BSB bsb;
     BSB_INIT(bsb, http2->data[which], http2->used[which]);
@@ -400,7 +400,7 @@ cleanup:
     return 0;
 }
 /******************************************************************************/
-LOCAL int http2_parse(MolochSession_t *session, void *uw, const unsigned char *data, int len, int which)
+LOCAL int http2_parse(ArkimeSession_t *session, void *uw, const unsigned char *data, int len, int which)
 {
     HTTP2Info_t            *http2          = uw;
 
@@ -422,10 +422,10 @@ LOCAL int http2_parse(MolochSession_t *session, void *uw, const unsigned char *d
 
     if (len > MAX_HTTP2_SIZE - http2->used[which]) {
 #ifdef HTTPDEBUG
-        moloch_print_hex_string(http2->data[which], http2->used[which]);
+        arkime_print_hex_string(http2->data[which], http2->used[which]);
         LOG("TOO MUCH DATA");
 #endif
-        return MOLOCH_PARSER_UNREGISTER;
+        return ARKIME_PARSER_UNREGISTER;
     }
     memcpy(http2->data[which] + http2->used[which], data, len);
     http2->used[which] += len;
@@ -443,7 +443,7 @@ LOCAL int http2_parse(MolochSession_t *session, void *uw, const unsigned char *d
     return 0;
 }
 /******************************************************************************/
-void http2_save(MolochSession_t UNUSED(*session), void *UNUSED(uw), int final)
+void http2_save(ArkimeSession_t UNUSED(*session), void *UNUSED(uw), int final)
 {
     if (!final)
         return;
@@ -455,7 +455,7 @@ void http2_save(MolochSession_t UNUSED(*session), void *UNUSED(uw), int final)
 #endif
 }
 /******************************************************************************/
-LOCAL void http2_free(MolochSession_t UNUSED(*session), void *uw)
+LOCAL void http2_free(ArkimeSession_t UNUSED(*session), void *uw)
 {
     HTTP2Info_t            *http2          = uw;
 
@@ -473,59 +473,59 @@ LOCAL void http2_free(MolochSession_t UNUSED(*session), void *uw)
             g_checksum_free(http2->streams[i].checksum[3]);
         }
     }
-    MOLOCH_TYPE_FREE(HTTP2Info_t, http2);
+    ARKIME_TYPE_FREE(HTTP2Info_t, http2);
 }
 /******************************************************************************/
-LOCAL void http2_classify(MolochSession_t *session, const unsigned char *UNUSED(data), int UNUSED(len), int which, void *UNUSED(uw))
+LOCAL void http2_classify(ArkimeSession_t *session, const unsigned char *UNUSED(data), int UNUSED(len), int which, void *UNUSED(uw))
 {
-    if (moloch_session_has_protocol(session, "http2"))
+    if (arkime_session_has_protocol(session, "http2"))
         return;
-    moloch_session_add_protocol(session, "http2");
+    arkime_session_add_protocol(session, "http2");
 
-    HTTP2Info_t            *http2          = MOLOCH_TYPE_ALLOC0(HTTP2Info_t);
+    HTTP2Info_t            *http2          = ARKIME_TYPE_ALLOC0(HTTP2Info_t);
     http2->which = which;
 
-    moloch_parsers_register2(session, http2_parse, http2, http2_free, http2_save);
+    arkime_parsers_register2(session, http2_parse, http2, http2_free, http2_save);
 }
 /******************************************************************************/
-void moloch_parser_init()
+void arkime_parser_init()
 {
-    moloch_parsers_classifier_register_tcp("http2", NULL, 0, (unsigned char *)"PRI * HTTP/2.0\r\n\r\nSM\r\n\r\n", 24, http2_classify);
+    arkime_parsers_classifier_register_tcp("http2", NULL, 0, (unsigned char *)"PRI * HTTP/2.0\r\n\r\nSM\r\n\r\n", 24, http2_classify);
 
-    methodField = moloch_field_define("http", "termfield",
+    methodField = arkime_field_define("http", "termfield",
         "http.method", "Request Method", "http.method",
         "HTTP Request Method",
-        MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT,
+        ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT,
         (char *)NULL);
-    statuscodeField = moloch_field_define("http", "integer",
+    statuscodeField = arkime_field_define("http", "integer",
         "http.statuscode", "Status Code", "http.statuscode",
         "Response HTTP numeric status code",
-        MOLOCH_FIELD_TYPE_INT_GHASH,  MOLOCH_FIELD_FLAG_CNT,
+        ARKIME_FIELD_TYPE_INT_GHASH,  ARKIME_FIELD_FLAG_CNT,
         (char *)NULL);
-    hostField = moloch_field_define("http", "lotermfield",
+    hostField = arkime_field_define("http", "lotermfield",
         "host.http", "Hostname", "http.host",
         "HTTP host header field",
-        MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT,
+        ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT,
         "aliases", "[\"http.host\"]",
         "category", "host",
         (char *)NULL);
-    magicField = moloch_field_define("http", "termfield",
+    magicField = arkime_field_define("http", "termfield",
         "http.bodymagic", "Body Magic", "http.bodyMagic",
         "The content type of body determined by libfile/magic",
-        MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT,
+        ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT,
         (char *)NULL);
-    md5Field = moloch_field_define("http", "lotermfield",
+    md5Field = arkime_field_define("http", "lotermfield",
         "http.md5", "Body MD5", "http.md5",
         "MD5 of http body response",
-        MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT,
+        ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT,
         "category", "md5",
         (char *)NULL);
 
     if (config.supportSha256) {
-        sha256Field = moloch_field_define("http", "lotermfield",
+        sha256Field = arkime_field_define("http", "lotermfield",
             "http.sha256", "Body SHA256", "http.sha256",
             "SHA256 of http body response",
-            MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT,
+            ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT,
             "category", "sha256",
             (char *)NULL);
     }

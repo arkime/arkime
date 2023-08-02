@@ -35,7 +35,7 @@ ul.nav.nav-pills.mb-3
       | Remove Tags
     b-dropdown-item(@click="removeData()", v-has-permission="'removeEnabled'")
       | Remove Data
-    b-dropdown-item(v-for="(value, key) in molochclusters", key="key", @click="sendSession(key)")
+    b-dropdown-item(v-for="(value, key) in remoteclusters", key="key", @click="sendSession(key)")
       | Send Session to {{ value.name }}
 
 div.mb-2

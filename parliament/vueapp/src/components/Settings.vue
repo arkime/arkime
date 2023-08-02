@@ -317,8 +317,7 @@
                   </span>
                 </span>
                 <input class="form-control"
-                  @keyup.enter="updatePassword"
-                  name="currentPassword"
+                  name="authSetupCode"
                   @input="passwordChanged = true"
                   v-model="authSetupCode"
                   autocomplete="current-password"
@@ -326,6 +325,24 @@
                 />
               </div>
             </div> <!-- /auth setup code -->
+            <!-- authMode -->
+            <div class="col-xl-9 col-lg-12 form-group">
+              <div class="input-group">
+                <span class="input-group-prepend">
+                  <span class="input-group-text">
+                    Auth Mode
+                  </span>
+                </span>
+                <input type="string"
+                  class="form-control"
+                  id="authMode"
+                  v-model="settings.commonAuth.authMode"
+                />
+              </div>
+              <p class="form-text small text-muted">
+                Controls how authentication is done, valid values are anonymous, basic, digest, header, oidc.
+              </p>
+            </div> <!-- /authMode -->
             <!-- userNameHeader -->
             <div class="col-xl-9 col-lg-12 form-group">
               <div class="input-group">
@@ -341,7 +358,7 @@
                 />
               </div>
               <p class="form-text small text-muted">
-                Controls how authentication is done, leave blank to use the single Parliament password, use <strong>digest</strong> to use digest authentication, use the userNameHeader to use header auth.
+                When authMode is header, this is which http header to use for the userId.
               </p>
             </div> <!-- /userNameHeader -->
             <!-- usersElasticsearch -->

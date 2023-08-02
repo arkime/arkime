@@ -26,6 +26,8 @@ const sjson = require('secure-json-parse');
 
 class ArkimeUtil {
   static debug = 0;
+  static adminRole;
+
   // ----------------------------------------------------------------------------
   /**
    * A json body parser that doesn't allow anything that looks like "__proto__": or "constructor":
@@ -82,6 +84,15 @@ class ArkimeUtil {
     res.header('X-Content-Type-Options', 'nosniff');
     return next();
   }
+
+  // ----------------------------------------------------------------------------
+  static noCache (req, res, ct) {
+    res.header('Cache-Control', 'no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0');
+    if (ct) {
+      res.setHeader('Content-Type', ct);
+      res.header('X-Content-Type-Options', 'nosniff');
+    }
+  };
 
   // ----------------------------------------------------------------------------
   /**
@@ -335,7 +346,7 @@ class ArkimeUtil {
       }
 
       userId = req.user.userId;
-    } else if (!req.user.hasRole('usersAdmin')) {
+    } else if (!req.user.hasRole('usersAdmin') || (!req.url.startsWith('/api/user/password') && ArkimeUtil.adminRole && !req.user.hasRole(ArkimeUtil.adminRole))) {
       // user is trying to get another user's settings without admin privilege
       return res.serverError(403, 'Need admin privileges');
     } else {

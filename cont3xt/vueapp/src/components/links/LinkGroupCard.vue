@@ -16,57 +16,76 @@
           v-b-tooltip.hover="`Shared with you by ${linkGroup.creator}`"
         />
         {{ linkGroup.name }}
-        <small class="pull-right"
-          v-if="!itype && getUser && linkGroup.creator !== getUser.userId">
-          You can only view this Link Group
-        </small>
+        <div class="pull-right">
+          <small v-if="!itype && getUser && linkGroup.creator !== getUser.userId">
+            You can only view this Link Group
+          </small>
+          <b-button
+              class="ml-1"
+              size="sm"
+              variant="secondary"
+              @click="rawEditMode = !rawEditMode"
+              v-b-tooltip.hover="`View ${rawEditMode ? 'form' : 'raw'} configuration for this link group`">
+            <span class="fa fa-fw" :class="{'fa-file-text-o': rawEditMode, 'fa-pencil-square-o': !rawEditMode}" />
+          </b-button>
+        </div>
       </h6>
     </template>
     <b-card-body>
       <div v-show="!collapsedLinkGroups[linkGroup._id]">
-        <template
-          v-for="(link, i) in filteredLinks">
-          <!-- display link to click -->
-          <div class="link-display"
-            :key="link.url + i + 'click'"
-            v-if="itype && link.name !== '----------'">
-            <b-form-checkbox
-              inline
-              tabindex="-1"
-              class="link-checkbox"
-              @change="$store.commit('TOGGLE_CHECK_LINK', { lgId: linkGroup._id, lname: link.name })"
-              :checked="getCheckedLinks[linkGroup._id] && getCheckedLinks[linkGroup._id][link.name]"
-            />
-            <a tabindex="-1"
-              target="_blank"
-              :title="link.name"
-              :href="getUrl(link.url)"
-              :style="link.color ? `color:${link.color}` : ''">
-              {{ link.name }}
-            </a>
-            <link-guidance :link="link" :element-id="`${linkGroup._id}-${i}`" />
-          </div> <!-- /display link to click -->
-          <!-- display link to view -->
-          <div :title="link.name"
-            :key="link.url + i + 'view'"
-            v-else-if="!itype && link.name !== '----------'">
-            <strong class="text-warning">
-              {{ link.name }}
-            </strong>
-            <a tabindex="-1"
-              href="javascript:void(0)"
-              :style="link.color ? `color:${link.color}` : ''">
-              {{ link.url }}
-            </a>
-            <link-guidance :link="link" :element-id="`${linkGroup.name}-${i}`" />
-          </div> <!-- /display link to view -->
-          <!-- separator -->
-          <hr class="link-separator-display"
-            :key="link.url + i + 'separator'"
-            v-else-if="link.name === '----------'"
-            :style="`border-color: ${link.color || '#777'}`"
-          >
+        <template v-if="!rawEditMode">
+          <template
+              v-for="(link, i) in filteredLinks">
+            <!-- display link to click -->
+            <div class="link-display"
+                 :key="link.url + i + 'click'"
+                 v-if="itype && link.name !== '----------'">
+              <b-form-checkbox
+                  inline
+                  tabindex="-1"
+                  class="link-checkbox"
+                  @change="$store.commit('TOGGLE_CHECK_LINK', { lgId: linkGroup._id, lname: link.name })"
+                  :checked="getCheckedLinks[linkGroup._id] && getCheckedLinks[linkGroup._id][link.name]"
+              />
+              <a tabindex="-1"
+                 target="_blank"
+                 :title="link.name"
+                 :href="getUrl(link.url)"
+                 :style="link.color ? `color:${link.color}` : ''">
+                {{ link.name }}
+              </a>
+              <link-guidance :link="link" :element-id="`${linkGroup._id}-${i}`" />
+            </div> <!-- /display link to click -->
+            <!-- display link to view -->
+            <div :title="link.name"
+                 :key="link.url + i + 'view'"
+                 v-else-if="!itype && link.name !== '----------'">
+              <strong class="text-warning">
+                {{ link.name }}
+              </strong>
+              <a tabindex="-1"
+                 href="javascript:void(0)"
+                 :style="link.color ? `color:${link.color}` : ''">
+                {{ link.url }}
+              </a>
+              <link-guidance :link="link" :element-id="`${linkGroup.name}-${i}`" />
+            </div> <!-- /display link to view -->
+            <!-- separator -->
+            <hr class="link-separator-display"
+                :key="link.url + i + 'separator'"
+                v-else-if="link.name === '----------'"
+                :style="`border-color: ${link.color || '#777'}`"
+            >
+          </template>
         </template>
+        <link-group-form
+            v-else
+            :raw-edit-mode="rawEditMode"
+            :link-group="updatedLinkGroup"
+            :no-edit="true"
+            @display-message="displayMessage"
+            @update-link-group="updateLinkGroup"
+        />
       </div>
     </b-card-body>
     <template #footer v-if="itype && !collapsedLinkGroups[linkGroup._id]">
@@ -151,8 +170,8 @@
               size="sm"
               variant="secondary"
               @click="rawEditMode = !rawEditMode"
-              v-b-tooltip.hover="'Toggle raw configuration for this link group'">
-              <span class="fa fa-pencil-square-o" />
+              v-b-tooltip.hover="`Edit ${rawEditMode ? 'form' : 'raw'} configuration for this link group`">
+              <span class="fa fa-fw" :class="{'fa-file-text-o': rawEditMode, 'fa-pencil-square-o': !rawEditMode}" />
             </b-button>
           </transition>
           <transition name="buttons">
@@ -467,7 +486,6 @@ export default {
 
 .link-header {
   overflow: hidden;
-  margin-right: 1rem;
   white-space: nowrap;
   text-overflow: ellipsis;
 }

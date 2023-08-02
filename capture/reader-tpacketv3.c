@@ -23,8 +23,8 @@
  *
  */
 
-#include "moloch.h"
-extern MolochConfig_t        config;
+#include "arkime.h"
+extern ArkimeConfig_t        config;
 
 #ifndef __linux
 void reader_tpacketv3_init(char *UNUSED(name))
@@ -59,22 +59,22 @@ typedef struct {
     uint8_t             *map;
     struct iovec        *rd;
     uint8_t              interfacePos;
-} MolochTPacketV3_t;
+} ArkimeTPacketV3_t;
 
-LOCAL MolochTPacketV3_t infos[MAX_INTERFACES][MAX_TPACKETV3_THREADS];
+LOCAL ArkimeTPacketV3_t infos[MAX_INTERFACES][MAX_TPACKETV3_THREADS];
 
 LOCAL int numThreads;
 
-extern MolochPcapFileHdr_t   pcapFileHeader;
+extern ArkimePcapFileHdr_t   pcapFileHeader;
 LOCAL struct bpf_program     bpf;
 
-LOCAL MolochReaderStats_t gStats;
-LOCAL MOLOCH_LOCK_DEFINE(gStats);
+LOCAL ArkimeReaderStats_t gStats;
+LOCAL ARKIME_LOCK_DEFINE(gStats);
 
 /******************************************************************************/
-int reader_tpacketv3_stats(MolochReaderStats_t *stats)
+int reader_tpacketv3_stats(ArkimeReaderStats_t *stats)
 {
-    MOLOCH_LOCK(gStats);
+    ARKIME_LOCK(gStats);
 
     struct tpacket_stats_v3 tpstats;
     for (int i = 0; i < MAX_INTERFACES && config.interface[i]; i++) {
@@ -87,13 +87,13 @@ int reader_tpacketv3_stats(MolochReaderStats_t *stats)
         }
     }
     *stats = gStats;
-    MOLOCH_UNLOCK(gStats);
+    ARKIME_UNLOCK(gStats);
     return 0;
 }
 /******************************************************************************/
 LOCAL void *reader_tpacketv3_thread(gpointer infov)
 {
-    MolochTPacketV3_t *info = (MolochTPacketV3_t *)infov;
+    ArkimeTPacketV3_t *info = (ArkimeTPacketV3_t *)infov;
     struct pollfd pfd;
     int pos = 0;
 
@@ -102,8 +102,8 @@ LOCAL void *reader_tpacketv3_thread(gpointer infov)
     pfd.events = POLLIN | POLLERR;
     pfd.revents = 0;
 
-    MolochPacketBatch_t batch;
-    moloch_packet_batch_init(&batch);
+    ArkimePacketBatch_t batch;
+    arkime_packet_batch_init(&batch);
 
     while (!config.quitting) {
         struct tpacket_block_desc *tbd = info->rd[pos].iov_base;
@@ -137,11 +137,11 @@ LOCAL void *reader_tpacketv3_thread(gpointer infov)
         for (p = 0; p < tbd->hdr.bh1.num_pkts; p++) {
             if (unlikely(th->tp_snaplen != th->tp_len)) {
                 LOGEXIT("ERROR - Arkime requires full packet captures caplen: %d pktlen: %d\n"
-                    "See https://arkime.com/faq#moloch_requires_full_packet_captures_error",
+                    "See https://arkime.com/faq#arkime_requires_full_packet_captures_error",
                     th->tp_snaplen, th->tp_len);
             }
 
-            MolochPacket_t *packet = MOLOCH_TYPE_ALLOC0(MolochPacket_t);
+            ArkimePacket_t *packet = ARKIME_TYPE_ALLOC0(ArkimePacket_t);
             packet->pkt           = (u_char *)th + th->tp_mac;
             packet->pktlen        = th->tp_len;
             packet->ts.tv_sec     = th->tp_sec;
@@ -152,11 +152,11 @@ LOCAL void *reader_tpacketv3_thread(gpointer infov)
                 packet->vlan = th->hv1.tp_vlan_tci & 0xfff;
             }
 
-            moloch_packet_batch(&batch, packet);
+            arkime_packet_batch(&batch, packet);
 
             th = (struct tpacket3_hdr *) ((uint8_t *) th + th->tp_next_offset);
         }
-        moloch_packet_batch_flush(&batch);
+        arkime_packet_batch_flush(&batch);
 
         tbd->hdr.bh1.block_status = TP_STATUS_KERNEL;
         pos = (pos + 1) % info->req.tp_block_nr;
@@ -168,7 +168,7 @@ void reader_tpacketv3_start() {
     char name[100];
     for (int i = 0; i < MAX_INTERFACES && config.interface[i]; i++) {
         for (int t = 0; t < numThreads; t++) {
-            snprintf(name, sizeof(name), "moloch-af3%d-%d", i, t);
+            snprintf(name, sizeof(name), "arkime-af3%d-%d", i, t);
             g_thread_unref(g_thread_new(name, &reader_tpacketv3_thread, &infos[i][t]));
         }
     }
@@ -185,8 +185,8 @@ void reader_tpacketv3_exit()
 /******************************************************************************/
 void reader_tpacketv3_init(char *UNUSED(name))
 {
-    int blocksize = moloch_config_int(NULL, "tpacketv3BlockSize", 1<<21, 1<<16, 1U<<31);
-    numThreads = moloch_config_int(NULL, "tpacketv3NumThreads", 2, 1, MAX_TPACKETV3_THREADS);
+    int blocksize = arkime_config_int(NULL, "tpacketv3BlockSize", 1<<21, 1<<16, 1U<<31);
+    numThreads = arkime_config_int(NULL, "tpacketv3NumThreads", 2, 1, MAX_TPACKETV3_THREADS);
 
     if (blocksize % getpagesize() != 0) {
         CONFIGEXIT("tpacketv3BlockSize=%d not divisible by pagesize %d", blocksize, getpagesize());
@@ -196,7 +196,7 @@ void reader_tpacketv3_init(char *UNUSED(name))
         CONFIGEXIT("tpacketv3BlockSize=%d not divisible by snapLen=%u", blocksize, config.snapLen);
     }
 
-    moloch_packet_set_dltsnap(DLT_EN10MB, config.snapLen);
+    arkime_packet_set_dltsnap(DLT_EN10MB, config.snapLen);
 
     pcap_t *dpcap = pcap_open_dead(pcapFileHeader.dlt, pcapFileHeader.snaplen);
 
@@ -206,7 +206,7 @@ void reader_tpacketv3_init(char *UNUSED(name))
         }
     }
 
-    int fanout_group_id = moloch_config_int(NULL, "tpacketv3ClusterId", 8005, 0x0001, 0xffff);
+    int fanout_group_id = arkime_config_int(NULL, "tpacketv3ClusterId", 8005, 0x0001, 0xffff);
 
     int version = TPACKET_V3;
     int i;
@@ -282,9 +282,9 @@ void reader_tpacketv3_init(char *UNUSED(name))
         CONFIGEXIT("Only support up to %d interfaces", MAX_INTERFACES);
     }
 
-    moloch_reader_start         = reader_tpacketv3_start;
-    moloch_reader_exit          = reader_tpacketv3_exit;
-    moloch_reader_stats         = reader_tpacketv3_stats;
+    arkime_reader_start         = reader_tpacketv3_start;
+    arkime_reader_exit          = reader_tpacketv3_exit;
+    arkime_reader_stats         = reader_tpacketv3_stats;
 }
 #endif // TPACKET_V3
 #endif // _linux

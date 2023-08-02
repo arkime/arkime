@@ -16,31 +16,31 @@
  * limitations under the License.
  */
 
-#include "moloch.h"
+#include "arkime.h"
 #include "dll.h"
 
 /******************************************************************************/
-extern MolochConfig_t        config;
+extern ArkimeConfig_t        config;
 
 /******************************************************************************/
-struct molochdrophashitem_t {
-    MolochDropHashItem_t *dhg_next, *dhg_prev;
-    MolochDropHashItem_t *hnext;
-    uint8_t               key[MOLOCH_SESSIONID_LEN - 1];
+struct arkimedrophashitem_t {
+    ArkimeDropHashItem_t *dhg_next, *dhg_prev;
+    ArkimeDropHashItem_t *hnext;
+    uint8_t               key[ARKIME_SESSIONID_LEN - 1];
     uint32_t              last;
     uint32_t              goodFor;
     uint16_t              port;
     uint16_t              flags;
 };
 
-struct molochdrophash_t {
-    MolochDropHashItem_t **heads;
+struct arkimedrophash_t {
+    ArkimeDropHashItem_t **heads;
     uint32_t               cnt;
     uint16_t               num;
 };
 
 /******************************************************************************/
-LOCAL inline uint32_t moloch_drophash_hash (const void *key, int len)
+LOCAL inline uint32_t arkime_drophash_hash (const void *key, int len)
 {
     uint32_t  h = 0;
     uint32_t *p = (uint32_t *)key;
@@ -54,7 +54,7 @@ LOCAL inline uint32_t moloch_drophash_hash (const void *key, int len)
 }
 
 /******************************************************************************/
-LOCAL void moloch_drophash_make(MolochDropHashGroup_t *group, int port)
+LOCAL void arkime_drophash_make(ArkimeDropHashGroup_t *group, int port)
 {
     int size;
 
@@ -69,47 +69,47 @@ LOCAL void moloch_drophash_make(MolochDropHashGroup_t *group, int port)
         break;
     }
 
-    MOLOCH_LOCK(group->lock);
+    ARKIME_LOCK(group->lock);
     if (group->drops[port])
         goto done;
 
-    MolochDropHash_t *hash;
+    ArkimeDropHash_t *hash;
 
-    hash          = MOLOCH_TYPE_ALLOC(MolochDropHash_t);
+    hash          = ARKIME_TYPE_ALLOC(ArkimeDropHash_t);
     hash->num     = size;
-    hash->heads   = MOLOCH_SIZE_ALLOC0("heads", size * sizeof(MolochDropHashItem_t *));
+    hash->heads   = ARKIME_SIZE_ALLOC0("heads", size * sizeof(ArkimeDropHashItem_t *));
     hash->cnt     = 0;
     group->drops[port] = hash;
 done:
-    MOLOCH_UNLOCK(group->lock);
+    ARKIME_UNLOCK(group->lock);
 }
 /******************************************************************************/
-int moloch_drophash_add (MolochDropHashGroup_t *group, int port, const void *key, uint32_t current, uint32_t goodFor)
+int arkime_drophash_add (ArkimeDropHashGroup_t *group, int port, const void *key, uint32_t current, uint32_t goodFor)
 {
     if (!group->drops[port]) {
-        moloch_drophash_make(group, port);
+        arkime_drophash_make(group, port);
     }
 
-    MolochDropHash_t *hash = group->drops[port];
+    ArkimeDropHash_t *hash = group->drops[port];
 
-    MolochDropHashItem_t *item;
+    ArkimeDropHashItem_t *item;
     uint32_t              h;
     if (group->keyLen == 4)
         h = (*(uint32_t *)key) % hash->num;
     else
-        h = moloch_drophash_hash(key, group->keyLen) % hash->num;
+        h = arkime_drophash_hash(key, group->keyLen) % hash->num;
 
-    MOLOCH_LOCK(group->lock);
+    ARKIME_LOCK(group->lock);
     if (hash->heads[h]) {
         for (item = hash->heads[h]; item; item = item->hnext) {
             if (memcmp(key, item->key, group->keyLen) == 0) {
-                MOLOCH_UNLOCK(group->lock);
+                ARKIME_UNLOCK(group->lock);
                 return 0;
             }
         }
     }
 
-    item           = MOLOCH_TYPE_ALLOC(MolochDropHashItem_t);
+    item           = ARKIME_TYPE_ALLOC(ArkimeDropHashItem_t);
     item->hnext    = hash->heads[h];
     item->flags    = 0;
     item->port     = port;
@@ -121,25 +121,25 @@ int moloch_drophash_add (MolochDropHashGroup_t *group, int port, const void *key
 
     DLL_PUSH_TAIL(dhg_, group, item);
     group->changed++;
-    MOLOCH_UNLOCK(group->lock);
+    ARKIME_UNLOCK(group->lock);
     return 1;
 }
 
 /******************************************************************************/
-int moloch_drophash_should_drop (MolochDropHashGroup_t *group, int port, void *key, uint32_t current)
+int arkime_drophash_should_drop (ArkimeDropHashGroup_t *group, int port, void *key, uint32_t current)
 {
-    MolochDropHash_t *hash = group->drops[port];
+    ArkimeDropHash_t *hash = group->drops[port];
 
     uint32_t              h;
     if (group->keyLen == 4)
         h = (*(uint32_t *)key) % hash->num;
     else
-        h = moloch_drophash_hash(key, group->keyLen) % hash->num;
+        h = arkime_drophash_hash(key, group->keyLen) % hash->num;
 
     if (!hash->heads[h])
         return 0;
 
-    MolochDropHashItem_t *item;
+    ArkimeDropHashItem_t *item;
     for (item = hash->heads[h]; item; item = item->hnext) {
         if (memcmp(key, item->key, group->keyLen) == 0) {
 
@@ -154,33 +154,33 @@ int moloch_drophash_should_drop (MolochDropHashGroup_t *group, int port, void *k
             }
 
             // Outside the window, need to remove, don't drop
-            moloch_drophash_delete(group, port, key);
+            arkime_drophash_delete(group, port, key);
             return 0;
         }
     }
     return 0;
 }
 /******************************************************************************/
-void moloch_drophash_free(void *ptr)
+void arkime_drophash_free(void *ptr)
 {
-    MOLOCH_TYPE_FREE(MolochDropHashItem_t, ptr);
+    ARKIME_TYPE_FREE(ArkimeDropHashItem_t, ptr);
 }
 /******************************************************************************/
-void moloch_drophash_delete (MolochDropHashGroup_t *group, int port, void *key)
+void arkime_drophash_delete (ArkimeDropHashGroup_t *group, int port, void *key)
 {
-    MolochDropHash_t *hash = group->drops[port];
+    ArkimeDropHash_t *hash = group->drops[port];
 
-    MolochDropHashItem_t *item, *parent = NULL;
+    ArkimeDropHashItem_t *item, *parent = NULL;
     uint32_t              h;
     if (group->keyLen == 4)
         h = (*(uint32_t *)key) % hash->num;
     else
-        h = moloch_drophash_hash(key, group->keyLen) % hash->num;
+        h = arkime_drophash_hash(key, group->keyLen) % hash->num;
 
     if (!hash->heads[h])
         return;
 
-    MOLOCH_LOCK(group->lock);
+    ARKIME_LOCK(group->lock);
     for (item = hash->heads[h]; item; parent = item, item = item->hnext) {
         if (memcmp(key, item->key, group->keyLen) == 0) {
             hash->cnt--;
@@ -190,18 +190,18 @@ void moloch_drophash_delete (MolochDropHashGroup_t *group, int port, void *key)
                 hash->heads[h] = item->hnext;
             }
             DLL_REMOVE(dhg_, group, item);
-            moloch_free_later(item, moloch_drophash_free);
+            arkime_free_later(item, arkime_drophash_free);
             group->changed++;
             break;
         }
     }
-    MOLOCH_UNLOCK(group->lock);
+    ARKIME_UNLOCK(group->lock);
 }
 
 /******************************************************************************/
-void moloch_drophash_init(MolochDropHashGroup_t *group, char *file, int keyLen)
+void arkime_drophash_init(ArkimeDropHashGroup_t *group, char *file, int keyLen)
 {
-    MOLOCH_LOCK_INIT(group->lock);
+    ARKIME_LOCK_INIT(group->lock);
     group->keyLen = keyLen;
     DLL_INIT(dhg_, group);
 
@@ -279,17 +279,17 @@ void moloch_drophash_init(MolochDropHashGroup_t *group, char *file, int keyLen)
         }
 
         if (last + goodFor >= currentTime.tv_sec)
-            moloch_drophash_add(group, port, key, last, goodFor);
+            arkime_drophash_add(group, port, key, last, goodFor);
     }
     group->changed = 0; // Reset changes so we don't save right away
     fclose(fp);
 }
 
 /******************************************************************************/
-void moloch_drophash_save(MolochDropHashGroup_t *group)
+void arkime_drophash_save(ArkimeDropHashGroup_t *group)
 {
     FILE *fp;
-    MolochDropHashItem_t *item;
+    ArkimeDropHashItem_t *item;
 
     if (!group->file)
         return;
@@ -298,7 +298,7 @@ void moloch_drophash_save(MolochDropHashGroup_t *group)
         LOG("ERROR - Couldn't open `%s` to save drophash", group->file);
         return;
     }
-    MOLOCH_LOCK(group->lock);
+    ARKIME_LOCK(group->lock);
     group->changed = 0;
     int ver = 2;
 
@@ -312,6 +312,6 @@ void moloch_drophash_save(MolochDropHashGroup_t *group)
         fwrite(&item->goodFor, 4, 1, fp);
         fwrite(&item->flags, 2, 1, fp);
     }
-    MOLOCH_UNLOCK(group->lock);
+    ARKIME_UNLOCK(group->lock);
     fclose(fp);
 }

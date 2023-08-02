@@ -12,8 +12,8 @@ my $token = getTokenCookie('test1');
 my $token2 = getTokenCookie('test2');
 
 # create test users
-viewerPostToken("/user/create", '{"userId": "test1", "userName": "test1", "enabled":true, "password":"password", "roles":["arkimeUser"]}', $adminToken);
-viewerPostToken("/user/create", '{"userId": "test2", "userName": "test2", "enabled":true, "password":"password"}', $adminToken);
+viewerPostToken("/api/user", '{"userId": "test1", "userName": "test1", "enabled":true, "password":"password", "roles":["arkimeUser"]}', $adminToken);
+viewerPostToken("/api/user", '{"userId": "test2", "userName": "test2", "enabled":true, "password":"password"}', $adminToken);
 
 # No views
 my $info = viewerGet("/api/views?molochRegressionUser=test1");
@@ -114,11 +114,11 @@ viewerDeleteToken("/api/view/${id2}?molochRegressionUser=test2", $token2);
 viewerDeleteToken("/api/view/${id3}?molochRegressionUser=test1", $token);
 
 # views are empty
-$info = viewerGet("/user/views?molochRegressionUser=test1");
+$info = viewerGet("/api/views?molochRegressionUser=test1");
 eq_or_diff($info->{recordsTotal}, 0, "returns 0 recordsTotal");
 eq_or_diff($info->{recordsFiltered}, 0, "returns 0 recordsFiltered");
 eq_or_diff($info->{data}, from_json("[]"), "empty views");
 
 # cleanup users
-viewerPostToken2("/user/delete", "userId=test1", $adminToken);
-viewerPostToken2("/user/delete", "userId=test2", $adminToken);
+viewerDeleteToken2("/api/user/test1", $adminToken);
+viewerDeleteToken2("/api/user/test2", $adminToken);
