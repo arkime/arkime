@@ -148,20 +148,20 @@
           <dd>The number of days defined in the "Days" input</dd>
           <dt>${numHours}</dt>
           <dd>The number of hours defined in the "Hours" input</dd>
-          <dt>${stopTS}</dt>
-          <dd>The stop date timestamp defined in the "Stop Date" input (YYYY-mm-ddTHH.mm.ssZ)</dd>
+          <dt>${endTS}</dt>
+          <dd>The end date timestamp defined in the "End Date" input (YYYY-mm-ddTHH.mm.ssZ)</dd>
           <dt>${startTS}</dt>
           <dd>The start date timestamp defined in the "Start Date" input (YYYY-mm-ddTHH.mm.ssZ)</dd>
-          <dt>${stopDate}</dt>
-          <dd>The stop date defined in the "Stop Date" input (YYYY-mm-dd)</dd>
+          <dt>${endDate}</dt>
+          <dd>The end date defined in the "End Date" input (YYYY-mm-dd)</dd>
           <dt>${startDate}</dt>
           <dd>The start date defined in the "Start Date" input (YYYY-mm-dd)</dd>
-          <dt>${stopEpoch}</dt>
-          <dd>The stop date timestamp since epoch (in seconds) in the "Stop Date" input</dd>
+          <dt>${endEpoch}</dt>
+          <dd>The end date timestamp since epoch (in seconds) in the "End Date" input</dd>
           <dt>${startEpoch}</dt>
           <dd>The start date timestamp since epoch (in seconds) defined in the "Start Date" input</dd>
-          <dt>${stopSplunk}</dt>
-          <dd>The stop date timestamp defined in the "Stop Date" input (MM/DD/YYYY:HH:mm:ss)</dd>
+          <dt>${endSplunk}</dt>
+          <dd>The end date timestamp defined in the "End Date" input (MM/DD/YYYY:HH:mm:ss)</dd>
           <dt>${startSplunk}</dt>
           <dd>The start date timestamp defined in the "Start Date" input (MM/DD/YYYY:HH:mm:ss)</dd>
         </dl>
