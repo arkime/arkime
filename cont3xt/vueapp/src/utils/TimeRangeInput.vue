@@ -32,7 +32,7 @@
         class="mr-2">
       <template #prepend>
         <b-input-group-text>
-          Stop
+          End
         </b-input-group-text>
       </template>
       <b-form-input
@@ -83,7 +83,7 @@ export default {
     },
     inputWidth: {
       type: String,
-      default: '152px'
+      default: '146px'
     }
   },
   data () {
