@@ -291,7 +291,7 @@
                           variant="dark"
                           class="text-center">
                         There is no overview configured for the <strong>{{ this.activeIndicator.itype }}</strong> iType.
-                        <a class="no-decoration" href="settings#overviews">Create one here!</a>
+                        <a class="no-decoration" href="settings#overviews">Create one!</a>
                       </b-alert>
                     </template>
                     <integration-card
@@ -433,8 +433,8 @@
                     There are no Link Groups that match your search.
                   </span>
                   <span v-else class="p-1">
-                    There are no Link Groups for the <strong>{{ this.rootIndicator.itype }}</strong> iType.
-                    <a class="no-decoration" href="settings#linkgroups">Create one here!</a>
+                    There are no Link Groups for the <strong>{{ activeIndicator.itype }}</strong> iType.
+                    <a class="no-decoration" href="settings#linkgroups">Create one!</a>
                   </span> <!-- /no link groups message -->
                 </div> <!-- /link groups -->
               </div>
