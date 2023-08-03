@@ -24,8 +24,8 @@
         />
         <b-badge
           class="btn-badge"
-          v-if="integrationDataMap[integration.name]._cont3xt.count !== undefined"
-          :variant="countBadgeColor(integrationDataMap[integration.name])">
+          v-if="shouldDisplayCountedIntegrationBtn(integration, integrationDataMap[integration.name])"
+          :variant="integrationCountSeverity(integrationDataMap[integration.name])">
           {{ integrationDataMap[integration.name]._cont3xt.count | humanReadableNumber }}
         </b-badge>
       </b-button>
@@ -35,7 +35,12 @@
 
 <script>
 import { mapGetters } from 'vuex';
-import { Cont3xtIndicatorProp, getIntegrationDataMap } from '@/utils/cont3xtUtil';
+import {
+  Cont3xtIndicatorProp,
+  getIntegrationDataMap,
+  shouldDisplayIntegrationBtn,
+  integrationCountSeverity, shouldDisplayCountedIntegrationBtn
+} from '@/utils/cont3xtUtil';
 
 // Clicking an integration button commits to the store which integration, itype,
 // and value to display integration data for. The Cont3xt component watches for
@@ -51,7 +56,15 @@ export default {
      * *     (there may be multiple IPs for instance, so the value
      * *     indicates which IP to display information for)
      */
-    indicator: Cont3xtIndicatorProp
+    indicator: Cont3xtIndicatorProp,
+    /**
+     * undefined - show all integrations
+     * 'success' | 'secondary' | 'danger' - show only integration buttons with that icon color/severity
+     */
+    countSeverityFilter: {
+      type: String,
+      required: false
+    }
   },
   computed: {
     ...mapGetters(['getIntegrationsArray', 'getLoading', 'getResults']),
@@ -61,9 +74,19 @@ export default {
       });
     },
     buttonIntegrations () {
-      return this.integrations.filter(integration =>
-        this.integrationDataMap[integration.name] && integration.icon
-      );
+      const sortedIntegrations = this.getIntegrationsArray.slice().sort((a, b) => {
+        return a.order - b.order;
+      });
+
+      return sortedIntegrations.filter(integration => {
+        const integrationData = this.integrationDataMap[integration.name];
+        // filter out buttons whose severity don't match countSeverityFilter, if we have one
+        if (this.countSeverityFilter) {
+          return shouldDisplayCountedIntegrationBtn(integration, integrationData) &&
+              this.integrationCountSeverity(integrationData) === this.countSeverityFilter;
+        }
+        return shouldDisplayIntegrationBtn(integration, integrationData);
+      });
     },
     /** @returns a map of integration names to integration data objects */
     integrationDataMap () {
@@ -71,17 +94,10 @@ export default {
     }
   },
   methods: {
+    shouldDisplayCountedIntegrationBtn,
+    integrationCountSeverity,
     setAsActive (integration) {
       this.$store.commit('SET_QUEUED_INTEGRATION', { indicator: this.indicator, source: integration.name });
-    },
-    countBadgeColor (data) {
-      if (data._cont3xt.count === 0) {
-        return 'secondary';
-      } else if (data._cont3xt.severity === 'high') {
-        return 'danger';
-      } else {
-        return 'success';
-      }
     }
   }
 };
