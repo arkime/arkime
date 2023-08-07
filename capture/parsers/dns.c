@@ -32,6 +32,9 @@ LOCAL  int                   queryTypeField;
 LOCAL  int                   queryClassField;
 LOCAL  int                   statusField;
 LOCAL  int                   opCodeField;
+LOCAL  int                   httpsAlpnField;
+LOCAL  int                   httpsPortField;
+LOCAL  int                   httpsIpField;
 
 typedef enum dns_type
 {
@@ -39,7 +42,8 @@ typedef enum dns_type
   RR_NS         =   2,
   RR_CNAME      =   5,
   RR_MX         =  15,
-  RR_AAAA       =  28
+  RR_AAAA       =  28,
+  RR_HTTPS      =  65
 } DNSType_t;
 
 typedef enum dns_class
@@ -204,6 +208,73 @@ LOCAL int dns_find_host(int pos, MolochSession_t *session, char *string, int len
         return TRUE;
 
     return FALSE;
+}
+/******************************************************************************/
+LOCAL void dns_parser_rr_https(MolochSession_t *session, const unsigned char *data, int len)
+{
+    if (len < 10)
+        return;
+
+    BSB bsb;
+    BSB_INIT(bsb, data, len);
+
+    BSB_IMPORT_skip(bsb, 2); // priority
+    uint8_t name = 1;
+    BSB_IMPORT_u08(bsb, name);
+    if (name != 0) // ALW - Can this be a real name?
+        return;
+
+    while (BSB_REMAINING(bsb) > 4 && !BSB_IS_ERROR(bsb)) {
+        uint16_t key = 0;
+        BSB_IMPORT_u16(bsb, key);
+        uint16_t len = 0;
+        BSB_IMPORT_u16(bsb, len);
+
+        if (len > BSB_REMAINING(bsb))
+            return;
+
+        unsigned char *ptr = BSB_WORK_PTR(bsb);
+
+        switch (key) {
+        case 1: { // alpn
+            BSB absb;
+            BSB_INIT(absb, ptr, len);
+            while (BSB_REMAINING(absb) > 1 && !BSB_IS_ERROR(absb)) {
+                uint8_t alen = 0;
+                BSB_IMPORT_u08(absb, alen);
+
+                unsigned char *aptr = NULL;
+                BSB_IMPORT_ptr(absb, aptr, alen);
+
+                if (aptr) {
+                    moloch_field_string_add(httpsAlpnField, session, (char *)aptr, alen, TRUE);
+                }
+            }
+            break;
+        }
+        case 3: { // port
+            if (len != 2)
+                break;
+            uint16_t port = (ptr[0] << 8) | ptr[1];
+            moloch_field_int_add(httpsPortField, session, port);
+            break;
+        }
+        case 4: { // ipv4hint
+            if (len != 4)
+                break;
+            uint32_t ip = (ptr[3] << 24) | (ptr[2] << 16) |  (ptr[1] << 8) | ptr[0];
+            moloch_field_ip4_add(httpsIpField, session, ip);
+            break;
+        }
+        case 6: // ipv6hint
+            if (len != 16)
+                break;
+            moloch_field_ip6_add(httpsIpField, session, ptr);
+            break;
+        }
+        BSB_IMPORT_skip(bsb, len);
+    }
+
 }
 /******************************************************************************/
 LOCAL void dns_parser(MolochSession_t *session, int kind, const unsigned char *data, int len)
@@ -432,6 +503,10 @@ LOCAL void dns_parser(MolochSession_t *session, int kind, const unsigned char *d
                 }
                 break;
             }
+            case RR_HTTPS: {
+                dns_parser_rr_https(session, BSB_WORK_PTR(bsb), rdlength);
+                break;
+            }
             } /* switch */
             BSB_IMPORT_skip(bsb, rdlength);
         }
@@ -612,6 +687,26 @@ void moloch_parser_init()
         "dns.query.class", "Query Class", "dns.qc",
         "DNS lookup query class",
         MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT,
+        (char *)NULL);
+
+    httpsAlpnField = moloch_field_define("dns", "lotermfield",
+        "dns.https.alpn", "Alpn", "dns.https.alpn",
+        "DNS https alpn",
+        MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT,
+        (char *)NULL);
+
+    httpsIpField = moloch_field_define("dns", "ip",
+        "ip.dns.https", "IP", "dns.https.ip",
+        "DNS https ip",
+        MOLOCH_FIELD_TYPE_IP_GHASH,  MOLOCH_FIELD_FLAG_CNT | MOLOCH_FIELD_FLAG_IPPRE,
+        "aliases", "[\"dns.https.ip\"]",
+        "category", "ip",
+        (char *)NULL);
+
+    httpsPortField = moloch_field_define("dns", "integer",
+        "dns.https.port", "IP", "dns.https.port",
+        "DNS https port",
+        MOLOCH_FIELD_TYPE_INT_HASH,  MOLOCH_FIELD_FLAG_CNT,
         (char *)NULL);
 
     qclasses[1]   = "IN";
