@@ -611,15 +611,6 @@ export default {
     indicatorTreeRoots () {
       return Object.values(this.getIndicatorGraph).filter(node => node.parentIds.has(undefined));
     },
-    // /** @returns {Cont3xtIndicatorNode | undefined} */
-    // indicatorTreeRoot () {
-    //   // since we don't yet have bulk, there can only be one root, so we grab it here
-    //   // TODO: this should be removed when bulk is added
-    //   return this.indicatorTreeRoots?.[0];
-    // },
-    // rootIndicator () {
-    //   return this.indicatorTreeRoot?.indicator;
-    // },
     showOverview () {
       return this.activeSource == null && !(this.getWaitRendering || this.getRendering);
     }
