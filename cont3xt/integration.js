@@ -383,9 +383,11 @@ class Integration {
   static async runIntegrationsList (shared, indicator, parentIndicator, integrations) {
     const { query, itype } = indicator;
 
-    // initial write (ensures dependable tracking of indicator tree)
-    shared.res.write(JSON.stringify({ purpose: 'link', indicator, parentIndicator }));
-    shared.res.write(',\n');
+    // initial write for sub-indicators (ensures dependable tracking of indicator tree)
+    if (parentIndicator != null) {
+      shared.res.write(JSON.stringify({ purpose: 'link', indicator, parentIndicator }));
+      shared.res.write(',\n');
+    }
 
     // do not reissue integrations if they have been started by a matching query reached via different descendants
     if (shared.queriedSet.has(`${query}-${itype}`)) { return; }
@@ -561,12 +563,13 @@ class Integration {
    * @type {object}
    * @param {DataChunkPurpose} purpose - String discriminator to indicate the use of this data chunk
    * @param {string} text - The message describing the error (on purpose: 'error')
-   * @param {Cont3xtIndicator} indicator - The itype and query that correspond to this chunk of data (all purposes except: 'finish' and 'error')
+   * @param {Cont3xtIndicator[]} indicators - The deduped, top-level indicators searched, given in search-order (purpose: 'init')
+   * @param {Cont3xtIndicator} indicator - The itype and query that correspond to this chunk of data (all purposes except: 'init', 'finish', and 'error')
    * @param {number} total - The total number of integrations to query
    * @param {number} sent - The number of integration results that have completed and been sent to the client
    * @param {string} name - The name of the integration result within the chunk (purpose: 'data')
    * @param {object} data - The data from the integration query (purpose: 'data'). This varies based upon the integration. The <a href="#integrationcard-type">IntegrationCard</a> describes how to present this data to the user.
-   * @param {Cont3xtIndicator} parentIndicator - The indicator that caused this integration/query to be run, or undefined if this is a root-level query (purpose: 'link')
+   * @param {Cont3xtIndicator} parentIndicator - The indicator that caused this integration/query to be run (purpose: 'link')
    * @param {object} enhanceInfo - Curated data contributed from an integration to an indicator of a separate query (purpose: 'enhance')
    */
 
@@ -655,8 +658,12 @@ class Integration {
         });
       }
     };
+    // the total number of integrations to query for the root indicators alone
+    const initialTotal = indicators.reduce((total, indicator) => {
+      return total + Integration.#integrations[indicator.itype].length;
+    }, 0);
     res.write('[\n');
-    res.write(JSON.stringify({ purpose: 'init', indicator: indicators[0], sent: shared.sent, total: Integration.#integrations[indicators[0].itype].length, text: 'more to follow' }));
+    res.write(JSON.stringify({ purpose: 'init', indicators, sent: shared.sent, total: initialTotal, text: 'more to follow' }));
     res.write(',\n');
 
     for (const indicator of indicators) {

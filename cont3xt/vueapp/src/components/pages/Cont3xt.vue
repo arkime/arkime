@@ -768,8 +768,14 @@ export default {
       switch (chunk.purpose) {
       case 'init':
         // determine the search type and save the search term
-        this.activeIndicatorId = localIndicatorId(chunk.indicator);
+        this.activeIndicatorId = localIndicatorId(chunk.indicators[0]);
         this.filterLinks(this.linkSearchTerm);
+
+        for (const indicator of chunk.indicators) {
+          this.$store.commit('UPDATE_INDICATOR_GRAPH', {
+            indicator, parentIndicator: undefined
+          });
+        }
         break;
       case 'error':
         this.error = `ERROR: ${chunk.text}`;

@@ -1,5 +1,5 @@
 # Test cont3xt.js
-use Test::More tests => 143;
+use Test::More tests => 136;
 use Test::Differences;
 use Data::Dumper;
 use MolochTest;
@@ -609,9 +609,10 @@ $json = cont3xtPost('/api/integration/search', to_json({
 is($json->[0]->{purpose}, "init");
 is($json->[0]->{sent}, 0);
 is($json->[0]->{text}, "more to follow");
-is($json->[0]->{indicator}->{itype}, "domain");
-is($json->[0]->{indicator}->{query}, "example.com");
-cmp_ok (scalar @{$json}, ">", 10);
+is(scalar @{$json->[0]->{indicators}}, 1);
+is($json->[0]->{indicators}->[0]->{itype}, "domain");
+is($json->[0]->{indicators}->[0]->{query}, "example.com");
+cmp_ok (scalar @{$json}, ">", 8);
 
 $json = cont3xtPost('/api/integration/search', to_json({
   query => "example.com",
@@ -621,15 +622,12 @@ $json = cont3xtPost('/api/integration/search', to_json({
 is($json->[0]->{purpose}, "init");
 is($json->[0]->{sent}, 0);
 is($json->[0]->{text}, "more to follow");
-is($json->[0]->{indicator}->{itype}, "domain");
-is($json->[0]->{indicator}->{query}, "example.com");
-is($json->[1]->{purpose}, "link");
-is($json->[1]->{parentIndicator}, undef);
-is($json->[1]->{indicator}->{itype}, "domain");
-is($json->[1]->{indicator}->{query}, "example.com");
-is($json->[2]->{purpose}, "finish");
-is($json->[2]->{resultCount}, 0);
-is (scalar @{$json}, 3);
+is(scalar @{$json->[0]->{indicators}}, 1);
+is($json->[0]->{indicators}->[0]->{itype}, "domain");
+is($json->[0]->{indicators}->[0]->{query}, "example.com");
+is($json->[1]->{purpose}, "finish");
+is($json->[1]->{resultCount}, 0);
+is (scalar @{$json}, 2);
 
 $json = cont3xtPost('/api/integration/search', to_json({
   query => "example.com, 1.1.1.1",
@@ -640,33 +638,26 @@ $json = cont3xtPost('/api/integration/search', to_json({
 is($json->[0]->{purpose}, "init"); # initial integration chunk
 is($json->[0]->{sent}, 0);
 is($json->[0]->{text}, "more to follow");
-is($json->[0]->{indicator}->{query}, "example.com");
-is($json->[0]->{indicator}->{itype}, "domain");
+is(scalar @{$json->[0]->{indicators}}, 2);
+is($json->[0]->{indicators}->[0]->{itype}, "domain");
+is($json->[0]->{indicators}->[0]->{query}, "example.com");
+is($json->[0]->{indicators}->[1]->{itype}, "ip");
+is($json->[0]->{indicators}->[1]->{query}, "1.1.1.1");
 
-is($json->[1]->{purpose}, "link");
-is($json->[1]->{indicator}->{query}, "example.com");
-is($json->[1]->{indicator}->{itype}, "domain");
-is($json->[1]->{parentIndicator}, undef);
-
+is($json->[1]->{purpose}, "enhance");
+is($json->[1]->{indicator}->{itype}, "ip");
 is($json->[2]->{purpose}, "link");
-is($json->[2]->{indicator}->{query}, "1.1.1.1");
 is($json->[2]->{indicator}->{itype}, "ip");
-is($json->[2]->{parentIndicator}, undef);
+is($json->[2]->{parentIndicator}->{query}, "example.com");
+is($json->[2]->{parentIndicator}->{itype}, "domain");
 
-is($json->[3]->{purpose}, "enhance");
-is($json->[3]->{indicator}->{itype}, "ip");
-is($json->[4]->{purpose}, "link");
-is($json->[4]->{indicator}->{itype}, "ip");
-is($json->[4]->{parentIndicator}->{query}, "example.com");
-is($json->[4]->{parentIndicator}->{itype}, "domain");
+is($json->[5]->{purpose}, "data");
+is($json->[5]->{indicator}->{query}, "example.com");
+is($json->[5]->{indicator}->{itype}, "domain");
 
-is($json->[7]->{purpose}, "data");
-is($json->[7]->{indicator}->{query}, "example.com");
-is($json->[7]->{indicator}->{itype}, "domain");
-
-is($json->[8]->{purpose}, "finish"); # last integration chunk
-is($json->[8]->{resultCount}, 0);
-is (scalar @{$json}, 9);
+is($json->[6]->{purpose}, "finish"); # last integration chunk
+is($json->[6]->{resultCount}, 0);
+is (scalar @{$json}, 7);
 
 $json = cont3xtPost('/api/integration/search', to_json({
   query => "example.com",
