@@ -1,5 +1,6 @@
 <template>
   <base-i-type
+    :indicator-id="indicatorId"
     :indicator="indicator"
     :tidbits="tidbits"
   >
@@ -30,6 +31,10 @@ export default {
     },
     enhanceInfo: {
       type: Object,
+      required: true
+    },
+    indicatorId: {
+      type: String,
       required: true
     }
   }

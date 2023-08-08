@@ -132,7 +132,7 @@
         </div>
       </div> <!-- /search -->
 
-      <div class="flex-grow-1 d-flex overflow-hidden pt-1">
+      <div class="flex-grow-1 d-flex flex-row overflow-hidden pt-1">
         <!-- welcome -->
         <div class="w-100 h-100 d-flex flex-column mt-1"
              v-if="!initialized && !error.length && !getIntegrationsError.length">
@@ -219,32 +219,37 @@
           </div>
         </div> <!-- /welcome -->
 
-        <!-- search error -->
-        <div
-            v-if="error.length"
-            class="mt-2 alert alert-warning">
-          <span class="fa fa-exclamation-triangle" />&nbsp;
-          {{ error }}
-          <button
-              tabindex="-1"
-              type="button"
-              @click="error = ''"
-              class="close cursor-pointer">
-            <span>&times;</span>
-          </button>
-        </div> <!-- /search error -->
+        <!-- errors -->
+        <div v-if="error.length || getIntegrationsError.length"
+             class="w-100 d-flex flex-column mt-2 mx-3">
+          <!-- search error -->
+          <div
+              v-if="error.length"
+              class="alert alert-warning">
+            <span class="fa fa-exclamation-triangle" />&nbsp;
+            {{ error }}
+            <button
+                tabindex="-1"
+                type="button"
+                @click="error = ''"
+                class="close cursor-pointer">
+              <span>&times;</span>
+            </button>
+          </div> <!-- /search error -->
 
-        <!-- integration error -->
-        <div
-            v-if="getIntegrationsError.length"
-            class="mt-2 alert alert-danger">
-          <span class="fa fa-exclamation-triangle" />&nbsp;
-          Error fetching integrations. Viewing data for integrations will not work!
-          <br>
-          {{ getIntegrationsError }}
-        </div> <!-- /integration error -->
+          <!-- integration error -->
+          <div
+              v-if="getIntegrationsError.length"
+              class="alert alert-danger">
+            <span class="fa fa-exclamation-triangle" />&nbsp;
+            Error fetching integrations. Viewing data for integrations will not work!
+            <br>
+            {{ getIntegrationsError }}
+          </div> <!-- /integration error -->
+        </div>
+        <!-- /errors -->
 
-        <div v-if="rootIndicator" class="cont3xt-result-grid-container">
+        <div v-if="shouldDisplayResults" class="cont3xt-result-grid-container">
           <div class="cont3xt-result-grid">
             <div class="indicator-tree-pane">
               <!-- tags line -->
@@ -252,20 +257,22 @@
                 <tag-display-line :tags="tags" :remove-tag="removeTag" :clear-tags="clearTags"/>
               </div>
               <!-- /tags line -->
-              <div class="pane-scroll-content pb-5">
+              <div class="pane-scroll-content pb-5 d-flex flex-column gap-3">
                 <!-- indicator result tree -->
-                <i-type-node :node="indicatorTreeRoot" />
+                <i-type-node
+                    v-for="(indicatorTreeRoot, i) in indicatorTreeRoots" :key="i"
+                    :node="indicatorTreeRoot" />
                 <!-- /indicator result tree -->
               </div>
             </div>
             <div class="result-card-pane position-relative" :class="{ 'result-card-pane-expanded': !getLinkGroupsPanelOpen }">
               <div class="d-flex justify-content-between mb-1 mx-2">
                 <integration-btns
-                    :indicator="activeIndicator"
+                    :indicator-id="activeIndicatorId"
                 />
                 <overview-selector
-                    v-if="activeIndicator"
-                    :i-type="activeIndicator.itype"
+                    v-if="getActiveIndicator"
+                    :i-type="getActiveIndicator.itype"
                     :selected-overview="currentOverviewCard"
                     @set-override-overview="setOverrideOverview" />
               </div>
@@ -282,7 +289,7 @@
                     <template v-if="showOverview">
                       <overview-card
                           v-if="currentOverviewCard"
-                          :indicator="activeIndicator"
+                          :indicator="getActiveIndicator"
                           :card="currentOverviewCard"
                       />
                       <b-alert
@@ -290,14 +297,14 @@
                           show
                           variant="dark"
                           class="text-center">
-                        There is no overview configured for the <strong>{{ this.activeIndicator.itype }}</strong> iType.
+                        There is no overview configured for the <strong>{{ getActiveIndicator.itype }}</strong> iType.
                         <a class="no-decoration" href="settings#overviews">Create one!</a>
                       </b-alert>
                     </template>
                     <integration-card
-                        v-else-if="activeSource && activeIndicator"
+                        v-else-if="activeSource && getActiveIndicator"
                         :source="activeSource"
-                        :indicator="activeIndicator"
+                        :indicator="getActiveIndicator"
                         @update-results="updateData"
                     />
                   </div>
@@ -323,7 +330,7 @@
             </div>
             <div v-if="getLinkGroupsPanelOpen" class="link-group-pane">
               <div class="flex-grow-1 d-flex flex-column link-group-panel-shadow ml-3 overflow-hidden">
-                <div v-if="activeIndicator" class="mb-1 mx-2">
+                <div v-if="getActiveIndicator" class="mb-1 mx-2">
                   <!-- link groups error -->
                   <b-alert
                       variant="danger"
@@ -389,7 +396,7 @@
                                     :place-holder-tip="linkPlaceholderTip" />
                   <!-- /time range input for links -->
                 </div>
-                <div v-if="activeIndicator" class="pane-scroll-content">
+                <div v-if="getActiveIndicator" class="pane-scroll-content">
                 <!-- link groups -->
                 <div class="d-flex flex-column align-items-start mb-5">
                   <template v-if="hasVisibleLinkGroup">
@@ -416,7 +423,7 @@
                           <link-group-card
                               v-if="getLinkGroups.length"
                               class="w-100"
-                              :indicator="activeIndicator"
+                              :indicator="getActiveIndicator"
                               :num-days="timeRangeInfo.numDays"
                               :num-hours="timeRangeInfo.numHours"
                               :stop-date="timeRangeInfo.stopDate"
@@ -433,7 +440,7 @@
                     There are no Link Groups that match your search.
                   </span>
                   <span v-else class="p-1">
-                    There are no Link Groups for the <strong>{{ activeIndicator.itype }}</strong> iType.
+                    There are no Link Groups for the <strong>{{ getActiveIndicator.itype }}</strong> iType.
                     <a class="no-decoration" href="settings#linkgroups">Create one!</a>
                   </span> <!-- /no link groups message -->
                 </div> <!-- /link groups -->
@@ -442,7 +449,7 @@
             </div>
           </div>
         </div>
-        <div v-if="rootIndicator && !getLinkGroupsPanelOpen" class="side-panel-stub link-group-panel-stub h-100 cursor-pointer d-flex flex-column"
+        <div v-if="shouldDisplayResults && !getLinkGroupsPanelOpen" class="side-panel-stub link-group-panel-stub h-100 cursor-pointer d-flex flex-column"
              v-b-tooltip.hover.top="'Show Link Groups Panel'"
              @click="toggleLinkGroupsPanel"
         >
@@ -476,6 +483,7 @@ import OverviewService from '@/components/services/OverviewService';
 import OverviewSelector from '../overviews/OverviewSelector.vue';
 import ITypeNode from '@/components/itypes/ITypeNode.vue';
 import IntegrationBtns from '@/components/integrations/IntegrationBtns.vue';
+import { localIndicatorId } from '@/utils/cont3xtUtil';
 
 export default {
   name: 'Cont3xt',
@@ -550,7 +558,7 @@ export default {
       'getAllViews', 'getImmediateSubmissionReady', 'getSelectedView',
       'getTags', 'getTagDisplayCollapsed', 'getSeeAllViews', 'getSeeAllLinkGroups',
       'getSeeAllOverviews', 'getSelectedOverviewMap', 'getOverviewMap', 'getResults',
-      'getIndicatorGraph', 'getLinkGroupsPanelOpen'
+      'getIndicatorGraph', 'getLinkGroupsPanelOpen', 'getActiveIndicator'
     ]),
     tags: {
       get () { return this.getTags; },
@@ -564,13 +572,16 @@ export default {
       get () { return this.$store.state.loading; },
       set (val) { this.$store.commit('SET_LOADING', val); }
     },
-    activeIndicator: {
-      get () { return this.$store.state.activeIndicator; },
-      set (val) { this.$store.commit('SET_ACTIVE_INDICATOR', val); }
+    activeIndicatorId: {
+      get () { return this.$store.state.activeIndicatorId; },
+      set (val) { this.$store.commit('SET_ACTIVE_INDICATOR_ID', val); }
     },
     activeSource: {
       get () { return this.$store.state.activeSource; },
       set (val) { this.$store.commit('SET_ACTIVE_SOURCE', val); }
+    },
+    shouldDisplayResults () {
+      return this.getActiveIndicator != null;
     },
     results () {
       return this.$store.state.results;
@@ -594,21 +605,21 @@ export default {
       if (this.overrideOverviewId) {
         return this.getOverviewMap[this.overrideOverviewId];
       }
-      return this.getSelectedOverviewMap[this.activeIndicator.itype];
+      return this.getSelectedOverviewMap[this.getActiveIndicator.itype];
     },
     /** @returns {Cont3xtIndicatorNode[]} */
     indicatorTreeRoots () {
       return Object.values(this.getIndicatorGraph).filter(node => node.parentIds.has(undefined));
     },
-    /** @returns {Cont3xtIndicatorNode | undefined} */
-    indicatorTreeRoot () {
-      // since we don't yet have bulk, there can only be one root, so we grab it here
-      // TODO: this should be removed when bulk is added
-      return this.indicatorTreeRoots?.[0];
-    },
-    rootIndicator () {
-      return this.indicatorTreeRoot?.indicator;
-    },
+    // /** @returns {Cont3xtIndicatorNode | undefined} */
+    // indicatorTreeRoot () {
+    //   // since we don't yet have bulk, there can only be one root, so we grab it here
+    //   // TODO: this should be removed when bulk is added
+    //   return this.indicatorTreeRoots?.[0];
+    // },
+    // rootIndicator () {
+    //   return this.indicatorTreeRoot?.indicator;
+    // },
     showOverview () {
       return this.activeSource == null && !(this.getWaitRendering || this.getRendering);
     }
@@ -621,13 +632,13 @@ export default {
       // or else the data will be stale when it updates the integration type
       this.$store.commit('SET_WAIT_RENDERING', true);
       setTimeout(() => { // need timeout for SET_RENDERING_CARD to take effect
-        this.activeIndicator = newQueuedIntegration.indicator;
+        this.activeIndicatorId = newQueuedIntegration.indicatorId;
         this.activeSource = newQueuedIntegration.source;
         this.$store.commit('SET_WAIT_RENDERING', false);
       }, 100);
     },
-    activeIndicator (newIndicator, oldIndicator) {
-      if (newIndicator?.query !== oldIndicator?.query || newIndicator?.itype !== oldIndicator?.itype) {
+    activeIndicatorId (newIndicatorId, oldIndicatorId) {
+      if (newIndicatorId !== oldIndicatorId) {
         this.overrideOverviewId = undefined;
       }
     },
@@ -766,7 +777,7 @@ export default {
       switch (chunk.purpose) {
       case 'init':
         // determine the search type and save the search term
-        this.activeIndicator = chunk.indicator;
+        this.activeIndicatorId = localIndicatorId(chunk.indicator);
         this.filterLinks(this.linkSearchTerm);
         break;
       case 'error':
@@ -826,7 +837,7 @@ export default {
 
       this.error = '';
       this.$store.commit('CLEAR_CONT3XT_RESULTS');
-      this.activeIndicator = undefined;
+      this.activeIndicatorId = undefined;
       this.activeSource = undefined;
       this.initialized = true;
       this.searchComplete = false;
@@ -866,12 +877,12 @@ export default {
     },
     hasLinkWithItype (linkGroup) {
       return linkGroup.links.some(link =>
-        link.url !== '----------' && link.itypes.includes(this.activeIndicator.itype)
+        link.url !== '----------' && link.itypes.includes(this.getActiveIndicator.itype)
       );
     },
     hasVisibleLink (linkGroup) {
       return linkGroup.links.some((link, i) =>
-        link.url !== '----------' && link.itypes.includes(this.activeIndicator.itype) && !this.hideLinks[linkGroup._id]?.[i]
+        link.url !== '----------' && link.itypes.includes(this.getActiveIndicator.itype) && !this.hideLinks[linkGroup._id]?.[i]
       );
     },
     shareLink () {
@@ -972,7 +983,7 @@ export default {
     // clear results/selections from the store (so the current search is not presented when the user returns)
     this.$store.commit('CLEAR_CONT3XT_RESULTS');
     this.activeSource = undefined;
-    this.activeIndicator = undefined;
+    this.activeIndicatorId = undefined;
   }
 };
 </script>

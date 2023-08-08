@@ -36,10 +36,9 @@
 <script>
 import { mapGetters } from 'vuex';
 import {
-  Cont3xtIndicatorProp,
   getIntegrationDataMap,
   shouldDisplayIntegrationBtn,
-  integrationCountSeverity, shouldDisplayCountedIntegrationBtn
+  integrationCountSeverity, shouldDisplayCountedIntegrationBtn, indicatorFromId
 } from '@/utils/cont3xtUtil';
 
 // Clicking an integration button commits to the store which integration, itype,
@@ -50,13 +49,14 @@ export default {
   name: 'IntegrationBtns',
   props: {
     /**
-     * object of { itype, query }
-     * * itype - the itype to display the integration data for (if clicked)
-     * * query - the value of the query to display the integration data for
-     * *     (there may be multiple IPs for instance, so the value
-     * *     indicates which IP to display information for)
+     * the global indicator id to display integration buttons for
+     *   we use the id instead of indicator itself to ensure that
+     *   the correct node is selected in the UI when a button is pressed
      */
-    indicator: Cont3xtIndicatorProp,
+    indicatorId: {
+      type: String,
+      required: true
+    },
     /**
      * undefined - show all integrations
      * 'success' | 'secondary' | 'danger' - show only integration buttons with that icon color/severity
@@ -68,6 +68,16 @@ export default {
   },
   computed: {
     ...mapGetters(['getIntegrationsArray', 'getLoading', 'getResults']),
+    /**
+     * object of { itype, query }
+     * * itype - the itype to display the integration data for (if clicked)
+     * * query - the value of the query to display the integration data for
+     * *     (there may be multiple IPs for instance, so the value
+     * *     indicates which IP to display information for)
+     */
+    indicator () {
+      return indicatorFromId(this.indicatorId);
+    },
     integrations () {
       return this.getIntegrationsArray.slice().sort((a, b) => {
         return a.order - b.order;
@@ -97,7 +107,7 @@ export default {
     shouldDisplayCountedIntegrationBtn,
     integrationCountSeverity,
     setAsActive (integration) {
-      this.$store.commit('SET_QUEUED_INTEGRATION', { indicator: this.indicator, source: integration.name });
+      this.$store.commit('SET_QUEUED_INTEGRATION', { indicatorId: this.indicatorId, source: integration.name });
     }
   }
 };

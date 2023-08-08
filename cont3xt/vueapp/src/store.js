@@ -2,7 +2,7 @@ import Vue from 'vue';
 import Vuex from 'vuex';
 import createPersistedState from 'vuex-persistedstate';
 import { iTypes, iTypeIndexMap } from '@/utils/iTypes';
-import { indicatorId } from '@/utils/cont3xtUtil';
+import { indicatorFromId, localIndicatorId } from '@/utils/cont3xtUtil';
 
 Vue.use(Vuex);
 
@@ -54,7 +54,7 @@ const store = new Vuex.Store({
     overviewsError: '',
     selectedOverviewIdMap: {},
     queuedIntegration: undefined,
-    activeIndicator: undefined,
+    activeIndicatorId: undefined,
     activeSource: undefined,
     /** @type {{ [itype: string]: { [query: string]: { [integrationName: string]: object } } }} */
     results: {}, // results[<itype>][<query>][<integration_name>] yields the data for an integration
@@ -283,8 +283,8 @@ const store = new Vuex.Store({
 
       Vue.set(state.results[itype][query], source, Object.freeze(result));
     },
-    SET_ACTIVE_INDICATOR (state, data) {
-      state.activeIndicator = data;
+    SET_ACTIVE_INDICATOR_ID (state, data) {
+      state.activeIndicatorId = data;
     },
     SET_QUEUED_INTEGRATION (state, data) {
       state.queuedIntegration = data;
@@ -293,7 +293,7 @@ const store = new Vuex.Store({
       state.activeSource = data;
     },
     ADD_ENHANCE_INFO (state, { indicator, enhanceInfo }) {
-      const id = indicatorId(indicator);
+      const id = localIndicatorId(indicator);
 
       if (!state.enhanceInfoTable[id]) {
         Vue.set(state.enhanceInfoTable, id, {});
@@ -303,10 +303,10 @@ const store = new Vuex.Store({
       }
     },
     UPDATE_INDICATOR_GRAPH (state, { indicator, parentIndicator }) {
-      const id = indicatorId(indicator);
+      const id = localIndicatorId(indicator);
 
       // a parentId of undefined means that the indicator is root-level
-      const parentId = parentIndicator ? indicatorId(parentIndicator) : undefined;
+      const parentId = parentIndicator ? localIndicatorId(parentIndicator) : undefined;
       if (!state.indicatorGraph[id]) {
         if (!state.enhanceInfoTable[id]) {
           Vue.set(state.enhanceInfoTable, id, {});
@@ -326,7 +326,7 @@ const store = new Vuex.Store({
 
       // handle case where parent already exists in the tree
       if (parentId && state.indicatorGraph[parentId]) {
-        const alreadyAChild = state.indicatorGraph[parentId].children.some(child => indicatorId(child.indicator) === id);
+        const alreadyAChild = state.indicatorGraph[parentId].children.some(child => localIndicatorId(child.indicator) === id);
         if (!alreadyAChild) {
           state.indicatorGraph[parentId].children.push(state.indicatorGraph[id]);
         }
@@ -528,8 +528,11 @@ const store = new Vuex.Store({
     getResults (state) {
       return state.results;
     },
+    getActiveIndicatorId (state) {
+      return state.activeIndicatorId;
+    },
     getActiveIndicator (state) {
-      return state.activeIndicator;
+      return (state.activeIndicatorId != null) ? indicatorFromId(state.activeIndicatorId) : undefined;
     },
     getQueuedIntegration (state) {
       return state.queuedIntegration;

@@ -27,8 +27,25 @@ export function getIntegrationData (results, indicator, source) {
   return results?.[indicator.itype]?.[indicator.query]?.[source] ?? {};
 }
 
-export function indicatorId (indicator) {
+export function localIndicatorId (indicator) {
   return `${indicator.query}-${indicator.itype}`;
+}
+
+/**
+ * Extracts the indicator object from its global ID
+ *   (where a global ID is some number of local IDs separated by commas)
+ *
+ * @param globalId - the fully qualified indicator path-id
+ *           e.g. 'foo.com-domain,1.1.1.1-ip'
+ * @returns {Cont3xtIndicator}
+ */
+export function indicatorFromId (globalId) {
+  const localId = globalId.substring(globalId.lastIndexOf(',') + 1);
+  const splitAt = localId.lastIndexOf('-');
+  return {
+    query: localId.substring(0, splitAt),
+    itype: localId.substring(splitAt + 1)
+  };
 }
 
 export function shouldDisplayIntegrationBtn (integration, integrationData) {
