@@ -1,5 +1,5 @@
 # Test cont3xt.js
-use Test::More tests => 138;
+use Test::More tests => 136;
 use Test::Differences;
 use Data::Dumper;
 use MolochTest;
@@ -609,9 +609,10 @@ $json = cont3xtPost('/api/integration/search', to_json({
 is($json->[0]->{purpose}, "init");
 is($json->[0]->{sent}, 0);
 is($json->[0]->{text}, "more to follow");
-is($json->[0]->{indicator}->{itype}, "domain");
-is($json->[0]->{indicator}->{query}, "example.com");
-cmp_ok (scalar @{$json}, ">", 10);
+is(scalar @{$json->[0]->{indicators}}, 1);
+is($json->[0]->{indicators}->[0]->{itype}, "domain");
+is($json->[0]->{indicators}->[0]->{query}, "example.com");
+cmp_ok (scalar @{$json}, ">", 8);
 
 $json = cont3xtPost('/api/integration/search', to_json({
   query => "example.com",
@@ -621,18 +622,15 @@ $json = cont3xtPost('/api/integration/search', to_json({
 is($json->[0]->{purpose}, "init");
 is($json->[0]->{sent}, 0);
 is($json->[0]->{text}, "more to follow");
-is($json->[0]->{indicator}->{itype}, "domain");
-is($json->[0]->{indicator}->{query}, "example.com");
-is($json->[1]->{purpose}, "link");
-is($json->[1]->{parentIndicator}, undef);
-is($json->[1]->{indicator}->{itype}, "domain");
-is($json->[1]->{indicator}->{query}, "example.com");
-is($json->[2]->{purpose}, "finish");
-is($json->[2]->{resultCount}, 0);
-is (scalar @{$json}, 3);
+is(scalar @{$json->[0]->{indicators}}, 1);
+is($json->[0]->{indicators}->[0]->{itype}, "domain");
+is($json->[0]->{indicators}->[0]->{query}, "example.com");
+is($json->[1]->{purpose}, "finish");
+is($json->[1]->{resultCount}, 0);
+is (scalar @{$json}, 2);
 
 $json = cont3xtPost('/api/integration/search', to_json({
-  query => "example.com",
+  query => "example.com, 1.1.1.1",
   tags => ["goodtag"],
   doIntegrations => ["DNS"]
 }));
@@ -640,28 +638,26 @@ $json = cont3xtPost('/api/integration/search', to_json({
 is($json->[0]->{purpose}, "init"); # initial integration chunk
 is($json->[0]->{sent}, 0);
 is($json->[0]->{text}, "more to follow");
-is($json->[0]->{indicator}->{query}, "example.com");
-is($json->[0]->{indicator}->{itype}, "domain");
+is(scalar @{$json->[0]->{indicators}}, 2);
+is($json->[0]->{indicators}->[0]->{itype}, "domain");
+is($json->[0]->{indicators}->[0]->{query}, "example.com");
+is($json->[0]->{indicators}->[1]->{itype}, "ip");
+is($json->[0]->{indicators}->[1]->{query}, "1.1.1.1");
 
-is($json->[1]->{purpose}, "link");
-is($json->[1]->{indicator}->{query}, "example.com");
-is($json->[1]->{indicator}->{itype}, "domain");
-is($json->[1]->{parentIndicator}, undef);
-
-is($json->[2]->{purpose}, "enhance");
+is($json->[1]->{purpose}, "enhance");
+is($json->[1]->{indicator}->{itype}, "ip");
+is($json->[2]->{purpose}, "link");
 is($json->[2]->{indicator}->{itype}, "ip");
-is($json->[3]->{purpose}, "link");
-is($json->[3]->{indicator}->{itype}, "ip");
-is($json->[3]->{parentIndicator}->{query}, "example.com");
-is($json->[3]->{parentIndicator}->{itype}, "domain");
+is($json->[2]->{parentIndicator}->{query}, "example.com");
+is($json->[2]->{parentIndicator}->{itype}, "domain");
 
-is($json->[6]->{purpose}, "data");
-is($json->[6]->{indicator}->{query}, "example.com");
-is($json->[6]->{indicator}->{itype}, "domain");
+is($json->[5]->{purpose}, "data");
+is($json->[5]->{indicator}->{query}, "example.com");
+is($json->[5]->{indicator}->{itype}, "domain");
 
-is($json->[7]->{purpose}, "finish"); # last integration chunk
-is($json->[7]->{resultCount}, 0);
-is (scalar @{$json}, 8);
+is($json->[6]->{purpose}, "finish"); # last integration chunk
+is($json->[6]->{resultCount}, 0);
+is (scalar @{$json}, 7);
 
 $json = cont3xtPost('/api/integration/search', to_json({
   query => "example.com",
@@ -694,6 +690,11 @@ $json = cont3xtPost('/api/integration/search', to_json({
   viewId => 1
 }));
 eq_or_diff($json, from_json('{"purpose": "error", "text": "viewId must be a string when present"}'));
+
+$json = cont3xtPost('/api/integration/search', to_json({
+    query => ","
+}));
+eq_or_diff($json, from_json('{"purpose": "error", "text": "query must contain at least one non-whitespace indicator"}'));
 
 esGet("/_flush");
 esGet("/_refresh");

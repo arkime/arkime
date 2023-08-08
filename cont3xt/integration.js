@@ -380,12 +380,14 @@ class Integration {
     return res.send({ success: true, integrations: results });
   }
 
-  static async runIntegrationsList (shared, indicator, parentIndicator, integrations, onFinish) {
+  static async runIntegrationsList (shared, indicator, parentIndicator, integrations) {
     const { query, itype } = indicator;
 
-    // initial write (ensures dependable tracking of indicator tree)
-    shared.res.write(JSON.stringify({ purpose: 'link', indicator, parentIndicator }));
-    shared.res.write(',\n');
+    // initial write for sub-indicators (ensures dependable tracking of indicator tree)
+    if (parentIndicator != null) {
+      shared.res.write(JSON.stringify({ purpose: 'link', indicator, parentIndicator }));
+      shared.res.write(',\n');
+    }
 
     // do not reissue integrations if they have been started by a matching query reached via different descendants
     if (shared.queriedSet.has(`${query}-${itype}`)) { return; }
@@ -405,7 +407,7 @@ class Integration {
             shared.res.write(JSON.stringify({ purpose: 'enhance', indicator: moreIndicator, enhanceInfo }));
             shared.res.write(',\n');
           }
-          Integration.runIntegrationsList(shared, moreIndicator, indicator, Integration.#integrations[moreIndicator.itype], onFinish);
+          Integration.runIntegrationsList(shared, moreIndicator, indicator, Integration.#integrations[moreIndicator.itype]);
         });
       }
 
@@ -422,7 +424,7 @@ class Integration {
       setImmediate(() => {
         if (shared.sent === shared.total && shared.finished !== true) {
           shared.finished = true;
-          onFinish();
+          shared.finishWrite();
         }
       });
     };
@@ -544,7 +546,7 @@ class Integration {
    * @typedef Itype
    * @type {string}
    * @param {string} itype="text" - The type of the search
-   *                                ip, domain, url, email, phone, hashes, or text
+   *                                ip, domain, url, email, phone, hash, or text
    */
 
   /**
@@ -561,12 +563,13 @@ class Integration {
    * @type {object}
    * @param {DataChunkPurpose} purpose - String discriminator to indicate the use of this data chunk
    * @param {string} text - The message describing the error (on purpose: 'error')
-   * @param {Cont3xtIndicator} indicator - The itype and query that correspond to this chunk of data (all purposes except: 'finish' and 'error')
+   * @param {Cont3xtIndicator[]} indicators - The deduped, top-level indicators searched, given in search-order (purpose: 'init')
+   * @param {Cont3xtIndicator} indicator - The itype and query that correspond to this chunk of data (all purposes except: 'init', 'finish', and 'error')
    * @param {number} total - The total number of integrations to query
    * @param {number} sent - The number of integration results that have completed and been sent to the client
    * @param {string} name - The name of the integration result within the chunk (purpose: 'data')
    * @param {object} data - The data from the integration query (purpose: 'data'). This varies based upon the integration. The <a href="#integrationcard-type">IntegrationCard</a> describes how to present this data to the user.
-   * @param {Cont3xtIndicator} parentIndicator - The indicator that caused this integration/query to be run, or undefined if this is a root-level query (purpose: 'link')
+   * @param {Cont3xtIndicator} parentIndicator - The indicator that caused this integration/query to be run (purpose: 'link')
    * @param {object} enhanceInfo - Curated data contributed from an integration to an indicator of a separate query (purpose: 'enhance')
    */
 
@@ -609,12 +612,24 @@ class Integration {
       return res.send({ purpose: 'error', text: 'viewId must be a string when present' });
     }
 
-    const query = ArkimeUtil.sanitizeStr(req.body.query.trim());
+    // dedupe and trim queries
+    const queries = [...new Set(
+      ArkimeUtil.sanitizeStr(req.body.query.trim())
+        .split(',')
+        .map(query => query.trim())
+        .filter(query => query.length > 0)
+    )];
 
-    const itype = Integration.classify(query);
-    const indicator = { itype, query };
+    if (queries.length === 0) {
+      return res.send({ purpose: 'error', text: 'query must contain at least one non-whitespace indicator' });
+    }
 
-    const integrations = Integration.#integrations[itype];
+    const indicators = queries.map(query => ({
+      query, itype: Integration.classify(query)
+    }));
+    const isBulk = indicators.length > 1;
+
+    const issuedAt = Date.now();
     const shared = {
       skipCache: !!req.body.skipCache,
       doIntegrations: req.body.doIntegrations,
@@ -623,43 +638,50 @@ class Integration {
       sent: 0,
       total: 0, // runIntegrationsList will fix
       resultCount: 0, // sum of _cont3xt.count from results
-      queriedSet: new Set()
+      queriedSet: new Set(),
+      finished: false,
+      finishWrite () { // end data write and create audit log when finished
+        res.write(JSON.stringify({ purpose: 'finish', resultCount: this.resultCount }));
+        res.end(']\n');
+
+        Audit.create({
+          userId: req.user.userId,
+          indicator: queries.join(', '),
+          iType: isBulk ? 'bulk' : indicators[0].itype,
+          tags: req.body.tags ?? [],
+          viewId: req.body.viewId,
+          issuedAt,
+          took: Date.now() - issuedAt,
+          resultCount: this.resultCount
+        }).catch((err) => {
+          console.log('ERROR - creating audit log.', err);
+        });
+      }
     };
+    // the total number of integrations to query for the root indicators alone
+    const initialTotal = indicators.reduce((total, indicator) => {
+      return total + Integration.#integrations[indicator.itype].length;
+    }, 0);
     res.write('[\n');
-    res.write(JSON.stringify({ purpose: 'init', indicator, sent: shared.sent, total: integrations.length, text: 'more to follow' }));
+    res.write(JSON.stringify({ purpose: 'init', indicators, sent: shared.sent, total: initialTotal, text: 'more to follow' }));
     res.write(',\n');
 
-    const issuedAt = Date.now();
-    // end data write and create audit log when finished
-    const finishWrite = () => {
-      res.write(JSON.stringify({ purpose: 'finish', resultCount: shared.resultCount }));
-      res.end(']\n');
+    for (const indicator of indicators) {
+      const { query, itype } = indicator;
+      const integrations = Integration.#integrations[itype];
 
-      Audit.create({
-        userId: req.user.userId,
-        indicator: query,
-        iType: itype,
-        tags: req.body.tags ?? [],
-        viewId: req.body.viewId,
-        issuedAt,
-        took: Date.now() - issuedAt,
-        resultCount: shared.resultCount
-      }).catch((err) => {
-        console.log('ERROR - creating audit log.', err);
-      });
-    };
-
-    Integration.runIntegrationsList(shared, indicator, undefined, integrations, finishWrite);
-    if (itype === 'email') {
-      const dquery = query.slice(query.indexOf('@') + 1);
-      Integration.runIntegrationsList(shared, { query: dquery, itype: 'domain' }, indicator, Integration.#integrations.domain, finishWrite);
-    } else if (itype === 'url') {
-      const url = new URL(query);
-      if (Integration.classify(url.hostname) === 'ip') {
-        Integration.runIntegrationsList(shared, { query: url.hostname, itype: 'ip' }, indicator, Integration.#integrations.ip, finishWrite);
-      } else {
-        const equery = extractDomain(query, { tld: true });
-        Integration.runIntegrationsList(shared, { query: equery, itype: 'domain' }, indicator, Integration.#integrations.domain, finishWrite);
+      Integration.runIntegrationsList(shared, indicator, undefined, integrations);
+      if (itype === 'email') {
+        const dquery = query.slice(query.indexOf('@') + 1);
+        Integration.runIntegrationsList(shared, { query: dquery, itype: 'domain' }, indicator, Integration.#integrations.domain);
+      } else if (itype === 'url') {
+        const url = new URL(query);
+        if (Integration.classify(url.hostname) === 'ip') {
+          Integration.runIntegrationsList(shared, { query: url.hostname, itype: 'ip' }, indicator, Integration.#integrations.ip);
+        } else {
+          const equery = extractDomain(query, { tld: true });
+          Integration.runIntegrationsList(shared, { query: equery, itype: 'domain' }, indicator, Integration.#integrations.domain);
+        }
       }
     }
   }

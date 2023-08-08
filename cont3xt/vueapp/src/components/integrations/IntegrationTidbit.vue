@@ -31,7 +31,7 @@
       />
     </template>
     <template v-else-if="groupColorNames.includes(tidbit.display)">
-      <h5 :id="id" class="align-self-end mr-1 mw-100">
+      <h5 :id="id" class="align-self-end my-0 mr-1 mw-100">
         <b-badge variant="light" class="d-inline-flex flex-wrap group-container mw-100 overflow-auto"
           :class="groupClassMap(tidbit.display)"
         >

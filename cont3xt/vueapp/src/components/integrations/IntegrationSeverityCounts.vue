@@ -1,7 +1,7 @@
 <template>
   <div class="d-flex flex-row text-nowrap severity-badge-container">
     <span v-if="severityTypes.some(severity => severityCounts[severity])" class="mr-1">
-      <span :id="`severity-counts:${indicatorId(indicator)}`">
+      <span :id="`${indicatorId}-severity-counts`">
         <template v-for="severity in severityTypes">
           <b-badge v-if="severityCounts[severity]"
                    :key="severity"
@@ -11,7 +11,7 @@
           </b-badge>
         </template>
       </span>
-      <b-tooltip :target="`severity-counts:${indicatorId(indicator)}`" placement="top">
+      <b-tooltip :target="`${indicatorId}-severity-counts`" placement="top">
         <div class="d-flex flex-column gap-1">
           <template v-for="severity in severityTypes">
             <div v-if="severityCounts[severity]" :key="severity" class="d-flex flex-row">
@@ -19,7 +19,7 @@
                 {{ severityEmojiMap[severity] }}
               </span>
               <integration-btns
-                  :indicator="indicator"
+                  :indicator-id="indicatorId"
                   :count-severity-filter="severity"/>
             </div>
           </template>
@@ -31,19 +31,20 @@
 
 <script>
 import {
-  Cont3xtIndicatorProp,
   getIntegrationDataMap,
   shouldDisplayCountedIntegrationBtn,
-  integrationCountSeverity, indicatorId
+  integrationCountSeverity, indicatorFromId
 } from '@/utils/cont3xtUtil';
 import { mapGetters } from 'vuex';
 import IntegrationBtns from '@/components/integrations/IntegrationBtns.vue';
 export default {
   name: 'IntegrationSeverityCounts',
   components: { IntegrationBtns },
-  methods: { indicatorId },
   props: {
-    indicator: Cont3xtIndicatorProp
+    indicatorId: {
+      type: String,
+      required: true
+    }
   },
   data () {
     return {
@@ -58,7 +59,7 @@ export default {
   computed: {
     ...mapGetters(['getResults', 'getIntegrationsArray']),
     integrationDataMap () {
-      return getIntegrationDataMap(this.getResults, this.indicator);
+      return getIntegrationDataMap(this.getResults, indicatorFromId(this.indicatorId));
     },
     severityCounts () {
       const counts = { secondary: 0, success: 0, danger: 0 };

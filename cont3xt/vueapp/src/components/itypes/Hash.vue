@@ -1,5 +1,6 @@
 <template>
   <base-i-type
+      :indicator-id="indicatorId"
       :indicator="indicator"
       :tidbits="tidbits"
   />
@@ -20,6 +21,10 @@ export default {
     indicator: Cont3xtIndicatorProp,
     children: {
       type: Array,
+      required: true
+    },
+    indicatorId: {
+      type: String,
       required: true
     }
   }
