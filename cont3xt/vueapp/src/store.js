@@ -43,6 +43,7 @@ const store = new Vuex.Store({
     toggleCache: false,
     downloadReport: false,
     copyShareLink: false,
+    toggleIntegrationPanel: false,
     immediateSubmissionReady: false,
     theme: undefined,
     tags: [],
@@ -232,6 +233,10 @@ const store = new Vuex.Store({
     SET_COPY_SHARE_LINK (state, value) {
       state.copyShareLink = value;
       setTimeout(() => { state.copyShareLink = false; });
+    },
+    SET_TOGGLE_INTEGRATION_PANEL (state, value) {
+      state.toggleIntegrationPanel = value;
+      setTimeout(() => { state.toggleIntegrationPanel = false; });
     },
     SET_IMMEDIATE_SUBMISSION_READY (state, value) {
       state.immediateSubmissionReady = value;
@@ -462,6 +467,9 @@ const store = new Vuex.Store({
     },
     getCopyShareLink (state) {
       return state.copyShareLink;
+    },
+    getToggleIntegrationPanel (state) {
+      return state.toggleIntegrationPanel;
     },
     getImmediateSubmissionReady (state) {
       return state.immediateSubmissionReady;

@@ -35,11 +35,13 @@
           <br>
           <code>'H'</code> - jump to the Help page
           <br>
-          <code>'>'</code> - toggle the link group panel
+          <code>'&lt;'</code> - toggle the integration panel
           <br>
-          <code>'-'</code> - collapse all top-level indicator result tree nodes
+          <code>'&gt;'</code> - toggle the link group panel
           <br>
-          <code>'+'</code> - expand all top-level indicator result tree nodes
+          <code>'shift -'</code> - collapse all top-level indicator result tree nodes
+          <br>
+          <code>'shift +'</code> - expand all top-level indicator result tree nodes
           <br>
           <code>'h'</code> - collapse active indicator result tree node, or navigate left
           <br>
@@ -216,6 +218,10 @@ export default {
         if (this.$route.name !== 'Help') {
           this.routeTo('/help');
         }
+        break;
+      case 'Comma': // (seen as `<`, since shift is required)
+        // toggle integration panel
+        this.$store.commit('SET_TOGGLE_INTEGRATION_PANEL', true);
         break;
       case 'Period': // (seen as `>`, since shift is required)
         // toggle link groups panel
