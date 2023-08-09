@@ -37,6 +37,18 @@
           <br>
           <code>'>'</code> - toggle the link group panel
           <br>
+          <code>'-'</code> - collapse all top-level indicator result tree nodes
+          <br>
+          <code>'+'</code> - expand all top-level indicator result tree nodes
+          <br>
+          <code>'h'</code> - collapse active indicator result tree node, or navigate left
+          <br>
+          <code>'j'</code> - navigate down in indicator result tree
+          <br>
+          <code>'k'</code> - navigate up in indicator result tree
+          <br>
+          <code>'l'</code> - expand active indicator result tree node, or navigate right
+          <br>
           <code>'shift + enter'</code> - issue search/refresh
           <br>
           <code>'esc'</code> - remove focus from any input and close this dialog
@@ -113,80 +125,113 @@ export default {
         return;
       }
 
-      // quit if the user is in an input or not holding the shift key
-      if (!this.getShiftKeyHold || (activeElement && inputs.indexOf(activeElement.tagName.toLowerCase()) !== -1)) {
+      // quit if the user is in an input
+      if (activeElement && inputs.indexOf(activeElement.tagName.toLowerCase()) !== -1) {
         return;
       }
 
-      switch (e.keyCode) {
-      case 81: // q
+      // non-shift shortcuts
+      if (!this.getShiftKeyHold) {
+        switch (e.code) {
+        case 'KeyJ':
+          // navigate down the indicator result tree
+          this.$store.commit('SET_RESULT_TREE_NAVIGATION_DIRECTION', 'down');
+          break;
+        case 'KeyK':
+          // navigate up the indicator result tree
+          this.$store.commit('SET_RESULT_TREE_NAVIGATION_DIRECTION', 'up');
+          break;
+        case 'KeyH':
+          // navigate left in the indicator result tree
+          this.$store.commit('SET_RESULT_TREE_NAVIGATION_DIRECTION', 'left');
+          break;
+        case 'KeyL':
+          // navigate right in the indicator result tree
+          this.$store.commit('SET_RESULT_TREE_NAVIGATION_DIRECTION', 'right');
+          break;
+        }
+        return;
+      }
+
+      // shifted shortcuts
+      switch (e.code) {
+      case 'KeyQ':
         // focus on search expression input
         this.$store.commit('SET_FOCUS_SEARCH', true);
         break;
-      case 84: // t
+      case 'KeyT':
         // focus on start time input
         this.$store.commit('SET_FOCUS_START_DATE', true);
         break;
-      case 70: // f
+      case 'KeyF':
         // focus on time range selector
         this.$store.commit('SET_FOCUS_LINK_SEARCH', true);
         break;
-      case 86: // v
+      case 'KeyV':
         // focus on view dropdown selector
         this.$store.commit('SET_FOCUS_VIEW_SEARCH', true);
         break;
-      case 71: // g
+      case 'KeyG':
         // focus on tag input
         this.$store.commit('SET_FOCUS_TAG_INPUT', true);
         break;
-      case 69: // e
+      case 'KeyE':
         // toggle cache
         this.$store.commit('SET_TOGGLE_CACHE', true);
         break;
-      case 82: // r
+      case 'KeyR':
         // download report
         this.$store.commit('SET_DOWNLOAD_REPORT', true);
         break;
-      case 76: // l
+      case 'KeyL':
         // copy share link to clipboard
         this.$store.commit('SET_COPY_SHARE_LINK', true);
         break;
-      case 67: // c
+      case 'KeyC':
         // open cont3xt page if not on cont3xt page
         if (this.$route.name !== 'Cont3xt') {
           this.routeTo('/');
         }
         break;
-      case 65: // a
+      case 'KeyA':
         // open stats page if not on stats page
         if (this.$route.name !== 'Stats') {
           this.routeTo('/stats');
         }
         break;
-      case 89: // y
+      case 'KeyY':
         // open history page if not on history page
         if (this.$route.name !== 'History') {
           this.routeTo('/history');
         }
         break;
-      case 83: // s
+      case 'KeyS':
         // open settings page if not on settings page
         if (this.$route.name !== 'Settings') {
           this.routeTo('/settings');
         }
         break;
-      case 72: // h
+      case 'KeyH':
         // open help page if not on help page
         if (this.$route.name !== 'Help') {
           this.routeTo('/help');
         }
         break;
-      case 190: // . (seen as `>`, since shift is required)
+      case 'Period': // (seen as `>`, since shift is required)
+        // toggle link groups panel
         this.$store.commit('TOGGLE_LINK_GROUPS_PANEL');
         break;
-      case 13: // enter
+      case 'Enter':
         // trigger search/refresh
         this.$store.commit('SET_ISSUE_SEARCH', true);
+        break;
+      case 'Minus':
+        // collapse all indicator result tree nodes
+        this.$store.commit('SET_COLLAPSE_OR_EXPAND_INDICATOR_ROOTS', { setRootsOpen: false });
+        break;
+      case 'Equal': // (seen as `+`, since shift is required)
+        // expand all indicator result tree nodes
+        this.$store.commit('SET_COLLAPSE_OR_EXPAND_INDICATOR_ROOTS', { setRootsOpen: true });
         break;
       }
     });

@@ -483,7 +483,7 @@ import OverviewService from '@/components/services/OverviewService';
 import OverviewSelector from '../overviews/OverviewSelector.vue';
 import ITypeNode from '@/components/itypes/ITypeNode.vue';
 import IntegrationBtns from '@/components/integrations/IntegrationBtns.vue';
-import { localIndicatorId } from '@/utils/cont3xtUtil';
+import { indicatorFromId, indicatorParentId, localIndicatorId } from '@/utils/cont3xtUtil';
 
 export default {
   name: 'Cont3xt',
@@ -558,7 +558,9 @@ export default {
       'getAllViews', 'getImmediateSubmissionReady', 'getSelectedView',
       'getTags', 'getTagDisplayCollapsed', 'getSeeAllViews', 'getSeeAllLinkGroups',
       'getSeeAllOverviews', 'getSelectedOverviewMap', 'getOverviewMap', 'getResults',
-      'getIndicatorGraph', 'getLinkGroupsPanelOpen', 'getActiveIndicator'
+      'getIndicatorGraph', 'getLinkGroupsPanelOpen', 'getActiveIndicator',
+      'getResultTreeNavigationDirection', 'getCollapsedIndicatorNodeMap',
+      'getCollapseOrExpandIndicatorRoots'
     ]),
     tags: {
       get () { return this.getTags; },
@@ -613,9 +615,56 @@ export default {
     },
     showOverview () {
       return this.activeSource == null && !(this.getWaitRendering || this.getRendering);
+    },
+    preOrderVisibleIndicators () {
+      const ids = [];
+      const traverseNode = (node, parentId) => {
+        const id = `${(parentId == null) ? '' : `${parentId},`}${localIndicatorId(node.indicator)}`;
+        ids.push(id);
+        if (!this.getCollapsedIndicatorNodeMap[id]) {
+          for (const childNode of node.children) {
+            traverseNode(childNode, id);
+          }
+        }
+      };
+
+      for (const rootNode of this.indicatorTreeRoots) {
+        traverseNode(rootNode, undefined);
+      }
+
+      return ids;
     }
   },
   watch: {
+    getResultTreeNavigationDirection (direction) {
+      if (direction == null || !this.shouldDisplayResults) { return; }
+
+      switch (direction) {
+      case 'up':
+        this.navigateUpResultTree();
+        break;
+      case 'down':
+        this.navigateDownResultTree();
+        break;
+      case 'left':
+        this.navigateLeftResultTree();
+        break;
+      case 'right':
+        this.navigateRightResultTree();
+        break;
+      }
+    },
+    getCollapseOrExpandIndicatorRoots (val) {
+      if (val == null) { return; }
+
+      for (const rootNode of this.indicatorTreeRoots) {
+        const rootIndicatorId = localIndicatorId(rootNode.indicator);
+        if (this.nodeIsCollapsable(rootIndicatorId) &&
+            val.setRootsOpen === !!this.getCollapsedIndicatorNodeMap[rootIndicatorId]) {
+          this.$store.commit('TOGGLE_INDICATOR_NODE_COLLAPSE', rootIndicatorId);
+        }
+      }
+    },
     getQueuedIntegration (newQueuedIntegration) {
       this.activeSource = undefined;
       this.$store.commit('SET_RENDERING_CARD', true);
@@ -908,6 +957,53 @@ export default {
       a.download = `${new Date().toISOString()}_${this.searchTerm}.json`;
       a.click();
       URL.revokeObjectURL(a.href);
+    },
+    /* result tree navigation/manipulation --------------------------------- */
+    navigateToResultNode (indicatorId) {
+      // scroll and set active to the indicator node with this id
+      this.activeIndicatorId = indicatorId;
+      // handled in BaseIType component with the corresponding indicatorId
+      this.$store.commit('SET_INDICATOR_ID_TO_FOCUS', indicatorId);
+    },
+    navigateUpResultTree () {
+      // proceed to the node that is visually above our current selection
+      const resultDisplayIndex = this.preOrderVisibleIndicators.indexOf(this.activeIndicatorId);
+      if (resultDisplayIndex > 0) {
+        this.navigateToResultNode(this.preOrderVisibleIndicators[resultDisplayIndex - 1]);
+      }
+    },
+    navigateDownResultTree () {
+      // proceed to the node that is visually below our current selection
+      const resultDisplayIndex = this.preOrderVisibleIndicators.indexOf(this.activeIndicatorId);
+      if (resultDisplayIndex >= 0 && resultDisplayIndex < this.preOrderVisibleIndicators.length - 1) {
+        this.navigateToResultNode(this.preOrderVisibleIndicators[resultDisplayIndex + 1]);
+      }
+    },
+    navigateLeftResultTree () {
+      // if the node is collapsable and not collapsed, collapse it--otherwise, go to the parent
+      if (this.nodeIsCollapsable(this.activeIndicatorId) && !this.getCollapsedIndicatorNodeMap[this.activeIndicatorId]) {
+        this.$store.commit('TOGGLE_INDICATOR_NODE_COLLAPSE', this.activeIndicatorId);
+      } else {
+        const parentId = indicatorParentId(this.activeIndicatorId);
+        if (parentId) { this.navigateToResultNode(parentId); }
+      }
+    },
+    navigateRightResultTree () {
+      // if the node is collapsed, expand it--otherwise, go to first child, if there is one
+      if (!this.nodeIsCollapsable(this.activeIndicatorId)) { return; }
+
+      if (this.getCollapsedIndicatorNodeMap[this.activeIndicatorId]) {
+        this.$store.commit('TOGGLE_INDICATOR_NODE_COLLAPSE', this.activeIndicatorId);
+      } else {
+        this.navigateDownResultTree();
+      }
+    },
+    nodeIsCollapsable (indicatorId) {
+      return this.nodeForIndicatorId(indicatorId).children.length > 0;
+    },
+    nodeForIndicatorId (indicatorId) {
+      const localId = localIndicatorId(indicatorFromId(indicatorId));
+      return this.getIndicatorGraph[localId];
     },
     /* helpers ------------------------------------------------------------- */
     updateData (chunk) {

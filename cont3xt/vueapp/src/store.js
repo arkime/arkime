@@ -62,7 +62,14 @@ const store = new Vuex.Store({
     indicatorGraph: {}, // maps every `${query}-${itype}` to its corresponding indicator node
     /** @type {{ [indicatorId: string]: object }} */
     enhanceInfoTable: {}, // maps every `${query}-${itype}` to any enhancement info it may have
-    linkGroupsPanelOpen: true
+    linkGroupsPanelOpen: true,
+    indicatorIdToFocus: undefined,
+    /** @type {'down' | 'up' | 'left' | 'right' | undefined} */
+    resultTreeNavigationDirection: undefined,
+    /** @type {{ [indicatorId: string]: boolean }} */
+    collapsedIndicatorNodeMap: {},
+    /** @type {{ setRootsOpen: boolean } | undefined} */
+    collapseOrExpandIndicatorRoots: undefined
   },
   mutations: {
     SET_USER (state, data) {
@@ -336,9 +343,25 @@ const store = new Vuex.Store({
       state.results = {};
       state.indicatorGraph = {};
       state.enhanceInfoTable = {};
+      state.collapsedIndicatorNodeMap = {};
     },
     TOGGLE_LINK_GROUPS_PANEL (state) {
       state.linkGroupsPanelOpen = !state.linkGroupsPanelOpen;
+    },
+    TOGGLE_INDICATOR_NODE_COLLAPSE (state, data) {
+      Vue.set(state.collapsedIndicatorNodeMap, data, !state.collapsedIndicatorNodeMap[data]);
+    },
+    SET_INDICATOR_ID_TO_FOCUS (state, data) {
+      state.indicatorIdToFocus = data;
+      setTimeout(() => { state.indicatorIdToFocus = undefined; });
+    },
+    SET_RESULT_TREE_NAVIGATION_DIRECTION (state, data) {
+      state.resultTreeNavigationDirection = data;
+      setTimeout(() => { state.resultTreeNavigationDirection = undefined; });
+    },
+    SET_COLLAPSE_OR_EXPAND_INDICATOR_ROOTS (state, data) {
+      state.collapseOrExpandIndicatorRoots = data;
+      setTimeout(() => { state.collapseOrExpandIndicatorRoots = undefined; });
     }
   },
   getters: {
@@ -545,6 +568,18 @@ const store = new Vuex.Store({
     },
     getLinkGroupsPanelOpen (state) {
       return state.linkGroupsPanelOpen;
+    },
+    getIndicatorIdToFocus (state) {
+      return state.indicatorIdToFocus;
+    },
+    getResultTreeNavigationDirection (state) {
+      return state.resultTreeNavigationDirection;
+    },
+    getCollapsedIndicatorNodeMap (state) {
+      return state.collapsedIndicatorNodeMap;
+    },
+    getCollapseOrExpandIndicatorRoots (state) {
+      return state.collapseOrExpandIndicatorRoots;
     }
   },
   plugins: [createPersistedState({

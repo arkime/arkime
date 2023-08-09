@@ -1,6 +1,8 @@
 <template>
-  <b-card v-if="indicator.query" class="cursor-pointer itype-card" :class="{ 'border-danger': isActiveIndicator }" @click.stop="setSelfAsActiveIndicator">
-    <div class="d-xl-flex">
+  <b-card v-if="indicator.query"
+          class="cursor-pointer itype-card" :class="{ 'border-danger': isActiveIndicator }"
+          @click.stop="setSelfAsActiveIndicator">
+    <div class="d-xl-flex" ref="nodeCardScrollMarker">
       <div class="d-xl-flex flex-grow-1 flex-wrap mw-100">
         <h4 class="text-warning m-0">
           {{ indicator.itype.toUpperCase() }}
@@ -32,9 +34,16 @@
 
     <!--  children  -->
     <div v-if="children.length > 0" class="mt-2">
-      <span v-for="(child, index) in children" :key="index">
-        <i-type-node :node="child" :parent-indicator-id="indicatorId" />
-      </span>
+      <template v-if="isCollapsed">
+        <b-card class="itype-card" @click.stop="toggleCollapse">
+          <span class="fa fa-plus fa-lg"/> {{ children.length }} hidden
+        </b-card>
+      </template>
+      <template v-else>
+        <span v-for="(child, index) in children" :key="index">
+          <i-type-node :node="child" :parent-indicator-id="indicatorId" />
+        </span>
+      </template>
     </div> <!--  /children  -->
   </b-card>
 </template>
@@ -73,7 +82,7 @@ export default {
     }
   },
   computed: {
-    ...mapGetters(['getResults', 'getActiveIndicatorId']),
+    ...mapGetters(['getResults', 'getActiveIndicatorId', 'getIndicatorIdToFocus', 'getCollapsedIndicatorNodeMap']),
     labeledTidbits () {
       return this.tidbits.filter(tidbit => tidbit.label?.length);
     },
@@ -82,6 +91,9 @@ export default {
     },
     isActiveIndicator () {
       return this.indicatorId === this.getActiveIndicatorId;
+    },
+    isCollapsed () {
+      return this.getCollapsedIndicatorNodeMap[this.indicatorId];
     }
   },
   methods: {
@@ -90,6 +102,16 @@ export default {
 
       this.$store.commit('SET_ACTIVE_INDICATOR_ID', this.indicatorId);
       this.$store.commit('SET_ACTIVE_SOURCE', undefined);
+    },
+    toggleCollapse () {
+      this.$store.commit('TOGGLE_INDICATOR_NODE_COLLAPSE', this.indicatorId);
+    }
+  },
+  watch: {
+    getIndicatorIdToFocus (val) {
+      if (this.indicatorId === val) {
+        this.$refs.nodeCardScrollMarker.scrollIntoView({ block: 'center', behavior: 'smooth' });
+      }
     }
   }
 };
