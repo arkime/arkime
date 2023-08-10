@@ -48,6 +48,16 @@ export function indicatorFromId (globalId) {
   };
 }
 
+/**
+ * @param indicatorId - the id of the indicator to get the parent id for
+ * @returns {string|undefined} - the parent id, or undefined if there is no parent
+ */
+export function indicatorParentId (indicatorId) {
+  return (indicatorId.includes(','))
+    ? indicatorId.substring(0, indicatorId.lastIndexOf(','))
+    : undefined;
+}
+
 export function shouldDisplayIntegrationBtn (integration, integrationData) {
   return integrationData != null && integration?.icon != null;
 }

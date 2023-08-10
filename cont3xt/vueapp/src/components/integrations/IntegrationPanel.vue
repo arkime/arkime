@@ -123,7 +123,7 @@ export default {
   computed: {
     ...mapGetters([
       'getDoableIntegrations', 'getRoles', 'getUser', 'getSortedIntegrations',
-      'getAllViews', 'getImmediateSubmissionReady', 'getSelectedView'
+      'getAllViews', 'getImmediateSubmissionReady', 'getSelectedView', 'getToggleIntegrationPanel'
     ]),
     sidebarKeepOpen: {
       get () {
@@ -146,6 +146,9 @@ export default {
     }
   },
   watch: {
+    getToggleIntegrationPanel (val) {
+      if (val) { this.toggleSidebar(); }
+    },
     getDoableIntegrations (newVal) {
       // forces initialization of selectedIntegrations when without persisted storage (ex. new browser/incognito)
       if (this.selectedIntegrations == null) {
