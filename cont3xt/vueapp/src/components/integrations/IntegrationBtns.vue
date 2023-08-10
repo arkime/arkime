@@ -13,8 +13,8 @@
         tabindex="0"
         variant="outline-dark"
         class="mr-1 float-right no-wrap"
-        :id="`${indicator.itype}-${integration.name}-${indicator.query}`"
-        :key="integration.name"
+        :id="`${indicatorId}-${integration.name}-btn`"
+        :key="`${indicatorId}-${integration.name}`"
         @click="setAsActive(integration)">
         <img
           :alt="integration.name"

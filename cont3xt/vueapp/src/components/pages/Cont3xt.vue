@@ -962,6 +962,7 @@ export default {
     navigateToResultNode (indicatorId) {
       // scroll and set active to the indicator node with this id
       this.activeIndicatorId = indicatorId;
+      this.activeSource = undefined;
       // handled in BaseIType component with the corresponding indicatorId
       this.$store.commit('SET_INDICATOR_ID_TO_FOCUS', indicatorId);
     },
