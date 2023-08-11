@@ -111,6 +111,12 @@ export default {
     getIndicatorIdToFocus (val) {
       if (this.indicatorId === val) {
         this.$refs.nodeCardScrollMarker.scrollIntoView({ block: 'center', behavior: 'smooth' });
+        // though the nodeCardScrollMarker element is not a focusable input
+        //   this moves the relative focus point to it (as if clicked),
+        //   so the next tab will go to the IntegrationBtns
+        this.$refs.nodeCardScrollMarker.focus({
+          preventScroll: true // don't double up on scrolling!
+        });
       }
     }
   }
