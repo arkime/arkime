@@ -6,7 +6,7 @@
     ref="integrationViewsDropdown">
     <template #button-content>
       <template v-if="hotKeyEnabled && getShiftKeyHold">
-        <span class="text-warning">V</span>
+        <span class="text-warning integration-view-hotkey-v">V</span>
       </template>
       <template v-else>
         <slot name="title">
@@ -261,5 +261,9 @@ export default {
 }
 .top-searched-dropdown {
   background-color: var(--color-gray-light);
+}
+.integration-view-hotkey-v {
+  /* pad the V shown when shifting to keep the button the same size */
+  padding-inline: 0.16rem
 }
 </style>
