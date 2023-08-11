@@ -1,8 +1,14 @@
 <template>
-  <b-dropdown size="sm" class="overview-dropdown" right no-caret v-b-tooltip.hover.top="'Select overview'">
+  <b-dropdown
+      ref="overviewsDropdown"
+      @shown="dropdownVisible = true"
+      @hidden="dropdownVisible = false"
+      size="sm" class="overview-dropdown" right
+      no-caret v-b-tooltip.hover.top="'Select overview'">
     <template #button-content>
       <div class="no-wrap d-inline-flex align-items-center">
-        <span class="fa fa-fw fa-file-o mr-1" />
+        <span v-if="getShiftKeyHold" class="text-warning overview-hotkey-o">O</span>
+        <span v-else class="fa fa-fw fa-file-o" />
         <div class="overview-name-shorten">{{ selectedOverview.name }}</div>
       </div>
     </template>
@@ -15,6 +21,7 @@
           </b-input-group-text>
         </template>
         <b-form-input
+            ref="overviewsDropdownSearch"
             v-model="query"
         />
       </b-input-group>
@@ -54,11 +61,16 @@ export default {
   },
   data () {
     return {
-      query: ''
+      query: '',
+      needsFocus: false,
+      dropdownVisible: false
     };
   },
   computed: {
-    ...mapGetters(['getSortedOverviews', 'getCorrectedSelectedOverviewIdMap']),
+    ...mapGetters([
+      'getSortedOverviews', 'getCorrectedSelectedOverviewIdMap',
+      'getShiftKeyHold', 'getFocusOverviewSearch'
+    ]),
     filteredOverviews () {
       return this.getSortedOverviews.filter(overview => {
         return overview.iType === this.iType &&
@@ -72,6 +84,28 @@ export default {
       return iTypeIconMap;
     }
   },
+  watch: {
+    getFocusOverviewSearch (val) {
+      if (val) { // shortcut for view dropdown search
+        if (!this.$refs.overviewsDropdown.visible) {
+          this.$refs.overviewsDropdown.show();
+        }
+        if (this.dropdownVisible) {
+          this.$refs.overviewsDropdownSearch.select();
+        } else {
+          // it can take a moment for the dropdown to show,
+          //     so we'll focus it as soon as it pops up later
+          this.needsFocus = true;
+        }
+      }
+    },
+    dropdownVisible (val) {
+      if (val && this.needsFocus) {
+        this.$refs.overviewsDropdownSearch.select();
+        this.needsFocus = false;
+      }
+    }
+  },
   methods: {
     selectOverview (id) {
       this.$store.commit('SET_ACTIVE_SOURCE', undefined);
@@ -82,6 +116,13 @@ export default {
 </script>
 
 <style>
+.overview-hotkey-o {
+  /* pad the O shown when shifting to keep the button the same size */
+  /* and size it to look similar to the file-o icon */
+  padding-inline: 0.15rem;
+  font-size: 1.1rem;
+}
+
 .overview-dropdown .dropdown-menu {
   width: 240px;
   overflow: hidden;

@@ -39,6 +39,7 @@ const store = new Vuex.Store({
     focusStartDate: false,
     focusLinkSearch: false,
     focusViewSearch: false,
+    focusOverviewSearch: false,
     focusTagInput: false,
     toggleCache: false,
     downloadReport: false,
@@ -217,6 +218,10 @@ const store = new Vuex.Store({
     SET_FOCUS_VIEW_SEARCH (state, value) {
       state.focusViewSearch = value;
       setTimeout(() => { state.focusViewSearch = false; });
+    },
+    SET_FOCUS_OVERVIEW_SEARCH (state, value) {
+      state.focusOverviewSearch = value;
+      setTimeout(() => { state.focusOverviewSearch = false; });
     },
     SET_FOCUS_TAG_INPUT (state, value) {
       state.focusTagInput = value;
@@ -455,6 +460,9 @@ const store = new Vuex.Store({
     },
     getFocusViewSearch (state) {
       return state.focusViewSearch;
+    },
+    getFocusOverviewSearch (state) {
+      return state.focusOverviewSearch;
     },
     getFocusTagInput (state) {
       return state.focusTagInput;

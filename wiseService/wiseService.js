@@ -1086,7 +1086,7 @@ app.post('/get', function (req, res) {
 });
 // ----------------------------------------------------------------------------
 /**
- * GET - Used by wise UI to retrieve all the sources
+ * GET - Used by wise UI to retrieve all the sources (unathenticated).
  *
  * @name "/sources"
  * @returns {string|array} All the sources
@@ -1096,7 +1096,7 @@ app.get('/sources', [ArkimeUtil.noCacheJson], (req, res) => {
 });
 // ----------------------------------------------------------------------------
 /**
- * GET - Used by wise UI to retrieve all the configuration definitions for the various sources.
+ * GET - Used by wise UI to retrieve all the configuration definitions for the various sources (unauthenticated).
  *
  * @name "/config/defs"
  * @returns {object}
@@ -1106,7 +1106,7 @@ app.get('/config/defs', [ArkimeUtil.noCacheJson], function (req, res) {
 });
 // ----------------------------------------------------------------------------
 /**
- * GET - Used by the wise UI to all the types known.
+ * GET - Used by the wise UI to all the types known (unathenticated).
  *
  * @name "/types"
  * @returns {string|array} - all the types

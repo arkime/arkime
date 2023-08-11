@@ -17,6 +17,8 @@
           <br>
           <code>'V'</code> - set focus to the view dropdown search filter
           <br>
+          <code>'O'</code> - set focus to the overview dropdown search filter
+          <br>
           <code>'G'</code> - set focus to the tag input
           <br>
           <code>'E'</code> - toggle cache On/Off
@@ -172,6 +174,10 @@ export default {
       case 'KeyV':
         // focus on view dropdown selector
         this.$store.commit('SET_FOCUS_VIEW_SEARCH', true);
+        break;
+      case 'KeyO':
+        // focus on overview dropdown selector
+        this.$store.commit('SET_FOCUS_OVERVIEW_SEARCH', true);
         break;
       case 'KeyG':
         // focus on tag input

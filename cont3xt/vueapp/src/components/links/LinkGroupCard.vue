@@ -16,8 +16,8 @@
           v-b-tooltip.hover="`Shared with you by ${linkGroup.creator}`"
         />
         {{ linkGroup.name }}
-        <div class="pull-right">
-          <small v-if="!itype && getUser && linkGroup.creator !== getUser.userId">
+        <div v-if="!itype && getUser && linkGroup.creator !== getUser.userId" class="pull-right">
+          <small>
             You can only view this Link Group
           </small>
           <b-button
