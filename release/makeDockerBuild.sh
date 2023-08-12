@@ -1,5 +1,5 @@
 #!/bin/sh
-export VER=4.2.0-2
+export VER=4.2.0-3
 #docker images -a | grep "arkime-build" | awk '{print $3}' | xargs docker rmi
 
 echo "ARKIME DOCKER 7"
