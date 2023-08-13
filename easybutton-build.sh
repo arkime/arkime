@@ -25,7 +25,7 @@ KAFKA=1.5.3
 # node v18 doesn't support RHEL 7
 # RHEL 7 EOL is July 1, 2024
 # node v16 EOL is Sept 11, 2023
-NODE=16.19.1
+NODE=16.20.2
 
 TDIR="/opt/arkime"
 DOPFRING=0
