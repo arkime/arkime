@@ -274,7 +274,7 @@ jobs:
 
     arch:
         requires: [~pr, ~commit]
-        image: andywick/arkime-build-arch:4.2.0-2
+        image: andywick/arkime-build-arch:4.2.0-3
         steps:
             - (cd / ; curl https://s3.amazonaws.com/files.molo.ch/snfmin.tar.gz | tar -zxvf -)
             - build: ./easybutton-build.sh --rminstall --kafka
@@ -535,7 +535,7 @@ jobs:
 
     release-arch:
         requires: [release-build]
-        image: andywick/arkime-build-arch:4.2.0-2
+        image: andywick/arkime-build-arch:4.2.0-3
         steps:
             - (cd / ; curl https://s3.amazonaws.com/files.molo.ch/snfmin.tar.gz | tar -zxvf -)
             - build: ./easybutton-build.sh --rminstall
