@@ -23,6 +23,13 @@ docker image build build22 --no-cache=true --tag andywick/arkime-build-22:$VER
 echo "ARKIME DOCKER Arch"
 docker image build buildArch --no-cache=true --tag andywick/arkime-build-arch:$VER
 
+echo "ARKIME DOCKER Al2023 AMD64"
+docker image build buildAl2023 --platform=linux/amd64 --no-cache=true --tag andywick/arkime-build-al2023-amd64:$VER
+
+echo "ARKIME DOCKER Al2023 ARM64"
+docker image build buildAl2023 --platform=linux/arm64 --no-cache=true --tag andywick/arkime-build-al2023-arm64:$VER
+
+
 exit 0
 
 docker push andywick/arkime-build-7:$VER

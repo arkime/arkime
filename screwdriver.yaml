@@ -144,6 +144,31 @@ jobs:
             - AWS_ACCESS_KEY_ID
             - AWS_SECRET_ACCESS_KEY
 
+    al2023-arm:
+        requires: [~pr,~commit]
+        image: andywick/arkime-build-al2023-arm64:4.2.0-3
+        steps:
+            - (cd / ; curl https://s3.amazonaws.com/files.molo.ch/snfmin.tar.gz | tar -zxvf -)
+            - ln -s /thirdparty .
+            - build: ./easybutton-build.sh --daq --rminstall
+            - test-capture: (cd tests ; ./tests.pl)
+            - export PATH=/opt/arkime/bin:/data/moloch/bin:$PATH
+            - npm -g config set user root; npm -g config set cache-min 9999999
+            - installing: make install
+            - linting: npm run lint
+            - cp -r capture/plugins/lua/samples /opt/arkime/lua
+            - build-package: |
+                export ARKIME_VERSION=`sed 's/.*"\(.*\)\".*$/\1/' /opt/arkime/common/version.js | head -n 1 | tr "-" "_"`
+                fpm -s dir -t rpm --rpm-digest sha256 -n arkime -x opt/arkime/logs -x opt/arkime/raw -v $ARKIME_VERSION --iteration $SD_BUILD_ID --template-scripts --after-install "release/afterinstall.sh" --url "https://arkime.com" --description "Arkime Full Packet System" -d perl-libwww-perl -d perl-JSON -d ethtool -d libyaml -d perl-LWP-Protocol-https -d libzstd --rpm-rpmbuild-define "_build_id_links none" /opt/arkime
+                if [ "$GIT_BRANCH" = "$MOLOCH_COPY_BRANCH" ]; then
+                  aws s3 cp --quiet arkime*.aarch64.rpm s3://files.molo.ch/arkime-${ARKIME_FILE_NAME}.al2023.aarch64.rpm --acl public-read
+                  aws s3api put-object-acl --bucket files.molo.ch --key arkime-${ARKIME_FILE_NAME}.al2023.aarch64.rpm --acl public-read
+                fi
+            - install-arkime: yum -y install arkime*.aarch64.rpm
+        secrets:
+            - AWS_ACCESS_KEY_ID
+            - AWS_SECRET_ACCESS_KEY
+
     ubuntu-18:
         requires: [~commit]
         image: andywick/arkime-build-18:4.2.0-2
