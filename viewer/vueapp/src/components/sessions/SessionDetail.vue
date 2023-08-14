@@ -848,7 +848,7 @@ export default {
 .session-detail dt {
   float: left;
   clear: left;
-  width: 160px;
+  width: 320px;
   text-align: right;
   margin-right: 6px;
   line-height: 1.7;
@@ -856,7 +856,7 @@ export default {
 }
 
 .session-detail dd {
-  margin-left: 165px;
+  margin-left: 325px;
 }
 
 /* more items link */
