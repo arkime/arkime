@@ -4,7 +4,9 @@ User Settings Description - an object with each sub object a setting.
     * password - if true then its a password
     * uiSetting - true if value is needed in the UI (do not set true for secure values like passwords)
 
+
 Card Description - an object of the following
+    - NOTE: see also Overviews section in pages/Help
   * title - title of the card
   * fields - an array of fields.
     * If the element is just a string that means
