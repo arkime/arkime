@@ -6,7 +6,7 @@
       size="sm" class="overview-dropdown" right
       no-caret v-b-tooltip.hover.top="'Select overview'">
     <template #button-content>
-      <div class="no-wrap d-inline-flex align-items-center">
+      <div class="no-wrap d-flex flex-row align-items-center">
         <span v-if="getShiftKeyHold" class="text-warning overview-hotkey-o">O</span>
         <span v-else class="fa fa-fw fa-file-o" />
         <div class="overview-name-shorten">{{ selectedOverview.name }}</div>
@@ -117,10 +117,12 @@ export default {
 
 <style>
 .overview-hotkey-o {
-  /* pad the O shown when shifting to keep the button the same size */
+  /* pad the O shown when shifting to keep the button the same width */
+  padding-inline: 0.13rem;
   /* and size it to look similar to the file-o icon */
-  padding-inline: 0.15rem;
-  font-size: 1.1rem;
+  font-size: 1.15rem;
+  /* keep the O from expanding the button to maintain the same height */
+  margin-block: -5px;
 }
 
 .overview-dropdown .dropdown-menu {
