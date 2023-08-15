@@ -615,7 +615,7 @@ class Integration {
     // dedupe and trim queries
     const queries = [...new Set(
       ArkimeUtil.sanitizeStr(req.body.query.trim())
-        .split(',')
+        .split(/[ |,\t]/)
         .map(query => query.trim())
         .filter(query => query.length > 0)
     )];
