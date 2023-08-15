@@ -8,7 +8,6 @@ const store = new Vuex.Store({
     theme: 'light',
     isUser: false,
     isAdmin: false,
-    hasAuth: false,
     refreshInterval: 15000
   },
   mutations: {
@@ -20,9 +19,6 @@ const store = new Vuex.Store({
     },
     setIsAdmin (state, value) {
       state.isAdmin = value;
-    },
-    setHasAuth (state, value) {
-      state.hasAuth = value;
     },
     setRefreshInterval (state, value) {
       value = parseInt(value) || 0;

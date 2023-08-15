@@ -27,6 +27,7 @@ Node Versions:
 
 NOTICE: Restart wiseService before capture when upgrading
 NOTICE: Cross-cluster Shortcuts require you to not restart all your viewers at once after upgrading
+NOTICE: Create a parliament config file before upgrading (see arkime.com/settings#parliament)
 
 5.0.0 2023/09/xx
   - BREAKING - s3Compression/simpleCompression now default to zstd
@@ -35,7 +36,8 @@ NOTICE: Cross-cluster Shortcuts require you to not restart all your viewers at o
   - BREAKING - enablePacketDedup defaults to TRUE
   - BREAKING - authMode defaults to digest now
   - BREAKING - removed old v1 APIs
-  - BREAKING - parliament password removed, must configure common auth before upgrade
+  - BREAKING - parliament password removed, must configure common auth via the UI before
+               upgrading or manually in the config file see arkime.com/settings#parliament
   - all - authMode setting added
   - all - authMode=basic added
   - capture - moloch converted to arkime
