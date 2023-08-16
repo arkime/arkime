@@ -113,7 +113,7 @@ To start the app for development and testing:
 * Move to the top level Moloch directory
 * run `npm run parliament:dev`
 
-This command starts the app with the necessary config options set (`-c ../parliament/parliament.dev.json`) and bundles the unminified application files into the `parliament/vueapp/dist` folder.
+This command starts the app with the necessary config options set (`-c ../parliament/parliament.ini`) and bundles the unminified application files into the `parliament/vueapp/dist` folder.
 
 `npm run parliament:dev` uses webpack to package the files then watches for changes to relevant files, and re-bundles the app after each save.
 
