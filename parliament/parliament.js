@@ -1818,7 +1818,7 @@ async function setupAuth () {
   Auth.initialize({
     debug: ArkimeConfig.debug,
     mode: getConfig('parliament', 'authMode'),
-    userNameHeader: getConfig('parliament', 'userNameHeader', 'anonymous'),
+    userNameHeader: getConfig('parliament', 'userNameHeader'),
     passwordSecret: getConfig('parliament', 'passwordSecret', 'password'),
     passwordSecretSection: 'parliament',
     basePath: getConfig('parliament', 'webBasePath', '/'),
