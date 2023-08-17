@@ -266,16 +266,11 @@
               </div>
             </div>
             <div class="result-card-pane position-relative" :class="{ 'result-card-pane-expanded': !getLinkGroupsPanelOpen }">
-              <div class="d-flex justify-content-between mb-1 mx-2">
-                <integration-btns
-                    :indicator-id="activeIndicatorId"
-                />
-                <overview-selector
-                    v-if="getActiveIndicator"
-                    :i-type="getActiveIndicator.itype"
-                    :selected-overview="currentOverviewCard"
-                    @set-override-overview="setOverrideOverview" />
-              </div>
+              <integration-btns
+                :indicator-id="activeIndicatorId"
+                :selected-overview="currentOverviewCard"
+                @set-override-overview="setOverrideOverview"
+              />
               <div class="pane-scroll-content" @scroll="handleScroll" ref="resultsIntegration">
                 <!-- integration results -->
                 <b-overlay
@@ -480,7 +475,6 @@ import TagDisplayLine from '@/utils/TagDisplayLine';
 import { paramStr } from '@/utils/paramStr';
 import LinkService from '@/components/services/LinkService';
 import OverviewService from '@/components/services/OverviewService';
-import OverviewSelector from '../overviews/OverviewSelector.vue';
 import ITypeNode from '@/components/itypes/ITypeNode.vue';
 import IntegrationBtns from '@/components/integrations/IntegrationBtns.vue';
 import { indicatorFromId, indicatorParentId, localIndicatorId } from '@/utils/cont3xtUtil';
@@ -490,7 +484,6 @@ export default {
   components: {
     IntegrationBtns,
     ITypeNode,
-    OverviewSelector,
     ReorderList,
     ViewSelector,
     LinkGroupCard,

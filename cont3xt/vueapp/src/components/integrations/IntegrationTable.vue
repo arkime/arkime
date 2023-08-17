@@ -184,6 +184,11 @@ export default {
     },
     selectedFields () {
       this.updateFilteredData(this.searchTerm);
+    },
+    tableData (newValue, oldValue) {
+      this.tableLen = Math.min(this.tableData.length || 1, this.size);
+      this.data = Array.isArray(this.tableData) ? this.tableData : [this.tableData];
+      this.filteredData = Array.isArray(this.tableData) ? this.tableData : [this.tableData];
     }
   },
   methods: {
