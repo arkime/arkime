@@ -269,6 +269,20 @@
           <dd>The end date timestamp defined in the "End Date" input (MM/DD/YYYY:HH:mm:ss)</dd>
           <dt>${startSplunk}</dt>
           <dd>The start date timestamp defined in the "Start Date" input (MM/DD/YYYY:HH:mm:ss)</dd>
+          <dt>${arrayIp}</dt>
+          <dd>Comma separated list of IPs in the results</dd>
+          <dt>${arrayDomain}</dt>
+          <dd>Comma separated list of Domains in the results (will be refanged)</dd>
+          <dt>${arrayUrl}</dt>
+          <dd>Comma separated list of URLs in the results (will be refanged)</dd>
+          <dt>${arrayEmail}</dt>
+          <dd>Comma separated list of Emails in the results (will be refanged)</dd>
+          <dt>${arrayPhone}</dt>
+          <dd>Comma separated list of Phone Numbers in the results</dd>
+          <dt>${arrayHash}</dt>
+          <dd>Comma separated list of Hashes in the results</dd>
+          <dt>${arrayText}</dt>
+          <dd>Comma separated list of Text in the results</dd>
         </dl>
         <p class="mt-1">
           Example:
@@ -385,3 +399,12 @@ export default {
   }
 };
 </script>
+
+<style scoped>
+dl.dl-horizontal dt {
+  width: 130px;
+}
+dl.dl-horizontal dd {
+  margin-left: 140px;
+}
+</style>

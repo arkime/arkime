@@ -420,6 +420,25 @@ export default {
       return normalizedLinkGroup;
     },
     getUrl (url) {
+      const types = ['domain', 'ip', 'url', 'email', 'hash', 'phone', 'text'];
+      // replaces ${arrayType} with a comma-separated list of all indicators of that type
+      // for example ${arrayIp} gets replaced with all the IPs in the results
+      for (const type of types) {
+        const matchStr = `\\$\\{array${type.charAt(0).toUpperCase() + type.slice(1)}\\}`;
+        if (url.match(new RegExp(matchStr, 'g'))) {
+          const array = [];
+          for (const key in this.$store.state.indicatorGraph) {
+            const indicator = this.$store.state.indicatorGraph[key];
+            if (indicator.indicator.itype === type) {
+              array.push(indicator.indicator.query);
+            }
+          }
+          if (array.length) {
+            url = url.replace(new RegExp(matchStr, 'g'), array.join(','));
+          }
+        }
+      }
+
       return url.replace(/\${indicator}/g, dr.refang(this.query))
         .replace(/\${type}/g, this.itype)
         .replace(/\${numDays}/g, this.numDays)
