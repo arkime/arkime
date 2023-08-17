@@ -4,9 +4,9 @@
       <span :id="`${indicatorId}-severity-counts`">
         <template v-for="severity in severityTypes">
           <b-badge v-if="severityCounts[severity]"
-                   :key="severity"
-                   class="severity-badge"
-                   :variant="severity">
+            :key="severity"
+            class="severity-badge mb-1"
+            :variant="severity">
             {{ severityCounts[severity] }}
           </b-badge>
         </template>
@@ -19,8 +19,8 @@
                 {{ severityEmojiMap[severity] }}
               </span>
               <integration-btns
-                  :indicator-id="indicatorId"
-                  :count-severity-filter="severity"/>
+                :indicator-id="indicatorId"
+                :count-severity-filter="severity"/>
             </div>
           </template>
         </div>
@@ -79,6 +79,9 @@ export default {
 .severity-badge-container {
   height: min-content;
   align-self: center;
+}
+.severity-badge {
+  font-size: 100%;
 }
 /* first and/or middle */
 .severity-badge:not(:last-child) {

@@ -1,10 +1,13 @@
 <template>
   <b-dropdown
-      ref="overviewsDropdown"
-      @shown="dropdownVisible = true"
-      @hidden="dropdownVisible = false"
-      size="sm" class="overview-dropdown" right
-      no-caret v-b-tooltip.hover.top="'Select overview'">
+    split
+    size="sm"
+    ref="overviewsDropdown"
+    class="overview-dropdown mr-1 mb-1"
+    @shown="dropdownVisible = true"
+    @hidden="dropdownVisible = false"
+    @click="selectOverview(selectedOverview._id)"
+    v-b-tooltip.hover.top="'Select overview'">
     <template #button-content>
       <div class="no-wrap d-flex flex-row align-items-center">
         <span v-if="getShiftKeyHold" class="text-warning overview-hotkey-o">O</span>
@@ -21,8 +24,8 @@
           </b-input-group-text>
         </template>
         <b-form-input
-            ref="overviewsDropdownSearch"
-            v-model="query"
+          ref="overviewsDropdownSearch"
+          v-model="query"
         />
       </b-input-group>
     </div>
@@ -31,10 +34,11 @@
       <template v-for="(overview, i) in filteredOverviews">
         <b-dropdown-item-btn :key="i"
           @click="selectOverview(overview._id)"
-          button-class="px-1 py-0"
-        >
-          <overview-selector-line :overview="overview"
-              :show-i-type-icon="false" />
+          button-class="px-1 py-0">
+          <overview-selector-line
+            :overview="overview"
+            :show-i-type-icon="false"
+          />
         </b-dropdown-item-btn>
       </template>
     </div>
@@ -131,7 +135,7 @@ export default {
 }
 
 .overview-name-shorten {
-  max-width: 6rem;
+  max-width: 7rem;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;

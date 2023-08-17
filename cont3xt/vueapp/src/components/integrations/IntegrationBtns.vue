@@ -1,18 +1,18 @@
 <template>
-  <div class="wrap-btns">
-    <template v-if="!buttonIntegrations.length">
-      <b-badge
-          variant="light" class="d-flex align-items-center">
-        <span>No Integrations</span>
-      </b-badge>
-    </template>
+  <div class="wrap-btns d-flex justify-content-between mx-2">
+    <overview-selector
+      v-if="getActiveIndicator"
+      :i-type="getActiveIndicator.itype"
+      :selected-overview="selectedOverview"
+      @set-override-overview="setOverrideOverview"
+    />
     <template v-for="integration in buttonIntegrations">
       <b-button
         v-b-tooltip.hover.noninteractive="integration.name"
         size="xs"
         tabindex="0"
         variant="outline-dark"
-        class="mr-1 float-right no-wrap"
+        class="mr-1 mb-1 float-right no-wrap"
         :id="`${indicatorId}-${integration.name}-btn`"
         :key="`${indicatorId}-${integration.name}`"
         @click="setAsActive(integration)">
@@ -30,6 +30,12 @@
         </b-badge>
       </b-button>
     </template>
+    <template v-if="!buttonIntegrations.length">
+      <b-badge
+          variant="light" class="d-flex align-items-center mb-1">
+        <span>No Integrations</span>
+      </b-badge>
+    </template>
   </div>
 </template>
 
@@ -40,6 +46,7 @@ import {
   shouldDisplayIntegrationBtn,
   integrationCountSeverity, shouldDisplayCountedIntegrationBtn, indicatorFromId
 } from '@/utils/cont3xtUtil';
+import OverviewSelector from '../overviews/OverviewSelector.vue';
 
 // Clicking an integration button commits to the store which integration, itype,
 // and value to display integration data for. The Cont3xt component watches for
@@ -47,6 +54,7 @@ import {
 // component watches for changes to the integration data to display.
 export default {
   name: 'IntegrationBtns',
+  components: { OverviewSelector },
   props: {
     /**
      * the global indicator id to display integration buttons for
@@ -64,10 +72,14 @@ export default {
     countSeverityFilter: {
       type: String,
       required: false
+    },
+    selectedOverview: {
+      type: Object,
+      required: true
     }
   },
   computed: {
-    ...mapGetters(['getIntegrationsArray', 'getLoading', 'getResults']),
+    ...mapGetters(['getIntegrationsArray', 'getLoading', 'getResults', 'getActiveIndicator']),
     /**
      * object of { itype, query }
      * * itype - the itype to display the integration data for (if clicked)
@@ -108,6 +120,9 @@ export default {
     integrationCountSeverity,
     setAsActive (integration) {
       this.$store.commit('SET_QUEUED_INTEGRATION', { indicatorId: this.indicatorId, source: integration.name });
+    },
+    setOverrideOverview (id) {
+      this.$emit('set-override-overview', id);
     }
   }
 };

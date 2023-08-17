@@ -1,50 +1,53 @@
 <template>
-  <span style="display: contents" class="cursor-help" id="testtest">
-    <!--  tooltip  -->
+  <span style="display: contents" class="cursor-help d-flex flex-row align-items-center overflow-hidden">
+
     <b-tooltip :target="id" noninteractive>
       <span class="text-primary">{{ tidbit.integration }}</span><span v-if="tidbit.tooltip">: {{ tidbit.tooltip }}</span>
-
-    </b-tooltip><!--  /tooltip  -->
+    </b-tooltip>
 
     <label v-if="labeled" :for="id" class="text-warning m-0">
       {{ tidbit.label }}
     </label>
 
     <template v-if="tidbit.display === 'badge'">
-      <h5 class="my-0 mr-1 mw-100" :id="id">
-        <b-badge variant="light" class="mw-100 overflow-hidden">
-          {{ tidbit.displayValue || tidbit.value }}
-        </b-badge>
-      </h5>
+      <b-badge variant="light" class="mw-100 overflow-hidden mr-1 mb-1" style="font-size:100%" :id="id">
+        {{ tidbit.displayValue || tidbit.value }}
+      </b-badge>
     </template>
+
     <template v-else-if="tidbit.display === 'cont3xtField'">
       <cont3xt-field class="mr-1 align-self-center" :id="id"
         :value="tidbit.value"
         :display="tidbit.displayValue"
       />
     </template>
+
     <template v-else-if="tidbit.display === 'cont3xtCopyLink'">
       <cont3xt-field class="mr-1 align-self-center" :id="id"
-          :options="{ copy: 'copy link' }"
-          :value="tidbit.value"
-          :display="tidbit.displayValue"
+        :options="{ copy: 'copy link' }"
+        :value="tidbit.value"
+        :display="tidbit.displayValue"
       />
     </template>
+
     <template v-else-if="groupColorNames.includes(tidbit.display)">
-      <h5 :id="id" class="align-self-end my-0 mr-1 mw-100">
-        <b-badge variant="light" class="d-inline-flex flex-wrap group-container mw-100 overflow-auto"
-          :class="groupClassMap(tidbit.display)"
-        >
-          <b-badge v-for="(element, index) in (tidbit.displayValue || tidbit.value)"
-                   :key="index" class="group-member" variant="light">
-            {{ element }}
-          </b-badge>
+      <b-badge
+        :id="id"
+        variant="light"
+        style="font-size:100%"
+        class="d-inline-flex flex-wrap group-container mw-100 overflow-auto text-wrap mb-1"
+        :class="groupClassMap(tidbit.display)">
+        <b-badge v-for="(element, index) in (tidbit.displayValue || tidbit.value)"
+          :key="index" class="group-member" variant="light">
+          {{ element }}
         </b-badge>
-      </h5>
+      </b-badge>
     </template>
+
     <template v-else>
       No display for {{ tidbit.display }} ({{ tidbit.value }})
     </template>
+
   </span>
 </template>
 
