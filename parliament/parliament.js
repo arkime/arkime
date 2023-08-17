@@ -52,8 +52,12 @@ const internals = {
   notifierTypes: {}
 };
 
-const parliamentReadError = `\nYou must fix this before you can run Parliament.
-  Try using parliament.example.json as a starting point`;
+const parliamentReadError = `
+You must fix this before you can run Parliament.
+Try using parliament.example.json as a starting point.
+Use the "file" setting in your Parliament config to point to your Parliament JSON file.
+See https://arkime.com/settings#parliament for more information.
+`;
 
 /* Config ------------------------------------------------------------------ */
 (function () {
