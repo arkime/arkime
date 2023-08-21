@@ -875,11 +875,22 @@ char *moloch_sprint_hex_string(char *buf, const unsigned char* data, unsigned in
 /******************************************************************************/
 void  moloch_parsers_register2(MolochSession_t *session, MolochParserFunc func, void *uw, MolochParserFreeFunc ffunc, MolochParserSaveFunc sfunc)
 {
+#ifdef DEBUG_PARSERS
+    LOG("session: %p func: %p uw: %p", session, func, uw);
+#endif
+
     if (session->parserNum > 30) {
         char ipStr[200];
         moloch_session_pretty_string(session, ipStr, sizeof(ipStr));
         LOG("WARNING - Too many parsers registered: %d %s", session->parserNum, ipStr);
         return;
+    }
+
+    // Check if this is a duplicate
+    for (int i = 0; i < session->parserNum; i++) {
+        if (session->parserInfo[i].parserFunc == func && session->parserInfo[i].uw == uw) {
+            return;
+        }
     }
 
     if (session->parserNum >= session->parserLen) {
