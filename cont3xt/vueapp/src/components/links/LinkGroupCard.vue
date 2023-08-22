@@ -419,7 +419,78 @@ export default {
 
       return normalizedLinkGroup;
     },
+    /**
+     * Replace the array placeholder in the url with the array of values
+     * placeholder looks like this: ${array,{iType:"ip",include:"top",sep:"OR",quote:"\""}}
+     * if it can't parse the options for the array placeholder, it removes the placeholder
+     * @param {string} url - the url to parse
+     * @returns {string} the url with the array placeholder replaced/removed
+     */
+    replaceArray (url) {
+      if (url.match(/\$\{array,/g)) {
+        const begin = url.indexOf('${array,') + 8;
+        const end = url.indexOf('}', begin) + 1;
+        let options = url.substring(begin, end);
+
+        try {
+          options = JSON.parse(options);
+        } catch (e) {
+          /* eslint-disable no-template-curly-in-string */
+          console.error('getUrl: array requires valid JSON for parameters. Placeholder should look like this:\n${array,{iType:"ip",include:"top",sep:"OR",quote:"\\""}}');
+          console.error('trying to parse', options);
+          console.error(e);
+          url = url.substring(0, begin - 8) + url.substring(end + 1);
+          return url;
+        }
+
+        if (!options.iType) {
+          console.error('getUrl: array requires an iType');
+          url = url.substring(0, begin - 8) + url.substring(end + 1);
+          return url;
+        }
+
+        if (!options.include) {
+          options.include = 'all'; // default to all
+        }
+
+        if (!options.sep) {
+          options.sep = ','; // default to comma
+        }
+
+        if (!options.quote) {
+          options.quote = ''; // default to no quote
+        }
+
+        if (['domain', 'ip', 'url', 'email', 'hash', 'phone', 'text'].indexOf(options.iType) === -1) {
+          console.error('getUrl: array requires a valid iType');
+          url = url.substring(0, begin - 8) + url.substring(end + 1);
+          return url;
+        }
+
+        const indicators = [];
+        for (const key in this.$store.state.indicatorGraph) {
+          const indicator = this.$store.state.indicatorGraph[key];
+          if (indicator.indicator.itype === options.iType) {
+            if (options.include === 'all' ||
+              (options.include === 'top' && indicator.parentIds.has(undefined))) {
+              indicators.push(indicator.indicator.query);
+            }
+          }
+        }
+
+        if (indicators.length) {
+          const indicatorStr = options.quote + indicators.join(`${options.quote}${options.sep}${options.quote}`) + options.quote;
+          url = url.substring(0, begin - 8) + indicatorStr + url.substring(end + 1);
+        } else {
+          url = url.substring(0, begin - 8) + url.substring(end + 1);
+        }
+      }
+
+      return url;
+    },
     getUrl (url) {
+      url = this.replaceArray(url);
+
       return url.replace(/\${indicator}/g, dr.refang(this.query))
         .replace(/\${type}/g, this.itype)
         .replace(/\${numDays}/g, this.numDays)
