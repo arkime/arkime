@@ -420,14 +420,14 @@ export default {
       return normalizedLinkGroup;
     },
     /**
-     * Replace the arrqy placeholder in the url with the array of values
+     * Replace the array placeholder in the url with the array of values
      * placeholder looks like this: ${array,{iType:"ip",include:"top",sep:"OR",quote:"\""}}
      * if it can't parse the options for the array placeholder, it removes the placeholder
      * @param {string} url - the url to parse
      * @returns {string} the url with the array placeholder replaced/removed
      */
     replaceArray (url) {
-      if (url.match(/\$\{array/g)) {
+      if (url.match(/\$\{array,/g)) {
         const begin = url.indexOf('${array,') + 8;
         const end = url.indexOf('}', begin) + 1;
         let options = url.substring(begin, end);
