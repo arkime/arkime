@@ -269,20 +269,43 @@
           <dd>The end date timestamp defined in the "End Date" input (MM/DD/YYYY:HH:mm:ss)</dd>
           <dt>${startSplunk}</dt>
           <dd>The start date timestamp defined in the "Start Date" input (MM/DD/YYYY:HH:mm:ss)</dd>
-          <dt>${arrayIp}</dt>
-          <dd>Comma separated list of IPs in the results</dd>
-          <dt>${arrayDomain}</dt>
-          <dd>Comma separated list of Domains in the results (will be refanged)</dd>
-          <dt>${arrayUrl}</dt>
-          <dd>Comma separated list of URLs in the results (will be refanged)</dd>
-          <dt>${arrayEmail}</dt>
-          <dd>Comma separated list of Emails in the results (will be refanged)</dd>
-          <dt>${arrayPhone}</dt>
-          <dd>Comma separated list of Phone Numbers in the results</dd>
-          <dt>${arrayHash}</dt>
-          <dd>Comma separated list of Hashes in the results</dd>
-          <dt>${arrayText}</dt>
-          <dd>Comma separated list of Text in the results</dd>
+          <dt>${array, ...}</dt>
+          <dd>
+            <p class="m-0">
+              You can create arrays of values in links. Arrays are special and include a lot of customization.
+              <ul class="m-0">
+                <li>Do not include spaces in your array options.</li>
+                <li>Escape double quotes with a backslash <code>\"</code></li>
+                <li>Escape backslashes with a backslash <code>\\</code></li>
+                <li>If the JSON cannot be parsed, the placeholder is removed from the link</li>
+              </ul>
+            </p>
+            <p class="m-0">
+              <strong class="text-info">iType<sup>*</sup></strong>
+              Which iType values to include in the array. REQUIRED (ip, domain, url, email, hash, phone, text)
+            </p>
+            <p class="m-0">
+              <strong class="text-info">include</strong>
+              "all" or "top". "all" = all values of the specified iType. "top" = top level values of the specified iType. Defaults to "all"
+            </p>
+            <p class="m-0">
+              <strong class="text-info">sep</strong>
+              Separator between values. Defaults to comma (",")
+            </p>
+            <p class="m-0">
+              <strong class="text-info">quote</strong>
+              Quote character to wrap values. Defaults to none ("")
+            </p>
+            <p class="m-0">
+              <strong>Examples:</strong>
+              <br>
+              <code>${array,{iType:"ip"}}</code> = 10.0.0.1,10.0.0.2,10.0.0.3
+              <br>
+              <code>${array,{iType:"ip",include:"top",sep:" OR ",quote:"\""}}</code> = "10.0.0.1" OR "10.0.0.2"
+              <br>
+              <code>${array,{iType:"domain",include:"all",sep:"|",quote:"'"}}</code> = 'example.com'|'test.org'|'arkime.com'
+            </p>
+          </dd>
         </dl>
         <p class="mt-1">
           Example:
