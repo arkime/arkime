@@ -48,6 +48,10 @@ NOTICE: Cross-cluster Shortcuts require you to not restart all your viewers at o
 
 
 4.4.1 2023/08/xx
+  - release - node 16.20.2
+  - capture - dns answers were double parsed
+  - capture - custom-fields honors viewerOnly:true
+  - cont3xt - remove raw view button for link groups on the cont3xt search page
 
 4.4.0 2023/08/02
   - release - cyberchef 10.5.2
