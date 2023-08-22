@@ -246,7 +246,7 @@ int moloch_field_define_text_full(char *field, char *text, int *shortcut)
         flags |= MOLOCH_FIELD_FLAG_FORCE_UTF8;
 
     if (fake)
-        flags |= ARKIME_FIELD_FLAG_FAKE;
+        flags |= MOLOCH_FIELD_FLAG_FAKE;
 
     int pos =  moloch_field_define(group, kind, field, friendly, db, help, type, flags, "category", category, "transform", transform, "aliases", aliases, (char *)NULL);
     g_strfreev(elements);
