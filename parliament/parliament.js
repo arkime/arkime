@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 'use strict';
 
-const MIN_PARLIAMENT_VERSION = 4;
+const MIN_PARLIAMENT_VERSION = 5;
 
 /* dependencies ------------------------------------------------------------- */
 const express = require('express');
@@ -23,6 +23,7 @@ const User = require('../common/user');
 const Auth = require('../common/auth');
 const version = require('../common/version');
 const ArkimeUtil = require('../common/arkimeUtil');
+const ArkimeConfig = require('../common/arkimeConfig');
 
 /* app setup --------------------------------------------------------------- */
 const app = express();
@@ -44,102 +45,47 @@ const settingsDefault = {
     removeIssuesAfter: 60,
     removeAcknowledgedAfter: 15
   },
-  commonAuth: {},
   notifiers: {}
 };
 
 const internals = {
-  notifierTypes: {},
-  insecure: false
+  notifierTypes: {}
 };
 
-const parliamentReadError = `\nYou must fix this before you can run Parliament.
-  Try using parliament.example.json as a starting point`;
+const parliamentReadError = `
+You must fix this before you can run Parliament.
+Try using parliament.example.json as a starting point.
+Use the "file" setting in your Parliament config to point to your Parliament JSON file.
+See https://arkime.com/settings#parliament for more information.
+`;
 
-(function () { // parse arguments
-  const appArgs = process.argv.slice(2);
-  let file, port;
-  let debug = 0;
-
-  function help () {
-    console.log('parliament.js [<config options>]\n');
-    console.log('Config Options:');
-    console.log('  -c, --config   Parliament config file to use');
-    console.log('  --port         Port for the web app to listen on');
-    console.log('  --cert         Public certificate to use for https');
-    console.log('  --key          Private certificate to use for https');
-    console.log('  --debug        Increase debug level, multiple are supported');
-    console.log('  --insecure     Disable certificate verification for https calls');
-
-    process.exit(0);
-  }
-
-  for (let i = 0, len = appArgs.length; i < len; i++) {
-    switch (appArgs[i]) {
-    case '-c':
-    case '--config':
-      file = appArgs[i + 1];
+/* Config ------------------------------------------------------------------ */
+(function () {
+  for (let i = 0, ilen = process.argv.length; i < ilen; i++) {
+    if (process.argv[i] === '-o') {
       i++;
-      break;
+      const equal = process.argv[i].indexOf('=');
+      if (equal === -1) {
+        console.log('Missing equal sign in', process.argv[i]);
+        process.exit(1);
+      }
+      ArkimeConfig.setOverride(process.argv[i].slice(0, equal), process.argv[i].slice(equal + 1));
+    } else if (process.argv[i] === '--help') {
+      console.log('parliament.js [<config options>]\n');
+      console.log('Config Options:');
+      console.log('  -c, --config   Parliament config file to use');
+      console.log('  -o <section>.<key>=<value>  Override the config file');
+      console.log('  --debug        Increase debug level, multiple are supported');
+      console.log('  --insecure     Disable certificate verification for https calls');
 
-    case '--port':
-      port = appArgs[i + 1];
-      i++;
-      break;
-
-    case '--cert':
-      app.set('certFile', appArgs[i + 1]);
-      i++;
-      break;
-
-    case '--key':
-      app.set('keyFile', appArgs[i + 1]);
-      i++;
-      break;
-
-    case '--regressionTests':
-      app.set('regressionTests', 1);
-      break;
-
-    case '--debug':
-      debug++;
-      break;
-
-    case '--insecure':
-      internals.insecure = true;
-      break;
-
-    case '-h':
-    case '--help':
-      help();
-      break;
-
-    default:
-      console.log(`Unknown option ${appArgs[i]}`);
-      help();
-      break;
+      process.exit(0);
     }
   }
-
-  if (file && !file.endsWith('.json') && file !== '/dev/null') {
-    console.log(`ERROR: Parliament config filename ${file} must end with .json`);
-    process.exit(1);
-  }
-
-  if (!appArgs.length) {
-    console.log('WARNING: No config options were set, starting Parliament in view only mode with defaults.\n');
-  }
-
-  app.set('debug', debug);
-
-  // set optional config options that reqiure defaults
-  app.set('port', port ?? 8008);
-  app.set('file', file ?? './parliament.json');
-
-  internals.httpsAgent = new https.Agent({ rejectUnauthorized: !internals.insecure });
 }());
 
-if (app.get('regressionTests')) {
+const getConfig = ArkimeConfig.get;
+
+if (ArkimeConfig.regressionTests) {
   app.post('/regressionTests/shutdown', function (req, res) {
     process.exit(0);
   });
@@ -147,43 +93,8 @@ if (app.get('regressionTests')) {
 
 // parliament object!
 let parliament;
-
-try { // check if the file exists
-  fs.accessSync(app.get('file'), fs.constants.F_OK);
-} catch (e) { // if the file doesn't exist, create it
-  try { // write the new file
-    parliament = { version: MIN_PARLIAMENT_VERSION };
-    fs.writeFileSync(app.get('file'), JSON.stringify(parliament, null, 2), 'utf8');
-  } catch (err) { // notify of error saving new parliament and exit
-    console.log('Error creating new Parliament:\n\n', ArkimeUtil.sanitizeStr(e.stack));
-    console.log(parliamentReadError);
-    process.exit(1);
-  }
-}
-
-try { // get the parliament file or error out if it's unreadable
-  parliament = require(`${app.get('file')}`);
-} catch (err) {
-  console.log(`Error reading ${app.get('file') ?? 'your parliament file'}:\n\n`, ArkimeUtil.sanitizeStr(err.stack));
-  console.log(parliamentReadError);
-  process.exit(1);
-}
-
-// construct the issues file name
-let issuesFilename = 'issues.json';
-if (app.get('file').indexOf('.json') > -1) {
-  const filename = app.get('file').replace(/\.json/g, '');
-  issuesFilename = `${filename}.issues.json`;
-}
-app.set('issuesfile', issuesFilename);
-
-// get the issues file or create it if it doesn't exist
+// issues object!
 let issues;
-try {
-  issues = require(issuesFilename);
-} catch (err) {
-  issues = [];
-}
 
 // define ids for groups and clusters
 let globalGroupId = 0;
@@ -231,7 +142,7 @@ function setCookie (req, res, next) {
     overwrite: true
   };
   // make cookie secure on https
-  if (app.get('keyFile') && app.get('certFile')) { cookieOptions.secure = true; }
+  if (getConfig('parliament', 'keyFile') && getConfig('parliament', 'certFile')) { cookieOptions.secure = true; }
 
   res.cookie( // send cookie for basic, non admin functions
     'PARLIAMENT-COOKIE',
@@ -332,10 +243,6 @@ app.use((req, res, next) => {
   return next();
 });
 
-function checkAuthUpdate (req, res, next) {
-  return isAdmin(req, res, next);
-}
-
 function isUser (req, res, next) {
   Auth.doAuth(req, res, () => {
     if (req.user.hasRole('parliamentUser')) {
@@ -381,7 +288,7 @@ async function sendAlerts () {
             });
           }
           alertToSend.notifier.sendAlert(alertToSend.config, alertToSend.message, links);
-          if (app.get('debug')) {
+          if (ArkimeConfig.debug) {
             console.log('Sending alert:', alertToSend.message, JSON.stringify(alertToSend.config, null, 2));
           }
           if (i === len - 1) { resolve(); }
@@ -534,7 +441,7 @@ function setIssue (cluster, newIssue) {
     issues.push(newIssue);
   }
 
-  if (app.get('debug') > 1) {
+  if (ArkimeConfig.debug > 1) {
     console.log('Setting issue:', JSON.stringify(newIssue, null, 2));
   }
 
@@ -594,7 +501,7 @@ function getHealth (cluster) {
 
         cluster.healthError = message;
 
-        if (app.get('debug')) {
+        if (ArkimeConfig.debug) {
           console.log('HEALTH ERROR:', options.url, message);
         }
 
@@ -710,7 +617,7 @@ function getStats (cluster) {
 
         cluster.statsError = message;
 
-        if (app.get('debug')) {
+        if (ArkimeConfig.debug) {
           console.log('STATS ERROR:', options.url, message);
         }
 
@@ -732,105 +639,104 @@ function buildNotifierTypes () {
     notifier.fields = fieldsMap;
   }
 
-  if (app.get('debug') > 1) {
+  if (ArkimeConfig.debug > 1) {
     console.log('Built notifier alerts:', JSON.stringify(internals.notifierTypes, null, 2));
   }
 }
 
 // Initializes the parliament with ids for each group and cluster
-// and sets up the parliament settings
-function initializeParliament () {
-  return new Promise((resolve, reject) => {
-    if (parliament.version === undefined || parliament.version < MIN_PARLIAMENT_VERSION) {
-      // notify of upgrade
-      console.log(
-        `WARNING - Current parliament version (${parliament.version ?? 1}) is less then required version (${MIN_PARLIAMENT_VERSION})
-          Upgrading ${app.get('file')} file...\n`
-      );
+// Upgrades the parliament if necessary
+async function initializeParliament () {
+  if (parliament.version === undefined || parliament.version < MIN_PARLIAMENT_VERSION) {
+    console.log( // notify of upgrade
+      `WARNING - Current parliament version (${parliament.version ?? 1}) is less then required version (${MIN_PARLIAMENT_VERSION})
+        Upgrading ${getConfig('parliament', 'file')} file...\n`
+    );
 
-      // do the upgrade
-      parliament = upgrade.upgrade(parliament, internals.notifierTypes);
+    // do the upgrade
+    parliament = await upgrade.upgrade(parliament, internals.notifierTypes, ArkimeConfig);
 
-      try { // write the upgraded file
-        const upgradeParliamentError = validateParliament();
-        if (!upgradeParliamentError) {
-          fs.writeFileSync(app.get('file'), JSON.stringify(parliament, null, 2), 'utf8');
-        }
-      } catch (e) { // notify of error saving upgraded parliament and exit
-        console.log('Error upgrading Parliament:\n\n', ArkimeUtil.sanitizeStr(e.stack));
+    try { // write the upgraded file
+      const upgradeParliamentError = validateParliament();
+      if (!upgradeParliamentError) {
+        fs.writeFileSync(getConfig('parliament', 'file'), JSON.stringify(parliament, null, 2), 'utf8');
+      }
+    } catch (e) { // notify of error saving upgraded parliament and exit
+      console.log('Error upgrading Parliament:\n\n', ArkimeUtil.sanitizeStr(e.stack));
+      if (ArkimeConfig.debug) {
         console.log(parliamentReadError);
-        process.exit(1);
       }
-
-      // notify of upgrade success
-      console.log(`SUCCESS - Parliament upgraded to version ${MIN_PARLIAMENT_VERSION}`);
+      throw new Error(e);
     }
 
-    if (!parliament.groups) { parliament.groups = []; }
+    // notify of upgrade success
+    console.log(`SUCCESS - Parliament upgraded to version ${MIN_PARLIAMENT_VERSION}`);
+  }
 
-    // set id for each group/cluster
-    for (const group of parliament.groups) {
-      group.id = globalGroupId++;
-      if (group.clusters) {
-        for (const cluster of group.clusters) {
-          cluster.id = globalClusterId++;
-        }
+  if (!parliament.groups) { parliament.groups = []; }
+
+  // set id for each group/cluster
+  for (const group of parliament.groups) {
+    group.id = globalGroupId++;
+    if (group.clusters) {
+      for (const cluster of group.clusters) {
+        cluster.id = globalClusterId++;
       }
     }
+  }
 
-    if (!parliament.settings) {
-      parliament.settings = settingsDefault;
-    }
-    if (!parliament.settings.notifiers) {
-      parliament.settings.notifiers = settingsDefault.notifiers;
-    }
-    if (!parliament.settings.general) {
-      parliament.settings.general = settingsDefault.general;
-    }
-    if (!parliament.settings.general.outOfDate) {
-      parliament.settings.general.outOfDate = settingsDefault.general.outOfDate;
-    }
-    if (!parliament.settings.general.noPackets) {
-      parliament.settings.general.noPackets = settingsDefault.general.noPackets;
-    }
-    if (!parliament.settings.general.noPacketsLength) {
-      parliament.settings.general.noPacketsLength = settingsDefault.general.noPacketsLength;
-    }
-    if (!parliament.settings.general.esQueryTimeout) {
-      parliament.settings.general.esQueryTimeout = settingsDefault.general.esQueryTimeout;
-    }
-    if (!parliament.settings.general.removeIssuesAfter) {
-      parliament.settings.general.removeIssuesAfter = settingsDefault.general.removeIssuesAfter;
-    }
-    if (!parliament.settings.general.removeAcknowledgedAfter) {
-      parliament.settings.general.removeAcknowledgedAfter = settingsDefault.general.removeAcknowledgedAfter;
-    }
-    if (!parliament.settings.general.hostname) {
-      parliament.settings.general.hostname = os.hostname();
-    }
+  if (!parliament.settings) {
+    parliament.settings = settingsDefault;
+  }
+  if (!parliament.settings.notifiers) {
+    parliament.settings.notifiers = settingsDefault.notifiers;
+  }
+  if (!parliament.settings.general) {
+    parliament.settings.general = settingsDefault.general;
+  }
+  if (!parliament.settings.general.outOfDate) {
+    parliament.settings.general.outOfDate = settingsDefault.general.outOfDate;
+  }
+  if (!parliament.settings.general.noPackets) {
+    parliament.settings.general.noPackets = settingsDefault.general.noPackets;
+  }
+  if (!parliament.settings.general.noPacketsLength) {
+    parliament.settings.general.noPacketsLength = settingsDefault.general.noPacketsLength;
+  }
+  if (!parliament.settings.general.esQueryTimeout) {
+    parliament.settings.general.esQueryTimeout = settingsDefault.general.esQueryTimeout;
+  }
+  if (!parliament.settings.general.removeIssuesAfter) {
+    parliament.settings.general.removeIssuesAfter = settingsDefault.general.removeIssuesAfter;
+  }
+  if (!parliament.settings.general.removeAcknowledgedAfter) {
+    parliament.settings.general.removeAcknowledgedAfter = settingsDefault.general.removeAcknowledgedAfter;
+  }
+  if (!parliament.settings.general.hostname) {
+    parliament.settings.general.hostname = os.hostname();
+  }
 
-    if (app.get('debug')) {
-      console.log('Parliament initialized!');
-      console.log('Parliament groups:', JSON.stringify(parliament.groups, null, 2));
-      console.log('Parliament general settings:', JSON.stringify(parliament.settings.general, null, 2));
-    }
+  if (ArkimeConfig.debug) {
+    console.log('Parliament initialized!');
+    console.log('Parliament groups:', JSON.stringify(parliament.groups, null, 2));
+    console.log('Parliament general settings:', JSON.stringify(parliament.settings.general, null, 2));
+  }
 
-    buildNotifierTypes();
+  buildNotifierTypes();
 
-    const parliamentError = validateParliament();
-    if (!parliamentError) {
-      fs.writeFile(app.get('file'), JSON.stringify(parliament, null, 2), 'utf8',
-        (err) => {
-          if (err) {
-            console.log('Parliament initialization error:', err.message ?? err);
-            return reject(new Error('Parliament initialization error'));
-          }
-
-          return resolve();
+  const parliamentError = validateParliament();
+  if (!parliamentError) {
+    fs.writeFile(getConfig('parliament', 'file'), JSON.stringify(parliament, null, 2), 'utf8',
+      (err) => {
+        if (err) {
+          console.log('Parliament initialization error:', err.message ?? err);
+          throw new Error('Parliament initialization error');
         }
-      );
-    }
-  });
+
+        return;
+      }
+    );
+  }
 }
 
 // Chains all promises for requests for health and stats to update each cluster
@@ -873,7 +779,7 @@ function updateParliament () {
         // save the data created after updating the parliament
         const parliamentError = validateParliament();
         if (!parliamentError) {
-          fs.writeFile(app.get('file'), JSON.stringify(parliament, null, 2), 'utf8',
+          fs.writeFile(getConfig('parliament', 'file'), JSON.stringify(parliament, null, 2), 'utf8',
             (err) => {
               if (err) {
                 console.log('Parliament update error:', err.message ?? err);
@@ -884,7 +790,7 @@ function updateParliament () {
             });
         }
 
-        if (app.get('debug')) {
+        if (ArkimeConfig.debug) {
           console.log('Parliament updated!');
           if (issuesRemoved) {
             console.log('Issues updated!');
@@ -989,9 +895,9 @@ function writeParliament (req, res, next, successObj, errorText, sendParliament)
     return next(parliamentError);
   }
 
-  fs.writeFile(app.get('file'), JSON.stringify(parliament, null, 2), 'utf8',
+  fs.writeFile(getConfig('parliament', 'file'), JSON.stringify(parliament, null, 2), 'utf8',
     (err) => {
-      if (app.get('debug')) {
+      if (ArkimeConfig.debug) {
         console.log('Wrote parliament file', err ?? '');
       }
 
@@ -1041,7 +947,7 @@ function writeIssues (req, res, next, successObj, errorText, sendIssues) {
 
   fs.writeFile(app.get('issuesfile'), JSON.stringify(issues, null, 2), 'utf8',
     (err) => {
-      if (app.get('debug')) {
+      if (ArkimeConfig.debug) {
         console.log('Wrote issues file', err ?? '');
       }
 
@@ -1062,7 +968,7 @@ function writeIssues (req, res, next, successObj, errorText, sendIssues) {
 }
 
 /* APIs -------------------------------------------------------------------- */
-if (app.get('regressionTests')) {
+if (ArkimeConfig.regressionTests) {
   app.get('/parliament/api/regressionTests/makeToken', (req, res, next) => {
     req.user = {
       userId: req.query.molochRegressionUser ?? 'anonymous'
@@ -1074,48 +980,10 @@ if (app.get('regressionTests')) {
 
 // Get whether authentication is set
 app.get('/parliament/api/auth', setCookie, (req, res, next) => {
-  let hasAuth = false;
-  if (parliament?.settings?.commonAuth) {
-    hasAuth = Object.keys(parliament?.settings?.commonAuth).length > 0;
-  }
-
   return res.json({
-    hasAuth,
     isUser: req.user.hasRole('parliamentUser'),
     isAdmin: req.user.hasRole('parliamentAdmin')
   });
-});
-
-// Update (or create) common auth settings for the parliament
-app.put('/parliament/api/auth/commonauth', [checkAuthUpdate], (req, res, next) => {
-  if (!ArkimeUtil.isObject(req.body.commonAuth)) {
-    return res.serverError(422, 'Missing auth settings');
-  }
-
-  // Go thru the secret fields and if the save still has ******** that means the user didn't change, so save what we have
-  for (const s of ['passwordSecret', 'usersElasticsearchAPIKey', 'usersElasticsearchBasicAuth']) {
-    if (req.body.commonAuth[s] === '********') {
-      req.body.commonAuth[s] = parliament.settings.commonAuth[s];
-    }
-  }
-
-  for (const s in req.body.commonAuth) {
-    const setting = req.body.commonAuth[s];
-
-    if (!ArkimeUtil.isString(setting)) {
-      continue;
-    }
-
-    if (!parliament.settings.commonAuth) {
-      parliament.settings.commonAuth = {};
-    }
-
-    parliament.settings.commonAuth[s] = setting;
-  }
-
-  const successObj = { success: true, text: 'Successfully updated your common auth settings.' };
-  const errorText = 'Unable to update your common auth settings.';
-  writeParliament(req, res, next, successObj, errorText);
 });
 
 app.get('/parliament/api/notifierTypes', [isAdmin, setCookie], (req, res) => {
@@ -1338,7 +1206,7 @@ app.put('/parliament/api/settings/restoreDefaults', [isAdmin, checkCookieToken],
     return next(parliamentError);
   }
 
-  fs.writeFile(app.get('file'), JSON.stringify(parliament, null, 2), 'utf8',
+  fs.writeFile(getConfig('parliament', 'file'), JSON.stringify(parliament, null, 2), 'utf8',
     (err) => {
       if (err) {
         const errorMsg = `Unable to write parliament data: ${err.message ?? err}`;
@@ -1951,47 +1819,35 @@ app.post('/parliament/api/testAlert', [isAdmin, checkCookieToken], (req, res, ne
 });
 
 async function setupAuth () {
-  const commonAuth = parliament.settings?.commonAuth || {};
-
-  let userNameHeader = commonAuth?.userNameHeader || 'anonymous';
-
-  let mode;
-  if (app.get('regressionTests')) {
-    mode = 'regressionTests';
-  } else if (userNameHeader === 'anonymous') {
-    mode = 'anonymous';
-  } else if (userNameHeader === 'digest' || userNameHeader === 'oidc') {
-    mode = userNameHeader;
-    userNameHeader = undefined;
-  } else {
-    mode = 'header';
-  }
-
   Auth.initialize({
-    mode,
-    userNameHeader,
-    debug: app.get('debug'),
-    passwordSecret: commonAuth.passwordSecret ?? 'password',
+    debug: ArkimeConfig.debug,
+    mode: getConfig('parliament', 'authMode'),
+    userNameHeader: getConfig('parliament', 'userNameHeader'),
+    passwordSecret: getConfig('parliament', 'passwordSecret', 'password'),
     passwordSecretSection: 'parliament',
-    basePath: '/',
-    userAuthIps: commonAuth.userAuthIps,
+    basePath: getConfig('parliament', 'webBasePath', '/'),
+    requiredAuthHeader: getConfig('parliament', 'requiredAuthHeader'),
+    requiredAuthHeaderVal: getConfig('parliament', 'requiredAuthHeaderVal'),
+    userAutoCreateTmpl: getConfig('parliament', 'userAutoCreateTmpl'),
+    userAuthIps: getConfig('parliament', 'userAuthIps'),
+    caTrustFile: getConfig('parliament', 'caTrustFile'),
     authConfig: {
-      httpRealm: commonAuth.httpRealm ?? 'Moloch',
-      userIdField: commonAuth.authUserIdField,
-      discoverURL: commonAuth.authDiscoverURL,
-      clientId: commonAuth.authClientId,
-      clientSecret: commonAuth.authClientSecret,
-      redirectURIs: commonAuth.authRedirectURIs,
-      trustProxy: commonAuth.authTrustProxy
+      httpRealm: getConfig('parliament', 'httpRealm', 'Moloch'),
+      userIdField: getConfig('parliament', 'authUserIdField'),
+      discoverURL: getConfig('parliament', 'authDiscoverURL'),
+      clientId: getConfig('parliament', 'authClientId'),
+      clientSecret: getConfig('parliament', 'authClientSecret'),
+      redirectURIs: getConfig('parliament', 'authRedirectURIs'),
+      trustProxy: getConfig('parliament', 'authTrustProxy')
     }
   });
 
   User.initialize({
-    insecure: internals.insecure,
-    node: commonAuth.usersElasticsearch ?? 'http://localhost:9200',
-    prefix: commonAuth.usersPrefix,
-    apiKey: commonAuth.usersElasticsearchAPIKey,
-    basicAuth: commonAuth.usersElasticsearchBasicAuth
+    insecure: ArkimeConfig.insecure,
+    node: getConfig('parliament', 'usersElasticsearch', 'http://localhost:9200'),
+    prefix: getConfig('parliament', 'usersPrefix'),
+    apiKey: getConfig('parliament', 'usersElasticsearchAPIKey'),
+    basicAuth: getConfig('parliament', 'usersElasticsearchBasicAuth')
   });
 }
 
@@ -2061,46 +1917,102 @@ app.use((req, res, next) => {
 });
 
 async function main () {
+  try {
+    await ArkimeConfig.initialize({ defaultConfigFile: `${version.config_prefix}/etc/parliament.ini` });
+
+    if (ArkimeConfig.debug === 0) {
+      ArkimeConfig.debug = parseInt(getConfig('parliament', 'debug', 0));
+    }
+    if (ArkimeConfig.debug) {
+      console.log('Debug Level', ArkimeConfig.debug);
+    }
+    internals.webBasePath = getConfig('parliament', 'webBasePath', '/');
+  } catch (err) {
+    console.log(err);
+    process.exit();
+  }
+
+  // ERROR OUT if there's no parliament config
+  if (!ArkimeConfig.getSection('parliament')) {
+    console.error('ERROR - No parliament config file. Please create a parliament config file. See https://arkime.com/settings#parliament\nExiting.\n');
+    process.exit(1);
+  }
+
+  try { // check if the parliament file exists
+    fs.accessSync(getConfig('parliament', 'file'), fs.constants.F_OK);
+  } catch (e) { // if the file doesn't exist, create it
+    try { // write the new file
+      parliament = { version: MIN_PARLIAMENT_VERSION };
+      fs.writeFileSync(getConfig('parliament', 'file'), JSON.stringify(parliament, null, 2), 'utf8');
+    } catch (err) { // notify of error saving new parliament and exit
+      console.log('Error creating new Parliament:\n\n', ArkimeUtil.sanitizeStr(e.stack));
+      console.log(parliamentReadError);
+      process.exit(1);
+    }
+  }
+
+  try { // get the parliament file or error out if it's unreadable
+    parliament = require(`${getConfig('parliament', 'file')}`);
+  } catch (err) {
+    console.log(`Error reading ${getConfig('parliament', 'file') ?? 'your parliament file'}:\n\n`, ArkimeUtil.sanitizeStr(err.stack));
+    console.log(parliamentReadError);
+    process.exit(1);
+  }
+
+  // construct the issues file name
+  let issuesFilename = 'issues.json';
+  if (getConfig('parliament', 'file').indexOf('.json') > -1) {
+    const filename = getConfig('parliament', 'file').replace(/\.json/g, '');
+    issuesFilename = `${filename}.issues.json`;
+  }
+  app.set('issuesfile', issuesFilename);
+
+  // get the issues file or create it if it doesn't exist
+  try {
+    issues = require(issuesFilename);
+  } catch (err) {
+    issues = [];
+  }
+
   await setupAuth();
 
   let server;
-  if (app.get('keyFile') && app.get('certFile')) {
+  if (getConfig('parliament', 'keyFile') && getConfig('parliament', 'certFile')) {
     const certOptions = {
-      key: fs.readFileSync(app.get('keyFile')),
-      cert: fs.readFileSync(app.get('certFile'))
+      key: fs.readFileSync(getConfig('parliament', 'keyFile')),
+      cert: fs.readFileSync(getConfig('parliament', 'certFile'))
     };
     server = https.createServer(certOptions, app);
   } else {
     server = http.createServer(app);
   }
 
-  const parliamentHost = parliament.settings?.commonAuth?.parliamentHost || undefined;
+  const parliamentHost = getConfig('parliament', 'parliamentHost');
   if (Auth.mode === 'header' && parliamentHost !== 'localhost' && parliamentHost !== '127.0.0.1') {
     console.log('SECURITY WARNING - When using header auth, parliamentHost should be localhost or use iptables');
   }
 
   server
     .on('error', function (e) {
-      console.log("ERROR - couldn't listen on host %s port %d is cont3xt already running?", parliamentHost, app.get('port'));
+      console.log("ERROR - couldn't listen on host %s port %d is cont3xt already running?", parliamentHost, getConfig('parliament', 'port', 8008));
       process.exit(1);
     })
     .on('listening', function (e) {
       console.log('Express server listening on host %s port %d in %s mode', server.address().address, server.address().port, app.settings.env);
-      if (app.get('debug')) {
-        console.log('Debug Level', app.get('debug'));
-        console.log('Parliament file:', app.get('file'));
+      if (ArkimeConfig.debug) {
+        console.log('Debug Level', ArkimeConfig.debug);
+        console.log('Parliament file:', getConfig('parliament', 'file'));
         console.log('Issues file:', issuesFilename);
       }
     })
-    .listen(app.get('port'), parliamentHost, () => {
-      initializeParliament()
-        .then(() => {
-          updateParliament();
-        })
-        .catch((err) => {
-          console.log('ERROR - never mind, couldn\'t initialize Parliament\n', err);
-          process.exit(1);
-        });
+    .listen(getConfig('parliament', 'port', 8008), parliamentHost, async () => {
+      try {
+        await initializeParliament();
+        updateParliament();
+      } catch (err) {
+        console.log('ERROR - never mind, couldn\'t initialize Parliament\n', err);
+        process.exit(1);
+      }
 
       setInterval(() => {
         updateParliament();

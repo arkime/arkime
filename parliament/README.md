@@ -28,7 +28,7 @@ If you are a `parliamentAdmin`, you can view and edit the Parliament settings. T
 4. The `remove all issues after` setting controls when an issue is removed if it has not occurred again. The issue is removed from the cluster after this time expires as long as the issue has not occurred again. _The default for this setting is 60 minutes._
 5. The `remove acknowledged issues after` setting controls when an acknowledged issue is removed. The issue is removed from the cluster after this time expires (so you don't have to remove issues manually with the trashcan button). _The default for this setting is 15 minutes._
 
-**Auth:** Here you can configure Parliament access using the Arkime User's database. See the [Arkime User Authetication](#arkime-user-authetication) section for more information.
+**Auth (v4):** Here you can configure Parliament access using the Arkime User's database. See the [Arkime User Authetication](#arkime-user-authetication) section for more information.
 
 **Notifiers:** this section provides the ability to configure alerts for your Parliament. Users can be alerted via:
 1. Slack
@@ -73,9 +73,9 @@ You should find that you have a new folder:
 
 To start the app for production, simply run:
 ```
-npm start -s -- --port 8765 -c ./absolute/path/to/parliament.json --key ./absolute/path/to/keyFile.pem --cert ./absolute/path/to/certFile.pem
+npm start -s -- -c ./absolute/path/to/config.ini
 ```
-This command starts the app, passing in the port, config file location, and key and cert file locations. It also bundles the application files into the `parliament/vueapp/dist` folder.
+This command starts the app and passes in the config file location. It also bundles the application files into the `parliament/vueapp/dist` folder.
 
 _**Important**: when using `npm start` the leading `--`, before the parameters is essential._
 
@@ -83,25 +83,25 @@ You can also run the app by building then starting the app. Like so:
 * Move to the top level Arkime directory
 * run `npm run parliament:build`
 * Move to the parliament directory
-* run ` node server.js --port 8765 -c ./absolute/path/to parliament.json --key ./absolute/path/to/keyFile.pem --cert ./absolute/path/to certFile.pem`
+* run ` node server.js -c ./absolute/path/to/config.ini`
 
 **The parameters are defined as follows:**
 
 | Parameter       | Default | Description |
 | --------------- | ------- | ----------- |
-| --port          | 8008    | Port for the web app to listen on. |
-| -c, --config    | ./parliament.json | Absolute path to the JSON file to store your parliament information. |
-| --key           | EMPTY   | Private certificate to use for https, if not set then http will be used. **certfile** must also be set. |
-| --cert          | EMPTY   | Public certificate to use for https, if not set then http will be used. **keyFile** must also be set. |
+| -c, --config    | /opt/arkime/etc/parliament.ini | Path to the config file |
+| --port          | 8008    |  **Deprecated!** Must supply this in the config file (see arkime.com/settings#parliament). Port for the web app to listen on. |
+| --key           | EMPTY   | **Deprecated!** Must supply this in the config file (see arkime.com/settings#parliament). Private certificate to use for https, if not set then http will be used. **certfile** must also be set. |
+| --cert          | EMPTY   | **Deprecated!** Must supply this in the config file (see arkime.com/settings#parliament). Public certificate to use for https, if not set then http will be used. **keyFile** must also be set. |
 
-_Note: if you do not pass in the port or file arguments, the defaults are used._
+_**Important**: Upgrading from v4 to v5 requires port/key/cert parameters to be included in the config file, not supplied as command line arguments!_
 
-Now browse to the app at `http://localhost:8765`, or whichever port you passed into the `npm start` command.
-
-You can view the parliament in read only mode and configure Arkime User Authentication in the Auth section on the Settings page (see section below).
+Now browse to the app at `http://localhost:8008` (or whichever port you included in the config file).
 
 ##### Arkime User Authetication
-You can configure Parliament access using the Auth section on the Settings page. Auth uses the Arkime User's database for Parliament access.
+You can configure Parliament access using the Auth section on the Settings page (v4) or the config file (v5). Auth uses the Arkime User's database for Parliament access.
+
+_**Note**: When upgrading form v4 to v5, Auth settings configured in the UI will be automatically transferred to the config file._
 
 - **All** Arkime users can view the Parliament.
 - Users with the "parliamentUser" role can ack, ignore, and delete issues within the Parliament.
@@ -113,7 +113,7 @@ To start the app for development and testing:
 * Move to the top level Moloch directory
 * run `npm run parliament:dev`
 
-This command starts the app with the necessary config options set (`--port 8008 -c ./parliament.dev.json`) and bundles the unminified application files into the `parliament/vueapp/dist` folder.
+This command starts the app with the necessary config options set (`-c ../parliament/parliament.ini`) and bundles the unminified application files into the `parliament/vueapp/dist` folder.
 
 `npm run parliament:dev` uses webpack to package the files then watches for changes to relevant files, and re-bundles the app after each save.
 
@@ -128,13 +128,13 @@ For a detailed explanation on how things work, check out the [vue webpack guide]
 
 Check out our [contributing guide](../CONTRIBUTING.md) for more information about contributing to Arkime.
 
-Before submitting a pull request with your contribution, please move to the top level Moloch directory and run `npm run lint`, and correct any errors. This runs [eslint][eslint], a static code analysis tool for finding problematic patterns or code that doesn’t adhere to our style guidelines. Check out `parliament/.eslintrc.js` to view this project's rules.
+Before submitting a pull request with your contribution, please move to the top level Arkime directory and run `npm run lint`, and correct any errors. This runs [eslint][eslint], a static code analysis tool for finding problematic patterns or code that doesn’t adhere to our style guidelines. Check out `parliament/.eslintrc.js` to view this project's rules.
 
 Please use a [fork](https://guides.github.com/activities/forking/) to submit a [pull request](https://help.github.com/articles/creating-a-pull-request/) for your contribution.
 
 
 ### Parliament Definition
-`parliament.json` (or whatever you pass into the -c config option when starting Parliament) is the file that describes your parliament. You can create this by hand or use the Parliament UI to create, edit, and delete groups and clusters. View the supplied `parliament.example.json` to view an example parliament configuration.
+`parliament.json` (or whatever you supply as `file=` in the config when starting Parliament) is the file that describes your parliament. You can create this by hand or use the Parliament UI to create, edit, and delete groups and clusters. View the supplied `parliament.example.json` to view an example parliament configuration.
 
 ### Issues
 `parliament.issues.json` will be created to store issues pertaining to the clusters in your parliament.

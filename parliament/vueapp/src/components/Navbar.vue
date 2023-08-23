@@ -33,7 +33,7 @@
           </router-link>
         </li>
         <li class="nav-item mr-2"
-          v-if="(hasAuth && isAdmin) || !hasAuth">
+          v-if="isAdmin">
           <router-link to="settings"
             active-class="active"
             class="nav-link">
@@ -110,9 +110,6 @@ export default {
     },
     isAdmin: function () {
       return this.$store.state.isAdmin;
-    },
-    hasAuth: function () {
-      return this.$store.state.hasAuth;
     },
     // data load interval
     refreshInterval: {

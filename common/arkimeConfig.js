@@ -264,10 +264,11 @@ class ConfigIni {
     return ini.parseSync(uri);
   }
 
-  static save (config, uri, cb) {
+  static save (uri, config, cb) {
     function encode (str) {
       return typeof (str) === 'string' ? str.replace(/[\n\r]/g, '\\n') : str;
     }
+
     let output = '';
     Object.keys(config).forEach((section) => {
       output += `[${encode(section)}]\n`;

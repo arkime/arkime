@@ -40,13 +40,6 @@
               General
             </a>
             <a class="nav-link cursor-pointer"
-              @click="openView('auth')"
-              :class="{'active':visibleTab === 'auth'}">
-              <span class="fa fa-fw fa-key">
-              </span>&nbsp;
-              Auth
-            </a>
-            <a class="nav-link cursor-pointer"
               @click="openView('notifiers')"
               :class="{'active':visibleTab === 'notifiers'}">
               <span class="fa fa-fw fa-bell">
@@ -263,196 +256,6 @@
           </div>
         </div>
         <!-- /general -->
-
-        <!-- auth -->
-        <div v-if="visibleTab === 'auth'"
-          class="col">
-          <div class="row">
-            <h3 class="col-xl-9 col-lg-12 form-group">
-              <button
-                type="button"
-                @click="updateCommonAuth"
-                title="Save auth settings"
-                v-b-tooltip.hover.bottomleft
-                class="btn btn-sm btn-outline-success pull-right">
-                Save
-              </button>
-              Auth
-              <hr>
-            </h3>
-          </div>
-          <div class="row">
-            <div class="col-xl-9 col-lg-12 form-group">
-              <div class="alert alert-warning">
-                <span class="fa fa-info-circle mr-2" />
-                After changing these settings, you must restart Parliament for them to take affect.
-              </div>
-            </div>
-            <!-- authMode -->
-            <div class="col-xl-9 col-lg-12 form-group">
-              <div class="input-group">
-                <span class="input-group-prepend">
-                  <span class="input-group-text">
-                    Auth Mode
-                  </span>
-                </span>
-                <input type="string"
-                  class="form-control"
-                  id="authMode"
-                  v-model="settings.commonAuth.authMode"
-                />
-              </div>
-              <p class="form-text small text-muted">
-                Controls how authentication is done, valid values are anonymous, basic, digest, header, oidc.
-              </p>
-            </div> <!-- /authMode -->
-            <!-- userNameHeader -->
-            <div class="col-xl-9 col-lg-12 form-group">
-              <div class="input-group">
-                <span class="input-group-prepend">
-                  <span class="input-group-text">
-                    User Name Header
-                  </span>
-                </span>
-                <input type="string"
-                  class="form-control"
-                  id="userNameHeader"
-                  v-model="settings.commonAuth.userNameHeader"
-                />
-              </div>
-              <p class="form-text small text-muted">
-                When authMode is header, this is which http header to use for the userId.
-              </p>
-            </div> <!-- /userNameHeader -->
-            <!-- usersElasticsearch -->
-            <div class="col-xl-9 col-lg-12 form-group">
-              <div class="input-group">
-                <span class="input-group-prepend">
-                  <span class="input-group-text">
-                    Users Elasticsearch URL
-                  </span>
-                </span>
-                <input type="string"
-                  class="form-control"
-                  id="usersElasticsearch"
-                  v-model="settings.commonAuth.usersElasticsearch"
-                />
-              </div>
-              <p class="form-text small text-muted">
-                The URL for the users Elasticsearch instance. By default http://localhost:9200 if not set
-              </p>
-            </div> <!-- /usersElasticsearch-->
-            <!-- usersPrefix -->
-            <div class="col-xl-9 col-lg-12 form-group">
-              <div class="input-group">
-                <span class="input-group-prepend">
-                  <span class="input-group-text">
-                    Users Prefix
-                  </span>
-                </span>
-                <input type="string"
-                  class="form-control"
-                  id="usersPrefix"
-                  v-model="settings.commonAuth.usersPrefix"
-                />
-              </div>
-              <p class="form-text small text-muted">
-                The prefix for the users Elasticsearch index. By default arkime_ if not set
-              </p>
-            </div> <!-- /usersPrefix-->
-            <!-- usersElasticsearchAPIKey -->
-            <div class="col-xl-9 col-lg-12 form-group">
-              <div class="input-group">
-                <span class="input-group-prepend">
-                  <span class="input-group-text">
-                    Elasticsearch API Key
-                  </span>
-                </span>
-                <input type="string"
-                  class="form-control"
-                  id="usersElasticsearchAPIKey"
-                  v-model="settings.commonAuth.usersElasticsearchAPIKey"
-                />
-              </div>
-              <p class="form-text small text-muted">
-                If using an APIKey for elasticsearch.
-              </p>
-            </div> <!-- /usersElasticsearchAPIKey-->
-            <!-- usersElasticsearchBasicAuth -->
-            <div class="col-xl-9 col-lg-12 form-group">
-              <div class="input-group">
-                <span class="input-group-prepend">
-                  <span class="input-group-text">
-                    Elasticsearch Basic Auth
-                  </span>
-                </span>
-                <input type="string"
-                  class="form-control"
-                  id="usersElasticsearchBasicAuth"
-                  v-model="settings.commonAuth.usersElasticsearchBasicAuth"
-                />
-              </div>
-              <p class="form-text small text-muted">
-                If using BasicAuth for elasticsearch.
-              </p>
-            </div> <!-- /usersElasticsearchBasicAuth-->
-            <!-- passwordSecret -->
-            <div class="col-xl-9 col-lg-12 form-group">
-              <div class="input-group">
-                <span class="input-group-prepend">
-                  <span class="input-group-text">
-                    Password Secret
-                  </span>
-                </span>
-                <input type="string"
-                  class="form-control"
-                  id="passwordSecret"
-                  v-model="settings.commonAuth.passwordSecret"
-                />
-              </div>
-              <p class="form-text small text-muted">
-                The secret used to encrypt the md5 of the users information.
-              </p>
-            </div> <!-- /passwordSecret-->
-            <!-- http realm -->
-            <div class="col-xl-9 col-lg-12 form-group">
-              <div class="input-group">
-                <span class="input-group-prepend">
-                  <span class="input-group-text">
-                    HTTP Realm
-                  </span>
-                </span>
-                <input type="string"
-                  class="form-control"
-                  id="httpRealm"
-                  v-model="settings.commonAuth.httpRealm"
-                />
-              </div>
-              <p class="form-text small text-muted">
-                The HTTP Realm for user authentication. Set this to the same realm as your Akime clusters to share credentials. By default "Moloch" if not set.
-              </p>
-            </div> <!-- /http realm-->
-            <!-- parliament host -->
-            <div class="col-xl-9 col-lg-12 form-group">
-              <div class="input-group">
-                <span class="input-group-prepend">
-                  <span class="input-group-text">
-                    Parliament Host
-                  </span>
-                </span>
-                <input type="string"
-                  class="form-control"
-                  id="httpRealm"
-                  v-model="settings.commonAuth.parliamentHost"
-                />
-              </div>
-              <p class="form-text small text-muted">
-                The IP used to listen for traffic, usually localhost or 0.0.0.0 for all ips (default).
-              </p>
-            </div> <!-- /http realm-->
-          </div>
-        </div>
-        <!-- /auth -->
 
         <!-- notifiers tab -->
         <div v-if="visibleTab === 'notifiers' && settings"
@@ -788,7 +591,6 @@
 </template>
 
 <script>
-import AuthService from '../auth';
 import SettingsService from './settings.service';
 
 let inputDebounce;
@@ -806,7 +608,7 @@ export default {
       // default tab
       visibleTab: 'general',
       // page data
-      settings: { general: {}, commonAuth: {} },
+      settings: { general: {} },
       // settings error
       settingsError: '',
       // notifier settings
@@ -815,10 +617,6 @@ export default {
     };
   },
   computed: {
-    // auth vars
-    hasAuth: function () {
-      return this.$store.state.hasAuth;
-    },
     isAdmin: function () {
       return this.$store.state.isAdmin;
     }
@@ -828,7 +626,7 @@ export default {
     let tab = window.location.hash;
     if (tab) { // if there is a tab specified and it's a valid tab
       tab = tab.replace(/^#/, '');
-      if (tab === 'general' || tab === 'notifiers' || tab === 'auth') {
+      if (tab === 'general' || tab === 'notifiers') {
         this.visibleTab = tab;
       }
     }
@@ -999,21 +797,6 @@ export default {
         return 'text';
       }
     },
-    updateCommonAuth: function () {
-      const data = {
-        commonAuth: {
-          ...this.settings.commonAuth
-        }
-      };
-
-      AuthService.updateCommonAuth(data).then((response) => {
-        this.success = 'Updated auth!';
-        this.settingsError = 'You must restart your Parliament for these changes to take effect!';
-        this.closeSuccess();
-      }).catch((error) => {
-        this.settingsError = error.text || 'Error saving auth settings.';
-      });
-    },
     debounceInput: function () {
       this.success = '';
       if (successCloseTimeout) { clearTimeout(successCloseTimeout); }
@@ -1043,10 +826,6 @@ export default {
       SettingsService.getSettings().then((data) => {
         this.error = '';
         this.settings = data;
-        if (!this.hasAuth) {
-          this.error = 'No authentication set for your Parliament!';
-          this.openView('auth'); // redirect the user to possibly configure auth
-        }
       }).catch((error) => {
         this.error = error.text || 'Error fetching settings.';
         this.networkError = error.networkError;

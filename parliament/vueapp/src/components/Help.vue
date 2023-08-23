@@ -33,10 +33,6 @@
             class="nav-link nested">
             General
           </a>
-          <a href="help#auth"
-            class="nav-link nested">
-            Auth
-          </a>
           <a href="help#notifiers"
             class="nav-link nested">
             Notifiers
@@ -223,30 +219,6 @@
               </li>
             </ul>
             <!-- /general -->
-
-            <!-- auth -->
-            <h6 id="auth">
-              <span class="fa fa-fw fa-key mr-2"></span>
-              Auth
-            </h6>
-            <p>
-              Auth uses the the Arkime User's database for Parliament access.
-            </p>
-            <ul>
-              <li>
-                All Arkime users can view the Parliament.
-              </li>
-              <li>
-                Users with the "parliamentUser" role can ack, ignore, and delete
-                issues within the Parliament.
-              </li>
-              <li>
-                Users with the "parliamentAdmin" role can do everything a "parliamentUser"
-                can, plus they can configure the Parliament by adding/removing/updating
-                groups/clusters and manage the Parliament settings.
-              </li>
-            </ul>
-            <!-- /auth -->
 
             <!-- notifiers -->
             <h6 id="notifiers">

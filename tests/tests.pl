@@ -350,7 +350,7 @@ my ($cmd) = @_;
             system("cd ../viewer ; $node --trace-warnings viewer.js --regressionTests $es $ues -c ../tests/config.test.ini -n test2 --debug $INSECURE $s3 > /tmp/moloch.test2 &");
             system("cd ../viewer ; $node --trace-warnings viewer.js --regressionTests $es $ues -c ../tests/config.test.ini -n test3 --debug -o s2sRegressionTests=true $INSECURE > /tmp/moloch.test3 &");
             system("cd ../viewer ; $node --trace-warnings viewer.js --regressionTests $ues -c ../tests/config.test.ini -n all --debug $INSECURE > /tmp/moloch.all &");
-            system("cd ../parliament ; $node --trace-warnings parliament.js --regressionTests -c ../tests/parliament.dev.json --debug > /tmp/moloch.parliament 2>&1 &");
+            system("cd ../parliament ; $node --trace-warnings parliament.js --regressionTests -c ../tests/parliament.tests.ini --debug > /tmp/moloch.parliament 2>&1 &");
             system("cd ../cont3xt ; $node --trace-warnings cont3xt.js $ces $cues --regressionTests -c ../tests/cont3xt.tests.ini --debug $INSECURE > /tmp/moloch.cont3xt 2>&1 &");
             system("cd ../viewer ; $node --trace-warnings esProxy.js --regressionTests $es -c ../tests/config.test.ini -n esproxy --debug $INSECURE > /tmp/moloch.esproxy &");
         } else {
@@ -360,7 +360,7 @@ my ($cmd) = @_;
             system("cd ../viewer ; $node viewer.js --regressionTests $es $ues -c ../tests/config.test.ini -n test2 $INSECURE $s3 > /dev/null &");
             system("cd ../viewer ; $node viewer.js --regressionTests $es $ues -c ../tests/config.test.ini -n test3 -o s2sRegressionTests=true $INSECURE > /dev/null &");
             system("cd ../viewer ; $node viewer.js --regressionTests $ues -c ../tests/config.test.ini -n all $INSECURE > /dev/null &");
-            system("cd ../parliament ; $node parliament.js --regressionTests -c ../tests/parliament.dev.json > /dev/null 2>&1 &");
+            system("cd ../parliament ; $node parliament.js --regressionTests -c ../tests/parliament.tests.ini > /dev/null 2>&1 &");
             system("cd ../cont3xt ; $node cont3xt.js $ces $cues --regressionTests -c ../tests/cont3xt.tests.ini $INSECURE > /dev/null 2>&1 &");
             system("cd ../viewer ; $node --trace-warnings esProxy.js --regressionTests $es -c ../tests/config.test.ini -n esproxy --debug $INSECURE >> /dev/null 2>&1 &");
         }
