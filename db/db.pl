@@ -7005,6 +7005,7 @@ if ($ARGV[1] =~ /^(users-?import|import)$/) {
 } elsif ($ARGV[1] =~ /^add-?missing$/) {
     my $dir = $ARGV[3];
     chop $dir if (substr($dir, -1) eq "/");
+    die "Please use full path, like the pcapDir setting, instead of '.'" if ($dir eq ".");
     opendir(my $dh, $dir) || die "Can't opendir $dir: $!";
     my @files = grep { m/^$ARGV[2]-/ && -f "$dir/$_" } readdir($dh);
     closedir $dh;
@@ -7028,13 +7029,14 @@ if ($ARGV[1] =~ /^(users-?import|import)$/) {
     }
     exit 0;
 } elsif ($ARGV[1] =~ /^sync-?files$/) {
-    my @nodes = split(",", $ARGV[2]);
-    my @dirs = split(",", $ARGV[3]);
+    my @nodes = split(/[,;]/, $ARGV[2]);
+    my @dirs = split(/[,;]/, $ARGV[3]);
 
     # find all local files, do this first also to make sure we can access dirs
     my @localfiles = ();
     foreach my $dir (@dirs) {
         chop $dir if (substr($dir, -1) eq "/");
+        die "Please use full path, like the pcapDir setting, instead of '.'" if ($dir eq ".");
         opendir(my $dh, $dir) || die "Can't opendir $dir: $!";
         foreach my $node (@nodes) {
             my @files = grep { m/^$ARGV[2]-/ && -f "$dir/$_" } readdir($dh);
@@ -7285,7 +7287,7 @@ qq/{"policy": {
     my $allocation = "";
     if ($DOHOTWARM) {
       $allocation = qq/{"allocation" : {"require" : { "molochtype" : "warm" }, "wait_for" : true }},/;
-    } 
+    }
 
 $policy = qq/{
   "policy" : {
