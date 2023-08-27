@@ -26,6 +26,9 @@ class ArkimeConfig {
   static regressionTests = false;
   static insecure = false;
 
+  static exit = Symbol('ArkimeConfig - exit');
+  static throw = Symbol('ArkimeConfig - throw');
+
   // ----------------------------------------------------------------------------
 
   static #override = new Map();
@@ -127,6 +130,13 @@ class ArkimeConfig {
     }
 
     if (value === undefined) {
+      if (d === ArkimeConfig.exit) {
+        console.log(`ERROR - ${sectionKey} not found in sections: ${sections}`);
+        process.exit();
+      }
+      if (d === ArkimeConfig.throw) {
+        throw new Error(`${sectionKey} not found in sections: ${sections}`);
+      }
       key = `default ${sectionKey}`;
       value = d;
     }
