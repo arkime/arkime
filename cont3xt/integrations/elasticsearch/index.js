@@ -51,7 +51,8 @@ class ElasticsearchIntegration extends Integration {
     super();
 
     this.name = ArkimeConfig.get(section, 'name', section);
-    this.icon = ArkimeConfig.get(section, 'icon', 'integrations/elasticsearch/icon.png');
+    this.icon = ArkimeConfig.get(section, 'icon',
+      section.startsWith('elasticsearch') ? 'integrations/elasticsearch/elasticsearch.png' : 'integrations/elasticsearch/opensearch.png');
     this.order = ElasticsearchIntegration.#order++;
     this.card.title = `${this.name} for %{query}`;
     const itypes = ArkimeConfig.get(section, 'itypes', ArkimeConfig.exit);
