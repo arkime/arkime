@@ -454,17 +454,9 @@ export default {
             return url;
           }
 
-          if (!options.include) {
-            options.include = 'all'; // default to all
-          }
-
-          if (!options.sep) {
-            options.sep = ','; // default to comma
-          }
-
-          if (!options.quote) {
-            options.quote = ''; // default to no quote
-          }
+          options.include ??= 'all'; // default to all
+          options.quote ??= ''; // default to no quote
+          options.sep ??= ','; // default to comma
 
           if (['domain', 'ip', 'url', 'email', 'hash', 'phone', 'text'].indexOf(options.iType) === -1) {
             console.error('getUrl: array requires a valid iType');
