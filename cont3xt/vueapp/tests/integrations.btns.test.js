@@ -46,7 +46,8 @@ const store = {
     results
   },
   mutations: {
-    SET_QUEUED_INTEGRATION: jest.fn()
+    SET_QUEUED_INTEGRATION: jest.fn(),
+    SET_ACTIVE_SOURCE: jest.fn()
   },
   getters: {
     getLoading (state) {
@@ -57,6 +58,21 @@ const store = {
     },
     getResults (state) {
       return state.results;
+    },
+    getActiveIndicator (state) {
+      return {
+        itype: 'ip',
+        query: '10.0.0.1'
+      };
+    },
+    getFocusOverviewSearch (state) {
+      return false;
+    },
+    getSortedOverviews (state) {
+      return [];
+    },
+    getShiftKeyHold (state) {
+      return false;
     }
   }
 };
@@ -70,7 +86,19 @@ test('Integration Btns', async () => {
       indicatorId: localIndicatorId({
         query: 'threatbutt.com',
         itype: 'domain'
-      })
+      }),
+      selectedOverview: {
+        iType: 'ip',
+        name: 'Default ip',
+        title: 'Overview of %{query}',
+        fields: [],
+        viewRoles: ['cont3xtUser'],
+        editRoles: ['superAdmin'],
+        creator: '!__cont3xt__!',
+        _id: 'ip',
+        _editable: true,
+        _viewable: true
+      }
     }
   });
 
@@ -86,7 +114,7 @@ test('Integration Btns', async () => {
 
   // can click buttons
   const btns = getAllByRole('button');
-  await fireEvent.click(btns[0]);
+  await fireEvent.click(btns[2]);
 
   // calls display integration mutation
   expect(store.mutations.SET_QUEUED_INTEGRATION).toHaveBeenCalledWith(store.state, {
@@ -94,7 +122,7 @@ test('Integration Btns', async () => {
   });
 
   // second button emits different values
-  await fireEvent.click(btns[1]);
+  await fireEvent.click(btns[3]);
   expect(store.mutations.SET_QUEUED_INTEGRATION).toHaveBeenCalledWith(store.state, {
     source: 'PT Whois', indicatorId: localIndicatorId({ itype: 'domain', query: 'threatbutt.com' })
   });
