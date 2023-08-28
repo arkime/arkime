@@ -1,5 +1,5 @@
 <template>
-  <div class="container-fluid mb-4 row mt-3">
+  <div class="d-flex flex-row flex-grow-1 overflow-hidden pt-3">
 
     <!-- navigation -->
     <div
@@ -38,7 +38,7 @@
       </div>
     </div>
 
-    <div class="col-xl-10 col-lg-9 col-md-9 col-sm-8 col-xs-12 settings-right-panel">
+    <div class="col-xl-10 col-lg-9 col-md-9 col-sm-8 col-xs-12 overflow-auto h-100">
 
       <!-- general -->
       <div v-if="visibleTab === 'general'">
@@ -274,10 +274,15 @@
             <p class="m-0">
               You can create arrays of values in links. Arrays are special and include a lot of customization.
               <ul class="m-0">
-                <li>Do not include spaces in your array options.</li>
+                <li>Do not include spaces in your array options JSON</li>
                 <li>Escape double quotes with a backslash <code>\"</code></li>
                 <li>Escape backslashes with a backslash <code>\\</code></li>
-                <li>If the JSON cannot be parsed, the placeholder is removed from the link</li>
+                <li>JSON keys must be double quoted</li>
+                <li>JSON values must be double quoted</li>
+                <li>JSON values must be strings</li>
+                <li>JSON values must be comma separated</li>
+                <li>There must be a comma (<code>,</code>) separating the <code>array</code> keyword and the array options JSON</li>
+                <li>If the array options JSON cannot be parsed, the placeholder is removed from the link. Open the browser's development console to see exactly where the JSON can't be parsed.</li>
               </ul>
             </p>
             <p class="m-0">
@@ -299,11 +304,11 @@
             <p class="m-0">
               <strong>Examples:</strong>
               <br>
-              <code>${array,{iType:"ip"}}</code> = 10.0.0.1,10.0.0.2,10.0.0.3
+              <code>${array,{"iType":"ip"}}</code> = 10.0.0.1,10.0.0.2,10.0.0.3
               <br>
-              <code>${array,{iType:"ip",include:"top",sep:" OR ",quote:"\""}}</code> = "10.0.0.1" OR "10.0.0.2"
+              <code>${array,{"iType":"ip","include":"top","sep":" OR ","quote":"\""}}</code> = "10.0.0.1" OR "10.0.0.2"
               <br>
-              <code>${array,{iType:"domain",include:"all",sep:"|",quote:"'"}}</code> = 'example.com'|'test.org'|'arkime.com'
+              <code>${array,{"iType":"domain","include":"all","sep":"|","quote":"'"}}</code> = 'example.com'|'test.org'|'arkime.com'
             </p>
           </dd>
         </dl>

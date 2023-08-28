@@ -427,62 +427,68 @@ export default {
      * @returns {string} the url with the array placeholder replaced/removed
      */
     replaceArray (url) {
-      if (url.match(/\$\{array,/g)) {
-        const begin = url.indexOf('${array,') + 8;
-        const end = url.indexOf('}', begin) + 1;
-        let options = url.substring(begin, end);
+      const regexp = /\$\{array,/g;
 
-        try {
-          options = JSON.parse(options);
-        } catch (e) {
-          /* eslint-disable no-template-curly-in-string */
-          console.error('getUrl: array requires valid JSON for parameters. Placeholder should look like this:\n${array,{iType:"ip",include:"top",sep:"OR",quote:"\\""}}');
-          console.error('trying to parse', options);
-          console.error(e);
-          url = url.substring(0, begin - 8) + url.substring(end + 1);
-          return url;
-        }
+      if (url.match(regexp)) {
+        const matches = Array.from(url.matchAll(regexp));
+        for (let i = matches.length - 1; i >= 0; i--) {
+          const match = matches[i];
+          const begin = match.index + match[0].length;
+          const end = url.indexOf('}', begin) + 1;
+          let options = url.substring(begin, end);
 
-        if (!options.iType) {
-          console.error('getUrl: array requires an iType');
-          url = url.substring(0, begin - 8) + url.substring(end + 1);
-          return url;
-        }
+          try {
+            options = JSON.parse(options);
+          } catch (e) {
+            /* eslint-disable no-template-curly-in-string */
+            console.error('getUrl: array requires valid JSON for parameters. Placeholder should look like this:\n${array,{"iType":"ip","include":"top","sep":"OR","quote":"\\""}}');
+            console.error('trying to parse', options);
+            console.error(e);
+            url = url.substring(0, begin - match[0].length) + url.substring(end + 1);
+            return url;
+          }
 
-        if (!options.include) {
-          options.include = 'all'; // default to all
-        }
+          if (!options.iType) {
+            console.error('getUrl: array requires an iType');
+            url = url.substring(0, begin - match[0].length) + url.substring(end + 1);
+            return url;
+          }
 
-        if (!options.sep) {
-          options.sep = ','; // default to comma
-        }
+          if (!options.include) {
+            options.include = 'all'; // default to all
+          }
 
-        if (!options.quote) {
-          options.quote = ''; // default to no quote
-        }
+          if (!options.sep) {
+            options.sep = ','; // default to comma
+          }
 
-        if (['domain', 'ip', 'url', 'email', 'hash', 'phone', 'text'].indexOf(options.iType) === -1) {
-          console.error('getUrl: array requires a valid iType');
-          url = url.substring(0, begin - 8) + url.substring(end + 1);
-          return url;
-        }
+          if (!options.quote) {
+            options.quote = ''; // default to no quote
+          }
 
-        const indicators = [];
-        for (const key in this.$store.state.indicatorGraph) {
-          const indicator = this.$store.state.indicatorGraph[key];
-          if (indicator.indicator.itype === options.iType) {
-            if (options.include === 'all' ||
-              (options.include === 'top' && indicator.parentIds.has(undefined))) {
-              indicators.push(indicator.indicator.query);
+          if (['domain', 'ip', 'url', 'email', 'hash', 'phone', 'text'].indexOf(options.iType) === -1) {
+            console.error('getUrl: array requires a valid iType');
+            url = url.substring(0, begin - match[0].length) + url.substring(end + 1);
+            return url;
+          }
+
+          const indicators = [];
+          for (const key in this.$store.state.indicatorGraph) {
+            const indicator = this.$store.state.indicatorGraph[key];
+            if (indicator.indicator.itype === options.iType) {
+              if (options.include === 'all' ||
+                (options.include === 'top' && (indicator.parentIds.has(undefined) || indicator.parentIds.size === 0))) {
+                indicators.push(indicator.indicator.query);
+              }
             }
           }
-        }
 
-        if (indicators.length) {
-          const indicatorStr = options.quote + indicators.join(`${options.quote}${options.sep}${options.quote}`) + options.quote;
-          url = url.substring(0, begin - 8) + indicatorStr + url.substring(end + 1);
-        } else {
-          url = url.substring(0, begin - 8) + url.substring(end + 1);
+          if (indicators.length) {
+            const indicatorStr = options.quote + indicators.join(`${options.quote}${options.sep}${options.quote}`) + options.quote;
+            url = url.substring(0, begin - match[0].length) + indicatorStr + url.substring(end + 1);
+          } else {
+            url = url.substring(0, begin - match[0].length) + url.substring(end + 1);
+          }
         }
       }
 

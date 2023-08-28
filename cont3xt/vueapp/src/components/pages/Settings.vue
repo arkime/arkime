@@ -115,7 +115,7 @@
       </div>
     </div> <!-- /navigation -->
 
-    <div class="col-xl-10 col-lg-9 col-md-9 col-sm-8 col-xs-12 settings-right-panel overflow-auto h-100 pt-3 pb-4 pr-4">
+    <div class="col-xl-10 col-lg-9 col-md-9 col-sm-8 col-xs-12 overflow-auto h-100 pt-3 pb-4 pr-4">
       <!-- view settings -->
       <div v-if="visibleTab === 'views'">
         <!-- view create form -->
