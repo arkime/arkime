@@ -133,7 +133,7 @@ class URLScanIntegration extends Integration {
 
   async fetch (user, query) {
     try {
-      const key = this.getUserConfig(user, 'URLScan', 'key');
+      const key = this.getUserConfig(user, 'key');
       if (!key) {
         return undefined;
       }

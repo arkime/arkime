@@ -131,8 +131,8 @@ class PassiveTotalWhoisIntegration extends Integration {
 
   async fetchDomain (user, domain) {
     try {
-      const puser = this.getUserConfig(user, 'PassiveTotal', 'user');
-      const pkey = this.getUserConfig(user, 'PassiveTotal', 'key');
+      const puser = this.getUserConfig(user, 'user');
+      const pkey = this.getUserConfig(user, 'key');
       if (!puser || !pkey) {
         return undefined;
       }
@@ -199,8 +199,8 @@ class PassiveTotalSubdomainsIntegration extends Integration {
 
   async fetchDomain (user, domain) {
     try {
-      const puser = this.getUserConfig(user, 'PassiveTotal', 'user');
-      const pkey = this.getUserConfig(user, 'PassiveTotal', 'key');
+      const puser = this.getUserConfig(user, 'user');
+      const pkey = this.getUserConfig(user, 'key');
       if (!puser || !pkey) {
         return undefined;
       }
@@ -299,8 +299,8 @@ class PassiveTotalDNSIntegration extends Integration {
 
   async fetch (user, query) {
     try {
-      const puser = this.getUserConfig(user, 'PassiveTotal', 'user');
-      const pkey = this.getUserConfig(user, 'PassiveTotal', 'key');
+      const puser = this.getUserConfig(user, 'user');
+      const pkey = this.getUserConfig(user, 'key');
       if (!puser || !pkey) {
         return undefined;
       }

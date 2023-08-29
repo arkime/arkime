@@ -140,7 +140,7 @@ class ShodanIntegration extends Integration {
 
   async fetchIp (user, ip) {
     try {
-      const key = this.getUserConfig(user, 'Shodan', 'key');
+      const key = this.getUserConfig(user, 'key');
       if (!key) {
         return undefined;
       }

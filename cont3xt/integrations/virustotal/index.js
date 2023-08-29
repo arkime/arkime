@@ -155,7 +155,7 @@ class VirusTotalDomainIntegration extends Integration {
 
   async fetchDomain (user, domain) {
     try {
-      const key = this.getUserConfig(user, 'VirusTotal', 'key');
+      const key = this.getUserConfig(user, 'key');
       if (!key) {
         return undefined;
       }
@@ -287,7 +287,7 @@ class VirusTotalIPIntegration extends Integration {
 
   async fetchIp (user, ip) {
     try {
-      const key = this.getUserConfig(user, 'VirusTotal', 'key');
+      const key = this.getUserConfig(user, 'key');
       if (!key) {
         return undefined;
       }
@@ -386,7 +386,7 @@ class VirusTotalHashIntegration extends Integration {
 
   async fetchHash (user, hash) {
     try {
-      const key = this.getUserConfig(user, 'VirusTotal', 'key');
+      const key = this.getUserConfig(user, 'key');
       if (!key) {
         return undefined;
       }

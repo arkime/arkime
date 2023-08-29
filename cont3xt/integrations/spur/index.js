@@ -144,7 +144,7 @@ class SpurIntegration extends Integration {
 
   async fetchIp (user, ip) {
     try {
-      const key = this.getUserConfig(user, 'Spur', 'key');
+      const key = this.getUserConfig(user, 'key');
       if (!key) {
         return undefined;
       }
