@@ -91,12 +91,12 @@ class TwilioIntegration extends Integration {
 
   async fetch (user, query) {
     try {
-      const sid = this.getUserConfig(user, 'Twilio', 'sid');
+      const sid = this.getUserConfig(user, 'sid');
       if (!sid) {
         return undefined;
       }
 
-      const token = this.getUserConfig(user, 'Twilio', 'token');
+      const token = this.getUserConfig(user, 'token');
       if (!token) {
         return undefined;
       }

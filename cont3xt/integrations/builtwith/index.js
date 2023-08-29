@@ -78,7 +78,7 @@ class BuiltWithIntegration extends Integration {
 
   async fetchDomain (user, query) {
     try {
-      const key = this.getUserConfig(user, this.name, 'key');
+      const key = this.getUserConfig(user, 'key');
       if (!key) {
         return undefined;
       }

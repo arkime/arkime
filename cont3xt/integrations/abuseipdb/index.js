@@ -96,7 +96,7 @@ class AbuseIPDBIntegration extends Integration {
 
   async fetchIp (user, ip) {
     try {
-      const key = this.getUserConfig(user, this.name, 'key');
+      const key = this.getUserConfig(user, 'key');
       if (!key) {
         return undefined;
       }

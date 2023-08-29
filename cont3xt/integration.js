@@ -18,6 +18,7 @@
 'use strict';
 
 const ArkimeUtil = require('../common/arkimeUtil');
+const ArkimeConfig = require('../common/arkimeConfig');
 const glob = require('glob');
 const path = require('path');
 const extractDomain = require('extract-domain');
@@ -36,7 +37,6 @@ class Integration {
   static NoResult = Symbol('NoResult');
 
   static debug = 0;
-  static getConfig;
 
   static #cache;
   static #cont3xtStartTime = Date.now();
@@ -63,7 +63,6 @@ class Integration {
   static initialize (options) {
     Integration.debug = options.debug ?? 0;
     Integration.#cache = options.cache;
-    Integration.getConfig = options.getConfig;
     options.integrationsPath ??= path.join(__dirname, '/integrations/');
 
     glob(options.integrationsPath + '*/index.js', (err, files) => {
@@ -111,6 +110,11 @@ class Integration {
       return;
     }
 
+    if (integration.configName !== undefined && integration.section !== undefined) {
+      console.log('Can not have both configName and section set', integration.name, integration.configName, integration.section);
+      return;
+    }
+
     integration.cacheable ??= true;
     integration.noStats ??= false;
     integration.order ??= 10000;
@@ -133,10 +137,10 @@ class Integration {
     //   cacheTimeout in cont3xt section
     //   cacheTimeout in integration code
     //   60 minutes
-    integration.cacheTimeout = ArkimeUtil.parseTimeStr(integration.getConfig('cacheTimeout', Integration.getConfig('cont3xt', 'cacheTimeout', integration.cacheTimeout ?? '1h'))) * 1000;
+    integration.cacheTimeout = ArkimeUtil.parseTimeStr(integration.getConfig('cacheTimeout', ArkimeConfig.get('cont3xt', 'cacheTimeout', integration.cacheTimeout ?? '1h'))) * 1000;
 
     // cachePolicy
-    integration.cachePolicy = integration.getConfig('cachePolicy', Integration.getConfig('cont3xt', 'cachePolicy', integration.cachePolicy ?? 'shared'));
+    integration.cachePolicy = integration.getConfig('cachePolicy', ArkimeConfig.get('cont3xt', 'cachePolicy', integration.cachePolicy ?? 'shared'));
     switch (integration.cachePolicy) {
     case 'none':
       integration.cacheable = false;
@@ -165,6 +169,11 @@ class Integration {
     Integration.#integrations.all.push(integration);
     for (const itype in integration.itypes) {
       Integration.#integrations[itype].push(integration);
+    }
+
+    integration.viewRoles = integration.getConfig('viewRoles');
+    if (integration.viewRoles) {
+      integration.viewRoles = integration.viewRoles.split(';');
     }
   }
 
@@ -341,11 +350,16 @@ class Integration {
       // If still doable check to see if all settings set
       if (doable && integration.settings) {
         for (const setting in integration.settings) {
-          if (integration.settings[setting].required && !integration.getUserConfig(req.user, integration.name, setting)) {
+          if (integration.settings[setting].required && !integration.getUserConfig(req.user, setting)) {
             doable = false;
             break;
           }
         }
+      }
+
+      // Check if integration has roles that can use integration
+      if (doable && integration.viewRoles && !req.user.hasRole(integration.viewRoles)) {
+        doable = false;
       }
 
       // Gather settings to be made accessible from the UI
@@ -356,14 +370,14 @@ class Integration {
 
       // User can override card display
       let card = integration.card;
-      const cardstr = integration.getUserConfig(req.user, integration.name, 'card');
+      const cardstr = integration.getUserConfig(req.user, 'card');
       if (cardstr) {
         card = JSON.parse(cardstr);
         // Should normalize here
       }
 
       // User can override order
-      const order = integration.getUserConfig(req.user, integration.name, 'order', integration.order);
+      const order = integration.getUserConfig(req.user, 'order', integration.order);
 
       results[integration.name] = {
         doable,
@@ -458,6 +472,16 @@ class Integration {
         shared.total--;
         if (Integration.debug > 1) {
           console.log('DISABLED', integration.name);
+        }
+        checkWriteDone();
+        continue;
+      }
+
+      // Check if integration has roles that can use integration
+      if (integration.viewRoles && !shared.user.hasRole(integration.viewRoles)) {
+        shared.total--;
+        if (Integration.debug > 1) {
+          console.log('FAILED VIEWROLES', integration.name);
         }
         checkWriteDone();
         continue;
@@ -715,6 +739,10 @@ class Integration {
       return res.send({ purpose: 'error', text: `integration ${itype} ${req.params.integration} disabled` });
     }
 
+    if (integration.viewRoles && !req.user.hasRole(integration.viewRoles)) {
+      return res.send({ purpose: 'error', text: `integration ${itype} ${req.params.integration} not allowed` });
+    }
+
     const stats = integration.stats;
     if (itypeStats[itype] === undefined) {
       makeITypeStats(itype);
@@ -797,7 +825,7 @@ class Integration {
       for (const setting in integration.settings) {
         if (integration.settings[setting].required) {
           cnt++;
-          if (Integration.getConfig(integration.name, setting) === undefined) {
+          if (ArkimeConfig.get(integration.name, setting) === undefined) {
             globalConfiged = false;
             break;
           }
@@ -875,22 +903,29 @@ class Integration {
     res.send({ success: true, startTime: Integration.#cont3xtStartTime, stats: result, itypeStats: iresult });
   }
 
+  // Return a config value for this integration
   getConfig (k, d) {
-    return Integration.getConfig(this.name, k, d);
+    return ArkimeConfig.get(this.section ?? this.name, k, d);
   }
 
-  // Return a config value by first check the user, then the interation name section.
-  getUserConfig (user, section, key, d) {
+  // Return a config value for this integration, but first check the user config
+  // - configName is used by integrations that share configuration under 1 config
+  //   user config and config file both index by configName
+  // - section is used by integrations that have different display vs section names,
+  //   user config is indexed by name, config file by section
+  // - should never have both configName and section set
+  getUserConfig (user, key, d) {
     if (user.cont3xt?.keys) {
       const keys = user.getCont3xtKeys();
-      if (keys[section]?.[key]) { return keys[section]?.[key]; }
+      const configName = this.configName ?? this.name;
+      if (keys[configName]?.[key]) { return keys[configName]?.[key]; }
     }
 
-    return Integration.getConfig(section, key, d);
+    return ArkimeConfig.get(this.configName ?? this.section ?? this.name, key, d);
   }
 
   userAgent () {
-    Integration.getConfig('cont3xt', 'userAgent', 'cont3xt');
+    ArkimeConfig.get('cont3xt', 'userAgent', 'cont3xt');
   }
 
   normalizeCard () {

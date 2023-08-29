@@ -539,8 +539,7 @@ async function setupAuth () {
 
   Integration.initialize({
     debug: ArkimeConfig.debug,
-    cache,
-    getConfig
+    cache
   });
 }
 

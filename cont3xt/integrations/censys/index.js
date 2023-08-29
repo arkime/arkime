@@ -120,8 +120,8 @@ class CensysIntegration extends Integration {
   }
 
   async fetchIp (user, ip) {
-    const id = this.getUserConfig(user, this.name, 'id');
-    const secret = this.getUserConfig(user, this.name, 'secret');
+    const id = this.getUserConfig(user, 'id');
+    const secret = this.getUserConfig(user, 'secret');
     if (!id || !secret) {
       return undefined;
     }

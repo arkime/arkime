@@ -50,6 +50,7 @@ class ElasticsearchIntegration extends Integration {
   constructor (section) {
     super();
 
+    this.section = section;
     this.name = ArkimeConfig.get(section, 'name', section);
     this.icon = ArkimeConfig.get(section, 'icon',
       section.startsWith('elasticsearch') ? 'integrations/elasticsearch/elasticsearch.png' : 'integrations/elasticsearch/opensearch.png');

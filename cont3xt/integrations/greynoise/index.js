@@ -87,7 +87,7 @@ class GreyNoiseIntegration extends Integration {
 
   async fetchIp (user, ip) {
     try {
-      const key = this.getUserConfig(user, 'GreyNoise', 'key');
+      const key = this.getUserConfig(user, 'key');
 
       const headers = { 'User-Agent': this.userAgent() };
       // use key if provided (optional, allows one to get around the daily rate limit)
