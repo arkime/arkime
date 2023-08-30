@@ -299,6 +299,11 @@ int arkime_field_define(char *group, char *kind, char *expression, char *friendl
     } else {
         flags |= (minfo->flags & ARKIME_FIELD_FLAG_DISABLED);
 
+        // If we already have a pos can't be a fake field later
+        if (minfo->pos != -1 && (flags & MOLOCH_FIELD_FLAG_FAKE)) {
+            return minfo->pos;
+        }
+
         char *category = NULL;
         char *transform = NULL;
         char *aliases = NULL;

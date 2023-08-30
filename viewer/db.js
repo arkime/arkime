@@ -1756,7 +1756,7 @@ exports.sid2Index = function (id, options) {
 };
 
 exports.loadFields = async () => {
-  return exports.search('fields', 'field', { size: 3000 });
+  return exports.search('fields', 'field', { size: 10000 });
 };
 
 exports.getIndices = async (startTime, stopTime, bounding, rotateIndex) => {
