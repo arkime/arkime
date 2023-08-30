@@ -39,7 +39,7 @@ export default {
 
   createNotifier: function (notifier) {
     return new Promise((resolve, reject) => {
-      Vue.axios.post('api/notifiers', { notifier })
+      Vue.axios.post('api/notifier', notifier)
         .then((response) => {
           resolve(response.data);
         })
@@ -91,6 +91,18 @@ export default {
   getNotifierTypes: function () {
     return new Promise((resolve, reject) => {
       Vue.axios.get('api/notifierTypes')
+        .then((response) => {
+          resolve(response.data);
+        })
+        .catch((error) => {
+          reject(error.response.data);
+        });
+    });
+  },
+
+  getNotifiers: function () {
+    return new Promise((resolve, reject) => {
+      Vue.axios.get('api/notifiers')
         .then((response) => {
           resolve(response.data);
         })

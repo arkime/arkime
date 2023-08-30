@@ -72,6 +72,7 @@
 # 76 - views index
 # 77 - cron sharing with roles and users
 # 78 - added roleAssigners to users
+# 79 - added parliament notifier flags
 
 use HTTP::Request::Common;
 use LWP::UserAgent;
@@ -84,7 +85,7 @@ use IO::Uncompress::Gunzip qw(gunzip $GunzipError);
 use strict;
 no if ($] >= 5.018), 'warnings' => 'experimental';
 
-my $VERSION = 78;
+my $VERSION = 79;
 my $verbose = 0;
 my $PREFIX = undef;
 my $OLDPREFIX = "";
@@ -5596,6 +5597,29 @@ sub notifiersUpdate
     },
     "updated": {
       "type": "date"
+    },
+    "on": {
+      "type": "boolean"
+    },
+    "alerts": {
+      "type": "object",
+      "properties": {
+        "esRed": {
+          "type": "boolean"
+        },
+        "esDown": {
+          "type": "boolean"
+        },
+        "esDropped": {
+          "type": "boolean"
+        },
+        "outOfDate": {
+          "type": "boolean"
+        },
+        "noPackets": {
+          "type": "boolean"
+        }
+      }
     }
   }
 }';
@@ -5623,6 +5647,39 @@ sub notifiersMove
 # remove notifiers from the _moloch_shared user
     delete $sharedUser->{notifiers};
     esPut("/${PREFIX}users/_doc/_moloch_shared", to_json($sharedUser));
+}
+
+sub notifiersAddMissingProps
+{
+  # add missing alerts and on properties to the notifiers
+  my $notifiers = esGet("/${PREFIX}notifiers/_search?size=10000");
+
+  return if ($notifiers->{hits}->{total}->{value} eq 0);
+
+  foreach my $notifier (@{$notifiers->{hits}->{hits}}) {
+      # if alerts and on are not props add them
+      my $id = $notifier->{_id};
+      $notifier = $notifier->{_source};
+
+      my $update = 0;
+      if (!exists $notifier->{on}) {
+        # viewer notifiers are off by default (on flag is used in parliament only)
+        $notifier->{on} = \0;
+        $update = 1;
+      }
+      if (!exists $notifier->{alerts}) {
+        # viewer alerts are all off by default (alerts are used in parliament only)
+        $notifier->{alerts} = {};
+        $notifier->{alerts}->{esRed} = \0;
+        $notifier->{alerts}->{esDown} = \0;
+        $notifier->{alerts}->{esDropped} = \0;
+        $notifier->{alerts}->{outOfDate} = \0;
+        $notifier->{alerts}->{noPackets} = \0;
+        $update = 1;
+      }
+
+      esPost("/${PREFIX}notifiers/_doc/${id}", to_json($notifier)) if ($update eq 1);
+  }
 }
 ################################################################################
 
@@ -7877,11 +7934,13 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
         historyUpdate();
         queriesUpdate();
         usersUpdate();
-    } elsif ($main::versionNumber <= 78) {
+    } elsif ($main::versionNumber <= 79) {
         checkForOld7Indices();
         sessions3Update();
         historyUpdate();
         queriesUpdate();
+        notifiersUpdate();
+        notifiersAddMissingProps();
     } else {
         logmsg "db.pl is hosed\n";
     }

@@ -4,48 +4,44 @@ import Vue from 'vue';
 import BootstrapVue from 'bootstrap-vue';
 import '@testing-library/jest-dom';
 import { render, fireEvent, waitFor } from '@testing-library/vue';
-import Notifiers from '../src/components/settings/Notifiers.vue';
-import SettingsService from '../src/components/settings/SettingsService';
-import HasRole from '../../../common/vueapp/HasRole.vue';
-import '../../../common/vueapp/vueFilters';
+import Notifiers from '../Notifiers.vue';
+import HasRole from '../HasRole.vue';
+import '../vueFilters';
 const {
   userWithSettings, roles, notifiers, notifierTypes
-} = require('../../../common/vueapp/tests/consts');
+} = require('./consts');
 
 Vue.use(BootstrapVue);
 
 Vue.directive('has-role', HasRole);
-
-jest.mock('../src/components/settings/SettingsService');
 
 const store = {
   state: {
     roles,
     notifiers: [],
     user: userWithSettings
+  },
+  mutations: {
+    setNotifiers: jest.fn()
   }
 };
 
-SettingsService.deleteNotifier = jest.fn().mockResolvedValue({ text: 'deleteNotifier YAY!' });
-SettingsService.testNotifier = jest.fn().mockResolvedValue({ text: 'testNotifier YAY!' });
-SettingsService.getNotifierTypes = jest.fn().mockResolvedValue(notifierTypes);
-SettingsService.getNotifiers = jest.fn().mockResolvedValue(notifiers);
-SettingsService.createNotifier = jest.fn().mockResolvedValue({
-  text: 'createNotifier YAY!',
-  notifier: notifiers[0]
-});
-SettingsService.updateNotifier = jest.fn().mockResolvedValue({
-  text: 'updateNotifier YAY!',
-  notifier: {
-    ...notifiers[0],
-    updated: 1629133294
-  }
-});
-
 test('notifiers', async () => {
+  fetch.mockResponseOnce(JSON.stringify(notifierTypes)); // mock call to api/notifierTypes
+  fetch.mockResponseOnce(JSON.stringify([])); // mock call to api/notifiers
+
   const {
     getByText, getByDisplayValue, getByPlaceholderText, queryByDisplayValue, emitted
-  } = render(Notifiers, { store });
+  } = render(Notifiers, {
+    store,
+    props: {
+      helpText: 'display me!',
+      parentApp: 'parliament'
+    }
+  });
+
+  // displays help text ---------------------------------------------------- //
+  getByText('display me!');
 
   // create notifier form validation --------------------------------------- //
   let openCreateFormBtn;
@@ -57,15 +53,19 @@ test('notifiers', async () => {
   getByText('Create New Slack Notifier'); // displays form
   const createBtn = getByText('Create');
   await fireEvent.click(createBtn);
+
   // required notifier fields
   getByText(`${notifierTypes.slack.fields[0].name} is required`);
   // required name field
   const newNameInput = getByDisplayValue('Slack');
+
   await fireEvent.update(newNameInput, '');
   await fireEvent.click(createBtn);
   getByText('Your new notifier must have a unique name');
 
   // can create notifier --------------------------------------------------- //
+  // mock api/notifier call
+  fetch.mockResponseOnce(JSON.stringify({ success: true, notifier: notifiers[0], text: 'YAY!' }));
   await fireEvent.update(newNameInput, 'Specific Slack');
   await fireEvent.update(getByPlaceholderText(notifierTypes.slack.fields[0].description), 'url');
   await fireEvent.click(createBtn);
@@ -80,40 +80,42 @@ test('notifiers', async () => {
   newNotifier.fields[0].value = 'url';
   newNotifier.roles = ['arkimeUser', 'parliamentUser'];
 
-  expect(SettingsService.createNotifier).toHaveBeenCalledWith(newNotifier);
-  const nameInput = getByDisplayValue('Slack'); // displays the new notifier
-  getByDisplayValue('https://slack.webhook.url');
+  const nameInput = getByDisplayValue('Specific Slack'); // displays the new notifier
   await waitFor(() => { // create notifier returns and tells parent to display message
+    getByDisplayValue('https://slack.webhook.url');
     expect(emitted()).toHaveProperty('display-message');
-    expect(emitted()['display-message'][0][0]).toStrictEqual({ msg: 'createNotifier YAY!' });
+    expect(emitted()['display-message'][0][0]).toStrictEqual({ msg: 'YAY!' });
   });
 
   // can update notifier --------------------------------------------------- //
+  const updatedNotifier = { ...notifiers[0] };
+  updatedNotifier.name = 'Slack Update';
+  // mock api/notifier/:id call
+  fetch.mockResponseOnce(JSON.stringify({ success: true, notifier: updatedNotifier, text: 'YAY2!' }));
   await fireEvent.update(nameInput, 'Slack Update');
   const saveBtn = getByText('Save');
   await fireEvent.click(saveBtn);
-  const updatedNotifier = { ...notifiers[0] };
-  updatedNotifier.name = 'Slack Update';
-  expect(SettingsService.updateNotifier).toHaveBeenCalledWith(notifiers[0].id, updatedNotifier);
   await waitFor(() => { // update notifier returns and tells parent to display message
     expect(emitted()).toHaveProperty('display-message');
-    expect(emitted()['display-message'][1][0]).toStrictEqual({ msg: 'updateNotifier YAY!' });
+    expect(emitted()['display-message'][1][0]).toStrictEqual({ msg: 'YAY2!' });
   });
 
   // can test notifier ----------------------------------------------------- //
+  // mock api/notifier/:id/test
+  fetch.mockResponseOnce(JSON.stringify({ success: true, text: 'YAY3!' }));
   await fireEvent.click(getByText('Test'));
-  expect(SettingsService.testNotifier).toHaveBeenCalledWith(notifiers[0].id);
   await waitFor(() => { // test notifier returns and tells parent to display message
     expect(emitted()).toHaveProperty('display-message');
-    expect(emitted()['display-message'][2][0]).toStrictEqual({ msg: 'testNotifier YAY!' });
+    expect(emitted()['display-message'][2][0]).toStrictEqual({ msg: 'YAY3!' });
   });
 
   // can delete notifier --------------------------------------------------- //
+  // mock api/notifier/:id delete
+  fetch.mockResponseOnce(JSON.stringify({ success: true, text: 'YAY4!' }));
   await fireEvent.click(getByText('Delete'));
-  expect(SettingsService.deleteNotifier).toHaveBeenCalledWith(notifiers[0].id);
   await waitFor(() => { // delete notifier returns and tells parent to display message
     expect(emitted()).toHaveProperty('display-message');
-    expect(emitted()['display-message'][3][0]).toStrictEqual({ msg: 'deleteNotifier YAY!' });
+    expect(emitted()['display-message'][3][0]).toStrictEqual({ msg: 'YAY4!' });
   });
   expect(queryByDisplayValue('Slack')).not.toBeInTheDocument(); // notifier removed
 });

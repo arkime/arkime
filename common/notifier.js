@@ -12,6 +12,7 @@ class Notifier {
   static #debug;
   static #esclient;
   static #notifiersIndex;
+  static #defaultAlerts = { esRed: false, esDown: false, esDropped: false, outOfDate: false, noPackets: false };
 
   static initialize (options) {
     Notifier.#debug = options.debug ?? 0;
@@ -34,6 +35,7 @@ class Notifier {
 
     const api = {
       register: (str, info) => {
+        if (options.issueTypes) { info.alerts = options.issueTypes; }
         Notifier.notifierTypes[str] = info;
       }
     };
@@ -83,18 +85,16 @@ class Notifier {
 
   /**
    * Checks that the notifier type is valid and the required fields are filled out
-   * @param {string} type - The type of notifier that is being checked
-   * @param {Array} fields - The list of fields to be checked against the type of notifier
-   *                         to determine that all the required fields are filled out
+   * @param {object} notifier - The notifier object to be checked
    * @returns {string|undefined} - String message to describe check error or undefined if all is good
    */
-  static #checkNotifierTypesAndFields (type, fields) {
-    type = type.toLowerCase();
+  static #checkNotifierTypesAndFields (notifier) {
+    const type = notifier.type.toLowerCase();
+
     let foundNotifier;
     for (const n in Notifier.notifierTypes) {
-      const notifier = Notifier.notifierTypes[n];
-      if (notifier.type === type) {
-        foundNotifier = notifier;
+      if (Notifier.notifierTypes[n].type === type) {
+        foundNotifier = Notifier.notifierTypes[n];
       }
     }
 
@@ -105,10 +105,21 @@ class Notifier {
     // check that required notifier fields exist
     for (const field of foundNotifier.fields) {
       if (field.required) {
-        for (const sentField of fields) {
+        for (const sentField of notifier.fields) {
           if (sentField.name === field.name && !sentField.value) {
             return `Missing a value for ${field.name}`;
           }
+        }
+      }
+    }
+
+    if (notifier.alerts) {
+      if (typeof notifier.alerts !== 'object') {
+        return 'Alerts must be an object';
+      }
+      for (const a in notifier.alerts) {
+        if (typeof notifier.alerts[a] !== 'boolean') {
+          return 'Alert must be true or false';
         }
       }
     }
@@ -218,7 +229,7 @@ class Notifier {
     };
 
     // if not an admin, restrict who can see the notifiers
-    if (!req.user.hasRole('arkimeAdmin')) {
+    if (!req.user.hasRole('arkimeAdmin') && !req.user.hasRole('parliamentAdmin')) {
       query.query = {
         bool: {
           filter: [
@@ -245,7 +256,7 @@ class Notifier {
         if (users) {
           result.users = users.join(',') || '';
         }
-        if (!req.user.hasRole('arkimeAdmin')) {
+        if (!req.user.hasRole('arkimeAdmin') && !req.user.hasRole('parliamentAdmin')) {
           // non-admins only need name and type to use notifiers (they cannot create/update/delete)
           const notifierType = result.type;
           const notifierName = result.name;
@@ -294,7 +305,10 @@ class Notifier {
       return res.serverError(403, 'Notifier name empty');
     }
 
-    const errorMsg = Notifier.#checkNotifierTypesAndFields(req.body.type, req.body.fields);
+    req.body.on = req.body?.on || false;
+    req.body.alerts = req.body?.alerts || Notifier.#defaultAlerts;
+
+    const errorMsg = Notifier.#checkNotifierTypesAndFields(req.body);
     if (errorMsg) {
       return res.serverError(403, errorMsg);
     }
@@ -361,7 +375,7 @@ class Notifier {
       return res.serverError(403, 'Notifier name empty');
     }
 
-    const errorMsg = Notifier.#checkNotifierTypesAndFields(req.body.type, req.body.fields);
+    const errorMsg = Notifier.#checkNotifierTypesAndFields(req.body);
     if (errorMsg) {
       return res.serverError(403, errorMsg);
     }
@@ -373,10 +387,12 @@ class Notifier {
         return res.serverError(404, 'Notifier not found');
       }
 
-      // only name, fields, roles, users can change
+      // only on, name, fields, roles, users, alerts can change
       notifier.name = req.body.name;
       notifier.roles = req.body.roles;
       notifier.fields = req.body.fields;
+      notifier.on = req.body.on || false;
+      notifier.alerts = req.body.alerts || Notifier.#defaultAlerts;
       notifier.updated = Math.floor(Date.now() / 1000); // update/add updated time
 
       // comma/newline separated value -> array of values

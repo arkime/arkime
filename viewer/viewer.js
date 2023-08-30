@@ -2215,7 +2215,7 @@ async function premain () {
 
   Notifier.initialize({
     debug: Config.debug,
-    prefix: internals.prefix,
+    prefix: Config.get('usersPrefix', Config.get('prefix', 'arkime')),
     esclient: User.getClient()
   });
 
