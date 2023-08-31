@@ -1635,30 +1635,7 @@ exports.checkVersion = async function (minVersion) {
     }
   });
 
-  try {
-    const { body: doc } = await internals.client7.indices.getTemplate({
-      name: fixIndex('sessions3_template'),
-      filter_path: '**._meta'
-    });
-
-    try {
-      const molochDbVersion = doc[fixIndex('sessions3_template')].mappings._meta.molochDbVersion;
-
-      if (molochDbVersion < minVersion) {
-        console.log(`ERROR - Current database version (${molochDbVersion}) is less then required version (${minVersion}) use 'db/db.pl <eshost:esport> upgrade' to upgrade`);
-        if (doc._node) {
-          console.log(`On node ${doc._node}`);
-        }
-        process.exit(1);
-      }
-    } catch (e) {
-      console.log("ERROR - Couldn't find database version.  Have you run ./db.pl host:port upgrade?", e);
-      process.exit(0);
-    }
-  } catch (err) {
-    console.log("ERROR - Couldn't retrieve database version, is OpenSearch/Elasticsearch running?  Have you run ./db.pl host:port init?", err);
-    process.exit(0);
-  }
+  ArkimeUtil.checkArkimeSchemaVersion(internals.client7, internals.prefix, minVersion);
 };
 
 exports.isLocalView = function (node, yesCB, noCB) {

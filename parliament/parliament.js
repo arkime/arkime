@@ -2,6 +2,7 @@
 'use strict';
 
 const MIN_PARLIAMENT_VERSION = 6;
+const MIN_DB_VERSION = 79;
 
 /* dependencies ------------------------------------------------------------- */
 const express = require('express');
@@ -609,6 +610,7 @@ function getStats (cluster) {
 // Initializes the parliament with ids for each group and cluster
 // Upgrades the parliament if necessary
 async function initializeParliament () {
+  ArkimeUtil.checkArkimeSchemaVersion(User.getClient(), getConfig('parliament', 'usersPrefix'), MIN_DB_VERSION);
   Notifier.initialize({
     issueTypes,
     debug: ArkimeConfig.debug,
