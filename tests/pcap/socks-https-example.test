@@ -171,6 +171,7 @@
                   "notBefore" : 1317600000000,
                   "publicAlgorithm" : "rsaEncryption",
                   "remainingDays" : -1,
+                  "remainingSeconds" : 32208328,
                   "serial" : "062d488986c9a6d7f94901c2b5906882",
                   "subjectCN" : [
                      "gp1.wac.edgecastcdn.net"
@@ -178,7 +179,8 @@
                   "subjectON" : [
                      "EdgeCast Networks, Inc."
                   ],
-                  "validDays" : 1164
+                  "validDays" : 1164,
+                  "validSeconds" : 100612800
                },
                {
                   "hash" : "42:85:78:55:fb:0e:a4:3f:54:c9:91:1e:30:e7:79:1d:8c:e8:27:05",
@@ -195,6 +197,7 @@
                   "notBefore" : 1207137600000,
                   "publicAlgorithm" : "rsaEncryption",
                   "remainingDays" : -1,
+                  "remainingSeconds" : 262939528,
                   "serial" : "0a5f114d035b179117d2efd4038c3f3b",
                   "subjectCN" : [
                      "digicert high assurance ca-3"
@@ -205,7 +208,8 @@
                   "subjectOU" : [
                      "www.digicert.com"
                   ],
-                  "validDays" : 5113
+                  "validDays" : 5113,
+                  "validSeconds" : 441806400
                }
             ],
             "certCnt" : 2,
@@ -567,6 +571,7 @@
                   "notBefore" : 1317600000000,
                   "publicAlgorithm" : "rsaEncryption",
                   "remainingDays" : -1,
+                  "remainingSeconds" : 32208325,
                   "serial" : "062d488986c9a6d7f94901c2b5906882",
                   "subjectCN" : [
                      "gp1.wac.edgecastcdn.net"
@@ -574,7 +579,8 @@
                   "subjectON" : [
                      "EdgeCast Networks, Inc."
                   ],
-                  "validDays" : 1164
+                  "validDays" : 1164,
+                  "validSeconds" : 100612800
                },
                {
                   "hash" : "42:85:78:55:fb:0e:a4:3f:54:c9:91:1e:30:e7:79:1d:8c:e8:27:05",
@@ -591,6 +597,7 @@
                   "notBefore" : 1207137600000,
                   "publicAlgorithm" : "rsaEncryption",
                   "remainingDays" : -1,
+                  "remainingSeconds" : 262939525,
                   "serial" : "0a5f114d035b179117d2efd4038c3f3b",
                   "subjectCN" : [
                      "digicert high assurance ca-3"
@@ -601,7 +608,8 @@
                   "subjectOU" : [
                      "www.digicert.com"
                   ],
-                  "validDays" : 5113
+                  "validDays" : 5113,
+                  "validSeconds" : 441806400
                }
             ],
             "certCnt" : 2,
@@ -960,6 +968,7 @@
                   "notBefore" : 1317600000000,
                   "publicAlgorithm" : "rsaEncryption",
                   "remainingDays" : -1,
+                  "remainingSeconds" : 32208320,
                   "serial" : "062d488986c9a6d7f94901c2b5906882",
                   "subjectCN" : [
                      "gp1.wac.edgecastcdn.net"
@@ -967,7 +976,8 @@
                   "subjectON" : [
                      "EdgeCast Networks, Inc."
                   ],
-                  "validDays" : 1164
+                  "validDays" : 1164,
+                  "validSeconds" : 100612800
                },
                {
                   "hash" : "42:85:78:55:fb:0e:a4:3f:54:c9:91:1e:30:e7:79:1d:8c:e8:27:05",
@@ -984,6 +994,7 @@
                   "notBefore" : 1207137600000,
                   "publicAlgorithm" : "rsaEncryption",
                   "remainingDays" : -1,
+                  "remainingSeconds" : 262939520,
                   "serial" : "0a5f114d035b179117d2efd4038c3f3b",
                   "subjectCN" : [
                      "digicert high assurance ca-3"
@@ -994,7 +1005,8 @@
                   "subjectOU" : [
                      "www.digicert.com"
                   ],
-                  "validDays" : 5113
+                  "validDays" : 5113,
+                  "validSeconds" : 441806400
                }
             ],
             "certCnt" : 2,

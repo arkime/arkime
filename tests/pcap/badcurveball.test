@@ -17,6 +17,7 @@
                   "notBefore" : 1579183250000,
                   "publicAlgorithm" : "id-ecPublicKey",
                   "remainingDays" : -1,
+                  "remainingSeconds" : 2481434,
                   "serial" : "62344031f7ab03e6f9327cde33419cf7fb09df94",
                   "subjectCN" : [
                      "infigo"
@@ -24,7 +25,8 @@
                   "subjectON" : [
                      "INFIGO IS"
                   ],
-                  "validDays" : 30
+                  "validDays" : 30,
+                  "validSeconds" : 2592000
                },
                {
                   "alt" : [
@@ -43,6 +45,7 @@
                   "notBefore" : 1521875742000,
                   "publicAlgorithm" : "id-ecPublicKey",
                   "remainingDays" : -1,
+                  "remainingSeconds" : 5653926,
                   "serial" : "5ecb7cee8ca206bf9ec00728889ad99f4362cfd9",
                   "subjectCN" : [
                      "sans isc dshield test"
@@ -50,7 +53,8 @@
                   "subjectON" : [
                      "SANS Internet Storm Center"
                   ],
-                  "validDays" : 730
+                  "validDays" : 730,
+                  "validSeconds" : 63072000
                }
             ],
             "certCnt" : 2,

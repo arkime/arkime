@@ -13,11 +13,13 @@
                   "notBefore" : 1464103436000,
                   "publicAlgorithm" : "rsaEncryption",
                   "remainingDays" : 1,
+                  "remainingSeconds" : 296911218,
                   "serial" : "02",
                   "subjectCN" : [
                      "mysql_server_5.7.12_auto_generated_server_certificate"
                   ],
-                  "validDays" : 3650
+                  "validDays" : 3650,
+                  "validSeconds" : 315360000
                }
             ],
             "certCnt" : 1,

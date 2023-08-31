@@ -25,6 +25,7 @@
                   "notBefore" : 1540857600000,
                   "publicAlgorithm" : "id-ecPublicKey",
                   "remainingDays" : -1,
+                  "remainingSeconds" : 10424192,
                   "serial" : "0a68bb984a507399f4716e809a44a7b0",
                   "subjectCN" : [
                      "cloudflare.com"
@@ -32,7 +33,8 @@
                   "subjectON" : [
                      "Cloudflare, Inc."
                   ],
-                  "validDays" : 735
+                  "validDays" : 735,
+                  "validSeconds" : 63547200
                },
                {
                   "curve" : "secp384r1",
@@ -50,6 +52,7 @@
                   "notBefore" : 1466513667000,
                   "publicAlgorithm" : "id-ecPublicKey",
                   "remainingDays" : 1,
+                  "remainingSeconds" : 345832259,
                   "serial" : "029707560cd4a9ebbfe272f1e096d882",
                   "subjectCN" : [
                      "digicert ecc extended validation server ca"
@@ -60,7 +63,8 @@
                   "subjectOU" : [
                      "www.digicert.com"
                   ],
-                  "validDays" : 5478
+                  "validDays" : 5478,
+                  "validSeconds" : 473299200
                }
             ],
             "certCnt" : 2,

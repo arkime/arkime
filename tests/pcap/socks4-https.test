@@ -33,6 +33,7 @@
                   "notBefore" : 1413504000000,
                   "publicAlgorithm" : "rsaEncryption",
                   "remainingDays" : -1,
+                  "remainingSeconds" : 33874359,
                   "serial" : "0dc04875701d090d9f3645da26f51fe7",
                   "subjectCN" : [
                      "login.live.com"
@@ -43,7 +44,8 @@
                   "subjectOU" : [
                      "Passport"
                   ],
-                  "validDays" : 409
+                  "validDays" : 409,
+                  "validSeconds" : 35423999
                },
                {
                   "hash" : "f4:a8:0a:0c:d1:e6:cf:19:0b:8c:bc:6f:bc:99:17:11:d4:82:c9:d0",
@@ -57,6 +59,7 @@
                   "notBefore" : 1162944000000,
                   "publicAlgorithm" : "rsaEncryption",
                   "remainingDays" : -1,
+                  "remainingSeconds" : 221275959,
                   "serial" : "35973187f3873a07327ece580c9b7eda",
                   "subjectCN" : [
                      "verisign class 3 public primary certification authority - g5"
@@ -68,7 +71,8 @@
                      "VeriSign Trust Network",
                      "(c) 2006 VeriSign, Inc. - For authorized use only"
                   ],
-                  "validDays" : 5478
+                  "validDays" : 5478,
+                  "validSeconds" : 473385599
                },
                {
                   "hash" : "4a:8a:2a:0e:27:6f:f3:3b:5d:d8:8a:36:21:46:01:0f:2a:8b:6a:ee",
@@ -86,6 +90,7 @@
                   "notBefore" : 1162944000000,
                   "publicAlgorithm" : "rsaEncryption",
                   "remainingDays" : -1,
+                  "remainingSeconds" : 63509559,
                   "serial" : "112a006d37e5106fd6ca7cc3efbacc18",
                   "subjectCN" : [
                      "verisign class 3 extended validation ssl sgc ca"
@@ -97,7 +102,8 @@
                      "VeriSign Trust Network",
                      "Terms of use at https://www.verisign.com/rpa (c)06"
                   ],
-                  "validDays" : 3652
+                  "validDays" : 3652,
+                  "validSeconds" : 315619199
                }
             ],
             "certCnt" : 3,
@@ -289,3 +295,4 @@
       }
    ]
 }
+

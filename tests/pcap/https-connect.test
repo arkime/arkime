@@ -26,6 +26,7 @@
                   "notBefore" : 1495670400000,
                   "publicAlgorithm" : "rsaEncryption",
                   "remainingDays" : -1,
+                  "remainingSeconds" : 23302987,
                   "serial" : "048d398cbd9d68c87e1ba3ec99c2b07d",
                   "subjectCN" : [
                      "lfoup01-b.cloudsink.net"
@@ -33,7 +34,8 @@
                   "subjectON" : [
                      "CrowdStrike, Inc."
                   ],
-                  "validDays" : 1100
+                  "validDays" : 1100,
+                  "validSeconds" : 95083200
                },
                {
                   "hash" : "a0:31:c4:67:82:e6:e6:c6:62:c2:c8:7c:76:da:9a:a6:2c:ca:bd:8e",
@@ -50,6 +52,7 @@
                   "notBefore" : 1382443200000,
                   "publicAlgorithm" : "rsaEncryption",
                   "remainingDays" : 1,
+                  "remainingSeconds" : 288378187,
                   "serial" : "04e1e7a4dc5cf2f36dc02b42b85d159f",
                   "subjectCN" : [
                      "digicert sha2 high assurance server ca"
@@ -60,7 +63,8 @@
                   "subjectOU" : [
                      "www.digicert.com"
                   ],
-                  "validDays" : 5479
+                  "validDays" : 5479,
+                  "validSeconds" : 473385600
                }
             ],
             "certCnt" : 2,
