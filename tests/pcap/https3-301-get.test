@@ -188,6 +188,10 @@
             ],
             "srcOuiCnt" : 1,
             "srcPayload8" : "1603010072010000",
+            "tags" : [
+               "cert:certificate-authority"
+            ],
+            "tagsCnt" : 1,
             "tcpflags" : {
                "ack" : 8,
                "dstZero" : 0,

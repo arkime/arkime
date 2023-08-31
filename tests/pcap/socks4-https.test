@@ -222,11 +222,12 @@
             "srcPayload8" : "040101bb00000001",
             "tags" : [
                "acked-unseen-segment-dst",
+               "cert:certificate-authority",
                "dstip",
                "out-of-order-dst",
                "srcip"
             ],
-            "tagsCnt" : 4,
+            "tagsCnt" : 5,
             "tcpflags" : {
                "ack" : 10,
                "dstZero" : 0,

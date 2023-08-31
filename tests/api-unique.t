@@ -96,6 +96,7 @@ eq_or_diff($txt,
 "byhost2, 7
 byip1, 1
 byip2, 1
+cert:certificate-authority, 3
 domainwise, 7
 dstip, 4
 hosttaggertest1, 7

@@ -158,6 +158,10 @@
             ],
             "srcOuiCnt" : 1,
             "srcPayload8" : "804c010300003300",
+            "tags" : [
+               "cert:certificate-authority"
+            ],
+            "tagsCnt" : 1,
             "srcRIR" : "ARIN",
             "tcpflags" : {
                "ack" : 4,
