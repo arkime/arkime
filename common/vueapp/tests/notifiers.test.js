@@ -135,5 +135,3 @@ test('notifiers - parliament', async () => {
   });
   expect(queryByDisplayValue('Slack')).not.toBeInTheDocument(); // notifier removed
 });
-
-
