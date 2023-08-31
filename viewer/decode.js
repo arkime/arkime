@@ -30,10 +30,6 @@ const async = require('async');
 const cryptoLib = require('crypto');
 const ArkimeUtil = require('../common/arkimeUtil');
 
-const { HTTPParser } = require('http-parser-js');
-// eslint-disable-next-line no-unused-vars
-const onExecute = HTTPParser.kOnExecute;
-
 const internals = {
   registry: {},
   settings: {},
@@ -493,6 +489,246 @@ ItemSMTPStream.prototype._finish = function (callback) {
   }
 };
 /// /////////////////////////////////////////////////////////////////////////////
+class ItemHTTPStream extends ItemTransform {
+  static STATES = {
+    start: 1,
+    req: 2,
+    req_body: 3,
+    req_body_chunk: 4,
+
+    res: 5,
+    res_body: 6,
+    res_body_chunk: 7
+  };
+
+  options;
+  states;
+  method;
+  code;
+  buffers = [];
+  contentLength = [];
+  transferEncoding = [];
+  contentType = ['', ''];
+  startPos = [0, 0];
+  bodyNum = 0;
+  runningStreams = 0;
+  itemPos = 0;
+
+  constructor (options) {
+    super({ maxPeekItems: 3 });
+    mkname(this, 'ItemHTTPStream');
+    this.options = options;
+    this.states = [ItemHTTPStream.STATES.start, ItemHTTPStream.STATES.start];
+  }
+
+  _shouldProcess (item) {
+    return (item.data.length >= 4 && item.data.slice(0, 4).toString() === 'HTTP');
+  };
+
+  add (item, endPos) {
+    this.itemPos++;
+    const buf = {
+      client: item.client,
+      ts: item.ts,
+      data: item.data.slice(this.startPos[item.client], endPos),
+      itemPos: this.itemPos
+    };
+
+    this.startPos[item.client] = endPos;
+    this.push(buf);
+  }
+
+  processText (item, pos) {
+    let endPos = pos;
+    while (endPos <= item.data.length && item.data[endPos] !== 0x0a) {
+      endPos++;
+    }
+    let line, upper;
+    if (endPos > pos && item.data[endPos - 1] === 0x0d) {
+      line = item.data.slice(pos, endPos - 1).toString();
+    } else {
+      line = item.data.slice(pos, endPos).toString();
+    }
+
+    switch (this.states[item.client]) {
+    case ItemHTTPStream.STATES.start:
+      upper = line;
+      this.contentLength[item.client] = 0;
+      this.transferEncoding[item.client] = '';
+      if (upper.startsWith('CONNECT')) {
+        this.states[item.client] = ItemHTTPStream.STATES.req;
+        this.method = 'CONNECT';
+      } else if (upper.startsWith('HTTP')) {
+        this.states[item.client] = ItemHTTPStream.STATES.res;
+        const parts = upper.split(/ +/);
+        this.code = +parts[1];
+      } else {
+        this.states[item.client] = ItemHTTPStream.STATES.req;
+        this.method = upper.split(' ')[0];
+        const parts = upper.split(/ +/);
+        this.url = parts[1];
+      }
+      break;
+
+    case ItemHTTPStream.STATES.req:
+      if (line.length === 0) {
+        if (this.method.match(/^(GET|HEAD|DELETE|TRACE)$/)) {
+          this.states[item.client] = ItemHTTPStream.STATES.start;
+        } else if (this.transferEncoding[item.client] === 'CHUNKED') {
+          this.states[item.client] = ItemHTTPStream.STATES.req_body_chunk;
+        } else {
+          this.states[item.client] = ItemHTTPStream.STATES.req_body;
+        }
+        this.add(item, endPos + 1);
+        break;
+      }
+      upper = line.toUpperCase();
+      if (upper.startsWith('CONTENT-LENGTH')) {
+        this.contentLength[item.client] = +upper.substring(15);
+      } else if (upper.startsWith('CONTENT-TYPE')) {
+        this.contentType[item.client] = upper.substring(14);
+      } else if (upper.startsWith('TRANSFER-ENCODING')) {
+        this.transferEncoding[item.client] = upper.substring(19);
+      }
+      break;
+
+    case ItemHTTPStream.STATES.req_body_chunk:
+      if (line.length === 0) { break; }
+      this.contentLength[item.client] = Number.parseInt(line, 16);
+      if (this.contentLength[item.client] === 0) {
+        this.msgEnd(item);
+      } else {
+        this.states[item.client] = ItemHTTPStream.STATES.res_body;
+      }
+      break;
+
+    case ItemHTTPStream.STATES.res:
+      if (line.length === 0) {
+        if (this.code / 100 === 1 || this.code === 204 || this.code === 304) {
+          this.states[item.client] = ItemHTTPStream.STATES.start;
+        } else if (this.transferEncoding[item.client] === 'CHUNKED') {
+          this.states[item.client] = ItemHTTPStream.STATES.res_body_chunk;
+        } else {
+          this.states[item.client] = ItemHTTPStream.STATES.req_body;
+        }
+        this.add(item, endPos + 1);
+        break;
+      }
+      upper = line.toUpperCase();
+      if (upper.startsWith('CONTENT-LENGTH')) {
+        this.contentLength[item.client] = +upper.substring(15);
+      } else if (upper.startsWith('TRANSFER-ENCODING')) {
+        this.transferEncoding[item.client] = upper.substring(19);
+      }
+      break;
+
+    case ItemHTTPStream.STATES.res_body_chunk:
+      if (line.length === 0) { break; }
+
+      this.contentLength[item.client] = Number.parseInt(line, 16);
+      if (this.contentLength[item.client] === 0) {
+        this.msgEnd(item);
+      } else {
+        this.states[item.client] = ItemHTTPStream.STATES.res_body;
+      }
+      break;
+    } /* switch */
+
+    return endPos + 1;
+  }
+
+  msgEnd (item) {
+    this.states[item.client] = ItemHTTPStream.STATES.start;
+    if (this.bufferStream) {
+      this.bufferStream.end();
+      delete this.bufferStream;
+    }
+  }
+
+  processBody (item, pos) {
+    if (this.contentLength[item.client]) {
+      const avail = item.data.length - pos;
+      const used = Math.min(avail, this.contentLength[item.client]);
+
+      if (!this.bufferStream) {
+        this.runningStreams++;
+        this.bufferStream = new Stream.PassThrough();
+        mkname(this.bufferStream, 'bufferStream');
+
+        const info = {
+          bodyNum: ++this.bodyNum,
+          bodyName: this.url.split(/[/?=]/).pop(),
+          bodyType: 'file',
+          itemPos: ++this.itemPos
+        };
+
+        if (!info.bodyName || info.bodyName.length === 0) {
+          info.bodyName = info.bodyType + info.bodyNum;
+        }
+
+        if (this.contentType[item.client].match(/^image/i)) {
+          info.bodyType = 'image';
+        } else if (this.contentType[item.client].match(/^text/i)) {
+          info.bodyType = 'text';
+        }
+
+        const order = this.options['ITEM-HTTP'] ? this.options['ITEM-HTTP'].order || [] : [];
+        const pipes = exports.createPipeline(this.options, order, this.bufferStream, info);
+
+        item.bodyNum = info.bodyNum;
+        item.bodyName = info.bodyName;
+        const heb = new CollectBodyStream(this, item, info);
+        pipes[pipes.length - 1].pipe(heb);
+      }
+
+      this.bufferStream.write(item.data.slice(pos, pos + used));
+
+      pos += used;
+      this.contentLength[item.client] -= used;
+    }
+    if (this.contentLength[item.client] === 0) {
+      if (this.transferEncoding[item.client] === 'CHUNKED') {
+        this.states[item.client] = ItemHTTPStream.STATES.res_body_chunk;
+      } else {
+        this.msgEnd(item);
+      }
+    }
+    return pos;
+  }
+
+  _process (item, callback) {
+    this.startPos[item.client] = 0;
+    let pos = 0;
+    while (pos < item.data.length) {
+      const state = this.states[item.client];
+      if (state === ItemHTTPStream.STATES.req_body || state === ItemHTTPStream.STATES.res_body) {
+        pos = this.processBody(item, pos);
+      } else {
+        pos = this.processText(item, pos);
+      }
+    }
+
+    callback();
+  }
+
+  bodyDone (item, data, headerInfo) {
+    this.push({ client: item.client, ts: item.ts, data, bodyNum: headerInfo.bodyNum, bodyType: headerInfo.bodyType, bodyName: headerInfo.bodyName, itemPos: headerInfo.itemPos });
+    this.runningStreams--;
+    if (this.runningStreams === 0 && this.endCb) {
+      this.endCb();
+    }
+  }
+
+  _finish (callback) {
+    if (this.runningStreams > 0) {
+      this.endCb = callback;
+    } else {
+      setImmediate(callback);
+    }
+  }
+};
+
+/*
 function ItemHTTPStream (options) {
   ItemTransform.call(this, { maxPeekItems: 2 });
   mkname(this, 'ItemHTTPStream');
@@ -627,6 +863,7 @@ ItemHTTPStream.prototype._finish = function (callback) {
     }
   });
 };
+*/
 
 /// /////////////////////////////////////////////////////////////////////////////
 function ItemHexFormaterStream (options) {
@@ -845,7 +1082,7 @@ if (require.main === module) {
 
   let base = 'ITEM-NATURAL';
   let filename;
-  const ending = ['ITEM-SORTER', 'ITEM-PRINTER'];
+  const ending = ['ITEM-PRINTER'];
   for (let aa = 2; aa < process.argv.length; aa++) {
     if (process.argv[aa] === '--hex') {
       base = 'ITEM-HEX';
@@ -884,8 +1121,10 @@ if (require.main === module) {
 
   options.order.push('ITEM-HTTP');
   options.order.push('ITEM-SMTP');
+  options.order.push('ITEM-BYTES');
+  options.order.push('ITEM-SORTER');
 
-  options.order = options.order.concat('ITEM-BYTES', base, ending);
+  options.order = options.order.concat(base, ending);
   console.log(options);
 
   if (!filename) {
