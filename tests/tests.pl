@@ -15,7 +15,7 @@ use Socket6 qw(AF_INET6 inet_pton);
 
 $main::userAgent = LWP::UserAgent->new(timeout => 20);
 
-my $ELASTICSEARCH = $ENV{ELASTICSEARCH} = "http://127.0.0.1:9200";
+my $ELASTICSEARCH = $ENV{ELASTICSEARCH} || "http://127.0.0.1:9200";
 
 $ENV{'PERL5LIB'} = getcwd();
 $ENV{'TZ'} = 'US/Eastern';

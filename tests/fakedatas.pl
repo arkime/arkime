@@ -8,7 +8,7 @@ use Cwd;
 
 $main::userAgent = LWP::UserAgent->new(timeout => 20);
 
-my $ELASTICSEARCH = $ENV{ELASTICSEARCH} = "http://127.0.0.1:9200";
+my $ELASTICSEARCH = $ENV{ELASTICSEARCH} || "http://127.0.0.1:9200";
 my $DEBUG = 0;
 my $STICKYSRC;
 my $STICKYDST;
