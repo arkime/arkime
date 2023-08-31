@@ -367,10 +367,10 @@ class Notifier {
       }
 
       // only on, name, fields, roles, users, alerts can change
+      notifier.on = !!req.body.on;
       notifier.name = req.body.name;
       notifier.roles = req.body.roles;
       notifier.fields = req.body.fields;
-      notifier.on = !!req.body.on || false;
       notifier.alerts = req.body.alerts ??= Notifier.#defaultAlerts;
       notifier.updated = Math.floor(Date.now() / 1000); // update/add updated time
 
