@@ -173,10 +173,11 @@
             "srcOuiCnt" : 1,
             "srcPayload8" : "1603010200010001",
             "tags" : [
+               "cert:certificate-authority",
                "dstip",
                "srcip"
             ],
-            "tagsCnt" : 2,
+            "tagsCnt" : 3,
             "tcpflags" : {
                "ack" : 2,
                "dstZero" : 0,
