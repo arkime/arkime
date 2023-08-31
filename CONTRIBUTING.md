@@ -45,46 +45,6 @@ If you want to run Arkime in non-anonymous mode:
 
 For more information about running the Arkime Viewer web application, visit the [viewer README](viewer/README.md).
 
-#### Using containers for building and testing
-
-If you prefer using containers for building and testing, in the `docker/testing` directory, there are `Dockerfile` and `docker-compose.yaml` files
-that can be used to build Arkime and run the tests easily without polluting your system.
-
-Depending on what you are developing or testing, make sure to include the folder where the source files are as a volume to the `arkime` container defined in
-the `docker-compose.yaml` file. The default is to have the `capture` and `tests` directories mounted as volumes, allowing development within those directories
-and then recompiling/retesting without having to rebuild the container image. The last volume needs to stay the same, since it as the correct configuration values to work
-within the docker compose environment defined by the accompanying `docker-compose.yaml` file.
-
-```yaml
-services:
-  arkime:
-    container_name: arkime
-    build:
-      dockerfile: ./docker/tests/Dockerfile
-      context: ../../.
-    volumes:
-      # Change the following 2 lines to whatever folder you are developing in, make sure to leave the last line as is
-      - ../../capture:/src/capture
-      - ../../tests:/src/tests
-      - ./config.test.ini:/src/tests/config.test.ini
-    command: sleep 300000
-    environment:
-      ELASTICSEARCH: "http://elasticsearch:9200"
-    networks:
-      - elastic
-    ports:
-      - 8123:8123
-```
-
-* From the top-level directory run `docker compose -f docker/tests/docker-compose.yaml build` to build the Arkime container image that we
-  will use
-  * Alternatively, run `docker compose -f docker/tests/docker-compose.yaml up -d`, which will build (if container image does not exist yet) and then start everything
-* Run `docker compose -f docker/tests/docker-compose.yaml up -d`, which will start the Arkime, ES and Kibana containers
-* Open a shell inside the Arkime container using `docker compose -f docker/tests/docker-compose.yaml exec arkime /bin/bash`
-
-You can now run the same commands as described above starting with `./easybutton-build.sh`, we recommend running it with the added `--nonode` flag,
-reduces the build time and `node` is already installed during the image build phase.
-
 **To contribute to [Parliament](parliament/README.md) or [WISE](wiseService/README.md), read their READMEs for information on how to build them for development**
 
 ---
