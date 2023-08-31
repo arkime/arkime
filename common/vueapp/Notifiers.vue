@@ -177,7 +177,6 @@
           </span>
         </template>
         <b-card-text>
-          MY NOTIFIER {{ notifier.name }}
           <!-- notifier name -->
           <b-input-group
             size="sm"

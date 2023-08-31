@@ -226,28 +226,24 @@ app.use((req, res, next) => {
 });
 
 function isUser (req, res, next) {
-  Auth.doAuth(req, res, () => {
-    if (req.user.hasRole('parliamentUser')) {
-      return next();
-    }
+  if (req.user.hasRole('parliamentUser')) {
+    return next();
+  }
 
-    res.status(403).json({
-      success: false,
-      text: 'Permission Denied: Not a Parliament user'
-    });
+  res.status(403).json({
+    success: false,
+    text: 'Permission Denied: Not a Parliament user'
   });
 }
 
 function isAdmin (req, res, next) {
-  Auth.doAuth(req, res, () => {
-    if (req.user.hasRole('parliamentAdmin')) {
-      return next();
-    }
+  if (req.user.hasRole('parliamentAdmin')) {
+    return next();
+  }
 
-    res.status(403).json({
-      success: false,
-      text: 'Permission Denied: Not a Parliament admin'
-    });
+  res.status(403).json({
+    success: false,
+    text: 'Permission Denied: Not a Parliament admin'
   });
 }
 
@@ -843,7 +839,7 @@ function getGeneralSetting (type) {
 // Use this before writing the parliament file
 function validateParliament (next) {
   const len = Buffer.from(JSON.stringify(parliament, null, 2)).length;
-  if (len < 320) {
+  if (len < 200) {
     // if it's an empty file, don't save it, return an error
     const errorMsg = 'Error writing parliament data: empty or invalid parliament';
     console.log(errorMsg);
@@ -982,6 +978,10 @@ app.get('/parliament/api/settings', [isAdmin, setCookie], (req, res, next) => {
 
 // Update the parliament general settings object
 app.put('/parliament/api/settings', [isAdmin, checkCookieToken], (req, res, next) => {
+  if (!req.body.settings?.general) {
+    return res.serverError(422, 'You must provide the settings to update.');
+  }
+
   // save general settings
   for (const s in req.body.settings.general) {
     let setting = req.body.settings.general[s];

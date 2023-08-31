@@ -26,12 +26,12 @@ const store = {
   }
 };
 
-test('notifiers', async () => {
+test('notifiers - parliament', async () => {
   fetch.mockResponseOnce(JSON.stringify(notifierTypes)); // mock call to api/notifierTypes
   fetch.mockResponseOnce(JSON.stringify([])); // mock call to api/notifiers
 
   const {
-    getByText, getByDisplayValue, getByPlaceholderText, queryByDisplayValue, emitted
+    getByText, getByTitle, getByDisplayValue, getByPlaceholderText, queryByDisplayValue, emitted, updateProps
   } = render(Notifiers, {
     store,
     props: {
@@ -109,6 +109,22 @@ test('notifiers', async () => {
     expect(emitted()['display-message'][2][0]).toStrictEqual({ msg: 'YAY3!' });
   });
 
+  // parliament has parliament only sections ------------------------------ //
+  const notifyArea = getByText('Notify on');
+  const notifyToggle = getByTitle('Turn this notifier on');
+
+  // help text get's updated ----------------------------------------------- //
+  await updateProps({
+    helpText: 'HELLO!',
+    parentApp: 'arkime'
+  });
+
+  getByText('HELLO!');
+
+  // viewer doesn't parliament only sections ------------------------------- //
+  expect(notifyArea).not.toBeInTheDocument();
+  expect(notifyToggle).not.toBeInTheDocument();
+
   // can delete notifier --------------------------------------------------- //
   // mock api/notifier/:id delete
   fetch.mockResponseOnce(JSON.stringify({ success: true, text: 'YAY4!' }));
@@ -119,3 +135,5 @@ test('notifiers', async () => {
   });
   expect(queryByDisplayValue('Slack')).not.toBeInTheDocument(); // notifier removed
 });
+
+

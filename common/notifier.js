@@ -84,11 +84,38 @@ class Notifier {
   // --------------------------------------------------------------------------
 
   /**
-   * Checks that the notifier type is valid and the required fields are filled out
+   * Checks that the notifier is valid.
+   * Mutates the notifier if on/alerts properties are missing or the name has special chars.
    * @param {object} notifier - The notifier object to be checked
    * @returns {string|undefined} - String message to describe check error or undefined if all is good
    */
-  static #checkNotifierTypesAndFields (notifier) {
+  static #validateNotifier (notifier) {
+    if (!ArkimeUtil.isString(notifier.name)) {
+      return 'Missing a notifier name';
+    }
+
+    if (!ArkimeUtil.isString(notifier.type)) {
+      return 'Missing notifier type';
+    }
+
+    if (!notifier.fields) {
+      return 'Missing notifier fields';
+    }
+
+    if (!Array.isArray(notifier.fields)) {
+      return 'Notifier fields must be an array';
+    }
+
+    notifier.name = notifier.name.replace(/[^-a-zA-Z0-9_: ]/g, '');
+    if (notifier.name.length === 0) {
+      return 'Notifier name empty';
+    }
+
+    notifier.on ??= false;
+    if (typeof notifier.on !== 'boolean') {
+      return 'Notifier on state must be true or false';
+    }
+
     const type = notifier.type.toLowerCase();
 
     let foundNotifier;
@@ -113,14 +140,13 @@ class Notifier {
       }
     }
 
-    if (notifier.alerts) {
-      if (typeof notifier.alerts !== 'object') {
-        return 'Alerts must be an object';
-      }
-      for (const a in notifier.alerts) {
-        if (typeof notifier.alerts[a] !== 'boolean') {
-          return 'Alert must be true or false';
-        }
+    notifier.alerts ??= Notifier.#defaultAlerts;
+    if (typeof notifier.alerts !== 'object') {
+      return 'Alerts must be an object';
+    }
+    for (const a in notifier.alerts) {
+      if (typeof notifier.alerts[a] !== 'boolean') {
+        return 'Alert must be true or false';
       }
     }
 
@@ -283,32 +309,7 @@ class Notifier {
    * @returns {Notifier} notifier - If successful, the notifier with name sanitized and created/user fields added.
    */
   static async apiCreateNotifier (req, res) {
-    if (!ArkimeUtil.isString(req.body.name)) {
-      return res.serverError(403, 'Missing a notifier name');
-    }
-
-    if (!ArkimeUtil.isString(req.body.type)) {
-      return res.serverError(403, 'Missing notifier type');
-    }
-
-    if (!req.body.fields) {
-      return res.serverError(403, 'Missing notifier fields');
-    }
-
-    if (!Array.isArray(req.body.fields)) {
-      return res.serverError(403, 'Notifier fields must be an array');
-    }
-
-    req.body.name = req.body.name.replace(/[^-a-zA-Z0-9_: ]/g, '');
-
-    if (req.body.name.length === 0) {
-      return res.serverError(403, 'Notifier name empty');
-    }
-
-    req.body.on = req.body?.on || false;
-    req.body.alerts = req.body?.alerts || Notifier.#defaultAlerts;
-
-    const errorMsg = Notifier.#checkNotifierTypesAndFields(req.body);
+    const errorMsg = Notifier.#validateNotifier(req.body);
     if (errorMsg) {
       return res.serverError(403, errorMsg);
     }
@@ -353,29 +354,7 @@ class Notifier {
    */
 
   static async apiUpdateNotifier (req, res) {
-    if (!ArkimeUtil.isString(req.body.name)) {
-      return res.serverError(403, 'Missing a notifier name');
-    }
-
-    if (!ArkimeUtil.isString(req.body.type)) {
-      return res.serverError(403, 'Missing notifier type');
-    }
-
-    if (!req.body.fields) {
-      return res.serverError(403, 'Missing notifier fields');
-    }
-
-    if (!Array.isArray(req.body.fields)) {
-      return res.serverError(403, 'Notifier fields must be an array');
-    }
-
-    req.body.name = req.body.name.replace(/[^-a-zA-Z0-9_: ]/g, '');
-
-    if (req.body.name.length === 0) {
-      return res.serverError(403, 'Notifier name empty');
-    }
-
-    const errorMsg = Notifier.#checkNotifierTypesAndFields(req.body);
+    const errorMsg = Notifier.#validateNotifier(req.body);
     if (errorMsg) {
       return res.serverError(403, errorMsg);
     }
@@ -391,8 +370,8 @@ class Notifier {
       notifier.name = req.body.name;
       notifier.roles = req.body.roles;
       notifier.fields = req.body.fields;
-      notifier.on = req.body.on || false;
-      notifier.alerts = req.body.alerts || Notifier.#defaultAlerts;
+      notifier.on = !!req.body.on || false;
+      notifier.alerts = req.body.alerts ??= Notifier.#defaultAlerts;
       notifier.updated = Math.floor(Date.now() / 1000); // update/add updated time
 
       // comma/newline separated value -> array of values

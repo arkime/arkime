@@ -5654,7 +5654,7 @@ sub notifiersAddMissingProps
   # add missing alerts and on properties to the notifiers
   my $notifiers = esGet("/${PREFIX}notifiers/_search?size=10000");
 
-  return if ($notifiers->{hits}->{total}->{value} eq 0);
+  return if (!$notifiers->{hits}->{total}->{value});
 
   foreach my $notifier (@{$notifiers->{hits}->{hits}}) {
       # if alerts and on are not props add them
@@ -5678,7 +5678,7 @@ sub notifiersAddMissingProps
         $update = 1;
       }
 
-      esPost("/${PREFIX}notifiers/_doc/${id}", to_json($notifier)) if ($update eq 1);
+      esPost("/${PREFIX}notifiers/_doc/${id}", to_json($notifier)) if ($update);
   }
 }
 ################################################################################
