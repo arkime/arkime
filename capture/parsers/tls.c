@@ -473,6 +473,10 @@ LOCAL void tls_process_server_certificate(MolochSession_t *session, const unsign
             moloch_session_add_tag(session, "cert:self-signed");
         }
 
+        if (certs->isCA) {
+            moloch_session_add_tag(session, "cert:certificate-authority");
+        }
+
 
         if (!moloch_field_certsinfo_add(certsField, session, certs, clen*2)) {
             moloch_field_certsinfo_free(certs);
