@@ -473,6 +473,10 @@ LOCAL void tls_process_server_certificate(ArkimeSession_t *session, const unsign
             arkime_session_add_tag(session, "cert:self-signed");
         }
 
+        if (certs->isCA) {
+            arkime_session_add_tag(session, "cert:certificate-authority");
+        }
+
 
         if (!arkime_field_certsinfo_add(certsField, session, certs, clen*2)) {
             arkime_field_certsinfo_free(certs);

@@ -151,6 +151,10 @@
                "port" : 64034
             },
             "srcPayload8" : "16030100e8010000",
+            "tags" : [
+               "cert:certificate-authority"
+            ],
+            "tagsCnt" : 1,
             "tcpflags" : {
                "ack" : 5,
                "dstZero" : 0,
