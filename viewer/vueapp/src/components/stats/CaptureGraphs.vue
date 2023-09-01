@@ -52,7 +52,8 @@ export default {
     'graphHide',
     'graphSort',
     'searchTerm',
-    'refreshData'
+    'refreshData',
+    'cluster'
   ],
   components: { MolochPaging, MolochError, MolochLoading },
   data: function () {
@@ -66,7 +67,8 @@ export default {
         start: 0,
         filter: this.searchTerm || undefined,
         desc: this.graphSort === 'desc',
-        hide: this.graphHide || 'none'
+        hide: this.graphHide || 'none',
+        cluster: this.cluster || undefined
       }
     };
   },
@@ -110,6 +112,11 @@ export default {
     graphSort: function () {
       initialized = false;
       this.query.desc = this.graphSort === 'desc';
+      this.loadData();
+    },
+    cluster: function () {
+      initialized = false;
+      this.query.cluster = this.cluster;
       this.loadData();
     },
     refreshData: function () {

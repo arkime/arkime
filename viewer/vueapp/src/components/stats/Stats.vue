@@ -9,6 +9,9 @@
 
             <div v-if="tabIndex === 7">&nbsp;</div>
 
+            <!-- TODO other don't have all option, you have to select only one -->
+            <Clusters class="mr-2" />
+
             <!-- graph type select -->
             <div class="input-group input-group-sm"
               v-if="tabIndex === 0">
@@ -367,6 +370,7 @@
             :graph-interval="graphInterval"
             :graph-hide="graphHide"
             :graph-sort="graphSort"
+            :cluster="cluster"
             :user="user">
           </capture-graphs>
         </b-tab>
@@ -389,8 +393,7 @@
           </es-nodes>
         </b-tab>
         <b-tab title="ES Indices"
-          @click="tabIndexChange(3)"
-          v-if="!multiviewer">
+          @click="tabIndexChange(3)">
           <es-indices v-if="user && tabIndex === 3"
             :refreshData="refreshData"
             :data-interval="dataInterval"
@@ -403,8 +406,7 @@
           </es-indices>
         </b-tab>
         <b-tab title="ES Tasks"
-          @click="tabIndexChange(4)"
-          v-if="!multiviewer">
+          @click="tabIndexChange(4)">
           <es-tasks v-if="user && tabIndex === 4"
             :data-interval="dataInterval"
             :refreshData="refreshData"
@@ -415,8 +417,7 @@
           </es-tasks>
         </b-tab>
         <b-tab title="ES Shards"
-          @click="tabIndexChange(5)"
-          v-if="!multiviewer">
+          @click="tabIndexChange(5)">
           <es-shards v-if="user && tabIndex === 5"
             :shards-show="shardsShow"
             :refreshData="refreshData"
@@ -425,8 +426,7 @@
           </es-shards>
         </b-tab>
         <b-tab title="ES Recovery"
-          @click="tabIndexChange(6)"
-          v-if="!multiviewer">
+          @click="tabIndexChange(6)">
           <es-recovery v-if="user && tabIndex === 6"
             :recovery-show="recoveryShow"
             :data-interval="dataInterval"
@@ -437,7 +437,7 @@
         </b-tab>
         <b-tab title="ES Admin"
           @click="tabIndexChange(7)"
-          v-if="user.esAdminUser && !multiviewer">
+          v-if="user.esAdminUser">
           <es-admin v-if="user && tabIndex === 7"
             :data-interval="dataInterval"
             :refreshData="refreshData"
@@ -463,6 +463,7 @@ import CaptureStats from './CaptureStats';
 import MolochCollapsible from '../utils/CollapsibleWrapper';
 import utils from '../utils/utils';
 import Focus from '../../../../../common/vueapp/Focus';
+import Clusters from '../utils/Clusters';
 
 let searchInputTimeout;
 
@@ -477,7 +478,8 @@ export default {
     EsTasks,
     EsRecovery,
     EsAdmin,
-    MolochCollapsible
+    MolochCollapsible,
+    Clusters
   },
   directives: { Focus },
   data: function () {
@@ -491,9 +493,9 @@ export default {
       shardsShow: this.$route.query.shardsShow || 'notstarted',
       dataInterval: this.$route.query.refreshInterval || '15000',
       pageSize: this.$route.query.size || '500',
+      cluster: this.$route.query.cluster || undefined,
       refreshData: false,
       childError: '',
-      multiviewer: this.$constants.MOLOCH_MULTIVIEWER,
       confirmMessage: '',
       itemToConfirm: undefined,
       issueConfirmation: undefined,
@@ -526,6 +528,9 @@ export default {
     },
     loadingData: function () {
       return this.$store.state.loadingData;
+    },
+    molochClusters: function () {
+      return this.$store.state.remoteclusters;
     }
   },
   watch: {
@@ -586,6 +591,9 @@ export default {
       }
       if (queryParams.refreshInterval) {
         this.dataInterval = queryParams.refreshInterval;
+      }
+      if (queryParams.cluster) {
+        this.cluster = queryParams.cluster;
       }
       this.pageSize = queryParams.size || 500;
     },
