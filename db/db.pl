@@ -443,9 +443,9 @@ sub esAlias
     my ($cmd, $index, $alias, $dontaddprefix) = @_;
     logmsg "Alias cmd $cmd from $index to alias $alias\n" if ($verbose > 0);
     if (!$dontaddprefix){ # append PREFIX
-        esPost("/_aliases?master_timeout=${ESTIMEOUT}s", '{ "actions": [ { "' . $cmd . '": { "index": "' . $PREFIX . $index . '", "alias" : "'. $PREFIX . $alias .'" } } ] }', 1);
+        esPost("/_aliases?master_timeout=${ESTIMEOUT}s", qq({ "actions": [ { "${cmd}": { "index": "${PREFIX}${index}", "alias" : "${PREFIX}${alias}" } } ] }), 1);
     } else { # do not append PREFIX
-        esPost("/_aliases?master_timeout=${ESTIMEOUT}s", '{ "actions": [ { "' . $cmd . '": { "index": "' . $index . '", "alias" : "'. $alias .'" } } ] }', 1);
+        esPost("/_aliases?master_timeout=${ESTIMEOUT}s", qq({ "actions": [ { "${cmd}": { "index": "${index}", "alias" : "${alias}" } } ] }), 1);
     }
 }
 
@@ -1291,9 +1291,9 @@ sub sessions3ECSTemplate
 # 1) change index_patterns
 # 2) Delete cloud,dns,http,tls,user,data_stream
 # 3) Add source.as.full, destination.as.full, source.mac-cnt, destination.mac-cnt, network.vlan.id-cnt
-my $template = '
+my $template = qq(
 {
-  "index_patterns": "' . $PREFIX . 'sessions3-*",
+  "index_patterns": "${PREFIX}sessions3-*",
   "mappings": {
     "_meta": {
       "version": "1.10.0"
@@ -1311,7 +1311,7 @@ my $template = '
       }
     ],
     "properties": {
-      "@timestamp": {
+      "\@timestamp": {
         "type": "date"
       },
       "agent": {
@@ -4174,7 +4174,7 @@ my $template = '
     }
   }
 }
-';
+);
     logmsg "Creating sessions ecs template\n" if ($verbose > 0);
     esPut("/_template/${PREFIX}sessions3_ecs_template?master_timeout=${ESTIMEOUT}s&pretty", $template);
 }
@@ -4183,10 +4183,11 @@ my $template = '
 # Not all fields need to be here, but the index will be created quicker if more are.
 sub sessions3Update
 {
-    my $mapping = '
+    my $mapping = qq(
 {
   "_meta": {
-    "molochDbVersion": ' . $VERSION . '
+    "molochDbVersion": $VERSION,
+    "arkimeDbVersion": $VERSION
   },
   "dynamic": "true",
   "dynamic_templates": [
@@ -5190,7 +5191,7 @@ sub sessions3Update
     }
   }
 }
-';
+);
 
 $REPLICAS = 0 if ($REPLICAS < 0);
 my $shardsPerNode = ceil($SHARDS * ($REPLICAS+1) / $main::numberOfNodes);
@@ -5207,15 +5208,15 @@ if ($DOILM) {
       "lifecycle.name": "${PREFIX}molochsessions"/;
 }
 
-    my $template = '
+    my $template = qq(
 {
-  "index_patterns": "' . $PREFIX . 'sessions3-*",
+  "index_patterns": "${PREFIX}sessions3-*",
   "settings": {
     "index": {
-      "routing.allocation.total_shards_per_node": ' . $shardsPerNode . $settings . ',
-      "refresh_interval": "' . $REFRESH . 's",
-      "number_of_shards": ' . $SHARDS . ',
-      "number_of_replicas": ' . $REPLICAS . ',
+      "routing.allocation.total_shards_per_node": ${shardsPerNode}${settings},
+      "refresh_interval": "${REFRESH}s",
+      "number_of_shards": ${SHARDS},
+      "number_of_replicas": ${REPLICAS},
       "analysis": {
         "analyzer": {
           "wordSplit": {
@@ -5227,9 +5228,9 @@ if ($DOILM) {
       }
     }
   },
-  "mappings":' . $mapping . ',
+  "mappings": ${mapping},
   "order": 99
-}';
+});
 
     logmsg "Creating sessions template\n" if ($verbose > 0);
     esPut("/_template/${PREFIX}sessions3_template?master_timeout=${ESTIMEOUT}s&pretty", $template);
@@ -6556,7 +6557,7 @@ if ($ARGV[1] =~ /^(users-?import|import)$/) {
                     ("$shardsPerNode" eq "null" && exists $settings->{$i}->{settings}->{"index.routing.allocation.total_shards_per_node"}) ||
                     ("$shardsPerNode" ne "null" && $settings->{$i}->{settings}->{"index.routing.allocation.total_shards_per_node"} ne "$shardsPerNode")) {
 
-                    esPut("/$i/_settings?master_timeout=${ESTIMEOUT}s", '{"index": {"number_of_replicas":' . $REPLICAS . ', "routing.allocation.total_shards_per_node": ' . $shardsPerNode . '}}', 1);
+                    esPut("/$i/_settings?master_timeout=${ESTIMEOUT}s", qq({"index": {"number_of_replicas":${REPLICAS}, "routing.allocation.total_shards_per_node": ${shardsPerNode}}}), 1);
                 }
             }
         } else {
