@@ -609,7 +609,7 @@ class ItemHTTPStream extends ItemTransform {
         } else if (this.transferEncoding[item.client] === 'CHUNKED') {
           this.states[item.client] = ItemHTTPStream.STATES.res_body_chunk;
         } else {
-          this.states[item.client] = ItemHTTPStream.STATES.req_body;
+          this.states[item.client] = ItemHTTPStream.STATES.res_body;
         }
         this.add(item, endPos + 1);
         break;
@@ -721,149 +721,17 @@ class ItemHTTPStream extends ItemTransform {
 
   _finish (callback) {
     if (this.runningStreams > 0) {
+      // Since we might not get all the packets, end any current buffer stream
+      if (this.bufferStream) {
+        this.bufferStream.end();
+        delete this.bufferStream;
+      }
       this.endCb = callback;
     } else {
       setImmediate(callback);
     }
   }
 };
-
-/*
-function ItemHTTPStream (options) {
-  ItemTransform.call(this, { maxPeekItems: 2 });
-  mkname(this, 'ItemHTTPStream');
-  this.bodyNum = 0;
-  this.options = options;
-  this.runningStreams = 0;
-}
-util.inherits(ItemHTTPStream, ItemTransform);
-ItemHTTPStream.onBody = function (buf, start, len) {
-  // console.log("onBody", start, len, item);
-  const item = this.curitem;
-  delete this.curitem;
-  if (!this.bufferStream) {
-    this.httpstream.push({ client: item.client, ts: item.ts, data: buf.slice(0, start) });
-    this.httpstream.runningStreams++;
-    this.bufferStream = new Stream.PassThrough();
-    mkname(this.bufferStream, 'bufferStream');
-
-    const order = this.httpstream.options['ITEM-HTTP'] ? this.httpstream.options['ITEM-HTTP'].order || [] : [];
-    const pipes = exports.createPipeline(this.httpstream.options, order, this.bufferStream, this.headerInfo);
-
-    item.bodyNum = ++this.httpstream.bodyNum;
-    item.bodyName = this.httpstream.bodyName;
-    const heb = new CollectBodyStream(this.httpstream, item, this.headerInfo);
-    pipes[pipes.length - 1].pipe(heb);
-
-    delete this.headerInfo;
-  }
-
-  this.bufferStream.write(buf.slice(start, start + len));
-};
-
-ItemHTTPStream.onMessageComplete = function () {
-  // console.log("onMessageComplete", this.bufferStream?"bufferStream":"no bufferStream");
-  if (this.bufferStream) {
-    this.bufferStream.end();
-    delete this.bufferStream;
-  } else {
-    this.httpstream.push(this.curitem);
-  }
-  delete this.curitem;
-};
-
-ItemHTTPStream.onHeadersComplete = function (major, minor, headers, method, url) {
-  // console.log("onHeadersComplete", headers, method, url);
-  const info = { headersMap: {} };
-  for (let i = 0; i < headers.length; i += 2) {
-    info.headersMap[headers[i].toLowerCase()] = headers[i + 1];
-  }
-  this.headerInfo = info;
-  if (url) { this.httpstream.bodyName = url.split(/[/?=]/).pop(); }
-
-  if (info.headersMap.expect === '100-continue') {
-    this.curitem.expect100 = true;
-  }
-};
-
-ItemHTTPStream.prototype._shouldProcess = function (item) {
-  return (item.data.length >= 4 && item.data.slice(0, 4).toString() === 'HTTP');
-};
-
-ItemHTTPStream.prototype._process = function (item, callback) {
-  // console.trace("_process", item.data.toString());
-  if (this.parsers === undefined) {
-    if (item.data.slice(0, 4).toString() === 'HTTP') {
-      this.parsers = [new HTTPParser(HTTPParser.RESPONSE), new HTTPParser(HTTPParser.REQUEST)];
-      this.parsers[0].initialize(HTTPParser.RESPONSE, {});
-      this.parsers[1].initialize(HTTPParser.REQUEST, {});
-    } else {
-      this.parsers = [new HTTPParser(HTTPParser.REQUEST), new HTTPParser(HTTPParser.RESPONSE)];
-      this.parsers[0].initialize(HTTPParser.REQUEST, {});
-      this.parsers[1].initialize(HTTPParser.RESPONSE, {});
-    }
-    this.parsers[0].httpstream = this.parsers[1].httpstream = this;
-    this.parsers[0][HTTPParser.kOnBody] = this.parsers[1][HTTPParser.kOnBody] = ItemHTTPStream.onBody;
-    this.parsers[0][HTTPParser.kOnMessageComplete] = this.parsers[1][HTTPParser.kOnMessageComplete] = ItemHTTPStream.onMessageComplete;
-    this.parsers[0][HTTPParser.kOnHeadersComplete] = this.parsers[1][HTTPParser.kOnHeadersComplete] = ItemHTTPStream.onHeadersComplete;
-  }
-
-  if (item.data.length === 0) {
-    this.push(item);
-  } else {
-    this.parsers[item.client].curitem = item;
-    const out = this.parsers[item.client].execute(item.data, 0, item.data.length);
-    if (typeof out === 'object') {
-      this.push(item);
-    } else if (item.expect100) {
-      this.push({ client: item.client, ts: item.ts, data: item.data.slice(0, out) });
-    }
-  }
-  setImmediate(callback);
-};
-
-ItemHTTPStream.prototype.bodyDone = function (item, data, headerInfo) {
-  let bodyType = 'file';
-  if (headerInfo.headersMap && headerInfo.headersMap['content-type']) {
-    if (headerInfo.headersMap['content-type'].match(/^image/i)) {
-      bodyType = 'image';
-    } else if (headerInfo.headersMap['content-type'].match(/^text/i)) {
-      bodyType = 'text';
-    }
-  }
-
-  const bodyName = item.bodyName || bodyType + item.bodyNum;
-  this.push({ client: item.client, ts: item.ts, data, bodyNum: item.bodyNum, bodyType, bodyName });
-  this.runningStreams--;
-  if (this.runningStreams === 0 && this.endCb) {
-    this.endCb();
-  }
-};
-ItemHTTPStream.prototype._finish = function (callback) {
-  const self = this;
-  this.parsers[0].finish();
-  this.parsers[1].finish();
-  if (this.parsers[0].curitem) {
-    this.push(this.parsers[0].curitem);
-  }
-  if (this.parsers[1].curitem) {
-    this.push(this.parsers[1].curitem);
-  }
-  const streams = 0;
-  async.each([this.parsers[0].bufferStream, this.parsers[1].bufferStream], function (stream, cb) {
-    if (stream) {
-      return stream.end(cb);
-    }
-    cb();
-  }, function () {
-    if (self.runningStreams > 0 || streams > 0) {
-      self.endCb = callback;
-    } else {
-      setImmediate(callback);
-    }
-  });
-};
-*/
 
 /// /////////////////////////////////////////////////////////////////////////////
 function ItemHexFormaterStream (options) {
