@@ -1,4 +1,4 @@
-use Test::More tests => 90;
+use Test::More tests => 92;
 use Cwd;
 use URI::Escape;
 use MolochTest;
@@ -9,7 +9,7 @@ use strict;
 
 my $result;
 
-my $version = 5;
+my $version = 6;
 
 my $es = "-o 'elasticsearch=$MolochTest::elasticsearch' -o 'usersElasticsearch=$MolochTest::elasticsearch' $ENV{INSECURE}";
 # create user without parliament role
@@ -54,13 +54,13 @@ $result = parliamentPutToken("/parliament/api/settings/restoreDefaults?molochReg
 eq_or_diff($result, from_json('{"success": false, "text": "Permission Denied: Not a Parliament admin"}'));
 $result = parliamentGetToken("/parliament/api/notifierTypes?molochRegressionUser=arkimeUserP", $arkimeUserToken);
 eq_or_diff($result, from_json('{"success": false, "text": "Permission Denied: Not a Parliament admin"}'));
-$result = parliamentPutToken("/parliament/api/notifiers/test?molochRegressionUser=arkimeUserP", '{}', $arkimeUserToken);
+$result = parliamentPutToken("/parliament/api/notifier/test?molochRegressionUser=arkimeUserP", '{}', $arkimeUserToken);
 eq_or_diff($result, from_json('{"success": false, "text": "Permission Denied: Not a Parliament admin"}'));
-$result = parliamentPostToken("/parliament/api/notifiers?molochRegressionUser=arkimeUserP", '{}', $arkimeUserToken);
+$result = parliamentPostToken("/parliament/api/notifier?molochRegressionUser=arkimeUserP", '{}', $arkimeUserToken);
 eq_or_diff($result, from_json('{"success": false, "text": "Permission Denied: Not a Parliament admin"}'));
-$result = parliamentDeleteToken("/parliament/api/notifiers/test?molochRegressionUser=arkimeUserP", $arkimeUserToken);
+$result = parliamentDeleteToken("/parliament/api/notifier/test?molochRegressionUser=arkimeUserP", $arkimeUserToken);
 eq_or_diff($result, from_json('{"success": false, "text": "Permission Denied: Not a Parliament admin"}'));
-$result = parliamentPostToken("/parliament/api/testAlert?molochRegressionUser=arkimeUserP", '{}', $arkimeUserToken);
+$result = parliamentPostToken("/parliament/api/notifier/id/test?molochRegressionUser=arkimeUserP", '{}', $arkimeUserToken);
 eq_or_diff($result, from_json('{"success": false, "text": "Permission Denied: Not a Parliament admin"}'));
 $result = parliamentPutToken("/parliament/api/parliament?molochRegressionUser=arkimeUserP", '{}', $arkimeUserToken);
 eq_or_diff($result, from_json('{"success": false, "text": "Permission Denied: Not a Parliament admin"}'));
@@ -112,13 +112,13 @@ $result = parliamentPutToken("/parliament/api/settings/restoreDefaults?molochReg
 eq_or_diff($result, from_json('{"success": false, "text": "Permission Denied: Not a Parliament admin"}'));
 $result = parliamentGetToken("/parliament/api/notifierTypes?molochRegressionUser=parliamentUserP", $parliamentUserToken);
 eq_or_diff($result, from_json('{"success": false, "text": "Permission Denied: Not a Parliament admin"}'));
-$result = parliamentPutToken("/parliament/api/notifiers/test?molochRegressionUser=parliamentUserP", '{}', $parliamentUserToken);
+$result = parliamentPutToken("/parliament/api/notifier/test?molochRegressionUser=parliamentUserP", '{}', $parliamentUserToken);
 eq_or_diff($result, from_json('{"success": false, "text": "Permission Denied: Not a Parliament admin"}'));
-$result = parliamentPostToken("/parliament/api/notifiers?molochRegressionUser=parliamentUserP", '{}', $parliamentUserToken);
+$result = parliamentPostToken("/parliament/api/notifier?molochRegressionUser=parliamentUserP", '{}', $parliamentUserToken);
 eq_or_diff($result, from_json('{"success": false, "text": "Permission Denied: Not a Parliament admin"}'));
-$result = parliamentDeleteToken("/parliament/api/notifiers/test?molochRegressionUser=parliamentUserP", $parliamentUserToken);
+$result = parliamentDeleteToken("/parliament/api/notifier/test?molochRegressionUser=parliamentUserP", $parliamentUserToken);
 eq_or_diff($result, from_json('{"success": false, "text": "Permission Denied: Not a Parliament admin"}'));
-$result = parliamentPostToken("/parliament/api/testAlert?molochRegressionUser=parliamentUserP", '{}', $parliamentUserToken);
+$result = parliamentPostToken("/parliament/api/notifier/id/test?molochRegressionUser=parliamentUserP", '{}', $parliamentUserToken);
 eq_or_diff($result, from_json('{"success": false, "text": "Permission Denied: Not a Parliament admin"}'));
 $result = parliamentPutToken("/parliament/api/parliament?molochRegressionUser=parliamentUserP", '{}', $parliamentUserToken);
 eq_or_diff($result, from_json('{"success": false, "text": "Permission Denied: Not a Parliament admin"}'));
@@ -163,8 +163,6 @@ eq_or_diff($result, from_json('{"text": "Must specify the acknowledged issue(s) 
 
 # parliament admin can access/update settings/parliament
 $result = parliamentGetToken("/parliament/api/settings?molochRegressionUser=parliamentAdminP", $parliamentAdminToken);
-ok(exists $result->{commonAuth});
-ok(exists $result->{notifiers});
 ok(exists $result->{general});
 ok(exists $result->{general}->{hostname});
 ok(exists $result->{general}->{outOfDate});
@@ -173,40 +171,44 @@ ok(exists $result->{general}->{esQueryTimeout});
 ok(exists $result->{general}->{removeIssuesAfter});
 ok(exists $result->{general}->{removeAcknowledgedAfter});
 
+# need settings object
+$result = parliamentPutToken("/parliament/api/settings?molochRegressionUser=parliamentAdminP", '{}', $parliamentAdminToken);
+ok(!$result->{success});
+
+# need settings object with general
+$result = parliamentPutToken("/parliament/api/settings?molochRegressionUser=parliamentAdminP", '{"settings": {} }', $parliamentAdminToken);
+ok(!$result->{success});
+
+# can update settings
 $result = parliamentPutToken("/parliament/api/settings?molochRegressionUser=parliamentAdminP", '{"settings": { "general": { "noPacketsLength": 100 } } }', $parliamentAdminToken);
 ok($result->{success});
-
 $result = parliamentGetToken("/parliament/api/settings?molochRegressionUser=parliamentAdminP", $parliamentAdminToken);
 eq_or_diff($result->{general}->{noPacketsLength}, 100);
 
+# notifier types have been initiated
 $result = parliamentGetToken("/parliament/api/notifierTypes?molochRegressionUser=parliamentAdminP", $parliamentAdminToken);
 ok(exists $result->{slack});
 ok(exists $result->{email});
 ok(exists $result->{twilio});
 
-$result = parliamentPostToken("/parliament/api/notifiers?molochRegressionUser=parliamentAdminP", '{"notifier":{"name":"Slack","type":"slack","fields":{"slackWebhookUrl":{"name":"slackWebhookUrl","required":true,"type":"secret","description":"Incoming Webhooks are a simple way to post messages from external sources into Slack.","value":"https://hooks.slack.com/services/asdf"}},"alerts":{"esRed":true,"esDown":true,"esDropped":true,"outOfDate":true,"noPackets":true}}}', $parliamentAdminToken);
-eq_or_diff($result, from_json('{"text": "Successfully added Slack notifier.", "success": true, "name": "Slack"}'));
-$result = parliamentPutToken("/parliament/api/notifiers/Slack?molochRegressionUser=parliamentAdminP", '{"key":"Slack","notifier":{"name":"Slack","type":"slack","fields":{"slackWebhookUrl":{"name":"slackWebhookUrl","required":true,"type":"secret","description":"Incoming Webhooks are a simple way to post messages from external sources into Slack.","value":"https://hooks.slack.com/services/asdfasdf"}},"alerts":{"esRed":true,"esDown":true,"esDropped":true,"outOfDate":true,"noPackets":true}}}', $parliamentAdminToken);
-eq_or_diff($result, from_json('{"text": "Successfully updated Slack notifier.", "success": true, "newKey": "Slack"}'));
-$result = parliamentPostToken("/parliament/api/testAlert?molochRegressionUser=parliamentAdminP", '{"notifier":"Slack"}', $parliamentAdminToken);
-eq_or_diff($result, from_json('{"text": "Successfully issued alert using the Slack notifier.", "success": true}'));
-$result = parliamentDeleteToken("/parliament/api/notifiers/Slack?molochRegressionUser=parliamentAdminP", $parliamentAdminToken);
-eq_or_diff($result, from_json('{"text": "Successfully removed Slack notifier.", "success": true}'));
+# can create notifier
+$result = parliamentPostToken("/parliament/api/notifier?molochRegressionUser=parliamentAdminP", '{"name":"Slack","type":"slack","fields":[{"name":"slackWebhookUrl","required":true,"type":"secret","description":"Incoming Webhooks are a simple way to post messages from external sources into Slack.","value":"https://hooks.slack.com/services/asdf"}],"alerts":{"esRed":true,"esDown":true,"esDropped":true,"outOfDate":true,"noPackets":true}}', $parliamentAdminToken);
+ok($result->{success});
+eq_or_diff($result->{notifier}->{name}, "Slack");
+my $id = $result->{notifier}->{id};
 
-# $result = parliamentPostToken("/parliament/api/groups?molochRegressionUser=parliamentAdminP", '{"title":"Group 1","description":""}', $parliamentAdminToken);
-# eq_or_diff($result, from_json('{"text": "Successfully added new group.", "success": true, "group": {"clusters":[],"id":0,"title":"Group 1"}}'));
-# $result = parliamentPostToken("/parliament/api/groups/0/clusters?molochRegressionUser=parliamentAdminP", '{"title":"Cluster 1","url":"localhost:8123"}', $parliamentAdminToken);
-# delete $result->{cluster}->{healthError};
-# delete $result->{cluster}->{statsError};
-# eq_or_diff($result, from_json('{"text": "Successfully added the requested cluster.", "success": true, "cluster": { "title":"Cluster 1", "url":"localhost:8123", "id":0}}'));
-# $result = parliamentPutToken("/parliament/api/groups/0?molochRegressionUser=parliamentAdminP", '{"title":"Group 1a"}', $parliamentAdminToken);
-# eq_or_diff($result, from_json('{"text": "Successfully updated the requested group.", "success": true}'));
-# $result = parliamentPutToken("/parliament/api/groups/0/clusters/0?molochRegressionUser=parliamentAdminP", '{"url":"localhost:8123","title":"Cluster 1a"}', $parliamentAdminToken);
-# eq_or_diff($result, from_json('{"text": "Successfully updated the requested cluster.", "success": true}'));
-# $result = parliamentDeleteToken("/parliament/api/groups/0/clusters/0?molochRegressionUser=parliamentAdminP", $parliamentAdminToken);
-# eq_or_diff($result, from_json('{"text": "Successfully removed the requested cluster.", "success": true}'));
-# $result = parliamentDeleteToken("/parliament/api/groups/0?molochRegressionUser=parliamentAdminP", $parliamentAdminToken);
-# eq_or_diff($result, from_json('{"text": "Successfully removed the requested group.", "success": true}'));
+# can update notifier
+$result = parliamentPutToken("/parliament/api/notifier/$id?molochRegressionUser=parliamentAdminP", '{"name":"Slack","type":"slack","fields":[{"name":"slackWebhookUrl","required":true,"type":"secret","description":"Incoming Webhooks are a simple way to post messages from external sources into Slack.","value":"https://hooks.slack.com/services/asdfasdf"}],"alerts":{"esRed":true,"esDown":true,"esDropped":true,"outOfDate":true,"noPackets":true}}', $parliamentAdminToken);
+ok($result->{success});
+eq_or_diff($result->{notifier}->{fields}->[0]->{value}, "https://hooks.slack.com/services/asdfasdf");
+
+# can issue notification
+$result = parliamentPostToken("/parliament/api/notifier/$id/test?molochRegressionUser=parliamentAdminP", '{}', $parliamentAdminToken);
+eq_or_diff($result, from_json('{"text": "Successfully issued alert using the Slack notifier.", "success": true}'));
+
+# can delete notifier
+$result = parliamentDeleteToken("/parliament/api/notifier/$id?molochRegressionUser=parliamentAdminP", $parliamentAdminToken);
+eq_or_diff($result, from_json('{"text": "Deleted notifier successfully", "success": true}'));
 
 # Create group no title
 $result = parliamentPostToken("/parliament/api/groups?molochRegressionUser=parliamentAdminP", '{}', $parliamentAdminToken);

@@ -418,6 +418,40 @@ class ArkimeUtil {
 
     return undefined;
   };
+
+  /**
+   * Check the Arkime Schema Version
+   */
+  static async checkArkimeSchemaVersion (esClient, prefix, minVersion) {
+    if (prefix.length > 0 && !prefix.endsWith('_')) {
+      prefix += '_';
+    }
+
+    try {
+      const { body: doc } = await esClient.indices.getTemplate({
+        name: `${prefix}sessions3_template`,
+        filter_path: '**._meta'
+      });
+
+      try {
+        const molochDbVersion = doc[`${prefix}sessions3_template`].mappings._meta.molochDbVersion;
+
+        if (molochDbVersion < minVersion) {
+          console.log(`ERROR - Current database version (${molochDbVersion}) is less then required version (${minVersion}) use 'db/db.pl <eshost:esport> upgrade' to upgrade`);
+          if (doc._node) {
+            console.log(`On node ${doc._node}`);
+          }
+          process.exit(1);
+        }
+      } catch (e) {
+        console.log("ERROR - Couldn't find database version.  Have you run ./db.pl host:port upgrade?", e);
+        process.exit(0);
+      }
+    } catch (err) {
+      console.log("ERROR - Couldn't retrieve database version, is OpenSearch/Elasticsearch running?  Have you run ./db.pl host:port init?", err);
+      process.exit(0);
+    }
+  }
 }
 
 module.exports = ArkimeUtil;

@@ -1349,9 +1349,11 @@
         <!-- notifiers settings -->
         <Notifiers
           id="notifiers"
+          parent-app="arkime"
           @display-message="displayMessage"
           v-if="visibleTab === 'notifiers'"
           v-has-role="{user:user,roles:'arkimeAdmin'}"
+          help-text="Configure notifiers that can be added to periodic queries and hunt jobs."
         />
 
         <!-- shortcut settings -->
@@ -1390,6 +1392,7 @@
 
 <script>
 import CommonUserService from '../../../../../common/vueapp/UserService';
+import Notifiers from '../../../../../common/vueapp/Notifiers';
 import UserService from '../users/UserService';
 import FieldService from '../search/FieldService';
 import SettingsService from './SettingsService';
@@ -1403,7 +1406,6 @@ import MolochPaging from '../utils/Pagination';
 import Utils from '../utils/utils';
 import PeriodicQueries from './PeriodicQueries';
 import Shortcuts from './Shortcuts';
-import Notifiers from './Notifiers';
 import Views from './Views';
 
 let clockInterval;
