@@ -212,15 +212,6 @@ my ($json) = @_;
                 }
             }
         }
-        if (exists $body->{cert}) {
-            for (my $i = 0; $i < @{$body->{cert}}; $i++) {
-                if ($body->{cert}->[$i]->{remainingDays} < 0) {
-                    $body->{cert}->[$i]->{remainingDays} = -1;
-                } elsif ($body->{cert}->[$i]->{remainingDays} > 0) {
-                    $body->{cert}->[$i]->{remainingDays} = 1;
-                }
-            }
-        }
     }
 
     @{$json->{sessions3}} = sort {

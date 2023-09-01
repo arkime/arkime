@@ -12,7 +12,7 @@
                   "notAfter" : 1521991598000,
                   "notBefore" : 1519399598000,
                   "publicAlgorithm" : "rsaEncryption",
-                  "remainingDays" : -1,
+                  "remainingDays" : 29,
                   "remainingSeconds" : 2591473,
                   "serial" : "00b27e45d092b4dddf",
                   "subjectCN" : [

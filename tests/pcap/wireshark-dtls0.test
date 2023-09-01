@@ -17,7 +17,7 @@
                   ],
                   "notAfter" : 1204562865000,
                   "notBefore" : 1046882865000,
-                  "remainingDays" : -1,
+                  "remainingDays" : 630,
                   "remainingSeconds" : 54441796,
                   "serial" : "01",
                   "subjectCN" : [

@@ -16,7 +16,7 @@
                   "notAfter" : 1581775250000,
                   "notBefore" : 1579183250000,
                   "publicAlgorithm" : "id-ecPublicKey",
-                  "remainingDays" : -1,
+                  "remainingDays" : 28,
                   "remainingSeconds" : 2481434,
                   "serial" : "62344031f7ab03e6f9327cde33419cf7fb09df94",
                   "subjectCN" : [
@@ -44,7 +44,7 @@
                   "notAfter" : 1584947742000,
                   "notBefore" : 1521875742000,
                   "publicAlgorithm" : "id-ecPublicKey",
-                  "remainingDays" : -1,
+                  "remainingDays" : 65,
                   "remainingSeconds" : 5653926,
                   "serial" : "5ecb7cee8ca206bf9ec00728889ad99f4362cfd9",
                   "subjectCN" : [

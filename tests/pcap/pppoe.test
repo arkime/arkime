@@ -15,7 +15,7 @@
                   "notAfter" : 1231995540000,
                   "notBefore" : 1168837200000,
                   "publicAlgorithm" : "rsaEncryption",
-                  "remainingDays" : -1,
+                  "remainingDays" : 443,
                   "remainingSeconds" : 38319485,
                   "serial" : "0119",
                   "subjectCN" : [
@@ -41,7 +41,7 @@
                   "notAfter" : 2142276180000,
                   "notBefore" : 1022565600000,
                   "publicAlgorithm" : "rsaEncryption",
-                  "remainingDays" : 1,
+                  "remainingDays" : 10979,
                   "remainingSeconds" : 948600125,
                   "serial" : "01",
                   "subjectCN" : [
@@ -64,7 +64,7 @@
                   "notAfter" : 1875288399000,
                   "notBefore" : 1086369999000,
                   "publicAlgorithm" : "rsaEncryption",
-                  "remainingDays" : 1,
+                  "remainingDays" : 7889,
                   "remainingSeconds" : 681612344,
                   "serial" : "07",
                   "subjectCN" : [
