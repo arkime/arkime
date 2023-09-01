@@ -528,7 +528,19 @@ app.get('/:index/:type/:id', function (req, res) {
 });
 
 app.get('/_cluster/settings', function (req, res) {
-  res.send({ persistent: {}, transient: {} });
+  let cluster = null;
+  if (req.query.cluster) {
+    cluster = Array.isArray(req.query.cluster) ? req.query.cluster : req.query.cluster.split(',');
+    req.url = req.url.replace(/cluster=[^&]*(&|$)/g, ''); // remove cluster from URL
+    delete req.query.cluster;
+  }
+  if (!cluster || cluster.length > 0) {
+    res.send({ persistent: {}, transient: {} });
+  } else {
+    simpleGather(req, res, null, (err, results) => {
+      res.send(results[0]);
+    });
+  }
 });
 
 app.head(/^\/$/, function (req, res) {
@@ -861,7 +873,13 @@ app.post(['/:index/:type/_search', '/:index/_search'], function (req, res) {
     req.arkime_need_to_scroll = true;
   }
   // console.log("DEBUG - INCOMING SEARCH", JSON.stringify(search, null, 2));
-  const activeNodes = getActiveNodes();
+  let cluster = null;
+  if (search.cluster) {
+    cluster = Array.isArray(search.cluster) ? search.cluster : search.cluster.split(',');
+    delete search.cluster;
+    req.body = JSON.stringify(search);
+  }
+  const activeNodes = getActiveNodes(cluster);
   async.each(activeNodes, (node, asyncCb) => {
     fixQuery(node, req.body, (err, body) => {
       // console.log("DEBUG - OUTGOING SEARCH", node, JSON.stringify(body, null, 2));

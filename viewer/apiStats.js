@@ -106,6 +106,7 @@ class StatsAPIs {
         }
       }
     }
+    ViewerUtils.addCluster(req.query.cluster, query);
 
     const rquery = {
       query: { term: { locked: 0 } },
@@ -119,6 +120,7 @@ class StatsAPIs {
         }
       }
     };
+    ViewerUtils.addCluster(req.query.cluster, rquery);
 
     if (req.query.hide !== undefined && req.query.hide !== 'none') {
       if (req.query.hide === 'old' || req.query.hide === 'both') {
@@ -132,7 +134,7 @@ class StatsAPIs {
     const now = Math.floor(Date.now() / 1000);
 
     Promise.all([Db.search('stats', 'stat', query),
-      Db.numberOfDocuments('stats'),
+      Db.numberOfDocuments('stats', rquery.cluster ? { cluster: rquery.cluster } : {}),
       Db.search('files', 'file', rquery)
     ]).then(([stats, total, retention]) => {
       if (stats.error) { throw stats.error; }
@@ -754,8 +756,9 @@ class StatsAPIs {
    * @returns {number} recordsFiltered - The number of ES tasks returned in this result.
    */
   static async getESTasks (req, res) {
+    const options = ViewerUtils.addCluster(req.query.cluster);
     try {
-      const { body: { tasks } } = await Db.tasks();
+      const { body: { tasks } } = await Db.tasks(options);
 
       let regex;
       if (req.query.filter !== undefined) {
@@ -1249,9 +1252,10 @@ class StatsAPIs {
    * @returns {array} ipExcludes - List of node ips that disallow the allocation of shards.
    */
   static getESShards (req, res) {
+    const options = ViewerUtils.addCluster(req.query.cluster, { flatSettings: true });
     Promise.all([
-      Db.shards(),
-      Db.getClusterSettings({ flatSettings: true })
+      Db.shards(options.cluster ? { cluster: options.cluster } : undefined),
+      Db.getClusterSettings(options)
     ]).then(([{ body: shards }, { body: settings }]) => {
       let ipExcludes = [];
       if (settings.persistent['cluster.routing.allocation.exclude._ip']) {
@@ -1439,9 +1443,10 @@ class StatsAPIs {
    */
   static async getESRecovery (req, res) {
     const sortField = (req.query.sortField || 'index') + (req.query.desc === 'true' ? ':desc' : '');
+    const options = ViewerUtils.addCluster(req.query.cluster);
 
     try {
-      const { body: recoveries } = await Db.recovery(sortField, req.query.show !== 'all');
+      const { body: recoveries } = await Db.recovery(sortField, req.query.show !== 'all', options.cluster);
       let regex;
       if (req.query.filter !== undefined) {
         try {

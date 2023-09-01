@@ -839,11 +839,12 @@ exports.clearCache = async () => {
   return internals.client7.indices.clearCache({});
 };
 
-exports.shards = async () => {
+exports.shards = async (options) => {
   return internals.client7.cat.shards({
     format: 'json',
     bytes: 'b',
-    h: 'index,shard,prirep,state,docs,store,ip,node,ur,uf,fm,sm'
+    h: 'index,shard,prirep,state,docs,store,ip,node,ur,uf,fm,sm',
+    cluster: options?.cluster
   });
 };
 
@@ -851,12 +852,13 @@ exports.allocation = async () => {
   return internals.client7.cat.allocation({ format: 'json', bytes: 'b' });
 };
 
-exports.recovery = async (sortField, activeOnly) => {
+exports.recovery = async (sortField, activeOnly, cluster) => {
   return internals.client7.cat.recovery({
     format: 'json',
     bytes: 'b',
     s: sortField,
-    active_only: activeOnly
+    active_only: activeOnly,
+    cluster
   });
 };
 
@@ -874,8 +876,8 @@ exports.putClusterSettings = async (options) => {
   return internals.client7.cluster.putSettings(options);
 };
 
-exports.tasks = async () => {
-  return internals.client7.tasks.list({ detailed: true, group_by: 'parents' });
+exports.tasks = async (options) => {
+  return internals.client7.tasks.list({ detailed: true, group_by: 'parents', cluster: options.cluster });
 };
 
 exports.taskCancel = async (taskId) => {
