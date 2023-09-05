@@ -86,7 +86,7 @@ export default {
   },
   watch: {
     selectOne (newValue) {
-      if (!newValue) {
+      if (!newValue && this.$route.query.cluster !== 'none') {
         const clusterParam = this.$route.query.cluster.split(',') || [];
         if (clusterParam !== this.selectedCluster) {
           this.selectedCluster = clusterParam;

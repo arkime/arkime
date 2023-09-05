@@ -51,6 +51,7 @@
 
 <script>
 import '../../cubismoverrides.css';
+import Utils from '../utils/utils';
 import MolochPaging from '../utils/Pagination';
 import MolochError from '../utils/Error';
 import MolochLoading from '../utils/Loading';
@@ -174,6 +175,15 @@ export default {
     },
     /* helper functions ---------------------------------------------------- */
     loadData: function () {
+      if (this.$constants.MOLOCH_MULTIVIEWER) {
+        const availableCluster = this.$store.state.esCluster.availableCluster.active;
+        const selection = Utils.checkClusterSelection(this.query.cluster, availableCluster);
+        if (!selection.valid) { // invalid selection
+          this.error = selection.error;
+          return;
+        }
+      }
+
       this.loading = true;
       initialized = false;
 

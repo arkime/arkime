@@ -52,10 +52,11 @@
 
 <script>
 import '../../cubismoverrides.css';
-import MolochPaging from '../utils/Pagination';
+import Utils from '../utils/utils';
 import MolochError from '../utils/Error';
-import MolochLoading from '../utils/Loading';
 import MolochTable from '../utils/Table';
+import MolochLoading from '../utils/Loading';
+import MolochPaging from '../utils/Pagination';
 
 let oldD3, cubism; // lazy load old d3 and cubism
 
@@ -242,6 +243,15 @@ export default {
       }, 500);
     },
     loadData: function (sortField, desc) {
+      if (this.$constants.MOLOCH_MULTIVIEWER) {
+        const availableCluster = this.$store.state.esCluster.availableCluster.active;
+        const selection = Utils.checkClusterSelection(this.query.cluster, availableCluster);
+        if (!selection.valid) { // invalid selection
+          this.error = selection.error;
+          return;
+        }
+      }
+
       this.loading = true;
       respondedAt = undefined;
 

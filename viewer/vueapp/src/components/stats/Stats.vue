@@ -9,11 +9,41 @@
 
             <div v-if="tabIndex === 7">&nbsp;</div>
 
-            <Clusters
-              class="mr-1"
-              @updateCluster="updateCluster"
-              :select-one="clusterParamOverride && tabIndex > 1"
-            />
+            <div class="input-group input-group-sm flex-grow-1"
+              v-if="tabIndex !== 7">
+              <div class="input-group-prepend">
+                <span class="input-group-text input-group-text-fw">
+                  <span v-if="loadingData"
+                    class="fa fa-spinner fa-spin text-theme-accent">
+                  </span>
+                  <span v-else-if="!shiftKeyHold"
+                    class="fa fa-search fa-fw">
+                  </span>
+                  <span v-else-if="shiftKeyHold"
+                    class="query-shortcut">
+                    Q
+                  </span>
+                </span>
+              </div>
+              <input type="text"
+                class="form-control"
+                v-model="searchTerm"
+                v-focus="focusInput"
+                @blur="onOffFocus"
+                @input="debounceSearchInput"
+                @keyup.enter="debounceSearchInput"
+                placeholder="Begin typing to search for items below"
+              />
+              <span class="input-group-append">
+                <button type="button"
+                  @click="clear"
+                  :disabled="!searchTerm"
+                  class="btn btn-outline-secondary btn-clear-input">
+                  <span class="fa fa-close">
+                  </span>
+                </button>
+              </span>
+            </div>
 
             <!-- graph type select -->
             <div class="input-group input-group-sm"
@@ -321,6 +351,12 @@
               {{ shrinkError }}
             </span> <!-- /shrink index -->
 
+            <Clusters
+              class="pull-right flex-grow-1"
+              @updateCluster="updateCluster"
+              :select-one="clusterParamOverride && tabIndex > 1"
+            />
+
           </div>
         </form> <!-- /stats sub navbar -->
       </span>
@@ -328,41 +364,6 @@
 
     <!-- stats content -->
     <div class="stats-tabs">
-      <div class="input-group input-group-sm pull-right mr-1 pt-1"
-        v-if="tabIndex !== 7">
-        <div class="input-group-prepend">
-          <span class="input-group-text input-group-text-fw">
-            <span v-if="loadingData"
-              class="fa fa-spinner fa-spin text-theme-accent">
-            </span>
-            <span v-else-if="!shiftKeyHold"
-              class="fa fa-search fa-fw">
-            </span>
-            <span v-else-if="shiftKeyHold"
-              class="query-shortcut">
-              Q
-            </span>
-          </span>
-        </div>
-        <input type="text"
-          class="form-control"
-          v-model="searchTerm"
-          v-focus="focusInput"
-          @blur="onOffFocus"
-          @input="debounceSearchInput"
-          @keyup.enter="debounceSearchInput"
-          placeholder="Begin typing to search for items below"
-        />
-        <span class="input-group-append">
-          <button type="button"
-            @click="clear"
-            :disabled="!searchTerm"
-            class="btn btn-outline-secondary btn-clear-input">
-            <span class="fa fa-close">
-            </span>
-          </button>
-        </span>
-      </div>
       <b-tabs v-model="tabIndex">
         <b-tab title="Capture Graphs"
           @click="tabIndexChange(0)">
@@ -444,7 +445,6 @@
             :cluster="cluster">
           </es-recovery>
         </b-tab>
-        <!-- TODO why is this not showing up -->
         <b-tab title="ES Admin"
           @click="tabIndexChange(7)"
           v-if="user.esAdminUser">
