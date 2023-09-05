@@ -18,6 +18,7 @@ const version = require('../common/version');
 const molochparser = require('./molochparser.js');
 const internals = require('./internals');
 const ViewerUtils = require('./viewerUtils');
+const ipaddr = require('ipaddr.js');
 
 class SessionAPIs {
   // --------------------------------------------------------------------------
@@ -584,7 +585,7 @@ class SessionAPIs {
           SessionAPIs.#localSessionDetailReturn(req, res, session, results || []);
         });
       } else if (packets[0].ip.p === 6) {
-        const key = session.source.ip;
+        const key = ipaddr.parse(session.source.ip).toString();
         Pcap.reassemble_tcp(packets, +req.query.packets || 200, key + ':' + session.source.port, (err, results) => {
           session._err = err;
           SessionAPIs.#localSessionDetailReturn(req, res, session, results || []);
@@ -1627,7 +1628,7 @@ class SessionAPIs {
           return doneCb(err, session, results);
         });
       } else if (packets[0].ip.p === 6) {
-        const key = session.source.ip;
+        const key = ipaddr.parse(session.source.ip).toString();
         Pcap.reassemble_tcp(packets, numPackets, key + ':' + session.source.port, (err, results) => {
           return doneCb(err, session, results);
         });

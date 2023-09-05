@@ -18,7 +18,6 @@
  */
 'use strict';
 
-const util = require('util');
 const Stream = require('stream');
 const Readable = Stream.Readable;
 const Transform = Stream.Transform;
@@ -44,91 +43,95 @@ function mkname (stream, streamName) {
   stream.molochName = streamName + '-' + mkname.cnt[streamName];
 }
 /// /////////////////////////////////////////////////////////////////////////////
-function ItemTransform (options) {
-  Transform.call(this, { objectMode: true });
-  this._itemTransform = {
-    state: 0,
-    max: options.maxPeekItems || 1,
-    items: []
+class ItemTransform extends Transform {
+  constructor (options) {
+    super({ objectMode: true });
+    this._itemTransform = {
+      state: 0,
+      max: options.maxPeekItems || 1,
+      items: []
+    };
+  }
+
+  _transform (item, encoding, callback) {
+    if (!item) {
+      return callback();
+    }
+
+    const self = this;
+    switch (self._itemTransform.state) {
+    case 0:
+      self._itemTransform.items.push(item);
+      if (self._shouldProcess(item)) {
+        self._itemTransform.state = 1;
+        async.each(self._itemTransform.items, function (eachItem, cb) {
+          try {
+            self._process(eachItem, function (err, data) {
+              if (data) {
+                self.push(data);
+              }
+              return cb();
+            });
+          } catch (err) {
+            cb(err);
+            console.log("Couldn't decode", err);
+          };
+        }, function (err) {
+          self._itemTransform.items = [];
+          return callback();
+        });
+        return;
+      }
+      if (self._itemTransform.items.length === self._itemTransform.max) {
+        self._itemTransform.state = 2;
+        while ((item = self._itemTransform.items.shift())) {
+          self.push(item);
+        }
+        self._itemTransform.items = [];
+      }
+      return callback();
+    case 1:
+      try {
+        return self._process(item, callback);
+      } catch (err) {
+        return callback(err);
+      }
+    case 2:
+      return callback(null, item);
+    }
+  };
+
+  _flush (callback) {
+    if (this._itemTransform.state === 1) {
+      return this._finish(callback);
+    }
+
+    let item;
+    while ((item = this._itemTransform.items.shift())) {
+      this.push(item);
+    }
+
+    callback();
   };
 }
-util.inherits(ItemTransform, Transform);
-ItemTransform.prototype._transform = function (item, encoding, callback) {
-  if (!item) {
-    return callback();
-  }
-
-  const self = this;
-  switch (self._itemTransform.state) {
-  case 0:
-    self._itemTransform.items.push(item);
-    if (self._shouldProcess(item)) {
-      self._itemTransform.state = 1;
-      async.each(self._itemTransform.items, function (eachItem, cb) {
-        try {
-          self._process(eachItem, function (err, data) {
-            if (data) {
-              self.push(data);
-            }
-            return cb();
-          });
-        } catch (err) {
-          cb(err);
-          console.log("Couldn't decode", err);
-        };
-      }, function (err) {
-        self._itemTransform.items = [];
-        return callback();
-      });
-      return;
-    }
-    if (self._itemTransform.items.length === self._itemTransform.max) {
-      self._itemTransform.state = 2;
-      while ((item = self._itemTransform.items.shift())) {
-        self.push(item);
-      }
-      self._itemTransform.items = [];
-    }
-    return callback();
-  case 1:
-    try {
-      return self._process(item, callback);
-    } catch (err) {
-      return callback(err);
-    }
-  case 2:
-    return callback(null, item);
-  }
-};
-
-ItemTransform.prototype._flush = function (callback) {
-  if (this._itemTransform.state === 1) {
-    return this._finish(callback);
-  }
-
-  let item;
-  while ((item = this._itemTransform.items.shift())) {
-    this.push(item);
-  }
-
-  callback();
-};
 
 /// /////////////////////////////////////////////////////////////////////////////
-function Pcap2ItemStream (options, pcap) {
-  Readable.call(this, { objectMode: true });
-  mkname(this, 'Pcap2ItemStream');
-  this.data = pcap || [];
-}
-util.inherits(Pcap2ItemStream, Readable);
-Pcap2ItemStream.prototype._read = function (size) {
-  const data = this.data;
-  for (let i = 0; i < data.length; i++) {
-    data[i].client = (i % 2);
-    this.push(data[i]);
+class Pcap2ItemStream extends Readable {
+  constructor (options, pcap) {
+    super({ objectMode: true });
+    mkname(this, 'Pcap2ItemStream');
+    this.data = pcap || [];
   }
-  this.push(null);
-};
+
+  _read (size) {
+    const data = this.data;
+    for (let i = 0; i < data.length; i++) {
+      data[i].client = (i % 2);
+      this.push(data[i]);
+    }
+    this.push(null);
+  };
+}
 
 /// /////////////////////////////////////////////////////////////////////////////
 function createUncompressStream (options, context) {
@@ -257,237 +260,243 @@ function createUnxorBruteGzip (options, context) {
 }
 
 /// /////////////////////////////////////////////////////////////////////////////
-function CollectBodyStream (collector, item, headerInfo) {
-  Writable.call(this);
-  mkname(this, 'CollectBodyStream');
+class CollectBodyStream extends Writable {
+  constructor (collector, item, headerInfo) {
+    super();
+    mkname(this, 'CollectBodyStream');
 
-  this.collector = collector;
-  this.item = item;
-  this.headerInfo = headerInfo;
+    this.collector = collector;
+    this.item = item;
+    this.headerInfo = headerInfo;
 
-  this.buffers = [];
+    this.buffers = [];
 
-  this.on('finish', function (err) {
-    this.collector.bodyDone(item, Buffer.concat(this.buffers), this.headerInfo);
-  });
+    this.on('finish', function (err) {
+      this.collector.bodyDone(item, Buffer.concat(this.buffers), this.headerInfo);
+    });
+  }
+
+  _write (chunk, encoding, callback) {
+    this.buffers.push(chunk);
+    callback(null);
+  };
 }
-util.inherits(CollectBodyStream, Writable);
-CollectBodyStream.prototype._write = function (chunk, encoding, callback) {
-  this.buffers.push(chunk);
-  callback(null);
-};
 
 /// /////////////////////////////////////////////////////////////////////////////
-function ItemSMTPStream (options) {
-  ItemTransform.call(this, { maxPeekItems: 3 });
-  mkname(this, 'ItemSMTPStream');
-  this.states = [ItemSMTPStream.STATES.cmd, ItemSMTPStream.STATES.cmd];
-  this.buffers = [];
-  this.options = options;
-  this.bodyNum = 0;
-  this.runningStreams = 0;
-  this.itemPos = 0;
-}
-util.inherits(ItemSMTPStream, ItemTransform);
-ItemSMTPStream.STATES = {
-  cmd: 1,
-  header: 2,
-  data: 3,
-  mime: 4,
-  mime_data: 5,
-  ignore: 6
-};
+class ItemSMTPStream extends ItemTransform {
+  static STATES = {
+    cmd: 1,
+    header: 2,
+    data: 3,
+    mime: 4,
+    mime_data: 5,
+    ignore: 6
+  };
 
-ItemSMTPStream.prototype._shouldProcess = function (item) {
-  return (item.data.length >= 4 && item.data.slice(0, 4).toString().match(/(HELO|EHLO)/));
-};
-
-ItemSMTPStream.prototype._process = function (item, callback) {
-  const self = this;
-  const lines = item.data.toString('binary').replace(/\r?\n$/, '').split(/\r?\n|\r/);
-  let state = this.states[item.client];
-  let header = '';
-  let mime;
-  let boundaries = {};
-  let matches;
-  let bodyType = 'file';
-  let bodyName = 'unknown';
-  let boundary;
-
-  if (internals.debug > 0) {
-    console.log('ItemSMTPStream._process', item);
+  constructor (options) {
+    super({ maxPeekItems: 3 });
+    mkname(this, 'ItemSMTPStream');
+    this.states = [ItemSMTPStream.STATES.cmd, ItemSMTPStream.STATES.cmd];
+    this.buffers = [];
+    this.options = options;
+    this.bodyNum = 0;
+    this.runningStreams = 0;
+    this.itemPos = 0;
   }
 
-  function addBuffer (newState, mimeData) {
-    if (mimeData) {
-      const headerInfo = { bodyType, bodyName, bodyNum: ++self.bodyNum, itemPos: ++self.itemPos };
-      const bufferStream = new Stream.PassThrough();
-      const order = self.options['ITEM-SMTP'] ? self.options['ITEM-SMTP'].order || [] : [];
-      const pipes = exports.createPipeline(self.options, order, bufferStream, headerInfo);
-      self.runningStreams++;
-      const heb = new CollectBodyStream(self, item, headerInfo);
-      pipes[pipes.length - 1].pipe(heb);
-      bufferStream.end(Buffer.from(self.buffers.join('\n') + '\n'));
+  _shouldProcess (item) {
+    return (item.data.length >= 4 && item.data.slice(0, 4).toString().match(/(HELO|EHLO)/));
+  };
+
+  _process (item, callback) {
+    const self = this;
+    const lines = item.data.toString('binary').replace(/\r?\n$/, '').split(/\r?\n|\r/);
+    let state = this.states[item.client];
+    let header = '';
+    let mime;
+    let boundaries = {};
+    let matches;
+    let bodyType = 'file';
+    let bodyName = 'unknown';
+    let boundary;
+
+    if (internals.debug > 0) {
+      console.log('ItemSMTPStream._process', item);
+    }
+
+    function addBuffer (newState, mimeData) {
+      if (mimeData) {
+        const headerInfo = { bodyType, bodyName, bodyNum: ++self.bodyNum, itemPos: ++self.itemPos };
+        const bufferStream = new Stream.PassThrough();
+        const order = self.options['ITEM-SMTP'] ? self.options['ITEM-SMTP'].order || [] : [];
+        const pipes = exports.createPipeline(self.options, order, bufferStream, headerInfo);
+        self.runningStreams++;
+        const heb = new CollectBodyStream(self, item, headerInfo);
+        pipes[pipes.length - 1].pipe(heb);
+        bufferStream.end(Buffer.from(self.buffers.join('\n') + '\n'));
+      } else {
+        const buf = {
+          client: item.client,
+          ts: item.ts,
+          data: Buffer.from(self.buffers.join('\n') + '\n'),
+          itemPos: ++self.itemPos
+        };
+
+        self.push(buf);
+      }
+      state = newState;
+      self.buffers = [];
+    }
+
+    linesloop:
+    for (let l = 0, llen = lines.length; l < llen; l++) {
+      switch (state) {
+      case ItemSMTPStream.STATES.cmd:
+        this.buffers.push(lines[l]);
+
+        if (lines[l].toUpperCase() === 'DATA') {
+          state = ItemSMTPStream.STATES.header;
+          header = '';
+          boundaries = {};
+        } else if (lines[l].toUpperCase() === 'STARTTLS') {
+          state = ItemSMTPStream.STATES.ignore;
+        }
+        break;
+      case ItemSMTPStream.STATES.header:
+        this.buffers.push(lines[l]);
+        if (lines[l][0] === ' ' || lines[l][0] === '\t') {
+          header += lines[l];
+          continue;
+        }
+        if (header.substr(0, 13).toLowerCase() === 'content-type:') {
+          if ((matches = header.match(/boundary\s*=\s*("?)([^"]*)\1/))) {
+            boundaries[matches[2]] = 1;
+          }
+        }
+        if (lines[l] === '') {
+          state = ItemSMTPStream.STATES.data;
+          continue;
+        }
+        header = lines[l];
+        break;
+      case ItemSMTPStream.STATES.data:
+        this.buffers.push(lines[l]);
+        if (lines[l] === '.') {
+          state = ItemSMTPStream.STATES.cmd;
+          continue;
+        }
+
+        if (lines[l][0] === '-') {
+          boundary = lines[l].substr(2);
+          if (boundary.substr(-2) === '--' && boundaries[boundary.slice(0, -2)]) {
+            addBuffer(ItemSMTPStream.STATES.data, false);
+            this.buffers.push(lines[l]);
+            mime = { line: '', base64: 0, doit: 0 };
+            continue linesloop;
+          } else if (boundaries[boundary]) {
+            addBuffer(ItemSMTPStream.STATES.mime, false);
+            this.buffers.push(lines[l]);
+            mime = { line: '', base64: 0, doit: 0 };
+            continue linesloop;
+          }
+        }
+        break;
+      case ItemSMTPStream.STATES.mime:
+        if (lines[l] === '.') {
+          state = ItemSMTPStream.STATES.cmd;
+          this.buffers.push(lines[l]);
+          continue;
+        }
+
+        this.buffers.push(lines[l]);
+
+        if (lines[l][0] === ' ' || lines[l][0] === '\t') {
+          mime.line += lines[l];
+          continue;
+        }
+        if (!mime) {
+          mime = { line: '', base64: 0, doit: 0 };
+        }
+
+        if (mime.line.substr(0, 13).toLowerCase() === 'content-type:') {
+          if ((matches = mime.line.match(/boundary\s*=\s*("?)([^"]*)\1/))) {
+            boundaries[matches[2]] = 1;
+          }
+          if ((matches = mime.line.match(/name\s*=\s*("?)([^"]*)\1/))) {
+            bodyName = matches[2];
+          }
+
+          if (mime.line.match(/content-type: image/i)) {
+            bodyType = 'image';
+          } else if (mime.line.match(/content-type: text/i)) {
+            bodyType = 'text';
+          } else {
+            bodyType = 'file';
+          }
+        } else if (mime.line.match(/content-disposition:/i)) {
+          if ((matches = mime.line.match(/filename\s*=\s*("?)([^"]*)\1/))) {
+            bodyName = matches[2];
+          }
+        } else if (mime.line.match(/content-transfer-encoding:.*base64/i)) {
+          mime.base64 = 1;
+          mime.doit = 1;
+        }
+        if (lines[l] === '') {
+          addBuffer(ItemSMTPStream.STATES.mimedata, false);
+          continue;
+        }
+        mime.line = lines[l];
+        break;
+      case ItemSMTPStream.STATES.mimedata:
+        if (lines[l] === '.') {
+          addBuffer(ItemSMTPStream.STATES.cmd, true);
+          this.buffers.push(lines[l]);
+          continue;
+        }
+
+        if (lines[l][0] === '-') {
+          boundary = lines[l].substr(2);
+          if (boundary.substr(-2) === '--' && boundaries[boundary.slice(0, -2)]) {
+            addBuffer(ItemSMTPStream.STATES.data, mime.doit === 1);
+            this.buffers.push(lines[l]);
+            mime = { line: '', base64: 0, doit: 0 };
+            continue linesloop;
+          } else if (boundaries[boundary]) {
+            addBuffer(ItemSMTPStream.STATES.mime, mime.doit === 1);
+            this.buffers.push(lines[l]);
+            mime = { line: '', base64: 0, doit: 0 };
+            continue linesloop;
+          }
+        }
+
+        this.buffers.push(lines[l]);
+        break;
+      }
+    }
+    this.states[item.client] = state;
+
+    if (this.buffers.length > 0) {
+      addBuffer(ItemSMTPStream.STATES.cmd, false);
+    }
+    callback();
+  };
+
+  bodyDone (item, data, headerInfo) {
+    this.push({ client: item.client, ts: item.ts, data, bodyNum: headerInfo.bodyNum, bodyType: headerInfo.bodyType, bodyName: headerInfo.bodyName, itemPos: headerInfo.itemPos });
+    this.runningStreams--;
+    if (this.runningStreams === 0 && this.endCb) {
+      this.endCb();
+    }
+  };
+
+  _finish (callback) {
+    if (this.runningStreams > 0) {
+      this.endCb = callback;
     } else {
-      const buf = {
-        client: item.client,
-        ts: item.ts,
-        data: Buffer.from(self.buffers.join('\n') + '\n'),
-        itemPos: ++self.itemPos
-      };
-
-      self.push(buf);
+      setImmediate(callback);
     }
-    state = newState;
-    self.buffers = [];
-  }
-
-  linesloop:
-  for (let l = 0, llen = lines.length; l < llen; l++) {
-    switch (state) {
-    case ItemSMTPStream.STATES.cmd:
-      this.buffers.push(lines[l]);
-
-      if (lines[l].toUpperCase() === 'DATA') {
-        state = ItemSMTPStream.STATES.header;
-        header = '';
-        boundaries = {};
-      } else if (lines[l].toUpperCase() === 'STARTTLS') {
-        state = ItemSMTPStream.STATES.ignore;
-      }
-      break;
-    case ItemSMTPStream.STATES.header:
-      this.buffers.push(lines[l]);
-      if (lines[l][0] === ' ' || lines[l][0] === '\t') {
-        header += lines[l];
-        continue;
-      }
-      if (header.substr(0, 13).toLowerCase() === 'content-type:') {
-        if ((matches = header.match(/boundary\s*=\s*("?)([^"]*)\1/))) {
-          boundaries[matches[2]] = 1;
-        }
-      }
-      if (lines[l] === '') {
-        state = ItemSMTPStream.STATES.data;
-        continue;
-      }
-      header = lines[l];
-      break;
-    case ItemSMTPStream.STATES.data:
-      this.buffers.push(lines[l]);
-      if (lines[l] === '.') {
-        state = ItemSMTPStream.STATES.cmd;
-        continue;
-      }
-
-      if (lines[l][0] === '-') {
-        boundary = lines[l].substr(2);
-        if (boundary.substr(-2) === '--' && boundaries[boundary.slice(0, -2)]) {
-          addBuffer(ItemSMTPStream.STATES.data, false);
-          this.buffers.push(lines[l]);
-          mime = { line: '', base64: 0, doit: 0 };
-          continue linesloop;
-        } else if (boundaries[boundary]) {
-          addBuffer(ItemSMTPStream.STATES.mime, false);
-          this.buffers.push(lines[l]);
-          mime = { line: '', base64: 0, doit: 0 };
-          continue linesloop;
-        }
-      }
-      break;
-    case ItemSMTPStream.STATES.mime:
-      if (lines[l] === '.') {
-        state = ItemSMTPStream.STATES.cmd;
-        this.buffers.push(lines[l]);
-        continue;
-      }
-
-      this.buffers.push(lines[l]);
-
-      if (lines[l][0] === ' ' || lines[l][0] === '\t') {
-        mime.line += lines[l];
-        continue;
-      }
-      if (!mime) {
-        mime = { line: '', base64: 0, doit: 0 };
-      }
-
-      if (mime.line.substr(0, 13).toLowerCase() === 'content-type:') {
-        if ((matches = mime.line.match(/boundary\s*=\s*("?)([^"]*)\1/))) {
-          boundaries[matches[2]] = 1;
-        }
-        if ((matches = mime.line.match(/name\s*=\s*("?)([^"]*)\1/))) {
-          bodyName = matches[2];
-        }
-
-        if (mime.line.match(/content-type: image/i)) {
-          bodyType = 'image';
-        } else if (mime.line.match(/content-type: text/i)) {
-          bodyType = 'text';
-        } else {
-          bodyType = 'file';
-        }
-      } else if (mime.line.match(/content-disposition:/i)) {
-        if ((matches = mime.line.match(/filename\s*=\s*("?)([^"]*)\1/))) {
-          bodyName = matches[2];
-        }
-      } else if (mime.line.match(/content-transfer-encoding:.*base64/i)) {
-        mime.base64 = 1;
-        mime.doit = 1;
-      }
-      if (lines[l] === '') {
-        addBuffer(ItemSMTPStream.STATES.mimedata, false);
-        continue;
-      }
-      mime.line = lines[l];
-      break;
-    case ItemSMTPStream.STATES.mimedata:
-      if (lines[l] === '.') {
-        addBuffer(ItemSMTPStream.STATES.cmd, true);
-        this.buffers.push(lines[l]);
-        continue;
-      }
-
-      if (lines[l][0] === '-') {
-        boundary = lines[l].substr(2);
-        if (boundary.substr(-2) === '--' && boundaries[boundary.slice(0, -2)]) {
-          addBuffer(ItemSMTPStream.STATES.data, mime.doit === 1);
-          this.buffers.push(lines[l]);
-          mime = { line: '', base64: 0, doit: 0 };
-          continue linesloop;
-        } else if (boundaries[boundary]) {
-          addBuffer(ItemSMTPStream.STATES.mime, mime.doit === 1);
-          this.buffers.push(lines[l]);
-          mime = { line: '', base64: 0, doit: 0 };
-          continue linesloop;
-        }
-      }
-
-      this.buffers.push(lines[l]);
-      break;
-    }
-  }
-  this.states[item.client] = state;
-
-  if (this.buffers.length > 0) {
-    addBuffer(ItemSMTPStream.STATES.cmd, false);
-  }
-  callback();
-};
-ItemSMTPStream.prototype.bodyDone = function (item, data, headerInfo) {
-  this.push({ client: item.client, ts: item.ts, data, bodyNum: headerInfo.bodyNum, bodyType: headerInfo.bodyType, bodyName: headerInfo.bodyName, itemPos: headerInfo.itemPos });
-  this.runningStreams--;
-  if (this.runningStreams === 0 && this.endCb) {
-    this.endCb();
-  }
-};
-ItemSMTPStream.prototype._finish = function (callback) {
-  if (this.runningStreams > 0) {
-    this.endCb = callback;
-  } else {
-    setImmediate(callback);
-  }
-};
+  };
+}
 /// /////////////////////////////////////////////////////////////////////////////
 class ItemHTTPStream extends ItemTransform {
   static STATES = {
@@ -734,54 +743,56 @@ class ItemHTTPStream extends ItemTransform {
 };
 
 /// /////////////////////////////////////////////////////////////////////////////
-function ItemHexFormaterStream (options) {
-  Transform.call(this, { objectMode: true });
-  mkname(this, 'ItemHexFormaterStream');
-  this.showOffsets = options['ITEM-HEX'] ? options['ITEM-HEX'].showOffsets || false : false;
+class ItemHexFormaterStream extends Transform {
+  constructor (options) {
+    super({ objectMode: true });
+    mkname(this, 'ItemHexFormaterStream');
+    this.showOffsets = options['ITEM-HEX'] ? options['ITEM-HEX'].showOffsets || false : false;
+  }
+
+  _transform (item, encoding, callback) {
+    if (item.html !== undefined) {
+      return callback(null, item);
+    }
+
+    let out = '<pre>';
+    let i, ilen;
+
+    const input = item.data;
+    for (let pos = 0, poslen = input.length; pos < poslen; pos += 16) {
+      const line = input.slice(pos, Math.min(pos + 16, input.length));
+      if (this.showOffsets) {
+        const paddedPos = pos.toString().padStart(8, '0');
+        out += '<span class="sessionln">' + paddedPos + ':</span> ';
+      }
+
+      for (i = 0; i < 16; i++) {
+        if (i % 2 === 0 && i > 0) {
+          out += ' ';
+        }
+        if (i < line.length) {
+          const paddedLine = line[i].toString(16).padStart(2, '0');
+          out += paddedLine;
+        } else {
+          out += '  ';
+        }
+      }
+
+      out += ' ';
+
+      for (i = 0, ilen = line.length; i < ilen; i++) {
+        if (line[i] <= 32 || line[i] > 128) {
+          out += '.';
+        } else {
+          out += ArkimeUtil.safeStr(line.toString('ascii', i, i + 1));
+        }
+      }
+      out += '\n';
+    }
+    item.html = out + '</pre>';
+    callback(null, item);
+  };
 }
-util.inherits(ItemHexFormaterStream, Transform);
-ItemHexFormaterStream.prototype._transform = function (item, encoding, callback) {
-  if (item.html !== undefined) {
-    return callback(null, item);
-  }
-
-  let out = '<pre>';
-  let i, ilen;
-
-  const input = item.data;
-  for (let pos = 0, poslen = input.length; pos < poslen; pos += 16) {
-    const line = input.slice(pos, Math.min(pos + 16, input.length));
-    if (this.showOffsets) {
-      const paddedPos = pos.toString().padStart(8, '0');
-      out += '<span class="sessionln">' + paddedPos + ':</span> ';
-    }
-
-    for (i = 0; i < 16; i++) {
-      if (i % 2 === 0 && i > 0) {
-        out += ' ';
-      }
-      if (i < line.length) {
-        const paddedLine = line[i].toString(16).padStart(2, '0');
-        out += paddedLine;
-      } else {
-        out += '  ';
-      }
-    }
-
-    out += ' ';
-
-    for (i = 0, ilen = line.length; i < ilen; i++) {
-      if (line[i] <= 32 || line[i] > 128) {
-        out += '.';
-      } else {
-        out += ArkimeUtil.safeStr(line.toString('ascii', i, i + 1));
-      }
-    }
-    out += '\n';
-  }
-  item.html = out + '</pre>';
-  callback(null, item);
-};
 /// /////////////////////////////////////////////////////////////////////////////
 function createItemSorterStream (options) {
   const stream = through.obj(function (item, encoding, callback) {
@@ -922,7 +933,9 @@ exports.createPipeline = function (options, order, stream, context) {
       console.trace("ERROR - Couldn't find", order[i], 'in decode registry');
       return;
     }
-    if (ClassOrCreate.super_) {
+
+    // If through2 or a real class
+    if (ClassOrCreate.super_ || Object.getOwnPropertyDescriptor(ClassOrCreate, 'prototype')?.writable === false) {
       pipes.push(new ClassOrCreate(options, context));
     } else {
       pipes.push(ClassOrCreate(options, context));
