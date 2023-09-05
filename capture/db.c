@@ -1310,8 +1310,8 @@ void arkime_db_save_session(ArkimeSession_t *session, int final)
                     BSB_EXPORT_sprintf(jbsb, "\"remainingDays\":%" PRId64 ",", ((int64_t)certs->notAfter - ((uint64_t)session->firstPacket.tv_sec))/(60*60*24));
                     BSB_EXPORT_sprintf(jbsb, "\"remainingSeconds\":%" PRId64 ",", ((int64_t)certs->notAfter - ((uint64_t)session->firstPacket.tv_sec)));
                 }
-                BSB_EXPORT_sprintf(jbsb, "\"validDays\":%" PRId64 ",", ((int64_t)certs->notAfter - certs->notBefore)/(60*60*24));
-                BSB_EXPORT_sprintf(jbsb, "\"validSeconds\":%" PRId64 ",", ((int64_t)certs->notAfter - certs->notBefore));
+                BSB_EXPORT_sprintf(jbsb, "\"validDays\":%" PRId64 ",", ((int64_t)certs->notAfter - (int64_t)certs->notBefore)/(60*60*24));
+                BSB_EXPORT_sprintf(jbsb, "\"validSeconds\":%" PRId64 ",", ((int64_t)certs->notAfter - (int64_t)certs->notBefore));
 
                 BSB_EXPORT_rewind(jbsb, 1); // Remove last comma
 
