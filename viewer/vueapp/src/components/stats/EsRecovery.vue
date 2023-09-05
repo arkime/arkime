@@ -27,6 +27,7 @@
         :action-column="true"
         :desc="query.desc"
         :sortField="query.sortField"
+        :no-results-msg="`No results match your search.${cluster ? 'Try selecting a different cluster.' : ''}`"
         page="esRecovery"
         table-classes="table-sm text-right small mt-2"
         table-state-name="esRecoveryCols"
@@ -55,7 +56,8 @@ export default {
     'dataInterval',
     'recoveryShow',
     'refreshData',
-    'searchTerm'
+    'searchTerm',
+    'cluster'
   ],
   components: {
     MolochTable,
@@ -76,7 +78,8 @@ export default {
         filter: this.searchTerm || undefined,
         sortField: 'index',
         desc: false,
-        show: this.recoveryShow || 'notdone'
+        show: this.recoveryShow || 'notdone',
+        cluster: this.cluster || undefined
       },
       columns: [ // es indices table columns
         // default columns
@@ -135,6 +138,10 @@ export default {
       if (this.refreshData) {
         this.loadData();
       }
+    },
+    cluster: function () {
+      this.query.cluster = this.cluster;
+      this.loadData();
     }
   },
   created: function () {

@@ -9,8 +9,11 @@
 
             <div v-if="tabIndex === 7">&nbsp;</div>
 
-            <!-- TODO other don't have all option, you have to select only one -->
-            <Clusters class="mr-2" />
+            <Clusters
+              class="mr-1"
+              @updateCluster="updateCluster"
+              :select-one="clusterParamOverride && tabIndex > 1"
+            />
 
             <!-- graph type select -->
             <div class="input-group input-group-sm"
@@ -381,6 +384,7 @@
             :refreshData="refreshData"
             :searchTerm="searchTerm"
             :data-interval="dataInterval"
+            :cluster="cluster"
             :user="user">
           </capture-stats>
         </b-tab>
@@ -389,7 +393,8 @@
           <es-nodes v-if="user && tabIndex === 2"
             :refreshData="refreshData"
             :searchTerm="searchTerm"
-            :data-interval="dataInterval">
+            :data-interval="dataInterval"
+            :cluster="cluster">
           </es-nodes>
         </b-tab>
         <b-tab title="ES Indices"
@@ -402,7 +407,8 @@
             @shrink="shrink"
             :searchTerm="searchTerm"
             :issueConfirmation="issueConfirmation"
-            :user="user">
+            :user="user"
+            :cluster="cluster">
           </es-indices>
         </b-tab>
         <b-tab title="ES Tasks"
@@ -413,7 +419,8 @@
             :searchTerm="searchTerm"
             :pageSize="pageSize"
             :user="user"
-            @errored="onError">
+            @errored="onError"
+            :cluster="cluster">
           </es-tasks>
         </b-tab>
         <b-tab title="ES Shards"
@@ -422,7 +429,8 @@
             :shards-show="shardsShow"
             :refreshData="refreshData"
             :searchTerm="searchTerm"
-            :data-interval="dataInterval">
+            :data-interval="dataInterval"
+            :cluster="cluster">
           </es-shards>
         </b-tab>
         <b-tab title="ES Recovery"
@@ -432,16 +440,19 @@
             :data-interval="dataInterval"
             :refreshData="refreshData"
             :searchTerm="searchTerm"
-            :user="user">
+            :user="user"
+            :cluster="cluster">
           </es-recovery>
         </b-tab>
+        <!-- TODO why is this not showing up -->
         <b-tab title="ES Admin"
           @click="tabIndexChange(7)"
           v-if="user.esAdminUser">
           <es-admin v-if="user && tabIndex === 7"
             :data-interval="dataInterval"
             :refreshData="refreshData"
-            :user="user">
+            :user="user"
+            :cluster="cluster">
           </es-admin>
         </b-tab>
       </b-tabs>
@@ -505,7 +516,8 @@ export default {
       shrinkFactors: undefined,
       temporaryNode: undefined,
       nodes: undefined,
-      shrinkError: undefined
+      shrinkError: undefined,
+      clusterParamOverride: true
     };
   },
   computed: {
@@ -563,7 +575,20 @@ export default {
       this.$router.push({ query: { ...this.$route.query, size: this.pageSize } });
     },
     tabIndexChange: function (newTabIndex) {
+      // override the query params for the cluster selected
+      // if the user is on any of the ES tabs, they can select only one cluster
+      // so even if the route query is set, we want to override it with only one cluster
+      // this flag is toggled so that the children components can override the route queries
+      // the cluster dropdown component watches for selectOne and updates the cluster prop to override the route queries
+      // but the route queries stay the same so that the user can navigate back to the previous tab without losing their selection
+      // TODO THIS IS MAKING THE CHILDREN LOAD 2X
+      this.clusterParamOverride = false;
+      setTimeout(() => { this.clusterParamOverride = true; });
       this.$router.push({ query: { ...this.$route.query, statsTab: newTabIndex } });
+    },
+    // overrides the cluster route query
+    updateCluster: function ({ cluster }) {
+      this.cluster = cluster;
     },
     updateParams: function () {
       const queryParams = this.$route.query;

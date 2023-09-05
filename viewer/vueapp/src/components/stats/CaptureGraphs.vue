@@ -24,7 +24,24 @@
         length-default=200>
       </moloch-paging>
 
-      <div id="statsGraph" style="width:1440px;"></div>
+      <div
+        v-if="stats && stats.recordsFiltered"
+        id="statsGraph"
+        style="width:1440px;">
+      </div>
+
+      <div class="text-center" v-else>
+        <h3>
+          <span class="fa fa-folder-open fa-2x text-muted" />
+        </h3>
+        <h5 class="lead">
+          No data.
+          <template v-if="cluster">
+            <br>
+            Try selecting a different cluster.
+          </template>
+        </h5>
+      </div>
 
     </div>
 

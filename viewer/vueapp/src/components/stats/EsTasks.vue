@@ -37,6 +37,7 @@
         :action-column="true"
         :desc="query.desc"
         :sortField="query.sortField"
+        :no-results-msg="`No results match your search.${cluster ? 'Try selecting a different cluster.' : ''}`"
         page="esTasks"
         table-classes="table-sm text-right small mt-2"
         table-state-name="esTasksCols"
@@ -77,7 +78,8 @@ export default {
     'dataInterval',
     'refreshData',
     'searchTerm',
-    'pageSize'
+    'pageSize',
+    'cluster'
   ],
   components: {
     MolochTable,
@@ -98,7 +100,8 @@ export default {
         filter: this.searchTerm || undefined,
         sortField: 'action',
         desc: false,
-        cancellable: false
+        cancellable: false,
+        cluster: this.cluster || undefined
       },
       columns: [ // es tasks table columns
         // default columns
@@ -150,6 +153,10 @@ export default {
       }
     },
     pageSize: function () {
+      this.loadData();
+    },
+    cluster: function () {
+      this.query.cluster = this.cluster;
       this.loadData();
     }
   },

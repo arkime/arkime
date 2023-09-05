@@ -28,6 +28,7 @@
         :action-column="true"
         :desc="query.desc"
         :sortField="query.sortField"
+        :no-results-msg="`No results match your search.${cluster ? 'Try selecting a different cluster.' : ''}`"
         page="esIndices"
         table-animation="list"
         table-classes="table-sm text-right small mt-2"
@@ -89,7 +90,8 @@ export default {
     'refreshData',
     'confirm',
     'issueConfirmation',
-    'searchTerm'
+    'searchTerm',
+    'cluster'
   ],
   components: {
     MolochTable,
@@ -109,7 +111,8 @@ export default {
       query: {
         filter: this.searchTerm || undefined,
         sortField: 'index',
-        desc: false
+        desc: false,
+        cluster: this.cluster || undefined
       },
       columns: [ // es indices table columns
         // default columns
@@ -166,6 +169,10 @@ export default {
       if (this.issueConfirmation) {
         this.deleteIndex(this.issueConfirmation);
       }
+    },
+    cluster: function () {
+      this.query.cluster = this.cluster;
+      this.loadData();
     }
   },
   created: function () {

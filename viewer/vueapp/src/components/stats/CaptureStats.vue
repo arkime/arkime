@@ -36,6 +36,7 @@
         :info-row-function="toggleStatDetailWrapper"
         :desc="query.desc"
         :sortField="query.sortField"
+        :no-results-msg="`No results match your search.${cluster ? 'Try selecting a different cluster.' : ''}`"
         page="captureStats"
         table-animation="list"
         table-classes="table-sm text-right small"
@@ -70,7 +71,8 @@ export default {
     'graphHide',
     'dataInterval',
     'refreshData',
-    'searchTerm'
+    'searchTerm',
+    'cluster'
   ],
   components: {
     MolochPaging,
@@ -95,7 +97,8 @@ export default {
         filter: this.searchTerm || undefined,
         sortField: 'nodeName',
         desc: true,
-        hide: this.graphHide || 'none'
+        hide: this.graphHide || 'none',
+        cluster: this.cluster || undefined
       },
       columns: [ // node stats table columns
         // default columns
@@ -191,6 +194,10 @@ export default {
       if (this.refreshData) {
         this.loadData();
       }
+    },
+    cluster: function () {
+      this.query.cluster = this.cluster;
+      this.loadData();
     }
   },
   created: function () {

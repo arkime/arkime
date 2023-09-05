@@ -29,6 +29,7 @@
         :action-column="true"
         :desc="query.desc"
         :sortField="query.sortField"
+        :no-results-msg="`No results match your search.${cluster ? 'Try selecting a different cluster.' : ''}`"
         page="esNodes"
         table-animation="list"
         table-classes="table-sm text-right small mt-2"
@@ -100,7 +101,12 @@ let respondedAt; // the time that the last data load successfully responded
 
 export default {
   name: 'EsStats',
-  props: ['dataInterval', 'refreshData', 'searchTerm'],
+  props: [
+    'dataInterval',
+    'refreshData',
+    'searchTerm',
+    'cluster'
+  ],
   components: {
     MolochTable,
     MolochError,
@@ -117,7 +123,8 @@ export default {
       query: {
         filter: this.searchTerm || undefined,
         sortField: 'nodeName',
-        desc: false
+        desc: false,
+        cluster: this.cluster || undefined
       },
       columns: [ // es stats table columns
         // default columns
@@ -131,7 +138,6 @@ export default {
         { id: 'read', name: 'Read/s', sort: 'read', doStats: true, default: true, width: 90, dataFunction: (item) => { return this.$options.filters.humanReadableBytes(item.read); } },
         { id: 'write', name: 'Write/s', sort: 'write', doStats: true, default: true, width: 90, dataFunction: (item) => { return this.$options.filters.humanReadableBytes(item.write); } },
         { id: 'searches', name: 'Search/s', sort: 'searches', doStats: true, width: 100, default: true, dataFunction: (item) => { return this.$options.filters.roundCommaString(item.searches); } },
-
         // all the rest of the available stats
         { id: 'ip', name: 'IP', sort: 'ip', doStats: false, width: 100 },
         { id: 'ipExcluded', name: 'IP Excluded', sort: 'ipExcluded', doStats: false, width: 100 },
@@ -189,6 +195,10 @@ export default {
       if (this.refreshData) {
         this.loadData();
       }
+    },
+    cluster: function (newValue) {
+      this.query.cluster = this.cluster;
+      this.loadData();
     }
   },
   created: function () {
