@@ -88,6 +88,11 @@ class ArkimeConfig {
   }
 
   // ----------------------------------------------------------------------------
+  static get configFile () {
+    return ArkimeConfig.#configFile;
+  }
+
+  // ----------------------------------------------------------------------------
   /**
    * Reload the config file
    */
