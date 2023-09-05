@@ -875,6 +875,7 @@ app.post(['/:index/:type/_search', '/:index/_search'], function (req, res) {
   // console.log("DEBUG - INCOMING SEARCH", JSON.stringify(search, null, 2));
   let cluster = null;
   if (search.cluster) {
+    req.query.cluster = search.cluster;
     cluster = Array.isArray(search.cluster) ? search.cluster : search.cluster.split(',');
     delete search.cluster;
     req.body = JSON.stringify(search);
