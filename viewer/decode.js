@@ -507,7 +507,9 @@ class ItemHTTPStream extends ItemTransform {
 
     res: 5,
     res_body: 6,
-    res_body_chunk: 7
+    res_body_chunk: 7,
+
+    pass: 8
   };
 
   options;
@@ -583,6 +585,8 @@ class ItemHTTPStream extends ItemTransform {
       if (line.length === 0) {
         if (this.method.match(/^(GET|HEAD|DELETE|TRACE)$/)) {
           this.states[item.client] = ItemHTTPStream.STATES.start;
+        } else if (this.method.match(/^(CONNECT)$/)) {
+          this.states[item.client] = ItemHTTPStream.STATES.pass;
         } else if (this.transferEncoding[item.client] === 'CHUNKED') {
           this.states[item.client] = ItemHTTPStream.STATES.req_body_chunk;
         } else {
@@ -615,6 +619,8 @@ class ItemHTTPStream extends ItemTransform {
       if (line.length === 0) {
         if (this.code / 100 === 1 || this.code === 204 || this.code === 304) {
           this.states[item.client] = ItemHTTPStream.STATES.start;
+        } else if (this.method.match(/^(CONNECT)$/)) {
+          this.states[item.client] = ItemHTTPStream.STATES.pass;
         } else if (this.transferEncoding[item.client] === 'CHUNKED') {
           this.states[item.client] = ItemHTTPStream.STATES.res_body_chunk;
         } else {
@@ -710,7 +716,10 @@ class ItemHTTPStream extends ItemTransform {
     let pos = 0;
     while (pos < item.data.length) {
       const state = this.states[item.client];
-      if (state === ItemHTTPStream.STATES.req_body || state === ItemHTTPStream.STATES.res_body) {
+      if (state === ItemHTTPStream.STATES.pass) {
+        this.push({ client: item.client, ts: item.ts, data: item.data.slice(0, item.data.length), itemPos: ++this.itemPos });
+        break;
+      } else if (state === ItemHTTPStream.STATES.req_body || state === ItemHTTPStream.STATES.res_body) {
         pos = this.processBody(item, pos);
       } else {
         pos = this.processText(item, pos);
