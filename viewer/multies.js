@@ -456,7 +456,7 @@ app.get('/_template/MULTIPREFIX_sessions2_template', (req, res) => {
 app.get('/_template/MULTIPREFIX_sessions3_template', (req, res) => {
   // req._skipReplace = false;
   simpleGather(req, res, null, (err, results) => {
-    console.log("DEBUG -", JSON.stringify(results, null, 2));
+    // console.log("DEBUG -", JSON.stringify(results, null, 2));
 
     let obj = results[0];
     for (let i = 1; i < results.length; i++) {
