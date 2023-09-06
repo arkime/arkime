@@ -10,6 +10,9 @@
               title="Tip: use ? to replace a single character and * to replace zero or more characters in your query"
               v-b-tooltip.hover>
             </span>
+            <Clusters
+              class="pull-right"
+            />
             <button type="button"
               class="btn btn-sm btn-theme-tertiary pull-right ml-1 search-btn"
               @click="loadData">
@@ -347,15 +350,17 @@
 
 <script>
 import qs from 'qs';
-import MolochPaging from '../utils/Pagination';
-import MolochLoading from '../utils/Loading';
-import MolochError from '../utils/Error';
-import ToggleBtn from '../../../../../common/vueapp/ToggleBtn';
+import Utils from '../utils/utils';
 import MolochTime from '../search/Time';
+import Clusters from '../utils/Clusters';
 import MolochToast from '../utils/Toast';
-import MolochCollapsible from '../utils/CollapsibleWrapper';
+import MolochError from '../utils/Error';
+import MolochLoading from '../utils/Loading';
+import MolochPaging from '../utils/Pagination';
 import HistoryService from './HistoryService';
 import Focus from '../../../../../common/vueapp/Focus';
+import MolochCollapsible from '../utils/CollapsibleWrapper';
+import ToggleBtn from '../../../../../common/vueapp/ToggleBtn';
 
 let searchInputTimeout; // timeout to debounce the search input
 
@@ -368,7 +373,8 @@ export default {
     MolochTime,
     ToggleBtn,
     MolochToast,
-    MolochCollapsible
+    MolochCollapsible,
+    Clusters
   },
   directives: { Focus },
   data: function () {
@@ -407,7 +413,8 @@ export default {
         start: 0,
         date: this.$store.state.timeRange,
         startTime: this.$store.state.time.startTime,
-        stopTime: this.$store.state.time.stopTime
+        stopTime: this.$store.state.time.stopTime,
+        cluster: this.$route.query.cluster || undefined
       };
     },
     user: function () {
@@ -431,6 +438,14 @@ export default {
   watch: {
     issueSearch: function (newVal, oldVal) {
       if (newVal) { this.loadData(); }
+    },
+    '$route.query.cluster': {
+      handler: function (newVal, oldVal) {
+        if (newVal !== oldVal) {
+          this.query.cluster = newVal;
+          this.loadData();
+        }
+      }
     }
   },
   created: function () {
@@ -526,6 +541,10 @@ export default {
     },
     /* helper functions ------------------------------------------ */
     loadData: function () {
+      if (!Utils.checkClusterSelection(this.query.cluster, this.$store.state.esCluster.availableCluster.active, this).valid) {
+        return;
+      }
+
       this.loading = true;
 
       const exists = [];
