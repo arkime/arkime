@@ -52,7 +52,7 @@ class StatsAPIs {
    */
   static async getESHealth (req, res) {
     try {
-      const health = await Db.healthCache();
+      const health = await Db.healthCache(req.query.cluster);
       return res.send(health);
     } catch (err) {
       return res.serverError(500, err.toString());
@@ -361,11 +361,11 @@ class StatsAPIs {
     let stats = [];
 
     Promise.all([
-      Db.nodesStatsCache(),
-      Db.nodesInfoCache(),
-      Db.masterCache(),
-      Db.allocation(),
-      Db.getClusterSettings({ flatSettings: true })
+      Db.nodesStatsCache(req.query.cluster),
+      Db.nodesInfoCache(req.query.cluster),
+      Db.masterCache(req.query.cluster),
+      Db.allocation(req.query.cluster),
+      Db.getClusterSettings({ flatSettings: true, cluster: req.query.cluster })
     ]).then(([nodesStats, nodesInfo, master, { body: allocation }, { body: settings }]) => {
       const shards = new Map(allocation.map(i => [i.node, parseInt(i.shards, 10)]));
 
@@ -517,8 +517,8 @@ class StatsAPIs {
    */
   static getESIndices (req, res) {
     async.parallel({
-      indices: Db.indicesCache,
-      indicesSettings: Db.indicesSettingsCache
+      indices: async () => await Db.indicesCache(req.query.cluster),
+      indicesSettings: async () => await Db.indicesSettingsCache(req.query.cluster)
     }, (err, results) => {
       if (err) {
         console.log(`ERROR - ${req.method} /api/esindices`, util.inspect(err, false, 50));

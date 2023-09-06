@@ -87,6 +87,7 @@ const favicon = require('serve-favicon');
 const compression = require('compression');
 
 const app = express();
+
 app.enable('jsonp callback');
 app.use(favicon(path.join(__dirname, '/public/favicon.ico')));
 app.use(logger(':date \x1b[1m:method\x1b[0m \x1b[33m:url\x1b[0m :res[content-length] bytes :response-time ms'));
@@ -186,8 +187,10 @@ function makeRequest (url, options, cb) {
     });
     pres.on('end', () => {
       if (result.length) {
-        result = result.replace(new RegExp('(index":\\s*|[,{]|  )"' + options.arkime_prefix + '(sessions3|sessions2|stats|dstats|sequence|files|users|history)', 'g'), '$1"MULTIPREFIX_$2');
-        result = result.replace(new RegExp('(index":\\s*)"' + options.arkime_prefix + '(fields_v[1-4][0-9]?)"', 'g'), '$1"MULTIPREFIX_$2"');
+        if (!options.skipReplace) {
+          result = result.replace(new RegExp('(index":\\s*|[,{]|  )"' + options.arkime_prefix + '(sessions3|sessions2|stats|dstats|sequence|files|users|history)', 'g'), '$1"MULTIPREFIX_$2');
+          result = result.replace(new RegExp('(index":\\s*)"' + options.arkime_prefix + '(fields_v[1-4][0-9]?)"', 'g'), '$1"MULTIPREFIX_$2"');
+        }
         result = JSON.parse(result);
       } else {
         result = {};
@@ -228,7 +231,11 @@ function simpleGather (req, res, bodies, doneCb) {
     const nodeName = node2Name(node);
     let nodeUrl = node2Url(node) + req.url;
 
-    const options = { method: req.method, arkime_opaque: req.headers['x-opaque-id'] };
+    const options = {
+      method: req.method,
+      arkime_opaque: req.headers['x-opaque-id'],
+      skipReplace: cluster !== null
+    };
     options.arkime_prefix = node2Prefix(node);
     nodeUrl = nodeUrl.replace(/MULTIPREFIX_/g, options.arkime_prefix).replace(/arkime_sessions2/g, 'sessions2');
     const url = new URL(nodeUrl);
@@ -373,6 +380,8 @@ app.get('/MULTIPREFIX_sessions*/_refresh', (req, res) => {
   req.url = '/sessions*/_refresh';
   return simpleGatherFirst(req, res);
 });
+
+app.get('/_all/_settings', simpleGatherFirst);
 
 app.get('/_cluster/:type/details', function (req, res) {
   const result = { available: [], active: [], inactive: [] };
