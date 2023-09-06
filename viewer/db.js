@@ -1091,7 +1091,7 @@ Db.flushCache = function () {
   internals.shortcutsCache = {};
   delete internals.aliasesCache;
   Db.getAliasesCache();
-  cache.clear();
+  cache.reset();
 };
 
 function twoDigitString (value) {
@@ -1121,15 +1121,16 @@ Db.searchHistory = async (query) => {
     rest_total_hits_as_int: true
   });
 };
-Db.countHistory = async () => {
+Db.countHistory = async (cluster) => {
   return internals.client7.count({
     index: internals.prefix === 'arkime_' ? 'history_v1-*,arkime_history_v1-*' : fixIndex('history_v1-*'),
-    ignoreUnavailable: true
+    ignoreUnavailable: true,
+    cluster
   });
 };
-Db.deleteHistory = async (id, index) => {
+Db.deleteHistory = async (id, index, cluster) => {
   return internals.client7.delete({
-    index, id, refresh: true
+    index, id, refresh: true, cluster
   });
 };
 

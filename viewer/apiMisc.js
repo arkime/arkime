@@ -7,6 +7,7 @@ const fs = require('fs');
 const unzipper = require('unzipper');
 const util = require('util');
 const ArkimeUtil = require('../common/arkimeUtil');
+const ViewerUtils = require('./viewerUtils');
 const User = require('../common/user');
 const View = require('./apiViews');
 const internals = require('./internals');
@@ -114,9 +115,11 @@ class MiscAPIs {
       query.query = { wildcard: { name: `*${req.query.filter}*` } };
     }
 
+    ViewerUtils.addCluster(req.query.cluster, query);
+
     Promise.all([
       Db.search('files', 'file', query),
-      Db.numberOfDocuments('files')
+      Db.numberOfDocuments('files', { cluster: req.query.cluster })
     ]).then(([files, total]) => {
       if (files.error) { throw files.error; }
 

@@ -3,6 +3,7 @@
 const Db = require('./db.js');
 const util = require('util');
 const ArkimeUtil = require('../common/arkimeUtil');
+const ViewerUtils = require('./viewerUtils');
 
 class HistoryAPIs {
   // --------------------------------------------------------------------------
@@ -132,9 +133,11 @@ class HistoryAPIs {
       });
     }
 
+    ViewerUtils.addCluster(req.query.cluster, query);
+
     Promise.all([
       Db.searchHistory(query),
-      Db.countHistory()
+      Db.countHistory(req.query.cluster)
     ]).then(([{ body: { hits: histories } }, { body: { count: total } }]) => {
       const results = { total: histories.total, results: [] };
       for (const hit of histories.hits) {
@@ -176,7 +179,7 @@ class HistoryAPIs {
     }
 
     try {
-      await Db.deleteHistory(req.params.id, req.query.index);
+      await Db.deleteHistory(req.params.id, req.query.index, req.query.cluster);
       return res.send(JSON.stringify({
         success: true,
         text: 'Deleted history item successfully'
