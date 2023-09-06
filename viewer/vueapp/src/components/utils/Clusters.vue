@@ -1,6 +1,6 @@
 <template>
-  <div>
-    <b-dropdown v-if="multiviewer"
+  <div v-if="multiviewer">
+    <b-dropdown
       right
       size="sm"
       class="multies-menu-dropdown pull-right ml-1"
@@ -203,6 +203,8 @@ export default {
     }
   },
   mounted () {
+    if (!this.multiviewer) { return; } // only visible/enabled in multiviewer mode
+
     this.getClusters();
 
     if (this.selectOne && this.selectedCluster.length > 1) {
