@@ -6,9 +6,9 @@
       <template v-if="notifierTypes">
         <b-button
           size="sm"
+          variant="primary"
           :key="notifier.name"
           class="pull-right ml-1"
-          variant="theme-tertiary"
           v-for="notifier of notifierTypes"
           @click="createNewNotifier(notifier)">
           <span class="fa fa-plus-circle mr-1" />
@@ -17,9 +17,7 @@
       </template>
     </h3>
 
-    <p>
-      Configure notifiers that can be added to periodic queries and hunt jobs.
-    </p>
+    <p class="lead">{{ helpText }}</p>
 
     <hr>
 
@@ -36,12 +34,10 @@
     <div class="text-center mt-4"
       v-if="!notifiers || !Object.keys(notifiers).length">
       <h3>
-        <span class="fa fa-folder-open fa-2x" />
+        <span class="fa fa-folder-open fa-3x text-muted" />
       </h3>
-      <h5>
+      <h5 class="lead">
         Create one by clicking one of the buttons above.
-        <br>
-        Then use it by adding it to your periodic queries or hunt jobs!
       </h5>
     </div> <!-- /no results -->
 
@@ -171,6 +167,14 @@
         v-for="(notifier, index) of notifiers">
         <template #header>
           {{notifier.type.charAt(0).toUpperCase() + notifier.type.slice(1)}} Notifier
+          <span
+            v-if="parentApp === 'parliament'"
+            @click="toggleNotifier(notifier, index)"
+            :class="{'fa-toggle-on text-success':notifier.on,'fa-toggle-off':!notifier.on}"
+            class="fa fa-lg pull-right cursor-pointer"
+            :title="`Turn this notifier ${notifier.on ? 'off' : 'on'}`"
+            v-b-tooltip.hover.bottom-right>
+          </span>
         </template>
         <b-card-text>
           <!-- notifier name -->
@@ -238,17 +242,40 @@
             @selected-roles-updated="updateNotifierRoles"
             :display-text="notifier.roles && notifier.roles.length ? undefined : 'Share with roles'"
           /> <!-- /notifier sharing -->
+          <template v-if="parentApp === 'parliament' && notifier.alerts">
+            <hr>
+            <!-- notifier alerts -->
+            <h5>Notify on</h5>
+            <div class="row">
+              <div class="col-12">
+                <div v-for="(alert, aKey) of notifier.alerts"
+                  :key="aKey"
+                  class="form-check form-check-inline"
+                  :title="`Notify if ${notifierTypes[notifier.type].alerts[aKey].description}`"
+                  v-b-tooltip.hover.top>
+                  <label class="form-check-label">
+                    <input class="form-check-input"
+                      type="checkbox"
+                      :id="notifierTypes[notifier.type].alerts[aKey].name+notifier.name"
+                      :name="notifierTypes[notifier.type].alerts[aKey].name+notifier.name"
+                      v-model="notifier.alerts[aKey]"
+                    />
+                    {{ notifierTypes[notifier.type].alerts[aKey].name }}
+                  </label>
+                </div>
+              </div>
+            </div>
+          </template> <!-- /notifier alerts -->
           <!-- notifier info -->
           <div class="row mt-2">
             <div class="col-12 small">
-              <span v-if="notifier.created || notifier.user">
+              <p v-if="notifier.created || notifier.user" class="m-0">
                 Created by {{ notifier.user }} at
-                {{ notifier.created * 1000 | timezoneDateString(user.settings.timezone, false) }}
-              </span>
-              <span v-if="notifier.updated"
-                class="pull-right">
-                Last updated at {{ notifier.updated * 1000 | timezoneDateString(user.settings.timezone, false) }}
-              </span>
+                {{ notifier.created * 1000 | timezoneDateString(tz, false) }}
+              </p>
+              <p v-if="notifier.updated" class="m-0">
+                Last updated at {{ notifier.updated * 1000 | timezoneDateString(tz, false) }}
+              </p>
             </div>
           </div> <!-- /notifier info -->
         </b-card-text>
@@ -289,15 +316,21 @@
 </template>
 
 <script>
-// services
-import SettingsService from './SettingsService';
-// components
-import RoleDropdown from '../../../../../common/vueapp/RoleDropdown';
+import setReqHeaders from './setReqHeaders';
+import RoleDropdown from './RoleDropdown';
 
 export default {
   name: 'Notifiers',
-  components: {
-    RoleDropdown
+  components: { RoleDropdown },
+  props: {
+    helpText: {
+      type: String,
+      required: true
+    },
+    parentApp: {
+      type: String,
+      required: true
+    }
   },
   data () {
     return {
@@ -312,27 +345,51 @@ export default {
       get () { return this.$store.state.notifiers || []; },
       set (notifiers) { this.$store.commit('setNotifiers', notifiers); }
     },
-    user () {
-      return this.$store.state.user;
-    },
     roles () {
       return this.$store.state.roles;
+    },
+    tz () {
+      return this.$store.state.user?.settings?.timezone || 'local';
     }
   },
   mounted () {
     // retrieves the types of notifiers that can be configured (slack, email, twilio)
-    SettingsService.getNotifierTypes().then((response) => {
+    fetch('api/notifierTypes', {
+      method: 'GET',
+      headers: setReqHeaders({ 'Content-Type': 'application/json' })
+    }).then((response) => {
+      return response.json();
+    }).then((response) => {
       this.notifierTypes = response;
     }).catch((error) => {
       this.error = error.text || error;
     });
+
+    // if notifiers haven't been fetched by the parent application, fetch them now
+    if (!this.$store.state.notifiers?.length) {
+      fetch('api/notifiers', {
+        method: 'GET',
+        headers: setReqHeaders({ 'Content-Type': 'application/json' })
+      }).then((response) => {
+        return response.json();
+      }).then((response) => {
+        this.$store.commit('setNotifiers', response);
+      }).catch((error) => {
+        this.error = error.text || error;
+      });
+    }
   },
   methods: {
     /* opens the form to create a new notifier */
     createNewNotifier (notifier) {
-      this.newNotifier = JSON.parse(JSON.stringify(notifier));
-      this.newNotifier.roles = ['arkimeUser', 'parliamentUser'];
-      this.newNotifier.users = '';
+      const clone = JSON.parse(JSON.stringify(notifier));
+      // flatten notifer alerts (we only need on state)
+      for (const a in clone.alerts) {
+        clone.alerts[a] = false; // off by default
+      }
+      clone.roles = ['arkimeUser', 'parliamentUser'];
+      clone.users = '';
+      this.newNotifier = clone;
       this.$bvModal.show('create-notifier-modal');
     },
     /* updates the roles on the new notifier object from the RoleDropdown component */
@@ -385,7 +442,18 @@ export default {
         }
       }
 
-      SettingsService.createNotifier(this.newNotifier).then((response) => {
+      fetch('api/notifier', {
+        method: 'POST',
+        headers: setReqHeaders({ 'Content-Type': 'application/json' }),
+        body: JSON.stringify(this.newNotifier)
+      }).then((response) => {
+        return response.json();
+      }).then((response) => {
+        if (!response.success) {
+          this.newNotifierError = response.text;
+          return;
+        }
+
         this.$bvModal.hide('create-notifier-modal');
         // add notifier to the list
         this.notifiers.push(response.notifier);
@@ -406,7 +474,17 @@ export default {
     },
     /* deletes a notifier */
     removeNotifier (id, index) {
-      SettingsService.deleteNotifier(id).then((response) => {
+      fetch(`api/notifier/${id}`, {
+        method: 'DELETE',
+        headers: setReqHeaders({ 'Content-Type': 'application/json' })
+      }).then((response) => {
+        return response.json();
+      }).then((response) => {
+        if (!response.success) {
+          this.$emit('display-message', { msg: response.text || 'Error deleting notifier.', type: 'danger' });
+          return;
+        }
+
         this.notifiers.splice(index, 1);
         // display success message to user
         this.$emit('display-message', { msg: response.text || 'Successfully deleted notifier.' });
@@ -416,7 +494,18 @@ export default {
     },
     /* updates a notifier */
     updateNotifier (id, index, notifier) {
-      SettingsService.updateNotifier(id, notifier).then((response) => {
+      fetch(`api/notifier/${id}`, {
+        method: 'PUT',
+        headers: setReqHeaders({ 'Content-Type': 'application/json' }),
+        body: JSON.stringify(notifier)
+      }).then((response) => {
+        return response.json();
+      }).then((response) => {
+        if (!response.success) {
+          this.$emit('display-message', { msg: response.text || 'Error updating notifier.', type: 'danger' });
+          return;
+        }
+
         this.notifiers.splice(index, 1, response.notifier);
         // display success message to user
         let msg = response.text || 'Successfully updated notifier.';
@@ -436,14 +525,30 @@ export default {
 
       this.$set(this.notifiers[index], 'loading', true);
 
-      SettingsService.testNotifier(id).then((response) => {
+      fetch(`api/notifier/${id}/test`, {
+        method: 'POST',
+        headers: setReqHeaders({})
+      }).then((response) => {
+        return response.json();
+      }).then((response) => {
+        if (!response.success) {
+          this.$emit('display-message', { msg: response.text || 'Error testing notifier.', type: 'danger' });
+          return;
+        }
+
         this.$set(this.notifiers[index], 'loading', false);
         // display success message to user
         this.$emit('display-message', { msg: response.text || 'Successfully tested notifier.' });
+        this.newNotifier = {};
       }).catch((error) => {
         this.$set(this.notifiers[index], 'loading', false);
         this.$emit('display-message', { msg: error.text || 'Error testing notifier.', type: 'danger' });
       });
+    },
+    /* toggles a notifier on/off (parliament use only) */
+    toggleNotifier: function (notifier, index) {
+      this.$set(notifier, 'on', !notifier.on);
+      this.updateNotifier(notifier.id, index, notifier);
     }
   }
 };

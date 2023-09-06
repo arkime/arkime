@@ -1,4 +1,4 @@
-use Test::More tests => 54;
+use Test::More tests => 57;
 use Cwd;
 use URI::Escape;
 use MolochTest;
@@ -49,6 +49,16 @@ esPost("/tests_notifiers/_delete_by_query?conflicts=proceed&refresh", '{ "query"
 # create notifier needs valid notifier type
   $json = viewerPostToken("/api/notifier", '{"name":"test1","type":"unknown","fields":[]}', $token);
   is($json->{text}, "Unknown notifier type", "invalid notifier type");
+
+# create notifier needs valid alerts
+  $json = viewerPostToken("/api/notifier", '{"name":"test1","type":"slack","alerts":"badstring","fields":[{"slackWebhookUrl":{"value":"test1url"}}]}', $token);
+  is($json->{text}, "Alerts must be an object", "Bad alerts type");
+  $json = viewerPostToken("/api/notifier", '{"name":"test1","type":"slack","alerts":{"esDown":"badstring"},"fields":[{"slackWebhookUrl":{"value":"test1url"}}]}', $token);
+  is($json->{text}, "Alert must be true or false", "Bad alerts type");
+
+# create notifier needs valid on state
+  $json = viewerPostToken("/api/notifier", '{"name":"test1","type":"slack","on":"badstring","fields":[{"slackWebhookUrl":{"value":"test1url"}}]}', $token);
+  is($json->{text}, "Notifier on state must be true or false", "Bad on type");
 
 # create notifier
   $json = viewerPostToken("/api/notifier", '{"name":"test1","type":"slack","fields":[{"slackWebhookUrl":{"value":"test1url"}}]}', $token);

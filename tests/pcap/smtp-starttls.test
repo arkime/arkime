@@ -253,10 +253,11 @@
             "srcOuiCnt" : 1,
             "srcPayload8" : "45484c4f20787878",
             "tags" : [
+               "cert:certificate-authority",
                "smtp:starttls",
                "srcip"
             ],
-            "tagsCnt" : 2,
+            "tagsCnt" : 3,
             "tcpflags" : {
                "ack" : 12,
                "dstZero" : 0,

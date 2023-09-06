@@ -5,6 +5,8 @@ Vue.use(Vuex);
 
 const store = new Vuex.Store({
   state: {
+    roles: [],
+    notifiers: [],
     theme: 'light',
     isUser: false,
     isAdmin: false,
@@ -24,6 +26,12 @@ const store = new Vuex.Store({
       value = parseInt(value) || 0;
       localStorage.setItem('refreshInterval', value);
       state.refreshInterval = value;
+    },
+    setRoles (state, value) {
+      state.roles = Vue.filter('parseRoles')(value);
+    },
+    setNotifiers (state, value) {
+      state.notifiers = value;
     }
   }
 });

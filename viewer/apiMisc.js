@@ -8,6 +8,7 @@ const unzipper = require('unzipper');
 const util = require('util');
 const ArkimeUtil = require('../common/arkimeUtil');
 const ViewerUtils = require('./viewerUtils');
+const ArkimeConfig = require('../common/arkimeConfig');
 const User = require('../common/user');
 const View = require('./apiViews');
 const internals = require('./internals');
@@ -304,7 +305,7 @@ class MiscAPIs {
       .replace(/{NODE}/g, Config.nodeName())
       .replace(/{TMPFILE}/g, req.file.path)
       .replace(/{INSECURE-ORIGINALNAME}/g, req.file.originalname)
-      .replace(/{CONFIG}/g, Config.getConfigFile());
+      .replace(/{CONFIG}/g, ArkimeConfig.configFile);
 
     console.log('upload command: ', cmd);
     exec(cmd, (error, stdout, stderr) => {

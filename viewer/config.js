@@ -182,11 +182,6 @@ class Config {
   }
 
   // ----------------------------------------------------------------------------
-  static getConfigFile () {
-    return ArkimeConfig.configFile;
-  };
-
-  // ----------------------------------------------------------------------------
   static isHTTPS (node) {
     return Config.getFull(node || internals.nodeName, 'keyFile') &&
            Config.getFull(node || internals.nodeName, 'certFile');
@@ -428,17 +423,14 @@ class Config {
   /// ///////////////////////////////////////////////////////////////////////////////
 
   static async initialize () {
-    /*
-    if (internals.config.default === undefined) {
-      if (internals.nodeName !== 'cont3xt') {
-        console.log('ERROR - [default] section missing from', internals.configFile);
-        process.exit(1);
-      }
-      internals.config.default = {};
-    }
-    */
-
     await ArkimeConfig.initialize({ defaultConfigFile: `${version.config_prefix}/etc/wiseService.ini` });
+
+    // Make sure for everything put cont3xt we have a default section
+    if (internals.nodeName !== 'cont3xt' && ArkimeConfig.getSection('default') === undefined) {
+      console.log('ERROR - [default] section missing from', ArkimeConfig.configFile);
+      process.exit(1);
+    }
+
     ArkimeConfig.loadIncludes(Config.get('includes'));
 
     const loadedCbs = Config.#loadedCbs;

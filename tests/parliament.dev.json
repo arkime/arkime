@@ -1,5 +1,5 @@
 {
-  "version": 5,
+  "version": 6,
   "authMode": "digest",
   "settings": {
     "general": {
@@ -10,8 +10,7 @@
       "removeIssuesAfter": 60,
       "removeAcknowledgedAfter": 15,
       "hostname": "W9JK0922LK"
-    },
-    "notifiers": {}
+    }
   },
   "groups": []
 }

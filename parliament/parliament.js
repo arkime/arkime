@@ -1,7 +1,8 @@
 #!/usr/bin/env node
 'use strict';
 
-const MIN_PARLIAMENT_VERSION = 5;
+const MIN_PARLIAMENT_VERSION = 6;
+const MIN_DB_VERSION = 79;
 
 /* dependencies ------------------------------------------------------------- */
 const express = require('express');
@@ -12,7 +13,6 @@ const favicon = require('serve-favicon');
 const axios = require('axios');
 const bp = require('body-parser');
 const logger = require('morgan');
-const glob = require('glob');
 const os = require('os');
 const helmet = require('helmet');
 const uuid = require('uuid').v4;
@@ -22,6 +22,7 @@ const dayMs = 60000 * 60 * 24;
 const User = require('../common/user');
 const Auth = require('../common/auth');
 const version = require('../common/version');
+const Notifier = require('../common/notifier');
 const ArkimeUtil = require('../common/arkimeUtil');
 const ArkimeConfig = require('../common/arkimeConfig');
 
@@ -195,24 +196,6 @@ Auth.app(app);
 app.use(ArkimeUtil.jsonParser);
 app.use(bp.urlencoded({ extended: true }));
 
-// Load notifier plugins for Parliament alerting
-function loadNotifiers () {
-  const api = {
-    register: function (str, info) {
-      internals.notifierTypes[str] = info;
-    }
-  };
-
-  // look for all notifier providers and initialize them
-  const files = glob.sync(path.join(__dirname, '/../common/notifier.*.js'));
-  files.forEach((file) => {
-    const plugin = require(file);
-    plugin.init(api);
-  });
-}
-
-loadNotifiers();
-
 function newError (code, msg) {
   const error = new Error(msg);
   error.httpStatusCode = code;
@@ -244,28 +227,24 @@ app.use((req, res, next) => {
 });
 
 function isUser (req, res, next) {
-  Auth.doAuth(req, res, () => {
-    if (req.user.hasRole('parliamentUser')) {
-      return next();
-    }
+  if (req.user.hasRole('parliamentUser')) {
+    return next();
+  }
 
-    res.status(403).json({
-      success: false,
-      text: 'Permission Denied: Not a Parliament user'
-    });
+  res.status(403).json({
+    success: false,
+    text: 'Permission Denied: Not a Parliament user'
   });
 }
 
 function isAdmin (req, res, next) {
-  Auth.doAuth(req, res, () => {
-    if (req.user.hasRole('parliamentAdmin')) {
-      return next();
-    }
+  if (req.user.hasRole('parliamentAdmin')) {
+    return next();
+  }
 
-    res.status(403).json({
-      success: false,
-      text: 'Permission Denied: Not a Parliament admin'
-    });
+  res.status(403).json({
+    success: false,
+    text: 'Permission Denied: Not a Parliament admin'
   });
 }
 
@@ -338,16 +317,18 @@ function formatIssueMessage (cluster, issue) {
   return message;
 }
 
-function buildAlert (cluster, issue) {
+async function buildAlert (cluster, issue) {
+  const { body: notifiers } = await Notifier.searchNotifiers({ query: { match_all: {} } });
+
   // if there are no notifiers set, skip everything, there's nowhere to alert
-  if (!parliament.settings.notifiers) { return; }
+  if (notifiers.hits.total === 0) { return; }
 
   issue.alerted = Date.now();
 
   const message = `${cluster.title} - ${issue.message}`;
 
-  for (const n in parliament.settings.notifiers) {
-    const setNotifier = parliament.settings.notifiers[n];
+  for (const n in notifiers.hits.hits) {
+    const setNotifier = notifiers.hits.hits[n]._source;
 
     // keep looking for notifiers if the notifier is off
     if (!setNotifier || !setNotifier.on) { continue; }
@@ -356,11 +337,11 @@ function buildAlert (cluster, issue) {
     if (!setNotifier.alerts[issue.type]) { continue; }
 
     const config = {};
-    const notifierDef = internals.notifierTypes[setNotifier.type];
+    const notifierDef = Notifier.notifierTypes[setNotifier.type];
 
     for (const f in notifierDef.fields) {
       const fieldDef = notifierDef.fields[f];
-      const field = setNotifier.fields[fieldDef.name];
+      const field = setNotifier.fields.find(fd => fieldDef.name === fd.name);
       if (!field || (fieldDef.required && !field.value)) {
         // field doesn't exist, or field is required and doesn't have a value
         console.log(`Missing the ${field.name} field for ${n} alerting. Add it on the settings page.`);
@@ -626,27 +607,17 @@ function getStats (cluster) {
   });
 }
 
-function buildNotifierTypes () {
-  for (const n in internals.notifierTypes) {
-    const notifier = internals.notifierTypes[n];
-    // add alert issue types to notifiers
-    notifier.alerts = issueTypes;
-    // make fields a map
-    const fieldsMap = {};
-    for (const field of notifier.fields) {
-      fieldsMap[field.name] = field;
-    }
-    notifier.fields = fieldsMap;
-  }
-
-  if (ArkimeConfig.debug > 1) {
-    console.log('Built notifier alerts:', JSON.stringify(internals.notifierTypes, null, 2));
-  }
-}
-
 // Initializes the parliament with ids for each group and cluster
 // Upgrades the parliament if necessary
 async function initializeParliament () {
+  ArkimeUtil.checkArkimeSchemaVersion(User.getClient(), getConfig('parliament', 'usersPrefix'), MIN_DB_VERSION);
+  Notifier.initialize({
+    issueTypes,
+    debug: ArkimeConfig.debug,
+    prefix: getConfig('parliament', 'usersPrefix'),
+    esclient: User.getClient()
+  });
+
   if (parliament.version === undefined || parliament.version < MIN_PARLIAMENT_VERSION) {
     console.log( // notify of upgrade
       `WARNING - Current parliament version (${parliament.version ?? 1}) is less then required version (${MIN_PARLIAMENT_VERSION})
@@ -654,7 +625,7 @@ async function initializeParliament () {
     );
 
     // do the upgrade
-    parliament = await upgrade.upgrade(parliament, internals.notifierTypes, ArkimeConfig);
+    parliament = await upgrade.upgrade(parliament, ArkimeConfig);
 
     try { // write the upgraded file
       const upgradeParliamentError = validateParliament();
@@ -688,9 +659,6 @@ async function initializeParliament () {
   if (!parliament.settings) {
     parliament.settings = settingsDefault;
   }
-  if (!parliament.settings.notifiers) {
-    parliament.settings.notifiers = settingsDefault.notifiers;
-  }
   if (!parliament.settings.general) {
     parliament.settings.general = settingsDefault.general;
   }
@@ -721,8 +689,6 @@ async function initializeParliament () {
     console.log('Parliament groups:', JSON.stringify(parliament.groups, null, 2));
     console.log('Parliament general settings:', JSON.stringify(parliament.settings.general, null, 2));
   }
-
-  buildNotifierTypes();
 
   const parliamentError = validateParliament();
   if (!parliamentError) {
@@ -875,7 +841,7 @@ function getGeneralSetting (type) {
 // Use this before writing the parliament file
 function validateParliament (next) {
   const len = Buffer.from(JSON.stringify(parliament, null, 2)).length;
-  if (len < 320) {
+  if (len < 200) {
     // if it's an empty file, don't save it, return an error
     const errorMsg = 'Error writing parliament data: empty or invalid parliament';
     console.log(errorMsg);
@@ -986,10 +952,6 @@ app.get('/parliament/api/auth', setCookie, (req, res, next) => {
   });
 });
 
-app.get('/parliament/api/notifierTypes', [isAdmin, setCookie], (req, res) => {
-  return res.json(internals.notifierTypes ?? {});
-});
-
 // Get the parliament settings object
 app.get('/parliament/api/settings', [isAdmin, setCookie], (req, res, next) => {
   if (!parliament.settings) {
@@ -1018,6 +980,10 @@ app.get('/parliament/api/settings', [isAdmin, setCookie], (req, res, next) => {
 
 // Update the parliament general settings object
 app.put('/parliament/api/settings', [isAdmin, checkCookieToken], (req, res, next) => {
+  if (!req.body.settings?.general) {
+    return res.serverError(422, 'You must provide the settings to update.');
+  }
+
   // save general settings
   for (const s in req.body.settings.general) {
     let setting = req.body.settings.general[s];
@@ -1038,151 +1004,29 @@ app.put('/parliament/api/settings', [isAdmin, checkCookieToken], (req, res, next
   writeParliament(req, res, next, successObj, errorText);
 });
 
-function verifyNotifierReqBody (req) {
-  if (typeof req.body.notifier !== 'object') {
-    return 'Missing notifier';
-  }
+app.get( // user roles endpoint
+  '/parliament/api/user/roles',
+  [ArkimeUtil.noCacheJson, checkCookieToken],
+  User.apiRoles
+);
 
-  if (!ArkimeUtil.isString(req.body.notifier.name)) {
-    return 'Missing notifier name';
-  }
+// fetch notifier types endpoint
+app.get('/parliament/api/notifierTypes', [ArkimeUtil.noCacheJson, isAdmin, setCookie], Notifier.apiGetNotifierTypes);
 
-  if (!ArkimeUtil.isString(req.body.notifier.type)) {
-    return 'Missing notifier type';
-  }
+// fetch configured notifiers endpoint
+app.get('/parliament/api/notifiers', [ArkimeUtil.noCacheJson, isAdmin, checkCookieToken], Notifier.apiGetNotifiers);
 
-  if (typeof req.body.notifier.fields !== 'object') {
-    return 'Missing notifier fields';
-  }
+// Create a new notifier endpoint
+app.post('/parliament/api/notifier', [ArkimeUtil.noCacheJson, isAdmin, checkCookieToken], Notifier.apiCreateNotifier);
 
-  if (typeof req.body.notifier.alerts !== 'object') {
-    return 'Missing notifier alerts';
-  }
+// Update an existing notifier endpoint
+app.put('/parliament/api/notifier/:id', [ArkimeUtil.noCacheJson, isAdmin, checkCookieToken], Notifier.apiUpdateNotifier);
 
-  return undefined;
-}
+// Remove a notifier endpoint
+app.delete('/parliament/api/notifier/:id', [ArkimeUtil.noCacheJson, isAdmin, checkCookieToken], Notifier.apiDeleteNotifier);
 
-// Update an existing notifier
-app.put('/parliament/api/notifiers/:name', [isAdmin, checkCookieToken], (req, res, next) => {
-  if (req.params.name === '__proto__') {
-    return res.serverError(404, 'Bad name');
-  }
-
-  if (!parliament.settings.notifiers[req.params.name]) {
-    return res.serverError(404, `${req.params.name} not found.`);
-  }
-
-  if (!ArkimeUtil.isString(req.body.key)) {
-    return res.serverError(422, 'Missing notifier key');
-  }
-
-  const verifyMsg = verifyNotifierReqBody(req);
-  if (verifyMsg) { return res.serverError(422, verifyMsg); }
-
-  req.body.notifier.name = req.body.notifier.name.replace(/[^-a-zA-Z0-9_: ]/g, '');
-
-  if (req.body.notifier.name !== req.body.key &&
-    parliament.settings.notifiers[req.body.notifier.name]) {
-    return res.serverError(403, `${req.body.notifier.name} already exists. Notifier names must be unique`);
-  }
-
-  let foundNotifier;
-  for (const n in internals.notifierTypes) {
-    const notifier = internals.notifierTypes[n];
-    if (notifier.type === req.body.notifier.type) {
-      foundNotifier = notifier;
-    }
-  }
-
-  if (!foundNotifier) {
-    return res.serverError(403, 'Unknown notifier type');
-  }
-
-  // check that required notifier fields exist
-  for (const f in foundNotifier.fields) {
-    const field = foundNotifier.fields[f];
-    for (const sf in req.body.notifier.fields) {
-      const sentField = req.body.notifier.fields[sf];
-      if (sentField.name === field.name && field.required && !sentField.value) {
-        return res.serverError(403, `Missing a value for ${field.name}`);
-      }
-    }
-  }
-
-  parliament.settings.notifiers[req.body.notifier.name] = req.body.notifier;
-  // delete the old one if the key (notifier name) has changed
-  if (parliament.settings.notifiers[req.body.key] &&
-    req.body.notifier.name !== req.body.key) {
-    parliament.settings.notifiers[req.body.key] = null;
-    delete parliament.settings.notifiers[req.body.key];
-  }
-
-  const successObj = {
-    success: true,
-    newKey: req.body.notifier.name,
-    text: `Successfully updated ${req.params.name} notifier.`
-  };
-  const errorText = `Cannot update ${req.params.name} notifier`;
-  writeParliament(req, res, next, successObj, errorText);
-});
-
-// Remove a notifier
-app.delete('/parliament/api/notifiers/:name', [isAdmin, checkCookieToken], (req, res, next) => {
-  if (!parliament.settings.notifiers[req.params.name]) {
-    return res.serverError(403, `Cannot find ${req.params.name} notifier to remove`);
-  }
-
-  parliament.settings.notifiers[req.params.name] = undefined;
-
-  const successObj = { success: true, text: `Successfully removed ${req.params.name} notifier.` };
-  const errorText = `Cannot remove ${req.params.name} notifier`;
-  writeParliament(req, res, next, successObj, errorText);
-});
-
-// Create a new notifier
-app.post('/parliament/api/notifiers', [isAdmin, checkCookieToken], (req, res, next) => {
-  const verifyMsg = verifyNotifierReqBody(req);
-  if (verifyMsg) { return res.serverError(422, verifyMsg); }
-
-  req.body.notifier.name = req.body.notifier.name.replace(/[^-a-zA-Z0-9_: ]/g, '');
-
-  if (parliament.settings.notifiers[req.body.notifier.name]) {
-    return res.serverError(403, `${req.body.notifier.name} already exists. Notifier names must be unique`);
-  }
-
-  let foundNotifier;
-  for (const n in internals.notifierTypes) {
-    const notifier = internals.notifierTypes[n];
-    if (notifier.type === req.body.notifier.type) {
-      foundNotifier = notifier;
-    }
-  }
-
-  if (!foundNotifier) {
-    return res.serverError(403, 'Unknown notifier type');
-  }
-
-  // check that required notifier fields exist
-  for (const f in foundNotifier.fields) {
-    const field = foundNotifier.fields[f];
-    for (const sf in req.body.notifier.fields) {
-      const sentField = req.body.notifier.fields[sf];
-      if (sentField.name === field.name && field.required && !sentField.value) {
-        return res.serverError(403, `Missing a value for ${field.name}`);
-      }
-    }
-  }
-
-  parliament.settings.notifiers[req.body.notifier.name] = req.body.notifier;
-
-  const successObj = {
-    success: true,
-    name: req.body.notifier.name,
-    text: `Successfully added ${req.body.notifier.name} notifier.`
-  };
-  const errorText = `Unable to add ${req.body.notifier.name} notifier.`;
-  writeParliament(req, res, next, successObj, errorText);
-});
+// issue a test alert to a specified notifier
+app.post('/parliament/api/notifier/:id/test', [ArkimeUtil.noCacheJson, isAdmin, checkCookieToken], Notifier.apiTestNotifier);
 
 // Update the parliament general settings object to the defaults
 app.put('/parliament/api/settings/restoreDefaults', [isAdmin, checkCookieToken], (req, res, next) => {
@@ -1769,55 +1613,6 @@ app.put('/parliament/api/removeSelectedAcknowledgedIssues', [isUser, checkCookie
   writeIssues(req, res, next, successObj, errorText);
 });
 
-// issue a test alert to a specified notifier
-app.post('/parliament/api/testAlert', [isAdmin, checkCookieToken], (req, res, next) => {
-  if (!ArkimeUtil.isString(req.body.notifier)) {
-    return res.serverError(422, 'Must specify the notifier.');
-  }
-
-  const notifier = parliament.settings.notifiers[req.body.notifier];
-
-  if (!notifier) {
-    const errorText = 'Unable to find the requested notifier';
-    return res.serverError(500, errorText);
-  }
-
-  const config = {};
-
-  for (const f in notifier.fields) {
-    const field = notifier.fields[f];
-    if (!field || (field.required && !field.value)) {
-      // field doesn't exist, or field is required and doesn't have a value
-      const message = `Missing the ${f} field for the ${notifier.name} notifier. Add it on the settings page.`;
-      console.log(message);
-
-      return res.serverError(422, message);
-    }
-    config[f] = field.value;
-  }
-
-  internals.notifierTypes[notifier.type].sendAlert(
-    config,
-    `Test alert from the ${notifier.name} notifier!`,
-    null,
-    (response) => {
-      // there should only be one error here because only one
-      // notifier alert is sent at a time
-      if (response.errors) {
-        // eslint-disable-next-line no-unreachable-loop
-        for (const e in response.errors) {
-          return res.serverError(500, response.errors[e]);
-        }
-      }
-
-      return res.json({
-        success: true,
-        text: `Successfully issued alert using the ${notifier.name} notifier.`
-      });
-    }
-  );
-});
-
 async function setupAuth () {
   Auth.initialize({
     debug: ArkimeConfig.debug,
@@ -1845,7 +1640,7 @@ async function setupAuth () {
   User.initialize({
     insecure: ArkimeConfig.insecure,
     node: getConfig('parliament', 'usersElasticsearch', 'http://localhost:9200'),
-    prefix: getConfig('parliament', 'usersPrefix'),
+    prefix: getConfig('parliament', 'usersPrefix', getConfig('parliament', 'prefix', 'arkime')),
     apiKey: getConfig('parliament', 'usersElasticsearchAPIKey'),
     basicAuth: getConfig('parliament', 'usersElasticsearchBasicAuth')
   });

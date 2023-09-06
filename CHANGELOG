@@ -41,6 +41,8 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
                and https://arkime.com/faq#how_do_i_upgrade_to_arkime_5
   - all - authMode setting added
   - all - authMode=basic added
+  - all - notifiers for parliament and arkime merged
+          conflicts mitigated by appending "Parliament" to parliament notifiers
   - capture - moloch converted to arkime
   - capture - override ips can now set any field
   - capture - overrideIpsFiles setting

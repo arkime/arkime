@@ -72,6 +72,7 @@
 # 76 - views index
 # 77 - cron sharing with roles and users
 # 78 - added roleAssigners to users
+# 79 - added parliament notifier flags
 
 use HTTP::Request::Common;
 use LWP::UserAgent;
@@ -84,7 +85,7 @@ use IO::Uncompress::Gunzip qw(gunzip $GunzipError);
 use strict;
 no if ($] >= 5.018), 'warnings' => 'experimental';
 
-my $VERSION = 78;
+my $VERSION = 79;
 my $verbose = 0;
 my $PREFIX = undef;
 my $OLDPREFIX = "";
@@ -442,9 +443,9 @@ sub esAlias
     my ($cmd, $index, $alias, $dontaddprefix) = @_;
     logmsg "Alias cmd $cmd from $index to alias $alias\n" if ($verbose > 0);
     if (!$dontaddprefix){ # append PREFIX
-        esPost("/_aliases?master_timeout=${ESTIMEOUT}s", '{ "actions": [ { "' . $cmd . '": { "index": "' . $PREFIX . $index . '", "alias" : "'. $PREFIX . $alias .'" } } ] }', 1);
+        esPost("/_aliases?master_timeout=${ESTIMEOUT}s", qq({ "actions": [ { "${cmd}": { "index": "${PREFIX}${index}", "alias" : "${PREFIX}${alias}" } } ] }), 1);
     } else { # do not append PREFIX
-        esPost("/_aliases?master_timeout=${ESTIMEOUT}s", '{ "actions": [ { "' . $cmd . '": { "index": "' . $index . '", "alias" : "'. $alias .'" } } ] }', 1);
+        esPost("/_aliases?master_timeout=${ESTIMEOUT}s", qq({ "actions": [ { "${cmd}": { "index": "${index}", "alias" : "${alias}" } } ] }), 1);
     }
 }
 
@@ -1290,9 +1291,9 @@ sub sessions3ECSTemplate
 # 1) change index_patterns
 # 2) Delete cloud,dns,http,tls,user,data_stream
 # 3) Add source.as.full, destination.as.full, source.mac-cnt, destination.mac-cnt, network.vlan.id-cnt
-my $template = '
+my $template = qq(
 {
-  "index_patterns": "' . $PREFIX . 'sessions3-*",
+  "index_patterns": "${PREFIX}sessions3-*",
   "mappings": {
     "_meta": {
       "version": "1.10.0"
@@ -1310,7 +1311,7 @@ my $template = '
       }
     ],
     "properties": {
-      "@timestamp": {
+      "\@timestamp": {
         "type": "date"
       },
       "agent": {
@@ -4173,7 +4174,7 @@ my $template = '
     }
   }
 }
-';
+);
     logmsg "Creating sessions ecs template\n" if ($verbose > 0);
     esPut("/_template/${PREFIX}sessions3_ecs_template?master_timeout=${ESTIMEOUT}s&pretty", $template);
 }
@@ -4182,10 +4183,11 @@ my $template = '
 # Not all fields need to be here, but the index will be created quicker if more are.
 sub sessions3Update
 {
-    my $mapping = '
+    my $mapping = qq(
 {
   "_meta": {
-    "molochDbVersion": ' . $VERSION . '
+    "molochDbVersion": $VERSION,
+    "arkimeDbVersion": $VERSION
   },
   "dynamic": "true",
   "dynamic_templates": [
@@ -5189,7 +5191,7 @@ sub sessions3Update
     }
   }
 }
-';
+);
 
 $REPLICAS = 0 if ($REPLICAS < 0);
 my $shardsPerNode = ceil($SHARDS * ($REPLICAS+1) / $main::numberOfNodes);
@@ -5206,15 +5208,15 @@ if ($DOILM) {
       "lifecycle.name": "${PREFIX}molochsessions"/;
 }
 
-    my $template = '
+    my $template = qq(
 {
-  "index_patterns": "' . $PREFIX . 'sessions3-*",
+  "index_patterns": "${PREFIX}sessions3-*",
   "settings": {
     "index": {
-      "routing.allocation.total_shards_per_node": ' . $shardsPerNode . $settings . ',
-      "refresh_interval": "' . $REFRESH . 's",
-      "number_of_shards": ' . $SHARDS . ',
-      "number_of_replicas": ' . $REPLICAS . ',
+      "routing.allocation.total_shards_per_node": ${shardsPerNode}${settings},
+      "refresh_interval": "${REFRESH}s",
+      "number_of_shards": ${SHARDS},
+      "number_of_replicas": ${REPLICAS},
       "analysis": {
         "analyzer": {
           "wordSplit": {
@@ -5226,9 +5228,9 @@ if ($DOILM) {
       }
     }
   },
-  "mappings":' . $mapping . ',
+  "mappings": ${mapping},
   "order": 99
-}';
+});
 
     logmsg "Creating sessions template\n" if ($verbose > 0);
     esPut("/_template/${PREFIX}sessions3_template?master_timeout=${ESTIMEOUT}s&pretty", $template);
@@ -5596,6 +5598,29 @@ sub notifiersUpdate
     },
     "updated": {
       "type": "date"
+    },
+    "on": {
+      "type": "boolean"
+    },
+    "alerts": {
+      "type": "object",
+      "properties": {
+        "esRed": {
+          "type": "boolean"
+        },
+        "esDown": {
+          "type": "boolean"
+        },
+        "esDropped": {
+          "type": "boolean"
+        },
+        "outOfDate": {
+          "type": "boolean"
+        },
+        "noPackets": {
+          "type": "boolean"
+        }
+      }
     }
   }
 }';
@@ -5623,6 +5648,39 @@ sub notifiersMove
 # remove notifiers from the _moloch_shared user
     delete $sharedUser->{notifiers};
     esPut("/${PREFIX}users/_doc/_moloch_shared", to_json($sharedUser));
+}
+
+sub notifiersAddMissingProps
+{
+  # add missing alerts and on properties to the notifiers
+  my $notifiers = esGet("/${PREFIX}notifiers/_search?size=10000");
+
+  return if (!$notifiers->{hits}->{total}->{value});
+
+  foreach my $notifier (@{$notifiers->{hits}->{hits}}) {
+      # if alerts and on are not props add them
+      my $id = $notifier->{_id};
+      $notifier = $notifier->{_source};
+
+      my $update = 0;
+      if (!exists $notifier->{on}) {
+        # viewer notifiers are off by default (on flag is used in parliament only)
+        $notifier->{on} = \0;
+        $update = 1;
+      }
+      if (!exists $notifier->{alerts}) {
+        # viewer alerts are all off by default (alerts are used in parliament only)
+        $notifier->{alerts} = {};
+        $notifier->{alerts}->{esRed} = \0;
+        $notifier->{alerts}->{esDown} = \0;
+        $notifier->{alerts}->{esDropped} = \0;
+        $notifier->{alerts}->{outOfDate} = \0;
+        $notifier->{alerts}->{noPackets} = \0;
+        $update = 1;
+      }
+
+      esPost("/${PREFIX}notifiers/_doc/${id}", to_json($notifier)) if ($update);
+  }
 }
 ################################################################################
 
@@ -6499,7 +6557,7 @@ if ($ARGV[1] =~ /^(users-?import|import)$/) {
                     ("$shardsPerNode" eq "null" && exists $settings->{$i}->{settings}->{"index.routing.allocation.total_shards_per_node"}) ||
                     ("$shardsPerNode" ne "null" && $settings->{$i}->{settings}->{"index.routing.allocation.total_shards_per_node"} ne "$shardsPerNode")) {
 
-                    esPut("/$i/_settings?master_timeout=${ESTIMEOUT}s", '{"index": {"number_of_replicas":' . $REPLICAS . ', "routing.allocation.total_shards_per_node": ' . $shardsPerNode . '}}', 1);
+                    esPut("/$i/_settings?master_timeout=${ESTIMEOUT}s", qq({"index": {"number_of_replicas":${REPLICAS}, "routing.allocation.total_shards_per_node": ${shardsPerNode}}}), 1);
                 }
             }
         } else {
@@ -7877,11 +7935,13 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
         historyUpdate();
         queriesUpdate();
         usersUpdate();
-    } elsif ($main::versionNumber <= 78) {
+    } elsif ($main::versionNumber <= 79) {
         checkForOld7Indices();
         sessions3Update();
         historyUpdate();
         queriesUpdate();
+        notifiersUpdate();
+        notifiersAddMissingProps();
     } else {
         logmsg "db.pl is hosed\n";
     }

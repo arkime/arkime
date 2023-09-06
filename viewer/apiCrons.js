@@ -6,6 +6,7 @@ const Db = require('./db');
 const Auth = require('../common/auth');
 const User = require('../common/user');
 const ArkimeUtil = require('../common/arkimeUtil');
+const ArkimeConfig = require('../common/arkimeConfig');
 const async = require('async');
 const internals = require('./internals');
 const SessionAPIs = require('./apiSessions');
@@ -55,7 +56,7 @@ class CronAPIs {
     } else if (!Config.get('multiES', false)) {
       const info = await Db.getQueriesNode();
       if (info.node === undefined) {
-        console.log(`WARNING - No cronQueries=true found in ${Config.getConfigFile()}, one and only one node MUST have cronQueries=true set for cron/hunts to work`);
+        console.log(`WARNING - No cronQueries=true found in ${ArkimeConfig.configFile}, one and only one node MUST have cronQueries=true set for cron/hunts to work`);
       } else if (Date.now() - info.updateTime > 2 * 60 * 1000) {
         console.log(`WARNING - cronQueries=true node '${info.node}' hasn't checked in lately, cron/hunts might be broken`);
       }
