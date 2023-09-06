@@ -1,6 +1,12 @@
 'use strict';
 
+import Vue from 'vue';
+
 import Utils from '../src/components/utils/utils';
+
+Vue.prototype.$constants = {
+  MOLOCH_MULTIVIEWER: false
+};
 
 test('findFactors', () => {
   expect(Utils.findFactors(1)).toStrictEqual([]);

@@ -21,6 +21,10 @@ global.$ = global.jQuery = $;
 Vue.use(VueAxios, axios);
 Vue.use(BootstrapVue);
 
+Vue.prototype.$constants = {
+  MOLOCH_MULTIVIEWER: false
+};
+
 jest.mock('../src/components/users/UserService');
 jest.mock('../src/components/search/FieldService');
 

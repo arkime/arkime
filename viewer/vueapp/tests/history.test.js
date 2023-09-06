@@ -23,6 +23,10 @@ Vue.use(BootstrapVue);
 Vue.directive('has-permission', HasPermission);
 Vue.directive('has-role', HasRole);
 
+Vue.prototype.$constants = {
+  MOLOCH_MULTIVIEWER: false
+};
+
 jest.mock('../src/components/history/HistoryService');
 jest.mock('../src/components/users/UserService');
 
@@ -36,6 +40,13 @@ const store = {
     time: {
       startTime: 0,
       stopTime: 0
+    },
+    esCluster: {
+      availableCluster: {
+        active: [],
+        inactive: []
+      },
+      selectedCluster: []
     }
   },
   mutations: {
