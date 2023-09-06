@@ -156,6 +156,7 @@ import MolochLoading from '../utils/Loading';
 
 export default {
   name: 'EsAdmin',
+  props: ['cluster'],
   components: { MolochError, MolochLoading },
   data: function () {
     return {
@@ -163,11 +164,20 @@ export default {
       error: '',
       interactionError: '',
       interactionSuccess: '',
-      settings: {}
+      settings: {},
+      query: {
+        cluster: this.cluster || undefined
+      }
     };
   },
   created: function () {
     this.loadData();
+  },
+  watch: {
+    cluster: function () {
+      this.query.cluster = this.cluster;
+      this.loadData();
+    }
   },
   methods: {
     /* exposed page functions ------------------------------------ */
@@ -177,12 +187,18 @@ export default {
         return;
       }
 
+      const selection = Utils.checkClusterSelection(this.query.cluster, this.$store.state.esCluster.availableCluster.active);
+      if (!selection.valid) {
+        this.$set(setting, 'error', selection.error);
+        return;
+      }
+
       const body = {
         key: setting.key,
         value: setting.current
       };
 
-      this.$http.post('api/esadmin/set', body)
+      this.$http.post('api/esadmin/set', body, { params: this.query })
         .then((response) => {
           this.$set(setting, 'error', '');
           this.$set(setting, 'changed', false);
@@ -191,8 +207,14 @@ export default {
         });
     },
     cancel: function (setting) {
+      const selection = Utils.checkClusterSelection(this.query.cluster, this.$store.state.esCluster.availableCluster.active);
+      if (!selection.valid) {
+        this.$set(setting, 'error', selection.error);
+        return;
+      }
+
       // update the changed value with the one that's saved
-      this.$http.get('api/esadmin')
+      this.$http.get('api/esadmin', { params: this.query })
         .then((response) => {
           this.$set(setting, 'error', '');
           for (const resSetting of response.data) {
@@ -206,7 +228,11 @@ export default {
         });
     },
     clearCache: function () {
-      this.$http.post('api/esadmin/clearcache')
+      if (!Utils.checkClusterSelection(this.query.cluster, this.$store.state.esCluster.availableCluster.active, this, 'interactionError').valid) {
+        return;
+      }
+
+      this.$http.post('api/esadmin/clearcache', { params: this.query })
         .then((response) => {
           this.interactionSuccess = response.data.text;
         })
@@ -215,7 +241,11 @@ export default {
         });
     },
     unflood: function () {
-      this.$http.post('api/esadmin/unflood')
+      if (!Utils.checkClusterSelection(this.query.cluster, this.$store.state.esCluster.availableCluster.active, this, 'interactionError').valid) {
+        return;
+      }
+
+      this.$http.post('api/esadmin/unflood', { params: this.query })
         .then((response) => {
           this.interactionSuccess = response.data.text;
         })
@@ -224,7 +254,11 @@ export default {
         });
     },
     flush: function () {
-      this.$http.post('api/esadmin/flush')
+      if (!Utils.checkClusterSelection(this.query.cluster, this.$store.state.esCluster.availableCluster.active, this, 'interactionError').valid) {
+        return;
+      }
+
+      this.$http.post('api/esadmin/flush', { params: this.query })
         .then((response) => {
           this.interactionSuccess = response.data.text;
         })
@@ -233,7 +267,11 @@ export default {
         });
     },
     retryFailed: function () {
-      this.$http.post('api/esadmin/reroute')
+      if (!Utils.checkClusterSelection(this.query.cluster, this.$store.state.esCluster.availableCluster.active, this, 'interactionError').valid) {
+        return;
+      }
+
+      this.$http.post('api/esadmin/reroute', { params: this.query })
         .then((response) => {
           this.interactionSuccess = response.data.text;
         })
@@ -243,18 +281,13 @@ export default {
     },
     /* helper functions ------------------------------------------ */
     loadData: function () {
-      if (this.$constants.MOLOCH_MULTIVIEWER) {
-        const availableCluster = this.$store.state.esCluster.availableCluster.active;
-        const selection = Utils.checkClusterSelection(this.query.cluster, availableCluster);
-        if (!selection.valid) { // invalid selection
-          this.error = selection.error;
-          return;
-        }
+      if (!Utils.checkClusterSelection(this.query.cluster, this.$store.state.esCluster.availableCluster.active, this).valid) {
+        return;
       }
 
       this.loading = true;
 
-      this.$http.get('api/esadmin')
+      this.$http.get('api/esadmin', { params: this.query })
         .then((response) => {
           this.error = '';
           this.loading = false;

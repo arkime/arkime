@@ -582,7 +582,6 @@ export default {
       fontSize: 0.4,
       zoomLevel: 1,
       weight: 'sessions',
-      multiviewer: this.$constants.MOLOCH_MULTIVIEWER,
       fieldHistoryConnectionsSrc: undefined,
       fieldHistoryConnectionsDst: undefined
     };
@@ -917,21 +916,15 @@ export default {
     },
     /* helper functions ---------------------------------------------------- */
     loadData: function () {
+      if (!Utils.checkClusterSelection(this.query.cluster, this.$store.state.esCluster.availableCluster.active, this).valid) {
+        this.drawGraphWrapper({ nodes: [], links: [] }); // draw empty graph
+        this.recordsFiltered = 0;
+        pendingPromise = null;
+        return;
+      }
+
       this.error = '';
       this.loading = true;
-
-      if (this.multiviewer) {
-        const availableCluster = this.$store.state.esCluster.availableCluster.active;
-        const selection = Utils.checkClusterSelection(this.query.cluster, availableCluster);
-        if (!selection.valid) { // invlaid selection
-          this.drawGraphWrapper({ nodes: [], links: [] }); // draw empty graph
-          this.recordsFiltered = 0;
-          pendingPromise = null;
-          this.error = selection.error;
-          this.loading = false;
-          return;
-        }
-      }
 
       if (!this.$route.query.srcField) {
         this.query.srcField = FieldService.getFieldProperty(this.user.settings.connSrcField, 'dbField');

@@ -161,13 +161,8 @@ export default {
       }, 500);
     },
     loadData: function (sortField, desc) {
-      if (this.$constants.MOLOCH_MULTIVIEWER) {
-        const availableCluster = this.$store.state.esCluster.availableCluster.active;
-        const selection = Utils.checkClusterSelection(this.query.cluster, availableCluster);
-        if (!selection.valid) { // invalid selection
-          this.error = selection.error;
-          return;
-        }
+      if (!Utils.checkClusterSelection(this.query.cluster, this.$store.state.esCluster.availableCluster.active, this).valid) {
+        return;
       }
 
       this.loading = true;

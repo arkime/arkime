@@ -736,7 +736,6 @@ export default {
       stickyHeader: false,
       tableHeaderOverflow: undefined,
       showFitButton: false,
-      multiviewer: this.$constants.MOLOCH_MULTIVIEWER,
       tableWidth: window.innerWidth - 20, // account for margins
       filteredFields: [],
       filteredFieldsCount: 0,
@@ -1505,20 +1504,15 @@ export default {
      * @param {bool} updateTable Whether the table needs updating
      */
     loadData: function (updateTable) {
+      if (!Utils.checkClusterSelection(this.query.cluster, this.$store.state.esCluster.availableCluster.active, this).valid) {
+        this.sessions.data = undefined;
+        this.dataLoading = false;
+        pendingPromise = null;
+        return;
+      }
+
       this.loading = true;
       this.error = '';
-
-      if (this.multiviewer) {
-        const availableCluster = this.$store.state.esCluster.availableCluster.active;
-        const selection = Utils.checkClusterSelection(this.query.cluster, availableCluster);
-        if (!selection.valid) { // invlaid selection
-          pendingPromise = null;
-          this.sessions.data = undefined;
-          this.error = selection.error;
-          this.dataLoading = false;
-          return;
-        }
-      }
 
       // save expanded sessions
       const expandedSessions = [];

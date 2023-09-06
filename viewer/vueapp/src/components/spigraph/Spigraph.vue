@@ -280,8 +280,7 @@ export default {
       fieldTypeahead: 'node',
       baseField: this.$route.query.exp || this.$route.query.field || this.$store.state.user.settings.spiGraph || 'node',
       sortBy: this.$route.query.sort || 'graph',
-      spiGraphType: this.$route.query.spiGraphType || 'default',
-      multiviewer: this.$constants.MOLOCH_MULTIVIEWER
+      spiGraphType: this.$route.query.spiGraphType || 'default'
     };
   },
   computed: {
@@ -467,24 +466,19 @@ export default {
     /* helper functions ---------------------------------------------------- */
     loadData: function () {
       respondedAt = undefined;
+
+      if (!Utils.checkClusterSelection(this.query.cluster, this.$store.state.esCluster.availableCluster.active, this).valid) {
+        this.items = [];
+        pendingPromise = null;
+        this.recordsTotal = 0;
+        this.recordsFiltered = 0;
+        this.mapData = undefined;
+        this.graphData = undefined;
+        return;
+      }
+
       this.loading = true;
       this.error = false;
-
-      if (this.multiviewer) {
-        const availableCluster = this.$store.state.esCluster.availableCluster.active;
-        const selection = Utils.checkClusterSelection(this.query.cluster, availableCluster);
-        if (!selection.valid) { // invlaid selection
-          this.items = [];
-          this.mapData = undefined;
-          this.graphData = undefined;
-          this.recordsTotal = 0;
-          this.recordsFiltered = 0;
-          pendingPromise = null;
-          this.error = selection.error;
-          this.loading = false;
-          return;
-        }
-      }
 
       // set whether map is open on the sessions page
       if (localStorage.getItem('spigraph-open-map') === 'true') {

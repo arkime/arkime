@@ -454,7 +454,6 @@ export default {
       newFieldConfigName: '',
       fieldConfigError: '',
       fieldConfigSuccess: '',
-      multiviewer: this.$constants.MOLOCH_MULTIVIEWER,
       spiviewFieldTransition: ''
     };
   },
@@ -961,15 +960,10 @@ export default {
     getSpiData: function (spiQuery) {
       if (!spiQuery) { return; }
 
-      if (this.multiviewer) {
-        const availableCluster = this.$store.state.esCluster.availableCluster.active;
-        const selection = Utils.checkClusterSelection(this.query.cluster, availableCluster);
-        if (!selection.valid) { // invlaid selection
-          pendingPromise = null;
-          this.error = selection.error;
-          this.dataLoading = false;
-          return;
-        }
+      if (!Utils.checkClusterSelection(this.query.cluster, this.$store.state.esCluster.availableCluster.active, this).valid) {
+        pendingPromise = null;
+        this.dataLoading = false;
+        return;
       }
 
       // reset loading counts for categories
