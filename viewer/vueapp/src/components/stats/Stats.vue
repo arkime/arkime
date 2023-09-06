@@ -581,7 +581,6 @@ export default {
       // this flag is toggled so that the children components can override the route queries
       // the cluster dropdown component watches for selectOne and updates the cluster prop to override the route queries
       // but the route queries stay the same so that the user can navigate back to the previous tab without losing their selection
-      // TODO THIS IS MAKING THE CHILDREN LOAD 2X
       this.clusterParamOverride = false;
       setTimeout(() => { this.clusterParamOverride = true; });
       this.$router.push({ query: { ...this.$route.query, statsTab: newTabIndex } });
