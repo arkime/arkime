@@ -202,7 +202,7 @@ export default {
     }
   },
   created: function () {
-    this.loadData();
+    // don't need to load data (table component does it)
     // set a recurring server req if necessary
     if (this.dataInterval !== '0') {
       this.setRequestInterval();
