@@ -87,6 +87,7 @@ const favicon = require('serve-favicon');
 const compression = require('compression');
 
 const app = express();
+// app.use ((req, res, next) => {console.log(req.url); next();});
 
 app.enable('jsonp callback');
 app.use(favicon(path.join(__dirname, '/public/favicon.ico')));
@@ -541,9 +542,8 @@ app.get('/_cluster/settings', function (req, res) {
   if (req.query.cluster) {
     cluster = Array.isArray(req.query.cluster) ? req.query.cluster : req.query.cluster.split(',');
     req.url = req.url.replace(/cluster=[^&]*(&|$)/g, ''); // remove cluster from URL
-    delete req.query.cluster;
   }
-  if (!cluster || cluster.length > 0) {
+  if (!cluster || cluster.length > 1) {
     res.send({ persistent: {}, transient: {} });
   } else {
     simpleGather(req, res, null, (err, results) => {

@@ -1436,7 +1436,7 @@ Db.healthCache = async (cluster) => {
 
   const health = await Db.health();
   const { body: doc } = await internals.client7.indices.getTemplate({
-    name: fixIndex('sessions3_template'), filter_path: '**._meta'
+    name: fixIndex('sessions3_template'), filter_path: '**._meta', cluster
   });
   health.molochDbVersion = doc[fixIndex('sessions3_template')].mappings._meta.molochDbVersion;
   cache.set(key, health);
@@ -1850,10 +1850,11 @@ Db.getClusterDetails = async () => {
   return internals.client7.get({ index: '_cluster', id: 'details' });
 };
 
-Db.getILMPolicy = async () => {
+Db.getILMPolicy = async (cluster) => {
   try {
     const data = await internals.client7.ilm.getLifecycle({
-      policy: `${internals.prefix}molochsessions,${internals.prefix}molochhistory`
+      policy: `${internals.prefix}molochsessions,${internals.prefix}molochhistory`,
+      cluster
     });
     return data.body;
   } catch {
@@ -1874,12 +1875,12 @@ Db.setILMPolicy = async (ilmName, policy) => {
   }
 };
 
-Db.getTemplate = async (templateName) => {
-  return internals.client7.indices.getTemplate({ name: fixIndex(templateName), flat_settings: true });
+Db.getTemplate = async (templateName, cluster) => {
+  return internals.client7.indices.getTemplate({ name: fixIndex(templateName), flat_settings: true, cluster });
 };
 
-Db.putTemplate = async (templateName, body) => {
-  return internals.client7.indices.putTemplate({ name: fixIndex(templateName), body });
+Db.putTemplate = async (templateName, body, cluster) => {
+  return internals.client7.indices.putTemplate({ name: fixIndex(templateName), body, cluster });
 };
 
 Db.setQueriesNode = async (node, force) => {

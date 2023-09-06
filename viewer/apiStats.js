@@ -918,9 +918,9 @@ class StatsAPIs {
    */
   static getESAdminSettings (req, res) {
     Promise.all([
-      Db.getClusterSettings({ flatSettings: true, include_defaults: true }),
-      Db.getILMPolicy(),
-      Db.getTemplate('sessions3_template')
+      Db.getClusterSettings({ flatSettings: true, include_defaults: true, cluster: req.query.cluster }),
+      Db.getILMPolicy(req.query.cluster),
+      Db.getTemplate('sessions3_template', req.query.cluster)
     ]).then(([{ body: settings }, ilm, { body: template }]) => {
       const rsettings = [];
 
@@ -1055,7 +1055,7 @@ class StatsAPIs {
 
     // Must set all 3 at once because of ES bug/feature
     if (req.body.key === 'arkime.disk.watermarks') {
-      const query = { body: { persistent: {} } };
+      const query = { body: { persistent: {} }, cluster: req.query.cluster };
       if (req.body.value === '' || req.body.value === null) {
         query.body.persistent['cluster.routing.allocation.disk.watermark.low'] = null;
         query.body.persistent['cluster.routing.allocation.disk.watermark.high'] = null;
@@ -1122,7 +1122,7 @@ class StatsAPIs {
     }
 
     if (req.body.key.startsWith('arkime.sessions')) {
-      Promise.all([Db.getTemplate('sessions3_template')]).then(([{ body: template }]) => {
+      Promise.all([Db.getTemplate('sessions3_template', req.query.cluster)]).then(([{ body: template }]) => {
         switch (req.body.key) {
         case 'arkime.sessions.shards':
           template[`${internals.prefix}sessions3_template`].settings['index.number_of_shards'] = req.body.value;
@@ -1140,7 +1140,7 @@ class StatsAPIs {
         default:
           return res.serverError(500, 'Unknown field');
         }
-        Db.putTemplate('sessions3_template', template[`${internals.prefix}sessions3_template`]);
+        Db.putTemplate('sessions3_template', template[`${internals.prefix}sessions3_template`], req.query.cluster);
         return res.send(JSON.stringify({ success: true, text: 'Successfully set settings' }));
       });
       return;
