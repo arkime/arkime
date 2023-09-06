@@ -90,7 +90,8 @@
       </span>
     </MolochCollapsible>
 
-    <table class="table table-sm table-striped small">
+    <table v-if="!error"
+      class="table table-sm table-striped small">
       <thead>
         <tr>
           <th width="100px;">
@@ -335,7 +336,7 @@
 
     <!-- error -->
     <moloch-error
-      v-if="!loading && error"
+      v-if="error"
       :message="error"
     /> <!-- /error -->
 
@@ -380,7 +381,7 @@ export default {
   data: function () {
     return {
       error: '',
-      loading: true,
+      loading: false,
       history: {},
       recordsTotal: 0,
       recordsFiltered: 0,
@@ -542,6 +543,7 @@ export default {
     /* helper functions ------------------------------------------ */
     loadData: function () {
       if (!Utils.checkClusterSelection(this.query.cluster, this.$store.state.esCluster.availableCluster.active, this).valid) {
+        this.history = {};
         return;
       }
 
