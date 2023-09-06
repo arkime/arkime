@@ -176,6 +176,14 @@ app.use((req, res, next) => {
   return next();
 });
 
+// Don't allow cluster if not multiviewer
+app.use((req, res, next) => {
+  if (!internals.multiES) {
+    delete req.query.cluster;
+  }
+  return next();
+});
+
 // client static files --------------------------------------------------------
 app.use(favicon(path.join(__dirname, '/public/favicon.ico')));
 // using fallthrough: false because there is no 404 endpoint (client router
@@ -509,7 +517,7 @@ function checkHeaderToken (req, res, next) {
 
 // used to disable endpoints in multi es mode
 function disableInMultiES (req, res, next) {
-  if (Config.get('multiES', false)) {
+  if (internals.multiES) {
     return res.serverError(401, 'Not supported in multies');
   }
   return next();
@@ -569,7 +577,7 @@ function checkEsAdminUser (req, res, next) {
       return next();
     }
   } else {
-    if (req.user.hasRole('arkimeAdmin') && Config.get('multiES', false) === false) {
+    if (req.user.hasRole('arkimeAdmin') && !internals.multiES) {
       return next();
     }
   }
@@ -2037,7 +2045,7 @@ app.use(cspHeader, setCookie, (req, res) => {
     version: version.version,
     devMode: Config.get('devMode', false),
     demoMode: Config.get('demoMode', false),
-    multiViewer: Config.get('multiES', false),
+    multiViewer: internals.multiES,
     hasUsersES: !!Config.get('usersElasticsearch', false),
     themeUrl: theme === 'custom-theme' ? 'api/user/css' : '',
     huntWarn: Config.get('huntWarn', 100000),
@@ -2192,13 +2200,13 @@ async function premain () {
     prefix: internals.prefix,
     usersHost: Config.getArray('usersElasticsearch', ','),
     // The default for usersPrefix should be '' if this is a multiviewer, otherwise Db.initialize will figure out
-    usersPrefix: Config.get('usersPrefix', Config.get('multiES', false) ? '' : undefined),
+    usersPrefix: Config.get('usersPrefix', internals.multiES ? '' : undefined),
     nodeName: Config.nodeName(),
     hostName: Config.hostName(),
     esClientKey: Config.get('esClientKey', null),
     esClientCert: Config.get('esClientCert', null),
     esClientKeyPass: Config.get('esClientKeyPass', null),
-    multiES: Config.get('multiES', false),
+    multiES: internals.multiES,
     insecure: ArkimeConfig.insecure,
     caTrustFile: Config.get('caTrustFile', null),
     requestTimeout: Config.get('elasticsearchTimeout', 300),
