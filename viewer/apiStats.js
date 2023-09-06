@@ -916,7 +916,13 @@ class StatsAPIs {
    * @name /esadmin
    * @returns {array} settings - List of ES settings that a user can change
    */
-  static getESAdminSettings (req, res) {
+  static async getESAdminSettings (req, res) {
+    let prefix = internals.prefix;
+    if (req.query.cluster) {
+      const details = await Db.getClusterDetails();
+      prefix = details.body?.prefix[req.query.cluster];
+    }
+
     Promise.all([
       Db.getClusterSettings({ flatSettings: true, include_defaults: true, cluster: req.query.cluster }),
       Db.getILMPolicy(req.query.cluster),
@@ -997,26 +1003,26 @@ class StatsAPIs {
         'Sessions - Number of shards for FUTURE sessions3 indices',
         'https://www.elastic.co/guide/en/elasticsearch/reference/current/index-modules.html#index-number-of-shards',
         '^\\d+$',
-        template[`${internals.prefix}sessions3_template`].settings['index.number_of_shards']);
+        template[`${prefix}sessions3_template`].settings['index.number_of_shards']);
 
       addSetting('arkime.sessions.replicas', 'Integer',
         'Sessions - Number of replicas for FUTURE sessions3 indices',
         'https://www.elastic.co/guide/en/elasticsearch/reference/current/index-modules.html#index-number-of-replicas',
         '^\\d+$',
-        template[`${internals.prefix}sessions3_template`].settings['index.number_of_replicas'] || 0);
+        template[`${prefix}sessions3_template`].settings['index.number_of_replicas'] || 0);
 
       addSetting('arkime.sessions.shards_per_node', 'Empty or Integer',
         'Sessions - Number of shards_per_node for FUTURE sessions3 indices',
         'https://www.elastic.co/guide/en/elasticsearch/reference/current/allocation-total-shards.html',
         '^(|\\d+)$',
-        template[`${internals.prefix}sessions3_template`].settings['index.routing.allocation.total_shards_per_node'] || '');
+        template[`${prefix}sessions3_template`].settings['index.routing.allocation.total_shards_per_node'] || '');
 
       function addIlm (key, current, ilmName, type, regex) {
         rsettings.push({ key, current, name: ilmName, type, url: 'https://arkime.com/faq#ilm', regex });
       }
 
-      if (ilm[`${internals.prefix}molochsessions`]) {
-        const silm = ilm[`${internals.prefix}molochsessions`];
+      if (ilm[`${prefix}molochsessions`]) {
+        const silm = ilm[`${prefix}molochsessions`];
         addIlm('arkime.ilm.sessions.forceTime', silm.policy.phases.warm.min_age,
           'ILM - Move to warm after', 'Time String', '^\\d+[hd]$');
         addIlm('arkime.ilm.sessions.replicas', silm.policy.phases.warm.actions.allocate.number_of_replicas,
@@ -1027,8 +1033,8 @@ class StatsAPIs {
           'ILM - Delete session index after', 'Time String', '^\\d+[hd]$');
       }
 
-      if (ilm[`${internals.prefix}molochhistory`]) {
-        const hilm = ilm[`${internals.prefix}molochhistory`];
+      if (ilm[`${prefix}molochhistory`]) {
+        const hilm = ilm[`${prefix}molochhistory`];
         addIlm('arkime.ilm.history.deleteTime', hilm.policy.phases.delete.min_age,
           'ILM - Delete History index after', 'Time String', '^\\d+[hd]$');
       }
@@ -1049,6 +1055,12 @@ class StatsAPIs {
   static async setESAdminSettings (req, res) {
     if (!ArkimeUtil.isString(req.body.key)) { return res.serverError(500, 'Missing key'); }
     if (!ArkimeUtil.isString(req.body.value, 0)) { return res.serverError(500, 'Missing value'); }
+
+    let prefix = internals.prefix;
+    if (req.query.cluster) {
+      const details = await Db.getClusterDetails();
+      prefix = details.body?.prefix[req.query.cluster];
+    }
 
     // Convert null string to null
     if (req.body.value === 'null') { req.body.value = null; }
@@ -1085,8 +1097,8 @@ class StatsAPIs {
 
     if (req.body.key.startsWith('arkime.ilm')) {
       Promise.all([Db.getILMPolicy()]).then(([ilm]) => {
-        const silm = ilm[`${internals.prefix}molochsessions`];
-        const hilm = ilm[`${internals.prefix}molochhistory`];
+        const silm = ilm[`${prefix}molochsessions`];
+        const hilm = ilm[`${prefix}molochhistory`];
 
         if (silm === undefined || hilm === undefined) {
           return res.serverError(500, 'ILM isn\'t configured');
@@ -1112,9 +1124,9 @@ class StatsAPIs {
           return res.serverError(500, 'Unknown field');
         }
         if (req.body.key.startsWith('arkime.ilm.history')) {
-          Db.setILMPolicy(`${internals.prefix}molochhistory`, hilm);
+          Db.setILMPolicy(`${prefix}molochhistory`, hilm);
         } else {
-          Db.setILMPolicy(`${internals.prefix}molochsessions`, silm);
+          Db.setILMPolicy(`${prefix}molochsessions`, silm);
         }
         return res.send(JSON.stringify({ success: true, text: 'Set' }));
       });
@@ -1125,28 +1137,28 @@ class StatsAPIs {
       Promise.all([Db.getTemplate('sessions3_template', req.query.cluster)]).then(([{ body: template }]) => {
         switch (req.body.key) {
         case 'arkime.sessions.shards':
-          template[`${internals.prefix}sessions3_template`].settings['index.number_of_shards'] = req.body.value;
+          template[`${prefix}sessions3_template`].settings['index.number_of_shards'] = req.body.value;
           break;
         case 'arkime.sessions.replicas':
-          template[`${internals.prefix}sessions3_template`].settings['index.number_of_replicas'] = req.body.value;
+          template[`${prefix}sessions3_template`].settings['index.number_of_replicas'] = req.body.value;
           break;
         case 'arkime.sessions.shards_per_node':
           if (req.body.value === '') {
-            delete template[`${internals.prefix}sessions3_template`].settings['index.routing.allocation.total_shards_per_node'];
+            delete template[`${prefix}sessions3_template`].settings['index.routing.allocation.total_shards_per_node'];
           } else {
-            template[`${internals.prefix}sessions3_template`].settings['index.routing.allocation.total_shards_per_node'] = req.body.value;
+            template[`${prefix}sessions3_template`].settings['index.routing.allocation.total_shards_per_node'] = req.body.value;
           }
           break;
         default:
           return res.serverError(500, 'Unknown field');
         }
-        Db.putTemplate('sessions3_template', template[`${internals.prefix}sessions3_template`], req.query.cluster);
+        Db.putTemplate('sessions3_template', template[`${prefix}sessions3_template`], req.query.cluster);
         return res.send(JSON.stringify({ success: true, text: 'Successfully set settings' }));
       });
       return;
     }
 
-    const clusterQuery = { body: { persistent: {} } };
+    const clusterQuery = { body: { persistent: {} }, cluster: req.query.cluster };
     clusterQuery.body.persistent[req.body.key] = req.body.value || null;
 
     try {
@@ -1343,7 +1355,7 @@ class StatsAPIs {
     }
 
     try {
-      const { body: settings } = await Db.getClusterSettings({ flatSettings: true });
+      const { body: settings } = await Db.getClusterSettings({ flatSettings: true, cluster: req.query.cluster });
       let exclude = [];
       let settingName;
 
@@ -1363,7 +1375,7 @@ class StatsAPIs {
         exclude.push(req.params.value);
       }
 
-      const query = { body: { persistent: {} } };
+      const query = { body: { persistent: {} }, cluster: req.query.cluster };
       query.body.persistent[settingName] = exclude.join(',');
 
       await Db.putClusterSettings(query);
@@ -1392,7 +1404,7 @@ class StatsAPIs {
     }
 
     try {
-      const { body: settings } = await Db.getClusterSettings({ flatSettings: true });
+      const { body: settings } = await Db.getClusterSettings({ flatSettings: true, cluster: req.query.cluster });
       let exclude = [];
       let settingName;
 
@@ -1413,7 +1425,7 @@ class StatsAPIs {
         exclude.splice(pos, 1);
       }
 
-      const query = { body: { persistent: {} } };
+      const query = { body: { persistent: {} }, cluster: req.query.cluster };
       query.body.persistent[settingName] = exclude.join(',');
 
       await Db.putClusterSettings(query);

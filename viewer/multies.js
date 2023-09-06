@@ -237,6 +237,9 @@ function simpleGather (req, res, bodies, doneCb) {
       arkime_opaque: req.headers['x-opaque-id'],
       skipReplace: cluster !== null
     };
+    if (req._skipReplace !== undefined) {
+      options.skipReplace = req._skipReplace;
+    }
     options.arkime_prefix = node2Prefix(node);
     nodeUrl = nodeUrl.replace(/MULTIPREFIX_/g, options.arkime_prefix).replace(/arkime_sessions2/g, 'sessions2');
     const url = new URL(nodeUrl);
@@ -383,9 +386,10 @@ app.get('/MULTIPREFIX_sessions*/_refresh', (req, res) => {
 });
 
 app.get('/_all/_settings', simpleGatherFirst);
+app.get('/_ilm/policy/*', simpleGatherFirst);
 
 app.get('/_cluster/:type/details', function (req, res) {
-  const result = { available: [], active: [], inactive: [] };
+  const result = { available: [], active: [], inactive: [], prefix: {} };
   const activeNodes = getActiveNodes();
   for (let i = 0; i < clusterList.length; i++) {
     result.available.push(clusterList[i]);
@@ -394,6 +398,7 @@ app.get('/_cluster/:type/details', function (req, res) {
     } else {
       result.inactive.push(clusterList[i]);
     }
+    result.prefix[clusterList[i]] = node2Prefix(activeNodes[i]);
   }
   res.send(result);
 });
@@ -449,8 +454,9 @@ app.get('/_template/MULTIPREFIX_sessions2_template', (req, res) => {
 });
 
 app.get('/_template/MULTIPREFIX_sessions3_template', (req, res) => {
+  // req._skipReplace = false;
   simpleGather(req, res, null, (err, results) => {
-    // console.log("DEBUG -", JSON.stringify(results, null, 2));
+    console.log("DEBUG -", JSON.stringify(results, null, 2));
 
     let obj = results[0];
     for (let i = 1; i < results.length; i++) {
@@ -551,6 +557,8 @@ app.get('/_cluster/settings', function (req, res) {
     });
   }
 });
+
+app.put('/_cluster/settings', simpleGatherFirst);
 
 app.head(/^\/$/, function (req, res) {
   res.send('');
