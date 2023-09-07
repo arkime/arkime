@@ -368,10 +368,25 @@ function simpleGatherFirst (req, res) {
   });
 }
 
-app.get('/_tasks', simpleGatherTasks);
-app.post('/_tasks/:taskId/_cancel', simpleGatherFirst);
+function simpleGather1Cluster (req, res) {
+  if (req.query.cluster === undefined) {
+    console.log('Missing cluster', ArkimeUtil.sanitizeStr(req.url));
+    return res.send({ error: 'Missing cluster' });
+  }
+  if (req.query.cluster.split(',').length !== 1) {
+    console.log('Expecting 1 cluster', ArkimeUtil.sanitizeStr(req.url));
+    return res.send({ error: 'Expecting 1 cluster' });
+  }
 
-app.get('/_cluster/nodes/stats', simpleGatherNodes);
+  simpleGather(req, res, null, (err, results) => {
+    res.send(results[0]);
+  });
+};
+
+app.get('/_tasks', simpleGatherTasks);
+app.post('/_tasks/:taskId/_cancel', simpleGather1Cluster);
+
+app.get('/_cluster/nodes/stats', simpleGather1Cluster);
 app.get('/_nodes', simpleGatherNodes);
 app.get('/_nodes/stats', simpleGatherNodes);
 app.get('/_nodes/stats/:kinds', simpleGatherNodes);
@@ -380,18 +395,22 @@ app.get('/_cluster/health', simpleGatherAdd);
 app.get('/:index/_aliases', simpleGatherNodes);
 app.get('/:index/_alias', simpleGatherNodes);
 
-app.post('/:index/_close', simpleGatherFirst);
-app.post('/:index/_open', simpleGatherFirst);
-app.post('/:index/_forcemerge', simpleGatherFirst);
+app.post('/:index/_close', simpleGather1Cluster);
+app.post('/:index/_open', simpleGather1Cluster);
+app.post('/:index/_forcemerge', simpleGather1Cluster);
 
-app.delete('/:index', simpleGatherFirst);
+app.delete('/:index', simpleGather1Cluster);
 
 app.get('/MULTIPREFIX_sessions*/_refresh', (req, res) => {
   req.url = '/sessions*/_refresh';
   return simpleGatherFirst(req, res);
 });
 
-app.get('/_all/_settings', simpleGatherFirst);
+app.get('/:index/_settings', simpleGatherFirst);
+app.put('/:index/_settings', simpleGather1Cluster);
+
+app.put('/:index1/_shrink/:index2', simpleGather1Cluster);
+
 app.get('/_ilm/policy/*', simpleGatherFirst);
 
 app.get('/_cluster/:type/details', function (req, res) {
@@ -472,7 +491,7 @@ app.get('/_template/MULTIPREFIX_sessions3_template', (req, res) => {
     res.send(obj);
   });
 });
-app.put('/_template/MULTIPREFIX_sessions3_template', simpleGatherFirst);
+app.put('/_template/MULTIPREFIX_sessions3_template', simpleGather1Cluster);
 
 app.get(['/users/user/:user', '/users/_doc/:user'], async (req, res) => {
   try {
@@ -564,7 +583,7 @@ app.get('/_cluster/settings', function (req, res) {
   }
 });
 
-app.put('/_cluster/settings', simpleGatherFirst);
+app.put('/_cluster/settings', simpleGather1Cluster);
 
 app.head(/^\/$/, function (req, res) {
   res.send('');
@@ -1033,6 +1052,10 @@ app.get(/./, function (req, res) {
 });
 
 app.post(/./, function (req, res) {
+  console.log('UNKNOWN', req.method, req.url, req.body);
+});
+
+app.put(/./, function (req, res) {
   console.log('UNKNOWN', req.method, req.url, req.body);
 });
 

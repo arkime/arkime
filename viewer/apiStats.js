@@ -726,7 +726,7 @@ class StatsAPIs {
 
       // wait for no more reloacting shards
       const shrinkCheckInterval = setInterval(() => {
-        Db.healthCache().then(async (result) => {
+        Db.healthCache(req.query.cluster).then(async (result) => {
           if (result.relocating_shards === 0) {
             clearInterval(shrinkCheckInterval);
             try {

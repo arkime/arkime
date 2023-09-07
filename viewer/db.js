@@ -33,7 +33,6 @@ const internals = {
   fileId2File: {},
   fileName2File: {},
   molochNodeStatsCache: {},
-  healthCache: {},
   shortcutsCache: {},
   qInProgress: 0,
   q: [],
@@ -786,9 +785,9 @@ Db.getAliasesCache = async (index) => {
   }
 };
 
-Db.health = async () => {
-  const { body: data } = await internals.client7.info();
-  const { body: result } = await internals.client7.cluster.health();
+Db.health = async (cluster) => {
+  const { body: data } = await internals.client7.info({ cluster });
+  const { body: result } = await internals.client7.cluster.health({ cluster });
   result.version = data.version.number;
   return result;
 };
@@ -796,7 +795,7 @@ Db.health = async () => {
 Db.indices = async (index, cluster) => {
   return internals.client7.cat.indices({
     format: 'json',
-    index: fixIndex(index),
+    index,
     bytes: 'b',
     h: 'health,status,index,uuid,pri,rep,docs.count,store.size,cd,segmentsCount,pri.search.query_current,memoryTotal',
     cluster
@@ -819,7 +818,8 @@ Db.setIndexSettings = async (index, options) => {
         index,
         body: options.body,
         timeout: '10m',
-        masterTimeout: '10m'
+        masterTimeout: '10m',
+        cluster: options.cluster
       });
     } catch (err) {
     }
@@ -830,11 +830,12 @@ Db.setIndexSettings = async (index, options) => {
       index,
       body: options.body,
       timeout: '10m',
-      masterTimeout: '10m'
+      masterTimeout: '10m',
+      cluster: options.cluster
     });
     return response;
   } catch (err) {
-    internals.healthCache = {};
+    cache.reset();
     throw err;
   }
 };
@@ -1086,7 +1087,6 @@ Db.flushCache = function () {
   internals.fileId2File = {};
   internals.fileName2File = {};
   internals.molochNodeStatsCache = {};
-  internals.healthCache = {};
   User.flushCache();
   internals.shortcutsCache = {};
   delete internals.aliasesCache;
@@ -1106,10 +1106,6 @@ Db.historyIt = async function (doc) {
     twoDigitString(d.getUTCFullYear() % 100) + 'w' +
     twoDigitString(Math.floor((d - jan) / 604800000));
 
-  if (internals?.healthCache?.molochDbVersion < 72) {
-    delete doc.esQuery;
-    delete doc.esQueryIndices;
-  }
   return internals.client7.index({
     index: iname, body: doc, refresh: true, timeout: '10m'
   });
@@ -1136,9 +1132,6 @@ Db.deleteHistory = async (id, index, cluster) => {
 
 // Hunt DB interactions
 Db.createHunt = async (doc) => {
-  if (internals?.healthCache?.molochDbVersion < 72) {
-    delete doc.description;
-  }
   return internals.client7.index({
     index: fixIndex('hunts'), body: doc, refresh: 'wait_for', timeout: '10m'
   });
@@ -1435,11 +1428,15 @@ Db.healthCache = async (cluster) => {
     return value;
   }
 
-  const health = await Db.health();
+  const health = await Db.health(cluster);
   const { body: doc } = await internals.client7.indices.getTemplate({
-    name: fixIndex('sessions3_template'), filter_path: '**._meta', cluster
+    name: fixIndex('sessions3_template'),
+    filter_path: '**._meta',
+    cluster
   });
-  health.molochDbVersion = doc[fixIndex('sessions3_template')].mappings._meta.molochDbVersion;
+  if (cluster === undefined) {
+    health.molochDbVersion = doc[fixIndex('sessions3_template')].mappings._meta.molochDbVersion;
+  }
   cache.set(key, health);
   return health;
 };
