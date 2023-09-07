@@ -667,12 +667,12 @@ export default {
         ? this.shrinkFactor = this.shrinkFactors[0]
         : this.shrinkFactor = this.shrinkFactors[1];
 
-      if (!Utils.checkClusterSelection(this.query.cluster, this.$store.state.esCluster.availableCluster.active, this).valid) {
+      if (!Utils.checkClusterSelection(this.cluster, this.$store.state.esCluster.availableCluster.active, this).valid) {
         return;
       }
 
       // find nodes for dropdown
-      this.$http.get('esstats.json', { params: this.query })
+      this.$http.get('esstats.json', { params: { cluster: this.cluster } })
         .then((response) => {
           this.nodes = response.data.data;
           this.temporaryNode = this.nodes[0].name;
@@ -686,14 +686,14 @@ export default {
       this.shrinkError = undefined;
     },
     executeShrink: function (index) {
-      if (!Utils.checkClusterSelection(this.query.cluster, this.$store.state.esCluster.availableCluster.active, this).valid) {
+      if (!Utils.checkClusterSelection(this.cluster, this.$store.state.esCluster.availableCluster.active, this).valid) {
         return;
       }
 
       this.$http.post(`api/esindices/${index.index}/shrink`, {
         target: this.temporaryNode,
         numShards: this.shrinkFactor
-      }, { params: { cluster: this.query.cluster } }).then((response) => {
+      }, { params: { cluster: this.cluster } }).then((response) => {
         if (!response.data.success) {
           this.shrinkError = response.data.text;
           return;
