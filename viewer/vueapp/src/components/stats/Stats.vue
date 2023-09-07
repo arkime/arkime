@@ -667,8 +667,12 @@ export default {
         ? this.shrinkFactor = this.shrinkFactors[0]
         : this.shrinkFactor = this.shrinkFactors[1];
 
+      if (!Utils.checkClusterSelection(this.query.cluster, this.$store.state.esCluster.availableCluster.active, this).valid) {
+        return;
+      }
+
       // find nodes for dropdown
-      this.$http.get('esstats.json', {})
+      this.$http.get('esstats.json', { params: this.query })
         .then((response) => {
           this.nodes = response.data.data;
           this.temporaryNode = this.nodes[0].name;
