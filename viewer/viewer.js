@@ -176,9 +176,12 @@ app.use((req, res, next) => {
   return next();
 });
 
-// Don't allow cluster if not multiviewer
+// Don't allow cluster if not multiviewer except for the /api/session.*/send calls
 app.use((req, res, next) => {
-  if (!internals.multiES) {
+  if (!internals.multiES &&
+    req.query.cluster !== undefined &&
+    req.url !== undefined &&
+    (!req.url.startsWith('/api/session') || !req.url.split('?')[0].endsWith('/send'))) {
     delete req.query.cluster;
   }
   return next();
