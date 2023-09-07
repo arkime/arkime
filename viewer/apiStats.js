@@ -602,7 +602,7 @@ class StatsAPIs {
    */
   static async deleteESIndex (req, res) {
     try {
-      await Db.deleteIndex([req.params.index], {});
+      await Db.deleteIndex([req.params.index], { cluster: req.query.cluster });
       return res.send(JSON.stringify({ success: true }));
     } catch (err) {
       console.log(`ERROR - ${req.method} /api/esindices/%s`, ArkimeUtil.sanitizeStr(req.params.index), util.inspect(err, false, 50));
@@ -621,7 +621,7 @@ class StatsAPIs {
    */
   static optimizeESIndex (req, res) {
     try {
-      Db.optimizeIndex([req.params.index], {});
+      Db.optimizeIndex([req.params.index], { cluster: req.query.cluster });
     } catch (err) {
       console.log(`ERROR - ${req.method} /api/esindices/%s/optimize`, ArkimeUtil.sanitizeStr(req.params.index), util.inspect(err, false, 50));
     }
@@ -640,8 +640,12 @@ class StatsAPIs {
    * @returns {string} text - The success/error message to (optionally) display to the user.
    */
   static async closeESIndex (req, res) {
+    if (internals.multiES && req.query.cluster === undefined) {
+      return res.serverError(401, 'Not supported in multies');
+    }
+
     try {
-      await Db.closeIndex([req.params.index], {});
+      await Db.closeIndex([req.params.index], { cluster: req.query.cluster });
       return res.send(JSON.stringify({ success: true }));
     } catch (err) {
       console.log(`ERROR - ${req.method} /api/esindices/%s/close`, ArkimeUtil.sanitizeStr(req.params.index), util.inspect(err, false, 50));
@@ -659,8 +663,12 @@ class StatsAPIs {
    * @returns {boolean} success - Always true, the openIndex function might block. Check the logs for errors.
    */
   static openESIndex (req, res) {
+    if (internals.multiES && req.query.cluster === undefined) {
+      return res.serverError(401, 'Not supported in multies');
+    }
+
     try {
-      Db.openIndex([req.params.index], {});
+      Db.openIndex([req.params.index], { cluster: req.query.cluster });
     } catch (err) {
       console.log(`ERROR - ${req.method} /api/esindices/%s/open`, ArkimeUtil.sanitizeStr(req.params.index), util.inspect(err, false, 50));
     }
@@ -681,6 +689,10 @@ class StatsAPIs {
    * @returns {string} text - The success/error message to (optionally) display to the user.
    */
   static async shrinkESIndex (req, res) {
+    if (internals.multiES && req.query.cluster === undefined) {
+      return res.serverError(401, 'Not supported in multies');
+    }
+
     if (!req.body) {
       return res.serverError(403, 'Missing body');
     }
@@ -694,7 +706,8 @@ class StatsAPIs {
         'index.routing.allocation.total_shards_per_node': null,
         'index.routing.allocation.require._name': req.body.target,
         'index.blocks.write': true
-      }
+      },
+      cluster: req.query.cluster
     };
 
     try {
@@ -707,7 +720,8 @@ class StatsAPIs {
             'index.codec': 'best_compression',
             'index.number_of_shards': req.body.numShards || 1
           }
-        }
+        },
+        cluster: req.query.cluster
       };
 
       // wait for no more reloacting shards
@@ -718,10 +732,10 @@ class StatsAPIs {
             try {
               await Db.shrinkIndex(req.params.index, shrinkParams);
 
-              const { body: indexResult } = await Db.indices(`${req.params.index}-shrink,${req.params.index}`);
+              const { body: indexResult } = await Db.indices(`${req.params.index}-shrink,${req.params.index}`, req.query.cluster);
               if (indexResult[0] && indexResult[1] &&
                 indexResult[0]['docs.count'] === indexResult[1]['docs.count']) {
-                await Db.deleteIndex([req.params.index], {});
+                await Db.deleteIndex([req.params.index], { cluster: req.query.cluster });
               }
             } catch (err) {
               console.log(`ERROR - ${req.method} /api/esindices/%s/shrink`, ArkimeUtil.sanitizeStr(req.params.index), util.inspect(err, false, 50));
@@ -1217,7 +1231,8 @@ class StatsAPIs {
    */
   static unfloodES (req, res) {
     Db.setIndexSettings('*', {
-      body: { 'index.blocks.read_only_allow_delete': null }
+      body: { 'index.blocks.read_only_allow_delete': null },
+      cluster: req.query.cluster
     });
     return res.send(JSON.stringify({ success: true, text: 'Unflooded' }));
   };

@@ -215,7 +215,7 @@ export default {
         return;
       }
 
-      this.$http.post(`api/esshards/${type}/${column[type]}/excludeasdf`, {}, { params: { cluster: this.query.cluster } })
+      this.$http.post(`api/esshards/${type}/${column[type]}/exclude`, {}, { params: { cluster: this.query.cluster } })
         .then((response) => {
           if (type === 'name') {
             column.nodeExcluded = true;
