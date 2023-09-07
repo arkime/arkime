@@ -188,7 +188,11 @@ export default {
       this.$emit('confirm', `Delete ${indexName}`, indexName);
     },
     deleteIndex (indexName) {
-      this.$http.delete(`api/esindices/${indexName}`)
+      if (!Utils.checkClusterSelection(this.query.cluster, this.$store.state.esCluster.availableCluster.active, this).valid) {
+        return;
+      }
+
+      this.$http.delete(`api/esindices/${indexName}`, { params: this.query })
         .then((response) => {
           for (let i = 0; i < this.stats.length; i++) {
             if (this.stats[i].index === indexName) {
