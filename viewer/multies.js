@@ -454,7 +454,6 @@ app.get('/_template/MULTIPREFIX_sessions2_template', (req, res) => {
 });
 
 app.get('/_template/MULTIPREFIX_sessions3_template', (req, res) => {
-  // req._skipReplace = false;
   simpleGather(req, res, null, (err, results) => {
     // console.log("DEBUG -", JSON.stringify(results, null, 2));
 
@@ -467,6 +466,7 @@ app.get('/_template/MULTIPREFIX_sessions3_template', (req, res) => {
     res.send(obj);
   });
 });
+app.put('/_template/MULTIPREFIX_sessions3_template', simpleGatherFirst);
 
 app.get(['/users/user/:user', '/users/_doc/:user'], async (req, res) => {
   try {

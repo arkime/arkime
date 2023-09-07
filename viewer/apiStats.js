@@ -1350,7 +1350,7 @@ class StatsAPIs {
    * @returns {string} text - The success/error message to (optionally) display to the user.
    */
   static async excludeESShard (req, res) {
-    if (Config.get('multiES', false)) {
+    if (internals.multiES && req.query.cluster === undefined) {
       return res.serverError(401, 'Not supported in multies');
     }
 
@@ -1399,7 +1399,7 @@ class StatsAPIs {
    * @returns {string} text - The success/error message to (optionally) display to the user.
    */
   static async includeESShard (req, res) {
-    if (Config.get('multiES', false)) {
+    if (internals.multiES && req.query.cluster === undefined) {
       return res.serverError(401, 'Not supported in multies');
     }
 
