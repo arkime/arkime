@@ -201,14 +201,22 @@ export default {
         });
     },
     optimizeIndex (indexName) {
-      this.$http.post(`api/esindices/${indexName}/optimize`)
+      if (!Utils.checkClusterSelection(this.query.cluster, this.$store.state.esCluster.availableCluster.active, this).valid) {
+        return;
+      }
+
+      this.$http.post(`api/esindices/${indexName}/optimize`, {}, { params: this.query })
         .then((response) => {
         }, (error) => {
           this.$emit('errored', error.text || error);
         });
     },
     closeIndex (index) {
-      this.$http.post(`api/esindices/${index.index}/close`)
+      if (!Utils.checkClusterSelection(this.query.cluster, this.$store.state.esCluster.availableCluster.active, this).valid) {
+        return;
+      }
+
+      this.$http.post(`api/esindices/${index.index}/close`, {}, { params: this.query })
         .then((response) => {
           if (response.data.success) {
             this.$set(index, 'status', 'close');
@@ -218,7 +226,11 @@ export default {
         });
     },
     openIndex (index) {
-      this.$http.post(`api/esindices/${index.index}/open`)
+      if (!Utils.checkClusterSelection(this.query.cluster, this.$store.state.esCluster.availableCluster.active, this).valid) {
+        return;
+      }
+
+      this.$http.post(`api/esindices/${index.index}/open`, {}, { params: this.query })
         .then((response) => {
           if (response.data.success) {
             this.$set(index, 'status', 'open');

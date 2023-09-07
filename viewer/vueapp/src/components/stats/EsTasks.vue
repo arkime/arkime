@@ -170,7 +170,11 @@ export default {
   methods: {
     /* exposed page functions ------------------------------------ */
     cancelTask (taskId) {
-      this.$http.post(`api/estasks/${taskId}/cancel`)
+      if (!Utils.checkClusterSelection(this.query.cluster, this.$store.state.esCluster.availableCluster.active, this).valid) {
+        return;
+      }
+
+      this.$http.post(`api/estasks/${taskId}/cancel`, {}, { params: this.query })
         .then((response) => {
           // remove the task from the list
           for (let i = 0, len = this.stats.length; i < len; i++) {
@@ -184,7 +188,11 @@ export default {
         });
     },
     cancelTasks () {
-      this.$http.post('api/estasks/cancelall')
+      if (!Utils.checkClusterSelection(this.query.cluster, this.$store.state.esCluster.availableCluster.active, this).valid) {
+        return;
+      }
+
+      this.$http.post('api/estasks/cancelall', {}, { params: this.query })
         .then((response) => {
           // remove cancellable tasks
           for (let i = this.stats.length - 1, len = 0; i >= len; i--) {

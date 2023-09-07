@@ -472,7 +472,7 @@ import EsAdmin from './EsAdmin';
 import CaptureGraphs from './CaptureGraphs';
 import CaptureStats from './CaptureStats';
 import MolochCollapsible from '../utils/CollapsibleWrapper';
-import utils from '../utils/utils';
+import Utils from '../utils/utils';
 import Focus from '../../../../../common/vueapp/Focus';
 import Clusters from '../utils/Clusters';
 
@@ -662,7 +662,7 @@ export default {
     },
     shrink: function (index) {
       this.shrinkIndex = index;
-      this.shrinkFactors = utils.findFactors(parseInt(index.pri));
+      this.shrinkFactors = Utils.findFactors(parseInt(index.pri));
       this.shrinkFactors.length === 1
         ? this.shrinkFactor = this.shrinkFactors[0]
         : this.shrinkFactor = this.shrinkFactors[1];
@@ -682,10 +682,14 @@ export default {
       this.shrinkError = undefined;
     },
     executeShrink: function (index) {
+      if (!Utils.checkClusterSelection(this.query.cluster, this.$store.state.esCluster.availableCluster.active, this).valid) {
+        return;
+      }
+
       this.$http.post(`api/esindices/${index.index}/shrink`, {
         target: this.temporaryNode,
         numShards: this.shrinkFactor
-      }).then((response) => {
+      }, { params: { cluster: this.query.cluster } }).then((response) => {
         if (!response.data.success) {
           this.shrinkError = response.data.text;
           return;

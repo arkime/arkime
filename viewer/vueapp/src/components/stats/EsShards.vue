@@ -244,7 +244,11 @@ export default {
       this.loadData();
     },
     exclude: function (type, column) {
-      this.$http.post(`api/esshards/${type}/${column[type]}/exclude`)
+      if (!Utils.checkClusterSelection(this.query.cluster, this.$store.state.esCluster.availableCluster.active, this).valid) {
+        return;
+      }
+
+      this.$http.post(`api/esshards/${type}/${column[type]}/exclude`, {}, { params: { cluster: this.query.cluster } })
         .then((response) => {
           if (type === 'name') {
             column.nodeExcluded = true;
@@ -256,7 +260,11 @@ export default {
         });
     },
     include: function (type, column) {
-      this.$http.post(`api/esshards/${type}/${column[type]}/include`)
+      if (!Utils.checkClusterSelection(this.query.cluster, this.$store.state.esCluster.availableCluster.active, this).valid) {
+        return;
+      }
+
+      this.$http.post(`api/esshards/${type}/${column[type]}/include`, {}, { params: { cluster: this.query.cluster } })
         .then((response) => {
           if (type === 'name') {
             column.nodeExcluded = false;

@@ -232,7 +232,7 @@ export default {
         return;
       }
 
-      this.$http.post('api/esadmin/clearcache', { params: this.query })
+      this.$http.post('api/esadmin/clearcache', {}, { params: this.query })
         .then((response) => {
           this.interactionSuccess = response.data.text;
         })
@@ -245,7 +245,7 @@ export default {
         return;
       }
 
-      this.$http.post('api/esadmin/unflood', { params: this.query })
+      this.$http.post('api/esadmin/unflood', {}, { params: this.query })
         .then((response) => {
           this.interactionSuccess = response.data.text;
         })
@@ -258,7 +258,7 @@ export default {
         return;
       }
 
-      this.$http.post('api/esadmin/flush', { params: this.query })
+      this.$http.post('api/esadmin/flush', {}, { params: this.query })
         .then((response) => {
           this.interactionSuccess = response.data.text;
         })
@@ -271,7 +271,7 @@ export default {
         return;
       }
 
-      this.$http.post('api/esadmin/reroute', { params: this.query })
+      this.$http.post('api/esadmin/reroute', {}, { params: this.query })
         .then((response) => {
           this.interactionSuccess = response.data.text;
         })
