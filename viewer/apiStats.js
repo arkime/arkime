@@ -866,7 +866,7 @@ class StatsAPIs {
     }
 
     try {
-      const { body: result } = await Db.taskCancel(taskId);
+      const { body: result } = await Db.taskCancel(taskId, req.query.cluster);
       return res.send(JSON.stringify({ success: true, text: result }));
     } catch (err) {
       console.log(`ERROR - ${req.method} /api/estasks/%s/cancel`, ArkimeUtil.sanitizeStr(taskId), util.inspect(err, false, 50));
@@ -895,7 +895,7 @@ class StatsAPIs {
     }
 
     try {
-      const { body: result } = await Db.cancelByOpaqueId(`${req.user.userId}::${cancelId}`);
+      const { body: result } = await Db.cancelByOpaqueId(`${req.user.userId}::${cancelId}`, req.query.cluster);
       return res.send(JSON.stringify({ success: true, text: result }));
     } catch (err) {
       console.log(`ERROR - ${req.method} /api/estasks/%s/cancelwith`, ArkimeUtil.sanitizeStr(cancelId), util.inspect(err, false, 50));
@@ -914,7 +914,7 @@ class StatsAPIs {
    */
   static async cancelAllESTasks (req, res) {
     try {
-      const { body: result } = await Db.taskCancel();
+      const { body: result } = await Db.taskCancel(undefined, req.query.cluster);
       return res.send(JSON.stringify({ success: true, text: result }));
     } catch (err) {
       console.log(`ERROR - ${req.method} /api/estasks/cancelall`, util.inspect(err, false, 50));

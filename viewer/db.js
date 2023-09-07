@@ -571,9 +571,11 @@ Db.search = async (index, type, query, options, cb) => {
   }
 };
 
-Db.cancelByOpaqueId = async (cancelId) => {
+Db.cancelByOpaqueId = async (cancelId, cluster) => {
   const { body: results } = await internals.client7.tasks.list({
-    detailed: false, group_by: 'parents'
+    detailed: false,
+    group_by: 'parents',
+    cluster
   });
 
   let found = false;
@@ -585,7 +587,7 @@ Db.cancelByOpaqueId = async (cancelId) => {
       result.headers['X-Opaque-Id'] === cancelId) {
       found = true;
       // don't need to wait for task to cancel, just break out and return
-      internals.client7.tasks.cancel({ taskId: resultKey });
+      internals.client7.tasks.cancel({ taskId: resultKey, cluster });
       break;
     }
   }
@@ -885,8 +887,8 @@ Db.tasks = async (options) => {
   return internals.client7.tasks.list({ detailed: true, group_by: 'parents', cluster: options.cluster });
 };
 
-Db.taskCancel = async (taskId) => {
-  return internals.client7.tasks.cancel(taskId ? { taskId } : {});
+Db.taskCancel = async (taskId, cluster) => {
+  return internals.client7.tasks.cancel({ taskId, cluster });
 };
 
 Db.nodesStats = async (options) => {

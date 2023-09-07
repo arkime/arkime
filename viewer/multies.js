@@ -385,6 +385,7 @@ function simpleGather1Cluster (req, res) {
 
 app.get('/_tasks', simpleGatherTasks);
 app.post('/_tasks/:taskId/_cancel', simpleGather1Cluster);
+app.post('/_tasks/_cancel', simpleGather1Cluster);
 
 app.get('/_cluster/nodes/stats', simpleGather1Cluster);
 app.get('/_nodes', simpleGatherNodes);
