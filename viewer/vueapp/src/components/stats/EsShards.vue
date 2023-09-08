@@ -12,11 +12,17 @@
     <div v-if="!error">
 
       <div v-if="stats.indices && !stats.indices.length"
-        class="text-danger text-center mt-4 mb-4">
-        <span class="fa fa-warning"></span>&nbsp;
-        No results match your search.
-        <br>
-        You may need to adjust the "Show" pulldown
+        class="text-center">
+        <h3>
+          <span class="fa fa-folder-open fa-2x text-muted" />
+        </h3>
+        <h5 class="lead">
+          No data. You may need to adjust the "Show" pulldown
+          <template v-if="cluster">
+            <br>
+            Or try selecting a different cluster.
+          </template>
+        </h5>
       </div>
 
       <table v-if="stats.indices && stats.indices.length"
@@ -146,6 +152,7 @@
 </template>
 
 <script>
+import Utils from '../utils/utils';
 import MolochError from '../utils/Error';
 import MolochLoading from '../utils/Loading';
 
@@ -159,7 +166,8 @@ export default {
     'dataInterval',
     'shardsShow',
     'refreshData',
-    'searchTerm'
+    'searchTerm',
+    'cluster'
   ],
   data: function () {
     return {
@@ -171,7 +179,8 @@ export default {
         filter: this.searchTerm || undefined,
         sortField: 'index',
         desc: false,
-        show: this.shardsShow || 'notstarted'
+        show: this.shardsShow || 'notstarted',
+        cluster: this.cluster || undefined
       },
       columns: [
         { name: 'Index', sort: 'index', doClick: false, hasDropdown: false, width: '200px' }
@@ -213,6 +222,10 @@ export default {
       if (this.refreshData) {
         this.loadData();
       }
+    },
+    cluster: function () {
+      this.query.cluster = this.cluster;
+      this.loadData();
     }
   },
   created: function () {
@@ -231,7 +244,11 @@ export default {
       this.loadData();
     },
     exclude: function (type, column) {
-      this.$http.post(`api/esshards/${type}/${column[type]}/exclude`)
+      if (!Utils.checkClusterSelection(this.query.cluster, this.$store.state.esCluster.availableCluster.active, this).valid) {
+        return;
+      }
+
+      this.$http.post(`api/esshards/${type}/${column[type]}/exclude`, {}, { params: { cluster: this.query.cluster } })
         .then((response) => {
           if (type === 'name') {
             column.nodeExcluded = true;
@@ -243,7 +260,11 @@ export default {
         });
     },
     include: function (type, column) {
-      this.$http.post(`api/esshards/${type}/${column[type]}/include`)
+      if (!Utils.checkClusterSelection(this.query.cluster, this.$store.state.esCluster.availableCluster.active, this).valid) {
+        return;
+      }
+
+      this.$http.post(`api/esshards/${type}/${column[type]}/include`, {}, { params: { cluster: this.query.cluster } })
         .then((response) => {
           if (type === 'name') {
             column.nodeExcluded = false;
@@ -269,6 +290,10 @@ export default {
       }, 500);
     },
     loadData: function () {
+      if (!Utils.checkClusterSelection(this.query.cluster, this.$store.state.esCluster.availableCluster.active, this).valid) {
+        return;
+      }
+
       this.loading = true;
       respondedAt = undefined;
 

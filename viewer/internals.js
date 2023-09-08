@@ -10,6 +10,7 @@ const ArkimeConfig = require('../common/arkimeConfig');
 // build internals
 const internals = {
   isProduction: false,
+  multiES: false,
   CYBERCHEFVERSION: '10.5.2',
   httpAgent: new http.Agent({ keepAlive: true, keepAliveMsecs: 5000, maxSockets: 40 }),
   previousNodesStats: [],
@@ -94,7 +95,7 @@ Config.loaded(() => {
   internals.esScrollTimeout = Config.get('elasticsearchScrollTimeout', 5 * 60) + 's';
   internals.userNameHeader = Config.get('userNameHeader');
   internals.esAdminUsersSet = Config.get('esAdminUsers', false) !== false;
-  internals.esAdminUsers = Config.get('multiES', false) ? [] : Config.getArray('esAdminUsers', ',', '');
+  internals.esAdminUsers = Config.getArray('esAdminUsers', ',', '');
   internals.httpsAgent = new https.Agent({ keepAlive: true, keepAliveMsecs: 5000, maxSockets: 40, rejectUnauthorized: !ArkimeConfig.insecure });
   internals.isLocalViewRegExp = Config.get('isLocalViewRegExp') ? new RE2(Config.get('isLocalViewRegExp')) : undefined;
   internals.allowUploads = !!Config.get('uploadCommand');
@@ -102,6 +103,7 @@ Config.loaded(() => {
                            60 + // How long before ES reindexs
                            20; // Transmit and extra time
   internals.prefix = Config.get('prefix', 'arkime_');
+  internals.multiES = Config.get('multiES', false);
 
   // make sure there's an _ after the prefix
   if (internals.prefix && !internals.prefix.endsWith('_')) {

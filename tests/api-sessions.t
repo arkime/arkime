@@ -1,4 +1,4 @@
-use Test::More tests => 91;
+use Test::More tests => 94;
 use Cwd;
 use URI::Escape;
 use MolochTest;
@@ -217,6 +217,9 @@ tcp,1386004309468,1386004309478,10.180.156.185,53533,US,10.180.156.249,1080,US,2
     eq_or_diff($json, from_json('{"success":false,"text":"Missing cluster"}'));
 
     $json = viewerGet("/api/session/test/$id/send?saveId=id&cluster=unknown");
+    eq_or_diff($json, from_json('{"success":false,"text":"Missing cluster"}'));
+
+    $json = viewerGet("/api/session/test/$id/send?saveId=id&remoteCluster=unknown");
     eq_or_diff($json, from_json('{"success":false,"text":"Unknown cluster"}'));
 
 # Test errors for /api/sessions/:nodeName/send
@@ -230,9 +233,12 @@ tcp,1386004309468,1386004309478,10.180.156.185,53533,US,10.180.156.249,1080,US,2
     eq_or_diff($json, from_json('{"success":false,"text":"Missing cluster"}'));
 
     $json = viewerPost("/api/sessions/test/send?saveId=id&cluster=unknown", '{}');
+    eq_or_diff($json, from_json('{"success":false,"text":"Missing cluster"}'));
+
+    $json = viewerPost("/api/sessions/test/send?saveId=id&remoteCluster=unknown", '{}');
     eq_or_diff($json, from_json('{"success":false,"text":"Unknown cluster"}'));
 
-    $json = viewerPost("/api/sessions/test/send?saveId=id&cluster=test2", '{}');
+    $json = viewerPost("/api/sessions/test/send?saveId=id&remoteCluster=test2", '{}');
     eq_or_diff($json, from_json('{"success":false,"text":"Missing ids"}'));
 
 # Test errors for /api/sessions/send
@@ -240,4 +246,7 @@ tcp,1386004309468,1386004309478,10.180.156.185,53533,US,10.180.156.249,1080,US,2
     eq_or_diff($json, from_json('{"success":false,"text":"Missing cluster"}'));
 
     $json = viewerPost("/api/sessions/send", "cluster=unknown");
+    eq_or_diff($json, from_json('{"success":false,"text":"Missing cluster"}'));
+
+    $json = viewerPost("/api/sessions/send", "remoteCluster=unknown");
     eq_or_diff($json, from_json('{"success":false,"text":"Unknown cluster"}'));

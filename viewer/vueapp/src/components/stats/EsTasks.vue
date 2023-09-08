@@ -37,6 +37,7 @@
         :action-column="true"
         :desc="query.desc"
         :sortField="query.sortField"
+        :no-results-msg="`No results match your search.${cluster ? 'Try selecting a different cluster.' : ''}`"
         page="esTasks"
         table-classes="table-sm text-right small mt-2"
         table-state-name="esTasksCols"
@@ -62,6 +63,7 @@
 </template>
 
 <script>
+import Utils from '../utils/utils';
 import MolochTable from '../utils/Table';
 import MolochError from '../utils/Error';
 import MolochLoading from '../utils/Loading';
@@ -77,7 +79,8 @@ export default {
     'dataInterval',
     'refreshData',
     'searchTerm',
-    'pageSize'
+    'pageSize',
+    'cluster'
   ],
   components: {
     MolochTable,
@@ -98,7 +101,8 @@ export default {
         filter: this.searchTerm || undefined,
         sortField: 'action',
         desc: false,
-        cancellable: false
+        cancellable: false,
+        cluster: this.cluster || undefined
       },
       columns: [ // es tasks table columns
         // default columns
@@ -151,6 +155,10 @@ export default {
     },
     pageSize: function () {
       this.loadData();
+    },
+    cluster: function () {
+      this.query.cluster = this.cluster;
+      this.loadData();
     }
   },
   created: function () {
@@ -162,7 +170,11 @@ export default {
   methods: {
     /* exposed page functions ------------------------------------ */
     cancelTask (taskId) {
-      this.$http.post(`api/estasks/${taskId}/cancel`)
+      if (!Utils.checkClusterSelection(this.query.cluster, this.$store.state.esCluster.availableCluster.active, this).valid) {
+        return;
+      }
+
+      this.$http.post(`api/estasks/${taskId}/cancel`, {}, { params: this.query })
         .then((response) => {
           // remove the task from the list
           for (let i = 0, len = this.stats.length; i < len; i++) {
@@ -176,7 +188,11 @@ export default {
         });
     },
     cancelTasks () {
-      this.$http.post('api/estasks/cancelall')
+      if (!Utils.checkClusterSelection(this.query.cluster, this.$store.state.esCluster.availableCluster.active, this).valid) {
+        return;
+      }
+
+      this.$http.post('api/estasks/cancelall', {}, { params: this.query })
         .then((response) => {
           // remove cancellable tasks
           for (let i = this.stats.length - 1, len = 0; i >= len; i--) {
@@ -197,6 +213,10 @@ export default {
       }, 500);
     },
     loadData: function (sortField, desc) {
+      if (!Utils.checkClusterSelection(this.query.cluster, this.$store.state.esCluster.availableCluster.active, this).valid) {
+        return;
+      }
+
       this.loading = true;
       respondedAt = undefined;
 

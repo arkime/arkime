@@ -24,7 +24,24 @@
         length-default=200>
       </moloch-paging>
 
-      <div id="statsGraph" style="width:1440px;"></div>
+      <div
+        v-if="stats && stats.recordsFiltered"
+        id="statsGraph"
+        style="width:1440px;">
+      </div>
+
+      <div class="text-center" v-else>
+        <h3>
+          <span class="fa fa-folder-open fa-2x text-muted" />
+        </h3>
+        <h5 class="lead">
+          No data.
+          <template v-if="cluster">
+            <br>
+            Try selecting a different cluster.
+          </template>
+        </h5>
+      </div>
 
     </div>
 
@@ -34,6 +51,7 @@
 
 <script>
 import '../../cubismoverrides.css';
+import Utils from '../utils/utils';
 import MolochPaging from '../utils/Pagination';
 import MolochError from '../utils/Error';
 import MolochLoading from '../utils/Loading';
@@ -52,7 +70,8 @@ export default {
     'graphHide',
     'graphSort',
     'searchTerm',
-    'refreshData'
+    'refreshData',
+    'cluster'
   ],
   components: { MolochPaging, MolochError, MolochLoading },
   data: function () {
@@ -66,7 +85,8 @@ export default {
         start: 0,
         filter: this.searchTerm || undefined,
         desc: this.graphSort === 'desc',
-        hide: this.graphHide || 'none'
+        hide: this.graphHide || 'none',
+        cluster: this.cluster || undefined
       }
     };
   },
@@ -112,6 +132,11 @@ export default {
       this.query.desc = this.graphSort === 'desc';
       this.loadData();
     },
+    cluster: function () {
+      initialized = false;
+      this.query.cluster = this.cluster;
+      this.loadData();
+    },
     refreshData: function () {
       if (this.refreshData) {
         this.loadData();
@@ -150,6 +175,10 @@ export default {
     },
     /* helper functions ---------------------------------------------------- */
     loadData: function () {
+      if (!Utils.checkClusterSelection(this.query.cluster, this.$store.state.esCluster.availableCluster.active, this).valid) {
+        return;
+      }
+
       this.loading = true;
       initialized = false;
 

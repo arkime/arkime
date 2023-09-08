@@ -18,12 +18,23 @@ global.$ = global.jQuery = $;
 
 Vue.use(BootstrapVue);
 
+Vue.prototype.$constants = {
+  MOLOCH_MULTIVIEWER: false
+};
+
 jest.mock('../src/components/files/FileService');
 jest.mock('../src/components/users/UserService');
 
 const store = {
   state: {
-    user: userWithSettings
+    user: userWithSettings,
+    esCluster: {
+      availableCluster: {
+        active: [],
+        inactive: []
+      },
+      selectedCluster: []
+    }
   }
 };
 
@@ -45,7 +56,7 @@ test('file page no results', async () => {
   });
 
   await waitFor(() => { // displays no results
-    getByText('No results match your search');
+    getByText('No results match your search.');
   });
 });
 

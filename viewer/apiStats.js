@@ -52,7 +52,7 @@ class StatsAPIs {
    */
   static async getESHealth (req, res) {
     try {
-      const health = await Db.healthCache();
+      const health = await Db.healthCache(req.query.cluster);
       return res.send(health);
     } catch (err) {
       return res.serverError(500, err.toString());
@@ -106,6 +106,7 @@ class StatsAPIs {
         }
       }
     }
+    ViewerUtils.addCluster(req.query.cluster, query);
 
     const rquery = {
       query: { term: { locked: 0 } },
@@ -119,6 +120,7 @@ class StatsAPIs {
         }
       }
     };
+    ViewerUtils.addCluster(req.query.cluster, rquery);
 
     if (req.query.hide !== undefined && req.query.hide !== 'none') {
       if (req.query.hide === 'old' || req.query.hide === 'both') {
@@ -132,7 +134,7 @@ class StatsAPIs {
     const now = Math.floor(Date.now() / 1000);
 
     Promise.all([Db.search('stats', 'stat', query),
-      Db.numberOfDocuments('stats'),
+      Db.numberOfDocuments('stats', rquery.cluster ? { cluster: rquery.cluster } : {}),
       Db.search('files', 'file', rquery)
     ]).then(([stats, total, retention]) => {
       if (stats.error) { throw stats.error; }
@@ -359,11 +361,11 @@ class StatsAPIs {
     let stats = [];
 
     Promise.all([
-      Db.nodesStatsCache(),
-      Db.nodesInfoCache(),
-      Db.masterCache(),
-      Db.allocation(),
-      Db.getClusterSettings({ flatSettings: true })
+      Db.nodesStatsCache(req.query.cluster),
+      Db.nodesInfoCache(req.query.cluster),
+      Db.masterCache(req.query.cluster),
+      Db.allocation(req.query.cluster),
+      Db.getClusterSettings({ flatSettings: true, cluster: req.query.cluster })
     ]).then(([nodesStats, nodesInfo, master, { body: allocation }, { body: settings }]) => {
       const shards = new Map(allocation.map(i => [i.node, parseInt(i.shards, 10)]));
 
@@ -515,8 +517,8 @@ class StatsAPIs {
    */
   static getESIndices (req, res) {
     async.parallel({
-      indices: Db.indicesCache,
-      indicesSettings: Db.indicesSettingsCache
+      indices: async () => await Db.indicesCache(req.query.cluster),
+      indicesSettings: async () => await Db.indicesSettingsCache(req.query.cluster)
     }, (err, results) => {
       if (err) {
         console.log(`ERROR - ${req.method} /api/esindices`, util.inspect(err, false, 50));
@@ -529,6 +531,10 @@ class StatsAPIs {
 
       const indices = results.indices;
       const indicesSettings = results.indicesSettings;
+
+      if (!Array.isArray(indices)) {
+        return res.serverError(500, 'No results');
+      }
 
       let findices = [];
 
@@ -600,7 +606,7 @@ class StatsAPIs {
    */
   static async deleteESIndex (req, res) {
     try {
-      await Db.deleteIndex([req.params.index], {});
+      await Db.deleteIndex([req.params.index], { cluster: req.query.cluster });
       return res.send(JSON.stringify({ success: true }));
     } catch (err) {
       console.log(`ERROR - ${req.method} /api/esindices/%s`, ArkimeUtil.sanitizeStr(req.params.index), util.inspect(err, false, 50));
@@ -619,7 +625,7 @@ class StatsAPIs {
    */
   static optimizeESIndex (req, res) {
     try {
-      Db.optimizeIndex([req.params.index], {});
+      Db.optimizeIndex([req.params.index], { cluster: req.query.cluster });
     } catch (err) {
       console.log(`ERROR - ${req.method} /api/esindices/%s/optimize`, ArkimeUtil.sanitizeStr(req.params.index), util.inspect(err, false, 50));
     }
@@ -638,8 +644,12 @@ class StatsAPIs {
    * @returns {string} text - The success/error message to (optionally) display to the user.
    */
   static async closeESIndex (req, res) {
+    if (internals.multiES && req.query.cluster === undefined) {
+      return res.serverError(401, 'Not supported in multies');
+    }
+
     try {
-      await Db.closeIndex([req.params.index], {});
+      await Db.closeIndex([req.params.index], { cluster: req.query.cluster });
       return res.send(JSON.stringify({ success: true }));
     } catch (err) {
       console.log(`ERROR - ${req.method} /api/esindices/%s/close`, ArkimeUtil.sanitizeStr(req.params.index), util.inspect(err, false, 50));
@@ -657,8 +667,12 @@ class StatsAPIs {
    * @returns {boolean} success - Always true, the openIndex function might block. Check the logs for errors.
    */
   static openESIndex (req, res) {
+    if (internals.multiES && req.query.cluster === undefined) {
+      return res.serverError(401, 'Not supported in multies');
+    }
+
     try {
-      Db.openIndex([req.params.index], {});
+      Db.openIndex([req.params.index], { cluster: req.query.cluster });
     } catch (err) {
       console.log(`ERROR - ${req.method} /api/esindices/%s/open`, ArkimeUtil.sanitizeStr(req.params.index), util.inspect(err, false, 50));
     }
@@ -679,6 +693,10 @@ class StatsAPIs {
    * @returns {string} text - The success/error message to (optionally) display to the user.
    */
   static async shrinkESIndex (req, res) {
+    if (internals.multiES && req.query.cluster === undefined) {
+      return res.serverError(401, 'Not supported in multies');
+    }
+
     if (!req.body) {
       return res.serverError(403, 'Missing body');
     }
@@ -692,7 +710,8 @@ class StatsAPIs {
         'index.routing.allocation.total_shards_per_node': null,
         'index.routing.allocation.require._name': req.body.target,
         'index.blocks.write': true
-      }
+      },
+      cluster: req.query.cluster
     };
 
     try {
@@ -705,21 +724,22 @@ class StatsAPIs {
             'index.codec': 'best_compression',
             'index.number_of_shards': req.body.numShards || 1
           }
-        }
+        },
+        cluster: req.query.cluster
       };
 
       // wait for no more reloacting shards
       const shrinkCheckInterval = setInterval(() => {
-        Db.healthCache().then(async (result) => {
+        Db.healthCache(req.query.cluster).then(async (result) => {
           if (result.relocating_shards === 0) {
             clearInterval(shrinkCheckInterval);
             try {
               await Db.shrinkIndex(req.params.index, shrinkParams);
 
-              const { body: indexResult } = await Db.indices(`${req.params.index}-shrink,${req.params.index}`);
+              const { body: indexResult } = await Db.indices(`${req.params.index}-shrink,${req.params.index}`, req.query.cluster);
               if (indexResult[0] && indexResult[1] &&
                 indexResult[0]['docs.count'] === indexResult[1]['docs.count']) {
-                await Db.deleteIndex([req.params.index], {});
+                await Db.deleteIndex([req.params.index], { cluster: req.query.cluster });
               }
             } catch (err) {
               console.log(`ERROR - ${req.method} /api/esindices/%s/shrink`, ArkimeUtil.sanitizeStr(req.params.index), util.inspect(err, false, 50));
@@ -754,8 +774,9 @@ class StatsAPIs {
    * @returns {number} recordsFiltered - The number of ES tasks returned in this result.
    */
   static async getESTasks (req, res) {
+    const options = ViewerUtils.addCluster(req.query.cluster);
     try {
-      const { body: { tasks } } = await Db.tasks();
+      const { body: { tasks } } = await Db.tasks(options);
 
       let regex;
       if (req.query.filter !== undefined) {
@@ -849,7 +870,7 @@ class StatsAPIs {
     }
 
     try {
-      const { body: result } = await Db.taskCancel(taskId);
+      const { body: result } = await Db.taskCancel(taskId, req.query.cluster);
       return res.send(JSON.stringify({ success: true, text: result }));
     } catch (err) {
       console.log(`ERROR - ${req.method} /api/estasks/%s/cancel`, ArkimeUtil.sanitizeStr(taskId), util.inspect(err, false, 50));
@@ -878,7 +899,7 @@ class StatsAPIs {
     }
 
     try {
-      const { body: result } = await Db.cancelByOpaqueId(`${req.user.userId}::${cancelId}`);
+      const { body: result } = await Db.cancelByOpaqueId(`${req.user.userId}::${cancelId}`, req.query.cluster);
       return res.send(JSON.stringify({ success: true, text: result }));
     } catch (err) {
       console.log(`ERROR - ${req.method} /api/estasks/%s/cancelwith`, ArkimeUtil.sanitizeStr(cancelId), util.inspect(err, false, 50));
@@ -897,7 +918,7 @@ class StatsAPIs {
    */
   static async cancelAllESTasks (req, res) {
     try {
-      const { body: result } = await Db.taskCancel();
+      const { body: result } = await Db.taskCancel(undefined, req.query.cluster);
       return res.send(JSON.stringify({ success: true, text: result }));
     } catch (err) {
       console.log(`ERROR - ${req.method} /api/estasks/cancelall`, util.inspect(err, false, 50));
@@ -913,11 +934,17 @@ class StatsAPIs {
    * @name /esadmin
    * @returns {array} settings - List of ES settings that a user can change
    */
-  static getESAdminSettings (req, res) {
+  static async getESAdminSettings (req, res) {
+    let prefix = internals.prefix;
+    if (req.query.cluster) {
+      const details = await Db.getClusterDetails();
+      prefix = details.body?.prefix[req.query.cluster];
+    }
+
     Promise.all([
-      Db.getClusterSettings({ flatSettings: true, include_defaults: true }),
-      Db.getILMPolicy(),
-      Db.getTemplate('sessions3_template')
+      Db.getClusterSettings({ flatSettings: true, include_defaults: true, cluster: req.query.cluster }),
+      Db.getILMPolicy(req.query.cluster),
+      Db.getTemplate('sessions3_template', req.query.cluster)
     ]).then(([{ body: settings }, ilm, { body: template }]) => {
       const rsettings = [];
 
@@ -994,26 +1021,26 @@ class StatsAPIs {
         'Sessions - Number of shards for FUTURE sessions3 indices',
         'https://www.elastic.co/guide/en/elasticsearch/reference/current/index-modules.html#index-number-of-shards',
         '^\\d+$',
-        template[`${internals.prefix}sessions3_template`].settings['index.number_of_shards']);
+        template[`${prefix}sessions3_template`].settings['index.number_of_shards']);
 
       addSetting('arkime.sessions.replicas', 'Integer',
         'Sessions - Number of replicas for FUTURE sessions3 indices',
         'https://www.elastic.co/guide/en/elasticsearch/reference/current/index-modules.html#index-number-of-replicas',
         '^\\d+$',
-        template[`${internals.prefix}sessions3_template`].settings['index.number_of_replicas'] || 0);
+        template[`${prefix}sessions3_template`].settings['index.number_of_replicas'] || 0);
 
       addSetting('arkime.sessions.shards_per_node', 'Empty or Integer',
         'Sessions - Number of shards_per_node for FUTURE sessions3 indices',
         'https://www.elastic.co/guide/en/elasticsearch/reference/current/allocation-total-shards.html',
         '^(|\\d+)$',
-        template[`${internals.prefix}sessions3_template`].settings['index.routing.allocation.total_shards_per_node'] || '');
+        template[`${prefix}sessions3_template`].settings['index.routing.allocation.total_shards_per_node'] || '');
 
       function addIlm (key, current, ilmName, type, regex) {
         rsettings.push({ key, current, name: ilmName, type, url: 'https://arkime.com/faq#ilm', regex });
       }
 
-      if (ilm[`${internals.prefix}molochsessions`]) {
-        const silm = ilm[`${internals.prefix}molochsessions`];
+      if (ilm[`${prefix}molochsessions`]) {
+        const silm = ilm[`${prefix}molochsessions`];
         addIlm('arkime.ilm.sessions.forceTime', silm.policy.phases.warm.min_age,
           'ILM - Move to warm after', 'Time String', '^\\d+[hd]$');
         addIlm('arkime.ilm.sessions.replicas', silm.policy.phases.warm.actions.allocate.number_of_replicas,
@@ -1024,8 +1051,8 @@ class StatsAPIs {
           'ILM - Delete session index after', 'Time String', '^\\d+[hd]$');
       }
 
-      if (ilm[`${internals.prefix}molochhistory`]) {
-        const hilm = ilm[`${internals.prefix}molochhistory`];
+      if (ilm[`${prefix}molochhistory`]) {
+        const hilm = ilm[`${prefix}molochhistory`];
         addIlm('arkime.ilm.history.deleteTime', hilm.policy.phases.delete.min_age,
           'ILM - Delete History index after', 'Time String', '^\\d+[hd]$');
       }
@@ -1047,12 +1074,18 @@ class StatsAPIs {
     if (!ArkimeUtil.isString(req.body.key)) { return res.serverError(500, 'Missing key'); }
     if (!ArkimeUtil.isString(req.body.value, 0)) { return res.serverError(500, 'Missing value'); }
 
+    let prefix = internals.prefix;
+    if (req.query.cluster) {
+      const details = await Db.getClusterDetails();
+      prefix = details.body?.prefix[req.query.cluster];
+    }
+
     // Convert null string to null
     if (req.body.value === 'null') { req.body.value = null; }
 
     // Must set all 3 at once because of ES bug/feature
     if (req.body.key === 'arkime.disk.watermarks') {
-      const query = { body: { persistent: {} } };
+      const query = { body: { persistent: {} }, cluster: req.query.cluster };
       if (req.body.value === '' || req.body.value === null) {
         query.body.persistent['cluster.routing.allocation.disk.watermark.low'] = null;
         query.body.persistent['cluster.routing.allocation.disk.watermark.high'] = null;
@@ -1082,8 +1115,8 @@ class StatsAPIs {
 
     if (req.body.key.startsWith('arkime.ilm')) {
       Promise.all([Db.getILMPolicy()]).then(([ilm]) => {
-        const silm = ilm[`${internals.prefix}molochsessions`];
-        const hilm = ilm[`${internals.prefix}molochhistory`];
+        const silm = ilm[`${prefix}molochsessions`];
+        const hilm = ilm[`${prefix}molochhistory`];
 
         if (silm === undefined || hilm === undefined) {
           return res.serverError(500, 'ILM isn\'t configured');
@@ -1109,9 +1142,9 @@ class StatsAPIs {
           return res.serverError(500, 'Unknown field');
         }
         if (req.body.key.startsWith('arkime.ilm.history')) {
-          Db.setILMPolicy(`${internals.prefix}molochhistory`, hilm);
+          Db.setILMPolicy(`${prefix}molochhistory`, hilm);
         } else {
-          Db.setILMPolicy(`${internals.prefix}molochsessions`, silm);
+          Db.setILMPolicy(`${prefix}molochsessions`, silm);
         }
         return res.send(JSON.stringify({ success: true, text: 'Set' }));
       });
@@ -1119,31 +1152,31 @@ class StatsAPIs {
     }
 
     if (req.body.key.startsWith('arkime.sessions')) {
-      Promise.all([Db.getTemplate('sessions3_template')]).then(([{ body: template }]) => {
+      Promise.all([Db.getTemplate('sessions3_template', req.query.cluster)]).then(([{ body: template }]) => {
         switch (req.body.key) {
         case 'arkime.sessions.shards':
-          template[`${internals.prefix}sessions3_template`].settings['index.number_of_shards'] = req.body.value;
+          template[`${prefix}sessions3_template`].settings['index.number_of_shards'] = req.body.value;
           break;
         case 'arkime.sessions.replicas':
-          template[`${internals.prefix}sessions3_template`].settings['index.number_of_replicas'] = req.body.value;
+          template[`${prefix}sessions3_template`].settings['index.number_of_replicas'] = req.body.value;
           break;
         case 'arkime.sessions.shards_per_node':
           if (req.body.value === '') {
-            delete template[`${internals.prefix}sessions3_template`].settings['index.routing.allocation.total_shards_per_node'];
+            delete template[`${prefix}sessions3_template`].settings['index.routing.allocation.total_shards_per_node'];
           } else {
-            template[`${internals.prefix}sessions3_template`].settings['index.routing.allocation.total_shards_per_node'] = req.body.value;
+            template[`${prefix}sessions3_template`].settings['index.routing.allocation.total_shards_per_node'] = req.body.value;
           }
           break;
         default:
           return res.serverError(500, 'Unknown field');
         }
-        Db.putTemplate('sessions3_template', template[`${internals.prefix}sessions3_template`]);
+        Db.putTemplate('sessions3_template', template[`${prefix}sessions3_template`], req.query.cluster);
         return res.send(JSON.stringify({ success: true, text: 'Successfully set settings' }));
       });
       return;
     }
 
-    const clusterQuery = { body: { persistent: {} } };
+    const clusterQuery = { body: { persistent: {} }, cluster: req.query.cluster };
     clusterQuery.body.persistent[req.body.key] = req.body.value || null;
 
     try {
@@ -1202,7 +1235,8 @@ class StatsAPIs {
    */
   static unfloodES (req, res) {
     Db.setIndexSettings('*', {
-      body: { 'index.blocks.read_only_allow_delete': null }
+      body: { 'index.blocks.read_only_allow_delete': null },
+      cluster: req.query.cluster
     });
     return res.send(JSON.stringify({ success: true, text: 'Unflooded' }));
   };
@@ -1249,10 +1283,14 @@ class StatsAPIs {
    * @returns {array} ipExcludes - List of node ips that disallow the allocation of shards.
    */
   static getESShards (req, res) {
+    const options = ViewerUtils.addCluster(req.query.cluster, { flatSettings: true });
     Promise.all([
-      Db.shards(),
-      Db.getClusterSettings({ flatSettings: true })
+      Db.shards(options.cluster ? { cluster: options.cluster } : undefined),
+      Db.getClusterSettings(options)
     ]).then(([{ body: shards }, { body: settings }]) => {
+      if (!Array.isArray(shards)) {
+        return res.serverError(500, 'No results');
+      }
       let ipExcludes = [];
       if (settings.persistent['cluster.routing.allocation.exclude._ip']) {
         ipExcludes = settings.persistent['cluster.routing.allocation.exclude._ip'].split(',');
@@ -1334,12 +1372,12 @@ class StatsAPIs {
    * @returns {string} text - The success/error message to (optionally) display to the user.
    */
   static async excludeESShard (req, res) {
-    if (Config.get('multiES', false)) {
+    if (internals.multiES && req.query.cluster === undefined) {
       return res.serverError(401, 'Not supported in multies');
     }
 
     try {
-      const { body: settings } = await Db.getClusterSettings({ flatSettings: true });
+      const { body: settings } = await Db.getClusterSettings({ flatSettings: true, cluster: req.query.cluster });
       let exclude = [];
       let settingName;
 
@@ -1359,7 +1397,7 @@ class StatsAPIs {
         exclude.push(req.params.value);
       }
 
-      const query = { body: { persistent: {} } };
+      const query = { body: { persistent: {} }, cluster: req.query.cluster };
       query.body.persistent[settingName] = exclude.join(',');
 
       await Db.putClusterSettings(query);
@@ -1383,12 +1421,12 @@ class StatsAPIs {
    * @returns {string} text - The success/error message to (optionally) display to the user.
    */
   static async includeESShard (req, res) {
-    if (Config.get('multiES', false)) {
+    if (internals.multiES && req.query.cluster === undefined) {
       return res.serverError(401, 'Not supported in multies');
     }
 
     try {
-      const { body: settings } = await Db.getClusterSettings({ flatSettings: true });
+      const { body: settings } = await Db.getClusterSettings({ flatSettings: true, cluster: req.query.cluster });
       let exclude = [];
       let settingName;
 
@@ -1409,7 +1447,7 @@ class StatsAPIs {
         exclude.splice(pos, 1);
       }
 
-      const query = { body: { persistent: {} } };
+      const query = { body: { persistent: {} }, cluster: req.query.cluster };
       query.body.persistent[settingName] = exclude.join(',');
 
       await Db.putClusterSettings(query);
@@ -1439,9 +1477,10 @@ class StatsAPIs {
    */
   static async getESRecovery (req, res) {
     const sortField = (req.query.sortField || 'index') + (req.query.desc === 'true' ? ':desc' : '');
+    const options = ViewerUtils.addCluster(req.query.cluster);
 
     try {
-      const { body: recoveries } = await Db.recovery(sortField, req.query.show !== 'all');
+      const { body: recoveries } = await Db.recovery(sortField, req.query.show !== 'all', options.cluster);
       let regex;
       if (req.query.filter !== undefined) {
         try {

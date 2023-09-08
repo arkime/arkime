@@ -5,6 +5,9 @@
       <span class="fixed-header">
         <div class="files-search">
           <div class="p-1">
+            <Clusters
+              class="pull-right flex-grow-1"
+            />
             <div class="input-group input-group-sm pull-right" style="max-width:50%;">
               <div class="input-group-prepend">
                 <span class="input-group-text input-group-text-fw">
@@ -67,6 +70,7 @@
           :desc="query.desc"
           :sort-field="query.sortField"
           :action-column="true"
+          :no-results-msg="`No results match your search.${query.cluster ? 'Try selecting a different cluster.' : ''}`"
           page="files"
           table-animation="list"
           table-classes="table-sm"
@@ -82,12 +86,14 @@
 </template>
 
 <script>
-import MolochPaging from '../utils/Pagination';
-import MolochError from '../utils/Error';
-import MolochLoading from '../utils/Loading';
-import MolochTable from '../utils/Table';
-import MolochCollapsible from '../utils/CollapsibleWrapper';
+import Utils from '../utils/utils';
 import FileService from './FileService';
+import MolochError from '../utils/Error';
+import MolochTable from '../utils/Table';
+import Clusters from '../utils/Clusters';
+import MolochLoading from '../utils/Loading';
+import MolochPaging from '../utils/Pagination';
+import MolochCollapsible from '../utils/CollapsibleWrapper';
 import Focus from '../../../../../common/vueapp/Focus';
 
 let searchInputTimeout; // timeout to debounce the search input
@@ -99,7 +105,8 @@ export default {
     MolochError,
     MolochLoading,
     MolochTable,
-    MolochCollapsible
+    MolochCollapsible,
+    Clusters
   },
   directives: { Focus },
   data: function () {
@@ -114,7 +121,8 @@ export default {
         start: 0,
         filter: null,
         sortField: 'num',
-        desc: false
+        desc: false,
+        cluster: this.$route.query.cluster || undefined
       },
       columns: [ // node stats table columns
         { id: 'num', name: 'File #', classes: 'text-right', sort: 'num', help: 'Internal file number, unique per node', width: 140, default: true },
@@ -149,6 +157,16 @@ export default {
       return this.$store.state.shiftKeyHold;
     }
   },
+  watch: {
+    '$route.query.cluster': {
+      handler: function (newVal, oldVal) {
+        if (newVal !== oldVal) {
+          this.query.cluster = newVal;
+          this.loadData();
+        }
+      }
+    }
+  },
   methods: {
     /* exposed page functions ------------------------------------ */
     changePaging (pagingValues) {
@@ -174,6 +192,10 @@ export default {
     },
     /* helper functions ---------------------------------------------------- */
     loadData: function (sortField, desc) {
+      if (!Utils.checkClusterSelection(this.query.cluster, this.$store.state.esCluster.availableCluster.active, this).valid) {
+        return;
+      }
+
       this.loading = true;
 
       if (desc !== undefined) { this.query.desc = desc; }

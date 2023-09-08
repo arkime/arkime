@@ -36,6 +36,7 @@
         :info-row-function="toggleStatDetailWrapper"
         :desc="query.desc"
         :sortField="query.sortField"
+        :no-results-msg="`No results match your search.${cluster ? 'Try selecting a different cluster.' : ''}`"
         page="captureStats"
         table-animation="list"
         table-classes="table-sm text-right small"
@@ -51,10 +52,11 @@
 
 <script>
 import '../../cubismoverrides.css';
-import MolochPaging from '../utils/Pagination';
+import Utils from '../utils/utils';
 import MolochError from '../utils/Error';
-import MolochLoading from '../utils/Loading';
 import MolochTable from '../utils/Table';
+import MolochLoading from '../utils/Loading';
+import MolochPaging from '../utils/Pagination';
 
 let oldD3, cubism; // lazy load old d3 and cubism
 
@@ -70,7 +72,8 @@ export default {
     'graphHide',
     'dataInterval',
     'refreshData',
-    'searchTerm'
+    'searchTerm',
+    'cluster'
   ],
   components: {
     MolochPaging,
@@ -95,7 +98,8 @@ export default {
         filter: this.searchTerm || undefined,
         sortField: 'nodeName',
         desc: true,
-        hide: this.graphHide || 'none'
+        hide: this.graphHide || 'none',
+        cluster: this.cluster || undefined
       },
       columns: [ // node stats table columns
         // default columns
@@ -191,10 +195,14 @@ export default {
       if (this.refreshData) {
         this.loadData();
       }
+    },
+    cluster: function () {
+      this.query.cluster = this.cluster;
+      this.loadData();
     }
   },
   created: function () {
-    this.loadData();
+    // don't need to load data (table component does it)
     // set a recurring server req if necessary
     if (this.dataInterval !== '0') {
       this.setRequestInterval();
@@ -235,6 +243,10 @@ export default {
       }, 500);
     },
     loadData: function (sortField, desc) {
+      if (!Utils.checkClusterSelection(this.query.cluster, this.$store.state.esCluster.availableCluster.active, this).valid) {
+        return;
+      }
+
       this.loading = true;
       respondedAt = undefined;
 

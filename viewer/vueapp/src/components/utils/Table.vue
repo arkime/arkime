@@ -177,7 +177,7 @@
           class="text-danger text-center">
           <span class="fa fa-warning">
           </span>&nbsp;
-          No results match your search
+          {{ noResultsMsg }}
         </td>
       </tr> <!-- /no results -->
     </transition-group>
@@ -359,6 +359,10 @@ export default {
     /* IMPORTANT! 'list' is the only table animation currently available */
     tableAnimation: { // table animation name
       type: String
+    },
+    noResultsMsg: { // message to display when there are no results
+      type: String,
+      default: 'No results match your search'
     }
   },
   data: function () {

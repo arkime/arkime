@@ -24,18 +24,16 @@ const async = require('async');
 const { Client } = require('@elastic/elasticsearch');
 const User = require('../common/user');
 const ArkimeUtil = require('../common/arkimeUtil');
+const LRU = require('lru-cache');
+
+const cache = new LRU({ max: 100, maxAge: 1000 * 10 });
+const Db = exports;
 
 const internals = {
   fileId2File: {},
   fileName2File: {},
   molochNodeStatsCache: {},
-  healthCache: {},
-  indicesCache: {},
-  indicesSettingsCache: {},
   shortcutsCache: {},
-  nodesStatsCache: {},
-  nodesInfoCache: {},
-  masterCache: {},
   qInProgress: 0,
   q: [],
   remoteShortcutsIndex: undefined,
@@ -61,7 +59,7 @@ function checkURLs (nodes) {
   }
 }
 
-exports.initialize = async (info, cb) => {
+Db.initialize = async (info, cb) => {
   internals.multiES = info.multiES === 'true' || info.multiES === true || false;
   delete info.multiES;
 
@@ -174,7 +172,7 @@ exports.initialize = async (info, cb) => {
 
   // Replace tag implementation
   if (internals.multiES) {
-    exports.isLocalView = (node, yesCB, noCB) => { return noCB(); };
+    Db.isLocalView = (node, yesCB, noCB) => { return noCB(); };
     internals.prefix = 'MULTIPREFIX_';
   }
 
@@ -184,8 +182,8 @@ exports.initialize = async (info, cb) => {
 
   // Update aliases cache so -shrink/-reindex works
   if (internals.nodeName !== undefined) {
-    exports.getAliasesCache(['sessions2-*', 'sessions3-*']);
-    setInterval(() => { exports.getAliasesCache(['sessions2-*', 'sessions3-*']); }, 2 * 60 * 1000);
+    Db.getAliasesCache(['sessions2-*', 'sessions3-*']);
+    setInterval(() => { Db.getAliasesCache(['sessions2-*', 'sessions3-*']); }, 2 * 60 * 1000);
   }
 
   internals.localShortcutsIndex = fixIndex('lookups');
@@ -260,27 +258,27 @@ function fixIndex (index) {
 
   return index;
 }
-exports.fixIndex = fixIndex;
+Db.fixIndex = fixIndex;
 
-exports.merge = (to, from) => {
+Db.merge = (to, from) => {
   for (const key in from) {
     to[key] = from[key];
   }
 };
 
-exports.get = async (index, type, id) => {
+Db.get = async (index, type, id) => {
   return internals.client7.get({ index: fixIndex(index), id });
 };
 
-exports.getWithOptions = async (index, type, id, options) => {
+Db.getWithOptions = async (index, type, id, options) => {
   const params = { index: fixIndex(index), id };
-  exports.merge(params, options);
+  Db.merge(params, options);
   return internals.client7.get(params);
 };
 
-exports.getSessionPromise = (id, options) => {
+Db.getSessionPromise = (id, options) => {
   return new Promise((resolve, reject) => {
-    exports.getSession(id, options, (err, session) => {
+    Db.getSession(id, options, (err, session) => {
       err ? reject(err) : resolve(session);
     });
   });
@@ -392,7 +390,7 @@ function fixSessionFields (fields, unflatten) {
 }
 
 // Get a session from OpenSearch/Elasticsearch and decode packetPos if requested
-exports.getSession = async (id, options, cb) => {
+Db.getSession = async (id, options, cb) => {
   if (internals.debug > 2) {
     console.log('GETSESSION -', id, options);
   }
@@ -400,7 +398,7 @@ exports.getSession = async (id, options, cb) => {
     if (!fields.packetPos || fields.packetPos.length === 0) {
       return cb(null, session);
     }
-    exports.fileIdToFile(fields.node, -1 * fields.packetPos[0], (fileInfo) => {
+    Db.fileIdToFile(fields.node, -1 * fields.packetPos[0], (fileInfo) => {
       if (internals.debug > 2) {
         console.log('GETSESSION - fixPackPos', fileInfo);
       }
@@ -425,12 +423,12 @@ exports.getSession = async (id, options, cb) => {
           return cb(null, session);
         } else if (fileInfo.packetPosEncoding === 'localIndex') {
           // Neg numbers aren't encoded, use var length encoding, if pos is 0 same gap as last gap, otherwise last + pos
-          exports.isLocalView(fields.node, () => {
+          Db.isLocalView(fields.node, () => {
             const newPacketPos = [];
             async.forEachOfSeries(fields.packetPos, (item, key, nextCb) => {
               if (key % 3 !== 0) { return nextCb(); } // Only look at every 3rd item
 
-              exports.fileIdToFile(fields.node, -1 * item, (idToFileInfo) => {
+              Db.fileIdToFile(fields.node, -1 * item, (idToFileInfo) => {
                 try {
                   const fd = fs.openSync(idToFileInfo.indexFilename, 'r');
                   if (!fd) { return nextCb(); }
@@ -485,18 +483,18 @@ exports.getSession = async (id, options, cb) => {
   if (!options) {
     options = { _source: 'cert', fields: ['*'] };
   }
-  const query = { query: { ids: { values: [exports.sid2Id(id)] } }, _source: options._source, fields: options.fields };
+  const query = { query: { ids: { values: [Db.sid2Id(id)] } }, _source: options._source, fields: options.fields };
 
   const unflatten = options?.arkime_unflatten ?? true;
   const params = { };
-  exports.merge(params, options);
+  Db.merge(params, options);
   delete params._source;
   delete params.fields;
   delete params.arkime_unflatten;
   delete params.final;
 
-  const index = exports.sid2Index(id, { multiple: true });
-  exports.search(index, '_doc', query, params, (err, results) => {
+  const index = Db.sid2Index(id, { multiple: true });
+  Db.search(index, '_doc', query, params, (err, results) => {
     if (internals.debug > 2) {
       console.log('GETSESSION - search results', err, JSON.stringify(results, false, 2));
     }
@@ -508,7 +506,7 @@ exports.getSession = async (id, options, cb) => {
       }
       options.final = true;
       internals.client7.indices.refresh({ index: fixIndex(index) }, () => {
-        exports.getSession(id, options, cb);
+        Db.getSession(id, options, cb);
       });
       return;
     }
@@ -526,17 +524,17 @@ exports.getSession = async (id, options, cb) => {
   });
 };
 
-exports.index = async (index, type, id, doc) => {
+Db.index = async (index, type, id, doc) => {
   return internals.client7.index({ index: fixIndex(index), body: doc, id });
 };
 
-exports.indexNow = async (index, type, id, doc) => {
+Db.indexNow = async (index, type, id, doc) => {
   return internals.client7.index({
     index: fixIndex(index), body: doc, id, refresh: true
   });
 };
 
-exports.search = async (index, type, query, options, cb) => {
+Db.search = async (index, type, query, options, cb) => {
   if (!cb && typeof options === 'function') {
     cb = options;
     options = undefined;
@@ -556,7 +554,7 @@ exports.search = async (index, type, query, options, cb) => {
     delete options.cancelId;
   }
 
-  exports.merge(params, options);
+  Db.merge(params, options);
 
   try {
     const { body: results } = await internals.client7.search(params, cancelId);
@@ -573,9 +571,11 @@ exports.search = async (index, type, query, options, cb) => {
   }
 };
 
-exports.cancelByOpaqueId = async (cancelId) => {
+Db.cancelByOpaqueId = async (cancelId, cluster) => {
   const { body: results } = await internals.client7.tasks.list({
-    detailed: false, group_by: 'parents'
+    detailed: false,
+    group_by: 'parents',
+    cluster
   });
 
   let found = false;
@@ -587,7 +587,7 @@ exports.cancelByOpaqueId = async (cancelId) => {
       result.headers['X-Opaque-Id'] === cancelId) {
       found = true;
       // don't need to wait for task to cancel, just break out and return
-      internals.client7.tasks.cancel({ taskId: resultKey });
+      internals.client7.tasks.cancel({ taskId: resultKey, cluster });
       break;
     }
   }
@@ -599,16 +599,16 @@ exports.cancelByOpaqueId = async (cancelId) => {
   return 'OpenSearch/Elasticsearch task cancelled succesfully';
 };
 
-exports.searchScroll = function (index, type, query, options, cb) {
+Db.searchScroll = function (index, type, query, options, cb) {
   // external scrolling, or multiesES or lesseq 10000, do a normal search which does its own Promise conversion
   if (query.scroll !== undefined || internals.multiES || (query.size ?? 0) + (parseInt(query.from ?? 0, 10)) <= 10000) {
-    return exports.search(index, type, query, options, cb);
+    return Db.search(index, type, query, options, cb);
   }
 
   // Convert promise to cb by calling ourselves
   if (!cb) {
     return new Promise((resolve, reject) => {
-      exports.searchScroll(index, query, type, options, (err, data) => {
+      Db.searchScroll(index, query, type, options, (err, data) => {
         if (err) {
           reject(err);
         } else {
@@ -627,17 +627,17 @@ exports.searchScroll = function (index, type, query, options, cb) {
 
   let totalResults;
   const params = { scroll: '2m' };
-  exports.merge(params, options);
+  Db.merge(params, options);
   query.size = 1000; // Get 1000 items per scroll call
   query.profile = internals.esProfile;
-  exports.search(index, type, query, params,
+  Db.search(index, type, query, params,
     async function getMoreUntilDone (error, response) {
       if (error) {
         if (totalResults && from > 0) {
           totalResults.hits.hits = totalResults.hits.hits.slice(from);
         }
         if (response && response._scroll_id) {
-          exports.clearScroll({ body: { scroll_id: response._scroll_id } });
+          Db.clearScroll({ body: { scroll_id: response._scroll_id } });
         }
         return cb(error, totalResults);
       }
@@ -650,7 +650,7 @@ exports.searchScroll = function (index, type, query, options, cb) {
 
       if (totalResults.hits.total > 0 && totalResults.hits.hits.length < Math.min(response.hits.total, querySize)) {
         try {
-          const { body: results } = await exports.scroll({
+          const { body: results } = await Db.scroll({
             scroll: '2m', body: { scroll_id: response._scroll_id }
           });
           getMoreUntilDone(null, results);
@@ -663,17 +663,17 @@ exports.searchScroll = function (index, type, query, options, cb) {
           totalResults.hits.hits = totalResults.hits.hits.slice(from);
         }
         if (response._scroll_id) {
-          exports.clearScroll({ body: { scroll_id: response._scroll_id } });
+          Db.clearScroll({ body: { scroll_id: response._scroll_id } });
         }
         return cb(null, totalResults);
       }
     });
 };
 
-exports.searchSessions = function (index, query, options, cb) {
+Db.searchSessions = function (index, query, options, cb) {
   if (cb === undefined) {
     return new Promise((resolve, reject) => {
-      exports.searchSessions(index, query, options, (err, result) => {
+      Db.searchSessions(index, query, options, (err, result) => {
         err ? reject(err) : resolve(result);
       });
     });
@@ -683,9 +683,9 @@ exports.searchSessions = function (index, query, options, cb) {
   const unflatten = options.arkime_unflatten ?? true;
   const params = { preference: 'primaries', ignore_unavailable: 'true' };
   if (internals.maxConcurrentShardRequests) { params.maxConcurrentShardRequests = internals.maxConcurrentShardRequests; }
-  exports.merge(params, options);
+  Db.merge(params, options);
   delete params.arkime_unflatten;
-  exports.searchScroll(index, 'session', query, params, (err, result) => {
+  Db.searchScroll(index, 'session', query, params, (err, result) => {
     if (err || result.hits.hits.length === 0) { return cb(err, result); }
 
     for (let i = 0; i < result.hits.hits.length; i++) {
@@ -695,7 +695,7 @@ exports.searchSessions = function (index, query, options, cb) {
   });
 };
 
-exports.msearchSessions = async (index, queries, options) => {
+Db.msearchSessions = async (index, queries, options) => {
   const body = [];
 
   for (let i = 0, ilen = queries.length; i < ilen; i++) {
@@ -714,71 +714,71 @@ exports.msearchSessions = async (index, queries, options) => {
   return internals.client7.msearch(params, cancelId);
 };
 
-exports.scroll = async (params) => {
+Db.scroll = async (params) => {
   params.rest_total_hits_as_int = true;
   return internals.client7.scroll(params);
 };
 
-exports.clearScroll = async (params) => {
+Db.clearScroll = async (params) => {
   return internals.client7.clearScroll(params);
 };
 
-exports.deleteDocument = async (index, type, id, options) => {
+Db.deleteDocument = async (index, type, id, options) => {
   const params = { index: fixIndex(index), id };
-  exports.merge(params, options);
+  Db.merge(params, options);
   return internals.client7.delete(params);
 };
 
 // This API does not call fixIndex
-exports.deleteIndex = async (index, options) => {
+Db.deleteIndex = async (index, options) => {
   const params = { index };
-  exports.merge(params, options);
+  Db.merge(params, options);
   return internals.client7.indices.delete(params);
 };
 
 // This API does not call fixIndex
-exports.optimizeIndex = async (index, options) => {
+Db.optimizeIndex = async (index, options) => {
   const params = { index, maxNumSegments: 1 };
-  exports.merge(params, options);
+  Db.merge(params, options);
   return internals.client7.indices.forcemerge(params);
 };
 
 // This API does not call fixIndex
-exports.closeIndex = async (index, options) => {
+Db.closeIndex = async (index, options) => {
   const params = { index };
-  exports.merge(params, options);
+  Db.merge(params, options);
   return internals.client7.indices.close(params);
 };
 
 // This API does not call fixIndex
-exports.openIndex = async (index, options) => {
+Db.openIndex = async (index, options) => {
   const params = { index };
-  exports.merge(params, options);
+  Db.merge(params, options);
   return internals.client7.indices.open(params);
 };
 
 // This API does not call fixIndex
-exports.shrinkIndex = async (index, options) => {
+Db.shrinkIndex = async (index, options) => {
   const params = { index, target: `${index}-shrink` };
-  exports.merge(params, options);
+  Db.merge(params, options);
   return internals.client7.indices.shrink(params);
 };
 
-exports.indexStats = async (index) => {
+Db.indexStats = async (index) => {
   return internals.client7.indices.stats({ index: fixIndex(index) });
 };
 
-exports.getAliases = async (index) => {
+Db.getAliases = async (index) => {
   return internals.client7.indices.getAlias({ index: fixIndex(index) });
 };
 
-exports.getAliasesCache = async (index) => {
+Db.getAliasesCache = async (index) => {
   if (internals.aliasesCache && internals.aliasesCacheTimeStamp > Date.now() - 5000) {
     return internals.aliasesCache;
   }
 
   try {
-    const { body: aliases } = await exports.getAliases(index);
+    const { body: aliases } = await Db.getAliases(index);
     internals.aliasesCacheTimeStamp = Date.now();
     internals.aliasesCache = aliases;
     return aliases;
@@ -787,27 +787,32 @@ exports.getAliasesCache = async (index) => {
   }
 };
 
-exports.health = async () => {
-  const { body: data } = await internals.client7.info();
-  const { body: result } = await internals.client7.cluster.health();
+Db.health = async (cluster) => {
+  const { body: data } = await internals.client7.info({ cluster });
+  const { body: result } = await internals.client7.cluster.health({ cluster });
   result.version = data.version.number;
   return result;
 };
 
-exports.indices = async (index) => {
+Db.indices = async (index, cluster) => {
   return internals.client7.cat.indices({
     format: 'json',
-    index: fixIndex(index),
+    index,
     bytes: 'b',
-    h: 'health,status,index,uuid,pri,rep,docs.count,store.size,cd,segmentsCount,pri.search.query_current,memoryTotal'
+    h: 'health,status,index,uuid,pri,rep,docs.count,store.size,cd,segmentsCount,pri.search.query_current,memoryTotal',
+    cluster
   });
 };
 
-exports.indicesSettings = async (index) => {
-  return internals.client7.indices.getSettings({ flatSettings: true, index: fixIndex(index) });
+Db.indicesSettings = async (index, cluster) => {
+  return internals.client7.indices.getSettings({
+    flatSettings: true,
+    index: fixIndex(index),
+    cluster
+  });
 };
 
-exports.setIndexSettings = async (index, options) => {
+Db.setIndexSettings = async (index, options) => {
   // Users might be on a different cluster
   if ((index === '*' || index.includes('users')) && internals.info.usersHost) {
     try {
@@ -815,7 +820,8 @@ exports.setIndexSettings = async (index, options) => {
         index,
         body: options.body,
         timeout: '10m',
-        masterTimeout: '10m'
+        masterTimeout: '10m',
+        cluster: options.cluster
       });
     } catch (err) {
     }
@@ -826,71 +832,74 @@ exports.setIndexSettings = async (index, options) => {
       index,
       body: options.body,
       timeout: '10m',
-      masterTimeout: '10m'
+      masterTimeout: '10m',
+      cluster: options.cluster
     });
     return response;
   } catch (err) {
-    internals.healthCache = {};
+    cache.reset();
     throw err;
   }
 };
 
-exports.clearCache = async () => {
+Db.clearCache = async () => {
   return internals.client7.indices.clearCache({});
 };
 
-exports.shards = async () => {
+Db.shards = async (options) => {
   return internals.client7.cat.shards({
     format: 'json',
     bytes: 'b',
-    h: 'index,shard,prirep,state,docs,store,ip,node,ur,uf,fm,sm'
+    h: 'index,shard,prirep,state,docs,store,ip,node,ur,uf,fm,sm',
+    cluster: options?.cluster
   });
 };
 
-exports.allocation = async () => {
-  return internals.client7.cat.allocation({ format: 'json', bytes: 'b' });
+Db.allocation = async (cluster) => {
+  return internals.client7.cat.allocation({ format: 'json', bytes: 'b', cluster });
 };
 
-exports.recovery = async (sortField, activeOnly) => {
+Db.recovery = async (sortField, activeOnly, cluster) => {
   return internals.client7.cat.recovery({
     format: 'json',
     bytes: 'b',
     s: sortField,
-    active_only: activeOnly
+    active_only: activeOnly,
+    cluster
   });
 };
 
-exports.master = async () => {
-  return internals.client7.cat.master({ format: 'json' });
+Db.master = async (cluster) => {
+  return internals.client7.cat.master({ format: 'json', cluster });
 };
 
-exports.getClusterSettings = async (options) => {
+Db.getClusterSettings = async (options) => {
   return internals.client7.cluster.getSettings(options);
 };
 
-exports.putClusterSettings = async (options) => {
+Db.putClusterSettings = async (options) => {
   options.timeout = '10m';
   options.masterTimeout = '10m';
   return internals.client7.cluster.putSettings(options);
 };
 
-exports.tasks = async () => {
-  return internals.client7.tasks.list({ detailed: true, group_by: 'parents' });
+Db.tasks = async (options) => {
+  return internals.client7.tasks.list({ detailed: true, group_by: 'parents', cluster: options.cluster });
 };
 
-exports.taskCancel = async (taskId) => {
-  return internals.client7.tasks.cancel(taskId ? { taskId } : {});
+Db.taskCancel = async (taskId, cluster) => {
+  return internals.client7.tasks.cancel({ taskId, cluster });
 };
 
-exports.nodesStats = async (options) => {
+Db.nodesStats = async (options) => {
   return internals.client7.nodes.stats(options);
 };
 
-exports.nodesInfo = async (options) => {
+Db.nodesInfo = async (options) => {
   return internals.client7.nodes.info(options);
 };
 
-exports.update = async (index, type, id, doc, options) => {
+Db.update = async (index, type, id, doc, options) => {
   const params = {
     id,
     body: doc,
@@ -898,11 +907,11 @@ exports.update = async (index, type, id, doc, options) => {
     retry_on_conflict: 3,
     index: fixIndex(index)
   };
-  exports.merge(params, options);
+  Db.merge(params, options);
   return internals.client7.update(params);
 };
 
-exports.updateSession = async (index, id, doc, cb) => {
+Db.updateSession = async (index, id, doc, cb) => {
   const params = {
     retry_on_conflict: 3,
     index: fixIndex(index),
@@ -917,7 +926,7 @@ exports.updateSession = async (index, id, doc, cb) => {
   } catch (err) {
     if (err.statusCode !== 403) { return cb(err, {}); }
     try { // try clearing the index.blocks.write if we got a forbidden response
-      exports.setIndexSettings(fixIndex(index), { body: { 'index.blocks.write': null } });
+      Db.setIndexSettings(fixIndex(index), { body: { 'index.blocks.write': null } });
       const { body: retryData } = await internals.client7.update(params);
       return cb(null, retryData);
     } catch (err) {
@@ -926,12 +935,12 @@ exports.updateSession = async (index, id, doc, cb) => {
   }
 };
 
-exports.close = async () => {
+Db.close = async () => {
   User.close();
   return internals.client7.close();
 };
 
-exports.reroute = async () => {
+Db.reroute = async () => {
   return internals.client7.cluster.reroute({
     timeout: '10m',
     masterTimeout: '10m',
@@ -939,7 +948,7 @@ exports.reroute = async () => {
   });
 };
 
-exports.flush = async (index) => {
+Db.flush = async (index) => {
   if (index === 'users') {
     return User.flush();
   } else if (index === 'lookups') {
@@ -949,7 +958,7 @@ exports.flush = async (index) => {
   }
 };
 
-exports.refresh = async (index) => {
+Db.refresh = async (index) => {
   if (index === 'users') {
     User.flush();
   } else if (index === 'lookups') {
@@ -959,7 +968,7 @@ exports.refresh = async (index) => {
   }
 };
 
-exports.addTagsToSession = function (index, id, tags, cluster, cb) {
+Db.addTagsToSession = function (index, id, tags, cluster, cb) {
   const script = `
     if (ctx._source.tags != null) {
       for (int i = 0; i < params.tags.length; i++) {
@@ -986,10 +995,10 @@ exports.addTagsToSession = function (index, id, tags, cluster, cb) {
 
   if (cluster) { body.cluster = cluster; }
 
-  exports.updateSession(index, id, body, cb);
+  Db.updateSession(index, id, body, cb);
 };
 
-exports.removeTagsFromSession = function (index, id, tags, cluster, cb) {
+Db.removeTagsFromSession = function (index, id, tags, cluster, cb) {
   const script = `
     if (ctx._source.tags != null) {
       for (int i = 0; i < params.tags.length; i++) {
@@ -1016,10 +1025,10 @@ exports.removeTagsFromSession = function (index, id, tags, cluster, cb) {
 
   if (cluster) { body.cluster = cluster; }
 
-  exports.updateSession(index, id, body, cb);
+  Db.updateSession(index, id, body, cb);
 };
 
-exports.addHuntToSession = function (index, id, huntId, huntName, cb) {
+Db.addHuntToSession = function (index, id, huntId, huntName, cb) {
   const script = `
     if (ctx._source.huntId != null) {
       ctx._source.huntId.add(params.huntId);
@@ -1044,10 +1053,10 @@ exports.addHuntToSession = function (index, id, huntId, huntName, cb) {
     }
   };
 
-  exports.updateSession(index, id, body, cb);
+  Db.updateSession(index, id, body, cb);
 };
 
-exports.removeHuntFromSession = function (index, id, huntId, huntName, cb) {
+Db.removeHuntFromSession = function (index, id, huntId, huntName, cb) {
   const script = `
     if (ctx._source.huntId != null) {
       int index = ctx._source.huntId.indexOf(params.huntId);
@@ -1070,21 +1079,21 @@ exports.removeHuntFromSession = function (index, id, huntId, huntName, cb) {
     }
   };
 
-  exports.updateSession(index, id, body, cb);
+  Db.updateSession(index, id, body, cb);
 };
 
 /// ///////////////////////////////////////////////////////////////////////////////
 /// / High level functions
 /// ///////////////////////////////////////////////////////////////////////////////
-exports.flushCache = function () {
+Db.flushCache = function () {
   internals.fileId2File = {};
   internals.fileName2File = {};
   internals.molochNodeStatsCache = {};
-  internals.healthCache = {};
   User.flushCache();
   internals.shortcutsCache = {};
   delete internals.aliasesCache;
-  exports.getAliasesCache();
+  Db.getAliasesCache();
+  cache.reset();
 };
 
 function twoDigitString (value) {
@@ -1092,69 +1101,63 @@ function twoDigitString (value) {
 }
 
 // History DB interactions
-exports.historyIt = async function (doc) {
+Db.historyIt = async function (doc) {
   const d = new Date(Date.now());
   const jan = new Date(d.getUTCFullYear(), 0, 0);
   const iname = internals.prefix + 'history_v1-' +
     twoDigitString(d.getUTCFullYear() % 100) + 'w' +
     twoDigitString(Math.floor((d - jan) / 604800000));
 
-  if (internals?.healthCache?.molochDbVersion < 72) {
-    delete doc.esQuery;
-    delete doc.esQueryIndices;
-  }
   return internals.client7.index({
     index: iname, body: doc, refresh: true, timeout: '10m'
   });
 };
-exports.searchHistory = async (query) => {
+Db.searchHistory = async (query) => {
   return internals.client7.search({
     index: internals.prefix === 'arkime_' ? 'history_v1-*,arkime_history_v1-*' : fixIndex('history_v1-*'),
     body: query,
     rest_total_hits_as_int: true
   });
 };
-exports.countHistory = async () => {
+Db.countHistory = async (cluster) => {
   return internals.client7.count({
     index: internals.prefix === 'arkime_' ? 'history_v1-*,arkime_history_v1-*' : fixIndex('history_v1-*'),
-    ignoreUnavailable: true
+    ignoreUnavailable: true,
+    cluster
   });
 };
-exports.deleteHistory = async (id, index) => {
+Db.deleteHistory = async (id, index, cluster) => {
   return internals.client7.delete({
-    index, id, refresh: true
+    index, id, refresh: true, cluster
   });
 };
 
 // Hunt DB interactions
-exports.createHunt = async (doc) => {
-  if (internals?.healthCache?.molochDbVersion < 72) {
-    delete doc.description;
-  }
+Db.createHunt = async (doc) => {
   return internals.client7.index({
     index: fixIndex('hunts'), body: doc, refresh: 'wait_for', timeout: '10m'
   });
 };
-exports.searchHunt = async (query) => {
+Db.searchHunt = async (query) => {
   return internals.client7.search({
     index: fixIndex('hunts'), body: query, rest_total_hits_as_int: true
   });
 };
-exports.countHunts = async () => {
+Db.countHunts = async () => {
   return internals.client7.count({ index: fixIndex('hunts') });
 };
-exports.deleteHunt = async (id) => {
+Db.deleteHunt = async (id) => {
   return internals.client7.delete({
     index: fixIndex('hunts'), id, refresh: true
   });
 };
-exports.setHunt = async (id, doc) => {
-  await exports.refresh('sessions*');
+Db.setHunt = async (id, doc) => {
+  await Db.refresh('sessions*');
   return internals.client7.index({
     index: fixIndex('hunts'), body: doc, id, refresh: true, timeout: '10m'
   });
 };
-exports.updateHunt = async (id, doc) => {
+Db.updateHunt = async (id, doc) => {
   const params = {
     refresh: true,
     retry_on_conflict: 3,
@@ -1166,7 +1169,7 @@ exports.updateHunt = async (id, doc) => {
 
   return internals.client7.update(params);
 };
-exports.getHunt = async (id) => {
+Db.getHunt = async (id) => {
   return internals.client7.get({ index: fixIndex('hunts'), id });
 };
 
@@ -1192,7 +1195,7 @@ async function setShortcutsVersion () {
 // updates the shortcuts in the local db if they are out of sync with the remote db (remote db = user's es)
 // if there's a users es set, then the shortcuts are saved in the remote db
 // so they need to be periodically updated in the local db for searching by shortcuts to work
-exports.updateLocalShortcuts = async () => {
+Db.updateLocalShortcuts = async () => {
   if (!internals.info.usersHost ||
      !internals.info.isPrimaryViewer || // If no isPrimaryViewer then we aren't actually viewer, dont do this
     !internals.info.isPrimaryViewer() ||
@@ -1216,7 +1219,7 @@ exports.updateLocalShortcuts = async () => {
     internals.shortcutsCache = {}; // Clear cache when updating
     // fetch shortcuts from remote and local indexes
     const [{ body: remoteResults }, { body: localResults }] = await Promise.all([
-      exports.searchShortcuts({ size: 10000 }), exports.searchShortcutsLocal({ size: 10000 })
+      Db.searchShortcuts({ size: 10000 }), Db.searchShortcutsLocal({ size: 10000 })
     ]);
 
     // compare the local shortcuts to the remote shortcuts to determine
@@ -1286,52 +1289,52 @@ exports.updateLocalShortcuts = async () => {
     console.log(`ERROR - ${msg}:`, err);
   }
 };
-exports.searchShortcuts = async (query) => {
+Db.searchShortcuts = async (query) => {
   return internals.usersClient7.search({
     index: internals.remoteShortcutsIndex, body: query, rest_total_hits_as_int: true, version: true
   });
 };
-exports.searchShortcutsLocal = async (query) => {
+Db.searchShortcutsLocal = async (query) => {
   return internals.client7.search({
     index: internals.localShortcutsIndex, body: query, rest_total_hits_as_int: true, version: true
   });
 };
-exports.numberOfShortcuts = async (query) => {
+Db.numberOfShortcuts = async (query) => {
   return internals.usersClient7.count({
     index: internals.remoteShortcutsIndex, body: query
   });
 };
-exports.createShortcut = async (doc) => {
+Db.createShortcut = async (doc) => {
   internals.shortcutsCache = {};
   await setShortcutsVersion();
   const response = await internals.usersClient7.index({
     index: internals.remoteShortcutsIndex, body: doc, refresh: 'wait_for', timeout: '10m'
   });
-  exports.updateLocalShortcuts();
+  Db.updateLocalShortcuts();
   return response;
 };
-exports.deleteShortcut = async (id) => {
+Db.deleteShortcut = async (id) => {
   internals.shortcutsCache = {};
   await setShortcutsVersion();
   const response = await internals.usersClient7.delete({
     index: internals.remoteShortcutsIndex, id, refresh: true
   });
-  exports.updateLocalShortcuts();
+  Db.updateLocalShortcuts();
   return response;
 };
-exports.setShortcut = async (id, doc) => {
+Db.setShortcut = async (id, doc) => {
   internals.shortcutsCache = {};
   await setShortcutsVersion();
   const response = await internals.usersClient7.index({
     index: internals.remoteShortcutsIndex, body: doc, id, refresh: true, timeout: '10m'
   });
-  exports.updateLocalShortcuts();
+  Db.updateLocalShortcuts();
   return response;
 };
-exports.getShortcut = async (id) => {
+Db.getShortcut = async (id) => {
   return internals.usersClient7.get({ index: internals.remoteShortcutsIndex, id });
 };
-exports.getShortcutsCache = async (user) => {
+Db.getShortcutsCache = async (user) => {
   if (internals.shortcutsCache[user.userId] && internals.shortcutsCache._timeStamp > Date.now() - 30000) {
     return internals.shortcutsCache[user.userId];
   }
@@ -1352,7 +1355,7 @@ exports.getShortcutsCache = async (user) => {
     size: 10000
   };
 
-  const { body: { hits: shortcuts } } = await exports.searchShortcutsLocal(query);
+  const { body: { hits: shortcuts } } = await Db.searchShortcutsLocal(query);
 
   const shortcutsMap = {};
   for (const shortcut of shortcuts.hits) {
@@ -1366,38 +1369,38 @@ exports.getShortcutsCache = async (user) => {
   return shortcutsMap;
 };
 
-exports.searchViews = async (query) => {
+Db.searchViews = async (query) => {
   return internals.usersClient7.search({
     index: `${internals.usersPrefix}views`, body: query, rest_total_hits_as_int: true, version: true
   });
 };
-exports.numberOfViews = async (query) => {
+Db.numberOfViews = async (query) => {
   return internals.usersClient7.count({
     index: `${internals.usersPrefix}views`, body: query
   });
 };
-exports.createView = async (doc) => {
+Db.createView = async (doc) => {
   return await internals.usersClient7.index({
     index: `${internals.usersPrefix}views`, body: doc, refresh: 'wait_for', timeout: '10m'
   });
 };
-exports.deleteView = async (id) => {
+Db.deleteView = async (id) => {
   return await internals.usersClient7.delete({
     index: `${internals.usersPrefix}views`, id, refresh: true
   });
 };
-exports.setView = async (id, doc) => {
+Db.setView = async (id, doc) => {
   return await internals.usersClient7.index({
     index: `${internals.usersPrefix}views`, body: doc, id, refresh: true, timeout: '10m'
   });
 };
-exports.getView = async (id) => {
+Db.getView = async (id) => {
   return internals.usersClient7.get({ index: `${internals.usersPrefix}views`, id });
 };
 
-exports.molochNodeStats = async (nodeName, cb) => {
+Db.molochNodeStats = async (nodeName, cb) => {
   try {
-    const { body: stat } = await exports.get('stats', 'stat', nodeName);
+    const { body: stat } = await Db.get('stats', 'stat', nodeName);
 
     internals.molochNodeStatsCache[nodeName] = stat._source;
     internals.molochNodeStatsCache[nodeName]._timeStamp = Date.now();
@@ -1411,118 +1414,106 @@ exports.molochNodeStats = async (nodeName, cb) => {
   }
 };
 
-exports.molochNodeStatsCache = function (nodeName, cb) {
+Db.molochNodeStatsCache = function (nodeName, cb) {
   if (internals.molochNodeStatsCache[nodeName] && internals.molochNodeStatsCache[nodeName]._timeStamp > Date.now() - 30000) {
     return cb(null, internals.molochNodeStatsCache[nodeName]);
   }
 
-  return exports.molochNodeStats(nodeName, cb);
+  return Db.molochNodeStats(nodeName, cb);
 };
 
-exports.healthCache = async () => {
-  if (internals.healthCache._timeStamp !== undefined && internals.healthCache._timeStamp > Date.now() - 10000) {
-    return internals.healthCache;
+Db.healthCache = async (cluster) => {
+  const key = `health-${cluster}`;
+  const value = cache.get(key);
+
+  if (value !== undefined) {
+    return value;
   }
 
-  try {
-    const health = await exports.health();
-    try {
-      const { body: doc } = await internals.client7.indices.getTemplate({
-        name: fixIndex('sessions3_template'), filter_path: '**._meta'
-      });
-      health.molochDbVersion = doc[fixIndex('sessions3_template')].mappings._meta.molochDbVersion;
-      internals.healthCache = health;
-      internals.healthCache._timeStamp = Date.now();
-      return health;
-    } catch (err) {
-      return health;
-    }
-  } catch (err) {
-    // Even if an error, if we have a cache use it
-    if (internals.healthCache._timeStamp !== undefined) {
-      return internals.healthCache;
-    }
-    throw err;
-  }
-};
-
-exports.nodesInfoCache = async () => {
-  if (internals.nodesInfoCache._timeStamp !== undefined && internals.nodesInfoCache._timeStamp > Date.now() - 30000) {
-    return internals.nodesInfoCache;
-  }
-
-  const { body: data } = await exports.nodesInfo();
-  internals.nodesInfoCache = data;
-  internals.nodesInfoCache._timeStamp = Date.now();
-  return data;
-};
-
-exports.masterCache = async () => {
-  if (internals.masterCache._timeStamp !== undefined && internals.masterCache._timeStamp > Date.now() - 60000) {
-    return internals.masterCache;
-  }
-
-  const { body: data } = await exports.master();
-  internals.masterCache = data;
-  internals.masterCache._timeStamp = Date.now();
-  return data;
-};
-
-exports.nodesStatsCache = async () => {
-  if (internals.nodesStatsCache._timeStamp !== undefined && internals.nodesStatsCache._timeStamp > Date.now() - 2500) {
-    return internals.nodesStatsCache;
-  }
-
-  const { body: data } = await exports.nodesStats({
-    metric: 'jvm,process,fs,os,indices,thread_pool'
+  const health = await Db.health(cluster);
+  const { body: doc } = await internals.client7.indices.getTemplate({
+    name: fixIndex('sessions3_template'),
+    filter_path: '**._meta',
+    cluster
   });
-  internals.nodesStatsCache = data;
-  internals.nodesStatsCache._timeStamp = Date.now();
+  if (cluster === undefined) {
+    health.molochDbVersion = doc[fixIndex('sessions3_template')].mappings._meta.molochDbVersion;
+  }
+  cache.set(key, health);
+  return health;
+};
+
+Db.nodesInfoCache = async (cluster) => {
+  const key = `nodesInfoCache-${cluster}`;
+  const value = cache.get(key);
+
+  if (value !== undefined) {
+    return value;
+  }
+
+  const { body: data } = await Db.nodesInfo({ cluster });
+  cache.set(key, data);
   return data;
 };
 
-exports.indicesCache = async () => {
-  if (internals.indicesCache._timeStamp !== undefined &&
-    internals.indicesCache._timeStamp > Date.now() - 10000) {
-    return internals.indicesCache;
+Db.masterCache = async (cluster) => {
+  const key = `master-${cluster}`;
+  const value = cache.get(key);
+
+  if (value !== undefined) {
+    return value;
   }
 
-  try {
-    const { body: indices } = await exports.indices();
-    internals.indicesCache = indices;
-    internals.indicesCache._timeStamp = Date.now();
-    return indices;
-  } catch (err) {
-    // Even if an error, if we have a cache use it
-    if (internals.indicesCache._timeStamp !== undefined) {
-      return internals.indicesCache;
-    }
-    throw err;
-  }
+  const { body: data } = await Db.master();
+  cache.set(key, data);
+  return data;
 };
 
-exports.indicesSettingsCache = async () => {
-  if (internals.indicesSettingsCache._timeStamp !== undefined &&
-    internals.indicesSettingsCache._timeStamp > Date.now() - 10000) {
-    return internals.indicesSettingsCache;
+Db.nodesStatsCache = async (cluster) => {
+  const key = `nodesStats-${cluster}`;
+  const value = cache.get(key);
+
+  if (value !== undefined) {
+    return value;
   }
 
-  try {
-    const { body: indicesSettings } = await exports.indicesSettings('_all');
-    internals.indicesSettingsCache = indicesSettings;
-    internals.indicesSettingsCache._timeStamp = Date.now();
-    return indicesSettings;
-  } catch (err) {
-    if (internals.indicesSettingsCache._timeStamp !== undefined) {
-      return internals.indicesSettingsCache;
-    }
-    throw err;
-  }
+  const { body: data } = await Db.nodesStats({
+    metric: 'jvm,process,fs,os,indices,thread_pool',
+    cluster
+  });
+  cache.set(key, data);
+  return data;
 };
 
-exports.hostnameToNodeids = function (hostname, cb) {
+Db.indicesCache = async (cluster) => {
+  const key = `indices-${cluster}`;
+  const value = cache.get(key);
+
+  if (value !== undefined) {
+    return value;
+  }
+
+  const { body: indices } = await Db.indices('_all', cluster);
+  cache.set(key, indices);
+  return indices;
+};
+
+Db.indicesSettingsCache = async (cluster) => {
+  const key = `indicesSettings-${cluster}`;
+  const value = cache.get(key);
+
+  if (value !== undefined) {
+    return value;
+  }
+
+  const { body: indicesSettings } = await Db.indicesSettings('_all', cluster);
+  cache.set(key, indicesSettings);
+  return indicesSettings;
+};
+
+Db.hostnameToNodeids = function (hostname, cb) {
   const query = { query: { match: { hostname } } };
-  exports.search('stats', 'stat', query, (err, sdata) => {
+  Db.search('stats', 'stat', query, (err, sdata) => {
     const nodes = [];
     if (sdata && sdata.hits && sdata.hits.hits) {
       for (let i = 0, ilen = sdata.hits.hits.length; i < ilen; i++) {
@@ -1533,7 +1524,7 @@ exports.hostnameToNodeids = function (hostname, cb) {
   });
 };
 
-exports.fileIdToFile = async (node, num, cb) => {
+Db.fileIdToFile = async (node, num, cb) => {
   const key = node + '!' + num;
   const info = internals.fileId2File[key];
   if (info !== undefined) {
@@ -1545,7 +1536,7 @@ exports.fileIdToFile = async (node, num, cb) => {
 
   let file = null;
   try {
-    const { body: fresult } = await exports.get('files', 'file', node + '-' + num);
+    const { body: fresult } = await Db.get('files', 'file', node + '-' + num);
     file = fresult._source;
     internals.fileId2File[key] = file;
     internals.fileName2File[file.name] = file;
@@ -1555,7 +1546,7 @@ exports.fileIdToFile = async (node, num, cb) => {
   return cb ? cb(file) : file;
 };
 
-exports.fileNameToFiles = function (fileName, cb) {
+Db.fileNameToFiles = function (fileName, cb) {
   let query;
   if (fileName[0] === '/' && fileName[fileName.length - 1] === '/') {
     query = { query: { regexp: { name: fileName.substring(1, fileName.length - 1) } }, sort: [{ num: { order: 'desc' } }] };
@@ -1571,7 +1562,7 @@ exports.fileNameToFiles = function (fileName, cb) {
     query = { size: 100, query: { term: { name: fileName } }, sort: [{ num: { order: 'desc' } }] };
   }
 
-  exports.search('files', 'file', query, (err, data) => {
+  Db.search('files', 'file', query, (err, data) => {
     const files = [];
     if (err || !data.hits) {
       return cb(null);
@@ -1587,16 +1578,16 @@ exports.fileNameToFiles = function (fileName, cb) {
   });
 };
 
-exports.getSequenceNumber = async (sName) => {
-  const { body: sinfo } = await exports.index('sequence', 'sequence', sName, {});
+Db.getSequenceNumber = async (sName) => {
+  const { body: sinfo } = await Db.index('sequence', 'sequence', sName, {});
   return sinfo._version;
 };
 
-exports.numberOfDocuments = async (index, options) => {
+Db.numberOfDocuments = async (index, options) => {
   // count interface is slow for larget data sets, don't use for sessions unless multiES
   if (index !== 'sessions2-*' || internals.multiES) {
     const params = { index: fixIndex(index), ignoreUnavailable: true };
-    exports.merge(params, options);
+    Db.merge(params, options);
     const { body: total } = await internals.client7.count(params);
     return { count: total.count };
   }
@@ -1604,7 +1595,7 @@ exports.numberOfDocuments = async (index, options) => {
   let count = 0;
   const str = `${internals.prefix}sessions2-`;
 
-  const indices = await exports.indicesCache();
+  const indices = await Db.indicesCache(options.cluster);
 
   for (let i = 0; i < indices.length; i++) {
     if (indices[i].index.includes(str)) {
@@ -1615,7 +1606,7 @@ exports.numberOfDocuments = async (index, options) => {
   return { count };
 };
 
-exports.checkVersion = async function (minVersion) {
+Db.checkVersion = async function (minVersion) {
   const match = process.versions.node.match(/^(\d+)\.(\d+)\.(\d+)/);
   const nodeVersion = parseInt(match[1], 10) * 10000 + parseInt(match[2], 10) * 100 + parseInt(match[3], 10);
   if (nodeVersion < 160000) {
@@ -1628,7 +1619,7 @@ exports.checkVersion = async function (minVersion) {
 
   ['stats', 'dstats', 'sequence', 'files'].forEach(async (index) => {
     try {
-      await exports.indexStats(index);
+      await Db.indexStats(index);
     } catch (err) {
       console.log(`ERROR - Issue with '${fixIndex(index)}' index, make sure 'db/db.pl <host:port> init' has been run.\n`, err);
       process.exit(1);
@@ -1638,7 +1629,7 @@ exports.checkVersion = async function (minVersion) {
   ArkimeUtil.checkArkimeSchemaVersion(internals.client7, internals.prefix, minVersion);
 };
 
-exports.isLocalView = function (node, yesCB, noCB) {
+Db.isLocalView = function (node, yesCB, noCB) {
   if (node === internals.nodeName) {
     if (internals.debug > 1) {
       console.log(`DEBUG: node:${node} is local view because equals ${internals.nodeName}`);
@@ -1646,7 +1637,7 @@ exports.isLocalView = function (node, yesCB, noCB) {
     return yesCB();
   }
 
-  exports.molochNodeStatsCache(node, (err, stat) => {
+  Db.molochNodeStatsCache(node, (err, stat) => {
     if (err || (stat.hostname !== os.hostname() && stat.hostname !== internals.hostName)) {
       if (internals.debug > 1) {
         console.log(`DEBUG: node:${node} is NOT local view because ${stat.hostname} != ${os.hostname()} or --host ${internals.hostName}`);
@@ -1661,14 +1652,14 @@ exports.isLocalView = function (node, yesCB, noCB) {
   });
 };
 
-exports.deleteFile = function (node, id, path, cb) {
+Db.deleteFile = function (node, id, path, cb) {
   fs.unlink(path, () => {
-    exports.deleteDocument('files', 'file', id);
+    Db.deleteDocument('files', 'file', id);
     cb();
   });
 };
 
-exports.session2Sid = function (item) {
+Db.session2Sid = function (item) {
   const ver = item._index.includes('sessions2') ? '2@' : '3@';
   if (item._id.length < 31) {
     // sessions2 didn't have new arkime_ prefix
@@ -1682,7 +1673,7 @@ exports.session2Sid = function (item) {
   return ver + item._id;
 };
 
-exports.sid2Id = function (id) {
+Db.sid2Id = function (id) {
   if (id[1] === '@') {
     id = id.substr(2);
   }
@@ -1695,7 +1686,7 @@ exports.sid2Id = function (id) {
   return id;
 };
 
-exports.sid2Index = function (id, options) {
+Db.sid2Index = function (id, options) {
   const colon = id.indexOf(':');
 
   if (id[1] === '@') {
@@ -1732,13 +1723,13 @@ exports.sid2Index = function (id, options) {
   return results[0];
 };
 
-exports.loadFields = async () => {
-  return exports.search('fields', 'field', { size: 10000 });
+Db.loadFields = async () => {
+  return Db.search('fields', 'field', { size: 10000 });
 };
 
-exports.getIndices = async (startTime, stopTime, bounding, rotateIndex) => {
+Db.getIndices = async (startTime, stopTime, bounding, rotateIndex) => {
   try {
-    const aliases = await exports.getAliasesCache(['sessions2-*', 'sessions3-*']);
+    const aliases = await Db.getAliasesCache(['sessions2-*', 'sessions3-*']);
     const indices = [];
 
     // Guess how long hour indices we find are
@@ -1824,7 +1815,7 @@ exports.getIndices = async (startTime, stopTime, bounding, rotateIndex) => {
   }
 };
 
-exports.getMinValue = async (index, field) => {
+Db.getMinValue = async (index, field) => {
   const params = {
     index: fixIndex(index),
     body: { size: 0, aggs: { min: { min: { field } } } }
@@ -1832,14 +1823,15 @@ exports.getMinValue = async (index, field) => {
   return internals.client7.search(params);
 };
 
-exports.getClusterDetails = async () => {
+Db.getClusterDetails = async () => {
   return internals.client7.get({ index: '_cluster', id: 'details' });
 };
 
-exports.getILMPolicy = async () => {
+Db.getILMPolicy = async (cluster) => {
   try {
     const data = await internals.client7.ilm.getLifecycle({
-      policy: `${internals.prefix}molochsessions,${internals.prefix}molochhistory`
+      policy: `${internals.prefix}molochsessions,${internals.prefix}molochhistory`,
+      cluster
     });
     return data.body;
   } catch {
@@ -1847,7 +1839,7 @@ exports.getILMPolicy = async () => {
   }
 };
 
-exports.setILMPolicy = async (ilmName, policy) => {
+Db.setILMPolicy = async (ilmName, policy) => {
   console.log('name', ilmName, 'policy', policy);
   try {
     const data = await internals.client7.ilm.putLifecycle({
@@ -1860,15 +1852,15 @@ exports.setILMPolicy = async (ilmName, policy) => {
   }
 };
 
-exports.getTemplate = async (templateName) => {
-  return internals.client7.indices.getTemplate({ name: fixIndex(templateName), flat_settings: true });
+Db.getTemplate = async (templateName, cluster) => {
+  return internals.client7.indices.getTemplate({ name: fixIndex(templateName), flat_settings: true, cluster });
 };
 
-exports.putTemplate = async (templateName, body) => {
-  return internals.client7.indices.putTemplate({ name: fixIndex(templateName), body });
+Db.putTemplate = async (templateName, body, cluster) => {
+  return internals.client7.indices.putTemplate({ name: fixIndex(templateName), body, cluster });
 };
 
-exports.setQueriesNode = async (node, force) => {
+Db.setQueriesNode = async (node, force) => {
   const namePid = `node-${process.pid}`;
 
   // force is true we just rewrite the primary-viewer entry everytime
@@ -1928,7 +1920,7 @@ exports.setQueriesNode = async (node, force) => {
   }
 };
 
-exports.getQueriesNode = async () => {
+Db.getQueriesNode = async () => {
   try {
     const { body: doc } = await internals.client7.get({
       id: 'primary-viewer',

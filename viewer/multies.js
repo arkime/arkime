@@ -87,6 +87,8 @@ const favicon = require('serve-favicon');
 const compression = require('compression');
 
 const app = express();
+// app.use ((req, res, next) => {console.log(req.url); next();});
+
 app.enable('jsonp callback');
 app.use(favicon(path.join(__dirname, '/public/favicon.ico')));
 app.use(logger(':date \x1b[1m:method\x1b[0m \x1b[33m:url\x1b[0m :res[content-length] bytes :response-time ms'));
@@ -186,8 +188,10 @@ function makeRequest (url, options, cb) {
     });
     pres.on('end', () => {
       if (result.length) {
-        result = result.replace(new RegExp('(index":\\s*|[,{]|  )"' + options.arkime_prefix + '(sessions3|sessions2|stats|dstats|sequence|files|users|history)', 'g'), '$1"MULTIPREFIX_$2');
-        result = result.replace(new RegExp('(index":\\s*)"' + options.arkime_prefix + '(fields_v[1-4][0-9]?)"', 'g'), '$1"MULTIPREFIX_$2"');
+        if (!options.skipReplace) {
+          result = result.replace(new RegExp('(index":\\s*|[,{]|  )"' + options.arkime_prefix + '(sessions3|sessions2|stats|dstats|sequence|files|users|history)', 'g'), '$1"MULTIPREFIX_$2');
+          result = result.replace(new RegExp('(index":\\s*)"' + options.arkime_prefix + '(fields_v[1-4][0-9]?)"', 'g'), '$1"MULTIPREFIX_$2"');
+        }
         result = JSON.parse(result);
       } else {
         result = {};
@@ -228,7 +232,11 @@ function simpleGather (req, res, bodies, doneCb) {
     const nodeName = node2Name(node);
     let nodeUrl = node2Url(node) + req.url;
 
-    const options = { method: req.method, arkime_opaque: req.headers['x-opaque-id'] };
+    const options = {
+      method: req.method,
+      arkime_opaque: req.headers['x-opaque-id'],
+      skipReplace: req._skipReplace
+    };
     options.arkime_prefix = node2Prefix(node);
     nodeUrl = nodeUrl.replace(/MULTIPREFIX_/g, options.arkime_prefix).replace(/arkime_sessions2/g, 'sessions2');
     const url = new URL(nodeUrl);
@@ -357,10 +365,27 @@ function simpleGatherFirst (req, res) {
   });
 }
 
-app.get('/_tasks', simpleGatherTasks);
-app.post('/_tasks/:taskId/_cancel', simpleGatherFirst);
+function simpleGather1Cluster (req, res) {
+  req._skipReplace = true;
+  if (req.query.cluster === undefined) {
+    console.log('Missing cluster', ArkimeUtil.sanitizeStr(req.url));
+    return res.send({ error: 'Missing cluster' });
+  }
+  if (req.query.cluster.split(',').length !== 1) {
+    console.log('Expecting 1 cluster', ArkimeUtil.sanitizeStr(req.url));
+    return res.send({ error: 'Expecting 1 cluster' });
+  }
 
-app.get('/_cluster/nodes/stats', simpleGatherNodes);
+  simpleGather(req, res, null, (err, results) => {
+    res.send(results[0]);
+  });
+};
+
+app.get('/_tasks', simpleGatherTasks);
+app.post('/_tasks/:taskId/_cancel', simpleGather1Cluster);
+app.post('/_tasks/_cancel', simpleGather1Cluster);
+
+app.get('/_cluster/nodes/stats', simpleGather1Cluster);
 app.get('/_nodes', simpleGatherNodes);
 app.get('/_nodes/stats', simpleGatherNodes);
 app.get('/_nodes/stats/:kinds', simpleGatherNodes);
@@ -369,13 +394,26 @@ app.get('/_cluster/health', simpleGatherAdd);
 app.get('/:index/_aliases', simpleGatherNodes);
 app.get('/:index/_alias', simpleGatherNodes);
 
+app.post('/:index/_close', simpleGather1Cluster);
+app.post('/:index/_open', simpleGather1Cluster);
+app.post('/:index/_forcemerge', simpleGather1Cluster);
+
+app.delete('/:index', simpleGather1Cluster);
+
 app.get('/MULTIPREFIX_sessions*/_refresh', (req, res) => {
   req.url = '/sessions*/_refresh';
   return simpleGatherFirst(req, res);
 });
 
+app.get('/:index/_settings', simpleGatherFirst);
+app.put('/:index/_settings', simpleGather1Cluster);
+
+app.put('/:index1/_shrink/:index2', simpleGather1Cluster);
+
+app.get('/_ilm/policy/*', simpleGather1Cluster);
+
 app.get('/_cluster/:type/details', function (req, res) {
-  const result = { available: [], active: [], inactive: [] };
+  const result = { available: [], active: [], inactive: [], prefix: {} };
   const activeNodes = getActiveNodes();
   for (let i = 0; i < clusterList.length; i++) {
     result.available.push(clusterList[i]);
@@ -384,6 +422,7 @@ app.get('/_cluster/:type/details', function (req, res) {
     } else {
       result.inactive.push(clusterList[i]);
     }
+    result.prefix[clusterList[i]] = node2Prefix(activeNodes[i]);
   }
   res.send(result);
 });
@@ -439,6 +478,7 @@ app.get('/_template/MULTIPREFIX_sessions2_template', (req, res) => {
 });
 
 app.get('/_template/MULTIPREFIX_sessions3_template', (req, res) => {
+  req._skipReplace = req.query.cluster !== undefined;
   simpleGather(req, res, null, (err, results) => {
     // console.log("DEBUG -", JSON.stringify(results, null, 2));
 
@@ -451,6 +491,7 @@ app.get('/_template/MULTIPREFIX_sessions3_template', (req, res) => {
     res.send(obj);
   });
 });
+app.put('/_template/MULTIPREFIX_sessions3_template', simpleGather1Cluster);
 
 app.get(['/users/user/:user', '/users/_doc/:user'], async (req, res) => {
   try {
@@ -528,8 +569,22 @@ app.get('/:index/:type/:id', function (req, res) {
 });
 
 app.get('/_cluster/settings', function (req, res) {
-  res.send({ persistent: {}, transient: {} });
+  let cluster = null;
+  if (req.query.cluster) {
+    cluster = Array.isArray(req.query.cluster) ? req.query.cluster : req.query.cluster.split(',');
+    req.url = req.url.replace(/cluster=[^&]*(&|$)/g, ''); // remove cluster from URL
+    req._skipReplace = true;
+  }
+  if (!cluster || cluster.length > 1) {
+    res.send({ persistent: {}, transient: {} });
+  } else {
+    simpleGather(req, res, null, (err, results) => {
+      res.send(results[0]);
+    });
+  }
 });
+
+app.put('/_cluster/settings', simpleGather1Cluster);
 
 app.head(/^\/$/, function (req, res) {
   res.send('');
@@ -861,7 +916,14 @@ app.post(['/:index/:type/_search', '/:index/_search'], function (req, res) {
     req.arkime_need_to_scroll = true;
   }
   // console.log("DEBUG - INCOMING SEARCH", JSON.stringify(search, null, 2));
-  const activeNodes = getActiveNodes();
+  let cluster = null;
+  if (search.cluster) {
+    req.query.cluster = search.cluster;
+    cluster = Array.isArray(search.cluster) ? search.cluster : search.cluster.split(',');
+    delete search.cluster;
+    req.body = JSON.stringify(search);
+  }
+  const activeNodes = getActiveNodes(cluster);
   async.each(activeNodes, (node, asyncCb) => {
     fixQuery(node, req.body, (err, body) => {
       // console.log("DEBUG - OUTGOING SEARCH", node, JSON.stringify(body, null, 2));
@@ -991,6 +1053,10 @@ app.get(/./, function (req, res) {
 });
 
 app.post(/./, function (req, res) {
+  console.log('UNKNOWN', req.method, req.url, req.body);
+});
+
+app.put(/./, function (req, res) {
   console.log('UNKNOWN', req.method, req.url, req.body);
 });
 

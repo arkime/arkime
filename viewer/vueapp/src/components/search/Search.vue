@@ -200,60 +200,7 @@
         </b-dropdown-item>
       </b-dropdown> <!-- /views dropdown menu -->
 
-      <!-- ES cluster dropdown menu -->
-      <b-dropdown v-if="multiviewer"
-        right
-        size="sm"
-        class="multies-menu-dropdown pull-right ml-1"
-        no-caret
-        toggle-class="rounded"
-        variant="theme-secondary"
-        @show="esVisMenuOpen = true"
-        @hide="esVisMenuOpen = false">
-        <template slot="button-content">
-          <div v-b-tooltip.hover.left :title="esMenuHoverText">
-            <span class="fa fa-database"> </span>
-            <span> {{ selectedCluster.length }} </span>
-          </div>
-        </template>
-        <b-dropdown-header>
-          <input type="text"
-            v-model="esQuery"
-            class="form-control form-control-sm dropdown-typeahead"
-            placeholder="Search for Clusters..."
-          />
-        </b-dropdown-header>
-        <b-dropdown-divider>
-        </b-dropdown-divider>
-         <b-dropdown-item @click.native.capture.stop.prevent="selectAllCluster">
-          <span class="fa fa-list"></span>&nbsp;
-          Select All
-        </b-dropdown-item>
-        <b-dropdown-item @click.native.capture.stop.prevent="clearAllCluster">
-          <span class="fa fa-eraser"></span>&nbsp;
-          Clear All
-        </b-dropdown-item>
-        <b-dropdown-divider>
-        </b-dropdown-divider>
-        <template v-if="esVisMenuOpen">
-          <template v-for="(clusters, group) in filteredClusteres">
-            <b-dropdown-header
-              :key="group"
-              class="group-header">
-              {{ group + ' (' + clusters.length + ')' }}
-            </b-dropdown-header>
-            <template v-for="cluster in clusters">
-              <b-dropdown-item
-                :id="group + cluster + 'item'"
-                :key="group + cluster + 'item'"
-                :class="{'active':isClusterVis(cluster)}"
-                @click.native.capture.stop.prevent="toggleClusterSelection(cluster)">
-                {{ cluster }}
-              </b-dropdown-item>
-            </template>
-          </template>
-        </template>
-      </b-dropdown> <!-- /Es cluster dropdown menu -->
+      <Clusters /> <!-- cluster dropdown menu -->
 
       <!-- search button -->
       <a class="btn btn-sm btn-theme-tertiary pull-right ml-1 search-btn"
@@ -404,6 +351,7 @@ import MolochSendSessions from '../sessions/Send';
 import MolochExportPcap from '../sessions/ExportPcap';
 import MolochExportCsv from '../sessions/ExportCsv';
 import MolochIntersection from '../sessions/Intersection';
+import Clusters from '../utils/Clusters';
 
 export default {
   name: 'MolochSearch',
@@ -417,7 +365,8 @@ export default {
     MolochSendSessions,
     MolochExportPcap,
     MolochExportCsv,
-    MolochIntersection
+    MolochIntersection,
+    Clusters
   },
   props: [
     'openSessions',
@@ -439,8 +388,6 @@ export default {
       actionForm: undefined,
       showApplyButtons: false,
       cluster: {},
-      esVisMenuOpen: false,
-      esQuery: '', // query for ES to toggle visibility
       view: this.$route.query.view,
       message: undefined,
       messageType: undefined,
@@ -475,41 +422,6 @@ export default {
     },
     user: function () {
       return this.$store.state.user;
-    },
-    esMenuHoverText: function () {
-      if (this.selectedCluster.length === 0) {
-        return 'No Selection';
-      } else if (this.selectedCluster.length === 1) {
-        return this.selectedCluster[0];
-      } else {
-        return this.selectedCluster.length + ' out of ' + this.availableCluster.active.length + ' selected';
-      }
-    },
-    availableCluster: {
-      get: function () {
-        return this.$store.state.esCluster.availableCluster;
-      },
-      set: function (newValue) {
-        this.$store.commit('setAvailableCluster', newValue);
-      }
-    },
-    selectedCluster: {
-      get: function () {
-        return this.$store.state.esCluster.selectedCluster || [];
-      },
-      set: function (newValue) {
-        this.$store.commit('setSelectedCluster', newValue);
-      }
-    },
-    filteredClusteres: function () {
-      const filteredGroupedClusters = {};
-      for (const group in this.availableCluster) {
-        filteredGroupedClusters[group] = this.$options.filters.searchCluster(
-          this.esQuery,
-          this.availableCluster[group]
-        );
-      }
-      return filteredGroupedClusters;
     },
     molochClusters: function () {
       return this.$store.state.remoteclusters;
@@ -557,20 +469,6 @@ export default {
     }
   },
   created: function () {
-    if (this.multiviewer) { // set clusters to search if in multiviewer mode
-      const clusters = this.$route.query.cluster ? this.$route.query.cluster.split(',') : [];
-      if (clusters.length === 0) {
-        this.selectedCluster = this.availableCluster.active;
-      } else {
-        this.selectedCluster = [];
-        for (let i = 0; i < clusters.length; i++) {
-          if (this.availableCluster.active.includes(clusters[i])) {
-            this.selectedCluster.push(clusters[i]);
-          }
-        }
-      }
-    }
-
     this.basePath = this.$route.path.split('/')[1];
 
     this.stickyViz = localStorage && localStorage[`${this.basePath}-sticky-viz`] &&
@@ -772,25 +670,6 @@ export default {
         }
       }, 500);
     },
-    /* MultiES functions ------------------------------------------ */
-    isClusterVis: function (cluster) {
-      if (this.availableCluster.active.includes(cluster)) { // found in active cluster list
-        return this.selectedCluster.includes(cluster); // returns True if found in selected cluster list
-      } else { // inactive cluster
-        return false;
-      }
-    },
-    updateRouteQueryForClusters: function (clusters) {
-      const cluster = clusters.length > 0 ? clusters.join(',') : 'none';
-      if (!this.$route.query.cluster || this.$route.query.cluster !== cluster) {
-        this.$router.push({
-          query: {
-            ...this.$route.query,
-            cluster
-          }
-        });
-      }
-    },
     /**
      * If the start/stop time has changed:
      * Applies the date start/stop time url parameters and removes the date url parameter
@@ -849,24 +728,6 @@ export default {
       } else {
         this.$emit('changeSearch');
       }
-    },
-    selectAllCluster: function () {
-      this.selectedCluster = this.availableCluster.active;
-      this.updateRouteQueryForClusters(this.selectedCluster);
-    },
-    clearAllCluster: function () {
-      this.selectedCluster = [];
-      this.updateRouteQueryForClusters(this.selectedCluster);
-    },
-    toggleClusterSelection: function (cluster) {
-      if (this.selectedCluster.includes(cluster)) { // already selected; remove from selection
-        this.selectedCluster = this.selectedCluster.filter((item) => {
-          return item !== cluster;
-        });
-      } else if (!this.availableCluster.inactive.includes(cluster)) { // not in inactive cluster
-        this.selectedCluster.push(cluster); // add to selected list
-      }
-      this.updateRouteQueryForClusters(this.selectedCluster);
     }
   }
 };
