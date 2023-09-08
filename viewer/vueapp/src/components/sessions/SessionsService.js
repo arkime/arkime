@@ -255,7 +255,7 @@ export default {
 
       // add tags and cluster to data instead of url params
       options.data.tags = params.tags;
-      options.data.cluster = cluster; // ALW use the cluster before routeParams replaces it
+      options.data.remoteCluster = cluster; // ALW use the cluster before routeParams replaces it
       delete options.params.tags;
       delete options.params.cluster;
 
