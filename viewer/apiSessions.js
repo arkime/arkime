@@ -851,13 +851,15 @@ class SessionAPIs {
 
     const saveId = Config.nodeName() + '-' + new Date().getTime().toString(36);
 
+    const cluster = req.body.remoteCluster ?? req.body.cluster;
+
     async.eachLimit(list, 10, (item, nextCb) => {
       const fields = item.fields;
       const sid = Db.session2Sid(item);
       SessionAPIs.isLocalView(fields.node, () => {
         const options = {
           user: req.user,
-          cluster: req.body.cluster,
+          cluster,
           id: sid,
           saveId,
           tags: req.body.tags,
@@ -866,7 +868,7 @@ class SessionAPIs {
         // Get from our DISK
         internals.sendSessionQueue.push(options, nextCb);
       }, () => {
-        let sendPath = `api/session/${fields.node}/${sid}/send?saveId=${saveId}&cluster=${req.body.cluster}`;
+        let sendPath = `api/session/${fields.node}/${sid}/send?saveId=${saveId}&remoteCluster=${cluster}`;
         if (ArkimeUtil.isString(req.body.tags)) {
           sendPath += `&tags=${req.body.tags}`;
         }

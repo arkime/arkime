@@ -178,10 +178,7 @@ app.use((req, res, next) => {
 
 // Don't allow cluster if not multiviewer except for the /api/session.*/send calls
 app.use((req, res, next) => {
-  if (!internals.multiES &&
-    req.query.cluster !== undefined &&
-    req.url !== undefined &&
-    (!req.url.startsWith('/api/session') || !req.url.split('?')[0].endsWith('/send'))) {
+  if (!internals.multiES && req.query.cluster !== undefined) {
     delete req.query.cluster;
   }
   return next();
@@ -1781,19 +1778,19 @@ app.get( // sessions get decodings endpoint
 );
 
 app.get( // session send to node endpoint - used by SessionAPIs.#sendSessionsList
-  ['/api/session/:nodeName/:id/send', '/:nodeName/sendSession/:id'],
+  ['/api/session/:nodeName/:id/send'],
   [checkProxyRequest],
   SessionAPIs.sendSessionToNode
 );
 
 app.post( // sessions send to node endpoint - used by CronAPIs.#sendSessionsListQL
-  ['/api/sessions/:nodeName/send', '/:nodeName/sendSessions'],
+  ['/api/sessions/:nodeName/send'],
   [checkProxyRequest],
   SessionAPIs.sendSessionsToNode
 );
 
 app.post( // sessions send endpoint - used by vueapp
-  ['/api/sessions/send', '/sendSessions'],
+  ['/api/sessions/send'],
   SessionAPIs.sendSessions
 );
 

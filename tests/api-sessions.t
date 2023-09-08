@@ -229,15 +229,15 @@ tcp,1386004309468,1386004309478,10.180.156.185,53533,US,10.180.156.249,1080,US,2
     $json = viewerPost("/api/sessions/test/send?saveId=id", '{}');
     eq_or_diff($json, from_json('{"success":false,"text":"Missing cluster"}'));
 
-    $json = viewerPost("/api/sessions/test/send?saveId=id&cluster=unknown", '{}');
+    $json = viewerPost("/api/sessions/test/send?saveId=id&remoteCluster=unknown", '{}');
     eq_or_diff($json, from_json('{"success":false,"text":"Unknown cluster"}'));
 
-    $json = viewerPost("/api/sessions/test/send?saveId=id&cluster=test2", '{}');
+    $json = viewerPost("/api/sessions/test/send?saveId=id&remoteCluster=test2", '{}');
     eq_or_diff($json, from_json('{"success":false,"text":"Missing ids"}'));
 
 # Test errors for /api/sessions/send
     $json = viewerPost("/api/sessions/send", '');
     eq_or_diff($json, from_json('{"success":false,"text":"Missing cluster"}'));
 
-    $json = viewerPost("/api/sessions/send", "cluster=unknown");
+    $json = viewerPost("/api/sessions/send", "remoteCluster=unknown");
     eq_or_diff($json, from_json('{"success":false,"text":"Unknown cluster"}'));
