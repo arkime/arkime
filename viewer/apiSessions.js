@@ -851,7 +851,7 @@ class SessionAPIs {
 
     const saveId = Config.nodeName() + '-' + new Date().getTime().toString(36);
 
-    const cluster = req.body.remoteCluster ?? req.body.cluster;
+    const cluster = req.body.remoteCluster;
 
     async.eachLimit(list, 10, (item, nextCb) => {
       const fields = item.fields;
@@ -3154,7 +3154,7 @@ class SessionAPIs {
     ArkimeUtil.noCache(req, res);
     res.statusCode = 200;
 
-    const cluster = req.query.remoteCluster ?? req.query.cluster;
+    const cluster = req.query.remoteCluster;
 
     if (!ArkimeUtil.isString(req.query.saveId)) { return res.serverError(200, 'Missing saveId'); }
     if (!ArkimeUtil.isString(cluster)) { return res.serverError(200, 'Missing cluster'); }
@@ -3191,7 +3191,7 @@ class SessionAPIs {
     ArkimeUtil.noCache(req, res);
     res.statusCode = 200;
 
-    const cluster = req.query.remoteCluster ?? req.query.cluster;
+    const cluster = req.query.remoteCluster;
 
     if (!ArkimeUtil.isString(req.query.saveId)) { return res.serverError(200, 'Missing saveId'); }
     if (!ArkimeUtil.isString(cluster)) { return res.serverError(200, 'Missing cluster'); }
@@ -3232,7 +3232,7 @@ class SessionAPIs {
    * @param {SessionsQuery} query - The request query to filter sessions, only used if ids isn't provided
    */
   static sendSessions (req, res) {
-    const cluster = req.body.remoteCluster ?? req.body.cluster;
+    const cluster = req.body.remoteCluster;
 
     if (!ArkimeUtil.isString(cluster)) { return res.serverError(200, 'Missing cluster'); }
     if (!internals.remoteClusters || !internals.remoteClusters[cluster]) { return res.serverError(200, 'Unknown cluster'); }
