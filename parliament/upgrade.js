@@ -7,16 +7,20 @@
 // 4 - remove parliament password
 // 5 - move settings to config
 // 6 - combine notifiers with viewer
+// 7 - remove parliament json
 
 const Notifier = require('../common/notifier');
+const Parliament = require('../common/parliament');
 
-const version = 6;
+const version = 7;
 
 /**
  * Upgrades the parliament object to the latest version
  * @param {object} parliament the parliament object to upgrade
+ * @param {object} ArkimeConfig the ArkimeConfig object
+ * @param {string} parliamentName the name of the parliament (must be unique)
  */
-exports.upgrade = async function (parliament, ArkimeConfig) {
+exports.upgrade = async function (parliament, ArkimeConfig, parliamentName) {
   // fix cluster types
   if (parliament.groups) {
     for (const group of parliament.groups) {
@@ -186,6 +190,24 @@ exports.upgrade = async function (parliament, ArkimeConfig) {
     }
 
     delete parliament.settings.notifiers;
+  }
+
+  if (parliament) { // add parliament to db
+    delete parliament.version; // don't need version anymore
+    delete parliament.authMode; // don't need authmode anymore
+    parliament.name = parliamentName; // parliament name is the id
+
+    console.log('Adding Parliament to DB...');
+
+    try {
+      await Parliament.createParliament(parliament);
+    } catch (err) {
+      if (err.meta.statusCode === 409) {
+        console.log('Parliament already exists in DB. Skipping!');
+      } else {
+        console.error('ERROR - Couldn\'t add Parliament to DB.', err);
+      }
+    }
   }
 
   // update version

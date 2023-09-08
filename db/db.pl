@@ -72,7 +72,7 @@
 # 76 - views index
 # 77 - cron sharing with roles and users
 # 78 - added roleAssigners to users
-# 79 - added parliament notifier flags
+# 79 - added parliament notifier flags to notifiers index and new parliament index
 
 use HTTP::Request::Common;
 use LWP::UserAgent;
@@ -5683,6 +5683,86 @@ sub notifiersAddMissingProps
   }
 }
 ################################################################################
+sub parliamentCreate
+{
+  my $settings = '
+{
+  "settings": {
+    "index.priority": 30,
+    "number_of_shards": 1,
+    "number_of_replicas": 0,
+    "auto_expand_replicas": "0-3"
+  }
+}';
+
+  logmsg "Creating parliament_v50 index\n" if ($verbose > 0);
+  esPut("/${PREFIX}parliament_v50?master_timeout=${ESTIMEOUT}s", $settings);
+  esAlias("add", "parliament_v50", "parliament");
+  parliamentUpdate();
+}
+
+sub parliamentUpdate
+{
+    my $mapping = '
+{
+  "_source": {"enabled": "true"},
+  "dynamic": "strict",
+  "properties": {
+    "name": {
+      "type": "keyword"
+    },
+    "settings": {
+      "type": "object",
+      "dynamic": "true",
+      "enabled": "false"
+    },
+    "groups": {
+      "type": "object",
+      "properties": {
+        "title": {
+          "type": "keyword"
+        },
+        "description": {
+          "type": "keyword"
+        },
+        "id": {
+          "type": "integer"
+        },
+        "clusters": {
+          "type": "object",
+          "properties": {
+            "title": {
+              "type": "keyword"
+            },
+            "description": {
+              "type": "keyword"
+            },
+            "url": {
+              "type": "keyword"
+            },
+            "type": {
+              "type": "keyword"
+            },
+            "id": {
+              "type": "integer"
+            },
+            "healthError": {
+              "type": "keyword"
+            },
+            "statsError": {
+              "type": "keyword"
+            }
+          }
+        }
+      }
+    }
+  }
+}';
+
+logmsg "Setting parliament_v50 mapping\n" if ($verbose > 0);
+esPut("/${PREFIX}parliament_v50/_mapping?master_timeout=${ESTIMEOUT}s&pretty", $mapping);
+}
+################################################################################
 
 ################################################################################
 sub viewsCreate
@@ -7942,6 +8022,7 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
         queriesUpdate();
         notifiersUpdate();
         notifiersAddMissingProps();
+        parliamentCreate();
     } else {
         logmsg "db.pl is hosed\n";
     }

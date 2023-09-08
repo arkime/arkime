@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 'use strict';
 
-const MIN_PARLIAMENT_VERSION = 6;
+const MIN_PARLIAMENT_VERSION = 7;
 const MIN_DB_VERSION = 79;
 
 /* dependencies ------------------------------------------------------------- */
@@ -23,6 +23,7 @@ const User = require('../common/user');
 const Auth = require('../common/auth');
 const version = require('../common/version');
 const Notifier = require('../common/notifier');
+const Parliament = require('../common/parliament');
 const ArkimeUtil = require('../common/arkimeUtil');
 const ArkimeConfig = require('../common/arkimeConfig');
 
@@ -50,7 +51,7 @@ const settingsDefault = {
 };
 
 const internals = {
-  notifierTypes: {}
+  parliamentName: 'Parliament'
 };
 
 const parliamentReadError = `
@@ -71,13 +72,16 @@ See https://arkime.com/settings#parliament for more information.
         process.exit(1);
       }
       ArkimeConfig.setOverride(process.argv[i].slice(0, equal), process.argv[i].slice(equal + 1));
+    } else if (process.argv[i] === '-n') {
+      internals.parliamentName = process.argv[++i];
     } else if (process.argv[i] === '--help') {
       console.log('parliament.js [<config options>]\n');
       console.log('Config Options:');
-      console.log('  -c, --config   Parliament config file to use');
+      console.log('  -c, --config                Parliament config file to use');
+      console.log('  -n, <name>                  Name of the Parliament for if you have multiple parliaments (defaults to "Parliament")');
       console.log('  -o <section>.<key>=<value>  Override the config file');
-      console.log('  --debug        Increase debug level, multiple are supported');
-      console.log('  --insecure     Disable certificate verification for https calls');
+      console.log('  --debug                     Increase debug level, multiple are supported');
+      console.log('  --insecure                  Disable certificate verification for https calls');
 
       process.exit(0);
     }
@@ -618,27 +622,34 @@ async function initializeParliament () {
     esclient: User.getClient()
   });
 
+  Parliament.initialize({
+    debug: ArkimeConfig.debug,
+    prefix: getConfig('parliament', 'usersPrefix'),
+    esclient: User.getClient()
+  });
+
   if (parliament.version === undefined || parliament.version < MIN_PARLIAMENT_VERSION) {
     console.log( // notify of upgrade
       `WARNING - Current parliament version (${parliament.version ?? 1}) is less then required version (${MIN_PARLIAMENT_VERSION})
-        Upgrading ${getConfig('parliament', 'file')} file...\n`
+        Upgrading your Parliament...\n`
     );
 
     // do the upgrade
-    parliament = await upgrade.upgrade(parliament, ArkimeConfig);
+    parliament = await upgrade.upgrade(parliament, ArkimeConfig, internals.parliamentName);
 
-    try { // write the upgraded file
-      const upgradeParliamentError = validateParliament();
-      if (!upgradeParliamentError) {
-        fs.writeFileSync(getConfig('parliament', 'file'), JSON.stringify(parliament, null, 2), 'utf8');
-      }
-    } catch (e) { // notify of error saving upgraded parliament and exit
-      console.log('Error upgrading Parliament:\n\n', ArkimeUtil.sanitizeStr(e.stack));
-      if (ArkimeConfig.debug) {
-        console.log(parliamentReadError);
-      }
-      throw new Error(e);
-    }
+    // TODO delete parliament.json?
+    // try { // write the upgraded file
+    //   const upgradeParliamentError = validateParliament();
+    //   if (!upgradeParliamentError) {
+    //     fs.writeFileSync(getConfig('parliament', 'file'), JSON.stringify(parliament, null, 2), 'utf8');
+    //   }
+    // } catch (e) { // notify of error saving upgraded parliament and exit
+    //   console.log('Error upgrading Parliament:\n\n', ArkimeUtil.sanitizeStr(e.stack));
+    //   if (ArkimeConfig.debug) {
+    //     console.log(parliamentReadError);
+    //   }
+    //   throw new Error(e);
+    // }
 
     // notify of upgrade success
     console.log(`SUCCESS - Parliament upgraded to version ${MIN_PARLIAMENT_VERSION}`);
