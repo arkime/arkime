@@ -235,11 +235,8 @@ function simpleGather (req, res, bodies, doneCb) {
     const options = {
       method: req.method,
       arkime_opaque: req.headers['x-opaque-id'],
-      skipReplace: cluster !== null
+      skipReplace: req._skipReplace
     };
-    if (req._skipReplace !== undefined) {
-      options.skipReplace = req._skipReplace;
-    }
     options.arkime_prefix = node2Prefix(node);
     nodeUrl = nodeUrl.replace(/MULTIPREFIX_/g, options.arkime_prefix).replace(/arkime_sessions2/g, 'sessions2');
     const url = new URL(nodeUrl);
@@ -369,6 +366,7 @@ function simpleGatherFirst (req, res) {
 }
 
 function simpleGather1Cluster (req, res) {
+  req._skipReplace = true;
   if (req.query.cluster === undefined) {
     console.log('Missing cluster', ArkimeUtil.sanitizeStr(req.url));
     return res.send({ error: 'Missing cluster' });
@@ -412,7 +410,7 @@ app.put('/:index/_settings', simpleGather1Cluster);
 
 app.put('/:index1/_shrink/:index2', simpleGather1Cluster);
 
-app.get('/_ilm/policy/*', simpleGatherFirst);
+app.get('/_ilm/policy/*', simpleGather1Cluster);
 
 app.get('/_cluster/:type/details', function (req, res) {
   const result = { available: [], active: [], inactive: [], prefix: {} };
@@ -480,6 +478,7 @@ app.get('/_template/MULTIPREFIX_sessions2_template', (req, res) => {
 });
 
 app.get('/_template/MULTIPREFIX_sessions3_template', (req, res) => {
+  req._skipReplace = req.query.cluster !== undefined;
   simpleGather(req, res, null, (err, results) => {
     // console.log("DEBUG -", JSON.stringify(results, null, 2));
 
@@ -574,6 +573,7 @@ app.get('/_cluster/settings', function (req, res) {
   if (req.query.cluster) {
     cluster = Array.isArray(req.query.cluster) ? req.query.cluster : req.query.cluster.split(',');
     req.url = req.url.replace(/cluster=[^&]*(&|$)/g, ''); // remove cluster from URL
+    req._skipReplace = true;
   }
   if (!cluster || cluster.length > 1) {
     res.send({ persistent: {}, transient: {} });
