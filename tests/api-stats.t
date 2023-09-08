@@ -1,4 +1,4 @@
-use Test::More tests => 63;
+use Test::More tests => 87;
 use Cwd;
 use URI::Escape;
 use MolochTest;
@@ -36,6 +36,15 @@ my $test1Token = getTokenCookie("test1");
     my $mstats = multiGet("/stats.json");
     is (@{$mstats->{data}}, 1, "multi stats.json data set ");
 
+    my $mstats = multiGet("/stats.json?cluster=test");
+    is (@{$mstats->{data}}, 1);
+
+    my $mstats = multiGet("/stats.json?cluster=test2");
+    is (@{$mstats->{data}}, 0);
+
+    my $mstats = multiGet("/stats.json?cluster=unknown");
+    is (@{$mstats->{data}}, 0);
+
 # dstats.json
     my $dstats = viewerGet("/api/dstats?nodeName=test&start=1399680425&stop=1399680460&step=5&interval=5&name=deltaPackets");
     is (@{$dstats}, 7, "dstats.json array size");
@@ -46,6 +55,13 @@ my $test1Token = getTokenCookie("test1");
 
     my $messtats = multiGet("/esstats.json");
     is ($messtats->{data}->[0]->{writesRejectedDelta}, 0, "Writes reject");
+
+    my $messtats = multiGet("/esstats.json?cluster=test");
+    is (@{$messtats->{data}}, 1);
+    is ($messtats->{data}->[0]->{writesRejectedDelta}, 0, "Writes reject");
+
+    my $messtats = multiGet("/esstats.json?cluster=unknown");
+    is (@{$messtats->{data}}, 0);
 
 # esindices
     my $indices = viewerGet("/api/esindices");
@@ -61,9 +77,25 @@ my $test1Token = getTokenCookie("test1");
     $indices = viewerGet("/api/esindices?desc=true&sortField=store.size");
     cmp_ok ($indices->{data}->[0]->{"store.size"}, ">=", $indices->{data}->[1]->{"store.size"}, "indices store.size sorted reverse");
 
+    $indices = multiGet("/api/esindices?cluster=test");
+    cmp_ok (@{$indices->{data}}, ">=", 30, "indices array size");
+    cmp_ok ($indices->{data}->[0]->{index} cmp $indices->{data}->[1]->{index}, "<", 0, "indices index sorted");
+
+    $indices = multiGet("/api/esindices?cluster=unknown");
+    eq_or_diff($indices, from_json('{"success": false, "text": "No results"}'));
+
 # estasks
     my $tasks = viewerGet("/api/estasks");
     cmp_ok (@{$tasks->{data}}, ">=", 1, "tasks array size");
+
+    my $tasks = multiGet("/api/estasks");
+    cmp_ok (@{$tasks->{data}}, ">=", 1, "tasks array size");
+
+    my $tasks = multiGet("/api/estasks?cluster=test");
+    cmp_ok (@{$tasks->{data}}, ">=", 1, "tasks array size");
+
+    my $tasks = multiGet("/api/estasks?cluster=unknown");
+    cmp_ok (@{$tasks->{data}}, "==", 0, "tasks array size");
 
 # esshards
     my $shards = viewerGet("/api/esshards?show=all");
@@ -113,15 +145,39 @@ my $test1Token = getTokenCookie("test1");
     eq_or_diff($shards->{nodeExcludes}, [], "esshard: nodeExcludes empty");
     eq_or_diff($shards->{ipExcludes}, [], "esshard: ipExcludes empty");
 
+    $shards = multiGet("/api/esshards?show=all");
+    cmp_ok (@{$shards->{indices}}, ">=", 30, "esshards: indices array size");
+    cmp_ok ($shards->{indices}->[0]->{name}, "lt", $shards->{indices}->[1]->{name}, "esshard: index[0] before index[1]");
+    eq_or_diff($shards->{nodeExcludes}, [], "esshard: nodeExcludes empty");
+    eq_or_diff($shards->{ipExcludes}, [], "esshard: ipExcludes empty");
+
+    $shards = multiGet("/api/esshards?show=all&cluster=test");
+    cmp_ok (@{$shards->{indices}}, ">=", 30, "esshards: indices array size");
+    cmp_ok ($shards->{indices}->[0]->{name}, "lt", $shards->{indices}->[1]->{name}, "esshard: index[0] before index[1]");
+    eq_or_diff($shards->{nodeExcludes}, [], "esshard: nodeExcludes empty");
+    eq_or_diff($shards->{ipExcludes}, [], "esshard: ipExcludes empty");
+
+    $shards = multiGet("/api/esshards?show=all&cluster=unknown");
+    eq_or_diff($shards, from_json('{"success": false, "text": "No results"}'));
+
 # esrecovery
     my $recovery = viewerGet("/api/esrecovery?show=all");
-    cmp_ok (@{$recovery->{data}}, ">=", 100, "tasks array size");
+    cmp_ok (@{$recovery->{data}}, ">=", 100, "recovery array size");
 
     $recovery = viewerGet("/api/esrecovery");
-    cmp_ok (@{$recovery->{data}}, "==", 0, "tasks array size");
+    cmp_ok (@{$recovery->{data}}, "==", 0, "recovery array size");
 
     $recovery = viewerGet("/api/esrecovery?show=notdone");
-    cmp_ok (@{$recovery->{data}}, "==", 0, "tasks array size");
+    cmp_ok (@{$recovery->{data}}, "==", 0, "recovery array size");
+
+    $recovery = multiGet("/api/esrecovery?show=all");
+    cmp_ok (@{$recovery->{data}}, ">=", 100, "recovery array size");
+
+    $recovery = multiGet("/api/esrecovery?show=all&cluster=test");
+    cmp_ok (@{$recovery->{data}}, ">=", 100, "recovery array size");
+
+    $recovery = multiGet("/api/esrecovery?show=all&cluster=unknown");
+    cmp_ok (@{$recovery->{data}}, "==", 0, "recovery array size");
 
 # parliament.json
     my $stats = viewerGet("/api/parliament");

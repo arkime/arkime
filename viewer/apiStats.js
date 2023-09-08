@@ -532,6 +532,10 @@ class StatsAPIs {
       const indices = results.indices;
       const indicesSettings = results.indicesSettings;
 
+      if (!Array.isArray(indices)) {
+          return res.serverError(500, 'No results');
+      }
+
       let findices = [];
 
       // filtering
@@ -1284,6 +1288,9 @@ class StatsAPIs {
       Db.shards(options.cluster ? { cluster: options.cluster } : undefined),
       Db.getClusterSettings(options)
     ]).then(([{ body: shards }, { body: settings }]) => {
+      if (!Array.isArray(shards)) {
+          return res.serverError(500, 'No results');
+      }
       let ipExcludes = [];
       if (settings.persistent['cluster.routing.allocation.exclude._ip']) {
         ipExcludes = settings.persistent['cluster.routing.allocation.exclude._ip'].split(',');
