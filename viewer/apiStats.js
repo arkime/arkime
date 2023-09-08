@@ -533,7 +533,7 @@ class StatsAPIs {
       const indicesSettings = results.indicesSettings;
 
       if (!Array.isArray(indices)) {
-          return res.serverError(500, 'No results');
+        return res.serverError(500, 'No results');
       }
 
       let findices = [];
@@ -1289,7 +1289,7 @@ class StatsAPIs {
       Db.getClusterSettings(options)
     ]).then(([{ body: shards }, { body: settings }]) => {
       if (!Array.isArray(shards)) {
-          return res.serverError(500, 'No results');
+        return res.serverError(500, 'No results');
       }
       let ipExcludes = [];
       if (settings.persistent['cluster.routing.allocation.exclude._ip']) {
