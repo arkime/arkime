@@ -232,6 +232,7 @@ class ArkimeUtil {
     process.exit(1);
   }
 
+  // ----------------------------------------------------------------------------
   /**
    * Create a memcached client from the provided url
    * @params {string} url - The memcached url to connect to.
@@ -251,6 +252,7 @@ class ArkimeUtil {
     process.exit(1);
   }
 
+  // ----------------------------------------------------------------------------
   /**
    * Create a LMDB store from the provided url
    * @params {string} url - The LMDB url to connect to.
@@ -272,12 +274,14 @@ class ArkimeUtil {
     }
   }
 
+  // ----------------------------------------------------------------------------
   static wildcardToRegexp (wildcard) {
     // https://stackoverflow.com/revisions/57527468/5
     wildcard = wildcard.replace(/[.+^${}()|[\]\\]/g, '\\$&');
     return new RegExp(`^${wildcard.replace(/\*/g, '.*').replace(/\?/g, '.')}$`, 'i');
   }
 
+  // ----------------------------------------------------------------------------
   static parseTimeStr (time) {
     if (typeof time !== 'string') {
       return time;
@@ -299,6 +303,7 @@ class ArkimeUtil {
     }
   }
 
+  // ----------------------------------------------------------------------------
   /**
    * Sends an error from the server by:
    * 1. setting the http content-type header to json
@@ -316,6 +321,7 @@ class ArkimeUtil {
     );
   }
 
+  // ----------------------------------------------------------------------------
   /**
    * Missing resource error handler for static file endpoints.
    * Sends a missing resource message to the client by:
@@ -330,6 +336,7 @@ class ArkimeUtil {
     return res.send('Cannot locate resource');
   }
 
+  // ----------------------------------------------------------------------------
   /**
    * express error handler
    */
@@ -339,6 +346,7 @@ class ArkimeUtil {
     next();
   }
 
+  // ----------------------------------------------------------------------------
   // express middleware to set req.settingUser to who to work on, depending if admin or not
   // This returns fresh from db
   static getSettingUserDb (req, res, next) {
@@ -375,6 +383,7 @@ class ArkimeUtil {
     });
   }
 
+  // ----------------------------------------------------------------------------
   /**
    * Breaks a comma or newline separated string of values into an array of values
    * @param {string} string - The comma or newline separated string of values
@@ -392,6 +401,7 @@ class ArkimeUtil {
     return values;
   }
 
+  // ----------------------------------------------------------------------------
   /**
    * Breaks file of certificates into an array of separate certificates
    * @param {string} string - The file containing certificates
@@ -424,6 +434,7 @@ class ArkimeUtil {
     return undefined;
   };
 
+  // ----------------------------------------------------------------------------
   /**
    * Check the Arkime Schema Version
    */
@@ -458,12 +469,17 @@ class ArkimeUtil {
     }
   }
 
+  // ----------------------------------------------------------------------------
+  /**
+   * Callback when of the cert files change
+   */
   static #fsWait;
   static #httpsServer;
   static #watchSection;
   static #watchHttpsFile (e, filename) {
     if (ArkimeUtil.#fsWait) { clearTimeout(ArkimeUtil.#fsWait); };
 
+    // We wait 10s from last event incase there are more events
     ArkimeUtil.#fsWait = setTimeout(() => {
       ArkimeUtil.#fsWait = null;
       try { // try to get the new cert files
@@ -490,8 +506,9 @@ class ArkimeUtil {
     }, 10000);
   }
 
+  // ----------------------------------------------------------------------------
   /**
-   * Create Server
+   * Create HTTP/HTTPS Server, load cert if HTTPS, listen, drop priv
    */
   static createHttpServer (section, app, host, port) {
     let server;
@@ -505,7 +522,7 @@ class ArkimeUtil {
       fs.watch(ArkimeConfig.get(section, 'keyFile'), { persistent: false }, ArkimeUtil.#watchHttpsFile);
       fs.watch(ArkimeConfig.get(section, 'certFile'), { persistent: false }, ArkimeUtil.#watchHttpsFile);
 
-      if (ArkimeUtil.debug > 0) {
+      if (ArkimeUtil.debug > 1) {
         console.log('Watching cert and key files. If either is changed, the server will be updated with the new files.');
       }
 
@@ -547,5 +564,6 @@ class ArkimeUtil {
 
 module.exports = ArkimeUtil;
 
+// At end because of circular require
 const User = require('./user');
 const ArkimeConfig = require('./arkimeConfig');
