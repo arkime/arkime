@@ -462,18 +462,7 @@ const httpsAgent = new https.Agent(Object.assign({ keepAlive: true, keepAliveMse
 async function main () {
   await Config.initialize();
 
-  console.log('Listen on ', Config.get('esProxyPort', '7200'));
-  if (Config.isHTTPS()) {
-    const cryptoOption = require('crypto').constants.SSL_OP_NO_TLSv1;
-    const server = https.createServer({
-      key: Config.keyFileData,
-      cert: Config.certFileData,
-      secureOptions: cryptoOption
-    }, app).listen(Config.get('esProxyPort', '7200'), Config.get('esProxyHost', undefined));
-    Config.setServerToReloadCerts(server, cryptoOption);
-  } else {
-    http.createServer(app).listen(Config.get('esProxyPort', '7200'), Config.get('esProxyHost', undefined));
-  }
+  ArkimeUtil.createHttpServer([Config.nodeName(), 'default'], app, Config.get('esProxyHost'), Config.get('esProxyPort', '7200'));
 }
 
 main();

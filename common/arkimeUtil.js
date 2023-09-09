@@ -23,6 +23,11 @@ const util = require('util');
 const fs = require('fs');
 const bodyParser = require('body-parser');
 const sjson = require('secure-json-parse');
+const http = require('http');
+const https = require('https');
+const path = require('path');
+// eslint-disable-next-line no-shadow
+const crypto = require('crypto');
 
 class ArkimeUtil {
   static debug = 0;
@@ -452,8 +457,95 @@ class ArkimeUtil {
       process.exit(0);
     }
   }
+
+  static #fsWait;
+  static #httpsServer;
+  static #watchSection;
+  static #watchHttpsFile (e, filename) {
+    if (ArkimeUtil.#fsWait) { clearTimeout(ArkimeUtil.#fsWait); };
+
+    ArkimeUtil.#fsWait = setTimeout(() => {
+      ArkimeUtil.#fsWait = null;
+      try { // try to get the new cert files
+        const keyFileData = fs.readFileSync(ArkimeConfig.get(ArkimeUtil.#watchSection, 'keyFile'));
+        const certFileData = fs.readFileSync(ArkimeConfig.get(ArkimeUtil.#watchSection, 'certFile'));
+
+        console.log('Reloading cert...');
+
+        const options = { // set new server cert options
+          key: keyFileData,
+          cert: certFileData,
+          secureOptions: crypto.constants.SSL_OP_NO_TLSv1
+        };
+
+        try {
+          ArkimeUtil.#httpsServer.setSecureContext(options);
+        } catch (err) {
+          console.log('ERROR cert not reloaded: ', err.toString());
+        }
+      } catch (err) { // don't continue if we can't read them
+        console.log('Missing cert or key files. Cannot reload cert.');
+        return;
+      }
+    }, 10000);
+  }
+
+  /**
+   * Create Server
+   */
+  static createHttpServer (section, app, host, port) {
+    let server;
+
+    if (ArkimeConfig.get(section, 'keyFile') && ArkimeConfig.get(section, 'certFile')) {
+      const keyFileData = fs.readFileSync(ArkimeConfig.get(section, 'keyFile'));
+      const certFileData = fs.readFileSync(ArkimeConfig.get(section, 'certFile'));
+      ArkimeUtil.#watchSection = section;
+
+      // watch the cert and key files
+      fs.watch(ArkimeConfig.get(section, 'keyFile'), { persistent: false }, ArkimeUtil.#watchHttpsFile);
+      fs.watch(ArkimeConfig.get(section, 'certFile'), { persistent: false }, ArkimeUtil.#watchHttpsFile);
+
+      if (ArkimeUtil.debug > 0) {
+        console.log('Watching cert and key files. If either is changed, the server will be updated with the new files.');
+      }
+
+      server = ArkimeUtil.#httpsServer = https.createServer({
+        key: keyFileData,
+        cert: certFileData,
+        secureOptions: crypto.constants.SSL_OP_NO_TLSv1
+      }, app);
+    } else {
+      server = http.createServer(app);
+    }
+
+    server
+      .on('error', (e) => {
+        console.log("ERROR - couldn't listen on host %s port %d is %s already running?", host, port, path.basename(process.argv[1]));
+        process.exit(1);
+      })
+      .on('listening', (e) => {
+        console.log('Express server listening on host %s port %d in %s mode', server.address().address, server.address().port, app.settings.env);
+      })
+      .listen(port, host);
+
+    // If root drop priv when dropGroup or dropUser set
+    if (process.getuid() === 0) {
+      const group = ArkimeConfig.get(section, 'dropGroup', null);
+      if (group !== null) {
+        process.setgid(group);
+      }
+
+      const user = ArkimeConfig.get(section, 'dropUser', null);
+      if (user !== null) {
+        process.setuid(user);
+      }
+    }
+
+    return server;
+  }
 }
 
 module.exports = ArkimeUtil;
 
 const User = require('./user');
+const ArkimeConfig = require('./arkimeConfig');

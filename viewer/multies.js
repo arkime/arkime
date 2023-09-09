@@ -1189,19 +1189,7 @@ async function premain () {
   activeESNodes = nodes.slice();
   console.log(nodes);
 
-  console.log('Listen on ', Config.get('multiESPort', '8200'));
-
-  if (Config.isHTTPS()) {
-    const cryptoOption = require('crypto').constants.SSL_OP_NO_TLSv1;
-    const server = https.createServer({
-      key: Config.keyFileData,
-      cert: Config.certFileData,
-      secureOptions: cryptoOption
-    }, app).listen(Config.get('multiESPort', '8200'), Config.get('multiESHost', undefined));
-    Config.setServerToReloadCerts(server, cryptoOption);
-  } else {
-    http.createServer(app).listen(Config.get('multiESPort', '8200'), Config.get('multiESHost', undefined));
-  }
+  ArkimeUtil.createHttpServer([Config.nodeName(), 'default'], app, Config.get('multiESHost'), Config.get('multiESPort', 8200));
 }
 
 premain();
