@@ -632,6 +632,8 @@ class ItemHTTPStream extends ItemTransform {
       upper = line.toUpperCase();
       if (upper.startsWith('CONTENT-LENGTH')) {
         this.contentLength[item.client] = +upper.substring(15);
+      } else if (upper.startsWith('CONTENT-TYPE')) {
+        this.contentType[item.client] = upper.substring(14);
       } else if (upper.startsWith('TRANSFER-ENCODING')) {
         this.transferEncoding[item.client] = upper.substring(19);
       }
