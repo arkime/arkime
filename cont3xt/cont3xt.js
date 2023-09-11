@@ -20,8 +20,6 @@
 const express = require('express');
 const fs = require('fs');
 const app = express();
-const http = require('http');
-const https = require('https');
 const path = require('path');
 const version = require('../common/version');
 const User = require('../common/user');
@@ -36,8 +34,6 @@ const Overview = require('./overview');
 const View = require('./view');
 const Db = require('./db');
 const jsonParser = ArkimeUtil.jsonParser;
-// eslint-disable-next-line no-shadow
-const crypto = require('crypto');
 const logger = require('morgan');
 const favicon = require('serve-favicon');
 const helmet = require('helmet');
@@ -561,30 +557,12 @@ async function main () {
   await setupAuth();
   setupHSTS();
 
-  let server;
-  if (getConfig('cont3xt', 'keyFile') && getConfig('cont3xt', 'certFile')) {
-    const keyFileData = fs.readFileSync(getConfig('cont3xt', 'keyFile'));
-    const certFileData = fs.readFileSync(getConfig('cont3xt', 'certFile'));
-
-    server = https.createServer({ key: keyFileData, cert: certFileData, secureOptions: crypto.constants.SSL_OP_NO_TLSv1 }, app);
-  } else {
-    server = http.createServer(app);
-  }
-
-  const cont3xtHost = getConfig('cont3xt', 'cont3xtHost', undefined);
+  const cont3xtHost = ArkimeConfig.get('cont3xt', 'cont3xtHost');
   if (Auth.mode === 'header' && cont3xtHost !== 'localhost' && cont3xtHost !== '127.0.0.1') {
     console.log('SECURITY WARNING - When using header auth, cont3xtHost should be localhost or use iptables');
   }
 
-  server
-    .on('error', (e) => {
-      console.log("ERROR - couldn't listen on host %s port %d is cont3xt already running?", cont3xtHost, getConfig('cont3xt', 'port', 3218));
-      process.exit(1);
-    })
-    .on('listening', (e) => {
-      console.log('Express server listening on host %s port %d in %s mode', server.address().address, server.address().port, app.settings.env);
-    })
-    .listen(getConfig('cont3xt', 'port', 3218), cont3xtHost);
+  ArkimeUtil.createHttpServer('cont3xt', app, cont3xtHost, ArkimeConfig.get('cont3xt', 'port', 3218));
 }
 
 main();

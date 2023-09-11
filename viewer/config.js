@@ -23,7 +23,6 @@
 /// / Command Line Parsing
 /// ///////////////////////////////////////////////////////////////////////////////
 const os = require('os');
-const fs = require('fs');
 const version = require('../common/version');
 const Auth = require('../common/auth');
 const ArkimeConfig = require('../common/arkimeConfig');
@@ -165,31 +164,14 @@ class Config {
   };
 
   // ----------------------------------------------------------------------------
-  static #dropPrivileges () {
-    if (process.getuid() !== 0) {
-      return;
-    }
-
-    const group = Config.get('dropGroup', null);
-    if (group !== null) {
-      process.setgid(group);
-    }
-
-    const user = Config.get('dropUser', null);
-    if (user !== null) {
-      process.setuid(user);
-    }
-  }
-
-  // ----------------------------------------------------------------------------
   static isHTTPS (node) {
-    return Config.getFull(node || internals.nodeName, 'keyFile') &&
-           Config.getFull(node || internals.nodeName, 'certFile');
+    return Config.getFull(node ?? internals.nodeName, 'keyFile') &&
+           Config.getFull(node ?? internals.nodeName, 'certFile');
   };
 
   // ----------------------------------------------------------------------------
   static basePath (node) {
-    return Config.getFull(node || internals.nodeName, 'webBasePath', '/');
+    return Config.getFull(node ?? internals.nodeName, 'webBasePath', '/');
   };
 
   // ----------------------------------------------------------------------------
@@ -272,64 +254,6 @@ class Config {
 
     return map;
   };
-
-  // ----------------------------------------------------------------------------
-  static #fsWait = null;
-  static #httpsServer = null;
-  static #httpsCryptoOption = null;
-  static watchFile (e, filename) {
-    if (!Config.#httpsServer || !Config.#httpsCryptoOption) {
-      return;
-    }
-
-    if (filename) { // 10s timeout for file changes (including file name changes)
-      if (Config.#fsWait) { clearTimeout(Config.#fsWait); };
-
-      Config.#fsWait = setTimeout(() => {
-        Config.#fsWait = null;
-        try { // try to get the new cert files
-          Config.#loadCertData();
-        } catch (err) { // don't continue if we can't read them
-          console.log('Missing cert or key files. Cannot reload cert.');
-          return;
-        }
-
-        console.log('Reloading cert...');
-
-        const options = { // set new server cert options
-          key: Config.keyFileData,
-          cert: Config.certFileData,
-          secureOptions: Config.#httpsCryptoOption
-        };
-
-        try {
-          Config.#httpsServer.setSecureContext(options);
-        } catch (err) {
-          console.log('ERROR cert not reloaded: ', err.toString());
-        }
-      }, 10000);
-    }
-  }
-
-  // ----------------------------------------------------------------------------
-  static setServerToReloadCerts (server, cryptoOption) {
-    if (!Config.isHTTPS()) { return; } // only used in https mode
-
-    if (Config.debug > 0) {
-      console.log('Watching cert and key files. If either is changed, the server will be updated with the new files.');
-    }
-
-    Config.#httpsServer = server;
-    Config.#httpsCryptoOption = cryptoOption;
-  };
-
-  // ----------------------------------------------------------------------------
-  static #loadCertData () {
-    Config.#keyFileLocation = Config.get('keyFile');
-    Config.#certFileLocation = Config.get('certFile');
-    Config.keyFileData = fs.readFileSync(Config.#keyFileLocation);
-    Config.certFileData = fs.readFileSync(Config.#certFileLocation);
-  }
 
   /// ///////////////////////////////////////////////////////////////////////////////
   // Fields
@@ -445,20 +369,6 @@ class Config {
         console.log('Debug Level', Config.debug);
       }
     }
-
-    if (Config.isHTTPS()) {
-      try {
-        Config.#loadCertData();
-
-        // watch the cert and key files
-        fs.watch(Config.#certFileLocation, { persistent: false }, Config.watchFile);
-        fs.watch(Config.#keyFileLocation, { persistent: false }, Config.watchFile);
-      } catch (err) {
-        console.log('ERROR loading cert or key files:', err.toString());
-      }
-    }
-
-    Config.#dropPrivileges();
 
     Auth.initialize({
       mode: Config.get('authMode'),

@@ -20,8 +20,6 @@
 
 const express = require('express');
 const fs = require('fs');
-const http = require('http');
-const https = require('https');
 const glob = require('glob');
 const async = require('async');
 const sprintf = require('./sprintf.js').sprintf;
@@ -1628,26 +1626,9 @@ function main () {
     setInterval(printStats, 60 * 1000);
   }
 
-  let server;
-  if (getConfig('wiseService', 'keyFile') && getConfig('wiseService', 'certFile')) {
-    const keyFileData = fs.readFileSync(getConfig('wiseService', 'keyFile'));
-    const certFileData = fs.readFileSync(getConfig('wiseService', 'certFile'));
-
-    server = https.createServer({ key: keyFileData, cert: certFileData, secureOptions: cryptoLib.constants.SSL_OP_NO_TLSv1 }, app);
-  } else {
-    server = http.createServer(app);
-  }
-
+  // Wait 2 seconds to start listening so the sources have time to settle down
   setTimeout(() => {
-    server
-      .on('error', (e) => {
-        console.log("ERROR - couldn't listen on port", getConfig('wiseService', 'port', 8081), 'is wiseService already running?');
-        process.exit(1);
-      })
-      .on('listening', (e) => {
-        console.log('Express server listening on port %d in %s mode', server.address().port, app.settings.env);
-      })
-      .listen(getConfig('wiseService', 'port', 8081));
+    ArkimeUtil.createHttpServer('wiseService', app, ArkimeConfig.get('wiseService', 'wiseHost'), ArkimeConfig.get('wiseService', 'port', 8081));
   }, 2000);
 }
 

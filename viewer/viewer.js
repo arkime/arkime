@@ -2132,34 +2132,13 @@ async function main () {
   createActions('field-actions', 'makeFieldActions', 'fieldActions');
   setInterval(() => createActions('field-actions', 'makeFieldActions', 'fieldActions'), 150 * 1000); // Check every 2.5 minutes
 
-  let server;
-  if (Config.isHTTPS()) {
-    const cryptoOption = require('crypto').constants.SSL_OP_NO_TLSv1;
-    server = https.createServer({
-      key: Config.keyFileData,
-      cert: Config.certFileData,
-      secureOptions: cryptoOption
-    }, app);
-    Config.setServerToReloadCerts(server, cryptoOption);
-  } else {
-    server = http.createServer(app);
-  }
-
   const viewHost = Config.get('viewHost', undefined);
   if (internals.userNameHeader !== undefined && viewHost !== 'localhost' && viewHost !== '127.0.0.1') {
     console.log('SECURITY WARNING - when userNameHeader is set, viewHost should be localhost or use iptables');
   }
 
-  server
-    .on('error', function (e) {
-      console.log("ERROR - couldn't listen on port", Config.get('viewPort', '8005'), 'is viewer already running?');
-      process.exit(1);
-    })
-    .on('listening', function (e) {
-      console.log('Express server listening on port %d in %s mode', server.address().port, app.settings.env);
-    })
-    .listen(Config.get('viewPort', '8005'), viewHost)
-    .setTimeout(20 * 60 * 1000);
+  const server = ArkimeUtil.createHttpServer([Config.nodeName(), 'default'], app, viewHost, Config.get('viewPort', '8005'));
+  server.setTimeout(20 * 60 * 1000);
 }
 
 // ============================================================================
