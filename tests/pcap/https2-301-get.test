@@ -18,7 +18,8 @@
                   "notAfter" : 1636502400000,
                   "notBefore" : 1194609600000,
                   "publicAlgorithm" : "rsaEncryption",
-                  "remainingDays" : -1,
+                  "remainingDays" : 2906,
+                  "remainingSeconds" : 251092127,
                   "serial" : "0337b928347c60a6aec5adb1217f3860",
                   "subjectCN" : [
                      "digicert high assurance ev ca-1"
@@ -29,7 +30,8 @@
                   "subjectOU" : [
                      "www.digicert.com"
                   ],
-                  "validDays" : 5114
+                  "validDays" : 5114,
+                  "validSeconds" : 441892800
                },
                {
                   "alt" : [
@@ -50,7 +52,8 @@
                   "notAfter" : 1441195200000,
                   "notBefore" : 1370822400000,
                   "publicAlgorithm" : "rsaEncryption",
-                  "remainingDays" : -1,
+                  "remainingDays" : 645,
+                  "remainingSeconds" : 55784927,
                   "serial" : "047fbe2e4bde0084d2caf8e3ecfe7058",
                   "subjectCN" : [
                      "github.com"
@@ -58,7 +61,8 @@
                   "subjectON" : [
                      "GitHub, Inc."
                   ],
-                  "validDays" : 814
+                  "validDays" : 814,
+                  "validSeconds" : 70372800
                }
             ],
             "certCnt" : 2,
@@ -228,3 +232,4 @@
       }
    ]
 }
+

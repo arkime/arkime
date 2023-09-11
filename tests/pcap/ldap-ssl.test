@@ -12,12 +12,14 @@
                   "notAfter" : 1738030709000,
                   "notBefore" : 1422670709000,
                   "publicAlgorithm" : "rsaEncryption",
-                  "remainingDays" : 1,
+                  "remainingDays" : 3649,
+                  "remainingSeconds" : 315357177,
                   "serial" : "008a07e08d4ab50a7b",
                   "subjectCN" : [
                      "ldap ssl test"
                   ],
-                  "validDays" : 3650
+                  "validDays" : 3650,
+                  "validSeconds" : 315360000
                }
             ],
             "certCnt" : 1,

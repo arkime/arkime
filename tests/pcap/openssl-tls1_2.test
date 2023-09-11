@@ -15,7 +15,8 @@
                   "notAfter" : 1534824000000,
                   "notBefore" : 1021953600000,
                   "publicAlgorithm" : "rsaEncryption",
-                  "remainingDays" : -1,
+                  "remainingDays" : 1406,
+                  "remainingSeconds" : 121486104,
                   "serial" : "12bbe6",
                   "subjectCN" : [
                      "geotrust global ca"
@@ -23,7 +24,8 @@
                   "subjectON" : [
                      "GeoTrust Inc."
                   ],
-                  "validDays" : 5936
+                  "validDays" : 5936,
+                  "validSeconds" : 512870400
                },
                {
                   "alt" : [
@@ -88,7 +90,8 @@
                   "notAfter" : 1419292800000,
                   "notBefore" : 1411553285000,
                   "publicAlgorithm" : "rsaEncryption",
-                  "remainingDays" : -1,
+                  "remainingDays" : 68,
+                  "remainingSeconds" : 5954904,
                   "serial" : "7a5b0bd895632f87",
                   "subjectCN" : [
                      "*.google.com"
@@ -96,7 +99,8 @@
                   "subjectON" : [
                      "Google Inc"
                   ],
-                  "validDays" : 89
+                  "validDays" : 89,
+                  "validSeconds" : 7739515
                },
                {
                   "hash" : "bb:dc:e1:3e:9d:53:7a:52:29:91:5c:b1:23:c7:aa:b0:a8:55:e7:98",
@@ -109,7 +113,8 @@
                   "notAfter" : 1483228799000,
                   "notBefore" : 1365174955000,
                   "publicAlgorithm" : "rsaEncryption",
-                  "remainingDays" : -1,
+                  "remainingDays" : 808,
+                  "remainingSeconds" : 69890903,
                   "serial" : "023a76",
                   "subjectCN" : [
                      "google internet authority g2"
@@ -117,7 +122,8 @@
                   "subjectON" : [
                      "Google Inc"
                   ],
-                  "validDays" : 1366
+                  "validDays" : 1366,
+                  "validSeconds" : 118053844
                }
             ],
             "certCnt" : 3,

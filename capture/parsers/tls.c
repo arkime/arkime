@@ -887,6 +887,18 @@ void arkime_parser_init()
         0, ARKIME_FIELD_FLAG_FAKE,
         (char *)NULL);
 
+    arkime_field_define("cert", "integer",
+        "cert.validforSeconds", "Seconds Valid For", "cert.validSeconds",
+        "Certificate is valid for this many seconds total",
+        0, ARKIME_FIELD_FLAG_FAKE,
+        (char *)NULL);
+
+    arkime_field_define("cert", "integer",
+        "cert.remainingSeconds", "Seconds remaining", "cert.remainingSeconds",
+        "Certificate is still valid for this many seconds",
+        0, ARKIME_FIELD_FLAG_FAKE,
+        (char *)NULL);
+
     arkime_field_define("cert", "termfield",
         "cert.curve", "Curve", "cert.curve",
         "Curve Algorithm",

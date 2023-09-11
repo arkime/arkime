@@ -28,6 +28,18 @@ if (session.cert)
       - if (cert.notAfter)
         strong.medium.ml-1 Not After
         moloch-session-field.detail-field(:expr="'cert.notafter'", :value='"'+cert.notAfter+'"', :field="fields['cert.notafter']", :pull-left="true")
+      - if (cert.validDays)
+        strong.medium.ml-1 Days Valid For
+        moloch-session-field.detail-field(:expr="'cert.validfor'", :value='"'+cert.validDays+'"', :field="fields['cert.validfor']", :pull-left="true")
+      - if (cert.validSeconds)
+        strong.medium.ml-1 Seconds Valid For
+        moloch-session-field.detail-field(:expr="'cert.validforSeconds'", :value='"'+cert.validSeconds+'"', :field="fields['cert.validforSeconds']", :pull-left="true")
+      - if (cert.remainingDays)
+        strong.medium.ml-1 Days Remaining
+        moloch-session-field.detail-field(:expr="'cert.remainingDays'", :value='"'+cert.remainingDays+'"', :field="fields['cert.remainingDays']", :pull-left="true")
+      - if (cert.remainingSeconds)
+        strong.medium.ml-1 Seconds Remaining
+        moloch-session-field.detail-field(:expr="'cert.remainingSeconds'", :value='"'+cert.remainingSeconds+'"', :field="fields['cert.remainingSeconds']", :pull-left="true")
       - if (cert.issueCN && Array.isArray(cert.issueCN))
         strong.medium.ml-1 Issuer Common
         each cn,i in cert.issueCN

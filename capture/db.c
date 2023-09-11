@@ -1303,10 +1303,15 @@ void arkime_db_save_session(ArkimeSession_t *session, int final)
 
                 BSB_EXPORT_sprintf(jbsb, "\"notBefore\":%" PRId64 ",", certs->notBefore*1000);
                 BSB_EXPORT_sprintf(jbsb, "\"notAfter\":%" PRId64 ",", certs->notAfter*1000);
-                if (certs->notAfter >= certs->notBefore) {
-                    BSB_EXPORT_sprintf(jbsb, "\"validDays\":%" PRId64 ",", ((int64_t)certs->notAfter - certs->notBefore)/(60*60*24));
-                    BSB_EXPORT_sprintf(jbsb, "\"remainingDays\":%" PRId64 ",", ((int64_t)certs->notAfter - currentTime.tv_sec)/(60*60*24));
+                if (certs->notAfter < ((uint64_t)session->firstPacket.tv_sec)) {
+                    BSB_EXPORT_sprintf(jbsb, "\"remainingDays\":%" PRId64 ",", ((int64_t)0));
+                    BSB_EXPORT_sprintf(jbsb, "\"remainingSeconds\":%" PRId64 ",", ((int64_t)0));
+                } else {
+                    BSB_EXPORT_sprintf(jbsb, "\"remainingDays\":%" PRId64 ",", ((int64_t)certs->notAfter - ((uint64_t)session->firstPacket.tv_sec))/(60*60*24));
+                    BSB_EXPORT_sprintf(jbsb, "\"remainingSeconds\":%" PRId64 ",", ((int64_t)certs->notAfter - ((uint64_t)session->firstPacket.tv_sec)));
                 }
+                BSB_EXPORT_sprintf(jbsb, "\"validDays\":%" PRId64 ",", ((int64_t)certs->notAfter - (int64_t)certs->notBefore)/(60*60*24));
+                BSB_EXPORT_sprintf(jbsb, "\"validSeconds\":%" PRId64 ",", ((int64_t)certs->notAfter - (int64_t)certs->notBefore));
 
                 BSB_EXPORT_rewind(jbsb, 1); // Remove last comma
 
