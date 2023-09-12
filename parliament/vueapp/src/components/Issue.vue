@@ -34,11 +34,11 @@ export default {
       required: true
     },
     groupId: {
-      type: Number,
+      type: String,
       required: true
     },
     clusterId: {
-      type: Number,
+      type: String,
       required: true
     },
     index: {

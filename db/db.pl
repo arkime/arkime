@@ -5726,7 +5726,7 @@ sub parliamentUpdate
           "type": "keyword"
         },
         "id": {
-          "type": "integer"
+          "type": "keyword"
         },
         "clusters": {
           "type": "object",
@@ -5740,17 +5740,32 @@ sub parliamentUpdate
             "url": {
               "type": "keyword"
             },
+            "localUrl": {
+              "type": "keyword"
+            },
             "type": {
               "type": "keyword"
             },
             "id": {
-              "type": "integer"
-            },
-            "healthError": {
               "type": "keyword"
             },
-            "statsError": {
-              "type": "keyword"
+            "hideDeltaBPS": {
+              "type": "boolean"
+            },
+            "hideDeltaTDPS": {
+              "type": "boolean"
+            },
+            "hideMonitoring": {
+              "type": "boolean"
+            },
+            "hideMolochNodes": {
+              "type": "boolean"
+            },
+            "hideDataNodes": {
+              "type": "boolean"
+            },
+            "hideTotalNodes": {
+              "type": "boolean"
             }
           }
         }

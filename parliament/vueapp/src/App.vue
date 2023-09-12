@@ -13,6 +13,7 @@
 
 <script>
 import ParliamentNavbar from './components/Navbar';
+import ParliamentService from './components/parliament.service';
 import ParliamentUpgradeBrowser from './components/UpgradeBrowser';
 
 export default {
@@ -32,7 +33,12 @@ export default {
 
     if (!this.compatibleBrowser) {
       console.log('Incompatible browser, please upgrade!');
+      return;
     }
+
+    ParliamentService.getParliament().then((data) => {
+      this.$store.commit('setParliament', data);
+    });
   }
 };
 </script>

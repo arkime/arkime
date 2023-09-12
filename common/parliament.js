@@ -1,11 +1,28 @@
 'use strict';
 
+const LRU = require('lru-cache');
+const ArkimeConfig = require('../common/arkimeConfig');
+
 class Parliament {
+  static #name;
   static #debug;
   static #esclient;
   static #parliamentIndex;
+  static #cache = new LRU({ max: 1000, maxAge: 1000 * 60 });
 
-  static initialize (options) {
+  static settingsDefault = {
+    general: {
+      noPackets: 0,
+      noPacketsLength: 10,
+      outOfDate: 30,
+      esQueryTimeout: 5,
+      removeIssuesAfter: 60,
+      removeAcknowledgedAfter: 15
+    }
+  };
+
+  static async initialize (options) {
+    Parliament.#name = options.name;
     Parliament.#debug = options.debug ?? 0;
     Parliament.#esclient = options.esclient;
 
@@ -26,9 +43,9 @@ class Parliament {
   // --------------------------------------------------------------------------
   // DB INTERACTIONS
   // --------------------------------------------------------------------------
-  static async getParliament (id) {
+  static async getParliament () {
     return Parliament.#esclient.get({
-      index: Parliament.#parliamentIndex, id
+      index: Parliament.#parliamentIndex, id: Parliament.#name
     });
   }
 
@@ -40,19 +57,13 @@ class Parliament {
 
   static async createParliament (parliament) {
     return Parliament.#esclient.create({
-      index: Parliament.#parliamentIndex, body: parliament, id: parliament.name, timeout: '10m'
+      index: Parliament.#parliamentIndex, body: parliament, id: Parliament.#name, timeout: '10m'
     });
   }
 
-  static async deleteParliament (id) {
-    return Parliament.#esclient.delete({
-      index: Parliament.#parliamentIndex, id, refresh: true, timeout: '10m'
-    });
-  }
-
-  static async setParliament (id, parliament) {
+  static async setParliament (parliament) {
     return Parliament.#esclient.index({
-      index: Parliament.#parliamentIndex, body: parliament, id, refresh: true, timeout: '10m'
+      index: Parliament.#parliamentIndex, body: parliament, id: Parliament.#name, refresh: true, timeout: '10m'
     });
   }
 
@@ -97,46 +108,87 @@ class Parliament {
    * @property {string} title - The title of the Cluster.
    * @property {string} description - The description of the Cluster.
    * @property {string} url - The url of the Cluster.
+   * @property {string} localUrl - The local url of the Cluster.
    * @property {string} type - The type of the Cluster.
-   * @property {string} healthError - The healthError of the Cluster.
+   * @property {string} id - The unique ID of the Cluster.
+   * @property {string} hideDeltaBPS - Whether to hide the delta bits per second of the Cluster.
+   * @property {string} hideDeltaTDPS - Whether to hide the delta packet drops per second of the Cluster.
+   * @property {string} hideMonitoring - Whether to hide number of sessions being recorded of the Cluster.
+   * @property {string} hideMolochNodes - Whether to hide the number of Arkime nodes of the Cluster.
+   * @property {string} hideDataNodes - Whether to hide the number of data nodes of the Cluster.
+   * @property {string} hideTotalNodes - Whether to hide the number of total nodes of the Cluster.
    */
 
   /**
-   * GET - /api/parliament/:id
+   * GET - /api/parliament
    *
    * Retrieves a parliament by id (name).
-   * @name /parliament/:id
+   * @name /parliament
    * @returns {Parliament} parliament - The requested parliament
    */
   static async apiGetParliament (req, res) {
-    return await Parliament.getParliament(req.params.id);
+    try {
+      const { body: { _source: parliament } } = await Parliament.getParliament();
+
+      Parliament.#cache.set('parliament', parliament);
+
+      if (!req.user.hasRole('parliamentAdmin')) {
+        delete parliament.settings;
+      }
+
+      return res.json(parliament);
+    } catch (err) {
+      if (ArkimeConfig.debug) {
+        console.log('Error fetching parliament', err);
+      }
+      return res.serverError(500, 'Error fetching parliament');
+    }
   }
 
   /**
-   * POST - /api/parliament/:id
-   *
-   * Creates a parliament by id (name).
-   * @name /parliament/:id
-   * @returns {boolean} success - Whether the operation was successful.
-   * @returns {string} text - The success/error message to (optionally) display to the user.
-   */
-  static async apiCreateParliament (req, res) {
-    // TODO validate parliament
-    return await Parliament.createParliament(req.body);
-  }
-
-  /**
-   * PUT - /api/parliament/:id
+   * PUT - /api/parliament
    *
    * Updates a parliament by id (name).
-   * @name /parliament/:id
+   * @name /parliament
    * @returns {boolean} success - Whether the operation was successful.
    * @returns {string} text - The success/error message to (optionally) display to the user.
    * @returns {Parliament} parliament - The updated parliament.
    */
   static async apiUpdateParliament (req, res) {
-    // TODO VALIDATE PARLIAMENT
-    return await Parliament.setParliament(req.params.id, req.body);
+    try {
+      await Parliament.setParliament(req.body);
+      return res.json({ success: true, text: 'Parliament updated successfully', parliament: req.body });
+    } catch (err) {
+      if (ArkimeConfig.debug) {
+        console.log('Error updating parliament', err);
+      }
+      return res.serverError(500, 'Error updating parliament');
+    }
+  }
+
+  // --------------------------------------------------------------------------
+  // HELPERS
+  // --------------------------------------------------------------------------
+  /**
+   * Retrieves a general setting from the parliament
+   * Caches it for 1 minute
+   * @param {string} type - The type of setting to retrieve.
+   */
+  static async getGeneralSetting (type) {
+    let parliament = Parliament.#cache.get('parliament');
+
+    if (!parliament) {
+      const { body: { _source: updatedParliament } } = await Parliament.getParliament();
+      Parliament.#cache.set('parliament', updatedParliament);
+      parliament = updatedParliament;
+    }
+
+    let val = Parliament.settingsDefault.general[type];
+    if (parliament?.settings?.general[type]) {
+      val = parliament.settings.general[type];
+    }
+
+    return val;
   }
 }
 

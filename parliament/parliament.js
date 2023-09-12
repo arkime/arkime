@@ -10,7 +10,6 @@ const http = require('http');
 const https = require('https');
 const fs = require('fs');
 const favicon = require('serve-favicon');
-const axios = require('axios');
 const bp = require('body-parser');
 const logger = require('morgan');
 const os = require('os');
@@ -18,6 +17,7 @@ const helmet = require('helmet');
 const uuid = require('uuid').v4;
 const upgrade = require('./upgrade');
 const path = require('path');
+const axios = require('axios');
 const dayMs = 60000 * 60 * 24;
 const User = require('../common/user');
 const Auth = require('../common/auth');
@@ -38,22 +38,6 @@ const issueTypes = {
   noPackets: { on: true, name: 'Low Packets', text: 'is not receiving many packets', severity: 'red', description: 'the capture node is not receiving many packets' }
 };
 
-const settingsDefault = {
-  general: {
-    noPackets: 0,
-    noPacketsLength: 10,
-    outOfDate: 30,
-    esQueryTimeout: 5,
-    removeIssuesAfter: 60,
-    removeAcknowledgedAfter: 15
-  },
-  notifiers: {}
-};
-
-const internals = {
-  parliamentName: 'Parliament'
-};
-
 const parliamentReadError = `
 You must fix this before you can run Parliament.
 Try using parliament.example.json as a starting point.
@@ -61,7 +45,15 @@ Use the "file" setting in your Parliament config to point to your Parliament JSO
 See https://arkime.com/settings#parliament for more information.
 `;
 
+const internals = {
+  stats: {},
+  parliamentName: 'Parliament',
+  httpsAgent: new https.Agent({ rejectUnauthorized: !ArkimeConfig.insecure })
+};
+
 /* Config ------------------------------------------------------------------ */
+const getConfig = ArkimeConfig.get;
+
 (function () {
   for (let i = 0, ilen = process.argv.length; i < ilen; i++) {
     if (process.argv[i] === '-o') {
@@ -88,8 +80,6 @@ See https://arkime.com/settings#parliament for more information.
   }
 }());
 
-const getConfig = ArkimeConfig.get;
-
 if (ArkimeConfig.regressionTests) {
   app.post('/regressionTests/shutdown', function (req, res) {
     process.exit(0);
@@ -97,13 +87,9 @@ if (ArkimeConfig.regressionTests) {
 }
 
 // parliament object!
-let parliament;
+let parliamentFile;
 // issues object!
 let issues;
-
-// define ids for groups and clusters
-let globalGroupId = 0;
-let globalClusterId = 0;
 
 // save noPackets issues so that the time of issue can be compared to the
 // noPacketsLength user setting (only issue alerts when the time the issue
@@ -207,15 +193,6 @@ function newError (code, msg) {
 }
 
 /* Middleware -------------------------------------------------------------- */
-// App should always have parliament data
-app.use((req, res, next) => {
-  if (!parliament) {
-    return res.serverError(500, 'Unable to fetch parliament data.');
-  }
-
-  next();
-});
-
 // Replace the default express error handler
 app.use((err, req, res, next) => {
   console.log(ArkimeUtil.sanitizeStr(err.stack));
@@ -257,6 +234,7 @@ function isAdmin (req, res, next) {
 let alerts = [];
 // sends alerts in the alerts list
 async function sendAlerts () {
+  const hostname = await Parliament.getGeneralSetting('hostname');
   const promise = new Promise((resolve, reject) => {
     for (let index = 0, len = alerts.length; index < len; index++) {
       (function (i) {
@@ -264,10 +242,10 @@ async function sendAlerts () {
         setTimeout(() => {
           const alertToSend = alerts[i];
           const links = [];
-          if (parliament.settings.general.includeUrl) {
+          if (Parliament.getGeneralSetting('includeUrl')) {
             links.push({
               text: 'Parliament Dashboard',
-              url: `${parliament.settings.general.hostname}?searchTerm=${alert.cluster}`
+              url: `${hostname}?searchTerm=${alertToSend.cluster}`
             });
           }
           alertToSend.notifier.sendAlert(alertToSend.config, alertToSend.message, links);
@@ -374,6 +352,154 @@ function findIssue (clusterId, issueType, node) {
   }
 }
 
+// Initializes the parliament with ids for each group and cluster
+// Upgrades the parliament if necessary
+async function initializeParliament () {
+  ArkimeUtil.checkArkimeSchemaVersion(User.getClient(), getConfig('parliament', 'usersPrefix'), MIN_DB_VERSION);
+  Notifier.initialize({
+    issueTypes,
+    debug: ArkimeConfig.debug,
+    prefix: getConfig('parliament', 'usersPrefix'),
+    esclient: User.getClient()
+  });
+
+  Parliament.initialize({
+    debug: ArkimeConfig.debug,
+    esclient: User.getClient(),
+    name: internals.parliamentName,
+    prefix: getConfig('parliament', 'usersPrefix')
+  });
+
+  parliamentFile = await require(`${getConfig('parliament', 'file')}`);
+
+  if (parliamentFile && (parliamentFile.version === undefined || parliamentFile.version < MIN_PARLIAMENT_VERSION)) {
+    console.log( // notify of upgrade
+      `WARNING - Current parliament version (${parliamentFile.version ?? 1}) is less then required version (${MIN_PARLIAMENT_VERSION})
+        Upgrading your Parliament...\n`
+    );
+
+    // do the upgrade
+    const upgraded = await upgrade.upgrade(parliamentFile, ArkimeConfig, internals.parliamentName, issues);
+    parliamentFile = upgraded.parliament;
+    issues = upgraded.issues;
+
+    try { // write the upgraded files
+      if (Buffer.from(JSON.stringify(parliamentFile, null, 2)).length > 100) {
+        fs.writeFileSync(getConfig('parliament', 'file'), JSON.stringify(parliamentFile, null, 2), 'utf8');
+      }
+      if (!validateIssues()) {
+        fs.writeFileSync(app.get('issuesfile'), JSON.stringify(issues, null, 2), 'utf8');
+      }
+    } catch (e) { // notify of error saving upgraded parliament and exit
+      console.log('Error upgrading Parliament:\n\n', ArkimeUtil.sanitizeStr(e.stack));
+      if (ArkimeConfig.debug) {
+        console.log(parliamentReadError);
+      }
+      throw new Error(e);
+    }
+
+    // notify of upgrade success
+    console.log(`SUCCESS - Parliament upgraded to version ${MIN_PARLIAMENT_VERSION}`);
+  }
+
+  try { // create parliament in db if it doesn't exist (there was no json file to upgrade from)
+    await Parliament.getParliament();
+  } catch (err) {
+    if (err.meta.statusCode === 404) {
+      console.log('Parliament does not exist exist in DB. creating!');
+      await Parliament.createParliament({
+        groups: [],
+        name: internals.parliamentName,
+        settings: Parliament.settingsDefault
+      });
+    } else {
+      console.error('ERROR - Error fetching Parliament', err);
+    }
+  }
+
+  if (parliamentFile && parliamentFile.version < 7) {
+    if (!parliamentFile.groups) { parliamentFile.groups = []; }
+
+    // set id for each group/cluster
+    for (const group of parliamentFile.groups) {
+      group.id = uuid();
+      if (group.clusters) {
+        for (const cluster of group.clusters) {
+          cluster.id = uuid();
+        }
+      }
+    }
+
+    if (!parliamentFile.settings) {
+      parliamentFile.settings = Parliament.settingsDefault;
+    }
+    if (!parliamentFile.settings.general) {
+      parliamentFile.settings.general = Parliament.settingsDefault.general;
+    }
+    if (!parliamentFile.settings.general.outOfDate) {
+      parliamentFile.settings.general.outOfDate = Parliament.settingsDefault.general.outOfDate;
+    }
+    if (!parliamentFile.settings.general.noPackets) {
+      parliamentFile.settings.general.noPackets = Parliament.settingsDefault.general.noPackets;
+    }
+    if (!parliamentFile.settings.general.noPacketsLength) {
+      parliamentFile.settings.general.noPacketsLength = Parliament.settingsDefault.general.noPacketsLength;
+    }
+    if (!parliamentFile.settings.general.esQueryTimeout) {
+      parliamentFile.settings.general.esQueryTimeout = Parliament.settingsDefault.general.esQueryTimeout;
+    }
+    if (!parliamentFile.settings.general.removeIssuesAfter) {
+      parliamentFile.settings.general.removeIssuesAfter = Parliament.settingsDefault.general.removeIssuesAfter;
+    }
+    if (!parliamentFile.settings.general.removeAcknowledgedAfter) {
+      parliamentFile.settings.general.removeAcknowledgedAfter = Parliament.settingsDefault.general.removeAcknowledgedAfter;
+    }
+    if (!parliamentFile.settings.general.hostname) {
+      parliamentFile.settings.general.hostname = os.hostname();
+    }
+  }
+
+  if (ArkimeConfig.debug) {
+    console.log('Parliament initialized!');
+  }
+}
+
+function cleanUpIssues () {
+  let issuesRemoved = false;
+
+  let len = issues.length;
+  while (len--) {
+    const issue = issues[len];
+    const timeSinceLastNoticed = Date.now() - issue.lastNoticed || issue.firstNoticed;
+    const removeIssuesAfter = Parliament.getGeneralSetting('removeIssuesAfter') * 1000 * 60;
+    const removeAcknowledgedAfter = Parliament.getGeneralSetting('removeAcknowledgedAfter') * 1000 * 60;
+
+    if (!issue.ignoreUntil) { // don't clean up any ignored issues, wait for the ignore to expire
+      // remove issues that are provisional that haven't been seen since the last cycle
+      if (issue.provisional && timeSinceLastNoticed >= 10000) {
+        issuesRemoved = true;
+        issues.splice(len, 1);
+      }
+
+      // remove all issues that have not been seen again for the removeIssuesAfter time, and
+      // remove all acknowledged issues that have not been seen again for the removeAcknowledgedAfter time
+      if ((!issue.acknowledged && timeSinceLastNoticed > removeIssuesAfter) ||
+          (issue.acknowledged && timeSinceLastNoticed > removeAcknowledgedAfter)) {
+        issuesRemoved = true;
+        issues.splice(len, 1);
+      }
+
+      // if the issue was acknowledged but still persists, unacknowledge and alert again
+      if (issue.acknowledged && (Date.now() - issue.acknowledged) > removeAcknowledgedAfter) {
+        issue.alerted = undefined;
+        issue.acknowledged = undefined;
+      }
+    }
+  }
+
+  return issuesRemoved;
+}
+
 // Updates an existing issue or pushes a new issue onto the issue array
 function setIssue (cluster, newIssue) {
   // build issue
@@ -442,10 +568,11 @@ function setIssue (cluster, newIssue) {
   }
 }
 
-// Retrieves the health of each cluster and updates the cluster with that info
 function getHealth (cluster) {
+  Parliament.getGeneralSetting('esQueryTimeout');
+
   return new Promise((resolve, reject) => {
-    const timeout = getGeneralSetting('esQueryTimeout') * 1000;
+    const timeout = Parliament.getGeneralSetting('esQueryTimeout') * 1000;
 
     const options = {
       url: `${cluster.localUrl ?? cluster.url}/eshealth.json`,
@@ -454,51 +581,50 @@ function getHealth (cluster) {
       timeout
     };
 
-    axios(options)
-      .then((response) => {
-        cluster.healthError = undefined;
+    axios(options).then((response) => {
+      cluster.healthError = undefined;
 
-        let health;
-        try {
-          health = response.data;
-        } catch (e) {
-          cluster.healthError = 'ES health parse failure';
-          console.log('Bad response for es health', cluster.localUrl ?? cluster.url);
-          return resolve();
+      let health;
+      try {
+        health = response.data;
+      } catch (e) {
+        cluster.healthError = 'ES health parse failure';
+        console.log('Bad response for es health', cluster.localUrl ?? cluster.url);
+        return resolve({ cluster });
+      }
+
+      if (health) {
+        cluster.status = health.status;
+        cluster.totalNodes = health.number_of_nodes;
+        cluster.dataNodes = health.number_of_data_nodes;
+
+        if (cluster.status === 'red') { // alert on red es status
+          setIssue(cluster, { type: 'esRed' });
         }
+      }
 
-        if (health) {
-          cluster.status = health.status;
-          cluster.totalNodes = health.number_of_nodes;
-          cluster.dataNodes = health.number_of_data_nodes;
+      return resolve({ cluster });
+    }).catch((error) => {
+      const message = error.message ?? error;
 
-          if (cluster.status === 'red') { // alert on red es status
-            setIssue(cluster, { type: 'esRed' });
-          }
-        }
+      setIssue(cluster, { type: 'esDown', value: message });
 
-        return resolve();
-      })
-      .catch((error) => {
-        const message = error.message ?? error;
+      cluster.healthError = message;
 
-        setIssue(cluster, { type: 'esDown', value: message });
+      if (ArkimeConfig.debug) {
+        console.log('HEALTH ERROR:', options.url, message);
+      }
 
-        cluster.healthError = message;
-
-        if (ArkimeConfig.debug) {
-          console.log('HEALTH ERROR:', options.url, message);
-        }
-
-        return resolve();
-      });
+      return resolve({ cluster });
+    });
   });
 }
 
-// Retrieves, then calculates stats for each cluster and updates the cluster with that info
-function getStats (cluster) {
+async function getStats (cluster) {
+  await Parliament.getGeneralSetting('esQueryTimeout');
+
   return new Promise((resolve, reject) => {
-    const timeout = getGeneralSetting('esQueryTimeout') * 1000;
+    const timeout = Parliament.getGeneralSetting('esQueryTimeout') * 1000;
 
     const options = {
       url: `${cluster.localUrl ?? cluster.url}/api/parliament`,
@@ -509,216 +635,111 @@ function getStats (cluster) {
 
     // Get now before the query since we don't know how long query/response will take
     const now = Date.now() / 1000;
-    axios(options)
-      .then((response) => {
-        cluster.statsError = undefined;
+    axios(options).then((response) => {
+      cluster.statsError = undefined;
 
-        if (response.data.bsqErr) {
-          cluster.statsError = response.data.bsqErr;
-          console.log('Get stats error', response.data.bsqErr);
-          return resolve();
+      if (response.data.bsqErr) {
+        cluster.statsError = response.data.bsqErr;
+        console.log('Get stats error', response.data.bsqErr);
+        return resolve({ cluster });
+      }
+
+      let stats;
+      try {
+        stats = response.data;
+      } catch (e) {
+        cluster.statsError = 'ES stats parse failure';
+        console.log('Bad response for stats', cluster.localUrl ?? cluster.url);
+        return resolve({ cluster });
+      }
+
+      if (!stats || !stats.data) { return resolve({ cluster }); }
+
+      cluster.deltaBPS = 0;
+      cluster.deltaTDPS = 0;
+      cluster.molochNodes = 0;
+      cluster.monitoring = 0;
+
+      const outOfDate = Parliament.getGeneralSetting('outOfDate');
+
+      for (const stat of stats.data) {
+        // sum delta bytes per second
+        if (stat.deltaBytesPerSec) {
+          cluster.deltaBPS += stat.deltaBytesPerSec;
         }
 
-        let stats;
-        try {
-          stats = response.data;
-        } catch (e) {
-          cluster.statsError = 'ES stats parse failure';
-          console.log('Bad response for stats', cluster.localUrl ?? cluster.url);
-          return resolve();
+        // sum delta total dropped per second
+        if (stat.deltaTotalDroppedPerSec) {
+          cluster.deltaTDPS += stat.deltaTotalDroppedPerSec;
         }
 
-        if (!stats || !stats.data) { return resolve(); }
+        if (stat.monitoring) {
+          cluster.monitoring += stat.monitoring;
+        }
 
-        cluster.deltaBPS = 0;
-        cluster.deltaTDPS = 0;
-        cluster.molochNodes = 0;
-        cluster.monitoring = 0;
+        if ((now - stat.currentTime) <= outOfDate && stat.deltaPacketsPerSec > 0) {
+          cluster.molochNodes++;
+        }
 
-        const outOfDate = getGeneralSetting('outOfDate');
+        // Look for issues
+        if ((now - stat.currentTime) > outOfDate) {
+          setIssue(cluster, {
+            type: 'outOfDate',
+            node: stat.nodeName,
+            value: stat.currentTime * 1000
+          });
+        }
 
-        for (const stat of stats.data) {
-          // sum delta bytes per second
-          if (stat.deltaBytesPerSec) {
-            cluster.deltaBPS += stat.deltaBytesPerSec;
-          }
+        // look for no packets issue
+        if (stat.deltaPacketsPerSec <= Parliament.getGeneralSetting('noPackets')) {
+          const id = cluster.title + stat.nodeName;
 
-          // sum delta total dropped per second
-          if (stat.deltaTotalDroppedPerSec) {
-            cluster.deltaTDPS += stat.deltaTotalDroppedPerSec;
-          }
-
-          if (stat.monitoring) {
-            cluster.monitoring += stat.monitoring;
-          }
-
-          if ((now - stat.currentTime) <= outOfDate && stat.deltaPacketsPerSec > 0) {
-            cluster.molochNodes++;
-          }
-
-          // Look for issues
-          if ((now - stat.currentTime) > outOfDate) {
+          // only set the noPackets issue if there is a record of this cluster/node
+          // having noPackets and that issue has persisted for the set length of time
+          if (noPacketsMap[id] &&
+            Date.now() - noPacketsMap[id] >= (Parliament.getGeneralSetting('noPacketsLength') * 1000)) {
             setIssue(cluster, {
-              type: 'outOfDate',
+              type: 'noPackets',
               node: stat.nodeName,
-              value: stat.currentTime * 1000
+              value: stat.deltaPacketsPerSec
             });
-          }
-
-          // look for no packets issue
-          if (stat.deltaPacketsPerSec <= getGeneralSetting('noPackets')) {
-            const id = cluster.title + stat.nodeName;
-
-            // only set the noPackets issue if there is a record of this cluster/node
-            // having noPackets and that issue has persisted for the set length of time
-            if (noPacketsMap[id] &&
-              Date.now() - noPacketsMap[id] >= (getGeneralSetting('noPacketsLength') * 1000)) {
-              setIssue(cluster, {
-                type: 'noPackets',
-                node: stat.nodeName,
-                value: stat.deltaPacketsPerSec
-              });
-            } else if (!noPacketsMap[id]) {
-              // if this issue has not been encountered yet, make a record of it
-              noPacketsMap[id] = Date.now();
-            }
-          }
-
-          if (stat.deltaESDroppedPerSec > 0) {
-            setIssue(cluster, {
-              type: 'esDropped',
-              node: stat.nodeName,
-              value: stat.deltaESDroppedPerSec
-            });
+          } else if (!noPacketsMap[id]) {
+            // if this issue has not been encountered yet, make a record of it
+            noPacketsMap[id] = Date.now();
           }
         }
 
-        return resolve();
-      })
-      .catch((error) => {
-        const message = error.message ?? error;
-
-        setIssue(cluster, { type: 'esDown', value: message });
-
-        cluster.statsError = message;
-
-        if (ArkimeConfig.debug) {
-          console.log('STATS ERROR:', options.url, message);
+        if (stat.deltaESDroppedPerSec > 0) {
+          setIssue(cluster, {
+            type: 'esDropped',
+            node: stat.nodeName,
+            value: stat.deltaESDroppedPerSec
+          });
         }
+      }
 
-        return resolve();
-      });
+      return resolve({ cluster });
+    }).catch((error) => {
+      const message = error.message ?? error;
+
+      setIssue(cluster, { type: 'esDown', value: message });
+
+      cluster.statsError = message;
+
+      if (ArkimeConfig.debug) {
+        console.log('STATS ERROR:', options.url, message);
+      }
+
+      return resolve({ cluster });
+    });
   });
 }
 
-// Initializes the parliament with ids for each group and cluster
-// Upgrades the parliament if necessary
-async function initializeParliament () {
-  ArkimeUtil.checkArkimeSchemaVersion(User.getClient(), getConfig('parliament', 'usersPrefix'), MIN_DB_VERSION);
-  Notifier.initialize({
-    issueTypes,
-    debug: ArkimeConfig.debug,
-    prefix: getConfig('parliament', 'usersPrefix'),
-    esclient: User.getClient()
-  });
+// Chains all promises for requests for health and stats for each cluster in the parliament
+// this also sets all the issues in the issues.json file
+async function updateParliament () {
+  const { body: { _source: parliament } } = await Parliament.getParliament();
 
-  Parliament.initialize({
-    debug: ArkimeConfig.debug,
-    prefix: getConfig('parliament', 'usersPrefix'),
-    esclient: User.getClient()
-  });
-
-  if (parliament.version === undefined || parliament.version < MIN_PARLIAMENT_VERSION) {
-    console.log( // notify of upgrade
-      `WARNING - Current parliament version (${parliament.version ?? 1}) is less then required version (${MIN_PARLIAMENT_VERSION})
-        Upgrading your Parliament...\n`
-    );
-
-    // do the upgrade
-    parliament = await upgrade.upgrade(parliament, ArkimeConfig, internals.parliamentName);
-
-    // TODO delete parliament.json?
-    // try { // write the upgraded file
-    //   const upgradeParliamentError = validateParliament();
-    //   if (!upgradeParliamentError) {
-    //     fs.writeFileSync(getConfig('parliament', 'file'), JSON.stringify(parliament, null, 2), 'utf8');
-    //   }
-    // } catch (e) { // notify of error saving upgraded parliament and exit
-    //   console.log('Error upgrading Parliament:\n\n', ArkimeUtil.sanitizeStr(e.stack));
-    //   if (ArkimeConfig.debug) {
-    //     console.log(parliamentReadError);
-    //   }
-    //   throw new Error(e);
-    // }
-
-    // notify of upgrade success
-    console.log(`SUCCESS - Parliament upgraded to version ${MIN_PARLIAMENT_VERSION}`);
-  }
-
-  if (!parliament.groups) { parliament.groups = []; }
-
-  // set id for each group/cluster
-  for (const group of parliament.groups) {
-    group.id = globalGroupId++;
-    if (group.clusters) {
-      for (const cluster of group.clusters) {
-        cluster.id = globalClusterId++;
-      }
-    }
-  }
-
-  if (!parliament.settings) {
-    parliament.settings = settingsDefault;
-  }
-  if (!parliament.settings.general) {
-    parliament.settings.general = settingsDefault.general;
-  }
-  if (!parliament.settings.general.outOfDate) {
-    parliament.settings.general.outOfDate = settingsDefault.general.outOfDate;
-  }
-  if (!parliament.settings.general.noPackets) {
-    parliament.settings.general.noPackets = settingsDefault.general.noPackets;
-  }
-  if (!parliament.settings.general.noPacketsLength) {
-    parliament.settings.general.noPacketsLength = settingsDefault.general.noPacketsLength;
-  }
-  if (!parliament.settings.general.esQueryTimeout) {
-    parliament.settings.general.esQueryTimeout = settingsDefault.general.esQueryTimeout;
-  }
-  if (!parliament.settings.general.removeIssuesAfter) {
-    parliament.settings.general.removeIssuesAfter = settingsDefault.general.removeIssuesAfter;
-  }
-  if (!parliament.settings.general.removeAcknowledgedAfter) {
-    parliament.settings.general.removeAcknowledgedAfter = settingsDefault.general.removeAcknowledgedAfter;
-  }
-  if (!parliament.settings.general.hostname) {
-    parliament.settings.general.hostname = os.hostname();
-  }
-
-  if (ArkimeConfig.debug) {
-    console.log('Parliament initialized!');
-    console.log('Parliament groups:', JSON.stringify(parliament.groups, null, 2));
-    console.log('Parliament general settings:', JSON.stringify(parliament.settings.general, null, 2));
-  }
-
-  const parliamentError = validateParliament();
-  if (!parliamentError) {
-    fs.writeFile(getConfig('parliament', 'file'), JSON.stringify(parliament, null, 2), 'utf8',
-      (err) => {
-        if (err) {
-          console.log('Parliament initialization error:', err.message ?? err);
-          throw new Error('Parliament initialization error');
-        }
-
-        return;
-      }
-    );
-  }
-}
-
-// Chains all promises for requests for health and stats to update each cluster
-// in the parliament
-function updateParliament () {
   return new Promise((resolve, reject) => {
     const promises = [];
     for (const group of parliament.groups) {
@@ -738,85 +759,37 @@ function updateParliament () {
 
     const issuesRemoved = cleanUpIssues();
 
-    Promise.all(promises)
-      .then(() => {
-        if (issuesRemoved) { // save the issues that were removed
-          const issuesError = validateIssues();
-          if (!issuesError) {
-            fs.writeFile(app.get('issuesfile'), JSON.stringify(issues, null, 2), 'utf8',
-              (err) => {
-                if (err) {
-                  console.log('Unable to write issue:', err.message ?? err);
-                }
-              }
-            );
-          }
-        }
-
-        // save the data created after updating the parliament
-        const parliamentError = validateParliament();
-        if (!parliamentError) {
-          fs.writeFile(getConfig('parliament', 'file'), JSON.stringify(parliament, null, 2), 'utf8',
+    Promise.all(promises).then((results) => {
+      if (issuesRemoved) { // save the issues that were removed
+        const issuesError = validateIssues();
+        if (!issuesError) {
+          fs.writeFile(app.get('issuesfile'), JSON.stringify(issues, null, 2), 'utf8',
             (err) => {
               if (err) {
-                console.log('Parliament update error:', err.message ?? err);
-                return reject(new Error('Parliament update error'));
+                console.log('Unable to write issue:', err.message ?? err);
               }
-
-              return resolve();
-            });
+            }
+          );
         }
+      }
 
-        if (ArkimeConfig.debug) {
-          console.log('Parliament updated!');
-          if (issuesRemoved) {
-            console.log('Issues updated!');
-          }
+      for (const result of results) {
+        internals.stats[result.cluster.id] = result.cluster;
+      }
+
+      if (ArkimeConfig.debug) {
+        console.log('Parliament stats updated!');
+        if (issuesRemoved) {
+          console.log('Issues updated!');
         }
+      }
 
-        return resolve();
-      })
-      .catch((error) => {
-        console.log('Parliament update error:', error.message ?? error);
-        return resolve();
-      });
+      return resolve();
+    }).catch((error) => {
+      console.log('Parliament update error:', error.message ?? error);
+      return resolve();
+    });
   });
-}
-
-function cleanUpIssues () {
-  let issuesRemoved = false;
-
-  let len = issues.length;
-  while (len--) {
-    const issue = issues[len];
-    const timeSinceLastNoticed = Date.now() - issue.lastNoticed || issue.firstNoticed;
-    const removeIssuesAfter = getGeneralSetting('removeIssuesAfter') * 1000 * 60;
-    const removeAcknowledgedAfter = getGeneralSetting('removeAcknowledgedAfter') * 1000 * 60;
-
-    if (!issue.ignoreUntil) { // don't clean up any ignored issues, wait for the ignore to expire
-      // remove issues that are provisional that haven't been seen since the last cycle
-      if (issue.provisional && timeSinceLastNoticed >= 10000) {
-        issuesRemoved = true;
-        issues.splice(len, 1);
-      }
-
-      // remove all issues that have not been seen again for the removeIssuesAfter time, and
-      // remove all acknowledged issues that have not been seen again for the removeAcknowledgedAfter time
-      if ((!issue.acknowledged && timeSinceLastNoticed > removeIssuesAfter) ||
-          (issue.acknowledged && timeSinceLastNoticed > removeAcknowledgedAfter)) {
-        issuesRemoved = true;
-        issues.splice(len, 1);
-      }
-
-      // if the issue was acknowledged but still persists, unacknowledge and alert again
-      if (issue.acknowledged && (Date.now() - issue.acknowledged) > removeAcknowledgedAfter) {
-        issue.alerted = undefined;
-        issue.acknowledged = undefined;
-      }
-    }
-  }
-
-  return issuesRemoved;
 }
 
 function removeIssue (issueType, clusterId, nodeId) {
@@ -825,7 +798,7 @@ function removeIssue (issueType, clusterId, nodeId) {
 
   while (len--) {
     const issue = issues[len];
-    if (issue.clusterId === parseInt(clusterId) &&
+    if (issue.clusterId === clusterId &&
       issue.type === issueType &&
       issue.node === nodeId) {
       foundIssue = true;
@@ -838,65 +811,6 @@ function removeIssue (issueType, clusterId, nodeId) {
   }
 
   return foundIssue;
-}
-
-function getGeneralSetting (type) {
-  let val = settingsDefault.general[type];
-  if (parliament.settings && parliament.settings.general && parliament.settings.general[type]) {
-    val = parliament.settings.general[type];
-  }
-  return val;
-}
-
-// Validates that the parliament object exists
-// Use this before writing the parliament file
-function validateParliament (next) {
-  const len = Buffer.from(JSON.stringify(parliament, null, 2)).length;
-  if (len < 200) {
-    // if it's an empty file, don't save it, return an error
-    const errorMsg = 'Error writing parliament data: empty or invalid parliament';
-    console.log(errorMsg);
-    if (next) {
-      return newError(500, errorMsg);
-    }
-    return errorMsg;
-  }
-  return false;
-}
-
-// Writes the parliament to the parliament json file, updates the parliament
-// with health and stats, then sends success or error
-function writeParliament (req, res, next, successObj, errorText, sendParliament) {
-  const parliamentError = validateParliament(next);
-  if (parliamentError) {
-    return next(parliamentError);
-  }
-
-  fs.writeFile(getConfig('parliament', 'file'), JSON.stringify(parliament, null, 2), 'utf8',
-    (err) => {
-      if (ArkimeConfig.debug) {
-        console.log('Wrote parliament file', err ?? '');
-      }
-
-      if (err) {
-        const errorMsg = `Unable to write parliament data: ${err.message ?? err}`;
-        console.log(errorMsg);
-        return res.serverError(500, errorMsg);
-      }
-
-      updateParliament()
-        .then(() => {
-          // send the updated parliament with the response
-          if (sendParliament && successObj.parliament) {
-            successObj.parliament = parliament;
-          }
-          return res.json(successObj);
-        })
-        .catch((err) => {
-          return res.serverError(500, errorText ?? 'Error updating parliament.');
-        });
-    }
-  );
 }
 
 // Validates that issues exist
@@ -963,63 +877,59 @@ app.get('/parliament/api/auth', setCookie, (req, res, next) => {
   });
 });
 
-// Get the parliament settings object
-app.get('/parliament/api/settings', [isAdmin, setCookie], (req, res, next) => {
-  if (!parliament.settings) {
-    return res.serverError(500, 'Your settings are empty. Try restarting Parliament.');
-  }
-
-  const settings = JSON.parse(JSON.stringify(parliament.settings));
-
-  if (!settings.general) {
-    settings.general = settingsDefault.general;
-  }
-
-  if (!settings.commonAuth) {
-    settings.commonAuth = {};
-  }
-
-  // Hide the secrets
-  for (const s of ['passwordSecret', 'usersElasticsearchAPIKey', 'usersElasticsearchBasicAuth']) {
-    if (settings.commonAuth[s] !== undefined) {
-      settings.commonAuth[s] = '********';
-    }
-  }
-
-  return res.json(settings);
-});
-
 // Update the parliament general settings object
-app.put('/parliament/api/settings', [isAdmin, checkCookieToken], (req, res, next) => {
+app.put('/parliament/api/settings', [isAdmin, checkCookieToken], async (req, res, next) => {
   if (!req.body.settings?.general) {
     return res.serverError(422, 'You must provide the settings to update.');
   }
 
-  // save general settings
-  for (const s in req.body.settings.general) {
-    let setting = req.body.settings.general[s];
+  try {
+    const { body: { _source: parliament } } = await Parliament.getParliament();
 
-    if (s !== 'hostname' && s !== 'includeUrl') {
-      if (isNaN(setting)) {
-        return res.serverError(422, `${s} must be a number.`);
-      } else {
-        setting = parseInt(setting);
+    // save general settings
+    for (const s in req.body.settings.general) {
+      let setting = req.body.settings.general[s];
+
+      if (s !== 'hostname' && s !== 'includeUrl') {
+        if (isNaN(setting)) {
+          return res.serverError(422, `${s} must be a number.`);
+        } else {
+          setting = parseInt(setting);
+        }
       }
+
+      parliament.settings.general[s] = setting;
     }
 
-    parliament.settings.general[s] = setting;
+    await Parliament.setParliament(parliament);
+    res.json({ success: true, text: 'Successfully updated settings.' });
+  } catch (e) {
+    if (ArkimeConfig.debug) {
+      console.log('Error updating settings', e);
+    }
+    res.serverError(500, 'Unable to update settings.');
   }
-
-  const successObj = { success: true, text: 'Successfully updated your settings.' };
-  const errorText = 'Unable to update your settings.';
-  writeParliament(req, res, next, successObj, errorText);
 });
 
-app.get( // user roles endpoint
-  '/parliament/api/user/roles',
-  [ArkimeUtil.noCacheJson, checkCookieToken],
-  User.apiRoles
-);
+// Update the parliament general settings object to the defaults
+app.put('/parliament/api/settings/restoreDefaults', [isAdmin, checkCookieToken], async (req, res, next) => {
+  try {
+    const { body: { _source: parliament } } = await Parliament.getParliament();
+
+    parliament.settings = Parliament.settingsDefault;
+
+    await Parliament.setParliament(parliament);
+    res.json({ success: true, text: 'Successfully restored default settings.', settings: parliament.settings });
+  } catch (e) {
+    if (ArkimeConfig.debug) {
+      console.log('Error restoring default settings', e);
+    }
+    res.serverError(500, 'Unable to restore default settings.');
+  }
+});
+
+// user roles endpoint
+app.get('/parliament/api/user/roles', [ArkimeUtil.noCacheJson, checkCookieToken], User.apiRoles);
 
 // fetch notifier types endpoint
 app.get('/parliament/api/notifierTypes', [ArkimeUtil.noCacheJson, isAdmin, setCookie], Notifier.apiGetNotifierTypes);
@@ -1039,91 +949,16 @@ app.delete('/parliament/api/notifier/:id', [ArkimeUtil.noCacheJson, isAdmin, che
 // issue a test alert to a specified notifier
 app.post('/parliament/api/notifier/:id/test', [ArkimeUtil.noCacheJson, isAdmin, checkCookieToken], Notifier.apiTestNotifier);
 
-// Update the parliament general settings object to the defaults
-app.put('/parliament/api/settings/restoreDefaults', [isAdmin, checkCookieToken], (req, res, next) => {
-  let type = 'all'; // default
-  if (ArkimeUtil.isString(req.body.type)) {
-    type = req.body.type;
-  }
+app.get('/parliament/api/parliament', Parliament.apiGetParliament);
 
-  if (type === 'general') {
-    parliament.settings.general = JSON.parse(JSON.stringify(settingsDefault.general));
-  } else if (type === 'all') {
-    parliament.settings = JSON.parse(JSON.stringify(settingsDefault));
-  } else {
-    return res.serverError(500, 'type must be general or all');
-  }
-
-  const settings = JSON.parse(JSON.stringify(parliament.settings));
-
-  const parliamentError = validateParliament(next);
-  if (!parliamentError) {
-    return next(parliamentError);
-  }
-
-  fs.writeFile(getConfig('parliament', 'file'), JSON.stringify(parliament, null, 2), 'utf8',
-    (err) => {
-      if (err) {
-        const errorMsg = `Unable to write parliament data: ${err.message ?? err}`;
-        console.log(errorMsg);
-        return res.serverError(500, errorMsg);
-      }
-
-      return res.json({
-        settings,
-        text: `Successfully restored ${req.body.type} default settings.`
-      });
-    }
-  );
+app.get('/parliament/api/parliament/stats', (req, res) => {
+  return res.json({ results: internals.stats });
 });
 
-// Get parliament with stats
-app.get('/parliament/api/parliament', (req, res, next) => {
-  const parliamentClone = JSON.parse(JSON.stringify(parliament));
-
-  for (const group of parliamentClone.groups) {
-    for (const cluster of group.clusters) {
-      cluster.activeIssues = [];
-      for (const issue of issues) {
-        if (issue.clusterId === cluster.id &&
-          !issue.acknowledged && !issue.ignoreUntil &&
-          !issue.provisional) {
-          cluster.activeIssues.push(issue);
-        }
-      }
-    }
-  }
-
-  delete parliamentClone.settings;
-
-  return res.json(parliamentClone);
-});
-
-// Updates the parliament order of clusters and groups
-app.put('/parliament/api/parliament', [isAdmin, checkCookieToken], (req, res, next) => {
-  if (typeof req.body.reorderedParliament !== 'object') {
-    return res.serverError(422, 'You must provide the new parliament order');
-  }
-
-  // remove any client only stuff
-  for (const group of req.body.reorderedParliament.groups) {
-    group.filteredClusters = undefined;
-    for (const cluster of group.clusters) {
-      cluster.issues = undefined;
-      cluster.activeIssues = undefined;
-    }
-  }
-
-  parliament.groups = req.body.reorderedParliament.groups;
-  updateParliament();
-
-  const successObj = { success: true, text: 'Successfully reordered items in your parliament.' };
-  const errorText = 'Unable to update the order of items in your parliament.';
-  writeParliament(req, res, next, successObj, errorText);
-});
+app.put('/parliament/api/parliament', [isAdmin, checkCookieToken], Parliament.apiUpdateParliament);
 
 // Create a new group in the parliament
-app.post('/parliament/api/groups', [isAdmin, checkCookieToken], (req, res, next) => {
+app.post('/parliament/api/groups', [isAdmin, checkCookieToken], async (req, res, next) => {
   if (!ArkimeUtil.isString(req.body.title)) {
     return res.serverError(422, 'A group must have a title');
   }
@@ -1132,40 +967,56 @@ app.post('/parliament/api/groups', [isAdmin, checkCookieToken], (req, res, next)
     return res.serverError(422, 'A group must have a string description.');
   }
 
-  const newGroup = { title: req.body.title, id: globalGroupId++, clusters: [] };
-  if (req.body.description) { newGroup.description = req.body.description; }
+  const newGroup = { title: req.body.title, id: uuid(), clusters: [] };
+  newGroup.description ??= req.body.description;
 
-  parliament.groups.push(newGroup);
+  try {
+    const { body: { _source: parliament } } = await Parliament.getParliament();
+    parliament.groups.push(newGroup);
 
-  const successObj = { success: true, group: newGroup, text: 'Successfully added new group.' };
-  const errorText = 'Unable to add that group to your parliament.';
-  writeParliament(req, res, next, successObj, errorText);
+    await Parliament.setParliament(parliament);
+    res.json({ success: true, group: newGroup, text: 'Successfully added new group.' });
+  } catch (e) {
+    if (ArkimeConfig.debug) {
+      console.log('Error adding new group', e);
+    }
+    res.serverError(500, 'Unable to add new group.');
+  }
 });
 
 // Delete a group in the parliament
-app.delete('/parliament/api/groups/:id', [isAdmin, checkCookieToken], (req, res, next) => {
-  let index = 0;
-  let foundGroup = false;
-  for (const group of parliament.groups) {
-    if (group.id === parseInt(req.params.id)) {
-      parliament.groups.splice(index, 1);
-      foundGroup = true;
-      break;
+app.delete('/parliament/api/groups/:id', [isAdmin, checkCookieToken], async (req, res, next) => {
+  try {
+    const { body: { _source: parliament } } = await Parliament.getParliament();
+
+    let index = 0;
+    let foundGroup = false;
+    for (const group of parliament.groups) {
+      console.log(group.id, req.params.id);
+      if (group.id === req.params.id) {
+        parliament.groups.splice(index, 1);
+        foundGroup = true;
+        break;
+      }
+      ++index;
     }
-    ++index;
-  }
 
-  if (!foundGroup) {
-    return res.serverError(500, 'Unable to find group to delete.');
-  }
+    if (!foundGroup) {
+      return res.serverError(500, 'Unable to find group to delete.');
+    }
 
-  const successObj = { success: true, text: 'Successfully removed the requested group.' };
-  const errorText = 'Unable to remove that group from the parliament.';
-  writeParliament(req, res, next, successObj, errorText);
+    await Parliament.setParliament(parliament);
+    res.json({ success: true, text: 'Successfully removed group.' });
+  } catch (e) {
+    if (ArkimeConfig.debug) {
+      console.log('Error removing group', e);
+    }
+    res.serverError(500, 'Unable to remove group.');
+  }
 });
 
 // Update a group in the parliament
-app.put('/parliament/api/groups/:id', [isAdmin, checkCookieToken], (req, res, next) => {
+app.put('/parliament/api/groups/:id', [isAdmin, checkCookieToken], async (req, res, next) => {
   if (!ArkimeUtil.isString(req.body.title)) {
     return res.serverError(422, 'A group must have a title.');
   }
@@ -1174,27 +1025,35 @@ app.put('/parliament/api/groups/:id', [isAdmin, checkCookieToken], (req, res, ne
     return res.serverError(422, 'A group must have a string description.');
   }
 
-  let foundGroup = false;
-  for (const group of parliament.groups) {
-    if (group.id === parseInt(req.params.id)) {
-      group.title = req.body.title;
-      group.description = req.body.description;
-      foundGroup = true;
-      break;
+  try {
+    const { body: { _source: parliament } } = await Parliament.getParliament();
+
+    let foundGroup = false;
+    for (const group of parliament.groups) {
+      if (group.id === req.params.id) {
+        group.title = req.body.title;
+        group.description = req.body.description;
+        foundGroup = true;
+        break;
+      }
     }
-  }
 
-  if (!foundGroup) {
-    return res.serverError(500, 'Unable to find group to edit.');
-  }
+    if (!foundGroup) {
+      return res.serverError(500, 'Unable to find group to edit.');
+    }
 
-  const successObj = { success: true, text: 'Successfully updated the requested group.' };
-  const errorText = 'Unable to update that group in the parliament.';
-  writeParliament(req, res, next, successObj, errorText);
+    await Parliament.setParliament(parliament);
+    res.json({ success: true, text: 'Successfully updated the group.' });
+  } catch (e) {
+    if (ArkimeConfig.debug) {
+      console.log('Error updating group', e);
+    }
+    res.serverError(500, 'Unable to update group.');
+  }
 });
 
 // Create a new cluster within an existing group
-app.post('/parliament/api/groups/:id/clusters', [isAdmin, checkCookieToken], (req, res, next) => {
+app.post('/parliament/api/groups/:id/clusters', [isAdmin, checkCookieToken], async (req, res, next) => {
   if (!ArkimeUtil.isString(req.body.title)) {
     return res.serverError(422, 'A cluster must have a title.');
   }
@@ -1220,60 +1079,78 @@ app.post('/parliament/api/groups/:id/clusters', [isAdmin, checkCookieToken], (re
     description: req.body.description,
     url: req.body.url,
     localUrl: req.body.localUrl,
-    id: globalClusterId++,
-    type: req.body.type
+    id: uuid(),
+    type: req.body.type,
+    hideDeltaBPS: false,
+    hideDeltaTDPS: false,
+    hideMonitoring: false,
+    hideMolochNodes: false,
+    hideDataNodes: false,
+    hideTotalNodes: false
   };
 
-  let foundGroup = false;
-  for (const group of parliament.groups) {
-    if (group.id === parseInt(req.params.id)) {
-      group.clusters.push(newCluster);
-      foundGroup = true;
-      break;
+  try {
+    const { body: { _source: parliament } } = await Parliament.getParliament();
+
+    let foundGroup = false;
+    for (const group of parliament.groups) {
+      if (group.id === req.params.id) {
+        group.clusters.push(newCluster);
+        foundGroup = true;
+        break;
+      }
     }
-  }
 
-  if (!foundGroup) {
-    return res.serverError(500, 'Unable to find group to place cluster.');
-  }
+    if (!foundGroup) {
+      return res.serverError(500, 'Unable to find group to place cluster.');
+    }
 
-  const successObj = {
-    success: true,
-    cluster: newCluster,
-    text: 'Successfully added the requested cluster.'
-  };
-  const errorText = 'Unable to add that cluster to the parliament.';
-  writeParliament(req, res, next, successObj, errorText, true);
+    await Parliament.setParliament(parliament);
+    res.json({ success: true, cluster: newCluster, text: 'Successfully added the cluster.' });
+  } catch (e) {
+    if (ArkimeConfig.debug) {
+      console.log('Error creating cluster', e);
+    }
+    res.serverError(500, 'Unable to create cluster.');
+  }
 });
 
 // Delete a cluster
-app.delete('/parliament/api/groups/:groupId/clusters/:clusterId', [isAdmin, checkCookieToken], (req, res, next) => {
-  let clusterIndex = 0;
-  let foundCluster = false;
-  for (const group of parliament.groups) {
-    if (group.id === parseInt(req.params.groupId)) {
-      for (const cluster of group.clusters) {
-        if (cluster.id === parseInt(req.params.clusterId)) {
-          group.clusters.splice(clusterIndex, 1);
-          foundCluster = true;
-          break;
+app.delete('/parliament/api/groups/:groupId/clusters/:clusterId', [isAdmin, checkCookieToken], async (req, res, next) => {
+  try {
+    const { body: { _source: parliament } } = await Parliament.getParliament();
+
+    let clusterIndex = 0;
+    let foundCluster = false;
+    for (const group of parliament.groups) {
+      if (group.id === req.params.groupId) {
+        for (const cluster of group.clusters) {
+          if (cluster.id === req.params.clusterId) {
+            group.clusters.splice(clusterIndex, 1);
+            foundCluster = true;
+            break;
+          }
+          ++clusterIndex;
         }
-        ++clusterIndex;
       }
     }
-  }
 
-  if (!foundCluster) {
-    return res.serverError(500, 'Unable to find cluster to delete.');
-  }
+    if (!foundCluster) {
+      return res.serverError(500, 'Unable to find cluster to delete.');
+    }
 
-  const successObj = { success: true, text: 'Successfully removed the requested cluster.' };
-  const errorText = 'Unable to remove that cluster from your parliament.';
-  writeParliament(req, res, next, successObj, errorText);
+    await Parliament.setParliament(parliament);
+    res.json({ success: true, text: 'Successfully removed the cluster.' });
+  } catch (e) {
+    if (ArkimeConfig.debug) {
+      console.log('Error removing cluster', e);
+    }
+    res.serverError(500, 'Unable to remove cluster.');
+  }
 });
 
 // Update a cluster
-app.put('/parliament/api/groups/:groupId/clusters/:clusterId', [isAdmin, checkCookieToken], (req, res, next) => {
+app.put('/parliament/api/groups/:groupId/clusters/:clusterId', [isAdmin, checkCookieToken], async (req, res, next) => {
   if (!ArkimeUtil.isString(req.body.title)) {
     return res.serverError(422, 'A cluster must have a title.');
   }
@@ -1294,42 +1171,63 @@ app.put('/parliament/api/groups/:groupId/clusters/:clusterId', [isAdmin, checkCo
     return res.serverError(422, 'A cluster must have a string type.');
   }
 
-  let foundCluster = false;
-  for (const group of parliament.groups) {
-    if (group.id === parseInt(req.params.groupId)) {
-      for (const cluster of group.clusters) {
-        if (cluster.id === parseInt(req.params.clusterId)) {
-          cluster.url = req.body.url;
-          cluster.title = req.body.title;
-          cluster.localUrl = req.body.localUrl;
-          cluster.description = req.body.description;
-          cluster.hideDeltaBPS = typeof req.body.hideDeltaBPS === 'boolean' ? req.body.hideDeltaBPS : undefined;
-          cluster.hideDataNodes = typeof req.body.hideDataNodes === 'boolean' ? req.body.hideDataNodes : undefined;
-          cluster.hideDeltaTDPS = typeof req.body.hideDeltaTDPS === 'boolean' ? req.body.hideDeltaTDPS : undefined;
-          cluster.hideTotalNodes = typeof req.body.hideTotalNodes === 'boolean' ? req.body.hideTotalNodes : undefined;
-          cluster.hideMonitoring = typeof req.body.hideMonitoring === 'boolean' ? req.body.hideMonitoring : undefined;
-          cluster.hideMolochNodes = typeof req.body.hideMolochNodes === 'boolean' ? req.body.hideMolochNodes : undefined;
-          cluster.type = req.body.type;
+  try {
+    const { body: { _source: parliament } } = await Parliament.getParliament();
 
-          foundCluster = true;
-          break;
+    let foundCluster = false;
+    for (const group of parliament.groups) {
+      if (group.id === req.params.groupId) {
+        for (const cluster of group.clusters) {
+          if (cluster.id === req.params.clusterId) {
+            cluster.url = req.body.url;
+            cluster.title = req.body.title;
+            cluster.localUrl = req.body.localUrl;
+            cluster.description = req.body.description;
+            cluster.hideDeltaBPS = typeof req.body.hideDeltaBPS === 'boolean' ? req.body.hideDeltaBPS : undefined;
+            cluster.hideDataNodes = typeof req.body.hideDataNodes === 'boolean' ? req.body.hideDataNodes : undefined;
+            cluster.hideDeltaTDPS = typeof req.body.hideDeltaTDPS === 'boolean' ? req.body.hideDeltaTDPS : undefined;
+            cluster.hideTotalNodes = typeof req.body.hideTotalNodes === 'boolean' ? req.body.hideTotalNodes : undefined;
+            cluster.hideMonitoring = typeof req.body.hideMonitoring === 'boolean' ? req.body.hideMonitoring : undefined;
+            cluster.hideMolochNodes = typeof req.body.hideMolochNodes === 'boolean' ? req.body.hideMolochNodes : undefined;
+            cluster.type = req.body.type;
+
+            foundCluster = true;
+            break;
+          }
         }
       }
     }
-  }
 
-  if (!foundCluster) {
-    return res.serverError(500, 'Unable to find cluster to update.');
-  }
+    if (!foundCluster) {
+      return res.serverError(500, 'Unable to find cluster to update.');
+    }
 
-  const successObj = { success: true, text: 'Successfully updated the requested cluster.' };
-  const errorText = 'Unable to update that cluster in your parliament.';
-  writeParliament(req, res, next, successObj, errorText);
+    await Parliament.setParliament(parliament);
+    res.json({ success: true, text: 'Successfully updated the cluster.' });
+  } catch (e) {
+    if (ArkimeConfig.debug) {
+      console.log('Error updating cluster', e);
+    }
+    res.serverError(500, 'Unable to update cluster.');
+  }
 });
 
 // Get a list of issues
 app.get('/parliament/api/issues', (req, res, next) => {
   let issuesClone = JSON.parse(JSON.stringify(issues));
+
+  if (req.query.map) {
+    const results = {};
+    for (const issue of issuesClone) {
+      if (!issue.acknowledged && !issue.ignoreUntil && !issue.provisional) {
+        if (!results[issue.clusterId]) {
+          results[issue.clusterId] = [];
+        }
+        results[issue.clusterId].push(issue);
+      }
+    }
+    return res.json({ results });
+  }
 
   issuesClone = issuesClone.filter((issue) => {
     // always filter out provisional issues
@@ -1434,7 +1332,7 @@ app.put('/parliament/api/acknowledgeIssues', [isUser, checkCookieToken], (req, r
   let count = 0;
 
   for (const i of req.body.issues) {
-    const issue = findIssue(parseInt(i.clusterId), i.type, i.node);
+    const issue = findIssue(i.clusterId, i.type, i.node);
     if (issue) {
       issue.acknowledged = now;
       count++;
@@ -1473,7 +1371,7 @@ app.put('/parliament/api/ignoreIssues', [isUser, checkCookieToken], (req, res, n
   let count = 0;
 
   for (const i of req.body.issues) {
-    const issue = findIssue(parseInt(i.clusterId), i.type, i.node);
+    const issue = findIssue(i.clusterId, i.type, i.node);
     if (issue) {
       issue.ignoreUntil = ignoreUntil;
       count++;
@@ -1508,7 +1406,7 @@ app.put('/parliament/api/removeIgnoreIssues', [isUser, checkCookieToken], (req, 
   let count = 0;
 
   for (const i of req.body.issues) {
-    const issue = findIssue(parseInt(i.clusterId), i.type, i.node);
+    const issue = findIssue(i.clusterId, i.type, i.node);
     if (issue) {
       issue.ignoreUntil = undefined;
       issue.alerted = undefined; // reset alert time so it can alert again
@@ -1585,7 +1483,7 @@ app.put('/parliament/api/removeSelectedAcknowledgedIssues', [isUser, checkCookie
 
   // mark issues to remove
   for (const i of req.body.issues) {
-    const issue = findIssue(parseInt(i.clusterId), i.type, i.node);
+    const issue = findIssue(i.clusterId, i.type, i.node);
     if (issue && issue.acknowledged) {
       count++;
       issue.remove = true;
@@ -1744,27 +1642,6 @@ async function main () {
     process.exit(1);
   }
 
-  try { // check if the parliament file exists
-    fs.accessSync(getConfig('parliament', 'file'), fs.constants.F_OK);
-  } catch (e) { // if the file doesn't exist, create it
-    try { // write the new file
-      parliament = { version: MIN_PARLIAMENT_VERSION };
-      fs.writeFileSync(getConfig('parliament', 'file'), JSON.stringify(parliament, null, 2), 'utf8');
-    } catch (err) { // notify of error saving new parliament and exit
-      console.log('Error creating new Parliament:\n\n', ArkimeUtil.sanitizeStr(e.stack));
-      console.log(parliamentReadError);
-      process.exit(1);
-    }
-  }
-
-  try { // get the parliament file or error out if it's unreadable
-    parliament = require(`${getConfig('parliament', 'file')}`);
-  } catch (err) {
-    console.log(`Error reading ${getConfig('parliament', 'file') ?? 'your parliament file'}:\n\n`, ArkimeUtil.sanitizeStr(err.stack));
-    console.log(parliamentReadError);
-    process.exit(1);
-  }
-
   // construct the issues file name
   let issuesFilename = 'issues.json';
   if (getConfig('parliament', 'file').indexOf('.json') > -1) {
@@ -1798,33 +1675,29 @@ async function main () {
     console.log('SECURITY WARNING - When using header auth, parliamentHost should be localhost or use iptables');
   }
 
-  server
-    .on('error', function (e) {
-      console.log("ERROR - couldn't listen on host %s port %d is cont3xt already running?", parliamentHost, getConfig('parliament', 'port', 8008));
+  server.on('error', function (e) {
+    console.log("ERROR - couldn't listen on host %s port %d is cont3xt already running?", parliamentHost, getConfig('parliament', 'port', 8008));
+    process.exit(1);
+  }).on('listening', function (e) {
+    console.log('Express server listening on host %s port %d in %s mode', server.address().address, server.address().port, app.settings.env);
+    if (ArkimeConfig.debug) {
+      console.log('Debug Level', ArkimeConfig.debug);
+      console.log('Parliament file:', getConfig('parliament', 'file'));
+      console.log('Issues file:', issuesFilename);
+    }
+  }).listen(getConfig('parliament', 'port', 8008), parliamentHost, async () => {
+    try {
+      await initializeParliament();
+    } catch (err) {
+      console.log('ERROR - never mind, couldn\'t initialize Parliament\n', err);
       process.exit(1);
-    })
-    .on('listening', function (e) {
-      console.log('Express server listening on host %s port %d in %s mode', server.address().address, server.address().port, app.settings.env);
-      if (ArkimeConfig.debug) {
-        console.log('Debug Level', ArkimeConfig.debug);
-        console.log('Parliament file:', getConfig('parliament', 'file'));
-        console.log('Issues file:', issuesFilename);
-      }
-    })
-    .listen(getConfig('parliament', 'port', 8008), parliamentHost, async () => {
-      try {
-        await initializeParliament();
-        updateParliament();
-      } catch (err) {
-        console.log('ERROR - never mind, couldn\'t initialize Parliament\n', err);
-        process.exit(1);
-      }
+    }
 
-      setInterval(() => {
-        updateParliament();
-        processAlerts();
-      }, 10000);
-    });
+    setInterval(() => {
+      updateParliament();
+      processAlerts();
+    }, 10000);
+  });
 }
 
 main();

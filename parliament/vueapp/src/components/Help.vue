@@ -131,7 +131,7 @@
             </li>
             <li>
               <strong>ES Red:</strong>
-              The Elasticsearch status returned from the cluster health checkwas RED.
+              The Elasticsearch status returned from the cluster health check was RED.
             </li>
             <li>
               <strong>ES Dropped:</strong>
