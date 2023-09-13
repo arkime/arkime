@@ -118,7 +118,7 @@ LOCAL void arkime_db_free_override_ip(ArkimeIpInfo_t *ii)
 /******************************************************************************/
 LOCAL void arkime_db_free_override_ips(patricia_tree_t *tree)
 {
-    Destroy_Patricia(tree, arkime_db_free_override_ip);
+    Destroy_Patricia(tree, (patricia_fn_data_t)arkime_db_free_override_ip);
 }
 /******************************************************************************/
 void arkime_db_install_override_ip()

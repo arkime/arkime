@@ -112,9 +112,9 @@ typedef struct arkime_string {
     char                 *str;
     uint32_t              s_hash;
     gpointer              uw;
-    short                 s_bucket;
-    short                 len:15;
-    short                 utf8:1;
+    uint16_t              s_bucket;
+    uint16_t              len:15;
+    uint16_t              utf8:1;
 } ArkimeString_t;
 
 typedef struct {
