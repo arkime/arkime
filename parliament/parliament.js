@@ -51,7 +51,7 @@ See https://arkime.com/settings#parliament for more information.
 
 const internals = {
   stats: {},
-  parliamentName: 'Parliament',
+  parliamentName: 'parliament',
   httpsAgent: new https.Agent({ rejectUnauthorized: !ArkimeConfig.insecure })
 };
 
@@ -202,7 +202,7 @@ function newError (code, msg) {
 // PARLIAMENT CLASS
 // ----------------------------------------------------------------------------
 class Parliament {
-  static #name;
+  static name;
   static #debug;
   static #esclient;
   static #parliamentIndex;
@@ -220,7 +220,7 @@ class Parliament {
   };
 
   static async initialize (options) {
-    Parliament.#name = options.name;
+    Parliament.name = options.name;
     Parliament.#debug = options.debug ?? 0;
     Parliament.#esclient = options.esclient;
 
@@ -241,25 +241,19 @@ class Parliament {
   // DB INTERACTIONS ---------------------------------------------------------
   static async getParliament () {
     return Parliament.#esclient.get({
-      index: Parliament.#parliamentIndex, id: Parliament.#name
-    });
-  }
-
-  static async searchParliaments (query) {
-    return Parliament.#esclient.search({
-      index: Parliament.#parliamentIndex, body: query, rest_total_hits_as_int: true
+      index: Parliament.#parliamentIndex, id: Parliament.name
     });
   }
 
   static async createParliament (parliament) {
     return Parliament.#esclient.create({
-      index: Parliament.#parliamentIndex, body: parliament, id: Parliament.#name, timeout: '10m'
+      index: Parliament.#parliamentIndex, body: parliament, id: Parliament.name, timeout: '10m'
     });
   }
 
   static async setParliament (parliament) {
     return Parliament.#esclient.index({
-      index: Parliament.#parliamentIndex, body: parliament, id: Parliament.#name, refresh: true, timeout: '10m'
+      index: Parliament.#parliamentIndex, body: parliament, id: Parliament.name, refresh: true, timeout: '10m'
     });
   }
 
@@ -326,11 +320,13 @@ class Parliament {
 
       Parliament.#cache.set('parliament', parliament);
 
+      const parliamentClone = JSON.parse(JSON.stringify(parliament));
+
       if (!req.user.hasRole('parliamentAdmin')) {
-        delete parliament.settings;
+        delete parliamentClone.settings;
       }
 
-      return res.json(parliament);
+      return res.json(parliamentClone);
     } catch (err) {
       if (ArkimeConfig.debug) {
         console.log('Error fetching parliament', err);
@@ -342,16 +338,43 @@ class Parliament {
   /**
    * PUT - /api/parliament
    *
-   * Updates a parliament by id (name).
+   * Updates a parliament's order of groups/clusters.
    * @name /parliament
    * @returns {boolean} success - Whether the operation was successful.
    * @returns {string} text - The success/error message to (optionally) display to the user.
    * @returns {Parliament} parliament - The updated parliament.
    */
-  static async apiUpdateParliament (req, res) {
+  static async apiUpdateParliamentOrder (req, res) {
     try {
-      await Parliament.setParliament(req.body);
-      return res.json({ success: true, text: 'Parliament updated successfully', parliament: req.body });
+      const { body: { _source: parliament } } = await Parliament.getParliament();
+
+      if (!req.body.oldIdx && req.body.newIdx) {
+        return res.serverError(500, 'Error updating parliament order');
+      }
+
+      if (req.body.newGroupId) { // we're rearranging clusters
+        const newGroup = parliament.groups.filter(group => group.id === req.body.newGroupId);
+        if (!newGroup.length) { return res.serverError(500, 'Error updating parliament order'); }
+
+        const oldGroup = parliament.groups.filter(group => group.id === req.body.oldGroupId);
+        if (!oldGroup.length) { return res.serverError(500, 'Error updating parliament order'); }
+
+        const cluster = oldGroup[0].clusters[req.body.oldIdx];
+        if (!cluster) { return res.serverError(500, 'Error updating parliament order'); }
+
+        oldGroup[0].clusters.splice(req.body.oldIdx, 1);
+        newGroup[0].clusters.splice(req.body.newIdx, 0, cluster);
+      } else { // we're rearranging groups
+        const group = parliament.groups[req.body.oldIdx];
+        if (!group) {
+          return res.serverError(500, 'Error updating parliament order');
+        }
+        parliament.groups.splice(req.body.oldIdx, 1);
+        parliament.groups.splice(req.body.newIdx, 0, group);
+      }
+
+      await Parliament.setParliament(parliament);
+      return res.json({ success: true, text: 'Parliament updated successfully' });
     } catch (err) {
       if (ArkimeConfig.debug) {
         console.log('Error updating parliament', err);
@@ -375,12 +398,7 @@ class Parliament {
       parliament = updatedParliament;
     }
 
-    let val = Parliament.settingsDefault.general[type];
-    if (parliament?.settings?.general[type]) {
-      val = parliament.settings.general[type];
-    }
-
-    return val;
+    return parliament?.settings?.general[type] ?? Parliament.settingsDefault.general[type];
   }
 }
 
@@ -577,7 +595,7 @@ async function initializeParliament () {
     );
 
     // do the upgrade
-    const upgraded = await upgrade.upgrade(parliamentFile, ArkimeConfig, internals.parliamentName, issues, Parliament);
+    const upgraded = await upgrade.upgrade(parliamentFile, issues, Parliament);
     parliamentFile = upgraded.parliament;
     issues = upgraded.issues;
 
@@ -605,7 +623,7 @@ async function initializeParliament () {
   try {
     await Parliament.getParliament();
   } catch (err) {
-    if (err.meta.statusCode === 404) {
+    if (err.meta?.statusCode === 404) {
       console.log('Parliament does not exist exist in DB. creating!');
       await Parliament.createParliament({
         groups: [],
@@ -1157,7 +1175,7 @@ app.get('/parliament/api/parliament/stats', (req, res) => {
   return res.json({ results: internals.stats });
 });
 
-app.put('/parliament/api/parliament', [isAdmin, checkCookieToken], Parliament.apiUpdateParliament);
+app.put('/parliament/api/parliament/order', [isAdmin, checkCookieToken], Parliament.apiUpdateParliamentOrder);
 
 // Create a new group in the parliament
 app.post('/parliament/api/groups', [isAdmin, checkCookieToken], async (req, res, next) => {
@@ -1194,7 +1212,6 @@ app.delete('/parliament/api/groups/:id', [isAdmin, checkCookieToken], async (req
     let index = 0;
     let foundGroup = false;
     for (const group of parliament.groups) {
-      console.log(group.id, req.params.id);
       if (group.id === req.params.id) {
         parliament.groups.splice(index, 1);
         foundGroup = true;

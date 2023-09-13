@@ -5804,6 +5804,16 @@ sub viewsUpdate
 {
   "_source": {"enabled": "true"},
   "dynamic": "strict",
+  "dynamic_templates": [
+    {
+      "string_template": {
+        "match_mapping_type": "string",
+        "mapping": {
+          "type": "keyword"
+        }
+      }
+    }
+  ],
   "properties": {
     "name": {
       "type": "keyword"
@@ -6504,7 +6514,7 @@ if ($ARGV[1] =~ /^(users-?import|import)$/) {
         }
     }
 
-    my @indices = ("users", "sequence", "stats", "queries", "files", "fields", "dstats", "hunts", "lookups", "notifiers", "views");
+    my @indices = ("users", "sequence", "stats", "queries", "files", "fields", "dstats", "hunts", "lookups", "notifiers", "views", "parliament");
     logmsg "Exporting documents...\n";
     foreach my $index (@indices) {
         my $data = esScroll($index, "", '{"version": true}');
@@ -7606,7 +7616,7 @@ $policy = qq/{
         }
     }
 
-    foreach my $i ("stats_v30", "dstats_v30", "fields_v30", "queries_v30", "hunts_v30", "lookups_v30", "users_v30", "notifiers_v40", "views_v40") {
+    foreach my $i ("stats_v30", "dstats_v30", "fields_v30", "queries_v30", "hunts_v30", "lookups_v30", "users_v30", "notifiers_v40", "views_v40", "parliament_v50") {
         if (!defined $indices{"${PREFIX}$i"}) {
             print "--> Couldn't find index ${PREFIX}$i, repair might fail\n"
         }
@@ -7618,7 +7628,7 @@ $policy = qq/{
         }
     }
 
-    foreach my $i ("queries", "hunts", "lookups", "users", "notifiers", "views") {
+    foreach my $i ("queries", "hunts", "lookups", "users", "notifiers", "views", "parliament") {
         if (defined $indices{"${PREFIX}$i"}) {
             print "--> Will delete the index ${PREFIX}$i and recreate as alias, this WILL cause data loss in those indices, maybe cancel and run backup first\n"
         }
@@ -7637,7 +7647,7 @@ $policy = qq/{
     $verbose = 3 if ($verbose < 3);
 
     print "Deleting any indices that should be aliases\n";
-    foreach my $i ("stats", "dstats", "fields", "queries", "hunts", "lookups", "users", "notifiers", "views") {
+    foreach my $i ("stats", "dstats", "fields", "queries", "hunts", "lookups", "users", "notifiers", "views", "parliament") {
         esDelete("/${PREFIX}$i", 0) if (defined $indices{"${PREFIX}$i"});
     }
 
@@ -7653,6 +7663,7 @@ $policy = qq/{
     esAlias("add", "users_v30", "users");
     esAlias("add", "notifiers_v40", "notifiers");
     esAlias("add", "views_v40", "views");
+    esAlias("add", "parliament_v50", "parliament");
 
     if (defined $indices{"${PREFIX}users_v30"}) {
         usersUpdate();
@@ -7709,6 +7720,12 @@ $policy = qq/{
     }
 
 
+    if (defined $indices{"${PREFIX}parliament_v50"}) {
+        parliamentUpdate();
+    } else {
+        parliamentCreate();
+    }
+
     if (!defined $templates{"${PREFIX}sessions3_ecs_template"}) {
         sessions3ECSTemplate();
     }
@@ -7717,6 +7734,7 @@ $policy = qq/{
         $UPGRADEALLSESSIONS = 0;
         historyUpdate();
     }
+
 
     print "\n";
     print "* You should also run ./db.pl upgrade again\n";
@@ -7835,7 +7853,7 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
 
     dbCheckForActivity($PREFIX);
 
-    my @indices = ("users", "sequence", "stats", "queries", "hunts", "files", "fields", "dstats", "lookups", "notifiers", "views");
+    my @indices = ("users", "sequence", "stats", "queries", "hunts", "files", "fields", "dstats", "lookups", "notifiers", "views", "parliament");
     my @filelist = ();
     foreach my $index (@indices) { # list of data, settings, and mappings files
         push(@filelist, "$ARGV[2].${PREFIX}${index}.json\n") if (-e "$ARGV[2].${PREFIX}${index}.json");
@@ -8016,6 +8034,7 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
         viewsMove();
         queriesUpdate();
         usersUpdate();
+        parliamentCreate();
     } elsif ($main::versionNumber == 75) {
         checkForOld7Indices();
         sessions3Update();
@@ -8024,12 +8043,14 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
         viewsMove();
         queriesUpdate();
         usersUpdate();
+        parliamentCreate();
     } elsif ($main::versionNumber <= 77) {
         checkForOld7Indices();
         sessions3Update();
         historyUpdate();
         queriesUpdate();
         usersUpdate();
+        parliamentCreate();
     } elsif ($main::versionNumber <= 79) {
         checkForOld7Indices();
         sessions3Update();

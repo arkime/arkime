@@ -1069,26 +1069,6 @@ export default {
     stopAutoRefresh () {
       if (interval) { clearInterval(interval); }
     },
-    // Remove UI only properties from groups and clusters in a parliament
-    sanitizeParliament (data) {
-      for (const group of data.groups) {
-        delete group.newTitle;
-        delete group.newClusterUrl;
-        delete group.newClusterType;
-        delete group.newDescription;
-        delete group.newClusterTitle;
-        delete group.newClusterLocalUrl;
-        delete group.newClusterDescription;
-
-        for (const cluster of group.clusters) {
-          delete cluster.newUrl;
-          delete cluster.newType;
-          delete cluster.newTitle;
-          delete cluster.newLocalUrl;
-          delete cluster.newDescription;
-        }
-      }
-    },
     getCluster (groupId, clusterId) {
       for (const group of this.parliament.groups) {
         if (group.id === groupId) {
@@ -1109,11 +1089,10 @@ export default {
       }
       return undefined;
     },
-    updateOrder (errorText) {
-      this.sanitizeParliament(this.parliament);
-
-      ParliamentService.update(this.parliament).catch((error) => {
+    updateOrder ({ oldIdx, newIdx, oldGroupId, newGroupId, errorText }) {
+      ParliamentService.updateOrder({ oldIdx, newIdx, oldGroupId, newGroupId }).catch((error) => {
         this.error = error.text || errorText;
+        // reset the parliament order by fetching parliament
         ParliamentService.getParliament().then((data) => {
           this.$store.commit('setParliament', data);
         });
@@ -1146,13 +1125,10 @@ export default {
             return;
           }
 
-          const parliamentClone = JSON.parse(JSON.stringify(this.parliament));
-          this.sanitizeParliament(parliamentClone);
-
           this.parliament.groups.splice(oldIdx, 1);
           this.parliament.groups.splice(newIdx, 0, group);
 
-          this.updateOrder(errorText);
+          this.updateOrder({ oldIdx, newIdx, errorText });
           this.startAutoRefresh();
         }
       });
@@ -1191,13 +1167,10 @@ export default {
               return;
             }
 
-            const parliamentClone = JSON.parse(JSON.stringify(this.parliament));
-            this.sanitizeParliament(parliamentClone);
-
             oldGroup.clusters.splice(oldIdx, 1);
             newGroup.clusters.splice(newIdx, 0, cluster);
 
-            this.updateOrder(errorText);
+            this.updateOrder({ oldIdx, newIdx, oldGroupId, newGroupId, errorText });
             this.startAutoRefresh();
           }
         });

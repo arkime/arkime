@@ -97,9 +97,9 @@ export default {
     });
   },
 
-  update: function (parliament) {
+  updateOrder: function (order) {
     return new Promise((resolve, reject) => {
-      Vue.axios.put('api/parliament', parliament)
+      Vue.axios.put('api/parliament/order', order)
         .then((response) => {
           resolve(response.data);
         })

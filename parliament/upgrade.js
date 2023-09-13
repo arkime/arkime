@@ -12,18 +12,17 @@
 const uuid = require('uuid').v4;
 
 const Notifier = require('../common/notifier');
+const ArkimeConfig = require('../common/arkimeConfig');
 
 const version = 7;
 
 /**
  * Upgrades the parliament object to the latest version
  * @param {object} parliament the parliament object to upgrade
- * @param {object} ArkimeConfig the ArkimeConfig object
- * @param {string} parliamentName the name of the parliament (must be unique)
- * @param {object} issues the issues object to update
+ * @param {object} issues the issues object to upgrade
  * @param {object} Parliament the Parliament class
  */
-exports.upgrade = async function (parliament, ArkimeConfig, parliamentName, issues, Parliament) {
+exports.upgrade = async function (parliament, issues, Parliament) {
   // fix cluster types
   if (parliament.groups) {
     for (const group of parliament.groups) {
@@ -198,7 +197,7 @@ exports.upgrade = async function (parliament, ArkimeConfig, parliamentName, issu
   if (parliament) { // add parliament to db
     delete parliament.version; // don't need version anymore
     delete parliament.authMode; // don't need authmode anymore
-    parliament.name = parliamentName; // parliament name is the id
+    parliament.name = Parliament.name; // parliament name is the id
 
     // remove healtherror and statserror
     for (const group of parliament.groups) {
@@ -221,7 +220,7 @@ exports.upgrade = async function (parliament, ArkimeConfig, parliamentName, issu
     try {
       await Parliament.createParliament(parliament);
     } catch (err) {
-      if (err.meta.statusCode === 409) {
+      if (err.meta?.statusCode === 409) {
         console.log('Parliament already exists in DB. Skipping!', err);
       } else {
         console.error('ERROR - Couldn\'t add Parliament to DB.', err);
