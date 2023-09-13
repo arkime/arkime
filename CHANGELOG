@@ -28,7 +28,7 @@ Node Versions:
 NOTICE: Restart wiseService before capture when upgrading
 NOTICE: Cross-cluster Shortcuts require you to not restart all your viewers at once after upgrading
 
-4.4.1 2023/08/xx
+4.5.0 2023/09/13
   - release - node 16.20.2
   - release - added missingok to default logrotate for arkime
   - capture - dns answers were double parsed
