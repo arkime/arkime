@@ -331,7 +331,7 @@ LOCAL void tagger_plugin_exit()
         ARKIME_TYPE_FREE(TaggerFile_t, file);
     );
 
-    Destroy_Patricia(allIps, tagger_free_ip);
+    Destroy_Patricia(allIps, (patricia_fn_data_t)tagger_free_ip);
 }
 
 /******************************************************************************/

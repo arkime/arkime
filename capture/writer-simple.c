@@ -77,7 +77,7 @@ typedef struct {
 // NOTE this points to the file structure, kind of backwards
 typedef struct arkimesimple {
     struct arkimesimple *simple_next, *simple_prev;
-    char                *buf;     // mmap buffer, config.pcapWriteSize + ARKIME_PACKET_MAX_LEN
+    uint8_t             *buf;     // mmap buffer, config.pcapWriteSize + ARKIME_PACKET_MAX_LEN
     ArkimeSimpleFile_t  *file;
     uint32_t             bufpos;  // Where in buf we are writing to
     uint8_t              closing; // This is the last block, close file when done
@@ -256,13 +256,13 @@ LOCAL void writer_simple_process_buf(int thread, int closing)
         switch(compressionMode) {
         case ARKIME_COMPRESSION_GZIP:
             deflate(&info->file->z_strm, Z_FINISH);
-            info->bufpos = (char *)info->file->z_strm.next_out - info->buf;
+            info->bufpos = (uint8_t *)info->file->z_strm.next_out - info->buf;
             info->file->pos += info->bufpos;
             break;
 #ifdef HAVE_ZSTD
         case ARKIME_COMPRESSION_ZSTD:
             ZSTD_endStream(info->file->zstd_strm, &info->file->zstd_out);
-            info->bufpos = (char *)info->file->zstd_out.dst + info->file->zstd_out.pos - info->buf;
+            info->bufpos = (uint8_t *)info->file->zstd_out.dst + info->file->zstd_out.pos - info->buf;
             info->file->pos += info->bufpos;
             break;
 #endif
@@ -402,7 +402,7 @@ LOCAL void writer_simple_write_output(ArkimeSimple_t *info, const unsigned char 
             deflate(&info->file->z_strm, Z_NO_FLUSH);
         }
         info->file->posInBlock += len;
-        info->bufpos = (char *)info->file->z_strm.next_out - info->buf;
+        info->bufpos = (uint8_t *)info->file->z_strm.next_out - info->buf;
         break;
 #ifdef HAVE_ZSTD
     case ARKIME_COMPRESSION_ZSTD:
@@ -426,7 +426,7 @@ LOCAL void writer_simple_write_output(ArkimeSimple_t *info, const unsigned char 
 LOCAL void writer_simple_gzip_make_new_block(ArkimeSimple_t *info)
 {
     deflate(&info->file->z_strm, Z_FULL_FLUSH);
-    info->bufpos = (char *)info->file->z_strm.next_out - info->buf;
+    info->bufpos = (uint8_t *)info->file->z_strm.next_out - info->buf;
     info->file->blockStart = info->file->z_strm.total_out;
     info->file->posInBlock = 0;
 }
