@@ -12,7 +12,6 @@
 const uuid = require('uuid').v4;
 
 const Notifier = require('../common/notifier');
-const Parliament = require('../common/parliament');
 
 const version = 7;
 
@@ -21,8 +20,10 @@ const version = 7;
  * @param {object} parliament the parliament object to upgrade
  * @param {object} ArkimeConfig the ArkimeConfig object
  * @param {string} parliamentName the name of the parliament (must be unique)
+ * @param {object} issues the issues object to update
+ * @param {object} Parliament the Parliament class
  */
-exports.upgrade = async function (parliament, ArkimeConfig, parliamentName, issues) {
+exports.upgrade = async function (parliament, ArkimeConfig, parliamentName, issues, Parliament) {
   // fix cluster types
   if (parliament.groups) {
     for (const group of parliament.groups) {
