@@ -573,7 +573,7 @@ class ItemHTTPStream extends ItemTransform {
         this.states[item.client] = ItemHTTPStream.STATES.res;
         const parts = upper.split(/ +/);
         this.code = +parts[1];
-      } else {
+      } else if (upper.length > 0) {
         this.states[item.client] = ItemHTTPStream.STATES.req;
         this.method = upper.split(' ')[0];
         const parts = upper.split(/ +/);

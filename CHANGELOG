@@ -39,24 +39,49 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - BREAKING - parliament password removed, must configure common auth via the UI before
                upgrading or manually in the config file see https://arkime.com/settings#parliament
                and https://arkime.com/faq#how_do_i_upgrade_to_arkime_5
+  - all - all programs support same config file formats (json/ini) and
   - all - authMode setting added
   - all - authMode=basic added
   - all - notifiers for parliament and arkime merged
           conflicts mitigated by appending "Parliament" to parliament notifiers
+  - all - drop privileges is now AFTER http(s) list
+          retrieval (file, elasticsearch)
   - capture - moloch converted to arkime
   - capture - override ips can now set any field
   - capture - overrideIpsFiles setting
   - capture - packetDropIpsFiles setting
+  - capture - can have negative cert.validDays/cert.remainingDays (thanks mcgillowen)
+  - capture - added cert.remainingSeconds/cert.remainingSeconds (thanks mcgillowen)
+  - capture - cert.remainingDays is now based on the firstPacket of session
+              instead of current time (thanks mcgillowen)
+  - cont3xt - new bulk UI and support for bulk queries
+  - cont3xt - lots of keyboard shortcut improvements
+  - cont3xt - new array syntax for links substitution
+  - cont3xt - new OpenSearch/Elasticsearch integration (config file only)
+  - cont3xt - new viewRoles in config file per integration to control access
   - viewer - removed x-moloch-auth
+  - viewer - files/history/stats now have cluster dropdown for multiviewer
   - parliament - dashboard-only mode removed, if you want users to just see
                  the dashboard don't assign them the parliamentUser role
+  - parliament - configuration is now stored in opensearch/elasticsearch
 
 
-4.4.1 2023/08/xx
+4.5.1 2023/09/xx
+
+4.5.0 2023/09/13
   - release - node 16.20.2
+  - release - added missingok to default logrotate for arkime
   - capture - dns answers were double parsed
   - capture - custom-fields honors viewerOnly:true
+  - capture - added dns.https fields
+  - capture - added cert:certificate-authority tag (thanks mcgillowen )
   - cont3xt - remove raw view button for link groups on the cont3xt search page
+  - cont3xt - Overview shortcut
+  - cont3xt - fixed overviews not updating on switch
+  - db.pl - don't allow '.' to be used for sync/add path
+  - viewer - fixed ipv6 session display issues when :: in ip
+  - viewer - http display rewritten to not depending on nodejs internals
+  - viewer - gpe display improvements
 
 4.4.0 2023/08/02
   - release - cyberchef 10.5.2
