@@ -510,7 +510,7 @@ class ArkimeUtil {
   /**
    * Create HTTP/HTTPS Server, load cert if HTTPS, listen, drop priv
    */
-  static createHttpServer (section, app, host, port) {
+  static createHttpServer (section, app, host, port, listenCb) {
     let server;
 
     if (ArkimeConfig.get(section, 'keyFile') && ArkimeConfig.get(section, 'certFile')) {
@@ -543,7 +543,7 @@ class ArkimeUtil {
       .on('listening', (e) => {
         console.log('Express server listening on host %s port %d in %s mode', server.address().address, server.address().port, app.settings.env);
       })
-      .listen(port, host);
+      .listen({port, host}, listenCb);
 
     // If root drop priv when dropGroup or dropUser set
     if (process.getuid() === 0) {
