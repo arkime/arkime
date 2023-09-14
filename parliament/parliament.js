@@ -336,9 +336,75 @@ class Parliament {
   }
 
   /**
+   * PUT - /api/parliament/settings
+   *
+   * Updates the parliament settings. Requires parliamentAdmin role.
+   * @name /parliament/settings
+   * @returns {boolean} success - Whether the operation was successful.
+   * @returns {string} text - The success/error message to (optionally) display to the user.
+   */
+  static async apiUpdateSettings (req, res, next) {
+    if (!req.body.settings?.general) {
+      return res.serverError(422, 'You must provide the settings to update.');
+    }
+
+    try {
+      const { body: { _source: parliament } } = await Parliament.getParliament();
+
+      // save general settings
+      for (const s in req.body.settings.general) {
+        let setting = req.body.settings.general[s];
+
+        if (s !== 'hostname' && s !== 'includeUrl') {
+          if (isNaN(setting)) {
+            return res.serverError(422, `${s} must be a number.`);
+          } else {
+            setting = parseInt(setting);
+          }
+        }
+
+        parliament.settings.general[s] = setting;
+      }
+
+      await Parliament.setParliament(parliament);
+      res.json({ success: true, text: 'Successfully updated settings.' });
+    } catch (e) {
+      if (ArkimeConfig.debug) {
+        console.log('Error updating settings', e);
+      }
+      res.serverError(500, 'Unable to update settings.');
+    }
+  }
+
+  /**
+   * PUT - /api/settings/restoreDefaults
+   *
+   * Restores the default settings. Requires parliamentAdmin role.
+   * @name /settings/restoreDefaults
+   * @returns {boolean} success - Whether the operation was successful.
+   * @returns {string} text - The success/error message to (optionally) display to the user.
+   */
+
+  static async apiRestoreDefaultSettings (req, res, next) {
+    try {
+      const { body: { _source: parliament } } = await Parliament.getParliament();
+
+      parliament.settings = Parliament.settingsDefault;
+
+      await Parliament.setParliament(parliament);
+      res.json({ success: true, text: 'Successfully restored default settings.', settings: parliament.settings });
+    } catch (e) {
+      if (ArkimeConfig.debug) {
+        console.log('Error restoring default settings', e);
+      }
+      res.serverError(500, 'Unable to restore default settings.');
+    }
+  }
+
+  /**
    * PUT - /api/parliament
    *
-   * Updates a parliament's order of groups/clusters.
+   * Updates a parliament's order of groups/clusters. Requires parliamentAdmin role.
    * @name /parliament
    * @returns {boolean} success - Whether the operation was successful.
    * @returns {string} text - The success/error message to (optionally) display to the user.
@@ -380,6 +446,315 @@ class Parliament {
         console.log('Error updating parliament', err);
       }
       return res.serverError(500, 'Error updating parliament');
+    }
+  }
+
+  /**
+   * POST - /api/groups
+   *
+   * Creates a new group in the parliament. Requires parliamentAdmin role.
+   * @name /groups
+   * @returns {boolean} success - Whether the operation was successful.
+   * @returns {string} text - The success/error message to (optionally) display to the user.
+   * @returns {Group} group - The new group including its unique id (if successful).
+   */
+  static async apiCreateGroup (req, res, next) {
+    if (!ArkimeUtil.isString(req.body.title)) {
+      return res.serverError(422, 'A group must have a title');
+    }
+
+    if (req.body.description && !ArkimeUtil.isString(req.body.description)) {
+      return res.serverError(422, 'A group must have a string description.');
+    }
+
+    const newGroup = { title: req.body.title, id: uuid(), clusters: [] };
+    newGroup.description ??= req.body.description;
+
+    try {
+      const { body: { _source: parliament } } = await Parliament.getParliament();
+      parliament.groups.push(newGroup);
+
+      await Parliament.setParliament(parliament);
+      res.json({ success: true, group: newGroup, text: 'Successfully added new group.' });
+    } catch (e) {
+      if (ArkimeConfig.debug) {
+        console.log('Error adding new group', e);
+      }
+      res.serverError(500, 'Unable to add new group.');
+    }
+  }
+
+  /**
+   * DELETE - /api/groups/:id
+   *
+   * Deletes a group from the parliament. Requires parliamentAdmin role.
+   * @name /groups/:id
+   * @param {string} id - The id of the group to delete.
+   * @returns {boolean} success - Whether the operation was successful.
+   * @returns {string} text - The success/error message to (optionally) display to the user.
+   */
+  static async apiDeleteGroup (req, res, next) {
+    try {
+      const { body: { _source: parliament } } = await Parliament.getParliament();
+
+      let index = 0;
+      let foundGroup = false;
+      for (const group of parliament.groups) {
+        if (group.id === req.params.id) {
+          parliament.groups.splice(index, 1);
+          foundGroup = true;
+          break;
+        }
+        ++index;
+      }
+
+      if (!foundGroup) {
+        return res.serverError(500, 'Unable to find group to delete.');
+      }
+
+      await Parliament.setParliament(parliament);
+      res.json({ success: true, text: 'Successfully removed group.' });
+    } catch (e) {
+      if (ArkimeConfig.debug) {
+        console.log('Error removing group', e);
+      }
+      res.serverError(500, 'Unable to remove group.');
+    }
+  }
+
+  /**
+   * PUT - /api/groups/:id
+   *
+   * Updates a group in the parliament. Requires parliamentAdmin role.
+   * @name /groups/:id
+   * @param {string} id - The id of the group to update.
+   * @param {Group} group - The updated group.
+   * @returns {boolean} success - Whether the operation was successful.
+   * @returns {string} text - The success/error message to (optionally) display to the user.
+   */
+
+  static async apiUpdateGroup (req, res, next) {
+    if (!ArkimeUtil.isString(req.body.title)) {
+      return res.serverError(422, 'A group must have a title.');
+    }
+
+    if (req.body.description && !ArkimeUtil.isString(req.body.description)) {
+      return res.serverError(422, 'A group must have a string description.');
+    }
+
+    try {
+      const { body: { _source: parliament } } = await Parliament.getParliament();
+
+      let foundGroup = false;
+      for (const group of parliament.groups) {
+        if (group.id === req.params.id) {
+          group.title = req.body.title;
+          group.description = req.body.description;
+          foundGroup = true;
+          break;
+        }
+      }
+
+      if (!foundGroup) {
+        return res.serverError(500, 'Unable to find group to edit.');
+      }
+
+      await Parliament.setParliament(parliament);
+      res.json({ success: true, text: 'Successfully updated the group.' });
+    } catch (e) {
+      if (ArkimeConfig.debug) {
+        console.log('Error updating group', e);
+      }
+      res.serverError(500, 'Unable to update group.');
+    }
+  }
+
+  /**
+   * POST /api/groups/:id/clusters
+   *
+   * Creates a new cluster in the group. Requires parliamentAdmin role.
+   * @name /groups/:id/clusters
+   * @param {string} id - The id of the group to add the cluster to.
+   * @param {Cluster} cluster - The cluster to add to the group.
+   * @returns {boolean} success - Whether the operation was successful.
+   * @returns {string} text - The success/error message to (optionally) display to the user.
+   * @returns {Cluster} cluster - The new cluster including its unique id (if successful).
+   */
+  static async apiCreateCluster (req, res, next) {
+    if (!ArkimeUtil.isString(req.body.title)) {
+      return res.serverError(422, 'A cluster must have a title.');
+    }
+
+    if (!ArkimeUtil.isString(req.body.url)) {
+      return res.serverError(422, 'A cluster must have a url.');
+    }
+
+    if (req.body.description && !ArkimeUtil.isString(req.body.description)) {
+      return res.serverError(422, 'A cluster must have a string description.');
+    }
+
+    if (req.body.localUrl && !ArkimeUtil.isString(req.body.localUrl)) {
+      return res.serverError(422, 'A cluster must have a string localUrl.');
+    }
+
+    if (req.body.type && !ArkimeUtil.isString(req.body.type)) {
+      return res.serverError(422, 'A cluster must have a string type.');
+    }
+
+    const newCluster = {
+      title: req.body.title,
+      description: req.body.description,
+      url: req.body.url,
+      localUrl: req.body.localUrl,
+      id: uuid(),
+      type: req.body.type,
+      hideDeltaBPS: false,
+      hideDeltaTDPS: false,
+      hideMonitoring: false,
+      hideMolochNodes: false,
+      hideDataNodes: false,
+      hideTotalNodes: false
+    };
+
+    try {
+      const { body: { _source: parliament } } = await Parliament.getParliament();
+
+      let foundGroup = false;
+      for (const group of parliament.groups) {
+        if (group.id === req.params.id) {
+          group.clusters.push(newCluster);
+          foundGroup = true;
+          break;
+        }
+      }
+
+      if (!foundGroup) {
+        return res.serverError(500, 'Unable to find group to place cluster.');
+      }
+
+      await Parliament.setParliament(parliament);
+      res.json({ success: true, cluster: newCluster, text: 'Successfully added the cluster.' });
+    } catch (e) {
+      if (ArkimeConfig.debug) {
+        console.log('Error creating cluster', e);
+      }
+      res.serverError(500, 'Unable to create cluster.');
+    }
+  }
+
+  /**
+   * DELETE - /api/groups/:id/clusters/:clusterId
+   *
+   * Deletes a cluster from the group. Requires parliamentAdmin role.
+   * @name /groups/:id/clusters/:clusterId
+   * @param {string} id - The id of the group to delete the cluster from.
+   * @param {string} clusterId - The id of the cluster to delete.
+   * @returns {boolean} success - Whether the operation was successful.
+   * @returns {string} text - The success/error message to (optionally) display to the user.
+   */
+  static async apiDeleteCluster (req, res, next) {
+    try {
+      const { body: { _source: parliament } } = await Parliament.getParliament();
+
+      let clusterIndex = 0;
+      let foundCluster = false;
+      for (const group of parliament.groups) {
+        if (group.id === req.params.groupId) {
+          for (const cluster of group.clusters) {
+            if (cluster.id === req.params.clusterId) {
+              group.clusters.splice(clusterIndex, 1);
+              foundCluster = true;
+              break;
+            }
+            ++clusterIndex;
+          }
+        }
+      }
+
+      if (!foundCluster) {
+        return res.serverError(500, 'Unable to find cluster to delete.');
+      }
+
+      await Parliament.setParliament(parliament);
+      res.json({ success: true, text: 'Successfully removed the cluster.' });
+    } catch (e) {
+      if (ArkimeConfig.debug) {
+        console.log('Error removing cluster', e);
+      }
+      res.serverError(500, 'Unable to remove cluster.');
+    }
+  }
+
+  /**
+   * PUT - /api/groups/:groupId/clusters/:clusterId
+   *
+   * Updates a cluster in the group. Requires parliamentAdmin role.
+   * @name /groups/:groupId/clusters/:clusterId
+   * @param {string} groupId - The id of the group to update the cluster in.
+   * @param {string} clusterId - The id of the cluster to update.
+   * @param {Cluster} cluster - The updated cluster.
+   * @returns {boolean} success - Whether the operation was successful.
+   * @returns {string} text - The success/error message to (optionally) display to the user.
+   */
+  static async apiUpdateCluster (req, res, next) {
+    if (!ArkimeUtil.isString(req.body.title)) {
+      return res.serverError(422, 'A cluster must have a title.');
+    }
+
+    if (!ArkimeUtil.isString(req.body.url)) {
+      return res.serverError(422, 'A cluster must have a url.');
+    }
+
+    if (req.body.description && !ArkimeUtil.isString(req.body.description)) {
+      return res.serverError(422, 'A cluster must have a string description.');
+    }
+
+    if (req.body.localUrl && !ArkimeUtil.isString(req.body.localUrl)) {
+      return res.serverError(422, 'A cluster must have a string localUrl.');
+    }
+
+    if (req.body.type && !ArkimeUtil.isString(req.body.type)) {
+      return res.serverError(422, 'A cluster must have a string type.');
+    }
+
+    try {
+      const { body: { _source: parliament } } = await Parliament.getParliament();
+
+      let foundCluster = false;
+      for (const group of parliament.groups) {
+        if (group.id === req.params.groupId) {
+          for (const cluster of group.clusters) {
+            if (cluster.id === req.params.clusterId) {
+              cluster.url = req.body.url;
+              cluster.title = req.body.title;
+              cluster.localUrl = req.body.localUrl;
+              cluster.description = req.body.description;
+              cluster.hideDeltaBPS = typeof req.body.hideDeltaBPS === 'boolean' ? req.body.hideDeltaBPS : undefined;
+              cluster.hideDataNodes = typeof req.body.hideDataNodes === 'boolean' ? req.body.hideDataNodes : undefined;
+              cluster.hideDeltaTDPS = typeof req.body.hideDeltaTDPS === 'boolean' ? req.body.hideDeltaTDPS : undefined;
+              cluster.hideTotalNodes = typeof req.body.hideTotalNodes === 'boolean' ? req.body.hideTotalNodes : undefined;
+              cluster.hideMonitoring = typeof req.body.hideMonitoring === 'boolean' ? req.body.hideMonitoring : undefined;
+              cluster.hideMolochNodes = typeof req.body.hideMolochNodes === 'boolean' ? req.body.hideMolochNodes : undefined;
+              cluster.type = req.body.type;
+
+              foundCluster = true;
+              break;
+            }
+          }
+        }
+      }
+
+      if (!foundCluster) {
+        return res.serverError(500, 'Unable to find cluster to update.');
+      }
+
+      await Parliament.setParliament(parliament);
+      res.json({ success: true, text: 'Successfully updated the cluster.' });
+    } catch (e) {
+      if (ArkimeConfig.debug) {
+        console.log('Error updating cluster', e);
+      }
+      res.serverError(500, 'Unable to update cluster.');
     }
   }
 
@@ -1098,55 +1473,10 @@ app.get('/parliament/api/auth', setCookie, (req, res, next) => {
 });
 
 // Update the parliament general settings object
-app.put('/parliament/api/settings', [isAdmin, checkCookieToken], async (req, res, next) => {
-  if (!req.body.settings?.general) {
-    return res.serverError(422, 'You must provide the settings to update.');
-  }
-
-  try {
-    const { body: { _source: parliament } } = await Parliament.getParliament();
-
-    // save general settings
-    for (const s in req.body.settings.general) {
-      let setting = req.body.settings.general[s];
-
-      if (s !== 'hostname' && s !== 'includeUrl') {
-        if (isNaN(setting)) {
-          return res.serverError(422, `${s} must be a number.`);
-        } else {
-          setting = parseInt(setting);
-        }
-      }
-
-      parliament.settings.general[s] = setting;
-    }
-
-    await Parliament.setParliament(parliament);
-    res.json({ success: true, text: 'Successfully updated settings.' });
-  } catch (e) {
-    if (ArkimeConfig.debug) {
-      console.log('Error updating settings', e);
-    }
-    res.serverError(500, 'Unable to update settings.');
-  }
-});
+app.put('/parliament/api/settings', [isAdmin, checkCookieToken], Parliament.apiUpdateSettings);
 
 // Update the parliament general settings object to the defaults
-app.put('/parliament/api/settings/restoreDefaults', [isAdmin, checkCookieToken], async (req, res, next) => {
-  try {
-    const { body: { _source: parliament } } = await Parliament.getParliament();
-
-    parliament.settings = Parliament.settingsDefault;
-
-    await Parliament.setParliament(parliament);
-    res.json({ success: true, text: 'Successfully restored default settings.', settings: parliament.settings });
-  } catch (e) {
-    if (ArkimeConfig.debug) {
-      console.log('Error restoring default settings', e);
-    }
-    res.serverError(500, 'Unable to restore default settings.');
-  }
-});
+app.put('/parliament/api/settings/restoreDefaults', [isAdmin, checkCookieToken], Parliament.apiRestoreDefaultSettings);
 
 // user roles endpoint
 app.get('/parliament/api/user/roles', [ArkimeUtil.noCacheJson, checkCookieToken], User.apiRoles);
@@ -1169,267 +1499,32 @@ app.delete('/parliament/api/notifier/:id', [ArkimeUtil.noCacheJson, isAdmin, che
 // issue a test alert to a specified notifier
 app.post('/parliament/api/notifier/:id/test', [ArkimeUtil.noCacheJson, isAdmin, checkCookieToken], Notifier.apiTestNotifier);
 
+// fetch the parliament object
 app.get('/parliament/api/parliament', Parliament.apiGetParliament);
 
-app.get('/parliament/api/parliament/stats', (req, res) => {
-  return res.json({ results: internals.stats });
-});
+// get the parliament stats (updated every 10 seconds by updateParliament)
+app.get('/parliament/api/parliament/stats', (req, res) => { return res.json({ results: internals.stats }); });
 
+// updates the parliament order of groups or clusters
 app.put('/parliament/api/parliament/order', [isAdmin, checkCookieToken], Parliament.apiUpdateParliamentOrder);
 
 // Create a new group in the parliament
-app.post('/parliament/api/groups', [isAdmin, checkCookieToken], async (req, res, next) => {
-  if (!ArkimeUtil.isString(req.body.title)) {
-    return res.serverError(422, 'A group must have a title');
-  }
-
-  if (req.body.description && !ArkimeUtil.isString(req.body.description)) {
-    return res.serverError(422, 'A group must have a string description.');
-  }
-
-  const newGroup = { title: req.body.title, id: uuid(), clusters: [] };
-  newGroup.description ??= req.body.description;
-
-  try {
-    const { body: { _source: parliament } } = await Parliament.getParliament();
-    parliament.groups.push(newGroup);
-
-    await Parliament.setParliament(parliament);
-    res.json({ success: true, group: newGroup, text: 'Successfully added new group.' });
-  } catch (e) {
-    if (ArkimeConfig.debug) {
-      console.log('Error adding new group', e);
-    }
-    res.serverError(500, 'Unable to add new group.');
-  }
-});
+app.post('/parliament/api/groups', [isAdmin, checkCookieToken], Parliament.apiCreateGroup);
 
 // Delete a group in the parliament
-app.delete('/parliament/api/groups/:id', [isAdmin, checkCookieToken], async (req, res, next) => {
-  try {
-    const { body: { _source: parliament } } = await Parliament.getParliament();
-
-    let index = 0;
-    let foundGroup = false;
-    for (const group of parliament.groups) {
-      if (group.id === req.params.id) {
-        parliament.groups.splice(index, 1);
-        foundGroup = true;
-        break;
-      }
-      ++index;
-    }
-
-    if (!foundGroup) {
-      return res.serverError(500, 'Unable to find group to delete.');
-    }
-
-    await Parliament.setParliament(parliament);
-    res.json({ success: true, text: 'Successfully removed group.' });
-  } catch (e) {
-    if (ArkimeConfig.debug) {
-      console.log('Error removing group', e);
-    }
-    res.serverError(500, 'Unable to remove group.');
-  }
-});
+app.delete('/parliament/api/groups/:id', [isAdmin, checkCookieToken], Parliament.apiDeleteGroup);
 
 // Update a group in the parliament
-app.put('/parliament/api/groups/:id', [isAdmin, checkCookieToken], async (req, res, next) => {
-  if (!ArkimeUtil.isString(req.body.title)) {
-    return res.serverError(422, 'A group must have a title.');
-  }
-
-  if (req.body.description && !ArkimeUtil.isString(req.body.description)) {
-    return res.serverError(422, 'A group must have a string description.');
-  }
-
-  try {
-    const { body: { _source: parliament } } = await Parliament.getParliament();
-
-    let foundGroup = false;
-    for (const group of parliament.groups) {
-      if (group.id === req.params.id) {
-        group.title = req.body.title;
-        group.description = req.body.description;
-        foundGroup = true;
-        break;
-      }
-    }
-
-    if (!foundGroup) {
-      return res.serverError(500, 'Unable to find group to edit.');
-    }
-
-    await Parliament.setParliament(parliament);
-    res.json({ success: true, text: 'Successfully updated the group.' });
-  } catch (e) {
-    if (ArkimeConfig.debug) {
-      console.log('Error updating group', e);
-    }
-    res.serverError(500, 'Unable to update group.');
-  }
-});
+app.put('/parliament/api/groups/:id', [isAdmin, checkCookieToken], Parliament.apiUpdateGroup);
 
 // Create a new cluster within an existing group
-app.post('/parliament/api/groups/:id/clusters', [isAdmin, checkCookieToken], async (req, res, next) => {
-  if (!ArkimeUtil.isString(req.body.title)) {
-    return res.serverError(422, 'A cluster must have a title.');
-  }
-
-  if (!ArkimeUtil.isString(req.body.url)) {
-    return res.serverError(422, 'A cluster must have a url.');
-  }
-
-  if (req.body.description && !ArkimeUtil.isString(req.body.description)) {
-    return res.serverError(422, 'A cluster must have a string description.');
-  }
-
-  if (req.body.localUrl && !ArkimeUtil.isString(req.body.localUrl)) {
-    return res.serverError(422, 'A cluster must have a string localUrl.');
-  }
-
-  if (req.body.type && !ArkimeUtil.isString(req.body.type)) {
-    return res.serverError(422, 'A cluster must have a string type.');
-  }
-
-  const newCluster = {
-    title: req.body.title,
-    description: req.body.description,
-    url: req.body.url,
-    localUrl: req.body.localUrl,
-    id: uuid(),
-    type: req.body.type,
-    hideDeltaBPS: false,
-    hideDeltaTDPS: false,
-    hideMonitoring: false,
-    hideMolochNodes: false,
-    hideDataNodes: false,
-    hideTotalNodes: false
-  };
-
-  try {
-    const { body: { _source: parliament } } = await Parliament.getParliament();
-
-    let foundGroup = false;
-    for (const group of parliament.groups) {
-      if (group.id === req.params.id) {
-        group.clusters.push(newCluster);
-        foundGroup = true;
-        break;
-      }
-    }
-
-    if (!foundGroup) {
-      return res.serverError(500, 'Unable to find group to place cluster.');
-    }
-
-    await Parliament.setParliament(parliament);
-    res.json({ success: true, cluster: newCluster, text: 'Successfully added the cluster.' });
-  } catch (e) {
-    if (ArkimeConfig.debug) {
-      console.log('Error creating cluster', e);
-    }
-    res.serverError(500, 'Unable to create cluster.');
-  }
-});
+app.post('/parliament/api/groups/:id/clusters', [isAdmin, checkCookieToken], Parliament.apiCreateCluster);
 
 // Delete a cluster
-app.delete('/parliament/api/groups/:groupId/clusters/:clusterId', [isAdmin, checkCookieToken], async (req, res, next) => {
-  try {
-    const { body: { _source: parliament } } = await Parliament.getParliament();
-
-    let clusterIndex = 0;
-    let foundCluster = false;
-    for (const group of parliament.groups) {
-      if (group.id === req.params.groupId) {
-        for (const cluster of group.clusters) {
-          if (cluster.id === req.params.clusterId) {
-            group.clusters.splice(clusterIndex, 1);
-            foundCluster = true;
-            break;
-          }
-          ++clusterIndex;
-        }
-      }
-    }
-
-    if (!foundCluster) {
-      return res.serverError(500, 'Unable to find cluster to delete.');
-    }
-
-    await Parliament.setParliament(parliament);
-    res.json({ success: true, text: 'Successfully removed the cluster.' });
-  } catch (e) {
-    if (ArkimeConfig.debug) {
-      console.log('Error removing cluster', e);
-    }
-    res.serverError(500, 'Unable to remove cluster.');
-  }
-});
+app.delete('/parliament/api/groups/:groupId/clusters/:clusterId', [isAdmin, checkCookieToken], Parliament.apiDeleteCluster);
 
 // Update a cluster
-app.put('/parliament/api/groups/:groupId/clusters/:clusterId', [isAdmin, checkCookieToken], async (req, res, next) => {
-  if (!ArkimeUtil.isString(req.body.title)) {
-    return res.serverError(422, 'A cluster must have a title.');
-  }
-
-  if (!ArkimeUtil.isString(req.body.url)) {
-    return res.serverError(422, 'A cluster must have a url.');
-  }
-
-  if (req.body.description && !ArkimeUtil.isString(req.body.description)) {
-    return res.serverError(422, 'A cluster must have a string description.');
-  }
-
-  if (req.body.localUrl && !ArkimeUtil.isString(req.body.localUrl)) {
-    return res.serverError(422, 'A cluster must have a string localUrl.');
-  }
-
-  if (req.body.type && !ArkimeUtil.isString(req.body.type)) {
-    return res.serverError(422, 'A cluster must have a string type.');
-  }
-
-  try {
-    const { body: { _source: parliament } } = await Parliament.getParliament();
-
-    let foundCluster = false;
-    for (const group of parliament.groups) {
-      if (group.id === req.params.groupId) {
-        for (const cluster of group.clusters) {
-          if (cluster.id === req.params.clusterId) {
-            cluster.url = req.body.url;
-            cluster.title = req.body.title;
-            cluster.localUrl = req.body.localUrl;
-            cluster.description = req.body.description;
-            cluster.hideDeltaBPS = typeof req.body.hideDeltaBPS === 'boolean' ? req.body.hideDeltaBPS : undefined;
-            cluster.hideDataNodes = typeof req.body.hideDataNodes === 'boolean' ? req.body.hideDataNodes : undefined;
-            cluster.hideDeltaTDPS = typeof req.body.hideDeltaTDPS === 'boolean' ? req.body.hideDeltaTDPS : undefined;
-            cluster.hideTotalNodes = typeof req.body.hideTotalNodes === 'boolean' ? req.body.hideTotalNodes : undefined;
-            cluster.hideMonitoring = typeof req.body.hideMonitoring === 'boolean' ? req.body.hideMonitoring : undefined;
-            cluster.hideMolochNodes = typeof req.body.hideMolochNodes === 'boolean' ? req.body.hideMolochNodes : undefined;
-            cluster.type = req.body.type;
-
-            foundCluster = true;
-            break;
-          }
-        }
-      }
-    }
-
-    if (!foundCluster) {
-      return res.serverError(500, 'Unable to find cluster to update.');
-    }
-
-    await Parliament.setParliament(parliament);
-    res.json({ success: true, text: 'Successfully updated the cluster.' });
-  } catch (e) {
-    if (ArkimeConfig.debug) {
-      console.log('Error updating cluster', e);
-    }
-    res.serverError(500, 'Unable to update cluster.');
-  }
-});
+app.put('/parliament/api/groups/:groupId/clusters/:clusterId', [isAdmin, checkCookieToken], Parliament.apiUpdateCluster);
 
 // Get a list of issues
 app.get('/parliament/api/issues', (req, res, next) => {
