@@ -13,6 +13,18 @@ export default {
     });
   },
 
+  getStats () {
+    return new Promise((resolve, reject) => {
+      Vue.axios.get('api/parliament/stats')
+        .then((response) => {
+          resolve(response.data);
+        })
+        .catch((error) => {
+          reject(error.response.data);
+        });
+    });
+  },
+
   createGroup: function (newGroup) {
     return new Promise((resolve, reject) => {
       Vue.axios.post('api/groups', newGroup)
@@ -85,9 +97,9 @@ export default {
     });
   },
 
-  updateParliamentOrder: function (reorderedParliament) {
+  updateOrder: function (order) {
     return new Promise((resolve, reject) => {
-      Vue.axios.put('api/parliament', { reorderedParliament })
+      Vue.axios.put('api/parliament/order', order)
         .then((response) => {
           resolve(response.data);
         })

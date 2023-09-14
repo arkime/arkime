@@ -7,16 +7,22 @@
 // 4 - remove parliament password
 // 5 - move settings to config
 // 6 - combine notifiers with viewer
+// 7 - remove parliament json
+
+const uuid = require('uuid').v4;
 
 const Notifier = require('../common/notifier');
+const ArkimeConfig = require('../common/arkimeConfig');
 
-const version = 6;
+const version = 7;
 
 /**
  * Upgrades the parliament object to the latest version
  * @param {object} parliament the parliament object to upgrade
+ * @param {object} issues the issues object to upgrade
+ * @param {object} Parliament the Parliament class
  */
-exports.upgrade = async function (parliament, ArkimeConfig) {
+exports.upgrade = async function (parliament, issues, Parliament) {
   // fix cluster types
   if (parliament.groups) {
     for (const group of parliament.groups) {
@@ -188,8 +194,42 @@ exports.upgrade = async function (parliament, ArkimeConfig) {
     delete parliament.settings.notifiers;
   }
 
+  if (parliament) { // add parliament to db
+    delete parliament.version; // don't need version anymore
+    delete parliament.authMode; // don't need authmode anymore
+    parliament.name = Parliament.name; // parliament name is the id
+
+    // remove healtherror and statserror
+    for (const group of parliament.groups) {
+      group.id = uuid(); // generate a new id for the group
+      for (const cluster of group.clusters) {
+        const oldClusterId = cluster.id;
+        cluster.id = uuid(); // generate a new id for the cluster
+        for (const issue of issues) { // update issues with new id
+          if (issue.clusterId === oldClusterId) {
+            issue.clusterId = cluster.id;
+          }
+        }
+        delete cluster.healthError;
+        delete cluster.statsError;
+      }
+    }
+
+    console.log('Adding Parliament to DB...');
+
+    try {
+      await Parliament.createParliament(parliament);
+    } catch (err) {
+      if (err.meta?.statusCode === 409) {
+        console.log('Parliament already exists in DB. Skipping!', err);
+      } else {
+        console.error('ERROR - Couldn\'t add Parliament to DB.', err);
+      }
+    }
+  }
+
   // update version
   parliament.version = version;
 
-  return parliament;
+  return { parliament, issues };
 };

@@ -10,6 +10,7 @@ const store = new Vuex.Store({
     theme: 'light',
     isUser: false,
     isAdmin: false,
+    parliament: {},
     refreshInterval: 15000
   },
   mutations: {
@@ -32,6 +33,12 @@ const store = new Vuex.Store({
     },
     setNotifiers (state, value) {
       state.notifiers = value;
+    },
+    setParliament (state, value) {
+      state.parliament = value;
+    },
+    setSettings (state, value) {
+      state.parliament.settings = value;
     }
   }
 });

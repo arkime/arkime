@@ -72,7 +72,7 @@
 # 76 - views index
 # 77 - cron sharing with roles and users
 # 78 - added roleAssigners to users
-# 79 - added parliament notifier flags
+# 79 - added parliament notifier flags to notifiers index and new parliament index
 
 use HTTP::Request::Common;
 use LWP::UserAgent;
@@ -170,7 +170,8 @@ sub showHelp($)
     print "    --ilm                      - Use ilm (Elasticsearch) to manage\n";
     print "    --ism                      - Use ism (OpenSearch) to manage\n";
     print "    --ifneeded                 - Only init or upgrade if needed, otherwise just exit\n";
-    print "  wipe [<init opts>]           - Same as init, but leaves user index untouched\n";
+    print "  wipe [<init opts>]           - Same as init, but leaves user,views,parliament indices untouched\n";
+    print "  clean                        - Remove all Arkime indices\n";
     print "  upgrade [<init opts>]        - Upgrade Arkime's mappings from a previous version or use to change settings\n";
     print "  expire <type> <num> [<opts>] - Perform daily OpenSearch/Elasticsearch maintenance and optimize all indices, not needed with ILM\n";
     print "       type                    - Same as rotateIndex in ini file = hourly,hourlyN,daily,weekly,monthly\n";
@@ -5683,6 +5684,111 @@ sub notifiersAddMissingProps
   }
 }
 ################################################################################
+sub parliamentCreate
+{
+  my $settings = '
+{
+  "settings": {
+    "index.priority": 30,
+    "number_of_shards": 1,
+    "number_of_replicas": 0,
+    "auto_expand_replicas": "0-3"
+  }
+}';
+
+  logmsg "Creating parliament_v50 index\n" if ($verbose > 0);
+  esPut("/${PREFIX}parliament_v50?master_timeout=${ESTIMEOUT}s", $settings);
+  esAlias("add", "parliament_v50", "parliament");
+  parliamentUpdate();
+}
+
+sub parliamentUpdate
+{
+    my $mapping = '
+{
+  "_source": {"enabled": "true"},
+  "dynamic": "strict",
+  "dynamic_templates": [
+    {
+      "string_template": {
+        "match_mapping_type": "string",
+        "mapping": {
+          "type": "keyword"
+        }
+      }
+    }
+  ],
+  "properties": {
+    "name": {
+      "type": "keyword"
+    },
+    "settings": {
+      "type": "object",
+      "dynamic": "true",
+      "enabled": "false"
+    },
+    "groups": {
+      "type": "object",
+      "properties": {
+        "title": {
+          "type": "keyword"
+        },
+        "description": {
+          "type": "keyword"
+        },
+        "id": {
+          "type": "keyword"
+        },
+        "clusters": {
+          "type": "object",
+          "properties": {
+            "title": {
+              "type": "keyword"
+            },
+            "description": {
+              "type": "keyword"
+            },
+            "url": {
+              "type": "keyword"
+            },
+            "localUrl": {
+              "type": "keyword"
+            },
+            "type": {
+              "type": "keyword"
+            },
+            "id": {
+              "type": "keyword"
+            },
+            "hideDeltaBPS": {
+              "type": "boolean"
+            },
+            "hideDeltaTDPS": {
+              "type": "boolean"
+            },
+            "hideMonitoring": {
+              "type": "boolean"
+            },
+            "hideMolochNodes": {
+              "type": "boolean"
+            },
+            "hideDataNodes": {
+              "type": "boolean"
+            },
+            "hideTotalNodes": {
+              "type": "boolean"
+            }
+          }
+        }
+      }
+    }
+  }
+}';
+
+logmsg "Setting parliament_v50 mapping\n" if ($verbose > 0);
+esPut("/${PREFIX}parliament_v50/_mapping?master_timeout=${ESTIMEOUT}s&pretty", $mapping);
+}
+################################################################################
 
 ################################################################################
 sub viewsCreate
@@ -6409,7 +6515,7 @@ if ($ARGV[1] =~ /^(users-?import|import)$/) {
         }
     }
 
-    my @indices = ("users", "sequence", "stats", "queries", "files", "fields", "dstats", "hunts", "lookups", "notifiers", "views");
+    my @indices = ("users", "sequence", "stats", "queries", "files", "fields", "dstats", "hunts", "lookups", "notifiers", "views", "parliament");
     logmsg "Exporting documents...\n";
     foreach my $index (@indices) {
         my $data = esScroll($index, "", '{"version": true}');
@@ -7511,7 +7617,7 @@ $policy = qq/{
         }
     }
 
-    foreach my $i ("stats_v30", "dstats_v30", "fields_v30", "queries_v30", "hunts_v30", "lookups_v30", "users_v30", "notifiers_v40", "views_v40") {
+    foreach my $i ("stats_v30", "dstats_v30", "fields_v30", "queries_v30", "hunts_v30", "lookups_v30", "users_v30", "notifiers_v40", "views_v40", "parliament_v50") {
         if (!defined $indices{"${PREFIX}$i"}) {
             print "--> Couldn't find index ${PREFIX}$i, repair might fail\n"
         }
@@ -7523,7 +7629,7 @@ $policy = qq/{
         }
     }
 
-    foreach my $i ("queries", "hunts", "lookups", "users", "notifiers", "views") {
+    foreach my $i ("queries", "hunts", "lookups", "users", "notifiers", "views", "parliament") {
         if (defined $indices{"${PREFIX}$i"}) {
             print "--> Will delete the index ${PREFIX}$i and recreate as alias, this WILL cause data loss in those indices, maybe cancel and run backup first\n"
         }
@@ -7542,7 +7648,7 @@ $policy = qq/{
     $verbose = 3 if ($verbose < 3);
 
     print "Deleting any indices that should be aliases\n";
-    foreach my $i ("stats", "dstats", "fields", "queries", "hunts", "lookups", "users", "notifiers", "views") {
+    foreach my $i ("stats", "dstats", "fields", "queries", "hunts", "lookups", "users", "notifiers", "views", "parliament") {
         esDelete("/${PREFIX}$i", 0) if (defined $indices{"${PREFIX}$i"});
     }
 
@@ -7558,6 +7664,7 @@ $policy = qq/{
     esAlias("add", "users_v30", "users");
     esAlias("add", "notifiers_v40", "notifiers");
     esAlias("add", "views_v40", "views");
+    esAlias("add", "parliament_v50", "parliament");
 
     if (defined $indices{"${PREFIX}users_v30"}) {
         usersUpdate();
@@ -7613,6 +7720,11 @@ $policy = qq/{
         viewsCreate();
     }
 
+    if (defined $indices{"${PREFIX}parliament_v50"}) {
+        parliamentUpdate();
+    } else {
+        parliamentCreate();
+    }
 
     if (!defined $templates{"${PREFIX}sessions3_ecs_template"}) {
         sessions3ECSTemplate();
@@ -7622,6 +7734,7 @@ $policy = qq/{
         $UPGRADEALLSESSIONS = 0;
         historyUpdate();
     }
+
 
     print "\n";
     print "* You should also run ./db.pl upgrade again\n";
@@ -7711,6 +7824,7 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
     if ($ARGV[1] =~ /^(init|clean)/) {
         esDelete("/${PREFIX}users_v30,${OLDPREFIX}users_v7,${OLDPREFIX}users_v6,${OLDPREFIX}users_v5,${OLDPREFIX}users,${PREFIX}users?ignore_unavailable=true", 1);
         esDelete("/${PREFIX}queries_v30,${OLDPREFIX}queries_v3,${OLDPREFIX}queries_v2,${OLDPREFIX}queries_v1,${OLDPREFIX}queries,${PREFIX}queries?ignore_unavailable=true", 1);
+        esDelete("/${PREFIX}parliament_v50?ignore_unavailable=true", 1);
     }
     esDelete("/tagger", 1);
 
@@ -7733,6 +7847,7 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
     if ($ARGV[1] =~ "init") {
         usersCreate();
         queriesCreate();
+        parliamentCreate();
     }
 } elsif ($ARGV[1] =~ /^(restore|restorenoprompt)$/) {
 
@@ -7740,7 +7855,7 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
 
     dbCheckForActivity($PREFIX);
 
-    my @indices = ("users", "sequence", "stats", "queries", "hunts", "files", "fields", "dstats", "lookups", "notifiers", "views");
+    my @indices = ("users", "sequence", "stats", "queries", "hunts", "files", "fields", "dstats", "lookups", "notifiers", "views", "parliament");
     my @filelist = ();
     foreach my $index (@indices) { # list of data, settings, and mappings files
         push(@filelist, "$ARGV[2].${PREFIX}${index}.json\n") if (-e "$ARGV[2].${PREFIX}${index}.json");
@@ -7921,6 +8036,7 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
         viewsMove();
         queriesUpdate();
         usersUpdate();
+        parliamentCreate();
     } elsif ($main::versionNumber == 75) {
         checkForOld7Indices();
         sessions3Update();
@@ -7929,12 +8045,14 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
         viewsMove();
         queriesUpdate();
         usersUpdate();
+        parliamentCreate();
     } elsif ($main::versionNumber <= 77) {
         checkForOld7Indices();
         sessions3Update();
         historyUpdate();
         queriesUpdate();
         usersUpdate();
+        parliamentCreate();
     } elsif ($main::versionNumber <= 79) {
         checkForOld7Indices();
         sessions3Update();
@@ -7942,6 +8060,7 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
         queriesUpdate();
         notifiersUpdate();
         notifiersAddMissingProps();
+        parliamentCreate();
     } else {
         logmsg "db.pl is hosed\n";
     }

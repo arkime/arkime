@@ -312,12 +312,18 @@ export default {
       error: '',
       networkError: false,
       // default tab
-      visibleTab: 'general',
-      // page data
-      settings: { general: {} }
+      visibleTab: 'general'
     };
   },
   computed: {
+    settings: {
+      get () {
+        return this.$store.state.parliament?.settings || { general: {} };
+      },
+      set (value) {
+        this.$store.commit('setSettings', value);
+      }
+    },
     isAdmin: function () {
       return this.$store.state.isAdmin;
     }
@@ -333,7 +339,6 @@ export default {
     }
 
     this.loadRoles();
-    this.loadData();
   },
   methods: {
     /* page functions ------------------------------------------------------ */
@@ -417,18 +422,6 @@ export default {
       this.msgType = type;
     },
     /* helper functions ---------------------------------------------------- */
-    loadData: function () {
-      this.msg = '';
-      this.error = '';
-
-      SettingsService.getSettings().then((data) => {
-        this.error = '';
-        this.settings = data;
-      }).catch((error) => {
-        this.error = error.text || 'Error fetching settings.';
-        this.networkError = error.networkError;
-      });
-    },
     loadRoles: function () {
       fetch('api/user/roles', {
         method: 'GET',
