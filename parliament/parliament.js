@@ -70,13 +70,13 @@ const getConfig = ArkimeConfig.get;
         process.exit(1);
       }
       ArkimeConfig.setOverride(process.argv[i].slice(0, equal), process.argv[i].slice(equal + 1));
-    } else if (process.argv[i] === '-n') {
+    } else if (process.argv[i] === '-n' || process.argv[i] === '--name') {
       internals.parliamentName = process.argv[++i];
     } else if (process.argv[i] === '--help') {
       console.log('parliament.js [<config options>]\n');
       console.log('Config Options:');
       console.log('  -c, --config                Parliament config file to use');
-      console.log('  -n, <name>                  Name of the Parliament for if you have multiple parliaments (defaults to "Parliament")');
+      console.log('  -n, --name <name>           Name of the Parliament for if you have multiple parliaments (defaults to "Parliament")');
       console.log('  -o <section>.<key>=<value>  Override the config file');
       console.log('  --debug                     Increase debug level, multiple are supported');
       console.log('  --insecure                  Disable certificate verification for https calls');
@@ -252,9 +252,19 @@ class Parliament {
   }
 
   static async setParliament (parliament) {
-    return Parliament.#esclient.index({
-      index: Parliament.#parliamentIndex, body: parliament, id: Parliament.name, refresh: true, timeout: '10m'
-    });
+    try {
+      const response = await Parliament.#esclient.index({
+        index: Parliament.#parliamentIndex, body: parliament, id: Parliament.name, refresh: true, timeout: '10m'
+      });
+
+      Parliament.#cache.set('parliament', parliament);
+      return response;
+    } catch (err) {
+      if (ArkimeConfig.debug) {
+        console.log('Error setting parliament', err);
+      }
+      throw err;
+    }
   }
 
   // APIS --------------------------------------------------------------------
@@ -355,7 +365,15 @@ class Parliament {
       for (const s in req.body.settings.general) {
         let setting = req.body.settings.general[s];
 
-        if (s !== 'hostname' && s !== 'includeUrl') {
+        if (s === 'hostname') { // hostname must be a string
+          if (!ArkimeUtil.isString(setting)) {
+            return res.serverError(422, 'hostname must be a string.');
+          }
+        } else if (s === 'includeUrl') { // include url must be a bool
+          if (typeof setting !== 'boolean') {
+            return res.serverError(422, 'includeUrl must be a boolean.');
+          }
+        } else { // all other settings are numbers
           if (isNaN(setting)) {
             return res.serverError(422, `${s} must be a number.`);
           } else {
@@ -414,26 +432,30 @@ class Parliament {
     try {
       const { body: { _source: parliament } } = await Parliament.getParliament();
 
-      if (!req.body.oldIdx && req.body.newIdx) {
-        return res.serverError(500, 'Error updating parliament order');
+      if (isNaN(req.body.oldIdx) || isNaN(req.body.newIdx)) {
+        return res.serverError(500, 'Error updating parliament order. Need old and new indexes!');
       }
 
       if (req.body.newGroupId) { // we're rearranging clusters
+        if (!ArkimeUtil.isString(req.body.newGroupId) || !ArkimeUtil.isString(req.body.oldGroupId)) {
+          return res.serverError(422, 'Error updating parliament order. Old and new group ids must be strings!');
+        }
+
         const newGroup = parliament.groups.filter(group => group.id === req.body.newGroupId);
-        if (!newGroup.length) { return res.serverError(500, 'Error updating parliament order'); }
+        if (!newGroup.length) { return res.serverError(500, 'Error updating parliament order. Can\'t find group to place cluster.'); }
 
         const oldGroup = parliament.groups.filter(group => group.id === req.body.oldGroupId);
-        if (!oldGroup.length) { return res.serverError(500, 'Error updating parliament order'); }
+        if (!oldGroup.length) { return res.serverError(500, 'Error updating parliament order. Can\'t find group to move cluster from.'); }
 
         const cluster = oldGroup[0].clusters[req.body.oldIdx];
-        if (!cluster) { return res.serverError(500, 'Error updating parliament order'); }
+        if (!cluster) { return res.serverError(500, 'Error updating parliament order. Can\'t find cluster to move.'); }
 
         oldGroup[0].clusters.splice(req.body.oldIdx, 1);
         newGroup[0].clusters.splice(req.body.newIdx, 0, cluster);
       } else { // we're rearranging groups
         const group = parliament.groups[req.body.oldIdx];
         if (!group) {
-          return res.serverError(500, 'Error updating parliament order');
+          return res.serverError(500, 'Error updating parliament order. Can\'t find group to move.');
         }
         parliament.groups.splice(req.body.oldIdx, 1);
         parliament.groups.splice(req.body.newIdx, 0, group);
@@ -1623,7 +1645,7 @@ app.get('/parliament/api/issues', (req, res, next) => {
 
   const recordsFiltered = issuesClone.length;
 
-  if (req.query.length) { // paging
+  if (req.query.length && !isNaN(req.query.length)) { // paging
     const len = parseInt(req.query.length);
     const start = !req.query.start ? 0 : parseInt(req.query.start);
 
