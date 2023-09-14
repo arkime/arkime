@@ -25,7 +25,7 @@ my $arkimeUserToken = getParliamentTokenCookie('arkimeUserP');
 
 # non parliament user can view parliament - empty
 $result = parliamentGetToken("/parliament/api/parliament", $arkimeUserToken);
-eq_or_diff($result, from_json('{"groups": [], "name": "parliament"}'));
+eq_or_diff($result, from_json('{"groups": [], "name": "parliamenttest"}'));
 
 # non parliament user can view issues
 $result = parliamentGetToken("/parliament/api/issues", $arkimeUserToken);
@@ -56,7 +56,7 @@ $result = parliamentDeleteToken("/parliament/api/notifier/test?molochRegressionU
 eq_or_diff($result, from_json('{"success": false, "text": "Permission Denied: Not a Parliament admin"}'));
 $result = parliamentPostToken("/parliament/api/notifier/id/test?molochRegressionUser=arkimeUserP", '{}', $arkimeUserToken);
 eq_or_diff($result, from_json('{"success": false, "text": "Permission Denied: Not a Parliament admin"}'));
-$result = parliamentPutToken("/parliament/api/parliament?molochRegressionUser=arkimeUserP", '{}', $arkimeUserToken);
+$result = parliamentPutToken("/parliament/api/parliament/order?molochRegressionUser=arkimeUserP", '{}', $arkimeUserToken);
 eq_or_diff($result, from_json('{"success": false, "text": "Permission Denied: Not a Parliament admin"}'));
 $result = parliamentPostToken("/parliament/api/groups?molochRegressionUser=arkimeUserP", '{}', $arkimeUserToken);
 eq_or_diff($result, from_json('{"success": false, "text": "Permission Denied: Not a Parliament admin"}'));
@@ -77,7 +77,7 @@ my $parliamentUserToken = getParliamentTokenCookie('parliamentUserP');
 
 # parliament user can view parliament
 $result = parliamentGetToken("/parliament/api/parliament?molochRegressionUser=parliamentUserP", $parliamentUserToken);
-eq_or_diff($result, from_json('{"groups": [], "name": "parliament" }'));
+eq_or_diff($result, from_json('{"groups": [], "name": "parliamenttest" }'));
 
 # parliament user can view issues
 $result = parliamentGetToken("/parliament/api/issues?molochRegressionUser=parliamentUserP", $parliamentUserToken);
@@ -114,7 +114,7 @@ $result = parliamentDeleteToken("/parliament/api/notifier/test?molochRegressionU
 eq_or_diff($result, from_json('{"success": false, "text": "Permission Denied: Not a Parliament admin"}'));
 $result = parliamentPostToken("/parliament/api/notifier/id/test?molochRegressionUser=parliamentUserP", '{}', $parliamentUserToken);
 eq_or_diff($result, from_json('{"success": false, "text": "Permission Denied: Not a Parliament admin"}'));
-$result = parliamentPutToken("/parliament/api/parliament?molochRegressionUser=parliamentUserP", '{}', $parliamentUserToken);
+$result = parliamentPutToken("/parliament/api/parliament/order?molochRegressionUser=parliamentUserP", '{}', $parliamentUserToken);
 eq_or_diff($result, from_json('{"success": false, "text": "Permission Denied: Not a Parliament admin"}'));
 $result = parliamentPostToken("/parliament/api/groups?molochRegressionUser=parliamentUserP", '{}', $parliamentUserToken);
 eq_or_diff($result, from_json('{"success": false, "text": "Permission Denied: Not a Parliament admin"}'));
@@ -136,7 +136,7 @@ my $parliamentAdminToken = getParliamentTokenCookie('parliamentAdminP');
 # parliament admin can view parliament
 $result = parliamentGetToken("/parliament/api/parliament?molochRegressionUser=parliamentAdminP", $parliamentAdminToken);
 delete $result->{settings};
-eq_or_diff($result, from_json('{"groups": [], "name": "parliament" }'));
+eq_or_diff($result, from_json('{"groups": [], "name": "parliamenttest" }'));
 
 # parliament admin can view issues
 $result = parliamentGetToken("/parliament/api/issues?molochRegressionUser=parliamentAdminP", $parliamentAdminToken);
@@ -229,7 +229,7 @@ eq_or_diff($result, from_json(qq({"success":true,"text":"Successfully added new 
 # Get parliament
 $result = parliamentGetToken("/parliament/api/parliament?molochRegressionUser=parliamentAdminP", $parliamentAdminToken);
 delete $result->{settings};
-eq_or_diff($result, from_json(qq({"groups": [{"clusters": [], "id": "$firstGroupId", "title": "the title"}, {"clusters": [], "description": "description for 2", "id": "$secondGroupId", "title": "the second title"}], "name": "parliament"})));
+eq_or_diff($result, from_json(qq({"groups": [{"clusters": [], "id": "$firstGroupId", "title": "the title"}, {"clusters": [], "description": "description for 2", "id": "$secondGroupId", "title": "the second title"}], "name": "parliamenttest"})));
 
 # Update second group bad title
 $result = parliamentPutToken("/parliament/api/groups/$secondGroupId?molochRegressionUser=parliamentAdminP", '{"title": 1, "description": "UP description for 2"}', $parliamentAdminToken);
@@ -251,7 +251,7 @@ eq_or_diff($result, from_json('{"success":true, "text":"Successfully restored de
 # Get parliament
 $result = parliamentGetToken("/parliament/api/parliament?molochRegressionUser=parliamentAdminP", $parliamentAdminToken);
 delete $result->{settings};
-eq_or_diff($result, from_json('{"groups": [{"clusters": [], "id": "' . $firstGroupId . '", "title": "the title"}, {"clusters": [], "description": "UP description for 2", "id":  "' . $secondGroupId . '", "title": "UP the second title"}], "name": "parliament"}'));
+eq_or_diff($result, from_json('{"groups": [{"clusters": [], "id": "' . $firstGroupId . '", "title": "the title"}, {"clusters": [], "description": "UP description for 2", "id":  "' . $secondGroupId . '", "title": "UP the second title"}], "name": "parliamenttest"}'));
 
 # Delete second group
 $result = parliamentDeleteToken("/parliament/api/groups/$secondGroupId?molochRegressionUser=parliamentAdminP", $parliamentAdminToken);
@@ -260,7 +260,7 @@ eq_or_diff($result, from_json('{"success":true,"text":"Successfully removed grou
 # Get parliament after delete
 $result = parliamentGetToken("/parliament/api/parliament?molochRegressionUser=parliamentAdminP", $parliamentAdminToken);
 delete $result->{settings};
-eq_or_diff($result, from_json('{"groups": [{"clusters": [], "id": "' . $firstGroupId . '", "title": "the title"}], "name": "parliament"}'));
+eq_or_diff($result, from_json('{"groups": [{"clusters": [], "id": "' . $firstGroupId . '", "title": "the title"}], "name": "parliamenttest"}'));
 
 # Add cluster requires url
 $result = parliamentPostToken("/parliament/api/groups/$firstGroupId/clusters?molochRegressionUser=parliamentAdminP", '{"title": "cluster 1"}', $parliamentAdminToken);
@@ -283,4 +283,8 @@ ok ($result->{success});
 $result = parliamentDeleteToken("/parliament/api/groups/$firstGroupId?molochRegressionUser=parliamentAdminP", $parliamentAdminToken);
 eq_or_diff($result, from_json('{"text": "Successfully removed group.", "success": true}'));
 
+# delete the added users
 viewerGet("/regressionTests/deleteAllUsers");
+
+# delete the parliament?
+esDelete("/tests_parliament/_doc/parliamenttest");
