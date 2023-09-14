@@ -5708,6 +5708,16 @@ sub parliamentUpdate
 {
   "_source": {"enabled": "true"},
   "dynamic": "strict",
+  "dynamic_templates": [
+    {
+      "string_template": {
+        "match_mapping_type": "string",
+        "mapping": {
+          "type": "keyword"
+        }
+      }
+    }
+  ],
   "properties": {
     "name": {
       "type": "keyword"
@@ -5805,16 +5815,6 @@ sub viewsUpdate
 {
   "_source": {"enabled": "true"},
   "dynamic": "strict",
-  "dynamic_templates": [
-    {
-      "string_template": {
-        "match_mapping_type": "string",
-        "mapping": {
-          "type": "keyword"
-        }
-      }
-    }
-  ],
   "properties": {
     "name": {
       "type": "keyword"
