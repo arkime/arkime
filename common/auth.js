@@ -145,7 +145,7 @@ class Auth {
       Auth.#serverSecret = options.serverSecret;
       Auth.#serverSecret256 = crypto.createHash('sha256').update(options.serverSecret).digest();
     } else {
-      Auth.#serverSecret = options.passwordSecret;
+      Auth.#serverSecret = Auth.passwordSecret;
       Auth.#serverSecret256 = Auth.passwordSecret256;
     }
     Auth.#requiredAuthHeader = options.requiredAuthHeader;
