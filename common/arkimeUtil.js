@@ -560,6 +560,26 @@ class ArkimeUtil {
 
     return server;
   }
+
+  // ----------------------------------------------------------------------------
+  /**
+   * Foramt the prefix
+   */
+  static formatPrefix (prefix) {
+    if (prefix === undefined) {
+      return 'arkime_';
+    }
+
+    if (prefix === '') {
+      return '';
+    }
+
+    if (prefix.endsWith('_')) {
+      return prefix;
+    }
+
+    return prefix + '_';
+  }
 }
 
 module.exports = ArkimeUtil;

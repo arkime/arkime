@@ -74,21 +74,8 @@ Db.initialize = async (info, cb) => {
   checkURLs(info.host);
   checkURLs(info.usersHost);
 
-  if (info.prefix === '') {
-    internals.prefix = '';
-  } else if (info.prefix && info.prefix.charAt(info.prefix.length - 1) !== '_') {
-    internals.prefix = info.prefix + '_';
-  } else {
-    internals.prefix = info.prefix || '';
-  }
-
-  if (info.usersPrefix === '') {
-    internals.usersPrefix = '';
-  } else if (info.usersPrefix && info.usersPrefix.charAt(info.usersPrefix.length - 1) !== '_') {
-    internals.usersPrefix = info.usersPrefix + '_';
-  } else {
-    internals.usersPrefix = info.usersPrefix || internals.prefix;
-  }
+  internals.prefix = ArkimeUtil.formatPrefix(info.prefix);
+  internals.usersPrefix = ArkimeUtil.formatPrefix(info.usersPrefix ?? info.prefix);
 
   internals.nodeName = info.nodeName;
   delete info.nodeName;
