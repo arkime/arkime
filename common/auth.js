@@ -879,10 +879,7 @@ class ESStore extends expressSession.Store {
       ESStore.#client = User.getClient();
       ESStore.start();
     }, 100);
-    let prefix = ArkimeConfig.get(options.section, 'usersPrefix', ArkimeConfig.get(options.section, 'prefix', 'arkime'));
-    if (prefix.slice(-1) !== '_') {
-      prefix += '_';
-    }
+    const prefix = ArkimeUtil.formatPrefix(ArkimeConfig.get(options.section, 'usersPrefix', ArkimeConfig.get(options.section, 'prefix', 'arkime_')));
     ESStore.#index = `${prefix}sids_v50`;
   }
 

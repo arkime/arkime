@@ -1,5 +1,5 @@
 # ESProxy
-use Test::More tests => 11;
+use Test::More tests => 16;
 use MolochTest;
 use Cwd;
 use URI::Escape;
@@ -34,3 +34,14 @@ is ($response->content, "Not authorized for API");
 $response = $MolochTest::userAgent->request(HTTP::Request::Common::DELETE("http://test:test\@$MolochTest::host:7200/_search"));
 is ($response->code, 400);
 is ($response->content, "Not authorized for API");
+
+$response = $MolochTest::userAgent->get("http://test:test\@$MolochTest::host:7200/_template/sessions3_template");
+is ($response->code, 400);
+is ($response->content, "Not authorized for API");
+
+$response = $MolochTest::userAgent->get("http://test:test\@$MolochTest::host:7200/_template/arkime_sessions3_template");
+is ($response->code, 400);
+is ($response->content, "Not authorized for API");
+
+$response = $MolochTest::userAgent->get("http://test:test\@$MolochTest::host:7200/_template/tests_sessions3_template");
+is ($response->code, 200);

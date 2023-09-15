@@ -54,10 +54,7 @@ Config.loaded(() => {
       sensors[sensor].ip = sensors[sensor].ip.split(',');
     }
   }
-  prefix = Config.get('prefix', 'arkime_');
-  if (prefix !== '' && prefix.charAt(prefix.length - 1) !== '_') {
-    prefix += '_';
-  }
+  prefix = ArkimeUtil.formatPrefix(Config.get('prefix', 'arkime_'));
   console.log(`PREFIX: ${prefix} OLDPREFIX: ${oldprefix}`);
 
   const esClientKey = Config.get('esClientKey');
@@ -117,30 +114,34 @@ const getExact = {
   '/_refresh': 1,
   '/_nodes/stats/jvm,process,fs,os,indices,thread_pool': 1
 };
-getExact[`/_template/${prefix}sessions3_template`] = 1;
-getExact[`/_template/${oldprefix}sessions2_template`] = 1;
-getExact[`/${oldprefix}sessions2-*/_alias`] = 1;
-getExact[`/${prefix}sessions3-*/_alias`] = 1;
-getExact[`/${oldprefix}sessions2-*,${prefix}sessions3-*/_alias`] = 1;
-getExact[`/${prefix}stats/_stats`] = 1;
-getExact[`/${prefix}users/_stats`] = 1;
-getExact[`/${prefix}users/_count`] = 1;
-getExact[`/${prefix}sequence/_stats`] = 1;
-getExact[`/${prefix}dstats/_stats`] = 1;
-getExact[`/${prefix}files/_stats`] = 1;
-getExact[`/${prefix}fields/_search`] = 1;
-getExact[`/${prefix}queries/_mapping`] = 1;
 
 // POST calls we can match exactly
 const postExact = {
 };
-postExact[`/${prefix}stats/_search`] = 1;
-postExact[`/${prefix}fields/_search`] = 1;
-postExact[`/${prefix}lookups/_search`] = 1;
 
 // PUT calls we can match exactly
 const putExact = {
 };
+
+Config.loaded(() => {
+  getExact[`/_template/${prefix}sessions3_template`] = 1;
+  getExact[`/_template/${oldprefix}sessions2_template`] = 1;
+  getExact[`/${oldprefix}sessions2-*/_alias`] = 1;
+  getExact[`/${prefix}sessions3-*/_alias`] = 1;
+  getExact[`/${oldprefix}sessions2-*,${prefix}sessions3-*/_alias`] = 1;
+  getExact[`/${prefix}stats/_stats`] = 1;
+  getExact[`/${prefix}users/_stats`] = 1;
+  getExact[`/${prefix}users/_count`] = 1;
+  getExact[`/${prefix}sequence/_stats`] = 1;
+  getExact[`/${prefix}dstats/_stats`] = 1;
+  getExact[`/${prefix}files/_stats`] = 1;
+  getExact[`/${prefix}fields/_search`] = 1;
+  getExact[`/${prefix}queries/_mapping`] = 1;
+
+  postExact[`/${prefix}stats/_search`] = 1;
+  postExact[`/${prefix}fields/_search`] = 1;
+  postExact[`/${prefix}lookups/_search`] = 1;
+});
 
 // ============================================================================
 // RegressionTests

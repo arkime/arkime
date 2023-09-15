@@ -18,16 +18,7 @@ class Notifier {
     Notifier.#debug = options.debug ?? 0;
     Notifier.#esclient = options.esclient;
 
-    let prefix = '';
-    if (options.prefix === undefined) {
-      prefix = 'arkime_';
-    } else if (options.prefix === '') {
-      prefix = '';
-    } else if (options.prefix.endsWith('_')) {
-      prefix = options.prefix;
-    } else {
-      prefix = options.prefix + '_';
-    }
+    const prefix = ArkimeUtil.formatPrefix(options.prefix);
 
     Notifier.#notifiersIndex = `${prefix}notifiers`;
 

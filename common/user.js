@@ -1383,15 +1383,7 @@ class UserESImplementation {
   client;
 
   constructor (options) {
-    if (options.prefix === undefined) {
-      this.prefix = 'arkime_';
-    } else if (options.prefix === '') {
-      this.prefix = '';
-    } else if (options.prefix.endsWith('_')) {
-      this.prefix = options.prefix;
-    } else {
-      this.prefix = options.prefix + '_';
-    }
+    this.prefix = ArkimeUtil.formatPrefix(options.prefix);
 
     const esSSLOptions = { rejectUnauthorized: !options.insecure };
     if (options.caTrustFile) { esSSLOptions.ca = ArkimeUtil.certificateFileToArray(options.caTrustFile); };

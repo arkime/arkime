@@ -223,16 +223,7 @@ class Parliament {
     Parliament.#debug = options.debug ?? 0;
     Parliament.#esclient = options.esclient;
 
-    let prefix = '';
-    if (options.prefix === undefined) {
-      prefix = 'arkime_';
-    } else if (options.prefix === '') {
-      prefix = '';
-    } else if (options.prefix.endsWith('_')) {
-      prefix = options.prefix;
-    } else {
-      prefix = options.prefix + '_';
-    }
+    const prefix = ArkimeUtil.formatPrefix(options.prefix);
 
     Parliament.#parliamentIndex = `${prefix}parliament`;
   }
