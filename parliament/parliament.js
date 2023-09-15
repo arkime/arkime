@@ -8,7 +8,6 @@ const MIN_DB_VERSION = 79;
 // DEPENDENCIES
 // ----------------------------------------------------------------------------
 const express = require('express');
-const http = require('http');
 const https = require('https');
 const fs = require('fs');
 const favicon = require('serve-favicon');
@@ -2001,33 +2000,18 @@ async function main () {
 
   await setupAuth();
 
-  let server;
-  if (getConfig('parliament', 'keyFile') && getConfig('parliament', 'certFile')) {
-    const certOptions = {
-      key: fs.readFileSync(getConfig('parliament', 'keyFile')),
-      cert: fs.readFileSync(getConfig('parliament', 'certFile'))
-    };
-    server = https.createServer(certOptions, app);
-  } else {
-    server = http.createServer(app);
-  }
-
   const parliamentHost = getConfig('parliament', 'parliamentHost');
   if (Auth.mode === 'header' && parliamentHost !== 'localhost' && parliamentHost !== '127.0.0.1') {
     console.log('SECURITY WARNING - When using header auth, parliamentHost should be localhost or use iptables');
   }
 
-  server.on('error', function (e) {
-    console.log("ERROR - couldn't listen on host %s port %d is cont3xt already running?", parliamentHost, getConfig('parliament', 'port', 8008));
-    process.exit(1);
-  }).on('listening', function (e) {
-    console.log('Express server listening on host %s port %d in %s mode', server.address().address, server.address().port, app.settings.env);
+  ArkimeUtil.createHttpServer('parliament', app, parliamentHost, ArkimeConfig.get('parliament', 'port', 8008), async () => {
     if (ArkimeConfig.debug) {
       console.log('Debug Level', ArkimeConfig.debug);
       console.log('Parliament file:', getConfig('parliament', 'file'));
       console.log('Issues file:', issuesFilename);
     }
-  }).listen(getConfig('parliament', 'port', 8008), parliamentHost, async () => {
+
     try {
       await initializeParliament();
     } catch (err) {
