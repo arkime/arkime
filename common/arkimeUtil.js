@@ -543,7 +543,7 @@ class ArkimeUtil {
       .on('listening', (e) => {
         console.log('Express server listening on host %s port %d in %s mode', server.address().address, server.address().port, app.settings.env);
       })
-      .listen({port, host}, listenCb);
+      .listen({ port, host }, listenCb);
 
     // If root drop priv when dropGroup or dropUser set
     if (process.getuid() === 0) {
