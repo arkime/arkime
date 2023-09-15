@@ -1861,27 +1861,8 @@ app.put('/parliament/api/removeSelectedAcknowledgedIssues', [isUser, checkCookie
 // INITIALIZE
 // ----------------------------------------------------------------------------
 async function setupAuth () {
-  Auth.initialize({
-    debug: ArkimeConfig.debug,
-    mode: getConfig('parliament', 'authMode'),
-    userNameHeader: getConfig('parliament', 'userNameHeader'),
-    passwordSecret: getConfig('parliament', 'passwordSecret', 'password'),
-    passwordSecretSection: 'parliament',
-    basePath: getConfig('parliament', 'webBasePath', '/'),
-    requiredAuthHeader: getConfig('parliament', 'requiredAuthHeader'),
-    requiredAuthHeaderVal: getConfig('parliament', 'requiredAuthHeaderVal'),
-    userAutoCreateTmpl: getConfig('parliament', 'userAutoCreateTmpl'),
-    userAuthIps: getConfig('parliament', 'userAuthIps'),
-    caTrustFile: getConfig('parliament', 'caTrustFile'),
-    authConfig: {
-      httpRealm: getConfig('parliament', 'httpRealm', 'Moloch'),
-      userIdField: getConfig('parliament', 'authUserIdField'),
-      discoverURL: getConfig('parliament', 'authDiscoverURL'),
-      clientId: getConfig('parliament', 'authClientId'),
-      clientSecret: getConfig('parliament', 'authClientSecret'),
-      redirectURIs: getConfig('parliament', 'authRedirectURIs'),
-      trustProxy: getConfig('parliament', 'authTrustProxy')
-    }
+  Auth.initialize('parliament', {
+    passwordSecretSection: 'parliament'
   });
 
   User.initialize({

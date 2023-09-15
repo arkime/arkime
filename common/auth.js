@@ -26,7 +26,6 @@ const iptrie = require('iptrie');
 const CustomStrategy = require('passport-custom');
 const express = require('express');
 const expressSession = require('express-session');
-const uuid = require('uuid').v4;
 const OIDC = require('openid-client');
 const LRU = require('lru-cache');
 
@@ -76,6 +75,7 @@ class Auth {
   // ----------------------------------------------------------------------------
   /**
    * Initialize the Auth subsystem
+   * @param {string} section The section to get all options from if they use standard name
    * @param {boolean} options.debug=0 The debug level to use for Auth component
    * @param {string} options.mode=digest What auth mode to run in
    * @param {string} options.basePath=/ What the web base path is for the app
@@ -90,7 +90,30 @@ class Auth {
    * @param {object} options.authConfig options specific to each auth mode
    * @param {object} options.caTrustFile Optional path to CA certificate file to use for external authentication
    */
-  static initialize (options) {
+  static initialize (section, options) {
+    // Make sure all options we need below are set
+    options ??= {};
+    options.debug ??= ArkimeConfig.debug;
+    options.mode ??= ArkimeConfig.get(section, 'authMode');
+    options.userNameHeader ??= ArkimeConfig.get(section, 'userNameHeader');
+    options.passwordSecret ??= ArkimeConfig.get(options.passwordSecretSection ?? section, 'passwordSecret');
+    options.serverSecret ??= ArkimeConfig.get(section, 'serverSecret');
+    options.requiredAuthHeader ??= ArkimeConfig.get(section, 'requiredAuthHeader');
+    options.requiredAuthHeaderVal ??= ArkimeConfig.get(section, 'requiredAuthHeaderVal');
+    options.userAutoCreateTmpl ??= ArkimeConfig.get(section, 'userAutoCreateTmpl');
+    options.userAuthIps ??= ArkimeConfig.get(section, 'userAuthIps');
+    options.caTrustFile ??= ArkimeConfig.get(section, 'caTrustFile');
+
+    options.authConfig ??= {};
+    options.authConfig.httpRealm ??= ArkimeConfig.get(section, 'httpRealm', 'Moloch');
+    options.authConfig.userIdField ??= ArkimeConfig.get(section, 'authUserIdField');
+    options.authConfig.discoverURL ??= ArkimeConfig.get(section, 'authDiscoverURL');
+    options.authConfig.clientId ??= ArkimeConfig.get(section, 'authClientId');
+    options.authConfig.clientSecret ??= ArkimeConfig.get(section, 'authClientSecret');
+    options.authConfig.redirectURIs ??= ArkimeConfig.get(section, 'authRedirectURIs');
+    options.authConfig.trustProxy ??= ArkimeConfig.get(section, 'authTrustProxy');
+    options.authConfig.cookieSameSite ??= ArkimeConfig.get(section, 'authCookieSameSite');
+
     if (options.debug > 1) {
       console.log('Auth.initialize', options);
     }
@@ -180,6 +203,7 @@ class Auth {
       check('clientSecret', 'authClientSecret');
       check('redirectURIs', 'authRedirectURIs');
       Auth.#strategies = ['oidc'];
+      Auth.#passportAuthOptions = { session: true, successRedirect: '/', failureRedirect: '/fail' };
       sessionAuth = true;
       break;
     case 'header':
@@ -209,13 +233,13 @@ class Auth {
 
     // If sessionAuth is required enable the express and passport sessions
     if (sessionAuth) {
-      Auth.#passportAuthOptions = { session: true, successRedirect: '/', failureRedirect: '/fail' };
       Auth.#authRouter.get('/fail', (req, res) => { res.send('User not found'); });
       Auth.#authRouter.use(expressSession({
-        secret: uuid(),
+        secret: Auth.passwordSecret + Auth.#serverSecret,
         resave: false,
         saveUninitialized: true,
-        cookie: { path: Auth.#basePath, secure: true, sameSite: Auth.#authConfig.cookieSameSite ?? 'Lax' }
+        cookie: { path: Auth.#basePath, secure: true, sameSite: Auth.#authConfig.cookieSameSite ?? 'Lax', maxAge: 24 * 60 * 60 * 1000 },
+        store: new ESStore({ section })
       }));
       Auth.#authRouter.use(passport.initialize());
       Auth.#authRouter.use(passport.session());
@@ -844,7 +868,126 @@ class Auth {
 }
 
 // ----------------------------------------------------------------------------
+class ESStore extends expressSession.Store {
+  static #client;
+  static #index;
+  static #ttl = 24 * 60 * 60 * 1000; // 1 hr
+
+  constructor (options) {
+    super();
+    setTimeout(async () => {
+      ESStore.#client = User.getClient();
+      ESStore.start();
+    }, 100);
+    let prefix = ArkimeConfig.get(options.section, 'usersPrefix', ArkimeConfig.get(options.section, 'prefix', 'arkime'));
+    if (prefix.slice(-1) !== '_') {
+      prefix += '_';
+    }
+    ESStore.#index = `${prefix}sids_v50`;
+  }
+
+  // ----------------------------------------------------------------------------
+  static async start () {
+    // Create Index if needed
+    try {
+      await ESStore.#client.indices.create({
+        index: ESStore.#index,
+        body: {
+          settings: {
+            number_of_shards: 1,
+            number_of_replicas: 0,
+            auto_expand_replicas: '0-1'
+          }
+        }
+      });
+    } catch (err) {
+      // If already exists ignore error
+      if (err.meta.body?.error?.type !== 'resource_already_exists_exception') {
+        console.log(err);
+        process.exit(0);
+      }
+    }
+
+    // Update mapping if needed
+    await ESStore.#client.indices.putMapping({
+      index: ESStore.#index,
+      body: {
+        dynamic_templates: [
+          {
+            string_template: {
+              match_mapping_type: 'string',
+              mapping: {
+                type: 'keyword'
+              }
+            }
+          }
+        ],
+        properties: {
+          _timestamp: { type: 'date' }
+        }
+      }
+    });
+
+    // Delete old sids
+    await ESStore.#client.deleteByQuery({
+      index: ESStore.#index,
+      body: {
+        query: {
+          range: {
+            _timestamp: {
+              lte: new Date().getTime() - ESStore.#ttl
+            }
+          }
+        }
+      },
+      timeout: '5m'
+    });
+  }
+
+  // ----------------------------------------------------------------------------
+  destroy (sid, callback) {
+    ESStore.#client.delete({
+      index: ESStore.#index,
+      id: sid
+    }, (err, response) => {
+      callback();
+    });
+  }
+
+  // ----------------------------------------------------------------------------
+  get (sid, callback) {
+    ESStore.#client.get({
+      index: ESStore.#index,
+      id: sid
+    }, (err, response) => {
+      if (err) {
+        return callback(err);
+      }
+
+      const _source = response.body._source;
+      if (new Date().getTime() - _source._timestamp > ESStore.#ttl) {
+        this.destroy(sid, () => {});
+        return callback();
+      }
+      return callback(err, _source);
+    });
+  }
+
+  // ----------------------------------------------------------------------------
+  set (sid, session, callback) {
+    session._timestamp = new Date().getTime();
+    ESStore.#client.index({
+      index: ESStore.#index,
+      id: sid,
+      body: session
+    }, (err, response) => {
+      callback(err);
+    });
+  }
+}
+// ----------------------------------------------------------------------------
 module.exports = Auth;
 
 const User = require('../common/user');
 const ArkimeUtil = require('../common/arkimeUtil');
+const ArkimeConfig = require('../common/arkimeConfig');
