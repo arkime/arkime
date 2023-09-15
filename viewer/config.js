@@ -370,30 +370,17 @@ class Config {
       }
     }
 
-    Auth.initialize({
-      mode: Config.get('authMode'),
-      userNameHeader: Config.get('userNameHeader'),
+    const section = [internals.nodeName];
+    if (internals.nodeName !== 'cont3xt') {
+      section.push('default');
+    }
+    Auth.initialize(section, {
       debug: Config.debug,
       basePath: Config.basePath(),
       passwordSecret: Config.getFull(internals.nodeName === 'cont3xt' ? 'cont3xt' : 'default', 'passwordSecret', 'password'),
       passwordSecretSection: internals.nodeName === 'cont3xt' ? 'cont3xt' : 'default',
-      serverSecret: Config.getFull('default', 'serverSecret'),
-      requiredAuthHeader: Config.get('requiredAuthHeader'),
-      requiredAuthHeaderVal: Config.get('requiredAuthHeaderVal'),
-      userAutoCreateTmpl: Config.get('userAutoCreateTmpl'),
-      userAuthIps: Config.get('userAuthIps'),
       s2s: true,
-      s2sRegressionTests: !!Config.get('s2sRegressionTests'),
-      caTrustFile: Config.getFull(internals.nodeName, 'caTrustFile'),
-      authConfig: {
-        httpRealm: Config.get('httpRealm', 'Moloch'),
-        userIdField: Config.get('authUserIdField'),
-        discoverURL: Config.get('authDiscoverURL'),
-        clientId: Config.get('authClientId'),
-        clientSecret: Config.get('authClientSecret'),
-        redirectURIs: Config.get('authRedirectURIs'),
-        trustProxy: Config.get('authTrustProxy')
-      }
+      s2sRegressionTests: !!Config.get('s2sRegressionTests')
     });
   }
 }

@@ -196,23 +196,8 @@ process.on('SIGINT', function () {
 
 // ----------------------------------------------------------------------------
 function setupAuth () {
-  Auth.initialize({
-    debug: ArkimeConfig.debug,
-    mode: getConfig('wiseService', 'authMode'),
-    userNameHeader: getConfig('wiseService', 'userNameHeader'),
-    passwordSecret: getConfig('wiseService', 'passwordSecret', 'password'),
-    passwordSecretSection: 'wiseService',
-    userAuthIps: getConfig('wiseService', 'userAuthIps'),
-    caTrustFile: getConfig('wiseService', 'caTrustFile'),
-    authConfig: {
-      httpRealm: getConfig('wiseService', 'httpRealm', 'Moloch'),
-      userIdField: getConfig('wiseService', 'authUserIdField'),
-      discoverURL: getConfig('wiseService', 'authDiscoverURL'),
-      clientId: getConfig('wiseService', 'authClientId'),
-      clientSecret: getConfig('wiseService', 'authClientSecret'),
-      redirectURIs: getConfig('wiseService', 'authRedirectURIs'),
-      trustProxy: getConfig('wiseService', 'authTrustProxy')
-    }
+  Auth.initialize('wiseService', {
+    passwordSecretSection: 'wiseService'
   });
 
   if (Auth.mode === 'anonymous') {

@@ -82,7 +82,7 @@ const cspHeader = helmet.contentSecurityPolicy({
 
 function setCookie (req, res, next) {
   const cookieOptions = {
-    path: getConfig('cont3xt', 'webBasePath', '/'),
+    path: internals.webBasePath,
     sameSite: 'Strict',
     overwrite: true
   };
@@ -375,7 +375,7 @@ app.use(cspHeader, setCookie, (req, res, next) => {
   const appContext = {
     nonce: res.locals.nonce,
     version: version.version,
-    path: getConfig('cont3xt', 'webBasePath', '/'),
+    path: internals.webBasePath,
     disableUserPasswordUI: getConfig('cont3xt', 'disableUserPasswordUI', true)
   };
 
@@ -456,27 +456,9 @@ const getConfig = ArkimeConfig.get;
 // Initialize stuff
 // ----------------------------------------------------------------------------
 async function setupAuth () {
-  Auth.initialize({
-    debug: ArkimeConfig.debug,
-    mode: getConfig('cont3xt', 'authMode'),
-    userNameHeader: getConfig('cont3xt', 'userNameHeader'),
-    passwordSecret: getConfig('cont3xt', 'passwordSecret', 'password'),
+  Auth.initialize('cont3xt', {
     passwordSecretSection: 'cont3xt',
-    basePath: internals.webBasePath,
-    requiredAuthHeader: getConfig('cont3xt', 'requiredAuthHeader'),
-    requiredAuthHeaderVal: getConfig('cont3xt', 'requiredAuthHeaderVal'),
-    userAutoCreateTmpl: getConfig('cont3xt', 'userAutoCreateTmpl'),
-    userAuthIps: getConfig('cont3xt', 'userAuthIps'),
-    caTrustFile: getConfig('cont3xt', 'caTrustFile'),
-    authConfig: {
-      httpRealm: getConfig('cont3xt', 'httpRealm', 'Moloch'),
-      userIdField: getConfig('cont3xt', 'authUserIdField'),
-      discoverURL: getConfig('cont3xt', 'authDiscoverURL'),
-      clientId: getConfig('cont3xt', 'authClientId'),
-      clientSecret: getConfig('cont3xt', 'authClientSecret'),
-      redirectURIs: getConfig('cont3xt', 'authRedirectURIs'),
-      trustProxy: getConfig('cont3xt', 'authTrustProxy')
-    }
+    basePath: internals.webBasePath
   });
 
   const dbUrl = getConfig('cont3xt', 'dbUrl');
