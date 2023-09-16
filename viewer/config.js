@@ -375,7 +375,7 @@ class Config {
       section.push('default');
     }
     Auth.initialize(section, {
-      debug: Config.debug,
+      appAdminRole: 'arkimeAdmin',
       basePath: Config.basePath(),
       passwordSecret: Config.getFull(internals.nodeName === 'cont3xt' ? 'cont3xt' : 'default', 'passwordSecret', 'password'),
       passwordSecretSection: internals.nodeName === 'cont3xt' ? 'cont3xt' : 'default',

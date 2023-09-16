@@ -5,17 +5,16 @@ const path = require('path');
 const util = require('util');
 const User = require('./user');
 const ArkimeUtil = require('./arkimeUtil');
+const ArkimeConfig = require('./arkimeConfig');
 
 class Notifier {
   static notifierTypes;
 
-  static #debug;
   static #esclient;
   static #notifiersIndex;
   static #defaultAlerts = { esRed: false, esDown: false, esDropped: false, outOfDate: false, noPackets: false };
 
   static initialize (options) {
-    Notifier.#debug = options.debug ?? 0;
     Notifier.#esclient = options.esclient;
 
     const prefix = ArkimeUtil.formatPrefix(options.prefix);
@@ -154,7 +153,7 @@ class Notifier {
 
       if (!notifier) {
         const msg = `ERROR - Cannot find notifier (${id}), no alert can be issued`;
-        if (Notifier.#debug) { console.log(msg); }
+        if (ArkimeConfig.debug) { console.log(msg); }
         return continueProcess(msg);
       }
 
@@ -181,7 +180,7 @@ class Notifier {
         // If a field is required and nothing was set, then we have an error
         if (field.required && config[field.name] === undefined) {
           const msg = `Cannot find notifier field value: ${field.name}, no alert can be issued`;
-          if (Notifier.#debug) { console.log(msg); }
+          if (ArkimeConfig.debug) { console.log(msg); }
           continueProcess(msg);
         }
       }

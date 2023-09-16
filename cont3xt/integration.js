@@ -36,7 +36,7 @@ const cont3xtUrlRegex = new RE2(/((([A-Za-z]{3,9}:(?:\/\/)?)(?:[\-;:&=\+\$,\w]+@
 class Integration {
   static NoResult = Symbol('NoResult');
 
-  static debug = 0;
+  static debug = ArkimeConfig.debug; // Used by integrations
 
   static #cache;
   static #cont3xtStartTime = Date.now();
@@ -54,14 +54,12 @@ class Integration {
 
   /**
    * Initialize the Integrations subsystem
-   * @param {number} options.debug=0 The debug level to use for Integrations
    * @param {object} options.cache The ArkimeCache implementation
    * @param {function} options.getConfig function used to get configuration items
    * @param {string} options.integrationsPath=__dirname/integrations/ Where to find the integrations
    *
    */
   static initialize (options) {
-    Integration.debug = options.debug ?? 0;
     Integration.#cache = options.cache;
     options.integrationsPath ??= path.join(__dirname, '/integrations/');
 
@@ -71,7 +69,7 @@ class Integration {
       });
     });
 
-    if (Integration.debug > 1) {
+    if (ArkimeConfig.debug > 1) {
       setTimeout(() => {
         const sorted = Integration.#integrations.all.sort((a, b) => { return a.order - b.order; });
         console.log('ORDER:');
@@ -157,7 +155,7 @@ class Integration {
       return;
     }
 
-    if (Integration.debug > 0) {
+    if (ArkimeConfig.debug > 0) {
       console.log(`REGISTER ${integration.name} cacheTimeout:${integration.cacheTimeout / 1000}s cacheable:${integration.cacheable} sharedCache:${integration.sharedCache} order:${integration.order} itypes:${Object.keys(integration.itypes)}`);
     }
 
@@ -410,7 +408,7 @@ class Integration {
     // update integration total
     shared.total += integrations.length;
 
-    if (Integration.debug > 0) {
+    if (ArkimeConfig.debug > 0) {
       console.log('RUNNING', itype, query, integrations.map(integration => integration.name));
     }
 
@@ -470,7 +468,7 @@ class Integration {
       const disabled = keys?.[integration.name]?.disabled;
       if (disabled === true || disabled === 'true') {
         shared.total--;
-        if (Integration.debug > 1) {
+        if (ArkimeConfig.debug > 1) {
           console.log('DISABLED', integration.name);
         }
         checkWriteDone();
@@ -480,7 +478,7 @@ class Integration {
       // Check if integration has roles that can use integration
       if (integration.viewRoles && !shared.user.hasRole(integration.viewRoles)) {
         shared.total--;
-        if (Integration.debug > 1) {
+        if (ArkimeConfig.debug > 1) {
           console.log('FAILED VIEWROLES', integration.name);
         }
         checkWriteDone();

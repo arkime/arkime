@@ -68,12 +68,10 @@ class User {
   static #userCacheTimeout = 5 * 1000;
   static #usersCache = new Map();
   static #rolesCache = { _timeStamp: 0 };
-  static #debug = false;
   static #implementation;
 
   /**
    * Initialize the User subsystem
-   * @param {boolean} options.debug=0 The debug level to use for User component
    * @param {string} options.url The url that represents which DB implementation to use
    * @param {boolean} options.readOnly=false If true don't set the last used time
    * @param {function} options.getCurrentUserCB Optional function that can modify a user object when fetching
@@ -81,10 +79,9 @@ class User {
    *
    */
   static initialize (options) {
-    if (options.debug > 1) {
+    if (ArkimeConfig.debug > 1) {
       console.log('User.initialize', options);
     }
-    User.#debug = options.debug ?? 0;
     readOnly = options.readOnly ?? false;
     getCurrentUserCB = options.getCurrentUserCB;
 
@@ -746,7 +743,7 @@ class User {
         roleAssigners: req.body.roleAssigners
       };
 
-      if (User.#debug) {
+      if (ArkimeConfig.debug) {
         console.log('Creating new user', nuser);
       }
 
@@ -905,7 +902,7 @@ class User {
       user.roleAssigners = req.body.roleAssigners ?? [];
 
       User.setUser(userId, user, (err, info) => {
-        if (User.#debug) {
+        if (ArkimeConfig.debug) {
           console.log('setUser', user, err, info);
         }
 
@@ -974,7 +971,7 @@ class User {
       user.roles = roles;
 
       User.setUser(userId, user, (err, info) => {
-        if (User.#debug) {
+        if (ArkimeConfig.debug) {
           console.log('setUser', user, err, info);
         }
 
@@ -1289,7 +1286,7 @@ class User {
           await User.#implementation.setLastUsed(this.userId, now);
         }
       } catch (err) {
-        if (User.#debug) {
+        if (ArkimeConfig.debug) {
           console.log('DEBUG - user lastUsed update error', err);
         }
       }
@@ -1818,3 +1815,4 @@ module.exports = User;
 
 const Auth = require('../common/auth');
 const ArkimeUtil = require('../common/arkimeUtil');
+const ArkimeConfig = require('../common/arkimeConfig');
