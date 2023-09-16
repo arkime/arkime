@@ -1277,19 +1277,19 @@ app.post( // (non-admin) list users (with role status for roleAssigners)
 
 app.post( // update user password endpoint
   ['/api/user/password'],
-  [ArkimeUtil.noCacheJson, checkCookieToken, logAction(), ArkimeUtil.getSettingUserDb],
+  [ArkimeUtil.noCacheJson, checkCookieToken, logAction(), Auth.getSettingUserDb],
   User.apiUpdateUserPassword
 );
 
 app.get( // user settings endpoint
   ['/api/user/settings'],
-  [ArkimeUtil.noCacheJson, recordResponseTime, ArkimeUtil.getSettingUserDb, User.checkPermissions(['webEnabled']), setCookie],
+  [ArkimeUtil.noCacheJson, recordResponseTime, Auth.getSettingUserDb, User.checkPermissions(['webEnabled']), setCookie],
   UserAPIs.getUserSettings
 );
 
 app.post( // update user settings endpoint
   ['/api/user/settings'],
-  [ArkimeUtil.noCacheJson, checkCookieToken, logAction(), ArkimeUtil.getSettingUserDb],
+  [ArkimeUtil.noCacheJson, checkCookieToken, logAction(), Auth.getSettingUserDb],
   UserAPIs.updateUserSettings
 );
 
@@ -1301,19 +1301,19 @@ app.get( // user custom columns endpoint
 
 app.post( // create user custom columns endpoint
   ['/api/user/column'],
-  [ArkimeUtil.noCacheJson, checkCookieToken, logAction(), ArkimeUtil.getSettingUserDb],
+  [ArkimeUtil.noCacheJson, checkCookieToken, logAction(), Auth.getSettingUserDb],
   UserAPIs.createUserColumns
 );
 
 app.put( // update user custom column endpoint
   ['/api/user/column/:name'],
-  [ArkimeUtil.noCacheJson, checkCookieToken, logAction(), ArkimeUtil.getSettingUserDb],
+  [ArkimeUtil.noCacheJson, checkCookieToken, logAction(), Auth.getSettingUserDb],
   UserAPIs.updateUserColumns
 );
 
 app.delete( // delete user custom column endpoint
   ['/api/user/column/:name'],
-  [ArkimeUtil.noCacheJson, checkCookieToken, logAction(), ArkimeUtil.getSettingUserDb],
+  [ArkimeUtil.noCacheJson, checkCookieToken, logAction(), Auth.getSettingUserDb],
   UserAPIs.deleteUserColumns
 );
 
@@ -1325,19 +1325,19 @@ app.get( // user spiview fields endpoint
 
 app.post( // create spiview fields endpoint
   ['/api/user/spiview'],
-  [ArkimeUtil.noCacheJson, checkCookieToken, logAction(), ArkimeUtil.getSettingUserDb],
+  [ArkimeUtil.noCacheJson, checkCookieToken, logAction(), Auth.getSettingUserDb],
   UserAPIs.createUserSpiviewFields
 );
 
 app.put( // update user spiview fields endpoint
   ['/api/user/spiview/:name'],
-  [ArkimeUtil.noCacheJson, checkCookieToken, logAction(), ArkimeUtil.getSettingUserDb],
+  [ArkimeUtil.noCacheJson, checkCookieToken, logAction(), Auth.getSettingUserDb],
   UserAPIs.updateUserSpiviewFields
 );
 
 app.delete( // delete user spiview fields endpoint
   ['/api/user/spiview/:name'],
-  [ArkimeUtil.noCacheJson, checkCookieToken, logAction(), ArkimeUtil.getSettingUserDb],
+  [ArkimeUtil.noCacheJson, checkCookieToken, logAction(), Auth.getSettingUserDb],
   UserAPIs.deleteUserSpiviewFields
 );
 
@@ -1392,19 +1392,19 @@ app.get( // get views endpoint
 
 app.post( // create view endpoint
   ['/api/view'],
-  [ArkimeUtil.noCacheJson, checkCookieToken, logAction(), ArkimeUtil.getSettingUserDb, sanitizeViewName],
+  [ArkimeUtil.noCacheJson, checkCookieToken, logAction(), Auth.getSettingUserDb, sanitizeViewName],
   ViewAPIs.apiCreateView
 );
 
 app.delete( // delete view endpoint
   ['/api/view/:id'],
-  [ArkimeUtil.noCacheJson, checkCookieToken, logAction(), ArkimeUtil.getSettingUserDb, sanitizeViewName],
+  [ArkimeUtil.noCacheJson, checkCookieToken, logAction(), Auth.getSettingUserDb, sanitizeViewName],
   ViewAPIs.apiDeleteView
 );
 
 app.put( // update view endpoint
   ['/api/view/:id'],
-  [ArkimeUtil.noCacheJson, checkCookieToken, logAction(), ArkimeUtil.getSettingUserDb, sanitizeViewName],
+  [ArkimeUtil.noCacheJson, checkCookieToken, logAction(), Auth.getSettingUserDb, sanitizeViewName],
   ViewAPIs.apiUpdateView
 );
 
@@ -1417,19 +1417,19 @@ app.get( // get cron queries endpoint
 
 app.post( // create cron query endpoint
   ['/api/cron'],
-  [ArkimeUtil.noCacheJson, checkCookieToken, logAction(), ArkimeUtil.getSettingUserDb],
+  [ArkimeUtil.noCacheJson, checkCookieToken, logAction(), Auth.getSettingUserDb],
   CronAPIs.createCron
 );
 
 app.delete( // delete cron endpoint
   ['/api/cron/:key'],
-  [ArkimeUtil.noCacheJson, checkCookieToken, logAction(), ArkimeUtil.getSettingUserDb, checkCronAccess],
+  [ArkimeUtil.noCacheJson, checkCookieToken, logAction(), Auth.getSettingUserDb, checkCronAccess],
   CronAPIs.deleteCron
 );
 
 app.post( // update cron endpoint
   ['/api/cron/:key'],
-  [ArkimeUtil.noCacheJson, checkCookieToken, logAction(), ArkimeUtil.getSettingUserDb, checkCronAccess],
+  [ArkimeUtil.noCacheJson, checkCookieToken, logAction(), Auth.getSettingUserDb, checkCronAccess],
   CronAPIs.updateCron
 );
 
@@ -1448,19 +1448,19 @@ app.get( // notifiers endpoint
 
 app.post( // create notifier endpoint
   ['/api/notifier'],
-  [ArkimeUtil.noCacheJson, ArkimeUtil.getSettingUserDb, User.checkRole('arkimeAdmin'), checkCookieToken],
+  [ArkimeUtil.noCacheJson, Auth.getSettingUserDb, User.checkRole('arkimeAdmin'), checkCookieToken],
   Notifier.apiCreateNotifier
 );
 
 app.put( // update notifier endpoint
   ['/api/notifier/:id'],
-  [ArkimeUtil.noCacheJson, ArkimeUtil.getSettingUserDb, User.checkRole('arkimeAdmin'), checkCookieToken],
+  [ArkimeUtil.noCacheJson, Auth.getSettingUserDb, User.checkRole('arkimeAdmin'), checkCookieToken],
   Notifier.apiUpdateNotifier
 );
 
 app.delete( // delete notifier endpoint
   ['/api/notifier/:id'],
-  [ArkimeUtil.noCacheJson, ArkimeUtil.getSettingUserDb, User.checkRole('arkimeAdmin'), checkCookieToken],
+  [ArkimeUtil.noCacheJson, Auth.getSettingUserDb, User.checkRole('arkimeAdmin'), checkCookieToken],
   Notifier.apiDeleteNotifier
 );
 
@@ -1897,19 +1897,19 @@ app.get( // get shortcuts endpoint
 
 app.post( // create shortcut endpoint
   ['/api/shortcut'],
-  [ArkimeUtil.noCacheJson, ArkimeUtil.getSettingUserDb, logAction('shortcut'), checkCookieToken],
+  [ArkimeUtil.noCacheJson, Auth.getSettingUserDb, logAction('shortcut'), checkCookieToken],
   ShortcutAPIs.createShortcut
 );
 
 app.put( // update shortcut endpoint
   ['/api/shortcut/:id'],
-  [ArkimeUtil.noCacheJson, ArkimeUtil.getSettingUserDb, logAction('shortcut/:id'), checkCookieToken],
+  [ArkimeUtil.noCacheJson, Auth.getSettingUserDb, logAction('shortcut/:id'), checkCookieToken],
   ShortcutAPIs.updateShortcut
 );
 
 app.delete( // delete shortcut endpoint
   ['/api/shortcut/:id'],
-  [ArkimeUtil.noCacheJson, ArkimeUtil.getSettingUserDb, logAction('shortcut/:id'), checkCookieToken],
+  [ArkimeUtil.noCacheJson, Auth.getSettingUserDb, logAction('shortcut/:id'), checkCookieToken],
   ShortcutAPIs.deleteShortcut
 );
 
