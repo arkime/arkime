@@ -213,7 +213,7 @@ app.post('/api/users', [jsonParser, User.checkRole('usersAdmin'), setCookie], Us
 app.post('/api/users/csv', [jsonParser, User.checkRole('usersAdmin'), setCookie], User.apiGetUsersCSV);
 app.post('/api/users/min', [jsonParser, checkCookieToken, User.checkAssignableRole], User.apiGetUsersMin);
 app.post('/api/user', [jsonParser, checkCookieToken, User.checkRole('usersAdmin')], User.apiCreateUser);
-app.post('/api/user/password', [jsonParser, checkCookieToken, ArkimeUtil.getSettingUserDb], User.apiUpdateUserPassword);
+app.post('/api/user/password', [jsonParser, checkCookieToken, Auth.getSettingUserDb], User.apiUpdateUserPassword);
 app.delete('/api/user/:id', [jsonParser, checkCookieToken, User.checkRole('usersAdmin')], User.apiDeleteUser);
 app.post('/api/user/:id', [jsonParser, checkCookieToken, User.checkRole('usersAdmin')], User.apiUpdateUser);
 app.post('/api/user/:id/assignment', [jsonParser, checkCookieToken, User.checkAssignableRole], User.apiUpdateUserRole);
@@ -457,6 +457,7 @@ const getConfig = ArkimeConfig.get;
 // ----------------------------------------------------------------------------
 async function setupAuth () {
   Auth.initialize('cont3xt', {
+    appAdminRole: 'cont3xtAdmin',
     passwordSecretSection: 'cont3xt',
     basePath: internals.webBasePath
   });
@@ -466,13 +467,8 @@ async function setupAuth () {
   const usersUrl = getConfig('cont3xt', 'usersUrl');
   let usersEs = getConfig('cont3xt', 'usersElasticsearch');
 
-  // ALW - 5.0 Fix
-  ArkimeUtil.debug = internals.debug;
-  ArkimeUtil.adminRole = 'cont3xtAdmin';
-
   await Db.initialize({
     insecure: ArkimeConfig.insecure,
-    debug: ArkimeConfig.debug,
     url: dbUrl,
     node: es,
     caTrustFile: getConfig('cont3xt', 'caTrustFile'),
@@ -489,7 +485,6 @@ async function setupAuth () {
   User.initialize({
     insecure: ArkimeConfig.insecure,
     requestTimeout: getConfig('cont3xt', 'elasticsearchTimeout', 300),
-    debug: ArkimeConfig.debug,
     url: usersUrl,
     node: usersEs,
     caTrustFile: getConfig('cont3xt', 'caTrustFile'),
@@ -502,7 +497,6 @@ async function setupAuth () {
   });
 
   Audit.initialize({
-    debug: ArkimeConfig.debug,
     expireHistoryDays: getConfig('cont3xt', 'expireHistoryDays', 180)
   });
 
@@ -516,7 +510,6 @@ async function setupAuth () {
   });
 
   Integration.initialize({
-    debug: ArkimeConfig.debug,
     cache
   });
 }

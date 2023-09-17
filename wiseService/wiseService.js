@@ -197,6 +197,7 @@ process.on('SIGINT', function () {
 // ----------------------------------------------------------------------------
 function setupAuth () {
   Auth.initialize('wiseService', {
+    appAdminRole: 'wiseAdmin',
     passwordSecretSection: 'wiseService'
   });
 

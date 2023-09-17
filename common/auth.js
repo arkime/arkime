@@ -30,13 +30,13 @@ const OIDC = require('openid-client');
 const LRU = require('lru-cache');
 
 class Auth {
-  static debug;
   static mode;
   static regressionTests = false;
   static passwordSecret;
   static passwordSecret256;
 
   static #userNameHeader;
+  static #appAdminRole;
   static #serverSecret;
   static #serverSecret256;
   static #basePath;
@@ -76,7 +76,6 @@ class Auth {
   /**
    * Initialize the Auth subsystem
    * @param {string} section The section to get all options from if they use standard name
-   * @param {boolean} options.debug=0 The debug level to use for Auth component
    * @param {string} options.mode=digest What auth mode to run in
    * @param {string} options.basePath=/ What the web base path is for the app
    * @param {string} options.userNameHeader In header auth mode, which http header has the user id
@@ -93,7 +92,6 @@ class Auth {
   static initialize (section, options) {
     // Make sure all options we need below are set
     options ??= {};
-    options.debug ??= ArkimeConfig.debug;
     options.mode ??= ArkimeConfig.get(section, 'authMode');
     options.userNameHeader ??= ArkimeConfig.get(section, 'userNameHeader');
     options.passwordSecret ??= ArkimeConfig.get(options.passwordSecretSection ?? section, 'passwordSecret');
@@ -114,7 +112,7 @@ class Auth {
     options.authConfig.trustProxy ??= ArkimeConfig.get(section, 'authTrustProxy');
     options.authConfig.cookieSameSite ??= ArkimeConfig.get(section, 'authCookieSameSite');
 
-    if (options.debug > 1) {
+    if (ArkimeConfig.debug > 1) {
       console.log('Auth.initialize', options);
     }
 
@@ -134,9 +132,9 @@ class Auth {
       }
     }
 
-    Auth.debug = options.debug ?? 0;
     Auth.mode = options.mode;
     Auth.#userNameHeader = options.userNameHeader;
+    Auth.#appAdminRole = options.appAdminRole;
     Auth.#basePath = options.basePath ?? '/';
     Auth.#passwordSecretSection = options.passwordSecretSection ?? 'default';
     Auth.passwordSecret = options.passwordSecret ?? 'password';
@@ -225,7 +223,7 @@ class Auth {
       Auth.#strategies.unshift('s2s');
     }
 
-    if (Auth.debug > 0) {
+    if (ArkimeConfig.debug > 0) {
       console.log('AUTH strategies', Auth.#strategies);
     }
 
@@ -379,7 +377,7 @@ class Auth {
     // ----------------------------------------------------------------------------
     passport.use('header', new CustomStrategy((req, done) => {
       if (Auth.#userNameHeader !== undefined && req.headers[Auth.#userNameHeader] === undefined) {
-        if (Auth.debug > 0) {
+        if (ArkimeConfig.debug > 0) {
           console.log(`AUTH: didn't find ${Auth.#userNameHeader} in the headers`, req.headers);
         }
         return done(null, false);
@@ -450,7 +448,7 @@ class Auth {
         const userId = userinfo[Auth.#authConfig.userIdField];
 
         if (userId === undefined) {
-          if (Auth.debug > 0) {
+          if (ArkimeConfig.debug > 0) {
             console.log(`AUTH: didn't find ${Auth.#authConfig.userIdField} in the userinfo`, userinfo);
           }
           return done(null, false);
@@ -621,7 +619,7 @@ class Auth {
 
   // ----------------------------------------------------------------------------
   static #dynamicCreate (userId, vars, cb) {
-    if (Auth.debug > 0) {
+    if (ArkimeConfig.debug > 0) {
       console.log('AUTH - #dynamicCreate', ArkimeUtil.sanitizeStr(userId));
     }
     const nuser = JSON.parse(new Function('return `' + Auth.#userAutoCreateTmpl + '`;').call(vars));
@@ -666,7 +664,7 @@ class Auth {
         req.url = req.url.replace(Auth.#basePath, '/');
       }
       if (err) {
-        if (Auth.debug > 0) {
+        if (ArkimeConfig.debug > 0) {
           console.log('AUTH: passport.authenticate fail', err);
         }
         res.status(403);
@@ -864,6 +862,43 @@ class Auth {
       node,
       path
     }, secret);
+  }
+
+  // ----------------------------------------------------------------------------
+  // express middleware to set req.settingUser to who to work on, depending if admin or not
+  // This returns fresh from db
+  static getSettingUserDb (req, res, next) {
+    let userId;
+
+    if (req.query.userId === undefined || req.query.userId === req.user.userId) {
+      if (Auth.regressionTests) {
+        req.settingUser = req.user;
+        return next();
+      }
+
+      userId = req.user.userId;
+    } else if (!req.user.hasRole('usersAdmin') || (!req.url.startsWith('/api/user/password') && Auth.#appAdminRole && !req.user.hasRole(Auth.#appAdminRole))) {
+      // user is trying to get another user's settings without admin privilege
+      return res.serverError(403, 'Need admin privileges');
+    } else {
+      userId = req.query.userId;
+    }
+
+    User.getUser(userId, function (err, user) {
+      if (err || !user) {
+        if (!Auth.passwordSecret) {
+          req.settingUser = JSON.parse(JSON.stringify(req.user));
+          delete req.settingUser.found;
+        } else {
+          return res.serverError(403, 'Unknown user');
+        }
+
+        return next();
+      }
+
+      req.settingUser = user;
+      return next();
+    });
   }
 }
 

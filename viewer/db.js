@@ -132,7 +132,6 @@ Db.initialize = async (info, cb) => {
       apiKey: info.usersEsApiKey,
       basicAuth: info.usersEsBasicAuth,
       prefix: internals.usersPrefix,
-      debug: internals.debug,
       getCurrentUserCB: info.getCurrentUserCB,
       noUsersCheck: info.noUsersCheck
     });
@@ -148,7 +147,6 @@ Db.initialize = async (info, cb) => {
       apiKey: info.esApiKey,
       basicAuth: info.esBasicAuth,
       prefix: internals.prefix,
-      debug: internals.debug,
       readOnly: internals.multiES,
       getCurrentUserCB: info.getCurrentUserCB,
       noUsersCheck: info.noUsersCheck

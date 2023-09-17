@@ -202,7 +202,6 @@ function newError (code, msg) {
 // ----------------------------------------------------------------------------
 class Parliament {
   static name;
-  static #debug;
   static #esclient;
   static #parliamentIndex;
   static #cache = new LRU({ max: 1000, maxAge: 1000 * 60 });
@@ -220,7 +219,6 @@ class Parliament {
 
   static async initialize (options) {
     Parliament.name = options.name;
-    Parliament.#debug = options.debug ?? 0;
     Parliament.#esclient = options.esclient;
 
     const prefix = ArkimeUtil.formatPrefix(options.prefix);
@@ -959,13 +957,11 @@ async function initializeParliament () {
   ArkimeUtil.checkArkimeSchemaVersion(User.getClient(), getConfig('parliament', 'usersPrefix'), MIN_DB_VERSION);
   Notifier.initialize({
     issueTypes,
-    debug: ArkimeConfig.debug,
     prefix: getConfig('parliament', 'usersPrefix'),
     esclient: User.getClient()
   });
 
   Parliament.initialize({
-    debug: ArkimeConfig.debug,
     esclient: User.getClient(),
     name: internals.parliamentName,
     prefix: getConfig('parliament', 'usersPrefix')
@@ -1853,6 +1849,7 @@ app.put('/parliament/api/removeSelectedAcknowledgedIssues', [isUser, checkCookie
 // ----------------------------------------------------------------------------
 async function setupAuth () {
   Auth.initialize('parliament', {
+    appAdminRole: 'parliamentAdmin',
     passwordSecretSection: 'parliament'
   });
 

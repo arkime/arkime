@@ -22,17 +22,14 @@ const { Client } = require('@elastic/elasticsearch');
 const fs = require('fs');
 const LinkGroup = require('./linkGroup');
 const ArkimeUtil = require('../common/arkimeUtil');
+const ArkimeConfig = require('../common/arkimeConfig');
 const cryptoLib = require('crypto');
 
 class Db {
-  static debug;
-
   static async initialize (options) {
-    if (options.debug > 1) {
+    if (ArkimeConfig.debug > 1) {
       console.log('Db.initialize', options);
     }
-
-    Db.debug = options.debug;
 
     if (options.url?.startsWith('lmdb')) {
       Db.implementation = new DbLMDBImplementation(options);

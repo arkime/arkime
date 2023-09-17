@@ -170,7 +170,6 @@ async function premain () {
     User.initialize({
       insecure: ArkimeConfig.insecure,
       requestTimeout: Config.get('elasticsearchTimeout', 300),
-      debug: Config.debug,
       url: usersUrl,
       node: usersEs,
       caTrustFile: Config.get('caTrustFile'),

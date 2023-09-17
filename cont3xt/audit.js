@@ -17,6 +17,8 @@
  */
 'use strict';
 
+const ArkimeConfig = require('../common/arkimeConfig');
+
 class Audit {
   constructor (data) {
     Object.assign(this, data);
@@ -24,11 +26,10 @@ class Audit {
 
   /**
    * Initialization sets up periodic cleaning of expired audit history logs
-   * @param {number} options.debug=0 The debug level to use
    * @param {number} options.expireHistoryDays How long to keep history
    */
   static initialize (options) {
-    if (options.debug > 1) {
+    if (ArkimeConfig.debug > 1) {
       console.log('Audit.initialize', options);
     }
     let { expireHistoryDays } = options;

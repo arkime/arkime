@@ -18,7 +18,6 @@
 
 const Redis = require('ioredis');
 const memjs = require('memjs');
-const Auth = require('./auth');
 const util = require('util');
 const fs = require('fs');
 const bodyParser = require('body-parser');
@@ -30,7 +29,6 @@ const path = require('path');
 const crypto = require('crypto');
 
 class ArkimeUtil {
-  static debug = 0;
   static adminRole;
 
   // ----------------------------------------------------------------------------
@@ -170,7 +168,7 @@ class ArkimeUtil {
         process.exit(1);
       }
 
-      if (ArkimeUtil.debug > 1) {
+      if (ArkimeConfig.debug > 1) {
         console.log('REDIS:', url);
       }
       return new Redis(url);
@@ -197,7 +195,7 @@ class ArkimeUtil {
         options.password = match[4];
       }
 
-      if (ArkimeUtil.debug > 1) {
+      if (ArkimeConfig.debug > 1) {
         console.log('REDIS-SENTINEL:', options);
       }
       return new Redis(options);
@@ -222,7 +220,7 @@ class ArkimeUtil {
         options.password = match[3];
       }
 
-      if (ArkimeUtil.debug > 1) {
+      if (ArkimeConfig.debug > 1) {
         console.log('REDIS-CLUSTER: hosts', hosts, 'options', { redisOptions: options });
       }
       return new Redis.Cluster(hosts, { redisOptions: options });
@@ -242,7 +240,7 @@ class ArkimeUtil {
     url = ArkimeUtil.sanitizeStr(url);
     // memcached://[user:pass@]server1[:11211],[user:pass@]server2[:11211],...
     if (url.startsWith('memcached://')) {
-      if (ArkimeUtil.debug > 0) {
+      if (ArkimeConfig.debug > 0) {
         console.log('MEMCACHED:', section, url);
       }
       return memjs.Client.create(url.substring(12));
@@ -344,43 +342,6 @@ class ArkimeUtil {
     console.error('Error', ArkimeUtil.sanitizeStr(err.stack));
     res.status(500).send(err.toString());
     next();
-  }
-
-  // ----------------------------------------------------------------------------
-  // express middleware to set req.settingUser to who to work on, depending if admin or not
-  // This returns fresh from db
-  static getSettingUserDb (req, res, next) {
-    let userId;
-
-    if (req.query.userId === undefined || req.query.userId === req.user.userId) {
-      if (Auth.regressionTests) {
-        req.settingUser = req.user;
-        return next();
-      }
-
-      userId = req.user.userId;
-    } else if (!req.user.hasRole('usersAdmin') || (!req.url.startsWith('/api/user/password') && ArkimeUtil.adminRole && !req.user.hasRole(ArkimeUtil.adminRole))) {
-      // user is trying to get another user's settings without admin privilege
-      return res.serverError(403, 'Need admin privileges');
-    } else {
-      userId = req.query.userId;
-    }
-
-    User.getUser(userId, function (err, user) {
-      if (err || !user) {
-        if (!Auth.passwordSecret) {
-          req.settingUser = JSON.parse(JSON.stringify(req.user));
-          delete req.settingUser.found;
-        } else {
-          return res.serverError(403, 'Unknown user');
-        }
-
-        return next();
-      }
-
-      req.settingUser = user;
-      return next();
-    });
   }
 
   // ----------------------------------------------------------------------------
@@ -522,7 +483,7 @@ class ArkimeUtil {
       fs.watch(ArkimeConfig.get(section, 'keyFile'), { persistent: false }, ArkimeUtil.#watchHttpsFile);
       fs.watch(ArkimeConfig.get(section, 'certFile'), { persistent: false }, ArkimeUtil.#watchHttpsFile);
 
-      if (ArkimeUtil.debug > 1) {
+      if (ArkimeConfig.debug > 1) {
         console.log('Watching cert and key files. If either is changed, the server will be updated with the new files.');
       }
 
@@ -585,5 +546,4 @@ class ArkimeUtil {
 module.exports = ArkimeUtil;
 
 // At end because of circular require
-const User = require('./user');
 const ArkimeConfig = require('./arkimeConfig');
