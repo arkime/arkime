@@ -67,6 +67,8 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
 
 
 4.5.1 2023/09/xx
+  - release - fix viewer systemd file
+  - all - handle cookies encoded, bad proxy
 
 4.5.0 2023/09/13
   - release - node 16.20.2

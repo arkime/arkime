@@ -818,9 +818,15 @@ class Auth {
 
   // ----------------------------------------------------------------------------
   // Decrypt the auth string into an object
-  // IV.E.H
   static auth2obj (auth, secret) {
+    // New json style
     if (auth[0] === '{') { return Auth.auth2objNext(auth, secret); }
+
+    // New json style, but still encoded, bad proxy probably
+    if (auth.startsWith('%7B%22')) { return Auth.auth2objNext(decodeURIComponent(auth), secret); }
+
+    // Old style, IV.E.H
+
     const parts = auth.split('.');
 
     if (parts.length !== 3) {
