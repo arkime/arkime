@@ -273,18 +273,17 @@ void writer_s3_free_creds(S3Credentials *creds)
  */
 LOCAL gboolean writer_s3_refresh_creds_gfunc (gpointer UNUSED(user_data))
 {
-    char role_url[1000];
-    size_t rlen;
+    size_t clen;
 
     S3Credentials *newCreds = ARKIME_TYPE_ALLOC0(S3Credentials);
 
-    unsigned char *credentials = arkime_get_instance_metadata(metadataServer, credURL, -1, &rlen);
+    unsigned char *credentials = arkime_get_instance_metadata(metadataServer, credURL, -1, &clen);
 
-    if (credentials && rlen) {
+    if (credentials && clen) {
         // Now need to extract access key, secret key and token
-        newCreds->s3AccessKeyId = arkime_js0n_get_str(credentials, rlen, "AccessKeyId");
-        newCreds->s3SecretAccessKey = arkime_js0n_get_str(credentials, rlen, "SecretAccessKey");
-        newCreds->s3Token = arkime_js0n_get_str(credentials, rlen, "Token");
+        newCreds->s3AccessKeyId = arkime_js0n_get_str(credentials, clen, "AccessKeyId");
+        newCreds->s3SecretAccessKey = arkime_js0n_get_str(credentials, clen, "SecretAccessKey");
+        newCreds->s3Token = arkime_js0n_get_str(credentials, clen, "Token");
         if (config.debug)
             LOG("Found AccessKeyId %s", newCreds->s3AccessKeyId);
     }
@@ -293,8 +292,7 @@ LOCAL gboolean writer_s3_refresh_creds_gfunc (gpointer UNUSED(user_data))
         arkime_free_later(s3MetaCreds, (GDestroyNotify)writer_s3_free_creds);
         s3MetaCreds = newCreds;
     } else {
-        printf("Cannot retrieve credentials from metadata service at %s\n", role_url);
-        exit(1);
+        LOGEXIT("Cannot retrieve credentials from metadata service at %s\n", credURL);
     }
 
     free(credentials);
@@ -1018,8 +1016,7 @@ void writer_s3_init(char *UNUSED(name))
         unsigned char *rolename = arkime_get_instance_metadata(metadataServer, "/latest/meta-data/iam/security-credentials/", -1, &rlen);
 
         if (!rolename || !rlen || rolename[0] == '<') {
-            printf("Cannot retrieve role name from metadata service\n");
-            exit(1);
+            LOGEXIT("Cannot retrieve role name from metadata service\n");
         }
 
         snprintf(credURL, sizeof(credURL), "/latest/meta-data/iam/security-credentials/%.*s", (int)rlen, rolename);
