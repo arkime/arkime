@@ -294,6 +294,14 @@ class Config {
       const source = field._source;
       source.exp = field._id;
 
+      if (source.dbField2?.startsWith('http.request-') && !source.exp.startsWith('http.request.')) {
+        return;
+      }
+
+      if (source.dbField2?.startsWith('http.response-') && !source.exp.startsWith('http.response.')) {
+        return;
+      }
+
       // Add some transforms
       if (!source.transform) {
         if (source.exp === 'http.uri' || source.exp === 'http.uri.tokens') {

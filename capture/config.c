@@ -992,7 +992,9 @@ void arkime_config_load_header(char *section, char *group, char *helpBase, char 
         char aliases[205];
 
         snprintf(expression, sizeof(expression), "%s%s", expBase, name);
-        snprintf(aliases, sizeof(aliases), "[\"%s%s\"]", aliasBase, name);
+        if (aliasBase) {
+            snprintf(aliases, sizeof(aliases), "[\"%s%s\"]", aliasBase, name);
+        }
         snprintf(field, sizeof(field), "%s%s", dbBase, name);
         snprintf(help, sizeof(help), "%s%s", helpBase, name);
 
