@@ -2505,6 +2505,16 @@ void arkime_db_add_field(char *group, char *kind, char *expression, char *friend
     BSB_EXPORT_cstr(fieldBSB, "}\n");
 }
 /******************************************************************************/
+void arkime_db_delete_field(const char *expression)
+{
+    if (config.dryRun)
+        return;
+
+    arkime_db_fieldbsb_make();
+
+    BSB_EXPORT_sprintf(fieldBSB, "{\"delete\": {\"_index\": \"%sfields\", \"_id\": \"%s\"}}\n", config.prefix, expression);
+}
+/******************************************************************************/
 void arkime_db_update_field(char *expression, char *name, char *value)
 {
     if (config.dryRun)

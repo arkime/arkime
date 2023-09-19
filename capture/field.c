@@ -120,11 +120,13 @@ void arkime_field_define_json(unsigned char *expression, int expression_len, uns
 
     // Ignore old style http.request/http.response, will remove in the future
     if (g_str_has_prefix(info->dbFieldFull, "http.request-") && !g_str_has_prefix(info->expression, "http.request.")) {
+        arkime_db_delete_field(info->expression);
         arkime_field_free_info(info);
         return;
     }
 
     if (g_str_has_prefix(info->dbFieldFull, "http.response-") && !g_str_has_prefix(info->expression, "http.response.")) {
+        arkime_db_delete_field(info->expression);
         arkime_field_free_info(info);
         return;
     }

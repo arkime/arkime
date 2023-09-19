@@ -1,4 +1,4 @@
-use Test::More tests => 334;
+use Test::More tests => 346;
 use Cwd;
 use URI::Escape;
 use MolochTest;
@@ -193,6 +193,13 @@ my $pwd = "*/pcap";
     countTest(2, "date=-1&expression=" . uri_escape("(file=$pwd/http-content-gzip.pcap||file=$pwd/socks5-reverse.pcap)&&http.cookie.value==[xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx,xxx]"));
     countTest(2, "date=-1&expression=" . uri_escape("(file=$pwd/http-content-gzip.pcap||file=$pwd/socks5-reverse.pcap)&&http.cookie.value!=FRED"));
 
+# http.referer
+    countTest(2, "date=-1&expression=" . uri_escape("(file=$pwd/http-content-gzip.pcap||file=$pwd/socks5-reverse.pcap)&&http.referer==EXISTS!"));
+    countTest(1, "date=-1&expression=" . uri_escape("(file=$pwd/http-content-gzip.pcap||file=$pwd/socks5-reverse.pcap)&&http.referer==*search*"));
+    countTest(0, "date=-1&expression=" . uri_escape("(file=$pwd/http-content-gzip.pcap||file=$pwd/socks5-reverse.pcap)&&http.referer==notfound"));
+    countTest(2, "date=-1&expression=" . uri_escape("(file=$pwd/http-content-gzip.pcap||file=$pwd/socks5-reverse.pcap)&&http.referer!=notfound"));
+    countTest(1, "date=-1&expression=" . uri_escape("(file=$pwd/http-content-gzip.pcap||file=$pwd/socks5-reverse.pcap)&&http.referer==/.*id=xxx.*/"));
+
 # http.request.referer
     countTest(2, "date=-1&expression=" . uri_escape("(file=$pwd/http-content-gzip.pcap||file=$pwd/socks5-reverse.pcap)&&http.request.referer==EXISTS!"));
     countTest(1, "date=-1&expression=" . uri_escape("(file=$pwd/http-content-gzip.pcap||file=$pwd/socks5-reverse.pcap)&&http.request.referer==*search*"));
@@ -200,5 +207,7 @@ my $pwd = "*/pcap";
     countTest(2, "date=-1&expression=" . uri_escape("(file=$pwd/http-content-gzip.pcap||file=$pwd/socks5-reverse.pcap)&&http.request.referer!=notfound"));
     countTest(1, "date=-1&expression=" . uri_escape("(file=$pwd/http-content-gzip.pcap||file=$pwd/socks5-reverse.pcap)&&http.request.referer==/.*id=xxx.*/"));
 
+# http.location
+    countTest(1, "date=-1&expression=" . uri_escape("(file=$pwd/http-content-gzip.pcap||file=$pwd/socks5-reverse.pcap)&&http.location==*ipv4.google.com*"));
 # http.response.location
     countTest(1, "date=-1&expression=" . uri_escape("(file=$pwd/http-content-gzip.pcap||file=$pwd/socks5-reverse.pcap)&&http.response.location==*ipv4.google.com*"));

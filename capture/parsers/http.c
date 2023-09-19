@@ -1038,8 +1038,8 @@ static const char *method_strings[] =
     arkime_config_add_header(&httpReqHeaders, "x-forwarded-for", xffField);
     arkime_config_add_header(&httpReqHeaders, "user-agent", uaField);
     arkime_config_add_header(&httpReqHeaders, "host", hostField);
-    arkime_config_load_header("headers-http-request", "http", "Request header ", "http.request.", NULL, "http.request-", &httpReqHeaders, 0);
-    arkime_config_load_header("headers-http-response", "http", "Response header ", "http.response.", NULL, "http.response-", &httpResHeaders, 0);
+    arkime_config_load_header("headers-http-request", "http", "Request header ", "http.request.", "http.", "http.request-", &httpReqHeaders, 0);
+    arkime_config_load_header("headers-http-response", "http", "Response header ", "http.response.", "http.", "http.response-", &httpResHeaders, 0);
 
     int i;
     for (i = 0; method_strings[i]; i++) {

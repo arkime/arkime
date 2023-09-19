@@ -39,9 +39,8 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - BREAKING - parliament password removed, must configure common auth via the UI before
                upgrading or manually in the config file see https://arkime.com/settings#parliament
                and https://arkime.com/faq#how_do_i_upgrade_to_arkime_5
-  - BREAKING - http request/response headers defined with
-	       headers-http-request/headers-http-response must use the new
-               http.request/http.response expresssion (example http.request.referer)
+  - BREAKING - http request/response headers defined with headers-http-request/headers-http-response use
+               http.request/response expresssion, example http.request.referer, old name still alias
   - all - all programs support same config file formats (json/ini) and
   - all - authMode setting added
   - all - authMode=basic added
