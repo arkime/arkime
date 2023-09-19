@@ -219,7 +219,7 @@ is($json->{text}, "Permission denied");
 # can't delete shortcut that doesn't exist
 $json = viewerDeleteToken("/api/shortcut/fakeshortcutid", $token);
 ok(!$json->{success}, "can't delete a nonexisting shortcut");
-is($json->{text}, "Fetching shortcut to delete failed");
+is($json->{text}, "Error deleting shortcut");
 
 # delete shortcut (plus bonus cleanup)
 $json = viewerDeleteToken("/api/shortcut/$shortcut1Id", $token);

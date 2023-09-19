@@ -1,4 +1,4 @@
-use Test::More tests => 34;
+use Test::More tests => 36;
 use Cwd;
 use MolochTest;
 use JSON;
@@ -54,9 +54,10 @@ $json = viewerGetToken("/api/crons?molochRegressionUser=test1", $test1Token);
 is (@{$json}, 0, "test1 cannot see queries not shared with them");
 
 # update roles
-$json = viewerPostToken("/api/cron/$key", '{"name":"test1update","query":"protocols == tls","action":"tag","tags":"tls","users":"test2,test3", "roles":["arkimeUser"]}', $token);
+$json = viewerPostToken("/api/cron/$key", '{"name":"test1update","query":"protocols == tls","action":"tag","tags":"tls","users":"test2,test3", "roles":["arkimeUser"],"editRoles":["cont3xtUser"]}', $token);
 ok($json->{success}, "query roles can be updated");
 eq_or_diff($json->{query}->{roles}->[0], "arkimeUser", "query roles was updated");
+eq_or_diff($json->{query}->{editRoles}->[0], "cont3xtUser", "query editRoles was updated");
 
 # can share with test1 via roles
 $json = viewerGetToken("/api/crons?molochRegressionUser=test1", $test1Token);
@@ -73,6 +74,10 @@ is (@{$json}, 1, "returns 1 query without all flag");
 $json = viewerGet("/api/crons?molochRegressionUser=anonymous&all=true");
 is (@{$json}, 2, "returns 2 queries with all flag");
 
+# test2 can update using editRoles
+$json = viewerPostToken("/api/cron/$key?molochRegressionUser=test2", '{"name":"good name","query":"protocols == tls","action":"tag","tags":"tls","users":"test2,test3", "roles":["arkimeUser"], "editRoles":["cont3xtUser"]}', $test2Token);
+ok($json->{success}, "editRoles user can update query");
+
 # shared user cannot update query
 $json = viewerPostToken("/api/cron/$key?molochRegressionUser=test1", '{"name":"bad name","query":"protocols == tls","action":"tag","tags":"tls","users":"test2,test3", "roles":["arkimeUser"]}', $test1Token);
 ok(!$json->{success}, "shared user cannot update query");
@@ -81,8 +86,8 @@ ok(!$json->{success}, "shared user cannot update query");
 $json = viewerDeleteToken("/api/cron/$key?molochRegressionUser=test1", $test1Token);
 ok(!$json->{success}, "shared user cannot delete query");
 
-# can delete periodic queries
-$json = viewerDeleteToken("/api/cron/$key", $token);
+# test2 can delete using editRoles
+$json = viewerDeleteToken("/api/cron/$key?molochRegressionUser=test2", $test2Token);
 ok($json->{success}, "query can be deleted");
 
 # can not update primary-viewer periodic query

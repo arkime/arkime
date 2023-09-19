@@ -1,4 +1,4 @@
-use Test::More tests => 33;
+use Test::More tests => 35;
 use MolochTest;
 use JSON;
 use Test::Differences;
@@ -13,7 +13,7 @@ my $token2 = getTokenCookie('test2');
 
 # create test users
 viewerPostToken("/api/user", '{"userId": "test1", "userName": "test1", "enabled":true, "password":"password", "roles":["arkimeUser"]}', $adminToken);
-viewerPostToken("/api/user", '{"userId": "test2", "userName": "test2", "enabled":true, "password":"password"}', $adminToken);
+viewerPostToken("/api/user", '{"userId": "test2", "userName": "test2", "enabled":true, "password":"password", "roles":["cont3xtUser"]}', $adminToken);
 
 # No views
 my $info = viewerGet("/api/views?molochRegressionUser=test1");
@@ -90,7 +90,7 @@ eq_or_diff($info->{invalidUsers}, from_json('["baduser"]'), "returns invalid use
 eq_or_diff($info->{view}->{users}, "test1", "has one valid user added to the view");
 eq_or_diff($info->{view}->{roles}, from_json('["arkimeUser"]'), "added roles");
 
-# can remove users
+# can remove users and update editRoles
 $info = viewerPutToken("/api/view/${id2}?molochRegressionUser=test2", '{"name": "view2", "expression": "ip == 10.0.0.1", "roles":["arkimeUser"], "users":""}', $token2);
 ok($info->{success}, "can update users");
 eq_or_diff($info->{view}->{users}, "", "removed users from view");
@@ -108,6 +108,16 @@ $info = viewerGet("/api/views?molochRegressionUser=anonymous");
 eq_or_diff($info->{recordsTotal}, 1, "returns 1 recordsTotal without all flag");
 $info = viewerGet("/api/views?molochRegressionUser=anonymous&all=true");
 eq_or_diff($info->{recordsTotal}, 2, "returns 2 recordsTotal with all flag");
+
+# test2 can edit view using editRoles
+$info = viewerPostToken("/api/view?molochRegressionUser=test1", '{"name": "view4", "expression": "ip == 4.3.2.1", "roles":["arkimeUser"], "users":"", "editRoles":["cont3xtUser"]}', $token);
+my $id4 = $info->{view}->{id};
+eq_or_diff($info->{view}->{editRoles}, from_json('["cont3xtUser"]'), "added editRoles");
+$info = viewerPutToken("/api/view/${id4}?molochRegressionUser=test2", '{"name": "updated!", "expression": "ip == 4.3.2.1", "roles":["arkimeUser"], "users":"", "editRoles":["cont3xtUser"]}', $token2);
+ok($info->{success}, "can update view with editRoles");
+
+# test2 can delete view using editRoles (plus bonus cleanup)
+viewerDeleteToken("/api/view/${id4}?molochRegressionUser=test2", $token2);
 
 # cleanup views
 viewerDeleteToken("/api/view/${id2}?molochRegressionUser=test2", $token2);
