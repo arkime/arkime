@@ -39,8 +39,8 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - BREAKING - parliament password removed, must configure common auth via the UI before
                upgrading or manually in the config file see https://arkime.com/settings#parliament
                and https://arkime.com/faq#how_do_i_upgrade_to_arkime_5
-  - BREAKING - http request/response headers defined with headers-http-request/headers-http-response use
-               http.request/response expresssion, example http.request.referer, old name still alias
+  - BREAKING - WISE/tagger must now use http.request.FIELD/http.response.FIELD
+               when referencing header defined with headers-http-request/headers-http-response
   - all - all programs support same config file formats (json/ini) and
   - all - authMode setting added
   - all - authMode=basic added
@@ -63,6 +63,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - cont3xt - new viewRoles in config file per integration to control access
   - viewer - removed x-moloch-auth
   - viewer - files/history/stats now have cluster dropdown for multiviewer
+  - viewer - http.request.FIELD and http.response.FIELD supported
   - parliament - dashboard-only mode removed, if you want users to just see
                  the dashboard don't assign them the parliamentUser role
   - parliament - configuration is now stored in opensearch/elasticsearch
