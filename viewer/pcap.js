@@ -328,10 +328,15 @@ Pcap.prototype.readPacketInternal = function (posArg, hpLenArg, cb) {
 
       // Uncompress if needed
       if (this.uncompressedBits) {
-        if (this.compression === 'gzip') {
-          readBuffer = zlib.inflateRawSync(readBuffer, { finishFlush: zlib.constants.Z_SYNC_FLUSH });
-        } else if (this.compression === 'zstd') {
-          readBuffer = decompressSync(readBuffer);
+        try {
+          if (this.compression === 'gzip') {
+            readBuffer = zlib.inflateRawSync(readBuffer, { finishFlush: zlib.constants.Z_SYNC_FLUSH });
+          } else if (this.compression === 'zstd') {
+            readBuffer = decompressSync(readBuffer);
+          }
+        } catch (e) {
+          console.log('PCAP uncompress issue', this.key, pos, buffer.length, bytesRead, e);
+          return cb(undefined);
         }
       }
 
