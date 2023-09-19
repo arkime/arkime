@@ -63,6 +63,18 @@ LOCAL int arkime_field_exp_cmp(const char *key, const ArkimeFieldInfo_t *element
     return strcmp(key, element->expression) == 0;
 }
 /******************************************************************************/
+LOCAL void arkime_field_free_info(ArkimeFieldInfo_t *info)
+{
+    g_free(info->dbFieldFull);
+    g_free(info->expression);
+    g_free(info->group);
+    g_free(info->kind);
+    g_free(info->category);
+    g_free(info->transform);
+    g_free(info->aliases);
+    ARKIME_TYPE_FREE(ArkimeFieldInfo_t, info);
+}
+/******************************************************************************/
 void arkime_field_define_json(unsigned char *expression, int expression_len, unsigned char *data, int data_len)
 {
     ArkimeFieldInfo_t *info = ARKIME_TYPE_ALLOC0(ArkimeFieldInfo_t);
@@ -104,6 +116,19 @@ void arkime_field_define_json(unsigned char *expression, int expression_len, uns
                 disabled = 1;
             }
         }
+    }
+
+    // Ignore old style http.request/http.response, will remove in the future
+    if (g_str_has_prefix(info->dbFieldFull, "http.request-") && !g_str_has_prefix(info->expression, "http.request.")) {
+        arkime_db_delete_field(info->expression);
+        arkime_field_free_info(info);
+        return;
+    }
+
+    if (g_str_has_prefix(info->dbFieldFull, "http.response-") && !g_str_has_prefix(info->expression, "http.response.")) {
+        arkime_db_delete_field(info->expression);
+        arkime_field_free_info(info);
+        return;
     }
 
     if (disabled)
@@ -401,15 +426,9 @@ int arkime_field_define(char *group, char *kind, char *expression, char *friendl
     }
 
     if (flags & ARKIME_FIELD_FLAG_FAKE) {
-        g_free(minfo->expression);
-        g_free(minfo->dbField);
-        g_free(minfo->group);
-        g_free(minfo->kind);
-        g_free(minfo->transform);
-        g_free(minfo->aliases);
         HASH_REMOVE(d_, fieldsByDb, minfo);
         HASH_REMOVE(e_, fieldsByExp, minfo);
-        ARKIME_TYPE_FREE(ArkimeFieldInfo_t, minfo);
+        arkime_field_free_info(minfo);
         return -1;
     }
 
@@ -1767,14 +1786,7 @@ void arkime_field_exit()
     // Remove those are in both db & exp hash
     HASH_FORALL_POP_HEAD(d_, fieldsByDb, info,
         HASH_REMOVE(e_, fieldsByExp, info);
-        g_free(info->dbFieldFull);
-        g_free(info->expression);
-        g_free(info->group);
-        g_free(info->kind);
-        g_free(info->category);
-        g_free(info->transform);
-        g_free(info->aliases);
-        ARKIME_TYPE_FREE(ArkimeFieldInfo_t, info);
+        arkime_field_free_info(info);
     );
 
     // Remove those are only in exp

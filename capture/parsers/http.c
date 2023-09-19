@@ -530,7 +530,7 @@ LOCAL int arkime_hp_cb_on_header_value (http_parser *parser, const char *at, siz
         } else if (strcasecmp("proxy-authorization", http->header[http->which]) == 0) {
             if (!http->proxyAuthString)
                 http->proxyAuthString = g_string_new_len(at, length);
-            else 
+            else
                 g_string_append_len(http->proxyAuthString, at, length);
         }
     }
@@ -1038,8 +1038,8 @@ static const char *method_strings[] =
     arkime_config_add_header(&httpReqHeaders, "x-forwarded-for", xffField);
     arkime_config_add_header(&httpReqHeaders, "user-agent", uaField);
     arkime_config_add_header(&httpReqHeaders, "host", hostField);
-    arkime_config_load_header("headers-http-request", "http", "Request header ", "http.", "http.request.", "http.request-", &httpReqHeaders, 0);
-    arkime_config_load_header("headers-http-response", "http", "Response header ", "http.", "http.response.", "http.response-", &httpResHeaders, 0);
+    arkime_config_load_header("headers-http-request", "http", "Request header ", "http.request.", "http.", "http.request-", &httpReqHeaders, 0);
+    arkime_config_load_header("headers-http-response", "http", "Response header ", "http.response.", "http.", "http.response-", &httpResHeaders, 0);
 
     int i;
     for (i = 0; method_strings[i]; i++) {

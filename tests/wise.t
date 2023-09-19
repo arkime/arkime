@@ -249,7 +249,7 @@ eq_or_diff($wise, '{"cloud":"if (session.cloud)\\n  div.sessionDetailMeta.bold P
 
 # Fields
 $wise = $MolochTest::userAgent->get("http://$MolochTest::host:8081/fields")->content;
-is(length($wise), 658);;
+is(length($wise), 666);
 
 my $info = viewerGet("/api/fields");
 eq_or_diff($info->{"wise.int.cnt"}, from_json('{"friendlyName":"Int Cnt","type":"integer","exp":"wise.int.cnt","help":"Unique number of Help Int","dbField":"wise.intCnt","group":"wise","dbField2":"wise.intCnt"}'));

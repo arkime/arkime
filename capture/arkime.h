@@ -892,6 +892,7 @@ void     arkime_db_save_session(ArkimeSession_t *session, int final);
 void     arkime_db_add_override_ip(char *str, ArkimeIpInfo_t *ii);
 void     arkime_db_install_override_ip();
 void     arkime_db_add_field(char *group, char *kind, char *expression, char *friendlyName, char *dbField, char *help, int haveap, va_list ap);
+void     arkime_db_delete_field(const char *expression);
 void     arkime_db_update_field(char *expression, char *name, char *value);
 void     arkime_db_update_filesize(uint32_t fileid, uint64_t filesize, uint64_t packetsSize, uint32_t packets);
 gboolean arkime_db_file_exists(const char *filename, uint32_t *outputId);
