@@ -2,9 +2,10 @@
   <b-dropdown
     size="sm"
     @shown="setFocus"
+    :disabled="disabled"
+    v-b-tooltip="tooltip"
     class="roles-dropdown"
-    :text="displayText || getRolesStr(localSelectedRoles)"
-    :disabled="disabled">
+    :text="displayText || getRolesStr(localSelectedRoles)">
     <!-- roles search -->
     <b-dropdown-header class="w-100 sticky-top">
       <b-input-group size="sm">
@@ -74,6 +75,7 @@ export default {
   directives: { Focus },
   props: {
     id: { type: String },
+    tooltip: { type: String },
     displayText: { type: String },
     selectedRoles: { type: Array },
     roles: { type: Array, required: true },

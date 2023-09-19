@@ -64,8 +64,6 @@
             <span v-show="viewsQuery.sortField !== 'name'" class="fa fa-sort"></span>
           </th>
           <th>Creator</th>
-          <th>Roles</th>
-          <th>Users</th>
           <th>Expression</th>
           <th width="30%">Sessions Columns</th>
           <th>Sessions Sort</th>
@@ -81,12 +79,6 @@
           </td>
           <td>
             {{ item.user }}
-          </td>
-          <td>
-            {{ item.roles ? item.roles.join(', ') : '' }}
-          </td>
-          <td>
-            {{ item.users }}
           </td>
           <td>
            {{ item.expression }}
@@ -129,7 +121,7 @@
                 <span class="fa fa-clipboard fa-fw" />
               </b-button>
               <template
-                v-if="canEditView(item)">
+                v-if="canEdit(item)">
                 <b-button
                   size="sm"
                   variant="danger"
@@ -213,17 +205,22 @@
         />
       </b-input-group>
       <div class="d-flex">
-        <div class="mr-3">
+        <div class="mr-3 flex-grow-1 no-wrap">
           <RoleDropdown
             :roles="roles"
             :selected-roles="newViewRoles"
-            display-text="Share with roles"
+            display-text="Who can view"
             @selected-roles-updated="updateNewViewRoles"
+          />
+          <RoleDropdown
+            :roles="roles"
+            display-text="Who can edit"
+            :selected-roles="newViewEditRoles"
+            @selected-roles-updated="updateNewViewEditRoles"
           />
         </div>
         <b-input-group
-          size="sm"
-          class="flex-grow-1">
+          size="sm">
           <template #prepend>
             <b-input-group-text
               v-b-tooltip.hover
@@ -283,6 +280,7 @@
 <script>
 // services
 import SettingsService from './SettingsService';
+import UserService from '../../../../../common/vueapp/UserService';
 // components
 import MolochPaging from '../utils/Pagination';
 import RoleDropdown from '../../../../../common/vueapp/RoleDropdown';
@@ -301,6 +299,7 @@ export default {
       newViewName: '',
       newViewExpression: '',
       newViewRoles: [],
+      newViewEditRoles: [],
       newViewUsers: '',
       size: 50,
       start: 0,
@@ -366,8 +365,10 @@ export default {
       this.start = newParams.start;
       this.getViews();
     },
-    canEditView (view) {
-      return this.user.roles.includes('arkimeAdmin') || (view.user && view.user === this.user.userId);
+    canEdit (view) {
+      return this.user.roles.includes('arkimeAdmin') ||
+        (view.user && view.user === this.user.userId) ||
+        (view.editRoles && UserService.hasRole(this.user, view.editRoles.join(',')));
     },
     /* updates the roles on a view object from the RoleDropdown component */
     updateViewRoles (roles, id) {
@@ -381,6 +382,9 @@ export default {
     updateNewViewRoles (roles) {
       this.newViewRoles = roles;
     },
+    updateNewViewEditRoles (roles) {
+      this.newViewEditRoles = roles;
+    },
     /* creates a view given the view name and expression */
     createView () {
       if (!this.validViewForm()) { return; }
@@ -389,6 +393,7 @@ export default {
         name: this.newViewName,
         roles: this.newViewRoles,
         users: this.newViewUsers,
+        editRoles: this.newViewEditRoles,
         expression: this.newViewExpression
       };
 
@@ -425,6 +430,7 @@ export default {
       this.newViewName = view.name || '';
       this.newViewRoles = view.roles || [];
       this.newViewUsers = view.users || '';
+      this.newViewEditRoles = view.editRoles || [];
       this.newViewExpression = view.expression || '';
       this.$bvModal.show('view-modal');
     },
@@ -437,6 +443,7 @@ export default {
         name: this.newViewName,
         roles: this.newViewRoles,
         users: this.newViewUsers,
+        editRoles: this.newViewEditRoles,
         expression: this.newViewExpression
       };
 
@@ -497,6 +504,7 @@ export default {
       this.newViewRoles = [];
       this.newViewUsers = '';
       this.newViewName = null;
+      this.newViewEditRoles = [];
       this.newViewExpression = null;
     },
     /* display success message to user and add any invalid users if they exist */

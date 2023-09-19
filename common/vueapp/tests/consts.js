@@ -56,12 +56,14 @@ export const views = [{
   id: '1',
   users: '',
   roles: [],
+  editRoles: [],
   user: 'testuser',
   name: 'test view 1',
   expression: 'protocols == tls'
 }, {
   id: '2',
   roles: [],
+  editRoles: [],
   user: 'admin',
   users: 'testuser',
   name: 'test view 2',
@@ -69,6 +71,7 @@ export const views = [{
 }, {
   id: '3',
   users: '',
+  editRoles: [],
   user: 'testuserid',
   name: 'test view 3',
   roles: ['arkimeUser'],

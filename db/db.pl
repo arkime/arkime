@@ -73,6 +73,7 @@
 # 77 - cron sharing with roles and users
 # 78 - added roleAssigners to users
 # 79 - added parliament notifier flags to notifiers index and new parliament index
+#      added editRoles to views, shortcuts, and queries
 
 use HTTP::Request::Common;
 use LWP::UserAgent;
@@ -1216,6 +1217,9 @@ sub queriesUpdate
       "type": "keyword"
     },
     "roles": {
+      "type": "keyword"
+    },
+    "editRoles": {
       "type": "keyword"
     },
     "users": {
@@ -5526,6 +5530,9 @@ sub lookupsUpdate
     },
     "roles": {
       "type": "keyword"
+    },
+    "editRoles": {
+      "type": "keyword"
     }
   }
 }';
@@ -5823,6 +5830,9 @@ sub viewsUpdate
       "type": "keyword"
     },
     "roles": {
+      "type": "keyword"
+    },
+    "editRoles": {
       "type": "keyword"
     },
     "user": {
@@ -8061,6 +8071,8 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
         notifiersUpdate();
         notifiersAddMissingProps();
         parliamentCreate();
+        viewsUpdate();
+        lookupsUpdate();
     } else {
         logmsg "db.pl is hosed\n";
     }
