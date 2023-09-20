@@ -8015,8 +8015,8 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
 # Remaing is upgrade or upgradenoprompt
 
 # For really old versions don't support upgradenoprompt
-    if ($main::versionNumber < 72) {
-        logmsg "Can not upgrade directly, please upgrade to Moloch 3.3.0+ first. (Db version $main::versionNumber)\n\n";
+    if ($main::versionNumber < 78) {
+        logmsg "Can not upgrade directly, please upgrade to Moloch 4.3.2+ first. (Db version $main::versionNumber)\n\n";
         exit 1;
     }
 
@@ -8034,36 +8034,7 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
 
     logmsg "Starting Upgrade\n";
 
-    if ($main::versionNumber < 75) {
-        checkForOld7Indices();
-        sessions3Update();
-        historyUpdate();
-        huntsUpdate();
-        lookupsUpdate();
-        notifiersCreate();
-        notifiersMove();
-        viewsCreate();
-        viewsMove();
-        queriesUpdate();
-        usersUpdate();
-        parliamentCreate();
-    } elsif ($main::versionNumber == 75) {
-        checkForOld7Indices();
-        sessions3Update();
-        historyUpdate();
-        viewsCreate();
-        viewsMove();
-        queriesUpdate();
-        usersUpdate();
-        parliamentCreate();
-    } elsif ($main::versionNumber <= 77) {
-        checkForOld7Indices();
-        sessions3Update();
-        historyUpdate();
-        queriesUpdate();
-        usersUpdate();
-        parliamentCreate();
-    } elsif ($main::versionNumber <= 79) {
+    if ($main::versionNumber < 79) {
         checkForOld7Indices();
         sessions3Update();
         historyUpdate();
@@ -8073,6 +8044,10 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
         parliamentCreate();
         viewsUpdate();
         lookupsUpdate();
+    } elsif ($main::versionNumber == 79) {
+        checkForOld7Indices();
+        sessions3Update();
+        historyUpdate();
     } else {
         logmsg "db.pl is hosed\n";
     }
