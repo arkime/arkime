@@ -608,6 +608,7 @@ class ItemHTTPStream extends ItemTransform {
     case ItemHTTPStream.STATES.req_body_chunk:
       if (line.length === 0) { break; }
       this.contentLength[item.client] = Number.parseInt(line, 16);
+      if (isNaN(this.contentLength[item.client])) { throw "Missing Chunk Length"; }
       if (this.contentLength[item.client] === 0) {
         this.msgEnd(item);
       } else {
@@ -643,6 +644,7 @@ class ItemHTTPStream extends ItemTransform {
       if (line.length === 0) { break; }
 
       this.contentLength[item.client] = Number.parseInt(line, 16);
+      if (isNaN(this.contentLength[item.client])) { throw "Missing Chunk Length"; }
       if (this.contentLength[item.client] === 0) {
         this.msgEnd(item);
       } else {
