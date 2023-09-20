@@ -147,7 +147,7 @@ export default {
   /**
    * Determines whether a user has role to perform a specific task
    * @param {Object} user The user to check roles for
-   * @param {String} role The role in question
+   * @param {String} role The role(s) in question (comma separated list)
    * @returns {Boolean} true if all roles are included
    */
   hasRole (user, role) {
@@ -159,12 +159,14 @@ export default {
         reverse = true;
         r = r.substring(1);
       }
-      if ((!reverse && !user.roles.includes(r)) ||
-        (reverse && user.roles.includes(r))) {
-        return false;
+      if (
+        (!reverse && user.roles.includes(r)) ||
+        (reverse && !user.roles.includes(r))
+      ) {
+        return true;
       }
     }
-    return true;
+    return false;
   },
 
   /**
