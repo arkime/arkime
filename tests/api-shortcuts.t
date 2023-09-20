@@ -1,4 +1,4 @@
-use Test::More tests => 94;
+use Test::More tests => 99;
 use Cwd;
 use URI::Escape;
 use MolochTest;
@@ -143,7 +143,7 @@ $shortcuts = viewerGet("/api/shortcuts?molochRegressionUser=user3");
 is(@{$shortcuts->{data}}, 0, "0 shortcuts for this user");
 
 # share shortcut with roles
-$json = viewerPutToken("/api/shortcut/$shortcut4Id", '{"name":"role_shared_shortcut","type":"string","value":"udp","users":"","roles":["cont3xtUser"]}', $token);
+$json = viewerPutToken("/api/shortcut/$shortcut4Id", '{"name":"role_shared_shortcut","type":"string","value":"udp","users":"","roles":["cont3xtUser"],"editRoles":[]}', $token);
 ok($json->{success}, "create shortcut with roles success");
 is($json->{shortcut}->{roles}->[0], "cont3xtUser", "create role shared shortcut");
 
@@ -152,24 +152,35 @@ $shortcuts = viewerGet("/api/shortcuts?molochRegressionUser=user2");
 is(@{$shortcuts->{data}}, 2, "2 shortcut for this user");
 
 # user2 can see the shortcut because they have the role
-$json = viewerPutToken("/api/shortcut/$shortcut4Id", '{"name":"role_shared_shortcut","type":"string","value":"udp","users":"","roles":["arkimeUser"]}', $token);
+$json = viewerPutToken("/api/shortcut/$shortcut4Id", '{"name":"role_shared_shortcut","type":"string","value":"udp","users":"","roles":["arkimeUser"],"editRoles":[]}', $token);
 $shortcuts = viewerGet("/api/shortcuts?molochRegressionUser=user2");
 is(@{$shortcuts->{data}}, 3, "3 shortcut for this user");
 
-# but they can't see users and roles fields if the shortcut is shared with them (they didn't create it)
+# but they can't see users, roles, and editRoles fields if the shortcut is shared with them (they didn't create it, aren't admin, and don't have editRoles)
 is($shortcuts->{data}->[2]->{roles}, undef, "can't see roles field if it's a shared shortcut");
 is($shortcuts->{data}->[2]->{users}, undef, "can't see users field if it's a shared shortcut");
+is($shortcuts->{data}->[2]->{editRoles}, undef, "can't see editRoles field if it's a shared shortcut");
 
 # arkimeAdmin can view users and roles fields
 $shortcuts = viewerGet("/api/shortcuts");
 ok(exists $shortcuts->{data}->[0]->{roles}, 'arkimeAdmin can see roles');
 ok(exists $shortcuts->{data}->[0]->{users}, 'arkimeAdmin can see users');
+ok(exists $shortcuts->{data}->[0]->{editRoles}, 'arkimeAdmin can see editRoles');
 
 # admin can view all shortcuts when all param is supplied
 $shortcuts = viewerGet("/api/shortcuts?molochRegressionUser=anonymous");
 eq_or_diff($shortcuts->{recordsTotal}, 2, "returns 2 recordsTotal without all flag");
 $shortcuts = viewerGet("/api/shortcuts?molochRegressionUser=anonymous&all=true");
 eq_or_diff($shortcuts->{recordsTotal}, 4, "returns 4 recordsTotal with all flag");
+
+# user2 cannot delete a shortcut they didn't create and don't have editRoles for
+$json = viewerDeleteToken("/api/shortcut/$shortcut4Id?molochRegressionUser=user2", $otherToken);
+ok(!$json->{success}, "delete shortcut failure");
+
+# user2 can edit shortcut using editRoles
+$json = viewerPutToken("/api/shortcut/$shortcut4Id", '{"name":"role_shared_shortcut","type":"string","value":"udp","users":"","roles":["arkimeUser"],"editRoles":["arkimeUser"]}', $token);
+$json = viewerPutToken("/api/shortcut/$shortcut4Id?molochRegressionUser=user2", '{"name":"role_shared_shortcut","type":"string","value":"udp","users":"","roles":["arkimeUser"],"editRoles":["arkimeUser"]}', $otherToken);
+ok($json->{success}, "edit shortcut with editRoles success");
 
 # get only shortcuts of a specific type
 $shortcuts = viewerGet("/api/shortcuts?fieldType=string");
@@ -225,10 +236,13 @@ is($json->{text}, "Error deleting shortcut");
 $json = viewerDeleteToken("/api/shortcut/$shortcut1Id", $token);
 ok($json->{success}, "delete shortcut success");
 
+# user2 can delete shortcut using editRoles (plus bonus cleanup)
+$json = viewerDeleteToken("/api/shortcut/$shortcut4Id?molochRegressionUser=user2", $otherToken);
+ok($json->{success}, "delete shortcut success");
+
 # cleanup
 $json = viewerDeleteToken("/api/shortcut/$shortcut2Id", $token);
 $json = viewerDeleteToken("/api/shortcut/$shortcut3Id", $token);
-$json = viewerDeleteToken("/api/shortcut/$shortcut4Id", $token);
 
 # make sure cleanup worked
 $shortcuts = viewerGet("/api/shortcuts");
