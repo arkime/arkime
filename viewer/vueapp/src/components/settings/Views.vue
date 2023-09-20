@@ -124,6 +124,15 @@
                 v-if="canEdit(item)">
                 <b-button
                   size="sm"
+                  variant="info"
+                  v-b-tooltip.hover
+                  v-if="canTransfer(item)"
+                  title="Transfer ownership of this view"
+                  @click="openTransferView(item)">
+                  <span class="fa fa-share fa-fw" />
+                </b-button>
+                <b-button
+                  size="sm"
                   variant="danger"
                   v-b-tooltip.hover
                   title="Delete this view"
@@ -274,6 +283,10 @@
       </template> <!-- /modal footer -->
     </b-modal> <!-- /new view form -->
 
+    <transfer-resource
+      @transfer-resource="submitTransferView"
+    />
+
   </div>
 </template>
 
@@ -284,12 +297,14 @@ import UserService from '../../../../../common/vueapp/UserService';
 // components
 import MolochPaging from '../utils/Pagination';
 import RoleDropdown from '../../../../../common/vueapp/RoleDropdown';
+import TransferResource from '../../../../../common/vueapp/TransferResource';
 
 export default {
   name: 'Views',
   components: {
     MolochPaging,
-    RoleDropdown
+    RoleDropdown,
+    TransferResource
   },
   data () {
     return {
@@ -310,7 +325,8 @@ export default {
       },
       recordsTotal: 0,
       recordsFiltered: 0,
-      seeAll: false
+      seeAll: false,
+      transferView: undefined
     };
   },
   props: {
@@ -370,6 +386,10 @@ export default {
         (view.user && view.user === this.user.userId) ||
         (view.editRoles && UserService.hasRole(this.user, view.editRoles.join(',')));
     },
+    canTransfer (view) {
+      return this.user.roles.includes('arkimeAdmin') ||
+        (view.user && view.user === this.user.userId);
+    },
     /* updates the roles on a view object from the RoleDropdown component */
     updateViewRoles (roles, id) {
       for (const view of this.views) {
@@ -405,6 +425,35 @@ export default {
         this.displaySuccess(response);
       }).catch((error) => {
         this.viewFormError = error.text;
+      });
+    },
+    /**
+     * Opens the transfer resource modal
+     * @param {Object} view The view to transfer
+     */
+    openTransferView (view) {
+      this.transferView = view;
+      this.$bvModal.show('transfer-modal');
+    },
+    /**
+     * Submits the transfer resource modal contents and updates the view
+     * @param {Object} userId The user id to transfer the view to
+     */
+    submitTransferView ({ userId }) {
+      if (!userId) {
+        this.transferView = undefined;
+        return;
+      }
+
+      const data = JSON.parse(JSON.stringify(this.transferView));
+      data.user = userId;
+
+      SettingsService.updateView(data, this.userId).then((response) => {
+        this.getViews();
+        this.transferView = undefined;
+        this.$emit('display-message', { msg: response.text, type: 'success' });
+      }).catch((error) => {
+        this.$emit('display-message', { msg: error.text, type: 'danger' });
       });
     },
     /**

@@ -229,8 +229,28 @@ class ViewAPIs {
     try {
       const { body: dbView } = await Db.getView(req.params.id);
 
-      // can't update creator of the view or the id
-      view.user = dbView._source.user;
+      // transfer ownership of view (admin and creator only)
+      if (view.user?.length) { // check if user is valid before updating it
+        if (req.settingUser.userId !== dbView._source.user && !req.settingUser.hasRole('arkimeAdmin')) {
+          return res.serverError(403, 'Permission denied');
+        }
+
+        // comma/newline separated value -> array of values
+        let user = ArkimeUtil.commaOrNewlineStringToArray(view.user);
+        user = await User.validateUserIds(user);
+
+        if (user.invalidUsers?.length) {
+          return res.serverError(403, `Invalid user: ${user.invalidUsers[0]}`);
+        }
+
+        if (user.validUsers?.length) {
+          view.user = user.validUsers[0];
+        }
+      } else {
+        view.user = dbView._source.user;
+      }
+
+      // can't update the id
       if (view.id) { delete view.id; }
 
       // comma/newline separated value -> array of values
