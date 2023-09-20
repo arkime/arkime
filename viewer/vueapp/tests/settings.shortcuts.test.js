@@ -78,6 +78,7 @@ test('shortcuts', async () => {
   expect(SettingsService.createShortcut).toHaveBeenCalledWith({
     users: '',
     roles: [],
+    editRoles: [],
     name: newName,
     type: 'string',
     description: '',
@@ -100,7 +101,8 @@ test('shortcuts', async () => {
     userId: 'testuserid',
     value: 'a\nb\nc\n',
     users: '',
-    roles: []
+    roles: [],
+    editRoles: []
   });
 
   SettingsService.getShortcuts = jest.fn().mockResolvedValue({
@@ -125,6 +127,7 @@ test('shortcuts', async () => {
   const newShortcut = {
     users: '',
     roles: [],
+    editRoles: [],
     type: 'string',
     description: '',
     name: 'NEW_NAME',

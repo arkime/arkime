@@ -17,7 +17,7 @@
  */
 'use strict';
 
-const MIN_DB_VERSION = 77;
+const MIN_DB_VERSION = 79;
 
 // ============================================================================
 // MODULES
@@ -541,32 +541,6 @@ async function checkHuntAccess (req, res, next) {
     } catch (err) {
       console.log('ERROR - fetching hunt to check access', err);
       return res.serverError(500, err);
-    }
-  }
-}
-
-async function checkCronAccess (req, res, next) {
-  if (req.params.key !== undefined) {
-    req.body.key = req.params.key;
-    delete req.params.key;
-  }
-
-  if (!ArkimeUtil.isString(req.body.key)) {
-    return res.serverError(403, 'Missing cron key');
-  }
-
-  if (req.user.hasRole('arkimeAdmin')) {
-    // an admin can do anything to any query
-    return next();
-  } else {
-    try {
-      const { body: { _source: query } } = await Db.get('queries', 'query', req.body.key);
-      if (query.creator === req.user.userId) {
-        return next();
-      }
-      return res.serverError(403, 'You cannot change another user\'s query unless you have admin privileges');
-    } catch (err) {
-      return res.serverError(403, 'Unknown query');
     }
   }
 }
@@ -1341,7 +1315,7 @@ app.delete( // delete user spiview fields endpoint
   UserAPIs.deleteUserSpiviewFields
 );
 
-app.put( // acknowledge message endoint
+app.put( // acknowledge message endpoint
   ['/api/user/:userId/acknowledge'],
   [ArkimeUtil.noCacheJson, logAction(), checkCookieToken],
   UserAPIs.acknowledgeMsg
@@ -1398,13 +1372,13 @@ app.post( // create view endpoint
 
 app.delete( // delete view endpoint
   ['/api/view/:id'],
-  [ArkimeUtil.noCacheJson, checkCookieToken, logAction(), Auth.getSettingUserDb, sanitizeViewName],
+  [ArkimeUtil.noCacheJson, checkCookieToken, logAction(), Auth.getSettingUserDb, ViewAPIs.checkViewAccess, sanitizeViewName],
   ViewAPIs.apiDeleteView
 );
 
 app.put( // update view endpoint
   ['/api/view/:id'],
-  [ArkimeUtil.noCacheJson, checkCookieToken, logAction(), Auth.getSettingUserDb, sanitizeViewName],
+  [ArkimeUtil.noCacheJson, checkCookieToken, logAction(), Auth.getSettingUserDb, ViewAPIs.checkViewAccess, sanitizeViewName],
   ViewAPIs.apiUpdateView
 );
 
@@ -1423,13 +1397,13 @@ app.post( // create cron query endpoint
 
 app.delete( // delete cron endpoint
   ['/api/cron/:key'],
-  [ArkimeUtil.noCacheJson, checkCookieToken, logAction(), Auth.getSettingUserDb, checkCronAccess],
+  [ArkimeUtil.noCacheJson, checkCookieToken, logAction(), Auth.getSettingUserDb, CronAPIs.checkCronAccess],
   CronAPIs.deleteCron
 );
 
 app.post( // update cron endpoint
   ['/api/cron/:key'],
-  [ArkimeUtil.noCacheJson, checkCookieToken, logAction(), Auth.getSettingUserDb, checkCronAccess],
+  [ArkimeUtil.noCacheJson, checkCookieToken, logAction(), Auth.getSettingUserDb, CronAPIs.checkCronAccess],
   CronAPIs.updateCron
 );
 
@@ -1903,13 +1877,13 @@ app.post( // create shortcut endpoint
 
 app.put( // update shortcut endpoint
   ['/api/shortcut/:id'],
-  [ArkimeUtil.noCacheJson, Auth.getSettingUserDb, logAction('shortcut/:id'), checkCookieToken],
+  [ArkimeUtil.noCacheJson, Auth.getSettingUserDb, logAction('shortcut/:id'), checkCookieToken, ShortcutAPIs.checkShortcutAccess],
   ShortcutAPIs.updateShortcut
 );
 
 app.delete( // delete shortcut endpoint
   ['/api/shortcut/:id'],
-  [ArkimeUtil.noCacheJson, Auth.getSettingUserDb, logAction('shortcut/:id'), checkCookieToken],
+  [ArkimeUtil.noCacheJson, Auth.getSettingUserDb, logAction('shortcut/:id'), checkCookieToken, ShortcutAPIs.checkShortcutAccess],
   ShortcutAPIs.deleteShortcut
 );
 

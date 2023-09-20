@@ -79,12 +79,15 @@ class CronAPIs {
    * @param {string} creator - The id of the user that created this query.
    * @param {string} tags - A comma separated list of tags to add to each session that matches this query.
    * @param {string} notifier - The name of the notifier to alert when there are matches for this query.
-   * @param {number} lastNotified - The time that this query last sent a notification to the notifier. Only notifies every 10 mintues. Format is seconds since Unix EPOC.
+   * @param {number} lastNotified - The time that this query last sent a notification to the notifier. Only notifies every 10 minutes. Format is seconds since Unix EPOC.
    * @param {number} lastNotifiedCount - The count of sessions that matched since the last notification was sent.
    * @param {string} description - The description of this query.
    * @param {number} created - The time that this query was created. Format is seconds since Unix EPOC.
    * @param {number} lastToggled - The time that this query was enabled or disabled. Format is seconds since Unix EPOC.
    * @param {string} lastToggledBy - The user who last enabled or disabled this query.
+   * @param {string} users - The list of userIds who have access to use this query.
+   * @param {string} roles - The list of roles who have access to use this query.
+   * @param {string} editRoles - The list of roles who have access to edit this query.
    */
 
   // --------------------------------------------------------------------------
@@ -103,7 +106,7 @@ class CronAPIs {
     const user = req.settingUser;
     if (user.settings === undefined) { user.settings = {}; }
 
-    const roles = [...await user.getRoles()]; // es requries an array for terms search
+    const roles = [...await user.getRoles()]; // es requires an array for terms search
 
     const query = {
       size: 1000,
@@ -118,6 +121,7 @@ class CronAPIs {
               bool: {
                 should: [
                   { terms: { roles } }, // shared via user role
+                  { terms: { editRoles: roles } }, // shared via edit role
                   { term: { users: user.userId } }, // shared via userId
                   { term: { creator: user.userId } } // created by this user
                 ]
@@ -148,6 +152,7 @@ class CronAPIs {
             // remove sensitive information for users this query is shared with (except arkimeAdmin)
             delete result.users;
             delete result.roles;
+            delete roles.editRoles;
           } else {
             if (result.users) { // client expects a string
               result.users = result.users.join(',');
@@ -191,6 +196,10 @@ class CronAPIs {
       return res.serverError(403, 'Roles field must be an array of strings');
     }
 
+    if (req.body.editRoles !== undefined && !ArkimeUtil.isStringArray(req.body.editRoles)) {
+      return res.serverError(403, 'Edit roles field must be an array of strings');
+    }
+
     if (req.body.users !== undefined && !ArkimeUtil.isString(req.body.users, 0)) {
       return res.serverError(403, 'Users field must be a string');
     }
@@ -209,6 +218,7 @@ class CronAPIs {
         roles: req.body.roles,
         query: req.body.query,
         action: req.body.action,
+        editRoles: req.body.editRoles,
         created: Math.floor(Date.now() / 1000)
       }
     };
@@ -298,6 +308,10 @@ class CronAPIs {
       return res.serverError(403, 'Roles field must be an array of strings');
     }
 
+    if (req.body.editRoles !== undefined && !ArkimeUtil.isStringArray(req.body.editRoles)) {
+      return res.serverError(403, 'Edit roles field must be an array of strings');
+    }
+
     if (req.body.users !== undefined && !ArkimeUtil.isString(req.body.users, 0)) {
       return res.serverError(403, 'Users field must be a string');
     }
@@ -317,7 +331,8 @@ class CronAPIs {
         roles: req.body.roles,
         query: req.body.query,
         action: req.body.action,
-        enabled: req.body.enabled
+        enabled: req.body.enabled,
+        editRoles: req.body.editRoles
       }
     };
 
@@ -757,7 +772,38 @@ class CronAPIs {
       }
       internals.cronRunning = false;
     });
-  };
+  }
+
+  /**
+   * checks a user's permission to access a periodic query to update/delete
+   * only allow admins, editors, or creator can update/delete periodic query
+   */
+  static async checkCronAccess (req, res, next) {
+    if (req.params.key !== undefined) {
+      req.body.key = req.params.key;
+      delete req.params.key;
+    }
+
+    if (!ArkimeUtil.isString(req.body.key)) {
+      return res.serverError(403, 'Missing cron key');
+    }
+
+    if (req.user.hasRole('arkimeAdmin')) { // an admin can do anything
+      return next();
+    } else {
+      try {
+        const { body: { _source: query } } = await Db.get('queries', 'query', req.body.key);
+
+        if (query.creator === req.settingUser.userId || req.settingUser.hasRole(query.editRoles)) {
+          return next();
+        }
+
+        return res.serverError(403, 'Permission denied');
+      } catch (err) {
+        return res.serverError(403, 'Unknown query');
+      }
+    }
+  }
 }
 
 module.exports = CronAPIs;

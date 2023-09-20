@@ -90,8 +90,6 @@
           <th>Value(s)</th>
           <th>Type</th>
           <th>Creator</th>
-          <th>Roles</th>
-          <th>Users</th>
           <th>&nbsp;</th>
         </tr>
       </thead>
@@ -135,12 +133,6 @@
             <td>
               {{ item.userId }}
             </td>
-            <td>
-              {{ item.roles ? item.roles.join(',') : '' }}
-            </td>
-            <td>
-              {{ item.users }}
-            </td>
             <td class="shortcut-btns">
               <span class="pull-right">
                 <b-button
@@ -151,7 +143,7 @@
                   @click="$emit('copy-value', item.value)">
                   <span class="fa fa-clipboard fa-fw" />
                 </b-button>
-                <span v-if="user.roles.includes('arkimeAdmin') || item.userId === user.userId">
+                <span v-if="canEdit(item)">
                   <b-button
                     size="sm"
                     variant="danger"
@@ -290,20 +282,33 @@
         </select>
       </b-input-group>
       <div class="d-flex">
-        <div class="mr-3">
+        <div class="mr-3 flex-grow-1 no-wrap">
           <RoleDropdown
             :roles="roles"
-            display-text="Share with roles"
+            display-text="Who can view"
+            :selected-roles="newShortcutRoles"
             @selected-roles-updated="updateNewShortcutRoles"
+          />
+          <RoleDropdown
+            :roles="roles"
+            display-text="Who can edit"
+            :selected-roles="newShortcutEditRoles"
+            @selected-roles-updated="updateNewShortcutEditRoles"
           />
         </div>
         <b-input-group
-          size="sm"
-          class="flex-grow-1"
-          prepend="Share with users">
+          size="sm">
+          <template #prepend>
+            <b-input-group-text
+              v-b-tooltip.hover
+              class="cursor-help"
+              title="Enter a comma separated list of users that can use this view">
+              Share with users
+            </b-input-group-text>
+          </template>
           <b-form-input
             v-model="newShortcutUsers"
-            placeholder="comma separated list of userIds"
+            placeholder="Comma separated list of users"
           />
         </b-input-group>
       </div>
@@ -368,6 +373,7 @@
 <script>
 // services
 import SettingsService from './SettingsService';
+import UserService from '../../../../../common/vueapp/UserService';
 // components
 import MolochPaging from '../utils/Pagination';
 import RoleDropdown from '../../../../../common/vueapp/RoleDropdown';
@@ -390,6 +396,7 @@ export default {
       newShortcutType: 'string',
       newShortcutUsers: '',
       newShortcutRoles: [],
+      newShortcutEditRoles: [],
       editingShortcut: false,
       shortcutsStart: 0,
       shortcutsSize: 50,
@@ -422,6 +429,11 @@ export default {
   },
   methods: {
     /* exposed page functions ---------------------------------------------- */
+    canEdit (shortcut) {
+      return this.user.roles.includes('arkimeAdmin') ||
+        (shortcut.userId && shortcut.user === this.user.userId) ||
+        (shortcut.editRoles && UserService.hasRole(this.user, shortcut.editRoles.join(',')));
+    },
     /**
      * triggered when shortcuts paging is changed
      * @param {object} newParams Object containing length & start
@@ -450,6 +462,7 @@ export default {
       this.newShortcutValue = shortcut.value || '';
       this.newShortcutUsers = shortcut.users || '';
       this.newShortcutRoles = shortcut.roles || [];
+      this.newShortcutEditRoles = shortcut.editRoles || [];
       this.newShortcutType = shortcut.type || 'string';
       this.newShortcutDescription = shortcut.description || '';
       this.$bvModal.show('shortcut-modal');
@@ -460,6 +473,9 @@ export default {
     },
     updateNewShortcutRoles (roles) {
       this.newShortcutRoles = roles;
+    },
+    updateNewShortcutEditRoles (roles) {
+      this.newShortcutEditRoles = roles;
     },
     /* creates a new shortcut */
     createShortcut () {
@@ -473,6 +489,7 @@ export default {
         value: this.newShortcutValue,
         users: this.newShortcutUsers,
         roles: this.newShortcutRoles,
+        editRoles: this.newShortcutEditRoles,
         description: this.newShortcutDescription
       };
 
@@ -506,6 +523,7 @@ export default {
         value: this.newShortcutValue,
         users: this.newShortcutUsers,
         roles: this.newShortcutRoles,
+        editRoles: this.newShortcutEditRoles,
         description: this.newShortcutDescription
       };
 
@@ -593,6 +611,7 @@ export default {
       this.newShortcutValue = '';
       this.newShortcutUsers = '';
       this.newShortcutRoles = [];
+      this.newShortcutEditRoles = [];
       this.newShortcutDescription = '';
       this.createShortcutLoading = false;
     },

@@ -211,12 +211,18 @@
           </div>
         </div>
         <div class="d-flex">
-          <div class="mr-3">
+           <div class="mr-3 flex-grow-1 no-wrap">
             <RoleDropdown
               :roles="roles"
-              display-text="Share with roles"
+              display-text="Who can view"
               :selected-roles="newCronQueryRoles"
               @selected-roles-updated="updateNewCronQueryRoles"
+            />
+            <RoleDropdown
+              :roles="roles"
+              display-text="Who can edit"
+              :selected-roles="newCronQueryEditRoles"
+              @selected-roles-updated="updateNewCronQueryEditRoles"
             />
           </div>
           <b-input-group
@@ -435,9 +441,18 @@
             <RoleDropdown
               :roles="roles"
               :id="query.key"
+              tooltip="Who can view"
               :selected-roles="query.roles"
               @selected-roles-updated="updateCronQueryRoles"
-              :display-text="query.roles && query.roles.length ? undefined : 'Share with roles'"
+              :display-text="query.roles && query.roles.length ? undefined : 'Who can view'"
+            />
+            <RoleDropdown
+              :roles="roles"
+              :id="query.key"
+              tooltip="Who can edit"
+              :selected-roles="query.editRoles"
+              @selected-roles-updated="updateCronQueryEditRoles"
+              :display-text="query.editRoles && query.editRoles.length ? undefined : 'Who can edit'"
             />
           </div>
         </b-card-text>
@@ -534,6 +549,7 @@
 <script>
 // services
 import SettingsService from './SettingsService';
+import UserService from '../../../../../common/vueapp/UserService';
 // components
 import RoleDropdown from '../../../../../common/vueapp/RoleDropdown';
 
@@ -560,6 +576,7 @@ export default {
       newCronQueryAction: 'tag',
       newCronQueryUsers: '',
       newCronQueryRoles: [],
+      newCronQueryEditRoles: [],
       seeAll: false
     };
   },
@@ -597,10 +614,15 @@ export default {
   methods: {
     // EXPOSED PAGE FUNCTIONS ---------------------------------------------- //
     canEditCronQuery (query) {
-      return this.user.roles.includes('arkimeAdmin') || (query.creator && query.creator === this.user.userId);
+      return this.user.roles.includes('arkimeAdmin') ||
+        (query.creator && query.creator === this.user.userId) ||
+        (query.editRoles && UserService.hasRole(this.user, query.editRoles.join(',')));
     },
     updateNewCronQueryRoles (roles) {
       this.newCronQueryRoles = roles;
+    },
+    updateNewCronQueryEditRoles (roles) {
+      this.newCronQueryEditRoles = roles;
     },
     /* creates a cron query given the name, expression, process, and tags */
     createCronQuery () {
@@ -630,6 +652,7 @@ export default {
         since: this.newCronQueryProcess,
         action: this.newCronQueryAction,
         query: this.newCronQueryExpression,
+        editRoles: this.newCronQueryEditRoles,
         description: this.newCronQueryDescription
       };
 
@@ -712,6 +735,16 @@ export default {
         }
       }
     },
+    /* updates the edit roles on a cron query from the RoleDropdown component */
+    updateCronQueryEditRoles (roles, id) {
+      for (const query of this.cronQueries) {
+        if (query.key === id) {
+          this.$set(query, 'editRoles', roles);
+          this.cronQueryChanged(query);
+          return;
+        }
+      }
+    },
     /**
      * Sets a cron query as having been changed
      * @param {object} query The query object that changed
@@ -776,13 +809,14 @@ export default {
         this.cronQueryListError = error.text;
       });
     },
-    // HELPLER FUNCTIONS --------------------------------------------------- //
+    // HELPER FUNCTIONS ---------------------------------------------------- //
     clearNewFormInputs () {
       this.cronQueryFormError = false;
       this.newCronQueryName = '';
       this.newCronQueryTags = '';
       this.newCronQueryUsers = '';
       this.newCronQueryRoles = [];
+      this.newCronQueryEditRoles = [];
       this.newCronQueryExpression = '';
       this.newCronQueryDescription = '';
       this.newCronQueryNotifier = undefined;
