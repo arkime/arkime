@@ -438,12 +438,13 @@ class ShortcutAPIs {
           const { values, invalidUsers } = await ShortcutAPIs.#normalizeShortcut(sentShortcut);
 
           // transfer ownership (admin and creator only)
-          if (sentShortcut.userId?.length) {
+          if (sentShortcut.userId && sentShortcut.userId !== fetchedShortcut._source.userId && ArkimeUtil.isString(sentShortcut.userId)) {
             if (req.settingUser.userId !== fetchedShortcut._source.userId && !req.settingUser.hasRole('arkimeAdmin')) {
               ShortcutAPIs.#shortcutMutex.unlock();
               return res.serverError(403, 'Permission denied');
             }
 
+            // check if user is valid before updating it
             // comma/newline separated value -> array of values
             let user = ArkimeUtil.commaOrNewlineStringToArray(sentShortcut.userId);
             user = await User.validateUserIds(user);

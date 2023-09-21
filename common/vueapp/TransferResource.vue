@@ -1,17 +1,22 @@
 <template>
   <b-modal
     id="transfer-modal"
+    @keyup.stop.prevent.enter="transferResource"
     title="Transfer ownership to another user">
-    <b-form>
+    <b-form
+      @submit="transferResource"
+      @keyup.stop.prevent.enter="transferResource">
       <!-- user ID input -->
       <b-input-group
         prepend="User ID">
         <b-form-input
+          autofocus
           required
           id="userId"
           type="text"
           v-model="userId"
           :state="!userId ? false : true"
+          @keyup.stop.prevent.enter="transferResource"
           placeholder="Enter a single user's ID">
         </b-form-input>
       </b-input-group> <!-- /user ID input -->

@@ -230,11 +230,12 @@ class ViewAPIs {
       const { body: dbView } = await Db.getView(req.params.id);
 
       // transfer ownership of view (admin and creator only)
-      if (view.user?.length) { // check if user is valid before updating it
+      if (view.user && view.user !== dbView._source.user && ArkimeUtil.isString(view.user)) {
         if (req.settingUser.userId !== dbView._source.user && !req.settingUser.hasRole('arkimeAdmin')) {
           return res.serverError(403, 'Permission denied');
         }
 
+        // check if user is valid before updating it
         // comma/newline separated value -> array of values
         let user = ArkimeUtil.commaOrNewlineStringToArray(view.user);
         user = await User.validateUserIds(user);

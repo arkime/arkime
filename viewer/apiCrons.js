@@ -347,6 +347,29 @@ class CronAPIs {
     try {
       const { body: { _source: cron } } = await Db.get('queries', 'query', key);
 
+      // transfer ownership of view (admin and creator only)
+      if (req.body.creator && req.body.creator !== cron.creator && ArkimeUtil.isString(req.body.creator)) {
+        if (req.settingUser.userId !== cron.creator && !req.settingUser.hasRole('arkimeAdmin')) {
+          return res.serverError(403, 'Permission denied');
+        }
+
+        // check if user is valid before updating it
+        // comma/newline separated value -> array of values
+        let user = ArkimeUtil.commaOrNewlineStringToArray(req.body.creator);
+        user = await User.validateUserIds(user);
+
+        if (user.invalidUsers?.length) {
+          return res.serverError(404, `Invalid user: ${user.invalidUsers[0]}`);
+        }
+        if (user.validUsers?.length) {
+          doc.doc.creator = user.validUsers[0];
+        } else {
+          return res.serverError(404, 'Cannot find valid user');
+        }
+      } else { // keep the same owner
+        doc.doc.creator = cron.creator;
+      }
+
       if (doc.doc.enabled !== cron.enabled) { // the query was enabled or disabled
         doc.doc.lastToggledBy = req.settingUser.userId;
         doc.doc.lastToggled = Math.floor(Date.now() / 1000);

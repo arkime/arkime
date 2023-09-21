@@ -1,4 +1,4 @@
-use Test::More tests => 36;
+use Test::More tests => 42;
 use Cwd;
 use MolochTest;
 use JSON;
@@ -74,6 +74,7 @@ is (@{$json}, 1, "returns 1 query without all flag");
 $json = viewerGet("/api/crons?molochRegressionUser=anonymous&all=true");
 is (@{$json}, 2, "returns 2 queries with all flag");
 
+
 # test2 can update using editRoles
 $json = viewerPostToken("/api/cron/$key?molochRegressionUser=test2", '{"name":"good name","query":"protocols == tls","action":"tag","tags":"tls","users":"test2,test3", "roles":["arkimeUser"], "editRoles":["cont3xtUser"]}', $test2Token);
 ok($json->{success}, "editRoles user can update query");
@@ -86,6 +87,21 @@ ok(!$json->{success}, "shared user cannot update query");
 $json = viewerDeleteToken("/api/cron/$key?molochRegressionUser=test1", $test1Token);
 ok(!$json->{success}, "shared user cannot delete query");
 
+# test1 cannot transfer ownership (not admin or creator)
+$json = viewerPostToken("/api/cron/$key?molochRegressionUser=test1", '{"creator":"test1","name":"test1update","query":"protocols == tls","action":"tag","tags":"tls","users":"test2,test3", "roles":["arkimeUser"],"editRoles":["cont3xtUser"]}', $test1Token);
+ok(!$json->{success}, "cannot transfer ownership without being admin or creator");
+eq_or_diff($json->{text}, "Permission denied");
+
+# can't transfer ownership to invalid user
+$json = viewerPostToken("/api/cron/$key", '{"creator":"asdf","name":"test1update","query":"protocols == tls","action":"tag","tags":"tls","users":"test2,test3", "roles":["arkimeUser"],"editRoles":["cont3xtUser"]}', $token);
+ok(!$json->{success}, "cannot transfer ownership to an invalid user");
+eq_or_diff($json->{text}, "Invalid user: asdf");
+
+# can transfer ownership
+$json = viewerPostToken("/api/cron/$key", '{"creator":"test1","name":"test1update","query":"protocols == tls","action":"tag","tags":"tls","users":"test2,test3", "roles":["arkimeUser"],"editRoles":["cont3xtUser"]}', $token);
+ok($json->{success}, "can transfer ownership to valid user");
+eq_or_diff($json->{query}->{creator}, "test1");
+
 # test2 can delete using editRoles
 $json = viewerDeleteToken("/api/cron/$key?molochRegressionUser=test2", $test2Token);
 ok($json->{success}, "query can be deleted");
@@ -97,7 +113,6 @@ eq_or_diff($json, from_json('{"text": "Bad query key", "success": false}'));
 # can not delete primary-viewer periodic queries
 $json = viewerDeleteToken("/api/cron/primary-viewer", $token);
 eq_or_diff($json, from_json('{"text": "Bad query key", "success": false}'));
-
 # Run crons
 viewerGet("/regressionTests/processCronQueries");
 viewerGet("/regressionTests/processCronQueries");
