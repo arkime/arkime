@@ -242,11 +242,12 @@ class ViewAPIs {
         if (user.invalidUsers?.length) {
           return res.serverError(403, `Invalid user: ${user.invalidUsers[0]}`);
         }
-
         if (user.validUsers?.length) {
           view.user = user.validUsers[0];
+        } else {
+          return res.serverError(403, 'Cannot find valid user');
         }
-      } else {
+      } else { // keep the same owner
         view.user = dbView._source.user;
       }
 

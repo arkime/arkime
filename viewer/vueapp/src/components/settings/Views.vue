@@ -452,6 +452,7 @@ export default {
         this.getViews();
         this.transferView = undefined;
         this.$emit('display-message', { msg: response.text, type: 'success' });
+        this.$bvModal.hide('transfer-modal');
       }).catch((error) => {
         this.$emit('display-message', { msg: error.text, type: 'danger' });
       });

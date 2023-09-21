@@ -3,6 +3,7 @@
     id="transfer-modal"
     title="Transfer ownership to another user">
     <b-form>
+      <!-- user ID input -->
       <b-input-group
         prepend="User ID">
         <b-form-input
@@ -13,8 +14,9 @@
           :state="!userId ? false : true"
           placeholder="Enter a single user's ID">
         </b-form-input>
-      </b-input-group>
+      </b-input-group> <!-- /user ID input -->
     </b-form>
+    <!-- modal footer -->
     <template #modal-footer>
       <div class="w-100 d-flex justify-content-between">
         <b-button
@@ -47,17 +49,27 @@ export default {
     };
   },
   methods: {
+    /**
+     * Cancel the transfer of a resource to another user and close the modal.
+     * Emits a `transfer-resource` event with no payload to the parent.
+     * NOTE: The parent should clear the resource to be transferred.
+     */
     cancel () {
+      this.userId = '';
       this.$emit('transfer-resource');
       this.$bvModal.hide('transfer-modal');
     },
+    /**
+     * Transfer ownership of a resource to another user.
+     * Emits a `transfer-resource` event with the `userId` as the payload to the parent.
+     * NOTE: The parent needs to close the modal if there are no errors.
+     */
     transferResource () {
       if (!this.userId) {
         return;
       }
 
       this.$emit('transfer-resource', { userId: this.userId });
-      this.$bvModal.hide('transfer-modal');
     }
   }
 };
