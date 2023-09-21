@@ -128,7 +128,7 @@ eq_or_diff($info->{text}, "Invalid user: asdf");
 
 # can transfer ownership
 $info = viewerPutToken("/api/view/${id4}?molochRegressionUser=test1", '{"name": "view4", "expression": "ip == 4.3.2.1", "roles":["arkimeUser"], "users":"", "editRoles":["cont3xtUser"], "user":"test2"}', $token);
-ok($info->{success}, "cannot transfer ownership to an invalid user");
+ok($info->{success}, "can transfer ownership to valid user");
 eq_or_diff($info->{view}->{user}, "test2");
 
 # test2 can delete view using editRoles (plus bonus cleanup)

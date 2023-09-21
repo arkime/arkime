@@ -704,7 +704,7 @@
                     {{ spiviewConfigError }}
                   </p>
                 </td>
-              </tr> <!-- /spview field config list error -->
+              </tr> <!-- /spiview field config list error -->
             </tbody>
           </table>
 
@@ -1651,7 +1651,7 @@ export default {
       this.settings.ms = newMs;
       this.updateTime();
     },
-    /* updates the displayed date for the timzeone setting
+    /* updates the displayed date for the timezone setting
      * triggered by the user changing the timezone/ms settings */
     updateTime: function () {
       this.tick();
@@ -1905,7 +1905,7 @@ export default {
     },
 
     /* helper functions ---------------------------------------------------- */
-    /* retrievs the theme colors from the document body's property values */
+    /* retrieves the theme colors from the document body's property values */
     getThemeColors: function () {
       const styles = window.getComputedStyle(document.body);
 
@@ -1975,7 +1975,7 @@ export default {
           this.setTheme();
           this.startClock();
         }).catch((error) => {
-          console.log('ERROR getting fields to populdate page', error);
+          console.log('ERROR getting fields to populate page', error);
         });
       }).catch((error) => {
         this.loading = false;

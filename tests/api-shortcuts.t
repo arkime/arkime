@@ -1,4 +1,4 @@
-use Test::More tests => 99;
+use Test::More tests => 105;
 use Cwd;
 use URI::Escape;
 use MolochTest;
@@ -181,6 +181,21 @@ ok(!$json->{success}, "delete shortcut failure");
 $json = viewerPutToken("/api/shortcut/$shortcut4Id", '{"name":"role_shared_shortcut","type":"string","value":"udp","users":"","roles":["arkimeUser"],"editRoles":["arkimeUser"]}', $token);
 $json = viewerPutToken("/api/shortcut/$shortcut4Id?molochRegressionUser=user2", '{"name":"role_shared_shortcut","type":"string","value":"udp","users":"","roles":["arkimeUser"],"editRoles":["arkimeUser"]}', $otherToken);
 ok($json->{success}, "edit shortcut with editRoles success");
+
+# test2 cannot transfer ownership (not admin or creator)
+$json = viewerPutToken("/api/shortcut/$shortcut4Id?molochRegressionUser=user2", '{"userId":"user2","name":"role_shared_shortcut","type":"string","value":"udp","users":"","roles":["arkimeUser"],"editRoles":["arkimeUser"]}', $otherToken);
+ok(!$json->{success}, "cannot transfer ownership without being admin or creator");
+eq_or_diff($json->{text}, "Permission denied");
+
+# can't transfer ownership to invalid user
+$json = viewerPutToken("/api/shortcut/$shortcut4Id", '{"userId":"asdf","name":"role_shared_shortcut","type":"string","value":"udp","users":"","roles":["arkimeUser"],"editRoles":["arkimeUser"]}', $token);
+ok(!$json->{success}, "cannot transfer ownership to an invalid user");
+eq_or_diff($json->{text}, "Invalid user: asdf");
+
+# can transfer ownership
+$json = viewerPutToken("/api/shortcut/$shortcut4Id", '{"userId":"user2","name":"role_shared_shortcut","type":"string","value":"udp","users":"","roles":["arkimeUser"],"editRoles":["arkimeUser"]}', $token);
+ok($json->{success}, "can transfer ownership to valid user");
+eq_or_diff($json->{shortcut}->{userId}, "user2");
 
 # get only shortcuts of a specific type
 $shortcuts = viewerGet("/api/shortcuts?fieldType=string");
