@@ -17,6 +17,7 @@
  */
 'use strict';
 
+const User = require('../common/user');
 const ArkimeUtil = require('../common/arkimeUtil');
 
 class View {
@@ -157,16 +158,16 @@ class View {
       return res.send({ success: false, text: 'View not found' });
     }
 
-    if (dbView.creator !== req.user.userId && !(req.user.hasRole(dbView.editRoles)) && !req.user.hasRole('cont3xtAdmin')) {
-      return res.send({ success: false, text: 'Permission denied' });
-    }
-
     const receivedView = req.body;
-    receivedView.creator = dbView.creator; // Make sure the creator doesn't get changed
 
     const { view, msg } = View.verifyView(receivedView);
     if (msg) {
       return res.send({ success: false, text: msg });
+    }
+
+    // sets the owner if it has changed
+    if (!await User.setOwner(req, res, view, dbView, 'creator')) {
+      return;
     }
 
     try {
@@ -193,10 +194,6 @@ class View {
     const view = await Db.getView(req.params.id);
     if (!view) {
       return res.send({ success: false, text: 'View not found' });
-    }
-
-    if (view.creator !== req.user.userId && !(req.user.hasRole(view.editRoles)) && !req.user.hasRole('cont3xtAdmin')) {
-      return res.send({ success: false, text: 'Permission denied' });
     }
 
     const results = await Db.deleteView(req.params.id, req.body);

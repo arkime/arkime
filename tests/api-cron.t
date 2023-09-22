@@ -95,7 +95,7 @@ eq_or_diff($json->{text}, "Permission denied");
 # can't transfer ownership to invalid user
 $json = viewerPostToken("/api/cron/$key", '{"creator":"asdf","name":"test1update","query":"protocols == tls","action":"tag","tags":"tls","users":"test2,test3", "roles":["arkimeUser"],"editRoles":["cont3xtUser"]}', $token);
 ok(!$json->{success}, "cannot transfer ownership to an invalid user");
-eq_or_diff($json->{text}, "Invalid user: asdf");
+eq_or_diff($json->{text}, "User not found");
 
 # can transfer ownership
 $json = viewerPostToken("/api/cron/$key", '{"creator":"test1","name":"test1update","query":"protocols == tls","action":"tag","tags":"tls","users":"test2,test3", "roles":["arkimeUser"],"editRoles":["cont3xtUser"]}', $token);

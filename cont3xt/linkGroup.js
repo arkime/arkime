@@ -221,38 +221,16 @@ class LinkGroup {
       return res.send({ success: false, text: 'LinkGroup not found' });
     }
 
-    if (olinkGroup.creator !== req.user.userId && !(req.user.hasRole(olinkGroup.editRoles)) && !req.user.hasRole('cont3xtAdmin')) {
-      return res.send({ success: false, text: 'Permission denied' });
-    }
-
     const linkGroup = req.body;
-
-    // transfer ownership of linkGroup (admin and creator only)
-    if (linkGroup.creator && linkGroup.creator !== olinkGroup.creator && ArkimeUtil.isString(linkGroup.creator)) {
-      if (req.user.userId !== olinkGroup.creator && !req.user.hasRole('arkimeAdmin')) {
-        return res.serverError(403, 'Permission denied');
-      }
-
-      // check if user is valid before updating it
-      // comma/newline separated value -> array of values
-      let user = ArkimeUtil.commaOrNewlineStringToArray(linkGroup.creator);
-      user = await User.validateUserIds(user);
-
-      if (user.invalidUsers?.length) {
-        return res.serverError(404, `Invalid user: ${user.invalidUsers[0]}`);
-      }
-      if (user.validUsers?.length) {
-        linkGroup.creator = user.validUsers[0];
-      } else {
-        return res.serverError(404, 'Cannot find valid user');
-      }
-    } else { // keep the same owner
-      linkGroup.creator = olinkGroup.creator;
-    }
 
     const { lg, msg } = LinkGroup.verifyLinkGroup(linkGroup);
     if (msg) {
       return res.send({ success: false, text: msg });
+    }
+
+    // sets the owner if it has changed
+    if (!await User.setOwner(req, res, lg, olinkGroup, 'creator')) {
+      return;
     }
 
     try {
@@ -278,10 +256,6 @@ class LinkGroup {
     const linkGroup = await Db.getLinkGroup(req.params.id);
     if (!linkGroup) {
       return res.send({ success: false, text: 'LinkGroup not found' });
-    }
-
-    if (linkGroup.creator !== req.user.userId && !(req.user.hasRole(linkGroup.editRoles)) && !req.user.hasRole('cont3xtAdmin')) {
-      return res.send({ success: false, text: 'Permission denied' });
     }
 
     const results = await Db.deleteLinkGroup(req.params.id, req.body);

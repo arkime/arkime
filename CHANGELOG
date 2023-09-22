@@ -61,9 +61,12 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - cont3xt - new array syntax for links substitution
   - cont3xt - new OpenSearch/Elasticsearch integration (config file only)
   - cont3xt - new viewRoles in config file per integration to control access
+  - cont3xt - transfer ownership of resources
   - viewer - removed x-moloch-auth
   - viewer - files/history/stats now have cluster dropdown for multiviewer
   - viewer - http.request.FIELD and http.response.FIELD supported
+  - viewer - add editor for resources
+  - viewer - transfer ownership of resources
   - parliament - dashboard-only mode removed, if you want users to just see
                  the dashboard don't assign them the parliamentUser role
   - parliament - configuration is now stored in opensearch/elasticsearch

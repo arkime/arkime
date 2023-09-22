@@ -187,6 +187,15 @@
                 <template #header>
                   <div class="w-100 d-flex justify-content-between align-items-start">
                     <div>
+                      <b-button
+                        size="sm"
+                        variant="info"
+                        v-b-tooltip.hover
+                        v-if="canTransferView(view)"
+                        title="Transfer ownership of this view"
+                        @click="openTransferResource(view)">
+                        <span class="fa fa-share fa-fw" />
+                      </b-button>
                       <!-- delete button -->
                       <transition name="buttons">
                         <b-button
@@ -439,6 +448,7 @@
               :modifiedOverview="activeModifiedOverview"
               @update-modified-overview="updateModifiedOverview"
               @overview-deleted="activeOverviewDeleted"
+              @open-transfer-resource="openTransferResource"
           />
           <div v-else
                class="d-flex flex-column">
@@ -821,6 +831,20 @@ export default {
           LinkService.getLinkGroups(this.seeAllLinkGroups);
           this.showMessage({ variant: 'success', message: response.text });
         }); // store deals with failure
+      } else if (data.integrations) { // it's a view
+        UserService.updateIntegrationsView(data).then((response) => {
+          this.$bvModal.hide('transfer-modal');
+          UserService.getIntegrationViews(this.seeAllViews);
+          this.showMessage({ variant: 'success', message: response.text });
+        }).catch((err) => {
+          this.showMessage({ variant: 'danger', message: err });
+        });
+      } else if (data.fields) {
+        OverviewService.updateOverview(data).then((response) => {
+          this.$bvModal.hide('transfer-modal');
+          OverviewService.getOverviews();
+          this.showMessage({ variant: 'success', message: response.text });
+        }); // store deals with failure
       } else {
         this.showMessage({ variant: 'error', message: 'Cannot parse the resource you want to transfer' });
       }
@@ -943,6 +967,10 @@ export default {
       }
     },
     /* VIEWS! -------------------------------- */
+    canTransferView (view) {
+      return this.getUser?.roles.includes('cont3xtAdmin') ||
+        (view?.creator && view?.creator === this.getUser?.userId);
+    },
     openViewForm () {
       this.$bvModal.show('view-form');
     },
@@ -960,9 +988,9 @@ export default {
       const view = JSON.parse(JSON.stringify(unNormalizedView));
 
       // sort these fields to make order not affect result of comparison, because their orders are not meaningful
-      view.editRoles.sort();
-      view.viewRoles.sort();
-      view.integrations.sort();
+      view.editRoles?.sort();
+      view.viewRoles?.sort();
+      view.integrations?.sort();
       return view;
     },
     updateView (view) {

@@ -204,8 +204,8 @@ app.use((req, res, next) => {
 
 app.get('/api/linkGroup', LinkGroup.apiGet);
 app.put('/api/linkGroup', [jsonParser, checkCookieToken], LinkGroup.apiCreate);
-app.put('/api/linkGroup/:id', [jsonParser, checkCookieToken], LinkGroup.apiUpdate);
-app.delete('/api/linkGroup/:id', [jsonParser, checkCookieToken], LinkGroup.apiDelete);
+app.put('/api/linkGroup/:id', [jsonParser, checkCookieToken, Auth.checkResourceAccess(Db.getLinkGroup, 'creator')], LinkGroup.apiUpdate);
+app.delete('/api/linkGroup/:id', [jsonParser, checkCookieToken, Auth.checkResourceAccess(Db.getLinkGroup, 'creator')], LinkGroup.apiDelete);
 
 app.get('/api/roles', [checkCookieToken], User.apiRoles);
 app.get('/api/user', User.apiGetUser);
@@ -229,16 +229,16 @@ app.get('/api/integration/stats', [setCookie], Integration.apiStats);
 
 app.get('/api/views', [setCookie], View.apiGet);
 app.post('/api/view', [jsonParser, checkCookieToken], View.apiCreate);
-app.put('/api/view/:id', [jsonParser, checkCookieToken], View.apiUpdate);
-app.delete('/api/view/:id', [jsonParser, checkCookieToken], View.apiDelete);
+app.put('/api/view/:id', [jsonParser, checkCookieToken, Auth.checkResourceAccess(Db.getView, 'creator')], View.apiUpdate);
+app.delete('/api/view/:id', [jsonParser, checkCookieToken, Auth.checkResourceAccess(Db.getView, 'creator')], View.apiDelete);
 
 app.get('/api/audits', Audit.apiGet);
 app.delete('/api/audit/:id', [jsonParser, checkCookieToken], Audit.apiDelete);
 
 app.get('/api/overview', Overview.apiGet);
 app.put('/api/overview', [jsonParser, checkCookieToken], Overview.apiCreate);
-app.put('/api/overview/:id', [jsonParser, checkCookieToken], Overview.apiUpdate);
-app.delete('/api/overview/:id', [jsonParser, checkCookieToken], Overview.apiDelete);
+app.put('/api/overview/:id', [jsonParser, checkCookieToken, Auth.checkResourceAccess(Db.getOverview, 'creator')], Overview.apiUpdate);
+app.delete('/api/overview/:id', [jsonParser, checkCookieToken, Auth.checkResourceAccess(Db.getOverview, 'creator')], Overview.apiDelete);
 
 app.get('/api/health', (req, res) => { res.send({ success: true }); });
 

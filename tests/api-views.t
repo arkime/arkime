@@ -124,7 +124,7 @@ eq_or_diff($info->{text}, "Permission denied");
 # can't transfer ownership to invalid user
 $info = viewerPutToken("/api/view/${id4}?molochRegressionUser=test1", '{"name": "view4", "expression": "ip == 4.3.2.1", "roles":["arkimeUser"], "users":"", "editRoles":["cont3xtUser"], "user":"asdf"}', $token);
 ok(!$info->{success}, "cannot transfer ownership to an invalid user");
-eq_or_diff($info->{text}, "Invalid user: asdf");
+eq_or_diff($info->{text}, "User not found");
 
 # can transfer ownership
 $info = viewerPutToken("/api/view/${id4}?molochRegressionUser=test1", '{"name": "view4", "expression": "ip == 4.3.2.1", "roles":["arkimeUser"], "users":"", "editRoles":["cont3xtUser"], "user":"test2"}', $token);

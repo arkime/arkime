@@ -1,5 +1,5 @@
 # Test cont3xt.js
-use Test::More tests => 139;
+use Test::More tests => 145;
 use Test::Differences;
 use Data::Dumper;
 use MolochTest;
@@ -232,7 +232,8 @@ $json = cont3xtPutToken("/api/linkGroup/$id", to_json({
     name => "foo1",
     url => "http://www.foobar.com",
     itypes => ["ip", "hash"]
-  }]
+  }],
+  creator => "anonymous"
 }), $token);
 eq_or_diff($json, from_json('{"success": true, "text": "Success"}'));
 
@@ -267,7 +268,7 @@ $json = cont3xtPutToken("/api/linkGroup/$id", to_json({
   }],
   creator => "asdf"
 }), $token);
-eq_or_diff($json, from_json('{"success": false, "text": "Invalid user: asdf"}'));
+eq_or_diff($json, from_json('{"success": false, "text": "User not found"}'));
 
 # can transfer ownership to valid user
 $json = cont3xtPutToken("/api/linkGroup/$id", to_json({
@@ -291,7 +292,7 @@ $json = cont3xtDeleteToken("/api/linkGroup/$id?molochRegressionUser=test", "{}",
 eq_or_diff($json, from_json('{"success": true, "text": "Success"}'));
 
 $json = cont3xtDeleteToken("/api/linkGroup/foo", "{}", $token);
-eq_or_diff($json, from_json('{"success": false, "text": "LinkGroup not found"}'));
+eq_or_diff($json, from_json('{"success": false, "text": "Unknown resource"}'));
 
 $json = cont3xtGet('/api/linkGroup');
 eq_or_diff($json, from_json('{"success": true, "linkGroups": []}'));
@@ -621,15 +622,61 @@ my $id = $json->{overviews}->[0]->{_id};
 delete $json->{overviews}->[0]->{_id};
 eq_or_diff($json, from_json('{"overviews":[{"creator":"anonymous","_editable":true,"_viewable": true, "viewRoles":["cont3xtUser"],"fields":[{"type":"linked","from":"Foo","field":"bar_field"},{"type":"custom","from":"Foo","custom":"foo.bar"}],"name":"Overview1 v2","title":"Overview v2 of %{query}","iType":"ip","editRoles":["superAdmin"]}],"success":true}'));
 
+# can't transfer ownership (not admin or creator)
+$json = cont3xtPutToken("/api/overview/$id?molochRegressionUser=test", to_json({
+    creator => "test"
+}), $token2);
+eq_or_diff($json, from_json('{"success": false, "text": "Permission denied"}'));
+
+# can't transfer ownership to invalid user
+$json = cont3xtPutToken("/api/overview/$id", to_json({
+    name => "Overview1 v2",
+    title => "Overview v2 of %{query}",
+    iType => "ip",
+    viewRoles => ["cont3xtUser"],
+    editRoles => ["superAdmin"],
+    fields => [{
+        type => "linked",
+        from  => "Foo",
+        field => "bar_field"
+    }, {
+        type   => "custom",
+        from  => "Foo",
+        custom => "foo.bar"
+    }],
+    creator => "asdf"
+}), $token);
+eq_or_diff($json, from_json('{"success": false, "text": "User not found"}'));
+
+# can transfer ownership to valid user
+$json = cont3xtPutToken("/api/overview/$id", to_json({
+    name => "Overview1 v2",
+    title => "Overview v2 of %{query}",
+    iType => "ip",
+    viewRoles => ["cont3xtUser"],
+    editRoles => ["superAdmin"],
+    fields => [{
+        type => "linked",
+        from  => "Foo",
+        field => "bar_field"
+    }, {
+        type   => "custom",
+        from  => "Foo",
+        custom => "foo.bar"
+    }],
+    creator => "test"
+}), $token);
+eq_or_diff($json, from_json('{"success": true, "text": "Success"}'));
+
 # delete overview requires token
 $json = cont3xtDelete("/api/overview/$id", "{}");
 eq_or_diff($json, from_json('{"success": false, "text": "Missing token"}'));
 
-$json = cont3xtDeleteToken("/api/overview/$id", "{}", $token);
+$json = cont3xtDeleteToken("/api/overview/$id?molochRegressionUser=test", "{}", $token2);
 eq_or_diff($json, from_json('{"success": true, "text": "Success"}'));
 
 $json = cont3xtDeleteToken("/api/overview/foo", "{}", $token);
-eq_or_diff($json, from_json('{"success": false, "text": "Overview not found"}'));
+eq_or_diff($json, from_json('{"success": false, "text": "Unknown resource"}'));
 
 $json = cont3xtGet('/api/overview');
 eq_or_diff($json, from_json('{"success": true, "overviews": []}'));
@@ -828,21 +875,42 @@ eq_or_diff($json, from_json('{"success": true, "text": "Success"}'));
 $json = cont3xtPutToken("/api/view/foo", to_json({
   name => "view2changed"
 }), $token);
-eq_or_diff($json, from_json('{"success": false, "text": "View not found"}'));
+eq_or_diff($json, from_json('{"success": false, "text": "Unknown resource"}'));
 
 $json = cont3xtGet('/api/views');
 is($json->{success}, 1);
 is($json->{views}->[1]->{name}, "view2changed");
 is (scalar @{$json->{views}}, 2);
 
+# can't transfer ownership (not admin or creator)
+$json = cont3xtPutToken("/api/view/$id?molochRegressionUser=test", to_json({
+    creator => "test"
+}), $token2);
+eq_or_diff($json, from_json('{"success": false, "text": "Permission denied"}'));
+
+# can't transfer ownership to invalid user
+$json = cont3xtPutToken("/api/view/$id", to_json({
+    name => "view2changed",
+    creator => "asdf"
+}), $token);
+eq_or_diff($json, from_json('{"success": false, "text": "User not found"}'));
+
+# can transfer ownership to valid user
+$json = cont3xtPutToken("/api/view/$id", to_json({
+    name => "view2changed",
+    creator => "test"
+}), $token);
+eq_or_diff($json, from_json('{"success": true, "text": "Success"}'));
+
+
 $json = cont3xtDelete("/api/view/$id", '{}');
 eq_or_diff($json, from_json('{"success": false, "text": "Missing token"}'));
 
-$json = cont3xtDeleteToken("/api/view/$id", '{}', $token);
+$json = cont3xtDeleteToken("/api/view/$id?molochRegressionUser=test", '{}', $token2);
 eq_or_diff($json, from_json('{"success": true, "text": "Success"}'));
 
 $json = cont3xtDeleteToken('/api/view/foo', '{}', $token);
-eq_or_diff($json, from_json('{"success": false, "text": "View not found"}'));
+eq_or_diff($json, from_json('{"success": false, "text": "Unknown resource"}'));
 
 $json = cont3xtGet('/api/views');
 is($json->{success}, 1);

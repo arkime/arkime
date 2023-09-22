@@ -386,7 +386,7 @@ export default {
   methods: {
     canTransfer (lg) {
       return this.getUser.roles.includes('cont3xtAdmin') ||
-        (lg.user && lg.user === this.getUser.userId);
+        (lg.creator && lg.creator === this.getUser.userId);
     },
     displayMessage (msg) {
       this.message = msg;

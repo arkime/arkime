@@ -68,28 +68,6 @@ class ShortcutAPIs {
     return { type, values, invalidUsers: users.invalidUsers };
   }
 
-  /**
-   * checks a user's permission to access a shortcut to update/delete
-   * only allow admins, editors, or creator can update/delete shortcut
-   */
-  static async checkShortcutAccess (req, res, next) {
-    if (req.user.hasRole('arkimeAdmin')) { // an admin can do anything
-      return next();
-    } else {
-      try {
-        const { body: { _source: shortcut } } = await Db.getShortcut(req.params.id);
-
-        if (shortcut.userId === req.settingUser.userId || req.settingUser.hasRole(shortcut.editRoles)) {
-          return next();
-        }
-
-        return res.serverError(403, 'Permission denied');
-      } catch (err) {
-        return res.serverError(403, 'Unknown shortcut');
-      }
-    }
-  }
-
   // --------------------------------------------------------------------------
   // APIs
   // --------------------------------------------------------------------------
@@ -437,30 +415,10 @@ class ShortcutAPIs {
 
           const { values, invalidUsers } = await ShortcutAPIs.#normalizeShortcut(sentShortcut);
 
-          // transfer ownership (admin and creator only)
-          if (sentShortcut.userId && sentShortcut.userId !== fetchedShortcut._source.userId && ArkimeUtil.isString(sentShortcut.userId)) {
-            if (req.settingUser.userId !== fetchedShortcut._source.userId && !req.settingUser.hasRole('arkimeAdmin')) {
-              ShortcutAPIs.#shortcutMutex.unlock();
-              return res.serverError(403, 'Permission denied');
-            }
-
-            // check if user is valid before updating it
-            // comma/newline separated value -> array of values
-            let user = ArkimeUtil.commaOrNewlineStringToArray(sentShortcut.userId);
-            user = await User.validateUserIds(user);
-
-            if (user.invalidUsers?.length) {
-              ShortcutAPIs.#shortcutMutex.unlock();
-              return res.serverError(404, `Invalid user: ${user.invalidUsers[0]}`);
-            }
-            if (user.validUsers?.length) {
-              sentShortcut.userId = user.validUsers[0];
-            } else {
-              ShortcutAPIs.#shortcutMutex.unlock();
-              return res.serverError(404, 'Cannot find valid user');
-            }
-          } else { // keep the same owner
-            sentShortcut.userId = fetchedShortcut._source.userId;
+          // sets the owner if it has changed
+          if (!await User.setOwner(req, res, sentShortcut, fetchedShortcut._source, 'userId')) {
+            ShortcutAPIs.#shortcutMutex.unlock();
+            return;
           }
 
           try {

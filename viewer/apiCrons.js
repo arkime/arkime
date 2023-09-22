@@ -345,29 +345,12 @@ class CronAPIs {
     }
 
     try {
-      const { body: { _source: cron } } = await Db.get('queries', 'query', key);
+      const { body: { _source: cron } } = await Db.getQuery(key);
 
-      // transfer ownership of view (admin and creator only)
-      if (req.body.creator && req.body.creator !== cron.creator && ArkimeUtil.isString(req.body.creator)) {
-        if (req.settingUser.userId !== cron.creator && !req.settingUser.hasRole('arkimeAdmin')) {
-          return res.serverError(403, 'Permission denied');
-        }
-
-        // check if user is valid before updating it
-        // comma/newline separated value -> array of values
-        let user = ArkimeUtil.commaOrNewlineStringToArray(req.body.creator);
-        user = await User.validateUserIds(user);
-
-        if (user.invalidUsers?.length) {
-          return res.serverError(404, `Invalid user: ${user.invalidUsers[0]}`);
-        }
-        if (user.validUsers?.length) {
-          doc.doc.creator = user.validUsers[0];
-        } else {
-          return res.serverError(404, 'Cannot find valid user');
-        }
-      } else { // keep the same owner
-        doc.doc.creator = cron.creator;
+      // sets the owner if it has changed
+      doc.doc.creator ??= req.body.creator;
+      if (!await User.setOwner(req, res, doc.doc, cron, 'creator')) {
+        return;
       }
 
       if (doc.doc.enabled !== cron.enabled) { // the query was enabled or disabled
@@ -415,7 +398,7 @@ class CronAPIs {
    * @returns {string} text - The success/error message to (optionally) display to the user.
    */
   static async deleteCron (req, res) {
-    const key = req.body.key;
+    const key = req.params.key;
 
     if (key === 'primary-viewer') {
       return res.serverError(403, 'Bad query key');
@@ -795,37 +778,6 @@ class CronAPIs {
       }
       internals.cronRunning = false;
     });
-  }
-
-  /**
-   * checks a user's permission to access a periodic query to update/delete
-   * only allow admins, editors, or creator can update/delete periodic query
-   */
-  static async checkCronAccess (req, res, next) {
-    if (req.params.key !== undefined) {
-      req.body.key = req.params.key;
-      delete req.params.key;
-    }
-
-    if (!ArkimeUtil.isString(req.body.key)) {
-      return res.serverError(403, 'Missing cron key');
-    }
-
-    if (req.user.hasRole('arkimeAdmin')) { // an admin can do anything
-      return next();
-    } else {
-      try {
-        const { body: { _source: query } } = await Db.get('queries', 'query', req.body.key);
-
-        if (query.creator === req.settingUser.userId || req.settingUser.hasRole(query.editRoles)) {
-          return next();
-        }
-
-        return res.serverError(403, 'Permission denied');
-      } catch (err) {
-        return res.serverError(403, 'Unknown query');
-      }
-    }
   }
 }
 

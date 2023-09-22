@@ -86,28 +86,6 @@ class ViewAPIs {
     return { data: results, recordsTotal: views.total, recordsFiltered: total };
   }
 
-  /**
-   * checks a user's permission to access a view to update/delete
-   * only allow admins, editors, or creator can update/delete view
-   */
-  static async checkViewAccess (req, res, next) {
-    if (req.user.hasRole('arkimeAdmin')) { // an admin can do anything
-      return next();
-    } else {
-      try {
-        const { body: { _source: view } } = await Db.getView(req.params.id);
-
-        if (view.user === req.settingUser.userId || req.settingUser.hasRole(view.editRoles)) {
-          return next();
-        }
-
-        return res.serverError(403, 'Permission denied');
-      } catch (err) {
-        return res.serverError(403, 'Unknown view');
-      }
-    }
-  }
-
   // --------------------------------------------------------------------------
   // APIs
   // --------------------------------------------------------------------------
@@ -229,27 +207,9 @@ class ViewAPIs {
     try {
       const { body: dbView } = await Db.getView(req.params.id);
 
-      // transfer ownership of view (admin and creator only)
-      if (view.user && view.user !== dbView._source.user && ArkimeUtil.isString(view.user)) {
-        if (req.settingUser.userId !== dbView._source.user && !req.settingUser.hasRole('arkimeAdmin')) {
-          return res.serverError(403, 'Permission denied');
-        }
-
-        // check if user is valid before updating it
-        // comma/newline separated value -> array of values
-        let user = ArkimeUtil.commaOrNewlineStringToArray(view.user);
-        user = await User.validateUserIds(user);
-
-        if (user.invalidUsers?.length) {
-          return res.serverError(404, `Invalid user: ${user.invalidUsers[0]}`);
-        }
-        if (user.validUsers?.length) {
-          view.user = user.validUsers[0];
-        } else {
-          return res.serverError(404, 'Cannot find valid user');
-        }
-      } else { // keep the same owner
-        view.user = dbView._source.user;
+      // sets the owner if it has changed
+      if (!await User.setOwner(req, res, view, dbView._source, 'user')) {
+        return;
       }
 
       // can't update the id

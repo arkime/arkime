@@ -171,7 +171,7 @@ class User {
   };
 
   /******************************************************************************/
-  // Static methods the Implmentation must have
+  // Static methods the Implementation must have
   /******************************************************************************/
 
   /**
@@ -1252,6 +1252,58 @@ class User {
       }
       next();
     };
+  }
+
+  /**
+   * Transfer ownership of a resource by updating the owner property
+   * Only if the resource creator has changed
+   * AND the user is an admin or the creator
+   * AND the new creator is a valid user
+   * If none of the above, sends a server error response
+   * @param {Object} req The request object
+   * @param {Object} res The response object
+   * @param {Object} resource The resource from the client
+   * @param {Object} dbResource The resource from the database
+   * @param {String} creatorProperty The property name of the creator
+   * @returns {boolean} true if the owner was set, false otherwise
+   */
+  static async setOwner (req, res, resource, dbResource, creatorProperty) {
+    if (!resource[creatorProperty]) { // keep same owner
+      if (dbResource[creatorProperty]) {
+        resource[creatorProperty] = dbResource[creatorProperty];
+      }
+      return true;
+    }
+
+    if ( // if the resource has a new creator
+      resource[creatorProperty] !== dbResource[creatorProperty] &&
+      ArkimeUtil.isString(resource[creatorProperty])) {
+      const settingUser = req.settingUser || req.user;
+
+      if ( // and the user is an admin or the creator of the resource
+        settingUser.userId !== dbResource[creatorProperty] &&
+        !settingUser.hasRole(Auth.appAdminRole)
+      ) {
+        res.serverError(403, 'Permission denied');
+        return false;
+      }
+
+      // check if user is valid before updating it
+      // comma/newline separated value -> array of values
+      let user = ArkimeUtil.commaOrNewlineStringToArray(resource[creatorProperty]);
+      user = await User.validateUserIds(user);
+
+      // set the valid user as the new owner (there should only be one valid user)
+      if (user.validUsers?.length) {
+        resource[creatorProperty] = user.validUsers[0];
+        return true;
+      }
+
+      res.serverError(404, 'User not found');
+      return false;
+    }
+
+    return true;
   }
 
   /**
