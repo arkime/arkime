@@ -17,6 +17,7 @@
  */
 'use strict';
 
+const User = require('../common/user');
 const ArkimeUtil = require('../common/arkimeUtil');
 
 class LinkGroup {
@@ -225,7 +226,29 @@ class LinkGroup {
     }
 
     const linkGroup = req.body;
-    linkGroup.creator = olinkGroup.creator; // Make sure the creator doesn't get changed
+
+    // transfer ownership of linkGroup (admin and creator only)
+    if (linkGroup.creator && linkGroup.creator !== olinkGroup.creator && ArkimeUtil.isString(linkGroup.creator)) {
+      if (req.user.userId !== olinkGroup.creator && !req.user.hasRole('arkimeAdmin')) {
+        return res.serverError(403, 'Permission denied');
+      }
+
+      // check if user is valid before updating it
+      // comma/newline separated value -> array of values
+      let user = ArkimeUtil.commaOrNewlineStringToArray(linkGroup.creator);
+      user = await User.validateUserIds(user);
+
+      if (user.invalidUsers?.length) {
+        return res.serverError(404, `Invalid user: ${user.invalidUsers[0]}`);
+      }
+      if (user.validUsers?.length) {
+        linkGroup.creator = user.validUsers[0];
+      } else {
+        return res.serverError(404, 'Cannot find valid user');
+      }
+    } else { // keep the same owner
+      linkGroup.creator = olinkGroup.creator;
+    }
 
     const { lg, msg } = LinkGroup.verifyLinkGroup(linkGroup);
     if (msg) {

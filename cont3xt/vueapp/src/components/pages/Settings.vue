@@ -331,7 +331,7 @@
                     <span
                       v-if="setting.globalConfiged"
                       class="fa fa-globe fa-lg mr-2 cursor-help"
-                      v-b-tooltip.hover="'This intergration has been globally configured by the admin with a shared account. If you fill out the account fields below, it will override that configuration.'"
+                      v-b-tooltip.hover="'This integration has been globally configured by the admin with a shared account. If you fill out the account fields below, it will override that configuration.'"
                     />
                     <a target="_blank"
                       :href="setting.homePage"
@@ -498,6 +498,7 @@
           :key="getLinkGroups[selectedLinkGroup]._id"
           :pre-updated-link-group="updatedLinkGroupMap[getLinkGroups[selectedLinkGroup]._id]"
           @update-link-group="updateLinkGroup"
+          @open-transfer-resource="openTransferResource"
         /> <!-- /link groups -->
         <!-- no link groups -->
         <div
@@ -576,6 +577,10 @@
       {{ msg }}
     </b-alert> <!-- messages -->
 
+    <transfer-resource
+      @transfer-resource="submitTransfer"
+    />
+
   </div>
 </template>
 
@@ -597,6 +602,7 @@ import CreateOverviewModal from '@/components/overviews/CreateOverviewModal.vue'
 import OverviewSelectorLine from '@/components/overviews/OverviewSelectorLine.vue';
 import { iTypes, iTypeIconMap, iTypeColorMap } from '@/utils/iTypes';
 import CommonUserService from '../../../../../common/vueapp/UserService';
+import TransferResource from '../../../../../common/vueapp/TransferResource';
 
 let timeout;
 
@@ -610,7 +616,8 @@ export default {
     ReorderList,
     LinkGroupCard,
     CreateViewModal,
-    CreateLinkGroupModal
+    CreateLinkGroupModal,
+    TransferResource
   },
   data () {
     return {
@@ -641,7 +648,9 @@ export default {
       // password
       currentPassword: '',
       newPassword: '',
-      confirmNewPassword: ''
+      confirmNewPassword: '',
+      // transfers
+      transferResource: undefined
     };
   },
   created () {
@@ -787,6 +796,34 @@ export default {
       this.$router.push({
         hash: tabName
       });
+    },
+    /* TRANSFERS! ----------------------------- */
+    openTransferResource (resource) {
+      this.transferResource = resource;
+      this.$bvModal.show('transfer-modal');
+    },
+    /**
+     * Submits the transfer resource modal contents and updates the resources
+     * @param {Object} userId The user id to transfer the resource to
+     */
+    submitTransfer ({ userId }) {
+      if (!userId) {
+        this.transferResource = undefined;
+        return;
+      }
+
+      const data = JSON.parse(JSON.stringify(this.transferResource));
+      data.creator = userId;
+
+      if (data.links) { // if it's a link group
+        LinkService.updateLinkGroup(data).then((response) => {
+          this.$bvModal.hide('transfer-modal');
+          LinkService.getLinkGroups(this.seeAllLinkGroups);
+          this.showMessage({ variant: 'success', message: response.text });
+        }); // store deals with failure
+      } else {
+        this.showMessage({ variant: 'error', message: 'Cannot parse the resource you want to transfer' });
+      }
     },
     /* INTEGRATIONS! ------------------------- */
     /* toggles the visibility of the value of password fields */

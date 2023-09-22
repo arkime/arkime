@@ -1,5 +1,5 @@
 # Test cont3xt.js
-use Test::More tests => 136;
+use Test::More tests => 139;
 use Test::Differences;
 use Data::Dumper;
 use MolochTest;
@@ -13,10 +13,13 @@ esPost("/cont3xt_views/_delete_by_query?conflicts=proceed&refresh", '{ "query": 
 
 my $token = getCont3xtTokenCookie();
 
+# create test cont3xtUser and get their token
+viewerPostToken("/api/user", '{"userId": "test", "userName": "test", "enabled":true, "password":"password", "roles":["cont3xtUser"]}', $token);
+my $token2 = getTokenCookie('test');
+
 my $json;
 
 ### LINK GROUPS
-
 # Make sure delete worked
 $json = cont3xtGet('/api/linkGroup');
 eq_or_diff($json, from_json('{"success": true, "linkGroups": []}'));
@@ -141,7 +144,6 @@ $json = cont3xtPutToken("/api/linkGroup", to_json({
 }), $token);
 eq_or_diff($json, from_json('{"success": false, "text": "Link externalDocUrl must be a string"}'));
 
-
 # update link group requires token
 $json = cont3xtPut('/api/linkGroup', to_json({
   viewRoles => ["superAdmin"],
@@ -239,11 +241,53 @@ my $id = $json->{linkGroups}->[0]->{_id};
 delete $json->{linkGroups}->[0]->{_id};
 eq_or_diff($json, from_json('{"linkGroups":[{"creator":"anonymous","_editable":true,"_viewable":true,"viewRoles":["cont3xtUser"],"links":[{"url":"http://www.foobar.com","itypes":["ip", "hash"],"name":"foo1"}],"name":"Links1","editRoles":["superAdmin"]}],"success":true}'));
 
+# can't transfer ownership (not admin or creator)
+$json = cont3xtPutToken("/api/linkGroup/$id?molochRegressionUser=test", to_json({
+  name => "Links1",
+  viewRoles => ["cont3xtUser"],
+  editRoles => ["superAdmin"],
+  links => [{
+    name => "foo1",
+    url => "http://www.foobar.com",
+    itypes => ["ip", "hash"]
+  }],
+  creator => "test"
+}), $token2);
+eq_or_diff($json, from_json('{"success": false, "text": "Permission denied"}'));
+
+# can't transfer ownership to invalid user
+$json = cont3xtPutToken("/api/linkGroup/$id", to_json({
+  name => "Links1",
+  viewRoles => ["cont3xtUser"],
+  editRoles => ["superAdmin"],
+  links => [{
+    name => "foo1",
+    url => "http://www.foobar.com",
+    itypes => ["ip", "hash"]
+  }],
+  creator => "asdf"
+}), $token);
+eq_or_diff($json, from_json('{"success": false, "text": "Invalid user: asdf"}'));
+
+# can transfer ownership to valid user
+$json = cont3xtPutToken("/api/linkGroup/$id", to_json({
+  name => "Links1",
+  viewRoles => ["cont3xtUser"],
+  editRoles => ["superAdmin"],
+  links => [{
+    name => "foo1",
+    url => "http://www.foobar.com",
+    itypes => ["ip", "hash"]
+  }],
+  creator => "test"
+}), $token);
+eq_or_diff($json, from_json('{"success": true, "text": "Success"}'));
+
 # delete link group requires token
-$json = cont3xtDelete("/api/linkGroup/$id", "{}");
+$json = cont3xtDelete("/api/linkGroup/$id?molochRegressionUser=test", "{}");
 eq_or_diff($json, from_json('{"success": false, "text": "Missing token"}'));
 
-$json = cont3xtDeleteToken("/api/linkGroup/$id", "{}", $token);
+$json = cont3xtDeleteToken("/api/linkGroup/$id?molochRegressionUser=test", "{}", $token2);
 eq_or_diff($json, from_json('{"success": true, "text": "Success"}'));
 
 $json = cont3xtDeleteToken("/api/linkGroup/foo", "{}", $token);

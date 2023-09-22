@@ -165,6 +165,15 @@
           </template>
         </b-alert>
         <div>
+          <b-button
+            size="sm"
+            variant="info"
+            v-b-tooltip.hover
+            v-if="canTransfer(linkGroup)"
+            title="Transfer ownership of this link group"
+            @click="$emit('open-transfer-resource', linkGroup)">
+            <span class="fa fa-share fa-fw" />
+          </b-button>
           <transition name="buttons">
             <b-button
               size="sm"
@@ -252,6 +261,15 @@
           Saved!
         </b-alert>
         <div>
+          <b-button
+            size="sm"
+            variant="info"
+            v-b-tooltip.hover
+            v-if="canTransfer(linkGroup)"
+            title="Transfer ownership of this link group"
+            @click="$emit('open-transfer-resource', linkGroup)">
+            <span class="fa fa-share fa-fw" />
+          </b-button>
           <transition name="buttons">
             <b-button
               size="sm"
@@ -366,6 +384,10 @@ export default {
     }
   },
   methods: {
+    canTransfer (lg) {
+      return this.getUser.roles.includes('cont3xtAdmin') ||
+        (lg.user && lg.user === this.getUser.userId);
+    },
     displayMessage (msg) {
       this.message = msg;
       this.success = true;

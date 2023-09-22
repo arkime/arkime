@@ -61,7 +61,7 @@ export default {
      */
     cancel () {
       this.userId = '';
-      this.$emit('transfer-resource');
+      this.$emit('transfer-resource', {});
       this.$bvModal.hide('transfer-modal');
     },
     /**
