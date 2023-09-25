@@ -284,7 +284,7 @@ class CronAPIs {
    * @returns {ArkimeQuery} query - The updated query object
    */
   static async updateCron (req, res) {
-    const key = req.body.key;
+    const key = req.params.key;
     if (key === 'primary-viewer') {
       return res.serverError(403, 'Bad query key');
     }
