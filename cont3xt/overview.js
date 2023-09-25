@@ -17,6 +17,7 @@
  */
 'use strict';
 
+const User = require('../common/user');
 const ArkimeUtil = require('../common/arkimeUtil');
 
 const iTypes = ['domain', 'ip', 'url', 'email', 'phone', 'hash', 'text'];
@@ -298,12 +299,12 @@ class Overview {
       return res.send({ success: false, text: 'Overview not found' });
     }
 
-    if (oOverview.creator !== req.user.userId && !(req.user.hasRole(oOverview.editRoles)) && !req.user.hasRole('cont3xtAdmin')) {
-      return res.send({ success: false, text: 'Permission denied' });
-    }
-
     const reqOverview = req.body;
-    reqOverview.creator = oOverview.creator; // Make sure the creator doesn't get changed
+
+    // sets the owner if it has changed
+    if (!await User.setOwner(req, res, reqOverview, oOverview, 'creator')) {
+      return;
+    }
 
     const { overview, msg } = Overview.verifyOverview(reqOverview);
     if (msg) {
@@ -383,10 +384,6 @@ class Overview {
     const overview = await Db.getOverview(req.params.id);
     if (!overview) {
       return res.send({ success: false, text: 'Overview not found' });
-    }
-
-    if (overview.creator !== req.user.userId && !(req.user.hasRole(overview.editRoles)) && !req.user.hasRole('cont3xtAdmin')) {
-      return res.send({ success: false, text: 'Permission denied' });
     }
 
     const results = await Db.deleteOverview(req.params.id, req.body);

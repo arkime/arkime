@@ -3,6 +3,16 @@
   <!-- settings content -->
   <div class="settings-page">
 
+    <!-- messages (success/error) displayed at bottom of page -->
+    <b-alert
+      dismissible
+      :variant="msgType"
+      v-model="showMessage"
+      style="z-index: 2000;"
+      class="position-fixed fixed-bottom m-0 rounded-0">
+      {{ msg }}
+    </b-alert> <!-- /messages -->
+
     <!-- sub navbar -->
     <div class="sub-navbar">
       <span class="sub-navbar-title">
@@ -17,14 +27,6 @@
           </span>
         </span>
       </span>
-      <div class="pull-right small toast-container">
-        <moloch-toast
-          class="mr-1"
-          :message="msg"
-          :type="msgType"
-          :done="messageDone">
-        </moloch-toast>
-      </div>
     </div> <!-- /sub navbar -->
 
     <!-- loading overlay -->
@@ -702,7 +704,7 @@
                     {{ spiviewConfigError }}
                   </p>
                 </td>
-              </tr> <!-- /spview field config list error -->
+              </tr> <!-- /spiview field config list error -->
             </tbody>
           </table>
 
@@ -1397,7 +1399,6 @@ import UserService from '../users/UserService';
 import FieldService from '../search/FieldService';
 import SettingsService from './SettingsService';
 import customCols from '../sessions/customCols.json';
-import MolochToast from '../utils/Toast';
 import MolochError from '../utils/Error';
 import MolochLoading from '../utils/Loading';
 import MolochFieldTypeahead from '../utils/FieldTypeahead';
@@ -1419,7 +1420,6 @@ export default {
   components: {
     MolochError,
     MolochLoading,
-    MolochToast,
     MolochFieldTypeahead,
     ColorPicker,
     MolochPaging,
@@ -1435,6 +1435,7 @@ export default {
       error: '',
       loading: true,
       msg: '',
+      showMessage: false,
       msgType: undefined,
       displayName: undefined,
       visibleTab: 'general', // default tab
@@ -1585,14 +1586,10 @@ export default {
         hash: tabName
       });
     },
-    /* remove the message when user is done with it or duration ends */
-    messageDone: function () {
-      this.msg = '';
-      this.msgType = undefined;
-    },
     /* displays a message in the navbar */
     displayMessage ({ msg, type }) {
       this.msg = msg;
+      this.showMessage = true;
       this.msgType = type || 'success';
     },
     /* GENERAL ------------------------------- */
@@ -1603,8 +1600,7 @@ export default {
     update: function (updateTheme) {
       UserService.saveSettings(this.settings, this.userId).then((response) => {
         // display success message to user
-        this.msg = response.text;
-        this.msgType = 'success';
+        this.displayMessage({ msg: response.text });
 
         if (updateTheme) {
           const now = Date.now();
@@ -1617,21 +1613,18 @@ export default {
         }
       }).catch((error) => {
         // display error message to user
-        this.msg = error.text;
-        this.msgType = 'danger';
+        this.displayMessage({ msg: error.text, type: 'danger' });
       });
     },
     resetSettings: function () {
       // Choosing to skip reset of theme. UserService will save state to store
       UserService.resetSettings(this.userId, this.settings.theme).then((response) => {
         // display success message to user
-        this.msg = response.text;
-        this.msgType = 'success';
+        this.displayMessage({ msg: response.text });
         this.getSettings(false);
       }).catch((error) => {
         // display error message to user
-        this.msg = error.text;
-        this.msgType = 'danger';
+        this.displayMessage({ msg: error.text, type: 'danger' });
       });
     },
     // attach the full field object to the component's timelineDataFilters from array of dbField
@@ -1658,7 +1651,7 @@ export default {
       this.settings.ms = newMs;
       this.updateTime();
     },
-    /* updates the displayed date for the timzeone setting
+    /* updates the displayed date for the timezone setting
      * triggered by the user changing the timezone/ms settings */
     updateTime: function () {
       this.tick();
@@ -1761,12 +1754,10 @@ export default {
       UserService.deleteColumnConfig(colName, this.userId).then((response) => {
         this.colConfigs.splice(index, 1);
         // display success message to user
-        this.msg = response.text;
-        this.msgType = 'success';
+        this.displayMessage({ msg: response.text });
       }).catch((error) => {
         // display error message to user
-        this.msg = error.text;
-        this.msgType = 'danger';
+        this.displayMessage({ msg: error.text, type: 'danger' });
       });
     },
     /* SPIVIEW FIELD CONFIGURATIONS -------------------- */
@@ -1779,12 +1770,10 @@ export default {
       UserService.deleteSpiviewFieldConfig(spiName, this.userId).then((response) => {
         this.spiviewConfigs.splice(index, 1);
         // display success message to user
-        this.msg = response.text;
-        this.msgType = 'success';
+        this.displayMessage({ msg: response.text });
       }).catch((error) => {
         // display error message to user
-        this.msg = error.text;
-        this.msgType = 'danger';
+        this.displayMessage({ msg: error.text, type: 'danger' });
       });
     },
     /* THEMES ------------------------------------------ */
@@ -1867,12 +1856,10 @@ export default {
       this.settings.shiftyEyes = !this.settings.shiftyEyes;
       UserService.saveSettings(this.settings, this.userId).then((response) => {
         // display success message to user
-        this.msg = 'SUPER SECRET THING HAPPENED!';
-        this.msgType = 'success';
+        this.displayMessage({ msg: 'SUPER SECRET THING HAPPENED!' });
       }).catch((error) => {
         // display error message to user
-        this.msg = error.text;
-        this.msgType = 'danger';
+        this.displayMessage({ msg: error.text, type: 'danger' });
       });
     },
     /* PASSWORD ---------------------------------------- */
@@ -1910,17 +1897,15 @@ export default {
         this.newPassword = null;
         this.confirmNewPassword = null;
         // display success message to user
-        this.msg = response.text;
-        this.msgType = 'success';
+        this.displayMessage({ msg: response.text });
       }).catch((error) => {
         // display error message to user
-        this.msg = error.text;
-        this.msgType = 'danger';
+        this.displayMessage({ msg: error.text, type: 'danger' });
       });
     },
 
     /* helper functions ---------------------------------------------------- */
-    /* retrievs the theme colors from the document body's property values */
+    /* retrieves the theme colors from the document body's property values */
     getThemeColors: function () {
       const styles = window.getComputedStyle(document.body);
 
@@ -1990,7 +1975,7 @@ export default {
           this.setTheme();
           this.startClock();
         }).catch((error) => {
-          console.log('ERROR getting fields to populdate page', error);
+          console.log('ERROR getting fields to populate page', error);
         });
       }).catch((error) => {
         this.loading = false;

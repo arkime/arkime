@@ -284,7 +284,7 @@ class CronAPIs {
    * @returns {ArkimeQuery} query - The updated query object
    */
   static async updateCron (req, res) {
-    const key = req.body.key;
+    const key = req.params.key;
     if (key === 'primary-viewer') {
       return res.serverError(403, 'Bad query key');
     }
@@ -345,7 +345,13 @@ class CronAPIs {
     }
 
     try {
-      const { body: { _source: cron } } = await Db.get('queries', 'query', key);
+      const { body: { _source: cron } } = await Db.getQuery(key);
+
+      // sets the owner if it has changed
+      doc.doc.creator ??= req.body.creator;
+      if (!await User.setOwner(req, res, doc.doc, cron, 'creator')) {
+        return;
+      }
 
       if (doc.doc.enabled !== cron.enabled) { // the query was enabled or disabled
         doc.doc.lastToggledBy = req.settingUser.userId;
@@ -392,7 +398,7 @@ class CronAPIs {
    * @returns {string} text - The success/error message to (optionally) display to the user.
    */
   static async deleteCron (req, res) {
-    const key = req.body.key;
+    const key = req.params.key;
 
     if (key === 'primary-viewer') {
       return res.serverError(403, 'Bad query key');
@@ -772,37 +778,6 @@ class CronAPIs {
       }
       internals.cronRunning = false;
     });
-  }
-
-  /**
-   * checks a user's permission to access a periodic query to update/delete
-   * only allow admins, editors, or creator can update/delete periodic query
-   */
-  static async checkCronAccess (req, res, next) {
-    if (req.params.key !== undefined) {
-      req.body.key = req.params.key;
-      delete req.params.key;
-    }
-
-    if (!ArkimeUtil.isString(req.body.key)) {
-      return res.serverError(403, 'Missing cron key');
-    }
-
-    if (req.user.hasRole('arkimeAdmin')) { // an admin can do anything
-      return next();
-    } else {
-      try {
-        const { body: { _source: query } } = await Db.get('queries', 'query', req.body.key);
-
-        if (query.creator === req.settingUser.userId || req.settingUser.hasRole(query.editRoles)) {
-          return next();
-        }
-
-        return res.serverError(403, 'Permission denied');
-      } catch (err) {
-        return res.serverError(403, 'Unknown query');
-      }
-    }
   }
 }
 

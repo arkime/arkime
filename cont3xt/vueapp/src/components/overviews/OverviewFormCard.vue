@@ -80,6 +80,16 @@
     <template #header>
       <div class="w-100 d-flex justify-content-between">
         <div>
+          <!-- transfer button -->
+          <b-button
+            size="sm"
+            variant="info"
+            v-b-tooltip.hover
+            v-if="canTransfer(localOverview) && !isDefaultOverview"
+            title="Transfer ownership of this link group"
+            @click="$emit('open-transfer-resource', localOverview)">
+            <span class="fa fa-share fa-fw" />
+          </b-button> <!-- /transfer button -->
           <!-- delete button -->
           <transition name="buttons">
             <b-button
@@ -219,6 +229,10 @@ export default {
     }
   },
   methods: {
+    canTransfer (overview) {
+      return this.getUser.roles.includes('cont3xtAdmin') ||
+        (overview.creator && overview.creator === this.getUser.userId);
+    },
     normalizeCardField,
     normalizeOverview (unNormalizedOverview) {
       const normalizedOverview = JSON.parse(JSON.stringify(unNormalizedOverview));

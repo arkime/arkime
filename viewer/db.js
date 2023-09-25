@@ -1919,7 +1919,7 @@ Db.getQueriesNode = async () => {
     const { body: doc } = await internals.client7.indices.getMapping({
       index: fixIndex('queries')
     });
-    // Since queries is an alias we dont't know the real index name here
+    // Since queries is an alias we don't know the real index name here
     const meta = doc[Object.keys(doc)[0]].mappings._meta;
 
     return {
@@ -1927,4 +1927,8 @@ Db.getQueriesNode = async () => {
       updateTime: meta?.updateTime
     };
   }
+};
+
+Db.getQuery = async (id) => {
+  return internals.client7.get({ index: fixIndex('queries'), id });
 };

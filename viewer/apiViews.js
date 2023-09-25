@@ -86,28 +86,6 @@ class ViewAPIs {
     return { data: results, recordsTotal: views.total, recordsFiltered: total };
   }
 
-  /**
-   * checks a user's permission to access a view to update/delete
-   * only allow admins, editors, or creator can update/delete view
-   */
-  static async checkViewAccess (req, res, next) {
-    if (req.user.hasRole('arkimeAdmin')) { // an admin can do anything
-      return next();
-    } else {
-      try {
-        const { body: { _source: view } } = await Db.getView(req.params.id);
-
-        if (view.user === req.settingUser.userId || req.settingUser.hasRole(view.editRoles)) {
-          return next();
-        }
-
-        return res.serverError(403, 'Permission denied');
-      } catch (err) {
-        return res.serverError(403, 'Unknown view');
-      }
-    }
-  }
-
   // --------------------------------------------------------------------------
   // APIs
   // --------------------------------------------------------------------------
@@ -229,8 +207,12 @@ class ViewAPIs {
     try {
       const { body: dbView } = await Db.getView(req.params.id);
 
-      // can't update creator of the view or the id
-      view.user = dbView._source.user;
+      // sets the owner if it has changed
+      if (!await User.setOwner(req, res, view, dbView._source, 'user')) {
+        return;
+      }
+
+      // can't update the id
       if (view.id) { delete view.id; }
 
       // comma/newline separated value -> array of values

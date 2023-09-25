@@ -146,6 +146,15 @@
                 <span v-if="canEdit(item)">
                   <b-button
                     size="sm"
+                    variant="info"
+                    v-b-tooltip.hover
+                    v-if="canTransfer(item)"
+                    title="Transfer ownership of this shortcut"
+                    @click="openTransferShortcut(item)">
+                    <span class="fa fa-share fa-fw" />
+                  </b-button>
+                  <b-button
+                    size="sm"
                     variant="danger"
                     v-b-tooltip.hover
                     title="Delete this shortcut"
@@ -367,6 +376,10 @@
       </template> <!-- /modal footer -->
     </b-modal> <!-- /new shortcut form -->
 
+    <transfer-resource
+      @transfer-resource="submitTransferShortcut"
+    />
+
   </div> <!-- / shortcut settings -->
 </template>
 
@@ -377,12 +390,14 @@ import UserService from '../../../../../common/vueapp/UserService';
 // components
 import MolochPaging from '../utils/Pagination';
 import RoleDropdown from '../../../../../common/vueapp/RoleDropdown';
+import TransferResource from '../../../../../common/vueapp/TransferResource';
 
 export default {
   name: 'Shortcuts',
   components: {
     MolochPaging,
-    RoleDropdown
+    RoleDropdown,
+    TransferResource
   },
   data () {
     return {
@@ -408,7 +423,8 @@ export default {
       createShortcutLoading: false,
       hasUsersES: this.$constants.MOLOCH_HASUSERSES,
       showAll: false,
-      seeAll: false
+      seeAll: false,
+      transferResource: undefined
     };
   },
   computed: {
@@ -431,8 +447,12 @@ export default {
     /* exposed page functions ---------------------------------------------- */
     canEdit (shortcut) {
       return this.user.roles.includes('arkimeAdmin') ||
-        (shortcut.userId && shortcut.user === this.user.userId) ||
+        (shortcut.userId && shortcut.userId === this.user.userId) ||
         (shortcut.editRoles && UserService.hasRole(this.user, shortcut.editRoles.join(',')));
+    },
+    canTransfer (shortcut) {
+      return this.user.roles.includes('arkimeAdmin') ||
+        (shortcut.userId && shortcut.userId === this.user.userId);
     },
     /**
      * triggered when shortcuts paging is changed
@@ -510,6 +530,38 @@ export default {
           return;
         }
       }
+    },
+    /**
+     * Opens the transfer resource modal
+     * @param {Object} shortcut The shortcut to transfer
+     */
+    openTransferShortcut (shortcut) {
+      this.transferShortcut = shortcut;
+      this.$bvModal.show('transfer-modal');
+    },
+    /**
+     * Submits the transfer resource modal contents and updates the shortcut
+     * @param {Object} userId The user id to transfer the shortcut to
+     */
+    submitTransferShortcut ({ userId }) {
+      if (!userId) {
+        this.transferShortcut = undefined;
+        return;
+      }
+
+      const data = JSON.parse(JSON.stringify(this.transferShortcut));
+      const id = data.id;
+      delete data.id;
+      data.userId = userId;
+
+      SettingsService.updateShortcut(id, data).then((response) => {
+        this.getShortcuts();
+        this.transferShortcut = undefined;
+        this.$emit('display-message', { msg: response.text, type: 'success' });
+        this.$bvModal.hide('transfer-modal');
+      }).catch((error) => {
+        this.$emit('display-message', { msg: error.text, type: 'danger' });
+      });
     },
     /* updates a specified shortcut */
     updateShortcut () {

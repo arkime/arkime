@@ -159,7 +159,7 @@
         <div class="d-flex flex-wrap">
           <!-- no views -->
           <div class="row lead mt-4"
-            v-if="getViews && (!getViews.length || !getViews.filter(v => v._editable).length)">
+            v-if="!viewSearchTerm && (!filteredViews.length || !filteredViews.filter(v => v._editable).length)">
             <div class="col">
               No Views are configured or shared for you to edit.
               <b-button
@@ -171,7 +171,7 @@
           </div> <!-- /no views -->
           <!-- no view results -->
           <div class="row lead mt-4"
-            v-else-if="viewSearchTerm && !filteredViews.length">
+            v-else-if="viewSearchTerm && (!filteredViews.length || !filteredViews.filter(v => v._editable).length)">
             <div class="col">
               No Views match your search.
             </div>
@@ -187,6 +187,15 @@
                 <template #header>
                   <div class="w-100 d-flex justify-content-between align-items-start">
                     <div>
+                      <b-button
+                        size="sm"
+                        variant="info"
+                        v-b-tooltip.hover
+                        v-if="canTransferView(view)"
+                        title="Transfer ownership of this view"
+                        @click="openTransferResource(view)">
+                        <span class="fa fa-share fa-fw" />
+                      </b-button>
                       <!-- delete button -->
                       <transition name="buttons">
                         <b-button
@@ -331,7 +340,7 @@
                     <span
                       v-if="setting.globalConfiged"
                       class="fa fa-globe fa-lg mr-2 cursor-help"
-                      v-b-tooltip.hover="'This intergration has been globally configured by the admin with a shared account. If you fill out the account fields below, it will override that configuration.'"
+                      v-b-tooltip.hover="'This integration has been globally configured by the admin with a shared account. If you fill out the account fields below, it will override that configuration.'"
                     />
                     <a target="_blank"
                       :href="setting.homePage"
@@ -439,6 +448,7 @@
               :modifiedOverview="activeModifiedOverview"
               @update-modified-overview="updateModifiedOverview"
               @overview-deleted="activeOverviewDeleted"
+              @open-transfer-resource="openTransferResource"
           />
           <div v-else
                class="d-flex flex-column">
@@ -498,6 +508,7 @@
           :key="getLinkGroups[selectedLinkGroup]._id"
           :pre-updated-link-group="updatedLinkGroupMap[getLinkGroups[selectedLinkGroup]._id]"
           @update-link-group="updateLinkGroup"
+          @open-transfer-resource="openTransferResource"
         /> <!-- /link groups -->
         <!-- no link groups -->
         <div
@@ -576,6 +587,10 @@
       {{ msg }}
     </b-alert> <!-- messages -->
 
+    <transfer-resource
+      @transfer-resource="submitTransfer"
+    />
+
   </div>
 </template>
 
@@ -597,6 +612,7 @@ import CreateOverviewModal from '@/components/overviews/CreateOverviewModal.vue'
 import OverviewSelectorLine from '@/components/overviews/OverviewSelectorLine.vue';
 import { iTypes, iTypeIconMap, iTypeColorMap } from '@/utils/iTypes';
 import CommonUserService from '../../../../../common/vueapp/UserService';
+import TransferResource from '../../../../../common/vueapp/TransferResource';
 
 let timeout;
 
@@ -610,7 +626,8 @@ export default {
     ReorderList,
     LinkGroupCard,
     CreateViewModal,
-    CreateLinkGroupModal
+    CreateLinkGroupModal,
+    TransferResource
   },
   data () {
     return {
@@ -641,7 +658,9 @@ export default {
       // password
       currentPassword: '',
       newPassword: '',
-      confirmNewPassword: ''
+      confirmNewPassword: '',
+      // transfers
+      transferResource: undefined
     };
   },
   created () {
@@ -788,6 +807,48 @@ export default {
         hash: tabName
       });
     },
+    /* TRANSFERS! ----------------------------- */
+    openTransferResource (resource) {
+      this.transferResource = resource;
+      this.$bvModal.show('transfer-modal');
+    },
+    /**
+     * Submits the transfer resource modal contents and updates the resources
+     * @param {Object} userId The user id to transfer the resource to
+     */
+    submitTransfer ({ userId }) {
+      if (!userId) {
+        this.transferResource = undefined;
+        return;
+      }
+
+      const data = JSON.parse(JSON.stringify(this.transferResource));
+      data.creator = userId;
+
+      if (data.links) { // if it's a link group
+        LinkService.updateLinkGroup(data).then((response) => {
+          this.$bvModal.hide('transfer-modal');
+          LinkService.getLinkGroups(this.seeAllLinkGroups);
+          this.showMessage({ variant: 'success', message: response.text });
+        }); // store deals with failure
+      } else if (data.integrations) { // it's a view
+        UserService.updateIntegrationsView(data).then((response) => {
+          this.$bvModal.hide('transfer-modal');
+          UserService.getIntegrationViews(this.seeAllViews);
+          this.showMessage({ variant: 'success', message: response.text });
+        }).catch((err) => {
+          this.showMessage({ variant: 'danger', message: err });
+        });
+      } else if (data.fields) {
+        OverviewService.updateOverview(data).then((response) => {
+          this.$bvModal.hide('transfer-modal');
+          OverviewService.getOverviews();
+          this.showMessage({ variant: 'success', message: response.text });
+        }); // store deals with failure
+      } else {
+        this.showMessage({ variant: 'error', message: 'Cannot parse the resource you want to transfer' });
+      }
+    },
     /* INTEGRATIONS! ------------------------- */
     /* toggles the visibility of the value of password fields */
     toggleVisiblePasswordField (field) {
@@ -906,6 +967,10 @@ export default {
       }
     },
     /* VIEWS! -------------------------------- */
+    canTransferView (view) {
+      return this.getUser?.roles.includes('cont3xtAdmin') ||
+        (view?.creator && view?.creator === this.getUser?.userId);
+    },
     openViewForm () {
       this.$bvModal.show('view-form');
     },
@@ -923,9 +988,9 @@ export default {
       const view = JSON.parse(JSON.stringify(unNormalizedView));
 
       // sort these fields to make order not affect result of comparison, because their orders are not meaningful
-      view.editRoles.sort();
-      view.viewRoles.sort();
-      view.integrations.sort();
+      view.editRoles?.sort();
+      view.viewRoles?.sort();
+      view.integrations?.sort();
       return view;
     },
     updateView (view) {

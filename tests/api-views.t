@@ -1,4 +1,4 @@
-use Test::More tests => 35;
+use Test::More tests => 41;
 use MolochTest;
 use JSON;
 use Test::Differences;
@@ -115,6 +115,21 @@ my $id4 = $info->{view}->{id};
 eq_or_diff($info->{view}->{editRoles}, from_json('["cont3xtUser"]'), "added editRoles");
 $info = viewerPutToken("/api/view/${id4}?molochRegressionUser=test2", '{"name": "updated!", "expression": "ip == 4.3.2.1", "roles":["arkimeUser"], "users":"", "editRoles":["cont3xtUser"]}', $token2);
 ok($info->{success}, "can update view with editRoles");
+
+# test2 cannot transfer ownership (not admin or creator)
+$info = viewerPutToken("/api/view/${id4}?molochRegressionUser=test2", '{"name": "view4", "expression": "ip == 4.3.2.1", "roles":["arkimeUser"], "users":"", "editRoles":["cont3xtUser"], "user":"asdf"}', $token2);
+ok(!$info->{success}, "cannot transfer ownership without being admin or creator");
+eq_or_diff($info->{text}, "Permission denied");
+
+# can't transfer ownership to invalid user
+$info = viewerPutToken("/api/view/${id4}?molochRegressionUser=test1", '{"name": "view4", "expression": "ip == 4.3.2.1", "roles":["arkimeUser"], "users":"", "editRoles":["cont3xtUser"], "user":"asdf"}', $token);
+ok(!$info->{success}, "cannot transfer ownership to an invalid user");
+eq_or_diff($info->{text}, "User not found");
+
+# can transfer ownership
+$info = viewerPutToken("/api/view/${id4}?molochRegressionUser=test1", '{"name": "view4", "expression": "ip == 4.3.2.1", "roles":["arkimeUser"], "users":"", "editRoles":["cont3xtUser"], "user":"test2"}', $token);
+ok($info->{success}, "can transfer ownership to valid user");
+eq_or_diff($info->{view}->{user}, "test2");
 
 # test2 can delete view using editRoles (plus bonus cleanup)
 viewerDeleteToken("/api/view/${id4}?molochRegressionUser=test2", $token2);

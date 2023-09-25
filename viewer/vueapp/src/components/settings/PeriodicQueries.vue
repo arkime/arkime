@@ -495,53 +495,65 @@
           </div>
         </b-card-text>
         <template #footer>
-          <template
-            v-if="query.changed && canEditCronQuery(query)">
-            <b-button
-              size="sm"
-              variant="warning"
-              v-b-tooltip.hover
-              @click="getCronQueries"
-              title="Undo changes to this query">
-              <span class="fa fa-ban fa-fw mr-1" />
-              Cancel
-            </b-button>
-            <b-button
-              size="sm"
-              v-b-tooltip.hover
-              class="pull-right"
-              variant="theme-tertiary"
-              title="Save changes to this query"
-              @click="updateCronQuery(query, index)">
-              <span class="fa fa-save fa-fw mr-1" />
-              Save
-            </b-button>
-          </template>
-          <template v-else>
-            <b-button
-              size="sm"
-              variant="info"
-              v-if="!query.changed"
-              @click="openCronSessions(query)"
-              v-b-tooltip.hover="'Open sessions that this query tagged in the last hour.'">
-              <span class="fa fa-folder-open fa-fw mr-1" />
-              Open Matching Sessions
-            </b-button>
-            <b-button
-              size="sm"
-              variant="danger"
-              v-b-tooltip.hover
-              class="pull-right"
-              title="Delete this periodic query"
-              @click="deleteCronQuery(query, index)"
-              v-if="!query.changed && canEditCronQuery(query)">
-              <span class="fa fa-trash-o fa-fw mr-1" />
-              Delete
-            </b-button>
+          <b-button
+            size="sm"
+            variant="warning"
+            @click="openCronSessions(query)"
+            v-b-tooltip.hover="'Open sessions that this query tagged in the last hour.'">
+            <span class="fa fa-folder-open fa-fw mr-1" />
+            Open Matches
+          </b-button>
+          <template v-if="canEditCronQuery(query)">
+            <template v-if="query.changed">
+              <b-button
+                size="sm"
+                variant="warning"
+                v-b-tooltip.hover
+                @click="getCronQueries"
+                title="Undo changes to this query">
+                <span class="fa fa-ban fa-fw mr-1" />
+                Cancel
+              </b-button>
+              <b-button
+                size="sm"
+                v-b-tooltip.hover
+                class="pull-right"
+                variant="theme-tertiary"
+                title="Save changes to this query"
+                @click="updateCronQuery(query, index)">
+                <span class="fa fa-save fa-fw mr-1" />
+                Save
+              </b-button>
+            </template>
+            <template v-else>
+              <b-button
+                size="sm"
+                variant="danger"
+                v-b-tooltip.hover
+                class="pull-right"
+                title="Delete this periodic query"
+                @click="deleteCronQuery(query, index)">
+                <span class="fa fa-trash-o fa-fw mr-1" />
+                Delete
+              </b-button>
+              <b-button
+                size="sm"
+                variant="info"
+                v-b-tooltip.hover
+                v-if="canTransfer(query)"
+                title="Transfer ownership of this periodic query"
+                @click="openTransferQuery(query)">
+                <span class="fa fa-share fa-fw" />
+              </b-button>
+            </template>
           </template>
         </template>
       </b-card>
     </b-card-group> <!-- /cron queries -->
+
+    <transfer-resource
+      @transfer-resource="submitTransferQuery"
+    />
 
   </div>
 </template>
@@ -552,11 +564,13 @@ import SettingsService from './SettingsService';
 import UserService from '../../../../../common/vueapp/UserService';
 // components
 import RoleDropdown from '../../../../../common/vueapp/RoleDropdown';
+import TransferResource from '../../../../../common/vueapp/TransferResource';
 
 export default {
   name: 'PeriodicQueries',
   components: {
-    RoleDropdown
+    RoleDropdown,
+    TransferResource
   },
   props: {
     userId: String // the setting user id
@@ -577,7 +591,8 @@ export default {
       newCronQueryUsers: '',
       newCronQueryRoles: [],
       newCronQueryEditRoles: [],
-      seeAll: false
+      seeAll: false,
+      transferQuery: undefined
     };
   },
   computed: {
@@ -617,6 +632,10 @@ export default {
       return this.user.roles.includes('arkimeAdmin') ||
         (query.creator && query.creator === this.user.userId) ||
         (query.editRoles && UserService.hasRole(this.user, query.editRoles.join(',')));
+    },
+    canTransfer (query) {
+      return this.user.roles.includes('arkimeAdmin') ||
+        (query.creator && query.creator === this.user.userId);
     },
     updateNewCronQueryRoles (roles) {
       this.newCronQueryRoles = roles;
@@ -709,6 +728,37 @@ export default {
         this.cronQueries.splice(index, 1);
         // display success message to user
         this.$emit('display-message', { msg: response.text });
+      }).catch((error) => {
+        // display error message to user
+        this.$emit('display-message', { msg: error.text, type: 'danger' });
+      });
+    },
+    /**
+     * Opens the transfer resource modal
+     * @param {Object} query The periodic query to transfer
+     */
+    openTransferQuery (query) {
+      this.transferQuery = query;
+      this.$bvModal.show('transfer-modal');
+    },
+    /**
+     * Submits the transfer resource modal contents and updates the periodic query
+     * @param {Object} userId The user id to transfer the periodic query to
+     */
+    submitTransferQuery ({ userId }) {
+      if (!userId) {
+        this.transferQuery = undefined;
+        return;
+      }
+
+      const data = JSON.parse(JSON.stringify(this.transferQuery));
+      data.creator = userId;
+
+      SettingsService.updateCronQuery(data, this.userId).then((response) => {
+        this.getCronQueries();
+        this.transferQuery = undefined;
+        this.$emit('display-message', { msg: response.text });
+        this.$bvModal.hide('transfer-modal');
       }).catch((error) => {
         // display error message to user
         this.$emit('display-message', { msg: error.text, type: 'danger' });

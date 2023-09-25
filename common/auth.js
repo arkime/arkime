@@ -284,6 +284,57 @@ class Auth {
   }
 
   // ----------------------------------------------------------------------------
+  static get appAdminRole () {
+    return Auth.#appAdminRole;
+  }
+
+  // ----------------------------------------------------------------------------
+  /**
+   * Check's a user's permission to access a resource to update/delete
+   * only allow admins, editors, or creator can update/delete resources
+   * @param {function} dbFunc The function to call to get the resource
+   * @param {string} ownerProperty The property on the resource that contains the owner
+   */
+  static checkResourceAccess (dbFunc, ownerProperty) {
+    return async (req, res, next) => {
+      if (req.user.hasRole(Auth.appAdminRole)) { // an admin can do anything
+        return next();
+      } else {
+        try {
+          const id = req.params.id ?? req.params.key;
+          if (!id) {
+            return res.serverError(404, 'Missing resource id');
+          }
+
+          let resource = await dbFunc(id);
+          if (resource?.body?._source) {
+            resource = resource.body._source;
+          }
+
+          if (!resource) {
+            return res.serverError(404, 'Unknown resource');
+          }
+
+          const settingUser = req.settingUser || req.user;
+          if ( // and creator or editor can update resources
+            (resource[ownerProperty] && resource[ownerProperty] === settingUser.userId) ||
+            settingUser.hasRole(resource.editRoles)
+          ) {
+            return next();
+          }
+
+          return res.serverError(403, 'Permission denied');
+        } catch (err) {
+          if (ArkimeConfig.debug > 0) {
+            console.log('ERROR - checking resource access:', err);
+          }
+          return res.serverError(404, 'Unknown resource');
+        }
+      }
+    };
+  }
+
+  // ----------------------------------------------------------------------------
   /* Register all the strategies that are supported */
   static async #registerStrategies () {
     // ----------------------------------------------------------------------------

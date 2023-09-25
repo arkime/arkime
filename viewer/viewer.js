@@ -1372,13 +1372,13 @@ app.post( // create view endpoint
 
 app.delete( // delete view endpoint
   ['/api/view/:id'],
-  [ArkimeUtil.noCacheJson, checkCookieToken, logAction(), Auth.getSettingUserDb, ViewAPIs.checkViewAccess, sanitizeViewName],
+  [ArkimeUtil.noCacheJson, checkCookieToken, logAction(), Auth.getSettingUserDb, Auth.checkResourceAccess(Db.getView, 'user'), sanitizeViewName],
   ViewAPIs.apiDeleteView
 );
 
 app.put( // update view endpoint
   ['/api/view/:id'],
-  [ArkimeUtil.noCacheJson, checkCookieToken, logAction(), Auth.getSettingUserDb, ViewAPIs.checkViewAccess, sanitizeViewName],
+  [ArkimeUtil.noCacheJson, checkCookieToken, logAction(), Auth.getSettingUserDb, Auth.checkResourceAccess(Db.getView, 'user'), sanitizeViewName],
   ViewAPIs.apiUpdateView
 );
 
@@ -1397,13 +1397,13 @@ app.post( // create cron query endpoint
 
 app.delete( // delete cron endpoint
   ['/api/cron/:key'],
-  [ArkimeUtil.noCacheJson, checkCookieToken, logAction(), Auth.getSettingUserDb, CronAPIs.checkCronAccess],
+  [ArkimeUtil.noCacheJson, checkCookieToken, logAction(), Auth.getSettingUserDb, Auth.checkResourceAccess(Db.getQuery, 'creator')],
   CronAPIs.deleteCron
 );
 
 app.post( // update cron endpoint
   ['/api/cron/:key'],
-  [ArkimeUtil.noCacheJson, checkCookieToken, logAction(), Auth.getSettingUserDb, CronAPIs.checkCronAccess],
+  [ArkimeUtil.noCacheJson, checkCookieToken, logAction(), Auth.getSettingUserDb, Auth.checkResourceAccess(Db.getQuery, 'creator')],
   CronAPIs.updateCron
 );
 
@@ -1877,13 +1877,13 @@ app.post( // create shortcut endpoint
 
 app.put( // update shortcut endpoint
   ['/api/shortcut/:id'],
-  [ArkimeUtil.noCacheJson, Auth.getSettingUserDb, logAction('shortcut/:id'), checkCookieToken, ShortcutAPIs.checkShortcutAccess],
+  [ArkimeUtil.noCacheJson, Auth.getSettingUserDb, logAction('shortcut/:id'), checkCookieToken, Auth.checkResourceAccess(Db.getShortcut, 'userId')],
   ShortcutAPIs.updateShortcut
 );
 
 app.delete( // delete shortcut endpoint
   ['/api/shortcut/:id'],
-  [ArkimeUtil.noCacheJson, Auth.getSettingUserDb, logAction('shortcut/:id'), checkCookieToken, ShortcutAPIs.checkShortcutAccess],
+  [ArkimeUtil.noCacheJson, Auth.getSettingUserDb, logAction('shortcut/:id'), checkCookieToken, Auth.checkResourceAccess(Db.getShortcut, 'userId')],
   ShortcutAPIs.deleteShortcut
 );
 

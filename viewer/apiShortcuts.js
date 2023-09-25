@@ -68,28 +68,6 @@ class ShortcutAPIs {
     return { type, values, invalidUsers: users.invalidUsers };
   }
 
-  /**
-   * checks a user's permission to access a shortcut to update/delete
-   * only allow admins, editors, or creator can update/delete shortcut
-   */
-  static async checkShortcutAccess (req, res, next) {
-    if (req.user.hasRole('arkimeAdmin')) { // an admin can do anything
-      return next();
-    } else {
-      try {
-        const { body: { _source: shortcut } } = await Db.getShortcut(req.params.id);
-
-        if (shortcut.userId === req.settingUser.userId || req.settingUser.hasRole(shortcut.editRoles)) {
-          return next();
-        }
-
-        return res.serverError(403, 'Permission denied');
-      } catch (err) {
-        return res.serverError(403, 'Unknown shortcut');
-      }
-    }
-  }
-
   // --------------------------------------------------------------------------
   // APIs
   // --------------------------------------------------------------------------
@@ -436,7 +414,12 @@ class ShortcutAPIs {
           }
 
           const { values, invalidUsers } = await ShortcutAPIs.#normalizeShortcut(sentShortcut);
-          sentShortcut.userId = fetchedShortcut._source.userId;
+
+          // sets the owner if it has changed
+          if (!await User.setOwner(req, res, sentShortcut, fetchedShortcut._source, 'userId')) {
+            ShortcutAPIs.#shortcutMutex.unlock();
+            return;
+          }
 
           try {
             await Db.setShortcut(req.params.id, sentShortcut);
