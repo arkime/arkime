@@ -6,6 +6,7 @@ import Settings from '@/components/Settings';
 import Parliament404 from '@/components/404';
 import Help from '@/components/Help';
 import AuthService from '@/auth';
+import FormAuth from '../../../common/vueapp/FormAuth';
 
 Vue.use(Router);
 
@@ -23,6 +24,7 @@ const router = new Router({
   routes: [
     {
       path: '',
+      alias: '/',
       name: 'Parliament',
       component: Parliament
     },
@@ -40,6 +42,11 @@ const router = new Router({
       path: '/help',
       name: 'Help',
       component: Help
+    },
+    {
+      path: '/auth',
+      name: 'FormAuth',
+      component: FormAuth
     },
     {
       path: '*',
