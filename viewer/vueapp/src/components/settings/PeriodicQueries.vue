@@ -501,7 +501,7 @@
             @click="openCronSessions(query)"
             v-b-tooltip.hover="'Open sessions that this query tagged in the last hour.'">
             <span class="fa fa-folder-open fa-fw mr-1" />
-            Open Matching Sessions
+            Open Matches
           </b-button>
           <template v-if="canEditCronQuery(query)">
             <template v-if="query.changed">
