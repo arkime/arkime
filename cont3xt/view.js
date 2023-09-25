@@ -56,8 +56,8 @@ class View {
 
     // Set editable on any views that the user is allowed to edit
     for (const view of views) {
-      view._editable = view.creator === req.user.userId || req.user.hasRole(view.editRoles);
-      view._viewable = view.creator === req.user.userId || req.user.hasRole(view.viewRoles);
+      view._editable = view.creator === req.user.userId || req.user.hasRole(view.editRoles) || all;
+      view._viewable = view.creator === req.user.userId || req.user.hasRole(view.viewRoles) || all;
     }
 
     res.send({ success: true, views });

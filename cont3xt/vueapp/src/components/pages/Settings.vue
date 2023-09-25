@@ -159,7 +159,7 @@
         <div class="d-flex flex-wrap">
           <!-- no views -->
           <div class="row lead mt-4"
-            v-if="getViews && (!getViews.length || !getViews.filter(v => v._editable).length)">
+            v-if="!viewSearchTerm && (!filteredViews.length || !filteredViews.filter(v => v._editable).length)">
             <div class="col">
               No Views are configured or shared for you to edit.
               <b-button
@@ -171,7 +171,7 @@
           </div> <!-- /no views -->
           <!-- no view results -->
           <div class="row lead mt-4"
-            v-else-if="viewSearchTerm && !filteredViews.length">
+            v-else-if="viewSearchTerm && (!filteredViews.length || !filteredViews.filter(v => v._editable).length)">
             <div class="col">
               No Views match your search.
             </div>

@@ -301,11 +301,7 @@ class Auth {
         return next();
       } else {
         try {
-          if (req.params.key !== undefined) {
-            req.body.key = req.params.key;
-          }
-
-          const id = req.params.id || req.body.key;
+          const id = req.params.id ?? req.params.key;
           if (!id) {
             return res.serverError(404, 'Missing resource id');
           }
