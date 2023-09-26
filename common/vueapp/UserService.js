@@ -225,28 +225,5 @@ export default {
         reject(error);
       });
     });
-  },
-
-  /**
-   * Login using form auth
-   * @param {Object} body - The body of the request including the username/password
-   */
-  login ({ username, password }) {
-    return new Promise((resolve, reject) => {
-      fetch('api/login', {
-        method: 'POST',
-        headers: setReqHeaders({ 'Content-Type': 'application/json' }),
-        body: JSON.stringify({ username, password })
-      }).then((response) => {
-        return response.json();
-      }).then((response) => {
-        if (!response.success) {
-          return reject(response);
-        }
-        return resolve(response);
-      }).catch((error) => {
-        reject(error);
-      });
-    });
   }
 };
