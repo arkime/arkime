@@ -240,6 +240,7 @@ class Auth {
     if (sessionAuth) {
       Auth.#authRouter.get('/fail', (req, res) => { res.send('User not found'); });
       Auth.#authRouter.use(expressSession({
+        name: 'ARKIME-SID',
         secret: Auth.passwordSecret + Auth.#serverSecret,
         resave: false,
         saveUninitialized: true,
