@@ -968,7 +968,9 @@ async function initializeParliament () {
   });
 
   // fetch parliament file if it exists
-  parliamentFile = require(`${getConfig('parliament', 'file')}`);
+  try {
+    parliamentFile = require(`${getConfig('parliament', 'file')}`);
+  } catch (err) {}
 
   // if there's a parliament file, check that it is the correct version
   if (parliamentFile && (parliamentFile.version === undefined || parliamentFile.version < MIN_PARLIAMENT_VERSION)) {
