@@ -5,7 +5,6 @@ import Config from '@/components/Config';
 import Help from '@/components/Help';
 import Stats from '@/components/Stats';
 import Wise404 from '@/components/404';
-import FormAuth from '../../../../common/vueapp/FormAuth';
 
 Vue.use(VueRouter);
 
@@ -30,11 +29,6 @@ const routes = [
     path: '/help',
     name: 'Help',
     component: Help
-  },
-  {
-    path: '/auth',
-    name: 'FormAuth',
-    component: FormAuth
   },
   {
     path: '*',

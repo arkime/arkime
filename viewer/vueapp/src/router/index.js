@@ -15,7 +15,6 @@ import Settings from '@/components/settings/Settings';
 import Upload from '@/components/upload/Upload';
 import Hunt from '@/components/hunt/Hunt';
 import Moloch404 from '@/components/utils/404';
-import FormAuth from '../../../../common/vueapp/FormAuth';
 
 Vue.use(Router);
 
@@ -103,11 +102,6 @@ const router = new Router({
       path: '/hunt',
       name: 'Hunt',
       component: Hunt
-    },
-    {
-      path: '/auth',
-      name: 'FormAuth',
-      component: FormAuth
     },
     {
       path: '*',

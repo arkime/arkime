@@ -248,19 +248,16 @@ class Auth {
       }));
       Auth.#authRouter.use(passport.initialize());
       Auth.#authRouter.use(passport.session());
+
       if (Auth.mode === 'form') {
+        const fs = require('fs');
+        const path = require('path');
+
         Auth.#authRouter.get('/auth', (req, res) => {
-        // User is not authenticated, show the login form
-          res.send(`
-            <h1>Form-based Authentication</h1>
-            <form method="post" action="${Auth.#basePath}api/login">
-              <label for="username">Username:</label>
-              <input type="text" id="username" name="username" required><br>
-              <label for="password">Password:</label>
-              <input type="password" id="password" name="password" required><br>
-              <button type="submit">Login</button>
-            </form>
-          `);
+          // User is not authenticated, show the login form
+          let html = fs.readFileSync(path.join(__dirname, '/vueapp/formAuth.html'), 'utf-8');
+          html = html.toString().replace(/@@BASEHREF@@/g, Auth.#basePath);
+          return res.send(html);
         });
       }
 

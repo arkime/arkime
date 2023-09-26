@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <base href="@@BASEHREF@@">
+    <meta name="referrer" content="no-referrer">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <title>LOGIN!</title>
+  </head>
+
+  <body>
+    <div class="d-flex justify-content-center text-center mt-4">
+      <div class="form-auth text-center mt-4">
+        <div class="jumbotron">
+          <h1 class="display-4">
+            LOGIN!
+          </h1>
+          <form method="post" action="@@BASEHREF@@api/login">
+            <div role="group" class="input-group mb-2">
+              <div class="input-group-prepend">
+                <div
+                  for="username"
+                  class="input-group-text">
+                  Username
+                </div>
+              </div>
+              <input
+                required
+                type="text"
+                id="username"
+                name="username"
+                placeholder="Username"
+                class="form-control"
+              />
+            </div>
+            <div role="group" class="input-group mb-2">
+              <div class="input-group-prepend">
+                <div
+                  for="password"
+                  class="input-group-text">
+                  Password
+                </div>
+              </div>
+              <input
+                required
+                id="password"
+                name="password"
+                type="password"
+                placeholder="Password"
+                required="required"
+                class="form-control"
+              />
+            </div>
+            <button
+              type="submit"
+              class="btn btn-primary btn-block">
+              Login
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </body>
+
+</html>
+
+<style>
+html {
+  font-family: sans-serif;
+  line-height: 1.15;
+  -webkit-text-size-adjust: 100%;
+  -ms-text-size-adjust: 100%;
+  -ms-overflow-style: scrollbar;
+  -webkit-tap-highlight-color: transparent;
+}
+.form-auth {
+  width: 500px;
+}
+
+.text-center {
+  text-align: center !important;
+}
+.d-flex {
+  display: -webkit-box !important;
+  display: -ms-flexbox !important;
+  display: flex !important;
+}
+.justify-content-center {
+  -webkit-box-pack: center !important;
+  -ms-flex-pack: center !important;
+  justify-content: center !important;
+}
+.jumbotron {
+  padding: 2rem 1rem;
+  margin-bottom: 2rem;
+  border-radius: 0.3rem;
+  background-color: #d4e3ed;
+  box-shadow: 4px 4px 10px 0 rgba(0,0,0,0.5);
+}
+.mt-4 {
+  margin-top: 1.5rem !important;
+}
+.mb-2 {
+  margin-bottom: 0.5rem !important;
+}
+.display-4 {
+  font-size: 3rem;
+  font-weight: 300;
+}
+.form-control {
+  display: block;
+  width: 100%;
+  padding: 0.375rem 0.75rem;
+  font-size: 1rem;
+  line-height: 1.5;
+  color: #495057;
+  background-color: #fff;
+  background-clip: padding-box;
+  border: 1px solid #ced4da;
+  border-radius: 0.25rem;
+  transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+}
+.form-control:focus {
+  color: #495057;
+  background-color: #fff;
+  border-color: #80bdff;
+  outline: 0;
+  box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+.form-control::placeholder {
+  color: #6c757d;
+  opacity: 1;
+}
+.input-group {
+  position: relative;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: stretch;
+  width: 100%;
+}
+.input-group-prepend {
+  margin-right: -1px;
+  display: flex;
+}
+.input-group > .form-control:not(:first-child), .input-group > .custom-select:not(:first-child) {
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+}
+.input-group > .form-control, .input-group > .form-control-plaintext, .input-group > .custom-select, .input-group > .custom-file {
+  position: relative;
+  flex: 1 1 auto;
+  width: 1%;
+  min-width: 0;
+  margin-bottom: 0;
+}
+.input-group-text {
+  display: flex;
+  align-items: center;
+  padding: 0.375rem 0.75rem;
+  margin-bottom: 0;
+  font-size: 1rem;
+  font-weight: 400;
+  line-height: 1.5;
+  color: #495057;
+  text-align: center;
+  white-space: nowrap;
+  background-color: #e9ecef;
+  border: 1px solid #ced4da;
+  border-radius: 0.25rem;
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+}
+.input-group-sm > .form-control, .input-group-sm > .custom-select, .input-group-sm > .input-group-prepend > .input-group-text, .input-group-sm > .input-group-append > .input-group-text, .input-group-sm > .input-group-prepend > .btn, .input-group-sm > .input-group-append > .btn {
+  padding: 0.25rem 0.5rem;
+  font-size: 0.875rem;
+  line-height: 1.5;
+  border-radius: 0.2rem;
+}
+.btn {
+  cursor: pointer;
+  display: inline-block;
+  font-weight: 400;
+  color: #212529;
+  text-align: center;
+  vertical-align: middle;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  background-color: transparent;
+  border: 1px solid transparent;
+  padding: 0.375rem 0.75rem;
+  font-size: 1rem;
+  line-height: 1.5;
+  border-radius: 0.25rem;
+  transition: color 0.15s ease-in-out, background-color 0.15s ease-in-out, border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+}
+.btn-primary {
+  color: #fff;
+  background-color: #007bff;
+  border-color: #007bff;
+}
+.btn-block {
+  display: block;
+  width: 100%;
+}
+</style>
