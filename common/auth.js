@@ -203,12 +203,12 @@ class Auth {
       check('clientSecret', 'authClientSecret');
       check('redirectURIs', 'authRedirectURIs');
       Auth.#strategies = ['oidc'];
-      Auth.#passportAuthOptions = { session: true, successRedirect: '/', failureRedirect: '/fail' };
+      Auth.#passportAuthOptions = { session: true, successRedirect: Auth.#basePath, failureRedirect: `${Auth.#basePath}fail` };
       sessionAuth = true;
       break;
     case 'form':
       Auth.#strategies = ['form'];
-      Auth.#passportAuthOptions = { session: true, successRedirect: '/', failureRedirect: '/auth' };
+      Auth.#passportAuthOptions = { session: true, successRedirect: Auth.#basePath, failureRedirect: `${Auth.#basePath}auth` };
       sessionAuth = true;
       break;
     case 'header':
@@ -253,7 +253,7 @@ class Auth {
         // User is not authenticated, show the login form
           res.send(`
             <h1>Form-based Authentication</h1>
-            <form method="post" action="/api/login">
+            <form method="post" action="${Auth.#basePath}api/login">
               <label for="username">Username:</label>
               <input type="text" id="username" name="username" required><br>
               <label for="password">Password:</label>
