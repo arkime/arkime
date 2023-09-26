@@ -1621,6 +1621,11 @@ function main () {
 async function buildConfigAndStart () {
   // Load config
   await ArkimeConfig.initialize({ defaultConfigFile: `${version.config_prefix}/etc/wiseService.ini` });
+
+  if (ArkimeConfig.debug === 0) {
+    ArkimeConfig.debug = parseInt(getConfig('wiseService', 'debug', 0));
+  }
+
   internals.updateTime = getConfig('wiseService', 'updateTime', 0);
 
   // Check if we need to restart, this is if there are multiple instances
