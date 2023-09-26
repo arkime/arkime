@@ -113,7 +113,6 @@ app.use((req, res, next) => {
   res.locals.nonce = Buffer.from(uuid()).toString('base64');
   next();
 });
-
 // define csp headers
 const cspDirectives = {
   defaultSrc: ["'self'"],
