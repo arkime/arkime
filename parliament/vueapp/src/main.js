@@ -38,6 +38,7 @@ new Vue({
     /* eslint-disable no-undef */
     Vue.prototype.$constants = {
       VERSION,
+      AUTHMODE,
       BUILD_DATE, // from webpack.DefinePlugin
       BUILD_VERSION // from webpack.DefinePlugin
     };

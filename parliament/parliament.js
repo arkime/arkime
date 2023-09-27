@@ -1907,7 +1907,8 @@ app.use((req, res, next) => {
 
   const appContext = {
     nonce: res.locals.nonce,
-    version: version.version
+    version: version.version,
+    authMode: getConfig('parliament', 'authMode', '')
   };
 
   // Create a fresh Vue app instance

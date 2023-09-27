@@ -264,6 +264,13 @@ class Auth {
           html = html.toString().replace(/@@BASEHREF@@/g, Auth.#basePath);
           return res.send(html);
         });
+
+        Auth.#authRouter.post('/logout', (req, res, next) => {
+          req.logout((err) => {
+            if (err) { return next(err); }
+            return res.redirect(`${Auth.#basePath}auth`);
+          });
+        });
       }
 
       // only save the userId to passport session
