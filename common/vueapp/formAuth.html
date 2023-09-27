@@ -12,7 +12,9 @@
       <div class="form-auth text-center mt-4">
         <div class="jumbotron">
           <h1 class="display-4">
+            <img src="logo.png" alt="logo" />
             LOGIN!
+            <img src="logo.png" alt="logo" />
           </h1>
           <form method="post" action="@@BASEHREF@@api/login">
             <div role="group" class="input-group mb-2">
@@ -25,6 +27,7 @@
               </div>
               <input
                 required
+                autofocus
                 type="text"
                 id="username"
                 name="username"
@@ -72,10 +75,15 @@ html {
   -ms-overflow-style: scrollbar;
   -webkit-tap-highlight-color: transparent;
 }
+img {
+  height: 60px;
+  margin-left: 1rem;
+  margin-right: 1rem;
+  margin-bottom: -0.7rem;
+}
 .form-auth {
   width: 500px;
 }
-
 .text-center {
   text-align: center !important;
 }

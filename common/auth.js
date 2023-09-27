@@ -254,6 +254,10 @@ class Auth {
         const fs = require('fs');
         const path = require('path');
 
+        Auth.#authRouter.get('/logo.png', (req, res) => {
+          res.sendFile(path.join(__dirname, '../assets/Arkime_Logo_Mark_FullGradient.png'));
+        });
+
         Auth.#authRouter.get('/auth', (req, res) => {
           // User is not authenticated, show the login form
           let html = fs.readFileSync(path.join(__dirname, '/vueapp/formAuth.html'), 'utf-8');
