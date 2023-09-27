@@ -842,7 +842,7 @@ void tls_process_client_hello_data(ArkimeSession_t *session, const unsigned char
     g_checksum_reset(checksum);
 
     // Add the field
-    arkime_field_string_add(ja4Field, session, ja4, 37, TRUE);
+    arkime_field_string_add(ja4Field, session, ja4, 36, TRUE);
 }
 /******************************************************************************/
 LOCAL void tls_process_client(ArkimeSession_t *session, const unsigned char *data, int len)
