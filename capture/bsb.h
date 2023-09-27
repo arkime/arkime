@@ -324,6 +324,18 @@ do {                                              \
     }                                             \
 } while (0)
 
+#define BSB_IMPORT_bsb(b, x, size)                \
+do {                                              \
+    if ((b).ptr + size <= (b).end &&              \
+        (b).ptr + size >= (b).buf) {              \
+        BSB_INIT(x, (b).ptr, size);               \
+        (b).ptr += size;                          \
+    } else {                                      \
+        BSB_SET_ERROR(b);                         \
+        (x).ptr = (x).buf = (x).end = NULL;       \
+    }                                             \
+} while (0)
+
 #define BSB_LIMPORT_ptr BSB_IMPORT_ptr
 #define BSB_IMPORT_skip BSB_EXPORT_skip
 #define BSB_LIMPORT_skip BSB_EXPORT_skip
