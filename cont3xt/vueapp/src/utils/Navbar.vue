@@ -126,7 +126,7 @@
           </span>
         </button>
       </div> <!-- /dark/light mode -->
-      <Logout />
+      <Logout :base-path="path" />
     </nav> <!-- /cont3xt nav -->
     <div class="progress-container">
       <b-progress
@@ -166,7 +166,8 @@ export default {
   },
   data: function () {
     return {
-      healthError: ''
+      healthError: '',
+      path: this.$constants.WEB_PATH
     };
   },
   computed: {

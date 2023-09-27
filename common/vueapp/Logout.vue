@@ -18,6 +18,10 @@ export default {
     size: {
       type: String,
       default: 'md'
+    },
+    basePath: {
+      type: String,
+      default: '/'
     }
   },
   data () {
@@ -27,7 +31,7 @@ export default {
   },
   methods: {
     logout () {
-      fetch('/logout', {
+      fetch(`${this.basePath}logout`, {
         method: 'POST',
         credentials: 'include'
       }).finally(() => {

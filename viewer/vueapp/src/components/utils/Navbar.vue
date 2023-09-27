@@ -91,7 +91,7 @@
         </div>
 
       </b-collapse>
-      <Logout size="sm" />
+      <Logout size="sm" :base-path="path" />
     </b-navbar>
     <div class="navbarOffset" />
   </span>
@@ -102,8 +102,8 @@ import qs from 'qs';
 import { mapMutations } from 'vuex';
 
 import ESHealth from './ESHealth';
-import Version from '../../../../../common/vueapp/Version';
 import Logout from '../../../../../common/vueapp/Logout';
+import Version from '../../../../../common/vueapp/Version';
 
 export default {
   name: 'MolochNavbar',
@@ -114,6 +114,7 @@ export default {
   },
   data: function () {
     return {
+      path: this.$constants.MOLOCH_PATH,
       menuOrder: [
         'sessions', 'spiview', 'spigraph', 'connections', 'hunt',
         'files', 'stats', 'history', 'upload', 'settings', 'users', 'roles'

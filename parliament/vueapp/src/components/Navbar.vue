@@ -83,7 +83,7 @@
           </div>
         </span> <!-- /refresh interval select -->
       </div>
-      <Logout />
+      <Logout :base-path="path" />
     </nav> <!-- /parliament nav -->
 
   </div>
@@ -105,7 +105,8 @@ export default {
   data: function () {
     return {
       // default theme is light
-      theme: 'light'
+      theme: 'light',
+      path: this.$constants.PATH
     };
   },
   computed: {

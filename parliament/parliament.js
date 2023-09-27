@@ -1908,6 +1908,7 @@ app.use((req, res, next) => {
   const appContext = {
     nonce: res.locals.nonce,
     version: version.version,
+    path: getConfig('parliament', 'webBasePath', '/'),
     authMode: getConfig('parliament', 'authMode', '')
   };
 
