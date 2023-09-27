@@ -76,11 +76,11 @@
         </li>
         <li class="nav-item mr-2">
           <router-link
-              to="roles"
-              tabindex="-1"
-              v-if="getUser && getUser.assignableRoles && getUser.assignableRoles.length > 0"
-              class="nav-link"
-              active-class="active">
+            to="roles"
+            tabindex="-1"
+            v-if="getUser && getUser.assignableRoles && getUser.assignableRoles.length > 0"
+            class="nav-link"
+            active-class="active">
             Roles
           </router-link>
         </li>
@@ -119,13 +119,14 @@
           title="Toggle light/dark theme"
           :class="{'btn-outline-info':theme === 'dark', 'btn-outline-warning':theme === 'light'}">
           <span v-if="theme === 'light'"
-            class="fa fa-sun-o">
+            class="fa fa-sun-o fa-fw">
           </span>
           <span v-if="theme === 'dark'"
-            class="fa fa-moon-o">
+            class="fa fa-moon-o fa-fw">
           </span>
         </button>
       </div> <!-- /dark/light mode -->
+      <Logout />
     </nav> <!-- /cont3xt nav -->
     <div class="progress-container">
       <b-progress
@@ -152,13 +153,17 @@
 import axios from 'axios';
 import { mapGetters } from 'vuex';
 
+import Logout from '@/../../../common/vueapp/Logout';
 import Version from '@/../../../common/vueapp/Version';
 
 let interval;
 
 export default {
   name: 'Cont3xtNavbar',
-  components: { Version },
+  components: {
+    Logout,
+    Version
+  },
   data: function () {
     return {
       healthError: ''

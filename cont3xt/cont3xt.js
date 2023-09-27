@@ -376,6 +376,7 @@ app.use(cspHeader, setCookie, (req, res, next) => {
     nonce: res.locals.nonce,
     version: version.version,
     path: internals.webBasePath,
+    authMode: getConfig('cont3xt', 'authMode', ''),
     disableUserPasswordUI: getConfig('cont3xt', 'disableUserPasswordUI', true)
   };
 

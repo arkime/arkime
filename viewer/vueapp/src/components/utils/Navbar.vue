@@ -91,6 +91,7 @@
         </div>
 
       </b-collapse>
+      <Logout size="sm" />
     </b-navbar>
     <div class="navbarOffset" />
   </span>
@@ -102,10 +103,12 @@ import { mapMutations } from 'vuex';
 
 import ESHealth from './ESHealth';
 import Version from '../../../../../common/vueapp/Version';
+import Logout from '../../../../../common/vueapp/Logout';
 
 export default {
   name: 'MolochNavbar',
   components: {
+    Logout,
     Version,
     ESHealth
   },

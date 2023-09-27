@@ -1,17 +1,25 @@
 <template>
   <b-button
+    :size="size"
     v-if="authMode && authMode === 'form'"
     class="ml-2"
+    title="Logout"
     @click="logout"
-    variant="outline-danger">
-    Logout
-    <span class="fa fa-sign-out ml-1"></span>
+    v-b-tooltip.hover
+    variant="outline-warning">
+    <span class="fa fa-sign-out fa-fw"></span>
   </b-button>
 </template>
 
 <script>
 export default {
   name: 'Logout',
+  props: {
+    size: {
+      type: String,
+      default: 'md'
+    }
+  },
   data () {
     return {
       authMode: this.$constants.AUTHMODE
