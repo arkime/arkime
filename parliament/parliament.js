@@ -1906,10 +1906,10 @@ app.use((req, res, next) => {
   });
 
   const appContext = {
+    authMode: Auth.mode,
     nonce: res.locals.nonce,
     version: version.version,
-    path: getConfig('parliament', 'webBasePath', '/'),
-    authMode: getConfig('parliament', 'authMode', '')
+    path: getConfig('parliament', 'webBasePath', '/')
   };
 
   // Create a fresh Vue app instance

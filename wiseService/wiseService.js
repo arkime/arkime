@@ -1570,9 +1570,9 @@ app.use(cspHeader, (req, res, next) => {
   });
 
   const appContext = {
+    authMode: Auth.mode,
     nonce: res.locals.nonce,
-    version: version.version,
-    authMode: getConfig('wiseService', 'authMode', '')
+    version: version.version
   };
 
   // Create a fresh Vue app instance
