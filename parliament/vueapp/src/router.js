@@ -23,6 +23,7 @@ const router = new Router({
   routes: [
     {
       path: '',
+      alias: '/',
       name: 'Parliament',
       component: Parliament
     },

@@ -24,10 +24,12 @@ const DigestStrategy = require('passport-http').DigestStrategy;
 const BasicStrategy = require('passport-http').BasicStrategy;
 const iptrie = require('iptrie');
 const CustomStrategy = require('passport-custom');
+const LocalStrategy = require('passport-local');
 const express = require('express');
 const expressSession = require('express-session');
 const OIDC = require('openid-client');
 const LRU = require('lru-cache');
+const bodyParser = require('body-parser');
 
 class Auth {
   static mode;
@@ -63,9 +65,8 @@ class Auth {
     Auth.#app = app;
     app.use(Auth.#authRouter);
 
-    if (options?.doAuth !== false) {
-      app.use(Auth.doAuth);
-    }
+    app.post('/api/login', bodyParser.urlencoded({ extended: true }));
+    app.use(Auth.doAuth);
 
     if (Auth.#app && Auth.#authConfig?.trustProxy !== undefined) {
       Auth.#doTrustProxy();
@@ -111,6 +112,7 @@ class Auth {
     options.authConfig.redirectURIs ??= ArkimeConfig.get(section, 'authRedirectURIs');
     options.authConfig.trustProxy ??= ArkimeConfig.get(section, 'authTrustProxy');
     options.authConfig.cookieSameSite ??= ArkimeConfig.get(section, 'authCookieSameSite');
+    options.authConfig.cookieSecure ??= ArkimeConfig.get(section, 'authCookieSecure', true);
 
     if (ArkimeConfig.debug > 1) {
       console.log('Auth.initialize', options);
@@ -118,7 +120,7 @@ class Auth {
 
     if (options.mode === undefined) {
       if (options.userNameHeader) {
-        if (options.userNameHeader.match(/^(digest|basic|anonymous|oidc)$/)) {
+        if (options.userNameHeader.match(/^(digest|basic|anonymous|oidc|form)$/)) {
           console.log(`WARNING - Using authMode=${options.userNameHeader} setting since userNameHeader set, add to config file to silence this warning.`);
           options.mode = options.userNameHeader;
           delete options.userNameHeader;
@@ -201,7 +203,12 @@ class Auth {
       check('clientSecret', 'authClientSecret');
       check('redirectURIs', 'authRedirectURIs');
       Auth.#strategies = ['oidc'];
-      Auth.#passportAuthOptions = { session: true, successRedirect: '/', failureRedirect: '/fail' };
+      Auth.#passportAuthOptions = { session: true, successRedirect: Auth.#basePath, failureRedirect: `${Auth.#basePath}fail` };
+      sessionAuth = true;
+      break;
+    case 'form':
+      Auth.#strategies = ['form'];
+      Auth.#passportAuthOptions = { session: true, successRedirect: Auth.#basePath, failureRedirect: `${Auth.#basePath}auth` };
       sessionAuth = true;
       break;
     case 'header':
@@ -233,14 +240,38 @@ class Auth {
     if (sessionAuth) {
       Auth.#authRouter.get('/fail', (req, res) => { res.send('User not found'); });
       Auth.#authRouter.use(expressSession({
+        name: 'ARKIME-SID',
         secret: Auth.passwordSecret + Auth.#serverSecret,
         resave: false,
         saveUninitialized: true,
-        cookie: { path: Auth.#basePath, secure: true, sameSite: Auth.#authConfig.cookieSameSite ?? 'Lax', maxAge: 24 * 60 * 60 * 1000 },
+        cookie: { path: Auth.#basePath, secure: Auth.#authConfig.cookieSecure, sameSite: Auth.#authConfig.cookieSameSite ?? 'Lax', maxAge: 24 * 60 * 60 * 1000 },
         store: new ESStore({ section })
       }));
       Auth.#authRouter.use(passport.initialize());
       Auth.#authRouter.use(passport.session());
+
+      if (Auth.mode === 'form') {
+        const fs = require('fs');
+        const path = require('path');
+
+        Auth.#authRouter.get('/logo.png', (req, res) => {
+          res.sendFile(path.join(__dirname, '../assets/Arkime_Logo_Mark_FullGradient.png'));
+        });
+
+        Auth.#authRouter.get('/auth', (req, res) => {
+          // User is not authenticated, show the login form
+          let html = fs.readFileSync(path.join(__dirname, '/vueapp/formAuth.html'), 'utf-8');
+          html = html.toString().replace(/@@BASEHREF@@/g, Auth.#basePath);
+          return res.send(html);
+        });
+
+        Auth.#authRouter.post('/logout', (req, res, next) => {
+          req.logout((err) => {
+            if (err) { return next(err); }
+            return res.redirect(`${Auth.#basePath}auth`);
+          });
+        });
+      }
 
       // only save the userId to passport session
       passport.serializeUser(function (user, done) {
@@ -403,7 +434,7 @@ class Auth {
         if (storeHa1 !== ha1) return done(null, false);
 
         user.setLastUsed();
-        return done(null, user, { ha1: Auth.store2ha1(user.passStore) });
+        return done(null, user);
       });
     }));
 
@@ -530,6 +561,26 @@ class Auth {
         });
       }));
     }
+
+    // ----------------------------------------------------------------------------
+    passport.use('form', new LocalStrategy((userId, password, done) => {
+      if (userId.startsWith('role:')) {
+        console.log(`AUTH: User ${userId} Can not authenticate with role`);
+        return done('Can not authenticate with role');
+      }
+      User.getUserCache(userId, async (err, user) => {
+        if (err) { return done(err); }
+        if (!user) { console.log('AUTH: User', userId, "doesn't exist"); return done(null, false); }
+        if (!user.enabled) { console.log('AUTH: User', userId, 'not enabled'); return done('Not enabled'); }
+
+        const storeHa1 = Auth.store2ha1(user.passStore);
+        const ha1 = Auth.pass2ha1(userId, password);
+        if (storeHa1 !== ha1) return done(null, false);
+
+        user.setLastUsed();
+        return done(null, user);
+      });
+    }));
 
     // ----------------------------------------------------------------------------
     passport.use('regressionTests', new CustomStrategy((req, done) => {
@@ -1050,6 +1101,9 @@ class ESStore extends expressSession.Store {
       id: sid
     }, (err, response) => {
       if (err) {
+        if (response?.statusCode === 404) {
+          return callback();
+        }
         return callback(err);
       }
 

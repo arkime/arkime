@@ -60,7 +60,7 @@ const internals = {
         { name: 'keyFile', required: false, help: 'Path to PEM encoded key file' },
         { name: 'certFile', required: false, help: 'Path to PEM encoded cert file' },
         { name: 'caTrustFile', required: false, help: 'Path to PEM encoded CA file' },
-        { name: 'authmode', required: true, help: 'How should auth be done: anonymous - no auth, basic - basic auth, digest - digest auth, header - http header auth, oidc - oidc auth', regex: '(anonymous|basic|digest|header|oidc)' },
+        { name: 'authmode', required: true, help: 'How should auth be done: anonymous - no auth, basic - basic auth, digest - digest auth, header - http header auth, oidc - oidc auth, form - form auth', regex: '(anonymous|basic|digest|header|oidc|form)' },
         { name: 'userNameHeader', required: true, help: 'the http header to use for username', ifField: 'authMode', ifValue: 'header' },
         { name: 'httpRealm', ifField: 'authMode', ifValue: 'digest', required: false, help: 'The realm to use for digest requests. Must be the same as viewer is using. Default Moloch' },
         { name: 'passwordSecret', ifField: 'authMode', ifValue: 'digest', required: false, password: true, help: 'The secret used to encrypted password hashes. Must be the same as viewer is using. Default password' },
@@ -1570,6 +1570,7 @@ app.use(cspHeader, (req, res, next) => {
   });
 
   const appContext = {
+    authMode: Auth.mode,
     nonce: res.locals.nonce,
     version: version.version
   };
@@ -1621,6 +1622,11 @@ function main () {
 async function buildConfigAndStart () {
   // Load config
   await ArkimeConfig.initialize({ defaultConfigFile: `${version.config_prefix}/etc/wiseService.ini` });
+
+  if (ArkimeConfig.debug === 0) {
+    ArkimeConfig.debug = parseInt(getConfig('wiseService', 'debug', 0));
+  }
+
   internals.updateTime = getConfig('wiseService', 'updateTime', 0);
 
   // Check if we need to restart, this is if there are multiple instances

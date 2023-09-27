@@ -42,6 +42,7 @@
     "passport": "^0.6.0",
     "passport-custom": "^1.1.1",
     "passport-http": "^0.3.0",
+    "passport-local": "^1.0.0",
     "peek-stream": "^1.1.3",
     "pngjs": "^6.0.0",
     "pug": "^3.0.2",

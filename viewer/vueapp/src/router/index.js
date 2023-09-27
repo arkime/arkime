@@ -45,6 +45,7 @@ const router = new Router({
     {
       path: '/sessions',
       name: 'Sessions',
+      alias: '/',
       component: Sessions
     },
     {

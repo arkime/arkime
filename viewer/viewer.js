@@ -2030,7 +2030,8 @@ app.use(cspHeader, setCookie, (req, res) => {
     businessDayEnd: Config.get('businessDayEnd', false),
     businessDays: Config.get('businessDays', '1,2,3,4,5'),
     turnOffGraphDays: Config.get('turnOffGraphDays', 30),
-    disableUserPasswordUI: Config.get('disableUserPasswordUI', true)
+    disableUserPasswordUI: Config.get('disableUserPasswordUI', true),
+    authMode: Auth.mode
   };
 
   // Create a fresh Vue app instance

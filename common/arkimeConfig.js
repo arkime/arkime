@@ -142,7 +142,7 @@ class ArkimeConfig {
       if (d === ArkimeConfig.throw) {
         throw new Error(`${sectionKey} not found in sections: ${sections}`);
       }
-      key = `default ${sectionKey}`;
+      key = `defaultValue ${sectionKey}`;
       value = d;
     }
 

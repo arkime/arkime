@@ -83,6 +83,7 @@
           </div>
         </span> <!-- /refresh interval select -->
       </div>
+      <Logout :base-path="path" />
     </nav> <!-- /parliament nav -->
 
   </div>
@@ -91,16 +92,21 @@
 
 <script>
 import Focus from '@/../../../common/vueapp/Focus';
+import Logout from '@/../../../common/vueapp/Logout';
 import Version from '@/../../../common/vueapp/Version';
 
 export default {
   name: 'ParliamentNavbar',
-  components: { Version },
+  components: {
+    Logout,
+    Version
+  },
   directives: { Focus },
   data: function () {
     return {
       // default theme is light
-      theme: 'light'
+      theme: 'light',
+      path: this.$constants.PATH
     };
   },
   computed: {
