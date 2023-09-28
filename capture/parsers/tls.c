@@ -639,9 +639,9 @@ void tls_process_client_hello_data(ArkimeSession_t *session, const unsigned char
             BSB_IMPORT_u16(cbsb, c);
             if (!tls_is_grease_value(c)) {
                 BSB_EXPORT_sprintf(ja3bsb, "%d-", c);
+                ja4Ciphers[ja4NumCiphers] = c;
+                ja4NumCiphers++;
             }
-            ja4Ciphers[ja4NumCiphers] = c;
-            ja4NumCiphers++;
             skiplen -= 2;
         }
         BSB_EXPORT_rewind(ja3bsb, 1); // Remove last -
@@ -667,6 +667,7 @@ void tls_process_client_hello_data(ArkimeSession_t *session, const unsigned char
 
                 if (tls_is_grease_value(etype)) {
                     BSB_IMPORT_skip (ebsb, elen);
+                    continue;
                 }
 
                 ja4NumExtensions++;
@@ -762,7 +763,9 @@ void tls_process_client_hello_data(ArkimeSession_t *session, const unsigned char
                     while (llen > 0 && !BSB_IS_ERROR(bsb)) {
                         uint16_t supported_version = 0;
                         BSB_IMPORT_u16(bsb, supported_version);
-                        ver = MAX(supported_version, ver);
+                        if (!tls_is_grease_value(supported_version)) {
+                            ver = MAX(supported_version, ver);
+                        }
                         llen--;
                     }
                 } else {
