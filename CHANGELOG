@@ -57,6 +57,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - capture - cert.remainingDays is now based on the firstPacket of session
               instead of current time (thanks mcgillowen)
   - capture - JA4 support
+  - capture - JA3/JA4 support for smtp STARTTLS
   - cont3xt - new bulk UI and support for bulk queries
   - cont3xt - lots of keyboard shortcut improvements
   - cont3xt - new array syntax for links substitution
