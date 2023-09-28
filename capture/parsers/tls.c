@@ -650,7 +650,7 @@ void tls_process_client_hello_data(ArkimeSession_t *session, const unsigned char
         BSB_IMPORT_u08(cbsb, skiplen);   // Compression Length
         BSB_IMPORT_skip(cbsb, skiplen);  // Compressions
 
-        if (BSB_REMAINING(cbsb) > 6) {
+        if (BSB_REMAINING(cbsb) >= 6) {
             int etotlen = 0;
             BSB_IMPORT_u16(cbsb, etotlen);  // Extensions Length
 
@@ -659,7 +659,7 @@ void tls_process_client_hello_data(ArkimeSession_t *session, const unsigned char
             BSB ebsb;
             BSB_INIT(ebsb, BSB_WORK_PTR(cbsb), etotlen);
 
-            while (BSB_REMAINING(ebsb) > 4) {
+            while (BSB_REMAINING(ebsb) >= 4) {
                 uint16_t etype = 0, elen = 0;
 
                 BSB_IMPORT_u16 (ebsb, etype);
