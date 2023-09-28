@@ -793,7 +793,8 @@ void tls_process_client_hello_data(ArkimeSession_t *session, const unsigned char
     char vstr[3];
     tls_ja4_version(ver, vstr);
 
-    char ja4[100];
+    char ja4[37];
+    ja4[36] = 0;
     ja4[0] = (session->ipProtocol == IPPROTO_TCP) ? 't' : 'q';
     ja4[1] = vstr[0];
     ja4[2] = vstr[1];
@@ -818,28 +819,39 @@ void tls_process_client_hello_data(ArkimeSession_t *session, const unsigned char
     BSB_EXPORT_rewind(tmpBSB, 1); // Remove last ,
 
     GChecksum * const checksum = checksums256[session->thread];
-    g_checksum_update(checksum, (guchar *)tmpBuf, BSB_LENGTH(tmpBSB));
 
-    memcpy(ja4 + 11, g_checksum_get_string(checksum), 12);
+    if (BSB_LENGTH(tmpBSB) > 0) {
+        g_checksum_update(checksum, (guchar *)tmpBuf, BSB_LENGTH(tmpBSB));
+        memcpy(ja4 + 11, g_checksum_get_string(checksum), 12);
+        g_checksum_reset(checksum);
+    } else {
+        memcpy(ja4 + 11, "000000000000", 12);
+    }
+
     ja4[23] = '_';
-    g_checksum_reset(checksum);
 
-    // Sort the extensions and add to list
+    // Sort the extensions, convert to hex, add unsorted Algos, first 12 bytes of sha256
     qsort(ja4Extensions, ja4NumExtensionsSome, 2, compare_uint16_t);
     BSB_INIT(tmpBSB, tmpBuf, sizeof(tmpBuf));
     for (int i = 0; i < ja4NumExtensionsSome; i++) {
         BSB_EXPORT_sprintf(tmpBSB, "%04x,", ja4Extensions[i]);
     }
     BSB_EXPORT_rewind(tmpBSB, 1); // Remove last ,
-    BSB_EXPORT_u08(tmpBSB, '_');
-    for (int i = 0; i < ja4NumAlgos; i++) {
-        BSB_EXPORT_sprintf(tmpBSB, "%04x,", ja4Algos[i]);
+    if (ja4NumAlgos > 0) {
+        BSB_EXPORT_u08(tmpBSB, '_');
+        for (int i = 0; i < ja4NumAlgos; i++) {
+            BSB_EXPORT_sprintf(tmpBSB, "%04x,", ja4Algos[i]);
+        }
+        BSB_EXPORT_rewind(tmpBSB, 1); // Remove last ,
     }
-    BSB_EXPORT_rewind(tmpBSB, 1); // Remove last ,
 
-    g_checksum_update(checksum, (guchar *)tmpBuf, BSB_LENGTH(tmpBSB));
-    memcpy(ja4 + 24, g_checksum_get_string(checksum), 12);
-    g_checksum_reset(checksum);
+    if (BSB_LENGTH(tmpBSB) > 0) {
+        g_checksum_update(checksum, (guchar *)tmpBuf, BSB_LENGTH(tmpBSB));
+        memcpy(ja4 + 24, g_checksum_get_string(checksum), 12);
+        g_checksum_reset(checksum);
+    } else {
+        memcpy(ja4 + 24, "000000000000", 12);
+    }
 
     // Add the field
     arkime_field_string_add(ja4Field, session, ja4, 36, TRUE);
