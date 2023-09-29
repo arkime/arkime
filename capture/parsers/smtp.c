@@ -438,7 +438,7 @@ LOCAL int smtp_parser(ArkimeSession_t *session, void *uw, const unsigned char *d
     ArkimeString_t       *emailHeader  = 0;
 
 #ifdef EMAILDEBUG
-    LOG("EMAILDEBUG: enter %d %d %d %.*s", which, *state, email->needStatus[(which + 1) % 2], remaining, data);
+    LOG("EMAILDEBUG: enter w:%d s:%d n:%d r:%d %.*s", which, *state, email->needStatus[(which + 1) % 2], remaining, remaining, data);
 #endif
 
     while (remaining > 0) {
@@ -512,7 +512,7 @@ LOCAL int smtp_parser(ArkimeSession_t *session, void *uw, const unsigned char *d
                 }
             } else if (strncasecmp(line->str, "STARTTLS", 8) == 0) {
                 arkime_session_add_tag(session, "smtp:starttls");
-                *state = EMAIL_IGNORE;
+                *state = EMAIL_TLS;
                 email->state[(which+1)%2] = EMAIL_TLS_OK;
                 return 0;
             } else if (strncasecmp(line->str, "HELO ", 5) == 0 ||

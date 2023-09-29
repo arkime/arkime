@@ -27,6 +27,7 @@ LOCAL  int                   srcIdField;
 LOCAL  int                   dstIdField;
 LOCAL  int                   ja3StrField;
 LOCAL  int                   ja3sStrField;
+LOCAL  int                   ja4Field;
 
 typedef struct {
     unsigned char       buf[8192];
@@ -37,6 +38,7 @@ typedef struct {
 extern unsigned char    arkime_char_to_hexstr[256][3];
 
 LOCAL GChecksum *checksums[ARKIME_MAX_PACKET_THREADS];
+LOCAL GChecksum *checksums256[ARKIME_MAX_PACKET_THREADS];
 
 /******************************************************************************/
 LOCAL void tls_certinfo_process(ArkimeCertInfo_t *ci, BSB *bsb)
@@ -198,6 +200,12 @@ LOCAL void tls_session_version(ArkimeSession_t *session, uint16_t ver)
     char str[100];
 
     switch (ver) {
+    case 0x0100:
+        arkime_field_string_add(verField, session, "SSLv1", 5, TRUE);
+        break;
+    case 0x0200:
+        arkime_field_string_add(verField, session, "SSLv2", 5, TRUE);
+        break;
     case 0x0300:
         arkime_field_string_add(verField, session, "SSLv3", 5, TRUE);
         break;
@@ -220,6 +228,39 @@ LOCAL void tls_session_version(ArkimeSession_t *session, uint16_t ver)
     default:
         snprintf(str, sizeof(str), "0x%04x", ver);
         arkime_field_string_add(verField, session, str, 6, TRUE);
+    }
+}
+/******************************************************************************/
+LOCAL void tls_ja4_version(uint16_t ver, char vstr[3])
+{
+    switch (ver) {
+    case 0x0100:
+        memcpy(vstr, "s1", 3);
+        break;
+    case 0x0200:
+        memcpy(vstr, "s2", 3);
+        break;
+    case 0x0300:
+        memcpy(vstr, "s3", 3);
+        break;
+    case 0x0301:
+        memcpy(vstr, "10", 3);
+        break;
+    case 0x0302:
+        memcpy(vstr, "11", 3);
+        break;
+    case 0x0303:
+        memcpy(vstr, "12", 3);
+        break;
+    case 0x0304:
+        memcpy(vstr, "13", 3);
+        break;
+    case 0x7f00 ... 0x7fff:
+        memcpy(vstr, "13", 3);
+        break;
+    default:
+        memcpy(vstr, "00", 3);
+        break;
     }
 }
 /******************************************************************************/
@@ -523,6 +564,11 @@ LOCAL int tls_process_server_handshake_record(ArkimeSession_t *session, const un
     return 0;
 }
 /******************************************************************************/
+// Comparison function for qsort
+int compare_uint16_t(const void* a, const void* b) {
+    return (int)(*(const uint16_t *)a - *(const uint16_t *)b);
+}
+/******************************************************************************/
 void tls_process_client_hello_data(ArkimeSession_t *session, const unsigned char *data, int len)
 {
     if (len < 7)
@@ -536,6 +582,16 @@ void tls_process_client_hello_data(ArkimeSession_t *session, const unsigned char
     BSB eja3bsb;
     char ecja3[10000];
     BSB ecja3bsb;
+
+    char     ja4HasSNI = 'i';
+    uint16_t ja4Ciphers[256];
+    uint8_t  ja4NumCiphers = 0;
+    uint8_t  ja4NumExtensions = 0;
+    uint16_t ja4Extensions[256];
+    uint8_t  ja4NumExtensionsSome = 0;
+    uint8_t  ja4NumAlgos = 0;
+    uint16_t ja4Algos[256];
+    uint8_t  ja4ALPN[2] = {'0', '0'};
 
     BSB_INIT(ja3bsb, ja3, sizeof(ja3));
     BSB_INIT(ecja3bsb, ecja3, sizeof(ecja3));
@@ -553,6 +609,7 @@ void tls_process_client_hello_data(ArkimeSession_t *session, const unsigned char
     BSB_IMPORT_u16(pbsb, ver);
 
     BSB_EXPORT_sprintf(ja3bsb, "%d,", ver);
+
 
     BSB cbsb;
     BSB_INIT(cbsb, pdata+6, plen-2); // The - 4 for plen is done above, confusing
@@ -582,6 +639,8 @@ void tls_process_client_hello_data(ArkimeSession_t *session, const unsigned char
             BSB_IMPORT_u16(cbsb, c);
             if (!tls_is_grease_value(c)) {
                 BSB_EXPORT_sprintf(ja3bsb, "%d-", c);
+                ja4Ciphers[ja4NumCiphers] = c;
+                ja4NumCiphers++;
             }
             skiplen -= 2;
         }
@@ -591,7 +650,7 @@ void tls_process_client_hello_data(ArkimeSession_t *session, const unsigned char
         BSB_IMPORT_u08(cbsb, skiplen);   // Compression Length
         BSB_IMPORT_skip(cbsb, skiplen);  // Compressions
 
-        if (BSB_REMAINING(cbsb) > 6) {
+        if (BSB_REMAINING(cbsb) >= 6) {
             int etotlen = 0;
             BSB_IMPORT_u16(cbsb, etotlen);  // Extensions Length
 
@@ -600,41 +659,50 @@ void tls_process_client_hello_data(ArkimeSession_t *session, const unsigned char
             BSB ebsb;
             BSB_INIT(ebsb, BSB_WORK_PTR(cbsb), etotlen);
 
-            while (BSB_REMAINING(ebsb) > 4) {
+            while (BSB_REMAINING(ebsb) >= 4) {
                 uint16_t etype = 0, elen = 0;
 
                 BSB_IMPORT_u16 (ebsb, etype);
                 BSB_IMPORT_u16 (ebsb, elen);
 
-                if (!tls_is_grease_value(etype))
-                    BSB_EXPORT_sprintf(eja3bsb, "%d-", etype);
+                if (tls_is_grease_value(etype)) {
+                    BSB_IMPORT_skip (ebsb, elen);
+                    continue;
+                }
+
+                ja4NumExtensions++;
+                ja4Extensions[ja4NumExtensionsSome] = etype;
+                ja4NumExtensionsSome++;
+
+                BSB_EXPORT_sprintf(eja3bsb, "%d-", etype);
 
                 if (elen > BSB_REMAINING(ebsb))
                     break;
 
+
                 if (etype == 0) { // SNI
-                    BSB snibsb;
-                    BSB_INIT(snibsb, BSB_WORK_PTR(ebsb), elen);
-                    BSB_IMPORT_skip (ebsb, elen);
+                    ja4NumExtensionsSome--;
+                    BSB bsb;
+                    BSB_IMPORT_bsb (ebsb, bsb, elen);
 
                     int sni = 0;
-                    BSB_IMPORT_u16(snibsb, sni); // list len
-                    if (sni != BSB_REMAINING(snibsb))
+                    BSB_IMPORT_u16(bsb, sni); // list len
+                    if (sni != BSB_REMAINING(bsb))
                         continue;
 
-                    BSB_IMPORT_u08(snibsb, sni); // type
+                    BSB_IMPORT_u08(bsb, sni); // type
                     if (sni != 0)
                         continue;
 
-                    BSB_IMPORT_u16(snibsb, sni); // len
-                    if (sni != BSB_REMAINING(snibsb))
+                    BSB_IMPORT_u16(bsb, sni); // len
+                    if (sni != BSB_REMAINING(bsb))
                         continue;
 
-                    arkime_field_string_add(hostField, session, (char *)BSB_WORK_PTR(snibsb), sni, TRUE);
+                    arkime_field_string_add(hostField, session, (char *)BSB_WORK_PTR(bsb), sni, TRUE);
+                    ja4HasSNI = 'd';
                 } else if (etype == 0x000a) { // Elliptic Curves
                     BSB bsb;
-                    BSB_INIT(bsb, BSB_WORK_PTR(ebsb), elen);
-                    BSB_IMPORT_skip (ebsb, elen);
+                    BSB_IMPORT_bsb (ebsb, bsb, elen);
 
                     uint16_t llen = 0;
                     BSB_IMPORT_u16(bsb, llen); // list len
@@ -649,8 +717,7 @@ void tls_process_client_hello_data(ArkimeSession_t *session, const unsigned char
                     BSB_EXPORT_rewind(ecja3bsb, 1); // Remove last -
                 } else if (etype == 0x000b) { // Elliptic Curves point formats
                     BSB bsb;
-                    BSB_INIT(bsb, BSB_WORK_PTR(ebsb), elen);
-                    BSB_IMPORT_skip (ebsb, elen);
+                    BSB_IMPORT_bsb (ebsb, bsb, elen);
 
                     uint16_t llen = 0;
                     BSB_IMPORT_u08(bsb, llen); // list len
@@ -661,6 +728,46 @@ void tls_process_client_hello_data(ArkimeSession_t *session, const unsigned char
                         llen -= 1;
                     }
                     BSB_EXPORT_rewind(ecfja3bsb, 1); // Remove last -
+                } else if (etype == 0x000d) { // Signature Algorithms
+                    BSB bsb;
+                    BSB_IMPORT_bsb (ebsb, bsb, elen);
+
+                    uint16_t llen = 0;
+                    BSB_IMPORT_u16(bsb, llen); // list len
+                    while (llen > 0 && !BSB_IS_ERROR(bsb)) {
+                        uint16_t a = 0;
+                        BSB_IMPORT_u16(bsb, a);
+                        ja4Algos[ja4NumAlgos++] = a;
+                        llen -= 2;
+                    }
+                } else if (etype == 0x10) { // ALPN
+                    ja4NumExtensionsSome--;
+                    BSB bsb;
+                    BSB_IMPORT_bsb (ebsb, bsb, elen);
+
+                    BSB_IMPORT_skip (bsb, 2); // len
+                    uint8_t plen = 0;
+                    BSB_IMPORT_u08 (bsb, plen); // len
+                    unsigned char *pstr = NULL;
+                    BSB_IMPORT_ptr (bsb, pstr, plen);
+                    if (plen > 0 && pstr && !BSB_IS_ERROR(bsb)) {
+                        ja4ALPN[0] = pstr[0];
+                        ja4ALPN[1] = pstr[plen-1];
+                    }
+                } else if (etype == 0x2b) { // etype 0x2b is supported version
+                    BSB bsb;
+                    BSB_IMPORT_bsb (ebsb, bsb, elen);
+
+                    uint16_t llen = 0;
+                    BSB_IMPORT_u08(bsb, llen); // list len
+                    while (llen > 0 && !BSB_IS_ERROR(bsb)) {
+                        uint16_t supported_version = 0;
+                        BSB_IMPORT_u16(bsb, supported_version);
+                        if (!tls_is_grease_value(supported_version)) {
+                            ver = MAX(supported_version, ver);
+                        }
+                        llen--;
+                    }
                 } else {
                     BSB_IMPORT_skip (ebsb, elen);
                 }
@@ -685,6 +792,72 @@ void tls_process_client_hello_data(ArkimeSession_t *session, const unsigned char
             g_free(md5);
         }
     }
+
+    char vstr[3];
+    tls_ja4_version(ver, vstr);
+
+    char ja4[37];
+    ja4[36] = 0;
+    ja4[0] = (session->ipProtocol == IPPROTO_TCP) ? 't' : 'q';
+    ja4[1] = vstr[0];
+    ja4[2] = vstr[1];
+    ja4[3] = ja4HasSNI;
+    ja4[4] = (ja4NumCiphers / 10) + '0';
+    ja4[5] = (ja4NumCiphers % 10) + '0';
+    ja4[6] = (ja4NumExtensions / 10) + '0';
+    ja4[7] = (ja4NumExtensions % 10) + '0';
+    ja4[8] = ja4ALPN[0];
+    ja4[9] = ja4ALPN[1];
+    ja4[10] = '_';
+
+    char tmpBuf[10*256];
+    BSB tmpBSB;
+
+    // Sort ciphers, convert to hex, first 12 bytes of sha256
+    qsort(ja4Ciphers, ja4NumCiphers, 2, compare_uint16_t);
+    BSB_INIT(tmpBSB, tmpBuf, sizeof(tmpBuf));
+    for (int i = 0; i < ja4NumCiphers; i++) {
+        BSB_EXPORT_sprintf(tmpBSB, "%04x,", ja4Ciphers[i]);
+    }
+    BSB_EXPORT_rewind(tmpBSB, 1); // Remove last ,
+
+    GChecksum * const checksum = checksums256[session->thread];
+
+    if (BSB_LENGTH(tmpBSB) > 0) {
+        g_checksum_update(checksum, (guchar *)tmpBuf, BSB_LENGTH(tmpBSB));
+        memcpy(ja4 + 11, g_checksum_get_string(checksum), 12);
+        g_checksum_reset(checksum);
+    } else {
+        memcpy(ja4 + 11, "000000000000", 12);
+    }
+
+    ja4[23] = '_';
+
+    // Sort the extensions, convert to hex, add unsorted Algos, first 12 bytes of sha256
+    qsort(ja4Extensions, ja4NumExtensionsSome, 2, compare_uint16_t);
+    BSB_INIT(tmpBSB, tmpBuf, sizeof(tmpBuf));
+    for (int i = 0; i < ja4NumExtensionsSome; i++) {
+        BSB_EXPORT_sprintf(tmpBSB, "%04x,", ja4Extensions[i]);
+    }
+    BSB_EXPORT_rewind(tmpBSB, 1); // Remove last ,
+    if (ja4NumAlgos > 0) {
+        BSB_EXPORT_u08(tmpBSB, '_');
+        for (int i = 0; i < ja4NumAlgos; i++) {
+            BSB_EXPORT_sprintf(tmpBSB, "%04x,", ja4Algos[i]);
+        }
+        BSB_EXPORT_rewind(tmpBSB, 1); // Remove last ,
+    }
+
+    if (BSB_LENGTH(tmpBSB) > 0) {
+        g_checksum_update(checksum, (guchar *)tmpBuf, BSB_LENGTH(tmpBSB));
+        memcpy(ja4 + 24, g_checksum_get_string(checksum), 12);
+        g_checksum_reset(checksum);
+    } else {
+        memcpy(ja4 + 24, "000000000000", 12);
+    }
+
+    // Add the field
+    arkime_field_string_add(ja4Field, session, ja4, 36, TRUE);
 }
 /******************************************************************************/
 LOCAL void tls_process_client(ArkimeSession_t *session, const unsigned char *data, int len)
@@ -931,6 +1104,12 @@ void arkime_parser_init()
         ARKIME_FIELD_TYPE_STR_GHASH,  ARKIME_FIELD_FLAG_CNT,
         (char *)NULL);
 
+    ja4Field = arkime_field_define("tls", "lotermfield",
+        "tls.ja4", "JA4", "tls.ja4",
+        "SSL/TLS JA4 field",
+        ARKIME_FIELD_TYPE_STR_GHASH,  ARKIME_FIELD_FLAG_CNT,
+        (char *)NULL);
+
     ja3sField = arkime_field_define("tls", "lotermfield",
         "tls.ja3s", "JA3S", "tls.ja3s",
         "SSL/TLS JA3S field",
@@ -975,6 +1154,7 @@ void arkime_parser_init()
     int t;
     for (t = 0; t < config.packetThreads; t++) {
         checksums[t] = g_checksum_new(G_CHECKSUM_SHA1);
+        checksums256[t] = g_checksum_new(G_CHECKSUM_SHA256);
     }
 }
 
