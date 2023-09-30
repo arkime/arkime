@@ -547,12 +547,12 @@ class Integration {
               Integration.#cache.set(cacheKey, response);
             }
           } else {
-            // console.log('ALW null', integration.name, cacheKey);
+            // console.log('ALW null', integration.section, cacheKey);
           }
           checkWriteDone();
         })
         .catch(err => {
-          console.log(integration.name, itype, query, err);
+          console.log('failure in %s - itype: %s query: %s error:', integration.section, itype, query, err);
           shared.sent++;
           stats.directError++;
           istats.directError++;

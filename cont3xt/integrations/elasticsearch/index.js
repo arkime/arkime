@@ -32,6 +32,9 @@ class ElasticsearchIntegration extends Integration {
   #timestampField;
   #url;
   #client;
+  #maxResults;
+  #includeId;
+  #includeIndex;
 
   static #order = 50000;
 
@@ -78,6 +81,10 @@ class ElasticsearchIntegration extends Integration {
     this.#url = ArkimeConfig.get(section, 'url', ArkimeConfig.exit);
     this.#timestampField = ArkimeConfig.get(section, 'timestampField');
 
+    this.#maxResults = ArkimeConfig.get(section, 'maxResults', 20);
+    this.#includeId = ArkimeConfig.get(section, 'includeId', false);
+    this.#includeIndex = ArkimeConfig.get(section, 'includeIndex', false);
+
     const options = {
       node: this.#url.split(',')[0],
       requestTimeout: 300000,
@@ -123,7 +130,8 @@ class ElasticsearchIntegration extends Integration {
           ]
         }
       },
-      sort: {}
+      sort: {},
+      size: this.#maxResults
     };
 
     query.query.bool.filter[0].term[this.#queryField] = item;
@@ -143,7 +151,15 @@ class ElasticsearchIntegration extends Integration {
     }
 
     const data = {
-      hits: results.body.hits.hits.map(i => i._source),
+      hits: results.body.hits.hits.map(i => {
+        if (this.#includeId) {
+          i._source._id = i._id;
+        }
+        if (this.#includeIndex) {
+          i._source._index = i._index;
+        }
+        return i._source;
+      }),
       _cont3xt: {
         count: results.body.hits.hits.length
       }
