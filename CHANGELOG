@@ -58,6 +58,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
               instead of current time (thanks mcgillowen)
   - capture - JA4 support
   - capture - JA3/JA4 support for smtp STARTTLS
+- - capture - always build zstd 1.5.5 (except arch)
   - cont3xt - new bulk UI and support for bulk queries
   - cont3xt - lots of keyboard shortcut improvements
   - cont3xt - new array syntax for links substitution
