@@ -249,6 +249,14 @@ AC_ARG_WITH(yara,
       fi
       YARA_CFLAGS="-I$withval/libyara/include"
       YARA_LIBS="$withval/libyara/.libs/libyara.a"
+    elif test -f $withval/libyara/include/yara.h -a -f $withval/.libs/libyara.a; then
+      owd=`pwd`
+      if cd $withval; then
+        withval=`pwd`;
+        cd $owd;
+      fi
+      YARA_CFLAGS="-I$withval/libyara/include"
+      YARA_LIBS="$withval/.libs/libyara.a"
     elif test -f $withval/include/yara.h -a -f $withval/lib/libyara.a; then
       owd=`pwd`
       if cd $withval; then

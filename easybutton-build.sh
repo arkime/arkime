@@ -496,6 +496,8 @@ if [ $? -ne 0 ]; then
   exit 1
 fi
 
+./capture/capture --version
+
 # Build plugins
 (cd capture/plugins/lua; $MAKE)
 
