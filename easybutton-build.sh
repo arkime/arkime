@@ -19,7 +19,7 @@ CURL=7.78.0
 LUA=5.3.6
 DAQ=2.0.7
 NGHTTP2=1.44.0
-ZSTD=1.5.2
+ZSTD=1.5.5
 KAFKA=1.5.3
 
 # node v18 doesn't support RHEL 7
@@ -37,7 +37,7 @@ DONODE=1
 DOINSTALL=0
 DORMINSTALL=0
 DOTHIRDPARTY=1
-BUILDZSTD=0
+BUILDZSTD=1
 
 while :
 do
@@ -120,9 +120,6 @@ UNAME="$(uname)"
 echo "ARKIME: Installing Dependencies"
 if [ -f "/etc/redhat-release" ] || [ -f "/etc/system-release" ]; then
   . /etc/os-release
-  if [ "$VERSION_ID" = "7" ]; then
-      BUILDZSTD=1
-  fi
   if [[ "$VERSION_ID" == 9* || "$VERSION_ID" == 2023 ]]; then
       sudo yum install -y glib2-devel libmaxminddb-devel libcurl-devel
       WITHGLIB=" "
@@ -137,9 +134,6 @@ fi
 
 if [ -f "/etc/debian_version" ]; then
   . /etc/os-release
-  if [[ "$VERSION_CODENAME" == "bionic" || "$VERSION_CODENAME" == "focal" ]]; then
-      BUILDZSTD=1
-  fi
   sudo apt-get -qq install wget curl libpcre3-dev uuid-dev libmagic-dev pkg-config g++ flex bison zlib1g-dev libffi-dev gettext libgeoip-dev make libjson-perl libbz2-dev libwww-perl libpng-dev xz-utils libffi-dev libssl-dev libreadline-dev libtool libyaml-dev dh-autoreconf libsocket6-perl libtest-differences-perl libzstd-dev
   if [ $? -ne 0 ]; then
     echo "ARKIME: apt-get failed"
@@ -259,6 +253,7 @@ elif [ -f "/etc/arch-release" ]; then
 
     DOKAFKA=1
     BUILDKAFKA=0
+    BUILDZSTD=0
 
     echo './configure \
       --with-zstd=yes \

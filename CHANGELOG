@@ -56,6 +56,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - capture - added cert.remainingSeconds/cert.remainingSeconds (thanks mcgillowen)
   - capture - cert.remainingDays is now based on the firstPacket of session
               instead of current time (thanks mcgillowen)
+  - capture - always build zstd 1.5.5 (except arch)
   - cont3xt - new bulk UI and support for bulk queries
   - cont3xt - lots of keyboard shortcut improvements
   - cont3xt - new array syntax for links substitution
