@@ -196,7 +196,7 @@ jobs:
             - AWS_SECRET_ACCESS_KEY
 
     ubuntu-20:
-        requires: [~commit]
+        requires: [~pr,~commit]
         image: andywick/arkime-build-20:4.2.0-2
         steps:
             - (cd / ; curl https://s3.amazonaws.com/files.molo.ch/snfmin.tar.gz | tar -zxvf -)
