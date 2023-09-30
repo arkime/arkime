@@ -41,6 +41,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
                and https://arkime.com/faq#how_do_i_upgrade_to_arkime_5
   - BREAKING - WISE/tagger must now use http.request.FIELD/http.response.FIELD
                when referencing header defined with headers-http-request/headers-http-response
+  - release - zstd 1.5.5, glib 2.78.0, nghttp2 1.56.0, curl 8.3.0, maxmind 1.7.1, yara 4.3.2
   - all - all programs support same config file formats (json/ini) and
   - all - authMode setting added
   - all - authMode=basic added
@@ -58,7 +59,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
               instead of current time (thanks mcgillowen)
   - capture - JA4 support
   - capture - JA3/JA4 support for smtp STARTTLS
-- - capture - always build zstd 1.5.5 (except arch)
+- - capture - always build zstd (except arch)
   - cont3xt - new bulk UI and support for bulk queries
   - cont3xt - lots of keyboard shortcut improvements
   - cont3xt - new array syntax for links substitution

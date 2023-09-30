@@ -32,6 +32,7 @@
 #ifndef BUILD_VERSION
 #define BUILD_VERSION "unkn"
 #endif
+#include "nghttp2/nghttp2.h"
 
 /******************************************************************************/
 ArkimeConfig_t         config;
@@ -153,7 +154,6 @@ void parse_args(int argc, char **argv)
     extern const char *zlibVersion(void);
     extern const char *yaml_get_version_string(void);
     //extern int magic_version(void);
-    //extern const char *OpenSSL_version(int type);
 
     context = g_option_context_new ("- capture");
     g_option_context_add_main_entries (context, entries, NULL);
@@ -190,6 +190,8 @@ void parse_args(int argc, char **argv)
         unsigned zver = ZSTD_versionNumber();
         printf("zstd: %u.%u.%u\n", zver/(100*100), (zver/100)%100, zver%100);
 #endif
+        nghttp2_info *ngver = nghttp2_version(0);
+        printf("nghttp2: %s\n", ngver->version_str);
 
         exit(0);
     }
