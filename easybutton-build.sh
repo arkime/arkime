@@ -11,7 +11,7 @@
 # * install arkime if --install
 
 
-GLIB=2.78.0
+GLIB=2.76.5
 YARA=4.3.2
 MAXMIND=1.7.1
 PCAP=1.10.4
