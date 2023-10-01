@@ -11,14 +11,16 @@
 # * install arkime if --install
 
 
+# newer glib requires pcre2, issues on Centos 7
 GLIB=2.72.4
-YARA=4.0.2
-MAXMIND=1.4.3
+# newer yara requires newer ssl, issues on Centos 7
+YARA=4.2.3
+MAXMIND=1.7.1
 PCAP=1.10.4
-CURL=7.78.0
+CURL=8.3.0
 LUA=5.3.6
 DAQ=2.0.7
-NGHTTP2=1.44.0
+NGHTTP2=1.56.0
 ZSTD=1.5.5
 KAFKA=1.5.3
 
@@ -125,7 +127,7 @@ if [ -f "/etc/redhat-release" ] || [ -f "/etc/system-release" ]; then
       WITHGLIB=" "
       WITHCURL=" "
   fi
-  sudo yum -y install --skip-broken wget curl pcre pcre-devel pkgconfig flex bison gcc-c++ zlib-devel e2fsprogs-devel openssl-devel file-devel make gettext libuuid-devel perl-JSON bzip2-libs bzip2-devel perl-libwww-perl libpng-devel xz libffi-devel readline-devel libtool libyaml-devel perl-Socket6 perl-Test-Differences libzstd-devel
+  sudo yum -y install --skip-broken wget curl pcre pcre-devel pkgconfig flex bison gcc-c++ zlib-devel e2fsprogs-devel openssl-devel file-devel make gettext libuuid-devel perl-JSON bzip2-libs bzip2-devel perl-libwww-perl libpng-devel xz libffi-devel readline-devel libtool libyaml-devel perl-Socket6 perl-Test-Differences
   if [ $? -ne 0 ]; then
     echo "ARKIME: yum failed"
     exit 1
@@ -134,7 +136,7 @@ fi
 
 if [ -f "/etc/debian_version" ]; then
   . /etc/os-release
-  sudo apt-get -qq install wget curl libpcre3-dev uuid-dev libmagic-dev pkg-config g++ flex bison zlib1g-dev libffi-dev gettext libgeoip-dev make libjson-perl libbz2-dev libwww-perl libpng-dev xz-utils libffi-dev libssl-dev libreadline-dev libtool libyaml-dev dh-autoreconf libsocket6-perl libtest-differences-perl libzstd-dev
+  sudo apt-get -qq install wget curl libpcre3-dev uuid-dev libmagic-dev pkg-config g++ flex bison zlib1g-dev libffi-dev gettext libgeoip-dev make libjson-perl libbz2-dev libwww-perl libpng-dev xz-utils libffi-dev libssl-dev libreadline-dev libtool libyaml-dev dh-autoreconf libsocket6-perl libtest-differences-perl
   if [ $? -ne 0 ]; then
     echo "ARKIME: apt-get failed"
     exit 1
@@ -495,6 +497,8 @@ if [ $? -ne 0 ]; then
   echo "ARKIME: $MAKE failed"
   exit 1
 fi
+
+./capture/capture --version
 
 # Build plugins
 (cd capture/plugins/lua; $MAKE)
