@@ -24,10 +24,8 @@ NGHTTP2=1.56.0
 ZSTD=1.5.5
 KAFKA=1.5.3
 
-# node v18 doesn't support RHEL 7
-# RHEL 7 EOL is July 1, 2024
-# node v16 EOL is Sept 11, 2023
-NODE=16.20.2
+# node v18 doesn't support Centos 7 and will be reset to v16 below
+NODE=18.18.0
 
 TDIR="/opt/arkime"
 DOPFRING=0
@@ -122,6 +120,11 @@ UNAME="$(uname)"
 echo "ARKIME: Installing Dependencies"
 if [ -f "/etc/redhat-release" ] || [ -f "/etc/system-release" ]; then
   . /etc/os-release
+  if [[ $DONODE == "1" && "$VERSION_ID" == "7" ]]; then
+      NODE=16.20.2
+      echo "Using $NODE on Centos 7 build since v18 isn't supported"
+  fi
+
   if [[ "$VERSION_ID" == 9* || "$VERSION_ID" == 2023 ]]; then
       sudo yum install -y glib2-devel libmaxminddb-devel libcurl-devel
       WITHGLIB=" "
