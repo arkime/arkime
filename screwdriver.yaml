@@ -64,7 +64,6 @@ jobs:
             - build: ./easybutton-build.sh --daq --pfring --kafka --rminstall
             - test-capture: (cd tests ; ./tests.pl)
             - export PATH=/opt/arkime/bin:/data/moloch/bin:$PATH
-            - npm -g config set user root; npm -g config set cache-min 9999999
             - installing: make install
             - linting: npm run lint
             - cp -r capture/plugins/lua/samples /opt/arkime/lua
@@ -103,7 +102,6 @@ jobs:
             - build: ./easybutton-build.sh --daq --pfring --rminstall
             - test-capture: (cd tests ; ./tests.pl)
             - export PATH=/opt/arkime/bin:/data/moloch/bin:$PATH
-            - npm -g config set user root; npm -g config set cache-min 9999999
             - installing: make install
             - linting: npm run lint
             - cp -r capture/plugins/lua/samples /opt/arkime/lua
@@ -128,7 +126,6 @@ jobs:
             - build: ./easybutton-build.sh --daq --rminstall
             - test-capture: (cd tests ; ./tests.pl)
             - export PATH=/opt/arkime/bin:/data/moloch/bin:$PATH
-            - npm -g config set user root; npm -g config set cache-min 9999999
             - installing: make install
             - linting: npm run lint
             - cp -r capture/plugins/lua/samples /opt/arkime/lua
@@ -154,7 +151,6 @@ jobs:
             - build: ./easybutton-build.sh --daq --pfring --kafka --rminstall
             - test-capture: (cd tests ; ./tests.pl)
             - export PATH=/opt/arkime/bin:/data/moloch/bin:$PATH
-            - npm -g config set user root
             - installing: make install
             - linting: npm run lint
             - cp -r capture/plugins/lua/samples /opt/arkime/lua
@@ -205,7 +201,6 @@ jobs:
             - build: ./easybutton-build.sh --daq --pfring --kafka --rminstall
             - test-capture: (cd tests ; ./tests.pl)
             - export PATH=/opt/arkime/bin:/data/moloch/bin:$PATH
-            - npm -g config set user root
             - installing: make install
             - linting: npm run lint
             - cp -r capture/plugins/lua/samples /opt/arkime/lua
@@ -256,7 +251,6 @@ jobs:
             - build: ./easybutton-build.sh --nothirdparty --pfring --kafka --rminstall
             - test-capture: (cd tests ; ./tests.pl)
             - export PATH=/opt/arkime/bin:/data/moloch/bin:$PATH
-            - npm -g config set user root
             - installing: make install
             - linting: npm run lint
             - cp -r capture/plugins/lua/samples /opt/arkime/lua
@@ -280,7 +274,6 @@ jobs:
             - build: ./easybutton-build.sh --rminstall --kafka
             - test-capture: (cd tests ; ./tests.pl)
             - export PATH=/opt/arkime/bin:$PATH
-            - npm -g config set user root
             - installing: make install
             - linting: npm run lint
             - cp -r capture/plugins/lua/samples /opt/arkime/lua
@@ -398,7 +391,6 @@ jobs:
             - ln -s /thirdparty .
             - build: ./easybutton-build.sh --daq --pfring --kafka --rminstall
             - export PATH=/opt/arkime/bin:/data/moloch/bin:$PATH:$PWD/node_modules/.bin
-            - npm -g config set user root; npm -g config set cache-min 9999999
             - installing: make install
             - cp -r capture/plugins/lua/samples /opt/arkime/lua
             - npm install license-checker; release/notice.txt.pl /opt/arkime NOTICE release/CAPTURENOTICE > /opt/arkime/NOTICE.txt
@@ -431,7 +423,6 @@ jobs:
             - ln -s /thirdparty .
             - build: ./easybutton-build.sh --daq --pfring --kafka --rminstall
             - export PATH=/opt/arkime/bin:/data/moloch/bin:$PATH:$PWD/node_modules/.bin
-            - npm -g config set user root; npm -g config set cache-min 9999999
             - installing: make install
             - cp -r capture/plugins/lua/samples /opt/arkime/lua
             - npm install license-checker; release/notice.txt.pl /opt/arkime NOTICE release/CAPTURENOTICE > /opt/arkime/NOTICE.txt
@@ -454,7 +445,6 @@ jobs:
             - ln -s /thirdparty .
             - build: ./easybutton-build.sh --daq --pfring --kafka --rminstall
             - export PATH=/opt/arkime/bin:/data/moloch/bin:$PATH:$PWD/node_modules/.bin
-            - npm -g config set user root
             - installing: make install
             - cp -r capture/plugins/lua/samples /opt/arkime/lua
             - npm install license-checker; release/notice.txt.pl /opt/arkime NOTICE release/CAPTURENOTICE > /opt/arkime/NOTICE.txt
@@ -488,7 +478,6 @@ jobs:
             - ln -s /thirdparty .
             - build: ./easybutton-build.sh --daq --pfring --kafka --rminstall
             - export PATH=/opt/arkime/bin:/data/moloch/bin:$PATH:$PWD/node_modules/.bin
-            - npm -g config set user root
             - installing: make install
             - cp -r capture/plugins/lua/samples /opt/arkime/lua
             - npm install license-checker; release/notice.txt.pl /opt/arkime NOTICE release/CAPTURENOTICE > /opt/arkime/NOTICE.txt
@@ -521,7 +510,6 @@ jobs:
             - ln -s /thirdparty .
             - build: ./easybutton-build.sh --nothirdparty --pfring --kafka --rminstall
             - export PATH=/opt/arkime/bin:/data/moloch/bin:$PATH
-            - npm -g config set user root
             - installing: make install
             - cp -r capture/plugins/lua/samples /opt/arkime/lua
             - build-package: |
@@ -541,7 +529,6 @@ jobs:
             - build: ./easybutton-build.sh --rminstall
             - test-capture: (cd tests ; ./tests.pl)
             - export PATH=/opt/arkime/bin:$PATH:$PWD/node_modules/.bin
-            - npm -g config set user root
             - installing: make install
             - cp -r capture/plugins/lua/samples /opt/arkime/lua
             - build-package: |
@@ -562,7 +549,6 @@ jobs:
             - ln -s /thirdparty .
             - build: ./easybutton-build.sh --daq --pfring --kafka --rminstall
             - export PATH=/opt/arkime/bin:/data/moloch/bin:$PATH:$PWD/node_modules/.bin
-            - npm -g config set user root; npm -g config set cache-min 9999999
             - installing: make install
             - cp -r capture/plugins/lua/samples /opt/arkime/lua
             - npm install license-checker; release/notice.txt.pl /opt/arkime NOTICE release/CAPTURENOTICE > /opt/arkime/NOTICE.txt
