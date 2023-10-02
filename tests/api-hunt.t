@@ -223,6 +223,8 @@ my $hToken = getTokenCookie('huntuser');
   $json = viewerDeleteToken("/api/hunt/$id7/user/huntuser?molochRegressionUser=anonymous", $token);
   is (scalar @{$json->{users}}, 0, "hunt should have no users");
 
+  esGet("/_flush");
+  esGet("/_refresh");
   sleep(2);
   esGet("/_flush");
   esGet("/_refresh");
