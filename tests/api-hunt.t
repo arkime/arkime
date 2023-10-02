@@ -216,23 +216,17 @@ my $hToken = getTokenCookie('huntuser');
   is ($json->{hunt}->{users}->[0], "huntuser", "hunt should have a user on creation");
   my $id7 = $json->{hunt}->{id};
   viewerGet("/regressionTests/processHuntJobs");
-  diag "0", Dumper(esGet("/tests_hunts/_doc/$id7"));
 
 # remove a user from a hunt
   esGet("/_flush");
   esGet("/_refresh");
-  sleep(2); # Wait for user to be set or else test after next fails
-  diag "1", Dumper(esGet("/tests_hunts/_doc/$id7"));
+  sleep(1); # Wait for user to be set or else test after next fails
   $json = viewerDeleteToken("/api/hunt/$id7/user/huntuser?molochRegressionUser=anonymous", $token);
   is (scalar @{$json->{users}}, 0, "hunt should have no users");
-  diag "2", Dumper(esGet("/tests_hunts/_doc/$id7"));
 
-  sleep(2);
-  diag "3", Dumper(esGet("/tests_hunts/_doc/$id7"));
   esGet("/_flush");
   esGet("/_refresh");
-  sleep(2);
-  diag "4", Dumper(esGet("/tests_hunts/_doc/$id7"));
+  sleep(1);
 
 # can't delete a user from an hunt with no users
   $json = viewerDeleteToken("/api/hunt/$id7/user/huntuser?molochRegressionUser=anonymous", $token);
