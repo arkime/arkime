@@ -215,6 +215,7 @@ my $hToken = getTokenCookie('huntuser');
   $json = viewerPostToken("/api/hunt?molochRegressionUser=anonymous", '{"users":"huntuser","totalSessions":1,"name":"test hunt 13~`!@#$%^&*()[]{};<>?/`","size":"50","search":"test search text","searchType":"ascii","type":"raw","src":true,"dst":true,"query":{"startTime":18000,"stopTime":1536872891}}', $token);
   is ($json->{hunt}->{users}->[0], "huntuser", "hunt should have a user on creation");
   my $id7 = $json->{hunt}->{id};
+  viewerGet("/regressionTests/processHuntJobs");
   diag "0", Dumper(esGet("/tests_hunts/_doc/$id7"));
 
 # remove a user from a hunt
