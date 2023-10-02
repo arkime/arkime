@@ -29,7 +29,7 @@ NOTICE: Restart wiseService before capture when upgrading
 NOTICE: Cross-cluster Shortcuts require you to not restart all your viewers at once after upgrading
 NOTICE: Create a parliament config file before upgrading (see https://arkime.com/settings#parliament and https://arkime.com/faq#how_do_i_upgrade_to_arkime_5)
 
-5.0.0 2023/09/xx
+5.0.0 2023/10/xx
   - BREAKING - s3Compression/simpleCompression now default to zstd
   - BREAKING - s3WriteGzip removed, use s3Compression=gzip
   - BREAKING - s3GapPacketPos defaults to TRUE
@@ -42,7 +42,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - BREAKING - WISE/tagger must now use http.request.FIELD/http.response.FIELD
                when referencing header defined with headers-http-request/headers-http-response
   - release - zstd 1.5.5, nghttp2 1.56.0, curl 8.3.0, maxmind 1.7.1, yara 4.2.3
-  - release - node v18.18.0 except Centos 7 build which still uses v16
+  - release - node v18.18.0 except Centos 7 and Ubuntu 18 build which still uses v16
   - all - all programs support same config file formats (json/ini) and
   - all - authMode setting added
   - all - authMode=basic added
