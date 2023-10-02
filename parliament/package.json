@@ -24,7 +24,8 @@
     ],
     "watch": [
       ".",
-      "../common"
+      "../common",
+      "../tests/parliament.ini"
     ]
   },
   "browserslist": [
