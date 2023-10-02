@@ -1,5 +1,5 @@
 #!/bin/sh
-export VER=4.2.0-3
+export VER=5.0.0-1
 #docker images -a | grep "arkime-build" | awk '{print $3}' | xargs docker rmi
 
 echo "ARKIME DOCKER 7"
@@ -23,6 +23,10 @@ docker image build build22 --no-cache=true --tag andywick/arkime-build-22:$VER
 echo "ARKIME DOCKER Arch"
 docker image build buildArch --no-cache=true --tag andywick/arkime-build-arch:$VER
 
+echo "ARKIME DOCKER Al2023"
+docker image build buildAl2023 --no-cache=true --tag andywick/arkime-build-al2023:$VER
+
+
 exit 0
 
 docker push andywick/arkime-build-7:$VER
@@ -32,3 +36,4 @@ docker push andywick/arkime-build-18:$VER
 docker push andywick/arkime-build-20:$VER
 docker push andywick/arkime-build-22:$VER
 docker push andywick/arkime-build-arch:$VER
+docker push andywick/arkime-build-al2023:$VER
