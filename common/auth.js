@@ -30,6 +30,7 @@ const expressSession = require('express-session');
 const OIDC = require('openid-client');
 const LRU = require('lru-cache');
 const bodyParser = require('body-parser');
+const SamlStrategy = require('@node-saml/passport-saml').Strategy;
 
 class Auth {
   static mode;
@@ -105,6 +106,8 @@ class Auth {
     options.authConfig ??= {};
     options.authConfig.httpRealm ??= ArkimeConfig.get(section, 'httpRealm', 'Moloch');
     options.authConfig.userIdField ??= ArkimeConfig.get(section, 'authUserIdField');
+
+    // oidc
     options.authConfig.discoverURL ??= ArkimeConfig.get(section, 'authDiscoverURL');
     options.authConfig.clientId ??= ArkimeConfig.get(section, 'authClientId');
     options.authConfig.clientSecret ??= ArkimeConfig.get(section, 'authClientSecret');
@@ -113,13 +116,18 @@ class Auth {
     options.authConfig.cookieSameSite ??= ArkimeConfig.get(section, 'authCookieSameSite');
     options.authConfig.cookieSecure ??= ArkimeConfig.get(section, 'authCookieSecure', true);
 
+    // saml
+    options.authConfig.entryPoint ??= ArkimeConfig.get(section, 'authEntryPoint');
+    options.authConfig.issuer ??= ArkimeConfig.get(section, 'authIssuer');
+    options.authConfig.cert ??= ArkimeConfig.get(section, 'authCert');
+
     if (ArkimeConfig.debug > 1) {
       console.log('Auth.initialize', options);
     }
 
     if (options.mode === undefined) {
       if (options.userNameHeader) {
-        if (options.userNameHeader.match(/^(digest|basic|anonymous|oidc|form)$/)) {
+        if (options.userNameHeader.match(/^(digest|basic|anonymous|oidc|form|saml)$/)) {
           console.log(`WARNING - Using authMode=${options.userNameHeader} setting since userNameHeader set, add to config file to silence this warning.`);
           options.mode = options.userNameHeader;
           delete options.userNameHeader;
@@ -208,6 +216,15 @@ class Auth {
     case 'form':
       Auth.#strategies = ['form'];
       Auth.#passportAuthOptions = { session: true, successRedirect: Auth.#basePath, failureRedirect: `${Auth.#basePath}auth` };
+      sessionAuth = true;
+      break;
+    case 'saml':
+      check('userIdField', 'authUserIdField');
+      check('entryPoint', 'authEntryPoint');
+      check('issuer', 'authIssuer');
+      check('cert', 'authCert');
+      Auth.#strategies = ['saml'];
+      Auth.#passportAuthOptions = { session: true, successRedirect: Auth.#basePath, failureRedirect: `${Auth.#basePath}fail` };
       sessionAuth = true;
       break;
     case 'header':
@@ -580,6 +597,49 @@ class Auth {
         return done(null, user);
       });
     }));
+
+    // ----------------------------------------------------------------------------
+    if (Auth.mode === 'saml') {
+      passport.use('saml', new SamlStrategy({
+        path: '/login/callback',
+        entryPoint: Auth.#authConfig.entryPoint,
+        issuer: Auth.#authConfig.issuer,
+        cert: Auth.#authConfig.cert
+      }, (profile, done) => {
+        const userId = profile[Auth.#authConfig.userIdField];
+
+        if (userId === undefined) {
+          if (ArkimeConfig.debug > 0) {
+            console.log(`AUTH: didn't find ${Auth.#authConfig.userIdField} in the profile`, profile);
+          }
+          return done(null, false);
+        }
+
+        if (userId.startsWith('role:')) {
+          console.log(`AUTH: User ${userId} Can not authenticate with role`);
+          return done('Can not authenticate with role');
+        }
+
+        async function samlAuthCheck (err, user) {
+          if (err || !user) { return done('User not found'); }
+          if (!user.enabled) { return done('User not enabled'); }
+          if (!user.headerAuthEnabled) { return done('User header auth not enabled'); }
+
+          user.setLastUsed();
+          return done(null, user);
+        }
+
+        User.getUserCache(userId, (err, user) => {
+          if (Auth.#userAutoCreateTmpl === undefined) {
+            return samlAuthCheck(err, user);
+          } else if ((err && err.toString().includes('Not Found')) || (!user)) { // Try dynamic creation
+            Auth.#dynamicCreate(userId, profile, samlAuthCheck);
+          } else {
+            return samlAuthCheck(err, user);
+          }
+        });
+      }));
+    }
 
     // ----------------------------------------------------------------------------
     passport.use('regressionTests', new CustomStrategy((req, done) => {

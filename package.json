@@ -7,6 +7,7 @@
   },
   "dependencies": {
     "@elastic/elasticsearch": "7.10.0",
+    "@node-saml/passport-saml": "^4.0.4",
     "@xingrz/cppzst": "^2.1.0-alpha.8",
     "arkime-notifme-sdk": "^1.11.2",
     "async": "^3.2.4",
