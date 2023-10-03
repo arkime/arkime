@@ -29,6 +29,7 @@
     "ioredis": "^4.28.5",
     "ipaddr.js": "^2.0.0",
     "iptrie": "https://github.com/awick/node-iptrie/tarball/nodev18",
+    "js-yaml": "^4.1.0",
     "lmdb": "^2.7.9",
     "lodash.template": "^4.5.0",
     "lru-cache": "^4.1.5",
