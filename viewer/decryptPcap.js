@@ -95,7 +95,7 @@ if (process.argv.length < 3) {
 async function premain () {
   await Config.initialize();
 
-  const escInfo = Config.getArray('elasticsearch', ',', 'http://localhost:9200');
+  const escInfo = Config.getArray('elasticsearch', 'http://localhost:9200');
   Db.initialize({
     host: escInfo,
     prefix: Config.get('prefix', 'arkime_'),
@@ -103,7 +103,7 @@ async function premain () {
     esClientCert: Config.get('esClientCert', null),
     esClientKeyPass: Config.get('esClientKeyPass', null),
     insecure: ArkimeConfig.insecure,
-    usersHost: Config.getArray('usersElasticsearch', ','),
+    usersHost: Config.getArray('usersElasticsearch'),
     usersPrefix: Config.get('usersPrefix'),
     esApiKey: Config.get('elasticsearchAPIKey', null),
     usersEsApiKey: Config.get('usersElasticsearchAPIKey', null),

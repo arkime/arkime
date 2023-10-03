@@ -23,12 +23,31 @@
 #include <fcntl.h>
 #include <inttypes.h>
 #include <errno.h>
+#include "yaml.h"
 
 extern ArkimeConfig_t        config;
 
 LOCAL GKeyFile             *arkimeKeyFile;
 LOCAL char                **overrideIpsFiles;
 LOCAL char                **packetDropIpsFiles;
+
+//#define CONFIG_DEBUG 1
+
+#ifdef CONFIG_DEBUG
+LOCAL char *yaml_names[] = {
+    "YAML_NO_EVENT",
+    "YAML_STREAM_START_EVENT",
+    "YAML_STREAM_END_EVENT",
+    "YAML_DOCUMENT_START_EVENT",
+    "YAML_DOCUMENT_END_EVENT",
+    "YAML_ALIAS_EVENT",
+    "YAML_SCALAR_EVENT",
+    "YAML_SEQUENCE_START_EVENT",
+    "YAML_SEQUENCE_END_EVENT",
+    "YAML_MAPPING_START_EVENT",
+    "YAML_MAPPING_END_EVENT"
+};
+#endif
 
 /******************************************************************************/
 gchar **arkime_config_section_raw_str_list(GKeyFile *keyfile, char *section, char *key, char *d)
@@ -396,6 +415,13 @@ void arkime_config_load_hidden(char *configFile)
     config.configFile = g_strdup(line);
 }
 /******************************************************************************/
+char arkime_config_key_sep(char *key) {
+    if (strcmp(key, "elasticsearch") == 0 ||
+        strcmp(key, "usersElasticsearch") == 0)
+        return ',';
+    return ';';
+}
+/******************************************************************************/
 gboolean arkime_config_load_json(GKeyFile *keyfile, char *data, GError **UNUSED(error))
 {
     uint32_t sections[4*100]; // Can have up to 100 sections
@@ -413,13 +439,122 @@ gboolean arkime_config_load_json(GKeyFile *keyfile, char *data, GError **UNUSED(
             char *key = g_strndup(data + sections[s+2] + keys[k], keys[k+1]);
             char *value = g_strndup(data + sections[s+2] + keys[k+2], keys[k+3]);
 
-            g_key_file_set_string(keyfile, section, key, value);
+            // HACK - Convert arrays back into strings
+            if (value[0] == '[') {
+                uint32_t parts[2*100]; // Can have up to 100 keys
+                memset(parts, 0, sizeof(parts));
+                js0n((unsigned char*)value, keys[k+3], parts, sizeof(parts));
+
+                char sep = arkime_config_key_sep(key);
+                char *buf = malloc(keys[k+3]);
+                BSB bsb;
+                BSB_INIT(bsb, buf, keys[k+3]);
+                for (int p = 0; parts[p]; p += 2) {
+                    if (p != 0)
+                        BSB_EXPORT_u08(bsb, sep);
+                    BSB_EXPORT_ptr(bsb, value+parts[p], parts[p+1]);
+                }
+                BSB_EXPORT_u08(bsb, 0);
+                g_key_file_set_string(keyfile, section, key, buf);
+            } else {
+                g_key_file_set_string(keyfile, section, key, value);
+            }
+
             g_free(key);
             g_free(value);
         }
         g_free(section);
     }
 
+    return TRUE;
+}
+/******************************************************************************/
+gboolean arkime_config_load_yaml(GKeyFile *keyfile, char *data, GError **UNUSED(error))
+{
+    yaml_parser_t parser;
+    yaml_parser_initialize(&parser);
+    yaml_parser_set_input_string(&parser, (unsigned char *)data, strlen(data));
+
+    int done = 0;
+    int level = 0;
+    char *section = NULL;
+    char *key = NULL;
+    char buf[20000];
+    char sep;
+    BSB bsb;
+    while (!done) {
+        yaml_event_t event;
+
+        if (!yaml_parser_parse(&parser, &event))
+            CONFIGEXIT("line %zu - Parse error '%s'", parser.problem_mark.line, parser.problem);
+
+#ifdef CONFIG_DEBUG
+        LOG("event level %d type %d - %s", level, event.type, yaml_names[event.type]);
+#endif
+        switch(event.type) {
+        case YAML_NO_EVENT:
+            done = 1;
+            break;
+        case YAML_SCALAR_EVENT:
+            if (level == 1) {
+                g_free(section);
+                section = g_strdup((char*)event.data.scalar.value);
+            } else if (level == 2) {
+                if (!key) {
+                    key = g_strdup((char*)event.data.scalar.value);
+                } else {
+#ifdef CONFIG_DEBUG
+                    LOG("%s:%s => %s", section, key, event.data.scalar.value);
+#endif
+                    g_key_file_set_string(keyfile, section, key, (char *)event.data.scalar.value);
+                    g_free(key);
+                    key = NULL;
+                }
+            } else if (level == 3) {
+                if (BSB_LENGTH(bsb) != 0)
+                    BSB_EXPORT_u08(bsb, sep);
+                int len = strlen((char *)event.data.scalar.value);
+                BSB_EXPORT_ptr(bsb, event.data.scalar.value, len);
+            }
+            break;
+        case YAML_SEQUENCE_START_EVENT:
+            BSB_INIT(bsb, buf, sizeof(buf));
+            sep = arkime_config_key_sep(key);
+            level++;
+            break;
+        case YAML_MAPPING_START_EVENT:
+            level++;
+            break;
+        case YAML_SEQUENCE_END_EVENT:
+            if (level == 3) {
+                BSB_EXPORT_u08(bsb, 0);
+#ifdef CONFIG_DEBUG
+                LOG("%s:%s => %s", section, key, buf);
+#endif
+                g_key_file_set_string(keyfile, section, key, buf);
+                g_free(key);
+                key = NULL;
+            }
+            level--;
+            break;
+        case YAML_MAPPING_END_EVENT:
+            if (level == 1) {
+                g_free(section);
+                section = NULL;
+            }
+            else if (level == 2) {
+                g_free(key);
+                key = NULL;
+            }
+            level--;
+            break;
+        default:
+            ;
+        }
+        yaml_event_delete(&event);
+    }
+
+    yaml_parser_delete(&parser);
     return TRUE;
 }
 /******************************************************************************/
@@ -476,6 +611,8 @@ void arkime_config_load()
 
         if (g_str_has_suffix(config.configFile, ".ini"))
             status = g_key_file_load_from_data(keyfile, (gchar *)data, -1, G_KEY_FILE_NONE, &error);
+        else if (g_str_has_suffix(config.configFile, ".yml") || g_str_has_suffix(config.configFile, ".yaml"))
+            status = arkime_config_load_yaml(keyfile, (char *)data, &error);
         else
             status = arkime_config_load_json(keyfile, (char *)data, &error);
         g_free(host);
@@ -487,6 +624,12 @@ void arkime_config_load()
             if (!g_file_get_contents(config.configFile, &data, NULL, &error))
                 CONFIGEXIT("Couldn't load config file (%s) %s\n", config.configFile, (error?error->message:""));
             status = arkime_config_load_json(keyfile, data, &error);
+            g_free(data);
+        } else if (g_str_has_suffix(config.configFile, ".yml") || g_str_has_suffix(config.configFile, ".yaml")) {
+            gchar *data;
+            if (!g_file_get_contents(config.configFile, &data, NULL, &error))
+                CONFIGEXIT("Couldn't load config file (%s) %s\n", config.configFile, (error?error->message:""));
+            status = arkime_config_load_yaml(keyfile, data, &error);
             g_free(data);
         } else
             status = g_key_file_load_from_file(keyfile, config.configFile, G_KEY_FILE_NONE, &error);

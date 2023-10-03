@@ -59,7 +59,7 @@ class ElasticsearchIntegration extends Integration {
       section.startsWith('elasticsearch') ? 'integrations/elasticsearch/elasticsearch.png' : 'integrations/elasticsearch/opensearch.png');
     this.order = ElasticsearchIntegration.#order++;
     this.card.title = `${this.name} for %{query}`;
-    const itypes = ArkimeConfig.get(section, 'itypes', ArkimeConfig.exit);
+    const itypes = ArkimeConfig.getArray(section, 'itypes', ArkimeConfig.exit);
 
     this.#index = ArkimeConfig.get(section, 'index', ArkimeConfig.exit);
     this.#method = ArkimeConfig.get(section, 'method', 'search');
@@ -75,7 +75,7 @@ class ElasticsearchIntegration extends Integration {
     }
 
     const imethod = (this.#method === 'search') ? 'searchMethod' : 'getMethod';
-    itypes.split(',').forEach(itype => {
+    itypes.forEach(itype => {
       this.itypes[itype] = imethod;
     });
     this.#url = ArkimeConfig.get(section, 'url', ArkimeConfig.exit);

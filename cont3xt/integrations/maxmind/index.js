@@ -51,8 +51,8 @@ class MaxmindIntegration extends Integration {
   constructor () {
     super();
 
-    const asnPaths = ArkimeConfig.get('cont3xt', 'geoLite2ASN', '/var/lib/GeoIP/GeoLite2-ASN.mmdb;/usr/share/GeoIP/GeoLite2-ASN.mmdb').split(';');
-    const countryPaths = ArkimeConfig.get('cont3xt', 'geoLite2Country', '/var/lib/GeoIP/GeoLite2-Country.mmdb;/usr/share/GeoIP/GeoLite2-Country.mmdb').split(';');
+    const asnPaths = ArkimeConfig.getArray('cont3xt', 'geoLite2ASN', '/var/lib/GeoIP/GeoLite2-ASN.mmdb;/usr/share/GeoIP/GeoLite2-ASN.mmdb');
+    const countryPaths = ArkimeConfig.getArray('cont3xt', 'geoLite2Country', '/var/lib/GeoIP/GeoLite2-Country.mmdb;/usr/share/GeoIP/GeoLite2-Country.mmdb');
 
     if (asnPaths.length === 0 && countryPaths.length === 0) {
       return;

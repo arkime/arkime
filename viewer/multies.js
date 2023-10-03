@@ -1105,7 +1105,7 @@ setInterval(enumerateActiveNodes, 1 * 60 * 1000); // 1*60*1000 ms
 async function premain () {
   await Config.initialize();
 
-  nodes = Config.get('multiESNodes', '').split(';');
+  nodes = Config.getArray('multiESNodes', '', ';');
   if (nodes.length === 0 || nodes[0] === '') {
     console.log('ERROR - Empty multiESNodes');
     process.exit(1);

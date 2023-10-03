@@ -85,7 +85,6 @@ class Auth {
    * @param {string} options.requiredAuthHeader In header auth mode, another header can be required
    * @param {string} options.requiredAuthHeaderVal In header auth mode, a comma separated list of values for requiredAuthHeader, if none are matched the user will not be authorized
    * @param {string} options.userAutoCreateTmpl A javascript string function that is used to create users that don't exist
-   * @param {string} options.userAuthIps A comma separated list of CIDRs that users are allowed from
    * @param {boolean} options.s2s Support s2s auth also
    * @param {object} options.authConfig options specific to each auth mode
    * @param {object} options.caTrustFile Optional path to CA certificate file to use for external authentication
@@ -100,7 +99,7 @@ class Auth {
     options.requiredAuthHeader ??= ArkimeConfig.get(section, 'requiredAuthHeader');
     options.requiredAuthHeaderVal ??= ArkimeConfig.get(section, 'requiredAuthHeaderVal');
     options.userAutoCreateTmpl ??= ArkimeConfig.get(section, 'userAutoCreateTmpl');
-    options.userAuthIps ??= ArkimeConfig.get(section, 'userAuthIps');
+    options.userAuthIps = ArkimeConfig.getArray(section, 'userAuthIps');
     options.caTrustFile ??= ArkimeConfig.get(section, 'caTrustFile');
 
     options.authConfig ??= {};
@@ -161,7 +160,7 @@ class Auth {
     }
 
     if (options.userAuthIps) {
-      for (const cidr of options.userAuthIps.split(',')) {
+      for (const cidr of options.userAuthIps) {
         const parts = cidr.split('/');
         if (parts[0].includes(':')) {
           Auth.#userAuthIps.add(parts[0], +(parts[1] ?? 128), 1);

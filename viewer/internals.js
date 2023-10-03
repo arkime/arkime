@@ -89,13 +89,13 @@ internals.initialize = (app) => {
 
 Config.loaded(() => {
 // build internals
-  internals.elasticBase = Config.getArray('elasticsearch', ',', 'http://localhost:9200');
+  internals.elasticBase = Config.getArray('elasticsearch', 'http://localhost:9200');
   internals.remoteClusters = Config.configMap('remote-clusters', 'moloch-clusters');
   internals.esQueryTimeout = Config.get('elasticsearchTimeout', 5 * 60) + 's';
   internals.esScrollTimeout = Config.get('elasticsearchScrollTimeout', 5 * 60) + 's';
   internals.userNameHeader = Config.get('userNameHeader');
   internals.esAdminUsersSet = Config.get('esAdminUsers', false) !== false;
-  internals.esAdminUsers = Config.getArray('esAdminUsers', ',', '');
+  internals.esAdminUsers = Config.getArray('esAdminUsers', '');
   internals.httpsAgent = new https.Agent({ keepAlive: true, keepAliveMsecs: 5000, maxSockets: 40, rejectUnauthorized: !ArkimeConfig.insecure });
   internals.isLocalViewRegExp = Config.get('isLocalViewRegExp') ? new RE2(Config.get('isLocalViewRegExp')) : undefined;
   internals.allowUploads = !!Config.get('uploadCommand');

@@ -166,7 +166,7 @@ async function premain () {
 
   if (Config.nodeName() === 'cont3xt') {
     const usersUrl = Config.get('usersUrl');
-    const usersEs = Config.get('usersElasticsearch', Config.get('elasticsearch', 'http://localhost:9200')).split(',');
+    const usersEs = Config.getArray('usersElasticsearch', Config.get('elasticsearch', 'http://localhost:9200'));
     User.initialize({
       insecure: ArkimeConfig.insecure,
       requestTimeout: Config.get('elasticsearchTimeout', 300),
@@ -183,7 +183,7 @@ async function premain () {
     });
     main();
   } else {
-    const escInfo = Config.getArray('elasticsearch', ',', 'http://localhost:9200');
+    const escInfo = Config.getArray('elasticsearch', 'http://localhost:9200');
     Db.initialize({
       host: escInfo,
       prefix: Config.get('prefix', 'arkime_'),
@@ -192,7 +192,7 @@ async function premain () {
       esClientKeyPass: Config.get('esClientKeyPass', null),
       insecure: ArkimeConfig.insecure,
       caTrustFile: Config.getFull(Config.nodeName(), 'caTrustFile'),
-      usersHost: Config.getArray('usersElasticsearch', ','),
+      usersHost: Config.getArray('usersElasticsearch'),
       usersPrefix: Config.get('usersPrefix'),
       esApiKey: Config.get('elasticsearchAPIKey', null),
       usersEsApiKey: Config.get('usersElasticsearchAPIKey', null),

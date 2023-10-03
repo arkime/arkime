@@ -20,6 +20,7 @@ const ArkimeUtil = require('./arkimeUtil');
 const fs = require('fs');
 const axios = require('axios');
 const ini = require('iniparser');
+const yaml = require('js-yaml');
 
 class ArkimeConfig {
   static debug = 0;
@@ -77,6 +78,8 @@ class ArkimeConfig {
 
       if (ArkimeConfig.#uri.endsWith('json')) {
         ArkimeConfig.#configImpl = ArkimeConfig.#schemes.json;
+      } else if (ArkimeConfig.#uri.endsWith('yaml') || ArkimeConfig.#uri.endsWith('yml')) {
+        ArkimeConfig.#configImpl = ArkimeConfig.#schemes.yaml;
       } else {
         ArkimeConfig.#configImpl = ArkimeConfig.#schemes.ini;
       }
@@ -155,6 +158,24 @@ class ArkimeConfig {
     if (value === 'true') { return true; }
 
     return value;
+  }
+
+  // ----------------------------------------------------------------------------
+  /**
+   * Get an array config value
+   * @param {string[] | string} sections The sections the key lives in, can also be a string
+   * @param {string} sectionKey The key in the section to get the value for
+   * @param {string} d=undefined The default value to return if sectionKey isn't found
+   */
+  static getArray (sections, sectionKey, d, sep) {
+    const value = ArkimeConfig.get(sections, sectionKey, d);
+
+    // Just return directly
+    if (value === undefined || Array.isArray(value)) { return value; }
+
+    // Need to split ourselves
+    sep ??= /[;,]/;
+    return value.split(sep).map(s => s.trim()).filter(s => s.match(/^\S+$/));
   }
 
   // ----------------------------------------------------------------------------
@@ -321,6 +342,25 @@ class ConfigJson {
 ArkimeConfig.registerScheme('json', ConfigJson);
 
 // ----------------------------------------------------------------------------
+
+class ConfigYaml {
+  static async load (uri) {
+    return yaml.load(fs.readFileSync(uri, 'utf8'));
+  }
+
+  static save (uri, config, cb) {
+    try {
+      fs.writeFileSync(uri, yaml.dump(config));
+      cb();
+    } catch (e) {
+      cb(e.message);
+    }
+  }
+}
+ArkimeConfig.registerScheme('yaml', ConfigYaml);
+ArkimeConfig.registerScheme('yml', ConfigYaml);
+
+// ----------------------------------------------------------------------------
 // redis://[:pass]@host:port/db/key
 class ConfigRedis {
   static #redisKey;
@@ -457,6 +497,8 @@ class ConfigHttp {
         return response.data;
       } else if (uri.endsWith('.ini')) {
         return ini.parseString(response.data);
+      } else if (uri.endsWith('.yaml') || uri.endsWith('.yml')) {
+        return yaml.load(response.data);
       } else {
         return JSON.parse(response.data);
       }
