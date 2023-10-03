@@ -132,13 +132,14 @@ class Config {
 
   // ----------------------------------------------------------------------------
   // Return an array split on separator, remove leading/trailing spaces, remove empty elements
-  static getArray (key, separator, defaultValue) {
-    const value = Config.get(key, defaultValue);
-    if (typeof value === 'string') {
-      return value.split(separator).map(s => s.trim()).filter(s => s.match(/^\S+$/));
-    } else {
-      return value;
-    }
+  static getArray (key, defaultValue, sep) {
+    return ArkimeConfig.getArray([internals.nodeName, 'default'], key, defaultValue, sep);
+  };
+
+  // ----------------------------------------------------------------------------
+  // Return an array split on separator, remove leading/trailing spaces, remove empty elements
+  static getFullArray (node, key, defaultValue, sep) {
+    return ArkimeConfig.getArray([node, 'default'], key, defaultValue, sep);
   };
 
   // ----------------------------------------------------------------------------

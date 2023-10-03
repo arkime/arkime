@@ -464,9 +464,9 @@ async function setupAuth () {
   });
 
   const dbUrl = getConfig('cont3xt', 'dbUrl');
-  const es = getConfig('cont3xt', 'elasticsearch', 'http://localhost:9200').split(',');
+  const es = ArkimeConfig.getArray('cont3xt', 'elasticsearch', 'http://localhost:9200');
   const usersUrl = getConfig('cont3xt', 'usersUrl');
-  let usersEs = getConfig('cont3xt', 'usersElasticsearch');
+  const usersEs = ArkimeConfig.getArray('cont3xt', 'usersElasticsearch') ?? es;
 
   await Db.initialize({
     insecure: ArkimeConfig.insecure,
@@ -476,12 +476,6 @@ async function setupAuth () {
     apiKey: getConfig('cont3xt', 'elasticsearchAPIKey'),
     basicAuth: getConfig('cont3xt', 'elasticsearchBasicAuth')
   });
-
-  if (usersEs) {
-    usersEs = usersEs.split(',');
-  } else {
-    usersEs = es;
-  }
 
   User.initialize({
     insecure: ArkimeConfig.insecure,

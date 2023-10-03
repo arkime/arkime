@@ -156,7 +156,7 @@ Config.loaded(() => {
     'accessLogFormat',
     ':date :username %1b[1m:method%1b[0m %1b[33m:url%1b[0m :status :res[content-length] bytes :response-time ms'
   ));
-  const _suppressPaths = Config.getArray('accessLogSuppressPaths', ';', '');
+  const _suppressPaths = Config.getArray('accessLogSuppressPaths', '');
 
   securityApp.use(logger(_loggerFormat, {
     stream: _stream,
@@ -370,8 +370,8 @@ function createSessionDetail () {
   const found = {};
   let dirs = [];
 
-  dirs = dirs.concat(Config.getArray('pluginsDir', ';', `${version.config_prefix}/plugins`));
-  dirs = dirs.concat(Config.getArray('parsersDir', ';', `${version.config_prefix}/parsers`));
+  dirs = dirs.concat(Config.getArray('pluginsDir', `${version.config_prefix}/plugins`));
+  dirs = dirs.concat(Config.getArray('parsersDir', `${version.config_prefix}/parsers`));
 
   dirs.forEach(function (dir) {
     try {
@@ -765,8 +765,8 @@ function loadPlugins () {
     getDb: function () { return Db; },
     getPcap: function () { return Pcap; }
   };
-  const plugins = Config.getArray('viewerPlugins', ';', '');
-  const dirs = Config.getArray('pluginsDir', ';', `${version.config_prefix}/plugins`);
+  const plugins = Config.getArray('viewerPlugins', '');
+  const dirs = Config.getArray('pluginsDir', `${version.config_prefix}/plugins`);
   plugins.forEach(function (plugin) {
     plugin = plugin.trim();
     if (plugin === '') {
@@ -1044,12 +1044,12 @@ function expireCheckAll () {
 
     // Find all the pcap dirs for local nodes
     async.map(nodes, function (node, cb) {
-      const pcapDirs = Config.getFull(node, 'pcapDir');
-      if (typeof pcapDirs !== 'string') {
+      const pcapDirs = Config.getFullArray(node, 'pcapDir');
+      if (!pcapDirs) {
         return cb("ERROR - couldn't find pcapDir setting for node: " + node + '\nIf you have it set try running:\nnpm remove iniparser; npm cache clean; npm update iniparser');
       }
       // Create a mapping from device id to stat information and all directories on that device
-      pcapDirs.split(';').forEach(function (pcapDir) {
+      pcapDirs.forEach(function (pcapDir) {
         if (!pcapDir) {
           return; // Skip empty elements.  Prevents errors when pcapDir has a trailing or double ;
         }
@@ -2152,7 +2152,7 @@ async function premain () {
   Db.initialize({
     host: internals.elasticBase,
     prefix: internals.prefix,
-    usersHost: Config.getArray('usersElasticsearch', ','),
+    usersHost: Config.getArray('usersElasticsearch'),
     // The default for usersPrefix should be '' if this is a multiviewer, otherwise Db.initialize will figure out
     usersPrefix: Config.get('usersPrefix', internals.multiES ? '' : undefined),
     nodeName: Config.nodeName(),

@@ -43,13 +43,14 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
                when referencing header defined with headers-http-request/headers-http-response
   - release - zstd 1.5.5, nghttp2 1.56.0, curl 8.3.0, maxmind 1.7.1, yara 4.2.3
   - release - node v18.18.0 except Centos 7 and Ubuntu 18 build which still uses v16
-  - all - all programs support same config file formats (json/ini) and
+  - all - all programs support same config file formats (ini/json/yaml) and
+          retrieval (file, elasticsearch)
+  - all - json/yaml config file formats now allow arrays instead of comma/semi separated
   - all - authMode setting added
   - all - authMode=basic added
   - all - notifiers for parliament and arkime merged
           conflicts mitigated by appending "Parliament" to parliament notifiers
   - all - drop privileges is now AFTER http(s) list
-          retrieval (file, elasticsearch)
   - capture - moloch converted to arkime
   - capture - override ips can now set any field
   - capture - overrideIpsFiles setting

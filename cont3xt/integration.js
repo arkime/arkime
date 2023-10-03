@@ -169,10 +169,7 @@ class Integration {
       Integration.#integrations[itype].push(integration);
     }
 
-    integration.viewRoles = integration.getConfig('viewRoles');
-    if (integration.viewRoles) {
-      integration.viewRoles = integration.viewRoles.split(';');
-    }
+    integration.viewRoles = integration.getConfigArray('viewRoles');
   }
 
   static classify (str) {
@@ -904,6 +901,11 @@ class Integration {
   // Return a config value for this integration
   getConfig (k, d) {
     return ArkimeConfig.get(this.section ?? this.name, k, d);
+  }
+
+  // Return a config value for this integration
+  getConfigArray (k, d, sep) {
+    return ArkimeConfig.getArray(this.section ?? this.name, k, d, sep);
   }
 
   // Return a config value for this integration, but first check the user config
