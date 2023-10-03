@@ -479,7 +479,7 @@ gboolean arkime_config_load_yaml(GKeyFile *keyfile, char *data, GError **UNUSED(
     int level = 0;
     char *section = NULL;
     char *key = NULL;
-    char buf[2000];
+    char buf[20000];
     char sep;
     BSB bsb;
     while (!done) {
