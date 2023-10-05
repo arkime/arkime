@@ -28,14 +28,16 @@ LOCAL  int versionField;
 
 #define FBZERO_MAX_SIZE 4096
 typedef struct {
-    unsigned char  data[FBZERO_MAX_SIZE];
-    int            pos;
+    uint8_t  data[FBZERO_MAX_SIZE];
+    int      pos;
 } FBZeroInfo_t;
 
 typedef struct {
     int            packets;
     int            which;
 } QUIC5xInfo_t;
+
+LOCAL uint32_t tls_process_client_hello_func;
 
 /******************************************************************************/
 LOCAL int quic_chlo_parser(ArkimeSession_t *session, BSB dbsb) {
@@ -53,12 +55,12 @@ LOCAL int quic_chlo_parser(ArkimeSession_t *session, BSB dbsb) {
 
     arkime_session_add_protocol(session, "quic");
 
-    if (!tag || memcmp(tag, "CHLO", 4) != 0 || BSB_REMAINING(dbsb) < tagLen*8 + 8) {
+    if (!tag || memcmp(tag, "CHLO", 4) != 0 || BSB_REMAINING(dbsb) < tagLen * 8 + 8) {
         return 0;
     }
 
-    guchar *tagDataStart = dbsb.buf + tagLen*8 + 8;
-    uint32_t dlen = BSB_SIZE(dbsb) - tagLen*8 - 8;
+    guchar *tagDataStart = dbsb.buf + tagLen * 8 + 8;
+    uint32_t dlen = BSB_SIZE(dbsb) - tagLen * 8 - 8;
 
     uint32_t start = 0;
     while (!BSB_IS_ERROR(dbsb) && BSB_REMAINING(dbsb) && tagLen > 0) {
@@ -90,7 +92,7 @@ LOCAL int quic_chlo_parser(ArkimeSession_t *session, BSB dbsb) {
     return 1;
 }
 /******************************************************************************/
-LOCAL int quic_2445_udp_parser(ArkimeSession_t *session, void *UNUSED(uw), const unsigned char *data, int len, int UNUSED(which))
+LOCAL int quic_2445_udp_parser(ArkimeSession_t *session, void *UNUSED(uw), const uint8_t *data, int len, int UNUSED(which))
 {
     uint32_t version = -1;
     uint32_t offset = 1;
@@ -109,15 +111,15 @@ LOCAL int quic_2445_udp_parser(ArkimeSession_t *session, void *UNUSED(uw), const
         offset += 8;
     }
 
-    if ( (uint32_t)len < offset+5) {
+    if ( (uint32_t)len < offset + 5) {
         return 0;
     }
 
     // Get version
     if (data[0] & 0x01 && data[offset] == 'Q') {
-        version = (data[offset+1] - '0') * 100 +
-                  (data[offset+2] - '0') * 10 +
-                  (data[offset+3] - '0');
+        version = (data[offset + 1] - '0') * 100 +
+                  (data[offset + 2] - '0') * 10 +
+                  (data[offset + 3] - '0');
         offset += 4;
     }
 
@@ -190,7 +192,7 @@ LOCAL int quic_2445_udp_parser(ArkimeSession_t *session, void *UNUSED(uw), const
 /******************************************************************************/
 // Couldn't figure out this document, brute force
 // https://docs.google.com/document/d/1FcpCJGTDEMblAs-Bm5TYuqhHyUqeWpqrItw2vkMFsdY/edit
-LOCAL int quic_4648_udp_parser(ArkimeSession_t *session, void *UNUSED(uw), const unsigned char *data, int len, int UNUSED(which))
+LOCAL int quic_4648_udp_parser(ArkimeSession_t *session, void *UNUSED(uw), const uint8_t *data, int len, int UNUSED(which))
 {
     uint32_t version = -1;
     uint32_t offset = 5;
@@ -219,9 +221,9 @@ LOCAL int quic_4648_udp_parser(ArkimeSession_t *session, void *UNUSED(uw), const
 }
 /******************************************************************************/
 // Headers are encrypted?
-LOCAL int quic_5x_udp_parser(ArkimeSession_t *session, void *uw, const unsigned char *data, int len, int which)
+LOCAL int quic_5x_udp_parser(ArkimeSession_t *session, void *uw, const uint8_t *data, int len, int which)
 {
-    if (len < 20 || memcmp(data+1, "Q05", 3) != 0) {
+    if (len < 20 || memcmp(data + 1, "Q05", 3) != 0) {
         return ARKIME_PARSER_UNREGISTER;
     }
 
@@ -240,14 +242,14 @@ LOCAL int quic_5x_udp_parser(ArkimeSession_t *session, void *uw, const unsigned 
     return 0;
 }
 /******************************************************************************/
-LOCAL void quic_2445_udp_classify(ArkimeSession_t *session, const unsigned char *data, int len, int UNUSED(which), void *UNUSED(uw))
+LOCAL void quic_2445_udp_classify(ArkimeSession_t *session, const uint8_t *data, int len, int UNUSED(which), void *UNUSED(uw))
 {
     if (len > 100 && (data[0] & 0x83) == 0x01) {
         arkime_parsers_register(session, quic_2445_udp_parser, 0, 0);
     }
 }
 /******************************************************************************/
-LOCAL void quic_4648_udp_classify(ArkimeSession_t *session, const unsigned char *data, int len, int UNUSED(which), void *UNUSED(uw))
+LOCAL void quic_4648_udp_classify(ArkimeSession_t *session, const uint8_t *data, int len, int UNUSED(which), void *UNUSED(uw))
 {
     if (len > 100 && (data[0] & 0xc0) == 0xc0) {
         arkime_parsers_register(session, quic_4648_udp_parser, 0, 0);
@@ -261,7 +263,7 @@ LOCAL void quic_5x_free(ArkimeSession_t UNUSED(*session), void *uw)
     ARKIME_TYPE_FREE(QUIC5xInfo_t, info);
 }
 /******************************************************************************/
-LOCAL void quic_5x_udp_classify(ArkimeSession_t *session, const unsigned char *data, int len, int UNUSED(which), void *UNUSED(uw))
+LOCAL void quic_5x_udp_classify(ArkimeSession_t *session, const uint8_t *data, int len, int UNUSED(which), void *UNUSED(uw))
 {
     if (len > 100 && (data[0] & 0xc0) == 0xc0) {
         QUIC5xInfo_t *info = ARKIME_TYPE_ALLOC(QUIC5xInfo_t);
@@ -271,7 +273,7 @@ LOCAL void quic_5x_udp_classify(ArkimeSession_t *session, const unsigned char *d
     }
 }
 /******************************************************************************/
-LOCAL void quic_add(ArkimeSession_t *UNUSED(session), const unsigned char *UNUSED(data), int UNUSED(len), int UNUSED(which), void *UNUSED(uw))
+LOCAL void quic_add(ArkimeSession_t *UNUSED(session), const uint8_t *UNUSED(data), int UNUSED(len), int UNUSED(which), void *UNUSED(uw))
 {
     arkime_session_add_protocol(session, "quic");
 }
@@ -283,7 +285,7 @@ LOCAL void quic_fbzero_free(ArkimeSession_t UNUSED(*session), void *uw)
     ARKIME_TYPE_FREE(FBZeroInfo_t, fbzero);
 }
 /******************************************************************************/
-LOCAL int quic_fb_tcp_parser(ArkimeSession_t *session, void *uw, const unsigned char *data, int remaining, int which)
+LOCAL int quic_fb_tcp_parser(ArkimeSession_t *session, void *uw, const uint8_t *data, int remaining, int which)
 {
     if (which != 0)
         return 0;
@@ -302,7 +304,7 @@ LOCAL int quic_fb_tcp_parser(ArkimeSession_t *session, void *uw, const unsigned 
         return 0;
 
     BSB dbsb;
-    BSB_INIT(dbsb, fbzero->data+9, len);
+    BSB_INIT(dbsb, fbzero->data + 9, len);
 
     if (quic_chlo_parser(session, dbsb))
         arkime_session_add_protocol(session, "fbzero");
@@ -311,7 +313,7 @@ LOCAL int quic_fb_tcp_parser(ArkimeSession_t *session, void *uw, const unsigned 
 }
 
 /******************************************************************************/
-LOCAL void quic_fb_tcp_classify(ArkimeSession_t *session, const unsigned char *UNUSED(data), int len, int which, void *UNUSED(uw))
+LOCAL void quic_fb_tcp_classify(ArkimeSession_t *session, const uint8_t *UNUSED(data), int len, int which, void *UNUSED(uw))
 {
     if (which == 0 && len > 13) {
         FBZeroInfo_t *fbzero = ARKIME_TYPE_ALLOC(FBZeroInfo_t);
@@ -380,19 +382,10 @@ LOCAL void hkdfExpandLabel(uint8_t *secret, int secretLen, char *label, uint8_t 
     g_hmac_unref(hmac);
 }
 /******************************************************************************/
-LOCAL void quic_ietf_udp_classify(ArkimeSession_t *session, const unsigned char *data, int len, int UNUSED(which), void *UNUSED(uw))
+LOCAL void quic_ietf_udp_classify(ArkimeSession_t *session, const uint8_t *data, int len, int UNUSED(which), void *UNUSED(uw))
 {
 // This is the most obfuscate protocol ever
 // Thank you wireshark/tshark/quicgo and other tools to verify (kindof) implementation
-
-    static int init = 1;
-    static void (*process_client_hello_data)(ArkimeSession_t *session, const uint8_t *data, int len) = NULL;
-
-    // Do this once. Has to be here since parsers can be loaded in any order
-    if (init) {
-        init = 0;
-        process_client_hello_data = dlsym(RTLD_DEFAULT, "tls_process_client_hello_data");
-    }
 
     // Min length for quic packets because of padding
     if (len < 1200 || len > 3000)
@@ -510,7 +503,7 @@ LOCAL void quic_ietf_udp_classify(ArkimeSession_t *session, const unsigned char 
     for (int i = 0; pn_length > 0; pn_length--, i++) {
         uint8_t tmp = 0;
         BSB_IMPORT_u08(bsb, tmp);
-        pn |= (tmp ^ mask[i+1]) << (8*(pn_length - 1));
+        pn |= (tmp ^ mask[i + 1]) << (8 * (pn_length - 1));
     }
 
   // Make copy, with decrypted first byte and packet number
@@ -539,7 +532,7 @@ LOCAL void quic_ietf_udp_classify(ArkimeSession_t *session, const unsigned char 
 
     pp_cipher_ctx = EVP_CIPHER_CTX_new();
     rc = EVP_DecryptInit(pp_cipher_ctx, pp_cipher, keyOkm, nonce);
-    rc += EVP_DecryptUpdate(pp_cipher_ctx, out, &outLen, BSB_WORK_PTR(bsb), BSB_REMAINING(bsb)-16);
+    rc += EVP_DecryptUpdate(pp_cipher_ctx, out, &outLen, BSB_WORK_PTR(bsb), BSB_REMAINING(bsb) - 16);
     //rc = EVP_DecryptFinal(pp_cipher_ctx, out, &outLen); --> Not sure why this isn't needed
     EVP_CIPHER_CTX_free(pp_cipher_ctx);
     if (rc != 2) {
@@ -578,22 +571,22 @@ LOCAL void quic_ietf_udp_classify(ArkimeSession_t *session, const unsigned char 
     }
 
     // Now actually decode the client hello
-    if (clen > 0 && process_client_hello_data) {
-        process_client_hello_data(session, cbuf, clen);
+    if (clen > 0) {
+        arkime_parser_call_named_func(tls_process_client_hello_func, session, cbuf, clen, NULL);
     }
 }
 /******************************************************************************/
 void arkime_parser_init()
 {
-    arkime_parsers_classifier_register_udp("quic", NULL, 1, (const unsigned char *)"Q05", 3, quic_5x_udp_classify);
-    arkime_parsers_classifier_register_udp("quic", NULL, 1, (const unsigned char *)"Q04", 3, quic_4648_udp_classify);
-    arkime_parsers_classifier_register_udp("quic", NULL, 9, (const unsigned char *)"Q04", 3, quic_2445_udp_classify);
-    arkime_parsers_classifier_register_udp("quic", NULL, 9, (const unsigned char *)"Q03", 3, quic_2445_udp_classify);
-    arkime_parsers_classifier_register_udp("quic", NULL, 9, (const unsigned char *)"Q02", 3, quic_2445_udp_classify);
-    arkime_parsers_classifier_register_tcp("fbzero", NULL, 0, (const unsigned char *)"\x31QTV", 4, quic_fb_tcp_classify);
-    arkime_parsers_classifier_register_udp("quic", NULL, 9, (const unsigned char *)"PRST", 4, quic_add);
+    arkime_parsers_classifier_register_udp("quic", NULL, 1, (const uint8_t *)"Q05", 3, quic_5x_udp_classify);
+    arkime_parsers_classifier_register_udp("quic", NULL, 1, (const uint8_t *)"Q04", 3, quic_4648_udp_classify);
+    arkime_parsers_classifier_register_udp("quic", NULL, 9, (const uint8_t *)"Q04", 3, quic_2445_udp_classify);
+    arkime_parsers_classifier_register_udp("quic", NULL, 9, (const uint8_t *)"Q03", 3, quic_2445_udp_classify);
+    arkime_parsers_classifier_register_udp("quic", NULL, 9, (const uint8_t *)"Q02", 3, quic_2445_udp_classify);
+    arkime_parsers_classifier_register_tcp("fbzero", NULL, 0, (const uint8_t *)"\x31QTV", 4, quic_fb_tcp_classify);
+    arkime_parsers_classifier_register_udp("quic", NULL, 9, (const uint8_t *)"PRST", 4, quic_add);
 
-    arkime_parsers_classifier_register_udp("quic", NULL, 1, (const unsigned char *)"\x00\x00\x00\x01", 1, quic_ietf_udp_classify);
+    arkime_parsers_classifier_register_udp("quic", NULL, 1, (const uint8_t *)"\x00\x00\x00\x01", 1, quic_ietf_udp_classify);
 
     hostField = arkime_field_define("quic", "lotermfield",
         "host.quic", "Hostname", "quic.host",
@@ -621,4 +614,6 @@ void arkime_parser_init()
         "QUIC Version",
         ARKIME_FIELD_TYPE_STR_GHASH,  ARKIME_FIELD_FLAG_CNT,
         (char *)NULL);
+
+    tls_process_client_hello_func = arkime_parser_get_named_func("tls_process_client_hello");
 }

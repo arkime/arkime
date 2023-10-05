@@ -96,7 +96,7 @@ void arkime_readers_start()
             if (!equal) {
                 CONFIGEXIT("Must be FieldExpr=value, missing equal '%s'", opsstr[j]);
             }
-            int len = strlen(equal+1);
+            int len = strlen(equal + 1);
             if (!len) {
                 CONFIGEXIT("Must be FieldExpr=value, empty value for '%s'", opsstr[j]);
             }
@@ -105,7 +105,7 @@ void arkime_readers_start()
             if (fieldPos == -1) {
                 CONFIGEXIT("Must be FieldExpr=value, Unknown field expression '%s'", opsstr[j]);
             }
-            arkime_field_ops_add(&readerFieldOps[i], fieldPos, equal+1, len);
+            arkime_field_ops_add(&readerFieldOps[i], fieldPos, equal + 1, len);
         }
         g_strfreev(opsstr);
     }

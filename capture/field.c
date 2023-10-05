@@ -75,11 +75,11 @@ LOCAL void arkime_field_free_info(ArkimeFieldInfo_t *info)
     ARKIME_TYPE_FREE(ArkimeFieldInfo_t, info);
 }
 /******************************************************************************/
-void arkime_field_define_json(unsigned char *expression, int expression_len, unsigned char *data, int data_len)
+void arkime_field_define_json(uint8_t *expression, int expression_len, uint8_t *data, int data_len)
 {
     ArkimeFieldInfo_t *info = ARKIME_TYPE_ALLOC0(ArkimeFieldInfo_t);
     int                i;
-    uint32_t           out[4*100]; // Can have up to 100 elements at any level
+    uint32_t           out[4 * 100]; // Can have up to 100 elements at any level
     int                disabled = 0;
 
     if (js0n(data, data_len, out, sizeof(out)) != 0) {
@@ -90,29 +90,29 @@ void arkime_field_define_json(unsigned char *expression, int expression_len, uns
     for (i = 0; out[i]; i += 4) {
         if (strncmp("group", (char*)data + out[i], 5) == 0) {
             g_free(info->group);
-            info->group = g_strndup((char*)data + out[i+2], out[i+3]);
+            info->group = g_strndup((char*)data + out[i + 2], out[i + 3]);
         } else if (strncmp("dbField2", (char*)data + out[i], 7) == 0) {
             g_free(info->dbFieldFull);
-            info->dbFieldFull = info->dbField = g_strndup((char*)data + out[i+2], out[i+3]);
-            info->dbFieldLen  = out[i+3];
+            info->dbFieldFull = info->dbField = g_strndup((char*)data + out[i + 2], out[i + 3]);
+            info->dbFieldLen  = out[i + 3];
         } else if (strncmp("fieldECS", (char*)data + out[i], 7) == 0) {
             g_free(info->dbFieldFull);
-            info->dbFieldFull = info->dbField = g_strndup((char*)data + out[i+2], out[i+3]);
-            info->dbFieldLen  = out[i+3];
+            info->dbFieldFull = info->dbField = g_strndup((char*)data + out[i + 2], out[i + 3]);
+            info->dbFieldLen  = out[i + 3];
         } else if (strncmp("type", (char*)data + out[i], 4) == 0) {
             g_free(info->kind);
-            info->kind = g_strndup((char*)data + out[i+2], out[i+3]);
+            info->kind = g_strndup((char*)data + out[i + 2], out[i + 3]);
         } else if (strncmp("category", (char*)data + out[i], 8) == 0) {
             g_free(info->category);
-            info->category = g_strndup((char*)data + out[i+2], out[i+3]);
+            info->category = g_strndup((char*)data + out[i + 2], out[i + 3]);
         } else if (strncmp("transform", (char*)data + out[i], 8) == 0) {
             g_free(info->transform);
-            info->transform = g_strndup((char*)data + out[i+2], out[i+3]);
+            info->transform = g_strndup((char*)data + out[i + 2], out[i + 3]);
         } else if (strncmp("aliases", (char*)data + out[i], 7) == 0) {
             g_free(info->aliases);
-            info->aliases = g_strndup((char*)data + out[i+2], out[i+3]);
+            info->aliases = g_strndup((char*)data + out[i + 2], out[i + 3]);
         } else if (strncmp("disabled", (char*)data + out[i], 8) == 0) {
-            if (strncmp((char *)data + out[i+2], "true", 4) == 0) {
+            if (strncmp((char *)data + out[i + 2], "true", 4) == 0) {
                 disabled = 1;
             }
         }
@@ -383,14 +383,14 @@ int arkime_field_define(char *group, char *kind, char *expression, char *friendl
             static char lastGroup[100] = "";
             static int groupNum = 0;
 
-            if (firstdot-minfo->dbField+1 >= (int)sizeof(lastGroup) - 1)
+            if (firstdot-minfo->dbField + 1 >= (int)sizeof(lastGroup) - 1)
                 LOGEXIT("ERROR - field '%s' too long", minfo->dbField);
 
-            if (memcmp(minfo->dbField, lastGroup, (firstdot-minfo->dbField)+1) == 0) {
+            if (memcmp(minfo->dbField, lastGroup, (firstdot-minfo->dbField) + 1) == 0) {
                 minfo->dbGroupNum = groupNum;
             } else {
                 minfo->dbGroupNum = ARKIME_THREAD_INCRNEW(groupNum);
-                memcpy(lastGroup, minfo->dbField, (firstdot-minfo->dbField)+1);
+                memcpy(lastGroup, minfo->dbField, (firstdot-minfo->dbField) + 1);
             }
             minfo->dbGroup = minfo->dbField;
             minfo->dbGroupLen = firstdot - minfo->dbField;
@@ -433,13 +433,13 @@ int arkime_field_define(char *group, char *kind, char *expression, char *friendl
     }
 
     if (flags & ARKIME_FIELD_FLAG_IPPRE) {
-        int l = strlen(dbField)-2;
+        int l = strlen(dbField) - 2;
         int fnlen = strlen(friendlyName);
         snprintf(dbField2, sizeof(dbField2), "%.*sGEO", l, dbField);
         HASH_FIND(d_, fieldsByDb, dbField2, info);
         if (!info) {
-            snprintf(expression2, sizeof(expression2), "country.%s", expression+3);
-            snprintf(friendlyName2, sizeof(friendlyName2), "%.*s GEO", fnlen-2, friendlyName);
+            snprintf(expression2, sizeof(expression2), "country.%s", expression+ 3);
+            snprintf(friendlyName2, sizeof(friendlyName2), "%.*s GEO", fnlen - 2, friendlyName);
             snprintf(help2, sizeof(help2), "GeoIP country string calculated from the %s", help);
             arkime_db_add_field(group, "uptermfield", expression2, friendlyName2, dbField2, help2, FALSE, empty_va_list);
         }
@@ -447,8 +447,8 @@ int arkime_field_define(char *group, char *kind, char *expression, char *friendl
         snprintf(dbField2, sizeof(dbField2), "%.*sASN", l, dbField);
         HASH_FIND(d_, fieldsByDb, dbField2, info);
         if (!info) {
-            snprintf(expression2, sizeof(expression2), "asn.%s", expression+3);
-            snprintf(friendlyName2, sizeof(friendlyName2), "%.*s ASN", fnlen-2, friendlyName);
+            snprintf(expression2, sizeof(expression2), "asn.%s", expression + 3);
+            snprintf(friendlyName2, sizeof(friendlyName2), "%.*s ASN", fnlen - 2, friendlyName);
             snprintf(help2, sizeof(help2), "GeoIP ASN string calculated from the %s", help);
             arkime_db_add_field(group, "termfield", expression2, friendlyName2, dbField2, help2, FALSE, empty_va_list);
         }
@@ -456,13 +456,13 @@ int arkime_field_define(char *group, char *kind, char *expression, char *friendl
         snprintf(dbField2, sizeof(dbField2), "%.*sRIR", l, dbField);
         HASH_FIND(d_, fieldsByDb, dbField2, info);
         if (!info) {
-            snprintf(expression2, sizeof(expression2), "rir.%s", expression+3);
-            snprintf(friendlyName2, sizeof(friendlyName2), "%.*s RIR", fnlen-2, friendlyName);
+            snprintf(expression2, sizeof(expression2), "rir.%s", expression + 3);
+            snprintf(friendlyName2, sizeof(friendlyName2), "%.*s RIR", fnlen - 2, friendlyName);
             snprintf(help2, sizeof(help2), "Regional Internet Registry string calculated from %s", help);
             arkime_db_add_field(group, "uptermfield", expression2, friendlyName2, dbField2, help2, FALSE, empty_va_list);
         }
     } else if (type == ARKIME_FIELD_TYPE_IP || type == ARKIME_FIELD_TYPE_IP_GHASH) {
-        int l = strlen(dbField)-2;
+        int l = strlen(dbField) - 2;
         snprintf(dbField2, sizeof(dbField2), "%.*sGEO", l, dbField);
         HASH_FIND(d_, fieldsByDb, dbField2, info);
         if (!info) {
@@ -555,7 +555,7 @@ const char *arkime_field_string_add(int pos, ArkimeSession_t *session, const cha
             arkime_field_truncated(session, info);
         }
 
-        field->jsonSize = 6 + info->dbFieldLen + 2*len;
+        field->jsonSize = 6 + info->dbFieldLen + 2 * len;
         if (copy)
             string = g_strndup(string, len);
         switch (info->type) {
@@ -595,7 +595,7 @@ const char *arkime_field_string_add(int pos, ArkimeSession_t *session, const cha
     }
 
     field = session->fields[pos];
-    field->jsonSize += (6 + 2*len);
+    field->jsonSize += (6 + 2 * len);
 
     if (field->jsonSize > 20000)
         session->midSave = 1;
@@ -616,7 +616,7 @@ const char *arkime_field_string_add(int pos, ArkimeSession_t *session, const cha
         HASH_FIND_HASH(s_, *(field->shash), arkime_string_hash_len(string, len), string, hstring);
 
         if (hstring) {
-            field->jsonSize -= (6 + 2*len);
+            field->jsonSize -= (6 + 2 * len);
             return NULL;
         }
         hstring = ARKIME_TYPE_ALLOC(ArkimeString_t);
@@ -632,7 +632,7 @@ const char *arkime_field_string_add(int pos, ArkimeSession_t *session, const cha
         if (copy)
             string = g_strndup(string, len);
         if (g_hash_table_lookup(field->ghash, string)) {
-            field->jsonSize -= (6 + 2*len);
+            field->jsonSize -= (6 + 2 * len);
             if (copy)
                 g_free((gpointer)string);
             return NULL;
@@ -726,7 +726,7 @@ const char *arkime_field_string_uw_add(int pos, ArkimeSession_t *session, const 
             len = ARKIME_FIELD_MAX_ELEMENT_SIZE;
             arkime_field_truncated(session, info);
         }
-        field->jsonSize = 6 + info->dbFieldLen + 2*len;
+        field->jsonSize = 6 + info->dbFieldLen + 2 * len;
         if (copy)
             string = g_strndup(string, len);
         switch (info->type) {
@@ -752,7 +752,7 @@ const char *arkime_field_string_uw_add(int pos, ArkimeSession_t *session, const 
         len = strlen(string);
 
     field = session->fields[pos];
-    field->jsonSize += (6 + 2*len);
+    field->jsonSize += (6 + 2 * len);
 
     if (len > ARKIME_FIELD_MAX_ELEMENT_SIZE) {
         len = ARKIME_FIELD_MAX_ELEMENT_SIZE;
@@ -767,7 +767,7 @@ const char *arkime_field_string_uw_add(int pos, ArkimeSession_t *session, const 
         HASH_FIND_HASH(s_, *(field->shash), arkime_string_hash_len(string, len), string, hstring);
 
         if (hstring) {
-            field->jsonSize -= (6 + 2*len);
+            field->jsonSize -= (6 + 2 * len);
             return NULL;
         }
         hstring = ARKIME_TYPE_ALLOC(ArkimeString_t);
@@ -928,7 +928,7 @@ gboolean arkime_field_ip_equal (gconstpointer v1, gconstpointer v2)
 SUPPRESS_UNSIGNED_INTEGER_OVERFLOW
 guint arkime_field_ip_hash (gconstpointer v)
 {
-  const unsigned char *p;
+  const uint8_t *p;
   guint32 h = 5381;
   unsigned int i;
 

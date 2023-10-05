@@ -428,7 +428,7 @@ LOCAL void arkime_packet_process(ArkimePacket_t *packet, int thread)
 LOCAL void *arkime_packet_thread(void *threadp)
 {
     int thread = (long)threadp;
-    const uint32_t maxPackets75 = config.maxPackets*0.75;
+    const uint32_t maxPackets75 = config.maxPackets * 0.75;
     uint32_t skipCount = 0;
 
     while (1) {
@@ -593,7 +593,7 @@ LOCAL gboolean arkime_packet_frags_process(ArkimePacket_t * const packet)
         if (fip_off != off)
             break;
         off += fpacket->payloadLen/8;
-        payloadLen = MAX(payloadLen, fip_off*8 + fpacket->payloadLen);
+        payloadLen = MAX(payloadLen, fip_off * 8 + fpacket->payloadLen);
     }
     // We have a hole
     if ((void*)fpacket != (void*)&frags->packets) {
@@ -616,7 +616,7 @@ LOCAL gboolean arkime_packet_frags_process(ArkimePacket_t * const packet)
 
     // Fix header of new packet
     fip4 = (struct ip*)(pkt + packet->ipOffset);
-    fip4->ip_len = htons(payloadLen + 4*ip4->ip_hl);
+    fip4->ip_len = htons(payloadLen + 4 * ip4->ip_hl);
     fip4->ip_off = 0;
 
     // Copy payload
@@ -624,10 +624,10 @@ LOCAL gboolean arkime_packet_frags_process(ArkimePacket_t * const packet)
         fip4 = (struct ip*)(fpacket->pkt + fpacket->ipOffset);
         uint16_t fip_off = ntohs(fip4->ip_off) & IP_OFFMASK;
 
-        if (packet->payloadOffset+(fip_off*8) + fpacket->payloadLen <= packet->pktlen)
-            memcpy(pkt+packet->payloadOffset+(fip_off*8), fpacket->pkt+fpacket->payloadOffset, fpacket->payloadLen);
+        if (packet->payloadOffset+(fip_off * 8) + fpacket->payloadLen <= packet->pktlen)
+            memcpy(pkt+packet->payloadOffset+(fip_off * 8), fpacket->pkt+fpacket->payloadOffset, fpacket->payloadLen);
         else
-            LOG("WARNING - Not enough room for frag %d > %d", packet->payloadOffset+(fip_off*8) + fpacket->payloadLen, packet->pktlen);
+            LOG("WARNING - Not enough room for frag %d > %d", packet->payloadOffset+(fip_off * 8) + fpacket->payloadLen, packet->pktlen);
     }
 
     // Set all the vars in the current packet to new defraged packet
@@ -768,13 +768,13 @@ LOCAL ArkimePacketRC arkime_packet_ip4(ArkimePacketBatch_t *batch, ArkimePacket_
             return ARKIME_PACKET_IP_DROPPED;
     }
 
-    if ((uint8_t*)data - packet->pkt >= 2048)
+    if ((uint8_t *)data - packet->pkt >= 2048)
         return ARKIME_PACKET_CORRUPT;
 
     packet->outerv6 = packet->v6; // v6 will get reset
     packet->v6 = 0;
     packet->outerIpOffset = packet->ipOffset; // ipOffset will get reset
-    packet->ipOffset = (uint8_t*)data - packet->pkt;
+    packet->ipOffset = (uint8_t *)data - packet->pkt;
     packet->payloadOffset = packet->ipOffset + ip_hdr_len;
     packet->payloadLen = ip_len - ip_hdr_len;
 
@@ -825,7 +825,7 @@ LOCAL ArkimePacketRC arkime_packet_ip4(ArkimePacketBatch_t *batch, ArkimePacket_
 
         const int dropPort = ((uint32_t)tcphdr->th_dport * (uint32_t)tcphdr->th_sport) & 0xffff;
         if (packetDrop4S.drops[dropPort] &&
-            arkime_drophash_should_drop(&packetDrop4, dropPort, sessionId+1, packet->ts.tv_sec)) {
+            arkime_drophash_should_drop(&packetDrop4, dropPort, sessionId + 1, packet->ts.tv_sec)) {
 
             return ARKIME_PACKET_IPPORT_DROPPED;
         }
@@ -848,7 +848,7 @@ LOCAL ArkimePacketRC arkime_packet_ip4(ArkimePacketBatch_t *batch, ArkimePacket_
 
             // Reset state on UNKNOWN
             packet->v6 = 0;
-            packet->ipOffset = (uint8_t*)data - packet->pkt;
+            packet->ipOffset = (uint8_t *)data - packet->pkt;
             packet->payloadOffset = packet->ipOffset + ip_hdr_len;
             packet->payloadLen = ip_len - ip_hdr_len;
         }
@@ -910,7 +910,7 @@ LOCAL ArkimePacketRC arkime_packet_ip6(ArkimePacketBatch_t * batch, ArkimePacket
     packet->outerv6 = packet->v6; // v6 will get reset
     packet->v6 = 1;
     packet->outerIpOffset = packet->ipOffset; // ipOffset will get reset
-    packet->ipOffset = (uint8_t*)data - packet->pkt;
+    packet->ipOffset = (uint8_t *)data - packet->pkt;
     packet->payloadOffset = packet->ipOffset + ip_hdr_len;
 
     if (ip_len + (int)sizeof(struct ip6_hdr) < ip_hdr_len) {
@@ -950,7 +950,7 @@ LOCAL ArkimePacketRC arkime_packet_ip6(ArkimePacketBatch_t * batch, ArkimePacket
                 return ARKIME_PACKET_CORRUPT;
             }
             nxt = data[ip_hdr_len];
-            ip_hdr_len += ((data[ip_hdr_len+1] + 1) << 3);
+            ip_hdr_len += ((data[ip_hdr_len + 1] + 1) << 3);
 
             packet->payloadOffset = packet->ipOffset + ip_hdr_len;
 
@@ -1004,7 +1004,7 @@ LOCAL ArkimePacketRC arkime_packet_ip6(ArkimePacketBatch_t * batch, ArkimePacket
 
             const int dropPort = ((uint32_t)tcphdr->th_dport * (uint32_t)tcphdr->th_sport) & 0xffff;
             if (packetDrop6S.drops[dropPort] &&
-                arkime_drophash_should_drop(&packetDrop6, dropPort, sessionId+1, packet->ts.tv_sec)) {
+                arkime_drophash_should_drop(&packetDrop6, dropPort, sessionId + 1, packet->ts.tv_sec)) {
 
                 return ARKIME_PACKET_IPPORT_DROPPED;
             }
@@ -1028,7 +1028,7 @@ LOCAL ArkimePacketRC arkime_packet_ip6(ArkimePacketBatch_t * batch, ArkimePacket
 
                 // Reset state on UNKNOWN
                 packet->v6 = 1;
-                packet->ipOffset = (uint8_t*)data - packet->pkt;
+                packet->ipOffset = (uint8_t *)data - packet->pkt;
                 packet->payloadOffset = packet->ipOffset + ip_hdr_len;
                 packet->payloadLen = ip_len + sizeof(struct ip6_hdr) - ip_hdr_len;
             }
@@ -1066,9 +1066,9 @@ LOCAL ArkimePacketRC arkime_packet_frame_relay(ArkimePacketBatch_t *batch, Arkim
     uint16_t type = data[2] << 8 | data[3];
 
     if (type == 0x03cc)
-        return arkime_packet_ip4(batch, packet, data+4, len-4);
+        return arkime_packet_ip4(batch, packet, data + 4, len - 4);
 
-    return arkime_packet_run_ethernet_cb(batch, packet, data+4, len-4, type, "FrameRelay");
+    return arkime_packet_run_ethernet_cb(batch, packet, data + 4, len - 4, type, "FrameRelay");
 }
 /******************************************************************************/
 LOCAL ArkimePacketRC arkime_packet_ieee802(ArkimePacketBatch_t *batch, ArkimePacket_t * const packet, const uint8_t *data, int len)
@@ -1077,16 +1077,16 @@ LOCAL ArkimePacketRC arkime_packet_ieee802(ArkimePacketBatch_t *batch, ArkimePac
     LOG("enter %p %p %d", packet, data, len);
 #endif
 
-    if (len < 6 || memcmp(data+2, "\xfe\xfe\x03", 3) != 0)
+    if (len < 6 || memcmp(data + 2, "\xfe\xfe\x03", 3) != 0)
         return ARKIME_PACKET_CORRUPT;
 
-    int etherlen = data[0] << 8 | data[+1];
+    int etherlen = data[0] << 8 | data[1];
     int ethertype = data[5];
 
     if (etherlen > len - 2)
         return ARKIME_PACKET_CORRUPT;
 
-    return arkime_packet_run_ethernet_cb(batch, packet, data+6, len-6, ethertype, "ieee802");
+    return arkime_packet_run_ethernet_cb(batch, packet, data + 6, len - 6, ethertype, "ieee802");
 }
 /******************************************************************************/
 LOCAL ArkimePacketRC arkime_packet_ether(ArkimePacketBatch_t * batch, ArkimePacket_t * const packet, const uint8_t *data, int len)
@@ -1102,7 +1102,7 @@ LOCAL ArkimePacketRC arkime_packet_ether(ArkimePacketBatch_t * batch, ArkimePack
         return ARKIME_PACKET_CORRUPT;
     }
     packet->outerEtherOffset = packet->etherOffset; //we need to keep track of the current and the previous mac offset, we don't know if this is the last etherframe here
-    packet->etherOffset = (uint8_t*)data - packet->pkt;
+    packet->etherOffset = (uint8_t *)data - packet->pkt;
 #ifdef DEBUG_PACKET
     char str[20];
     snprintf(str, sizeof(str), "%02x:%02x:%02x:%02x:%02x:%02x",
@@ -1127,8 +1127,8 @@ LOCAL ArkimePacketRC arkime_packet_ether(ArkimePacketBatch_t * batch, ArkimePack
 
 
     int n = 12;
-    while (n+2 < len) {
-        int ethertype = data[n] << 8 | data[n+1];
+    while (n + 2 < len) {
+        int ethertype = data[n] << 8 | data[n + 1];
         if (ethertype <= 1500) {
             return arkime_packet_ieee802(batch, packet, data+n, len-n);
         }
@@ -1143,7 +1143,7 @@ LOCAL ArkimePacketRC arkime_packet_ether(ArkimePacketBatch_t * batch, ArkimePack
         } // switch
     }
 #ifdef DEBUG_PACKET
-    LOG("BAD PACKET: bad len %d < %d", n+2, len);
+    LOG("BAD PACKET: bad len %d < %d", n + 2, len);
 #endif
     return ARKIME_PACKET_CORRUPT;
 }
@@ -1161,11 +1161,11 @@ LOCAL ArkimePacketRC arkime_packet_sll(ArkimePacketBatch_t * batch, ArkimePacket
     switch (ethertype) {
     case ETHERTYPE_VLAN:
         if ((data[20] & 0xf0) == 0x60)
-            return arkime_packet_ip6(batch, packet, data+20, len - 20);
+            return arkime_packet_ip6(batch, packet, data + 20, len - 20);
         else
-            return arkime_packet_ip4(batch, packet, data+20, len - 20);
+            return arkime_packet_ip4(batch, packet, data + 20, len - 20);
     default:
-        return arkime_packet_run_ethernet_cb(batch, packet, data+16,len-16, ethertype, "SLL");
+        return arkime_packet_run_ethernet_cb(batch, packet, data + 16,len - 16, ethertype, "SLL");
     } // switch
     return ARKIME_PACKET_CORRUPT;
 }
@@ -1180,7 +1180,7 @@ LOCAL ArkimePacketRC arkime_packet_sll2(ArkimePacketBatch_t * batch, ArkimePacke
     }
 
     int ethertype = data[0] << 8 | data[1];
-    return arkime_packet_run_ethernet_cb(batch, packet, data+20,len-20, ethertype, "SLL2");
+    return arkime_packet_run_ethernet_cb(batch, packet, data + 20,len - 20, ethertype, "SLL2");
 }
 /******************************************************************************/
 LOCAL ArkimePacketRC arkime_packet_nflog(ArkimePacketBatch_t * batch, ArkimePacket_t * const packet, const uint8_t *data, int len)
@@ -1194,8 +1194,8 @@ LOCAL ArkimePacketRC arkime_packet_nflog(ArkimePacketBatch_t * batch, ArkimePack
         return ARKIME_PACKET_CORRUPT;
     }
     int n = 4;
-    while (n+4 < len) {
-        int length = data[n+1] << 8 | data[n];
+    while (n + 4 < len) {
+        int length = data[n + 1] << 8 | data[n];
 
         // Make sure length is at least header and not bigger then remaining packet
         if (length < 4 || length > len - n) {
@@ -1205,11 +1205,11 @@ LOCAL ArkimePacketRC arkime_packet_nflog(ArkimePacketBatch_t * batch, ArkimePack
             return ARKIME_PACKET_CORRUPT;
         }
 
-        if (data[n+3] == 0 && data[n+2] == 9) {
+        if (data[n + 3] == 0 && data[n + 2] == 9) {
             if (data[0] == AF_INET) {
-                return arkime_packet_ip4(batch, packet, data+n+4, length - 4);
+                return arkime_packet_ip4(batch, packet, data + n + 4, length - 4);
             } else {
-                return arkime_packet_ip6(batch, packet, data+n+4, length - 4);
+                return arkime_packet_ip6(batch, packet, data + n + 4, length - 4);
             }
         } else {
             n += ((length + 3) & 0xfffffc);
@@ -1235,12 +1235,12 @@ LOCAL ArkimePacketRC arkime_packet_radiotap(ArkimePacketBatch_t * batch, ArkimeP
 
     hl += 24 + 3;
 
-    if (data[hl] != 0 || data[hl+1] != 0 || data[hl+2] != 0)
+    if (data[hl] != 0 || data[hl + 1] != 0 || data[hl + 2] != 0)
         return ARKIME_PACKET_UNKNOWN;
 
     hl += 3;
 
-    uint16_t ethertype = (data[hl] << 8) | data[hl+1];
+    uint16_t ethertype = (data[hl] << 8) | data[hl + 1];
     hl += 2;
 
     return arkime_packet_run_ethernet_cb(batch, packet, data+hl,len-hl, ethertype, "RadioTap");
@@ -1284,9 +1284,9 @@ void arkime_packet_batch(ArkimePacketBatch_t * batch, ArkimePacket_t * const pac
     case DLT_NULL: // NULL
         if (packet->pktlen > 4) {
             if (packet->pkt[0] == 30)
-                rc = arkime_packet_ip6(batch, packet, packet->pkt+4, packet->pktlen-4);
+                rc = arkime_packet_ip6(batch, packet, packet->pkt + 4, packet->pktlen - 4);
             else
-                rc = arkime_packet_ip4(batch, packet, packet->pkt+4, packet->pktlen-4);
+                rc = arkime_packet_ip4(batch, packet, packet->pkt + 4, packet->pktlen - 4);
         } else {
 #ifdef DEBUG_PACKET
             LOG("BAD PACKET: Too short %d", packet->pktlen);
@@ -1429,7 +1429,7 @@ LOCAL uint32_t arkime_packet_frag_hash(const void *key)
     int i;
     uint32_t n = 0;
     for (i = 0; i < 10; i++) {
-        n = (n << 5) - n + ((unsigned char*)key)[i];
+        n = (n << 5) - n + ((uint8_t *)key)[i];
     }
     return n;
 }
@@ -1492,7 +1492,7 @@ ArkimePacketRC arkime_packet_run_ethernet_cb(ArkimePacketBatch_t * batch, Arkime
 /******************************************************************************/
 void arkime_packet_set_ethernet_cb(uint16_t type, ArkimePacketEnqueue_cb enqueueCb)
 {
-    if (ethernetCbs[type]) 
+    if (ethernetCbs[type])
       LOG ("redining existing callback type %d", type);
 
     ethernetCbs[type] = enqueueCb;
@@ -1525,7 +1525,7 @@ ArkimePacketRC arkime_packet_run_ip_cb(ArkimePacketBatch_t * batch, ArkimePacket
 /******************************************************************************/
 void arkime_packet_set_ip_cb(uint16_t type, ArkimePacketEnqueue_cb enqueueCb)
 {
-    if (type >= ARKIME_IPPROTO_MAX) 
+    if (type >= ARKIME_IPPROTO_MAX)
       LOGEXIT ("ERROR - type value too large %d", type);
 
     ipCbs[type] = enqueueCb;
@@ -1880,9 +1880,9 @@ void arkime_packet_drophash_add(ArkimeSession_t *session, int which, int min)
     if (which == -1) {
         const int port = (htons(session->port1) * htons(session->port2)) & 0xffff;
         if (ARKIME_SESSION_v6(session)) {
-            arkime_drophash_add(&packetDrop6S, port, session->sessionId+1, session->lastPacket.tv_sec, min*60);
+            arkime_drophash_add(&packetDrop6S, port, session->sessionId + 1, session->lastPacket.tv_sec, min * 60);
         } else {
-            arkime_drophash_add(&packetDrop4S, port, session->sessionId+1, session->lastPacket.tv_sec, min*60);
+            arkime_drophash_add(&packetDrop4S, port, session->sessionId + 1, session->lastPacket.tv_sec, min * 60);
         }
     } else {
         // packetDrop is kept in network byte order
@@ -1890,15 +1890,15 @@ void arkime_packet_drophash_add(ArkimeSession_t *session, int which, int min)
 
         if (ARKIME_SESSION_v6(session)) {
             if (which == 0) {
-                arkime_drophash_add(&packetDrop6, port, (void*)&session->addr1, session->lastPacket.tv_sec, min*60);
+                arkime_drophash_add(&packetDrop6, port, (void*)&session->addr1, session->lastPacket.tv_sec, min * 60);
             } else {
-                arkime_drophash_add(&packetDrop6, port, (void*)&session->addr2, session->lastPacket.tv_sec, min*60);
+                arkime_drophash_add(&packetDrop6, port, (void*)&session->addr2, session->lastPacket.tv_sec, min * 60);
             }
         } else {
             if (which == 0) {
-                arkime_drophash_add(&packetDrop4, port, &((uint32_t *)session->addr1.s6_addr)[3], session->lastPacket.tv_sec, min*60);
+                arkime_drophash_add(&packetDrop4, port, &((uint32_t *)session->addr1.s6_addr)[3], session->lastPacket.tv_sec, min * 60);
             } else {
-                arkime_drophash_add(&packetDrop4, port, &((uint32_t *)session->addr2.s6_addr)[3], session->lastPacket.tv_sec, min*60);
+                arkime_drophash_add(&packetDrop4, port, &((uint32_t *)session->addr2.s6_addr)[3], session->lastPacket.tv_sec, min * 60);
             }
         }
     }

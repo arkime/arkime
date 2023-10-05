@@ -93,7 +93,7 @@ void http_common_parse_cookie(ArkimeSession_t *session, char *cookie, int len)
         if (!equal)
             break;
         arkime_field_string_add(cookieKeyField, session, start, equal-start, TRUE);
-        start = memchr(equal+1, ';', end - (equal+1));
+        start = memchr(equal + 1, ';', end - (equal + 1));
         if (config.parseCookieValue) {
             equal++;
             while (isspace(*equal) && equal < end) equal++;
@@ -207,7 +207,7 @@ void http_common_parse_url(ArkimeSession_t *session, char *url, int len)
 
     if (question) {
         arkime_field_string_add(pathField, session, url, question - url, TRUE);
-        char *start = question+1;
+        char *start = question + 1;
         char *ch;
         int   field = keyField;
         for (ch = start; ch < end; ch++) {
@@ -220,7 +220,7 @@ void http_common_parse_url(ArkimeSession_t *session, char *url, int len)
                         g_free(str);
                     }
                 }
-                start = ch+1;
+                start = ch + 1;
                 field = keyField;
                 continue;
             } else if (*ch == '=') {
@@ -232,7 +232,7 @@ void http_common_parse_url(ArkimeSession_t *session, char *url, int len)
                         g_free(str);
                     }
                 }
-                start = ch+1;
+                start = ch + 1;
                 field = valueField;
             }
         }
@@ -264,7 +264,7 @@ LOCAL int arkime_hp_cb_on_message_begin (http_parser *parser)
     http->inBody   &= ~(1 << http->which);
     g_checksum_reset(http->checksum[http->which]);
     if (config.supportSha256) {
-        g_checksum_reset(http->checksum[http->which+2]);
+        g_checksum_reset(http->checksum[http->which + 2]);
     }
 
     if (pluginsCbs & ARKIME_PLUGIN_HP_OMB)
@@ -322,7 +322,7 @@ LOCAL int arkime_hp_cb_on_body (http_parser *parser, const char *at, size_t leng
 
     g_checksum_update(http->checksum[http->which], (guchar *)at, length);
     if (config.supportSha256) {
-        g_checksum_update(http->checksum[http->which+2], (guchar *)at, length);
+        g_checksum_update(http->checksum[http->which + 2], (guchar *)at, length);
     }
 
     if (pluginsCbs & ARKIME_PLUGIN_HP_OB)
@@ -402,7 +402,7 @@ LOCAL int arkime_hp_cb_on_message_complete (http_parser *parser)
         const char *md5 = g_checksum_get_string(http->checksum[http->which]);
         arkime_field_string_uw_add(md5Field, session, (char*)md5, 32, (gpointer)http->magicString[http->which], TRUE);
         if (config.supportSha256) {
-            const char *sha256 = g_checksum_get_string(http->checksum[http->which+2]);
+            const char *sha256 = g_checksum_get_string(http->checksum[http->which + 2]);
             arkime_field_string_uw_add(sha256Field, session, (char*)sha256, 64, (gpointer)http->magicString[http->which], TRUE);
         }
     }
@@ -698,7 +698,7 @@ LOCAL int arkime_hp_cb_on_headers_complete (http_parser *parser)
 
 /*############################## SHARED ##############################*/
 /******************************************************************************/
-LOCAL int http_parse(ArkimeSession_t *session, void *uw, const unsigned char *data, int remaining, int which)
+LOCAL int http_parse(ArkimeSession_t *session, void *uw, const uint8_t *data, int remaining, int which)
 {
     HTTPInfo_t            *http          = uw;
 
@@ -796,7 +796,7 @@ LOCAL void http_free(ArkimeSession_t UNUSED(*session), void *uw)
     ARKIME_TYPE_FREE(HTTPInfo_t, http);
 }
 /******************************************************************************/
-LOCAL void http_classify(ArkimeSession_t *session, const unsigned char *UNUSED(data), int UNUSED(len), int UNUSED(which), void *UNUSED(uw))
+LOCAL void http_classify(ArkimeSession_t *session, const uint8_t *UNUSED(data), int UNUSED(len), int UNUSED(which), void *UNUSED(uw))
 {
     if (arkime_session_has_protocol(session, "http"))
         return;
@@ -1043,10 +1043,10 @@ static const char *method_strings[] =
 
     int i;
     for (i = 0; method_strings[i]; i++) {
-        arkime_parsers_classifier_register_tcp("http", NULL, 0, (unsigned char*)method_strings[i], strlen(method_strings[i]), http_classify);
+        arkime_parsers_classifier_register_tcp("http", NULL, 0, (uint8_t *)method_strings[i], strlen(method_strings[i]), http_classify);
     }
 
-    arkime_parsers_classifier_register_tcp("http", NULL, 0, (unsigned char*)"HTTP", 4, http_classify);
+    arkime_parsers_classifier_register_tcp("http", NULL, 0, (uint8_t *)"HTTP", 4, http_classify);
 
     memset(&parserSettings, 0, sizeof(parserSettings));
     parserSettings.on_message_begin = arkime_hp_cb_on_message_begin;

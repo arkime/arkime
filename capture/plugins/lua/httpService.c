@@ -25,7 +25,7 @@ typedef struct {
     long ref;
     int  thread;
     int code;
-    unsigned char *data;
+    uint8_t *data;
     int len;
 } LuaHttp_t;
 
@@ -83,7 +83,7 @@ LOCAL void mhs_http_response_cb_process(ArkimeSession_t *UNUSED(session), gpoint
     ARKIME_TYPE_FREE(LuaHttp_t, lhttp);
 }
 /******************************************************************************/
-void mhs_http_response_cb(int code, unsigned char *data, int len, gpointer uw)
+void mhs_http_response_cb(int code, uint8_t *data, int len, gpointer uw)
 {
     LuaHttp_t *lhttp = uw;
     lhttp->code = code;

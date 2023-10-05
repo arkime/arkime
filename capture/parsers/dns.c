@@ -66,7 +66,7 @@ typedef enum dns_result_record_type
 } DNSResultRecordType_t;
 
 typedef struct {
-    unsigned char      *data[2];
+    uint8_t            *data[2];
     uint16_t            size[2];
     uint16_t            pos[2];
     uint16_t            len[2];
@@ -116,7 +116,7 @@ LOCAL int dns_name_element(BSB *nbsb, BSB *bsb)
     return 0;
 }
 /******************************************************************************/
-LOCAL unsigned char *dns_name(const unsigned char *full, int fulllen, BSB *inbsb, unsigned char *name, int *namelen)
+LOCAL uint8_t *dns_name(const uint8_t *full, int fulllen, BSB *inbsb, uint8_t *name, int *namelen)
 {
     BSB  nbsb;
     int  didPointer = 0;
@@ -128,7 +128,7 @@ LOCAL unsigned char *dns_name(const unsigned char *full, int fulllen, BSB *inbsb
     curbsb = inbsb;
 
     while (BSB_REMAINING(*curbsb)) {
-        unsigned char ch = 0;
+        uint8_t ch = 0;
         BSB_IMPORT_u08(*curbsb, ch);
 
         if (ch == 0)
@@ -210,7 +210,7 @@ LOCAL int dns_find_host(int pos, ArkimeSession_t *session, char *string, int len
     return FALSE;
 }
 /******************************************************************************/
-LOCAL void dns_parser_rr_https(ArkimeSession_t *session, const unsigned char *data, int len)
+LOCAL void dns_parser_rr_https(ArkimeSession_t *session, const uint8_t *data, int len)
 {
     if (len < 10)
         return;
@@ -233,7 +233,7 @@ LOCAL void dns_parser_rr_https(ArkimeSession_t *session, const unsigned char *da
         if (len > BSB_REMAINING(bsb))
             return;
 
-        unsigned char *ptr = BSB_WORK_PTR(bsb);
+        uint8_t *ptr = BSB_WORK_PTR(bsb);
 
         switch (key) {
         case 1: { // alpn
@@ -243,7 +243,7 @@ LOCAL void dns_parser_rr_https(ArkimeSession_t *session, const unsigned char *da
                 uint8_t alen = 0;
                 BSB_IMPORT_u08(absb, alen);
 
-                unsigned char *aptr = NULL;
+                uint8_t *aptr = NULL;
                 BSB_IMPORT_ptr(absb, aptr, alen);
 
                 if (aptr) {
@@ -277,7 +277,7 @@ LOCAL void dns_parser_rr_https(ArkimeSession_t *session, const unsigned char *da
 
 }
 /******************************************************************************/
-LOCAL void dns_parser(ArkimeSession_t *session, int kind, const unsigned char *data, int len)
+LOCAL void dns_parser(ArkimeSession_t *session, int kind, const uint8_t *data, int len)
 {
 
     if (len < 17)
@@ -320,15 +320,15 @@ LOCAL void dns_parser(ArkimeSession_t *session, int kind, const unsigned char *d
     /* QD Section */
     int i;
     for (i = 0; BSB_NOT_ERROR(bsb) && i < qd_count; i++) {
-        unsigned char  namebuf[8000];
+        uint8_t  namebuf[8000];
         int namelen = sizeof(namebuf);
-        unsigned char *name = dns_name(data, len, &bsb, namebuf, &namelen);
+        uint8_t *name = dns_name(data, len, &bsb, namebuf, &namelen);
 
         if (BSB_IS_ERROR(bsb) || !name)
             break;
 
         if (!namelen) {
-            name = (unsigned char*)"<root>";
+            name = (uint8_t *)"<root>";
             namelen = 6;
         }
 
@@ -373,12 +373,12 @@ LOCAL void dns_parser(ArkimeSession_t *session, int kind, const unsigned char *d
     }
     int recordType = 0;
     for (recordType= RESULT_RECORD_ANSWER; recordType <= RESULT_RECORD_ADDITIONAL; recordType++) {
-        int recordNum = resultRecordCount[recordType-1];
+        int recordNum = resultRecordCount[recordType - 1];
         for (i = 0; BSB_NOT_ERROR(bsb) && i < recordNum; i++) {
 
-            unsigned char  namebuf[8000];
+            uint8_t  namebuf[8000];
             int namelen = sizeof(namebuf);
-            unsigned char *name = dns_name(data, len, &bsb, namebuf, &namelen);
+            uint8_t *name = dns_name(data, len, &bsb, namebuf, &namelen);
 
             if (BSB_IS_ERROR(bsb) || !name)
              break;
@@ -405,7 +405,7 @@ LOCAL void dns_parser(ArkimeSession_t *session, int kind, const unsigned char *d
                 if (rdlength != 4)
                     break;
                 struct in_addr in;
-                unsigned char *ptr = BSB_WORK_PTR(bsb);
+                uint8_t *ptr = BSB_WORK_PTR(bsb);
                 in.s_addr = ((uint32_t)(ptr[3])) << 24 | ((uint32_t)(ptr[2])) << 16 | ((uint32_t)(ptr[1])) << 8 | ptr[0];
 
                 if (opcode == 5) { // update
@@ -481,7 +481,7 @@ LOCAL void dns_parser(ArkimeSession_t *session, int kind, const unsigned char *d
             case RR_AAAA: {
                 if (rdlength != 16)
                     break;
-                unsigned char *ptr = BSB_WORK_PTR(bsb);
+                uint8_t *ptr = BSB_WORK_PTR(bsb);
 
                 if (opcode == 5) { // update
                     arkime_field_ip6_add(ipField, session, ptr);
@@ -513,7 +513,7 @@ LOCAL void dns_parser(ArkimeSession_t *session, int kind, const unsigned char *d
     }
 }
 /******************************************************************************/
-LOCAL int dns_tcp_parser(ArkimeSession_t *session, void *uw, const unsigned char *data, int len, int which)
+LOCAL int dns_tcp_parser(ArkimeSession_t *session, void *uw, const uint8_t *data, int len, int which)
 {
     DNSInfo_t *info = uw;
     while (len >= 2) {
@@ -528,8 +528,8 @@ LOCAL int dns_tcp_parser(ArkimeSession_t *session, void *uw, const unsigned char
             }
 
             // Have all the data in this first packet, just parse it
-            if (dnslength <= len-2) {
-                dns_parser(session, 0, data+2, dnslength);
+            if (dnslength <= len - 2) {
+                dns_parser(session, 0, data + 2, dnslength);
                 data += 2 + dnslength;
                 len -= 2 + dnslength;
                 continue;
@@ -548,9 +548,9 @@ LOCAL int dns_tcp_parser(ArkimeSession_t *session, void *uw, const unsigned char
                 info->size[which] = dnslength;
             }
 
-            memcpy(info->data[which], data+2, len-2);
+            memcpy(info->data[which], data + 2, len - 2);
             info->len[which] = dnslength;
-            info->pos[which] = len-2;
+            info->pos[which] = len - 2;
             return 0;
         } else {
             int rem = info->len[which] - info->pos[which];
@@ -570,7 +570,7 @@ LOCAL int dns_tcp_parser(ArkimeSession_t *session, void *uw, const unsigned char
     return 0;
 }
 /******************************************************************************/
-LOCAL void dns_tcp_classify(ArkimeSession_t *session, const unsigned char *UNUSED(data), int UNUSED(len), int UNUSED(which), void *UNUSED(uw))
+LOCAL void dns_tcp_classify(ArkimeSession_t *session, const uint8_t *UNUSED(data), int UNUSED(len), int UNUSED(which), void *UNUSED(uw))
 {
     if (/*which == 0 &&*/ session->port2 == 53 && !arkime_session_has_protocol(session, "dns")) {
         arkime_session_add_protocol(session, "dns");
@@ -579,7 +579,7 @@ LOCAL void dns_tcp_classify(ArkimeSession_t *session, const unsigned char *UNUSE
     }
 }
 /******************************************************************************/
-LOCAL int dns_udp_parser(ArkimeSession_t *session, void *uw, const unsigned char *data, int len, int UNUSED(which))
+LOCAL int dns_udp_parser(ArkimeSession_t *session, void *uw, const uint8_t *data, int len, int UNUSED(which))
 {
     if (uw == 0 || (session->port1 != 53 && session->port2 != 53)) {
         dns_parser(session, (long)uw, data, len);
@@ -587,7 +587,7 @@ LOCAL int dns_udp_parser(ArkimeSession_t *session, void *uw, const unsigned char
     return 0;
 }
 /******************************************************************************/
-LOCAL void dns_udp_classify(ArkimeSession_t *session, const unsigned char *UNUSED(data), int UNUSED(len), int UNUSED(which), void *UNUSED(uw))
+LOCAL void dns_udp_classify(ArkimeSession_t *session, const uint8_t *UNUSED(data), int UNUSED(len), int UNUSED(which), void *UNUSED(uw))
 {
     arkime_parsers_register(session, dns_udp_parser, uw, 0);
 }

@@ -25,7 +25,7 @@ LOCAL  int dbField;
 LOCAL  int appField;
 
 /******************************************************************************/
-LOCAL int postgresql_parser(ArkimeSession_t *session, void *uw, const unsigned char *data, int len, int which)
+LOCAL int postgresql_parser(ArkimeSession_t *session, void *uw, const uint8_t *data, int len, int which)
 {
     Info_t *info = uw;
     if (which != info->which)
@@ -55,14 +55,14 @@ LOCAL int postgresql_parser(ArkimeSession_t *session, void *uw, const unsigned c
     while (BSB_NOT_ERROR(bsb) && BSB_REMAINING(bsb) > 1 && *(BSB_WORK_PTR(bsb)) != 0) {
         char *key = (char*)BSB_WORK_PTR(bsb);
         int klen = strnlen(key, BSB_REMAINING(bsb));
-        BSB_IMPORT_skip(bsb, klen+1);
+        BSB_IMPORT_skip(bsb, klen + 1);
 
         if (BSB_IS_ERROR(bsb))
             break;
 
         char *value = (char*)BSB_WORK_PTR(bsb);
         int vlen = strnlen(value, BSB_REMAINING(bsb));
-        BSB_IMPORT_skip(bsb, vlen+1);
+        BSB_IMPORT_skip(bsb, vlen + 1);
 
         if (BSB_IS_ERROR(bsb))
             break;
@@ -88,12 +88,12 @@ LOCAL void postgresql_free(ArkimeSession_t UNUSED(*session), void *uw)
     ARKIME_TYPE_FREE(Info_t, info);
 }
 /******************************************************************************/
-LOCAL void postgresql_classify(ArkimeSession_t *session, const unsigned char UNUSED(*data), int UNUSED(len), int which, void *UNUSED(uw))
+LOCAL void postgresql_classify(ArkimeSession_t *session, const uint8_t UNUSED(*data), int UNUSED(len), int which, void *UNUSED(uw))
 {
     if (arkime_session_has_protocol(session, "postgresql"))
         return;
 
-    if ((len == 8 && memcmp(data+3, "\x08\x04\xd2\x16\x2f", 5) == 0) ||
+    if ((len == 8 && memcmp(data + 3, "\x08\x04\xd2\x16\x2f", 5) == 0) ||
         (len > 8 && data[3] <= len && data[4] == 0 && data[5] == 3 && data[6] == 0)) {
 
         Info_t *info = ARKIME_TYPE_ALLOC0(Info_t);
@@ -104,7 +104,7 @@ LOCAL void postgresql_classify(ArkimeSession_t *session, const unsigned char UNU
 /******************************************************************************/
 void arkime_parser_init()
 {
-    arkime_parsers_classifier_register_tcp("postgresql", NULL, 0, (unsigned char*)"\x00\x00\x00", 3, postgresql_classify);
+    arkime_parsers_classifier_register_tcp("postgresql", NULL, 0, (uint8_t *)"\x00\x00\x00", 3, postgresql_classify);
 
     userField = arkime_field_define("postgresql", "termfield",
         "postgresql.user", "User", "postgresql.user",

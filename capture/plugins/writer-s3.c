@@ -35,7 +35,7 @@ typedef struct writer_s3_output {
     struct writer_s3_output   *os3_next, *os3_prev;
     uint16_t                   os3_count;
 
-    unsigned char             *buf;
+    uint8_t                   *buf;
     int                        len;
 } SavepcapS3Output_t;
 
@@ -128,7 +128,7 @@ LOCAL uint32_t s3CompressionBlockSize;
 
 
 
-void writer_s3_request(char *method, char *path, char *qs, unsigned char *data, int len, gboolean specifyStorageClass, ArkimeHttpResponse_cb cb, gpointer uw);
+void writer_s3_request(char *method, char *path, char *qs, uint8_t *data, int len, gboolean specifyStorageClass, ArkimeHttpResponse_cb cb, gpointer uw);
 /******************************************************************************/
 uint32_t writer_s3_queue_length()
 {
@@ -154,7 +154,7 @@ uint32_t writer_s3_queue_length()
     return q;
 }
 /******************************************************************************/
-void writer_s3_complete_cb (int code, unsigned char *data, int len, gpointer uw)
+void writer_s3_complete_cb (int code, uint8_t *data, int len, gpointer uw)
 {
     ARKIME_LOCK(fileQ);
 
@@ -201,7 +201,7 @@ void writer_s3_complete_cb (int code, unsigned char *data, int len, gpointer uw)
     ARKIME_UNLOCK(fileQ);
 }
 /******************************************************************************/
-void writer_s3_part_cb (int code, unsigned char *data, int len, gpointer uw)
+void writer_s3_part_cb (int code, uint8_t *data, int len, gpointer uw)
 {
     SavepcapS3File_t  *file = uw;
 
@@ -231,14 +231,14 @@ void writer_s3_part_cb (int code, unsigned char *data, int len, gpointer uw)
         }
         BSB_EXPORT_cstr(bsb, "</CompleteMultipartUpload>\n");
 
-        writer_s3_request("POST", file->outputPath, qs, (unsigned char*)buf, BSB_LENGTH(bsb), FALSE, writer_s3_complete_cb, file);
+        writer_s3_request("POST", file->outputPath, qs, (uint8_t*)buf, BSB_LENGTH(bsb), FALSE, writer_s3_complete_cb, file);
         if (config.debug > 1)
             LOG("Complete-Request: %s %.*s", file->outputFileName, (int)BSB_LENGTH(bsb), buf);
     }
 
 }
 /******************************************************************************/
-unsigned char *arkime_get_instance_metadata(void *serverV, char *key, int key_len, size_t *mlen)
+uint8_t *arkime_get_instance_metadata(void *serverV, char *key, int key_len, size_t *mlen)
 {
     char *requestHeaders[2];
     char  tokenHeader[200];
@@ -247,7 +247,7 @@ unsigned char *arkime_get_instance_metadata(void *serverV, char *key, int key_le
         char *tokenRequestHeaders[2] = {"X-aws-ec2-metadata-token-ttl-seconds: 30", NULL};
         if (config.debug)
             LOG("Requesting IMDSv2 metadata token");
-        unsigned char *token = arkime_http_send_sync(serverV, "PUT", "/latest/api/token", -1, NULL, 0, tokenRequestHeaders, mlen, NULL);
+        uint8_t *token = arkime_http_send_sync(serverV, "PUT", "/latest/api/token", -1, NULL, 0, tokenRequestHeaders, mlen, NULL);
         if (config.debug)
             LOG("IMDSv2 metadata token received");
         snprintf(tokenHeader, sizeof(tokenHeader), "X-aws-ec2-metadata-token: %s", token);
@@ -277,7 +277,7 @@ LOCAL gboolean writer_s3_refresh_creds_gfunc (gpointer UNUSED(user_data))
 
     S3Credentials *newCreds = ARKIME_TYPE_ALLOC0(S3Credentials);
 
-    unsigned char *credentials = arkime_get_instance_metadata(metadataServer, credURL, -1, &clen);
+    uint8_t *credentials = arkime_get_instance_metadata(metadataServer, credURL, -1, &clen);
 
     if (credentials && clen) {
         // Now need to extract access key, secret key and token
@@ -300,7 +300,7 @@ LOCAL gboolean writer_s3_refresh_creds_gfunc (gpointer UNUSED(user_data))
     return G_SOURCE_CONTINUE;
 }
 /******************************************************************************/
-void writer_s3_init_cb (int code, unsigned char *data, int len, gpointer uw)
+void writer_s3_init_cb (int code, uint8_t *data, int len, gpointer uw)
 {
     SavepcapS3File_t   *file = uw;
 
@@ -368,7 +368,7 @@ void writer_s3_header_cb (char *url, const char *field, const char *value, int v
         LOG("Part-Etag: %s %d", file->outputFileName, pn);
 }
 /******************************************************************************/
-void writer_s3_request(char *method, char *path, char *qs, unsigned char *data, int len, gboolean specifyStorageClass, ArkimeHttpResponse_cb cb, gpointer uw)
+void writer_s3_request(char *method, char *path, char *qs, uint8_t *data, int len, gboolean specifyStorageClass, ArkimeHttpResponse_cb cb, gpointer uw)
 {
     char           canonicalRequest[20000];
     char           datetime[17];
@@ -767,13 +767,13 @@ void writer_s3_flush(SavepcapS3File_t *s3file, gboolean end)
         char qs[1000];
 
         snprintf(qs, sizeof(qs), "partNumber=%d&uploadId=%s", s3file->partNumber, s3file->uploadId);
-        writer_s3_request("PUT", s3file->outputPath, qs, (unsigned char *)s3file->outputBuffer, s3file->outputPos, FALSE, writer_s3_part_cb, s3file);
+        writer_s3_request("PUT", s3file->outputPath, qs, (uint8_t *)s3file->outputBuffer, s3file->outputPos, FALSE, writer_s3_part_cb, s3file);
         if (config.debug)
             LOG("Part-Request: %s %s", s3file->outputFileName, qs);
         s3file->partNumber++;
     } else {
         SavepcapS3Output_t *output = ARKIME_TYPE_ALLOC0(SavepcapS3Output_t);
-        output->buf = (unsigned char *)s3file->outputBuffer;
+        output->buf = (uint8_t *)s3file->outputBuffer;
         output->len = s3file->outputPos;
         DLL_PUSH_TAIL(os3_, &s3file->outputQ, output);
     }
@@ -864,7 +864,7 @@ LOCAL void writer_s3_file_time_check(ArkimeSession_t *session, void *UNUSED(uw1)
     clock_gettime(CLOCK_REALTIME_COARSE, &ts);
 
     SavepcapS3File_t *s3file = currentFiles[session->thread];
-    if (s3file && s3file->outputActualFilePos > 24 && (ts.tv_sec - s3file->outputFileTime.tv_sec) >= config.maxFileTimeM*60) {
+    if (s3file && s3file->outputActualFilePos > 24 && (ts.tv_sec - s3file->outputFileTime.tv_sec) >= config.maxFileTimeM * 60) {
         writer_s3_flush(s3file, TRUE);
         currentFiles[session->thread] = NULL;
     }
@@ -1013,7 +1013,7 @@ void writer_s3_init(char *UNUSED(name))
 
         s3ConfigCreds.s3AccessKeyId = NULL;
 
-        unsigned char *rolename = arkime_get_instance_metadata(metadataServer, "/latest/meta-data/iam/security-credentials/", -1, &rlen);
+        uint8_t *rolename = arkime_get_instance_metadata(metadataServer, "/latest/meta-data/iam/security-credentials/", -1, &rlen);
 
         if (!rolename || !rlen || rolename[0] == '<') {
             LOGEXIT("Cannot retrieve role name from metadata service\n");

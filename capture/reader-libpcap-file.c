@@ -35,7 +35,7 @@ LOCAL  FILE                 *offlineFile = 0;
 extern void                 *esServer;
 LOCAL  ArkimeStringHead_t    monitorQ;
 
-LOCAL  char                  offlinePcapFilename[PATH_MAX+1];
+LOCAL  char                  offlinePcapFilename[PATH_MAX + 1];
 LOCAL  int                   pktsToRead;
 
 LOCAL void reader_libpcapfile_opened();
@@ -329,8 +329,8 @@ filesDone:
         }
 
         int lineLen = strlen(line);
-        if (line[lineLen-1] == '\n') {
-            line[lineLen-1] = 0;
+        if (line[lineLen - 1] == '\n') {
+            line[lineLen - 1] = 0;
         }
 
         g_strstrip(line);
@@ -390,7 +390,7 @@ fileListsDone:
             if (config.pcapRecursive && g_file_test(fullfilename, G_FILE_TEST_IS_DIR)) {
                 if (pcapGDirLevel >= 20)
                     continue;
-                pcapBase[pcapGDirLevel+1] = fullfilename;
+                pcapBase[pcapGDirLevel + 1] = fullfilename;
                 pcapGDirLevel++;
                 return reader_libpcapfile_next();
             }
@@ -658,7 +658,7 @@ LOCAL void reader_libpcapfile_start() {
             CONFIGEXIT("Must be FieldExpr=regex%%value, missing equal '%s'", filenameOpsStr[i]);
         }
 
-        char *percent = strchr(equal+1, '%');
+        char *percent = strchr(equal + 1, '%');
         if (!percent) {
             CONFIGEXIT("Must be FieldExpr=regex%%value, missing percent '%s'", filenameOpsStr[i]);
         }
@@ -666,12 +666,12 @@ LOCAL void reader_libpcapfile_start() {
         *equal = 0;
         *percent = 0;
 
-        int elen = strlen(equal+1);
+        int elen = strlen(equal + 1);
         if (!elen) {
             CONFIGEXIT("Must be FieldExpr=regex%%value, empty regex for '%s'", filenameOpsStr[i]);
         }
 
-        int vlen = strlen(percent+1);
+        int vlen = strlen(percent + 1);
         if (!vlen) {
             CONFIGEXIT("Must be FieldExpr=regex%%value, empty value for '%s'", filenameOpsStr[i]);
         }
@@ -681,10 +681,10 @@ LOCAL void reader_libpcapfile_start() {
             CONFIGEXIT("Must be FieldExpr=regex?value, Unknown field expression '%s'", filenameOpsStr[i]);
         }
 
-        filenameOps[filenameOpsNum].regex = g_regex_new(equal+1, 0, 0, 0);
-        filenameOps[filenameOpsNum].expand = g_strdup(percent+1);
+        filenameOps[filenameOpsNum].regex = g_regex_new(equal + 1, 0, 0, 0);
+        filenameOps[filenameOpsNum].expand = g_strdup(percent + 1);
         if (!filenameOps[filenameOpsNum].regex)
-            CONFIGEXIT("Couldn't compile regex '%s'", equal+1);
+            CONFIGEXIT("Couldn't compile regex '%s'", equal + 1);
         filenameOps[filenameOpsNum].field = fieldPos;
         filenameOpsNum++;
     }

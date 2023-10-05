@@ -32,7 +32,7 @@ LOCAL ArkimePacketRC vxlan_packet_enqueue(ArkimePacketBatch_t * batch, ArkimePac
     }
 
     packet->tunnel |= ARKIME_PACKET_TUNNEL_VXLAN;
-    return arkime_packet_run_ethernet_cb(batch, packet, data+8, len-8, ARKIME_ETHERTYPE_ETHER, "vxlan");
+    return arkime_packet_run_ethernet_cb(batch, packet, data + 8, len - 8, ARKIME_ETHERTYPE_ETHER, "vxlan");
 }
 /******************************************************************************/
 SUPPRESS_ALIGNMENT
@@ -45,16 +45,16 @@ LOCAL ArkimePacketRC vxlan_gpe_packet_enqueue(ArkimePacketBatch_t * batch, Arkim
         return ARKIME_PACKET_UNKNOWN;
 
     packet->tunnel |= ARKIME_PACKET_TUNNEL_VXLAN_GPE;
-    
+
     switch (data[3]) {
     case 1:
-        return arkime_packet_run_ethernet_cb(batch, packet, data+8, len-8, ETHERTYPE_IP, "vxlan-gpe");
+        return arkime_packet_run_ethernet_cb(batch, packet, data + 8, len - 8, ETHERTYPE_IP, "vxlan-gpe");
     case 2:
-        return arkime_packet_run_ethernet_cb(batch, packet, data+8, len-8, ETHERTYPE_IPV6, "vxlan-gpe");
+        return arkime_packet_run_ethernet_cb(batch, packet, data + 8, len - 8, ETHERTYPE_IPV6, "vxlan-gpe");
     case 3:
-        return arkime_packet_run_ethernet_cb(batch, packet, data+8, len-8, ARKIME_ETHERTYPE_ETHER, "vxlan-gpe");
+        return arkime_packet_run_ethernet_cb(batch, packet, data + 8, len - 8, ARKIME_ETHERTYPE_ETHER, "vxlan-gpe");
     case 4:
-        return arkime_packet_run_ethernet_cb(batch, packet, data+8, len-8, ARKIME_ETHERTYPE_NSH, "vxlan-gpe");
+        return arkime_packet_run_ethernet_cb(batch, packet, data + 8, len - 8, ARKIME_ETHERTYPE_NSH, "vxlan-gpe");
     }
     return ARKIME_PACKET_UNKNOWN;
 }

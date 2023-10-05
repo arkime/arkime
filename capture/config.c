@@ -424,35 +424,35 @@ char arkime_config_key_sep(char *key) {
 /******************************************************************************/
 gboolean arkime_config_load_json(GKeyFile *keyfile, char *data, GError **UNUSED(error))
 {
-    uint32_t sections[4*100]; // Can have up to 100 sections
+    uint32_t sections[4 * 100]; // Can have up to 100 sections
     memset(sections, 0, sizeof(sections));
-    js0n((unsigned char*)data, strlen(data), sections, sizeof(sections));
+    js0n((uint8_t *)data, strlen(data), sections, sizeof(sections));
 
     for (int s = 0; sections[s]; s+= 4) {
-        char *section = g_strndup(data + sections[s], sections[s+1]);
+        char *section = g_strndup(data + sections[s], sections[s + 1]);
 
-        uint32_t keys[4*500]; // Can have up to 500 keys
+        uint32_t keys[4 * 500]; // Can have up to 500 keys
         memset(keys, 0, sizeof(keys));
-        js0n((unsigned char*)data + sections[s+2], sections[s+3], keys, sizeof(keys));
+        js0n((uint8_t *)data + sections[s + 2], sections[s + 3], keys, sizeof(keys));
 
         for (int k = 0; keys[k]; k += 4) {
-            char *key = g_strndup(data + sections[s+2] + keys[k], keys[k+1]);
-            char *value = g_strndup(data + sections[s+2] + keys[k+2], keys[k+3]);
+            char *key = g_strndup(data + sections[s + 2] + keys[k], keys[k + 1]);
+            char *value = g_strndup(data + sections[s + 2] + keys[k + 2], keys[k + 3]);
 
             // HACK - Convert arrays back into strings
             if (value[0] == '[') {
-                uint32_t parts[2*100]; // Can have up to 100 keys
+                uint32_t parts[2 * 100]; // Can have up to 100 keys
                 memset(parts, 0, sizeof(parts));
-                js0n((unsigned char*)value, keys[k+3], parts, sizeof(parts));
+                js0n((uint8_t *)value, keys[k + 3], parts, sizeof(parts));
 
                 char sep = arkime_config_key_sep(key);
-                char *buf = malloc(keys[k+3]);
+                char *buf = malloc(keys[k + 3]);
                 BSB bsb;
-                BSB_INIT(bsb, buf, keys[k+3]);
+                BSB_INIT(bsb, buf, keys[k + 3]);
                 for (int p = 0; parts[p]; p += 2) {
                     if (p != 0)
                         BSB_EXPORT_u08(bsb, sep);
-                    BSB_EXPORT_ptr(bsb, value+parts[p], parts[p+1]);
+                    BSB_EXPORT_ptr(bsb, value+parts[p], parts[p + 1]);
                 }
                 BSB_EXPORT_u08(bsb, 0);
                 g_key_file_set_string(keyfile, section, key, buf);
@@ -473,7 +473,7 @@ gboolean arkime_config_load_yaml(GKeyFile *keyfile, char *data, GError **UNUSED(
 {
     yaml_parser_t parser;
     yaml_parser_initialize(&parser);
-    yaml_parser_set_input_string(&parser, (unsigned char *)data, strlen(data));
+    yaml_parser_set_input_string(&parser, (uint8_t *)data, strlen(data));
 
     int done = 0;
     int level = 0;
@@ -604,7 +604,7 @@ void arkime_config_load()
         void *server = arkime_http_create_server(host, 5, 5, TRUE);
 
         int code;
-        unsigned char *data = arkime_http_send_sync(server, "GET", end, strlen(end), NULL, 0, NULL, NULL, &code);
+        uint8_t *data = arkime_http_send_sync(server, "GET", end, strlen(end), NULL, 0, NULL, NULL, &code);
 
         if (!data || code != 200)
             CONFIGEXIT("Couldn't download from code: %d host: %s url: %s", code, host, end);
@@ -700,7 +700,7 @@ void arkime_config_load()
             char *colon = strchr(tags[i], ':');
             if (colon) {
                 *colon = 0;
-                num = atoi(colon+1);
+                num = atoi(colon + 1);
                 if (num < 1)
                     num = 1;
                 if (num > 0xffff)
@@ -721,8 +721,8 @@ void arkime_config_load()
             char *lower = g_ascii_strdown(config.smtpIpHeaders[i], len);
             g_free(config.smtpIpHeaders[i]);
             config.smtpIpHeaders[i] = lower;
-            if (lower[len-1] == ':')
-                lower[len-1] = 0;
+            if (lower[len - 1] == ':')
+                lower[len - 1] = 0;
         }
     }
 
@@ -734,7 +734,7 @@ void arkime_config_load()
         char *tmp  = g_malloc(len + 2);
         memcpy(tmp, config.prefix, len);
         tmp[len] = '_';
-        tmp[len+1] = 0;
+        tmp[len + 1] = 0;
         g_free(config.prefix);
         config.prefix = tmp;
     }
@@ -775,26 +775,26 @@ void arkime_config_load()
     }
 
     config.maxFileSizeG          = arkime_config_double(keyfile, "maxFileSizeG", 12, 0.01, 1024);
-    config.maxFileSizeB          = config.maxFileSizeG*1024LL*1024LL*1024LL;
+    config.maxFileSizeB          = config.maxFileSizeG * 1024LL * 1024LL * 1024LL;
     config.maxFileTimeM          = arkime_config_int(keyfile, "maxFileTimeM", 0, 0, 0xffff);
     config.timeouts[SESSION_ICMP]= arkime_config_int(keyfile, "icmpTimeout", 10, 1, 0xffff);
     config.timeouts[SESSION_UDP] = arkime_config_int(keyfile, "udpTimeout", 60, 1, 0xffff);
-    config.timeouts[SESSION_TCP] = arkime_config_int(keyfile, "tcpTimeout", 60*8, 10, 0xffff);
+    config.timeouts[SESSION_TCP] = arkime_config_int(keyfile, "tcpTimeout", 60 * 8, 10, 0xffff);
     config.timeouts[SESSION_SCTP]= arkime_config_int(keyfile, "sctpTimeout", 60, 10, 0xffff);
-    config.timeouts[SESSION_ESP] = arkime_config_int(keyfile, "espTimeout", 60*10, 10, 0xffff);
-    config.timeouts[SESSION_OTHER] = 60*10;
-    config.tcpSaveTimeout        = arkime_config_int(keyfile, "tcpSaveTimeout", 60*8, 10, 60*120);
+    config.timeouts[SESSION_ESP] = arkime_config_int(keyfile, "espTimeout", 60 * 10, 10, 0xffff);
+    config.timeouts[SESSION_OTHER] = 60 * 10;
+    config.tcpSaveTimeout        = arkime_config_int(keyfile, "tcpSaveTimeout", 60 * 8, 10, 60 * 120);
     int maxStreams               = arkime_config_int(keyfile, "maxStreams", 1500000, 1, 16777215);
     config.maxPackets            = arkime_config_int(keyfile, "maxPackets", 10000, 1, 0xffff);
     config.maxPacketsInQueue     = arkime_config_int(keyfile, "maxPacketsInQueue", 200000, 10000, 5000000);
     config.dbBulkSize            = arkime_config_int(keyfile, "dbBulkSize", 1000000, 500000, 15000000);
-    config.dbFlushTimeout        = arkime_config_int(keyfile, "dbFlushTimeout", 5, 1, 60*30);
+    config.dbFlushTimeout        = arkime_config_int(keyfile, "dbFlushTimeout", 5, 1, 60 * 30);
     config.maxESConns            = arkime_config_int(keyfile, "maxESConns", 20, 3, 500);
     config.maxESRequests         = arkime_config_int(keyfile, "maxESRequests", 500, 10, 2500);
     config.logEveryXPackets      = arkime_config_int(keyfile, "logEveryXPackets", 50000, 1000, 0xffffffff);
     config.pcapBufferSize        = arkime_config_int(keyfile, "pcapBufferSize", 300000000, 100000, 0xffffffff);
     config.pcapWriteSize         = arkime_config_int(keyfile, "pcapWriteSize", 0x40000, 0x10000, 0x8000000);
-    config.fragsTimeout          = arkime_config_int(keyfile, "fragsTimeout", 60*8, 60, 0xffff);
+    config.fragsTimeout          = arkime_config_int(keyfile, "fragsTimeout", 60 * 8, 60, 0xffff);
     config.maxFrags              = arkime_config_int(keyfile, "maxFrags", 10000, 100, 0xffffff);
     config.snapLen               = arkime_config_int(keyfile, "snapLen", 16384, 1, ARKIME_PACKET_MAX_LEN);
     config.maxMemPercentage      = arkime_config_int(keyfile, "maxMemPercentage", 100, 5, 100);
@@ -826,9 +826,9 @@ void arkime_config_load()
     config.enablePacketLen       = arkime_config_boolean(NULL, "enablePacketLen", FALSE);
     config.enablePacketDedup     = arkime_config_boolean(NULL, "enablePacketDedup", TRUE);
 
-    config.maxStreams[SESSION_TCP] = MAX(100, maxStreams/config.packetThreads*1.25);
-    config.maxStreams[SESSION_UDP] = MAX(100, maxStreams/config.packetThreads/20);
-    config.maxStreams[SESSION_SCTP] = MAX(100, maxStreams/config.packetThreads/20);
+    config.maxStreams[SESSION_TCP] = MAX(100, maxStreams/config.packetThreads * 1.25);
+    config.maxStreams[SESSION_UDP] = MAX(100, maxStreams/config.packetThreads / 20);
+    config.maxStreams[SESSION_SCTP] = MAX(100, maxStreams/config.packetThreads / 20);
     config.maxStreams[SESSION_ICMP] = MAX(100, maxStreams/config.packetThreads/200);
     config.maxStreams[SESSION_ESP] = MAX(100, maxStreams/config.packetThreads/200);
     config.maxStreams[SESSION_OTHER] = MAX(100, maxStreams/config.packetThreads/20);
@@ -846,22 +846,22 @@ void arkime_config_load()
             } else if (strcmp(s, "ether:all") == 0) {
                 memset(&config.etherSavePcap, 0xff, sizeof(config.etherSavePcap));
             } else if (strncmp(s, "ip:", 3) == 0) {
-                int n = atoi(s+3);
+                int n = atoi(s + 3);
                 if (n < 0 || n > 0xff)
                     CONFIGEXIT("Bad saveUnknownPackets ip value: %s", s);
                 BIT_SET(n, config.ipSavePcap);
             } else if (strncmp(s, "-ip:", 4) == 0) {
-                int n = atoi(s+4);
+                int n = atoi(s + 4);
                 if (n < 0 || n > 0xff)
                     CONFIGEXIT("Bad saveUnknownPackets -ip value: %s", s);
                 BIT_CLR(n, config.ipSavePcap);
             } else if (strncmp(s, "ether:", 6) == 0) {
-                int n = atoi(s+6);
+                int n = atoi(s + 6);
                 if (n < 0 || n > 0xffff)
                     CONFIGEXIT("Bad saveUnknownPackets ether value: %s", s);
                 BIT_SET(n, config.etherSavePcap);
             } else if (strncmp(s, "-ether:", 7) == 0) {
-                int n = atoi(s+7);
+                int n = atoi(s + 7);
                 if (n < 0 || n > 0xffff)
                     CONFIGEXIT("Bad saveUnknownPackets -ether value: %s", s);
                 BIT_CLR(n, config.etherSavePcap);
@@ -903,23 +903,23 @@ void arkime_config_parse_override_ips(GKeyFile *keyFile)
         ArkimeIpInfo_t *ii = ARKIME_TYPE_ALLOC0(ArkimeIpInfo_t);
         for (v = 0; v < values_len; v++) {
             if (strncmp(values[v], "asn:", 4) == 0) {
-                if (!g_regex_match(asnRegex, values[v]+4, 0, NULL)) {
-                    CONFIGEXIT("Value for override-ips doesn't match ASN format of /AS\\d+ .*/ '%s'", values[v]+4);
+                if (!g_regex_match(asnRegex, values[v] + 4, 0, NULL)) {
+                    CONFIGEXIT("Value for override-ips doesn't match ASN format of /AS\\d+ .*/ '%s'", values[v] + 4);
                 }
-                char *sp = strchr(values[v]+6, ' ');
+                char *sp = strchr(values[v] + 6, ' ');
                 *sp = 0;
-                ii->asNum = atoi(values[v]+6);
-                ii->asStr = g_strdup(sp+1);
-                ii->asLen = strlen(sp+1);
+                ii->asNum = atoi(values[v] + 6);
+                ii->asStr = g_strdup(sp + 1);
+                ii->asLen = strlen(sp + 1);
             } else if (strncmp(values[v], "rir:", 4) == 0) {
-                ii->rir = g_strdup(values[v]+4);
+                ii->rir = g_strdup(values[v] + 4);
             } else if (strncmp(values[v], "tag:", 4) == 0) {
                 if (ii->numtags < 10) {
-                    ii->tagsStr[(int)ii->numtags] = strdup(values[v]+4);
+                    ii->tagsStr[(int)ii->numtags] = strdup(values[v] + 4);
                     ii->numtags++;
                 }
             } else if (strncmp(values[v], "country:", 8) == 0) {
-                ii->country = g_strdup(values[v]+8);
+                ii->country = g_strdup(values[v] + 8);
             } else {
                 char *colon = strchr(values[v], ':');
                 if (!colon)

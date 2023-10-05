@@ -47,7 +47,7 @@ typedef struct arkimehttprequest_t {
     char                  url[1024];
     char                  key[1024];
 
-    unsigned char        *dataIn;
+    uint8_t              *dataIn;
     uint32_t              used;
     uint32_t              size;
 
@@ -79,9 +79,9 @@ typedef struct arkimehttpconnhead_t {
 } ArkimeHttpConnHead_t;
 
 typedef struct {
-   char*    clientCert;
-   char*    clientKey;
-   char*    clientKeyPass;
+   char    *clientCert;
+   char    *clientKey;
+   char    *clientKeyPass;
 } ArkimeClientAuth_t;
 
 LOCAL HASH_VAR(s_, connections, ArkimeHttpConnHead_t, 119);
@@ -148,7 +148,7 @@ LOCAL size_t arkime_http_curl_write_callback(void *contents, size_t size, size_t
         curl_easy_getinfo(request->easy, CURLINFO_CONTENT_LENGTH_DOWNLOAD, &cl);
         request->used = sz;
         request->size = MAX(sz, cl);
-        request->dataIn = malloc(request->size+1);
+        request->dataIn = malloc(request->size + 1);
         memcpy(request->dataIn, contents, sz);
         return sz;
     }
@@ -163,7 +163,7 @@ LOCAL size_t arkime_http_curl_write_callback(void *contents, size_t size, size_t
     return sz;
 }
 /******************************************************************************/
-unsigned char *arkime_http_send_sync(void *serverV, const char *method, const char *key, int32_t key_len, char *data, uint32_t data_len, char **headers, size_t *return_len, int *code)
+uint8_t *arkime_http_send_sync(void *serverV, const char *method, const char *key, int32_t key_len, char *data, uint32_t data_len, char **headers, size_t *return_len, int *code)
 {
     ArkimeHttpServer_t        *server = serverV;
     struct curl_slist         *headerList = NULL;
@@ -306,8 +306,8 @@ unsigned char *arkime_http_send_sync(void *serverV, const char *method, const ch
            server->syncRequest.url,
            uploadSize,
            downloadSize,
-           connectTime*1000,
-           totalTime*1000);
+           connectTime * 1000,
+           totalTime * 1000);
     }
 
     uint8_t *dataIn = server->syncRequest.dataIn;
@@ -394,8 +394,8 @@ LOCAL void arkime_http_curlm_check_multi_info(ArkimeHttpServer_t *server)
                    request->url,
                    uploadSize,
                    downloadSize,
-                   connectTime*1000,
-                   totalTime*1000);
+                   connectTime * 1000,
+                   totalTime * 1000);
             }
 
 #ifdef ARKIME_HTTP_DEBUG
@@ -523,8 +523,8 @@ size_t arkime_http_curlm_header_function(char *buffer, size_t size, size_t nitem
     int sz = size*nitems;
     int i = sz;
 
-    while (i > 0 && (buffer[i-1] == '\r' || buffer[i-1] == '\n')) {
-        buffer[i -1] = 0;
+    while (i > 0 && (buffer[i - 1] == '\r' || buffer[i - 1] == '\n')) {
+        buffer[i - 1] = 0;
         i--;
     }
 
@@ -560,7 +560,7 @@ LOCAL gboolean arkime_http_curl_watch_open_callback(int fd, GIOCondition conditi
 
     uint8_t sessionId[ARKIME_SESSIONID_LEN];
     int  localPort, remotePort;
-    char remoteIp[INET6_ADDRSTRLEN+2];
+    char remoteIp[INET6_ADDRSTRLEN + 2];
     if (localAddressStorage.ss_family == AF_INET) {
         struct sockaddr_in *localAddress = (struct sockaddr_in *)&localAddressStorage;
         struct sockaddr_in *remoteAddress = (struct sockaddr_in *)&remoteAddressStorage;
@@ -576,7 +576,7 @@ LOCAL gboolean arkime_http_curl_watch_open_callback(int fd, GIOCondition conditi
                           remoteAddress->sin6_addr.s6_addr, remoteAddress->sin6_port);
         localPort = ntohs(localAddress->sin6_port);
         remotePort = ntohs(remoteAddress->sin6_port);
-        inet_ntop(AF_INET6, &remoteAddress->sin6_addr, remoteIp+1, sizeof(remoteIp)-2);
+        inet_ntop(AF_INET6, &remoteAddress->sin6_addr, remoteIp + 1, sizeof(remoteIp) - 2);
         remoteIp[0] = '[';
         g_strlcat(remoteIp, "]", sizeof(remoteIp));
     }
@@ -660,7 +660,7 @@ int arkime_http_curl_close_callback(void *snameV, curl_socket_t fd)
 
     uint8_t sessionId[ARKIME_SESSIONID_LEN];
     int  localPort, remotePort;
-    char remoteIp[INET6_ADDRSTRLEN+2];
+    char remoteIp[INET6_ADDRSTRLEN + 2];
     if (localAddressStorage.ss_family == AF_INET) {
         struct sockaddr_in *localAddress = (struct sockaddr_in *)&localAddressStorage;
         struct sockaddr_in *remoteAddress = (struct sockaddr_in *)&remoteAddressStorage;
@@ -676,7 +676,7 @@ int arkime_http_curl_close_callback(void *snameV, curl_socket_t fd)
                           remoteAddress->sin6_addr.s6_addr, remoteAddress->sin6_port);
         localPort = ntohs(localAddress->sin6_port);
         remotePort = ntohs(remoteAddress->sin6_port);
-        inet_ntop(AF_INET6, &remoteAddress->sin6_addr, remoteIp+1, sizeof(remoteIp)-2);
+        inet_ntop(AF_INET6, &remoteAddress->sin6_addr, remoteIp + 1, sizeof(remoteIp) - 2);
         remoteIp[0] = '[';
         g_strlcat(remoteIp, "]", sizeof(remoteIp));
     }
@@ -805,9 +805,9 @@ gboolean arkime_http_schedule(void *serverV, const char *method, const char *key
 
         ARKIME_LOCK(z_strm);
         z_strm.avail_in   = data_len;
-        z_strm.next_in    = (unsigned char *)data;
+        z_strm.next_in    = (uint8_t *)data;
         z_strm.avail_out  = data_len;
-        z_strm.next_out   = (unsigned char *)buf;
+        z_strm.next_out   = (uint8_t *)buf;
         ret = deflate(&z_strm, Z_FINISH);
         if (ret == Z_STREAM_END) {
             request->headerList = curl_slist_append(request->headerList, "Content-Encoding: gzip");
@@ -893,7 +893,7 @@ gboolean arkime_http_schedule(void *serverV, const char *method, const char *key
 }
 
 /******************************************************************************/
-unsigned char *arkime_http_get(void *serverV, char *key, int key_len, size_t *mlen)
+uint8_t *arkime_http_get(void *serverV, char *key, int key_len, size_t *mlen)
 {
     return arkime_http_send_sync(serverV, "GET", key, key_len, NULL, 0, NULL, mlen, NULL);
 }
@@ -971,14 +971,14 @@ void arkime_http_set_retries(void *serverV, uint16_t retries)
     server->maxRetries = retries;
 }
 /******************************************************************************/
-void arkime_http_set_client_cert(void *serverV, char* clientCert,
-                                char* clientKey, char* clientKeyPass)
+void arkime_http_set_client_cert(void *serverV, char *clientCert,
+                                char *clientKey, char *clientKeyPass)
 {
     ArkimeHttpServer_t        *server = serverV;
     if(server->clientAuth != NULL) {
         ARKIME_TYPE_FREE(ArkimeClientAuth_t, server->clientAuth);
     }
-    ArkimeClientAuth_t* clientAuth = ARKIME_TYPE_ALLOC0(ArkimeClientAuth_t);
+    ArkimeClientAuth_t *clientAuth = ARKIME_TYPE_ALLOC0(ArkimeClientAuth_t);
 
     clientAuth->clientCert = clientCert;
     clientAuth->clientKey  = clientKey;

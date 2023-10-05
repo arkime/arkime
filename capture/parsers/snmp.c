@@ -27,7 +27,7 @@ LOCAL  char                 *types[8] = {"GetRequest", "GetNextRequest", "GetRes
 LOCAL  int                   lens[8];
 
 /******************************************************************************/
-LOCAL int snmp_parser(ArkimeSession_t *session, void *UNUSED(uw), const unsigned char *data, int len, int UNUSED(which))
+LOCAL int snmp_parser(ArkimeSession_t *session, void *UNUSED(uw), const uint8_t *data, int len, int UNUSED(which))
 {
     int version;
     uint32_t dataType;
@@ -35,7 +35,7 @@ LOCAL int snmp_parser(ArkimeSession_t *session, void *UNUSED(uw), const unsigned
     BSB bsb;
 
     BSB_INIT(bsb, data, len);
-    unsigned char *value = arkime_parsers_asn_get_tlv(&bsb, &apc, &atag, &alen);
+    uint8_t *value = arkime_parsers_asn_get_tlv(&bsb, &apc, &atag, &alen);
 
     if (!value || atag != 16 || alen < 16)
         return ARKIME_PARSER_UNREGISTER;
@@ -131,7 +131,7 @@ LOCAL int snmp_parser(ArkimeSession_t *session, void *UNUSED(uw), const unsigned
     return 0;
 }
 /******************************************************************************/
-LOCAL void snmp_classify(ArkimeSession_t *session, const unsigned char *data, int len, int UNUSED(which), void *UNUSED(uw))
+LOCAL void snmp_classify(ArkimeSession_t *session, const uint8_t *data, int len, int UNUSED(which), void *UNUSED(uw))
 {
     uint32_t apc, atag, alen;
     BSB bsb;
@@ -145,7 +145,7 @@ LOCAL void snmp_classify(ArkimeSession_t *session, const unsigned char *data, in
     }
 
     BSB_INIT(bsb, data, len);
-    unsigned char *value = arkime_parsers_asn_get_tlv(&bsb, &apc, &atag, &alen);
+    uint8_t *value = arkime_parsers_asn_get_tlv(&bsb, &apc, &atag, &alen);
 
     if (!value || atag != 16 || alen < 16)
         return;

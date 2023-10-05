@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-/* Circular array of chained hashtable where space is preallocated and 
+/* Circular array of chained hashtable where space is preallocated and
  * there is a count array of elements per hashtable slot. We stop
  * searching the oldest hashtable and wipe its count array.
  *
@@ -62,20 +62,20 @@ int arkime_dedup_should_drop (const ArkimePacket_t *packet, int headerLen)
     uint32_t secondSlot = currentTime.tv_sec % dedupSeconds;
 
     // Create hash, headerLen should be length of ip & tcp/udp header
-    unsigned char md[16];
+    uint8_t md[16];
     MD5_CTX ctx;
     MD5_Init(&ctx);
     uint8_t * const ptr = packet->pkt + packet->ipOffset;
     if ((ptr[0] & 0xf0) == 0x40) {
         MD5_Update(&ctx, ptr, 8);
         // Skip TTL (1 byte)
-        MD5_Update(&ctx, ptr+9, 1);
+        MD5_Update(&ctx, ptr + 9, 1);
         // Skip Header checksum (2 byte)
-        MD5_Update(&ctx, ptr+12, headerLen-12);
+        MD5_Update(&ctx, ptr + 12, headerLen - 12);
     } else {
         MD5_Update(&ctx, ptr, 7);
         // Skip HOP
-        MD5_Update(&ctx, ptr+8, headerLen-8);
+        MD5_Update(&ctx, ptr + 8, headerLen - 8);
     }
     MD5_Final(md, &ctx);
     int h = ((uint32_t *)md)[0] % dedupSlots;
@@ -137,7 +137,7 @@ void arkime_dedup_init()
     dedupSize      = dedupSlots * DEDUP_SIZE_FACTOR;
 
     if (config.debug)
-        LOG("seconds = %u packets = %u slots = %u size = %u mem=%u", dedupSeconds, dedupPackets, dedupSlots, dedupSize, dedupSeconds *(dedupSlots + dedupSize*16));
+        LOG("seconds = %u packets = %u slots = %u size = %u mem=%u", dedupSeconds, dedupPackets, dedupSlots, dedupSize, dedupSeconds *(dedupSlots + dedupSize * 16));
 
     seconds = ARKIME_SIZE_ALLOC0("dedup seconds", sizeof(DedupSeconds_t) * dedupSeconds);
     for (uint32_t i = 0; i < dedupSeconds; i++) {

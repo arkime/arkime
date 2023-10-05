@@ -20,8 +20,8 @@ LOCAL  int bindNameField;
 LOCAL  int authTypeField;
 
 typedef struct {
-    unsigned char       buf[2][8192];
-    int                 len[2];
+    uint8_t       buf[2][8192];
+    int           len[2];
 } LDAPInfo_t;
 /******************************************************************************/
 LOCAL void ldap_process(ArkimeSession_t *session, LDAPInfo_t *ldap, int which)
@@ -101,7 +101,7 @@ LOCAL void ldap_process(ArkimeSession_t *session, LDAPInfo_t *ldap, int which)
     }
 }
 /******************************************************************************/
-LOCAL int ldap_parser(ArkimeSession_t *session, void *uw, const unsigned char *data, int remaining, int which)
+LOCAL int ldap_parser(ArkimeSession_t *session, void *uw, const uint8_t *data, int remaining, int which)
 {
     LDAPInfo_t            *ldap          = uw;
 
@@ -115,7 +115,7 @@ LOCAL int ldap_parser(ArkimeSession_t *session, void *uw, const unsigned char *d
 
     if (ldap->len[which] > 6000) {
         ldap_process(session, ldap, which);
-        if (ldap->len[(which + 1) %2] == -1) // If other direction is finished then unregister
+        if (ldap->len[(which + 1) % 2] == -1) // If other direction is finished then unregister
             arkime_parsers_unregister(session, ldap);
     }
 
@@ -142,7 +142,7 @@ LOCAL void ldap_free(ArkimeSession_t *UNUSED(session), void *uw)
     ARKIME_TYPE_FREE(LDAPInfo_t, ldap);
 }
 /******************************************************************************/
-LOCAL void ldap_classify(ArkimeSession_t *session, const unsigned char *data, int len, int UNUSED(which), void *UNUSED(uw))
+LOCAL void ldap_classify(ArkimeSession_t *session, const uint8_t *data, int len, int UNUSED(which), void *UNUSED(uw))
 {
     if (arkime_session_has_protocol(session, "ldap"))
         return;
@@ -151,7 +151,7 @@ LOCAL void ldap_classify(ArkimeSession_t *session, const unsigned char *data, in
     BSB_INIT(bsb, data, len);
 
     uint32_t apc, atag, alen;
-    unsigned char *value = arkime_parsers_asn_get_tlv(&bsb, &apc, &atag, &alen);
+    uint8_t *value = arkime_parsers_asn_get_tlv(&bsb, &apc, &atag, &alen);
     if (value && apc && atag == 16) {
         BSB_INIT(bsb, value, alen);
 
@@ -176,8 +176,8 @@ LOCAL void ldap_classify(ArkimeSession_t *session, const unsigned char *data, in
 /******************************************************************************/
 void arkime_parser_init()
 {
-    arkime_parsers_classifier_register_tcp("ldap", NULL, 0, (unsigned char*)"\x30", 1, ldap_classify);
-    arkime_parsers_classifier_register_udp("ldap", NULL, 0, (unsigned char*)"\x30", 1, ldap_classify);
+    arkime_parsers_classifier_register_tcp("ldap", NULL, 0, (uint8_t *)"\x30", 1, ldap_classify);
+    arkime_parsers_classifier_register_udp("ldap", NULL, 0, (uint8_t *)"\x30", 1, ldap_classify);
 
     authTypeField = arkime_field_define("ldap", "termfield",
         "ldap.authtype", "Auth Type", "ldap.authtype",

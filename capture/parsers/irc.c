@@ -24,7 +24,7 @@ LOCAL  int channelsField;
 LOCAL  int nickField;
 
 /******************************************************************************/
-LOCAL int irc_parser(ArkimeSession_t *session, void *uw, const unsigned char *data, int remaining, int which)
+LOCAL int irc_parser(ArkimeSession_t *session, void *uw, const uint8_t *data, int remaining, int which)
 {
     IRCInfo_t *irc = uw;
 
@@ -53,11 +53,11 @@ LOCAL int irc_parser(ArkimeSession_t *session, void *uw, const unsigned char *da
 
         if (BSB_REMAINING(bsb) > 6 && BSB_memcmp("JOIN ", bsb, 5) == 0) {
             BSB_IMPORT_skip(bsb, 5);
-            unsigned char *start = BSB_WORK_PTR(bsb);
+            uint8_t *start = BSB_WORK_PTR(bsb);
             while (BSB_REMAINING(bsb) > 0 && BSB_PEEK(bsb) != ' ' && BSB_PEEK(bsb) != '\r' && BSB_PEEK(bsb) != '\n') {
                 BSB_IMPORT_skip(bsb, 1);
             }
-            unsigned char *end = BSB_WORK_PTR(bsb);
+            uint8_t *end = BSB_WORK_PTR(bsb);
 
             if (!BSB_IS_ERROR(bsb) && start != end) {
                 arkime_field_string_add(channelsField, session, (char*)start, end - start, TRUE);
@@ -66,11 +66,11 @@ LOCAL int irc_parser(ArkimeSession_t *session, void *uw, const unsigned char *da
 
         if (BSB_REMAINING(bsb) > 6 && BSB_memcmp("NICK ", bsb, 5) == 0) {
             BSB_IMPORT_skip(bsb, 5);
-            unsigned char *start = BSB_WORK_PTR(bsb);
+            uint8_t *start = BSB_WORK_PTR(bsb);
             while (BSB_REMAINING(bsb) > 0 && BSB_PEEK(bsb) != ' ' && BSB_PEEK(bsb) != '\r' && BSB_PEEK(bsb) != '\n') {
                 BSB_IMPORT_skip(bsb, 1);
             }
-            unsigned char *end = BSB_WORK_PTR(bsb);
+            uint8_t *end = BSB_WORK_PTR(bsb);
 
             if (!BSB_IS_ERROR(bsb) && start != end) {
                 arkime_field_string_add(nickField, session, (char*)start, end - start, TRUE);
@@ -92,7 +92,7 @@ LOCAL void irc_free(ArkimeSession_t UNUSED(*session), void *uw)
     ARKIME_TYPE_FREE(IRCInfo_t, irc);
 }
 /******************************************************************************/
-LOCAL void irc_classify(ArkimeSession_t *session, const unsigned char *data, int len, int which, void *UNUSED(uw))
+LOCAL void irc_classify(ArkimeSession_t *session, const uint8_t *data, int len, int which, void *UNUSED(uw))
 {
     if (len < 8)
         return;
@@ -131,10 +131,10 @@ void arkime_parser_init()
         ARKIME_FIELD_TYPE_STR_GHASH, ARKIME_FIELD_FLAG_CNT,
         (char *)NULL);
 
-    arkime_parsers_classifier_register_tcp("irc", NULL, 0, (unsigned char*)":", 1, irc_classify);
-    arkime_parsers_classifier_register_tcp("irc", NULL, 0, (unsigned char*)"NOTICE AUTH", 11, irc_classify);
-    arkime_parsers_classifier_register_tcp("irc", NULL, 0, (unsigned char*)"NICK ", 5, irc_classify);
-    arkime_parsers_classifier_register_tcp("irc", NULL, 0, (unsigned char*)"USER ", 5, irc_classify);
-    arkime_parsers_classifier_register_tcp("irc", NULL, 0, (unsigned char*)"CAP REQ ", 8, irc_classify);
+    arkime_parsers_classifier_register_tcp("irc", NULL, 0, (uint8_t *)":", 1, irc_classify);
+    arkime_parsers_classifier_register_tcp("irc", NULL, 0, (uint8_t *)"NOTICE AUTH", 11, irc_classify);
+    arkime_parsers_classifier_register_tcp("irc", NULL, 0, (uint8_t *)"NICK ", 5, irc_classify);
+    arkime_parsers_classifier_register_tcp("irc", NULL, 0, (uint8_t *)"USER ", 5, irc_classify);
+    arkime_parsers_classifier_register_tcp("irc", NULL, 0, (uint8_t *)"CAP REQ ", 8, irc_classify);
 }
 

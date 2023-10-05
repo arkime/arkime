@@ -139,7 +139,7 @@ int tcp_packet_process(ArkimeSession_t * const session, ArkimePacket_t * const p
     struct tcphdr       *tcphdr = (struct tcphdr *)(packet->pkt + packet->payloadOffset);
 
 
-    int            len = packet->payloadLen - 4*tcphdr->th_off;
+    int            len = packet->payloadLen - 4 * tcphdr->th_off;
 
     const uint32_t seq = ntohl(tcphdr->th_seq);
 
@@ -171,7 +171,7 @@ int tcp_packet_process(ArkimeSession_t * const session, ArkimePacket_t * const p
 #ifdef DEBUG_TCP
                 LOG("syn-ack first");
 #endif
-                session->tcpSeq[(packet->direction+1)%2] = ntohl(tcphdr->th_ack);
+                session->tcpSeq[(packet->direction + 1) % 2] = ntohl(tcphdr->th_ack);
             }
         } else {
             session->tcpFlagCnt[ARKIME_TCPFLAG_SYN]++;
@@ -257,8 +257,8 @@ int tcp_packet_process(ArkimeSession_t * const session, ArkimePacket_t * const p
     if (tcphdr->th_flags & TH_ACK) {
         if (session->haveTcpSession &&  // Seen a SYN
             (session->ackedUnseenSegment & (1 << packet->direction)) == 0 &&  // Haven't already tagged
-            session->tcpSeq[(packet->direction+1)%2] != 0 &&                  // The syn-ack isn't what is missing
-            (tcp_sequence_diff(session->tcpSeq[(packet->direction+1)%2], ntohl(tcphdr->th_ack)) > 1)) { // more then one byte missing
+            session->tcpSeq[(packet->direction + 1) % 2] != 0 &&                  // The syn-ack isn't what is missing
+            (tcp_sequence_diff(session->tcpSeq[(packet->direction + 1) % 2], ntohl(tcphdr->th_ack)) > 1)) { // more then one byte missing
 
                 static const char *tags[2] = {"acked-unseen-segment-src", "acked-unseen-segment-dst"};
                 arkime_session_add_tag(session, tags[packet->direction]);
@@ -282,7 +282,7 @@ int tcp_packet_process(ArkimeSession_t * const session, ArkimePacket_t * const p
     td->ack = ack;
     td->seq = seq;
     td->len = len;
-    td->dataOffset = packet->payloadOffset + 4*tcphdr->th_off;
+    td->dataOffset = packet->payloadOffset + 4 * tcphdr->th_off;
 
 #ifdef DEBUG_TCP
     LOG("dir: %u seq: %u ack: %u len: %d diff0: %" PRIu64, packet->direction, seq, ack, len, diff);
@@ -365,7 +365,7 @@ int tcp_pre_process(ArkimeSession_t *session, ArkimePacket_t * const packet, int
     struct tcphdr       *tcphdr = (struct tcphdr *)(packet->pkt + packet->payloadOffset);
 
     // If this is an old session that hash RSTs and we get a syn, probably a port reuse, close old session
-    if (!isNewSession && (tcphdr->th_flags & TH_SYN) && ((tcphdr->th_flags & TH_ACK) == 0) && 
+    if (!isNewSession && (tcphdr->th_flags & TH_SYN) && ((tcphdr->th_flags & TH_ACK) == 0) &&
             (session->tcpFlagCnt[ARKIME_TCPFLAG_RST] || session->tcpFlagCnt[ARKIME_TCPFLAG_FIN])) {
         return 1;
     }

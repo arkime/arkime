@@ -22,7 +22,7 @@ LOCAL ArkimePQ_t            *bgpPq;
 LOCAL  int                   typeField;
 
 /******************************************************************************/
-LOCAL int bgp_parser(ArkimeSession_t *session, void *UNUSED(uw), const unsigned char *data, int len, int UNUSED(which))
+LOCAL int bgp_parser(ArkimeSession_t *session, void *UNUSED(uw), const uint8_t *data, int len, int UNUSED(which))
 {
     if (len < 19 || memcmp("\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff", data, 16) != 0)
         return 0;
@@ -37,7 +37,7 @@ LOCAL int bgp_parser(ArkimeSession_t *session, void *UNUSED(uw), const unsigned 
     return 0;
 }
 /******************************************************************************/
-LOCAL void bgp_tcp_classify(ArkimeSession_t *session, const unsigned char *data, int len, int UNUSED(which), void *UNUSED(uw))
+LOCAL void bgp_tcp_classify(ArkimeSession_t *session, const uint8_t *data, int len, int UNUSED(which), void *UNUSED(uw))
 {
     if (len < 19 || memcmp("\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff", data, 16) != 0)
         return;

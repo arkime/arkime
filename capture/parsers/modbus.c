@@ -23,7 +23,7 @@ LOCAL  int exceptionCodeField;
 #define MODBUS_TCP_HEADER_LEN 7
 
 /******************************************************************************/
-LOCAL int modbus_tcp_parser(ArkimeSession_t *session, void *uw, const unsigned char *data, int len, int which) {
+LOCAL int modbus_tcp_parser(ArkimeSession_t *session, void *uw, const uint8_t *data, int len, int which) {
 
     if (len < MODBUS_TCP_HEADER_LEN || data[3] != 0) {
         return ARKIME_PARSER_UNREGISTER;
@@ -99,7 +99,7 @@ LOCAL void modbus_tcp_free(ArkimeSession_t UNUSED(*session), void *uw)
     ARKIME_TYPE_FREE(ModbusInfo_t, info);
 }
 /******************************************************************************/
-LOCAL void modbus_tcp_classify(ArkimeSession_t *session, const unsigned char *data, int len, int UNUSED(which), void UNUSED(*uw))
+LOCAL void modbus_tcp_classify(ArkimeSession_t *session, const uint8_t *data, int len, int UNUSED(which), void UNUSED(*uw))
 {
     // Checks that the Modbus data has at least the length of a full header
     if (len < MODBUS_TCP_HEADER_LEN) {

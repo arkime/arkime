@@ -90,7 +90,7 @@ typedef struct {
     GHashTable            *fieldsMatch[ARKIME_FIELDS_MAX];
 
     int                    rulesLen[ARKIME_RULE_TYPE_NUM];
-    ArkimeRule_t          *rules[ARKIME_RULE_TYPE_NUM][ARKIME_RULES_MAX+1];
+    ArkimeRule_t          *rules[ARKIME_RULE_TYPE_NUM][ARKIME_RULES_MAX + 1];
 } ArkimeRulesInfo_t;
 
 LOCAL ArkimeRulesInfo_t    current;
@@ -222,7 +222,7 @@ LOCAL void arkime_rules_parser_print(YamlNode_t *node, int level)
         printf("%.*s %s:\n", level, indent, node->key);
         int i;
         for (i = 0; i < (int)node->values->len; i++)
-            arkime_rules_parser_print(g_ptr_array_index(node->values, i), level+1);
+            arkime_rules_parser_print(g_ptr_array_index(node->values, i), level + 1);
     }
 }
 /******************************************************************************/
@@ -381,7 +381,7 @@ LOCAL void arkime_rules_load_add_field_range_match(ArkimeRule_t *rule, int pos, 
     *dash = 0;
 
     uint32_t min = atoi(key);
-    uint32_t max = atoi(dash+1);
+    uint32_t max = atoi(dash + 1);
     if (min > max)
         CONFIGEXIT("Min %u > Max %u not allowed", min, max);
 
@@ -424,10 +424,10 @@ LOCAL void arkime_rules_load_add_field_match(ArkimeRule_t *rule, int pos, int ty
     if (len > 255)
         CONFIGEXIT("Match %s is to too large", key);
 
-    uint8_t *nkey = g_malloc(len+3);
+    uint8_t *nkey = g_malloc(len + 3);
     nkey[0] = type;
     nkey[1] = len;
-    memcpy(nkey+2, key, len+1);
+    memcpy(nkey + 2, key, len + 1);
 
     g_ptr_array_add(rule->match[pos], (char *)nkey); // Just made a copy above
 
@@ -669,7 +669,7 @@ LOCAL void arkime_rules_load_complete()
             g_regex_match(regex, bpfs[i], 0, &match_info);
             if (g_match_info_matches(match_info)) {
                 g_match_info_fetch_pos (match_info, 1, &start_pos, NULL);
-                rule->bpf = g_strndup(bpfs[i], start_pos-1);
+                rule->bpf = g_strndup(bpfs[i], start_pos - 1);
                 arkime_field_ops_add(&rule->ops, pos, g_match_info_fetch(match_info, 1), -1);
             } else {
                 rule->bpf = g_strdup(bpfs[i]);
@@ -693,7 +693,7 @@ LOCAL void arkime_rules_load_complete()
             g_regex_match(regex, bpfs[i], 0, &match_info);
             if (g_match_info_matches(match_info)) {
                 g_match_info_fetch_pos (match_info, 1, &start_pos, NULL);
-                rule->bpf = g_strndup(bpfs[i], start_pos-1);
+                rule->bpf = g_strndup(bpfs[i], start_pos - 1);
                 arkime_field_ops_add(&rule->ops, pos, g_match_info_fetch(match_info, 1), -1);
             } else {
                 rule->bpf = g_strdup(bpfs[i]);
@@ -878,25 +878,25 @@ LOCAL gboolean arkime_rules_check_str_match(const ArkimeRule_t * const rule, int
 
         switch (akey[0]) {
         case ARKIME_RULES_STR_MATCH_TAIL:
-            if (memcmp(akey+2, key + len - akey[1], akey[1]) == 0) {
+            if (memcmp(akey + 2, key + len - akey[1], akey[1]) == 0) {
                 if (logStr) {
-                    BSB_EXPORT_sprintf(*logStr, "%s,tail: %s, ", config.fields[p]->expression, akey+2);
+                    BSB_EXPORT_sprintf(*logStr, "%s,tail: %s, ", config.fields[p]->expression, akey + 2);
                 }
                 return TRUE;
             }
             break;
         case ARKIME_RULES_STR_MATCH_HEAD:
-            if (memcmp(akey+2, key, akey[1]) == 0) {
+            if (memcmp(akey + 2, key, akey[1]) == 0) {
                 if (logStr) {
-                    BSB_EXPORT_sprintf(*logStr, "%s,head: %s, ", config.fields[p]->expression, akey+2);
+                    BSB_EXPORT_sprintf(*logStr, "%s,head: %s, ", config.fields[p]->expression, akey + 2);
                 }
                 return TRUE;
             }
             break;
         case ARKIME_RULES_STR_MATCH_CONTAINS:
-            if (arkime_memstr(key, len, (char*)akey+2, akey[1]) != 0) {
+            if (arkime_memstr(key, len, (char*)akey + 2, akey[1]) != 0) {
                 if (logStr) {
-                    BSB_EXPORT_sprintf(*logStr, "%s,contains: %s, ", config.fields[p]->expression, akey+2);
+                    BSB_EXPORT_sprintf(*logStr, "%s,contains: %s, ", config.fields[p]->expression, akey + 2);
                 }
                 return TRUE;
             }
@@ -1303,15 +1303,15 @@ void arkime_rules_run_field_set(ArkimeSession_t *session, int pos, const gpointe
 
                     switch (akey[0]) {
                     case ARKIME_RULES_STR_MATCH_TAIL:
-                        if (memcmp(akey+2, value + len - akey[1], akey[1]) == 0)
+                        if (memcmp(akey + 2, value + len - akey[1], akey[1]) == 0)
                             arkime_rules_run_field_set_rules(session, pos, rules);
                         break;
                     case ARKIME_RULES_STR_MATCH_HEAD:
-                        if (memcmp(akey+2, value, akey[1]) == 0)
+                        if (memcmp(akey + 2, value, akey[1]) == 0)
                             arkime_rules_run_field_set_rules(session, pos, rules);
                         break;
                     case ARKIME_RULES_STR_MATCH_CONTAINS:
-                        if (arkime_memstr(value, len, (char*)akey+2, akey[1]) != 0)
+                        if (arkime_memstr(value, len, (char*)akey + 2, akey[1]) != 0)
                             arkime_rules_run_field_set_rules(session, pos, rules);
                     }
                 }

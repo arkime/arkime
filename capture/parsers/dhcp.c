@@ -23,14 +23,14 @@ LOCAL  int ouiField;
 LOCAL  int idField;
 
 /******************************************************************************/
-LOCAL void dhcpv6_udp_classify(ArkimeSession_t *session, const unsigned char *data, int UNUSED(len), int UNUSED(which), void *UNUSED(uw))
+LOCAL void dhcpv6_udp_classify(ArkimeSession_t *session, const uint8_t *data, int UNUSED(len), int UNUSED(which), void *UNUSED(uw))
 {
     if ((data[0] != 1 && data[0] != 11) || !ARKIME_SESSION_v6(session))
         return;
     arkime_session_add_protocol(session, "dhcpv6");
 }
 /******************************************************************************/
-LOCAL int dhcp_udp_parser(ArkimeSession_t *session, void *UNUSED(uw), const unsigned char *data, int len, int UNUSED(which))
+LOCAL int dhcp_udp_parser(ArkimeSession_t *session, void *UNUSED(uw), const uint8_t *data, int len, int UNUSED(which))
 {
     static char *names[] = {
             "",
@@ -62,7 +62,7 @@ LOCAL int dhcp_udp_parser(ArkimeSession_t *session, void *UNUSED(uw), const unsi
     int hardwareType = data[1];
 
     if (hardwareType == 1) {
-        arkime_field_macoui_add(session, macField, ouiField, data+28);
+        arkime_field_macoui_add(session, macField, ouiField, data + 28);
     }
 
     char str[100];
@@ -78,7 +78,7 @@ LOCAL int dhcp_udp_parser(ArkimeSession_t *session, void *UNUSED(uw), const unsi
         int t = 0;
         int l = 0;
         uint32_t value = 0;
-        unsigned char *valueStr = 0;
+        uint8_t *valueStr = 0;
         BSB_IMPORT_u08(bsb, t);
         if (t == 255) // End Tag, no length
             break;
@@ -106,7 +106,7 @@ LOCAL int dhcp_udp_parser(ArkimeSession_t *session, void *UNUSED(uw), const unsi
                 if (valueStr)
                     arkime_field_macoui_add(session, macField, ouiField, valueStr);
             } else {
-                BSB_IMPORT_skip(bsb, l-1);
+                BSB_IMPORT_skip(bsb, l - 1);
             }
             break;
         case 81: // FQDN
@@ -119,8 +119,8 @@ LOCAL int dhcp_udp_parser(ArkimeSession_t *session, void *UNUSED(uw), const unsi
             if (value != 0) // Don't support any encodings right now
                 BSB_IMPORT_skip(bsb, l - 1);
             else {
-                BSB_IMPORT_ptr(bsb, valueStr, l-3);
-                arkime_field_string_add_lower(hostField, session, (char *)valueStr, l-3);
+                BSB_IMPORT_ptr(bsb, valueStr, l - 3);
+                arkime_field_string_add_lower(hostField, session, (char *)valueStr, l - 3);
             }
             break;
 
@@ -131,10 +131,10 @@ LOCAL int dhcp_udp_parser(ArkimeSession_t *session, void *UNUSED(uw), const unsi
     return 0;
 }
 /******************************************************************************/
-LOCAL void dhcp_udp_classify(ArkimeSession_t *session, const unsigned char *data, int len, int UNUSED(which), void *UNUSED(uw))
+LOCAL void dhcp_udp_classify(ArkimeSession_t *session, const uint8_t *data, int len, int UNUSED(which), void *UNUSED(uw))
 {
 
-    if (len < 256 || (data[0] != 1 && data[0] != 2) || ARKIME_SESSION_v6(session) || memcmp(data+236, "\x63\x82\x53\x63", 4) != 0)
+    if (len < 256 || (data[0] != 1 && data[0] != 2) || ARKIME_SESSION_v6(session) || memcmp(data + 236, "\x63\x82\x53\x63", 4) != 0)
         return;
 
     arkime_parsers_register(session, dhcp_udp_parser, 0, 0);
