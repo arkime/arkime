@@ -24,8 +24,8 @@ LOCAL  int snameField;
 
 #define KRB5_MAX_SIZE 4096
 typedef struct {
-    unsigned char  data[2][KRB5_MAX_SIZE];
-    int            pos[2];
+    uint8_t  data[2][KRB5_MAX_SIZE];
+    int      pos[2];
 } KRB5Info_t;
 
 /******************************************************************************/
@@ -35,7 +35,7 @@ typedef struct {
 --      name-string[1]          SEQUENCE OF GeneralString
 --}
  */
-LOCAL void krb5_parse_principal_name(ArkimeSession_t *session, int field, const unsigned char *data, int len)
+LOCAL void krb5_parse_principal_name(ArkimeSession_t *session, int field, const uint8_t *data, int len)
 {
     ArkimeASNSeq_t seq[10];
 
@@ -80,7 +80,7 @@ LOCAL void krb5_parse_principal_name(ArkimeSession_t *session, int field, const 
 --      additional-tickets[11]  SEQUENCE OF Ticket OPTIONAL
 --}
 */
-LOCAL void krb5_parse_req_body(ArkimeSession_t *session, const unsigned char *data, int len)
+LOCAL void krb5_parse_req_body(ArkimeSession_t *session, const uint8_t *data, int len)
 {
     ArkimeASNSeq_t seq[12];
 
@@ -116,7 +116,7 @@ LOCAL void krb5_parse_req_body(ArkimeSession_t *session, const unsigned char *da
 --      req-body[4]             KDC-REQ-BODY
 --}
 */
-LOCAL void krb5_parse_req(ArkimeSession_t *session, const unsigned char *data, int len)
+LOCAL void krb5_parse_req(ArkimeSession_t *session, const uint8_t *data, int len)
 {
     ArkimeASNSeq_t seq[5];
 
@@ -153,7 +153,7 @@ LOCAL void krb5_parse_req(ArkimeSession_t *session, const unsigned char *data, i
 --      enc-part[6]             EncryptedData
 --}
 */
-LOCAL void krb5_parse_rep(ArkimeSession_t *UNUSED(session), const unsigned char *UNUSED(data), int UNUSED(len))
+LOCAL void krb5_parse_rep(ArkimeSession_t *UNUSED(session), const uint8_t *UNUSED(data), int UNUSED(len))
 {
 }
 /******************************************************************************/
@@ -174,15 +174,15 @@ LOCAL void krb5_parse_rep(ArkimeSession_t *UNUSED(session), const unsigned char 
 --      e-data[12]              OCTET STRING OPTIONAL
 --}
 */
-LOCAL void krb5_parse_error(ArkimeSession_t *UNUSED(session), const unsigned char *UNUSED(data), int UNUSED(len))
+LOCAL void krb5_parse_error(ArkimeSession_t *UNUSED(session), const uint8_t *UNUSED(data), int UNUSED(len))
 {
 }
 /******************************************************************************/
-LOCAL void krb5_parse(ArkimeSession_t *session, const unsigned char *data, int len)
+LOCAL void krb5_parse(ArkimeSession_t *session, const uint8_t *data, int len)
 {
     BSB obsb;
     uint32_t opc, msgType, olen;
-    unsigned char *ovalue;
+    uint8_t *ovalue;
 
     BSB_INIT(obsb, data, len);
     ovalue = arkime_parsers_asn_get_tlv(&obsb, &opc, &msgType, &olen);
@@ -207,13 +207,13 @@ LOCAL void krb5_parse(ArkimeSession_t *session, const unsigned char *data, int l
     }
 }
 /******************************************************************************/
-LOCAL int krb5_udp_parser(ArkimeSession_t *session, void *UNUSED(uw), const unsigned char *data, int len, int UNUSED(which))
+LOCAL int krb5_udp_parser(ArkimeSession_t *session, void *UNUSED(uw), const uint8_t *data, int len, int UNUSED(which))
 {
     krb5_parse(session, data, len);
     return 0;
 }
 /******************************************************************************/
-LOCAL void krb5_udp_classify(ArkimeSession_t *session, const unsigned char *data, int len, int UNUSED(which), void *UNUSED(uw))
+LOCAL void krb5_udp_classify(ArkimeSession_t *session, const uint8_t *data, int len, int UNUSED(which), void *UNUSED(uw))
 {
     if (arkime_session_has_protocol(session, "krb5"))
         return;
@@ -238,7 +238,7 @@ LOCAL void krb5_free(ArkimeSession_t UNUSED(*session), void *uw)
     ARKIME_TYPE_FREE(KRB5Info_t, krb5);
 }
 /******************************************************************************/
-LOCAL int krb5_tcp_parser(ArkimeSession_t *session, void *uw, const unsigned char *data, int remaining, int which)
+LOCAL int krb5_tcp_parser(ArkimeSession_t *session, void *uw, const uint8_t *data, int remaining, int which)
 {
     KRB5Info_t *krb5 = uw;
 
@@ -252,13 +252,13 @@ LOCAL int krb5_tcp_parser(ArkimeSession_t *session, void *uw, const unsigned cha
     int len = (krb5->data[which][2] << 8) | krb5->data[which][3];
     if (krb5->pos[which] < len + 4)
         return 0;
-    krb5_parse(session, krb5->data[which]+4, len);
-    memmove(krb5->data[which], krb5->data[which]+len+4, krb5->pos[which] - len - 4);
+    krb5_parse(session, krb5->data[which] + 4, len);
+    memmove(krb5->data[which], krb5->data[which] + len + 4, krb5->pos[which] - len - 4);
     krb5->pos[which] -= (len + 4);
     return 0;
 }
 /******************************************************************************/
-LOCAL void krb5_tcp_classify(ArkimeSession_t *session, const unsigned char *data, int UNUSED(len), int UNUSED(which), void *UNUSED(uw))
+LOCAL void krb5_tcp_classify(ArkimeSession_t *session, const uint8_t *data, int UNUSED(len), int UNUSED(which), void *UNUSED(uw))
 {
     if (len < 2 || which != 0 || data[0] != 0 || data[1] != 0)
         return;
@@ -290,9 +290,9 @@ void arkime_parser_init()
         ARKIME_FIELD_TYPE_STR_GHASH,  ARKIME_FIELD_FLAG_CNT,
         (char *)NULL);
 
-    arkime_parsers_classifier_register_udp("krb5", 0, 7, (unsigned char*)"\x03\x02\x01\x05", 4, krb5_udp_classify);
-    arkime_parsers_classifier_register_udp("krb5", 0, 9, (unsigned char*)"\x03\x02\x01\x05", 4, krb5_udp_classify);
-    arkime_parsers_classifier_register_tcp("krb5", 0, 11, (unsigned char*)"\x03\x02\x01\x05", 4, krb5_tcp_classify);
-    arkime_parsers_classifier_register_tcp("krb5", 0, 13, (unsigned char*)"\x03\x02\x01\x05", 4, krb5_tcp_classify);
+    arkime_parsers_classifier_register_udp("krb5", 0, 7, (uint8_t *)"\x03\x02\x01\x05", 4, krb5_udp_classify);
+    arkime_parsers_classifier_register_udp("krb5", 0, 9, (uint8_t *)"\x03\x02\x01\x05", 4, krb5_udp_classify);
+    arkime_parsers_classifier_register_tcp("krb5", 0, 11, (uint8_t *)"\x03\x02\x01\x05", 4, krb5_tcp_classify);
+    arkime_parsers_classifier_register_tcp("krb5", 0, 13, (uint8_t *)"\x03\x02\x01\x05", 4, krb5_tcp_classify);
 }
 

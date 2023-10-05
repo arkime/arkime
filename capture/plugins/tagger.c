@@ -127,7 +127,7 @@ LOCAL void tagger_plugin_save(ArkimeSession_t *session, int UNUSED(final))
 {
     TaggerString_t *tstring;
 
-    patricia_node_t *nodes[PATRICIA_MAXBITS+1];
+    patricia_node_t *nodes[PATRICIA_MAXBITS + 1];
     int cnt;
     prefix_t prefix;
 
@@ -199,8 +199,8 @@ LOCAL void tagger_plugin_save(ArkimeSession_t *session, int UNUSED(final))
             if (tstring)
                 tagger_process_match(session, tstring->infos);
             char *dot = strchr(hstring->str, '.');
-            if (dot && *(dot+1)) {
-                HASH_FIND(s_, allDomains, dot+1, tstring);
+            if (dot && *(dot + 1)) {
+                HASH_FIND(s_, allDomains, dot + 1, tstring);
                 if (tstring)
                     tagger_process_match(session, tstring->infos);
             }
@@ -214,8 +214,8 @@ LOCAL void tagger_plugin_save(ArkimeSession_t *session, int UNUSED(final))
             if (tstring)
                 tagger_process_match(session, tstring->infos);
             char *dot = strchr(hstring->str, '.');
-            if (dot && *(dot+1)) {
-                HASH_FIND(s_, allDomains, dot+1, tstring);
+            if (dot && *(dot + 1)) {
+                HASH_FIND(s_, allDomains, dot + 1, tstring);
                 if (tstring)
                     tagger_process_match(session, tstring->infos);
             }
@@ -229,8 +229,8 @@ LOCAL void tagger_plugin_save(ArkimeSession_t *session, int UNUSED(final))
             if (tstring)
                 tagger_process_match(session, tstring->infos);
             char *dot = strchr(hstring->str, '.');
-            if (dot && *(dot+1)) {
-                HASH_FIND(s_, allDomains, dot+1, tstring);
+            if (dot && *(dot + 1)) {
+                HASH_FIND(s_, allDomains, dot + 1, tstring);
                 if (tstring)
                     tagger_process_match(session, tstring->infos);
             }
@@ -419,10 +419,10 @@ LOCAL void tagger_info_free(gpointer data)
 /*
  * File data from ES
  */
-LOCAL void tagger_load_file_cb(int UNUSED(code), unsigned char *data, int data_len, gpointer uw)
+LOCAL void tagger_load_file_cb(int UNUSED(code), uint8_t *data, int data_len, gpointer uw)
 {
     TaggerFile_t *file = uw;
-    uint32_t out[4*100];
+    uint32_t out[4 * 100];
 
     if (file->md5)
         tagger_unload_file(file);
@@ -449,19 +449,19 @@ LOCAL void tagger_load_file_cb(int UNUSED(code), unsigned char *data, int data_l
 
     int i;
     for (i = 0; out[i]; i+= 4) {
-        if (out[i+1] == 3 && memcmp("md5", data + out[i], sizeof("md5")-1) == 0) {
-            file->md5 = g_strndup((char*)data + out[i+2], out[i+3]);
-        } else if (out[i+1] == 4 && memcmp("tags", data + out[i], sizeof("tags")-1) == 0) {
-            data[out[i+2] + out[i+3]] = 0;
-            file->tags = g_strsplit((char*)data + out[i+2], ",", 0);
-        } else if (out[i+1] == sizeof("type")-1 && memcmp("type", data + out[i], sizeof("type")-1) == 0) {
-            file->type = g_strndup((char*)data + out[i+2], out[i+3]);
-        } else if (out[i+1] == sizeof("data")-1 && memcmp("data", data + out[i], sizeof("data")-1) == 0) {
-            data[out[i+2] + out[i+3]] = 0;
-            file->elements = g_strsplit((char*)data + out[i+2], ",", 0);
-        } else if (out[i+1] == sizeof("fields") - 1 && memcmp("fields", data + out[i], sizeof("fields")-1) == 0) {
-            data[out[i+2] + out[i+3]] = 0;
-            char **fields = g_strsplit((char*)data + out[i+2], ",", 0);
+        if (out[i + 1] == 3 && memcmp("md5", data + out[i], sizeof("md5") - 1) == 0) {
+            file->md5 = g_strndup((char*)data + out[i + 2], out[i + 3]);
+        } else if (out[i + 1] == 4 && memcmp("tags", data + out[i], sizeof("tags") - 1) == 0) {
+            data[out[i + 2] + out[i + 3]] = 0;
+            file->tags = g_strsplit((char*)data + out[i + 2], ",", 0);
+        } else if (out[i + 1] == sizeof("type") - 1 && memcmp("type", data + out[i], sizeof("type") - 1) == 0) {
+            file->type = g_strndup((char*)data + out[i + 2], out[i + 3]);
+        } else if (out[i + 1] == sizeof("data") - 1 && memcmp("data", data + out[i], sizeof("data") - 1) == 0) {
+            data[out[i + 2] + out[i + 3]] = 0;
+            file->elements = g_strsplit((char*)data + out[i + 2], ",", 0);
+        } else if (out[i + 1] == sizeof("fields") - 1 && memcmp("fields", data + out[i], sizeof("fields") - 1) == 0) {
+            data[out[i + 2] + out[i + 3]] = 0;
+            char **fields = g_strsplit((char*)data + out[i + 2], ",", 0);
             int f;
             for (f = 0; f < 100 && fields[f]; f++) {
                 int shortcut = -1;
@@ -488,7 +488,7 @@ LOCAL void tagger_load_file_cb(int UNUSED(code), unsigned char *data, int data_l
             if (*str == ';' || *str == '=') {
                 if (!str[1])
                     break;
-                parts[p] = str+1;
+                parts[p] = str + 1;
                 p++;
                 *str = 0;
             }
@@ -497,7 +497,7 @@ LOCAL void tagger_load_file_cb(int UNUSED(code), unsigned char *data, int data_l
 
         TaggerInfo_t *info = ARKIME_TYPE_ALLOC(TaggerInfo_t);
         info->file = file;
-        arkime_field_ops_init(&info->ops, p-2, 0);
+        arkime_field_ops_init(&info->ops, p - 2, 0);
 
         int j;
         for(j = 2; j < p; j+=2) {
@@ -514,7 +514,7 @@ LOCAL void tagger_load_file_cb(int UNUSED(code), unsigned char *data, int data_l
                 continue;
             }
 
-            arkime_field_ops_add(&info->ops, pos, parts[j+1], strlen(parts[j+1]));
+            arkime_field_ops_add(&info->ops, pos, parts[j + 1], strlen(parts[j + 1]));
         }
 
         TaggerStringHash_t *hash = 0;
@@ -580,10 +580,10 @@ LOCAL void tagger_load_file(TaggerFile_t *file)
 /*
  * Process the list of files from ES
  */
-LOCAL void tagger_fetch_files_cb(int UNUSED(code), unsigned char *data, int data_len, gpointer UNUSED(uw))
+LOCAL void tagger_fetch_files_cb(int UNUSED(code), uint8_t *data, int data_len, gpointer UNUSED(uw))
 {
     uint32_t           hits_len;
-    unsigned char     *hits = arkime_js0n_get(data, data_len, "hits", &hits_len);
+    uint8_t           *hits = arkime_js0n_get(data, data_len, "hits", &hits_len);
 
     if (!hits_len || !hits)
         return;
@@ -593,7 +593,7 @@ LOCAL void tagger_fetch_files_cb(int UNUSED(code), unsigned char *data, int data
     if (!hits_len || !hits)
         return;
 
-    uint32_t out[2*8000];
+    uint32_t out[2 * 8000];
     int rc;
     if ((rc = js0n(hits, hits_len, out, sizeof(out))) != 0) {
         LOG("ERROR: Parse error %d in >%.*s<\n", rc, hits_len, hits);
@@ -602,16 +602,16 @@ LOCAL void tagger_fetch_files_cb(int UNUSED(code), unsigned char *data, int data
     int i;
     for (i = 0; out[i]; i+= 2) {
         uint32_t           source_len;
-        unsigned char     *source = 0;
-        source = arkime_js0n_get(hits+out[i], out[i+1], "_source", &source_len);
+        uint8_t           *source = 0;
+        source = arkime_js0n_get(hits+out[i], out[i + 1], "_source", &source_len);
         if (!source) {
             continue;
         }
 
-        char     *id = arkime_js0n_get_str(hits+out[i], out[i+1], "_id");
+        char     *id = arkime_js0n_get_str(hits+out[i], out[i + 1], "_id");
 
         uint32_t           md5_len;
-        unsigned char     *md5 = 0;
+        uint8_t           *md5 = 0;
         md5 = arkime_js0n_get(source, source_len, "md5", &md5_len);
 
         if (*md5 == '[') {
@@ -650,7 +650,7 @@ LOCAL gboolean tagger_fetch_files (gpointer sync)
     /* Need to copy the data since sync uses a static buffer, should fix that */
     if (sync) {
         size_t         data_len;
-        unsigned char *data = arkime_http_send_sync(esServer, "GET", key, key_len, NULL, 0, NULL, &data_len, NULL);
+        uint8_t       *data = arkime_http_send_sync(esServer, "GET", key, key_len, NULL, 0, NULL, &data_len, NULL);
         tagger_fetch_files_cb(200, data, data_len, NULL);
         free(data);
     } else {

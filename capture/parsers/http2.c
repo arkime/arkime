@@ -39,7 +39,7 @@ typedef enum {
 
 typedef struct {
     nghttp2_hd_inflater     *hd_inflater[2];
-    unsigned char            data[2][MAX_HTTP2_SIZE];
+    uint8_t                  data[2][MAX_HTTP2_SIZE];
     int                      used[2];
     uint8_t                  lastType[2];
     uint8_t                  dataPadding[2];
@@ -99,7 +99,7 @@ LOCAL int http2_spos_get(HTTP2Info_t *http2, uint32_t streamId, int create)
         return -1;
     http2->streams[http2->numStreams].id = streamId;
     http2->numStreams++;
-    return http2->numStreams-1;
+    return http2->numStreams - 1;
 }
 /******************************************************************************/
 LOCAL void http2_spos_free(HTTP2Info_t *http2, uint32_t streamId)
@@ -121,7 +121,7 @@ LOCAL void http2_spos_free(HTTP2Info_t *http2, uint32_t streamId)
     }
 }
 /******************************************************************************/
-LOCAL void http2_parse_header_block(ArkimeSession_t *session, HTTP2Info_t *http2, int which, uint8_t flags, uint32_t streamId, unsigned char *in, int inlen)
+LOCAL void http2_parse_header_block(ArkimeSession_t *session, HTTP2Info_t *http2, int which, uint8_t flags, uint32_t streamId, uint8_t *in, int inlen)
 {
     int spos = http2_spos_get(http2, streamId, TRUE);
     if (spos == -1)
@@ -208,7 +208,7 @@ LOCAL void http2_parse_header_block(ArkimeSession_t *session, HTTP2Info_t *http2
  * |                           Padding (*)                       ...
  * +---------------------------------------------------------------+
  */
-LOCAL void http2_parse_frame_headers(ArkimeSession_t *session, HTTP2Info_t *http2, int which, uint8_t flags, uint32_t streamId, unsigned char *in, int inlen)
+LOCAL void http2_parse_frame_headers(ArkimeSession_t *session, HTTP2Info_t *http2, int which, uint8_t flags, uint32_t streamId, uint8_t *in, int inlen)
 {
     if (flags & NGHTTP2_FLAG_PADDED) {
         uint8_t padding = in[0];
@@ -237,7 +237,7 @@ LOCAL void http2_parse_frame_headers(ArkimeSession_t *session, HTTP2Info_t *http
  * |                           Padding (*)                       ...
  * +---------------------------------------------------------------+
  */
-LOCAL void http2_parse_frame_push_promise(ArkimeSession_t *session, HTTP2Info_t *http2, int which, uint8_t flags, uint32_t streamId, unsigned char *in, int inlen)
+LOCAL void http2_parse_frame_push_promise(ArkimeSession_t *session, HTTP2Info_t *http2, int which, uint8_t flags, uint32_t streamId, uint8_t *in, int inlen)
 {
     if (flags & NGHTTP2_FLAG_PADDED) {
         uint8_t padding = in[0];
@@ -264,7 +264,7 @@ LOCAL void http2_parse_frame_push_promise(ArkimeSession_t *session, HTTP2Info_t 
  * |                           Padding (*)                       ...
  * +---------------------------------------------------------------+
  */
-LOCAL void http2_parse_frame_data(ArkimeSession_t *session, HTTP2Info_t *http2, int which, uint8_t flags, uint32_t streamId, const unsigned char *in, int inlen, int initial)
+LOCAL void http2_parse_frame_data(ArkimeSession_t *session, HTTP2Info_t *http2, int which, uint8_t flags, uint32_t streamId, const uint8_t *in, int inlen, int initial)
 {
     // If first packet check for padding/end and save it for when dataneeded is 0
     if (initial) {
@@ -301,13 +301,13 @@ LOCAL void http2_parse_frame_data(ArkimeSession_t *session, HTTP2Info_t *http2, 
     if (!http2->streams[spos].checksum[which]) {
         http2->streams[spos].checksum[which] = g_checksum_new(G_CHECKSUM_MD5);
         if (config.supportSha256) {
-            http2->streams[spos].checksum[which+2] = g_checksum_new(G_CHECKSUM_SHA256);
+            http2->streams[spos].checksum[which + 2] = g_checksum_new(G_CHECKSUM_SHA256);
         }
     }
 
     g_checksum_update(http2->streams[spos].checksum[which], (guchar *)in, inlen);
     if (config.supportSha256) {
-        g_checksum_update(http2->streams[spos].checksum[which+2], (guchar *)in, inlen);
+        g_checksum_update(http2->streams[spos].checksum[which + 2], (guchar *)in, inlen);
     }
 
     // If the first packet in the frame said this is end and we've read them all, set the md5/sha fields
@@ -316,9 +316,9 @@ LOCAL void http2_parse_frame_data(ArkimeSession_t *session, HTTP2Info_t *http2, 
         arkime_field_string_uw_add(md5Field, session, (char*)md5, 32, (gpointer)http2->streams[spos].magicString[which], TRUE);
         g_checksum_reset(http2->streams[spos].checksum[which]);
         if (config.supportSha256) {
-            const char *sha256 = g_checksum_get_string(http2->streams[spos].checksum[which+2]);
+            const char *sha256 = g_checksum_get_string(http2->streams[spos].checksum[which + 2]);
             arkime_field_string_uw_add(sha256Field, session, (char*)sha256, 64, (gpointer)http2->streams[spos].magicString[which], TRUE);
-            g_checksum_reset(http2->streams[spos].checksum[which+2]);
+            g_checksum_reset(http2->streams[spos].checksum[which + 2]);
         }
     }
 }
@@ -400,7 +400,7 @@ cleanup:
     return 0;
 }
 /******************************************************************************/
-LOCAL int http2_parse(ArkimeSession_t *session, void *uw, const unsigned char *data, int len, int which)
+LOCAL int http2_parse(ArkimeSession_t *session, void *uw, const uint8_t *data, int len, int which)
 {
     HTTP2Info_t            *http2          = uw;
 
@@ -476,7 +476,7 @@ LOCAL void http2_free(ArkimeSession_t UNUSED(*session), void *uw)
     ARKIME_TYPE_FREE(HTTP2Info_t, http2);
 }
 /******************************************************************************/
-LOCAL void http2_classify(ArkimeSession_t *session, const unsigned char *UNUSED(data), int UNUSED(len), int which, void *UNUSED(uw))
+LOCAL void http2_classify(ArkimeSession_t *session, const uint8_t *UNUSED(data), int UNUSED(len), int which, void *UNUSED(uw))
 {
     if (arkime_session_has_protocol(session, "http2"))
         return;
@@ -490,7 +490,7 @@ LOCAL void http2_classify(ArkimeSession_t *session, const unsigned char *UNUSED(
 /******************************************************************************/
 void arkime_parser_init()
 {
-    arkime_parsers_classifier_register_tcp("http2", NULL, 0, (unsigned char *)"PRI * HTTP/2.0\r\n\r\nSM\r\n\r\n", 24, http2_classify);
+    arkime_parsers_classifier_register_tcp("http2", NULL, 0, (uint8_t *)"PRI * HTTP/2.0\r\n\r\nSM\r\n\r\n", 24, http2_classify);
 
     methodField = arkime_field_define("http", "termfield",
         "http.method", "Request Method", "http.method",

@@ -46,7 +46,7 @@ int reader_snf_stats(ArkimeReaderStats_t *stats)
     stats->total = 0;
 
     int i, r;
-    int ringStartOffset = (snfProcNum-1)*snfNumRings;
+    int ringStartOffset = (snfProcNum - 1)*snfNumRings;
     for (i = 0; i < MAX_INTERFACES && config.interface[i]; i++) {
         for (r = ringStartOffset; r < (ringStartOffset+snfNumRings); r++) {
 
@@ -55,7 +55,7 @@ int reader_snf_stats(ArkimeReaderStats_t *stats)
 
             int err = snf_ring_getstats(rings[i][r], &ss);
 
-            if (err) 
+            if (err)
                 continue;
             //
             // Miricom reports drops at the NIC level
@@ -123,7 +123,7 @@ LOCAL void *reader_snf_thread(gpointer posv)
 void reader_snf_start() {
     arkime_packet_set_dltsnap(DLT_EN10MB, config.snapLen);
 
-    int ringStartOffset = (snfProcNum-1)*snfNumRings;
+    int ringStartOffset = (snfProcNum - 1)*snfNumRings;
     int i, r;
     for (i = 0; i < MAX_INTERFACES && config.interface[i]; i++) {
         for (r = ringStartOffset; r < (ringStartOffset+snfNumRings); r++) {
@@ -165,7 +165,7 @@ void reader_snf_init(char *UNUSED(name))
         CONFIGEXIT("Myricom: failed in snf_getifaddrs %d", err);
     }
 
-    int ringStartOffset = (snfProcNum-1)*snfNumRings;
+    int ringStartOffset = (snfProcNum - 1)*snfNumRings;
     int i, r;
     for (i = 0; i < MAX_INTERFACES && config.interface[i]; i++) {
         struct snf_ifaddrs *ifa = ifaddrs;

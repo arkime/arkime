@@ -2,15 +2,15 @@
  *
  * https://www.plixer.com/support/netflow_v5.html
  * https://www.plixer.com/support/netflow_v7.html
- *     
+ *
  * Copyright 2012-2017 AOL Inc. All rights reserved.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this Software except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -64,14 +64,14 @@ LOCAL void netflow_send(const int thread)
 
     BSB_INIT(hbsb, buf[thread], headerSize);
 
-    uint32_t sys_uptime = (lastTime[thread].tv_sec - initialPacket.tv_sec)*1000 + (lastTime[thread].tv_usec - initialPacket.tv_usec)/1000;
+    uint32_t sys_uptime = (lastTime[thread].tv_sec - initialPacket.tv_sec) * 1000 + (lastTime[thread].tv_usec - initialPacket.tv_usec) / 1000;
 
     /* Header */
     BSB_EXPORT_u16(hbsb, netflowVersion);
     BSB_EXPORT_u16(hbsb, bufCount[thread]); // count
     BSB_EXPORT_u32(hbsb, sys_uptime); // sys_uptime
     BSB_EXPORT_u32(hbsb, lastTime[thread].tv_sec);
-    BSB_EXPORT_u32(hbsb, lastTime[thread].tv_usec*1000);
+    BSB_EXPORT_u32(hbsb, lastTime[thread].tv_usec * 1000);
 
     switch (netflowVersion) {
     case 5:
@@ -89,7 +89,7 @@ LOCAL void netflow_send(const int thread)
     int i;
     for (i = 0; i < numDests; i++) {
         int rc;
-        
+
         if ((rc = send(dests[i].fd, buf[thread], BSB_LENGTH(bsb[thread])+headerSize, 0)) < BSB_LENGTH(bsb[thread])+headerSize) {
             LOG("Failed to send rc=%d size=%u error=%s", rc, (uint32_t)BSB_LENGTH(bsb[thread])+headerSize, strerror(errno));
         }
@@ -100,7 +100,7 @@ LOCAL void netflow_send(const int thread)
     bufCount[thread] = 0;
 }
 /******************************************************************************/
-/* 
+/*
  * Called by arkime when a session is about to be saved
  */
 LOCAL void netflow_plugin_save(ArkimeSession_t *session, int UNUSED(final))
@@ -125,8 +125,8 @@ LOCAL void netflow_plugin_save(ArkimeSession_t *session, int UNUSED(final))
     if ((lastTime[thread].tv_sec < session->lastPacket.tv_sec) || (lastTime[thread].tv_sec == session->lastPacket.tv_sec && lastTime[thread].tv_usec < session->lastPacket.tv_usec)) {
         lastTime[thread] = session->lastPacket;
     }
-    uint32_t first = (session->firstPacket.tv_sec - initialPacket.tv_sec)*1000 + (session->firstPacket.tv_usec - initialPacket.tv_usec)/1000;
-    uint32_t last  = (session->lastPacket.tv_sec - initialPacket.tv_sec)*1000 + (session->lastPacket.tv_usec - initialPacket.tv_usec)/1000;
+    uint32_t first = (session->firstPacket.tv_sec - initialPacket.tv_sec) * 1000 + (session->firstPacket.tv_usec - initialPacket.tv_usec) / 1000;
+    uint32_t last  = (session->lastPacket.tv_sec - initialPacket.tv_sec) * 1000 + (session->lastPacket.tv_usec - initialPacket.tv_usec) / 1000;
 
     if (session->packets[0]) {
         /* Body */
@@ -228,7 +228,7 @@ LOCAL void netflow_plugin_save(ArkimeSession_t *session, int UNUSED(final))
 }
 
 /******************************************************************************/
-/* 
+/*
  * Called by arkime when arkime is quiting
  */
 LOCAL void netflow_plugin_exit()
@@ -268,7 +268,7 @@ void arkime_plugin_init()
 
     if (netflowVersion == 1)
         headerSize = 16;
-    else 
+    else
         headerSize = 24;
 
     char **dsts = arkime_config_str_list(NULL, "netflowDestinations", NULL);
@@ -289,8 +289,8 @@ void arkime_plugin_init()
 	hints.ai_family = AF_INET;
 	hints.ai_socktype = SOCK_DGRAM;
 
-        if (getaddrinfo(dsts[i], colon+1, &hints, &res)) {
-            CONFIGEXIT("Failed looking up %s:%s", dsts[i], colon+1);
+        if (getaddrinfo(dsts[i], colon + 1, &hints, &res)) {
+            CONFIGEXIT("Failed looking up %s:%s", dsts[i], colon + 1);
         }
 
         dests[numDests].addr = *((struct sockaddr_in *) res->ai_addr);

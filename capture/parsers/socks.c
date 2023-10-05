@@ -37,7 +37,7 @@ LOCAL  int hostField;
 /******************************************************************************/
 #define SOCKS4_STATE_REPLY        0
 #define SOCKS4_STATE_DATA         1
-LOCAL int socks4_parser(ArkimeSession_t *session, void *uw, const unsigned char *data, int remaining, int which)
+LOCAL int socks4_parser(ArkimeSession_t *session, void *uw, const uint8_t *data, int remaining, int which)
 {
     SocksInfo_t            *socks          = uw;
 
@@ -63,7 +63,7 @@ LOCAL int socks4_parser(ArkimeSession_t *session, void *uw, const unsigned char 
                 }
                 socks->host = 0;
             }
-            arkime_parsers_classify_tcp(session, data+8, remaining-8, which);
+            arkime_parsers_classify_tcp(session, data + 8, remaining - 8, which);
             socks->state4 = SOCKS4_STATE_DATA;
             return 8;
         }
@@ -86,7 +86,7 @@ LOCAL int socks4_parser(ArkimeSession_t *session, void *uw, const unsigned char 
 #define SOCKS5_STATE_CONN_REQUEST   5
 #define SOCKS5_STATE_CONN_REPLY     6
 #define SOCKS5_STATE_CONN_DATA      7
-LOCAL int socks5_parser(ArkimeSession_t *session, void *uw, const unsigned char *data, int remaining, int which)
+LOCAL int socks5_parser(ArkimeSession_t *session, void *uw, const uint8_t *data, int remaining, int which)
 {
     SocksInfo_t            *socks          = uw;
     int                     consumed;
@@ -106,7 +106,7 @@ LOCAL int socks5_parser(ArkimeSession_t *session, void *uw, const unsigned char 
         } else {
             socks->state5[which] = SOCKS5_STATE_USER_REQUEST;
         }
-        socks->state5[(which+1)%2] = SOCKS5_STATE_VER_REPLY;
+        socks->state5[(which + 1) % 2] = SOCKS5_STATE_VER_REPLY;
         break;
     case SOCKS5_STATE_VER_REPLY:
         if (remaining != 2 || data[0] != 5 || data[1] > 2) {
@@ -133,7 +133,7 @@ LOCAL int socks5_parser(ArkimeSession_t *session, void *uw, const unsigned char 
 
         return 2;
     case SOCKS5_STATE_USER_REQUEST:
-        if (remaining < 2 || (3 + data[1] > (int)remaining) || (2 + data[1] + 1 + data[data[1]+2]  > (int)remaining)) {
+        if (remaining < 2 || (3 + data[1] > (int)remaining) || (2 + data[1] + 1 + data[data[1] + 2]  > (int)remaining)) {
             arkime_parsers_unregister(session, uw);
             return 0;
         }
@@ -141,7 +141,7 @@ LOCAL int socks5_parser(ArkimeSession_t *session, void *uw, const unsigned char 
         arkime_field_string_add(userField, session, (char *)data + 2, data[1], TRUE);
         arkime_session_add_tag(session, "socks:password");
         socks->state5[which] = SOCKS5_STATE_CONN_REQUEST;
-        return data[1] + 1 + data[data[1]+2];
+        return data[1] + 1 + data[data[1] + 2];
     case SOCKS5_STATE_USER_REPLY:
         socks->state5[which] = SOCKS5_STATE_CONN_REPLY;
         return 2;
@@ -158,7 +158,7 @@ LOCAL int socks5_parser(ArkimeSession_t *session, void *uw, const unsigned char 
                 return 0;
             }
             socks->port = (data[8]&0xff) << 8 | (data[9]&0xff);
-            memcpy(&socks->ip, data+4, 4);
+            memcpy(&socks->ip, data + 4, 4);
             arkime_field_ip4_add(ipField, session, socks->ip);
             arkime_field_int_add(portField, session, socks->port);
             consumed = 4 + 4 + 2;
@@ -169,7 +169,7 @@ LOCAL int socks5_parser(ArkimeSession_t *session, void *uw, const unsigned char 
             }
             socks->port = (data[5+data[4]]&0xff) << 8 | (data[6+data[4]]&0xff);
 
-            arkime_field_string_add_lower(hostField, session, (char *)data+5, data[4]);
+            arkime_field_string_add_lower(hostField, session, (char *)data + 5, data[4]);
             arkime_field_int_add(portField, session, socks->port);
             consumed = 4 + 1 + data[4] + 2;
         } else if (data[3] == 4) { // IPV6
@@ -232,13 +232,13 @@ LOCAL void socks_free(ArkimeSession_t UNUSED(*session), void *uw)
     ARKIME_TYPE_FREE(SocksInfo_t, socks);
 }
 /******************************************************************************/
-LOCAL void socks4_classify(ArkimeSession_t *session, const unsigned char *data, int len, int which, void *UNUSED(uw))
+LOCAL void socks4_classify(ArkimeSession_t *session, const uint8_t *data, int len, int which, void *UNUSED(uw))
 {
 #ifdef SOCKSDEBUG
     LOG("SOCKSDEBUG: enter %d %d", data[0], len);
 #endif
 
-    if (len < 8 || data[len-1] != 0)
+    if (len < 8 || data[len - 1] != 0)
         return;
 
     SocksInfo_t *socks;
@@ -249,13 +249,13 @@ LOCAL void socks4_classify(ArkimeSession_t *session, const unsigned char *data, 
     if (data[4] == 0 && data[5] == 0 && data[6] == 0 && data[7] != 0) {
         socks->ip = 0;
     } else {
-        memcpy(&socks->ip, data+4, 4);
+        memcpy(&socks->ip, data + 4, 4);
     }
 
     int i;
     for(i = 8; i < len && data[i]; i++);
     if (i > 8 && i != len ) {
-        socks->user = g_strndup((char *)data+8, i-8);
+        socks->user = g_strndup((char *)data + 8, i - 8);
         socks->userlen = i - 8;
     }
 
@@ -273,7 +273,7 @@ LOCAL void socks4_classify(ArkimeSession_t *session, const unsigned char *data, 
 }
 
 /******************************************************************************/
-LOCAL void socks5_classify(ArkimeSession_t *session, const unsigned char *data, int len, int which, void *UNUSED(uw))
+LOCAL void socks5_classify(ArkimeSession_t *session, const uint8_t *data, int len, int which, void *UNUSED(uw))
 {
 #ifdef SOCKSDEBUG
     LOG("SOCKSDEBUG: enter %d %d", data[0], len);
@@ -333,8 +333,8 @@ void arkime_parser_init()
         "category", "user",
         (char *)NULL);
 
-    arkime_parsers_classifier_register_tcp("socks5", NULL, 0, (unsigned char*)"\005", 1, socks5_classify);
-    arkime_parsers_classifier_register_tcp("socks4", NULL, 0, (unsigned char*)"\004\000", 2, socks4_classify);
-    arkime_parsers_classifier_register_tcp("socks4", NULL, 0, (unsigned char*)"\004\001", 2, socks4_classify);
+    arkime_parsers_classifier_register_tcp("socks5", NULL, 0, (uint8_t *)"\005", 1, socks5_classify);
+    arkime_parsers_classifier_register_tcp("socks4", NULL, 0, (uint8_t *)"\004\000", 2, socks4_classify);
+    arkime_parsers_classifier_register_tcp("socks4", NULL, 0, (uint8_t *)"\004\001", 2, socks4_classify);
 }
 

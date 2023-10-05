@@ -347,7 +347,7 @@ void arkime_plugins_cb_new(ArkimeSession_t *session)
     );
 }
 /******************************************************************************/
-void arkime_plugins_cb_tcp(ArkimeSession_t *session, const unsigned char *data, int len, int which)
+void arkime_plugins_cb_tcp(ArkimeSession_t *session, const uint8_t *data, int len, int which)
 {
     ArkimePlugin_t *plugin;
 
@@ -357,7 +357,7 @@ void arkime_plugins_cb_tcp(ArkimeSession_t *session, const unsigned char *data, 
     );
 }
 /******************************************************************************/
-void arkime_plugins_cb_udp(ArkimeSession_t *session, const unsigned char *data, int len, int which)
+void arkime_plugins_cb_udp(ArkimeSession_t *session, const uint8_t *data, int len, int which)
 {
     ArkimePlugin_t *plugin;
 

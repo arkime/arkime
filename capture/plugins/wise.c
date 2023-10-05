@@ -171,7 +171,7 @@ LOCAL void wise_load_fields()
 
     key_len = snprintf(key, sizeof(key), "/fields?ver=1");
     size_t         data_len;
-    unsigned char *data = arkime_http_send_sync(wiseService, "GET", key, key_len, NULL, 0, NULL, &data_len, NULL);
+    uint8_t *data = arkime_http_send_sync(wiseService, "GET", key, key_len, NULL, 0, NULL, &data_len, NULL);
 
     BSB bsb;
     BSB_INIT(bsb, data, data_len);
@@ -184,11 +184,11 @@ LOCAL void wise_load_fields()
         if (wiseURL) {
             LOGEXIT("ERROR - Verify wiseURL value of `%s` version: %d - %s",
                     wiseURL, ver,
-                    (ver == -1?"Couldn't connect to WISE":"Unsupported version"));
+                    (ver == -1 ? "Couldn't connect to WISE" : "Unsupported version"));
         } else {
             LOGEXIT("ERROR - Verify wiseHost:wisePort value of `%s:%d` version: %d - %s",
                     wiseHost, wisePort, ver,
-                    (ver == -1?"Couldn't connect to WISE":"Unsupported version"));
+                    (ver == -1 ? "Couldn't connect to WISE" : "Unsupported version"));
         }
     }
 
@@ -246,7 +246,7 @@ LOCAL void wise_remove_item_locked(WiseItem_t *wi)
     arkime_free_later(wi, (GDestroyNotify) wise_free_item);
 }
 /******************************************************************************/
-LOCAL void wise_cb(int UNUSED(code), unsigned char *data, int data_len, gpointer uw)
+LOCAL void wise_cb(int UNUSED(code), uint8_t *data, int data_len, gpointer uw)
 {
 
     BSB             bsb;
@@ -276,7 +276,7 @@ LOCAL void wise_cb(int UNUSED(code), unsigned char *data, int data_len, gpointer
 
     int hashPos = 0;
     if (ver == 2) {
-        unsigned char *hash;
+        uint8_t *hash;
         BSB_IMPORT_ptr(bsb, hash, 32);
 
         int cnt = 0;
@@ -414,7 +414,7 @@ LOCAL void wise_lookup(ArkimeSession_t *session, WiseRequest_t *request, char *v
             }
 
             if (wi->numSessions >= wi->sessionsSize) {
-                wi->sessionsSize = MIN(wi->sessionsSize*2, 4096);
+                wi->sessionsSize = MIN(wi->sessionsSize * 2, 4096);
                 wi->sessions = realloc(wi->sessions, sizeof(ArkimeSession_t *) * wi->sessionsSize);
             }
             wi->sessions[wi->numSessions++] = session;
@@ -473,9 +473,9 @@ LOCAL void wise_lookup_domain(ArkimeSession_t *session, WiseRequest_t *request, 
             domain += 8;
     }
 
-    unsigned char *end = (unsigned char*)domain;
-    unsigned char *colon = 0;
-    int            period = 0;
+    uint8_t *end = (uint8_t*)domain;
+    uint8_t *colon = 0;
+    int      period = 0;
 
     while (*end) {
         if (!validDNS[*end]) {
@@ -505,7 +505,7 @@ LOCAL void wise_lookup_domain(ArkimeSession_t *session, WiseRequest_t *request, 
     }
 
     // Last character is digit, can't be a domain, so either ip or bogus
-    if (isdigit(*(end-1))) {
+    if (isdigit(*(end - 1))) {
         struct in_addr addr;
         if (inet_pton(AF_INET, domain, &addr) == 1) {
             wise_lookup(session, request, domain, INTEL_TYPE_IP);

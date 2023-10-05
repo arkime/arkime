@@ -37,7 +37,7 @@ LOCAL ArkimePacketRC erspan_packet_enqueue(ArkimePacketBatch_t * UNUSED(batch), 
     BSB_IMPORT_u16(bsb, packet->vlan);
     packet->vlan &= 0x7f; // clear the version bits
 
-    return arkime_packet_run_ethernet_cb(batch, packet, data+8,len-8, ARKIME_ETHERTYPE_ETHER, "ERSpan");
+    return arkime_packet_run_ethernet_cb(batch, packet, data + 8,len - 8, ARKIME_ETHERTYPE_ETHER, "ERSpan");
 }
 /******************************************************************************/
 void arkime_parser_init()

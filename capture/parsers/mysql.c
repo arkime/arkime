@@ -26,7 +26,7 @@ LOCAL  int versionField;
 extern ArkimeConfig_t        config;
 
 /******************************************************************************/
-LOCAL int mysql_parser(ArkimeSession_t *session, void *uw, const unsigned char *data, int len, int which)
+LOCAL int mysql_parser(ArkimeSession_t *session, void *uw, const uint8_t *data, int len, int which)
 {
     Info_t *info = uw;
     if (which != 0) {
@@ -44,8 +44,8 @@ LOCAL int mysql_parser(ArkimeSession_t *session, void *uw, const unsigned char *
         return 0;
     }
 
-    unsigned char *ptr = (unsigned char*)data + 36;
-    unsigned char *end = (unsigned char*)data + len;
+    uint8_t *ptr = (uint8_t *)data + 36;
+    uint8_t *end = (uint8_t *)data + len;
 
     while (ptr < end) {
         if (*ptr == 0)
@@ -62,7 +62,7 @@ LOCAL int mysql_parser(ArkimeSession_t *session, void *uw, const unsigned char *
     info->version = 0;
 
     if (ptr > data + 36) {
-        arkime_field_string_add_lower(userField, session, (char*)data+36, ptr - (data + 36));
+        arkime_field_string_add_lower(userField, session, (char*)data + 36, ptr - (data + 36));
     }
 
     if (data[5] & 0x08) { //CLIENT_SSL
@@ -82,7 +82,7 @@ LOCAL void mysql_free(ArkimeSession_t UNUSED(*session), void *uw)
     ARKIME_TYPE_FREE(Info_t, info);
 }
 /******************************************************************************/
-LOCAL void mysql_classify(ArkimeSession_t *session, const unsigned char *data, int len, int which, void *UNUSED(uw))
+LOCAL void mysql_classify(ArkimeSession_t *session, const uint8_t *data, int len, int which, void *UNUSED(uw))
 {
     if (which != 1)
         return;
@@ -90,8 +90,8 @@ LOCAL void mysql_classify(ArkimeSession_t *session, const unsigned char *data, i
     if (arkime_session_has_protocol(session, "mysql"))
         return;
 
-    unsigned char *ptr = (unsigned char*)data + 5;
-    unsigned char *end = (unsigned char*)data + len;
+    uint8_t *ptr = (uint8_t *)data + 5;
+    uint8_t *end = (uint8_t *)data + len;
 
     while (ptr < end) {
         if (*ptr == 0)
@@ -114,7 +114,7 @@ LOCAL void mysql_classify(ArkimeSession_t *session, const unsigned char *data, i
 /******************************************************************************/
 void arkime_parser_init()
 {
-    arkime_parsers_classifier_register_tcp("mysql", NULL, 1, (unsigned char*)"\x00\x00\x00\x0a", 4, mysql_classify);
+    arkime_parsers_classifier_register_tcp("mysql", NULL, 1, (uint8_t *)"\x00\x00\x00\x0a", 4, mysql_classify);
 
     userField = arkime_field_define("mysql", "lotermfield",
         "mysql.user", "User", "mysql.user",

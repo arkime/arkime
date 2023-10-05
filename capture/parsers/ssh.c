@@ -31,14 +31,14 @@ LOCAL  int hasshField;
 LOCAL  int hasshServerField;
 
 /******************************************************************************/
-LOCAL void ssh_parse_keyinit(ArkimeSession_t *session, const unsigned char *data, int remaining, int isDst)
+LOCAL void ssh_parse_keyinit(ArkimeSession_t *session, const uint8_t *data, int remaining, int isDst)
 {
     BSB   bsb;
     char  hbuf[30000];
     BSB   hbsb;
 
     uint32_t       len = 0;
-    unsigned char *value = 0;
+    uint8_t *value = 0;
 
     BSB_INIT(bsb, data, remaining);
     BSB_INIT(hbsb, hbuf, sizeof(hbuf));
@@ -116,7 +116,7 @@ LOCAL void ssh_parse_keyinit(ArkimeSession_t *session, const unsigned char *data
 }
 
 /******************************************************************************/
-LOCAL int ssh_parser(ArkimeSession_t *session, void *uw, const unsigned char *data, int remaining, int which)
+LOCAL int ssh_parser(ArkimeSession_t *session, void *uw, const uint8_t *data, int remaining, int which)
 {
     SSHInfo_t *ssh = uw;
 
@@ -146,8 +146,8 @@ LOCAL int ssh_parser(ArkimeSession_t *session, void *uw, const unsigned char *da
 
     // Version handshake
     if (remaining > 3 && memcmp("SSH", data, 3) == 0) {
-        unsigned char *n = memchr(data, 0x0a, remaining);
-        if (n && *(n-1) == 0x0d)
+        uint8_t *n = memchr(data, 0x0a, remaining);
+        if (n && *(n - 1) == 0x0d)
             n--;
 
         if (n) {
@@ -191,7 +191,7 @@ LOCAL int ssh_parser(ArkimeSession_t *session, void *uw, const unsigned char *da
 
             if (!BSB_IS_ERROR(bsb) && BSB_REMAINING(bsb) >= keyLen) {
                 char *str = g_base64_encode(BSB_WORK_PTR(bsb), keyLen);
-                if (!arkime_field_string_add(keyField, session, str, (keyLen/3+1)*4, FALSE)) {
+                if (!arkime_field_string_add(keyField, session, str, (keyLen / 3 + 1) * 4, FALSE)) {
                     g_free(str);
                 }
             }
@@ -210,7 +210,7 @@ LOCAL void ssh_free(ArkimeSession_t UNUSED(*session), void *uw)
     ARKIME_TYPE_FREE(SSHInfo_t, ssh);
 }
 /******************************************************************************/
-LOCAL void ssh_classify(ArkimeSession_t *session, const unsigned char *UNUSED(data), int UNUSED(len), int UNUSED(which), void *UNUSED(uw))
+LOCAL void ssh_classify(ArkimeSession_t *session, const uint8_t *UNUSED(data), int UNUSED(len), int UNUSED(which), void *UNUSED(uw))
 {
     if (arkime_session_has_protocol(session, "ssh"))
         return;
@@ -248,6 +248,6 @@ void arkime_parser_init()
         ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT,
         (char *)NULL);
 
-    arkime_parsers_classifier_register_tcp("ssh", NULL, 0, (unsigned char*)"SSH", 3, ssh_classify);
+    arkime_parsers_classifier_register_tcp("ssh", NULL, 0, (uint8_t *)"SSH", 3, ssh_classify);
 }
 

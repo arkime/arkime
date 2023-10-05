@@ -90,7 +90,7 @@ void *molua_pushArkimeSession (lua_State *L, const ArkimeSession_t *ms)
 }
 
 /******************************************************************************/
-void molua_classify_cb(ArkimeSession_t *session, const unsigned char *data, int len, int which, void *uw)
+void molua_classify_cb(ArkimeSession_t *session, const uint8_t *data, int len, int which, void *uw)
 {
     lua_State *L = Ls[session->thread];
     lua_getglobal(L, uw);
@@ -104,7 +104,7 @@ void molua_classify_cb(ArkimeSession_t *session, const unsigned char *data, int 
 
 
 /******************************************************************************/
-int molua_parsers_cb(ArkimeSession_t *session, void *uw, const unsigned char *data, int remaining, int which)
+int molua_parsers_cb(ArkimeSession_t *session, void *uw, const uint8_t *data, int remaining, int which)
 {
     lua_State *L = Ls[session->thread];
     lua_rawgeti(L, LUA_REGISTRYINDEX, (long)uw);
@@ -663,7 +663,7 @@ LOCAL int MS_get_certs(lua_State *L, ArkimeSession_t *session, const char *exp)
         HASH_FORALL(t_, *cihash, certs,
             if (!certs->curve)
                 continue;
-            lua_pushinteger(L, i+1);
+            lua_pushinteger(L, i + 1);
             lua_pushstring(L, certs->curve);
             lua_settable(L, -3);
             i++;
@@ -676,7 +676,7 @@ LOCAL int MS_get_certs(lua_State *L, ArkimeSession_t *session, const char *exp)
         HASH_FORALL(t_, *cihash, certs,
             if (!certs->publicAlgorithm)
                 continue;
-            lua_pushinteger(L, i+1);
+            lua_pushinteger(L, i + 1);
             lua_pushstring(L, certs->publicAlgorithm);
             lua_settable(L, -3);
             i++;
@@ -746,19 +746,19 @@ LOCAL int MS_get(lua_State *L)
         case 't':
             if (strncmp(exp, "tcpflags.", 9) != 0)
                 break;
-            if (strcmp(exp+9, "syn") == 0)
+            if (strcmp(exp + 9, "syn") == 0)
                 lua_pushinteger(L, session->tcpFlagCnt[ARKIME_TCPFLAG_SYN]);
-            else if (strcmp(exp+9, "syn-ack") == 0)
+            else if (strcmp(exp + 9, "syn-ack") == 0)
                 lua_pushinteger(L, session->tcpFlagCnt[ARKIME_TCPFLAG_SYN_ACK]);
-            else if (strcmp(exp+9, "ack") == 0)
+            else if (strcmp(exp + 9, "ack") == 0)
                 lua_pushinteger(L, session->tcpFlagCnt[ARKIME_TCPFLAG_ACK]);
-            else if (strcmp(exp+9, "psh") == 0)
+            else if (strcmp(exp + 9, "psh") == 0)
                 lua_pushinteger(L, session->tcpFlagCnt[ARKIME_TCPFLAG_PSH]);
-            else if (strcmp(exp+9, "rst") == 0)
+            else if (strcmp(exp + 9, "rst") == 0)
                 lua_pushinteger(L, session->tcpFlagCnt[ARKIME_TCPFLAG_RST]);
-            else if (strcmp(exp+9, "FIN") == 0)
+            else if (strcmp(exp + 9, "FIN") == 0)
                 lua_pushinteger(L, session->tcpFlagCnt[ARKIME_TCPFLAG_FIN]);
-            else if (strcmp(exp+9, "URG") == 0)
+            else if (strcmp(exp + 9, "URG") == 0)
                 lua_pushinteger(L, session->tcpFlagCnt[ARKIME_TCPFLAG_URG]);
             else
                 break;
@@ -793,7 +793,7 @@ LOCAL int MS_get(lua_State *L)
         i = 0;
         lua_newtable(L);
         HASH_FORALL(i_, *ihash, hint,
-            lua_pushinteger(L, i+1);
+            lua_pushinteger(L, i + 1);
             lua_pushinteger(L, hint->i_hash);
             lua_settable(L,-3);
             i++;
@@ -805,7 +805,7 @@ LOCAL int MS_get(lua_State *L)
         lua_newtable(L);
         g_hash_table_iter_init (&iter, ghash);
         while (g_hash_table_iter_next (&iter, &ikey, NULL)) {
-            lua_pushinteger(L, i+1);
+            lua_pushinteger(L, i + 1);
             lua_pushinteger(L, (unsigned int)(long)ikey);
             lua_settable(L,-3);
             i++;
@@ -817,7 +817,7 @@ LOCAL int MS_get(lua_State *L)
     case ARKIME_FIELD_TYPE_STR_ARRAY:
         lua_newtable(L);
         for(i = 0; i < field->sarray->len; i++) {
-            lua_pushinteger(L, i+1);
+            lua_pushinteger(L, i + 1);
             lua_pushstring(L, g_ptr_array_index(field->sarray, i));
             lua_settable(L,-3);
         }
@@ -827,7 +827,7 @@ LOCAL int MS_get(lua_State *L)
         i = 0;
         lua_newtable(L);
         HASH_FORALL(s_, *shash, hstring,
-            lua_pushinteger(L, i+1);
+            lua_pushinteger(L, i + 1);
             lua_pushstring(L, hstring->str);
             lua_settable(L,-3);
             i++;
@@ -839,7 +839,7 @@ LOCAL int MS_get(lua_State *L)
         lua_newtable(L);
         g_hash_table_iter_init (&iter, ghash);
         while (g_hash_table_iter_next (&iter, &ikey, NULL)) {
-            lua_pushinteger(L, i+1);
+            lua_pushinteger(L, i + 1);
             lua_pushstring(L, ikey);
             lua_settable(L,-3);
             i++;
@@ -860,7 +860,7 @@ LOCAL int MS_get(lua_State *L)
         lua_newtable(L);
         g_hash_table_iter_init (&iter, ghash);
         while (g_hash_table_iter_next (&iter, &ikey, NULL)) {
-            lua_pushinteger(L, i+1);
+            lua_pushinteger(L, i + 1);
             if (IN6_IS_ADDR_V4MAPPED((struct in6_addr *)ikey)) {
                 inet_ntop(AF_INET6, ikey, addrbuf, INET6_ADDRSTRLEN);
             } else {

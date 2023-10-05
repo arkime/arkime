@@ -54,8 +54,8 @@ LOCAL  YR_RULES    *yEmailRules = 0;
 LOCAL  int         yFlags = 0;
 
 /******************************************************************************/
-// Yara 4 compiler callback: const YR_RULE* rule inbetween int line_number and const char* message.
-void arkime_yara_report_error(int error_level, const char* file_name, int line_number, const YR_RULE* UNUSED(rule), const char* error_message, void* UNUSED(user_data))
+// Yara 4 compiler callback: const YR_RULE *rule inbetween int line_number and const char *message.
+void arkime_yara_report_error(int error_level, const char *file_name, int line_number, const YR_RULE *UNUSED(rule), const char *error_message, void *UNUSED(user_data))
 {
     LOG("%d %s:%d: %s\n", error_level, file_name, line_number, error_message);
 }
@@ -139,13 +139,13 @@ void arkime_yara_init()
 
 /******************************************************************************/
 // Yara 4: scanning callback now has a YR_SCAN_CONTEXT* context as 0th param.
-int arkime_yara_callback(YR_SCAN_CONTEXT* UNUSED(context), int message, YR_RULE* rule, ArkimeSession_t* session)
+int arkime_yara_callback(YR_SCAN_CONTEXT *UNUSED(context), int message, YR_RULE *rule, ArkimeSession_t *session)
 {
     if (message != CALLBACK_MSG_RULE_MATCHING)
         return CALLBACK_CONTINUE;
 
     char tagname[256];
-    const char* tag;
+    const char *tag;
 
     snprintf(tagname, sizeof(tagname), "yara:%s", rule->identifier);
     arkime_session_add_tag(session, tagname);
@@ -195,7 +195,7 @@ LOCAL  YR_RULES    *yEmailRules = 0;
 LOCAL  int         yFlags = 0;
 
 /******************************************************************************/
-void arkime_yara_report_error(int error_level, const char* file_name, int line_number, const char* error_message, void* UNUSED(user_data))
+void arkime_yara_report_error(int error_level, const char *file_name, int line_number, const char *error_message, void *UNUSED(user_data))
 {
     LOG("%d %s:%d: %s\n", error_level, file_name, line_number, error_message);
 }
@@ -278,13 +278,13 @@ void arkime_yara_init()
 }
 
 /******************************************************************************/
-int arkime_yara_callback(int message, YR_RULE* rule, ArkimeSession_t* session)
+int arkime_yara_callback(int message, YR_RULE *rule, ArkimeSession_t *session)
 {
     if (message != CALLBACK_MSG_RULE_MATCHING)
         return CALLBACK_CONTINUE;
 
     char tagname[256];
-    const char* tag;
+    const char *tag;
 
     snprintf(tagname, sizeof(tagname), "yara:%s", rule->identifier);
     arkime_session_add_tag(session, tagname);
@@ -332,7 +332,7 @@ LOCAL  YR_RULES *yEmailRules = 0;
 
 
 /******************************************************************************/
-void arkime_yara_report_error(int error_level, const char* file_name, int line_number, const char* error_message)
+void arkime_yara_report_error(int error_level, const char *file_name, int line_number, const char *error_message)
 {
     LOG("%d %s:%d: %s\n", error_level, file_name, line_number, error_message);
 }
@@ -371,13 +371,13 @@ void arkime_yara_init()
 }
 
 /******************************************************************************/
-int arkime_yara_callback(int message, YR_RULE* rule, ArkimeSession_t* session)
+int arkime_yara_callback(int message, YR_RULE *rule, ArkimeSession_t *session)
 {
     if (message != CALLBACK_MSG_RULE_MATCHING)
         return CALLBACK_CONTINUE;
 
     char tagname[256];
-    const char* tag;
+    const char *tag;
 
     snprintf(tagname, sizeof(tagname), "yara:%s", rule->identifier);
     arkime_session_add_tag(session, tagname);
@@ -425,7 +425,7 @@ LOCAL  YR_RULES *yEmailRules = 0;
 
 
 /******************************************************************************/
-void arkime_yara_report_error(int error_level, const char* file_name, int line_number, const char* error_message)
+void arkime_yara_report_error(int error_level, const char *file_name, int line_number, const char *error_message)
 {
     LOG("%d %s:%d: %s\n", error_level, file_name, line_number, error_message);
 }
@@ -464,13 +464,13 @@ void arkime_yara_init()
 }
 
 /******************************************************************************/
-int arkime_yara_callback(int message, YR_RULE* rule, ArkimeSession_t* session)
+int arkime_yara_callback(int message, YR_RULE *rule, ArkimeSession_t *session)
 {
     if (message == CALLBACK_MSG_RULE_MATCHING)
         return CALLBACK_CONTINUE;
 
-    char tagname[256];
-    char* tag;
+    char  tagname[256];
+    char *tag;
 
     snprintf(tagname, sizeof(tagname), "yara:%s", rule->identifier);
     arkime_session_add_tag(session, tagname);

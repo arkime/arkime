@@ -48,7 +48,7 @@ LOCAL ArkimePacketRC gtp_packet_enqueue(ArkimePacketBatch_t * batch, ArkimePacke
         if (extlen == 0) {
             return ARKIME_PACKET_UNKNOWN;
         }
-        BSB_IMPORT_skip(bsb, extlen*4-2);
+        BSB_IMPORT_skip(bsb, extlen * 4 - 2);
         BSB_IMPORT_u08(bsb, next);
     }
 

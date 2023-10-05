@@ -33,9 +33,9 @@ LOCAL void arp_create_sessionid(uint8_t *sessionId, ArkimePacket_t *packet)
     sessionId[3] = 0x08;
     sessionId[4] = 0x06;
     if (data[7] == 1)
-        memcpy(sessionId+5, data+24, 4);
+        memcpy(sessionId + 5, data + 24, 4);
     else
-        memcpy(sessionId+5, data+14, 4);
+        memcpy(sessionId + 5, data + 14, 4);
 }
 /******************************************************************************/
 LOCAL int arp_pre_process(ArkimeSession_t *session, ArkimePacket_t * const UNUSED(packet), int isNewSession)

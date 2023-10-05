@@ -136,7 +136,7 @@ void arkime_pq_upsert(ArkimePQ_t *pq, ArkimeSession_t *session, uint32_t timeout
         DLL_PUSH_TAIL(pql_, &pq->buckets[session->thread][timeout], item);
         item->expire = expire;
         return;
-    } 
+    }
 
     // This is a new item
     item = ARKIME_TYPE_ALLOC(ArkimePQItem_t);
@@ -216,7 +216,7 @@ void arkime_pq_flush(int thread)
 SUPPRESS_UNSIGNED_INTEGER_OVERFLOW
 uint32_t arkime_string_hash(const void *key)
 {
-    unsigned char *p = (unsigned char *)key;
+    uint8_t *p = (uint8_t *)key;
     uint32_t n = 0;
     while (*p) {
         n = (n << 5) - n + *p;

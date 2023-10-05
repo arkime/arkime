@@ -30,15 +30,19 @@ LOCAL  int                   ja3sStrField;
 LOCAL  int                   ja4Field;
 
 typedef struct {
-    unsigned char       buf[8192];
+    uint8_t             buf[8192];
     uint16_t            len;
     char                which;
 } TLSInfo_t;
 
-extern unsigned char    arkime_char_to_hexstr[256][3];
+extern uint8_t    arkime_char_to_hexstr[256][3];
 
 LOCAL GChecksum *checksums[ARKIME_MAX_PACKET_THREADS];
 LOCAL GChecksum *checksums256[ARKIME_MAX_PACKET_THREADS];
+
+LOCAL uint32_t tls_process_client_hello_func;
+LOCAL uint32_t tls_process_server_hello_func;
+LOCAL uint32_t tls_process_server_certificate_func;
 
 /******************************************************************************/
 LOCAL void tls_certinfo_process(ArkimeCertInfo_t *ci, BSB *bsb)
@@ -48,7 +52,7 @@ LOCAL void tls_certinfo_process(ArkimeCertInfo_t *ci, BSB *bsb)
     lastOid[0] = 0;
 
     while (BSB_REMAINING(*bsb)) {
-        unsigned char *value = arkime_parsers_asn_get_tlv(bsb, &apc, &atag, &alen);
+        uint8_t *value = arkime_parsers_asn_get_tlv(bsb, &apc, &atag, &alen);
         if (!value)
             return;
 
@@ -86,14 +90,14 @@ LOCAL void tls_certinfo_process(ArkimeCertInfo_t *ci, BSB *bsb)
     }
 }
 /******************************************************************************/
-LOCAL void tls_certinfo_process_publickey(ArkimeCertsInfo_t *certs, unsigned char *data, uint32_t len)
+LOCAL void tls_certinfo_process_publickey(ArkimeCertsInfo_t *certs, uint8_t *data, uint32_t len)
 {
     BSB bsb, tbsb;
     BSB_INIT(bsb, data, len);
     char oid[1000];
 
     uint32_t apc, atag, alen;
-    unsigned char *value = arkime_parsers_asn_get_tlv(&bsb, &apc, &atag, &alen);
+    uint8_t *value = arkime_parsers_asn_get_tlv(&bsb, &apc, &atag, &alen);
 
     BSB_INIT(tbsb, value, alen);
     value = arkime_parsers_asn_get_tlv(&tbsb, &apc, &atag, &alen);
@@ -131,7 +135,7 @@ LOCAL void tls_key_usage (ArkimeCertsInfo_t *certs, BSB *bsb)
     uint32_t apc, atag, alen;
 
     while (BSB_REMAINING(*bsb) >= 2) {
-        unsigned char *value = arkime_parsers_asn_get_tlv(bsb, &apc, &atag, &alen);
+        uint8_t *value = arkime_parsers_asn_get_tlv(bsb, &apc, &atag, &alen);
 
         if (value && atag == 4 && alen == 4)
             certs->isCA = (value[3] & 0x02);
@@ -143,7 +147,7 @@ LOCAL void tls_alt_names(ArkimeSession_t *session, ArkimeCertsInfo_t *certs, BSB
     uint32_t apc, atag, alen;
 
     while (BSB_REMAINING(*bsb) >= 2) {
-        unsigned char *value = arkime_parsers_asn_get_tlv(bsb, &apc, &atag, &alen);
+        uint8_t *value = arkime_parsers_asn_get_tlv(bsb, &apc, &atag, &alen);
 
         if (!value)
             return;
@@ -264,7 +268,7 @@ LOCAL void tls_ja4_version(uint16_t ver, char vstr[3])
     }
 }
 /******************************************************************************/
-LOCAL void tls_process_server_hello(ArkimeSession_t *session, const unsigned char *data, int len)
+LOCAL uint32_t tls_process_server_hello(ArkimeSession_t *session, const uint8_t *data, int len, void UNUSED(*uw))
 {
     BSB bsb;
     BSB_INIT(bsb, data, len);
@@ -274,7 +278,7 @@ LOCAL void tls_process_server_hello(ArkimeSession_t *session, const unsigned cha
     BSB_IMPORT_skip(bsb, 32);     // Random
 
     if(BSB_IS_ERROR(bsb))
-        return;
+        return -1;
 
     int  add12Later = FALSE;
 
@@ -289,15 +293,15 @@ LOCAL void tls_process_server_hello(ArkimeSession_t *session, const unsigned cha
         int skiplen = 0;
         BSB_IMPORT_u08(bsb, skiplen);   // Session Id Length
         if (skiplen > 0 && BSB_REMAINING(bsb) > skiplen) {
-            unsigned char *ptr = BSB_WORK_PTR(bsb);
+            uint8_t *ptr = BSB_WORK_PTR(bsb);
             char sessionId[513];
             int  i;
             for(i=0; i < skiplen; i++) {
-                sessionId[i*2] = arkime_char_to_hexstr[ptr[i]][0];
-                sessionId[i*2+1] = arkime_char_to_hexstr[ptr[i]][1];
+                sessionId[i * 2] = arkime_char_to_hexstr[ptr[i]][0];
+                sessionId[i * 2 + 1] = arkime_char_to_hexstr[ptr[i]][1];
             }
-            sessionId[skiplen*2] = 0;
-            arkime_field_string_add(dstIdField, session, sessionId, skiplen*2, TRUE);
+            sessionId[skiplen * 2] = 0;
+            arkime_field_string_add(dstIdField, session, sessionId, skiplen * 2, TRUE);
         }
         BSB_IMPORT_skip(bsb, skiplen);  // Session Id
     }
@@ -384,10 +388,11 @@ LOCAL void tls_process_server_hello(ArkimeSession_t *session, const unsigned cha
     if (!arkime_field_string_add(ja3sField, session, md5, 32, FALSE)) {
         g_free(md5);
     }
+    return 0;
 }
 
 /******************************************************************************/
-LOCAL void tls_process_server_certificate(ArkimeSession_t *session, const unsigned char *data, int len)
+LOCAL uint32_t tls_process_server_certificate(ArkimeSession_t *session, const uint8_t *data, int len, void UNUSED(*uw))
 {
 
     BSB cbsb;
@@ -400,7 +405,7 @@ LOCAL void tls_process_server_certificate(ArkimeSession_t *session, const unsign
 
     while(BSB_REMAINING(cbsb) > 3) {
         int            badreason = 0;
-        unsigned char *cdata = BSB_WORK_PTR(cbsb);
+        uint8_t *cdata = BSB_WORK_PTR(cbsb);
         int            clen = MIN(BSB_REMAINING(cbsb) - 3, (cdata[0] << 16 | cdata[1] << 8 | cdata[2]));
 
 
@@ -414,7 +419,7 @@ LOCAL void tls_process_server_certificate(ArkimeSession_t *session, const unsign
         DLL_INIT(s_, &certs->issuer.orgUnit);
 
         uint32_t       atag, alen, apc;
-        unsigned char *value;
+        uint8_t *value;
 
         BSB            bsb;
         BSB_INIT(bsb, cdata + 3, clen);
@@ -427,9 +432,9 @@ LOCAL void tls_process_server_certificate(ArkimeSession_t *session, const unsign
         if (dlen > 0) {
             int i;
             for(i = 0; i < 20; i++) {
-                certs->hash[i*3] = arkime_char_to_hexstr[digest[i]][0];
-                certs->hash[i*3+1] = arkime_char_to_hexstr[digest[i]][1];
-                certs->hash[i*3+2] = ':';
+                certs->hash[i * 3] = arkime_char_to_hexstr[digest[i]][0];
+                certs->hash[i * 3 + 1] = arkime_char_to_hexstr[digest[i]][1];
+                certs->hash[i * 3 + 2] = ':';
             }
         }
         certs->hash[59] = 0;
@@ -519,7 +524,7 @@ LOCAL void tls_process_server_certificate(ArkimeSession_t *session, const unsign
         }
 
 
-        if (!arkime_field_certsinfo_add(certsField, session, certs, clen*2)) {
+        if (!arkime_field_certsinfo_add(certsField, session, certs, clen * 2)) {
             arkime_field_certsinfo_free(certs);
         }
 
@@ -533,27 +538,28 @@ LOCAL void tls_process_server_certificate(ArkimeSession_t *session, const unsign
         arkime_field_certsinfo_free(certs);
         break;
     }
+    return 0;
 }
 /******************************************************************************/
 /* @data the data inside the record layer
  * @len  the length of data inside record layer
  */
-LOCAL int tls_process_server_handshake_record(ArkimeSession_t *session, const unsigned char *data, int len)
+LOCAL int tls_process_server_handshake_record(ArkimeSession_t *session, const uint8_t *data, int len)
 {
     BSB rbsb;
 
     BSB_INIT(rbsb, data, len);
 
     while (BSB_REMAINING(rbsb) >= 4) {
-        unsigned char *hdata = BSB_WORK_PTR(rbsb);
+        uint8_t *hdata = BSB_WORK_PTR(rbsb);
         int hlen = MIN(BSB_REMAINING(rbsb), (hdata[1] << 16 | hdata[2] << 8 | hdata[3]) + 4);
 
         switch(hdata[0]) {
         case 2:
-            tls_process_server_hello(session, hdata+4, hlen-4);
+            arkime_parser_call_named_func(tls_process_server_hello_func, session, hdata + 4, hlen - 4, NULL);
             break;
         case 11:
-            tls_process_server_certificate(session, hdata + 4, hlen - 4);
+            arkime_parser_call_named_func(tls_process_server_certificate_func, session, hdata + 4, hlen - 4, NULL);
             break;
         case 14:
             return 1;
@@ -565,14 +571,14 @@ LOCAL int tls_process_server_handshake_record(ArkimeSession_t *session, const un
 }
 /******************************************************************************/
 // Comparison function for qsort
-int compare_uint16_t(const void* a, const void* b) {
+int compare_uint16_t(const void *a, const void *b) {
     return (int)(*(const uint16_t *)a - *(const uint16_t *)b);
 }
 /******************************************************************************/
-void tls_process_client_hello_data(ArkimeSession_t *session, const unsigned char *data, int len)
+uint32_t tls_process_client_hello_data(ArkimeSession_t *session, const uint8_t *data, int len, void UNUSED(*uw))
 {
     if (len < 7)
-        return;
+        return -1;
 
     char ja3[30000];
     BSB ja3bsb;
@@ -601,8 +607,8 @@ void tls_process_client_hello_data(ArkimeSession_t *session, const unsigned char
     BSB pbsb;
     BSB_INIT(pbsb, data, len);
 
-    unsigned char *pdata = BSB_WORK_PTR(pbsb);
-    int            plen = MIN(BSB_REMAINING(pbsb) - 4, pdata[2] << 8 | pdata[3]);
+    uint8_t *pdata = BSB_WORK_PTR(pbsb);
+    int      plen = MIN(BSB_REMAINING(pbsb) - 4, pdata[2] << 8 | pdata[3]);
 
     uint16_t ver = 0;
     BSB_IMPORT_skip(pbsb, 4); // type + len
@@ -620,16 +626,16 @@ void tls_process_client_hello_data(ArkimeSession_t *session, const unsigned char
         int skiplen = 0;
         BSB_IMPORT_u08(cbsb, skiplen);   // Session Id Length
         if (skiplen > 0 && BSB_REMAINING(cbsb) > skiplen) {
-            unsigned char *ptr = BSB_WORK_PTR(cbsb);
+            uint8_t *ptr = BSB_WORK_PTR(cbsb);
             char sessionId[513];
             int  i;
 
             for(i=0; i < skiplen; i++) {
-                sessionId[i*2] = arkime_char_to_hexstr[ptr[i]][0];
-                sessionId[i*2+1] = arkime_char_to_hexstr[ptr[i]][1];
+                sessionId[i * 2] = arkime_char_to_hexstr[ptr[i]][0];
+                sessionId[i * 2 + 1] = arkime_char_to_hexstr[ptr[i]][1];
             }
-            sessionId[skiplen*2] = 0;
-            arkime_field_string_add(srcIdField, session, sessionId, skiplen*2, TRUE);
+            sessionId[skiplen * 2] = 0;
+            arkime_field_string_add(srcIdField, session, sessionId, skiplen * 2, TRUE);
         }
         BSB_IMPORT_skip(cbsb, skiplen);  // Session Id
 
@@ -748,11 +754,11 @@ void tls_process_client_hello_data(ArkimeSession_t *session, const unsigned char
                     BSB_IMPORT_skip (bsb, 2); // len
                     uint8_t plen = 0;
                     BSB_IMPORT_u08 (bsb, plen); // len
-                    unsigned char *pstr = NULL;
+                    uint8_t *pstr = NULL;
                     BSB_IMPORT_ptr (bsb, pstr, plen);
                     if (plen > 0 && pstr && !BSB_IS_ERROR(bsb)) {
                         ja4ALPN[0] = pstr[0];
-                        ja4ALPN[1] = pstr[plen-1];
+                        ja4ALPN[1] = pstr[plen - 1];
                     }
                 } else if (etype == 0x2b) { // etype 0x2b is supported version
                     BSB bsb;
@@ -810,7 +816,7 @@ void tls_process_client_hello_data(ArkimeSession_t *session, const unsigned char
     ja4[9] = ja4ALPN[1];
     ja4[10] = '_';
 
-    char tmpBuf[10*256];
+    char tmpBuf[10 * 256];
     BSB tmpBSB;
 
     // Sort ciphers, convert to hex, first 12 bytes of sha256
@@ -858,25 +864,27 @@ void tls_process_client_hello_data(ArkimeSession_t *session, const unsigned char
 
     // Add the field
     arkime_field_string_add(ja4Field, session, ja4, 36, TRUE);
+
+    return 0;
 }
 /******************************************************************************/
-LOCAL void tls_process_client(ArkimeSession_t *session, const unsigned char *data, int len)
+LOCAL void tls_process_client(ArkimeSession_t *session, const uint8_t *data, int len)
 {
     BSB sslbsb;
 
     BSB_INIT(sslbsb, data, len);
 
     if (BSB_REMAINING(sslbsb) > 5) {
-        unsigned char *ssldata = BSB_WORK_PTR(sslbsb);
+        uint8_t *ssldata = BSB_WORK_PTR(sslbsb);
         int            ssllen = MIN(BSB_REMAINING(sslbsb) - 5, ssldata[3] << 8 | ssldata[4]);
 
 
-        tls_process_client_hello_data(session, ssldata + 5, ssllen);
+        arkime_parser_call_named_func(tls_process_client_hello_func, session, ssldata + 5, ssllen, NULL);
     }
 }
 
 /******************************************************************************/
-LOCAL int tls_parser(ArkimeSession_t *session, void *uw, const unsigned char *data, int remaining, int which)
+LOCAL int tls_parser(ArkimeSession_t *session, void *uw, const uint8_t *data, int remaining, int which)
 {
     TLSInfo_t            *tls          = uw;
 
@@ -925,7 +933,7 @@ LOCAL void tls_save(ArkimeSession_t *session, void *uw, int UNUSED(final))
     TLSInfo_t            *tls          = uw;
 
     if (tls->len > 5 && tls->buf[0] == 0x16) {
-        tls_process_server_handshake_record(session, tls->buf+5, tls->len-5);
+        tls_process_server_handshake_record(session, tls->buf + 5, tls->len - 5);
         tls->len = 0;
     }
 }
@@ -937,7 +945,7 @@ LOCAL void tls_free(ArkimeSession_t *UNUSED(session), void *uw)
     ARKIME_TYPE_FREE(TLSInfo_t, tls);
 }
 /******************************************************************************/
-LOCAL void tls_classify(ArkimeSession_t *session, const unsigned char *data, int len, int which, void *UNUSED(uw))
+LOCAL void tls_classify(ArkimeSession_t *session, const uint8_t *data, int len, int which, void *UNUSED(uw))
 {
     if (len < 6 || data[2] > 0x03)
         return;
@@ -947,7 +955,7 @@ LOCAL void tls_classify(ArkimeSession_t *session, const unsigned char *data, int
 
 
     /* 1 Content Type - 0x16
-     * 2 Version 0x0301 - 0x03-03
+     * 2 Version 0x0301 - 0x03 - 03
      * 2 Length
      * 1 Message Type 1 - Client Hello, 2 Server Hello
      */
@@ -1149,12 +1157,16 @@ void arkime_parser_init()
             (char *)NULL);
     }
 
-    arkime_parsers_classifier_register_tcp("tls", NULL, 0, (unsigned char*)"\x16\x03", 2, tls_classify);
+    arkime_parsers_classifier_register_tcp("tls", NULL, 0, (uint8_t *)"\x16\x03", 2, tls_classify);
 
     int t;
     for (t = 0; t < config.packetThreads; t++) {
         checksums[t] = g_checksum_new(G_CHECKSUM_SHA1);
         checksums256[t] = g_checksum_new(G_CHECKSUM_SHA256);
     }
+
+    tls_process_client_hello_func = arkime_parser_add_named_func("tls_process_client_hello", tls_process_client_hello_data);
+    tls_process_server_hello_func = arkime_parser_add_named_func("tls_process_server_hello", tls_process_server_hello);
+    tls_process_server_certificate_func = arkime_parser_add_named_func("tls_process_server_certificate", tls_process_server_certificate);
 }
 

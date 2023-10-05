@@ -22,7 +22,7 @@ LOCAL  int endpointIpField;
 LOCAL  int framedIpField;
 
 /******************************************************************************/
-LOCAL int radius_udp_parser(ArkimeSession_t *session, void *UNUSED(uw), const unsigned char *data, int len, int UNUSED(which))
+LOCAL int radius_udp_parser(ArkimeSession_t *session, void *UNUSED(uw), const uint8_t *data, int len, int UNUSED(which))
 {
     BSB bsb;
 
@@ -30,8 +30,8 @@ LOCAL int radius_udp_parser(ArkimeSession_t *session, void *UNUSED(uw), const un
 
     BSB_IMPORT_skip(bsb, 20);
 
-    unsigned char type = 0, length = 0;
-    unsigned char *value;
+    uint8_t type = 0, length = 0;
+    uint8_t *value;
     char str[256];
     struct in_addr in;
     int i;
@@ -88,7 +88,7 @@ LOCAL int radius_udp_parser(ArkimeSession_t *session, void *UNUSED(uw), const un
     return 0;
 }
 /******************************************************************************/
-LOCAL void radius_udp_classify(ArkimeSession_t *session, const unsigned char *UNUSED(data), int len, int UNUSED(which), void *UNUSED(uw))
+LOCAL void radius_udp_classify(ArkimeSession_t *session, const uint8_t *UNUSED(data), int len, int UNUSED(which), void *UNUSED(uw))
 {
     if (len < 4 || len != ((data[2] << 8) | data[3])) {
         return;
@@ -131,9 +131,9 @@ void arkime_parser_init()
         (char *)NULL);
 
 
-    arkime_parsers_classifier_register_udp("radius", NULL, 0, (const unsigned char *)"\x01", 1, radius_udp_classify);
-    arkime_parsers_classifier_register_udp("radius", NULL, 0, (const unsigned char *)"\x02", 1, radius_udp_classify);
-    arkime_parsers_classifier_register_udp("radius", NULL, 0, (const unsigned char *)"\x03", 1, radius_udp_classify);
-    arkime_parsers_classifier_register_udp("radius", NULL, 0, (const unsigned char *)"\x04", 1, radius_udp_classify);
-    arkime_parsers_classifier_register_udp("radius", NULL, 0, (const unsigned char *)"\x05", 1, radius_udp_classify);
+    arkime_parsers_classifier_register_udp("radius", NULL, 0, (const uint8_t *)"\x01", 1, radius_udp_classify);
+    arkime_parsers_classifier_register_udp("radius", NULL, 0, (const uint8_t *)"\x02", 1, radius_udp_classify);
+    arkime_parsers_classifier_register_udp("radius", NULL, 0, (const uint8_t *)"\x03", 1, radius_udp_classify);
+    arkime_parsers_classifier_register_udp("radius", NULL, 0, (const uint8_t *)"\x04", 1, radius_udp_classify);
+    arkime_parsers_classifier_register_udp("radius", NULL, 0, (const uint8_t *)"\x05", 1, radius_udp_classify);
 }

@@ -339,7 +339,7 @@ LOCAL char *writer_simple_get_kekId ()
     char okek[2000];
     int i,j;
 
-    for (i = j = 0; kek[i] && j+2 < 1999; i++) {
+    for (i = j = 0; kek[i] && j + 2 < 1999; i++) {
         if (kek[i] != '%') {
             okek[j] = kek[i];
             j++;
@@ -349,22 +349,22 @@ LOCAL char *writer_simple_get_kekId ()
         switch(kek[i]) {
         case 'y':
             okek[j] = '0' + (tmp.tm_year % 100)/10;
-            okek[j+1] = '0' + tmp.tm_year%10;
+            okek[j + 1] = '0' + tmp.tm_year % 10;
             j += 2;
             break;
         case 'm':
-            okek[j] = '0' + (tmp.tm_mon+1)/10;
-            okek[j+1] = '0' + (tmp.tm_mon+1)%10;
+            okek[j] = '0' + (tmp.tm_mon + 1)/10;
+            okek[j + 1] = '0' + (tmp.tm_mon + 1) % 10;
             j += 2;
             break;
         case 'd':
             okek[j] = '0' + tmp.tm_mday/10;
-            okek[j+1] = '0' + tmp.tm_mday%10;
+            okek[j + 1] = '0' + tmp.tm_mday % 10;
             j += 2;
             break;
         case 'H':
             okek[j] = '0' + tmp.tm_hour/10;
-            okek[j+1] = '0' + tmp.tm_hour%10;
+            okek[j + 1] = '0' + tmp.tm_hour % 10;
             j += 2;
             break;
         case 'N':
@@ -385,7 +385,7 @@ LOCAL char *writer_simple_get_kekId ()
     return g_strndup(okek, j);
 }
 /******************************************************************************/
-LOCAL void writer_simple_write_output(ArkimeSimple_t *info, const unsigned char *data, int len)
+LOCAL void writer_simple_write_output(ArkimeSimple_t *info, const uint8_t *data, int len)
 {
     switch(compressionMode) {
     case ARKIME_COMPRESSION_NONE:
@@ -586,13 +586,13 @@ LOCAL void writer_simple_write(const ArkimeSession_t * const session, ArkimePack
             memcpy(&pcapFileHeader2, &pcapFileHeader, 24);
             pcapFileHeader2.magic = 0xa1b2c3d5;
             pcapFileHeader2.thiszone = firstPacket[thread];
-            writer_simple_write_output(info, (unsigned char *)&pcapFileHeader2, 20);
+            writer_simple_write_output(info, (uint8_t *)&pcapFileHeader2, 20);
         } else {
-            writer_simple_write_output(info, (unsigned char *)&pcapFileHeader, 20);
+            writer_simple_write_output(info, (uint8_t *)&pcapFileHeader, 20);
         }
 
         uint32_t linktype = arkime_packet_dlt_to_linktype(pcapFileHeader.dlt);
-        writer_simple_write_output(info, (unsigned char *)&linktype, 4);
+        writer_simple_write_output(info, (uint8_t *)&linktype, 4);
         if (config.debug)
             LOG("opened %d %s %d", thread, name, info->file->fd);
         g_free(name);
@@ -641,9 +641,9 @@ LOCAL void writer_simple_write(const ArkimeSession_t * const session, ArkimePack
             t = ((packet->ts.tv_sec - firstPacket[thread]) << 20) | packet->ts.tv_usec;
         }
 
-        memcpy(header+2, &t, 4);
+        memcpy(header + 2, &t, 4);
 
-        writer_simple_write_output(info, (unsigned char *)&header, 6);
+        writer_simple_write_output(info, (uint8_t *)&header, 6);
     } else {
         struct arkime_pcap_sf_pkthdr hdr;
 
@@ -651,7 +651,7 @@ LOCAL void writer_simple_write(const ArkimeSession_t * const session, ArkimePack
         hdr.ts.tv_usec = packet->ts.tv_usec;
         hdr.caplen     = packet->pktlen;
         hdr.pktlen     = packet->pktlen;
-        writer_simple_write_output(info, (unsigned char *)&hdr, 16);
+        writer_simple_write_output(info, (uint8_t *)&hdr, 16);
     }
     writer_simple_write_output(info, packet->pkt, packet->pktlen);
 
@@ -682,7 +682,7 @@ LOCAL void *writer_simple_thread(void *UNUSED(arg))
         if (info->closing) {
             // Round up to next page size
             if (total % pageSize != 0)
-                total = ((total/pageSize)+1)*pageSize;
+                total = ((total/pageSize) + 1)*pageSize;
         }
 
         switch(simpleMode) {
@@ -761,7 +761,7 @@ LOCAL void writer_simple_check(ArkimeSession_t *session, void *UNUSED(uw1), void
         return;
     }
 
-    if (config.maxFileTimeM > 0 && now.tv_sec - fileAge[session->thread].tv_sec >= config.maxFileTimeM*60) {
+    if (config.maxFileTimeM > 0 && now.tv_sec - fileAge[session->thread].tv_sec >= config.maxFileTimeM * 60) {
         writer_simple_process_buf(session->thread, 1);
         return;
     }
@@ -827,7 +827,7 @@ FILE *writer_simple_get_index(int thread, int64_t fileNum)
 /******************************************************************************/
 void writer_simple_index (ArkimeSession_t * session)
 {
-    uint8_t  buf[0xffff*5];
+    uint8_t  buf[0xffff * 5];
     BSB      bsb;
     int      files = 0;
     int64_t  filePos[1024];
@@ -841,15 +841,15 @@ void writer_simple_index (ArkimeSession_t * session)
         int64_t packetPos = (int64_t)g_array_index(session->filePosArray, int64_t, i);
         if (packetPos < 0) {
             if (fp) {
-                filePos[(files-1)*3 + 2] = BSB_LENGTH(bsb);
+                filePos[(files - 1) * 3 + 2] = BSB_LENGTH(bsb);
                 fwrite(buf, BSB_LENGTH(bsb), 1, fp);
                 last = 0;
                 lastgap = 0;
             }
             fp = writer_simple_get_index(session->thread, -packetPos);
 
-            filePos[files*3] = packetPos;      // Which file
-            filePos[files*3 + 1] = ftell(fp);  // Where in index file
+            filePos[files * 3] = packetPos;      // Which file
+            filePos[files * 3 + 1] = ftell(fp);  // Where in index file
             files++;
 
             BSB_INIT(bsb, buf, sizeof(buf));
@@ -904,18 +904,18 @@ void writer_simple_index (ArkimeSession_t * session)
             }
             BSB_EXPORT_u08(bsb, ((val >> 42) & 0x7f));
 
-            // support up to 0xffffffffffffffUL (2^56-1)
+            // support up to 0xffffffffffffffUL (2^56 - 1)
             BSB_EXPORT_u08(bsb, 0x80 | ((val >> 49) & 0x7f));
         }
     }
 
     if (fp) {
-        filePos[(files-1)*3 + 2] = BSB_LENGTH(bsb);
+        filePos[(files - 1) * 3 + 2] = BSB_LENGTH(bsb);
         fwrite(buf, BSB_LENGTH(bsb), 1, fp);
     }
 
     g_array_set_size(session->filePosArray, 0);
-    g_array_append_vals(session->filePosArray, filePos, files*3);
+    g_array_append_vals(session->filePosArray, filePos, files * 3);
 }
 /******************************************************************************/
 void writer_simple_init(char *name)
@@ -968,10 +968,10 @@ void writer_simple_init(char *name)
     } else if (strcmp(mode, "aes-256-ctr") == 0) {
         simpleMode = ARKIME_SIMPLE_AES256CTR;
         cipher = EVP_aes_256_ctr();
-        if (config.maxFileSizeB > 64*1024LL*1024LL*1024LL) {
+        if (config.maxFileSizeB > 64 * 1024LL * 1024LL * 1024LL) {
             LOG ("INFO: Reseting maxFileSizeG since %lf is greater then the max 64G in aes-256-ctr mode", config.maxFileSizeG);
             config.maxFileSizeG = 64.0;
-            config.maxFileSizeB = 64LL*1024LL*1024LL*1024LL;
+            config.maxFileSizeB = 64LL * 1024LL * 1024LL * 1024LL;
         }
     } else if (strcmp(mode, "xor-2048") == 0) {
         LOG("WARNING - simpleEncoding of xor-2048 is NOT actually secure");

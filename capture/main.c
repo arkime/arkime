@@ -39,8 +39,8 @@ ArkimeConfig_t         config;
 extern void           *esServer;
 GMainLoop             *mainLoop;
 char                  *arkime_char_to_hex = "0123456789abcdef"; /* don't change case */
-unsigned char          arkime_char_to_hexstr[256][3];
-unsigned char          arkime_hex_to_char[256][256];
+uint8_t                arkime_char_to_hexstr[256][3];
+uint8_t                arkime_hex_to_char[256][256];
 uint32_t               hashSalt;
 
 extern ArkimeWriterQueueLength arkime_writer_queue_length;
@@ -188,7 +188,7 @@ void parse_args(int argc, char **argv)
 #ifdef HAVE_ZSTD
         extern unsigned ZSTD_versionNumber(void);
         unsigned zver = ZSTD_versionNumber();
-        printf("zstd: %u.%u.%u\n", zver/(100*100), (zver/100)%100, zver%100);
+        printf("zstd: %u.%u.%u\n", zver/(100 * 100), (zver / 100) % 100, zver % 100);
 #endif
         nghttp2_info *ngver = nghttp2_version(0);
         printf("nghttp2: %s\n", ngver->version_str);
@@ -380,11 +380,11 @@ uint32_t arkime_get_next_powerof2(uint32_t v)
     return v;
 }
 /******************************************************************************/
-unsigned char *arkime_js0n_get(unsigned char *data, uint32_t len, char *key, uint32_t *olen)
+uint8_t *arkime_js0n_get(uint8_t *data, uint32_t len, char *key, uint32_t *olen)
 {
     uint32_t key_len = strlen(key);
     int      i;
-    uint32_t out[4*100]; // Can have up to 100 elements at any level
+    uint32_t out[4 * 100]; // Can have up to 100 elements at any level
 
     *olen = 0;
     int rc;
@@ -395,18 +395,18 @@ unsigned char *arkime_js0n_get(unsigned char *data, uint32_t len, char *key, uin
     }
 
     for (i = 0; out[i]; i+= 4) {
-        if (out[i+1] == key_len && memcmp(key, data + out[i], key_len) == 0) {
-            *olen = out[i+3];
-            return data + out[i+2];
+        if (out[i + 1] == key_len && memcmp(key, data + out[i], key_len) == 0) {
+            *olen = out[i + 3];
+            return data + out[i + 2];
         }
     }
     return 0;
 }
 /******************************************************************************/
-char *arkime_js0n_get_str(unsigned char *data, uint32_t len, char *key)
+char *arkime_js0n_get_str(uint8_t *data, uint32_t len, char *key)
 {
     uint32_t           value_len;
-    unsigned char     *value = 0;
+    uint8_t           *value = 0;
 
     value = arkime_js0n_get(data, len, key, &value_len);
     if (!value)
@@ -421,7 +421,7 @@ const char *arkime_memstr(const char *haystack, int haysize, const char *needle,
         if (memcmp(p, needle, needlesize) == 0)
             return p;
         haysize -= (p - haystack + 1);
-        haystack = p+1;
+        haystack = p + 1;
     }
     return NULL;
 }
@@ -472,7 +472,7 @@ gboolean arkime_string_add(void *hashv, char *string, gpointer uw, gboolean copy
 SUPPRESS_UNSIGNED_INTEGER_OVERFLOW
 uint32_t arkime_string_hash(const void *key)
 {
-    unsigned char *p = (unsigned char *)key;
+    uint8_t *p = (uint8_t *)key;
     uint32_t n = 0;
     while (*p) {
         n = (n << 5) - n + *p;
@@ -487,7 +487,7 @@ uint32_t arkime_string_hash(const void *key)
 SUPPRESS_UNSIGNED_INTEGER_OVERFLOW
 uint32_t arkime_string_hash_len(const void *key, int len)
 {
-    unsigned char *p = (unsigned char *)key;
+    uint8_t *p = (uint8_t *)key;
     uint32_t n = 0;
     while (len) {
         n = (n << 5) - n + *p;
@@ -710,9 +710,9 @@ void arkime_hex_init()
     int i, j;
     for (i = 0; i < 16; i++) {
         for (j = 0; j < 16; j++) {
-            arkime_hex_to_char[(unsigned char)arkime_char_to_hex[i]][(unsigned char)arkime_char_to_hex[j]] = i << 4 | j;
-            arkime_hex_to_char[toupper(arkime_char_to_hex[i])][(unsigned char)arkime_char_to_hex[j]] = i << 4 | j;
-            arkime_hex_to_char[(unsigned char)arkime_char_to_hex[i]][toupper(arkime_char_to_hex[j])] = i << 4 | j;
+            arkime_hex_to_char[(uint8_t)arkime_char_to_hex[i]][(uint8_t)arkime_char_to_hex[j]] = i << 4 | j;
+            arkime_hex_to_char[toupper(arkime_char_to_hex[i])][(uint8_t)arkime_char_to_hex[j]] = i << 4 | j;
+            arkime_hex_to_char[(uint8_t)arkime_char_to_hex[i]][toupper(arkime_char_to_hex[j])] = i << 4 | j;
             arkime_hex_to_char[toupper(arkime_char_to_hex[i])][toupper(arkime_char_to_hex[j])] = i << 4 | j;
         }
     }

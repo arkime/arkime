@@ -15,7 +15,7 @@
 #include "arkime.h"
 
 /******************************************************************************/
-LOCAL void rpc_classify_udp(ArkimeSession_t *session, const unsigned char *data, int len, int UNUSED(which), void *UNUSED(uw))
+LOCAL void rpc_classify_udp(ArkimeSession_t *session, const uint8_t *data, int len, int UNUSED(which), void *UNUSED(uw))
 {
     if (len < 16)
         return;
@@ -67,6 +67,6 @@ LOCAL void rpc_classify_udp(ArkimeSession_t *session, const unsigned char *data,
 /******************************************************************************/
 void arkime_parser_init()
 {
-    arkime_parsers_classifier_register_udp("rpc", NULL, 4, (unsigned char *)"\x00\x00\x00\x00\x00\x00\x00\x02\x00\x01\x86", 11, rpc_classify_udp);
+    arkime_parsers_classifier_register_udp("rpc", NULL, 4, (uint8_t *)"\x00\x00\x00\x00\x00\x00\x00\x02\x00\x01\x86", 11, rpc_classify_udp);
 }
 

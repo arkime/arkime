@@ -86,25 +86,25 @@ void arkime_session_id (uint8_t *buf, uint32_t addr1, uint16_t port1, uint32_t a
 {
     buf[0] = ARKIME_SESSIONID4_LEN;
     if (addr1 < addr2) {
-        memcpy(buf+1, &addr1, 4);
-        memcpy(buf+5, &port1, 2);
-        memcpy(buf+7, &addr2, 4);
-        memcpy(buf+11, &port2, 2);
+        memcpy(buf + 1, &addr1, 4);
+        memcpy(buf + 5, &port1, 2);
+        memcpy(buf + 7, &addr2, 4);
+        memcpy(buf + 11, &port2, 2);
     } else if (addr1 > addr2) {
-        memcpy(buf+1, &addr2, 4);
-        memcpy(buf+5, &port2, 2);
-        memcpy(buf+7, &addr1, 4);
-        memcpy(buf+11, &port1, 2);
+        memcpy(buf + 1, &addr2, 4);
+        memcpy(buf + 5, &port2, 2);
+        memcpy(buf + 7, &addr1, 4);
+        memcpy(buf + 11, &port1, 2);
     } else if (ntohs(port1) < ntohs(port2)) {
-        memcpy(buf+1, &addr1, 4);
-        memcpy(buf+5, &port1, 2);
-        memcpy(buf+7, &addr2, 4);
-        memcpy(buf+11, &port2, 2);
+        memcpy(buf + 1, &addr1, 4);
+        memcpy(buf + 5, &port1, 2);
+        memcpy(buf + 7, &addr2, 4);
+        memcpy(buf + 11, &port2, 2);
     } else {
-        memcpy(buf+1, &addr2, 4);
-        memcpy(buf+5, &port2, 2);
-        memcpy(buf+7, &addr1, 4);
-        memcpy(buf+11, &port1, 2);
+        memcpy(buf + 1, &addr2, 4);
+        memcpy(buf + 5, &port2, 2);
+        memcpy(buf + 7, &addr1, 4);
+        memcpy(buf + 11, &port1, 2);
     }
 }
 /******************************************************************************/
@@ -113,25 +113,25 @@ void arkime_session_id6 (uint8_t *buf, uint8_t *addr1, uint16_t port1, uint8_t *
     buf[0] = ARKIME_SESSIONID6_LEN;
     int cmp = memcmp(addr1, addr2, 16);
     if (cmp < 0) {
-        memcpy(buf+1, addr1, 16);
-        memcpy(buf+17, &port1, 2);
-        memcpy(buf+19, addr2, 16);
-        memcpy(buf+35, &port2, 2);
+        memcpy(buf + 1, addr1, 16);
+        memcpy(buf + 17, &port1, 2);
+        memcpy(buf + 19, addr2, 16);
+        memcpy(buf + 35, &port2, 2);
     } else if (cmp > 0) {
-        memcpy(buf+1, addr2, 16);
-        memcpy(buf+17, &port2, 2);
-        memcpy(buf+19, addr1, 16);
-        memcpy(buf+35, &port1, 2);
+        memcpy(buf + 1, addr2, 16);
+        memcpy(buf + 17, &port2, 2);
+        memcpy(buf + 19, addr1, 16);
+        memcpy(buf + 35, &port1, 2);
     } else if (ntohs(port1) < ntohs(port2)) {
-        memcpy(buf+1, addr1, 16);
-        memcpy(buf+17, &port1, 2);
-        memcpy(buf+19, addr2, 16);
-        memcpy(buf+35, &port2, 2);
+        memcpy(buf + 1, addr1, 16);
+        memcpy(buf + 17, &port1, 2);
+        memcpy(buf + 19, addr2, 16);
+        memcpy(buf + 35, &port2, 2);
     } else {
-        memcpy(buf+1, addr2, 16);
-        memcpy(buf+17, &port2, 2);
-        memcpy(buf+19, addr1, 16);
-        memcpy(buf+35, &port1, 2);
+        memcpy(buf + 1, addr2, 16);
+        memcpy(buf + 17, &port2, 2);
+        memcpy(buf + 19, addr1, 16);
+        memcpy(buf + 35, &port1, 2);
     }
 }
 #endif
@@ -170,8 +170,8 @@ SUPPRESS_UNSIGNED_INTEGER_OVERFLOW
 uint32_t arkime_session_hash(const void *key)
 {
     uint32_t *p = (uint32_t *)key;
-    uint32_t *end = (uint32_t *)((unsigned char *)key + ((unsigned char *)key)[0] - 4);
-    uint32_t h = ((uint8_t *)key)[((uint8_t *)key)[0]-1];  // There is one extra byte at the end
+    uint32_t *end = (uint32_t *)((uint8_t *)key + ((uint8_t *)key)[0] - 4);
+    uint32_t h = ((uint8_t *)key)[((uint8_t *)key)[0] - 1];  // There is one extra byte at the end
 
     while (p < end) {
         h = (h + *p) * 0xc6a4a793;
@@ -191,8 +191,8 @@ SUPPRESS_UNSIGNED_INTEGER_OVERFLOW
 uint32_t arkime_session_hash(const void *key)
 {
     uint32_t *p = (uint32_t *)key;
-    const uint32_t *end = (uint32_t *)((unsigned char *)key + ((unsigned char *)key)[0] - 4);
-    uint32_t h = ((uint8_t *)key)[((uint8_t *)key)[0]-1];  // There is one extra byte at the end
+    const uint32_t *end = (uint32_t *)((uint8_t *)key + ((uint8_t *)key)[0] - 4);
+    uint32_t h = ((uint8_t *)key)[((uint8_t *)key)[0] - 1];  // There is one extra byte at the end
 
     while (p < end) {
         h ^= *p;
@@ -206,7 +206,7 @@ uint32_t arkime_session_hash(const void *key)
 #endif
 
 /******************************************************************************/
-LOCAL gboolean arkime_session_equal(const unsigned char *a, const unsigned char *b)
+LOCAL gboolean arkime_session_equal(const uint8_t *a, const uint8_t *b)
 {
     if (a[0] != b[0])
         return FALSE;
@@ -546,7 +546,7 @@ LOCAL void arkime_session_load_stopped()
             LOG("WARNING - `%s` corrupt", stoppedFilename);
             break;
         }
-        read += fread(key+1, key[0] - 1, 1, fp);
+        read += fread(key + 1, key[0] - 1, 1, fp);
         read += fread(&value, 4, 1, fp);
 
         if (read != 3) {
@@ -595,7 +595,7 @@ LOCAL gboolean arkime_session_save_stopped(gpointer UNUSED(user_data))
 
         GHashTableIter iter;
         g_hash_table_iter_init(&iter, stoppedSessions[t].new);
-        unsigned char *ikey;
+        uint8_t *ikey;
         gpointer ivalue;
         while (g_hash_table_iter_next (&iter, (gpointer *)&ikey, &ivalue)) {
             cnt++;

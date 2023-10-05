@@ -26,7 +26,7 @@ LOCAL ArkimePacketRC ciscometadata_packet_enqueue(ArkimePacketBatch_t * UNUSED(b
 
     // Just ignore 6 bytes for now
 
-    return arkime_packet_run_ethernet_cb(batch, packet, data+6, len-6, ARKIME_ETHERTYPE_DETECT, "CISCOMETADATA");
+    return arkime_packet_run_ethernet_cb(batch, packet, data + 6, len - 6, ARKIME_ETHERTYPE_DETECT, "CISCOMETADATA");
 }
 /******************************************************************************/
 void arkime_parser_init()

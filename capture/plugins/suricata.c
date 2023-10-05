@@ -238,9 +238,9 @@ LOCAL gboolean suricata_parse_ip(char *str, int len, struct in6_addr *v)
 /******************************************************************************/
 LOCAL void suricata_process_alert(char *data, int len, SuricataItem_t *item)
 {
-    uint32_t out[4*100];
+    uint32_t out[4 * 100];
     int rc;
-    if ((rc = js0n((unsigned char *)data, len, out, sizeof(out))) != 0) {
+    if ((rc = js0n((uint8_t *)data, len, out, sizeof(out))) != 0) {
         LOG("ERROR: Parse error %d >%.*s<\n", rc, len, data);
         fflush(stdout);
         return;
@@ -281,9 +281,9 @@ LOCAL void suricata_process()
     if (lineLen < 50)
         return;
 
-    uint32_t out[4*100]; // Can have up to 100 elements at any level
+    uint32_t out[4 * 100]; // Can have up to 100 elements at any level
     int rc;
-    if ((rc = js0n((unsigned char *)line, lineLen, out, sizeof(out))) != 0) {
+    if ((rc = js0n((uint8_t *)line, lineLen, out, sizeof(out))) != 0) {
         if (rc > 0)
             LOG("ERROR: Parse error at character pos %d (%c)(%u) >%.*s<\n", rc-1, line[rc-1], (uint8_t)line[rc-1], lineLen, line);
         else
@@ -303,21 +303,21 @@ LOCAL void suricata_process()
     uint16_t        dstPort = 0;
 
     int i;
-    for (i = 0; out[i]; i+= 4) {
+    for (i = 0; out[i]; i += 4) {
         if (config.debug > 2)
-            LOG("KEY %.*s DATA %.*s", out[i+1], line + out[i], out[i+3], line + out[i+2]);
+            LOG("KEY %.*s DATA %.*s", out[i + 1], line + out[i], out[i + 3], line + out[i + 2]);
 
         if (MATCH(line, "timestamp")) {
             struct tm tm;
-            strptime(line + out[i+2], "%Y-%m-%dT%H:%M:%S.%%06u", &tm);
+            strptime(line + out[i + 2], "%Y-%m-%dT%H:%M:%S.%%06u", &tm);
             item->timestamp = timegm(&tm);
 
-            if (out[i+3] > 30) {
-                char *t = line + out[i+2];
-                int offset = (t[27] - '0')*10*3600 +
-                             (t[28] - '0')*3600 +
-                             (t[29] - '0')*10*60 +
-                             (t[30] - '0')*60;
+            if (out[i + 3] > 30) {
+                char *t = line + out[i + 2];
+                int offset = (t[27] - '0') * 10 * 3600 +
+                             (t[28] - '0') * 3600 +
+                             (t[29] - '0') * 10 * 60 +
+                             (t[30] - '0') * 60;
                 if (t[26] == '-')
                     offset *= -1;
                 item->timestamp -= offset;
@@ -336,36 +336,36 @@ LOCAL void suricata_process()
                 return;
             }
         } else if (MATCH(line, "event_type")) {
-            if (strncmp("alert", line + out[i+2], 5) != 0) {
+            if (strncmp("alert", line + out[i + 2], 5) != 0) {
                 suricata_item_free(item);
                 return;
             }
         } else if (MATCH(line, "src_ip")) {
-            suricata_parse_ip(line + out[i+2], out[i+3], &srcIp);
+            suricata_parse_ip(line + out[i + 2], out[i + 3], &srcIp);
         } else if (MATCH(line, "src_port")) {
-            srcPort = atoi(line + out[i+2]);
+            srcPort = atoi(line + out[i + 2]);
         } else if (MATCH(line, "dest_ip")) {
-            suricata_parse_ip(line + out[i+2], out[i+3], &dstIp);
+            suricata_parse_ip(line + out[i + 2], out[i + 3], &dstIp);
         } else if (MATCH(line, "dest_port")) {
-            dstPort = atoi(line + out[i+2]);
+            dstPort = atoi(line + out[i + 2]);
         } else if (MATCH(line, "flow_id")) {
-            item->flow_id = g_strndup(line + out[i+2], out[i+3]);
-            item->flow_id_len = out[i+3];
+            item->flow_id = g_strndup(line + out[i + 2], out[i + 3]);
+            item->flow_id_len = out[i + 3];
         } else if (MATCH(line, "proto")) {
             // Match on prototol by name or by
             // IANA number: https://www.iana.org/assignments/protocol-numbers/protocol-numbers.xhtml
-            if (strncmp("TCP", line + out[i+2], 3) == 0 || strncmp("006", line + out[i+2], 3) == 0)
+            if (strncmp("TCP", line + out[i + 2], 3) == 0 || strncmp("006", line + out[i + 2], 3) == 0)
                 item->ses = SESSION_TCP;
-            else if (strncmp("UDP", line + out[i+2], 3) == 0 || strncmp("017", line + out[i+2], 3) == 0)
+            else if (strncmp("UDP", line + out[i + 2], 3) == 0 || strncmp("017", line + out[i + 2], 3) == 0)
                 item->ses = SESSION_UDP;
-            else if (strncmp("ICMP", line + out[i+2], 4) == 0 || strncmp("001", line + out[i+2], 3) == 0)
+            else if (strncmp("ICMP", line + out[i + 2], 4) == 0 || strncmp("001", line + out[i + 2], 3) == 0)
                 item->ses = SESSION_ICMP;
             else {
                 suricata_item_free(item);
                 return;
             }
         } else if (MATCH(line, "alert")) {
-            suricata_process_alert(line + out[i+2], out[i+3], item);
+            suricata_process_alert(line + out[i + 2], out[i + 3], item);
         }
     }
 
@@ -387,7 +387,7 @@ LOCAL void suricata_read()
 {
     while (fgets(line + lineLen, lineSize - lineLen, file)) {
         lineLen = strlen(line);
-        if (line[lineLen-1] == '\n') {
+        if (line[lineLen - 1] == '\n') {
             suricata_process();
             lineLen = 0;
         } else if (lineLen == lineSize - 1) {

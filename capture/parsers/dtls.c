@@ -27,7 +27,7 @@ LOCAL void dtls_certinfo_process(ArkimeCertInfo_t *ci, BSB *bsb)
     lastOid[0] = 0;
 
     while (BSB_REMAINING(*bsb)) {
-        unsigned char *value = arkime_parsers_asn_get_tlv(bsb, &apc, &atag, &alen);
+        uint8_t *value = arkime_parsers_asn_get_tlv(bsb, &apc, &atag, &alen);
         if (!value)
             return;
 
@@ -70,7 +70,7 @@ LOCAL void dtls_key_usage (ArkimeCertsInfo_t *certs, BSB *bsb)
     uint32_t apc, atag, alen;
 
     while (BSB_REMAINING(*bsb) >= 2) {
-        unsigned char *value = arkime_parsers_asn_get_tlv(bsb, &apc, &atag, &alen);
+        uint8_t *value = arkime_parsers_asn_get_tlv(bsb, &apc, &atag, &alen);
 
         if (value && atag == 4 && alen == 4)
             certs->isCA = (value[3] & 0x02);
@@ -82,7 +82,7 @@ LOCAL void dtls_alt_names(ArkimeCertsInfo_t *certs, BSB *bsb, char *lastOid)
     uint32_t apc, atag, alen;
 
     while (BSB_REMAINING(*bsb) >= 2) {
-        unsigned char *value = arkime_parsers_asn_get_tlv(bsb, &apc, &atag, &alen);
+        uint8_t *value = arkime_parsers_asn_get_tlv(bsb, &apc, &atag, &alen);
 
         if (!value)
             return;
@@ -118,7 +118,7 @@ LOCAL void dtls_alt_names(ArkimeCertsInfo_t *certs, BSB *bsb, char *lastOid)
     return;
 }
 /******************************************************************************/
-LOCAL void dtls_process_server_certificate(ArkimeSession_t *session, const unsigned char *data, int len)
+LOCAL void dtls_process_server_certificate(ArkimeSession_t *session, const uint8_t *data, int len)
 {
 
     BSB cbsb;
@@ -131,7 +131,7 @@ LOCAL void dtls_process_server_certificate(ArkimeSession_t *session, const unsig
 
     while(BSB_REMAINING(cbsb) > 3) {
         int            badreason = 0;
-        unsigned char *cdata = BSB_WORK_PTR(cbsb);
+        uint8_t *cdata = BSB_WORK_PTR(cbsb);
         int            clen = MIN(BSB_REMAINING(cbsb) - 3, (cdata[0] << 16 | cdata[1] << 8 | cdata[2]));
 
 
@@ -145,7 +145,7 @@ LOCAL void dtls_process_server_certificate(ArkimeSession_t *session, const unsig
         DLL_INIT(s_, &certs->issuer.orgUnit);
 
         uint32_t       atag, alen, apc;
-        unsigned char *value;
+        uint8_t *value;
 
         BSB            bsb;
         BSB_INIT(bsb, cdata + 3, clen);
@@ -153,14 +153,14 @@ LOCAL void dtls_process_server_certificate(ArkimeSession_t *session, const unsig
         /*guchar digest[20];
         gsize  len = sizeof(digest);
 
-        g_checksum_update(checksum, cdata+3, clen);
+        g_checksum_update(checksum, cdata + 3, clen);
         g_checksum_get_digest(checksum, digest, &len);
         if (len > 0) {
             int i;
             for(i = 0; i < 20; i++) {
-                certs->hash[i*3] = arkime_char_to_hexstr[digest[i]][0];
-                certs->hash[i*3+1] = arkime_char_to_hexstr[digest[i]][1];
-                certs->hash[i*3+2] = ':';
+                certs->hash[i * 3] = arkime_char_to_hexstr[digest[i]][0];
+                certs->hash[i * 3 + 1] = arkime_char_to_hexstr[digest[i]][1];
+                certs->hash[i * 3 + 2] = ':';
             }
         }
         certs->hash[59] = 0;
@@ -245,7 +245,7 @@ LOCAL void dtls_process_server_certificate(ArkimeSession_t *session, const unsig
         }
 
 
-        if (!arkime_field_certsinfo_add(certsField, session, certs, clen*2)) {
+        if (!arkime_field_certsinfo_add(certsField, session, certs, clen * 2)) {
             arkime_field_certsinfo_free(certs);
         }
 
@@ -261,7 +261,7 @@ LOCAL void dtls_process_server_certificate(ArkimeSession_t *session, const unsig
     }
 }
 /******************************************************************************/
-LOCAL int dtls_udp_parser(ArkimeSession_t *session, void *UNUSED(uw), const unsigned char *data, int len, int UNUSED(which))
+LOCAL int dtls_udp_parser(ArkimeSession_t *session, void *UNUSED(uw), const uint8_t *data, int len, int UNUSED(which))
 {
     BSB bbuf;
 
@@ -318,7 +318,7 @@ LOCAL int dtls_udp_parser(ArkimeSession_t *session, void *UNUSED(uw), const unsi
     return 0;
 }
 /******************************************************************************/
-LOCAL void dtls_udp_classify(ArkimeSession_t *session, const unsigned char *data, int len, int UNUSED(which), void *UNUSED(uw))
+LOCAL void dtls_udp_classify(ArkimeSession_t *session, const uint8_t *data, int len, int UNUSED(which), void *UNUSED(uw))
 {
     if (len < 100 || data[13] != 1)
         return;
@@ -328,10 +328,10 @@ LOCAL void dtls_udp_classify(ArkimeSession_t *session, const unsigned char *data
 /******************************************************************************/
 void arkime_parser_init()
 {
-    arkime_parsers_classifier_register_udp("dtls", NULL, 0, (const unsigned char *)"\x16\x01\x00", 3, dtls_udp_classify);
-    arkime_parsers_classifier_register_udp("dtls", NULL, 0, (const unsigned char *)"\x16\xfe\xff", 3, dtls_udp_classify);
-    arkime_parsers_classifier_register_udp("dtls", NULL, 0, (const unsigned char *)"\x16\xfe\xfe", 3, dtls_udp_classify);
-    arkime_parsers_classifier_register_udp("dtls", NULL, 0, (const unsigned char *)"\x16\xfe\xfd", 3, dtls_udp_classify);
+    arkime_parsers_classifier_register_udp("dtls", NULL, 0, (const uint8_t *)"\x16\x01\x00", 3, dtls_udp_classify);
+    arkime_parsers_classifier_register_udp("dtls", NULL, 0, (const uint8_t *)"\x16\xfe\xff", 3, dtls_udp_classify);
+    arkime_parsers_classifier_register_udp("dtls", NULL, 0, (const uint8_t *)"\x16\xfe\xfe", 3, dtls_udp_classify);
+    arkime_parsers_classifier_register_udp("dtls", NULL, 0, (const uint8_t *)"\x16\xfe\xfd", 3, dtls_udp_classify);
 
     certsField = arkime_field_define("cert", "notreal",
         "cert", "cert", "cert",

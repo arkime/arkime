@@ -32,7 +32,7 @@ typedef struct {
     uint32_t           remlen[2];
     short              buflen[2];
     uint16_t           flags2[2];
-    unsigned char      version[2];
+    uint8_t            version[2];
     char               state[2];
 } SMBInfo_t;
 
@@ -82,14 +82,14 @@ LOCAL void smb_add_string(ArkimeSession_t *session, int field, char *buf, int le
 }
 /******************************************************************************/
 // 2.2.13 AUTHENTICATE_MESSAGE from  http://download.microsoft.com/download/9/5/E/95EF66AF-9026-4BB0-A41D-A4F81802D92C/[MS-NLMP].pdf
-LOCAL void smb_security_blob(ArkimeSession_t *session, unsigned char *data, int len)
+LOCAL void smb_security_blob(ArkimeSession_t *session, uint8_t *data, int len)
 {
     BSB bsb;
 
     BSB_INIT(bsb, data, len);
 
     uint32_t apc, atag, alen;
-    unsigned char *value = arkime_parsers_asn_get_tlv(&bsb, &apc, &atag, &alen);
+    uint8_t *value = arkime_parsers_asn_get_tlv(&bsb, &apc, &atag, &alen);
 
     if (atag != 1)
         return;
@@ -236,7 +236,7 @@ LOCAL void smb1_parse_userdomainosver(ArkimeSession_t *session, char *buf, int l
 /******************************************************************************/
 LOCAL int smb1_parse(ArkimeSession_t *session, SMBInfo_t *smb, BSB *bsb, char *state, uint32_t *remlen, int which)
 {
-    unsigned char *start = BSB_WORK_PTR(*bsb);
+    uint8_t *start = BSB_WORK_PTR(*bsb);
 
     switch (*state) {
     case SMB_SMBHEADER: {
@@ -286,7 +286,7 @@ LOCAL int smb1_parse(ArkimeSession_t *session, SMBInfo_t *smb, BSB *bsb, char *s
         }
         int wordcount = 0;
         BSB_IMPORT_u08(*bsb, wordcount);
-        BSB_IMPORT_skip(*bsb, wordcount*2 + 3);
+        BSB_IMPORT_skip(*bsb, wordcount * 2 + 3);
         smb_add_string(session, fnField, (char*)BSB_WORK_PTR(*bsb), BSB_REMAINING(*bsb), smb->flags2[which] & SMB1_FLAGS2_UNICODE);
         *state = SMB_SKIP;
         break;
@@ -297,7 +297,7 @@ LOCAL int smb1_parse(ArkimeSession_t *session, SMBInfo_t *smb, BSB *bsb, char *s
         }
         int wordcount = 0;
         BSB_IMPORT_u08(*bsb, wordcount);
-        BSB_IMPORT_skip(*bsb, wordcount*2+3);
+        BSB_IMPORT_skip(*bsb, wordcount * 2 + 3);
         if (BSB_IS_ERROR(*bsb))
             return 1;
         smb_add_string(session, fnField, (char*)BSB_WORK_PTR(*bsb), BSB_REMAINING(*bsb), smb->flags2[which] & SMB1_FLAGS2_UNICODE);
@@ -381,7 +381,7 @@ LOCAL int smb1_parse(ArkimeSession_t *session, SMBInfo_t *smb, BSB *bsb, char *s
 /******************************************************************************/
 LOCAL int smb2_parse(ArkimeSession_t *session, SMBInfo_t *UNUSED(smb), BSB *bsb, char *state, uint32_t *remlen, int UNUSED(which))
 {
-    unsigned char *start = BSB_WORK_PTR(*bsb);
+    uint8_t *start = BSB_WORK_PTR(*bsb);
 
     switch (*state) {
     case SMB_SMBHEADER: {
@@ -474,7 +474,7 @@ LOCAL int smb2_parse(ArkimeSession_t *session, SMBInfo_t *UNUSED(smb), BSB *bsb,
     return 0;
 }
 /******************************************************************************/
-LOCAL int smb_parser(ArkimeSession_t *session, void *uw, const unsigned char *data, int remaining, int which)
+LOCAL int smb_parser(ArkimeSession_t *session, void *uw, const uint8_t *data, int remaining, int which)
 {
     SMBInfo_t            *smb          = uw;
     char                 *state        = &smb->state[which];
@@ -556,7 +556,7 @@ LOCAL int smb_parser(ArkimeSession_t *session, void *uw, const unsigned char *da
             return 0;
         }
 
-        if (BSB_REMAINING(bsb) > 0 && BSB_WORK_PTR(bsb) != (unsigned char *)buf) {
+        if (BSB_REMAINING(bsb) > 0 && BSB_WORK_PTR(bsb) != (uint8_t *)buf) {
 #ifdef SMBDEBUG
             //LOG("  Moving data %ld %s", BSB_REMAINING(bsb), arkime_session_id_string(session->protocol, session->addr1, session->port1, session->addr2, session->port2));
 #endif
@@ -579,7 +579,7 @@ LOCAL void smb_free(ArkimeSession_t UNUSED(*session), void *uw)
     ARKIME_TYPE_FREE(SMBInfo_t, smb);
 }
 /******************************************************************************/
-LOCAL void smb_classify(ArkimeSession_t *session, const unsigned char *data, int UNUSED(len), int UNUSED(which), void *UNUSED(uw))
+LOCAL void smb_classify(ArkimeSession_t *session, const uint8_t *data, int UNUSED(len), int UNUSED(which), void *UNUSED(uw))
 {
     if (data[4] != 0xff && data[4] != 0xfe)
         return;
@@ -648,5 +648,5 @@ void arkime_parser_init()
         "aliases", "[\"smb.host.tokens\"]",
         (char *)NULL);
 
-    arkime_parsers_classifier_register_tcp("smb", NULL, 5, (unsigned char*)"SMB", 3, smb_classify);
+    arkime_parsers_classifier_register_tcp("smb", NULL, 5, (uint8_t *)"SMB", 3, smb_classify);
 }

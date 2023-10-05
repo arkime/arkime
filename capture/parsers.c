@@ -29,7 +29,7 @@ LOCAL  gchar                 classTag[100];
 
 LOCAL  magic_t               cookie[ARKIME_MAX_PACKET_THREADS];
 
-extern unsigned char         arkime_char_to_hexstr[256][3];
+extern uint8_t               arkime_char_to_hexstr[256][3];
 
 int    userField;
 
@@ -37,6 +37,16 @@ enum ArkimeMagicMode { ARKIME_MAGICMODE_LIBMAGIC, ARKIME_MAGICMODE_BOTH, ARKIME_
 
 LOCAL enum ArkimeMagicMode magicMode;
 
+/******************************************************************************/
+typedef struct {
+    GPtrArray *funcs;
+    uint16_t   id;
+} ArkimeNamedInfo_t;
+
+#define MAX_NAMED_FUNCS  100
+LOCAL uint16_t           namedFuncsMax = 0;
+LOCAL ArkimeNamedInfo_t *namedFuncsArr[MAX_NAMED_FUNCS];
+LOCAL GHashTable        *namedFuncsHash;
 /******************************************************************************/
 #define MAGIC_MATCH(offset, needle) memcmp(data+offset, needle, sizeof(needle)-1) == 0
 #define MAGIC_MATCH_LEN(offset, needle) ((len > (int)sizeof(needle)-1+offset) && (memcmp(data+offset, needle, sizeof(needle)-1) == 0))
@@ -90,13 +100,13 @@ const char *arkime_parsers_magic_basic(ArkimeSession_t *session, int field, cons
         if (len > 100 && (gchar)data[1] == (gchar)0x82) {
             ArkimeASNSeq_t seq[5];
             int i;
-            int num = arkime_parsers_asn_get_sequence(seq, 5, (unsigned char *)data, len, TRUE);
+            int num = arkime_parsers_asn_get_sequence(seq, 5, (uint8_t *)data, len, TRUE);
             for (i = 0; i < num; i++) {
                 if (seq[i].pc && seq[i].tag == 16) {
                     BSB tbsb;
                     BSB_INIT(tbsb, seq[i].value, seq[i].len);
                     uint32_t ipc, itag, ilen;
-                    unsigned char *ivalue;
+                    uint8_t *ivalue;
                     ivalue = arkime_parsers_asn_get_tlv(&tbsb, &ipc, &itag, &ilen);
                     if (itag != 6)
                         continue;
@@ -382,8 +392,7 @@ void arkime_parsers_initial_tag(ArkimeSession_t *session)
 /*############################## ASN ##############################*/
 
 /******************************************************************************/
-unsigned char *
-arkime_parsers_asn_get_tlv(BSB *bsb, uint32_t *apc, uint32_t *atag, uint32_t *alen)
+uint8_t * arkime_parsers_asn_get_tlv(BSB *bsb, uint32_t *apc, uint32_t *atag, uint32_t *alen)
 {
 
     if (BSB_REMAINING(*bsb) < 2)
@@ -426,7 +435,7 @@ arkime_parsers_asn_get_tlv(BSB *bsb, uint32_t *apc, uint32_t *atag, uint32_t *al
     if (*alen > BSB_REMAINING(*bsb))
         *alen = BSB_REMAINING(*bsb);
 
-    unsigned char *value;
+    uint8_t *value;
     BSB_IMPORT_ptr(*bsb, value, *alen);
     if (BSB_IS_ERROR(*bsb)) {
         goto get_tlv_error;
@@ -441,14 +450,14 @@ get_tlv_error:
     return 0;
 }
 /******************************************************************************/
-int arkime_parsers_asn_get_sequence(ArkimeASNSeq_t *seqs, int maxSeq, const unsigned char *data, int len, gboolean wrapper)
+int arkime_parsers_asn_get_sequence(ArkimeASNSeq_t *seqs, int maxSeq, const uint8_t *data, int len, gboolean wrapper)
 {
     int num = 0;
     BSB bsb;
     BSB_INIT(bsb, data, len);
     if (wrapper) {
         uint32_t ipc, itag, ilen;
-        unsigned char *ivalue;
+        uint8_t *ivalue;
         ivalue = arkime_parsers_asn_get_tlv(&bsb, &ipc, &itag, &ilen);
         if (!ipc || itag != 16)
             return 0;
@@ -482,7 +491,7 @@ const char *arkime_parsers_asn_sequence_to_string(ArkimeASNSeq_t *seq, int *len)
     return ivalue;
 }
 /******************************************************************************/
-void arkime_parsers_asn_decode_oid(char *buf, int bufsz, const unsigned char *oid, int len) {
+void arkime_parsers_asn_decode_oid(char *buf, int bufsz, const uint8_t *oid, int len) {
     int buflen = 0;
     int pos = 0;
     int first = TRUE;
@@ -513,7 +522,7 @@ void arkime_parsers_asn_decode_oid(char *buf, int bufsz, const unsigned char *oi
 #define char2num(ch) (isdigit(ch)?((ch) - '0'):0)
 #define str2num(str) (char2num((str)[0]) * 10 + char2num((str)[1]))
 #define str4num(str) (char2num((str)[0]) * 1000 + char2num((str)[1]) * 100 + char2num((str)[2]) * 10 + char2num((str)[3]))
-uint64_t arkime_parsers_asn_parse_time(ArkimeSession_t *session, int tag, unsigned char* value, int len)
+uint64_t arkime_parsers_asn_parse_time(ArkimeSession_t *session, int tag, uint8_t * value, int len)
 {
     int        offset = 0;
     struct tm  tm;
@@ -601,6 +610,8 @@ LOCAL int cstring_cmp(const void *a, const void *b)
 /******************************************************************************/
 void arkime_parsers_init()
 {
+    namedFuncsHash = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, NULL);
+
     if (config.nodeClass)
         snprintf(classTag, sizeof(classTag), "class:%s", config.nodeClass);
 
@@ -849,7 +860,7 @@ void arkime_parsers_exit() {
     }
 }
 /******************************************************************************/
-void arkime_print_hex_string(const unsigned char* data, unsigned int length)
+void arkime_print_hex_string(const uint8_t * data, unsigned int length)
 {
     unsigned int i;
 
@@ -861,15 +872,15 @@ void arkime_print_hex_string(const unsigned char* data, unsigned int length)
     printf("\n");
 }
 /******************************************************************************/
-char *arkime_sprint_hex_string(char *buf, const unsigned char* data, unsigned int length)
+char *arkime_sprint_hex_string(char *buf, const uint8_t * data, unsigned int length)
 {
     unsigned int i;
 
     for (i = 0; i < length; i++)
     {
-        memcpy(buf+i*2, arkime_char_to_hexstr[data[i]], 2);
+        memcpy(buf+i * 2, arkime_char_to_hexstr[data[i]], 2);
     }
-    buf[i*2] = 0;
+    buf[i * 2] = 0;
     return buf;
 }
 /******************************************************************************/
@@ -930,7 +941,7 @@ typedef struct arkime_classify_t
     const char          *name;
     void                *uw;
     int                  offset;
-    const unsigned char *match;
+    const uint8_t       *match;
     int                  matchlen;
     int                  minlen;
     ArkimeClassifyFunc   func;
@@ -1019,7 +1030,7 @@ void arkime_parsers_classifier_register_port_internal(const char *name, void *uw
         arkime_parsers_classifier_add(&classifersUdpPortDst[port], c);
 }
 /******************************************************************************/
-void arkime_parsers_classifier_register_tcp_internal(const char *name, void *uw, int offset, const unsigned char *match, int matchlen, ArkimeClassifyFunc func, size_t sessionsize, int apiversion)
+void arkime_parsers_classifier_register_tcp_internal(const char *name, void *uw, int offset, const uint8_t *match, int matchlen, ArkimeClassifyFunc func, size_t sessionsize, int apiversion)
 {
     if (sizeof(ArkimeSession_t) != sessionsize) {
         CONFIGEXIT("Parser '%s' built with different version of arkime.h\n %u != %u", name, (unsigned int)sizeof(ArkimeSession_t),  (unsigned int)sessionsize);
@@ -1057,7 +1068,7 @@ void arkime_parsers_classifier_register_tcp_internal(const char *name, void *uw,
     }
 }
 /******************************************************************************/
-void arkime_parsers_classifier_register_udp_internal(const char *name, void *uw, int offset, const unsigned char *match, int matchlen, ArkimeClassifyFunc func, size_t sessionsize, int apiversion)
+void arkime_parsers_classifier_register_udp_internal(const char *name, void *uw, int offset, const uint8_t *match, int matchlen, ArkimeClassifyFunc func, size_t sessionsize, int apiversion)
 {
     if (sizeof(ArkimeSession_t) != sessionsize) {
         CONFIGEXIT("Parser '%s' built with different version of arkime.h", name);
@@ -1089,7 +1100,7 @@ void arkime_parsers_classifier_register_udp_internal(const char *name, void *uw,
     }
 }
 /******************************************************************************/
-void arkime_parsers_classify_udp(ArkimeSession_t *session, const unsigned char *data, int remaining, int which)
+void arkime_parsers_classify_udp(ArkimeSession_t *session, const uint8_t *data, int remaining, int which)
 {
     int i;
 
@@ -1121,7 +1132,7 @@ void arkime_parsers_classify_udp(ArkimeSession_t *session, const unsigned char *
 
     for (i = 0; i < classifersUdp2[data[0]][data[1]].cnt; i++) {
         ArkimeClassify_t *c = classifersUdp2[data[0]][data[1]].arr[i];
-        if (remaining >= c->minlen && memcmp(data+2, c->match, c->matchlen) == 0) {
+        if (remaining >= c->minlen && memcmp(data + 2, c->match, c->matchlen) == 0) {
             c->func(session, data, remaining, which, c->uw);
         }
     }
@@ -1131,7 +1142,7 @@ void arkime_parsers_classify_udp(ArkimeSession_t *session, const unsigned char *
         arkime_yara_execute(session, data, remaining, 0);
 }
 /******************************************************************************/
-void arkime_parsers_classify_tcp(ArkimeSession_t *session, const unsigned char *data, int remaining, int which)
+void arkime_parsers_classify_tcp(ArkimeSession_t *session, const uint8_t *data, int remaining, int which)
 {
     int i;
 
@@ -1164,7 +1175,7 @@ void arkime_parsers_classify_tcp(ArkimeSession_t *session, const unsigned char *
 
     for (i = 0; i < classifersTcp2[data[0]][data[1]].cnt; i++) {
         ArkimeClassify_t *c = classifersTcp2[data[0]][data[1]].arr[i];
-        if (remaining >= c->minlen && memcmp(data+2, c->match, c->matchlen) == 0) {
+        if (remaining >= c->minlen && memcmp(data + 2, c->match, c->matchlen) == 0) {
             c->func(session, data, remaining, which, c->uw);
         }
     }
@@ -1172,4 +1183,49 @@ void arkime_parsers_classify_tcp(ArkimeSession_t *session, const unsigned char *
     arkime_rules_run_after_classify(session);
     if (config.yara && !config.yaraEveryPacket && !session->stopYara)
         arkime_yara_execute(session, data, remaining, 0);
+}
+
+/******************************************************************************/
+uint32_t arkime_parser_add_named_func(char *name, ArkimeParserNamedFunc func)
+{
+    ArkimeNamedInfo_t *info = g_hash_table_lookup(namedFuncsHash, name);
+    if (!info) {
+        info = ARKIME_TYPE_ALLOC0(ArkimeNamedInfo_t);
+        info->funcs = g_ptr_array_new();
+        namedFuncsMax++; // Don't use 0
+        if (namedFuncsMax >= MAX_NAMED_FUNCS)
+            return 0;
+        info->id = namedFuncsMax;
+        namedFuncsArr[namedFuncsMax] = info;
+        g_hash_table_insert(namedFuncsHash, name, info);
+    }
+    g_ptr_array_add(info->funcs, func);
+    return info->id;
+}
+/******************************************************************************/
+uint32_t arkime_parser_get_named_func(char *name)
+{
+    ArkimeNamedInfo_t *info = g_hash_table_lookup(namedFuncsHash, name);
+    if (!info) {
+        info = ARKIME_TYPE_ALLOC0(ArkimeNamedInfo_t);
+        info->funcs = g_ptr_array_new();
+        namedFuncsMax++; // Don't use 0
+        if (namedFuncsMax >= MAX_NAMED_FUNCS)
+            return 0;
+        info->id = namedFuncsMax;
+        namedFuncsArr[namedFuncsMax] = info;
+        g_hash_table_insert(namedFuncsHash, name, info);
+    }
+    return info->id;
+}
+/******************************************************************************/
+void arkime_parser_call_named_func(uint32_t id, ArkimeSession_t *session, const uint8_t *data, int len, void *uw)
+{
+    if (id == 0 || id > namedFuncsMax)
+        return;
+    ArkimeNamedInfo_t *info = namedFuncsArr[id];
+    for (int i = 0; i < (int)info->funcs->len; i++) {
+        ArkimeParserNamedFunc func = g_ptr_array_index(info->funcs, i);
+        func(session, data, len, uw);
+    }
 }

@@ -29,15 +29,15 @@ LOCAL ArkimePacketRC pppoe_packet_enqueue(ArkimePacketBatch_t * batch, ArkimePac
 
     uint16_t plen = data[4] << 8 | data[5];
     uint16_t type = data[6] << 8 | data[7];
-    if (plen != len-6)
+    if (plen != len - 6)
         return ARKIME_PACKET_CORRUPT;
 
     packet->tunnel |= ARKIME_PACKET_TUNNEL_PPPOE;
     switch (type) {
     case 0x21:
-        return arkime_packet_run_ethernet_cb(batch, packet, data+8, len-8, ETHERTYPE_IP, "PPP");
+        return arkime_packet_run_ethernet_cb(batch, packet, data + 8, len - 8, ETHERTYPE_IP, "PPP");
     case 0x57:
-        return arkime_packet_run_ethernet_cb(batch, packet, data+8, len-8, ETHERTYPE_IPV6, "PPP");
+        return arkime_packet_run_ethernet_cb(batch, packet, data + 8, len- 8, ETHERTYPE_IPV6, "PPP");
     default:
 #ifdef DEBUG_PACKET
         LOG("BAD PACKET: Unknown pppoe type %d", type);
@@ -59,9 +59,9 @@ LOCAL ArkimePacketRC ppp_packet_enqueue(ArkimePacketBatch_t * batch, ArkimePacke
     packet->tunnel |= ARKIME_PACKET_TUNNEL_PPP;
     switch (data[3]) {
     case 0x21:
-        return arkime_packet_run_ethernet_cb(batch, packet, data+4, len-4, ETHERTYPE_IP, "PPP");
+        return arkime_packet_run_ethernet_cb(batch, packet, data + 4, len - 4, ETHERTYPE_IP, "PPP");
     case 0x57:
-        return arkime_packet_run_ethernet_cb(batch, packet, data+4, len-4, ETHERTYPE_IPV6, "PPP");
+        return arkime_packet_run_ethernet_cb(batch, packet, data + 4, len - 4, ETHERTYPE_IPV6, "PPP");
     default:
 #ifdef DEBUG_PACKET
         LOG("BAD PACKET: Unknown ppp type %d", data[3]);
