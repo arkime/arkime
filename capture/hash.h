@@ -1,8 +1,8 @@
 /******************************************************************************/
 /* hash.h  -- Hashtable
  *
- * Simple macro based hashtable using DLL buckets with counts that supports 
- * having a single item in multiple lists or hash tables by using a prefix.  
+ * Simple macro based hashtable using DLL buckets with counts that supports
+ * having a single item in multiple lists or hash tables by using a prefix.
  * Every element in the hash table needs to follow the DLL rules.
  *
  * To Use:
@@ -125,11 +125,19 @@ typedef int (* HASH_CMP_FUNC)(const void *key, const void *element);
       } \
   }
 
+#define HASH_FORALL_POP_HEAD2(name, varname, element) \
+  for ( int _##name##b = 0;  _##name##b < (varname).size;  _##name##b++) \
+      for(; DLL_POP_HEAD(name, &((varname).buckets[_##name##b]), element); (varname).count--)
+
 #define HASH_FORALL(name, varname, element, code) \
   for ( int _##name##b = 0;  _##name##b < (varname).size;  _##name##b++) {\
       for (element = (varname).buckets[_##name##b].name##next; element != (void*)&((varname).buckets[_##name##b]); element = element->name##next) { \
           code \
       } \
   }
+
+#define HASH_FORALL2(name, varname, element) \
+  for ( int _##name##b = 0;  _##name##b < (varname).size;  _##name##b++) \
+      for (element = (varname).buckets[_##name##b].name##next; element != (void*)&((varname).buckets[_##name##b]); element = element->name##next)
 
 #endif

@@ -796,10 +796,10 @@ void arkime_parsers_init()
         LOG("WARNING - No parsers loaded, is parsersDir set correctly");
     }
 
-    HASH_FORALL_POP_HEAD(s_, loaded, hstring,
+    HASH_FORALL_POP_HEAD2(s_, loaded, hstring) {
         g_free(hstring->str);
         ARKIME_TYPE_FREE(ArkimeString_t, hstring);
-    );
+    }
     g_free(disableParsers); // NOT, g_strfreev because using the pointers
 
     // Set tags field up AFTER loading plugins

@@ -500,10 +500,10 @@ do { \
         BSB_EXPORT_sprintf(jbsb, "\"%s-cnt\":%d,", config.fields[POS]->dbField, HASH_COUNT(s_, *shash)); \
     } \
     BSB_EXPORT_sprintf(jbsb, "\"%s\":[", config.fields[POS]->dbField); \
-    HASH_FORALL(s_, *shash, hstring, \
+    HASH_FORALL2(s_, *shash, hstring) { \
         arkime_db_js0n_str(&jbsb, (uint8_t *)hstring->str, hstring->utf8 || FLAGS & ARKIME_FIELD_FLAG_FORCE_UTF8); \
         BSB_EXPORT_u08(jbsb, ','); \
-    ); \
+    } \
     BSB_EXPORT_rewind(jbsb, 1); /* Remove last comma */ \
     BSB_EXPORT_cstr(jbsb, "],"); \
 } while(0)
@@ -1048,10 +1048,10 @@ void arkime_db_save_session(ArkimeSession_t *session, int final)
         case ARKIME_FIELD_TYPE_STR_HASH:
             SAVE_FIELD_STR_HASH(pos, flags);
             if (freeField) {
-                HASH_FORALL_POP_HEAD(s_, *shash, hstring,
+                HASH_FORALL_POP_HEAD2(s_, *shash, hstring) {
                     g_free(hstring->str);
                     ARKIME_TYPE_FREE(ArkimeString_t, hstring);
-                );
+                }
                 ARKIME_TYPE_FREE(ArkimeStringHashStd_t, shash);
             }
             break;
@@ -1079,14 +1079,14 @@ void arkime_db_save_session(ArkimeSession_t *session, int final)
                 BSB_EXPORT_sprintf(jbsb, "\"%sCnt\":%d,", config.fields[pos]->dbField, HASH_COUNT(i_, *ihash));
             }
             BSB_EXPORT_sprintf(jbsb, "\"%s\":[", config.fields[pos]->dbField);
-            HASH_FORALL(i_, *ihash, hint,
+            HASH_FORALL2(i_, *ihash, hint) {
                 BSB_EXPORT_sprintf(jbsb, "%u", hint->i_hash);
                 BSB_EXPORT_u08(jbsb, ',');
-            );
+            }
             if (freeField) {
-                HASH_FORALL_POP_HEAD(i_, *ihash, hint,
+                HASH_FORALL_POP_HEAD2(i_, *ihash, hint) {
                     ARKIME_TYPE_FREE(ArkimeInt_t, hint);
-                );
+                }
                 ARKIME_TYPE_FREE(ArkimeIntHashStd_t, ihash);
             }
             BSB_EXPORT_rewind(jbsb, 1); // Remove last comma
@@ -1271,7 +1271,7 @@ void arkime_db_save_session(ArkimeSession_t *session, int final)
             ArkimeCertsInfo_t *certs;
             ArkimeString_t *string;
 
-            HASH_FORALL_POP_HEAD(t_, *cihash, certs,
+            HASH_FORALL_POP_HEAD2(t_, *cihash, certs) {
                 BSB_EXPORT_u08(jbsb, '{');
 
                 BSB_EXPORT_sprintf(jbsb, "\"hash\":\"%s\",", certs->hash);
@@ -1320,7 +1320,7 @@ void arkime_db_save_session(ArkimeSession_t *session, int final)
 
                 BSB_EXPORT_u08(jbsb, '}');
                 BSB_EXPORT_u08(jbsb, ',');
-            );
+            }
             ARKIME_TYPE_FREE(ArkimeCertsInfoHashStd_t, cihash);
 
             BSB_EXPORT_rewind(jbsb, 1); // Remove last comma
