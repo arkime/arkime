@@ -1,8 +1,8 @@
 /******************************************************************************/
 /* hash.h  -- Hashtable
  *
- * Simple macro based hashtable using DLL buckets with counts that supports 
- * having a single item in multiple lists or hash tables by using a prefix.  
+ * Simple macro based hashtable using DLL buckets with counts that supports
+ * having a single item in multiple lists or hash tables by using a prefix.
  * Every element in the hash table needs to follow the DLL rules.
  *
  * To Use:
@@ -14,6 +14,8 @@
  * A key can also just be the element
  *
  * The same WARNING in dll.h applies since hash.h just uses DLL
+ *
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 #ifndef _HASH_HEADER

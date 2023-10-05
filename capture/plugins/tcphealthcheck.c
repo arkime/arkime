@@ -1,5 +1,7 @@
 /* tcphealthcheck.c  -- TCP Health Check plugin
-Listens on a TCP socket and immediately closes it to confirm that the capture service is running.
+ * Listens on a TCP socket and immediately closes it to confirm that the capture service is running.
+ *
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 
@@ -24,11 +26,11 @@ LOCAL  int                   tcp_port;
 void tcp_server(void) {
     int server_fd, err;
     struct sockaddr_in server, client;
-   
+
     server.sin_family = AF_INET;
     server.sin_port = htons(tcp_port);
     server.sin_addr.s_addr = htonl(INADDR_ANY);
-    
+
     server_fd = socket(AF_INET, SOCK_STREAM, 0);
     if (server_fd < 0) {
         LOG("Error creating socket: %d", server_fd);
@@ -69,7 +71,7 @@ void tcp_server(void) {
 }
 
 /******************************************************************************/
-void *tcp_listener(void *vargp) 
+void *tcp_listener(void *vargp)
 {
     (void) vargp;
     LOG("Starting TCP server");
@@ -90,7 +92,7 @@ void arkime_plugin_init()
     if (tcp_port) {
         LOG("tcpHealthCheckPort set to %d", tcp_port);
         pthread_create(&thread_id, NULL, tcp_listener, NULL);
-        LOG("TCP listener thread created"); 
+        LOG("TCP listener thread created");
         arkime_plugins_register("tcphealthcheck", FALSE);
     }
     else {

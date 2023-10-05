@@ -4,6 +4,7 @@
  * Simple macros that deal with byte safe importing/exporting and deal with
  * buffer overflows.
  *
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 

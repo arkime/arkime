@@ -1,9 +1,11 @@
 #!/usr/bin/perl
 # curl http://www.iana.org/assignments/tls-parameters/tls-parameters-4.csv | ./tls-cipher.h.pl > tls-cipher.h
+#
+# SPDX-License-Identifier: Apache-2.0
 use strict;
 use Data::Dumper;
 
-my @rows; 
+my @rows;
 
 for (my $i = 0; $i < 256; $i++) {
     @rows[$i] = [];

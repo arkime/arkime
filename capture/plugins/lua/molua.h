@@ -1,3 +1,4 @@
+/* SPDX-License-Identifier: Apache-2.0 */
 #ifndef _ARKIME_LUA_
 #define _ARKIME_LUA_
 #include "arkime.h"
