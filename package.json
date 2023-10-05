@@ -142,7 +142,7 @@
     "node-notifier": "^8.0.1",
     "nodemon": "^2.0.19",
     "ora": "^5.1.0",
-    "postcss": "^8.4.5",
+    "postcss": "^8.4.31",
     "postcss-import": "^14.0.0",
     "postcss-loader": "^5.0.0",
     "postcss-url": "^10.1.3",
