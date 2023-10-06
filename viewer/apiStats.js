@@ -45,7 +45,7 @@ class StatsAPIs {
   /**
    * GET - /api/eshealth
    *
-   * Retrive OpenSearch/Elasticsearch health and stats
+   * Retrieve OpenSearch/Elasticsearch health and stats
    * There is no auth necessary to retrieve eshealth
    * @name /eshealth
    * @returns {ESHealth} health - The elasticsearch cluster health status and info
