@@ -1187,7 +1187,7 @@ uint32_t arkime_parser_add_named_func(char *name, ArkimeParserNamedFunc func)
             return 0;
         info->id = namedFuncsMax;
         namedFuncsArr[namedFuncsMax] = info;
-        g_hash_table_insert(namedFuncsHash, name, info);
+        g_hash_table_insert(namedFuncsHash, g_strdup(name), info);
     }
     g_ptr_array_add(info->funcs, func);
     return info->id;
@@ -1204,7 +1204,7 @@ uint32_t arkime_parser_get_named_func(char *name)
             return 0;
         info->id = namedFuncsMax;
         namedFuncsArr[namedFuncsMax] = info;
-        g_hash_table_insert(namedFuncsHash, name, info);
+        g_hash_table_insert(namedFuncsHash, g_strdup(name), info);
     }
     return info->id;
 }
