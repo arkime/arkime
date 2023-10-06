@@ -368,7 +368,7 @@ void arkime_config_load_includes(char **includes)
                     g_error_free(error);
                 continue;
             } else {
-                CONFIGEXIT("Couldn't load config includes file (%s) %s\n", fn, (error?error->message:""));
+                CONFIGEXIT("Couldn't load config includes file (%s) %s", fn, (error?error->message:""));
             }
         }
 
@@ -612,13 +612,13 @@ void arkime_config_load()
         if (g_str_has_suffix(config.configFile, ".json")) {
             gchar *data;
             if (!g_file_get_contents(config.configFile, &data, NULL, &error))
-                CONFIGEXIT("Couldn't load config file (%s) %s\n", config.configFile, (error?error->message:""));
+                CONFIGEXIT("Couldn't load config file (%s) %s", config.configFile, (error?error->message:""));
             status = arkime_config_load_json(keyfile, data, &error);
             g_free(data);
         } else if (g_str_has_suffix(config.configFile, ".yml") || g_str_has_suffix(config.configFile, ".yaml")) {
             gchar *data;
             if (!g_file_get_contents(config.configFile, &data, NULL, &error))
-                CONFIGEXIT("Couldn't load config file (%s) %s\n", config.configFile, (error?error->message:""));
+                CONFIGEXIT("Couldn't load config file (%s) %s", config.configFile, (error?error->message:""));
             status = arkime_config_load_yaml(keyfile, data, &error);
             g_free(data);
         } else
@@ -626,7 +626,7 @@ void arkime_config_load()
     }
 
     if (!status || error) {
-        CONFIGEXIT("Couldn't load config file (%s) %s\n", config.configFile, (error?error->message:""));
+        CONFIGEXIT("Couldn't load config file (%s) %s", config.configFile, (error?error->message:""));
     }
 
     char **includes = arkime_config_str_list(keyfile, "includes", NULL);
@@ -654,7 +654,7 @@ void arkime_config_load()
     char *rotateIndex       = arkime_config_str(keyfile, "rotateIndex", "daily");
 
     if (!rotateIndex) {
-        CONFIGEXIT("The rotateIndex= can't be empty in config file (%s)\n", config.configFile);
+        CONFIGEXIT("The rotateIndex= can't be empty in config file (%s)", config.configFile);
     } else if (strcmp(rotateIndex, "hourly") == 0)
         config.rotate = ARKIME_ROTATE_HOURLY;
     else if (strcmp(rotateIndex, "hourly2") == 0)
@@ -676,7 +676,7 @@ void arkime_config_load()
     else if (strcmp(rotateIndex, "monthly") == 0)
         config.rotate = ARKIME_ROTATE_MONTHLY;
     else {
-        CONFIGEXIT("Unknown rotateIndex '%s' in config file (%s), see https://arkime.com/settings#rotateindex\n", rotateIndex, config.configFile);
+        CONFIGEXIT("Unknown rotateIndex '%s' in config file (%s), see https://arkime.com/settings#rotateindex", rotateIndex, config.configFile);
     }
     g_free(rotateIndex);
 
@@ -748,20 +748,20 @@ void arkime_config_load()
 
     config.offlineRegex     = g_regex_new(offlineRegex, 0, 0, &error);
     if (!config.offlineRegex || error) {
-        CONFIGEXIT("Couldn't parse offlineRegex (%s) %s\n", offlineRegex, (error?error->message:""));
+        CONFIGEXIT("Couldn't parse offlineRegex (%s) %s", offlineRegex, (error?error->message:""));
     }
     g_free(offlineRegex);
 
     config.pcapDirTemplate  = arkime_config_str(keyfile, "pcapDirTemplate", NULL);
     if (config.pcapDirTemplate && config.pcapDirTemplate[0] != '/') {
-        CONFIGEXIT("pcapDirTemplate MUST start with a / '%s'\n", config.pcapDirTemplate);
+        CONFIGEXIT("pcapDirTemplate MUST start with a / '%s'", config.pcapDirTemplate);
     }
 
     config.pcapDirAlgorithm = arkime_config_str(keyfile, "pcapDirAlgorithm", "round-robin");
     if (strcmp(config.pcapDirAlgorithm, "round-robin") != 0
             && strcmp(config.pcapDirAlgorithm, "max-free-percent") != 0
             && strcmp(config.pcapDirAlgorithm, "max-free-bytes") != 0) {
-        CONFIGEXIT("'%s' is not a valid value for pcapDirAlgorithm.  Supported algorithms are round-robin, max-free-percent, and max-free-bytes.\n", config.pcapDirAlgorithm);
+        CONFIGEXIT("'%s' is not a valid value for pcapDirAlgorithm.  Supported algorithms are round-robin, max-free-percent, and max-free-bytes.", config.pcapDirAlgorithm);
     }
 
     config.maxFileSizeG          = arkime_config_double(keyfile, "maxFileSizeG", 12, 0.01, 1024);
@@ -952,7 +952,7 @@ void arkime_config_load_override_ips()
                         g_error_free(error);
                     continue;
                 } else {
-                    CONFIGEXIT("Couldn't load overrideIpsFiles file (%s) %s\n", overrideIpsFiles[i], (error?error->message:""));
+                    CONFIGEXIT("Couldn't load overrideIpsFiles file (%s) %s", overrideIpsFiles[i], (error?error->message:""));
                 }
             }
             arkime_config_parse_override_ips(keyfile);
@@ -1020,7 +1020,7 @@ void arkime_config_load_packet_ips()
                         g_error_free(error);
                     continue;
                 } else {
-                    CONFIGEXIT("Couldn't load packetDropIpsFiles file (%s) %s\n", packetDropIpsFiles[i], (error?error->message:""));
+                    CONFIGEXIT("Couldn't load packetDropIpsFiles file (%s) %s", packetDropIpsFiles[i], (error?error->message:""));
                 }
             }
             arkime_config_parse_packet_ips(keyfile);
@@ -1162,10 +1162,10 @@ void arkime_config_monitor_file_msg(char *desc, char *name, ArkimeFileChange_cb 
     struct stat     sb;
 
     if (numFiles >= ARKIME_CONFIG_FILES)
-        CONFIGEXIT("Couldn't monitor anymore files %s %s", desc, name);
+        CONFIGEXIT("Reached max number (%d) of files to monitor %s '%s'", ARKIME_CONFIG_FILES, desc, name);
 
     if (stat(name, &sb) != 0) {
-        CONFIGEXIT("Couldn't stat %s file %s error %s. %s", desc, name, strerror(errno), msg);
+        CONFIGEXIT("Couldn't stat %s file '%s' with error '%s' %s", desc, name, strerror(errno), msg);
     }
 
     files[numFiles].name[0] = g_strdup(name);
@@ -1268,15 +1268,15 @@ void arkime_config_init()
     }
 
     if (config.interface && !config.interface[0]) {
-        CONFIGEXIT("The interface= is set in the config file (%s), but it is empty. :( You need to fix this before Arkime can continue.\n", config.configFile);
+        CONFIGEXIT("The interface= is set in the config file (%s), but it is empty. :( You need to fix this before Arkime can continue.", config.configFile);
     }
 
     if (!config.interface && !config.pcapReadOffline) {
-        CONFIGEXIT("Please set interface= in the [default] or [%s] section of the config file (%s) OR on the capture command line use either a pcap file (-r) or pcap directory (-R) switch. You need to fix this before Arkime can continue.\n", config.nodeName, config.configFile);
+        CONFIGEXIT("Please set interface= in the [default] or [%s] section of the config file (%s) OR on the capture command line use either a pcap file (-r) or pcap directory (-R) switch. You need to fix this before Arkime can continue.", config.nodeName, config.configFile);
     }
 
     if (!config.pcapDir || !config.pcapDir[0]) {
-        CONFIGEXIT("You must set a non empty pcapDir= in the config file(%s) to save files to. You need to fix this before Arkime can continue.\n", config.configFile);
+        CONFIGEXIT("You must set a non empty pcapDir= in the config file(%s) to save files to. You need to fix this before Arkime can continue.", config.configFile);
     }
 
     if (!config.dryRun) {

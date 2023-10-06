@@ -941,7 +941,7 @@ void writer_s3_init(char *UNUSED(name))
     config.gapPacketPos = arkime_config_boolean(NULL, "s3GapPacketPos", TRUE);
 
     if (!s3Bucket) {
-        CONFIGEXIT("Must set s3Bucket to save to s3\n");
+        CONFIGEXIT("Must set s3Bucket to save to s3");
     }
 
     if (s3Compression != NULL) {
@@ -1015,7 +1015,7 @@ void writer_s3_init(char *UNUSED(name))
         g_timeout_add_seconds( 280, writer_s3_refresh_creds_gfunc, 0);
         writer_s3_refresh_creds_gfunc(NULL);
     } else if (s3ConfigCreds.s3AccessKeyId && !s3ConfigCreds.s3SecretAccessKey) {
-        CONFIGEXIT("Must set s3SecretAccessKey to save to s3\n");
+        CONFIGEXIT("Must set s3SecretAccessKey to save to s3");
     }
 
     if (config.pcapWriteSize < 5242880) {
