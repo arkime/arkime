@@ -29,6 +29,8 @@ LOCAL va_list empty_va_list;
 
 #define ARKIME_FIELD_MAX_ELEMENT_SIZE 16384
 
+GHashTable *groupName2Num;
+
 /******************************************************************************/
 void arkime_field_by_exp_add_special(char *exp, int pos)
 {
@@ -283,6 +285,28 @@ int arkime_field_define_text(char *text, int *shortcut)
     va_end(args);
 }*/
 /******************************************************************************/
+int arkime_field_group_num(char *group, int len)
+{
+    static int maxGroupNum = 0;
+    char       groupName[100];
+
+    if (len + 1 >= (int)sizeof(groupName)) {
+        LOGEXIT("ERROR - field '%s' too long", group);
+        return 0;
+    }
+    memcpy(groupName, group, len);
+    groupName[len] = 0;
+
+    long groupNum = (long)g_hash_table_lookup(groupName2Num, groupName);
+    if (groupNum != 0) {
+        return groupNum;
+    }
+
+    groupNum = ARKIME_THREAD_INCRNEW(maxGroupNum);
+    g_hash_table_insert(groupName2Num, g_strdup(groupName), (gpointer)groupNum);
+    return groupNum;
+}
+/******************************************************************************/
 int arkime_field_define(char *group, char *kind, char *expression, char *friendlyName, char *dbField, char *help, ArkimeFieldType type, int flags, ...)
 {
     char dbField2[100];
@@ -370,18 +394,7 @@ int arkime_field_define(char *group, char *kind, char *expression, char *friendl
         // Change leading part to dbGroup
         char *firstdot = strchr(minfo->dbField, '.');
         if (firstdot) {
-            static char lastGroup[100] = "";
-            static int groupNum = 0;
-
-            if (firstdot-minfo->dbField + 1 >= (int)sizeof(lastGroup) - 1)
-                LOGEXIT("ERROR - field '%s' too long", minfo->dbField);
-
-            if (memcmp(minfo->dbField, lastGroup, (firstdot-minfo->dbField) + 1) == 0) {
-                minfo->dbGroupNum = groupNum;
-            } else {
-                minfo->dbGroupNum = ARKIME_THREAD_INCRNEW(groupNum);
-                memcpy(lastGroup, minfo->dbField, (firstdot-minfo->dbField) + 1);
-            }
+            minfo->dbGroupNum = arkime_field_group_num(minfo->dbField, (firstdot-minfo->dbField) + 1);
             minfo->dbGroup = minfo->dbField;
             minfo->dbGroupLen = firstdot - minfo->dbField;
             minfo->dbField += (firstdot - minfo->dbField) + 1;
@@ -1741,6 +1754,7 @@ void arkime_field_init()
     config.maxField = 0;
     HASH_INIT(d_, fieldsByDb, arkime_string_hash, arkime_string_cmp);
     HASH_INIT(e_, fieldsByExp, arkime_string_hash, (HASH_CMP_FUNC)arkime_field_exp_cmp);
+    groupName2Num = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, NULL);
 
     arkime_field_by_exp_add_special("dontSaveSPI", ARKIME_FIELD_SPECIAL_STOP_SPI);
     arkime_field_by_exp_add_special("_dontSaveSPI", ARKIME_FIELD_SPECIAL_STOP_SPI);
