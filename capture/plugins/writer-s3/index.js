@@ -17,9 +17,7 @@
  */
 'use strict';
 
-const {
-  S3
-} = require("@aws-sdk/client-s3");
+const { S3 } = require('@aws-sdk/client-s3');
 const async = require('async');
 const zlib = require('zlib');
 const { decompressSync } = require('@xingrz/cppzst');
