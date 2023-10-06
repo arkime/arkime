@@ -17,7 +17,9 @@
  */
 'use strict';
 
-const AWS = require('aws-sdk');
+const {
+  S3
+} = require("@aws-sdk/client-s3");
 const async = require('async');
 const zlib = require('zlib');
 const { decompressSync } = require('@xingrz/cppzst');
@@ -84,7 +86,7 @@ function makeS3 (node, region, bucket) {
   }
 
   // Lets hope that we can find a credential provider elsewhere
-  const rv = S3s[region + key] = new AWS.S3(s3Params);
+  const rv = S3s[region + key] = new S3(s3Params);
   return rv;
 }
 /// ///////////////////////////////////////////////////////////////////////////////
