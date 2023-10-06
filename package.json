@@ -8,7 +8,7 @@
   "dependencies": {
     "@elastic/elasticsearch": "7.10.0",
     "@xingrz/cppzst": "^2.1.0-alpha.8",
-    "arkime-notifme-sdk": "^1.11.2",
+    "arkime-notifme-sdk": "^1.11.3",
     "async": "^3.2.4",
     "aws-sdk": "^2.1354.0",
     "axios": "^0.21.4",
@@ -106,7 +106,7 @@
     "test": "(cd common && jest) && (cd viewer && jest) && (cd cont3xt && jest)"
   },
   "devDependencies": {
-    "@babel/core": "^7.12.17",
+    "@babel/core": "^7.23.0",
     "@babel/eslint-parser": "^7.17.0",
     "@babel/plugin-proposal-class-properties": "^7.13.0",
     "@babel/preset-env": "^7.12.17",
@@ -169,11 +169,11 @@
     "vue-template-compiler": "^2.6.12",
     "vuex": "^3.6.2",
     "vuex-persistedstate": "^4.1.0",
-    "webpack": "^5.76.0",
-    "webpack-bundle-analyzer": "^4.4.0",
-    "webpack-cli": "^4.8.0",
-    "webpack-dev-server": "^4.11.1",
-    "webpack-merge": "^5.7.3"
+    "webpack": "^5.88.2",
+    "webpack-bundle-analyzer": "^4.9.1",
+    "webpack-cli": "^5.1.4",
+    "webpack-dev-server": "^4.15.1",
+    "webpack-merge": "^5.9.0"
   },
   "engines": {
     "node": ">= 16.0.0 < 19",
