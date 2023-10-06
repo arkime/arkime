@@ -70,7 +70,7 @@ void arkime_yara_open(char *filename, YR_COMPILER **compiler, YR_RULES **rules)
             }
             yr_compiler_get_rules(*compiler, rules);
         } else {
-            CONFIGEXIT("yara could not open file: %s\n", filename);
+            CONFIGEXIT("yara could not open file: %s", filename);
         }
     }
 }
@@ -210,7 +210,7 @@ void arkime_yara_open(char *filename, YR_COMPILER **compiler, YR_RULES **rules)
             }
             yr_compiler_get_rules(*compiler, rules);
         } else {
-            CONFIGEXIT("yara could not open file: %s\n", filename);
+            CONFIGEXIT("yara could not open file: %s", filename);
         }
     }
 }
@@ -347,7 +347,7 @@ void arkime_yara_open(char *filename, YR_COMPILER **compiler, YR_RULES **rules)
             }
             yr_compiler_get_rules(*compiler, rules);
         } else {
-            CONFIGEXIT("yara could not open file: %s\n", filename);
+            CONFIGEXIT("yara could not open file: %s", filename);
         }
     }
 }
@@ -440,7 +440,7 @@ void arkime_yara_open(char *filename, YR_COMPILER **compiler, YR_RULES **rules)
             }
             yr_compiler_get_rules(*compiler, rules);
         } else {
-            CONFIGEXIT("yara could not open file: %s\n", filename);
+            CONFIGEXIT("yara could not open file: %s", filename);
         }
     }
 }
