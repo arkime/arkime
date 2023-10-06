@@ -660,27 +660,27 @@ LOCAL int MS_get_certs(lua_State *L, ArkimeSession_t *session, const char *exp)
     int i = 0;
     if (strcmp(exp, "cert.curve") == 0) {
         lua_newtable(L);
-        HASH_FORALL(t_, *cihash, certs,
+        HASH_FORALL2(t_, *cihash, certs) {
             if (!certs->curve)
                 continue;
             lua_pushinteger(L, i + 1);
             lua_pushstring(L, certs->curve);
             lua_settable(L, -3);
             i++;
-        );
+        }
         return 1;
     }
 
     if (strcmp(exp, "cert.publicAlgorithm") == 0) {
         lua_newtable(L);
-        HASH_FORALL(t_, *cihash, certs,
+        HASH_FORALL2(t_, *cihash, certs) {
             if (!certs->publicAlgorithm)
                 continue;
             lua_pushinteger(L, i + 1);
             lua_pushstring(L, certs->publicAlgorithm);
             lua_settable(L, -3);
             i++;
-        );
+        }
         return 1;
     }
 
@@ -792,12 +792,12 @@ LOCAL int MS_get(lua_State *L)
         ihash = field->ihash;
         i = 0;
         lua_newtable(L);
-        HASH_FORALL(i_, *ihash, hint,
+        HASH_FORALL2(i_, *ihash, hint) {
             lua_pushinteger(L, i + 1);
             lua_pushinteger(L, hint->i_hash);
             lua_settable(L,-3);
             i++;
-        );
+        }
         break;
     case ARKIME_FIELD_TYPE_INT_GHASH:
         ghash = field->ghash;
@@ -826,12 +826,12 @@ LOCAL int MS_get(lua_State *L)
         shash = field->shash;
         i = 0;
         lua_newtable(L);
-        HASH_FORALL(s_, *shash, hstring,
+        HASH_FORALL2(s_, *shash, hstring) {
             lua_pushinteger(L, i + 1);
             lua_pushstring(L, hstring->str);
             lua_settable(L,-3);
             i++;
-        );
+        }
         break;
     case ARKIME_FIELD_TYPE_STR_GHASH:
         ghash = field->ghash;

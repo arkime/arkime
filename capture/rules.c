@@ -1122,13 +1122,13 @@ LOCAL void arkime_rules_check_rule_fields(ArkimeSession_t * const session, Arkim
         case ARKIME_FIELD_TYPE_INT_HASH:
             ihash = session->fields[p]->ihash;
             good = 0;
-            HASH_FORALL(i_, *ihash, hint,
+            HASH_FORALL2(i_, *ihash, hint) {
                 if (g_hash_table_contains(rule->hash[p], (gpointer)(long)hint->i_hash)) {
                     good = 1;
                     RULE_LOG_INT(hint->i_hash);
                     break;
                 }
-            );
+            }
             break;
         case ARKIME_FIELD_TYPE_INT_GHASH:
             ghash = session->fields[p]->ghash;
@@ -1207,12 +1207,12 @@ LOCAL void arkime_rules_check_rule_fields(ArkimeSession_t * const session, Arkim
         case ARKIME_FIELD_TYPE_STR_HASH:
             shash = session->fields[p]->shash;
             good = 0;
-            HASH_FORALL(s_, *shash, hstring,
+            HASH_FORALL2(s_, *shash, hstring) {
                 if (arkime_rules_check_str_match(rule, p, (gpointer)hstring->str, logStr)) {
                     good = 1;
                     break;
                 }
-            );
+            }
             break;
         case ARKIME_FIELD_TYPE_CERTSINFO:
             // Unsupported

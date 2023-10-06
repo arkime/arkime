@@ -321,175 +321,175 @@ void arkime_plugins_cb_pre_save(ArkimeSession_t *session, int final)
 {
     ArkimePlugin_t *plugin;
 
-    HASH_FORALL(p_, plugins, plugin,
+    HASH_FORALL2(p_, plugins, plugin) {
         if (plugin->preSaveFunc)
             plugin->preSaveFunc(session, final);
-    );
+    }
 }
 /******************************************************************************/
 void arkime_plugins_cb_save(ArkimeSession_t *session, int final)
 {
     ArkimePlugin_t *plugin;
 
-    HASH_FORALL(p_, plugins, plugin,
+    HASH_FORALL2(p_, plugins, plugin) {
         if (plugin->saveFunc)
             plugin->saveFunc(session, final);
-    );
+    }
 }
 /******************************************************************************/
 void arkime_plugins_cb_new(ArkimeSession_t *session)
 {
     ArkimePlugin_t *plugin;
 
-    HASH_FORALL(p_, plugins, plugin,
+    HASH_FORALL2(p_, plugins, plugin) {
         if (plugin->newFunc)
             plugin->newFunc(session);
-    );
+    }
 }
 /******************************************************************************/
 void arkime_plugins_cb_tcp(ArkimeSession_t *session, const uint8_t *data, int len, int which)
 {
     ArkimePlugin_t *plugin;
 
-    HASH_FORALL(p_, plugins, plugin,
+    HASH_FORALL2(p_, plugins, plugin) {
         if (plugin->tcpFunc)
             plugin->tcpFunc(session, data, len, which);
-    );
+    }
 }
 /******************************************************************************/
 void arkime_plugins_cb_udp(ArkimeSession_t *session, const uint8_t *data, int len, int which)
 {
     ArkimePlugin_t *plugin;
 
-    HASH_FORALL(p_, plugins, plugin,
+    HASH_FORALL2(p_, plugins, plugin) {
         if (plugin->udpFunc)
             plugin->udpFunc(session, data, len, which);
-    );
+    }
 }
 /******************************************************************************/
 void arkime_plugins_cb_hp_omb(ArkimeSession_t *session, http_parser *parser)
 {
     ArkimePlugin_t *plugin;
 
-    HASH_FORALL(p_, plugins, plugin,
+    HASH_FORALL2(p_, plugins, plugin) {
         if (plugin->on_message_begin)
             plugin->on_message_begin(session, parser);
-    );
+    }
 }
 /******************************************************************************/
 void arkime_plugins_cb_hp_ou(ArkimeSession_t *session, http_parser *parser, const char *at, size_t length)
 {
     ArkimePlugin_t *plugin;
 
-    HASH_FORALL(p_, plugins, plugin,
+    HASH_FORALL2(p_, plugins, plugin) {
         if (plugin->on_url)
             plugin->on_url(session, parser, at, length);
-    );
+    }
 }
 /******************************************************************************/
 void arkime_plugins_cb_hp_ohf(ArkimeSession_t *session, http_parser *parser, const char *at, size_t length)
 {
     ArkimePlugin_t *plugin;
 
-    HASH_FORALL(p_, plugins, plugin,
+    HASH_FORALL2(p_, plugins, plugin) {
         if (plugin->on_header_field)
             plugin->on_header_field(session, parser, at, length);
-    );
+    }
 }
 /******************************************************************************/
 void arkime_plugins_cb_hp_ohfr(ArkimeSession_t *session, http_parser *parser, const char *at, size_t length)
 {
     ArkimePlugin_t *plugin;
 
-    HASH_FORALL(p_, plugins, plugin,
+    HASH_FORALL2(p_, plugins, plugin) {
         if (plugin->on_header_field_raw)
             plugin->on_header_field_raw(session, parser, at, length);
-    );
+    }
 }
 /******************************************************************************/
 void arkime_plugins_cb_hp_ohv(ArkimeSession_t *session, http_parser *parser, const char *at, size_t length)
 {
     ArkimePlugin_t *plugin;
 
-    HASH_FORALL(p_, plugins, plugin,
+    HASH_FORALL2(p_, plugins, plugin) {
         if (plugin->on_header_value)
             plugin->on_header_value(session, parser, at, length);
-    );
+    }
 }
 /******************************************************************************/
 void arkime_plugins_cb_hp_ohc(ArkimeSession_t *session, http_parser *parser)
 {
     ArkimePlugin_t *plugin;
 
-    HASH_FORALL(p_, plugins, plugin,
+    HASH_FORALL2(p_, plugins, plugin) {
         if (plugin->on_headers_complete)
             plugin->on_headers_complete(session, parser);
-    );
+    }
 }
 /******************************************************************************/
 void arkime_plugins_cb_hp_ob(ArkimeSession_t *session, http_parser *parser, const char *at, size_t length)
 {
     ArkimePlugin_t *plugin;
 
-    HASH_FORALL(p_, plugins, plugin,
+    HASH_FORALL2(p_, plugins, plugin) {
         if (plugin->on_body)
             plugin->on_body(session, parser, at, length);
-    );
+    }
 }
 /******************************************************************************/
 void arkime_plugins_cb_hp_omc(ArkimeSession_t *session, http_parser *parser)
 {
     ArkimePlugin_t *plugin;
 
-    HASH_FORALL(p_, plugins, plugin,
+    HASH_FORALL2(p_, plugins, plugin) {
         if (plugin->on_message_complete)
             plugin->on_message_complete(session, parser);
-    );
+    }
 }
 /******************************************************************************/
 void arkime_plugins_cb_smtp_oh(ArkimeSession_t *session, const char *field, size_t field_len, const char *value, size_t value_len)
 {
     ArkimePlugin_t *plugin;
 
-    HASH_FORALL(p_, plugins, plugin,
+    HASH_FORALL2(p_, plugins, plugin) {
         if (plugin->smtp_on_header)
             plugin->smtp_on_header(session, field, field_len, value, value_len);
-    );
+    }
 }
 /******************************************************************************/
 void arkime_plugins_cb_smtp_ohc(ArkimeSession_t *session)
 {
     ArkimePlugin_t *plugin;
 
-    HASH_FORALL(p_, plugins, plugin,
+    HASH_FORALL2(p_, plugins, plugin) {
         if (plugin->smtp_on_header_complete)
             plugin->smtp_on_header_complete(session);
-    );
+    }
 }
 /******************************************************************************/
 void arkime_plugins_exit()
 {
     ArkimePlugin_t *plugin;
 
-    HASH_FORALL(p_, plugins, plugin,
+    HASH_FORALL2(p_, plugins, plugin) {
         if (plugin->exitFunc)
             plugin->exitFunc();
-    );
+    }
 
-    HASH_FORALL_POP_HEAD(p_, plugins, plugin,
+    HASH_FORALL_POP_HEAD2(p_, plugins, plugin) {
         free(plugin->name);
         ARKIME_TYPE_FREE(ArkimePlugin_t, plugin);
-    );
+    }
 }
 /******************************************************************************/
 void arkime_plugins_reload()
 {
     ArkimePlugin_t *plugin;
 
-    HASH_FORALL(p_, plugins, plugin,
+    HASH_FORALL2(p_, plugins, plugin) {
         if (plugin->reloadFunc)
             plugin->reloadFunc();
-    );
+    }
 }
 /******************************************************************************/
 uint32_t arkime_plugins_outstanding()
@@ -497,9 +497,9 @@ uint32_t arkime_plugins_outstanding()
     ArkimePlugin_t *plugin;
     uint32_t        outstanding = 0;
 
-    HASH_FORALL(p_, plugins, plugin,
+    HASH_FORALL2(p_, plugins, plugin) {
         if (plugin->outstandingFunc)
             outstanding += plugin->outstandingFunc();
-    );
+    }
     return outstanding;
 }

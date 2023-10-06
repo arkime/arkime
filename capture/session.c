@@ -857,9 +857,9 @@ LOCAL void arkime_session_flush_close(ArkimeSession_t *session, gpointer UNUSED(
     int i;
 
     for (i = 0; i < SESSION_MAX; i++) {
-        HASH_FORALL_POP_HEAD(h_, sessions[thread][i], session,
+        HASH_FORALL_POP_HEAD2(h_, sessions[thread][i], session) {
             arkime_session_save(session);
-        );
+        }
     }
     arkime_pq_flush(thread);
 }

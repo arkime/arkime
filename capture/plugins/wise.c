@@ -552,14 +552,14 @@ void wise_lookup_tuple(ArkimeSession_t *session, WiseRequest_t *request)
     int first = 1;
     ArkimeString_t *hstring;
     ArkimeStringHashStd_t *shash = session->fields[protocolField]->shash;
-    HASH_FORALL(s_, *shash, hstring,
+    HASH_FORALL2(s_, *shash, hstring) {
         if (first) {
             first = 0;
         } else {
             BSB_EXPORT_u08(bsb, ',');
         }
         BSB_EXPORT_ptr(bsb, hstring->str, hstring->len);
-    );
+    }
 
     if (IN6_IS_ADDR_V4MAPPED(&session->addr1)) {
 
@@ -714,10 +714,10 @@ void wise_plugin_pre_save(ArkimeSession_t *session, int UNUSED(final))
                 break;
             case ARKIME_FIELD_TYPE_INT_HASH:
                 ihash = session->fields[pos]->ihash;
-                HASH_FORALL(i_, *ihash, hint,
+                HASH_FORALL2(i_, *ihash, hint) {
                     snprintf(buf, sizeof(buf), "%u", hint->i_hash);
                     wise_lookup(session, iRequest, buf, type);
-                );
+                }
                 break;
             case ARKIME_FIELD_TYPE_INT_GHASH:
                 ghash = session->fields[pos]->ghash;
@@ -771,7 +771,7 @@ void wise_plugin_pre_save(ArkimeSession_t *session, int UNUSED(final))
                 break;
             case ARKIME_FIELD_TYPE_STR_HASH:
                 shash = session->fields[pos]->shash;
-                HASH_FORALL(s_, *shash, hstring,
+                HASH_FORALL2(s_, *shash, hstring) {
                     if (type == INTEL_TYPE_DOMAIN)
                         wise_lookup_domain(session, iRequest, hstring->str);
                     else if (type == INTEL_TYPE_URL)
@@ -783,7 +783,7 @@ void wise_plugin_pre_save(ArkimeSession_t *session, int UNUSED(final))
                     } else {
                         wise_lookup(session, iRequest, hstring->str, type);
                     }
-                );
+                }
                 break;
             case ARKIME_FIELD_TYPE_STR_GHASH:
                 ghash = session->fields[pos]->ghash;

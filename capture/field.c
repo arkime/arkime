@@ -1308,10 +1308,10 @@ void arkime_field_free(ArkimeSession_t *session)
             break;
         case ARKIME_FIELD_TYPE_STR_HASH:
             shash = session->fields[pos]->shash;
-            HASH_FORALL_POP_HEAD(s_, *shash, hstring,
+            HASH_FORALL_POP_HEAD2(s_, *shash, hstring) {
                 g_free(hstring->str);
                 ARKIME_TYPE_FREE(ArkimeString_t, hstring);
-            );
+            }
             ARKIME_TYPE_FREE(ArkimeStringHashStd_t, shash);
             break;
         case ARKIME_FIELD_TYPE_INT:
@@ -1321,9 +1321,9 @@ void arkime_field_free(ArkimeSession_t *session)
             break;
         case ARKIME_FIELD_TYPE_INT_HASH:
             ihash = session->fields[pos]->ihash;
-            HASH_FORALL_POP_HEAD(i_, *ihash, hint,
+            HASH_FORALL_POP_HEAD2(i_, *ihash, hint) {
                 ARKIME_TYPE_FREE(ArkimeInt_t, hint);
-            );
+            }
             ARKIME_TYPE_FREE(ArkimeIntHashStd_t, ihash);
             break;
         case ARKIME_FIELD_TYPE_FLOAT:
@@ -1342,9 +1342,9 @@ void arkime_field_free(ArkimeSession_t *session)
             break;
         case ARKIME_FIELD_TYPE_CERTSINFO:
             cihash = session->fields[pos]->cihash;
-            HASH_FORALL_POP_HEAD(t_, *cihash, hci,
+            HASH_FORALL_POP_HEAD2(t_, *cihash, hci) {
                 arkime_field_certsinfo_free(hci);
-            );
+            }
             ARKIME_TYPE_FREE(ArkimeCertsInfoHashStd_t, cihash);
             break;
         } // switch
@@ -1784,14 +1784,14 @@ void arkime_field_exit()
     ArkimeFieldInfo_t *info;
 
     // Remove those are in both db & exp hash
-    HASH_FORALL_POP_HEAD(d_, fieldsByDb, info,
+    HASH_FORALL_POP_HEAD2(d_, fieldsByDb, info) {
         HASH_REMOVE(e_, fieldsByExp, info);
         arkime_field_free_info(info);
-    );
+    }
 
     // Remove those are only in exp
-    HASH_FORALL_POP_HEAD(d_, fieldsByExp, info,
+    HASH_FORALL_POP_HEAD2(d_, fieldsByExp, info) {
         g_free(info->expression);
-    );
+    }
 }
 /******************************************************************************/

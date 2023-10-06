@@ -64,13 +64,13 @@ LOCAL void scrubspi_plugin_save(ArkimeSession_t *session, int UNUSED(final))
             break;
         case ARKIME_FIELD_TYPE_STR_HASH:
             shash = session->fields[pos]->shash;
-            HASH_FORALL(s_, *shash, hstring,
+            HASH_FORALL2(s_, *shash, hstring) {
                 newstr = g_regex_replace(ss[s].search, hstring->str, -1, 0, ss[s].replace, 0, NULL);
                 if (newstr) {
                     g_free(hstring->str);
                     hstring->str = newstr;
                 }
-            );
+            }
 
             break;
         case ARKIME_FIELD_TYPE_STR_GHASH:
