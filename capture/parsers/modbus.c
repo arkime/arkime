@@ -1,3 +1,9 @@
+/* modbus.c
+ *
+ * Copyright 2020 Sqooba AG. All rights reserved.
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
 #include <string.h>
 #include <ctype.h>
 #include "arkimeconfig.h"

@@ -2,13 +2,15 @@
 /* dll.h  -- Double Linked List
  *
  * Simple macro based DLL with counts that supports having a single item in
- * multiple lists by using a prefix.  Every element in the list needs to 
+ * multiple lists by using a prefix.  Every element in the list needs to
  * have a [prefix]next and [prefix]prev elements.  The list head needs to have
- * a [prefix]count element.  
+ * a [prefix]count element.
  *
- * WARNING: If using a seperate head structure AND a single item is in multiple 
+ * WARNING: If using a seperate head structure AND a single item is in multiple
  * lists the byte position in the structure of the next and prev elements MUST be
  * the same between the head structure and item structures.
+ *
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 #ifndef _DLL_HEADER

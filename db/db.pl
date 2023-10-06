@@ -2,6 +2,8 @@
 # This script can initialize, upgrade or provide simple maintenance for the
 # Arkime OpenSearch/Elasticsearch db
 #
+# SPDX-License-Identifier: Apache-2.0
+#
 # Schema Versions
 #  0 - Before this script existed
 #  1 - First version of script; turned on strict schema; added lpms, fpms; added

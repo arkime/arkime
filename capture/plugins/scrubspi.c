@@ -10,6 +10,8 @@
  *     [scrubspi]
  *     http.uri=/github/foohub/
  *     asn.dst=:AOL:EXAMPLE:
+ *
+ * SPDX-License-Identifier: Apache-2.0
  */
 #include <stdio.h>
 #include <stdlib.h>

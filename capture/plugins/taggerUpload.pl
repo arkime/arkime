@@ -1,6 +1,8 @@
 #!/usr/bin/perl -w
 # Used to upload new tagger files to the database.  The filename is used as
 # a database key, so make sure to reuse the same filename.
+#
+# SPDX-License-Identifier: Apache-2.0
 
 use strict;
 use HTTP::Request::Common;

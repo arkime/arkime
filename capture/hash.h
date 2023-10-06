@@ -14,6 +14,8 @@
  * A key can also just be the element
  *
  * The same WARNING in dll.h applies since hash.h just uses DLL
+ *
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 #ifndef _HASH_HEADER
