@@ -6,11 +6,11 @@
     "url": "https://github.com/arkime/arkime.git"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.425.0",
     "@elastic/elasticsearch": "7.10.0",
     "@xingrz/cppzst": "^2.1.0-alpha.8",
     "arkime-notifme-sdk": "^1.11.3",
     "async": "^3.2.4",
-    "aws-sdk": "^2.1354.0",
     "axios": "^0.21.4",
     "better-sqlite3": "^7.5.0",
     "body-parser": "^1.20.1",
