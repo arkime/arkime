@@ -155,7 +155,6 @@ if (internals.workers > 1) {
 
 // ----------------------------------------------------------------------------
 const app = express();
-const logger = require('morgan');
 const timeout = require('connect-timeout');
 
 // super secret
@@ -186,8 +185,6 @@ const cspHeader = helmet.contentSecurityPolicy({
   directives: cspDirectives
 });
 
-const getConfig = ArkimeConfig.get;
-
 // Explicit sigint handler for running under docker
 // See https://github.com/nodejs/node/issues/4182
 process.on('SIGINT', function () {
@@ -196,7 +193,7 @@ process.on('SIGINT', function () {
 
 // ----------------------------------------------------------------------------
 function setupAuth () {
-  Auth.initialize('wiseService', {
+  Auth.initialize({
     appAdminRole: 'wiseAdmin',
     passwordSecretSection: 'wiseService'
   });
@@ -205,15 +202,15 @@ function setupAuth () {
     return;
   }
 
-  const es = getConfig('wiseService', 'usersElasticsearch', 'http://localhost:9200');
+  const es = ArkimeConfig.get('usersElasticsearch', 'http://localhost:9200');
 
   User.initialize({
     insecure: ArkimeConfig.insecure,
     node: es,
-    caTrustFile: getConfig('wiseService', 'caTrustFile'),
-    prefix: getConfig('wiseService', 'usersPrefix'),
-    apiKey: getConfig('wiseService', 'usersElasticsearchAPIKey'),
-    basicAuth: getConfig('wiseService', 'usersElasticsearchBasicAuth')
+    caTrustFile: ArkimeConfig.get('caTrustFile'),
+    prefix: ArkimeConfig.get('usersPrefix'),
+    apiKey: ArkimeConfig.get('usersElasticsearchAPIKey'),
+    basicAuth: ArkimeConfig.get('usersElasticsearchBasicAuth')
   });
 }
 
@@ -266,7 +263,7 @@ class WISESourceAPI {
    * @param {string} [default] - the default value to return if key is not found in section
    * @returns {string} - The value found or the default value
    */
-  getConfig = ArkimeConfig.get;
+  getConfig = ArkimeConfig.getFull;
 
   // ----------------------------------------------------------------------------
   /**
@@ -573,7 +570,7 @@ class WISESourceAPI {
 }
 // ----------------------------------------------------------------------------
 function loadSources () {
-  glob(getConfig('wiseService', 'sourcePath', path.join(__dirname, '/')) + 'source.*.js', (err, files) => {
+  glob(ArkimeConfig.get('sourcePath', path.join(__dirname, '/')) + 'source.*.js', (err, files) => {
     files.forEach((file) => {
       try {
         const src = require(file);
@@ -608,7 +605,7 @@ function loadSources () {
 // ----------------------------------------------------------------------------
 // APIs
 // ----------------------------------------------------------------------------
-app.use(logger(':date \x1b[1m:method\x1b[0m \x1b[33m:url\x1b[0m :res[content-length] bytes :response-time ms'));
+ArkimeUtil.logger(app);
 app.use(timeout(5 * 1000));
 
 // client static files --------------------------------------------------------
@@ -807,7 +804,7 @@ function addType (type, newSrc) {
       }
     }
 
-    const items = getConfig('wiseService', typeInfo.excludeName, '');
+    const items = ArkimeConfig.get(typeInfo.excludeName, '');
     if (type === 'ip') {
       typeInfo.excludes = new iptrie.IPTrie();
       items.split(';').map(item => item.trim()).filter(item => item !== '').forEach((item) => {
@@ -1599,10 +1596,10 @@ app.use(cspHeader, (req, res, next) => {
 // ----------------------------------------------------------------------------
 function main () {
   internals.cache = ArkimeCache.createCache({
-    type: getConfig('cache', 'type', 'memory'),
-    cacheSize: getConfig('cache', 'cacheSize', '100000'),
-    cacheTimeout: getConfig('cache', 'cacheTimeout'),
-    getConfig: (key, value) => getConfig('cache', key, value)
+    type: ArkimeConfig.getFull('cache', 'type', 'memory'),
+    cacheSize: ArkimeConfig.getFull('cache', 'cacheSize', '100000'),
+    cacheTimeout: ArkimeConfig.getFull('cache', 'cacheTimeout'),
+    getConfig: (key, value) => ArkimeConfig.getFull('cache', key, value)
   });
 
   internals.sourceApi = new WISESourceAPI();
@@ -1615,24 +1612,23 @@ function main () {
 
   // Wait 2 seconds to start listening so the sources have time to settle down
   setTimeout(() => {
-    ArkimeUtil.createHttpServer('wiseService', app, ArkimeConfig.get('wiseService', 'wiseHost'), ArkimeConfig.get('wiseService', 'port', 8081));
+    ArkimeUtil.createHttpServer(app, ArkimeConfig.get('wiseHost'), ArkimeConfig.get('port', 8081));
   }, 2000);
 }
 
 async function buildConfigAndStart () {
   // Load config
-  await ArkimeConfig.initialize({ defaultConfigFile: `${version.config_prefix}/etc/wiseService.ini` });
+  await ArkimeConfig.initialize({
+    defaultConfigFile: `${version.config_prefix}/etc/wiseService.ini`,
+    defaultSections: 'wiseService'
+  });
 
-  if (ArkimeConfig.debug === 0) {
-    ArkimeConfig.debug = parseInt(getConfig('wiseService', 'debug', 0));
-  }
-
-  internals.updateTime = getConfig('wiseService', 'updateTime', 0);
+  internals.updateTime = ArkimeConfig.get('updateTime', 0);
 
   // Check if we need to restart, this is if there are multiple instances
   setInterval(async () => {
     await ArkimeConfig.reload();
-    const updateTime = getConfig('wiseService', 'updateTime', 0);
+    const updateTime = ArkimeConfig.get('updateTime', 0);
     if (updateTime > internals.updateTime) {
       console.log('New config file, restarting');
       // Because of nodemon

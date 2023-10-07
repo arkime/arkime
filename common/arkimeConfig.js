@@ -40,14 +40,25 @@ class ArkimeConfig {
   static #configFile;
   static #uri;
   static #dumpConfig;
+  static #defaultSections;
 
   // ----------------------------------------------------------------------------
   /**
    * Initialize the ArkimeConfig subsystem
    * @param {string} options.defaultConfigFile what the default config file path is
+   * @param {string} options.defaultSections what section to use when undefined
    */
   static async initialize (options) {
     ArkimeConfig.#configFile ??= options.defaultConfigFile;
+
+    if (options.defaultSections === undefined) {
+      console.trace('defaultSections option must be set');
+      process.exit();
+    } else if (Array.isArray(options.defaultSections)) {
+      ArkimeConfig.#defaultSections = options.defaultSections;
+    } else {
+      ArkimeConfig.#defaultSections = [options.defaultSections];
+    }
 
     // The config is actually hidden
     if (ArkimeConfig.#configFile.endsWith('.hiddenconfig')) {
@@ -88,6 +99,26 @@ class ArkimeConfig {
     }
 
     await ArkimeConfig.reload();
+
+    // Load includes, currently must be ini
+    ArkimeConfig.#loadIncludes(ArkimeConfig.get('includes'));
+
+    // Setup any deaults
+    //
+    if (ArkimeConfig.debug === 0) {
+      ArkimeConfig.debug = parseInt(ArkimeConfig.get('debug', 0));
+    }
+
+    if (ArkimeConfig.debug) {
+      console.log('Debug Level', ArkimeConfig.debug);
+    }
+
+    // Tell everything waiting on config we are done
+    const loadedCbs = ArkimeConfig.#loadedCbs;
+    ArkimeConfig.#loadedCbs = undefined; // Mark as loaded
+    for (const cb of loadedCbs) {
+      cb();
+    }
   }
 
   // ----------------------------------------------------------------------------
@@ -125,7 +156,8 @@ class ArkimeConfig {
    * @param {string} sectionKey The key in the section to get the value for
    * @param {string} d=undefined The default value to return if sectionKey isn't found
    */
-  static get (sections, sectionKey, d) {
+  static getFull (sections, sectionKey, d) {
+    sections ??= ArkimeConfig.#defaultSections;
     if (!Array.isArray(sections)) { sections = [sections]; }
 
     let value;
@@ -161,14 +193,19 @@ class ArkimeConfig {
   }
 
   // ----------------------------------------------------------------------------
+  static get (sectionKey, d) {
+    return ArkimeConfig.getFull(ArkimeConfig.#defaultSections, sectionKey, d);
+  }
+
+  // ----------------------------------------------------------------------------
   /**
    * Get an array config value
    * @param {string[] | string} sections The sections the key lives in, can also be a string
    * @param {string} sectionKey The key in the section to get the value for
    * @param {string} d=undefined The default value to return if sectionKey isn't found
    */
-  static getArray (sections, sectionKey, d, sep) {
-    const value = ArkimeConfig.get(sections, sectionKey, d);
+  static getFullArray (sections, sectionKey, d, sep) {
+    const value = ArkimeConfig.getFull(sections, sectionKey, d);
 
     // Just return directly
     if (value === undefined || Array.isArray(value)) { return value; }
@@ -176,6 +213,11 @@ class ArkimeConfig {
     // Need to split ourselves
     sep ??= /[;,]/;
     return value.split(sep).map(s => s.trim()).filter(s => s.match(/^\S+$/));
+  }
+
+  // ----------------------------------------------------------------------------
+  static getArray (sectionKey, d, sep) {
+    return ArkimeConfig.getFullArray(ArkimeConfig.#defaultSections, sectionKey, d, sep);
   }
 
   // ----------------------------------------------------------------------------
@@ -212,7 +254,7 @@ class ArkimeConfig {
   /**
    * Load include files, currently these must be local in ini format
    */
-  static loadIncludes (includes) {
+  static #loadIncludes (includes) {
     if (!includes) {
       return;
     }
@@ -264,6 +306,16 @@ class ArkimeConfig {
   }
 
   // ----------------------------------------------------------------------------
+  static #loadedCbs = [];
+  static loaded (cb) {
+    if (ArkimeConfig.#loadedCbs === undefined) {
+      cb(); // Loaded already, call right away
+    } else {
+      ArkimeConfig.#loadedCbs.push(cb);
+    }
+  }
+
+  // ----------------------------------------------------------------------------
   static processArgs () {
     const args = [];
     for (let i = 0, ilen = process.argv.length; i < ilen; i++) {
@@ -283,10 +335,6 @@ class ArkimeConfig {
       }
     }
     process.argv = args;
-
-    if (ArkimeConfig.debug > 0) {
-      console.log('Debug Level', ArkimeConfig.debug);
-    }
   }
 }
 

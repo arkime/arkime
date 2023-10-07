@@ -50,7 +50,6 @@ const app = express();
 // ============================================================================
 
 // app.configure
-const logger = require('morgan');
 const favicon = require('serve-favicon');
 const bodyParser = require('body-parser');
 const multer = require('multer');
@@ -117,7 +116,7 @@ const cyberchefCspHeader = helmet.contentSecurityPolicy({
 
 const securityApp = express.Router();
 app.use(securityApp);
-Config.loaded(() => {
+ArkimeConfig.loaded(() => {
   // app security options -------------------------------------------------------
   const iframeOption = Config.get('iframe', 'deny');
   if (iframeOption === 'sameorigin' || iframeOption === 'deny') {
@@ -143,30 +142,9 @@ Config.loaded(() => {
     res.locals.nonce = Buffer.from(uuid()).toString('base64');
     next();
   });
-
-  // logging --------------------------------------------------------------------
-  // send req to access log file or stdout
-  let _stream = process.stdout;
-  const _accesslogfile = Config.get('accessLogFile');
-  if (_accesslogfile) {
-    _stream = fs.createWriteStream(_accesslogfile, { flags: 'a' });
-  }
-
-  const _loggerFormat = decodeURIComponent(Config.get(
-    'accessLogFormat',
-    ':date :username %1b[1m:method%1b[0m %1b[33m:url%1b[0m :status :res[content-length] bytes :response-time ms'
-  ));
-  const _suppressPaths = Config.getArray('accessLogSuppressPaths', '');
-
-  securityApp.use(logger(_loggerFormat, {
-    stream: _stream,
-    skip: (req, res) => { return _suppressPaths.includes(req.path); }
-  }));
-
-  logger.token('username', (req, res) => {
-    return req.user ? req.user.userId : '-';
-  });
 });
+
+ArkimeUtil.logger(app);
 
 // appwide middleware ---------------------------------------------------------
 app.use((req, res, next) => {
@@ -301,7 +279,7 @@ app.use(async (req, res, next) => {
   next();
 });
 
-Config.loaded(() => {
+ArkimeConfig.loaded(() => {
   if (Config.get('passwordSecret')) {
   } else if (ArkimeConfig.regressionTests) {
     console.log('WARNING - Option --regressionTests was used, do NOT use in production, for testing only');
@@ -1081,7 +1059,7 @@ function expireCheckAll () {
 // REDIRECTS & DEMO SETUP
 // ============================================================================
 // APIs disabled in demoMode, needs to be before real callbacks
-Config.loaded(() => {
+ArkimeConfig.loaded(() => {
   if (Config.get('demoMode', false)) {
     console.log('WARNING - Starting in demo mode, some APIs disabled');
     securityApp.all([
@@ -2112,7 +2090,7 @@ async function main () {
     console.log('SECURITY WARNING - when userNameHeader is set, viewHost should be localhost or use iptables');
   }
 
-  const server = ArkimeUtil.createHttpServer([Config.nodeName(), 'default'], app, viewHost, Config.get('viewPort', '8005'));
+  const server = ArkimeUtil.createHttpServer(app, viewHost, Config.get('viewPort', '8005'));
   server.setTimeout(20 * 60 * 1000);
 }
 

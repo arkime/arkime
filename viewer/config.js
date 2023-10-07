@@ -98,17 +98,15 @@ class Config {
   /// ///////////////////////////////////////////////////////////////////////////////
 
   // ----------------------------------------------------------------------------
-  static sectionGet = ArkimeConfig.get;
+  static sectionGet = ArkimeConfig.getFull;
 
   // ----------------------------------------------------------------------------
   static getFull (node, key, defaultValue) {
-    return ArkimeConfig.get([node, 'default'], key, defaultValue);
+    return ArkimeConfig.getFull([node, 'default'], key, defaultValue);
   }
 
   // ----------------------------------------------------------------------------
-  static get (key, defaultValue) {
-    return ArkimeConfig.get([internals.nodeName, 'default'], key, defaultValue);
-  };
+  static get = ArkimeConfig.get;
 
   // ----------------------------------------------------------------------------
   static getBoolFull (node, key, defaultValue) {
@@ -126,20 +124,15 @@ class Config {
   };
 
   // ----------------------------------------------------------------------------
-  static getBool (key, defaultValue) {
-    return Config.getBoolFull(internals.nodeName, key, defaultValue);
-  };
-
-  // ----------------------------------------------------------------------------
   // Return an array split on separator, remove leading/trailing spaces, remove empty elements
   static getArray (key, defaultValue, sep) {
-    return ArkimeConfig.getArray([internals.nodeName, 'default'], key, defaultValue, sep);
+    return ArkimeConfig.getArray(key, defaultValue, sep);
   };
 
   // ----------------------------------------------------------------------------
   // Return an array split on separator, remove leading/trailing spaces, remove empty elements
   static getFullArray (node, key, defaultValue, sep) {
-    return ArkimeConfig.getArray([node, 'default'], key, defaultValue, sep);
+    return ArkimeConfig.getFullArray([node, 'default'], key, defaultValue, sep);
   };
 
   // ----------------------------------------------------------------------------
@@ -341,49 +334,30 @@ class Config {
     }
   };
 
-  // ----------------------------------------------------------------------------
-  static #loadedCbs = [];
-  static loaded (cb) {
-    if (Config.#loadedCbs === undefined) {
-      cb(); // Loaded already, call right away
-    } else {
-      Config.#loadedCbs.push(cb);
-    }
-  }
-
   /// ///////////////////////////////////////////////////////////////////////////////
   // Initialize Auth
   /// ///////////////////////////////////////////////////////////////////////////////
 
   static async initialize () {
-    await ArkimeConfig.initialize({ defaultConfigFile: `${version.config_prefix}/etc/wiseService.ini` });
-
-    // Make sure for everything put cont3xt we have a default section
-    if (internals.nodeName !== 'cont3xt' && ArkimeConfig.getSection('default') === undefined) {
-      console.log('ERROR - [default] section missing from', ArkimeConfig.configFile);
-      process.exit(1);
-    }
-
-    ArkimeConfig.loadIncludes(Config.get('includes'));
-
-    const loadedCbs = Config.#loadedCbs;
-    Config.#loadedCbs = undefined; // Mark as loaded
-    for (const cb of loadedCbs) {
-      cb();
-    }
-
-    if (Config.debug === 0) {
-      ArkimeConfig.debug = parseInt(Config.get('debug', 0));
-      if (Config.debug) {
-        console.log('Debug Level', Config.debug);
-      }
-    }
-
-    const section = [internals.nodeName];
+    const sections = [internals.nodeName];
     if (internals.nodeName !== 'cont3xt') {
-      section.push('default');
+      sections.push('default');
     }
-    Auth.initialize(section, {
+
+    ArkimeConfig.loaded(() => {
+      // If add user is called with cont3xt/parliament don't need default section, everything else does
+      if (internals.nodeName !== 'cont3xt' && internals.nodeName !== 'parliament' && ArkimeConfig.getSection('default') === undefined) {
+        console.log('ERROR - [default] section missing from', ArkimeConfig.configFile);
+        process.exit(1);
+      }
+    });
+
+    await ArkimeConfig.initialize({
+      defaultConfigFile: `${version.config_prefix}/etc/config.ini`,
+      defaultSections: sections
+    });
+
+    Auth.initialize({
       appAdminRole: 'arkimeAdmin',
       basePath: Config.basePath(),
       passwordSecret: Config.getFull(internals.nodeName === 'cont3xt' ? 'cont3xt' : 'default', 'passwordSecret', 'password'),

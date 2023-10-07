@@ -87,7 +87,7 @@ internals.initialize = (app) => {
   internals.isProduction = app.get('env') === 'production';
 };
 
-Config.loaded(() => {
+ArkimeConfig.loaded(() => {
 // build internals
   internals.elasticBase = Config.getArray('elasticsearch', 'http://localhost:9200');
   internals.remoteClusters = Config.configMap('remote-clusters', 'moloch-clusters');

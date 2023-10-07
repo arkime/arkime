@@ -42,7 +42,7 @@ let prefix;
 const esSSLOptions = { rejectUnauthorized: !ArkimeConfig.insecure };
 let authHeader;
 
-Config.loaded(() => {
+ArkimeConfig.loaded(() => {
   elasticsearch = Config.get('elasticsearch');
   sensors = Config.configMap('esproxy-sensors');
   oldprefix = prefix === 'arkime_' ? '' : prefix;
@@ -89,7 +89,7 @@ Config.loaded(() => {
 let elasticsearchTee;
 let authHeaderTee;
 
-Config.loaded(() => {
+ArkimeConfig.loaded(() => {
   elasticsearchTee = Config.sectionGet('tee', 'elasticsearch');
   const esAPIKeyTee = Config.sectionGet('tee', 'elasticsearchAPIKey');
   const esBasicAuthTee = Config.sectionGet('tee', 'elasticsearchBasicAuth');
@@ -123,7 +123,7 @@ const postExact = {
 const putExact = {
 };
 
-Config.loaded(() => {
+ArkimeConfig.loaded(() => {
   getExact[`/_template/${prefix}sessions3_template`] = 1;
   getExact[`/_template/${oldprefix}sessions2_template`] = 1;
   getExact[`/${oldprefix}sessions2-*/_alias`] = 1;
@@ -463,7 +463,7 @@ const httpsAgent = new https.Agent(Object.assign({ keepAlive: true, keepAliveMse
 async function main () {
   await Config.initialize();
 
-  ArkimeUtil.createHttpServer([Config.nodeName(), 'default'], app, Config.get('esProxyHost'), Config.get('esProxyPort', '7200'));
+  ArkimeUtil.createHttpServer(app, Config.get('esProxyHost'), Config.get('esProxyPort', '7200'));
 }
 
 main();
