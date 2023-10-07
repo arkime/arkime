@@ -16,7 +16,7 @@
 extern ArkimeConfig_t        config;
 
 /******************************************************************************/
-LOCAL ArkimePacketRC gre_packet_enqueue(ArkimePacketBatch_t * UNUSED(batch), ArkimePacket_t * const packet, const uint8_t *data, int UNUSED(len))
+LOCAL ArkimePacketRC gre_packet_enqueue(ArkimePacketBatch_t *UNUSED(batch), ArkimePacket_t *const packet, const uint8_t *data, int UNUSED(len))
 {
     packet->tunnel |= ARKIME_PACKET_TUNNEL_GRE;
 

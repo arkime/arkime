@@ -103,8 +103,8 @@ typedef struct arkime_string {
     uint32_t              s_hash;
     gpointer              uw;
     uint16_t              s_bucket;
-    uint16_t              len:15;
-    uint16_t              utf8:1;
+    uint16_t              len: 15;
+    uint16_t              utf8: 1;
 } ArkimeString_t;
 
 typedef struct {
@@ -215,8 +215,6 @@ typedef enum {
 #define ARKIME_FIELD_FLAG_IPPRE              0x4000
 
 
-
-
 typedef struct arkime_field_info {
     struct arkime_field_info *d_next, *d_prev; /* Must be first */
     char                     *dbFieldFull;     /* Must be second - this is the full version example:mysql.user-term */
@@ -270,8 +268,8 @@ typedef struct {
 typedef struct {
     char                 *str;
     union {
-      int                 strLenOrInt;
-      float               f;
+        int                 strLenOrInt;
+        float               f;
     };
     int16_t               fieldPos;
     int8_t                set;
@@ -346,7 +344,8 @@ enum ArkimeRotate {
     ARKIME_ROTATE_HOURLY12,
     ARKIME_ROTATE_DAILY,
     ARKIME_ROTATE_WEEKLY,
-    ARKIME_ROTATE_MONTHLY };
+    ARKIME_ROTATE_MONTHLY
+};
 
 /* Field numbers are signed
  * [ARKIME_FIELD_SPECIAL_MIN, -1)                   - Rules only, Op fields
@@ -574,17 +573,17 @@ typedef struct arkimepacket_t
     uint8_t        ipProtocol;          // ip protocol
     uint8_t        mProtocol;           // arkime protocol
     uint8_t        readerPos;           // position for filename/ops
-    uint32_t       etherOffset:11;      // offset to current ethernet frame from start
-    uint32_t       outerEtherOffset:11; // offset to previous ethernet frame from start
-    uint32_t       tunnel:8;            // tunnel type
-    uint32_t       direction:1;         // direction of packet
-    uint32_t       v6:1;                // v6 or not
-    uint32_t       outerv6:1;           // outer v6 or not
-    uint32_t       copied:1;            // don't need to copy
-    uint32_t       wasfrag:1;           // was a fragment
-    uint32_t       ipOffset:11;         // offset to ip header from start
-    uint32_t       outerIpOffset:11;    // offset to outer ip header from start
-    uint32_t       vni:24;              // vxlan id
+    uint32_t       etherOffset: 11;     // offset to current ethernet frame from start
+    uint32_t       outerEtherOffset: 11; // offset to previous ethernet frame from start
+    uint32_t       tunnel: 8;           // tunnel type
+    uint32_t       direction: 1;        // direction of packet
+    uint32_t       v6: 1;               // v6 or not
+    uint32_t       outerv6: 1;          // outer v6 or not
+    uint32_t       copied: 1;           // don't need to copy
+    uint32_t       wasfrag: 1;          // was a fragment
+    uint32_t       ipOffset: 11;        // offset to ip header from start
+    uint32_t       outerIpOffset: 11;   // offset to outer ip header from start
+    uint32_t       vni: 24;             // vxlan id
 } ArkimePacket_t;
 
 typedef struct
@@ -696,20 +695,20 @@ typedef struct arkime_session {
     uint8_t                minSaving;
     uint8_t                thread;
 
-    uint16_t               haveTcpSession:1;
-    uint16_t               needSave:1;
-    uint16_t               stopSPI:1;
-    uint16_t               closingQ:1;
-    uint16_t               stopTCP:1;
-    SessionTypes           ses:3;
-    uint16_t               midSave:1;
-    uint16_t               outOfOrder:2;
-    uint16_t               ackedUnseenSegment:2;
-    uint16_t               stopYara:1;
-    uint16_t               diskOverload:1;
-    uint16_t               pq:1;
-    uint16_t               synSet:2;
-    uint16_t               inStoppedSave:1;
+    uint16_t               haveTcpSession: 1;
+    uint16_t               needSave: 1;
+    uint16_t               stopSPI: 1;
+    uint16_t               closingQ: 1;
+    uint16_t               stopTCP: 1;
+    SessionTypes           ses: 3;
+    uint16_t               midSave: 1;
+    uint16_t               outOfOrder: 2;
+    uint16_t               ackedUnseenSegment: 2;
+    uint16_t               stopYara: 1;
+    uint16_t               diskOverload: 1;
+    uint16_t               pq: 1;
+    uint16_t               synSet: 2;
+    uint16_t               inStoppedSave: 1;
 } ArkimeSession_t;
 
 typedef struct arkime_session_head {
@@ -745,13 +744,13 @@ int   arkime_size_free(void *mem);
 
 // pcap_file_header
 typedef struct {
-	uint32_t magic;
-	uint16_t version_major;
-	uint16_t version_minor;
-	int32_t  thiszone;	/* gmt to local correction */
-	uint32_t sigfigs;	/* accuracy of timestamps */
-	uint32_t snaplen;	/* max length saved portion of each pkt */
-	uint32_t dlt;	        /* data link type - see https://github.com/arkime/arkime/issues/1303#issuecomment-554684749 */
+    uint32_t magic;
+    uint16_t version_major;
+    uint16_t version_minor;
+    int32_t  thiszone;	/* gmt to local correction */
+    uint32_t sigfigs;	/* accuracy of timestamps */
+    uint32_t snaplen;	/* max length saved portion of each pkt */
+    uint32_t dlt;	/* data link type - see https://github.com/arkime/arkime/issues/1303#issuecomment-554684749 */
 } ArkimePcapFileHdr_t;
 
 #ifndef likely
@@ -1086,21 +1085,21 @@ void arkime_session_set_stop_spi(ArkimeSession_t *session, int value);
  * packet.c
  */
 typedef enum {
-  ARKIME_PACKET_DO_PROCESS,
-  ARKIME_PACKET_IP_DROPPED,
-  ARKIME_PACKET_OVERLOAD_DROPPED,
-  ARKIME_PACKET_CORRUPT,
-  ARKIME_PACKET_UNKNOWN,
-  ARKIME_PACKET_IPPORT_DROPPED,
-  ARKIME_PACKET_DONT_PROCESS,
-  ARKIME_PACKET_DONT_PROCESS_OR_FREE,
-  ARKIME_PACKET_DUPLICATE_DROPPED,
-  ARKIME_PACKET_MAX
+    ARKIME_PACKET_DO_PROCESS,
+    ARKIME_PACKET_IP_DROPPED,
+    ARKIME_PACKET_OVERLOAD_DROPPED,
+    ARKIME_PACKET_CORRUPT,
+    ARKIME_PACKET_UNKNOWN,
+    ARKIME_PACKET_IPPORT_DROPPED,
+    ARKIME_PACKET_DONT_PROCESS,
+    ARKIME_PACKET_DONT_PROCESS_OR_FREE,
+    ARKIME_PACKET_DUPLICATE_DROPPED,
+    ARKIME_PACKET_MAX
 } ArkimePacketRC;
 
-typedef ArkimePacketRC (*ArkimePacketEnqueue_cb)(ArkimePacketBatch_t * batch, ArkimePacket_t * const packet, const uint8_t *data, int len);
+typedef ArkimePacketRC (*ArkimePacketEnqueue_cb)(ArkimePacketBatch_t *batch, ArkimePacket_t *const packet, const uint8_t *data, int len);
 
-typedef int (*ArkimePacketSessionId_cb)(uint8_t *sessionId, ArkimePacket_t * const packet, const uint8_t *data, int len);
+typedef int (*ArkimePacketSessionId_cb)(uint8_t *sessionId, ArkimePacket_t *const packet, const uint8_t *data, int len);
 
 void     arkime_packet_init();
 uint64_t arkime_packet_dropped_packets();
@@ -1120,27 +1119,27 @@ void     arkime_packet_install_packet_ip();
 
 void     arkime_packet_batch_init(ArkimePacketBatch_t *batch);
 void     arkime_packet_batch_flush(ArkimePacketBatch_t *batch);
-void     arkime_packet_batch(ArkimePacketBatch_t * batch, ArkimePacket_t * const packet);
-void     arkime_packet_batch_process(ArkimePacketBatch_t * batch, ArkimePacket_t * const packet, int thread);
+void     arkime_packet_batch(ArkimePacketBatch_t *batch, ArkimePacket_t *const packet);
+void     arkime_packet_batch_process(ArkimePacketBatch_t *batch, ArkimePacket_t *const packet, int thread);
 
 void     arkime_packet_set_dltsnap(int dlt, int snaplen);
 uint32_t arkime_packet_dlt_to_linktype(int dlt);
 void     arkime_packet_drophash_add(ArkimeSession_t *session, int which, int min);
 
-void     arkime_packet_save_ethernet(ArkimePacket_t * const packet, uint16_t type);
-ArkimePacketRC arkime_packet_run_ethernet_cb(ArkimePacketBatch_t * batch, ArkimePacket_t * const packet, const uint8_t *data, int len, uint16_t type, const char *str);
+void     arkime_packet_save_ethernet(ArkimePacket_t *const packet, uint16_t type);
+ArkimePacketRC arkime_packet_run_ethernet_cb(ArkimePacketBatch_t *batch, ArkimePacket_t *const packet, const uint8_t *data, int len, uint16_t type, const char *str);
 void     arkime_packet_set_ethernet_cb(uint16_t type, ArkimePacketEnqueue_cb enqueueCb);
 
-ArkimePacketRC arkime_packet_run_ip_cb(ArkimePacketBatch_t * batch, ArkimePacket_t * const packet, const uint8_t *data, int len, uint16_t type, const char *str);
+ArkimePacketRC arkime_packet_run_ip_cb(ArkimePacketBatch_t *batch, ArkimePacket_t *const packet, const uint8_t *data, int len, uint16_t type, const char *str);
 void     arkime_packet_set_ip_cb(uint16_t type, ArkimePacketEnqueue_cb enqueueCb);
 
 void     arkime_packet_set_udpport_enqueue_cb(uint16_t port, ArkimePacketEnqueue_cb enqueueCb);
 
 
 /******************************************************************************/
-typedef void (*ArkimeProtocolCreateSessionId_cb)(uint8_t *sessionId, ArkimePacket_t * const packet);
-typedef int  (*ArkimeProtocolPreProcess_cb)(ArkimeSession_t *session, ArkimePacket_t * const packet, int isNewSession);
-typedef int  (*ArkimeProtocolProcess_cb)(ArkimeSession_t *session, ArkimePacket_t * const packet);
+typedef void (*ArkimeProtocolCreateSessionId_cb)(uint8_t *sessionId, ArkimePacket_t *const packet);
+typedef int  (*ArkimeProtocolPreProcess_cb)(ArkimeSession_t *session, ArkimePacket_t *const packet, int isNewSession);
+typedef int  (*ArkimeProtocolProcess_cb)(ArkimeSession_t *session, ArkimePacket_t *const packet);
 typedef void (*ArkimeProtocolSessionFree_cb)(ArkimeSession_t *session);
 
 typedef struct {
@@ -1213,7 +1212,7 @@ void arkime_plugins_reload();
 int  arkime_plugins_register_internal(const char *name, gboolean storeData, size_t sessionsize, int apiversion);
 #define arkime_plugins_register(name, storeData) arkime_plugins_register_internal(name, storeData, sizeof(ArkimeSession_t), ARKIME_API_VERSION)
 
-void arkime_plugins_set_cb(const char *            name,
+void arkime_plugins_set_cb(const char             *name,
                            ArkimePluginIpFunc      ipFunc,
                            ArkimePluginUdpFunc     udpFunc,
                            ArkimePluginTcpFunc     tcpFunc,
@@ -1223,7 +1222,7 @@ void arkime_plugins_set_cb(const char *            name,
                            ArkimePluginExitFunc    exitFunc,
                            ArkimePluginExitFunc    reloadFunc);
 
-void arkime_plugins_set_http_cb(const char *             name,
+void arkime_plugins_set_http_cb(const char              *name,
                                 ArkimePluginHttpFunc     on_message_begin,
                                 ArkimePluginHttpDataFunc on_url,
                                 ArkimePluginHttpDataFunc on_header_field,
@@ -1232,7 +1231,7 @@ void arkime_plugins_set_http_cb(const char *             name,
                                 ArkimePluginHttpDataFunc on_body,
                                 ArkimePluginHttpFunc     on_message_complete);
 
-void arkime_plugins_set_http_ext_cb(const char *             name,
+void arkime_plugins_set_http_ext_cb(const char              *name,
                                     ArkimePluginHttpFunc     on_message_begin,
                                     ArkimePluginHttpDataFunc on_url,
                                     ArkimePluginHttpDataFunc on_header_field,
@@ -1242,11 +1241,11 @@ void arkime_plugins_set_http_ext_cb(const char *             name,
                                     ArkimePluginHttpDataFunc on_body,
                                     ArkimePluginHttpFunc     on_message_complete);
 
-void arkime_plugins_set_smtp_cb(const char *                name,
+void arkime_plugins_set_smtp_cb(const char                 *name,
                                 ArkimePluginSMTPHeaderFunc  on_header,
                                 ArkimePluginSMTPFunc        on_header_complete);
 
-void arkime_plugins_set_outstanding_cb(const char *                name,
+void arkime_plugins_set_outstanding_cb(const char                 *name,
                                        ArkimePluginOutstandingFunc outstandingFunc);
 
 uint32_t arkime_plugins_outstanding();
@@ -1328,9 +1327,9 @@ guint arkime_field_ip_hash (gconstpointer v);
 
 typedef void (*ArkimeWriterInit)(char *name);
 typedef uint32_t (*ArkimeWriterQueueLength)();
-typedef void (*ArkimeWriterWrite)(const ArkimeSession_t * const session, ArkimePacket_t * const packet);
+typedef void (*ArkimeWriterWrite)(const ArkimeSession_t *const session, ArkimePacket_t *const packet);
 typedef void (*ArkimeWriterExit)();
-typedef void (*ArkimeWriterIndex)(ArkimeSession_t * session);
+typedef void (*ArkimeWriterIndex)(ArkimeSession_t *session);
 
 extern ArkimeWriterQueueLength arkime_writer_queue_length;
 extern ArkimeWriterWrite arkime_writer_write;
@@ -1430,8 +1429,8 @@ int js0n(const uint8_t *js, unsigned int len, unsigned int *out, unsigned int ol
 #define strncat(x,y,n) BANNED(strncat, g_strlcat)
 
 #undef sprintf
-#undef vsprintf
 #define sprintf(...) BANNED(sprintf, snprintf)
+#undef vsprintf
 #define vsprintf(...) BANNED(vsprintf, vsnprintf)
 
 #undef gmtime

@@ -47,37 +47,37 @@ typedef struct {
     guint              bdatRemaining[2];
     GChecksum         *checksum[4];
 
-    uint16_t           base64Decode:2;
-    uint16_t           firstInContent:2;
-    uint16_t           seenHeaders:2;
-    uint16_t           inBDAT:2;
+    uint16_t           base64Decode: 2;
+    uint16_t           firstInContent: 2;
+    uint16_t           seenHeaders: 2;
+    uint16_t           inBDAT: 2;
 } SMTPInfo_t;
 
 /******************************************************************************/
 enum {
-EMAIL_CMD,
-EMAIL_CMD_RETURN,
+    EMAIL_CMD,
+    EMAIL_CMD_RETURN,
 
-EMAIL_AUTHLOGIN,
-EMAIL_AUTHLOGIN_RETURN,
+    EMAIL_AUTHLOGIN,
+    EMAIL_AUTHLOGIN_RETURN,
 
-EMAIL_AUTHPLAIN,
-EMAIL_AUTHPLAIN_RETURN,
+    EMAIL_AUTHPLAIN,
+    EMAIL_AUTHPLAIN_RETURN,
 
-EMAIL_DATA_HEADER,
-EMAIL_DATA_HEADER_RETURN,
-EMAIL_DATA_HEADER_DONE,
-EMAIL_DATA,
-EMAIL_DATA_RETURN,
-EMAIL_IGNORE,
-EMAIL_TLS_OK,
-EMAIL_TLS_OK_RETURN,
-EMAIL_TLS,
-EMAIL_MIME,
-EMAIL_MIME_RETURN,
-EMAIL_MIME_DONE,
-EMAIL_MIME_DATA,
-EMAIL_MIME_DATA_RETURN
+    EMAIL_DATA_HEADER,
+    EMAIL_DATA_HEADER_RETURN,
+    EMAIL_DATA_HEADER_DONE,
+    EMAIL_DATA,
+    EMAIL_DATA_RETURN,
+    EMAIL_IGNORE,
+    EMAIL_TLS_OK,
+    EMAIL_TLS_OK_RETURN,
+    EMAIL_TLS,
+    EMAIL_MIME,
+    EMAIL_MIME_RETURN,
+    EMAIL_MIME_DONE,
+    EMAIL_MIME_DATA,
+    EMAIL_MIME_DATA_RETURN
 };
 /******************************************************************************/
 LOCAL char *smtp_remove_matching(char *str, char start, char stop)
@@ -141,7 +141,7 @@ LOCAL void smtp_email_add_value(ArkimeSession_t *session, int pos, char *s, int 
     } /* SWITCH */
 }
 /******************************************************************************/
-LOCAL char * smtp_quoteable_decode_inplace(char *str, gsize *olen)
+LOCAL char *smtp_quoteable_decode_inplace(char *str, gsize *olen)
 {
     char *start = str;
     int   ipos = 0;
@@ -233,7 +233,7 @@ LOCAL void smtp_email_add_encoded(ArkimeSession_t *session, int pos, char *strin
                 extra = 1;
             }
 
-            char *out = g_convert((char *)str+extra, startquestion - str-extra, "utf-8", "CP1252", &bread, &bwritten, &error);
+            char *out = g_convert((char *)str + extra, startquestion - str - extra, "utf-8", "CP1252", &bread, &bwritten, &error);
             if (error) {
                 LOG("WARNING - failed converting %s to utf-8 %s ", "CP1252", error->message);
                 arkime_field_string_add(pos, session, string, len, TRUE);
@@ -337,7 +337,7 @@ LOCAL void smtp_email_add_encoded(ArkimeSession_t *session, int pos, char *strin
 /******************************************************************************/
 LOCAL void smtp_parse_email_addresses(int field, ArkimeSession_t *session, char *data, int len)
 {
-    char *end = data+len;
+    char *end = data + len;
 
     while (data < end) {
         while (data < end && isspace(*data)) data++;
@@ -370,7 +370,7 @@ LOCAL void smtp_parse_email_addresses(int field, ArkimeSession_t *session, char 
 LOCAL void smtp_parse_email_received(ArkimeSession_t *session, char *data, int len)
 {
     char *start = data;
-    char *end = data+len;
+    char *end = data + len;
 
     while (data < end) {
         if (end - data > 10) {
@@ -395,7 +395,7 @@ LOCAL void smtp_parse_email_received(ArkimeSession_t *session, char *data, int l
                     data++;
                 }
 
-                arkime_field_string_add_lower(hostField, session, (char *)fromstart, data-fromstart);
+                arkime_field_string_add_lower(hostField, session, (char *)fromstart, data - fromstart);
             } else if (memcmp("by ", data, 3) == 0) {
                 data += 3;
                 while(data < end && isspace(*data)) data++;
@@ -405,7 +405,7 @@ LOCAL void smtp_parse_email_received(ArkimeSession_t *session, char *data, int l
                         fromstart = data + 1;
                     data++;
                 }
-                arkime_field_string_add_lower(hostField, session, (char *)fromstart, data-fromstart);
+                arkime_field_string_add_lower(hostField, session, (char *)fromstart, data - fromstart);
             }
         }
 
@@ -492,7 +492,7 @@ LOCAL int smtp_parser(ArkimeSession_t *session, void *uw, const uint8_t *data, i
                     zation = strlen(line->str + 11);
                     if (zation < out_len) {
                         gsize cation = strlen(line->str + 11 + zation + 1);
-                        if (cation+zation + 1 < out_len) {
+                        if (cation + zation + 1 < out_len) {
                             arkime_field_string_add_lower(userField, session, line->str + 11 + zation + 1, cation);
                         }
                     }
@@ -535,9 +535,9 @@ LOCAL int smtp_parser(ArkimeSession_t *session, void *uw, const uint8_t *data, i
                 g_base64_decode_inplace(line->str, &out_len);
             zation = strlen(line->str);
             if (zation < out_len) {
-                gsize cation = strlen(line->str+zation + 1);
-                if (cation+zation + 1 < out_len) {
-                    arkime_field_string_add_lower(userField, session, line->str+zation + 1, cation);
+                gsize cation = strlen(line->str + zation + 1);
+                if (cation + zation + 1 < out_len) {
+                    arkime_field_string_add_lower(userField, session, line->str + zation + 1, cation);
                 }
             }
             *state = EMAIL_CMD;
@@ -606,13 +606,13 @@ LOCAL int smtp_parser(ArkimeSession_t *session, void *uw, const uint8_t *data, i
                         smtp_email_add_encoded(session, subField, line->str + 9, line->len - 9);
                     }
                 } else if ((long)emailHeader->uw == dstField) {
-                    smtp_parse_email_addresses(dstField, session, line->str+cpos, line->len-cpos);
+                    smtp_parse_email_addresses(dstField, session, line->str + cpos, line->len - cpos);
                 } else if ((long)emailHeader->uw == srcField) {
-                    smtp_parse_email_addresses(srcField, session, line->str+cpos, line->len-cpos);
+                    smtp_parse_email_addresses(srcField, session, line->str + cpos, line->len - cpos);
                 } else if ((long)emailHeader->uw == idField) {
-                    arkime_field_string_add(idField, session, smtp_remove_matching(line->str+cpos, '<', '>'), -1, TRUE);
+                    arkime_field_string_add(idField, session, smtp_remove_matching(line->str + cpos, '<', '>'), -1, TRUE);
                 } else if ((long)emailHeader->uw == receivedField) {
-                    smtp_parse_email_received(session, line->str+cpos, line->len-cpos);
+                    smtp_parse_email_received(session, line->str + cpos, line->len - cpos);
                 } else if ((long)emailHeader->uw == ctField) {
                     char *s = line->str + 13;
                     while(isspace(*s)) s++;
@@ -626,7 +626,7 @@ LOCAL int smtp_parser(ArkimeSession_t *session, void *uw, const uint8_t *data, i
                         DLL_PUSH_TAIL(s_, &email->boundaries, string);
                     }
                 } else {
-                    smtp_email_add_value(session, (long)emailHeader->uw, line->str + cpos , line->len - cpos);
+                    smtp_email_add_value(session, (long)emailHeader->uw, line->str + cpos, line->len - cpos);
                 }
                 is_header_value_consumed = TRUE;
             }
@@ -646,7 +646,7 @@ LOCAL int smtp_parser(ArkimeSession_t *session, void *uw, const uint8_t *data, i
             if (config.parseSMTPHeaderAll && is_header_value_consumed == FALSE) {
                 int cpos = colon - line->str + 1;
                 arkime_field_string_add(headerField, session, lower, colon - line->str, TRUE);
-                smtp_email_add_value(session, (long)headerValue, line->str + cpos , line->len - cpos);
+                smtp_email_add_value(session, (long)headerValue, line->str + cpos, line->len - cpos);
             }
 
             if (pluginsCbs & ARKIME_PLUGIN_SMTP_OH) {
@@ -673,7 +673,7 @@ LOCAL int smtp_parser(ArkimeSession_t *session, void *uw, const uint8_t *data, i
         case EMAIL_MIME_DATA_RETURN:
         case EMAIL_DATA_RETURN: {
 #ifdef EMAILDEBUG
-            printf("%d %d %sdata => %s\n", which, *state, (*state == EMAIL_MIME_DATA_RETURN?"mime ": ""), line->str);
+            printf("%d %d %sdata => %s\n", which, *state, (*state == EMAIL_MIME_DATA_RETURN ? "mime " : ""), line->str);
 #endif
 
             // If not in BDAT end DATA on single .
@@ -685,7 +685,7 @@ LOCAL int smtp_parser(ArkimeSession_t *session, void *uw, const uint8_t *data, i
 
                 if (line->str[0] == '-') {
                     ArkimeString_t *string;
-                    DLL_FOREACH(s_,&email->boundaries,string) {
+                    DLL_FOREACH(s_, &email->boundaries, string) {
                         if ((int)line->len >= (int)(string->len + 2) && memcmp(line->str + 2, string->str, string->len) == 0) {
                             found = TRUE;
                             break;
@@ -696,10 +696,10 @@ LOCAL int smtp_parser(ArkimeSession_t *session, void *uw, const uint8_t *data, i
                 if (found) {
                     if (email->base64Decode & (1 << which)) {
                         const char *md5 = g_checksum_get_string(email->checksum[which]);
-                        arkime_field_string_add(md5Field, session, (char*)md5, 32, TRUE);
+                        arkime_field_string_add(md5Field, session, (char *)md5, 32, TRUE);
                         if (config.supportSha256) {
                             const char *sha256 = g_checksum_get_string(email->checksum[which + 2]);
-                            arkime_field_string_add(sha256Field, session, (char*)sha256, 64, TRUE);
+                            arkime_field_string_add(sha256Field, session, (char *)sha256, 64, TRUE);
                         }
                     }
                     email->firstInContent |= (1 << which);
@@ -716,8 +716,8 @@ LOCAL int smtp_parser(ArkimeSession_t *session, void *uw, const uint8_t *data, i
                         guchar buf[20000];
                         if (sizeof(buf) > line->len) {
                             gsize  b = g_base64_decode_step (line->str, line->len, buf,
-                                                            &(email->state64[which]),
-                                                            &(email->save64[which]));
+                                                             &(email->state64[which]),
+                                                             &(email->save64[which]));
                             g_checksum_update(email->checksum[which], buf, b);
                             if (config.supportSha256) {
                                 g_checksum_update(email->checksum[which + 2], buf, b);
@@ -912,141 +912,141 @@ LOCAL void smtp_classify(ArkimeSession_t *session, const uint8_t *data, int len,
 void arkime_parser_init()
 {
     hostField = arkime_field_define("email", "lotermfield",
-        "host.email", "Hostname", "email.host",
-        "Email hostnames",
-        ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT,
-        "aliases", "[\"email.host\"]",
-        "requiredRight", "emailSearch",
-        "category", "host",
-        (char *)NULL);
+                                    "host.email", "Hostname", "email.host",
+                                    "Email hostnames",
+                                    ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT,
+                                    "aliases", "[\"email.host\"]",
+                                    "requiredRight", "emailSearch",
+                                    "category", "host",
+                                    (char *)NULL);
 
     arkime_field_define("email", "lotextfield",
-        "host.email.tokens", "Hostname Tokens", "email.hostTokens",
-        "Email Hostname Tokens",
-        ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_FAKE,
-        "aliases", "[\"email.host.tokens\"]",
-        "requiredRight", "emailSearch",
-        (char *)NULL);
+                        "host.email.tokens", "Hostname Tokens", "email.hostTokens",
+                        "Email Hostname Tokens",
+                        ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_FAKE,
+                        "aliases", "[\"email.host.tokens\"]",
+                        "requiredRight", "emailSearch",
+                        (char *)NULL);
 
     uaField = arkime_field_define("email", "termfield",
-        "email.x-mailer", "X-Mailer Header", "email.useragent",
-        "Email X-Mailer header",
-        ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT,
-        "requiredRight", "emailSearch",
-        (char *)NULL);
+                                  "email.x-mailer", "X-Mailer Header", "email.useragent",
+                                  "Email X-Mailer header",
+                                  ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT,
+                                  "requiredRight", "emailSearch",
+                                  (char *)NULL);
 
     srcField = arkime_field_define("email", "lotermfield",
-        "email.src", "Sender", "email.src",
-        "Email from address",
-        ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT,
-        "requiredRight", "emailSearch",
-        "category", "user",
-        (char *)NULL);
+                                   "email.src", "Sender", "email.src",
+                                   "Email from address",
+                                   ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT,
+                                   "requiredRight", "emailSearch",
+                                   "category", "user",
+                                   (char *)NULL);
 
     dstField = arkime_field_define("email", "lotermfield",
-        "email.dst", "Receiver", "email.dst",
-        "Email to address",
-        ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT,
-        "requiredRight", "emailSearch",
-        "category", "user",
-        (char *)NULL);
+                                   "email.dst", "Receiver", "email.dst",
+                                   "Email to address",
+                                   ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT,
+                                   "requiredRight", "emailSearch",
+                                   "category", "user",
+                                   (char *)NULL);
 
     subField = arkime_field_define("email", "termfield",
-        "email.subject", "Subject", "email.subject",
-        "Email subject header",
-        ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT | ARKIME_FIELD_FLAG_FORCE_UTF8,
-        "requiredRight", "emailSearch",
-        (char *)NULL);
+                                   "email.subject", "Subject", "email.subject",
+                                   "Email subject header",
+                                   ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT | ARKIME_FIELD_FLAG_FORCE_UTF8,
+                                   "requiredRight", "emailSearch",
+                                   (char *)NULL);
 
     idField = arkime_field_define("email", "termfield",
-        "email.message-id", "Id", "email.id",
-        "Email Message-Id header",
-        ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT,
-        "requiredRight", "emailSearch",
-        (char *)NULL);
+                                  "email.message-id", "Id", "email.id",
+                                  "Email Message-Id header",
+                                  ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT,
+                                  "requiredRight", "emailSearch",
+                                  (char *)NULL);
 
     ctField = arkime_field_define("email", "termfield",
-        "email.content-type", "Content-Type", "email.contentType",
-        "Email content-type header",
-        ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT,
-        (char *)NULL);
+                                  "email.content-type", "Content-Type", "email.contentType",
+                                  "Email content-type header",
+                                  ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT,
+                                  (char *)NULL);
 
     mvField = arkime_field_define("email", "termfield",
-        "email.mime-version", "Mime-Version", "email.mimeVersion",
-        "Email Mime-Header header",
-        ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT,
-        (char *)NULL);
+                                  "email.mime-version", "Mime-Version", "email.mimeVersion",
+                                  "Email Mime-Header header",
+                                  ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT,
+                                  (char *)NULL);
 
     fnField = arkime_field_define("email", "termfield",
-        "email.fn", "Filenames", "email.filename",
-        "Email attachment filenames",
-        ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT | ARKIME_FIELD_FLAG_FORCE_UTF8,
-        "requiredRight", "emailSearch",
-        (char *)NULL);
+                                  "email.fn", "Filenames", "email.filename",
+                                  "Email attachment filenames",
+                                  ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT | ARKIME_FIELD_FLAG_FORCE_UTF8,
+                                  "requiredRight", "emailSearch",
+                                  (char *)NULL);
 
     md5Field = arkime_field_define("email", "termfield",
-        "email.md5", "Attach MD5s", "email.md5",
-        "Email attachment MD5s",
-        ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT,
-        "requiredRight", "emailSearch",
-        "category", "md5",
-        (char *)NULL);
+                                   "email.md5", "Attach MD5s", "email.md5",
+                                   "Email attachment MD5s",
+                                   ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT,
+                                   "requiredRight", "emailSearch",
+                                   "category", "md5",
+                                   (char *)NULL);
 
     if (config.supportSha256) {
         sha256Field = arkime_field_define("email", "termfield",
-            "email.sha256", "Attach SHA256s", "email.sha256",
-            "Email attachment SHA256s",
-            ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT,
-            "requiredRight", "emailSearch",
-            "category", "sha256",
-            "disabled", "true",
-            (char *)NULL);
+                                          "email.sha256", "Attach SHA256s", "email.sha256",
+                                          "Email attachment SHA256s",
+                                          ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT,
+                                          "requiredRight", "emailSearch",
+                                          "category", "sha256",
+                                          "disabled", "true",
+                                          (char *)NULL);
     }
 
     fctField = arkime_field_define("email", "termfield",
-        "email.file-content-type", "Attach Content-Type", "email.fileContentType",
-        "Email attachment content types",
-        ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT,
-        "requiredRight", "emailSearch",
-        (char *)NULL);
+                                   "email.file-content-type", "Attach Content-Type", "email.fileContentType",
+                                   "Email attachment content types",
+                                   ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT,
+                                   "requiredRight", "emailSearch",
+                                   (char *)NULL);
 
     ipField = arkime_field_define("email", "ip",
-        "ip.email", "IP", "email.ip",
-        "Email IP address",
-        ARKIME_FIELD_TYPE_IP_GHASH,   ARKIME_FIELD_FLAG_CNT | ARKIME_FIELD_FLAG_IPPRE,
-        "requiredRight", "emailSearch",
-        "category", "ip",
-        (char *)NULL);
+                                  "ip.email", "IP", "email.ip",
+                                  "Email IP address",
+                                  ARKIME_FIELD_TYPE_IP_GHASH,   ARKIME_FIELD_FLAG_CNT | ARKIME_FIELD_FLAG_IPPRE,
+                                  "requiredRight", "emailSearch",
+                                  "category", "ip",
+                                  (char *)NULL);
 
     hhField = arkime_field_define("email", "lotermfield",
-        "email.has-header", "Header", "email.header",
-        "Email has the header set",
-        ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT,
-        "requiredRight", "emailSearch",
-        (char *)NULL);
+                                  "email.has-header", "Header", "email.header",
+                                  "Email has the header set",
+                                  ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT,
+                                  "requiredRight", "emailSearch",
+                                  (char *)NULL);
 
     headerField = arkime_field_define("email", "termfield",
-            "email.has-header.name", "Header Field", "email.headerField", "Email has the header field set",
-            ARKIME_FIELD_TYPE_STR_ARRAY, ARKIME_FIELD_FLAG_NODB,
-            (char *)NULL);
+                                      "email.has-header.name", "Header Field", "email.headerField", "Email has the header field set",
+                                      ARKIME_FIELD_TYPE_STR_ARRAY, ARKIME_FIELD_FLAG_NODB,
+                                      (char *)NULL);
 
     headerValue = arkime_field_define("email", "termfield",
-            "email.has-header.value", "Header Value", "email.headerValue", "Email has the header value",
-            ARKIME_FIELD_TYPE_STR_ARRAY, ARKIME_FIELD_FLAG_CNT,
-            "requiredRight", "emailSearch",
-            (char *)NULL);
+                                      "email.has-header.value", "Header Value", "email.headerValue", "Email has the header value",
+                                      ARKIME_FIELD_TYPE_STR_ARRAY, ARKIME_FIELD_FLAG_CNT,
+                                      "requiredRight", "emailSearch",
+                                      (char *)NULL);
 
     magicField = arkime_field_define("email", "termfield",
-        "email.bodymagic", "Body Magic", "email.bodyMagic",
-        "The content type of body determined by libfile/magic",
-        ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT,
-        (char *)NULL);
+                                     "email.bodymagic", "Body Magic", "email.bodyMagic",
+                                     "The content type of body determined by libfile/magic",
+                                     ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT,
+                                     (char *)NULL);
 
     helloField = arkime_field_define("email", "lotermfield",
-        "email.smtp-hello", "SMTP Hello", "email.smtpHello",
-        "SMTP HELO/EHLO",
-        ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT,
-        (char *)NULL);
+                                     "email.smtp-hello", "SMTP Hello", "email.smtpHello",
+                                     "SMTP HELO/EHLO",
+                                     ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT,
+                                     (char *)NULL);
 
     HASH_INIT(s_, emailHeaders, arkime_string_hash, arkime_string_cmp);
     arkime_config_add_header(&emailHeaders, "cc", dstField);

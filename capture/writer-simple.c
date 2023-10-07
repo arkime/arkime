@@ -137,7 +137,7 @@ LOCAL ArkimeSimple_t *writer_simple_alloc(int thread, ArkimeSimple_t *previous)
 
     if (!info) {
         info = ARKIME_TYPE_ALLOC0(ArkimeSimple_t);
-        info->buf = mmap (0, config.pcapWriteSize + ARKIME_PACKET_MAX_LEN, PROT_READ|PROT_WRITE, MAP_ANON|MAP_PRIVATE, -1, 0);
+        info->buf = mmap (0, config.pcapWriteSize + ARKIME_PACKET_MAX_LEN, PROT_READ | PROT_WRITE, MAP_ANON | MAP_PRIVATE, -1, 0);
         if (unlikely(info->buf == MAP_FAILED)) {
             LOGEXIT("ERROR - MMap failure in writer_simple_alloc, %d: %s", errno, strerror(errno));
         }
@@ -201,7 +201,7 @@ LOCAL void writer_simple_process_buf(int thread, int closing)
     info->closing = closing;
     if (!closing) {
         // Round down to nearest pagesize
-        int writeSize = (info->bufpos/pageSize) * pageSize;
+        int writeSize = (info->bufpos / pageSize) * pageSize;
 
         // Create next buffer
         ArkimeSimple_t *ninfo = currentInfo[thread] = writer_simple_alloc(thread, info);
@@ -285,9 +285,9 @@ LOCAL void writer_simple_encrypt_key(char *kekId, uint8_t *dek, int deklen, char
     if (!kekId)
         CONFIGEXIT("simpleKEKId must be set");
 
-   char *kekstr = arkime_config_section_str(NULL, "keks", kekId, NULL);
-   if (!kekstr)
-       CONFIGEXIT("No kek with id '%s' found in keks config section", kekId);
+    char *kekstr = arkime_config_section_str(NULL, "keks", kekId, NULL);
+    if (!kekstr)
+        CONFIGEXIT("No kek with id '%s' found in keks config section", kekId);
 
     EVP_BytesToKey(EVP_aes_192_cbc(), EVP_md5(), NULL, (uint8_t *)kekstr, strlen(kekstr), 1, kek, kekiv);
     g_free(kekstr);
@@ -327,7 +327,7 @@ LOCAL char *writer_simple_get_kekId ()
     gmtime_r(&now.tv_sec, &tmp);
 
     char okek[2000];
-    int i,j;
+    int i, j;
 
     for (i = j = 0; kek[i] && j + 2 < 1999; i++) {
         if (kek[i] != '%') {
@@ -338,22 +338,22 @@ LOCAL char *writer_simple_get_kekId ()
         i++;
         switch(kek[i]) {
         case 'y':
-            okek[j] = '0' + (tmp.tm_year % 100)/10;
+            okek[j] = '0' + (tmp.tm_year % 100) / 10;
             okek[j + 1] = '0' + tmp.tm_year % 10;
             j += 2;
             break;
         case 'm':
-            okek[j] = '0' + (tmp.tm_mon + 1)/10;
+            okek[j] = '0' + (tmp.tm_mon + 1) / 10;
             okek[j + 1] = '0' + (tmp.tm_mon + 1) % 10;
             j += 2;
             break;
         case 'd':
-            okek[j] = '0' + tmp.tm_mday/10;
+            okek[j] = '0' + tmp.tm_mday / 10;
             okek[j + 1] = '0' + tmp.tm_mday % 10;
             j += 2;
             break;
         case 'H':
-            okek[j] = '0' + tmp.tm_hour/10;
+            okek[j] = '0' + tmp.tm_hour / 10;
             okek[j + 1] = '0' + tmp.tm_hour % 10;
             j += 2;
             break;
@@ -365,7 +365,7 @@ LOCAL char *writer_simple_get_kekId ()
             if(bufboundary >= (int) sizeof(okek)) {
                 LOGEXIT("ERROR - node name '%s' is too long", config.nodeName);
             }
-            memcpy(okek+j, config.nodeName, namelen);
+            memcpy(okek + j, config.nodeName, namelen);
             j = bufboundary;
             break;
         }
@@ -431,7 +431,7 @@ LOCAL void writer_simple_zstd_make_new_block(ArkimeSimple_t *info)
 #endif
 }
 /******************************************************************************/
-LOCAL void writer_simple_write(const ArkimeSession_t * const session, ArkimePacket_t * const packet)
+LOCAL void writer_simple_write(const ArkimeSession_t *const session, ArkimePacket_t *const packet)
 {
     ArkimeSimple_t *info;
 
@@ -538,7 +538,7 @@ LOCAL void writer_simple_write(const ArkimeSession_t * const session, ArkimePack
             char    ivhex[33];
             RAND_bytes(iv, 12);
             RAND_bytes(dek, 32);
-            memset(iv+12, 0, 4);
+            memset(iv + 12, 0, 4);
             kekId = writer_simple_get_kekId();
             writer_simple_encrypt_key(kekId, dek, 32, dekhex);
             arkime_sprint_hex_string(ivhex, iv, 12);
@@ -672,7 +672,7 @@ LOCAL void *writer_simple_thread(void *UNUSED(arg))
         if (info->closing) {
             // Round up to next page size
             if (total % pageSize != 0)
-                total = ((total/pageSize) + 1)*pageSize;
+                total = ((total / pageSize) + 1) * pageSize;
         }
 
         switch(simpleMode) {
@@ -815,7 +815,7 @@ FILE *writer_simple_get_index(int thread, int64_t fileNum)
     return indexFiles[thread][p].fp;
 }
 /******************************************************************************/
-void writer_simple_index (ArkimeSession_t * session)
+void writer_simple_index (ArkimeSession_t *session)
 {
     uint8_t  buf[0xffff * 5];
     BSB      bsb;

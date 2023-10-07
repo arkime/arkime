@@ -80,8 +80,8 @@ LOCAL void netflow_send(const int thread)
     for (i = 0; i < numDests; i++) {
         int rc;
 
-        if ((rc = send(dests[i].fd, buf[thread], BSB_LENGTH(bsb[thread])+headerSize, 0)) < BSB_LENGTH(bsb[thread])+headerSize) {
-            LOG("Failed to send rc=%d size=%u error=%s", rc, (uint32_t)BSB_LENGTH(bsb[thread])+headerSize, strerror(errno));
+        if ((rc = send(dests[i].fd, buf[thread], BSB_LENGTH(bsb[thread]) + headerSize, 0)) < BSB_LENGTH(bsb[thread]) + headerSize) {
+            LOG("Failed to send rc=%d size=%u error=%s", rc, (uint32_t)BSB_LENGTH(bsb[thread]) + headerSize, strerror(errno));
         }
     }
 
@@ -238,15 +238,15 @@ void arkime_plugin_init()
     arkime_plugins_register("netflow", FALSE);
 
     arkime_plugins_set_cb("netflow",
-      NULL,
-      NULL,
-      NULL,
-      NULL,
-      netflow_plugin_save,
-      NULL,
-      netflow_plugin_exit,
-      NULL
-    );
+                          NULL,
+                          NULL,
+                          NULL,
+                          NULL,
+                          netflow_plugin_save,
+                          NULL,
+                          netflow_plugin_exit,
+                          NULL
+                         );
 
     netflowSNMPInput = arkime_config_int(NULL, "netflowSNMPInput", 0, 0, 0xffffffff);
     netflowSNMPOutput = arkime_config_int(NULL, "netflowSNMPOutput", 0, 0, 0xffffffff);
@@ -262,7 +262,7 @@ void arkime_plugin_init()
         headerSize = 24;
 
     char **dsts = arkime_config_str_list(NULL, "netflowDestinations", NULL);
-    if (dsts == NULL || dsts[0] == NULL || dsts[0][0] == 0){
+    if (dsts == NULL || dsts[0] == NULL || dsts[0][0] == 0) {
         CONFIGEXIT("netflowDestinations must be set");
     }
 
@@ -275,9 +275,9 @@ void arkime_plugin_init()
         *colon = 0;
 
         struct addrinfo hints, *res;
-	memset(&hints, 0 , sizeof(hints));
-	hints.ai_family = AF_INET;
-	hints.ai_socktype = SOCK_DGRAM;
+        memset(&hints, 0, sizeof(hints));
+        hints.ai_family = AF_INET;
+        hints.ai_socktype = SOCK_DGRAM;
 
         if (getaddrinfo(dsts[i], colon + 1, &hints, &res)) {
             CONFIGEXIT("Failed looking up %s:%s", dsts[i], colon + 1);

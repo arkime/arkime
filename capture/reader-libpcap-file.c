@@ -101,7 +101,7 @@ LOCAL gboolean reader_libpcapfile_monitor_read()
         struct inotify_event *event = (struct inotify_event *) p;
         reader_libpcapfile_monitor_do(event);
         p += sizeof(struct inotify_event) + event->len;
-     }
+    }
     return TRUE;
 }
 /******************************************************************************/
@@ -115,7 +115,7 @@ LOCAL void reader_libpcapfile_monitor_dir(char *dirname)
         LOG ("WARNING - Couldn't watch %s %s", dirname, strerror(errno));
         return;
     } else {
-        g_hash_table_insert(wdHashTable, (void*)(long)rc, g_strdup(dirname));
+        g_hash_table_insert(wdHashTable, (void *)(long)rc, g_strdup(dirname));
     }
 
     if (!config.pcapRecursive)
@@ -205,45 +205,45 @@ LOCAL int reader_libpcapfile_process(char *filename)
     // check to see if viewer might have access issues to non-copied pcap file
     if (config.copyPcap == 0) {
 
-      if (strlen (filename) >= PATH_MAX) {
-        // filename bigger than path buffer, skip check
-      } else if ((config.dropUser == NULL) && (config.dropGroup == NULL)) {
-        // drop.User,Group not defined -- skip check
-      } else if (strncmp (filename, "/", 1) != 0) {
-        LOG("WARNING using a relative path may make pcap inaccessible to viewer");
-      } else {
+        if (strlen (filename) >= PATH_MAX) {
+            // filename bigger than path buffer, skip check
+        } else if ((config.dropUser == NULL) && (config.dropGroup == NULL)) {
+            // drop.User,Group not defined -- skip check
+        } else if (strncmp (filename, "/", 1) != 0) {
+            LOG("WARNING using a relative path may make pcap inaccessible to viewer");
+        } else {
 
-    	  path[0] = 0;
+            path[0] = 0;
 
-        // process copy of filename given strtok_r changes arg
-        g_strlcpy (tmpFilename, filename, sizeof(tmpFilename));
+            // process copy of filename given strtok_r changes arg
+            g_strlcpy (tmpFilename, filename, sizeof(tmpFilename));
 
-        token = strtok_r (tmpFilename, "/", &save_ptr);
+            token = strtok_r (tmpFilename, "/", &save_ptr);
 
-        while (token != NULL) {
-          g_strlcat (path, "/", sizeof(path));
-          g_strlcat (path, token, sizeof(path));
+            while (token != NULL) {
+                g_strlcat (path, "/", sizeof(path));
+                g_strlcat (path, token, sizeof(path));
 
-          if (stat(path, &stats) != -1) {
-            gr = getgrgid (stats.st_gid);
-            pw = getpwuid (stats.st_uid);
+                if (stat(path, &stats) != -1) {
+                    gr = getgrgid (stats.st_gid);
+                    pw = getpwuid (stats.st_uid);
 
-            if (stats.st_mode & S_IROTH) {
-              // world readable
-            } else if ((stats.st_mode & S_IRGRP) && config.dropGroup && (strcmp (config.dropGroup, gr->gr_name) == 0)) {
-              // group readable and dropGroup matches file group
-              // TODO compare group id values as opposed to group name
-            } else if ((stats.st_mode & S_IRUSR) && config.dropUser && (strcmp (config.dropUser, pw->pw_name) == 0)) {
-              // user readable and dropUser matches file user
-              // TODO compare user id values as opposed to user name
-            } else
-              LOG("WARNING -- permission issues with %s might make pcap inaccessible to viewer", path);
-          } else
-            LOG("WARNING -- Can't stat %s.  Pcap might not be accessible to viewer", path);
+                    if (stats.st_mode & S_IROTH) {
+                        // world readable
+                    } else if ((stats.st_mode & S_IRGRP) && config.dropGroup && (strcmp (config.dropGroup, gr->gr_name) == 0)) {
+                        // group readable and dropGroup matches file group
+                        // TODO compare group id values as opposed to group name
+                    } else if ((stats.st_mode & S_IRUSR) && config.dropUser && (strcmp (config.dropUser, pw->pw_name) == 0)) {
+                        // user readable and dropUser matches file user
+                        // TODO compare user id values as opposed to user name
+                    } else
+                        LOG("WARNING -- permission issues with %s might make pcap inaccessible to viewer", path);
+                } else
+                    LOG("WARNING -- Can't stat %s.  Pcap might not be accessible to viewer", path);
 
-          token = strtok_r (NULL, "/", &save_ptr);
+                token = strtok_r (NULL, "/", &save_ptr);
+            }
         }
-      }
     }
 
 process:
@@ -468,8 +468,8 @@ LOCAL void reader_libpcapfile_pcap_cb(u_char *UNUSED(user), const struct pcap_pk
     if (unlikely(h->caplen != h->len)) {
         if (!config.readTruncatedPackets && !config.ignoreErrors) {
             LOGEXIT("ERROR - Arkime requires full packet captures caplen: %d pktlen: %d. "
-                "If using tcpdump use the \"-s0\" option, or set readTruncatedPackets in ini file",
-                h->caplen, h->len);
+                    "If using tcpdump use the \"-s0\" option, or set readTruncatedPackets in ini file",
+                    h->caplen, h->len);
         }
         packet->pktlen     = h->caplen;
     } else {
@@ -577,7 +577,7 @@ LOCAL void reader_libpcapfile_opened()
             LOGEXIT("ERROR - Couldn't compile bpf filter: '%s' with %s", config.bpf, pcap_geterr(pcap));
         }
 
-	if (pcap_setfilter(pcap, &bpf) == -1) {
+        if (pcap_setfilter(pcap, &bpf) == -1) {
             LOGEXIT("ERROR - Couldn't set bpf filter: '%s' with %s", config.bpf, pcap_geterr(pcap));
         }
         pcap_freecode(&bpf);

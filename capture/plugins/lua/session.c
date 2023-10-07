@@ -27,12 +27,12 @@ static struct {
 };
 
 static const char *http_method_strings[] =
-    {
+{
 #define XX(num, name, string) #string,
     HTTP_METHOD_MAP(XX)
 #undef XX
     0
-    };
+};
 
 LOCAL  int                   certsField;
 
@@ -59,7 +59,7 @@ LOCAL void *checkArkimeSession (lua_State *L, int index)
 {
     void **pms, *ms;
     luaL_checktype(L, index, LUA_TUSERDATA);
-    pms = (void**)luaL_checkudata(L, index, "ArkimeSession");
+    pms = (void **)luaL_checkudata(L, index, "ArkimeSession");
     if (pms == NULL) {
         luaL_argerror(L, index, lua_pushfstring(L, "ArkimeSession expected, got %s", luaL_typename(L, index)));
         return NULL;
@@ -73,7 +73,7 @@ LOCAL void *checkArkimeSession (lua_State *L, int index)
 void *molua_pushArkimeSession (lua_State *L, const ArkimeSession_t *ms)
 {
     void **pms = (void **)lua_newuserdata(L, sizeof(void *));
-    *pms = (void*)ms;
+    *pms = (void *)ms;
     luaL_getmetatable(L, "ArkimeSession");
     lua_setmetatable(L, -2);
     return pms;
@@ -88,7 +88,7 @@ void molua_classify_cb(ArkimeSession_t *session, const uint8_t *data, int len, i
     lua_pushlstring(L, (char *)data, len);
     lua_pushnumber(L, which);
     if (lua_pcall(L, 3, 0, 0) != 0) {
-       LOGEXIT("error running function %s: %s", (char *)uw, lua_tostring(L, -1));
+        LOGEXIT("error running function %s: %s", (char *)uw, lua_tostring(L, -1));
     }
 }
 
@@ -103,7 +103,7 @@ int molua_parsers_cb(ArkimeSession_t *session, void *uw, const uint8_t *data, in
     lua_pushnumber(L, which);
 
     if (lua_pcall(L, 3, 1, 0) != 0) {
-       LOGEXIT("error running parser function %s", lua_tostring(L, -1));
+        LOGEXIT("error running parser function %s", lua_tostring(L, -1));
     }
 
     int num = lua_tointeger(L, -1);
@@ -298,14 +298,14 @@ LOCAL void MS_register_all_http_cbs()
     if (!http_cbs_registered) {
         http_cbs_registered = 1;
         arkime_plugins_set_http_ext_cb("lua",
-            NULL,
-            molua_http_on_url,
-            molua_http_on_header_field,
-            molua_http_on_header_field_raw,
-            molua_http_on_header_value,
-            molua_http_on_headers_complete,
-            molua_http_on_body_cb,
-            molua_http_on_message_complete);
+                                       NULL,
+                                       molua_http_on_url,
+                                       molua_http_on_header_field,
+                                       molua_http_on_header_field_raw,
+                                       molua_http_on_header_value,
+                                       molua_http_on_headers_complete,
+                                       molua_http_on_body_cb,
+                                       molua_http_on_message_complete);
     }
 }
 /******************************************************************************/
@@ -407,14 +407,14 @@ LOCAL void MS_register_all_save_cbs()
     if (!save_cbs_registered) {
         save_cbs_registered = 1;
         arkime_plugins_set_cb("lua",
-            NULL,
-            NULL,
-            NULL,
-            molua_pre_save,
-            molua_save,
-            NULL,
-            NULL,
-            NULL);
+                              NULL,
+                              NULL,
+                              NULL,
+                              molua_pre_save,
+                              molua_save,
+                              NULL,
+                              NULL,
+                              NULL);
     }
 }
 /******************************************************************************/
@@ -469,7 +469,7 @@ LOCAL int MS_register_parser(lua_State *L)
     ArkimeSession_t *session = checkArkimeSession(L, 1);
     long ref = luaL_ref(L, LUA_REGISTRYINDEX);
 
-    arkime_parsers_register2(session, molua_parsers_cb, (void*)ref, molua_parsers_free_cb, NULL);
+    arkime_parsers_register2(session, molua_parsers_cb, (void *)ref, molua_parsers_free_cb, NULL);
 
     return 0;
 }
@@ -785,7 +785,7 @@ LOCAL int MS_get(lua_State *L)
         HASH_FORALL2(i_, *ihash, hint) {
             lua_pushinteger(L, i + 1);
             lua_pushinteger(L, hint->i_hash);
-            lua_settable(L,-3);
+            lua_settable(L, -3);
             i++;
         }
         break;
@@ -797,7 +797,7 @@ LOCAL int MS_get(lua_State *L)
         while (g_hash_table_iter_next (&iter, &ikey, NULL)) {
             lua_pushinteger(L, i + 1);
             lua_pushinteger(L, (unsigned int)(long)ikey);
-            lua_settable(L,-3);
+            lua_settable(L, -3);
             i++;
         }
         break;
@@ -809,7 +809,7 @@ LOCAL int MS_get(lua_State *L)
         for(i = 0; i < field->sarray->len; i++) {
             lua_pushinteger(L, i + 1);
             lua_pushstring(L, g_ptr_array_index(field->sarray, i));
-            lua_settable(L,-3);
+            lua_settable(L, -3);
         }
         break;
     case ARKIME_FIELD_TYPE_STR_HASH:
@@ -819,7 +819,7 @@ LOCAL int MS_get(lua_State *L)
         HASH_FORALL2(s_, *shash, hstring) {
             lua_pushinteger(L, i + 1);
             lua_pushstring(L, hstring->str);
-            lua_settable(L,-3);
+            lua_settable(L, -3);
             i++;
         }
         break;
@@ -831,7 +831,7 @@ LOCAL int MS_get(lua_State *L)
         while (g_hash_table_iter_next (&iter, &ikey, NULL)) {
             lua_pushinteger(L, i + 1);
             lua_pushstring(L, ikey);
-            lua_settable(L,-3);
+            lua_settable(L, -3);
             i++;
         }
         break;
@@ -857,7 +857,7 @@ LOCAL int MS_get(lua_State *L)
                 inet_ntop(AF_INET, &ARKIME_V6_TO_V4(*(struct in6_addr *)ikey), addrbuf, INET6_ADDRSTRLEN);
             }
             lua_pushstring(L, addrbuf);
-            lua_settable(L,-3);
+            lua_settable(L, -3);
             i++;
         }
         break;
@@ -898,24 +898,24 @@ LOCAL int MSP_get_protocol(lua_State *L)
     char pnum[16];
     const char *protocol = pnum;
     switch (session->ipProtocol) {
-        case 1:
-            protocol = "icmp";
-            break;
-        case 6:
-            protocol = "tcp";
-            break;
-        case 17:
-            protocol = "udp";
-            break;
-        case 58:
-            protocol = "icmpv6";
-            break;
-        case 132:
-            protocol = "sctp";
-            break;
-        default:
-            snprintf(pnum, sizeof(pnum), "%d", session->ipProtocol);
-            break;
+    case 1:
+        protocol = "icmp";
+        break;
+    case 6:
+        protocol = "tcp";
+        break;
+    case 17:
+        protocol = "udp";
+        break;
+    case 58:
+        protocol = "icmpv6";
+        break;
+    case 132:
+        protocol = "sctp";
+        break;
+    default:
+        snprintf(pnum, sizeof(pnum), "%d", session->ipProtocol);
+        break;
     }
     lua_pushstring(L, protocol);
     return 1;

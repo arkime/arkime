@@ -55,7 +55,7 @@ int arkime_dedup_should_drop (const ArkimePacket_t *packet, int headerLen)
     uint8_t md[16];
     MD5_CTX ctx;
     MD5_Init(&ctx);
-    uint8_t * const ptr = packet->pkt + packet->ipOffset;
+    uint8_t *const ptr = packet->pkt + packet->ipOffset;
     if ((ptr[0] & 0xf0) == 0x40) {
         MD5_Update(&ctx, ptr, 8);
         // Skip TTL (1 byte)
@@ -96,7 +96,7 @@ int arkime_dedup_should_drop (const ArkimePacket_t *packet, int headerLen)
 
         int count = seconds[s].counts[h];
         for (int c = 0; c < count; c++) {
-            if (memcmp(md, seconds[s].md5s + 16 * (h*DEDUP_SIZE_FACTOR + c), 16) == 0) {
+            if (memcmp(md, seconds[s].md5s + 16 * (h * DEDUP_SIZE_FACTOR + c), 16) == 0) {
                 return 1;
             }
         }
@@ -110,7 +110,7 @@ int arkime_dedup_should_drop (const ArkimePacket_t *packet, int headerLen)
 
     // For now ignore the race condition of search between incr and copy
     int c = ARKIME_THREAD_INCROLD(seconds[secondSlot].counts[h]);
-    memcpy(seconds[secondSlot].md5s + 16 * (h*DEDUP_SIZE_FACTOR + c), md, 16);
+    memcpy(seconds[secondSlot].md5s + 16 * (h * DEDUP_SIZE_FACTOR + c), md, 16);
     ARKIME_THREAD_INCR(seconds[secondSlot].count);
 
     return 0;
@@ -123,11 +123,11 @@ void arkime_dedup_init()
 
     dedupSeconds   = arkime_config_int(NULL, "dedupSeconds", 2, 0, 30) + 1; // + 1 because a slot isn't active before being replaced
     dedupPackets   = arkime_config_int(NULL, "dedupPackets", 0xfffff, 0xffff, 0xffffff);
-    dedupSlots     = arkime_get_next_prime(dedupPackets/DEDUP_SLOT_FACTOR);
+    dedupSlots     = arkime_get_next_prime(dedupPackets / DEDUP_SLOT_FACTOR);
     dedupSize      = dedupSlots * DEDUP_SIZE_FACTOR;
 
     if (config.debug)
-        LOG("seconds = %u packets = %u slots = %u size = %u mem=%u", dedupSeconds, dedupPackets, dedupSlots, dedupSize, dedupSeconds *(dedupSlots + dedupSize * 16));
+        LOG("seconds = %u packets = %u slots = %u size = %u mem=%u", dedupSeconds, dedupPackets, dedupSlots, dedupSize, dedupSeconds * (dedupSlots + dedupSize * 16));
 
     seconds = ARKIME_SIZE_ALLOC0("dedup seconds", sizeof(DedupSeconds_t) * dedupSeconds);
     for (uint32_t i = 0; i < dedupSeconds; i++) {

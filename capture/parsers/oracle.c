@@ -20,11 +20,11 @@ LOCAL char *oracle_get_item(const uint8_t *data, char *needle, int needle_len, i
     if (item) {
         uint8_t *paren = (uint8_t *)g_strstr_len((char *)item, data[25] - (item - start), ")");
         if (paren) {
-            *len = (paren-item)-needle_len;
+            *len = (paren - item) - needle_len;
             if (*len == 0)
                 return NULL;
 
-            return g_ascii_strdown((char *)item+needle_len, *len);
+            return g_ascii_strdown((char *)item + needle_len, *len);
         }
     }
     return NULL;
@@ -62,31 +62,31 @@ void arkime_parser_init()
     arkime_parsers_classifier_register_tcp("oracle", NULL, 2, (uint8_t *)"\x00\x00\x01\x00\x00\x00", 6, oracle_classify);
 
     userField = arkime_field_define("oracle", "lotermfield",
-        "oracle.user", "User", "oracle.user",
-        "Oracle User",
-        ARKIME_FIELD_TYPE_STR,  ARKIME_FIELD_FLAG_LINKED_SESSIONS,
-        "category", "user",
-        (char *)NULL);
+                                    "oracle.user", "User", "oracle.user",
+                                    "Oracle User",
+                                    ARKIME_FIELD_TYPE_STR,  ARKIME_FIELD_FLAG_LINKED_SESSIONS,
+                                    "category", "user",
+                                    (char *)NULL);
 
     hostField = arkime_field_define("oracle", "lotermfield",
-        "oracle.host", "Host", "oracle.host",
-        "Oracle Host",
-        ARKIME_FIELD_TYPE_STR,  ARKIME_FIELD_FLAG_LINKED_SESSIONS,
-        "category", "host",
-        "aliases", "[\"host.oracle\"]",
-        (char *)NULL);
+                                    "oracle.host", "Host", "oracle.host",
+                                    "Oracle Host",
+                                    ARKIME_FIELD_TYPE_STR,  ARKIME_FIELD_FLAG_LINKED_SESSIONS,
+                                    "category", "host",
+                                    "aliases", "[\"host.oracle\"]",
+                                    (char *)NULL);
 
     arkime_field_define("oracle", "lotextfield",
-        "oracle.host.tokens", "Hostname Tokens", "oracle.hostTokens",
-        "Oracle Hostname Tokens",
-        ARKIME_FIELD_TYPE_STR,  ARKIME_FIELD_FLAG_FAKE,
-        "aliases", "[\"host.oracle.tokens\"]",
-        (char *)NULL);
+                        "oracle.host.tokens", "Hostname Tokens", "oracle.hostTokens",
+                        "Oracle Hostname Tokens",
+                        ARKIME_FIELD_TYPE_STR,  ARKIME_FIELD_FLAG_FAKE,
+                        "aliases", "[\"host.oracle.tokens\"]",
+                        (char *)NULL);
 
     serviceField = arkime_field_define("oracle", "lotermfield",
-        "oracle.service", "Service", "oracle.service",
-        "Oracle Service",
-        ARKIME_FIELD_TYPE_STR,  ARKIME_FIELD_FLAG_LINKED_SESSIONS,
-        (char *)NULL);
+                                       "oracle.service", "Service", "oracle.service",
+                                       "Oracle Service",
+                                       ARKIME_FIELD_TYPE_STR,  ARKIME_FIELD_FLAG_LINKED_SESSIONS,
+                                       (char *)NULL);
 }
 

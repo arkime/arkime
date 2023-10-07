@@ -159,32 +159,32 @@ void arkime_parser_init()
     CLASSIFY_UDP("snmp", 0, "\x30", snmp_classify);
 
     versionField = arkime_field_define("snmp", "integer",
-        "snmp.version", "Version", "snmp.version",
-        "SNMP Version",
-        ARKIME_FIELD_TYPE_INT_HASH,  ARKIME_FIELD_FLAG_CNT,
-        (char *)NULL);
+                                       "snmp.version", "Version", "snmp.version",
+                                       "SNMP Version",
+                                       ARKIME_FIELD_TYPE_INT_HASH,  ARKIME_FIELD_FLAG_CNT,
+                                       (char *)NULL);
 
     communityField = arkime_field_define("snmp", "termfield",
-        "snmp.community", "Community", "snmp.community",
-        "SNMP Community",
-        ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT,
-        (char *)NULL);
+                                         "snmp.community", "Community", "snmp.community",
+                                         "SNMP Community",
+                                         ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT,
+                                         (char *)NULL);
 
     errorField = arkime_field_define("snmp", "integer",
-        "snmp.error", "Error Code", "snmp.error",
-        "SNMP Error Code",
-        ARKIME_FIELD_TYPE_INT_HASH,  ARKIME_FIELD_FLAG_CNT,
-        (char *)NULL);
+                                     "snmp.error", "Error Code", "snmp.error",
+                                     "SNMP Error Code",
+                                     ARKIME_FIELD_TYPE_INT_HASH,  ARKIME_FIELD_FLAG_CNT,
+                                     (char *)NULL);
 
     variableField = arkime_field_define("snmp", "termfield",
-        "snmp.variable", "Variable", "snmp.variable",
-        "SNMP Variable",
-        ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT,
-        (char *)NULL);
+                                        "snmp.variable", "Variable", "snmp.variable",
+                                        "SNMP Variable",
+                                        ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT,
+                                        (char *)NULL);
 
     typeField = arkime_field_define("snmp", "termfield",
-        "snmp.type", "Type", "snmp.type",
-        "SNMP Type",
-        ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT,
-        (char *)NULL);
+                                    "snmp.type", "Type", "snmp.type",
+                                    "SNMP Type",
+                                    ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT,
+                                    (char *)NULL);
 }

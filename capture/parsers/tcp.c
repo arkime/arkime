@@ -63,7 +63,7 @@ void tcp_packet_finish(ArkimeSession_t *session)
     ArkimeTcpData_t            *ftd;
     ArkimeTcpData_t            *next;
 
-    ArkimeTcpDataHead_t * const tcpData = &session->tcpData;
+    ArkimeTcpDataHead_t *const tcpData = &session->tcpData;
 
 #ifdef DEBUG_TCP
     LOG("START %u %u", session->tcpSeq[0], session->tcpSeq[1]);
@@ -124,7 +124,7 @@ void tcp_packet_finish(ArkimeSession_t *session)
 }
 /******************************************************************************/
 SUPPRESS_ALIGNMENT
-int tcp_packet_process(ArkimeSession_t * const session, ArkimePacket_t * const packet)
+int tcp_packet_process(ArkimeSession_t *const session, ArkimePacket_t *const packet)
 {
     struct tcphdr       *tcphdr = (struct tcphdr *)(packet->pkt + packet->payloadOffset);
 
@@ -221,7 +221,7 @@ int tcp_packet_process(ArkimeSession_t * const session, ArkimePacket_t * const p
         session->tcpSeq[packet->direction] = seq;
     }
 
-    ArkimeTcpDataHead_t * const tcpData = &session->tcpData;
+    ArkimeTcpDataHead_t *const tcpData = &session->tcpData;
 
     if (DLL_COUNT(td_, tcpData) > maxTcpOutOfOrderPackets) {
         tcp_session_free(session);
@@ -250,9 +250,9 @@ int tcp_packet_process(ArkimeSession_t * const session, ArkimePacket_t * const p
             session->tcpSeq[(packet->direction + 1) % 2] != 0 &&                  // The syn-ack isn't what is missing
             (tcp_sequence_diff(session->tcpSeq[(packet->direction + 1) % 2], ntohl(tcphdr->th_ack)) > 1)) { // more then one byte missing
 
-                static const char *tags[2] = {"acked-unseen-segment-src", "acked-unseen-segment-dst"};
-                arkime_session_add_tag(session, tags[packet->direction]);
-                session->ackedUnseenSegment |= (1 << packet->direction);
+            static const char *tags[2] = {"acked-unseen-segment-src", "acked-unseen-segment-dst"};
+            arkime_session_add_tag(session, tags[packet->direction]);
+            session->ackedUnseenSegment |= (1 << packet->direction);
         }
     }
 
@@ -316,7 +316,7 @@ int tcp_packet_process(ArkimeSession_t * const session, ArkimePacket_t * const p
             }
         }
 
-        if ((void*)ftd == (void*)tcpData) {
+        if ((void * )ftd == (void * )tcpData) {
             DLL_PUSH_HEAD(td_, tcpData, td);
         }
 
@@ -334,8 +334,8 @@ int tcp_packet_process(ArkimeSession_t * const session, ArkimePacket_t * const p
 SUPPRESS_ALIGNMENT
 void tcp_create_sessionid(uint8_t *sessionId, ArkimePacket_t *packet)
 {
-    struct ip           *ip4 = (struct ip*)(packet->pkt + packet->ipOffset);
-    struct ip6_hdr      *ip6 = (struct ip6_hdr*)(packet->pkt + packet->ipOffset);
+    struct ip           *ip4 = (struct ip *)(packet->pkt + packet->ipOffset);
+    struct ip6_hdr      *ip6 = (struct ip6_hdr *)(packet->pkt + packet->ipOffset);
     struct tcphdr       *tcphdr = (struct tcphdr *)(packet->pkt + packet->payloadOffset);
 
     if (packet->v6) {
@@ -348,21 +348,21 @@ void tcp_create_sessionid(uint8_t *sessionId, ArkimePacket_t *packet)
 }
 /******************************************************************************/
 SUPPRESS_ALIGNMENT
-int tcp_pre_process(ArkimeSession_t *session, ArkimePacket_t * const packet, int isNewSession)
+int tcp_pre_process(ArkimeSession_t *session, ArkimePacket_t *const packet, int isNewSession)
 {
-    struct ip           *ip4 = (struct ip*)(packet->pkt + packet->ipOffset);
-    struct ip6_hdr      *ip6 = (struct ip6_hdr*)(packet->pkt + packet->ipOffset);
+    struct ip           *ip4 = (struct ip *)(packet->pkt + packet->ipOffset);
+    struct ip6_hdr      *ip6 = (struct ip6_hdr *)(packet->pkt + packet->ipOffset);
     struct tcphdr       *tcphdr = (struct tcphdr *)(packet->pkt + packet->payloadOffset);
 
     // If this is an old session that hash RSTs and we get a syn, probably a port reuse, close old session
     if (!isNewSession && (tcphdr->th_flags & TH_SYN) && ((tcphdr->th_flags & TH_ACK) == 0) &&
-            (session->tcpFlagCnt[ARKIME_TCPFLAG_RST] || session->tcpFlagCnt[ARKIME_TCPFLAG_FIN])) {
+        (session->tcpFlagCnt[ARKIME_TCPFLAG_RST] || session->tcpFlagCnt[ARKIME_TCPFLAG_FIN])) {
         return 1;
     }
 
     if (isNewSession) {
-       /* If antiSynDrop option is set to true, capture will assume that
-        * if the syn-ack ip4 was captured first then the syn probably got dropped.*/
+        /* If antiSynDrop option is set to true, capture will assume that
+         * if the syn-ack ip4 was captured first then the syn probably got dropped.*/
         if ((tcphdr->th_flags & TH_SYN) && (tcphdr->th_flags & TH_ACK) && (config.antiSynDrop)) {
             struct in6_addr tmp;
             tmp = session->addr1;
@@ -395,13 +395,13 @@ int tcp_pre_process(ArkimeSession_t *session, ArkimePacket_t * const packet, int
 
     packet->direction = (dir &&
                          session->port1 == ntohs(tcphdr->th_sport) &&
-                         session->port2 == ntohs(tcphdr->th_dport))?0:1;
+                         session->port2 == ntohs(tcphdr->th_dport)) ? 0 : 1;
     session->tcp_flags |= tcphdr->th_flags;
 
     return 0;
 }
 /******************************************************************************/
-int tcp_process(ArkimeSession_t *session, ArkimePacket_t * const packet)
+int tcp_process(ArkimeSession_t *session, ArkimePacket_t *const packet)
 {
     int freePacket = tcp_packet_process(session, packet);
     tcp_packet_finish(session);

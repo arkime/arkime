@@ -65,7 +65,7 @@ typedef struct writer_s3_file {
     ZSTD_outBuffer             zstd_out;
     ZSTD_inBuffer              zstd_in;
     uint64_t                   zstd_saved; // How much we've "saved" not including current buffer so
-                                           // zstd_saved + s3file->zstd_out.pos == z_strm.total_out
+    // zstd_saved + s3file->zstd_out.pos == z_strm.total_out
 #endif
 } SavepcapS3File_t;
 
@@ -74,8 +74,8 @@ SavepcapS3File_t            *currentFiles[ARKIME_MAX_PACKET_THREADS];
 LOCAL  ARKIME_LOCK_DEFINE(fileQ);
 LOCAL  SavepcapS3File_t      fileQ;
 
-LOCAL  void *                s3Server = 0;
-LOCAL  void *                metadataServer = 0;
+LOCAL  void                 *s3Server = 0;
+LOCAL  void                 *metadataServer = 0;
 LOCAL  char                  *s3Region;
 LOCAL  char                  *s3Host;
 LOCAL  char                  *s3Bucket;
@@ -115,7 +115,6 @@ LOCAL uint32_t s3CompressionBlockSize;
 
 // These must agree with the index.js
 #define COMPRESSED_WITHIN_BLOCK_BITS  20
-
 
 
 void writer_s3_request(char *method, char *path, char *qs, uint8_t *data, int len, gboolean specifyStorageClass, ArkimeHttpResponse_cb cb, gpointer uw);
@@ -221,7 +220,7 @@ void writer_s3_part_cb (int code, uint8_t *data, int len, gpointer uw)
         }
         BSB_EXPORT_cstr(bsb, "</CompleteMultipartUpload>\n");
 
-        writer_s3_request("POST", file->outputPath, qs, (uint8_t*)buf, BSB_LENGTH(bsb), FALSE, writer_s3_complete_cb, file);
+        writer_s3_request("POST", file->outputPath, qs, (uint8_t *)buf, BSB_LENGTH(bsb), FALSE, writer_s3_complete_cb, file);
         if (config.debug > 1)
             LOG("Complete-Request: %s %.*s", file->outputFileName, (int)BSB_LENGTH(bsb), buf);
     }
@@ -350,7 +349,7 @@ void writer_s3_header_cb (char *url, const char *field, const char *value, int v
     int pn = atoi(pnstr + 11);
 
     if (*value == '"')
-        file->partNumbers[pn] = g_strndup(value+1, valueLen-2);
+        file->partNumbers[pn] = g_strndup(value + 1, valueLen - 2);
     else
         file->partNumbers[pn] = g_strndup(value, valueLen);
 
@@ -373,19 +372,19 @@ void writer_s3_request(char *method, char *path, char *qs, uint8_t *data, int le
     struct tm      gm;
     gmtime_r(&outputFileTime.tv_sec, &gm);
     snprintf(datetime, sizeof(datetime),
-            "%04u%02u%02uT%02u%02u%02uZ",
-            gm.tm_year + 1900,
-            gm.tm_mon+1,
-            gm.tm_mday,
-            gm.tm_hour,
-            gm.tm_min,
-            gm.tm_sec);
+             "%04u%02u%02uT%02u%02u%02uZ",
+             gm.tm_year + 1900,
+             gm.tm_mon + 1,
+             gm.tm_mday,
+             gm.tm_hour,
+             gm.tm_min,
+             gm.tm_sec);
 
     S3Credentials *creds = s3MetaCreds ? s3MetaCreds : &s3ConfigCreds;
 
     snprintf(storageClassHeader, sizeof(storageClassHeader), "x-amz-storage-class:%s\n", s3StorageClass);
     if (creds->s3Token) {
-      snprintf(tokenHeader, sizeof(tokenHeader), "x-amz-security-token:%s\n", creds->s3Token);
+        snprintf(tokenHeader, sizeof(tokenHeader), "x-amz-security-token:%s\n", creds->s3Token);
     }
 
     GChecksum *checksum = g_checksum_new(G_CHECKSUM_SHA256);
@@ -398,35 +397,35 @@ void writer_s3_request(char *method, char *path, char *qs, uint8_t *data, int le
         snprintf(objectkey, sizeof(objectkey), "%s", path);
 
     snprintf(canonicalRequest, sizeof(canonicalRequest),
-            "%s\n"       // HTTPRequestMethod
-            "%s\n"       // CanonicalURI
-            "%s\n"       // CanonicalQueryString
-            //CanonicalHeaders
-            "host:%s\n"
-            "x-amz-content-sha256:%s\n"
-            "x-amz-date:%s\n"
-            "%s"
-            "%s"
-            "\n"
-            // SignedHeaders
-            "host;x-amz-content-sha256;x-amz-date%s%s\n"
-            "%s"     // HexEncode(Hash(RequestPayload))
-            ,
-            method,
-            objectkey,
-            qs,
-            s3Host,
-            bodyHash,
-            datetime,
-            (creds->s3Token?tokenHeader:""),
-            (specifyStorageClass?storageClassHeader:""),
-            (creds->s3Token?";x-amz-security-token":""),
-            (specifyStorageClass?";x-amz-storage-class":""),
-            bodyHash);
+             "%s\n"       // HTTPRequestMethod
+             "%s\n"       // CanonicalURI
+             "%s\n"       // CanonicalQueryString
+             //CanonicalHeaders
+             "host:%s\n"
+             "x-amz-content-sha256:%s\n"
+             "x-amz-date:%s\n"
+             "%s"
+             "%s"
+             "\n"
+             // SignedHeaders
+             "host;x-amz-content-sha256;x-amz-date%s%s\n"
+             "%s"     // HexEncode(Hash(RequestPayload))
+             ,
+             method,
+             objectkey,
+             qs,
+             s3Host,
+             bodyHash,
+             datetime,
+             (creds->s3Token ? tokenHeader : ""),
+             (specifyStorageClass ? storageClassHeader : ""),
+             (creds->s3Token ? ";x-amz-security-token" : ""),
+             (specifyStorageClass ? ";x-amz-storage-class" : ""),
+             bodyHash);
     //LOG("canonicalRequest: %s", canonicalRequest);
 
     g_checksum_reset(checksum);
-    g_checksum_update(checksum, (guchar*)canonicalRequest, -1);
+    g_checksum_update(checksum, (guchar *)canonicalRequest, -1);
 
     char stringToSign[1000];
     snprintf(stringToSign, sizeof(stringToSign),
@@ -446,35 +445,35 @@ void writer_s3_request(char *method, char *path, char *qs, uint8_t *data, int le
 
     char  kDate[65];
     gsize kDateLen = sizeof(kDate);
-    GHmac *hmac = g_hmac_new(G_CHECKSUM_SHA256, (guchar*)kSecret, strlen(kSecret));
-    g_hmac_update(hmac, (guchar*)datetime, 8);
-    g_hmac_get_digest(hmac, (guchar*)kDate, &kDateLen);
+    GHmac *hmac = g_hmac_new(G_CHECKSUM_SHA256, (guchar *)kSecret, strlen(kSecret));
+    g_hmac_update(hmac, (guchar *)datetime, 8);
+    g_hmac_get_digest(hmac, (guchar *)kDate, &kDateLen);
     g_hmac_unref(hmac);
 
     char  kRegion[65];
     gsize kRegionLen = sizeof(kRegion);
-    hmac = g_hmac_new(G_CHECKSUM_SHA256, (guchar*)kDate, kDateLen);
-    g_hmac_update(hmac, (guchar*)s3Region, -1);
-    g_hmac_get_digest(hmac, (guchar*)kRegion, &kRegionLen);
+    hmac = g_hmac_new(G_CHECKSUM_SHA256, (guchar *)kDate, kDateLen);
+    g_hmac_update(hmac, (guchar *)s3Region, -1);
+    g_hmac_get_digest(hmac, (guchar *)kRegion, &kRegionLen);
     g_hmac_unref(hmac);
 
     char  kService[65];
     gsize kServiceLen = sizeof(kService);
-    hmac = g_hmac_new(G_CHECKSUM_SHA256, (guchar*)kRegion, kRegionLen);
-    g_hmac_update(hmac, (guchar*)"s3", 2);
-    g_hmac_get_digest(hmac, (guchar*)kService, &kServiceLen);
+    hmac = g_hmac_new(G_CHECKSUM_SHA256, (guchar *)kRegion, kRegionLen);
+    g_hmac_update(hmac, (guchar *)"s3", 2);
+    g_hmac_get_digest(hmac, (guchar *)kService, &kServiceLen);
     g_hmac_unref(hmac);
 
     char kSigning[65];
     gsize kSigningLen = sizeof(kSigning);
-    hmac = g_hmac_new(G_CHECKSUM_SHA256, (guchar*)kService, kServiceLen);
-    g_hmac_update(hmac, (guchar*)"aws4_request", 12);
-    g_hmac_get_digest(hmac, (guchar*)kSigning, &kSigningLen);
+    hmac = g_hmac_new(G_CHECKSUM_SHA256, (guchar *)kService, kServiceLen);
+    g_hmac_update(hmac, (guchar *)"aws4_request", 12);
+    g_hmac_get_digest(hmac, (guchar *)kSigning, &kSigningLen);
     g_hmac_unref(hmac);
 
     char signature[65];
-    hmac = g_hmac_new(G_CHECKSUM_SHA256, (guchar*)kSigning, kSigningLen);
-    g_hmac_update(hmac, (guchar*)stringToSign, -1);
+    hmac = g_hmac_new(G_CHECKSUM_SHA256, (guchar *)kSigning, kSigningLen);
+    g_hmac_update(hmac, (guchar *)stringToSign, -1);
     g_strlcpy(signature, g_hmac_get_string(hmac), sizeof(signature));
     g_hmac_unref(hmac);
 
@@ -494,15 +493,15 @@ void writer_s3_request(char *method, char *path, char *qs, uint8_t *data, int le
     int nextHeader = 5;
 
     snprintf(strs[0], sizeof(strs[0]),
-            "Authorization: AWS4-HMAC-SHA256 Credential=%s/%8.8s/%s/s3/aws4_request,SignedHeaders=host;x-amz-content-sha256;x-amz-date%s%s,Signature=%s"
-            ,
-            creds->s3AccessKeyId, datetime, s3Region,
-            (creds->s3Token?";x-amz-security-token":""),
-            (specifyStorageClass?";x-amz-storage-class":""),
-            signature
+             "Authorization: AWS4-HMAC-SHA256 Credential=%s/%8.8s/%s/s3/aws4_request,SignedHeaders=host;x-amz-content-sha256;x-amz-date%s%s,Signature=%s"
+             ,
+             creds->s3AccessKeyId, datetime, s3Region,
+             (creds->s3Token ? ";x-amz-security-token" : ""),
+             (specifyStorageClass ? ";x-amz-storage-class" : ""),
+             signature
             );
 
-    snprintf(strs[1], sizeof(strs[1]), "x-amz-content-sha256: %s" , bodyHash);
+    snprintf(strs[1], sizeof(strs[1]), "x-amz-content-sha256: %s", bodyHash);
     snprintf(strs[2], sizeof(strs[2]), "x-amz-date: %s", datetime);
 
     if (creds->s3Token) {
@@ -519,7 +518,7 @@ void writer_s3_request(char *method, char *path, char *qs, uint8_t *data, int le
     headers[nextHeader] = NULL;
 
     inprogress++;
-    arkime_http_send(s3Server, method, fullpath, strlen(fullpath), (char*)data, len, headers, FALSE, cb, uw);
+    arkime_http_send(s3Server, method, fullpath, strlen(fullpath), (char *)data, len, headers, FALSE, cb, uw);
     g_checksum_free(checksum);
 }
 /******************************************************************************/
@@ -655,8 +654,8 @@ LOCAL uint64_t append_to_output(SavepcapS3File_t *s3file, void *data, size_t len
         s3file->outputDataSinceLastMiniBlock += length;
 
         if (!packetHeader &&
-               (s3file->outputOffsetInBlock >= (1 << COMPRESSED_WITHIN_BLOCK_BITS) - 16 ||
-                s3file->outputActualFilePos > s3file->outputLastBlockStart + s3CompressionBlockSize)) {
+            (s3file->outputOffsetInBlock >= (1 << COMPRESSED_WITHIN_BLOCK_BITS) - 16 ||
+             s3file->outputActualFilePos > s3file->outputLastBlockStart + s3CompressionBlockSize)) {
             // We need to make a new block
             make_new_block(s3file);
         }
@@ -665,7 +664,7 @@ LOCAL uint64_t append_to_output(SavepcapS3File_t *s3file, void *data, size_t len
         if (!s3file->zstd_strm) {
             s3file->zstd_strm = ZSTD_createCStream();
             if (s3CompressionLevel != 0)
-              ZSTD_CCtx_setParameter(s3file->zstd_strm, ZSTD_c_compressionLevel, MIN(s3CompressionLevel, ZSTD_maxCLevel()));
+                ZSTD_CCtx_setParameter(s3file->zstd_strm, ZSTD_c_compressionLevel, MIN(s3CompressionLevel, ZSTD_maxCLevel()));
             s3file->zstd_out.dst = s3file->outputBuffer;
             s3file->zstd_out.size = config.pcapWriteSize + ARKIME_PACKET_MAX_LEN;
             s3file->zstd_out.pos = 0;
@@ -695,8 +694,8 @@ LOCAL uint64_t append_to_output(SavepcapS3File_t *s3file, void *data, size_t len
         s3file->outputDataSinceLastMiniBlock += length;
 
         if (!packetHeader &&
-               (s3file->outputOffsetInBlock >= (1 << COMPRESSED_WITHIN_BLOCK_BITS) - 16 ||
-                s3file->outputActualFilePos > s3file->outputLastBlockStart + s3CompressionBlockSize)) {
+            (s3file->outputOffsetInBlock >= (1 << COMPRESSED_WITHIN_BLOCK_BITS) - 16 ||
+             s3file->outputActualFilePos > s3file->outputLastBlockStart + s3CompressionBlockSize)) {
             // We need to make a new block
             make_new_block(s3file);
         }
@@ -728,16 +727,16 @@ void writer_s3_flush(SavepcapS3File_t *s3file, gboolean end)
         return;
 
     if (compressionMode == ARKIME_COMPRESSION_GZIP) {
-      if (end) {
-        deflate(&s3file->z_strm, Z_FINISH);
+        if (end) {
+            deflate(&s3file->z_strm, Z_FINISH);
 
-        if (s3file->z_strm.avail_out == 0) {
-          writer_s3_flush(s3file, FALSE);
-          deflate(&s3file->z_strm, Z_FINISH);
+            if (s3file->z_strm.avail_out == 0) {
+                writer_s3_flush(s3file, FALSE);
+                deflate(&s3file->z_strm, Z_FINISH);
+            }
         }
-      }
 
-      s3file->outputPos = s3file->z_strm.next_out - (Bytef *) s3file->outputBuffer;
+        s3file->outputPos = s3file->z_strm.next_out - (Bytef *) s3file->outputBuffer;
     } else if (compressionMode == ARKIME_COMPRESSION_ZSTD) {
 #ifdef HAVE_ZSTD
         if (end) {
@@ -748,8 +747,8 @@ void writer_s3_flush(SavepcapS3File_t *s3file, gboolean end)
             }
         }
 
-      s3file->outputPos = s3file->zstd_out.pos;
-      s3file->zstd_saved += s3file->zstd_out.pos;
+        s3file->outputPos = s3file->zstd_out.pos;
+        s3file->zstd_saved += s3file->zstd_out.pos;
 #endif
     }
 
@@ -808,7 +807,7 @@ SavepcapS3File_t *writer_s3_create(const ArkimePacket_t *packet)
     char              *packetPosEncoding = ARKIME_VAR_ARG_STR_SKIP;
 
     localtime_r(&packet->ts.tv_sec, &tmp);
-    snprintf(filename, sizeof(filename), "s3://%s/%s/%s/#NUMHEX#-%02d%02d%02d-#NUM#.pcap%s", s3Region, s3Bucket, config.nodeName, tmp.tm_year%100, tmp.tm_mon+1, tmp.tm_mday, extension[compressionMode]);
+    snprintf(filename, sizeof(filename), "s3://%s/%s/%s/#NUMHEX#-%02d%02d%02d-#NUM#.pcap%s", s3Region, s3Bucket, config.nodeName, tmp.tm_year % 100, tmp.tm_mon + 1, tmp.tm_mday, extension[compressionMode]);
 
     SavepcapS3File_t *s3file = ARKIME_TYPE_ALLOC0(SavepcapS3File_t);
     DLL_INIT(os3_, &s3file->outputQ);
@@ -826,9 +825,9 @@ SavepcapS3File_t *writer_s3_create(const ArkimePacket_t *packet)
     }
 
     s3file->outputFileName = arkime_db_create_file_full(packet->ts.tv_sec, filename, 0, 0, &s3file->outputId,
-            "packetPosEncoding", packetPosEncoding,
-            "#compressionBlockSize", compressionBlockSizeArg,
-            NULL);
+                                                        "packetPosEncoding", packetPosEncoding,
+                                                        "#compressionBlockSize", compressionBlockSizeArg,
+                                                        NULL);
     s3file->outputPath = s3file->outputFileName + offset;
     clock_gettime(CLOCK_REALTIME_COARSE, &s3file->outputFileTime);
 
@@ -883,7 +882,7 @@ struct pcap_sf_pkthdr {
     uint32_t len;               /* length this packet (off wire) */
 };
 void
-writer_s3_write(const ArkimeSession_t *const session, ArkimePacket_t * const packet)
+writer_s3_write(const ArkimeSession_t *const session, ArkimePacket_t *const packet)
 {
     struct pcap_sf_pkthdr hdr;
 
@@ -927,7 +926,7 @@ void writer_s3_init(char *UNUSED(name))
     REMOVEDCONFIG("s3WriteGzip", "use s3Compression=gzip");
     char *s3Compression   = arkime_config_str(NULL, "s3Compression", "zstd");
     s3CompressionLevel    = arkime_config_int(NULL, "s3CompressionLevel", 0, 0, 22);
-    s3CompressionBlockSize= arkime_config_int(NULL, "s3CompressionBlockSize", 100000, 0xffff, 0x7ffff);
+    s3CompressionBlockSize = arkime_config_int(NULL, "s3CompressionBlockSize", 100000, 0xffff, 0x7ffff);
     s3StorageClass        = arkime_config_str(NULL, "s3StorageClass", "STANDARD");
     s3MaxConns            = arkime_config_int(NULL, "s3MaxConns", 20, 5, 1000);
     s3MaxRequests         = arkime_config_int(NULL, "s3MaxRequests", 500, 10, 5000);
@@ -1045,9 +1044,9 @@ void writer_s3_init(char *UNUSED(name))
     config.maxFileSizeB = MIN(config.maxFileSizeB, 0x50000000000LL);
 
     if (compressionMode != ARKIME_COMPRESSION_NONE) {
-      // We only have 33 bits of offset to play with. Limit the file size to that
-      // minus a bit to allow for the last compressed chunk to be emitted
-      config.maxFileSizeB = MIN(config.maxFileSizeB, 0x1fff00000LL);
+        // We only have 33 bits of offset to play with. Limit the file size to that
+        // minus a bit to allow for the last compressed chunk to be emitted
+        config.maxFileSizeB = MIN(config.maxFileSizeB, 0x1fff00000LL);
     }
 
     char host[200];

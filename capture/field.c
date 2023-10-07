@@ -78,32 +78,32 @@ void arkime_field_define_json(uint8_t *expression, int expression_len, uint8_t *
         LOGEXIT("ERROR - Parse error for >%.*s<\n", data_len, data);
     }
 
-    info->expression = g_strndup((char*)expression, expression_len);
+    info->expression = g_strndup((char *)expression, expression_len);
     for (i = 0; out[i]; i += 4) {
-        if (strncmp("group", (char*)data + out[i], 5) == 0) {
+        if (strncmp("group", (char * )data + out[i], 5) == 0) {
             g_free(info->group);
-            info->group = g_strndup((char*)data + out[i + 2], out[i + 3]);
-        } else if (strncmp("dbField2", (char*)data + out[i], 7) == 0) {
+            info->group = g_strndup((char *)data + out[i + 2], out[i + 3]);
+        } else if (strncmp("dbField2", (char * )data + out[i], 7) == 0) {
             g_free(info->dbFieldFull);
-            info->dbFieldFull = info->dbField = g_strndup((char*)data + out[i + 2], out[i + 3]);
+            info->dbFieldFull = info->dbField = g_strndup((char *)data + out[i + 2], out[i + 3]);
             info->dbFieldLen  = out[i + 3];
-        } else if (strncmp("fieldECS", (char*)data + out[i], 7) == 0) {
+        } else if (strncmp("fieldECS", (char * )data + out[i], 7) == 0) {
             g_free(info->dbFieldFull);
-            info->dbFieldFull = info->dbField = g_strndup((char*)data + out[i + 2], out[i + 3]);
+            info->dbFieldFull = info->dbField = g_strndup((char *)data + out[i + 2], out[i + 3]);
             info->dbFieldLen  = out[i + 3];
-        } else if (strncmp("type", (char*)data + out[i], 4) == 0) {
+        } else if (strncmp("type", (char * )data + out[i], 4) == 0) {
             g_free(info->kind);
-            info->kind = g_strndup((char*)data + out[i + 2], out[i + 3]);
-        } else if (strncmp("category", (char*)data + out[i], 8) == 0) {
+            info->kind = g_strndup((char *)data + out[i + 2], out[i + 3]);
+        } else if (strncmp("category", (char * )data + out[i], 8) == 0) {
             g_free(info->category);
-            info->category = g_strndup((char*)data + out[i + 2], out[i + 3]);
-        } else if (strncmp("transform", (char*)data + out[i], 8) == 0) {
+            info->category = g_strndup((char *)data + out[i + 2], out[i + 3]);
+        } else if (strncmp("transform", (char * )data + out[i], 8) == 0) {
             g_free(info->transform);
-            info->transform = g_strndup((char*)data + out[i + 2], out[i + 3]);
-        } else if (strncmp("aliases", (char*)data + out[i], 7) == 0) {
+            info->transform = g_strndup((char *)data + out[i + 2], out[i + 3]);
+        } else if (strncmp("aliases", (char * )data + out[i], 7) == 0) {
             g_free(info->aliases);
-            info->aliases = g_strndup((char*)data + out[i + 2], out[i + 3]);
-        } else if (strncmp("disabled", (char*)data + out[i], 8) == 0) {
+            info->aliases = g_strndup((char *)data + out[i + 2], out[i + 3]);
+        } else if (strncmp("disabled", (char * )data + out[i], 8) == 0) {
             if (strncmp((char *)data + out[i + 2], "true", 4) == 0) {
                 disabled = 1;
             }
@@ -223,10 +223,10 @@ int arkime_field_define_text_full(char *field, char *text, int *shortcut)
     if (!group) {
         char *dot = strchr(field, '.');
         if (dot) {
-            if (dot-field >= (int)sizeof(groupbuf) - 1)
+            if (dot - field >= (int)sizeof(groupbuf) - 1)
                 LOGEXIT("ERROR - field '%s' too long", field);
-            memcpy(groupbuf, field, dot-field);
-            groupbuf[dot-field] = 0;
+            memcpy(groupbuf, field, dot - field);
+            groupbuf[dot - field] = 0;
             group = groupbuf;
         } else {
             group = "general";
@@ -394,7 +394,7 @@ int arkime_field_define(char *group, char *kind, char *expression, char *friendl
         // Change leading part to dbGroup
         char *firstdot = strchr(minfo->dbField, '.');
         if (firstdot) {
-            minfo->dbGroupNum = arkime_field_group_num(minfo->dbField, (firstdot-minfo->dbField) + 1);
+            minfo->dbGroupNum = arkime_field_group_num(minfo->dbField, (firstdot - minfo->dbField) + 1);
             minfo->dbGroup = minfo->dbField;
             minfo->dbGroupLen = firstdot - minfo->dbField;
             minfo->dbField += (firstdot - minfo->dbField) + 1;
@@ -441,7 +441,7 @@ int arkime_field_define(char *group, char *kind, char *expression, char *friendl
         snprintf(dbField2, sizeof(dbField2), "%.*sGEO", l, dbField);
         HASH_FIND(d_, fieldsByDb, dbField2, info);
         if (!info) {
-            snprintf(expression2, sizeof(expression2), "country.%s", expression+ 3);
+            snprintf(expression2, sizeof(expression2), "country.%s", expression + 3);
             snprintf(friendlyName2, sizeof(friendlyName2), "%.*s GEO", fnlen - 2, friendlyName);
             snprintf(help2, sizeof(help2), "GeoIP country string calculated from the %s", help);
             arkime_db_add_field(group, "uptermfield", expression2, friendlyName2, dbField2, help2, FALSE, empty_va_list);
@@ -563,18 +563,18 @@ const char *arkime_field_string_add(int pos, ArkimeSession_t *session, const cha
             string = g_strndup(string, len);
         switch (info->type) {
         case ARKIME_FIELD_TYPE_STR:
-            field->str = (char*)string;
+            field->str = (char *)string;
             goto added;
         case ARKIME_FIELD_TYPE_STR_ARRAY:
             field->sarray = g_ptr_array_new_with_free_func(g_free);
-            g_ptr_array_add(field->sarray, (char*)string);
+            g_ptr_array_add(field->sarray, (char *)string);
             goto added;
         case ARKIME_FIELD_TYPE_STR_HASH:
             hash = ARKIME_TYPE_ALLOC(ArkimeStringHashStd_t);
             HASH_INIT(s_, *hash, arkime_string_hash, arkime_string_ncmp);
             field->shash = hash;
             hstring = ARKIME_TYPE_ALLOC(ArkimeString_t);
-            hstring->str = (char*)string;
+            hstring->str = (char *)string;
             hstring->len = len;
             hstring->utf8 = 0;
             hstring->uw = 0;
@@ -608,12 +608,12 @@ const char *arkime_field_string_add(int pos, ArkimeSession_t *session, const cha
         if (copy)
             string = g_strndup(string, len);
         g_free(field->str);
-        field->str = (char*)string;
+        field->str = (char *)string;
         goto added;
     case ARKIME_FIELD_TYPE_STR_ARRAY:
         if (copy)
             string = g_strndup(string, len);
-        g_ptr_array_add(field->sarray, (char*)string);
+        g_ptr_array_add(field->sarray, (char *)string);
         goto added;
     case ARKIME_FIELD_TYPE_STR_HASH:
         HASH_FIND_HASH(s_, *(field->shash), arkime_string_hash_len(string, len), string, hstring);
@@ -625,7 +625,7 @@ const char *arkime_field_string_add(int pos, ArkimeSession_t *session, const cha
         hstring = ARKIME_TYPE_ALLOC(ArkimeString_t);
         if (copy)
             string = g_strndup(string, len);
-        hstring->str = (char*)string;
+        hstring->str = (char *)string;
         hstring->len = len;
         hstring->utf8 = 0;
         hstring->uw = 0;
@@ -648,7 +648,7 @@ const char *arkime_field_string_add(int pos, ArkimeSession_t *session, const cha
 
 added:
     if (info->ruleEnabled)
-      arkime_rules_run_field_set(session, pos, (const gpointer) string);
+        arkime_rules_run_field_set(session, pos, (const gpointer) string);
 
     return string;
 }
@@ -738,7 +738,7 @@ const char *arkime_field_string_uw_add(int pos, ArkimeSession_t *session, const 
             HASH_INIT(s_, *hash, arkime_string_hash, arkime_string_ncmp);
             field->shash = hash;
             hstring = ARKIME_TYPE_ALLOC(ArkimeString_t);
-            hstring->str = (char*)string;
+            hstring->str = (char *)string;
             hstring->len = len;
             hstring->utf8 = 0;
             hstring->uw = uw;
@@ -776,7 +776,7 @@ const char *arkime_field_string_uw_add(int pos, ArkimeSession_t *session, const 
         hstring = ARKIME_TYPE_ALLOC(ArkimeString_t);
         if (copy)
             string = g_strndup(string, len);
-        hstring->str = (char*)string;
+        hstring->str = (char *)string;
         hstring->len = len;
         hstring->utf8 = 0;
         hstring->uw = uw;
@@ -857,7 +857,7 @@ gboolean arkime_field_int_add(int pos, ArkimeSession_t *session, int i)
 
 added:
     if (info->ruleEnabled)
-      arkime_rules_run_field_set(session, pos, (gpointer)(long)i);
+        arkime_rules_run_field_set(session, pos, (gpointer)(long)i);
 
     return TRUE;
 }
@@ -916,8 +916,8 @@ gboolean arkime_field_float_add(int pos, ArkimeSession_t *session, float f)
 
 added:
     if (info->ruleEnabled) {
-      memcpy(&fint, &f, 4);
-      arkime_rules_run_field_set(session, pos, (gpointer)(long)fint);
+        memcpy(&fint, &f, 4);
+        arkime_rules_run_field_set(session, pos, (gpointer)(long)fint);
     }
 
     return TRUE;
@@ -925,21 +925,21 @@ added:
 /******************************************************************************/
 gboolean arkime_field_ip_equal (gconstpointer v1, gconstpointer v2)
 {
-  return memcmp (v1, v2, 16) == 0;
+    return memcmp (v1, v2, 16) == 0;
 }
 /******************************************************************************/
 SUPPRESS_UNSIGNED_INTEGER_OVERFLOW
 guint arkime_field_ip_hash (gconstpointer v)
 {
-  const uint8_t *p;
-  guint32 h = 5381;
-  unsigned int i;
+    const uint8_t *p;
+    guint32 h = 5381;
+    unsigned int i;
 
-  for (i = 0, p = v; i < 16; i++, p++) {
-    h = (h << 5) + h + *p;
-  }
+    for (i = 0, p = v; i < 16; i++, p++) {
+        h = (h << 5) + h + *p;
+    }
 
-  return h;
+    return h;
 }
 
 /******************************************************************************/
@@ -1019,7 +1019,7 @@ gboolean arkime_field_ip_add_str(int pos, ArkimeSession_t *session, char *str)
 
 added:
     if (info->ruleEnabled)
-      arkime_rules_run_field_set(session, pos, v);
+        arkime_rules_run_field_set(session, pos, v);
 
     return TRUE;
 }
@@ -1078,7 +1078,7 @@ gboolean arkime_field_ip4_add(int pos, ArkimeSession_t *session, uint32_t i)
 
 added:
     if (info->ruleEnabled)
-      arkime_rules_run_field_set(session, pos, v);
+        arkime_rules_run_field_set(session, pos, v);
 
     return TRUE;
 }
@@ -1133,7 +1133,7 @@ gboolean arkime_field_ip6_add(int pos, ArkimeSession_t *session, const uint8_t *
 
 added:
     if (info->ruleEnabled)
-      arkime_rules_run_field_set(session, pos, v);
+        arkime_rules_run_field_set(session, pos, v);
 
     return TRUE;
 }
@@ -1152,7 +1152,7 @@ uint32_t arkime_field_certsinfo_hash(const void *key)
                 (ci->subject.orgName.s_count));
     }
     return ((ci->serialNumber[0] << 28) |
-            (ci->serialNumber[ci->serialNumberLen-1] << 24) |
+            (ci->serialNumber[ci->serialNumberLen - 1] << 24) |
             (ci->issuer.commonName.s_count << 18) |
             (ci->issuer.orgName.s_count << 12) |
             (ci->subject.commonName.s_count << 6) |
@@ -1184,7 +1184,7 @@ int arkime_field_certsinfo_cmp(const void *keyv, const void *elementv)
 
     ArkimeString_t *kstr, *estr;
     for (kstr = key->issuer.commonName.s_next, estr = element->issuer.commonName.s_next;
-         kstr != (void *)&(key->issuer.commonName);
+         kstr != (void *) & (key->issuer.commonName);
          kstr = kstr->s_next, estr = estr->s_next) {
 
         if (strcmp(kstr->str, estr->str) != 0)
@@ -1192,7 +1192,7 @@ int arkime_field_certsinfo_cmp(const void *keyv, const void *elementv)
     }
 
     for (kstr = key->issuer.orgName.s_next, estr = element->issuer.orgName.s_next;
-         kstr != (void *)&(key->issuer.orgName);
+         kstr != (void *) & (key->issuer.orgName);
          kstr = kstr->s_next, estr = estr->s_next) {
 
         if (strcmp(kstr->str, estr->str) != 0)
@@ -1200,7 +1200,7 @@ int arkime_field_certsinfo_cmp(const void *keyv, const void *elementv)
     }
 
     for (kstr = key->issuer.orgUnit.s_next, estr = element->issuer.orgUnit.s_next;
-         kstr != (void *)&(key->issuer.orgUnit);
+         kstr != (void *) & (key->issuer.orgUnit);
          kstr = kstr->s_next, estr = estr->s_next) {
 
         if (strcmp(kstr->str, estr->str) != 0)
@@ -1208,7 +1208,7 @@ int arkime_field_certsinfo_cmp(const void *keyv, const void *elementv)
     }
 
     for (kstr = key->subject.commonName.s_next, estr = element->subject.commonName.s_next;
-         kstr != (void *)&(key->subject.commonName);
+         kstr != (void *) & (key->subject.commonName);
          kstr = kstr->s_next, estr = estr->s_next) {
 
         if (strcmp(kstr->str, estr->str) != 0)
@@ -1216,7 +1216,7 @@ int arkime_field_certsinfo_cmp(const void *keyv, const void *elementv)
     }
 
     for (kstr = key->subject.orgName.s_next, estr = element->subject.orgName.s_next;
-         kstr != (void *)&(key->subject.orgName);
+         kstr != (void *) & (key->subject.orgName);
          kstr = kstr->s_next, estr = estr->s_next) {
 
         if (strcmp(kstr->str, estr->str) != 0)
@@ -1224,7 +1224,7 @@ int arkime_field_certsinfo_cmp(const void *keyv, const void *elementv)
     }
 
     for (kstr = key->subject.orgUnit.s_next, estr = element->subject.orgUnit.s_next;
-         kstr != (void *)&(key->subject.orgUnit);
+         kstr != (void *) & (key->subject.orgUnit);
          kstr = kstr->s_next, estr = estr->s_next) {
 
         if (strcmp(kstr->str, estr->str) != 0)
@@ -1275,12 +1275,12 @@ void arkime_field_macoui_add(ArkimeSession_t *session, int macField, int ouiFiel
     char str[20];
 
     snprintf(str, sizeof(str), "%02x:%02x:%02x:%02x:%02x:%02x",
-            mac[0],
-            mac[1],
-            mac[2],
-            mac[3],
-            mac[4],
-            mac[5]);
+             mac[0],
+             mac[1],
+             mac[2],
+             mac[3],
+             mac[4],
+             mac[5]);
 
     if (arkime_field_string_add(macField, session, str, 17, TRUE))
         arkime_db_oui_lookup(ouiField, session, mac);

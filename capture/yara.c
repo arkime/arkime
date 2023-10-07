@@ -13,26 +13,24 @@ extern ArkimeConfig_t config;
 char *arkime_yara_version() {
     static char buf[100];
 #ifdef YR_MAJOR_VERSION
- #ifdef YR_MINOR_VERSION
-  #ifdef YR_MICRO_VERSION
+#ifdef YR_MINOR_VERSION
+#ifdef YR_MICRO_VERSION
     snprintf(buf, sizeof(buf), "%d.%d.%d", YR_MAJOR_VERSION, YR_MINOR_VERSION, YR_MICRO_VERSION);
-  #else /* YR_MICRO_VERSION */
+#else /* YR_MICRO_VERSION */
     snprintf(buf, sizeof(buf), "%d.%d", YR_MAJOR_VERSION, YR_MINOR_VERSION);
-  #endif /* YR_MICRO_VERSION */
- #else /* YR_MINOR_VERSION */
+#endif /* YR_MICRO_VERSION */
+#else /* YR_MINOR_VERSION */
     snprintf(buf, sizeof(buf), "%d.x", YR_MAJOR_VERSION);
- #endif /* YR_MINOR_VERSION */
+#endif /* YR_MINOR_VERSION */
 #else /* YR_MAJOR_VERSION */
- #ifdef STRING_IS_HEX
+#ifdef STRING_IS_HEX
     snprintf(buf, sizeof(buf), "2.x");
- #else
+#else
     snprintf(buf, sizeof(buf), "unknown");
- #endif /* STRING_IS_HEX */
+#endif /* STRING_IS_HEX */
 #endif /* YR_MAJOR_VERSION */
     return buf;
 }
-
-
 
 
 #if YR_MAJOR_VERSION == 4

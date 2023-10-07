@@ -12,12 +12,12 @@ extern ArkimeConfig_t        config;
 
 LOCAL  ArkimeStringHashStd_t readersHash;
 
-void reader_libpcapfile_init(char*);
-void reader_libpcap_init(char*);
-void reader_tpacketv3_init(char*);
-void reader_null_init(char*);
-void reader_pcapoverip_init(char*);
-void reader_tzsp_init(char*);
+void reader_libpcapfile_init(char *);
+void reader_libpcap_init(char *);
+void reader_tpacketv3_init(char *);
+void reader_null_init(char *);
+void reader_pcapoverip_init(char *);
+void reader_tzsp_init(char *);
 
 ArkimeReaderStart  arkime_reader_start;
 ArkimeReaderStats  arkime_reader_stats;

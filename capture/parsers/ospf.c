@@ -13,7 +13,7 @@ LOCAL ArkimePQ_t *ospfPq;
 LOCAL int ospfMProtocol;
 
 /******************************************************************************/
-LOCAL void ospf_create_sessionid(uint8_t *sessionId, ArkimePacket_t * const UNUSED (packet))
+LOCAL void ospf_create_sessionid(uint8_t *sessionId, ArkimePacket_t *const UNUSED (packet))
 {
     // uint8_t *data = packet->pkt + packet->payloadOffset;
 
@@ -24,7 +24,7 @@ LOCAL void ospf_create_sessionid(uint8_t *sessionId, ArkimePacket_t * const UNUS
     // for now, lump all ospf into the same session
 }
 /******************************************************************************/
-LOCAL int ospf_pre_process(ArkimeSession_t *session, ArkimePacket_t * const UNUSED(packet), int isNewSession)
+LOCAL int ospf_pre_process(ArkimeSession_t *session, ArkimePacket_t *const UNUSED(packet), int isNewSession)
 {
     if (isNewSession)
         arkime_session_add_protocol(session, "ospf");
@@ -32,12 +32,12 @@ LOCAL int ospf_pre_process(ArkimeSession_t *session, ArkimePacket_t * const UNUS
     return 0;
 }
 /******************************************************************************/
-LOCAL int ospf_process(ArkimeSession_t *UNUSED(session), ArkimePacket_t * const UNUSED(packet))
+LOCAL int ospf_process(ArkimeSession_t *UNUSED(session), ArkimePacket_t *const UNUSED(packet))
 {
     return 1;
 }
 /******************************************************************************/
-LOCAL ArkimePacketRC ospf_packet_enqueue(ArkimePacketBatch_t * UNUSED(batch), ArkimePacket_t * const packet, const uint8_t *data, int len)
+LOCAL ArkimePacketRC ospf_packet_enqueue(ArkimePacketBatch_t *UNUSED(batch), ArkimePacket_t *const packet, const uint8_t *data, int len)
 {
     uint8_t sessionId[ARKIME_SESSIONID_LEN];
 
@@ -64,9 +64,9 @@ void arkime_parser_init()
     arkime_packet_set_ip_cb(89, ospf_packet_enqueue);
     ospfPq = arkime_pq_alloc(10, ospf_pq_cb);
     ospfMProtocol = arkime_mprotocol_register("ospf",
-                                             SESSION_OTHER,
-                                             ospf_create_sessionid,
-                                             ospf_pre_process,
-                                             ospf_process,
-                                             NULL);
+                                              SESSION_OTHER,
+                                              ospf_create_sessionid,
+                                              ospf_pre_process,
+                                              ospf_process,
+                                              NULL);
 }

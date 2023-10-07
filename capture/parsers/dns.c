@@ -28,31 +28,31 @@ LOCAL  int                   httpsIpField;
 
 typedef enum dns_type
 {
-  RR_A          =   1,
-  RR_NS         =   2,
-  RR_CNAME      =   5,
-  RR_MX         =  15,
-  RR_AAAA       =  28,
-  RR_HTTPS      =  65
+    RR_A          =   1,
+    RR_NS         =   2,
+    RR_CNAME      =   5,
+    RR_MX         =  15,
+    RR_AAAA       =  28,
+    RR_HTTPS      =  65
 } DNSType_t;
 
 typedef enum dns_class
 {
-  CLASS_IN      =     1,
-  CLASS_CS      =     2,
-  CLASS_CH      =     3,
-  CLASS_HS      =     4,
-  CLASS_NONE    =   254,
-  CLASS_ANY     =   255,
-  CLASS_UNKNOWN = 65280
+    CLASS_IN      =     1,
+    CLASS_CS      =     2,
+    CLASS_CH      =     3,
+    CLASS_HS      =     4,
+    CLASS_NONE    =   254,
+    CLASS_ANY     =   255,
+    CLASS_UNKNOWN = 65280
 } DNSClass_t;
 
 typedef enum dns_result_record_type
 {
-  RESULT_RECORD_ANSWER          =     1,    /* Answer or Prerequisites Record */
-  RESULT_RECORD_AUTHORITATIVE   =     2,    /* Authoritative or Update Record */
-  RESULT_RECORD_ADDITIONAL      =     3,    /* Additional Record */
-  RESULT_RECORD_UNKNOWN         =     4,    /* Unknown Record*/
+    RESULT_RECORD_ANSWER          =     1,    /* Answer or Prerequisites Record */
+    RESULT_RECORD_AUTHORITATIVE   =     2,    /* Authoritative or Update Record */
+    RESULT_RECORD_ADDITIONAL      =     3,    /* Additional Record */
+    RESULT_RECORD_UNKNOWN         =     4,    /* Unknown Record*/
 } DNSResultRecordType_t;
 
 typedef struct {
@@ -134,7 +134,7 @@ LOCAL uint8_t *dns_name(const uint8_t *full, int fulllen, BSB *inbsb, uint8_t *n
             BSB_IMPORT_u16(*curbsb, tpos);
             tpos &= 0x3fff;
 
-            BSB_INIT(tmpbsb, full+tpos, fulllen - tpos);
+            BSB_INIT(tmpbsb, full + tpos, fulllen - tpos);
             curbsb = &tmpbsb;
             continue;
         }
@@ -275,22 +275,22 @@ LOCAL void dns_parser(ArkimeSession_t *session, int kind, const uint8_t *data, i
 
     int qr      = (data[2] >> 7) & 0x1;
     int opcode  = (data[2] >> 3) & 0xf;
- /*
-    int aa      = (data[2] >> 2) & 0x1;
-    int tc      = (data[2] >> 1) & 0x1;
-    int rd      = (data[2] >> 0) & 0x1;
-    int ra      = (data[3] >> 7) & 0x1;
-    int z       = (data[3] >> 6) & 0x1;
-    int ad      = (data[3] >> 5) & 0x1;
-    int cd      = (data[3] >> 4) & 0x1;
-*/
+    /*
+       int aa      = (data[2] >> 2) & 0x1;
+       int tc      = (data[2] >> 1) & 0x1;
+       int rd      = (data[2] >> 0) & 0x1;
+       int ra      = (data[3] >> 7) & 0x1;
+       int z       = (data[3] >> 6) & 0x1;
+       int ad      = (data[3] >> 5) & 0x1;
+       int cd      = (data[3] >> 4) & 0x1;
+    */
     if (opcode > 5)
         return;
 
     int qd_count = (data[4] << 8) | data[5];                                                          /*number of question records*/
     int an_prereqs_count = (data[6] << 8) | data[7];                                                  /*number of answer or prerequisite records*/
-    int ns_update_count = (opcode == 5 || config.parseDNSRecordAll)? (data[8] << 8) | data[9]:0;      /*number of authoritative or update recrods*/
-    int ar_count = (opcode == 5 || config.parseDNSRecordAll)? (data[10] << 8) | data[11]:0;           /*number of additional records*/
+    int ns_update_count = (opcode == 5 || config.parseDNSRecordAll) ? (data[8] << 8) | data[9] : 0;   /*number of authoritative or update recrods*/
+    int ar_count = (opcode == 5 || config.parseDNSRecordAll) ? (data[10] << 8) | data[11] : 0;        /*number of additional records*/
 
     int resultRecordCount [3] = {0};
     resultRecordCount [0] = an_prereqs_count;
@@ -298,7 +298,7 @@ LOCAL void dns_parser(ArkimeSession_t *session, int kind, const uint8_t *data, i
     resultRecordCount [2] = ar_count;
 
 #ifdef DNSDEBUG
-        LOG("DNSDEBUG: [Query/Zone Count: %d], [Answer or Prerequisite Count: %d], [Authoritative or Update RecordCount: %d], [Additional Record Count: %d]", qd_count, an_prereqs_count, ns_update_count, ar_count);
+    LOG("DNSDEBUG: [Query/Zone Count: %d], [Answer or Prerequisite Count: %d], [Authoritative or Update RecordCount: %d], [Additional Record Count: %d]", qd_count, an_prereqs_count, ns_update_count, ar_count);
 #endif
 
     if (qd_count > 10 || qd_count <= 0)
@@ -322,12 +322,12 @@ LOCAL void dns_parser(ArkimeSession_t *session, int kind, const uint8_t *data, i
             namelen = 6;
         }
 
-        unsigned short qtype = 0 , qclass = 0 ;
+        unsigned short qtype = 0, qclass = 0 ;
         BSB_IMPORT_u16(bsb, qtype);
         BSB_IMPORT_u16(bsb, qclass);
 
         if (opcode == 5)/* Skip Zone records in UPDATE query*/
-          continue;
+            continue;
 
         if (qclass <= 255 && qclasses[qclass]) {
             arkime_field_string_add(queryClassField, session, qclasses[qclass], -1, TRUE);
@@ -362,7 +362,7 @@ LOCAL void dns_parser(ArkimeSession_t *session, int kind, const uint8_t *data, i
         arkime_field_string_add(statusField, session, statuses[rcode], -1, TRUE);
     }
     int recordType = 0;
-    for (recordType= RESULT_RECORD_ANSWER; recordType <= RESULT_RECORD_ADDITIONAL; recordType++) {
+    for (recordType = RESULT_RECORD_ANSWER; recordType <= RESULT_RECORD_ADDITIONAL; recordType++) {
         int recordNum = resultRecordCount[recordType - 1];
         for (i = 0; BSB_NOT_ERROR(bsb) && i < recordNum; i++) {
 
@@ -371,7 +371,7 @@ LOCAL void dns_parser(ArkimeSession_t *session, int kind, const uint8_t *data, i
             uint8_t *name = dns_name(data, len, &bsb, namebuf, &namelen);
 
             if (BSB_IS_ERROR(bsb) || !name)
-             break;
+                break;
 
             uint16_t antype = 0;
             BSB_IMPORT_u16 (bsb, antype);
@@ -407,11 +407,11 @@ LOCAL void dns_parser(ArkimeSession_t *session, int kind, const uint8_t *data, i
                     }
 
                     if (config.parseDNSRecordAll) {
-                        if (dns_find_host(hostNameServerField, session, (char *)name, namelen)){ // IP for name-server
+                        if (dns_find_host(hostNameServerField, session, (char *)name, namelen)) { // IP for name-server
                             arkime_field_ip4_add(ipNameServerField, session, in.s_addr);
                         }
 
-                        if (dns_find_host(hostMailServerField, session, (char *)name, namelen)){ // IP for mail-exchange
+                        if (dns_find_host(hostMailServerField, session, (char *)name, namelen)) { // IP for mail-exchange
                             arkime_field_ip4_add(ipMailServerField, session, in.s_addr);
                         }
                     }
@@ -464,7 +464,7 @@ LOCAL void dns_parser(ArkimeSession_t *session, int kind, const uint8_t *data, i
                 if (config.parseDNSRecordAll)
                     dns_add_host(hostMailServerField, session, (char *)name, namelen);
                 else
-                    dns_add_host(hostField, session, (char*)name, namelen);
+                    dns_add_host(hostField, session, (char *)name, namelen);
 
                 break;
             }
@@ -482,11 +482,11 @@ LOCAL void dns_parser(ArkimeSession_t *session, int kind, const uint8_t *data, i
                     }
 
                     if (config.parseDNSRecordAll) {
-                        if (dns_find_host(hostNameServerField, session, (char *)name, namelen)){ // IP for name-server
+                        if (dns_find_host(hostNameServerField, session, (char *)name, namelen)) { // IP for name-server
                             arkime_field_ip6_add(ipNameServerField, session, ptr);
                         }
 
-                        if (dns_find_host(hostMailServerField, session, (char *)name, namelen)){ // IP for mail-server
+                        if (dns_find_host(hostMailServerField, session, (char *)name, namelen)) { // IP for mail-server
                             arkime_field_ip6_add(ipMailServerField, session, ptr);
                         }
                     }
@@ -510,7 +510,7 @@ LOCAL int dns_tcp_parser(ArkimeSession_t *session, void *uw, const uint8_t *data
 
         // First packet of request
         if (info->len[which] == 0) {
-            int dnslength = ((data[0]&0xff) << 8) | (data[1] & 0xff);
+            int dnslength = ((data[0] & 0xff) << 8) | (data[1] & 0xff);
 
             if (dnslength < 18) {
                 arkime_parsers_unregister(session, uw);
@@ -564,7 +564,7 @@ LOCAL void dns_tcp_classify(ArkimeSession_t *session, const uint8_t *UNUSED(data
 {
     if (/*which == 0 &&*/ session->port2 == 53 && !arkime_session_has_protocol(session, "dns")) {
         arkime_session_add_protocol(session, "dns");
-        DNSInfo_t  *info= ARKIME_TYPE_ALLOC0(DNSInfo_t);
+        DNSInfo_t  *info = ARKIME_TYPE_ALLOC0(DNSInfo_t);
         arkime_parsers_register(session, dns_tcp_parser, info, dns_free);
     }
 }
@@ -585,119 +585,119 @@ LOCAL void dns_udp_classify(ArkimeSession_t *session, const uint8_t *UNUSED(data
 void arkime_parser_init()
 {
     ipField = arkime_field_define("dns", "ip",
-        "ip.dns", "IP",  "dns.ip",
-        "IP from DNS result",
-        ARKIME_FIELD_TYPE_IP_GHASH, ARKIME_FIELD_FLAG_CNT | ARKIME_FIELD_FLAG_IPPRE,
-        "aliases", "[\"dns.ip\"]",
-        "category", "ip",
-        (char *)NULL);
+                                  "ip.dns", "IP",  "dns.ip",
+                                  "IP from DNS result",
+                                  ARKIME_FIELD_TYPE_IP_GHASH, ARKIME_FIELD_FLAG_CNT | ARKIME_FIELD_FLAG_IPPRE,
+                                  "aliases", "[\"dns.ip\"]",
+                                  "category", "ip",
+                                  (char *)NULL);
 
     ipNameServerField = arkime_field_define("dns", "ip",
-        "ip.dns.nameserver", "IP",  "dns.nameserverIp",
-        "IPs for nameservers",
-        ARKIME_FIELD_TYPE_IP_GHASH, ARKIME_FIELD_FLAG_CNT | ARKIME_FIELD_FLAG_IPPRE,
-        "category", "ip",
-        (char *)NULL);
+                                            "ip.dns.nameserver", "IP",  "dns.nameserverIp",
+                                            "IPs for nameservers",
+                                            ARKIME_FIELD_TYPE_IP_GHASH, ARKIME_FIELD_FLAG_CNT | ARKIME_FIELD_FLAG_IPPRE,
+                                            "category", "ip",
+                                            (char *)NULL);
 
     ipMailServerField = arkime_field_define("dns", "ip",
-        "ip.dns.mailserver", "IP",  "dns.mailserverIp",
-        "IPs for mailservers",
-        ARKIME_FIELD_TYPE_IP_GHASH, ARKIME_FIELD_FLAG_CNT | ARKIME_FIELD_FLAG_IPPRE,
-        "category", "ip",
-        (char *)NULL);
+                                            "ip.dns.mailserver", "IP",  "dns.mailserverIp",
+                                            "IPs for mailservers",
+                                            ARKIME_FIELD_TYPE_IP_GHASH, ARKIME_FIELD_FLAG_CNT | ARKIME_FIELD_FLAG_IPPRE,
+                                            "category", "ip",
+                                            (char *)NULL);
 
     arkime_field_define("dns", "ip",
-        "ip.dns.all", "IP", "dnsipall",
-        "Shorthand for ip.dns or ip.dns.nameserver",
-        0, ARKIME_FIELD_FLAG_FAKE,
-        "regex", "^ip\\\\.dns(?:(?!\\\\.(cnt|all)$).)*$",
-        (char *)NULL);
+                        "ip.dns.all", "IP", "dnsipall",
+                        "Shorthand for ip.dns or ip.dns.nameserver",
+                        0, ARKIME_FIELD_FLAG_FAKE,
+                        "regex", "^ip\\\\.dns(?:(?!\\\\.(cnt|all)$).)*$",
+                        (char *)NULL);
 
     hostField = arkime_field_define("dns", "lotermfield",
-        "host.dns", "Host", "dns.host",
-        "DNS lookup hostname",
-        ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT | ARKIME_FIELD_FLAG_FORCE_UTF8,
-        "aliases", "[\"dns.host\"]",
-        "category", "host",
-        (char *)NULL);
+                                    "host.dns", "Host", "dns.host",
+                                    "DNS lookup hostname",
+                                    ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT | ARKIME_FIELD_FLAG_FORCE_UTF8,
+                                    "aliases", "[\"dns.host\"]",
+                                    "category", "host",
+                                    (char *)NULL);
 
     arkime_field_define("dns", "lotextfield",
-        "host.dns.tokens", "Hostname Tokens", "dns.hostTokens",
-        "DNS lookup hostname tokens",
-        ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_FAKE,
-        "aliases", "[\"dns.host.tokens\"]",
-        (char *)NULL);
+                        "host.dns.tokens", "Hostname Tokens", "dns.hostTokens",
+                        "DNS lookup hostname tokens",
+                        ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_FAKE,
+                        "aliases", "[\"dns.host.tokens\"]",
+                        (char *)NULL);
 
     hostNameServerField = arkime_field_define("dns", "lotermfield",
-        "host.dns.nameserver", "NS Host", "dns.nameserverHost",
-        "Hostnames for Name Server",
-        ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT | ARKIME_FIELD_FLAG_FORCE_UTF8,
-        "category", "host",
-        (char *)NULL);
+                                              "host.dns.nameserver", "NS Host", "dns.nameserverHost",
+                                              "Hostnames for Name Server",
+                                              ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT | ARKIME_FIELD_FLAG_FORCE_UTF8,
+                                              "category", "host",
+                                              (char *)NULL);
 
     hostMailServerField = arkime_field_define("dns", "lotermfield",
-        "host.dns.mailserver", "MX Host", "dns.mailserverHost",
-        "Hostnames for Mail Exchange Server",
-        ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT | ARKIME_FIELD_FLAG_FORCE_UTF8,
-        "category", "host",
-        (char *)NULL);
+                                              "host.dns.mailserver", "MX Host", "dns.mailserverHost",
+                                              "Hostnames for Mail Exchange Server",
+                                              ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT | ARKIME_FIELD_FLAG_FORCE_UTF8,
+                                              "category", "host",
+                                              (char *)NULL);
 
     arkime_field_define("dns", "lotermfield",
-        "host.dns.all", "All Host", "dnshostall",
-        "Shorthand for host.dns or host.dns.nameserver",
-        0, ARKIME_FIELD_FLAG_FAKE,
-        "regex",  "^host\\\\.dns(?:(?!\\\\.(cnt|all)$).)*$",
-        (char *)NULL);
+                        "host.dns.all", "All Host", "dnshostall",
+                        "Shorthand for host.dns or host.dns.nameserver",
+                        0, ARKIME_FIELD_FLAG_FAKE,
+                        "regex",  "^host\\\\.dns(?:(?!\\\\.(cnt|all)$).)*$",
+                        (char *)NULL);
 
     punyField = arkime_field_define("dns", "lotermfield",
-        "dns.puny", "Puny", "dns.puny",
-        "DNS lookup punycode",
-        ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT,
-        (char *)NULL);
+                                    "dns.puny", "Puny", "dns.puny",
+                                    "DNS lookup punycode",
+                                    ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT,
+                                    (char *)NULL);
 
     statusField = arkime_field_define("dns", "uptermfield",
-        "dns.status", "Status Code", "dns.status",
-        "DNS lookup return code",
-        ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT,
-        (char *)NULL);
+                                      "dns.status", "Status Code", "dns.status",
+                                      "DNS lookup return code",
+                                      ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT,
+                                      (char *)NULL);
 
     opCodeField = arkime_field_define("dns", "uptermfield",
-        "dns.opcode", "Op Code", "dns.opcode",
-        "DNS lookup op code",
-        ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT,
-        (char *)NULL);
+                                      "dns.opcode", "Op Code", "dns.opcode",
+                                      "DNS lookup op code",
+                                      ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT,
+                                      (char *)NULL);
 
     queryTypeField = arkime_field_define("dns", "uptermfield",
-        "dns.query.type", "Query Type", "dns.qt",
-        "DNS lookup query type",
-        ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT,
-        (char *)NULL);
+                                         "dns.query.type", "Query Type", "dns.qt",
+                                         "DNS lookup query type",
+                                         ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT,
+                                         (char *)NULL);
 
     queryClassField = arkime_field_define("dns", "uptermfield",
-        "dns.query.class", "Query Class", "dns.qc",
-        "DNS lookup query class",
-        ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT,
-        (char *)NULL);
+                                          "dns.query.class", "Query Class", "dns.qc",
+                                          "DNS lookup query class",
+                                          ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT,
+                                          (char *)NULL);
 
     httpsAlpnField = arkime_field_define("dns", "lotermfield",
-        "dns.https.alpn", "Alpn", "dns.https.alpn",
-        "DNS https alpn",
-        ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT,
-        (char *)NULL);
+                                         "dns.https.alpn", "Alpn", "dns.https.alpn",
+                                         "DNS https alpn",
+                                         ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT,
+                                         (char *)NULL);
 
     httpsIpField = arkime_field_define("dns", "ip",
-        "ip.dns.https", "IP", "dns.https.ip",
-        "DNS https ip",
-        ARKIME_FIELD_TYPE_IP_GHASH,  ARKIME_FIELD_FLAG_CNT | ARKIME_FIELD_FLAG_IPPRE,
-        "aliases", "[\"dns.https.ip\"]",
-        "category", "ip",
-        (char *)NULL);
+                                       "ip.dns.https", "IP", "dns.https.ip",
+                                       "DNS https ip",
+                                       ARKIME_FIELD_TYPE_IP_GHASH,  ARKIME_FIELD_FLAG_CNT | ARKIME_FIELD_FLAG_IPPRE,
+                                       "aliases", "[\"dns.https.ip\"]",
+                                       "category", "ip",
+                                       (char *)NULL);
 
     httpsPortField = arkime_field_define("dns", "integer",
-        "dns.https.port", "IP", "dns.https.port",
-        "DNS https port",
-        ARKIME_FIELD_TYPE_INT_HASH,  ARKIME_FIELD_FLAG_CNT,
-        (char *)NULL);
+                                         "dns.https.port", "IP", "dns.https.port",
+                                         "DNS https port",
+                                         ARKIME_FIELD_TYPE_INT_HASH,  ARKIME_FIELD_FLAG_CNT,
+                                         (char *)NULL);
 
     qclasses[1]   = "IN";
     qclasses[2]   = "CS";
@@ -768,8 +768,8 @@ void arkime_parser_init()
 
     arkime_parsers_classifier_register_port("dns", NULL, 53, ARKIME_PARSERS_PORT_TCP_DST, dns_tcp_classify);
 
-    arkime_parsers_classifier_register_port("dns",   (void*)(long)0,   53, ARKIME_PARSERS_PORT_UDP, dns_udp_classify);
-    arkime_parsers_classifier_register_port("llmnr", (void*)(long)1, 5355, ARKIME_PARSERS_PORT_UDP, dns_udp_classify);
-    arkime_parsers_classifier_register_port("mdns",  (void*)(long)2, 5353, ARKIME_PARSERS_PORT_UDP, dns_udp_classify);
+    arkime_parsers_classifier_register_port("dns",   (void *)(long)0,   53, ARKIME_PARSERS_PORT_UDP, dns_udp_classify);
+    arkime_parsers_classifier_register_port("llmnr", (void *)(long)1, 5355, ARKIME_PARSERS_PORT_UDP, dns_udp_classify);
+    arkime_parsers_classifier_register_port("mdns",  (void *)(long)2, 5353, ARKIME_PARSERS_PORT_UDP, dns_udp_classify);
 
 }

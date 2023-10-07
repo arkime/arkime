@@ -123,7 +123,7 @@ gchar *arkime_config_section_str(GKeyFile *keyfile, char *section, char *key, ch
     }
 
     if (config.debug) {
-        LOG("%s.%s=%s", section, key, result?result:"(null)");
+        LOG("%s.%s=%s", section, key, result ? result : "(null)");
     }
 
     return result;
@@ -177,7 +177,7 @@ gchar *arkime_config_str(GKeyFile *keyfile, char *key, char *d)
         g_strstrip(result);
 
     if (config.debug) {
-        LOG("%s=%s", key, result?result:"(null)");
+        LOG("%s=%s", key, result ? result : "(null)");
     }
 
     return result;
@@ -344,7 +344,7 @@ char arkime_config_boolean(GKeyFile *keyfile, char *key, char d)
     }
 
     if (config.debug) {
-        LOG("%s=%s", key, value?"true": "false");
+        LOG("%s=%s", key, value ? "true" : "false");
     }
 
     return value;
@@ -368,7 +368,7 @@ void arkime_config_load_includes(char **includes)
                     g_error_free(error);
                 continue;
             } else {
-                CONFIGEXIT("Couldn't load config includes file (%s) %s", fn, (error?error->message:""));
+                CONFIGEXIT("Couldn't load config includes file (%s) %s", fn, (error ? error->message : ""));
             }
         }
 
@@ -418,7 +418,7 @@ gboolean arkime_config_load_json(GKeyFile *keyfile, char *data, GError **UNUSED(
     memset(sections, 0, sizeof(sections));
     js0n((uint8_t *)data, strlen(data), sections, sizeof(sections));
 
-    for (int s = 0; sections[s]; s+= 4) {
+    for (int s = 0; sections[s]; s += 4) {
         char *section = g_strndup(data + sections[s], sections[s + 1]);
 
         uint32_t keys[4 * 500]; // Can have up to 500 keys
@@ -442,7 +442,7 @@ gboolean arkime_config_load_json(GKeyFile *keyfile, char *data, GError **UNUSED(
                 for (int p = 0; parts[p]; p += 2) {
                     if (p != 0)
                         BSB_EXPORT_u08(bsb, sep);
-                    BSB_EXPORT_ptr(bsb, value+parts[p], parts[p + 1]);
+                    BSB_EXPORT_ptr(bsb, value + parts[p], parts[p + 1]);
                 }
                 BSB_EXPORT_u08(bsb, 0);
                 g_key_file_set_string(keyfile, section, key, buf);
@@ -488,10 +488,10 @@ gboolean arkime_config_load_yaml(GKeyFile *keyfile, char *data, GError **UNUSED(
         case YAML_SCALAR_EVENT:
             if (level == 1) {
                 g_free(section);
-                section = g_strdup((char*)event.data.scalar.value);
+                section = g_strdup((char *)event.data.scalar.value);
             } else if (level == 2) {
                 if (!key) {
-                    key = g_strdup((char*)event.data.scalar.value);
+                    key = g_strdup((char *)event.data.scalar.value);
                 } else {
 #ifdef CONFIG_DEBUG
                     LOG("%s:%s => %s", section, key, event.data.scalar.value);
@@ -612,13 +612,13 @@ void arkime_config_load()
         if (g_str_has_suffix(config.configFile, ".json")) {
             gchar *data;
             if (!g_file_get_contents(config.configFile, &data, NULL, &error))
-                CONFIGEXIT("Couldn't load config file (%s) %s", config.configFile, (error?error->message:""));
+                CONFIGEXIT("Couldn't load config file (%s) %s", config.configFile, (error ? error->message : ""));
             status = arkime_config_load_json(keyfile, data, &error);
             g_free(data);
         } else if (g_str_has_suffix(config.configFile, ".yml") || g_str_has_suffix(config.configFile, ".yaml")) {
             gchar *data;
             if (!g_file_get_contents(config.configFile, &data, NULL, &error))
-                CONFIGEXIT("Couldn't load config file (%s) %s", config.configFile, (error?error->message:""));
+                CONFIGEXIT("Couldn't load config file (%s) %s", config.configFile, (error ? error->message : ""));
             status = arkime_config_load_yaml(keyfile, data, &error);
             g_free(data);
         } else
@@ -626,7 +626,7 @@ void arkime_config_load()
     }
 
     if (!status || error) {
-        CONFIGEXIT("Couldn't load config file (%s) %s", config.configFile, (error?error->message:""));
+        CONFIGEXIT("Couldn't load config file (%s) %s", config.configFile, (error ? error->message : ""));
     }
 
     char **includes = arkime_config_str_list(keyfile, "includes", NULL);
@@ -696,7 +696,7 @@ void arkime_config_load()
                 if (num > 0xffff)
                     num = 0xffff;
             }
-            arkime_string_add((ArkimeStringHash_t *)(char*)&config.dontSaveTags, tags[i], (gpointer)(long)num, TRUE);
+            arkime_string_add((ArkimeStringHash_t *)(char *)&config.dontSaveTags, tags[i], (gpointer)(long)num, TRUE);
         }
         g_strfreev(tags);
     }
@@ -748,7 +748,7 @@ void arkime_config_load()
 
     config.offlineRegex     = g_regex_new(offlineRegex, 0, 0, &error);
     if (!config.offlineRegex || error) {
-        CONFIGEXIT("Couldn't parse offlineRegex (%s) %s", offlineRegex, (error?error->message:""));
+        CONFIGEXIT("Couldn't parse offlineRegex (%s) %s", offlineRegex, (error ? error->message : ""));
     }
     g_free(offlineRegex);
 
@@ -759,18 +759,18 @@ void arkime_config_load()
 
     config.pcapDirAlgorithm = arkime_config_str(keyfile, "pcapDirAlgorithm", "round-robin");
     if (strcmp(config.pcapDirAlgorithm, "round-robin") != 0
-            && strcmp(config.pcapDirAlgorithm, "max-free-percent") != 0
-            && strcmp(config.pcapDirAlgorithm, "max-free-bytes") != 0) {
+        && strcmp(config.pcapDirAlgorithm, "max-free-percent") != 0
+        && strcmp(config.pcapDirAlgorithm, "max-free-bytes") != 0) {
         CONFIGEXIT("'%s' is not a valid value for pcapDirAlgorithm.  Supported algorithms are round-robin, max-free-percent, and max-free-bytes.", config.pcapDirAlgorithm);
     }
 
     config.maxFileSizeG          = arkime_config_double(keyfile, "maxFileSizeG", 12, 0.01, 1024);
     config.maxFileSizeB          = config.maxFileSizeG * 1024LL * 1024LL * 1024LL;
     config.maxFileTimeM          = arkime_config_int(keyfile, "maxFileTimeM", 0, 0, 0xffff);
-    config.timeouts[SESSION_ICMP]= arkime_config_int(keyfile, "icmpTimeout", 10, 1, 0xffff);
+    config.timeouts[SESSION_ICMP] = arkime_config_int(keyfile, "icmpTimeout", 10, 1, 0xffff);
     config.timeouts[SESSION_UDP] = arkime_config_int(keyfile, "udpTimeout", 60, 1, 0xffff);
     config.timeouts[SESSION_TCP] = arkime_config_int(keyfile, "tcpTimeout", 60 * 8, 10, 0xffff);
-    config.timeouts[SESSION_SCTP]= arkime_config_int(keyfile, "sctpTimeout", 60, 10, 0xffff);
+    config.timeouts[SESSION_SCTP] = arkime_config_int(keyfile, "sctpTimeout", 60, 10, 0xffff);
     config.timeouts[SESSION_ESP] = arkime_config_int(keyfile, "espTimeout", 60 * 10, 10, 0xffff);
     config.timeouts[SESSION_OTHER] = 60 * 10;
     config.tcpSaveTimeout        = arkime_config_int(keyfile, "tcpSaveTimeout", 60 * 8, 10, 60 * 120);
@@ -816,12 +816,12 @@ void arkime_config_load()
     config.enablePacketLen       = arkime_config_boolean(NULL, "enablePacketLen", FALSE);
     config.enablePacketDedup     = arkime_config_boolean(NULL, "enablePacketDedup", TRUE);
 
-    config.maxStreams[SESSION_TCP] = MAX(100, maxStreams/config.packetThreads * 1.25);
-    config.maxStreams[SESSION_UDP] = MAX(100, maxStreams/config.packetThreads / 20);
-    config.maxStreams[SESSION_SCTP] = MAX(100, maxStreams/config.packetThreads / 20);
-    config.maxStreams[SESSION_ICMP] = MAX(100, maxStreams/config.packetThreads/200);
-    config.maxStreams[SESSION_ESP] = MAX(100, maxStreams/config.packetThreads/200);
-    config.maxStreams[SESSION_OTHER] = MAX(100, maxStreams/config.packetThreads/20);
+    config.maxStreams[SESSION_TCP] = MAX(100, maxStreams / config.packetThreads * 1.25);
+    config.maxStreams[SESSION_UDP] = MAX(100, maxStreams / config.packetThreads / 20);
+    config.maxStreams[SESSION_SCTP] = MAX(100, maxStreams / config.packetThreads / 20);
+    config.maxStreams[SESSION_ICMP] = MAX(100, maxStreams / config.packetThreads / 200);
+    config.maxStreams[SESSION_ESP] = MAX(100, maxStreams / config.packetThreads / 200);
+    config.maxStreams[SESSION_OTHER] = MAX(100, maxStreams / config.packetThreads / 20);
 
     gchar **saveUnknownPackets     = arkime_config_str_list(keyfile, "saveUnknownPackets", NULL);
     if (saveUnknownPackets) {
@@ -886,10 +886,10 @@ void arkime_config_parse_override_ips(GKeyFile *keyFile)
     for (k = 0 ; k < keys_len; k++) {
         gsize values_len;
         gchar **values = g_key_file_get_string_list(keyFile,
-                                                   "override-ips",
-                                                   keys[k],
-                                                  &values_len,
-                                                   NULL);
+                                                    "override-ips",
+                                                    keys[k],
+                                                    &values_len,
+                                                    NULL);
         ArkimeIpInfo_t *ii = ARKIME_TYPE_ALLOC0(ArkimeIpInfo_t);
         for (v = 0; v < values_len; v++) {
             if (strncmp(values[v], "asn:", 4) == 0) {
@@ -952,7 +952,7 @@ void arkime_config_load_override_ips()
                         g_error_free(error);
                     continue;
                 } else {
-                    CONFIGEXIT("Couldn't load overrideIpsFiles file (%s) %s", overrideIpsFiles[i], (error?error->message:""));
+                    CONFIGEXIT("Couldn't load overrideIpsFiles file (%s) %s", overrideIpsFiles[i], (error ? error->message : ""));
                 }
             }
             arkime_config_parse_override_ips(keyfile);
@@ -980,10 +980,10 @@ void arkime_config_parse_packet_ips(GKeyFile *keyFile)
     for (k = 0 ; k < keys_len; k++) {
         gsize values_len;
         gchar **values = g_key_file_get_string_list(keyFile,
-                                                   "packet-drop-ips",
-                                                   keys[k],
-                                                  &values_len,
-                                                   NULL);
+                                                    "packet-drop-ips",
+                                                    keys[k],
+                                                    &values_len,
+                                                    NULL);
         int mode = 0;
         for (v = 0; v < values_len; v++) {
             if (strncmp(values[v], "drop", 4) == 0) {
@@ -1020,7 +1020,7 @@ void arkime_config_load_packet_ips()
                         g_error_free(error);
                     continue;
                 } else {
-                    CONFIGEXIT("Couldn't load packetDropIpsFiles file (%s) %s", packetDropIpsFiles[i], (error?error->message:""));
+                    CONFIGEXIT("Couldn't load packetDropIpsFiles file (%s) %s", packetDropIpsFiles[i], (error ? error->message : ""));
                 }
             }
             arkime_config_parse_packet_ips(keyfile);
@@ -1060,10 +1060,10 @@ void arkime_config_load_header(char *section, char *group, char *helpBase, char 
     for (k = 0 ; k < keys_len; k++) {
         gsize values_len;
         gchar **values = g_key_file_get_string_list(arkimeKeyFile,
-                                                   section,
-                                                   keys[k],
-                                                  &values_len,
-                                                   NULL);
+                                                    section,
+                                                    keys[k],
+                                                    &values_len,
+                                                    NULL);
         snprintf(name, sizeof(name), "%s", keys[k]);
         int type = 0;
         ArkimeFieldType t = ARKIME_FIELD_TYPE_INT;
@@ -1133,9 +1133,9 @@ void arkime_config_load_header(char *section, char *group, char *helpBase, char 
 
         int pos;
         pos = arkime_field_define(group, kind,
-                expression, expression, field,
-                help,
-                t, f, "aliases", aliasBase ? aliases : NULL, (char *)NULL);
+                                  expression, expression, field,
+                                  help,
+                                  t, f, "aliases", aliasBase ? aliases : NULL, (char *)NULL);
         arkime_config_add_header(hash, g_strdup(keys[k]), pos);
         g_strfreev(values);
     }

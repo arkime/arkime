@@ -8,7 +8,7 @@
 extern ArkimeConfig_t        config;
 
 /******************************************************************************/
-LOCAL ArkimePacketRC pppoe_packet_enqueue(ArkimePacketBatch_t * batch, ArkimePacket_t * const packet, const uint8_t *data, int len)
+LOCAL ArkimePacketRC pppoe_packet_enqueue(ArkimePacketBatch_t *batch, ArkimePacket_t *const packet, const uint8_t *data, int len)
 {
     if (len < 8 || data[0] != 0x11 || data[1] != 0) {
 #ifdef DEBUG_PACKET
@@ -27,7 +27,7 @@ LOCAL ArkimePacketRC pppoe_packet_enqueue(ArkimePacketBatch_t * batch, ArkimePac
     case 0x21:
         return arkime_packet_run_ethernet_cb(batch, packet, data + 8, len - 8, ETHERTYPE_IP, "PPP");
     case 0x57:
-        return arkime_packet_run_ethernet_cb(batch, packet, data + 8, len- 8, ETHERTYPE_IPV6, "PPP");
+        return arkime_packet_run_ethernet_cb(batch, packet, data + 8, len - 8, ETHERTYPE_IPV6, "PPP");
     default:
 #ifdef DEBUG_PACKET
         LOG("BAD PACKET: Unknown pppoe type %d", type);
@@ -37,7 +37,7 @@ LOCAL ArkimePacketRC pppoe_packet_enqueue(ArkimePacketBatch_t * batch, ArkimePac
     }
 }
 /******************************************************************************/
-LOCAL ArkimePacketRC ppp_packet_enqueue(ArkimePacketBatch_t * batch, ArkimePacket_t * const packet, const uint8_t *data, int len)
+LOCAL ArkimePacketRC ppp_packet_enqueue(ArkimePacketBatch_t *batch, ArkimePacket_t *const packet, const uint8_t *data, int len)
 {
     if (len < 4 || data[2] != 0x00) {
 #ifdef DEBUG_PACKET

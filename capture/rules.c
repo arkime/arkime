@@ -96,8 +96,8 @@ extern ArkimePcapFileHdr_t pcapFileHeader;
 
 typedef union {
     struct {
-      uint32_t      min;
-      uint32_t      max;
+        uint32_t      min;
+        uint32_t      max;
     };
     uint64_t        num;
 } ArkimeRuleIntMatch_t;
@@ -193,7 +193,8 @@ LOCAL YamlNode_t *arkime_rules_parser_parse_yaml(char *filename, YamlNode_t *par
         case YAML_MAPPING_END_EVENT:
         case YAML_SEQUENCE_END_EVENT:
             done = 1;
-        default: ;
+        default:
+            ;
         }
         yaml_event_delete(&event);
     }
@@ -233,7 +234,7 @@ LOCAL YamlNode_t *arkime_rules_parser_get(YamlNode_t *node, char *path)
 
         int i;
         for (i = 0; i < (int)node->values->len; i++) {
-            if (strncmp(path, ((YamlNode_t*)g_ptr_array_index(node->values, i))->key, len) == 0)
+            if (strncmp(path, ((YamlNode_t * )g_ptr_array_index(node->values, i))->key, len) == 0)
                 break;
         }
         if (i == (int)node->values->len)
@@ -378,7 +379,7 @@ LOCAL void arkime_rules_load_add_field_range_match(ArkimeRule_t *rule, int pos, 
     // If the range is small convert back to non range.
     if (max - min < 20) {
         char str[30];
-        for (;min <= max; min++) {
+        for (; min <= max; min++) {
             snprintf(str, sizeof(str), "%u", min);
             arkime_rules_load_add_field(rule, pos, str);
         }
@@ -815,7 +816,7 @@ void arkime_rules_recompile()
     }
 }
 /******************************************************************************/
-LOCAL gboolean arkime_rules_check_ip(const ArkimeRule_t * const rule, const int p, const struct in6_addr *ip, BSB *logStr)
+LOCAL gboolean arkime_rules_check_ip(const ArkimeRule_t *const rule, const int p, const struct in6_addr *ip, BSB *logStr)
 {
     if (IN6_IS_ADDR_V4MAPPED(ip)) {
         patricia_node_t *node = patricia_search_best3 (rule->tree4[p], ((u_char *)ip->s6_addr) + 12, 32);
@@ -824,12 +825,12 @@ LOCAL gboolean arkime_rules_check_ip(const ArkimeRule_t * const rule, const int 
         if (!logStr)
             return TRUE;
         BSB_EXPORT_sprintf(*logStr, "%s: %u.%u.%u.%u/%u, ",
-                config.fields[p]->expression,
-                node->prefix->add.sin.s_addr & 0xff,
-                (node->prefix->add.sin.s_addr >> 8) & 0xff,
-                (node->prefix->add.sin.s_addr >> 16) & 0xff,
-                (node->prefix->add.sin.s_addr >> 24) & 0xff,
-                node->prefix->bitlen);
+                           config.fields[p]->expression,
+                           node->prefix->add.sin.s_addr & 0xff,
+                           (node->prefix->add.sin.s_addr >> 8) & 0xff,
+                           (node->prefix->add.sin.s_addr >> 16) & 0xff,
+                           (node->prefix->add.sin.s_addr >> 24) & 0xff,
+                           node->prefix->bitlen);
     } else {
         patricia_node_t *node = patricia_search_best3 (rule->tree6[p], (u_char *)ip->s6_addr, 128);
         if (!node)
@@ -844,7 +845,7 @@ LOCAL gboolean arkime_rules_check_ip(const ArkimeRule_t * const rule, const int 
     return TRUE;
 }
 /******************************************************************************/
-LOCAL gboolean arkime_rules_check_str_match(const ArkimeRule_t * const rule, int p, const char * const key, BSB *logStr)
+LOCAL gboolean arkime_rules_check_str_match(const ArkimeRule_t *const rule, int p, const char *const key, BSB *logStr)
 {
 
     if (rule->hash[p] && g_hash_table_contains(rule->hash[p], key)) {
@@ -854,7 +855,7 @@ LOCAL gboolean arkime_rules_check_str_match(const ArkimeRule_t * const rule, int
         return TRUE;
     }
 
-    const GPtrArray * const matches = rule->match[p];
+    const GPtrArray *const matches = rule->match[p];
 
     if (!matches)
         return FALSE;
@@ -884,7 +885,7 @@ LOCAL gboolean arkime_rules_check_str_match(const ArkimeRule_t * const rule, int
             }
             break;
         case ARKIME_RULES_STR_MATCH_CONTAINS:
-            if (arkime_memstr(key, len, (char*)akey + 2, akey[1]) != 0) {
+            if (arkime_memstr(key, len, (char * )akey + 2, akey[1]) != 0) {
                 if (logStr) {
                     BSB_EXPORT_sprintf(*logStr, "%s,contains: %s, ", config.fields[p]->expression, akey + 2);
                 }
@@ -896,9 +897,9 @@ LOCAL gboolean arkime_rules_check_str_match(const ArkimeRule_t * const rule, int
 
     return FALSE;
 }
-LOCAL void arkime_rules_check_rule_fields(ArkimeSession_t * const session, ArkimeRule_t * const rule, int skipPos, BSB *logStr);
+LOCAL void arkime_rules_check_rule_fields(ArkimeSession_t *const session, ArkimeRule_t *const rule, int skipPos, BSB *logStr);
 /******************************************************************************/
-LOCAL void arkime_rules_match(ArkimeSession_t * const session, ArkimeRule_t * const rule)
+LOCAL void arkime_rules_match(ArkimeSession_t *const session, ArkimeRule_t *const rule)
 {
     if (rule->log) {
         char ipStr[200];
@@ -912,7 +913,7 @@ LOCAL void arkime_rules_match(ArkimeSession_t * const session, ArkimeRule_t * co
         arkime_rules_check_rule_fields(session, rule, -1, &bsb);
 
         if (BSB_LENGTH(bsb) > 2) {
-            LOG("%s - %s - %.*s",rule->name, ipStr, (int)BSB_LENGTH(bsb) - 2, logStr);
+            LOG("%s - %s - %.*s", rule->name, ipStr, (int)BSB_LENGTH(bsb) - 2, logStr);
         }
     }
     ARKIME_THREAD_INCR(rule->matched);
@@ -936,7 +937,7 @@ LOCAL void arkime_rules_match(ArkimeSession_t * const session, ArkimeRule_t * co
     if (good && logStr) \
         BSB_EXPORT_sprintf(*logStr, "%s: %" PRIu64 ", ", config.fields[p]->expression, _v);
 
-LOCAL void arkime_rules_check_rule_fields(ArkimeSession_t * const session, ArkimeRule_t * const rule, int skipPos, BSB *logStr)
+LOCAL void arkime_rules_check_rule_fields(ArkimeSession_t *const session, ArkimeRule_t *const rule, int skipPos, BSB *logStr)
 {
     ArkimeString_t        *hstring;
     ArkimeInt_t           *hint;
@@ -1301,7 +1302,7 @@ void arkime_rules_run_field_set(ArkimeSession_t *session, int pos, const gpointe
                             arkime_rules_run_field_set_rules(session, pos, rules);
                         break;
                     case ARKIME_RULES_STR_MATCH_CONTAINS:
-                        if (arkime_memstr(value, len, (char*)akey + 2, akey[1]) != 0)
+                        if (arkime_memstr(value, len, (char * )akey + 2, akey[1]) != 0)
                             arkime_rules_run_field_set_rules(session, pos, rules);
                     }
                 }
@@ -1367,8 +1368,8 @@ void arkime_rules_session_create(ArkimeSession_t *session)
             arkime_rules_run_field_set(session, ARKIME_FIELD_EXSPECIAL_SRC_PORT, (gpointer)(long)session->port1);
         if (config.fields[ARKIME_FIELD_EXSPECIAL_DST_PORT]->ruleEnabled)
             arkime_rules_run_field_set(session, ARKIME_FIELD_EXSPECIAL_DST_PORT, (gpointer)(long)session->port2);
-        // NO BREAK because TCP/UDP/SCTP have ip also
-        // fall through
+    // NO BREAK because TCP/UDP/SCTP have ip also
+    // fall through
     case IPPROTO_ESP:
     case IPPROTO_ICMP:
     case IPPROTO_ICMPV6:
@@ -1395,9 +1396,9 @@ void arkime_rules_stats()
                     header = 1;
                 }
                 printf("%-35s %-30s %" PRIu64 "\n",
-                        current.rules[t][r]->filename,
-                        current.rules[t][r]->name,
-                        current.rules[t][r]->matched);
+                       current.rules[t][r]->filename,
+                       current.rules[t][r]->name,
+                       current.rules[t][r]->matched);
             }
         }
     }

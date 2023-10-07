@@ -131,7 +131,7 @@ LOCAL char          *iBuf = 0;
 /******************************************************************************/
 LOCAL int wise_item_cmp(const void *keyv, const void *elementv)
 {
-    char *key = (char*)keyv;
+    char *key = (char *)keyv;
     WiseItem_t *element = (WiseItem_t *)elementv;
 
     return strcmp(key, element->key) == 0;
@@ -195,7 +195,7 @@ LOCAL void wise_load_fields()
     for (int i = 0; i < cnt; i++) {
         int len = 0;
         BSB_IMPORT_u16(bsb, len); // len includes NULL terminated
-        fieldsMap[0][i] = arkime_field_define_text((char*)BSB_WORK_PTR(bsb), NULL);
+        fieldsMap[0][i] = arkime_field_define_text((char *)BSB_WORK_PTR(bsb), NULL);
         if (fieldsMap[0][i] == -1) {
             fieldsTS = 0;
             if (config.debug)
@@ -285,7 +285,7 @@ LOCAL void wise_cb(int UNUSED(code), uint8_t *data, int data_len, gpointer uw)
             LOGEXIT("ERROR - Too many unique wise hashs");
 
         if (hashPos == fieldsMapCnt) {
-            fieldsMapHash[hashPos] = g_strndup((gchar*)hash, 32);
+            fieldsMapHash[hashPos] = g_strndup((gchar *)hash, 32);
             fieldsMapCnt++;
             g_strlcpy(wiseGetURI, "/get?ver=2", sizeof(wiseGetURI));
             if (fieldsMapCnt > 0) {
@@ -304,7 +304,7 @@ LOCAL void wise_cb(int UNUSED(code), uint8_t *data, int data_len, gpointer uw)
         for (i = 0; i < cnt; i++) {
             int len = 0;
             BSB_IMPORT_u16(bsb, len); // len includes NULL terminated
-            fieldsMap[0][i] = arkime_field_define_text((char*)BSB_WORK_PTR(bsb), NULL);
+            fieldsMap[0][i] = arkime_field_define_text((char *)BSB_WORK_PTR(bsb), NULL);
             if (fieldsMap[0][i] == -1) {
                 fieldsTS = 0;
                 if (config.debug)
@@ -333,7 +333,7 @@ LOCAL void wise_cb(int UNUSED(code), uint8_t *data, int data_len, gpointer uw)
 
             int len = 0;
             BSB_IMPORT_u08(bsb, len);
-            char *str = (char*)BSB_WORK_PTR(bsb);
+            char *str = (char *)BSB_WORK_PTR(bsb);
             BSB_IMPORT_skip(bsb, len);
 
             if (fieldPos == -1) {
@@ -463,7 +463,7 @@ LOCAL void wise_lookup_domain(ArkimeSession_t *session, WiseRequest_t *request, 
             domain += 8;
     }
 
-    uint8_t *end = (uint8_t*)domain;
+    uint8_t *end = (uint8_t *)domain;
     uint8_t *colon = 0;
     int      period = 0;
 
@@ -553,29 +553,29 @@ void wise_lookup_tuple(ArkimeSession_t *session, WiseRequest_t *request)
 
     if (IN6_IS_ADDR_V4MAPPED(&session->addr1)) {
 
-      uint32_t ip1 = ARKIME_V6_TO_V4(session->addr1);
-      uint32_t ip2 = ARKIME_V6_TO_V4(session->addr2);
+        uint32_t ip1 = ARKIME_V6_TO_V4(session->addr1);
+        uint32_t ip2 = ARKIME_V6_TO_V4(session->addr2);
 
-      BSB_EXPORT_sprintf(bsb, ";%u.%u.%u.%u;%u;%u.%u.%u.%u;%u",
-                         ip1 & 0xff, (ip1 >> 8) & 0xff, (ip1 >> 16) & 0xff, (ip1 >> 24) & 0xff,
-                         session->port1,
-                         ip2 & 0xff, (ip2 >> 8) & 0xff, (ip2 >> 16) & 0xff, (ip2 >> 24) & 0xff,
-                         session->port2
-                        );
+        BSB_EXPORT_sprintf(bsb, ";%u.%u.%u.%u;%u;%u.%u.%u.%u;%u",
+                           ip1 & 0xff, (ip1 >> 8) & 0xff, (ip1 >> 16) & 0xff, (ip1 >> 24) & 0xff,
+                           session->port1,
+                           ip2 & 0xff, (ip2 >> 8) & 0xff, (ip2 >> 16) & 0xff, (ip2 >> 24) & 0xff,
+                           session->port2
+                          );
     } else {
-      // inet_ntop(AF_INET6, ip6, ipstr, sizeof(ipstr));
-      char ipstr1[INET6_ADDRSTRLEN];
-      char ipstr2[INET6_ADDRSTRLEN];
+        // inet_ntop(AF_INET6, ip6, ipstr, sizeof(ipstr));
+        char ipstr1[INET6_ADDRSTRLEN];
+        char ipstr2[INET6_ADDRSTRLEN];
 
-      inet_ntop(AF_INET6, &session->addr1, ipstr1, sizeof(ipstr1));
-      inet_ntop(AF_INET6, &session->addr2, ipstr2, sizeof(ipstr2));
+        inet_ntop(AF_INET6, &session->addr1, ipstr1, sizeof(ipstr1));
+        inet_ntop(AF_INET6, &session->addr2, ipstr2, sizeof(ipstr2));
 
-      BSB_EXPORT_sprintf(bsb, ";%s;%u;%s;%u",
-                         ipstr1,
-                         session->port1,
-                         ipstr2,
-                         session->port2
-                        );
+        BSB_EXPORT_sprintf(bsb, ";%s;%u;%s;%u",
+                           ipstr1,
+                           session->port1,
+                           ipstr2,
+                           session->port2
+                          );
 
 
     }
@@ -768,7 +768,7 @@ void wise_plugin_pre_save(ArkimeSession_t *session, int UNUSED(final))
                         wise_lookup_url(session, iRequest, hstring->str);
                     else if (hstring->uw) {
                         char str[1000];
-                        snprintf(str, sizeof(str), "%s;%s", hstring->str, (char*)hstring->uw);
+                        snprintf(str, sizeof(str), "%s;%s", hstring->str, (char *)hstring->uw);
                         wise_lookup(session, iRequest, str, type);
                     } else {
                         wise_lookup(session, iRequest, hstring->str, type);
@@ -799,7 +799,7 @@ void wise_plugin_pre_save(ArkimeSession_t *session, int UNUSED(final))
         wise_lookup_tuple(session, iRequest);
     }
 
-    if (iRequest->numItems > WISE_MAX_REQUEST_ITEMS/2) {
+    if (iRequest->numItems > WISE_MAX_REQUEST_ITEMS / 2) {
         wise_flush_locked();
     }
     ARKIME_UNLOCK(iRequest);
@@ -829,7 +829,7 @@ LOCAL uint32_t wise_plugin_outstanding()
 {
     int count;
     ARKIME_LOCK(iRequest);
-    count = inflight + (iRequest?iRequest->numItems:0) + arkime_http_queue_length(wiseService);
+    count = inflight + (iRequest ? iRequest->numItems : 0) + arkime_http_queue_length(wiseService);
     ARKIME_UNLOCK(iRequest);
     LOG("wise: %d", count);
     return count;
@@ -989,15 +989,15 @@ void arkime_plugin_init()
     arkime_plugins_register("wise", FALSE);
 
     arkime_plugins_set_cb("wise",
-      NULL,
-      NULL,
-      NULL,
-      wise_plugin_pre_save,
-      NULL,
-      NULL,
-      wise_plugin_exit,
-      NULL
-    );
+                          NULL,
+                          NULL,
+                          NULL,
+                          wise_plugin_pre_save,
+                          NULL,
+                          NULL,
+                          wise_plugin_exit,
+                          NULL
+                         );
 
     arkime_plugins_set_outstanding_cb("wise", wise_plugin_outstanding);
 

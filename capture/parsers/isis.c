@@ -22,7 +22,7 @@ LOCAL void isis_create_sessionid(uint8_t *sessionId, ArkimePacket_t *UNUSED(pack
     // for now, lump all isis into the same session
 }
 /******************************************************************************/
-LOCAL int isis_pre_process(ArkimeSession_t *session, ArkimePacket_t * const UNUSED(packet), int isNewSession)
+LOCAL int isis_pre_process(ArkimeSession_t *session, ArkimePacket_t *const UNUSED(packet), int isNewSession)
 {
     char msg[32];
 
@@ -30,40 +30,40 @@ LOCAL int isis_pre_process(ArkimeSession_t *session, ArkimePacket_t * const UNUS
         arkime_session_add_protocol(session, "isis");
 
     if (packet->pktlen < 22) {
-      snprintf (msg, sizeof(msg), "err-len-%d", packet->pktlen);
-      arkime_field_string_add(typeField, session, msg, -1, TRUE);
-      return 0;
+        snprintf (msg, sizeof(msg), "err-len-%d", packet->pktlen);
+        arkime_field_string_add(typeField, session, msg, -1, TRUE);
+        return 0;
     }
 
     switch (packet->pkt[21]) {
-      case 15:
+    case 15:
         arkime_field_string_add(typeField, session, "lan-l1-hello", -1, TRUE);
         break;
-      case 16:
+    case 16:
         arkime_field_string_add(typeField, session, "lan-l2-hello", -1, TRUE);
         break;
-      case 17:
+    case 17:
         arkime_field_string_add(typeField, session, "p2p-hello", -1, TRUE);
         break;
-      case 18:
+    case 18:
         arkime_field_string_add(typeField, session, "l1-lsp", -1, TRUE);
         break;
-      case 20:
+    case 20:
         arkime_field_string_add(typeField, session, "l2-lsp", -1, TRUE);
         break;
-      case 24:
+    case 24:
         arkime_field_string_add(typeField, session, "l1-csnp", -1, TRUE);
         break;
-      case 25:
+    case 25:
         arkime_field_string_add(typeField, session, "l2-csnp", -1, TRUE);
         break;
-      case 26:
+    case 26:
         arkime_field_string_add(typeField, session, "l1-psnp", -1, TRUE);
         break;
-      case 27:
+    case 27:
         arkime_field_string_add(typeField, session, "l2-psnp", -1, TRUE);
         break;
-      default:
+    default:
         snprintf (msg, sizeof(msg), "unk-%d", packet->pkt[21]);
         if (config.debug)
             LOG("isis %s\n", msg);
@@ -73,16 +73,16 @@ LOCAL int isis_pre_process(ArkimeSession_t *session, ArkimePacket_t * const UNUS
     return 0;
 }
 /******************************************************************************/
-LOCAL int isis_process(ArkimeSession_t *UNUSED(session), ArkimePacket_t * const UNUSED(packet))
+LOCAL int isis_process(ArkimeSession_t *UNUSED(session), ArkimePacket_t *const UNUSED(packet))
 {
     return 1;
 }
 /******************************************************************************/
-LOCAL ArkimePacketRC isis_packet_enqueue(ArkimePacketBatch_t * UNUSED(batch), ArkimePacket_t * const packet, const uint8_t *data, int len)
+LOCAL ArkimePacketRC isis_packet_enqueue(ArkimePacketBatch_t *UNUSED(batch), ArkimePacket_t *const packet, const uint8_t *data, int len)
 {
     uint8_t sessionId[ARKIME_SESSIONID_LEN];
 
-    // no sanity checks until we parse.  the thinking is that it will make sense to 
+    // no sanity checks until we parse.  the thinking is that it will make sense to
     // high level parse to determine isis packet type (eg hello, csnp/psnp, lsp) and
     // protocol tag with these additional discriminators
 
@@ -107,16 +107,16 @@ void arkime_parser_init()
     arkime_packet_set_ethernet_cb(0x83, isis_packet_enqueue);
     isisPq = arkime_pq_alloc(10, isis_pq_cb);
     isisMProtocol = arkime_mprotocol_register("isis",
-                                             SESSION_OTHER,
-                                             isis_create_sessionid,
-                                             isis_pre_process,
-                                             isis_process,
-                                             NULL);
+                                              SESSION_OTHER,
+                                              isis_create_sessionid,
+                                              isis_pre_process,
+                                              isis_process,
+                                              NULL);
 
 
-    typeField = arkime_field_define("isis","lotermfield",
-        "isis.msgType", "isis.msgType", "isis.msgType",
-        "ISIS Msg Type field",
-        ARKIME_FIELD_TYPE_STR_GHASH, 0,
-        (char *)NULL);
+    typeField = arkime_field_define("isis", "lotermfield",
+                                    "isis.msgType", "isis.msgType", "isis.msgType",
+                                    "ISIS Msg Type field",
+                                    ARKIME_FIELD_TYPE_STR_GHASH, 0,
+                                    (char *)NULL);
 }

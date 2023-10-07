@@ -19,7 +19,7 @@ LOCAL  int                   espMProtocol;
 
 /******************************************************************************/
 SUPPRESS_ALIGNMENT
-LOCAL ArkimePacketRC esp_packet_enqueue(ArkimePacketBatch_t * UNUSED(batch), ArkimePacket_t * const packet, const uint8_t *UNUSED(data), int UNUSED(len))
+LOCAL ArkimePacketRC esp_packet_enqueue(ArkimePacketBatch_t *UNUSED(batch), ArkimePacket_t *const packet, const uint8_t *UNUSED(data), int UNUSED(len))
 {
     uint8_t                 sessionId[ARKIME_SESSIONID_LEN];
 
@@ -27,7 +27,7 @@ LOCAL ArkimePacketRC esp_packet_enqueue(ArkimePacketBatch_t * UNUSED(batch), Ark
         struct ip6_hdr *ip6 = (struct ip6_hdr *)(packet->pkt + packet->ipOffset);
         arkime_session_id6(sessionId, ip6->ip6_src.s6_addr, 0, ip6->ip6_dst.s6_addr, 0);
     } else {
-        struct ip *ip4 = (struct ip*)(packet->pkt + packet->ipOffset);
+        struct ip *ip4 = (struct ip *)(packet->pkt + packet->ipOffset);
         arkime_session_id(sessionId, ip4->ip_src.s_addr, 0, ip4->ip_dst.s_addr, 0);
     }
 
@@ -40,8 +40,8 @@ LOCAL ArkimePacketRC esp_packet_enqueue(ArkimePacketBatch_t * UNUSED(batch), Ark
 SUPPRESS_ALIGNMENT
 LOCAL void esp_create_sessionid(uint8_t *sessionId, ArkimePacket_t *packet)
 {
-    struct ip           *ip4 = (struct ip*)(packet->pkt + packet->ipOffset);
-    struct ip6_hdr      *ip6 = (struct ip6_hdr*)(packet->pkt + packet->ipOffset);
+    struct ip           *ip4 = (struct ip *)(packet->pkt + packet->ipOffset);
+    struct ip6_hdr      *ip6 = (struct ip6_hdr *)(packet->pkt + packet->ipOffset);
 
     if (packet->v6) {
         arkime_session_id6(sessionId, ip6->ip6_src.s6_addr, 0,
@@ -52,7 +52,7 @@ LOCAL void esp_create_sessionid(uint8_t *sessionId, ArkimePacket_t *packet)
     }
 }
 /******************************************************************************/
-LOCAL int esp_pre_process(ArkimeSession_t *session, ArkimePacket_t * const UNUSED(packet), int isNewSession)
+LOCAL int esp_pre_process(ArkimeSession_t *session, ArkimePacket_t *const UNUSED(packet), int isNewSession)
 {
     if (isNewSession)
         arkime_session_add_protocol(session, "esp");

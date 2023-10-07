@@ -36,9 +36,9 @@ int reader_snf_stats(ArkimeReaderStats_t *stats)
     stats->total = 0;
 
     int i, r;
-    int ringStartOffset = (snfProcNum - 1)*snfNumRings;
+    int ringStartOffset = (snfProcNum - 1) * snfNumRings;
     for (i = 0; i < MAX_INTERFACES && config.interface[i]; i++) {
-        for (r = ringStartOffset; r < (ringStartOffset+snfNumRings); r++) {
+        for (r = ringStartOffset; r < (ringStartOffset + snfNumRings); r++) {
 
             // Use the packets read stats accumulated in moloch
             stats->total += totalPktsRead[i][r];
@@ -57,7 +57,7 @@ int reader_snf_stats(ArkimeReaderStats_t *stats)
             // is not possible in the current SNF implementation
             //
             if(r == ringStartOffset) { // Overflows are not reported per ring...
-                stats->dropped += (ss.ring_pkt_overflow/snfNumProcs);
+                stats->dropped += (ss.ring_pkt_overflow / snfNumProcs);
             }
             // The previous implementation read this statistic
             // from Myricom, but this is documented to be an estimate.
@@ -113,10 +113,10 @@ LOCAL void *reader_snf_thread(gpointer posv)
 void reader_snf_start() {
     arkime_packet_set_dltsnap(DLT_EN10MB, config.snapLen);
 
-    int ringStartOffset = (snfProcNum - 1)*snfNumRings;
+    int ringStartOffset = (snfProcNum - 1) * snfNumRings;
     int i, r;
     for (i = 0; i < MAX_INTERFACES && config.interface[i]; i++) {
-        for (r = ringStartOffset; r < (ringStartOffset+snfNumRings); r++) {
+        for (r = ringStartOffset; r < (ringStartOffset + snfNumRings); r++) {
 
             totalPktsRead[i][r] = 0;
 
@@ -138,9 +138,9 @@ void reader_snf_init(char *UNUSED(name))
 
     // Quick config sanity check for clustered processes
     if (snfNumProcs > 1 && snfProcNum == 0) {
-       CONFIGEXIT("Myricom: snfNumProcs set > 1 but snfProcNum not present in config");
+        CONFIGEXIT("Myricom: snfNumProcs set > 1 but snfProcNum not present in config");
     } else {
-       snfProcNum = 1;
+        snfProcNum = 1;
     }
 
     int snfDataRingSize = arkime_config_int(NULL, "snfDataRingSize", 0, 0, 0x7fffffff);
@@ -155,7 +155,7 @@ void reader_snf_init(char *UNUSED(name))
         CONFIGEXIT("Myricom: failed in snf_getifaddrs %d", err);
     }
 
-    int ringStartOffset = (snfProcNum - 1)*snfNumRings;
+    int ringStartOffset = (snfProcNum - 1) * snfNumRings;
     int i, r;
     for (i = 0; i < MAX_INTERFACES && config.interface[i]; i++) {
         struct snf_ifaddrs *ifa = ifaddrs;
@@ -178,7 +178,7 @@ void reader_snf_init(char *UNUSED(name))
             CONFIGEXIT("Myricom: Couldn't open interface '%s' %d", config.interface[i], err);
         }
 
-        for (r = ringStartOffset; r < (ringStartOffset+snfNumRings); r++) {
+        for (r = ringStartOffset; r < (ringStartOffset + snfNumRings); r++) {
             err = snf_ring_open(handles[i], &rings[i][r]);
             if (err != 0) {
                 CONFIGEXIT("Mryicom: Couldn't open ring %d for interface '%s' %d", r, config.interface[i], err);

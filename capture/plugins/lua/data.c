@@ -11,7 +11,7 @@ LOCAL MD_t *checkArkimeData (lua_State *L, int index)
 {
     MD_t *md;
     luaL_checktype(L, index, LUA_TUSERDATA);
-    md = (MD_t*)luaL_checkudata(L, index, "ArkimeData");
+    md = (MD_t *)luaL_checkudata(L, index, "ArkimeData");
     if (md == NULL) {
         luaL_argerror(L, index, lua_pushfstring(L, "ArkimeData expected, got %s", luaL_typename(L, index)));
         return NULL;
@@ -51,7 +51,7 @@ void MD_markInvalid(lua_State *L, int index)
 int MD_gc(lua_State *L)
 {
     // Do this directly as we don't want the 'invalid' check
-    MD_t *md = (MD_t*)luaL_checkudata(L, 1, "ArkimeData");
+    MD_t *md = (MD_t *)luaL_checkudata(L, 1, "ArkimeData");
     if (md->needFree) {
         g_free((gpointer)md->str);
     }
@@ -124,7 +124,7 @@ int MD_pcre_match(lua_State *L)
     for (i = 0; i < cnt; i++) {
         gint start, end;
         g_match_info_fetch_pos(match_info, i, &start, &end);
-        lua_pushlstring(L, data->str + start, end-start);
+        lua_pushlstring(L, data->str + start, end - start);
     }
     g_match_info_free(match_info);
     return cnt + 1;

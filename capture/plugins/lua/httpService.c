@@ -24,7 +24,7 @@ LOCAL void *checkMHS (lua_State *L, int index)
 {
     void **pmhs, *mhs;
     luaL_checktype(L, index, LUA_TUSERDATA);
-    pmhs = (void**)luaL_checkudata(L, index, "ArkimeHttpService");
+    pmhs = (void **)luaL_checkudata(L, index, "ArkimeHttpService");
     if (pmhs == NULL) {
         luaL_argerror(L, index, lua_pushfstring(L, "ArkimeHttpService expected, got %s", luaL_typename(L, index)));
         return NULL;
@@ -66,7 +66,7 @@ LOCAL void mhs_http_response_cb_process(ArkimeSession_t *UNUSED(session), gpoint
     lua_pushlstring(L, (char *)lhttp->data, lhttp->len);
 
     if (lua_pcall(L, 2, 0, 0) != 0) {
-       LOGEXIT("error running http callback function %s", lua_tostring(L, -1));
+        LOGEXIT("error running http callback function %s", lua_tostring(L, -1));
     }
 
     g_free(lhttp->data);

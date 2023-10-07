@@ -69,9 +69,9 @@ typedef struct arkimehttpconnhead_t {
 } ArkimeHttpConnHead_t;
 
 typedef struct {
-   char    *clientCert;
-   char    *clientKey;
-   char    *clientKeyPass;
+    char    *clientCert;
+    char    *clientKey;
+    char    *clientKeyPass;
 } ArkimeClientAuth_t;
 
 LOCAL HASH_VAR(s_, connections, ArkimeHttpConnHead_t, 119);
@@ -203,11 +203,11 @@ uint8_t *arkime_http_send_sync(void *serverV, const char *method, const char *ke
 
     // Send client certs if so configured
     if(server->clientAuth) {
-       curl_easy_setopt(easy, CURLOPT_SSLCERT, server->clientAuth->clientCert);
-       curl_easy_setopt(easy, CURLOPT_SSLKEY, server->clientAuth->clientKey);
-       if(server->clientAuth->clientKeyPass) {
-          curl_easy_setopt(easy, CURLOPT_SSLKEYPASSWD, server->clientAuth->clientKeyPass);
-       }
+        curl_easy_setopt(easy, CURLOPT_SSLCERT, server->clientAuth->clientCert);
+        curl_easy_setopt(easy, CURLOPT_SSLKEY, server->clientAuth->clientKey);
+        if(server->clientAuth->clientKeyPass) {
+            curl_easy_setopt(easy, CURLOPT_SSLKEYPASSWD, server->clientAuth->clientKeyPass);
+        }
     }
 
     if (method[0] != 'G') {
@@ -279,7 +279,7 @@ uint8_t *arkime_http_send_sync(void *serverV, const char *method, const char *ke
     if (code)
         *code = responseCode;
 
-    if (config.logESRequests || (server->printErrors && responseCode/100 != 2)) {
+    if (config.logESRequests || (server->printErrors && responseCode / 100 != 2)) {
         double totalTime;
         double connectTime;
         double uploadSize;
@@ -291,13 +291,13 @@ uint8_t *arkime_http_send_sync(void *serverV, const char *method, const char *ke
         curl_easy_getinfo(easy, CURLINFO_SIZE_DOWNLOAD, &downloadSize);
 
         LOG("%d/%d SYNC %ld %s %.0lf/%0.lf %.0lfms %.0lfms",
-           1, 1,
-           responseCode,
-           server->syncRequest.url,
-           uploadSize,
-           downloadSize,
-           connectTime * 1000,
-           totalTime * 1000);
+            1, 1,
+            responseCode,
+            server->syncRequest.url,
+            uploadSize,
+            downloadSize,
+            connectTime * 1000,
+            totalTime * 1000);
     }
 
     uint8_t *dataIn = server->syncRequest.dataIn;
@@ -360,13 +360,13 @@ LOCAL void arkime_http_curlm_check_multi_info(ArkimeHttpServer_t *server)
     while ((msg = curl_multi_info_read(server->multi, &msgs_left))) {
         if (msg->msg == CURLMSG_DONE) {
             easy = msg->easy_handle;
-            curl_easy_getinfo(easy, CURLINFO_PRIVATE, (void*)&request);
+            curl_easy_getinfo(easy, CURLINFO_PRIVATE, (void *)&request);
             curl_easy_getinfo(easy, CURLINFO_EFFECTIVE_URL, &eff_url);
 
             long   responseCode;
             curl_easy_getinfo(easy, CURLINFO_RESPONSE_CODE, &responseCode);
 
-            if (config.logESRequests || (server->printErrors && responseCode/100 != 2)) {
+            if (config.logESRequests || (server->printErrors && responseCode / 100 != 2)) {
                 double totalTime;
                 double connectTime;
                 double uploadSize;
@@ -378,14 +378,14 @@ LOCAL void arkime_http_curlm_check_multi_info(ArkimeHttpServer_t *server)
                 curl_easy_getinfo(easy, CURLINFO_SIZE_DOWNLOAD, &downloadSize);
 
                 LOG("%d/%d ASYNC %ld %s %.0lf/%.0lf %.0lfms %.0lfms",
-                   request->server->outstanding,
-                   request->server->connections,
-                   responseCode,
-                   request->url,
-                   uploadSize,
-                   downloadSize,
-                   connectTime * 1000,
-                   totalTime * 1000);
+                    request->server->outstanding,
+                    request->server->connections,
+                    responseCode,
+                    request->url,
+                    uploadSize,
+                    downloadSize,
+                    connectTime * 1000,
+                    totalTime * 1000);
             }
 
 #ifdef ARKIME_HTTP_DEBUG
@@ -405,7 +405,7 @@ LOCAL void arkime_http_curlm_check_multi_info(ArkimeHttpServer_t *server)
                 ARKIME_UNLOCK(requests);
             } else {
 
-                if (server->printErrors && responseCode/100 != 2) {
+                if (server->printErrors && responseCode / 100 != 2) {
                     if (arkime_memstr((char *)request->dataIn, MIN(request->used, 1000), "version conflict, current version", 33)) {
                         LOG("See the FAQ - https://arkime.com/faq#version-conflict");
                     }
@@ -467,8 +467,8 @@ LOCAL int arkime_http_curlm_socket_callback(CURL *UNUSED(easy), curl_socket_t fd
             g_source_remove(ev);
         }
 
-        ev = arkime_watch_fd(fd, ((what&CURL_POLL_IN)?ARKIME_GIO_READ_COND:0)|((what&CURL_POLL_OUT)?ARKIME_GIO_WRITE_COND:0), arkime_http_watch_callback, server);
-        curl_multi_assign(server->multi, fd, (void*)ev);
+        ev = arkime_watch_fd(fd, ((what & CURL_POLL_IN) ? ARKIME_GIO_READ_COND : 0) | ((what & CURL_POLL_OUT) ? ARKIME_GIO_WRITE_COND : 0), arkime_http_watch_callback, server);
+        curl_multi_assign(server->multi, fd, (void *)ev);
     }
 
     return 0;
@@ -510,7 +510,7 @@ LOCAL int arkime_http_curlm_timeout_callback(CURLM *UNUSED(multi), long timeout_
 size_t arkime_http_curlm_header_function(char *buffer, size_t size, size_t nitems, void *requestP)
 {
     ArkimeHttpRequest_t *request = requestP;
-    int sz = size*nitems;
+    int sz = size * nitems;
     int i = sz;
 
     while (i > 0 && (buffer[i - 1] == '\r' || buffer[i - 1] == '\n')) {
@@ -526,7 +526,7 @@ size_t arkime_http_curlm_header_function(char *buffer, size_t size, size_t nitem
     colon++;
     while (isspace(*colon)) colon++;
 
-    request->server->headerCb(request->url, buffer, colon, buffer+i-colon, request->uw);
+    request->server->headerCb(request->url, buffer, colon, buffer + i - colon, request->uw);
     return sz;
 }
 /******************************************************************************/
@@ -539,12 +539,12 @@ LOCAL gboolean arkime_http_curl_watch_open_callback(int fd, GIOCondition conditi
     struct sockaddr_storage localAddressStorage, remoteAddressStorage;
 
     socklen_t addressLength = sizeof(localAddressStorage);
-    int rc = getsockname(fd, (struct sockaddr*)&localAddressStorage, &addressLength);
+    int rc = getsockname(fd, (struct sockaddr *)&localAddressStorage, &addressLength);
     if (rc != 0)
         return CURLE_OK;
 
     addressLength = sizeof(remoteAddressStorage);
-    rc = getpeername(fd, (struct sockaddr*)&remoteAddressStorage, &addressLength);
+    rc = getpeername(fd, (struct sockaddr *)&remoteAddressStorage, &addressLength);
     if (rc != 0)
         return CURLE_OK;
 
@@ -563,7 +563,7 @@ LOCAL gboolean arkime_http_curl_watch_open_callback(int fd, GIOCondition conditi
         struct sockaddr_in6 *localAddress = (struct sockaddr_in6 *)&localAddressStorage;
         struct sockaddr_in6 *remoteAddress = (struct sockaddr_in6 *)&remoteAddressStorage;
         arkime_session_id6(sessionId, localAddress->sin6_addr.s6_addr, localAddress->sin6_port,
-                          remoteAddress->sin6_addr.s6_addr, remoteAddress->sin6_port);
+                           remoteAddress->sin6_addr.s6_addr, remoteAddress->sin6_port);
         localPort = ntohs(localAddress->sin6_port);
         remotePort = ntohs(remoteAddress->sin6_port);
         inet_ntop(AF_INET6, &remoteAddress->sin6_addr, remoteIp + 1, sizeof(remoteIp) - 2);
@@ -573,13 +573,13 @@ LOCAL gboolean arkime_http_curl_watch_open_callback(int fd, GIOCondition conditi
 
     if (config.logHTTPConnections) {
         LOG("Connected %d/%d - %s   %d->%s:%d - fd:%d",
-                server->outstanding,
-                server->connections,
-                sname->name,
-                localPort,
-                remoteIp,
-                remotePort,
-                fd);
+            server->outstanding,
+            server->connections,
+            sname->name,
+            localPort,
+            remoteIp,
+            remotePort,
+            fd);
     }
 
     ArkimeHttpConn_t *conn;
@@ -635,14 +635,14 @@ int arkime_http_curl_close_callback(void *snameV, curl_socket_t fd)
     struct sockaddr_storage localAddressStorage, remoteAddressStorage;
 
     socklen_t addressLength = sizeof(localAddressStorage);
-    int rc = getsockname(fd, (struct sockaddr*)&localAddressStorage, &addressLength);
+    int rc = getsockname(fd, (struct sockaddr *)&localAddressStorage, &addressLength);
     if (rc != 0) {
         close(fd);
         return 0;
     }
 
     addressLength = sizeof(remoteAddressStorage);
-    rc = getpeername(fd, (struct sockaddr*)&remoteAddressStorage, &addressLength);
+    rc = getpeername(fd, (struct sockaddr *)&remoteAddressStorage, &addressLength);
     if (rc != 0) {
         close(fd);
         return 0;
@@ -663,7 +663,7 @@ int arkime_http_curl_close_callback(void *snameV, curl_socket_t fd)
         struct sockaddr_in6 *localAddress = (struct sockaddr_in6 *)&localAddressStorage;
         struct sockaddr_in6 *remoteAddress = (struct sockaddr_in6 *)&remoteAddressStorage;
         arkime_session_id6(sessionId, localAddress->sin6_addr.s6_addr, localAddress->sin6_port,
-                          remoteAddress->sin6_addr.s6_addr, remoteAddress->sin6_port);
+                           remoteAddress->sin6_addr.s6_addr, remoteAddress->sin6_port);
         localPort = ntohs(localAddress->sin6_port);
         remotePort = ntohs(remoteAddress->sin6_port);
         inet_ntop(AF_INET6, &remoteAddress->sin6_addr, remoteIp + 1, sizeof(remoteIp) - 2);
@@ -687,14 +687,14 @@ int arkime_http_curl_close_callback(void *snameV, curl_socket_t fd)
 
     if (config.logHTTPConnections) {
         LOG("Close %d/%d - %s   %d->%s:%d fd:%d removed: %s",
-                server->outstanding,
-                server->connections,
-                sname->name,
-                localPort,
-                remoteIp,
-                remotePort,
-                fd,
-                conn?"true":"false");
+            server->outstanding,
+            server->connections,
+            sname->name,
+            localPort,
+            remoteIp,
+            remotePort,
+            fd,
+            conn ? "true" : "false");
     }
 
     close (fd);
@@ -730,7 +730,7 @@ LOCAL gboolean arkime_http_send_timer_callback(gpointer UNUSED(unused))
 /******************************************************************************/
 gboolean arkime_http_send(void *serverV, const char *method, const char *key, int32_t key_len, char *data, uint32_t data_len, char **headers, gboolean dropable, ArkimeHttpResponse_cb func, gpointer uw)
 {
-   return arkime_http_schedule(serverV, method, key, key_len, data, data_len, headers, dropable ? ARKIME_HTTP_PRIORITY_DROPABLE : ARKIME_HTTP_PRIORITY_NORMAL, func, uw);
+    return arkime_http_schedule(serverV, method, key, key_len, data, data_len, headers, dropable ? ARKIME_HTTP_PRIORITY_DROPABLE : ARKIME_HTTP_PRIORITY_NORMAL, func, uw);
 }
 /******************************************************************************/
 gboolean arkime_http_schedule(void *serverV, const char *method, const char *key, int32_t key_len, char *data, uint32_t data_len, char **headers, int priority, ArkimeHttpResponse_cb func, gpointer uw)
@@ -834,11 +834,11 @@ gboolean arkime_http_schedule(void *serverV, const char *method, const char *key
 
     // Send client certs if so configured
     if(server->clientAuth) {
-       curl_easy_setopt(request->easy, CURLOPT_SSLCERT, server->clientAuth->clientCert);
-       curl_easy_setopt(request->easy, CURLOPT_SSLKEY, server->clientAuth->clientKey);
-       if(server->clientAuth->clientKeyPass) {
-          curl_easy_setopt(request->easy, CURLOPT_SSLKEYPASSWD, server->clientAuth->clientKeyPass);
-       }
+        curl_easy_setopt(request->easy, CURLOPT_SSLCERT, server->clientAuth->clientCert);
+        curl_easy_setopt(request->easy, CURLOPT_SSLKEY, server->clientAuth->clientKey);
+        if(server->clientAuth->clientKeyPass) {
+            curl_easy_setopt(request->easy, CURLOPT_SSLKEYPASSWD, server->clientAuth->clientKeyPass);
+        }
     }
 
     curl_easy_setopt(request->easy, CURLOPT_WRITEFUNCTION, arkime_http_curl_write_callback);
@@ -892,13 +892,13 @@ uint8_t *arkime_http_get(void *serverV, char *key, int key_len, size_t *mlen)
 int arkime_http_queue_length(void *serverV)
 {
     ArkimeHttpServer_t        *server = serverV;
-    return server?server->outstanding:0;
+    return server ? server->outstanding : 0;
 }
 /******************************************************************************/
 uint64_t arkime_http_dropped_count(void *serverV)
 {
     ArkimeHttpServer_t        *server = serverV;
-    return server?server->dropped:0;
+    return server ? server->dropped : 0;
 }
 /******************************************************************************/
 void arkime_http_set_header_cb(void *serverV, ArkimeHttpHeader_cb cb)
@@ -937,7 +937,7 @@ void arkime_http_free_server(void *serverV)
     curl_multi_cleanup(server->multi);
 
 
-    for (int i = 0; i < server->snamesCnt; i++){
+    for (int i = 0; i < server->snamesCnt; i++) {
         g_free(server->snames[i].name);
     }
     free(server->snames);
@@ -962,7 +962,7 @@ void arkime_http_set_retries(void *serverV, uint16_t retries)
 }
 /******************************************************************************/
 void arkime_http_set_client_cert(void *serverV, char *clientCert,
-                                char *clientKey, char *clientKeyPass)
+                                 char *clientKey, char *clientKeyPass)
 {
     ArkimeHttpServer_t        *server = serverV;
     if(server->clientAuth != NULL) {
@@ -991,7 +991,7 @@ gboolean arkime_http_is_arkime(uint32_t hash, uint8_t *sessionId)
     ARKIME_LOCK(connections);
     HASH_FIND_HASH(h_, connections, hash, sessionId, conn);
     ARKIME_UNLOCK(connections);
-    return (conn?1:0);
+    return (conn ? 1 : 0);
 }
 /******************************************************************************/
 void *arkime_http_create_server(const char *hostnames, int maxConns, int maxOutstandingRequests, int compress)

@@ -28,32 +28,32 @@ void test_plugin_pre_save(ArkimeSession_t *session, int UNUSED(final))
 void arkime_plugin_init()
 {
     test_number = arkime_field_define("test", "integer",
-        "test.number", "Test Number", "test.number",
-        "Test Number",
-        ARKIME_FIELD_TYPE_INT_HASH,      0, 
-        NULL);
+                                      "test.number", "Test Number", "test.number",
+                                      "Test Number",
+                                      ARKIME_FIELD_TYPE_INT_HASH,      0,
+                                      NULL);
 
     test_ip = arkime_field_define("test", "ip",
-        "test.ip", "Test Ip", "test.ip",
-        "Test IP",
-        ARKIME_FIELD_TYPE_IP_GHASH,       0, 
-        NULL);
+                                  "test.ip", "Test Ip", "test.ip",
+                                  "Test IP",
+                                  ARKIME_FIELD_TYPE_IP_GHASH,       0,
+                                  NULL);
 
     test_string = arkime_field_define("test", "textfield",
-        "test.string", "Test String", "test.string.snow",
-        "Test String",
-        ARKIME_FIELD_TYPE_STR_HASH,       0, 
-        NULL);
+                                      "test.string", "Test String", "test.string.snow",
+                                      "Test String",
+                                      ARKIME_FIELD_TYPE_STR_HASH,       0,
+                                      NULL);
 
     arkime_plugins_register("string", FALSE);
     arkime_plugins_set_cb("string",
-      NULL,
-      NULL,
-      NULL,
-      test_plugin_pre_save,
-      NULL,
-      NULL,
-      NULL,
-      NULL
-    );
+                          NULL,
+                          NULL,
+                          NULL,
+                          test_plugin_pre_save,
+                          NULL,
+                          NULL,
+                          NULL,
+                          NULL
+                         );
 }

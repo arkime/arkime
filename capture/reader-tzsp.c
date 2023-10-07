@@ -57,7 +57,7 @@ LOCAL void *tzsp_thread(gpointer UNUSED(uw))
             dropped++;
             continue;
         }
-        
+
         if (len <= 10) {
             dropped++;
             continue;
@@ -100,7 +100,7 @@ LOCAL void *tzsp_thread(gpointer UNUSED(uw))
             BSB_IMPORT_u08(bsb, taglen);
             BSB_IMPORT_skip(bsb, taglen);
         }
-        
+
         if (BSB_IS_ERROR(bsb) || BSB_REMAINING(bsb) < 6) {
             dropped++;
             continue;

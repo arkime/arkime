@@ -13,7 +13,7 @@ LOCAL ArkimePQ_t *pimPq;
 LOCAL int pimMProtocol;
 
 /******************************************************************************/
-LOCAL void pim_create_sessionid(uint8_t *sessionId, ArkimePacket_t * const UNUSED (packet))
+LOCAL void pim_create_sessionid(uint8_t *sessionId, ArkimePacket_t *const UNUSED (packet))
 {
     sessionId[0] = 2;
     sessionId[1] = IPPROTO_PIM;
@@ -22,7 +22,7 @@ LOCAL void pim_create_sessionid(uint8_t *sessionId, ArkimePacket_t * const UNUSE
     // for now, lump all pim into the same session
 }
 /******************************************************************************/
-LOCAL int pim_pre_process(ArkimeSession_t *session, ArkimePacket_t * const UNUSED(packet), int isNewSession)
+LOCAL int pim_pre_process(ArkimeSession_t *session, ArkimePacket_t *const UNUSED(packet), int isNewSession)
 {
     if (isNewSession)
         arkime_session_add_protocol(session, "pim");
@@ -30,12 +30,12 @@ LOCAL int pim_pre_process(ArkimeSession_t *session, ArkimePacket_t * const UNUSE
     return 0;
 }
 /******************************************************************************/
-LOCAL int pim_process(ArkimeSession_t *UNUSED(session), ArkimePacket_t * const UNUSED(packet))
+LOCAL int pim_process(ArkimeSession_t *UNUSED(session), ArkimePacket_t *const UNUSED(packet))
 {
     return 1;
 }
 /******************************************************************************/
-LOCAL ArkimePacketRC pim_packet_enqueue(ArkimePacketBatch_t * UNUSED(batch), ArkimePacket_t * const packet, const uint8_t *data, int len)
+LOCAL ArkimePacketRC pim_packet_enqueue(ArkimePacketBatch_t *UNUSED(batch), ArkimePacket_t *const packet, const uint8_t *data, int len)
 {
     uint8_t sessionId[ARKIME_SESSIONID_LEN];
 

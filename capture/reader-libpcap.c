@@ -40,8 +40,8 @@ void reader_libpcap_pcap_cb(u_char *batch, const struct pcap_pkthdr *h, const u_
 {
     if (unlikely(h->caplen != h->len)) {
         LOGEXIT("ERROR - Arkime requires full packet captures caplen: %d pktlen: %d\n"
-            "See https://arkime.com/faq#arkime_requires_full_packet_captures_error",
-            h->caplen, h->len);
+                "See https://arkime.com/faq#arkime_requires_full_packet_captures_error",
+                h->caplen, h->len);
     }
 
     ArkimePacket_t *packet = ARKIME_TYPE_ALLOC0(ArkimePacket_t);
@@ -67,7 +67,7 @@ LOCAL void *reader_libpcap_thread(gpointer posv)
     arkime_packet_batch_init(&batch);
     batch.readerPos = pos;
     while (1) {
-        int r = pcap_dispatch(pcap, 10000, reader_libpcap_pcap_cb, (u_char*)&batch);
+        int r = pcap_dispatch(pcap, 10000, reader_libpcap_pcap_cb, (u_char *)&batch);
         arkime_packet_batch_flush(&batch);
 
         // Some kind of failure we quit
@@ -149,14 +149,14 @@ reader_libpcap_open_live(const char *source, int snaplen, int promisc, int to_ms
 fail:
     if (status == PCAP_ERROR)
         snprintf(errbuf, PCAP_ERRBUF_SIZE, "%s: %s", source,
-            pcap_geterr(p));
+                 pcap_geterr(p));
     else if (status == PCAP_ERROR_NO_SUCH_DEVICE ||
-        status == PCAP_ERROR_PERM_DENIED)
+             status == PCAP_ERROR_PERM_DENIED)
         snprintf(errbuf, PCAP_ERRBUF_SIZE, "%s: %s (%s)", source,
-            pcap_statustostr(status), pcap_geterr(p));
+                 pcap_statustostr(status), pcap_geterr(p));
     else
         snprintf(errbuf, PCAP_ERRBUF_SIZE, "%s: %s", source,
-            pcap_statustostr(status));
+                 pcap_statustostr(status));
     pcap_close(p);
     return (NULL);
 }

@@ -36,19 +36,19 @@ LOCAL void dtls_certinfo_process(ArkimeCertInfo_t *ci, BSB *bsb)
                 ArkimeString_t *element = ARKIME_TYPE_ALLOC0(ArkimeString_t);
                 element->utf8 = atag == 12;
                 if (element->utf8)
-                    element->str = g_utf8_strdown((char*)value, alen);
+                    element->str = g_utf8_strdown((char * )value, alen);
                 else
-                    element->str = g_ascii_strdown((char*)value, alen);
+                    element->str = g_ascii_strdown((char *)value, alen);
                 DLL_PUSH_TAIL(s_, &ci->commonName, element);
             } else if (strcmp(lastOid, "2.5.4.10") == 0) {
                 ArkimeString_t *element = ARKIME_TYPE_ALLOC0(ArkimeString_t);
                 element->utf8 = atag == 12;
-                element->str = g_strndup((char*)value, alen);
+                element->str = g_strndup((char *)value, alen);
                 DLL_PUSH_TAIL(s_, &ci->orgName, element);
             } else if (strcmp(lastOid, "2.5.4.11") == 0) {
                 ArkimeString_t *element = ARKIME_TYPE_ALLOC0(ArkimeString_t);
                 element->utf8 = atag == 12;
-                element->str = g_strndup((char*)value, alen);
+                element->str = g_strndup((char *)value, alen);
                 DLL_PUSH_TAIL(s_, &ci->orgUnit, element);
             }
         }
@@ -98,7 +98,7 @@ LOCAL void dtls_alt_names(ArkimeCertsInfo_t *certs, BSB *bsb, char *lastOid)
             return;
         } else if (lastOid[0] && atag == 2) {
             ArkimeString_t *element = ARKIME_TYPE_ALLOC0(ArkimeString_t);
-            element->str = g_ascii_strdown((char*)value, alen);
+            element->str = g_ascii_strdown((char *)value, alen);
             element->len = alen;
             element->utf8 = 1;
             DLL_PUSH_TAIL(s_, &certs->alt, element);
@@ -158,21 +158,33 @@ LOCAL void dtls_process_server_certificate(ArkimeSession_t *session, const uint8
 
         /* Certificate */
         if (!(value = arkime_parsers_asn_get_tlv(&bsb, &apc, &atag, &alen)))
-            {badreason = 1; goto bad_cert;}
+        {
+            badreason = 1;
+            goto bad_cert;
+        }
         BSB_INIT(bsb, value, alen);
 
         /* signedCertificate */
         if (!(value = arkime_parsers_asn_get_tlv(&bsb, &apc, &atag, &alen)))
-            {badreason = 2; goto bad_cert;}
+        {
+            badreason = 2;
+            goto bad_cert;
+        }
         BSB_INIT(bsb, value, alen);
 
         /* serialNumber or version*/
         if (!(value = arkime_parsers_asn_get_tlv(&bsb, &apc, &atag, &alen)))
-            {badreason = 3; goto bad_cert;}
+        {
+            badreason = 3;
+            goto bad_cert;
+        }
 
         if (apc) {
             if (!(value = arkime_parsers_asn_get_tlv(&bsb, &apc, &atag, &alen)))
-                {badreason = 4; goto bad_cert;}
+            {
+                badreason = 4;
+                goto bad_cert;
+            }
         }
         certs->serialNumberLen = alen;
         certs->serialNumber = malloc(alen);
@@ -180,42 +192,66 @@ LOCAL void dtls_process_server_certificate(ArkimeSession_t *session, const uint8
 
         /* signature */
         if (!arkime_parsers_asn_get_tlv(&bsb, &apc, &atag, &alen))
-            {badreason = 5; goto bad_cert;}
+        {
+            badreason = 5;
+            goto bad_cert;
+        }
 
         /* issuer */
         if (!(value = arkime_parsers_asn_get_tlv(&bsb, &apc, &atag, &alen)))
-            {badreason = 6; goto bad_cert;}
+        {
+            badreason = 6;
+            goto bad_cert;
+        }
         BSB tbsb;
         BSB_INIT(tbsb, value, alen);
         dtls_certinfo_process(&certs->issuer, &tbsb);
 
         /* validity */
         if (!(value = arkime_parsers_asn_get_tlv(&bsb, &apc, &atag, &alen)))
-            {badreason = 7; goto bad_cert;}
+        {
+            badreason = 7;
+            goto bad_cert;
+        }
 
         BSB_INIT(tbsb, value, alen);
         if (!(value = arkime_parsers_asn_get_tlv(&tbsb, &apc, &atag, &alen)))
-            {badreason = 7; goto bad_cert;}
+        {
+            badreason = 7;
+            goto bad_cert;
+        }
         certs->notBefore = arkime_parsers_asn_parse_time(session, atag, value, alen);
 
         if (!(value = arkime_parsers_asn_get_tlv(&tbsb, &apc, &atag, &alen)))
-            {badreason = 7; goto bad_cert;}
+        {
+            badreason = 7;
+            goto bad_cert;
+        }
         certs->notAfter = arkime_parsers_asn_parse_time(session, atag, value, alen);
 
         /* subject */
         if (!(value = arkime_parsers_asn_get_tlv(&bsb, &apc, &atag, &alen)))
-            {badreason = 8; goto bad_cert;}
+        {
+            badreason = 8;
+            goto bad_cert;
+        }
         BSB_INIT(tbsb, value, alen);
         dtls_certinfo_process(&certs->subject, &tbsb);
 
         /* subjectPublicKeyInfo */
         if (!arkime_parsers_asn_get_tlv(&bsb, &apc, &atag, &alen))
-            {badreason = 9; goto bad_cert;}
+        {
+            badreason = 9;
+            goto bad_cert;
+        }
 
         /* extensions */
         if (BSB_REMAINING(bsb)) {
             if (!(value = arkime_parsers_asn_get_tlv(&bsb, &apc, &atag, &alen)))
-                {badreason = 10; goto bad_cert;}
+            {
+                badreason = 10;
+                goto bad_cert;
+            }
             BSB_INIT(tbsb, value, alen);
             char lastOid[100];
             lastOid[0] = 0;
@@ -243,7 +279,7 @@ LOCAL void dtls_process_server_certificate(ArkimeSession_t *session, const uint8
 
         continue;
 
-    bad_cert:
+bad_cert:
         if (config.debug)
             LOG("bad cert %d - %d", badreason, clen);
         arkime_field_certsinfo_free(certs);
@@ -324,8 +360,8 @@ void arkime_parser_init()
     arkime_parsers_classifier_register_udp("dtls", NULL, 0, (const uint8_t *)"\x16\xfe\xfd", 3, dtls_udp_classify);
 
     certsField = arkime_field_define("cert", "notreal",
-        "cert", "cert", "cert",
-        "CERT Info",
-        ARKIME_FIELD_TYPE_CERTSINFO,  ARKIME_FIELD_FLAG_CNT | ARKIME_FIELD_FLAG_NODB,
-        (char *)NULL);
+                                     "cert", "cert", "cert",
+                                     "CERT Info",
+                                     ARKIME_FIELD_TYPE_CERTSINFO,  ARKIME_FIELD_FLAG_CNT | ARKIME_FIELD_FLAG_NODB,
+                                     (char *)NULL);
 }

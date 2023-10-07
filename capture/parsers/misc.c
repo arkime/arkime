@@ -17,7 +17,7 @@ LOCAL void rdp_classify(ArkimeSession_t *session, const uint8_t *data, int len, 
         if (len > 30 && memcmp(data + 11, "Cookie: mstshash=", 17) == 0) {
             char *end = g_strstr_len((char *)data + 28, len - 28, "\r\n");
             if (end)
-                arkime_field_string_add_lower(userField, session, (char*)data + 28, end - (char *)data - 28);
+                arkime_field_string_add_lower(userField, session, (char * )data + 28, end - (char *)data - 28);
         }
     }
 }
@@ -35,8 +35,8 @@ LOCAL void gh0st_classify(ArkimeSession_t *session, const uint8_t *data, int len
         return;
 
     if (data[13] == 0x78 && data[14] == 0x9c &&
-        (((data[8] == 0) && (data[7] == 0) && (((data[6]&0xff) << (uint32_t)8 | (data[5]&0xff)) == len)) ||  // Windows
-         ((data[5] == 0) && (data[6] == 0) && (((data[7]&0xff) << (uint32_t)8 | (data[8]&0xff)) == len)))) { // Mac
+        (((data[8] == 0) && (data[7] == 0) && (((data[6] & 0xff) << (uint32_t)8 | (data[5] & 0xff)) == len)) || // Windows
+         ((data[5] == 0) && (data[6] == 0) && (((data[7] & 0xff) << (uint32_t)8 | (data[8] & 0xff)) == len)))) { // Mac
         arkime_session_add_protocol(session, "gh0st");
     }
 
@@ -63,7 +63,7 @@ LOCAL void vnc_classify(ArkimeSession_t *session, const uint8_t *data, int len, 
 /******************************************************************************/
 LOCAL void jabber_classify(ArkimeSession_t *session, const uint8_t *data, int len, int UNUSED(which), void *UNUSED(uw))
 {
-    if (g_strstr_len((gchar*)data + 5, len - 5, "jabber") != NULL)
+    if (g_strstr_len((gchar * )data + 5, len - 5, "jabber") != NULL)
         arkime_session_add_protocol(session, "jabber");
 }
 /******************************************************************************/
@@ -79,7 +79,7 @@ LOCAL void user_classify(ArkimeSession_t *session, const uint8_t *data, int len,
             break;
     }
 
-    arkime_field_string_add_lower(userField, session, (char*)data + 5, i - 5);
+    arkime_field_string_add_lower(userField, session, (char *)data + 5, i - 5);
 }
 /******************************************************************************/
 LOCAL void misc_add_protocol_classify(ArkimeSession_t *session, const uint8_t *UNUSED(data), int UNUSED(len), int UNUSED(which), void *uw)
@@ -91,8 +91,8 @@ LOCAL void ntp_classify(ArkimeSession_t *session, const uint8_t *data, int len, 
 {
 
     if ((session->port1 != 123 && session->port2 != 123) ||  // ntp port
-         len < 48 ||                                         // min length
-         data[1] > 16                                        // max stratum
+        len < 48 ||                                         // min length
+        data[1] > 16                                        // max stratum
        ) {
         return;
     }
@@ -165,7 +165,7 @@ LOCAL void dropbox_lan_sync_classify(ArkimeSession_t *session, const uint8_t *da
 /******************************************************************************/
 LOCAL void kafka_classify(ArkimeSession_t *session, const uint8_t *data, int len, int UNUSED(which), void *UNUSED(uw))
 {
-    if (len < 10 || data[4] != 0 || data[5] > 6|| data[7] != 0)
+    if (len < 10 || data[4] != 0 || data[5] > 6 || data[7] != 0)
         return;
 
     int flen = 4 + ((data[2] << 8) | data[3]);
@@ -179,7 +179,7 @@ LOCAL void kafka_classify(ArkimeSession_t *session, const uint8_t *data, int len
 LOCAL void thrift_classify(ArkimeSession_t *session, const uint8_t *data, int len, int UNUSED(which), void *UNUSED(uw))
 {
     if (len > 20 && data[4] == 0x80 && data[5] == 0x01 && data[6] == 0)
-    arkime_session_add_protocol(session, "thrift");
+        arkime_session_add_protocol(session, "thrift");
 }
 /******************************************************************************/
 LOCAL void rip_classify(ArkimeSession_t *session, const uint8_t *UNUSED(data), int UNUSED(len), int UNUSED(which), void *UNUSED(uw))
@@ -192,12 +192,12 @@ LOCAL void rip_classify(ArkimeSession_t *session, const uint8_t *UNUSED(data), i
 LOCAL void isakmp_udp_classify(ArkimeSession_t *session, const uint8_t *data, int len, int UNUSED(which), void *UNUSED(uw))
 {
     if (len < 18 ||
-            (data[16] != 1 && data[16] != 8 && data[16] != 33 && data[16] != 46) ||
-            (data[17] != 0x10 && data[17] != 0x20 && data[17] != 0x02)) {
+        (data[16] != 1 && data[16] != 8 && data[16] != 33 && data[16] != 46) ||
+        (data[17] != 0x10 && data[17] != 0x20 && data[17] != 0x02)) {
         return;
     }
     arkime_session_add_protocol(session, "isakmp");
- }
+}
 /******************************************************************************/
 LOCAL void aruba_papi_udp_classify(ArkimeSession_t *session, const uint8_t *data, int len, int UNUSED(which), void *UNUSED(uw))
 {

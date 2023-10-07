@@ -51,7 +51,7 @@ LOCAL void ldap_process(ArkimeSession_t *session, LDAPInfo_t *ldap, int which)
             if (ilen == 0) {
                 arkime_field_string_add(bindNameField, session, "<ROOT>", 6, TRUE);
             } else {
-                arkime_field_string_add(bindNameField, session, (const char*)ivalue, ilen, TRUE);
+                arkime_field_string_add(bindNameField, session, (const char *)ivalue, ilen, TRUE);
             }
             ivalue = arkime_parsers_asn_get_tlv(&ibsb, &ipc, &itag, &ilen); // auth
             if (!ivalue)
@@ -100,8 +100,8 @@ LOCAL int ldap_parser(ArkimeSession_t *session, void *uw, const uint8_t *data, i
     }
 
     // Copy the data we have
-    memcpy(ldap->buf[which] + ldap->len[which], data, MIN(remaining, (int)sizeof(ldap->buf[which])-ldap->len[which]));
-    ldap->len[which] += MIN(remaining, (int)sizeof(ldap->buf[which])-ldap->len[which]);
+    memcpy(ldap->buf[which] + ldap->len[which], data, MIN(remaining, (int)sizeof(ldap->buf[which]) - ldap->len[which]));
+    ldap->len[which] += MIN(remaining, (int)sizeof(ldap->buf[which]) - ldap->len[which]);
 
     if (ldap->len[which] > 6000) {
         ldap_process(session, ldap, which);
@@ -170,14 +170,14 @@ void arkime_parser_init()
     arkime_parsers_classifier_register_udp("ldap", NULL, 0, (uint8_t *)"\x30", 1, ldap_classify);
 
     authTypeField = arkime_field_define("ldap", "termfield",
-        "ldap.authtype", "Auth Type", "ldap.authtype",
-        "The auth type of ldap bind",
-        ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT,
-        (char *)NULL);
+                                        "ldap.authtype", "Auth Type", "ldap.authtype",
+                                        "The auth type of ldap bind",
+                                        ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT,
+                                        (char *)NULL);
 
     bindNameField = arkime_field_define("ldap", "termfield",
-        "ldap.bindname", "Bind Name", "ldap.bindname",
-        "The bind name of ldap bind",
-        ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT,
-        (char *)NULL);
+                                        "ldap.bindname", "Bind Name", "ldap.bindname",
+                                        "The bind name of ldap bind",
+                                        ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT,
+                                        (char *)NULL);
 }

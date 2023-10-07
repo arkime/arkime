@@ -179,7 +179,7 @@ LOCAL void http2_parse_header_block(ArkimeSession_t *session, HTTP2Info_t *http2
         }
         if((inflate_flags & NGHTTP2_HD_INFLATE_EMIT) == 0 &&
            inlen == 0) {
-           break;
+            break;
         }
     }
 }
@@ -207,7 +207,7 @@ LOCAL void http2_parse_frame_headers(ArkimeSession_t *session, HTTP2Info_t *http
     }
 
     if (flags & NGHTTP2_FLAG_PRIORITY) {
-        in +=5;
+        in += 5;
         inlen -= 5;
     }
 
@@ -303,11 +303,11 @@ LOCAL void http2_parse_frame_data(ArkimeSession_t *session, HTTP2Info_t *http2, 
     // If the first packet in the frame said this is end and we've read them all, set the md5/sha fields
     if (http2->isEnd[which] && http2->dataNeeded[which] == 0) {
         const char *md5 = g_checksum_get_string(http2->streams[spos].checksum[which]);
-        arkime_field_string_uw_add(md5Field, session, (char*)md5, 32, (gpointer)http2->streams[spos].magicString[which], TRUE);
+        arkime_field_string_uw_add(md5Field, session, (char *)md5, 32, (gpointer)http2->streams[spos].magicString[which], TRUE);
         g_checksum_reset(http2->streams[spos].checksum[which]);
         if (config.supportSha256) {
             const char *sha256 = g_checksum_get_string(http2->streams[spos].checksum[which + 2]);
-            arkime_field_string_uw_add(sha256Field, session, (char*)sha256, 64, (gpointer)http2->streams[spos].magicString[which], TRUE);
+            arkime_field_string_uw_add(sha256Field, session, (char *)sha256, 64, (gpointer)http2->streams[spos].magicString[which], TRUE);
             g_checksum_reset(http2->streams[spos].checksum[which + 2]);
         }
     }
@@ -483,40 +483,40 @@ void arkime_parser_init()
     arkime_parsers_classifier_register_tcp("http2", NULL, 0, (uint8_t *)"PRI * HTTP/2.0\r\n\r\nSM\r\n\r\n", 24, http2_classify);
 
     methodField = arkime_field_define("http", "termfield",
-        "http.method", "Request Method", "http.method",
-        "HTTP Request Method",
-        ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT,
-        (char *)NULL);
+                                      "http.method", "Request Method", "http.method",
+                                      "HTTP Request Method",
+                                      ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT,
+                                      (char *)NULL);
     statuscodeField = arkime_field_define("http", "integer",
-        "http.statuscode", "Status Code", "http.statuscode",
-        "Response HTTP numeric status code",
-        ARKIME_FIELD_TYPE_INT_GHASH,  ARKIME_FIELD_FLAG_CNT,
-        (char *)NULL);
+                                          "http.statuscode", "Status Code", "http.statuscode",
+                                          "Response HTTP numeric status code",
+                                          ARKIME_FIELD_TYPE_INT_GHASH,  ARKIME_FIELD_FLAG_CNT,
+                                          (char *)NULL);
     hostField = arkime_field_define("http", "lotermfield",
-        "host.http", "Hostname", "http.host",
-        "HTTP host header field",
-        ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT,
-        "aliases", "[\"http.host\"]",
-        "category", "host",
-        (char *)NULL);
+                                    "host.http", "Hostname", "http.host",
+                                    "HTTP host header field",
+                                    ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT,
+                                    "aliases", "[\"http.host\"]",
+                                    "category", "host",
+                                    (char *)NULL);
     magicField = arkime_field_define("http", "termfield",
-        "http.bodymagic", "Body Magic", "http.bodyMagic",
-        "The content type of body determined by libfile/magic",
-        ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT,
-        (char *)NULL);
+                                     "http.bodymagic", "Body Magic", "http.bodyMagic",
+                                     "The content type of body determined by libfile/magic",
+                                     ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT,
+                                     (char *)NULL);
     md5Field = arkime_field_define("http", "lotermfield",
-        "http.md5", "Body MD5", "http.md5",
-        "MD5 of http body response",
-        ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT,
-        "category", "md5",
-        (char *)NULL);
+                                   "http.md5", "Body MD5", "http.md5",
+                                   "MD5 of http body response",
+                                   ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT,
+                                   "category", "md5",
+                                   (char *)NULL);
 
     if (config.supportSha256) {
         sha256Field = arkime_field_define("http", "lotermfield",
-            "http.sha256", "Body SHA256", "http.sha256",
-            "SHA256 of http body response",
-            ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT,
-            "category", "sha256",
-            (char *)NULL);
+                                          "http.sha256", "Body SHA256", "http.sha256",
+                                          "SHA256 of http body response",
+                                          ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT,
+                                          "category", "sha256",
+                                          (char *)NULL);
     }
 }

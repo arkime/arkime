@@ -1,0 +1,7 @@
+--mode=c
+--pad-oper
+--min-conditional-indent=0
+--max-continuation-indent=100
+--suffix=none
+--squeeze-lines=2
+--align-pointer=name

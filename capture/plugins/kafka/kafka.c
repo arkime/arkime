@@ -70,11 +70,11 @@ LOCAL void kafka_send_session_bulk(char *json, int len)
     for (int i = 0; i < 5; i++) {
         rd_kafka_resp_err_t err;
         err = rd_kafka_producev(
-            rk,
-            RD_KAFKA_V_TOPIC(topic),
-            RD_KAFKA_V_VALUE(json, len),
-            RD_KAFKA_V_OPAQUE(json),
-            RD_KAFKA_V_END);
+                  rk,
+                  RD_KAFKA_V_TOPIC(topic),
+                  RD_KAFKA_V_VALUE(json, len),
+                  RD_KAFKA_V_OPAQUE(json),
+                  RD_KAFKA_V_END);
 
         if (err) {
             /* Failed to *enqueue* message for producing. */
@@ -210,7 +210,7 @@ void arkime_plugin_init()
 
         kafkaSSLKeyPassword = arkime_config_str(NULL, "kafkaSSLKeyPassword", NULL);
         if (kafkaSSLKeyPassword) {
-             if (rd_kafka_conf_set(conf, "ssl.key.password", kafkaSSLKeyPassword,
+            if (rd_kafka_conf_set(conf, "ssl.key.password", kafkaSSLKeyPassword,
                                   errstr, sizeof(errstr)) != RD_KAFKA_CONF_OK)
             {
                 LOGEXIT("Error configuring kafka:ss.key.password, error = %s", errstr);

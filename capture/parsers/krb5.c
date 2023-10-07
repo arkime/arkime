@@ -263,22 +263,22 @@ void arkime_parser_init()
 {
 
     realmField = arkime_field_define("krb5", "termfield",
-        "krb5.realm", "Realm", "krb5.realm",
-        "Kerberos 5 Realm",
-        ARKIME_FIELD_TYPE_STR_GHASH,  ARKIME_FIELD_FLAG_CNT,
-        (char *)NULL);
+                                     "krb5.realm", "Realm", "krb5.realm",
+                                     "Kerberos 5 Realm",
+                                     ARKIME_FIELD_TYPE_STR_GHASH,  ARKIME_FIELD_FLAG_CNT,
+                                     (char *)NULL);
 
     cnameField = arkime_field_define("krb5", "termfield",
-        "krb5.cname", "cname", "krb5.cname",
-        "Kerberos 5 cname",
-        ARKIME_FIELD_TYPE_STR_GHASH,  ARKIME_FIELD_FLAG_CNT,
-        (char *)NULL);
+                                     "krb5.cname", "cname", "krb5.cname",
+                                     "Kerberos 5 cname",
+                                     ARKIME_FIELD_TYPE_STR_GHASH,  ARKIME_FIELD_FLAG_CNT,
+                                     (char *)NULL);
 
     snameField = arkime_field_define("krb5", "termfield",
-        "krb5.sname", "sname", "krb5.sname",
-        "Kerberos 5 sname",
-        ARKIME_FIELD_TYPE_STR_GHASH,  ARKIME_FIELD_FLAG_CNT,
-        (char *)NULL);
+                                     "krb5.sname", "sname", "krb5.sname",
+                                     "Kerberos 5 sname",
+                                     ARKIME_FIELD_TYPE_STR_GHASH,  ARKIME_FIELD_FLAG_CNT,
+                                     (char *)NULL);
 
     arkime_parsers_classifier_register_udp("krb5", 0, 7, (uint8_t *)"\x03\x02\x01\x05", 4, krb5_udp_classify);
     arkime_parsers_classifier_register_udp("krb5", 0, 9, (uint8_t *)"\x03\x02\x01\x05", 4, krb5_udp_classify);

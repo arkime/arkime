@@ -128,13 +128,13 @@ LOCAL void smb_security_blob(ArkimeSession_t *session, uint8_t *data, int len)
         return;
 
     if (lens[2]) {
-        smb_add_string(session, domainField, (char*)value + offsets[2], lens[2], TRUE);
+        smb_add_string(session, domainField, (char *)value + offsets[2], lens[2], TRUE);
     }
     if (lens[3]) {
-        smb_add_string(session, userField, (char*)value + offsets[3], lens[3], TRUE);
+        smb_add_string(session, userField, (char *)value + offsets[3], lens[3], TRUE);
     }
     if (lens[4]) {
-        smb_add_string(session, hostField, (char*)value + offsets[4], lens[4], TRUE);
+        smb_add_string(session, hostField, (char *)value + offsets[4], lens[4], TRUE);
     }
 }
 /******************************************************************************/
@@ -277,7 +277,7 @@ LOCAL int smb1_parse(ArkimeSession_t *session, SMBInfo_t *smb, BSB *bsb, char *s
         int wordcount = 0;
         BSB_IMPORT_u08(*bsb, wordcount);
         BSB_IMPORT_skip(*bsb, wordcount * 2 + 3);
-        smb_add_string(session, fnField, (char*)BSB_WORK_PTR(*bsb), BSB_REMAINING(*bsb), smb->flags2[which] & SMB1_FLAGS2_UNICODE);
+        smb_add_string(session, fnField, (char *)BSB_WORK_PTR(*bsb), BSB_REMAINING(*bsb), smb->flags2[which] & SMB1_FLAGS2_UNICODE);
         *state = SMB_SKIP;
         break;
     }
@@ -290,7 +290,7 @@ LOCAL int smb1_parse(ArkimeSession_t *session, SMBInfo_t *smb, BSB *bsb, char *s
         BSB_IMPORT_skip(*bsb, wordcount * 2 + 3);
         if (BSB_IS_ERROR(*bsb))
             return 1;
-        smb_add_string(session, fnField, (char*)BSB_WORK_PTR(*bsb), BSB_REMAINING(*bsb), smb->flags2[which] & SMB1_FLAGS2_UNICODE);
+        smb_add_string(session, fnField, (char *)BSB_WORK_PTR(*bsb), BSB_REMAINING(*bsb), smb->flags2[which] & SMB1_FLAGS2_UNICODE);
         *state = SMB_SKIP;
         break;
     }
@@ -303,12 +303,12 @@ LOCAL int smb1_parse(ArkimeSession_t *session, SMBInfo_t *smb, BSB *bsb, char *s
         BSB_IMPORT_u16(*bsb, passlength);
         BSB_IMPORT_skip(*bsb, 2 + passlength);
 
-        uint32_t offset = ((BSB_WORK_PTR(*bsb) - start) % 2 == 0)?2:1;
+        uint32_t offset = ((BSB_WORK_PTR(*bsb) - start) % 2 == 0) ? 2 : 1;
 
         if (BSB_IS_ERROR(*bsb) || offset > BSB_REMAINING(*bsb)) {
             return 1;
         }
-        smb_add_string(session, shareField, (char*)BSB_WORK_PTR(*bsb)+offset, BSB_REMAINING(*bsb)-offset, smb->flags2[which] & SMB1_FLAGS2_UNICODE);
+        smb_add_string(session, shareField, (char *)BSB_WORK_PTR(*bsb) + offset, BSB_REMAINING(*bsb) - offset, smb->flags2[which] & SMB1_FLAGS2_UNICODE);
         *state = SMB_SKIP;
         break;
     }
@@ -336,11 +336,11 @@ LOCAL int smb1_parse(ArkimeSession_t *session, SMBInfo_t *smb, BSB *bsb, char *s
             smb_security_blob(session, BSB_WORK_PTR(*bsb), securitylen);
             BSB_IMPORT_skip(*bsb, securitylen);
 
-            uint32_t offset = ((BSB_WORK_PTR(*bsb) - start) % 2 == 0)?0:1;
+            uint32_t offset = ((BSB_WORK_PTR(*bsb) - start) % 2 == 0) ? 0 : 1;
             BSB_IMPORT_skip(*bsb, offset);
 
             if (!BSB_IS_ERROR(*bsb)) {
-                smb1_parse_osverdomain(session, (char*)BSB_WORK_PTR(*bsb), BSB_REMAINING(*bsb), smb->flags2[which] & SMB1_FLAGS2_UNICODE);
+                smb1_parse_osverdomain(session, (char *)BSB_WORK_PTR(*bsb), BSB_REMAINING(*bsb), smb->flags2[which] & SMB1_FLAGS2_UNICODE);
             }
         } else if (wordcount == 13) {
             BSB_IMPORT_skip(*bsb, 14);
@@ -352,11 +352,11 @@ LOCAL int smb1_parse(ArkimeSession_t *session, SMBInfo_t *smb, BSB *bsb, char *s
 
             BSB_IMPORT_skip(*bsb, 10 + ansipw + upw);
 
-            uint32_t offset = ((BSB_WORK_PTR(*bsb) - start) % 2 == 0)?0:1;
+            uint32_t offset = ((BSB_WORK_PTR(*bsb) - start) % 2 == 0) ? 0 : 1;
             BSB_IMPORT_skip(*bsb, offset);
 
             if (!BSB_IS_ERROR(*bsb)) {
-                smb1_parse_userdomainosver(session, (char*)BSB_WORK_PTR(*bsb), BSB_REMAINING(*bsb), smb->flags2[which] & SMB1_FLAGS2_UNICODE);
+                smb1_parse_userdomainosver(session, (char *)BSB_WORK_PTR(*bsb), BSB_REMAINING(*bsb), smb->flags2[which] & SMB1_FLAGS2_UNICODE);
             }
         }
 
@@ -421,7 +421,7 @@ LOCAL int smb2_parse(ArkimeSession_t *session, SMBInfo_t *UNUSED(smb), BSB *bsb,
         BSB_IMPORT_skip(*bsb, pathoffset);
 
         if (!BSB_IS_ERROR(*bsb) && pathlen < BSB_REMAINING(*bsb)) {
-            smb_add_string(session, shareField, (char*)BSB_WORK_PTR(*bsb), pathlen, smb->flags2[which] & SMB1_FLAGS2_UNICODE);
+            smb_add_string(session, shareField, (char *)BSB_WORK_PTR(*bsb), pathlen, smb->flags2[which] & SMB1_FLAGS2_UNICODE);
         }
 
         *remlen -= (BSB_WORK_PTR(*bsb) - start);
@@ -444,7 +444,7 @@ LOCAL int smb2_parse(ArkimeSession_t *session, SMBInfo_t *UNUSED(smb), BSB *bsb,
         if (!BSB_IS_ERROR(*bsb) && namelen < BSB_REMAINING(*bsb)) {
             gsize bread, bwritten;
             GError      *error = 0;
-            char *out = g_convert((char*)BSB_WORK_PTR(*bsb), namelen, "utf-8", "ucs-2le", &bread, &bwritten, &error);
+            char *out = g_convert((char *)BSB_WORK_PTR(*bsb), namelen, "utf-8", "ucs-2le", &bread, &bwritten, &error);
             if (error) {
                 LOG("ERROR %s", error->message);
                 g_error_free(error);
@@ -586,57 +586,57 @@ LOCAL void smb_classify(ArkimeSession_t *session, const uint8_t *data, int UNUSE
 /******************************************************************************/
 void arkime_parser_init()
 {
-    shareField =arkime_field_define("smb", "termfield",
-        "smb.share", "Share", "smb.share",
-        "SMB shares connected to",
-        ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT,
-        (char *)NULL);
+    shareField = arkime_field_define("smb", "termfield",
+                                     "smb.share", "Share", "smb.share",
+                                     "SMB shares connected to",
+                                     ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT,
+                                     (char *)NULL);
 
     fnField = arkime_field_define("smb", "termfield",
-        "smb.fn", "Filename", "smb.filename",
-        "SMB files opened, created, deleted",
-        ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT,
-        (char *)NULL);
+                                  "smb.fn", "Filename", "smb.filename",
+                                  "SMB files opened, created, deleted",
+                                  ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT,
+                                  (char *)NULL);
 
     osField = arkime_field_define("smb", "termfield",
-        "smb.os", "OS", "smb.os",
-        "SMB OS information",
-        ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT,
-        (char *)NULL);
+                                  "smb.os", "OS", "smb.os",
+                                  "SMB OS information",
+                                  ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT,
+                                  (char *)NULL);
 
     domainField = arkime_field_define("smb", "termfield",
-        "smb.domain", "Domain", "smb.domain",
-        "SMB domain",
-        ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT,
-        (char *)NULL);
+                                      "smb.domain", "Domain", "smb.domain",
+                                      "SMB domain",
+                                      ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT,
+                                      (char *)NULL);
 
     verField = arkime_field_define("smb", "termfield",
-        "smb.ver", "Version", "smb.version",
-        "SMB Version information",
-        ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT,
-        (char *)NULL);
+                                   "smb.ver", "Version", "smb.version",
+                                   "SMB Version information",
+                                   ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT,
+                                   (char *)NULL);
 
     userField = arkime_field_define("smb", "termfield",
-        "smb.user", "User", "smb.user",
-        "SMB User",
-        ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT,
-        "category", "user",
-        (char *)NULL);
+                                    "smb.user", "User", "smb.user",
+                                    "SMB User",
+                                    ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT,
+                                    "category", "user",
+                                    (char *)NULL);
 
     hostField = arkime_field_define("smb", "termfield",
-        "host.smb", "Hostname", "smb.host",
-        "SMB Host name",
-        ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT,
-        "category", "host",
-        "aliases", "[\"smb.host\"]",
-        (char *)NULL);
+                                    "host.smb", "Hostname", "smb.host",
+                                    "SMB Host name",
+                                    ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT,
+                                    "category", "host",
+                                    "aliases", "[\"smb.host\"]",
+                                    (char *)NULL);
 
     arkime_field_define("smb", "lotextfield",
-        "host.smb.tokens", "Hostname Tokens", "smb.hostTokens",
-        "SMB Host Tokens",
-        ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_FAKE,
-        "aliases", "[\"smb.host.tokens\"]",
-        (char *)NULL);
+                        "host.smb.tokens", "Hostname Tokens", "smb.hostTokens",
+                        "SMB Host Tokens",
+                        ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_FAKE,
+                        "aliases", "[\"smb.host.tokens\"]",
+                        (char *)NULL);
 
     arkime_parsers_classifier_register_tcp("smb", NULL, 5, (uint8_t *)"SMB", 3, smb_classify);
 }
