@@ -11,7 +11,7 @@ const SessionAPIs = require('./apiSessions');
 
 let fieldsMap;
 
-Config.loaded(() => {
+ArkimeConfig.loaded(() => {
   if (!fieldsMap) {
     setTimeout(() => { // make sure db.js loads before fetching fields
       ViewerUtils.loadFields()

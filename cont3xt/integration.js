@@ -135,10 +135,10 @@ class Integration {
     //   cacheTimeout in cont3xt section
     //   cacheTimeout in integration code
     //   60 minutes
-    integration.cacheTimeout = ArkimeUtil.parseTimeStr(integration.getConfig('cacheTimeout', ArkimeConfig.get('cont3xt', 'cacheTimeout', integration.cacheTimeout ?? '1h'))) * 1000;
+    integration.cacheTimeout = ArkimeUtil.parseTimeStr(integration.getConfig('cacheTimeout', ArkimeConfig.get('cacheTimeout', integration.cacheTimeout ?? '1h'))) * 1000;
 
     // cachePolicy
-    integration.cachePolicy = integration.getConfig('cachePolicy', ArkimeConfig.get('cont3xt', 'cachePolicy', integration.cachePolicy ?? 'shared'));
+    integration.cachePolicy = integration.getConfig('cachePolicy', ArkimeConfig.get('cachePolicy', integration.cachePolicy ?? 'shared'));
     switch (integration.cachePolicy) {
     case 'none':
       integration.cacheable = false;
@@ -820,7 +820,7 @@ class Integration {
       for (const setting in integration.settings) {
         if (integration.settings[setting].required) {
           cnt++;
-          if (ArkimeConfig.get(integration.name, setting) === undefined) {
+          if (ArkimeConfig.getFull(integration.section ?? integration.name, setting) === undefined) {
             globalConfiged = false;
             break;
           }
@@ -900,12 +900,12 @@ class Integration {
 
   // Return a config value for this integration
   getConfig (k, d) {
-    return ArkimeConfig.get(this.section ?? this.name, k, d);
+    return ArkimeConfig.getFull(this.section ?? this.name, k, d);
   }
 
   // Return a config value for this integration
   getConfigArray (k, d, sep) {
-    return ArkimeConfig.getArray(this.section ?? this.name, k, d, sep);
+    return ArkimeConfig.getFullArray(this.section ?? this.name, k, d, sep);
   }
 
   // Return a config value for this integration, but first check the user config
@@ -921,11 +921,11 @@ class Integration {
       if (keys[configName]?.[key]) { return keys[configName]?.[key]; }
     }
 
-    return ArkimeConfig.get(this.configName ?? this.section ?? this.name, key, d);
+    return ArkimeConfig.getFull(this.configName ?? this.section ?? this.name, key, d);
   }
 
   userAgent () {
-    ArkimeConfig.get('cont3xt', 'userAgent', 'cont3xt');
+    this.getConfig('userAgent', ArkimeConfig.get('userAgent', 'cont3xt'));
   }
 
   normalizeCard () {

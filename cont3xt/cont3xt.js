@@ -34,7 +34,6 @@ const Overview = require('./overview');
 const View = require('./view');
 const Db = require('./db');
 const jsonParser = ArkimeUtil.jsonParser;
-const logger = require('morgan');
 const favicon = require('serve-favicon');
 const helmet = require('helmet');
 const uuid = require('uuid').v4;
@@ -54,7 +53,7 @@ app.use(helmet.xssFilter()); // disables browsers' buggy cross-site scripting fi
 app.use(helmet.noSniff()); // mitigates MIME type sniffing
 
 function setupHSTS () {
-  if (getConfig('cont3xt', 'hstsHeader', false)) {
+  if (ArkimeConfig.get('hstsHeader', false)) {
     app.use(helmet.hsts({
       maxAge: 31536000,
       includeSubDomains: true
@@ -87,7 +86,7 @@ function setCookie (req, res, next) {
     overwrite: true
   };
 
-  if (getConfig('cont3xt', 'keyFile') && getConfig('cont3xt', 'certFile')) {
+  if (ArkimeConfig.get('keyFile') && ArkimeConfig.get('certFile')) {
     cookieOptions.secure = true;
   }
 
@@ -123,11 +122,7 @@ function checkCookieToken (req, res, next) {
 // ----------------------------------------------------------------------------
 // Logging
 // ----------------------------------------------------------------------------
-app.use(logger(':date :username \x1b[1m:method\x1b[0m \x1b[33m:url\x1b[0m :res[content-length] bytes :response-time ms'));
-
-logger.token('username', (req, res) => {
-  return req.user ? req.user.userId : '-';
-});
+ArkimeUtil.logger(app);
 
 // ----------------------------------------------------------------------------
 // Load balancer test - no auth
@@ -377,7 +372,7 @@ app.use(cspHeader, setCookie, (req, res, next) => {
     nonce: res.locals.nonce,
     version: version.version,
     path: internals.webBasePath,
-    disableUserPasswordUI: getConfig('cont3xt', 'disableUserPasswordUI', true)
+    disableUserPasswordUI: ArkimeConfig.get('disableUserPasswordUI', true)
   };
 
   // Create a fresh Vue app instance
@@ -451,57 +446,55 @@ User.prototype.setCont3xtKeys = function (v) {
   this.save((err) => { console.log('SAVED', err); });
 };
 
-const getConfig = ArkimeConfig.get;
-
 // ----------------------------------------------------------------------------
 // Initialize stuff
 // ----------------------------------------------------------------------------
 async function setupAuth () {
-  Auth.initialize('cont3xt', {
+  Auth.initialize({
     appAdminRole: 'cont3xtAdmin',
     passwordSecretSection: 'cont3xt',
     basePath: internals.webBasePath
   });
 
-  const dbUrl = getConfig('cont3xt', 'dbUrl');
-  const es = ArkimeConfig.getArray('cont3xt', 'elasticsearch', 'http://localhost:9200');
-  const usersUrl = getConfig('cont3xt', 'usersUrl');
-  const usersEs = ArkimeConfig.getArray('cont3xt', 'usersElasticsearch') ?? es;
+  const dbUrl = ArkimeConfig.get('dbUrl');
+  const es = ArkimeConfig.getArray('elasticsearch', 'http://localhost:9200');
+  const usersUrl = ArkimeConfig.get('usersUrl');
+  const usersEs = ArkimeConfig.getArray('usersElasticsearch') ?? es;
 
   await Db.initialize({
     insecure: ArkimeConfig.insecure,
     url: dbUrl,
     node: es,
-    caTrustFile: getConfig('cont3xt', 'caTrustFile'),
-    apiKey: getConfig('cont3xt', 'elasticsearchAPIKey'),
-    basicAuth: getConfig('cont3xt', 'elasticsearchBasicAuth')
+    caTrustFile: ArkimeConfig.get('caTrustFile'),
+    apiKey: ArkimeConfig.get('elasticsearchAPIKey'),
+    basicAuth: ArkimeConfig.get('elasticsearchBasicAuth')
   });
 
   User.initialize({
     insecure: ArkimeConfig.insecure,
-    requestTimeout: getConfig('cont3xt', 'elasticsearchTimeout', 300),
+    requestTimeout: ArkimeConfig.get('elasticsearchTimeout', 300),
     url: usersUrl,
     node: usersEs,
-    caTrustFile: getConfig('cont3xt', 'caTrustFile'),
-    clientKey: getConfig('cont3xt', 'esClientKey'),
-    clientCert: getConfig('cont3xt', 'esClientCert'),
-    clientKeyPass: getConfig('cont3xt', 'esClientKeyPass'),
-    prefix: getConfig('cont3xt', 'usersPrefix'),
-    apiKey: getConfig('cont3xt', 'usersElasticsearchAPIKey'),
-    basicAuth: getConfig('cont3xt', 'usersElasticsearchBasicAuth', getConfig('cont3xt', 'elasticsearchBasicAuth'))
+    caTrustFile: ArkimeConfig.get('caTrustFile'),
+    clientKey: ArkimeConfig.get('esClientKey'),
+    clientCert: ArkimeConfig.get('esClientCert'),
+    clientKeyPass: ArkimeConfig.get('esClientKeyPass'),
+    prefix: ArkimeConfig.get('usersPrefix'),
+    apiKey: ArkimeConfig.get('usersElasticsearchAPIKey'),
+    basicAuth: ArkimeConfig.get('usersElasticsearchBasicAuth', ArkimeConfig.get('elasticsearchBasicAuth'))
   });
 
   Audit.initialize({
-    expireHistoryDays: getConfig('cont3xt', 'expireHistoryDays', 180)
+    expireHistoryDays: ArkimeConfig.get('expireHistoryDays', 180)
   });
 
   Overview.initialize();
 
   const cache = ArkimeCache.createCache({
-    type: getConfig('cache', 'type', 'memory'),
-    cacheSize: getConfig('cache', 'cacheSize', '100000'),
-    cacheTimeout: getConfig('cache', 'cacheTimeout'),
-    getConfig: (key, value) => getConfig('cache', key, value)
+    type: ArkimeConfig.getFull('cache', 'type', 'memory'),
+    cacheSize: ArkimeConfig.getFull('cache', 'cacheSize', '100000'),
+    cacheTimeout: ArkimeConfig.getFull('cache', 'cacheTimeout'),
+    getConfig: (key, value) => ArkimeConfig.getFull('cache', key, value)
   });
 
   Integration.initialize({
@@ -511,15 +504,12 @@ async function setupAuth () {
 
 async function main () {
   try {
-    await ArkimeConfig.initialize({ defaultConfigFile: `${version.config_prefix}/etc/cont3xt.ini` });
+    await ArkimeConfig.initialize({
+      defaultConfigFile: `${version.config_prefix}/etc/cont3xt.ini`,
+      defaultSections: 'cont3xt'
+    });
 
-    if (ArkimeConfig.debug === 0) {
-      ArkimeConfig.debug = parseInt(getConfig('cont3xt', 'debug', 0));
-    }
-    if (ArkimeConfig.debug) {
-      console.log('Debug Level', ArkimeConfig.debug);
-    }
-    internals.webBasePath = getConfig('cont3xt', 'webBasePath', '/');
+    internals.webBasePath = ArkimeConfig.get('webBasePath', '/');
   } catch (err) {
     console.log(err);
     process.exit();
@@ -527,12 +517,12 @@ async function main () {
   await setupAuth();
   setupHSTS();
 
-  const cont3xtHost = ArkimeConfig.get('cont3xt', 'cont3xtHost');
+  const cont3xtHost = ArkimeConfig.get('cont3xtHost');
   if (Auth.mode === 'header' && cont3xtHost !== 'localhost' && cont3xtHost !== '127.0.0.1') {
     console.log('SECURITY WARNING - When using header auth, cont3xtHost should be localhost or use iptables');
   }
 
-  ArkimeUtil.createHttpServer('cont3xt', app, cont3xtHost, ArkimeConfig.get('cont3xt', 'port', 3218));
+  ArkimeUtil.createHttpServer(app, cont3xtHost, ArkimeConfig.get('port', 3218));
 }
 
 main();

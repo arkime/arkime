@@ -27,6 +27,8 @@ const https = require('https');
 const path = require('path');
 // eslint-disable-next-line no-shadow
 const crypto = require('crypto');
+const logger = require('morgan');
+const express = require('express');
 
 class ArkimeUtil {
   static adminRole;
@@ -436,7 +438,6 @@ class ArkimeUtil {
    */
   static #fsWait;
   static #httpsServer;
-  static #watchSection;
   static #watchHttpsFile (e, filename) {
     if (ArkimeUtil.#fsWait) { clearTimeout(ArkimeUtil.#fsWait); };
 
@@ -444,8 +445,8 @@ class ArkimeUtil {
     ArkimeUtil.#fsWait = setTimeout(() => {
       ArkimeUtil.#fsWait = null;
       try { // try to get the new cert files
-        const keyFileData = fs.readFileSync(ArkimeConfig.get(ArkimeUtil.#watchSection, 'keyFile'));
-        const certFileData = fs.readFileSync(ArkimeConfig.get(ArkimeUtil.#watchSection, 'certFile'));
+        const keyFileData = fs.readFileSync(ArkimeConfig.get('keyFile'));
+        const certFileData = fs.readFileSync(ArkimeConfig.get('certFile'));
 
         console.log('Reloading cert...');
 
@@ -471,17 +472,16 @@ class ArkimeUtil {
   /**
    * Create HTTP/HTTPS Server, load cert if HTTPS, listen, drop priv
    */
-  static createHttpServer (section, app, host, port, listenCb) {
+  static createHttpServer (app, host, port, listenCb) {
     let server;
 
-    if (ArkimeConfig.get(section, 'keyFile') && ArkimeConfig.get(section, 'certFile')) {
-      const keyFileData = fs.readFileSync(ArkimeConfig.get(section, 'keyFile'));
-      const certFileData = fs.readFileSync(ArkimeConfig.get(section, 'certFile'));
-      ArkimeUtil.#watchSection = section;
+    if (ArkimeConfig.get('keyFile') && ArkimeConfig.get('certFile')) {
+      const keyFileData = fs.readFileSync(ArkimeConfig.get('keyFile'));
+      const certFileData = fs.readFileSync(ArkimeConfig.get('certFile'));
 
       // watch the cert and key files
-      fs.watch(ArkimeConfig.get(section, 'keyFile'), { persistent: false }, ArkimeUtil.#watchHttpsFile);
-      fs.watch(ArkimeConfig.get(section, 'certFile'), { persistent: false }, ArkimeUtil.#watchHttpsFile);
+      fs.watch(ArkimeConfig.get('keyFile'), { persistent: false }, ArkimeUtil.#watchHttpsFile);
+      fs.watch(ArkimeConfig.get('certFile'), { persistent: false }, ArkimeUtil.#watchHttpsFile);
 
       if (ArkimeConfig.debug > 1) {
         console.log('Watching cert and key files. If either is changed, the server will be updated with the new files.');
@@ -508,12 +508,12 @@ class ArkimeUtil {
 
     // If root drop priv when dropGroup or dropUser set
     if (process.getuid() === 0) {
-      const group = ArkimeConfig.get(section, 'dropGroup', null);
+      const group = ArkimeConfig.get('dropGroup', null);
       if (group !== null) {
         process.setgid(group);
       }
 
-      const user = ArkimeConfig.get(section, 'dropUser', null);
+      const user = ArkimeConfig.get('dropUser', null);
       if (user !== null) {
         process.setuid(user);
       }
@@ -540,6 +540,39 @@ class ArkimeUtil {
     }
 
     return prefix + '_';
+  }
+
+  // ----------------------------------------------------------------------------
+  /**
+   * Setup logger
+   */
+  static logger (app) {
+    const loggerApp = express.Router();
+    app.use(loggerApp);
+    ArkimeConfig.loaded(() => {
+      // send req to access log file or stdout
+      let stream = process.stdout;
+      const accessLogFile = ArkimeConfig.get('accessLogFile');
+      if (accessLogFile) {
+        stream = fs.createWriteStream(accessLogFile, { flags: 'a' });
+      }
+
+      const accessLogFormat = decodeURIComponent(ArkimeConfig.get(
+        'accessLogFormat',
+        ':date :username %1b[1m:method%1b[0m %1b[33m:url%1b[0m :status :res[content-length] bytes :response-time ms'
+      ));
+
+      const accessLogSuppressPaths = ArkimeConfig.getArray('accessLogSuppressPaths', '');
+
+      loggerApp.use(logger(accessLogFormat, {
+        stream,
+        skip: (req, res) => { return accessLogSuppressPaths.includes(req.path); }
+      }));
+
+      logger.token('username', (req, res) => {
+        return req.user ? req.user.userId : '-';
+      });
+    });
   }
 }
 

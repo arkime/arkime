@@ -12,7 +12,6 @@ const https = require('https');
 const fs = require('fs');
 const favicon = require('serve-favicon');
 const bp = require('body-parser');
-const logger = require('morgan');
 const os = require('os');
 const helmet = require('helmet');
 const uuid = require('uuid').v4;
@@ -57,8 +56,6 @@ const internals = {
 // ----------------------------------------------------------------------------
 // CONFIG
 // ----------------------------------------------------------------------------
-const getConfig = ArkimeConfig.get;
-
 (function () {
   for (let i = 0, ilen = process.argv.length; i < ilen; i++) {
     if (process.argv[i] === '-o') {
@@ -138,7 +135,7 @@ function setCookie (req, res, next) {
     overwrite: true
   };
   // make cookie secure on https
-  if (getConfig('parliament', 'keyFile') && getConfig('parliament', 'certFile')) { cookieOptions.secure = true; }
+  if (ArkimeConfig.get('keyFile') && ArkimeConfig.get('certFile')) { cookieOptions.secure = true; }
 
   res.cookie( // send cookie for basic, non admin functions
     'PARLIAMENT-COOKIE',
@@ -181,7 +178,7 @@ app.use('/parliament/assets', express.static(
 ), ArkimeUtil.missingResource);
 
 // log requests
-app.use(logger(':date \x1b[1m:method\x1b[0m \x1b[33m:url\x1b[0m :status :res[content-length] bytes :response-time ms', { stream: process.stdout }));
+ArkimeUtil.logger(app);
 
 app.use(favicon(path.join(__dirname, '/favicon.ico')));
 
@@ -954,22 +951,22 @@ function findIssue (clusterId, issueType, node) {
 // Initializes the parliament with ids for each group and cluster
 // Upgrades the parliament if necessary
 async function initializeParliament () {
-  ArkimeUtil.checkArkimeSchemaVersion(User.getClient(), getConfig('parliament', 'usersPrefix'), MIN_DB_VERSION);
+  ArkimeUtil.checkArkimeSchemaVersion(User.getClient(), ArkimeConfig.get('usersPrefix'), MIN_DB_VERSION);
   Notifier.initialize({
     issueTypes,
-    prefix: getConfig('parliament', 'usersPrefix'),
+    prefix: ArkimeConfig.get('usersPrefix'),
     esclient: User.getClient()
   });
 
   Parliament.initialize({
     esclient: User.getClient(),
     name: internals.parliamentName,
-    prefix: getConfig('parliament', 'usersPrefix')
+    prefix: ArkimeConfig.get('usersPrefix')
   });
 
   // fetch parliament file if it exists
   try {
-    parliamentFile = require(`${getConfig('parliament', 'file')}`);
+    parliamentFile = require(`${ArkimeConfig.get('file')}`);
   } catch (err) {}
 
   // if there's a parliament file, check that it is the correct version
@@ -986,7 +983,7 @@ async function initializeParliament () {
 
     try { // write the upgraded files
       if (Buffer.from(JSON.stringify(parliamentFile, null, 2)).length > 100) {
-        fs.writeFileSync(getConfig('parliament', 'file'), JSON.stringify(parliamentFile, null, 2), 'utf8');
+        fs.writeFileSync(ArkimeConfig.get('file'), JSON.stringify(parliamentFile, null, 2), 'utf8');
       }
       if (!validateIssues()) {
         fs.writeFileSync(app.get('issuesfile'), JSON.stringify(issues, null, 2), 'utf8');
@@ -1850,17 +1847,17 @@ app.put('/parliament/api/removeSelectedAcknowledgedIssues', [isUser, checkCookie
 // INITIALIZE
 // ----------------------------------------------------------------------------
 async function setupAuth () {
-  Auth.initialize('parliament', {
+  Auth.initialize({
     appAdminRole: 'parliamentAdmin',
     passwordSecretSection: 'parliament'
   });
 
   User.initialize({
     insecure: ArkimeConfig.insecure,
-    node: getConfig('parliament', 'usersElasticsearch', 'http://localhost:9200'),
-    prefix: getConfig('parliament', 'usersPrefix', getConfig('parliament', 'prefix', 'arkime')),
-    apiKey: getConfig('parliament', 'usersElasticsearchAPIKey'),
-    basicAuth: getConfig('parliament', 'usersElasticsearchBasicAuth')
+    node: ArkimeConfig.get('usersElasticsearch', 'http://localhost:9200'),
+    prefix: ArkimeConfig.get('usersPrefix', ArkimeConfig.get('prefix', 'arkime')),
+    apiKey: ArkimeConfig.get('usersElasticsearchAPIKey'),
+    basicAuth: ArkimeConfig.get('usersElasticsearchBasicAuth')
   });
 }
 
@@ -1909,7 +1906,7 @@ app.use((req, res, next) => {
     authMode: Auth.mode,
     nonce: res.locals.nonce,
     version: version.version,
-    path: getConfig('parliament', 'webBasePath', '/')
+    path: ArkimeConfig.get('webBasePath', '/')
   };
 
   // Create a fresh Vue app instance
@@ -1936,15 +1933,12 @@ app.use((req, res, next) => {
 // ----------------------------------------------------------------------------
 async function main () {
   try {
-    await ArkimeConfig.initialize({ defaultConfigFile: `${version.config_prefix}/etc/parliament.ini` });
+    await ArkimeConfig.initialize({
+      defaultConfigFile: `${version.config_prefix}/etc/parliament.ini`,
+      defaultSections: 'parliament'
+    });
 
-    if (ArkimeConfig.debug === 0) {
-      ArkimeConfig.debug = parseInt(getConfig('parliament', 'debug', 0));
-    }
-    if (ArkimeConfig.debug) {
-      console.log('Debug Level', ArkimeConfig.debug);
-    }
-    internals.webBasePath = getConfig('parliament', 'webBasePath', '/');
+    internals.webBasePath = ArkimeConfig.get('webBasePath', '/');
   } catch (err) {
     console.log(err);
     process.exit();
@@ -1958,8 +1952,8 @@ async function main () {
 
   // construct the issues file name
   let issuesFilename = 'issues.json';
-  if (getConfig('parliament', 'file').indexOf('.json') > -1) {
-    const filename = getConfig('parliament', 'file').replace(/\.json/g, '');
+  if (ArkimeConfig.get('file').indexOf('.json') > -1) {
+    const filename = ArkimeConfig.get('file').replace(/\.json/g, '');
     issuesFilename = `${filename}.issues.json`;
   }
   app.set('issuesfile', issuesFilename);
@@ -1973,15 +1967,14 @@ async function main () {
 
   await setupAuth();
 
-  const parliamentHost = getConfig('parliament', 'parliamentHost');
+  const parliamentHost = ArkimeConfig.get('parliamentHost');
   if (Auth.mode === 'header' && parliamentHost !== 'localhost' && parliamentHost !== '127.0.0.1') {
     console.log('SECURITY WARNING - When using header auth, parliamentHost should be localhost or use iptables');
   }
 
-  ArkimeUtil.createHttpServer('parliament', app, parliamentHost, ArkimeConfig.get('parliament', 'port', 8008), async () => {
+  ArkimeUtil.createHttpServer(app, parliamentHost, ArkimeConfig.get('port', 8008), async () => {
     if (ArkimeConfig.debug) {
-      console.log('Debug Level', ArkimeConfig.debug);
-      console.log('Parliament file:', getConfig('parliament', 'file'));
+      console.log('Parliament file:', ArkimeConfig.get('file'));
       console.log('Issues file:', issuesFilename);
     }
 

@@ -76,7 +76,6 @@ class Auth {
   // ----------------------------------------------------------------------------
   /**
    * Initialize the Auth subsystem
-   * @param {string} section The section to get all options from if they use standard name
    * @param {string} options.mode=digest What auth mode to run in
    * @param {string} options.basePath=/ What the web base path is for the app
    * @param {string} options.userNameHeader In header auth mode, which http header has the user id
@@ -89,29 +88,29 @@ class Auth {
    * @param {object} options.authConfig options specific to each auth mode
    * @param {object} options.caTrustFile Optional path to CA certificate file to use for external authentication
    */
-  static initialize (section, options) {
+  static initialize (options) {
     // Make sure all options we need below are set
     options ??= {};
-    options.mode ??= ArkimeConfig.get(section, 'authMode');
-    options.userNameHeader ??= ArkimeConfig.get(section, 'userNameHeader');
-    options.passwordSecret ??= ArkimeConfig.get(options.passwordSecretSection ?? section, 'passwordSecret');
-    options.serverSecret ??= ArkimeConfig.get(section, 'serverSecret');
-    options.requiredAuthHeader ??= ArkimeConfig.get(section, 'requiredAuthHeader');
-    options.requiredAuthHeaderVal ??= ArkimeConfig.get(section, 'requiredAuthHeaderVal');
-    options.userAutoCreateTmpl ??= ArkimeConfig.get(section, 'userAutoCreateTmpl');
-    options.userAuthIps = ArkimeConfig.getArray(section, 'userAuthIps');
-    options.caTrustFile ??= ArkimeConfig.get(section, 'caTrustFile');
+    options.mode ??= ArkimeConfig.get('authMode');
+    options.userNameHeader ??= ArkimeConfig.get('userNameHeader');
+    options.passwordSecret ??= ArkimeConfig.getFull(options.passwordSecretSection ?? undefined, 'passwordSecret');
+    options.serverSecret ??= ArkimeConfig.get('serverSecret');
+    options.requiredAuthHeader ??= ArkimeConfig.get('requiredAuthHeader');
+    options.requiredAuthHeaderVal ??= ArkimeConfig.get('requiredAuthHeaderVal');
+    options.userAutoCreateTmpl ??= ArkimeConfig.get('userAutoCreateTmpl');
+    options.userAuthIps = ArkimeConfig.getArray('userAuthIps');
+    options.caTrustFile ??= ArkimeConfig.get('caTrustFile');
 
     options.authConfig ??= {};
-    options.authConfig.httpRealm ??= ArkimeConfig.get(section, 'httpRealm', 'Moloch');
-    options.authConfig.userIdField ??= ArkimeConfig.get(section, 'authUserIdField');
-    options.authConfig.discoverURL ??= ArkimeConfig.get(section, 'authDiscoverURL');
-    options.authConfig.clientId ??= ArkimeConfig.get(section, 'authClientId');
-    options.authConfig.clientSecret ??= ArkimeConfig.get(section, 'authClientSecret');
-    options.authConfig.redirectURIs ??= ArkimeConfig.get(section, 'authRedirectURIs');
-    options.authConfig.trustProxy ??= ArkimeConfig.get(section, 'authTrustProxy');
-    options.authConfig.cookieSameSite ??= ArkimeConfig.get(section, 'authCookieSameSite');
-    options.authConfig.cookieSecure ??= ArkimeConfig.get(section, 'authCookieSecure', true);
+    options.authConfig.httpRealm ??= ArkimeConfig.get('httpRealm', 'Moloch');
+    options.authConfig.userIdField ??= ArkimeConfig.get('authUserIdField');
+    options.authConfig.discoverURL ??= ArkimeConfig.get('authDiscoverURL');
+    options.authConfig.clientId ??= ArkimeConfig.get('authClientId');
+    options.authConfig.clientSecret ??= ArkimeConfig.get('authClientSecret');
+    options.authConfig.redirectURIs ??= ArkimeConfig.get('authRedirectURIs');
+    options.authConfig.trustProxy ??= ArkimeConfig.get('authTrustProxy');
+    options.authConfig.cookieSameSite ??= ArkimeConfig.get('authCookieSameSite');
+    options.authConfig.cookieSecure ??= ArkimeConfig.get('authCookieSecure', true);
 
     if (ArkimeConfig.debug > 1) {
       console.log('Auth.initialize', options);
@@ -244,7 +243,7 @@ class Auth {
         resave: false,
         saveUninitialized: true,
         cookie: { path: Auth.#basePath, secure: Auth.#authConfig.cookieSecure, sameSite: Auth.#authConfig.cookieSameSite ?? 'Lax', maxAge: 24 * 60 * 60 * 1000 },
-        store: new ESStore({ section })
+        store: new ESStore({ })
       }));
       Auth.#authRouter.use(passport.initialize());
       Auth.#authRouter.use(passport.session());
@@ -1021,7 +1020,7 @@ class ESStore extends expressSession.Store {
       ESStore.#client = User.getClient();
       ESStore.start();
     }, 100);
-    const prefix = ArkimeUtil.formatPrefix(ArkimeConfig.get(options.section, 'usersPrefix', ArkimeConfig.get(options.section, 'prefix', 'arkime_')));
+    const prefix = ArkimeUtil.formatPrefix(ArkimeConfig.get('usersPrefix', ArkimeConfig.get('prefix', 'arkime_')));
     ESStore.#index = `${prefix}sids_v50`;
   }
 

@@ -32,7 +32,7 @@ const ArkimeUtil = require('../common/arkimeUtil');
 const ArkimeConfig = require('../common/arkimeConfig');
 
 const esSSLOptions = { rejectUnauthorized: !ArkimeConfig.insecure };
-Config.loaded(() => {
+ArkimeConfig.loaded(() => {
   const esClientKey = Config.get('esClientKey');
   const esClientCert = Config.get('esClientCert');
   const caTrustFile = Config.get('caTrustFile');
@@ -82,7 +82,6 @@ function saveBody (req, res, next) {
 }
 
 // app.configure
-const logger = require('morgan');
 const favicon = require('serve-favicon');
 const compression = require('compression');
 
@@ -91,7 +90,7 @@ const app = express();
 
 app.enable('jsonp callback');
 app.use(favicon(path.join(__dirname, '/public/favicon.ico')));
-app.use(logger(':date \x1b[1m:method\x1b[0m \x1b[33m:url\x1b[0m :res[content-length] bytes :response-time ms'));
+ArkimeUtil.logger(app);
 app.use(saveBody);
 app.use(compression());
 app.use(function (req, res, next) {
@@ -1189,7 +1188,7 @@ async function premain () {
   activeESNodes = nodes.slice();
   console.log(nodes);
 
-  ArkimeUtil.createHttpServer([Config.nodeName(), 'default'], app, Config.get('multiESHost'), Config.get('multiESPort', 8200));
+  ArkimeUtil.createHttpServer(app, Config.get('multiESHost'), Config.get('multiESPort', 8200));
 }
 
 premain();
