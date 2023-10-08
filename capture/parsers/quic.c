@@ -68,11 +68,11 @@ LOCAL int quic_chlo_parser(ArkimeSession_t *session, BSB dbsb) {
             return 1;
 
         if (memcmp(subTag, "SNI\x00", 4) == 0) {
-            arkime_field_string_add(hostField, session, (char *)tagDataStart+start, endOffset-start, TRUE);
+            arkime_field_string_add(hostField, session, (char *)tagDataStart + start, endOffset - start, TRUE);
         } else if (memcmp(subTag, "UAID", 4) == 0) {
-            arkime_field_string_add(uaField, session, (char *)tagDataStart+start, endOffset-start, TRUE);
+            arkime_field_string_add(uaField, session, (char *)tagDataStart + start, endOffset - start, TRUE);
         } else if (memcmp(subTag, "VER\x00", 4) == 0) {
-            arkime_field_string_add(versionField, session, (char *)tagDataStart+start, endOffset-start, TRUE);
+            arkime_field_string_add(versionField, session, (char *)tagDataStart + start, endOffset - start, TRUE);
         } else {
             //LOG("Subtag: %4.4s len: %d %.*s", subTag, endOffset-start, endOffset-start, tagDataStart+start);
         }
@@ -138,7 +138,7 @@ LOCAL int quic_2445_udp_parser(ArkimeSession_t *session, void *UNUSED(uw), const
         return 0;
 
     BSB bsb;
-    BSB_INIT(bsb, data+offset, len-offset);
+    BSB_INIT(bsb, data + offset, len - offset);
 
     while (!BSB_IS_ERROR(bsb) && BSB_REMAINING(bsb)) {
         uint8_t type = 0;
@@ -199,8 +199,8 @@ LOCAL int quic_4648_udp_parser(ArkimeSession_t *session, void *UNUSED(uw), const
     if (version < 46 || version > 48) {
         return ARKIME_PARSER_UNREGISTER;
     }
-    for (;offset < (uint32_t)len - 20; offset++) {
-        if (data[offset] == 'C' && memcmp(data+offset, "CHLO", 4) == 0) {
+    for (; offset < (uint32_t)len - 20; offset++) {
+        if (data[offset] == 'C' && memcmp(data + offset, "CHLO", 4) == 0) {
             BSB bsb;
             BSB_INIT(bsb, data + offset, len - offset);
             quic_chlo_parser(session, bsb);
@@ -389,7 +389,7 @@ LOCAL void quic_ietf_udp_classify(ArkimeSession_t *session, const uint8_t *data,
     BSB bsb;
     BSB_INIT(bsb, data, len);
 
-  // Decode Header
+    // Decode Header
     uint8_t flags = 0;
     BSB_IMPORT_u08(bsb, flags); // Still partially encrypted
     BSB_IMPORT_skip(bsb, 4); // version
@@ -423,19 +423,19 @@ LOCAL void quic_ietf_udp_classify(ArkimeSession_t *session, const uint8_t *data,
     if (BSB_IS_ERROR(bsb))
         return;
 
-  // HKDF - HMAC-based Key Derivation Function
-  // https://datatracker.ietf.org/doc/html/rfc5869
+    // HKDF - HMAC-based Key Derivation Function
+    // https://datatracker.ietf.org/doc/html/rfc5869
 
-  // HKDF-Extract(salt, IKM) -> PRK
+    // HKDF-Extract(salt, IKM) -> PRK
     static uint8_t salt[20] = { 0x38, 0x76, 0x2c, 0xf7, 0xf5, 0x59, 0x34, 0xb3, 0x4d, 0x17, 0x9a, 0xe6, 0xa4, 0xc8, 0x0c, 0xad, 0xcc, 0xbb, 0x7f, 0x0a };
     GHmac *hmac = g_hmac_new(G_CHECKSUM_SHA256, salt, 20);
-    g_hmac_update(hmac, (guchar*)did, dlen);
+    g_hmac_update(hmac, (guchar *)did, dlen);
     uint8_t prk[65];
     gsize   prkLen = sizeof(prk);
-    g_hmac_get_digest(hmac, (guchar*)prk, &prkLen);
+    g_hmac_get_digest(hmac, (guchar *)prk, &prkLen);
     g_hmac_unref(hmac);
 
-  // Calculate secrets for later
+    // Calculate secrets for later
     uint8_t clientOkm[32];
     hkdfExpandLabel(prk, prkLen, "tls13 client in", clientOkm, sizeof(clientOkm));
 
@@ -448,7 +448,7 @@ LOCAL void quic_ietf_udp_classify(ArkimeSession_t *session, const uint8_t *data,
     uint8_t ivOkm[12];
     hkdfExpandLabel(clientOkm, sizeof(clientOkm), "tls13 quic iv", ivOkm, sizeof(ivOkm));
 
-  // Get mask input data
+    // Get mask input data
     BSB_IMPORT_skip(bsb, 4);
     uint8_t maskInput[16];
     BSB_IMPORT_byte(bsb, maskInput, 16);
@@ -458,7 +458,7 @@ LOCAL void quic_ietf_udp_classify(ArkimeSession_t *session, const uint8_t *data,
 
     BSB_IMPORT_rewind(bsb, 20); // Go back
 
-  // Calculate mask for packet number
+    // Calculate mask for packet number
     uint8_t mask[100];
     int     maskLen = sizeof(mask);
 
@@ -476,8 +476,8 @@ LOCAL void quic_ietf_udp_classify(ArkimeSession_t *session, const uint8_t *data,
         return;
     }
 
-  // Decrypt Packet Number using mask
-  // https://datatracker.ietf.org/doc/html/draft-ietf-quic-tls-33#section-5.4.1
+    // Decrypt Packet Number using mask
+    // https://datatracker.ietf.org/doc/html/draft-ietf-quic-tls-33#section-5.4.1
     uint8_t packet0 = flags;
     if ((packet0 & 0x80) == 0x80) {
         packet0 ^= mask[0] & 0x0f;
@@ -496,7 +496,7 @@ LOCAL void quic_ietf_udp_classify(ArkimeSession_t *session, const uint8_t *data,
         pn |= (tmp ^ mask[i + 1]) << (8 * (pn_length - 1));
     }
 
-  // Make copy, with decrypted first byte and packet number
+    // Make copy, with decrypted first byte and packet number
     uint8_t buffer[3100];
     uint16_t headerLen = BSB_POSITION(bsb);
 
@@ -508,13 +508,13 @@ LOCAL void quic_ietf_udp_classify(ArkimeSession_t *session, const uint8_t *data,
         buffer[headerLen - 2] = (pn & 0xff) >> 8;
     }
 
-  // Make nonce
+    // Make nonce
     uint8_t nonce[12];
     memcpy(nonce, ivOkm, sizeof(nonce));
     nonce[10] ^= (pn & 0xff) >> 8;
     nonce[11] ^= (pn & 0xff);
 
-  // Decrypt Packet
+    // Decrypt Packet
     EVP_CIPHER_CTX      *pp_cipher_ctx;
     const EVP_CIPHER    *pp_cipher = EVP_aes_128_gcm();
     uint8_t out[3000];
@@ -579,31 +579,31 @@ void arkime_parser_init()
     arkime_parsers_classifier_register_udp("quic", NULL, 1, (const uint8_t *)"\x00\x00\x00\x01", 1, quic_ietf_udp_classify);
 
     hostField = arkime_field_define("quic", "lotermfield",
-        "host.quic", "Hostname", "quic.host",
-        "QUIC host header field",
-        ARKIME_FIELD_TYPE_STR_GHASH,  ARKIME_FIELD_FLAG_CNT,
-        "category", "host",
-        "aliases", "[\"quic.host\"]",
-        (char *)NULL);
+                                    "host.quic", "Hostname", "quic.host",
+                                    "QUIC host header field",
+                                    ARKIME_FIELD_TYPE_STR_GHASH,  ARKIME_FIELD_FLAG_CNT,
+                                    "category", "host",
+                                    "aliases", "[\"quic.host\"]",
+                                    (char *)NULL);
 
     arkime_field_define("quic", "lotextfield",
-        "host.quic.tokens", "Hostname Tokens", "quic.hostTokens",
-        "QUIC host tokens header field",
-        ARKIME_FIELD_TYPE_STR_GHASH,  ARKIME_FIELD_FLAG_FAKE,
-        "aliases", "[\"quic.host.tokens\"]",
-        (char *)NULL);
+                        "host.quic.tokens", "Hostname Tokens", "quic.hostTokens",
+                        "QUIC host tokens header field",
+                        ARKIME_FIELD_TYPE_STR_GHASH,  ARKIME_FIELD_FLAG_FAKE,
+                        "aliases", "[\"quic.host.tokens\"]",
+                        (char *)NULL);
 
     uaField = arkime_field_define("quic", "termfield",
-        "quic.user-agent", "User-Agent", "quic.useragent",
-        "User-Agent",
-        ARKIME_FIELD_TYPE_STR_GHASH,  ARKIME_FIELD_FLAG_CNT,
-        (char *)NULL);
+                                  "quic.user-agent", "User-Agent", "quic.useragent",
+                                  "User-Agent",
+                                  ARKIME_FIELD_TYPE_STR_GHASH,  ARKIME_FIELD_FLAG_CNT,
+                                  (char *)NULL);
 
     versionField = arkime_field_define("quic", "termfield",
-        "quic.version", "Version", "quic.version",
-        "QUIC Version",
-        ARKIME_FIELD_TYPE_STR_GHASH,  ARKIME_FIELD_FLAG_CNT,
-        (char *)NULL);
+                                       "quic.version", "Version", "quic.version",
+                                       "QUIC Version",
+                                       ARKIME_FIELD_TYPE_STR_GHASH,  ARKIME_FIELD_FLAG_CNT,
+                                       (char *)NULL);
 
     tls_process_client_hello_func = arkime_parser_get_named_func("tls_process_client_hello");
 }

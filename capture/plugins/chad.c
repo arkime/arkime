@@ -23,9 +23,9 @@ static char     CHAD_HTTP_CONFIG[] = "host;accept;accept-encoding;accept-languag
 static char     CHAD_HTTP_IGNORE[] = "X-IPINTELL;rpauserdata;rspauth;x-novinet;x-is-aol;x-lb-client-ip;x-lb-client-ssl;x-ssl-offload;dnt;X-CHAD;X-QS-CHAD;X-POST-CHAD;X-OREO-CHAD";
 
 
-static char     CHAD_SMTP_CONFIG[]="received;message-id;reply-to;from;to;subject;date;mime-version;content-transfer-encoding;x-priority;x-msmail-priority;x-mailer;x-mimeole;content-type;content-disposition;user-agent;dkim-signature;domainkey-signature;cc;sender;delivered-to;errors-to;precedence;importance;X-Virus-Scanned";
+static char     CHAD_SMTP_CONFIG[] = "received;message-id;reply-to;from;to;subject;date;mime-version;content-transfer-encoding;x-priority;x-msmail-priority;x-mailer;x-mimeole;content-type;content-disposition;user-agent;dkim-signature;domainkey-signature;cc;sender;delivered-to;errors-to;precedence;importance;X-Virus-Scanned";
 
-static char     CHAD_SMTP_IGNORE[]="x-freebsd-cvs-branch;x-beenthere;x-mailman-version;list-unsubscribe;list-subscribe;list-id;list-archive;list-post;list-help;x-return-path-hint;x-roving-id;x-lumos-senderid;x-roving-campaignid;x-roving-streamid;x-server-id;x-antiabuse;x-aol-ip;x-originalarrivaltime";
+static char     CHAD_SMTP_IGNORE[] = "x-freebsd-cvs-branch;x-beenthere;x-mailman-version;list-unsubscribe;list-subscribe;list-id;list-archive;list-post;list-help;x-return-path-hint;x-roving-id;x-lumos-senderid;x-roving-campaignid;x-roving-streamid;x-server-id;x-antiabuse;x-aol-ip;x-originalarrivaltime";
 
 int chad_plugin_num;
 int chad_http_num;
@@ -143,7 +143,7 @@ void chad_plugin_init(char **chads, char **ignores, gboolean http)
 {
     int i;
     int p;
-    
+
     for (i = 0, p = 0; chads[i] && p < 64; i++) {
         ChadToken_t *token;
         if(http)
@@ -201,28 +201,28 @@ void arkime_plugin_init()
                      0);
 
     arkime_plugins_set_cb("chad",
-      NULL,
-      NULL,
-      NULL,
-      NULL,
-      chad_plugin_save,
-      NULL,
-      NULL,
-      NULL
-    );
+                          NULL,
+                          NULL,
+                          NULL,
+                          NULL,
+                          chad_plugin_save,
+                          NULL,
+                          NULL,
+                          NULL
+                         );
 
     arkime_plugins_set_http_cb("chad",
-      NULL,
-      NULL,
-      chad_on_header_field,
-      NULL,
-      chad_on_header_complete,
-      NULL,
-      NULL
-    );
+                               NULL,
+                               NULL,
+                               chad_on_header_field,
+                               NULL,
+                               chad_on_header_complete,
+                               NULL,
+                               NULL
+                              );
 
     arkime_plugins_set_smtp_cb("chad",
-      chad_smtp_on_header,
-      chad_smtp_on_header_complete
-    );
+                               chad_smtp_on_header,
+                               chad_smtp_on_header_complete
+                              );
 }

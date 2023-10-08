@@ -56,17 +56,17 @@ void tcp_server(void) {
     while (1) {
         socklen_t client_len = sizeof(client);
         int client_fd = accept(server_fd, (struct sockaddr *) &client, &client_len);
-            if (client_fd < 0) {
-                LOG("Error establishing new connection: %d", client_fd);
+        if (client_fd < 0) {
+            LOG("Error establishing new connection: %d", client_fd);
+        }
+        else {
+            if (config.debug) {
+                char str[INET6_ADDRSTRLEN];
+                inet_ntop(AF_INET, &client.sin_addr, str, sizeof(str));
+                LOG("Incomding health check %s:%d", str, client.sin_port);
             }
-            else {
-                if (config.debug) {
-                    char str[INET6_ADDRSTRLEN];
-                    inet_ntop(AF_INET, &client.sin_addr, str, sizeof(str));
-                    LOG("Incomding health check %s:%d", str, client.sin_port);
-                }
-                close(client_fd);
-            }
+            close(client_fd);
+        }
     }
 }
 
@@ -96,6 +96,6 @@ void arkime_plugin_init()
         arkime_plugins_register("tcphealthcheck", FALSE);
     }
     else {
-      LOG("To use TCP health checks, set tcpHealthCheckPort to a value between 1 and 65535");
+        LOG("To use TCP health checks, set tcpHealthCheckPort to a value between 1 and 65535");
     }
 }

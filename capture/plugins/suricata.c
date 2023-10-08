@@ -237,27 +237,27 @@ LOCAL void suricata_process_alert(char *data, int len, SuricataItem_t *item)
     }
 
     int i;
-    for (i = 0; out[i]; i+= 4) {
+    for (i = 0; out[i]; i += 4) {
         if (config.debug > 2)
-            LOG("  KEY %.*s DATA %.*s", out[i+1], data + out[i], out[i+3], data + out[i+2]);
+            LOG("  KEY %.*s DATA %.*s", out[i + 1], data + out[i], out[i + 3], data + out[i + 2]);
 
         if (MATCH(data, "action")) {
-            item->action = g_strndup(data + out[i+2], out[i+3]);
-            item->action_len = out[i+3];
+            item->action = g_strndup(data + out[i + 2], out[i + 3]);
+            item->action_len = out[i + 3];
         } else if (MATCH(data, "gid")) {
-            item->gid = atoi(data + out[i+2]);
+            item->gid = atoi(data + out[i + 2]);
         } else if (MATCH(data, "signature_id")) {
-            item->signature_id = atoi(data + out[i+2]);
+            item->signature_id = atoi(data + out[i + 2]);
         } else if (MATCH(data, "rev")) {
-            item->rev = atoi(data + out[i+2]);
+            item->rev = atoi(data + out[i + 2]);
         } else if (MATCH(data, "signature")) {
-            item->signature = g_regex_replace_literal(slashslashRegex, data + out[i+2], out[i+3], 0, "/", 0, NULL);
+            item->signature = g_regex_replace_literal(slashslashRegex, data + out[i + 2], out[i + 3], 0, "/", 0, NULL);
             item->signature_len = strlen(item->signature);
         } else if (MATCH(data, "severity")) {
-            item->severity = atoi(data + out[i+2]);
+            item->severity = atoi(data + out[i + 2]);
         } else if (MATCH(data, "category")) {
-            item->category = g_strndup(data + out[i+2], out[i+3]);
-            item->category_len = out[i+3];
+            item->category = g_strndup(data + out[i + 2], out[i + 3]);
+            item->category_len = out[i + 3];
         }
     }
 
@@ -275,7 +275,7 @@ LOCAL void suricata_process()
     int rc;
     if ((rc = js0n((uint8_t *)line, lineLen, out, sizeof(out))) != 0) {
         if (rc > 0)
-            LOG("ERROR: Parse error at character pos %d (%c)(%u) >%.*s<\n", rc-1, line[rc-1], (uint8_t)line[rc-1], lineLen, line);
+            LOG("ERROR: Parse error at character pos %d (%c)(%u) >%.*s<\n", rc - 1, line[rc - 1], (uint8_t)line[rc - 1], lineLen, line);
         else
             LOG("ERROR: Parse error %d >%.*s<\n", rc, lineLen, line);
         fflush(stdout);
@@ -317,8 +317,8 @@ LOCAL void suricata_process()
                 char buf[100];
                 ctime_r(&item->timestamp, buf);
                 LOG("Parsed date  = %24.24s from %lu which %s >= %lu", buf, item->timestamp,
-                        item->timestamp >= currentTime.tv_sec - suricataExpireSeconds?"is":"is not",
-                        currentTime.tv_sec - suricataExpireSeconds);
+                    item->timestamp >= currentTime.tv_sec - suricataExpireSeconds ? "is" : "is not",
+                    currentTime.tv_sec - suricataExpireSeconds);
             }
 
             if (item->timestamp < currentTime.tv_sec - suricataExpireSeconds) {
@@ -488,57 +488,57 @@ void arkime_plugin_init()
     arkime_plugins_register("suricata", FALSE);
 
     arkime_plugins_set_cb("suricata",
-      NULL,
-      NULL,
-      NULL,
-      NULL,
-      suricata_plugin_save,
-      NULL,
-      suricata_plugin_exit,
-      NULL
-    );
+                          NULL,
+                          NULL,
+                          NULL,
+                          NULL,
+                          suricata_plugin_save,
+                          NULL,
+                          suricata_plugin_exit,
+                          NULL
+                         );
 
     flowIdField = arkime_field_define("suricata", "termfield",
-        "suricata.flowId", "Flow Id", "suricata.flowId",
-        "Suricata Flow Id",
-        ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT,
-        (char *)NULL);
+                                      "suricata.flowId", "Flow Id", "suricata.flowId",
+                                      "Suricata Flow Id",
+                                      ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT,
+                                      (char *)NULL);
 
     actionField = arkime_field_define("suricata", "termfield",
-        "suricata.action", "Action", "suricata.action",
-        "Suricata Action",
-        ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT,
-        (char *)NULL);
+                                      "suricata.action", "Action", "suricata.action",
+                                      "Suricata Action",
+                                      ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT,
+                                      (char *)NULL);
 
     signatureField = arkime_field_define("suricata", "termfield",
-        "suricata.signature", "Signature", "suricata.signature",
-        "Suricata Signature",
-        ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT,
-        (char *)NULL);
+                                         "suricata.signature", "Signature", "suricata.signature",
+                                         "Suricata Signature",
+                                         ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT,
+                                         (char *)NULL);
 
     categoryField = arkime_field_define("suricata", "termfield",
-        "suricata.category", "Category", "suricata.category",
-        "Suricata Category",
-        ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT,
-        (char *)NULL);
+                                        "suricata.category", "Category", "suricata.category",
+                                        "Suricata Category",
+                                        ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT,
+                                        (char *)NULL);
 
     gidField = arkime_field_define("suricata", "integer",
-        "suricata.gid", "Gid", "suricata.gid",
-        "Suricata Gid",
-        ARKIME_FIELD_TYPE_INT_GHASH,  ARKIME_FIELD_FLAG_CNT,
-        (char *)NULL);
+                                   "suricata.gid", "Gid", "suricata.gid",
+                                   "Suricata Gid",
+                                   ARKIME_FIELD_TYPE_INT_GHASH,  ARKIME_FIELD_FLAG_CNT,
+                                   (char *)NULL);
 
     signatureIdField = arkime_field_define("suricata", "integer",
-        "suricata.signatureId", "Signature Id", "suricata.signatureId",
-        "Suricata Signature Id",
-        ARKIME_FIELD_TYPE_INT_GHASH,  ARKIME_FIELD_FLAG_CNT,
-        (char *)NULL);
+                                           "suricata.signatureId", "Signature Id", "suricata.signatureId",
+                                           "Suricata Signature Id",
+                                           ARKIME_FIELD_TYPE_INT_GHASH,  ARKIME_FIELD_FLAG_CNT,
+                                           (char *)NULL);
 
     severityField = arkime_field_define("suricata", "integer",
-        "suricata.severity", "Severity", "suricata.severity",
-        "Suricata Severity",
-        ARKIME_FIELD_TYPE_INT_GHASH,  ARKIME_FIELD_FLAG_CNT,
-        (char *)NULL);
+                                        "suricata.severity", "Severity", "suricata.severity",
+                                        "Suricata Severity",
+                                        ARKIME_FIELD_TYPE_INT_GHASH,  ARKIME_FIELD_FLAG_CNT,
+                                        (char *)NULL);
 
     slashslashRegex = g_regex_new("\\\\/", 0, 0, 0);
 

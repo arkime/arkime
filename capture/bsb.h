@@ -361,7 +361,6 @@ do {                                              \
 #define BSB_PEEK(b) ((b).ptr + 1 <= (b).end?*b.ptr:-1)
 
 
-
 #define BSB_IMPORT_byte(b, x, size)               \
 do {                                              \
     if ((b).ptr + size <= (b).end) {              \

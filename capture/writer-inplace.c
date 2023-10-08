@@ -33,7 +33,7 @@ LOCAL void writer_inplace_exit()
 {
 }
 /******************************************************************************/
-LOCAL long writer_inplace_create(ArkimePacket_t * const packet)
+LOCAL long writer_inplace_create(ArkimePacket_t *const packet)
 {
     struct stat st;
     const char *readerName = readerFileName[packet->readerPos];
@@ -59,7 +59,7 @@ LOCAL long writer_inplace_create(ArkimePacket_t * const packet)
 }
 
 /******************************************************************************/
-LOCAL void writer_inplace_write(const ArkimeSession_t * const UNUSED(session), ArkimePacket_t * const packet)
+LOCAL void writer_inplace_write(const ArkimeSession_t *const UNUSED(session), ArkimePacket_t *const packet)
 {
     // Need to lock since multiple packet threads for the same readerPos are running and only want to create once
     ARKIME_LOCK(filePtr2Id);
@@ -72,7 +72,7 @@ LOCAL void writer_inplace_write(const ArkimeSession_t * const UNUSED(session), A
     packet->writerFilePos = packet->readerFilePos;
 }
 /******************************************************************************/
-LOCAL void writer_inplace_write_dryrun(const ArkimeSession_t * const UNUSED(session), ArkimePacket_t * const packet)
+LOCAL void writer_inplace_write_dryrun(const ArkimeSession_t *const UNUSED(session), ArkimePacket_t *const packet)
 {
     packet->writerFilePos = packet->readerFilePos;
 }

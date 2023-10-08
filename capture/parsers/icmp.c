@@ -24,7 +24,7 @@ LOCAL int                    icmpCodeField;
 
 /******************************************************************************/
 SUPPRESS_ALIGNMENT
-LOCAL ArkimePacketRC icmp_packet_enqueue(ArkimePacketBatch_t * UNUSED(batch), ArkimePacket_t * const packet, const uint8_t *UNUSED(data), int UNUSED(len))
+LOCAL ArkimePacketRC icmp_packet_enqueue(ArkimePacketBatch_t *UNUSED(batch), ArkimePacket_t *const packet, const uint8_t *UNUSED(data), int UNUSED(len))
 {
     uint8_t                 sessionId[ARKIME_SESSIONID_LEN];
 
@@ -32,7 +32,7 @@ LOCAL ArkimePacketRC icmp_packet_enqueue(ArkimePacketBatch_t * UNUSED(batch), Ar
         struct ip6_hdr *ip6 = (struct ip6_hdr *)(packet->pkt + packet->ipOffset);
         arkime_session_id6(sessionId, ip6->ip6_src.s6_addr, 0, ip6->ip6_dst.s6_addr, 0);
     } else {
-        struct ip *ip4 = (struct ip*)(packet->pkt + packet->ipOffset);
+        struct ip *ip4 = (struct ip *)(packet->pkt + packet->ipOffset);
         arkime_session_id(sessionId, ip4->ip_src.s_addr, 0, ip4->ip_dst.s_addr, 0);
     }
     packet->mProtocol = icmpMProtocol;
@@ -41,7 +41,7 @@ LOCAL ArkimePacketRC icmp_packet_enqueue(ArkimePacketBatch_t * UNUSED(batch), Ar
 }
 /******************************************************************************/
 SUPPRESS_ALIGNMENT
-LOCAL ArkimePacketRC icmpv6_packet_enqueue(ArkimePacketBatch_t * UNUSED(batch), ArkimePacket_t * const packet, const uint8_t *UNUSED(data), int UNUSED(len))
+LOCAL ArkimePacketRC icmpv6_packet_enqueue(ArkimePacketBatch_t *UNUSED(batch), ArkimePacket_t *const packet, const uint8_t *UNUSED(data), int UNUSED(len))
 {
     uint8_t                 sessionId[ARKIME_SESSIONID_LEN];
 
@@ -58,8 +58,8 @@ LOCAL ArkimePacketRC icmpv6_packet_enqueue(ArkimePacketBatch_t * UNUSED(batch), 
 SUPPRESS_ALIGNMENT
 LOCAL void icmp_create_sessionid(uint8_t *sessionId, ArkimePacket_t *packet)
 {
-    struct ip           *ip4 = (struct ip*)(packet->pkt + packet->ipOffset);
-    struct ip6_hdr      *ip6 = (struct ip6_hdr*)(packet->pkt + packet->ipOffset);
+    struct ip           *ip4 = (struct ip *)(packet->pkt + packet->ipOffset);
+    struct ip6_hdr      *ip6 = (struct ip6_hdr *)(packet->pkt + packet->ipOffset);
 
     if (packet->v6) {
         arkime_session_id6(sessionId, ip6->ip6_src.s6_addr, 0, ip6->ip6_dst.s6_addr, 0);
@@ -69,10 +69,10 @@ LOCAL void icmp_create_sessionid(uint8_t *sessionId, ArkimePacket_t *packet)
 }
 /******************************************************************************/
 SUPPRESS_ALIGNMENT
-LOCAL int icmp_pre_process(ArkimeSession_t *session, ArkimePacket_t * const packet, int isNewSession)
+LOCAL int icmp_pre_process(ArkimeSession_t *session, ArkimePacket_t *const packet, int isNewSession)
 {
-    struct ip           *ip4 = (struct ip*)(packet->pkt + packet->ipOffset);
-    struct ip6_hdr      *ip6 = (struct ip6_hdr*)(packet->pkt + packet->ipOffset);
+    struct ip           *ip4 = (struct ip *)(packet->pkt + packet->ipOffset);
+    struct ip6_hdr      *ip6 = (struct ip6_hdr *)(packet->pkt + packet->ipOffset);
 
     if (isNewSession)
         arkime_session_add_protocol(session, "icmp");
@@ -86,13 +86,13 @@ LOCAL int icmp_pre_process(ArkimeSession_t *session, ArkimePacket_t * const pack
                memcmp(session->addr2.s6_addr, ip6->ip6_dst.s6_addr, 16) == 0);
     }
 
-    packet->direction = (dir)?0:1;
-    session->databytes[packet->direction] += (packet->pktlen -packet->payloadOffset);
+    packet->direction = (dir) ? 0 : 1;
+    session->databytes[packet->direction] += (packet->pktlen - packet->payloadOffset);
 
     return 0;
 }
 /******************************************************************************/
-LOCAL int icmp_process(ArkimeSession_t *session, ArkimePacket_t * const packet)
+LOCAL int icmp_process(ArkimeSession_t *session, ArkimePacket_t *const packet)
 {
     const uint8_t *data = packet->pkt + packet->payloadOffset;
 
@@ -106,14 +106,14 @@ LOCAL int icmp_process(ArkimeSession_t *session, ArkimePacket_t * const packet)
 SUPPRESS_ALIGNMENT
 LOCAL void icmpv6_create_sessionid(uint8_t *sessionId, ArkimePacket_t *packet)
 {
-    struct ip6_hdr      *ip6 = (struct ip6_hdr*)(packet->pkt + packet->ipOffset);
+    struct ip6_hdr      *ip6 = (struct ip6_hdr *)(packet->pkt + packet->ipOffset);
     arkime_session_id6(sessionId, ip6->ip6_src.s6_addr, 0, ip6->ip6_dst.s6_addr, 0);
 }
 /******************************************************************************/
 SUPPRESS_ALIGNMENT
-LOCAL int icmpv6_pre_process(ArkimeSession_t *session, ArkimePacket_t * const packet, int isNewSession)
+LOCAL int icmpv6_pre_process(ArkimeSession_t *session, ArkimePacket_t *const packet, int isNewSession)
 {
-    struct ip6_hdr      *ip6 = (struct ip6_hdr*)(packet->pkt + packet->ipOffset);
+    struct ip6_hdr      *ip6 = (struct ip6_hdr *)(packet->pkt + packet->ipOffset);
 
     if (isNewSession)
         arkime_session_add_protocol(session, "icmp");
@@ -121,8 +121,8 @@ LOCAL int icmpv6_pre_process(ArkimeSession_t *session, ArkimePacket_t * const pa
     int dir = (memcmp(session->addr1.s6_addr, ip6->ip6_src.s6_addr, 16) == 0 &&
                memcmp(session->addr2.s6_addr, ip6->ip6_dst.s6_addr, 16) == 0);
 
-    packet->direction = (dir)?0:1;
-    session->databytes[packet->direction] += (packet->pktlen -packet->payloadOffset);
+    packet->direction = (dir) ? 0 : 1;
+    session->databytes[packet->direction] += (packet->pktlen - packet->payloadOffset);
 
     return 0;
 }
@@ -147,15 +147,15 @@ void arkime_parser_init()
                                                 NULL);
 
     icmpTypeField = arkime_field_define("general", "integer",
-        "icmp.type", "ICMP Type", "icmp.type",
-        "ICMP type field values",
-        ARKIME_FIELD_TYPE_INT_GHASH, 0,
-        (char *)NULL);
+                                        "icmp.type", "ICMP Type", "icmp.type",
+                                        "ICMP type field values",
+                                        ARKIME_FIELD_TYPE_INT_GHASH, 0,
+                                        (char *)NULL);
 
     icmpCodeField = arkime_field_define("general", "integer",
-        "icmp.code", "ICMP Code", "icmp.code",
-        "ICMP code field values",
-        ARKIME_FIELD_TYPE_INT_GHASH, 0,
-        (char *)NULL);
+                                        "icmp.code", "ICMP Code", "icmp.code",
+                                        "ICMP code field values",
+                                        ARKIME_FIELD_TYPE_INT_GHASH, 0,
+                                        (char *)NULL);
 
 }

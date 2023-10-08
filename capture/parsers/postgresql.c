@@ -43,14 +43,14 @@ LOCAL int postgresql_parser(ArkimeSession_t *session, void *uw, const uint8_t *d
     }
 
     while (BSB_NOT_ERROR(bsb) && BSB_REMAINING(bsb) > 1 && *(BSB_WORK_PTR(bsb)) != 0) {
-        char *key = (char*)BSB_WORK_PTR(bsb);
+        char *key = (char *)BSB_WORK_PTR(bsb);
         int klen = strnlen(key, BSB_REMAINING(bsb));
         BSB_IMPORT_skip(bsb, klen + 1);
 
         if (BSB_IS_ERROR(bsb))
             break;
 
-        char *value = (char*)BSB_WORK_PTR(bsb);
+        char *value = (char *)BSB_WORK_PTR(bsb);
         int vlen = strnlen(value, BSB_REMAINING(bsb));
         BSB_IMPORT_skip(bsb, vlen + 1);
 
@@ -97,22 +97,22 @@ void arkime_parser_init()
     arkime_parsers_classifier_register_tcp("postgresql", NULL, 0, (uint8_t *)"\x00\x00\x00", 3, postgresql_classify);
 
     userField = arkime_field_define("postgresql", "termfield",
-        "postgresql.user", "User", "postgresql.user",
-        "Postgresql user name",
-        ARKIME_FIELD_TYPE_STR,  ARKIME_FIELD_FLAG_LINKED_SESSIONS,
-        "category", "user",
-        (char *)NULL);
+                                    "postgresql.user", "User", "postgresql.user",
+                                    "Postgresql user name",
+                                    ARKIME_FIELD_TYPE_STR,  ARKIME_FIELD_FLAG_LINKED_SESSIONS,
+                                    "category", "user",
+                                    (char *)NULL);
 
     dbField = arkime_field_define("postgresql", "termfield",
-        "postgresql.db", "Database", "postgresql.db",
-        "Postgresql database",
-        ARKIME_FIELD_TYPE_STR,  ARKIME_FIELD_FLAG_LINKED_SESSIONS,
-        (char *)NULL);
+                                  "postgresql.db", "Database", "postgresql.db",
+                                  "Postgresql database",
+                                  ARKIME_FIELD_TYPE_STR,  ARKIME_FIELD_FLAG_LINKED_SESSIONS,
+                                  (char *)NULL);
 
     appField = arkime_field_define("postgresql", "termfield",
-        "postgresql.app", "Application", "postgresql.app",
-        "Postgresql application",
-        ARKIME_FIELD_TYPE_STR,  ARKIME_FIELD_FLAG_LINKED_SESSIONS,
-        (char *)NULL);
+                                   "postgresql.app", "Application", "postgresql.app",
+                                   "Postgresql application",
+                                   ARKIME_FIELD_TYPE_STR,  ARKIME_FIELD_FLAG_LINKED_SESSIONS,
+                                   (char *)NULL);
 }
 

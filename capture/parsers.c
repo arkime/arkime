@@ -343,9 +343,9 @@ const char *arkime_parsers_magic(ArkimeSession_t *session, int field, const char
         if (m)
             return m;
 
-        // Fall thru
+    // Fall thru
     case ARKIME_MAGICMODE_LIBMAGIC:
-        m = magic_buffer(cookie[session->thread], data, MIN(len,50));
+        m = magic_buffer(cookie[session->thread], data, MIN(len, 50));
         if (m) {
             int mlen;
             char *semi = strchr(m, ';');
@@ -382,7 +382,7 @@ void arkime_parsers_initial_tag(ArkimeSession_t *session)
 /*############################## ASN ##############################*/
 
 /******************************************************************************/
-uint8_t * arkime_parsers_asn_get_tlv(BSB *bsb, uint32_t *apc, uint32_t *atag, uint32_t *alen)
+uint8_t *arkime_parsers_asn_get_tlv(BSB *bsb, uint32_t *apc, uint32_t *atag, uint32_t *alen)
 {
 
     if (BSB_REMAINING(*bsb) < 2)
@@ -469,7 +469,7 @@ const char *arkime_parsers_asn_sequence_to_string(ArkimeASNSeq_t *seq, int *len)
 {
     if (!seq->pc) {
         *len = seq->len;
-        return (const char*)seq->value;
+        return (const char *)seq->value;
     }
 
     BSB bsb;
@@ -498,11 +498,11 @@ void arkime_parsers_asn_decode_oid(char *buf, int bufsz, const uint8_t *oid, int
         if (first) {
             first = FALSE;
             if (value > 40) /* two values in first byte */
-                buflen = snprintf(buf, bufsz, "%d.%d", value/40, value % 40);
+                buflen = snprintf(buf, bufsz, "%d.%d", value / 40, value % 40);
             else /* one value in first byte */
                 buflen = snprintf(buf, bufsz, "%d", value);
         } else if (buflen < bufsz) {
-            buflen += snprintf(buf+buflen, bufsz-buflen, ".%d", value);
+            buflen += snprintf(buf + buflen, bufsz - buflen, ".%d", value);
         }
 
         value = 0;
@@ -512,7 +512,7 @@ void arkime_parsers_asn_decode_oid(char *buf, int bufsz, const uint8_t *oid, int
 #define char2num(ch) (isdigit(ch)?((ch) - '0'):0)
 #define str2num(str) (char2num((str)[0]) * 10 + char2num((str)[1]))
 #define str4num(str) (char2num((str)[0]) * 1000 + char2num((str)[1]) * 100 + char2num((str)[2]) * 10 + char2num((str)[3]))
-uint64_t arkime_parsers_asn_parse_time(ArkimeSession_t *session, int tag, uint8_t * value, int len)
+uint64_t arkime_parsers_asn_parse_time(ArkimeSession_t *session, int tag, uint8_t *value, int len)
 {
     int        offset = 0;
     struct tm  tm;
@@ -521,17 +521,17 @@ uint64_t arkime_parsers_asn_parse_time(ArkimeSession_t *session, int tag, uint8_
     //UTCTime
     if (tag == 23 && len > 12) {
         if (len > 17 && value[12] != 'Z')
-            offset = str2num(value+13) * 60 + str2num(value+15);
+            offset = str2num(value + 13) * 60 + str2num(value + 15);
 
         if (value[12] == '-')
             offset = -offset;
 
-        tm.tm_year = str2num(value+0);
-        tm.tm_mon  = str2num(value+2) - 1;
-        tm.tm_mday = str2num(value+4);
-        tm.tm_hour = str2num(value+6);
-        tm.tm_min  = str2num(value+8);
-        tm.tm_sec  = str2num(value+10);
+        tm.tm_year = str2num(value + 0);
+        tm.tm_mon  = str2num(value + 2) - 1;
+        tm.tm_mday = str2num(value + 4);
+        tm.tm_hour = str2num(value + 6);
+        tm.tm_min  = str2num(value + 8);
+        tm.tm_sec  = str2num(value + 10);
 
         if (tm.tm_year < 50)
             tm.tm_year += 100;
@@ -547,21 +547,21 @@ uint64_t arkime_parsers_asn_parse_time(ArkimeSession_t *session, int tag, uint8_
     else if (tag == 24 && len >= 10) {
         int pos;
         memset(&tm, 0, sizeof(tm));
-        tm.tm_year = str4num(value+0) - 1900;
-        tm.tm_mon  = str2num(value+4) - 1;
-        tm.tm_mday = str2num(value+6);
-        tm.tm_hour = str2num(value+8);
+        tm.tm_year = str4num(value + 0) - 1900;
+        tm.tm_mon  = str2num(value + 4) - 1;
+        tm.tm_mday = str2num(value + 6);
+        tm.tm_hour = str2num(value + 8);
         if (len < 12 || value[10] == 'Z' || value[10] == '+' || value[10] == '-') {
             pos = 10;
             goto gtdone;
         }
 
-        tm.tm_min  = str2num(value+10);
+        tm.tm_min  = str2num(value + 10);
         if (len < 14 || value[12] == 'Z' || value[12] == '+' || value[12] == '-') {
             pos = 12;
             goto gtdone;
         }
-        tm.tm_sec  = str2num(value+12);
+        tm.tm_sec  = str2num(value + 12);
         if (len < 15 || value[14] == 'Z' || value[14] == '+' || value[14] == '-') {
             pos = 14;
             goto gtdone;
@@ -571,12 +571,12 @@ uint64_t arkime_parsers_asn_parse_time(ArkimeSession_t *session, int tag, uint8_
         } else {
             pos = 14;
         }
-    gtdone:
+gtdone:
         if (pos == len) {
             val = timegm(&tm);
         } else {
             if (pos + 5 < len && (value[pos] == '+' || value[pos] == '-')) {
-                offset = str2num(value+pos+1) * 60 +  str2num(value+pos+3);
+                offset = str2num(value + pos + 1) * 60 +  str2num(value + pos + 3);
 
                 if (value[pos] == '-')
                     offset = -offset;
@@ -595,7 +595,7 @@ uint64_t arkime_parsers_asn_parse_time(ArkimeSession_t *session, int tag, uint8_
 /******************************************************************************/
 LOCAL int cstring_cmp(const void *a, const void *b)
 {
-   return strcmp(*(char **)a, *(char **)b);
+    return strcmp(*(char **)a, *(char **)b);
 }
 /******************************************************************************/
 void arkime_parsers_init()
@@ -606,23 +606,23 @@ void arkime_parsers_init()
         snprintf(classTag, sizeof(classTag), "class:%s", config.nodeClass);
 
     arkime_field_define("general", "integer",
-        "session.segments", "Session Segments", "segmentCnt",
-        "Number of segments in session so far",
-        0,  ARKIME_FIELD_FLAG_FAKE,
-        (char *)NULL);
+                        "session.segments", "Session Segments", "segmentCnt",
+                        "Number of segments in session so far",
+                        0,  ARKIME_FIELD_FLAG_FAKE,
+                        (char *)NULL);
 
     arkime_field_define("general", "integer",
-        "session.length", "Session Length", "length",
-        "Session Length in milliseconds so far",
-        0,  ARKIME_FIELD_FLAG_FAKE,
-        (char *)NULL);
+                        "session.length", "Session Length", "length",
+                        "Session Length in milliseconds so far",
+                        0,  ARKIME_FIELD_FLAG_FAKE,
+                        (char *)NULL);
 
     userField = arkime_field_define("general", "lotermfield",
-        "user", "User", "user",
-        "External user set for session",
-        ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT | ARKIME_FIELD_FLAG_LINKED_SESSIONS,
-        "category", "user",
-        (char *)NULL);
+                                    "user", "User", "user",
+                                    "External user set for session",
+                                    ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT | ARKIME_FIELD_FLAG_LINKED_SESSIONS,
+                                    "category", "user",
+                                    (char *)NULL);
 
     int flags = MAGIC_MIME;
 
@@ -724,7 +724,7 @@ void arkime_parsers_init()
                 continue;
 
             // If it doesn't end with .so we ignore it
-            if (strlen(filename) < 3 || strcasecmp(".so", filename + strlen(filename)-3) != 0) {
+            if (strlen(filename) < 3 || strcasecmp(".so", filename + strlen(filename) - 3) != 0) {
                 continue;
             }
 
@@ -756,7 +756,7 @@ void arkime_parsers_init()
 
             ArkimePluginInitFunc parser_init;
 
-            if (!g_module_symbol(parser, "arkime_parser_init", (gpointer *)(char*)&parser_init) || parser_init == NULL) {
+            if (!g_module_symbol(parser, "arkime_parser_init", (gpointer *)(char * )&parser_init) || parser_init == NULL) {
                 LOG("ERROR - Module %s doesn't have a arkime_parser_init", filenames[i]);
                 g_free(filenames[i]);
                 g_free (path);
@@ -794,16 +794,16 @@ void arkime_parsers_init()
 
     // Set tags field up AFTER loading plugins
     config.tagsStringField = arkime_field_define("general", "termfield",
-        "tags", "Tags", "tags",
-        "Tags set for session",
-        ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT | ARKIME_FIELD_FLAG_LINKED_SESSIONS,
-        (char *)NULL);
+                                                 "tags", "Tags", "tags",
+                                                 "Tags set for session",
+                                                 ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT | ARKIME_FIELD_FLAG_LINKED_SESSIONS,
+                                                 (char *)NULL);
 
     arkime_field_define("general", "lotermfield",
-        "asset", "Asset", "asset",
-        "Asset name",
-        ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT | ARKIME_FIELD_FLAG_LINKED_SESSIONS,
-        (char *)NULL);
+                        "asset", "Asset", "asset",
+                        "Asset name",
+                        ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT | ARKIME_FIELD_FLAG_LINKED_SESSIONS,
+                        (char *)NULL);
 
     gsize keys_len;
     gchar **keys = arkime_config_section_keys(NULL, "custom-fields", &keys_len);
@@ -825,7 +825,7 @@ void arkime_parsers_init()
             if (!equal) {
                 CONFIGEXIT("Must be FieldExpr=value, missing equal '%s'", config.extraOps[i]);
             }
-            int len = strlen(equal+1);
+            int len = strlen(equal + 1);
             if (!len) {
                 CONFIGEXIT("Must be FieldExpr=value, empty value for '%s'", config.extraOps[i]);
             }
@@ -834,7 +834,7 @@ void arkime_parsers_init()
             if (fieldPos == -1) {
                 CONFIGEXIT("Must be FieldExpr=value, Unknown field expression '%s'", config.extraOps[i]);
             }
-            arkime_field_ops_add(&config.ops, fieldPos, equal+1, len);
+            arkime_field_ops_add(&config.ops, fieldPos, equal + 1, len);
         }
     } else {
         arkime_field_ops_init(&config.ops, 0, 0);
@@ -850,7 +850,7 @@ void arkime_parsers_exit() {
     }
 }
 /******************************************************************************/
-void arkime_print_hex_string(const uint8_t * data, unsigned int length)
+void arkime_print_hex_string(const uint8_t *data, unsigned int length)
 {
     unsigned int i;
 
@@ -862,13 +862,13 @@ void arkime_print_hex_string(const uint8_t * data, unsigned int length)
     printf("\n");
 }
 /******************************************************************************/
-char *arkime_sprint_hex_string(char *buf, const uint8_t * data, unsigned int length)
+char *arkime_sprint_hex_string(char *buf, const uint8_t *data, unsigned int length)
 {
     unsigned int i;
 
     for (i = 0; i < length; i++)
     {
-        memcpy(buf+i * 2, arkime_char_to_hexstr[data[i]], 2);
+        memcpy(buf + i * 2, arkime_char_to_hexstr[data[i]], 2);
     }
     buf[i * 2] = 0;
     return buf;

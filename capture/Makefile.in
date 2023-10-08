@@ -96,3 +96,6 @@ distclean realclean clean:
 
 cppcheck:
 	cppcheck -q --enable=all --std=c99 -I. -Ithirdparty *.c plugins/*.c plugins/*/*.c parsers/*.c
+
+format:
+	AStyle --options=.astylerc  *.[ch]  p*/*.c p*/*/*.c  ../tests/plugins/*.c

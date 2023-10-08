@@ -23,25 +23,26 @@ LOCAL void dhcpv6_udp_classify(ArkimeSession_t *session, const uint8_t *data, in
 LOCAL int dhcp_udp_parser(ArkimeSession_t *session, void *UNUSED(uw), const uint8_t *data, int len, int UNUSED(which))
 {
     static char *names[] = {
-            "",
-            "DISCOVER",
-            "OFFER",
-            "REQUEST",
-            "DECLINE",
-            "ACK",
-            "NAK",
-            "RELEASE",
-            "INFORM",
-            "FORCERENEW",
-            "LEASEQUERY",
-            "LEASEUNASSIGNED",
-            "LEASEUNKNOWN",
-            "LEASEACTIVE",
-            "BULKLEASEQUERY",
-            "LEASEQUERYDONE",
-            "ACTIVELEASEQUERY",
-            "LEASEQUERYSTATUS",
-            "TLS"};
+        "",
+        "DISCOVER",
+        "OFFER",
+        "REQUEST",
+        "DECLINE",
+        "ACK",
+        "NAK",
+        "RELEASE",
+        "INFORM",
+        "FORCERENEW",
+        "LEASEQUERY",
+        "LEASEUNASSIGNED",
+        "LEASEUNKNOWN",
+        "LEASEACTIVE",
+        "BULKLEASEQUERY",
+        "LEASEQUERYDONE",
+        "ACTIVELEASEQUERY",
+        "LEASEQUERYSTATUS",
+        "TLS"
+    };
 
     if (len < 256)
         return 0;
@@ -134,43 +135,43 @@ LOCAL void dhcp_udp_classify(ArkimeSession_t *session, const uint8_t *data, int 
 void arkime_parser_init()
 {
     typeField = arkime_field_define("dhcp", "uptermfield",
-        "dhcp.type", "Type", "dhcp.type",
-        "DHCP Type",
-        ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT,
-        (char *)NULL);
+                                    "dhcp.type", "Type", "dhcp.type",
+                                    "DHCP Type",
+                                    ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT,
+                                    (char *)NULL);
 
     hostField = arkime_field_define("dhcp", "lotermfield",
-        "dhcp.host", "Host", "dhcp.host",
-        "DHCP Host",
-        ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT,
-        "aliases", "[\"host.dhcp\"]",
-        "category", "host",
-        (char *)NULL);
+                                    "dhcp.host", "Host", "dhcp.host",
+                                    "DHCP Host",
+                                    ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT,
+                                    "aliases", "[\"host.dhcp\"]",
+                                    "category", "host",
+                                    (char *)NULL);
 
     arkime_field_define("dhcp", "lotextfield",
-        "dhcp.host.tokens", "Hostname Tokens", "dhcp.hostTokens",
-        "DHCP Hostname Tokens",
-        ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_FAKE,
-        "aliases", "[\"host.dhcp.tokens\"]",
-        (char *)NULL);
+                        "dhcp.host.tokens", "Hostname Tokens", "dhcp.hostTokens",
+                        "DHCP Hostname Tokens",
+                        ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_FAKE,
+                        "aliases", "[\"host.dhcp.tokens\"]",
+                        (char *)NULL);
 
     macField = arkime_field_define("dhcp", "lotermfield",
-        "dhcp.mac", "Client MAC", "dhcp.mac",
-        "Client ethernet MAC ",
-        ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT,
-        (char *)NULL);
+                                   "dhcp.mac", "Client MAC", "dhcp.mac",
+                                   "Client ethernet MAC ",
+                                   ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT,
+                                   (char *)NULL);
 
     ouiField = arkime_field_define("dhcp", "termfield",
-        "dhcp.oui", "Client OUI", "dhcp.oui",
-        "Client ethernet OUI ",
-        ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT,
-        (char *)NULL);
+                                   "dhcp.oui", "Client OUI", "dhcp.oui",
+                                   "Client ethernet OUI ",
+                                   ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT,
+                                   (char *)NULL);
 
     idField = arkime_field_define("dhcp", "lotermfield",
-        "dhcp.id", "Transaction id", "dhcp.id",
-        "DHCP Transaction Id",
-        ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT,
-        (char *)NULL);
+                                  "dhcp.id", "Transaction id", "dhcp.id",
+                                  "DHCP Transaction Id",
+                                  ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT,
+                                  (char *)NULL);
 
 
     arkime_parsers_classifier_register_port("dhcpv6",  NULL, 547, ARKIME_PARSERS_PORT_UDP, dhcpv6_udp_classify);

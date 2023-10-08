@@ -141,7 +141,7 @@ char *arkime_session_pretty_string (ArkimeSession_t *session, char *buf, int len
         uint32_t ip1 = ARKIME_V6_TO_V4(session->addr1);
         uint32_t ip2 = ARKIME_V6_TO_V4(session->addr2);
         BSB_EXPORT_sprintf(bsb, "%u.%u.%u.%u:%u => %u.%u.%u.%u:%u", ip1 & 0xff, (ip1 >> 8) & 0xff, (ip1 >> 16) & 0xff, (ip1 >> 24) & 0xff, session->port1,
-            ip2 & 0xff, (ip2 >> 8) & 0xff, (ip2 >> 16) & 0xff, (ip2 >> 24) & 0xff, session->port2);
+                           ip2 & 0xff, (ip2 >> 8) & 0xff, (ip2 >> 16) & 0xff, (ip2 >> 24) & 0xff, session->port2);
     } else {
         BSB_EXPORT_inet_ntop(bsb, AF_INET6, &session->addr1);
         BSB_EXPORT_sprintf(bsb, ".%u", session->port1);
@@ -673,7 +673,7 @@ ArkimeSession_t *arkime_session_find_or_create(int mProtocol, uint32_t hash, uin
     session->thread = thread;
     DLL_INIT(td_, &session->tcpData);
     if (config.numPlugins > 0)
-        session->pluginData = ARKIME_SIZE_ALLOC0(pluginData, sizeof(void *)*config.numPlugins);
+        session->pluginData = ARKIME_SIZE_ALLOC0(pluginData, sizeof(void *) * config.numPlugins);
 
     if (stoppedSessions[thread].old) {
         uint64_t result = (uint64_t)g_hash_table_lookup(stoppedSessions[session->thread].old, session->sessionId);
@@ -797,10 +797,10 @@ int arkime_session_idle_seconds(SessionTypes ses)
 void arkime_session_init()
 {
     protocolField = arkime_field_define("general", "termfield",
-        "protocols", "Protocols", "protocol",
-        "Protocols set for session",
-        ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT | ARKIME_FIELD_FLAG_LINKED_SESSIONS,
-        (char *)NULL);
+                                        "protocols", "Protocols", "protocol",
+                                        "Protocols set for session",
+                                        ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT | ARKIME_FIELD_FLAG_LINKED_SESSIONS,
+                                        (char *)NULL);
 
     tcpClosingTimeout = arkime_config_int(NULL, "tcpClosingTimeout", 5, 1, 255);
 
@@ -888,7 +888,7 @@ void arkime_session_exit()
             counts[SESSION_SCTP],
             counts[SESSION_ESP],
             counts[SESSION_OTHER]
-            );
+           );
 
     arkime_session_flush();
 }

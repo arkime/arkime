@@ -34,7 +34,7 @@ LOCAL inline uint32_t arkime_drophash_hash (const void *key, int len)
 {
     uint32_t  h = 0;
     uint32_t *p = (uint32_t *)key;
-    uint32_t *end = p + len/4;
+    uint32_t *end = p + len / 4;
     while (p < end) {
         h = (h + *p) * 0xc6a4a793;
         h ^= h >> 16;

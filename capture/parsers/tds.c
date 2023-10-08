@@ -27,14 +27,14 @@ LOCAL int tds_parser(ArkimeSession_t *session, void *uw, const uint8_t *data, in
     if (tds->pos[0] > 598) {
 #if 0
         LOG("host:%.*s user:%.*s pass:%.*s process:%.*s app:%.*s server:%.*s lib:%.*s",
-                tds->data[0][38], tds->data[0] + 8,
-                tds->data[0][69], tds->data[0] + 39,
-                tds->data[0][100], tds->data[0] + 70,
-                tds->data[0][131], tds->data[0] + 101,
-                tds->data[0][178], tds->data[0] + 148,
-                tds->data[0][209], tds->data[0] + 179,
-                tds->data[0][480], tds->data[0] + 470
-                );
+            tds->data[0][38], tds->data[0] + 8,
+            tds->data[0][69], tds->data[0] + 39,
+            tds->data[0][100], tds->data[0] + 70,
+            tds->data[0][131], tds->data[0] + 101,
+            tds->data[0][178], tds->data[0] + 148,
+            tds->data[0][209], tds->data[0] + 179,
+            tds->data[0][480], tds->data[0] + 470
+           );
 #endif
         arkime_field_string_add_lower(userField, session, (const char *)tds->data[0] + 39, tds->data[0][69]);
         arkime_parsers_unregister(session, uw);

@@ -35,9 +35,9 @@ typedef struct {
     uint32_t                len;
     int                     readWatch;
     int                     interface;
-    uint16_t                state:1;
-    uint16_t                bigEndian:1;
-    uint16_t                isClient:1;
+    uint16_t                state: 1;
+    uint16_t                bigEndian: 1;
+    uint16_t                isClient: 1;
 } POIClient_t;
 
 LOCAL int                   isConnected[MAX_INTERFACES];
@@ -94,7 +94,7 @@ gboolean pcapoverip_client_read_cb(gint UNUSED(fd), GIOCondition cond, gpointer 
             break;
 
         BSB bsb;
-        BSB_INIT(bsb, poic->data + pos , poic->len - pos);
+        BSB_INIT(bsb, poic->data + pos, poic->len - pos);
 
         ArkimePacket_t *packet = ARKIME_TYPE_ALLOC0(ArkimePacket_t);
 
@@ -115,8 +115,8 @@ gboolean pcapoverip_client_read_cb(gint UNUSED(fd), GIOCondition cond, gpointer 
         if (unlikely(caplen != origlen)) {
             if (!config.readTruncatedPackets && !config.ignoreErrors) {
                 LOGEXIT("ERROR - Arkime requires full packet captures caplen: %u pktlen: %u. "
-                    "If using tcpdump use the \"-s0\" option, or set readTruncatedPackets in ini file",
-                    caplen, origlen);
+                        "If using tcpdump use the \"-s0\" option, or set readTruncatedPackets in ini file",
+                        caplen, origlen);
             }
         }
 
@@ -195,7 +195,7 @@ LOCAL void pcapoverip_client_connect(int interface) {
             g_socket_set_blocking (conn, FALSE);
             struct sockaddr_in localAddress, remoteAddress;
             socklen_t addressLength = sizeof(localAddress);
-            getsockname(g_socket_get_fd(conn), (struct sockaddr*)&localAddress, &addressLength);
+            getsockname(g_socket_get_fd(conn), (struct sockaddr *)&localAddress, &addressLength);
             g_socket_address_to_native(sockaddr, &remoteAddress, addressLength, NULL);
             if (config.debug > 0)
                 LOG("connected %s:%d", config.interface[interface], port);

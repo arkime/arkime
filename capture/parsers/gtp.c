@@ -9,7 +9,7 @@ extern ArkimeConfig_t        config;
 
 /******************************************************************************/
 SUPPRESS_ALIGNMENT
-LOCAL ArkimePacketRC gtp_packet_enqueue(ArkimePacketBatch_t * batch, ArkimePacket_t * const packet, const uint8_t *data, int len)
+LOCAL ArkimePacketRC gtp_packet_enqueue(ArkimePacketBatch_t *batch, ArkimePacket_t *const packet, const uint8_t *data, int len)
 {
     if (len <= 12)
         return ARKIME_PACKET_UNKNOWN;

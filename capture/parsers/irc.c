@@ -50,7 +50,7 @@ LOCAL int irc_parser(ArkimeSession_t *session, void *uw, const uint8_t *data, in
             uint8_t *end = BSB_WORK_PTR(bsb);
 
             if (!BSB_IS_ERROR(bsb) && start != end) {
-                arkime_field_string_add(channelsField, session, (char*)start, end - start, TRUE);
+                arkime_field_string_add(channelsField, session, (char *)start, end - start, TRUE);
             }
         }
 
@@ -63,7 +63,7 @@ LOCAL int irc_parser(ArkimeSession_t *session, void *uw, const uint8_t *data, in
             uint8_t *end = BSB_WORK_PTR(bsb);
 
             if (!BSB_IS_ERROR(bsb) && start != end) {
-                arkime_field_string_add(nickField, session, (char*)start, end - start, TRUE);
+                arkime_field_string_add(nickField, session, (char *)start, end - start, TRUE);
             }
         }
 
@@ -109,17 +109,17 @@ LOCAL void irc_classify(ArkimeSession_t *session, const uint8_t *data, int len, 
 void arkime_parser_init()
 {
     nickField = arkime_field_define("irc", "termfield",
-        "irc.nick", "Nickname", "irc.nick",
-        "Nicknames set",
-        ARKIME_FIELD_TYPE_STR_GHASH, ARKIME_FIELD_FLAG_CNT,
-        "category", "user",
-        (char *)NULL);
+                                    "irc.nick", "Nickname", "irc.nick",
+                                    "Nicknames set",
+                                    ARKIME_FIELD_TYPE_STR_GHASH, ARKIME_FIELD_FLAG_CNT,
+                                    "category", "user",
+                                    (char *)NULL);
 
     channelsField = arkime_field_define("irc", "termfield",
-        "irc.channel", "Channel", "irc.channel",
-        "Channels joined",
-        ARKIME_FIELD_TYPE_STR_GHASH, ARKIME_FIELD_FLAG_CNT,
-        (char *)NULL);
+                                        "irc.channel", "Channel", "irc.channel",
+                                        "Channels joined",
+                                        ARKIME_FIELD_TYPE_STR_GHASH, ARKIME_FIELD_FLAG_CNT,
+                                        (char *)NULL);
 
     arkime_parsers_classifier_register_tcp("irc", NULL, 0, (uint8_t *)":", 1, irc_classify);
     arkime_parsers_classifier_register_tcp("irc", NULL, 0, (uint8_t *)"NOTICE AUTH", 11, irc_classify);

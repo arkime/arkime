@@ -82,8 +82,8 @@ LOCAL void arkime_pq_shift(ArkimePQ_t *pq, int thread)
         if (i <= shift) {
             DLL_PUSH_TAIL_DLL(pql_, &pq->buckets[thread][0], &pq->buckets[thread][i]);
         }
-        if (i+shift <= pq->maxSeconds) {
-            DLL_PUSH_TAIL_DLL(pql_, &pq->buckets[thread][i], &pq->buckets[thread][i+shift]);
+        if (i + shift <= pq->maxSeconds) {
+            DLL_PUSH_TAIL_DLL(pql_, &pq->buckets[thread][i], &pq->buckets[thread][i + shift]);
         }
     }
     pq->bucket0[thread] = lastPacketSecs[thread];
@@ -234,13 +234,20 @@ int main()
     // Big jump
     LOG("**TEST1");
     arkime_pq_init(&pq, 1, pq_cb);
-    lastPacketSecs[0] = 0; arkime_pq_run(0, 10);
-    lastPacketSecs[0] = 1259261324; arkime_pq_run(0, 10);
-    lastPacketSecs[0] = 1259261324; arkime_pq_upsert(&pq, &session1, 5, NULL);
-    lastPacketSecs[0] = 1259261384; arkime_pq_upsert(&pq, &session1, 5, NULL);
-    lastPacketSecs[0] = 1259261384; arkime_pq_upsert(&pq, &session1, 5, NULL);
-    lastPacketSecs[0] = 1259261384; arkime_pq_run(0, 10);
-    lastPacketSecs[0] = 1259261385; arkime_pq_run(0, 10);
+    lastPacketSecs[0] = 0;
+    arkime_pq_run(0, 10);
+    lastPacketSecs[0] = 1259261324;
+    arkime_pq_run(0, 10);
+    lastPacketSecs[0] = 1259261324;
+    arkime_pq_upsert(&pq, &session1, 5, NULL);
+    lastPacketSecs[0] = 1259261384;
+    arkime_pq_upsert(&pq, &session1, 5, NULL);
+    lastPacketSecs[0] = 1259261384;
+    arkime_pq_upsert(&pq, &session1, 5, NULL);
+    lastPacketSecs[0] = 1259261384;
+    arkime_pq_run(0, 10);
+    lastPacketSecs[0] = 1259261385;
+    arkime_pq_run(0, 10);
     assert(callbacks == 1);
     assert(HASH_COUNT(pqh_, pq.keys[0]) == 0);
 
@@ -276,7 +283,6 @@ int main()
     arkime_pq_run(0, 10);
     assert(callbacks == 1);
     assert(HASH_COUNT(pqh_, pq.keys[0]) == 0);
-
 
 
     // Keep moving 0 ahead

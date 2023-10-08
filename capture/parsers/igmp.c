@@ -13,7 +13,7 @@ LOCAL ArkimePQ_t *igmpPq;
 LOCAL int igmpMProtocol;
 
 /******************************************************************************/
-LOCAL void igmp_create_sessionid(uint8_t *sessionId, ArkimePacket_t * const UNUSED (packet))
+LOCAL void igmp_create_sessionid(uint8_t *sessionId, ArkimePacket_t *const UNUSED (packet))
 {
     sessionId[0] = 2;
     sessionId[1] = IPPROTO_IGMP;
@@ -22,7 +22,7 @@ LOCAL void igmp_create_sessionid(uint8_t *sessionId, ArkimePacket_t * const UNUS
     // for now, lump all igmp into the same session
 }
 /******************************************************************************/
-LOCAL int igmp_pre_process(ArkimeSession_t *session, ArkimePacket_t * const UNUSED(packet), int isNewSession)
+LOCAL int igmp_pre_process(ArkimeSession_t *session, ArkimePacket_t *const UNUSED(packet), int isNewSession)
 {
     if (isNewSession)
         arkime_session_add_protocol(session, "igmp");
@@ -30,12 +30,12 @@ LOCAL int igmp_pre_process(ArkimeSession_t *session, ArkimePacket_t * const UNUS
     return 0;
 }
 /******************************************************************************/
-int igmp_process(ArkimeSession_t *UNUSED(session), ArkimePacket_t * const UNUSED(packet))
+int igmp_process(ArkimeSession_t *UNUSED(session), ArkimePacket_t *const UNUSED(packet))
 {
     return 1;
 }
 /******************************************************************************/
-LOCAL ArkimePacketRC igmp_packet_enqueue(ArkimePacketBatch_t * UNUSED(batch), ArkimePacket_t * const packet, const uint8_t *data, int len)
+LOCAL ArkimePacketRC igmp_packet_enqueue(ArkimePacketBatch_t *UNUSED(batch), ArkimePacket_t *const packet, const uint8_t *data, int len)
 {
     uint8_t sessionId[ARKIME_SESSIONID_LEN];
 
@@ -62,9 +62,9 @@ void arkime_parser_init()
     arkime_packet_set_ip_cb(IPPROTO_IGMP, igmp_packet_enqueue);
     igmpPq = arkime_pq_alloc(10, igmp_pq_cb);
     igmpMProtocol = arkime_mprotocol_register("igmp",
-                                             SESSION_OTHER,
-                                             igmp_create_sessionid,
-                                             igmp_pre_process,
-                                             igmp_process,
-                                             NULL);
+                                              SESSION_OTHER,
+                                              igmp_create_sessionid,
+                                              igmp_pre_process,
+                                              igmp_process,
+                                              NULL);
 }

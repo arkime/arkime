@@ -147,7 +147,7 @@ LOCAL int socks5_parser(ArkimeSession_t *session, void *uw, const uint8_t *data,
                 arkime_parsers_unregister(session, uw);
                 return 0;
             }
-            socks->port = (data[8]&0xff) << 8 | (data[9]&0xff);
+            socks->port = (data[8] & 0xff) << 8 | (data[9] & 0xff);
             memcpy(&socks->ip, data + 4, 4);
             arkime_field_ip4_add(ipField, session, socks->ip);
             arkime_field_int_add(portField, session, socks->port);
@@ -157,7 +157,7 @@ LOCAL int socks5_parser(ArkimeSession_t *session, void *uw, const uint8_t *data,
                 arkime_parsers_unregister(session, uw);
                 return 0;
             }
-            socks->port = (data[5+data[4]]&0xff) << 8 | (data[6+data[4]]&0xff);
+            socks->port = (data[5 + data[4]] & 0xff) << 8 | (data[6 + data[4]] & 0xff);
 
             arkime_field_string_add_lower(hostField, session, (char *)data + 5, data[4]);
             arkime_field_int_add(portField, session, socks->port);
@@ -172,7 +172,7 @@ LOCAL int socks5_parser(ArkimeSession_t *session, void *uw, const uint8_t *data,
             break;
         }
 
-        arkime_parsers_classify_tcp(session, data+consumed, remaining-consumed, which);
+        arkime_parsers_classify_tcp(session, data + consumed, remaining - consumed, which);
         return consumed;
     case SOCKS5_STATE_CONN_REPLY: {
         if (remaining < 6) {
@@ -196,7 +196,7 @@ LOCAL int socks5_parser(ArkimeSession_t *session, void *uw, const uint8_t *data,
             return 0;
         }
 
-        arkime_parsers_classify_tcp(session, data+consumed, remaining-consumed, which);
+        arkime_parsers_classify_tcp(session, data + consumed, remaining - consumed, which);
         return consumed;
     }
     case SOCKS5_STATE_CONN_DATA:
@@ -235,7 +235,7 @@ LOCAL void socks4_classify(ArkimeSession_t *session, const uint8_t *data, int le
 
     socks = ARKIME_TYPE_ALLOC0(SocksInfo_t);
     socks->which = which;
-    socks->port = (data[2]&0xff) << 8 | (data[3]&0xff);
+    socks->port = (data[2] & 0xff) << 8 | (data[3] & 0xff);
     if (data[4] == 0 && data[5] == 0 && data[6] == 0 && data[7] != 0) {
         socks->ip = 0;
     } else {
@@ -254,8 +254,8 @@ LOCAL void socks4_classify(ArkimeSession_t *session, const uint8_t *data, int le
         int start;
         for(start = i; i < len && data[i]; i++);
         if (i > start && i != len ) {
-            socks->hostlen = i-start;
-            socks->host = g_ascii_strdown((char*)data+start, i-start);
+            socks->hostlen = i - start;
+            socks->host = g_ascii_strdown((char *)data + start, i - start);
         }
     }
 
@@ -269,7 +269,7 @@ LOCAL void socks5_classify(ArkimeSession_t *session, const uint8_t *data, int le
     LOG("SOCKSDEBUG: enter %d %d", data[0], len);
 #endif
 
-    if ((len >=3 && len <= 5) && data[1] == len - 2 && data[2] <= 3) {
+    if ((len >= 3 && len <= 5) && data[1] == len - 2 && data[2] <= 3) {
         SocksInfo_t *socks;
 
         socks = ARKIME_TYPE_ALLOC0(SocksInfo_t);
@@ -284,44 +284,44 @@ LOCAL void socks5_classify(ArkimeSession_t *session, const uint8_t *data, int le
 void arkime_parser_init()
 {
     ipField = arkime_field_define("socks", "ip",
-        "ip.socks", "IP", "socks.ip",
-        "SOCKS destination IP",
-        ARKIME_FIELD_TYPE_IP, ARKIME_FIELD_FLAG_IPPRE,
-        "aliases", "[\"socks.ip\"]",
-        "portField", "sockspo",
-        "portField2", "socks.port",
-        (char *)NULL);
+                                  "ip.socks", "IP", "socks.ip",
+                                  "SOCKS destination IP",
+                                  ARKIME_FIELD_TYPE_IP, ARKIME_FIELD_FLAG_IPPRE,
+                                  "aliases", "[\"socks.ip\"]",
+                                  "portField", "sockspo",
+                                  "portField2", "socks.port",
+                                  (char *)NULL);
 
     hostField = arkime_field_define("socks", "lotermfield",
-        "host.socks", "Host", "socks.host",
-        "SOCKS destination host",
-        ARKIME_FIELD_TYPE_STR,       0,
-        "aliases", "[\"socks.host\"]",
-        "category", "host",
-        (char *)NULL);
+                                    "host.socks", "Host", "socks.host",
+                                    "SOCKS destination host",
+                                    ARKIME_FIELD_TYPE_STR,       0,
+                                    "aliases", "[\"socks.host\"]",
+                                    "category", "host",
+                                    (char *)NULL);
 
     arkime_field_define("socks", "lotextfield",
-        "host.socks.tokens", "Hostname Tokens", "socks.hostTokens",
-        "SOCKS Hostname Tokens",
-        ARKIME_FIELD_TYPE_STR,       ARKIME_FIELD_FLAG_FAKE,
-        "aliases", "[\"socks.host.tokens\"]",
-        (char *)NULL);
+                        "host.socks.tokens", "Hostname Tokens", "socks.hostTokens",
+                        "SOCKS Hostname Tokens",
+                        ARKIME_FIELD_TYPE_STR,       ARKIME_FIELD_FLAG_FAKE,
+                        "aliases", "[\"socks.host.tokens\"]",
+                        (char *)NULL);
 
     portField = arkime_field_define("socks", "integer",
-        "port.socks", "Port", "socks.port",
-        "SOCKS destination port",
-        ARKIME_FIELD_TYPE_INT,       0,
-        "aliases", "[\"socks.port\"]",
-        "category", "port",
-        (char *)NULL);
+                                    "port.socks", "Port", "socks.port",
+                                    "SOCKS destination port",
+                                    ARKIME_FIELD_TYPE_INT,       0,
+                                    "aliases", "[\"socks.port\"]",
+                                    "category", "port",
+                                    (char *)NULL);
 
     userField = arkime_field_define("socks", "termfield",
-        "socks.user", "User", "socks.user",
-        "SOCKS authenticated user",
-        ARKIME_FIELD_TYPE_STR,     0,
-        "aliases", "[\"socksuser\"]",
-        "category", "user",
-        (char *)NULL);
+                                    "socks.user", "User", "socks.user",
+                                    "SOCKS authenticated user",
+                                    ARKIME_FIELD_TYPE_STR,     0,
+                                    "aliases", "[\"socksuser\"]",
+                                    "category", "user",
+                                    (char *)NULL);
 
     arkime_parsers_classifier_register_tcp("socks5", NULL, 0, (uint8_t *)"\005", 1, socks5_classify);
     arkime_parsers_classifier_register_tcp("socks4", NULL, 0, (uint8_t *)"\004\000", 2, socks4_classify);

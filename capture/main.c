@@ -108,7 +108,7 @@ LOCAL  GOptionEntry entries[] =
     { "nostats",     0, G_OPTION_FLAG_HIDDEN, G_OPTION_ARG_NONE,           &config.noStats,       "Don't send node stats", NULL },
     { "insecure",    0,                    0, G_OPTION_ARG_NONE,           &config.insecure,      "Disable certificate verification for https calls", NULL },
     { "nolockpcap",  0,                    0, G_OPTION_ARG_NONE,           &config.noLockPcap,    "Don't lock offline pcap files (ie., allow deletion)", NULL },
-    { "ignoreerrors",0, G_OPTION_FLAG_HIDDEN, G_OPTION_ARG_NONE,           &config.ignoreErrors,  "Ignore most errors and continue", NULL },
+    { "ignoreerrors", 0, G_OPTION_FLAG_HIDDEN, G_OPTION_ARG_NONE,           &config.ignoreErrors,  "Ignore most errors and continue", NULL },
     { "dumpConfig",  0, G_OPTION_FLAG_HIDDEN, G_OPTION_ARG_NONE,           &config.dumpConfig,    "Display the config.", NULL },
     { "regressionTests",  0, G_OPTION_FLAG_HIDDEN, G_OPTION_ARG_NONE,      &config.regressionTests, "Regression Tests", NULL },
     { NULL,          0, 0,                                    0,           NULL, NULL, NULL }
@@ -178,7 +178,7 @@ void parse_args(int argc, char **argv)
 #ifdef HAVE_ZSTD
         extern unsigned ZSTD_versionNumber(void);
         unsigned zver = ZSTD_versionNumber();
-        printf("zstd: %u.%u.%u\n", zver/(100 * 100), (zver / 100) % 100, zver % 100);
+        printf("zstd: %u.%u.%u\n", zver / (100 * 100), (zver / 100) % 100, zver % 100);
 #endif
         nghttp2_info *ngver = nghttp2_version(0);
         printf("nghttp2: %s\n", ngver->version_str);
@@ -191,8 +191,8 @@ void parse_args(int argc, char **argv)
         glib_micro_version !=  GLIB_MICRO_VERSION) {
 
         LOG("WARNING - glib compiled %d.%d.%d vs linked %u.%u.%u",
-                GLIB_MAJOR_VERSION, GLIB_MINOR_VERSION, GLIB_MICRO_VERSION,
-                glib_major_version, glib_minor_version, glib_micro_version);
+            GLIB_MAJOR_VERSION, GLIB_MINOR_VERSION, GLIB_MICRO_VERSION,
+            glib_major_version, glib_minor_version, glib_micro_version);
     }
 
 
@@ -307,7 +307,7 @@ LOCAL void arkime_free_later_init()
 void *arkime_size_alloc(int size, int zero)
 {
     size += 8;
-    void *mem = (zero?g_slice_alloc0(size):g_slice_alloc(size));
+    void *mem = (zero ? g_slice_alloc0(size) : g_slice_alloc(size));
     memcpy(mem, &size, 4);
     return (char *)mem + 8;
 }
@@ -347,14 +347,15 @@ uint32_t arkime_get_next_prime(uint32_t v)
                                 5000011, 6000011, 7000003, 8000009, 9000011, 10000019,
                                 11000027, 12000017, 13000027, 14000029, 15000017, 16000057,
                                 17000023, 18000041, 19000013, 20000003, 21000037, 22000001,
-                                0};
+                                0
+                               };
 
     int p;
     for (p = 0; primes[p]; p++) {
         if (primes[p] > v)
             return primes[p];
     }
-    return primes[p-1];
+    return primes[p - 1];
 }
 /******************************************************************************/
 //https://graphics.stanford.edu/~seander/bithacks.html#RoundUpPowerOf2
@@ -384,7 +385,7 @@ uint8_t *arkime_js0n_get(uint8_t *data, uint32_t len, char *key, uint32_t *olen)
         return 0;
     }
 
-    for (i = 0; out[i]; i+= 4) {
+    for (i = 0; out[i]; i += 4) {
         if (out[i + 1] == key_len && memcmp(key, data + out[i], key_len) == 0) {
             *olen = out[i + 3];
             return data + out[i + 2];
@@ -401,7 +402,7 @@ char *arkime_js0n_get_str(uint8_t *data, uint32_t len, char *key)
     value = arkime_js0n_get(data, len, key, &value_len);
     if (!value)
         return NULL;
-    return g_strndup((gchar*)value, value_len);
+    return g_strndup((gchar *)value, value_len);
 }
 /******************************************************************************/
 const char *arkime_memstr(const char *haystack, int haysize, const char *needle, int needlesize)
@@ -431,7 +432,7 @@ const char *arkime_memcasestr(const char *haystack, int haysize, const char *nee
         }
         return p;
 
-        memcasestr_outer: ;
+memcasestr_outer: ;
     }
     return NULL;
 }
@@ -493,7 +494,7 @@ uint32_t arkime_string_hash_len(const void *key, int len)
 /******************************************************************************/
 int arkime_string_cmp(const void *keyv, const void *elementv)
 {
-    char *key = (char*)keyv;
+    char *key = (char *)keyv;
     ArkimeString_t *element = (ArkimeString_t *)elementv;
 
     return strcmp(key, element->str) == 0;
@@ -501,7 +502,7 @@ int arkime_string_cmp(const void *keyv, const void *elementv)
 /******************************************************************************/
 int arkime_string_ncmp(const void *keyv, const void *elementv)
 {
-    char *key = (char*)keyv;
+    char *key = (char *)keyv;
     ArkimeString_t *element = (ArkimeString_t *)elementv;
 
     return strncmp(key, element->str, element->len) == 0;
@@ -607,8 +608,8 @@ void arkime_add_can_quit (ArkimeCanQuitFunc func, const char *name)
  */
 gboolean arkime_quit_gfunc (gpointer UNUSED(user_data))
 {
-LOCAL gboolean readerExit   = TRUE;
-LOCAL gboolean writerExit   = TRUE;
+    LOCAL gboolean readerExit   = TRUE;
+    LOCAL gboolean writerExit   = TRUE;
 
 // On the first run shutdown reader and sessions
     if (readerExit) {
@@ -735,7 +736,7 @@ void arkime_mlockall_init()
     struct rlimit l;
     getrlimit(RLIMIT_MEMLOCK, &l);
     if (l.rlim_max != RLIM_INFINITY && l.rlim_max < 4000000000LL) {
-        LOG("WARNING: memlock in limits.conf must be unlimited or at least 4000000, currently %lu", (unsigned long)l.rlim_max/1024);
+        LOG("WARNING: memlock in limits.conf must be unlimited or at least 4000000, currently %lu", (unsigned long)l.rlim_max / 1024);
         return;
     }
 

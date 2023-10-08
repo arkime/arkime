@@ -127,15 +127,15 @@ LOCAL void *reader_tpacketv3_thread(gpointer infov)
         for (p = 0; p < tbd->hdr.bh1.num_pkts; p++) {
             if (unlikely(th->tp_snaplen != th->tp_len)) {
                 LOGEXIT("ERROR - Arkime requires full packet captures caplen: %d pktlen: %d\n"
-                    "See https://arkime.com/faq#arkime_requires_full_packet_captures_error",
-                    th->tp_snaplen, th->tp_len);
+                        "See https://arkime.com/faq#arkime_requires_full_packet_captures_error",
+                        th->tp_snaplen, th->tp_len);
             }
 
             ArkimePacket_t *packet = ARKIME_TYPE_ALLOC0(ArkimePacket_t);
             packet->pkt           = (u_char *)th + th->tp_mac;
             packet->pktlen        = th->tp_len;
             packet->ts.tv_sec     = th->tp_sec;
-            packet->ts.tv_usec    = th->tp_nsec/1000;
+            packet->ts.tv_usec    = th->tp_nsec / 1000;
             packet->readerPos     = info->interfacePos;
 
             if ((th->tp_status & TP_STATUS_VLAN_VALID) && th->hv1.tp_vlan_tci) {
@@ -175,7 +175,7 @@ void reader_tpacketv3_exit()
 /******************************************************************************/
 void reader_tpacketv3_init(char *UNUSED(name))
 {
-    int blocksize = arkime_config_int(NULL, "tpacketv3BlockSize", 1<<21, 1<<16, 1U<<31);
+    int blocksize = arkime_config_int(NULL, "tpacketv3BlockSize", 1 << 21, 1 << 16, 1U << 31);
     numThreads = arkime_config_int(NULL, "tpacketv3NumThreads", 2, 1, MAX_TPACKETV3_THREADS);
 
     if (blocksize % getpagesize() != 0) {
@@ -236,7 +236,7 @@ void reader_tpacketv3_init(char *UNUSED(name))
             }
 
             infos[i][t].map = mmap64(NULL, infos[i][t].req.tp_block_size * infos[i][t].req.tp_block_nr,
-                                 PROT_READ | PROT_WRITE, MAP_SHARED | MAP_LOCKED, infos[i][t].fd, 0);
+                                     PROT_READ | PROT_WRITE, MAP_SHARED | MAP_LOCKED, infos[i][t].fd, 0);
             if (unlikely(infos[i][t].map == MAP_FAILED)) {
                 CONFIGEXIT("MMap64 failure in reader_tpacketv3_init, %d: %s. Tried to allocate %d bytes (tpacketv3BlockSize: %d * 64) which was probbaly too large for this host, you probably need to reduce one of the values.", errno, strerror(errno), infos[i][t].req.tp_block_size * infos[i][t].req.tp_block_nr, blocksize);
             }
@@ -258,7 +258,7 @@ void reader_tpacketv3_init(char *UNUSED(name))
                 CONFIGEXIT("Error binding %s: %s", config.interface[i], strerror(errno));
 
             int fanout_type = PACKET_FANOUT_HASH;
-            int fanout_arg = ((fanout_group_id+i) | (fanout_type << 16));
+            int fanout_arg = ((fanout_group_id + i) | (fanout_type << 16));
             if(setsockopt(infos[i][t].fd, SOL_PACKET, PACKET_FANOUT, &fanout_arg, sizeof(fanout_arg)) < 0)
                 CONFIGEXIT("Error setting packet fanout parameters: tpacketv3ClusterId: %d (%s)", fanout_group_id, strerror(errno));
         }

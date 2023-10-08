@@ -163,10 +163,10 @@ LOCAL void tagger_plugin_save(ArkimeSession_t *session, int UNUSED(final))
         ghash = session->fields[httpXffField]->ghash;
         g_hash_table_iter_init (&iter, ghash);
         while (g_hash_table_iter_next (&iter, &ikey, NULL)) {
-            if (IN6_IS_ADDR_V4MAPPED((struct in6_addr*)ikey)) {
+            if (IN6_IS_ADDR_V4MAPPED((struct in6_addr * )ikey)) {
                 prefix.family = AF_INET;
                 prefix.bitlen = 32;
-                prefix.add.sin.s_addr = ARKIME_V6_TO_V4(*(struct in6_addr*)ikey);
+                prefix.add.sin.s_addr = ARKIME_V6_TO_V4(*(struct in6_addr *)ikey);
             } else {
                 prefix.family = AF_INET6;
                 prefix.bitlen = 128;
@@ -438,20 +438,20 @@ LOCAL void tagger_load_file_cb(int UNUSED(code), uint8_t *data, int data_len, gp
     memset(fieldShortHand, 0xff, sizeof(fieldShortHand));
 
     int i;
-    for (i = 0; out[i]; i+= 4) {
+    for (i = 0; out[i]; i += 4) {
         if (out[i + 1] == 3 && memcmp("md5", data + out[i], sizeof("md5") - 1) == 0) {
-            file->md5 = g_strndup((char*)data + out[i + 2], out[i + 3]);
+            file->md5 = g_strndup((char *)data + out[i + 2], out[i + 3]);
         } else if (out[i + 1] == 4 && memcmp("tags", data + out[i], sizeof("tags") - 1) == 0) {
             data[out[i + 2] + out[i + 3]] = 0;
-            file->tags = g_strsplit((char*)data + out[i + 2], ",", 0);
+            file->tags = g_strsplit((char *)data + out[i + 2], ",", 0);
         } else if (out[i + 1] == sizeof("type") - 1 && memcmp("type", data + out[i], sizeof("type") - 1) == 0) {
-            file->type = g_strndup((char*)data + out[i + 2], out[i + 3]);
+            file->type = g_strndup((char *)data + out[i + 2], out[i + 3]);
         } else if (out[i + 1] == sizeof("data") - 1 && memcmp("data", data + out[i], sizeof("data") - 1) == 0) {
             data[out[i + 2] + out[i + 3]] = 0;
-            file->elements = g_strsplit((char*)data + out[i + 2], ",", 0);
+            file->elements = g_strsplit((char *)data + out[i + 2], ",", 0);
         } else if (out[i + 1] == sizeof("fields") - 1 && memcmp("fields", data + out[i], sizeof("fields") - 1) == 0) {
             data[out[i + 2] + out[i + 3]] = 0;
-            char **fields = g_strsplit((char*)data + out[i + 2], ",", 0);
+            char **fields = g_strsplit((char *)data + out[i + 2], ",", 0);
             int f;
             for (f = 0; f < 100 && fields[f]; f++) {
                 int shortcut = -1;
@@ -490,7 +490,7 @@ LOCAL void tagger_load_file_cb(int UNUSED(code), uint8_t *data, int data_len, gp
         arkime_field_ops_init(&info->ops, p - 2, 0);
 
         int j;
-        for(j = 2; j < p; j+=2) {
+        for(j = 2; j < p; j += 2) {
             int pos = -1;
             if (isdigit(parts[j][0])) {
                 unsigned int f = atoi(parts[j]);
@@ -590,22 +590,22 @@ LOCAL void tagger_fetch_files_cb(int UNUSED(code), uint8_t *data, int data_len, 
         return;
     }
     int i;
-    for (i = 0; out[i]; i+= 2) {
+    for (i = 0; out[i]; i += 2) {
         uint32_t           source_len;
         uint8_t           *source = 0;
-        source = arkime_js0n_get(hits+out[i], out[i + 1], "_source", &source_len);
+        source = arkime_js0n_get(hits + out[i], out[i + 1], "_source", &source_len);
         if (!source) {
             continue;
         }
 
-        char     *id = arkime_js0n_get_str(hits+out[i], out[i + 1], "_id");
+        char     *id = arkime_js0n_get_str(hits + out[i], out[i + 1], "_id");
 
         uint32_t           md5_len;
         uint8_t           *md5 = 0;
         md5 = arkime_js0n_get(source, source_len, "md5", &md5_len);
 
         if (*md5 == '[') {
-            md5+=2;
+            md5 += 2;
             md5_len -= 4;
         }
 
@@ -620,7 +620,7 @@ LOCAL void tagger_fetch_files_cb(int UNUSED(code), uint8_t *data, int data_len, 
             continue;
         }
         g_free(id);
-        if (!file->md5 || strncmp(file->md5, (char*)md5, md5_len) != 0) {
+        if (!file->md5 || strncmp(file->md5, (char * )md5, md5_len) != 0) {
             tagger_load_file(file);
         }
     }
@@ -670,15 +670,15 @@ void arkime_plugin_init()
     arkime_plugins_register("tagger", FALSE);
 
     arkime_plugins_set_cb("tagger",
-      NULL,
-      NULL,
-      NULL,
-      NULL,
-      tagger_plugin_save,
-      NULL,
-      tagger_plugin_exit,
-      NULL
-    );
+                          NULL,
+                          NULL,
+                          NULL,
+                          NULL,
+                          tagger_plugin_save,
+                          NULL,
+                          tagger_plugin_exit,
+                          NULL
+                         );
 
     tagsField      = arkime_field_by_db("tags");
     httpHostField  = arkime_field_by_db("http.host");

@@ -9,7 +9,7 @@ extern ArkimeConfig_t        config;
 
 /******************************************************************************/
 SUPPRESS_ALIGNMENT
-LOCAL ArkimePacketRC nsh_packet_enqueue(ArkimePacketBatch_t * batch, ArkimePacket_t * const packet, const uint8_t *data, int len)
+LOCAL ArkimePacketRC nsh_packet_enqueue(ArkimePacketBatch_t *batch, ArkimePacket_t *const packet, const uint8_t *data, int len)
 {
     if (len < 4) {
 #ifdef DEBUG_PACKET
@@ -36,15 +36,15 @@ LOCAL ArkimePacketRC nsh_packet_enqueue(ArkimePacketBatch_t * batch, ArkimePacke
 
     switch (data[3]) {
     case 1:
-        return arkime_packet_run_ethernet_cb(batch, packet, data+length, len-length, ETHERTYPE_IP, "NSH");
+        return arkime_packet_run_ethernet_cb(batch, packet, data + length, len - length, ETHERTYPE_IP, "NSH");
     case 2:
-        return arkime_packet_run_ethernet_cb(batch, packet, data+length, len-length, ETHERTYPE_IPV6, "NSH");
+        return arkime_packet_run_ethernet_cb(batch, packet, data + length, len - length, ETHERTYPE_IPV6, "NSH");
     case 3:
-        return arkime_packet_run_ethernet_cb(batch, packet, data+length, len-length, ARKIME_ETHERTYPE_ETHER, "NSH");
+        return arkime_packet_run_ethernet_cb(batch, packet, data + length, len - length, ARKIME_ETHERTYPE_ETHER, "NSH");
     case 4:
-        return arkime_packet_run_ethernet_cb(batch, packet, data+length, len-length, ARKIME_ETHERTYPE_NSH, "NSH");
+        return arkime_packet_run_ethernet_cb(batch, packet, data + length, len - length, ARKIME_ETHERTYPE_NSH, "NSH");
     case 5:
-        return arkime_packet_run_ethernet_cb(batch, packet, data+length, len-length, ARKIME_ETHERTYPE_MPLS, "NSH");
+        return arkime_packet_run_ethernet_cb(batch, packet, data + length, len - length, ARKIME_ETHERTYPE_MPLS, "NSH");
     default:
         return ARKIME_PACKET_CORRUPT;
     }

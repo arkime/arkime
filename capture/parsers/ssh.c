@@ -98,7 +98,7 @@ LOCAL void ssh_parse_keyinit(ArkimeSession_t *session, const uint8_t *data, int 
 
     if (!BSB_IS_ERROR(bsb) && !BSB_IS_ERROR(hbsb)) {
         gchar *md5 = g_compute_checksum_for_data(G_CHECKSUM_MD5, (guchar *)hbuf, BSB_LENGTH(hbsb));
-        if (!arkime_field_string_add(isDst?hasshServerField:hasshField, session, md5, 32, FALSE)) {
+        if (!arkime_field_string_add(isDst ? hasshServerField : hasshField, session, md5, 32, FALSE)) {
             g_free(md5);
         }
 
@@ -215,28 +215,28 @@ LOCAL void ssh_classify(ArkimeSession_t *session, const uint8_t *UNUSED(data), i
 void arkime_parser_init()
 {
     verField = arkime_field_define("ssh", "lotermfield",
-        "ssh.ver", "Version", "ssh.version",
-        "SSH Software Version",
-        ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT,
-        (char *)NULL);
+                                   "ssh.ver", "Version", "ssh.version",
+                                   "SSH Software Version",
+                                   ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT,
+                                   (char *)NULL);
 
     keyField = arkime_field_define("ssh", "termfield",
-        "ssh.key", "Key", "ssh.key",
-        "SSH Key",
-        ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT,
-        (char *)NULL);
+                                   "ssh.key", "Key", "ssh.key",
+                                   "SSH Key",
+                                   ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT,
+                                   (char *)NULL);
 
     hasshField = arkime_field_define("ssh", "lotermfield",
-        "ssh.hassh", "HASSH", "ssh.hassh",
-        "SSH HASSH field",
-        ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT,
-        (char *)NULL);
+                                     "ssh.hassh", "HASSH", "ssh.hassh",
+                                     "SSH HASSH field",
+                                     ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT,
+                                     (char *)NULL);
 
     hasshServerField = arkime_field_define("ssh", "lotermfield",
-        "ssh.hasshServer", "HASSH Server", "ssh.hasshServer",
-        "SSH HASSH Server field",
-        ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT,
-        (char *)NULL);
+                                           "ssh.hasshServer", "HASSH Server", "ssh.hasshServer",
+                                           "SSH HASSH Server field",
+                                           ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT,
+                                           (char *)NULL);
 
     arkime_parsers_classifier_register_tcp("ssh", NULL, 0, (uint8_t *)"SSH", 3, ssh_classify);
 }

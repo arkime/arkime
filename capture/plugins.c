@@ -104,7 +104,7 @@ void arkime_plugins_load(char **plugins) {
 
         ArkimePluginInitFunc plugin_init;
 
-        if (!g_module_symbol(plugin, "arkime_plugin_init", (gpointer *)(char*)&plugin_init) || plugin_init == NULL) {
+        if (!g_module_symbol(plugin, "arkime_plugin_init", (gpointer *)(char * )&plugin_init) || plugin_init == NULL) {
             LOG("ERROR - Module %s doesn't have a arkime_plugin_init", name);
             continue;
         }
@@ -118,7 +118,7 @@ void arkime_plugins_load(char **plugins) {
     }
 }
 /******************************************************************************/
-int arkime_plugins_register_internal(const char *            name,
+int arkime_plugins_register_internal(const char             *name,
                                      gboolean                storeData,
                                      size_t                  sessionsize,
                                      int                     apiversion)
@@ -149,7 +149,7 @@ int arkime_plugins_register_internal(const char *            name,
     return plugin->num;
 }
 /******************************************************************************/
-void arkime_plugins_set_cb(const char *            name,
+void arkime_plugins_set_cb(const char             *name,
                            ArkimePluginIpFunc      ipFunc,
                            ArkimePluginUdpFunc     udpFunc,
                            ArkimePluginTcpFunc     tcpFunc,
@@ -200,7 +200,7 @@ void arkime_plugins_set_cb(const char *            name,
         pluginsCbs |= ARKIME_PLUGIN_RELOAD;
 }
 /******************************************************************************/
-void arkime_plugins_set_http_cb(const char *             name,
+void arkime_plugins_set_http_cb(const char              *name,
                                 ArkimePluginHttpFunc     on_message_begin,
                                 ArkimePluginHttpDataFunc on_url,
                                 ArkimePluginHttpDataFunc on_header_field,
@@ -220,7 +220,7 @@ void arkime_plugins_set_http_cb(const char *             name,
                                    on_message_complete);
 }
 /******************************************************************************/
-void arkime_plugins_set_http_ext_cb(const char *             name,
+void arkime_plugins_set_http_ext_cb(const char              *name,
                                     ArkimePluginHttpFunc     on_message_begin,
                                     ArkimePluginHttpDataFunc on_url,
                                     ArkimePluginHttpDataFunc on_header_field,
@@ -272,7 +272,7 @@ void arkime_plugins_set_http_ext_cb(const char *             name,
 
 }
 /******************************************************************************/
-void arkime_plugins_set_smtp_cb(const char *                name,
+void arkime_plugins_set_smtp_cb(const char                 *name,
                                 ArkimePluginSMTPHeaderFunc  on_header,
                                 ArkimePluginSMTPFunc        on_header_complete)
 {
@@ -293,8 +293,8 @@ void arkime_plugins_set_smtp_cb(const char *                name,
         pluginsCbs |= ARKIME_PLUGIN_SMTP_OHC;
 }
 /******************************************************************************/
-void arkime_plugins_set_outstanding_cb(const char *                name,
-                                ArkimePluginOutstandingFunc        outstandingFunc)
+void arkime_plugins_set_outstanding_cb(const char                 *name,
+                                       ArkimePluginOutstandingFunc        outstandingFunc)
 {
     ArkimePlugin_t *plugin;
 

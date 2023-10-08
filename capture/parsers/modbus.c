@@ -139,32 +139,32 @@ void arkime_parser_init()
     arkime_parsers_classifier_register_port("modbus", NULL, 502, ARKIME_PARSERS_PORT_TCP, modbus_tcp_classify);
 
     unitIdField = arkime_field_define("modbus", "integer",
-        "modbus.unitid", "Modbus Unit ID", "modbus.unitid",
-        "Modbus Unit ID",
-        ARKIME_FIELD_TYPE_INT, 0,
-        (char *) NULL);
+                                      "modbus.unitid", "Modbus Unit ID", "modbus.unitid",
+                                      "Modbus Unit ID",
+                                      ARKIME_FIELD_TYPE_INT, 0,
+                                      (char *) NULL);
 
     transactionIdField = arkime_field_define("modbus", "integer",
-        "modbus.transactionid", "Modbus Transaction IDs", "modbus.transactionid",
-        "Modbus Transaction IDs",
-        ARKIME_FIELD_TYPE_INT_GHASH, ARKIME_FIELD_FLAG_CNT,
-        (char *) NULL);
+                                             "modbus.transactionid", "Modbus Transaction IDs", "modbus.transactionid",
+                                             "Modbus Transaction IDs",
+                                             ARKIME_FIELD_TYPE_INT_GHASH, ARKIME_FIELD_FLAG_CNT,
+                                             (char *) NULL);
 
     protocolIdField = arkime_field_define("modbus", "integer",
-        "modbus.protocolid", "Modbus Protocol ID", "modbus.protocolid",
-        "Modbus Protocol ID (should always be 0)",
-        ARKIME_FIELD_TYPE_INT, 0,
-        (char *) NULL);
+                                          "modbus.protocolid", "Modbus Protocol ID", "modbus.protocolid",
+                                          "Modbus Protocol ID (should always be 0)",
+                                          ARKIME_FIELD_TYPE_INT, 0,
+                                          (char *) NULL);
 
     functionCodeField = arkime_field_define("modbus", "integer",
-        "modbus.funccode", "Modbus Function Code", "modbus.funccode",
-        "Modbus Function Codes",
-        ARKIME_FIELD_TYPE_INT_GHASH, ARKIME_FIELD_FLAG_CNT,
-        (char *)NULL);
+                                            "modbus.funccode", "Modbus Function Code", "modbus.funccode",
+                                            "Modbus Function Codes",
+                                            ARKIME_FIELD_TYPE_INT_GHASH, ARKIME_FIELD_FLAG_CNT,
+                                            (char *)NULL);
 
     exceptionCodeField = arkime_field_define("modbus", "integer",
-        "modbus.exccode", "Modbus Exception Code", "modbus.exccode",
-        "Modbus Exception Codes",
-        ARKIME_FIELD_TYPE_INT_GHASH, ARKIME_FIELD_FLAG_CNT,
-        (char *)NULL);
+                                             "modbus.exccode", "Modbus Exception Code", "modbus.exccode",
+                                             "Modbus Exception Codes",
+                                             ARKIME_FIELD_TYPE_INT_GHASH, ARKIME_FIELD_FLAG_CNT,
+                                             (char *)NULL);
 }

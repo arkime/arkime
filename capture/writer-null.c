@@ -28,7 +28,7 @@ LOCAL void writer_null_exit()
 {
 }
 /******************************************************************************/
-LOCAL void writer_null_write(const ArkimeSession_t * const UNUSED(session), ArkimePacket_t * const packet)
+LOCAL void writer_null_write(const ArkimeSession_t *const UNUSED(session), ArkimePacket_t *const packet)
 {
     packet->writerFileNum = 0;
     packet->writerFilePos = outputFilePos;

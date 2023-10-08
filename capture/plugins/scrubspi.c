@@ -152,15 +152,15 @@ void arkime_plugin_init()
     arkime_plugins_register("scrubspi", FALSE);
 
     arkime_plugins_set_cb("scrubspi",
-      NULL,
-      NULL,
-      NULL,
-      NULL,
-      scrubspi_plugin_save,
-      NULL,
-      NULL,
-      NULL
-    );
+                          NULL,
+                          NULL,
+                          NULL,
+                          NULL,
+                          scrubspi_plugin_save,
+                          NULL,
+                          NULL,
+                          NULL
+                         );
 
     gsize keys_len;
     gchar **keys = arkime_config_section_keys(NULL, "scrubspi", &keys_len);

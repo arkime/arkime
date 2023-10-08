@@ -40,9 +40,9 @@ LOCAL int radius_udp_parser(ArkimeSession_t *session, void *UNUSED(uw), const ui
         case 1:
             arkime_field_string_add(userField, session, (char *)value, length, TRUE);
             break;
-    /*    case 4:
-            LOG("NAS-IP-Address: %d %d %u.%u.%u.%u", type, length, value[0], value[1], value[2], value[3]);
-            break;*/
+        /*    case 4:
+                LOG("NAS-IP-Address: %d %d %u.%u.%u.%u", type, length, value[0], value[1], value[2], value[3]);
+                break;*/
         case 8:
             if (length != 4)
                 return 0;
@@ -52,15 +52,15 @@ LOCAL int radius_udp_parser(ArkimeSession_t *session, void *UNUSED(uw), const ui
         case 31:
             if (length == 12) {
                 snprintf(str, sizeof(str), "%c%c:%c%c:%c%c:%c%c:%c%c:%c%c",
-                        value[0], value[1],
-                        value[2], value[3],
-                        value[4], value[5],
-                        value[6], value[7],
-                        value[8], value[9],
-                        value[10], value[11]);
+                         value[0], value[1],
+                         value[2], value[3],
+                         value[4], value[5],
+                         value[6], value[7],
+                         value[8], value[9],
+                         value[10], value[11]);
                 for (i = 0; i < 17; i++) {
                     if (isupper (str[i]))
-                      str[i] = tolower (str[i]);
+                        str[i] = tolower (str[i]);
                 }
                 arkime_field_string_add(macField, session, str, 17, TRUE);
             }
@@ -71,8 +71,8 @@ LOCAL int radius_udp_parser(ArkimeSession_t *session, void *UNUSED(uw), const ui
             arkime_field_ip_add_str(endpointIpField, session, str);
             break;
 
-/*        default:
-            LOG("%d %d %.*s", type, length, length, value);*/
+            /*        default:
+                        LOG("%d %d %.*s", type, length, length, value);*/
         }
     }
     return 0;
@@ -96,29 +96,29 @@ LOCAL void radius_udp_classify(ArkimeSession_t *session, const uint8_t *UNUSED(d
 void arkime_parser_init()
 {
     userField = arkime_field_define("radius", "termfield",
-        "radius.user", "User", "radius.user",
-        "RADIUS user",
-        ARKIME_FIELD_TYPE_STR_GHASH,  0,
-        "category", "user",
-        (char *)NULL);
+                                    "radius.user", "User", "radius.user",
+                                    "RADIUS user",
+                                    ARKIME_FIELD_TYPE_STR_GHASH,  0,
+                                    "category", "user",
+                                    (char *)NULL);
 
     macField = arkime_field_define("radius", "lotermfield",
-        "radius.mac", "MAC", "radius.mac",
-        "Radius Mac",
-        ARKIME_FIELD_TYPE_STR_GHASH,  ARKIME_FIELD_FLAG_CNT,
-        (char *)NULL);
+                                   "radius.mac", "MAC", "radius.mac",
+                                   "Radius Mac",
+                                   ARKIME_FIELD_TYPE_STR_GHASH,  ARKIME_FIELD_FLAG_CNT,
+                                   (char *)NULL);
 
     endpointIpField = arkime_field_define("radius", "ip",
-        "radius.endpoint-ip", "Endpoint IP", "radius.endpointIp",
-        "Radius endpoint ip addresses for session",
-        ARKIME_FIELD_TYPE_IP_GHASH,  ARKIME_FIELD_FLAG_CNT,
-        (char *)NULL);
+                                          "radius.endpoint-ip", "Endpoint IP", "radius.endpointIp",
+                                          "Radius endpoint ip addresses for session",
+                                          ARKIME_FIELD_TYPE_IP_GHASH,  ARKIME_FIELD_FLAG_CNT,
+                                          (char *)NULL);
 
     framedIpField = arkime_field_define("radius", "ip",
-        "radius.framed-ip", "Framed IP", "radius.framedIp",
-        "Radius framed ip addresses for session",
-        ARKIME_FIELD_TYPE_IP_GHASH,  ARKIME_FIELD_FLAG_CNT,
-        (char *)NULL);
+                                        "radius.framed-ip", "Framed IP", "radius.framedIp",
+                                        "Radius framed ip addresses for session",
+                                        ARKIME_FIELD_TYPE_IP_GHASH,  ARKIME_FIELD_FLAG_CNT,
+                                        (char *)NULL);
 
 
     arkime_parsers_classifier_register_udp("radius", NULL, 0, (const uint8_t *)"\x01", 1, radius_udp_classify);

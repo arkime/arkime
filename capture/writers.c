@@ -42,10 +42,10 @@ void arkime_writers_add(char *name, ArkimeWriterInit func) {
     arkime_string_add(&writersHash, name, func, TRUE);
 }
 /******************************************************************************/
-void writer_disk_init(char*);
-void writer_null_init(char*);
-void writer_inplace_init(char*);
-void writer_simple_init(char*);
+void writer_disk_init(char *);
+void writer_null_init(char *);
+void writer_inplace_init(char *);
+void writer_simple_init(char *);
 
 void arkime_writers_init()
 {

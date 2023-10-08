@@ -13,7 +13,7 @@ LOCAL ArkimePQ_t *unkIpProtocolPq;
 LOCAL int unkIpProtocolMProtocol;
 
 /******************************************************************************/
-LOCAL void unkIpProtocol_create_sessionid(uint8_t *sessionId, ArkimePacket_t * const UNUSED (packet))
+LOCAL void unkIpProtocol_create_sessionid(uint8_t *sessionId, ArkimePacket_t *const UNUSED (packet))
 {
     // uint8_t *data = packet->pkt + packet->payloadOffset;
 
@@ -24,7 +24,7 @@ LOCAL void unkIpProtocol_create_sessionid(uint8_t *sessionId, ArkimePacket_t * c
     // for now, lump all unkIpProtocol into the same session
 }
 /******************************************************************************/
-LOCAL int unkIpProtocol_pre_process(ArkimeSession_t *session, ArkimePacket_t * const UNUSED(packet), int isNewSession)
+LOCAL int unkIpProtocol_pre_process(ArkimeSession_t *session, ArkimePacket_t *const UNUSED(packet), int isNewSession)
 {
     if (isNewSession)
         arkime_session_add_protocol(session, "unkIpProtocol");
@@ -32,12 +32,12 @@ LOCAL int unkIpProtocol_pre_process(ArkimeSession_t *session, ArkimePacket_t * c
     return 0;
 }
 /******************************************************************************/
-LOCAL int unkIpProtocol_process(ArkimeSession_t *UNUSED(session), ArkimePacket_t * const UNUSED(packet))
+LOCAL int unkIpProtocol_process(ArkimeSession_t *UNUSED(session), ArkimePacket_t *const UNUSED(packet))
 {
     return 1;
 }
 /******************************************************************************/
-LOCAL ArkimePacketRC unkIpProtocol_packet_enqueue(ArkimePacketBatch_t * UNUSED(batch), ArkimePacket_t * const packet, const uint8_t *data, int len)
+LOCAL ArkimePacketRC unkIpProtocol_packet_enqueue(ArkimePacketBatch_t *UNUSED(batch), ArkimePacket_t *const packet, const uint8_t *data, int len)
 {
     uint8_t sessionId[ARKIME_SESSIONID_LEN];
 
@@ -64,9 +64,9 @@ void arkime_plugin_init()
     arkime_packet_set_ip_cb(ARKIME_IPPROTO_UNKNOWN, unkIpProtocol_packet_enqueue);
     unkIpProtocolPq = arkime_pq_alloc(10, unkIpProtocol_pq_cb);
     unkIpProtocolMProtocol = arkime_mprotocol_register("unkIpProtocol",
-                                             SESSION_OTHER,
-                                             unkIpProtocol_create_sessionid,
-                                             unkIpProtocol_pre_process,
-                                             unkIpProtocol_process,
-                                             NULL);
+                                                       SESSION_OTHER,
+                                                       unkIpProtocol_create_sessionid,
+                                                       unkIpProtocol_pre_process,
+                                                       unkIpProtocol_process,
+                                                       NULL);
 }

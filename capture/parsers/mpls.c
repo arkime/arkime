@@ -9,7 +9,7 @@ extern ArkimeConfig_t        config;
 
 /******************************************************************************/
 SUPPRESS_ALIGNMENT
-LOCAL ArkimePacketRC mpls_packet_enqueue(ArkimePacketBatch_t * batch, ArkimePacket_t * const packet, const uint8_t *data, int len)
+LOCAL ArkimePacketRC mpls_packet_enqueue(ArkimePacketBatch_t *batch, ArkimePacket_t *const packet, const uint8_t *data, int len)
 {
     while (1) {
         if (len < 4 + (int)sizeof(struct ip)) {
