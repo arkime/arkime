@@ -125,9 +125,7 @@ class Config {
 
   // ----------------------------------------------------------------------------
   // Return an array split on separator, remove leading/trailing spaces, remove empty elements
-  static getArray (key, defaultValue, sep) {
-    return ArkimeConfig.getArray(key, defaultValue, sep);
-  };
+  static getArray = ArkimeConfig.getArray;
 
   // ----------------------------------------------------------------------------
   // Return an array split on separator, remove leading/trailing spaces, remove empty elements
