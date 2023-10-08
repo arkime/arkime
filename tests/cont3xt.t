@@ -1,5 +1,5 @@
 # Test cont3xt.js
-use Test::More tests => 145;
+use Test::More tests => 153;
 use Test::Differences;
 use Data::Dumper;
 use MolochTest;
@@ -18,7 +18,7 @@ viewerPostToken("/api/user", '{"userId": "test", "userName": "test", "enabled":t
 my $token2 = getTokenCookie('test');
 
 my $json;
-
+################################################################################
 ### LINK GROUPS
 # Make sure delete worked
 $json = cont3xtGet('/api/linkGroup');
@@ -297,6 +297,7 @@ eq_or_diff($json, from_json('{"success": false, "text": "Unknown resource"}'));
 $json = cont3xtGet('/api/linkGroup');
 eq_or_diff($json, from_json('{"success": true, "linkGroups": []}'));
 
+################################################################################
 ### OVERVIEWS
 $json = cont3xtGet('/api/overview');
 eq_or_diff($json, from_json('{"success": true, "overviews": []}'));
@@ -681,6 +682,7 @@ eq_or_diff($json, from_json('{"success": false, "text": "Unknown resource"}'));
 $json = cont3xtGet('/api/overview');
 eq_or_diff($json, from_json('{"success": true, "overviews": []}'));
 
+################################################################################
 ### ROLES
 $json = cont3xtGet('/api/roles');
 eq_or_diff($json, from_json('{"success": false, "text": "Missing token"}'));
@@ -688,6 +690,7 @@ eq_or_diff($json, from_json('{"success": false, "text": "Missing token"}'));
 $json = cont3xtGetToken('/api/roles', $token);
 eq_or_diff($json, from_json('{"success": true, "roles": ["arkimeAdmin","arkimeUser","cont3xtAdmin","cont3xtUser","parliamentAdmin","parliamentUser","superAdmin","usersAdmin","wiseAdmin","wiseUser"]}'));
 
+################################################################################
 ### INTEGRATION
 $json = cont3xtGet('/api/integration');
 is ($json->{success}, 1);
@@ -789,7 +792,42 @@ eq_or_diff($json, from_json('{"purpose": "error", "text": "query must contain at
 
 esGet("/_flush");
 esGet("/_refresh");
+################################################################################
+### SINGLE INTEGRATION
+#/api/integration/:itype/:integration/search
 
+# maxmind tests
+$json = cont3xtPost('/api/integration/ip/foo/search', to_json({
+  query => "8.8.8.8"
+}));
+eq_or_diff($json, from_json('{"purpose": "error", "text": "integration ip foo not found"}'));
+
+$json = cont3xtPost('/api/integration/bar/Maxmind/search', to_json({
+  query => "8.8.8.8"
+}));
+eq_or_diff($json, from_json('{"purpose": "error", "text": "integration bar Maxmind not found"}'));
+
+$json = cont3xtPost('/api/integration/ip/Maxmind/search', to_json({
+  query => "8.8.8.8"
+}));
+is($json->{data}->{asn}->{autonomous_system_number}, 15169);
+is($json->{data}->{country}->{country}->{names}->{en}, "United States");
+
+# elasticsearch tests
+$json = cont3xtPost('/api/integration/ip/elasticsearch:test/search', to_json({
+  query => "10.0.0.1"
+}));
+is($json->{data}->{_cont3xt}->{count}, 2);
+is($json->{data}->{hits}->[0]->{source}->{ip}, "10.0.0.1");
+is($json->{data}->{hits}->[1]->{source}->{ip}, "10.0.0.1");
+
+$json = cont3xtPost('/api/integration/ip/elasticsearch:test/search', to_json({
+  query => "badip"
+}));
+is($json->{purpose}, "fail");
+
+
+################################################################################
 ### HISTORY
 $json = cont3xtGet('/api/audits?searchTerm=goodtag');
 is($json->{success}, 1);
@@ -817,6 +855,7 @@ $json = cont3xtGet('/api/audits');
 is($json->{success}, 1);
 is (scalar @{$json->{audits}}, 2);
 
+################################################################################
 ### VIEWS
 # Bad
 $json = cont3xtPostToken('/api/view', to_json({
@@ -916,6 +955,7 @@ $json = cont3xtGet('/api/views');
 is($json->{success}, 1);
 is (scalar @{$json->{views}}, 1);
 
+################################################################################
 ### Settings
 $json = cont3xtGet('/api/integration/settings');
 ok($json->{success});
@@ -929,6 +969,7 @@ is ($json, "SyntaxError: Unexpected token h in JSON at position 0");
 $json = cont3xtPutToken('/api/integration/settings', '{"__proto__": {"foo": 1}}', $token);
 is ($json, "SyntaxError: Object contains forbidden prototype property");
 
+################################################################################
 ### Classify
 $json = cont3xtPost('/regressionTests/classify', '["aol.com", "1.2.3.4", "a----b.com", "https://a----b.com", "703-867-5309", "text", "foo@example.com", "d07708229fb0d2d513c82f36e5cdc68f", "25425d55a6af7586bf68c3989f0d4d89ffbb1641"]');
 eq_or_diff($json, from_json('["domain", "ip", "domain", "url", "phone", "text", "email", "hash", "hash"]'));

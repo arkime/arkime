@@ -54,21 +54,21 @@ class ElasticsearchIntegration extends Integration {
     super();
 
     this.section = section;
-    this.name = ArkimeConfig.get(section, 'name', section);
-    this.icon = ArkimeConfig.get(section, 'icon',
+    this.name = ArkimeConfig.getFull(section, 'name', section);
+    this.icon = ArkimeConfig.getFull(section, 'icon',
       section.startsWith('elasticsearch') ? 'integrations/elasticsearch/elasticsearch.png' : 'integrations/elasticsearch/opensearch.png');
     this.order = ElasticsearchIntegration.#order++;
     this.card.title = `${this.name} for %{query}`;
-    const itypes = ArkimeConfig.getArray(section, 'itypes', ArkimeConfig.exit);
+    const itypes = ArkimeConfig.getFullArray(section, 'itypes', ArkimeConfig.exit);
 
-    this.#index = ArkimeConfig.get(section, 'index', ArkimeConfig.exit);
-    this.#method = ArkimeConfig.get(section, 'method', 'search');
+    this.#index = ArkimeConfig.getFull(section, 'index', ArkimeConfig.exit);
+    this.#method = ArkimeConfig.getFull(section, 'method', 'search');
     if (!this.#method.match(/^(get|search)$/)) {
       console.log(section, `- method must be get or search ${this.#method}`);
       return;
     }
     if (this.#method === 'search') {
-      this.#queryField = ArkimeConfig.get(section, 'queryField', ArkimeConfig.exit);
+      this.#queryField = ArkimeConfig.getFull(section, 'queryField', ArkimeConfig.exit);
       this.card.fields.push({ label: 'hits', type: 'json' });
     } else {
       this.card.fields.push({ label: 'data', type: 'json' });
@@ -78,24 +78,24 @@ class ElasticsearchIntegration extends Integration {
     itypes.forEach(itype => {
       this.itypes[itype] = imethod;
     });
-    this.#url = ArkimeConfig.get(section, 'url', ArkimeConfig.exit);
-    this.#timestampField = ArkimeConfig.get(section, 'timestampField');
+    this.#url = ArkimeConfig.getFull(section, 'url', ArkimeConfig.exit);
+    this.#timestampField = ArkimeConfig.getFull(section, 'timestampField');
 
-    this.#maxResults = ArkimeConfig.get(section, 'maxResults', 20);
-    this.#includeId = ArkimeConfig.get(section, 'includeId', false);
-    this.#includeIndex = ArkimeConfig.get(section, 'includeIndex', false);
+    this.#maxResults = ArkimeConfig.getFull(section, 'maxResults', 20);
+    this.#includeId = ArkimeConfig.getFull(section, 'includeId', false);
+    this.#includeIndex = ArkimeConfig.getFull(section, 'includeIndex', false);
 
     const options = {
       node: this.#url.split(',')[0],
       requestTimeout: 300000,
       maxRetries: 2,
       ssl: {
-        rejectUnauthorized: !!ArkimeConfig.get(section, 'insecure', true)
+        rejectUnauthorized: !!ArkimeConfig.getFull(section, 'insecure', true)
       }
     };
 
-    const apiKey = ArkimeConfig.get(section, 'apiKey');
-    let basicAuth = ArkimeConfig.get(section, 'basicAuth');
+    const apiKey = ArkimeConfig.getFull(section, 'apiKey');
+    let basicAuth = ArkimeConfig.getFull(section, 'basicAuth');
     if (apiKey) {
       options.auth = {
         apiKey
