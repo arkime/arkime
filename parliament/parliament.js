@@ -353,10 +353,13 @@ class Parliament {
       for (const s in req.body.settings.general) {
         let setting = req.body.settings.general[s];
 
-        // hostname/wiseUrl/cont3xtUrl must be strings
-        if (s === 'hostname' || s === 'wiseUrl' || s === 'cont3xtUrl') {
+        if (s === 'hostname') { // hostname must be a string
           if (!ArkimeUtil.isString(setting)) {
             return res.serverError(422, 'hostname must be a string.');
+          }
+        } else if (s === 'wiseUrl' || s === 'cont3xtUrl') { // urls must be strings or empty
+          if (setting && !ArkimeUtil.isString(setting)) {
+            return res.serverError(422, `${s} must be a string.`);
           }
         } else if (s === 'includeUrl') { // include url must be a bool
           if (typeof setting !== 'boolean') {
