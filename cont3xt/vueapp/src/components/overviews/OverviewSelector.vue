@@ -11,7 +11,6 @@
     <template #button-content>
       <div class="no-wrap d-flex flex-row align-items-center">
         <span v-if="getShiftKeyHold" class="text-warning overview-hotkey-o">O</span>
-        <span v-else class="fa fa-fw fa-file-o" />
         <div class="overview-name-shorten">{{ selectedOverview.name }}</div>
       </div>
     </template>
@@ -135,7 +134,7 @@ export default {
 }
 
 .overview-name-shorten {
-  max-width: 7rem;
+  max-width: 8rem;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;

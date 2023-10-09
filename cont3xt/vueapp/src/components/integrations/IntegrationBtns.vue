@@ -1,5 +1,6 @@
 <template>
-  <div class="wrap-btns d-flex justify-content-between mx-2">
+  <div class="mx-2"
+    :class="{'wrap-btns d-flex justify-content-between': buttonIntegrations.length > 4}">
     <overview-selector
       v-if="getActiveIndicator"
       :i-type="getActiveIndicator.itype"
@@ -12,7 +13,7 @@
         size="xs"
         tabindex="0"
         variant="outline-dark"
-        class="mr-1 mb-1 float-right no-wrap"
+        class="mr-1 mb-1 no-wrap"
         :id="`${indicatorId}-${integration.name}-btn`"
         :key="`${indicatorId}-${integration.name}`"
         @click="setAsActive(integration)">
