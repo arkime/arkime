@@ -354,6 +354,10 @@ class Parliament {
           if (!ArkimeUtil.isString(setting)) {
             return res.serverError(422, 'hostname must be a string.');
           }
+        } else if (s === 'wiseUrl' || s === 'cont3xtUrl') { // urls must be strings or empty
+          if (setting && !ArkimeUtil.isString(setting)) {
+            return res.serverError(422, `${s} must be a string.`);
+          }
         } else if (s === 'includeUrl') { // include url must be a bool
           if (typeof setting !== 'boolean') {
             return res.serverError(422, 'includeUrl must be a boolean.');

@@ -46,11 +46,29 @@
         <Version timezone="local" />
       </span>
       <div class="form-inline">
+        <!-- cont3xt url -->
+        <a v-if="settings.general.cont3xtUrl"
+          target="_blank"
+          class="btn btn-outline-primary cursor-pointer mr-2"
+          v-b-tooltip.hover.bottom
+          :href="settings.general.cont3xtUrl"
+          :title="`Open Cont3xt in a new tab (${settings.general.cont3xtUrl})`">
+          Cont3xt
+        </a> <!-- /cont3xt url -->
+        <!-- wise url -->
+        <a v-if="settings.general.wiseUrl"
+          target="_blank"
+          class="btn btn-outline-info cursor-pointer mr-2"
+          v-b-tooltip.hover.bottom
+          :href="settings.general.wiseUrl"
+          :title="`Open WISE in a new tab (${settings.general.wiseUrl})`">
+          WISE
+        </a> <!-- /wise url -->
         <!-- dark/light mode -->
         <button type="button"
           class="btn btn-outline-secondary cursor-pointer mr-2"
           @click="toggleTheme"
-          v-b-tooltip.hover.left
+          v-b-tooltip.hover.bottom
           title="Toggle light/dark theme">
           <span v-if="theme === 'light'"
             class="fa fa-sun-o">
@@ -111,11 +129,14 @@ export default {
   },
   computed: {
     // auth vars
-    isUser: function () {
+    isUser () {
       return this.$store.state.isUser;
     },
-    isAdmin: function () {
+    isAdmin () {
       return this.$store.state.isAdmin;
+    },
+    settings () {
+      return this.$store.state.parliament?.settings || { general: {} };
     },
     // data load interval
     refreshInterval: {
