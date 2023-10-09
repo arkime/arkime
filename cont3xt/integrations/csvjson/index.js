@@ -271,15 +271,13 @@ class CsvJsonIntegration extends Integration {
       console.log(this.section, '- ERROR not loading', this.section, 'since', this.#url, "doesn't exist");
       return;
     }
-    this.#process(fs.readFileSync(this.#url));
-    if (this.#watch) {
-      this.#watch.close();
-    }
 
     const fileWatchCb = (e, filename) => {
       clearTimeout(this.#watchTimer);
+      this.#watchTimer = undefined;
       if (e === 'rename') {
         this.#watch.close();
+        this.#watch = undefined;
         setTimeout(() => {
           this.#load();
           this.#watch = fs.watch(this.#url, fileWatchCb);
@@ -292,6 +290,11 @@ class CsvJsonIntegration extends Integration {
       }
     };
 
+    this.#process(fs.readFileSync(this.#url));
+    if (this.#watch) {
+      this.#watch.close();
+      this.#watch = undefined;
+    }
     this.watch = fs.watch(this.#url, fileWatchCb);
   };
 
