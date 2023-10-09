@@ -252,7 +252,6 @@
                   id="wiseUrl"
                   @input="debounceInput"
                   v-model="settings.general.wiseUrl"
-                  max="3600"
                 />
               </div>
               <p class="form-text small text-muted">
@@ -272,7 +271,6 @@
                   id="cont3xtUrl"
                   @input="debounceInput"
                   v-model="settings.general.cont3xtUrl"
-                  max="3600"
                 />
               </div>
               <p class="form-text small text-muted">
