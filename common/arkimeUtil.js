@@ -574,6 +574,30 @@ class ArkimeUtil {
       });
     });
   }
+
+  // ----------------------------------------------------------------------------
+  /*
+   * make sure a string ip is valid by expanding with 0's at the end
+   */
+  static expandIp(ip) {
+    if (ip.includes(':')) {
+      if (ip.includes('::')) {
+        return ip;
+      } else {
+        const parts = ip.split(':');
+        if (parts.length === 8) {
+          return ip;
+        }
+        return ip + '::0';
+      }
+    } else {
+      const parts = ip.split('.');
+      while (parts.length < 4) {
+        parts.push('0');
+      }
+      return parts.join('.');
+    }
+  }
 }
 
 module.exports = ArkimeUtil;

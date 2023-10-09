@@ -1,5 +1,5 @@
 # Test cont3xt.js
-use Test::More tests => 153;
+use Test::More tests => 157;
 use Test::Differences;
 use Data::Dumper;
 use MolochTest;
@@ -825,6 +825,29 @@ $json = cont3xtPost('/api/integration/ip/elasticsearch:test/search', to_json({
   query => "badip"
 }));
 is($json->{purpose}, "fail");
+
+# json tests
+$json = cont3xtPost('/api/integration/ip/json:ipwise/search', to_json({
+  query => "10.20.30.50"
+}));
+is($json->{data}->{_cont3xt}->{count}, 1);
+
+$json = cont3xtPost('/api/integration/ip/json:ipwise/search', to_json({
+  query => "2001:16d8:ffce:0010:aca8:353c:291d:a9b3"
+}));
+is($json->{data}->{_cont3xt}->{count}, 1);
+
+# csv tests
+$json = cont3xtPost('/api/integration/domain/csv:whois/search', to_json({
+  query => "whois.apnic.net"
+}));
+is($json->{data}->{_cont3xt}->{count}, 51);
+
+# csv tests
+$json = cont3xtPost('/api/integration/ip/csv:rir/search', to_json({
+  query => "8.8.8.8"
+}));
+is($json->{data}->{_cont3xt}->{count}, 1);
 
 
 ################################################################################
