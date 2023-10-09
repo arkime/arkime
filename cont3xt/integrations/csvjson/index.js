@@ -28,18 +28,22 @@ class CsvJsonIntegration extends Integration {
   };
 
   // CsvJson Items
+  #load; // Function pointer
+  #parse; // Function pointer
   #url;
-  #client;
+  #redisClient;
   #redisKey;
-  #load;
-  #parse;
-  #doIp;
-  #doOther;
+  #doIp; // process should setup ip cache
+  #doOther; // process should setup other cache
   #ipCache;
   #otherCache;
-  #keyColumn;
-  #keyPath;
-  #arrayPath;
+  #keyColumn; // csv - column with the key
+  #arrayPath; // json - path to the json array
+  #keyPath; // json - path to the key inside each item in json array
+  #watch; // file - fs.watch
+  #watchTimer; // file - change made, now wait to see if more changes
+  #init = true; // not file - initial load
+  #reload; // not file - reload interval in min
 
   constructor (section, isCSV) {
     super();
@@ -74,6 +78,8 @@ class CsvJsonIntegration extends Integration {
       this.#parse = this.#parseJSON;
     }
 
+    this.#reload = parseInt(ArkimeConfig.getFull(section, 'reload', -1));
+
     // Set up load function
     if (this.#url.startsWith('file:///')) {
       this.#url = this.#url.substring(7);
@@ -106,7 +112,7 @@ class CsvJsonIntegration extends Integration {
         throw new Error(`Invalid redis url - ${redisParts[0]}//[:pass@]redishost[:redisport]/redisDbNum/key`);
       }
       this.#redisKey = redisParts.pop();
-      this.#client = ArkimeUtil.createRedisClient(redisParts.join('/'), section);
+      this.#redisClient = ArkimeUtil.createRedisClient(redisParts.join('/'), section);
     } else {
       console.log(this.section, '- ERROR not loading', this.section, 'don\'t know how to open', this.#url);
       return;
@@ -146,9 +152,10 @@ class CsvJsonIntegration extends Integration {
       }
     };
   }
+
   // ----------------------------------------------------------------------------
-  #parseCSV (data, setCb, endCb) {
-    csv.parse(data, { skip_empty_lines: true, comment: '#', relax_column_count: true, columns: true }, (err, data) => {
+  #parseCSV (body, setCb, endCb) {
+    csv.parse(body, { skip_empty_lines: true, comment: '#', relax_column_count: true, columns: true }, (err, data) => {
       if (err) {
         return endCb(err);
       }
@@ -233,9 +240,9 @@ class CsvJsonIntegration extends Integration {
 
     if (this.#doOther) {
       const otherCache = new Map();
-      const setCb = (key, value) => {;
+      const setCb = (key, value) => {
         if (!key) { return; }
-        let result = otherCache.get(key);
+        const result = otherCache.get(key);
         if (result) {
           result.push(value);
         } else {
@@ -251,6 +258,11 @@ class CsvJsonIntegration extends Integration {
       };
       this.#parse(data, setCb, endCb);
     }
+
+    if (this.#init > 0) {
+      this.#init = false;
+      setInterval(this.#load.bind(this), this.#reload * 1000 * 60);
+    }
   }
 
   // ----------------------------------------------------------------------------
@@ -260,12 +272,33 @@ class CsvJsonIntegration extends Integration {
       return;
     }
     this.#process(fs.readFileSync(this.#url));
+    if (this.#watch) {
+      this.#watch.close();
+    }
+
+    const fileWatchCb = (e, filename) => {
+      clearTimeout(this.#watchTimer);
+      if (e === 'rename') {
+        this.#watch.close();
+        setTimeout(() => {
+          this.#load();
+          this.#watch = fs.watch(this.#url, fileWatchCb);
+        }, 500);
+      } else {
+        this.#watchTimer = setTimeout(() => {
+          this.#watchTimer = undefined;
+          this.#load();
+        }, 2000);
+      }
+    };
+
+    this.watch = fs.watch(this.#url, fileWatchCb);
   };
 
   // ----------------------------------------------------------------------------
   #loadRedis () {
-    if (this.#client && this.#redisKey) {
-      this.#client.get(this.#redisKey, (err, data) => {
+    if (this.#redisClient && this.#redisKey) {
+      this.#redisClient.get(this.#redisKey, (err, data) => {
         if (err) {
           console.log(this.section, '- ERROR', err);
           return;

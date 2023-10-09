@@ -579,7 +579,7 @@ class ArkimeUtil {
   /*
    * make sure a string ip is valid by expanding with 0's at the end
    */
-  static expandIp(ip) {
+  static expandIp (ip) {
     if (ip.includes(':')) {
       if (ip.includes('::')) {
         return ip;
