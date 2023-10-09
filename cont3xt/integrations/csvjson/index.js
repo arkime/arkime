@@ -259,7 +259,7 @@ class CsvJsonIntegration extends Integration {
       this.#parse(data, setCb, endCb);
     }
 
-    if (this.#init > 0) {
+    if (this.#init && this.#reload > 0) {
       this.#init = false;
       setInterval(this.#load.bind(this), this.#reload * 1000 * 60);
     }
@@ -272,30 +272,20 @@ class CsvJsonIntegration extends Integration {
       return;
     }
 
-    const fileWatchCb = (e, filename) => {
-      clearTimeout(this.#watchTimer);
-      this.#watchTimer = undefined;
-      if (e === 'rename') {
-        this.#watch.close();
-        this.#watch = undefined;
-        setTimeout(() => {
-          this.#load();
-          this.#watch = fs.watch(this.#url, fileWatchCb);
-        }, 500);
-      } else {
-        this.#watchTimer = setTimeout(() => {
-          this.#watchTimer = undefined;
-          this.#load();
-        }, 2000);
-      }
-    };
-
+    // Proess the file
     this.#process(fs.readFileSync(this.#url));
-    if (this.#watch) {
-      this.#watch.close();
-      this.#watch = undefined;
+
+    // Watch for file changes, debounce over 500ms
+    if (!this.#watch) {
+      // Need to as variable because of 'this'
+      const watchCb = () => {
+        clearTimeout(this.#watchTimer);
+        this.#watchTimer = setTimeout(() => {
+          this.#load();
+        }, 1000);
+      };
+      this.#watch = fs.watch(this.#url, watchCb);
     }
-    this.watch = fs.watch(this.#url, fileWatchCb);
   };
 
   // ----------------------------------------------------------------------------
