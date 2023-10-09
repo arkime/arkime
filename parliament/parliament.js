@@ -353,7 +353,8 @@ class Parliament {
       for (const s in req.body.settings.general) {
         let setting = req.body.settings.general[s];
 
-        if (s === 'hostname') { // hostname must be a string
+        // hostname/wiseUrl/cont3xtUrl must be strings
+        if (s === 'hostname' || s === 'wiseUrl' || s === 'cont3xtUrl') {
           if (!ArkimeUtil.isString(setting)) {
             return res.serverError(422, 'hostname must be a string.');
           }

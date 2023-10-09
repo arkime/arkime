@@ -239,6 +239,46 @@
                 issues that have not been seen again after the specified time.
               </p>
             </div> <!-- /remove acknowledged issues after -->
+            <!-- wise url -->
+            <div class="col-xl-9 col-lg-12 form-group">
+              <div class="input-group">
+                <span class="input-group-prepend">
+                  <span class="input-group-text">
+                    WISE URL
+                  </span>
+                </span>
+                <input type="text"
+                  class="form-control"
+                  id="wiseUrl"
+                  @input="debounceInput"
+                  v-model="settings.general.wiseUrl"
+                  max="3600"
+                />
+              </div>
+              <p class="form-text small text-muted">
+                Add a button on the navbar to open WISE.
+              </p>
+            </div> <!-- /wise url -->
+            <!-- cont3xt url -->
+            <div class="col-xl-9 col-lg-12 form-group">
+              <div class="input-group">
+                <span class="input-group-prepend">
+                  <span class="input-group-text">
+                    Cont3xt URL
+                  </span>
+                </span>
+                <input type="text"
+                  class="form-control"
+                  id="cont3xtUrl"
+                  @input="debounceInput"
+                  v-model="settings.general.cont3xtUrl"
+                  max="3600"
+                />
+              </div>
+              <p class="form-text small text-muted">
+                Add a button on the navbar to open Cont3xt.
+              </p>
+            </div> <!-- /cont3xt url -->
           </div>
         </div>
         <!-- /general -->
@@ -383,7 +423,7 @@ export default {
 
       SettingsService.saveSettings(this.settings).then((data) => {
         this.displayMessage({ msg: data.text || 'Saved your settings.', type: 'success' });
-        this.clearMesssage();
+        this.clearMessage();
       }).catch((error) => {
         this.displayMessage({ msg: error.text || 'Error saving your settings.', type: 'danger' });
       });
@@ -412,7 +452,7 @@ export default {
       SettingsService.restoreDefaults(type).then((data) => {
         this.settings = data.settings;
         this.displayMessage({ msg: data.text || `Successfully restored ${type} default settings.`, type: 'success' });
-        this.clearMesssage();
+        this.clearMessage();
       }).catch((error) => {
         this.displayMessage({ msg: error.text || `Error restoring ${type} default settings.`, type: 'danger' });
       });
@@ -432,7 +472,7 @@ export default {
         this.$store.commit('setRoles', response.roles || []);
       });
     },
-    clearMesssage: function (time) {
+    clearMessage: function (time) {
       if (msgCloseTimeout) { clearTimeout(msgCloseTimeout); }
       msgCloseTimeout = setTimeout(() => {
         this.msg = '';
