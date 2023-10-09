@@ -24,6 +24,7 @@ class CsvJsonIntegration extends Integration {
 
   card = {
     fields: [
+      { label: 'data', type: 'json' }
     ]
   };
 
@@ -68,11 +69,11 @@ class CsvJsonIntegration extends Integration {
 
     // Set up parse method
     if (isCSV) {
-      this.icon = ArkimeConfig.getFull(section, 'icon', 'integrations/memory/CSV.png');
+      this.icon = ArkimeConfig.getFull(section, 'icon', 'integrations/csvjson/CSV.png');
       this.#keyColumn = ArkimeConfig.getFull(section, 'keyColumn', ArkimeConfig.exit);
       this.#parse = this.#parseCSV;
     } else {
-      this.icon = ArkimeConfig.getFull(section, 'icon', 'integrations/memory/JSON.png');
+      this.icon = ArkimeConfig.getFull(section, 'icon', 'integrations/csvjson/JSON.png');
       this.#arrayPath = ArkimeConfig.getFull(section, 'arrayPath');
       this.#keyPath = ArkimeConfig.getFull(section, 'keyPath', ArkimeConfig.exit);
       this.#parse = this.#parseJSON;
