@@ -620,6 +620,7 @@ class ItemHTTPStream extends ItemTransform {
       if (line.length === 0) {
         if (this.code / 100 === 1 || this.code === 204 || this.code === 304) {
           this.states[item.client] = ItemHTTPStream.STATES.start;
+        } else if (this.method === undefined) {
         } else if (this.method.match(/^(CONNECT)$/)) {
           this.states[item.client] = ItemHTTPStream.STATES.pass;
         } else if (this.transferEncoding[item.client] === 'CHUNKED') {

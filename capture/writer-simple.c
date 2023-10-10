@@ -375,7 +375,7 @@ LOCAL char *writer_simple_get_kekId ()
     return g_strndup(okek, j);
 }
 /******************************************************************************/
-LOCAL void writer_simple_write_output(ArkimeSimple_t *info, const uint8_t *data, int len)
+LOCAL void writer_simple_write_output(int thread, ArkimeSimple_t *info, const uint8_t *data, int len)
 {
     switch(compressionMode) {
     case ARKIME_COMPRESSION_NONE:
@@ -401,6 +401,10 @@ LOCAL void writer_simple_write_output(ArkimeSimple_t *info, const uint8_t *data,
         info->file->zstd_in.pos = 0;
 
         while (ZSTD_compressStream2(info->file->zstd_strm, &info->file->zstd_out, &info->file->zstd_in, ZSTD_e_continue) != 0) {
+            // This current zstd buffer is full
+            if (info->file->zstd_out.pos == info->file->zstd_out.size) {
+                writer_simple_process_buf(thread, 0);
+            }
         }
         info->file->posInBlock += len;
         info->bufpos = info->file->zstd_out.pos;
@@ -576,13 +580,13 @@ LOCAL void writer_simple_write(const ArkimeSession_t *const session, ArkimePacke
             memcpy(&pcapFileHeader2, &pcapFileHeader, 24);
             pcapFileHeader2.magic = 0xa1b2c3d5;
             pcapFileHeader2.thiszone = firstPacket[thread];
-            writer_simple_write_output(info, (uint8_t *)&pcapFileHeader2, 20);
+            writer_simple_write_output(thread, info, (uint8_t *)&pcapFileHeader2, 20);
         } else {
-            writer_simple_write_output(info, (uint8_t *)&pcapFileHeader, 20);
+            writer_simple_write_output(thread, info, (uint8_t *)&pcapFileHeader, 20);
         }
 
         uint32_t linktype = arkime_packet_dlt_to_linktype(pcapFileHeader.dlt);
-        writer_simple_write_output(info, (uint8_t *)&linktype, 4);
+        writer_simple_write_output(thread, info, (uint8_t *)&linktype, 4);
         if (config.debug)
             LOG("opened %d %s %d", thread, name, info->file->fd);
         g_free(name);
@@ -633,7 +637,7 @@ LOCAL void writer_simple_write(const ArkimeSession_t *const session, ArkimePacke
 
         memcpy(header + 2, &t, 4);
 
-        writer_simple_write_output(info, (uint8_t *)&header, 6);
+        writer_simple_write_output(thread, info, (uint8_t *)&header, 6);
     } else {
         struct arkime_pcap_sf_pkthdr hdr;
 
@@ -641,9 +645,9 @@ LOCAL void writer_simple_write(const ArkimeSession_t *const session, ArkimePacke
         hdr.ts.tv_usec = packet->ts.tv_usec;
         hdr.caplen     = packet->pktlen;
         hdr.pktlen     = packet->pktlen;
-        writer_simple_write_output(info, (uint8_t *)&hdr, 16);
+        writer_simple_write_output(thread, info, (uint8_t *)&hdr, 16);
     }
-    writer_simple_write_output(info, packet->pkt, packet->pktlen);
+    writer_simple_write_output(thread, info, packet->pkt, packet->pktlen);
 
     if (info->bufpos > config.pcapWriteSize) {
         writer_simple_process_buf(thread, 0);
