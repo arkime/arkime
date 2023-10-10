@@ -30,7 +30,11 @@ NOTICE: Cross-cluster Shortcuts require you to not restart all your viewers at o
 
 4.5.1 2023/09/xx
   - release - fix viewer systemd file
-  - all - handle cookies encoded, bad proxy
+  - capture - zstd might hang with full buffer
+  - viewer - corrupt http session decoding might hang viewer
+  - viewer - handle uncompressing pcap errors better
+  - viewer - role check in UI didn't always work
+  - all - handle cookies encoded with bad proxy
 
 4.5.0 2023/09/13
   - release - node 16.20.2
