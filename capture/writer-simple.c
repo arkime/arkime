@@ -399,6 +399,10 @@ LOCAL void writer_simple_write_output(int thread, MolochSimple_t *info, const un
         info->file->z_strm.avail_in = len;
 
         while (info->file->z_strm.avail_in != 0) {
+            // The current zlib buffer is full
+            if (info->file->z_strm.avail_out == 0) {
+                writer_simple_process_buf(thread, 0);
+            }
             deflate(&info->file->z_strm, Z_NO_FLUSH);
         }
         info->file->posInBlock += len;
@@ -411,7 +415,7 @@ LOCAL void writer_simple_write_output(int thread, MolochSimple_t *info, const un
         info->file->zstd_in.pos = 0;
 
         while (ZSTD_compressStream2(info->file->zstd_strm, &info->file->zstd_out, &info->file->zstd_in, ZSTD_e_continue) != 0) {
-            // This current zstd buffer is full
+            // The current zstd buffer is full
             if (info->file->zstd_out.pos == info->file->zstd_out.size) {
                 writer_simple_process_buf(thread, 0);
             }
