@@ -405,6 +405,7 @@ LOCAL void writer_simple_write_output(int thread, const unsigned char *data, int
         while (info->file->z_strm.avail_in != 0) {
             // The current zlib buffer is full
             if (info->file->z_strm.avail_out == 0) {
+                info->bufpos = (char *)info->file->z_strm.next_out - info->buf;
                 info = writer_simple_process_buf(info->file->thread, 0);
             }
             deflate(&info->file->z_strm, Z_NO_FLUSH);
@@ -421,6 +422,7 @@ LOCAL void writer_simple_write_output(int thread, const unsigned char *data, int
         while (ZSTD_compressStream2(info->file->zstd_strm, &info->file->zstd_out, &info->file->zstd_in, ZSTD_e_continue) != 0) {
             // The current zstd buffer is full
             if (info->file->zstd_out.pos == info->file->zstd_out.size) {
+                info->bufpos = info->file->zstd_out.pos;
                 info = writer_simple_process_buf(info->file->thread, 0);
             }
         }
@@ -452,6 +454,7 @@ LOCAL void writer_simple_zstd_make_new_block(int thread)
     while (ZSTD_compressStream2(info->file->zstd_strm, &info->file->zstd_out, &info->file->zstd_in, ZSTD_e_end) != 0) {
         // The current zstd buffer is full
         if (info->file->zstd_out.pos == info->file->zstd_out.size) {
+            info->bufpos = info->file->zstd_out.pos;
             info = writer_simple_process_buf(info->file->thread, 0);
         }
     }
