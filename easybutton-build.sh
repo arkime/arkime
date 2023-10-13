@@ -103,6 +103,29 @@ do
   esac
 done
 
+################################################################################
+# BUILD FUNCTIONS
+################################################################################
+buildYara () {
+  if [ ! -f "yara/yara-$YARA.tar.gz" ]; then
+    mkdir -p yara
+    wget https://github.com/VirusTotal/yara/archive/v$YARA.tar.gz -O yara/yara-$YARA.tar.gz
+  fi
+
+  if [ ! -f "yara/yara-$YARA/libyara/.libs/libyara.a" ]; then
+    (cd yara ; tar zxf yara-$YARA.tar.gz)
+    (cd yara/yara-$YARA; ./bootstrap.sh ; ./configure --enable-static; $MAKE)
+    if [ $? -ne 0 ]; then
+      echo "ARKIME: $MAKE failed"
+      exit 1
+    fi
+  else
+    echo "ARKIME: Not rebuilding yara"
+  fi
+}
+
+################################################################################
+
 # Warn users
 echo ""
 echo "This script is for building Arkime from source and meant for people who enjoy pain. The prebuilt versions at https://arkime.com/#download are recommended for installation."
@@ -184,6 +207,11 @@ fi
 if [ "$UNAME" = "FreeBSD" ]; then
   sudo pkg_add -Fr wget curl pcre flex bison gettext e2fsprogs-libuuid glib gmake libexecinfo
   MAKE=gmake
+fi
+
+if [ -f "/etc/alpine-release" ] ; then
+  sudo apk add wget curl-dev file-dev g++ zstd-dev make glib-dev yaml-dev libpcap-dev librdkafka-dev libmaxminddb-dev autoconf automake pcre-dev libuuid lua-dev libtool perl-http-message perl-lwp-protocol-https perl-json perl-test-differences perl-socket6
+  mkdir -p thirdparty
 fi
 
 # do autoconf
@@ -273,7 +301,7 @@ elif [ -f "/etc/arch-release" ]; then
       --with-glib2=no \
       --with-pfring=no \
       --with-curl=no \
-      --with-lua=no LIBS="-lpcap -lyara -llua -lcurl" GLIB2_CFLAGS="-I/usr/include/glib-2.0 -I/usr/lib/glib-2.0/include" GLIB2_LIBS="-lglib-2.0 -lgmodule-2.0 -lgobject-2.0 -lgio-2.0"
+      --with-lua=no LIBS="-lpcap -lyara -llua -lcurl" GLIB2_CFLAGS="-I/usr/include/glib-2.0 -I/usr/lib/glib-2.0/include" GLIB2_LIBS="-lglib-2.0 -lgmodule-2.0 -lgobject-2.0 -lgio-2.0" \
       KAFKA_LIBS="-lrdkafka" KAFKA_CFLAGS="-I/usr/include/librdkafka" \
       --with-kafka=no'
     ./configure \
@@ -284,6 +312,35 @@ elif [ -f "/etc/arch-release" ]; then
       --with-pfring=no \
       --with-curl=no \
       --with-lua=no LIBS="-lpcap -lyara -llua -lcurl" GLIB2_CFLAGS="-I/usr/include/glib-2.0 -I/usr/lib/glib-2.0/include" GLIB2_LIBS="-lglib-2.0 -lgmodule-2.0 -lgobject-2.0 -lgio-2.0" \
+      KAFKA_LIBS="-lrdkafka" KAFKA_CFLAGS="-I/usr/include/librdkafka" \
+      --with-kafka=no
+elif [ -f "/etc/alpine-release" ] ; then
+
+    DOKAFKA=1
+    BUILDKAFKA=0
+    BUILDZSTD=0
+
+    (cd thirdparty; buildYara)
+
+    echo './configure \
+      --with-zstd=yes \
+      --with-libpcap=no \
+      --with-yara=thirdparty/yara/yara-$YARA \
+      --with-glib2=no \
+      --with-pfring=no \
+      --with-curl=no \
+      --with-lua=no LIBS="-lpcap -llua -lcurl" GLIB2_CFLAGS="-I/usr/include/glib-2.0 -I/usr/lib/glib-2.0/include" GLIB2_LIBS="-lglib-2.0 -lgmodule-2.0 -lgobject-2.0 -lgio-2.0" \
+      KAFKA_LIBS="-lrdkafka" KAFKA_CFLAGS="-I/usr/include/librdkafka" \
+      --with-kafka=no'
+
+    ./configure \
+      --with-zstd=yes \
+      --with-libpcap=no \
+      --with-yara=thirdparty/yara/yara-$YARA \
+      --with-glib2=no \
+      --with-pfring=no \
+      --with-curl=no \
+      --with-lua=no LIBS="-L/usr/lib -lpcap -llua -lcurl" GLIB2_CFLAGS="-I/usr/include/glib-2.0 -I/usr/lib/glib-2.0/include" GLIB2_LIBS="-lglib-2.0 -lgmodule-2.0 -lgobject-2.0 -lgio-2.0" \
       KAFKA_LIBS="-lrdkafka" KAFKA_CFLAGS="-I/usr/include/librdkafka" \
       --with-kafka=no
 elif [ $DOTHIRDPARTY -eq 0 ]; then
@@ -325,22 +382,7 @@ else
     fi
   fi
 
-  # yara
-  if [ ! -f "yara/yara-$YARA.tar.gz" ]; then
-    mkdir -p yara
-    wget https://github.com/VirusTotal/yara/archive/v$YARA.tar.gz -O yara/yara-$YARA.tar.gz
-  fi
-
-  if [ ! -f "yara/yara-$YARA/libyara/.libs/libyara.a" ]; then
-    (cd yara ; tar zxf yara-$YARA.tar.gz)
-    (cd yara/yara-$YARA; ./bootstrap.sh ; ./configure --enable-static; $MAKE)
-    if [ $? -ne 0 ]; then
-      echo "ARKIME: $MAKE failed"
-      exit 1
-    fi
-  else
-    echo "ARKIME: Not rebuilding yara"
-  fi
+  buildYara
 
   # Maxmind
   if [ ! -f "libmaxminddb-$MAXMIND.tar.gz" ]; then
@@ -547,13 +589,20 @@ case "$(uname -m)" in
         ;;
 esac
 
+NODEHOST=nodejs.org
+if [ -f "/etc/alpine-release" ] ; then
+    NODEHOST=unofficial-builds.nodejs.org
+    ARCH="$ARCH-musl"
+fi
+
 if [ $DONODE -eq 1 ] && [ ! -f "$TDIR/bin/node" ]; then
     echo "ARKIME: Installing node $NODE"
     sudo mkdir -p $TDIR/bin $TDIR/etc
-    if [ ! -f node-v$NODE-linux-x64.tar.xz ] ; then
-        wget https://nodejs.org/download/release/v$NODE/node-v$NODE-linux-$ARCH.tar.xz
+
+    if [ ! -f node-v$NODE-linux-$ARCH.tar.xz ] ; then
+	wget https://$NODEHOST/download/release/v$NODE/node-v$NODE-linux-$ARCH.tar.xz
     fi
-    sudo tar xfC node-v$NODE-linux-$ARCH.tar.xz $TDIR
+    sudo tar xf node-v$NODE-linux-$ARCH.tar.xz -C $TDIR
     (cd $TDIR/bin ; sudo ln -sf ../node-v$NODE-linux-$ARCH/bin/* .)
 fi
 
