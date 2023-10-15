@@ -20,12 +20,12 @@ PCAP=1.10.4
 CURL=8.4.0
 LUA=5.3.6
 DAQ=2.0.7
-NGHTTP2=1.56.0
+NGHTTP2=1.57.0
 ZSTD=1.5.5
 KAFKA=1.5.3
 
 # node v18 doesn't support Centos 7/Ubuntu 18 and will be reset to v16 below
-NODE=18.18.0
+NODE=18.18.2
 OLDNODE=16.20.2
 
 TDIR="/opt/arkime"
