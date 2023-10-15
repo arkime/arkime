@@ -190,11 +190,13 @@ LOCAL char *smtp_gformat(char *format)
         if (strcasecmp(format, "ks_c_5601-1987") == 0)
             return "CP949";
         break;
+#ifdef OLD
     case 'g':
     case 'G':
         if (strcasecmp(format, "gb2312") == 0)
             return "CP936";
         break;
+#endif
     case 'w':
     case 'W':
         if (strcasecmp(format, "windows-1251") == 0)
