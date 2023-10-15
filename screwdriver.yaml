@@ -293,6 +293,21 @@ jobs:
             - AWS_ACCESS_KEY_ID
             - AWS_SECRET_ACCESS_KEY
 
+    alpine:
+        requires: [~pr, ~commit]
+        image: alpine/alpine:3.14
+        steps:
+            - (cd / ; curl https://s3.amazonaws.com/files.molo.ch/snfmin.tar.gz | tar -zxvf -)
+            - build: ./easybutton-build.sh --rminstall --kafka
+            - test-capture: (cd tests ; ./tests.pl)
+            - export PATH=/opt/arkime/bin:$PATH
+            - installing: make install
+            - linting: npm run lint
+
+        secrets:
+            - AWS_ACCESS_KEY_ID
+            - AWS_SECRET_ACCESS_KEY
+
     centos-7-sanitize:
         annotations:
             screwdriver.cd/cpu: TURBO
