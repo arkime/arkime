@@ -1399,6 +1399,9 @@ void arkime_field_certsinfo_free (ArkimeCertsInfo_t *certs)
     if (certs->serialNumber)
         free(certs->serialNumber);
 
+    if (certs->extra)
+        g_hash_table_destroy(certs->extra);
+
     ARKIME_TYPE_FREE(ArkimeCertsInfo_t, certs);
 }
 /******************************************************************************/

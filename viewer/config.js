@@ -109,21 +109,6 @@ class Config {
   static get = ArkimeConfig.get;
 
   // ----------------------------------------------------------------------------
-  static getBoolFull (node, key, defaultValue) {
-    const value = Config.getFull(node, key);
-    if (value !== undefined) {
-      if (value === 'true' || value === '1') {
-        return true;
-      } else if (value === 'false' || value === '0') {
-        return false;
-      } else {
-        console.log('ERROR - invalid value for ', key);
-      }
-    }
-    return defaultValue;
-  };
-
-  // ----------------------------------------------------------------------------
   // Return an array split on separator, remove leading/trailing spaces, remove empty elements
   static getArray = ArkimeConfig.getArray;
 

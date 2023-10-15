@@ -64,11 +64,11 @@ function makeS3 (node, region, bucket) {
 
   bucket ??= Config.getFull(node, 's3Bucket');
   const bucketHasDot = bucket.indexOf('.') >= 0;
-  if (Config.getBoolFull(node, 's3PathAccessStyle', bucketHasDot) === true) {
+  if (Config.getFull(node, 's3PathAccessStyle', bucketHasDot) === true) {
     s3Params.s3ForcePathStyle = true;
   }
 
-  if (Config.getBoolFull(node, 's3UseHttp', false) === true) {
+  if (Config.getFull(node, 's3UseHttp', false) === true) {
     s3Params.sslEnabled = false;
   }
 
