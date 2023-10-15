@@ -297,6 +297,7 @@ jobs:
         requires: [~pr, ~commit]
         image: alpine:3.14
         steps:
+            - apk add --no-cache curl bash
             - (cd / ; curl https://s3.amazonaws.com/files.molo.ch/snfmin.tar.gz | tar -zxvf -)
             - build: ./easybutton-build.sh --rminstall --kafka
             - test-capture: (cd tests ; ./tests.pl)

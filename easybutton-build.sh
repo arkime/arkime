@@ -210,7 +210,7 @@ if [ "$UNAME" = "FreeBSD" ]; then
 fi
 
 if [ -f "/etc/alpine-release" ] ; then
-  sudo apk add wget curl-dev file-dev g++ zstd-dev make glib-dev yaml-dev libpcap-dev librdkafka-dev libmaxminddb-dev autoconf automake pcre-dev libuuid lua-dev libtool perl-http-message perl-lwp-protocol-https perl-json perl-test-differences perl-socket6
+  sudo apk add --no-cache wget curl-dev file-dev g++ zstd-dev make glib-dev yaml-dev libpcap-dev librdkafka-dev libmaxminddb-dev autoconf automake pcre-dev libuuid lua-dev libtool perl-http-message perl-lwp-protocol-https perl-json perl-test-differences perl-socket6
   mkdir -p thirdparty
 fi
 
