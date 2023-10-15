@@ -29,7 +29,7 @@ NOTICE: Restart wiseService before capture when upgrading
 NOTICE: Cross-cluster Shortcuts require you to not restart all your viewers at once after upgrading
 NOTICE: Create a parliament config file before upgrading (see https://arkime.com/settings#parliament and https://arkime.com/faq#how_do_i_upgrade_to_arkime_5)
 
-5.0.0 2023/10/xx
+5.0.0 2023/11/xx
   - BREAKING - s3Compression/simpleCompression now default to zstd
   - BREAKING - s3WriteGzip removed, use s3Compression=gzip
   - BREAKING - s3GapPacketPos defaults to TRUE
@@ -41,8 +41,9 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
                and https://arkime.com/faq#how_do_i_upgrade_to_arkime_5
   - BREAKING - WISE/tagger must now use http.request.FIELD/http.response.FIELD
                when referencing header defined with headers-http-request/headers-http-response
-  - release - zstd 1.5.5, nghttp2 1.56.0, curl 8.3.0, maxmind 1.7.1, yara 4.2.3
-  - release - node v18.18.0 except Centos 7 and Ubuntu 18 build which still uses v16
+  - release - zstd 1.5.5, nghttp2 1.57.0, curl 8.3.0, maxmind 1.7.1, yara 4.2.3
+  - release - node v18.18.2 except Centos 7 and Ubuntu 18 build which still uses v16
+  - release - support building on alpine
   - all - all programs support same config file formats (ini/json/yaml) and
           retrieval (file, elasticsearch)
   - all - json/yaml config file formats now allow arrays instead of comma/semi separated
@@ -61,13 +62,15 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
               instead of current time (thanks mcgillowen)
   - capture - JA4 support
   - capture - JA3/JA4 support for smtp STARTTLS
-- - capture - always build zstd (except arch)
+  - capture - always build zstd (except arch)
   - cont3xt - new bulk UI and support for bulk queries
   - cont3xt - lots of keyboard shortcut improvements
   - cont3xt - new array syntax for links substitution
   - cont3xt - new OpenSearch/Elasticsearch integration (config file only)
   - cont3xt - new viewRoles in config file per integration to control access
   - cont3xt - transfer ownership of resources
+  - cont3xt - new csv/json data source supports
+  - cont3xt - new redis data source support
   - viewer - removed x-moloch-auth
   - viewer - files/history/stats now have cluster dropdown for multiviewer
   - viewer - http.request.FIELD and http.response.FIELD supported
