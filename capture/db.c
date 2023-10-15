@@ -518,6 +518,7 @@ void arkime_db_save_session(ArkimeSession_t *session, int final)
     uint8_t               *dataPtr;
     uint32_t               jsonSize;
     gpointer               ikey;
+    gpointer               ival;
     char                   ipsrc[INET6_ADDRSTRLEN];
     char                   ipdst[INET6_ADDRSTRLEN];
 
@@ -1302,6 +1303,13 @@ void arkime_db_save_session(ArkimeSession_t *session, int final)
                 }
                 BSB_EXPORT_sprintf(jbsb, "\"validDays\":%" PRId64 ",", ((int64_t)certs->notAfter - (int64_t)certs->notBefore) / (60 * 60 * 24));
                 BSB_EXPORT_sprintf(jbsb, "\"validSeconds\":%" PRId64 ",", ((int64_t)certs->notAfter - (int64_t)certs->notBefore));
+
+                if (certs->extra) {
+                    g_hash_table_iter_init (&iter, certs->extra);
+                    while (g_hash_table_iter_next (&iter, &ikey, &ival)) {
+                        BSB_EXPORT_sprintf(jbsb, "\"%s\":\"%s\",", (char *)ikey, (char *)ival);
+                    }
+                }
 
                 BSB_EXPORT_rewind(jbsb, 1); // Remove last comma
 

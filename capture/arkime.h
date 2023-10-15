@@ -156,6 +156,7 @@ typedef struct arkime_certsinfo {
     char                     isCA;
     const char              *publicAlgorithm;
     const char              *curve;
+    GHashTable              *extra;
 } ArkimeCertsInfo_t;
 
 typedef struct {

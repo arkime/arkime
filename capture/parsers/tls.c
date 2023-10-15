@@ -33,6 +33,7 @@ LOCAL GChecksum *checksums256[ARKIME_MAX_PACKET_THREADS];
 LOCAL uint32_t tls_process_client_hello_func;
 LOCAL uint32_t tls_process_server_hello_func;
 LOCAL uint32_t tls_process_server_certificate_func;
+LOCAL uint32_t tls_process_certificate_wInfo_func;
 
 /******************************************************************************/
 LOCAL void tls_certinfo_process(ArkimeCertInfo_t *ci, BSB *bsb)
@@ -555,6 +556,8 @@ LOCAL uint32_t tls_process_server_certificate(ArkimeSession_t *session, const ui
         }
 
         BSB_IMPORT_skip(cbsb, clen + 3);
+
+        arkime_parser_call_named_func(tls_process_certificate_wInfo_func, session, cdata + 3, clen, certs);
 
         continue;
 
@@ -1194,5 +1197,6 @@ void arkime_parser_init()
     tls_process_client_hello_func = arkime_parser_add_named_func("tls_process_client_hello", tls_process_client_hello_data);
     tls_process_server_hello_func = arkime_parser_add_named_func("tls_process_server_hello", tls_process_server_hello);
     tls_process_server_certificate_func = arkime_parser_add_named_func("tls_process_server_certificate", tls_process_server_certificate);
+    tls_process_certificate_wInfo_func = arkime_parser_get_named_func("tls_process_certificate_wInfo");
 }
 
