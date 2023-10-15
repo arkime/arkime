@@ -24,9 +24,7 @@ NGHTTP2=1.57.0
 ZSTD=1.5.5
 KAFKA=1.5.3
 
-# node v18 doesn't support Centos 7/Ubuntu 18 and will be reset to v16 below
 NODE=18.18.2
-OLDNODE=16.20.2
 
 TDIR="/opt/arkime"
 DOPFRING=0
@@ -103,6 +101,19 @@ do
   esac
 done
 
+
+################################################################################
+# Default node setting, reset to unofficial builds below for Centos 7, Ubuntu 18, Alpine
+NODEHOST=nodejs.org
+case "$(uname -m)" in
+    "x86_64")
+        NODEARCH="x64"
+        ;;
+    "aarch64")
+        NODEARCH="arm64"
+        ;;
+esac
+
 ################################################################################
 # BUILD FUNCTIONS
 ################################################################################
@@ -145,14 +156,14 @@ echo "ARKIME: Installing Dependencies"
 if [ -f "/etc/redhat-release" ] || [ -f "/etc/system-release" ]; then
   . /etc/os-release
   if [[ $DONODE == "1" && "$VERSION_ID" == "7" ]]; then
-      NODE=$OLDNODE
-      echo "Using $NODE on Centos 7 build since Node v18 isn't supported"
+    NODEHOST=unofficial-builds.nodejs.org
+    NODEARCH="$NODEARCH-glibc-217"
   fi
 
   if [[ "$VERSION_ID" == 9* || "$VERSION_ID" == 2023 ]]; then
-      sudo yum install -y glib2-devel libmaxminddb-devel libcurl-devel
-      WITHGLIB=" "
-      WITHCURL=" "
+    sudo yum install -y glib2-devel libmaxminddb-devel libcurl-devel
+    WITHGLIB=" "
+    WITHCURL=" "
   fi
   sudo yum -y install --skip-broken wget curl pcre pcre-devel pkgconfig flex bison gcc-c++ zlib-devel e2fsprogs-devel openssl-devel file-devel make gettext libuuid-devel perl-JSON bzip2-libs bzip2-devel perl-libwww-perl libpng-devel xz libffi-devel readline-devel libtool libyaml-devel perl-Socket6 perl-Test-Differences
   if [ $? -ne 0 ]; then
@@ -170,24 +181,24 @@ if [ -f "/etc/debian_version" ]; then
   fi
 
   if [[ $DONODE == "1" && "$VERSION_CODENAME" == "bionic" ]]; then
-      NODE=$OLDNODE
-      echo "Using $NODE on Ubuntu 18 build since Node v18 isn't supported"
+    NODEHOST=unofficial-builds.nodejs.org
+    NODEARCH="$NODEARCH-glibc-217"
   fi
 
   # Just use OS packages, currently for Ubuntu 22
   if [ $DOTHIRDPARTY -eq 0 ]; then
-      apt-get -qq install libmaxminddb-dev libcurl4-openssl-dev libyara-dev libglib2.0-dev libpcap-dev libnghttp2-dev liblua5.4-dev librdkafka-dev
-      if [ $? -ne 0 ]; then
-        echo "ARKIME: apt-get failed"
-        exit 1
-      fi
-      export LUA_CFLAGS="-I/usr/include/lua5.4/"
-      export LUA_LIBS="-llua5.4"
-      with_lua=no
+    apt-get -qq install libmaxminddb-dev libcurl4-openssl-dev libyara-dev libglib2.0-dev libpcap-dev libnghttp2-dev liblua5.4-dev librdkafka-dev
+    if [ $? -ne 0 ]; then
+      echo "ARKIME: apt-get failed"
+      exit 1
+    fi
+    export LUA_CFLAGS="-I/usr/include/lua5.4/"
+    export LUA_LIBS="-llua5.4"
+    with_lua=no
 
-      export KAFKA_CFLAGS="-I/usr/include/librdkafka/"
-      export KAFKA_LIBS="-lrdkafka"
-      with_kafka=no
+    export KAFKA_CFLAGS="-I/usr/include/librdkafka/"
+    export KAFKA_LIBS="-lrdkafka"
+    with_kafka=no
   fi
 fi
 
@@ -212,6 +223,8 @@ fi
 if [ -f "/etc/alpine-release" ] ; then
   sudo apk add --no-cache wget curl-dev file-dev g++ zstd-dev make glib-dev yaml-dev libpcap-dev librdkafka-dev libmaxminddb-dev autoconf automake pcre-dev libuuid lua-dev libtool perl-http-message perl-lwp-protocol-https perl-json perl-test-differences perl-socket6
   mkdir -p thirdparty
+  NODEHOST=unofficial-builds.nodejs.org
+  NODEARCH="$NODEARCH-musl"
 fi
 
 # do autoconf
@@ -580,30 +593,15 @@ if [ $DORMINSTALL -eq 1 ]; then
 fi
 
 # Install node if not already there
-case "$(uname -m)" in
-    "x86_64")
-        ARCH="x64"
-        ;;
-    "aarch64")
-        ARCH="arm64"
-        ;;
-esac
-
-NODEHOST=nodejs.org
-if [ -f "/etc/alpine-release" ] ; then
-    NODEHOST=unofficial-builds.nodejs.org
-    ARCH="$ARCH-musl"
-fi
-
 if [ $DONODE -eq 1 ] && [ ! -f "$TDIR/bin/node" ]; then
     echo "ARKIME: Installing node $NODE"
     sudo mkdir -p $TDIR/bin $TDIR/etc
 
-    if [ ! -f node-v$NODE-linux-$ARCH.tar.xz ] ; then
-	wget https://$NODEHOST/download/release/v$NODE/node-v$NODE-linux-$ARCH.tar.xz
+    if [ ! -f node-v$NODE-linux-$NODEARCH.tar.xz ] ; then
+	wget https://$NODEHOST/download/release/v$NODE/node-v$NODE-linux-$NODEARCH.tar.xz
     fi
-    sudo tar xf node-v$NODE-linux-$ARCH.tar.xz -C $TDIR
-    (cd $TDIR/bin ; sudo ln -sf ../node-v$NODE-linux-$ARCH/bin/* .)
+    sudo tar xf node-v$NODE-linux-$NODEARCH.tar.xz -C $TDIR
+    (cd $TDIR/bin ; sudo ln -sf ../node-v$NODE-linux-$NODEARCH/bin/* .)
 fi
 
 echo
