@@ -295,7 +295,7 @@ jobs:
 
     alpine:
         requires: [~pr, ~commit]
-        image: alpine/alpine:3.14
+        image: alpine:3.14
         steps:
             - (cd / ; curl https://s3.amazonaws.com/files.molo.ch/snfmin.tar.gz | tar -zxvf -)
             - build: ./easybutton-build.sh --rminstall --kafka
