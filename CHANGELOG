@@ -28,10 +28,10 @@ Node Versions:
 NOTICE: Restart wiseService before capture when upgrading
 NOTICE: Cross-cluster Shortcuts require you to not restart all your viewers at once after upgrading
 
-4.5.1 2023/09/xx
+4.6.0 2023/10/16
   - release - curl 8.4.0
   - release - fix viewer systemd file
-  - capture - zstd might hang with full buffer
+  - capture - fix zstd hanging capture on full buffer
   - viewer - corrupt http session decoding might hang viewer
   - viewer - handle uncompressing pcap errors better
   - viewer - role check in UI didn't always work
