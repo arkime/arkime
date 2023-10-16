@@ -187,7 +187,7 @@ if [ -f "/etc/debian_version" ]; then
 
   # Just use OS packages, currently for Ubuntu 22
   if [ $DOTHIRDPARTY -eq 0 ]; then
-    apt-get -qq install libmaxminddb-dev libcurl4-openssl-dev libyara-dev libglib2.0-dev libpcap-dev libnghttp2-dev liblua5.4-dev librdkafka-dev
+    apt-get -qq install libmaxminddb-dev libcurl4-openssl-dev libyara-dev libglib2.0-dev libpcap-dev libnghttp2-dev liblua5.4-dev librdkafka-dev libzstd-dev
     if [ $? -ne 0 ]; then
       echo "ARKIME: apt-get failed"
       exit 1
