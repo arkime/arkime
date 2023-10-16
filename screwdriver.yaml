@@ -25,7 +25,6 @@ jobs:
             - test-capture: (cd tests ; ./tests.pl)
             - export PATH=/opt/arkime/bin:/data/moloch/bin:$PATH
             - installing: scl enable devtoolset-9 rh-python36 'make install'
-            - test-ui: npm run test
             - linting: npm run lint
             - cp -r capture/plugins/lua/samples /opt/arkime/lua
             - build-package: |
@@ -64,6 +63,7 @@ jobs:
             - test-capture: (cd tests ; ./tests.pl)
             - export PATH=/opt/arkime/bin:/data/moloch/bin:$PATH
             - installing: make install
+            - test-ui: npm run test
             - linting: npm run lint
             - cp -r capture/plugins/lua/samples /opt/arkime/lua
             - build-package: |
@@ -102,6 +102,7 @@ jobs:
             - test-capture: (cd tests ; ./tests.pl)
             - export PATH=/opt/arkime/bin:/data/moloch/bin:$PATH
             - installing: make install
+            - test-ui: npm run test
             - linting: npm run lint
             - cp -r capture/plugins/lua/samples /opt/arkime/lua
             - build-package: |
