@@ -1,5 +1,6 @@
 FROM oraclelinux:8
 MAINTAINER Andy Wick <andy.wick@oath.com>
+ARG ARKIME_BRANCH=main
 
 RUN \
 yum -y update && \
@@ -13,7 +14,7 @@ dnf config-manager --set-enabled remi && \
 yum -y clean all && \
 yum -y install pfring && \
 git clone https://github.com/arkime/arkime && \
-(cd arkime; git checkout main; ./easybutton-build.sh --daq --pfring --kafka) && \
+(cd arkime; git checkout $ARKIME_BRANCH; ./easybutton-build.sh --daq --pfring --kafka) && \
 mv arkime/thirdparty / && \
 rm -rf /thirdparty/glib*/*/tests /thirdparty/glib*/*/*/tests && \
 rm -rf arkime && \

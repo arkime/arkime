@@ -1,5 +1,6 @@
 FROM --platform=linux/amd64 centos:7.9.2009
 MAINTAINER Andy Wick <andy.wick@oath.com>
+ARG ARKIME_BRANCH=main
 
 RUN \
 yum -y update; \
@@ -10,7 +11,7 @@ yum -y install git sudo perl-Test-Base perl-Test-Differences perl-Test-Simple bz
 yum -y update; \
 yum -y install devtoolset-9-gcc-c++ pfring rh-python36; \
 git clone https://github.com/arkime/arkime; \
-(cd arkime; git checkout main; scl enable devtoolset-9 rh-python36 './easybutton-build.sh --daq --pfring --kafka'); \
+(cd arkime; git checkout $ARKIME_BRANCH; scl enable devtoolset-9 rh-python36 './easybutton-build.sh --daq --pfring --kafka'); \
 mv arkime/thirdparty /; \
 rm -rf /thirdparty/glib*/*/tests /thirdparty/glib*/*/*/tests && \
 rm -rf arkime; \
