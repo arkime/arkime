@@ -17,11 +17,11 @@ shared:
 jobs:
     centos-7:
         requires: [~pr, ~commit]
-        image: andywick/arkime-build-7:5.0.0-2
+        image: andywick/arkime-build-7:5.0.0-3
         steps:
             - (cd / ; curl https://s3.amazonaws.com/files.molo.ch/snfmin.tar.gz | tar -zxvf -)
             - ln -s /thirdparty .
-            - build: scl enable devtoolset-9 rh-python36 "./easybutton-build.sh --daq --pfring --kafka --rminstall"
+            - build: scl enable devtoolset-9 rh-python36 "./easybutton-build.sh --daq --kafka --rminstall"
             - test-capture: (cd tests ; ./tests.pl)
             - export PATH=/opt/arkime/bin:/data/moloch/bin:$PATH
             - installing: scl enable devtoolset-9 rh-python36 'make install'
@@ -37,7 +37,7 @@ jobs:
             - build-moloch-package: |
                 rm -rf /data/moloch; mkdir -p /data
                 mv /opt/arkime /data/moloch
-                scl enable devtoolset-9 rh-python36 "./easybutton-build.sh --daq --pfring --kafka --dir /data/moloch"
+                scl enable devtoolset-9 rh-python36 "./easybutton-build.sh --daq --kafka --dir /data/moloch"
                 scl enable devtoolset-9 rh-python36 "cd capture ; make clean; make; make install"
                 (cd release ; make installmoloch)
                 mv /data/moloch/bin/capture /data/moloch/bin/moloch-capture
@@ -314,11 +314,11 @@ jobs:
             screwdriver.cd/cpu: TURBO
             screwdriver.cd/ram: TURBO
         requires: [~pr, ~commit]
-        image: andywick/arkime-build-7:5.0.0-2
+        image: andywick/arkime-build-7:5.0.0-3
         steps:
             - (cd / ; curl https://s3.amazonaws.com/files.molo.ch/snfmin.tar.gz | tar -zxvf -)
             - ln -s /thirdparty .
-            - build: scl enable devtoolset-9 rh-python36 "./easybutton-build.sh --daq --pfring --kafka --rminstall --dir /data/moloch"
+            - build: scl enable devtoolset-9 rh-python36 "./easybutton-build.sh --daq --kafka --rminstall --dir /data/moloch"
             - yum -y install libasan-static devtoolset-9-libasan-devel libasan4 devtoolset-9-libubsan-devel libubsan which
             - build-sanitize: (cd capture; scl enable devtoolset-9 rh-python36 "make SANITIZE_LDFLAGS='-fno-common -fsanitize=address -fsanitize=undefined -fno-omit-frame-pointer' sanitize")
             - test-capture: (cd tests ; ./tests.pl)
@@ -363,7 +363,7 @@ jobs:
             - SLACK
 
     release-build:
-        image: andywick/arkime-build-7:5.0.0-2
+        image: andywick/arkime-build-7:5.0.0-3
         requires: []
         annotations:
             beta.screwdriver.cd/cpu: LOW
@@ -377,7 +377,7 @@ jobs:
         steps:
             - (cd / ; curl https://s3.amazonaws.com/files.molo.ch/snfmin.tar.gz | tar -zxvf -)
             - ln -s /thirdparty .
-            - build: scl enable devtoolset-9 rh-python36 "./easybutton-build.sh --daq --pfring --kafka --rminstall"
+            - build: scl enable devtoolset-9 rh-python36 "./easybutton-build.sh --daq --kafka --rminstall"
             - export PATH=/opt/arkime/bin:/data/moloch/bin:$PATH:$PWD/node_modules/.bin
             - installing: scl enable devtoolset-9 rh-python36 'make install'
             - cp -r capture/plugins/lua/samples /opt/arkime/lua
@@ -389,7 +389,7 @@ jobs:
             - build-moloch-package: |
                 rm -rf /data/moloch; mkdir -p /data
                 mv /opt/arkime /data/moloch
-                scl enable devtoolset-9 rh-python36 "./easybutton-build.sh --daq --pfring --kafka --dir /data/moloch"
+                scl enable devtoolset-9 rh-python36 "./easybutton-build.sh --daq --kafka --dir /data/moloch"
                 scl enable devtoolset-9 rh-python36 "cd capture ; make clean; make; make install"
                 (cd release ; make installmoloch)
                 mv /data/moloch/bin/capture /data/moloch/bin/moloch-capture

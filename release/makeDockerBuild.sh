@@ -1,5 +1,5 @@
 #!/bin/sh
-export VER=5.0.0-2
+export VER=5.0.0-3
 export ARKIME_BRANCH=main
 
 #docker images -a | grep "arkime-build" | awk '{print $3}' | xargs docker rmi
