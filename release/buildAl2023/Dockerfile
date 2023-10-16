@@ -1,5 +1,6 @@
 FROM amazonlinux:2023
 MAINTAINER Andy Wick <andy.wick@oath.com>
+ARG ARKIME_BRANCH=main
 
 RUN \
 yum -y update && \
@@ -9,7 +10,7 @@ yum -y clean all && \
 #yum -y install pfring && \
 yum -y install --allowerasing curl && \
 git clone https://github.com/arkime/arkime && \
-(cd arkime; git checkout main; ./easybutton-build.sh --daq --kafka) && \
+(cd arkime; git checkout $ARKIME_BRANCH; ./easybutton-build.sh --daq --kafka) && \
 mv arkime/thirdparty / && \
 rm -rf /thirdparty/glib*/*/tests /thirdparty/glib*/*/*/tests && \
 rm -rf arkime && \

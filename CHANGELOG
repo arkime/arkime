@@ -42,6 +42,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
                and https://arkime.com/faq#how_do_i_upgrade_to_arkime_5
   - BREAKING - WISE/tagger must now use http.request.FIELD/http.response.FIELD
                when referencing header defined with headers-http-request/headers-http-response
+  - BREAKING - Centos 7 build no longers supports pfring
   - release - zstd 1.5.5, nghttp2 1.57.0, maxmind 1.7.1, yara 4.2.3
   - release - node v18.18.2 - Centos 7, Ubuntu 18, Alpine use unofficial builds
   - release - support building on alpine
