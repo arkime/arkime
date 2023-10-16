@@ -82,10 +82,10 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - parliament - configuration is now stored in opensearch/elasticsearch
 
 
-4.5.1 2023/09/xx
+4.6.0 2023/10/16
   - release - curl 8.4.0
   - release - fix viewer systemd file
-  - capture - zstd might hang with full buffer
+  - capture - fix zstd hanging capture on full buffer
   - viewer - corrupt http session decoding might hang viewer
   - viewer - handle uncompressing pcap errors better
   - viewer - role check in UI didn't always work
