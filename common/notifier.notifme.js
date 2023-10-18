@@ -1,3 +1,10 @@
+/******************************************************************************/
+/* notifier.notifme.js  -- notifme implementation
+ *
+ * Copyright Yahoo Inc.
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
 'use strict';
 
 const Notifme = require('arkime-notifme-sdk');

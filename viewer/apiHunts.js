@@ -1,3 +1,10 @@
+/******************************************************************************/
+/* apiHunts.js -- api calls for hunts tab
+ *
+ * Copyright Yahoo Inc.
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
 'use strict';
 
 const Config = require('./config.js');
