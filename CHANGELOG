@@ -70,6 +70,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - cont3xt - lots of keyboard shortcut improvements
   - cont3xt - new array syntax for links substitution
   - cont3xt - new OpenSearch/Elasticsearch integration (config file only)
+  - cont3xt - new csv/json file/url/redis integration (config file only)
   - cont3xt - new viewRoles in config file per integration to control access
   - cont3xt - transfer ownership of resources
   - cont3xt - new csv/json data source supports

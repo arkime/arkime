@@ -1,3 +1,10 @@
+/******************************************************************************/
+/* apiHistory.js -- api calls for history tab
+ *
+ * Copyright Yahoo Inc.
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
 'use strict';
 
 const Db = require('./db.js');

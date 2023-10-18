@@ -1,4 +1,10 @@
-#!/usr/bin/env node
+/******************************************************************************/
+/* upgrade.js -- upgrade previous parliament config files
+ *
+ * Copyright Yahoo Inc.
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
 'use strict';
 
 // 1 - first version of parliament

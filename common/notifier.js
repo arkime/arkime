@@ -1,3 +1,11 @@
+/******************************************************************************/
+/* notifier.js  -- common notifier code
+ *
+ * Copyright Yahoo Inc.
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 'use strict';
 
 const glob = require('glob');

@@ -1,3 +1,10 @@
+/******************************************************************************/
+/* apiCrons.js -- api calls for periodic queries
+ *
+ * Copyright Yahoo Inc.
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
 'use strict';
 
 const Config = require('./config');

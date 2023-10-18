@@ -1,3 +1,10 @@
+/******************************************************************************/
+/* normalizeCardField.js --
+ *
+ * Copyright Yahoo Inc.
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
 const normalizeCardField = (inField) => {
   const f = JSON.parse(JSON.stringify(inField));
 

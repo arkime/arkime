@@ -1,3 +1,10 @@
+/******************************************************************************/
+/* apiMisc.js -- api calls for misc parts of viewer
+ *
+ * Copyright Yahoo Inc.
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
 'use strict';
 
 const Config = require('./config.js');

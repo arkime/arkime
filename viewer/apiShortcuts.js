@@ -1,3 +1,10 @@
+/******************************************************************************/
+/* apiShortcuts.js -- api calls for shortcuts
+ *
+ * Copyright Yahoo Inc.
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
 'use strict';
 
 const Db = require('./db.js');
