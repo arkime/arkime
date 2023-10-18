@@ -958,7 +958,7 @@ void writer_simple_init(char *name)
 #ifdef HAVE_ZSTD
         simpleZstdLevel = arkime_config_int(NULL, "simpleZstdLevel", 0, 0, ZSTD_maxCLevel());
 #endif
-        simpleCompressionBlockSize = arkime_config_int(NULL, "simpleCompressionBlockSize", 32000, 8191, 0xfffff);
+        simpleCompressionBlockSize = arkime_config_int(NULL, "simpleCompressionBlockSize", 64000, 8191, 0xfffff);
         uncompressedBits = ceil(log2(simpleCompressionBlockSize));
 
         // simpleCompressionBlockSize can't be a power of 2
