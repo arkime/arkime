@@ -86,7 +86,7 @@ use POSIX;
 use IO::Compress::Gzip qw(gzip $GzipError);
 use IO::Uncompress::Gunzip qw(gunzip $GunzipError);
 use strict;
-no if ($] >= 5.018), 'warnings' => 'experimental';
+use warnings;
 
 my $VERSION = 79;
 my $verbose = 0;
@@ -121,7 +121,7 @@ my $LOCKED = 0;
 my $GZ = 0;
 my $REFRESH = 60;
 my $ESAPIKEY = "";
-my $USERPASS;
+my $USERPASS = "";
 my $IFNEEDED = 0;
 
 #use LWP::ConsoleLogger::Everywhere ();
@@ -390,13 +390,13 @@ sub esCopy
     my $status = esGet("/${srci}/_refresh", 1);
     $main::userAgent->timeout(7200);
 
-    my $status = esGet("/_stats/docs", 1);
+    $status = esGet("/_stats/docs", 1);
     logmsg "Copying " . $status->{indices}->{$srci}->{primaries}->{docs}->{count} . " elements from $srci to $dsti\n";
 
     esPost("/_reindex?timeout=7200s", to_json({"source" => {"index" => $srci}, "dest" => {"index" => $dsti, "version_type" => "external"}, "conflicts" => "proceed"}));
 
-    my $status = esGet("/${dsti}/_refresh", 1);
-    my $status = esGet("/_stats/docs", 1);
+    $status = esGet("/${dsti}/_refresh", 1);
+    $status = esGet("/_stats/docs", 1);
     if ($status->{indices}->{$srci}->{primaries}->{docs}->{count} > $status->{indices}->{$dsti}->{primaries}->{docs}->{count}) {
         logmsg $status->{indices}->{$srci}->{primaries}->{docs}->{count}, " > ",  $status->{indices}->{$dsti}->{primaries}->{docs}->{count}, "\n";
         die "\nERROR - Copy failed from $srci to $dsti, you will probably need to delete $dsti and run upgrade again.  Make sure to not change the index while upgrading.\n\n";
@@ -5639,27 +5639,6 @@ logmsg "Setting notifiers_v40 mapping\n" if ($verbose > 0);
 esPut("/${PREFIX}notifiers_v40/_mapping?master_timeout=${ESTIMEOUT}s&pretty", $mapping);
 }
 
-sub notifiersMove
-{
-# add the notifiers from the _moloch_shared user to the new notifiers index
-    my $sharedUser = esGet("/${PREFIX}users/_source/_moloch_shared", 1);
-    my @notifiers = keys %{$sharedUser->{notifiers}};
-
-    return if ($sharedUser->{status} == 404);
-
-    foreach my $n (@notifiers) {
-        my $notifier = $sharedUser->{notifiers}{$n};
-        $notifier->{users} = "";
-        $notifier->{roles} = ["arkimeUser", "parliamentUser"];
-        my $name = $notifier->{name};
-        esPost("/${PREFIX}notifiers/_doc/${name}", to_json($notifier));
-    }
-
-# remove notifiers from the _moloch_shared user
-    delete $sharedUser->{notifiers};
-    esPut("/${PREFIX}users/_doc/_moloch_shared", to_json($sharedUser));
-}
-
 sub notifiersAddMissingProps
 {
   # add missing alerts and on properties to the notifiers
@@ -6207,7 +6186,7 @@ sub dbCheck {
     my @parts = split(/[-.]/, $esversion->{version}->{number});
     $main::esVersion = int($parts[0]*100*100) + int($parts[1]*100) + int($parts[2]);
 
-    if ($esversion->{version}->{distribution} eq "opensearch") {
+    if ($esversion->{version}->{distribution} // "" eq "opensearch") {
         if ($main::esVersion < 1000) {
             logmsg("Currently using OpenSearch version ", $esversion->{version}->{number}, " which isn't supported\n",
                   "* < 1.0.0 is not supported\n"
@@ -6235,7 +6214,7 @@ sub dbCheck {
     my $nodeStats = esGet("/_nodes/stats");
 
     foreach my $key (sort {$nodes->{nodes}->{$a}->{name} cmp $nodes->{nodes}->{$b}->{name}} keys %{$nodes->{nodes}}) {
-        next if (!(/^(data|data_hot)$/ ~~ @{$nodes->{nodes}->{$key}->{roles}}));
+        next if (!(grep { /^(data|data_hot)$/ } @{$nodes->{nodes}->{$key}->{roles}}));
         my $node = $nodes->{nodes}->{$key};
         my $nodeStat = $nodeStats->{nodes}->{$key};
         my $errstr;
@@ -6520,7 +6499,8 @@ if ($ARGV[1] =~ /^(users-?import|import)$/) {
     sub bopen {
         my ($index) = @_;
         if ($GZ) {
-            return new IO::Compress::Gzip "$ARGV[2].${PREFIX}${index}.json.gz" or die "cannot open $ARGV[2].${PREFIX}${index}.json.gz: $GzipError\n";
+            my $g = new IO::Compress::Gzip"$ARGV[2].${PREFIX}${index}.json.gz" or die "cannot open $ARGV[2].${PREFIX}${index}.json.gz: $GzipError\n";
+            return $g
         } else {
             open(my $fh, ">", "$ARGV[2].${PREFIX}${index}.json") or die "cannot open > $ARGV[2].${PREFIX}${index}.json: $!";
             return $fh;
@@ -6573,7 +6553,7 @@ if ($ARGV[1] =~ /^(users-?import|import)$/) {
     }
     my $aliases = join(',', @indices_prefixed);
     $aliases = "/_cat/aliases/${aliases}?format=json";
-    my $data = esGet($aliases), "\n";
+    my $data = esGet($aliases);
     my $fh = bopen("aliases");
     print $fh to_json($data);
     close($fh);
@@ -6858,7 +6838,7 @@ if ($ARGV[1] =~ /^(users-?import|import)$/) {
     # increment the _meta version by 1
     my $mapping = esGet("/${PREFIX}lookups/_mapping");
     my @indices = keys %{$mapping};
-    my $index = @indices[0];
+    my $index = $indices[0];
     my $meta = $mapping->{$index}->{mappings}->{_meta};
 
 
@@ -6885,8 +6865,8 @@ if ($ARGV[1] =~ /^(users-?import|import)$/) {
 
     logmsg("Checking for completion\n");
     my $status = esGet("/${PREFIX}$ARGV[2]-shrink/_refresh", 0);
-    my $status = esGet("/${PREFIX}$ARGV[2]-shrink/_flush", 0);
-    my $status = esGet("/_stats/docs", 0);
+    $status = esGet("/${PREFIX}$ARGV[2]-shrink/_flush", 0);
+    $status = esGet("/_stats/docs", 0);
     if ($status->{indices}->{"${PREFIX}$ARGV[2]-shrink"}->{primaries}->{docs}->{count} == $status->{indices}->{"${PREFIX}$ARGV[2]"}->{primaries}->{docs}->{count}) {
         logmsg("Deleting old index\n");
         esDelete("/${PREFIX}$ARGV[2]", 1);
@@ -7615,6 +7595,8 @@ $policy = qq/{
     print "Deleted $src\n";
     exit 0;
 } elsif ($ARGV[1] =~ /^repair$/) {
+    my $nodes = esGet("/_nodes");
+    $main::numberOfNodes = dataNodes($nodes->{nodes});
     dbVersion(1);
     if ($main::versionNumber != $VERSION) {
         die "Must upgrade before trying to do a repair";
@@ -7761,7 +7743,7 @@ my ($nodes) = @_;
     my $total = 0;
 
     foreach my $key (keys %{$nodes}) {
-        $total++ if (/^(data|data_hot)$/ ~~ @{$nodes->{$key}->{roles}});
+        $total++ if (grep { /^(data|data_hot)$/ } @{$nodes->{$key}->{roles}});
     }
     return $total;
 }
