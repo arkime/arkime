@@ -7,8 +7,8 @@
 # * use apt-get/yum to install OS dependancies
 # * download known working versions of arkime dependancies
 # * build them statically
-# * configure moloch-capture to use them
-# * build moloch-capture
+# * configure capture to use them
+# * build capture
 # * install node unless --nonode
 # * install arkime if --install
 

@@ -1,7 +1,7 @@
 use Test::More tests => 12;
 use Cwd;
 use URI::Escape;
-use MolochTest;
+use ArkimeTest;
 use JSON;
 use Test::Differences;
 use Data::Dumper;
@@ -92,7 +92,7 @@ my ($json, $mjson);
     eq_or_diff($mjson, $json, "multi: node to protocol baselined", { context => 3 });
 
 # csv
-    my $csv = $MolochTest::userAgent->get("http://$MolochTest::host:8123/api/connections.csv?date=-1&dstField=cert.notAfter&expression=" . uri_escape("$files"))->content;
+    my $csv = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8123/api/connections.csv?date=-1&dstField=cert.notAfter&expression=" . uri_escape("$files"))->content;
     $csv =~ s/\r//g;
     eq_or_diff($csv, qq(Source, Destination, Sessions, Bytes, Bytes, Data bytes, Packets, Packets, Arkime Node
 "10.180.156.185","1418212800000",3,32958,26760,93,test

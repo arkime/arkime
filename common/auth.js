@@ -572,7 +572,7 @@ class Auth {
 
     // ----------------------------------------------------------------------------
     passport.use('regressionTests', new CustomStrategy((req, done) => {
-      const userId = req?.query?.molochRegressionUser ?? 'anonymous';
+      const userId = req?.query?.arkimeRegressionUser ?? 'anonymous';
       if (userId.startsWith('role:')) {
         return done('Can not authenticate with role');
       }

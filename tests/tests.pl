@@ -12,7 +12,7 @@ use Test::Differences;
 use Cwd;
 use URI::Escape;
 use TAP::Harness;
-use MolochTest;
+use ArkimeTest;
 use Socket6 qw(AF_INET6 inet_pton);
 
 $main::userAgent = LWP::UserAgent->new(timeout => 20);
@@ -41,7 +41,7 @@ sub doGeo {
         system("wget https://s3.amazonaws.com/files.molo.ch/testing/GeoLite2-ASN.mmdb");
     }
 
-    if (! -f "plugins/test.so" || (stat('../capture/moloch.h'))[9] > (stat('plugins/test.so'))[9]) {
+    if (! -f "plugins/test.so" || (stat('../capture/arkime.h'))[9] > (stat('plugins/test.so'))[9]) {
         system("cd plugins ; make");
     }
 }
@@ -293,12 +293,12 @@ my ($cmd) = @_;
         my $wes = "-o 'wiseService.usersElasticsearch=$ELASTICSEARCH'";
         print ("Starting WISE\n");
         if ($main::debug) {
-            system("cd ../wiseService ; $node wiseService.js $wes $INSECURE --webcode thecode --webconfig --regressionTests -c ../tests/config.test.json > /tmp/moloch.wise &");
+            system("cd ../wiseService ; $node wiseService.js $wes $INSECURE --webcode thecode --webconfig --regressionTests -c ../tests/config.test.json > /tmp/arkime.wise &");
         } else {
             system("cd ../wiseService ; $node wiseService.js $wes $INSECURE --webcode thecode --webconfig --regressionTests -c ../tests/config.test.json > /dev/null &");
         }
 
-        waitFor($MolochTest::host, 8081, 1);
+        waitFor($ArkimeTest::host, 8081, 1);
     }
 
     my $es = "-o 'elasticsearch=$ELASTICSEARCH'";
@@ -319,12 +319,12 @@ my ($cmd) = @_;
         if (!$main::debug) {
             $mcmd .= " 2>&1 1>/dev/null";
         } else {
-            $mcmd .= " --debug 1>/tmp/moloch.capture 2>&1";
+            $mcmd .= " --debug 1>/tmp/arkime.capture 2>&1";
         }
 
 
         if ($main::valgrind) {
-            $mcmd = "G_SLICE=always-malloc valgrind --leak-check=full --log-file=moloch.val " . $mcmd;
+            $mcmd = "G_SLICE=always-malloc valgrind --leak-check=full --log-file=arkime.val " . $mcmd;
         }
 
         print "$mcmd\n" if ($main::debug);
@@ -338,18 +338,18 @@ my ($cmd) = @_;
     if ($cmd ne "--viewernostart") {
         print ("Starting viewer\n");
         if ($main::debug) {
-            system("cd ../viewer ; $node --trace-warnings multies.js --regressionTests $mes -c ../tests/config.test.ini -n all --debug $INSECURE > /tmp/multies.all &");
-            waitFor($MolochTest::host, 8200, 1);
-            system("cd ../viewer ; $node --trace-warnings viewer.js --regressionTests $es $ues -c ../tests/config.test.ini -n test --debug $INSECURE > /tmp/moloch.test &");
-            system("cd ../viewer ; $node --trace-warnings viewer.js --regressionTests $es $ues -c ../tests/config.test.ini -n test2 --debug $INSECURE $s3 > /tmp/moloch.test2 &");
-            system("cd ../viewer ; $node --trace-warnings viewer.js --regressionTests $es $ues -c ../tests/config.test.ini -n test3 --debug -o s2sRegressionTests=true $INSECURE > /tmp/moloch.test3 &");
-            system("cd ../viewer ; $node --trace-warnings viewer.js --regressionTests $ues -c ../tests/config.test.ini -n all --debug $INSECURE > /tmp/moloch.all &");
-            system("cd ../parliament ; $node --trace-warnings parliament.js --regressionTests $pues -c ../tests/parliament.tests.ini -n parliamenttest --debug $INSECURE > /tmp/moloch.parliament 2>&1 &");
-            system("cd ../cont3xt ; $node --trace-warnings cont3xt.js $ces $cues --regressionTests -c ../tests/cont3xt.tests.ini --debug $INSECURE > /tmp/moloch.cont3xt 2>&1 &");
-            system("cd ../viewer ; $node --trace-warnings esProxy.js --regressionTests $es -c ../tests/config.test.ini -n esproxy --debug $INSECURE > /tmp/moloch.esproxy &");
+            system("cd ../viewer ; $node --trace-warnings multies.js --regressionTests $mes -c ../tests/config.test.ini -n all --debug $INSECURE > /tmp/arkime.multies &");
+            waitFor($ArkimeTest::host, 8200, 1);
+            system("cd ../viewer ; $node --trace-warnings viewer.js --regressionTests $es $ues -c ../tests/config.test.ini -n test --debug $INSECURE > /tmp/arkime.test &");
+            system("cd ../viewer ; $node --trace-warnings viewer.js --regressionTests $es $ues -c ../tests/config.test.ini -n test2 --debug $INSECURE $s3 > /tmp/arkime.test2 &");
+            system("cd ../viewer ; $node --trace-warnings viewer.js --regressionTests $es $ues -c ../tests/config.test.ini -n test3 --debug -o s2sRegressionTests=true $INSECURE > /tmp/arkime.test3 &");
+            system("cd ../viewer ; $node --trace-warnings viewer.js --regressionTests $ues -c ../tests/config.test.ini -n all --debug $INSECURE > /tmp/arkime.all &");
+            system("cd ../parliament ; $node --trace-warnings parliament.js --regressionTests $pues -c ../tests/parliament.tests.ini -n parliamenttest --debug $INSECURE > /tmp/arkime.parliament 2>&1 &");
+            system("cd ../cont3xt ; $node --trace-warnings cont3xt.js $ces $cues --regressionTests -c ../tests/cont3xt.tests.ini --debug $INSECURE > /tmp/arkime.cont3xt 2>&1 &");
+            system("cd ../viewer ; $node --trace-warnings esProxy.js --regressionTests $es -c ../tests/config.test.ini -n esproxy --debug $INSECURE > /tmp/arkime.esproxy &");
         } else {
             system("cd ../viewer ; $node multies.js --regressionTests $mes -c ../tests/config.test.ini -n all $INSECURE > /dev/null &");
-            waitFor($MolochTest::host, 8200, 1);
+            waitFor($ArkimeTest::host, 8200, 1);
             system("cd ../viewer ; $node viewer.js --regressionTests $es $ues -c ../tests/config.test.ini -n test $INSECURE > /dev/null &");
             system("cd ../viewer ; $node viewer.js --regressionTests $es $ues -c ../tests/config.test.ini -n test2 $INSECURE $s3 > /dev/null &");
             system("cd ../viewer ; $node viewer.js --regressionTests $es $ues -c ../tests/config.test.ini -n test3 -o s2sRegressionTests=true $INSECURE > /dev/null &");
@@ -361,12 +361,12 @@ my ($cmd) = @_;
         sleep (10000) if ($cmd eq "--viewerhang");
     }
 
-    waitFor($MolochTest::host, 8123);
-    waitFor($MolochTest::host, 8124);
-    waitFor($MolochTest::host, 8125);
-    waitFor($MolochTest::host, 8008);
-    waitFor($MolochTest::host, 3218);
-    waitFor($MolochTest::host, 7200);
+    waitFor($ArkimeTest::host, 8123);
+    waitFor($ArkimeTest::host, 8124);
+    waitFor($ArkimeTest::host, 8125);
+    waitFor($ArkimeTest::host, 8008);
+    waitFor($ArkimeTest::host, 3218);
+    waitFor($ArkimeTest::host, 7200);
     sleep 1;
 
     $main::userAgent->get("$ELASTICSEARCH/_flush");
@@ -415,7 +415,7 @@ while (scalar (@ARGV) > 0) {
         shift @ARGV;
     } elsif ($ARGV[0] eq "--elasticsearch") {
         shift @ARGV;
-        $MolochTest::elasticsearch = $ELASTICSEARCH = $ENV{ELASTICSEARCH} = $ARGV[0];
+        $ArkimeTest::elasticsearch = $ELASTICSEARCH = $ENV{ELASTICSEARCH} = $ARGV[0];
         shift @ARGV;
     } elsif ($ARGV[0] eq "--c8") {
         $main::c8 = 1;
@@ -426,7 +426,7 @@ while (scalar (@ARGV) > 0) {
         system("rm -rf ../cont3xt/coverage");
         shift @ARGV;
     } elsif ($ARGV[0] eq "--insecure") {
-        $MolochTest::userAgent->ssl_opts(
+        $ArkimeTest::userAgent->ssl_opts(
             SSL_verify_mode => 0,
             verify_hostname=> 0
         );

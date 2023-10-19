@@ -1,7 +1,7 @@
 use Test::More tests => 321;
 use Cwd;
 use URI::Escape;
-use MolochTest;
+use ArkimeTest;
 use JSON;
 use Test::Differences;
 use Data::Dumper;
@@ -78,17 +78,17 @@ my $hToken = getTokenCookie('huntuser');
   eq_or_diff($json, from_json('{"text": "Missing fully formed query (must include start time and stop time)", "success": false}'));
 
 # Bad roles
-  $json = viewerPostToken("/api/hunt?molochRegressionUser=anonymous", '{"totalSessions":1,"name":"test hunt 17","size":"50","search":"test search text","searchType":"ascii","type":"raw","src":true,"dst":true,"query":{"startTime":18000,"stopTime":1536872891}, "roles": false}', $token);
+  $json = viewerPostToken("/api/hunt?arkimeRegressionUser=anonymous", '{"totalSessions":1,"name":"test hunt 17","size":"50","search":"test search text","searchType":"ascii","type":"raw","src":true,"dst":true,"query":{"startTime":18000,"stopTime":1536872891}, "roles": false}', $token);
   eq_or_diff($json, from_json('{"text": "Roles field must be an array of strings", "success": false}'));
 
-  $json = viewerPostToken("/api/hunt?molochRegressionUser=anonymous", '{"totalSessions":1,"name":"test hunt 18","size":"50","search":"test search text","searchType":"ascii","type":"raw","src":true,"dst":true,"query":{"startTime":18000,"stopTime":1536872891}, "roles": [false]}', $token);
+  $json = viewerPostToken("/api/hunt?arkimeRegressionUser=anonymous", '{"totalSessions":1,"name":"test hunt 18","size":"50","search":"test search text","searchType":"ascii","type":"raw","src":true,"dst":true,"query":{"startTime":18000,"stopTime":1536872891}, "roles": [false]}', $token);
   eq_or_diff($json, from_json('{"text": "Roles field must be an array of strings", "success": false}'));
 
 # Bad users
-  $json = viewerPostToken("/api/hunt?molochRegressionUser=anonymous", '{"totalSessions":1,"name":"test hunt 18","size":"50","search":"test search text","searchType":"ascii","type":"raw","src":true,"dst":true,"query":{"startTime":18000,"stopTime":1536872891}, "users": false}', $token);
+  $json = viewerPostToken("/api/hunt?arkimeRegressionUser=anonymous", '{"totalSessions":1,"name":"test hunt 18","size":"50","search":"test search text","searchType":"ascii","type":"raw","src":true,"dst":true,"query":{"startTime":18000,"stopTime":1536872891}, "users": false}', $token);
   eq_or_diff($json, from_json('{"text": "Users field must be a string", "success": false}'));
 
-  $json = viewerPostToken("/api/hunt?molochRegressionUser=anonymous", '{"totalSessions":1,"name":"test hunt 18","size":"50","search":"test search text","searchType":"ascii","type":"raw","src":true,"dst":true,"query":{"startTime":18000,"stopTime":1536872891}, "users": [false]}', $token);
+  $json = viewerPostToken("/api/hunt?arkimeRegressionUser=anonymous", '{"totalSessions":1,"name":"test hunt 18","size":"50","search":"test search text","searchType":"ascii","type":"raw","src":true,"dst":true,"query":{"startTime":18000,"stopTime":1536872891}, "users": [false]}', $token);
   eq_or_diff($json, from_json('{"text": "Users field must be a string", "success": false}'));
 
 # Make sure no hunts
@@ -99,12 +99,12 @@ my $hToken = getTokenCookie('huntuser');
 ##### GOOD
 
 # Add a valid hunt, and it should immediately run
-  $json = viewerPostToken("/api/hunt?molochRegressionUser=anonymous", '{"totalSessions":1,"name":"test hunt 13~`!@#$%^&*()[]{};<>?/`","size":"50","search":"test search text","searchType":"ascii","type":"raw","src":true,"dst":true,"query":{"startTime":18000,"stopTime":1536872891}}', $token);
+  $json = viewerPostToken("/api/hunt?arkimeRegressionUser=anonymous", '{"totalSessions":1,"name":"test hunt 13~`!@#$%^&*()[]{};<>?/`","size":"50","search":"test search text","searchType":"ascii","type":"raw","src":true,"dst":true,"query":{"startTime":18000,"stopTime":1536872891}}', $token);
   is ($json->{success}, 1);
   my $id1 = $json->{hunt}->{id};
 
 # cancel hunt
-  my $canceljson = viewerPutToken("/api/hunt/$id1/cancel?molochRegressionuser=anonymous", "{}", $token);
+  my $canceljson = viewerPutToken("/api/hunt/$id1/cancel?arkimeRegressionUser=anonymous", "{}", $token);
   is ($canceljson->{success}, 1, "can cancel a hunt");
 
 # Make sure the hunt's name doesn't contain special chars
@@ -113,7 +113,7 @@ my $hToken = getTokenCookie('huntuser');
 # Hunt should finish
   viewerGet("/regressionTests/processHuntJobs");
 
-  $hunts = viewerGet("/api/hunts?molochRegressionUser=user2&history=true");
+  $hunts = viewerGet("/api/hunts?arkimeRegressionUser=user2&history=true");
   is (@{$hunts->{data}}, 1, "Add hunt 1");
 
 # user2 shouldn't see id, query, search, searchType, userId
@@ -125,13 +125,13 @@ my $hToken = getTokenCookie('huntuser');
   ok(! exists $item->{query});
 
 # If the user is not an admin they can only delete their own hunts
-  $json = viewerDeleteToken("/api/hunt/$id1?molochRegressionUser=user2", $otherToken);
+  $json = viewerDeleteToken("/api/hunt/$id1?arkimeRegressionUser=user2", $otherToken);
   is ($json->{text}, "You cannot change another user's hunt unless you have admin privileges");
 
   $hunts = viewerGet("/api/hunts?history=true");
   is (@{$hunts->{data}}, 1, "Non admin user cannot delete another user's hunt");
 
-  $json = viewerPostToken("/api/hunt?molochRegressionUser=user2", '{"totalSessions":1,"name":"test hunt 14","size":"50","search":"test search text","searchType":"ascii","type":"raw","src":true,"dst":true,"query":{"startTime":18000,"stopTime":1536872891}}', $otherToken);
+  $json = viewerPostToken("/api/hunt?arkimeRegressionUser=user2", '{"totalSessions":1,"name":"test hunt 14","size":"50","search":"test search text","searchType":"ascii","type":"raw","src":true,"dst":true,"query":{"startTime":18000,"stopTime":1536872891}}', $otherToken);
 
   viewerGet("/regressionTests/processHuntJobs");
 
@@ -140,34 +140,34 @@ my $hToken = getTokenCookie('huntuser');
 
   my $id2 = $json->{hunt}->{id};
 
-  $json = viewerDeleteToken("/api/hunt/$id2?molochRegressionUser=user2", $otherToken);
+  $json = viewerDeleteToken("/api/hunt/$id2?arkimeRegressionUser=user2", $otherToken);
   is ($json->{text}, "Deleted hunt successfully");
 
   $hunts = viewerGet("/api/hunts?history=true");
   is (@{$hunts->{data}}, 1, "User can remove their own hunt");
 
 # If the user is not an admin they can only pause their own hunts
-  $json = viewerPostToken("/api/hunt?molochRegressionUser=anonymous", '{"totalSessions":1,"name":"test hunt 15~`!@#$%^&*()[]{};<>?/`","size":"50","search":"test search text","searchType":"ascii","type":"raw","src":true,"dst":true,"query":{"startTime":18000,"stopTime":1536872891}}', $token);
+  $json = viewerPostToken("/api/hunt?arkimeRegressionUser=anonymous", '{"totalSessions":1,"name":"test hunt 15~`!@#$%^&*()[]{};<>?/`","size":"50","search":"test search text","searchType":"ascii","type":"raw","src":true,"dst":true,"query":{"startTime":18000,"stopTime":1536872891}}', $token);
   my $id3 = $json->{hunt}->{id};
 
-  $json = viewerPutToken("/api/hunt/$id3/pause?molochRegressionUser=user2", "{}", $otherToken);
+  $json = viewerPutToken("/api/hunt/$id3/pause?arkimeRegressionUser=user2", "{}", $otherToken);
   is ($json->{text}, "You cannot change another user\'s hunt unless you have admin privileges", "Non admin user cannot pause another user's hunt");
 
 # If the user is not an admin they can only play their own hunts
-  $json = viewerPutToken("/api/hunt/$id3/play?molochRegressionUser=user2", "{}", $otherToken);
+  $json = viewerPutToken("/api/hunt/$id3/play?arkimeRegressionUser=user2", "{}", $otherToken);
   is ($json->{text}, "You cannot change another user\'s hunt unless you have admin privileges", "Non admin user cannot pause another user's hunt");
 
-  $json = viewerDeleteToken("/api/hunt/$id3?molochRegressionUser=anonymous", $token);
+  $json = viewerDeleteToken("/api/hunt/$id3?arkimeRegressionUser=anonymous", $token);
   is ($json->{text}, "Deleted hunt successfully");
 
 # Admin can delete any hunt
-  $json = viewerPostToken("/api/hunt?molochRegressionUser=user2", '{"totalSessions":1,"name":"test hunt 16","size":"50","search":"test search text","searchType":"ascii","type":"raw","src":true,"dst":true,"query":{"startTime":18000,"stopTime":1536872891}}', $otherToken);
+  $json = viewerPostToken("/api/hunt?arkimeRegressionUser=user2", '{"totalSessions":1,"name":"test hunt 16","size":"50","search":"test search text","searchType":"ascii","type":"raw","src":true,"dst":true,"query":{"startTime":18000,"stopTime":1536872891}}', $otherToken);
   my $id4 = $json->{hunt}->{id};
 
   viewerGet("/regressionTests/processHuntJobs");
   sleep(1); # Wait for it to finish processing
 
-  $json = viewerDeleteToken("/api/hunt/$id4?molochRegressionUser=anonymous", $token);
+  $json = viewerDeleteToken("/api/hunt/$id4?arkimeRegressionUser=anonymous", $token);
   is ($json->{text}, "Deleted hunt successfully");
 
   $hunts = viewerGet("/api/hunts?history=true");
@@ -181,14 +181,14 @@ my $hToken = getTokenCookie('huntuser');
   is ($found, 0, "Admin can remove any hunt");
 
 # should be able to run a hunt with a view
-  $json = viewerPostToken("/api/view?molochRegressionUser=user2", '{"name": "tls", "expression": "protocols == tls", "users": "user2,user3", "roles":["arkimeUser"]}', $otherToken);
+  $json = viewerPostToken("/api/view?arkimeRegressionUser=user2", '{"name": "tls", "expression": "protocols == tls", "users": "user2,user3", "roles":["arkimeUser"]}', $otherToken);
   my $viewId = $json->{view}->{id};
-  $json = viewerPostToken("/api/hunt?molochRegressionUser=user2", '{"totalSessions":1,"name":"test hunt 13~`!@#$%^&*()[]{};<>?/`","size":"50","search":"test search text","searchType":"ascii","type":"raw","src":true,"dst":true,"query":{"startTime":18000,"stopTime":1536872891,"view":"' . $viewId . '"}}', $otherToken);
+  $json = viewerPostToken("/api/hunt?arkimeRegressionUser=user2", '{"totalSessions":1,"name":"test hunt 13~`!@#$%^&*()[]{};<>?/`","size":"50","search":"test search text","searchType":"ascii","type":"raw","src":true,"dst":true,"query":{"startTime":18000,"stopTime":1536872891,"view":"' . $viewId . '"}}', $otherToken);
   is ($json->{success}, 1, "can run a hunt with a view");
   my $id5 = $json->{hunt}->{id};
 
 # hunt bad regex
-  $json = viewerPostToken("/api/hunt?molochRegressionUser=user2", '{"totalSessions":1,"name":"badhunt","size":"50","search":"bad[","searchType":"regex","type":"raw","src":true,"dst":true,"query":{"startTime":18000,"stopTime":1536872891}}', $otherToken);
+  $json = viewerPostToken("/api/hunt?arkimeRegressionUser=user2", '{"totalSessions":1,"name":"badhunt","size":"50","search":"bad[","searchType":"regex","type":"raw","src":true,"dst":true,"query":{"startTime":18000,"stopTime":1536872891}}', $otherToken);
   my $id6 = $json->{hunt}->{id};
 
   viewerGet("/regressionTests/processHuntJobs");
@@ -212,7 +212,7 @@ my $hToken = getTokenCookie('huntuser');
   is($badHunt->{unrunnable}, 1, "hunt should be unrunable");
 
 # add a hunt that is shared with another user
-  $json = viewerPostToken("/api/hunt?molochRegressionUser=anonymous", '{"users":"huntuser","totalSessions":1,"name":"test hunt 13~`!@#$%^&*()[]{};<>?/`","size":"50","search":"test search text","searchType":"ascii","type":"raw","src":true,"dst":true,"query":{"startTime":18000,"stopTime":1536872891}}', $token);
+  $json = viewerPostToken("/api/hunt?arkimeRegressionUser=anonymous", '{"users":"huntuser","totalSessions":1,"name":"test hunt 13~`!@#$%^&*()[]{};<>?/`","size":"50","search":"test search text","searchType":"ascii","type":"raw","src":true,"dst":true,"query":{"startTime":18000,"stopTime":1536872891}}', $token);
   is ($json->{hunt}->{users}->[0], "huntuser", "hunt should have a user on creation");
   my $id7 = $json->{hunt}->{id};
   viewerGet("/regressionTests/processHuntJobs");
@@ -221,7 +221,7 @@ my $hToken = getTokenCookie('huntuser');
   esGet("/_flush");
   esGet("/_refresh");
   sleep(1); # Wait for user to be set or else test after next fails
-  $json = viewerDeleteToken("/api/hunt/$id7/user/huntuser?molochRegressionUser=anonymous", $token);
+  $json = viewerDeleteToken("/api/hunt/$id7/user/huntuser?arkimeRegressionUser=anonymous", $token);
   is (scalar @{$json->{users}}, 0, "hunt should have no users");
 
   esGet("/_flush");
@@ -229,42 +229,42 @@ my $hToken = getTokenCookie('huntuser');
   sleep(1);
 
 # can't delete a user from an hunt with no users
-  $json = viewerDeleteToken("/api/hunt/$id7/user/huntuser?molochRegressionUser=anonymous", $token);
+  $json = viewerDeleteToken("/api/hunt/$id7/user/huntuser?arkimeRegressionUser=anonymous", $token);
   eq_or_diff($json, from_json('{"text": "There are no users that have access to view this hunt", "success": false}'), "can't delete a user from an hunt with no users");
 
 # add a user to a hunt
-  $json = viewerPostToken("/api/hunt/$id7/users?molochRegressionUser=anonymous", '{"users":"huntuser"}', $token);
+  $json = viewerPostToken("/api/hunt/$id7/users?arkimeRegressionUser=anonymous", '{"users":"huntuser"}', $token);
   is ($json->{users}->[0], "huntuser", "hunt should have a user added");
 
 # can't add an unknown user to a hunt
-  $json = viewerPostToken("/api/hunt/$id7/users?molochRegressionUser=anonymous", '{"users":"unknownuser"}', $token);
+  $json = viewerPostToken("/api/hunt/$id7/users?arkimeRegressionUser=anonymous", '{"users":"unknownuser"}', $token);
   eq_or_diff($json, from_json('{"text": "Unable to validate user IDs provided", "success": false}'), "hunt should show error if no users are added");
 
 # hunt should not add and send back invalid users
-  $json = viewerDeleteToken("/api/hunt/$id7/user/huntuser?molochRegressionUser=anonymous", $token);
-  $json = viewerPostToken("/api/hunt/$id7/users?molochRegressionUser=anonymous", '{"users":"huntuser,unknownuser"}', $token);
+  $json = viewerDeleteToken("/api/hunt/$id7/user/huntuser?arkimeRegressionUser=anonymous", $token);
+  $json = viewerPostToken("/api/hunt/$id7/users?arkimeRegressionUser=anonymous", '{"users":"huntuser,unknownuser"}', $token);
   is (scalar @{$json->{users}}, 1, "hunt should not add an unknown user");
   is ($json->{invalidUsers}->[0], "unknownuser", "hunt should send back invalid users");
 
 # can't add empty users
-  $json = viewerPostToken("/api/hunt/$id7/users?molochRegressionUser=anonymous", '{}', $token);
+  $json = viewerPostToken("/api/hunt/$id7/users?arkimeRegressionUser=anonymous", '{}', $token);
   eq_or_diff($json, from_json('{"success":false,"text":"You must provide users in a comma separated string"}'), "hunt can't add empty users");
 
 # can't add missing users
-  $json = viewerPostToken("/api/hunt/$id7/users?molochRegressionUser=anonymous", '{"users":""}', $token);
+  $json = viewerPostToken("/api/hunt/$id7/users?arkimeRegressionUser=anonymous", '{"users":""}', $token);
   eq_or_diff($json, from_json('{"success":false,"text":"You must provide users in a comma separated string"}'), "hunt can't add empty users");
 
 # can't delete an unknown user
-  $json = viewerDeleteToken("/api/hunt/$id7/user/unknownuser?molochRegressionUser=anonymous", $token);
+  $json = viewerDeleteToken("/api/hunt/$id7/user/unknownuser?arkimeRegressionUser=anonymous", $token);
   eq_or_diff($json, from_json('{"text": "That user does not have access to this hunt", "success": false}'), "can't delete a user from an hunt with no users");
 
 # remove hunt id and name from sessions
-  $json = viewerPutToken("/api/hunt/$id7/removefromsessions?molochRegressionUser=anonymous", "{}", $token);
+  $json = viewerPutToken("/api/hunt/$id7/removefromsessions?arkimeRegressionUser=anonymous", "{}", $token);
   is ($json->{success}, 0, "can't remove hunt name and id from hunts with no matches");
-  $json = viewerPostToken("/api/hunt?molochRegressionUser=anonymous", '{"totalSessions":1,"name":"test hunt","size":"50","search":"coconut","searchType":"ascii","type":"raw","src":true,"dst":true,"query":{"startTime":18000,"stopTime":1536872891}}', $token);
+  $json = viewerPostToken("/api/hunt?arkimeRegressionUser=anonymous", '{"totalSessions":1,"name":"test hunt","size":"50","search":"coconut","searchType":"ascii","type":"raw","src":true,"dst":true,"query":{"startTime":18000,"stopTime":1536872891}}', $token);
   my $id8 = $json->{hunt}->{id};
   viewerGet("/regressionTests/processHuntJobs");
-  $json = viewerPutToken("/api/hunt/$id8/removefromsessions?molochRegressionUser=anonymous", "{}", $token);
+  $json = viewerPutToken("/api/hunt/$id8/removefromsessions?arkimeRegressionUser=anonymous", "{}", $token);
   is ($json->{success}, 1, "can remove hunt name and id from sessions");
 
 # can update hunt description
@@ -275,7 +275,7 @@ my $hToken = getTokenCookie('huntuser');
   is ($hunts->{data}->[4]->{description}, "awesome new description", "description updated");
 
 # validate that user can't access hunt secret fields because of hunt roles
-  $hunts = viewerGetToken("/api/hunts?all&molochRegressionUser=user3", $nonadminToken);
+  $hunts = viewerGetToken("/api/hunts?all&arkimeRegressionUser=user3", $nonadminToken);
   my ($viewHunt, $badHunt);
   foreach my $item (@{$hunts->{data}}) {
     is ($item->{id}, "", "should be missing id field");
@@ -293,7 +293,7 @@ my $hToken = getTokenCookie('huntuser');
   is ($hunts->{data}->[4]->{roles}->[0], "arkimeUser", "roles updated");
 
 # validate that user can access hunt secrets now that the role is set
-  $hunts = viewerGetToken("/api/hunts?all&molochRegressionUser=user3", $nonadminToken);
+  $hunts = viewerGetToken("/api/hunts?all&arkimeRegressionUser=user3", $nonadminToken);
   ok(exists $hunts->{data}->[4]->{id});
   isnt($hunts->{data}->[4]->{id}, "", "should have id field");
   ok(exists $hunts->{data}->[4]->{userId});
@@ -307,11 +307,11 @@ my $hToken = getTokenCookie('huntuser');
 
 
 # cleanup
-  viewerDeleteToken("/api/hunt/$id5?molochRegressionUser=anonymous", $token);
-  viewerDeleteToken("/api/hunt/$id6?molochRegressionUser=anonymous", $token);
-  viewerDeleteToken("/api/hunt/$id7?molochRegressionUser=anonymous", $token);
-  viewerDeleteToken("/api/hunt/$id8?molochRegressionUser=anonymous", $token);
-  viewerDeleteToken("/api/view/$viewId?molochRegressionUser=user2", $otherToken);
+  viewerDeleteToken("/api/hunt/$id5?arkimeRegressionUser=anonymous", $token);
+  viewerDeleteToken("/api/hunt/$id6?arkimeRegressionUser=anonymous", $token);
+  viewerDeleteToken("/api/hunt/$id7?arkimeRegressionUser=anonymous", $token);
+  viewerDeleteToken("/api/hunt/$id8?arkimeRegressionUser=anonymous", $token);
+  viewerDeleteToken("/api/view/$viewId?arkimeRegressionUser=user2", $otherToken);
 
 
 # multiget should return an error
@@ -327,12 +327,12 @@ my $hToken = getTokenCookie('huntuser');
   sub createHunts {
     my ($stype, $str) = @_;
 
-    $HUNTS{"raw-$stype-both-$str"} = viewerPostToken("/api/hunt?molochRegressionUser=huntuser", '{"totalSessions":1,"name":"' . "raw-$stype-both-$str-$$" . '", "size":"50","search":"' . $str . '","searchType":"' . $stype . '","type":"raw","src":true,"dst":true,"query":{"startTime":18000,"stopTime":1536872891, "expression": "file == *http-wrapped-header.pcap"}}', $hToken);
-    $HUNTS{"raw-$stype-src-$str"} = viewerPostToken("/api/hunt?molochRegressionUser=huntuser", '{"totalSessions":1,"name":"' . "raw-$stype-src-$str-$$" . '", "size":"50","search":"' . $str . '","searchType":"' . $stype . '","type":"raw","src":true,"dst":false,"query":{"startTime":18000,"stopTime":1536872891, "expression": "file == *http-wrapped-header.pcap"}}', $hToken);
-    $HUNTS{"raw-$stype-dst-$str"} = viewerPostToken("/api/hunt?molochRegressionUser=huntuser", '{"totalSessions":1,"name":"' . "raw-$stype-dst-$str-$$" . '", "size":"50","search":"' . $str . '","searchType":"' . $stype . '","type":"raw","src":false,"dst":true,"query":{"startTime":18000,"stopTime":1536872891, "expression": "file == *http-wrapped-header.pcap"}}', $hToken);
-    $HUNTS{"reassembled-$stype-both-$str"} = viewerPostToken("/api/hunt?molochRegressionUser=huntuser", '{"totalSessions":1,"name":"' . "reassembled-$stype-both-$str-$$" . '", "size":"50","search":"' . $str . '","searchType":"' . $stype . '","type":"reassembled","src":true,"dst":true,"query":{"startTime":18000,"stopTime":1536872891, "expression": "file == *http-wrapped-header.pcap"}}', $hToken);
-    $HUNTS{"reassembled-$stype-src-$str"} = viewerPostToken("/api/hunt?molochRegressionUser=huntuser", '{"totalSessions":1,"name":"' . "reassembled-$stype-src-$str-$$" . '", "size":"50","search":"' . $str . '","searchType":"' . $stype . '","type":"reassembled","src":true,"dst":false,"query":{"startTime":18000,"stopTime":1536872891, "expression": "file == *http-wrapped-header.pcap"}}', $hToken);
-    $HUNTS{"reassembled-$stype-dst-$str"} = viewerPostToken("/api/hunt?molochRegressionUser=huntuser", '{"totalSessions":1,"name":"' . "reassembled-$stype-dst-$str-$$" . '", "size":"50","search":"' . $str . '","searchType":"' . $stype . '","type":"reassembled","src":false,"dst":true,"query":{"startTime":18000,"stopTime":1536872891, "expression": "file == *http-wrapped-header.pcap"}}', $hToken);
+    $HUNTS{"raw-$stype-both-$str"} = viewerPostToken("/api/hunt?arkimeRegressionUser=huntuser", '{"totalSessions":1,"name":"' . "raw-$stype-both-$str-$$" . '", "size":"50","search":"' . $str . '","searchType":"' . $stype . '","type":"raw","src":true,"dst":true,"query":{"startTime":18000,"stopTime":1536872891, "expression": "file == *http-wrapped-header.pcap"}}', $hToken);
+    $HUNTS{"raw-$stype-src-$str"} = viewerPostToken("/api/hunt?arkimeRegressionUser=huntuser", '{"totalSessions":1,"name":"' . "raw-$stype-src-$str-$$" . '", "size":"50","search":"' . $str . '","searchType":"' . $stype . '","type":"raw","src":true,"dst":false,"query":{"startTime":18000,"stopTime":1536872891, "expression": "file == *http-wrapped-header.pcap"}}', $hToken);
+    $HUNTS{"raw-$stype-dst-$str"} = viewerPostToken("/api/hunt?arkimeRegressionUser=huntuser", '{"totalSessions":1,"name":"' . "raw-$stype-dst-$str-$$" . '", "size":"50","search":"' . $str . '","searchType":"' . $stype . '","type":"raw","src":false,"dst":true,"query":{"startTime":18000,"stopTime":1536872891, "expression": "file == *http-wrapped-header.pcap"}}', $hToken);
+    $HUNTS{"reassembled-$stype-both-$str"} = viewerPostToken("/api/hunt?arkimeRegressionUser=huntuser", '{"totalSessions":1,"name":"' . "reassembled-$stype-both-$str-$$" . '", "size":"50","search":"' . $str . '","searchType":"' . $stype . '","type":"reassembled","src":true,"dst":true,"query":{"startTime":18000,"stopTime":1536872891, "expression": "file == *http-wrapped-header.pcap"}}', $hToken);
+    $HUNTS{"reassembled-$stype-src-$str"} = viewerPostToken("/api/hunt?arkimeRegressionUser=huntuser", '{"totalSessions":1,"name":"' . "reassembled-$stype-src-$str-$$" . '", "size":"50","search":"' . $str . '","searchType":"' . $stype . '","type":"reassembled","src":true,"dst":false,"query":{"startTime":18000,"stopTime":1536872891, "expression": "file == *http-wrapped-header.pcap"}}', $hToken);
+    $HUNTS{"reassembled-$stype-dst-$str"} = viewerPostToken("/api/hunt?arkimeRegressionUser=huntuser", '{"totalSessions":1,"name":"' . "reassembled-$stype-dst-$str-$$" . '", "size":"50","search":"' . $str . '","searchType":"' . $stype . '","type":"reassembled","src":false,"dst":true,"query":{"startTime":18000,"stopTime":1536872891, "expression": "file == *http-wrapped-header.pcap"}}', $hToken);
   }
 
   # Check hunt vars given name and what the match count should be
@@ -367,7 +367,7 @@ my $hToken = getTokenCookie('huntuser');
   createHunts("hexregex", "766..63d");
 
   # create a hunt for regex dos
-  $HUNTS{"raw-regex-both-(.*a){25}x"} = viewerPostToken("/api/hunt?molochRegressionUser=huntuser", '{"totalSessions":67,"name":"' . "raw-regex-both-(.*a){25}x-$$" . '", "size":"50","search":"(.*a){25}x","searchType":"regex","type":"raw","src":true,"dst":true,"query":{"startTime":1430916462,"stopTime":1569170858,"expression":"tags != bdat*"}}', $hToken);
+  $HUNTS{"raw-regex-both-(.*a){25}x"} = viewerPostToken("/api/hunt?arkimeRegressionUser=huntuser", '{"totalSessions":67,"name":"' . "raw-regex-both-(.*a){25}x-$$" . '", "size":"50","search":"(.*a){25}x","searchType":"regex","type":"raw","src":true,"dst":true,"query":{"startTime":1430916462,"stopTime":1569170858,"expression":"tags != bdat*"}}', $hToken);
 
   # Actually process the hunts
   viewerGet("/regressionTests/processHuntJobs");
@@ -445,7 +445,7 @@ my $hToken = getTokenCookie('huntuser');
 
 # cleanup
   $json = viewerDeleteToken("/api/user/huntuser", $token);
-  viewerDeleteToken("/api/hunt/$id1?molochRegressionUser=anonymous", $token);
-  viewerDeleteToken("/api/hunt/$id3?molochRegressionUser=anonymous", $token);
+  viewerDeleteToken("/api/hunt/$id1?arkimeRegressionUser=anonymous", $token);
+  viewerDeleteToken("/api/hunt/$id3?arkimeRegressionUser=anonymous", $token);
   esPost("/tests_hunts/_delete_by_query?conflicts=proceed&refresh", '{ "query": { "match_all": {} } }');
-  viewerDeleteToken("/api/view/${viewId}?molochRegressionUser=user2", $otherToken);
+  viewerDeleteToken("/api/view/${viewId}?arkimeRegressionUser=user2", $otherToken);

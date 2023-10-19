@@ -1,7 +1,7 @@
 use Test::More tests => 87;
 use Cwd;
 use URI::Escape;
-use MolochTest;
+use ArkimeTest;
 use Data::Dumper;
 use JSON;
 use Test::Differences;
@@ -119,7 +119,7 @@ my $test1Token = getTokenCookie("test1");
     $result = viewerPostToken("/api/esshards/foobar/1.2.3.4/exclude", "", $token);
     eq_or_diff($result, from_json('{"success": false, "text": "Unknown exclude type"}'), "esshard: exclude foobar");
 
-    $result = viewerPostToken("/api/esshards/foobar/1.2.3.4/exclude?molochRegressionUser=test1", "", $test1Token);
+    $result = viewerPostToken("/api/esshards/foobar/1.2.3.4/exclude?arkimeRegressionUser=test1", "", $test1Token);
     eq_or_diff($result, from_json('{"success": false, "text": "You do not have permission to access this resource"}'), "esshard: exclude not admin");
 
     $shards = viewerGet("/api/esshards");
@@ -138,7 +138,7 @@ my $test1Token = getTokenCookie("test1");
     $result = viewerPostToken("/api/esshards/foobar/1.2.3.4/include", "", $token);
     eq_or_diff($result, from_json('{"success": false, "text": "Unknown include type"}'), "esshard: include foodbar");
 
-    $result = viewerPostToken("/api/esshards/foobar/1.2.3.4/include?molochRegressionUser=test1", "", $test1Token);
+    $result = viewerPostToken("/api/esshards/foobar/1.2.3.4/include?arkimeRegressionUser=test1", "", $test1Token);
     eq_or_diff($result, from_json('{"success": false, "text": "You do not have permission to access this resource"}'), "esshard: include not admin");
 
     $shards = viewerGet("/api/esshards");

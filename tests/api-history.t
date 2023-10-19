@@ -1,7 +1,7 @@
 use Test::More tests => 47;
 use Cwd;
 use URI::Escape;
-use MolochTest;
+use ArkimeTest;
 use JSON;
 use Test::Differences;
 use Data::Dumper;
@@ -31,26 +31,26 @@ my ($url) = @_;
     esGet("/_refresh");
 
 # Make a request
-    countTest(4, "molochRegressionUser=historytest1&date=-1&expression=" . uri_escape("(file=$pwd/socks-https-example.pcap||file=$pwd/dns-mx.pcap)&&tags=domainwise"));
+    countTest(4, "arkimeRegressionUser=historytest1&date=-1&expression=" . uri_escape("(file=$pwd/socks-https-example.pcap||file=$pwd/dns-mx.pcap)&&tags=domainwise"));
     sleep(2);
     esGet("/_flush");
     esGet("/_refresh");
 
 # See if recorded, should be the only item that is ours
-    my $json = viewerGet("/api/histories?molochRegressionUser=historytest1");
+    my $json = viewerGet("/api/histories?arkimeRegressionUser=historytest1");
     is ($json->{recordsFiltered}, 1, "Test1: recordsFiltered");
     my $item = $json->{data}->[0];
     is ($item->{expression}, "(file=$pwd/socks-https-example.pcap||file=$pwd/dns-mx.pcap)&&tags=domainwise", "Test1: expression");
     is ($item->{uiPage}, "sessions", "Test1: uiPage");
     is ($item->{api}, "/sessions.json", "Test1: api");
-    is ($item->{query}, "molochRegressionUser=historytest1&date=-1&expression=(file=*/pcap/socks-https-example.pcap||file=*/pcap/dns-mx.pcap)&&tags=domainwise", "Test1: query");
+    is ($item->{query}, "arkimeRegressionUser=historytest1&date=-1&expression=(file=*/pcap/socks-https-example.pcap||file=*/pcap/dns-mx.pcap)&&tags=domainwise", "Test1: query");
     is ($item->{userId}, "historytest1", "Test1: userId");
     is ($item->{recordsReturned}, 4, "Test1: recordsReturned");
     is ($item->{recordsFiltered}, 4, "Test1: recordsFiltered");
     cmp_ok ($item->{recordsTotal}, '>=', 80, "recordsTotal");
 
 # Check Multi
-    my $mjson = multiGet("/api/histories?molochRegressionUser=historytest1");
+    my $mjson = multiGet("/api/histories?arkimeRegressionUser=historytest1");
     my $index = $json->{data}->[0]->{index};
     delete $json->{data}->[0]->{index};
     delete $mjson->{data}->[0]->{index};
@@ -59,19 +59,19 @@ my ($url) = @_;
     $json->{data}->[0]->{index} = $index;
 
 # Make sure another user doesn't see our history
-    $json = get("/api/histories?molochRegressionUser=historytest2");
+    $json = get("/api/histories?arkimeRegressionUser=historytest2");
     is ($json->{recordsFiltered}, 0, "Test2: recordsFiltered");
 
 # Make sure another user doesn't see our history when time given
-    $json = get("/api/histories?molochRegressionUser=historytest2&startTime=0&stopTime=2147483647");
+    $json = get("/api/histories?arkimeRegressionUser=historytest2&startTime=0&stopTime=2147483647");
     is ($json->{recordsFiltered}, 0, "Test2: recordsFiltered");
 
 # Make sure can't request someone elses
-    $json = get("/api/histories?molochRegressionUser=historytest2&userId=historytest1");
+    $json = get("/api/histories?arkimeRegressionUser=historytest2&userId=historytest1");
     eq_or_diff($json, from_json('{"success": false, "text": "Need admin privileges"}'));
 
 # Make sure can't request ours with wildcard
-    $json = get("/api/histories?molochRegressionUser=historytest2&userId=historytest2*");
+    $json = get("/api/histories?arkimeRegressionUser=historytest2&userId=historytest2*");
     eq_or_diff($json, from_json('{"success": false, "text": "Need admin privileges"}'));
 
 # An admin user should see everything, find it
@@ -118,7 +118,7 @@ my ($url) = @_;
     is ($json->{recordsFiltered}, 0, "Test5: recordsFiltered");
 
 # Can't delete items when not admin
-    $json = viewerDeleteToken("/api/history/$item->{id}?molochRegressionUser=historytest1", $otherToken);
+    $json = viewerDeleteToken("/api/history/$item->{id}?arkimeRegressionUser=historytest1", $otherToken);
     eq_or_diff($json, from_json('{"success": false, "text": "You do not have permission to access this resource"}', {relaxed => 1}), "Test Delete Not Admin", { context => 3 });
 
 # Delete item no index
@@ -131,7 +131,7 @@ my ($url) = @_;
     esGet("/_refresh");
 
 # Make sure gone
-    $json = get("/api/histories?molochRegressionUser=historytest1");
+    $json = get("/api/histories?arkimeRegressionUser=historytest1");
     is ($json->{recordsFiltered}, 0, "Should be no items");
 
 # An admin user should see forced expressions for users
@@ -142,13 +142,13 @@ my ($url) = @_;
     esGet("/_flush");
 
     # issue a request as the user with the forced expression
-    countTest(1, "molochRegressionUser=historytest2&date=-1&expression=" . uri_escape("(file=$pwd/socks-https-example.pcap||file=$pwd/dns-mx.pcap)&&tags=domainwise"));
+    countTest(1, "arkimeRegressionUser=historytest2&date=-1&expression=" . uri_escape("(file=$pwd/socks-https-example.pcap||file=$pwd/dns-mx.pcap)&&tags=domainwise"));
     sleep(2);
     esGet("/_refresh");
     esGet("/_flush");
 
     # find and delete the user/create history item
-    $json = viewerGet("/api/histories?molochRegressionUser=anonymous");
+    $json = viewerGet("/api/histories?arkimeRegressionUser=anonymous");
     $item = $json->{data}->[0];
     $json = viewerDeleteToken("/api/history/$item->{id}?index=$item->{index}", $token);
 
@@ -164,7 +164,7 @@ my ($url) = @_;
     is ($found2, 1, "Admin should see forcedExpression in history");
 
 # A nonadmin user should not see forcedExpression
-  $json = viewerGet("/api/histories?molochRegressionUser=historytest2");
+  $json = viewerGet("/api/histories?arkimeRegressionUser=historytest2");
 
   my $found3 = 0;
   foreach my $item4 (@{$json->{data}}) {
@@ -191,7 +191,7 @@ my ($url) = @_;
     esGet("/_flush");
 
 # Check history for delete
-    $json = viewerGet("/api/histories?molochRegressionUser=anonymous&sortField=timestamp&desc=true");
+    $json = viewerGet("/api/histories?arkimeRegressionUser=anonymous&sortField=timestamp&desc=true");
     is ($json->{recordsFiltered}, 2, "Delete: recordsFiltered");
     $item = $json->{data}->[0];
     is ($item->{api}, "/api/user/historytest2", "Delete: api");

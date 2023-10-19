@@ -1,6 +1,6 @@
 # Test config
 use lib ".";
-use MolochTest;
+use ArkimeTest;
 use Test::More tests => 34;
 use Test::Differences;
 use Data::Dumper;
@@ -25,7 +25,7 @@ print FH <<EOF;
 EOF
 close(FH);
 
-system("curl -s -k ${MolochTest::elasticsearch}/testconfig/_doc/testconfig -d @../viewer/public/testconfig.json -H 'Content-Type: application/json' > /dev/null");
+system("curl -s -k ${ArkimeTest::elasticsearch}/testconfig/_doc/testconfig -d @../viewer/public/testconfig.json -H 'Content-Type: application/json' > /dev/null");
 esGet("/_refresh");
 
 my ($out, $es, $url);
@@ -111,7 +111,7 @@ var=2
 
 #### ELASTICSEARCH JSON
 
-$es = "${MolochTest::elasticsearch}/testconfig/_doc/testconfig";
+$es = "${ArkimeTest::elasticsearch}/testconfig/_doc/testconfig";
 $es =~ s/^http/elasticsearch/;
 
 $out = `node ../viewer/viewer.js -c $es -o foo=bar -n test --regressionTests --dumpConfig 2>&1 1>/dev/null`;
@@ -143,7 +143,7 @@ var=2
 
 #### NOTFOUND ELASTICSEARCH JSON
 
-$es = "${MolochTest::elasticsearch}/testconfig/_doc/notfound";
+$es = "${ArkimeTest::elasticsearch}/testconfig/_doc/notfound";
 $es =~ s/^http/elasticsearch/;
 
 $out = `node ../viewer/viewer.js -c $es -o foo=bar -n test --regressionTests --dumpConfig 2>&1 1>/dev/null`;
@@ -167,7 +167,7 @@ eq_or_diff($out, "");
 
 #### HTTP JSON
 
-$url = "${MolochTest::elasticsearch}/testconfig/_source/testconfig";
+$url = "${ArkimeTest::elasticsearch}/testconfig/_source/testconfig";
 
 $out = `node ../viewer/viewer.js -c $url -o foo=bar -n test --regressionTests --dumpConfig 2>&1 1>/dev/null`;
 eq_or_diff($out, "OVERRIDE Map(2) { \'default.foo\' => \'bar\', \'test.foo\' => \'bar\' }
@@ -198,7 +198,7 @@ var=2
 
 #### NOTFOUND HTTP JSON
 
-$url = "${MolochTest::elasticsearch}/testconfig/_source/notfound";
+$url = "${ArkimeTest::elasticsearch}/testconfig/_source/notfound";
 
 $out = `node ../viewer/viewer.js -c $url -o foo=bar -n test --regressionTests --dumpConfig 2>&1 1>/dev/null`;
 eq_or_diff($out, "OVERRIDE Map(2) { \'default.foo\' => \'bar\', \'test.foo\' => \'bar\' }
