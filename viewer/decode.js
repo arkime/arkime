@@ -677,7 +677,7 @@ class ItemHTTPStream extends ItemTransform {
 
         const info = {
           bodyNum: ++this.bodyNum,
-          bodyName: this.url.split(/[/?=]/).pop(),
+          bodyName: this.url?.split(/[/?=]/).pop(),
           bodyType: 'file',
           itemPos: ++this.itemPos
         };
