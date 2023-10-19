@@ -1,7 +1,7 @@
 use Test::More tests => 38;
 use Cwd;
 use URI::Escape;
-use MolochTest;
+use ArkimeTest;
 use Test::Differences;
 use strict;
 
@@ -9,8 +9,8 @@ use strict;
 sub get {
 my ($param) = @_;
 
-    my $txt = $MolochTest::userAgent->get("http://$MolochTest::host:8123/multiunique.txt?$param")->content;
-    my $mtxt = $MolochTest::userAgent->get("http://$MolochTest::host:8125/multiunique.txt?$param")->content;
+    my $txt = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8123/multiunique.txt?$param")->content;
+    my $mtxt = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8125/multiunique.txt?$param")->content;
     my @lines = split(/\n/, $txt);
     my @mlines = split(/\n/, $mtxt);
 
@@ -26,8 +26,8 @@ my ($param) = @_;
 sub post {
     my ($content) = @_;
 
-    my $txt = $MolochTest::userAgent->post("http://$MolochTest::host:8123/multiunique.txt", Content => $content, "Content-Type" => "application/json;charset=UTF-8")->content;
-    my $mtxt = $MolochTest::userAgent->post("http://$MolochTest::host:8125/multiunique.txt", Content => $content, "Content-Type" => "application/json;charset=UTF-8")->content;
+    my $txt = $ArkimeTest::userAgent->post("http://$ArkimeTest::host:8123/multiunique.txt", Content => $content, "Content-Type" => "application/json;charset=UTF-8")->content;
+    my $mtxt = $ArkimeTest::userAgent->post("http://$ArkimeTest::host:8125/multiunique.txt", Content => $content, "Content-Type" => "application/json;charset=UTF-8")->content;
     my @lines = split(/\n/, $txt);
     my @mlines = split(/\n/, $mtxt);
 

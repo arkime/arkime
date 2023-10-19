@@ -1475,7 +1475,7 @@ function writeIssues (req, res, next, successObj, errorText, sendIssues) {
 if (ArkimeConfig.regressionTests) {
   app.get('/parliament/api/regressionTests/makeToken', (req, res, next) => {
     req.user = {
-      userId: req.query.molochRegressionUser ?? 'anonymous'
+      userId: req.query.arkimeRegressionUser ?? 'anonymous'
     };
     setCookie(req, res, next);
     return res.end();

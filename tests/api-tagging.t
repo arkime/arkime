@@ -1,7 +1,7 @@
 use Test::More tests => 72;
 use Cwd;
 use URI::Escape;
-use MolochTest;
+use ArkimeTest;
 use JSON;
 use Data::Dumper;
 use strict;

@@ -1,7 +1,7 @@
 use Test::More;
 use Cwd;
 use URI::Escape;
-use MolochTest;
+use ArkimeTest;
 use JSON;
 use Test::Differences;
 use Data::Dumper;
@@ -25,7 +25,7 @@ my ($tag, $compression, $extension, $gap) = @_;
     # Test 1
     my $json = countTest2(1, "date=-1&expression=" . uri_escape("tags=$tag && port.src == 54072"));
     my $id = $json->{data}->[0]->{id};
-    my $content = $MolochTest::userAgent->get("http://$MolochTest::host:8124/api/session/s3/$id/packets?line=false&ts=false&base=ascii")->content;
+    my $content = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8124/api/session/s3/$id/packets?line=false&ts=false&base=ascii")->content;
 
     # Test string crosses 2 packets
     ok ($content =~ /domain in examples without prior coordination or asking for permission/);
@@ -33,7 +33,7 @@ my ($tag, $compression, $extension, $gap) = @_;
     # Test 2
     $json = countTest2(1, "date=-1&expression=" . uri_escape("tags=$tag && ip.src == 172.17.96.143:59221"));
     $id = $json->{data}->[0]->{id};
-    $content = $MolochTest::userAgent->get("http://$MolochTest::host:8124/api/session/s3/$id/packets?line=false&ts=false&base=ascii")->content;
+    $content = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8124/api/session/s3/$id/packets?line=false&ts=false&base=ascii")->content;
 
     # Test string crosses 2 packets
     ok ($content =~ /NWIXML:notificationSequence xmlns:/);

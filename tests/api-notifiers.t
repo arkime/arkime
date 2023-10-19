@@ -1,7 +1,7 @@
 use Test::More tests => 57;
 use Cwd;
 use URI::Escape;
-use MolochTest;
+use ArkimeTest;
 use JSON;
 use Test::Differences;
 use Data::Dumper;
@@ -43,7 +43,7 @@ esPost("/tests_notifiers/_delete_by_query?conflicts=proceed&refresh", '{ "query"
 # create notifier requires token and admin access
   $json = viewerPost("/api/notifier", '{}');
   is($json->{text}, "Missing token", "create notifier requires token");
-  $json = viewerPostToken("/api/notifier?molochRegressionUser=notadmin", '{}', $notAdminToken);
+  $json = viewerPostToken("/api/notifier?arkimeRegressionUser=notadmin", '{}', $notAdminToken);
   is($json->{text}, "You do not have permission to access this resource", "create notifier requires admin");
 
 # create notifier needs valid notifier type
@@ -75,7 +75,7 @@ esPost("/tests_notifiers/_delete_by_query?conflicts=proceed&refresh", '{ "query"
   ok(exists $json->{notifier}->{created}, "created field was set");
 
 # update notifier requires admin access
-  $json = viewerPutToken("/api/notifier/$id1?molochRegressionUser=notadmin", '{}', $notAdminToken);
+  $json = viewerPutToken("/api/notifier/$id1?arkimeRegressionUser=notadmin", '{}', $notAdminToken);
   is($json->{text}, "You do not have permission to access this resource", "update notifier requires admin");
 
 # update notifier needs valid id
@@ -117,7 +117,7 @@ esPost("/tests_notifiers/_delete_by_query?conflicts=proceed&refresh", '{ "query"
   my $id3 = $json->{notifier}->{id};
 
 # user can see shared notifier only but non admin no fields
-  $notifiers = viewerGetToken("/api/notifiers?molochRegressionUser=notadmin", $notAdminToken);
+  $notifiers = viewerGetToken("/api/notifiers?arkimeRegressionUser=notadmin", $notAdminToken);
   is (@{$notifiers}, 1, "Single notifier shared with notadmin user");
   ok(exists $notifiers->[0], "notifier update");
   ok(!exists $notifiers->[0]->{fields}, "fields shouldn't exist for non admin");
@@ -129,7 +129,7 @@ esPost("/tests_notifiers/_delete_by_query?conflicts=proceed&refresh", '{ "query"
   my $id4 = $json->{notifier}->{id};
 
 # notadmin user cannot see id4 notifier
-  $notifiers = viewerGetToken("/api/notifiers?molochRegressionUser=notadmin", $notAdminToken);
+  $notifiers = viewerGetToken("/api/notifiers?arkimeRegressionUser=notadmin", $notAdminToken);
   is (@{$notifiers}, 1, "Still single notifier shared with notadmin user");
 
 # can update shared users and returns invalid users
@@ -145,7 +145,7 @@ esPost("/tests_notifiers/_delete_by_query?conflicts=proceed&refresh", '{ "query"
   is($json->{notifier}->{roles}->[1], "parliamentUser", "roles updated");
 
 # notadmin user can now see see id4 notifier
-  $notifiers = viewerGetToken("/api/notifiers?molochRegressionUser=notadmin", $notAdminToken);
+  $notifiers = viewerGetToken("/api/notifiers?arkimeRegressionUser=notadmin", $notAdminToken);
   is (@{$notifiers}, 2, "2 notifiers shared with notadmin user (one by user sharing and one by role sharing)");
   is (${notifiers}->[0]->{name}, "test3", 'can see notifier shared by users');
   is (${notifiers}->[1]->{name}, "test4", 'can see notifier shared by roles');

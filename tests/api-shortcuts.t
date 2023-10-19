@@ -1,7 +1,7 @@
 use Test::More tests => 105;
 use Cwd;
 use URI::Escape;
-use MolochTest;
+use ArkimeTest;
 use JSON;
 use Test::Differences;
 use Data::Dumper;
@@ -76,8 +76,8 @@ $json = viewerPutToken("/api/shortcut/$shortcut1Id", '{"name":"test_shortcut_upd
 esGet("/_refresh");
 countTest(1, "date=-1&expression=" . uri_escape("file=*/pcap/bt-udp.pcap&&ip.dst=\$test_shortcut_updated"));
 countTest(2, "date=-1&expression=" . uri_escape("file=*/pcap/bt-udp.pcap&&ip.dst!=\$test_shortcut_updated"));
-countTest(0, "molochRegressionUser=user2&date=-1&expression=" . uri_escape("file=*/pcap/bt-udp.pcap&&ip.dst=\$test_shortcut_updated"));
-countTest(0, "molochRegressionUser=user2&date=-1&expression=" . uri_escape("file=*/pcap/bt-udp.pcap&&ip.dst!=\$test_shortcut_updated"));
+countTest(0, "arkimeRegressionUser=user2&date=-1&expression=" . uri_escape("file=*/pcap/bt-udp.pcap&&ip.dst=\$test_shortcut_updated"));
+countTest(0, "arkimeRegressionUser=user2&date=-1&expression=" . uri_escape("file=*/pcap/bt-udp.pcap&&ip.dst!=\$test_shortcut_updated"));
 countTest(2, "date=-1&expression=" . uri_escape("file=*/pcap/bt-udp.pcap&&ip!=\$test_shortcut_updated"));
 
 # create another ip shortcut
@@ -92,8 +92,8 @@ countTest(1, "date=-1&expression=" . uri_escape("file=*/pcap/bt-udp.pcap&&ip!=[\
 # same tests with multi
 countTestMulti(1, "date=-1&expression=" . uri_escape("file=*/pcap/bt-udp.pcap&&ip.dst=\$test_shortcut_updated"));
 countTestMulti(2, "date=-1&expression=" . uri_escape("file=*/pcap/bt-udp.pcap&&ip.dst!=\$test_shortcut_updated"));
-countTestMulti(0, "molochRegressionUser=user2&date=-1&expression=" . uri_escape("file=*/pcap/bt-udp.pcap&&ip.dst=\$test_shortcut_updated"));
-countTestMulti(0, "molochRegressionUser=user2&date=-1&expression=" . uri_escape("file=*/pcap/bt-udp.pcap&&ip.dst!=\$test_shortcut_updated"));
+countTestMulti(0, "arkimeRegressionUser=user2&date=-1&expression=" . uri_escape("file=*/pcap/bt-udp.pcap&&ip.dst=\$test_shortcut_updated"));
+countTestMulti(0, "arkimeRegressionUser=user2&date=-1&expression=" . uri_escape("file=*/pcap/bt-udp.pcap&&ip.dst!=\$test_shortcut_updated"));
 countTestMulti(2, "date=-1&expression=" . uri_escape("file=*/pcap/bt-udp.pcap&&ip!=\$test_shortcut_updated"));
 countTestMulti(1, "date=-1&expression=" . uri_escape("file=*/pcap/bt-udp.pcap&&ip.dst!=[\$test_shortcut_updated,\$ip_shortcut]"));
 countTestMulti(2, "date=-1&expression=" . uri_escape("file=*/pcap/bt-udp.pcap&&ip.dst==[\$test_shortcut_updated,\$ip_shortcut]"));
@@ -103,20 +103,20 @@ countTestMulti(1, "date=-1&expression=" . uri_escape("file=*/pcap/bt-udp.pcap&&i
 $json = viewerDeleteToken("/api/shortcut/$ipShortcutId", $token); # cleanup
 
 # create shortcut by another user
-$json = viewerPostToken("/api/shortcut?molochRegressionUser=user2", '{"name":"other_test_shortcut","type":"string","value":"udp"}', $otherToken);
+$json = viewerPostToken("/api/shortcut?arkimeRegressionUser=user2", '{"name":"other_test_shortcut","type":"string","value":"udp"}', $otherToken);
 ok($json->{success}, "create shortcut success");
 my $shortcut2Id = $json->{shortcut}->{id}; # save id for cleanup later
 
 # get shortcuts should have 1
-$shortcuts = viewerGet("/api/shortcuts?molochRegressionUser=user2");
+$shortcuts = viewerGet("/api/shortcuts?arkimeRegressionUser=user2");
 is(@{$shortcuts->{data}}, 1, "1 shortcut for this user");
 
 # multi get shortcuts all should have 1
-$shortcuts = multiGet("/api/shortcuts?molochRegressionUser=user2");
+$shortcuts = multiGet("/api/shortcuts?arkimeRegressionUser=user2");
 is(@{$shortcuts->{data}}, 1, "1 shortcut for this user");
 
 # create a shortcut by another user
-$json = viewerPostToken("/api/shortcut?molochRegressionUser=user2", '{"name":"other_test_shortcut_2","type":"string","value":"udp"}', $otherToken);
+$json = viewerPostToken("/api/shortcut?arkimeRegressionUser=user2", '{"name":"other_test_shortcut_2","type":"string","value":"udp"}', $otherToken);
 ok($json->{success}, "create shortcut success");
 my $shortcut3Id = $json->{shortcut}->{id}; # save id for cleanup later
 
@@ -125,7 +125,7 @@ $json = viewerPutToken("/api/shortcut/$shortcut3Id", '{"name":"test_shortcut_upd
 ok(!$json->{success}, "unique shortcut names");
 
 # unshared shortcut can't be seen by nonadmin users
-$shortcuts = viewerGet('/api/shortcuts?molochRegressionUser=user3');
+$shortcuts = viewerGet('/api/shortcuts?arkimeRegressionUser=user3');
 is(@{$shortcuts->{data}}, 0, "user3 has no shortcuts shared with them");
 
 # can share shortcut with users
@@ -135,11 +135,11 @@ is($json->{shortcut}->{users}->[0], "user2", "create user shared shortcut");
 my $shortcut4Id = $json->{shortcut}->{id}; # save id for cleanup later
 
 # user2 can see shortcut shared with just them
-$shortcuts = viewerGet("/api/shortcuts?molochRegressionUser=user2");
+$shortcuts = viewerGet("/api/shortcuts?arkimeRegressionUser=user2");
 is(@{$shortcuts->{data}}, 3, "3 shortcut for this user");
 
 # but a user3 cannot see that shortcut
-$shortcuts = viewerGet("/api/shortcuts?molochRegressionUser=user3");
+$shortcuts = viewerGet("/api/shortcuts?arkimeRegressionUser=user3");
 is(@{$shortcuts->{data}}, 0, "0 shortcuts for this user");
 
 # share shortcut with roles
@@ -148,12 +148,12 @@ ok($json->{success}, "create shortcut with roles success");
 is($json->{shortcut}->{roles}->[0], "cont3xtUser", "create role shared shortcut");
 
 # user2 can't see shortcut because they don't have that role
-$shortcuts = viewerGet("/api/shortcuts?molochRegressionUser=user2");
+$shortcuts = viewerGet("/api/shortcuts?arkimeRegressionUser=user2");
 is(@{$shortcuts->{data}}, 2, "2 shortcut for this user");
 
 # user2 can see the shortcut because they have the role
 $json = viewerPutToken("/api/shortcut/$shortcut4Id", '{"name":"role_shared_shortcut","type":"string","value":"udp","users":"","roles":["arkimeUser"],"editRoles":[]}', $token);
-$shortcuts = viewerGet("/api/shortcuts?molochRegressionUser=user2");
+$shortcuts = viewerGet("/api/shortcuts?arkimeRegressionUser=user2");
 is(@{$shortcuts->{data}}, 3, "3 shortcut for this user");
 
 # but they can't see users, roles, and editRoles fields if the shortcut is shared with them (they didn't create it, aren't admin, and don't have editRoles)
@@ -168,22 +168,22 @@ ok(exists $shortcuts->{data}->[0]->{users}, 'arkimeAdmin can see users');
 ok(exists $shortcuts->{data}->[0]->{editRoles}, 'arkimeAdmin can see editRoles');
 
 # admin can view all shortcuts when all param is supplied
-$shortcuts = viewerGet("/api/shortcuts?molochRegressionUser=anonymous");
+$shortcuts = viewerGet("/api/shortcuts?arkimeRegressionUser=anonymous");
 eq_or_diff($shortcuts->{recordsTotal}, 2, "returns 2 recordsTotal without all flag");
-$shortcuts = viewerGet("/api/shortcuts?molochRegressionUser=anonymous&all=true");
+$shortcuts = viewerGet("/api/shortcuts?arkimeRegressionUser=anonymous&all=true");
 eq_or_diff($shortcuts->{recordsTotal}, 4, "returns 4 recordsTotal with all flag");
 
 # user2 cannot delete a shortcut they didn't create and don't have editRoles for
-$json = viewerDeleteToken("/api/shortcut/$shortcut4Id?molochRegressionUser=user2", $otherToken);
+$json = viewerDeleteToken("/api/shortcut/$shortcut4Id?arkimeRegressionUser=user2", $otherToken);
 ok(!$json->{success}, "delete shortcut failure");
 
 # user2 can edit shortcut using editRoles
 $json = viewerPutToken("/api/shortcut/$shortcut4Id", '{"name":"role_shared_shortcut","type":"string","value":"udp","users":"","roles":["arkimeUser"],"editRoles":["arkimeUser"]}', $token);
-$json = viewerPutToken("/api/shortcut/$shortcut4Id?molochRegressionUser=user2", '{"name":"role_shared_shortcut","type":"string","value":"udp","users":"","roles":["arkimeUser"],"editRoles":["arkimeUser"]}', $otherToken);
+$json = viewerPutToken("/api/shortcut/$shortcut4Id?arkimeRegressionUser=user2", '{"name":"role_shared_shortcut","type":"string","value":"udp","users":"","roles":["arkimeUser"],"editRoles":["arkimeUser"]}', $otherToken);
 ok($json->{success}, "edit shortcut with editRoles success");
 
 # test2 cannot transfer ownership (not admin or creator)
-$json = viewerPutToken("/api/shortcut/$shortcut4Id?molochRegressionUser=user2", '{"userId":"user2","name":"role_shared_shortcut","type":"string","value":"udp","users":"","roles":["arkimeUser"],"editRoles":["arkimeUser"]}', $otherToken);
+$json = viewerPutToken("/api/shortcut/$shortcut4Id?arkimeRegressionUser=user2", '{"userId":"user2","name":"role_shared_shortcut","type":"string","value":"udp","users":"","roles":["arkimeUser"],"editRoles":["arkimeUser"]}', $otherToken);
 ok(!$json->{success}, "cannot transfer ownership without being admin or creator");
 eq_or_diff($json->{text}, "Permission denied");
 
@@ -238,7 +238,7 @@ $json = viewerDelete("/api/shortcut/$shortcut1Id");
 is($json->{text}, "Missing token", "delete shortcut requires token");
 
 # can't delete another user's shortcuts
-$json = viewerDeleteToken("/api/shortcut/$shortcut1Id?molochRegressionUser=user2", $otherToken);
+$json = viewerDeleteToken("/api/shortcut/$shortcut1Id?arkimeRegressionUser=user2", $otherToken);
 ok(!$json->{success}, "can't delete another user's shortcut");
 is($json->{text}, "Permission denied");
 
@@ -252,7 +252,7 @@ $json = viewerDeleteToken("/api/shortcut/$shortcut1Id", $token);
 ok($json->{success}, "delete shortcut success");
 
 # user2 can delete shortcut using editRoles (plus bonus cleanup)
-$json = viewerDeleteToken("/api/shortcut/$shortcut4Id?molochRegressionUser=user2", $otherToken);
+$json = viewerDeleteToken("/api/shortcut/$shortcut4Id?arkimeRegressionUser=user2", $otherToken);
 ok($json->{success}, "delete shortcut success");
 
 # cleanup
@@ -262,7 +262,7 @@ $json = viewerDeleteToken("/api/shortcut/$shortcut3Id", $token);
 # make sure cleanup worked
 $shortcuts = viewerGet("/api/shortcuts");
 is(@{$shortcuts->{data}}, 0, "Empty shortcuts after cleanup");
-$shortcuts = viewerGet("/api/shortcuts?molochRegressionUser=user2");
+$shortcuts = viewerGet("/api/shortcuts?arkimeRegressionUser=user2");
 is(@{$shortcuts->{data}}, 0, "Empty shortcuts for user2 after cleanup");
 
 # the local (test2) cluster should sync with the remote (test) cluster

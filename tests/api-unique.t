@@ -1,7 +1,7 @@
 use Test::More tests => 42;
 use Cwd;
 use URI::Escape;
-use MolochTest;
+use ArkimeTest;
 use Test::Differences;
 use strict;
 
@@ -12,8 +12,8 @@ viewerPostToken("/api/user", '{"userId": "test1", "userName": "test1", "enabled"
 sub get {
 my ($param) = @_;
 
-    my $txt = $MolochTest::userAgent->get("http://$MolochTest::host:8123/unique.txt?$param")->content;
-    my $mtxt = $MolochTest::userAgent->get("http://$MolochTest::host:8125/unique.txt?$param")->content;
+    my $txt = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8123/unique.txt?$param")->content;
+    my $mtxt = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8125/unique.txt?$param")->content;
 
     $txt =~ s,/[-0-9A-Za-z./_]+tests/pcap/,/DIR/tests/pcap/,g;
     $mtxt =~ s,/[-0-9A-Za-z./_]+tests/pcap/,/DIR/tests/pcap/,g;
@@ -217,7 +217,7 @@ eq_or_diff($txt,
 /DIR/tests/pcap/v6-http.pcap, 6
 ", "filename counts");
 
-$txt = get("date=-1&field=node&expression=$files&counts=1&molochRegressionUser=test1");
+$txt = get("date=-1&field=node&expression=$files&counts=1&arkimeRegressionUser=test1");
 eq_or_diff($txt, "User time limit (72 hours) exceeded\n");
 
 viewerDeleteToken("/api/user/test1", $token);

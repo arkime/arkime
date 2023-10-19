@@ -2,7 +2,7 @@
 use Test::More tests => 42;
 use Cwd;
 use URI::Escape;
-use MolochTest;
+use ArkimeTest;
 use Test::Differences;
 use JSON;
 use Data::Dumper;
@@ -75,7 +75,7 @@ my $json;
     is (!exists $json->{graph}, 1, "Shouldn't have connections.json graph");
     is (!exists $json->{map}, 1, "Shouldn't have connections.json map");
 
-    my $txt = $MolochTest::userAgent->get("http://$MolochTest::host:8124/unique.txt?field=tags")->content;
+    my $txt = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8124/unique.txt?field=tags")->content;
     is ($txt, "", "Empty unique.txt");
 
     $json = viewerGet2("/api/remoteclusters");
