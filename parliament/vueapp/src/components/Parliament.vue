@@ -471,7 +471,7 @@
                             @change="cluster.hideMolochNodes = !cluster.hideMolochNodes"
                           />
                           <strong class="d-inline-block">
-                            {{ stats[cluster.id].molochNodes | commaString }}
+                            {{ stats[cluster.id].arkimeNodes | commaString }}
                           </strong>
                           <small class="d-inline-block">
                             Active Nodes

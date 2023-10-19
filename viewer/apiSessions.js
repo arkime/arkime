@@ -23,7 +23,7 @@ const ArkimeConfig = require('../common/arkimeConfig');
 const Auth = require('../common/auth');
 const Pcap = require('./pcap.js');
 const version = require('../common/version');
-const molochparser = require('./molochparser.js');
+const arkimeparser = require('./arkimeparser.js');
 const internals = require('./internals');
 const ViewerUtils = require('./viewerUtils');
 const ipaddr = require('ipaddr.js');
@@ -219,7 +219,7 @@ class SessionAPIs {
       const view = views[0]._source;
 
       try {
-        const viewExpression = molochparser.parse(view.expression);
+        const viewExpression = arkimeparser.parse(view.expression);
         query.query.bool.filter.push(viewExpression);
         return continueBuildQueryCb(req, query, undefined, finalCb, queryOverride);
       } catch (err) {
@@ -1415,7 +1415,7 @@ class SessionAPIs {
 
     // always complete building the query regardless of shortcuts
     let err;
-    molochparser.parser.yy = {
+    arkimeparser.parser.yy = {
       views: req.user.views,
       fieldsMap: Config.getFieldsMap(),
       dbFieldsMap: Config.getDBFieldsMap(),
@@ -1431,7 +1431,7 @@ class SessionAPIs {
       } else {
         // reqQuery.expression = reqQuery.expression.replace(/\\/g, "\\\\");
         try {
-          query.query.bool.filter.push(molochparser.parse(reqQuery.expression));
+          query.query.bool.filter.push(arkimeparser.parse(reqQuery.expression));
         } catch (e) {
           err = e;
         }

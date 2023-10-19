@@ -1113,7 +1113,7 @@ Pcap.reassemble_generic_ether = function (packets, numPackets, cb) {
 
 // Needs to be rewritten since its possible for packets to be
 // dropped by windowing and other things to actually be displayed allowed.
-// If multiple tcp sessions in one moloch session display can be wacky/wrong.
+// If multiple tcp sessions in one arkime session display can be wacky/wrong.
 Pcap.reassemble_tcp = function (packets, numPackets, skey, cb) {
   try {
     // Remove syn, rst, 0 length packets and figure out min/max seq number
