@@ -384,7 +384,6 @@ function createSessionDetail () {
 
     internals.sessionDetailNew = internals.sessionDetailNew.replace(/div.sessionDetailMeta.bold/g, 'h4.sessionDetailMeta')
       .replace(/dl.sessionDetailMeta/g, 'dl')
-      .replace(/a.moloch-right-click.*molochexpr='([^']+)'.*#{(.*)}/g, "+clickableValue('$1', $2)")
     ;
   });
 }
@@ -593,15 +592,15 @@ function logAction (uiPage) {
       log.recordsFiltered = recordsFiltered;
     };
 
-    req._molochStartTime = new Date();
+    req._arkimeStartTime = new Date();
 
     function finish () {
       res.removeListener('finish', finish);
 
-      log.queryTime = new Date() - req._molochStartTime;
+      log.queryTime = new Date() - req._arkimeStartTime;
 
-      if (req._molochESQuery) { log.esQuery = req._molochESQuery; }
-      if (req._molochESQueryIndices) { log.esQueryIndices = req._molochESQueryIndices; }
+      if (req._arkimeESQuery) { log.esQuery = req._arkimeESQuery; }
+      if (req._arkimeESQueryIndices) { log.esQueryIndices = req._arkimeESQueryIndices; }
 
       try {
         Db.historyIt(log);

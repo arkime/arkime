@@ -530,6 +530,7 @@ jobs:
             - export PATH=/opt/arkime/bin:/data/moloch/bin:$PATH
             - installing: make install
             - cp -r capture/plugins/lua/samples /opt/arkime/lua
+            - npm install license-checker; release/notice.txt.pl /opt/arkime NOTICE release/CAPTURENOTICE > /opt/arkime/NOTICE.txt
             - build-package: |
                 export ARKIME_VERSION=`sed 's/.*"\(.*\)\".*$/\1/' /opt/arkime/common/version.js | head -n 1`
                 fpm -s dir -t deb -n arkime -x opt/arkime/logs -x opt/arkime/raw -v $ARKIME_VERSION --iteration $RELEASE_ITERATION --template-scripts --after-install "release/afterinstall.sh" --url "https://arkime.com" --description "Arkime Full Packet System" -d libwww-perl -d libjson-perl -d ethtool -d libyaml-dev -d liblua5.4-0 -d libmaxminddb0 -d libcurl4 -d libpcap0.8 -d libglib2.0-0 -d libnghttp2-14 -d libyara8  -d librdkafka1 /opt/arkime
@@ -549,6 +550,7 @@ jobs:
             - export PATH=/opt/arkime/bin:$PATH:$PWD/node_modules/.bin
             - installing: make install
             - cp -r capture/plugins/lua/samples /opt/arkime/lua
+            - npm install license-checker; release/notice.txt.pl /opt/arkime NOTICE release/CAPTURENOTICE > /opt/arkime/NOTICE.txt
             - build-package: |
                 export ARKIME_VERSION=`sed 's/.*"\(.*\)\".*$/\1/' /opt/arkime/common/version.js | head -n 1`
                 /root/.local/share/gem/ruby/3.0.0/bin/fpm -s dir -t pacman -n arkime -x opt/arkime/logs -x opt/arkime/raw -v $ARKIME_VERSION --iteration $RELEASE_ITERATION --template-scripts --after-install "release/afterinstall.sh" --url "https://arkime.com" --description "Arkime Full Packet System" -d libmaxminddb -d libpcap -d yara -d perl-http-message -d perl-lwp-protocol-https -d perl-json -d libnet -d lua -d zstd -d openssl-1.1 -d pcre /opt/arkime

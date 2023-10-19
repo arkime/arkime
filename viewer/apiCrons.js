@@ -19,7 +19,7 @@ const internals = require('./internals');
 const SessionAPIs = require('./apiSessions');
 const ViewerUtils = require('./viewerUtils');
 const http = require('http');
-const molochparser = require('./molochparser.js');
+const arkimeparser = require('./arkimeparser.js');
 const Notifier = require('../common/notifier');
 
 class CronAPIs {
@@ -678,7 +678,7 @@ class CronAPIs {
             }
 
             // always complete building the query regardless of shortcuts
-            molochparser.parser.yy = {
+            arkimeparser.parser.yy = {
               emailSearch: user.emailSearch === true,
               fieldsMap: Config.getFieldsMap(),
               dbFieldsMap: Config.getDBFieldsMap(),
@@ -695,7 +695,7 @@ class CronAPIs {
             };
 
             try {
-              query.query.bool.filter.push(molochparser.parse(cq.query));
+              query.query.bool.filter.push(arkimeparser.parse(cq.query));
             } catch (e) {
               console.log("CRON - Couldn't compile periodic query expression", cq, e);
               return forQueriesCb();
@@ -704,8 +704,8 @@ class CronAPIs {
             if (user.getExpression()) {
               try {
                 // Expression was set by admin, so assume email search ok
-                molochparser.parser.yy.emailSearch = true;
-                const userExpression = molochparser.parse(user.getExpression());
+                arkimeparser.parser.yy.emailSearch = true;
+                const userExpression = arkimeparser.parse(user.getExpression());
                 query.query.bool.filter.push(userExpression);
               } catch (e) {
                 console.log("CRON - Couldn't compile user forced expression", user.getExpression(), e);

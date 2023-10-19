@@ -6,10 +6,10 @@ CP = /bin/cp
 INSTALL_BUNDLE ?= "bundle:min"
 
 
-all: molochparser.js
+all: arkimeparser.js
 
-molochparser.js: molochparser.jison
-	jison molochparser.jison
+arkimeparser.js: arkimeparser.jison
+	jison arkimeparser.jison
 
 check:
 	npm ci

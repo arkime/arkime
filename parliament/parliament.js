@@ -1268,7 +1268,7 @@ async function getStats (cluster) {
 
       cluster.deltaBPS = 0;
       cluster.deltaTDPS = 0;
-      cluster.molochNodes = 0;
+      cluster.arkimeNodes = 0;
       cluster.monitoring = 0;
 
       const outOfDate = Parliament.getGeneralSetting('outOfDate');
@@ -1289,7 +1289,7 @@ async function getStats (cluster) {
         }
 
         if ((now - stat.currentTime) <= outOfDate && stat.deltaPacketsPerSec > 0) {
-          cluster.molochNodes++;
+          cluster.arkimeNodes++;
         }
 
         // Look for issues

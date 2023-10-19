@@ -22,7 +22,7 @@ const Db = exports;
 const internals = {
   fileId2File: {},
   fileName2File: {},
-  molochNodeStatsCache: {},
+  arkimeNodeStatsCache: {},
   shortcutsCache: {},
   qInProgress: 0,
   q: [],
@@ -1063,7 +1063,7 @@ Db.removeHuntFromSession = function (index, id, huntId, huntName, cb) {
 Db.flushCache = function () {
   internals.fileId2File = {};
   internals.fileName2File = {};
-  internals.molochNodeStatsCache = {};
+  internals.arkimeNodeStatsCache = {};
   User.flushCache();
   internals.shortcutsCache = {};
   delete internals.aliasesCache;
@@ -1373,28 +1373,28 @@ Db.getView = async (id) => {
   return internals.usersClient7.get({ index: `${internals.usersPrefix}views`, id });
 };
 
-Db.molochNodeStats = async (nodeName, cb) => {
+Db.arkimeNodeStats = async (nodeName, cb) => {
   try {
     const { body: stat } = await Db.get('stats', 'stat', nodeName);
 
-    internals.molochNodeStatsCache[nodeName] = stat._source;
-    internals.molochNodeStatsCache[nodeName]._timeStamp = Date.now();
+    internals.arkimeNodeStatsCache[nodeName] = stat._source;
+    internals.arkimeNodeStatsCache[nodeName]._timeStamp = Date.now();
 
     cb(null, stat._source);
   } catch (err) {
-    if (internals.molochNodeStatsCache[nodeName]) {
-      return cb(null, internals.molochNodeStatsCache[nodeName]);
+    if (internals.arkimeNodeStatsCache[nodeName]) {
+      return cb(null, internals.arkimeNodeStatsCache[nodeName]);
     }
-    return cb(err || 'Unknown node ' + nodeName, internals.molochNodeStatsCache[nodeName]);
+    return cb(err || 'Unknown node ' + nodeName, internals.arkimeNodeStatsCache[nodeName]);
   }
 };
 
-Db.molochNodeStatsCache = function (nodeName, cb) {
-  if (internals.molochNodeStatsCache[nodeName] && internals.molochNodeStatsCache[nodeName]._timeStamp > Date.now() - 30000) {
-    return cb(null, internals.molochNodeStatsCache[nodeName]);
+Db.arkimeNodeStatsCache = function (nodeName, cb) {
+  if (internals.arkimeNodeStatsCache[nodeName] && internals.arkimeNodeStatsCache[nodeName]._timeStamp > Date.now() - 30000) {
+    return cb(null, internals.arkimeNodeStatsCache[nodeName]);
   }
 
-  return Db.molochNodeStats(nodeName, cb);
+  return Db.arkimeNodeStats(nodeName, cb);
 };
 
 Db.healthCache = async (cluster) => {
@@ -1612,7 +1612,7 @@ Db.isLocalView = function (node, yesCB, noCB) {
     return yesCB();
   }
 
-  Db.molochNodeStatsCache(node, (err, stat) => {
+  Db.arkimeNodeStatsCache(node, (err, stat) => {
     if (err || (stat.hostname !== os.hostname() && stat.hostname !== internals.hostName)) {
       if (internals.debug > 1) {
         console.log(`DEBUG: node:${node} is NOT local view because ${stat.hostname} != ${os.hostname()} or --host ${internals.hostName}`);

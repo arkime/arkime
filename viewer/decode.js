@@ -31,7 +31,7 @@ function mkname (stream, streamName) {
   if (!mkname.cnt) { mkname.cnt = {}; }
   if (!mkname.cnt[streamName]) { mkname.cnt[streamName] = 0; }
   mkname.cnt[streamName]++;
-  stream.molochName = streamName + '-' + mkname.cnt[streamName];
+  stream.arkimeName = streamName + '-' + mkname.cnt[streamName];
 }
 /// /////////////////////////////////////////////////////////////////////////////
 class ItemTransform extends Transform {
@@ -133,14 +133,14 @@ function createUncompressStream (options, context) {
 
     if (data[0] === 0x1f && data[1] === 0x8b && data[2] === 8) {
       if (context.headersMap && context.headersMap['content-encoding'] === 'deflate') {
-        context.headersMap['content-encoding'] = 'moloch-gzip';
+        context.headersMap['content-encoding'] = 'arkime-gzip';
       }
       const s = zlib.createGunzip();
       return swap(null, s);
     }
 
     /* if (context.headersMap && context.headersMap["content-encoding"] === "deflate") {
-      context.headersMap["content-encoding"] = "moloch-deflate";
+      context.headersMap["content-encoding"] = "arkime-deflate";
       return swap(null, zlib.createDeflate());
     } */
 
