@@ -210,6 +210,13 @@ exports.upgrade = async function (parliament, issues, Parliament) {
             issue.clusterId = cluster.id;
           }
         }
+
+        // map hideMolochNodes to hideArkimeNodes
+        if ('hideMolochNodes' in cluster) {
+          cluster.hideArkimeNodes = cluster.hideMolochNodes;
+          delete cluster.hideMolochNodes;
+        }
+
         delete cluster.healthError;
         delete cluster.statsError;
       }
