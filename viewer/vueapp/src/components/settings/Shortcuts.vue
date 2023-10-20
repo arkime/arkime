@@ -64,13 +64,13 @@ SPDX-License-Identifier: Apache-2.0
         <span class="fa fa-user-circle mr-1" />
         See {{ seeAll ? ' MY ' : ' ALL ' }} Shortcuts
       </b-form-checkbox>
-      <moloch-paging
+      <arkime-paging
         v-if="shortcuts.data"
         :length-default="shortcutsSize"
         @changePaging="changeShortcutsPaging"
         :records-total="shortcuts.recordsTotal"
         :records-filtered="shortcuts.recordsFiltered">
-      </moloch-paging>
+      </arkime-paging>
     </div>
 
     <table v-if="shortcuts.data"
@@ -392,14 +392,14 @@ SPDX-License-Identifier: Apache-2.0
 import SettingsService from './SettingsService';
 import UserService from '../../../../../common/vueapp/UserService';
 // components
-import MolochPaging from '../utils/Pagination';
+import ArkimePaging from '../utils/Pagination';
 import RoleDropdown from '../../../../../common/vueapp/RoleDropdown';
 import TransferResource from '../../../../../common/vueapp/TransferResource';
 
 export default {
   name: 'Shortcuts',
   components: {
-    MolochPaging,
+    ArkimePaging,
     RoleDropdown,
     TransferResource
   },
@@ -425,7 +425,7 @@ export default {
         search: ''
       },
       createShortcutLoading: false,
-      hasUsersES: this.$constants.MOLOCH_HASUSERSES,
+      hasUsersES: this.$constants.HASUSERSES,
       showAll: false,
       seeAll: false,
       transferResource: undefined

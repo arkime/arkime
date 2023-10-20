@@ -24,7 +24,7 @@ Vue.directive('has-permission', HasPermission);
 Vue.directive('has-role', HasRole);
 
 Vue.prototype.$constants = {
-  MOLOCH_MULTIVIEWER: false
+  MULTIVIEWER: false
 };
 
 jest.mock('../src/components/history/HistoryService');

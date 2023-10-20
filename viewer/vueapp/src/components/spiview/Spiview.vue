@@ -6,13 +6,13 @@ SPDX-License-Identifier: Apache-2.0
 
   <div class="spiview-page">
 
-    <MolochCollapsible>
+    <ArkimeCollapsible>
       <span class="fixed-header">
         <!-- search navbar -->
-        <moloch-search
+        <arkime-search
           @changeSearch="changeSearch"
           :num-matching-sessions="filtered">
-        </moloch-search> <!-- /search navbar -->
+        </arkime-search> <!-- /search navbar -->
 
         <!-- info navbar -->
         <form class="info-nav">
@@ -147,26 +147,26 @@ SPDX-License-Identifier: Apache-2.0
           </span>
         </div>
       </form> <!-- /warning navbar -->
-    </MolochCollapsible>
+    </ArkimeCollapsible>
 
     <!-- visualizations -->
-    <moloch-visualizations
+    <arkime-visualizations
       v-if="mapData && graphData && showToolBars"
       :primary="true"
       :map-data="mapData"
       :graph-data="graphData"
       @fetchMapData="fetchVizData"
       :timelineDataFilters="timelineDataFilters">
-    </moloch-visualizations> <!-- /visualizations -->
+    </arkime-visualizations> <!-- /visualizations -->
 
     <div class="spiview-content mr-1 ml-1">
 
       <!-- page error -->
-      <moloch-error
+      <arkime-error
         v-if="error"
         :message="error"
         class="mt-5 mb-5">
-      </moloch-error> <!-- /page error -->
+      </arkime-error> <!-- /page error -->
 
       <!-- spiview panels -->
       <div role="tablist">
@@ -208,14 +208,14 @@ SPDX-License-Identifier: Apache-2.0
                 @click.stop
                 class="protocol-value">
                 <strong>
-                  <moloch-session-field
+                  <arkime-session-field
                     :field="{dbField:'ipProtocol', exp:'protocols', type:'lotermfield', group:'general', transform:'ipProtocolLookup'}"
                     :expr="'protocols'"
                     :value="key"
                     :pull-left="true"
                     :parse="false"
                     :session-btn="true">
-                  </moloch-session-field>
+                  </arkime-session-field>
                 </strong>
                 <sup>({{ value | commaString }})</sup>
               </span>
@@ -338,14 +338,14 @@ SPDX-License-Identifier: Apache-2.0
                           :key="bucket.key">
                           <span v-if="bucket.key || bucket.key === 0"
                             class="small spi-bucket mr-1 no-wrap">
-                            <moloch-session-field
+                            <arkime-session-field
                               :field="value.field"
                               :value="bucket.key"
                               :expr="value.field.exp"
                               :parse="true"
                               :pull-left="true"
                               :session-btn="true">
-                            </moloch-session-field>
+                            </arkime-session-field>
                             <sup>({{ bucket.doc_count | commaString }})</sup>
                           </span>
                         </span>
@@ -406,10 +406,10 @@ import ConfigService from '../utils/ConfigService';
 import FieldService from '../search/FieldService';
 import UserService from '../users/UserService';
 
-import MolochError from '../utils/Error';
-import MolochSearch from '../search/Search';
-import MolochVisualizations from '../visualizations/Visualizations';
-import MolochCollapsible from '../utils/CollapsibleWrapper';
+import ArkimeError from '../utils/Error';
+import ArkimeSearch from '../search/Search';
+import ArkimeVisualizations from '../visualizations/Visualizations';
+import ArkimeCollapsible from '../utils/CollapsibleWrapper';
 import FieldActions from '../sessions/FieldActions';
 
 // import utils
@@ -433,10 +433,10 @@ let newConfigTimeout;
 export default {
   name: 'Spiview',
   components: {
-    MolochError,
-    MolochSearch,
-    MolochVisualizations,
-    MolochCollapsible,
+    ArkimeError,
+    ArkimeSearch,
+    ArkimeVisualizations,
+    ArkimeCollapsible,
     FieldActions
   },
   data: function () {

@@ -5,13 +5,13 @@ SPDX-License-Identifier: Apache-2.0
 <template>
 
   <div class="connections-page">
-    <MolochCollapsible>
+    <ArkimeCollapsible>
       <span class="fixed-header">
         <!-- search navbar -->
-        <moloch-search
+        <arkime-search
           :start="query.start"
           @changeSearch="cancelAndLoad(true)">
-        </moloch-search> <!-- /search navbar -->
+        </arkime-search> <!-- /search navbar -->
 
         <!-- connections sub navbar -->
         <form class="connections-form">
@@ -48,14 +48,14 @@ SPDX-License-Identifier: Apache-2.0
                     Src:
                   </span>
                 </span>
-                <moloch-field-typeahead
+                <arkime-field-typeahead
                   :fields="fields"
                   query-param="srcField"
                   :initial-value="srcFieldTypeahead"
                   @fieldSelected="changeSrcField"
                   :history="fieldHistoryConnectionsSrc"
                   page="ConnectionsSrc">
-                </moloch-field-typeahead>
+                </arkime-field-typeahead>
               </div>
             </div> <!-- /src select -->
 
@@ -69,14 +69,14 @@ SPDX-License-Identifier: Apache-2.0
                     Dst:
                   </span>
                 </span>
-                <moloch-field-typeahead
+                <arkime-field-typeahead
                   :fields="fields"
                   query-param="dstField"
                   :initial-value="dstFieldTypeahead"
                   @fieldSelected="changeDstField"
                   :history="fieldHistoryConnectionsDst"
                   page="ConnectionsDst">
-                </moloch-field-typeahead>
+                </arkime-field-typeahead>
               </div>
             </div> <!-- /dst select -->
 
@@ -294,30 +294,30 @@ SPDX-License-Identifier: Apache-2.0
           </div>
         </form> <!-- /connections sub navbar -->
       </span>
-    </MolochCollapsible>
+    </ArkimeCollapsible>
 
     <div class="connections-content">
 
       <!-- loading overlay -->
-      <moloch-loading
+      <arkime-loading
         :can-cancel="true"
         v-if="loading && !error"
         @cancel="cancelAndLoad">
-      </moloch-loading> <!-- /loading overlay -->
+      </arkime-loading> <!-- /loading overlay -->
 
       <!-- page error -->
-      <moloch-error
+      <arkime-error
         v-if="error"
         :message="error"
         class="mt-5">
-      </moloch-error> <!-- /page error -->
+      </arkime-error> <!-- /page error -->
 
       <!-- no results -->
-      <moloch-no-results
+      <arkime-no-results
         v-if="!error && !loading && recordsFiltered === 0"
         class="mt-5"
         :view="query.view">
-      </moloch-no-results> <!-- /no results -->
+      </arkime-no-results> <!-- /no results -->
 
       <!-- connections graph container -->
       <svg class="connections-graph"></svg>
@@ -434,13 +434,13 @@ SPDX-License-Identifier: Apache-2.0
 
 <script>
 // import components
-import MolochSearch from '../search/Search';
-import MolochError from '../utils/Error';
-import MolochLoading from '../utils/Loading';
-import MolochNoResults from '../utils/NoResults';
-import MolochCollapsible from '../utils/CollapsibleWrapper';
+import ArkimeSearch from '../search/Search';
+import ArkimeError from '../utils/Error';
+import ArkimeLoading from '../utils/Loading';
+import ArkimeNoResults from '../utils/NoResults';
+import ArkimeCollapsible from '../utils/CollapsibleWrapper';
 // import services
-import MolochFieldTypeahead from '../utils/FieldTypeahead';
+import ArkimeFieldTypeahead from '../utils/FieldTypeahead';
 import FieldService from '../search/FieldService';
 import UserService from '../users/UserService';
 import ConnectionsService from './ConnectionsService';
@@ -557,12 +557,12 @@ export default {
   name: 'Connections',
   mixins: [clickaway],
   components: {
-    MolochSearch,
-    MolochError,
-    MolochLoading,
-    MolochNoResults,
-    MolochCollapsible,
-    MolochFieldTypeahead
+    ArkimeSearch,
+    ArkimeError,
+    ArkimeLoading,
+    ArkimeNoResults,
+    ArkimeCollapsible,
+    ArkimeFieldTypeahead
   },
   data: function () {
     return {
@@ -1345,13 +1345,13 @@ export default {
             <div class="connections-popup">
               <div class="mb-2 mt-2">
                 <strong>
-                  <moloch-session-field
+                  <arkime-session-field
                     :value="dataNode.id"
                     :session="dataNode"
                     :expr="dataNode.exp"
                     :field="fields[dataNode.dbField]"
                     :pull-left="true">
-                  </moloch-session-field>
+                  </arkime-session-field>
                 </strong>
                 <a class="pull-right cursor-pointer no-decoration"
                   @click="closePopup">
@@ -1375,23 +1375,23 @@ export default {
                     </dt>
                     <dd>
                       <span v-if="!Array.isArray(dataNode[field])">
-                        <moloch-session-field
+                        <arkime-session-field
                           :value="dataNode[field]"
                           :session="dataNode"
                           :expr="fields[field].exp"
                           :field="fields[field]"
                           :pull-left="true">
-                        </moloch-session-field>
+                        </arkime-session-field>
                       </span>
                       <span v-else
                         v-for="value in dataNode[field]">
-                        <moloch-session-field
+                        <arkime-session-field
                           :value="value"
                           :session="dataNode"
                           :expr="fields[field].exp"
                           :field="fields[field]"
                           :pull-left="true">
-                        </moloch-session-field>
+                        </arkime-session-field>
                       </span>&nbsp;
                     </dd>
                     </template>
@@ -1465,22 +1465,22 @@ export default {
                 </a>
               </div>
               <div>
-                <moloch-session-field
+                <arkime-session-field
                   :value="linkData.source.id"
                   :session="linkData"
                   :expr="linkData.srcExp"
                   :field="fields[linkData.srcDbField]"
                   :pull-left="true">
-                </moloch-session-field>
+                </arkime-session-field>
               </div>
               <div class="mb-2">
-                <moloch-session-field
+                <arkime-session-field
                   :value="linkData.target.id"
                   :session="linkData"
                   :expr="linkData.dstExp"
                   :field="fields[linkData.dstDbField]"
                   :pull-left="true">
-                </moloch-session-field>
+                </arkime-session-field>
               </div>
 
               <dl class="dl-horizontal">
@@ -1495,23 +1495,23 @@ export default {
                     </dt>
                     <dd>
                       <span v-if="!Array.isArray(linkData[field])">
-                        <moloch-session-field
+                        <arkime-session-field
                           :value="linkData[field]"
                           :session="linkData"
                           :expr="fields[field].exp"
                           :field="fields[field]"
                           :pull-left="true">
-                        </moloch-session-field>
+                        </arkime-session-field>
                       </span>
                       <span v-else
                         v-for="value in linkData[field]">
-                        <moloch-session-field
+                        <arkime-session-field
                           :value="value"
                           :session="linkData"
                           :expr="fields[field].exp"
                           :field="fields[field]"
                           :pull-left="true">
-                        </moloch-session-field>
+                        </arkime-session-field>
                       </span>&nbsp;
                     </dd>
                   </template>

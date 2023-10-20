@@ -63,7 +63,7 @@ import UserService from '../users/UserService';
 let inputTimeout;
 
 export default {
-  name: 'MolochFieldTypeahead',
+  name: 'ArkimeFieldTypeahead',
   props: {
     fields: {
       type: Array,

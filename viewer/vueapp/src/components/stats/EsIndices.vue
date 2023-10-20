@@ -6,23 +6,23 @@ SPDX-License-Identifier: Apache-2.0
 
   <div class="container-fluid mt-2">
 
-    <moloch-loading v-if="initialLoading && !error">
-    </moloch-loading>
+    <arkime-loading v-if="initialLoading && !error">
+    </arkime-loading>
 
-    <moloch-error v-if="error"
+    <arkime-error v-if="error"
       :message="error">
-    </moloch-error>
+    </arkime-error>
 
     <div v-show="!error">
 
-      <moloch-paging v-if="stats"
+      <arkime-paging v-if="stats"
         class="mt-1 ml-2"
         :info-only="true"
         :records-total="recordsTotal"
         :records-filtered="recordsFiltered">
-      </moloch-paging>
+      </arkime-paging>
 
-      <moloch-table
+      <arkime-table
         id="esIndicesTable"
         :data="stats"
         :loadData="loadData"
@@ -69,7 +69,7 @@ SPDX-License-Identifier: Apache-2.0
             </b-dropdown-item>
           </b-dropdown>
         </template>
-      </moloch-table>
+      </arkime-table>
 
     </div>
 
@@ -79,10 +79,10 @@ SPDX-License-Identifier: Apache-2.0
 
 <script>
 import Utils from '../utils/utils';
-import MolochTable from '../utils/Table';
-import MolochError from '../utils/Error';
-import MolochLoading from '../utils/Loading';
-import MolochPaging from '../utils/Pagination';
+import ArkimeTable from '../utils/Table';
+import ArkimeError from '../utils/Error';
+import ArkimeLoading from '../utils/Loading';
+import ArkimePaging from '../utils/Pagination';
 
 let reqPromise; // promise returned from setInterval for recurring requests
 let respondedAt; // the time that the last data load successfully responded
@@ -99,10 +99,10 @@ export default {
     'cluster'
   ],
   components: {
-    MolochTable,
-    MolochError,
-    MolochPaging,
-    MolochLoading
+    ArkimeTable,
+    ArkimeError,
+    ArkimePaging,
+    ArkimeLoading
   },
   data: function () {
     return {

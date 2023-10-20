@@ -6,16 +6,16 @@ SPDX-License-Identifier: Apache-2.0
 
   <div class="packet-search-page ml-2 mr-2">
 
-    <MolochCollapsible>
+    <ArkimeCollapsible>
       <span class="fixed-header">
         <!-- search navbar -->
-        <moloch-search
+        <arkime-search
           v-if="user.settings"
           :start="sessionsQuery.start"
           :hide-actions="true"
           :hide-interval="true"
           @changeSearch="cancelAndLoad(true)">
-        </moloch-search> <!-- /search navbar -->
+        </arkime-search> <!-- /search navbar -->
 
         <!-- hunt create navbar -->
         <form class="hunt-create-navbar">
@@ -63,12 +63,12 @@ SPDX-License-Identifier: Apache-2.0
           </div>
         </form> <!-- /hunt create navbar -->
       </span>
-    </MolochCollapsible>
+    </ArkimeCollapsible>
 
     <!-- loading overlay -->
-    <moloch-loading
+    <arkime-loading
       v-if="loading">
-    </moloch-loading> <!-- /loading overlay -->
+    </arkime-loading> <!-- /loading overlay -->
 
     <!-- configuration error -->
     <b-alert
@@ -706,12 +706,12 @@ SPDX-License-Identifier: Apache-2.0
         <div class="row form-inline">
           <div class="col-12">
           <!-- job history paging -->
-          <moloch-paging
+          <arkime-paging
             class="pull-right ml-2"
             :records-total="historyResults.recordsTotal"
             :records-filtered="historyResults.recordsFiltered"
             @changePaging="changePaging">
-          </moloch-paging> <!-- /job history paging -->
+          </arkime-paging> <!-- /job history paging -->
             <!-- search packet search jobs -->
             <div class="input-group input-group-sm">
               <span class="input-group-prepend cursor-help">
@@ -887,10 +887,10 @@ import ConfigService from '../utils/ConfigService';
 import HuntService from './HuntService';
 // import components
 import ToggleBtn from '../../../../../common/vueapp/ToggleBtn';
-import MolochSearch from '../search/Search';
-import MolochLoading from '../utils/Loading';
-import MolochPaging from '../utils/Pagination';
-import MolochCollapsible from '../utils/CollapsibleWrapper';
+import ArkimeSearch from '../search/Search';
+import ArkimeLoading from '../utils/Loading';
+import ArkimePaging from '../utils/Pagination';
+import ArkimeCollapsible from '../utils/CollapsibleWrapper';
 import Focus from '../../../../../common/vueapp/Focus';
 import HuntData from './HuntData';
 import HuntRow from './HuntRow';
@@ -907,10 +907,10 @@ export default {
   name: 'PacketSearch',
   components: {
     ToggleBtn,
-    MolochSearch,
-    MolochLoading,
-    MolochCollapsible,
-    MolochPaging,
+    ArkimeSearch,
+    ArkimeLoading,
+    ArkimeCollapsible,
+    ArkimePaging,
     HuntData,
     HuntRow,
     RoleDropdown
@@ -952,9 +952,9 @@ export default {
       jobDescription: '',
       jobRoles: [],
       // hunt limits
-      huntWarn: this.$constants.MOLOCH_HUNTWARN,
-      huntLimit: this.$constants.MOLOCH_HUNTLIMIT,
-      anonymousMode: this.$constants.MOLOCH_ANONYMOUS_MODE,
+      huntWarn: this.$constants.HUNTWARN,
+      huntLimit: this.$constants.HUNTLIMIT,
+      anonymousMode: this.$constants.ANONYMOUS_MODE,
       // hunt configured?
       nodeInfo: undefined
     };

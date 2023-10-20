@@ -28,13 +28,13 @@ SPDX-License-Identifier: Apache-2.0
             {{ field.friendlyName }}
           </td>
           <td>
-            <moloch-session-field
+            <arkime-session-field
               :field="field"
               :value="getPopupInfo(index).name"
               :expr="field.exp"
               :parse="true"
               :session-btn="true">
-            </moloch-session-field>
+            </arkime-session-field>
           </td>
           <td>
             <strong>

@@ -6,12 +6,12 @@ SPDX-License-Identifier: Apache-2.0
 
   <div class="container-fluid">
 
-    <moloch-loading v-if="initialLoading && !error">
-    </moloch-loading>
+    <arkime-loading v-if="initialLoading && !error">
+    </arkime-loading>
 
-    <moloch-error v-if="error"
+    <arkime-error v-if="error"
       :message="error">
-    </moloch-error>
+    </arkime-error>
 
     <div v-show="!error">
 
@@ -20,13 +20,13 @@ SPDX-License-Identifier: Apache-2.0
         title="HINT: These graphs are 1440 pixels wide. Expand your browser window to at least 1500 pixels wide for best viewing.">
       </span>
 
-      <moloch-paging v-if="stats"
+      <arkime-paging v-if="stats"
         class="mt-1"
         :records-total="stats.recordsTotal"
         :records-filtered="stats.recordsFiltered"
         v-on:changePaging="changePaging"
         length-default=200>
-      </moloch-paging>
+      </arkime-paging>
 
       <div
         v-if="stats && stats.recordsFiltered"
@@ -56,9 +56,9 @@ SPDX-License-Identifier: Apache-2.0
 <script>
 import '../../cubismoverrides.css';
 import Utils from '../utils/utils';
-import MolochPaging from '../utils/Pagination';
-import MolochError from '../utils/Error';
-import MolochLoading from '../utils/Loading';
+import ArkimePaging from '../utils/Pagination';
+import ArkimeError from '../utils/Error';
+import ArkimeLoading from '../utils/Loading';
 
 let oldD3, cubism; // lazy load old d3 and cubism
 
@@ -77,7 +77,7 @@ export default {
     'refreshData',
     'cluster'
   ],
-  components: { MolochPaging, MolochError, MolochLoading },
+  components: { ArkimePaging, ArkimeError, ArkimeLoading },
   data: function () {
     return {
       error: '',

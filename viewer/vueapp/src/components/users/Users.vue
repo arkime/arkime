@@ -11,7 +11,7 @@ SPDX-License-Identifier: Apache-2.0
       @update-roles="getRoles"
       @update-current-user="updateCurrentUser">
       <template #loading>
-        <MolochLoading />
+        <ArkimeLoading />
       </template>
     </UsersCommon>
   </div>
@@ -19,14 +19,14 @@ SPDX-License-Identifier: Apache-2.0
 
 <script>
 import UserService from './UserService';
-import MolochLoading from '../utils/Loading';
+import ArkimeLoading from '../utils/Loading';
 import UsersCommon from '../../../../../common/vueapp/Users';
 
 export default {
   name: 'Users',
   components: {
     UsersCommon,
-    MolochLoading
+    ArkimeLoading
   },
   computed: {
     user: {

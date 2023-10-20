@@ -129,7 +129,7 @@ SPDX-License-Identifier: Apache-2.0
 import SessionsService from './SessionsService';
 
 export default {
-  name: 'MolochIntersection',
+  name: 'ArkimeIntersection',
   props: {
     done: Function,
     fields: Array

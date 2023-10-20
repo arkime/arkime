@@ -14,7 +14,7 @@ const {
 Vue.use(BootstrapVue);
 
 Vue.prototype.$constants = {
-  MOLOCH_HASUSERSES: false
+  HASUSERSES: false
 };
 
 jest.mock('../src/components/settings/SettingsService');

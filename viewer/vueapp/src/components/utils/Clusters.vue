@@ -85,7 +85,7 @@ export default {
       esQuery: '', // query for ES to toggle visibility
       showMessage: false,
       esVisMenuOpen: false,
-      multiviewer: this.$constants.MOLOCH_MULTIVIEWER
+      multiviewer: this.$constants.MULTIVIEWER
     };
   },
   watch: {

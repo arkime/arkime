@@ -22,7 +22,7 @@ Vue.use(VueAxios, axios);
 Vue.use(BootstrapVue);
 
 Vue.prototype.$constants = {
-  MOLOCH_MULTIVIEWER: false
+  MULTIVIEWER: false
 };
 
 jest.mock('../src/components/users/UserService');

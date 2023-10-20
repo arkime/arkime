@@ -98,7 +98,7 @@ import SessionsService from './SessionsService';
 import SegmentSelect from './SegmentSelect';
 
 export default {
-  name: 'MolochTagSessions',
+  name: 'ArkimeTagSessions',
   components: { SegmentSelect },
   props: {
     add: Boolean,

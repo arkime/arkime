@@ -117,7 +117,7 @@ let stickyContainer;
 let oldLength = 1;
 
 export default {
-  name: 'MolochStickySessions',
+  name: 'ArkimeStickySessions',
   props: ['sessions', 'ms'],
   data: function () {
     return {
