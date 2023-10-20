@@ -1,3 +1,7 @@
+<!--
+Copyright Yahoo Inc.
+SPDX-License-Identifier: Apache-2.0
+-->
 <template v-if="linkGroup">
   <!-- view (for con3xt page and users who can view but not edit) -->
   <b-card

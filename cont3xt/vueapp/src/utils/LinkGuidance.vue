@@ -1,3 +1,7 @@
+<!--
+Copyright Yahoo Inc.
+SPDX-License-Identifier: Apache-2.0
+-->
 <template>
   <span>
     <span v-if="link.infoField" class="fa fa-info-circle cursor-help"

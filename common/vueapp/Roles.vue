@@ -1,3 +1,7 @@
+<!--
+Copyright Yahoo Inc.
+SPDX-License-Identifier: Apache-2.0
+-->
 <template>
   <div class="container-fluid">
     <div class="d-flex justify-content-between mt-3 mb-2">
