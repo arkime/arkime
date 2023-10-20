@@ -1,3 +1,7 @@
+<!--
+Copyright Yahoo Inc.
+SPDX-License-Identifier: Apache-2.0
+-->
 <template>
   <div class="container-fluid overflow-auto pt-3">
     <div class="d-flex align-items-center mb-2">

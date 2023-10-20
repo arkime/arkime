@@ -1,3 +1,7 @@
+<!--
+Copyright Yahoo Inc.
+SPDX-License-Identifier: Apache-2.0
+-->
 <template>
   <span style="display: contents" class="cursor-help d-flex flex-row align-items-center overflow-hidden">
 

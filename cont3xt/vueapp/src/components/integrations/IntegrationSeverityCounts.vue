@@ -1,3 +1,7 @@
+<!--
+Copyright Yahoo Inc.
+SPDX-License-Identifier: Apache-2.0
+-->
 <template>
   <div class="d-flex flex-row text-nowrap severity-badge-container">
     <span v-if="severityTypes.some(severity => severityCounts[severity])" class="mr-1">

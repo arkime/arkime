@@ -1,3 +1,7 @@
+<!--
+Copyright Yahoo Inc.
+SPDX-License-Identifier: Apache-2.0
+-->
 <template>
   <div class="mx-2"
     :class="{'wrap-btns d-flex justify-content-between': buttonIntegrations.length > 4}">

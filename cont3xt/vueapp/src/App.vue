@@ -1,3 +1,7 @@
+<!--
+Copyright Yahoo Inc.
+SPDX-License-Identifier: Apache-2.0
+-->
 <template>
   <div id="app">
     <div v-if="compatibleBrowser" class="d-flex flex-column h-100">

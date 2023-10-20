@@ -1,3 +1,7 @@
+<!--
+Copyright Yahoo Inc.
+SPDX-License-Identifier: Apache-2.0
+-->
 <template>
   <b-card v-if="indicator.query"
           class="cursor-pointer itype-card" :class="{ 'border-danger': isActiveIndicator }"

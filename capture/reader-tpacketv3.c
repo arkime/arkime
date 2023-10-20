@@ -113,7 +113,7 @@ LOCAL void *reader_tpacketv3_thread(gpointer infov)
             LOG("Stats pos:%d info:%d status:%x waiting:%d total cnt:%d total waiting:%d", pos, info->interfacePos, tbd->hdr.bh1.block_status, tbd->hdr.bh1.num_pkts, cnt, waiting);
         }
 
-        // Wait until the block is owned by moloch
+        // Wait until the block is owned by capture
         if ((tbd->hdr.bh1.block_status & TP_STATUS_USER) == 0) {
             poll(&pfd, 1, -1);
             continue;

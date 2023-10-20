@@ -1,3 +1,7 @@
+<!--
+Copyright Yahoo Inc.
+SPDX-License-Identifier: Apache-2.0
+-->
 <template>
   <div :class="{'sticky-viz':stickyViz && primary, 'hide-viz':hideViz && primary, 'disabled-msg':disabledAggregations}">
 

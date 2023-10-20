@@ -1,3 +1,7 @@
+<!--
+Copyright Yahoo Inc.
+SPDX-License-Identifier: Apache-2.0
+-->
 <template>
   <div class="sidebar-container d-flex flex-row" :class="{'sidebar-expand': sidebarKeepOpen}">
     <!-- open search panel on hover button -->
