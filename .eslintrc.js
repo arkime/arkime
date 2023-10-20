@@ -7,7 +7,7 @@ module.exports = {
     requireConfigFile: false,
     babelOptions: {
       plugins: [
-        '@babel/plugin-proposal-class-properties',
+        '@babel/plugin-transform-class-properties',
         '@babel/plugin-syntax-class-properties'
       ]
     }
