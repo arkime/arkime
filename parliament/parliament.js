@@ -304,7 +304,7 @@ class Parliament {
    * @property {string} hideDeltaBPS - Whether to hide the delta bits per second of the Cluster.
    * @property {string} hideDeltaTDPS - Whether to hide the delta packet drops per second of the Cluster.
    * @property {string} hideMonitoring - Whether to hide number of sessions being recorded of the Cluster.
-   * @property {string} hideMolochNodes - Whether to hide the number of Arkime nodes of the Cluster.
+   * @property {string} hideArkimeNodes - Whether to hide the number of Arkime nodes of the Cluster.
    * @property {string} hideDataNodes - Whether to hide the number of data nodes of the Cluster.
    * @property {string} hideTotalNodes - Whether to hide the number of total nodes of the Cluster.
    */
@@ -629,7 +629,7 @@ class Parliament {
       hideDeltaBPS: false,
       hideDeltaTDPS: false,
       hideMonitoring: false,
-      hideMolochNodes: false,
+      hideArkimeNodes: false,
       hideDataNodes: false,
       hideTotalNodes: false
     };
@@ -752,7 +752,7 @@ class Parliament {
               cluster.hideDeltaTDPS = typeof req.body.hideDeltaTDPS === 'boolean' ? req.body.hideDeltaTDPS : undefined;
               cluster.hideTotalNodes = typeof req.body.hideTotalNodes === 'boolean' ? req.body.hideTotalNodes : undefined;
               cluster.hideMonitoring = typeof req.body.hideMonitoring === 'boolean' ? req.body.hideMonitoring : undefined;
-              cluster.hideMolochNodes = typeof req.body.hideMolochNodes === 'boolean' ? req.body.hideMolochNodes : undefined;
+              cluster.hideArkimeNodes = typeof req.body.hideArkimeNodes === 'boolean' ? req.body.hideArkimeNodes : undefined;
               cluster.type = req.body.type;
 
               foundCluster = true;

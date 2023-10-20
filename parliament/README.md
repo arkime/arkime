@@ -110,7 +110,7 @@ _**Note**: When upgrading form v4 to v5, Auth settings configured in the UI will
 #### Development
 
 To start the app for development and testing:
-* Move to the top level Moloch directory
+* Move to the top level Arkime directory
 * run `npm run parliament:dev`
 
 This command starts the app with the necessary config options set (`-c ../parliament/parliament.ini`) and bundles the unminified application files into the `parliament/vueapp/dist` folder.

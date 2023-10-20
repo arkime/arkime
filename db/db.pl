@@ -5757,7 +5757,7 @@ sub parliamentUpdate
             "hideMonitoring": {
               "type": "boolean"
             },
-            "hideMolochNodes": {
+            "hideArkimeNodes": {
               "type": "boolean"
             },
             "hideDataNodes": {

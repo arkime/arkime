@@ -462,13 +462,13 @@
                           </small>
                         </label>
                       </div>
-                      <div v-if="cluster.id === clusterBeingEdited || !cluster.hideMolochNodes"
+                      <div v-if="cluster.id === clusterBeingEdited || !cluster.hideArkimeNodes"
                         class="col-6">
                         <label :class="{'form-check-label':cluster.id === clusterBeingEdited}">
                           <input v-if="isAdmin && cluster.id === clusterBeingEdited && editMode"
                             type="checkbox"
-                            :checked="!cluster.hideMolochNodes"
-                            @change="cluster.hideMolochNodes = !cluster.hideMolochNodes"
+                            :checked="!cluster.hideArkimeNodes"
+                            @change="cluster.hideArkimeNodes = !cluster.hideArkimeNodes"
                           />
                           <strong class="d-inline-block">
                             {{ stats[cluster.id].arkimeNodes | commaString }}
@@ -981,7 +981,7 @@ export default {
         hideDeltaTDPS: cluster.hideDeltaTDPS,
         hideTotalNodes: cluster.hideTotalNodes,
         hideMonitoring: cluster.hideMonitoring,
-        hideMolochNodes: cluster.hideMolochNodes
+        hideArkimeNodes: cluster.hideArkimeNodes
       };
 
       if (cluster.newType) {
