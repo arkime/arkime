@@ -110,7 +110,7 @@ import Logout from '../../../../../common/vueapp/Logout';
 import Version from '../../../../../common/vueapp/Version';
 
 export default {
-  name: 'MolochNavbar',
+  name: 'ArkimeNavbar',
   components: {
     Logout,
     Version,
@@ -118,7 +118,7 @@ export default {
   },
   data: function () {
     return {
-      path: this.$constants.MOLOCH_PATH,
+      path: this.$constants.PATH,
       menuOrder: [
         'sessions', 'spiview', 'spigraph', 'connections', 'hunt',
         'files', 'stats', 'history', 'upload', 'settings', 'users', 'roles'
@@ -144,11 +144,11 @@ export default {
         roles: { title: 'Roles', link: 'roles', permission: 'canAssignRoles' }
       };
 
-      if (!this.$constants.MOLOCH_MULTIVIEWER) {
+      if (!this.$constants.MULTIVIEWER) {
         menu.hunt = { title: 'Hunt', link: 'hunt', permission: 'packetSearch', hotkey: ['H', 'unt'] };
       }
 
-      if (!this.$constants.MOLOCH_DEMO_MODE) {
+      if (!this.$constants.DEMO_MODE) {
         menu.history = { title: 'History', link: 'history' };
         menu.settings = { title: 'Settings', link: 'settings' };
         menu.users = { title: 'Users', link: 'users', role: 'usersAdmin' };

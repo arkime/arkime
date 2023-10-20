@@ -43,7 +43,7 @@ SPDX-License-Identifier: Apache-2.0
 
 <script>
 export default {
-  name: 'MolochLoading',
+  name: 'ArkimeLoading',
   props: ['canCancel'],
   data () {
     return {

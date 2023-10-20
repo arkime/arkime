@@ -109,7 +109,7 @@ import SessionsService from './SessionsService';
 import SegmentSelect from './SegmentSelect';
 
 export default {
-  name: 'MolochExportCsv',
+  name: 'ArkimeExportCsv',
   components: { SegmentSelect },
   props: {
     start: Number,

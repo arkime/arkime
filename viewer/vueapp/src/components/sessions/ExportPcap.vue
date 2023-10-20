@@ -69,7 +69,7 @@ import SessionsService from './SessionsService';
 import SegmentSelect from './SegmentSelect';
 
 export default {
-  name: 'MolochExportPcap',
+  name: 'ArkimeExportPcap',
   components: { SegmentSelect },
   props: {
     start: Number,

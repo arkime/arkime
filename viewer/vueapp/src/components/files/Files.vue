@@ -5,7 +5,7 @@ SPDX-License-Identifier: Apache-2.0
 <template>
 
   <div>
-    <MolochCollapsible>
+    <ArkimeCollapsible>
       <span class="fixed-header">
         <div class="files-search">
           <div class="p-1">
@@ -43,29 +43,29 @@ SPDX-License-Identifier: Apache-2.0
                 </button>
               </span>
             </div>
-            <moloch-paging v-if="files"
+            <arkime-paging v-if="files"
               :records-total="recordsTotal"
               :records-filtered="recordsFiltered"
               v-on:changePaging="changePaging"
               length-default=500 >
-            </moloch-paging>
+            </arkime-paging>
           </div>
         </div>
       </span>
-    </MolochCollapsible>
+    </ArkimeCollapsible>
 
     <div class="files-content container-fluid">
 
-      <moloch-loading v-if="loading && !error">
-      </moloch-loading>
+      <arkime-loading v-if="loading && !error">
+      </arkime-loading>
 
-      <moloch-error v-if="error"
+      <arkime-error v-if="error"
         :message="error">
-      </moloch-error>
+      </arkime-error>
 
       <div v-if="!error"
         class="ml-2 mr-2">
-        <moloch-table
+        <arkime-table
           id="fieldTable"
           :data="files"
           :load-data="loadData"
@@ -80,7 +80,7 @@ SPDX-License-Identifier: Apache-2.0
           table-classes="table-sm"
           table-state-name="fieldsCols"
           table-widths-state-name="filesColWidths">
-        </moloch-table>
+        </arkime-table>
       </div>
 
     </div>
@@ -92,12 +92,12 @@ SPDX-License-Identifier: Apache-2.0
 <script>
 import Utils from '../utils/utils';
 import FileService from './FileService';
-import MolochError from '../utils/Error';
-import MolochTable from '../utils/Table';
+import ArkimeError from '../utils/Error';
+import ArkimeTable from '../utils/Table';
 import Clusters from '../utils/Clusters';
-import MolochLoading from '../utils/Loading';
-import MolochPaging from '../utils/Pagination';
-import MolochCollapsible from '../utils/CollapsibleWrapper';
+import ArkimeLoading from '../utils/Loading';
+import ArkimePaging from '../utils/Pagination';
+import ArkimeCollapsible from '../utils/CollapsibleWrapper';
 import Focus from '../../../../../common/vueapp/Focus';
 
 let searchInputTimeout; // timeout to debounce the search input
@@ -105,11 +105,11 @@ let searchInputTimeout; // timeout to debounce the search input
 export default {
   name: 'Files',
   components: {
-    MolochPaging,
-    MolochError,
-    MolochLoading,
-    MolochTable,
-    MolochCollapsible,
+    ArkimePaging,
+    ArkimeError,
+    ArkimeLoading,
+    ArkimeTable,
+    ArkimeCollapsible,
     Clusters
   },
   directives: { Focus },

@@ -19,7 +19,7 @@ global.$ = global.jQuery = $;
 Vue.use(BootstrapVue);
 
 Vue.prototype.$constants = {
-  MOLOCH_MULTIVIEWER: false
+  MULTIVIEWER: false
 };
 
 jest.mock('../src/components/files/FileService');

@@ -34,16 +34,16 @@ SPDX-License-Identifier: Apache-2.0
     </div> <!-- /sub navbar -->
 
     <!-- loading overlay -->
-    <moloch-loading
+    <arkime-loading
       v-if="loading">
-    </moloch-loading> <!-- /loading overlay -->
+    </arkime-loading> <!-- /loading overlay -->
 
     <!-- page error -->
-    <moloch-error
+    <arkime-error
       v-if="error"
       :message-html="error"
       class="settings-error">
-    </moloch-error> <!-- /page error -->
+    </arkime-error> <!-- /page error -->
 
     <!-- content -->
     <div class="settings-content row"
@@ -397,13 +397,13 @@ SPDX-License-Identifier: Apache-2.0
               Default SPI Graph
             </label>
             <div class="col-sm-6">
-              <moloch-field-typeahead
+              <arkime-field-typeahead
                 :dropup="true"
                 :fields="fields"
                 query-param="field"
                 :initial-value="spiGraphTypeahead"
                 @fieldSelected="spiGraphFieldSelected">
-              </moloch-field-typeahead>
+              </arkime-field-typeahead>
             </div>
             <div class="col-sm-3">
               <h4 v-if="spiGraphField">
@@ -423,13 +423,13 @@ SPDX-License-Identifier: Apache-2.0
               Connections Src
             </label>
             <div class="col-sm-6">
-              <moloch-field-typeahead
+              <arkime-field-typeahead
                 :dropup="true"
                 :fields="fields"
                 query-param="field"
                 :initial-value="connSrcFieldTypeahead"
                 @fieldSelected="connSrcFieldSelected">
-              </moloch-field-typeahead>
+              </arkime-field-typeahead>
             </div>
             <div class="col-sm-3">
               <h4 v-if="connSrcField">
@@ -449,13 +449,13 @@ SPDX-License-Identifier: Apache-2.0
               Connections Dst
             </label>
             <div class="col-sm-6">
-              <moloch-field-typeahead
+              <arkime-field-typeahead
                 :dropup="true"
                 :fields="fields"
                 query-param="field"
                 :initial-value="connDstFieldTypeahead"
                 @fieldSelected="connDstFieldSelected">
-              </moloch-field-typeahead>
+              </arkime-field-typeahead>
             </div>
             <div class="col-sm-3">
               <h4 v-if="connDstField">
@@ -475,13 +475,13 @@ SPDX-License-Identifier: Apache-2.0
             </label>
 
             <div class="col-sm-6">
-              <moloch-field-typeahead
+              <arkime-field-typeahead
                 :dropup="true"
                 :fields="integerFields"
                 :initial-value="filtersTypeahead"
                 query-param="field"
                 @fieldSelected="timelineFilterSelected">
-              </moloch-field-typeahead>
+              </arkime-field-typeahead>
             </div>
             <div class="col-sm-3">
               <h4 v-if="timelineDataFilters.length > 0">
@@ -1030,11 +1030,11 @@ SPDX-License-Identifier: Apache-2.0
                       </div>
                     </div>
                     <div class="display-sub-sub-navbar">
-                      <moloch-paging
+                      <arkime-paging
                         class="mt-1 ml-1"
                         :records-total="200"
                         :records-filtered="100">
-                      </moloch-paging>
+                      </arkime-paging>
                     </div>
                     <div>
                       <div class="ml-1 mr-1 mt-2 pb-2">
@@ -1403,11 +1403,11 @@ import UserService from '../users/UserService';
 import FieldService from '../search/FieldService';
 import SettingsService from './SettingsService';
 import customCols from '../sessions/customCols.json';
-import MolochError from '../utils/Error';
-import MolochLoading from '../utils/Loading';
-import MolochFieldTypeahead from '../utils/FieldTypeahead';
+import ArkimeError from '../utils/Error';
+import ArkimeLoading from '../utils/Loading';
+import ArkimeFieldTypeahead from '../utils/FieldTypeahead';
 import ColorPicker from '../utils/ColorPicker';
-import MolochPaging from '../utils/Pagination';
+import ArkimePaging from '../utils/Pagination';
 import Utils from '../utils/utils';
 import PeriodicQueries from './PeriodicQueries';
 import Shortcuts from './Shortcuts';
@@ -1422,11 +1422,11 @@ let secrets = [];
 export default {
   name: 'Settings',
   components: {
-    MolochError,
-    MolochLoading,
-    MolochFieldTypeahead,
+    ArkimeError,
+    ArkimeLoading,
+    ArkimeFieldTypeahead,
     ColorPicker,
-    MolochPaging,
+    ArkimePaging,
     PeriodicQueries,
     Shortcuts,
     Notifiers,
@@ -1492,8 +1492,8 @@ export default {
       newPassword: '',
       confirmNewPassword: '',
       changePasswordError: '',
-      multiviewer: this.$constants.MOLOCH_MULTIVIEWER,
-      hasUsersES: this.$constants.MOLOCH_HASUSERSES
+      multiviewer: this.$constants.MULTIVIEWER,
+      hasUsersES: this.$constants.HASUSERSES
     };
   },
   computed: {
@@ -1994,7 +1994,7 @@ export default {
         this.displayName = '';
       });
     },
-    /* retrieves moloch fields and visible column headers for sessions table
+    /* retrieves arkime fields and visible column headers for sessions table
      * adds custom columns to fields
      * sets user settings for spigraph field & connections src/dst fields
      * creates fields map for quick lookups

@@ -17,12 +17,12 @@ SPDX-License-Identifier: Apache-2.0
         Upload File
       </span>
       <div class="pull-right small toast-container">
-        <moloch-toast
+        <arkime-toast
           class="mr-1"
           :message="msg"
           :type="msgType"
           :done="messageDone">
-        </moloch-toast>
+        </arkime-toast>
       </div>
     </div>
 
@@ -99,11 +99,11 @@ SPDX-License-Identifier: Apache-2.0
       </div>
 
       <!-- file upload error -->
-      <moloch-error
+      <arkime-error
         v-if="error"
         :message-html="error"
         class="mt-5 mb-5">
-      </moloch-error> <!-- /file upload error -->
+      </arkime-error> <!-- /file upload error -->
 
     </div>
 
@@ -113,12 +113,15 @@ SPDX-License-Identifier: Apache-2.0
 
 <script>
 import Vue from 'vue';
-import MolochToast from '../utils/Toast';
-import MolochError from '../utils/Error';
+import ArkimeToast from '../utils/Toast';
+import ArkimeError from '../utils/Error';
 
 export default {
-  name: 'MolochUpload',
-  components: { MolochToast, MolochError },
+  name: 'ArkimeUpload',
+  components: {
+    ArkimeToast,
+    ArkimeError
+  },
   data: function () {
     return {
       file: '',

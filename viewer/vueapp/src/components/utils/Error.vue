@@ -21,7 +21,7 @@ SPDX-License-Identifier: Apache-2.0
 
 <script>
 export default {
-  name: 'MolochError',
+  name: 'ArkimeError',
   props: ['message', 'messageHtml']
 };
 </script>

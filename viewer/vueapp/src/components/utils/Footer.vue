@@ -25,7 +25,7 @@ SPDX-License-Identifier: Apache-2.0
 
 <script>
 export default {
-  name: 'MolochFooter',
+  name: 'ArkimeFooter',
   data: function () {
     return {
       version: this.$constants.VERSION

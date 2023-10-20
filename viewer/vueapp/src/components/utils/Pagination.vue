@@ -52,7 +52,7 @@ SPDX-License-Identifier: Apache-2.0
 
 <script>
 export default {
-  name: 'MolochPaging',
+  name: 'ArkimePaging',
   props: [
     'recordsTotal',
     'recordsFiltered',

@@ -4,7 +4,7 @@ SPDX-License-Identifier: Apache-2.0
 -->
 <template>
 
-  <div class="moloch-info container">
+  <div class="arkime-info container">
 
   <div class="center-area">
 
@@ -39,6 +39,6 @@ SPDX-License-Identifier: Apache-2.0
 
 <script>
 export default {
-  name: 'Moloch404'
+  name: 'Arkime404'
 };
 </script>

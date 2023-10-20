@@ -50,7 +50,7 @@ SPDX-License-Identifier: Apache-2.0
 import UserService from '../users/UserService';
 
 export default {
-  name: 'MolochWelcomeMessage',
+  name: 'ArkimeWelcomeMessage',
   data: function () {
     return {
       dismissed: false

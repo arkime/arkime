@@ -58,7 +58,7 @@ export default {
     };
 
     // only validate in multiviewer mode
-    if (!Vue.prototype.$constants.MOLOCH_MULTIVIEWER) {
+    if (!Vue.prototype.$constants.MULTIVIEWER) {
       return result;
     }
 

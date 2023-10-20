@@ -97,7 +97,7 @@ SPDX-License-Identifier: Apache-2.0
           <span class="fa fa-fw fa-trash-o"></span>&nbsp;
           Remove Data
         </b-dropdown-item>
-        <b-dropdown-item v-for="(cluster, key) in molochClusters"
+        <b-dropdown-item v-for="(cluster, key) in arkimeClusters"
           :key="key"
           @click="sendSession(key)"
           :title="`Send to ${cluster.name}`">
@@ -230,19 +230,19 @@ SPDX-License-Identifier: Apache-2.0
       </expression-typeahead> <!-- /search box typeahead -->
 
       <!-- time inputs -->
-      <moloch-time
+      <arkime-time
         :timezone="user.settings.timezone"
         @timeChange="timeChange"
         :hide-interval="hideInterval"
         :updateTime="updateTime">
-      </moloch-time> <!-- /time inputs -->
+      </arkime-time> <!-- /time inputs -->
 
       <!-- form message -->
       <div class="small mt-1">
-        <moloch-toast :message="message"
+        <arkime-toast :message="message"
           :type="messageType"
           :done="messageDone">
-        </moloch-toast>
+        </arkime-toast>
       </div> <!-- /form message -->
 
       <div v-if="actionForm">
@@ -281,13 +281,13 @@ SPDX-License-Identifier: Apache-2.0
           </div>
           <!-- actions menu forms -->
           <div :class="{'col-md-9':showApplyButtons,'col-md-12':!showApplyButtons}">
-            <moloch-modify-view v-if="actionForm === 'modify:view'"
+            <arkime-modify-view v-if="actionForm === 'modify:view'"
               :done="actionFormDone"
               :editView="editableView"
               :initialExpression="expression"
               @setView="setView">
-            </moloch-modify-view>
-            <moloch-tag-sessions v-else-if="actionForm === 'add:tags' || actionForm === 'remove:tags'"
+            </arkime-modify-view>
+            <arkime-tag-sessions v-else-if="actionForm === 'add:tags' || actionForm === 'remove:tags'"
               :add="actionForm === 'add:tags'"
               :start="start"
               :done="actionFormDone"
@@ -295,16 +295,16 @@ SPDX-License-Identifier: Apache-2.0
               :num-visible="numVisibleSessions"
               :num-matching="numMatchingSessions"
               :apply-to="actionFormItemRadio">
-            </moloch-tag-sessions>
-            <moloch-remove-data v-else-if="actionForm === 'remove:data'"
+            </arkime-tag-sessions>
+            <arkime-remove-data v-else-if="actionForm === 'remove:data'"
               :start="start"
               :done="actionFormDone"
               :sessions="openSessions"
               :num-visible="numVisibleSessions"
               :num-matching="numMatchingSessions"
               :apply-to="actionFormItemRadio">
-            </moloch-remove-data>
-            <moloch-send-sessions v-else-if="actionForm === 'send:session'"
+            </arkime-remove-data>
+            <arkime-send-sessions v-else-if="actionForm === 'send:session'"
               :start="start"
               :cluster="cluster"
               :done="actionFormDone"
@@ -312,16 +312,16 @@ SPDX-License-Identifier: Apache-2.0
               :num-visible="numVisibleSessions"
               :num-matching="numMatchingSessions"
               :apply-to="actionFormItemRadio">
-            </moloch-send-sessions>
-            <moloch-export-pcap v-else-if="actionForm === 'export:pcap'"
+            </arkime-send-sessions>
+            <arkime-export-pcap v-else-if="actionForm === 'export:pcap'"
               :start="start"
               :done="actionFormDone"
               :sessions="openSessions"
               :num-visible="numVisibleSessions"
               :num-matching="numMatchingSessions"
               :apply-to="actionFormItemRadio">
-            </moloch-export-pcap>
-            <moloch-export-csv v-else-if="actionForm === 'export:csv'"
+            </arkime-export-pcap>
+            <arkime-export-csv v-else-if="actionForm === 'export:csv'"
               :start="start"
               :fields="fields"
               :done="actionFormDone"
@@ -329,11 +329,11 @@ SPDX-License-Identifier: Apache-2.0
               :num-visible="numVisibleSessions"
               :num-matching="numMatchingSessions"
               :apply-to="actionFormItemRadio">
-            </moloch-export-csv>
-            <moloch-intersection v-else-if="actionForm === 'view:intersection'"
+            </arkime-export-csv>
+            <arkime-intersection v-else-if="actionForm === 'view:intersection'"
               :done="actionFormDone"
               :fields="fields">
-            </moloch-intersection>
+            </arkime-intersection>
           </div> <!-- /actions menu forms -->
         </div>
       </div>
@@ -346,30 +346,30 @@ SPDX-License-Identifier: Apache-2.0
 <script>
 import SettingsService from '../settings/SettingsService';
 import ExpressionTypeahead from './ExpressionTypeahead';
-import MolochTime from './Time';
-import MolochToast from '../utils/Toast';
-import MolochModifyView from '../sessions/ModifyView';
-import MolochTagSessions from '../sessions/Tags';
-import MolochRemoveData from '../sessions/Remove';
-import MolochSendSessions from '../sessions/Send';
-import MolochExportPcap from '../sessions/ExportPcap';
-import MolochExportCsv from '../sessions/ExportCsv';
-import MolochIntersection from '../sessions/Intersection';
+import ArkimeTime from './Time';
+import ArkimeToast from '../utils/Toast';
+import ArkimeModifyView from '../sessions/ModifyView';
+import ArkimeTagSessions from '../sessions/Tags';
+import ArkimeRemoveData from '../sessions/Remove';
+import ArkimeSendSessions from '../sessions/Send';
+import ArkimeExportPcap from '../sessions/ExportPcap';
+import ArkimeExportCsv from '../sessions/ExportCsv';
+import ArkimeIntersection from '../sessions/Intersection';
 import Clusters from '../utils/Clusters';
 
 export default {
-  name: 'MolochSearch',
+  name: 'ArkimeSearch',
   components: {
     ExpressionTypeahead,
-    MolochTime,
-    MolochToast,
-    MolochModifyView,
-    MolochTagSessions,
-    MolochRemoveData,
-    MolochSendSessions,
-    MolochExportPcap,
-    MolochExportCsv,
-    MolochIntersection,
+    ArkimeTime,
+    ArkimeToast,
+    ArkimeModifyView,
+    ArkimeTagSessions,
+    ArkimeRemoveData,
+    ArkimeSendSessions,
+    ArkimeExportPcap,
+    ArkimeExportCsv,
+    ArkimeIntersection,
     Clusters
   },
   props: [
@@ -397,7 +397,7 @@ export default {
       messageType: undefined,
       updateTime: false,
       editableView: undefined, // Not necessarily active view
-      multiviewer: this.$constants.MOLOCH_MULTIVIEWER,
+      multiviewer: this.$constants.MULTIVIEWER,
       basePath: undefined
     };
   },
@@ -427,7 +427,7 @@ export default {
     user: function () {
       return this.$store.state.user;
     },
-    molochClusters: function () {
+    arkimeClusters: function () {
       return this.$store.state.remoteclusters;
     },
     openItemsTooltip: function () {

@@ -89,7 +89,7 @@ import SessionsService from './SessionsService';
 import SegmentSelect from './SegmentSelect';
 
 export default {
-  name: 'MolochRemoveData',
+  name: 'ArkimeRemoveData',
   components: { SegmentSelect },
   props: {
     start: Number,

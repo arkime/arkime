@@ -5,7 +5,7 @@ SPDX-License-Identifier: Apache-2.0
 <template>
 
   <div class="stats-content">
-    <MolochCollapsible>
+    <ArkimeCollapsible>
       <span class="fixed-header">
         <!-- stats sub navbar -->
         <form class="stats-form">
@@ -364,7 +364,7 @@ SPDX-License-Identifier: Apache-2.0
           </div>
         </form> <!-- /stats sub navbar -->
       </span>
-    </MolochCollapsible>
+    </ArkimeCollapsible>
 
     <!-- stats content -->
     <div class="stats-tabs">
@@ -475,7 +475,7 @@ import EsIndices from './EsIndices';
 import EsAdmin from './EsAdmin';
 import CaptureGraphs from './CaptureGraphs';
 import CaptureStats from './CaptureStats';
-import MolochCollapsible from '../utils/CollapsibleWrapper';
+import ArkimeCollapsible from '../utils/CollapsibleWrapper';
 import Utils from '../utils/utils';
 import Focus from '../../../../../common/vueapp/Focus';
 import Clusters from '../utils/Clusters';
@@ -493,7 +493,7 @@ export default {
     EsTasks,
     EsRecovery,
     EsAdmin,
-    MolochCollapsible,
+    ArkimeCollapsible,
     Clusters
   },
   directives: { Focus },
@@ -544,9 +544,6 @@ export default {
     },
     loadingData: function () {
       return this.$store.state.loadingData;
-    },
-    molochClusters: function () {
-      return this.$store.state.remoteclusters;
     }
   },
   watch: {

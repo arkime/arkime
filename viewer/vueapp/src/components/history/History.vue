@@ -5,7 +5,7 @@ SPDX-License-Identifier: Apache-2.0
 <template>
 
   <div class="history-page">
-    <MolochCollapsible>
+    <ArkimeCollapsible>
       <span class="fixed-header">
         <!-- search navbar -->
         <form class="history-search">
@@ -63,12 +63,12 @@ SPDX-License-Identifier: Apache-2.0
               </span>
             </div>
             <div class="form-inline mt-1">
-              <moloch-time
+              <arkime-time
                 :timezone="user.settings.timezone"
                 @timeChange="loadData"
                 :hide-bounding="true"
                 :hide-interval="true">
-              </moloch-time>
+              </arkime-time>
             </div>
           </div>
         </form> <!-- /search navbar -->
@@ -76,23 +76,23 @@ SPDX-License-Identifier: Apache-2.0
         <!-- paging navbar -->
         <form class="history-paging">
           <div class="form-inline">
-            <moloch-paging v-if="history"
+            <arkime-paging v-if="history"
               class="mt-1 ml-1"
               :records-total="recordsTotal"
               :records-filtered="recordsFiltered"
               @changePaging="changePaging"
               length-default=100>
-            </moloch-paging>
-            <moloch-toast
+            </arkime-paging>
+            <arkime-toast
               class="ml-2 mb-3 mt-1"
               :message="msg"
               :type="msgType"
               :done="messageDone">
-            </moloch-toast>
+            </arkime-toast>
           </div>
         </form> <!-- /paging navbar -->
       </span>
-    </MolochCollapsible>
+    </ArkimeCollapsible>
 
     <table v-if="!error"
       class="table table-sm table-striped small">
@@ -334,12 +334,12 @@ SPDX-License-Identifier: Apache-2.0
     </table>
 
     <!-- loading overlay -->
-    <moloch-loading
+    <arkime-loading
       v-if="loading && !error">
-    </moloch-loading> <!-- /loading overlay -->
+    </arkime-loading> <!-- /loading overlay -->
 
     <!-- error -->
-    <moloch-error
+    <arkime-error
       v-if="error"
       :message="error"
     /> <!-- /error -->
@@ -356,15 +356,15 @@ SPDX-License-Identifier: Apache-2.0
 <script>
 import qs from 'qs';
 import Utils from '../utils/utils';
-import MolochTime from '../search/Time';
+import ArkimeTime from '../search/Time';
 import Clusters from '../utils/Clusters';
-import MolochToast from '../utils/Toast';
-import MolochError from '../utils/Error';
-import MolochLoading from '../utils/Loading';
-import MolochPaging from '../utils/Pagination';
+import ArkimeToast from '../utils/Toast';
+import ArkimeError from '../utils/Error';
+import ArkimeLoading from '../utils/Loading';
+import ArkimePaging from '../utils/Pagination';
 import HistoryService from './HistoryService';
 import Focus from '../../../../../common/vueapp/Focus';
-import MolochCollapsible from '../utils/CollapsibleWrapper';
+import ArkimeCollapsible from '../utils/CollapsibleWrapper';
 import ToggleBtn from '../../../../../common/vueapp/ToggleBtn';
 
 let searchInputTimeout; // timeout to debounce the search input
@@ -372,13 +372,13 @@ let searchInputTimeout; // timeout to debounce the search input
 export default {
   name: 'ArkimeHistory',
   components: {
-    MolochPaging,
-    MolochLoading,
-    MolochError,
-    MolochTime,
+    ArkimePaging,
+    ArkimeLoading,
+    ArkimeError,
+    ArkimeTime,
     ToggleBtn,
-    MolochToast,
-    MolochCollapsible,
+    ArkimeToast,
+    ArkimeCollapsible,
     Clusters
   },
   directives: { Focus },

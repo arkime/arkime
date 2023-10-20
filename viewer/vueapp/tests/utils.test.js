@@ -5,7 +5,7 @@ import Vue from 'vue';
 import Utils from '../src/components/utils/utils';
 
 Vue.prototype.$constants = {
-  MOLOCH_MULTIVIEWER: false
+  MULTIVIEWER: false
 };
 
 test('findFactors', () => {

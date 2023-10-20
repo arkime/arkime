@@ -43,12 +43,12 @@ SPDX-License-Identifier: Apache-2.0
         <span v-if="Array.isArray(session[infoField.dbField])">
           <span v-for="(value, index) in limitArrayLength(session[infoField.dbField], infoField.limit)"
             :key="value + index">
-            <moloch-session-field
+            <arkime-session-field
               :value="value"
               :session="session"
               :expr="infoField.exp"
               :field="infoField.dbField">
-            </moloch-session-field>
+            </arkime-session-field>
           </span>
           <a class="cursor-pointer"
             href="javascript:void(0)"
@@ -64,12 +64,12 @@ SPDX-License-Identifier: Apache-2.0
           </a>
         </span>
         <span v-else>
-          <moloch-session-field
+          <arkime-session-field
             :value="session[infoField.dbField]"
             :session="session"
             :expr="infoField.exp"
             :field="infoField.dbField">
-          </moloch-session-field>
+          </arkime-session-field>
         </span>
       </div>
     </div>
@@ -82,7 +82,7 @@ SPDX-License-Identifier: Apache-2.0
 import SessionsService from './SessionsService';
 
 export default {
-  name: 'MolochSessionInfo',
+  name: 'ArkimeSessionInfo',
   props: [
     'session', // the session object
     'infoFields' // the fields to display as info

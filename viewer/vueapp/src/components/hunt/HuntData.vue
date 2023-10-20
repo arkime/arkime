@@ -307,7 +307,7 @@ export default {
       showAddUsers: false,
       editDescription: false,
       newDescription: this.job.description,
-      anonymousMode: this.$constants.MOLOCH_ANONYMOUS_MODE
+      anonymousMode: this.$constants.ANONYMOUS_MODE
     };
   },
   computed: {

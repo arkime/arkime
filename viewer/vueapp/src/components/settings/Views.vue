@@ -48,13 +48,13 @@ SPDX-License-Identifier: Apache-2.0
         <span class="fa fa-user-circle mr-1" />
         See {{ seeAll ? ' MY ' : ' ALL ' }} Views
       </b-form-checkbox>
-      <moloch-paging
+      <arkime-paging
         v-if="views"
         :length-default="size"
         :records-total="recordsTotal"
         :records-filtered="recordsFiltered"
         @changePaging="changeViewsPaging">
-      </moloch-paging>
+      </arkime-paging>
     </div>
 
     <table class="table table-striped table-sm">
@@ -299,14 +299,14 @@ SPDX-License-Identifier: Apache-2.0
 import SettingsService from './SettingsService';
 import UserService from '../../../../../common/vueapp/UserService';
 // components
-import MolochPaging from '../utils/Pagination';
+import ArkimePaging from '../utils/Pagination';
 import RoleDropdown from '../../../../../common/vueapp/RoleDropdown';
 import TransferResource from '../../../../../common/vueapp/TransferResource';
 
 export default {
   name: 'Views',
   components: {
-    MolochPaging,
+    ArkimePaging,
     RoleDropdown,
     TransferResource
   },

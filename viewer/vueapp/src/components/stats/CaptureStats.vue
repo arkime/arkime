@@ -6,12 +6,12 @@ SPDX-License-Identifier: Apache-2.0
 
   <div class="container-fluid">
 
-    <moloch-loading v-if="initialLoading && !error">
-    </moloch-loading>
+    <arkime-loading v-if="initialLoading && !error">
+    </arkime-loading>
 
-    <moloch-error v-if="error"
+    <arkime-error v-if="error"
       :message="error">
-    </moloch-error>
+    </arkime-error>
 
     <div v-show="!error">
 
@@ -20,15 +20,15 @@ SPDX-License-Identifier: Apache-2.0
         title="HINT: These graphs are 1440 pixels wide. Expand your browser window to at least 1500 pixels wide for best viewing.">
       </span>
 
-      <moloch-paging v-if="stats"
+      <arkime-paging v-if="stats"
         class="mt-1 ml-2"
         :records-total="recordsTotal"
         :records-filtered="recordsFiltered"
         v-on:changePaging="changePaging"
         length-default=200>
-      </moloch-paging>
+      </arkime-paging>
 
-      <moloch-table
+      <arkime-table
         id="captureStatsTable"
         :data="stats"
         :loadData="loadData"
@@ -46,7 +46,7 @@ SPDX-License-Identifier: Apache-2.0
         table-classes="table-sm text-right small"
         table-state-name="captureStatsCols"
         table-widths-state-name="captureStatsColWidths">
-      </moloch-table>
+      </arkime-table>
 
     </div>
 
@@ -57,10 +57,10 @@ SPDX-License-Identifier: Apache-2.0
 <script>
 import '../../cubismoverrides.css';
 import Utils from '../utils/utils';
-import MolochError from '../utils/Error';
-import MolochTable from '../utils/Table';
-import MolochLoading from '../utils/Loading';
-import MolochPaging from '../utils/Pagination';
+import ArkimeError from '../utils/Error';
+import ArkimeTable from '../utils/Table';
+import ArkimeLoading from '../utils/Loading';
+import ArkimePaging from '../utils/Pagination';
 
 let oldD3, cubism; // lazy load old d3 and cubism
 
@@ -80,10 +80,10 @@ export default {
     'cluster'
   ],
   components: {
-    MolochPaging,
-    MolochError,
-    MolochLoading,
-    MolochTable
+    ArkimePaging,
+    ArkimeError,
+    ArkimeLoading,
+    ArkimeTable
   },
   data: function () {
     return {

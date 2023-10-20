@@ -6,12 +6,12 @@ SPDX-License-Identifier: Apache-2.0
 
   <div class="container-fluid mt-3">
 
-    <moloch-loading v-if="initialLoading && !error">
-    </moloch-loading>
+    <arkime-loading v-if="initialLoading && !error">
+    </arkime-loading>
 
-    <moloch-error v-if="error"
+    <arkime-error v-if="error"
       :message="error">
-    </moloch-error>
+    </arkime-error>
 
     <div v-if="!error">
 
@@ -157,15 +157,18 @@ SPDX-License-Identifier: Apache-2.0
 
 <script>
 import Utils from '../utils/utils';
-import MolochError from '../utils/Error';
-import MolochLoading from '../utils/Loading';
+import ArkimeError from '../utils/Error';
+import ArkimeLoading from '../utils/Loading';
 
 let reqPromise; // promise returned from setInterval for recurring requests
 let respondedAt; // the time that the last data load successfully responded
 
 export default {
   name: 'EsShards',
-  components: { MolochError, MolochLoading },
+  components: {
+    ArkimeError,
+    ArkimeLoading
+  },
   props: [
     'dataInterval',
     'shardsShow',

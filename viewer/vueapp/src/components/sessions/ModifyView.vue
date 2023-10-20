@@ -148,7 +148,7 @@ import SettingsService from '../settings/SettingsService';
 import RoleDropdown from '../../../../../common/vueapp/RoleDropdown';
 
 export default {
-  name: 'MolochModifyView',
+  name: 'ArkimeModifyView',
   components: {
     RoleDropdown
   },

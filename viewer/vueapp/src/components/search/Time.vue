@@ -261,7 +261,7 @@ let startDateCheck;
 let stopDateCheck;
 
 export default {
-  name: 'MolochTime',
+  name: 'ArkimeTime',
   components: { datePicker },
   directives: { Focus },
   props: [

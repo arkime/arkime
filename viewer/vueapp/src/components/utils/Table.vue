@@ -292,7 +292,7 @@ function gripUnclick (e, vueThis) {
  * There is no need to load data in the parent.
  */
 export default {
-  name: 'MolochTable',
+  name: 'ArkimeTable',
   components: { ToggleBtn },
   props: {
     loadData: { // event to fire when the table needs to load data
