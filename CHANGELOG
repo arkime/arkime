@@ -51,10 +51,11 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
           retrieval (file, elasticsearch)
   - all - json/yaml config file formats now allow arrays instead of comma/semi separated
   - all - authMode setting added
-  - all - authMode=basic added
+  - all - authMode basic, form, basic+form, and basic+oidc added
   - all - notifiers for parliament and arkime merged
           conflicts mitigated by appending "Parliament" to parliament notifiers
   - all - drop privileges is now AFTER http(s) list
+  - all -
   - capture - moloch converted to arkime
   - capture - override ips can now set any field
   - capture - overrideIpsFiles setting

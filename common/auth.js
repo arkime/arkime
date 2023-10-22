@@ -108,7 +108,7 @@ class Auth {
 
     if (options.mode === undefined) {
       if (options.userNameHeader) {
-        if (options.userNameHeader.match(/^(digest|basic|anonymous|oidc|form)$/)) {
+        if (options.userNameHeader.match(/^(digest|basic|anonymous|oidc|basic\+oidc|form|basic\+form)$/)) {
           console.log(`WARNING - Using authMode=${options.userNameHeader} setting since userNameHeader set, add to config file to silence this warning.`);
           options.mode = options.userNameHeader;
           delete options.userNameHeader;
@@ -171,6 +171,11 @@ class Auth {
       }
     }
 
+    const addBasic = Auth.mode.startsWith('basic+');
+    if (addBasic) {
+      Auth.mode = Auth.mode.slice(6);
+    }
+
     let sessionAuth = false;
     switch (Auth.mode) {
     case 'anonymous':
@@ -191,12 +196,12 @@ class Auth {
       check('clientSecret', 'authClientSecret');
       check('redirectURIs', 'authRedirectURIs');
       Auth.#strategies = ['oidc'];
-      Auth.#passportAuthOptions = { session: true, successRedirect: Auth.#basePath, failureRedirect: `${Auth.#basePath}fail` };
+      Auth.#passportAuthOptions = { session: true, failureRedirect: `${Auth.#basePath}fail` };
       sessionAuth = true;
       break;
     case 'form':
       Auth.#strategies = ['form'];
-      Auth.#passportAuthOptions = { session: true, successRedirect: Auth.#basePath, failureRedirect: `${Auth.#basePath}auth` };
+      Auth.#passportAuthOptions = { session: true, failureRedirect: `${Auth.#basePath}auth` };
       sessionAuth = true;
       break;
     case 'header':
@@ -212,6 +217,10 @@ class Auth {
     default:
       console.log('ERROR - unknown authMode', ArkimeUtil.sanitizeStr(Auth.mode));
       process.exit(1);
+    }
+
+    if (addBasic) {
+      Auth.#strategies.unshift('basic');
     }
 
     if (options.s2s && !Auth.#strategies.includes('s2s')) {
@@ -760,6 +769,10 @@ class Auth {
         res.status(403);
         return res.send(JSON.stringify({ success: false, text: err }));
       } else {
+        // Redirect to / if this is a login url
+        if (req.route?.path === '/api/login' || req.route?.path === '/auth/login/callback') {
+          return res.redirect(Auth.#basePath);
+        }
         return next();
       }
     });
