@@ -5672,6 +5672,8 @@ sub notifiersAddMissingProps
   }
 }
 ################################################################################
+
+################################################################################
 sub parliamentCreate
 {
   my $settings = '
@@ -5833,39 +5835,6 @@ sub viewsUpdate
 logmsg "Setting views_v40 mapping\n" if ($verbose > 0);
 esPut("/${PREFIX}views_v40/_mapping?master_timeout=${ESTIMEOUT}s&pretty", $mapping);
 }
-
-sub viewsMove
-{
-# add the views from all users to the new views index
-  my $users = esGet("/${PREFIX}users/_search?size=1000");
-
-  foreach my $user (@{$users->{hits}->{hits}}) {
-      my @views = keys %{$user->{_source}->{views}};
-
-      foreach my $v (@views) {
-          my $view = $user->{_source}->{views}{$v};
-          $view->{users} = "";
-          $view->{name} = $v;
-          if ($view->{shared}) {
-            $view->{roles} = ["arkimeUser"];
-          }
-          delete $view->{shared};
-          if (!exists $view->{user}) {
-            $view->{user} = $user->{_source}->{userId};
-          }
-          esPost("/${PREFIX}views/_doc", to_json($view));
-      }
-
-      # update the user to delete views
-      delete $user->{_source}->{views};
-      my $userId = $user->{_id};
-      esPut("/${PREFIX}users/_doc/${userId}", to_json($user->{_source}));
-  }
-
-  # delete the _moloch_shared user
-  esDelete("/${PREFIX}users/_doc/_moloch_shared", 1);
-}
-################################################################################
 
 ################################################################################
 sub usersCreate
@@ -8019,6 +7988,7 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
     logmsg "Starting Upgrade\n";
 
     if ($main::versionNumber < 79) {
+        esDelete("/${PREFIX}users/_doc/_moloch_shared", 1);
         checkForOld7Indices();
         sessions3Update();
         historyUpdate();
