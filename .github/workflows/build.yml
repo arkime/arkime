@@ -19,10 +19,13 @@ jobs:
         git config --global --add safe.directory `pwd`
 
     - name: Checkout repository
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
+      with:
+        fetch-tags: true
 
     - name: build
       run: |
+        git describe --tags
         (cd / ; curl https://s3.amazonaws.com/files.molo.ch/snfmin.tar.gz | tar -zxvf -)
         ./easybutton-build.sh --rminstall --kafka
         (cd tests ; ./tests.pl)
