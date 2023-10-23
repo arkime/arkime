@@ -40,7 +40,7 @@ int reader_snf_stats(ArkimeReaderStats_t *stats)
     for (i = 0; i < MAX_INTERFACES && config.interface[i]; i++) {
         for (r = ringStartOffset; r < (ringStartOffset + snfNumRings); r++) {
 
-            // Use the packets read stats accumulated in moloch
+            // Use the packets read stats accumulated in capture
             stats->total += totalPktsRead[i][r];
 
             int err = snf_ring_getstats(rings[i][r], &ss);

@@ -6476,7 +6476,7 @@ if ($ARGV[1] =~ /^(users-?import|import)$/) {
         }
     }
 
-    my @indices = ("users", "sequence", "stats", "queries", "files", "fields", "dstats", "hunts", "lookups", "notifiers", "views", "parliament");
+    my @indices = ("dstats", "fields", "files", "hunts", "lookups", "notifiers", "parliament", "queries", "sequence", "stats", "users", "views");
     logmsg "Exporting documents...\n";
     foreach my $index (@indices) {
         my $data = esScroll($index, "", '{"version": true}');
@@ -6969,7 +6969,7 @@ if ($ARGV[1] =~ /^(users-?import|import)$/) {
 
     sub printIndex {
         my ($status, $name) = @_;
-        my $index = $status->{indices}->{$PREFIX.$name} || $status->{indices}->{$OLDPREFIX.$name};
+        my $index = $status->{indices}->{$PREFIX.$name} // $status->{indices}->{$OLDPREFIX.$name} // $status->{indices}->{$name};
         return if (!$index);
         printf "%-20s %17s (%s bytes)\n", $name . ":", commify($index->{primaries}->{docs}->{count}), commify($index->{primaries}->{store}->{size_in_bytes});
     }
@@ -7003,9 +7003,10 @@ if ($ARGV[1] =~ /^(users-?import|import)$/) {
         printf "History Density:     %17s (%s bytes)\n", commify(int($historys/($dataNodes*scalar(@historys)))),
                                                        commify(int($historysBytes/($dataNodes*scalar(@historys))));
     }
-    printIndex($status, "stats_v30");
-    printIndex($status, "stats_v4");
-    printIndex($status, "stats_v3");
+
+    printIndex($status, "dstats_v30");
+    printIndex($status, "dstats_v4");
+    printIndex($status, "dstats_v3");
 
     printIndex($status, "fields_v30");
     printIndex($status, "fields_v3");
@@ -7015,23 +7016,38 @@ if ($ARGV[1] =~ /^(users-?import|import)$/) {
     printIndex($status, "files_v6");
     printIndex($status, "files_v5");
 
+    printIndex($status, "hunts_v30");
+    printIndex($status, "hunts_v2");
+    printIndex($status, "hunts_v1");
+
+    printIndex($status, "lookups_v30");
+
+    printIndex($status, "notifiers_v40");
+
+    printIndex($status, "parliament_v50");
+
+    printIndex($status, "queries_v30");
+
+    printIndex($status, "sequence_v30");
+    printIndex($status, "sequence_v3");
+    printIndex($status, "sequence_v2");
+
+    printIndex($status, "stats_v30");
+    printIndex($status, "stats_v4");
+    printIndex($status, "stats_v3");
+
     printIndex($status, "users_v30");
     printIndex($status, "users_v7");
     printIndex($status, "users_v6");
     printIndex($status, "users_v5");
     printIndex($status, "users_v4");
 
-    printIndex($status, "hunts_v30");
-    printIndex($status, "hunts_v2");
-    printIndex($status, "hunts_v1");
+    printIndex($status, "views_v40");
 
-    printIndex($status, "dstats_v30");
-    printIndex($status, "dstats_v4");
-    printIndex($status, "dstats_v3");
-
-    printIndex($status, "sequence_v30");
-    printIndex($status, "sequence_v3");
-    printIndex($status, "sequence_v2");
+    printIndex($status, "cont3xt_history");
+    printIndex($status, "cont3xt_links");
+    printIndex($status, "cont3xt_overviews");
+    printIndex($status, "cont3xt_views");
     exit 0;
 } elsif ($ARGV[1] eq "mv") {
     (my $fn = $ARGV[2]) =~ s/\//\\\//g;
@@ -7580,19 +7596,19 @@ $policy = qq/{
         }
     }
 
-    foreach my $i ("stats_v30", "dstats_v30", "fields_v30", "queries_v30", "hunts_v30", "lookups_v30", "users_v30", "notifiers_v40", "views_v40", "parliament_v50") {
+    foreach my $i ("dstats_v30", "fields_v30", "hunts_v30", "lookups_v30", "notifiers_v40", "parliament_v50", "queries_v30", "stats_v30", "users_v30", "views_v40") {
         if (!defined $indices{"${PREFIX}$i"}) {
             print "--> Couldn't find index ${PREFIX}$i, repair might fail\n"
         }
     }
 
-    foreach my $i ("stats", "dstats", "fields") {
+    foreach my $i ("dstats", "fields", "stats") {
         if (defined $indices{"${PREFIX}$i"}) {
             print "--> Will delete the index ${PREFIX}$i and recreate as alias\n"
         }
     }
 
-    foreach my $i ("queries", "hunts", "lookups", "users", "notifiers", "views", "parliament") {
+    foreach my $i ("hunts", "lookups", "notifiers", "parliament", "queries", "users", "views") {
         if (defined $indices{"${PREFIX}$i"}) {
             print "--> Will delete the index ${PREFIX}$i and recreate as alias, this WILL cause data loss in those indices, maybe cancel and run backup first\n"
         }
@@ -7611,23 +7627,23 @@ $policy = qq/{
     $verbose = 3 if ($verbose < 3);
 
     print "Deleting any indices that should be aliases\n";
-    foreach my $i ("stats", "dstats", "fields", "queries", "hunts", "lookups", "users", "notifiers", "views", "parliament") {
+    foreach my $i ("dstats", "fields", "hunts", "lookups", "notifiers", "parliament", "queries", "stats", "users", "views") {
         esDelete("/${PREFIX}$i", 0) if (defined $indices{"${PREFIX}$i"});
     }
 
     print "Re-adding aliases\n";
-    esAlias("add", "sequence_v30", "sequence");
-    esAlias("add", "files_v30", "files");
-    esAlias("add", "stats_v30", "stats");
     esAlias("add", "dstats_v30", "dstats");
     esAlias("add", "fields_v30", "fields");
-    esAlias("add", "queries_v30", "queries");
+    esAlias("add", "files_v30", "files");
     esAlias("add", "hunts_v30", "hunts");
     esAlias("add", "lookups_v30", "lookups");
-    esAlias("add", "users_v30", "users");
     esAlias("add", "notifiers_v40", "notifiers");
-    esAlias("add", "views_v40", "views");
     esAlias("add", "parliament_v50", "parliament");
+    esAlias("add", "queries_v30", "queries");
+    esAlias("add", "sequence_v30", "sequence");
+    esAlias("add", "stats_v30", "stats");
+    esAlias("add", "users_v30", "users");
+    esAlias("add", "views_v40", "views");
 
     if (defined $indices{"${PREFIX}users_v30"}) {
         usersUpdate();

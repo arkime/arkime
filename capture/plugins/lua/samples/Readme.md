@@ -24,4 +24,4 @@ dcerpc.cmd=db:dcerpc.cmd;kind:termfield;friendly:DCERPC Command;count:true;help:
 You also need to add lua.so to plugins and the script files as listed below
 
 * plugins=lua.so
-* luaFiles=/data/moloch/lua/dcerpc.lua;/data/moloch/lua/smb.lua;/data/moloch/lua/entropy.lua
+* luaFiles=/opt/arkime/lua/dcerpc.lua;/opt/arkmie/lua/smb.lua;/opt/arkime/lua/entropy.lua
