@@ -16,6 +16,7 @@ jobs:
     - name: install git
       run: |
         apk add --no-cache curl bash sudo git
+        git config --global --add safe.directory `pwd`
 
     - name: Checkout repository
       uses: actions/checkout@v3
