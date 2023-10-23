@@ -413,6 +413,9 @@ uint8_t *arkime_parsers_asn_get_tlv(BSB *bsb, uint32_t *apc, uint32_t *atag, uin
     if (ch & 0x80) {
         int cnt = ch & 0x7f;
         (*alen) = 0;
+        if (cnt > 4) {
+            goto get_tlv_error;
+        }
         while (cnt > 0 && BSB_REMAINING(*bsb)) {
             BSB_IMPORT_u08(*bsb, ch);
             (*alen) = ((*alen) << 8) | ch;
