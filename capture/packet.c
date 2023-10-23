@@ -282,7 +282,7 @@ LOCAL void arkime_packet_process(ArkimePacket_t *packet, int thread)
             // If the last fileNum used in the session isn't the same as the
             // lastest packets fileNum then we need to add to the filePos and
             // fileNum arrays.
-            int16_t len;
+            uint16_t len;
             if (session->lastFileNum != packet->writerFileNum) {
                 session->lastFileNum = packet->writerFileNum;
                 g_array_append_val(session->fileNumArray, packet->writerFileNum);
