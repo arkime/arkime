@@ -13,15 +13,21 @@ jobs:
     container: alpine:3.14
 
     steps:
+    - name: install git
+      run: |
+        apk add --no-cache curl bash sudo git
+
     - name: Checkout repository
       uses: actions/checkout@v3
 
     - name: build
       run: |
-        apk add --no-cache curl bash sudo git
         (cd / ; curl https://s3.amazonaws.com/files.molo.ch/snfmin.tar.gz | tar -zxvf -)
         ./easybutton-build.sh --rminstall --kafka
         (cd tests ; ./tests.pl)
+
+    - name: install
+      run: |
         export PATH=/opt/arkime/bin:$PATH
         make install
         npm run lint
