@@ -21,7 +21,7 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v4
       with:
-        fetch-tags: true
+        fetch-depth: 0
 
     - name: build
       run: |
