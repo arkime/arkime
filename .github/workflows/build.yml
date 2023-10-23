@@ -1,0 +1,27 @@
+name: "Build"
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    container: alpine:3.14
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+
+    - name: build
+      run: |
+        apk add --no-cache curl bash sudo git
+        (cd / ; curl https://s3.amazonaws.com/files.molo.ch/snfmin.tar.gz | tar -zxvf -)
+        ./easybutton-build.sh --rminstall --kafka
+        (cd tests ; ./tests.pl)
+        export PATH=/opt/arkime/bin:$PATH
+        make install
+        npm run lint
