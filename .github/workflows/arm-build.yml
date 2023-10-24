@@ -23,7 +23,13 @@ jobs:
     - name: easybutton
       run: |
         ln -s /thirdparty .
-        ./easybutton-build.sh
+        ./easybutton-build.sh --rminstall --kafka
 
-    - name: tests
+    - name: capture tests
       run: (cd tests; ./tests.pl)
+
+    - name: install
+      run: |
+        export PATH=/opt/arkime/bin:$PATH
+        make install
+        npm run lint
