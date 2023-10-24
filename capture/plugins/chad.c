@@ -177,7 +177,7 @@ void arkime_plugin_init()
 {
     chad_plugin_num = arkime_plugins_register("chad", TRUE);
 
-    chad_http_num = arkime_field_by_exp("http.chad");
+    chad_http_num = arkime_field_by_exp("http.request.chad");
     if (chad_http_num == -1) {
         CONFIGEXIT("Add 'chad=type:string;count:true;' to the '[headers-http-request]' section of the config.ini file");
     }
