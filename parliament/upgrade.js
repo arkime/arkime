@@ -225,6 +225,13 @@ exports.upgrade = async function (parliament, issues, Parliament) {
 
         delete cluster.healthError;
         delete cluster.statsError;
+        delete cluster.status;
+        delete cluster.totalNodes;
+        delete cluster.dataNodes;
+        delete cluster.deltaBPS;
+        delete cluster.deltaTDPS;
+        delete cluster.molochNodes;
+        delete cluster.monitoring;
       }
     }
 
@@ -236,7 +243,7 @@ exports.upgrade = async function (parliament, issues, Parliament) {
       if (err.meta?.statusCode === 409) {
         console.log('Parliament already exists in DB. Skipping!', err);
       } else {
-        console.error('ERROR - Couldn\'t add Parliament to DB.', err);
+        console.error('ERROR - Couldn\'t add Parliament to DB.', JSON.stringify(err, null, 2));
       }
     }
   }
