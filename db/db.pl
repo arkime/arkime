@@ -7984,7 +7984,7 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
 # Remaing is upgrade or upgradenoprompt
 
 # For really old versions don't support upgradenoprompt
-    if ($main::versionNumber < 78) {
+    if ($main::versionNumber < 77) {
         logmsg "Can not upgrade directly, please upgrade to Moloch 4.3.2+ first. (Db version $main::versionNumber)\n\n";
         exit 1;
     }
@@ -8014,6 +8014,7 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
         parliamentCreate();
         viewsUpdate();
         lookupsUpdate();
+        usersUpdate();
     } elsif ($main::versionNumber == 79) {
         checkForOld7Indices();
         sessions3Update();
