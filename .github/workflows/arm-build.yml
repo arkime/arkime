@@ -14,7 +14,7 @@ jobs:
     steps:
     - name: install
       run: |
-        yum -y install git wget
+        yum -y install git wget sudo
 
     - uses: actions/checkout@v3
 
