@@ -9,17 +9,21 @@ on:
 jobs:
   build:
     runs-on: [self-hosted, linux, ARM64]
-    container: public.ecr.aws/amazonlinux/amazonlinux:2023
+    container: andywick/arkime-build-al2023-arm64:5.0.0-3
 
     steps:
     - name: install
       run: |
         yum -y install git wget sudo
 
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
 
     - name: easybutton
-      run: ./easybutton-build.sh
+      run: |
+        ln -s /thirdparty .
+        ./easybutton-build.sh
 
     - name: tests
       run: (cd tests; ./tests.pl)
