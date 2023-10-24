@@ -1,24 +1,28 @@
+<!--
+Copyright Yahoo Inc.
+SPDX-License-Identifier: Apache-2.0
+-->
 <template>
 
   <div class="container-fluid mt-2">
 
-    <moloch-loading v-if="initialLoading && !error">
-    </moloch-loading>
+    <arkime-loading v-if="initialLoading && !error">
+    </arkime-loading>
 
-    <moloch-error v-if="error"
+    <arkime-error v-if="error"
       :message="error">
-    </moloch-error>
+    </arkime-error>
 
     <div v-show="!error">
 
-      <moloch-paging v-if="stats"
+      <arkime-paging v-if="stats"
         class="mt-1 ml-2"
         :info-only="true"
         :records-total="recordsTotal"
         :records-filtered="recordsFiltered">
-      </moloch-paging>
+      </arkime-paging>
 
-      <moloch-table
+      <arkime-table
         id="esIndicesTable"
         :data="stats"
         :loadData="loadData"
@@ -28,6 +32,7 @@
         :action-column="true"
         :desc="query.desc"
         :sortField="query.sortField"
+        :no-results-msg="`No results match your search.${cluster ? 'Try selecting a different cluster.' : ''}`"
         page="esIndices"
         table-animation="list"
         table-classes="table-sm text-right small mt-2"
@@ -64,7 +69,7 @@
             </b-dropdown-item>
           </b-dropdown>
         </template>
-      </moloch-table>
+      </arkime-table>
 
     </div>
 
@@ -73,10 +78,11 @@
 </template>
 
 <script>
-import MolochTable from '../utils/Table';
-import MolochError from '../utils/Error';
-import MolochLoading from '../utils/Loading';
-import MolochPaging from '../utils/Pagination';
+import Utils from '../utils/utils';
+import ArkimeTable from '../utils/Table';
+import ArkimeError from '../utils/Error';
+import ArkimeLoading from '../utils/Loading';
+import ArkimePaging from '../utils/Pagination';
 
 let reqPromise; // promise returned from setInterval for recurring requests
 let respondedAt; // the time that the last data load successfully responded
@@ -89,13 +95,14 @@ export default {
     'refreshData',
     'confirm',
     'issueConfirmation',
-    'searchTerm'
+    'searchTerm',
+    'cluster'
   ],
   components: {
-    MolochTable,
-    MolochError,
-    MolochPaging,
-    MolochLoading
+    ArkimeTable,
+    ArkimeError,
+    ArkimePaging,
+    ArkimeLoading
   },
   data: function () {
     return {
@@ -109,7 +116,8 @@ export default {
       query: {
         filter: this.searchTerm || undefined,
         sortField: 'index',
-        desc: false
+        desc: false,
+        cluster: this.cluster || undefined
       },
       columns: [ // es indices table columns
         // default columns
@@ -166,6 +174,10 @@ export default {
       if (this.issueConfirmation) {
         this.deleteIndex(this.issueConfirmation);
       }
+    },
+    cluster: function () {
+      this.query.cluster = this.cluster;
+      this.loadData();
     }
   },
   created: function () {
@@ -180,7 +192,11 @@ export default {
       this.$emit('confirm', `Delete ${indexName}`, indexName);
     },
     deleteIndex (indexName) {
-      this.$http.delete(`api/esindices/${indexName}`)
+      if (!Utils.checkClusterSelection(this.query.cluster, this.$store.state.esCluster.availableCluster.active, this).valid) {
+        return;
+      }
+
+      this.$http.delete(`api/esindices/${indexName}`, { params: this.query })
         .then((response) => {
           for (let i = 0; i < this.stats.length; i++) {
             if (this.stats[i].index === indexName) {
@@ -193,14 +209,22 @@ export default {
         });
     },
     optimizeIndex (indexName) {
-      this.$http.post(`api/esindices/${indexName}/optimize`)
+      if (!Utils.checkClusterSelection(this.query.cluster, this.$store.state.esCluster.availableCluster.active, this).valid) {
+        return;
+      }
+
+      this.$http.post(`api/esindices/${indexName}/optimize`, {}, { params: this.query })
         .then((response) => {
         }, (error) => {
           this.$emit('errored', error.text || error);
         });
     },
     closeIndex (index) {
-      this.$http.post(`api/esindices/${index.index}/close`)
+      if (!Utils.checkClusterSelection(this.query.cluster, this.$store.state.esCluster.availableCluster.active, this).valid) {
+        return;
+      }
+
+      this.$http.post(`api/esindices/${index.index}/close`, {}, { params: this.query })
         .then((response) => {
           if (response.data.success) {
             this.$set(index, 'status', 'close');
@@ -210,7 +234,11 @@ export default {
         });
     },
     openIndex (index) {
-      this.$http.post(`api/esindices/${index.index}/open`)
+      if (!Utils.checkClusterSelection(this.query.cluster, this.$store.state.esCluster.availableCluster.active, this).valid) {
+        return;
+      }
+
+      this.$http.post(`api/esindices/${index.index}/open`, {}, { params: this.query })
         .then((response) => {
           if (response.data.success) {
             this.$set(index, 'status', 'open');
@@ -231,6 +259,10 @@ export default {
       }, 500);
     },
     loadData: function (sortField, desc) {
+      if (!Utils.checkClusterSelection(this.query.cluster, this.$store.state.esCluster.availableCluster.active, this).valid) {
+        return;
+      }
+
       this.loading = true;
       respondedAt = undefined;
 

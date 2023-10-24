@@ -223,7 +223,7 @@ export default {
       Vue.axios(options).then((response) => {
         resolve(response.data);
       }).catch((error) => {
-        reject(error.data);
+        reject(error);
       });
     });
   },
@@ -247,7 +247,7 @@ export default {
       Vue.axios(options).then((response) => {
         resolve(response.data);
       }).catch((error) => {
-        reject(error.data);
+        reject(error);
       });
     });
   },
@@ -278,7 +278,7 @@ export default {
       Vue.axios(options).then((response) => {
         resolve(response.data);
       }).catch((error) => {
-        reject(error.data);
+        reject(error);
       });
     });
   },

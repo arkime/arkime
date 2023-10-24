@@ -11,6 +11,7 @@ INCLUDE_OTHER = -Ithirdparty \
 	        @YARA_CFLAGS@ \
 	        @MAXMINDDB_CFLAGS@ \
 	        @MAGIC_CFLAGS@ \
+		@NGHTTP2_CFLAGS@ \
 	        @ZSTD_CFLAGS@ \
 	        @CURL_CFLAGS@
 
@@ -42,7 +43,7 @@ SANITIZE_CFLAGS  = $(SANITIZE_LDFLAGS)
 FUZZ_LDFLAGS     = -fno-common -fsanitize=fuzzer,address -fstack-protector-all -fsanitize-address-use-after-scope
 FUZZ_CFLAGS      = -DFUZZLOCH $(FUZZ_LDFLAGS)
 
-%.o : %.c moloch.h hash.h dll.h bsb.h
+%.o : %.c arkime.h hash.h dll.h bsb.h
 	$(CC) -fno-strict-aliasing -pthread -fPIC -g -O2 $(EXTRA_CFLAGS) -Wall -Wextra -D_GNU_SOURCE -std=gnu99 -c $< \
             $(INCLUDE_PCAP) \
             $(INCLUDE_OTHER) \
@@ -58,15 +59,15 @@ all:thirdparty/js0n.o thirdparty/http_parser.o thirdparty/patricia.o $(O_FILES)
 	(cd plugins; $(MAKE) EXTRA_CFLAGS="$(EXTRA_CFLAGS)")
 
 sanitize:thirdparty/js0n.o thirdparty/http_parser.o thirdparty/patricia.o
-	touch moloch.h
+	touch arkime.h
 	$(MAKE) EXTRA_CFLAGS="$(SANITIZE_CFLAGS)" EXTRA_LDFLAGS="$(SANITIZE_LDFLAGS)"
-	touch moloch.h
+	touch arkime.h
 
 fuzzloch:thirdparty/js0n.o thirdparty/http_parser.o thirdparty/patricia.o
-	touch moloch.h
+	touch arkime.h
 	$(MAKE) EXTRA_CFLAGS="$(FUZZ_CFLAGS)" EXTRA_LDFLAGS="$(FUZZ_LDFLAGS)"
 	mv capture fuzzloch-capture
-	touch moloch.h
+	touch arkime.h
 
 thirdparty/js0n.o:thirdparty/js0n.c
 	$(CC) -fno-strict-aliasing -pthread -fPIC -O2 -c thirdparty/js0n.c -o thirdparty/js0n.o
@@ -91,7 +92,10 @@ check:
 	(cd plugins; $(MAKE) check)
 
 distclean realclean clean:
-	rm -f *.o moloch-capture capture */*.o */*.so
+	rm -f *.o arkime-capture capture */*.o */*.so
 
 cppcheck:
 	cppcheck -q --enable=all --std=c99 -I. -Ithirdparty *.c plugins/*.c plugins/*/*.c parsers/*.c
+
+format:
+	AStyle --options=.astylerc  *.[ch]  p*/*.c p*/*/*.c  ../tests/plugins/*.c

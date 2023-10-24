@@ -3,17 +3,7 @@
  *
  * Copyright 2012-2016 AOL Inc. All rights reserved.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this Software except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 'use strict';
@@ -1123,7 +1113,7 @@ Pcap.reassemble_generic_ether = function (packets, numPackets, cb) {
 
 // Needs to be rewritten since its possible for packets to be
 // dropped by windowing and other things to actually be displayed allowed.
-// If multiple tcp sessions in one moloch session display can be wacky/wrong.
+// If multiple tcp sessions in one arkime session display can be wacky/wrong.
 Pcap.reassemble_tcp = function (packets, numPackets, skey, cb) {
   try {
     // Remove syn, rst, 0 length packets and figure out min/max seq number

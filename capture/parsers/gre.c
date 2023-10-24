@@ -2,20 +2,10 @@
  *
  * Copyright 2019 AOL Inc. All rights reserved.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this Software except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: Apache-2.0
  */
 
-#include "moloch.h"
+#include "arkime.h"
 #include "patricia.h"
 #include <inttypes.h>
 #include <arpa/inet.h>
@@ -23,18 +13,18 @@
 
 
 /******************************************************************************/
-extern MolochConfig_t        config;
+extern ArkimeConfig_t        config;
 
 /******************************************************************************/
-LOCAL MolochPacketRC gre_packet_enqueue(MolochPacketBatch_t * UNUSED(batch), MolochPacket_t * const packet, const uint8_t *data, int UNUSED(len))
+LOCAL ArkimePacketRC gre_packet_enqueue(ArkimePacketBatch_t *UNUSED(batch), ArkimePacket_t *const packet, const uint8_t *data, int UNUSED(len))
 {
-    packet->tunnel |= MOLOCH_PACKET_TUNNEL_GRE;
+    packet->tunnel |= ARKIME_PACKET_TUNNEL_GRE;
 
     //LOG("ALW ipOffset %d payloadOffset %d diff %d", packet->ipOffset, packet->payloadOffset, (int)(data - packet->pkt));
 
     BSB bsb;
     if (unlikely(len) < 4 || unlikely(!data))
-        return MOLOCH_PACKET_CORRUPT;
+        return ARKIME_PACKET_CORRUPT;
 
     BSB_INIT(bsb, data, len);
 
@@ -75,17 +65,17 @@ LOCAL MolochPacketRC gre_packet_enqueue(MolochPacketBatch_t * UNUSED(batch), Mol
     }
 
     if (BSB_IS_ERROR(bsb))
-        return MOLOCH_PACKET_CORRUPT;
+        return ARKIME_PACKET_CORRUPT;
 
     // Type I of ERSPAN doesn't have a ERSPAN header
     if (type == 0x88be && (flags_version & 0x1000) == 0) {
-        type = MOLOCH_ETHERTYPE_ETHER;
+        type = ARKIME_ETHERTYPE_ETHER;
     }
 
-    return moloch_packet_run_ethernet_cb(batch, packet, BSB_WORK_PTR(bsb), BSB_REMAINING(bsb), type, "GRE");
+    return arkime_packet_run_ethernet_cb(batch, packet, BSB_WORK_PTR(bsb), BSB_REMAINING(bsb), type, "GRE");
 }
 /******************************************************************************/
-void moloch_parser_init()
+void arkime_parser_init()
 {
-    moloch_packet_set_ip_cb(IPPROTO_GRE, gre_packet_enqueue);
+    arkime_packet_set_ip_cb(IPPROTO_GRE, gre_packet_enqueue);
 }

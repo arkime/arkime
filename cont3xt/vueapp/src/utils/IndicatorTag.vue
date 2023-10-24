@@ -1,3 +1,7 @@
+<!--
+Copyright Yahoo Inc.
+SPDX-License-Identifier: Apache-2.0
+-->
 <template>
   <span class="px-1 ml-1 rounded bg-danger tag tag-pad-bottom">
     {{ value }}

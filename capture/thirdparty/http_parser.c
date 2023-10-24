@@ -459,7 +459,7 @@ parse_url_char(enum state s, const char ch)
         return s_req_schema_slash;
       }
 
-      /* ALW MOLOCH: Assume we just have a path, bad client! */
+      /* ALW ARKIME: Assume we just have a path, bad client! */
       return s_req_path;
       break;
 
@@ -1349,7 +1349,7 @@ size_t http_parser_execute (http_parser *parser,
           break;
         }
 
-        /* ALW MOLOCH: Assume we just have a missing colon */
+        /* ALW ARKIME: Assume we just have a missing colon */
         parser->state = s_header_value_start;
         CALLBACK_DATA(header_field);
         break;

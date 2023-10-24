@@ -1,3 +1,10 @@
+/******************************************************************************/
+/* apiMisc.js -- api calls for misc parts of viewer
+ *
+ * Copyright Yahoo Inc.
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
 'use strict';
 
 const Config = require('./config.js');
@@ -7,10 +14,11 @@ const fs = require('fs');
 const unzipper = require('unzipper');
 const util = require('util');
 const ArkimeUtil = require('../common/arkimeUtil');
+const ViewerUtils = require('./viewerUtils');
+const ArkimeConfig = require('../common/arkimeConfig');
 const User = require('../common/user');
 const View = require('./apiViews');
 const internals = require('./internals');
-const ViewerUtils = require('./viewerUtils');
 const UserAPIs = require('./apiUsers');
 const SessionAPIs = require('./apiSessions');
 
@@ -115,9 +123,11 @@ class MiscAPIs {
       query.query = { wildcard: { name: `*${req.query.filter}*` } };
     }
 
+    ViewerUtils.addCluster(req.query.cluster, query);
+
     Promise.all([
       Db.search('files', 'file', query),
-      Db.numberOfDocuments('files')
+      Db.numberOfDocuments('files', { cluster: req.query.cluster })
     ]).then(([files, total]) => {
       if (files.error) { throw files.error; }
 
@@ -168,26 +178,6 @@ class MiscAPIs {
         }
       });
     });
-  };
-
-  // title apis ---------------------------------------------------------------
-  /**
-   * GET - /api/title
-   *
-   * Retrieves the browser page title for the Arkime app.
-   * Configure it using <a href="https://arkime.com/settings#titletemplate">the titleTemplate setting</a>
-   * @name /title
-   * @returns {string} title - The title of the app based on the configured setting.
-   */
-  static getPageTitle (req, res) {
-    ViewerUtils.noCache(req, res, 'text/plain; charset=utf-8');
-    let titleConfig = Config.get('titleTemplate', '_cluster_ - _page_ _-view_ _-expression_');
-
-    titleConfig = titleConfig.replace(/_cluster_/g, internals.clusterName)
-      .replace(/_userId_/g, req.user ? req.user.userId : '-')
-      .replace(/_userName_/g, req.user ? req.user.userName : '-');
-
-    res.send(titleConfig);
   };
 
   // value actions apis -------------------------------------------------------
@@ -322,7 +312,7 @@ class MiscAPIs {
       .replace(/{NODE}/g, Config.nodeName())
       .replace(/{TMPFILE}/g, req.file.path)
       .replace(/{INSECURE-ORIGINALNAME}/g, req.file.originalname)
-      .replace(/{CONFIG}/g, Config.getConfigFile());
+      .replace(/{CONFIG}/g, ArkimeConfig.configFile);
 
     console.log('upload command: ', cmd);
     exec(cmd, (error, stdout, stderr) => {

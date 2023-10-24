@@ -27,6 +27,51 @@ export function getIntegrationData (results, indicator, source) {
   return results?.[indicator.itype]?.[indicator.query]?.[source] ?? {};
 }
 
-export function indicatorId (indicator) {
+export function localIndicatorId (indicator) {
   return `${indicator.query}-${indicator.itype}`;
+}
+
+/**
+ * Extracts the indicator object from its global ID
+ *   (where a global ID is some number of local IDs separated by commas)
+ *
+ * @param globalId - the fully qualified indicator path-id
+ *           e.g. 'foo.com-domain,1.1.1.1-ip'
+ * @returns {Cont3xtIndicator}
+ */
+export function indicatorFromId (globalId) {
+  const localId = globalId.substring(globalId.lastIndexOf(',') + 1);
+  const splitAt = localId.lastIndexOf('-');
+  return {
+    query: localId.substring(0, splitAt),
+    itype: localId.substring(splitAt + 1)
+  };
+}
+
+/**
+ * @param indicatorId - the id of the indicator to get the parent id for
+ * @returns {string|undefined} - the parent id, or undefined if there is no parent
+ */
+export function indicatorParentId (indicatorId) {
+  return (indicatorId.includes(','))
+    ? indicatorId.substring(0, indicatorId.lastIndexOf(','))
+    : undefined;
+}
+
+export function shouldDisplayIntegrationBtn (integration, integrationData) {
+  return integrationData != null && integration?.icon != null;
+}
+
+export function shouldDisplayCountedIntegrationBtn (integration, integrationData) {
+  return shouldDisplayIntegrationBtn(integration, integrationData) && integrationData?._cont3xt?.count != null;
+}
+
+export function integrationCountSeverity (integrationData) {
+  if (integrationData._cont3xt.count === 0) {
+    return 'secondary';
+  } else if (integrationData._cont3xt.severity === 'high') {
+    return 'danger';
+  } else {
+    return 'success';
+  }
 }

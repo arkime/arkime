@@ -1,3 +1,7 @@
+<!--
+Copyright Yahoo Inc.
+SPDX-License-Identifier: Apache-2.0
+-->
 <template>
 
   <div>
@@ -48,7 +52,7 @@
 
 <script>
 export default {
-  name: 'MolochPaging',
+  name: 'ArkimePaging',
   props: [
     'recordsTotal',
     'recordsFiltered',

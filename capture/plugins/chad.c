@@ -3,26 +3,16 @@
  *
  * Copyright Yahoo Inc.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this Software except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
-#include "moloch.h"
+#include "arkime.h"
 
-extern MolochConfig_t        config;
+extern ArkimeConfig_t        config;
 
 static char     CHAD_ORDER_ARR[] =
     "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVSXYZ1234567890=";
@@ -33,9 +23,9 @@ static char     CHAD_HTTP_CONFIG[] = "host;accept;accept-encoding;accept-languag
 static char     CHAD_HTTP_IGNORE[] = "X-IPINTELL;rpauserdata;rspauth;x-novinet;x-is-aol;x-lb-client-ip;x-lb-client-ssl;x-ssl-offload;dnt;X-CHAD;X-QS-CHAD;X-POST-CHAD;X-OREO-CHAD";
 
 
-static char     CHAD_SMTP_CONFIG[]="received;message-id;reply-to;from;to;subject;date;mime-version;content-transfer-encoding;x-priority;x-msmail-priority;x-mailer;x-mimeole;content-type;content-disposition;user-agent;dkim-signature;domainkey-signature;cc;sender;delivered-to;errors-to;precedence;importance;X-Virus-Scanned";
+static char     CHAD_SMTP_CONFIG[] = "received;message-id;reply-to;from;to;subject;date;mime-version;content-transfer-encoding;x-priority;x-msmail-priority;x-mailer;x-mimeole;content-type;content-disposition;user-agent;dkim-signature;domainkey-signature;cc;sender;delivered-to;errors-to;precedence;importance;X-Virus-Scanned";
 
-static char     CHAD_SMTP_IGNORE[]="x-freebsd-cvs-branch;x-beenthere;x-mailman-version;list-unsubscribe;list-subscribe;list-id;list-archive;list-post;list-help;x-return-path-hint;x-roving-id;x-lumos-senderid;x-roving-campaignid;x-roving-streamid;x-server-id;x-antiabuse;x-aol-ip;x-originalarrivaltime";
+static char     CHAD_SMTP_IGNORE[] = "x-freebsd-cvs-branch;x-beenthere;x-mailman-version;list-unsubscribe;list-subscribe;list-id;list-archive;list-post;list-help;x-return-path-hint;x-roving-id;x-lumos-senderid;x-roving-campaignid;x-roving-streamid;x-server-id;x-antiabuse;x-aol-ip;x-originalarrivaltime";
 
 int chad_plugin_num;
 int chad_http_num;
@@ -59,7 +49,7 @@ HASH_VAR(c_, chadSMTPTokens, ChadToken_t, 151);
 /******************************************************************************/
 ChadToken_t *chad_token_add(char *item, char letter, gboolean http)
 {
-    ChadToken_t *token = MOLOCH_TYPE_ALLOC(ChadToken_t);
+    ChadToken_t *token = ARKIME_TYPE_ALLOC(ChadToken_t);
 
     while (isspace(*item))
         item++;
@@ -75,7 +65,7 @@ ChadToken_t *chad_token_add(char *item, char letter, gboolean http)
 }
 
 /******************************************************************************/
-void chad_on_header_field(MolochSession_t *session, http_parser *UNUSED(hp), const char *field, size_t UNUSED(field_len))
+void chad_on_header_field(ArkimeSession_t *session, http_parser *UNUSED(hp), const char *field, size_t UNUSED(field_len))
 {
     ChadToken_t *token;
     char letter;
@@ -99,17 +89,17 @@ void chad_on_header_field(MolochSession_t *session, http_parser *UNUSED(hp), con
 }
 
 /******************************************************************************/
-void chad_on_header_complete (MolochSession_t *session, http_parser *hp)
+void chad_on_header_complete (ArkimeSession_t *session, http_parser *hp)
 {
     if (session->pluginData[chad_plugin_num]) {
         if (hp->status_code == 0) {
-            moloch_field_string_add(chad_http_num, session, ((GString *)session->pluginData[chad_plugin_num])->str, ((GString *)session->pluginData[chad_plugin_num])->len, TRUE);
+            arkime_field_string_add(chad_http_num, session, ((GString *)session->pluginData[chad_plugin_num])->str, ((GString *)session->pluginData[chad_plugin_num])->len, TRUE);
         }
         g_string_truncate(session->pluginData[chad_plugin_num], 0);
     }
 }
 /******************************************************************************/
-void chad_smtp_on_header(MolochSession_t *session, const char *field, size_t UNUSED(field_len), const char *UNUSED(value), size_t UNUSED(value_len))
+void chad_smtp_on_header(ArkimeSession_t *session, const char *field, size_t UNUSED(field_len), const char *UNUSED(value), size_t UNUSED(value_len))
 {
     ChadToken_t *token;
     char letter;
@@ -132,16 +122,16 @@ void chad_smtp_on_header(MolochSession_t *session, const char *field, size_t UNU
 
 }
 /******************************************************************************/
-void chad_smtp_on_header_complete (MolochSession_t *session)
+void chad_smtp_on_header_complete (ArkimeSession_t *session)
 {
     if (session->pluginData[chad_plugin_num]) {
-        moloch_field_string_add(chad_email_num, session, ((GString *)session->pluginData[chad_plugin_num])->str, ((GString *)session->pluginData[chad_plugin_num])->len, TRUE);
+        arkime_field_string_add(chad_email_num, session, ((GString *)session->pluginData[chad_plugin_num])->str, ((GString *)session->pluginData[chad_plugin_num])->len, TRUE);
         g_string_truncate(session->pluginData[chad_plugin_num], 0);
     }
 }
 
 /******************************************************************************/
-void chad_plugin_save(MolochSession_t *session, int UNUSED(final))
+void chad_plugin_save(ArkimeSession_t *session, int UNUSED(final))
 {
     if (session->pluginData[chad_plugin_num]) {
         g_string_free(session->pluginData[chad_plugin_num], TRUE);
@@ -153,7 +143,7 @@ void chad_plugin_init(char **chads, char **ignores, gboolean http)
 {
     int i;
     int p;
-    
+
     for (i = 0, p = 0; chads[i] && p < 64; i++) {
         ChadToken_t *token;
         if(http)
@@ -183,56 +173,56 @@ void chad_plugin_init(char **chads, char **ignores, gboolean http)
     g_strfreev(ignores);
 }
 /******************************************************************************/
-void moloch_plugin_init()
+void arkime_plugin_init()
 {
-    chad_plugin_num = moloch_plugins_register("chad", TRUE);
+    chad_plugin_num = arkime_plugins_register("chad", TRUE);
 
-    chad_http_num = moloch_field_by_exp("http.chad");
+    chad_http_num = arkime_field_by_exp("http.chad");
     if (chad_http_num == -1) {
         CONFIGEXIT("Add 'chad=type:string;count:true;' to the '[headers-http-request]' section of the config.ini file");
     }
 
-    chad_email_num = moloch_field_by_exp("email.chad");
+    chad_email_num = arkime_field_by_exp("email.chad");
     if (chad_email_num == -1) {
         CONFIGEXIT("Add 'chad=type:string;count:true;' to the '[headers-email]' section of the config.ini file");
     }
 
     LOG("chad plugin num = %d", chad_plugin_num);
 
-    HASH_INIT(c_, chadTokens, moloch_string_hash, moloch_string_cmp);
-    chad_plugin_init(moloch_config_str_list(NULL, "chadHTTPItems", CHAD_HTTP_CONFIG),
-                     moloch_config_str_list(NULL, "chadHTTPIgnores", CHAD_HTTP_IGNORE),
+    HASH_INIT(c_, chadTokens, arkime_string_hash, arkime_string_cmp);
+    chad_plugin_init(arkime_config_str_list(NULL, "chadHTTPItems", CHAD_HTTP_CONFIG),
+                     arkime_config_str_list(NULL, "chadHTTPIgnores", CHAD_HTTP_IGNORE),
                      1);
 
 
-    HASH_INIT(c_, chadSMTPTokens, moloch_string_hash, moloch_string_cmp);
-    chad_plugin_init(moloch_config_str_list(NULL, "chadSMTPItems", CHAD_SMTP_CONFIG),
-                     moloch_config_str_list(NULL, "chadSMTPIgnores", CHAD_SMTP_IGNORE),
+    HASH_INIT(c_, chadSMTPTokens, arkime_string_hash, arkime_string_cmp);
+    chad_plugin_init(arkime_config_str_list(NULL, "chadSMTPItems", CHAD_SMTP_CONFIG),
+                     arkime_config_str_list(NULL, "chadSMTPIgnores", CHAD_SMTP_IGNORE),
                      0);
 
-    moloch_plugins_set_cb("chad",
-      NULL,
-      NULL,
-      NULL,
-      NULL,
-      chad_plugin_save,
-      NULL,
-      NULL,
-      NULL
-    );
+    arkime_plugins_set_cb("chad",
+                          NULL,
+                          NULL,
+                          NULL,
+                          NULL,
+                          chad_plugin_save,
+                          NULL,
+                          NULL,
+                          NULL
+                         );
 
-    moloch_plugins_set_http_cb("chad",
-      NULL,
-      NULL,
-      chad_on_header_field,
-      NULL,
-      chad_on_header_complete,
-      NULL,
-      NULL
-    );
+    arkime_plugins_set_http_cb("chad",
+                               NULL,
+                               NULL,
+                               chad_on_header_field,
+                               NULL,
+                               chad_on_header_complete,
+                               NULL,
+                               NULL
+                              );
 
-    moloch_plugins_set_smtp_cb("chad",
-      chad_smtp_on_header,
-      chad_smtp_on_header_complete
-    );
+    arkime_plugins_set_smtp_cb("chad",
+                               chad_smtp_on_header,
+                               chad_smtp_on_header_complete
+                              );
 }

@@ -1,9 +1,9 @@
-package MolochTest;
+package ArkimeTest;
 use Exporter;
 use strict;
 use Test::More;
-@MolochTest::ISA = qw(Exporter);
-@MolochTest::EXPORT = qw (esGet esPost esPut esDelete esCopy viewerGet viewerGetToken viewerGet2 viewerDelete viewerDeleteToken viewerPost viewerPost2 viewerPostToken viewerPostToken2 countTest countTestToken countTest2 countTestMulti errTest bin2hex mesGet mesPost multiGet multiPost getTokenCookie getTokenCookie2 parliamentGet parliamentGetToken parliamentGetToken2 parliamentPost parliamentPostToken2 parliamentPut parliamentPutToken2 parliamentDelete parliamentDeleteToken parliamentDeleteToken2 getParliamentTokenCookie waitFor viewerPutToken viewerPut getCont3xtTokenCookie cont3xtGet cont3xtGetToken cont3xtPut cont3xtPutToken cont3xtDelete cont3xtDeleteToken cont3xtPost cont3xtPostToken);
+@ArkimeTest::ISA = qw(Exporter);
+@ArkimeTest::EXPORT = qw (esGet esPost esPut esDelete esCopy viewerGet viewerGetToken viewerGet2 viewerDelete viewerDeleteToken viewerDeleteToken2 viewerPost viewerPost2 viewerPostToken viewerPostToken2 countTest countTestToken countTest2 countTestMulti errTest bin2hex mesGet mesPost multiGet multiPost getTokenCookie getTokenCookie2 parliamentGet parliamentGetToken parliamentPost parliamentPostToken parliamentPut parliamentPutToken parliamentDelete parliamentDeleteToken getParliamentTokenCookie waitFor viewerPutToken viewerPut getCont3xtTokenCookie cont3xtGet cont3xtGetToken cont3xtPut cont3xtPutToken cont3xtDelete cont3xtDeleteToken cont3xtPost cont3xtPostToken);
 
 use LWP::UserAgent;
 use HTTP::Request::Common;
@@ -12,12 +12,12 @@ use URI::Escape;
 use Data::Dumper;
 use IO::Socket::INET;
 
-$MolochTest::userAgent = LWP::UserAgent->new(timeout => 120);
-$MolochTest::host = "127.0.0.1";
-$MolochTest::elasticsearch = $ENV{ELASTICSEARCH} || "http://127.0.0.1:9200";
+$ArkimeTest::userAgent = LWP::UserAgent->new(timeout => 120);
+$ArkimeTest::host = "127.0.0.1";
+$ArkimeTest::elasticsearch = $ENV{ELASTICSEARCH} || "http://127.0.0.1:9200";
 
 if ($ENV{INSECURE} eq "--insecure") {
-    $MolochTest::userAgent->ssl_opts(
+    $ArkimeTest::userAgent->ssl_opts(
         SSL_verify_mode => 0,
         verify_hostname=> 0
     )
@@ -27,7 +27,7 @@ if ($ENV{INSECURE} eq "--insecure") {
 sub viewerGet {
 my ($url, $debug) = @_;
 
-    my $response = $MolochTest::userAgent->get("http://$MolochTest::host:8123$url");
+    my $response = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8123$url");
     diag $url, " response:", $response->content if ($debug);
     my $tmp = $response->content;
     $tmp =~ s,/[-0-9A-Za-z./_]+tests/pcap/,/DIR/tests/pcap/,g;
@@ -38,7 +38,7 @@ my ($url, $debug) = @_;
 sub viewerGetToken {
 my ($url, $token, $debug) = @_;
 
-    my $response = $MolochTest::userAgent->get("http://$MolochTest::host:8123$url", "x-arkime-cookie" => $token);
+    my $response = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8123$url", "x-arkime-cookie" => $token);
     diag $url, " response:>", $response->content, "<:\n" if ($debug);
     my $tmp = $response->content;
     $tmp =~ s,/[-0-9A-Za-z./_]+tests/pcap/,/DIR/tests/pcap/,g;
@@ -49,7 +49,7 @@ my ($url, $token, $debug) = @_;
 sub viewerGet2 {
 my ($url, $debug) = @_;
 
-    my $response = $MolochTest::userAgent->get("http://$MolochTest::host:8124$url");
+    my $response = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8124$url");
     diag $url, " response:", $response->content if ($debug);
     my $tmp = $response->content;
     $tmp =~ s,/[-0-9A-Za-z./_]+tests/pcap/,/DIR/tests/pcap/,g;
@@ -60,7 +60,7 @@ my ($url, $debug) = @_;
 sub multiGet {
 my ($url, $debug) = @_;
 
-    my $response = $MolochTest::userAgent->get("http://$MolochTest::host:8125$url");
+    my $response = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8125$url");
     diag $url, " response:", $response->content if ($debug);
     my $tmp = $response->content;
     $tmp =~ s,/[-0-9A-Za-z./_]+tests/pcap/,/DIR/tests/pcap/,g;
@@ -71,7 +71,7 @@ my ($url, $debug) = @_;
 sub viewerDelete {
 my ($url, $debug) = @_;
 
-    my $response = $MolochTest::userAgent->request(HTTP::Request::Common::_simple_req("DELETE", "http://$MolochTest::host:8123$url"));
+    my $response = $ArkimeTest::userAgent->request(HTTP::Request::Common::_simple_req("DELETE", "http://$ArkimeTest::host:8123$url"));
     diag $url, " response:", $response->content if ($debug);
     my $json = from_json($response->content);
     return ($json);
@@ -80,7 +80,16 @@ my ($url, $debug) = @_;
 sub viewerDeleteToken {
 my ($url, $token, $debug) = @_;
 
-    my $response = $MolochTest::userAgent->request(HTTP::Request::Common::_simple_req("DELETE", "http://$MolochTest::host:8123$url", "x-arkime-cookie" => $token));
+    my $response = $ArkimeTest::userAgent->request(HTTP::Request::Common::_simple_req("DELETE", "http://$ArkimeTest::host:8123$url", "x-arkime-cookie" => $token));
+    diag $url, " response:", $response->content if ($debug);
+    my $json = from_json($response->content);
+    return ($json);
+}
+################################################################################
+sub viewerDeleteToken2 {
+my ($url, $token, $debug) = @_;
+
+    my $response = $ArkimeTest::userAgent->request(HTTP::Request::Common::_simple_req("DELETE", "http://$ArkimeTest::host:8124$url", "x-arkime-cookie" => $token));
     diag $url, " response:", $response->content if ($debug);
     my $json = from_json($response->content);
     return ($json);
@@ -91,9 +100,9 @@ my ($url, $content, $debug) = @_;
 
     my $response;
     if (substr($content, 0, 2) eq '{"') {
-        $response = $MolochTest::userAgent->post("http://$MolochTest::host:8123$url", Content => $content, "Content-Type" => "application/json;charset=UTF-8");
+        $response = $ArkimeTest::userAgent->post("http://$ArkimeTest::host:8123$url", Content => $content, "Content-Type" => "application/json;charset=UTF-8");
     } else {
-        $response = $MolochTest::userAgent->post("http://$MolochTest::host:8123$url", Content => $content);
+        $response = $ArkimeTest::userAgent->post("http://$ArkimeTest::host:8123$url", Content => $content);
     }
 
     diag $url, " response:", $response->content if ($debug);
@@ -108,9 +117,9 @@ my ($url, $content, $debug) = @_;
 
     my $response;
     if (substr($content, 0, 2) eq '{"') {
-        $response = $MolochTest::userAgent->post("http://$MolochTest::host:8125$url", Content => $content, "Content-Type" => "application/json;charset=UTF-8");
+        $response = $ArkimeTest::userAgent->post("http://$ArkimeTest::host:8125$url", Content => $content, "Content-Type" => "application/json;charset=UTF-8");
     } else {
-        $response = $MolochTest::userAgent->post("http://$MolochTest::host:8125$url", Content => $content);
+        $response = $ArkimeTest::userAgent->post("http://$ArkimeTest::host:8125$url", Content => $content);
     }
 
     diag $url, " response:", $response->content if ($debug);
@@ -125,9 +134,9 @@ my ($url, $content, $debug) = @_;
 
     my $response;
     if (substr($content, 0, 2) eq '{"') {
-        $response = $MolochTest::userAgent->post("http://$MolochTest::host:8124$url", Content => $content, "Content-Type" => "application/json;charset=UTF-8");
+        $response = $ArkimeTest::userAgent->post("http://$ArkimeTest::host:8124$url", Content => $content, "Content-Type" => "application/json;charset=UTF-8");
     } else {
-        $response = $MolochTest::userAgent->post("http://$MolochTest::host:8124$url", Content => $content);
+        $response = $ArkimeTest::userAgent->post("http://$ArkimeTest::host:8124$url", Content => $content);
     }
 
     diag $url, " response:", $response->content if ($debug);
@@ -140,9 +149,9 @@ my ($url, $content, $token, $debug) = @_;
 
     my $response;
     if (substr($content, 0, 2) eq '{"') {
-        $response = $MolochTest::userAgent->post("http://$MolochTest::host:8123$url", Content => $content, "Content-Type" => "application/json;charset=UTF-8", "x-arkime-cookie" => $token);
+        $response = $ArkimeTest::userAgent->post("http://$ArkimeTest::host:8123$url", Content => $content, "Content-Type" => "application/json;charset=UTF-8", "x-arkime-cookie" => $token);
     } else {
-        $response = $MolochTest::userAgent->post("http://$MolochTest::host:8123$url", Content => $content, "x-arkime-cookie" => $token);
+        $response = $ArkimeTest::userAgent->post("http://$ArkimeTest::host:8123$url", Content => $content, "x-arkime-cookie" => $token);
     }
     my $json = from_json($response->content);
     return ($json);
@@ -153,9 +162,9 @@ my ($url, $content, $token, $debug) = @_;
 
     my $response;
     if (substr($content, 0, 2) eq '{"') {
-        $response = $MolochTest::userAgent->post("http://$MolochTest::host:8124$url", Content => $content, "Content-Type" => "application/json;charset=UTF-8", "x-arkime-cookie" => $token);
+        $response = $ArkimeTest::userAgent->post("http://$ArkimeTest::host:8124$url", Content => $content, "Content-Type" => "application/json;charset=UTF-8", "x-arkime-cookie" => $token);
     } else {
-        $response = $MolochTest::userAgent->post("http://$MolochTest::host:8124$url", Content => $content, "x-arkime-cookie" => $token);
+        $response = $ArkimeTest::userAgent->post("http://$ArkimeTest::host:8124$url", Content => $content, "x-arkime-cookie" => $token);
     }
     diag $url, " response:", $response->content if ($debug);
     my $json = from_json($response->content);
@@ -167,9 +176,9 @@ my ($url, $content, $debug) = @_;
 
     my $response;
     if (substr($content, 0, 2) eq '{"') {
-        $response = $MolochTest::userAgent->put("http://$MolochTest::host:8123$url", Content => $content, "Content-Type" => "application/json;charset=UTF-8");
+        $response = $ArkimeTest::userAgent->put("http://$ArkimeTest::host:8123$url", Content => $content, "Content-Type" => "application/json;charset=UTF-8");
     } else {
-        $response = $MolochTest::userAgent->put("http://$MolochTest::host:8123$url", Content => $content);
+        $response = $ArkimeTest::userAgent->put("http://$ArkimeTest::host:8123$url", Content => $content);
     }
 
     diag $url, " response:", $response->content if ($debug);
@@ -181,9 +190,9 @@ sub viewerPutToken {
 my ($url, $content, $token, $debug) = @_;
     my $response;
     if (substr($content, 0, 2) eq '{"') {
-        $response = $MolochTest::userAgent->put("http://$MolochTest::host:8123$url", Content => $content, "Content-Type" => "application/json;charset=UTF-8", "x-arkime-cookie" => $token);
+        $response = $ArkimeTest::userAgent->put("http://$ArkimeTest::host:8123$url", Content => $content, "Content-Type" => "application/json;charset=UTF-8", "x-arkime-cookie" => $token);
     } else {
-        $response = $MolochTest::userAgent->put("http://$MolochTest::host:8123$url", Content => $content, "x-arkime-cookie" => $token);
+        $response = $ArkimeTest::userAgent->put("http://$ArkimeTest::host:8123$url", Content => $content, "x-arkime-cookie" => $token);
     }
     diag $url, " response:", $response->content if ($debug);
     my $json = from_json($response->content);
@@ -193,7 +202,7 @@ my ($url, $content, $token, $debug) = @_;
 sub mesGet {
 my ($url, $debug) = @_;
 
-    my $response = $MolochTest::userAgent->get("http://$MolochTest::host:8200$url");
+    my $response = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8200$url");
     diag $url, " response:", $response->content if ($debug);
     my $json = from_json($response->content);
     return ($json);
@@ -202,7 +211,7 @@ my ($url, $debug) = @_;
 sub mesPost {
 my ($url, $content) = @_;
 
-    my $response = $MolochTest::userAgent->post("http://$MolochTest::host:8200$url", Content => $content);
+    my $response = $ArkimeTest::userAgent->post("http://$ArkimeTest::host:8200$url", Content => $content);
     #print $url, " response:", $response->content, "\n";
     my $json = from_json($response->content);
     return ($json);
@@ -211,8 +220,8 @@ my ($url, $content) = @_;
 sub esGet {
 my ($url) = @_;
 
-    my $response = $MolochTest::userAgent->get("$MolochTest::elasticsearch$url");
-    #print "$MolochTest::elasticsearch$url", " response:", $response->content;
+    my $response = $ArkimeTest::userAgent->get("$ArkimeTest::elasticsearch$url");
+    #print "$ArkimeTest::elasticsearch$url", " response:", $response->content;
     my $json = from_json($response->content);
     return ($json);
 }
@@ -220,9 +229,9 @@ my ($url) = @_;
 sub esPost {
 my ($url, $content) = @_;
 
-    my $response = $MolochTest::userAgent->post("$MolochTest::elasticsearch$url", Content => $content, "Content-Type" => "application/json;charset=UTF-8");
+    my $response = $ArkimeTest::userAgent->post("$ArkimeTest::elasticsearch$url", Content => $content, "Content-Type" => "application/json;charset=UTF-8");
     #diag $url, " response:", $response->content;
-    #print "$MolochTest::elasticsearch$url content:", $content,"\n response:", $response->content;
+    #print "$ArkimeTest::elasticsearch$url content:", $content,"\n response:", $response->content;
     my $json = from_json($response->content);
     return ($json);
 }
@@ -230,7 +239,7 @@ my ($url, $content) = @_;
 sub esPut {
 my ($url, $content) = @_;
 
-    my $response = $MolochTest::userAgent->put("$MolochTest::elasticsearch$url", Content => $content, "Content-Type" => "application/json;charset=UTF-8");
+    my $response = $ArkimeTest::userAgent->put("$ArkimeTest::elasticsearch$url", Content => $content, "Content-Type" => "application/json;charset=UTF-8");
     #diag $url, " response:", $response->content;
     my $json = from_json($response->content);
     return ($json);
@@ -239,7 +248,7 @@ my ($url, $content) = @_;
 sub esDelete {
 my ($url) = @_;
 
-    my $response = $MolochTest::userAgent->request(HTTP::Request::Common::_simple_req("DELETE", "$MolochTest::elasticsearch$url"));
+    my $response = $ArkimeTest::userAgent->request(HTTP::Request::Common::_simple_req("DELETE", "$ArkimeTest::elasticsearch$url"));
     #print $url, " response:", $response->content;
     my $json = from_json($response->content);
     return ($json);
@@ -332,9 +341,9 @@ my ($userId) = @_;
 
     my $setCookie;
     if ($userId) {
-        $setCookie = $MolochTest::userAgent->get("http://$MolochTest::host:8123/makeToken?molochRegressionUser=$userId")->{"_headers"}->{"set-cookie"};
+        $setCookie = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8123/makeToken?arkimeRegressionUser=$userId")->{"_headers"}->{"set-cookie"};
     } else {
-        $setCookie = $MolochTest::userAgent->get("http://$MolochTest::host:8123/makeToken")->{"_headers"}->{"set-cookie"};
+        $setCookie = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8123/makeToken")->{"_headers"}->{"set-cookie"};
     }
 
     $setCookie =~ /ARKIME-COOKIE=([^;]*)/;
@@ -342,7 +351,7 @@ my ($userId) = @_;
 }
 ################################################################################
 sub getTokenCookie2 {
-    my $setCookie = $MolochTest::userAgent->get("http://$MolochTest::host:8124/users")->{"_headers"}->{"set-cookie"};
+    my $setCookie = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8124/users")->{"_headers"}->{"set-cookie"};
     $setCookie =~ /ARKIME-COOKIE=([^;]*)/;
     return uri_unescape($1);
 }
@@ -352,9 +361,9 @@ my ($userId) = @_;
 
     my $setCookie;
     if ($userId) {
-        $setCookie = $MolochTest::userAgent->get("http://$MolochTest::host:3218/makeToken?molochRegressionUser=$userId")->{"_headers"}->{"set-cookie"};
+        $setCookie = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:3218/makeToken?arkimeRegressionUser=$userId")->{"_headers"}->{"set-cookie"};
     } else {
-        $setCookie = $MolochTest::userAgent->get("http://$MolochTest::host:3218/makeToken")->{"_headers"}->{"set-cookie"};
+        $setCookie = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:3218/makeToken")->{"_headers"}->{"set-cookie"};
     }
 
     $setCookie =~ /CONT3XT-COOKIE=([^;]*)/;
@@ -366,9 +375,9 @@ my ($userId) = @_;
 
     my $setCookie;
     if ($userId) {
-        $setCookie = $MolochTest::userAgent->get("http://$MolochTest::host:8009/parliament/api/regressionTests/makeToken/?molochRegressionUser=$userId")->{"_headers"}->{"set-cookie"};
+        $setCookie = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8008/parliament/api/regressionTests/makeToken?arkimeRegressionUser=$userId")->{"_headers"}->{"set-cookie"};
     } else {
-        $setCookie = $MolochTest::userAgent->get("http://$MolochTest::host:8009/parliament/api/regressionTests/makeToken")->{"_headers"}->{"set-cookie"};
+        $setCookie = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8008/parliament/api/regressionTests/makeToken")->{"_headers"}->{"set-cookie"};
     }
 
     $setCookie =~ /PARLIAMENT-COOKIE=([^;]*)/;
@@ -377,7 +386,7 @@ my ($userId) = @_;
 ################################################################################
 sub parliamentGet {
 my ($url, $debug) = @_;
-    my $response = $MolochTest::userAgent->get("http://$MolochTest::host:8008$url");
+    my $response = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8008$url");
     diag $url, " response:", $response->content if ($debug);
     my $json = from_json($response->content);
     return ($json);
@@ -385,15 +394,7 @@ my ($url, $debug) = @_;
 ################################################################################
 sub parliamentGetToken {
 my ($url, $token, $debug) = @_;
-    my $response = $MolochTest::userAgent->get("http://$MolochTest::host:8008$url", "x-access-token" => $token);
-    diag $url, " response:", $response->content if ($debug);
-    my $json = from_json($response->content);
-    return ($json);
-}
-################################################################################
-sub parliamentGetToken2 {
-my ($url, $token, $debug) = @_;
-    my $response = $MolochTest::userAgent->get("http://$MolochTest::host:8009$url", "x-access-token" => $token);
+    my $response = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8008$url", "x-parliament-token" => $token);
     diag $url, " response:", $response->content if ($debug);
     my $json = from_json($response->content);
     return ($json);
@@ -401,19 +402,19 @@ my ($url, $token, $debug) = @_;
 ################################################################################
 sub parliamentPost {
 my ($url, $content, $debug) = @_;
-    my $response = $MolochTest::userAgent->post("http://$MolochTest::host:8008$url", Content => $content, "Content-Type" => "application/json;charset=UTF-8");
+    my $response = $ArkimeTest::userAgent->post("http://$ArkimeTest::host:8008$url", Content => $content, "Content-Type" => "application/json;charset=UTF-8");
     diag $url, " response:", $response->content if ($debug);
     my $json = from_json($response->content);
     return ($json);
 }
 ################################################################################
-sub parliamentPostToken2 {
+sub parliamentPostToken {
 my ($url, $content, $token, $debug) = @_;
     my $response;
     if (substr($content, 0, 2) eq '{"') {
-        $response = $MolochTest::userAgent->post("http://$MolochTest::host:8009$url", Content => $content, "Content-Type" => "application/json;charset=UTF-8", "x-parliament-cookie" => $token);
+        $response = $ArkimeTest::userAgent->post("http://$ArkimeTest::host:8008$url", Content => $content, "Content-Type" => "application/json;charset=UTF-8", "x-parliament-cookie" => $token);
     } else {
-        $response = $MolochTest::userAgent->post("http://$MolochTest::host:8009$url", Content => $content, "x-parliament-cookie" => $token);
+        $response = $ArkimeTest::userAgent->post("http://$ArkimeTest::host:8008$url", Content => $content, "x-parliament-cookie" => $token);
     }
     my $json = from_json($response->content);
     return ($json);
@@ -421,19 +422,19 @@ my ($url, $content, $token, $debug) = @_;
 ################################################################################
 sub parliamentPut {
 my ($url, $content, $debug) = @_;
-    my $response = $MolochTest::userAgent->request(HTTP::Request::Common::PUT("http://$MolochTest::host:8008$url", Content => $content, "Content-Type" => "application/json;charset=UTF-8"));
+    my $response = $ArkimeTest::userAgent->request(HTTP::Request::Common::PUT("http://$ArkimeTest::host:8008$url", Content => $content, "Content-Type" => "application/json;charset=UTF-8"));
     diag $url, " response:", $response->content if ($debug);
     my $json = from_json($response->content);
     return ($json);
 }
 ################################################################################
-sub parliamentPutToken2 {
+sub parliamentPutToken {
 my ($url, $content, $token, $debug) = @_;
     my $response;
     if (substr($content, 0, 2) eq '{"') {
-        $response = $MolochTest::userAgent->put("http://$MolochTest::host:8009$url", Content => $content, "Content-Type" => "application/json;charset=UTF-8", "x-parliament-cookie" => $token);
+        $response = $ArkimeTest::userAgent->put("http://$ArkimeTest::host:8008$url", Content => $content, "Content-Type" => "application/json;charset=UTF-8", "x-parliament-cookie" => $token);
     } else {
-        $response = $MolochTest::userAgent->put("http://$MolochTest::host:8009$url", Content => $content, "x-parliament-cookie" => $token);
+        $response = $ArkimeTest::userAgent->put("http://$ArkimeTest::host:8008$url", Content => $content, "x-parliament-cookie" => $token);
     }
     diag $url, " response:", $response->content if ($debug);
     my $json = from_json($response->content);
@@ -442,7 +443,7 @@ my ($url, $content, $token, $debug) = @_;
 ################################################################################
 sub parliamentDelete {
 my ($url, $debug) = @_;
-    my $response = $MolochTest::userAgent->request(HTTP::Request::Common::DELETE("http://$MolochTest::host:8008$url"));
+    my $response = $ArkimeTest::userAgent->request(HTTP::Request::Common::DELETE("http://$ArkimeTest::host:8008$url"));
     diag $url, " response:", $response->content if ($debug);
     my $json = from_json($response->content);
     return ($json);
@@ -450,15 +451,7 @@ my ($url, $debug) = @_;
 ################################################################################
 sub parliamentDeleteToken {
 my ($url, $token, $debug) = @_;
-    my $response = $MolochTest::userAgent->request(HTTP::Request::Common::DELETE("http://$MolochTest::host:8008$url", "x-access-token" => $token));
-    diag $url, " response:", $response->content if ($debug);
-    my $json = from_json($response->content);
-    return ($json);
-}
-################################################################################
-sub parliamentDeleteToken2 {
-my ($url, $token, $debug) = @_;
-    my $response = $MolochTest::userAgent->request(HTTP::Request::Common::_simple_req("DELETE", "http://$MolochTest::host:8009$url", "x-parliament-cookie" => $token));
+    my $response = $ArkimeTest::userAgent->request(HTTP::Request::Common::DELETE("http://$ArkimeTest::host:8008$url", "x-parliament-cookie" => $token));
     diag $url, " response:", $response->content if ($debug);
     my $json = from_json($response->content);
     return ($json);
@@ -466,8 +459,7 @@ my ($url, $token, $debug) = @_;
 ################################################################################
 sub cont3xtGet {
 my ($url, $debug) = @_;
-
-    my $response = $MolochTest::userAgent->get("http://$MolochTest::host:3218$url");
+    my $response = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:3218$url");
     diag $url, " response:", $response->content if ($debug);
     my $tmp = $response->content;
     my $json = from_json($tmp);
@@ -476,7 +468,7 @@ my ($url, $debug) = @_;
 ################################################################################
 sub cont3xtGetToken {
 my ($url, $token, $debug) = @_;
-    my $response = $MolochTest::userAgent->request(HTTP::Request::Common::GET("http://$MolochTest::host:3218$url", "x-cont3xt-cookie" => $token));
+    my $response = $ArkimeTest::userAgent->request(HTTP::Request::Common::GET("http://$ArkimeTest::host:3218$url", "x-cont3xt-cookie" => $token));
     diag $url, " response:", $response->content if ($debug);
     my $json = from_json($response->content);
     return ($json);
@@ -484,7 +476,7 @@ my ($url, $token, $debug) = @_;
 ################################################################################
 sub cont3xtPut {
 my ($url, $content, $debug) = @_;
-    my $response = $MolochTest::userAgent->request(HTTP::Request::Common::PUT("http://$MolochTest::host:3218$url", Content => $content, "Content-Type" => "application/json;charset=UTF-8"));
+    my $response = $ArkimeTest::userAgent->request(HTTP::Request::Common::PUT("http://$ArkimeTest::host:3218$url", Content => $content, "Content-Type" => "application/json;charset=UTF-8"));
     diag $url, " response:", $response->content if ($debug);
     return $response->content if ($response->content =~ /^[^[{]/);
     my $json = from_json($response->content);
@@ -493,7 +485,7 @@ my ($url, $content, $debug) = @_;
 ################################################################################
 sub cont3xtPutToken {
 my ($url, $content, $token, $debug) = @_;
-    my $response = $MolochTest::userAgent->request(HTTP::Request::Common::PUT("http://$MolochTest::host:3218$url", Content => $content, "Content-Type" => "application/json;charset=UTF-8", "x-cont3xt-cookie" => $token));
+    my $response = $ArkimeTest::userAgent->request(HTTP::Request::Common::PUT("http://$ArkimeTest::host:3218$url", Content => $content, "Content-Type" => "application/json;charset=UTF-8", "x-cont3xt-cookie" => $token));
     diag $url, " response:", $response->content if ($debug);
     return $response->content if ($response->content =~ /^[^\[{]/);
     my $json = from_json($response->content);
@@ -502,7 +494,7 @@ my ($url, $content, $token, $debug) = @_;
 ################################################################################
 sub cont3xtPost {
 my ($url, $content, $debug) = @_;
-    my $response = $MolochTest::userAgent->request(HTTP::Request::Common::POST("http://$MolochTest::host:3218$url", Content => $content, "Content-Type" => "application/json;charset=UTF-8"));
+    my $response = $ArkimeTest::userAgent->request(HTTP::Request::Common::POST("http://$ArkimeTest::host:3218$url", Content => $content, "Content-Type" => "application/json;charset=UTF-8"));
     diag $url, " response:", $response->content if ($debug);
     return $response->content if ($response->content =~ /^[^\[{]/);
     my $json = from_json($response->content);
@@ -511,7 +503,7 @@ my ($url, $content, $debug) = @_;
 ################################################################################
 sub cont3xtPostToken {
 my ($url, $content, $token, $debug) = @_;
-    my $response = $MolochTest::userAgent->request(HTTP::Request::Common::POST("http://$MolochTest::host:3218$url", Content => $content, "Content-Type" => "application/json;charset=UTF-8", "x-cont3xt-cookie" => $token));
+    my $response = $ArkimeTest::userAgent->request(HTTP::Request::Common::POST("http://$ArkimeTest::host:3218$url", Content => $content, "Content-Type" => "application/json;charset=UTF-8", "x-cont3xt-cookie" => $token));
     diag $url, " response:", $response->content if ($debug);
     return $response->content if ($response->content =~ /^[^\[{]/);
     my $json = from_json($response->content);
@@ -520,7 +512,7 @@ my ($url, $content, $token, $debug) = @_;
 ################################################################################
 sub cont3xtDelete {
 my ($url, $content, $debug) = @_;
-    my $response = $MolochTest::userAgent->request(HTTP::Request::Common::DELETE("http://$MolochTest::host:3218$url", Content => $content, "Content-Type" => "application/json;charset=UTF-8"));
+    my $response = $ArkimeTest::userAgent->request(HTTP::Request::Common::DELETE("http://$ArkimeTest::host:3218$url", Content => $content, "Content-Type" => "application/json;charset=UTF-8"));
     diag $url, " response:", $response->content if ($debug);
     my $json = from_json($response->content);
     return ($json);
@@ -528,7 +520,7 @@ my ($url, $content, $debug) = @_;
 ################################################################################
 sub cont3xtDeleteToken {
 my ($url, $content, $token, $debug) = @_;
-    my $response = $MolochTest::userAgent->request(HTTP::Request::Common::DELETE("http://$MolochTest::host:3218$url", Content => $content, "Content-Type" => "application/json;charset=UTF-8", "x-cont3xt-cookie" => $token));
+    my $response = $ArkimeTest::userAgent->request(HTTP::Request::Common::DELETE("http://$ArkimeTest::host:3218$url", Content => $content, "Content-Type" => "application/json;charset=UTF-8", "x-cont3xt-cookie" => $token));
     diag $url, " response:", $response->content if ($debug);
     my $json = from_json($response->content);
     return ($json);

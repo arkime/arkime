@@ -1,13 +1,17 @@
+<!--
+Copyright Yahoo Inc.
+SPDX-License-Identifier: Apache-2.0
+-->
 <template>
 
   <div class="container-fluid">
 
-    <moloch-loading v-if="initialLoading && !error">
-    </moloch-loading>
+    <arkime-loading v-if="initialLoading && !error">
+    </arkime-loading>
 
-    <moloch-error v-if="error"
+    <arkime-error v-if="error"
       :message="error">
-    </moloch-error>
+    </arkime-error>
 
     <div v-show="!error">
 
@@ -16,15 +20,15 @@
         title="HINT: These graphs are 1440 pixels wide. Expand your browser window to at least 1500 pixels wide for best viewing.">
       </span>
 
-      <moloch-paging v-if="stats"
+      <arkime-paging v-if="stats"
         class="mt-1 ml-2"
         :records-total="recordsTotal"
         :records-filtered="recordsFiltered"
         v-on:changePaging="changePaging"
         length-default=200>
-      </moloch-paging>
+      </arkime-paging>
 
-      <moloch-table
+      <arkime-table
         id="captureStatsTable"
         :data="stats"
         :loadData="loadData"
@@ -36,12 +40,13 @@
         :info-row-function="toggleStatDetailWrapper"
         :desc="query.desc"
         :sortField="query.sortField"
+        :no-results-msg="`No results match your search.${cluster ? 'Try selecting a different cluster.' : ''}`"
         page="captureStats"
         table-animation="list"
         table-classes="table-sm text-right small"
         table-state-name="captureStatsCols"
         table-widths-state-name="captureStatsColWidths">
-      </moloch-table>
+      </arkime-table>
 
     </div>
 
@@ -51,10 +56,11 @@
 
 <script>
 import '../../cubismoverrides.css';
-import MolochPaging from '../utils/Pagination';
-import MolochError from '../utils/Error';
-import MolochLoading from '../utils/Loading';
-import MolochTable from '../utils/Table';
+import Utils from '../utils/utils';
+import ArkimeError from '../utils/Error';
+import ArkimeTable from '../utils/Table';
+import ArkimeLoading from '../utils/Loading';
+import ArkimePaging from '../utils/Pagination';
 
 let oldD3, cubism; // lazy load old d3 and cubism
 
@@ -70,13 +76,14 @@ export default {
     'graphHide',
     'dataInterval',
     'refreshData',
-    'searchTerm'
+    'searchTerm',
+    'cluster'
   ],
   components: {
-    MolochPaging,
-    MolochError,
-    MolochLoading,
-    MolochTable
+    ArkimePaging,
+    ArkimeError,
+    ArkimeLoading,
+    ArkimeTable
   },
   data: function () {
     return {
@@ -95,7 +102,8 @@ export default {
         filter: this.searchTerm || undefined,
         sortField: 'nodeName',
         desc: true,
-        hide: this.graphHide || 'none'
+        hide: this.graphHide || 'none',
+        cluster: this.cluster || undefined
       },
       columns: [ // node stats table columns
         // default columns
@@ -191,10 +199,14 @@ export default {
       if (this.refreshData) {
         this.loadData();
       }
+    },
+    cluster: function () {
+      this.query.cluster = this.cluster;
+      this.loadData();
     }
   },
   created: function () {
-    this.loadData();
+    // don't need to load data (table component does it)
     // set a recurring server req if necessary
     if (this.dataInterval !== '0') {
       this.setRequestInterval();
@@ -235,6 +247,10 @@ export default {
       }, 500);
     },
     loadData: function (sortField, desc) {
+      if (!Utils.checkClusterSelection(this.query.cluster, this.$store.state.esCluster.availableCluster.active, this).valid) {
+        return;
+      }
+
       this.loading = true;
       respondedAt = undefined;
 

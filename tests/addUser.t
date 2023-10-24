@@ -2,14 +2,14 @@
 use Test::More tests => 63;
 use Test::Differences;
 use Data::Dumper;
-use MolochTest;
+use ArkimeTest;
 use JSON;
 use strict;
 
 viewerGet("/regressionTests/deleteAllUsers");
 esGet("/_refresh");
 my $token = getTokenCookie();
-my $es = "-o 'elasticsearch=$MolochTest::elasticsearch' -o 'usersElasticsearch=$MolochTest::elasticsearch' $ENV{INSECURE}";
+my $es = "-o 'elasticsearch=$ArkimeTest::elasticsearch' -o 'usersElasticsearch=$ArkimeTest::elasticsearch' $ENV{INSECURE}";
 
 # script exits successfully
 my $result = system("cd ../viewer ; node addUser.js $es -c ../tests/config.test.ini -n testuser admin admin admin --admin");
@@ -62,15 +62,15 @@ ok($users->{data}->[2]->{emailSearch}, "Can update exiting user");
 #### Auth Header tests
 my $mresponse;
 
-$response = $MolochTest::userAgent->get("http://$MolochTest::host:8126/");
+$response = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8126/");
 is ($response->code, 401);
 is ($response->content, 'Unauthorized');
 
-$response = $MolochTest::userAgent->get("http://$MolochTest::host:8126/", ':arkime_user' => '');
+$response = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8126/", ':arkime_user' => '');
 is ($response->code, 403);
 is ($response->content, '{"success":false,"text":"User name header is empty"}');
 
-$response = $MolochTest::userAgent->get("http://$MolochTest::host:8126/", ':arkime_user' => 'authtest1');
+$response = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8126/", ':arkime_user' => 'authtest1');
 is ($response->code, 200);
 
 $response = viewerGet("/regressionTests/getUser/authtest1");
@@ -85,100 +85,100 @@ eq_or_diff($response, from_json('{"headerAuthEnabled":true,"enabled":true,"userI
 system("cd ../viewer ; node addUser.js $es -c ../tests/config.test.ini -n test3 authtest2 authtest2 authtest2");
 $response = viewerGet("/regressionTests/getUser/authtest2");
 
-$response = $MolochTest::userAgent->get("http://$MolochTest::host:8126/", ':arkime_user' => 'authtest2');
+$response = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8126/", ':arkime_user' => 'authtest2');
 is ($response->content, '{"success":false,"text":"User header auth not enabled"}');
 is ($response->code, 403);
 
 # Bad password
-$MolochTest::userAgent->credentials( "$MolochTest::host:8126", 'Moloch', 'authtest2', 'authtest222' );
-$response = $MolochTest::userAgent->get("http://$MolochTest::host:8126/");
+$ArkimeTest::userAgent->credentials( "$ArkimeTest::host:8126", 'Moloch', 'authtest2', 'authtest222' );
+$response = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8126/");
 is ($response->content, 'Unauthorized');
 is ($response->code, 401);
 
 # Bad password but username header
-$response = $MolochTest::userAgent->get("http://$MolochTest::host:8126/", ':arkime_user' => 'authtest2');
+$response = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8126/", ':arkime_user' => 'authtest2');
 is ($response->content, '{"success":false,"text":"User header auth not enabled"}');
 is ($response->code, 403);
 
 # Good password
-$MolochTest::userAgent->credentials( "$MolochTest::host:8126", 'Moloch', 'authtest2', 'authtest2' );
-$response = $MolochTest::userAgent->get("http://$MolochTest::host:8126/");
+$ArkimeTest::userAgent->credentials( "$ArkimeTest::host:8126", 'Moloch', 'authtest2', 'authtest2' );
+$response = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8126/");
 is ($response->code, 200);
 
 # /receiveSession
-$response = $MolochTest::userAgent->get("http://$MolochTest::host:8126/receiveSession");
+$response = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8126/receiveSession");
 is ($response->content, "receive session only allowed s2s");
 is ($response->code, 401);
 
 # No arkimeUser role
-$MolochTest::userAgent->credentials( "$MolochTest::host:8126", 'Moloch', 'test8', 'test8' );
-$response = $MolochTest::userAgent->get("http://$MolochTest::host:8126/");
+$ArkimeTest::userAgent->credentials( "$ArkimeTest::host:8126", 'Moloch', 'test8', 'test8' );
+$response = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8126/");
 is ($response->content, "Need arkimeUser role assigned");
 is ($response->code, 403);
 
 # No role auth
-$MolochTest::userAgent->credentials( "$MolochTest::host:8126", 'Moloch', 'role:role', 'role:role' );
-$response = $MolochTest::userAgent->get("http://$MolochTest::host:8126/");
+$ArkimeTest::userAgent->credentials( "$ArkimeTest::host:8126", 'Moloch', 'role:role', 'role:role' );
+$response = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8126/");
 is ($response->code, 403);
 is ($response->content, '{"success":false,"text":"Can not authenticate with role"}');
 
-$response = $MolochTest::userAgent->get("http://$MolochTest::host:8126/", ':arkime_user' => 'role:role');
+$response = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8126/", ':arkime_user' => 'role:role');
 is ($response->code, 403);
 is ($response->content, '{"success":false,"text":"Can not authenticate with role"}');
 
-$response = $MolochTest::userAgent->get("http://$MolochTest::host:8123/?molochRegressionUser=role:role");
+$response = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8123/?arkimeRegressionUser=role:role");
 is ($response->code, 403);
 is ($response->content, '{"success":false,"text":"Can not authenticate with role"}');
 
 # s2s
 
 # /receiveSession - empty
-$response = $MolochTest::userAgent->get("http://$MolochTest::host:8126/receiveSession", ':x-arkime-auth' => '');
+$response = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8126/receiveSession", ':x-arkime-auth' => '');
 is ($response->content, '{"success":false,"text":"S2S auth header corrupt"}');
 is ($response->code, 403);
 
 # /receiveSession - garbage
-$response = $MolochTest::userAgent->get("http://$MolochTest::host:8126/receiveSession", ':x-arkime-auth' => 'garbage');
+$response = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8126/receiveSession", ':x-arkime-auth' => 'garbage');
 is ($response->content, '{"success":false,"text":"S2S auth header corrupt"}');
 is ($response->code, 403);
 
 # /receiveSession - empty json
-$response = $MolochTest::userAgent->get("http://$MolochTest::host:8126/receiveSession", ':x-arkime-auth' => '{}');
+$response = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8126/receiveSession", ':x-arkime-auth' => '{}');
 is ($response->content, '{"success":false,"text":"S2S bad path"}');
 is ($response->code, 403);
 
 # /receiveSession - bad path
-$response = $MolochTest::userAgent->get("http://$MolochTest::host:8126/receiveSession", ':x-arkime-auth' => '{"path": "/"}');
+$response = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8126/receiveSession", ':x-arkime-auth' => '{"path": "/"}');
 is ($response->content, '{"success":false,"text":"S2S bad user"}');
 is ($response->code, 403);
 
 # /receiveSession - bad date
-$response = $MolochTest::userAgent->get("http://$MolochTest::host:8126/receiveSession", ':x-arkime-auth' => '{"path": "/", "user": "authtest2"}');
+$response = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8126/receiveSession", ':x-arkime-auth' => '{"path": "/", "user": "authtest2"}');
 is ($response->content, '{"success":false,"text":"S2S bad date"}');
 is ($response->code, 403);
 
 # /receiveSession - user role
-$response = $MolochTest::userAgent->get("http://$MolochTest::host:8126/receiveSession", ':x-arkime-auth' => '{"path": "/", "user": "role:authtest2", "date": 1}');
+$response = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8126/receiveSession", ':x-arkime-auth' => '{"path": "/", "user": "role:authtest2", "date": 1}');
 is ($response->content, '{"success":false,"text":"Can not authenticate with role"}');
 is ($response->code, 403);
 
 # /receiveSession - url mismatch
-$response = $MolochTest::userAgent->get("http://$MolochTest::host:8126/receiveSession", ':x-arkime-auth' => '{"path": "/", "user": "authtest2", "date": 1}');
+$response = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8126/receiveSession", ':x-arkime-auth' => '{"path": "/", "user": "authtest2", "date": 1}');
 is ($response->content, '{"success":false,"text":"Unauthorized based on bad url"}');
 is ($response->code, 403);
 
 # /receiveSession - url mismatch
-$response = $MolochTest::userAgent->get("http://$MolochTest::host:8126/receiveSession", ':x-arkime-auth' => '{"path": "/receiveSession", "user": "authtest2", "date": 1}');
+$response = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8126/receiveSession", ':x-arkime-auth' => '{"path": "/receiveSession", "user": "authtest2", "date": 1}');
 is ($response->content, '{"success":false,"text":"Unauthorized based on timestamp - check that all Arkime viewer machines have accurate clocks"}');
 is ($response->code, 403);
 
 # /receiveSession - good but wrong method
-$response = $MolochTest::userAgent->get("http://$MolochTest::host:8126/receiveSession", ':x-arkime-auth' => '{"path": "/receiveSession", "user": "authtest2", "date": ' . time() * 1000 .'}');
+$response = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8126/receiveSession", ':x-arkime-auth' => '{"path": "/receiveSession", "user": "authtest2", "date": ' . time() * 1000 .'}');
 is ($response->content, 'Permission denied');
 is ($response->code, 403);
 
 # /receiveSession - good
-$response = $MolochTest::userAgent->post("http://$MolochTest::host:8126/receiveSession", ':x-arkime-auth' => '{"path": "/receiveSession", "user": "authtest2", "date": ' . time() * 1000 .'}');
+$response = $ArkimeTest::userAgent->post("http://$ArkimeTest::host:8126/receiveSession", ':x-arkime-auth' => '{"path": "/receiveSession", "user": "authtest2", "date": ' . time() * 1000 .'}');
 is ($response->content, '{"success":false,"text":"Missing saveId"}');
 is ($response->code, 200);
 
@@ -199,7 +199,7 @@ viewerDeleteToken("/api/user/test8", $token);
 viewerDeleteToken("/api/user/authtest1", $token);
 viewerDeleteToken("/api/user/authtest2", $token);
 
-my $users = viewerPost("/user/list", "");
+my $users = viewerPost("/api/users", "");
 is (@{$users->{data}}, 2, "Two supers left");
 
 viewerGet("/regressionTests/deleteAllUsers");
@@ -207,5 +207,5 @@ sleep(1);
 esGet("/_flush");
 esGet("/_refresh");
 
-my $users = viewerPost("/user/list", "");
+my $users = viewerPost("/api/users", "");
 is (@{$users->{data}}, 0, "Empty users table");

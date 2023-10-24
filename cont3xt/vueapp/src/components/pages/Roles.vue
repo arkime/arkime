@@ -1,8 +1,14 @@
+<!--
+Copyright Yahoo Inc.
+SPDX-License-Identifier: Apache-2.0
+-->
 <template>
-  <RolesCommon
-    :currentUser="getUser"
-    :cont3xt-dark-theme="getDarkThemeEnabled"
-    @update-current-user="updateCurrentUser" />
+  <div class="overflow-auto">
+    <RolesCommon
+        :currentUser="getUser"
+        :cont3xt-dark-theme="getDarkThemeEnabled"
+        @update-current-user="updateCurrentUser" />
+  </div>
 </template>
 
 <script>

@@ -1,18 +1,8 @@
 /* Copyright 2012-2017 AOL Inc. All rights reserved.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this Software except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: Apache-2.0
  */
-#include "moloch.h"
+#include "arkime.h"
 #include <sys/socket.h>
 #include <arpa/inet.h>
 
@@ -21,7 +11,7 @@
 #define MAX_URL_LENGTH 4096
 
 typedef struct {
-    MolochSession_t *session;
+    ArkimeSession_t *session;
     GString         *urlString;
     GString         *hostString;
     GString         *cookieString;
@@ -37,22 +27,22 @@ typedef struct {
     GChecksum       *checksum[4];
     const char      *magicString[2];
 
-    uint16_t         wParsers:2;
-    uint16_t         inHeader:2;
-    uint16_t         inValue:2;
-    uint16_t         inBody:2;
-    uint16_t         urlWhich:1;
-    uint16_t         which:1;
-    uint16_t         isConnect:2; // Keep track of each side that is CONNECT and completed headers
-    uint16_t         reclassify:2; // Keep track of each side that needs to reclassify still
-    uint16_t         http2Upgrade:1;
+    uint16_t         wParsers: 2;
+    uint16_t         inHeader: 2;
+    uint16_t         inValue: 2;
+    uint16_t         inBody: 2;
+    uint16_t         urlWhich: 1;
+    uint16_t         which: 1;
+    uint16_t         isConnect: 2; // Keep track of each side that is CONNECT and completed headers
+    uint16_t         reclassify: 2; // Keep track of each side that needs to reclassify still
+    uint16_t         http2Upgrade: 1;
 } HTTPInfo_t;
 
-extern MolochConfig_t        config;
+extern ArkimeConfig_t        config;
 LOCAL  http_parser_settings  parserSettings;
 extern uint32_t              pluginsCbs;
-LOCAL  MolochStringHashStd_t httpReqHeaders;
-LOCAL  MolochStringHashStd_t httpResHeaders;
+LOCAL  ArkimeStringHashStd_t httpReqHeaders;
+LOCAL  ArkimeStringHashStd_t httpResHeaders;
 
 LOCAL  int cookieKeyField;
 LOCAL  int cookieValueField;
@@ -83,7 +73,7 @@ LOCAL  int headerResValue;
 LOCAL  int parseHTTPHeaderValueMaxLen;
 
 /******************************************************************************/
-void http_common_parse_cookie(MolochSession_t *session, char *cookie, int len)
+void http_common_parse_cookie(ArkimeSession_t *session, char *cookie, int len)
 {
     char *start = cookie;
     char *end = cookie + len;
@@ -92,13 +82,13 @@ void http_common_parse_cookie(MolochSession_t *session, char *cookie, int len)
         char *equal = memchr(start, '=', end - start);
         if (!equal)
             break;
-        moloch_field_string_add(cookieKeyField, session, start, equal-start, TRUE);
-        start = memchr(equal+1, ';', end - (equal+1));
+        arkime_field_string_add(cookieKeyField, session, start, equal - start, TRUE);
+        start = memchr(equal + 1, ';', end - (equal + 1));
         if (config.parseCookieValue) {
             equal++;
             while (isspace(*equal) && equal < end) equal++;
             if (equal < end && equal != start)
-                moloch_field_string_add(cookieValueField, session, equal, start?start-equal:end-equal, TRUE);
+                arkime_field_string_add(cookieValueField, session, equal, start ? start - equal : end - equal, TRUE);
         }
 
         if(!start)
@@ -107,7 +97,7 @@ void http_common_parse_cookie(MolochSession_t *session, char *cookie, int len)
     }
 }
 /******************************************************************************/
-void http_common_add_header_value(MolochSession_t *session, int pos, const char *s, int l)
+void http_common_add_header_value(ArkimeSession_t *session, int pos, const char *s, int l)
 {
     while (isspace(*s)) {
         s++;
@@ -115,38 +105,38 @@ void http_common_add_header_value(MolochSession_t *session, int pos, const char 
     }
 
     switch (config.fields[pos]->type) {
-    case MOLOCH_FIELD_TYPE_INT:
-    case MOLOCH_FIELD_TYPE_INT_ARRAY:
-    case MOLOCH_FIELD_TYPE_INT_HASH:
-    case MOLOCH_FIELD_TYPE_INT_GHASH:
-        moloch_field_int_add(pos, session, atoi(s));
+    case ARKIME_FIELD_TYPE_INT:
+    case ARKIME_FIELD_TYPE_INT_ARRAY:
+    case ARKIME_FIELD_TYPE_INT_HASH:
+    case ARKIME_FIELD_TYPE_INT_GHASH:
+        arkime_field_int_add(pos, session, atoi(s));
         break;
-    case MOLOCH_FIELD_TYPE_FLOAT:
-    case MOLOCH_FIELD_TYPE_FLOAT_ARRAY:
-    case MOLOCH_FIELD_TYPE_FLOAT_GHASH:
-        moloch_field_float_add(pos, session, atof(s));
+    case ARKIME_FIELD_TYPE_FLOAT:
+    case ARKIME_FIELD_TYPE_FLOAT_ARRAY:
+    case ARKIME_FIELD_TYPE_FLOAT_GHASH:
+        arkime_field_float_add(pos, session, atof(s));
         break;
-    case MOLOCH_FIELD_TYPE_STR:
-    case MOLOCH_FIELD_TYPE_STR_ARRAY:
-    case MOLOCH_FIELD_TYPE_STR_HASH:
-    case MOLOCH_FIELD_TYPE_STR_GHASH:
+    case ARKIME_FIELD_TYPE_STR:
+    case ARKIME_FIELD_TYPE_STR_ARRAY:
+    case ARKIME_FIELD_TYPE_STR_HASH:
+    case ARKIME_FIELD_TYPE_STR_GHASH:
         if (pos == headerReqValue || pos == headerResValue)
-            moloch_field_string_add_lower(pos, session, s, MIN(l, parseHTTPHeaderValueMaxLen));
+            arkime_field_string_add_lower(pos, session, s, MIN(l, parseHTTPHeaderValueMaxLen));
         else
-            moloch_field_string_add(pos, session, s, l, TRUE);
+            arkime_field_string_add(pos, session, s, l, TRUE);
         break;
-    case MOLOCH_FIELD_TYPE_IP:
-    case MOLOCH_FIELD_TYPE_IP_GHASH:
+    case ARKIME_FIELD_TYPE_IP:
+    case ARKIME_FIELD_TYPE_IP_GHASH:
     {
         int i;
         gchar **parts = g_strsplit(s, ",", 0);
 
         for (i = 0; parts[i]; i++) {
-            moloch_field_ip_add_str(pos, session, parts[i]);
+            arkime_field_ip_add_str(pos, session, parts[i]);
 
             /* Add back maybe
             if (ia == 0 || ia == 0xffffffff) {
-                moloch_session_add_tag(session, "http:bad-xff");
+                arkime_session_add_tag(session, "http:bad-xff");
                 if (config.debug)
                     LOG("INFO - Didn't understand ip: %s %s %d", s, ip, ia);
                 continue;
@@ -157,22 +147,22 @@ void http_common_add_header_value(MolochSession_t *session, int pos, const char 
         g_strfreev(parts);
         break;
     }
-    case MOLOCH_FIELD_TYPE_CERTSINFO:
+    case ARKIME_FIELD_TYPE_CERTSINFO:
         // Unsupported
         break;
     } /* SWITCH */
 }
 /******************************************************************************/
-void http_common_add_header(MolochSession_t *session, int pos, int isReq, const char *name, int namelen, const char *value, int valuelen)
+void http_common_add_header(ArkimeSession_t *session, int pos, int isReq, const char *name, int namelen, const char *value, int valuelen)
 {
-    MolochString_t        *hstring;
+    ArkimeString_t        *hstring;
 
     char *lower = g_ascii_strdown(name, namelen);
 
     if (isReq)
-        moloch_field_string_add(tagsReqField, session, (const char *)lower, namelen, TRUE);
+        arkime_field_string_add(tagsReqField, session, (const char *)lower, namelen, TRUE);
     else
-        moloch_field_string_add(tagsResField, session, (const char *)lower, namelen, TRUE);
+        arkime_field_string_add(tagsResField, session, (const char *)lower, namelen, TRUE);
 
     if (pos == 0) {
         if (isReq)
@@ -183,11 +173,11 @@ void http_common_add_header(MolochSession_t *session, int pos, int isReq, const 
         if (hstring) {
             pos = (long)hstring->uw;
         } else if (isReq && config.parseHTTPHeaderRequestAll) { // Header in request
-            moloch_field_string_add(headerReqField, session, lower, -1, TRUE);
+            arkime_field_string_add(headerReqField, session, lower, -1, TRUE);
             pos = headerReqValue;
         }
         else if (!isReq && config.parseHTTPHeaderResponseAll) { // Header in response
-            moloch_field_string_add(headerResField, session, lower, -1, TRUE);
+            arkime_field_string_add(headerResField, session, lower, -1, TRUE);
             pos = headerResValue;
         }
     }
@@ -200,14 +190,14 @@ void http_common_add_header(MolochSession_t *session, int pos, int isReq, const 
     http_common_add_header_value(session, pos, (char *)value, valuelen);
 }
 /******************************************************************************/
-void http_common_parse_url(MolochSession_t *session, char *url, int len)
+void http_common_parse_url(ArkimeSession_t *session, char *url, int len)
 {
     char *end = url + len;
     char *question = memchr(url, '?', len);
 
     if (question) {
-        moloch_field_string_add(pathField, session, url, question - url, TRUE);
-        char *start = question+1;
+        arkime_field_string_add(pathField, session, url, question - url, TRUE);
+        char *start = question + 1;
         char *ch;
         int   field = keyField;
         for (ch = start; ch < end; ch++) {
@@ -215,44 +205,44 @@ void http_common_parse_url(MolochSession_t *session, char *url, int len)
                 if (ch != start && (config.parseQSValue || field == keyField)) {
                     char *str = g_uri_unescape_segment(start, ch, NULL);
                     if (!str) {
-                        moloch_field_string_add(field, session, start, ch-start, TRUE);
-                    } else if (!moloch_field_string_add(field, session, str, -1, FALSE)) {
+                        arkime_field_string_add(field, session, start, ch - start, TRUE);
+                    } else if (!arkime_field_string_add(field, session, str, -1, FALSE)) {
                         g_free(str);
                     }
                 }
-                start = ch+1;
+                start = ch + 1;
                 field = keyField;
                 continue;
             } else if (*ch == '=') {
                 if (ch != start && (config.parseQSValue || field == keyField)) {
                     char *str = g_uri_unescape_segment(start, ch, NULL);
                     if (!str) {
-                        moloch_field_string_add(field, session, start, ch-start, TRUE);
-                    } else if (!moloch_field_string_add(field, session, str, -1, FALSE)) {
+                        arkime_field_string_add(field, session, start, ch - start, TRUE);
+                    } else if (!arkime_field_string_add(field, session, str, -1, FALSE)) {
                         g_free(str);
                     }
                 }
-                start = ch+1;
+                start = ch + 1;
                 field = valueField;
             }
         }
         if (config.parseQSValue && field == valueField && ch > start) {
             char *str = g_uri_unescape_segment(start, ch, NULL);
             if (!str) {
-                moloch_field_string_add(field, session, start, ch-start, TRUE);
-            } else if (!moloch_field_string_add(field, session, str, -1, FALSE)) {
+                arkime_field_string_add(field, session, start, ch - start, TRUE);
+            } else if (!arkime_field_string_add(field, session, str, -1, FALSE)) {
                 g_free(str);
             }
         }
     } else {
-        moloch_field_string_add(pathField, session, url, len, TRUE);
+        arkime_field_string_add(pathField, session, url, len, TRUE);
     }
 }
 /******************************************************************************/
-LOCAL int moloch_hp_cb_on_message_begin (http_parser *parser)
+LOCAL int arkime_hp_cb_on_message_begin (http_parser *parser)
 {
     HTTPInfo_t            *http = parser->data;
-    MolochSession_t       *session = http->session;
+    ArkimeSession_t       *session = http->session;
 
 #ifdef HTTPDEBUG
     LOG("HTTPDEBUG: which: %d", http->which);
@@ -264,16 +254,16 @@ LOCAL int moloch_hp_cb_on_message_begin (http_parser *parser)
     http->inBody   &= ~(1 << http->which);
     g_checksum_reset(http->checksum[http->which]);
     if (config.supportSha256) {
-        g_checksum_reset(http->checksum[http->which+2]);
+        g_checksum_reset(http->checksum[http->which + 2]);
     }
 
-    if (pluginsCbs & MOLOCH_PLUGIN_HP_OMB)
-        moloch_plugins_cb_hp_omb(session, parser);
+    if (pluginsCbs & ARKIME_PLUGIN_HP_OMB)
+        arkime_plugins_cb_hp_omb(session, parser);
 
     return 0;
 }
 /******************************************************************************/
-LOCAL int moloch_hp_cb_on_url (http_parser *parser, const char *at, size_t length)
+LOCAL int arkime_hp_cb_on_url (http_parser *parser, const char *at, size_t length)
 {
     HTTPInfo_t            *http = parser->data;
 
@@ -291,30 +281,30 @@ LOCAL int moloch_hp_cb_on_url (http_parser *parser, const char *at, size_t lengt
 }
 
 /******************************************************************************/
-LOCAL int moloch_hp_cb_on_body (http_parser *parser, const char *at, size_t length)
+LOCAL int arkime_hp_cb_on_body (http_parser *parser, const char *at, size_t length)
 {
     HTTPInfo_t            *http = parser->data;
-    MolochSession_t       *session = http->session;
+    ArkimeSession_t       *session = http->session;
 
 #ifdef HTTPDEBUG
     LOG("HTTPDEBUG: which: %d", http->which);
 #endif
 
     if (!(http->inBody & (1 << http->which))) {
-        if (moloch_memcasestr(at, length, "password=", 9) ||
-            moloch_memcasestr(at, length, "passwd=", 7) ||
-            moloch_memcasestr(at, length, "pass=", 5)
+        if (arkime_memcasestr(at, length, "password=", 9) ||
+            arkime_memcasestr(at, length, "passwd=", 7) ||
+            arkime_memcasestr(at, length, "pass=", 5)
            ) {
-            moloch_session_add_tag(session, "http:password");
+            arkime_session_add_tag(session, "http:password");
         }
 
-        http->magicString[http->which] = moloch_parsers_magic(session, magicField, at, length);
+        http->magicString[http->which] = arkime_parsers_magic(session, magicField, at, length);
         http->inBody |= (1 << http->which);
 
         /* Put small requests in a field. */
         if (http->which == http->urlWhich && length <= config.maxReqBody && length > 0) {
             if (!config.reqBodyOnlyUtf8 || g_utf8_validate(at, length, NULL) == TRUE) {
-                moloch_field_string_add(reqBodyField, session, at, length, TRUE);
+                arkime_field_string_add(reqBodyField, session, at, length, TRUE);
             }
         }
 
@@ -322,17 +312,17 @@ LOCAL int moloch_hp_cb_on_body (http_parser *parser, const char *at, size_t leng
 
     g_checksum_update(http->checksum[http->which], (guchar *)at, length);
     if (config.supportSha256) {
-        g_checksum_update(http->checksum[http->which+2], (guchar *)at, length);
+        g_checksum_update(http->checksum[http->which + 2], (guchar *)at, length);
     }
 
-    if (pluginsCbs & MOLOCH_PLUGIN_HP_OB)
-        moloch_plugins_cb_hp_ob(session, parser, at, length);
+    if (pluginsCbs & ARKIME_PLUGIN_HP_OB)
+        arkime_plugins_cb_hp_ob(session, parser, at, length);
 
     return 0;
 }
 
 /******************************************************************************/
-LOCAL void moloch_http_parse_authorization(MolochSession_t *session, char *str)
+LOCAL void arkime_http_parse_authorization(ArkimeSession_t *session, char *str)
 {
     gsize olen;
 
@@ -343,7 +333,7 @@ LOCAL void moloch_http_parse_authorization(MolochSession_t *session, char *str)
     if (!space)
         return;
 
-    moloch_field_string_add_lower(atField, session, str, space-str);
+    arkime_field_string_add_lower(atField, session, str, space - str);
 
     if (strncasecmp("basic", str, 5) == 0) {
         str += 5;
@@ -359,7 +349,7 @@ LOCAL void moloch_http_parse_authorization(MolochSession_t *session, char *str)
             char *colon = strchr(str, ':');
             if (colon)
                 *colon = 0;
-            moloch_field_string_add(userField, session, str, -1, TRUE);
+            arkime_field_string_add(userField, session, str, -1, TRUE);
         }
     } else if (strncasecmp("digest", str, 6) == 0) {
         str += 5;
@@ -382,28 +372,28 @@ LOCAL void moloch_http_parse_authorization(MolochSession_t *session, char *str)
         while (*end && (*end != '"' || !quote) && (*end != ',' || quote)) {
             end++;
         }
-        moloch_field_string_add(userField, session, str, end - str, TRUE);
+        arkime_field_string_add(userField, session, str, end - str, TRUE);
     }
 }
 /******************************************************************************/
-LOCAL int moloch_hp_cb_on_message_complete (http_parser *parser)
+LOCAL int arkime_hp_cb_on_message_complete (http_parser *parser)
 {
     HTTPInfo_t            *http = parser->data;
-    MolochSession_t       *session = http->session;
+    ArkimeSession_t       *session = http->session;
 
 #ifdef HTTPDEBUG
     LOG("HTTPDEBUG: which: %d", http->which);
 #endif
 
-    if (pluginsCbs & MOLOCH_PLUGIN_HP_OMC)
-        moloch_plugins_cb_hp_omc(session, parser);
+    if (pluginsCbs & ARKIME_PLUGIN_HP_OMC)
+        arkime_plugins_cb_hp_omc(session, parser);
 
     if (http->inBody & (1 << http->which)) {
         const char *md5 = g_checksum_get_string(http->checksum[http->which]);
-        moloch_field_string_uw_add(md5Field, session, (char*)md5, 32, (gpointer)http->magicString[http->which], TRUE);
+        arkime_field_string_uw_add(md5Field, session, (char *)md5, 32, (gpointer)http->magicString[http->which], TRUE);
         if (config.supportSha256) {
-            const char *sha256 = g_checksum_get_string(http->checksum[http->which+2]);
-            moloch_field_string_uw_add(sha256Field, session, (char*)sha256, 64, (gpointer)http->magicString[http->which], TRUE);
+            const char *sha256 = g_checksum_get_string(http->checksum[http->which + 2]);
+            arkime_field_string_uw_add(sha256Field, session, (char *)sha256, 64, (gpointer)http->magicString[http->which], TRUE);
         }
     }
 
@@ -411,7 +401,7 @@ LOCAL int moloch_hp_cb_on_message_complete (http_parser *parser)
 }
 
 /******************************************************************************/
-LOCAL void http_add_value(MolochSession_t *session, HTTPInfo_t *http)
+LOCAL void http_add_value(ArkimeSession_t *session, HTTPInfo_t *http)
 {
     int                     pos  = http->pos[http->which];
     char                    *s   = http->valueString[http->which]->str;
@@ -423,10 +413,10 @@ LOCAL void http_add_value(MolochSession_t *session, HTTPInfo_t *http)
     http->pos[http->which] = 0;
 }
 /******************************************************************************/
-LOCAL int moloch_hp_cb_on_header_field (http_parser *parser, const char *at, size_t length)
+LOCAL int arkime_hp_cb_on_header_field (http_parser *parser, const char *at, size_t length)
 {
     HTTPInfo_t            *http = parser->data;
-    MolochSession_t       *session = http->session;
+    ArkimeSession_t       *session = http->session;
 
 #ifdef HTTPDEBUG
     LOG("HTTPDEBUG: which: %d field: %.*s", http->which, (int)length, at);
@@ -444,8 +434,8 @@ LOCAL int moloch_hp_cb_on_header_field (http_parser *parser, const char *at, siz
 
     if ((http->inHeader & (1 << http->which)) == 0) {
         http->inHeader |= (1 << http->which);
-        if (http->urlString && parser->status_code == 0 && pluginsCbs & MOLOCH_PLUGIN_HP_OU) {
-            moloch_plugins_cb_hp_ou(session, parser, http->urlString->str, http->urlString->len);
+        if (http->urlString && parser->status_code == 0 && pluginsCbs & ARKIME_PLUGIN_HP_OU) {
+            arkime_plugins_cb_hp_ou(session, parser, http->urlString->str, http->urlString->len);
         }
     }
 
@@ -461,11 +451,11 @@ LOCAL int moloch_hp_cb_on_header_field (http_parser *parser, const char *at, siz
 }
 
 /******************************************************************************/
-LOCAL int moloch_hp_cb_on_header_value (http_parser *parser, const char *at, size_t length)
+LOCAL int arkime_hp_cb_on_header_value (http_parser *parser, const char *at, size_t length)
 {
     HTTPInfo_t            *http = parser->data;
-    MolochSession_t       *session = http->session;
-    MolochString_t        *hstring;
+    ArkimeSession_t       *session = http->session;
+    ArkimeString_t        *hstring;
 
 #ifdef HTTPDEBUG
     LOG("HTTPDEBUG: which: %d value: %.*s", http->which, (int)length, at);
@@ -475,32 +465,32 @@ LOCAL int moloch_hp_cb_on_header_value (http_parser *parser, const char *at, siz
         http->inValue |= (1 << http->which);
 
         const char *header = http->header[http->which];
-        moloch_plugins_cb_hp_ohfr(session, parser, header, strlen(header));
+        arkime_plugins_cb_hp_ohfr(session, parser, header, strlen(header));
         char *lower = g_ascii_strdown(header, -1);
-        moloch_plugins_cb_hp_ohf(session, parser, lower, strlen(lower));
+        arkime_plugins_cb_hp_ohf(session, parser, lower, strlen(lower));
 
         if (http->which == http->urlWhich)
             HASH_FIND(s_, httpReqHeaders, lower, hstring);
         else
             HASH_FIND(s_, httpResHeaders, lower, hstring);
 
-        http->pos[http->which] = (long)(hstring?hstring->uw:0);
+        http->pos[http->which] = (long)(hstring ? hstring->uw : 0);
 
         if (http->pos[http->which] == 0) { // Header was not defined
             if ((http->which == 0) && config.parseHTTPHeaderRequestAll) { // Header in request
-                moloch_field_string_add(headerReqField, session, lower, -1, TRUE);
+                arkime_field_string_add(headerReqField, session, lower, -1, TRUE);
                 http->pos[http->which] = (long) headerReqValue;
             }
             else if ((http->which == 1) && config.parseHTTPHeaderResponseAll) { // Header in response
-                moloch_field_string_add(headerResField, session, lower, -1, TRUE);
+                arkime_field_string_add(headerResField, session, lower, -1, TRUE);
                 http->pos[http->which] = (long) headerResValue;
             }
         }
 
         if (http->which == http->urlWhich)
-            moloch_field_string_add(tagsReqField, session, lower, -1, TRUE);
+            arkime_field_string_add(tagsReqField, session, lower, -1, TRUE);
         else {
-            moloch_field_string_add(tagsResField, session, lower, -1, TRUE);
+            arkime_field_string_add(tagsResField, session, lower, -1, TRUE);
             if (strcmp(lower, "upgrade") == 0 && length >= 3 && memcmp(at, "h2c", 3) == 0) {
                 http->http2Upgrade = 1;
             }
@@ -508,7 +498,7 @@ LOCAL int moloch_hp_cb_on_header_value (http_parser *parser, const char *at, siz
         g_free(lower);
     }
 
-    moloch_plugins_cb_hp_ohv(session, parser, at, length);
+    arkime_plugins_cb_hp_ohv(session, parser, at, length);
 
     // Request side
     if (parser->method) {
@@ -530,7 +520,7 @@ LOCAL int moloch_hp_cb_on_header_value (http_parser *parser, const char *at, siz
         } else if (strcasecmp("proxy-authorization", http->header[http->which]) == 0) {
             if (!http->proxyAuthString)
                 http->proxyAuthString = g_string_new_len(at, length);
-            else 
+            else
                 g_string_append_len(http->proxyAuthString, at, length);
         }
     }
@@ -545,10 +535,10 @@ LOCAL int moloch_hp_cb_on_header_value (http_parser *parser, const char *at, siz
     return 0;
 }
 /******************************************************************************/
-LOCAL int moloch_hp_cb_on_headers_complete (http_parser *parser)
+LOCAL int arkime_hp_cb_on_headers_complete (http_parser *parser)
 {
     HTTPInfo_t            *http = parser->data;
-    MolochSession_t       *session = http->session;
+    ArkimeSession_t       *session = http->session;
     char                   version[20];
 
 #ifdef HTTPDEBUG
@@ -563,11 +553,11 @@ LOCAL int moloch_hp_cb_on_headers_complete (http_parser *parser)
     int len = snprintf(version, sizeof(version), "%d.%d", parser->http_major, parser->http_minor);
 
     if (parser->status_code == 0) {
-        moloch_field_string_add(methodField, session, http_method_str(parser->method), -1, TRUE);
-        moloch_field_string_add(verReqField, session, version, len, TRUE);
+        arkime_field_string_add(methodField, session, http_method_str(parser->method), -1, TRUE);
+        arkime_field_string_add(verReqField, session, version, len, TRUE);
     } else {
-        moloch_field_int_add(statuscodeField, session, parser->status_code);
-        moloch_field_string_add(verResField, session, version, len, TRUE);
+        arkime_field_int_add(statuscodeField, session, parser->status_code);
+        arkime_field_string_add(verResField, session, version, len, TRUE);
     }
 
     if (http->inValue & (1 << http->which) && http->pos[http->which]) {
@@ -580,7 +570,7 @@ LOCAL int moloch_hp_cb_on_headers_complete (http_parser *parser)
         char *ch = http->urlString->str;
         while (*ch) {
             if (*ch < 32) {
-                moloch_session_add_tag(session, "http:control-char");
+                arkime_session_add_tag(session, "http:control-char");
                 break;
             }
             ch++;
@@ -593,14 +583,14 @@ LOCAL int moloch_hp_cb_on_headers_complete (http_parser *parser)
     }
 
     if (http->authString && http->authString->str[0]) {
-        moloch_http_parse_authorization(session, http->authString->str);
+        arkime_http_parse_authorization(session, http->authString->str);
         g_string_truncate(http->authString, 0);
     }
 
     /* Adding an additional check for proxy-authorization string*/
-    if (http->proxyAuthString && http->proxyAuthString->str[0]){
-	    moloch_http_parse_authorization(session, http->proxyAuthString->str);
-	    g_string_truncate(http->proxyAuthString, 0);
+    if (http->proxyAuthString && http->proxyAuthString->str[0]) {
+        arkime_http_parse_authorization(session, http->proxyAuthString->str);
+        g_string_truncate(http->proxyAuthString, 0);
     }
 
     if (http->hostString) {
@@ -611,9 +601,9 @@ LOCAL int moloch_hp_cb_on_headers_complete (http_parser *parser)
     if (http->urlString && http->hostString) {
         char *colon = strchr(http->hostString->str, ':');
         if (colon) {
-            moloch_field_string_add(hostField, session, http->hostString->str, colon - http->hostString->str, TRUE);
+            arkime_field_string_add(hostField, session, http->hostString->str, colon - http->hostString->str, TRUE);
         } else {
-            moloch_field_string_add(hostField, session, http->hostString->str, http->hostString->len, TRUE);
+            arkime_field_string_add(hostField, session, http->hostString->str, http->hostString->len, TRUE);
         }
 
         http_common_parse_url(session, http->urlString->str, http->urlString->len);
@@ -627,7 +617,7 @@ LOCAL int moloch_hp_cb_on_headers_complete (http_parser *parser)
                     truncated = TRUE;
                     g_string_truncate(http->urlString, MAX_URL_LENGTH);
                 }
-                if (!moloch_field_string_add(urlsField, session, http->urlString->str, http->urlString->len, FALSE))
+                if (!arkime_field_string_add(urlsField, session, http->urlString->str, http->urlString->len, FALSE))
                     g_free(http->urlString->str);
                 g_string_free(http->urlString, FALSE);
                 g_string_free(http->hostString, TRUE);
@@ -640,7 +630,7 @@ LOCAL int moloch_hp_cb_on_headers_complete (http_parser *parser)
                     truncated = TRUE;
                     g_string_truncate(http->hostString, MAX_URL_LENGTH);
                 }
-                if (!moloch_field_string_add(urlsField, session, http->hostString->str, http->hostString->len, FALSE))
+                if (!arkime_field_string_add(urlsField, session, http->hostString->str, http->hostString->len, FALSE))
                     g_free(http->hostString->str);
 
                 g_string_free(http->urlString, TRUE);
@@ -654,7 +644,7 @@ LOCAL int moloch_hp_cb_on_headers_complete (http_parser *parser)
                 truncated = TRUE;
                 g_string_truncate(http->hostString, MAX_URL_LENGTH);
             }
-            if (!moloch_field_string_add(urlsField, session, http->hostString->str, http->hostString->len, FALSE))
+            if (!arkime_field_string_add(urlsField, session, http->hostString->str, http->hostString->len, FALSE))
                 g_free(http->hostString->str);
             g_string_free(http->urlString, TRUE);
             g_string_free(http->hostString, FALSE);
@@ -668,17 +658,17 @@ LOCAL int moloch_hp_cb_on_headers_complete (http_parser *parser)
             truncated = TRUE;
             g_string_truncate(http->urlString, MAX_URL_LENGTH);
         }
-        if (!moloch_field_string_add(urlsField, session, http->urlString->str, http->urlString->len, FALSE))
-                g_free(http->urlString->str);
+        if (!arkime_field_string_add(urlsField, session, http->urlString->str, http->urlString->len, FALSE))
+            g_free(http->urlString->str);
         g_string_free(http->urlString, FALSE);
 
         http->urlString = NULL;
     } else if (http->hostString) {
         char *colon = strchr(http->hostString->str, ':');
         if (colon) {
-            moloch_field_string_add(hostField, session, http->hostString->str, colon - http->hostString->str, TRUE);
+            arkime_field_string_add(hostField, session, http->hostString->str, colon - http->hostString->str, TRUE);
         } else {
-            moloch_field_string_add(hostField, session, http->hostString->str, http->hostString->len, TRUE);
+            arkime_field_string_add(hostField, session, http->hostString->str, http->hostString->len, TRUE);
         }
 
         g_string_free(http->hostString, TRUE);
@@ -686,25 +676,25 @@ LOCAL int moloch_hp_cb_on_headers_complete (http_parser *parser)
     }
 
     if (truncated)
-        moloch_session_add_tag(session, "http:url-truncated");
+        arkime_session_add_tag(session, "http:url-truncated");
 
-    moloch_session_add_protocol(session, "http");
+    arkime_session_add_protocol(session, "http");
 
-    if (pluginsCbs & MOLOCH_PLUGIN_HP_OHC)
-        moloch_plugins_cb_hp_ohc(session, parser);
+    if (pluginsCbs & ARKIME_PLUGIN_HP_OHC)
+        arkime_plugins_cb_hp_ohc(session, parser);
 
     return 0;
 }
 
 /*############################## SHARED ##############################*/
 /******************************************************************************/
-LOCAL int http_parse(MolochSession_t *session, void *uw, const unsigned char *data, int remaining, int which)
+LOCAL int http_parse(ArkimeSession_t *session, void *uw, const uint8_t *data, int remaining, int which)
 {
     HTTPInfo_t            *http          = uw;
 
     if (http->http2Upgrade) {
-        moloch_parsers_classify_tcp(session, data, remaining, which);
-        return MOLOCH_PARSER_UNREGISTER;
+        arkime_parsers_classify_tcp(session, data, remaining, which);
+        return ARKIME_PARSER_UNREGISTER;
     }
 
     http->which = which;
@@ -716,11 +706,11 @@ LOCAL int http_parse(MolochSession_t *session, void *uw, const unsigned char *da
         // Check if either side needs to be classified
         if (http->reclassify & (1 << which)) {
             http->reclassify &= ~(1 << which);
-            moloch_parsers_classify_tcp(session, data, remaining, which);
+            arkime_parsers_classify_tcp(session, data, remaining, which);
 
             // Both sides have been reclassified, remove http parser
             if (http->reclassify == 0 && http->isConnect == 0x3) {
-                moloch_parsers_unregister(session, uw);
+                arkime_parsers_unregister(session, uw);
             }
             return 0;
         }
@@ -733,12 +723,12 @@ LOCAL int http_parse(MolochSession_t *session, void *uw, const unsigned char *da
     while (remaining > 0) {
         int len = http_parser_execute(&http->parsers[http->which], &parserSettings, (char *)data, remaining);
 #ifdef HTTPDEBUG
-            LOG("HTTPDEBUG: parse result: %d input: %d errno: %d", len, remaining, http->parsers[http->which].http_errno);
+        LOG("HTTPDEBUG: parse result: %d input: %d errno: %d", len, remaining, http->parsers[http->which].http_errno);
 #endif
         if (len <= 0) {
             http->wParsers &= ~(1 << http->which);
             if (!http->wParsers) {
-                moloch_parsers_unregister(session, uw);
+                arkime_parsers_unregister(session, uw);
             }
             break;
         }
@@ -748,7 +738,7 @@ LOCAL int http_parse(MolochSession_t *session, void *uw, const unsigned char *da
     return 0;
 }
 /******************************************************************************/
-void http_save(MolochSession_t UNUSED(*session), void *uw, int final)
+void http_save(ArkimeSession_t UNUSED(*session), void *uw, int final)
 {
     if (!final)
         return;
@@ -768,7 +758,7 @@ void http_save(MolochSession_t UNUSED(*session), void *uw, int final)
 
 }
 /******************************************************************************/
-LOCAL void http_free(MolochSession_t UNUSED(*session), void *uw)
+LOCAL void http_free(ArkimeSession_t UNUSED(*session), void *uw)
 {
     HTTPInfo_t            *http          = uw;
 
@@ -793,17 +783,17 @@ LOCAL void http_free(MolochSession_t UNUSED(*session), void *uw)
         g_checksum_free(http->checksum[3]);
     }
 
-    MOLOCH_TYPE_FREE(HTTPInfo_t, http);
+    ARKIME_TYPE_FREE(HTTPInfo_t, http);
 }
 /******************************************************************************/
-LOCAL void http_classify(MolochSession_t *session, const unsigned char *UNUSED(data), int UNUSED(len), int UNUSED(which), void *UNUSED(uw))
+LOCAL void http_classify(ArkimeSession_t *session, const uint8_t *UNUSED(data), int UNUSED(len), int UNUSED(which), void *UNUSED(uw))
 {
-    if (moloch_session_has_protocol(session, "http"))
+    if (arkime_session_has_protocol(session, "http"))
         return;
 
-    moloch_session_add_protocol(session, "http");
+    arkime_session_add_protocol(session, "http");
 
-    HTTPInfo_t            *http          = MOLOCH_TYPE_ALLOC0(HTTPInfo_t);
+    HTTPInfo_t            *http          = ARKIME_TYPE_ALLOC0(HTTPInfo_t);
 
     http->checksum[0] = g_checksum_new(G_CHECKSUM_MD5);
     http->checksum[1] = g_checksum_new(G_CHECKSUM_MD5);
@@ -820,242 +810,242 @@ LOCAL void http_classify(MolochSession_t *session, const unsigned char *UNUSED(d
 
     http->session = session;
 
-    moloch_parsers_register2(session, http_parse, http, http_free, http_save);
+    arkime_parsers_register2(session, http_parse, http, http_free, http_save);
 }
 /******************************************************************************/
-void moloch_parser_init()
+void arkime_parser_init()
 {
-static const char *method_strings[] =
+    static const char *method_strings[] =
     {
 #define XX(num, name, string) #string,
-    HTTP_METHOD_MAP(XX)
+        HTTP_METHOD_MAP(XX)
 #undef XX
-    0
+        0
     };
 
-    hostField = moloch_field_define("http", "lotermfield",
-        "host.http", "Hostname", "http.host",
-        "HTTP host header field",
-        MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT,
-        "aliases", "[\"http.host\"]",
-        "category", "host",
-        (char *)NULL);
+    hostField = arkime_field_define("http", "lotermfield",
+                                    "host.http", "Hostname", "http.host",
+                                    "HTTP host header field",
+                                    ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT,
+                                    "aliases", "[\"http.host\"]",
+                                    "category", "host",
+                                    (char *)NULL);
 
-    moloch_field_define("http", "lotextfield",
-        "host.http.tokens", "Hostname Tokens", "http.hostTokens",
-        "HTTP host Tokens header field",
-        MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_FAKE,
-        "aliases", "[\"http.host.tokens\"]",
-        (char *)NULL);
+    arkime_field_define("http", "lotextfield",
+                        "host.http.tokens", "Hostname Tokens", "http.hostTokens",
+                        "HTTP host Tokens header field",
+                        ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_FAKE,
+                        "aliases", "[\"http.host.tokens\"]",
+                        (char *)NULL);
 
-    urlsField = moloch_field_define("http", "termfield",
-        "http.uri", "URI", "http.uri",
-        "URIs for request",
-        MOLOCH_FIELD_TYPE_STR_HASH, MOLOCH_FIELD_FLAG_CNT,
-        "category", "[\"url\",\"host\"]",
-        (char *)NULL);
+    urlsField = arkime_field_define("http", "termfield",
+                                    "http.uri", "URI", "http.uri",
+                                    "URIs for request",
+                                    ARKIME_FIELD_TYPE_STR_HASH, ARKIME_FIELD_FLAG_CNT,
+                                    "category", "[\"url\",\"host\"]",
+                                    (char *)NULL);
 
-    moloch_field_define("http", "lotextfield",
-        "http.uri.tokens", "URI Tokens", "http.uriTokens",
-        "URIs Tokens for request",
-        MOLOCH_FIELD_TYPE_STR_HASH, MOLOCH_FIELD_FLAG_FAKE,
-        (char *)NULL);
+    arkime_field_define("http", "lotextfield",
+                        "http.uri.tokens", "URI Tokens", "http.uriTokens",
+                        "URIs Tokens for request",
+                        ARKIME_FIELD_TYPE_STR_HASH, ARKIME_FIELD_FLAG_FAKE,
+                        (char *)NULL);
 
-    xffField = moloch_field_define("http", "ip",
-        "ip.xff", "XFF IP", "http.xffIp",
-        "X-Forwarded-For Header",
-        MOLOCH_FIELD_TYPE_IP_GHASH, MOLOCH_FIELD_FLAG_CNT | MOLOCH_FIELD_FLAG_IPPRE,
-        "category", "ip",
-        (char *)NULL);
+    xffField = arkime_field_define("http", "ip",
+                                   "ip.xff", "XFF IP", "http.xffIp",
+                                   "X-Forwarded-For Header",
+                                   ARKIME_FIELD_TYPE_IP_GHASH, ARKIME_FIELD_FLAG_CNT | ARKIME_FIELD_FLAG_IPPRE,
+                                   "category", "ip",
+                                   (char *)NULL);
 
-    uaField = moloch_field_define("http", "termfield",
-        "http.user-agent", "Useragent", "http.useragent",
-        "User-Agent Header",
-        MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT,
-        (char *)NULL);
+    uaField = arkime_field_define("http", "termfield",
+                                  "http.user-agent", "Useragent", "http.useragent",
+                                  "User-Agent Header",
+                                  ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT,
+                                  (char *)NULL);
 
-    moloch_field_define("http", "lotextfield",
-        "http.user-agent.tokens", "Useragent Tokens", "http.useragentTokens",
-        "User-Agent Header Tokens",
-        MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_FAKE,
-        (char *)NULL);
+    arkime_field_define("http", "lotextfield",
+                        "http.user-agent.tokens", "Useragent Tokens", "http.useragentTokens",
+                        "User-Agent Header Tokens",
+                        ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_FAKE,
+                        (char *)NULL);
 
-    tagsReqField = moloch_field_define("http", "lotermfield",
-        "http.hasheader.src", "Has Src Header", "http.requestHeader",
-        "Request has header present",
-        MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT,
-        (char *)NULL);
+    tagsReqField = arkime_field_define("http", "lotermfield",
+                                       "http.hasheader.src", "Has Src Header", "http.requestHeader",
+                                       "Request has header present",
+                                       ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT,
+                                       (char *)NULL);
 
-    tagsResField = moloch_field_define("http", "lotermfield",
-        "http.hasheader.dst", "Has Dst Header", "http.responseHeader",
-        "Response has header present",
-        MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT,
-        (char *)NULL);
+    tagsResField = arkime_field_define("http", "lotermfield",
+                                       "http.hasheader.dst", "Has Dst Header", "http.responseHeader",
+                                       "Response has header present",
+                                       ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT,
+                                       (char *)NULL);
 
-    headerReqField = moloch_field_define("http", "lotermfield",
-        "http.header.request.field", "Request Header Fields", "http.requestHeaderField",
-        "Contains Request header fields",
-        MOLOCH_FIELD_TYPE_STR_ARRAY, MOLOCH_FIELD_FLAG_NODB,
-        (char *)NULL);
+    headerReqField = arkime_field_define("http", "lotermfield",
+                                         "http.header.request.field", "Request Header Fields", "http.requestHeaderField",
+                                         "Contains Request header fields",
+                                         ARKIME_FIELD_TYPE_STR_ARRAY, ARKIME_FIELD_FLAG_NODB,
+                                         (char *)NULL);
 
-    headerReqValue = moloch_field_define("http","lotermfield",
-        "http.hasheader.src.value", "Request Header Values", "http.requestHeaderValue",
-        "Contains request header values",
-        MOLOCH_FIELD_TYPE_STR_ARRAY, MOLOCH_FIELD_FLAG_CNT,
-        (char *)NULL);
+    headerReqValue = arkime_field_define("http", "lotermfield",
+                                         "http.hasheader.src.value", "Request Header Values", "http.requestHeaderValue",
+                                         "Contains request header values",
+                                         ARKIME_FIELD_TYPE_STR_ARRAY, ARKIME_FIELD_FLAG_CNT,
+                                         (char *)NULL);
 
-    headerResField = moloch_field_define("http","lotermfield",
-        "http.header.response.field","Response Header fields", "http.responseHeaderField",
-        "Contains response header fields",
-        MOLOCH_FIELD_TYPE_STR_ARRAY, MOLOCH_FIELD_FLAG_NODB,
-        (char *)NULL);
+    headerResField = arkime_field_define("http", "lotermfield",
+                                         "http.header.response.field", "Response Header fields", "http.responseHeaderField",
+                                         "Contains response header fields",
+                                         ARKIME_FIELD_TYPE_STR_ARRAY, ARKIME_FIELD_FLAG_NODB,
+                                         (char *)NULL);
 
-    headerResValue = moloch_field_define("http","lotermfield",
-        "http.hasheader.dst.value", "Response Header Values", "http.responseHeaderValue",
-        "Contains response header values",
-        MOLOCH_FIELD_TYPE_STR_ARRAY, MOLOCH_FIELD_FLAG_CNT,
-        (char *)NULL);
+    headerResValue = arkime_field_define("http", "lotermfield",
+                                         "http.hasheader.dst.value", "Response Header Values", "http.responseHeaderValue",
+                                         "Contains response header values",
+                                         ARKIME_FIELD_TYPE_STR_ARRAY, ARKIME_FIELD_FLAG_CNT,
+                                         (char *)NULL);
 
-    moloch_field_define("http", "lotermfield",
-        "http.hasheader", "Has Src or Dst Header", "hhall",
-        "Shorthand for http.hasheader.src or http.hasheader.dst",
-        0,  MOLOCH_FIELD_FLAG_FAKE,
-        "regex", "^http\\\\.hasheader\\\\.(?:(?!(cnt|value)$).)*$",
-        (char *)NULL);
+    arkime_field_define("http", "lotermfield",
+                        "http.hasheader", "Has Src or Dst Header", "hhall",
+                        "Shorthand for http.hasheader.src or http.hasheader.dst",
+                        0,  ARKIME_FIELD_FLAG_FAKE,
+                        "regex", "^http\\\\.hasheader\\\\.(?:(?!(cnt|value)$).)*$",
+                        (char *)NULL);
 
-    moloch_field_define("http", "lotermfield",
-        "http.hasheader.value", "Has Value in Src or Dst Header", "hhvalueall",
-        "Shorthand for http.hasheader.src.value or http.hasheader.dst.value",
-        0,  MOLOCH_FIELD_FLAG_FAKE,
-        "regex", "^http\\\\.hasheader\\\\.(src|dst)\\\\.value$",
-        (char *)NULL);
+    arkime_field_define("http", "lotermfield",
+                        "http.hasheader.value", "Has Value in Src or Dst Header", "hhvalueall",
+                        "Shorthand for http.hasheader.src.value or http.hasheader.dst.value",
+                        0,  ARKIME_FIELD_FLAG_FAKE,
+                        "regex", "^http\\\\.hasheader\\\\.(src|dst)\\\\.value$",
+                        (char *)NULL);
 
-    md5Field = moloch_field_define("http", "lotermfield",
-        "http.md5", "Body MD5", "http.md5",
-        "MD5 of http body response",
-        MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT,
-        "category", "md5",
-        (char *)NULL);
+    md5Field = arkime_field_define("http", "lotermfield",
+                                   "http.md5", "Body MD5", "http.md5",
+                                   "MD5 of http body response",
+                                   ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT,
+                                   "category", "md5",
+                                   (char *)NULL);
 
     if (config.supportSha256) {
-        sha256Field = moloch_field_define("http", "lotermfield",
-            "http.sha256", "Body SHA256", "http.sha256",
-            "SHA256 of http body response",
-            MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT,
-            "category", "sha256",
-            (char *)NULL);
+        sha256Field = arkime_field_define("http", "lotermfield",
+                                          "http.sha256", "Body SHA256", "http.sha256",
+                                          "SHA256 of http body response",
+                                          ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT,
+                                          "category", "sha256",
+                                          (char *)NULL);
     }
 
-    moloch_field_define("http", "termfield",
-        "http.version", "Version", "httpversion",
-        "HTTP version number",
-        0, MOLOCH_FIELD_FLAG_FAKE,
-        "regex", "^http.version.[a-z]+$",
-        (char *)NULL);
+    arkime_field_define("http", "termfield",
+                        "http.version", "Version", "httpversion",
+                        "HTTP version number",
+                        0, ARKIME_FIELD_FLAG_FAKE,
+                        "regex", "^http.version.[a-z]+$",
+                        (char *)NULL);
 
-    verReqField = moloch_field_define("http", "termfield",
-        "http.version.src", "Src Version", "http.clientVersion",
-        "Request HTTP version number",
-        MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT,
-        (char *)NULL);
+    verReqField = arkime_field_define("http", "termfield",
+                                      "http.version.src", "Src Version", "http.clientVersion",
+                                      "Request HTTP version number",
+                                      ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT,
+                                      (char *)NULL);
 
-    verResField = moloch_field_define("http", "termfield",
-        "http.version.dst", "Dst Version", "http.serverVersion",
-        "Response HTTP version number",
-        MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT,
-        (char *)NULL);
+    verResField = arkime_field_define("http", "termfield",
+                                      "http.version.dst", "Dst Version", "http.serverVersion",
+                                      "Response HTTP version number",
+                                      ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT,
+                                      (char *)NULL);
 
-    pathField = moloch_field_define("http", "termfield",
-        "http.uri.path", "URI Path", "http.path",
-        "Path portion of URI",
-        MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT,
-        (char *)NULL);
+    pathField = arkime_field_define("http", "termfield",
+                                    "http.uri.path", "URI Path", "http.path",
+                                    "Path portion of URI",
+                                    ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT,
+                                    (char *)NULL);
 
-    keyField = moloch_field_define("http", "termfield",
-        "http.uri.key", "QS Keys", "http.key",
-        "Keys from query string of URI",
-        MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT,
-        (char *)NULL);
+    keyField = arkime_field_define("http", "termfield",
+                                   "http.uri.key", "QS Keys", "http.key",
+                                   "Keys from query string of URI",
+                                   ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT,
+                                   (char *)NULL);
 
-    valueField = moloch_field_define("http", "termfield",
-        "http.uri.value", "QS Values", "http.value",
-        "Values from query string of URI",
-        MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT,
-        (char *)NULL);
+    valueField = arkime_field_define("http", "termfield",
+                                     "http.uri.value", "QS Values", "http.value",
+                                     "Values from query string of URI",
+                                     ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT,
+                                     (char *)NULL);
 
-    cookieKeyField = moloch_field_define("http", "termfield",
-        "http.cookie.key", "Cookie Keys", "http.cookieKey",
-        "The keys to cookies sent up in requests",
-        MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT,
-        (char *)NULL);
+    cookieKeyField = arkime_field_define("http", "termfield",
+                                         "http.cookie.key", "Cookie Keys", "http.cookieKey",
+                                         "The keys to cookies sent up in requests",
+                                         ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT,
+                                         (char *)NULL);
 
-    cookieValueField = moloch_field_define("http", "termfield",
-        "http.cookie.value", "Cookie Values", "http.cookieValue",
-        "The values to cookies sent up in requests",
-        MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT,
-        (char *)NULL);
+    cookieValueField = arkime_field_define("http", "termfield",
+                                           "http.cookie.value", "Cookie Values", "http.cookieValue",
+                                           "The values to cookies sent up in requests",
+                                           ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT,
+                                           (char *)NULL);
 
-    methodField = moloch_field_define("http", "termfield",
-        "http.method", "Request Method", "http.method",
-        "HTTP Request Method",
-        MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT,
-        (char *)NULL);
+    methodField = arkime_field_define("http", "termfield",
+                                      "http.method", "Request Method", "http.method",
+                                      "HTTP Request Method",
+                                      ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT,
+                                      (char *)NULL);
 
-    magicField = moloch_field_define("http", "termfield",
-        "http.bodymagic", "Body Magic", "http.bodyMagic",
-        "The content type of body determined by libfile/magic",
-        MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT,
-        (char *)NULL);
+    magicField = arkime_field_define("http", "termfield",
+                                     "http.bodymagic", "Body Magic", "http.bodyMagic",
+                                     "The content type of body determined by libfile/magic",
+                                     ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT,
+                                     (char *)NULL);
 
-    userField = moloch_field_define("http", "termfield",
-        "http.user", "User", "http.user",
-        "HTTP Auth User",
-        MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT,
-        "category", "user",
-        (char *)NULL);
+    userField = arkime_field_define("http", "termfield",
+                                    "http.user", "User", "http.user",
+                                    "HTTP Auth User",
+                                    ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT,
+                                    "category", "user",
+                                    (char *)NULL);
 
-    atField = moloch_field_define("http", "lotermfield",
-        "http.authtype", "Auth Type", "http.authType",
-        "HTTP Auth Type",
-        MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT,
-        (char *)NULL);
+    atField = arkime_field_define("http", "lotermfield",
+                                  "http.authtype", "Auth Type", "http.authType",
+                                  "HTTP Auth Type",
+                                  ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT,
+                                  (char *)NULL);
 
-    statuscodeField = moloch_field_define("http", "integer",
-        "http.statuscode", "Status Code", "http.statuscode",
-        "Response HTTP numeric status code",
-        MOLOCH_FIELD_TYPE_INT_GHASH,  MOLOCH_FIELD_FLAG_CNT,
-        (char *)NULL);
+    statuscodeField = arkime_field_define("http", "integer",
+                                          "http.statuscode", "Status Code", "http.statuscode",
+                                          "Response HTTP numeric status code",
+                                          ARKIME_FIELD_TYPE_INT_GHASH,  ARKIME_FIELD_FLAG_CNT,
+                                          (char *)NULL);
 
-    reqBodyField = moloch_field_define("http", "termfield",
-        "http.reqbody", "Request Body", "http.requestBody",
-        "HTTP Request Body",
-        MOLOCH_FIELD_TYPE_STR_HASH, 0,
-        (char *)NULL);
+    reqBodyField = arkime_field_define("http", "termfield",
+                                       "http.reqbody", "Request Body", "http.requestBody",
+                                       "HTTP Request Body",
+                                       ARKIME_FIELD_TYPE_STR_HASH, 0,
+                                       (char *)NULL);
 
-    HASH_INIT(s_, httpReqHeaders, moloch_string_hash, moloch_string_cmp);
-    HASH_INIT(s_, httpResHeaders, moloch_string_hash, moloch_string_cmp);
+    HASH_INIT(s_, httpReqHeaders, arkime_string_hash, arkime_string_cmp);
+    HASH_INIT(s_, httpResHeaders, arkime_string_hash, arkime_string_cmp);
 
-    moloch_config_add_header(&httpReqHeaders, "x-forwarded-for", xffField);
-    moloch_config_add_header(&httpReqHeaders, "user-agent", uaField);
-    moloch_config_add_header(&httpReqHeaders, "host", hostField);
-    moloch_config_load_header("headers-http-request", "http", "Request header ", "http.", "http.request.", "http.request-", &httpReqHeaders, 0);
-    moloch_config_load_header("headers-http-response", "http", "Response header ", "http.", "http.response.", "http.response-", &httpResHeaders, 0);
+    arkime_config_add_header(&httpReqHeaders, "x-forwarded-for", xffField);
+    arkime_config_add_header(&httpReqHeaders, "user-agent", uaField);
+    arkime_config_add_header(&httpReqHeaders, "host", hostField);
+    arkime_config_load_header("headers-http-request", "http", "Request header ", "http.request.", "http.", "http.request-", &httpReqHeaders, 0);
+    arkime_config_load_header("headers-http-response", "http", "Response header ", "http.response.", "http.", "http.response-", &httpResHeaders, 0);
 
     int i;
     for (i = 0; method_strings[i]; i++) {
-        moloch_parsers_classifier_register_tcp("http", NULL, 0, (unsigned char*)method_strings[i], strlen(method_strings[i]), http_classify);
+        arkime_parsers_classifier_register_tcp("http", NULL, 0, (uint8_t *)method_strings[i], strlen(method_strings[i]), http_classify);
     }
 
-    moloch_parsers_classifier_register_tcp("http", NULL, 0, (unsigned char*)"HTTP", 4, http_classify);
+    arkime_parsers_classifier_register_tcp("http", NULL, 0, (uint8_t *)"HTTP", 4, http_classify);
 
     memset(&parserSettings, 0, sizeof(parserSettings));
-    parserSettings.on_message_begin = moloch_hp_cb_on_message_begin;
-    parserSettings.on_url = moloch_hp_cb_on_url;
-    parserSettings.on_body = moloch_hp_cb_on_body;
-    parserSettings.on_headers_complete = moloch_hp_cb_on_headers_complete;
-    parserSettings.on_message_complete = moloch_hp_cb_on_message_complete;
-    parserSettings.on_header_field = moloch_hp_cb_on_header_field;
-    parserSettings.on_header_value = moloch_hp_cb_on_header_value;
+    parserSettings.on_message_begin = arkime_hp_cb_on_message_begin;
+    parserSettings.on_url = arkime_hp_cb_on_url;
+    parserSettings.on_body = arkime_hp_cb_on_body;
+    parserSettings.on_headers_complete = arkime_hp_cb_on_headers_complete;
+    parserSettings.on_message_complete = arkime_hp_cb_on_message_complete;
+    parserSettings.on_header_field = arkime_hp_cb_on_header_field;
+    parserSettings.on_header_value = arkime_hp_cb_on_header_value;
 
-    parseHTTPHeaderValueMaxLen = moloch_config_int(NULL, "parseHTTPHeaderValueMaxLen", 1024, 1, 2048);
+    parseHTTPHeaderValueMaxLen = arkime_config_int(NULL, "parseHTTPHeaderValueMaxLen", 1024, 1, 2048);
 }

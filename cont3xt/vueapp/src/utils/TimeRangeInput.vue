@@ -1,3 +1,7 @@
+<!--
+Copyright Yahoo Inc.
+SPDX-License-Identifier: Apache-2.0
+-->
 <template>
   <b-form inline class="d-flex align-items-center">
     <b-input-group
@@ -32,7 +36,7 @@
         class="mr-2">
       <template #prepend>
         <b-input-group-text>
-          Stop
+          End
         </b-input-group-text>
       </template>
       <b-form-input
@@ -46,11 +50,13 @@
           @change="updateStopStart('stopDate')"
       />
     </b-input-group>
-    <span class="fa fa-lg fa-question-circle cursor-help mt-1"
-          v-b-tooltip.hover.html="placeHolderTip"
-    />
-    <span class="pl-2">
-      {{ timeRangeInfo.numDays }} days | {{ timeRangeInfo.numHours }} hours
+    <span class="text-nowrap">
+      <span class="fa fa-lg fa-question-circle cursor-help mt-1"
+            v-b-tooltip.hover.html="placeHolderTip"
+      />
+      <span class="pl-1">
+        {{ timeRangeInfo.numDays }} days | {{ timeRangeInfo.numHours }} hours
+      </span>
     </span>
   </b-form>
 </template>
@@ -81,7 +87,7 @@ export default {
     },
     inputWidth: {
       type: String,
-      default: '152px'
+      default: '146px'
     }
   },
   data () {

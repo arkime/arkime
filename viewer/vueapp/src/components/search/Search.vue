@@ -1,3 +1,7 @@
+<!--
+Copyright Yahoo Inc.
+SPDX-License-Identifier: Apache-2.0
+-->
 <template>
 
   <form class="position-relative">
@@ -93,7 +97,7 @@
           <span class="fa fa-fw fa-trash-o"></span>&nbsp;
           Remove Data
         </b-dropdown-item>
-        <b-dropdown-item v-for="(cluster, key) in molochClusters"
+        <b-dropdown-item v-for="(cluster, key) in arkimeClusters"
           :key="key"
           @click="sendSession(key)"
           :title="`Send to ${cluster.name}`">
@@ -200,60 +204,7 @@
         </b-dropdown-item>
       </b-dropdown> <!-- /views dropdown menu -->
 
-      <!-- ES cluster dropdown menu -->
-      <b-dropdown v-if="multiviewer"
-        right
-        size="sm"
-        class="multies-menu-dropdown pull-right ml-1"
-        no-caret
-        toggle-class="rounded"
-        variant="theme-secondary"
-        @show="esVisMenuOpen = true"
-        @hide="esVisMenuOpen = false">
-        <template slot="button-content">
-          <div v-b-tooltip.hover.left :title="esMenuHoverText">
-            <span class="fa fa-database"> </span>
-            <span> {{ selectedCluster.length }} </span>
-          </div>
-        </template>
-        <b-dropdown-header>
-          <input type="text"
-            v-model="esQuery"
-            class="form-control form-control-sm dropdown-typeahead"
-            placeholder="Search for Clusters..."
-          />
-        </b-dropdown-header>
-        <b-dropdown-divider>
-        </b-dropdown-divider>
-         <b-dropdown-item @click.native.capture.stop.prevent="selectAllCluster">
-          <span class="fa fa-list"></span>&nbsp;
-          Select All
-        </b-dropdown-item>
-        <b-dropdown-item @click.native.capture.stop.prevent="clearAllCluster">
-          <span class="fa fa-eraser"></span>&nbsp;
-          Clear All
-        </b-dropdown-item>
-        <b-dropdown-divider>
-        </b-dropdown-divider>
-        <template v-if="esVisMenuOpen">
-          <template v-for="(clusters, group) in filteredClusteres">
-            <b-dropdown-header
-              :key="group"
-              class="group-header">
-              {{ group + ' (' + clusters.length + ')' }}
-            </b-dropdown-header>
-            <template v-for="cluster in clusters">
-              <b-dropdown-item
-                :id="group + cluster + 'item'"
-                :key="group + cluster + 'item'"
-                :class="{'active':isClusterVis(cluster)}"
-                @click.native.capture.stop.prevent="toggleClusterSelection(cluster)">
-                {{ cluster }}
-              </b-dropdown-item>
-            </template>
-          </template>
-        </template>
-      </b-dropdown> <!-- /Es cluster dropdown menu -->
+      <Clusters /> <!-- cluster dropdown menu -->
 
       <!-- search button -->
       <a class="btn btn-sm btn-theme-tertiary pull-right ml-1 search-btn"
@@ -279,19 +230,19 @@
       </expression-typeahead> <!-- /search box typeahead -->
 
       <!-- time inputs -->
-      <moloch-time
+      <arkime-time
         :timezone="user.settings.timezone"
         @timeChange="timeChange"
         :hide-interval="hideInterval"
         :updateTime="updateTime">
-      </moloch-time> <!-- /time inputs -->
+      </arkime-time> <!-- /time inputs -->
 
       <!-- form message -->
       <div class="small mt-1">
-        <moloch-toast :message="message"
+        <arkime-toast :message="message"
           :type="messageType"
           :done="messageDone">
-        </moloch-toast>
+        </arkime-toast>
       </div> <!-- /form message -->
 
       <div v-if="actionForm">
@@ -330,13 +281,13 @@
           </div>
           <!-- actions menu forms -->
           <div :class="{'col-md-9':showApplyButtons,'col-md-12':!showApplyButtons}">
-            <moloch-modify-view v-if="actionForm === 'modify:view'"
+            <arkime-modify-view v-if="actionForm === 'modify:view'"
               :done="actionFormDone"
               :editView="editableView"
               :initialExpression="expression"
               @setView="setView">
-            </moloch-modify-view>
-            <moloch-tag-sessions v-else-if="actionForm === 'add:tags' || actionForm === 'remove:tags'"
+            </arkime-modify-view>
+            <arkime-tag-sessions v-else-if="actionForm === 'add:tags' || actionForm === 'remove:tags'"
               :add="actionForm === 'add:tags'"
               :start="start"
               :done="actionFormDone"
@@ -344,16 +295,16 @@
               :num-visible="numVisibleSessions"
               :num-matching="numMatchingSessions"
               :apply-to="actionFormItemRadio">
-            </moloch-tag-sessions>
-            <moloch-remove-data v-else-if="actionForm === 'remove:data'"
+            </arkime-tag-sessions>
+            <arkime-remove-data v-else-if="actionForm === 'remove:data'"
               :start="start"
               :done="actionFormDone"
               :sessions="openSessions"
               :num-visible="numVisibleSessions"
               :num-matching="numMatchingSessions"
               :apply-to="actionFormItemRadio">
-            </moloch-remove-data>
-            <moloch-send-sessions v-else-if="actionForm === 'send:session'"
+            </arkime-remove-data>
+            <arkime-send-sessions v-else-if="actionForm === 'send:session'"
               :start="start"
               :cluster="cluster"
               :done="actionFormDone"
@@ -361,16 +312,16 @@
               :num-visible="numVisibleSessions"
               :num-matching="numMatchingSessions"
               :apply-to="actionFormItemRadio">
-            </moloch-send-sessions>
-            <moloch-export-pcap v-else-if="actionForm === 'export:pcap'"
+            </arkime-send-sessions>
+            <arkime-export-pcap v-else-if="actionForm === 'export:pcap'"
               :start="start"
               :done="actionFormDone"
               :sessions="openSessions"
               :num-visible="numVisibleSessions"
               :num-matching="numMatchingSessions"
               :apply-to="actionFormItemRadio">
-            </moloch-export-pcap>
-            <moloch-export-csv v-else-if="actionForm === 'export:csv'"
+            </arkime-export-pcap>
+            <arkime-export-csv v-else-if="actionForm === 'export:csv'"
               :start="start"
               :fields="fields"
               :done="actionFormDone"
@@ -378,11 +329,11 @@
               :num-visible="numVisibleSessions"
               :num-matching="numMatchingSessions"
               :apply-to="actionFormItemRadio">
-            </moloch-export-csv>
-            <moloch-intersection v-else-if="actionForm === 'view:intersection'"
+            </arkime-export-csv>
+            <arkime-intersection v-else-if="actionForm === 'view:intersection'"
               :done="actionFormDone"
               :fields="fields">
-            </moloch-intersection>
+            </arkime-intersection>
           </div> <!-- /actions menu forms -->
         </div>
       </div>
@@ -395,29 +346,31 @@
 <script>
 import SettingsService from '../settings/SettingsService';
 import ExpressionTypeahead from './ExpressionTypeahead';
-import MolochTime from './Time';
-import MolochToast from '../utils/Toast';
-import MolochModifyView from '../sessions/ModifyView';
-import MolochTagSessions from '../sessions/Tags';
-import MolochRemoveData from '../sessions/Remove';
-import MolochSendSessions from '../sessions/Send';
-import MolochExportPcap from '../sessions/ExportPcap';
-import MolochExportCsv from '../sessions/ExportCsv';
-import MolochIntersection from '../sessions/Intersection';
+import ArkimeTime from './Time';
+import ArkimeToast from '../utils/Toast';
+import ArkimeModifyView from '../sessions/ModifyView';
+import ArkimeTagSessions from '../sessions/Tags';
+import ArkimeRemoveData from '../sessions/Remove';
+import ArkimeSendSessions from '../sessions/Send';
+import ArkimeExportPcap from '../sessions/ExportPcap';
+import ArkimeExportCsv from '../sessions/ExportCsv';
+import ArkimeIntersection from '../sessions/Intersection';
+import Clusters from '../utils/Clusters';
 
 export default {
-  name: 'MolochSearch',
+  name: 'ArkimeSearch',
   components: {
     ExpressionTypeahead,
-    MolochTime,
-    MolochToast,
-    MolochModifyView,
-    MolochTagSessions,
-    MolochRemoveData,
-    MolochSendSessions,
-    MolochExportPcap,
-    MolochExportCsv,
-    MolochIntersection
+    ArkimeTime,
+    ArkimeToast,
+    ArkimeModifyView,
+    ArkimeTagSessions,
+    ArkimeRemoveData,
+    ArkimeSendSessions,
+    ArkimeExportPcap,
+    ArkimeExportCsv,
+    ArkimeIntersection,
+    Clusters
   },
   props: [
     'openSessions',
@@ -439,14 +392,12 @@ export default {
       actionForm: undefined,
       showApplyButtons: false,
       cluster: {},
-      esVisMenuOpen: false,
-      esQuery: '', // query for ES to toggle visibility
       view: this.$route.query.view,
       message: undefined,
       messageType: undefined,
       updateTime: false,
       editableView: undefined, // Not necessarily active view
-      multiviewer: this.$constants.MOLOCH_MULTIVIEWER,
+      multiviewer: this.$constants.MULTIVIEWER,
       basePath: undefined
     };
   },
@@ -476,42 +427,7 @@ export default {
     user: function () {
       return this.$store.state.user;
     },
-    esMenuHoverText: function () {
-      if (this.selectedCluster.length === 0) {
-        return 'No Selection';
-      } else if (this.selectedCluster.length === 1) {
-        return this.selectedCluster[0];
-      } else {
-        return this.selectedCluster.length + ' out of ' + this.availableCluster.active.length + ' selected';
-      }
-    },
-    availableCluster: {
-      get: function () {
-        return this.$store.state.esCluster.availableCluster;
-      },
-      set: function (newValue) {
-        this.$store.commit('setAvailableCluster', newValue);
-      }
-    },
-    selectedCluster: {
-      get: function () {
-        return this.$store.state.esCluster.selectedCluster || [];
-      },
-      set: function (newValue) {
-        this.$store.commit('setSelectedCluster', newValue);
-      }
-    },
-    filteredClusteres: function () {
-      const filteredGroupedClusters = {};
-      for (const group in this.availableCluster) {
-        filteredGroupedClusters[group] = this.$options.filters.searchCluster(
-          this.esQuery,
-          this.availableCluster[group]
-        );
-      }
-      return filteredGroupedClusters;
-    },
-    molochClusters: function () {
+    arkimeClusters: function () {
       return this.$store.state.remoteclusters;
     },
     openItemsTooltip: function () {
@@ -557,20 +473,6 @@ export default {
     }
   },
   created: function () {
-    if (this.multiviewer) { // set clusters to search if in multiviewer mode
-      const clusters = this.$route.query.cluster ? this.$route.query.cluster.split(',') : [];
-      if (clusters.length === 0) {
-        this.selectedCluster = this.availableCluster.active;
-      } else {
-        this.selectedCluster = [];
-        for (let i = 0; i < clusters.length; i++) {
-          if (this.availableCluster.active.includes(clusters[i])) {
-            this.selectedCluster.push(clusters[i]);
-          }
-        }
-      }
-    }
-
     this.basePath = this.$route.path.split('/')[1];
 
     this.stickyViz = localStorage && localStorage[`${this.basePath}-sticky-viz`] &&
@@ -772,25 +674,6 @@ export default {
         }
       }, 500);
     },
-    /* MultiES functions ------------------------------------------ */
-    isClusterVis: function (cluster) {
-      if (this.availableCluster.active.includes(cluster)) { // found in active cluster list
-        return this.selectedCluster.includes(cluster); // returns True if found in selected cluster list
-      } else { // inactive cluster
-        return false;
-      }
-    },
-    updateRouteQueryForClusters: function (clusters) {
-      const cluster = clusters.length > 0 ? clusters.join(',') : 'none';
-      if (!this.$route.query.cluster || this.$route.query.cluster !== cluster) {
-        this.$router.push({
-          query: {
-            ...this.$route.query,
-            cluster
-          }
-        });
-      }
-    },
     /**
      * If the start/stop time has changed:
      * Applies the date start/stop time url parameters and removes the date url parameter
@@ -849,24 +732,6 @@ export default {
       } else {
         this.$emit('changeSearch');
       }
-    },
-    selectAllCluster: function () {
-      this.selectedCluster = this.availableCluster.active;
-      this.updateRouteQueryForClusters(this.selectedCluster);
-    },
-    clearAllCluster: function () {
-      this.selectedCluster = [];
-      this.updateRouteQueryForClusters(this.selectedCluster);
-    },
-    toggleClusterSelection: function (cluster) {
-      if (this.selectedCluster.includes(cluster)) { // already selected; remove from selection
-        this.selectedCluster = this.selectedCluster.filter((item) => {
-          return item !== cluster;
-        });
-      } else if (!this.availableCluster.inactive.includes(cluster)) { // not in inactive cluster
-        this.selectedCluster.push(cluster); // add to selected list
-      }
-      this.updateRouteQueryForClusters(this.selectedCluster);
     }
   }
 };

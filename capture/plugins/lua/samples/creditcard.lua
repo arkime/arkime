@@ -30,7 +30,7 @@ function cc_http_body(session, data)
     if matched then
         match = match:gsub("[ -]", "")
 	if luhn_checksum(match) then
-	    local dmatch = MolochData.new(match);
+	    local dmatch = ArkimeData.new(match);
 	    if dmatch:pcre_ismatch(fullCreditCard) then
                 local t = session:table()
                 if (t.cccount == nil) then
@@ -50,7 +50,7 @@ end
 
 -- From http://www.regular-expressions.info/creditcard.html
 -- [[ ]] means ignore escapes in lua
-fullCreditCard = MolochData.pcre_create([[^(?:4[0-9]{12}(?:[0-9]{3})?(?#Visa
+fullCreditCard = ArkimeData.pcre_create([[^(?:4[0-9]{12}(?:[0-9]{3})?(?#Visa
 )|5[1-5][0-9]{14}(?#MasterCard
 )|3[47][0-9]{13}(?#American Express
 )|3(?:0[0-5]|[68][0-9])[0-9]{11}(?#Diners Club
@@ -58,6 +58,6 @@ fullCreditCard = MolochData.pcre_create([[^(?:4[0-9]{12}(?:[0-9]{3})?(?#Visa
 )|(?:2131|1800|35\d{3})\d{11}(?#JCB
 ))$]])
 
-fastCreditCard = MolochData.pcre_create([[\b(?:\d[ -]*?){13,16}\b]])
-MolochSession.register_body_feed("http", "cc_http_body")
+fastCreditCard = ArkimeData.pcre_create([[\b(?:\d[ -]*?){13,16}\b]])
+ArkimeSession.register_body_feed("http", "cc_http_body")
 

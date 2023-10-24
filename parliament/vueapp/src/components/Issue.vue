@@ -1,9 +1,13 @@
+<!--
+Copyright Yahoo Inc.
+SPDX-License-Identifier: Apache-2.0
+-->
 <template>
 
   <div class="alert alert-sm"
     :class="{'alert-warning':issue.severity==='yellow','alert-danger':issue.severity==='red'}">
     <issue-actions
-      v-if="isUser && loggedIn"
+      v-if="isUser"
       class="issue-btns"
       :issue="issue"
       :groupId="groupId"
@@ -34,18 +38,17 @@ export default {
       required: true
     },
     groupId: {
-      type: Number,
+      type: String,
       required: true
     },
     clusterId: {
-      type: Number,
+      type: String,
       required: true
     },
     index: {
       type: Number,
       required: true
-    },
-    loggedIn: Boolean
+    }
   },
   computed: {
     isUser () {

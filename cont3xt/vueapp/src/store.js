@@ -2,7 +2,7 @@ import Vue from 'vue';
 import Vuex from 'vuex';
 import createPersistedState from 'vuex-persistedstate';
 import { iTypes, iTypeIndexMap } from '@/utils/iTypes';
-import { indicatorId } from '@/utils/cont3xtUtil';
+import { indicatorFromId, localIndicatorId } from '@/utils/cont3xtUtil';
 
 Vue.use(Vuex);
 
@@ -44,6 +44,7 @@ const store = new Vuex.Store({
     toggleCache: false,
     downloadReport: false,
     copyShareLink: false,
+    toggleIntegrationPanel: false,
     immediateSubmissionReady: false,
     theme: undefined,
     tags: [],
@@ -55,14 +56,22 @@ const store = new Vuex.Store({
     overviewsError: '',
     selectedOverviewIdMap: {},
     queuedIntegration: undefined,
-    activeIndicator: undefined,
+    activeIndicatorId: undefined,
     activeSource: undefined,
     /** @type {{ [itype: string]: { [query: string]: { [integrationName: string]: object } } }} */
     results: {}, // results[<itype>][<query>][<integration_name>] yields the data for an integration
     /** @type {{ [indicatorId: string]: Cont3xtIndicatorNode }} */
     indicatorGraph: {}, // maps every `${query}-${itype}` to its corresponding indicator node
     /** @type {{ [indicatorId: string]: object }} */
-    enhanceInfoTable: {} // maps every `${query}-${itype}` to any enhancement info it may have
+    enhanceInfoTable: {}, // maps every `${query}-${itype}` to any enhancement info it may have
+    linkGroupsPanelOpen: true,
+    indicatorIdToFocus: undefined,
+    /** @type {'down' | 'up' | 'left' | 'right' | undefined} */
+    resultTreeNavigationDirection: undefined,
+    /** @type {{ [indicatorId: string]: boolean }} */
+    collapsedIndicatorNodeMap: {},
+    /** @type {{ setRootsOpen: boolean } | undefined} */
+    collapseOrExpandIndicatorRoots: undefined
   },
   mutations: {
     SET_USER (state, data) {
@@ -230,6 +239,10 @@ const store = new Vuex.Store({
       state.copyShareLink = value;
       setTimeout(() => { state.copyShareLink = false; });
     },
+    SET_TOGGLE_INTEGRATION_PANEL (state, value) {
+      state.toggleIntegrationPanel = value;
+      setTimeout(() => { state.toggleIntegrationPanel = false; });
+    },
     SET_IMMEDIATE_SUBMISSION_READY (state, value) {
       state.immediateSubmissionReady = value;
     },
@@ -287,8 +300,8 @@ const store = new Vuex.Store({
 
       Vue.set(state.results[itype][query], source, Object.freeze(result));
     },
-    SET_ACTIVE_INDICATOR (state, data) {
-      state.activeIndicator = data;
+    SET_ACTIVE_INDICATOR_ID (state, data) {
+      state.activeIndicatorId = data;
     },
     SET_QUEUED_INTEGRATION (state, data) {
       state.queuedIntegration = data;
@@ -297,7 +310,7 @@ const store = new Vuex.Store({
       state.activeSource = data;
     },
     ADD_ENHANCE_INFO (state, { indicator, enhanceInfo }) {
-      const id = indicatorId(indicator);
+      const id = localIndicatorId(indicator);
 
       if (!state.enhanceInfoTable[id]) {
         Vue.set(state.enhanceInfoTable, id, {});
@@ -307,10 +320,10 @@ const store = new Vuex.Store({
       }
     },
     UPDATE_INDICATOR_GRAPH (state, { indicator, parentIndicator }) {
-      const id = indicatorId(indicator);
+      const id = localIndicatorId(indicator);
 
       // a parentId of undefined means that the indicator is root-level
-      const parentId = parentIndicator ? indicatorId(parentIndicator) : undefined;
+      const parentId = parentIndicator ? localIndicatorId(parentIndicator) : undefined;
       if (!state.indicatorGraph[id]) {
         if (!state.enhanceInfoTable[id]) {
           Vue.set(state.enhanceInfoTable, id, {});
@@ -330,7 +343,7 @@ const store = new Vuex.Store({
 
       // handle case where parent already exists in the tree
       if (parentId && state.indicatorGraph[parentId]) {
-        const alreadyAChild = state.indicatorGraph[parentId].children.some(child => indicatorId(child.indicator) === id);
+        const alreadyAChild = state.indicatorGraph[parentId].children.some(child => localIndicatorId(child.indicator) === id);
         if (!alreadyAChild) {
           state.indicatorGraph[parentId].children.push(state.indicatorGraph[id]);
         }
@@ -340,6 +353,25 @@ const store = new Vuex.Store({
       state.results = {};
       state.indicatorGraph = {};
       state.enhanceInfoTable = {};
+      state.collapsedIndicatorNodeMap = {};
+    },
+    TOGGLE_LINK_GROUPS_PANEL (state) {
+      state.linkGroupsPanelOpen = !state.linkGroupsPanelOpen;
+    },
+    TOGGLE_INDICATOR_NODE_COLLAPSE (state, data) {
+      Vue.set(state.collapsedIndicatorNodeMap, data, !state.collapsedIndicatorNodeMap[data]);
+    },
+    SET_INDICATOR_ID_TO_FOCUS (state, data) {
+      state.indicatorIdToFocus = data;
+      setTimeout(() => { state.indicatorIdToFocus = undefined; });
+    },
+    SET_RESULT_TREE_NAVIGATION_DIRECTION (state, data) {
+      state.resultTreeNavigationDirection = data;
+      setTimeout(() => { state.resultTreeNavigationDirection = undefined; });
+    },
+    SET_COLLAPSE_OR_EXPAND_INDICATOR_ROOTS (state, data) {
+      state.collapseOrExpandIndicatorRoots = data;
+      setTimeout(() => { state.collapseOrExpandIndicatorRoots = undefined; });
     }
   },
   getters: {
@@ -444,6 +476,9 @@ const store = new Vuex.Store({
     getCopyShareLink (state) {
       return state.copyShareLink;
     },
+    getToggleIntegrationPanel (state) {
+      return state.toggleIntegrationPanel;
+    },
     getImmediateSubmissionReady (state) {
       return state.immediateSubmissionReady;
     },
@@ -532,8 +567,11 @@ const store = new Vuex.Store({
     getResults (state) {
       return state.results;
     },
+    getActiveIndicatorId (state) {
+      return state.activeIndicatorId;
+    },
     getActiveIndicator (state) {
-      return state.activeIndicator;
+      return (state.activeIndicatorId != null) ? indicatorFromId(state.activeIndicatorId) : undefined;
     },
     getQueuedIntegration (state) {
       return state.queuedIntegration;
@@ -543,11 +581,26 @@ const store = new Vuex.Store({
     },
     getIndicatorGraph (state) {
       return state.indicatorGraph;
+    },
+    getLinkGroupsPanelOpen (state) {
+      return state.linkGroupsPanelOpen;
+    },
+    getIndicatorIdToFocus (state) {
+      return state.indicatorIdToFocus;
+    },
+    getResultTreeNavigationDirection (state) {
+      return state.resultTreeNavigationDirection;
+    },
+    getCollapsedIndicatorNodeMap (state) {
+      return state.collapsedIndicatorNodeMap;
+    },
+    getCollapseOrExpandIndicatorRoots (state) {
+      return state.collapseOrExpandIndicatorRoots;
     }
   },
   plugins: [createPersistedState({
     paths: [ // only these state variables are persisted to localstorage
-      'checkedLinks', 'selectedIntegrations', 'sidebarKeepOpen',
+      'checkedLinks', 'selectedIntegrations', 'sidebarKeepOpen', 'linkGroupsPanelOpen',
       'collapsedLinkGroups', 'integrationsPanelHoverDelay', 'theme'
     ]
   })]

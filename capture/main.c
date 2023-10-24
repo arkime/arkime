@@ -2,20 +2,10 @@
  *
  * Copyright 2012-2017 AOL Inc. All rights reserved.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this Software except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: Apache-2.0
  */
 
-#include "moloch.h"
+#include "arkime.h"
 #include <pwd.h>
 #include <grp.h>
 #include <errno.h>
@@ -32,20 +22,21 @@
 #ifndef BUILD_VERSION
 #define BUILD_VERSION "unkn"
 #endif
+#include "nghttp2/nghttp2.h"
 
 /******************************************************************************/
-MolochConfig_t         config;
+ArkimeConfig_t         config;
 extern void           *esServer;
 GMainLoop             *mainLoop;
-char                  *moloch_char_to_hex = "0123456789abcdef"; /* don't change case */
-unsigned char          moloch_char_to_hexstr[256][3];
-unsigned char          moloch_hex_to_char[256][256];
+char                  *arkime_char_to_hex = "0123456789abcdef"; /* don't change case */
+uint8_t                arkime_char_to_hexstr[256][3];
+uint8_t                arkime_hex_to_char[256][256];
 uint32_t               hashSalt;
 
-extern MolochWriterQueueLength moloch_writer_queue_length;
-extern MolochPcapFileHdr_t     pcapFileHeader;
+extern ArkimeWriterQueueLength arkime_writer_queue_length;
+extern ArkimePcapFileHdr_t     pcapFileHeader;
 
-MOLOCH_LOCK_DEFINE(LOG);
+ARKIME_LOCK_DEFINE(LOG);
 
 /******************************************************************************/
 LOCAL  gboolean showVersion    = FALSE;
@@ -57,12 +48,12 @@ typedef struct {
     void              *ptr;
     GDestroyNotify     cb;
     uint32_t           sec;
-} MolochFreeLater_t;
-MolochFreeLater_t  freeLaterList[FREE_LATER_SIZE];
-MOLOCH_LOCK_DEFINE(freeLaterList);
+} ArkimeFreeLater_t;
+ArkimeFreeLater_t  freeLaterList[FREE_LATER_SIZE];
+ARKIME_LOCK_DEFINE(freeLaterList);
 
 /******************************************************************************/
-gboolean moloch_debug_flag()
+gboolean arkime_debug_flag()
 {
     config.debug++;
     config.quiet = 0;
@@ -70,7 +61,7 @@ gboolean moloch_debug_flag()
 }
 
 /******************************************************************************/
-gboolean moloch_cmdline_option(const gchar *option_name, const gchar *input, gpointer UNUSED(data), GError **UNUSED(error))
+gboolean arkime_cmdline_option(const gchar *option_name, const gchar *input, gpointer UNUSED(data), GError **UNUSED(error))
 {
     char *equal = strchr(input, '=');
     if (!equal)
@@ -94,7 +85,7 @@ LOCAL  GOptionEntry entries[] =
     { "pcapfile",  'r',                    0, G_OPTION_ARG_FILENAME_ARRAY, &config.pcapReadFiles, "Offline pcap file", NULL },
     { "pcapdir",   'R',                    0, G_OPTION_ARG_FILENAME_ARRAY, &config.pcapReadDirs,  "Offline pcap directory, all *.pcap files will be processed", NULL },
     { "monitor",   'm',                    0, G_OPTION_ARG_NONE,           &config.pcapMonitor,   "Used with -R option monitors the directory for closed files", NULL },
-    { "packetcnt",   0,                    0, G_OPTION_ARG_INT,            &config.pktsToRead,    "Number of packets to read from each offline file", NULL},
+    { "packetcnt",   0,                    0, G_OPTION_ARG_INT,            &config.pktsToRead,    "Number of packets to read from each offline file", NULL },
     { "delete",      0,                    0, G_OPTION_ARG_NONE,           &config.pcapDelete,    "In offline mode delete files once processed, requires --copy", NULL },
     { "skip",      's',                    0, G_OPTION_ARG_NONE,           &config.pcapSkip,      "Used with -R option and without --copy, skip files already processed", NULL },
     { "reprocess",   0,                    0, G_OPTION_ARG_NONE,           &config.pcapReprocess, "In offline mode reprocess files, use the same files table entry", NULL },
@@ -105,9 +96,9 @@ LOCAL  GOptionEntry entries[] =
     { "tags",        0, G_OPTION_FLAG_HIDDEN, G_OPTION_ARG_STRING_ARRAY,   &config.extraTags,     "Extra tag to add to all packets, can be used multiple times", NULL },
     { "filelist",  'F',                    0, G_OPTION_ARG_STRING_ARRAY,   &config.pcapFileLists, "File that has a list of pcap file names, 1 per line", NULL },
     { "op",          0,                    0, G_OPTION_ARG_STRING_ARRAY,   &config.extraOps,      "FieldExpr=Value to set on all session, can be used multiple times", NULL},
-    { "option",    'o',                    0, G_OPTION_ARG_CALLBACK,       moloch_cmdline_option, "Key=Value to override config.ini", NULL},
+    { "option",    'o',                    0, G_OPTION_ARG_CALLBACK,       arkime_cmdline_option, "Key=Value to override config.ini", NULL },
     { "version",   'v',                    0, G_OPTION_ARG_NONE,           &showVersion,          "Show version number", NULL },
-    { "debug",     'd', G_OPTION_FLAG_NO_ARG, G_OPTION_ARG_CALLBACK,       moloch_debug_flag,     "Turn on all debugging", NULL },
+    { "debug",     'd', G_OPTION_FLAG_NO_ARG, G_OPTION_ARG_CALLBACK,       arkime_debug_flag,     "Turn on all debugging", NULL },
     { "quiet",     'q',                    0, G_OPTION_ARG_NONE,           &config.quiet,         "Turn off regular logging", NULL },
     { "copy",        0,                    0, G_OPTION_ARG_NONE,           &config.copyPcap,      "When in offline mode copy the pcap files into the pcapDir from the config file", NULL },
     { "dryrun",      0,                    0, G_OPTION_ARG_NONE,           &config.dryRun,        "dry run, nothing written to databases or filesystem", NULL },
@@ -117,7 +108,9 @@ LOCAL  GOptionEntry entries[] =
     { "nostats",     0, G_OPTION_FLAG_HIDDEN, G_OPTION_ARG_NONE,           &config.noStats,       "Don't send node stats", NULL },
     { "insecure",    0,                    0, G_OPTION_ARG_NONE,           &config.insecure,      "Disable certificate verification for https calls", NULL },
     { "nolockpcap",  0,                    0, G_OPTION_ARG_NONE,           &config.noLockPcap,    "Don't lock offline pcap files (ie., allow deletion)", NULL },
-    { "ignoreerrors",0, G_OPTION_FLAG_HIDDEN, G_OPTION_ARG_NONE,           &config.ignoreErrors,  "Ignore most errors and continue", NULL },
+    { "ignoreerrors", 0, G_OPTION_FLAG_HIDDEN, G_OPTION_ARG_NONE,           &config.ignoreErrors,  "Ignore most errors and continue", NULL },
+    { "dumpConfig",  0, G_OPTION_FLAG_HIDDEN, G_OPTION_ARG_NONE,           &config.dumpConfig,    "Display the config.", NULL },
+    { "regressionTests",  0, G_OPTION_FLAG_HIDDEN, G_OPTION_ARG_NONE,      &config.regressionTests, "Regression Tests", NULL },
     { NULL,          0, 0,                                    0,           NULL, NULL, NULL }
 };
 
@@ -151,7 +144,6 @@ void parse_args(int argc, char **argv)
     extern const char *zlibVersion(void);
     extern const char *yaml_get_version_string(void);
     //extern int magic_version(void);
-    //extern const char *OpenSSL_version(int type);
 
     context = g_option_context_new ("- capture");
     g_option_context_add_main_entries (context, entries, NULL);
@@ -169,7 +161,7 @@ void parse_args(int argc, char **argv)
         config.configFile = g_strdup(CONFIG_PREFIX "/etc/config.ini");
 
     if (showVersion || config.debug) {
-        printf("arkime-capture %s/%s session size=%d packet size=%d api=%d\n", PACKAGE_VERSION, BUILD_VERSION, (int)sizeof(MolochSession_t), (int)sizeof(MolochPacket_t), MOLOCH_API_VERSION);
+        printf("arkime-capture %s/%s session size=%d packet size=%d api=%d\n", PACKAGE_VERSION, BUILD_VERSION, (int)sizeof(ArkimeSession_t), (int)sizeof(ArkimePacket_t), ARKIME_API_VERSION);
     }
 
     if (showVersion) {
@@ -181,13 +173,15 @@ void parse_args(int argc, char **argv)
         //printf("openssl: %s\n", OpenSSL_version(0));
         printf("pcre: %s\n", pcre_version());
         printf("yaml: %s\n", yaml_get_version_string());
-        printf("yara: %s\n", moloch_yara_version());
+        printf("yara: %s\n", arkime_yara_version());
         printf("zlib: %s\n", zlibVersion());
 #ifdef HAVE_ZSTD
         extern unsigned ZSTD_versionNumber(void);
         unsigned zver = ZSTD_versionNumber();
-        printf("zstd: %u.%u.%u\n", zver/(100*100), (zver/100)%100, zver%100);
+        printf("zstd: %u.%u.%u\n", zver / (100 * 100), (zver / 100) % 100, zver % 100);
 #endif
+        nghttp2_info *ngver = nghttp2_version(0);
+        printf("nghttp2: %s\n", ngver->version_str);
 
         exit(0);
     }
@@ -197,8 +191,8 @@ void parse_args(int argc, char **argv)
         glib_micro_version !=  GLIB_MICRO_VERSION) {
 
         LOG("WARNING - glib compiled %d.%d.%d vs linked %u.%u.%u",
-                GLIB_MAJOR_VERSION, GLIB_MINOR_VERSION, GLIB_MICRO_VERSION,
-                glib_major_version, glib_minor_version, glib_micro_version);
+            GLIB_MAJOR_VERSION, GLIB_MINOR_VERSION, GLIB_MICRO_VERSION,
+            glib_major_version, glib_minor_version, glib_micro_version);
     }
 
 
@@ -266,7 +260,7 @@ void parse_args(int argc, char **argv)
     }
 }
 /******************************************************************************/
-void moloch_free_later(void *ptr, GDestroyNotify cb)
+void arkime_free_later(void *ptr, GDestroyNotify cb)
 {
     if (!ptr)
         return;
@@ -274,7 +268,7 @@ void moloch_free_later(void *ptr, GDestroyNotify cb)
     struct timespec currentTime;
     clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &currentTime);
 
-    MOLOCH_LOCK(freeLaterList);
+    ARKIME_LOCK(freeLaterList);
     if ((freeLaterBack + 1) % FREE_LATER_SIZE == freeLaterFront) {
         freeLaterList[freeLaterFront].cb(freeLaterList[freeLaterFront].ptr);
         freeLaterFront = (freeLaterFront + 1) % FREE_LATER_SIZE;
@@ -284,41 +278,41 @@ void moloch_free_later(void *ptr, GDestroyNotify cb)
     freeLaterList[freeLaterBack].ptr = ptr;
     freeLaterList[freeLaterBack].cb  = cb;
     freeLaterBack = (freeLaterBack + 1) % FREE_LATER_SIZE;
-    MOLOCH_UNLOCK(freeLaterList);
+    ARKIME_UNLOCK(freeLaterList);
 }
 /******************************************************************************/
-LOCAL gboolean moloch_free_later_check (gpointer UNUSED(user_data))
+LOCAL gboolean arkime_free_later_check (gpointer UNUSED(user_data))
 {
     if (freeLaterFront == freeLaterBack)
         return TRUE;
 
     struct timespec currentTime;
     clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &currentTime);
-    MOLOCH_LOCK(freeLaterList);
+    ARKIME_LOCK(freeLaterList);
     while (freeLaterFront != freeLaterBack &&
            freeLaterList[freeLaterFront].sec < currentTime.tv_sec) {
         freeLaterList[freeLaterFront].cb(freeLaterList[freeLaterFront].ptr);
         freeLaterFront = (freeLaterFront + 1) % FREE_LATER_SIZE;
     }
-    MOLOCH_UNLOCK(freeLaterList);
+    ARKIME_UNLOCK(freeLaterList);
     return G_SOURCE_CONTINUE;
 }
 /******************************************************************************/
-LOCAL void moloch_free_later_init()
+LOCAL void arkime_free_later_init()
 {
-    g_timeout_add_seconds(1, moloch_free_later_check, 0);
+    g_timeout_add_seconds(1, arkime_free_later_check, 0);
 }
 
 /******************************************************************************/
-void *moloch_size_alloc(int size, int zero)
+void *arkime_size_alloc(int size, int zero)
 {
     size += 8;
-    void *mem = (zero?g_slice_alloc0(size):g_slice_alloc(size));
+    void *mem = (zero ? g_slice_alloc0(size) : g_slice_alloc(size));
     memcpy(mem, &size, 4);
     return (char *)mem + 8;
 }
 /******************************************************************************/
-int moloch_size_free(void *mem)
+int arkime_size_free(void *mem)
 {
     int size;
     mem = (char *)mem - 8;
@@ -332,39 +326,40 @@ void controlc(int UNUSED(sig))
 {
     LOG("Control-C");
     signal(SIGINT, exit); // Double Control-C quits right away
-    moloch_quit();
+    arkime_quit();
 }
 /******************************************************************************/
 void terminate(int UNUSED(sig))
 {
     LOG("Terminate");
-    moloch_quit();
+    arkime_quit();
 }
 /******************************************************************************/
 void reload(int UNUSED(sig))
 {
-    moloch_plugins_reload();
+    arkime_plugins_reload();
 }
 /******************************************************************************/
-uint32_t moloch_get_next_prime(uint32_t v)
+uint32_t arkime_get_next_prime(uint32_t v)
 {
     static uint32_t primes[] = {1009, 10007, 49999, 99991, 199799, 400009, 500009, 732209,
                                 1092757, 1299827, 1500007, 1987411, 2999999, 4000037,
                                 5000011, 6000011, 7000003, 8000009, 9000011, 10000019,
                                 11000027, 12000017, 13000027, 14000029, 15000017, 16000057,
                                 17000023, 18000041, 19000013, 20000003, 21000037, 22000001,
-                                0};
+                                0
+                               };
 
     int p;
     for (p = 0; primes[p]; p++) {
         if (primes[p] > v)
             return primes[p];
     }
-    return primes[p-1];
+    return primes[p - 1];
 }
 /******************************************************************************/
 //https://graphics.stanford.edu/~seander/bithacks.html#RoundUpPowerOf2
-uint32_t moloch_get_next_powerof2(uint32_t v)
+uint32_t arkime_get_next_powerof2(uint32_t v)
 {
     v--;
     v |= v >> 1;
@@ -376,11 +371,11 @@ uint32_t moloch_get_next_powerof2(uint32_t v)
     return v;
 }
 /******************************************************************************/
-unsigned char *moloch_js0n_get(unsigned char *data, uint32_t len, char *key, uint32_t *olen)
+uint8_t *arkime_js0n_get(uint8_t *data, uint32_t len, char *key, uint32_t *olen)
 {
     uint32_t key_len = strlen(key);
     int      i;
-    uint32_t out[4*100]; // Can have up to 100 elements at any level
+    uint32_t out[4 * 100]; // Can have up to 100 elements at any level
 
     *olen = 0;
     int rc;
@@ -390,39 +385,39 @@ unsigned char *moloch_js0n_get(unsigned char *data, uint32_t len, char *key, uin
         return 0;
     }
 
-    for (i = 0; out[i]; i+= 4) {
-        if (out[i+1] == key_len && memcmp(key, data + out[i], key_len) == 0) {
-            *olen = out[i+3];
-            return data + out[i+2];
+    for (i = 0; out[i]; i += 4) {
+        if (out[i + 1] == key_len && memcmp(key, data + out[i], key_len) == 0) {
+            *olen = out[i + 3];
+            return data + out[i + 2];
         }
     }
     return 0;
 }
 /******************************************************************************/
-char *moloch_js0n_get_str(unsigned char *data, uint32_t len, char *key)
+char *arkime_js0n_get_str(uint8_t *data, uint32_t len, char *key)
 {
     uint32_t           value_len;
-    unsigned char     *value = 0;
+    uint8_t           *value = 0;
 
-    value = moloch_js0n_get(data, len, key, &value_len);
+    value = arkime_js0n_get(data, len, key, &value_len);
     if (!value)
         return NULL;
-    return g_strndup((gchar*)value, value_len);
+    return g_strndup((gchar *)value, value_len);
 }
 /******************************************************************************/
-const char *moloch_memstr(const char *haystack, int haysize, const char *needle, int needlesize)
+const char *arkime_memstr(const char *haystack, int haysize, const char *needle, int needlesize)
 {
     const char *p;
     while (haysize >= needlesize && (p = memchr(haystack, *needle, haysize - needlesize + 1))) {
         if (memcmp(p, needle, needlesize) == 0)
             return p;
         haysize -= (p - haystack + 1);
-        haystack = p+1;
+        haystack = p + 1;
     }
     return NULL;
 }
 /******************************************************************************/
-const char *moloch_memcasestr(const char *haystack, int haysize, const char *needle, int needlesize)
+const char *arkime_memcasestr(const char *haystack, int haysize, const char *needle, int needlesize)
 {
     const char *p;
     const char *end = haystack + haysize - needlesize;
@@ -437,15 +432,15 @@ const char *moloch_memcasestr(const char *haystack, int haysize, const char *nee
         }
         return p;
 
-        memcasestr_outer: ;
+memcasestr_outer: ;
     }
     return NULL;
 }
 /******************************************************************************/
-gboolean moloch_string_add(void *hashv, char *string, gpointer uw, gboolean copy)
+gboolean arkime_string_add(void *hashv, char *string, gpointer uw, gboolean copy)
 {
-    MolochStringHash_t *hash = hashv;
-    MolochString_t *hstring;
+    ArkimeStringHash_t *hash = hashv;
+    ArkimeString_t *hstring;
 
     HASH_FIND(s_, *hash, string, hstring);
     if (hstring) {
@@ -453,7 +448,7 @@ gboolean moloch_string_add(void *hashv, char *string, gpointer uw, gboolean copy
         return FALSE;
     }
 
-    hstring = MOLOCH_TYPE_ALLOC0(MolochString_t);
+    hstring = ARKIME_TYPE_ALLOC0(ArkimeString_t);
     if (copy) {
         hstring->str = g_strdup(string);
     } else {
@@ -466,9 +461,9 @@ gboolean moloch_string_add(void *hashv, char *string, gpointer uw, gboolean copy
 }
 /******************************************************************************/
 SUPPRESS_UNSIGNED_INTEGER_OVERFLOW
-uint32_t moloch_string_hash(const void *key)
+uint32_t arkime_string_hash(const void *key)
 {
-    unsigned char *p = (unsigned char *)key;
+    uint8_t *p = (uint8_t *)key;
     uint32_t n = 0;
     while (*p) {
         n = (n << 5) - n + *p;
@@ -481,9 +476,9 @@ uint32_t moloch_string_hash(const void *key)
 }
 /******************************************************************************/
 SUPPRESS_UNSIGNED_INTEGER_OVERFLOW
-uint32_t moloch_string_hash_len(const void *key, int len)
+uint32_t arkime_string_hash_len(const void *key, int len)
 {
-    unsigned char *p = (unsigned char *)key;
+    uint8_t *p = (uint8_t *)key;
     uint32_t n = 0;
     while (len) {
         n = (n << 5) - n + *p;
@@ -497,72 +492,72 @@ uint32_t moloch_string_hash_len(const void *key, int len)
 }
 
 /******************************************************************************/
-int moloch_string_cmp(const void *keyv, const void *elementv)
+int arkime_string_cmp(const void *keyv, const void *elementv)
 {
-    char *key = (char*)keyv;
-    MolochString_t *element = (MolochString_t *)elementv;
+    char *key = (char *)keyv;
+    ArkimeString_t *element = (ArkimeString_t *)elementv;
 
     return strcmp(key, element->str) == 0;
 }
 /******************************************************************************/
-int moloch_string_ncmp(const void *keyv, const void *elementv)
+int arkime_string_ncmp(const void *keyv, const void *elementv)
 {
-    char *key = (char*)keyv;
-    MolochString_t *element = (MolochString_t *)elementv;
+    char *key = (char *)keyv;
+    ArkimeString_t *element = (ArkimeString_t *)elementv;
 
     return strncmp(key, element->str, element->len) == 0;
 }
 /******************************************************************************/
-uint32_t moloch_int_hash(const void *key)
+uint32_t arkime_int_hash(const void *key)
 {
     return (uint32_t)((long)key);
 }
 
 /******************************************************************************/
-int moloch_int_cmp(const void *keyv, const void *elementv)
+int arkime_int_cmp(const void *keyv, const void *elementv)
 {
     uint32_t key = (uint32_t)((long)keyv);
-    MolochInt_t *element = (MolochInt_t *)elementv;
+    ArkimeInt_t *element = (ArkimeInt_t *)elementv;
 
     return key == element->i_hash;
 }
 /******************************************************************************/
 typedef struct {
-    MolochWatchFd_func  func;
+    ArkimeWatchFd_func  func;
     gpointer            data;
-} MolochWatchFd_t;
+} ArkimeWatchFd_t;
 
 /******************************************************************************/
-LOCAL void moloch_gio_destroy(gpointer data)
+LOCAL void arkime_gio_destroy(gpointer data)
 {
     g_free(data);
 }
 /******************************************************************************/
-LOCAL gboolean moloch_gio_invoke(GIOChannel *source, GIOCondition condition, gpointer data)
+LOCAL gboolean arkime_gio_invoke(GIOChannel *source, GIOCondition condition, gpointer data)
 {
-    MolochWatchFd_t *watch = data;
+    ArkimeWatchFd_t *watch = data;
 
     return watch->func(g_io_channel_unix_get_fd(source), condition, watch->data);
 }
 
 /******************************************************************************/
-gint moloch_watch_fd(gint fd, GIOCondition cond, MolochWatchFd_func func, gpointer data)
+gint arkime_watch_fd(gint fd, GIOCondition cond, ArkimeWatchFd_func func, gpointer data)
 {
 
-    MolochWatchFd_t *watch = g_new0(MolochWatchFd_t, 1);
+    ArkimeWatchFd_t *watch = g_new0(ArkimeWatchFd_t, 1);
     watch->func = func;
     watch->data = data;
 
     GIOChannel *channel = g_io_channel_unix_new(fd);
 
-    gint id =  g_io_add_watch_full(channel, G_PRIORITY_DEFAULT, cond, moloch_gio_invoke, watch, moloch_gio_destroy);
+    gint id =  g_io_add_watch_full(channel, G_PRIORITY_DEFAULT, cond, arkime_gio_invoke, watch, arkime_gio_destroy);
 
     g_io_channel_unref(channel);
     return id;
 }
 
 /******************************************************************************/
-void moloch_drop_privileges()
+void arkime_drop_privileges()
 {
     if (getuid() != 0)
         return;
@@ -594,11 +589,11 @@ void moloch_drop_privileges()
 
 }
 /******************************************************************************/
-LOCAL  MolochCanQuitFunc  canQuitFuncs[20];
+LOCAL  ArkimeCanQuitFunc  canQuitFuncs[20];
 LOCAL  const char        *canQuitNames[20];
 LOCAL  int                canQuitFuncsNum;
 
-void moloch_add_can_quit (MolochCanQuitFunc func, const char *name)
+void arkime_add_can_quit (ArkimeCanQuitFunc func, const char *name)
 {
     if (canQuitFuncsNum >= 20) {
         LOGEXIT("ERROR - Can't add canQuitFunc");
@@ -611,18 +606,18 @@ void moloch_add_can_quit (MolochCanQuitFunc func, const char *name)
 /*
  * Don't actually end main loop until all the various pieces are done
  */
-gboolean moloch_quit_gfunc (gpointer UNUSED(user_data))
+gboolean arkime_quit_gfunc (gpointer UNUSED(user_data))
 {
-LOCAL gboolean readerExit   = TRUE;
-LOCAL gboolean writerExit   = TRUE;
+    LOCAL gboolean readerExit   = TRUE;
+    LOCAL gboolean writerExit   = TRUE;
 
 // On the first run shutdown reader and sessions
     if (readerExit) {
         readerExit = FALSE;
-        if (moloch_reader_stop)
-            moloch_reader_stop();
-        moloch_packet_exit();
-        moloch_session_exit();
+        if (arkime_reader_stop)
+            arkime_reader_stop();
+        arkime_packet_exit();
+        arkime_session_exit();
         if (config.debug)
             LOG("Read exit finished");
         return G_SOURCE_CONTINUE;
@@ -644,7 +639,7 @@ LOCAL gboolean writerExit   = TRUE;
     if (writerExit) {
         writerExit = FALSE;
         if (!config.dryRun && config.copyPcap) {
-            moloch_writer_exit();
+            arkime_writer_exit();
             if (config.debug)
                 LOG("Write exit finished");
             return G_SOURCE_CONTINUE;
@@ -656,7 +651,7 @@ LOCAL gboolean writerExit   = TRUE;
     return G_SOURCE_REMOVE;
 }
 /******************************************************************************/
-void moloch_quit()
+void arkime_quit()
 {
     if (config.quitting)
         return;
@@ -665,7 +660,7 @@ void moloch_quit()
         LOG("Quitting");
 
     config.quitting = TRUE;
-    g_timeout_add(100, moloch_quit_gfunc, 0);
+    g_timeout_add(100, arkime_quit_gfunc, 0);
 }
 /******************************************************************************/
 /*
@@ -673,9 +668,9 @@ void moloch_quit()
  * TRUE - call again in 1ms
  * FALSE - don't call again
  */
-gboolean moloch_ready_gfunc (gpointer UNUSED(user_data))
+gboolean arkime_ready_gfunc (gpointer UNUSED(user_data))
 {
-    if (moloch_http_queue_length(esServer))
+    if (arkime_http_queue_length(esServer))
         return G_SOURCE_CONTINUE;
 
     if (config.debug)
@@ -683,44 +678,44 @@ gboolean moloch_ready_gfunc (gpointer UNUSED(user_data))
 
     if (config.pcapReadOffline) {
         if (config.dryRun || !config.copyPcap) {
-            moloch_writers_start("inplace");
+            arkime_writers_start("inplace");
         } else {
-            moloch_writers_start(NULL);
+            arkime_writers_start(NULL);
         }
 
     } else {
         if (config.dryRun) {
-            moloch_writers_start("null");
+            arkime_writers_start("null");
         } else {
-            moloch_writers_start(NULL);
+            arkime_writers_start(NULL);
         }
     }
-    moloch_readers_start();
+    arkime_readers_start();
     if (!config.pcapReadOffline && (pcapFileHeader.dlt == DLT_NULL || pcapFileHeader.snaplen == 0))
-        LOGEXIT("ERROR - Reader didn't call moloch_packet_set_dltsnap");
+        LOGEXIT("ERROR - Reader didn't call arkime_packet_set_dltsnap");
     return G_SOURCE_REMOVE;
 }
 /******************************************************************************/
-void moloch_hex_init()
+void arkime_hex_init()
 {
     int i, j;
     for (i = 0; i < 16; i++) {
         for (j = 0; j < 16; j++) {
-            moloch_hex_to_char[(unsigned char)moloch_char_to_hex[i]][(unsigned char)moloch_char_to_hex[j]] = i << 4 | j;
-            moloch_hex_to_char[toupper(moloch_char_to_hex[i])][(unsigned char)moloch_char_to_hex[j]] = i << 4 | j;
-            moloch_hex_to_char[(unsigned char)moloch_char_to_hex[i]][toupper(moloch_char_to_hex[j])] = i << 4 | j;
-            moloch_hex_to_char[toupper(moloch_char_to_hex[i])][toupper(moloch_char_to_hex[j])] = i << 4 | j;
+            arkime_hex_to_char[(uint8_t)arkime_char_to_hex[i]][(uint8_t)arkime_char_to_hex[j]] = i << 4 | j;
+            arkime_hex_to_char[toupper(arkime_char_to_hex[i])][(uint8_t)arkime_char_to_hex[j]] = i << 4 | j;
+            arkime_hex_to_char[(uint8_t)arkime_char_to_hex[i]][toupper(arkime_char_to_hex[j])] = i << 4 | j;
+            arkime_hex_to_char[toupper(arkime_char_to_hex[i])][toupper(arkime_char_to_hex[j])] = i << 4 | j;
         }
     }
 
     for (i = 0; i < 256; i++) {
-        moloch_char_to_hexstr[i][0] = moloch_char_to_hex[(i >> 4) & 0xf];
-        moloch_char_to_hexstr[i][1] = moloch_char_to_hex[i & 0xf];
+        arkime_char_to_hexstr[i][0] = arkime_char_to_hex[(i >> 4) & 0xf];
+        arkime_char_to_hexstr[i][1] = arkime_char_to_hex[i & 0xf];
     }
 }
 
 /*
-void moloch_sched_init()
+void arkime_sched_init()
 {
 #ifdef _POSIX_PRIORITY_SCHEDULING
     struct sched_param sp;
@@ -735,13 +730,13 @@ void moloch_sched_init()
 }
 */
 /******************************************************************************/
-void moloch_mlockall_init()
+void arkime_mlockall_init()
 {
 #ifdef _POSIX_MEMLOCK
     struct rlimit l;
     getrlimit(RLIMIT_MEMLOCK, &l);
     if (l.rlim_max != RLIM_INFINITY && l.rlim_max < 4000000000LL) {
-        LOG("WARNING: memlock in limits.conf must be unlimited or at least 4000000, currently %lu", (unsigned long)l.rlim_max/1024);
+        LOG("WARNING: memlock in limits.conf must be unlimited or at least 4000000, currently %lu", (unsigned long)l.rlim_max / 1024);
         return;
     }
 
@@ -768,7 +763,7 @@ void moloch_mlockall_init()
  * directory, and config.test.ini will be loaded for fuzz node.
  */
 
-MolochPacketBatch_t   batch;
+ArkimePacketBatch_t   batch;
 uint64_t              fuzzloch_sessionid = 0;
 
 int
@@ -783,26 +778,26 @@ LLVMFuzzerInitialize(int *UNUSED(argc), char ***UNUSED(argv))
     hashSalt = 0;
     pcapFileHeader.dlt = DLT_EN10MB;
 
-    moloch_free_later_init();
-    moloch_hex_init();
-    moloch_config_init();
-    moloch_writers_init();
-    moloch_writers_start("null");
-    moloch_readers_init();
-    moloch_readers_set("null");
-    moloch_plugins_init();
-    moloch_field_init();
-    moloch_http_init();
-    moloch_db_init();
-    moloch_packet_init();
-    moloch_config_load_local_ips();
-    moloch_config_load_packet_ips();
-    moloch_yara_init();
-    moloch_parsers_init();
-    moloch_session_init();
-    moloch_plugins_load(config.plugins);
-    moloch_rules_init();
-    moloch_packet_batch_init(&batch);
+    arkime_free_later_init();
+    arkime_hex_init();
+    arkime_http_init();
+    arkime_config_init();
+    arkime_writers_init();
+    arkime_writers_start("null");
+    arkime_readers_init();
+    arkime_readers_set("null");
+    arkime_plugins_init();
+    arkime_field_init();
+    arkime_db_init();
+    arkime_packet_init();
+    arkime_config_load_packet_ips();
+    arkime_yara_init();
+    arkime_parsers_init();
+    arkime_session_init();
+    arkime_plugins_load(config.plugins);
+    arkime_config_load_override_ips();
+    arkime_rules_init();
+    arkime_packet_batch_init(&batch);
     return 0;
 }
 
@@ -834,7 +829,7 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
 
         // LOG("Packet %llu %d", fuzzloch_sessionid, len);
 
-        MolochPacket_t *packet = MOLOCH_TYPE_ALLOC0(MolochPacket_t);
+        ArkimePacket_t *packet = ARKIME_TYPE_ALLOC0(ArkimePacket_t);
         packet->pktlen         = len;
         packet->pkt            = ptr;
         packet->ts.tv_sec      = ts >> 4;
@@ -844,7 +839,7 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
         packet->readerPos      = 0;
 
         // In FUZZ mode batch will actually process it
-        moloch_packet_batch(&batch, packet);
+        arkime_packet_batch(&batch, packet);
     }
 
     return 0;
@@ -870,50 +865,50 @@ int main(int argc, char **argv)
     if (config.insecure)
         LOG("\n\nDON'T DO IT!!!! `--insecure` is a bad idea\n\n");
 
-    moloch_free_later_init();
-    moloch_hex_init();
-    moloch_config_init();
+    arkime_free_later_init();
+    arkime_hex_init();
+    arkime_http_init();
+    arkime_config_init();
     arkime_dedup_init();
-    moloch_writers_init();
-    moloch_readers_init();
-    moloch_plugins_init();
-    moloch_plugins_load(config.rootPlugins);
+    arkime_writers_init();
+    arkime_readers_init();
+    arkime_plugins_init();
+    arkime_plugins_load(config.rootPlugins);
     if (config.pcapReadOffline)
-        moloch_readers_set("libpcap-file");
+        arkime_readers_set("libpcap-file");
     else
-        moloch_readers_set(NULL);
+        arkime_readers_set(NULL);
     if (!config.pcapReadOffline) {
-        moloch_drop_privileges();
+        arkime_drop_privileges();
         config.copyPcap = 1;
-        moloch_mlockall_init();
+        arkime_mlockall_init();
     }
-    moloch_field_init();
-    moloch_http_init();
-    moloch_db_init();
-    moloch_packet_init();
-    moloch_config_load_local_ips();
-    moloch_config_load_packet_ips();
-    moloch_yara_init();
-    moloch_parsers_init();
-    moloch_session_init();
-    moloch_plugins_load(config.plugins);
-    moloch_rules_init();
-    g_timeout_add(1, moloch_ready_gfunc, 0);
+    arkime_field_init();
+    arkime_db_init();
+    arkime_packet_init();
+    arkime_config_load_packet_ips();
+    arkime_yara_init();
+    arkime_parsers_init();
+    arkime_session_init();
+    arkime_plugins_load(config.plugins);
+    arkime_config_load_override_ips();
+    arkime_rules_init();
+    g_timeout_add(1, arkime_ready_gfunc, 0);
 
     g_main_loop_run(mainLoop);
 
     if (!config.pcapReadOffline || config.debug)
         LOG("Final cleanup");
-    moloch_plugins_exit();
-    moloch_parsers_exit();
-    moloch_db_exit();
-    moloch_http_exit();
-    moloch_field_exit();
-    moloch_readers_exit();
+    arkime_plugins_exit();
+    arkime_parsers_exit();
+    arkime_db_exit();
+    arkime_http_exit();
+    arkime_field_exit();
+    arkime_readers_exit();
     arkime_dedup_exit();
-    moloch_config_exit();
-    moloch_rules_exit();
-    moloch_yara_exit();
+    arkime_config_exit();
+    arkime_rules_exit();
+    arkime_yara_exit();
 
     g_main_loop_unref(mainLoop);
 

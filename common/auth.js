@@ -3,17 +3,7 @@
  *
  * Copyright Yahoo Inc.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this Software except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: Apache-2.0
  */
 'use strict';
 
@@ -21,22 +11,24 @@
 const crypto = require('crypto');
 const passport = require('passport');
 const DigestStrategy = require('passport-http').DigestStrategy;
+const BasicStrategy = require('passport-http').BasicStrategy;
 const iptrie = require('iptrie');
 const CustomStrategy = require('passport-custom');
+const LocalStrategy = require('passport-local');
 const express = require('express');
 const expressSession = require('express-session');
-const uuid = require('uuid').v4;
 const OIDC = require('openid-client');
 const LRU = require('lru-cache');
+const bodyParser = require('body-parser');
 
 class Auth {
-  static debug;
   static mode;
   static regressionTests = false;
   static passwordSecret;
   static passwordSecret256;
 
   static #userNameHeader;
+  static #appAdminRole;
   static #serverSecret;
   static #serverSecret256;
   static #basePath;
@@ -63,9 +55,8 @@ class Auth {
     Auth.#app = app;
     app.use(Auth.#authRouter);
 
-    if (options?.doAuth !== false) {
-      app.use(Auth.doAuth);
-    }
+    app.post('/api/login', bodyParser.urlencoded({ extended: true }));
+    app.use(Auth.doAuth);
 
     if (Auth.#app && Auth.#authConfig?.trustProxy !== undefined) {
       Auth.#doTrustProxy();
@@ -75,29 +66,66 @@ class Auth {
   // ----------------------------------------------------------------------------
   /**
    * Initialize the Auth subsystem
-   * @param {boolean} options.debug=0 The debug level to use for Auth component
-   * @param {string} options.mode=anonymous What auth mode to run in
+   * @param {string} options.mode=digest What auth mode to run in
    * @param {string} options.basePath=/ What the web base path is for the app
    * @param {string} options.userNameHeader In header auth mode, which http header has the user id
-   * @param {string} options.passwordSecret=password For digest mode, what password to use to encrypt the password hash
+   * @param {string} options.passwordSecret=password For basic/digest mode, what password to use to encrypt the password hash
    * @param {string} options.serverSecret=passwordSecret What password is used to encrypt S2S auth
    * @param {string} options.requiredAuthHeader In header auth mode, another header can be required
    * @param {string} options.requiredAuthHeaderVal In header auth mode, a comma separated list of values for requiredAuthHeader, if none are matched the user will not be authorized
    * @param {string} options.userAutoCreateTmpl A javascript string function that is used to create users that don't exist
-   * @param {string} options.userAuthIps A comma separated list of CIDRs that users are allowed from
    * @param {boolean} options.s2s Support s2s auth also
    * @param {object} options.authConfig options specific to each auth mode
    * @param {object} options.caTrustFile Optional path to CA certificate file to use for external authentication
    */
   static initialize (options) {
-    if (options.debug > 1) {
+    // Make sure all options we need below are set
+    options ??= {};
+    options.mode ??= ArkimeConfig.get('authMode');
+    options.userNameHeader ??= ArkimeConfig.get('userNameHeader');
+    options.passwordSecret ??= ArkimeConfig.getFull(options.passwordSecretSection ?? undefined, 'passwordSecret');
+    options.serverSecret ??= ArkimeConfig.get('serverSecret');
+    options.requiredAuthHeader ??= ArkimeConfig.get('requiredAuthHeader');
+    options.requiredAuthHeaderVal ??= ArkimeConfig.get('requiredAuthHeaderVal');
+    options.userAutoCreateTmpl ??= ArkimeConfig.get('userAutoCreateTmpl');
+    options.userAuthIps = ArkimeConfig.getArray('userAuthIps');
+    options.caTrustFile ??= ArkimeConfig.get('caTrustFile');
+
+    options.authConfig ??= {};
+    options.authConfig.httpRealm ??= ArkimeConfig.get('httpRealm', 'Moloch');
+    options.authConfig.userIdField ??= ArkimeConfig.get('authUserIdField');
+    options.authConfig.discoverURL ??= ArkimeConfig.get('authDiscoverURL');
+    options.authConfig.clientId ??= ArkimeConfig.get('authClientId');
+    options.authConfig.clientSecret ??= ArkimeConfig.get('authClientSecret');
+    options.authConfig.redirectURIs ??= ArkimeConfig.get('authRedirectURIs');
+    options.authConfig.trustProxy ??= ArkimeConfig.get('authTrustProxy');
+    options.authConfig.cookieSameSite ??= ArkimeConfig.get('authCookieSameSite');
+    options.authConfig.cookieSecure ??= ArkimeConfig.get('authCookieSecure', true);
+
+    if (ArkimeConfig.debug > 1) {
       console.log('Auth.initialize', options);
     }
 
-    Auth.debug = options.debug ?? 0;
-    Auth.mode = options.mode ?? 'anonymous';
-    Auth.#basePath = options.basePath ?? '/';
+    if (options.mode === undefined) {
+      if (options.userNameHeader) {
+        if (options.userNameHeader.match(/^(digest|basic|anonymous|oidc|basic\+oidc|form|basic\+form)$/)) {
+          console.log(`WARNING - Using authMode=${options.userNameHeader} setting since userNameHeader set, add to config file to silence this warning.`);
+          options.mode = options.userNameHeader;
+          delete options.userNameHeader;
+        } else {
+          console.log('WARNING - Using authMode=header since not set, add to config file to silence this warning.');
+          options.mode = 'header';
+        }
+      } else {
+        console.log('WARNING - Using authMode=digest since not set, add to config file to silence this warning.');
+        options.mode = 'digest';
+      }
+    }
+
+    Auth.mode = options.mode;
     Auth.#userNameHeader = options.userNameHeader;
+    Auth.#appAdminRole = options.appAdminRole;
+    Auth.#basePath = options.basePath ?? '/';
     Auth.#passwordSecretSection = options.passwordSecretSection ?? 'default';
     Auth.passwordSecret = options.passwordSecret ?? 'password';
     Auth.passwordSecret256 = crypto.createHash('sha256').update(Auth.passwordSecret).digest();
@@ -105,7 +133,7 @@ class Auth {
       Auth.#serverSecret = options.serverSecret;
       Auth.#serverSecret256 = crypto.createHash('sha256').update(options.serverSecret).digest();
     } else {
-      Auth.#serverSecret = options.passwordSecret;
+      Auth.#serverSecret = Auth.passwordSecret;
       Auth.#serverSecret256 = Auth.passwordSecret256;
     }
     Auth.#requiredAuthHeader = options.requiredAuthHeader;
@@ -121,7 +149,7 @@ class Auth {
     }
 
     if (options.userAuthIps) {
-      for (const cidr of options.userAuthIps.split(',')) {
+      for (const cidr of options.userAuthIps) {
         const parts = cidr.split('/');
         if (parts[0].includes(':')) {
           Auth.#userAuthIps.add(parts[0], +(parts[1] ?? 128), 1);
@@ -143,13 +171,19 @@ class Auth {
       }
     }
 
+    const addBasic = Auth.mode.startsWith('basic+');
+    if (addBasic) {
+      Auth.mode = Auth.mode.slice(6);
+    }
+
     let sessionAuth = false;
     switch (Auth.mode) {
     case 'anonymous':
-      Auth.#strategies = ['anonymous'];
-      break;
-    case 'anonymousWithDB':
       Auth.#strategies = ['anonymousWithDB'];
+      break;
+    case 'basic':
+      check('httpRealm');
+      Auth.#strategies = ['basic'];
       break;
     case 'digest':
       check('httpRealm');
@@ -162,6 +196,12 @@ class Auth {
       check('clientSecret', 'authClientSecret');
       check('redirectURIs', 'authRedirectURIs');
       Auth.#strategies = ['oidc'];
+      Auth.#passportAuthOptions = { session: true, failureRedirect: `${Auth.#basePath}fail` };
+      sessionAuth = true;
+      break;
+    case 'form':
+      Auth.#strategies = ['form'];
+      Auth.#passportAuthOptions = { session: true, failureRedirect: `${Auth.#basePath}auth` };
       sessionAuth = true;
       break;
     case 'header':
@@ -179,11 +219,15 @@ class Auth {
       process.exit(1);
     }
 
+    if (addBasic) {
+      Auth.#strategies.unshift('basic');
+    }
+
     if (options.s2s && !Auth.#strategies.includes('s2s')) {
       Auth.#strategies.unshift('s2s');
     }
 
-    if (Auth.debug > 0) {
+    if (ArkimeConfig.debug > 0) {
       console.log('AUTH strategies', Auth.#strategies);
     }
 
@@ -191,16 +235,40 @@ class Auth {
 
     // If sessionAuth is required enable the express and passport sessions
     if (sessionAuth) {
-      Auth.#passportAuthOptions = { session: true, successRedirect: '/', failureRedirect: '/fail' };
       Auth.#authRouter.get('/fail', (req, res) => { res.send('User not found'); });
       Auth.#authRouter.use(expressSession({
-        secret: uuid(),
+        name: 'ARKIME-SID',
+        secret: Auth.passwordSecret + Auth.#serverSecret,
         resave: false,
         saveUninitialized: true,
-        cookie: { path: Auth.#basePath, secure: true, sameSite: Auth.#authConfig.cookieSameSite ?? 'Lax' }
+        cookie: { path: Auth.#basePath, secure: Auth.#authConfig.cookieSecure, sameSite: Auth.#authConfig.cookieSameSite ?? 'Lax', maxAge: 24 * 60 * 60 * 1000 },
+        store: new ESStore({ })
       }));
       Auth.#authRouter.use(passport.initialize());
       Auth.#authRouter.use(passport.session());
+
+      if (Auth.mode === 'form') {
+        const fs = require('fs');
+        const path = require('path');
+
+        Auth.#authRouter.get('/logo.png', (req, res) => {
+          res.sendFile(path.join(__dirname, '../assets/Arkime_Logo_Mark_FullGradient.png'));
+        });
+
+        Auth.#authRouter.get('/auth', (req, res) => {
+          // User is not authenticated, show the login form
+          let html = fs.readFileSync(path.join(__dirname, '/vueapp/formAuth.html'), 'utf-8');
+          html = html.toString().replace(/@@BASEHREF@@/g, Auth.#basePath);
+          return res.send(html);
+        });
+
+        Auth.#authRouter.post('/logout', (req, res, next) => {
+          req.logout((err) => {
+            if (err) { return next(err); }
+            return res.redirect(`${Auth.#basePath}auth`);
+          });
+        });
+      }
 
       // only save the userId to passport session
       passport.serializeUser(function (user, done) {
@@ -241,6 +309,57 @@ class Auth {
   // ----------------------------------------------------------------------------
   static isAnonymousMode () {
     return Auth.mode === 'anonymous' || Auth.mode === 'anonymousWithDB';
+  }
+
+  // ----------------------------------------------------------------------------
+  static get appAdminRole () {
+    return Auth.#appAdminRole;
+  }
+
+  // ----------------------------------------------------------------------------
+  /**
+   * Check's a user's permission to access a resource to update/delete
+   * only allow admins, editors, or creator can update/delete resources
+   * @param {function} dbFunc The function to call to get the resource
+   * @param {string} ownerProperty The property on the resource that contains the owner
+   */
+  static checkResourceAccess (dbFunc, ownerProperty) {
+    return async (req, res, next) => {
+      if (req.user.hasRole(Auth.appAdminRole)) { // an admin can do anything
+        return next();
+      } else {
+        try {
+          const id = req.params.id ?? req.params.key;
+          if (!id) {
+            return res.serverError(404, 'Missing resource id');
+          }
+
+          let resource = await dbFunc(id);
+          if (resource?.body?._source) {
+            resource = resource.body._source;
+          }
+
+          if (!resource) {
+            return res.serverError(404, 'Unknown resource');
+          }
+
+          const settingUser = req.settingUser || req.user;
+          if ( // and creator or editor can update resources
+            (resource[ownerProperty] && resource[ownerProperty] === settingUser.userId) ||
+            settingUser.hasRole(resource.editRoles)
+          ) {
+            return next();
+          }
+
+          return res.serverError(403, 'Permission denied');
+        } catch (err) {
+          if (ArkimeConfig.debug > 0) {
+            console.log('ERROR - checking resource access:', err);
+          }
+          return res.serverError(404, 'Unknown resource');
+        }
+      }
+    };
   }
 
   // ----------------------------------------------------------------------------
@@ -297,6 +416,26 @@ class Auth {
     }));
 
     // ----------------------------------------------------------------------------
+    passport.use('basic', new BasicStrategy((userId, password, done) => {
+      if (userId.startsWith('role:')) {
+        console.log(`AUTH: User ${userId} Can not authenticate with role`);
+        return done('Can not authenticate with role');
+      }
+      User.getUserCache(userId, async (err, user) => {
+        if (err) { return done(err); }
+        if (!user) { console.log('AUTH: User', userId, "doesn't exist"); return done(null, false); }
+        if (!user.enabled) { console.log('AUTH: User', userId, 'not enabled'); return done('Not enabled'); }
+
+        const storeHa1 = Auth.store2ha1(user.passStore);
+        const ha1 = Auth.pass2ha1(userId, password);
+        if (storeHa1 !== ha1) return done(null, false);
+
+        user.setLastUsed();
+        return done(null, user);
+      });
+    }));
+
+    // ----------------------------------------------------------------------------
     passport.use('digest', new DigestStrategy({ qop: 'auth', realm: Auth.#authConfig.httpRealm }, (userId, done) => {
       if (userId.startsWith('role:')) {
         console.log(`AUTH: User ${userId} Can not authenticate with role`);
@@ -317,7 +456,7 @@ class Auth {
     // ----------------------------------------------------------------------------
     passport.use('header', new CustomStrategy((req, done) => {
       if (Auth.#userNameHeader !== undefined && req.headers[Auth.#userNameHeader] === undefined) {
-        if (Auth.debug > 0) {
+        if (ArkimeConfig.debug > 0) {
           console.log(`AUTH: didn't find ${Auth.#userNameHeader} in the headers`, req.headers);
         }
         return done(null, false);
@@ -388,7 +527,7 @@ class Auth {
         const userId = userinfo[Auth.#authConfig.userIdField];
 
         if (userId === undefined) {
-          if (Auth.debug > 0) {
+          if (ArkimeConfig.debug > 0) {
             console.log(`AUTH: didn't find ${Auth.#authConfig.userIdField} in the userinfo`, userinfo);
           }
           return done(null, false);
@@ -421,8 +560,28 @@ class Auth {
     }
 
     // ----------------------------------------------------------------------------
+    passport.use('form', new LocalStrategy((userId, password, done) => {
+      if (userId.startsWith('role:')) {
+        console.log(`AUTH: User ${userId} Can not authenticate with role`);
+        return done('Can not authenticate with role');
+      }
+      User.getUserCache(userId, async (err, user) => {
+        if (err) { return done(err); }
+        if (!user) { console.log('AUTH: User', userId, "doesn't exist"); return done(null, false); }
+        if (!user.enabled) { console.log('AUTH: User', userId, 'not enabled'); return done('Not enabled'); }
+
+        const storeHa1 = Auth.store2ha1(user.passStore);
+        const ha1 = Auth.pass2ha1(userId, password);
+        if (storeHa1 !== ha1) return done(null, false);
+
+        user.setLastUsed();
+        return done(null, user);
+      });
+    }));
+
+    // ----------------------------------------------------------------------------
     passport.use('regressionTests', new CustomStrategy((req, done) => {
-      const userId = req?.query?.molochRegressionUser ?? 'anonymous';
+      const userId = req?.query?.arkimeRegressionUser ?? 'anonymous';
       if (userId.startsWith('role:')) {
         return done('Can not authenticate with role');
       }
@@ -459,7 +618,7 @@ class Auth {
 
     // ----------------------------------------------------------------------------
     passport.use('s2s', new CustomStrategy((req, done) => {
-      let obj = req.headers['x-arkime-auth'] ?? req.headers['x-moloch-auth'];
+      let obj = req.headers['x-arkime-auth'];
 
       if (obj === undefined) {
         return done(null, false);
@@ -559,7 +718,7 @@ class Auth {
 
   // ----------------------------------------------------------------------------
   static #dynamicCreate (userId, vars, cb) {
-    if (Auth.debug > 0) {
+    if (ArkimeConfig.debug > 0) {
       console.log('AUTH - #dynamicCreate', ArkimeUtil.sanitizeStr(userId));
     }
     const nuser = JSON.parse(new Function('return `' + Auth.#userAutoCreateTmpl + '`;').call(vars));
@@ -604,12 +763,16 @@ class Auth {
         req.url = req.url.replace(Auth.#basePath, '/');
       }
       if (err) {
-        if (Auth.debug > 0) {
+        if (ArkimeConfig.debug > 0) {
           console.log('AUTH: passport.authenticate fail', err);
         }
         res.status(403);
         return res.send(JSON.stringify({ success: false, text: err }));
       } else {
+        // Redirect to / if this is a login url
+        if (req.route?.path === '/api/login' || req.route?.path === '/auth/login/callback') {
+          return res.redirect(Auth.#basePath);
+        }
         return next();
       }
     });
@@ -635,11 +798,17 @@ class Auth {
   }
 
   // ----------------------------------------------------------------------------
+  // Hash (MD5) the password
+  static pass2ha1 (userId, password) {
+    return Auth.md5(userId + ':' + Auth.#authConfig.httpRealm + ':' + password);
+  }
+
+  // ----------------------------------------------------------------------------
   // Hash (MD5) and encrypt the password before storing.
   // Encryption is used because OpenSearch/Elasticsearch is insecure by default and we don't want others adding accounts.
   static pass2store (userId, password) {
     // md5 is required because of http digest
-    return Auth.ha12store(Auth.md5(userId + ':' + Auth.#authConfig.httpRealm + ':' + password));
+    return Auth.ha12store(Auth.pass2ha1(userId, password));
   };
 
   // ----------------------------------------------------------------------------
@@ -803,10 +972,166 @@ class Auth {
       path
     }, secret);
   }
+
+  // ----------------------------------------------------------------------------
+  // express middleware to set req.settingUser to who to work on, depending if admin or not
+  // This returns fresh from db
+  static getSettingUserDb (req, res, next) {
+    let userId;
+
+    if (req.query.userId === undefined || req.query.userId === req.user.userId) {
+      if (Auth.regressionTests) {
+        req.settingUser = req.user;
+        return next();
+      }
+
+      userId = req.user.userId;
+    } else if (!req.user.hasRole('usersAdmin') || (!req.url.startsWith('/api/user/password') && Auth.#appAdminRole && !req.user.hasRole(Auth.#appAdminRole))) {
+      // user is trying to get another user's settings without admin privilege
+      return res.serverError(403, 'Need admin privileges');
+    } else {
+      userId = req.query.userId;
+    }
+
+    User.getUser(userId, function (err, user) {
+      if (err || !user) {
+        if (!Auth.passwordSecret) {
+          req.settingUser = JSON.parse(JSON.stringify(req.user));
+          delete req.settingUser.found;
+        } else {
+          return res.serverError(403, 'Unknown user');
+        }
+
+        return next();
+      }
+
+      req.settingUser = user;
+      return next();
+    });
+  }
 }
 
+// ----------------------------------------------------------------------------
+class ESStore extends expressSession.Store {
+  static #client;
+  static #index;
+  static #ttl = 24 * 60 * 60 * 1000; // 1 hr
+
+  constructor (options) {
+    super();
+    setTimeout(async () => {
+      ESStore.#client = User.getClient();
+      ESStore.start();
+    }, 100);
+    const prefix = ArkimeUtil.formatPrefix(ArkimeConfig.get('usersPrefix', ArkimeConfig.get('prefix', 'arkime_')));
+    ESStore.#index = `${prefix}sids_v50`;
+  }
+
+  // ----------------------------------------------------------------------------
+  static async start () {
+    // Create Index if needed
+    try {
+      await ESStore.#client.indices.create({
+        index: ESStore.#index,
+        body: {
+          settings: {
+            number_of_shards: 1,
+            number_of_replicas: 0,
+            auto_expand_replicas: '0-1'
+          }
+        }
+      });
+    } catch (err) {
+      // If already exists ignore error
+      if (err.meta.body?.error?.type !== 'resource_already_exists_exception') {
+        console.log(err);
+        process.exit(0);
+      }
+    }
+
+    // Update mapping if needed
+    await ESStore.#client.indices.putMapping({
+      index: ESStore.#index,
+      body: {
+        dynamic_templates: [
+          {
+            string_template: {
+              match_mapping_type: 'string',
+              mapping: {
+                type: 'keyword'
+              }
+            }
+          }
+        ],
+        properties: {
+          _timestamp: { type: 'date' }
+        }
+      }
+    });
+
+    // Delete old sids
+    await ESStore.#client.deleteByQuery({
+      index: ESStore.#index,
+      body: {
+        query: {
+          range: {
+            _timestamp: {
+              lte: new Date().getTime() - ESStore.#ttl
+            }
+          }
+        }
+      },
+      timeout: '5m'
+    });
+  }
+
+  // ----------------------------------------------------------------------------
+  destroy (sid, callback) {
+    ESStore.#client.delete({
+      index: ESStore.#index,
+      id: sid
+    }, (err, response) => {
+      callback();
+    });
+  }
+
+  // ----------------------------------------------------------------------------
+  get (sid, callback) {
+    ESStore.#client.get({
+      index: ESStore.#index,
+      id: sid
+    }, (err, response) => {
+      if (err) {
+        if (response?.statusCode === 404) {
+          return callback();
+        }
+        return callback(err);
+      }
+
+      const _source = response.body._source;
+      if (new Date().getTime() - _source._timestamp > ESStore.#ttl) {
+        this.destroy(sid, () => {});
+        return callback();
+      }
+      return callback(err, _source);
+    });
+  }
+
+  // ----------------------------------------------------------------------------
+  set (sid, session, callback) {
+    session._timestamp = new Date().getTime();
+    ESStore.#client.index({
+      index: ESStore.#index,
+      id: sid,
+      body: session
+    }, (err, response) => {
+      callback(err);
+    });
+  }
+}
 // ----------------------------------------------------------------------------
 module.exports = Auth;
 
 const User = require('../common/user');
 const ArkimeUtil = require('../common/arkimeUtil');
+const ArkimeConfig = require('../common/arkimeConfig');

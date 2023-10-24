@@ -2,30 +2,20 @@
  *
  * Copyright 2012-2017 AOL Inc. All rights reserved.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this Software except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: Apache-2.0
  */
 #include "molua.h"
 /******************************************************************************/
 
 
-extern lua_State *Ls[MOLOCH_MAX_PACKET_THREADS];
-extern MolochSession_t moluaFakeSessions[MOLOCH_MAX_PACKET_THREADS];
+extern lua_State *Ls[ARKIME_MAX_PACKET_THREADS];
+extern ArkimeSession_t moluaFakeSessions[ARKIME_MAX_PACKET_THREADS];
 
 typedef struct {
     long ref;
     int  thread;
     int code;
-    unsigned char *data;
+    uint8_t *data;
     int len;
 } LuaHttp_t;
 
@@ -34,14 +24,14 @@ LOCAL void *checkMHS (lua_State *L, int index)
 {
     void **pmhs, *mhs;
     luaL_checktype(L, index, LUA_TUSERDATA);
-    pmhs = (void**)luaL_checkudata(L, index, "MolochHttpService");
+    pmhs = (void **)luaL_checkudata(L, index, "ArkimeHttpService");
     if (pmhs == NULL) {
-        luaL_argerror(L, index, lua_pushfstring(L, "MolochHttpService expected, got %s", luaL_typename(L, index)));
+        luaL_argerror(L, index, lua_pushfstring(L, "ArkimeHttpService expected, got %s", luaL_typename(L, index)));
         return NULL;
     }
     mhs = *pmhs;
     if (!mhs)
-        luaL_error(L, "null MolochHttpService");
+        luaL_error(L, "null ArkimeHttpService");
     return mhs;
 }
 /******************************************************************************/
@@ -49,7 +39,7 @@ LOCAL void *pushMHS (lua_State *L, void *mhs)
 {
     void **pmhs = (void **)lua_newuserdata(L, sizeof(void *));
     *pmhs = mhs;
-    luaL_getmetatable(L, "MolochHttpService");
+    luaL_getmetatable(L, "ArkimeHttpService");
     lua_setmetatable(L, -2);
     return pmhs;
 }
@@ -61,12 +51,12 @@ LOCAL int MHS_new(lua_State *L)
         return luaL_error(L, "usage: <hosts:ports> <maxConnections> <maxRequests>");
     }
 
-    void *server = moloch_http_create_server(lua_tostring(L, 1), lua_tointeger(L, 2), lua_tointeger(L, 3), 0);
+    void *server = arkime_http_create_server(lua_tostring(L, 1), lua_tointeger(L, 2), lua_tointeger(L, 3), 0);
     pushMHS(L, server);
     return 1;
 }
 /******************************************************************************/
-LOCAL void mhs_http_response_cb_process(MolochSession_t *UNUSED(session), gpointer uw1, gpointer UNUSED(uw2))
+LOCAL void mhs_http_response_cb_process(ArkimeSession_t *UNUSED(session), gpointer uw1, gpointer UNUSED(uw2))
 {
     LuaHttp_t *lhttp = uw1;
 
@@ -76,21 +66,21 @@ LOCAL void mhs_http_response_cb_process(MolochSession_t *UNUSED(session), gpoint
     lua_pushlstring(L, (char *)lhttp->data, lhttp->len);
 
     if (lua_pcall(L, 2, 0, 0) != 0) {
-       LOGEXIT("error running http callback function %s", lua_tostring(L, -1));
+        LOGEXIT("error running http callback function %s", lua_tostring(L, -1));
     }
 
     g_free(lhttp->data);
-    MOLOCH_TYPE_FREE(LuaHttp_t, lhttp);
+    ARKIME_TYPE_FREE(LuaHttp_t, lhttp);
 }
 /******************************************************************************/
-void mhs_http_response_cb(int code, unsigned char *data, int len, gpointer uw)
+void mhs_http_response_cb(int code, uint8_t *data, int len, gpointer uw)
 {
     LuaHttp_t *lhttp = uw;
     lhttp->code = code;
     lhttp->len = len;
     lhttp->data = g_memdup(data, len); // Sucks
 
-    moloch_session_add_cmd(&moluaFakeSessions[lhttp->thread], MOLOCH_SES_CMD_FUNC, lhttp, NULL, mhs_http_response_cb_process);
+    arkime_session_add_cmd(&moluaFakeSessions[lhttp->thread], ARKIME_SES_CMD_FUNC, lhttp, NULL, mhs_http_response_cb_process);
 }
 /******************************************************************************/
 LOCAL int MHS_request(lua_State *L)
@@ -108,7 +98,7 @@ LOCAL int MHS_request(lua_State *L)
     char *data;
 
     if (data_len > 0) {
-        data = moloch_http_get_buffer(data_len);
+        data = arkime_http_get_buffer(data_len);
         memcpy(data, lua_tostring(L, 4), data_len);
     } else {
         data = NULL;
@@ -120,12 +110,12 @@ LOCAL int MHS_request(lua_State *L)
             break;
     }
 
-    LuaHttp_t *lhttp = MOLOCH_TYPE_ALLOC(LuaHttp_t);
+    LuaHttp_t *lhttp = ARKIME_TYPE_ALLOC(LuaHttp_t);
     lhttp->ref = luaL_ref(L, LUA_REGISTRYINDEX);
     lhttp->thread = thread;
 
     gboolean result;
-    result = moloch_http_send(server,
+    result = arkime_http_send(server,
                               lua_tostring(L, 2),   // method
                               lua_tostring(L, 3),   // key
                               lua_rawlen(L, 3),     // key_len
@@ -148,18 +138,18 @@ LOCAL int MHS_gc(lua_State *L)
 
     void *server = checkMHS(L, 1);
 
-    moloch_http_free_server(server);
+    arkime_http_free_server(server);
     return 0;
 }
 /******************************************************************************/
 LOCAL int MHS_tostring (lua_State *L)
 {
-    lua_pushfstring(L, "MolochHttpService: %p", lua_touserdata(L, 1));
+    lua_pushfstring(L, "ArkimeHttpService: %p", lua_touserdata(L, 1));
     return 1;
 }
 
 /******************************************************************************/
-void luaopen_molochhttpservice(lua_State *L)
+void luaopen_arkimehttpservice(lua_State *L)
 {
     static const struct luaL_Reg methods[] = {
         {"__tostring", MHS_tostring},
@@ -173,10 +163,10 @@ void luaopen_molochhttpservice(lua_State *L)
         { NULL, NULL }
     };
 
-    luaL_newmetatable(L, "MolochHttpService");
+    luaL_newmetatable(L, "ArkimeHttpService");
     lua_pushvalue(L, -1);
     lua_setfield(L, -2, "__index");
     luaL_setfuncs(L, methods, 0);
     luaL_newlib(L, functions);
-    lua_setglobal(L, "MolochHttpService");
+    lua_setglobal(L, "ArkimeHttpService");
 }

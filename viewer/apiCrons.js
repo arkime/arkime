@@ -1,3 +1,10 @@
+/******************************************************************************/
+/* apiCrons.js -- api calls for periodic queries
+ *
+ * Copyright Yahoo Inc.
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
 'use strict';
 
 const Config = require('./config');
@@ -6,12 +13,13 @@ const Db = require('./db');
 const Auth = require('../common/auth');
 const User = require('../common/user');
 const ArkimeUtil = require('../common/arkimeUtil');
+const ArkimeConfig = require('../common/arkimeConfig');
 const async = require('async');
 const internals = require('./internals');
 const SessionAPIs = require('./apiSessions');
 const ViewerUtils = require('./viewerUtils');
 const http = require('http');
-const molochparser = require('./molochparser.js');
+const arkimeparser = require('./arkimeparser.js');
 const Notifier = require('../common/notifier');
 
 class CronAPIs {
@@ -55,7 +63,7 @@ class CronAPIs {
     } else if (!Config.get('multiES', false)) {
       const info = await Db.getQueriesNode();
       if (info.node === undefined) {
-        console.log(`WARNING - No cronQueries=true found in ${Config.getConfigFile()}, one and only one node MUST have cronQueries=true set for cron/hunts to work`);
+        console.log(`WARNING - No cronQueries=true found in ${ArkimeConfig.configFile}, one and only one node MUST have cronQueries=true set for cron/hunts to work`);
       } else if (Date.now() - info.updateTime > 2 * 60 * 1000) {
         console.log(`WARNING - cronQueries=true node '${info.node}' hasn't checked in lately, cron/hunts might be broken`);
       }
@@ -78,12 +86,15 @@ class CronAPIs {
    * @param {string} creator - The id of the user that created this query.
    * @param {string} tags - A comma separated list of tags to add to each session that matches this query.
    * @param {string} notifier - The name of the notifier to alert when there are matches for this query.
-   * @param {number} lastNotified - The time that this query last sent a notification to the notifier. Only notifies every 10 mintues. Format is seconds since Unix EPOC.
+   * @param {number} lastNotified - The time that this query last sent a notification to the notifier. Only notifies every 10 minutes. Format is seconds since Unix EPOC.
    * @param {number} lastNotifiedCount - The count of sessions that matched since the last notification was sent.
    * @param {string} description - The description of this query.
    * @param {number} created - The time that this query was created. Format is seconds since Unix EPOC.
    * @param {number} lastToggled - The time that this query was enabled or disabled. Format is seconds since Unix EPOC.
    * @param {string} lastToggledBy - The user who last enabled or disabled this query.
+   * @param {string} users - The list of userIds who have access to use this query.
+   * @param {string} roles - The list of roles who have access to use this query.
+   * @param {string} editRoles - The list of roles who have access to edit this query.
    */
 
   // --------------------------------------------------------------------------
@@ -102,7 +113,7 @@ class CronAPIs {
     const user = req.settingUser;
     if (user.settings === undefined) { user.settings = {}; }
 
-    const roles = [...await user.getRoles()]; // es requries an array for terms search
+    const roles = [...await user.getRoles()]; // es requires an array for terms search
 
     const query = {
       size: 1000,
@@ -117,6 +128,7 @@ class CronAPIs {
               bool: {
                 should: [
                   { terms: { roles } }, // shared via user role
+                  { terms: { editRoles: roles } }, // shared via edit role
                   { term: { users: user.userId } }, // shared via userId
                   { term: { creator: user.userId } } // created by this user
                 ]
@@ -147,6 +159,7 @@ class CronAPIs {
             // remove sensitive information for users this query is shared with (except arkimeAdmin)
             delete result.users;
             delete result.roles;
+            delete roles.editRoles;
           } else {
             if (result.users) { // client expects a string
               result.users = result.users.join(',');
@@ -190,6 +203,10 @@ class CronAPIs {
       return res.serverError(403, 'Roles field must be an array of strings');
     }
 
+    if (req.body.editRoles !== undefined && !ArkimeUtil.isStringArray(req.body.editRoles)) {
+      return res.serverError(403, 'Edit roles field must be an array of strings');
+    }
+
     if (req.body.users !== undefined && !ArkimeUtil.isString(req.body.users, 0)) {
       return res.serverError(403, 'Users field must be a string');
     }
@@ -208,6 +225,7 @@ class CronAPIs {
         roles: req.body.roles,
         query: req.body.query,
         action: req.body.action,
+        editRoles: req.body.editRoles,
         created: Math.floor(Date.now() / 1000)
       }
     };
@@ -273,7 +291,7 @@ class CronAPIs {
    * @returns {ArkimeQuery} query - The updated query object
    */
   static async updateCron (req, res) {
-    const key = req.body.key;
+    const key = req.params.key;
     if (key === 'primary-viewer') {
       return res.serverError(403, 'Bad query key');
     }
@@ -297,6 +315,10 @@ class CronAPIs {
       return res.serverError(403, 'Roles field must be an array of strings');
     }
 
+    if (req.body.editRoles !== undefined && !ArkimeUtil.isStringArray(req.body.editRoles)) {
+      return res.serverError(403, 'Edit roles field must be an array of strings');
+    }
+
     if (req.body.users !== undefined && !ArkimeUtil.isString(req.body.users, 0)) {
       return res.serverError(403, 'Users field must be a string');
     }
@@ -316,7 +338,8 @@ class CronAPIs {
         roles: req.body.roles,
         query: req.body.query,
         action: req.body.action,
-        enabled: req.body.enabled
+        enabled: req.body.enabled,
+        editRoles: req.body.editRoles
       }
     };
 
@@ -329,7 +352,13 @@ class CronAPIs {
     }
 
     try {
-      const { body: { _source: cron } } = await Db.get('queries', 'query', key);
+      const { body: { _source: cron } } = await Db.getQuery(key);
+
+      // sets the owner if it has changed
+      doc.doc.creator ??= req.body.creator;
+      if (!await User.setOwner(req, res, doc.doc, cron, 'creator')) {
+        return;
+      }
 
       if (doc.doc.enabled !== cron.enabled) { // the query was enabled or disabled
         doc.doc.lastToggledBy = req.settingUser.userId;
@@ -376,7 +405,7 @@ class CronAPIs {
    * @returns {string} text - The success/error message to (optionally) display to the user.
    */
   static async deleteCron (req, res) {
-    const key = req.body.key;
+    const key = req.params.key;
 
     if (key === 'primary-viewer') {
       return res.serverError(403, 'Bad query key');
@@ -438,7 +467,7 @@ class CronAPIs {
       function () {
         // Get from remote DISK
         ViewerUtils.getViewUrl(node, (err, viewUrl, client) => {
-          let sendPath = `${Config.basePath(node) + node}/sendSessions?saveId=${pOptions.saveId}&cluster=${pOptions.cluster}`;
+          let sendPath = `${Config.basePath(node)}api/sessions/${node}/send?saveId=${pOptions.saveId}&remoteCluster=${pOptions.cluster}`;
           if (pOptions.tags) { sendPath += `&tags=${pOptions.tags}`; }
           const url = new URL(sendPath, viewUrl);
           const reqOptions = {
@@ -649,7 +678,7 @@ class CronAPIs {
             }
 
             // always complete building the query regardless of shortcuts
-            molochparser.parser.yy = {
+            arkimeparser.parser.yy = {
               emailSearch: user.emailSearch === true,
               fieldsMap: Config.getFieldsMap(),
               dbFieldsMap: Config.getDBFieldsMap(),
@@ -666,7 +695,7 @@ class CronAPIs {
             };
 
             try {
-              query.query.bool.filter.push(molochparser.parse(cq.query));
+              query.query.bool.filter.push(arkimeparser.parse(cq.query));
             } catch (e) {
               console.log("CRON - Couldn't compile periodic query expression", cq, e);
               return forQueriesCb();
@@ -675,8 +704,8 @@ class CronAPIs {
             if (user.getExpression()) {
               try {
                 // Expression was set by admin, so assume email search ok
-                molochparser.parser.yy.emailSearch = true;
-                const userExpression = molochparser.parse(user.getExpression());
+                arkimeparser.parser.yy.emailSearch = true;
+                const userExpression = arkimeparser.parse(user.getExpression());
                 query.query.bool.filter.push(userExpression);
               } catch (e) {
                 console.log("CRON - Couldn't compile user forced expression", user.getExpression(), e);
@@ -756,7 +785,7 @@ class CronAPIs {
       }
       internals.cronRunning = false;
     });
-  };
+  }
 }
 
 module.exports = CronAPIs;

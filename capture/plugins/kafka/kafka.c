@@ -2,17 +2,7 @@
  *
  * Copyright 2020 Sqooba AG. All rights reserved.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this Software except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 #include <sys/socket.h>
@@ -26,7 +16,7 @@
 #include <uuid/uuid.h>
 #include <ctype.h>
 #include <errno.h>
-#include "moloch.h"
+#include "arkime.h"
 #include "bsb.h"
 #include "rdkafka.h"
 
@@ -41,7 +31,7 @@ LOCAL const char *kafkaSSLCertificateLocation;
 LOCAL const char *kafkaSSLKeyLocation;
 LOCAL const char *kafkaSSLKeyPassword;
 
-extern MolochConfig_t config;
+extern ArkimeConfig_t config;
 
 /******************************************************************************
  * Message delivery report callback using the richer rd_kafka_message_t object.
@@ -67,7 +57,7 @@ LOCAL void kafka_msg_delivered_bulk_cb(rd_kafka_t *UNUSED(rk), const rd_kafka_me
     char *json = (char *)rkmessage->_private; /* V_OPAQUE */
     if (config.debug > 2)
         LOG("opaque=%p", json);
-    moloch_http_free_buffer(json);
+    arkime_http_free_buffer(json);
 }
 
 /******************************************************************************/
@@ -80,11 +70,11 @@ LOCAL void kafka_send_session_bulk(char *json, int len)
     for (int i = 0; i < 5; i++) {
         rd_kafka_resp_err_t err;
         err = rd_kafka_producev(
-            rk,
-            RD_KAFKA_V_TOPIC(topic),
-            RD_KAFKA_V_VALUE(json, len),
-            RD_KAFKA_V_OPAQUE(json),
-            RD_KAFKA_V_END);
+                  rk,
+                  RD_KAFKA_V_TOPIC(topic),
+                  RD_KAFKA_V_VALUE(json, len),
+                  RD_KAFKA_V_OPAQUE(json),
+                  RD_KAFKA_V_END);
 
         if (err) {
             /* Failed to *enqueue* message for producing. */
@@ -117,13 +107,13 @@ LOCAL void kafka_send_session_bulk(char *json, int len)
     }
 
     // Didn't send
-    moloch_http_free_buffer(json);
+    arkime_http_free_buffer(json);
     rd_kafka_poll(rk, 0 /*non-blocking*/);
 }
 
 /******************************************************************************/
 /*
- * Called by moloch when moloch is quiting
+ * Called by arkime when arkime is quiting
  */
 LOCAL void kafka_plugin_exit()
 {
@@ -145,15 +135,15 @@ LOCAL void kafka_plugin_exit()
 
 /******************************************************************************/
 /*
- * Called by moloch when the plugin is loaded
+ * Called by arkime when the plugin is loaded
  */
-void moloch_plugin_init()
+void arkime_plugin_init()
 {
-    moloch_plugins_register("kafka", TRUE);
+    arkime_plugins_register("kafka", TRUE);
 
     LOG("Loading Kafka plugin");
 
-    moloch_plugins_set_cb("kafka",
+    arkime_plugins_set_cb("kafka",
                           NULL,
                           NULL,
                           NULL,
@@ -164,8 +154,8 @@ void moloch_plugin_init()
                           NULL);
 
     conf = rd_kafka_conf_new();
-    brokers = *moloch_config_str_list(NULL, "kafkaBootstrapServers", "");
-    topic = moloch_config_str(NULL, "kafkaTopic", "arkime-json");
+    brokers = *arkime_config_str_list(NULL, "kafkaBootstrapServers", "");
+    topic = arkime_config_str(NULL, "kafkaTopic", "arkime-json");
 
     // See more config on https://github.com/edenhill/librdkafka/blob/master/CONFIGURATION.md
 
@@ -178,7 +168,7 @@ void moloch_plugin_init()
     if (config.debug)
         LOG("kafka broker %s", brokers);
 
-    kafkaSSL = moloch_config_boolean(NULL, "kafkaSSL", FALSE);
+    kafkaSSL = arkime_config_boolean(NULL, "kafkaSSL", FALSE);
     if (kafkaSSL)
     {
         if (config.debug)
@@ -190,7 +180,7 @@ void moloch_plugin_init()
             LOGEXIT("Error configuring kafka:security.protocol, error = %s", errstr);
         }
 
-        kafkaSSLCALocation = moloch_config_str(NULL, "kafkaSSLCALocation", NULL);
+        kafkaSSLCALocation = arkime_config_str(NULL, "kafkaSSLCALocation", NULL);
         if (kafkaSSLCALocation)
         {
             if (rd_kafka_conf_set(conf, "ssl.ca.location", kafkaSSLCALocation,
@@ -200,7 +190,7 @@ void moloch_plugin_init()
             }
         }
 
-        kafkaSSLCertificateLocation = moloch_config_str(NULL, "kafkaSSLCertificateLocation", NULL);
+        kafkaSSLCertificateLocation = arkime_config_str(NULL, "kafkaSSLCertificateLocation", NULL);
         if (kafkaSSLCertificateLocation) {
             if (rd_kafka_conf_set(conf, "ssl.certificate.location", kafkaSSLCertificateLocation,
                                   errstr, sizeof(errstr)) != RD_KAFKA_CONF_OK)
@@ -209,7 +199,7 @@ void moloch_plugin_init()
             }
         }
 
-        kafkaSSLKeyLocation = moloch_config_str(NULL, "kafkaSSLKeyLocation", NULL);
+        kafkaSSLKeyLocation = arkime_config_str(NULL, "kafkaSSLKeyLocation", NULL);
         if (kafkaSSLKeyLocation) {
             if (rd_kafka_conf_set(conf, "ssl.key.location", kafkaSSLKeyLocation,
                                   errstr, sizeof(errstr)) != RD_KAFKA_CONF_OK)
@@ -218,9 +208,9 @@ void moloch_plugin_init()
             }
         }
 
-        kafkaSSLKeyPassword = moloch_config_str(NULL, "kafkaSSLKeyPassword", NULL);
+        kafkaSSLKeyPassword = arkime_config_str(NULL, "kafkaSSLKeyPassword", NULL);
         if (kafkaSSLKeyPassword) {
-             if (rd_kafka_conf_set(conf, "ssl.key.password", kafkaSSLKeyPassword,
+            if (rd_kafka_conf_set(conf, "ssl.key.password", kafkaSSLKeyPassword,
                                   errstr, sizeof(errstr)) != RD_KAFKA_CONF_OK)
             {
                 LOGEXIT("Error configuring kafka:ss.key.password, error = %s", errstr);
@@ -231,13 +221,13 @@ void moloch_plugin_init()
 
     rd_kafka_conf_set_dr_msg_cb(conf, kafka_msg_delivered_bulk_cb);
 
-    char *kafkaMsgFormat = moloch_config_str(NULL, "kafkaMsgFormat", "bulk");
+    char *kafkaMsgFormat = arkime_config_str(NULL, "kafkaMsgFormat", "bulk");
     if (strcmp(kafkaMsgFormat, "bulk") == 0) {
-        moloch_db_set_send_bulk2(kafka_send_session_bulk, TRUE, FALSE, 0xffff);
+        arkime_db_set_send_bulk2(kafka_send_session_bulk, TRUE, FALSE, 0xffff);
     } else if (strcmp(kafkaMsgFormat, "bulk1") == 0) {
-        moloch_db_set_send_bulk2(kafka_send_session_bulk, TRUE, FALSE, 1);
+        arkime_db_set_send_bulk2(kafka_send_session_bulk, TRUE, FALSE, 1);
     } else if (strcmp(kafkaMsgFormat, "doc") == 0) {
-        moloch_db_set_send_bulk2(kafka_send_session_bulk, FALSE, TRUE, 1);
+        arkime_db_set_send_bulk2(kafka_send_session_bulk, FALSE, TRUE, 1);
     } else {
         LOGEXIT("Unknown config kafkaMsgFormat value '%s'", kafkaMsgFormat);
     }

@@ -1,7 +1,7 @@
 use Test::More tests => 24;
 use Cwd;
 use URI::Escape;
-use MolochTest;
+use ArkimeTest;
 use strict;
 
 my $files = "file=*/pcap/ssh2.pcap";

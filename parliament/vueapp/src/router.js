@@ -23,6 +23,7 @@ const router = new Router({
   routes: [
     {
       path: '',
+      alias: '/',
       name: 'Parliament',
       component: Parliament
     },
@@ -50,8 +51,7 @@ const router = new Router({
 });
 
 router.beforeEach((to, from, next) => {
-  AuthService.hasAuth();
-  AuthService.isLoggedIn();
+  AuthService.getAuthInfo();
   next();
 });
 

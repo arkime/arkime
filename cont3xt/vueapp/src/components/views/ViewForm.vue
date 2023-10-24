@@ -1,3 +1,7 @@
+<!--
+Copyright Yahoo Inc.
+SPDX-License-Identifier: Apache-2.0
+-->
 <template>
   <b-form>
     <!-- view name -->
@@ -113,7 +117,7 @@ export default {
     };
   },
   created () {
-    if (!this.localView.integrations.length) {
+    if (!this.localView?.integrations?.length) {
       this.localView.integrations = this.getSelectedIntegrations;
     }
   },

@@ -1,29 +1,19 @@
 /* Copyright 2019 AOL Inc. All rights reserved.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this Software except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: Apache-2.0
  */
-#include "moloch.h"
+#include "arkime.h"
 #include <net/ethernet.h>
 
-extern MolochConfig_t        config;
+extern ArkimeConfig_t        config;
 
 /******************************************************************************/
 SUPPRESS_ALIGNMENT
-LOCAL MolochPacketRC mpls_packet_enqueue(MolochPacketBatch_t * batch, MolochPacket_t * const packet, const uint8_t *data, int len)
+LOCAL ArkimePacketRC mpls_packet_enqueue(ArkimePacketBatch_t *batch, ArkimePacket_t *const packet, const uint8_t *data, int len)
 {
     while (1) {
         if (len < 4 + (int)sizeof(struct ip)) {
-            return MOLOCH_PACKET_CORRUPT;
+            return ARKIME_PACKET_CORRUPT;
         }
 
         int S = data[2] & 0x1;
@@ -32,25 +22,25 @@ LOCAL MolochPacketRC mpls_packet_enqueue(MolochPacketBatch_t * batch, MolochPack
         len -= 4;
 
         if (S) {
-            packet->tunnel |= MOLOCH_PACKET_TUNNEL_MPLS;
+            packet->tunnel |= ARKIME_PACKET_TUNNEL_MPLS;
             switch (data[0] >> 4) {
             case 4:
-                return moloch_packet_run_ethernet_cb(batch, packet, data, len, ETHERTYPE_IP, "MPLS");
+                return arkime_packet_run_ethernet_cb(batch, packet, data, len, ETHERTYPE_IP, "MPLS");
             case 6:
-                return moloch_packet_run_ethernet_cb(batch, packet, data, len, ETHERTYPE_IPV6, "MPLS");
+                return arkime_packet_run_ethernet_cb(batch, packet, data, len, ETHERTYPE_IPV6, "MPLS");
             default:
 #ifdef DEBUG_PACKET
                 LOG("BAD PACKET: Unknown mpls type %d", data[0] >> 4);
 #endif
-                moloch_packet_save_ethernet(packet, 0x8847);
-                return MOLOCH_PACKET_UNKNOWN;
+                arkime_packet_save_ethernet(packet, 0x8847);
+                return ARKIME_PACKET_UNKNOWN;
             }
         }
     }
-    return MOLOCH_PACKET_CORRUPT;
+    return ARKIME_PACKET_CORRUPT;
 }
 /******************************************************************************/
-void moloch_parser_init()
+void arkime_parser_init()
 {
-    moloch_packet_set_ethernet_cb(MOLOCH_ETHERTYPE_MPLS, mpls_packet_enqueue);
+    arkime_packet_set_ethernet_cb(ARKIME_ETHERTYPE_MPLS, mpls_packet_enqueue);
 }

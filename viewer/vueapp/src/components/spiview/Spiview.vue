@@ -1,14 +1,18 @@
+<!--
+Copyright Yahoo Inc.
+SPDX-License-Identifier: Apache-2.0
+-->
 <template>
 
   <div class="spiview-page">
 
-    <MolochCollapsible>
+    <ArkimeCollapsible>
       <span class="fixed-header">
         <!-- search navbar -->
-        <moloch-search
+        <arkime-search
           @changeSearch="changeSearch"
           :num-matching-sessions="filtered">
-        </moloch-search> <!-- /search navbar -->
+        </arkime-search> <!-- /search navbar -->
 
         <!-- info navbar -->
         <form class="info-nav">
@@ -143,26 +147,26 @@
           </span>
         </div>
       </form> <!-- /warning navbar -->
-    </MolochCollapsible>
+    </ArkimeCollapsible>
 
     <!-- visualizations -->
-    <moloch-visualizations
+    <arkime-visualizations
       v-if="mapData && graphData && showToolBars"
       :primary="true"
       :map-data="mapData"
       :graph-data="graphData"
       @fetchMapData="fetchVizData"
       :timelineDataFilters="timelineDataFilters">
-    </moloch-visualizations> <!-- /visualizations -->
+    </arkime-visualizations> <!-- /visualizations -->
 
     <div class="spiview-content mr-1 ml-1">
 
       <!-- page error -->
-      <moloch-error
+      <arkime-error
         v-if="error"
         :message="error"
         class="mt-5 mb-5">
-      </moloch-error> <!-- /page error -->
+      </arkime-error> <!-- /page error -->
 
       <!-- spiview panels -->
       <div role="tablist">
@@ -204,14 +208,14 @@
                 @click.stop
                 class="protocol-value">
                 <strong>
-                  <moloch-session-field
+                  <arkime-session-field
                     :field="{dbField:'ipProtocol', exp:'protocols', type:'lotermfield', group:'general', transform:'ipProtocolLookup'}"
                     :expr="'protocols'"
                     :value="key"
                     :pull-left="true"
                     :parse="false"
                     :session-btn="true">
-                  </moloch-session-field>
+                  </arkime-session-field>
                 </strong>
                 <sup>({{ value | commaString }})</sup>
               </span>
@@ -334,14 +338,14 @@
                           :key="bucket.key">
                           <span v-if="bucket.key || bucket.key === 0"
                             class="small spi-bucket mr-1 no-wrap">
-                            <moloch-session-field
+                            <arkime-session-field
                               :field="value.field"
                               :value="bucket.key"
                               :expr="value.field.exp"
                               :parse="true"
                               :pull-left="true"
                               :session-btn="true">
-                            </moloch-session-field>
+                            </arkime-session-field>
                             <sup>({{ bucket.doc_count | commaString }})</sup>
                           </span>
                         </span>
@@ -402,10 +406,10 @@ import ConfigService from '../utils/ConfigService';
 import FieldService from '../search/FieldService';
 import UserService from '../users/UserService';
 
-import MolochError from '../utils/Error';
-import MolochSearch from '../search/Search';
-import MolochVisualizations from '../visualizations/Visualizations';
-import MolochCollapsible from '../utils/CollapsibleWrapper';
+import ArkimeError from '../utils/Error';
+import ArkimeSearch from '../search/Search';
+import ArkimeVisualizations from '../visualizations/Visualizations';
+import ArkimeCollapsible from '../utils/CollapsibleWrapper';
 import FieldActions from '../sessions/FieldActions';
 
 // import utils
@@ -429,10 +433,10 @@ let newConfigTimeout;
 export default {
   name: 'Spiview',
   components: {
-    MolochError,
-    MolochSearch,
-    MolochVisualizations,
-    MolochCollapsible,
+    ArkimeError,
+    ArkimeSearch,
+    ArkimeVisualizations,
+    ArkimeCollapsible,
     FieldActions
   },
   data: function () {
@@ -454,7 +458,6 @@ export default {
       newFieldConfigName: '',
       fieldConfigError: '',
       fieldConfigSuccess: '',
-      multiviewer: this.$constants.MOLOCH_MULTIVIEWER,
       spiviewFieldTransition: ''
     };
   },
@@ -961,15 +964,10 @@ export default {
     getSpiData: function (spiQuery) {
       if (!spiQuery) { return; }
 
-      if (this.multiviewer) {
-        const availableCluster = this.$store.state.esCluster.availableCluster.active;
-        const selection = Utils.checkClusterSelection(this.query.cluster, availableCluster);
-        if (!selection.valid) { // invlaid selection
-          pendingPromise = null;
-          this.error = selection.error;
-          this.dataLoading = false;
-          return;
-        }
+      if (!Utils.checkClusterSelection(this.query.cluster, this.$store.state.esCluster.availableCluster.active, this).valid) {
+        pendingPromise = null;
+        this.dataLoading = false;
+        return;
       }
 
       // reset loading counts for categories

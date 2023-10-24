@@ -1,13 +1,17 @@
+<!--
+Copyright Yahoo Inc.
+SPDX-License-Identifier: Apache-2.0
+-->
 <template>
 
   <div class="spigraph-page">
-    <MolochCollapsible>
+    <ArkimeCollapsible>
       <span class="fixed-header">
         <!-- search navbar -->
-        <moloch-search
+        <arkime-search
           :num-matching-sessions="filtered"
           @changeSearch="cancelAndLoad(true)">
-        </moloch-search> <!-- /search navbar -->
+        </arkime-search> <!-- /search navbar -->
 
         <!-- spigraph sub navbar -->
         <form class="spigraph-form"
@@ -24,13 +28,13 @@
                     SPI Graph:
                   </span>
                 </span>
-                <moloch-field-typeahead
+                <arkime-field-typeahead
                   :fields="fields"
                   query-param="exp"
                   :initial-value="fieldTypeahead"
                   @fieldSelected="changeField"
                   page="Spigraph">
-                </moloch-field-typeahead>
+                </arkime-field-typeahead>
               </div>
             </div> <!-- /field select -->
 
@@ -128,18 +132,18 @@
           </div>
         </form>
       </span>
-    </MolochCollapsible>
+    </ArkimeCollapsible>
 
     <!-- main visualization -->
     <div v-if="spiGraphType === 'default' && mapData && graphData && fieldObj && showToolBars">
-      <moloch-visualizations
+      <arkime-visualizations
         id="primary"
         :graph-data="graphData"
         :map-data="mapData"
         :primary="true"
         :timelineDataFilters="timelineDataFilters"
         @fetchMapData="cancelAndLoad(true)">
-      </moloch-visualizations>
+      </arkime-visualizations>
     </div> <!-- /main visualization -->
 
     <div class="spigraph-content">
@@ -147,7 +151,7 @@
       <!-- pie graph type -->
       <div v-if="spiGraphType === 'pie' || spiGraphType === 'table' || spiGraphType === 'treemap'">
 
-        <moloch-pie v-if="items && items.length"
+        <arkime-pie v-if="items && items.length"
           :base-field="baseField"
           :graph-data="items"
           :fields="fields"
@@ -155,7 +159,7 @@
           :spiGraphType="spiGraphType"
           @toggleLoad="toggleLoad"
           @toggleError="toggleError">
-        </moloch-pie>
+        </arkime-pie>
 
       </div> <!-- /pie graph type -->
 
@@ -172,14 +176,14 @@
               <div class="col-md-12">
                 <div class="spi-bucket">
                   <strong>
-                    <moloch-session-field
+                    <arkime-session-field
                       :field="fieldObj"
                       :value="item.name"
                       :expr="fieldObj.exp"
                       :parse="true"
                       :pull-left="true"
                       :session-btn="true">
-                    </moloch-session-field>
+                    </arkime-session-field>
                   </strong>
                   <sup>({{ item[graphType] | commaString }})</sup>
                 </div>
@@ -188,13 +192,13 @@
             <!-- field visualization -->
             <div class="row">
               <div class="col-md-12">
-                <moloch-visualizations
+                <arkime-visualizations
                   :id="(index + 1).toString()"
                   :graph-data="item.graph"
                   :map-data="item.map"
                   :primary="false"
                   :timelineDataFilters="timelineDataFilters">
-                </moloch-visualizations>
+                </arkime-visualizations>
               </div>
             </div> <!-- /field visualization -->
           </div>
@@ -203,26 +207,26 @@
       </div> <!-- /default graph type -->
 
       <!-- loading overlay -->
-      <moloch-loading
+      <arkime-loading
         :can-cancel="true"
         v-if="loading && !error"
         @cancel="cancelAndLoad">
-      </moloch-loading> <!-- /loading overlay -->
+      </arkime-loading> <!-- /loading overlay -->
 
       <!-- page error -->
-      <moloch-error
+      <arkime-error
         v-if="error"
         :message="error"
         class="mt-5 mb-5">
-      </moloch-error> <!-- /page error -->
+      </arkime-error> <!-- /page error -->
 
       <!-- no results -->
-      <moloch-no-results
+      <arkime-no-results
         v-if="!error && !loading && !items.length"
         class="mt-5 mb-5"
         :records-total="recordsTotal"
         :view="query.view">
-      </moloch-no-results> <!-- /no results -->
+      </arkime-no-results> <!-- /no results -->
 
     </div>
 
@@ -238,14 +242,14 @@ import SpigraphService from './SpigraphService';
 import FieldService from '../search/FieldService';
 import ConfigService from '../utils/ConfigService';
 // import internal
-import MolochError from '../utils/Error';
-import MolochSearch from '../search/Search';
-import MolochLoading from '../utils/Loading';
-import MolochNoResults from '../utils/NoResults';
-import MolochFieldTypeahead from '../utils/FieldTypeahead';
-import MolochVisualizations from '../visualizations/Visualizations';
-import MolochCollapsible from '../utils/CollapsibleWrapper';
-import MolochPie from './Hierarchy';
+import ArkimeError from '../utils/Error';
+import ArkimeSearch from '../search/Search';
+import ArkimeLoading from '../utils/Loading';
+import ArkimeNoResults from '../utils/NoResults';
+import ArkimeFieldTypeahead from '../utils/FieldTypeahead';
+import ArkimeVisualizations from '../visualizations/Visualizations';
+import ArkimeCollapsible from '../utils/CollapsibleWrapper';
+import ArkimePie from './Hierarchy';
 // import utils
 import Utils from '../utils/utils';
 
@@ -256,14 +260,14 @@ let pendingPromise; // save a pending promise to be able to cancel it
 export default {
   name: 'Spigraph',
   components: {
-    MolochError,
-    MolochSearch,
-    MolochLoading,
-    MolochNoResults,
-    MolochFieldTypeahead,
-    MolochVisualizations,
-    MolochCollapsible,
-    MolochPie
+    ArkimeError,
+    ArkimeSearch,
+    ArkimeLoading,
+    ArkimeNoResults,
+    ArkimeFieldTypeahead,
+    ArkimeVisualizations,
+    ArkimeCollapsible,
+    ArkimePie
   },
   data: function () {
     return {
@@ -280,8 +284,7 @@ export default {
       fieldTypeahead: 'node',
       baseField: this.$route.query.exp || this.$route.query.field || this.$store.state.user.settings.spiGraph || 'node',
       sortBy: this.$route.query.sort || 'graph',
-      spiGraphType: this.$route.query.spiGraphType || 'default',
-      multiviewer: this.$constants.MOLOCH_MULTIVIEWER
+      spiGraphType: this.$route.query.spiGraphType || 'default'
     };
   },
   computed: {
@@ -467,24 +470,19 @@ export default {
     /* helper functions ---------------------------------------------------- */
     loadData: function () {
       respondedAt = undefined;
+
+      if (!Utils.checkClusterSelection(this.query.cluster, this.$store.state.esCluster.availableCluster.active, this).valid) {
+        this.items = [];
+        pendingPromise = null;
+        this.recordsTotal = 0;
+        this.recordsFiltered = 0;
+        this.mapData = undefined;
+        this.graphData = undefined;
+        return;
+      }
+
       this.loading = true;
       this.error = false;
-
-      if (this.multiviewer) {
-        const availableCluster = this.$store.state.esCluster.availableCluster.active;
-        const selection = Utils.checkClusterSelection(this.query.cluster, availableCluster);
-        if (!selection.valid) { // invlaid selection
-          this.items = [];
-          this.mapData = undefined;
-          this.graphData = undefined;
-          this.recordsTotal = 0;
-          this.recordsFiltered = 0;
-          pendingPromise = null;
-          this.error = selection.error;
-          this.loading = false;
-          return;
-        }
-      }
 
       // set whether map is open on the sessions page
       if (localStorage.getItem('spigraph-open-map') === 'true') {

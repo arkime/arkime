@@ -94,7 +94,8 @@ test('periodic queries', async () => {
     since: '0',
     description: '',
     users: '',
-    roles: []
+    roles: [],
+    editRoles: []
   }, undefined);
 
   await waitFor(() => { // create query returns and tells parent to display message

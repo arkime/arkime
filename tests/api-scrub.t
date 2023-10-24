@@ -1,7 +1,7 @@
 use Test::More tests => 38;
 use Cwd;
 use URI::Escape;
-use MolochTest;
+use ArkimeTest;
 use Data::Dumper;
 use Test::Differences;
 use JSON;
@@ -9,11 +9,11 @@ use strict;
 
 my $copytest = getcwd() . "/copytest.pcap";
 my $token = getTokenCookie();
-my $es = "-o 'elasticsearch=$MolochTest::elasticsearch'";
+my $es = "-o 'elasticsearch=$ArkimeTest::elasticsearch'";
 
 countTest(0, "date=-1&expression=" . uri_escape("file=$copytest"));
 
-system("../db/db.pl --prefix tests $MolochTest::elasticsearch rm $copytest 2>&1 1>/dev/null");
+system("../db/db.pl --prefix tests $ArkimeTest::elasticsearch rm $copytest 2>&1 1>/dev/null");
 viewerPost("/regressionTests/flushCache");
 system("/bin/cp pcap/socks-http-example.pcap copytest.pcap");
 system("../capture/capture $es -c config.test.ini -n test -r copytest.pcap $ENV{INSECURE}");
@@ -26,9 +26,9 @@ countTest(3, "date=-1&expression=" . uri_escape("file=$copytest"));
 
 # Get png
     my $hit = $idQuery->{data}->[0];
-    my $png1 = $MolochTest::userAgent->get("http://$MolochTest::host:8123/api/session/raw/$hit->{node}/$hit->{id}.png");
-    my $png2 = $MolochTest::userAgent->get("http://$MolochTest::host:8124/api/session/raw/$hit->{node}/$hit->{id}.png");
-    my $pngm = $MolochTest::userAgent->get("http://$MolochTest::host:8125/api/session/raw/$hit->{node}/$hit->{id}.png");
+    my $png1 = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8123/api/session/raw/$hit->{node}/$hit->{id}.png");
+    my $png2 = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8124/api/session/raw/$hit->{node}/$hit->{id}.png");
+    my $pngm = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8125/api/session/raw/$hit->{node}/$hit->{id}.png");
 
     eq_or_diff($png1->content, $png2->content);
     eq_or_diff($png1->content, $pngm->content);
@@ -48,9 +48,9 @@ countTest(3, "date=-1&expression=" . uri_escape("file=$copytest"));
     countTest(1, "date=-1&expression=" . uri_escape("file=$copytest&&scrubbed.by==/Anon.*mous/"));
 
 # get png
-    $png1 = $MolochTest::userAgent->get("http://$MolochTest::host:8123/api/session/raw/$hit->{node}/$hit->{id}.png");
-    $png2 = $MolochTest::userAgent->get("http://$MolochTest::host:8124/api/session/raw/$hit->{node}/$hit->{id}.png");
-    $pngm = $MolochTest::userAgent->get("http://$MolochTest::host:8125/api/session/raw/$hit->{node}/$hit->{id}.png");
+    $png1 = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8123/api/session/raw/$hit->{node}/$hit->{id}.png");
+    $png2 = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8124/api/session/raw/$hit->{node}/$hit->{id}.png");
+    $pngm = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8125/api/session/raw/$hit->{node}/$hit->{id}.png");
 
     eq_or_diff($png1->content, $png2->content);
     eq_or_diff($png1->content, $pngm->content);
@@ -79,7 +79,7 @@ countTest(3, "date=-1&expression=" . uri_escape("file=$copytest"));
 
 # cleanup
     unlink("copytest.pcap");
-    system("../db/db.pl --prefix tests $MolochTest::elasticsearch rm $copytest 2>&1 1>/dev/null");
+    system("../db/db.pl --prefix tests $ArkimeTest::elasticsearch rm $copytest 2>&1 1>/dev/null");
     viewerPost("/regressionTests/flushCache");
     esGet("/_flush");
     esGet("/_refresh");

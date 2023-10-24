@@ -1,3 +1,7 @@
+<!--
+Copyright Yahoo Inc.
+SPDX-License-Identifier: Apache-2.0
+-->
 <template>
   <div>
 
@@ -60,13 +64,13 @@
         <span class="fa fa-user-circle mr-1" />
         See {{ seeAll ? ' MY ' : ' ALL ' }} Shortcuts
       </b-form-checkbox>
-      <moloch-paging
+      <arkime-paging
         v-if="shortcuts.data"
         :length-default="shortcutsSize"
         @changePaging="changeShortcutsPaging"
         :records-total="shortcuts.recordsTotal"
         :records-filtered="shortcuts.recordsFiltered">
-      </moloch-paging>
+      </arkime-paging>
     </div>
 
     <table v-if="shortcuts.data"
@@ -90,8 +94,6 @@
           <th>Value(s)</th>
           <th>Type</th>
           <th>Creator</th>
-          <th>Roles</th>
-          <th>Users</th>
           <th>&nbsp;</th>
         </tr>
       </thead>
@@ -135,12 +137,6 @@
             <td>
               {{ item.userId }}
             </td>
-            <td>
-              {{ item.roles ? item.roles.join(',') : '' }}
-            </td>
-            <td>
-              {{ item.users }}
-            </td>
             <td class="shortcut-btns">
               <span class="pull-right">
                 <b-button
@@ -151,7 +147,16 @@
                   @click="$emit('copy-value', item.value)">
                   <span class="fa fa-clipboard fa-fw" />
                 </b-button>
-                <span v-if="user.roles.includes('arkimeAdmin') || item.userId === user.userId">
+                <span v-if="canEdit(item)">
+                  <b-button
+                    size="sm"
+                    variant="info"
+                    v-b-tooltip.hover
+                    v-if="canTransfer(item)"
+                    title="Transfer ownership of this shortcut"
+                    @click="openTransferShortcut(item)">
+                    <span class="fa fa-share fa-fw" />
+                  </b-button>
                   <b-button
                     size="sm"
                     variant="danger"
@@ -290,20 +295,33 @@
         </select>
       </b-input-group>
       <div class="d-flex">
-        <div class="mr-3">
+        <div class="mr-3 flex-grow-1 no-wrap">
           <RoleDropdown
             :roles="roles"
-            display-text="Share with roles"
+            display-text="Who can view"
+            :selected-roles="newShortcutRoles"
             @selected-roles-updated="updateNewShortcutRoles"
+          />
+          <RoleDropdown
+            :roles="roles"
+            display-text="Who can edit"
+            :selected-roles="newShortcutEditRoles"
+            @selected-roles-updated="updateNewShortcutEditRoles"
           />
         </div>
         <b-input-group
-          size="sm"
-          class="flex-grow-1"
-          prepend="Share with users">
+          size="sm">
+          <template #prepend>
+            <b-input-group-text
+              v-b-tooltip.hover
+              class="cursor-help"
+              title="Enter a comma separated list of users that can use this view">
+              Share with users
+            </b-input-group-text>
+          </template>
           <b-form-input
             v-model="newShortcutUsers"
-            placeholder="comma separated list of userIds"
+            placeholder="Comma separated list of users"
           />
         </b-input-group>
       </div>
@@ -362,21 +380,28 @@
       </template> <!-- /modal footer -->
     </b-modal> <!-- /new shortcut form -->
 
+    <transfer-resource
+      @transfer-resource="submitTransferShortcut"
+    />
+
   </div> <!-- / shortcut settings -->
 </template>
 
 <script>
 // services
 import SettingsService from './SettingsService';
+import UserService from '../../../../../common/vueapp/UserService';
 // components
-import MolochPaging from '../utils/Pagination';
+import ArkimePaging from '../utils/Pagination';
 import RoleDropdown from '../../../../../common/vueapp/RoleDropdown';
+import TransferResource from '../../../../../common/vueapp/TransferResource';
 
 export default {
   name: 'Shortcuts',
   components: {
-    MolochPaging,
-    RoleDropdown
+    ArkimePaging,
+    RoleDropdown,
+    TransferResource
   },
   data () {
     return {
@@ -390,6 +415,7 @@ export default {
       newShortcutType: 'string',
       newShortcutUsers: '',
       newShortcutRoles: [],
+      newShortcutEditRoles: [],
       editingShortcut: false,
       shortcutsStart: 0,
       shortcutsSize: 50,
@@ -399,9 +425,10 @@ export default {
         search: ''
       },
       createShortcutLoading: false,
-      hasUsersES: this.$constants.MOLOCH_HASUSERSES,
+      hasUsersES: this.$constants.HASUSERSES,
       showAll: false,
-      seeAll: false
+      seeAll: false,
+      transferResource: undefined
     };
   },
   computed: {
@@ -422,6 +449,15 @@ export default {
   },
   methods: {
     /* exposed page functions ---------------------------------------------- */
+    canEdit (shortcut) {
+      return this.user.roles.includes('arkimeAdmin') ||
+        (shortcut.userId && shortcut.userId === this.user.userId) ||
+        (shortcut.editRoles && UserService.hasRole(this.user, shortcut.editRoles.join(',')));
+    },
+    canTransfer (shortcut) {
+      return this.user.roles.includes('arkimeAdmin') ||
+        (shortcut.userId && shortcut.userId === this.user.userId);
+    },
     /**
      * triggered when shortcuts paging is changed
      * @param {object} newParams Object containing length & start
@@ -450,6 +486,7 @@ export default {
       this.newShortcutValue = shortcut.value || '';
       this.newShortcutUsers = shortcut.users || '';
       this.newShortcutRoles = shortcut.roles || [];
+      this.newShortcutEditRoles = shortcut.editRoles || [];
       this.newShortcutType = shortcut.type || 'string';
       this.newShortcutDescription = shortcut.description || '';
       this.$bvModal.show('shortcut-modal');
@@ -460,6 +497,9 @@ export default {
     },
     updateNewShortcutRoles (roles) {
       this.newShortcutRoles = roles;
+    },
+    updateNewShortcutEditRoles (roles) {
+      this.newShortcutEditRoles = roles;
     },
     /* creates a new shortcut */
     createShortcut () {
@@ -473,6 +513,7 @@ export default {
         value: this.newShortcutValue,
         users: this.newShortcutUsers,
         roles: this.newShortcutRoles,
+        editRoles: this.newShortcutEditRoles,
         description: this.newShortcutDescription
       };
 
@@ -494,6 +535,38 @@ export default {
         }
       }
     },
+    /**
+     * Opens the transfer resource modal
+     * @param {Object} shortcut The shortcut to transfer
+     */
+    openTransferShortcut (shortcut) {
+      this.transferShortcut = shortcut;
+      this.$bvModal.show('transfer-modal');
+    },
+    /**
+     * Submits the transfer resource modal contents and updates the shortcut
+     * @param {Object} userId The user id to transfer the shortcut to
+     */
+    submitTransferShortcut ({ userId }) {
+      if (!userId) {
+        this.transferShortcut = undefined;
+        return;
+      }
+
+      const data = JSON.parse(JSON.stringify(this.transferShortcut));
+      const id = data.id;
+      delete data.id;
+      data.userId = userId;
+
+      SettingsService.updateShortcut(id, data).then((response) => {
+        this.getShortcuts();
+        this.transferShortcut = undefined;
+        this.$emit('display-message', { msg: response.text, type: 'success' });
+        this.$bvModal.hide('transfer-modal');
+      }).catch((error) => {
+        this.$emit('display-message', { msg: error.text, type: 'danger' });
+      });
+    },
     /* updates a specified shortcut */
     updateShortcut () {
       if (!this.validShortcutForm()) { return; }
@@ -506,6 +579,7 @@ export default {
         value: this.newShortcutValue,
         users: this.newShortcutUsers,
         roles: this.newShortcutRoles,
+        editRoles: this.newShortcutEditRoles,
         description: this.newShortcutDescription
       };
 
@@ -593,6 +667,7 @@ export default {
       this.newShortcutValue = '';
       this.newShortcutUsers = '';
       this.newShortcutRoles = [];
+      this.newShortcutEditRoles = [];
       this.newShortcutDescription = '';
       this.createShortcutLoading = false;
     },

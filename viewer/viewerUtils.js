@@ -1,3 +1,10 @@
+/******************************************************************************/
+/* viewerUtils.js -- shared util functions
+ *
+ * Copyright Yahoo Inc.
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
 'use strict';
 
 const Config = require('./config.js');
@@ -8,7 +15,7 @@ const https = require('https');
 const ArkimeUtil = require('../common/arkimeUtil');
 const Auth = require('../common/auth');
 const User = require('../common/user');
-const molochparser = require('./molochparser.js');
+const arkimeparser = require('./arkimeparser.js');
 const internals = require('./internals');
 
 class ViewerUtils {
@@ -28,15 +35,6 @@ class ViewerUtils {
 
     if (internals.caTrustCerts[node] !== undefined && internals.caTrustCerts[node].length > 0) {
       options.ca = internals.caTrustCerts[node];
-    }
-  };
-
-  // ----------------------------------------------------------------------------
-  static noCache (req, res, ct) {
-    res.header('Cache-Control', 'no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0');
-    if (ct) {
-      res.setHeader('Content-Type', ct);
-      res.header('X-Content-Type-Options', 'nosniff');
     }
   };
 
@@ -266,8 +264,8 @@ class ViewerUtils {
     if (!err && req.user.getExpression()) {
       try {
         // Expression was set by admin, so assume email search ok
-        molochparser.parser.yy.emailSearch = true;
-        const userExpression = molochparser.parse(req.user.getExpression());
+        arkimeparser.parser.yy.emailSearch = true;
+        const userExpression = arkimeparser.parse(req.user.getExpression());
         query.query.bool.filter.push(userExpression);
       } catch (e) {
         console.log(`ERROR - Forced expression (${req.user.getExpression()}) doesn't compile -`, e);
@@ -276,21 +274,21 @@ class ViewerUtils {
     }
 
     ViewerUtils.lookupQueryItems(query.query.bool.filter, async (lerr) => {
-      req._molochESQuery = JSON.stringify(query);
+      req._arkimeESQuery = JSON.stringify(query);
 
       if (reqQuery.date === '-1' || // An all query
           Config.get('queryAllIndices', Config.get('multiES', false))) { // queryAllIndices (default: multiES)
-        req._molochESQueryIndices = Db.fixIndex(['sessions2-*', 'sessions3-*']);
+        req._arkimeESQueryIndices = Db.fixIndex(['sessions2-*', 'sessions3-*']);
         return finalCb(err || lerr, query, Db.fixIndex(['sessions2-*', 'sessions3-*'])); // Then we just go against all indices for a slight overhead
       }
 
       const indices = await Db.getIndices(reqQuery.startTime, reqQuery.stopTime, reqQuery.bounding, Config.get('rotateIndex', 'daily'));
 
       if (indices.length > 3000) { // Will url be too long
-        req._molochESQueryIndices = Db.fixIndex(['sessions2-*', 'sessions3-*']);
+        req._arkimeESQueryIndices = Db.fixIndex(['sessions2-*', 'sessions3-*']);
         return finalCb(err || lerr, query, Db.fixIndex(['sessions2-*', 'sessions3-*']));
       } else {
-        req._molochESQueryIndices = indices;
+        req._arkimeESQueryIndices = indices;
         return finalCb(err || lerr, query, indices);
       }
     });
@@ -537,7 +535,7 @@ class ViewerUtils {
       return;
     }
 
-    Db.molochNodeStatsCache(node, function (err, stat) {
+    Db.arkimeNodeStatsCache(node, function (err, stat) {
       if (err) {
         return cb(err);
       }

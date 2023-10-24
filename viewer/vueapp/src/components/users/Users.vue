@@ -1,3 +1,7 @@
+<!--
+Copyright Yahoo Inc.
+SPDX-License-Identifier: Apache-2.0
+-->
 <template>
   <div class="container-fluid">
     <UsersCommon
@@ -7,7 +11,7 @@
       @update-roles="getRoles"
       @update-current-user="updateCurrentUser">
       <template #loading>
-        <MolochLoading />
+        <ArkimeLoading />
       </template>
     </UsersCommon>
   </div>
@@ -15,14 +19,14 @@
 
 <script>
 import UserService from './UserService';
-import MolochLoading from '../utils/Loading';
+import ArkimeLoading from '../utils/Loading';
 import UsersCommon from '../../../../../common/vueapp/Users';
 
 export default {
   name: 'Users',
   components: {
     UsersCommon,
-    MolochLoading
+    ArkimeLoading
   },
   computed: {
     user: {

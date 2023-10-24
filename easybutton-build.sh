@@ -1,31 +1,32 @@
 #!/bin/bash
 # Use this script to install OS dependencies, downloading and compile arkime dependencies, compile arkime capture, optionally install
+#
+# SPDX-License-Identifier: Apache-2.0
 
 # This script will
 # * use apt-get/yum to install OS dependancies
 # * download known working versions of arkime dependancies
 # * build them statically
-# * configure moloch-capture to use them
-# * build moloch-capture
+# * configure capture to use them
+# * build capture
 # * install node unless --nonode
 # * install arkime if --install
 
 
+# newer glib requires pcre2, issues on Centos 7
 GLIB=2.72.4
-YARA=4.0.2
-MAXMIND=1.4.3
+# newer yara requires newer ssl, issues on Centos 7
+YARA=4.2.3
+MAXMIND=1.7.1
 PCAP=1.10.4
 CURL=8.4.0
 LUA=5.3.6
 DAQ=2.0.7
-NGHTTP2=1.44.0
-ZSTD=1.5.2
+NGHTTP2=1.57.0
+ZSTD=1.5.5
 KAFKA=1.5.3
 
-# node v18 doesn't support RHEL 7
-# RHEL 7 EOL is July 1, 2024
-# node v16 EOL is Sept 11, 2023
-NODE=16.20.2
+NODE=18.18.2
 
 TDIR="/opt/arkime"
 DOPFRING=0
@@ -37,7 +38,7 @@ DONODE=1
 DOINSTALL=0
 DORMINSTALL=0
 DOTHIRDPARTY=1
-BUILDZSTD=0
+BUILDZSTD=1
 
 while :
 do
@@ -102,6 +103,42 @@ do
   esac
 done
 
+
+################################################################################
+# Default node setting, reset to unofficial builds below for Centos 7, Ubuntu 18, Alpine
+NODEHOST=nodejs.org
+case "$(uname -m)" in
+    "x86_64")
+        NODEARCH="x64"
+        ;;
+    "aarch64")
+        NODEARCH="arm64"
+        ;;
+esac
+
+################################################################################
+# BUILD FUNCTIONS
+################################################################################
+buildYara () {
+  if [ ! -f "yara/yara-$YARA.tar.gz" ]; then
+    mkdir -p yara
+    wget https://github.com/VirusTotal/yara/archive/v$YARA.tar.gz -O yara/yara-$YARA.tar.gz
+  fi
+
+  if [ ! -f "yara/yara-$YARA/libyara/.libs/libyara.a" ]; then
+    (cd yara ; tar zxf yara-$YARA.tar.gz)
+    (cd yara/yara-$YARA; ./bootstrap.sh ; ./configure --enable-static; $MAKE)
+    if [ $? -ne 0 ]; then
+      echo "ARKIME: $MAKE failed"
+      exit 1
+    fi
+  else
+    echo "ARKIME: Not rebuilding yara"
+  fi
+}
+
+################################################################################
+
 # Warn users
 echo ""
 echo "This script is for building Arkime from source and meant for people who enjoy pain. The prebuilt versions at https://arkime.com/#download are recommended for installation."
@@ -120,15 +157,17 @@ UNAME="$(uname)"
 echo "ARKIME: Installing Dependencies"
 if [ -f "/etc/redhat-release" ] || [ -f "/etc/system-release" ]; then
   . /etc/os-release
-  if [ "$VERSION_ID" = "7" ]; then
-      BUILDZSTD=1
+  if [[ $DONODE == "1" && "$VERSION_ID" == "7" ]]; then
+    NODEHOST=unofficial-builds.nodejs.org
+    NODEARCH="$NODEARCH-glibc-217"
   fi
+
   if [[ "$VERSION_ID" == 9* || "$VERSION_ID" == 2023 ]]; then
-      sudo yum install -y glib2-devel libmaxminddb-devel libcurl-devel
-      WITHGLIB=" "
-      WITHCURL=" "
+    sudo yum install -y glib2-devel libmaxminddb-devel libcurl-devel
+    WITHGLIB=" "
+    WITHCURL=" "
   fi
-  sudo yum -y install --skip-broken wget curl pcre pcre-devel pkgconfig flex bison gcc-c++ zlib-devel e2fsprogs-devel openssl-devel file-devel make gettext libuuid-devel perl-JSON bzip2-libs bzip2-devel perl-libwww-perl libpng-devel xz libffi-devel readline-devel libtool libyaml-devel perl-Socket6 perl-Test-Differences libzstd-devel
+  sudo yum -y install --skip-broken wget curl pcre pcre-devel pkgconfig flex bison gcc-c++ zlib-devel e2fsprogs-devel openssl-devel file-devel make gettext libuuid-devel perl-JSON bzip2-libs bzip2-devel perl-libwww-perl libpng-devel xz libffi-devel readline-devel libtool libyaml-devel perl-Socket6 perl-Test-Differences
   if [ $? -ne 0 ]; then
     echo "ARKIME: yum failed"
     exit 1
@@ -137,29 +176,31 @@ fi
 
 if [ -f "/etc/debian_version" ]; then
   . /etc/os-release
-  if [[ "$VERSION_CODENAME" == "bionic" || "$VERSION_CODENAME" == "focal" ]]; then
-      BUILDZSTD=1
-  fi
-  sudo apt-get -qq install wget curl libpcre3-dev uuid-dev libmagic-dev pkg-config g++ flex bison zlib1g-dev libffi-dev gettext libgeoip-dev make libjson-perl libbz2-dev libwww-perl libpng-dev xz-utils libffi-dev libssl-dev libreadline-dev libtool libyaml-dev dh-autoreconf libsocket6-perl libtest-differences-perl libzstd-dev
+  sudo apt-get -qq install wget curl libpcre3-dev uuid-dev libmagic-dev pkg-config g++ flex bison zlib1g-dev libffi-dev gettext libgeoip-dev make libjson-perl libbz2-dev libwww-perl libpng-dev xz-utils libffi-dev libssl-dev libreadline-dev libtool libyaml-dev dh-autoreconf libsocket6-perl libtest-differences-perl
   if [ $? -ne 0 ]; then
     echo "ARKIME: apt-get failed"
     exit 1
   fi
 
+  if [[ $DONODE == "1" && "$VERSION_CODENAME" == "bionic" ]]; then
+    NODEHOST=unofficial-builds.nodejs.org
+    NODEARCH="$NODEARCH-glibc-217"
+  fi
+
   # Just use OS packages, currently for Ubuntu 22
   if [ $DOTHIRDPARTY -eq 0 ]; then
-      apt-get -qq install libmaxminddb-dev libcurl4-openssl-dev libyara-dev libglib2.0-dev libpcap-dev libnghttp2-dev liblua5.4-dev librdkafka-dev
-      if [ $? -ne 0 ]; then
-        echo "ARKIME: apt-get failed"
-        exit 1
-      fi
-      export LUA_CFLAGS="-I/usr/include/lua5.4/"
-      export LUA_LIBS="-llua5.4"
-      with_lua=no
+    apt-get -qq install libmaxminddb-dev libcurl4-openssl-dev libyara-dev libglib2.0-dev libpcap-dev libnghttp2-dev liblua5.4-dev librdkafka-dev libzstd-dev
+    if [ $? -ne 0 ]; then
+      echo "ARKIME: apt-get failed"
+      exit 1
+    fi
+    export LUA_CFLAGS="-I/usr/include/lua5.4/"
+    export LUA_LIBS="-llua5.4"
+    with_lua=no
 
-      export KAFKA_CFLAGS="-I/usr/include/librdkafka/"
-      export KAFKA_LIBS="-lrdkafka"
-      with_kafka=no
+    export KAFKA_CFLAGS="-I/usr/include/librdkafka/"
+    export KAFKA_LIBS="-lrdkafka"
+    with_kafka=no
   fi
 fi
 
@@ -179,6 +220,13 @@ fi
 if [ "$UNAME" = "FreeBSD" ]; then
   sudo pkg_add -Fr wget curl pcre flex bison gettext e2fsprogs-libuuid glib gmake libexecinfo
   MAKE=gmake
+fi
+
+if [ -f "/etc/alpine-release" ] ; then
+  sudo apk add --no-cache wget curl-dev file-dev g++ zstd-dev make glib-dev yaml-dev libpcap-dev librdkafka-dev libmaxminddb-dev autoconf automake pcre-dev libuuid lua-dev libtool perl-http-message perl-lwp-protocol-https perl-json perl-test-differences perl-socket6
+  mkdir -p thirdparty
+  NODEHOST=unofficial-builds.nodejs.org
+  NODEARCH="$NODEARCH-musl"
 fi
 
 # do autoconf
@@ -259,6 +307,7 @@ elif [ -f "/etc/arch-release" ]; then
 
     DOKAFKA=1
     BUILDKAFKA=0
+    BUILDZSTD=0
 
     echo './configure \
       --with-zstd=yes \
@@ -267,7 +316,7 @@ elif [ -f "/etc/arch-release" ]; then
       --with-glib2=no \
       --with-pfring=no \
       --with-curl=no \
-      --with-lua=no LIBS="-lpcap -lyara -llua -lcurl" GLIB2_CFLAGS="-I/usr/include/glib-2.0 -I/usr/lib/glib-2.0/include" GLIB2_LIBS="-lglib-2.0 -lgmodule-2.0 -lgobject-2.0 -lgio-2.0"
+      --with-lua=no LIBS="-lpcap -lyara -llua -lcurl" GLIB2_CFLAGS="-I/usr/include/glib-2.0 -I/usr/lib/glib-2.0/include" GLIB2_LIBS="-lglib-2.0 -lgmodule-2.0 -lgobject-2.0 -lgio-2.0" \
       KAFKA_LIBS="-lrdkafka" KAFKA_CFLAGS="-I/usr/include/librdkafka" \
       --with-kafka=no'
     ./configure \
@@ -278,6 +327,35 @@ elif [ -f "/etc/arch-release" ]; then
       --with-pfring=no \
       --with-curl=no \
       --with-lua=no LIBS="-lpcap -lyara -llua -lcurl" GLIB2_CFLAGS="-I/usr/include/glib-2.0 -I/usr/lib/glib-2.0/include" GLIB2_LIBS="-lglib-2.0 -lgmodule-2.0 -lgobject-2.0 -lgio-2.0" \
+      KAFKA_LIBS="-lrdkafka" KAFKA_CFLAGS="-I/usr/include/librdkafka" \
+      --with-kafka=no
+elif [ -f "/etc/alpine-release" ] ; then
+
+    DOKAFKA=1
+    BUILDKAFKA=0
+    BUILDZSTD=0
+
+    (cd thirdparty; buildYara)
+
+    echo './configure \
+      --with-zstd=yes \
+      --with-libpcap=no \
+      --with-yara=thirdparty/yara/yara-$YARA \
+      --with-glib2=no \
+      --with-pfring=no \
+      --with-curl=no \
+      --with-lua=no LIBS="-lpcap -llua -lcurl" GLIB2_CFLAGS="-I/usr/include/glib-2.0 -I/usr/lib/glib-2.0/include" GLIB2_LIBS="-lglib-2.0 -lgmodule-2.0 -lgobject-2.0 -lgio-2.0" \
+      KAFKA_LIBS="-lrdkafka" KAFKA_CFLAGS="-I/usr/include/librdkafka" \
+      --with-kafka=no'
+
+    ./configure \
+      --with-zstd=yes \
+      --with-libpcap=no \
+      --with-yara=thirdparty/yara/yara-$YARA \
+      --with-glib2=no \
+      --with-pfring=no \
+      --with-curl=no \
+      --with-lua=no LIBS="-L/usr/lib -lpcap -llua -lcurl" GLIB2_CFLAGS="-I/usr/include/glib-2.0 -I/usr/lib/glib-2.0/include" GLIB2_LIBS="-lglib-2.0 -lgmodule-2.0 -lgobject-2.0 -lgio-2.0" \
       KAFKA_LIBS="-lrdkafka" KAFKA_CFLAGS="-I/usr/include/librdkafka" \
       --with-kafka=no
 elif [ $DOTHIRDPARTY -eq 0 ]; then
@@ -319,22 +397,7 @@ else
     fi
   fi
 
-  # yara
-  if [ ! -f "yara/yara-$YARA.tar.gz" ]; then
-    mkdir -p yara
-    wget https://github.com/VirusTotal/yara/archive/v$YARA.tar.gz -O yara/yara-$YARA.tar.gz
-  fi
-
-  if [ ! -f "yara/yara-$YARA/libyara/.libs/libyara.a" ]; then
-    (cd yara ; tar zxf yara-$YARA.tar.gz)
-    (cd yara/yara-$YARA; ./bootstrap.sh ; ./configure --enable-static; $MAKE)
-    if [ $? -ne 0 ]; then
-      echo "ARKIME: $MAKE failed"
-      exit 1
-    fi
-  else
-    echo "ARKIME: Not rebuilding yara"
-  fi
+  buildYara
 
   # Maxmind
   if [ ! -f "libmaxminddb-$MAXMIND.tar.gz" ]; then
@@ -501,6 +564,8 @@ if [ $? -ne 0 ]; then
   exit 1
 fi
 
+./capture/capture --version
+
 # Build plugins
 (cd capture/plugins/lua; $MAKE)
 
@@ -530,23 +595,15 @@ if [ $DORMINSTALL -eq 1 ]; then
 fi
 
 # Install node if not already there
-case "$(uname -m)" in
-    "x86_64")
-        ARCH="x64"
-        ;;
-    "aarch64")
-        ARCH="arm64"
-        ;;
-esac
-
 if [ $DONODE -eq 1 ] && [ ! -f "$TDIR/bin/node" ]; then
     echo "ARKIME: Installing node $NODE"
     sudo mkdir -p $TDIR/bin $TDIR/etc
-    if [ ! -f node-v$NODE-linux-x64.tar.xz ] ; then
-        wget https://nodejs.org/download/release/v$NODE/node-v$NODE-linux-$ARCH.tar.xz
+
+    if [ ! -f node-v$NODE-linux-$NODEARCH.tar.xz ] ; then
+	wget https://$NODEHOST/download/release/v$NODE/node-v$NODE-linux-$NODEARCH.tar.xz
     fi
-    sudo tar xfC node-v$NODE-linux-$ARCH.tar.xz $TDIR
-    (cd $TDIR/bin ; sudo ln -sf ../node-v$NODE-linux-$ARCH/bin/* .)
+    sudo tar xf node-v$NODE-linux-$NODEARCH.tar.xz -C $TDIR
+    (cd $TDIR/bin ; sudo ln -sf ../node-v$NODE-linux-$NODEARCH/bin/* .)
 fi
 
 echo

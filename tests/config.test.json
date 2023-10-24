@@ -1,7 +1,7 @@
 {
  "wiseService": {
   "usersPrefix": "tests",
-  "userNameHeader": "digest",
+  "authMode": "digest",
   "usersElasticsearch": "http://localhost:9200"
  },
  "file:email": {

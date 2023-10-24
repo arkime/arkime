@@ -1,5 +1,9 @@
+<!--
+Copyright Yahoo Inc.
+SPDX-License-Identifier: Apache-2.0
+-->
 <template>
-  <div class="container-fluid mb-4 row">
+  <div class="d-flex flex-row flex-grow-1 overflow-hidden pt-3">
 
     <!-- navigation -->
     <div
@@ -38,7 +42,7 @@
       </div>
     </div>
 
-    <div class="col-xl-10 col-lg-9 col-md-9 col-sm-8 col-xs-12 settings-right-panel">
+    <div class="col-xl-10 col-lg-9 col-md-9 col-sm-8 col-xs-12 overflow-auto h-100">
 
       <!-- general -->
       <div v-if="visibleTab === 'general'">
@@ -253,22 +257,64 @@
           <dd>The number of days defined in the "Days" input</dd>
           <dt>${numHours}</dt>
           <dd>The number of hours defined in the "Hours" input</dd>
-          <dt>${stopTS}</dt>
-          <dd>The stop date timestamp defined in the "Stop Date" input (YYYY-mm-ddTHH.mm.ssZ)</dd>
+          <dt>${endTS}</dt>
+          <dd>The end date timestamp defined in the "End Date" input (YYYY-mm-ddTHH.mm.ssZ)</dd>
           <dt>${startTS}</dt>
           <dd>The start date timestamp defined in the "Start Date" input (YYYY-mm-ddTHH.mm.ssZ)</dd>
-          <dt>${stopDate}</dt>
-          <dd>The stop date defined in the "Stop Date" input (YYYY-mm-dd)</dd>
+          <dt>${endDate}</dt>
+          <dd>The end date defined in the "End Date" input (YYYY-mm-dd)</dd>
           <dt>${startDate}</dt>
           <dd>The start date defined in the "Start Date" input (YYYY-mm-dd)</dd>
-          <dt>${stopEpoch}</dt>
-          <dd>The stop date timestamp since epoch (in seconds) in the "Stop Date" input</dd>
+          <dt>${endEpoch}</dt>
+          <dd>The end date timestamp since epoch (in seconds) in the "End Date" input</dd>
           <dt>${startEpoch}</dt>
           <dd>The start date timestamp since epoch (in seconds) defined in the "Start Date" input</dd>
-          <dt>${stopSplunk}</dt>
-          <dd>The stop date timestamp defined in the "Stop Date" input (MM/DD/YYYY:HH:mm:ss)</dd>
+          <dt>${endSplunk}</dt>
+          <dd>The end date timestamp defined in the "End Date" input (MM/DD/YYYY:HH:mm:ss)</dd>
           <dt>${startSplunk}</dt>
           <dd>The start date timestamp defined in the "Start Date" input (MM/DD/YYYY:HH:mm:ss)</dd>
+          <dt>${array, ...}</dt>
+          <dd>
+            <p class="m-0">
+              You can create arrays of values in links. Arrays are special and include a lot of customization.
+              <ul class="m-0">
+                <li>Do not include spaces in your array options JSON</li>
+                <li>Escape double quotes with a backslash <code>\"</code></li>
+                <li>Escape backslashes with a backslash <code>\\</code></li>
+                <li>JSON keys must be double quoted</li>
+                <li>JSON values must be double quoted</li>
+                <li>JSON values must be strings</li>
+                <li>JSON values must be comma separated</li>
+                <li>There must be a comma (<code>,</code>) separating the <code>array</code> keyword and the array options JSON</li>
+                <li>If the array options JSON cannot be parsed, the placeholder is removed from the link. Open the browser's development console to see exactly where the JSON can't be parsed.</li>
+              </ul>
+            </p>
+            <p class="m-0">
+              <strong class="text-info">iType<sup>*</sup></strong>
+              Which iType values to include in the array. REQUIRED (ip, domain, url, email, hash, phone, text)
+            </p>
+            <p class="m-0">
+              <strong class="text-info">include</strong>
+              "all" or "top". "all" = all values of the specified iType. "top" = top level values of the specified iType. Defaults to "all"
+            </p>
+            <p class="m-0">
+              <strong class="text-info">sep</strong>
+              Separator between values. Defaults to comma (",")
+            </p>
+            <p class="m-0">
+              <strong class="text-info">quote</strong>
+              Quote character to wrap values. Defaults to none ("")
+            </p>
+            <p class="m-0">
+              <strong>Examples:</strong>
+              <br>
+              <code>${array,{"iType":"ip"}}</code> = 10.0.0.1,10.0.0.2,10.0.0.3
+              <br>
+              <code>${array,{"iType":"ip","include":"top","sep":" OR ","quote":"\""}}</code> = "10.0.0.1" OR "10.0.0.2"
+              <br>
+              <code>${array,{"iType":"domain","include":"all","sep":"|","quote":"'"}}</code> = 'example.com'|'test.org'|'arkime.com'
+            </p>
+          </dd>
         </dl>
         <p class="mt-1">
           Example:
@@ -385,3 +431,12 @@ export default {
   }
 };
 </script>
+
+<style scoped>
+dl.dl-horizontal dt {
+  width: 130px;
+}
+dl.dl-horizontal dd {
+  margin-left: 140px;
+}
+</style>

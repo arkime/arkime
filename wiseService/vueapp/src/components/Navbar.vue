@@ -1,3 +1,7 @@
+<!--
+Copyright Yahoo Inc.
+SPDX-License-Identifier: Apache-2.0
+-->
 <template>
   <div>
     <!-- wise navbar -->
@@ -76,22 +80,27 @@
         v-b-tooltip.hover.left
         title="Toggle light/dark theme">
         <span v-if="wiseTheme === 'light'"
-          class="fa fa-sun-o">
+          class="fa fa-sun-o fa-fw">
         </span>
         <span v-if="wiseTheme === 'dark'"
-          class="fa fa-moon-o">
+          class="fa fa-moon-o fa-fw">
         </span>
       </button> <!-- /dark/light mode -->
+      <Logout />
     </nav> <!-- /wise navbar -->
   </div>
 </template>
 
 <script>
+import Logout from '@/../../../common/vueapp/Logout';
 import Version from '@/../../../common/vueapp/Version';
 
 export default {
   name: 'WiseNavbar',
-  components: { Version },
+  components: {
+    Logout,
+    Version
+  },
   data: function () {
     return {
       queryParams: {}

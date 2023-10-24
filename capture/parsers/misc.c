@@ -1,86 +1,76 @@
 /* Copyright 2012-2017 AOL Inc. All rights reserved.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this Software except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: Apache-2.0
  */
-#include "moloch.h"
+#include "arkime.h"
 
-extern MolochConfig_t        config;
+extern ArkimeConfig_t        config;
 
 LOCAL  int userField;
 
 /******************************************************************************/
-LOCAL void rdp_classify(MolochSession_t *session, const unsigned char *data, int len, int UNUSED(which), void *UNUSED(uw))
+LOCAL void rdp_classify(ArkimeSession_t *session, const uint8_t *data, int len, int UNUSED(which), void *UNUSED(uw))
 {
 
     if (len > 5 && data[3] <= len && data[4] == (data[3] - 5) && data[5] == 0xe0) {
-        moloch_session_add_protocol(session, "rdp");
-        if (len > 30 && memcmp(data+11, "Cookie: mstshash=", 17) == 0) {
-            char *end = g_strstr_len((char *)data+28, len-28, "\r\n");
+        arkime_session_add_protocol(session, "rdp");
+        if (len > 30 && memcmp(data + 11, "Cookie: mstshash=", 17) == 0) {
+            char *end = g_strstr_len((char *)data + 28, len - 28, "\r\n");
             if (end)
-                moloch_field_string_add_lower(userField, session, (char*)data+28, end - (char *)data - 28);
+                arkime_field_string_add_lower(userField, session, (char * )data + 28, end - (char *)data - 28);
         }
     }
 }
 /******************************************************************************/
-LOCAL void imap_classify(MolochSession_t *session, const unsigned char *data, int len, int UNUSED(which), void *UNUSED(uw))
+LOCAL void imap_classify(ArkimeSession_t *session, const uint8_t *data, int len, int UNUSED(which), void *UNUSED(uw))
 {
-    if (moloch_memstr((const char *)data+5, len-5, "IMAP", 4)) {
-        moloch_session_add_protocol(session, "imap");
+    if (arkime_memstr((const char *)data + 5, len - 5, "IMAP", 4)) {
+        arkime_session_add_protocol(session, "imap");
     }
 }
 /******************************************************************************/
-LOCAL void gh0st_classify(MolochSession_t *session, const unsigned char *data, int len, int UNUSED(which), void *UNUSED(uw))
+LOCAL void gh0st_classify(ArkimeSession_t *session, const uint8_t *data, int len, int UNUSED(which), void *UNUSED(uw))
 {
     if (len < 15)
         return;
 
     if (data[13] == 0x78 && data[14] == 0x9c &&
-        (((data[8] == 0) && (data[7] == 0) && (((data[6]&0xff) << (uint32_t)8 | (data[5]&0xff)) == len)) ||  // Windows
-         ((data[5] == 0) && (data[6] == 0) && (((data[7]&0xff) << (uint32_t)8 | (data[8]&0xff)) == len)))) { // Mac
-        moloch_session_add_protocol(session, "gh0st");
+        (((data[8] == 0) && (data[7] == 0) && (((data[6] & 0xff) << (uint32_t)8 | (data[5] & 0xff)) == len)) || // Windows
+         ((data[5] == 0) && (data[6] == 0) && (((data[7] & 0xff) << (uint32_t)8 | (data[8] & 0xff)) == len)))) { // Mac
+        arkime_session_add_protocol(session, "gh0st");
     }
 
     if (data[7] == 0 && data[8] == 0 && data[11] == 0 && data[12] == 0 && data[13] == 0x78 && data[14] == 0x9c) {
-        moloch_session_add_protocol(session, "gh0st");
+        arkime_session_add_protocol(session, "gh0st");
     }
 }
 /******************************************************************************/
-LOCAL void other220_classify(MolochSession_t *session, const unsigned char *data, int len, int UNUSED(which), void *UNUSED(uw))
+LOCAL void other220_classify(ArkimeSession_t *session, const uint8_t *data, int len, int UNUSED(which), void *UNUSED(uw))
 {
     if (g_strstr_len((char *)data, len, "LMTP") != NULL) {
-        moloch_session_add_protocol(session, "lmtp");
+        arkime_session_add_protocol(session, "lmtp");
     }
     else if (g_strstr_len((char *)data, len, "SMTP") == NULL && g_strstr_len((char *)data, len, " TLS") == NULL) {
-        moloch_session_add_protocol(session, "ftp");
+        arkime_session_add_protocol(session, "ftp");
     }
 }
 /******************************************************************************/
-LOCAL void vnc_classify(MolochSession_t *session, const unsigned char *data, int len, int UNUSED(which), void *UNUSED(uw))
+LOCAL void vnc_classify(ArkimeSession_t *session, const uint8_t *data, int len, int UNUSED(which), void *UNUSED(uw))
 {
     if (len >= 12 && data[7] == '.' && data[11] == 0xa)
-        moloch_session_add_protocol(session, "vnc");
+        arkime_session_add_protocol(session, "vnc");
 }
 /******************************************************************************/
-LOCAL void jabber_classify(MolochSession_t *session, const unsigned char *data, int len, int UNUSED(which), void *UNUSED(uw))
+LOCAL void jabber_classify(ArkimeSession_t *session, const uint8_t *data, int len, int UNUSED(which), void *UNUSED(uw))
 {
-    if (g_strstr_len((gchar*)data+5, len-5, "jabber") != NULL)
-        moloch_session_add_protocol(session, "jabber");
+    if (g_strstr_len((gchar * )data + 5, len - 5, "jabber") != NULL)
+        arkime_session_add_protocol(session, "jabber");
 }
 /******************************************************************************/
-LOCAL void user_classify(MolochSession_t *session, const unsigned char *data, int len, int UNUSED(which), void *UNUSED(uw))
+LOCAL void user_classify(ArkimeSession_t *session, const uint8_t *data, int len, int UNUSED(which), void *UNUSED(uw))
 {
     //If a USER packet must have not NICK or +iw with it so we don't pickup IRC
-    if (len <= 5 || moloch_memstr((char *)data, len, "\nNICK ", 6) || moloch_memstr((char *)data, len, " +iw ", 5)) {
+    if (len <= 5 || arkime_memstr((char *)data, len, "\nNICK ", 6) || arkime_memstr((char *)data, len, " +iw ", 5)) {
         return;
     }
     int i;
@@ -89,32 +79,32 @@ LOCAL void user_classify(MolochSession_t *session, const unsigned char *data, in
             break;
     }
 
-    moloch_field_string_add_lower(userField, session, (char*)data+5, i-5);
+    arkime_field_string_add_lower(userField, session, (char *)data + 5, i - 5);
 }
 /******************************************************************************/
-LOCAL void misc_add_protocol_classify(MolochSession_t *session, const unsigned char *UNUSED(data), int UNUSED(len), int UNUSED(which), void *uw)
+LOCAL void misc_add_protocol_classify(ArkimeSession_t *session, const uint8_t *UNUSED(data), int UNUSED(len), int UNUSED(which), void *uw)
 {
-    moloch_session_add_protocol(session, uw);
+    arkime_session_add_protocol(session, uw);
 }
 /******************************************************************************/
-LOCAL void ntp_classify(MolochSession_t *session, const unsigned char *data, int len, int UNUSED(which), void *UNUSED(uw))
+LOCAL void ntp_classify(ArkimeSession_t *session, const uint8_t *data, int len, int UNUSED(which), void *UNUSED(uw))
 {
 
     if ((session->port1 != 123 && session->port2 != 123) ||  // ntp port
-         len < 48 ||                                         // min length
-         data[1] > 16                                        // max stratum
+        len < 48 ||                                         // min length
+        data[1] > 16                                        // max stratum
        ) {
         return;
     }
-    moloch_session_add_protocol(session, "ntp");
+    arkime_session_add_protocol(session, "ntp");
 }
 /******************************************************************************/
-LOCAL void syslog_classify(MolochSession_t *session, const unsigned char *UNUSED(data), int len, int UNUSED(which), void *UNUSED(uw))
+LOCAL void syslog_classify(ArkimeSession_t *session, const uint8_t *UNUSED(data), int len, int UNUSED(which), void *UNUSED(uw))
 {
     int i;
     for (i = 2; i < len; i++) {
         if (data[i] == '>') {
-            moloch_session_add_protocol(session, "syslog");
+            arkime_session_add_protocol(session, "syslog");
             return;
         }
 
@@ -123,29 +113,29 @@ LOCAL void syslog_classify(MolochSession_t *session, const unsigned char *UNUSED
     }
 }
 /******************************************************************************/
-LOCAL void stun_classify(MolochSession_t *session, const unsigned char *data, int len, int UNUSED(which), void *UNUSED(uw))
+LOCAL void stun_classify(ArkimeSession_t *session, const uint8_t *data, int len, int UNUSED(which), void *UNUSED(uw))
 {
     if (len < 20 || 20 + data[3] != len)
         return;
 
-    if (memcmp(data+4, "\x21\x12\xa4\x42", 4) == 0) {
-        moloch_session_add_protocol(session, "stun");
+    if (memcmp(data + 4, "\x21\x12\xa4\x42", 4) == 0) {
+        arkime_session_add_protocol(session, "stun");
         return;
     }
 
     if (data[1] == 1 && len > 25 && data[23] + 24 == len) {
-        moloch_session_add_protocol(session, "stun");
+        arkime_session_add_protocol(session, "stun");
         return;
     }
 }
 /******************************************************************************/
-LOCAL void stun_rsp_classify(MolochSession_t *session, const unsigned char *data, int len, int UNUSED(which), void *UNUSED(uw))
+LOCAL void stun_rsp_classify(ArkimeSession_t *session, const uint8_t *data, int len, int UNUSED(which), void *UNUSED(uw))
 {
-    if (moloch_memstr((const char *)data+7, len-7, "STUN", 4))
-        moloch_session_add_protocol(session, "stun");
+    if (arkime_memstr((const char *)data + 7, len - 7, "STUN", 4))
+        arkime_session_add_protocol(session, "stun");
 }
 /******************************************************************************/
-LOCAL void flap_classify(MolochSession_t *session, const unsigned char *data, int len, int UNUSED(which), void *UNUSED(uw))
+LOCAL void flap_classify(ArkimeSession_t *session, const uint8_t *data, int len, int UNUSED(which), void *UNUSED(uw))
 {
     if (len < 6)
         return;
@@ -157,25 +147,25 @@ LOCAL void flap_classify(MolochSession_t *session, const unsigned char *data, in
 
     // lenght matches or there is another flap frame in the packet
     if (len == flen || (data[flen] == '*'))
-        moloch_session_add_protocol(session, "flap");
+        arkime_session_add_protocol(session, "flap");
 }
 /******************************************************************************/
-LOCAL void tacacs_classify(MolochSession_t *session, const unsigned char *UNUSED(data), int UNUSED(len), int UNUSED(which), void *UNUSED(uw))
+LOCAL void tacacs_classify(ArkimeSession_t *session, const uint8_t *UNUSED(data), int UNUSED(len), int UNUSED(which), void *UNUSED(uw))
 {
     if (session->port1 == 49 || session->port2 == 49)
-        moloch_session_add_protocol(session, "tacacs");
+        arkime_session_add_protocol(session, "tacacs");
 }
 /******************************************************************************/
-LOCAL void dropbox_lan_sync_classify(MolochSession_t *session, const unsigned char *data, int len, int UNUSED(which), void *UNUSED(uw))
+LOCAL void dropbox_lan_sync_classify(ArkimeSession_t *session, const uint8_t *data, int len, int UNUSED(which), void *UNUSED(uw))
 {
-    if (moloch_memstr((const char *)data+1, len-1, "host_int", 8)) {
-        moloch_session_add_protocol(session, "dropbox-lan-sync");
+    if (arkime_memstr((const char *)data + 1, len - 1, "host_int", 8)) {
+        arkime_session_add_protocol(session, "dropbox-lan-sync");
     }
 }
 /******************************************************************************/
-LOCAL void kafka_classify(MolochSession_t *session, const unsigned char *data, int len, int UNUSED(which), void *UNUSED(uw))
+LOCAL void kafka_classify(ArkimeSession_t *session, const uint8_t *data, int len, int UNUSED(which), void *UNUSED(uw))
 {
-    if (len < 10 || data[4] != 0 || data[5] > 6|| data[7] != 0)
+    if (len < 10 || data[4] != 0 || data[5] > 6 || data[7] != 0)
         return;
 
     int flen = 4 + ((data[2] << 8) | data[3]);
@@ -183,66 +173,66 @@ LOCAL void kafka_classify(MolochSession_t *session, const unsigned char *data, i
     if (len != flen)
         return;
 
-    moloch_session_add_protocol(session, "kafka");
+    arkime_session_add_protocol(session, "kafka");
 }
 /******************************************************************************/
-LOCAL void thrift_classify(MolochSession_t *session, const unsigned char *data, int len, int UNUSED(which), void *UNUSED(uw))
+LOCAL void thrift_classify(ArkimeSession_t *session, const uint8_t *data, int len, int UNUSED(which), void *UNUSED(uw))
 {
     if (len > 20 && data[4] == 0x80 && data[5] == 0x01 && data[6] == 0)
-    moloch_session_add_protocol(session, "thrift");
+        arkime_session_add_protocol(session, "thrift");
 }
 /******************************************************************************/
-LOCAL void rip_classify(MolochSession_t *session, const unsigned char *UNUSED(data), int UNUSED(len), int UNUSED(which), void *UNUSED(uw))
+LOCAL void rip_classify(ArkimeSession_t *session, const uint8_t *UNUSED(data), int UNUSED(len), int UNUSED(which), void *UNUSED(uw))
 {
     if (session->port2 != 520 &&  session->port1 != 520)
         return;
-    moloch_session_add_protocol(session, "rip");
+    arkime_session_add_protocol(session, "rip");
 }
 /******************************************************************************/
-LOCAL void isakmp_udp_classify(MolochSession_t *session, const unsigned char *data, int len, int UNUSED(which), void *UNUSED(uw))
+LOCAL void isakmp_udp_classify(ArkimeSession_t *session, const uint8_t *data, int len, int UNUSED(which), void *UNUSED(uw))
 {
     if (len < 18 ||
-            (data[16] != 1 && data[16] != 8 && data[16] != 33 && data[16] != 46) ||
-            (data[17] != 0x10 && data[17] != 0x20 && data[17] != 0x02)) {
+        (data[16] != 1 && data[16] != 8 && data[16] != 33 && data[16] != 46) ||
+        (data[17] != 0x10 && data[17] != 0x20 && data[17] != 0x02)) {
         return;
     }
-    moloch_session_add_protocol(session, "isakmp");
- }
+    arkime_session_add_protocol(session, "isakmp");
+}
 /******************************************************************************/
-LOCAL void aruba_papi_udp_classify(MolochSession_t *session, const unsigned char *data, int len, int UNUSED(which), void *UNUSED(uw))
+LOCAL void aruba_papi_udp_classify(ArkimeSession_t *session, const uint8_t *data, int len, int UNUSED(which), void *UNUSED(uw))
 {
     if (len < 20 || data[0] != 0x49 || data[1] != 0x72) {
         return;
     }
-    moloch_session_add_protocol(session, "aruba-papi");
+    arkime_session_add_protocol(session, "aruba-papi");
 }
 /******************************************************************************/
-LOCAL void sccp_classify(MolochSession_t *session, const unsigned char *data, int len, int UNUSED(which), void *UNUSED(uw))
+LOCAL void sccp_classify(ArkimeSession_t *session, const uint8_t *data, int len, int UNUSED(which), void *UNUSED(uw))
 {
-    if (len > 20 && len >= data[0] + 8 && memcmp(data+1, "\0\0\0\0\0\0\0", 7) == 0) {
-        moloch_session_add_protocol(session, "sccp");
+    if (len > 20 && len >= data[0] + 8 && memcmp(data + 1, "\0\0\0\0\0\0\0", 7) == 0) {
+        arkime_session_add_protocol(session, "sccp");
     }
 }
 /******************************************************************************/
-LOCAL void wudo_classify(MolochSession_t *session, const unsigned char *data, int len, int UNUSED(which), void *UNUSED(uw))
+LOCAL void wudo_classify(ArkimeSession_t *session, const uint8_t *data, int len, int UNUSED(which), void *UNUSED(uw))
 {
     if (len < 15)
         return;
 
     if (memcmp(data, "\x00\x00\x00\x00", 4) == 0) {
-        moloch_session_add_protocol(session, "wudo");
+        arkime_session_add_protocol(session, "wudo");
     }
     else if (memcmp(data, "\x0eSwarm protocol", 15) == 0) {
-        moloch_session_add_protocol(session, "wudo");
+        arkime_session_add_protocol(session, "wudo");
     }
 }
 /******************************************************************************/
-LOCAL void mqtt_classify(MolochSession_t *session, const unsigned char *data, int len, int UNUSED(which), void *UNUSED(uw))
+LOCAL void mqtt_classify(ArkimeSession_t *session, const uint8_t *data, int len, int UNUSED(which), void *UNUSED(uw))
 {
-    if (len < 30 || memcmp("MQ", data+4, 2) != 0)
+    if (len < 30 || memcmp("MQ", data + 4, 2) != 0)
         return;
 
-    moloch_session_add_protocol(session, "mqtt");
+    arkime_session_add_protocol(session, "mqtt");
 
     BSB bsb;
 
@@ -275,50 +265,50 @@ LOCAL void mqtt_classify(MolochSession_t *session, const unsigned char *data, in
     }
 
     if (flags & 0x80) {
-        int            userLen = 0;
-        unsigned char *user = 0;
+        int      userLen = 0;
+        uint8_t *user = 0;
         BSB_IMPORT_u16(bsb, userLen);
         BSB_IMPORT_ptr(bsb, user, userLen);
 
         if (BSB_NOT_ERROR(bsb)) {
-            moloch_field_string_add_lower(userField, session, (char *)user, userLen);
+            arkime_field_string_add_lower(userField, session, (char *)user, userLen);
         }
     }
 }
 /******************************************************************************/
-LOCAL void hdfs_classify(MolochSession_t *session, const unsigned char *data, int len, int UNUSED(which), void *UNUSED(uw))
+LOCAL void hdfs_classify(ArkimeSession_t *session, const uint8_t *data, int len, int UNUSED(which), void *UNUSED(uw))
 {
     if (len < 10 || data[5] != 0xa)
         return;
-    moloch_session_add_protocol(session, "hdfs");
+    arkime_session_add_protocol(session, "hdfs");
 }
 /******************************************************************************/
-LOCAL void hsrp_udp_classify(MolochSession_t *session, const unsigned char *data, int len, int UNUSED(which), void *UNUSED(uw))
+LOCAL void hsrp_udp_classify(ArkimeSession_t *session, const uint8_t *data, int len, int UNUSED(which), void *UNUSED(uw))
 {
     if (session->port1 != session->port2 || len < 3)
         return;
 
     if (data[0] == 0 && data[1] == 3)
-        moloch_session_add_protocol(session, "hsrp");
+        arkime_session_add_protocol(session, "hsrp");
     else if (data[0] == 1 && data[1] == 40 && data[2] == 2)
-        moloch_session_add_protocol(session, "hsrpv2");
+        arkime_session_add_protocol(session, "hsrpv2");
 }
 /******************************************************************************/
-LOCAL void safet_udp_classify(MolochSession_t *session, const unsigned char *data, int len, int UNUSED(which), void *UNUSED(uw))
+LOCAL void safet_udp_classify(ArkimeSession_t *session, const uint8_t *data, int len, int UNUSED(which), void *UNUSED(uw))
 {
     if (len < 24 || data[2] != len)
         return;
-    moloch_session_add_protocol(session, "safet");
+    arkime_session_add_protocol(session, "safet");
 }
 /******************************************************************************/
-LOCAL void telnet_tcp_classify(MolochSession_t *session, const unsigned char *data, int len, int UNUSED(which), void *UNUSED(uw))
+LOCAL void telnet_tcp_classify(ArkimeSession_t *session, const uint8_t *data, int len, int UNUSED(which), void *UNUSED(uw))
 {
     if (len < 3 || data[0] != 0xff || data[1] < 0xfa)
         return;
-    moloch_session_add_protocol(session, "telnet");
+    arkime_session_add_protocol(session, "telnet");
 }
 /******************************************************************************/
-LOCAL void netflow_classify(MolochSession_t *session, const unsigned char *data, int len, int UNUSED(which), void *UNUSED(uw))
+LOCAL void netflow_classify(ArkimeSession_t *session, const uint8_t *data, int len, int UNUSED(which), void *UNUSED(uw))
 {
     // Exclude DNS and small packets
     if (session->port1 == 53 || session->port2 == 53 || len < 24)
@@ -335,22 +325,22 @@ LOCAL void netflow_classify(MolochSession_t *session, const unsigned char *data,
     BSB_IMPORT_u32(bsb, systime);
 
     // Make sure valid count and time
-    if (count == 0 || count > 200 || count*16 > len || systime < 1000000000 /*Sep 2001*/)
+    if (count == 0 || count > 200 || count * 16 > len || systime < 1000000000 /*Sep 2001*/)
         return;
 
-    moloch_session_add_protocol(session, "netflow");
+    arkime_session_add_protocol(session, "netflow");
 }
 /******************************************************************************/
 
 #define PARSERS_CLASSIFY_BOTH(_name, _uw, _offset, _str, _len, _func) \
-    moloch_parsers_classifier_register_tcp(_name, _uw, _offset, (unsigned char*)_str, _len, _func); \
-    moloch_parsers_classifier_register_udp(_name, _uw, _offset, (unsigned char*)_str, _len, _func);
+    arkime_parsers_classifier_register_tcp(_name, _uw, _offset, (uint8_t *)_str, _len, _func); \
+    arkime_parsers_classifier_register_udp(_name, _uw, _offset, (uint8_t *)_str, _len, _func);
 
-#define SIMPLE_CLASSIFY_TCP(name, bytes) moloch_parsers_classifier_register_tcp(name, name, 0, (unsigned char*)bytes, sizeof(bytes)-1, misc_add_protocol_classify);
-#define SIMPLE_CLASSIFY_UDP(name, bytes) moloch_parsers_classifier_register_udp(name, name, 0, (unsigned char*)bytes, sizeof(bytes)-1, misc_add_protocol_classify);
-#define SIMPLE_CLASSIFY_BOTH(name, bytes) PARSERS_CLASSIFY_BOTH(name, name, 0, (unsigned char*)bytes, sizeof(bytes)-1, misc_add_protocol_classify);
+#define SIMPLE_CLASSIFY_TCP(name, bytes) arkime_parsers_classifier_register_tcp(name, name, 0, (uint8_t *)bytes, sizeof(bytes) - 1, misc_add_protocol_classify);
+#define SIMPLE_CLASSIFY_UDP(name, bytes) arkime_parsers_classifier_register_udp(name, name, 0, (uint8_t *)bytes, sizeof(bytes) - 1, misc_add_protocol_classify);
+#define SIMPLE_CLASSIFY_BOTH(name, bytes) PARSERS_CLASSIFY_BOTH(name, name, 0, (uint8_t *)bytes, sizeof(bytes) - 1, misc_add_protocol_classify);
 
-void moloch_parser_init()
+void arkime_parser_init()
 {
     SIMPLE_CLASSIFY_TCP("bittorrent", "\x13" "BitTorrent protocol");
     SIMPLE_CLASSIFY_TCP("bittorrent", "BSYNC\x00");
@@ -412,17 +402,17 @@ void moloch_parser_init()
 
     SIMPLE_CLASSIFY_UDP("bjnp", "BJNP");
 
-    PARSERS_CLASSIFY_BOTH("syslog", NULL, 0, (unsigned char*)"<1", 2, syslog_classify);
-    PARSERS_CLASSIFY_BOTH("syslog", NULL, 0, (unsigned char*)"<2", 2, syslog_classify);
-    PARSERS_CLASSIFY_BOTH("syslog", NULL, 0, (unsigned char*)"<3", 2, syslog_classify);
-    PARSERS_CLASSIFY_BOTH("syslog", NULL, 0, (unsigned char*)"<4", 2, syslog_classify);
-    PARSERS_CLASSIFY_BOTH("syslog", NULL, 0, (unsigned char*)"<5", 2, syslog_classify);
-    PARSERS_CLASSIFY_BOTH("syslog", NULL, 0, (unsigned char*)"<6", 2, syslog_classify);
-    PARSERS_CLASSIFY_BOTH("syslog", NULL, 0, (unsigned char*)"<7", 2, syslog_classify);
-    PARSERS_CLASSIFY_BOTH("syslog", NULL, 0, (unsigned char*)"<8", 2, syslog_classify);
-    PARSERS_CLASSIFY_BOTH("syslog", NULL, 0, (unsigned char*)"<9", 2, syslog_classify);
+    PARSERS_CLASSIFY_BOTH("syslog", NULL, 0, (uint8_t *)"<1", 2, syslog_classify);
+    PARSERS_CLASSIFY_BOTH("syslog", NULL, 0, (uint8_t *)"<2", 2, syslog_classify);
+    PARSERS_CLASSIFY_BOTH("syslog", NULL, 0, (uint8_t *)"<3", 2, syslog_classify);
+    PARSERS_CLASSIFY_BOTH("syslog", NULL, 0, (uint8_t *)"<4", 2, syslog_classify);
+    PARSERS_CLASSIFY_BOTH("syslog", NULL, 0, (uint8_t *)"<5", 2, syslog_classify);
+    PARSERS_CLASSIFY_BOTH("syslog", NULL, 0, (uint8_t *)"<6", 2, syslog_classify);
+    PARSERS_CLASSIFY_BOTH("syslog", NULL, 0, (uint8_t *)"<7", 2, syslog_classify);
+    PARSERS_CLASSIFY_BOTH("syslog", NULL, 0, (uint8_t *)"<8", 2, syslog_classify);
+    PARSERS_CLASSIFY_BOTH("syslog", NULL, 0, (uint8_t *)"<9", 2, syslog_classify);
 
-    PARSERS_CLASSIFY_BOTH("stun", NULL, 0, (unsigned char*)"RSP/", 4, stun_rsp_classify);
+    PARSERS_CLASSIFY_BOTH("stun", NULL, 0, (uint8_t *)"RSP/", 4, stun_rsp_classify);
 
     CLASSIFY_UDP("stun", 0, "\x00\x01\x00", stun_classify);
     CLASSIFY_UDP("stun", 0, "\x00\x03\x00", stun_classify);
@@ -440,17 +430,17 @@ void moloch_parser_init()
 
     SIMPLE_CLASSIFY_TCP("rmi", "\x4a\x52\x4d\x49\x00\x02\x4b");
 
-    PARSERS_CLASSIFY_BOTH("tacacs", NULL, 0, (unsigned char*)"\xc0\x01\x01", 3, tacacs_classify);
-    PARSERS_CLASSIFY_BOTH("tacacs", NULL, 0, (unsigned char*)"\xc0\x01\x02", 3, tacacs_classify);
-    PARSERS_CLASSIFY_BOTH("tacacs", NULL, 0, (unsigned char*)"\xc0\x02\x01", 3, tacacs_classify);
-    PARSERS_CLASSIFY_BOTH("tacacs", NULL, 0, (unsigned char*)"\xc0\x03\x01", 3, tacacs_classify);
-    PARSERS_CLASSIFY_BOTH("tacacs", NULL, 0, (unsigned char*)"\xc0\x03\x02", 3, tacacs_classify);
-    PARSERS_CLASSIFY_BOTH("tacacs", NULL, 0, (unsigned char*)"\xc1\x01\x01", 3, tacacs_classify);
-    PARSERS_CLASSIFY_BOTH("tacacs", NULL, 0, (unsigned char*)"\xc1\x01\x02", 3, tacacs_classify);
+    PARSERS_CLASSIFY_BOTH("tacacs", NULL, 0, (uint8_t *)"\xc0\x01\x01", 3, tacacs_classify);
+    PARSERS_CLASSIFY_BOTH("tacacs", NULL, 0, (uint8_t *)"\xc0\x01\x02", 3, tacacs_classify);
+    PARSERS_CLASSIFY_BOTH("tacacs", NULL, 0, (uint8_t *)"\xc0\x02\x01", 3, tacacs_classify);
+    PARSERS_CLASSIFY_BOTH("tacacs", NULL, 0, (uint8_t *)"\xc0\x03\x01", 3, tacacs_classify);
+    PARSERS_CLASSIFY_BOTH("tacacs", NULL, 0, (uint8_t *)"\xc0\x03\x02", 3, tacacs_classify);
+    PARSERS_CLASSIFY_BOTH("tacacs", NULL, 0, (uint8_t *)"\xc1\x01\x01", 3, tacacs_classify);
+    PARSERS_CLASSIFY_BOTH("tacacs", NULL, 0, (uint8_t *)"\xc1\x01\x02", 3, tacacs_classify);
 
     SIMPLE_CLASSIFY_TCP("flash-policy", "<policy-file-request/>");
 
-    moloch_parsers_classifier_register_port("dropbox-lan-sync",  NULL, 17500, MOLOCH_PARSERS_PORT_UDP, dropbox_lan_sync_classify);
+    arkime_parsers_classifier_register_port("dropbox-lan-sync",  NULL, 17500, ARKIME_PARSERS_PORT_UDP, dropbox_lan_sync_classify);
 
     CLASSIFY_TCP("kafka", 0, "\x00\x00", kafka_classify);
 
@@ -475,10 +465,10 @@ void moloch_parser_init()
     SIMPLE_CLASSIFY_TCP("splunk", "--splunk-cooked-mode");
     CLASSIFY_TCP("splunk-replication", 6, "\x00\x06\x00\x00\x00\x05_raw", misc_add_protocol_classify);
 
-    moloch_parsers_classifier_register_port("isakmp",  NULL, 500, MOLOCH_PARSERS_PORT_UDP, isakmp_udp_classify);
-    moloch_parsers_classifier_register_port("isakmp",  NULL, 4500, MOLOCH_PARSERS_PORT_UDP, isakmp_udp_classify);
+    arkime_parsers_classifier_register_port("isakmp",  NULL, 500, ARKIME_PARSERS_PORT_UDP, isakmp_udp_classify);
+    arkime_parsers_classifier_register_port("isakmp",  NULL, 4500, ARKIME_PARSERS_PORT_UDP, isakmp_udp_classify);
 
-    moloch_parsers_classifier_register_port("aruba-papi",  NULL, 8211, MOLOCH_PARSERS_PORT_UDP, aruba_papi_udp_classify);
+    arkime_parsers_classifier_register_port("aruba-papi",  NULL, 8211, ARKIME_PARSERS_PORT_UDP, aruba_papi_udp_classify);
 
     SIMPLE_CLASSIFY_TCP("x11", "\x6c\x00\x0b\x00");
 
@@ -507,24 +497,24 @@ void moloch_parser_init()
     SIMPLE_CLASSIFY_TCP("zookeeper", "\x00\x00\x00\x2c\x00\x00\x00\x00");
     SIMPLE_CLASSIFY_TCP("zookeeper", "\x00\x00\x00\x2d\x00\x00\x00\x00");
 
-    moloch_parsers_classifier_register_port("sccp",  NULL, 2000, MOLOCH_PARSERS_PORT_TCP_DST, sccp_classify);
+    arkime_parsers_classifier_register_port("sccp",  NULL, 2000, ARKIME_PARSERS_PORT_TCP_DST, sccp_classify);
 
-    moloch_parsers_classifier_register_port("wudo",  NULL, 7680, MOLOCH_PARSERS_PORT_TCP_DST, wudo_classify);
+    arkime_parsers_classifier_register_port("wudo",  NULL, 7680, ARKIME_PARSERS_PORT_TCP_DST, wudo_classify);
 
     CLASSIFY_TCP("mqtt", 0, "\x10", mqtt_classify);
 
-    moloch_parsers_classifier_register_port("hsrp",  NULL, 1985, MOLOCH_PARSERS_PORT_UDP, hsrp_udp_classify);
-    moloch_parsers_classifier_register_port("hsrp",  NULL, 2029, MOLOCH_PARSERS_PORT_UDP, hsrp_udp_classify);
+    arkime_parsers_classifier_register_port("hsrp",  NULL, 1985, ARKIME_PARSERS_PORT_UDP, hsrp_udp_classify);
+    arkime_parsers_classifier_register_port("hsrp",  NULL, 2029, ARKIME_PARSERS_PORT_UDP, hsrp_udp_classify);
 
     SIMPLE_CLASSIFY_TCP("elasticsearch", "ES\x00\x00");
 
-    moloch_parsers_classifier_register_port("safet",  NULL, 23294, MOLOCH_PARSERS_PORT_UDP, safet_udp_classify);
+    arkime_parsers_classifier_register_port("safet",  NULL, 23294, ARKIME_PARSERS_PORT_UDP, safet_udp_classify);
 
-    moloch_parsers_classifier_register_port("telnet",  NULL, 23, MOLOCH_PARSERS_PORT_TCP_DST, telnet_tcp_classify);
+    arkime_parsers_classifier_register_port("telnet",  NULL, 23, ARKIME_PARSERS_PORT_TCP_DST, telnet_tcp_classify);
 
-    moloch_parsers_classifier_register_port("whois",  "whois", 43, MOLOCH_PARSERS_PORT_TCP_DST, misc_add_protocol_classify);
+    arkime_parsers_classifier_register_port("whois",  "whois", 43, ARKIME_PARSERS_PORT_TCP_DST, misc_add_protocol_classify);
 
-    moloch_parsers_classifier_register_port("finger",  "finger", 79, MOLOCH_PARSERS_PORT_TCP_DST, misc_add_protocol_classify);
+    arkime_parsers_classifier_register_port("finger",  "finger", 79, ARKIME_PARSERS_PORT_TCP_DST, misc_add_protocol_classify);
 
     SIMPLE_CLASSIFY_TCP("rtsp", "RTSP/1.0 ");
 
@@ -532,6 +522,6 @@ void moloch_parser_init()
 
     SIMPLE_CLASSIFY_BOTH("dnp3", "\x05\x64");
 
-    userField = moloch_field_by_db("user");
+    userField = arkime_field_by_db("user");
 }
 

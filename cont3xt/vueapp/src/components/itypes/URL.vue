@@ -1,5 +1,10 @@
+<!--
+Copyright Yahoo Inc.
+SPDX-License-Identifier: Apache-2.0
+-->
 <template>
   <base-i-type
+      :indicator-id="indicatorId"
       :indicator="indicator"
       :tidbits="tidbits"
       :children="children"
@@ -21,6 +26,10 @@ export default {
     indicator: Cont3xtIndicatorProp,
     children: {
       type: Array,
+      required: true
+    },
+    indicatorId: {
+      type: String,
       required: true
     }
   }

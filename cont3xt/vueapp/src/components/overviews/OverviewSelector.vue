@@ -1,14 +1,20 @@
+<!--
+Copyright Yahoo Inc.
+SPDX-License-Identifier: Apache-2.0
+-->
 <template>
   <b-dropdown
-      ref="overviewsDropdown"
-      @shown="dropdownVisible = true"
-      @hidden="dropdownVisible = false"
-      size="sm" class="ml-1 overview-dropdown"
-      no-caret v-b-tooltip.hover.top="'Select overview'">
+    split
+    size="sm"
+    ref="overviewsDropdown"
+    class="overview-dropdown mr-1 mb-1"
+    @shown="dropdownVisible = true"
+    @hidden="dropdownVisible = false"
+    @click="selectOverview(selectedOverview._id)"
+    v-b-tooltip.hover.top="'Select overview'">
     <template #button-content>
-      <div class="no-wrap d-inline-flex align-items-center">
+      <div class="no-wrap d-flex flex-row align-items-center">
         <span v-if="getShiftKeyHold" class="text-warning overview-hotkey-o">O</span>
-        <span v-else class="fa fa-fw fa-file-o" />
         <div class="overview-name-shorten">{{ selectedOverview.name }}</div>
       </div>
     </template>
@@ -21,8 +27,8 @@
           </b-input-group-text>
         </template>
         <b-form-input
-            ref="overviewsDropdownSearch"
-            v-model="query"
+          ref="overviewsDropdownSearch"
+          v-model="query"
         />
       </b-input-group>
     </div>
@@ -31,10 +37,11 @@
       <template v-for="(overview, i) in filteredOverviews">
         <b-dropdown-item-btn :key="i"
           @click="selectOverview(overview._id)"
-          button-class="px-1 py-0"
-        >
-          <overview-selector-line :overview="overview"
-              :show-i-type-icon="false" />
+          button-class="px-1 py-0">
+          <overview-selector-line
+            :overview="overview"
+            :show-i-type-icon="false"
+          />
         </b-dropdown-item-btn>
       </template>
     </div>
@@ -117,10 +124,12 @@ export default {
 
 <style>
 .overview-hotkey-o {
-  /* pad the O shown when shifting to keep the button the same size */
+  /* pad the O shown when shifting to keep the button the same width */
+  padding-inline: 0.13rem;
   /* and size it to look similar to the file-o icon */
-  padding-inline: 0.15rem;
-  font-size: 1.1rem;
+  font-size: 1.15rem;
+  /* keep the O from expanding the button to maintain the same height */
+  margin-block: -5px;
 }
 
 .overview-dropdown .dropdown-menu {
@@ -129,7 +138,7 @@ export default {
 }
 
 .overview-name-shorten {
-  max-width: 6rem;
+  max-width: 8rem;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;

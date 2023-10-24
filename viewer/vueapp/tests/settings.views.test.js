@@ -29,7 +29,7 @@ const $route = {
   }
 };
 
-const newView = { name: 'newview', expression: 'protocols == tls', users: '', roles: [], id: '4' };
+const newView = { name: 'newview', expression: 'protocols == tls', users: '', roles: [], editRoles: [], id: '4' };
 const updatedView = { ...views[0], name: 'updated view name' };
 
 // view services
@@ -44,7 +44,7 @@ SettingsService.updateView = jest.fn().mockResolvedValue({
   text: 'updateView YAY!'
 });
 SettingsService.createView = jest.fn().mockResolvedValue({
-  succes: true,
+  success: true,
   view: newView,
   text: 'createView YAY!'
 });
@@ -82,6 +82,7 @@ test('views', async () => {
   await fireEvent.click(createViewBtn);
   expect(SettingsService.createView).toHaveBeenCalledWith({
     roles: [],
+    editRoles: [],
     users: '',
     name: newViewName,
     expression: newViewExpression

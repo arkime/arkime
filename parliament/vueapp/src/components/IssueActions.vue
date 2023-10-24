@@ -1,3 +1,7 @@
+<!--
+Copyright Yahoo Inc.
+SPDX-License-Identifier: Apache-2.0
+-->
 <template>
 
   <div v-if="isUser">
@@ -78,13 +82,13 @@ export default {
       required: true
     },
     groupId: {
-      type: Number,
+      type: String,
       default: function () {
         return this.issue.groupId;
       }
     },
     clusterId: {
-      type: Number,
+      type: String,
       default: function () {
         return this.issue.clusterId;
       }

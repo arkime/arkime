@@ -3,17 +3,7 @@
  *
  * Copyright Yahoo Inc.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this Software except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: Apache-2.0
  */
 'use strict';
 const { Client } = require('@elastic/elasticsearch');
@@ -68,12 +58,10 @@ class User {
   static #userCacheTimeout = 5 * 1000;
   static #usersCache = new Map();
   static #rolesCache = { _timeStamp: 0 };
-  static #debug = false;
   static #implementation;
 
   /**
    * Initialize the User subsystem
-   * @param {boolean} options.debug=0 The debug level to use for User component
    * @param {string} options.url The url that represents which DB implementation to use
    * @param {boolean} options.readOnly=false If true don't set the last used time
    * @param {function} options.getCurrentUserCB Optional function that can modify a user object when fetching
@@ -81,10 +69,9 @@ class User {
    *
    */
   static initialize (options) {
-    if (options.debug > 1) {
+    if (ArkimeConfig.debug > 1) {
       console.log('User.initialize', options);
     }
-    User.#debug = options.debug ?? 0;
     readOnly = options.readOnly ?? false;
     getCurrentUserCB = options.getCurrentUserCB;
 
@@ -174,7 +161,7 @@ class User {
   };
 
   /******************************************************************************/
-  // Static methods the Implmentation must have
+  // Static methods the Implementation must have
   /******************************************************************************/
 
   /**
@@ -274,6 +261,11 @@ class User {
     if (user.roles !== undefined) {
       user.createEnabled = user.roles.includes('usersAdmin');
     }
+
+    // Make sure views/notifiers are no longer part of user
+    // db.pl should have moved already
+    delete user.views;
+    delete user.notifiers;
 
     User.#usersCache.delete(userId);
     User.#implementation.setUser(userId, user, (err, boo) => {
@@ -430,8 +422,6 @@ class User {
    * @param {boolean} disablePcapDownload=false - Do not allow this user to download PCAP files.
    * @param {string} expression - An Arkime search expression that is silently added to all queries. Useful to limit what data a user can access (e.g. which nodes or IPs).
    * @param {ArkimeSettings} settings - The Arkime app settings.
-   * @param {object} views - A list of views that the user can apply to their search.
-   * @param {object} notifiers - A list of notifiers taht the user can use.
    * @param {object} columnConfigs - A list of sessions table column configurations that a user has created.
    * @param {object} spiviewFieldConfigs - A list of SPIView page field configurations that a user has created.
    * @param {object} tableStates - A list of table states used to render Arkime tables as the user has configured them.
@@ -454,25 +444,10 @@ class User {
     return res.send(clone);
   };
 
-  /**
-   * POST - /api/users
-   *
-   * Retrieves a list of users (admin only).
-   * @name /users
-   * @returns {boolean} success - True if the request was successful, false otherwise
-   * @returns {ArkimeUser[]} data - The list of users configured.
-   * @returns {number} recordsTotal - The total number of users.
-   * @returns {number} recordsFiltered - The number of users returned in this result.
-   */
-  static apiGetUsers (req, res, next) {
-    if (typeof req.body !== 'object') { return; }
+  static #apiGetUsersCommon (req) {
+    if (typeof req.body !== 'object') { return undefined; }
     if (Array.isArray(req.body.start) || Array.isArray(req.body.length)) {
-      return res.send({
-        success: false,
-        recordsTotal: 0,
-        recordsFiltered: 0,
-        data: []
-      });
+      return undefined;
     }
 
     const query = {
@@ -488,6 +463,30 @@ class User {
     query.sortField = req.body.sortField || 'userId';
     query.sortDescending = req.body.desc === true;
     query.searchFields = ['userId', 'userName', 'roles'];
+
+    return query;
+  }
+
+  /**
+   * POST - /api/users
+   *
+   * Retrieves a list of users (admin only).
+   * @name /users
+   * @returns {boolean} success - True if the request was successful, false otherwise
+   * @returns {ArkimeUser[]} data - The list of users configured.
+   * @returns {number} recordsTotal - The total number of users.
+   * @returns {number} recordsFiltered - The number of users returned in this result.
+   */
+  static apiGetUsers (req, res, next) {
+    const query = User.#apiGetUsersCommon(req);
+    if (query === undefined) {
+      res.send({
+        success: false,
+        recordsTotal: 0,
+        recordsFiltered: 0,
+        data: []
+      });
+    }
 
     Promise.all([
       User.searchUsers(query),
@@ -508,6 +507,60 @@ class User {
         recordsFiltered: 0,
         data: []
       });
+    });
+  };
+
+  /**
+   * POST - /api/users/csv
+   *
+   * Retrieves a list of users (admin only).
+   * @name /users/csv
+   */
+  static apiGetUsersCSV (req, res, next) {
+    ArkimeUtil.noCache(req, res, 'text/csv');
+
+    const query = User.#apiGetUsersCommon(req);
+    if (query === undefined) {
+      res.send({
+        success: false,
+        recordsTotal: 0,
+        recordsFiltered: 0,
+        data: []
+      });
+    }
+
+    Promise.all([
+      User.searchUsers(query),
+      User.numberOfUsers()
+    ]).then(([users, total]) => {
+      if (users.error) { throw users.error; }
+      const columns = 'userId,userName,enabled,webEnabled,headerAuthEnabled,roles,emailSearch,removeEnabled,packetSearch,hideStats,hideFiles,hidePcap,disablePcapDownload,expression,timeLimit'.split(',');
+      res.write(columns.join(', '));
+      res.write('\r\n');
+      users = users.users;
+      for (let u = 0; u < users.length; u++) {
+        const values = [];
+        for (let c = 0; c < columns.length; c++) {
+          let value = users[u][columns[c]];
+          if (value === undefined) {
+            value = '';
+          } else if (Array.isArray(value)) {
+            value = '"' + value.join(', ') + '"';
+          } else if (typeof (value) === 'string' && value.includes(',')) {
+            if (value.includes('"')) {
+              value = value.replace(/"/g, '""');
+            }
+            value = '"' + value + '"';
+          }
+          values.push(value);
+        }
+        res.write(values.join(','));
+        res.write('\r\n');
+      }
+      res.end();
+    }).catch((err) => {
+      console.log(`ERROR - ${req.method} /api/users`, util.inspect(err, false, 50));
+      return res.send('Error');
     });
   };
 
@@ -680,7 +733,7 @@ class User {
         roleAssigners: req.body.roleAssigners
       };
 
-      if (User.#debug) {
+      if (ArkimeConfig.debug) {
         console.log('Creating new user', nuser);
       }
 
@@ -707,7 +760,7 @@ class User {
    * @returns {string} text - The success/error message to (optionally) display to the user.
    */
   static async apiDeleteUser (req, res) {
-    const userId = ArkimeUtil.sanitizeStr(req.body.userId || req.params.id);
+    const userId = ArkimeUtil.sanitizeStr(req.params.id);
 
     if (!ArkimeUtil.isString(userId)) {
       return res.serverError(403, 'Missing userId');
@@ -744,7 +797,7 @@ class User {
    * @returns {string} text - The success/error message to (optionally) display to the user.
    */
   static async apiUpdateUser (req, res) {
-    const userId = ArkimeUtil.sanitizeStr(req.body.userId || req.params.id);
+    const userId = ArkimeUtil.sanitizeStr(req.params.id);
 
     if (!ArkimeUtil.isString(userId)) {
       return res.serverError(403, 'Missing userId');
@@ -839,7 +892,7 @@ class User {
       user.roleAssigners = req.body.roleAssigners ?? [];
 
       User.setUser(userId, user, (err, info) => {
-        if (User.#debug) {
+        if (ArkimeConfig.debug) {
           console.log('setUser', user, err, info);
         }
 
@@ -865,7 +918,7 @@ class User {
    * @returns {string} text - The success/error message to (optionally) display to the user.
    */
   static apiUpdateUserRole (req, res) {
-    const userId = ArkimeUtil.sanitizeStr(req.body.userId || req.params.id);
+    const userId = ArkimeUtil.sanitizeStr(req.params.id);
     const roleId = req.body.roleId;
     const newRoleState = req.body.newRoleState;
 
@@ -908,7 +961,7 @@ class User {
       user.roles = roles;
 
       User.setUser(userId, user, (err, info) => {
-        if (User.#debug) {
+        if (ArkimeConfig.debug) {
           console.log('setUser', user, err, info);
         }
 
@@ -1192,6 +1245,58 @@ class User {
   }
 
   /**
+   * Transfer ownership of a resource by updating the owner property
+   * Only if the resource creator has changed
+   * AND the user is an admin or the creator
+   * AND the new creator is a valid user
+   * If none of the above, sends a server error response
+   * @param {Object} req The request object
+   * @param {Object} res The response object
+   * @param {Object} resource The resource from the client
+   * @param {Object} dbResource The resource from the database
+   * @param {String} creatorProperty The property name of the creator
+   * @returns {boolean} true if the owner was set, false otherwise
+   */
+  static async setOwner (req, res, resource, dbResource, creatorProperty) {
+    if (!resource[creatorProperty]) { // keep same owner
+      if (dbResource[creatorProperty]) {
+        resource[creatorProperty] = dbResource[creatorProperty];
+      }
+      return true;
+    }
+
+    if ( // if the resource has a new creator
+      resource[creatorProperty] !== dbResource[creatorProperty] &&
+      ArkimeUtil.isString(resource[creatorProperty])) {
+      const settingUser = req.settingUser || req.user;
+
+      if ( // and the user is an admin or the creator of the resource
+        settingUser.userId !== dbResource[creatorProperty] &&
+        !settingUser.hasRole(Auth.appAdminRole)
+      ) {
+        res.serverError(403, 'Permission denied');
+        return false;
+      }
+
+      // check if user is valid before updating it
+      // comma/newline separated value -> array of values
+      let user = ArkimeUtil.commaOrNewlineStringToArray(resource[creatorProperty]);
+      user = await User.validateUserIds(user);
+
+      // set the valid user as the new owner (there should only be one valid user)
+      if (user.validUsers?.length) {
+        resource[creatorProperty] = user.validUsers[0];
+        return true;
+      }
+
+      res.serverError(404, 'User not found');
+      return false;
+    }
+
+    return true;
+  }
+
+  /**
    * Return set of all roles expanded for ourself
    */
   async getRoles () {
@@ -1223,7 +1328,7 @@ class User {
           await User.#implementation.setLastUsed(this.userId, now);
         }
       } catch (err) {
-        if (User.#debug) {
+        if (ArkimeConfig.debug) {
           console.log('DEBUG - user lastUsed update error', err);
         }
       }
@@ -1317,15 +1422,7 @@ class UserESImplementation {
   client;
 
   constructor (options) {
-    if (options.prefix === undefined) {
-      this.prefix = 'arkime_';
-    } else if (options.prefix === '') {
-      this.prefix = '';
-    } else if (options.prefix.endsWith('_')) {
-      this.prefix = options.prefix;
-    } else {
-      this.prefix = options.prefix + '_';
-    }
+    this.prefix = ArkimeUtil.formatPrefix(options.prefix);
 
     const esSSLOptions = { rejectUnauthorized: !options.insecure };
     if (options.caTrustFile) { esSSLOptions.ca = ArkimeUtil.certificateFileToArray(options.caTrustFile); };
@@ -1760,3 +1857,4 @@ module.exports = User;
 
 const Auth = require('../common/auth');
 const ArkimeUtil = require('../common/arkimeUtil');
+const ArkimeConfig = require('../common/arkimeConfig');

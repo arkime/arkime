@@ -24,7 +24,7 @@ Vue.use(BootstrapVue);
 Vue.directive('has-permission', HasPermission);
 
 Vue.prototype.$constants = {
-  MOLOCH_MULTIVIEWER: false
+  MULTIVIEWER: false
 };
 
 jest.mock('../src/components/users/UserService');

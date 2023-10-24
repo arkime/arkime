@@ -1,7 +1,7 @@
 use Test::More tests => 14;
 use Cwd;
 use URI::Escape;
-use MolochTest;
+use ArkimeTest;
 use Test::Differences;
 use Data::Dumper;
 use JSON;
@@ -12,8 +12,8 @@ sub get {
 my ($param) = @_;
 
 #    diag "/spigraphhierarchy?$param";
-    my $json = viewerGet("/spigraphhierarchy?$param");
-    my $mjson = multiGet("/spigraphhierarchy?$param");
+    my $json = viewerGet("/api/spigraphhierarchy?$param");
+    my $mjson = multiGet("/api/spigraphhierarchy?$param");
 
     eq_or_diff($mjson, $json, "single doesn't match multi for $param", { context => 3 });
 

@@ -12,6 +12,7 @@ install:
 	$(INSTALL) config.ini.sample $(etcdir)/
 	$(INSTALL) wise.ini.sample $(etcdir)/
 	$(INSTALL) cont3xt.ini.sample $(etcdir)/
+	$(INSTALL) parliament.ini.sample $(etcdir)/
 	$(INSTALL) parliament.env.example $(etcdir)/
 	$(INSTALL) env.example $(etcdir)/
 

@@ -1,3 +1,10 @@
+/******************************************************************************/
+/* apiConnections.js -- api calls for connections tab
+ *
+ * Copyright Yahoo Inc.
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
 'use strict';
 
 const Config = require('./config.js');
@@ -5,19 +12,22 @@ const Db = require('./db.js');
 const async = require('async');
 const util = require('util');
 const ArkimeUtil = require('../common/arkimeUtil');
+const ArkimeConfig = require('../common/arkimeConfig');
 const ViewerUtils = require('./viewerUtils');
 const SessionAPIs = require('./apiSessions');
 
 let fieldsMap;
 
-if (!fieldsMap) {
-  setTimeout(() => { // make sure db.js loads before fetching fields
-    ViewerUtils.loadFields()
-      .then((result) => {
-        fieldsMap = result.fieldsMap;
-      });
-  });
-}
+ArkimeConfig.loaded(() => {
+  if (!fieldsMap) {
+    setTimeout(() => { // make sure db.js loads before fetching fields
+      ViewerUtils.loadFields()
+        .then((result) => {
+          fieldsMap = result.fieldsMap;
+        });
+    });
+  }
+});
 
 class ConnectionAPIs {
   // --------------------------------------------------------------------------
@@ -403,7 +413,7 @@ class ConnectionAPIs {
             }
 
             let nodeKeys = Object.keys(nodesHash);
-            if (Config.regressionTests) {
+            if (ArkimeConfig.regressionTests) {
               nodeKeys = nodeKeys.sort((a, b) => {
                 return nodesHash[a].id.localeCompare(nodesHash[b].id);
               });
@@ -506,7 +516,7 @@ class ConnectionAPIs {
    * @returns {csv} csv - The csv with the connections requested
    */
   static getConnectionsCSV (req, res) {
-    ViewerUtils.noCache(req, res, 'text/csv');
+    ArkimeUtil.noCache(req, res, 'text/csv');
 
     const seperator = req.query.seperator ?? ',';
     ConnectionAPIs.#buildConnections(req, res, (err, nodes, links, total) => {

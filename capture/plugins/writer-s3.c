@@ -3,17 +3,7 @@
  *
  * Copyright 2012-2017 AOL Inc. All rights reserved.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this Software except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: Apache-2.0
  */
 #define _FILE_OFFSET_BITS 64
 #include <stdio.h>
@@ -23,19 +13,19 @@
 #include <zlib.h>
 #include <sys/stat.h>
 #include <sys/mman.h>
-#include "moloch.h"
+#include "arkime.h"
 #include "arkimeconfig.h"
 #ifdef HAVE_ZSTD
 #include <zstd.h>
 #endif
 
-extern MolochConfig_t        config;
+extern ArkimeConfig_t        config;
 
 typedef struct writer_s3_output {
     struct writer_s3_output   *os3_next, *os3_prev;
     uint16_t                   os3_count;
 
-    unsigned char             *buf;
+    uint8_t                   *buf;
     int                        len;
 } SavepcapS3Output_t;
 
@@ -75,17 +65,17 @@ typedef struct writer_s3_file {
     ZSTD_outBuffer             zstd_out;
     ZSTD_inBuffer              zstd_in;
     uint64_t                   zstd_saved; // How much we've "saved" not including current buffer so
-                                           // zstd_saved + s3file->zstd_out.pos == z_strm.total_out
+    // zstd_saved + s3file->zstd_out.pos == z_strm.total_out
 #endif
 } SavepcapS3File_t;
 
-SavepcapS3File_t            *currentFiles[MOLOCH_MAX_PACKET_THREADS];
+SavepcapS3File_t            *currentFiles[ARKIME_MAX_PACKET_THREADS];
 
-LOCAL  MOLOCH_LOCK_DEFINE(fileQ);
+LOCAL  ARKIME_LOCK_DEFINE(fileQ);
 LOCAL  SavepcapS3File_t      fileQ;
 
-LOCAL  void *                s3Server = 0;
-LOCAL  void *                metadataServer = 0;
+LOCAL  void                 *s3Server = 0;
+LOCAL  void                 *metadataServer = 0;
 LOCAL  char                  *s3Region;
 LOCAL  char                  *s3Host;
 LOCAL  char                  *s3Bucket;
@@ -106,9 +96,9 @@ LOCAL  int                    inprogress;
 void writer_s3_flush(SavepcapS3File_t *s3file, gboolean all);
 
 typedef enum {
-    MOLOCH_COMPRESSION_NONE,
-    MOLOCH_COMPRESSION_GZIP,
-    MOLOCH_COMPRESSION_ZSTD
+    ARKIME_COMPRESSION_NONE,
+    ARKIME_COMPRESSION_GZIP,
+    ARKIME_COMPRESSION_ZSTD
 } S3CompressionMode;
 
 typedef struct {
@@ -120,21 +110,20 @@ typedef struct {
 LOCAL S3Credentials *s3MetaCreds;   // Creds from meta service, use if non NULL
 LOCAL S3Credentials  s3ConfigCreds; // Creds from config file
 
-LOCAL S3CompressionMode compressionMode = MOLOCH_COMPRESSION_NONE;
+LOCAL S3CompressionMode compressionMode = ARKIME_COMPRESSION_NONE;
 LOCAL uint32_t s3CompressionBlockSize;
 
 // These must agree with the index.js
 #define COMPRESSED_WITHIN_BLOCK_BITS  20
 
 
-
-void writer_s3_request(char *method, char *path, char *qs, unsigned char *data, int len, gboolean specifyStorageClass, MolochHttpResponse_cb cb, gpointer uw);
+void writer_s3_request(char *method, char *path, char *qs, uint8_t *data, int len, gboolean specifyStorageClass, ArkimeHttpResponse_cb cb, gpointer uw);
 /******************************************************************************/
 uint32_t writer_s3_queue_length()
 {
     int q = 0;
 
-    MOLOCH_LOCK(fileQ);
+    ARKIME_LOCK(fileQ);
 
     SavepcapS3File_t *file;
     DLL_FOREACH(fs3_, &fileQ, file)
@@ -145,18 +134,18 @@ uint32_t writer_s3_queue_length()
     }
 
     if (config.debug) {
-        LOG("queue length: http Q:%d in progress: %d waiting:%d", moloch_http_queue_length(s3Server), inprogress, q);
+        LOG("queue length: http Q:%d in progress: %d waiting:%d", arkime_http_queue_length(s3Server), inprogress, q);
     }
 
-    q += moloch_http_queue_length(s3Server) + inprogress;
-    MOLOCH_UNLOCK(fileQ);
+    q += arkime_http_queue_length(s3Server) + inprogress;
+    ARKIME_UNLOCK(fileQ);
 
     return q;
 }
 /******************************************************************************/
-void writer_s3_complete_cb (int code, unsigned char *data, int len, gpointer uw)
+void writer_s3_complete_cb (int code, uint8_t *data, int len, gpointer uw)
 {
-    MOLOCH_LOCK(fileQ);
+    ARKIME_LOCK(fileQ);
 
     SavepcapS3File_t  *file = uw;
     inprogress--;
@@ -170,20 +159,20 @@ void writer_s3_complete_cb (int code, unsigned char *data, int len, gpointer uw)
 
     uint64_t size;
     switch (compressionMode) {
-    case MOLOCH_COMPRESSION_NONE:
+    case ARKIME_COMPRESSION_NONE:
         size = file->outputActualFilePos;
         break;
-    case MOLOCH_COMPRESSION_GZIP:
+    case ARKIME_COMPRESSION_GZIP:
         size = file->z_strm.total_out;
         break;
-    case MOLOCH_COMPRESSION_ZSTD:
+    case ARKIME_COMPRESSION_ZSTD:
 #ifdef HAVE_ZSTD
         size = file->zstd_saved;
 #endif
         break;
     }
 
-    moloch_db_update_filesize(file->outputId, size, file->packetBytesWritten, file->packets);
+    arkime_db_update_filesize(file->outputId, size, file->packetBytesWritten, file->packets);
 
 
     DLL_REMOVE(fs3_, &fileQ, file);
@@ -196,12 +185,12 @@ void writer_s3_complete_cb (int code, unsigned char *data, int len, gpointer uw)
 #endif
 
 
-    MOLOCH_TYPE_FREE(SavepcapS3File_t, file);
+    ARKIME_TYPE_FREE(SavepcapS3File_t, file);
 
-    MOLOCH_UNLOCK(fileQ);
+    ARKIME_UNLOCK(fileQ);
 }
 /******************************************************************************/
-void writer_s3_part_cb (int code, unsigned char *data, int len, gpointer uw)
+void writer_s3_part_cb (int code, uint8_t *data, int len, gpointer uw)
 {
     SavepcapS3File_t  *file = uw;
 
@@ -219,7 +208,7 @@ void writer_s3_part_cb (int code, unsigned char *data, int len, gpointer uw)
     if (file->doClose && file->partNumber == file->partNumberResponses) {
         char qs[1000];
         snprintf(qs, sizeof(qs), "uploadId=%s", file->uploadId);
-        char *buf = moloch_http_get_buffer(1000000);
+        char *buf = arkime_http_get_buffer(1000000);
         BSB bsb;
 
         BSB_INIT(bsb, buf, 1000000);
@@ -231,14 +220,14 @@ void writer_s3_part_cb (int code, unsigned char *data, int len, gpointer uw)
         }
         BSB_EXPORT_cstr(bsb, "</CompleteMultipartUpload>\n");
 
-        writer_s3_request("POST", file->outputPath, qs, (unsigned char*)buf, BSB_LENGTH(bsb), FALSE, writer_s3_complete_cb, file);
+        writer_s3_request("POST", file->outputPath, qs, (uint8_t *)buf, BSB_LENGTH(bsb), FALSE, writer_s3_complete_cb, file);
         if (config.debug > 1)
             LOG("Complete-Request: %s %.*s", file->outputFileName, (int)BSB_LENGTH(bsb), buf);
     }
 
 }
 /******************************************************************************/
-unsigned char *moloch_get_instance_metadata(void *serverV, char *key, int key_len, size_t *mlen)
+uint8_t *arkime_get_instance_metadata(void *serverV, char *key, int key_len, size_t *mlen)
 {
     char *requestHeaders[2];
     char  tokenHeader[200];
@@ -247,7 +236,7 @@ unsigned char *moloch_get_instance_metadata(void *serverV, char *key, int key_le
         char *tokenRequestHeaders[2] = {"X-aws-ec2-metadata-token-ttl-seconds: 30", NULL};
         if (config.debug)
             LOG("Requesting IMDSv2 metadata token");
-        unsigned char *token = moloch_http_send_sync(serverV, "PUT", "/latest/api/token", -1, NULL, 0, tokenRequestHeaders, mlen);
+        uint8_t *token = arkime_http_send_sync(serverV, "PUT", "/latest/api/token", -1, NULL, 0, tokenRequestHeaders, mlen, NULL);
         if (config.debug)
             LOG("IMDSv2 metadata token received");
         snprintf(tokenHeader, sizeof(tokenHeader), "X-aws-ec2-metadata-token: %s", token);
@@ -257,7 +246,7 @@ unsigned char *moloch_get_instance_metadata(void *serverV, char *key, int key_le
             LOG("Using IMDSv1");
         requestHeaders[0] = NULL;
     }
-    return moloch_http_send_sync(serverV, "GET", key, key_len, NULL, 0, requestHeaders, mlen);
+    return arkime_http_send_sync(serverV, "GET", key, key_len, NULL, 0, requestHeaders, mlen, NULL);
 }
 /******************************************************************************/
 void writer_s3_free_creds(S3Credentials *creds)
@@ -265,7 +254,7 @@ void writer_s3_free_creds(S3Credentials *creds)
     g_free(creds->s3AccessKeyId);
     g_free(creds->s3SecretAccessKey);
     g_free(creds->s3Token);
-    MOLOCH_TYPE_FREE(S3Credentials, creds);
+    ARKIME_TYPE_FREE(S3Credentials, creds);
 }
 /******************************************************************************/
 /* Timer callback to refresh our creds. We fetch them into new structure
@@ -273,28 +262,26 @@ void writer_s3_free_creds(S3Credentials *creds)
  */
 LOCAL gboolean writer_s3_refresh_creds_gfunc (gpointer UNUSED(user_data))
 {
-    char role_url[1000];
-    size_t rlen;
+    size_t clen;
 
-    S3Credentials *newCreds = MOLOCH_TYPE_ALLOC0(S3Credentials);
+    S3Credentials *newCreds = ARKIME_TYPE_ALLOC0(S3Credentials);
 
-    unsigned char *credentials = moloch_get_instance_metadata(metadataServer, credURL, -1, &rlen);
+    uint8_t *credentials = arkime_get_instance_metadata(metadataServer, credURL, -1, &clen);
 
-    if (credentials && rlen) {
+    if (credentials && clen) {
         // Now need to extract access key, secret key and token
-        newCreds->s3AccessKeyId = moloch_js0n_get_str(credentials, rlen, "AccessKeyId");
-        newCreds->s3SecretAccessKey = moloch_js0n_get_str(credentials, rlen, "SecretAccessKey");
-        newCreds->s3Token = moloch_js0n_get_str(credentials, rlen, "Token");
+        newCreds->s3AccessKeyId = arkime_js0n_get_str(credentials, clen, "AccessKeyId");
+        newCreds->s3SecretAccessKey = arkime_js0n_get_str(credentials, clen, "SecretAccessKey");
+        newCreds->s3Token = arkime_js0n_get_str(credentials, clen, "Token");
         if (config.debug)
             LOG("Found AccessKeyId %s", newCreds->s3AccessKeyId);
     }
 
     if (newCreds->s3AccessKeyId && newCreds->s3SecretAccessKey && newCreds->s3Token) {
-        moloch_free_later(s3MetaCreds, (GDestroyNotify)writer_s3_free_creds);
+        arkime_free_later(s3MetaCreds, (GDestroyNotify)writer_s3_free_creds);
         s3MetaCreds = newCreds;
     } else {
-        printf("Cannot retrieve credentials from metadata service at %s\n", role_url);
-        exit(1);
+        LOGEXIT("Cannot retrieve credentials from metadata service at %s\n", credURL);
     }
 
     free(credentials);
@@ -302,7 +289,7 @@ LOCAL gboolean writer_s3_refresh_creds_gfunc (gpointer UNUSED(user_data))
     return G_SOURCE_CONTINUE;
 }
 /******************************************************************************/
-void writer_s3_init_cb (int code, unsigned char *data, int len, gpointer uw)
+void writer_s3_init_cb (int code, uint8_t *data, int len, gpointer uw)
 {
     SavepcapS3File_t   *file = uw;
 
@@ -344,7 +331,7 @@ void writer_s3_init_cb (int code, unsigned char *data, int len, gpointer uw)
             LOG("Part-Request: %s %s", file->outputFileName, qs);
         file->partNumber++;
         writer_s3_request("PUT", file->outputPath, qs, output->buf, output->len, FALSE, writer_s3_part_cb, file);
-        MOLOCH_TYPE_FREE(SavepcapS3Output_t, output);
+        ARKIME_TYPE_FREE(SavepcapS3Output_t, output);
     }
 }
 /******************************************************************************/
@@ -362,7 +349,7 @@ void writer_s3_header_cb (char *url, const char *field, const char *value, int v
     int pn = atoi(pnstr + 11);
 
     if (*value == '"')
-        file->partNumbers[pn] = g_strndup(value+1, valueLen-2);
+        file->partNumbers[pn] = g_strndup(value + 1, valueLen - 2);
     else
         file->partNumbers[pn] = g_strndup(value, valueLen);
 
@@ -370,7 +357,7 @@ void writer_s3_header_cb (char *url, const char *field, const char *value, int v
         LOG("Part-Etag: %s %d", file->outputFileName, pn);
 }
 /******************************************************************************/
-void writer_s3_request(char *method, char *path, char *qs, unsigned char *data, int len, gboolean specifyStorageClass, MolochHttpResponse_cb cb, gpointer uw)
+void writer_s3_request(char *method, char *path, char *qs, uint8_t *data, int len, gboolean specifyStorageClass, ArkimeHttpResponse_cb cb, gpointer uw)
 {
     char           canonicalRequest[20000];
     char           datetime[17];
@@ -385,19 +372,19 @@ void writer_s3_request(char *method, char *path, char *qs, unsigned char *data, 
     struct tm      gm;
     gmtime_r(&outputFileTime.tv_sec, &gm);
     snprintf(datetime, sizeof(datetime),
-            "%04u%02u%02uT%02u%02u%02uZ",
-            gm.tm_year + 1900,
-            gm.tm_mon+1,
-            gm.tm_mday,
-            gm.tm_hour,
-            gm.tm_min,
-            gm.tm_sec);
+             "%04u%02u%02uT%02u%02u%02uZ",
+             gm.tm_year + 1900,
+             gm.tm_mon + 1,
+             gm.tm_mday,
+             gm.tm_hour,
+             gm.tm_min,
+             gm.tm_sec);
 
     S3Credentials *creds = s3MetaCreds ? s3MetaCreds : &s3ConfigCreds;
 
     snprintf(storageClassHeader, sizeof(storageClassHeader), "x-amz-storage-class:%s\n", s3StorageClass);
     if (creds->s3Token) {
-      snprintf(tokenHeader, sizeof(tokenHeader), "x-amz-security-token:%s\n", creds->s3Token);
+        snprintf(tokenHeader, sizeof(tokenHeader), "x-amz-security-token:%s\n", creds->s3Token);
     }
 
     GChecksum *checksum = g_checksum_new(G_CHECKSUM_SHA256);
@@ -410,35 +397,35 @@ void writer_s3_request(char *method, char *path, char *qs, unsigned char *data, 
         snprintf(objectkey, sizeof(objectkey), "%s", path);
 
     snprintf(canonicalRequest, sizeof(canonicalRequest),
-            "%s\n"       // HTTPRequestMethod
-            "%s\n"       // CanonicalURI
-            "%s\n"       // CanonicalQueryString
-            //CanonicalHeaders
-            "host:%s\n"
-            "x-amz-content-sha256:%s\n"
-            "x-amz-date:%s\n"
-            "%s"
-            "%s"
-            "\n"
-            // SignedHeaders
-            "host;x-amz-content-sha256;x-amz-date%s%s\n"
-            "%s"     // HexEncode(Hash(RequestPayload))
-            ,
-            method,
-            objectkey,
-            qs,
-            s3Host,
-            bodyHash,
-            datetime,
-            (creds->s3Token?tokenHeader:""),
-            (specifyStorageClass?storageClassHeader:""),
-            (creds->s3Token?";x-amz-security-token":""),
-            (specifyStorageClass?";x-amz-storage-class":""),
-            bodyHash);
+             "%s\n"       // HTTPRequestMethod
+             "%s\n"       // CanonicalURI
+             "%s\n"       // CanonicalQueryString
+             //CanonicalHeaders
+             "host:%s\n"
+             "x-amz-content-sha256:%s\n"
+             "x-amz-date:%s\n"
+             "%s"
+             "%s"
+             "\n"
+             // SignedHeaders
+             "host;x-amz-content-sha256;x-amz-date%s%s\n"
+             "%s"     // HexEncode(Hash(RequestPayload))
+             ,
+             method,
+             objectkey,
+             qs,
+             s3Host,
+             bodyHash,
+             datetime,
+             (creds->s3Token ? tokenHeader : ""),
+             (specifyStorageClass ? storageClassHeader : ""),
+             (creds->s3Token ? ";x-amz-security-token" : ""),
+             (specifyStorageClass ? ";x-amz-storage-class" : ""),
+             bodyHash);
     //LOG("canonicalRequest: %s", canonicalRequest);
 
     g_checksum_reset(checksum);
-    g_checksum_update(checksum, (guchar*)canonicalRequest, -1);
+    g_checksum_update(checksum, (guchar *)canonicalRequest, -1);
 
     char stringToSign[1000];
     snprintf(stringToSign, sizeof(stringToSign),
@@ -458,35 +445,35 @@ void writer_s3_request(char *method, char *path, char *qs, unsigned char *data, 
 
     char  kDate[65];
     gsize kDateLen = sizeof(kDate);
-    GHmac *hmac = g_hmac_new(G_CHECKSUM_SHA256, (guchar*)kSecret, strlen(kSecret));
-    g_hmac_update(hmac, (guchar*)datetime, 8);
-    g_hmac_get_digest(hmac, (guchar*)kDate, &kDateLen);
+    GHmac *hmac = g_hmac_new(G_CHECKSUM_SHA256, (guchar *)kSecret, strlen(kSecret));
+    g_hmac_update(hmac, (guchar *)datetime, 8);
+    g_hmac_get_digest(hmac, (guchar *)kDate, &kDateLen);
     g_hmac_unref(hmac);
 
     char  kRegion[65];
     gsize kRegionLen = sizeof(kRegion);
-    hmac = g_hmac_new(G_CHECKSUM_SHA256, (guchar*)kDate, kDateLen);
-    g_hmac_update(hmac, (guchar*)s3Region, -1);
-    g_hmac_get_digest(hmac, (guchar*)kRegion, &kRegionLen);
+    hmac = g_hmac_new(G_CHECKSUM_SHA256, (guchar *)kDate, kDateLen);
+    g_hmac_update(hmac, (guchar *)s3Region, -1);
+    g_hmac_get_digest(hmac, (guchar *)kRegion, &kRegionLen);
     g_hmac_unref(hmac);
 
     char  kService[65];
     gsize kServiceLen = sizeof(kService);
-    hmac = g_hmac_new(G_CHECKSUM_SHA256, (guchar*)kRegion, kRegionLen);
-    g_hmac_update(hmac, (guchar*)"s3", 2);
-    g_hmac_get_digest(hmac, (guchar*)kService, &kServiceLen);
+    hmac = g_hmac_new(G_CHECKSUM_SHA256, (guchar *)kRegion, kRegionLen);
+    g_hmac_update(hmac, (guchar *)"s3", 2);
+    g_hmac_get_digest(hmac, (guchar *)kService, &kServiceLen);
     g_hmac_unref(hmac);
 
     char kSigning[65];
     gsize kSigningLen = sizeof(kSigning);
-    hmac = g_hmac_new(G_CHECKSUM_SHA256, (guchar*)kService, kServiceLen);
-    g_hmac_update(hmac, (guchar*)"aws4_request", 12);
-    g_hmac_get_digest(hmac, (guchar*)kSigning, &kSigningLen);
+    hmac = g_hmac_new(G_CHECKSUM_SHA256, (guchar *)kService, kServiceLen);
+    g_hmac_update(hmac, (guchar *)"aws4_request", 12);
+    g_hmac_get_digest(hmac, (guchar *)kSigning, &kSigningLen);
     g_hmac_unref(hmac);
 
     char signature[65];
-    hmac = g_hmac_new(G_CHECKSUM_SHA256, (guchar*)kSigning, kSigningLen);
-    g_hmac_update(hmac, (guchar*)stringToSign, -1);
+    hmac = g_hmac_new(G_CHECKSUM_SHA256, (guchar *)kSigning, kSigningLen);
+    g_hmac_update(hmac, (guchar *)stringToSign, -1);
     g_strlcpy(signature, g_hmac_get_string(hmac), sizeof(signature));
     g_hmac_unref(hmac);
 
@@ -506,15 +493,15 @@ void writer_s3_request(char *method, char *path, char *qs, unsigned char *data, 
     int nextHeader = 5;
 
     snprintf(strs[0], sizeof(strs[0]),
-            "Authorization: AWS4-HMAC-SHA256 Credential=%s/%8.8s/%s/s3/aws4_request,SignedHeaders=host;x-amz-content-sha256;x-amz-date%s%s,Signature=%s"
-            ,
-            creds->s3AccessKeyId, datetime, s3Region,
-            (creds->s3Token?";x-amz-security-token":""),
-            (specifyStorageClass?";x-amz-storage-class":""),
-            signature
+             "Authorization: AWS4-HMAC-SHA256 Credential=%s/%8.8s/%s/s3/aws4_request,SignedHeaders=host;x-amz-content-sha256;x-amz-date%s%s,Signature=%s"
+             ,
+             creds->s3AccessKeyId, datetime, s3Region,
+             (creds->s3Token ? ";x-amz-security-token" : ""),
+             (specifyStorageClass ? ";x-amz-storage-class" : ""),
+             signature
             );
 
-    snprintf(strs[1], sizeof(strs[1]), "x-amz-content-sha256: %s" , bodyHash);
+    snprintf(strs[1], sizeof(strs[1]), "x-amz-content-sha256: %s", bodyHash);
     snprintf(strs[2], sizeof(strs[2]), "x-amz-date: %s", datetime);
 
     if (creds->s3Token) {
@@ -531,7 +518,7 @@ void writer_s3_request(char *method, char *path, char *qs, unsigned char *data, 
     headers[nextHeader] = NULL;
 
     inprogress++;
-    moloch_http_send(s3Server, method, fullpath, strlen(fullpath), (char*)data, len, headers, FALSE, cb, uw);
+    arkime_http_send(s3Server, method, fullpath, strlen(fullpath), (char *)data, len, headers, FALSE, cb, uw);
     g_checksum_free(checksum);
 }
 /******************************************************************************/
@@ -540,7 +527,7 @@ void writer_s3_request(char *method, char *path, char *qs, unsigned char *data, 
  * and the next data written will cause a new block header.
  */
 LOCAL void make_new_block(SavepcapS3File_t *s3file) {
-    if (compressionMode == MOLOCH_COMPRESSION_GZIP) {
+    if (compressionMode == ARKIME_COMPRESSION_GZIP) {
         while (TRUE) {
             deflate(&s3file->z_strm, Z_FULL_FLUSH);
             if (s3file->z_strm.avail_out > 0) {
@@ -553,7 +540,7 @@ LOCAL void make_new_block(SavepcapS3File_t *s3file) {
         s3file->outputLastBlockStart = s3file->outputActualFilePos;
         s3file->outputOffsetInBlock = 0;
         s3file->outputDataSinceLastMiniBlock = 0;
-    } else if (compressionMode == MOLOCH_COMPRESSION_ZSTD) {
+    } else if (compressionMode == ARKIME_COMPRESSION_ZSTD) {
 #ifdef HAVE_ZSTD
         while (TRUE) {
             ZSTD_compressStream2(s3file->zstd_strm, &s3file->zstd_out, &s3file->zstd_in, ZSTD_e_end);
@@ -574,10 +561,10 @@ LOCAL void make_new_block(SavepcapS3File_t *s3file) {
 /******************************************************************************/
 /* Make sure there is enough space in encryption buffers for incoming data and
  * data that is waiting to be written out. Because encryption lib does its
- * own buffer we do our best guess here. 
+ * own buffer we do our best guess here.
  */
 LOCAL void ensure_space_for_output(SavepcapS3File_t *s3file, size_t space) {
-    if (compressionMode == MOLOCH_COMPRESSION_GZIP) {
+    if (compressionMode == ARKIME_COMPRESSION_GZIP) {
         size_t max_need_space = s3file->outputActualFilePos - s3file->outputLastBlockStart + 64 + deflateBound(&s3file->z_strm, space + s3file->outputDataSinceLastMiniBlock);
 
         if (max_need_space >= s3CompressionBlockSize) {
@@ -596,7 +583,7 @@ LOCAL void ensure_space_for_output(SavepcapS3File_t *s3file, size_t space) {
                 make_new_block(s3file);
             }
         }
-    } else if (compressionMode == MOLOCH_COMPRESSION_ZSTD) {
+    } else if (compressionMode == ARKIME_COMPRESSION_ZSTD) {
 #ifdef HAVE_ZSTD
         size_t max_need_space = s3file->outputActualFilePos - s3file->outputLastBlockStart + 64 + ZSTD_compressBound(space + s3file->outputDataSinceLastMiniBlock);
 
@@ -630,11 +617,11 @@ LOCAL void ensure_space_for_output(SavepcapS3File_t *s3file, size_t space) {
 LOCAL uint64_t append_to_output(SavepcapS3File_t *s3file, void *data, size_t length, gboolean packetHeader, size_t extra_space) {
     uint64_t pos;
 
-    if (compressionMode == MOLOCH_COMPRESSION_GZIP) {
+    if (compressionMode == ARKIME_COMPRESSION_GZIP) {
         if (s3file->outputActualFilePos == 0) {
             memset(&s3file->z_strm, 0, sizeof(s3file->z_strm));
             s3file->z_strm.next_out = (Bytef *) s3file->outputBuffer;
-            s3file->z_strm.avail_out = config.pcapWriteSize + MOLOCH_PACKET_MAX_LEN;
+            s3file->z_strm.avail_out = config.pcapWriteSize + ARKIME_PACKET_MAX_LEN;
             s3file->z_strm.zalloc = Z_NULL;
             s3file->z_strm.zfree = Z_NULL;
 
@@ -667,19 +654,19 @@ LOCAL uint64_t append_to_output(SavepcapS3File_t *s3file, void *data, size_t len
         s3file->outputDataSinceLastMiniBlock += length;
 
         if (!packetHeader &&
-               (s3file->outputOffsetInBlock >= (1 << COMPRESSED_WITHIN_BLOCK_BITS) - 16 ||
-                s3file->outputActualFilePos > s3file->outputLastBlockStart + s3CompressionBlockSize)) {
+            (s3file->outputOffsetInBlock >= (1 << COMPRESSED_WITHIN_BLOCK_BITS) - 16 ||
+             s3file->outputActualFilePos > s3file->outputLastBlockStart + s3CompressionBlockSize)) {
             // We need to make a new block
             make_new_block(s3file);
         }
-    } else if (compressionMode == MOLOCH_COMPRESSION_ZSTD) {
+    } else if (compressionMode == ARKIME_COMPRESSION_ZSTD) {
 #ifdef HAVE_ZSTD
         if (!s3file->zstd_strm) {
             s3file->zstd_strm = ZSTD_createCStream();
             if (s3CompressionLevel != 0)
-              ZSTD_CCtx_setParameter(s3file->zstd_strm, ZSTD_c_compressionLevel, MIN(s3CompressionLevel, ZSTD_maxCLevel()));
+                ZSTD_CCtx_setParameter(s3file->zstd_strm, ZSTD_c_compressionLevel, MIN(s3CompressionLevel, ZSTD_maxCLevel()));
             s3file->zstd_out.dst = s3file->outputBuffer;
-            s3file->zstd_out.size = config.pcapWriteSize + MOLOCH_PACKET_MAX_LEN;
+            s3file->zstd_out.size = config.pcapWriteSize + ARKIME_PACKET_MAX_LEN;
             s3file->zstd_out.pos = 0;
         }
 
@@ -707,8 +694,8 @@ LOCAL uint64_t append_to_output(SavepcapS3File_t *s3file, void *data, size_t len
         s3file->outputDataSinceLastMiniBlock += length;
 
         if (!packetHeader &&
-               (s3file->outputOffsetInBlock >= (1 << COMPRESSED_WITHIN_BLOCK_BITS) - 16 ||
-                s3file->outputActualFilePos > s3file->outputLastBlockStart + s3CompressionBlockSize)) {
+            (s3file->outputOffsetInBlock >= (1 << COMPRESSED_WITHIN_BLOCK_BITS) - 16 ||
+             s3file->outputActualFilePos > s3file->outputLastBlockStart + s3CompressionBlockSize)) {
             // We need to make a new block
             make_new_block(s3file);
         }
@@ -739,18 +726,18 @@ void writer_s3_flush(SavepcapS3File_t *s3file, gboolean end)
     if (!s3file)
         return;
 
-    if (compressionMode == MOLOCH_COMPRESSION_GZIP) {
-      if (end) {
-        deflate(&s3file->z_strm, Z_FINISH);
+    if (compressionMode == ARKIME_COMPRESSION_GZIP) {
+        if (end) {
+            deflate(&s3file->z_strm, Z_FINISH);
 
-        if (s3file->z_strm.avail_out == 0) {
-          writer_s3_flush(s3file, FALSE);
-          deflate(&s3file->z_strm, Z_FINISH);
+            if (s3file->z_strm.avail_out == 0) {
+                writer_s3_flush(s3file, FALSE);
+                deflate(&s3file->z_strm, Z_FINISH);
+            }
         }
-      }
 
-      s3file->outputPos = s3file->z_strm.next_out - (Bytef *) s3file->outputBuffer;
-    } else if (compressionMode == MOLOCH_COMPRESSION_ZSTD) {
+        s3file->outputPos = s3file->z_strm.next_out - (Bytef *) s3file->outputBuffer;
+    } else if (compressionMode == ARKIME_COMPRESSION_ZSTD) {
 #ifdef HAVE_ZSTD
         if (end) {
             ZSTD_endStream(s3file->zstd_strm, &s3file->zstd_out);
@@ -760,8 +747,8 @@ void writer_s3_flush(SavepcapS3File_t *s3file, gboolean end)
             }
         }
 
-      s3file->outputPos = s3file->zstd_out.pos;
-      s3file->zstd_saved += s3file->zstd_out.pos;
+        s3file->outputPos = s3file->zstd_out.pos;
+        s3file->zstd_saved += s3file->zstd_out.pos;
 #endif
     }
 
@@ -769,13 +756,13 @@ void writer_s3_flush(SavepcapS3File_t *s3file, gboolean end)
         char qs[1000];
 
         snprintf(qs, sizeof(qs), "partNumber=%d&uploadId=%s", s3file->partNumber, s3file->uploadId);
-        writer_s3_request("PUT", s3file->outputPath, qs, (unsigned char *)s3file->outputBuffer, s3file->outputPos, FALSE, writer_s3_part_cb, s3file);
+        writer_s3_request("PUT", s3file->outputPath, qs, (uint8_t *)s3file->outputBuffer, s3file->outputPos, FALSE, writer_s3_part_cb, s3file);
         if (config.debug)
             LOG("Part-Request: %s %s", s3file->outputFileName, qs);
         s3file->partNumber++;
     } else {
-        SavepcapS3Output_t *output = MOLOCH_TYPE_ALLOC0(SavepcapS3Output_t);
-        output->buf = (unsigned char *)s3file->outputBuffer;
+        SavepcapS3Output_t *output = ARKIME_TYPE_ALLOC0(SavepcapS3Output_t);
+        output->buf = (uint8_t *)s3file->outputBuffer;
         output->len = s3file->outputPos;
         DLL_PUSH_TAIL(os3_, &s3file->outputQ, output);
     }
@@ -783,16 +770,16 @@ void writer_s3_flush(SavepcapS3File_t *s3file, gboolean end)
     if (end) {
         s3file->doClose = TRUE;
     } else {
-        s3file->outputBuffer = moloch_http_get_buffer(config.pcapWriteSize + MOLOCH_PACKET_MAX_LEN);
+        s3file->outputBuffer = arkime_http_get_buffer(config.pcapWriteSize + ARKIME_PACKET_MAX_LEN);
         s3file->outputPos = 0;
 
-        if (compressionMode == MOLOCH_COMPRESSION_GZIP) {
+        if (compressionMode == ARKIME_COMPRESSION_GZIP) {
             s3file->z_strm.next_out = (Bytef *) s3file->outputBuffer;
-            s3file->z_strm.avail_out = config.pcapWriteSize + MOLOCH_PACKET_MAX_LEN;
-        } else if (compressionMode == MOLOCH_COMPRESSION_ZSTD) {
+            s3file->z_strm.avail_out = config.pcapWriteSize + ARKIME_PACKET_MAX_LEN;
+        } else if (compressionMode == ARKIME_COMPRESSION_ZSTD) {
 #ifdef HAVE_ZSTD
             s3file->zstd_out.dst = s3file->outputBuffer;
-            s3file->zstd_out.size = config.pcapWriteSize + MOLOCH_PACKET_MAX_LEN;
+            s3file->zstd_out.size = config.pcapWriteSize + ARKIME_PACKET_MAX_LEN;
             s3file->zstd_out.pos = 0;
 #endif
         }
@@ -809,27 +796,27 @@ void writer_s3_exit()
     }
 }
 /******************************************************************************/
-extern MolochPcapFileHdr_t pcapFileHeader;
-SavepcapS3File_t *writer_s3_create(const MolochPacket_t *packet)
+extern ArkimePcapFileHdr_t pcapFileHeader;
+SavepcapS3File_t *writer_s3_create(const ArkimePacket_t *packet)
 {
     char               filename[1000];
     static char       *extension[3] = {"", ".gz", ".zst"};
     struct tm          tmp;
     int                offset = 6 + strlen(s3Region) + strlen(s3Bucket);
-    char              *compressionBlockSizeArg = MOLOCH_VAR_ARG_INT_SKIP;
-    char              *packetPosEncoding = MOLOCH_VAR_ARG_STR_SKIP;
+    char              *compressionBlockSizeArg = ARKIME_VAR_ARG_INT_SKIP;
+    char              *packetPosEncoding = ARKIME_VAR_ARG_STR_SKIP;
 
     localtime_r(&packet->ts.tv_sec, &tmp);
-    snprintf(filename, sizeof(filename), "s3://%s/%s/%s/#NUMHEX#-%02d%02d%02d-#NUM#.pcap%s", s3Region, s3Bucket, config.nodeName, tmp.tm_year%100, tmp.tm_mon+1, tmp.tm_mday, extension[compressionMode]);
+    snprintf(filename, sizeof(filename), "s3://%s/%s/%s/#NUMHEX#-%02d%02d%02d-#NUM#.pcap%s", s3Region, s3Bucket, config.nodeName, tmp.tm_year % 100, tmp.tm_mon + 1, tmp.tm_mday, extension[compressionMode]);
 
-    SavepcapS3File_t *s3file = MOLOCH_TYPE_ALLOC0(SavepcapS3File_t);
+    SavepcapS3File_t *s3file = ARKIME_TYPE_ALLOC0(SavepcapS3File_t);
     DLL_INIT(os3_, &s3file->outputQ);
 
-    MOLOCH_LOCK(fileQ);
+    ARKIME_LOCK(fileQ);
     DLL_PUSH_TAIL(fs3_, &fileQ, s3file);
-    MOLOCH_UNLOCK(fileQ);
+    ARKIME_UNLOCK(fileQ);
 
-    if (compressionMode != MOLOCH_COMPRESSION_NONE) {
+    if (compressionMode != ARKIME_COMPRESSION_NONE) {
         compressionBlockSizeArg = (char *)(uint64_t)s3CompressionBlockSize;
     }
 
@@ -837,16 +824,16 @@ SavepcapS3File_t *writer_s3_create(const MolochPacket_t *packet)
         packetPosEncoding = "gap0";
     }
 
-    s3file->outputFileName = moloch_db_create_file_full(packet->ts.tv_sec, filename, 0, 0, &s3file->outputId,
-            "packetPosEncoding", packetPosEncoding,
-            "#compressionBlockSize", compressionBlockSizeArg,
-            NULL);
+    s3file->outputFileName = arkime_db_create_file_full(packet->ts.tv_sec, filename, 0, 0, &s3file->outputId,
+                                                        "packetPosEncoding", packetPosEncoding,
+                                                        "#compressionBlockSize", compressionBlockSizeArg,
+                                                        NULL);
     s3file->outputPath = s3file->outputFileName + offset;
     clock_gettime(CLOCK_REALTIME_COARSE, &s3file->outputFileTime);
 
-    s3file->outputBuffer = moloch_http_get_buffer(config.pcapWriteSize + MOLOCH_PACKET_MAX_LEN);
+    s3file->outputBuffer = arkime_http_get_buffer(config.pcapWriteSize + ARKIME_PACKET_MAX_LEN);
     s3file->outputPos = 0;
-    uint32_t linktype = moloch_packet_dlt_to_linktype(pcapFileHeader.dlt);
+    uint32_t linktype = arkime_packet_dlt_to_linktype(pcapFileHeader.dlt);
     append_to_output(s3file, &pcapFileHeader, 20, FALSE, 0);
     append_to_output(s3file, &linktype, 4, FALSE, 0);
     make_new_block(s3file);                   // So we can read the header in a small amount of data fetched
@@ -860,13 +847,13 @@ SavepcapS3File_t *writer_s3_create(const MolochPacket_t *packet)
 
 /******************************************************************************/
 // Called inside each packet thread
-LOCAL void writer_s3_file_time_check(MolochSession_t *session, void *UNUSED(uw1), void *UNUSED(uw2))
+LOCAL void writer_s3_file_time_check(ArkimeSession_t *session, void *UNUSED(uw1), void *UNUSED(uw2))
 {
     struct timespec ts;
     clock_gettime(CLOCK_REALTIME_COARSE, &ts);
 
     SavepcapS3File_t *s3file = currentFiles[session->thread];
-    if (s3file && s3file->outputActualFilePos > 24 && (ts.tv_sec - s3file->outputFileTime.tv_sec) >= config.maxFileTimeM*60) {
+    if (s3file && s3file->outputActualFilePos > 24 && (ts.tv_sec - s3file->outputFileTime.tv_sec) >= config.maxFileTimeM * 60) {
         writer_s3_flush(s3file, TRUE);
         currentFiles[session->thread] = NULL;
     }
@@ -878,7 +865,7 @@ LOCAL void writer_s3_file_time_check(MolochSession_t *session, void *UNUSED(uw1)
 LOCAL gboolean writer_s3_file_time_gfunc (gpointer UNUSED(user_data))
 {
     for (int thread = 0; thread < config.packetThreads; thread++) {
-        moloch_session_add_cmd_thread(thread, NULL, NULL, writer_s3_file_time_check);
+        arkime_session_add_cmd_thread(thread, NULL, NULL, writer_s3_file_time_check);
     }
 
     return G_SOURCE_CONTINUE;
@@ -895,7 +882,7 @@ struct pcap_sf_pkthdr {
     uint32_t len;               /* length this packet (off wire) */
 };
 void
-writer_s3_write(const MolochSession_t *const session, MolochPacket_t * const packet)
+writer_s3_write(const ArkimeSession_t *const session, ArkimePacket_t *const packet)
 {
     struct pcap_sf_pkthdr hdr;
 
@@ -927,54 +914,52 @@ writer_s3_write(const MolochSession_t *const session, MolochPacket_t * const pac
 /******************************************************************************/
 void writer_s3_init(char *UNUSED(name))
 {
-    moloch_writer_queue_length = writer_s3_queue_length;
-    moloch_writer_exit         = writer_s3_exit;
-    moloch_writer_write        = writer_s3_write;
+    arkime_writer_queue_length = writer_s3_queue_length;
+    arkime_writer_exit         = writer_s3_exit;
+    arkime_writer_write        = writer_s3_write;
 
-    s3Region              = moloch_config_str(NULL, "s3Region", "us-east-1");
-    s3Host                = moloch_config_str(NULL, "s3Host", NULL);
-    s3Bucket              = moloch_config_str(NULL, "s3Bucket", NULL);
-    s3PathAccessStyle     = moloch_config_boolean(NULL, "s3PathAccessStyle", strchr(s3Bucket, '.') != NULL);
-    s3Compress            = moloch_config_boolean(NULL, "s3Compress", FALSE);
-    char s3WriteGzip      = moloch_config_boolean(NULL, "s3WriteGzip", FALSE);
-    char *s3Compression   = moloch_config_str(NULL, "s3Compression", NULL);
-    s3CompressionLevel    = moloch_config_int(NULL, "s3CompressionLevel", 0, 0, 22);
-    s3CompressionBlockSize= moloch_config_int(NULL, "s3CompressionBlockSize", 100000, 0xffff, 0x7ffff);
-    s3StorageClass        = moloch_config_str(NULL, "s3StorageClass", "STANDARD");
-    s3MaxConns            = moloch_config_int(NULL, "s3MaxConns", 20, 5, 1000);
-    s3MaxRequests         = moloch_config_int(NULL, "s3MaxRequests", 500, 10, 5000);
-    s3UseHttp             = moloch_config_boolean(NULL, "s3UseHttp", FALSE);
-    s3UseTokenForMetadata = moloch_config_boolean(NULL, "s3UseTokenForMetadata", TRUE);
-    int s3UseECSEnv       = moloch_config_boolean(NULL, "s3UseECSEnv", FALSE);
+    s3Region              = arkime_config_str(NULL, "s3Region", "us-east-1");
+    s3Host                = arkime_config_str(NULL, "s3Host", NULL);
+    s3Bucket              = arkime_config_str(NULL, "s3Bucket", NULL);
+    s3PathAccessStyle     = arkime_config_boolean(NULL, "s3PathAccessStyle", strchr(s3Bucket, '.') != NULL);
+    s3Compress            = arkime_config_boolean(NULL, "s3Compress", FALSE);
+    REMOVEDCONFIG("s3WriteGzip", "use s3Compression=gzip");
+    char *s3Compression   = arkime_config_str(NULL, "s3Compression", "zstd");
+    s3CompressionLevel    = arkime_config_int(NULL, "s3CompressionLevel", 0, 0, 22);
+    s3CompressionBlockSize = arkime_config_int(NULL, "s3CompressionBlockSize", 100000, 0xffff, 0x7ffff);
+    s3StorageClass        = arkime_config_str(NULL, "s3StorageClass", "STANDARD");
+    s3MaxConns            = arkime_config_int(NULL, "s3MaxConns", 20, 5, 1000);
+    s3MaxRequests         = arkime_config_int(NULL, "s3MaxRequests", 500, 10, 5000);
+    s3UseHttp             = arkime_config_boolean(NULL, "s3UseHttp", FALSE);
+    s3UseTokenForMetadata = arkime_config_boolean(NULL, "s3UseTokenForMetadata", TRUE);
+    int s3UseECSEnv       = arkime_config_boolean(NULL, "s3UseECSEnv", FALSE);
 
-    s3ConfigCreds.s3AccessKeyId     = moloch_config_str(NULL, "s3AccessKeyId", NULL);
-    s3ConfigCreds.s3SecretAccessKey = moloch_config_str(NULL, "s3SecretAccessKey", NULL);
+    s3ConfigCreds.s3AccessKeyId     = arkime_config_str(NULL, "s3AccessKeyId", NULL);
+    s3ConfigCreds.s3SecretAccessKey = arkime_config_str(NULL, "s3SecretAccessKey", NULL);
 
-    config.gapPacketPos = moloch_config_boolean(NULL, "s3GapPacketPos", FALSE);
+    config.gapPacketPos = arkime_config_boolean(NULL, "s3GapPacketPos", TRUE);
 
     if (!s3Bucket) {
-        CONFIGEXIT("Must set s3Bucket to save to s3\n");
+        CONFIGEXIT("Must set s3Bucket to save to s3");
     }
 
     if (s3Compression != NULL) {
         if (strcmp(s3Compression, "none") == 0) {
-            compressionMode = MOLOCH_COMPRESSION_NONE;
+            compressionMode = ARKIME_COMPRESSION_NONE;
         } else if (strcmp(s3Compression, "gzip") == 0) {
-            compressionMode = MOLOCH_COMPRESSION_GZIP;
+            compressionMode = ARKIME_COMPRESSION_GZIP;
         } else if (strcmp(s3Compression, "zstd") == 0) {
 #ifdef HAVE_ZSTD
-            compressionMode = MOLOCH_COMPRESSION_ZSTD;
+            compressionMode = ARKIME_COMPRESSION_ZSTD;
 #else
             CONFIGEXIT("Arkime capture was not compiled with zstd support");
 #endif
         } else {
             CONFIGEXIT("Unknown s3Compression value %s", s3Compression);
         }
-    } else if (s3WriteGzip) {
-        compressionMode = MOLOCH_COMPRESSION_GZIP;
     }
 
-    if (s3Compress && compressionMode != MOLOCH_COMPRESSION_NONE) {
+    if (s3Compress && compressionMode != ARKIME_COMPRESSION_NONE) {
         LOG("Setting s3Compress to false since compressing pcap");
         s3Compress = FALSE;
     }
@@ -999,7 +984,7 @@ void writer_s3_init(char *UNUSED(name))
 
         g_strlcpy(credURL, relativeURI, sizeof(credURL));
 
-        metadataServer = moloch_http_create_server(uri, 10, 10, 0);
+        metadataServer = arkime_http_create_server(uri, 10, 10, 0);
 
         if (config.debug) {
             LOG("metadata base: %s cred uri: %s", uri, credURL);
@@ -1012,16 +997,15 @@ void writer_s3_init(char *UNUSED(name))
         // Fetch the data from the EC2 metadata service
         size_t rlen;
 
-        metadataServer = moloch_http_create_server("http://169.254.169.254", 10, 10, 0);
-        moloch_http_set_print_errors(metadataServer);
+        metadataServer = arkime_http_create_server("http://169.254.169.254", 10, 10, 0);
+        arkime_http_set_print_errors(metadataServer);
 
         s3ConfigCreds.s3AccessKeyId = NULL;
 
-        unsigned char *rolename = moloch_get_instance_metadata(metadataServer, "/latest/meta-data/iam/security-credentials/", -1, &rlen);
+        uint8_t *rolename = arkime_get_instance_metadata(metadataServer, "/latest/meta-data/iam/security-credentials/", -1, &rlen);
 
         if (!rolename || !rlen || rolename[0] == '<') {
-            printf("Cannot retrieve role name from metadata service\n");
-            exit(1);
+            LOGEXIT("Cannot retrieve role name from metadata service\n");
         }
 
         snprintf(credURL, sizeof(credURL), "/latest/meta-data/iam/security-credentials/%.*s", (int)rlen, rolename);
@@ -1030,7 +1014,7 @@ void writer_s3_init(char *UNUSED(name))
         g_timeout_add_seconds( 280, writer_s3_refresh_creds_gfunc, 0);
         writer_s3_refresh_creds_gfunc(NULL);
     } else if (s3ConfigCreds.s3AccessKeyId && !s3ConfigCreds.s3SecretAccessKey) {
-        CONFIGEXIT("Must set s3SecretAccessKey to save to s3\n");
+        CONFIGEXIT("Must set s3SecretAccessKey to save to s3");
     }
 
     if (config.pcapWriteSize < 5242880) {
@@ -1059,10 +1043,10 @@ void writer_s3_init(char *UNUSED(name))
     // S3 has a 5TiB max size
     config.maxFileSizeB = MIN(config.maxFileSizeB, 0x50000000000LL);
 
-    if (compressionMode != MOLOCH_COMPRESSION_NONE) {
-      // We only have 33 bits of offset to play with. Limit the file size to that
-      // minus a bit to allow for the last compressed chunk to be emitted
-      config.maxFileSizeB = MIN(config.maxFileSizeB, 0x1fff00000LL);
+    if (compressionMode != ARKIME_COMPRESSION_NONE) {
+        // We only have 33 bits of offset to play with. Limit the file size to that
+        // minus a bit to allow for the last compressed chunk to be emitted
+        config.maxFileSizeB = MIN(config.maxFileSizeB, 0x1fff00000LL);
     }
 
     char host[200];
@@ -1071,9 +1055,9 @@ void writer_s3_init(char *UNUSED(name))
     } else {
         snprintf(host, sizeof(host), "https://%s", s3Host);
     }
-    s3Server = moloch_http_create_server(host, s3MaxConns, s3MaxRequests, s3Compress);
-    moloch_http_set_print_errors(s3Server);
-    moloch_http_set_header_cb(s3Server, writer_s3_header_cb);
+    s3Server = arkime_http_create_server(host, s3MaxConns, s3MaxRequests, s3Compress);
+    arkime_http_set_print_errors(s3Server);
+    arkime_http_set_header_cb(s3Server, writer_s3_header_cb);
 
     DLL_INIT(fs3_, &fileQ);
 
@@ -1082,7 +1066,7 @@ void writer_s3_init(char *UNUSED(name))
     }
 }
 /******************************************************************************/
-void moloch_plugin_init()
+void arkime_plugin_init()
 {
-    moloch_writers_add("s3", writer_s3_init);
+    arkime_writers_add("s3", writer_s3_init);
 }

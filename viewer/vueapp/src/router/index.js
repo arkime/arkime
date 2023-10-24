@@ -14,14 +14,14 @@ import Connections from '@/components/connections/Connections';
 import Settings from '@/components/settings/Settings';
 import Upload from '@/components/upload/Upload';
 import Hunt from '@/components/hunt/Hunt';
-import Moloch404 from '@/components/utils/404';
+import Arkime404 from '@/components/utils/404';
 
 Vue.use(Router);
 
 /* eslint-disable no-undef */
 const router = new Router({
   mode: 'history',
-  base: MOLOCH_PATH,
+  base: PATH,
   scrollBehavior: function (to, from, savedPosition) {
     if (to.hash) {
       let yoffset = 150;
@@ -45,6 +45,7 @@ const router = new Router({
     {
       path: '/sessions',
       name: 'Sessions',
+      alias: '/',
       component: Sessions
     },
     {
@@ -105,14 +106,14 @@ const router = new Router({
     {
       path: '*',
       name: 'Not Found',
-      component: Moloch404
+      component: Arkime404
     }
   ]
 });
 
 router.beforeEach((to, from, next) => {
   // always use the expression in the url query parameter if the navigation
-  // was initiated from anything not in the moloch UI (browser forward/back btns)
+  // was initiated from anything not in the arkime UI (browser forward/back btns)
   if (!to.params.nav && store.state.expression !== to.query.expression) {
     store.commit('setExpression', to.query.expression);
   }
@@ -122,7 +123,7 @@ router.beforeEach((to, from, next) => {
   const expression = to.query.expression ? ` - ${to.query.expression}` : '';
 
   /* eslint-disable no-undef */
-  const title = MOLOCH_TITLE_CONFIG.replace(/_page_/g, page)
+  const title = TITLE_CONFIG.replace(/_page_/g, page)
     .replace(/( *_-expression|_expression)_/g, expression)
     .replace(/( *_-view|_view)_/g, view);
 

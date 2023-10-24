@@ -33,7 +33,8 @@
                   "notAfter" : 1451573263000,
                   "notBefore" : 1415717263000,
                   "publicAlgorithm" : "rsaEncryption",
-                  "remainingDays" : -1,
+                  "remainingDays" : 344,
+                  "remainingSeconds" : 29801713,
                   "serial" : "2e8f3b9cbc17eacb6459a3b8c0b598fb",
                   "subjectCN" : [
                      "mail.yandex.ru"
@@ -44,7 +45,8 @@
                   "subjectOU" : [
                      "ITO"
                   ],
-                  "validDays" : 415
+                  "validDays" : 415,
+                  "validSeconds" : 35856000
                },
                {
                   "hash" : "12:e1:89:f7:dc:2f:a2:82:38:0b:48:77:31:9f:5f:1d:fe:af:6d:69",
@@ -57,7 +59,8 @@
                   "notAfter" : 1709470465000,
                   "notBefore" : 1236084865000,
                   "publicAlgorithm" : "rsaEncryption",
-                  "remainingDays" : 1,
+                  "remainingDays" : 3329,
+                  "remainingSeconds" : 287698915,
                   "serial" : "4ca5fec6617c48b056382a8280e0508c",
                   "subjectCN" : [
                      "certum level iv ca"
@@ -68,7 +71,8 @@
                   "subjectOU" : [
                      "Certum Certification Authority"
                   ],
-                  "validDays" : 5479
+                  "validDays" : 5479,
+                  "validSeconds" : 473385600
                }
             ],
             "certCnt" : 2,
@@ -230,6 +234,10 @@
                   "771,52243-49199-158-49171-49172-49169-51-50-57-156-47-53-10-5-4,0-65281-10-11-35-13172-16-5-18-13-21,23-24-25,0"
                ],
                "ja3stringCnt" : 1,
+               "ja4" : [
+                  "t12d1511s3_23c751c1cee3_f2efb249ca37"
+               ],
+               "ja4Cnt" : 1,
                "srcSessionId" : [
                   "51273b31b1b975c9276907197fbf6b855bc4387e341cea1d5cf727c086c0774b"
                ],

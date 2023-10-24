@@ -1,17 +1,7 @@
 /******************************************************************************/
 /* Copyright Yahoo Inc.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this Software except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: Apache-2.0
  */
 const Integration = require('../../integration.js');
 const axios = require('axios');
@@ -131,8 +121,8 @@ class PassiveTotalWhoisIntegration extends Integration {
 
   async fetchDomain (user, domain) {
     try {
-      const puser = this.getUserConfig(user, 'PassiveTotal', 'user');
-      const pkey = this.getUserConfig(user, 'PassiveTotal', 'key');
+      const puser = this.getUserConfig(user, 'user');
+      const pkey = this.getUserConfig(user, 'key');
       if (!puser || !pkey) {
         return undefined;
       }
@@ -199,8 +189,8 @@ class PassiveTotalSubdomainsIntegration extends Integration {
 
   async fetchDomain (user, domain) {
     try {
-      const puser = this.getUserConfig(user, 'PassiveTotal', 'user');
-      const pkey = this.getUserConfig(user, 'PassiveTotal', 'key');
+      const puser = this.getUserConfig(user, 'user');
+      const pkey = this.getUserConfig(user, 'key');
       if (!puser || !pkey) {
         return undefined;
       }
@@ -299,8 +289,8 @@ class PassiveTotalDNSIntegration extends Integration {
 
   async fetch (user, query) {
     try {
-      const puser = this.getUserConfig(user, 'PassiveTotal', 'user');
-      const pkey = this.getUserConfig(user, 'PassiveTotal', 'key');
+      const puser = this.getUserConfig(user, 'user');
+      const pkey = this.getUserConfig(user, 'key');
       if (!puser || !pkey) {
         return undefined;
       }

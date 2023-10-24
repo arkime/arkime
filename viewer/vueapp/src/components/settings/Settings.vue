@@ -1,7 +1,21 @@
+<!--
+Copyright Yahoo Inc.
+SPDX-License-Identifier: Apache-2.0
+-->
 <template>
 
   <!-- settings content -->
   <div class="settings-page">
+
+    <!-- messages (success/error) displayed at bottom of page -->
+    <b-alert
+      dismissible
+      :variant="msgType"
+      v-model="showMessage"
+      style="z-index: 2000;"
+      class="position-fixed fixed-bottom m-0 rounded-0">
+      {{ msg }}
+    </b-alert> <!-- /messages -->
 
     <!-- sub navbar -->
     <div class="sub-navbar">
@@ -17,27 +31,19 @@
           </span>
         </span>
       </span>
-      <div class="pull-right small toast-container">
-        <moloch-toast
-          class="mr-1"
-          :message="msg"
-          :type="msgType"
-          :done="messageDone">
-        </moloch-toast>
-      </div>
     </div> <!-- /sub navbar -->
 
     <!-- loading overlay -->
-    <moloch-loading
+    <arkime-loading
       v-if="loading">
-    </moloch-loading> <!-- /loading overlay -->
+    </arkime-loading> <!-- /loading overlay -->
 
     <!-- page error -->
-    <moloch-error
+    <arkime-error
       v-if="error"
       :message-html="error"
       class="settings-error">
-    </moloch-error> <!-- /page error -->
+    </arkime-error> <!-- /page error -->
 
     <!-- content -->
     <div class="settings-content row"
@@ -391,13 +397,13 @@
               Default SPI Graph
             </label>
             <div class="col-sm-6">
-              <moloch-field-typeahead
+              <arkime-field-typeahead
                 :dropup="true"
                 :fields="fields"
                 query-param="field"
                 :initial-value="spiGraphTypeahead"
                 @fieldSelected="spiGraphFieldSelected">
-              </moloch-field-typeahead>
+              </arkime-field-typeahead>
             </div>
             <div class="col-sm-3">
               <h4 v-if="spiGraphField">
@@ -417,13 +423,13 @@
               Connections Src
             </label>
             <div class="col-sm-6">
-              <moloch-field-typeahead
+              <arkime-field-typeahead
                 :dropup="true"
                 :fields="fields"
                 query-param="field"
                 :initial-value="connSrcFieldTypeahead"
                 @fieldSelected="connSrcFieldSelected">
-              </moloch-field-typeahead>
+              </arkime-field-typeahead>
             </div>
             <div class="col-sm-3">
               <h4 v-if="connSrcField">
@@ -443,13 +449,13 @@
               Connections Dst
             </label>
             <div class="col-sm-6">
-              <moloch-field-typeahead
+              <arkime-field-typeahead
                 :dropup="true"
                 :fields="fields"
                 query-param="field"
                 :initial-value="connDstFieldTypeahead"
                 @fieldSelected="connDstFieldSelected">
-              </moloch-field-typeahead>
+              </arkime-field-typeahead>
             </div>
             <div class="col-sm-3">
               <h4 v-if="connDstField">
@@ -469,13 +475,13 @@
             </label>
 
             <div class="col-sm-6">
-              <moloch-field-typeahead
+              <arkime-field-typeahead
                 :dropup="true"
                 :fields="integerFields"
                 :initial-value="filtersTypeahead"
                 query-param="field"
                 @fieldSelected="timelineFilterSelected">
-              </moloch-field-typeahead>
+              </arkime-field-typeahead>
             </div>
             <div class="col-sm-3">
               <h4 v-if="timelineDataFilters.length > 0">
@@ -702,7 +708,7 @@
                     {{ spiviewConfigError }}
                   </p>
                 </td>
-              </tr> <!-- /spview field config list error -->
+              </tr> <!-- /spiview field config list error -->
             </tbody>
           </table>
 
@@ -1024,11 +1030,11 @@
                       </div>
                     </div>
                     <div class="display-sub-sub-navbar">
-                      <moloch-paging
+                      <arkime-paging
                         class="mt-1 ml-1"
                         :records-total="200"
                         :records-filtered="100">
-                      </moloch-paging>
+                      </arkime-paging>
                     </div>
                     <div>
                       <div class="ml-1 mr-1 mt-2 pb-2">
@@ -1349,9 +1355,11 @@
         <!-- notifiers settings -->
         <Notifiers
           id="notifiers"
+          parent-app="arkime"
           @display-message="displayMessage"
           v-if="visibleTab === 'notifiers'"
           v-has-role="{user:user,roles:'arkimeAdmin'}"
+          help-text="Configure notifiers that can be added to periodic queries and hunt jobs."
         />
 
         <!-- shortcut settings -->
@@ -1390,20 +1398,19 @@
 
 <script>
 import CommonUserService from '../../../../../common/vueapp/UserService';
+import Notifiers from '../../../../../common/vueapp/Notifiers';
 import UserService from '../users/UserService';
 import FieldService from '../search/FieldService';
 import SettingsService from './SettingsService';
 import customCols from '../sessions/customCols.json';
-import MolochToast from '../utils/Toast';
-import MolochError from '../utils/Error';
-import MolochLoading from '../utils/Loading';
-import MolochFieldTypeahead from '../utils/FieldTypeahead';
+import ArkimeError from '../utils/Error';
+import ArkimeLoading from '../utils/Loading';
+import ArkimeFieldTypeahead from '../utils/FieldTypeahead';
 import ColorPicker from '../utils/ColorPicker';
-import MolochPaging from '../utils/Pagination';
+import ArkimePaging from '../utils/Pagination';
 import Utils from '../utils/utils';
 import PeriodicQueries from './PeriodicQueries';
 import Shortcuts from './Shortcuts';
-import Notifiers from './Notifiers';
 import Views from './Views';
 
 let clockInterval;
@@ -1415,12 +1422,11 @@ let secrets = [];
 export default {
   name: 'Settings',
   components: {
-    MolochError,
-    MolochLoading,
-    MolochToast,
-    MolochFieldTypeahead,
+    ArkimeError,
+    ArkimeLoading,
+    ArkimeFieldTypeahead,
     ColorPicker,
-    MolochPaging,
+    ArkimePaging,
     PeriodicQueries,
     Shortcuts,
     Notifiers,
@@ -1433,6 +1439,7 @@ export default {
       error: '',
       loading: true,
       msg: '',
+      showMessage: false,
       msgType: undefined,
       displayName: undefined,
       visibleTab: 'general', // default tab
@@ -1485,8 +1492,8 @@ export default {
       newPassword: '',
       confirmNewPassword: '',
       changePasswordError: '',
-      multiviewer: this.$constants.MOLOCH_MULTIVIEWER,
-      hasUsersES: this.$constants.MOLOCH_HASUSERSES
+      multiviewer: this.$constants.MULTIVIEWER,
+      hasUsersES: this.$constants.HASUSERSES
     };
   },
   computed: {
@@ -1583,14 +1590,10 @@ export default {
         hash: tabName
       });
     },
-    /* remove the message when user is done with it or duration ends */
-    messageDone: function () {
-      this.msg = '';
-      this.msgType = undefined;
-    },
     /* displays a message in the navbar */
     displayMessage ({ msg, type }) {
       this.msg = msg;
+      this.showMessage = true;
       this.msgType = type || 'success';
     },
     /* GENERAL ------------------------------- */
@@ -1601,8 +1604,7 @@ export default {
     update: function (updateTheme) {
       UserService.saveSettings(this.settings, this.userId).then((response) => {
         // display success message to user
-        this.msg = response.text;
-        this.msgType = 'success';
+        this.displayMessage({ msg: response.text });
 
         if (updateTheme) {
           const now = Date.now();
@@ -1615,21 +1617,18 @@ export default {
         }
       }).catch((error) => {
         // display error message to user
-        this.msg = error.text;
-        this.msgType = 'danger';
+        this.displayMessage({ msg: error.text, type: 'danger' });
       });
     },
     resetSettings: function () {
       // Choosing to skip reset of theme. UserService will save state to store
       UserService.resetSettings(this.userId, this.settings.theme).then((response) => {
         // display success message to user
-        this.msg = response.text;
-        this.msgType = 'success';
+        this.displayMessage({ msg: response.text });
         this.getSettings(false);
       }).catch((error) => {
         // display error message to user
-        this.msg = error.text;
-        this.msgType = 'danger';
+        this.displayMessage({ msg: error.text, type: 'danger' });
       });
     },
     // attach the full field object to the component's timelineDataFilters from array of dbField
@@ -1656,7 +1655,7 @@ export default {
       this.settings.ms = newMs;
       this.updateTime();
     },
-    /* updates the displayed date for the timzeone setting
+    /* updates the displayed date for the timezone setting
      * triggered by the user changing the timezone/ms settings */
     updateTime: function () {
       this.tick();
@@ -1759,12 +1758,10 @@ export default {
       UserService.deleteColumnConfig(colName, this.userId).then((response) => {
         this.colConfigs.splice(index, 1);
         // display success message to user
-        this.msg = response.text;
-        this.msgType = 'success';
+        this.displayMessage({ msg: response.text });
       }).catch((error) => {
         // display error message to user
-        this.msg = error.text;
-        this.msgType = 'danger';
+        this.displayMessage({ msg: error.text, type: 'danger' });
       });
     },
     /* SPIVIEW FIELD CONFIGURATIONS -------------------- */
@@ -1777,12 +1774,10 @@ export default {
       UserService.deleteSpiviewFieldConfig(spiName, this.userId).then((response) => {
         this.spiviewConfigs.splice(index, 1);
         // display success message to user
-        this.msg = response.text;
-        this.msgType = 'success';
+        this.displayMessage({ msg: response.text });
       }).catch((error) => {
         // display error message to user
-        this.msg = error.text;
-        this.msgType = 'danger';
+        this.displayMessage({ msg: error.text, type: 'danger' });
       });
     },
     /* THEMES ------------------------------------------ */
@@ -1865,12 +1860,10 @@ export default {
       this.settings.shiftyEyes = !this.settings.shiftyEyes;
       UserService.saveSettings(this.settings, this.userId).then((response) => {
         // display success message to user
-        this.msg = 'SUPER SECRET THING HAPPENED!';
-        this.msgType = 'success';
+        this.displayMessage({ msg: 'SUPER SECRET THING HAPPENED!' });
       }).catch((error) => {
         // display error message to user
-        this.msg = error.text;
-        this.msgType = 'danger';
+        this.displayMessage({ msg: error.text, type: 'danger' });
       });
     },
     /* PASSWORD ---------------------------------------- */
@@ -1908,17 +1901,15 @@ export default {
         this.newPassword = null;
         this.confirmNewPassword = null;
         // display success message to user
-        this.msg = response.text;
-        this.msgType = 'success';
+        this.displayMessage({ msg: response.text });
       }).catch((error) => {
         // display error message to user
-        this.msg = error.text;
-        this.msgType = 'danger';
+        this.displayMessage({ msg: error.text, type: 'danger' });
       });
     },
 
     /* helper functions ---------------------------------------------------- */
-    /* retrievs the theme colors from the document body's property values */
+    /* retrieves the theme colors from the document body's property values */
     getThemeColors: function () {
       const styles = window.getComputedStyle(document.body);
 
@@ -1988,7 +1979,7 @@ export default {
           this.setTheme();
           this.startClock();
         }).catch((error) => {
-          console.log('ERROR getting fields to populdate page', error);
+          console.log('ERROR getting fields to populate page', error);
         });
       }).catch((error) => {
         this.loading = false;
@@ -2003,7 +1994,7 @@ export default {
         this.displayName = '';
       });
     },
-    /* retrieves moloch fields and visible column headers for sessions table
+    /* retrieves arkime fields and visible column headers for sessions table
      * adds custom columns to fields
      * sets user settings for spigraph field & connections src/dst fields
      * creates fields map for quick lookups

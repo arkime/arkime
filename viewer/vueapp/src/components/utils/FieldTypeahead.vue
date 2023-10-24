@@ -1,3 +1,7 @@
+<!--
+Copyright Yahoo Inc.
+SPDX-License-Identifier: Apache-2.0
+-->
 <template>
 
   <div :class="{'dropup':dropup}">
@@ -59,7 +63,7 @@ import UserService from '../users/UserService';
 let inputTimeout;
 
 export default {
-  name: 'MolochFieldTypeahead',
+  name: 'ArkimeFieldTypeahead',
   props: {
     fields: {
       type: Array,

@@ -9,7 +9,6 @@ import { render, waitFor, fireEvent } from '@testing-library/vue';
 import Settings from '../src/components/settings/Settings.vue';
 import SettingsService from '../src/components/settings/SettingsService';
 import UserService from '../src/components/users/UserService';
-import ConfigService from '../src/components/utils/ConfigService';
 import HasPermission from '../src/components/utils/HasPermission.vue';
 import HasRole from '../../../common/vueapp/HasRole.vue';
 import Utils from '../src/components/utils/utils';
@@ -29,11 +28,10 @@ Vue.directive('has-permission', HasPermission);
 Vue.directive('has-role', HasRole);
 
 Vue.prototype.$constants = {
-  MOLOCH_MULTIVIEWER: false
+  MULTIVIEWER: false
 };
 
 jest.mock('../src/components/users/UserService');
-jest.mock('../src/components/utils/ConfigService');
 jest.mock('../src/components/settings/SettingsService');
 
 const store = {
@@ -78,10 +76,6 @@ UserService.getState = jest.fn().mockResolvedValue({
   data: {
     visibleHeaders: ['firstPacket', 'lastPacket']
   }
-});
-// config service
-ConfigService.getMolochClusters = jest.fn().mockResolvedValue({
-  test2: { name: 'Test2', url: 'http://localhost:8124' }
 });
 
 test('settings - self', async () => {

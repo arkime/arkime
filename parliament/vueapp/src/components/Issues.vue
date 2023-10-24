@@ -1,3 +1,7 @@
+<!--
+Copyright Yahoo Inc.
+SPDX-License-Identifier: Apache-2.0
+-->
 <template>
 
   <div class="container-fluid">
@@ -70,7 +74,7 @@
         <!-- /page info -->
         <template v-if="isUser">
           <!-- remove/cancel all issues button -->
-          <button v-if="loggedIn && issues && issues.length"
+          <button v-if="isUser && issues && issues.length"
             class="btn btn-outline-danger btn-sm cursor-pointer"
             v-b-tooltip.hover.bottom
             title="Remove ALL acknowledged issues across the ENTIRE Parliament"
@@ -85,7 +89,7 @@
           </button>
           <transition name="slide-fade">
             <button class="btn btn-outline-warning btn-sm cursor-pointer"
-              v-if="isUser && loggedIn && issues && issues.length && removeAllAcknowledgedIssuesConfirm"
+              v-if="isUser && issues && issues.length && removeAllAcknowledgedIssuesConfirm"
               v-b-tooltip.hover.bottom
               title="Cancel removing ALL acknowledged issues"
               @click="cancelRemoveAllAcknowledgedIssues">
@@ -195,7 +199,7 @@
       class="table table-hover table-sm">
       <thead>
         <tr>
-          <th v-if="isUser && loggedIn && issues.length">
+          <th v-if="isUser && issues.length">
             <input type="checkbox"
               @click="toggleAllIssues"
               v-model="allIssuesSelected"
@@ -304,7 +308,7 @@
               class="fa fa-sort-desc fa-fw">
             </span>
           </th>
-          <th v-if="isUser && loggedIn && issues && issues.length"
+          <th v-if="isUser && issues && issues.length"
             width="120px"
             scope="col">
             <span v-if="atLeastOneIssueSelected">
@@ -370,7 +374,7 @@
         <template v-for="(issue, index) of issues">
           <tr :key="getIssueTrackingId(issue)"
             :class="getIssueRowClass(issue)">
-            <td v-if="isUser && loggedIn">
+            <td v-if="isUser">
               <input
                 type="checkbox"
                 v-model="issue.selected"
@@ -408,7 +412,7 @@
                 {{ issue.acknowledged | moment('YYYY/MM/DD HH:mm:ss') }}
               </span>
             </td>
-            <td v-if="isUser && loggedIn">
+            <td v-if="isUser">
               <issue-actions class="issue-btns"
                 :issue="issue"
                 @issueChange="issueChange">
@@ -500,9 +504,6 @@ export default {
     },
     isUser: function () {
       return this.$store.state.isUser;
-    },
-    loggedIn: function () {
-      return this.$store.state.loggedIn;
     },
     // data refresh interval
     refreshInterval: function () {

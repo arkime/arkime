@@ -2,33 +2,23 @@
  *
  * Copyright 2012-2017 AOL Inc. All rights reserved.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this Software except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: Apache-2.0
  */
 
-#include "moloch.h"
+#include "arkime.h"
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include "daq.h"
 #include "pcap.h"
 
-extern MolochConfig_t        config;
+extern ArkimeConfig_t        config;
 
 LOCAL const DAQ_Module_t    *module;
 LOCAL void                  *handles[MAX_INTERFACES];
 
 /******************************************************************************/
-int reader_daq_stats(MolochReaderStats_t *stats)
+int reader_daq_stats(ArkimeReaderStats_t *stats)
 {
     DAQ_Stats_t daq_stats;
 
@@ -53,14 +43,14 @@ DAQ_Verdict reader_daq_packet_cb(void *batch, const DAQ_PktHdr_t *h, const uint8
         LOGEXIT("ERROR - Arkime requires full packet captures caplen: %d pktlen: %d", h->caplen, h->pktlen);
     }
 
-    MolochPacket_t *packet = MOLOCH_TYPE_ALLOC0(MolochPacket_t);
+    ArkimePacket_t *packet = ARKIME_TYPE_ALLOC0(ArkimePacket_t);
 
     packet->pkt           = (u_char *)data;
     packet->ts            = h->ts;
     packet->pktlen        = h->pktlen;
-    packet->readerPos     = ((MolochPacketBatch_t *)batch)->readerPos;
+    packet->readerPos     = ((ArkimePacketBatch_t *)batch)->readerPos;
 
-    moloch_packet_batch((MolochPacketBatch_t *)batch, packet);
+    arkime_packet_batch((ArkimePacketBatch_t *)batch, packet);
     return DAQ_VERDICT_PASS;
 }
 /******************************************************************************/
@@ -69,17 +59,17 @@ LOCAL void *reader_daq_thread(gpointer posv)
     long pos = (long)posv;
     gpointer handle = handles[pos];
 
-    MolochPacketBatch_t   batch;
-    moloch_packet_batch_init(&batch);
+    ArkimePacketBatch_t   batch;
+    arkime_packet_batch_init(&batch);
     batch.readerPos = pos;
     while (1) {
         int r = daq_acquire(module, handle, 10000, reader_daq_packet_cb, &batch);
-        moloch_packet_batch_flush(&batch);
+        arkime_packet_batch_flush(&batch);
 
         // Some kind of failure we quit
         if (unlikely(r)) {
             LOG("DAQ quiting %d %s", r, daq_get_error(module, handle));
-            moloch_quit();
+            arkime_quit();
             module = 0;
             break;
         }
@@ -91,7 +81,7 @@ void reader_daq_start() {
     int err;
 
     //ALW - Bug: assumes all linktypes are the same
-    moloch_packet_set_dltsnap(daq_get_datalink_type(module, handles[0]), config.snapLen);
+    arkime_packet_set_dltsnap(daq_get_datalink_type(module, handles[0]), config.snapLen);
 
     int i;
     for (i = 0; i < MAX_INTERFACES && config.interface[i]; i++) {
@@ -110,7 +100,7 @@ void reader_daq_start() {
         }
 
         char name[100];
-        snprintf(name, sizeof(name), "moloch-daq%d", i);
+        snprintf(name, sizeof(name), "arkime-daq%d", i);
         g_thread_unref(g_thread_new(name, &reader_daq_thread, NULL));
     }
 }
@@ -139,8 +129,8 @@ void reader_daq_init(char *UNUSED(name))
     DAQ_Config_t cfg;
 
 
-    gchar **dirs = moloch_config_str_list(NULL, "daqModuleDirs", "/usr/local/lib/daq");
-    gchar *moduleName = moloch_config_str(NULL, "daqModule", "pcap");
+    gchar **dirs = arkime_config_str_list(NULL, "daqModuleDirs", "/usr/local/lib/daq");
+    gchar *moduleName = arkime_config_str(NULL, "daqModule", "pcap");
 
     err = daq_load_modules((const char **)dirs);
     if (err) {
@@ -169,13 +159,13 @@ void reader_daq_init(char *UNUSED(name))
         }
     }
 
-    moloch_reader_start         = reader_daq_start;
-    moloch_reader_stop          = reader_daq_stop;
-    moloch_reader_stats         = reader_daq_stats;
-    moloch_reader_exit          = reader_daq_exit;
+    arkime_reader_start         = reader_daq_start;
+    arkime_reader_stop          = reader_daq_stop;
+    arkime_reader_stats         = reader_daq_stats;
+    arkime_reader_exit          = reader_daq_exit;
 }
 /******************************************************************************/
-void moloch_plugin_init()
+void arkime_plugin_init()
 {
-    moloch_readers_add("daq", reader_daq_init);
+    arkime_readers_add("daq", reader_daq_init);
 }

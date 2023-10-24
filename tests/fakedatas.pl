@@ -3,7 +3,7 @@
 use strict;
 use JSON;
 use Data::Dumper;
-use MolochTest;
+use ArkimeTest;
 use Cwd;
 
 $main::userAgent = LWP::UserAgent->new(timeout => 20);

@@ -1,15 +1,16 @@
-#ifndef _MOLOCH_LUA_
-#define _MOLOCH_LUA_
-#include "moloch.h"
+/* SPDX-License-Identifier: Apache-2.0 */
+#ifndef _ARKIME_LUA_
+#define _ARKIME_LUA_
+#include "arkime.h"
 #include "lua.h"
 #include "lauxlib.h"
 #include "lualib.h"
 
-extern MolochConfig_t        config;
+extern ArkimeConfig_t        config;
 
-void luaopen_molochhttpservice(lua_State *L);
-void luaopen_molochsession(lua_State *L);
-void luaopen_molochdata(lua_State *L);
+void luaopen_arkimehttpservice(lua_State *L);
+void luaopen_arkimesession(lua_State *L);
+void luaopen_arkimedata(lua_State *L);
 
 void molua_stackDump (lua_State *L);
 
@@ -44,8 +45,8 @@ typedef struct {
     char     done_message_begin[2];     // 0 for REQ, 1 for RESP
 } MoluaPlugin_t;
 
-MD_t *molua_pushMolochData (lua_State *L, const char *str, int len);
-void *molua_pushMolochSession (lua_State *L, const MolochSession_t *session);
+MD_t *molua_pushArkimeData (lua_State *L, const char *str, int len);
+void *molua_pushArkimeSession (lua_State *L, const ArkimeSession_t *session);
 void MD_markInvalid(lua_State *L, int index);
 
 extern int molua_pluginIndex;

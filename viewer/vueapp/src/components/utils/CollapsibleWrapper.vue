@@ -1,3 +1,7 @@
+<!--
+Copyright Yahoo Inc.
+SPDX-License-Identifier: Apache-2.0
+-->
 <template>
   <b-collapse :visible="showToolBars" v-on:recalc-collapse="getOffset">
     <span ref="collapseBox">

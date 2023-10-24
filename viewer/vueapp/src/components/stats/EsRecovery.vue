@@ -1,24 +1,28 @@
+<!--
+Copyright Yahoo Inc.
+SPDX-License-Identifier: Apache-2.0
+-->
 <template>
 
   <div class="container-fluid mt-2">
 
-    <moloch-loading v-if="initialLoading && !error">
-    </moloch-loading>
+    <arkime-loading v-if="initialLoading && !error">
+    </arkime-loading>
 
-    <moloch-error v-if="error"
+    <arkime-error v-if="error"
       :message="error">
-    </moloch-error>
+    </arkime-error>
 
     <div v-show="!error">
 
-      <moloch-paging v-if="stats"
+      <arkime-paging v-if="stats"
         class="mt-1 ml-2"
         :info-only="true"
         :records-total="recordsTotal"
         :records-filtered="recordsFiltered">
-      </moloch-paging>
+      </arkime-paging>
 
-      <moloch-table
+      <arkime-table
         id="esRecoveryTable"
         :data="stats"
         :loadData="loadData"
@@ -27,11 +31,12 @@
         :action-column="true"
         :desc="query.desc"
         :sortField="query.sortField"
+        :no-results-msg="`No results match your search.${cluster ? 'Try selecting a different cluster.' : ''}`"
         page="esRecovery"
         table-classes="table-sm text-right small mt-2"
         table-state-name="esRecoveryCols"
         table-widths-state-name="esRecoveryColWidths">
-      </moloch-table>
+      </arkime-table>
 
     </div>
 
@@ -40,10 +45,11 @@
 </template>
 
 <script>
-import MolochTable from '../utils/Table';
-import MolochError from '../utils/Error';
-import MolochLoading from '../utils/Loading';
-import MolochPaging from '../utils/Pagination';
+import Utils from '../utils/utils';
+import ArkimeTable from '../utils/Table';
+import ArkimeError from '../utils/Error';
+import ArkimeLoading from '../utils/Loading';
+import ArkimePaging from '../utils/Pagination';
 
 let reqPromise; // promise returned from setInterval for recurring requests
 let respondedAt; // the time that the last data load successfully responded
@@ -55,13 +61,14 @@ export default {
     'dataInterval',
     'recoveryShow',
     'refreshData',
-    'searchTerm'
+    'searchTerm',
+    'cluster'
   ],
   components: {
-    MolochTable,
-    MolochError,
-    MolochPaging,
-    MolochLoading
+    ArkimeTable,
+    ArkimeError,
+    ArkimePaging,
+    ArkimeLoading
   },
   data: function () {
     return {
@@ -76,7 +83,8 @@ export default {
         filter: this.searchTerm || undefined,
         sortField: 'index',
         desc: false,
-        show: this.recoveryShow || 'notdone'
+        show: this.recoveryShow || 'notdone',
+        cluster: this.cluster || undefined
       },
       columns: [ // es indices table columns
         // default columns
@@ -135,6 +143,10 @@ export default {
       if (this.refreshData) {
         this.loadData();
       }
+    },
+    cluster: function () {
+      this.query.cluster = this.cluster;
+      this.loadData();
     }
   },
   created: function () {
@@ -153,6 +165,10 @@ export default {
       }, 500);
     },
     loadData: function (sortField, desc) {
+      if (!Utils.checkClusterSelection(this.query.cluster, this.$store.state.esCluster.availableCluster.active, this).valid) {
+        return;
+      }
+
       this.loading = true;
       respondedAt = undefined;
 

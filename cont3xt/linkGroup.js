@@ -3,20 +3,11 @@
  *
  * Copyright Yahoo Inc.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this Software except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: Apache-2.0
  */
 'use strict';
 
+const User = require('../common/user');
 const ArkimeUtil = require('../common/arkimeUtil');
 
 class LinkGroup {
@@ -220,16 +211,16 @@ class LinkGroup {
       return res.send({ success: false, text: 'LinkGroup not found' });
     }
 
-    if (olinkGroup.creator !== req.user.userId && !(req.user.hasRole(olinkGroup.editRoles)) && !req.user.hasRole('cont3xtAdmin')) {
-      return res.send({ success: false, text: 'Permission denied' });
-    }
-
     const linkGroup = req.body;
-    linkGroup.creator = olinkGroup.creator; // Make sure the creator doesn't get changed
 
     const { lg, msg } = LinkGroup.verifyLinkGroup(linkGroup);
     if (msg) {
       return res.send({ success: false, text: msg });
+    }
+
+    // sets the owner if it has changed
+    if (!await User.setOwner(req, res, lg, olinkGroup, 'creator')) {
+      return;
     }
 
     try {
@@ -255,10 +246,6 @@ class LinkGroup {
     const linkGroup = await Db.getLinkGroup(req.params.id);
     if (!linkGroup) {
       return res.send({ success: false, text: 'LinkGroup not found' });
-    }
-
-    if (linkGroup.creator !== req.user.userId && !(req.user.hasRole(linkGroup.editRoles)) && !req.user.hasRole('cont3xtAdmin')) {
-      return res.send({ success: false, text: 'Permission denied' });
     }
 
     const results = await Db.deleteLinkGroup(req.params.id, req.body);

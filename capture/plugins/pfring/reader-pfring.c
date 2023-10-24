@@ -2,32 +2,22 @@
  *
  * Copyright 2012-2017 AOL Inc. All rights reserved.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this Software except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: Apache-2.0
  */
 
-#include "moloch.h"
+#include "arkime.h"
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include "pfring.h"
 #include "pcap.h"
 
-extern MolochConfig_t        config;
+extern ArkimeConfig_t        config;
 
 LOCAL pfring                *rings[MAX_INTERFACES];
 
 /******************************************************************************/
-int reader_pfring_stats(MolochReaderStats_t *stats)
+int reader_pfring_stats(ArkimeReaderStats_t *stats)
 {
     pfring_stat pfstats;
 
@@ -45,22 +35,22 @@ int reader_pfring_stats(MolochReaderStats_t *stats)
 /******************************************************************************/
 void reader_pfring_packet_cb(const struct pfring_pkthdr *h, const u_char *p, const u_char *user_bytes)
 {
-    MolochPacketBatch_t *batch = (MolochPacketBatch_t *)user_bytes;
+    ArkimePacketBatch_t *batch = (ArkimePacketBatch_t *)user_bytes;
 
     if (unlikely(h->caplen != h->len)) {
         LOGEXIT("ERROR - Arkime requires full packet captures caplen: %d pktlen: %d", h->caplen, h->len);
     }
 
-    MolochPacket_t *packet = MOLOCH_TYPE_ALLOC0(MolochPacket_t);
+    ArkimePacket_t *packet = ARKIME_TYPE_ALLOC0(ArkimePacket_t);
 
     packet->pkt           = (u_char *)p;
     packet->ts            = h->ts;
     packet->pktlen        = h->len;
     packet->readerPos     = batch->readerPos;
 
-    moloch_packet_batch(batch, packet);
+    arkime_packet_batch(batch, packet);
     if (batch->count > 10000)
-        moloch_packet_batch_flush(batch);
+        arkime_packet_batch_flush(batch);
 }
 /******************************************************************************/
 LOCAL void *reader_pfring_thread(void *posv)
@@ -68,18 +58,18 @@ LOCAL void *reader_pfring_thread(void *posv)
     long                   pos = (long)posv;
     pfring                *ring = rings[pos];
 
-    MolochPacketBatch_t batch;
-    moloch_packet_batch_init(&batch);
+    ArkimePacketBatch_t batch;
+    arkime_packet_batch_init(&batch);
     batch.readerPos = pos;
     pfring_enable_ring(ring);
     while (1) {
         int r = pfring_loop(ring, reader_pfring_packet_cb, (u_char *)&batch, -1);
 
-        moloch_packet_batch_flush(&batch);
+        arkime_packet_batch_flush(&batch);
 
         // Some kind of failure we quit
         if (unlikely(r <= 0)) {
-            moloch_quit();
+            arkime_quit();
             rings[pos] = 0;
             break;
         }
@@ -88,12 +78,12 @@ LOCAL void *reader_pfring_thread(void *posv)
 }
 /******************************************************************************/
 void reader_pfring_start() {
-    moloch_packet_set_dltsnap(DLT_EN10MB, config.snapLen);
+    arkime_packet_set_dltsnap(DLT_EN10MB, config.snapLen);
 
     int i;
     for (i = 0; i < MAX_INTERFACES && config.interface[i]; i++) {
         char name[100];
-        snprintf(name, sizeof(name), "moloch-pfring%d", i);
+        snprintf(name, sizeof(name), "arkime-pfring%d", i);
         g_thread_unref(g_thread_new(name, &reader_pfring_thread, (gpointer)(long)i));
     }
 }
@@ -122,7 +112,7 @@ void reader_pfring_exit()
 void reader_pfring_init(char *UNUSED(name))
 {
     int flags = PF_RING_PROMISC | PF_RING_TIMESTAMP;
-    int clusterId = moloch_config_int(NULL, "pfringClusterId", 0, 0, 255);
+    int clusterId = arkime_config_int(NULL, "pfringClusterId", 0, 0, 255);
 
     int i;
     for (i = 0; i < MAX_INTERFACES && config.interface[i]; i++) {
@@ -147,13 +137,13 @@ void reader_pfring_init(char *UNUSED(name))
         pfring_enable_rss_rehash(rings[i]);
     }
 
-    moloch_reader_start         = reader_pfring_start;
-    moloch_reader_stop          = reader_pfring_stop;
-    moloch_reader_stats         = reader_pfring_stats;
-    moloch_reader_exit          = reader_pfring_exit;
+    arkime_reader_start         = reader_pfring_start;
+    arkime_reader_stop          = reader_pfring_stop;
+    arkime_reader_stats         = reader_pfring_stats;
+    arkime_reader_exit          = reader_pfring_exit;
 }
 /******************************************************************************/
-void moloch_plugin_init()
+void arkime_plugin_init()
 {
-    moloch_readers_add("pfring", reader_pfring_init);
+    arkime_readers_add("pfring", reader_pfring_init);
 }

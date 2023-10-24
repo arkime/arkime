@@ -1,3 +1,7 @@
+<!--
+Copyright Yahoo Inc.
+SPDX-License-Identifier: Apache-2.0
+-->
 <template>
   <div>
     <!-- modify view form -->
@@ -144,7 +148,7 @@ import SettingsService from '../settings/SettingsService';
 import RoleDropdown from '../../../../../common/vueapp/RoleDropdown';
 
 export default {
-  name: 'MolochModifyView',
+  name: 'ArkimeModifyView',
   components: {
     RoleDropdown
   },

@@ -1,3 +1,7 @@
+<!--
+Copyright Yahoo Inc.
+SPDX-License-Identifier: Apache-2.0
+-->
 <template>
 
   <div class="help-content">
@@ -154,7 +158,7 @@
           <a class="btn btn-link" href="https://arkime.com">Home Page</a> |
           <a class="btn btn-link" href="https://arkime.com/faq">FAQ</a> |
           <a class="btn btn-link" href="https://arkime.com/learn">Docs</a> |
-          <a class="btn btn-link" href="https://github.com/aol/moloch">GitHub</a> |
+          <a class="btn btn-link" href="https://github.com/arkime/arkime">GitHub</a> |
           <a class="btn btn-link" href="https://slackinvite.arkime.com/">Request Slack Invite</a>
         </div>
       </div>

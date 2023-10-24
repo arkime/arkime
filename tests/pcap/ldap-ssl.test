@@ -12,12 +12,14 @@
                   "notAfter" : 1738030709000,
                   "notBefore" : 1422670709000,
                   "publicAlgorithm" : "rsaEncryption",
-                  "remainingDays" : 1,
+                  "remainingDays" : 3649,
+                  "remainingSeconds" : 315357177,
                   "serial" : "008a07e08d4ab50a7b",
                   "subjectCN" : [
                      "ldap ssl test"
                   ],
-                  "validDays" : 3650
+                  "validDays" : 3650,
+                  "validSeconds" : 315360000
                }
             ],
             "certCnt" : 1,
@@ -191,6 +193,10 @@
                   "771,51-103-69-57-107-136-22-50-64-68-56-106-135-19-102-47-60-65-53-61-132-10-5-4,65281-13,,"
                ],
                "ja3stringCnt" : 1,
+               "ja4" : [
+                  "t12i240200_e34a427d6317_e0d811e466d9"
+               ],
+               "ja4Cnt" : 1,
                "version" : [
                   "TLSv1.2"
                ],

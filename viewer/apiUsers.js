@@ -1,3 +1,10 @@
+/******************************************************************************/
+/* apiUsers.js -- api calls for users tab
+ *
+ * Copyright Yahoo Inc.
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
 'use strict';
 
 const Config = require('./config.js');
@@ -40,11 +47,11 @@ class UserAPIs {
   static getCurrentUserCB (user, clone) {
     clone.canUpload = internals.allowUploads;
 
-    // If esAdminUser is set use that, other wise use arkimeAdmin privilege
+    // If esAdminUser is set use that, otherwise use arkimeAdmin privilege
     if (internals.esAdminUsersSet) {
       clone.esAdminUser = internals.esAdminUsers.includes(user.userId);
     } else {
-      clone.esAdminUser = user.hasRole('arkimeAdmin') && Config.get('multiES', false) === false;
+      clone.esAdminUser = user.hasRole('arkimeAdmin');
     }
 
     // If no settings, use defaults
@@ -406,7 +413,7 @@ class UserAPIs {
    * @returns {string} text - The success/error message to (optionally) display to the user.
    */
   static deleteUserColumns (req, res) {
-    const colName = req.body.name || req.params.name;
+    const colName = req.params.name;
     if (!colName) {
       return res.serverError(403, 'Missing custom column configuration name');
     }

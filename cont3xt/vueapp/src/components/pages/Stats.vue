@@ -1,5 +1,9 @@
+<!--
+Copyright Yahoo Inc.
+SPDX-License-Identifier: Apache-2.0
+-->
 <template>
-  <div class="container-fluid">
+  <div class="container-fluid overflow-auto pt-3">
     <b-overlay
       rounded="sm"
       blur="0.2rem"
@@ -9,7 +13,7 @@
 
       <!-- loading overlay template -->
       <template #overlay>
-        <div class="text-center margin-for-nav-and-progress">
+        <div class="text-center">
           <span class="fa fa-circle-o-notch fa-spin fa-2x" />
           <p>Loading stats...</p>
         </div>

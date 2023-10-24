@@ -1,3 +1,10 @@
+/******************************************************************************/
+/* apiSessions.js -- api calls for sessions tab
+ *
+ * Copyright Yahoo Inc.
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
 'use strict';
 
 const Config = require('./config.js');
@@ -12,10 +19,11 @@ const pug = require('pug');
 const util = require('util');
 const decode = require('./decode.js');
 const ArkimeUtil = require('../common/arkimeUtil');
+const ArkimeConfig = require('../common/arkimeConfig');
 const Auth = require('../common/auth');
 const Pcap = require('./pcap.js');
 const version = require('../common/version');
-const molochparser = require('./molochparser.js');
+const arkimeparser = require('./arkimeparser.js');
 const internals = require('./internals');
 const ViewerUtils = require('./viewerUtils');
 const ipaddr = require('ipaddr.js');
@@ -211,7 +219,7 @@ class SessionAPIs {
       const view = views[0]._source;
 
       try {
-        const viewExpression = molochparser.parse(view.expression);
+        const viewExpression = arkimeparser.parse(view.expression);
         query.query.bool.filter.push(viewExpression);
         return continueBuildQueryCb(req, query, undefined, finalCb, queryOverride);
       } catch (err) {
@@ -757,7 +765,7 @@ class SessionAPIs {
           let buffer = Buffer.alloc(Math.min(16200000, fields['network.packets'] * 20 + fields['network.bytes']));
           let bufpos = 0;
 
-          const sessionPath = Config.basePath(fields.node) + fields.node + '/' + extension + '/' + Db.session2Sid(item) + '.' + extension;
+          const sessionPath = Config.basePath(fields.node) + 'api/session/' + fields.node + '/' + Db.session2Sid(item) + '.' + extension;
           const url = new URL(sessionPath, viewUrl);
           const options = {
             agent: client === http ? internals.httpAgent : internals.httpsAgent
@@ -851,13 +859,15 @@ class SessionAPIs {
 
     const saveId = Config.nodeName() + '-' + new Date().getTime().toString(36);
 
+    const cluster = req.body.remoteCluster;
+
     async.eachLimit(list, 10, (item, nextCb) => {
       const fields = item.fields;
       const sid = Db.session2Sid(item);
       SessionAPIs.isLocalView(fields.node, () => {
         const options = {
           user: req.user,
-          cluster: req.body.cluster,
+          cluster,
           id: sid,
           saveId,
           tags: req.body.tags,
@@ -866,7 +876,7 @@ class SessionAPIs {
         // Get from our DISK
         internals.sendSessionQueue.push(options, nextCb);
       }, () => {
-        let sendPath = `api/session/${fields.node}/${sid}/send?saveId=${saveId}&cluster=${req.body.cluster}`;
+        let sendPath = `api/session/${fields.node}/${sid}/send?saveId=${saveId}&remoteCluster=${cluster}`;
         if (ArkimeUtil.isString(req.body.tags)) {
           sendPath += `&tags=${req.body.tags}`;
         }
@@ -885,7 +895,7 @@ class SessionAPIs {
 
   // --------------------------------------------------------------------------
   static #sessionsPcap (req, res, pcapWriter, extension) {
-    ViewerUtils.noCache(req, res, 'application/vnd.tcpdump.pcap');
+    ArkimeUtil.noCache(req, res, 'application/vnd.tcpdump.pcap');
 
     const fields = ['lastPacket', 'node', 'network.bytes', 'network.packets', 'rootId'];
 
@@ -935,7 +945,7 @@ class SessionAPIs {
     }, (err, session) => {
       if (err) {
         res.status(500);
-        if (!Config.regressionTests) {
+        if (!ArkimeConfig.regressionTests) {
           console.trace('writePcap', err);
         }
         return doneCb(err);
@@ -1405,7 +1415,7 @@ class SessionAPIs {
 
     // always complete building the query regardless of shortcuts
     let err;
-    molochparser.parser.yy = {
+    arkimeparser.parser.yy = {
       views: req.user.views,
       fieldsMap: Config.getFieldsMap(),
       dbFieldsMap: Config.getDBFieldsMap(),
@@ -1421,7 +1431,7 @@ class SessionAPIs {
       } else {
         // reqQuery.expression = reqQuery.expression.replace(/\\/g, "\\\\");
         try {
-          query.query.bool.filter.push(molochparser.parse(reqQuery.expression));
+          query.query.bool.filter.push(arkimeparser.parse(reqQuery.expression));
         } catch (e) {
           err = e;
         }
@@ -1502,7 +1512,7 @@ class SessionAPIs {
 
   // --------------------------------------------------------------------------
   static proxyRequest (req, res, errCb) {
-    ViewerUtils.noCache(req, res);
+    ArkimeUtil.noCache(req, res);
 
     ViewerUtils.getViewUrl(req.params.nodeName, (err, viewUrl, client) => {
       if (err) {
@@ -1826,7 +1836,7 @@ class SessionAPIs {
    * @returns {csv} csv - The csv with the sessions requested
    */
   static getSessionsCSV (req, res) {
-    ViewerUtils.noCache(req, res, 'text/csv');
+    ArkimeUtil.noCache(req, res, 'text/csv');
 
     // default fields to display in csv
     let fields = [
@@ -2370,7 +2380,7 @@ class SessionAPIs {
    * @returns {string} The list of unique fields (with counts if requested)
    */
   static getUnique (req, res) {
-    ViewerUtils.noCache(req, res, 'text/plain; charset=utf-8');
+    ArkimeUtil.noCache(req, res, 'text/plain; charset=utf-8');
 
     // req.query.exp -> req.query.field by viewer.js:expToField
 
@@ -2514,7 +2524,7 @@ class SessionAPIs {
    * @returns {string} The list of an intersection of unique fields (with counts if requested)
    */
   static getMultiunique (req, res) {
-    ViewerUtils.noCache(req, res, 'text/plain; charset=utf-8');
+    ArkimeUtil.noCache(req, res, 'text/plain; charset=utf-8');
 
     if (!ArkimeUtil.isString(req.query.exp)) {
       return res.send('Missing exp parameter');
@@ -2659,7 +2669,7 @@ class SessionAPIs {
    */
   static getPackets (req, res) {
     SessionAPIs.isLocalView(req.params.nodeName, () => {
-      ViewerUtils.noCache(req, res);
+      ArkimeUtil.noCache(req, res);
       req.packetsOnly = true;
       SessionAPIs.#localSessionDetail(req, res);
     }, () => {
@@ -2851,7 +2861,7 @@ class SessionAPIs {
    * @returns {pcap} A PCAP file with the session requested
    */
   static getPCAPFromNode (req, res) {
-    ViewerUtils.noCache(req, res, 'application/vnd.tcpdump.pcap');
+    ArkimeUtil.noCache(req, res, 'application/vnd.tcpdump.pcap');
     const writeHeader = !req.query || !req.query.noHeader || req.query.noHeader !== 'true';
     SessionAPIs.#writePcap(res, req.params.id, { writeHeader }, () => {
       res.end();
@@ -2867,7 +2877,7 @@ class SessionAPIs {
    * @returns {pcap} A PCAPNG file with the session requested
    */
   static getPCAPNGFromNode (req, res) {
-    ViewerUtils.noCache(req, res, 'application/vnd.tcpdump.pcap');
+    ArkimeUtil.noCache(req, res, 'application/vnd.tcpdump.pcap');
     const writeHeader = !req.query || !req.query.noHeader || req.query.noHeader !== 'true';
     SessionAPIs.#writePcapNg(res, req.params.id, { writeHeader }, () => {
       res.end();
@@ -2883,7 +2893,7 @@ class SessionAPIs {
    * @returns {pcap} A PCAP file with the session requested
    */
   static getEntirePCAP (req, res) {
-    ViewerUtils.noCache(req, res, 'application/vnd.tcpdump.pcap');
+    ArkimeUtil.noCache(req, res, 'application/vnd.tcpdump.pcap');
 
     const writerOptions = { writeHeader: true };
 
@@ -2917,7 +2927,7 @@ class SessionAPIs {
    * @returns {image/png} image - The bitmap image.
    */
   static getPacketPNG (req, res) {
-    ViewerUtils.noCache(req, res, 'image/png');
+    ArkimeUtil.noCache(req, res, 'image/png');
 
     SessionAPIs.processSessionIdAndDecode(req.params.id, 1000, (err, session, results) => {
       if (err) {
@@ -2968,7 +2978,7 @@ class SessionAPIs {
    * @returns {string} The source or destination packet text.
    */
   static getRawPackets (req, res) {
-    ViewerUtils.noCache(req, res, 'application/vnd.tcpdump.pcap');
+    ArkimeUtil.noCache(req, res, 'application/vnd.tcpdump.pcap');
 
     SessionAPIs.processSessionIdAndDecode(req.params.id, 10000, (err, session, results) => {
       if (err) {
@@ -3037,7 +3047,7 @@ class SessionAPIs {
                   res.status(400);
                   return res.end(err);
                 } else if (item) {
-                  ViewerUtils.noCache(req, res, 'application/force-download');
+                  ArkimeUtil.noCache(req, res, 'application/force-download');
                   res.setHeader('content-disposition', contentDisposition(item.bodyName + '.pellet'));
                   return res.end(item.data);
                 } else {
@@ -3089,7 +3099,7 @@ class SessionAPIs {
         res.status(400);
         return res.end(err);
       } else if (item) {
-        ViewerUtils.noCache(req, res, 'application/force-download');
+        ArkimeUtil.noCache(req, res, 'application/force-download');
         res.setHeader('content-disposition', contentDisposition(item.bodyName + '.pellet'));
         return res.end(item.data);
       } else {
@@ -3149,10 +3159,10 @@ class SessionAPIs {
    * @name /session/:nodeName/:id/send
    */
   static sendSessionToNode (req, res) {
-    ViewerUtils.noCache(req, res);
+    ArkimeUtil.noCache(req, res);
     res.statusCode = 200;
 
-    const cluster = req.query.remoteCluster ?? req.query.cluster;
+    const cluster = req.query.remoteCluster;
 
     if (!ArkimeUtil.isString(req.query.saveId)) { return res.serverError(200, 'Missing saveId'); }
     if (!ArkimeUtil.isString(cluster)) { return res.serverError(200, 'Missing cluster'); }
@@ -3186,10 +3196,10 @@ class SessionAPIs {
    * @param {saveId} saveId - The sessionId to use on the remote side.
    */
   static sendSessionsToNode (req, res) {
-    ViewerUtils.noCache(req, res);
+    ArkimeUtil.noCache(req, res);
     res.statusCode = 200;
 
-    const cluster = req.query.remoteCluster ?? req.query.cluster;
+    const cluster = req.query.remoteCluster;
 
     if (!ArkimeUtil.isString(req.query.saveId)) { return res.serverError(200, 'Missing saveId'); }
     if (!ArkimeUtil.isString(cluster)) { return res.serverError(200, 'Missing cluster'); }
@@ -3230,7 +3240,7 @@ class SessionAPIs {
    * @param {SessionsQuery} query - The request query to filter sessions, only used if ids isn't provided
    */
   static sendSessions (req, res) {
-    const cluster = req.body.remoteCluster ?? req.body.cluster;
+    const cluster = req.body.remoteCluster;
 
     if (!ArkimeUtil.isString(cluster)) { return res.serverError(200, 'Missing cluster'); }
     if (!internals.remoteClusters || !internals.remoteClusters[cluster]) { return res.serverError(200, 'Unknown cluster'); }

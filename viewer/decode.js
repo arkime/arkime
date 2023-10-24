@@ -1,20 +1,11 @@
+/******************************************************************************/
 /* decode.js  -- The pcap decoding code.
  *
  * To fix bugs you can just do `node decode.js [OPTIONS] [FILE]`
  *
  * Copyright 2012-2016 AOL Inc. All rights reserved.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this Software except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: Apache-2.0
  */
 'use strict';
 
@@ -40,7 +31,7 @@ function mkname (stream, streamName) {
   if (!mkname.cnt) { mkname.cnt = {}; }
   if (!mkname.cnt[streamName]) { mkname.cnt[streamName] = 0; }
   mkname.cnt[streamName]++;
-  stream.molochName = streamName + '-' + mkname.cnt[streamName];
+  stream.arkimeName = streamName + '-' + mkname.cnt[streamName];
 }
 /// /////////////////////////////////////////////////////////////////////////////
 class ItemTransform extends Transform {
@@ -142,14 +133,14 @@ function createUncompressStream (options, context) {
 
     if (data[0] === 0x1f && data[1] === 0x8b && data[2] === 8) {
       if (context.headersMap && context.headersMap['content-encoding'] === 'deflate') {
-        context.headersMap['content-encoding'] = 'moloch-gzip';
+        context.headersMap['content-encoding'] = 'arkime-gzip';
       }
       const s = zlib.createGunzip();
       return swap(null, s);
     }
 
     /* if (context.headersMap && context.headersMap["content-encoding"] === "deflate") {
-      context.headersMap["content-encoding"] = "moloch-deflate";
+      context.headersMap["content-encoding"] = "arkime-deflate";
       return swap(null, zlib.createDeflate());
     } */
 

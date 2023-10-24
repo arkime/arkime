@@ -1,5 +1,5 @@
-#ifndef MOLOCH_TLS_CIPHER_H
-#define MOLOCH_TLS_CIPHER_H
+#ifndef ARKIME_TLS_CIPHER_H
+#define ARKIME_TLS_CIPHER_H
 static char *ciphers_00[256] = {
 "TLS_NULL_WITH_NULL_NULL",
 "TLS_RSA_WITH_NULL_MD5",

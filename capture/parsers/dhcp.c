@@ -1,21 +1,11 @@
 /* Copyright 2018, Oath Inc.. All rights reserved.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this Software except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: Apache-2.0
  */
-#include "moloch.h"
+#include "arkime.h"
 #include <arpa/inet.h>
 
-extern MolochConfig_t        config;
+extern ArkimeConfig_t        config;
 LOCAL  int typeField;
 LOCAL  int hostField;
 LOCAL  int macField;
@@ -23,35 +13,36 @@ LOCAL  int ouiField;
 LOCAL  int idField;
 
 /******************************************************************************/
-LOCAL void dhcpv6_udp_classify(MolochSession_t *session, const unsigned char *data, int UNUSED(len), int UNUSED(which), void *UNUSED(uw))
+LOCAL void dhcpv6_udp_classify(ArkimeSession_t *session, const uint8_t *data, int UNUSED(len), int UNUSED(which), void *UNUSED(uw))
 {
-    if ((data[0] != 1 && data[0] != 11) || !MOLOCH_SESSION_v6(session))
+    if ((data[0] != 1 && data[0] != 11) || !ARKIME_SESSION_v6(session))
         return;
-    moloch_session_add_protocol(session, "dhcpv6");
+    arkime_session_add_protocol(session, "dhcpv6");
 }
 /******************************************************************************/
-LOCAL int dhcp_udp_parser(MolochSession_t *session, void *UNUSED(uw), const unsigned char *data, int len, int UNUSED(which))
+LOCAL int dhcp_udp_parser(ArkimeSession_t *session, void *UNUSED(uw), const uint8_t *data, int len, int UNUSED(which))
 {
     static char *names[] = {
-            "",
-            "DISCOVER",
-            "OFFER",
-            "REQUEST",
-            "DECLINE",
-            "ACK",
-            "NAK",
-            "RELEASE",
-            "INFORM",
-            "FORCERENEW",
-            "LEASEQUERY",
-            "LEASEUNASSIGNED",
-            "LEASEUNKNOWN",
-            "LEASEACTIVE",
-            "BULKLEASEQUERY",
-            "LEASEQUERYDONE",
-            "ACTIVELEASEQUERY",
-            "LEASEQUERYSTATUS",
-            "TLS"};
+        "",
+        "DISCOVER",
+        "OFFER",
+        "REQUEST",
+        "DECLINE",
+        "ACK",
+        "NAK",
+        "RELEASE",
+        "INFORM",
+        "FORCERENEW",
+        "LEASEQUERY",
+        "LEASEUNASSIGNED",
+        "LEASEUNKNOWN",
+        "LEASEACTIVE",
+        "BULKLEASEQUERY",
+        "LEASEQUERYDONE",
+        "ACTIVELEASEQUERY",
+        "LEASEQUERYSTATUS",
+        "TLS"
+    };
 
     if (len < 256)
         return 0;
@@ -62,7 +53,7 @@ LOCAL int dhcp_udp_parser(MolochSession_t *session, void *UNUSED(uw), const unsi
     int hardwareType = data[1];
 
     if (hardwareType == 1) {
-        moloch_field_macoui_add(session, macField, ouiField, data+28);
+        arkime_field_macoui_add(session, macField, ouiField, data + 28);
     }
 
     char str[100];
@@ -70,7 +61,7 @@ LOCAL int dhcp_udp_parser(MolochSession_t *session, void *UNUSED(uw), const unsi
     BSB_IMPORT_skip(bsb, 4);
     BSB_IMPORT_u32(bsb, id);
     snprintf(str, sizeof(str), "%x", id);
-    moloch_field_string_add(idField, session, str, -1, TRUE);
+    arkime_field_string_add(idField, session, str, -1, TRUE);
 
     // 236 offset + magic len - 4 skip - u32 import
     BSB_IMPORT_skip(bsb, 236 + 4 - 4 - 4);
@@ -78,7 +69,7 @@ LOCAL int dhcp_udp_parser(MolochSession_t *session, void *UNUSED(uw), const unsi
         int t = 0;
         int l = 0;
         uint32_t value = 0;
-        unsigned char *valueStr = 0;
+        uint8_t *valueStr = 0;
         BSB_IMPORT_u08(bsb, t);
         if (t == 255) // End Tag, no length
             break;
@@ -88,13 +79,13 @@ LOCAL int dhcp_udp_parser(MolochSession_t *session, void *UNUSED(uw), const unsi
         switch(t) {
         case 12: // Host Name
             BSB_IMPORT_ptr(bsb, valueStr, l);
-            moloch_field_string_add_lower(hostField, session, (char *)valueStr, l);
+            arkime_field_string_add_lower(hostField, session, (char *)valueStr, l);
             break;
         case 53: // Message Type
             if (l == 1) {
                 BSB_IMPORT_u08(bsb, value);
                 if (value <= 18)
-                    moloch_field_string_add(typeField, session, names[value], -1, TRUE);
+                    arkime_field_string_add(typeField, session, names[value], -1, TRUE);
             } else {
                 BSB_IMPORT_skip(bsb, l);
             }
@@ -104,9 +95,9 @@ LOCAL int dhcp_udp_parser(MolochSession_t *session, void *UNUSED(uw), const unsi
             if (l == 7 && value == 1) {
                 BSB_IMPORT_ptr(bsb, valueStr, 6);
                 if (valueStr)
-                    moloch_field_macoui_add(session, macField, ouiField, valueStr);
+                    arkime_field_macoui_add(session, macField, ouiField, valueStr);
             } else {
-                BSB_IMPORT_skip(bsb, l-1);
+                BSB_IMPORT_skip(bsb, l - 1);
             }
             break;
         case 81: // FQDN
@@ -119,8 +110,8 @@ LOCAL int dhcp_udp_parser(MolochSession_t *session, void *UNUSED(uw), const unsi
             if (value != 0) // Don't support any encodings right now
                 BSB_IMPORT_skip(bsb, l - 1);
             else {
-                BSB_IMPORT_ptr(bsb, valueStr, l-3);
-                moloch_field_string_add_lower(hostField, session, (char *)valueStr, l-3);
+                BSB_IMPORT_ptr(bsb, valueStr, l - 3);
+                arkime_field_string_add_lower(hostField, session, (char *)valueStr, l - 3);
             }
             break;
 
@@ -131,58 +122,58 @@ LOCAL int dhcp_udp_parser(MolochSession_t *session, void *UNUSED(uw), const unsi
     return 0;
 }
 /******************************************************************************/
-LOCAL void dhcp_udp_classify(MolochSession_t *session, const unsigned char *data, int len, int UNUSED(which), void *UNUSED(uw))
+LOCAL void dhcp_udp_classify(ArkimeSession_t *session, const uint8_t *data, int len, int UNUSED(which), void *UNUSED(uw))
 {
 
-    if (len < 256 || (data[0] != 1 && data[0] != 2) || MOLOCH_SESSION_v6(session) || memcmp(data+236, "\x63\x82\x53\x63", 4) != 0)
+    if (len < 256 || (data[0] != 1 && data[0] != 2) || ARKIME_SESSION_v6(session) || memcmp(data + 236, "\x63\x82\x53\x63", 4) != 0)
         return;
 
-    moloch_parsers_register(session, dhcp_udp_parser, 0, 0);
-    moloch_session_add_protocol(session, "dhcp");
+    arkime_parsers_register(session, dhcp_udp_parser, 0, 0);
+    arkime_session_add_protocol(session, "dhcp");
 }
 /******************************************************************************/
-void moloch_parser_init()
+void arkime_parser_init()
 {
-    typeField = moloch_field_define("dhcp", "uptermfield",
-        "dhcp.type", "Type", "dhcp.type",
-        "DHCP Type",
-        MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT,
-        (char *)NULL);
+    typeField = arkime_field_define("dhcp", "uptermfield",
+                                    "dhcp.type", "Type", "dhcp.type",
+                                    "DHCP Type",
+                                    ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT,
+                                    (char *)NULL);
 
-    hostField = moloch_field_define("dhcp", "lotermfield",
-        "dhcp.host", "Host", "dhcp.host",
-        "DHCP Host",
-        MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT,
-        "aliases", "[\"host.dhcp\"]",
-        "category", "host",
-        (char *)NULL);
+    hostField = arkime_field_define("dhcp", "lotermfield",
+                                    "dhcp.host", "Host", "dhcp.host",
+                                    "DHCP Host",
+                                    ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT,
+                                    "aliases", "[\"host.dhcp\"]",
+                                    "category", "host",
+                                    (char *)NULL);
 
-    moloch_field_define("dhcp", "lotextfield",
-        "dhcp.host.tokens", "Hostname Tokens", "dhcp.hostTokens",
-        "DHCP Hostname Tokens",
-        MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_FAKE,
-        "aliases", "[\"host.dhcp.tokens\"]",
-        (char *)NULL);
+    arkime_field_define("dhcp", "lotextfield",
+                        "dhcp.host.tokens", "Hostname Tokens", "dhcp.hostTokens",
+                        "DHCP Hostname Tokens",
+                        ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_FAKE,
+                        "aliases", "[\"host.dhcp.tokens\"]",
+                        (char *)NULL);
 
-    macField = moloch_field_define("dhcp", "lotermfield",
-        "dhcp.mac", "Client MAC", "dhcp.mac",
-        "Client ethernet MAC ",
-        MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT,
-        (char *)NULL);
+    macField = arkime_field_define("dhcp", "lotermfield",
+                                   "dhcp.mac", "Client MAC", "dhcp.mac",
+                                   "Client ethernet MAC ",
+                                   ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT,
+                                   (char *)NULL);
 
-    ouiField = moloch_field_define("dhcp", "termfield",
-        "dhcp.oui", "Client OUI", "dhcp.oui",
-        "Client ethernet OUI ",
-        MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT,
-        (char *)NULL);
+    ouiField = arkime_field_define("dhcp", "termfield",
+                                   "dhcp.oui", "Client OUI", "dhcp.oui",
+                                   "Client ethernet OUI ",
+                                   ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT,
+                                   (char *)NULL);
 
-    idField = moloch_field_define("dhcp", "lotermfield",
-        "dhcp.id", "Transaction id", "dhcp.id",
-        "DHCP Transaction Id",
-        MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT,
-        (char *)NULL);
+    idField = arkime_field_define("dhcp", "lotermfield",
+                                  "dhcp.id", "Transaction id", "dhcp.id",
+                                  "DHCP Transaction Id",
+                                  ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT,
+                                  (char *)NULL);
 
 
-    moloch_parsers_classifier_register_port("dhcpv6",  NULL, 547, MOLOCH_PARSERS_PORT_UDP, dhcpv6_udp_classify);
-    moloch_parsers_classifier_register_port("dhcp",  NULL, 67, MOLOCH_PARSERS_PORT_UDP, dhcp_udp_classify);
+    arkime_parsers_classifier_register_port("dhcpv6",  NULL, 547, ARKIME_PARSERS_PORT_UDP, dhcpv6_udp_classify);
+    arkime_parsers_classifier_register_port("dhcp",  NULL, 67, ARKIME_PARSERS_PORT_UDP, dhcp_udp_classify);
 }

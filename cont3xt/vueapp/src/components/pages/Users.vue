@@ -1,5 +1,9 @@
+<!--
+Copyright Yahoo Inc.
+SPDX-License-Identifier: Apache-2.0
+-->
 <template>
-  <div class="container-fluid">
+  <div class="container-fluid overflow-auto">
     <UsersCommon
       v-if="getUser"
       :roles="getRoles"

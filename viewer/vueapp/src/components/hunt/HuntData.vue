@@ -1,3 +1,7 @@
+<!--
+Copyright Yahoo Inc.
+SPDX-License-Identifier: Apache-2.0
+-->
 <template>
   <div>
     <div class="row">
@@ -303,7 +307,7 @@ export default {
       showAddUsers: false,
       editDescription: false,
       newDescription: this.job.description,
-      anonymousMode: this.$constants.MOLOCH_ANONYMOUS_MODE
+      anonymousMode: this.$constants.ANONYMOUS_MODE
     };
   },
   computed: {

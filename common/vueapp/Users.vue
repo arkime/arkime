@@ -1,3 +1,7 @@
+<!--
+Copyright Yahoo Inc.
+SPDX-License-Identifier: Apache-2.0
+-->
 <template>
   <div>
 
@@ -48,6 +52,17 @@
           v-model="currentPage"
           :total-rows="recordsTotal"
         />
+      </div>
+      <div>
+        <b-button
+          size="sm"
+          class="ml-2"
+          @click="download"
+          variant="primary"
+          v-b-tooltip.hover
+          title="Download CSV">
+          <span class="fa fa-download" />
+        </b-button>
       </div>
     </div> <!-- /search -->
 
@@ -673,6 +688,17 @@ export default {
       this.$bvModal.hide('create-user-modal');
       this.showMessage({ variant: 'success', message });
     },
+    download () {
+      const query = this.getUsersQuery();
+
+      UserService.downloadCSV(query).then((response) => {
+        // display success message to user
+        this.showMessage({ variant: 'success', message: response.text || 'Downloaded!' });
+      }).catch((error) => {
+        // display error message to user
+        this.showMessage({ variant: 'danger', message: error.text || error });
+      });
+    },
     /* helper functions ---------------------------------------------------- */
     emitCurrentUserUpdate () {
       this.$emit('update-current-user');
@@ -685,14 +711,17 @@ export default {
         this.msgType = '';
       }, 10000);
     },
-    loadUsers () {
-      const query = {
+    getUsersQuery () {
+      return {
         desc: this.desc,
         length: this.perPage,
         filter: this.searchTerm,
         sortField: this.sortField,
         start: (this.currentPage - 1) * this.perPage
       };
+    },
+    loadUsers () {
+      const query = this.getUsersQuery();
 
       UserService.searchUsers(query).then((response) => {
         this.error = '';

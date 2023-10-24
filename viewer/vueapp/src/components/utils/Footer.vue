@@ -1,3 +1,7 @@
+<!--
+Copyright Yahoo Inc.
+SPDX-License-Identifier: Apache-2.0
+-->
 <template>
 
   <div class="footer">
@@ -21,7 +25,7 @@
 
 <script>
 export default {
-  name: 'MolochFooter',
+  name: 'ArkimeFooter',
   data: function () {
     return {
       version: this.$constants.VERSION

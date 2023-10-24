@@ -1,13 +1,53 @@
+<!--
+Copyright Yahoo Inc.
+SPDX-License-Identifier: Apache-2.0
+-->
 <template>
 
   <div class="stats-content">
-    <MolochCollapsible>
+    <ArkimeCollapsible>
       <span class="fixed-header">
         <!-- stats sub navbar -->
         <form class="stats-form">
           <div class="form-inline mr-1 ml-1 mt-1 mb-1">
 
             <div v-if="tabIndex === 7">&nbsp;</div>
+
+            <div class="input-group input-group-sm flex-grow-1"
+              v-if="tabIndex !== 7">
+              <div class="input-group-prepend">
+                <span class="input-group-text input-group-text-fw">
+                  <span v-if="loadingData"
+                    class="fa fa-spinner fa-spin text-theme-accent">
+                  </span>
+                  <span v-else-if="!shiftKeyHold"
+                    class="fa fa-search fa-fw">
+                  </span>
+                  <span v-else-if="shiftKeyHold"
+                    class="query-shortcut">
+                    Q
+                  </span>
+                </span>
+              </div>
+              <input type="text"
+                class="form-control"
+                v-model="searchTerm"
+                v-focus="focusInput"
+                @blur="onOffFocus"
+                @input="debounceSearchInput"
+                @keyup.enter="debounceSearchInput"
+                placeholder="Begin typing to search for items below"
+              />
+              <span class="input-group-append">
+                <button type="button"
+                  @click="clear"
+                  :disabled="!searchTerm"
+                  class="btn btn-outline-secondary btn-clear-input">
+                  <span class="fa fa-close">
+                  </span>
+                </button>
+              </span>
+            </div>
 
             <!-- graph type select -->
             <div class="input-group input-group-sm"
@@ -315,48 +355,19 @@
               {{ shrinkError }}
             </span> <!-- /shrink index -->
 
+            <Clusters
+              class="pull-right flex-grow-1"
+              @updateCluster="updateCluster"
+              :select-one="clusterParamOverride && tabIndex > 1"
+            />
+
           </div>
         </form> <!-- /stats sub navbar -->
       </span>
-    </MolochCollapsible>
+    </ArkimeCollapsible>
 
     <!-- stats content -->
     <div class="stats-tabs">
-      <div class="input-group input-group-sm pull-right mr-1 pt-1"
-        v-if="tabIndex !== 7">
-        <div class="input-group-prepend">
-          <span class="input-group-text input-group-text-fw">
-            <span v-if="loadingData"
-              class="fa fa-spinner fa-spin text-theme-accent">
-            </span>
-            <span v-else-if="!shiftKeyHold"
-              class="fa fa-search fa-fw">
-            </span>
-            <span v-else-if="shiftKeyHold"
-              class="query-shortcut">
-              Q
-            </span>
-          </span>
-        </div>
-        <input type="text"
-          class="form-control"
-          v-model="searchTerm"
-          v-focus="focusInput"
-          @blur="onOffFocus"
-          @input="debounceSearchInput"
-          @keyup.enter="debounceSearchInput"
-          placeholder="Begin typing to search for items below"
-        />
-        <span class="input-group-append">
-          <button type="button"
-            @click="clear"
-            :disabled="!searchTerm"
-            class="btn btn-outline-secondary btn-clear-input">
-            <span class="fa fa-close">
-            </span>
-          </button>
-        </span>
-      </div>
       <b-tabs v-model="tabIndex">
         <b-tab title="Capture Graphs"
           @click="tabIndexChange(0)">
@@ -367,6 +378,7 @@
             :graph-interval="graphInterval"
             :graph-hide="graphHide"
             :graph-sort="graphSort"
+            :cluster="cluster"
             :user="user">
           </capture-graphs>
         </b-tab>
@@ -377,6 +389,7 @@
             :refreshData="refreshData"
             :searchTerm="searchTerm"
             :data-interval="dataInterval"
+            :cluster="cluster"
             :user="user">
           </capture-stats>
         </b-tab>
@@ -385,12 +398,12 @@
           <es-nodes v-if="user && tabIndex === 2"
             :refreshData="refreshData"
             :searchTerm="searchTerm"
-            :data-interval="dataInterval">
+            :data-interval="dataInterval"
+            :cluster="cluster">
           </es-nodes>
         </b-tab>
         <b-tab title="ES Indices"
-          @click="tabIndexChange(3)"
-          v-if="!multiviewer">
+          @click="tabIndexChange(3)">
           <es-indices v-if="user && tabIndex === 3"
             :refreshData="refreshData"
             :data-interval="dataInterval"
@@ -399,49 +412,51 @@
             @shrink="shrink"
             :searchTerm="searchTerm"
             :issueConfirmation="issueConfirmation"
-            :user="user">
+            :user="user"
+            :cluster="cluster">
           </es-indices>
         </b-tab>
         <b-tab title="ES Tasks"
-          @click="tabIndexChange(4)"
-          v-if="!multiviewer">
+          @click="tabIndexChange(4)">
           <es-tasks v-if="user && tabIndex === 4"
             :data-interval="dataInterval"
             :refreshData="refreshData"
             :searchTerm="searchTerm"
             :pageSize="pageSize"
             :user="user"
-            @errored="onError">
+            @errored="onError"
+            :cluster="cluster">
           </es-tasks>
         </b-tab>
         <b-tab title="ES Shards"
-          @click="tabIndexChange(5)"
-          v-if="!multiviewer">
+          @click="tabIndexChange(5)">
           <es-shards v-if="user && tabIndex === 5"
             :shards-show="shardsShow"
             :refreshData="refreshData"
             :searchTerm="searchTerm"
-            :data-interval="dataInterval">
+            :data-interval="dataInterval"
+            :cluster="cluster">
           </es-shards>
         </b-tab>
         <b-tab title="ES Recovery"
-          @click="tabIndexChange(6)"
-          v-if="!multiviewer">
+          @click="tabIndexChange(6)">
           <es-recovery v-if="user && tabIndex === 6"
             :recovery-show="recoveryShow"
             :data-interval="dataInterval"
             :refreshData="refreshData"
             :searchTerm="searchTerm"
-            :user="user">
+            :user="user"
+            :cluster="cluster">
           </es-recovery>
         </b-tab>
         <b-tab title="ES Admin"
           @click="tabIndexChange(7)"
-          v-if="user.esAdminUser && !multiviewer">
+          v-if="user.esAdminUser">
           <es-admin v-if="user && tabIndex === 7"
             :data-interval="dataInterval"
             :refreshData="refreshData"
-            :user="user">
+            :user="user"
+            :cluster="cluster">
           </es-admin>
         </b-tab>
       </b-tabs>
@@ -460,9 +475,10 @@ import EsIndices from './EsIndices';
 import EsAdmin from './EsAdmin';
 import CaptureGraphs from './CaptureGraphs';
 import CaptureStats from './CaptureStats';
-import MolochCollapsible from '../utils/CollapsibleWrapper';
-import utils from '../utils/utils';
+import ArkimeCollapsible from '../utils/CollapsibleWrapper';
+import Utils from '../utils/utils';
 import Focus from '../../../../../common/vueapp/Focus';
+import Clusters from '../utils/Clusters';
 
 let searchInputTimeout;
 
@@ -477,7 +493,8 @@ export default {
     EsTasks,
     EsRecovery,
     EsAdmin,
-    MolochCollapsible
+    ArkimeCollapsible,
+    Clusters
   },
   directives: { Focus },
   data: function () {
@@ -491,9 +508,9 @@ export default {
       shardsShow: this.$route.query.shardsShow || 'notstarted',
       dataInterval: this.$route.query.refreshInterval || '15000',
       pageSize: this.$route.query.size || '500',
+      cluster: this.$route.query.cluster || undefined,
       refreshData: false,
       childError: '',
-      multiviewer: this.$constants.MOLOCH_MULTIVIEWER,
       confirmMessage: '',
       itemToConfirm: undefined,
       issueConfirmation: undefined,
@@ -503,7 +520,8 @@ export default {
       shrinkFactors: undefined,
       temporaryNode: undefined,
       nodes: undefined,
-      shrinkError: undefined
+      shrinkError: undefined,
+      clusterParamOverride: true
     };
   },
   computed: {
@@ -558,7 +576,19 @@ export default {
       this.$router.push({ query: { ...this.$route.query, size: this.pageSize } });
     },
     tabIndexChange: function (newTabIndex) {
+      // override the query params for the cluster selected
+      // if the user is on any of the ES tabs, they can select only one cluster
+      // so even if the route query is set, we want to override it with only one cluster
+      // this flag is toggled so that the children components can override the route queries
+      // the cluster dropdown component watches for selectOne and updates the cluster prop to override the route queries
+      // but the route queries stay the same so that the user can navigate back to the previous tab without losing their selection
+      this.clusterParamOverride = false;
+      setTimeout(() => { this.clusterParamOverride = true; });
       this.$router.push({ query: { ...this.$route.query, statsTab: newTabIndex } });
+    },
+    // overrides the cluster route query
+    updateCluster: function ({ cluster }) {
+      this.cluster = cluster;
     },
     updateParams: function () {
       const queryParams = this.$route.query;
@@ -586,6 +616,9 @@ export default {
       }
       if (queryParams.refreshInterval) {
         this.dataInterval = queryParams.refreshInterval;
+      }
+      if (queryParams.cluster) {
+        this.cluster = queryParams.cluster;
       }
       this.pageSize = queryParams.size || 500;
     },
@@ -630,13 +663,17 @@ export default {
     },
     shrink: function (index) {
       this.shrinkIndex = index;
-      this.shrinkFactors = utils.findFactors(parseInt(index.pri));
+      this.shrinkFactors = Utils.findFactors(parseInt(index.pri));
       this.shrinkFactors.length === 1
         ? this.shrinkFactor = this.shrinkFactors[0]
         : this.shrinkFactor = this.shrinkFactors[1];
 
+      if (!Utils.checkClusterSelection(this.cluster, this.$store.state.esCluster.availableCluster.active, this).valid) {
+        return;
+      }
+
       // find nodes for dropdown
-      this.$http.get('esstats.json', {})
+      this.$http.get('esstats.json', { params: { cluster: this.cluster } })
         .then((response) => {
           this.nodes = response.data.data;
           this.temporaryNode = this.nodes[0].name;
@@ -650,10 +687,14 @@ export default {
       this.shrinkError = undefined;
     },
     executeShrink: function (index) {
+      if (!Utils.checkClusterSelection(this.cluster, this.$store.state.esCluster.availableCluster.active, this).valid) {
+        return;
+      }
+
       this.$http.post(`api/esindices/${index.index}/shrink`, {
         target: this.temporaryNode,
         numShards: this.shrinkFactor
-      }).then((response) => {
+      }, { params: { cluster: this.cluster } }).then((response) => {
         if (!response.data.success) {
           this.shrinkError = response.data.text;
           return;

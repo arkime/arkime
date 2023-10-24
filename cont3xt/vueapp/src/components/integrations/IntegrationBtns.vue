@@ -1,15 +1,25 @@
+<!--
+Copyright Yahoo Inc.
+SPDX-License-Identifier: Apache-2.0
+-->
 <template>
-  <div class="wrap-btns">
-    <template v-for="integration in integrations">
+  <div class="mx-2"
+    :class="{'wrap-btns d-flex justify-content-between': buttonIntegrations.length > 4}">
+    <overview-selector
+      v-if="getActiveIndicator"
+      :i-type="getActiveIndicator.itype"
+      :selected-overview="selectedOverview"
+      @set-override-overview="setOverrideOverview"
+    />
+    <template v-for="integration in buttonIntegrations">
       <b-button
         v-b-tooltip.hover.noninteractive="integration.name"
         size="xs"
         tabindex="0"
         variant="outline-dark"
-        class="ml-1 mt-1 float-right no-wrap"
-        :id="`${indicator.itype}-${integration.name}-${indicator.query}`"
-        :key="integration.name"
-        v-if="integrationDataMap[integration.name] && integration.icon"
+        class="mr-1 mb-1 no-wrap"
+        :id="`${indicatorId}-${integration.name}-btn`"
+        :key="`${indicatorId}-${integration.name}`"
         @click="setAsActive(integration)">
         <img
           :alt="integration.name"
@@ -19,18 +29,29 @@
         />
         <b-badge
           class="btn-badge"
-          v-if="integrationDataMap[integration.name]._cont3xt.count !== undefined"
-          :variant="countBadgeColor(integrationDataMap[integration.name])">
+          v-if="shouldDisplayCountedIntegrationBtn(integration, integrationDataMap[integration.name])"
+          :variant="integrationCountSeverity(integrationDataMap[integration.name])">
           {{ integrationDataMap[integration.name]._cont3xt.count | humanReadableNumber }}
         </b-badge>
       </b-button>
+    </template>
+    <template v-if="!buttonIntegrations.length">
+      <b-badge
+          variant="light" class="d-flex align-items-center mb-1">
+        <span>No Integrations</span>
+      </b-badge>
     </template>
   </div>
 </template>
 
 <script>
 import { mapGetters } from 'vuex';
-import { Cont3xtIndicatorProp, getIntegrationDataMap } from '@/utils/cont3xtUtil';
+import {
+  getIntegrationDataMap,
+  shouldDisplayIntegrationBtn,
+  integrationCountSeverity, shouldDisplayCountedIntegrationBtn, indicatorFromId
+} from '@/utils/cont3xtUtil';
+import OverviewSelector from '../overviews/OverviewSelector.vue';
 
 // Clicking an integration button commits to the store which integration, itype,
 // and value to display integration data for. The Cont3xt component watches for
@@ -38,7 +59,32 @@ import { Cont3xtIndicatorProp, getIntegrationDataMap } from '@/utils/cont3xtUtil
 // component watches for changes to the integration data to display.
 export default {
   name: 'IntegrationBtns',
+  components: { OverviewSelector },
   props: {
+    /**
+     * the global indicator id to display integration buttons for
+     *   we use the id instead of indicator itself to ensure that
+     *   the correct node is selected in the UI when a button is pressed
+     */
+    indicatorId: {
+      type: String,
+      required: true
+    },
+    /**
+     * undefined - show all integrations
+     * 'success' | 'secondary' | 'danger' - show only integration buttons with that icon color/severity
+     */
+    countSeverityFilter: {
+      type: String,
+      required: false
+    },
+    selectedOverview: {
+      type: Object,
+      required: true
+    }
+  },
+  computed: {
+    ...mapGetters(['getIntegrationsArray', 'getLoading', 'getResults', 'getActiveIndicator']),
     /**
      * object of { itype, query }
      * * itype - the itype to display the integration data for (if clicked)
@@ -46,13 +92,27 @@ export default {
      * *     (there may be multiple IPs for instance, so the value
      * *     indicates which IP to display information for)
      */
-    indicator: Cont3xtIndicatorProp
-  },
-  computed: {
-    ...mapGetters(['getIntegrationsArray', 'getLoading', 'getResults']),
+    indicator () {
+      return indicatorFromId(this.indicatorId);
+    },
     integrations () {
       return this.getIntegrationsArray.slice().sort((a, b) => {
         return a.order - b.order;
+      });
+    },
+    buttonIntegrations () {
+      const sortedIntegrations = this.getIntegrationsArray.slice().sort((a, b) => {
+        return a.order - b.order;
+      });
+
+      return sortedIntegrations.filter(integration => {
+        const integrationData = this.integrationDataMap[integration.name];
+        // filter out buttons whose severity don't match countSeverityFilter, if we have one
+        if (this.countSeverityFilter) {
+          return shouldDisplayCountedIntegrationBtn(integration, integrationData) &&
+              this.integrationCountSeverity(integrationData) === this.countSeverityFilter;
+        }
+        return shouldDisplayIntegrationBtn(integration, integrationData);
       });
     },
     /** @returns a map of integration names to integration data objects */
@@ -61,17 +121,13 @@ export default {
     }
   },
   methods: {
+    shouldDisplayCountedIntegrationBtn,
+    integrationCountSeverity,
     setAsActive (integration) {
-      this.$store.commit('SET_QUEUED_INTEGRATION', { indicator: this.indicator, source: integration.name });
+      this.$store.commit('SET_QUEUED_INTEGRATION', { indicatorId: this.indicatorId, source: integration.name });
     },
-    countBadgeColor (data) {
-      if (data._cont3xt.count === 0) {
-        return 'secondary';
-      } else if (data._cont3xt.severity === 'high') {
-        return 'danger';
-      } else {
-        return 'success';
-      }
+    setOverrideOverview (id) {
+      this.$emit('set-override-overview', id);
     }
   }
 };

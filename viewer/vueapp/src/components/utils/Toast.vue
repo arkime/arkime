@@ -1,3 +1,7 @@
+<!--
+Copyright Yahoo Inc.
+SPDX-License-Identifier: Apache-2.0
+-->
 <template>
 
   <!-- alert -->
@@ -40,7 +44,7 @@
 let timeout;
 
 export default {
-  name: 'MolochToast',
+  name: 'ArkimeToast',
   props: {
     message: String,
     done: Function,

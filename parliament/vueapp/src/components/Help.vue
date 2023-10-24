@@ -1,3 +1,7 @@
+<!--
+Copyright Yahoo Inc.
+SPDX-License-Identifier: Apache-2.0
+-->
 <template>
 
   <div class="help-content">
@@ -32,14 +36,6 @@
           <a href="help#general"
             class="nav-link nested">
             General
-          </a>
-          <a href="help#auth"
-            class="nav-link nested">
-            Auth
-          </a>
-          <a href="help#password"
-            class="nav-link nested">
-            Password
           </a>
           <a href="help#notifiers"
             class="nav-link nested">
@@ -139,7 +135,7 @@
             </li>
             <li>
               <strong>ES Red:</strong>
-              The Elasticsearch status returned from the cluster health checkwas RED.
+              The Elasticsearch status returned from the cluster health check was RED.
             </li>
             <li>
               <strong>ES Dropped:</strong>
@@ -161,8 +157,7 @@
           </p>
           <p>
             <em>
-              <strong>Note:</strong> To view this page, you cannot run the Parliament in
-              dashboard only mode and the user must be logged in or not have a password configured.
+              <strong>Note:</strong> To view this page, you must be logged in as a parliamentAdmin.
             </em>
           </p>
 
@@ -228,46 +223,6 @@
               </li>
             </ul>
             <!-- /general -->
-
-            <!-- password -->
-            <h6 id="password">
-              <span class="fa fa-fw fa-lock mr-2"></span>
-              Password (<strong>deprecated</strong>)
-            </h6>
-            <p>
-              <strong>These passwords are being deprecated</strong>, please use the Auth section
-              to configure access to your Parliament. Auth uses the the Arkime
-              User's database for Parliament access.
-            </p>
-            <p>
-              The password section allows a user to update the Parliament password or create
-              a new password if the Parliament was started without one.
-            </p>
-            <!-- /password -->
-
-            <!-- auth -->
-            <h6 id="auth">
-              <span class="fa fa-fw fa-key mr-2"></span>
-              Auth
-            </h6>
-            <p>
-              Auth uses the the Arkime User's database for Parliament access.
-            </p>
-            <ul>
-              <li>
-                All Arkime users can view the Parliament (like dashboard only mode).
-              </li>
-              <li>
-                Users with the "parliamentUser" role can ack, ignore, and delete
-                issues within the Parliament.
-              </li>
-              <li>
-                Users with the "parliamentAdmin" role can do everything a "parliamentUser"
-                can, plus they can configure the Parliament by adding/removing/updating
-                groups/clusters and manage the Parliament settings.
-              </li>
-            </ul>
-            <!-- /auth -->
 
             <!-- notifiers -->
             <h6 id="notifiers">

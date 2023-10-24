@@ -1,3 +1,7 @@
+<!--
+Copyright Yahoo Inc.
+SPDX-License-Identifier: Apache-2.0
+-->
 <template>
 
   <!-- tag sessions form -->
@@ -94,7 +98,7 @@ import SessionsService from './SessionsService';
 import SegmentSelect from './SegmentSelect';
 
 export default {
-  name: 'MolochTagSessions',
+  name: 'ArkimeTagSessions',
   components: { SegmentSelect },
   props: {
     add: Boolean,

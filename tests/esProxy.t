@@ -1,6 +1,6 @@
 # ESProxy
-use Test::More tests => 11;
-use MolochTest;
+use Test::More tests => 16;
+use ArkimeTest;
 use Cwd;
 use URI::Escape;
 use Data::Dumper;
@@ -10,27 +10,38 @@ use strict;
 
 my $response;
 
-$response = $MolochTest::userAgent->get("http://$MolochTest::host:7200");
+$response = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:7200");
 is ($response->code, 401);
 
-$response = $MolochTest::userAgent->get("http://test:wrong\@$MolochTest::host:7200");
+$response = $ArkimeTest::userAgent->get("http://test:wrong\@$ArkimeTest::host:7200");
 is ($response->code, 401);
 
-$response = $MolochTest::userAgent->get("http://test:test\@$MolochTest::host:7200");
+$response = $ArkimeTest::userAgent->get("http://test:test\@$ArkimeTest::host:7200");
 is ($response->code, 200);
 
-$response = $MolochTest::userAgent->get("http://test:test\@$MolochTest::host:7200/_search");
+$response = $ArkimeTest::userAgent->get("http://test:test\@$ArkimeTest::host:7200/_search");
 is ($response->code, 400);
 is ($response->content, "Not authorized for API");
 
-$response = $MolochTest::userAgent->post("http://test:test\@$MolochTest::host:7200/_search");
+$response = $ArkimeTest::userAgent->post("http://test:test\@$ArkimeTest::host:7200/_search");
 is ($response->code, 400);
 is ($response->content, "Not authorized for API");
 
-$response = $MolochTest::userAgent->put("http://test:test\@$MolochTest::host:7200/_search");
+$response = $ArkimeTest::userAgent->put("http://test:test\@$ArkimeTest::host:7200/_search");
 is ($response->code, 400);
 is ($response->content, "Not authorized for API");
 
-$response = $MolochTest::userAgent->request(HTTP::Request::Common::DELETE("http://test:test\@$MolochTest::host:7200/_search"));
+$response = $ArkimeTest::userAgent->request(HTTP::Request::Common::DELETE("http://test:test\@$ArkimeTest::host:7200/_search"));
 is ($response->code, 400);
 is ($response->content, "Not authorized for API");
+
+$response = $ArkimeTest::userAgent->get("http://test:test\@$ArkimeTest::host:7200/_template/sessions3_template");
+is ($response->code, 400);
+is ($response->content, "Not authorized for API");
+
+$response = $ArkimeTest::userAgent->get("http://test:test\@$ArkimeTest::host:7200/_template/arkime_sessions3_template");
+is ($response->code, 400);
+is ($response->content, "Not authorized for API");
+
+$response = $ArkimeTest::userAgent->get("http://test:test\@$ArkimeTest::host:7200/_template/tests_sessions3_template");
+is ($response->code, 200);

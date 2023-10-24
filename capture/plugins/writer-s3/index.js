@@ -3,21 +3,11 @@
  *
  * Copyright 2012-2015 AOL Inc. All rights reserved.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this Software except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: Apache-2.0
  */
 'use strict';
 
-const AWS = require('aws-sdk');
+const { S3 } = require('@aws-sdk/client-s3');
 const async = require('async');
 const zlib = require('zlib');
 const { decompressSync } = require('@xingrz/cppzst');
@@ -65,8 +55,7 @@ function makeS3 (node, region, bucket) {
       console.log('ERROR - No s3SecretAccessKey set for ', node);
     }
 
-    s3Params.accessKeyId = key;
-    s3Params.secretAccessKey = secret;
+    s3Params.credentials = { accessKeyId: key, secretAccessKey: secret };
   }
 
   if (Config.getFull(node, 's3Host') !== undefined) {
@@ -75,16 +64,16 @@ function makeS3 (node, region, bucket) {
 
   bucket ??= Config.getFull(node, 's3Bucket');
   const bucketHasDot = bucket.indexOf('.') >= 0;
-  if (Config.getBoolFull(node, 's3PathAccessStyle', bucketHasDot) === true) {
+  if (Config.getFull(node, 's3PathAccessStyle', bucketHasDot) === true) {
     s3Params.s3ForcePathStyle = true;
   }
 
-  if (Config.getBoolFull(node, 's3UseHttp', false) === true) {
+  if (Config.getFull(node, 's3UseHttp', false) === true) {
     s3Params.sslEnabled = false;
   }
 
   // Lets hope that we can find a credential provider elsewhere
-  const rv = S3s[region + key] = new AWS.S3(s3Params);
+  const rv = S3s[region + key] = new S3(s3Params);
   return rv;
 }
 /// ///////////////////////////////////////////////////////////////////////////////
@@ -121,17 +110,18 @@ function processSessionIdS3 (session, headerCb, packetCb, endCb, limit) {
       if (S3DEBUG) {
         console.log('s3.getObject for header', params);
       }
-      s3.getObject(params, function (err, data) {
+      s3.getObject(params, async function (err, data) {
         if (err) {
           console.log(err, info);
           return endCb("Couldn't open s3 file, save might not be complete yet - " + info.name, fields);
         }
+        const body = Buffer.from(await data.Body.transformToByteArray());
         if (params.Key.endsWith('.gz')) {
-          header = zlib.gunzipSync(data.Body, { finishFlush: zlib.constants.Z_SYNC_FLUSH });
+          header = zlib.gunzipSync(body, { finishFlush: zlib.constants.Z_SYNC_FLUSH });
         } else if (params.Key.endsWith('.zst')) {
-          header = decompressSync(data.Body);
+          header = decompressSync(body);
         } else {
-          header = data.Body;
+          header = body;
         }
         header = header.subarray(0, 24);
         pcap = Pcap.make(info.name, header);
@@ -193,11 +183,12 @@ function processSessionIdS3 (session, headerCb, packetCb, endCb, limit) {
         if (S3DEBUG) {
           console.log('s3.getObject for pcap data', data.params);
         }
-        s3.getObject(data.params, function (err, s3data) {
+        s3.getObject(data.params, async function (err, s3data) {
           if (err) {
             console.log('WARNING - Only have SPI data, PCAP file no longer available', data.info.name, err);
             return nextCb('Only have SPI data, PCAP file no longer available for ' + data.info.name);
           }
+          const body = Buffer.from(await s3data.Body.transformToByteArray());
           if (data.compressed) {
             // Need to decompress the block(s)
             const decompressed = {};
@@ -207,10 +198,10 @@ function processSessionIdS3 (session, headerCb, packetCb, endCb, limit) {
               if (!decompressed[sp.rangeStart]) {
                 const offset = sp.rangeStart - data.rangeStart;
                 if (data.compressed === COMPRESSED_GZIP) {
-                  decompressed[sp.rangeStart] = zlib.inflateRawSync(s3data.Body.subarray(offset, offset + data.info.compressionBlockSize),
+                  decompressed[sp.rangeStart] = zlib.inflateRawSync(body.subarray(offset, offset + data.info.compressionBlockSize),
                     { finishFlush: zlib.constants.Z_SYNC_FLUSH });
                 } else if (data.compressed === COMPRESSED_ZSTD) {
-                  decompressed[sp.rangeStart] = decompressSync(s3data.Body.subarray(offset, offset + data.info.compressionBlockSize));
+                  decompressed[sp.rangeStart] = decompressSync(body.subarray(offset, offset + data.info.compressionBlockSize));
                 }
                 const decompressedCacheKey = 'data:' + data.params.Bucket + ':' + data.params.Key + ':' + sp.rangeStart;
                 lru.set(decompressedCacheKey, decompressed[sp.rangeStart]);
@@ -233,7 +224,7 @@ function processSessionIdS3 (session, headerCb, packetCb, endCb, limit) {
             nextCb);
           } else {
             async.each(data.subPackets, (sp, nextSubCb) => {
-              const subPacketData = s3data.Body.subarray(sp.packetStart - data.packetStart, sp.packetEnd - data.packetStart);
+              const subPacketData = body.subarray(sp.packetStart - data.packetStart, sp.packetEnd - data.packetStart);
               const len = (pcap.bigEndian ? subPacketData.readUInt32BE(8) : subPacketData.readUInt32LE(8));
 
               packetCb(pcap, subPacketData.subarray(0, len + 16), nextSubCb, sp.itemPos);
