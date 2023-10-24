@@ -14,7 +14,7 @@ jobs:
     steps:
     - name: install
       run: |
-        yum -y install git curl wget
+        yum -y install git wget
 
     - uses: actions/checkout@v3
 
