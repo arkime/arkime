@@ -30,6 +30,7 @@ jobs:
 
     - name: install
       run: |
+        git config --global --add safe.directory `pwd`
         export PATH=/opt/arkime/bin:$PATH
         make install
         npm run lint
