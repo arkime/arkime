@@ -1012,12 +1012,12 @@ async function initializeParliament () {
   }
 
   // create parliament in db if it doesn't exist
-  // (there was no parliament file file to upgrade from)
+  // (there was no parliament file to upgrade from)
   try {
     await Parliament.getParliament();
   } catch (err) {
     if (err.meta?.statusCode === 404) {
-      console.log('Parliament does not exist exist in DB. creating!');
+      console.log('Parliament does not exist in DB. creating!');
       await Parliament.createParliament({
         groups: [],
         name: internals.parliamentName,
