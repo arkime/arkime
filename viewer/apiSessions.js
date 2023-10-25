@@ -3010,7 +3010,8 @@ class SessionAPIs {
     SessionAPIs.buildSessionQuery(req, (bsqErr, query, indices) => {
       if (bsqErr) {
         res.status(400);
-        return res.end(bsqErr);
+        console.log('ERROR - Build session query: ', ArkimeUtil.sanitizeStr(bsqErr));
+        return res.end('Session Query Error');
       }
 
       query.size = 1;
