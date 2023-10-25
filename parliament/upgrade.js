@@ -147,54 +147,58 @@ exports.upgrade = async function (parliament, issues, Parliament) {
     for (const n in parliament.settings.notifiers) {
       const notifier = parliament.settings.notifiers[n];
 
-      // get viewer notifiers that match the parliament notifier name
-      const query = { bool: { must: { term: { name: notifier.name } } } };
-      const { body: matchingNotifiers } = await Notifier.searchNotifiers({ query });
+      try {
+        // get viewer notifiers that match the parliament notifier name
+        const query = { bool: { must: { term: { name: notifier.name } } } };
+        const { body: matchingNotifiers } = await Notifier.searchNotifiers({ query });
 
-      // find out if there is a matching notifier in viewer
-      let nameCollision = false;
-      if (matchingNotifiers.hits.total > 0) {
-        for (const hit of matchingNotifiers.hits.hits) {
-          if (hit._source.name === notifier.name) {
-            nameCollision = true;
-            break;
+        // find out if there is a matching notifier in viewer
+        let nameCollision = false;
+        if (matchingNotifiers.hits.total > 0) {
+          for (const hit of matchingNotifiers.hits.hits) {
+            if (hit._source.name === notifier.name) {
+              nameCollision = true;
+              break;
+            }
           }
         }
-      }
 
-      if (nameCollision) { // update the name of the Parliament notifier if there is a name collision with viewer
-        console.log(`WARNING - Notifier with name ${notifier.name} already exists. Renaming to "Parliament ${notifier.name}"`);
-        notifier.name = `Parliament ${notifier.name}`;
-      }
-
-      // viewer uses fields array (parliament uses fields object)
-      // map parliament notifier fields to an array
-      const fields = [];
-      for (const f in notifier.fields) {
-        fields.push(notifier.fields[f]);
-      }
-      notifier.fields = fields;
-
-      // parliament saved the entire alert object
-      // let's just save the on/off state instead
-      const updatedAlerts = {};
-      for (const a in notifier.alerts) {
-        const nAlert = notifier.alerts[a];
-        if (typeof nAlert === 'object' && 'on' in nAlert) {
-          updatedAlerts[a] = nAlert.on;
-        } else {
-          updatedAlerts[a] = nAlert;
+        if (nameCollision) { // update the name of the Parliament notifier if there is a name collision with viewer
+          console.log(`WARNING - Notifier with name ${notifier.name} already exists. Renaming to "Parliament ${notifier.name}"`);
+          notifier.name = `Parliament ${notifier.name}`;
         }
+
+        // viewer uses fields array (parliament uses fields object)
+        // map parliament notifier fields to an array
+        const fields = [];
+        for (const f in notifier.fields) {
+          fields.push(notifier.fields[f]);
+        }
+        notifier.fields = fields;
+
+        // parliament saved the entire alert object
+        // let's just save the on/off state instead
+        const updatedAlerts = {};
+        for (const a in notifier.alerts) {
+          const nAlert = notifier.alerts[a];
+          if (typeof nAlert === 'object' && 'on' in nAlert) {
+            updatedAlerts[a] = nAlert.on;
+          } else {
+            updatedAlerts[a] = nAlert;
+          }
+        }
+        notifier.alerts = updatedAlerts;
+
+        // parliament doesn't have these fields, add them
+        notifier.roles ??= ['parliamentUser'];
+        notifier.user ??= 'migrated from parliament';
+        notifier.users ??= [];
+        notifier.created ??= Math.floor(Date.now() / 1000);
+
+        await Notifier.createNotifier(notifier);
+      } catch (err) {
+        console.log(`ERROR - adding notifier (${notifier.name}) to DB.`, JSON.stringify(err, null, 2));
       }
-      notifier.alerts = updatedAlerts;
-
-      // parliament doesn't have these fields, add them
-      notifier.roles ??= ['parliamentUser'];
-      notifier.user ??= 'migrated from parliament';
-      notifier.users ??= [];
-      notifier.created ??= Math.floor(Date.now() / 1000);
-
-      await Notifier.createNotifier(notifier);
     }
 
     delete parliament.settings.notifiers;
@@ -205,7 +209,7 @@ exports.upgrade = async function (parliament, issues, Parliament) {
     delete parliament.authMode; // don't need authmode anymore
     parliament.name = Parliament.name; // parliament name is the id
 
-    // remove healtherror and statserror
+    // remove healthError and statsError
     for (const group of parliament.groups) {
       group.id = uuid(); // generate a new id for the group
       for (const cluster of group.clusters) {
