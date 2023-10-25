@@ -333,7 +333,6 @@ class Config {
     Auth.initialize({
       appAdminRole: 'arkimeAdmin',
       basePath: Config.basePath(),
-      passwordSecret: Config.getFull(internals.nodeName === 'cont3xt' ? 'cont3xt' : 'default', 'passwordSecret', 'password'),
       passwordSecretSection: internals.nodeName === 'cont3xt' ? 'cont3xt' : 'default',
       s2s: true,
       s2sRegressionTests: !!Config.get('s2sRegressionTests')
