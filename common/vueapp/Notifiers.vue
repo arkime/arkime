@@ -252,21 +252,24 @@ SPDX-License-Identifier: Apache-2.0
             <h5>Notify on</h5>
             <div class="row">
               <div class="col-12">
-                <div v-for="(alert, aKey) of notifier.alerts"
-                  :key="aKey"
-                  class="form-check form-check-inline"
-                  :title="`Notify if ${notifierTypes[notifier.type].alerts[aKey].description}`"
-                  v-b-tooltip.hover.top>
-                  <label class="form-check-label">
-                    <input class="form-check-input"
-                      type="checkbox"
-                      :id="notifierTypes[notifier.type].alerts[aKey].name+notifier.name"
-                      :name="notifierTypes[notifier.type].alerts[aKey].name+notifier.name"
-                      v-model="notifier.alerts[aKey]"
-                    />
-                    {{ notifierTypes[notifier.type].alerts[aKey].name }}
-                  </label>
-                </div>
+                <template v-for="(alert, aKey) of notifier.alerts">
+                  <div
+                    :key="aKey"
+                    v-if="notifierTypes[notifier.type.toLowerCase()].alerts && notifierTypes[notifier.type.toLowerCase()].alerts[aKey]"
+                    class="form-check form-check-inline"
+                    :title="`Notify if ${notifierTypes[notifier.type.toLowerCase()].alerts[aKey].description}`"
+                    v-b-tooltip.hover.top>
+                    <label class="form-check-label">
+                      <input class="form-check-input"
+                        type="checkbox"
+                        :id="notifierTypes[notifier.type.toLowerCase()].alerts[aKey].name+notifier.name"
+                        :name="notifierTypes[notifier.type.toLowerCase()].alerts[aKey].name+notifier.name"
+                        v-model="notifier.alerts[aKey]"
+                      />
+                      {{ notifierTypes[notifier.type.toLowerCase()].alerts[aKey].name }}
+                    </label>
+                  </div>
+                </template>
               </div>
             </div>
           </template> <!-- /notifier alerts -->
@@ -387,7 +390,7 @@ export default {
     /* opens the form to create a new notifier */
     createNewNotifier (notifier) {
       const clone = JSON.parse(JSON.stringify(notifier));
-      // flatten notifer alerts (we only need on state)
+      // flatten notifier alerts (we only need on state)
       for (const a in clone.alerts) {
         clone.alerts[a] = false; // off by default
       }
