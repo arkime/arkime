@@ -1,3 +1,5 @@
+[![OpenSSF Best Practices](https://www.bestpractices.dev/projects/7997/badge)](https://www.bestpractices.dev/projects/7997)
+
 # Arkime
 > Arkime (formerly Moloch) is a large scale, open source, indexed packet capture and search system.
 
