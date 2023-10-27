@@ -51,7 +51,8 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
           retrieval (file, elasticsearch)
   - all - json/yaml config file formats now allow arrays instead of comma/semi separated
   - all - authMode setting added
-  - all - authMode basic, form, basic+form, and basic+oidc added
+  - all - added authMode: basic, form, basic+form, basic+oidc, headerOnly,
+          header+digest (same as header), header+basic
   - all - notifiers for parliament and arkime merged
           conflicts mitigated by appending "Parliament" to parliament notifiers
   - all - drop privileges is now AFTER http(s) list
@@ -81,6 +82,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - viewer - http.request.FIELD and http.response.FIELD supported
   - viewer - add editor for resources
   - viewer - transfer ownership of resources
+  - viewer - added uploadRoles to control who can upload
   - parliament - dashboard-only mode removed, if you want users to just see
                  the dashboard don't assign them the parliamentUser role
   - parliament - configuration is now stored in opensearch/elasticsearch

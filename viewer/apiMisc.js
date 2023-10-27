@@ -297,6 +297,16 @@ class MiscAPIs {
       return;
     }
 
+    if (!req.user.hasRole(internals.uploadRoles)) {
+      res.status(403);
+      return res.end('Not covered by role');
+    }
+
+    if (req.file === undefined) {
+      res.status(403);
+      return res.end('Missing file');
+    }
+
     let tags = '';
     if (ArkimeUtil.isString(req.body.tags)) {
       const t = req.body.tags.replace(/[^-a-zA-Z0-9_:,]/g, '').split(',');

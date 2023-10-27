@@ -45,6 +45,7 @@ class Auth {
   static #passwordSecretSection;
   static #app;
   static #keyCache = new LRU({ max: 1000, maxAge: 1000 * 60 * 5 });
+  static #logoutUrl;
 
   // ----------------------------------------------------------------------------
   /**
@@ -171,9 +172,11 @@ class Auth {
       }
     }
 
+    Auth.#logoutUrl = ArkimeConfig.get('logoutUrl');
     const addBasic = Auth.mode.startsWith('basic+');
     if (addBasic) {
       Auth.mode = Auth.mode.slice(6);
+      Auth.#logoutUrl ??= `${Auth.basePath}logout`;
     }
 
     let sessionAuth = false;
@@ -184,6 +187,7 @@ class Auth {
     case 'basic':
       check('httpRealm');
       Auth.#strategies = ['basic'];
+      Auth.#logoutUrl ??= `${Auth.basePath}logout`;
       break;
     case 'digest':
       check('httpRealm');
@@ -204,8 +208,16 @@ class Auth {
       Auth.#passportAuthOptions = { session: true, failureRedirect: `${Auth.#basePath}auth` };
       sessionAuth = true;
       break;
+    case 'headerOnly':
+      Auth.#strategies = ['header'];
+      break;
     case 'header':
+    case 'header+digest':
       Auth.#strategies = ['header', 'digest'];
+      break;
+    case 'header+basic':
+      Auth.#strategies = ['header', 'basic'];
+      Auth.#logoutUrl ??= `${Auth.basePath}logout`;
       break;
     case 's2s':
       Auth.#strategies = ['s2s'];
@@ -219,10 +231,12 @@ class Auth {
       process.exit(1);
     }
 
+    // Add basic to beginning
     if (addBasic) {
       Auth.#strategies.unshift('basic');
     }
 
+    // Add s2s to beginning
     if (options.s2s && !Auth.#strategies.includes('s2s')) {
       Auth.#strategies.unshift('s2s');
     }
@@ -314,6 +328,11 @@ class Auth {
   // ----------------------------------------------------------------------------
   static get appAdminRole () {
     return Auth.#appAdminRole;
+  }
+
+  // ----------------------------------------------------------------------------
+  static get logoutUrl () {
+    return Auth.#logoutUrl;
   }
 
   // ----------------------------------------------------------------------------

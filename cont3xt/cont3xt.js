@@ -358,7 +358,7 @@ app.use(cspHeader, setCookie, (req, res, next) => {
   });
 
   const appContext = {
-    authMode: Auth.mode,
+    logoutUrl: Auth.logoutUrl,
     nonce: res.locals.nonce,
     version: version.version,
     path: internals.webBasePath,

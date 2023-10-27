@@ -39,7 +39,7 @@ new Vue({
     Vue.prototype.$constants = {
       PATH,
       VERSION,
-      AUTHMODE,
+      LOGOUT_URL,
       BUILD_DATE, // from webpack.DefinePlugin
       BUILD_VERSION // from webpack.DefinePlugin
     };
