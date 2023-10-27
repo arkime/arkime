@@ -106,6 +106,7 @@ ArkimeConfig.loaded(() => {
   internals.httpsAgent = new https.Agent({ keepAlive: true, keepAliveMsecs: 5000, maxSockets: 40, rejectUnauthorized: !ArkimeConfig.insecure });
   internals.isLocalViewRegExp = Config.get('isLocalViewRegExp') ? new RE2(Config.get('isLocalViewRegExp')) : undefined;
   internals.allowUploads = !!Config.get('uploadCommand');
+  internals.uploadRoles = Config.getArray('uploadRoles', 'arkimeUser');
   internals.cronTimeout = +Config.get('dbFlushTimeout', 5) + // How long capture holds items
                            60 + // How long before ES reindexs
                            20; // Transmit and extra time

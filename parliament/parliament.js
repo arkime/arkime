@@ -1914,7 +1914,7 @@ app.use((req, res, next) => {
   });
 
   const appContext = {
-    authMode: Auth.mode,
+    logoutUrl: Auth.logoutUrl,
     nonce: res.locals.nonce,
     version: version.version,
     path: ArkimeConfig.get('webBasePath', '/')

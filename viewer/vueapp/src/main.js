@@ -80,7 +80,7 @@ new Vue({
       DISABLE_USER_PASSWORD_UI,
       BUILD_VERSION, // from webpack.DefinePlugin
       BUILD_DATE, // from webpack.DefinePlugin
-      AUTHMODE
+      LOGOUT_URL
     };
   }
 });

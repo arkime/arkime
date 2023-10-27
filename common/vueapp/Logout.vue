@@ -5,7 +5,7 @@ SPDX-License-Identifier: Apache-2.0
 <template>
   <b-button
     :size="size"
-    v-if="authMode && authMode === 'form'"
+    v-if="logoutUrl"
     class="ml-2"
     title="Logout"
     @click="logout"
@@ -30,12 +30,12 @@ export default {
   },
   data () {
     return {
-      authMode: this.$constants.AUTHMODE
+      logoutUrl: this.$constants.LOGOUT_URL
     };
   },
   methods: {
     logout () {
-      fetch(`${this.basePath}logout`, {
+      fetch(this.$constants.LOGOUT_URL, {
         method: 'POST',
         credentials: 'include'
       }).finally(() => {

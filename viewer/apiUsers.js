@@ -45,7 +45,7 @@ class UserAPIs {
 
   // --------------------------------------------------------------------------
   static getCurrentUserCB (user, clone) {
-    clone.canUpload = internals.allowUploads;
+    clone.canUpload = internals.allowUploads && user.hasRole(internals.uploadRoles);
 
     // If esAdminUser is set use that, otherwise use arkimeAdmin privilege
     if (internals.esAdminUsersSet) {

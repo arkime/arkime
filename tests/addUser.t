@@ -1,5 +1,5 @@
 # Test addUser.js and general authentication
-use Test::More tests => 63;
+use Test::More tests => 67;
 use Test::Differences;
 use Data::Dumper;
 use ArkimeTest;
@@ -9,6 +9,8 @@ use strict;
 viewerGet("/regressionTests/deleteAllUsers");
 esGet("/_refresh");
 my $token = getTokenCookie();
+my $test6Token = getTokenCookie('test6');
+my $test7Token = getTokenCookie('test7');
 my $es = "-o 'elasticsearch=$ArkimeTest::elasticsearch' -o 'usersElasticsearch=$ArkimeTest::elasticsearch' $ENV{INSECURE}";
 
 # script exits successfully
@@ -22,8 +24,8 @@ system("cd ../viewer ; node addUser.js $es -c ../tests/config.test.ini -n testus
 system("cd ../viewer ; node addUser.js $es -c ../tests/config.test.ini -n testuser test3 test3 test3 --email");
 system("cd ../viewer ; node addUser.js $es -c ../tests/config.test.ini -n testuser test4 test4 test4 --expression 'ip.src == 10.0.0.1'");
 system("cd ../viewer ; node addUser.js $es -c ../tests/config.test.ini -n testuser test5 test5 test5 --remove");
-system("cd ../viewer ; node addUser.js $es -c ../tests/config.test.ini -n testuser test6 test6 test6 --webauth");
-system("cd ../viewer ; node addUser.js $es -c ../tests/config.test.ini -n testuser test7 test7 test7 --packetSearch");
+system("cd ../viewer ; node addUser.js $es -c ../tests/config.test.ini -n testuser test6 test6 test6 --webauth --roles arkimeUser");
+system("cd ../viewer ; node addUser.js $es -c ../tests/config.test.ini -n testuser test7 test7 test7 --packetSearch --roles arkimeUser,parliamentUser");
 system("cd ../viewer ; node addUser.js $es -c ../tests/config.test.ini -n testuser test8 test8 test8 --roles 'parliamentUser' ");
 
 # fetch the users
@@ -109,6 +111,17 @@ is ($response->code, 200);
 $response = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8126/receiveSession");
 is ($response->content, "receive session only allowed s2s");
 is ($response->code, 401);
+
+# No arkimeUser role
+$ArkimeTest::userAgent->credentials( "$ArkimeTest::host:8126", 'Moloch', 'test6', 'test6' );
+$response = $ArkimeTest::userAgent->post("http://$ArkimeTest::host:8126/api/upload", "x-arkime-cookie" => $test6Token);
+is ($response->content, "Not covered by role");
+is ($response->code, 403);
+
+$ArkimeTest::userAgent->credentials( "$ArkimeTest::host:8126", 'Moloch', 'test7', 'test7');
+$response = $ArkimeTest::userAgent->post("http://$ArkimeTest::host:8126/api/upload", "x-arkime-cookie" => $test7Token);
+is ($response->content, "Missing file");
+is ($response->code, 403);
 
 # No arkimeUser role
 $ArkimeTest::userAgent->credentials( "$ArkimeTest::host:8126", 'Moloch', 'test8', 'test8' );
