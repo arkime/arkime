@@ -3,11 +3,11 @@
 [![Static Badge](https://img.shields.io/badge/license-Apache_2.0-D22128)](https://github.com/arkime/arkime/blob/main/LICENSE)
 [![Static Badge](https://img.shields.io/badge/chat-on_Slack-ECB22E?logo=slack)](https://slackinvite.arkime.com/)
 [![Static Badge](https://img.shields.io/badge/follow_us-on_LinkedIn-0077B5?logo=linkedin)](https://www.linkedin.com/company/arkime)
-[![Pipeline Status][status-image]][status-url] [![Job Status][job-status-image]][status-url]
+[![Pipeline Status][status-image]][status-url]
 
 [status-image]: https://cd.screwdriver.cd/pipelines/354/badge
 [job-status-image]: https://cd.screwdriver.cd/pipelines/354/main/badge
-[status-url]: https://cd.screwdriver.cd/pipelines/354/badge
+[status-url]: https://cd.screwdriver.cd/pipelines/354
 
 
 # Arkime
