@@ -77,7 +77,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - cont3xt - transfer ownership of resources
   - cont3xt - new csv/json data source supports
   - cont3xt - new redis data source support
-  - esproxy - support field updates
+  - esproxy - support field updates/deletes
   - viewer - removed x-moloch-auth
   - viewer - files/history/stats now have cluster dropdown for multiviewer
   - viewer - http.request.FIELD and http.response.FIELD supported
