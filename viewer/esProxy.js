@@ -344,8 +344,12 @@ function validateBulk (req) {
       } else if (typeof json.create === 'object') {
         const _index = json.create._index;
         if (!_index.includes('sessions2') && !_index.includes('sessions3')) { throw new Error(`Bad index ${_index}`); }
+      } else if (typeof json.update === 'object') {
+        const _index = json.update._index;
+        if (!_index.includes('fields')) { throw new Error(`Bad index ${_index}`); }
       } else {
-        throw new Error('Missing create or index operation');
+        console.log("Failed bulk", JSON.stringify(json, false, 2));
+        throw new Error('Missing create, update or index operation');
       }
     } catch (err) {
       console.log('Bulk error', err, ArkimeUtil.sanitizeStr(lines[i]));
