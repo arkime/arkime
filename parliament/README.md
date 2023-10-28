@@ -28,7 +28,7 @@ If you are a `parliamentAdmin`, you can view and edit the Parliament settings. T
 4. The `remove all issues after` setting controls when an issue is removed if it has not occurred again. The issue is removed from the cluster after this time expires as long as the issue has not occurred again. _The default for this setting is 60 minutes._
 5. The `remove acknowledged issues after` setting controls when an acknowledged issue is removed. The issue is removed from the cluster after this time expires (so you don't have to remove issues manually with the trashcan button). _The default for this setting is 15 minutes._
 
-**Auth (v4):** Here you can configure Parliament access using the Arkime User's database. See the [Arkime User Authetication](#arkime-user-authetication) section for more information.
+**Auth (v4):** Here you can configure Parliament access using the Arkime User's database. See the [Arkime User Authentication](#arkime-user-authentication) section for more information.
 
 **Notifiers:** this section provides the ability to configure alerts for your Parliament. Users can be alerted via:
 1. Slack
@@ -98,7 +98,7 @@ _**Important**: Upgrading from v4 to v5 requires port/key/cert parameters to be 
 
 Now browse to the app at `http://localhost:8008` (or whichever port you included in the config file).
 
-##### Arkime User Authetication
+#### Arkime User Authentication
 You can configure Parliament access using the Auth section on the Settings page (v4) or the config file (v5). Auth uses the Arkime User's database for Parliament access.
 
 _**Note**: When upgrading form v4 to v5, Auth settings configured in the UI will be automatically transferred to the config file._
