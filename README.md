@@ -112,7 +112,7 @@ You can learn more about the Arkime API on our [API Wiki page](https://arkime.co
 
 ## Contribute
 
-Please refer to the [CONTRIBUTING.md](CONTRIBUTING.md) file for information about how to get involved. We welcome issues, feature requests, pull requests, and documentation updates in GitHub.  For questions about using and troubleshooting Arkime please use the Slack channels.
+Please refer to the [CONTRIBUTING.md](CONTRIBUTING.md) file for information about how to get involved. We welcome issues, feature requests, pull requests and documentation updates in GitHub.  For questions about using and troubleshooting Arkime please use the Slack channels.
 
 ## Maintainers
 
