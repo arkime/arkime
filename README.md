@@ -74,7 +74,7 @@ Once Arkime is running, point your browser to http://localhost:8005 to access th
 
 Access to Arkime is protected by using HTTPS with digest passwords or by using an authentication providing web server proxy. All PCAPs are stored on the sensors and are only accessed using the Arkime interface or API. Arkime is not meant to replace an IDS but instead work alongside them to store and index all the network traffic in standard PCAP format, providing fast access.
 
-Elasticsearch provides NO security by default, so ``iptables`` **MUST** be used to allow only Arkime machines to talk to the ``elasticsearch`` machines (ports 9200-920x) and for them to mesh connect (ports 9300-930x).  An example with 3 ES machines 2 nodes each and a viewer only machine
+Elasticsearch provides no security by default, so ``iptables`` **MUST** be used to allow only Arkime machines to talk to the ``elasticsearch`` machines (ports 9200-920x) and for them to mesh connect (ports 9300-930x).  An example with 3 ES machines 2 nodes each and a viewer only machine
 ```
     for ip in arkimees1 arkimees2 arkimees3 arkimevieweronly1; do
       iptables -A INPUT -i eth0 -p tcp --dport 9300 -s $ip -j ACCEPT
@@ -100,7 +100,7 @@ Elasticsearch provides NO security by default, so ``iptables`` **MUST** be used 
   - It is also possible to place Apache in front of Arkime, so it can handle the authentication and pass the username on to Arkime.
   - This is how we deploy it.
 
-* A shared password stored in the Arkime configuration file is used to encrypt password hashes AND for inter-Arkime communication.
+* A shared password stored in the Arkime configuration file is used to encrypt password hashes and for inter-Arkime communication.
 
   - Make sure you protect the config file on the filesystem with proper file permissions.
   - Encrypted password hashes are used so a new password hash can not be inserted into ``elasticsearch`` directly in case it hasn't been secured.
