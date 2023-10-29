@@ -15,7 +15,7 @@
 
 ![banner](https://raw.githubusercontent.com/arkime/arkime/main/assets/Arkime_Logo_FullGradientBlack@3x.png)
 
-Arkime augments your current security infrastructure to store and index network traffic in standard PCAP format, providing fast, indexed access. An intuitive and simple web interface is provided for PCAP browsing, searching, and exporting. Arkime exposes APIs which allow for PCAP data and JSON formatted session data to be downloaded and consumed directly. Arkime stores and exports all packets in standard PCAP format, allowing you to also use your favorite PCAP ingesting tools, such as wireshark, during your analysis workflow.
+Arkime augments your current security infrastructure to store and index network traffic in standard PCAP format, providing fast and indexed access. An intuitive and simple web interface is provided for PCAP browsing, searching and exporting. Arkime exposes APIs which allow for PCAP data and JSON formatted session data to be downloaded and consumed directly. Arkime stores and exports all packets in standard PCAP format, allowing you to also use your favourite PCAP ingesting tools, such as wireshark, during your analysis workflow.
 
 Arkime is built to be deployed across many systems and can scale to handle tens of gigabits/sec of traffic. PCAP retention is based on available sensor disk space. Metadata retention is based on the Elasticsearch cluster scale. Both can be increased at anytime and are under your complete control.
 
