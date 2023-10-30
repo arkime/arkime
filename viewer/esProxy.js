@@ -347,6 +347,9 @@ function validateBulk (req) {
       } else if (typeof json.update === 'object') {
         const _index = json.update._index;
         if (!_index.includes('fields')) { throw new Error(`Bad index ${_index}`); }
+      } else if (typeof json.delete === 'object') {
+        const _index = json.delete._index;
+        if (!_index.includes('fields')) { throw new Error(`Bad index ${_index}`); }
       } else {
         console.log('Failed bulk', JSON.stringify(json, false, 2));
         throw new Error('Missing create, update or index operation');
