@@ -292,8 +292,8 @@ class WISESourceAPI {
       friendly = match[1];
     }
 
-    if (WISESource.field2Pos[fieldName] !== undefined) {
-      return WISESource.field2Pos[fieldName];
+    if (WISESource.field2Pos.has(fieldName)) {
+      return WISESource.field2Pos.get(fieldName);
     }
 
     if (ArkimeConfig.debug > 1) {
@@ -338,9 +338,9 @@ class WISESourceAPI {
 
     internals.fieldsMd5 = cryptoLib.createHash('md5').update(internals.fieldsBuf1.slice(8)).digest('hex');
 
-    WISESource.pos2Field[pos] = fieldName;
-    WISESource.field2Pos[fieldName] = pos;
-    WISESource.field2Info[fieldName] = { pos, friendly, db };
+    WISESource.pos2Field.set(pos, fieldName);
+    WISESource.field2Pos.set(fieldName, pos);
+    WISESource.field2Info.set(fieldName, { pos, friendly, db });
     return pos;
   }
 
@@ -391,7 +391,7 @@ class WISESourceAPI {
       output += `  div.sessionDetailMeta.bold ${title}\n  dl.sessionDetailMeta\n`;
 
       for (const field of fields.split(',')) {
-        const info = WISESource.field2Info[field];
+        const info = WISESource.field2Info.get(field);
         if (!info) {
           continue;
         }
@@ -1196,7 +1196,7 @@ app.get("/bro/:type", [ArkimeUtil.noCacheJson], function(req, res) {
           let len = buffer[offset++];
           let value = buffer.toString('utf8', offset, offset+len-1);
           offset += len;
-          res.write(WISESource.pos2Field[pos] + ": " + value);
+          res.write(WISESource.pos2Field.get(pos) + ": " + value);
         }
       }
       if (!found) {

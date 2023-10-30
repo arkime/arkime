@@ -21,13 +21,13 @@ const internals = {
   CYBERCHEFVERSION: '10.5.2',
   httpAgent: new http.Agent({ keepAlive: true, keepAliveMsecs: 5000, maxSockets: 40 }),
   previousNodesStats: [],
-  caTrustCerts: {},
+  caTrustCerts: new Map(),
   cronRunning: false,
   rightClicks: {},
   fieldActions: {},
   pluginEmitter: new EventEmitter(),
-  writers: {},
-  oldDBFields: {},
+  writers: new Map(),
+  oldDBFields: new Map(),
   uploadLimits: {},
 
   // http://garethrees.org/2007/11/14/pngcrush/

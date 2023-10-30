@@ -1,4 +1,4 @@
-use Test::More tests => 88;
+use Test::More tests => 93;
 use Cwd;
 use URI::Escape;
 use ArkimeTest;
@@ -272,8 +272,19 @@ my $firstClusterId = $result->{cluster}->{id};
 ok ($result->{success});
 
 # Update cluster
-$result = parliamentPutToken("/parliament/api/groups/$firstGroupId/clusters/$firstClusterId?arkimeRegressionUser=parliamentAdminP", '{"title": "cluster 1a", "url": "super/fancy/urla"}', $parliamentAdminToken);
+$result = parliamentPutToken("/parliament/api/groups/$firstGroupId/clusters/$firstClusterId?arkimeRegressionUser=parliamentAdminP", '{"title": "cluster 1a", "url": "http://localhost:8123"}', $parliamentAdminToken);
 ok ($result->{success});
+
+# Stats
+parliamentGet("/regressionTests/updateParliament");
+$result = parliamentGetToken("/parliament/api/parliament/stats", $parliamentAdminToken);
+my @k = keys %{$result->{results}};
+is (scalar @k, 1);
+my $result = $result->{results}->{$k[0]};
+is ($result->{title}, "cluster 1a");
+is ($result->{id}, $k[0]);
+ok (exists $result->{deltaBPS});
+ok (exists $result->{dataNodes});
 
 # Delete cluster
 $result = parliamentDeleteToken("/parliament/api/groups/$firstGroupId/clusters/$firstClusterId?arkimeRegressionUser=parliamentAdminP", $parliamentAdminToken);

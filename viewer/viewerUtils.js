@@ -25,16 +25,18 @@ class ViewerUtils {
       return;
     }
 
-    if (internals.caTrustCerts[node] !== undefined && internals.caTrustCerts[node].length > 0) {
-      options.ca = internals.caTrustCerts[node];
+    let certs = internals.caTrustCerts.get(node);
+    if (certs && certs.length > 0) {
+      options.ca = certs;
       return;
     }
 
     const caTrustFile = Config.getFull(node, 'caTrustFile');
-    internals.caTrustCerts[node] = ArkimeUtil.certificateFileToArray(caTrustFile);
+    certs = ArkimeUtil.certificateFileToArray(caTrustFile);
+    internals.caTrustCerts.set(node, certs);
 
-    if (internals.caTrustCerts[node] !== undefined && internals.caTrustCerts[node].length > 0) {
-      options.ca = internals.caTrustCerts[node];
+    if (certs && certs.length > 0) {
+      options.ca = certs;
     }
   };
 
@@ -451,11 +453,11 @@ class ViewerUtils {
       // Everything will use fieldECS or dbField2 as dbField
       for (let i = 0, ilen = data.length; i < ilen; i++) {
         if (data[i]._source.fieldECS) {
-          internals.oldDBFields[data[i]._source.dbField] = data[i]._source;
-          internals.oldDBFields[data[i]._source.dbField2] = data[i]._source;
+          internals.oldDBFields.set(data[i]._source.dbField, data[i]._source);
+          internals.oldDBFields.set(data[i]._source.dbField2, data[i]._source);
           data[i]._source.dbField = data[i]._source.fieldECS;
         } else {
-          internals.oldDBFields[data[i]._source.dbField] = data[i]._source;
+          internals.oldDBFields.set(data[i]._source.dbField, data[i]._source);
           data[i]._source.dbField = data[i]._source.dbField2;
         }
 
@@ -484,8 +486,10 @@ class ViewerUtils {
 
   // ----------------------------------------------------------------------------
   static oldDB2newDB (x) {
-    if (!internals.oldDBFields[x]) { return x; }
-    return internals.oldDBFields[x].dbFieldECS || internals.oldDBFields[x].dbField2;
+    const old = internals.oldDBFields.get(x);
+
+    if (old === undefined) { return x; }
+    return old.dbFieldECS ?? old.dbField2;
   };
 
   // ----------------------------------------------------------------------------

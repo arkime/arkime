@@ -229,8 +229,8 @@ class WISESource {
         }
         if (this.shortcuts[kv[0]] !== undefined) {
           args.push(this.shortcuts[kv[0]].pos);
-        } else if (WISESource.field2Pos[kv[0]]) {
-          args.push(WISESource.field2Pos[kv[0]]);
+        } else if (WISESource.field2Pos.has(kv[0])) {
+          args.push(WISESource.field2Pos.get(kv[0]));
         } else {
           args.push(this.api.addField('field:' + kv[0]));
         }
@@ -393,9 +393,9 @@ class WISESource {
   static emptyResult = Buffer.alloc(1);
 
   // ----------------------------------------------------------------------------
-  static field2Pos = {};
-  static field2Info = {};
-  static pos2Field = {};
+  static field2Pos = new Map();
+  static field2Info = new Map();
+  static pos2Field = new Map();
 
   // ----------------------------------------------------------------------------
   /**
@@ -486,7 +486,7 @@ class WISESource {
       const len = results[offset + 1];
       const value = results.toString('utf8', offset + 2, offset + 2 + len - 1);
       offset += 2 + len;
-      collection.push({ field: WISESource.pos2Field[pos], len: len - 1, value });
+      collection.push({ field: WISESource.pos2Field.get(pos), len: len - 1, value });
     }
 
     return JSON.stringify(collection).replace(/},{/g, '},\n{');
