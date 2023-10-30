@@ -55,9 +55,10 @@ See https://arkime.com/settings#parliament for more information.
 `;
 
 const internals = {
-  stats: {},
+  stats: new Map(),
   parliamentName: 'parliament',
-  httpsAgent: new https.Agent({ rejectUnauthorized: !ArkimeConfig.insecure })
+  httpsAgent: new https.Agent({ rejectUnauthorized: !ArkimeConfig.insecure }),
+  updateInProgress: false
 };
 
 // ----------------------------------------------------------------------------
@@ -90,6 +91,16 @@ const internals = {
 }());
 
 if (ArkimeConfig.regressionTests) {
+  app.get('/regressionTests/updateParliament', function (req, res) {
+    updateParliament();
+    setTimeout(async function checkUpdateFinished () {
+      if (internals.updateInProgress) {
+        setTimeout(checkUpdateFinished, 500);
+      } else {
+        res.send('{}');
+      }
+    }, 500);
+  });
   app.post('/regressionTests/shutdown', function (req, res) {
     process.exit(0);
   });
@@ -103,7 +114,7 @@ let issues;
 // save noPackets issues so that the time of issue can be compared to the
 // noPacketsLength user setting (only issue alerts when the time the issue
 // was encounterd exceeds the noPacketsLength user setting)
-const noPacketsMap = {};
+const noPacketsMap = new Map();
 
 // super secret
 app.use(helmet.hidePoweredBy());
@@ -1307,16 +1318,16 @@ async function getStats (cluster) {
 
           // only set the noPackets issue if there is a record of this cluster/node
           // having noPackets and that issue has persisted for the set length of time
-          if (noPacketsMap[id] &&
-            Date.now() - noPacketsMap[id] >= (Parliament.getGeneralSetting('noPacketsLength') * 1000)) {
+          if (noPacketsMap.has(id) &&
+            Date.now() - noPacketsMap.get(id) >= (Parliament.getGeneralSetting('noPacketsLength') * 1000)) {
             setIssue(cluster, {
               type: 'noPackets',
               node: stat.nodeName,
               value: stat.deltaPacketsPerSec
             });
-          } else if (!noPacketsMap[id]) {
+          } else if (!noPacketsMap.has(id)) {
             // if this issue has not been encountered yet, make a record of it
-            noPacketsMap[id] = Date.now();
+            noPacketsMap.set(id, Date.now());
           }
         }
 
@@ -1349,6 +1360,7 @@ async function getStats (cluster) {
 // Chains all promises for requests for health and stats for each cluster in the parliament
 // this also sets all the issues in the issues.json file
 async function updateParliament () {
+  internals.updateInProgress = true;
   const { body: { _source: parliament } } = await Parliament.getParliament();
 
   return new Promise((resolve, reject) => {
@@ -1385,7 +1397,7 @@ async function updateParliament () {
       }
 
       for (const result of results) {
-        internals.stats[result.cluster.id] = result.cluster;
+        internals.stats.set(result.cluster.id, result.cluster);
       }
 
       if (ArkimeConfig.debug) {
@@ -1395,6 +1407,7 @@ async function updateParliament () {
         }
       }
 
+      internals.updateInProgress = false;
       return resolve();
     }).catch((error) => {
       console.log('Parliament update error:', error.message ?? error);
@@ -1416,7 +1429,7 @@ function removeIssue (issueType, clusterId, nodeId) {
       issues.splice(len, 1);
       if (issue.type === 'noPackets') {
         // also remove it from the no packets record
-        delete noPacketsMap[issue.cluster + nodeId];
+        noPacketsMap.delete(issue.cluster + nodeId);
       }
     }
   }
@@ -1521,7 +1534,7 @@ app.post('/parliament/api/notifier/:id/test', [ArkimeUtil.noCacheJson, isAdmin, 
 app.get('/parliament/api/parliament', Parliament.apiGetParliament);
 
 // get the parliament stats (updated every 10 seconds by updateParliament)
-app.get('/parliament/api/parliament/stats', (req, res) => { return res.json({ results: internals.stats }); });
+app.get('/parliament/api/parliament/stats', (req, res) => { return res.json({ results: Object.fromEntries(internals.stats) }); });
 
 // updates the parliament order of groups or clusters
 app.put('/parliament/api/parliament/order', [isAdmin, checkCookieToken], Parliament.apiUpdateParliamentOrder);
@@ -2000,6 +2013,7 @@ async function main () {
       updateParliament();
       processAlerts();
     }, 10000);
+    updateParliament();
   });
 }
 

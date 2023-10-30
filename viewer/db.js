@@ -20,12 +20,11 @@ const cache = new LRU({ max: 100, maxAge: 1000 * 10 });
 const Db = exports;
 
 const internals = {
-  fileId2File: {},
-  fileName2File: {},
-  arkimeNodeStatsCache: {},
-  shortcutsCache: {},
-  qInProgress: 0,
-  q: [],
+  fileId2File: new Map(),
+  fileName2File: new Map(),
+  arkimeNodeStatsCache: new Map(),
+  shortcutsCache: new Map(),
+  shortcutsCacheTS: new Map(),
   remoteShortcutsIndex: undefined,
   localShortcutsIndex: undefined,
   localShortcutsVersion: -1 // always start with -1 so there's an initial sync of shortcuts from user's es db
@@ -1061,11 +1060,11 @@ Db.removeHuntFromSession = function (index, id, huntId, huntName, cb) {
 /// / High level functions
 /// ///////////////////////////////////////////////////////////////////////////////
 Db.flushCache = function () {
-  internals.fileId2File = {};
-  internals.fileName2File = {};
-  internals.arkimeNodeStatsCache = {};
+  internals.fileId2File.clear();
+  internals.fileName2File.clear();
+  internals.arkimeNodeStatsCache.clear();
   User.flushCache();
-  internals.shortcutsCache = {};
+  internals.shortcutsCache.clear();
   delete internals.aliasesCache;
   Db.getAliasesCache();
   cache.reset();
@@ -1191,7 +1190,7 @@ Db.updateLocalShortcuts = async () => {
 
     console.log(msg);
 
-    internals.shortcutsCache = {}; // Clear cache when updating
+    internals.shortcutsCache.clear(); // Clear cache when updating
     // fetch shortcuts from remote and local indexes
     const [{ body: remoteResults }, { body: localResults }] = await Promise.all([
       Db.searchShortcuts({ size: 10000 }), Db.searchShortcutsLocal({ size: 10000 })
@@ -1280,7 +1279,7 @@ Db.numberOfShortcuts = async (query) => {
   });
 };
 Db.createShortcut = async (doc) => {
-  internals.shortcutsCache = {};
+  internals.shortcutsCache.clear();
   await setShortcutsVersion();
   const response = await internals.usersClient7.index({
     index: internals.remoteShortcutsIndex, body: doc, refresh: 'wait_for', timeout: '10m'
@@ -1289,7 +1288,7 @@ Db.createShortcut = async (doc) => {
   return response;
 };
 Db.deleteShortcut = async (id) => {
-  internals.shortcutsCache = {};
+  internals.shortcutsCache.clear();
   await setShortcutsVersion();
   const response = await internals.usersClient7.delete({
     index: internals.remoteShortcutsIndex, id, refresh: true
@@ -1298,7 +1297,7 @@ Db.deleteShortcut = async (id) => {
   return response;
 };
 Db.setShortcut = async (id, doc) => {
-  internals.shortcutsCache = {};
+  internals.shortcutsCache.clear();
   await setShortcutsVersion();
   const response = await internals.usersClient7.index({
     index: internals.remoteShortcutsIndex, body: doc, id, refresh: true, timeout: '10m'
@@ -1310,8 +1309,9 @@ Db.getShortcut = async (id) => {
   return internals.usersClient7.get({ index: internals.remoteShortcutsIndex, id });
 };
 Db.getShortcutsCache = async (user) => {
-  if (internals.shortcutsCache[user.userId] && internals.shortcutsCache._timeStamp > Date.now() - 30000) {
-    return internals.shortcutsCache[user.userId];
+  const cshortcuts = internals.shortcutsCache.get(user.userId);
+  if (cshortcuts && internals.shortcutsCacheTS.get(user.userId) > Date.now() - 30000) {
+    return cshortcuts;
   }
 
   const roles = [...await user.getRoles()]; // es requries an array for terms search
@@ -1338,8 +1338,8 @@ Db.getShortcutsCache = async (user) => {
     shortcutsMap[shortcut._source.name] = shortcut;
   }
 
-  internals.shortcutsCache[user.userId] = shortcutsMap;
-  internals.shortcutsCache._timeStamp = Date.now();
+  internals.shortcutsCache.set(user.userId, shortcutsMap);
+  internals.shortcutsCacheTS.set(user.userId, Date.now());
 
   return shortcutsMap;
 };
@@ -1377,21 +1377,22 @@ Db.arkimeNodeStats = async (nodeName, cb) => {
   try {
     const { body: stat } = await Db.get('stats', 'stat', nodeName);
 
-    internals.arkimeNodeStatsCache[nodeName] = stat._source;
-    internals.arkimeNodeStatsCache[nodeName]._timeStamp = Date.now();
+    stat._source._timeStamp = Date.now();
+    internals.arkimeNodeStatsCache.set(nodeName, stat._source);
 
     cb(null, stat._source);
   } catch (err) {
-    if (internals.arkimeNodeStatsCache[nodeName]) {
-      return cb(null, internals.arkimeNodeStatsCache[nodeName]);
+    if (internals.arkimeNodeStatsCache.has(nodeName)) {
+      return cb(null, internals.arkimeNodeStatsCache.get(nodeName));
     }
-    return cb(err || 'Unknown node ' + nodeName, internals.arkimeNodeStatsCache[nodeName]);
+    return cb(err || 'Unknown node ' + nodeName);
   }
 };
 
 Db.arkimeNodeStatsCache = function (nodeName, cb) {
-  if (internals.arkimeNodeStatsCache[nodeName] && internals.arkimeNodeStatsCache[nodeName]._timeStamp > Date.now() - 30000) {
-    return cb(null, internals.arkimeNodeStatsCache[nodeName]);
+  const stat = internals.arkimeNodeStatsCache.get(nodeName);
+  if (stat && stat._timeStamp > Date.now() - 30000) {
+    return cb(null, stat);
   }
 
   return Db.arkimeNodeStats(nodeName, cb);
@@ -1501,7 +1502,7 @@ Db.hostnameToNodeids = function (hostname, cb) {
 
 Db.fileIdToFile = async (node, num, cb) => {
   const key = node + '!' + num;
-  const info = internals.fileId2File[key];
+  const info = internals.fileId2File.get(key);
   if (info !== undefined) {
     if (cb) {
       return setImmediate(() => { cb(info); });
@@ -1513,10 +1514,10 @@ Db.fileIdToFile = async (node, num, cb) => {
   try {
     const { body: fresult } = await Db.get('files', 'file', node + '-' + num);
     file = fresult._source;
-    internals.fileId2File[key] = file;
-    internals.fileName2File[file.name] = file;
+    internals.fileId2File.set(key, file);
+    internals.fileName2File.set(file.name, file);
   } catch (err) { // Cache file is unknown
-    internals.fileId2File[key] = null;
+    internals.fileId2File.delete(key);
   }
   return cb ? cb(file) : file;
 };
@@ -1531,8 +1532,8 @@ Db.fileNameToFiles = function (fileName, cb) {
 
   // Not wildcard/regex check the cache
   if (!query) {
-    if (internals.fileName2File[fileName]) {
-      return cb([internals.fileName2File[fileName]]);
+    if (internals.fileName2File.has(fileName)) {
+      return cb([internals.fileName2File.get(fileName)]);
     }
     query = { size: 100, query: { term: { name: fileName } }, sort: [{ num: { order: 'desc' } }] };
   }
@@ -1545,8 +1546,8 @@ Db.fileNameToFiles = function (fileName, cb) {
     data.hits.hits.forEach((hit) => {
       const file = hit._source;
       const key = file.node + '!' + file.num;
-      internals.fileId2File[key] = file;
-      internals.fileName2File[file.name] = file;
+      internals.fileId2File.set(key, file);
+      internals.fileName2File.set(file.name, file);
       files.push(file);
     });
     return cb(files);

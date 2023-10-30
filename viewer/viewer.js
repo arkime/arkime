@@ -727,7 +727,7 @@ function setFieldLocals () {
 function loadPlugins () {
   const api = {
     registerWriter: function (str, info) {
-      internals.writers[str] = info;
+      internals.writers.set(str, info);
     },
     getDb: function () { return Db; },
     getPcap: function () { return Pcap; }
@@ -2063,7 +2063,7 @@ async function main () {
   loadPlugins();
 
   const pcapWriteMethod = Config.get('pcapWriteMethod');
-  const writer = internals.writers[pcapWriteMethod];
+  const writer = internals.writers.get(pcapWriteMethod);
   if (!writer || writer.localNode === true) {
     expireCheckAll();
     setInterval(expireCheckAll, 60 * 1000);

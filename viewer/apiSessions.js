@@ -1201,7 +1201,7 @@ class SessionAPIs {
       function readyToProcess () {
         const pcapWriteMethod = Config.getFull(fields.node, 'pcapWriteMethod');
         let psid = SessionAPIs.#processSessionIdDisk;
-        const writer = internals.writers[pcapWriteMethod];
+        const writer = internals.writers.get(pcapWriteMethod);
         if (writer && writer.processSessionId) {
           psid = writer.processSessionId;
         }
@@ -1500,7 +1500,7 @@ class SessionAPIs {
     }
 
     const pcapWriteMethod = Config.getFull(node, 'pcapWriteMethod');
-    const writer = internals.writers[pcapWriteMethod];
+    const writer = internals.writers.get(pcapWriteMethod);
     if (writer && writer.localNode === false) {
       if (Config.debug > 1) {
         console.log(`DEBUG: node:${node} is local view because of writer`);
