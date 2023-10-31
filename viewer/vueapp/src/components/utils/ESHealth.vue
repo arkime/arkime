@@ -36,10 +36,14 @@ SPDX-License-Identifier: Apache-2.0
       placement="bottom"
       boundary="viewport">
       <div class="text-center mb-1">
-        <strong>Elasticsearch Stats</strong>
+        <strong>App Info</strong>
       </div>
       <dl v-if="!error && esHealth"
         class="dl-horizontal es-stats-dl">
+        <dt>User Name</dt>
+        <dd>{{ user.userName }}</dd>
+        <dt>User ID</dt>
+        <dd>{{ user.userId }}</dd>
         <dt>ES Version</dt>
         <dd>{{ esHealth.version }}&nbsp;</dd>
         <dt>DB Version</dt>
@@ -77,6 +81,9 @@ export default {
     }, 10000);
   },
   computed: {
+    user () {
+      return this.$store.state.user;
+    },
     esHealth () {
       return this.$store.state.esHealth;
     },
