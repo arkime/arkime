@@ -29,7 +29,13 @@ Card Description - an object of the following
         * json - just display raw json, call in JSON.stringify(blah, false, 2)
         * dnsRecords - display of non-A/AAAA dns records (for use with DNS integration and `path: []`)
       * defang - when true defang the string, change http to hXXp and change . to [.]
-      * pivot - when set this field should be added to action menu for table entry that you can replace query with
+      * pivot - when set this field should include a dropdown action menu, options include:
+        * copy - show a copy option in the pivot dropdown to copy the value
+        * pivot - replace query with the value
+        * custom - create a custom button
+          * field - requires path (see path above)
+          * name - name to display on the button
+          * href - the url for the button. use %{var} to replace pieces of the url when constructing the card
       * join - with array, display with value as the separator on one line (example single: ', ')
       * fieldRoot - for arrays/tables, the path (it can have dots) from each object in the array to its desired field. Effectively maps the root array of objects to an array of values/sub-objects.
       * fieldRootPath - alternative to fieldRoot, this is the fieldRoot path pre-separated into a string array (eg. fieldRoot: 'foo.bar' is equivalent to fieldRootPath: ['foo', 'bar'])

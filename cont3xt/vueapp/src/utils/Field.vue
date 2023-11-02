@@ -31,14 +31,14 @@ SPDX-License-Identifier: Apache-2.0
         key="copy"
         v-if="options.copy"
         @click="doCopy(value)">
-        Copy
+        {{ options.copy }}
       </b-dropdown-item>
       <b-dropdown-item
         key="pivot"
         target="_blank"
         v-if="options.pivot"
         :href="`?b=${base64Encode(value)}`">
-        Pivot
+        {{ options.pivot }}
       </b-dropdown-item>
     </div>
   </span>

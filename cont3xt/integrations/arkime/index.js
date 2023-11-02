@@ -28,6 +28,20 @@ class ArkimeIntegration extends Integration {
 
   card = {
     fields: [{
+      label: 'Protocols',
+      field: 'protocols',
+      type: 'table',
+      fields: [
+        {
+          label: 'Protocol',
+          field: 'key'
+        },
+        {
+          label: 'Count',
+          field: 'doc_count'
+        }
+      ]
+    }, {
       label: 'Sessions',
       field: 'hits',
       type: 'table',
@@ -37,22 +51,22 @@ class ArkimeIntegration extends Integration {
           field: 'source.ip',
           pivot: true,
           options: {
-            link: {
+            srcip: {
               field: {
                 path: ['source', 'ip']
               },
               name: 'Arkime Src IP Query',
               href: '%{arkimeUrl}/sessions?expression=ip.src==%{value}'
             },
-            link2: {
+            id: {
               field: {
                 path: ['id']
               },
               name: 'Arkime Session',
               href: '%{arkimeUrl}/sessions?expression=id==%{value}'
             },
-            copy: true,
-            pivot: true
+            copy: 'Copy',
+            pivot: 'Pivot'
           }
         },
         {
@@ -64,22 +78,22 @@ class ArkimeIntegration extends Integration {
           field: 'destination.ip',
           pivot: true,
           options: {
-            link: {
+            dstip: {
               field: {
                 path: ['source', 'ip']
               },
               name: 'Arkime Dst IP Query',
               href: '%{arkimeUrl}/sessions?expression=ip.dst==%{value}'
             },
-            link2: {
+            id: {
               field: {
                 path: ['id']
               },
               name: 'Arkime Session',
               href: '%{arkimeUrl}/sessions?expression=id==%{value}'
             },
-            copy: true,
-            pivot: true
+            copy: 'Copy',
+            pivot: 'Pivot'
           }
         },
         {
@@ -117,6 +131,7 @@ class ArkimeIntegration extends Integration {
     this.card.title = `${this.name} | Searching ${time} | Displaying ${this.#maxResults} results`;
     // replace href with correct arkime url and add date to query
     this.card.fields.forEach((field) => {
+      if (!field.fields) { return; }
       field.fields.forEach((subfield) => {
         if (!subfield.options) { return; }
         for (const option in subfield.options) {
@@ -177,6 +192,9 @@ class ArkimeIntegration extends Integration {
           ]
         }
       },
+      aggregations: {
+        protocols: { terms: { field: 'protocol' } }
+      },
       sort: { lastPacket: { order: 'desc' } },
       size: this.#maxResults
     };
@@ -196,6 +214,7 @@ class ArkimeIntegration extends Integration {
     }
 
     return {
+      protocols: results.body.aggregations.protocols.buckets,
       hits: results.body.hits.hits.map(i => ({ ...i._source, id: i._id })),
       _cont3xt: {
         count: results.body.hits.total
