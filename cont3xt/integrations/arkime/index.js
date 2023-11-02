@@ -27,14 +27,74 @@ class ArkimeIntegration extends Integration {
   };
 
   card = {
-    fields: [
-    ]
+    fields: [{
+      label: 'Sessions',
+      field: 'hits',
+      type: 'table',
+      fields: [
+        {
+          label: 'Source IP',
+          field: 'source.ip',
+          pivot: true,
+          options: {
+            link: {
+              field: {
+                path: ['source', 'ip']
+              },
+              name: 'Arkime Src IP Query',
+              href: '%{arkimeUrl}/sessions?expression=ip.src==%{value}'
+            },
+            link2: {
+              field: {
+                path: ['id']
+              },
+              name: 'Arkime Session',
+              href: '%{arkimeUrl}/sessions?expression=id==%{value}'
+            },
+            copy: true,
+            pivot: true
+          }
+        },
+        {
+          label: 'Source Port',
+          field: 'source.port'
+        },
+        {
+          label: 'Destination IP',
+          field: 'destination.ip',
+          pivot: true,
+          options: {
+            link: {
+              field: {
+                path: ['source', 'ip']
+              },
+              name: 'Arkime Dst IP Query',
+              href: '%{arkimeUrl}/sessions?expression=ip.dst==%{value}'
+            },
+            link2: {
+              field: {
+                path: ['id']
+              },
+              name: 'Arkime Session',
+              href: '%{arkimeUrl}/sessions?expression=id==%{value}'
+            },
+            copy: true,
+            pivot: true
+          }
+        },
+        {
+          label: 'Destination Port',
+          field: 'destination.port'
+        }
+      ]
+    }]
   };
 
   // ----------------------------------------------------------------------------
 
   #prefix;
   #client;
+  #arkimeUrl;
   #searchDays;
   #maxResults;
 
@@ -48,6 +108,25 @@ class ArkimeIntegration extends Integration {
     this.#prefix = ArkimeUtil.formatPrefix(ArkimeConfig.getFull(section, 'prefix'));
     this.#searchDays = parseInt(ArkimeConfig.getFull(section, 'searchDays', -1), 10);
     this.#maxResults = ArkimeConfig.getFull(section, 'maxResults', 20);
+    this.#arkimeUrl = ArkimeConfig.getFull(section, 'arkimeUrl', 'http://localhost:8123');
+    if (this.#arkimeUrl.endsWith('/')) {
+      this.#arkimeUrl = this.#arkimeUrl.slice(0, -1);
+    }
+
+    const time = this.#searchDays === -1 ? 'ALL' : `${this.#searchDays} days`;
+    this.card.title = `${this.name} | Searching ${time} | Displaying ${this.#maxResults} results`;
+    // replace href with correct arkime url and add date to query
+    this.card.fields.forEach((field) => {
+      field.fields.forEach((subfield) => {
+        if (!subfield.options) { return; }
+        for (const option in subfield.options) {
+          if (subfield.options[option].href) {
+            subfield.options[option].href = subfield.options[option].href.replace('%{arkimeUrl}', this.#arkimeUrl);
+            subfield.options[option].href += `&date=${this.#searchDays === -1 ? -1 : this.#searchDays * 24}`;
+          }
+        }
+      });
+    });
 
     const elasticsearch = ArkimeConfig.getFullArray(section, 'elasticsearch', 'http://localhost:9200');
     const elasticsearchAPIKey = ArkimeConfig.getFull(section, 'elasticsearchAPIKey');
@@ -102,7 +181,7 @@ class ArkimeIntegration extends Integration {
       size: this.#maxResults
     };
 
-    if (this.#searchDays !== -1) {
+    if (this.#searchDays === -1) {
       query.query.bool.must.shift();
     }
 
@@ -116,15 +195,12 @@ class ArkimeIntegration extends Integration {
       return Integration.NoResult;
     }
 
-    const data = {
-      hits: results.body.hits.hits.map(i => {
-        return i._source;
-      }),
+    return {
+      hits: results.body.hits.hits.map(i => ({ ...i._source, id: i._id })),
       _cont3xt: {
-        count: results.body.hits.hits.length
+        count: results.body.hits.total
       }
     };
-    return data;
   }
 
   // ----------------------------------------------------------------------------

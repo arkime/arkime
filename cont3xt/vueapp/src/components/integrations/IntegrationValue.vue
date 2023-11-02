@@ -17,13 +17,13 @@ SPDX-License-Identifier: Apache-2.0
         <span class="text-warning">
           {{ field.label }}
           <span
-              class="fa"
-              v-if="field.type === 'table' || field.type === 'array'"
-              :class="{'fa-caret-down':visible,'fa-caret-up':!visible}"
+            class="fa"
+            v-if="field.type === 'table' || field.type === 'array'"
+            :class="{'fa-caret-down':visible,'fa-caret-up':!visible}"
           />
         </span>
         <span v-if="field.type === 'table'"
-            :class="getTableLength() === 0 ? 'table-count-low' : 'text-default'">({{ getTableLength() }})
+          :class="getTableLength() === 0 ? 'table-count-low' : 'text-default'">({{ getTableLength() }})
         </span>
       </label>
       <div class="d-inline">
@@ -137,14 +137,18 @@ SPDX-License-Identifier: Apache-2.0
       <template v-else>
         <template v-if="field.pivot">
           <cont3xt-field
+            pull-left
+            :data="data"
             :value="value.value"
+            :options="field.options"
             :highlights="highlights"
           />
         </template>
         <template v-else>
           <highlightable-text
-              :content="value.value"
-              :highlights="highlights"/>
+            :content="value.value"
+            :highlights="highlights"
+          />
         </template>
       </template> <!-- /default string, ms, seconds, & date field -->
     </template>

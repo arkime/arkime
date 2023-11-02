@@ -18,16 +18,27 @@ SPDX-License-Identifier: Apache-2.0
       class="field-dropdown"
       data-testid="field-dropdown"
       :class="{'pull-right':!pullLeft,'pull-left':pullLeft}">
+      <template v-for="option in options">
+        <b-dropdown-item
+          target="_blank"
+          :key="option.name"
+          v-if="option.href"
+          :href="formatUrl(option)">
+          {{ option.name }}
+        </b-dropdown-item>
+      </template>
       <b-dropdown-item
+        key="copy"
         v-if="options.copy"
         @click="doCopy(value)">
-        {{ options.copy }}
+        Copy
       </b-dropdown-item>
       <b-dropdown-item
+        key="pivot"
         target="_blank"
         v-if="options.pivot"
         :href="`?b=${base64Encode(value)}`">
-        {{ options.pivot }}
+        Pivot
       </b-dropdown-item>
     </div>
   </span>
@@ -35,6 +46,7 @@ SPDX-License-Identifier: Apache-2.0
 
 <script>
 import HighlightableText from '@/utils/HighlightableText';
+import { formatPostProcessedValue } from '@/utils/formatValue';
 
 export default {
   name: 'Cont3xtField',
@@ -42,6 +54,11 @@ export default {
     HighlightableText
   },
   props: {
+    data: { // the parent data row for replacing values in urls
+      // only necessary for pivot fields that have a url
+      type: Object,
+      default: () => { return {}; }
+    },
     value: { // the value to be used in copy and display if no display value
       type: String,
       required: true
@@ -70,6 +87,10 @@ export default {
     };
   },
   methods: {
+    formatUrl (option) {
+      const value = formatPostProcessedValue(this.data, option.field);
+      return option.href.replace('%{value}', value);
+    },
     /** Toggles the dropdown menu options for a field */
     toggleDropdown () {
       this.isOpen = !this.isOpen;
