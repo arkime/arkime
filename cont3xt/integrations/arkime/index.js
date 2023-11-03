@@ -80,7 +80,7 @@ class ArkimeIntegration extends Integration {
           options: {
             dstip: {
               field: {
-                path: ['source', 'ip']
+                path: ['destination', 'ip']
               },
               name: 'Arkime Dst IP Query',
               href: '%{arkimeUrl}/sessions?expression=ip.dst==%{value}'
@@ -122,7 +122,7 @@ class ArkimeIntegration extends Integration {
     this.#prefix = ArkimeUtil.formatPrefix(ArkimeConfig.getFull(section, 'prefix'));
     this.#searchDays = parseInt(ArkimeConfig.getFull(section, 'searchDays', -1), 10);
     this.#maxResults = ArkimeConfig.getFull(section, 'maxResults', 20);
-    this.#arkimeUrl = ArkimeConfig.getFull(section, 'arkimeUrl', 'http://localhost:8123');
+    this.#arkimeUrl = ArkimeConfig.getFull(section, 'arkimeUrl', 'http://localhost:8005');
     if (this.#arkimeUrl.endsWith('/')) {
       this.#arkimeUrl = this.#arkimeUrl.slice(0, -1);
     }
