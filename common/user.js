@@ -49,6 +49,8 @@ const searchColumns = [
 let readOnly = false;
 let getCurrentUserCB;
 
+const userIdRegexp = /[^@\w.-]/;
+
 /******************************************************************************/
 // User class
 /******************************************************************************/
@@ -202,11 +204,60 @@ class User {
   }
 
   /**
+   * Create a user from thin air!
+   */
+
+  static #makeRegressionUser (userId) {
+    if (!Auth.regressionTests) {
+      process.exit();
+    }
+
+    if (userId.startsWith('sac-') || userId.startsWith('role:sac-')) {
+      return undefined;
+    }
+
+    const user = Object.assign(new User(), {
+      userId,
+      enabled: true,
+      webEnabled: true,
+      headerAuthEnabled: false,
+      emailSearch: true,
+      removeEnabled: true,
+      packetSearch: true,
+      settings: {},
+      welcomeMsgNum: 1
+    });
+
+    if (userId === 'superAdmin') {
+      user.roles = ['superAdmin'];
+    } else if (userId === 'anonymous') {
+      user.roles = ['arkimeAdmin', 'cont3xtUser', 'parliamentUser', 'usersAdmin', 'wiseUser'];
+    } else {
+      user.roles = ['arkimeUser', 'cont3xtUser', 'parliamentUser', 'wiseUser'];
+    }
+    User.setUser(userId, user);
+    return user;
+  }
+
+  /**
    * Return a user from DB, callback only
    */
   static getUser (userId, cb) {
     User.#implementation.getUser(userId, async (err, data) => {
-      if (err || !data) { return cb(err, null); }
+      let user;
+      if (err || !data) {
+        if (Auth.regressionTests) {
+          user = User.#makeRegressionUser(userId, cb);
+          if (!user) {
+            console.log(`Not making regression user ${userId}`);
+            return cb(undefined, undefined);
+          }
+        } else {
+          return cb(err, undefined);
+        }
+      } else {
+        user = Object.assign(new User(), data);
+      }
 
       // If passStore is using old form re-encrypt
       /* Remove for now
@@ -218,7 +269,6 @@ class User {
       }
       */
 
-      const user = Object.assign(new User(), data);
       cleanUser(user);
       user.settings = user.settings ?? {};
       await user.expandFromRoles();
@@ -269,7 +319,9 @@ class User {
 
     User.#usersCache.delete(userId);
     User.#implementation.setUser(userId, user, (err, boo) => {
-      cb(err, boo);
+      if (cb) {
+        cb(err, boo);
+      }
     });
   };
 
@@ -656,7 +708,7 @@ class User {
       return res.serverError(403, 'Password needs to be at least 3 characters');
     }
 
-    if (userIdTest.match(/[^@\w.-]/)) {
+    if (userIdTest.match(userIdRegexp)) {
       return res.serverError(403, 'User ID must be word characters');
     }
 
@@ -799,6 +851,8 @@ class User {
   static async apiUpdateUser (req, res) {
     const userId = ArkimeUtil.sanitizeStr(req.params.id);
 
+    delete req.body.userId; // Make sure nothing uses this
+
     if (!ArkimeUtil.isString(userId)) {
       return res.serverError(403, 'Missing userId');
     }
@@ -825,7 +879,7 @@ class User {
 
     const rolesSet = await User.roles2ExpandedSet(req.body.roles);
     const iamSuperAdmin = req.user.hasRole('superAdmin');
-    if (isRole && (rolesSet.has(req.body.userId) || req.body.roles.includes(req.body.userId))) {
+    if (isRole && (rolesSet.has(userId) || req.body.roles.includes(userId))) {
       return res.serverError(403, 'Can\'t have circular role dependencies');
     }
 

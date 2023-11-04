@@ -11,9 +11,8 @@ use strict;
 my $wise;
 my @wise;
 
-my $es = "-o 'elasticsearch=$ArkimeTest::elasticsearch' -o 'usersElasticsearch=$ArkimeTest::elasticsearch' $ENV{INSECURE}";
-system("cd ../viewer ; node addUser.js $es -c ../tests/config.test.ini -n testuser wiseUser wiseUser wiseUser --roles 'wiseUser' ");
-system("cd ../viewer ; node addUser.js $es -c ../tests/config.test.ini -n testuser wiseAdmin wiseAdmin wiseAdmin --roles 'wiseAdmin' ");
+addUser("-n testuser wiseUser wiseUser wiseUser --roles 'wiseUser' ");
+addUser("-n testuser wiseAdmin wiseAdmin wiseAdmin --roles 'wiseAdmin' ");
 
 # IP Query
 $wise = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8081/ip/10.0.0.3")->content;
@@ -132,7 +131,7 @@ eq_or_diff(from_json($wise), from_json('[{"field":"email.dst","len":10,"value":"
 '),"ALL 12345678\@aol.com");
 
 $wise = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8081/rightClicks")->content;
-eq_or_diff(from_json($wise), from_json('{"ALLTESTWISE":{"url":"http:/www.example.com","all":true,"name":"AllWiseTest"},"USERTEST":{"url": "https://example.com", "name": "usertest", "category": "url","users":{"test1":1},"notUsers":{"test101":1}},"VTIP":{"url":"https://www.virustotal.com/en/ip-address/%TEXT%/information/","name":"Virus Total IP","category":"ip"},"VTHOST":{"url":"https://www.virustotal.com/en/domain/%HOST%/information/","name":"Virus Total Host","category":"host"},"VTURL":{"url":"https://www.virustotal.com/latest-scan/%URL%","name":"Virus Total URL","category":"url"}}'),"right clicks");
+eq_or_diff(from_json($wise), from_json('{"ALLTESTWISE":{"url":"http:/www.example.com","all":true,"name":"AllWiseTest"},"USERTEST":{"url": "https://example.com", "name": "usertest", "category": "url","users":{"sac-test1":1},"notUsers":{"test101":1}},"VTIP":{"url":"https://www.virustotal.com/en/ip-address/%TEXT%/information/","name":"Virus Total IP","category":"ip"},"VTHOST":{"url":"https://www.virustotal.com/en/domain/%HOST%/information/","name":"Virus Total Host","category":"host"},"VTURL":{"url":"https://www.virustotal.com/latest-scan/%URL%","name":"Virus Total URL","category":"url"}}'),"right clicks");
 
 my $pwd = "*/pcap";
 
@@ -256,11 +255,11 @@ eq_or_diff($info->{"wise.int.cnt"}, from_json('{"friendlyName":"Int Cnt","type":
 
 # Field Actions
 $wise = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8081/fieldActions")->content;
-eq_or_diff($wise, '{"ASDFWISE":{"url":"https://www.asdf.com?expression=%EXPRESSION%&date=%DATE%&field=%FIELD%&dbField=%DBFIELD%","name":"Field Action %FIELDNAME%!","category":"ip","users":{"admin":1,"test1":1},"notUsers":{"test101":1}},"ALLTESTWISE":{"url":"http:/www.example.com","name":"AllWiseTest","all":true}}');
+eq_or_diff($wise, '{"ASDFWISE":{"url":"https://www.asdf.com?expression=%EXPRESSION%&date=%DATE%&field=%FIELD%&dbField=%DBFIELD%","name":"Field Action %FIELDNAME%!","category":"ip","users":{"admin":1,"sac-test1":1},"notUsers":{"test101":1}},"ALLTESTWISE":{"url":"http:/www.example.com","name":"AllWiseTest","all":true}}');
 
 # Value Actions
 $wise = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8081/valueActions")->content;
-eq_or_diff($wise, '{"VTIP":{"url":"https://www.virustotal.com/en/ip-address/%TEXT%/information/","name":"Virus Total IP","category":"ip"},"VTHOST":{"url":"https://www.virustotal.com/en/domain/%HOST%/information/","name":"Virus Total Host","category":"host"},"VTURL":{"url":"https://www.virustotal.com/latest-scan/%URL%","name":"Virus Total URL","category":"url"},"USERTEST":{"url":"https://example.com","name":"usertest","category":"url","users":{"test1":1},"notUsers":{"test101":1}},"ALLTESTWISE":{"url":"http:/www.example.com","name":"AllWiseTest","all":true}}');
+eq_or_diff($wise, '{"VTIP":{"url":"https://www.virustotal.com/en/ip-address/%TEXT%/information/","name":"Virus Total IP","category":"ip"},"VTHOST":{"url":"https://www.virustotal.com/en/domain/%HOST%/information/","name":"Virus Total Host","category":"host"},"VTURL":{"url":"https://www.virustotal.com/latest-scan/%URL%","name":"Virus Total URL","category":"url"},"USERTEST":{"url":"https://example.com","name":"usertest","category":"url","users":{"sac-test1":1},"notUsers":{"test101":1}},"ALLTESTWISE":{"url":"http:/www.example.com","name":"AllWiseTest","all":true}}');
 
 # __proto__
 $wise = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8081/file:mac/__proto__/00:12:1e:f2:61:3d")->content;

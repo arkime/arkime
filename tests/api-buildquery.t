@@ -22,8 +22,10 @@ my ($expression, $expected, $debug) = @_;
     }
 }
 
+# Delete shortcuts
+clearIndex("tests_lookups");
+
 # Create shortcuts for testing
-esPost("/tests_lookups/_delete_by_query?conflicts=proceed&refresh", '{ "query": { "match_all": {} } }');
 my $token = getTokenCookie();
 my $ipshortcut1 = viewerPostToken("/api/shortcut", '{"name":"ipshortcut1","type":"ip","value":"10.10.10.10"}', $token)->{shortcut}->{id};
 my $ipshortcut2 = viewerPostToken("/api/shortcut", '{"name":"ipshortcut2","type":"ip","value":"10.10.10.10"}', $token)->{shortcut}->{id};
@@ -265,4 +267,4 @@ doTest('stoptime==]"2014/02/26 10:27:57", "2014-06-10T10:10:10-05:00"[', '{"bool
 doTest('stoptime!=]"2014/02/26 10:27:57", "2014-06-10T10:10:10-05:00"[', '{"bool":{"must_not":{"bool":{"filter":[{"range":{"lastPacket":{"lte":"2014-02-26T10:27:57-05:00","gte":"2014-02-26T10:27:57-05:00"}}},{"range":{"lastPacket":{"gte":"2014-06-10T11:10:10-04:00","lte":"2014-06-10T11:10:10-04:00"}}}]}}}}');
 
 # Delete shortcuts
-esPost("/tests_lookups/_delete_by_query?conflicts=proceed&refresh", '{ "query": { "match_all": {} } }');
+clearIndex("tests_lookups");

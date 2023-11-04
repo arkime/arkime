@@ -170,11 +170,20 @@ if (ArkimeConfig.regressionTests) {
   // Override default lastUsed min write internal for tests
   User.lastUsedMinInterval = 1000;
 
+  app.get('/regressionTests/makeToken', (req, res, next) => {
+    req.user = {
+      userId: req.query.arkimeRegressionUser ?? 'anonymous'
+    };
+    setCookie(req, res);
+    return res.end();
+  });
+
   app.post('/regressionTests/shutdown', function (req, res) {
     Db.close();
     process.exit(0);
   });
   app.post('/regressionTests/flushCache', function (req, res) {
+    User.flushCache();
     Db.flushCache();
     res.send('{}');
   });
@@ -248,7 +257,7 @@ Auth.app(app);
 
 // check for arkimeUser
 app.use(async (req, res, next) => {
-  if (!Config.get('passwordSecret')) {
+  if (Auth.isAnonymousMode()) {
     return next();
   }
   // For receiveSession there is no user (so no role check can be done) AND must be s2s
@@ -270,14 +279,8 @@ app.use(async (req, res, next) => {
 });
 
 ArkimeConfig.loaded(() => {
-  if (Config.get('passwordSecret')) {
-  } else if (ArkimeConfig.regressionTests) {
+  if (ArkimeConfig.regressionTests) {
     console.log('WARNING - Option --regressionTests was used, do NOT use in production, for testing only');
-    internals.noPasswordSecret = true;
-  } else {
-    /* Shared password isn't set, who cares about auth, db is only used for settings */
-    console.log('WARNING - The setting "passwordSecret" is not set, all access is anonymous');
-    internals.noPasswordSecret = true;
   }
 });
 
@@ -453,7 +456,9 @@ function setCookie (req, res, next) {
     cookieOptions
   );
 
-  return next();
+  if (next) {
+    return next();
+  }
 }
 
 function checkCookieToken (req, res, next) {
@@ -677,7 +682,7 @@ function getSettingUserCache (req, res, next) {
 
   User.getUserCache(req.query.userId, (err, user) => {
     if (err || !user) {
-      if (internals.noPasswordSecret) {
+      if (Auth.isAnonymousMode()) {
         req.settingUser = Object.assign(new User(), req.user);
         delete req.settingUser.found;
       } else {
@@ -1992,7 +1997,7 @@ app.use(cspHeader, setCookie, (req, res) => {
     huntWarn: Config.get('huntWarn', 100000),
     huntLimit: limit,
     nonce: res.locals.nonce,
-    anonymousMode: !!internals.noPasswordSecret && !Config.regressionTests,
+    anonymousMode: Auth.isAnonymousMode() && !Config.regressionTests,
     businesDayStart: Config.get('businessDayStart', false),
     businessDayEnd: Config.get('businessDayEnd', false),
     businessDays: Config.get('businessDays', '1,2,3,4,5'),

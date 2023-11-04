@@ -3,7 +3,7 @@ use strict;
 use Data::Dumper;
 
 my %settings;
-my $capture = `egrep -h 'moloch_config_(str|int|boolean|double).*"' ../capture/*.c ../capture/*/*.c ../capture/*/*/*.c`;
+my $capture = `egrep -h 'arkime_config_(str|int|boolean|double).*"' ../capture/*.c ../capture/*/*.c ../capture/*/*/*.c`;
 foreach my $line (split("\n", $capture)) {
     my ($match) = $line =~ /"([^"]*)"/;
     $settings{$match} = $line;

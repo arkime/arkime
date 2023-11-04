@@ -7,6 +7,9 @@ use Data::Dumper;
 use Test::Differences;
 use strict;
 
+# clean old users
+    clearIndex("tests_users");
+
 my $json;
 
     $json = mesGet("/");

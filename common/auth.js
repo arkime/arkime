@@ -608,29 +608,7 @@ class Auth {
       User.getUserCache(userId, (err, user) => {
         if (user) {
           user.setLastUsed();
-          return done(null, user);
         }
-        user = Object.assign(new User(), {
-          userId,
-          enabled: true,
-          webEnabled: true,
-          headerAuthEnabled: false,
-          emailSearch: true,
-          removeEnabled: true,
-          packetSearch: true,
-          settings: {},
-          welcomeMsgNum: 1
-        });
-
-        if (userId === 'superAdmin') {
-          user.roles = ['superAdmin'];
-        } else if (userId === 'anonymous') {
-          user.roles = ['arkimeAdmin', 'cont3xtUser', 'parliamentUser', 'usersAdmin', 'wiseUser'];
-        } else {
-          user.roles = ['arkimeUser', 'cont3xtUser', 'parliamentUser', 'wiseUser'];
-        }
-
-        user.expandFromRoles();
         return done(null, user);
       });
     }));
@@ -700,6 +678,7 @@ class Auth {
           welcomeMsgNum: 1,
           roles: ['arkimeAdmin', 'cont3xtUser', 'parliamentUser', 'usersAdmin', 'wiseUser']
         });
+        user.expandFromRoles();
         return done(null, user);
       }
 

@@ -7,7 +7,7 @@ use strict;
 
 # create user with time limit
 my $token = getTokenCookie();
-viewerPostToken("/api/user", '{"userId": "test1", "userName": "test1", "enabled":true, "password":"password", "timeLimit":"72"}', $token);
+viewerPostToken("/api/user", '{"userId": "sac-test1", "userName": "sac-test1", "enabled":true, "password":"password", "timeLimit":"72", "roles":["arkimeUser"]}', $token);
 
 sub get {
 my ($param) = @_;
@@ -217,7 +217,7 @@ eq_or_diff($txt,
 /DIR/tests/pcap/v6-http.pcap, 6
 ", "filename counts");
 
-$txt = get("date=-1&field=node&expression=$files&counts=1&arkimeRegressionUser=test1");
+$txt = get("date=-1&field=node&expression=$files&counts=1&arkimeRegressionUser=sac-test1");
 eq_or_diff($txt, "User time limit (72 hours) exceeded\n");
 
-viewerDeleteToken("/api/user/test1", $token);
+viewerDeleteToken("/api/user/sac-test1", $token);

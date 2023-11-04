@@ -610,7 +610,7 @@ class ViewerUtils {
   // check for anonymous mode before fetching user cache and return anonymous
   // user or the user requested by the userId
   static getUserCacheIncAnon (userId, cb) {
-    if (internals.noPasswordSecret) { // user is anonymous
+    if (Auth.isAnonymousMode()) { // user is anonymous
       User.getUserCache('anonymous', (err, anonUser) => {
         const anon = Object.assign(new User(), internals.anonymousUser);
 

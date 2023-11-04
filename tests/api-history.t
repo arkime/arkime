@@ -136,13 +136,13 @@ my ($url) = @_;
 
 # An admin user should see forced expressions for users
     # create a user with a forced expression
-    $json = viewerPostToken("/api/user", '{"userId": "historytest2", "userName": "UserName", "enabled":true, "password":"password","expression":"protocols == udp"}', $token);
+    $json = viewerPostToken("/api/user", '{"userId": "sac-historytest3", "userName": "UserName", "enabled":true, "password":"password","expression":"protocols == udp", "roles": ["arkimeUser"]}', $token);
     sleep(1);
     esGet("/_refresh");
     esGet("/_flush");
 
     # issue a request as the user with the forced expression
-    countTest(1, "arkimeRegressionUser=historytest2&date=-1&expression=" . uri_escape("(file=$pwd/socks-https-example.pcap||file=$pwd/dns-mx.pcap)&&tags=domainwise"));
+    countTest(1, "arkimeRegressionUser=sac-historytest3&date=-1&expression=" . uri_escape("(file=$pwd/socks-https-example.pcap||file=$pwd/dns-mx.pcap)&&tags=domainwise"));
     sleep(2);
     esGet("/_refresh");
     esGet("/_flush");
@@ -164,7 +164,7 @@ my ($url) = @_;
     is ($found2, 1, "Admin should see forcedExpression in history");
 
 # A nonadmin user should not see forcedExpression
-  $json = viewerGet("/api/histories?arkimeRegressionUser=historytest2");
+  $json = viewerGet("/api/histories?arkimeRegressionUser=sac-historytest3");
 
   my $found3 = 0;
   foreach my $item4 (@{$json->{data}}) {
@@ -185,7 +185,7 @@ my ($url) = @_;
     esGet("/_refresh");
     esGet("/_flush");
 
-    $json = viewerDeleteToken("/api/user/historytest2", $token);
+    $json = viewerDeleteToken("/api/user/sac-historytest3", $token);
     sleep(1);
     esGet("/_refresh");
     esGet("/_flush");
@@ -194,7 +194,7 @@ my ($url) = @_;
     $json = viewerGet("/api/histories?arkimeRegressionUser=anonymous&sortField=timestamp&desc=true");
     is ($json->{recordsFiltered}, 2, "Delete: recordsFiltered");
     $item = $json->{data}->[0];
-    is ($item->{api}, "/api/user/historytest2", "Delete: api");
+    is ($item->{api}, "/api/user/sac-historytest3", "Delete: api");
     is ($item->{userId}, "anonymous", "Delete: userId");
     ok (!exists $item->{body}->{password}, "Delete: should have no password item");
     ok (!exists $item->{body}->{newPassword}, "Delete: should have no newPassword item");
