@@ -167,7 +167,7 @@ if [ -f "/etc/redhat-release" ] || [ -f "/etc/system-release" ]; then
     WITHGLIB=" "
     WITHCURL=" "
   fi
-  sudo yum -y install --skip-broken wget curl pcre pcre-devel pkgconfig flex bison gcc-c++ zlib-devel e2fsprogs-devel openssl-devel file-devel make gettext libuuid-devel perl-JSON bzip2-libs bzip2-devel perl-libwww-perl libpng-devel xz libffi-devel readline-devel libtool libyaml-devel perl-Socket6 perl-Test-Differences
+  sudo yum -y install --skip-broken wget curl pcre pcre-devel pkgconfig flex bison gcc-c++ zlib-devel e2fsprogs-devel openssl-devel file-devel make gettext libuuid-devel perl-JSON bzip2-libs bzip2-devel perl-libwww-perl libpng-devel xz libffi-devel readline-devel libtool libyaml-devel perl-Socket6 perl-Test-Differences perl-Try-Tiny
   if [ $? -ne 0 ]; then
     echo "ARKIME: yum failed"
     exit 1
