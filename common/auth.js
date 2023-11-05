@@ -176,7 +176,6 @@ class Auth {
     const addBasic = Auth.mode.startsWith('basic+');
     if (addBasic) {
       Auth.mode = Auth.mode.slice(6);
-      Auth.#logoutUrl ??= `${Auth.basePath}logout`;
     }
 
     let sessionAuth = false;
@@ -187,7 +186,6 @@ class Auth {
     case 'basic':
       check('httpRealm');
       Auth.#strategies = ['basic'];
-      Auth.#logoutUrl ??= `${Auth.basePath}logout`;
       break;
     case 'digest':
       check('httpRealm');
@@ -207,6 +205,7 @@ class Auth {
       Auth.#strategies = ['form'];
       Auth.#passportAuthOptions = { session: true, failureRedirect: `${Auth.#basePath}auth` };
       sessionAuth = true;
+      Auth.#logoutUrl ??= `${Auth.#basePath}logout`;
       break;
     case 'headerOnly':
       Auth.#strategies = ['header'];
@@ -217,7 +216,6 @@ class Auth {
       break;
     case 'header+basic':
       Auth.#strategies = ['header', 'basic'];
-      Auth.#logoutUrl ??= `${Auth.basePath}logout`;
       break;
     case 's2s':
       Auth.#strategies = ['s2s'];
