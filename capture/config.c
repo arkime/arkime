@@ -734,7 +734,6 @@ void arkime_config_load()
     config.pcapDir          = arkime_config_str_list(keyfile, "pcapDir", NULL);
     config.bpf              = arkime_config_str(keyfile, "bpf", NULL);
     config.yara             = arkime_config_str(keyfile, "yara", NULL);
-    config.emailYara        = arkime_config_str(keyfile, "emailYara", NULL);
     config.rirFile          = arkime_config_str(keyfile, "rirFile", NULL);
     config.ouiFile          = arkime_config_str(keyfile, "ouiFile", NULL);
     config.geoLite2ASN      = arkime_config_str_list(keyfile, "geoLite2ASN", "/var/lib/GeoIP/GeoLite2-ASN.mmdb;/usr/share/GeoIP/GeoLite2-ASN.mmdb;" CONFIG_PREFIX "/etc/GeoLite2-ASN.mmdb");
@@ -808,7 +807,6 @@ void arkime_config_load()
     config.supportSha256         = arkime_config_boolean(keyfile, "supportSha256", FALSE);
     config.reqBodyOnlyUtf8       = arkime_config_boolean(keyfile, "reqBodyOnlyUtf8", TRUE);
     config.compressES            = arkime_config_boolean(keyfile, "compressES", TRUE);
-    config.antiSynDrop           = arkime_config_boolean(keyfile, "antiSynDrop", TRUE);
     config.readTruncatedPackets  = arkime_config_boolean(keyfile, "readTruncatedPackets", FALSE);
     config.trackESP              = arkime_config_boolean(keyfile, "trackESP", FALSE);
     config.yaraEveryPacket       = arkime_config_boolean(keyfile, "yaraEveryPacket", TRUE);
@@ -1298,8 +1296,6 @@ void arkime_config_exit()
         g_free(config.bpf);
     if (config.yara)
         g_free(config.yara);
-    if (config.emailYara)
-        g_free(config.emailYara);
     if (config.pcapDir)
         g_strfreev(config.pcapDir);
     if (config.pcapDirTemplate)

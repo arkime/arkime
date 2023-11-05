@@ -157,7 +157,7 @@ int tcp_packet_process(ArkimeSession_t *const session, ArkimePacket_t *const pac
         if (tcphdr->th_flags & TH_ACK) {
             session->tcpFlagCnt[ARKIME_TCPFLAG_SYN_ACK]++;
 
-            if (!session->haveTcpSession && config.antiSynDrop) {
+            if (!session->haveTcpSession) {
 #ifdef DEBUG_TCP
                 LOG("syn-ack first");
 #endif
@@ -361,9 +361,8 @@ int tcp_pre_process(ArkimeSession_t *session, ArkimePacket_t *const packet, int 
     }
 
     if (isNewSession) {
-        /* If antiSynDrop option is set to true, capture will assume that
-         * if the syn-ack ip4 was captured first then the syn probably got dropped.*/
-        if ((tcphdr->th_flags & TH_SYN) && (tcphdr->th_flags & TH_ACK) && (config.antiSynDrop)) {
+        /* if the syn-ack was captured first then the syn probably got dropped.*/
+        if ((tcphdr->th_flags & TH_SYN) && (tcphdr->th_flags & TH_ACK)) {
             struct in6_addr tmp;
             tmp = session->addr1;
             session->addr1 = session->addr2;
