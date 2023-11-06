@@ -1989,7 +1989,6 @@ app.use(cspHeader, setCookie, (req, res) => {
     titleConfig,
     path: Config.basePath(),
     version: version.version,
-    devMode: Config.get('devMode', false),
     demoMode: Config.get('demoMode', false),
     multiViewer: internals.multiES,
     hasUsersES: !!Config.get('usersElasticsearch', false),
