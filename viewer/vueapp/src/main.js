@@ -65,7 +65,6 @@ new Vue({
     Vue.prototype.$constants = {
       TITLE_CONFIG,
       DEMO_MODE,
-      DEV_MODE,
       VERSION,
       PATH,
       MULTIVIEWER,

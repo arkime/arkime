@@ -10,7 +10,6 @@ my $json;
 
 my $prefix = int(rand()*100000);
 my $token = getTokenCookie();
-my $es = "-o 'elasticsearch=$ArkimeTest::elasticsearch' $ENV{INSECURE}";
 
 sub doTest {
     my ($encryption, $compression, $blocksize, $shortheader) = @_;
@@ -22,7 +21,7 @@ sub doTest {
     #diag $btag;
 
   ###### wireshark-bdat.pcap - run
-    $cmd = "../capture/capture $es -c config.test.ini -n test --copy -r pcap/wireshark-bdat.pcap --tag $btag -o simpleCompression=$compression";
+    $cmd = "../capture/capture $ArkimeTest::es -c config.test.ini -n test --copy -r pcap/wireshark-bdat.pcap --tag $btag -o simpleCompression=$compression";
     if (defined $encryption) {
         $cmd .= " -o simpleEncoding=$encryption -o simpleKEKId=test";
     }
@@ -36,7 +35,7 @@ sub doTest {
     system("$cmd");
 
   ###### socks-http-pass.pcap - run
-    $cmd = "../capture/capture $es -c config.test.ini -n test --copy -r pcap/socks-http-pass.pcap --tag $stag -o simpleCompression=$compression";
+    $cmd = "../capture/capture $ArkimeTest::es -c config.test.ini -n test --copy -r pcap/socks-http-pass.pcap --tag $stag -o simpleCompression=$compression";
     if (defined $encryption) {
         $cmd .= " -o simpleEncoding=$encryption -o simpleKEKId=test";
     }
@@ -100,7 +99,7 @@ $json = esGet("/tests_files/_search?q=node:test&sort=num:desc&size=20");
 foreach my $item (@{$json->{hits}->{hits}}) {
     next if (exists $item->{_source}->{uncompressedBits});
     next if (!exists $item->{_source}->{dek});
-    my $cmd = "(cd ../viewer; node decryptPcap.js $es -n test -c ../tests/config.test.ini $item->{_source}->{name} > $item->{_source}->{name}.pcap)";
+    my $cmd = "(cd ../viewer; node decryptPcap.js $ArkimeTest::es -n test -c ../tests/config.test.ini $item->{_source}->{name} > $item->{_source}->{name}.pcap)";
     system($cmd);
     open my $in, '<', "$item->{_source}->{name}.pcap" or die "error opening $item->{_source}->{name}.pcap $!";
     read ($in, my $data, 4);

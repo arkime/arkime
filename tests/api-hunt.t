@@ -12,18 +12,21 @@ my $otherToken = getTokenCookie('user2');
 my $nonadminToken = getTokenCookie2('user3');
 my $json;
 
-# Delete old hunts
-  esPost("/tests_hunts/_delete_by_query?conflicts=proceed&refresh", '{ "query": { "match_all": {} } }');
+
+
+# Delete old hunts and users
+clearIndex("tests_hunts");
+clearIndex("tests_users");
 
 # Make sure no hunts
   my $hunts = viewerGet("/api/hunts?all");
   delete $hunts->{nodeInfo};
   eq_or_diff($hunts, from_json('{"recordsTotal": 0, "data": [], "recordsFiltered": 0}'));
 
-# Create huntuser
-  $json = viewerPostToken("/api/user", '{"userId": "huntuser", "userName": "UserName", "enabled":true, "password":"password", "packetSearch":true}', $token);
+# Create sac-huntuser
+  $json = viewerPostToken("/api/user", '{"userId": "sac-huntuser", "userName": "UserName", "enabled":true, "password":"password", "packetSearch":true, "roles": ["arkimeUser"]}', $token);
 
-my $hToken = getTokenCookie('huntuser');
+my $hToken = getTokenCookie('sac-huntuser');
 
 ##### ERRORS
 # Must have token to add a hunt
@@ -135,7 +138,8 @@ my $hToken = getTokenCookie('huntuser');
 
   viewerGet("/regressionTests/processHuntJobs");
 
-  $hunts = viewerGet("/api/hunts?history=true");
+  #$hunts = viewerGet("/api/hunts?history=true&all=true");
+  $hunts = viewerGet("/api/hunts?all=true");
   is (@{$hunts->{data}}, 2, "Add hunt 2");
 
   my $id2 = $json->{hunt}->{id};
@@ -212,8 +216,8 @@ my $hToken = getTokenCookie('huntuser');
   is($badHunt->{unrunnable}, 1, "hunt should be unrunable");
 
 # add a hunt that is shared with another user
-  $json = viewerPostToken("/api/hunt?arkimeRegressionUser=anonymous", '{"users":"huntuser","totalSessions":1,"name":"test hunt 13~`!@#$%^&*()[]{};<>?/`","size":"50","search":"test search text","searchType":"ascii","type":"raw","src":true,"dst":true,"query":{"startTime":18000,"stopTime":1536872891}}', $token);
-  is ($json->{hunt}->{users}->[0], "huntuser", "hunt should have a user on creation");
+  $json = viewerPostToken("/api/hunt?arkimeRegressionUser=anonymous", '{"users":"sac-huntuser","totalSessions":1,"name":"test hunt 13~`!@#$%^&*()[]{};<>?/`","size":"50","search":"test search text","searchType":"ascii","type":"raw","src":true,"dst":true,"query":{"startTime":18000,"stopTime":1536872891}}', $token);
+  is ($json->{hunt}->{users}->[0], "sac-huntuser", "hunt should have a user on creation");
   my $id7 = $json->{hunt}->{id};
   viewerGet("/regressionTests/processHuntJobs");
 
@@ -221,7 +225,7 @@ my $hToken = getTokenCookie('huntuser');
   esGet("/_flush");
   esGet("/_refresh");
   sleep(1); # Wait for user to be set or else test after next fails
-  $json = viewerDeleteToken("/api/hunt/$id7/user/huntuser?arkimeRegressionUser=anonymous", $token);
+  $json = viewerDeleteToken("/api/hunt/$id7/user/sac-huntuser?arkimeRegressionUser=anonymous", $token);
   is (scalar @{$json->{users}}, 0, "hunt should have no users");
 
   esGet("/_flush");
@@ -229,20 +233,20 @@ my $hToken = getTokenCookie('huntuser');
   sleep(1);
 
 # can't delete a user from an hunt with no users
-  $json = viewerDeleteToken("/api/hunt/$id7/user/huntuser?arkimeRegressionUser=anonymous", $token);
+  $json = viewerDeleteToken("/api/hunt/$id7/user/sac-huntuser?arkimeRegressionUser=anonymous", $token);
   eq_or_diff($json, from_json('{"text": "There are no users that have access to view this hunt", "success": false}'), "can't delete a user from an hunt with no users");
 
 # add a user to a hunt
-  $json = viewerPostToken("/api/hunt/$id7/users?arkimeRegressionUser=anonymous", '{"users":"huntuser"}', $token);
-  is ($json->{users}->[0], "huntuser", "hunt should have a user added");
+  $json = viewerPostToken("/api/hunt/$id7/users?arkimeRegressionUser=anonymous", '{"users":"sac-huntuser"}', $token);
+  is ($json->{users}->[0], "sac-huntuser", "hunt should have a user added");
 
 # can't add an unknown user to a hunt
   $json = viewerPostToken("/api/hunt/$id7/users?arkimeRegressionUser=anonymous", '{"users":"unknownuser"}', $token);
   eq_or_diff($json, from_json('{"text": "Unable to validate user IDs provided", "success": false}'), "hunt should show error if no users are added");
 
 # hunt should not add and send back invalid users
-  $json = viewerDeleteToken("/api/hunt/$id7/user/huntuser?arkimeRegressionUser=anonymous", $token);
-  $json = viewerPostToken("/api/hunt/$id7/users?arkimeRegressionUser=anonymous", '{"users":"huntuser,unknownuser"}', $token);
+  $json = viewerDeleteToken("/api/hunt/$id7/user/sac-huntuser?arkimeRegressionUser=anonymous", $token);
+  $json = viewerPostToken("/api/hunt/$id7/users?arkimeRegressionUser=anonymous", '{"users":"sac-huntuser,unknownuser"}', $token);
   is (scalar @{$json->{users}}, 1, "hunt should not add an unknown user");
   is ($json->{invalidUsers}->[0], "unknownuser", "hunt should send back invalid users");
 
@@ -327,12 +331,12 @@ my $hToken = getTokenCookie('huntuser');
   sub createHunts {
     my ($stype, $str) = @_;
 
-    $HUNTS{"raw-$stype-both-$str"} = viewerPostToken("/api/hunt?arkimeRegressionUser=huntuser", '{"totalSessions":1,"name":"' . "raw-$stype-both-$str-$$" . '", "size":"50","search":"' . $str . '","searchType":"' . $stype . '","type":"raw","src":true,"dst":true,"query":{"startTime":18000,"stopTime":1536872891, "expression": "file == *http-wrapped-header.pcap"}}', $hToken);
-    $HUNTS{"raw-$stype-src-$str"} = viewerPostToken("/api/hunt?arkimeRegressionUser=huntuser", '{"totalSessions":1,"name":"' . "raw-$stype-src-$str-$$" . '", "size":"50","search":"' . $str . '","searchType":"' . $stype . '","type":"raw","src":true,"dst":false,"query":{"startTime":18000,"stopTime":1536872891, "expression": "file == *http-wrapped-header.pcap"}}', $hToken);
-    $HUNTS{"raw-$stype-dst-$str"} = viewerPostToken("/api/hunt?arkimeRegressionUser=huntuser", '{"totalSessions":1,"name":"' . "raw-$stype-dst-$str-$$" . '", "size":"50","search":"' . $str . '","searchType":"' . $stype . '","type":"raw","src":false,"dst":true,"query":{"startTime":18000,"stopTime":1536872891, "expression": "file == *http-wrapped-header.pcap"}}', $hToken);
-    $HUNTS{"reassembled-$stype-both-$str"} = viewerPostToken("/api/hunt?arkimeRegressionUser=huntuser", '{"totalSessions":1,"name":"' . "reassembled-$stype-both-$str-$$" . '", "size":"50","search":"' . $str . '","searchType":"' . $stype . '","type":"reassembled","src":true,"dst":true,"query":{"startTime":18000,"stopTime":1536872891, "expression": "file == *http-wrapped-header.pcap"}}', $hToken);
-    $HUNTS{"reassembled-$stype-src-$str"} = viewerPostToken("/api/hunt?arkimeRegressionUser=huntuser", '{"totalSessions":1,"name":"' . "reassembled-$stype-src-$str-$$" . '", "size":"50","search":"' . $str . '","searchType":"' . $stype . '","type":"reassembled","src":true,"dst":false,"query":{"startTime":18000,"stopTime":1536872891, "expression": "file == *http-wrapped-header.pcap"}}', $hToken);
-    $HUNTS{"reassembled-$stype-dst-$str"} = viewerPostToken("/api/hunt?arkimeRegressionUser=huntuser", '{"totalSessions":1,"name":"' . "reassembled-$stype-dst-$str-$$" . '", "size":"50","search":"' . $str . '","searchType":"' . $stype . '","type":"reassembled","src":false,"dst":true,"query":{"startTime":18000,"stopTime":1536872891, "expression": "file == *http-wrapped-header.pcap"}}', $hToken);
+    $HUNTS{"raw-$stype-both-$str"} = viewerPostToken("/api/hunt?arkimeRegressionUser=sac-huntuser", '{"totalSessions":1,"name":"' . "raw-$stype-both-$str-$$" . '", "size":"50","search":"' . $str . '","searchType":"' . $stype . '","type":"raw","src":true,"dst":true,"query":{"startTime":18000,"stopTime":1536872891, "expression": "file == *http-wrapped-header.pcap"}}', $hToken);
+    $HUNTS{"raw-$stype-src-$str"} = viewerPostToken("/api/hunt?arkimeRegressionUser=sac-huntuser", '{"totalSessions":1,"name":"' . "raw-$stype-src-$str-$$" . '", "size":"50","search":"' . $str . '","searchType":"' . $stype . '","type":"raw","src":true,"dst":false,"query":{"startTime":18000,"stopTime":1536872891, "expression": "file == *http-wrapped-header.pcap"}}', $hToken);
+    $HUNTS{"raw-$stype-dst-$str"} = viewerPostToken("/api/hunt?arkimeRegressionUser=sac-huntuser", '{"totalSessions":1,"name":"' . "raw-$stype-dst-$str-$$" . '", "size":"50","search":"' . $str . '","searchType":"' . $stype . '","type":"raw","src":false,"dst":true,"query":{"startTime":18000,"stopTime":1536872891, "expression": "file == *http-wrapped-header.pcap"}}', $hToken);
+    $HUNTS{"reassembled-$stype-both-$str"} = viewerPostToken("/api/hunt?arkimeRegressionUser=sac-huntuser", '{"totalSessions":1,"name":"' . "reassembled-$stype-both-$str-$$" . '", "size":"50","search":"' . $str . '","searchType":"' . $stype . '","type":"reassembled","src":true,"dst":true,"query":{"startTime":18000,"stopTime":1536872891, "expression": "file == *http-wrapped-header.pcap"}}', $hToken);
+    $HUNTS{"reassembled-$stype-src-$str"} = viewerPostToken("/api/hunt?arkimeRegressionUser=sac-huntuser", '{"totalSessions":1,"name":"' . "reassembled-$stype-src-$str-$$" . '", "size":"50","search":"' . $str . '","searchType":"' . $stype . '","type":"reassembled","src":true,"dst":false,"query":{"startTime":18000,"stopTime":1536872891, "expression": "file == *http-wrapped-header.pcap"}}', $hToken);
+    $HUNTS{"reassembled-$stype-dst-$str"} = viewerPostToken("/api/hunt?arkimeRegressionUser=sac-huntuser", '{"totalSessions":1,"name":"' . "reassembled-$stype-dst-$str-$$" . '", "size":"50","search":"' . $str . '","searchType":"' . $stype . '","type":"reassembled","src":false,"dst":true,"query":{"startTime":18000,"stopTime":1536872891, "expression": "file == *http-wrapped-header.pcap"}}', $hToken);
   }
 
   # Check hunt vars given name and what the match count should be
@@ -367,7 +371,7 @@ my $hToken = getTokenCookie('huntuser');
   createHunts("hexregex", "766..63d");
 
   # create a hunt for regex dos
-  $HUNTS{"raw-regex-both-(.*a){25}x"} = viewerPostToken("/api/hunt?arkimeRegressionUser=huntuser", '{"totalSessions":67,"name":"' . "raw-regex-both-(.*a){25}x-$$" . '", "size":"50","search":"(.*a){25}x","searchType":"regex","type":"raw","src":true,"dst":true,"query":{"startTime":1430916462,"stopTime":1569170858,"expression":"tags != bdat*"}}', $hToken);
+  $HUNTS{"raw-regex-both-(.*a){25}x"} = viewerPostToken("/api/hunt?arkimeRegressionUser=sac-huntuser", '{"totalSessions":67,"name":"' . "raw-regex-both-(.*a){25}x-$$" . '", "size":"50","search":"(.*a){25}x","searchType":"regex","type":"raw","src":true,"dst":true,"query":{"startTime":1430916462,"stopTime":1569170858,"expression":"tags != bdat*"}}', $hToken);
 
   # Actually process the hunts
   viewerGet("/regressionTests/processHuntJobs");
@@ -444,8 +448,8 @@ my $hToken = getTokenCookie('huntuser');
   is ($result->{matchedSessions}, 0, "raw-regex-both-(.*a){25}x match check");
 
 # cleanup
-  $json = viewerDeleteToken("/api/user/huntuser", $token);
+  $json = viewerDeleteToken("/api/user/sac-huntuser", $token);
   viewerDeleteToken("/api/hunt/$id1?arkimeRegressionUser=anonymous", $token);
   viewerDeleteToken("/api/hunt/$id3?arkimeRegressionUser=anonymous", $token);
-  esPost("/tests_hunts/_delete_by_query?conflicts=proceed&refresh", '{ "query": { "match_all": {} } }');
+  clearIndex("tests_hunts");
   viewerDeleteToken("/api/view/${viewId}?arkimeRegressionUser=user2", $otherToken);

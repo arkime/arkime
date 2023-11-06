@@ -11,13 +11,12 @@ my $result;
 
 my $version = 7;
 
-my $es = "-o 'elasticsearch=$ArkimeTest::elasticsearch' -o 'usersElasticsearch=$ArkimeTest::elasticsearch' $ENV{INSECURE}";
 # create user without parliament role
-system("cd ../viewer ; node addUser.js $es -c ../tests/config.test.ini -n testuser arkimeUserP arkimeUserP arkimeUserP --roles 'arkimeUser' ");
+addUser("-n testuser arkimeUserP arkimeUserP arkimeUserP --roles 'arkimeUser' ");
 # create user with parliament role
-system("cd ../viewer ; node addUser.js $es -c ../tests/config.test.ini -n testuser parliamentUserP parliamentUserP parliamentUserP --roles 'parliamentUser' ");
+addUser("-n testuser parliamentUserP parliamentUserP parliamentUserP --roles 'parliamentUser' ");
 # create user with parliament admin role
-system("cd ../viewer ; node addUser.js $es -c ../tests/config.test.ini -n testuser parliamentAdminP parliamentAdminP parliamentAdminP --roles 'parliamentAdmin' ");
+addUser("-n testuser parliamentAdminP parliamentAdminP parliamentAdminP --roles 'parliamentAdmin' ");
 
 # authenticate non parliament user
 $ArkimeTest::userAgent->credentials( "$ArkimeTest::host:8008", 'Moloch', 'arkimeUserP', 'arkimeUserP' );

@@ -8,13 +8,13 @@ use Data::Dumper;
 use strict;
 
 my $token = getTokenCookie();
-my $notAdminToken = getTokenCookie('notadmin');
+my $notAdminToken = getTokenCookie('sac-notadmin');
 
-esPost("/tests_notifiers/_delete_by_query?conflicts=proceed&refresh", '{ "query": { "match_all": {} } }');
+clearIndex("tests_notifiers");
 
 # add users for sharing tests
-  viewerPostToken("/api/user", '{"userId": "notadmin", "userName": "notadmin", "enabled":true, "password":"password", "roles":["arkimeUser"]}', $token);
-  viewerPostToken("/api/user", '{"userId": "user2", "userName": "user2", "enabled":true, "password":"password", "roles":["arkimeUser"]}', $token);
+  viewerPostToken("/api/user", '{"userId": "sac-notadmin", "userName": "notadmin", "enabled":true, "password":"password", "roles":["arkimeUser"]}', $token);
+  viewerPostToken("/api/user", '{"userId": "sac-user2", "userName": "user2", "enabled":true, "password":"password", "roles":["arkimeUser"]}', $token);
 
 # notifier types
   my $notifierTypes = viewerGetToken("/api/notifiertypes", $token);
@@ -43,7 +43,7 @@ esPost("/tests_notifiers/_delete_by_query?conflicts=proceed&refresh", '{ "query"
 # create notifier requires token and admin access
   $json = viewerPost("/api/notifier", '{}');
   is($json->{text}, "Missing token", "create notifier requires token");
-  $json = viewerPostToken("/api/notifier?arkimeRegressionUser=notadmin", '{}', $notAdminToken);
+  $json = viewerPostToken("/api/notifier?arkimeRegressionUser=sac-notadmin", '{}', $notAdminToken);
   is($json->{text}, "You do not have permission to access this resource", "create notifier requires admin");
 
 # create notifier needs valid notifier type
@@ -75,7 +75,7 @@ esPost("/tests_notifiers/_delete_by_query?conflicts=proceed&refresh", '{ "query"
   ok(exists $json->{notifier}->{created}, "created field was set");
 
 # update notifier requires admin access
-  $json = viewerPutToken("/api/notifier/$id1?arkimeRegressionUser=notadmin", '{}', $notAdminToken);
+  $json = viewerPutToken("/api/notifier/$id1?arkimeRegressionUser=sac-notadmin", '{}', $notAdminToken);
   is($json->{text}, "You do not have permission to access this resource", "update notifier requires admin");
 
 # update notifier needs valid id
@@ -110,15 +110,15 @@ esPost("/tests_notifiers/_delete_by_query?conflicts=proceed&refresh", '{ "query"
   ok(exists $json->{notifier}->{updated}, "updated field was set");
 
 # can share with a users and returns invalid users
-  $json = viewerPostToken("/api/notifier", '{"name":"test3","users":"notadmin,asdf","type":"slack","fields":[{"slackWebhookUrl":{"value":"testurl"}}]}', $token);
+  $json = viewerPostToken("/api/notifier", '{"name":"test3","users":"sac-notadmin,asdf","type":"slack","fields":[{"slackWebhookUrl":{"value":"testurl"}}]}', $token);
   ok($json->{success}, "notifier create success");
-  is($json->{notifier}->{users}, "notadmin", "users set");
+  is($json->{notifier}->{users}, "sac-notadmin", "users set");
   is($json->{invalidUsers}->[0], "asdf", "correct invalid users");
   my $id3 = $json->{notifier}->{id};
 
 # user can see shared notifier only but non admin no fields
-  $notifiers = viewerGetToken("/api/notifiers?arkimeRegressionUser=notadmin", $notAdminToken);
-  is (@{$notifiers}, 1, "Single notifier shared with notadmin user");
+  $notifiers = viewerGetToken("/api/notifiers?arkimeRegressionUser=sac-notadmin", $notAdminToken);
+  is (@{$notifiers}, 1, "Single notifier shared with sac-notadmin user");
   ok(exists $notifiers->[0], "notifier update");
   ok(!exists $notifiers->[0]->{fields}, "fields shouldn't exist for non admin");
 
@@ -128,14 +128,14 @@ esPost("/tests_notifiers/_delete_by_query?conflicts=proceed&refresh", '{ "query"
   is($json->{notifier}->{roles}->[0], "parliamentUser", "roles set");
   my $id4 = $json->{notifier}->{id};
 
-# notadmin user cannot see id4 notifier
-  $notifiers = viewerGetToken("/api/notifiers?arkimeRegressionUser=notadmin", $notAdminToken);
-  is (@{$notifiers}, 1, "Still single notifier shared with notadmin user");
+# sac-notadmin user cannot see id4 notifier
+  $notifiers = viewerGetToken("/api/notifiers?arkimeRegressionUser=sac-notadmin", $notAdminToken);
+  is (@{$notifiers}, 1, "Still single notifier shared with sac-notadmin user");
 
 # can update shared users and returns invalid users
-  $json = viewerPutToken("/api/notifier/$id3", '{"name":"test3","users":"notadmin,user2,fdsa","type":"slack","fields":[{"slackWebhookUrl":{"value":"testurl"}}]}', $token);
+  $json = viewerPutToken("/api/notifier/$id3", '{"name":"test3","users":"sac-notadmin,sac-user2,fdsa","type":"slack","fields":[{"slackWebhookUrl":{"value":"testurl"}}]}', $token);
   ok($json->{success}, "notifier update success");
-  is($json->{notifier}->{users}, "notadmin,user2", "notifier users update");
+  is($json->{notifier}->{users}, "sac-notadmin,sac-user2", "notifier users update");
   is($json->{invalidUsers}->[0], "fdsa", "correct invalid users on update");
 
 # can update roles
@@ -144,9 +144,9 @@ esPost("/tests_notifiers/_delete_by_query?conflicts=proceed&refresh", '{ "query"
   is($json->{notifier}->{roles}->[0], "arkimeUser", "roles updated");
   is($json->{notifier}->{roles}->[1], "parliamentUser", "roles updated");
 
-# notadmin user can now see see id4 notifier
-  $notifiers = viewerGetToken("/api/notifiers?arkimeRegressionUser=notadmin", $notAdminToken);
-  is (@{$notifiers}, 2, "2 notifiers shared with notadmin user (one by user sharing and one by role sharing)");
+# sac-notadmin user can now see see id4 notifier
+  $notifiers = viewerGetToken("/api/notifiers?arkimeRegressionUser=sac-notadmin", $notAdminToken);
+  is (@{$notifiers}, 2, "2 notifiers shared with sac-notadmin user (one by user sharing and one by role sharing)");
   is (${notifiers}->[0]->{name}, "test3", 'can see notifier shared by users');
   is (${notifiers}->[1]->{name}, "test4", 'can see notifier shared by roles');
 
@@ -165,5 +165,5 @@ esPost("/tests_notifiers/_delete_by_query?conflicts=proceed&refresh", '{ "query"
   $notifiers = viewerGetToken("/api/notifiers", $token);
   is (@{$notifiers}, 0, "Removed notifiers");
   # remove added users
-  viewerDeleteToken("/api/user/notadmin", $token);
-  viewerDeleteToken("/api/user/user2", $token);
+  viewerDeleteToken("/api/user/sac-notadmin", $token);
+  viewerDeleteToken("/api/user/sac-user2", $token);

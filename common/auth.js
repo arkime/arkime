@@ -176,7 +176,6 @@ class Auth {
     const addBasic = Auth.mode.startsWith('basic+');
     if (addBasic) {
       Auth.mode = Auth.mode.slice(6);
-      Auth.#logoutUrl ??= `${Auth.basePath}logout`;
     }
 
     let sessionAuth = false;
@@ -187,7 +186,6 @@ class Auth {
     case 'basic':
       check('httpRealm');
       Auth.#strategies = ['basic'];
-      Auth.#logoutUrl ??= `${Auth.basePath}logout`;
       break;
     case 'digest':
       check('httpRealm');
@@ -207,6 +205,7 @@ class Auth {
       Auth.#strategies = ['form'];
       Auth.#passportAuthOptions = { session: true, failureRedirect: `${Auth.#basePath}auth` };
       sessionAuth = true;
+      Auth.#logoutUrl ??= `${Auth.#basePath}logout`;
       break;
     case 'headerOnly':
       Auth.#strategies = ['header'];
@@ -217,7 +216,6 @@ class Auth {
       break;
     case 'header+basic':
       Auth.#strategies = ['header', 'basic'];
-      Auth.#logoutUrl ??= `${Auth.basePath}logout`;
       break;
     case 's2s':
       Auth.#strategies = ['s2s'];
@@ -608,29 +606,7 @@ class Auth {
       User.getUserCache(userId, (err, user) => {
         if (user) {
           user.setLastUsed();
-          return done(null, user);
         }
-        user = Object.assign(new User(), {
-          userId,
-          enabled: true,
-          webEnabled: true,
-          headerAuthEnabled: false,
-          emailSearch: true,
-          removeEnabled: true,
-          packetSearch: true,
-          settings: {},
-          welcomeMsgNum: 1
-        });
-
-        if (userId === 'superAdmin') {
-          user.roles = ['superAdmin'];
-        } else if (userId === 'anonymous') {
-          user.roles = ['arkimeAdmin', 'cont3xtUser', 'parliamentUser', 'usersAdmin', 'wiseUser'];
-        } else {
-          user.roles = ['arkimeUser', 'cont3xtUser', 'parliamentUser', 'wiseUser'];
-        }
-
-        user.expandFromRoles();
         return done(null, user);
       });
     }));
@@ -700,6 +676,7 @@ class Auth {
           welcomeMsgNum: 1,
           roles: ['arkimeAdmin', 'cont3xtUser', 'parliamentUser', 'usersAdmin', 'wiseUser']
         });
+        user.expandFromRoles();
         return done(null, user);
       }
 

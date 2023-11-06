@@ -6,16 +6,16 @@ use ArkimeTest;
 use JSON;
 use strict;
 
-esPost("/cont3xt_links/_delete_by_query?conflicts=proceed&refresh", '{ "query": { "match_all": {} } }');
-esPost("/cont3xt_overviews/_delete_by_query?conflicts=proceed&refresh", '{ "query": { "match_all": {} } }');
-esPost("/cont3xt_history/_delete_by_query?conflicts=proceed&refresh", '{ "query": { "match_all": {} } }');
-esPost("/cont3xt_views/_delete_by_query?conflicts=proceed&refresh", '{ "query": { "match_all": {} } }');
+clearIndex("cont3xt_links");
+clearIndex("cont3xt_overviews");
+clearIndex("cont3xt_history");
+clearIndex("cont3xt_views");
 
 my $token = getCont3xtTokenCookie();
 
-# create test cont3xtUser and get their token
-viewerPostToken("/api/user", '{"userId": "test", "userName": "test", "enabled":true, "password":"password", "roles":["cont3xtUser"]}', $token);
-my $token2 = getTokenCookie('test');
+# create sac-test cont3xtUser and get their token
+viewerPostToken("/api/user", '{"userId": "sac-test", "userName": "test", "enabled":true, "password":"password", "roles":["cont3xtUser"]}', $token);
+my $token2 = getTokenCookie('sac-test');
 
 my $json;
 ################################################################################
@@ -243,7 +243,7 @@ delete $json->{linkGroups}->[0]->{_id};
 eq_or_diff($json, from_json('{"linkGroups":[{"creator":"anonymous","_editable":true,"_viewable":true,"viewRoles":["cont3xtUser"],"links":[{"url":"http://www.foobar.com","itypes":["ip", "hash"],"name":"foo1"}],"name":"Links1","editRoles":["superAdmin"]}],"success":true}'));
 
 # can't transfer ownership (not admin or creator)
-$json = cont3xtPutToken("/api/linkGroup/$id?arkimeRegressionUser=test", to_json({
+$json = cont3xtPutToken("/api/linkGroup/$id?arkimeRegressionUser=sac-test", to_json({
   name => "Links1",
   viewRoles => ["cont3xtUser"],
   editRoles => ["superAdmin"],
@@ -252,7 +252,7 @@ $json = cont3xtPutToken("/api/linkGroup/$id?arkimeRegressionUser=test", to_json(
     url => "http://www.foobar.com",
     itypes => ["ip", "hash"]
   }],
-  creator => "test"
+  creator => "sac-test"
 }), $token2);
 eq_or_diff($json, from_json('{"success": false, "text": "Permission denied"}'));
 
@@ -280,15 +280,15 @@ $json = cont3xtPutToken("/api/linkGroup/$id", to_json({
     url => "http://www.foobar.com",
     itypes => ["ip", "hash"]
   }],
-  creator => "test"
+  creator => "sac-test"
 }), $token);
 eq_or_diff($json, from_json('{"success": true, "text": "Success"}'));
 
 # delete link group requires token
-$json = cont3xtDelete("/api/linkGroup/$id?arkimeRegressionUser=test", "{}");
+$json = cont3xtDelete("/api/linkGroup/$id?arkimeRegressionUser=sac-test", "{}");
 eq_or_diff($json, from_json('{"success": false, "text": "Missing token"}'));
 
-$json = cont3xtDeleteToken("/api/linkGroup/$id?arkimeRegressionUser=test", "{}", $token2);
+$json = cont3xtDeleteToken("/api/linkGroup/$id?arkimeRegressionUser=sac-test", "{}", $token2);
 eq_or_diff($json, from_json('{"success": true, "text": "Success"}'));
 
 $json = cont3xtDeleteToken("/api/linkGroup/foo", "{}", $token);
@@ -624,8 +624,8 @@ delete $json->{overviews}->[0]->{_id};
 eq_or_diff($json, from_json('{"overviews":[{"creator":"anonymous","_editable":true,"_viewable": true, "viewRoles":["cont3xtUser"],"fields":[{"type":"linked","from":"Foo","field":"bar_field"},{"type":"custom","from":"Foo","custom":"foo.bar"}],"name":"Overview1 v2","title":"Overview v2 of %{query}","iType":"ip","editRoles":["superAdmin"]}],"success":true}'));
 
 # can't transfer ownership (not admin or creator)
-$json = cont3xtPutToken("/api/overview/$id?arkimeRegressionUser=test", to_json({
-    creator => "test"
+$json = cont3xtPutToken("/api/overview/$id?arkimeRegressionUser=sac-test", to_json({
+    creator => "sac-test"
 }), $token2);
 eq_or_diff($json, from_json('{"success": false, "text": "Permission denied"}'));
 
@@ -665,7 +665,7 @@ $json = cont3xtPutToken("/api/overview/$id", to_json({
         from  => "Foo",
         custom => "foo.bar"
     }],
-    creator => "test"
+    creator => "sac-test"
 }), $token);
 eq_or_diff($json, from_json('{"success": true, "text": "Success"}'));
 
@@ -673,7 +673,7 @@ eq_or_diff($json, from_json('{"success": true, "text": "Success"}'));
 $json = cont3xtDelete("/api/overview/$id", "{}");
 eq_or_diff($json, from_json('{"success": false, "text": "Missing token"}'));
 
-$json = cont3xtDeleteToken("/api/overview/$id?arkimeRegressionUser=test", "{}", $token2);
+$json = cont3xtDeleteToken("/api/overview/$id?arkimeRegressionUser=sac-test", "{}", $token2);
 eq_or_diff($json, from_json('{"success": true, "text": "Success"}'));
 
 $json = cont3xtDeleteToken("/api/overview/foo", "{}", $token);
@@ -945,8 +945,8 @@ is($json->{views}->[1]->{name}, "view2changed");
 is (scalar @{$json->{views}}, 2);
 
 # can't transfer ownership (not admin or creator)
-$json = cont3xtPutToken("/api/view/$id?arkimeRegressionUser=test", to_json({
-    creator => "test"
+$json = cont3xtPutToken("/api/view/$id?arkimeRegressionUser=sac-test", to_json({
+    creator => "sac-test"
 }), $token2);
 eq_or_diff($json, from_json('{"success": false, "text": "Permission denied"}'));
 
@@ -960,7 +960,7 @@ eq_or_diff($json, from_json('{"success": false, "text": "User not found"}'));
 # can transfer ownership to valid user
 $json = cont3xtPutToken("/api/view/$id", to_json({
     name => "view2changed",
-    creator => "test"
+    creator => "sac-test"
 }), $token);
 eq_or_diff($json, from_json('{"success": true, "text": "Success"}'));
 
@@ -968,7 +968,7 @@ eq_or_diff($json, from_json('{"success": true, "text": "Success"}'));
 $json = cont3xtDelete("/api/view/$id", '{}');
 eq_or_diff($json, from_json('{"success": false, "text": "Missing token"}'));
 
-$json = cont3xtDeleteToken("/api/view/$id?arkimeRegressionUser=test", '{}', $token2);
+$json = cont3xtDeleteToken("/api/view/$id?arkimeRegressionUser=sac-test", '{}', $token2);
 eq_or_diff($json, from_json('{"success": true, "text": "Success"}'));
 
 $json = cont3xtDeleteToken('/api/view/foo', '{}', $token);

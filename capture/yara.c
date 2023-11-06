@@ -92,25 +92,6 @@ void arkime_yara_load(char *name)
     yRules = rules;
 }
 /******************************************************************************/
-void arkime_yara_load_email(char *name)
-{
-    YR_COMPILER *compiler;
-    YR_RULES *rules;
-
-    if (!name)
-        return;
-
-    arkime_yara_open(name, &compiler, &rules);
-
-    if (yEmailRules)
-        arkime_free_later(yEmailRules, (GDestroyNotify) yr_rules_destroy);
-    if (yEmailCompiler)
-        arkime_free_later(yEmailCompiler, (GDestroyNotify) yr_compiler_destroy);
-
-    yEmailCompiler = compiler;
-    yEmailRules = rules;
-}
-/******************************************************************************/
 void arkime_yara_init()
 {
     if (arkime_config_boolean(NULL, "yaraFastMode", TRUE))
@@ -120,9 +101,6 @@ void arkime_yara_init()
 
     if (config.yara)
         arkime_config_monitor_file("yara file", config.yara, arkime_yara_load);
-
-    if (config.emailYara)
-        arkime_config_monitor_file("yara email file", config.emailYara, arkime_yara_load_email);
 }
 
 /******************************************************************************/
@@ -150,12 +128,6 @@ int arkime_yara_callback(YR_SCAN_CONTEXT *UNUSED(context), int message, YR_RULE 
 void  arkime_yara_execute(ArkimeSession_t *session, const uint8_t *data, int len, int UNUSED(first))
 {
     yr_rules_scan_mem(yRules, (uint8_t *)data, len, yFlags, (YR_CALLBACK_FUNC)arkime_yara_callback, session, 0);
-    return;
-}
-/******************************************************************************/
-void  arkime_yara_email_execute(ArkimeSession_t *session, const uint8_t *data, int len, int UNUSED(first))
-{
-    yr_rules_scan_mem(yEmailRules, (uint8_t *)data, len, yFlags, (YR_CALLBACK_FUNC)arkime_yara_callback, session, 0);
     return;
 }
 /******************************************************************************/
@@ -232,25 +204,6 @@ void arkime_yara_load(char *name)
     yRules = rules;
 }
 /******************************************************************************/
-void arkime_yara_load_email(char *name)
-{
-    YR_COMPILER *compiler;
-    YR_RULES *rules;
-
-    if (!name)
-        return;
-
-    arkime_yara_open(name, &compiler, &rules);
-
-    if (yEmailRules)
-        arkime_free_later(yEmailRules, (GDestroyNotify) yr_rules_destroy);
-    if (yEmailCompiler)
-        arkime_free_later(yEmailCompiler, (GDestroyNotify) yr_compiler_destroy);
-
-    yEmailCompiler = compiler;
-    yEmailRules = rules;
-}
-/******************************************************************************/
 void arkime_yara_init()
 {
     if (arkime_config_boolean(NULL, "yaraFastMode", TRUE))
@@ -260,9 +213,6 @@ void arkime_yara_init()
 
     if (config.yara)
         arkime_config_monitor_file("yara file", config.yara, arkime_yara_load);
-
-    if (config.emailYara)
-        arkime_config_monitor_file("yara email file", config.emailYara, arkime_yara_load_email);
 }
 
 /******************************************************************************/
@@ -289,12 +239,6 @@ int arkime_yara_callback(int message, YR_RULE *rule, ArkimeSession_t *session)
 void  arkime_yara_execute(ArkimeSession_t *session, const uint8_t *data, int len, int UNUSED(first))
 {
     yr_rules_scan_mem(yRules, (uint8_t *)data, len, yFlags, (YR_CALLBACK_FUNC)arkime_yara_callback, session, 0);
-    return;
-}
-/******************************************************************************/
-void  arkime_yara_email_execute(ArkimeSession_t *session, const uint8_t *data, int len, int UNUSED(first))
-{
-    yr_rules_scan_mem(yEmailRules, (uint8_t *)data, len, yFlags, (YR_CALLBACK_FUNC)arkime_yara_callback, session, 0);
     return;
 }
 /******************************************************************************/
@@ -355,7 +299,6 @@ void arkime_yara_init()
     yr_initialize();
 
     arkime_yara_open(config.yara, &yCompiler, &yRules);
-    arkime_yara_open(config.emailYara, &yEmailCompiler, &yEmailRules);
 }
 
 /******************************************************************************/
@@ -382,12 +325,6 @@ int arkime_yara_callback(int message, YR_RULE *rule, ArkimeSession_t *session)
 void  arkime_yara_execute(ArkimeSession_t *session, const uint8_t *data, int len, int UNUSED(first))
 {
     yr_rules_scan_mem(yRules, (uint8_t *)data, len, 0, (YR_CALLBACK_FUNC)arkime_yara_callback, session, 0);
-    return;
-}
-/******************************************************************************/
-void  arkime_yara_email_execute(ArkimeSession_t *session, const uint8_t *data, int len, int UNUSED(first))
-{
-    yr_rules_scan_mem(yEmailRules, (uint8_t *)data, len, 0, (YR_CALLBACK_FUNC)arkime_yara_callback, session, 0);
     return;
 }
 /******************************************************************************/
@@ -448,7 +385,6 @@ void arkime_yara_init()
     yr_initialize();
 
     arkime_yara_open(config.yara, &yCompiler, &yRules);
-    arkime_yara_open(config.emailYara, &yEmailCompiler, &yEmailRules);
 }
 
 /******************************************************************************/
@@ -475,12 +411,6 @@ int arkime_yara_callback(int message, YR_RULE *rule, ArkimeSession_t *session)
 void  arkime_yara_execute(ArkimeSession_t *session, const uint8_t *data, int len, int UNUSED(first))
 {
     yr_rules_scan_mem(yRules, (uint8_t *)data, len, (YR_CALLBACK_FUNC)arkime_yara_callback, session, FALSE, 0);
-    return;
-}
-/******************************************************************************/
-void  arkime_yara_email_execute(ArkimeSession_t *session, const uint8_t *data, int len, int UNUSED(first))
-{
-    yr_rules_scan_mem(yEmailRules, (uint8_t *)data, len, (YR_CALLBACK_FUNC)arkime_yara_callback, session, FALSE, 0);
     return;
 }
 /******************************************************************************/
