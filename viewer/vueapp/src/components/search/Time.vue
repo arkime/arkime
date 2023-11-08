@@ -373,7 +373,7 @@ export default {
     if (!this.$route.query.startTime &&
       !this.$route.query.stopTime &&
       !this.$route.query.date) {
-      date = this.$constants.DEFAULT_TIME_RANGE || 1;
+      date = this.$constants.DEFAULT_TIME_RANGE ?? 1;
     }
 
     this.setupTimeParams(
@@ -711,11 +711,11 @@ export default {
           this.localStartTime = moment(start * 1000);
           this.time.startTime = start;
         } else { // if we can't parse stop or start time, set default
-          this.timeRange = this.$constants.DEFAULT_TIME_RANGE || '1'; // default to config or 1 hour
+          this.timeRange = this.$constants.DEFAULT_TIME_RANGE ?? '1'; // default to config or 1 hour
         }
       } else {
         // there are no time query parameters, so set defaults
-        this.timeRange = this.$constants.DEFAULT_TIME_RANGE || '1'; // default to config or 1 hour
+        this.timeRange = this.$constants.DEFAULT_TIME_RANGE ?? '1'; // default to config or 1 hour
       }
     },
     /* watch for the url parameters to change and update the page */

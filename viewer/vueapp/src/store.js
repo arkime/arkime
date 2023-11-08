@@ -23,7 +23,7 @@ const store = new Vuex.Store({
     fieldsMap: {}, // NOTE: this has duplicate fields where dbField and dbField2 are different
     fieldsAliasMap: {},
     fieldhistory: [],
-    timeRange: DEFAULT_TIME_RANGE || 1, /* eslint-disable-line no-undef */
+    timeRange: DEFAULT_TIME_RANGE ?? 1, /* eslint-disable-line no-undef */
     expression: undefined,
     time: {
       startTime: undefined,
