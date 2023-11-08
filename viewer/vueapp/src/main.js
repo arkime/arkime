@@ -79,7 +79,8 @@ new Vue({
       DISABLE_USER_PASSWORD_UI,
       BUILD_VERSION, // from webpack.DefinePlugin
       BUILD_DATE, // from webpack.DefinePlugin
-      LOGOUT_URL
+      LOGOUT_URL,
+      DEFAULT_TIME_RANGE
     };
   }
 });
