@@ -31,62 +31,62 @@ NOTICE: Cross-cluster Shortcuts require you to not restart all your viewers at o
 NOTICE: Create a parliament config file before upgrading (see https://arkime.com/settings#parliament and https://arkime.com/faq#how_do_i_upgrade_to_arkime_5)
 
 5.0.0 2023/11/xx
-  - BREAKING - s3Compression/simpleCompression now default to zstd
-  - BREAKING - s3WriteGzip removed, use s3Compression=gzip
-  - BREAKING - s3GapPacketPos defaults to TRUE
-  - BREAKING - enablePacketDedup defaults to TRUE
-  - BREAKING - authMode defaults to digest now
-  - BREAKING - removed old v1 APIs
-  - BREAKING - parliament password removed, must configure common auth via the UI before
-               upgrading or manually in the config file see https://arkime.com/settings#parliament
-               and https://arkime.com/faq#how_do_i_upgrade_to_arkime_5
-  - BREAKING - WISE/tagger must now use http.request.FIELD/http.response.FIELD
-               when referencing header defined with headers-http-request/headers-http-response
-  - BREAKING - Centos 7 build no longers supports pfring
-  - BREAKING - Increase simpleCompressionBlockSize default to 64000
-  - release - zstd 1.5.5, nghttp2 1.57.0, maxmind 1.7.1, yara 4.2.3
-  - release - node v18.18.2 - Centos 7, Ubuntu 18, Alpine use unofficial builds
-  - release - support building on alpine
-  - all - all programs support same config file formats (ini/json/yaml) and
-          retrieval (file, elasticsearch)
-  - all - json/yaml config file formats now allow arrays instead of comma/semi separated
-  - all - authMode setting added
-  - all - added authMode: basic, form, basic+form, basic+oidc, headerOnly,
-          header+digest (same as header), header+basic
-  - all - notifiers for parliament and arkime merged
-          conflicts mitigated by appending "Parliament" to parliament notifiers
-  - all - drop privileges is now AFTER http(s) list
-  - all -
-  - capture - moloch converted to arkime
-  - capture - override ips can now set any field
-  - capture - overrideIpsFiles setting
-  - capture - packetDropIpsFiles setting
-  - capture - can have negative cert.validDays/cert.remainingDays (thanks mcgillowen)
-  - capture - added cert.remainingSeconds/cert.remainingSeconds (thanks mcgillowen)
-  - capture - cert.remainingDays is now based on the firstPacket of session
-              instead of current time (thanks mcgillowen)
-  - capture - JA4 support
-  - capture - JA3/JA4 support for smtp STARTTLS
-  - capture - always build zstd (except arch)
-  - cont3xt - new bulk UI and support for bulk queries
-  - cont3xt - lots of keyboard shortcut improvements
-  - cont3xt - new array syntax for links substitution
-  - cont3xt - new OpenSearch/Elasticsearch integration (config file only)
-  - cont3xt - new csv/json file/url/redis integration (config file only)
-  - cont3xt - new viewRoles in config file per integration to control access
-  - cont3xt - transfer ownership of resources
-  - cont3xt - new csv/json data source supports
-  - cont3xt - new redis data source support
-  - esproxy - support field updates/deletes
-  - viewer - removed x-moloch-auth
-  - viewer - files/history/stats now have cluster dropdown for multiviewer
-  - viewer - http.request.FIELD and http.response.FIELD supported
-  - viewer - add editor for resources
-  - viewer - transfer ownership of resources
-  - viewer - added uploadRoles to control who can upload
-  - parliament - dashboard-only mode removed, if you want users to just see
-                 the dashboard don't assign them the parliamentUser role
-  - parliament - configuration is now stored in opensearch/elasticsearch
+## BREAKING
+  - #2297 s3Compression/simpleCompression now default to zstd
+  - #2297 s3WriteGzip removed, use s3Compression=gzip
+  - #2297 s3GapPacketPos defaults to TRUE
+  - #2297 enablePacketDedup defaults to TRUE
+  - #2299 authMode defaults to digest now
+  - #2312 removed old v1 APIs
+  - #2349 parliament password removed, must configure common auth via the UI before upgrading or manually in the config file see [parliament](https://arkime.com/settings#parliament) and [how do I upgrade to 5](https://arkime.com/faq#how_do_i_upgrade_to_arkime_5)
+  - #2402 WISE/tagger must now use http.request.FIELD/http.response.FIELD when referencing header defined with headers-http-request/headers-http-response
+  - #2450 Centos 7 build no longers supports pfring
+  - #2453 Increase simpleCompressionBlockSize default to 64000
+  - #2299 #2308 Remove anonymous auth as the default
+## Release
+  - #2448 zstd 1.5.5, nghttp2 1.57.0, maxmind 1.7.1, yara 4.2.3
+  - #2448 node v18.18.2 - Centos 7, Ubuntu 18, Alpine use unofficial builds
+  - #2447 support building on alpine
+## All
+  - #2316 programs support same config file formats (ini/json/yaml) and retrieval (file, elasticsearch)
+  - #2419 json/yaml config file formats now allow arrays instead of comma/semi separated
+  - #2299 #2308 authMode setting added
+  - #2299 #2408 #2463 added authMode: basic, form, basic+form, basic+oidc, headerOnly, header+digest (same as header), header+basic
+  - #2387 notifiers for parliament and arkime merged conflicts mitigated by appending "Parliament" to parliament notifiers
+  - #2396 drop privileges is now AFTER http(s) list
+## Capture
+  - #2295 moloch converted to arkime
+  - #2312 override ips can now set any field
+  - #2312 overrideIpsFiles setting
+  - #2314 packetDropIpsFiles setting
+  - #2390 can have negative cert.validDays/cert.remainingDays (thanks @mcgillowen)
+  - #2390 added cert.remainingSeconds/cert.remainingSeconds (thanks @mcgillowen)
+  - #2390 cert.remainingDays is now based on the firstPacket of session instead of current time (thanks @mcgillowen)
+  - #2409 JA4 support
+  - #2409 JA3/JA4 support for smtp STARTTLS
+  - #2297 always build zstd (except arch)
+## Cont3xt
+  - #2121 new bulk UI and support for bulk queries
+  - #2271 lots of keyboard shortcut improvements
+  - #2383 new array syntax for links substitution
+  - #2382 new OpenSearch/Elasticsearch integration (config file only)
+  - #2441 new csv/json file/url/redis integration (config file only)
+  - #2385 new viewRoles in config file per integration to control access
+  - #2407 transfer ownership of resources
+  - #2437 new csv/json data source supports
+  - #2441 new redis data source support
+## ESProxy
+  - #2483 #2484 support field updates/deletes
+## Viewer
+  - #2296 removed x-moloch-auth
+  - #2392 files/history/stats now have cluster dropdown for multiviewer
+  - #2402 http.request.FIELD and http.response.FIELD supported
+  - #2404 add editor for resources
+  - #2407 transfer ownership of resources
+  - #2482 added uploadRoles to control who can upload
+## Parliament
+  - #2377 dashboard-only mode removed, if you want users to just see the dashboard don't assign them the parliamentUser role
+  - #2395 configuration is now stored in opensearch/elasticsearch
 
 
 4.6.0 2023/10/16
