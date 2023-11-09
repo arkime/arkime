@@ -48,7 +48,7 @@
 #define SUPPRESS_INT_CONVERSION
 #endif
 
-#define ARKIME_API_VERSION 500
+#define ARKIME_API_VERSION 501
 
 #define ARKIME_SESSIONID_LEN  37
 #define ARKIME_SESSIONID6_LEN 37
@@ -439,7 +439,6 @@ typedef struct arkime_config {
     char     *pcapDirTemplate;
     char     *bpf;
     char     *yara;
-    char     *emailYara;
     char     *caTrustFile;
     char    **geoLite2ASN;
     char    **geoLite2Country;
@@ -493,7 +492,6 @@ typedef struct arkime_config {
     char      supportSha256;
     char      reqBodyOnlyUtf8;
     char      compressES;
-    char      antiSynDrop;
     char      readTruncatedPackets;
     char      yaraEveryPacket;
     char     *pcapDirAlgorithm;
