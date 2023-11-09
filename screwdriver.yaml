@@ -373,7 +373,7 @@ jobs:
 
     release-centos-7:
         requires: [release-build]
-        image: andywick/arkime-build-7:5.0.0-2
+        image: andywick/arkime-build-7:5.0.0-3
         steps:
             - (cd / ; curl https://s3.amazonaws.com/files.molo.ch/snfmin.tar.gz | tar -zxvf -)
             - ln -s /thirdparty .
@@ -542,7 +542,7 @@ jobs:
 
     release-arch:
         requires: [release-build]
-        image: andywick/arkime-build-arch:5.0.0-3
+        image: andywick/arkime-build-arch:5.0.0-2
         steps:
             - (cd / ; curl https://s3.amazonaws.com/files.molo.ch/snfmin.tar.gz | tar -zxvf -)
             - build: ./easybutton-build.sh --rminstall
