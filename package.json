@@ -11,7 +11,7 @@
     "@xingrz/cppzst": "^2.1.0-alpha.8",
     "arkime-notifme-sdk": "^1.11.3",
     "async": "^3.2.4",
-    "axios": "^0.21.4",
+    "axios": "^1.6.0",
     "better-sqlite3": "^7.5.0",
     "body-parser": "^1.20.1",
     "bson": "^1.1.5",
