@@ -1056,18 +1056,19 @@ function expireCheckAll () {
 ArkimeConfig.loaded(() => {
   if (Config.get('demoMode', false)) {
     console.log('WARNING - Starting in demo mode, some APIs disabled');
-    securityApp.all([
-      '/api/histories',
-      '/api/history/*',
-      '/api/cron*',
-      '/api/user/password*'
-    ], (req, res, next) => {
-      if (req.user.hasRole('arkimeAdmin')) {
-        return next();
-      }
-      return res.serverError(403, 'Disabled in demo mode.');
-    });
   }
+});
+
+app.all([
+  '/api/histories',
+  '/api/history/*',
+  '/api/cron*',
+  '/api/user/password*'
+], (req, res, next) => {
+  if (!Config.get('demoMode', false) || req.user.hasRole('arkimeAdmin')) {
+    return next();
+  }
+  return res.serverError(403, 'Disabled in demo mode.');
 });
 
 // redirect to sessions page and conserve params
@@ -1989,7 +1990,7 @@ app.use(cspHeader, setCookie, (req, res) => {
     titleConfig,
     path: Config.basePath(),
     version: version.version,
-    demoMode: Config.get('demoMode', false),
+    demoMode: Config.get('demoMode', false) && !req.user.hasRole('arkimeAdmin'),
     multiViewer: internals.multiES,
     hasUsersES: !!Config.get('usersElasticsearch', false),
     themeUrl: theme === 'custom-theme' ? 'api/user/css' : '',
