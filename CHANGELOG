@@ -32,15 +32,15 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
 
 5.0.0 2023/11/xx
 ## BREAKING
-  - #2297 s3Compression/simpleCompression now default to zstd
-  - #2297 s3WriteGzip removed, use s3Compression=gzip
+  - #2297 s3Compression/simpleCompression now defaults to zstd
+  - #2297 s3WriteGzip removed, use s3Compression=gzip for gzip instead of new zstd default
   - #2297 s3GapPacketPos defaults to TRUE
   - #2297 enablePacketDedup defaults to TRUE
   - #2299 authMode defaults to digest now
-  - #2312 removed old v1 APIs
+  - #2312 removed old v1 viewer APIs
   - #2349 parliament password removed, must configure common auth via the UI before upgrading or manually in the config file see [parliament](https://arkime.com/settings#parliament) and [how do I upgrade to 5](https://arkime.com/faq#how_do_i_upgrade_to_arkime_5)
   - #2402 WISE/tagger must now use http.request.FIELD/http.response.FIELD when referencing header defined with headers-http-request/headers-http-response
-  - #2450 Centos 7 build no longers supports pfring
+  - #2450 Centos 7 build no longers includes pfring support
   - #2453 Increase simpleCompressionBlockSize default to 64000
   - #2299 #2308 Remove anonymous auth as the default
 ## Release
@@ -75,6 +75,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #2407 transfer ownership of resources
   - #2437 new csv/json data source supports
   - #2441 new redis data source support
+  - #2507 demoMode added
 ## ESProxy
   - #2483 #2484 support field updates/deletes
 ## Viewer

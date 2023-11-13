@@ -739,7 +739,7 @@ export default {
     },
     disablePassword () {
       if (!this.getUser) { return true; } // wait for user to be initialized
-      return !!this.$constants.DISABLE_USER_PASSWORD_UI && !!this.getUser.headerAuthEnabled;
+      return !!this.$constants.DEMO_MODE || (!!this.$constants.DISABLE_USER_PASSWORD_UI && !!this.getUser.headerAuthEnabled);
     }
   },
   watch: {
