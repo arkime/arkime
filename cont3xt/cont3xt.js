@@ -187,6 +187,16 @@ app.use((req, res, next) => {
   next();
 });
 
+// Demo mode - disable some APIs
+app.all([
+  '/api/user/password*'
+], (req, res, next) => {
+  if (!Config.get('demoMode', false) || req.user.hasRole('arkimeAdmin')) {
+    return next();
+  }
+  return res.serverError(403, 'Disabled in demo mode.');
+});
+
 app.get('/api/linkGroup', LinkGroup.apiGet);
 app.put('/api/linkGroup', [jsonParser, checkCookieToken], LinkGroup.apiCreate);
 app.put('/api/linkGroup/:id', [jsonParser, checkCookieToken, Auth.checkResourceAccess(Db.getLinkGroup, 'creator')], LinkGroup.apiUpdate);
@@ -362,7 +372,8 @@ app.use(cspHeader, setCookie, (req, res, next) => {
     nonce: res.locals.nonce,
     version: version.version,
     path: internals.webBasePath,
-    disableUserPasswordUI: ArkimeConfig.get('disableUserPasswordUI', true)
+    disableUserPasswordUI: ArkimeConfig.get('disableUserPasswordUI', true),
+    demoMode: ArkimeConfig.get('demoMode', false) && !req.user.hasRole('arkimeAdmin')
   };
 
   // Create a fresh Vue app instance
