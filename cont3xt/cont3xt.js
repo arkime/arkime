@@ -191,7 +191,7 @@ app.use((req, res, next) => {
 app.all([
   '/api/user/password*'
 ], (req, res, next) => {
-  if (!Config.get('demoMode', false) || req.user.hasRole('arkimeAdmin')) {
+  if (!ArkimeConfig.get('demoMode', false) || req.user.hasRole('arkimeAdmin')) {
     return next();
   }
   return res.serverError(403, 'Disabled in demo mode.');
