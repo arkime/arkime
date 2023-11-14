@@ -47,10 +47,10 @@ jobs:
       - name: ALW find fpm arch
         if: ${{ matrix.package == 'arch' }}
         run: |
+          export PATH=/root/.local/share/gem/ruby/3.0.0/bin:$PATH
           find / -name fpm -print
           /root/.local/share/gem/ruby/3.0.0/bin/fpm || true
-          gem update --system
-          /root/.local/share/gem/ruby/3.0.0/bin/fpm || true
+          fpm || true
 
       - name: Checkout repository
         uses: actions/checkout@v4
