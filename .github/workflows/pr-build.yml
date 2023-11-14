@@ -113,8 +113,7 @@ jobs:
         if: ${{ matrix.package == 'deb' }}
         run: |
           export ARKIME_VERSION=`sed 's/.*"\(.*\)\".*$/\1/' /opt/arkime/common/version.js | head -n 1`
-          fpm -s dir -t deb -n arkime -x opt/arkime/logs -x opt/arkime/raw -v $ARKIME_VERSION --iteration ${{ github.run_attempt }} --template-scripts --after-install "release/afterinstall.sh" --url "https://arkime.com" --description "Arkime Full Packet System" -d libwww-perl -d libjson-perl -d ethtool -d libyaml-dev
-          -p  arkime_${ARKIME_VERSION}-${{github.run_attempt}}.${{matrix.version}}_amd64.deb /opt/arkime
+          fpm -s dir -t deb -n arkime -x opt/arkime/logs -x opt/arkime/raw -v $ARKIME_VERSION --iteration ${{ github.run_attempt }} --template-scripts --after-install "release/afterinstall.sh" --url "https://arkime.com" --description "Arkime Full Packet System" -d libwww-perl -d libjson-perl -d ethtool -d libyaml-dev -p arkime_${ARKIME_VERSION}-${{github.run_attempt}}.${{matrix.version}}_amd64.deb /opt/arkime
           ls -l *.deb
 
       - uses: actions/upload-artifact@v3
