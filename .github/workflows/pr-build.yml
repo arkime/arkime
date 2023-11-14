@@ -21,11 +21,11 @@ jobs:
           - version: el9
             container: andywick/arkime-build-9:5.0.0-2
           - version: ubuntu18
-            container: andywick/arkime-build-18:5.0.0-3
+            container: andywick/arkime-build-18:5.0.0-2
           - version: ubuntu20
-            container: andywick/arkime-build-20:5.0.0-3
+            container: andywick/arkime-build-20:5.0.0-2
           - version: ubuntu22
-            container: andywick/arkime-build-22:5.0.0-3
+            container: andywick/arkime-build-22:5.0.0-2
 
     container:
       image: ${{ matrix.container }}
