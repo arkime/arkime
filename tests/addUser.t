@@ -13,6 +13,7 @@ esGet("/_refresh");
 my $token = getTokenCookie();
 my $test6Token = getTokenCookie('test6');
 my $test7Token = getTokenCookie('test7');
+esGet("/_refresh");
 
 # script exits successfully
 my $result = addUser("-n testuser admin admin admin --admin");
@@ -28,6 +29,7 @@ addUser("-n testuser test5 test5 test5 --remove");
 addUser("-n testuser test6 test6 test6 --webauth --roles arkimeUser");
 addUser("-n testuser test7 test7 test7 --packetSearch --roles arkimeUser,parliamentUser");
 addUser("-n testuser test8 test8 test8 --roles 'parliamentUser' ");
+esGet("/_refresh");
 
 # fetch the users
 my $users = viewerPost("/api/users", "");

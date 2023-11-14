@@ -13,19 +13,13 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        version: [el7, el8, el9, ubuntu18, ubuntu20, ubuntu22, arch]
+        version: [el8, el9, ubuntu20, ubuntu22, arch]
         include:
-          - version: el7
-            container: andywick/arkime-build-7:5.0.0-3
-            buildopt: "--kafka"
           - version: el8
             container: andywick/arkime-build-8:5.0.0-2
             buildopt: "--kafka --pfring"
           - version: el9
             container: andywick/arkime-build-9:5.0.0-2
-            buildopt: "--kafka --pfring"
-          - version: ubuntu18
-            container: andywick/arkime-build-18:5.0.0-2
             buildopt: "--kafka --pfring"
           - version: ubuntu20
             container: andywick/arkime-build-20:5.0.0-2
@@ -45,7 +39,7 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
@@ -57,19 +51,10 @@ jobs:
           fi
           git config --global --add safe.directory `pwd`
 
-      - name: build and install 7
-        if: ${{ matrix.version == 'el7' }}
-        run: |
-          scl enable devtoolset-9 rh-python36 "./easybutton-build.sh ${{ matrix.buildopt }} --rminstall"
-          export PATH=/opt/arkime/bin:$PATH
-          scl enable devtoolset-9 rh-python36 "make install"
-
-      - name: build and install not 7
-        if: ${{ matrix.version != 'el7' }}
+      - name: build and install
         run: |
           ./easybutton-build.sh ${{ matrix.buildopt }} --rminstall
           export PATH=/opt/arkime/bin:$PATH
-          export GIT_DISCOVERY_ACROSS_FILESYSTEM=1
           make install
 
       - name: lint
@@ -92,7 +77,6 @@ jobs:
         if: ${{ matrix.version == 'arch' }}
         run: |
           export PATH=/opt/arkime/bin:$PATH
-          echo $PATH
           (chown -R opensearch /opensearch-2.7.0; cd /opensearch-2.7.0 ; su opensearch -c "ES_JAVA_OPTS='-Xms1000m -Xmx1000m' bin/opensearch" > /tmp/os &)
           sleep 30
           cat /tmp/os
