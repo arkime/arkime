@@ -1,0 +1,55 @@
+name: "pr-build"
+
+on:
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  matrix:
+    strategy:
+      matrix:
+        version: [el7, el8, el9, ubuntu18, ubuntu20, ubuntu22]
+      include:
+        - version: el7
+          container: andywick/arkime-build-7:5.0.0-3
+        - version: el8
+          container: andywick/arkime-build-8:5.0.0-2
+        - version: el9
+          container: andywick/arkime-build-9:5.0.0-2
+        - version: ubuntu18
+          container: andywick/arkime-build-18:5.0.0-3
+        - version: ubuntu20
+          container: andywick/arkime-build-20:5.0.0-3
+        - version: ubuntu22
+          container: andywick/arkime-build-22:5.0.0-3
+
+    container:
+      image: ${{ matrix.container }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: build
+        run: |
+          (cd / ; curl https://s3.amazonaws.com/files.molo.ch/snfmin.tar.gz | tar -zxvf -)
+          ln -s /thirdparty .
+          ./easybutton-build.sh --rminstall --kafka
+
+      - name: capture tests
+        run: |
+          (cd tests; ./tests.pl)
+
+      - name: install
+        run: |
+          export PATH=/opt/arkime/bin:$PATH
+          make install
+          npm run lint
+          cp -r capture/plugins/lua/samples /opt/arkime/lua
+
+      - name: ui test
+        if: ${{ matrix.version == "el8" }}
+        run: |
+          npm run test
