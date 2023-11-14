@@ -128,7 +128,19 @@ jobs:
     runs-on: ubuntu-latest
     needs: build
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
       - name: send
+        env:
+          SLACK_URL: ${{ secrets.SLACK_URL }}
         run: |
           echo "Sending msg"
+          export ARKIME_VERSION=`grep AC_INIT configure.ac | sed "s/.*\[\(.*\)\].*$/\1/"`
+          echo ARKIME_VERSION: $ARKIME_VERSION
+          MSG=`git log -1 --format=%s`
+          BODY="{\"icon_emoji\": \":sushi:\", \"username\": \"GitAction\", \"text\":\"It worked: $GIT_BRANCH - arkime-$ARKIME_VERSION-$SD_BUILD_ID - $MSG\"}"
+          curl -XPOST -H "Content-type: application/json" --data "$BODY" $SLACK_URL
 
