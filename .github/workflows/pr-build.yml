@@ -11,6 +11,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
         version: [el7, el8, el9, ubuntu18, ubuntu20, ubuntu22]
         include:
