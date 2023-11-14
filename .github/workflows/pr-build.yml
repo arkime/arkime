@@ -54,6 +54,6 @@ jobs:
           cp -r capture/plugins/lua/samples /opt/arkime/lua
 
       - name: ui test
-        if: ${{ matrix.version == "el8" }}
+        if: ${{ matrix.version == 'el8' }}
         run: |
           npm run test
