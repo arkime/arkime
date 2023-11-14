@@ -71,6 +71,7 @@ jobs:
 
       - name: capture tests
         run: |
+          echo "ALW ${{ github.run_id }} ${{ github.run_number }} ${{ github.run_attempt }}"
           (cd tests; ./tests.pl)
 
       - name: ui test
