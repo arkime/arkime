@@ -13,28 +13,33 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        version: [el8, el9, ubuntu20, ubuntu22, arch, al2023]
+        version: [el8, el9, ubuntu2004, ubuntu2204, arch, al2023]
         include:
           - version: el8
             container: andywick/arkime-build-8:5.0.0-2
             buildopt: "--kafka --pfring"
             package: rpm
+
           - version: el9
             container: andywick/arkime-build-9:5.0.0-2
             buildopt: "--kafka --pfring"
             package: rpm
-          - version: ubuntu20
+
+          - version: ubuntu2004
             container: andywick/arkime-build-20:5.0.0-2
             buildopt: "--kafka --pfring"
             package: deb
-          - version: ubuntu22
+
+          - version: ubuntu2204
             container: andywick/arkime-build-22:5.0.0-2
             buildopt: "--nothirdparty --kafka --pfring"
             package: deb
+
           - version: arch
             container: andywick/arkime-build-arch:5.0.0-2
             buildopt: "--kafka"
             package: arch
+
           - version: al2023
             container: andywick/arkime-build-al2023:5.0.0-2
             buildopt: "--kafka --pfring"
@@ -94,22 +99,31 @@ jobs:
         run: |
           gem install --no-document fpm rexml
           export ARKIME_VERSION=`sed 's/.*"\(.*\)\".*$/\1/' /opt/arkime/common/version.js | head -n 1`
-          /root/.local/share/gem/ruby/3.0.0/bin/fpm -s dir -t pacman -n arkime -x opt/arkime/logs -x opt/arkime/raw -v $ARKIME_VERSION --iteration ${{ github.run_attempt }} --template-scripts --after-install "release/afterinstall.sh" --url "https://arkime.com" --description "Arkime Full Packet System" -d libmaxminddb -d libpcap -d yara -d perl-http-message -d perl-lwp-protocol-https -d perl-json -d libnet -d lua -d zstd -d openssl-1.1 -d pcre /opt/arkime
+          /root/.local/share/gem/ruby/3.0.0/bin/fpm -s dir -t pacman -n arkime -x opt/arkime/logs -x opt/arkime/raw -v $ARKIME_VERSION --iteration ${{ github.run_attempt }} --template-scripts --after-install "release/afterinstall.sh" --url "https://arkime.com" --description "Arkime Full Packet System" -d libmaxminddb -d libpcap -d yara -d perl-http-message -d perl-lwp-protocol-https -d perl-json -d libnet -d lua -d zstd -d openssl-1.1 -d pcre -p arkime-${ARKIME_VERSION}-${{github.run_attempt}}_${{matrix.version}}.pkg.tar.zst /opt/arkime
           ls -l *.zst
 
       - name: package rpm
         if: ${{ matrix.package == 'rpm' }}
         run: |
           export ARKIME_VERSION=`sed 's/.*"\(.*\)\".*$/\1/' /opt/arkime/common/version.js | head -n 1 | tr "-" "_"`
-          fpm -s dir -t rpm -n arkime -x opt/arkime/logs -x opt/arkime/raw -v $ARKIME_VERSION --iteration ${{ github.run_attempt }} --template-scripts --after-install "release/afterinstall.sh" --url "https://arkime.com" --description "Arkime Full Packet System" -d perl-libwww-perl -d perl-JSON -d ethtool -d libyaml -d perl-LWP-Protocol-https --rpm-rpmbuild-define "_build_id_links none" /opt/arkime
+          fpm -s dir -t rpm -n arkime -x opt/arkime/logs -x opt/arkime/raw -v $ARKIME_VERSION --iteration ${{ github.run_attempt }} --template-scripts --after-install "release/afterinstall.sh" --url "https://arkime.com" --description "Arkime Full Packet System" -d perl-libwww-perl -d perl-JSON -d ethtool -d libyaml -d perl-LWP-Protocol-https --rpm-rpmbuild-define "_build_id_links none" -p arkime-${ARKIME_VERSION}-${{github.run_attempt}}.${{matrix.version}}.x86_64.rpm /opt/arkime
           ls -l *.rpm
 
       - name: package deb
         if: ${{ matrix.package == 'deb' }}
         run: |
           export ARKIME_VERSION=`sed 's/.*"\(.*\)\".*$/\1/' /opt/arkime/common/version.js | head -n 1`
-          fpm -s dir -t deb -n arkime -x opt/arkime/logs -x opt/arkime/raw -v $ARKIME_VERSION --iteration ${{ github.run_attempt }} --template-scripts --after-install "release/afterinstall.sh" --url "https://arkime.com" --description "Arkime Full Packet System" -d libwww-perl -d libjson-perl -d ethtool -d libyaml-dev /opt/arkime
+          fpm -s dir -t deb -n arkime -x opt/arkime/logs -x opt/arkime/raw -v $ARKIME_VERSION --iteration ${{ github.run_attempt }} --template-scripts --after-install "release/afterinstall.sh" --url "https://arkime.com" --description "Arkime Full Packet System" -d libwww-perl -d libjson-perl -d ethtool -d libyaml-dev
+          -p  arkime_${ARKIME_VERSION}-${{github.run_attempt}}.${{matrix.version}}_amd64.deb /opt/arkime
           ls -l *.deb
+
+      - uses: actions/upload-artifact@v3
+        with:
+          name: upload artifact
+          path: |
+            *.deb
+            *.rpm
+            *.zst
 
   slack:
     runs-on: ubuntu-latest
