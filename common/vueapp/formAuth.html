@@ -16,6 +16,9 @@
             LOGIN!
             <img src="logo.png" alt="logo" />
           </h1>
+          <p class="lead">
+            @@MESSAGE@@
+          </p>
           <form method="post" action="@@BASEHREF@@api/login">
             <div role="group" class="input-group mb-2">
               <div class="input-group-prepend">
@@ -210,5 +213,11 @@ img {
 .btn-block {
   display: block;
   width: 100%;
+}
+
+.lead {
+  font-size: 1.25rem;
+  font-weight: 300;
+  line-height: 1.5;
 }
 </style>

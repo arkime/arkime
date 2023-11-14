@@ -270,7 +270,8 @@ class Auth {
         Auth.#authRouter.get('/auth', (req, res) => {
           // User is not authenticated, show the login form
           let html = fs.readFileSync(path.join(__dirname, '/vueapp/formAuth.html'), 'utf-8');
-          html = html.toString().replace(/@@BASEHREF@@/g, Auth.#basePath);
+          html = html.toString().replace(/@@BASEHREF@@/g, Auth.#basePath)
+            .replace(/@@MESSAGE@@/g, ArkimeConfig.get('loginMessage', ''));
           return res.send(html);
         });
 

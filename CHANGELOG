@@ -54,6 +54,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #2299 #2408 #2463 added authMode: basic, form, basic+form, basic+oidc, headerOnly, header+digest (same as header), header+basic
   - #2387 notifiers for parliament and arkime merged conflicts mitigated by appending "Parliament" to parliament notifiers
   - #2396 drop privileges is now AFTER http(s) list
+  - #2509 add optional login message for form auth
 ## Capture
   - #2295 moloch converted to arkime
   - #2312 override ips can now set any field
