@@ -37,10 +37,21 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: build
+      - name: thirdparty
         run: |
           (cd / ; curl https://s3.amazonaws.com/files.molo.ch/snfmin.tar.gz | tar -zxvf -)
-          ln -s /thirdparty .
+          if [ -d "/thirdparty" ]; then
+            ln -s /thirdparty .
+          fi
+
+      - name: build 7
+        if: ${{ matrix.version == 'el7' }}
+        run: |
+          scl enable devtoolset-9 rh-python36 "./easybutton-build.sh --rminstall --kafka"
+
+      - name: build not 7
+        if: ${{ matrix.version != 'el7' }}
+        run: |
           ./easybutton-build.sh --rminstall --kafka
 
       - name: capture tests
@@ -49,6 +60,7 @@ jobs:
 
       - name: install
         run: |
+          git config --global --add safe.directory `pwd`
           export PATH=/opt/arkime/bin:$PATH
           make install
           npm run lint
