@@ -51,6 +51,9 @@ jobs:
           find / -name fpm -print
           /root/.local/share/gem/ruby/3.0.0/bin/fpm || true
           fpm || true
+          gem install --no-document fpm rexml
+          find / -name fpm -print
+          fpm || true
 
       - name: Checkout repository
         uses: actions/checkout@v4
