@@ -44,6 +44,12 @@ jobs:
       image: ${{ matrix.container }}
 
     steps:
+      - name: ALW find fpm arch
+        if: ${{ matrix.package == 'arch' }}
+        run: |
+          find / -name fpm -print
+          /root/.local/share/gem/ruby/3.0.0/bin/fpm || true
+
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
