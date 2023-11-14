@@ -9,6 +9,7 @@ on:
 
 jobs:
   build:
+    runs-on: ubuntu-latest
     strategy:
       matrix:
         version: [el7, el8, el9, ubuntu18, ubuntu20, ubuntu22]
