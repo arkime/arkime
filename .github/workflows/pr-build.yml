@@ -18,27 +18,27 @@ jobs:
           - version: el8
             container: andywick/arkime-build-8:5.0.0-2
             buildopt: "--kafka --pfring"
-            pacakge: rpm
+            package: rpm
           - version: el9
             container: andywick/arkime-build-9:5.0.0-2
             buildopt: "--kafka --pfring"
-            pacakge: rpm
+            package: rpm
           - version: ubuntu20
             container: andywick/arkime-build-20:5.0.0-2
             buildopt: "--kafka --pfring"
-            pacakge: deb
+            package: deb
           - version: ubuntu22
             container: andywick/arkime-build-22:5.0.0-2
             buildopt: "--nothirdparty --kafka --pfring"
-            pacakge: deb
+            package: deb
           - version: arch
             container: andywick/arkime-build-arch:5.0.0-2
             buildopt: "--kafka"
-            pacakge: arch
+            package: arch
           - version: al2023
             container: andywick/arkime-build-al2023:5.0.0-2
             buildopt: "--kafka --pfring"
-            pacakge: rpm
+            package: rpm
 
     container:
       image: ${{ matrix.container }}
