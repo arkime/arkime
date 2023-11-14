@@ -13,20 +13,32 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        version: [el7, el8, el9, ubuntu18, ubuntu20, ubuntu22]
+        version: [el7, el8, el9, ubuntu18, ubuntu20, ubuntu22, arch]
         include:
           - version: el7
             container: andywick/arkime-build-7:5.0.0-3
+            buildopt: "--kafka"
           - version: el8
             container: andywick/arkime-build-8:5.0.0-2
+            buildopt: "--kafka --pfring"
           - version: el9
             container: andywick/arkime-build-9:5.0.0-2
+            buildopt: "--kafka --pfring"
           - version: ubuntu18
             container: andywick/arkime-build-18:5.0.0-2
+            buildopt: "--kafka --pfring"
           - version: ubuntu20
             container: andywick/arkime-build-20:5.0.0-2
+            buildopt: "--kafka --pfring"
           - version: ubuntu22
             container: andywick/arkime-build-22:5.0.0-2
+            buildopt: "--nothirdparty --kafka --pfring"
+          - version: arch
+            container: andywick/arkime-build-arch:5.0.0-2
+            buildopt: "--kafka"
+          - version: al2023
+            container: andywick/arkime-build-al2023:5.0.0-2
+            buildopt: "--kafka --pfring"
 
     container:
       image: ${{ matrix.container }}
@@ -47,12 +59,12 @@ jobs:
       - name: build 7
         if: ${{ matrix.version == 'el7' }}
         run: |
-          scl enable devtoolset-9 rh-python36 "./easybutton-build.sh --rminstall --kafka"
+          scl enable devtoolset-9 rh-python36 "./easybutton-build.sh ${{ matrix.buildopt }} --rminstall"
 
       - name: build not 7
         if: ${{ matrix.version != 'el7' }}
         run: |
-          ./easybutton-build.sh --rminstall --kafka
+          ./easybutton-build.sh ${{ matrix.buildopt }} --rminstall
 
       - name: capture tests
         run: |
@@ -69,4 +81,5 @@ jobs:
       - name: ui test
         if: ${{ matrix.version == 'el8' }}
         run: |
+          export PATH=/opt/arkime/bin:$PATH
           npm run test
