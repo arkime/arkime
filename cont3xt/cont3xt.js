@@ -191,7 +191,7 @@ app.use((req, res, next) => {
 app.all([
   '/api/user/password*'
 ], (req, res, next) => {
-  if (!ArkimeConfig.get('demoMode', false) || req.user.hasRole('arkimeAdmin')) {
+  if (!req.user.isDemoMode()) {
     return next();
   }
   return res.serverError(403, 'Disabled in demo mode.');
@@ -373,7 +373,7 @@ app.use(cspHeader, setCookie, (req, res, next) => {
     version: version.version,
     path: internals.webBasePath,
     disableUserPasswordUI: ArkimeConfig.get('disableUserPasswordUI', true),
-    demoMode: ArkimeConfig.get('demoMode', false) && !req.user.hasRole('arkimeAdmin')
+    demoMode: req.user.isDemoMode()
   };
 
   // Create a fresh Vue app instance

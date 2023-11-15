@@ -1065,7 +1065,7 @@ app.all([
   '/api/cron*',
   '/api/user/password*'
 ], (req, res, next) => {
-  if (!Config.get('demoMode', false) || req.user.hasRole('arkimeAdmin')) {
+  if (!req.user.isDemoMode()) {
     return next();
   }
   return res.serverError(403, 'Disabled in demo mode.');
@@ -1967,7 +1967,7 @@ app.use(cspHeader, setCookie, (req, res) => {
     return res.status(403).send('Permission denied');
   }
 
-  if (req.path === '/settings' && Config.get('demoMode', false) && !req.user.hasRole('usersAdmin')) {
+  if (req.path === '/settings' && req.user.isDemoMode()) {
     return res.status(403).send('Permission denied');
   }
 
@@ -1990,7 +1990,7 @@ app.use(cspHeader, setCookie, (req, res) => {
     titleConfig,
     path: Config.basePath(),
     version: version.version,
-    demoMode: Config.get('demoMode', false) && !req.user.hasRole('arkimeAdmin'),
+    demoMode: req.user.isDemoMode(),
     multiViewer: internals.multiES,
     hasUsersES: !!Config.get('usersElasticsearch', false),
     themeUrl: theme === 'custom-theme' ? 'api/user/css' : '',
