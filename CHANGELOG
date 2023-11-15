@@ -36,13 +36,12 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #2297 s3WriteGzip removed, use s3Compression=gzip for gzip instead of new zstd default
   - #2297 s3GapPacketPos defaults to TRUE
   - #2297 enablePacketDedup defaults to TRUE
-  - #2299 authMode defaults to digest now
+  - #2299 #2308  authMode defaults to digest now
   - #2312 removed old v1 viewer APIs
   - #2349 parliament password removed, must configure common auth via the UI before upgrading or manually in the config file see [parliament](https://arkime.com/settings#parliament) and [how do I upgrade to 5](https://arkime.com/faq#how_do_i_upgrade_to_arkime_5)
   - #2402 WISE/tagger must now use http.request.FIELD/http.response.FIELD when referencing header defined with headers-http-request/headers-http-response
   - #2450 Centos 7 build no longers includes pfring support
   - #2453 Increase simpleCompressionBlockSize default to 64000
-  - #2299 #2308 Remove anonymous auth as the default
 ## Release
   - #2448 zstd 1.5.5, nghttp2 1.57.0, maxmind 1.7.1, yara 4.2.3
   - #2448 node v18.18.2 - Centos 7, Ubuntu 18, Alpine use unofficial builds
@@ -55,6 +54,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #2387 notifiers for parliament and arkime merged conflicts mitigated by appending "Parliament" to parliament notifiers
   - #2396 drop privileges is now AFTER http(s) list
   - #2509 add optional login message for form auth
+  - #2511 new authOIDCScope setting
 ## Capture
   - #2295 moloch converted to arkime
   - #2312 override ips can now set any field
