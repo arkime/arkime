@@ -102,6 +102,7 @@ class Auth {
     options.authConfig.trustProxy ??= ArkimeConfig.get('authTrustProxy');
     options.authConfig.cookieSameSite ??= ArkimeConfig.get('authCookieSameSite');
     options.authConfig.cookieSecure ??= ArkimeConfig.get('authCookieSecure', true);
+    options.authConfig.oidcScope ??= ArkimeConfig.get('authOIDCScope', 'openid');
 
     if (ArkimeConfig.debug > 1) {
       console.log('Auth.initialize', options);
@@ -198,7 +199,7 @@ class Auth {
       check('clientSecret', 'authClientSecret');
       check('redirectURIs', 'authRedirectURIs');
       Auth.#strategies = ['oidc'];
-      Auth.#passportAuthOptions = { session: true, failureRedirect: `${Auth.#basePath}fail` };
+      Auth.#passportAuthOptions = { session: true, failureRedirect: `${Auth.#basePath}fail`, scope: Auth.#authConfig.oidcScope };
       sessionAuth = true;
       break;
     case 'form':
