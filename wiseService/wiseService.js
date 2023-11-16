@@ -1115,6 +1115,7 @@ app.get('/types/:source?', [ArkimeUtil.noCacheJson], (req, res) => {
 app.get('/:source/:typeName/:value', [ArkimeUtil.noCacheJson], function (req, res, next) {
   // Poor route planning by ALW, shame
   if (req.params.source === 'source' && req.params.value === 'get') { return next(); }
+  if (req.params.source === 'auth') { return next(); }
 
   const source = internals.sources.get(req.params.source);
   if (!source) {
