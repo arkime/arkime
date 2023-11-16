@@ -61,6 +61,7 @@ class User {
   static #usersCache = new Map();
   static #rolesCache = { _timeStamp: 0 };
   static #implementation;
+  static #demoMode;
 
   /**
    * Initialize the User subsystem
@@ -94,6 +95,11 @@ class User {
           console.log('WARNING\nWARNING - No users are defined, use `/opt/arkime/bin/arkime_add_user.sh` to add one\nWARNING');
         }
       });
+    }
+
+    User.#demoMode = ArkimeConfig.get('demoMode', false);
+    if (typeof User.#demoMode !== 'boolean') {
+      User.#demoMode = new Set(ArkimeConfig.getArray('demoMode'));
     }
   }
 
@@ -1248,6 +1254,19 @@ class User {
       }
     }
     return true;
+  }
+
+  /*
+   *
+   */
+  isDemoMode () {
+    if (this.hasRole(Auth.appAdminRole)) { return false; }
+
+    if (typeof User.#demoMode === 'boolean') {
+      return User.#demoMode;
+    }
+
+    return User.#demoMode.has(this.userId);
   }
 
   /**
