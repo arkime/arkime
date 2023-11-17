@@ -27,6 +27,13 @@ SPDX-License-Identifier: Apache-2.0
     </div>
 
     <div class="container">
+
+      <!-- demo mode -->
+      <div v-if="demoMode" class="alert alert-warning">
+        <span class="fa fa-exclamation-triangle mr-1"></span>
+        Everything uploaded will be visible to everyone else using this demo!
+      </div> <!-- /demo mode -->
+
       <div class="row">
         <div class="col-md-12">
 
@@ -129,7 +136,8 @@ export default {
       uploading: false,
       error: '',
       msg: '',
-      msgType: undefined
+      msgType: undefined,
+      demoMode: this.$constants.DEMO_MODE
     };
   },
   methods: {
