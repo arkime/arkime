@@ -1159,7 +1159,6 @@ app.all([
   '/molochclusters',
   '/remoteclusters',
   '/clusters',
-  '/upload',
   '/reverseDNS.txt',
   '/lookups',
   '/lookups/:id',
