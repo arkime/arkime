@@ -221,24 +221,24 @@ typedef struct arkime_field_info {
     char                     *dbFieldFull;     /* Must be second - this is the full version example:mysql.user-term */
     char                     *dbField;         /* - this is the version used in db writing example:user-term */
     uint32_t                  d_hash;
-    uint32_t                  d_bucket;
-    uint32_t                  d_count;
+    uint16_t                  d_bucket;
+    uint16_t                  d_count;
 
     struct arkime_field_info *e_next, *e_prev;
     char                     *expression;
     uint32_t                  e_hash;
-    uint32_t                  e_bucket;
-    uint32_t                  e_count;
+    uint16_t                  e_bucket;
+    uint16_t                  e_count;
 
-    int                       dbFieldLen;
-    int                       dbGroupNum;
+    int16_t                   dbFieldLen;
+    int16_t                   dbGroupNum;
     char                     *dbGroup;
-    int                       dbGroupLen;
+    int16_t                   dbGroupLen;
     char                     *group;
     char                     *kind;
     char                     *category;
-    int                       pos;
-    ArkimeFieldType          type;
+    int16_t                   pos;
+    ArkimeFieldType           type;
     uint16_t                  flags;
     char                      ruleEnabled;
     char                     *transform;
@@ -269,16 +269,17 @@ typedef struct {
 typedef struct {
     char                 *str;
     union {
-        int                 strLenOrInt;
-        float               f;
+        int               strLenOrInt;
+        float             f;
     };
     int16_t               fieldPos;
+    int16_t               matchPos;
     int8_t                set;
 } ArkimeFieldOp_t;
 
 #define ARKIME_FIELD_OPS_FLAGS_COPY 0x0001
 typedef struct {
-    ArkimeFieldOp_t     *ops;
+    ArkimeFieldOp_t      *ops;
     uint16_t              size;
     uint16_t              num;
     uint16_t              flags;
@@ -1290,6 +1291,7 @@ void arkime_field_define_json(uint8_t *expression, int expression_len, uint8_t *
 int  arkime_field_define_text(char *text, int *shortcut);
 int  arkime_field_define_text_full(char *field, char *text, int *shortcut);
 int  arkime_field_define(char *group, char *kind, char *expression, char *friendlyName, char *dbField, char *help, ArkimeFieldType type, int flags, ...);
+
 int  arkime_field_by_db(const char *dbField);
 int  arkime_field_by_exp(const char *exp);
 const char *arkime_field_string_add(int pos, ArkimeSession_t *session, const char *string, int len, gboolean copy);
@@ -1312,7 +1314,9 @@ void arkime_field_exit();
 void arkime_field_ops_init(ArkimeFieldOps_t *ops, int numOps, uint16_t flags);
 void arkime_field_ops_free(ArkimeFieldOps_t *ops);
 void arkime_field_ops_add(ArkimeFieldOps_t *ops, int fieldPos, char *value, int valuelen);
+void arkime_field_ops_add_match(ArkimeFieldOps_t *ops, int fieldPos, char *value, int valuelen, int matchPos);
 void arkime_field_ops_run(ArkimeSession_t *session, ArkimeFieldOps_t *ops);
+void arkime_field_ops_run_match(ArkimeSession_t *session, ArkimeFieldOps_t *ops, int matchPos);
 
 void *arkime_field_parse_ip(const char *str);
 gboolean arkime_field_ip_equal (gconstpointer v1, gconstpointer v2);

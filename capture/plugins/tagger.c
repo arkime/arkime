@@ -97,16 +97,18 @@ HASH_VAR(s_, allFiles, TaggerFileHead_t, 101);
 LOCAL  patricia_tree_t *allIps;
 
 /******************************************************************************/
-LOCAL void tagger_process_match(ArkimeSession_t *session, GPtrArray *infos)
+LOCAL void tagger_process_match(ArkimeSession_t *session, GPtrArray *infos, int matchPos)
 {
     uint32_t f, t;
     for (f = 0; f < infos->len; f++) {
         TaggerInfo_t *info = g_ptr_array_index(infos, f);
         TaggerFile_t *file = info->file;
-        for (t = 0; file->tags[t]; t++) {
-            arkime_session_add_tag(session, file->tags[t]);
+        if (file->tags) {
+            for (t = 0; file->tags[t]; t++) {
+                arkime_session_add_tag(session, file->tags[t]);
+            }
         }
-        arkime_field_ops_run(session, &info->ops);
+        arkime_field_ops_run_match(session, &info->ops, matchPos);
     }
 }
 /******************************************************************************/
@@ -137,7 +139,7 @@ LOCAL void tagger_plugin_save(ArkimeSession_t *session, int UNUSED(final))
 
     cnt = patricia_search_all(allIps, &prefix, 1, nodes);
     for (i = 0; i < cnt; i++) {
-        tagger_process_match(session, ((TaggerIP_t *)(nodes[i]->data))->infos);
+        tagger_process_match(session, ((TaggerIP_t *)(nodes[i]->data))->infos, ARKIME_FIELD_EXSPECIAL_SRC_IP);
     }
 
     if (IN6_IS_ADDR_V4MAPPED(&session->addr2)) {
@@ -152,7 +154,7 @@ LOCAL void tagger_plugin_save(ArkimeSession_t *session, int UNUSED(final))
 
     cnt = patricia_search_all(allIps, &prefix, 1, nodes);
     for (i = 0; i < cnt; i++) {
-        tagger_process_match(session, ((TaggerIP_t *)(nodes[i]->data))->infos);
+        tagger_process_match(session, ((TaggerIP_t *)(nodes[i]->data))->infos, ARKIME_FIELD_EXSPECIAL_DST_IP);
     }
 
     if (httpXffField != -1 && session->fields[httpXffField]) {
@@ -175,7 +177,7 @@ LOCAL void tagger_plugin_save(ArkimeSession_t *session, int UNUSED(final))
 
             cnt = patricia_search_all(allIps, &prefix, 1, nodes);
             for (i = 0; i < cnt; i++) {
-                tagger_process_match(session, ((TaggerIP_t *)(nodes[i]->data))->infos);
+                tagger_process_match(session, ((TaggerIP_t *)(nodes[i]->data))->infos, httpXffField);
             }
         }
     }
@@ -187,12 +189,12 @@ LOCAL void tagger_plugin_save(ArkimeSession_t *session, int UNUSED(final))
         HASH_FORALL2(s_, *shash, hstring) {
             HASH_FIND_HASH(s_, allDomains, hstring->s_hash, hstring->str, tstring);
             if (tstring)
-                tagger_process_match(session, tstring->infos);
+                tagger_process_match(session, tstring->infos, httpHostField);
             char *dot = strchr(hstring->str, '.');
             if (dot && *(dot + 1)) {
                 HASH_FIND(s_, allDomains, dot + 1, tstring);
                 if (tstring)
-                    tagger_process_match(session, tstring->infos);
+                    tagger_process_match(session, tstring->infos, httpHostField);
             }
         }
     }
@@ -202,12 +204,12 @@ LOCAL void tagger_plugin_save(ArkimeSession_t *session, int UNUSED(final))
         HASH_FORALL2(s_, *shash, hstring) {
             HASH_FIND_HASH(s_, allDomains, hstring->s_hash, hstring->str, tstring);
             if (tstring)
-                tagger_process_match(session, tstring->infos);
+                tagger_process_match(session, tstring->infos, dnsHostField);
             char *dot = strchr(hstring->str, '.');
             if (dot && *(dot + 1)) {
                 HASH_FIND(s_, allDomains, dot + 1, tstring);
                 if (tstring)
-                    tagger_process_match(session, tstring->infos);
+                    tagger_process_match(session, tstring->infos, dnsHostField);
             }
         }
     }
@@ -217,12 +219,12 @@ LOCAL void tagger_plugin_save(ArkimeSession_t *session, int UNUSED(final))
         HASH_FORALL2(s_, *shash, hstring) {
             HASH_FIND_HASH(s_, allDomains, hstring->s_hash, hstring->str, tstring);
             if (tstring)
-                tagger_process_match(session, tstring->infos);
+                tagger_process_match(session, tstring->infos, dnsMailServerField);
             char *dot = strchr(hstring->str, '.');
             if (dot && *(dot + 1)) {
                 HASH_FIND(s_, allDomains, dot + 1, tstring);
                 if (tstring)
-                    tagger_process_match(session, tstring->infos);
+                    tagger_process_match(session, tstring->infos, dnsMailServerField);
             }
         }
     }
@@ -232,7 +234,7 @@ LOCAL void tagger_plugin_save(ArkimeSession_t *session, int UNUSED(final))
         HASH_FORALL2(s_, *shash, hstring) {
             HASH_FIND_HASH(s_, allMD5s, hstring->s_hash, hstring->str, tstring);
             if (tstring)
-                tagger_process_match(session, tstring->infos);
+                tagger_process_match(session, tstring->infos, httpMd5Field);
         }
     }
 
@@ -241,7 +243,7 @@ LOCAL void tagger_plugin_save(ArkimeSession_t *session, int UNUSED(final))
         HASH_FORALL2(s_, *shash, hstring) {
             HASH_FIND_HASH(s_, allURIs, hstring->s_hash, hstring->str, tstring);
             if (tstring) {
-                tagger_process_match(session, tstring->infos);
+                tagger_process_match(session, tstring->infos, httpPathField);
             }
         }
     }
@@ -251,7 +253,7 @@ LOCAL void tagger_plugin_save(ArkimeSession_t *session, int UNUSED(final))
         HASH_FORALL2(s_, *shash, hstring) {
             HASH_FIND_HASH(s_, allMD5s, hstring->s_hash, hstring->str, tstring);
             if (tstring)
-                tagger_process_match(session, tstring->infos);
+                tagger_process_match(session, tstring->infos, emailMd5Field);
         }
     }
 
@@ -260,7 +262,7 @@ LOCAL void tagger_plugin_save(ArkimeSession_t *session, int UNUSED(final))
         HASH_FORALL2(s_, *shash, hstring) {
             HASH_FIND_HASH(s_, allEmails, hstring->s_hash, hstring->str, tstring);
             if (tstring)
-                tagger_process_match(session, tstring->infos);
+                tagger_process_match(session, tstring->infos, emailSrcField);
         }
     }
 
@@ -269,7 +271,7 @@ LOCAL void tagger_plugin_save(ArkimeSession_t *session, int UNUSED(final))
         HASH_FORALL2(s_, *shash, hstring) {
             HASH_FIND_HASH(s_, allEmails, hstring->s_hash, hstring->str, tstring);
             if (tstring)
-                tagger_process_match(session, tstring->infos);
+                tagger_process_match(session, tstring->infos, emailDstField);
         }
     }
 }
@@ -316,7 +318,8 @@ LOCAL void tagger_plugin_exit()
         free(file->str);
         g_free(file->md5);
         g_free(file->type);
-        g_strfreev(file->tags);
+        if (file->tags)
+            g_strfreev(file->tags);
         g_strfreev(file->elements);
         ARKIME_TYPE_FREE(TaggerFile_t, file);
     }
@@ -393,7 +396,8 @@ LOCAL void tagger_unload_file(TaggerFile_t *file) {
 
     g_free(file->md5);
     g_free(file->type);
-    g_strfreev(file->tags);
+    if (file->tags)
+        g_strfreev(file->tags);
     g_strfreev(file->elements);
     file->md5 = NULL;
 }
@@ -452,8 +456,7 @@ LOCAL void tagger_load_file_cb(int UNUSED(code), uint8_t *data, int data_len, gp
         } else if (out[i + 1] == sizeof("fields") - 1 && memcmp("fields", data + out[i], sizeof("fields") - 1) == 0) {
             data[out[i + 2] + out[i + 3]] = 0;
             char **fields = g_strsplit((char *)data + out[i + 2], ",", 0);
-            int f;
-            for (f = 0; f < 100 && fields[f]; f++) {
+            for (int f = 0; f < 100 && fields[f]; f++) {
                 int shortcut = -1;
                 int pos = arkime_field_define_text(fields[f], &shortcut);
                 if (shortcut >= 0 && shortcut < 20)

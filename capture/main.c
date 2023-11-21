@@ -665,8 +665,7 @@ void arkime_quit()
 /******************************************************************************/
 /*
  * Don't actually init nids/pcap until all the pre tags are loaded.
- * TRUE - call again in 1ms
- * FALSE - don't call again
+ * CONTINUE - call again in 1ms
  */
 gboolean arkime_ready_gfunc (gpointer UNUSED(user_data))
 {

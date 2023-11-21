@@ -24,7 +24,8 @@ eq_or_diff(\@wise, from_json('[
 {"field":"tags","len":7,"value":"ipwise2"},
 {"field":"tags","len":9,"value":"ipwisecsv"},
 {"field":"tags","len":9,"value":"wisebyip1"},
-{"field":"irc.channel","len":16,"value":"wisebyip1channel"}
+{"field":"irc.channel","len":16,"value":"wisebyip1channel"},
+{"field":"asset","len":6,"value":"wtest1"}
 ]'),"All 10.0.0.3");
 
 $wise = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8081/file:ip/ip/10.0.0.3")->content;
@@ -35,7 +36,8 @@ eq_or_diff(\@wise, from_json('[
 {"field":"tags","len":6,"value":"ipwise"},
 {"field":"tags","len":7,"value":"ipwise2"},
 {"field":"tags","len":9,"value":"wisebyip1"},
-{"field":"irc.channel","len":16,"value":"wisebyip1channel"}
+{"field":"irc.channel","len":16,"value":"wisebyip1channel"},
+{"field":"asset","len":6,"value":"wtest1"}
 ]'),"file:ip 10.0.0.3");
 
 $wise = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8081/file:ipblah/ip/10.0.0.3")->content;
@@ -77,28 +79,32 @@ from_json('[
 {"field":"tags","len":7,"value":"ipwise2"},
 {"field":"tags","len":9,"value":"wisebyip1"},
 {"field":"irc.channel","len":16,"value":"wisebyip1channel"},
-{"field":"email.x-priority","len":3,"value":"999"}]
+{"field":"email.x-priority","len":3,"value":"999"},
+{"field":"asset","len":6,"value":"wtest1"}]
 },
 {"key":"128.128.128.0/24","ops":
 [{"field":"tags","len":6,"value":"ipwise"},
 {"field":"tags","len":7,"value":"ipwise2"},
 {"field":"tags","len":9,"value":"wisebyip2"},
 {"field":"mysql.ver","len":21,"value":"wisebyip2mysqlversion"},
-{"field":"test.ip","len":11,"value":"21.21.21.21"}]
+{"field":"test.ip","len":11,"value":"21.21.21.21"},
+{"field":"asset","len":6,"value":"wtest3"}]
 },
 {"key":"192.168.177.160","ops":
 [{"field":"tags","len":6,"value":"ipwise"},
 {"field":"tags","len":7,"value":"ipwise2"},
 {"field":"tags","len":9,"value":"wisebyip2"},
 {"field":"mysql.ver","len":21,"value":"wisebyip2mysqlversion"},
-{"field":"test.ip","len":11,"value":"21.21.21.21"}]
+{"field":"test.ip","len":11,"value":"21.21.21.21"},
+{"field":"asset","len":6,"value":"wtest2"}]
 },
 {"key":"fe80::211:25ff:fe82:95b5","ops":
 [{"field":"tags","len":6,"value":"ipwise"},
 {"field":"tags","len":7,"value":"ipwise2"},
 {"field":"tags","len":9,"value":"wisebyip3"},
 {"field":"mysql.ver","len":21,"value":"wisebyip3mysqlversion"},
-{"field":"test.ip","len":11,"value":"22.22.22.22"}]
+{"field":"test.ip","len":11,"value":"22.22.22.22"},
+{"field":"asset","len":6,"value":"wtest4"}]
 }
 ]', {relaxed=>1}), "file:ip dump");
 
@@ -331,7 +337,7 @@ $wise = $ArkimeTest::userAgent->put("http://$ArkimeTest::host:8081/config/save",
 eq_or_diff($wise, '{"success":true,"text":"Would save, but regressionTests"}');
 
 $wise = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8081/source/file:ip/get")->content;
-is($wise, '{"success":true,"raw":"10.0.0.3;tags=wisebyip1;irc.channel=wisebyip1channel;email.x-priority=999\\n192.168.177.160;tags=wisebyip2;mysql.ver=wisebyip2mysqlversion;test.ip=21.21.21.21\\n128.128.128.0/24;tags=wisebyip2;mysql.ver=wisebyip2mysqlversion;test.ip=21.21.21.21\\nfe80::211:25ff:fe82:95b5;tags=wisebyip3;mysql.ver=wisebyip3mysqlversion;test.ip=22.22.22.22\\n"}');
+is($wise, '{"success":true,"raw":"10.0.0.3;tags=wisebyip1;irc.channel=wisebyip1channel;email.x-priority=999;asset=wtest1\\n192.168.177.160;tags=wisebyip2;mysql.ver=wisebyip2mysqlversion;test.ip=21.21.21.21;asset=wtest2\\n128.128.128.0/24;tags=wisebyip2;mysql.ver=wisebyip2mysqlversion;test.ip=21.21.21.21;asset=wtest3\\nfe80::211:25ff:fe82:95b5;tags=wisebyip3;mysql.ver=wisebyip3mysqlversion;test.ip=22.22.22.22;asset=wtest4\\n"}');
 
 $wise = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8081/source/notfound/get")->content;
 is($wise, '{"success":false,"text":"Source notfound not found"}');

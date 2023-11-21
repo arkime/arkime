@@ -336,7 +336,7 @@ LOCAL void arkime_packet_process(ArkimePacket_t *packet, int thread)
             }
 
             int n = 12;
-            while ((pcapData[n] == 0x81 && pcapData[n + 1] == 0x00) || (pcapData[n] == 0x88 && pcapData[n+1] == 0xa8)) {
+            while ((pcapData[n] == 0x81 && pcapData[n + 1] == 0x00) || (pcapData[n] == 0x88 && pcapData[n + 1] == 0xa8)) {
                 uint16_t vlan = ((uint16_t)(pcapData[n + 2] << 8 | pcapData[n + 3])) & 0xfff;
                 arkime_field_int_add(vlanField, session, vlan);
                 n += 4;

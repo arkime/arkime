@@ -10,6 +10,16 @@ use LWP::UserAgent;
 use Digest::MD5 qw(md5_hex);
 use Data::Dumper;
 
+
+sub showHelp($)
+{
+    my ($str) = @_;
+    print $str,"\n";
+    die "$0 [--insecure] ESHOST:ESPORT (ip|host|md5|email|uri) filename [tag1..tagN]";
+}
+
+showHelp("Missing arguments") if (@ARGV < 3);
+
 my $INSECURE = 0;
 if ($ARGV[0] eq "--insecure") {
     $INSECURE = 1;
@@ -22,14 +32,7 @@ if ($host !~ /(http:|https)/) {
     $host = "http://$ARGV[0]";
 }
 
-sub showHelp($)
-{
-    my ($str) = @_;
-    print $str,"\n";
-    die "$0 [--insecure] ESHOST:ESPORT (ip|host|md5|email|uri) filename tag1 [tag2..tagN]";
-}
-
-showHelp("Missing arguments") if (@ARGV < 4);
+showHelp("Missing arguments") if (@ARGV < 3); # Again because of INSECURE
 showHelp("Must be ip, host, or md5 for file type instead of $ARGV[1]") if ($ARGV[1] !~ /^(host|ip|md5|email|uri)$/);
 showHelp("file '$ARGV[2]' not found") if (! -f $ARGV[2]);
 showHelp("file '$ARGV[2]' empty") if (-z $ARGV[2]);
@@ -67,12 +70,16 @@ if ($fields ne "") {
     chop $fields;
     $fields .= "\", ";
 }
+
 my $elements = join ',', @ELEMENTS;
 close (FILE);
 
 my $md5hex = md5_hex($elements);
 
-my $content  = '{' . $fields . '"tags": "' . join(',', @ARGV[3 .. $#ARGV]) . '", "md5":"' . $md5hex .'", "type":"' . $ARGV[1] . '", "data":"' . $elements . '"}'. "\n";
+my $tags = "";
+$tags = '"tags": "' . join(',', @ARGV[3 .. $#ARGV]) . '",' if (@ARGV >= 4);
+
+my $content  = qq({${fields}${tags}"md5":"$md5hex", "type":"$ARGV[1]", "data":"$elements"}\n);
 $response = $userAgent->post("$host/tagger/_doc/$ARGV[2]", "Content-Type" => "application/json;charset=UTF-8", Content => $content);
 print $response->content, "\n";
 
