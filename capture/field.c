@@ -31,6 +31,8 @@ LOCAL va_list empty_va_list;
 
 GHashTable *groupName2Num;
 
+int16_t fieldOpsRemap[ARKIME_FIELDS_MAX][ARKIME_FIELDS_MAX];
+
 /******************************************************************************/
 void arkime_field_by_exp_add_special(char *exp, int pos)
 {
@@ -1460,16 +1462,17 @@ int arkime_field_ops_should_run_int_op(ArkimeFieldOp_t *op, int value)
     return 0;
 }
 /******************************************************************************/
-void arkime_field_ops_run(ArkimeSession_t *session, ArkimeFieldOps_t *ops)
+void arkime_field_ops_run_match(ArkimeSession_t *session, ArkimeFieldOps_t *ops, int matchPos)
 {
     int i;
 
     for (i = 0; i < ops->num; i++) {
         ArkimeFieldOp_t *op = &(ops->ops[i]);
+        int16_t fieldPos = op->fieldPos;
 
         // Special field pos that really are setting a field in sessions
-        if (op->fieldPos < 0) {
-            switch (op->fieldPos) {
+        if (fieldPos < 0) {
+            switch (fieldPos) {
             case ARKIME_FIELD_SPECIAL_STOP_SPI:
                 if (arkime_field_ops_should_run_int_op(op, session->stopSPI))
                     arkime_session_set_stop_spi(session, op->strLenOrInt);
@@ -1503,9 +1506,15 @@ void arkime_field_ops_run(ArkimeSession_t *session, ArkimeFieldOps_t *ops)
             }
             continue;
         }
+
+        // If matchPos isn't -1 then we are doing a match and we need to remap the fieldPos
+        if (matchPos >= 0 && fieldOpsRemap[fieldPos][matchPos] >= 0) {
+            fieldPos = fieldOpsRemap[fieldPos][matchPos];
+        }
+
         // Exspecial Fields
-        if (op->fieldPos >= ARKIME_FIELD_EXSPECIAL_START) {
-            switch (op->fieldPos) {
+        if (fieldPos >= ARKIME_FIELD_EXSPECIAL_START) {
+            switch (fieldPos) {
             case ARKIME_FIELD_EXSPECIAL_SRC_IP:
             case ARKIME_FIELD_EXSPECIAL_SRC_PORT:
             case ARKIME_FIELD_EXSPECIAL_DST_IP:
@@ -1527,39 +1536,44 @@ void arkime_field_ops_run(ArkimeSession_t *session, ArkimeFieldOps_t *ops)
             continue;
         }
 
-        switch (config.fields[op->fieldPos]->type) {
+        switch (config.fields[fieldPos]->type) {
         case ARKIME_FIELD_TYPE_INT:
-            if (arkime_field_count(op->fieldPos, session) == 0 ||
-                arkime_field_ops_should_run_int_op(op, session->fields[op->fieldPos]->i)) {
+            if (arkime_field_count(fieldPos, session) == 0 ||
+                arkime_field_ops_should_run_int_op(op, session->fields[fieldPos]->i)) {
 
-                arkime_field_int_add(op->fieldPos, session, op->strLenOrInt);
+                arkime_field_int_add(fieldPos, session, op->strLenOrInt);
             }
             break;
         case ARKIME_FIELD_TYPE_INT_HASH:
         case ARKIME_FIELD_TYPE_INT_GHASH:
         case ARKIME_FIELD_TYPE_INT_ARRAY:
-            arkime_field_int_add(op->fieldPos, session, op->strLenOrInt);
+            arkime_field_int_add(fieldPos, session, op->strLenOrInt);
             break;
         case ARKIME_FIELD_TYPE_FLOAT_GHASH:
         case ARKIME_FIELD_TYPE_FLOAT:
         case ARKIME_FIELD_TYPE_FLOAT_ARRAY:
-            arkime_field_float_add(op->fieldPos, session, op->f);
+            arkime_field_float_add(fieldPos, session, op->f);
             break;
         case ARKIME_FIELD_TYPE_IP:
         case ARKIME_FIELD_TYPE_IP_GHASH:
-            arkime_field_ip_add_str(op->fieldPos, session, op->str);
+            arkime_field_ip_add_str(fieldPos, session, op->str);
             break;
         case ARKIME_FIELD_TYPE_STR:
         case ARKIME_FIELD_TYPE_STR_ARRAY:
         case ARKIME_FIELD_TYPE_STR_HASH:
         case ARKIME_FIELD_TYPE_STR_GHASH:
-            arkime_field_string_add(op->fieldPos, session, op->str, op->strLenOrInt, TRUE);
+            arkime_field_string_add(fieldPos, session, op->str, op->strLenOrInt, TRUE);
             break;
         case ARKIME_FIELD_TYPE_CERTSINFO:
             // Unsupported
             break;
         }
     }
+}
+/******************************************************************************/
+void arkime_field_ops_run(ArkimeSession_t *session, ArkimeFieldOps_t *ops)
+{
+    arkime_field_ops_run_match(session, ops, -1);
 }
 /******************************************************************************/
 void arkime_field_ops_free(ArkimeFieldOps_t *ops)
@@ -1630,7 +1644,7 @@ void arkime_field_ops_int_parse(ArkimeFieldOp_t *op, char *value)
     }
 }
 /******************************************************************************/
-void arkime_field_ops_add(ArkimeFieldOps_t *ops, int fieldPos, char *value, int valuelen)
+void arkime_field_ops_add_match(ArkimeFieldOps_t *ops, int fieldPos, char *value, int valuelen, int matchPos)
 {
     if (ops->num >= ops->size) {
         ops->size = ceil (ops->size * 1.6);
@@ -1645,6 +1659,7 @@ void arkime_field_ops_add(ArkimeFieldOps_t *ops, int fieldPos, char *value, int 
     ArkimeFieldOp_t *op = &(ops->ops[ops->num]);
 
     op->fieldPos = fieldPos;
+    op->matchPos = matchPos;
 
     if (fieldPos < 0) {
         switch (op->fieldPos) {
@@ -1752,6 +1767,60 @@ void arkime_field_ops_add(ArkimeFieldOps_t *ops, int fieldPos, char *value, int 
     ops->num++;
 }
 /******************************************************************************/
+void arkime_field_ops_add(ArkimeFieldOps_t *ops, int fieldPos, char *value, int valuelen)
+{
+    arkime_field_ops_add_match(ops, fieldPos, value, valuelen, -1);
+}
+/******************************************************************************/
+// Parse oldExpr=matchExpr1=newExpr1;matchExpr2=newExpr2
+gboolean arkime_field_load_field_remap (gpointer UNUSED(user_data))
+{
+    gsize keys_len;
+    int   i;
+
+    gchar **keys = arkime_config_section_keys(NULL, "custom-fields-remap", &keys_len);
+
+    if (!keys)
+        return G_SOURCE_REMOVE;
+
+    for (i = 0; i < (int)keys_len; i++) {
+        int oldPos = arkime_field_by_exp(keys[i]);
+        if (oldPos == -1) {
+            LOG("WARNING - Unknown field '%s', not remapping", keys[i]);
+            continue;
+        }
+        gchar *info = arkime_config_section_str(NULL, "custom-fields-remap", keys[i], NULL);
+
+        char **kvs = g_strsplit(info, ";", 0);
+        for (int k = 0; kvs[k]; k++) {
+            char *key = kvs[k];
+            char *value = strchr(key, '=');
+            if (!value)
+                continue;
+            *value = 0; value++;
+            while(isspace(*key)) key++;
+            g_strchomp(key);
+            while(isspace(*value)) value++;
+            g_strchomp(value);
+            int matchPos = arkime_field_by_exp(key);
+            if (matchPos == -1) {
+                LOG("WARNING - Unknown field '%s', not remapping", key);
+                continue;
+            }
+            int newPos = arkime_field_by_exp(value);
+            if (newPos == -1) {
+                LOG("WARNING - Unknown field '%s', not remapping", value);
+                continue;
+            }
+            fieldOpsRemap[oldPos][matchPos] = newPos;
+        }
+        g_strfreev(kvs);
+        g_free(info);
+    }
+    g_strfreev(keys);
+    return G_SOURCE_REMOVE;
+}
+/******************************************************************************/
 void arkime_field_init()
 {
     config.maxField = 0;
@@ -1784,6 +1853,10 @@ void arkime_field_init()
     arkime_field_by_exp_add_special_type("databytes.src", ARKIME_FIELD_EXSPECIAL_DATABYTES_SRC, ARKIME_FIELD_TYPE_INT);
     arkime_field_by_exp_add_special_type("databytes.dst", ARKIME_FIELD_EXSPECIAL_DATABYTES_DST, ARKIME_FIELD_TYPE_INT);
     arkime_field_by_exp_add_special_type("communityId", ARKIME_FIELD_EXSPECIAL_COMMUNITYID, ARKIME_FIELD_TYPE_STR);
+
+    // Wait until about to start listening to remap
+    memset(fieldOpsRemap, -1, sizeof(fieldOpsRemap));
+    g_timeout_add(0, arkime_field_load_field_remap, 0);
 }
 /******************************************************************************/
 void arkime_field_exit()
@@ -1801,4 +1874,3 @@ void arkime_field_exit()
         g_free(info->expression);
     }
 }
-/******************************************************************************/

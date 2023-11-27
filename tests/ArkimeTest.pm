@@ -276,9 +276,13 @@ sub countTest {
 my ($count, $test, $debug) = @_;
     local $Test::Builder::Level = $Test::Builder::Level + 1;
     my $json = viewerGet("/sessions.json?$test");
+    if ($json->{recordsFiltered} != $count || scalar @{$json->{data}} != $count) {
+        diag "Failed Test " . uri_unescape($test);
+    }
     diag Dumper($json) if ($debug);
     is ($json->{recordsFiltered}, $count, " recordsFiltered");
     is (scalar @{$json->{data}}, $count, " data count");
+
     return $json
 }
 ################################################################################

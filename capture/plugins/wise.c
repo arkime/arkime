@@ -85,6 +85,7 @@ typedef struct wiseitem {
 
     ArkimeFieldOps_t      ops;
     ArkimeSession_t     **sessions;
+    int16_t              *matchPoses;
     char                 *key;
 
     uint32_t              loadTime;
@@ -195,7 +196,8 @@ LOCAL void wise_load_fields()
     for (int i = 0; i < cnt; i++) {
         int len = 0;
         BSB_IMPORT_u16(bsb, len); // len includes NULL terminated
-        fieldsMap[0][i] = arkime_field_define_text((char *)BSB_WORK_PTR(bsb), NULL);
+        char *str = (char *)BSB_WORK_PTR(bsb);
+        fieldsMap[0][i] = arkime_field_define_text(str, NULL);
         if (fieldsMap[0][i] == -1) {
             fieldsTS = 0;
             if (config.debug)
@@ -206,12 +208,13 @@ LOCAL void wise_load_fields()
     free(data);
 }
 /******************************************************************************/
-LOCAL void wise_session_cmd_cb(ArkimeSession_t *session, gpointer uw1, gpointer UNUSED(uw2))
+LOCAL void wise_session_cmd_cb(ArkimeSession_t *session, gpointer uw1, gpointer uw2)
 {
     WiseItem_t    *wi = uw1;
+    int16_t        matchPos = (long)uw2;
 
     if (wi) {
-        arkime_field_ops_run(session, &wi->ops);
+        arkime_field_ops_run_match(session, &wi->ops, matchPos);
     }
     arkime_session_decr_outstanding(session);
 }
@@ -232,6 +235,8 @@ LOCAL void wise_remove_item_locked(WiseItem_t *wi)
         }
         g_free(wi->sessions);
         wi->sessions = 0;
+        g_free(wi->matchPoses);
+        wi->matchPoses = 0;
     }
     arkime_free_later(wi, (GDestroyNotify) wise_free_item);
 }
@@ -304,11 +309,12 @@ LOCAL void wise_cb(int UNUSED(code), uint8_t *data, int data_len, gpointer uw)
         for (i = 0; i < cnt; i++) {
             int len = 0;
             BSB_IMPORT_u16(bsb, len); // len includes NULL terminated
-            fieldsMap[0][i] = arkime_field_define_text((char *)BSB_WORK_PTR(bsb), NULL);
-            if (fieldsMap[0][i] == -1) {
+            char *str = (char *)BSB_WORK_PTR(bsb);
+            fieldsMap[hashPos][i] = arkime_field_define_text(str, NULL);
+            if (fieldsMap[hashPos][i] == -1) {
                 fieldsTS = 0;
                 if (config.debug)
-                    LOG("Couldn't define field - %d %d %s", i, fieldsMap[0][i], BSB_WORK_PTR(bsb));
+                    LOG("Couldn't define field - %d %d %s", i, fieldsMap[hashPos][i], BSB_WORK_PTR(bsb));
             }
             BSB_IMPORT_skip(bsb, len);
         }
@@ -329,23 +335,22 @@ LOCAL void wise_cb(int UNUSED(code), uint8_t *data, int data_len, gpointer uw)
 
             int rfield = 0;
             BSB_IMPORT_u08(bsb, rfield);
-            int fieldPos = fieldsMap[hashPos][rfield];
-
             int len = 0;
+
             BSB_IMPORT_u08(bsb, len);
             char *str = (char *)BSB_WORK_PTR(bsb);
             BSB_IMPORT_skip(bsb, len);
-
-            if (fieldPos == -1) {
-                LOG("Couldn't find pos %d", rfield);
-                continue;
-            }
 
             if (BSB_IS_ERROR(bsb)) {
                 LOG("ERROR - WISE Response was corrupt");
                 break;
             }
 
+            int fieldPos = fieldsMap[hashPos][rfield];
+            if (fieldPos == -1) {
+                LOG("Couldn't find pos %d", rfield);
+                continue;
+            }
             arkime_field_ops_add(&wi->ops, fieldPos, str, len - 1);
         }
 
@@ -354,10 +359,12 @@ LOCAL void wise_cb(int UNUSED(code), uint8_t *data, int data_len, gpointer uw)
         // Schedule updates on waiting sessions
         int s;
         for (s = 0; s < wi->numSessions; s++) {
-            arkime_session_add_cmd(wi->sessions[s], ARKIME_SES_CMD_FUNC, wi, NULL, wise_session_cmd_cb);
+            arkime_session_add_cmd(wi->sessions[s], ARKIME_SES_CMD_FUNC, wi, (gpointer)(long)wi->matchPoses[s], wise_session_cmd_cb);
         }
         g_free(wi->sessions);
         wi->sessions = 0;
+        g_free(wi->matchPoses);
+        wi->matchPoses = 0;
         wi->numSessions = 0;
 
         DLL_PUSH_HEAD(wil_, &types[(int)wi->type].itemList, wi);
@@ -371,7 +378,7 @@ LOCAL void wise_cb(int UNUSED(code), uint8_t *data, int data_len, gpointer uw)
     ARKIME_TYPE_FREE(WiseRequest_t, request);
 }
 /******************************************************************************/
-LOCAL void wise_lookup(ArkimeSession_t *session, WiseRequest_t *request, char *value, int type)
+LOCAL void wise_lookup(ArkimeSession_t *session, WiseRequest_t *request, char *value, int type, uint16_t matchPos)
 {
 
     if (*value == 0)
@@ -406,15 +413,18 @@ LOCAL void wise_lookup(ArkimeSession_t *session, WiseRequest_t *request, char *v
             if (wi->numSessions >= wi->sessionsSize) {
                 wi->sessionsSize = MIN(wi->sessionsSize * 2, 4096);
                 wi->sessions = realloc(wi->sessions, sizeof(ArkimeSession_t *) * wi->sessionsSize);
+                wi->matchPoses = realloc(wi->matchPoses, sizeof(int16_t) * wi->sessionsSize);
             }
-            wi->sessions[wi->numSessions++] = session;
+            wi->sessions[wi->numSessions] = session;
+            wi->matchPoses[wi->numSessions] = matchPos;
+            wi->numSessions++;
             arkime_session_incr_outstanding(session);
             stats[type][INTEL_STAT_INPROGRESS]++;
             goto cleanup;
         }
 
         if (wi->loadTime + cacheSecs > currentTime.tv_sec) {
-            arkime_field_ops_run(session, &wi->ops);
+            arkime_field_ops_run_match(session, &wi->ops, matchPos);
             stats[type][INTEL_STAT_CACHE]++;
             goto cleanup;
         }
@@ -432,7 +442,10 @@ LOCAL void wise_lookup(ArkimeSession_t *session, WiseRequest_t *request, char *v
     }
 
     wi->sessions = malloc(sizeof(ArkimeSession_t *) * wi->sessionsSize);
-    wi->sessions[wi->numSessions++] = session;
+    wi->matchPoses = malloc(sizeof(int16_t) * wi->sessionsSize);
+    wi->sessions[wi->numSessions] = session;
+    wi->matchPoses[wi->numSessions] = matchPos;
+    wi->numSessions++;
     arkime_session_incr_outstanding(session);
 
     stats[type][INTEL_STAT_REQUEST]++;
@@ -453,7 +466,7 @@ cleanup:
     ARKIME_UNLOCK(item);
 }
 /******************************************************************************/
-LOCAL void wise_lookup_domain(ArkimeSession_t *session, WiseRequest_t *request, char *domain)
+LOCAL void wise_lookup_domain(ArkimeSession_t *session, WiseRequest_t *request, char *domain, int16_t matchPos)
 {
     // Skip leading http
     if (*domain == 'h') {
@@ -498,7 +511,7 @@ LOCAL void wise_lookup_domain(ArkimeSession_t *session, WiseRequest_t *request, 
     if (isdigit(*(end - 1))) {
         struct in_addr addr;
         if (inet_pton(AF_INET, domain, &addr) == 1) {
-            wise_lookup(session, request, domain, INTEL_TYPE_IP);
+            wise_lookup(session, request, domain, INTEL_TYPE_IP, matchPos);
         }
         return;
     }
@@ -510,16 +523,16 @@ LOCAL void wise_lookup_domain(ArkimeSession_t *session, WiseRequest_t *request, 
         }
     }
 
-    wise_lookup(session, request, domain, INTEL_TYPE_DOMAIN);
+    wise_lookup(session, request, domain, INTEL_TYPE_DOMAIN, matchPos);
 
 cleanup:
     if (colon)
         *colon = ':';
 }
 /******************************************************************************/
-void wise_lookup_ip(ArkimeSession_t *session, WiseRequest_t *request, struct in6_addr *ip6)
+void wise_lookup_ip(ArkimeSession_t *session, WiseRequest_t *request, struct in6_addr *ip6, int16_t matchPos)
 {
-    char ipstr[INET6_ADDRSTRLEN];
+    char ipstr[INET6_ADDRSTRLEN + 100];
 
     if (IN6_IS_ADDR_V4MAPPED(ip6)) {
         uint32_t ip = ARKIME_V6_TO_V4(*ip6);
@@ -528,7 +541,7 @@ void wise_lookup_ip(ArkimeSession_t *session, WiseRequest_t *request, struct in6
         inet_ntop(AF_INET6, ip6, ipstr, sizeof(ipstr));
     }
 
-    wise_lookup(session, request, ipstr, INTEL_TYPE_IP);
+    wise_lookup(session, request, ipstr, INTEL_TYPE_IP, matchPos);
 }
 /******************************************************************************/
 void wise_lookup_tuple(ArkimeSession_t *session, WiseRequest_t *request)
@@ -579,10 +592,10 @@ void wise_lookup_tuple(ArkimeSession_t *session, WiseRequest_t *request)
 
 
     }
-    wise_lookup(session, request, str, INTEL_TYPE_TUPLE);
+    wise_lookup(session, request, str, INTEL_TYPE_TUPLE, -1);
 }
 /******************************************************************************/
-void wise_lookup_url(ArkimeSession_t *session, WiseRequest_t *request, char *url)
+void wise_lookup_url(ArkimeSession_t *session, WiseRequest_t *request, char *url, int16_t matchPos)
 {
     // Skip leading http
     if (*url == 'h') {
@@ -595,10 +608,10 @@ void wise_lookup_url(ArkimeSession_t *session, WiseRequest_t *request, char *url
     char *question = strchr(url, '?');
     if (question) {
         *question = 0;
-        wise_lookup(session, request, url, INTEL_TYPE_URL);
+        wise_lookup(session, request, url, INTEL_TYPE_URL, matchPos);
         *question = '?';
     } else {
-        wise_lookup(session, request, url, INTEL_TYPE_URL);
+        wise_lookup(session, request, url, INTEL_TYPE_URL, matchPos);
     }
 }
 /******************************************************************************/
@@ -641,8 +654,8 @@ void wise_plugin_pre_save(ArkimeSession_t *session, int UNUSED(final))
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wstrict-aliasing"
     //IPs
-    wise_lookup_ip(session, iRequest, &session->addr1);
-    wise_lookup_ip(session, iRequest, &session->addr2);
+    wise_lookup_ip(session, iRequest, &session->addr1, ARKIME_FIELD_EXSPECIAL_SRC_IP);
+    wise_lookup_ip(session, iRequest, &session->addr2, ARKIME_FIELD_EXSPECIAL_DST_IP);
 
 #pragma GCC diagnostic pop
 
@@ -657,7 +670,7 @@ void wise_plugin_pre_save(ArkimeSession_t *session, int UNUSED(final))
                     // Currently don't do communityId for ICMP because it requires magic
                     if (session->ses != SESSION_ICMP) {
                         char *communityId = arkime_db_community_id(session);
-                        wise_lookup(session, iRequest, communityId, type);
+                        wise_lookup(session, iRequest, communityId, type, pos);
                         g_free(communityId);
                     }
                     break;
@@ -672,7 +685,7 @@ void wise_plugin_pre_save(ArkimeSession_t *session, int UNUSED(final))
                         int len = strlen(ipstr);
                         snprintf(ipstr + len, sizeof(ipstr) - len, ".%d", session->port2);
                     }
-                    wise_lookup(session, iRequest, ipstr, type);
+                    wise_lookup(session, iRequest, ipstr, type, pos);
                     break;
                 }
                 } /* switch */
@@ -694,19 +707,19 @@ void wise_plugin_pre_save(ArkimeSession_t *session, int UNUSED(final))
             switch(config.fields[pos]->type) {
             case ARKIME_FIELD_TYPE_INT:
                 snprintf(buf, sizeof(buf), "%d", session->fields[pos]->i);
-                wise_lookup(session, iRequest, buf, type);
+                wise_lookup(session, iRequest, buf, type, pos);
                 break;
             case ARKIME_FIELD_TYPE_INT_ARRAY:
                 for(i = 0; i < (int)session->fields[pos]->iarray->len; i++) {
                     snprintf(buf, sizeof(buf), "%u", g_array_index(session->fields[pos]->iarray, uint32_t, i));
-                    wise_lookup(session, iRequest, buf, type);
+                    wise_lookup(session, iRequest, buf, type, pos);
                 }
                 break;
             case ARKIME_FIELD_TYPE_INT_HASH:
                 ihash = session->fields[pos]->ihash;
                 HASH_FORALL2(i_, *ihash, hint) {
                     snprintf(buf, sizeof(buf), "%u", hint->i_hash);
-                    wise_lookup(session, iRequest, buf, type);
+                    wise_lookup(session, iRequest, buf, type, pos);
                 }
                 break;
             case ARKIME_FIELD_TYPE_INT_GHASH:
@@ -714,17 +727,17 @@ void wise_plugin_pre_save(ArkimeSession_t *session, int UNUSED(final))
                 g_hash_table_iter_init (&iter, ghash);
                 while (g_hash_table_iter_next (&iter, &ikey, NULL)) {
                     snprintf(buf, sizeof(buf), "%d", (int)(long)ikey);
-                    wise_lookup(session, iRequest, buf, type);
+                    wise_lookup(session, iRequest, buf, type, pos);
                 }
                 break;
             case ARKIME_FIELD_TYPE_FLOAT:
                 snprintf(buf, sizeof(buf), "%f", session->fields[pos]->f);
-                wise_lookup(session, iRequest, buf, type);
+                wise_lookup(session, iRequest, buf, type, pos);
                 break;
             case ARKIME_FIELD_TYPE_FLOAT_ARRAY:
                 for(i = 0; i < (int)session->fields[pos]->farray->len; i++) {
                     snprintf(buf, sizeof(buf), "%f", g_array_index(session->fields[pos]->farray, float, i));
-                    wise_lookup(session, iRequest, buf, type);
+                    wise_lookup(session, iRequest, buf, type, pos);
                 }
                 break;
             case ARKIME_FIELD_TYPE_FLOAT_GHASH:
@@ -732,46 +745,46 @@ void wise_plugin_pre_save(ArkimeSession_t *session, int UNUSED(final))
                 g_hash_table_iter_init (&iter, ghash);
                 while (g_hash_table_iter_next (&iter, &ikey, NULL)) {
                     snprintf(buf, sizeof(buf), "%f", POINTER_TO_FLOAT(ikey));
-                    wise_lookup(session, iRequest, buf, type);
+                    wise_lookup(session, iRequest, buf, type, pos);
                 }
                 break;
             case ARKIME_FIELD_TYPE_IP:
-                wise_lookup_ip(session, iRequest, (struct in6_addr *)session->fields[pos]->ip);
+                wise_lookup_ip(session, iRequest, (struct in6_addr *)session->fields[pos]->ip, pos);
                 break;
             case ARKIME_FIELD_TYPE_IP_GHASH:
                 ghash = session->fields[pos]->ghash;
                 g_hash_table_iter_init (&iter, ghash);
                 while (g_hash_table_iter_next (&iter, &ikey, NULL)) {
-                    wise_lookup_ip(session, iRequest, (struct in6_addr *)ikey);
+                    wise_lookup_ip(session, iRequest, (struct in6_addr *)ikey, pos);
                 }
                 break;
             case ARKIME_FIELD_TYPE_STR:
                 if (type == INTEL_TYPE_DOMAIN)
-                    wise_lookup_domain(session, iRequest, session->fields[pos]->str);
+                    wise_lookup_domain(session, iRequest, session->fields[pos]->str, pos);
                 else
-                    wise_lookup(session, iRequest, session->fields[pos]->str, type);
+                    wise_lookup(session, iRequest, session->fields[pos]->str, type, pos);
                 break;
             case ARKIME_FIELD_TYPE_STR_ARRAY:
                 for(i = 0; i < (int)session->fields[pos]->sarray->len; i++) {
                     if (type == INTEL_TYPE_DOMAIN)
-                        wise_lookup_domain(session, iRequest, g_ptr_array_index(session->fields[pos]->sarray, i));
+                        wise_lookup_domain(session, iRequest, g_ptr_array_index(session->fields[pos]->sarray, i), pos);
                     else
-                        wise_lookup(session, iRequest, g_ptr_array_index(session->fields[pos]->sarray, i), type);
+                        wise_lookup(session, iRequest, g_ptr_array_index(session->fields[pos]->sarray, i), type, pos);
                 }
                 break;
             case ARKIME_FIELD_TYPE_STR_HASH:
                 shash = session->fields[pos]->shash;
                 HASH_FORALL2(s_, *shash, hstring) {
                     if (type == INTEL_TYPE_DOMAIN)
-                        wise_lookup_domain(session, iRequest, hstring->str);
+                        wise_lookup_domain(session, iRequest, hstring->str, pos);
                     else if (type == INTEL_TYPE_URL)
-                        wise_lookup_url(session, iRequest, hstring->str);
+                        wise_lookup_url(session, iRequest, hstring->str, pos);
                     else if (hstring->uw) {
                         char str[1000];
                         snprintf(str, sizeof(str), "%s;%s", hstring->str, (char *)hstring->uw);
-                        wise_lookup(session, iRequest, str, type);
+                        wise_lookup(session, iRequest, str, type, pos);
                     } else {
-                        wise_lookup(session, iRequest, hstring->str, type);
+                        wise_lookup(session, iRequest, hstring->str, type, pos);
                     }
                 }
                 break;
@@ -780,11 +793,11 @@ void wise_plugin_pre_save(ArkimeSession_t *session, int UNUSED(final))
                 g_hash_table_iter_init (&iter, ghash);
                 while (g_hash_table_iter_next (&iter, &ikey, NULL)) {
                     if (type == INTEL_TYPE_DOMAIN)
-                        wise_lookup_domain(session, iRequest, hstring->str);
+                        wise_lookup_domain(session, iRequest, hstring->str, pos);
                     else if (type == INTEL_TYPE_URL)
-                        wise_lookup_url(session, iRequest, hstring->str);
+                        wise_lookup_url(session, iRequest, hstring->str, pos);
                     else
-                        wise_lookup(session, iRequest, ikey, type);
+                        wise_lookup(session, iRequest, ikey, type, pos);
                 }
             case ARKIME_FIELD_TYPE_CERTSINFO:
                 // Unsupported
@@ -835,7 +848,7 @@ LOCAL uint32_t wise_plugin_outstanding()
     return count;
 }
 /******************************************************************************/
-LOCAL void wise_load_config()
+LOCAL void wise_load_wise_types()
 {
     gsize keys_len;
     int   i, type;
@@ -938,7 +951,6 @@ LOCAL void wise_load_config()
     g_strfreev(keys);
 }
 
-
 /******************************************************************************/
 void arkime_plugin_init()
 {
@@ -963,7 +975,7 @@ void arkime_plugin_init()
 
     protocolField    = arkime_field_by_db("protocol");
 
-    wise_load_config();
+    wise_load_wise_types();
 
     wiseExcludeDomains = arkime_config_str_list(NULL, "wiseExcludeDomains", ".in-addr.arpa;.ip6.arpa");
     for (i = 0; wiseExcludeDomains[i]; i++);

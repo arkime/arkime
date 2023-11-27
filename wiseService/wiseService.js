@@ -959,7 +959,12 @@ function processQueryResponse0 (req, res, queries, results) {
   res.end();
 }
 // ----------------------------------------------------------------------------
-//
+// pos len value
+// 0   4   flags
+// 4   2   2
+// 8   32  md5 of fields
+// 40  2   length of fields info if md5 unknown
+// 42  L   fields info
 function processQueryResponse2 (req, res, queries, results) {
   const hashes = (req.query.hashes || '').split(',');
 

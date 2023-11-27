@@ -66,6 +66,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #2409 JA4 support
   - #2409 JA3/JA4 support for smtp STARTTLS
   - #2297 always build zstd (except arch)
+  - #2517 new custom-fields-remap feature
 ## Cont3xt
   - #2121 new bulk UI and support for bulk queries
   - #2271 lots of keyboard shortcut improvements
