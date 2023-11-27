@@ -429,6 +429,8 @@ class Auth {
           user.spiviewFieldConfigs = dbUser.spiviewFieldConfigs;
           user.tableStates = dbUser.tableStates;
           user.cont3xt = dbUser.cont3xt;
+        } else {
+          user.save();
         }
         return done(null, user);
       });
