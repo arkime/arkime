@@ -864,7 +864,6 @@ $json = cont3xtPost('/api/integration/ip/csv:rir/search', to_json({
 }));
 is($json->{data}->{_cont3xt}->{count}, 1);
 
-
 ################################################################################
 ### HISTORY
 $json = cont3xtGet('/api/audits?searchTerm=goodtag');
