@@ -1,5 +1,5 @@
 # Test cont3xt.js
-use Test::More tests => 157;
+use Test::More tests => 161;
 use Test::Differences;
 use Data::Dumper;
 use ArkimeTest;
@@ -754,6 +754,21 @@ is($json->[6]->{resultCount}, 0);
 is (scalar @{$json}, 7);
 
 $json = cont3xtPost('/api/integration/search', to_json({
+  query => "http://example.com/blah.html",
+  doIntegrations => ["dns"]
+}));
+eq_or_diff($json->[1]->{indicator}, from_json('{"query": "example.com", "itype": "domain"}'));
+eq_or_diff($json->[1]->{parentIndicator}, from_json('{"query": "http://example.com/blah.html", "itype": "url"}'));
+
+$json = cont3xtPost('/api/integration/search', to_json({
+  query => "http://8.8.8.8/blah.html",
+  doIntegrations => ["dns"]
+}));
+eq_or_diff($json->[1]->{indicator}, from_json('{"query": "8.8.8.8", "itype": "ip"}'));
+eq_or_diff($json->[1]->{parentIndicator}, from_json('{"query": "http://8.8.8.8/blah.html", "itype": "url"}'));
+
+
+$json = cont3xtPost('/api/integration/search', to_json({
   query => "example.com",
   tags => "badtag",
   doIntegrations => ["DNS"]
@@ -849,7 +864,6 @@ $json = cont3xtPost('/api/integration/ip/csv:rir/search', to_json({
 }));
 is($json->{data}->{_cont3xt}->{count}, 1);
 
-
 ################################################################################
 ### HISTORY
 $json = cont3xtGet('/api/audits?searchTerm=goodtag');
@@ -862,7 +876,7 @@ is (scalar @{$json->{audits}}, 0);
 
 $json = cont3xtGet('/api/audits');
 is($json->{success}, 1);
-is (scalar @{$json->{audits}}, 3);
+is (scalar @{$json->{audits}}, 5);
 $id = $json->{audits}->[0]->{_id};
 
 $json = cont3xtDelete("/api/audit/$id", '{}');
@@ -876,7 +890,7 @@ eq_or_diff($json, from_json('{"success": false, "text": "History log not found"}
 
 $json = cont3xtGet('/api/audits');
 is($json->{success}, 1);
-is (scalar @{$json->{audits}}, 2);
+is (scalar @{$json->{audits}}, 4);
 
 ################################################################################
 ### VIEWS
