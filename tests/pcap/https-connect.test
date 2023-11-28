@@ -100,6 +100,7 @@
                "method" : [
                   "CONNECT"
                ],
+               "method-CONNECT" : 1,
                "methodCnt" : 1,
                "requestHeader" : [
                   "user-agent"

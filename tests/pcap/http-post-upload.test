@@ -54,6 +54,8 @@
                   "GET",
                   "POST"
                ],
+               "method-GET" : 2,
+               "method-POST" : 1,
                "methodCnt" : 2,
                "path" : [
                   "/fileupload/",

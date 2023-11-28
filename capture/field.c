@@ -1797,7 +1797,8 @@ gboolean arkime_field_load_field_remap (gpointer UNUSED(user_data))
             char *value = strchr(key, '=');
             if (!value)
                 continue;
-            *value = 0; value++;
+            *value = 0;
+            value++;
             while(isspace(*key)) key++;
             g_strchomp(key);
             while(isspace(*value)) value++;

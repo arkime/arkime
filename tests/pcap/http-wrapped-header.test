@@ -97,6 +97,7 @@
                "method" : [
                   "GET"
                ],
+               "method-GET" : 1,
                "methodCnt" : 1,
                "path" : [
                   "/x/xx/xxxxxxxxxxxxxxxxxxx/x/xxxxxx/xxxxxxxxxxxxxxx"

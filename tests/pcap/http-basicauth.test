@@ -66,6 +66,7 @@
                "method" : [
                   "GET"
                ],
+               "method-GET" : 1,
                "methodCnt" : 1,
                "path" : [
                   "/xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx/xxx/xxxxxxxxxxxxxxxxxxxx.js"

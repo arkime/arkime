@@ -79,6 +79,7 @@
                "method" : [
                   "GET"
                ],
+               "method-GET" : 2,
                "methodCnt" : 1,
                "path" : [
                   "/search"

@@ -43,6 +43,7 @@
                "method" : [
                   "POST"
                ],
+               "method-POST" : 4,
                "methodCnt" : 1,
                "path" : [
                   "/exhmedmx"

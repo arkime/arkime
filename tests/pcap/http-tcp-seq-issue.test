@@ -54,6 +54,7 @@
                "method" : [
                   "POST"
                ],
+               "method-POST" : 1,
                "methodCnt" : 1,
                "path" : [
                   "/xxxxxxxxx/xxxxxx/xxxxxxxxxxx/xxxxxxxxxx/xxx/xxxxxxxxx.xxx"
