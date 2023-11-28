@@ -46,9 +46,9 @@ jobs:
 
           - version: al2023-arm
             container: andywick/arkime-build-al2023-arm64:5.0.0-3
-            buildopt: "--kafka --pfring"
+            buildopt: "--kafka"
             package: rpm
-            runson: buildjet-4vcpu-ubuntu-2204-arm
+            runson: buildjet-2vcpu-ubuntu-2204-arm
             arch: aarch64
 
     runs-on: ${{ matrix.runson || 'ubuntu-latest' }}
@@ -124,13 +124,13 @@ jobs:
           fpm -s dir -t deb -n arkime -x opt/arkime/logs -x opt/arkime/raw -v $ARKIME_VERSION --iteration ${{ github.run_attempt }} --template-scripts --after-install "release/afterinstall.sh" --url "https://arkime.com" --description "Arkime Full Packet System" -d libwww-perl -d libjson-perl -d ethtool -d libyaml-dev -p arkime_${ARKIME_VERSION}-${{github.run_attempt}}.${{matrix.version}}_${{matrix.arch || 'amd64'}}.deb /opt/arkime
           ls -l *.deb
 
-      - uses: actions/upload-artifact@v3
-        with:
-          name: upload artifact
-          path: |
-            *.deb
-            *.rpm
-            *.zst
+#      - uses: actions/upload-artifact@v3
+#        with:
+#          name: upload artifact
+#          path: |
+#            *.deb
+#            *.rpm
+#            *.zst
 
   slack:
     runs-on: ubuntu-latest
