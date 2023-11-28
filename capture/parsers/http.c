@@ -10,7 +10,8 @@
 
 #define MAX_URL_LENGTH 4096
 
-#define HTTP_MAX_METHOD 25
+// Only track DELETE, GET, HEAD, POST, PUT, CONNECT, OPTIONS
+#define HTTP_MAX_METHOD 6
 
 typedef struct {
     ArkimeSession_t *session;
@@ -25,7 +26,7 @@ typedef struct {
     char             header[2][40];
     short            pos[2];
     http_parser      parsers[2];
-    uint16_t         methodCounts[HTTP_MAX_METHOD + 2];
+    uint16_t         methodCounts[HTTP_MAX_METHOD + 1];
 
     GChecksum       *checksum[4];
     const char      *magicString[2];
