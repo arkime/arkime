@@ -1,3 +1,7 @@
+<!--
+Copyright Yahoo Inc.
+SPDX-License-Identifier: Apache-2.0
+-->
 <template>
   <b-modal
     size="xl"
@@ -28,17 +32,19 @@
           class="mb-0 alert-sm mr-1 ml-1">
           {{ error }}
         </b-alert>
-        <b-button
-          variant="warning"
-          @click="rawEditMode = !rawEditMode"
-          v-b-tooltip.hover="'Edit the raw config for this link group'">
-          <span class="fa fa-pencil-square-o" />
-        </b-button>
-        <b-button
-          @click="create"
-          variant="success">
-          Create
-        </b-button>
+        <div>
+          <b-button
+            variant="secondary"
+            @click="rawEditMode = !rawEditMode"
+            v-b-tooltip.hover.left="'Toggle raw configuration for this link group'">
+            <span class="fa fa-pencil-square-o" />
+          </b-button>
+          <b-button
+            @click="create"
+            variant="success">
+            Create
+          </b-button>
+        </div>
       </div>
     </template> <!-- /footer -->
   </b-modal>

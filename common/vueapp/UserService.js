@@ -147,7 +147,7 @@ export default {
   /**
    * Determines whether a user has role to perform a specific task
    * @param {Object} user The user to check roles for
-   * @param {String} role The role in question
+   * @param {String} role The role(s) in question (comma separated list)
    * @returns {Boolean} true if all roles are included
    */
   hasRole (user, role) {
@@ -157,14 +157,16 @@ export default {
       let reverse = false;
       if (r.startsWith('!')) {
         reverse = true;
-        r = r.substr(1);
+        r = r.substring(1);
       }
-      if ((!reverse && !user.roles.includes(r)) ||
-        (reverse && user.roles.includes(r))) {
-        return false;
+      if (
+        (!reverse && user.roles.includes(r)) ||
+        (reverse && !user.roles.includes(r))
+      ) {
+        return true;
       }
     }
-    return true;
+    return false;
   },
 
   /**
@@ -193,6 +195,34 @@ export default {
         } else {
           return reject(response.text);
         }
+      });
+    });
+  },
+
+  /**
+   * Download users csv
+   * @param {Object} query - The query to filter users to download
+   *                         {desc:false,start:0,length:50,filter:"",sortField:"userId"}
+   */
+  downloadCSV (query) {
+    return new Promise((resolve, reject) => {
+      fetch('api/users/csv', {
+        method: 'POST',
+        headers: setReqHeaders({ 'Content-Type': 'application/json' }),
+        body: JSON.stringify(query)
+      }).then((response) => {
+        return response.blob();
+      }).then((csvBlob) => {
+        const url = window.URL.createObjectURL(csvBlob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'users.csv';
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        return resolve({ success: true, text: 'Downloaded!' });
+      }).catch((error) => {
+        reject(error);
       });
     });
   }

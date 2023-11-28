@@ -1,21 +1,12 @@
 /******************************************************************************/
 /* Copyright Yahoo Inc.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this Software except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: Apache-2.0
  */
 const Integration = require('../../integration.js');
 const maxmind = require('maxmind');
 const fs = require('fs');
+const ArkimeConfig = require('../../../common/arkimeConfig');
 
 class MaxmindIntegration extends Integration {
   name = 'Maxmind';
@@ -50,8 +41,8 @@ class MaxmindIntegration extends Integration {
   constructor () {
     super();
 
-    const asnPaths = Integration.getConfig('cont3xt', 'geoLite2ASN', '/var/lib/GeoIP/GeoLite2-ASN.mmdb;/usr/share/GeoIP/GeoLite2-ASN.mmdb').split(';');
-    const countryPaths = Integration.getConfig('cont3xt', 'geoLite2Country', '/var/lib/GeoIP/GeoLite2-Country.mmdb;/usr/share/GeoIP/GeoLite2-Country.mmdb').split(';');
+    const asnPaths = ArkimeConfig.getFullArray(['Maxmind', 'cont3xt'], 'geoLite2ASN', '/var/lib/GeoIP/GeoLite2-ASN.mmdb;/usr/share/GeoIP/GeoLite2-ASN.mmdb');
+    const countryPaths = ArkimeConfig.getFullArray(['Maxmind', 'cont3xt'], 'geoLite2Country', '/var/lib/GeoIP/GeoLite2-Country.mmdb;/usr/share/GeoIP/GeoLite2-Country.mmdb');
 
     if (asnPaths.length === 0 && countryPaths.length === 0) {
       return;

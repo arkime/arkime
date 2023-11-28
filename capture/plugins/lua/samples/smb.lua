@@ -241,5 +241,5 @@ function contains(tab,val)
   return false
 end
 
-MolochSession.register_tcp_classifier("smb", 4, string.char(0xff, 0x53, 0x4d, 0x42), "smbClassify")
-MolochSession.register_tcp_classifier("smb", 4, string.char(0xfe, 0x53, 0x4d, 0x42), "smbClassify")
+ArkimeSession.register_tcp_classifier("smb", 4, string.char(0xff, 0x53, 0x4d, 0x42), "smbClassify")
+ArkimeSession.register_tcp_classifier("smb", 4, string.char(0xfe, 0x53, 0x4d, 0x42), "smbClassify")

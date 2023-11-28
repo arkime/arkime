@@ -6,17 +6,7 @@
  *
  * Copyright 2020 AOL Inc. All rights reserved.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this Software except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: Apache-2.0
  */
 const Config = require('./config.js');
 const express = require('express');
@@ -26,6 +16,7 @@ const fs = require('fs');
 const basicAuth = require('basic-auth');
 const zlib = require('zlib');
 const ArkimeUtil = require('../common/arkimeUtil');
+const ArkimeConfig = require('../common/arkimeConfig');
 
 // express app
 const app = express();
@@ -34,67 +25,75 @@ const app = express();
 // Config
 // ============================================================================
 
-const elasticsearch = Config.get('elasticsearch');
-const sensors = Config.configMap('esproxy-sensors');
-console.log('sensors', sensors);
-
-for (const sensor in sensors) {
-  sensors[sensor].node = sensor;
-  if (sensors[sensor].ip) {
-    sensors[sensor].ip = sensors[sensor].ip.split(',');
-  }
-}
-let prefix = Config.get('prefix', 'arkime_');
-if (prefix !== '' && prefix.charAt(prefix.length - 1) !== '_') {
-  prefix += '_';
-}
-
-const oldprefix = prefix === 'arkime_' ? '' : prefix;
-
-console.log(`PREFIX: ${prefix} OLDPREFIX: ${oldprefix}`);
-
-const esSSLOptions = { rejectUnauthorized: !Config.insecure, ca: Config.getCaTrustCerts(Config.nodeName()) };
-const esClientKey = Config.get('esClientKey');
-const esClientCert = Config.get('esClientCert');
-if (esClientKey) {
-  esSSLOptions.key = fs.readFileSync(esClientKey);
-  esSSLOptions.cert = fs.readFileSync(esClientCert);
-  const esClientKeyPass = Config.get('esClientKeyPass');
-  if (esClientKeyPass) {
-    esSSLOptions.passphrase = esClientKeyPass;
-  }
-}
-
-const esAPIKey = Config.get('elasticsearchAPIKey');
-const esBasicAuth = Config.get('elasticsearchBasicAuth');
-
+let elasticsearch;
+let sensors;
+let oldprefix;
+let prefix;
+const esSSLOptions = { rejectUnauthorized: !ArkimeConfig.insecure };
 let authHeader;
-if (esAPIKey) {
-  authHeader = `ApiKey ${esAPIKey}`;
-} else if (esBasicAuth) {
-  if (!esBasicAuth.includes(':')) {
-    authHeader = `Basic ${esBasicAuth}`;
-  } else {
-    authHeader = `Basic ${Buffer.from(esBasicAuth).toString('base64')}`;
+
+ArkimeConfig.loaded(() => {
+  elasticsearch = Config.get('elasticsearch');
+  sensors = Config.configMap('esproxy-sensors');
+  oldprefix = prefix === 'arkime_' ? '' : prefix;
+  console.log('sensors', sensors);
+
+  for (const sensor in sensors) {
+    sensors[sensor].node = sensor;
+    if (sensors[sensor].ip) {
+      sensors[sensor].ip = sensors[sensor].ip.split(',');
+    }
   }
-}
+  prefix = ArkimeUtil.formatPrefix(Config.get('prefix', 'arkime_'));
+  console.log(`PREFIX: ${prefix} OLDPREFIX: ${oldprefix}`);
+
+  const esClientKey = Config.get('esClientKey');
+  const esClientCert = Config.get('esClientCert');
+  const caTrustFile = Config.getFull(Config.nodeName(), 'caTrustFile');
+  if (caTrustFile) { esSSLOptions.ca = ArkimeUtil.certificateFileToArray(caTrustFile); };
+  if (esClientKey) {
+    esSSLOptions.key = fs.readFileSync(esClientKey);
+    esSSLOptions.cert = fs.readFileSync(esClientCert);
+    const esClientKeyPass = Config.get('esClientKeyPass');
+    if (esClientKeyPass) {
+      esSSLOptions.passphrase = esClientKeyPass;
+    }
+  }
+
+  const esAPIKey = Config.get('elasticsearchAPIKey');
+  const esBasicAuth = Config.get('elasticsearchBasicAuth');
+
+  if (esAPIKey) {
+    authHeader = `ApiKey ${esAPIKey}`;
+  } else if (esBasicAuth) {
+    if (!esBasicAuth.includes(':')) {
+      authHeader = `Basic ${esBasicAuth}`;
+    } else {
+      authHeader = `Basic ${Buffer.from(esBasicAuth).toString('base64')}`;
+    }
+  }
+});
 
 // ============================================================================
 // Optional tee stuff
-const elasticsearchTee = Config.sectionGet('tee', 'elasticsearch');
-const esAPIKeyTee = Config.sectionGet('tee', 'elasticsearchAPIKey');
-const esBasicAuthTee = Config.sectionGet('tee', 'elasticsearchBasicAuth');
-
+let elasticsearchTee;
 let authHeaderTee;
-if (esAPIKeyTee) {
-  authHeaderTee = `ApiKey ${esAPIKeyTee}`;
-} else if (esBasicAuthTee) {
-  if (!esBasicAuthTee.includes(':')) {
-    authHeaderTee = `Basic ${esBasicAuthTee}`;
-  } else {
-    authHeaderTee = `Basic ${Buffer.from(esBasicAuthTee).toString('base64')}`;
+
+ArkimeConfig.loaded(() => {
+  elasticsearchTee = Config.sectionGet('tee', 'elasticsearch');
+  const esAPIKeyTee = Config.sectionGet('tee', 'elasticsearchAPIKey');
+  const esBasicAuthTee = Config.sectionGet('tee', 'elasticsearchBasicAuth');
+
+  if (esAPIKeyTee) {
+    authHeaderTee = `ApiKey ${esAPIKeyTee}`;
+  } else if (esBasicAuthTee) {
+    if (!esBasicAuthTee.includes(':')) {
+      authHeaderTee = `Basic ${esBasicAuthTee}`;
+    } else {
+      authHeaderTee = `Basic ${Buffer.from(esBasicAuthTee).toString('base64')}`;
+    }
   }
-}
+});
 
 // ============================================================================
 // GET calls we can match exactly
@@ -105,30 +104,43 @@ const getExact = {
   '/_refresh': 1,
   '/_nodes/stats/jvm,process,fs,os,indices,thread_pool': 1
 };
-getExact[`/_template/${prefix}sessions3_template`] = 1;
-getExact[`/_template/${oldprefix}sessions2_template`] = 1;
-getExact[`/${oldprefix}sessions2-*/_alias`] = 1;
-getExact[`/${prefix}sessions3-*/_alias`] = 1;
-getExact[`/${oldprefix}sessions2-*,${prefix}sessions3-*/_alias`] = 1;
-getExact[`/${prefix}stats/_stats`] = 1;
-getExact[`/${prefix}users/_stats`] = 1;
-getExact[`/${prefix}users/_count`] = 1;
-getExact[`/${prefix}sequence/_stats`] = 1;
-getExact[`/${prefix}dstats/_stats`] = 1;
-getExact[`/${prefix}files/_stats`] = 1;
-getExact[`/${prefix}fields/_search`] = 1;
-getExact[`/${prefix}queries/_mapping`] = 1;
 
 // POST calls we can match exactly
 const postExact = {
 };
-postExact[`/${prefix}stats/_search`] = 1;
-postExact[`/${prefix}fields/_search`] = 1;
-postExact[`/${prefix}lookups/_search`] = 1;
 
 // PUT calls we can match exactly
 const putExact = {
 };
+
+ArkimeConfig.loaded(() => {
+  getExact[`/_template/${prefix}sessions3_template`] = 1;
+  getExact[`/_template/${oldprefix}sessions2_template`] = 1;
+  getExact[`/${oldprefix}sessions2-*/_alias`] = 1;
+  getExact[`/${prefix}sessions3-*/_alias`] = 1;
+  getExact[`/${oldprefix}sessions2-*,${prefix}sessions3-*/_alias`] = 1;
+  getExact[`/${prefix}stats/_stats`] = 1;
+  getExact[`/${prefix}users/_stats`] = 1;
+  getExact[`/${prefix}users/_count`] = 1;
+  getExact[`/${prefix}sequence/_stats`] = 1;
+  getExact[`/${prefix}dstats/_stats`] = 1;
+  getExact[`/${prefix}files/_stats`] = 1;
+  getExact[`/${prefix}fields/_search`] = 1;
+  getExact[`/${prefix}queries/_mapping`] = 1;
+
+  postExact[`/${prefix}stats/_search`] = 1;
+  postExact[`/${prefix}fields/_search`] = 1;
+  postExact[`/${prefix}lookups/_search`] = 1;
+});
+
+// ============================================================================
+// RegressionTests
+// ===========================================================================
+if (ArkimeConfig.regressionTests) {
+  app.post('/regressionTests/shutdown', function (req, res) {
+    process.exit(0);
+  });
+}
 
 // ============================================================================
 // Auth
@@ -332,8 +344,15 @@ function validateBulk (req) {
       } else if (typeof json.create === 'object') {
         const _index = json.create._index;
         if (!_index.includes('sessions2') && !_index.includes('sessions3')) { throw new Error(`Bad index ${_index}`); }
+      } else if (typeof json.update === 'object') {
+        const _index = json.update._index;
+        if (!_index.includes('fields')) { throw new Error(`Bad index ${_index}`); }
+      } else if (typeof json.delete === 'object') {
+        const _index = json.delete._index;
+        if (!_index.includes('fields')) { throw new Error(`Bad index ${_index}`); }
       } else {
-        throw new Error('Missing create or index operation');
+        console.log('Failed bulk', JSON.stringify(json, false, 2));
+        throw new Error('Missing create, update or index operation');
       }
     } catch (err) {
       console.log('Bulk error', err, ArkimeUtil.sanitizeStr(lines[i]));
@@ -438,15 +457,10 @@ app.use(ArkimeUtil.expressErrorHandler);
 const httpAgent = new http.Agent({ keepAlive: true, keepAliveMsecs: 5000, maxSockets: 100 });
 const httpsAgent = new https.Agent(Object.assign({ keepAlive: true, keepAliveMsecs: 5000, maxSockets: 100 }, esSSLOptions));
 
-console.log('Listen on ', Config.get('esProxyPort', '7200'));
-if (Config.isHTTPS()) {
-  const cryptoOption = require('crypto').constants.SSL_OP_NO_TLSv1;
-  const server = https.createServer({
-    key: Config.keyFileData,
-    cert: Config.certFileData,
-    secureOptions: cryptoOption
-  }, app).listen(Config.get('esProxyPort', '7200'), Config.get('esProxyHost', undefined));
-  Config.setServerToReloadCerts(server, cryptoOption);
-} else {
-  http.createServer(app).listen(Config.get('esProxyPort', '7200'), Config.get('esProxyHost', undefined));
+async function main () {
+  await Config.initialize();
+
+  ArkimeUtil.createHttpServer(app, Config.get('esProxyHost'), Config.get('esProxyPort', '7200'));
 }
+
+main();

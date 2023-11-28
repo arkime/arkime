@@ -1,3 +1,7 @@
+<!--
+Copyright Yahoo Inc.
+SPDX-License-Identifier: Apache-2.0
+-->
 <template>
 
   <div class="help-content">
@@ -33,10 +37,6 @@
             class="nav-link nested">
             General
           </a>
-          <a href="help#password"
-            class="nav-link nested">
-            Password
-          </a>
           <a href="help#notifiers"
             class="nav-link nested">
             Notifiers
@@ -55,7 +55,7 @@
             Parliament contains a grouped list of your Arkime clusters.
           </strong></p>
           <p class="lead">
-            Parliament allows users to view your Arkime cluster's status and
+            Parliament allows users to view each Arkime cluster's status and
             navigate to each cluster.
           </p>
           <!-- /about -->
@@ -72,14 +72,14 @@
             The Parliament dashboard includes links, ES health, and issues for each Arkime cluster.
           </p>
           <p>
-            The dashboard page allows users to view and interact with the Molochs in your Parliament.
-            You can search for Molochs in your Parliament, change the data refresh time
+            The dashboard page allows users to view and interact with the Arkimes in your Parliament.
+            You can search for Arkimes in your Parliament, change the data refresh time
             (15 seconds is the default),
             and hover over issues and ES health statuses for more information.
           </p>
           <p>
-            <strong>Once logged in</strong>, a user can acknowledge and ignore issues for each cluster as well as update
-            the Parliament when in Edit Mode. To enter this mode, toggle the switch on the top right
+            <strong>Once logged in</strong>, a parliamentUser can acknowledge and ignore issues for each cluster.
+            A parliamentAdmin can update the Parliament when in Edit Mode. To enter this mode, toggle the switch on the top right
             (below the navbar). Now you can add, update, delete, and reorder groups and clusters in your Parliament.
           </p>
           <!-- /dashboard -->
@@ -96,8 +96,8 @@
             The issues page contains a list of issues that your Parliament is experiencing.
           </p>
           <p>
-            <strong>Once logged in</strong>, a user can ignore, acknowledge, and remove
-            acknowledged issues for every cluster.
+            <strong>Once logged in</strong>, a parliamentUser and a parliamentAdmin
+            can ignore, acknowledge, and remove acknowledged issues for every cluster.
           </p>
           <p>
             <span class="fa fa-check">
@@ -114,7 +114,6 @@
             (via the ignore dropdown button or automatically after the set ignore time has expired).
           </p>
 
-          <!-- TODO describe issue types -->
           <p>
             Issue types include:
           </p>
@@ -136,7 +135,7 @@
             </li>
             <li>
               <strong>ES Red:</strong>
-              The Elasticsearch status returned from the cluster health checkwas RED.
+              The Elasticsearch status returned from the cluster health check was RED.
             </li>
             <li>
               <strong>ES Dropped:</strong>
@@ -158,8 +157,7 @@
           </p>
           <p>
             <em>
-              <strong>Note:</strong> To view this page, you cannot run the Parliament in
-              dashboard only mode and the user must be logged in or not have a password configured.
+              <strong>Note:</strong> To view this page, you must be logged in as a parliamentAdmin.
             </em>
           </p>
 
@@ -226,22 +224,9 @@
             </ul>
             <!-- /general -->
 
-            <!-- password -->
-            <h6 id="password">
-              <span class="fa fa-fw fa-lock">
-              </span>&nbsp;
-              Password
-            </h6>
-            <p>
-              The password section allows a user to update the Parliament password or create
-              a new password if the Parliament was started without one.
-            </p>
-            <!-- /password -->
-
             <!-- notifiers -->
             <h6 id="notifiers">
-              <span class="fa fa-fw fa-bell">
-              </span>&nbsp;
+              <span class="fa fa-fw fa-bell mr-2"></span>
               Notifiers
             </h6>
             <p>

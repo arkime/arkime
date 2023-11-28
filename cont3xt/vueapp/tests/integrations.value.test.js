@@ -100,11 +100,7 @@ const field11 = {
 const store = {
   state: {
     renderingArray: false,
-    renderingTable: false,
-    displayIntegration: {
-      source: 'Whois',
-      itype: 'domain'
-    }
+    renderingTable: false
   },
   getters: {
     getRenderingArray (state) {

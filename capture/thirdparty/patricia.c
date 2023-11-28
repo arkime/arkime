@@ -1,10 +1,10 @@
 #include <assert.h>
-#include <ctype.h> 
-#include <errno.h> 
+#include <ctype.h>
+#include <errno.h>
 #include <math.h>
 #include <stddef.h>
-#include <stdio.h> 
-#include <stdlib.h> 
+#include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <sys/types.h>
 #include <sys/socket.h>
@@ -30,7 +30,7 @@ comp_with_mask(void *addr, const void *dest, u_int mask)
 }
 
 /*
- * this allows imcomplete prefix 
+ * this allows imcomplete prefix
  */
 int
 my_inet_pton(int af, const char *src, void *dst)
@@ -122,7 +122,7 @@ prefix_toa2x(prefix_t * prefix, char *buff, int with_len)
 }
 
 /*
- * prefix_toa2 convert prefix information to ascii string 
+ * prefix_toa2 convert prefix information to ascii string
  */
 char           *
 prefix_toa2(prefix_t * prefix, char *buff)
@@ -176,7 +176,7 @@ New_Prefix(int family, void *dest, int bitlen)
 }
 
 /*
- * ascii2prefix 
+ * ascii2prefix
  */
 prefix_t       *
 ascii2prefix2(int family, char *string, prefix_t *prefix)
@@ -187,7 +187,7 @@ ascii2prefix2(int family, char *string, prefix_t *prefix)
     struct in_addr  sin;
     struct in6_addr sin6;
     /*
-     * not thread safe 
+     * not thread safe
      */
     char save[MAXLINE];
 
@@ -246,7 +246,7 @@ Ref_Prefix(prefix_t * prefix)
         return (NULL);
     if (prefix->ref_count == 0) {
         /*
-         * make a copy in case of a static prefix 
+         * make a copy in case of a static prefix
          */
         return (New_Prefix2
                 (prefix->family, &prefix->add, prefix->bitlen,
@@ -263,7 +263,7 @@ Deref_Prefix(prefix_t * prefix)
         return;
     /*
      * for secure programming, raise an assert. no static prefix can call
-     * this 
+     * this
      */
     assert(prefix->ref_count > 0);
 
@@ -280,7 +280,7 @@ Deref_Prefix(prefix_t * prefix)
 // static int      num_active_patricia = 0;
 
 /*
- * these routines support continuous mask only 
+ * these routines support continuous mask only
  */
 
 patricia_tree_t *
@@ -302,7 +302,7 @@ New_Patricia(int maxbits)
  */
 
 void
-Clear_Patricia(patricia_tree_t * patricia, void_fn_t func)
+Clear_Patricia(patricia_tree_t * patricia, patricia_fn_data_t func)
 {
     assert(patricia);
     if (patricia->head) {
@@ -345,7 +345,7 @@ Clear_Patricia(patricia_tree_t * patricia, void_fn_t func)
 
 
 void
-Destroy_Patricia(patricia_tree_t * patricia, void_fn_t func)
+Destroy_Patricia(patricia_tree_t * patricia, patricia_fn_data_t func)
 {
     Clear_Patricia(patricia, func);
     free(patricia);
@@ -358,7 +358,7 @@ Destroy_Patricia(patricia_tree_t * patricia, void_fn_t func)
  */
 
 void
-patricia_process(patricia_tree_t * patricia, void_fn_t func)
+patricia_process(patricia_tree_t * patricia, patricia_fn_prefix_data_t func)
 {
     patricia_node_t *node;
     assert(func);
@@ -369,7 +369,7 @@ patricia_process(patricia_tree_t * patricia, void_fn_t func)
 }
 
 size_t
-patricia_walk_inorder(patricia_node_t * node, void_fn_t func)
+patricia_walk_inorder(patricia_node_t * node, patricia_fn_prefix_data_t func)
 {
     size_t          n = 0;
     assert(func);
@@ -434,7 +434,7 @@ patricia_search_exact(patricia_tree_t * patricia, prefix_t * prefix)
 
 
 /*
- * if inclusive != 0, "best" may be the given prefix itself 
+ * if inclusive != 0, "best" may be the given prefix itself
  */
 patricia_node_t *
 patricia_search_best2(patricia_tree_t * patricia, prefix_t * prefix,
@@ -539,7 +539,7 @@ patricia_search_best3(patricia_tree_t * patricia, const u_char *addr, int bitlen
 }
 
 /*
- * if inclusive != 0, "best" may be the given prefix itself 
+ * if inclusive != 0, "best" may be the given prefix itself
  */
 int
 patricia_search_all(patricia_tree_t * patricia, prefix_t * prefix, int inclusive, patricia_node_t **results)
@@ -650,7 +650,7 @@ patricia_lookup(patricia_tree_t * patricia,
     if (!patricia || ! prefix || prefix->bitlen > patricia->maxbits)
 	return NULL;
 #if 0
-    if (!patricia || !prefix || 
+    if (!patricia || !prefix ||
 	    prefix->bitlen >= patricia->maxbits)
 	return NULL;
     printf("%p %p\n", patricia, prefix);
@@ -695,7 +695,7 @@ patricia_lookup(patricia_tree_t * patricia,
     assert(node->prefix);
     test_addr = prefix_touchar(node->prefix);
     /*
-     * find the first bit different 
+     * find the first bit different
      */
     check_bit = (node->bit < bitlen) ? node->bit : bitlen;
     differ_bit = 0;
@@ -705,14 +705,14 @@ patricia_lookup(patricia_tree_t * patricia,
             continue;
         }
         /*
-         * I know the better way, but for now 
+         * I know the better way, but for now
          */
         for (j = 0; j < 8; j++) {
             if (BIT_TEST(r, (0x80 >> j)))
                 break;
         }
         /*
-         * must be found 
+         * must be found
          */
         assert(j < 8);
         differ_bit = i * 8 + j;
@@ -818,13 +818,13 @@ patricia_remove(patricia_tree_t * patricia, patricia_node_t * node)
 
         /*
          * this might be a placeholder node -- have to check and make sure
-         * there is a prefix aossciated with it ! 
+         * there is a prefix aossciated with it !
          */
         if (node->prefix != NULL)
             Deref_Prefix(node->prefix);
         node->prefix = NULL;
         /*
-         * Also I needed to clear data pointer -- masaki 
+         * Also I needed to clear data pointer -- masaki
          */
         node->data = NULL;
         return;
@@ -856,7 +856,7 @@ patricia_remove(patricia_tree_t * patricia, patricia_node_t * node)
             return;
 
         /*
-         * we need to remove parent too 
+         * we need to remove parent too
          */
 
         if (parent->parent == NULL) {

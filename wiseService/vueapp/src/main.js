@@ -27,6 +27,7 @@ new Vue({
     /* eslint-disable no-undef */
     Vue.prototype.$constants = {
       VERSION,
+      LOGOUT_URL,
       BUILD_DATE, // from webpack.DefinePlugin
       BUILD_VERSION // from webpack.DefinePlugin
     };

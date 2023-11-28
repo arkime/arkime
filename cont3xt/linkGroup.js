@@ -3,20 +3,11 @@
  *
  * Copyright Yahoo Inc.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this Software except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: Apache-2.0
  */
 'use strict';
 
+const User = require('../common/user');
 const ArkimeUtil = require('../common/arkimeUtil');
 
 class LinkGroup {
@@ -102,64 +93,82 @@ class LinkGroup {
 
   // Verify the link group, returns error msg on failure
   static verifyLinkGroup (lg) {
+    lg = (
+      ({ // only allow these properties in link groups
+        // eslint-disable-next-line no-shadow
+        name, links, viewRoles, editRoles, creator
+      }) => ({ name, links, viewRoles, editRoles, creator })
+    )(lg);
+
     if (!ArkimeUtil.isString(lg.name)) {
-      return 'Missing name';
+      return { msg: 'Missing name' };
     }
 
     if (!Array.isArray(lg.links)) {
-      return 'Missing list of links';
+      return { msg: 'Missing list of links' };
     }
 
     if (lg.viewRoles !== undefined && !ArkimeUtil.isStringArray(lg.viewRoles)) {
-      return 'viewRoles must be an array of strings';
+      return { msg: 'viewRoles must be an array of strings' };
     }
 
     if (lg.editRoles !== undefined && !ArkimeUtil.isStringArray(lg.editRoles)) {
-      return 'editRoles must be an array of strings';
+      return { msg: 'editRoles must be an array of strings' };
     }
 
     if (lg.editRoles !== undefined) {
       if (!Array.isArray(lg.editRoles)) {
-        return 'editRoles must be array';
+        return { msg: 'editRoles must be array' };
       }
 
       for (const editRole of lg.editRoles) {
         if (!ArkimeUtil.isString(editRole)) {
-          return 'editRoles must contain strings';
+          return { msg: 'editRoles must contain strings' };
         }
       }
     }
 
-    for (const link of lg.links) {
+    for (let i = 0; i < lg.links.length; i++) {
+      const link = lg.links[i];
+      lg.links[i] = (
+        ({ // only allow these properties in links
+          // eslint-disable-next-line no-shadow
+          name, url, itypes, color, infoField, externalDocName, externalDocUrl
+        }) => ({ name, url, itypes, color, infoField, externalDocName, externalDocUrl })
+      )(link);
+
       if (typeof link !== 'object') {
-        return 'Link must be object';
+        return { msg: 'Link must be object' };
       }
       if (!ArkimeUtil.isString(link.name)) {
-        return 'Link missing name';
+        return { msg: 'Link missing name' };
       }
       if (!ArkimeUtil.isString(link.url)) {
-        return 'Link missing url';
+        return { msg: 'Link missing url' };
       }
       if (!Array.isArray(link.itypes)) {
-        return 'Link missing itypes';
+        return { msg: 'Link missing itypes' };
       }
       for (const itype of link.itypes) {
         if (!ArkimeUtil.isString(itype)) {
-          return 'Link itypes must be strings';
+          return { msg: 'Link itypes must be strings' };
         }
       }
+      if (link.color !== undefined && !ArkimeUtil.isString(link.color)) {
+        return { msg: 'Link color must be a string' };
+      }
       if (link.infoField !== undefined && !ArkimeUtil.isString(link.infoField)) {
-        return 'Link infoField must be a string';
+        return { msg: 'Link infoField must be a string' };
       }
       if (link.externalDocName !== undefined && !ArkimeUtil.isString(link.externalDocName)) {
-        return 'Link externalDocName must be a string';
+        return { msg: 'Link externalDocName must be a string' };
       }
       if (link.externalDocUrl !== undefined && !ArkimeUtil.isString(link.externalDocUrl)) {
-        return 'Link externalDocUrl must be a string';
+        return { msg: 'Link externalDocUrl must be a string' };
       }
     }
 
-    return null;
+    return { lg };
   }
 
   /**
@@ -175,12 +184,12 @@ class LinkGroup {
     const linkGroup = req.body;
     linkGroup.creator = req.user.userId;
 
-    const msg = LinkGroup.verifyLinkGroup(linkGroup);
+    const { lg, msg } = LinkGroup.verifyLinkGroup(linkGroup);
     if (msg) {
       return res.send({ success: false, text: msg });
     }
 
-    const results = await Db.putLinkGroup(null, linkGroup);
+    const results = await Db.putLinkGroup(null, lg);
     if (!results) {
       return res.send({ success: false, text: 'ES Error' });
     }
@@ -202,20 +211,20 @@ class LinkGroup {
       return res.send({ success: false, text: 'LinkGroup not found' });
     }
 
-    if (olinkGroup.creator !== req.user.userId && !(req.user.hasRole(olinkGroup.editRoles)) && !req.user.hasRole('cont3xtAdmin')) {
-      return res.send({ success: false, text: 'Permission denied' });
-    }
-
     const linkGroup = req.body;
-    linkGroup.creator = olinkGroup.creator; // Make sure the creator doesn't get changed
 
-    const msg = LinkGroup.verifyLinkGroup(linkGroup);
+    const { lg, msg } = LinkGroup.verifyLinkGroup(linkGroup);
     if (msg) {
       return res.send({ success: false, text: msg });
     }
 
+    // sets the owner if it has changed
+    if (!await User.setOwner(req, res, lg, olinkGroup, 'creator')) {
+      return;
+    }
+
     try {
-      const results = await Db.putLinkGroup(req.params.id, linkGroup);
+      const results = await Db.putLinkGroup(req.params.id, lg);
       if (!results) {
         return res.send({ success: false, text: 'ES Error' });
       }
@@ -237,10 +246,6 @@ class LinkGroup {
     const linkGroup = await Db.getLinkGroup(req.params.id);
     if (!linkGroup) {
       return res.send({ success: false, text: 'LinkGroup not found' });
-    }
-
-    if (linkGroup.creator !== req.user.userId && !(req.user.hasRole(linkGroup.editRoles)) && !req.user.hasRole('cont3xtAdmin')) {
-      return res.send({ success: false, text: 'Permission denied' });
     }
 
     const results = await Db.deleteLinkGroup(req.params.id, req.body);

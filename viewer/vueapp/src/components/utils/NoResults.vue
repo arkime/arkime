@@ -1,3 +1,7 @@
+<!--
+Copyright Yahoo Inc.
+SPDX-License-Identifier: Apache-2.0
+-->
 <template>
 
   <div class="info-area vertical-horizontal-center">
@@ -26,7 +30,7 @@
 
 <script>
 export default {
-  name: 'MolochNoResults',
+  name: 'ArkimeNoResults',
   props: ['recordsTotal', 'view'],
   computed: {
     viewName () {

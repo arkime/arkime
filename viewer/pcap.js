@@ -3,17 +3,7 @@
  *
  * Copyright 2012-2016 AOL Inc. All rights reserved.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this Software except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 'use strict';
@@ -328,10 +318,15 @@ Pcap.prototype.readPacketInternal = function (posArg, hpLenArg, cb) {
 
       // Uncompress if needed
       if (this.uncompressedBits) {
-        if (this.compression === 'gzip') {
-          readBuffer = zlib.inflateRawSync(readBuffer, { finishFlush: zlib.constants.Z_SYNC_FLUSH });
-        } else if (this.compression === 'zstd') {
-          readBuffer = decompressSync(readBuffer);
+        try {
+          if (this.compression === 'gzip') {
+            readBuffer = zlib.inflateRawSync(readBuffer, { finishFlush: zlib.constants.Z_SYNC_FLUSH });
+          } else if (this.compression === 'zstd') {
+            readBuffer = decompressSync(readBuffer);
+          }
+        } catch (e) {
+          console.log('PCAP uncompress issue', this.key, pos, buffer.length, bytesRead, e);
+          return cb(undefined);
         }
       }
 
@@ -505,8 +500,61 @@ Pcap.prototype.udp = function (buffer, obj, pos) {
   };
 
   obj.udp.data = buffer.slice(8);
-  if ((obj.udp.dport === 0x12b5) && (obj.udp.data.length > 8) && ((obj.udp.data[0] & 0x77) === 0) && ((obj.udp.data[1] & 0xb7) === 0)) {
+  const data = obj.udp.data;
+
+  // vxlan
+  if ((obj.udp.dport === 4789) && (data.length > 8) && ((data[0] & 0x77) === 0) && ((data[1] & 0xb7) === 0)) {
     this.ether(buffer.slice(16), obj, pos + 16);
+  }
+
+  // vxlan gpe
+  if ((obj.udp.dport === 4790) && (data.length > 8) && ((data[0] & 0xf0) === 0) && ((data[1] & 0xff) === 0)) {
+    switch (data[3]) {
+    case 1:
+      return this.ip4(buffer.slice(16), obj, pos + 16);
+    case 2:
+      return this.ip6(buffer.slice(16), obj, pos + 16);
+    case 3:
+      return this.ether(buffer.slice(16), obj, pos + 16);
+    case 4:
+      // TODO NSH
+      break;
+    }
+  }
+
+  // geneve
+  if ((obj.udp.dport === 6081) && (data.length > 8) && ((data[0] & 0xc0) === 0) && ((data[1] & 0x3f) === 0)) {
+    const optlen = data[0] & 0x3f;
+    const protocol = (data[2] << 8) | data[3];
+    const offset = 8 + optlen * 4;
+
+    if (8 + offset < buffer.length) {
+      this.ethertyperun(protocol, buffer.slice(8 + offset), obj, pos + 8 + offset);
+    }
+  }
+
+  // gtp
+  if ((obj.udp.dport === 2152) && (data.length > 8) && ((data[0] & 0xf0) === 0x30) && (data[1] === 0xff)) {
+    let offset = 8;
+    let next = 0;
+    if (data[0] & 0x7) {
+      offset += 3;
+      next = data[offset];
+      offset++;
+    }
+    while (next !== 0) {
+      const extlen = data[offset];
+      offset++;
+      offset += extlen * 4 - 2;
+      next = data[offset];
+      offset++;
+    }
+
+    if ((data[offset] & 0xf0) === 0x60) {
+      this.ip6(data.slice(offset), obj, pos + offset);
+    } else {
+      this.ip4(data.slice(offset), obj, pos + offset);
+    }
   }
 };
 
@@ -567,27 +615,11 @@ Pcap.prototype.gre = function (buffer, obj, pos) {
     bpos += 4;
   }
 
+  if (this.ethertyperun(obj.gre.type, buffer.slice(bpos), obj, pos + bpos)) { return; }
+
   switch (obj.gre.type) {
-  case 0x0800:
-    this.ip4(buffer.slice(bpos), obj, pos + bpos);
-    break;
-  case 0x86dd:
-    this.ip6(buffer.slice(bpos), obj, pos + bpos);
-    break;
-  case 0x6558:
-    this.ether(buffer.slice(bpos), obj, pos + bpos);
-    break;
-  case 0x6559:
-    this.framerelay(buffer.slice(bpos), obj, pos + bpos);
-    break;
-  case 0x880b:
-    this.ppp(buffer.slice(bpos), obj, pos + bpos);
-    break;
   case 0x88be:
     this.ether(buffer.slice(bpos + 8), obj, pos + bpos + 8);
-    break;
-  case 0x8847:
-    this.mpls(buffer.slice(bpos), obj, pos + bpos);
     break;
   default:
     console.log('gre Unknown type', obj.gre.type);
@@ -746,22 +778,44 @@ Pcap.prototype.mpls = function (buffer, obj, pos) {
   }
 };
 
+Pcap.prototype.ethertyperun = function (type, buffer, obj, pos) {
+  switch (type) {
+  case 0x0800:
+    this.ip4(buffer, obj, pos);
+    break;
+  case 0x0806: // arp
+    obj.ether ??= { data: buffer };
+    break;
+  case 0x86dd:
+    this.ip6(buffer, obj, pos);
+    break;
+  case 0x8864:
+    this.pppoe(buffer, obj, pos);
+    break;
+  case 0x8847:
+    this.mpls(buffer, obj, pos);
+    break;
+  case 0x6558:
+    this.ether(buffer, obj, pos);
+    break;
+  case 0x6559:
+    this.framerelay(buffer, obj, pos);
+    break;
+  case 0x880b:
+    this.ppp(buffer, obj, pos);
+    break;
+  default:
+    return false;
+  }
+  return true;
+};
+
 Pcap.prototype.ethertype = function (buffer, obj, pos) {
   obj.ether.type = buffer.readUInt16BE(0);
 
+  if (this.ethertyperun(obj.ether.type, buffer.slice(2), obj, pos + 2)) { return; }
+
   switch (obj.ether.type) {
-  case 0x0800:
-    this.ip4(buffer.slice(2), obj, pos + 2);
-    break;
-  case 0x86dd:
-    this.ip6(buffer.slice(2), obj, pos + 2);
-    break;
-  case 0x8864:
-    this.pppoe(buffer.slice(2), obj, pos + 2);
-    break;
-  case 0x8847:
-    this.mpls(buffer.slice(2), obj, pos + 2);
-    break;
   case 0x8100: // VLAN
   case 0x88a8: // Q-in-Q
     this.ethertype(buffer.slice(4), obj, pos + 4);
@@ -783,12 +837,10 @@ Pcap.prototype.ether = function (buffer, obj, pos) {
 };
 
 Pcap.prototype.radiotap = function (buffer, obj, pos) {
-  const l = buffer[2] + 24;
-  if (buffer[l + 6] === 0x08 && buffer[l + 7] === 0x00) {
-    this.ip4(buffer.slice(l + 8), obj, pos + l + 8);
-  } else if (buffer[l + 6] === 0x86 && buffer[l + 7] === 0xdd) {
-    this.ip6(buffer.slice(l + 8), obj, pos + l + 8);
-  }
+  const l = buffer[2] + 24 + 6;
+  const ethertype = buffer.readUInt16BE(l);
+
+  if (this.ethertyperun(ethertype, buffer.slice(l + 2), obj, pos + l + 2)) { return; }
 };
 
 Pcap.prototype.nflog = function (buffer, obj, pos) {
@@ -1061,7 +1113,7 @@ Pcap.reassemble_generic_ether = function (packets, numPackets, cb) {
 
 // Needs to be rewritten since its possible for packets to be
 // dropped by windowing and other things to actually be displayed allowed.
-// If multiple tcp sessions in one moloch session display can be wacky/wrong.
+// If multiple tcp sessions in one arkime session display can be wacky/wrong.
 Pcap.reassemble_tcp = function (packets, numPackets, skey, cb) {
   try {
     // Remove syn, rst, 0 length packets and figure out min/max seq number
@@ -1269,15 +1321,16 @@ Pcap.packetFlow = function (session, packets, numPackets, cb) {
 Pcap.key = function (packet) {
   if (!packet.ip) { return packet.ether.addr1; }
   const sep = packet.ip.addr1.includes(':') ? '.' : ':';
+  const addr1 = ipaddr.parse(packet.ip.addr1).toString();
   switch (packet.ip.p) {
   case 6: // tcp
-    return `${packet.ip.addr1}${sep}${packet.tcp.sport}`;
+    return `${addr1}${sep}${packet.tcp.sport}`;
   case 17: // udp
-    return `${packet.ip.addr1}${sep}${packet.udp.sport}`;
+    return `${addr1}${sep}${packet.udp.sport}`;
   case 132: // sctp
-    return `${packet.ip.addr1}${sep}${packet.sctp.sport}`;
+    return `${addr1}${sep}${packet.sctp.sport}`;
   default:
-    return packet.ip.addr1;
+    return addr1;
   }
 };
 
@@ -1290,7 +1343,7 @@ Pcap.keyFromSession = function (session) {
   case 132: // sctp
   case 'sctp':
     const sep = session.source.ip.includes(':') ? '.' : ':';
-    return `${session.source.ip}${sep}${session.source.port}`;
+    return `${ipaddr.parse(session.source.ip).toString()}${sep}${session.source.port}`;
   default:
     return session.source.ip;
   }

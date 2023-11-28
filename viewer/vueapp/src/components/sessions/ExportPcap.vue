@@ -1,3 +1,7 @@
+<!--
+Copyright Yahoo Inc.
+SPDX-License-Identifier: Apache-2.0
+-->
 <template>
 
   <!-- export pcap form -->
@@ -65,7 +69,7 @@ import SessionsService from './SessionsService';
 import SegmentSelect from './SegmentSelect';
 
 export default {
-  name: 'MolochExportPcap',
+  name: 'ArkimeExportPcap',
   components: { SegmentSelect },
   props: {
     start: Number,

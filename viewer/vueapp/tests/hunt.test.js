@@ -26,9 +26,9 @@ Vue.use(VueAxios, axios);
 Vue.use(BootstrapVue);
 
 Vue.prototype.$constants = {
-  MOLOCH_HUNTWARN: 10000,
-  MOLOCH_HUNTLIMIT: 1000000,
-  MOLOCH_ANONYMOUS_MODE: false
+  HUNTWARN: 10000,
+  HUNTLIMIT: 1000000,
+  ANONYMOUS_MODE: false
 };
 
 jest.mock('../src/components/hunt/HuntService');
@@ -97,12 +97,6 @@ const store = {
 const $route = { query: {}, path: 'http://localhost:8123/arkime/hunt' };
 
 beforeEach(() => {
-  ConfigService.getMolochClusters = jest.fn().mockResolvedValue({
-    data: {
-      name: 'Test2',
-      url: 'http://localhost:8124'
-    }
-  });
   ConfigService.getClusters = jest.fn().mockResolvedValue({
     data: { active: [], inactive: [] }
   });

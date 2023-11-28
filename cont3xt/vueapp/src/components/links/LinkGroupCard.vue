@@ -1,3 +1,7 @@
+<!--
+Copyright Yahoo Inc.
+SPDX-License-Identifier: Apache-2.0
+-->
 <template v-if="linkGroup">
   <!-- view (for con3xt page and users who can view but not edit) -->
   <b-card
@@ -16,57 +20,76 @@
           v-b-tooltip.hover="`Shared with you by ${linkGroup.creator}`"
         />
         {{ linkGroup.name }}
-        <small class="pull-right"
-          v-if="!itype && getUser && linkGroup.creator !== getUser.userId">
-          You can only view this Link Group
-        </small>
+        <div v-if="!itype && getUser && linkGroup.creator !== getUser.userId" class="pull-right">
+          <small>
+            You can only view this Link Group
+          </small>
+          <b-button
+              class="ml-1"
+              size="sm"
+              variant="secondary"
+              @click="rawEditMode = !rawEditMode"
+              v-b-tooltip.hover="`View ${rawEditMode ? 'form' : 'raw'} configuration for this link group`">
+            <span class="fa fa-fw" :class="{'fa-file-text-o': rawEditMode, 'fa-pencil-square-o': !rawEditMode}" />
+          </b-button>
+        </div>
       </h6>
     </template>
     <b-card-body>
       <div v-show="!collapsedLinkGroups[linkGroup._id]">
-        <template
-          v-for="(link, i) in filteredLinks">
-          <!-- display link to click -->
-          <div class="link-display"
-            :key="link.url + i + 'click'"
-            v-if="itype && link.name !== '----------'">
-            <b-form-checkbox
-              inline
-              tabindex="-1"
-              class="link-checkbox"
-              @change="$store.commit('TOGGLE_CHECK_LINK', { lgId: linkGroup._id, lname: link.name })"
-              :checked="getCheckedLinks[linkGroup._id] && getCheckedLinks[linkGroup._id][link.name]"
-            />
-            <a tabindex="-1"
-              target="_blank"
-              :title="link.name"
-              :href="getUrl(link.url)"
-              :style="link.color ? `color:${link.color}` : ''">
-              {{ link.name }}
-            </a>
-            <link-guidance :link="link" :element-id="`${linkGroup._id}-${i}`" />
-          </div> <!-- /display link to click -->
-          <!-- display link to view -->
-          <div :title="link.name"
-            :key="link.url + i + 'view'"
-            v-else-if="!itype && link.name !== '----------'">
-            <strong class="text-warning">
-              {{ link.name }}
-            </strong>
-            <a tabindex="-1"
-              href="javascript:void(0)"
-              :style="link.color ? `color:${link.color}` : ''">
-              {{ link.url }}
-            </a>
-            <link-guidance :link="link" :element-id="`${linkGroup.name}-${i}`" />
-          </div> <!-- /display link to view -->
-          <!-- separator -->
-          <hr class="link-separator-display"
-            :key="link.url + i + 'separator'"
-            v-else-if="link.name === '----------'"
-            :style="`border-color: ${link.color || '#777'}`"
-          >
+        <template v-if="!rawEditMode">
+          <template
+              v-for="(link, i) in filteredLinks">
+            <!-- display link to click -->
+            <div class="link-display"
+                 :key="link.url + i + 'click'"
+                 v-if="itype && link.name !== '----------'">
+              <b-form-checkbox
+                  inline
+                  tabindex="-1"
+                  class="link-checkbox"
+                  @change="$store.commit('TOGGLE_CHECK_LINK', { lgId: linkGroup._id, lname: link.name })"
+                  :checked="getCheckedLinks[linkGroup._id] && getCheckedLinks[linkGroup._id][link.name]"
+              />
+              <a tabindex="-1"
+                 target="_blank"
+                 :title="link.name"
+                 :href="getUrl(link.url)"
+                 :style="link.color ? `color:${link.color}` : ''">
+                {{ link.name }}
+              </a>
+              <link-guidance :link="link" :element-id="`${linkGroup._id}-${i}`" />
+            </div> <!-- /display link to click -->
+            <!-- display link to view -->
+            <div :title="link.name"
+                 :key="link.url + i + 'view'"
+                 v-else-if="!itype && link.name !== '----------'">
+              <strong class="text-warning">
+                {{ link.name }}
+              </strong>
+              <a tabindex="-1"
+                 href="javascript:void(0)"
+                 :style="link.color ? `color:${link.color}` : ''">
+                {{ link.url }}
+              </a>
+              <link-guidance :link="link" :element-id="`${linkGroup.name}-${i}`" />
+            </div> <!-- /display link to view -->
+            <!-- separator -->
+            <hr class="link-separator-display"
+                :key="link.url + i + 'separator'"
+                v-else-if="link.name === '----------'"
+                :style="`border-color: ${link.color || '#777'}`"
+            >
+          </template>
         </template>
+        <link-group-form
+            v-else
+            :raw-edit-mode="rawEditMode"
+            :link-group="updatedLinkGroup"
+            :no-edit="true"
+            @display-message="displayMessage"
+            @update-link-group="updateLinkGroup"
+        />
       </div>
     </b-card-body>
     <template #footer v-if="itype && !collapsedLinkGroups[linkGroup._id]">
@@ -146,13 +169,22 @@
           </template>
         </b-alert>
         <div>
+          <b-button
+            size="sm"
+            variant="info"
+            v-b-tooltip.hover
+            v-if="canTransfer(linkGroup)"
+            title="Transfer ownership of this link group"
+            @click="$emit('open-transfer-resource', linkGroup)">
+            <span class="fa fa-share fa-fw" />
+          </b-button>
           <transition name="buttons">
             <b-button
               size="sm"
               variant="secondary"
               @click="rawEditMode = !rawEditMode"
-              v-b-tooltip.hover="'Toggle raw configuration for this link group'">
-              <span class="fa fa-pencil-square-o" />
+              v-b-tooltip.hover="`Edit ${rawEditMode ? 'form' : 'raw'} configuration for this link group`">
+              <span class="fa fa-fw" :class="{'fa-file-text-o': rawEditMode, 'fa-pencil-square-o': !rawEditMode}" />
             </b-button>
           </transition>
           <transition name="buttons">
@@ -233,6 +265,15 @@
           Saved!
         </b-alert>
         <div>
+          <b-button
+            size="sm"
+            variant="info"
+            v-b-tooltip.hover
+            v-if="canTransfer(linkGroup)"
+            title="Transfer ownership of this link group"
+            @click="$emit('open-transfer-resource', linkGroup)">
+            <span class="fa fa-share fa-fw" />
+          </b-button>
           <transition name="buttons">
             <b-button
               size="sm"
@@ -276,13 +317,13 @@ import { mapGetters } from 'vuex';
 import LinkService from '@/components/services/LinkService';
 import LinkGroupForm from '@/components/links/LinkGroupForm';
 import LinkGuidance from '@/utils/LinkGuidance';
+import { Cont3xtIndicatorProp } from '@/utils/cont3xtUtil';
 
 export default {
   name: 'LinkGroupCard',
   components: { LinkGroupForm, LinkGuidance },
   props: {
-    itype: String, // the itype of the search to display links for
-    query: String, // the query in the search bar to apply to urls
+    indicator: Cont3xtIndicatorProp, // the indicator { query, itype } to display links for
     numDays: [Number, String], // the number of days to apply to urls
     numHours: [Number, String], // the number of hours to apply to urls
     stopDate: String, // the stop date to apply to urls
@@ -304,7 +345,6 @@ export default {
       rawEditMode: false,
       changesMade: false,
       confirmDelete: false,
-      collapsedLinkGroups: this.$store.state.collapsedLinkGroups,
       updatedLinkGroup: this.preUpdatedLinkGroup ?? JSON.parse(JSON.stringify(this.linkGroup))
     };
   },
@@ -312,6 +352,15 @@ export default {
     ...mapGetters([
       'getUser', 'getCheckedLinks'
     ]),
+    itype () {
+      return this.indicator?.itype;
+    },
+    query () {
+      return this.indicator?.query;
+    },
+    collapsedLinkGroups () {
+      return this.$store.state.collapsedLinkGroups;
+    },
     filteredLinks () {
       const links = [];
 
@@ -339,6 +388,10 @@ export default {
     }
   },
   methods: {
+    canTransfer (lg) {
+      return this.getUser.roles.includes('cont3xtAdmin') ||
+        (lg.creator && lg.creator === this.getUser.userId);
+    },
     displayMessage (msg) {
       this.message = msg;
       this.success = true;
@@ -392,18 +445,87 @@ export default {
 
       return normalizedLinkGroup;
     },
+    /**
+     * Replace the array placeholder in the url with the array of values
+     * placeholder looks like this: ${array,{iType:"ip",include:"top",sep:"OR",quote:"\""}}
+     * if it can't parse the options for the array placeholder, it removes the placeholder
+     * @param {string} url - the url to parse
+     * @returns {string} the url with the array placeholder replaced/removed
+     */
+    replaceArray (url) {
+      const regexp = /\$\{array,/g;
+
+      if (url.match(regexp)) {
+        const matches = Array.from(url.matchAll(regexp));
+        for (let i = matches.length - 1; i >= 0; i--) {
+          const match = matches[i];
+          const begin = match.index + match[0].length;
+          const end = url.indexOf('}', begin) + 1;
+          let options = url.substring(begin, end);
+
+          try {
+            options = JSON.parse(options);
+          } catch (e) {
+            /* eslint-disable no-template-curly-in-string */
+            console.error('getUrl: array requires valid JSON for parameters. Placeholder should look like this:\n${array,{"iType":"ip","include":"top","sep":"OR","quote":"\\""}}');
+            console.error('trying to parse', options);
+            console.error(e);
+            url = url.substring(0, begin - match[0].length) + url.substring(end + 1);
+            return url;
+          }
+
+          if (!options.iType) {
+            console.error('getUrl: array requires an iType');
+            url = url.substring(0, begin - match[0].length) + url.substring(end + 1);
+            return url;
+          }
+
+          options.include ??= 'all'; // default to all
+          options.quote ??= ''; // default to no quote
+          options.sep ??= ','; // default to comma
+
+          if (['domain', 'ip', 'url', 'email', 'hash', 'phone', 'text'].indexOf(options.iType) === -1) {
+            console.error('getUrl: array requires a valid iType');
+            url = url.substring(0, begin - match[0].length) + url.substring(end + 1);
+            return url;
+          }
+
+          const indicators = [];
+          for (const key in this.$store.state.indicatorGraph) {
+            const indicator = this.$store.state.indicatorGraph[key];
+            if (indicator.indicator.itype === options.iType) {
+              if (options.include === 'all' ||
+                (options.include === 'top' && (indicator.parentIds.has(undefined) || indicator.parentIds.size === 0))) {
+                indicators.push(indicator.indicator.query);
+              }
+            }
+          }
+
+          if (indicators.length) {
+            const indicatorStr = options.quote + indicators.join(`${options.quote}${options.sep}${options.quote}`) + options.quote;
+            url = url.substring(0, begin - match[0].length) + indicatorStr + url.substring(end + 1);
+          } else {
+            url = url.substring(0, begin - match[0].length) + url.substring(end + 1);
+          }
+        }
+      }
+
+      return url;
+    },
     getUrl (url) {
+      url = this.replaceArray(url);
+
       return url.replace(/\${indicator}/g, dr.refang(this.query))
         .replace(/\${type}/g, this.itype)
         .replace(/\${numDays}/g, this.numDays)
         .replace(/\${numHours}/g, this.numHours)
-        .replace(/\${stopTS}/g, this.stopDate)
+        .replace(/\${(stopTs|endTs)}/g, this.stopDate)
         .replace(/\${startTS}/g, this.startDate)
-        .replace(/\${stopDate}/g, this.stopDate.split('T')[0])
+        .replace(/\${(stopDate|endDate)}/g, this.stopDate.split('T')[0])
         .replace(/\${startDate}/g, this.startDate.split('T')[0])
-        .replace(/\${stopEpoch}/g, new Date(this.stopDate).getTime() / 1000)
+        .replace(/\${(stopEpoch|endEpoch)}/g, new Date(this.stopDate).getTime() / 1000)
         .replace(/\${startEpoch}/g, new Date(this.startDate).getTime() / 1000)
-        .replace(/\${stopSplunk}/g, moment(this.stopDate).format('MM/DD/YYYY:HH:mm:ss'))
+        .replace(/\${(stopSplunk|endSplunk)}/g, moment(this.stopDate).format('MM/DD/YYYY:HH:mm:ss'))
         .replace(/\${startSplunk}/g, moment(this.startDate).format('MM/DD/YYYY:HH:mm:ss'));
     },
     openAllLinks (linkGroup) {
@@ -459,7 +581,6 @@ export default {
 
 .link-header {
   overflow: hidden;
-  margin-right: 1rem;
   white-space: nowrap;
   text-overflow: ellipsis;
 }

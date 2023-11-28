@@ -25,7 +25,8 @@
                   "notAfter" : 1590753600000,
                   "notBefore" : 1495670400000,
                   "publicAlgorithm" : "rsaEncryption",
-                  "remainingDays" : -1,
+                  "remainingDays" : 269,
+                  "remainingSeconds" : 23302987,
                   "serial" : "048d398cbd9d68c87e1ba3ec99c2b07d",
                   "subjectCN" : [
                      "lfoup01-b.cloudsink.net"
@@ -33,7 +34,8 @@
                   "subjectON" : [
                      "CrowdStrike, Inc."
                   ],
-                  "validDays" : 1100
+                  "validDays" : 1100,
+                  "validSeconds" : 95083200
                },
                {
                   "hash" : "a0:31:c4:67:82:e6:e6:c6:62:c2:c8:7c:76:da:9a:a6:2c:ca:bd:8e",
@@ -49,7 +51,8 @@
                   "notAfter" : 1855828800000,
                   "notBefore" : 1382443200000,
                   "publicAlgorithm" : "rsaEncryption",
-                  "remainingDays" : 1,
+                  "remainingDays" : 3337,
+                  "remainingSeconds" : 288378187,
                   "serial" : "04e1e7a4dc5cf2f36dc02b42b85d159f",
                   "subjectCN" : [
                      "digicert sha2 high assurance server ca"
@@ -60,7 +63,8 @@
                   "subjectOU" : [
                      "www.digicert.com"
                   ],
-                  "validDays" : 5479
+                  "validDays" : 5479,
+                  "validSeconds" : 473385600
                }
             ],
             "certCnt" : 2,
@@ -215,6 +219,10 @@
             ],
             "srcOuiCnt" : 1,
             "srcPayload8" : "434f4e4e45435420",
+            "tags" : [
+               "cert:certificate-authority"
+            ],
+            "tagsCnt" : 1,
             "tcpflags" : {
                "ack" : 9,
                "dstZero" : 0,
@@ -247,6 +255,10 @@
                   "771,49200-49196-49192-49188-49172-49162-165-163-161-159-107-106-105-104-57-56-55-54-136-135-134-133-49202-49198-49194-49190-49167-49157-157-61-53-132-49199-49195-49191-49187-49171-49161-164-162-160-158-103-64-63-62-51-50-49-48-154-153-152-151-69-68-67-66-49201-49197-49193-49189-49166-49156-156-60-47-150-65-49170-49160-22-19-16-13-49165-49155-10-7-49169-49159-49164-49154-5-4-255,11-10-35-13-15,23-25-24-22,0-1-2"
                ],
                "ja3stringCnt" : 1,
+               "ja4" : [
+                  "t12i860500_e18388e7f3a3_a1e935682795"
+               ],
+               "ja4Cnt" : 1,
                "version" : [
                   "TLSv1.2"
                ],

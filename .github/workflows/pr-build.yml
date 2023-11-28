@@ -1,0 +1,146 @@
+name: "pr-build"
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    # The branches below must be a subset of the branches above
+    branches: [ "main" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        version: [el8, el9, ubuntu2004, ubuntu2204, arch, al2023]
+        include:
+          - version: el8
+            container: andywick/arkime-build-8:5.0.0-2
+            buildopt: "--kafka --pfring"
+            package: rpm
+
+          - version: el9
+            container: andywick/arkime-build-9:5.0.0-2
+            buildopt: "--kafka --pfring"
+            package: rpm
+
+          - version: ubuntu2004
+            container: andywick/arkime-build-20:5.0.0-2
+            buildopt: "--kafka --pfring"
+            package: deb
+
+          - version: ubuntu2204
+            container: andywick/arkime-build-22:5.0.0-2
+            buildopt: "--nothirdparty --kafka --pfring"
+            package: deb
+
+          - version: arch
+            container: andywick/arkime-build-arch:5.0.0-2
+            buildopt: "--kafka"
+            package: arch
+
+          - version: al2023
+            container: andywick/arkime-build-al2023:5.0.0-2
+            buildopt: "--kafka --pfring"
+            package: rpm
+
+    container:
+      image: ${{ matrix.container }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: thirdparty
+        run: |
+          (cd / ; curl https://s3.amazonaws.com/files.molo.ch/snfmin.tar.gz | tar -zxvf -)
+          if [ -d "/thirdparty" ]; then
+            ln -s /thirdparty .
+          fi
+          git config --global --add safe.directory `pwd`
+
+      - name: build and install
+        run: |
+          ./easybutton-build.sh ${{ matrix.buildopt }} --rminstall
+          export PATH=/opt/arkime/bin:$PATH
+          make install
+
+      - name: lint
+        run: |
+          export PATH=/opt/arkime/bin:$PATH
+          npm run lint
+          cp -r capture/plugins/lua/samples /opt/arkime/lua
+
+      - name: capture tests
+        run: |
+          echo "ALW ${{ github.run_id }} ${{ github.run_number }} ${{ github.run_attempt }}"
+          (cd tests; ./tests.pl)
+
+      - name: ui test
+        if: ${{ matrix.version == 'el8' }}
+        run: |
+          export PATH=/opt/arkime/bin:$PATH
+          npm run test
+
+      - name: viewer test
+        if: ${{ matrix.version == 'arch' }}
+        run: |
+          export PATH=/opt/arkime/bin:$PATH
+          (chown -R opensearch /opensearch-2.7.0; cd /opensearch-2.7.0 ; su opensearch -c "ES_JAVA_OPTS='-Xms1000m -Xmx1000m' bin/opensearch" > /tmp/os &)
+          sleep 30
+          cat /tmp/os
+          (cd tests ; G_SLICE=always-malloc ./tests.pl --viewer)
+
+      - name: package arch
+        if: ${{ matrix.package == 'arch' }}
+        run: |
+          gem install --no-document fpm rexml
+          export ARKIME_VERSION=`sed 's/.*"\(.*\)\".*$/\1/' /opt/arkime/common/version.js | head -n 1`
+          /root/.local/share/gem/ruby/3.0.0/bin/fpm -s dir -t pacman -n arkime -x opt/arkime/logs -x opt/arkime/raw -v $ARKIME_VERSION --iteration ${{ github.run_attempt }} --template-scripts --after-install "release/afterinstall.sh" --url "https://arkime.com" --description "Arkime Full Packet System" -d libmaxminddb -d libpcap -d yara -d perl-http-message -d perl-lwp-protocol-https -d perl-json -d libnet -d lua -d zstd -d openssl-1.1 -d pcre -p arkime-${ARKIME_VERSION}-${{github.run_attempt}}_${{matrix.version}}.pkg.tar.zst /opt/arkime
+          ls -l *.zst
+
+      - name: package rpm
+        if: ${{ matrix.package == 'rpm' }}
+        run: |
+          export ARKIME_VERSION=`sed 's/.*"\(.*\)\".*$/\1/' /opt/arkime/common/version.js | head -n 1 | tr "-" "_"`
+          fpm -s dir -t rpm -n arkime -x opt/arkime/logs -x opt/arkime/raw -v $ARKIME_VERSION --iteration ${{ github.run_attempt }} --template-scripts --after-install "release/afterinstall.sh" --url "https://arkime.com" --description "Arkime Full Packet System" -d perl-libwww-perl -d perl-JSON -d ethtool -d libyaml -d perl-LWP-Protocol-https --rpm-rpmbuild-define "_build_id_links none" -p arkime-${ARKIME_VERSION}-${{github.run_attempt}}.${{matrix.version}}.x86_64.rpm /opt/arkime
+          ls -l *.rpm
+
+      - name: package deb
+        if: ${{ matrix.package == 'deb' }}
+        run: |
+          export ARKIME_VERSION=`sed 's/.*"\(.*\)\".*$/\1/' /opt/arkime/common/version.js | head -n 1`
+          fpm -s dir -t deb -n arkime -x opt/arkime/logs -x opt/arkime/raw -v $ARKIME_VERSION --iteration ${{ github.run_attempt }} --template-scripts --after-install "release/afterinstall.sh" --url "https://arkime.com" --description "Arkime Full Packet System" -d libwww-perl -d libjson-perl -d ethtool -d libyaml-dev -p arkime_${ARKIME_VERSION}-${{github.run_attempt}}.${{matrix.version}}_amd64.deb /opt/arkime
+          ls -l *.deb
+
+      - uses: actions/upload-artifact@v3
+        with:
+          name: upload artifact
+          path: |
+            *.deb
+            *.rpm
+            *.zst
+
+  slack:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: send
+        env:
+          SLACK_URL: ${{ secrets.SLACK_URL }}
+        run: |
+          echo "Sending msg"
+          export ARKIME_VERSION=`grep AC_INIT configure.ac | sed "s/.*\[\(.*\)\].*$/\1/"`
+          echo ARKIME_VERSION: $ARKIME_VERSION
+          MSG=`git log -1 --format=%s`
+          BODY="{\"icon_emoji\": \":sushi:\", \"username\": \"GitAction\", \"text\":\"It worked: $GIT_BRANCH - arkime-$ARKIME_VERSION-$SD_BUILD_ID - $MSG\"}"
+          curl -XPOST -H "Content-type: application/json" --data "$BODY" $SLACK_URL
+

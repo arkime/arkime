@@ -1,10 +1,8 @@
 import Vue from 'vue';
 import store from '../../store';
 
-let _molochClustersCache;
-let getMolochClustersQIP;
-let _molochClickablesCache;
-let getMolochClickablesQIP;
+let _arkimeClickablesCache;
+let getArkimeClickablesQIP;
 let getFieldActionsQIP;
 
 export default {
@@ -26,44 +24,19 @@ export default {
   },
 
   /**
-   * Gets the available moloch clusters and caches the results
-   * @returns {Promise} Promise A promise object that signals the completion
-   *                            or rejection of the request.
-   */
-  getMolochClusters: function () {
-    if (getMolochClustersQIP) { return getMolochClustersQIP; }
-
-    getMolochClustersQIP = new Promise((resolve, reject) => {
-      if (_molochClustersCache) { resolve(_molochClustersCache); }
-
-      Vue.axios.get('remoteclusters')
-        .then((response) => {
-          getMolochClustersQIP = undefined;
-          _molochClustersCache = response.data;
-          resolve(response.data);
-        }, (error) => {
-          getMolochClustersQIP = undefined;
-          reject(error);
-        });
-    });
-
-    return getMolochClustersQIP;
-  },
-
-  /**
    * Gets the available clickable fields and caches the result
    * @returns {Promise} Promise A promise object that signals the completion
    *                            or rejection of the request.
    */
-  getMolochClickables: function () {
-    if (getMolochClickablesQIP) { return getMolochClickablesQIP; }
+  getArkimeClickables: function () {
+    if (getArkimeClickablesQIP) { return getArkimeClickablesQIP; }
 
-    getMolochClickablesQIP = new Promise((resolve, reject) => {
-      if (_molochClickablesCache) { return resolve(_molochClickablesCache); }
+    getArkimeClickablesQIP = new Promise((resolve, reject) => {
+      if (_arkimeClickablesCache) { return resolve(_arkimeClickablesCache); }
 
       Vue.axios.get('api/valueactions')
         .then((response) => {
-          getMolochClickablesQIP = undefined;
+          getArkimeClickablesQIP = undefined;
 
           for (const key in response.data) {
             const item = response.data[key];
@@ -77,15 +50,15 @@ export default {
             }
           }
 
-          _molochClickablesCache = response.data;
+          _arkimeClickablesCache = response.data;
           return resolve(response.data);
         }, (error) => {
-          getMolochClickablesQIP = undefined;
+          getArkimeClickablesQIP = undefined;
           return reject(error);
         });
     });
 
-    return getMolochClickablesQIP;
+    return getArkimeClickablesQIP;
   },
 
   /**

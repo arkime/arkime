@@ -1,7 +1,7 @@
-use Test::More tests => 76;
+use Test::More tests => 93;
 use Cwd;
 use URI::Escape;
-use MolochTest;
+use ArkimeTest;
 use JSON;
 use Test::Differences;
 use Data::Dumper;
@@ -29,7 +29,7 @@ my ($url) = @_;
     my $json = viewerGet($url);
     my $mjson = multiGet($url);
 
-    $json = testMulti($json, $mjson, $url);
+    $json = testMulti($json, $mjson, $url) if (exists $json->{items});
 
     return $json
 }
@@ -40,7 +40,7 @@ sub post {
     my $json = viewerPost($url, $content);
     my $mjson = multiPost($url, $content);
 
-    $json = testMulti($json, $mjson, $url);
+    $json = testMulti($json, $mjson, $url) if (exists $json->{items});
 
     return $json;
 }
@@ -48,6 +48,22 @@ sub post {
 esGet("/_refresh");
 
 my ($json, $mjson, $pjson);
+
+# empty field
+    $json = get("/spigraph.json?map=true&date=-1&field=&expression=" . uri_escape("file=$pwd/bigendian.pcap|file=$pwd/socks-http-example.pcap|file=$pwd/bt-tcp.pcap"));
+    $pjson = post("/api/spigraph", '{"map":true, "date":-1, "field":"", "expression":"file=' . $pwd . '/bigendian.pcap|file=' . $pwd . '/socks-http-example.pcap|file=' . $pwd . '/bt-tcp.pcap"}');
+    is ($json->{items}->[0]->{name}, "test");
+    eq_or_diff($json, $pjson, "GET and POST versions of spigraph endpoint are not the same");
+
+# no field
+    $json = get("/spigraph.json?map=true&date=-1&expression=" . uri_escape("file=$pwd/bigendian.pcap|file=$pwd/socks-http-example.pcap|file=$pwd/bt-tcp.pcap"));
+    $pjson = post("/api/spigraph", '{"map":true, "date":-1, "expression":"file=' . $pwd . '/bigendian.pcap|file=' . $pwd . '/socks-http-example.pcap|file=' . $pwd . '/bt-tcp.pcap"}');
+    is ($json->{items}->[0]->{name}, "test");
+    eq_or_diff($json, $pjson, "GET and POST versions of spigraph endpoint are not the same");
+
+# bad field
+    $pjson = post("/api/spigraph", '{"map":true, "date":-1, "field": {}, "expression":"file=' . $pwd . '/bigendian.pcap|file=' . $pwd . '/socks-http-example.pcap|file=' . $pwd . '/bt-tcp.pcap"}');
+    eq_or_diff($pjson, from_json('{"success": false, "text": "Bad \'field\' parameter"}'));
 
 #node
     $json = get("/spigraph.json?map=true&date=-1&field=node&expression=" . uri_escape("file=$pwd/bigendian.pcap|file=$pwd/socks-http-example.pcap|file=$pwd/bt-tcp.pcap"));

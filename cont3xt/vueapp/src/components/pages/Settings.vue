@@ -1,12 +1,16 @@
+<!--
+Copyright Yahoo Inc.
+SPDX-License-Identifier: Apache-2.0
+-->
 <template>
-  <div class="container-fluid mb-4 row">
+  <div class="d-flex flex-row flex-grow-1 overflow-hidden">
 
     <!-- navigation -->
     <div
       role="tablist"
       aria-orientation="vertical"
-      class="col-xl-2 col-lg-3 col-md-3 col-sm-4 col-xs-12 no-overflow">
-      <div class="nav flex-column nav-pills">
+      class="col-xl-2 col-lg-3 col-md-3 col-sm-4 col-xs-12 h-100 overflow-auto no-overflow-x">
+      <div class="nav d-flex flex-column nav-pills pt-3 pb-4">
         <a @click="openView('views')"
           class="nav-link cursor-pointer"
           :class="{'active':visibleTab === 'views'}">
@@ -28,6 +32,39 @@
           <span class="fa fa-fw fa-key mr-1" />
           Integrations
         </a>
+        <a @click="openView('overviews')"
+           class="nav-link cursor-pointer mb-1"
+           :class="{'active':visibleTab === 'overviews'}">
+          <span class="fa fa-fw fa-file-o mr-1" />
+          Overviews
+          <b-button
+              size="xs"
+              class="float-right"
+              variant="secondary"
+              v-if="visibleTab === 'overviews'"
+              @click.stop.prevent="openOverviewForm"
+              v-b-tooltip.hover="'Create a new overview'">
+            <span class="fa fa-fw fa-plus-circle" />
+          </b-button>
+        </a>
+        <template v-if="visibleTab === 'overviews'">
+          <!-- overview create form -->
+          <create-overview-modal />
+          <!-- overviews -->
+          <div v-for="iType in iTypes" :key="iType"
+            class="itype-group-container" :style="{ 'border-color': iTypeColorMap[iType] }"
+          >
+            <a
+                v-for="overview in getSortedOverviews.filter(o => o.iType === iType)"
+                :key="overview._id"
+                :title="overview.name"
+                @click="setActiveOverviewId(overview._id)"
+                :class="{ 'active':activeOverviewId === overview._id }"
+                class="nav-link cursor-pointer w-100">
+              <overview-selector-line :overview="overview" />
+            </a>
+          </div>
+        </template>
         <a @click="openView('linkgroups')"
           class="nav-link cursor-pointer mb-1"
           :class="{'active':visibleTab === 'linkgroups'}">
@@ -48,11 +85,19 @@
             :index="i"
             :key="lg._id"
             @update="updateList"
-            :list="linkGroups"
-            v-for="(lg, i) in linkGroups"
+            :list="getLinkGroups"
+            v-for="(lg, i) in getLinkGroups"
             style="position:relative; max-width:calc(100% - 1rem); margin-left:1rem;">
             <template slot="handle">
-              <span class="fa fa-bars d-inline sub-nav-handle" />
+              <span
+                :id="`${lg._id}-tt`"
+                class="fa fa-bars d-inline sub-nav-handle">
+              </span>
+              <b-tooltip
+                noninteractive
+                :target="`${lg._id}-tt`">
+                Drag &amp; drop to reorder Link Groups
+              </b-tooltip>
             </template>
             <template slot="default">
               <a :title="lg.name"
@@ -74,7 +119,7 @@
       </div>
     </div> <!-- /navigation -->
 
-    <div class="col-xl-10 col-lg-9 col-md-9 col-sm-8 col-xs-12 settings-right-panel">
+    <div class="col-xl-10 col-lg-9 col-md-9 col-sm-8 col-xs-12 overflow-auto h-100 pt-3 pb-4 pr-4">
       <!-- view settings -->
       <div v-if="visibleTab === 'views'">
         <!-- view create form -->
@@ -118,7 +163,7 @@
         <div class="d-flex flex-wrap">
           <!-- no views -->
           <div class="row lead mt-4"
-            v-if="getViews && (!getViews.length || !getViews.filter(v => v._editable).length)">
+            v-if="!viewSearchTerm && (!filteredViews.length || !filteredViews.filter(v => v._editable).length)">
             <div class="col">
               No Views are configured or shared for you to edit.
               <b-button
@@ -130,7 +175,7 @@
           </div> <!-- /no views -->
           <!-- no view results -->
           <div class="row lead mt-4"
-            v-else-if="viewSearchTerm && !filteredViews.length">
+            v-else-if="viewSearchTerm && (!filteredViews.length || !filteredViews.filter(v => v._editable).length)">
             <div class="col">
               No Views match your search.
             </div>
@@ -146,6 +191,15 @@
                 <template #header>
                   <div class="w-100 d-flex justify-content-between align-items-start">
                     <div>
+                      <b-button
+                        size="sm"
+                        variant="info"
+                        v-b-tooltip.hover
+                        v-if="canTransferView(view)"
+                        title="Transfer ownership of this view"
+                        @click="openTransferResource(view)">
+                        <span class="fa fa-share fa-fw" />
+                      </b-button>
                       <!-- delete button -->
                       <transition name="buttons">
                         <b-button
@@ -266,6 +320,12 @@
         </div>
         <div class="d-flex flex-wrap">
           <template v-if="!rawIntegrationSettings">
+            <div class="row lead mt-4"
+              v-if="Object.keys(sortedFilteredIntegrationSettings).length === 0">
+              <div class="col">
+                No Integrations match your search.
+              </div>
+            </div>
             <div
               :key="key"
               class="w-25 p-2"
@@ -284,7 +344,7 @@
                     <span
                       v-if="setting.globalConfiged"
                       class="fa fa-globe fa-lg mr-2 cursor-help"
-                      v-b-tooltip.hover="'This intergration has been globally configured by the admin with a shared account. If you fill out the account fields below, it will override that configuration.'"
+                      v-b-tooltip.hover="'This integration has been globally configured by the admin with a shared account. If you fill out the account fields below, it will override that configuration.'"
                     />
                     <a target="_blank"
                       :href="setting.homePage"
@@ -345,6 +405,69 @@
         </div>
       </div> <!-- /integrations settings -->
 
+      <!-- overviews settings -->
+      <div v-if="visibleTab === 'overviews'">
+        <div class="ml-2 mr-3 w-100 d-flex justify-content-between align-items-center">
+          <h1>
+            Overviews
+          </h1>
+          <span class="pull-right">
+            <b-button
+                variant="outline-primary"
+                v-b-modal.overview-form
+            >
+              <span class="fa fa-plus-circle" />
+              New Overview
+            </b-button>
+            <b-form-checkbox
+                button
+                class="ml-2 no-wrap"
+                v-model="seeAllOverviews"
+                v-b-tooltip.hover
+                @input="seeAllOverviewsChanged"
+                v-if="roles.includes('cont3xtAdmin')"
+                :title="seeAllOverviews ? 'Just show the overviews created from your activity or shared with you' : 'See all the overviews that exist for all users (you can because you are an ADMIN!)'">
+              <span class="fa fa-user-circle mr-1" />
+              See {{ seeAllOverviews ? ' MY ' : ' ALL ' }} Overviews
+            </b-form-checkbox>
+          </span>
+        </div>
+
+        <!-- overview error -->
+        <b-alert
+            dismissible
+            variant="danger"
+            style="z-index: 2000;"
+            v-model="overviewsError"
+            class="position-fixed fixed-bottom m-0 rounded-0">
+          {{ getOverviewsError }}
+        </b-alert> <!-- /overview error -->
+
+        <div class="d-flex flex-wrap">
+          <!-- overview-form-card uses :key to reset form when swapping active overview -->
+          <overview-form-card
+              v-if="activeOverviewId && activeUnModifiedOverview"
+              :key="activeOverviewId"
+              :overview="activeUnModifiedOverview"
+              :modifiedOverview="activeModifiedOverview"
+              @update-modified-overview="updateModifiedOverview"
+              @overview-deleted="activeOverviewDeleted"
+              @open-transfer-resource="openTransferResource"
+          />
+          <div v-else
+               class="d-flex flex-column">
+            <span>
+              No Overviews configured.
+            </span>
+            <b-button
+                variant="outline-primary"
+                v-b-modal.overview-form>
+              Create one!
+            </b-button>
+          </div>
+        </div>
+      </div> <!-- /overviews settings -->
+
       <!-- link group settings -->
       <div v-if="visibleTab === 'linkgroups'">
         <!-- link group create form -->
@@ -384,16 +507,17 @@
         </b-alert> <!-- /link group error -->
         <!-- link groups -->
         <link-group-card
-          v-if="linkGroups && linkGroups.length"
-          :link-group="linkGroups[selectedLinkGroup]"
-          :key="linkGroups[selectedLinkGroup]._id"
-          :pre-updated-link-group="updatedLinkGroupMap[linkGroups[selectedLinkGroup]._id]"
+          v-if="getLinkGroups && getLinkGroups.length && getLinkGroups[selectedLinkGroup]"
+          :link-group="getLinkGroups[selectedLinkGroup]"
+          :key="getLinkGroups[selectedLinkGroup]._id"
+          :pre-updated-link-group="updatedLinkGroupMap[getLinkGroups[selectedLinkGroup]._id]"
           @update-link-group="updateLinkGroup"
+          @open-transfer-resource="openTransferResource"
         /> <!-- /link groups -->
         <!-- no link groups -->
         <div
           class="row lead mt-4"
-          v-if="linkGroups && !linkGroups.length">
+          v-if="getLinkGroups && !getLinkGroups.length">
           <div class="col">
             No Link Groups are configured.
             <b-button
@@ -438,12 +562,12 @@
             <!-- confirm new password -->
             <b-input-group
               class="mt-2"
-              prepend="Current Password">
+              prepend="New Password">
               <b-form-input
                 type="password"
                 v-model="confirmNewPassword"
                 @keydown.enter="changePassword"
-                placeholder="Enter your new password"
+                placeholder="Confirm your new password"
               />
             </b-input-group>
             <!-- change password button -->
@@ -467,10 +591,15 @@
       {{ msg }}
     </b-alert> <!-- messages -->
 
+    <transfer-resource
+      @transfer-resource="submitTransfer"
+    />
+
   </div>
 </template>
 
 <script>
+import Vue from 'vue';
 import { mapGetters } from 'vuex';
 
 import ReorderList from '@/utils/ReorderList';
@@ -481,17 +610,28 @@ import CreateViewModal from '@/components/views/CreateViewModal';
 import Cont3xtService from '@/components/services/Cont3xtService';
 import CreateLinkGroupModal from '@/components/links/CreateLinkGroupModal';
 import LinkService from '@/components/services/LinkService';
+import OverviewService from '@/components/services/OverviewService';
+import OverviewFormCard from '@/components/overviews/OverviewFormCard';
+import CreateOverviewModal from '@/components/overviews/CreateOverviewModal.vue';
+import OverviewSelectorLine from '@/components/overviews/OverviewSelectorLine.vue';
+import { iTypes, iTypeIconMap, iTypeColorMap } from '@/utils/iTypes';
+import CommonUserService from '../../../../../common/vueapp/UserService';
+import TransferResource from '../../../../../common/vueapp/TransferResource';
 
 let timeout;
 
 export default {
   name: 'Cont3xtSettings',
   components: {
+    OverviewSelectorLine,
+    CreateOverviewModal,
+    OverviewFormCard,
     ViewForm,
     ReorderList,
     LinkGroupCard,
     CreateViewModal,
-    CreateLinkGroupModal
+    CreateLinkGroupModal,
+    TransferResource
   },
   data () {
     return {
@@ -504,6 +644,12 @@ export default {
       integrationSearchTerm: '',
       filteredIntegrationSettings: {},
       rawIntegrationSettings: undefined,
+      // overviews
+      iTypes,
+      iTypeIconMap,
+      iTypeColorMap,
+      activeOverviewId: undefined,
+      modifiedOverviewMap: {},
       // link groups
       selectedLinkGroup: 0,
       updatedLinkGroupMap: {},
@@ -516,14 +662,16 @@ export default {
       // password
       currentPassword: '',
       newPassword: '',
-      confirmNewPassword: ''
+      confirmNewPassword: '',
+      // transfers
+      transferResource: undefined
     };
   },
   created () {
     let tab = window.location.hash;
     if (tab) { // if there is a tab specified and it's a valid tab
       tab = tab.replace(/^#/, '');
-      if (tab === 'views' || tab === 'integrations' || tab === 'linkgroups' ||
+      if (tab === 'views' || tab === 'integrations' || tab === 'overviews' || tab === 'linkgroups' ||
         tab === 'password') {
         this.visibleTab = tab;
       }
@@ -537,9 +685,16 @@ export default {
     });
 
     this.filterViews(this.viewSearchTerm);
+
+    if (this.getOverviews != null) {
+      this.setActiveOverviewToFirst();
+    }
   },
   computed: {
-    ...mapGetters(['getLinkGroups', 'getLinkGroupsError', 'getIntegrations', 'getViews', 'getUser']),
+    ...mapGetters([
+      'getLinkGroups', 'getLinkGroupsError', 'getIntegrations', 'getViews', 'getUser',
+      'getOverviews', 'getOverviewsError', 'getSortedOverviews', 'getCorrectedSelectedOverviewIdMap'
+    ]),
     seeAllViews: {
       get () { return this.$store.state.seeAllViews; },
       set (value) { this.$store.commit('SET_SEE_ALL_VIEWS', value); }
@@ -547,6 +702,10 @@ export default {
     seeAllLinkGroups: {
       get () { return this.$store.state.seeAllLinkGroups; },
       set (value) { this.$store.commit('SET_SEE_ALL_LINK_GROUPS', value); }
+    },
+    seeAllOverviews: {
+      get () { return this.$store.state.seeAllOverviews; },
+      set (value) { this.$store.commit('SET_SEE_ALL_OVERVIEWS', value); }
     },
     linkGroupsError: {
       get () {
@@ -556,11 +715,19 @@ export default {
         this.$store.commit('SET_LINK_GROUPS_ERROR', '');
       }
     },
-    linkGroups () {
-      if (this.getLinkGroups == null) { return undefined; }
-      const sortedLinkGroups = [...this.getLinkGroups];
-      sortedLinkGroups.sort((a, b) => a.name.localeCompare(b.name));
-      return sortedLinkGroups;
+    overviewsError: {
+      get () {
+        return !!this.$store.state.overviewsError;
+      },
+      set () {
+        this.$store.commit('SET_OVERVIEWS_ERROR', '');
+      }
+    },
+    activeUnModifiedOverview () {
+      return this.getOverviews?.find(overview => overview._id === this.activeOverviewId);
+    },
+    activeModifiedOverview () {
+      return this.modifiedOverviewMap?.[this.activeOverviewId];
     },
     roles () {
       return this.getUser?.roles ?? [];
@@ -572,7 +739,7 @@ export default {
     },
     disablePassword () {
       if (!this.getUser) { return true; } // wait for user to be initialized
-      return !!this.$constants.DISABLE_USER_PASSWORD_UI && !!this.getUser.headerAuthEnabled;
+      return !!this.$constants.DEMO_MODE || (!!this.$constants.DISABLE_USER_PASSWORD_UI && !!this.getUser.headerAuthEnabled);
     }
   },
   watch: {
@@ -586,10 +753,10 @@ export default {
 
       for (const key in this.integrationSettings) {
         if (key.toString().toLowerCase().match(query)?.length > 0) {
-          this.filteredIntegrationSettings[key] = JSON.parse(JSON.stringify(this.integrationSettings[key]));
+          this.$set(this.filteredIntegrationSettings, key, JSON.parse(JSON.stringify(this.integrationSettings[key])));
           continue;
         }
-        delete this.filteredIntegrationSettings[key];
+        Vue.delete(this.filteredIntegrationSettings, key);
       }
     },
     viewSearchTerm (searchTerm) {
@@ -621,6 +788,16 @@ export default {
     },
     getViews () {
       this.filterViews(this.viewSearchTerm);
+    },
+    getOverviews (newValue, oldValue) {
+      if (oldValue == null) {
+        this.setActiveOverviewToFirst();
+      }
+    },
+    activeUnModifiedOverview () {
+      if (this.activeUnModifiedOverview === undefined) {
+        this.setActiveOverviewToFirst();
+      }
     }
   },
   methods: {
@@ -633,6 +810,48 @@ export default {
       this.$router.push({
         hash: tabName
       });
+    },
+    /* TRANSFERS! ----------------------------- */
+    openTransferResource (resource) {
+      this.transferResource = resource;
+      this.$bvModal.show('transfer-modal');
+    },
+    /**
+     * Submits the transfer resource modal contents and updates the resources
+     * @param {Object} userId The user id to transfer the resource to
+     */
+    submitTransfer ({ userId }) {
+      if (!userId) {
+        this.transferResource = undefined;
+        return;
+      }
+
+      const data = JSON.parse(JSON.stringify(this.transferResource));
+      data.creator = userId;
+
+      if (data.links) { // if it's a link group
+        LinkService.updateLinkGroup(data).then((response) => {
+          this.$bvModal.hide('transfer-modal');
+          LinkService.getLinkGroups(this.seeAllLinkGroups);
+          this.showMessage({ variant: 'success', message: response.text });
+        }); // store deals with failure
+      } else if (data.integrations) { // it's a view
+        UserService.updateIntegrationsView(data).then((response) => {
+          this.$bvModal.hide('transfer-modal');
+          UserService.getIntegrationViews(this.seeAllViews);
+          this.showMessage({ variant: 'success', message: response.text });
+        }).catch((err) => {
+          this.showMessage({ variant: 'danger', message: err });
+        });
+      } else if (data.fields) {
+        OverviewService.updateOverview(data).then((response) => {
+          this.$bvModal.hide('transfer-modal');
+          OverviewService.getOverviews();
+          this.showMessage({ variant: 'success', message: response.text });
+        }); // store deals with failure
+      } else {
+        this.showMessage({ variant: 'error', message: 'Cannot parse the resource you want to transfer' });
+      }
     },
     /* INTEGRATIONS! ------------------------- */
     /* toggles the visibility of the value of password fields */
@@ -684,6 +903,33 @@ export default {
 
       return setting.values[sname] ? setting.values[sname].length > 0 : false;
     },
+    /* OVERVIEWS! ---------------------------- */
+    setActiveOverviewToFirst () {
+      this.setActiveOverviewId(this.getSortedOverviews[0]?._id);
+    },
+    setActiveOverviewId (newActiveOverviewId) {
+      const newActiveOverview = this.getOverviews?.find(overview => overview._id === newActiveOverviewId);
+      if (newActiveOverview == null) { return; }
+
+      if (this.modifiedOverviewMap[newActiveOverviewId] == null) {
+        Vue.set(this.modifiedOverviewMap, newActiveOverviewId, JSON.parse(JSON.stringify(newActiveOverview)));
+      }
+      this.activeOverviewId = newActiveOverviewId;
+    },
+    setDefaultOverview (id, iType) {
+      this.$store.commit('SET_SELECTED_OVERVIEW_ID_FOR_ITYPE', { iType, id });
+      UserService.setUserSettings({ selectedOverviews: this.getCorrectedSelectedOverviewIdMap });
+    },
+    updateModifiedOverview (newOverview) {
+      Vue.set(this.modifiedOverviewMap, this.activeOverviewId, newOverview);
+    },
+    activeOverviewDeleted () {
+      Vue.set(this.modifiedOverviewMap, this.activeOverviewId, undefined);
+      this.setActiveOverviewToFirst();
+    },
+    openOverviewForm () {
+      this.$bvModal.show('overview-form');
+    },
     /* LINK GROUPS! -------------------------- */
     updateLinkGroup (linkGroup) {
       this.$set(this.updatedLinkGroupMap, linkGroup._id, linkGroup);
@@ -694,6 +940,10 @@ export default {
     // re-fetch link groups when changing see-all for link groups
     seeAllLinkGroupsChanged () {
       LinkService.getLinkGroups(this.seeAllLinkGroups);
+    },
+    // re-fetch overviews when changing see-all for overviews
+    seeAllOverviewsChanged () {
+      OverviewService.getOverviews();
     },
     updateList ({ list, from, to }) {
       const ids = [];
@@ -721,6 +971,10 @@ export default {
       }
     },
     /* VIEWS! -------------------------------- */
+    canTransferView (view) {
+      return this.getUser?.roles.includes('cont3xtAdmin') ||
+        (view?.creator && view?.creator === this.getUser?.userId);
+    },
     openViewForm () {
       this.$bvModal.show('view-form');
     },
@@ -738,9 +992,9 @@ export default {
       const view = JSON.parse(JSON.stringify(unNormalizedView));
 
       // sort these fields to make order not affect result of comparison, because their orders are not meaningful
-      view.editRoles.sort();
-      view.viewRoles.sort();
-      view.integrations.sort();
+      view.editRoles?.sort();
+      view.viewRoles?.sort();
+      view.integrations?.sort();
       return view;
     },
     updateView (view) {
@@ -830,7 +1084,7 @@ export default {
         currentPassword: this.currentPassword
       };
 
-      UserService.changePassword(data).then((response) => {
+      CommonUserService.changePassword(data).then((response) => {
         this.newPassword = null;
         this.currentPassword = null;
         this.confirmNewPassword = null;
@@ -888,7 +1142,7 @@ export default {
           const match = line.match(regex.section);
           json[match[1]] = {};
           section = match[1];
-        };
+        }
       });
       return json;
     },
@@ -959,5 +1213,16 @@ export default {
 .integration-setting-img {
   height:27px;
   margin-left: -8px;
+}
+
+.itype-group-container {
+  position: relative;
+  max-width: calc(100% - 1rem);
+  margin-left: 1rem;
+  border-left-width: 2px;
+  border-left-style: solid;
+  border-radius: 5px;
+  padding-left: 4px;
+  margin-bottom: 4px
 }
 </style>

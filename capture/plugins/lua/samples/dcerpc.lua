@@ -1405,4 +1405,4 @@ function parseDCERPC(session, str, direction)
     return 0
 end
 
-MolochSession.register_tcp_classifier("dcerpc", 0, string.char(0x05, 0x00), "dcerpcClassify")
+ArkimeSession.register_tcp_classifier("dcerpc", 0, string.char(0x05, 0x00), "dcerpcClassify")

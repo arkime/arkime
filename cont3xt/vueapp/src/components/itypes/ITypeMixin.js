@@ -2,12 +2,13 @@ import { formatValue } from '@/utils/formatValue';
 import { mapGetters } from 'vuex';
 import { applyTemplate } from '@/utils/applyTemplate';
 import { applyPostProcess } from '@/utils/applyPostProcess';
+import { getIntegrationDataMap } from '@/utils/cont3xtUtil';
 
 export const ITypeMixin = {
   computed: {
-    ...mapGetters(['getIntegrations']),
+    ...mapGetters(['getIntegrations', 'getResults']),
     tidbits () {
-      const validTidbits = Object.entries(this.integrationData)
+      const validTidbits = Object.entries(this.integrationDataMap)
         .flatMap(([integration, data]) => (
           this.getIntegrations[integration].tidbits.map(tidbit => {
             const value = formatValue(data, tidbit);
@@ -70,8 +71,8 @@ export const ITypeMixin = {
 
       return uniqueTidbits;
     },
-    integrationData () {
-      return this.gatherIntegrationData(this.data, this.itype, this.query);
+    integrationDataMap () {
+      return getIntegrationDataMap(this.getResults, this.indicator);
     }
   },
   methods: {
@@ -82,21 +83,14 @@ export const ITypeMixin = {
         : tooltip;
     },
     applyTidbitPostProcess (value, data, integration, postProcess, template) {
+      if (!value) { return; }
       // first fill template, if existent
       if (template?.length) {
         value = applyTemplate(template, { value, data });
       }
+      const uiSettings = this.getIntegrations[integration].uiSettings;
       // apply any post processors
-      return applyPostProcess(postProcess, value, data, this.getIntegrations[integration].uiSettings);
-    },
-    gatherIntegrationData (data, itype, query) { // restructures data into the shape {[integrationName]: data}
-      const iTypeStub = data?.[itype] || {};
-      const integrationPairs = Object.entries(iTypeStub)
-        .filter(([key, _]) => key !== '_query')
-        .map(([integrationName, dataEntryArray]) => [integrationName, dataEntryArray?.find(dataEntry => dataEntry._query === query)?.data])
-        .filter(([_, val]) => val != null);
-
-      return Object.fromEntries(integrationPairs);
+      return applyPostProcess(postProcess, value, { data, uiSettings });
     }
   }
 };

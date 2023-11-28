@@ -3,17 +3,7 @@
  *
  * Copyright Yahoo Inc.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this Software except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: Apache-2.0
  */
 'use strict';
 
@@ -22,26 +12,20 @@ const { Client } = require('@elastic/elasticsearch');
 const fs = require('fs');
 const LinkGroup = require('./linkGroup');
 const ArkimeUtil = require('../common/arkimeUtil');
+const ArkimeConfig = require('../common/arkimeConfig');
 const cryptoLib = require('crypto');
 
 class Db {
-  static debug;
-
   static async initialize (options) {
-    if (options.debug > 1) {
+    if (ArkimeConfig.debug > 1) {
       console.log('Db.initialize', options);
     }
 
-    Db.debug = options.debug;
-
-    if (!options.url) {
-      Db.implementation = new DbESImplementation(options);
-    } else if (options.url.startsWith('lmdb')) {
+    if (options.url?.startsWith('lmdb')) {
       Db.implementation = new DbLMDBImplementation(options);
-    // } else if (options.url.startsWith('redis')) {
-    //  Db.implementation = new DbRedisImplementation(options);
     } else {
       Db.implementation = new DbESImplementation(options);
+      await Db.implementation.initialize();
     }
   };
 
@@ -131,6 +115,35 @@ class Db {
   static async deleteExpiredAudits (expireMs) {
     return await Db.implementation.deleteExpiredAudits(expireMs);
   }
+
+  /**
+   * Get all the overviews that match the creator and set of roles
+   */
+  static async getMatchingOverviews (creator, roles, all) {
+    return Db.implementation.getMatchingOverviews(creator, roles, all);
+  }
+
+  /**
+   * Put a single overview
+   */
+  static async putOverview (id, overview) {
+    if (overview._id) { delete overview._id; }
+    return Db.implementation.putOverview(id, overview);
+  }
+
+  /**
+   * Get a single overview
+   */
+  static async getOverview (id) {
+    return Db.implementation.getOverview(id);
+  }
+
+  /**
+   * Delete a single overview
+   */
+  static async deleteOverview (id) {
+    return Db.implementation.deleteOverview(id);
+  }
 }
 
 /******************************************************************************/
@@ -140,7 +153,8 @@ class DbESImplementation {
   client;
 
   constructor (options) {
-    const esSSLOptions = { rejectUnauthorized: !options.insecure, ca: options.ca };
+    const esSSLOptions = { rejectUnauthorized: !options.insecure };
+    if (options.caTrustFile) { esSSLOptions.ca = ArkimeUtil.certificateFileToArray(options.caTrustFile); };
     if (options.clientKey) {
       esSSLOptions.key = fs.readFileSync(options.clientKey);
       esSSLOptions.cert = fs.readFileSync(options.clientCert);
@@ -165,7 +179,7 @@ class DbESImplementation {
       if (!basicAuth.includes(':')) {
         basicAuth = Buffer.from(basicAuth, 'base64').toString();
       }
-      basicAuth = basicAuth.split(':');
+      basicAuth = ArkimeUtil.splitRemain(basicAuth, ':', 1);
       esOptions.auth = {
         username: basicAuth[0],
         password: basicAuth[1]
@@ -173,14 +187,21 @@ class DbESImplementation {
     }
 
     this.client = new Client(esOptions);
-
-    // Create the cont3xt_links index
-    this.createLinksIndex();
-    // Create the cont3xt_views index
-    this.createViewsIndex();
-    // Create the cont3xt_history index
-    this.createHistoryIndex();
   };
+
+  async initialize () {
+    // create all ES indices simultaneously
+    await Promise.all([
+      // Create the cont3xt_links index
+      this.createLinksIndex(),
+      // Create the cont3xt_views index
+      this.createViewsIndex(),
+      // Create the cont3xt_history index
+      this.createHistoryIndex(),
+      // Create the cont3xt_overviews index
+      this.createOverviewIndex()
+    ]);
+  }
 
   async createLinksIndex () {
     try {
@@ -285,6 +306,59 @@ class DbESImplementation {
           indicator: { type: 'keyword' },
           tags: { type: 'keyword' },
           viewId: { type: 'keyword' }
+        },
+        dynamic_templates: [
+          {
+            string_template: {
+              match_mapping_type: 'string',
+              mapping: {
+                type: 'keyword'
+              }
+            }
+          }
+        ]
+      }
+    });
+  }
+
+  async createOverviewIndex () {
+    try {
+      await this.client.indices.create({
+        index: 'cont3xt_overviews',
+        body: {
+          settings: {
+            number_of_shards: 1,
+            number_of_replicas: 0,
+            auto_expand_replicas: '0-2'
+          }
+        }
+      });
+    } catch (err) {
+      // If already exists ignore error
+      if (err.meta.body?.error?.type !== 'resource_already_exists_exception') {
+        console.log(err);
+        process.exit(0);
+      }
+    }
+
+    await this.client.indices.putMapping({
+      index: 'cont3xt_overviews',
+      body: {
+        properties: {
+          creator: { type: 'keyword' },
+          name: { type: 'keyword' },
+          title: { type: 'keyword' },
+          iType: { type: 'keyword' },
+          viewRoles: { type: 'keyword' },
+          editRoles: { type: 'keyword' },
+          fields: {
+            properties: {
+              from: { type: 'keyword' },
+              type: { type: 'keyword' },
+              field: { type: 'keyword' },
+              custom: { type: 'keyword' }
+            }
+          }
         },
         dynamic_templates: [
           {
@@ -597,6 +671,95 @@ class DbESImplementation {
       return [];
     }
   }
+
+  /* Overviews ---------------------------------------- */
+  async getMatchingOverviews (creator, roles, all) {
+    const query = {
+      size: 1000,
+      query: {
+        bool: {
+          should: []
+        }
+      }
+    };
+
+    if (!all) {
+      if (creator) {
+        query.query.bool.should.push({
+          term: {
+            creator
+          }
+        });
+      }
+      if (roles) {
+        query.query.bool.should.push({
+          terms: {
+            editRoles: roles
+          }
+        });
+
+        query.query.bool.should.push({
+          terms: {
+            viewRoles: roles
+          }
+        });
+      }
+    }
+
+    const results = await this.client.search({
+      index: 'cont3xt_overviews',
+      body: query,
+      rest_total_hits_as_int: true
+    });
+
+    const hits = results.body.hits.hits;
+    const overviews = [];
+    for (let i = 0; i < hits.length; i++) {
+      const overview = new Overview(hits[i]._source);
+      overview._id = hits[i]._id;
+      overviews.push(overview);
+    }
+
+    return overviews;
+  }
+
+  async putOverview (id, overview) {
+    const results = await this.client.index({
+      id,
+      index: 'cont3xt_overviews',
+      body: overview,
+      refresh: true
+    });
+
+    return results.body._id;
+  }
+
+  async getOverview (id) {
+    try {
+      const results = await this.client.get({
+        index: 'cont3xt_overviews',
+        id
+      });
+
+      if (results?.body?._source) {
+        return results.body._source;
+      }
+    } catch (err) {}
+    return null;
+  }
+
+  async deleteOverview (id) {
+    const results = await this.client.delete({
+      index: 'cont3xt_overviews',
+      id,
+      refresh: true
+    });
+
+    if (results.body) {
+      return results.body;
+    }
+    return null;
+  }
 }
 /******************************************************************************/
 // LMDB Implementation of Users DB
@@ -606,12 +769,14 @@ class DbLMDBImplementation {
   viewStore;
   linkGroupStore;
   auditStore;
+  overviewStore;
 
   constructor (options) {
     this.store = ArkimeUtil.createLMDBStore(options.url, 'Db');
     this.linkGroupStore = this.store.openDB('linkGroups');
     this.viewStore = this.store.openDB('views');
     this.auditStore = this.store.openDB('audits');
+    this.overviewStore = this.store.openDB('overviews');
   }
 
   /**
@@ -757,9 +922,56 @@ class DbLMDBImplementation {
     }
     return expiredLogIds.length;
   }
+
+  /* Overviews ---------------------------------------- */
+  /**
+   * Get all the links that match the creator and set of roles
+   */
+  async getMatchingOverviews (creator, roles, all) {
+    const hits = [];
+    this.overviewStore.getRange({})
+      .filter(({ value }) => {
+        if (all) { return true; }
+        if (creator !== undefined && creator === value.creator) { return true; }
+        if (roles !== undefined) {
+          if (value.editRoles && roles.some(x => value.editRoles.includes(x))) { return true; }
+          if (value.viewRoles && roles.some(x => value.viewRoles.includes(x))) { return true; }
+        }
+        return false;
+      }).forEach(({ key, value }) => {
+        value._id = key;
+        hits.push(value);
+      });
+
+    const overviews = [];
+    for (let i = 0; i < hits.length; i++) {
+      const overview = new Overview(hits[i]);
+      overviews.push(overview);
+    }
+
+    return overviews;
+  }
+
+  async putOverview (id, overview) {
+    if (id === null) {
+      // Maybe should be a UUID?
+      id = cryptoLib.randomBytes(16).toString('hex');
+    }
+    await this.overviewStore.put(id, overview);
+    return id;
+  }
+
+  async getOverview (id) {
+    return await this.overviewStore.get(id);
+  }
+
+  async deleteOverview (id) {
+    return this.overviewStore.remove(id);
+  }
 }
 
 module.exports = Db;
 
 const View = require('./view');
 const Audit = require('./audit');
+const Overview = require('./overview');

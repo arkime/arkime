@@ -3,20 +3,10 @@
  *
  * Copyright 2012-2017 AOL Inc. All rights reserved.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this Software except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: Apache-2.0
  */
 #define _FILE_OFFSET_BITS 64
-#include "moloch.h"
+#include "arkime.h"
 #include <errno.h>
 #include <sys/stat.h>
 #include "pcap.h"
@@ -25,25 +15,25 @@
 #include <grp.h>
 #include <sys/stat.h>
 
-extern MolochPcapFileHdr_t   pcapFileHeader;
+extern ArkimePcapFileHdr_t   pcapFileHeader;
 
-extern MolochConfig_t        config;
+extern ArkimeConfig_t        config;
 
 LOCAL  pcap_t               *pcap;
 LOCAL  FILE                 *offlineFile = 0;
 
 extern void                 *esServer;
-LOCAL  MolochStringHead_t    monitorQ;
+LOCAL  ArkimeStringHead_t    monitorQ;
 
-LOCAL  char                  offlinePcapFilename[PATH_MAX+1];
+LOCAL  char                  offlinePcapFilename[PATH_MAX + 1];
 LOCAL  int                   pktsToRead;
 
 LOCAL void reader_libpcapfile_opened();
 
-LOCAL MolochPacketBatch_t   batch;
+LOCAL ArkimePacketBatch_t   batch;
 LOCAL uint8_t               readerPos;
 extern char                *readerFileName[256];
-extern MolochFieldOps_t     readerFieldOps[256];
+extern ArkimeFieldOps_t     readerFieldOps[256];
 extern uint32_t             readerOutputIds[256];
 
 LOCAL  int                  offlineDispatchAfter;
@@ -86,7 +76,7 @@ LOCAL void reader_libpcapfile_monitor_do(struct inotify_event *event)
         return;
     }
 
-    MolochString_t *string = MOLOCH_TYPE_ALLOC0(MolochString_t);
+    ArkimeString_t *string = ARKIME_TYPE_ALLOC0(ArkimeString_t);
     string->str = fullfilename;
 
     if (config.debug)
@@ -111,7 +101,7 @@ LOCAL gboolean reader_libpcapfile_monitor_read()
         struct inotify_event *event = (struct inotify_event *) p;
         reader_libpcapfile_monitor_do(event);
         p += sizeof(struct inotify_event) + event->len;
-     }
+    }
     return TRUE;
 }
 /******************************************************************************/
@@ -125,7 +115,7 @@ LOCAL void reader_libpcapfile_monitor_dir(char *dirname)
         LOG ("WARNING - Couldn't watch %s %s", dirname, strerror(errno));
         return;
     } else {
-        g_hash_table_insert(wdHashTable, (void*)(long)rc, g_strdup(dirname));
+        g_hash_table_insert(wdHashTable, (void *)(long)rc, g_strdup(dirname));
     }
 
     if (!config.pcapRecursive)
@@ -168,7 +158,7 @@ LOCAL void reader_libpcapfile_init_monitor()
         LOGEXIT("ERROR - Couldn't init inotify %s", strerror(errno));
 
     wdHashTable = g_hash_table_new (g_direct_hash, g_direct_equal);
-    moloch_watch_fd(monitorFd, MOLOCH_GIO_READ_COND, reader_libpcapfile_monitor_read, NULL);
+    arkime_watch_fd(monitorFd, ARKIME_GIO_READ_COND, reader_libpcapfile_monitor_read, NULL);
 
     for (dir = 0; config.pcapReadDirs[dir] && config.pcapReadDirs[dir][0]; dir++) {
         reader_libpcapfile_monitor_dir(config.pcapReadDirs[dir]);
@@ -201,13 +191,13 @@ LOCAL int reader_libpcapfile_process(char *filename)
         return 1;
     }
 
-    if (config.pcapSkip && moloch_db_file_exists(offlinePcapFilename, NULL)) {
+    if (config.pcapSkip && arkime_db_file_exists(offlinePcapFilename, NULL)) {
         if (config.debug)
             LOG("Skipping %s", filename);
         return 1;
     }
 
-    if (config.pcapReprocess && !moloch_db_file_exists(offlinePcapFilename, NULL)) {
+    if (config.pcapReprocess && !arkime_db_file_exists(offlinePcapFilename, NULL)) {
         LOG("Can't reprocess %s", filename);
         return 1;
     }
@@ -215,45 +205,45 @@ LOCAL int reader_libpcapfile_process(char *filename)
     // check to see if viewer might have access issues to non-copied pcap file
     if (config.copyPcap == 0) {
 
-      if (strlen (filename) >= PATH_MAX) {
-        // filename bigger than path buffer, skip check
-      } else if ((config.dropUser == NULL) && (config.dropGroup == NULL)) {
-        // drop.User,Group not defined -- skip check
-      } else if (strncmp (filename, "/", 1) != 0) {
-        LOG("WARNING using a relative path may make pcap inaccessible to viewer");
-      } else {
+        if (strlen (filename) >= PATH_MAX) {
+            // filename bigger than path buffer, skip check
+        } else if ((config.dropUser == NULL) && (config.dropGroup == NULL)) {
+            // drop.User,Group not defined -- skip check
+        } else if (strncmp (filename, "/", 1) != 0) {
+            LOG("WARNING using a relative path may make pcap inaccessible to viewer");
+        } else {
 
-    	  path[0] = 0;
+            path[0] = 0;
 
-        // process copy of filename given strtok_r changes arg
-        g_strlcpy (tmpFilename, filename, sizeof(tmpFilename));
+            // process copy of filename given strtok_r changes arg
+            g_strlcpy (tmpFilename, filename, sizeof(tmpFilename));
 
-        token = strtok_r (tmpFilename, "/", &save_ptr);
+            token = strtok_r (tmpFilename, "/", &save_ptr);
 
-        while (token != NULL) {
-          g_strlcat (path, "/", sizeof(path));
-          g_strlcat (path, token, sizeof(path));
+            while (token != NULL) {
+                g_strlcat (path, "/", sizeof(path));
+                g_strlcat (path, token, sizeof(path));
 
-          if (stat(path, &stats) != -1) {
-            gr = getgrgid (stats.st_gid);
-            pw = getpwuid (stats.st_uid);
+                if (stat(path, &stats) != -1) {
+                    gr = getgrgid (stats.st_gid);
+                    pw = getpwuid (stats.st_uid);
 
-            if (stats.st_mode & S_IROTH) {
-              // world readable
-            } else if ((stats.st_mode & S_IRGRP) && config.dropGroup && (strcmp (config.dropGroup, gr->gr_name) == 0)) {
-              // group readable and dropGroup matches file group
-              // TODO compare group id values as opposed to group name
-            } else if ((stats.st_mode & S_IRUSR) && config.dropUser && (strcmp (config.dropUser, pw->pw_name) == 0)) {
-              // user readable and dropUser matches file user
-              // TODO compare user id values as opposed to user name
-            } else
-              LOG("WARNING -- permission issues with %s might make pcap inaccessible to viewer", path);
-          } else
-            LOG("WARNING -- Can't stat %s.  Pcap might not be accessible to viewer", path);
+                    if (stats.st_mode & S_IROTH) {
+                        // world readable
+                    } else if ((stats.st_mode & S_IRGRP) && config.dropGroup && (strcmp (config.dropGroup, gr->gr_name) == 0)) {
+                        // group readable and dropGroup matches file group
+                        // TODO compare group id values as opposed to group name
+                    } else if ((stats.st_mode & S_IRUSR) && config.dropUser && (strcmp (config.dropUser, pw->pw_name) == 0)) {
+                        // user readable and dropUser matches file user
+                        // TODO compare user id values as opposed to user name
+                    } else
+                        LOG("WARNING -- permission issues with %s might make pcap inaccessible to viewer", path);
+                } else
+                    LOG("WARNING -- Can't stat %s.  Pcap might not be accessible to viewer", path);
 
-          token = strtok_r (NULL, "/", &save_ptr);
+                token = strtok_r (NULL, "/", &save_ptr);
+            }
         }
-      }
     }
 
 process:
@@ -329,8 +319,8 @@ filesDone:
         }
 
         int lineLen = strlen(line);
-        if (line[lineLen-1] == '\n') {
-            line[lineLen-1] = 0;
+        if (line[lineLen - 1] == '\n') {
+            line[lineLen - 1] = 0;
         }
 
         g_strstrip(line);
@@ -390,7 +380,7 @@ fileListsDone:
             if (config.pcapRecursive && g_file_test(fullfilename, G_FILE_TEST_IS_DIR)) {
                 if (pcapGDirLevel >= 20)
                     continue;
-                pcapBase[pcapGDirLevel+1] = fullfilename;
+                pcapBase[pcapGDirLevel + 1] = fullfilename;
                 pcapGDirLevel++;
                 return reader_libpcapfile_next();
             }
@@ -426,10 +416,10 @@ fileListsDone:
 
 dirsDone:
     while (DLL_COUNT(s_, &monitorQ) > 0) {
-        MolochString_t *string;
+        ArkimeString_t *string;
         DLL_POP_HEAD(s_, &monitorQ, string);
         fullfilename = string->str;
-        MOLOCH_TYPE_FREE(MolochString_t, string);
+        ARKIME_TYPE_FREE(ArkimeString_t, string);
 
         if (reader_libpcapfile_process(fullfilename)) {
             g_free(fullfilename);
@@ -454,7 +444,7 @@ LOCAL gboolean reader_libpcapfile_monitor_gfunc (gpointer UNUSED(user_data))
     return G_SOURCE_CONTINUE;
 }
 /******************************************************************************/
-LOCAL int reader_libpcapfile_stats(MolochReaderStats_t *stats)
+LOCAL int reader_libpcapfile_stats(ArkimeReaderStats_t *stats)
 {
     struct pcap_stat ps;
     if (!pcap) {
@@ -473,13 +463,13 @@ LOCAL int reader_libpcapfile_stats(MolochReaderStats_t *stats)
 /******************************************************************************/
 LOCAL void reader_libpcapfile_pcap_cb(u_char *UNUSED(user), const struct pcap_pkthdr *h, const u_char *bytes)
 {
-    MolochPacket_t *packet = MOLOCH_TYPE_ALLOC0(MolochPacket_t);
+    ArkimePacket_t *packet = ARKIME_TYPE_ALLOC0(ArkimePacket_t);
 
     if (unlikely(h->caplen != h->len)) {
         if (!config.readTruncatedPackets && !config.ignoreErrors) {
             LOGEXIT("ERROR - Arkime requires full packet captures caplen: %d pktlen: %d. "
-                "If using tcpdump use the \"-s0\" option, or set readTruncatedPackets in ini file",
-                h->caplen, h->len);
+                    "If using tcpdump use the \"-s0\" option, or set readTruncatedPackets in ini file",
+                    h->caplen, h->len);
         }
         packet->pktlen     = h->caplen;
     } else {
@@ -492,29 +482,29 @@ LOCAL void reader_libpcapfile_pcap_cb(u_char *UNUSED(user), const struct pcap_pk
     packet->ts.tv_usec    = h->ts.tv_usec;
     packet->readerFilePos = ftell(offlineFile) - 16 - h->len;
     packet->readerPos     = readerPos;
-    moloch_packet_batch(&batch, packet);
+    arkime_packet_batch(&batch, packet);
 }
 /******************************************************************************/
 LOCAL gboolean reader_libpcapfile_read()
 {
     // pause reading if too many waiting disk operations
-    if (moloch_writer_queue_length() > 10) {
+    if (arkime_writer_queue_length() > 10) {
         if (config.debug)
-            LOG("Waiting to process more packets, write q: %u", moloch_writer_queue_length());
+            LOG("Waiting to process more packets, write q: %u", arkime_writer_queue_length());
         return G_SOURCE_CONTINUE;
     }
 
     // pause reading if too many waiting ES operations
-    if (moloch_http_queue_length(esServer) > 30) {
+    if (arkime_http_queue_length(esServer) > 30) {
         if (config.debug)
-            LOG("Waiting to process more packets, es q: %d", moloch_http_queue_length(esServer));
+            LOG("Waiting to process more packets, es q: %d", arkime_http_queue_length(esServer));
         return G_SOURCE_CONTINUE;
     }
 
     // pause reading if too many packets are waiting to be processed
-    if (moloch_packet_outstanding() > (int)(config.maxPacketsInQueue - offlineDispatchAfter)) {
+    if (arkime_packet_outstanding() > (int)(config.maxPacketsInQueue - offlineDispatchAfter)) {
         if (config.debug)
-            LOG("Waiting to process more packets, packet q: %d allow %d, try increasing maxPacketsInQueue (%u)", moloch_packet_outstanding(), (int)(config.maxPacketsInQueue - offlineDispatchAfter), config.maxPacketsInQueue);
+            LOG("Waiting to process more packets, packet q: %d allow %d, try increasing maxPacketsInQueue (%u)", arkime_packet_outstanding(), (int)(config.maxPacketsInQueue - offlineDispatchAfter), config.maxPacketsInQueue);
         return G_SOURCE_CONTINUE;
     }
 
@@ -530,7 +520,7 @@ LOCAL gboolean reader_libpcapfile_read()
     } else {
         r = pcap_dispatch(pcap, offlineDispatchAfter, reader_libpcapfile_pcap_cb, NULL);
     }
-    moloch_packet_batch_flush(&batch);
+    arkime_packet_batch_flush(&batch);
 
     // Some kind of failure, move to the next file or quit
     if (r <= 0) {
@@ -549,7 +539,7 @@ LOCAL gboolean reader_libpcapfile_read()
         if (config.pcapMonitor)
             g_timeout_add(25, reader_libpcapfile_monitor_gfunc, 0);
         else {
-            moloch_quit();
+            arkime_quit();
         }
         return G_SOURCE_REMOVE;
     }
@@ -559,15 +549,15 @@ LOCAL gboolean reader_libpcapfile_read()
 /******************************************************************************/
 LOCAL void reader_libpcapfile_opened()
 {
-    int moloch_db_can_quit();
+    int arkime_db_can_quit();
 
     if (config.flushBetween) {
-        moloch_session_flush();
+        arkime_session_flush();
         g_main_context_iteration(NULL, TRUE);
         int rc[4];
 
         // Pause until all packets and commands are done
-        while ((rc[0] = moloch_session_cmd_outstanding()) + (rc[1] = moloch_session_close_outstanding()) + (rc[2] = moloch_packet_outstanding()) + (rc[3] = moloch_session_monitoring()) > 0) {
+        while ((rc[0] = arkime_session_cmd_outstanding()) + (rc[1] = arkime_session_close_outstanding()) + (rc[2] = arkime_packet_outstanding()) + (rc[3] = arkime_session_monitoring()) > 0) {
             if (config.debug) {
                 LOG("Waiting next file %d %d %d %d", rc[0], rc[1], rc[2], rc[3]);
             }
@@ -576,7 +566,7 @@ LOCAL void reader_libpcapfile_opened()
         }
     }
 
-    moloch_packet_set_dltsnap(pcap_datalink(pcap), pcap_snapshot(pcap));
+    arkime_packet_set_dltsnap(pcap_datalink(pcap), pcap_snapshot(pcap));
 
     offlineFile = pcap_file(pcap);
 
@@ -587,7 +577,7 @@ LOCAL void reader_libpcapfile_opened()
             LOGEXIT("ERROR - Couldn't compile bpf filter: '%s' with %s", config.bpf, pcap_geterr(pcap));
         }
 
-	if (pcap_setfilter(pcap, &bpf) == -1) {
+        if (pcap_setfilter(pcap, &bpf) == -1) {
             LOGEXIT("ERROR - Couldn't set bpf filter: '%s' with %s", config.bpf, pcap_geterr(pcap));
         }
         pcap_freecode(&bpf);
@@ -605,16 +595,16 @@ LOCAL void reader_libpcapfile_opened()
     if (fd == -1) {
         g_timeout_add(25, reader_libpcapfile_read, NULL);
     } else {
-        moloch_watch_fd(fd, MOLOCH_GIO_READ_COND, reader_libpcapfile_read, NULL);
+        arkime_watch_fd(fd, ARKIME_GIO_READ_COND, reader_libpcapfile_read, NULL);
     }
 
     if (filenameOpsNum > 0) {
 
         // Free any previously allocated
         if (readerFieldOps[readerPos].size > 0)
-            moloch_field_ops_free(&readerFieldOps[readerPos]);
+            arkime_field_ops_free(&readerFieldOps[readerPos]);
 
-        moloch_field_ops_init(&readerFieldOps[readerPos], filenameOpsNum, MOLOCH_FIELD_OPS_FLAGS_COPY);
+        arkime_field_ops_init(&readerFieldOps[readerPos], filenameOpsNum, ARKIME_FIELD_OPS_FLAGS_COPY);
 
         // Go thru all the filename ops looking for matches and then expand the value string
         int i;
@@ -629,7 +619,7 @@ LOCAL void reader_libpcapfile_opened()
                     g_error_free(error);
                 }
                 if (expand) {
-                    moloch_field_ops_add(&readerFieldOps[readerPos], filenameOps[i].field, expand, -1);
+                    arkime_field_ops_add(&readerFieldOps[readerPos], filenameOps[i].field, expand, -1);
                     g_free(expand);
                 }
             }
@@ -646,7 +636,7 @@ LOCAL void reader_libpcapfile_start() {
     // value is expanded using the g_regex_replace rules (\1 being the first capture group)
     // https://developer.gnome.org/glib/stable/glib-Perl-compatible-regular-expressions.html#g-regex-replace
     char **filenameOpsStr;
-    filenameOpsStr = moloch_config_str_list(NULL, "filenameOps", "");
+    filenameOpsStr = arkime_config_str_list(NULL, "filenameOps", "");
 
     int i;
     for (i = 0; filenameOpsStr && filenameOpsStr[i] && i < 100; i++) {
@@ -658,7 +648,7 @@ LOCAL void reader_libpcapfile_start() {
             CONFIGEXIT("Must be FieldExpr=regex%%value, missing equal '%s'", filenameOpsStr[i]);
         }
 
-        char *percent = strchr(equal+1, '%');
+        char *percent = strchr(equal + 1, '%');
         if (!percent) {
             CONFIGEXIT("Must be FieldExpr=regex%%value, missing percent '%s'", filenameOpsStr[i]);
         }
@@ -666,25 +656,25 @@ LOCAL void reader_libpcapfile_start() {
         *equal = 0;
         *percent = 0;
 
-        int elen = strlen(equal+1);
+        int elen = strlen(equal + 1);
         if (!elen) {
             CONFIGEXIT("Must be FieldExpr=regex%%value, empty regex for '%s'", filenameOpsStr[i]);
         }
 
-        int vlen = strlen(percent+1);
+        int vlen = strlen(percent + 1);
         if (!vlen) {
             CONFIGEXIT("Must be FieldExpr=regex%%value, empty value for '%s'", filenameOpsStr[i]);
         }
 
-        int fieldPos = moloch_field_by_exp(filenameOpsStr[i]);
+        int fieldPos = arkime_field_by_exp(filenameOpsStr[i]);
         if (fieldPos == -1) {
             CONFIGEXIT("Must be FieldExpr=regex?value, Unknown field expression '%s'", filenameOpsStr[i]);
         }
 
-        filenameOps[filenameOpsNum].regex = g_regex_new(equal+1, 0, 0, 0);
-        filenameOps[filenameOpsNum].expand = g_strdup(percent+1);
+        filenameOps[filenameOpsNum].regex = g_regex_new(equal + 1, 0, 0, 0);
+        filenameOps[filenameOpsNum].expand = g_strdup(percent + 1);
         if (!filenameOps[filenameOpsNum].regex)
-            CONFIGEXIT("Couldn't compile regex '%s'", equal+1);
+            CONFIGEXIT("Couldn't compile regex '%s'", equal + 1);
         filenameOps[filenameOpsNum].field = fieldPos;
         filenameOpsNum++;
     }
@@ -696,25 +686,25 @@ LOCAL void reader_libpcapfile_start() {
         if (config.pcapMonitor) {
             g_timeout_add(25, reader_libpcapfile_monitor_gfunc, 0);
         } else {
-            moloch_quit();
+            arkime_quit();
         }
     }
 }
 /******************************************************************************/
 void reader_libpcapfile_init(char *UNUSED(name))
 {
-    offlineDispatchAfter        = moloch_config_int(NULL, "offlineDispatchAfter", 2500, 1, 0x7fff);
+    offlineDispatchAfter        = arkime_config_int(NULL, "offlineDispatchAfter", 2500, 1, 0x7fff);
 
     if (offlineDispatchAfter > (int)(config.maxPacketsInQueue + 1000)) {
         CONFIGEXIT("offlineDispatchAfter (%d) must be less than maxPacketsInQueue (%u) + 1000", offlineDispatchAfter, config.maxPacketsInQueue);
     }
 
-    moloch_reader_start         = reader_libpcapfile_start;
-    moloch_reader_stats         = reader_libpcapfile_stats;
+    arkime_reader_start         = reader_libpcapfile_start;
+    arkime_reader_stats         = reader_libpcapfile_stats;
 
     if (config.pcapMonitor)
         reader_libpcapfile_init_monitor();
 
     DLL_INIT(s_, &monitorQ);
-    moloch_packet_batch_init(&batch);
+    arkime_packet_batch_init(&batch);
 }

@@ -3,17 +3,7 @@
  *
  * Copyright 2012-2016 AOL Inc. All rights reserved.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this Software except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 'use strict';
@@ -29,18 +19,23 @@ const https = require('https');
 const fs = require('fs');
 const path = require('path');
 const ArkimeUtil = require('../common/arkimeUtil');
+const ArkimeConfig = require('../common/arkimeConfig');
 
-const esSSLOptions = { rejectUnauthorized: !Config.insecure, ca: Config.getCaTrustCerts(Config.nodeName()) };
-const esClientKey = Config.get('esClientKey');
-const esClientCert = Config.get('esClientCert');
-if (esClientKey) {
-  esSSLOptions.key = fs.readFileSync(esClientKey);
-  esSSLOptions.cert = fs.readFileSync(esClientCert);
-  const esClientKeyPass = Config.get('esClientKeyPass');
-  if (esClientKeyPass) {
-    esSSLOptions.passphrase = esClientKeyPass;
+const esSSLOptions = { rejectUnauthorized: !ArkimeConfig.insecure };
+ArkimeConfig.loaded(() => {
+  const esClientKey = Config.get('esClientKey');
+  const esClientCert = Config.get('esClientCert');
+  const caTrustFile = Config.get('caTrustFile');
+  if (caTrustFile) { esSSLOptions.ca = ArkimeUtil.certificateFileToArray(caTrustFile); };
+  if (esClientKey) {
+    esSSLOptions.key = fs.readFileSync(esClientKey);
+    esSSLOptions.cert = fs.readFileSync(esClientCert);
+    const esClientKeyPass = Config.get('esClientKeyPass');
+    if (esClientKeyPass) {
+      esSSLOptions.passphrase = esClientKeyPass;
+    }
   }
-}
+});
 
 const clients = {};
 let nodes = [];
@@ -77,14 +72,15 @@ function saveBody (req, res, next) {
 }
 
 // app.configure
-const logger = require('morgan');
 const favicon = require('serve-favicon');
 const compression = require('compression');
 
 const app = express();
+// app.use ((req, res, next) => {console.log(req.url); next();});
+
 app.enable('jsonp callback');
 app.use(favicon(path.join(__dirname, '/public/favicon.ico')));
-app.use(logger(':date \x1b[1m:method\x1b[0m \x1b[33m:url\x1b[0m :res[content-length] bytes :response-time ms'));
+ArkimeUtil.logger(app);
 app.use(saveBody);
 app.use(compression());
 app.use(function (req, res, next) {
@@ -181,8 +177,10 @@ function makeRequest (url, options, cb) {
     });
     pres.on('end', () => {
       if (result.length) {
-        result = result.replace(new RegExp('(index":\\s*|[,{]|  )"' + options.arkime_prefix + '(sessions3|sessions2|stats|dstats|sequence|files|users|history)', 'g'), '$1"MULTIPREFIX_$2');
-        result = result.replace(new RegExp('(index":\\s*)"' + options.arkime_prefix + '(fields_v[1-4][0-9]?)"', 'g'), '$1"MULTIPREFIX_$2"');
+        if (!options.skipReplace) {
+          result = result.replace(new RegExp('(index":\\s*|[,{]|  )"' + options.arkime_prefix + '(sessions3|sessions2|stats|dstats|sequence|files|users|history)', 'g'), '$1"MULTIPREFIX_$2');
+          result = result.replace(new RegExp('(index":\\s*)"' + options.arkime_prefix + '(fields_v[1-4][0-9]?)"', 'g'), '$1"MULTIPREFIX_$2"');
+        }
         result = JSON.parse(result);
       } else {
         result = {};
@@ -223,7 +221,11 @@ function simpleGather (req, res, bodies, doneCb) {
     const nodeName = node2Name(node);
     let nodeUrl = node2Url(node) + req.url;
 
-    const options = { method: req.method, arkime_opaque: req.headers['x-opaque-id'] };
+    const options = {
+      method: req.method,
+      arkime_opaque: req.headers['x-opaque-id'],
+      skipReplace: req._skipReplace
+    };
     options.arkime_prefix = node2Prefix(node);
     nodeUrl = nodeUrl.replace(/MULTIPREFIX_/g, options.arkime_prefix).replace(/arkime_sessions2/g, 'sessions2');
     const url = new URL(nodeUrl);
@@ -352,10 +354,27 @@ function simpleGatherFirst (req, res) {
   });
 }
 
-app.get('/_tasks', simpleGatherTasks);
-app.post('/_tasks/:taskId/_cancel', simpleGatherFirst);
+function simpleGather1Cluster (req, res) {
+  req._skipReplace = true;
+  if (req.query.cluster === undefined) {
+    console.log('Missing cluster', ArkimeUtil.sanitizeStr(req.url));
+    return res.send({ error: 'Missing cluster' });
+  }
+  if (req.query.cluster.split(',').length !== 1) {
+    console.log('Expecting 1 cluster', ArkimeUtil.sanitizeStr(req.url));
+    return res.send({ error: 'Expecting 1 cluster' });
+  }
 
-app.get('/_cluster/nodes/stats', simpleGatherNodes);
+  simpleGather(req, res, null, (err, results) => {
+    res.send(results[0]);
+  });
+};
+
+app.get('/_tasks', simpleGatherTasks);
+app.post('/_tasks/:taskId/_cancel', simpleGather1Cluster);
+app.post('/_tasks/_cancel', simpleGather1Cluster);
+
+app.get('/_cluster/nodes/stats', simpleGather1Cluster);
 app.get('/_nodes', simpleGatherNodes);
 app.get('/_nodes/stats', simpleGatherNodes);
 app.get('/_nodes/stats/:kinds', simpleGatherNodes);
@@ -364,13 +383,26 @@ app.get('/_cluster/health', simpleGatherAdd);
 app.get('/:index/_aliases', simpleGatherNodes);
 app.get('/:index/_alias', simpleGatherNodes);
 
+app.post('/:index/_close', simpleGather1Cluster);
+app.post('/:index/_open', simpleGather1Cluster);
+app.post('/:index/_forcemerge', simpleGather1Cluster);
+
+app.delete('/:index', simpleGather1Cluster);
+
 app.get('/MULTIPREFIX_sessions*/_refresh', (req, res) => {
   req.url = '/sessions*/_refresh';
   return simpleGatherFirst(req, res);
 });
 
+app.get('/:index/_settings', simpleGatherFirst);
+app.put('/:index/_settings', simpleGather1Cluster);
+
+app.put('/:index1/_shrink/:index2', simpleGather1Cluster);
+
+app.get('/_ilm/policy/*', simpleGather1Cluster);
+
 app.get('/_cluster/:type/details', function (req, res) {
-  const result = { available: [], active: [], inactive: [] };
+  const result = { available: [], active: [], inactive: [], prefix: {} };
   const activeNodes = getActiveNodes();
   for (let i = 0; i < clusterList.length; i++) {
     result.available.push(clusterList[i]);
@@ -379,6 +411,7 @@ app.get('/_cluster/:type/details', function (req, res) {
     } else {
       result.inactive.push(clusterList[i]);
     }
+    result.prefix[clusterList[i]] = node2Prefix(activeNodes[i]);
   }
   res.send(result);
 });
@@ -434,6 +467,7 @@ app.get('/_template/MULTIPREFIX_sessions2_template', (req, res) => {
 });
 
 app.get('/_template/MULTIPREFIX_sessions3_template', (req, res) => {
+  req._skipReplace = req.query.cluster !== undefined;
   simpleGather(req, res, null, (err, results) => {
     // console.log("DEBUG -", JSON.stringify(results, null, 2));
 
@@ -446,6 +480,7 @@ app.get('/_template/MULTIPREFIX_sessions3_template', (req, res) => {
     res.send(obj);
   });
 });
+app.put('/_template/MULTIPREFIX_sessions3_template', simpleGather1Cluster);
 
 app.get(['/users/user/:user', '/users/_doc/:user'], async (req, res) => {
   try {
@@ -523,8 +558,22 @@ app.get('/:index/:type/:id', function (req, res) {
 });
 
 app.get('/_cluster/settings', function (req, res) {
-  res.send({ persistent: {}, transient: {} });
+  let cluster = null;
+  if (req.query.cluster) {
+    cluster = Array.isArray(req.query.cluster) ? req.query.cluster : req.query.cluster.split(',');
+    req.url = req.url.replace(/cluster=[^&]*(&|$)/g, ''); // remove cluster from URL
+    req._skipReplace = true;
+  }
+  if (!cluster || cluster.length > 1) {
+    res.send({ persistent: {}, transient: {} });
+  } else {
+    simpleGather(req, res, null, (err, results) => {
+      res.send(results[0]);
+    });
+  }
 });
+
+app.put('/_cluster/settings', simpleGather1Cluster);
 
 app.head(/^\/$/, function (req, res) {
   res.send('');
@@ -856,7 +905,14 @@ app.post(['/:index/:type/_search', '/:index/_search'], function (req, res) {
     req.arkime_need_to_scroll = true;
   }
   // console.log("DEBUG - INCOMING SEARCH", JSON.stringify(search, null, 2));
-  const activeNodes = getActiveNodes();
+  let cluster = null;
+  if (search.cluster) {
+    req.query.cluster = search.cluster;
+    cluster = Array.isArray(search.cluster) ? search.cluster : search.cluster.split(',');
+    delete search.cluster;
+    req.body = JSON.stringify(search);
+  }
+  const activeNodes = getActiveNodes(cluster);
   async.each(activeNodes, (node, asyncCb) => {
     fixQuery(node, req.body, (err, body) => {
       // console.log("DEBUG - OUTGOING SEARCH", node, JSON.stringify(body, null, 2));
@@ -973,7 +1029,7 @@ app.post('/:index/_count', simpleGatherAdd);
 app.get('/:index/:type/_count', simpleGatherAdd);
 app.post('/:index/:type/_count', simpleGatherAdd);
 
-if (Config.get('regressionTests')) {
+if (ArkimeConfig.regressionTests) {
   app.post('/regressionTests/shutdown', function (req, res) {
     process.exit(0);
   });
@@ -989,95 +1045,16 @@ app.post(/./, function (req, res) {
   console.log('UNKNOWN', req.method, req.url, req.body);
 });
 
+app.put(/./, function (req, res) {
+  console.log('UNKNOWN', req.method, req.url, req.body);
+});
+
 // Replace the default express error handler
 app.use(ArkimeUtil.expressErrorHandler);
 
 /// ///////////////////////////////////////////////////////////////////////////////
 /// / Main
 /// ///////////////////////////////////////////////////////////////////////////////
-
-nodes = Config.get('multiESNodes', '').split(';');
-if (nodes.length === 0 || nodes[0] === '') {
-  console.log('ERROR - Empty multiESNodes');
-  process.exit(1);
-}
-
-for (let i = 0; i < nodes.length; i++) {
-  const nodeName = node2Name(nodes[i]);
-  if (!nodeName) {
-    console.log('ERROR - name is missing in multiESNodes for', nodes[i], 'Set node name as multiESNodes=http://example1:9200,name:<friendly-name-11>;http://example2:9200,name:<friendly-name-2>');
-    process.exit(1);
-  }
-  clusterList[i] = nodeName; // name
-
-  // Maintain a mapping of node to cluster and cluster to node
-  clusters[nodes[i]] = clusterList[i]; // node -> cluster
-  clusters[clusterList[i]] = nodes[i]; // cluster -> node
-}
-
-// First connect
-nodes.forEach((node) => {
-  if (node.toLowerCase().includes(',http')) {
-    console.log('WARNING - multiESNodes may be using a comma as a host delimiter, change to semicolon');
-  }
-
-  let esNode = node.split(',')[0];
-  esNode = esNode.startsWith('http') ? esNode : `http://${esNode}`;
-
-  const esClientOptions = {
-    node: esNode,
-    requestTimeout: 300000,
-    maxRetries: 2,
-    ssl: esSSLOptions
-  };
-
-  const nodeName = node2Name(node);
-  const esAPIKey = node2ESAPIKey(node);
-  let esBasicAuth = node2ESBasicAuth(node);
-  if (esAPIKey) {
-    esClientOptions.auth = {
-      apiKey: esAPIKey
-    };
-    authHeader[nodeName] = `ApiKey ${esAPIKey}`;
-  } else if (esBasicAuth) {
-    if (!esBasicAuth.includes(':')) {
-      esBasicAuth = Buffer.from(esBasicAuth, 'base64').toString();
-    }
-    esBasicAuth = esBasicAuth.split(':');
-    esClientOptions.auth = {
-      username: esBasicAuth[0],
-      password: esBasicAuth[1]
-    };
-    const b64 = Buffer.from(esBasicAuth.join(':')).toString('base64');
-    authHeader[nodeName] = `Basic ${b64}`;
-  }
-
-  clients[node] = new Client(esClientOptions);
-});
-
-// Now check version numbers
-nodes.forEach(async (node) => {
-  try {
-    const { body: data } = await clients[node].info();
-
-    if (data.version.distribution === 'opensearch') {
-      if (data.version.number.match(/^[0]/)) {
-        console.log(`ERROR - OpenSearch ${data.version.number} not supported, OpenSearch 1.0.0 or later required.`);
-        process.exit();
-      }
-    } else {
-      if (data.version.number.match(/^([0-6]|7\.[0-9]\.)/)) {
-        console.log(`ERROR - ES ${data.version.number} not supported, ES 7.10.0 or later required.`);
-        process.exit();
-      }
-    }
-  } catch (err) {
-    console.log(err);
-  }
-});
-
-// list of active nodes
-activeESNodes = nodes.slice();
 
 // Ping (HEAD /) periodically to maintian a list of active ES nodes
 function pingESNode (client, node) {
@@ -1114,18 +1091,94 @@ function enumerateActiveNodes () {
 
 setInterval(enumerateActiveNodes, 1 * 60 * 1000); // 1*60*1000 ms
 
-console.log(nodes);
+async function premain () {
+  await Config.initialize();
 
-console.log('Listen on ', Config.get('multiESPort', '8200'));
+  nodes = Config.getArray('multiESNodes', '', ';');
+  if (nodes.length === 0 || nodes[0] === '') {
+    console.log('ERROR - Empty multiESNodes');
+    process.exit(1);
+  }
 
-if (Config.isHTTPS()) {
-  const cryptoOption = require('crypto').constants.SSL_OP_NO_TLSv1;
-  const server = https.createServer({
-    key: Config.keyFileData,
-    cert: Config.certFileData,
-    secureOptions: cryptoOption
-  }, app).listen(Config.get('multiESPort', '8200'), Config.get('multiESHost', undefined));
-  Config.setServerToReloadCerts(server, cryptoOption);
-} else {
-  http.createServer(app).listen(Config.get('multiESPort', '8200'), Config.get('multiESHost', undefined));
+  for (let i = 0; i < nodes.length; i++) {
+    const nodeName = node2Name(nodes[i]);
+    if (!nodeName) {
+      console.log('ERROR - name is missing in multiESNodes for', nodes[i], 'Set node name as multiESNodes=http://example1:9200,name:<friendly-name-11>;http://example2:9200,name:<friendly-name-2>');
+      process.exit(1);
+    }
+    clusterList[i] = nodeName; // name
+
+    // Maintain a mapping of node to cluster and cluster to node
+    clusters[nodes[i]] = clusterList[i]; // node -> cluster
+    clusters[clusterList[i]] = nodes[i]; // cluster -> node
+  }
+
+  // First connect
+  nodes.forEach((node) => {
+    if (node.toLowerCase().includes(',http')) {
+      console.log('WARNING - multiESNodes may be using a comma as a host delimiter, change to semicolon');
+    }
+
+    let esNode = node.split(',')[0];
+    esNode = esNode.startsWith('http') ? esNode : `http://${esNode}`;
+
+    const esClientOptions = {
+      node: esNode,
+      requestTimeout: 300000,
+      maxRetries: 2,
+      ssl: esSSLOptions
+    };
+
+    const nodeName = node2Name(node);
+    const esAPIKey = node2ESAPIKey(node);
+    let esBasicAuth = node2ESBasicAuth(node);
+    if (esAPIKey) {
+      esClientOptions.auth = {
+        apiKey: esAPIKey
+      };
+      authHeader[nodeName] = `ApiKey ${esAPIKey}`;
+    } else if (esBasicAuth) {
+      if (!esBasicAuth.includes(':')) {
+        esBasicAuth = Buffer.from(esBasicAuth, 'base64').toString();
+      }
+      esBasicAuth = esBasicAuth.split(':');
+      esClientOptions.auth = {
+        username: esBasicAuth[0],
+        password: esBasicAuth[1]
+      };
+      const b64 = Buffer.from(esBasicAuth.join(':')).toString('base64');
+      authHeader[nodeName] = `Basic ${b64}`;
+    }
+
+    clients[node] = new Client(esClientOptions);
+  });
+
+  // Now check version numbers
+  nodes.forEach(async (node) => {
+    try {
+      const { body: data } = await clients[node].info();
+
+      if (data.version.distribution === 'opensearch') {
+        if (data.version.number.match(/^[0]/)) {
+          console.log(`ERROR - OpenSearch ${data.version.number} not supported, OpenSearch 1.0.0 or later required.`);
+          process.exit();
+        }
+      } else {
+        if (data.version.number.match(/^([0-6]|7\.[0-9]\.)/)) {
+          console.log(`ERROR - ES ${data.version.number} not supported, ES 7.10.0 or later required.`);
+          process.exit();
+        }
+      }
+    } catch (err) {
+      console.log(err);
+    }
+  });
+
+  // list of active nodes
+  activeESNodes = nodes.slice();
+  console.log(nodes);
+
+  ArkimeUtil.createHttpServer(app, Config.get('multiESHost'), Config.get('multiESPort', 8200));
 }
+
+premain();

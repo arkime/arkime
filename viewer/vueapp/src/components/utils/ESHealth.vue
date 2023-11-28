@@ -1,3 +1,7 @@
+<!--
+Copyright Yahoo Inc.
+SPDX-License-Identifier: Apache-2.0
+-->
 <template>
 
   <span>
@@ -6,7 +10,8 @@
     <div v-if="error"
       v-b-tooltip.hover
       :title="errorTitle"
-      class="error-div text-muted-more mt-2 text-right pull-right cursor-help">
+      :class="{'cursor-help': errorTitle}"
+      class="error-div text-muted-more mt-2 text-right pull-right">
       <small>
         {{ error || 'Network Error' }} - try
         <a @click="window.location.reload()"
@@ -31,10 +36,14 @@
       placement="bottom"
       boundary="viewport">
       <div class="text-center mb-1">
-        <strong>Elasticsearch Stats</strong>
+        <strong>App Info</strong>
       </div>
       <dl v-if="!error && esHealth"
         class="dl-horizontal es-stats-dl">
+        <dt>User Name</dt>
+        <dd>{{ user.userName }}</dd>
+        <dt>User ID</dt>
+        <dd>{{ user.userId }}</dd>
         <dt>ES Version</dt>
         <dd>{{ esHealth.version }}&nbsp;</dd>
         <dt>DB Version</dt>
@@ -72,19 +81,25 @@ export default {
     }, 10000);
   },
   computed: {
+    user () {
+      return this.$store.state.user;
+    },
     esHealth () {
       return this.$store.state.esHealth;
     },
     error () {
       // truncate the error and show the full error in a title attribute
       let error = this.$store.state.esHealthError || '';
+      if (typeof error !== 'string') {
+        return 'Error loading health';
+      }
       if (error.length > 50) {
         error = error.substring(0, 50) + '...';
       }
       return error;
     },
     errorTitle () {
-      return this.$store.state.esHealthError;
+      return this.$store.state.esHealthError.text || '';
     },
     esHealthClass: function () {
       return {

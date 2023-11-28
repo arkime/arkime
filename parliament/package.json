@@ -5,10 +5,6 @@
     "type": "git",
     "url": "https://github.com/arkime/arkime.git"
   },
-  "dependencies": {
-    "bcrypt": "^5.1.0",
-    "jsonwebtoken": "^9.0.0"
-  },
   "scripts": {
     "bundle": "cd ../ && npm run parliament:bundle",
     "bundle:min": "cd ../ && npm run parliament:build",
@@ -17,7 +13,7 @@
     "lint": "cd ../ && npm run parliament:lint"
   },
   "engines": {
-    "node": ">= 16.0.0 < 18",
+    "node": ">= 16.0.0 < 19",
     "npm": ">= 3.0.0"
   },
   "nodemonConfig": {
@@ -25,6 +21,11 @@
       "node_modules",
       "vueapp",
       "*.json"
+    ],
+    "watch": [
+      ".",
+      "../common",
+      "../tests/parliament.ini"
     ]
   },
   "browserslist": [

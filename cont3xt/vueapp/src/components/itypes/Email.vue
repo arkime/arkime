@@ -1,16 +1,20 @@
+<!--
+Copyright Yahoo Inc.
+SPDX-License-Identifier: Apache-2.0
+-->
 <template>
   <base-i-type
-    :value="query"
-    :itype="itype"
-    :data="data"
+    :indicator-id="indicatorId"
+    :indicator="indicator"
     :tidbits="tidbits"
-    :children="domainChildren"
+    :children="children"
   />
 </template>
 
 <script>
 import BaseIType from '@/components/itypes/BaseIType';
 import { ITypeMixin } from './ITypeMixin';
+import { Cont3xtIndicatorProp } from '@/utils/cont3xtUtil';
 
 export default {
   name: 'Cont3xtEmail',
@@ -19,26 +23,15 @@ export default {
     BaseIType
   },
   props: {
-    data: { // the data returned from cont3xt search
-      type: Object,
+    indicator: Cont3xtIndicatorProp,
+    children: {
+      type: Array,
       required: true
     },
-    query: { // the query string to display (needed because emails don't get
-      // searched, domains and IPs do so there is no data.email)
+    indicatorId: {
       type: String,
       required: true
     }
-  },
-  computed: {
-    domainChildren () { // array containing the domain child resulting from
-      const query = this.data?.domain?._query;
-      return query ? [{ itype: 'domain', query }] : [];
-    }
-  },
-  data () {
-    return {
-      itype: 'email'
-    };
   }
 };
 </script>

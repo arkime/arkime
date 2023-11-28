@@ -3,17 +3,7 @@
  *
  * Copyright Yahoo Inc.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this Software except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: Apache-2.0
  */
 'use strict';
 
@@ -21,21 +11,25 @@
 const crypto = require('crypto');
 const passport = require('passport');
 const DigestStrategy = require('passport-http').DigestStrategy;
+const BasicStrategy = require('passport-http').BasicStrategy;
 const iptrie = require('iptrie');
 const CustomStrategy = require('passport-custom');
+const LocalStrategy = require('passport-local');
 const express = require('express');
 const expressSession = require('express-session');
-const uuid = require('uuid').v4;
 const OIDC = require('openid-client');
+const LRU = require('lru-cache');
+const bodyParser = require('body-parser');
 
 class Auth {
-  static debug;
   static mode;
   static regressionTests = false;
   static passwordSecret;
   static passwordSecret256;
 
   static #userNameHeader;
+  static #appAdminRole;
+  static #serverSecret;
   static #serverSecret256;
   static #basePath;
   static #requiredAuthHeader;
@@ -47,6 +41,11 @@ class Auth {
   static #authRouter = express.Router();
   static #authConfig;
   static #passportAuthOptions = { session: false };
+  static #caTrustCerts;
+  static #passwordSecretSection;
+  static #app;
+  static #keyCache = new LRU({ max: 1000, maxAge: 1000 * 60 * 5 });
+  static #logoutUrl;
 
   // ----------------------------------------------------------------------------
   /**
@@ -54,43 +53,89 @@ class Auth {
    * auth should be installed.
    */
   static app (app, options) {
+    Auth.#app = app;
     app.use(Auth.#authRouter);
 
-    if (options?.doAuth !== false) {
-      app.use(Auth.doAuth);
+    app.post('/api/login', bodyParser.urlencoded({ extended: true }));
+    app.use(Auth.doAuth);
+
+    if (Auth.#app && Auth.#authConfig?.trustProxy !== undefined) {
+      Auth.#doTrustProxy();
     }
   }
 
   // ----------------------------------------------------------------------------
   /**
    * Initialize the Auth subsystem
-   * @param {boolean} options.debug=0 The debug level to use for Auth component
-   * @param {string} options.mode=anonymous What auth mode to run in
+   * @param {string} options.mode=digest What auth mode to run in
    * @param {string} options.basePath=/ What the web base path is for the app
    * @param {string} options.userNameHeader In header auth mode, which http header has the user id
-   * @param {string} options.passwordSecret=password For digest mode, what password to use to encrypt the password hash
+   * @param {string} options.passwordSecret=password For basic/digest mode, what password to use to encrypt the password hash
    * @param {string} options.serverSecret=passwordSecret What password is used to encrypt S2S auth
    * @param {string} options.requiredAuthHeader In header auth mode, another header can be required
    * @param {string} options.requiredAuthHeaderVal In header auth mode, a comma separated list of values for requiredAuthHeader, if none are matched the user will not be authorized
    * @param {string} options.userAutoCreateTmpl A javascript string function that is used to create users that don't exist
-   * @param {string} options.userAuthIps A comma separated list of CIDRs that users are allowed from
    * @param {boolean} options.s2s Support s2s auth also
-   * @param {object} options.authConfig options specific to each auth mode;
+   * @param {object} options.authConfig options specific to each auth mode
+   * @param {object} options.caTrustFile Optional path to CA certificate file to use for external authentication
    */
   static initialize (options) {
-    if (options.debug > 1) {
+    // Make sure all options we need below are set
+    options ??= {};
+    options.mode ??= ArkimeConfig.get('authMode');
+    options.userNameHeader ??= ArkimeConfig.get('userNameHeader');
+    options.passwordSecret ??= ArkimeConfig.getFull(options.passwordSecretSection ?? undefined, 'passwordSecret');
+    options.serverSecret ??= ArkimeConfig.get('serverSecret');
+    options.requiredAuthHeader ??= ArkimeConfig.get('requiredAuthHeader');
+    options.requiredAuthHeaderVal ??= ArkimeConfig.get('requiredAuthHeaderVal');
+    options.userAutoCreateTmpl ??= ArkimeConfig.get('userAutoCreateTmpl');
+    options.userAuthIps = ArkimeConfig.getArray('userAuthIps');
+    options.caTrustFile ??= ArkimeConfig.get('caTrustFile');
+
+    options.authConfig ??= {};
+    options.authConfig.httpRealm ??= ArkimeConfig.get('httpRealm', 'Moloch');
+    options.authConfig.userIdField ??= ArkimeConfig.get('authUserIdField');
+    options.authConfig.discoverURL ??= ArkimeConfig.get('authDiscoverURL');
+    options.authConfig.clientId ??= ArkimeConfig.get('authClientId');
+    options.authConfig.clientSecret ??= ArkimeConfig.get('authClientSecret');
+    options.authConfig.redirectURIs ??= ArkimeConfig.get('authRedirectURIs');
+    options.authConfig.trustProxy ??= ArkimeConfig.get('authTrustProxy');
+    options.authConfig.cookieSameSite ??= ArkimeConfig.get('authCookieSameSite');
+    options.authConfig.cookieSecure ??= ArkimeConfig.get('authCookieSecure', true);
+    options.authConfig.oidcScope ??= ArkimeConfig.get('authOIDCScope', 'openid');
+
+    if (ArkimeConfig.debug > 1) {
       console.log('Auth.initialize', options);
     }
 
-    Auth.debug = options.debug ?? 0;
-    Auth.mode = options.mode ?? 'anonymous';
-    Auth.#basePath = options.basePath ?? '/';
+    if (options.mode === undefined) {
+      if (options.userNameHeader) {
+        if (options.userNameHeader.match(/^(digest|basic|anonymous|oidc|basic\+oidc|form|basic\+form)$/)) {
+          console.log(`WARNING - Using authMode=${options.userNameHeader} setting since userNameHeader set, add to config file to silence this warning.`);
+          options.mode = options.userNameHeader;
+          delete options.userNameHeader;
+        } else {
+          console.log('WARNING - Using authMode=header since not set, add to config file to silence this warning.');
+          options.mode = 'header';
+        }
+      } else {
+        console.log('WARNING - Using authMode=digest since not set, add to config file to silence this warning.');
+        options.mode = 'digest';
+      }
+    }
+
+    Auth.mode = options.mode;
     Auth.#userNameHeader = options.userNameHeader;
+    Auth.#appAdminRole = options.appAdminRole;
+    Auth.#basePath = options.basePath ?? '/';
+    Auth.#passwordSecretSection = options.passwordSecretSection ?? 'default';
     Auth.passwordSecret = options.passwordSecret ?? 'password';
     Auth.passwordSecret256 = crypto.createHash('sha256').update(Auth.passwordSecret).digest();
     if (options.serverSecret) {
+      Auth.#serverSecret = options.serverSecret;
       Auth.#serverSecret256 = crypto.createHash('sha256').update(options.serverSecret).digest();
     } else {
+      Auth.#serverSecret = Auth.passwordSecret;
       Auth.#serverSecret256 = Auth.passwordSecret256;
     }
     Auth.#requiredAuthHeader = options.requiredAuthHeader;
@@ -99,9 +144,14 @@ class Auth {
     Auth.#userAuthIps = new iptrie.IPTrie();
     Auth.#s2sRegressionTests = options.s2sRegressionTests;
     Auth.#authConfig = options.authConfig;
+    Auth.#caTrustCerts = ArkimeUtil.certificateFileToArray(options.caTrustFile);
+
+    if (Auth.#app && Auth.#authConfig?.trustProxy !== undefined) {
+      Auth.#doTrustProxy();
+    }
 
     if (options.userAuthIps) {
-      for (const cidr of options.userAuthIps.split(',')) {
+      for (const cidr of options.userAuthIps) {
         const parts = cidr.split('/');
         if (parts[0].includes(':')) {
           Auth.#userAuthIps.add(parts[0], +(parts[1] ?? 128), 1);
@@ -123,13 +173,20 @@ class Auth {
       }
     }
 
+    Auth.#logoutUrl = ArkimeConfig.get('logoutUrl');
+    const addBasic = Auth.mode.startsWith('basic+');
+    if (addBasic) {
+      Auth.mode = Auth.mode.slice(6);
+    }
+
     let sessionAuth = false;
     switch (Auth.mode) {
     case 'anonymous':
-      Auth.#strategies = ['anonymous'];
-      break;
-    case 'anonymousWithDB':
       Auth.#strategies = ['anonymousWithDB'];
+      break;
+    case 'basic':
+      check('httpRealm');
+      Auth.#strategies = ['basic'];
       break;
     case 'digest':
       check('httpRealm');
@@ -142,22 +199,48 @@ class Auth {
       check('clientSecret', 'authClientSecret');
       check('redirectURIs', 'authRedirectURIs');
       Auth.#strategies = ['oidc'];
+      Auth.#passportAuthOptions = { session: true, failureRedirect: `${Auth.#basePath}fail`, scope: Auth.#authConfig.oidcScope };
       sessionAuth = true;
       break;
+    case 'form':
+      Auth.#strategies = ['form'];
+      Auth.#passportAuthOptions = { session: true, failureRedirect: `${Auth.#basePath}auth` };
+      sessionAuth = true;
+      Auth.#logoutUrl ??= `${Auth.#basePath}logout`;
+      break;
+    case 'headerOnly':
+      Auth.#strategies = ['header'];
+      break;
     case 'header':
+    case 'header+digest':
       Auth.#strategies = ['header', 'digest'];
+      break;
+    case 'header+basic':
+      Auth.#strategies = ['header', 'basic'];
+      break;
+    case 's2s':
+      Auth.#strategies = ['s2s'];
       break;
     case 'regressionTests':
       Auth.#strategies = ['regressionTests'];
       Auth.regressionTests = true;
       break;
+    default:
+      console.log('ERROR - unknown authMode', ArkimeUtil.sanitizeStr(Auth.mode));
+      process.exit(1);
     }
 
-    if (options.s2s) {
+    // Add basic to beginning
+    if (addBasic) {
+      Auth.#strategies.unshift('basic');
+    }
+
+    // Add s2s to beginning
+    if (options.s2s && !Auth.#strategies.includes('s2s')) {
       Auth.#strategies.unshift('s2s');
     }
 
-    if (Auth.debug > 0) {
+    if (ArkimeConfig.debug > 0) {
       console.log('AUTH strategies', Auth.#strategies);
     }
 
@@ -165,16 +248,41 @@ class Auth {
 
     // If sessionAuth is required enable the express and passport sessions
     if (sessionAuth) {
-      Auth.#passportAuthOptions = { session: true, successRedirect: '/', failureRedirect: '/fail' };
       Auth.#authRouter.get('/fail', (req, res) => { res.send('User not found'); });
       Auth.#authRouter.use(expressSession({
-        secret: uuid(),
+        name: 'ARKIME-SID',
+        secret: Auth.passwordSecret + Auth.#serverSecret,
         resave: false,
         saveUninitialized: true,
-        cookie: { path: Auth.#basePath, secure: true }
+        cookie: { path: Auth.#basePath, secure: Auth.#authConfig.cookieSecure, sameSite: Auth.#authConfig.cookieSameSite ?? 'Lax', maxAge: 24 * 60 * 60 * 1000 },
+        store: new ESStore({ })
       }));
       Auth.#authRouter.use(passport.initialize());
       Auth.#authRouter.use(passport.session());
+
+      if (Auth.mode === 'form') {
+        const fs = require('fs');
+        const path = require('path');
+
+        Auth.#authRouter.get('/logo.png', (req, res) => {
+          res.sendFile(path.join(__dirname, '../assets/Arkime_Logo_Mark_FullGradient.png'));
+        });
+
+        Auth.#authRouter.get('/auth', (req, res) => {
+          // User is not authenticated, show the login form
+          let html = fs.readFileSync(path.join(__dirname, '/vueapp/formAuth.html'), 'utf-8');
+          html = html.toString().replace(/@@BASEHREF@@/g, Auth.#basePath)
+            .replace(/@@MESSAGE@@/g, ArkimeConfig.get('loginMessage', ''));
+          return res.send(html);
+        });
+
+        Auth.#authRouter.post('/logout', (req, res, next) => {
+          req.logout((err) => {
+            if (err) { return next(err); }
+            return res.redirect(`${Auth.#basePath}auth`);
+          });
+        });
+      }
 
       // only save the userId to passport session
       passport.serializeUser(function (user, done) {
@@ -198,8 +306,79 @@ class Auth {
   }
 
   // ----------------------------------------------------------------------------
+  static #doTrustProxy () {
+    const trustProxy = Auth.#authConfig.trustProxy;
+
+    if (trustProxy === true || trustProxy === 'true') {
+      Auth.#app.set('trust proxy', true);
+    } else if (trustProxy === false || trustProxy === 'false') {
+      Auth.#app.set('trust proxy', false);
+    } else if (!isNaN(trustProxy)) {
+      Auth.#app.set('trust proxy', parseInt(trustProxy));
+    } else {
+      Auth.#app.set('trust proxy', trustProxy);
+    }
+  }
+
+  // ----------------------------------------------------------------------------
   static isAnonymousMode () {
     return Auth.mode === 'anonymous' || Auth.mode === 'anonymousWithDB';
+  }
+
+  // ----------------------------------------------------------------------------
+  static get appAdminRole () {
+    return Auth.#appAdminRole;
+  }
+
+  // ----------------------------------------------------------------------------
+  static get logoutUrl () {
+    return Auth.#logoutUrl;
+  }
+
+  // ----------------------------------------------------------------------------
+  /**
+   * Check's a user's permission to access a resource to update/delete
+   * only allow admins, editors, or creator can update/delete resources
+   * @param {function} dbFunc The function to call to get the resource
+   * @param {string} ownerProperty The property on the resource that contains the owner
+   */
+  static checkResourceAccess (dbFunc, ownerProperty) {
+    return async (req, res, next) => {
+      if (req.user.hasRole(Auth.appAdminRole)) { // an admin can do anything
+        return next();
+      } else {
+        try {
+          const id = req.params.id ?? req.params.key;
+          if (!id) {
+            return res.serverError(404, 'Missing resource id');
+          }
+
+          let resource = await dbFunc(id);
+          if (resource?.body?._source) {
+            resource = resource.body._source;
+          }
+
+          if (!resource) {
+            return res.serverError(404, 'Unknown resource');
+          }
+
+          const settingUser = req.settingUser || req.user;
+          if ( // and creator or editor can update resources
+            (resource[ownerProperty] && resource[ownerProperty] === settingUser.userId) ||
+            settingUser.hasRole(resource.editRoles)
+          ) {
+            return next();
+          }
+
+          return res.serverError(403, 'Permission denied');
+        } catch (err) {
+          if (ArkimeConfig.debug > 0) {
+            console.log('ERROR - checking resource access:', err);
+          }
+          return res.serverError(404, 'Unknown resource');
+        }
+      }
+    };
   }
 
   // ----------------------------------------------------------------------------
@@ -242,7 +421,7 @@ class Auth {
 
       User.getUserCache('anonymous', (err, dbUser) => {
         // Replace certain fields if available from db
-        if (user) {
+        if (dbUser) {
           user.setLastUsed();
           user.settings = dbUser.settings;
           user.views = dbUser.views;
@@ -250,7 +429,29 @@ class Auth {
           user.spiviewFieldConfigs = dbUser.spiviewFieldConfigs;
           user.tableStates = dbUser.tableStates;
           user.cont3xt = dbUser.cont3xt;
+        } else {
+          user.save();
         }
+        return done(null, user);
+      });
+    }));
+
+    // ----------------------------------------------------------------------------
+    passport.use('basic', new BasicStrategy((userId, password, done) => {
+      if (userId.startsWith('role:')) {
+        console.log(`AUTH: User ${userId} Can not authenticate with role`);
+        return done('Can not authenticate with role');
+      }
+      User.getUserCache(userId, async (err, user) => {
+        if (err) { return done(err); }
+        if (!user) { console.log('AUTH: User', userId, "doesn't exist"); return done(null, false); }
+        if (!user.enabled) { console.log('AUTH: User', userId, 'not enabled'); return done('Not enabled'); }
+
+        const storeHa1 = Auth.store2ha1(user.passStore);
+        const ha1 = Auth.pass2ha1(userId, password);
+        if (storeHa1 !== ha1) return done(null, false);
+
+        user.setLastUsed();
         return done(null, user);
       });
     }));
@@ -276,7 +477,7 @@ class Auth {
     // ----------------------------------------------------------------------------
     passport.use('header', new CustomStrategy((req, done) => {
       if (Auth.#userNameHeader !== undefined && req.headers[Auth.#userNameHeader] === undefined) {
-        if (Auth.debug > 0) {
+        if (ArkimeConfig.debug > 0) {
           console.log(`AUTH: didn't find ${Auth.#userNameHeader} in the headers`, req.headers);
         }
         return done(null, false);
@@ -294,7 +495,8 @@ class Auth {
           }
         });
         if (!authorized) {
-          return done('Not authorized');
+          console.log(`The required auth header '${Auth.#requiredAuthHeader}' expected '${Auth.#requiredAuthHeaderVal}' and has `, ArkimeUtil.sanitizeStr(authHeader));
+          return done('Bad authorization header');
         }
       }
 
@@ -329,6 +531,9 @@ class Auth {
 
     // ----------------------------------------------------------------------------
     if (Auth.mode === 'oidc') {
+      if (Auth.#caTrustCerts !== undefined) {
+        OIDC.custom.setHttpOptionsDefaults({ ca: Auth.#caTrustCerts });
+      }
       const issuer = await OIDC.Issuer.discover(Auth.#authConfig.discoverURL);
       const client = new issuer.Client({
         client_id: Auth.#authConfig.clientId,
@@ -343,10 +548,15 @@ class Auth {
         const userId = userinfo[Auth.#authConfig.userIdField];
 
         if (userId === undefined) {
-          if (Auth.debug > 0) {
+          if (ArkimeConfig.debug > 0) {
             console.log(`AUTH: didn't find ${Auth.#authConfig.userIdField} in the userinfo`, userinfo);
           }
           return done(null, false);
+        }
+
+        if (userId.startsWith('role:')) {
+          console.log(`AUTH: User ${userId} Can not authenticate with role`);
+          return done('Can not authenticate with role');
         }
 
         async function oidcAuthCheck (err, user) {
@@ -371,8 +581,28 @@ class Auth {
     }
 
     // ----------------------------------------------------------------------------
+    passport.use('form', new LocalStrategy((userId, password, done) => {
+      if (userId.startsWith('role:')) {
+        console.log(`AUTH: User ${userId} Can not authenticate with role`);
+        return done('Can not authenticate with role');
+      }
+      User.getUserCache(userId, async (err, user) => {
+        if (err) { return done(err); }
+        if (!user) { console.log('AUTH: User', userId, "doesn't exist"); return done(null, false); }
+        if (!user.enabled) { console.log('AUTH: User', userId, 'not enabled'); return done('Not enabled'); }
+
+        const storeHa1 = Auth.store2ha1(user.passStore);
+        const ha1 = Auth.pass2ha1(userId, password);
+        if (storeHa1 !== ha1) return done(null, false);
+
+        user.setLastUsed();
+        return done(null, user);
+      });
+    }));
+
+    // ----------------------------------------------------------------------------
     passport.use('regressionTests', new CustomStrategy((req, done) => {
-      const userId = req?.query?.molochRegressionUser ?? 'anonymous';
+      const userId = req?.query?.arkimeRegressionUser ?? 'anonymous';
       if (userId.startsWith('role:')) {
         return done('Can not authenticate with role');
       }
@@ -380,45 +610,24 @@ class Auth {
       User.getUserCache(userId, (err, user) => {
         if (user) {
           user.setLastUsed();
-          return done(null, user);
         }
-        user = Object.assign(new User(), {
-          userId,
-          enabled: true,
-          webEnabled: true,
-          headerAuthEnabled: false,
-          emailSearch: true,
-          removeEnabled: true,
-          packetSearch: true,
-          settings: {},
-          welcomeMsgNum: 1
-        });
-
-        if (userId === 'superAdmin') {
-          user.roles = ['superAdmin'];
-        } else if (userId === 'anonymous') {
-          user.roles = ['arkimeAdmin', 'cont3xtUser', 'parliamentUser', 'usersAdmin', 'wiseUser'];
-        } else {
-          user.roles = ['arkimeUser', 'cont3xtUser', 'parliamentUser', 'wiseUser'];
-        }
-
-        user.expandFromRoles();
         return done(null, user);
       });
     }));
 
     // ----------------------------------------------------------------------------
     passport.use('s2s', new CustomStrategy((req, done) => {
-      if (req.headers['x-arkime-auth'] === undefined) {
+      let obj = req.headers['x-arkime-auth'];
+
+      if (obj === undefined) {
         return done(null, false);
       }
 
-      let obj;
       try {
         if (Auth.#s2sRegressionTests) {
-          obj = JSON.parse(req.headers['x-arkime-auth']);
+          obj = JSON.parse(obj);
         } else {
-          obj = Auth.auth2obj(req.headers['x-arkime-auth']);
+          obj = Auth.auth2obj(obj);
         }
       } catch (e) {
         console.log('AUTH: x-arkime-auth corrupt', e);
@@ -457,6 +666,24 @@ class Auth {
         return done(null, {});
       }
 
+      // s2s && regressionTests for anonymous user we just fake
+      if (Auth.regressionTests && obj.user === 'anonymous') {
+        const user = Object.assign(new User(), {
+          userId: obj.user,
+          enabled: true,
+          webEnabled: true,
+          headerAuthEnabled: false,
+          emailSearch: true,
+          removeEnabled: true,
+          packetSearch: true,
+          settings: {},
+          welcomeMsgNum: 1,
+          roles: ['arkimeAdmin', 'cont3xtUser', 'parliamentUser', 'usersAdmin', 'wiseUser']
+        });
+        user.expandFromRoles();
+        return done(null, user);
+      }
+
       User.getUserCache(obj.user, async (err, user) => {
         if (err) { return done('ERROR - x-arkime getUser - user: ' + obj.user + ' err:' + err); }
         if (!user) { return done(obj.user + " doesn't exist"); }
@@ -491,6 +718,9 @@ class Auth {
 
   // ----------------------------------------------------------------------------
   static #dynamicCreate (userId, vars, cb) {
+    if (ArkimeConfig.debug > 0) {
+      console.log('AUTH - #dynamicCreate', ArkimeUtil.sanitizeStr(userId));
+    }
     const nuser = JSON.parse(new Function('return `' + Auth.#userAutoCreateTmpl + '`;').call(vars));
     if (nuser.passStore === undefined) {
       nuser.passStore = Auth.pass2store(nuser.userId, crypto.randomBytes(48));
@@ -533,9 +763,16 @@ class Auth {
         req.url = req.url.replace(Auth.#basePath, '/');
       }
       if (err) {
+        if (ArkimeConfig.debug > 0) {
+          console.log('AUTH: passport.authenticate fail', err);
+        }
         res.status(403);
         return res.send(JSON.stringify({ success: false, text: err }));
       } else {
+        // Redirect to / if this is a login url
+        if (req.route?.path === '/api/login' || req.route?.path === '/auth/login/callback') {
+          return res.redirect(Auth.#basePath);
+        }
         return next();
       }
     });
@@ -561,11 +798,17 @@ class Auth {
   }
 
   // ----------------------------------------------------------------------------
+  // Hash (MD5) the password
+  static pass2ha1 (userId, password) {
+    return Auth.md5(userId + ':' + Auth.#authConfig.httpRealm + ':' + password);
+  }
+
+  // ----------------------------------------------------------------------------
   // Hash (MD5) and encrypt the password before storing.
   // Encryption is used because OpenSearch/Elasticsearch is insecure by default and we don't want others adding accounts.
   static pass2store (userId, password) {
     // md5 is required because of http digest
-    return Auth.ha12store(Auth.md5(userId + ':' + Auth.#authConfig.httpRealm + ':' + password));
+    return Auth.ha12store(Auth.pass2ha1(userId, password));
   };
 
   // ----------------------------------------------------------------------------
@@ -589,15 +832,52 @@ class Auth {
         return d;
       }
     } catch (e) {
-      console.log("passwordSecret set in the [default] section can not decrypt information.  Make sure passwordSecret is the same for all nodes. You may need to re-add users if you've changed the secret.", e);
+      console.log(`passwordSecret set in the [${Auth.#passwordSecretSection}] section can not decrypt information.  Make sure passwordSecret is the same for all nodes/applications. You may need to re-add users if you've changed the secret.`, e);
       process.exit(1);
     }
   };
 
   // ----------------------------------------------------------------------------
   // Encrypt an object into an auth string
+  static obj2authNext (obj, secret) {
+    secret ??= Auth.#serverSecret;
+
+    let entry, key, salt;
+    if ((entry = Auth.#keyCache.get(secret))) {
+      salt = entry.salt;
+      key = entry.key;
+    } else {
+      salt = crypto.randomBytes(16);
+      key = crypto.pbkdf2Sync(secret, salt, 300000, 32, 'sha256');
+      Auth.#keyCache.set(secret, { key, salt });
+      Auth.#keyCache.set(`${secret}:${salt.toString('hex')}`, key);
+    }
+
+    const iv = crypto.randomBytes(12);
+    const cipher = crypto.createCipheriv('aes-256-gcm', key, iv);
+
+    let data = cipher.update(JSON.stringify(obj), 'utf8', 'hex');
+    data += cipher.final('hex');
+
+    const tag = cipher.getAuthTag();
+
+    const auth = {
+      iv: iv.toString('hex'),
+      salt: salt.toString('hex'),
+      data, // already hex
+      tag: tag.toString('hex')
+    };
+
+    return JSON.stringify(auth);
+  }
+
+  // ----------------------------------------------------------------------------
+  // Encrypt an object into an auth string
   // IV.E.H
   static obj2auth (obj, secret) {
+    // HACK: Remove in future, for cookies use Next since local
+    if (obj.pid !== undefined) { return Auth.obj2authNext(obj, secret); }
+
     if (secret) {
       secret = crypto.createHash('sha256').update(secret).digest();
     } else {
@@ -615,8 +895,41 @@ class Auth {
 
   // ----------------------------------------------------------------------------
   // Decrypt the auth string into an object
-  // IV.E.H
+  static auth2objNext (auth, secret) {
+    secret ??= Auth.#serverSecret;
+    try {
+      const { iv, salt, data, tag } = JSON.parse(auth);
+
+      let key = Auth.#keyCache.get(`${secret}:${salt}`);
+      if (!key) {
+        key = crypto.pbkdf2Sync(secret, Buffer.from(salt, 'hex'), 300000, 32, 'sha256');
+        Auth.#keyCache.set(`${secret}:${salt}`, key);
+      }
+
+      const decipher = crypto.createDecipheriv('aes-256-gcm', key, Buffer.from(iv, 'hex'));
+      decipher.setAuthTag(Buffer.from(tag, 'hex'));
+
+      let decrypted = decipher.update(data, 'hex', 'utf8');
+      decrypted += decipher.final('utf8');
+
+      return JSON.parse(decrypted);
+    } catch (error) {
+      console.log(error);
+      throw new Error('Incorrect auth supplied');
+    }
+  }
+
+  // ----------------------------------------------------------------------------
+  // Decrypt the auth string into an object
   static auth2obj (auth, secret) {
+    // New json style
+    if (auth[0] === '{') { return Auth.auth2objNext(auth, secret); }
+
+    // New json style, but still encoded, bad proxy probably
+    if (auth.startsWith('%7B%22')) { return Auth.auth2objNext(decodeURIComponent(auth), secret); }
+
+    // Old style, IV.E.H
+
     const parts = auth.split('.');
 
     if (parts.length !== 3) {
@@ -652,17 +965,173 @@ class Auth {
     if (!options.headers) {
       options.headers = {};
     }
-    options.headers['x-moloch-auth'] = Auth.obj2auth({
+    options.headers['x-arkime-auth'] = Auth.obj2auth({
       date: Date.now(),
       user: user.userId,
       node,
       path
     }, secret);
   }
+
+  // ----------------------------------------------------------------------------
+  // express middleware to set req.settingUser to who to work on, depending if admin or not
+  // This returns fresh from db
+  static getSettingUserDb (req, res, next) {
+    let userId;
+
+    if (req.query.userId === undefined || req.query.userId === req.user.userId) {
+      if (Auth.regressionTests) {
+        req.settingUser = req.user;
+        return next();
+      }
+
+      userId = req.user.userId;
+    } else if (!req.user.hasRole('usersAdmin') || (!req.url.startsWith('/api/user/password') && Auth.#appAdminRole && !req.user.hasRole(Auth.#appAdminRole))) {
+      // user is trying to get another user's settings without admin privilege
+      return res.serverError(403, 'Need admin privileges');
+    } else {
+      userId = req.query.userId;
+    }
+
+    User.getUser(userId, function (err, user) {
+      if (err || !user) {
+        if (!Auth.passwordSecret) {
+          req.settingUser = JSON.parse(JSON.stringify(req.user));
+          delete req.settingUser.found;
+        } else {
+          return res.serverError(403, 'Unknown user');
+        }
+
+        return next();
+      }
+
+      req.settingUser = user;
+      return next();
+    });
+  }
 }
 
+// ----------------------------------------------------------------------------
+class ESStore extends expressSession.Store {
+  static #client;
+  static #index;
+  static #ttl = 24 * 60 * 60 * 1000; // 1 hr
+
+  constructor (options) {
+    super();
+    setTimeout(async () => {
+      ESStore.#client = User.getClient();
+      ESStore.start();
+    }, 100);
+    const prefix = ArkimeUtil.formatPrefix(ArkimeConfig.get('usersPrefix', ArkimeConfig.get('prefix', 'arkime_')));
+    ESStore.#index = `${prefix}sids_v50`;
+  }
+
+  // ----------------------------------------------------------------------------
+  static async start () {
+    // Create Index if needed
+    try {
+      await ESStore.#client.indices.create({
+        index: ESStore.#index,
+        body: {
+          settings: {
+            number_of_shards: 1,
+            number_of_replicas: 0,
+            auto_expand_replicas: '0-1'
+          }
+        }
+      });
+    } catch (err) {
+      // If already exists ignore error
+      if (err.meta.body?.error?.type !== 'resource_already_exists_exception') {
+        console.log(err);
+        process.exit(0);
+      }
+    }
+
+    // Update mapping if needed
+    await ESStore.#client.indices.putMapping({
+      index: ESStore.#index,
+      body: {
+        dynamic_templates: [
+          {
+            string_template: {
+              match_mapping_type: 'string',
+              mapping: {
+                type: 'keyword'
+              }
+            }
+          }
+        ],
+        properties: {
+          _timestamp: { type: 'date' }
+        }
+      }
+    });
+
+    // Delete old sids
+    await ESStore.#client.deleteByQuery({
+      index: ESStore.#index,
+      body: {
+        query: {
+          range: {
+            _timestamp: {
+              lte: new Date().getTime() - ESStore.#ttl
+            }
+          }
+        }
+      },
+      timeout: '5m'
+    });
+  }
+
+  // ----------------------------------------------------------------------------
+  destroy (sid, callback) {
+    ESStore.#client.delete({
+      index: ESStore.#index,
+      id: sid
+    }, (err, response) => {
+      callback();
+    });
+  }
+
+  // ----------------------------------------------------------------------------
+  get (sid, callback) {
+    ESStore.#client.get({
+      index: ESStore.#index,
+      id: sid
+    }, (err, response) => {
+      if (err) {
+        if (response?.statusCode === 404) {
+          return callback();
+        }
+        return callback(err);
+      }
+
+      const _source = response.body._source;
+      if (new Date().getTime() - _source._timestamp > ESStore.#ttl) {
+        this.destroy(sid, () => {});
+        return callback();
+      }
+      return callback(err, _source);
+    });
+  }
+
+  // ----------------------------------------------------------------------------
+  set (sid, session, callback) {
+    session._timestamp = new Date().getTime();
+    ESStore.#client.index({
+      index: ESStore.#index,
+      id: sid,
+      body: session
+    }, (err, response) => {
+      callback(err);
+    });
+  }
+}
 // ----------------------------------------------------------------------------
 module.exports = Auth;
 
 const User = require('../common/user');
 const ArkimeUtil = require('../common/arkimeUtil');
+const ArkimeConfig = require('../common/arkimeConfig');

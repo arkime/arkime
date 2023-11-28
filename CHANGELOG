@@ -5,7 +5,7 @@ OpenSearch Versions:
 
 Elasticsearch Versions:
   * Arkime >= 4.0.0  supports ES >= 7.10.0 or 8.x, not 9.x or later
-  * Moloch >= 3.0.0  supports ES >= 7.10.0, not 8.x or later
+  * Arkime >= 3.0.0  supports ES >= 7.10.0, not 8.x or later
   * Moloch >= 2.7.0  supports ES >= 7.4.0, not 8.x or later
   * Moloch >= 2.2.0  supports ES >= 6.8.0 or >= 7.1.0, not 8.x or later
   * Moloch >= 2.0.0  supports ES >= 6.7.0 or >= 7.1.0, not 8.x or later
@@ -15,8 +15,10 @@ Elasticsearch Versions:
   * Moloch >= 0.18.1 supports ES 2.4.x, >= 5.3.1 not 6.x or later
 
 Node Versions:
-  * Moloch >= 3.4.0 requires NodeJS >= 16.0.0 and < 17
-  * Moloch >= 3.0.0 requires NodeJS 14.x
+  * Arkime >= 5.0.0 requires NodeJS >= 18.0.0 and < 19
+  * Arkime >= 4.2.0 requires NodeJS >= 16.0.0 and < 19
+  * Arkime >= 3.4.0 requires NodeJS >= 16.0.0 and < 17
+  * Arkime >= 3.0.0 requires NodeJS 14.x
   * Moloch >= 2.4.0 requires NodeJS 12.x
   * Moloch >= 2.0.0 requires NodeJS 10.x
   * Moloch >= 1.6.0 requires NodeJS 8.x, 8.12 or later
@@ -26,20 +28,220 @@ Node Versions:
 
 NOTICE: Restart wiseService before capture when upgrading
 NOTICE: Cross-cluster Shortcuts require you to not restart all your viewers at once after upgrading
+NOTICE: Create a parliament config file before upgrading (see https://arkime.com/settings#parliament and https://arkime.com/faq#how_do_i_upgrade_to_arkime_5)
 
-4.1.1 2023/02/xx
-  - release - node 16.19.0
+5.0.0 2023/11/xx
+## BREAKING
+  - #2297 s3Compression/simpleCompression now defaults to zstd
+  - #2297 s3WriteGzip removed, use s3Compression=gzip for gzip instead of new zstd default
+  - #2297 s3GapPacketPos defaults to TRUE
+  - #2297 enablePacketDedup defaults to TRUE
+  - #2299 #2308  authMode defaults to digest now
+  - #2312 removed old v1 viewer APIs
+  - #2349 parliament password removed, must configure common auth via the UI before upgrading or manually in the config file see [parliament](https://arkime.com/settings#parliament) and [how do I upgrade to 5](https://arkime.com/faq#how_do_i_upgrade_to_arkime_5)
+  - #2402 WISE/tagger must now use http.request.FIELD/http.response.FIELD when referencing header defined with headers-http-request/headers-http-response
+  - #2450 Centos 7 build no longers includes pfring support
+  - #2453 Increase simpleCompressionBlockSize default to 64000
+## Release
+  - #2448 zstd 1.5.5, nghttp2 1.57.0, maxmind 1.7.1, yara 4.2.3
+  - #2448 node v18.18.2 - Centos 7, Ubuntu 18, Alpine use unofficial builds
+  - #2447 support building on alpine
+## All
+  - #2316 programs support same config file formats (ini/json/yaml) and retrieval (file, elasticsearch)
+  - #2419 json/yaml config file formats now allow arrays instead of comma/semi separated
+  - #2299 #2308 authMode setting added
+  - #2299 #2408 #2463 added authMode: basic, form, basic+form, basic+oidc, headerOnly, header+digest (same as header), header+basic
+  - #2387 notifiers for parliament and arkime merged conflicts mitigated by appending "Parliament" to parliament notifiers
+  - #2396 drop privileges is now AFTER http(s) list
+  - #2509 add optional login message for form auth
+  - #2511 new authOIDCScope setting
+## Capture
+  - #2295 moloch converted to arkime
+  - #2312 override ips can now set any field
+  - #2312 overrideIpsFiles setting
+  - #2314 packetDropIpsFiles setting
+  - #2390 can have negative cert.validDays/cert.remainingDays (thanks @mcgillowen)
+  - #2390 added cert.remainingSeconds/cert.remainingSeconds (thanks @mcgillowen)
+  - #2390 cert.remainingDays is now based on the firstPacket of session instead of current time (thanks @mcgillowen)
+  - #2409 JA4 support
+  - #2409 JA3/JA4 support for smtp STARTTLS
+  - #2297 always build zstd (except arch)
+  - #2517 new custom-fields-remap feature
+  - #2186 count the number of http methods per session
+## Cont3xt
+  - #2121 new bulk UI and support for bulk queries
+  - #2271 lots of keyboard shortcut improvements
+  - #2383 new array syntax for links substitution
+  - #2382 new OpenSearch/Elasticsearch integration (config file only)
+  - #2441 new csv/json file/url/redis integration (config file only)
+  - #2385 new viewRoles in config file per integration to control access
+  - #2407 transfer ownership of resources
+  - #2437 new csv/json data source supports
+  - #2441 new redis data source support
+  - #2507 demoMode added
+## ESProxy
+  - #2483 #2484 support field updates/deletes
+## Viewer
+  - #2296 removed x-moloch-auth
+  - #2392 files/history/stats now have cluster dropdown for multiviewer
+  - #2402 http.request.FIELD and http.response.FIELD supported
+  - #2404 add editor for resources
+  - #2407 transfer ownership of resources
+  - #2482 added uploadRoles to control who can upload
+  - #2501 add defaultTimeRange setting
+## Parliament
+  - #2377 dashboard-only mode removed, if you want users to just see the dashboard don't assign them the parliamentUser role
+  - #2395 configuration is now stored in opensearch/elasticsearch
+
+
+4.6.0 2023/10/16
+  - release - curl 8.4.0
+  - release - fix viewer systemd file
+  - capture - fix zstd hanging capture on full buffer
+  - viewer - corrupt http session decoding might hang viewer
+  - viewer - handle uncompressing pcap errors better
+  - viewer - role check in UI didn't always work
+  - all - handle cookies encoded with bad proxy
+
+4.5.0 2023/09/13
+  - release - node 16.20.2
+  - release - added missingok to default logrotate for arkime
+  - capture - dns answers were double parsed
+  - capture - custom-fields honors viewerOnly:true
+  - capture - added dns.https fields
+  - capture - added cert:certificate-authority tag (thanks mcgillowen )
+  - cont3xt - remove raw view button for link groups on the cont3xt search page
+  - cont3xt - Overview shortcut
+  - cont3xt - fixed overviews not updating on switch
+  - db.pl - don't allow '.' to be used for sync/add path
+  - viewer - fixed ipv6 session display issues when :: in ip
+  - viewer - http display rewritten to not depending on nodejs internals
+  - viewer - gpe display improvements
+
+4.4.0 2023/08/02
+  - release - cyberchef 10.5.2
+  - release - update arkime_update_geo.sh to use different manuf location
+  - all - improved json verification
+  - all - better logging when requiredAuthHeader fails
+  - all - better role creation/usage validation
+  - all - don't allow circular role dependencies
+  - all - now need to be an userAdmin and *Admin to update *Admin change
+          settings for another user
+  - all - more auth debugging
+  - all - can now change the password of another *Admin user if you have
+          userAdmin and all the same *Admin
+  - all - hide webEnable, headerAuthEnable checkboxes for roles
+  - all - oidc now uses sameSite: Lax instead of sameSite: Strict for cookies
+  - capture - handle tcp port reuse better
+  - capture - fix kafka memory leak when produce fails
+  - cont3xt - New overview cards
+  - cont3xt - fix startup race condition with db init
+  - cont3xt - new search protocol to prepare for bulk
+  - parliament - fix parliament clean start not letting auth be set up
+  - viewer - gtp decoding
+  - viewer - demo mode improvements, arkimeAdmin can use normally
+  - viewer - fix unique endpoint not enforcing user time limit
+
+4.3.2 2023/06/13
+  - release - cyberchef 10.4.0 libpcap 1.10.4
+  - all - config 'prefix' can be at most 50 characters
+  - all - new cookie generation code
+  - capture - handle packets better at epoch time
+  - cont3xt - add twilio country code tidbit
+  - cont3xt - add httpRealm to sample config
+  - cont3xt - help improvements
+  - cont3xt - minor UI improvements
+  - db.pl - set ISM deleteTime for sessions correctly
+  - esproxy - add tests
+  - parliament - fixed occasional missing token error
+  - viewer/wise - Field/Value actions now support all:true to show on every instance
+  - viewer - Fix Src/Dst mouse over for packets/bytes
+  - viewer - Field Actions didn't work in expanded meta
+  - viewer - Fix sending/receiving sessions not working
+
+4.3.1 2023/05/08
+  - BREAKING - If running mixed versions of Arkime, broken cron queries error
+               might show on OLD version
+  - release - fix ubuntu22 kafka dep
+  - all - passwordSecret log message now has the right [section]
+  - capture - --tags option now works as well as --tag
+  - viewer - new auto cronQueries setting
+  - viewer - change where primary viewer info is stored to not cause constant
+             mapping change
+  - viewer - fixed ipv6 not working, now assumes zero filled with mask (if
+             not provided)
+  - viewer - code refactor into javascript classes
+
+4.3.0 2023/04/27
+  - BREAKING - Only SuperAdmin can assign *Admin roles now
+  - release - fix kafka library linking
+  - release - al2023 support
+  - release - improve arkime_config_interfaces.sh
+  - release - Configure doesn't offer demo Elasticsearch on Arch
+  - release - reqBodyOnlyUtf8=true in sample config file
+  - all - support colon in OpenSearch/Elasticsearch password
+  - all - fix some prototype pollution
+  - all - improve roles enforcement
+  - all - New authTrustProxy setting
+  - capture - tcpClosingTimeout setting controls delay before saving tcp
+              sessions after close
+  - capture - default dbBulkSize to 1M, min 500K, max 15M and removed
+              from sample config file
+  - capture - s3 writer now writes multiple files based on packetThreads
+  - capture - s3 writer supports zstd, s3Compression setting
+  - capture - s3 writer compression level, s3CompressionBlockSize setting
+  - capture - s3 writer block size, s3CompressionBlockSize setting
+  - capture - s3 writer gap encoding, s3GapPacketPos setting
+  - capture - s3 writer when s3UseECSEnv is true use container env vars to find
+              the id/key/token for s3 auth
+  - capture - improve Gh0st parser (#2225)
+  - capture - new dnp3 & finger classifier
+  - capture - tcphealthcheck adding debugging
+  - capture/viewer - includes setting ignores missing files starting with -
+  - cont3xt - add malicious tidbit from urlscan results
+  - cont3xt - add malicious and brand columns to results table for urlscan
+  - cont3xt - link group UI improvements
+  - cont3xt - add createDate for whois data
+  - db.pl - new --ifneeded option to init/upgrade that will exit if not needed
+  - parliament - fix digest auth
+  - parliament - better auth support
+  - parliament - improve issue page and filters
+  - viewer - display errors when cronQueries isn't configured
+  - viewer - fix first sessions table row obscured sometimes
+  - viewer - disable more apis in demo mode
+  - viewer - allow roles forced expression without user forced expression (#2213)
+  - viewer - s3 now use each file's bucket to determine access style
+  - wise - only send csp headers in initial request for wise page
+
+4.2.0 2023/03/01
+  - release - node 16.19.1, support node v18
+  - release - fix arch build issues
+  - release - EL9 build uses sha256 digest
   - all - OpenSearch/Elasticsearch name cleanup
   - all - cleanup nodejs dependencies
   - all - refactor how authentication is done, everything now uses passportjs
   - all - support oidc authentication method
+  - all - caTrustFile setting should work everywhere
   - capture - support ERSPAN Type I and vlan for Type II
+  - capture - new kafka plugin for sessions
+  - capture - use malloc instead of GSlice
+  - capture - corrupt DNS alt name memory leak fixed
+  - capture - Added simpleFreeOutputBuffers setting
   - cont3xt - raw create link groups
   - cont3xt - two clicks to delete link groups or links
   - cont3xt - classify domains with multiple dashes correctly
   - cont3xt - added ability to copy links between link groups
+  - cont3xt - support intl phonenumbers
+  - db.pl - Initial OpenSearch ISM support
+  - db.pl - Better error text for cert verify failure
   - esproxy - fix converting basic auth to base64
   - viewer - fix field actions crash
+  - viewer - can now use expression  http.request.FIELD or http.response.FIELD
+             with headers-http-request, headers-http-response defined fields
+  - viewer - support viewing ipv6 DLT_RAW (#1293)
+  - viewer - ESAdmin -> Unflood works on users cluster now also
+  - viewer - support running in s2s auth mode only
+
 
 4.1.0 2023/01/10
   - release - glib 2.72.4 cyberchef 9.55.0 flot 4.2.3 d3 7.7
@@ -54,7 +256,7 @@ NOTICE: Cross-cluster Shortcuts require you to not restart all your viewers at o
   - capture - add VNI field
   - capture - initial tzsp reader support
   - capture - y2038 fixes
-  - capture - Integer ops in rules now support a leading min or max which only 
+  - capture - Integer ops in rules now support a leading min or max which only
               sets the value if less than or greater than current value
   - wise - added usersElasticsearchBasicAuth setting and lmdb cache support
   - wise - add passivetotal value action if at least key is defined

@@ -2,6 +2,8 @@
 # This script can initialize, upgrade or provide simple maintenance for the
 # Arkime OpenSearch/Elasticsearch db
 #
+# SPDX-License-Identifier: Apache-2.0
+#
 # Schema Versions
 #  0 - Before this script existed
 #  1 - First version of script; turned on strict schema; added lpms, fpms; added
@@ -72,6 +74,8 @@
 # 76 - views index
 # 77 - cron sharing with roles and users
 # 78 - added roleAssigners to users
+# 79 - added parliament notifier flags to notifiers index and new parliament index
+#      added editRoles to views, shortcuts, and queries
 
 use HTTP::Request::Common;
 use LWP::UserAgent;
@@ -82,9 +86,9 @@ use POSIX;
 use IO::Compress::Gzip qw(gzip $GzipError);
 use IO::Uncompress::Gunzip qw(gunzip $GunzipError);
 use strict;
-no if ($] >= 5.018), 'warnings' => 'experimental';
+use warnings;
 
-my $VERSION = 78;
+my $VERSION = 79;
 my $verbose = 0;
 my $PREFIX = undef;
 my $OLDPREFIX = "";
@@ -117,7 +121,8 @@ my $LOCKED = 0;
 my $GZ = 0;
 my $REFRESH = 60;
 my $ESAPIKEY = "";
-my $USERPASS;
+my $USERPASS = "";
+my $IFNEEDED = 0;
 
 #use LWP::ConsoleLogger::Everywhere ();
 
@@ -167,7 +172,9 @@ sub showHelp($)
     print "    --hotwarm                  - Set 'hot' for 'node.attr.molochtype' on new indices, warm on non sessions indices\n";
     print "    --ilm                      - Use ilm (Elasticsearch) to manage\n";
     print "    --ism                      - Use ism (OpenSearch) to manage\n";
-    print "  wipe [<init opts>]           - Same as init, but leaves user index untouched\n";
+    print "    --ifneeded                 - Only init or upgrade if needed, otherwise just exit\n";
+    print "  wipe [<init opts>]           - Same as init, but leaves user,views,parliament indices untouched\n";
+    print "  clean                        - Remove all Arkime indices\n";
     print "  upgrade [<init opts>]        - Upgrade Arkime's mappings from a previous version or use to change settings\n";
     print "  expire <type> <num> [<opts>] - Perform daily OpenSearch/Elasticsearch maintenance and optimize all indices, not needed with ILM\n";
     print "       type                    - Same as rotateIndex in ini file = hourly,hourlyN,daily,weekly,monthly\n";
@@ -383,13 +390,13 @@ sub esCopy
     my $status = esGet("/${srci}/_refresh", 1);
     $main::userAgent->timeout(7200);
 
-    my $status = esGet("/_stats/docs", 1);
+    $status = esGet("/_stats/docs", 1);
     logmsg "Copying " . $status->{indices}->{$srci}->{primaries}->{docs}->{count} . " elements from $srci to $dsti\n";
 
     esPost("/_reindex?timeout=7200s", to_json({"source" => {"index" => $srci}, "dest" => {"index" => $dsti, "version_type" => "external"}, "conflicts" => "proceed"}));
 
-    my $status = esGet("/${dsti}/_refresh", 1);
-    my $status = esGet("/_stats/docs", 1);
+    $status = esGet("/${dsti}/_refresh", 1);
+    $status = esGet("/_stats/docs", 1);
     if ($status->{indices}->{$srci}->{primaries}->{docs}->{count} > $status->{indices}->{$dsti}->{primaries}->{docs}->{count}) {
         logmsg $status->{indices}->{$srci}->{primaries}->{docs}->{count}, " > ",  $status->{indices}->{$dsti}->{primaries}->{docs}->{count}, "\n";
         die "\nERROR - Copy failed from $srci to $dsti, you will probably need to delete $dsti and run upgrade again.  Make sure to not change the index while upgrading.\n\n";
@@ -440,9 +447,9 @@ sub esAlias
     my ($cmd, $index, $alias, $dontaddprefix) = @_;
     logmsg "Alias cmd $cmd from $index to alias $alias\n" if ($verbose > 0);
     if (!$dontaddprefix){ # append PREFIX
-        esPost("/_aliases?master_timeout=${ESTIMEOUT}s", '{ "actions": [ { "' . $cmd . '": { "index": "' . $PREFIX . $index . '", "alias" : "'. $PREFIX . $alias .'" } } ] }', 1);
+        esPost("/_aliases?master_timeout=${ESTIMEOUT}s", qq({ "actions": [ { "${cmd}": { "index": "${PREFIX}${index}", "alias" : "${PREFIX}${alias}" } } ] }), 1);
     } else { # do not append PREFIX
-        esPost("/_aliases?master_timeout=${ESTIMEOUT}s", '{ "actions": [ { "' . $cmd . '": { "index": "' . $index . '", "alias" : "'. $alias .'" } } ] }', 1);
+        esPost("/_aliases?master_timeout=${ESTIMEOUT}s", qq({ "actions": [ { "${cmd}": { "index": "${index}", "alias" : "${alias}" } } ] }), 1);
     }
 }
 
@@ -1214,6 +1221,9 @@ sub queriesUpdate
     "roles": {
       "type": "keyword"
     },
+    "editRoles": {
+      "type": "keyword"
+    },
     "users": {
       "type": "keyword"
     }
@@ -1288,9 +1298,9 @@ sub sessions3ECSTemplate
 # 1) change index_patterns
 # 2) Delete cloud,dns,http,tls,user,data_stream
 # 3) Add source.as.full, destination.as.full, source.mac-cnt, destination.mac-cnt, network.vlan.id-cnt
-my $template = '
+my $template = qq(
 {
-  "index_patterns": "' . $PREFIX . 'sessions3-*",
+  "index_patterns": "${PREFIX}sessions3-*",
   "mappings": {
     "_meta": {
       "version": "1.10.0"
@@ -1308,7 +1318,7 @@ my $template = '
       }
     ],
     "properties": {
-      "@timestamp": {
+      "\@timestamp": {
         "type": "date"
       },
       "agent": {
@@ -4171,7 +4181,7 @@ my $template = '
     }
   }
 }
-';
+);
     logmsg "Creating sessions ecs template\n" if ($verbose > 0);
     esPut("/_template/${PREFIX}sessions3_ecs_template?master_timeout=${ESTIMEOUT}s&pretty", $template);
 }
@@ -4180,10 +4190,11 @@ my $template = '
 # Not all fields need to be here, but the index will be created quicker if more are.
 sub sessions3Update
 {
-    my $mapping = '
+    my $mapping = qq(
 {
   "_meta": {
-    "molochDbVersion": ' . $VERSION . '
+    "molochDbVersion": $VERSION,
+    "arkimeDbVersion": $VERSION
   },
   "dynamic": "true",
   "dynamic_templates": [
@@ -5187,7 +5198,7 @@ sub sessions3Update
     }
   }
 }
-';
+);
 
 $REPLICAS = 0 if ($REPLICAS < 0);
 my $shardsPerNode = ceil($SHARDS * ($REPLICAS+1) / $main::numberOfNodes);
@@ -5204,15 +5215,15 @@ if ($DOILM) {
       "lifecycle.name": "${PREFIX}molochsessions"/;
 }
 
-    my $template = '
+    my $template = qq(
 {
-  "index_patterns": "' . $PREFIX . 'sessions3-*",
+  "index_patterns": "${PREFIX}sessions3-*",
   "settings": {
     "index": {
-      "routing.allocation.total_shards_per_node": ' . $shardsPerNode . $settings . ',
-      "refresh_interval": "' . $REFRESH . 's",
-      "number_of_shards": ' . $SHARDS . ',
-      "number_of_replicas": ' . $REPLICAS . ',
+      "routing.allocation.total_shards_per_node": ${shardsPerNode}${settings},
+      "refresh_interval": "${REFRESH}s",
+      "number_of_shards": ${SHARDS},
+      "number_of_replicas": ${REPLICAS},
       "analysis": {
         "analyzer": {
           "wordSplit": {
@@ -5224,9 +5235,9 @@ if ($DOILM) {
       }
     }
   },
-  "mappings":' . $mapping . ',
+  "mappings": ${mapping},
   "order": 99
-}';
+});
 
     logmsg "Creating sessions template\n" if ($verbose > 0);
     esPut("/_template/${PREFIX}sessions3_template?master_timeout=${ESTIMEOUT}s&pretty", $template);
@@ -5521,6 +5532,9 @@ sub lookupsUpdate
     },
     "roles": {
       "type": "keyword"
+    },
+    "editRoles": {
+      "type": "keyword"
     }
   }
 }';
@@ -5594,6 +5608,29 @@ sub notifiersUpdate
     },
     "updated": {
       "type": "date"
+    },
+    "on": {
+      "type": "boolean"
+    },
+    "alerts": {
+      "type": "object",
+      "properties": {
+        "esRed": {
+          "type": "boolean"
+        },
+        "esDown": {
+          "type": "boolean"
+        },
+        "esDropped": {
+          "type": "boolean"
+        },
+        "outOfDate": {
+          "type": "boolean"
+        },
+        "noPackets": {
+          "type": "boolean"
+        }
+      }
     }
   }
 }';
@@ -5602,25 +5639,144 @@ logmsg "Setting notifiers_v40 mapping\n" if ($verbose > 0);
 esPut("/${PREFIX}notifiers_v40/_mapping?master_timeout=${ESTIMEOUT}s&pretty", $mapping);
 }
 
-sub notifiersMove
+sub notifiersAddMissingProps
 {
-# add the notifiers from the _moloch_shared user to the new notifiers index
-    my $sharedUser = esGet("/${PREFIX}users/_source/_moloch_shared", 1);
-    my @notifiers = keys %{$sharedUser->{notifiers}};
+  # add missing alerts and on properties to the notifiers
+  my $notifiers = esGet("/${PREFIX}notifiers/_search?size=10000");
 
-    return if ($sharedUser->{status} == 404);
+  return if (!$notifiers->{hits}->{total}->{value});
 
-    foreach my $n (@notifiers) {
-        my $notifier = $sharedUser->{notifiers}{$n};
-        $notifier->{users} = "";
-        $notifier->{roles} = ["arkimeUser", "parliamentUser"];
-        my $name = $notifier->{name};
-        esPost("/${PREFIX}notifiers/_doc/${name}", to_json($notifier));
+  foreach my $notifier (@{$notifiers->{hits}->{hits}}) {
+      # if alerts and on are not props add them
+      my $id = $notifier->{_id};
+      $notifier = $notifier->{_source};
+
+      my $update = 0;
+      if (!exists $notifier->{on}) {
+        # viewer notifiers are off by default (on flag is used in parliament only)
+        $notifier->{on} = \0;
+        $update = 1;
+      }
+      if (!exists $notifier->{alerts}) {
+        # viewer alerts are all off by default (alerts are used in parliament only)
+        $notifier->{alerts} = {};
+        $notifier->{alerts}->{esRed} = \0;
+        $notifier->{alerts}->{esDown} = \0;
+        $notifier->{alerts}->{esDropped} = \0;
+        $notifier->{alerts}->{outOfDate} = \0;
+        $notifier->{alerts}->{noPackets} = \0;
+        $update = 1;
+      }
+
+      esPost("/${PREFIX}notifiers/_doc/${id}", to_json($notifier)) if ($update);
+  }
+}
+################################################################################
+
+################################################################################
+sub parliamentCreate
+{
+  my $settings = '
+{
+  "settings": {
+    "index.priority": 30,
+    "number_of_shards": 1,
+    "number_of_replicas": 0,
+    "auto_expand_replicas": "0-3"
+  }
+}';
+
+  logmsg "Creating parliament_v50 index\n" if ($verbose > 0);
+  esPut("/${PREFIX}parliament_v50?master_timeout=${ESTIMEOUT}s", $settings);
+  esAlias("add", "parliament_v50", "parliament");
+  parliamentUpdate();
+}
+
+sub parliamentUpdate
+{
+    my $mapping = '
+{
+  "_source": {"enabled": "true"},
+  "dynamic": "strict",
+  "dynamic_templates": [
+    {
+      "string_template": {
+        "match_mapping_type": "string",
+        "mapping": {
+          "type": "keyword"
+        }
+      }
     }
+  ],
+  "properties": {
+    "name": {
+      "type": "keyword"
+    },
+    "settings": {
+      "type": "object",
+      "dynamic": "true",
+      "enabled": "false"
+    },
+    "groups": {
+      "type": "object",
+      "properties": {
+        "title": {
+          "type": "keyword"
+        },
+        "description": {
+          "type": "keyword"
+        },
+        "id": {
+          "type": "keyword"
+        },
+        "clusters": {
+          "type": "object",
+          "properties": {
+            "title": {
+              "type": "keyword"
+            },
+            "description": {
+              "type": "keyword"
+            },
+            "url": {
+              "type": "keyword"
+            },
+            "localUrl": {
+              "type": "keyword"
+            },
+            "type": {
+              "type": "keyword"
+            },
+            "id": {
+              "type": "keyword"
+            },
+            "hideDeltaBPS": {
+              "type": "boolean"
+            },
+            "hideDeltaTDPS": {
+              "type": "boolean"
+            },
+            "hideMonitoring": {
+              "type": "boolean"
+            },
+            "hideArkimeNodes": {
+              "type": "boolean"
+            },
+            "hideDataNodes": {
+              "type": "boolean"
+            },
+            "hideTotalNodes": {
+              "type": "boolean"
+            }
+          }
+        }
+      }
+    }
+  }
+}';
 
-# remove notifiers from the _moloch_shared user
-    delete $sharedUser->{notifiers};
-    esPut("/${PREFIX}users/_doc/_moloch_shared", to_json($sharedUser));
+logmsg "Setting parliament_v50 mapping\n" if ($verbose > 0);
+esPut("/${PREFIX}parliament_v50/_mapping?master_timeout=${ESTIMEOUT}s&pretty", $mapping);
 }
 ################################################################################
 
@@ -5659,6 +5815,9 @@ sub viewsUpdate
     "roles": {
       "type": "keyword"
     },
+    "editRoles": {
+      "type": "keyword"
+    },
     "user": {
       "type": "keyword"
     },
@@ -5676,39 +5835,6 @@ sub viewsUpdate
 logmsg "Setting views_v40 mapping\n" if ($verbose > 0);
 esPut("/${PREFIX}views_v40/_mapping?master_timeout=${ESTIMEOUT}s&pretty", $mapping);
 }
-
-sub viewsMove
-{
-# add the views from all users to the new views index
-  my $users = esGet("/${PREFIX}users/_search?size=1000");
-
-  foreach my $user (@{$users->{hits}->{hits}}) {
-      my @views = keys %{$user->{_source}->{views}};
-
-      foreach my $v (@views) {
-          my $view = $user->{_source}->{views}{$v};
-          $view->{users} = "";
-          $view->{name} = $v;
-          if ($view->{shared}) {
-            $view->{roles} = ["arkimeUser"];
-          }
-          delete $view->{shared};
-          if (!exists $view->{user}) {
-            $view->{user} = $user->{_source}->{userId};
-          }
-          esPost("/${PREFIX}views/_doc", to_json($view));
-      }
-
-      # update the user to delete views
-      delete $user->{_source}->{views};
-      my $userId = $user->{_id};
-      esPut("/${PREFIX}users/_doc/${userId}", to_json($user->{_source}));
-  }
-
-  # delete the _moloch_shared user
-  esDelete("/${PREFIX}users/_doc/_moloch_shared", 1);
-}
-################################################################################
 
 ################################################################################
 sub usersCreate
@@ -5784,16 +5910,6 @@ sub usersUpdate
     "settings": {
       "type": "object",
       "dynamic": "true"
-    },
-    "views": {
-      "type": "object",
-      "dynamic": "true",
-      "enabled": "false"
-    },
-    "notifiers": {
-      "type": "object",
-      "dynamic": "true",
-      "enabled": "false"
     },
     "columnConfigs": {
       "type": "object",
@@ -6039,7 +6155,7 @@ sub dbCheck {
     my @parts = split(/[-.]/, $esversion->{version}->{number});
     $main::esVersion = int($parts[0]*100*100) + int($parts[1]*100) + int($parts[2]);
 
-    if ($esversion->{version}->{distribution} eq "opensearch") {
+    if ($esversion->{version}->{distribution} // "" eq "opensearch") {
         if ($main::esVersion < 1000) {
             logmsg("Currently using OpenSearch version ", $esversion->{version}->{number}, " which isn't supported\n",
                   "* < 1.0.0 is not supported\n"
@@ -6067,7 +6183,7 @@ sub dbCheck {
     my $nodeStats = esGet("/_nodes/stats");
 
     foreach my $key (sort {$nodes->{nodes}->{$a}->{name} cmp $nodes->{nodes}->{$b}->{name}} keys %{$nodes->{nodes}}) {
-        next if (!(/^(data|data_hot)$/ ~~ @{$nodes->{nodes}->{$key}->{roles}}));
+        next if (!(grep { /^(data|data_hot)$/ } @{$nodes->{nodes}->{$key}->{roles}}));
         my $node = $nodes->{nodes}->{$key};
         my $nodeStat = $nodeStats->{nodes}->{$key};
         my $errstr;
@@ -6174,6 +6290,8 @@ sub parseArgs {
             }
         } elsif ($ARGV[$pos] eq "--hotwarm") {
             $DOHOTWARM = 1;
+        } elsif ($ARGV[$pos] eq "--ifneeded") {
+            $IFNEEDED = 1;
         } elsif ($ARGV[$pos] eq "--ilm") {
             $DOILM = 1;
             die "Can't use both --ilm and --ism" if ($DOISM);
@@ -6218,6 +6336,7 @@ while (@ARGV > 0 && substr($ARGV[0], 0, 1) eq "-") {
          $verbose += ($ARGV[0] =~ tr/v//);
     } elsif ($ARGV[0] =~ /--prefix$/) {
         $PREFIX = $ARGV[1];
+        die "--prefix can be at most 50 characters long" if (length($PREFIX) > 50);
         shift @ARGV;
         $PREFIX .= "_" if ($PREFIX ne "" && $PREFIX !~ /_$/);
         $OLDPREFIX = $PREFIX;
@@ -6349,14 +6468,15 @@ if ($ARGV[1] =~ /^(users-?import|import)$/) {
     sub bopen {
         my ($index) = @_;
         if ($GZ) {
-            return new IO::Compress::Gzip "$ARGV[2].${PREFIX}${index}.json.gz" or die "cannot open $ARGV[2].${PREFIX}${index}.json.gz: $GzipError\n";
+            my $g = new IO::Compress::Gzip"$ARGV[2].${PREFIX}${index}.json.gz" or die "cannot open $ARGV[2].${PREFIX}${index}.json.gz: $GzipError\n";
+            return $g
         } else {
             open(my $fh, ">", "$ARGV[2].${PREFIX}${index}.json") or die "cannot open > $ARGV[2].${PREFIX}${index}.json: $!";
             return $fh;
         }
     }
 
-    my @indices = ("users", "sequence", "stats", "queries", "files", "fields", "dstats", "hunts", "lookups", "notifiers", "views");
+    my @indices = ("dstats", "fields", "files", "hunts", "lookups", "notifiers", "parliament", "queries", "sequence", "stats", "users", "views");
     logmsg "Exporting documents...\n";
     foreach my $index (@indices) {
         my $data = esScroll($index, "", '{"version": true}');
@@ -6402,7 +6522,7 @@ if ($ARGV[1] =~ /^(users-?import|import)$/) {
     }
     my $aliases = join(',', @indices_prefixed);
     $aliases = "/_cat/aliases/${aliases}?format=json";
-    my $data = esGet($aliases), "\n";
+    my $data = esGet($aliases);
     my $fh = bopen("aliases");
     print $fh to_json($data);
     close($fh);
@@ -6504,7 +6624,7 @@ if ($ARGV[1] =~ /^(users-?import|import)$/) {
                     ("$shardsPerNode" eq "null" && exists $settings->{$i}->{settings}->{"index.routing.allocation.total_shards_per_node"}) ||
                     ("$shardsPerNode" ne "null" && $settings->{$i}->{settings}->{"index.routing.allocation.total_shards_per_node"} ne "$shardsPerNode")) {
 
-                    esPut("/$i/_settings?master_timeout=${ESTIMEOUT}s", '{"index": {"number_of_replicas":' . $REPLICAS . ', "routing.allocation.total_shards_per_node": ' . $shardsPerNode . '}}', 1);
+                    esPut("/$i/_settings?master_timeout=${ESTIMEOUT}s", qq({"index": {"number_of_replicas":${REPLICAS}, "routing.allocation.total_shards_per_node": ${shardsPerNode}}}), 1);
                 }
             }
         } else {
@@ -6687,7 +6807,7 @@ if ($ARGV[1] =~ /^(users-?import|import)$/) {
     # increment the _meta version by 1
     my $mapping = esGet("/${PREFIX}lookups/_mapping");
     my @indices = keys %{$mapping};
-    my $index = @indices[0];
+    my $index = $indices[0];
     my $meta = $mapping->{$index}->{mappings}->{_meta};
 
 
@@ -6714,8 +6834,8 @@ if ($ARGV[1] =~ /^(users-?import|import)$/) {
 
     logmsg("Checking for completion\n");
     my $status = esGet("/${PREFIX}$ARGV[2]-shrink/_refresh", 0);
-    my $status = esGet("/${PREFIX}$ARGV[2]-shrink/_flush", 0);
-    my $status = esGet("/_stats/docs", 0);
+    $status = esGet("/${PREFIX}$ARGV[2]-shrink/_flush", 0);
+    $status = esGet("/_stats/docs", 0);
     if ($status->{indices}->{"${PREFIX}$ARGV[2]-shrink"}->{primaries}->{docs}->{count} == $status->{indices}->{"${PREFIX}$ARGV[2]"}->{primaries}->{docs}->{count}) {
         logmsg("Deleting old index\n");
         esDelete("/${PREFIX}$ARGV[2]", 1);
@@ -6849,7 +6969,7 @@ if ($ARGV[1] =~ /^(users-?import|import)$/) {
 
     sub printIndex {
         my ($status, $name) = @_;
-        my $index = $status->{indices}->{$PREFIX.$name} || $status->{indices}->{$OLDPREFIX.$name};
+        my $index = $status->{indices}->{$PREFIX.$name} // $status->{indices}->{$OLDPREFIX.$name} // $status->{indices}->{$name};
         return if (!$index);
         printf "%-20s %17s (%s bytes)\n", $name . ":", commify($index->{primaries}->{docs}->{count}), commify($index->{primaries}->{store}->{size_in_bytes});
     }
@@ -6883,9 +7003,10 @@ if ($ARGV[1] =~ /^(users-?import|import)$/) {
         printf "History Density:     %17s (%s bytes)\n", commify(int($historys/($dataNodes*scalar(@historys)))),
                                                        commify(int($historysBytes/($dataNodes*scalar(@historys))));
     }
-    printIndex($status, "stats_v30");
-    printIndex($status, "stats_v4");
-    printIndex($status, "stats_v3");
+
+    printIndex($status, "dstats_v30");
+    printIndex($status, "dstats_v4");
+    printIndex($status, "dstats_v3");
 
     printIndex($status, "fields_v30");
     printIndex($status, "fields_v3");
@@ -6895,23 +7016,38 @@ if ($ARGV[1] =~ /^(users-?import|import)$/) {
     printIndex($status, "files_v6");
     printIndex($status, "files_v5");
 
+    printIndex($status, "hunts_v30");
+    printIndex($status, "hunts_v2");
+    printIndex($status, "hunts_v1");
+
+    printIndex($status, "lookups_v30");
+
+    printIndex($status, "notifiers_v40");
+
+    printIndex($status, "parliament_v50");
+
+    printIndex($status, "queries_v30");
+
+    printIndex($status, "sequence_v30");
+    printIndex($status, "sequence_v3");
+    printIndex($status, "sequence_v2");
+
+    printIndex($status, "stats_v30");
+    printIndex($status, "stats_v4");
+    printIndex($status, "stats_v3");
+
     printIndex($status, "users_v30");
     printIndex($status, "users_v7");
     printIndex($status, "users_v6");
     printIndex($status, "users_v5");
     printIndex($status, "users_v4");
 
-    printIndex($status, "hunts_v30");
-    printIndex($status, "hunts_v2");
-    printIndex($status, "hunts_v1");
+    printIndex($status, "views_v40");
 
-    printIndex($status, "dstats_v30");
-    printIndex($status, "dstats_v4");
-    printIndex($status, "dstats_v3");
-
-    printIndex($status, "sequence_v30");
-    printIndex($status, "sequence_v3");
-    printIndex($status, "sequence_v2");
+    printIndex($status, "cont3xt_history");
+    printIndex($status, "cont3xt_links");
+    printIndex($status, "cont3xt_overviews");
+    printIndex($status, "cont3xt_views");
     exit 0;
 } elsif ($ARGV[1] eq "mv") {
     (my $fn = $ARGV[2]) =~ s/\//\\\//g;
@@ -7000,6 +7136,7 @@ if ($ARGV[1] =~ /^(users-?import|import)$/) {
 } elsif ($ARGV[1] =~ /^add-?missing$/) {
     my $dir = $ARGV[3];
     chop $dir if (substr($dir, -1) eq "/");
+    die "Please use full path, like the pcapDir setting, instead of '.'" if ($dir eq ".");
     opendir(my $dh, $dir) || die "Can't opendir $dir: $!";
     my @files = grep { m/^$ARGV[2]-/ && -f "$dir/$_" } readdir($dh);
     closedir $dh;
@@ -7023,13 +7160,14 @@ if ($ARGV[1] =~ /^(users-?import|import)$/) {
     }
     exit 0;
 } elsif ($ARGV[1] =~ /^sync-?files$/) {
-    my @nodes = split(",", $ARGV[2]);
-    my @dirs = split(",", $ARGV[3]);
+    my @nodes = split(/[,;]/, $ARGV[2]);
+    my @dirs = split(/[,;]/, $ARGV[3]);
 
     # find all local files, do this first also to make sure we can access dirs
     my @localfiles = ();
     foreach my $dir (@dirs) {
         chop $dir if (substr($dir, -1) eq "/");
+        die "Please use full path, like the pcapDir setting, instead of '.'" if ($dir eq ".");
         opendir(my $dh, $dir) || die "Can't opendir $dir: $!";
         foreach my $node (@nodes) {
             my @files = grep { m/^$ARGV[2]-/ && -f "$dir/$_" } readdir($dh);
@@ -7280,7 +7418,7 @@ qq/{"policy": {
     my $allocation = "";
     if ($DOHOTWARM) {
       $allocation = qq/{"allocation" : {"require" : { "molochtype" : "warm" }, "wait_for" : true }},/;
-    } 
+    }
 
 $policy = qq/{
   "policy" : {
@@ -7327,7 +7465,7 @@ $policy = qq/{
           {
             "state_name" : "delete",
             "conditions" : {
-              "min_index_age" : "$forceTime"
+              "min_index_age" : "$deleteTime"
             }
           }
         ]
@@ -7442,6 +7580,8 @@ $policy = qq/{
     print "Deleted $src\n";
     exit 0;
 } elsif ($ARGV[1] =~ /^repair$/) {
+    my $nodes = esGet("/_nodes");
+    $main::numberOfNodes = dataNodes($nodes->{nodes});
     dbVersion(1);
     if ($main::versionNumber != $VERSION) {
         die "Must upgrade before trying to do a repair";
@@ -7456,19 +7596,19 @@ $policy = qq/{
         }
     }
 
-    foreach my $i ("stats_v30", "dstats_v30", "fields_v30", "queries_v30", "hunts_v30", "lookups_v30", "users_v30", "notifiers_v40", "views_v40") {
+    foreach my $i ("dstats_v30", "fields_v30", "hunts_v30", "lookups_v30", "notifiers_v40", "parliament_v50", "queries_v30", "stats_v30", "users_v30", "views_v40") {
         if (!defined $indices{"${PREFIX}$i"}) {
             print "--> Couldn't find index ${PREFIX}$i, repair might fail\n"
         }
     }
 
-    foreach my $i ("stats", "dstats", "fields") {
+    foreach my $i ("dstats", "fields", "stats") {
         if (defined $indices{"${PREFIX}$i"}) {
             print "--> Will delete the index ${PREFIX}$i and recreate as alias\n"
         }
     }
 
-    foreach my $i ("queries", "hunts", "lookups", "users", "notifiers", "views") {
+    foreach my $i ("hunts", "lookups", "notifiers", "parliament", "queries", "users", "views") {
         if (defined $indices{"${PREFIX}$i"}) {
             print "--> Will delete the index ${PREFIX}$i and recreate as alias, this WILL cause data loss in those indices, maybe cancel and run backup first\n"
         }
@@ -7487,21 +7627,22 @@ $policy = qq/{
     $verbose = 3 if ($verbose < 3);
 
     print "Deleting any indices that should be aliases\n";
-    foreach my $i ("stats", "dstats", "fields", "queries", "hunts", "lookups", "users", "notifiers", "views") {
+    foreach my $i ("dstats", "fields", "hunts", "lookups", "notifiers", "parliament", "queries", "stats", "users", "views") {
         esDelete("/${PREFIX}$i", 0) if (defined $indices{"${PREFIX}$i"});
     }
 
     print "Re-adding aliases\n";
-    esAlias("add", "sequence_v30", "sequence");
-    esAlias("add", "files_v30", "files");
-    esAlias("add", "stats_v30", "stats");
     esAlias("add", "dstats_v30", "dstats");
     esAlias("add", "fields_v30", "fields");
-    esAlias("add", "queries_v30", "queries");
+    esAlias("add", "files_v30", "files");
     esAlias("add", "hunts_v30", "hunts");
     esAlias("add", "lookups_v30", "lookups");
-    esAlias("add", "users_v30", "users");
     esAlias("add", "notifiers_v40", "notifiers");
+    esAlias("add", "parliament_v50", "parliament");
+    esAlias("add", "queries_v30", "queries");
+    esAlias("add", "sequence_v30", "sequence");
+    esAlias("add", "stats_v30", "stats");
+    esAlias("add", "users_v30", "users");
     esAlias("add", "views_v40", "views");
 
     if (defined $indices{"${PREFIX}users_v30"}) {
@@ -7558,6 +7699,11 @@ $policy = qq/{
         viewsCreate();
     }
 
+    if (defined $indices{"${PREFIX}parliament_v50"}) {
+        parliamentUpdate();
+    } else {
+        parliamentCreate();
+    }
 
     if (!defined $templates{"${PREFIX}sessions3_ecs_template"}) {
         sessions3ECSTemplate();
@@ -7567,6 +7713,7 @@ $policy = qq/{
         $UPGRADEALLSESSIONS = 0;
         historyUpdate();
     }
+
 
     print "\n";
     print "* You should also run ./db.pl upgrade again\n";
@@ -7581,7 +7728,7 @@ my ($nodes) = @_;
     my $total = 0;
 
     foreach my $key (keys %{$nodes}) {
-        $total++ if (/^(data|data_hot)$/ ~~ @{$nodes->{$key}->{roles}});
+        $total++ if (grep { /^(data|data_hot)$/ } @{$nodes->{$key}->{roles}});
     }
     return $total;
 }
@@ -7618,6 +7765,10 @@ if ($ARGV[1] eq "wipe" && $main::versionNumber != $VERSION) {
 
 if ($ARGV[1] =~ /^(init|wipe|clean)/) {
 
+    if ($ARGV[1] eq "init" && $IFNEEDED && $main::versionNumber == $VERSION) {
+        exit 0;
+    }
+
     if ($ARGV[1] eq "init" && $main::versionNumber >= 0) {
         logmsg "It appears this OpenSearch/Elasticsearch cluster already has Arkime installed (version $main::versionNumber), this will delete ALL data in OpenSearch/Elasticsearch! (It does not delete the pcap files on disk.)\n\n";
         waitFor("INIT", "do you want to erase everything?");
@@ -7652,6 +7803,7 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
     if ($ARGV[1] =~ /^(init|clean)/) {
         esDelete("/${PREFIX}users_v30,${OLDPREFIX}users_v7,${OLDPREFIX}users_v6,${OLDPREFIX}users_v5,${OLDPREFIX}users,${PREFIX}users?ignore_unavailable=true", 1);
         esDelete("/${PREFIX}queries_v30,${OLDPREFIX}queries_v3,${OLDPREFIX}queries_v2,${OLDPREFIX}queries_v1,${OLDPREFIX}queries,${PREFIX}queries?ignore_unavailable=true", 1);
+        esDelete("/${PREFIX}parliament_v50?ignore_unavailable=true", 1);
     }
     esDelete("/tagger", 1);
 
@@ -7674,6 +7826,7 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
     if ($ARGV[1] =~ "init") {
         usersCreate();
         queriesCreate();
+        parliamentCreate();
     }
 } elsif ($ARGV[1] =~ /^(restore|restorenoprompt)$/) {
 
@@ -7681,7 +7834,7 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
 
     dbCheckForActivity($PREFIX);
 
-    my @indices = ("users", "sequence", "stats", "queries", "hunts", "files", "fields", "dstats", "lookups", "notifiers", "views");
+    my @indices = ("users", "sequence", "stats", "queries", "hunts", "files", "fields", "dstats", "lookups", "notifiers", "views", "parliament");
     my @filelist = ();
     foreach my $index (@indices) { # list of data, settings, and mappings files
         push(@filelist, "$ARGV[2].${PREFIX}${index}.json\n") if (-e "$ARGV[2].${PREFIX}${index}.json");
@@ -7831,9 +7984,13 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
 # Remaing is upgrade or upgradenoprompt
 
 # For really old versions don't support upgradenoprompt
-    if ($main::versionNumber < 72) {
-        logmsg "Can not upgrade directly, please upgrade to Moloch 3.3.0+ first. (Db version $main::versionNumber)\n\n";
+    if ($main::versionNumber < 77) {
+        logmsg "Can not upgrade directly, please upgrade to Moloch 4.3.2+ first. (Db version $main::versionNumber)\n\n";
         exit 1;
+    }
+
+    if ($IFNEEDED && $main::versionNumber == $VERSION) {
+        exit 0;
     }
 
     if ($health->{status} eq "red") {
@@ -7846,37 +8003,22 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
 
     logmsg "Starting Upgrade\n";
 
-    if ($main::versionNumber < 75) {
+    if ($main::versionNumber < 79) {
+        esDelete("/${PREFIX}users/_doc/_moloch_shared", 1);
         checkForOld7Indices();
         sessions3Update();
         historyUpdate();
-        huntsUpdate();
+        queriesUpdate();
+        notifiersUpdate();
+        notifiersAddMissingProps();
+        parliamentCreate();
+        viewsUpdate();
         lookupsUpdate();
-        notifiersCreate();
-        notifiersMove();
-        viewsCreate();
-        viewsMove();
-        queriesUpdate();
         usersUpdate();
-    } elsif ($main::versionNumber == 75) {
+    } elsif ($main::versionNumber == 79) {
         checkForOld7Indices();
         sessions3Update();
         historyUpdate();
-        viewsCreate();
-        viewsMove();
-        queriesUpdate();
-        usersUpdate();
-    } elsif ($main::versionNumber <= 77) {
-        checkForOld7Indices();
-        sessions3Update();
-        historyUpdate();
-        queriesUpdate();
-        usersUpdate();
-    } elsif ($main::versionNumber <= 78) {
-        checkForOld7Indices();
-        sessions3Update();
-        historyUpdate();
-        queriesUpdate();
     } else {
         logmsg "db.pl is hosed\n";
     }

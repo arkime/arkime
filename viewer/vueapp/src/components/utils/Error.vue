@@ -1,3 +1,7 @@
+<!--
+Copyright Yahoo Inc.
+SPDX-License-Identifier: Apache-2.0
+-->
 <template>
 
   <div class="info-area vertical-center text-monospace">
@@ -17,7 +21,7 @@
 
 <script>
 export default {
-  name: 'MolochError',
+  name: 'ArkimeError',
   props: ['message', 'messageHtml']
 };
 </script>

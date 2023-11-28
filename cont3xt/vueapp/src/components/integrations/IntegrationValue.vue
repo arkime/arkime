@@ -1,3 +1,7 @@
+<!--
+Copyright Yahoo Inc.
+SPDX-License-Identifier: Apache-2.0
+-->
 <template>
   <span
     v-b-tooltip.hover
@@ -13,13 +17,13 @@
         <span class="text-warning">
           {{ field.label }}
           <span
-              class="fa"
-              v-if="field.type === 'table' || field.type === 'array'"
-              :class="{'fa-caret-down':visible,'fa-caret-up':!visible}"
+            class="fa"
+            v-if="field.type === 'table' || field.type === 'array'"
+            :class="{'fa-caret-down':visible,'fa-caret-up':!visible}"
           />
         </span>
         <span v-if="field.type === 'table'"
-            :class="getTableLength() === 0 ? 'table-count-low' : 'text-default'">({{ getTableLength() }})
+          :class="getTableLength() === 0 ? 'table-count-low' : 'text-default'">({{ getTableLength() }})
         </span>
       </label>
       <div class="d-inline">
@@ -125,18 +129,26 @@
             :content="value.value"
             :highlights="highlights"/></code></pre>
       </template> <!-- /json field -->
+      <!-- DnsRecords field -->
+      <template v-else-if="field.type === 'dnsRecords'">
+        <DnsRecords :data="value.value" />
+      </template> <!-- /DnsRecords field -->
       <!-- /default string, ms, seconds, & date field -->
       <template v-else>
         <template v-if="field.pivot">
           <cont3xt-field
+            pull-left
+            :data="data"
             :value="value.value"
+            :options="field.options"
             :highlights="highlights"
           />
         </template>
         <template v-else>
           <highlightable-text
-              :content="value.value"
-              :highlights="highlights"/>
+            :content="value.value"
+            :highlights="highlights"
+          />
         </template>
       </template> <!-- /default string, ms, seconds, & date field -->
     </template>
@@ -151,10 +163,12 @@ import IntegrationArray from '@/components/integrations/IntegrationArray';
 import IntegrationTable from '@/components/integrations/IntegrationTable';
 import HighlightableText from '@/utils/HighlightableText';
 import { formatPostProcessedValue } from '@/utils/formatValue';
+import DnsRecords from '@/utils/DnsRecords.vue';
 
 export default {
   name: 'IntegrationValue',
   components: {
+    DnsRecords,
     Cont3xtField,
     IntegrationArray,
     IntegrationTable,
@@ -191,13 +205,13 @@ export default {
     };
   },
   computed: {
-    ...mapGetters(['getRenderingTable', 'getRenderingArray', 'getIntegrationData']),
+    ...mapGetters(['getRenderingTable', 'getRenderingArray', 'getActiveIndicator', 'getActiveSource']),
     value () {
       let full;
       let value = this.findValue(this.data, this.field);
 
       // truncate long values
-      if (this.truncate && value && value.length > (this.field.len || 100)) {
+      if (this.truncate && value && typeof value === 'string' && value.length > (this.field.len || 100)) {
         full = value;
         value = `${value.substring(0, this.field.len || 100)}...`;
       }
@@ -227,9 +241,8 @@ export default {
       const a = document.createElement('a');
       const file = new Blob([this.generateCSVString()], { type: 'text/csv' });
       a.href = URL.createObjectURL(file);
-      let { source } = this.$store.state.displayIntegration;
-      source = source.replaceAll(' ', '_');
-      a.download = `${new Date().toISOString()}_${source}_${this.field.path.join('.')}_${this.getIntegrationData._query}.csv`;
+      const source = this.getActiveSource.replaceAll(' ', '_');
+      a.download = `${new Date().toISOString()}_${source}_${this.field.path.join('.')}_${this.getActiveIndicator.query}.csv`;
       a.click();
       URL.revokeObjectURL(a.href);
     },

@@ -1,3 +1,9 @@
+/* apiViews.js -- api calls for views
+ *
+ * Copyright Yahoo Inc.
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
 'use strict';
 
 const Db = require('./db');
@@ -5,12 +11,18 @@ const util = require('util');
 const User = require('../common/user');
 const ArkimeUtil = require('../common/arkimeUtil');
 
-class View {
+class ViewAPIs {
+  // --------------------------------------------------------------------------
+  // HELPERS
+  // --------------------------------------------------------------------------
+  /**
+   * Retrieves an Arkime views that a user can view.
+   */
   static async getViews (req) {
     const user = req.settingUser;
     if (!user) { return { data: [], recordsTotal: 0, recordsFiltered: 0 }; }
 
-    const roles = [...await user.getRoles()]; // es requries an array for terms search
+    const roles = [...await user.getRoles()]; // es requires an array for terms search
 
     // only get views for setting user or shared
     const query = {
@@ -21,6 +33,7 @@ class View {
               bool: {
                 should: [
                   { terms: { roles } }, // shared via user role
+                  { terms: { editRoles: roles } }, // shared via user editRoles
                   { term: { users: user.userId } }, // shared via userId
                   { term: { user: user.userId } } // created by this user
                 ]
@@ -59,10 +72,14 @@ class View {
       const id = view._id;
       const result = view._source;
 
-      if (user.userId !== result.user && !user.hasRole('arkimeAdmin')) {
-        // remove sensitive information for users this view is shared with (except arkimeAdmin)
+      if ( // remove sensitive information for users this is shared with
+        // (except creator, arkimeAdmin, and editors)
+        user.userId !== result.user &&
+        !user.hasRole('arkimeAdmin') &&
+        !user.hasRole(result.editRoles)) {
         delete result.users;
         delete result.roles;
+        delete result.editRoles;
       } else if (result.users) {
         // client expects a string
         result.users = result.users.join(',');
@@ -75,6 +92,10 @@ class View {
     return { data: results, recordsTotal: views.total, recordsFiltered: total };
   }
 
+  // --------------------------------------------------------------------------
+  // APIs
+  // --------------------------------------------------------------------------
+
   /**
    * A database view that can be applied to any search.
    *
@@ -84,8 +105,9 @@ class View {
    * @param {string} expression - The search expression to filter sessions.
    * @param {ArkimeColumnConfig} sessionsColConfig - The Sessions column configuration to apply to the Sessions table when applying the view.
    * @param {string} user - The user ID of the user who created the view.
-   * @property {Arrray} users - The list of userIds who have access to use this view.
-   * @property {Array} roles - The list of roles who have access to use this view.
+   * @param {string} users - The list of userIds who have access to use this view.
+   * @param {string[]} roles - The list of roles who have access to use this view.
+   * @param {string[]} editRoles - The list of roles who have access to edit this view.
    */
 
   /**
@@ -96,7 +118,7 @@ class View {
    * @returns {ArkimeView[]} views - A list of views a user has configured or has been shared.
    */
   static async apiGetViews (req, res) {
-    const views = await View.getViews(req);
+    const views = await ViewAPIs.getViews(req);
     res.send(views);
   }
 
@@ -157,13 +179,6 @@ class View {
    */
   static async apiDeleteView (req, res) {
     try {
-      const { body: dbView } = await Db.getView(req.params.id);
-
-      // only allow admins or view creator to delete view
-      if (!req.user.hasRole('arkimeAdmin') && req.settingUser.userId !== dbView._source.user) {
-        return res.serverError(403, 'Permission denied');
-      }
-
       await Db.deleteView(req.params.id);
       res.send(JSON.stringify({
         success: true,
@@ -198,13 +213,12 @@ class View {
     try {
       const { body: dbView } = await Db.getView(req.params.id);
 
-      // only allow admins or view creator can update view
-      if (!req.user.hasRole('arkimeAdmin') && req.settingUser.userId !== dbView._source.user) {
-        return res.serverError(403, 'Permission denied');
+      // sets the owner if it has changed
+      if (!await User.setOwner(req, res, view, dbView._source, 'user')) {
+        return;
       }
 
-      // can't update creator of the view or the id
-      view.user = dbView._source.user;
+      // can't update the id
       if (view.id) { delete view.id; }
 
       // comma/newline separated value -> array of values
@@ -235,4 +249,4 @@ class View {
   }
 }
 
-module.exports = View;
+module.exports = ViewAPIs;

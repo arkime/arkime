@@ -23,7 +23,7 @@ Vue.use(VueAxios, axios);
 Vue.use(VueMoment);
 Vue.use(BootstrapVue);
 
-// setup axios http interceptor to add token to reqs
+// setup axios http interceptor to add cookie to reqs
 interceptorSetup();
 
 /* eslint-disable no-new */
@@ -37,7 +37,9 @@ new Vue({
     // define app constants
     /* eslint-disable no-undef */
     Vue.prototype.$constants = {
+      PATH,
       VERSION,
+      LOGOUT_URL,
       BUILD_DATE, // from webpack.DefinePlugin
       BUILD_VERSION // from webpack.DefinePlugin
     };

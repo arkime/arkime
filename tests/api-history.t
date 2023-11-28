@@ -1,7 +1,7 @@
-use Test::More tests => 49;
+use Test::More tests => 47;
 use Cwd;
 use URI::Escape;
-use MolochTest;
+use ArkimeTest;
 use JSON;
 use Test::Differences;
 use Data::Dumper;
@@ -31,26 +31,26 @@ my ($url) = @_;
     esGet("/_refresh");
 
 # Make a request
-    countTest(4, "molochRegressionUser=historytest1&date=-1&expression=" . uri_escape("(file=$pwd/socks-https-example.pcap||file=$pwd/dns-mx.pcap)&&tags=domainwise"));
+    countTest(4, "arkimeRegressionUser=historytest1&date=-1&expression=" . uri_escape("(file=$pwd/socks-https-example.pcap||file=$pwd/dns-mx.pcap)&&tags=domainwise"));
     sleep(2);
     esGet("/_flush");
     esGet("/_refresh");
 
 # See if recorded, should be the only item that is ours
-    my $json = viewerGet("/history/list?molochRegressionUser=historytest1");
+    my $json = viewerGet("/api/histories?arkimeRegressionUser=historytest1");
     is ($json->{recordsFiltered}, 1, "Test1: recordsFiltered");
     my $item = $json->{data}->[0];
     is ($item->{expression}, "(file=$pwd/socks-https-example.pcap||file=$pwd/dns-mx.pcap)&&tags=domainwise", "Test1: expression");
     is ($item->{uiPage}, "sessions", "Test1: uiPage");
     is ($item->{api}, "/sessions.json", "Test1: api");
-    is ($item->{query}, "molochRegressionUser=historytest1&date=-1&expression=(file=*/pcap/socks-https-example.pcap||file=*/pcap/dns-mx.pcap)&&tags=domainwise", "Test1: query");
+    is ($item->{query}, "arkimeRegressionUser=historytest1&date=-1&expression=(file=*/pcap/socks-https-example.pcap||file=*/pcap/dns-mx.pcap)&&tags=domainwise", "Test1: query");
     is ($item->{userId}, "historytest1", "Test1: userId");
     is ($item->{recordsReturned}, 4, "Test1: recordsReturned");
     is ($item->{recordsFiltered}, 4, "Test1: recordsFiltered");
     cmp_ok ($item->{recordsTotal}, '>=', 80, "recordsTotal");
 
 # Check Multi
-    my $mjson = multiGet("/api/histories?molochRegressionUser=historytest1");
+    my $mjson = multiGet("/api/histories?arkimeRegressionUser=historytest1");
     my $index = $json->{data}->[0]->{index};
     delete $json->{data}->[0]->{index};
     delete $mjson->{data}->[0]->{index};
@@ -59,19 +59,19 @@ my ($url) = @_;
     $json->{data}->[0]->{index} = $index;
 
 # Make sure another user doesn't see our history
-    $json = get("/history/list?molochRegressionUser=historytest2");
+    $json = get("/api/histories?arkimeRegressionUser=historytest2");
     is ($json->{recordsFiltered}, 0, "Test2: recordsFiltered");
 
 # Make sure another user doesn't see our history when time given
-    $json = get("/history/list?molochRegressionUser=historytest2&startTime=0&stopTime=2147483647");
+    $json = get("/api/histories?arkimeRegressionUser=historytest2&startTime=0&stopTime=2147483647");
     is ($json->{recordsFiltered}, 0, "Test2: recordsFiltered");
 
 # Make sure can't request someone elses
-    $json = get("/history/list?molochRegressionUser=historytest2&userId=historytest1");
+    $json = get("/api/histories?arkimeRegressionUser=historytest2&userId=historytest1");
     eq_or_diff($json, from_json('{"success": false, "text": "Need admin privileges"}'));
 
 # Make sure can't request ours with wildcard
-    $json = get("/history/list?molochRegressionUser=historytest2&userId=historytest2*");
+    $json = get("/api/histories?arkimeRegressionUser=historytest2&userId=historytest2*");
     eq_or_diff($json, from_json('{"success": false, "text": "Need admin privileges"}'));
 
 # An admin user should see everything, find it
@@ -88,25 +88,25 @@ my ($url) = @_;
     is ($found, 1, "Test3: Found id in all");
 
 # Should be able to pass in userId and api params
-    $json = viewerGet("/history/list?userId=historytest1&api=sessions");
+    $json = viewerGet("/api/histories?userId=historytest1&api=sessions");
     is ($json->{recordsFiltered}, 1, "Test4: recordsFiltered");
     my $item = $json->{data}->[0];
     is ($item->{api}, "/sessions.json", "Test4: api");
-    $json = viewerGet("/history/list?userId=historytest1&api=somethingsilly");
+    $json = viewerGet("/api/histories?userId=historytest1&api=somethingsilly");
     is ($json->{recordsFiltered}, 0, "Test4: recordsFiltered");
-    $json = viewerGet("/history/list?userId=somethingsilly&api=sessions");
+    $json = viewerGet("/api/histories?userId=somethingsilly&api=sessions");
     is ($json->{recordsFiltered}, 0, "Test4: recordsFiltered");
 
-    $json = viewerGet("/history/list?userId=historytest1*&api=sessions");
+    $json = viewerGet("/api/histories?userId=historytest1*&api=sessions");
     is ($json->{recordsFiltered}, 1, "Test4b: recordsFiltered");
 
-    $json = viewerGet("/history/list?userId=h*&api=sessions");
+    $json = viewerGet("/api/histories?userId=h*&api=sessions");
     is ($json->{recordsFiltered}, 1, "Test4c: recordsFiltered");
 
-    $json = viewerGet("/history/list?userId=*i*&api=sessions");
+    $json = viewerGet("/api/histories?userId=*i*&api=sessions");
     is ($json->{recordsFiltered}, 1, "Test4d: recordsFiltered");
 
-    $json = viewerGet("/history/list?userId=*j*&api=sessions");
+    $json = viewerGet("/api/histories?userId=*j*&api=sessions");
     is ($json->{recordsFiltered}, 0, "Test4e: recordsFiltered");
 
 # Should be able to filter by time range
@@ -118,7 +118,7 @@ my ($url) = @_;
     is ($json->{recordsFiltered}, 0, "Test5: recordsFiltered");
 
 # Can't delete items when not admin
-    $json = viewerDeleteToken("/history/list/$item->{id}?molochRegressionUser=historytest1", $otherToken);
+    $json = viewerDeleteToken("/api/history/$item->{id}?arkimeRegressionUser=historytest1", $otherToken);
     eq_or_diff($json, from_json('{"success": false, "text": "You do not have permission to access this resource"}', {relaxed => 1}), "Test Delete Not Admin", { context => 3 });
 
 # Delete item no index
@@ -131,29 +131,29 @@ my ($url) = @_;
     esGet("/_refresh");
 
 # Make sure gone
-    $json = get("/api/histories?molochRegressionUser=historytest1");
+    $json = get("/api/histories?arkimeRegressionUser=historytest1");
     is ($json->{recordsFiltered}, 0, "Should be no items");
 
 # An admin user should see forced expressions for users
     # create a user with a forced expression
-    $json = viewerPostToken("/user/create", '{"userId": "historytest2", "userName": "UserName", "enabled":true, "password":"password","expression":"protocols == udp"}', $token);
+    $json = viewerPostToken("/api/user", '{"userId": "sac-historytest3", "userName": "UserName", "enabled":true, "password":"password","expression":"protocols == udp", "roles": ["arkimeUser"]}', $token);
     sleep(1);
     esGet("/_refresh");
     esGet("/_flush");
 
     # issue a request as the user with the forced expression
-    countTest(1, "molochRegressionUser=historytest2&date=-1&expression=" . uri_escape("(file=$pwd/socks-https-example.pcap||file=$pwd/dns-mx.pcap)&&tags=domainwise"));
+    countTest(1, "arkimeRegressionUser=sac-historytest3&date=-1&expression=" . uri_escape("(file=$pwd/socks-https-example.pcap||file=$pwd/dns-mx.pcap)&&tags=domainwise"));
     sleep(2);
     esGet("/_refresh");
     esGet("/_flush");
 
     # find and delete the user/create history item
-    $json = viewerGet("/history/list?molochRegressionUser=anonymous");
+    $json = viewerGet("/api/histories?arkimeRegressionUser=anonymous");
     $item = $json->{data}->[0];
-    $json = viewerDeleteToken("/history/list/$item->{id}?index=$item->{index}", $token);
+    $json = viewerDeleteToken("/api/history/$item->{id}?index=$item->{index}", $token);
 
     # confirm that the forced expression is visible to admin
-    $json = viewerGet("/history/list");
+    $json = viewerGet("/api/histories");
     my $found2 = 0;
     foreach my $item3 (@{$json->{data}}) {
         if ($item3->{forcedExpression} eq "(protocols == udp)") {
@@ -164,7 +164,7 @@ my ($url) = @_;
     is ($found2, 1, "Admin should see forcedExpression in history");
 
 # A nonadmin user should not see forcedExpression
-  $json = viewerGet("/history/list?molochRegressionUser=historytest2");
+  $json = viewerGet("/api/histories?arkimeRegressionUser=sac-historytest3");
 
   my $found3 = 0;
   foreach my $item4 (@{$json->{data}}) {
@@ -177,27 +177,25 @@ my ($url) = @_;
 
   # delete the history item with the forced expression
   $item = $json->{data}->[0];
-  $json = viewerDeleteToken("/history/list/$item->{id}?index=$item->{index}", $token);
+  $json = viewerDeleteToken("/api/history/$item->{id}?index=$item->{index}", $token);
 
 # Delete Users
-    $json = viewerPostToken("/user/delete", "userId=historytest1&password=a&newPassword=b&currentPassword=c&test=1", $token);
+    $json = viewerDeleteToken("/api/user/historytest1", $token);
     sleep(1);
     esGet("/_refresh");
     esGet("/_flush");
 
-    $json = viewerPostToken("/user/delete", "userId=historytest2&password=a&newPassword=b&currentPassword=c&test=1", $token);
+    $json = viewerDeleteToken("/api/user/sac-historytest3", $token);
     sleep(1);
     esGet("/_refresh");
     esGet("/_flush");
 
 # Check history for delete
-    $json = viewerGet("/api/histories?molochRegressionUser=anonymous&sortField=timestamp&desc=true");
+    $json = viewerGet("/api/histories?arkimeRegressionUser=anonymous&sortField=timestamp&desc=true");
     is ($json->{recordsFiltered}, 2, "Delete: recordsFiltered");
     $item = $json->{data}->[0];
-    is ($item->{api}, "/user/delete", "Delete: api");
+    is ($item->{api}, "/api/user/sac-historytest3", "Delete: api");
     is ($item->{userId}, "anonymous", "Delete: userId");
     ok (!exists $item->{body}->{password}, "Delete: should have no password item");
     ok (!exists $item->{body}->{newPassword}, "Delete: should have no newPassword item");
     ok (!exists $item->{body}->{currentPassword}, "Delete: should have no currentPassword item");
-    is ($item->{body}->{userId}, "historytest2", "Delete: correct userId item");
-    is ($item->{body}->{test}, "1", "Delete: correct test item");

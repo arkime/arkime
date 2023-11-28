@@ -1,7 +1,11 @@
+<!--
+Copyright Yahoo Inc.
+SPDX-License-Identifier: Apache-2.0
+-->
 <template>
-  <div>
+  <div class="d-flex flex-column">
     <!-- cont3xt navbar -->
-    <nav class="navbar navbar-expand navbar-dark bg-dark justify-content-between fixed-top">
+    <nav class="navbar navbar-expand navbar-dark bg-dark justify-content-between">
       <router-link
         exact
         to="help"
@@ -76,11 +80,11 @@
         </li>
         <li class="nav-item mr-2">
           <router-link
-              to="roles"
-              tabindex="-1"
-              v-if="getUser && getUser.assignableRoles && getUser.assignableRoles.length > 0"
-              class="nav-link"
-              active-class="active">
+            to="roles"
+            tabindex="-1"
+            v-if="getUser && getUser.assignableRoles && getUser.assignableRoles.length > 0"
+            class="nav-link"
+            active-class="active">
             Roles
           </router-link>
         </li>
@@ -119,30 +123,33 @@
           title="Toggle light/dark theme"
           :class="{'btn-outline-info':theme === 'dark', 'btn-outline-warning':theme === 'light'}">
           <span v-if="theme === 'light'"
-            class="fa fa-sun-o">
+            class="fa fa-sun-o fa-fw">
           </span>
           <span v-if="theme === 'dark'"
-            class="fa fa-moon-o">
+            class="fa fa-moon-o fa-fw">
           </span>
         </button>
       </div> <!-- /dark/light mode -->
+      <Logout :base-path="path" />
     </nav> <!-- /cont3xt nav -->
-    <b-progress
-      height="8px"
-      class="mt-2 cursor-help"
-      :max="getLoading.total"
-      :animated="getLoading.total != getLoading.received + getLoading.failed">
-      <b-progress-bar
-        variant="success"
-        :value="getLoading.received"
-        v-b-tooltip.hover="`${getLoading.received}/${getLoading.total} fetched successfully`"
-      />
-      <b-progress-bar
-        variant="danger"
-        :value="getLoading.failed"
-        v-b-tooltip.hover="`${getLoading.failed}/${getLoading.total} failed: ${getLoading.failures.join(', ')}`"
-      />
-    </b-progress>
+    <div class="progress-container">
+      <b-progress
+          height="8px"
+          class="cursor-help"
+          :max="getLoading.total"
+          :animated="getLoading.total != getLoading.received + getLoading.failed">
+        <b-progress-bar
+            variant="success"
+            :value="getLoading.received"
+            v-b-tooltip.hover="`${getLoading.received}/${getLoading.total} fetched successfully`"
+        />
+        <b-progress-bar
+            variant="danger"
+            :value="getLoading.failed"
+            v-b-tooltip.hover="`${getLoading.failed}/${getLoading.total} failed: ${getLoading.failures.join(', ')}`"
+        />
+      </b-progress>
+    </div>
   </div>
 </template>
 
@@ -150,16 +157,21 @@
 import axios from 'axios';
 import { mapGetters } from 'vuex';
 
+import Logout from '@/../../../common/vueapp/Logout';
 import Version from '@/../../../common/vueapp/Version';
 
 let interval;
 
 export default {
   name: 'Cont3xtNavbar',
-  components: { Version },
+  components: {
+    Logout,
+    Version
+  },
   data: function () {
     return {
-      healthError: ''
+      healthError: '',
+      path: this.$constants.WEB_PATH
     };
   },
   computed: {
@@ -214,14 +226,10 @@ export default {
 </script>
 
 <style scoped>
-div.progress {
-  top: 44px;
-  width: 100%;
-  z-index: 1030;
-  position: fixed;
+.progress-container .progress {
   border-radius: 0;
 }
-body.dark div.progress {
+body.dark .progress-container .progress {
   background-color: #404040;
 }
 

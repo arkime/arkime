@@ -1,17 +1,7 @@
 /******************************************************************************/
 /* Copyright Yahoo Inc.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this Software except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: Apache-2.0
  */
 const ArkimeUtil = require('../../../common/arkimeUtil');
 const Integration = require('../../integration.js');
@@ -120,7 +110,7 @@ class ThreatstreamIntegration extends Integration {
 
   async fetch (user, query) {
     try {
-      const host = this.getUserConfig(user, 'Threatstream', 'host', 'api.threatstream.com');
+      const host = this.getUserConfig(user, 'host', 'api.threatstream.com');
 
       // https://www.oreilly.com/library/view/regular-expressions-cookbook/9781449327453/ch08s15.html + uppercase
       if (!host.match(/^([a-zA-Z0-9]+(-[a-zA-Z0-9]+)*\.)+[a-zA-Z]{2,}$/)) {
@@ -128,8 +118,8 @@ class ThreatstreamIntegration extends Integration {
         return undefined;
       }
 
-      const tuser = this.getUserConfig(user, 'Threatstream', 'user');
-      const tkey = this.getUserConfig(user, 'Threatstream', 'key');
+      const tuser = this.getUserConfig(user, 'user');
+      const tkey = this.getUserConfig(user, 'key');
       if (!tkey || !tuser) {
         return undefined;
       }

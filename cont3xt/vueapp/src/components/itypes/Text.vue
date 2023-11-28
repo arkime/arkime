@@ -1,8 +1,11 @@
+<!--
+Copyright Yahoo Inc.
+SPDX-License-Identifier: Apache-2.0
+-->
 <template>
   <base-i-type
-      :value="query"
-      :itype="itype"
-      :data="data"
+      :indicator-id="indicatorId"
+      :indicator="indicator"
       :tidbits="tidbits"
   />
 </template>
@@ -10,6 +13,7 @@
 <script>
 import BaseIType from '@/components/itypes/BaseIType';
 import { ITypeMixin } from './ITypeMixin';
+import { Cont3xtIndicatorProp } from '@/utils/cont3xtUtil';
 
 export default {
   name: 'Cont3xtText',
@@ -18,20 +22,15 @@ export default {
     BaseIType
   },
   props: {
-    data: { // the data returned from cont3xt search
-      type: Object, // NOTE: there will never be data specifically for text
+    indicator: Cont3xtIndicatorProp,
+    children: {
+      type: Array,
       required: true
     },
-    query: { // the query string to display (needed because text doesn't get
-      // searched so there is no data.phone)
+    indicatorId: {
       type: String,
       required: true
     }
-  },
-  data () {
-    return {
-      itype: 'text'
-    };
   }
 };
 </script>

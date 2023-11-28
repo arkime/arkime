@@ -4,15 +4,18 @@ User Settings Description - an object with each sub object a setting.
     * password - if true then its a password
     * uiSetting - true if value is needed in the UI (do not set true for secure values like passwords)
 
+
 Card Description - an object of the following
+    - NOTE: see also Overviews section in pages/Help
   * title - title of the card
   * fields - an array of fields.
     * If the element is just a string that means
-      * both "name" and "field" are that string
+      * both "label" and "field" are that string
       * type is string
     * otherwise it can be an object with
       * label - the field label to show the user
       * field - the path (it can have dots) to the data for field, if not set the field is the same as name. For table type this will be the path to the array.
+      * path - alternative to field, this is the field path pre-separated into a string array (eg. field: 'foo.bar' is equivalent to path: ['foo', 'bar'])
       * fields - for tables, the list of fields, same format as this
       * type - if not set it is string
         * string - obvious
@@ -24,10 +27,18 @@ Card Description - an object of the following
         * ms - a ms time value
         * seconds - a second time value
         * json - just display raw json, call in JSON.stringify(blah, false, 2)
+        * dnsRecords - display of non-A/AAAA dns records (for use with DNS integration and `path: []`)
       * defang - when true defang the string, change http to hXXp and change . to [.]
-      * pivot - when set this field should be added to action menu for table entry that you can replace query with
+      * pivot - when set this field should include a dropdown action menu, options include:
+        * copy - show a copy option in the pivot dropdown to copy the value
+        * pivot - replace query with the value
+        * custom - create a custom button
+          * field - requires path (see path above)
+          * name - name to display on the button
+          * href - the url for the button. use %{var} to replace pieces of the url when constructing the card
       * join - with array, display with value as the separator on one line (example single: ', ')
       * fieldRoot - for arrays/tables, the path (it can have dots) from each object in the array to its desired field. Effectively maps the root array of objects to an array of values/sub-objects.
+      * fieldRootPath - alternative to fieldRoot, this is the fieldRoot path pre-separated into a string array (eg. fieldRoot: 'foo.bar' is equivalent to fieldRootPath: ['foo', 'bar'])
       * filterEmpty - for arrays/tables, removes empty (nullish & empty string/array) rows/elements when true (default is true)
       * defaultSortField - with array, sorts the table by this field
       * defaultSortDirection - with array and defaultSortField, sorts the table in this direction ('asc' or 'desc')

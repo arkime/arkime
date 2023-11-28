@@ -3,17 +3,7 @@
  *
  * Copyright 2012-2016 AOL Inc. All rights reserved.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this Software except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: Apache-2.0
  */
 'use strict';
 
@@ -21,6 +11,7 @@ const csv = require('csv');
 const axios = require('axios');
 const fs = require('fs');
 const iptrie = require('iptrie');
+const ArkimeUtil = require('../common/arkimeUtil');
 
 /**
  * All sources need to have the WISESource as their top base class.
@@ -231,15 +222,15 @@ class WISESource {
       const args = [];
       const parts = lines[l].split(';');
       for (let p = 1; p < parts.length; p++) {
-        const kv = splitRemain(parts[p], '=', 1);
+        const kv = ArkimeUtil.splitRemain(parts[p], '=', 1);
         if (kv.length !== 2) {
           console.log('WARNING -', this.section, "- ignored extra piece '" + parts[p] + "' from line '" + lines[l] + "'");
           continue;
         }
         if (this.shortcuts[kv[0]] !== undefined) {
           args.push(this.shortcuts[kv[0]].pos);
-        } else if (WISESource.field2Pos[kv[0]]) {
-          args.push(WISESource.field2Pos[kv[0]]);
+        } else if (WISESource.field2Pos.has(kv[0])) {
+          args.push(WISESource.field2Pos.get(kv[0]));
         } else {
           args.push(this.api.addField('field:' + kv[0]));
         }
@@ -402,9 +393,9 @@ class WISESource {
   static emptyResult = Buffer.alloc(1);
 
   // ----------------------------------------------------------------------------
-  static field2Pos = {};
-  static field2Info = {};
-  static pos2Field = {};
+  static field2Pos = new Map();
+  static field2Info = new Map();
+  static pos2Field = new Map();
 
   // ----------------------------------------------------------------------------
   /**
@@ -495,7 +486,7 @@ class WISESource {
       const len = results[offset + 1];
       const value = results.toString('utf8', offset + 2, offset + 2 + len - 1);
       offset += 2 + len;
-      collection.push({ field: WISESource.pos2Field[pos], len: len - 1, value });
+      collection.push({ field: WISESource.pos2Field.get(pos), len: len - 1, value });
     }
 
     return JSON.stringify(collection).replace(/},{/g, '},\n{');
@@ -601,15 +592,3 @@ class WISESource {
  */
 
 module.exports = WISESource;
-
-// ----------------------------------------------------------------------------
-// https://coderwall.com/p/pq0usg/javascript-string-split-that-ll-return-the-remainder
-function splitRemain (str, separator, limit) {
-  str = str.split(separator);
-  if (str.length <= limit) { return str; }
-
-  const ret = str.splice(0, limit);
-  ret.push(str.join(separator));
-
-  return ret;
-}

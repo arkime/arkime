@@ -1,3 +1,7 @@
+<!--
+Copyright Yahoo Inc.
+SPDX-License-Identifier: Apache-2.0
+-->
 <template>
   <div class="spigraph-pie">
 
@@ -14,11 +18,11 @@
               Add another field:
             </span>
           </span>
-          <moloch-field-typeahead
+          <arkime-field-typeahead
             :fields="fields"
             @fieldSelected="changeField"
             page="SpigraphSubfield">
-          </moloch-field-typeahead>
+          </arkime-field-typeahead>
         </div>
       </div>
       <drag-list
@@ -128,14 +132,14 @@
                     <span class="color-swatch"
                       style="background-color:transparent;">
                     </span>
-                    <moloch-session-field
+                    <arkime-session-field
                       :field="fieldList[index]"
                       :value="parent.name"
                       :expr="fieldList[index].exp"
                       :parse="true"
                       :session-btn="true"
                       :pull-left="true">
-                    </moloch-session-field>
+                    </arkime-session-field>
                   </td>
                   <td :key="`${index}-${parent.name}-1`"
                     v-if="fieldList[index] && !fieldList[index].hide">
@@ -148,24 +152,24 @@
                   :style="{ backgroundColor: item.color }">
                 </span>
                 <template v-if="item.parents && item.parents.length && fieldList[item.parents.length]">
-                  <moloch-session-field
+                  <arkime-session-field
                     :field="fieldList[item.parents.length]"
                     :value="item.name"
                     :expr="fieldList[item.parents.length].exp"
                     :parse="true"
                     :session-btn="true"
                     :pull-left="true">
-                  </moloch-session-field>
+                  </arkime-session-field>
                 </template>
                 <template v-else>
-                  <moloch-session-field
+                  <arkime-session-field
                     :field="fieldList[0]"
                     :value="item.name"
                     :expr="fieldList[0].exp"
                     :parse="true"
                     :session-btn="true"
                     :pull-left="true">
-                  </moloch-session-field>
+                  </arkime-session-field>
                 </template>
               </td>
               <td>
@@ -179,11 +183,11 @@
     <!-- /table area -->
 
     <!-- no results -->
-    <moloch-no-results
+    <arkime-no-results
       v-if="!tableData.length"
       class="mt-5 mb-5"
       :view="query.view">
-    </moloch-no-results> <!-- /no results -->
+    </arkime-no-results> <!-- /no results -->
 
   </div>
 </template>
@@ -194,8 +198,8 @@ import Vue from 'vue';
 // import services
 import SpigraphService from './SpigraphService';
 // import internal
-import MolochNoResults from '../utils/NoResults';
-import MolochFieldTypeahead from '../utils/FieldTypeahead';
+import ArkimeNoResults from '../utils/NoResults';
+import ArkimeFieldTypeahead from '../utils/FieldTypeahead';
 import Popup from './Popup';
 import DragList from '../utils/DragList';
 // import utils
@@ -357,10 +361,10 @@ function fillColor (d) {
 
 // Vue component ----------------------------------------------------------- //
 export default {
-  name: 'MolochPie',
+  name: 'ArkimePie',
   components: {
-    MolochNoResults,
-    MolochFieldTypeahead,
+    ArkimeNoResults,
+    ArkimeFieldTypeahead,
     Popup,
     DragList
   },

@@ -1,6 +1,8 @@
 import Vue from 'vue';
 import Vuex from 'vuex';
 import createPersistedState from 'vuex-persistedstate';
+import { iTypes, iTypeIndexMap } from '@/utils/iTypes';
+import { indicatorFromId, localIndicatorId } from '@/utils/cont3xtUtil';
 
 Vue.use(Vuex);
 
@@ -22,8 +24,6 @@ const store = new Vuex.Store({
     integrations: {},
     integrationsError: '',
     integrationsArray: [],
-    displayIntegration: {},
-    integrationData: {},
     linkGroups: undefined,
     linkGroupsError: '',
     collapsedLinkGroups: {},
@@ -39,16 +39,39 @@ const store = new Vuex.Store({
     focusStartDate: false,
     focusLinkSearch: false,
     focusViewSearch: false,
+    focusOverviewSearch: false,
     focusTagInput: false,
     toggleCache: false,
     downloadReport: false,
     copyShareLink: false,
+    toggleIntegrationPanel: false,
     immediateSubmissionReady: false,
     theme: undefined,
     tags: [],
     tagDisplayCollapsed: true,
     seeAllViews: false,
-    seeAllLinkGroups: false
+    seeAllLinkGroups: false,
+    seeAllOverviews: false,
+    overviews: undefined,
+    overviewsError: '',
+    selectedOverviewIdMap: {},
+    queuedIntegration: undefined,
+    activeIndicatorId: undefined,
+    activeSource: undefined,
+    /** @type {{ [itype: string]: { [query: string]: { [integrationName: string]: object } } }} */
+    results: {}, // results[<itype>][<query>][<integration_name>] yields the data for an integration
+    /** @type {{ [indicatorId: string]: Cont3xtIndicatorNode }} */
+    indicatorGraph: {}, // maps every `${query}-${itype}` to its corresponding indicator node
+    /** @type {{ [indicatorId: string]: object }} */
+    enhanceInfoTable: {}, // maps every `${query}-${itype}` to any enhancement info it may have
+    linkGroupsPanelOpen: true,
+    indicatorIdToFocus: undefined,
+    /** @type {'down' | 'up' | 'left' | 'right' | undefined} */
+    resultTreeNavigationDirection: undefined,
+    /** @type {{ [indicatorId: string]: boolean }} */
+    collapsedIndicatorNodeMap: {},
+    /** @type {{ setRootsOpen: boolean } | undefined} */
+    collapseOrExpandIndicatorRoots: undefined
   },
   mutations: {
     SET_USER (state, data) {
@@ -101,12 +124,6 @@ const store = new Vuex.Store({
     },
     SET_INTEGRATIONS_ERROR (state, data) {
       state.integrationsError = data;
-    },
-    SET_DISPLAY_INTEGRATION (state, data) {
-      state.displayIntegration = data;
-    },
-    SET_INTEGRATION_DATA (state, data) {
-      state.integrationData = Object.freeze(data);
     },
     SET_LINK_GROUPS (state, data) {
       state.linkGroups = data;
@@ -202,6 +219,10 @@ const store = new Vuex.Store({
       state.focusViewSearch = value;
       setTimeout(() => { state.focusViewSearch = false; });
     },
+    SET_FOCUS_OVERVIEW_SEARCH (state, value) {
+      state.focusOverviewSearch = value;
+      setTimeout(() => { state.focusOverviewSearch = false; });
+    },
     SET_FOCUS_TAG_INPUT (state, value) {
       state.focusTagInput = value;
       setTimeout(() => { state.focusTagInput = false; });
@@ -217,6 +238,10 @@ const store = new Vuex.Store({
     SET_COPY_SHARE_LINK (state, value) {
       state.copyShareLink = value;
       setTimeout(() => { state.copyShareLink = false; });
+    },
+    SET_TOGGLE_INTEGRATION_PANEL (state, value) {
+      state.toggleIntegrationPanel = value;
+      setTimeout(() => { state.toggleIntegrationPanel = false; });
     },
     SET_IMMEDIATE_SUBMISSION_READY (state, value) {
       state.immediateSubmissionReady = value;
@@ -235,6 +260,118 @@ const store = new Vuex.Store({
     },
     SET_SEE_ALL_LINK_GROUPS (state, data) {
       state.seeAllLinkGroups = data;
+    },
+    SET_SEE_ALL_OVERVIEWS (state, data) {
+      state.seeAllOverviews = data;
+    },
+    SET_OVERVIEWS (state, data) {
+      state.overviews = data;
+    },
+    SET_OVERVIEWS_ERROR (state, data) {
+      state.overviewsError = data;
+    },
+    SET_SELECTED_OVERVIEW_ID_MAP (state, data) {
+      state.selectedOverviewIdMap = data;
+    },
+    SET_SELECTED_OVERVIEW_ID_FOR_ITYPE (state, { iType, id }) {
+      Vue.set(state.selectedOverviewIdMap, iType, id);
+    },
+    REMOVE_OVERVIEW (state, id) {
+      const index = state.overviews.findIndex(overview => overview._id === id);
+      if (index !== -1) {
+        state.overviews.splice(index, 1);
+      }
+    },
+    UPDATE_OVERVIEW (state, data) {
+      const index = state.overviews.findIndex(overview => overview._id === data._id);
+      if (index !== -1) {
+        Vue.set(state.overviews, index, data);
+      }
+    },
+    SET_INTEGRATION_RESULT (state, { indicator, source, result }) {
+      const { itype, query } = indicator;
+
+      if (!state.results[itype]) {
+        Vue.set(state.results, itype, {});
+      }
+      if (!state.results[itype][query]) {
+        Vue.set(state.results[itype], query, {});
+      }
+
+      Vue.set(state.results[itype][query], source, Object.freeze(result));
+    },
+    SET_ACTIVE_INDICATOR_ID (state, data) {
+      state.activeIndicatorId = data;
+    },
+    SET_QUEUED_INTEGRATION (state, data) {
+      state.queuedIntegration = data;
+    },
+    SET_ACTIVE_SOURCE (state, data) {
+      state.activeSource = data;
+    },
+    ADD_ENHANCE_INFO (state, { indicator, enhanceInfo }) {
+      const id = localIndicatorId(indicator);
+
+      if (!state.enhanceInfoTable[id]) {
+        Vue.set(state.enhanceInfoTable, id, {});
+      }
+      for (const key in enhanceInfo) {
+        Vue.set(state.enhanceInfoTable[id], key, enhanceInfo[key]);
+      }
+    },
+    UPDATE_INDICATOR_GRAPH (state, { indicator, parentIndicator }) {
+      const id = localIndicatorId(indicator);
+
+      // a parentId of undefined means that the indicator is root-level
+      const parentId = parentIndicator ? localIndicatorId(parentIndicator) : undefined;
+      if (!state.indicatorGraph[id]) {
+        if (!state.enhanceInfoTable[id]) {
+          Vue.set(state.enhanceInfoTable, id, {});
+        }
+
+        const indicatorNode = {
+          indicator,
+          parentIds: new Set([parentId]),
+          // handle case where child(ren) exist before parent
+          children: Object.values(state.indicatorGraph).filter(node => node.parentIds.has(id)),
+          enhanceInfo: state.enhanceInfoTable[id]
+        };
+        Vue.set(state.indicatorGraph, id, indicatorNode);
+      } else {
+        state.indicatorGraph[id].parentIds.add(parentId);
+      }
+
+      // handle case where parent already exists in the tree
+      if (parentId && state.indicatorGraph[parentId]) {
+        const alreadyAChild = state.indicatorGraph[parentId].children.some(child => localIndicatorId(child.indicator) === id);
+        if (!alreadyAChild) {
+          state.indicatorGraph[parentId].children.push(state.indicatorGraph[id]);
+        }
+      }
+    },
+    CLEAR_CONT3XT_RESULTS (state) {
+      state.results = {};
+      state.indicatorGraph = {};
+      state.enhanceInfoTable = {};
+      state.collapsedIndicatorNodeMap = {};
+    },
+    TOGGLE_LINK_GROUPS_PANEL (state) {
+      state.linkGroupsPanelOpen = !state.linkGroupsPanelOpen;
+    },
+    TOGGLE_INDICATOR_NODE_COLLAPSE (state, data) {
+      Vue.set(state.collapsedIndicatorNodeMap, data, !state.collapsedIndicatorNodeMap[data]);
+    },
+    SET_INDICATOR_ID_TO_FOCUS (state, data) {
+      state.indicatorIdToFocus = data;
+      setTimeout(() => { state.indicatorIdToFocus = undefined; });
+    },
+    SET_RESULT_TREE_NAVIGATION_DIRECTION (state, data) {
+      state.resultTreeNavigationDirection = data;
+      setTimeout(() => { state.resultTreeNavigationDirection = undefined; });
+    },
+    SET_COLLAPSE_OR_EXPAND_INDICATOR_ROOTS (state, data) {
+      state.collapseOrExpandIndicatorRoots = data;
+      setTimeout(() => { state.collapseOrExpandIndicatorRoots = undefined; });
     }
   },
   getters: {
@@ -251,7 +388,7 @@ const store = new Vuex.Store({
       return state.renderingCard;
     },
     getWaitRendering (state) {
-      return state.getWaitRendering;
+      return state.waitRendering;
     },
     getRenderingTable (state) {
       return state.renderingTable;
@@ -287,9 +424,6 @@ const store = new Vuex.Store({
     },
     getIntegrationsArray (state) {
       return state.integrationsArray;
-    },
-    getIntegrationData (state) {
-      return state.integrationData;
     },
     getLinkGroups (state) {
       return state.linkGroups;
@@ -327,6 +461,9 @@ const store = new Vuex.Store({
     getFocusViewSearch (state) {
       return state.focusViewSearch;
     },
+    getFocusOverviewSearch (state) {
+      return state.focusOverviewSearch;
+    },
     getFocusTagInput (state) {
       return state.focusTagInput;
     },
@@ -338,6 +475,9 @@ const store = new Vuex.Store({
     },
     getCopyShareLink (state) {
       return state.copyShareLink;
+    },
+    getToggleIntegrationPanel (state) {
+      return state.toggleIntegrationPanel;
     },
     getImmediateSubmissionReady (state) {
       return state.immediateSubmissionReady;
@@ -379,11 +519,88 @@ const store = new Vuex.Store({
     },
     getSeeAllLinkGroups (state) {
       return state.seeAllLinkGroups;
+    },
+    getSeeAllOverviews (state) {
+      return state.seeAllOverviews;
+    },
+    getOverviews (state) {
+      return state.overviews;
+    },
+    getOverviewMap (state) { // { [overviewId]: overview }
+      return Object.fromEntries(
+        (state.overviews ?? []).map(overview => [overview._id, overview])
+      );
+    },
+    getSortedOverviews (state) {
+      const overviews = [...(state.overviews ?? [])];
+      overviews.sort((a, b) => {
+        const iTypeDiff = iTypeIndexMap[a.iType] - iTypeIndexMap[b.iType];
+        return (iTypeDiff === 0) ? a.name.localeCompare(b.name) : iTypeDiff;
+      });
+      return overviews;
+    },
+    getOverviewsError (state) {
+      return state.overviewsError;
+    },
+    getSelectedOverviewIdMap (state) {
+      return state.selectedOverviewIdMap;
+    },
+    getCorrectedSelectedOverviewIdMap (state, getters) {
+      return Object.fromEntries(
+        iTypes.map(iType => {
+          let selectedId = state.selectedOverviewIdMap[iType];
+          // fallback to default overview (id == iType) for undefined or incorrectly-iTyped
+          if (selectedId == null || getters.getOverviewMap[selectedId]?.iType !== iType) {
+            selectedId = iType;
+          }
+          return [iType, selectedId];
+        })
+      );
+    },
+    getSelectedOverviewMap (state, getters) {
+      return Object.fromEntries(
+        Object.entries(getters.getCorrectedSelectedOverviewIdMap).map(([iType, id]) => [
+          iType, getters.getOverviewMap[id]
+        ])
+      );
+    },
+    getResults (state) {
+      return state.results;
+    },
+    getActiveIndicatorId (state) {
+      return state.activeIndicatorId;
+    },
+    getActiveIndicator (state) {
+      return (state.activeIndicatorId != null) ? indicatorFromId(state.activeIndicatorId) : undefined;
+    },
+    getQueuedIntegration (state) {
+      return state.queuedIntegration;
+    },
+    getActiveSource (state) {
+      return state.activeSource;
+    },
+    getIndicatorGraph (state) {
+      return state.indicatorGraph;
+    },
+    getLinkGroupsPanelOpen (state) {
+      return state.linkGroupsPanelOpen;
+    },
+    getIndicatorIdToFocus (state) {
+      return state.indicatorIdToFocus;
+    },
+    getResultTreeNavigationDirection (state) {
+      return state.resultTreeNavigationDirection;
+    },
+    getCollapsedIndicatorNodeMap (state) {
+      return state.collapsedIndicatorNodeMap;
+    },
+    getCollapseOrExpandIndicatorRoots (state) {
+      return state.collapseOrExpandIndicatorRoots;
     }
   },
   plugins: [createPersistedState({
     paths: [ // only these state variables are persisted to localstorage
-      'checkedLinks', 'selectedIntegrations', 'sidebarKeepOpen',
+      'checkedLinks', 'selectedIntegrations', 'sidebarKeepOpen', 'linkGroupsPanelOpen',
       'collapsedLinkGroups', 'integrationsPanelHoverDelay', 'theme'
     ]
   })]

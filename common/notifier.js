@@ -1,3 +1,11 @@
+/******************************************************************************/
+/* notifier.js  -- common notifier code
+ *
+ * Copyright Yahoo Inc.
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 'use strict';
 
 const glob = require('glob');
@@ -5,28 +13,19 @@ const path = require('path');
 const util = require('util');
 const User = require('./user');
 const ArkimeUtil = require('./arkimeUtil');
+const ArkimeConfig = require('./arkimeConfig');
 
 class Notifier {
   static notifierTypes;
 
-  static #debug;
   static #esclient;
   static #notifiersIndex;
+  static #defaultAlerts = { esRed: false, esDown: false, esDropped: false, outOfDate: false, noPackets: false };
 
   static initialize (options) {
-    Notifier.#debug = options.debug ?? 0;
     Notifier.#esclient = options.esclient;
 
-    let prefix = '';
-    if (options.prefix === undefined) {
-      prefix = 'arkime_';
-    } else if (options.prefix === '') {
-      prefix = '';
-    } else if (options.prefix.endsWith('_')) {
-      prefix = options.prefix;
-    } else {
-      prefix = options.prefix + '_';
-    }
+    const prefix = ArkimeUtil.formatPrefix(options.prefix);
 
     Notifier.#notifiersIndex = `${prefix}notifiers`;
 
@@ -34,6 +33,7 @@ class Notifier {
 
     const api = {
       register: (str, info) => {
+        if (options.issueTypes) { info.alerts = options.issueTypes; }
         Notifier.notifierTypes[str] = info;
       }
     };
@@ -82,19 +82,44 @@ class Notifier {
   // --------------------------------------------------------------------------
 
   /**
-   * Checks that the notifier type is valid and the required fields are filled out
-   * @param {string} type - The type of notifier that is being checked
-   * @param {Array} fields - The list of fields to be checked against the type of notifier
-   *                         to determine that all the required fields are filled out
+   * Checks that the notifier is valid.
+   * Mutates the notifier if on/alerts properties are missing or the name has special chars.
+   * @param {object} notifier - The notifier object to be checked
    * @returns {string|undefined} - String message to describe check error or undefined if all is good
    */
-  static #checkNotifierTypesAndFields (type, fields) {
-    type = type.toLowerCase();
+  static #validateNotifier (notifier) {
+    if (!ArkimeUtil.isString(notifier.name)) {
+      return 'Missing a notifier name';
+    }
+
+    if (!ArkimeUtil.isString(notifier.type)) {
+      return 'Missing notifier type';
+    }
+
+    if (!notifier.fields) {
+      return 'Missing notifier fields';
+    }
+
+    if (!Array.isArray(notifier.fields)) {
+      return 'Notifier fields must be an array';
+    }
+
+    notifier.name = notifier.name.replace(/[^-a-zA-Z0-9_: ]/g, '');
+    if (notifier.name.length === 0) {
+      return 'Notifier name empty';
+    }
+
+    notifier.on ??= false;
+    if (typeof notifier.on !== 'boolean') {
+      return 'Notifier on state must be true or false';
+    }
+
+    const type = notifier.type.toLowerCase();
+
     let foundNotifier;
     for (const n in Notifier.notifierTypes) {
-      const notifier = Notifier.notifierTypes[n];
-      if (notifier.type === type) {
-        foundNotifier = notifier;
+      if (Notifier.notifierTypes[n].type === type) {
+        foundNotifier = Notifier.notifierTypes[n];
       }
     }
 
@@ -105,11 +130,21 @@ class Notifier {
     // check that required notifier fields exist
     for (const field of foundNotifier.fields) {
       if (field.required) {
-        for (const sentField of fields) {
+        for (const sentField of notifier.fields) {
           if (sentField.name === field.name && !sentField.value) {
             return `Missing a value for ${field.name}`;
           }
         }
+      }
+    }
+
+    notifier.alerts ??= Notifier.#defaultAlerts;
+    if (typeof notifier.alerts !== 'object') {
+      return 'Alerts must be an object';
+    }
+    for (const a in notifier.alerts) {
+      if (typeof notifier.alerts[a] !== 'boolean') {
+        return 'Alert must be true or false';
       }
     }
 
@@ -126,7 +161,7 @@ class Notifier {
 
       if (!notifier) {
         const msg = `ERROR - Cannot find notifier (${id}), no alert can be issued`;
-        if (Notifier.#debug) { console.log(msg); }
+        if (ArkimeConfig.debug) { console.log(msg); }
         return continueProcess(msg);
       }
 
@@ -153,7 +188,7 @@ class Notifier {
         // If a field is required and nothing was set, then we have an error
         if (field.required && config[field.name] === undefined) {
           const msg = `Cannot find notifier field value: ${field.name}, no alert can be issued`;
-          if (Notifier.#debug) { console.log(msg); }
+          if (ArkimeConfig.debug) { console.log(msg); }
           continueProcess(msg);
         }
       }
@@ -218,7 +253,7 @@ class Notifier {
     };
 
     // if not an admin, restrict who can see the notifiers
-    if (!req.user.hasRole('arkimeAdmin')) {
+    if (!req.user.hasRole('arkimeAdmin') && !req.user.hasRole('parliamentAdmin')) {
       query.query = {
         bool: {
           filter: [
@@ -245,7 +280,7 @@ class Notifier {
         if (users) {
           result.users = users.join(',') || '';
         }
-        if (!req.user.hasRole('arkimeAdmin')) {
+        if (!req.user.hasRole('arkimeAdmin') && !req.user.hasRole('parliamentAdmin')) {
           // non-admins only need name and type to use notifiers (they cannot create/update/delete)
           const notifierType = result.type;
           const notifierName = result.name;
@@ -272,29 +307,7 @@ class Notifier {
    * @returns {Notifier} notifier - If successful, the notifier with name sanitized and created/user fields added.
    */
   static async apiCreateNotifier (req, res) {
-    if (!ArkimeUtil.isString(req.body.name)) {
-      return res.serverError(403, 'Missing a notifier name');
-    }
-
-    if (!ArkimeUtil.isString(req.body.type)) {
-      return res.serverError(403, 'Missing notifier type');
-    }
-
-    if (!req.body.fields) {
-      return res.serverError(403, 'Missing notifier fields');
-    }
-
-    if (!Array.isArray(req.body.fields)) {
-      return res.serverError(403, 'Notifier fields must be an array');
-    }
-
-    req.body.name = req.body.name.replace(/[^-a-zA-Z0-9_: ]/g, '');
-
-    if (req.body.name.length === 0) {
-      return res.serverError(403, 'Notifier name empty');
-    }
-
-    const errorMsg = Notifier.#checkNotifierTypesAndFields(req.body.type, req.body.fields);
+    const errorMsg = Notifier.#validateNotifier(req.body);
     if (errorMsg) {
       return res.serverError(403, errorMsg);
     }
@@ -339,29 +352,7 @@ class Notifier {
    */
 
   static async apiUpdateNotifier (req, res) {
-    if (!ArkimeUtil.isString(req.body.name)) {
-      return res.serverError(403, 'Missing a notifier name');
-    }
-
-    if (!ArkimeUtil.isString(req.body.type)) {
-      return res.serverError(403, 'Missing notifier type');
-    }
-
-    if (!req.body.fields) {
-      return res.serverError(403, 'Missing notifier fields');
-    }
-
-    if (!Array.isArray(req.body.fields)) {
-      return res.serverError(403, 'Notifier fields must be an array');
-    }
-
-    req.body.name = req.body.name.replace(/[^-a-zA-Z0-9_: ]/g, '');
-
-    if (req.body.name.length === 0) {
-      return res.serverError(403, 'Notifier name empty');
-    }
-
-    const errorMsg = Notifier.#checkNotifierTypesAndFields(req.body.type, req.body.fields);
+    const errorMsg = Notifier.#validateNotifier(req.body);
     if (errorMsg) {
       return res.serverError(403, errorMsg);
     }
@@ -373,10 +364,12 @@ class Notifier {
         return res.serverError(404, 'Notifier not found');
       }
 
-      // only name, fields, roles, users can change
+      // only on, name, fields, roles, users, alerts can change
+      notifier.on = !!req.body.on;
       notifier.name = req.body.name;
       notifier.roles = req.body.roles;
       notifier.fields = req.body.fields;
+      notifier.alerts = req.body.alerts ??= Notifier.#defaultAlerts;
       notifier.updated = Math.floor(Date.now() / 1000); // update/add updated time
 
       // comma/newline separated value -> array of values

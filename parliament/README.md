@@ -8,25 +8,18 @@ This project was generated with [Vue CLI][vuecli].
 
 The Parliament dashboard contains a grouped list of your Arkime clusters with links, ES health, and issues for each. You can search for Arkimes in your Parliament, change the data refresh time (15 seconds is the default), and hover over issues and ES health statuses for more information.
 
-The app can be run in three ways:
-1. with a password
-2. read only mode (without a password, but it can be configured later)
-3. dashboard only mode (no password or ability to configure one)
-
-_**If your Parliament has a password (via option 1 or 2), you can interact with it in the ways enumerated below.**_
-
 #### Parliament Page
-The main Parliament page allows a user to view and interact with the Arkimes in your Parliament. Once logged in, a user can acknowledge and ignore issues for each cluster as well as update the Parliament when in **Edit Mode**. To enter this mode, toggle the switch on the top right (below the navbar). Now you can add, update, delete, or reorder groups and clusters in your Parliament.
+The main Parliament page allows any user in the users database to view Arkimes in your Parliament. If a user has a `parliamentUser` or `parliamentAdmin` role assigned they can interact with the Arkimes in your Parliament. These users can acknowledge and ignore issues for each cluster. A user with a `parliamentAdmin` role assigned can also update the Parliament when in **Edit Mode**. To enter this mode, toggle the switch on the top right (below the navbar). Now you can add, update, delete, or reorder groups and clusters in your Parliament.
 
 #### Issues Page
-The issues page contains a list of issues that your Parliament is experiencing. Here, you can ignore, acknowledge, and remove acknowledged issues.
+The issues page contains a list of issues that your Parliament is experiencing. Here, you can ignore, acknowledge, and remove acknowledged issues if you are a `parliamentUser`.
 
 Acknowledged issues will not show up on the main Parliament page, but will remain here (but grayed out) to be removed (via the trashcan button or waiting 15 minutes for them to be removed automatically).
 
 Ignored issues will not show up on the main Parliament page, but will remain here (but grayed out) to be unignored (via the ignore dropdown button or automatically after the set ignore time has expired).
 
 #### Settings Page
-The settings page has 3 sections as described below:
+If you are a `parliamentAdmin`, you can view and edit the Parliament settings. The settings page has 3 sections as described below:
 
 **General:** this section has a few settings that pertain to issues in your Parliament.
 1. The `capture nodes must check in this often` setting controls how behind a node's cluster's timestamp can be from the current time. If the timestamp exceeds this time setting, an `Out Of Date` issue is added to the cluster. _The default for this setting is 30 seconds._
@@ -35,7 +28,7 @@ The settings page has 3 sections as described below:
 4. The `remove all issues after` setting controls when an issue is removed if it has not occurred again. The issue is removed from the cluster after this time expires as long as the issue has not occurred again. _The default for this setting is 60 minutes._
 5. The `remove acknowledged issues after` setting controls when an acknowledged issue is removed. The issue is removed from the cluster after this time expires (so you don't have to remove issues manually with the trashcan button). _The default for this setting is 15 minutes._
 
-**Password:** this section allows a user to update the Parliament password or create a new password if the Parliament was started without one.
+**Auth (v4):** Here you can configure Parliament access using the Arkime User's database. See the [Arkime User Authentication](#arkime-user-authentication) section for more information.
 
 **Notifiers:** this section provides the ability to configure alerts for your Parliament. Users can be alerted via:
 1. Slack
@@ -80,48 +73,51 @@ You should find that you have a new folder:
 
 To start the app for production, simply run:
 ```
-npm start -s -- --pass somepassword --port 8765 -c ./absolute/path/to/parliament.json --key ./absolute/path/to/keyFile.pem --cert ./absolute/path/to/certFile.pem
+npm start -s -- -c ./absolute/path/to/config.ini
 ```
-This command starts the app, passing in the password, port, config file location, and key and cert file locations. It also bundles the application files into the `parliament/vueapp/dist` folder.
+This command starts the app and passes in the config file location. It also bundles the application files into the `parliament/vueapp/dist` folder.
 
 _**Important**: when using `npm start` the leading `--`, before the parameters is essential._
 
 You can also run the app by building then starting the app. Like so:
-* Move to the top level Moloch directory
+* Move to the top level Arkime directory
 * run `npm run parliament:build`
 * Move to the parliament directory
-* run ` node server.js --pass somepassword --port 8765 -c ./absolute/path/to parliament.json --key ./absolute/path/to/keyFile.pem --cert ./absolute/path/to certFile.pem`
+* run ` node server.js -c ./absolute/path/to/config.ini`
 
 **The parameters are defined as follows:**
 
 | Parameter       | Default | Description |
 | --------------- | ------- | ----------- |
-| --pass          | EMPTY   | Password will be used to login to update the parliament. If it is not set, the app runs in read only mode. **IMPORTANT:** passing in a password will overwrite any password already configured in your parliament. You can always configure a password later in the UI. |
-| --port          | 8008    | Port for the web app to listen on. |
-| -c, --config    | ./parliament.json | Absolute path to the JSON file to store your parliament information. |
-| --key           | EMPTY   | Private certificate to use for https, if not set then http will be used. **certfile** must also be set. |
-| --cert          | EMPTY   | Public certificate to use for https, if not set then http will be used. **keyFile** must also be set. |
-| --dashboardOnly | EMPTY   | This flag runs the parliament in dashboard only mode. A user will not be allowed to configure settings, a password, or interact with the parliament via the UI. |
+| -c, --config    | /opt/arkime/etc/parliament.ini | Path to the config file |
+| --port          | 8008    |  **Deprecated!** Must supply this in the config file (see arkime.com/settings#parliament). Port for the web app to listen on. |
+| --key           | EMPTY   | **Deprecated!** Must supply this in the config file (see arkime.com/settings#parliament). Private certificate to use for https, if not set then http will be used. **certfile** must also be set. |
+| --cert          | EMPTY   | **Deprecated!** Must supply this in the config file (see arkime.com/settings#parliament). Public certificate to use for https, if not set then http will be used. **keyFile** must also be set. |
 
-_Note: if you do not pass in the port or file arguments, the defaults are used._
+_**Important**: Upgrading from v4 to v5 requires port/key/cert parameters to be included in the config file, not supplied as command line arguments!_
 
-Now browse to the app at `http://localhost:8765`, or whichever port you passed into the `npm start` command.
+Now browse to the app at `http://localhost:8008` (or whichever port you included in the config file).
 
-To login, use the password that you passed into the `npm start` command. If you did not supply a password, you can view the parliament in read only mode or configure one by navigating to the settings page.
+#### Arkime User Authentication
+You can configure Parliament access using the Auth section on the Settings page (v4) or the config file (v5). Auth uses the Arkime User's database for Parliament access.
+
+_**Note**: When upgrading form v4 to v5, Auth settings configured in the UI will be automatically transferred to the config file._
+
+- **All** Arkime users can view the Parliament.
+- Users with the "parliamentUser" role can ack, ignore, and delete issues within the Parliament.
+- Users with the "parliamentAdmin" role can do everything a "parliamentUser" can, plus they can configure the Parliament by adding/removing/updating groups/clusters and manage the Parliament settings.
 
 #### Development
 
 To start the app for development and testing:
-* Move to the top level Moloch directory
+* Move to the top level Arkime directory
 * run `npm run parliament:dev`
 
-This command starts the app with the necessary config options set (`--pass admin --port 8008 -c ./parliament.dev.json`) and bundles the unminified application files into the `parliament/vueapp/dist` folder.
+This command starts the app with the necessary config options set (`-c ../parliament/parliament.ini`) and bundles the unminified application files into the `parliament/vueapp/dist` folder.
 
 `npm run parliament:dev` uses webpack to package the files then watches for changes to relevant files, and re-bundles the app after each save.
 
 Now browse to the app at `http://localhost:8008`.
-
-To login, use the password, 'admin'.
 
 #### Further help with running the application
 
@@ -132,13 +128,13 @@ For a detailed explanation on how things work, check out the [vue webpack guide]
 
 Check out our [contributing guide](../CONTRIBUTING.md) for more information about contributing to Arkime.
 
-Before submitting a pull request with your contribution, please move to the top level Moloch directory and run `npm run lint`, and correct any errors. This runs [eslint][eslint], a static code analysis tool for finding problematic patterns or code that doesn’t adhere to our style guidelines. Check out `parliament/.eslintrc.js` to view this project's rules.
+Before submitting a pull request with your contribution, please move to the top level Arkime directory and run `npm run lint`, and correct any errors. This runs [eslint][eslint], a static code analysis tool for finding problematic patterns or code that doesn’t adhere to our style guidelines. Check out `parliament/.eslintrc.js` to view this project's rules.
 
 Please use a [fork](https://guides.github.com/activities/forking/) to submit a [pull request](https://help.github.com/articles/creating-a-pull-request/) for your contribution.
 
 
 ### Parliament Definition
-`parliament.json` (or whatever you pass into the -c config option when starting Parliament) is the file that describes your parliament. You can create this by hand or use the Parliament UI to create, edit, and delete groups and clusters. View the supplied `parliament.example.json` to view an example parliament configuration.
+`parliament.json` (or whatever you supply as `file=` in the config when starting Parliament) is the file that describes your parliament. You can create this by hand or use the Parliament UI to create, edit, and delete groups and clusters. View the supplied `parliament.example.json` to view an example parliament configuration.
 
 ### Issues
 `parliament.issues.json` will be created to store issues pertaining to the clusters in your parliament.
@@ -147,7 +143,6 @@ Please use a [fork](https://guides.github.com/activities/forking/) to submit a [
 ```javascript
 {                   // parliament object
   version: x,       // version (number)
-  password: 'hash', // hashed password
   groups: [ ... ],  // list of groups in the parliament
   settings: {       // parliament settings
     general: {      // general settings
@@ -190,7 +185,6 @@ Please use a [fork](https://guides.github.com/activities/forking/) to submit a [
   }
 }
 ```
-**Note:** The password is hashed using [bcrypt][bcrypt].
 
 ##### Group model:
 ```javascript
@@ -287,4 +281,3 @@ Please use a [fork](https://guides.github.com/activities/forking/) to submit a [
 [node]: https://nodejs.org
 [npm]: https://www.npmjs.org/
 [eslint]: https://eslint.org/
-[bcrypt]: https://github.com/kelektiv/node.bcrypt.js#readme

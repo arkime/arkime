@@ -1,3 +1,7 @@
+<!--
+Copyright Yahoo Inc.
+SPDX-License-Identifier: Apache-2.0
+-->
 <template>
 
   <transition name="slide-fade">
@@ -46,7 +50,7 @@
 import UserService from '../users/UserService';
 
 export default {
-  name: 'MolochWelcomeMessage',
+  name: 'ArkimeWelcomeMessage',
   data: function () {
     return {
       dismissed: false

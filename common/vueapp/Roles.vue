@@ -1,3 +1,7 @@
+<!--
+Copyright Yahoo Inc.
+SPDX-License-Identifier: Apache-2.0
+-->
 <template>
   <div class="container-fluid">
     <div class="d-flex justify-content-between mt-3 mb-2">
@@ -43,7 +47,7 @@
       <!-- loading overlay template -->
       <template #overlay>
         <slot name="loading">
-          <div class="text-center margin-for-nav-and-progress">
+          <div class="text-center">
             <span class="fa fa-circle-o-notch fa-spin fa-2x" />
             <p>Loading roles...</p>
           </div>

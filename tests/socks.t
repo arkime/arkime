@@ -1,7 +1,7 @@
 use Test::More tests => 36;
 use Cwd;
 use URI::Escape;
-use MolochTest;
+use ArkimeTest;
 use strict;
 
 my $pwd = "*/pcap";

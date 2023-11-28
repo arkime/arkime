@@ -1,3 +1,7 @@
+<!--
+Copyright Yahoo Inc.
+SPDX-License-Identifier: Apache-2.0
+-->
 <template>
   <div>
 
@@ -44,13 +48,13 @@
         <span class="fa fa-user-circle mr-1" />
         See {{ seeAll ? ' MY ' : ' ALL ' }} Views
       </b-form-checkbox>
-      <moloch-paging
+      <arkime-paging
         v-if="views"
         :length-default="size"
         :records-total="recordsTotal"
         :records-filtered="recordsFiltered"
         @changePaging="changeViewsPaging">
-      </moloch-paging>
+      </arkime-paging>
     </div>
 
     <table class="table table-striped table-sm">
@@ -64,8 +68,6 @@
             <span v-show="viewsQuery.sortField !== 'name'" class="fa fa-sort"></span>
           </th>
           <th>Creator</th>
-          <th>Roles</th>
-          <th>Users</th>
           <th>Expression</th>
           <th width="30%">Sessions Columns</th>
           <th>Sessions Sort</th>
@@ -81,12 +83,6 @@
           </td>
           <td>
             {{ item.user }}
-          </td>
-          <td>
-            {{ item.roles ? item.roles.join(', ') : '' }}
-          </td>
-          <td>
-            {{ item.users }}
           </td>
           <td>
            {{ item.expression }}
@@ -119,7 +115,7 @@
             </span>
           </td>
           <td>
-            <span class="pull-right">
+            <span class="pull-right no-wrap">
               <b-button
                 size="sm"
                 v-b-tooltip.hover
@@ -129,7 +125,16 @@
                 <span class="fa fa-clipboard fa-fw" />
               </b-button>
               <template
-                v-if="canEditView(item)">
+                v-if="canEdit(item)">
+                <b-button
+                  size="sm"
+                  variant="info"
+                  v-b-tooltip.hover
+                  v-if="canTransfer(item)"
+                  title="Transfer ownership of this view"
+                  @click="openTransferView(item)">
+                  <span class="fa fa-share fa-fw" />
+                </b-button>
                 <b-button
                   size="sm"
                   variant="danger"
@@ -213,17 +218,22 @@
         />
       </b-input-group>
       <div class="d-flex">
-        <div class="mr-3">
+        <div class="mr-3 flex-grow-1 no-wrap">
           <RoleDropdown
             :roles="roles"
             :selected-roles="newViewRoles"
-            display-text="Share with roles"
+            display-text="Who can view"
             @selected-roles-updated="updateNewViewRoles"
+          />
+          <RoleDropdown
+            :roles="roles"
+            display-text="Who can edit"
+            :selected-roles="newViewEditRoles"
+            @selected-roles-updated="updateNewViewEditRoles"
           />
         </div>
         <b-input-group
-          size="sm"
-          class="flex-grow-1">
+          size="sm">
           <template #prepend>
             <b-input-group-text
               v-b-tooltip.hover
@@ -277,21 +287,28 @@
       </template> <!-- /modal footer -->
     </b-modal> <!-- /new view form -->
 
+    <transfer-resource
+      @transfer-resource="submitTransferView"
+    />
+
   </div>
 </template>
 
 <script>
 // services
 import SettingsService from './SettingsService';
+import UserService from '../../../../../common/vueapp/UserService';
 // components
-import MolochPaging from '../utils/Pagination';
+import ArkimePaging from '../utils/Pagination';
 import RoleDropdown from '../../../../../common/vueapp/RoleDropdown';
+import TransferResource from '../../../../../common/vueapp/TransferResource';
 
 export default {
   name: 'Views',
   components: {
-    MolochPaging,
-    RoleDropdown
+    ArkimePaging,
+    RoleDropdown,
+    TransferResource
   },
   data () {
     return {
@@ -301,6 +318,7 @@ export default {
       newViewName: '',
       newViewExpression: '',
       newViewRoles: [],
+      newViewEditRoles: [],
       newViewUsers: '',
       size: 50,
       start: 0,
@@ -311,7 +329,8 @@ export default {
       },
       recordsTotal: 0,
       recordsFiltered: 0,
-      seeAll: false
+      seeAll: false,
+      transferView: undefined
     };
   },
   props: {
@@ -366,8 +385,14 @@ export default {
       this.start = newParams.start;
       this.getViews();
     },
-    canEditView (view) {
-      return this.user.roles.includes('arkimeAdmin') || (view.user && view.user === this.user.userId);
+    canEdit (view) {
+      return this.user.roles.includes('arkimeAdmin') ||
+        (view.user && view.user === this.user.userId) ||
+        (view.editRoles && UserService.hasRole(this.user, view.editRoles.join(',')));
+    },
+    canTransfer (view) {
+      return this.user.roles.includes('arkimeAdmin') ||
+        (view.user && view.user === this.user.userId);
     },
     /* updates the roles on a view object from the RoleDropdown component */
     updateViewRoles (roles, id) {
@@ -381,6 +406,9 @@ export default {
     updateNewViewRoles (roles) {
       this.newViewRoles = roles;
     },
+    updateNewViewEditRoles (roles) {
+      this.newViewEditRoles = roles;
+    },
     /* creates a view given the view name and expression */
     createView () {
       if (!this.validViewForm()) { return; }
@@ -389,6 +417,7 @@ export default {
         name: this.newViewName,
         roles: this.newViewRoles,
         users: this.newViewUsers,
+        editRoles: this.newViewEditRoles,
         expression: this.newViewExpression
       };
 
@@ -400,6 +429,36 @@ export default {
         this.displaySuccess(response);
       }).catch((error) => {
         this.viewFormError = error.text;
+      });
+    },
+    /**
+     * Opens the transfer resource modal
+     * @param {Object} view The view to transfer
+     */
+    openTransferView (view) {
+      this.transferView = view;
+      this.$bvModal.show('transfer-modal');
+    },
+    /**
+     * Submits the transfer resource modal contents and updates the view
+     * @param {Object} userId The user id to transfer the view to
+     */
+    submitTransferView ({ userId }) {
+      if (!userId) {
+        this.transferView = undefined;
+        return;
+      }
+
+      const data = JSON.parse(JSON.stringify(this.transferView));
+      data.user = userId;
+
+      SettingsService.updateView(data, this.userId).then((response) => {
+        this.getViews();
+        this.transferView = undefined;
+        this.$emit('display-message', { msg: response.text, type: 'success' });
+        this.$bvModal.hide('transfer-modal');
+      }).catch((error) => {
+        this.$emit('display-message', { msg: error.text, type: 'danger' });
       });
     },
     /**
@@ -425,6 +484,7 @@ export default {
       this.newViewName = view.name || '';
       this.newViewRoles = view.roles || [];
       this.newViewUsers = view.users || '';
+      this.newViewEditRoles = view.editRoles || [];
       this.newViewExpression = view.expression || '';
       this.$bvModal.show('view-modal');
     },
@@ -437,6 +497,7 @@ export default {
         name: this.newViewName,
         roles: this.newViewRoles,
         users: this.newViewUsers,
+        editRoles: this.newViewEditRoles,
         expression: this.newViewExpression
       };
 
@@ -497,6 +558,7 @@ export default {
       this.newViewRoles = [];
       this.newViewUsers = '';
       this.newViewName = null;
+      this.newViewEditRoles = [];
       this.newViewExpression = null;
     },
     /* display success message to user and add any invalid users if they exist */

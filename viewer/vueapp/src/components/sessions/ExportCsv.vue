@@ -1,3 +1,7 @@
+<!--
+Copyright Yahoo Inc.
+SPDX-License-Identifier: Apache-2.0
+-->
 <template>
 
   <div @keyup.stop.prevent.enter="exportCsv">
@@ -105,7 +109,7 @@ import SessionsService from './SessionsService';
 import SegmentSelect from './SegmentSelect';
 
 export default {
-  name: 'MolochExportCsv',
+  name: 'ArkimeExportCsv',
   components: { SegmentSelect },
   props: {
     start: Number,

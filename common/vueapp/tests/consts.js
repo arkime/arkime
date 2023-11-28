@@ -56,12 +56,14 @@ export const views = [{
   id: '1',
   users: '',
   roles: [],
+  editRoles: [],
   user: 'testuser',
   name: 'test view 1',
   expression: 'protocols == tls'
 }, {
   id: '2',
   roles: [],
+  editRoles: [],
   user: 'admin',
   users: 'testuser',
   name: 'test view 2',
@@ -69,6 +71,7 @@ export const views = [{
 }, {
   id: '3',
   users: '',
+  editRoles: [],
   user: 'testuserid',
   name: 'test view 3',
   roles: ['arkimeUser'],
@@ -149,7 +152,14 @@ export const notifierTypes = {
       type: 'secret'
     }],
     name: 'Slack',
-    type: 'slack'
+    type: 'slack',
+    alerts: {
+      esRed: { on: true, name: 'ES Red', text: 'ES is red', severity: 'red', description: 'ES status is red' },
+      esDown: { on: true, name: 'ES Down', text: ' ES is down', severity: 'red', description: 'ES is unreachable' },
+      esDropped: { on: true, name: 'ES Dropped', text: 'ES is dropping bulk inserts', severity: 'yellow', description: 'the capture node is overloading ES' },
+      outOfDate: { on: true, name: 'Out of Date', text: 'has not checked in since', severity: 'red', description: 'the capture node has not checked in' },
+      noPackets: { on: true, name: 'Low Packets', text: 'is not receiving many packets', severity: 'red', description: 'the capture node is not receiving many packets' }
+    }
   }
 };
 
@@ -166,7 +176,11 @@ export const notifiers = [{
   name: 'Slack',
   type: 'slack',
   id: 'notifierid',
-  user: 'testuserid'
+  user: 'testuserid',
+  users: '',
+  on: false,
+  roles: ['arkimeAdmin', 'parliamentAdmin'],
+  alerts: { esRed: false, esDown: false, esDropped: false, outOfDate: false, noPackets: false }
 }];
 
 export const shortcuts = [{

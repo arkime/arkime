@@ -36,6 +36,7 @@ if [ -d "/etc/logrotate.d" ] && [ ! -f "/etc/logrotate.d/$name" ]; then
     rotate 14
     notifempty
     copytruncate
+    missingok
 }
 EOF
 else

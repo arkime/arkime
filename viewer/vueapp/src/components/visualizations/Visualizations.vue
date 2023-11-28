@@ -1,3 +1,7 @@
+<!--
+Copyright Yahoo Inc.
+SPDX-License-Identifier: Apache-2.0
+-->
 <template>
   <div :class="{'sticky-viz':stickyViz && primary, 'hide-viz':hideViz && primary, 'disabled-msg':disabledAggregations}">
 
@@ -41,7 +45,7 @@
 
                   <!-- map -->
                   <div class="map"
-                    :id="'molochMap' + id">
+                    :id="'arkimeMap' + id">
                   </div> <!-- /map -->
 
                   <!-- map buttons -->
@@ -269,7 +273,7 @@ let barWidthInUnits;
 let barWidthInPixels;
 
 export default {
-  name: 'MolochVisualizations',
+  name: 'ArkimeVisualizations',
   props: {
     graphData: {
       type: Object,
@@ -720,7 +724,9 @@ export default {
             };
 
             let type;
-            if (this.graphType === 'totPacketsHisto' || this.graphType === 'totBytesHisto' || this.graphType === 'totDataBytesHisto') {
+            if (this.graphType === 'totPacketsHisto' || this.graphType === 'network.packetsHisto' ||
+                this.graphType === 'totBytesHisto' || this.graphType === 'network.bytesHisto' ||
+                this.graphType === 'totDataBytesHisto') {
               type = item.seriesIndex === 0 ? 'Src' : 'Dst';
             }
 
@@ -888,16 +894,16 @@ export default {
       }
 
       // add business hours to graph if they exist
-      if (this.$constants.MOLOCH_BUSINESS_DAY_START && this.$constants.MOLOCH_BUSINESS_DAY_END) {
+      if (this.$constants.BUSINESS_DAY_START && this.$constants.BUSINESS_DAY_END) {
         this.addBusinessHours();
       }
     },
     addBusinessHours () {
-      if (!this.$constants.MOLOCH_BUSINESS_DAY_START || !this.$constants.MOLOCH_BUSINESS_DAY_END) {
+      if (!this.$constants.BUSINESS_DAY_START || !this.$constants.BUSINESS_DAY_END) {
         return;
       }
 
-      const businessDays = this.$constants.MOLOCH_BUSINESS_DAYS.split(',');
+      const businessDays = this.$constants.BUSINESS_DAYS.split(',');
       const startDate = moment(this.graphData.xmin); // the start of the graph
       const stopDate = moment(this.graphData.xmax); // the end of the graph
       let daysInRange = stopDate.diff(startDate, 'days'); // # days in graph
@@ -911,9 +917,9 @@ export default {
         // only display business hours on the specified business days
         if (businessDays.indexOf(dayOfWeek.toString()) >= 0) {
           // get the start of the business day
-          const dayStart = day.clone().add(this.$constants.MOLOCH_BUSINESS_DAY_START, 'hours');
+          const dayStart = day.clone().add(this.$constants.BUSINESS_DAY_START, 'hours');
           // get the end of the business day
-          const dayStop = day.clone().add(this.$constants.MOLOCH_BUSINESS_DAY_END, 'hours');
+          const dayStop = day.clone().add(this.$constants.BUSINESS_DAY_END, 'hours');
           // add business hours for this day to graph
           this.graphOptions.grid.markings.push({
             color,
@@ -975,7 +981,7 @@ export default {
         this.map = $(this.mapEl).children('.jvectormap-container').remove();
       }
 
-      this.mapEl = $('#molochMap' + this.id);
+      this.mapEl = $('#arkimeMap' + this.id);
 
       // watch for the window to resize to resize the expanded map
       window.addEventListener('resize', this.onMapResize, { passive: true });
@@ -1396,7 +1402,7 @@ export default {
   padding-bottom: 0px;
 }
 .hide-viz.sticky-viz .viz-container {
-  z-index: 5;
+  z-index: 4;
   overflow: visible;
   box-shadow: none !important;
   background-color: transparent;

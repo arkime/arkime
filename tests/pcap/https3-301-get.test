@@ -18,7 +18,8 @@
                   "notAfter" : 1636502400000,
                   "notBefore" : 1194609600000,
                   "publicAlgorithm" : "rsaEncryption",
-                  "remainingDays" : -1,
+                  "remainingDays" : 2906,
+                  "remainingSeconds" : 251105579,
                   "serial" : "0337b928347c60a6aec5adb1217f3860",
                   "subjectCN" : [
                      "digicert high assurance ev ca-1"
@@ -29,7 +30,8 @@
                   "subjectOU" : [
                      "www.digicert.com"
                   ],
-                  "validDays" : 5114
+                  "validDays" : 5114,
+                  "validSeconds" : 441892800
                },
                {
                   "alt" : [
@@ -50,7 +52,8 @@
                   "notAfter" : 1441195200000,
                   "notBefore" : 1370822400000,
                   "publicAlgorithm" : "rsaEncryption",
-                  "remainingDays" : -1,
+                  "remainingDays" : 645,
+                  "remainingSeconds" : 55798379,
                   "serial" : "047fbe2e4bde0084d2caf8e3ecfe7058",
                   "subjectCN" : [
                      "github.com"
@@ -58,7 +61,8 @@
                   "subjectON" : [
                      "GitHub, Inc."
                   ],
-                  "validDays" : 814
+                  "validDays" : 814,
+                  "validSeconds" : 70372800
                }
             ],
             "certCnt" : 2,
@@ -188,6 +192,10 @@
             ],
             "srcOuiCnt" : 1,
             "srcPayload8" : "1603010072010000",
+            "tags" : [
+               "cert:certificate-authority"
+            ],
+            "tagsCnt" : 1,
             "tcpflags" : {
                "ack" : 8,
                "dstZero" : 0,
@@ -223,6 +231,10 @@
                   "769,57-56-53-22-19-10-51-50-47-154-153-150-5-4-21-18-9-20-17-8-6-3-255,0,,"
                ],
                "ja3stringCnt" : 1,
+               "ja4" : [
+                  "t10d230100_6a57a6f57151_000000000000"
+               ],
+               "ja4Cnt" : 1,
                "version" : [
                   "TLSv1"
                ],

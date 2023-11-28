@@ -3,20 +3,11 @@
  *
  * Copyright Yahoo Inc.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this Software except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: Apache-2.0
  */
 'use strict';
 
+const User = require('../common/user');
 const ArkimeUtil = require('../common/arkimeUtil');
 
 class View {
@@ -55,8 +46,8 @@ class View {
 
     // Set editable on any views that the user is allowed to edit
     for (const view of views) {
-      view._editable = view.creator === req.user.userId || req.user.hasRole(view.editRoles);
-      view._viewable = view.creator === req.user.userId || req.user.hasRole(view.viewRoles);
+      view._editable = view.creator === req.user.userId || req.user.hasRole(view.editRoles) || all;
+      view._viewable = view.creator === req.user.userId || req.user.hasRole(view.viewRoles) || all;
     }
 
     res.send({ success: true, views });
@@ -66,43 +57,50 @@ class View {
    * Verify the view, returns error msg on failure
    */
   static verifyView (view) {
+    view = (
+      ({ // only allow these properties in views
+        // eslint-disable-next-line no-shadow
+        name, integrations, viewRoles, editRoles, creator
+      }) => ({ name, integrations, viewRoles, editRoles, creator })
+    )(view);
+
     if (!ArkimeUtil.isString(view.name)) {
-      return 'Missing name';
+      return { msg: 'Missing name' };
     }
 
     view.name = ArkimeUtil.removeSpecialChars(view.name);
 
     if (view.viewRoles !== undefined) {
-      if (!Array.isArray(view.viewRoles)) { return 'viewRoles must be array'; }
+      if (!Array.isArray(view.viewRoles)) { return { msg: 'viewRoles must be array' }; }
 
       for (const viewRole of view.viewRoles) {
         if (!ArkimeUtil.isString(viewRole)) {
-          return 'viewRoles must contain strings';
+          return { msg: 'viewRoles must contain strings' };
         }
       }
     }
 
     if (view.editRoles !== undefined) {
-      if (!Array.isArray(view.editRoles)) { return 'editRoles must be array'; }
+      if (!Array.isArray(view.editRoles)) { return { msg: 'editRoles must be array' }; }
 
       for (const editRole of view.editRoles) {
         if (!ArkimeUtil.isString(editRole)) {
-          return 'editRoles must contain strings';
+          return { msg: 'editRoles must contain strings' };
         }
       }
     }
 
     if (view.integrations !== undefined) {
-      if (!Array.isArray(view.integrations)) { return 'integrations must be array'; }
+      if (!Array.isArray(view.integrations)) { return { msg: 'integrations must be array' }; }
 
       for (const integration of view.integrations) {
         if (!ArkimeUtil.isString(integration)) {
-          return 'integrations must contain strings';
+          return { msg: 'integrations must contain strings' };
         }
       }
     }
 
-    return null;
+    return { view };
   }
 
   /**
@@ -115,10 +113,10 @@ class View {
    * @returns {string} text - The success/error message to (optionally) display to the user
    */
   static async apiCreate (req, res, next) {
-    const view = req.body;
-    view.creator = req.user.userId;
+    const receivedView = req.body;
+    receivedView.creator = req.user.userId;
 
-    const msg = View.verifyView(view);
+    const { view, msg } = View.verifyView(receivedView);
     if (msg) {
       return res.send({ success: false, text: msg });
     }
@@ -150,16 +148,16 @@ class View {
       return res.send({ success: false, text: 'View not found' });
     }
 
-    if (dbView.creator !== req.user.userId && !(req.user.hasRole(dbView.editRoles)) && !req.user.hasRole('cont3xtAdmin')) {
-      return res.send({ success: false, text: 'Permission denied' });
-    }
+    const receivedView = req.body;
 
-    const view = req.body;
-    view.creator = dbView.creator; // Make sure the creator doesn't get changed
-
-    const msg = View.verifyView(view);
+    const { view, msg } = View.verifyView(receivedView);
     if (msg) {
       return res.send({ success: false, text: msg });
+    }
+
+    // sets the owner if it has changed
+    if (!await User.setOwner(req, res, view, dbView, 'creator')) {
+      return;
     }
 
     try {
@@ -186,10 +184,6 @@ class View {
     const view = await Db.getView(req.params.id);
     if (!view) {
       return res.send({ success: false, text: 'View not found' });
-    }
-
-    if (view.creator !== req.user.userId && !(req.user.hasRole(view.editRoles)) && !req.user.hasRole('cont3xtAdmin')) {
-      return res.send({ success: false, text: 'Permission denied' });
     }
 
     const results = await Db.deleteView(req.params.id, req.body);

@@ -38,6 +38,7 @@ const props = {
 test('users page no users', async () => {
   UserService.searchUsers = jest.fn().mockResolvedValue({ data: [] });
   UserService.searchUsersMin = jest.fn().mockResolvedValue({ data: [] });
+  UserService.downloadCSV = jest.fn().mockResolvedValue({ data: 'col1,col2,col3' });
 
   const {
     getByText, getAllByText
@@ -195,4 +196,8 @@ test('users page user crud', async () => {
   await waitFor(() => { // search issued (called 2x because of create above
     expect(UserService.searchUsers).toHaveBeenCalledTimes(2); // and search input)
   });
+
+  // download user csv ----------------------------------------------------- //
+  await fireEvent.click(getByTitle('Download CSV'));
+  expect(UserService.downloadCSV).toHaveBeenCalledTimes(1);
 });

@@ -1,7 +1,7 @@
-use Test::More tests => 56;
+use Test::More tests => 68;
 use Cwd;
 use URI::Escape;
-use MolochTest;
+use ArkimeTest;
 use strict;
 
 my $pwd = "*/pcap";
@@ -41,3 +41,13 @@ my $pwd = "*/pcap";
     countTest(2, "date=-1&expression=" . uri_escape("(file=$pwd/http-500-head.pcap||file=$pwd/http-wrapped-header.pcap)&&tags=uritaggertest2"));
     countTest(1, "date=-1&expression=" . uri_escape("(file=$pwd/http-500-head.pcap||file=$pwd/http-wrapped-header.pcap)&&http.referer=added1&&tags=firstmatch"));
     countTest(1, "date=-1&expression=" . uri_escape("(file=$pwd/http-500-head.pcap||file=$pwd/http-wrapped-header.pcap)&&http.user-agent=added2&&tags=secondmatch"));
+
+# fieldMap tests
+    countTest(1, "date=-1&expression=" . uri_escape("(file=$pwd/socks5-rdp.pcap||file=$pwd/bt-udp.pcap||file=$pwd/bigendian.pcap||file=$pwd/v6-http.pcap)&&ip.src=10.0.0.3"));
+    countTest(1, "date=-1&expression=" . uri_escape("(file=$pwd/socks5-rdp.pcap||file=$pwd/bt-udp.pcap||file=$pwd/bigendian.pcap||file=$pwd/v6-http.pcap)&&asset.src=test1"));
+
+    countTest(1, "date=-1&expression=" . uri_escape("(file=$pwd/socks5-rdp.pcap||file=$pwd/bt-udp.pcap||file=$pwd/bigendian.pcap||file=$pwd/v6-http.pcap)&&ip.dst=10.0.0.3"));
+    countTest(1, "date=-1&expression=" . uri_escape("(file=$pwd/socks5-rdp.pcap||file=$pwd/bt-udp.pcap||file=$pwd/bigendian.pcap||file=$pwd/v6-http.pcap)&&asset.dst=test1"));
+
+    countTest(1, "date=-1&expression=" . uri_escape("(file=$pwd/socks5-rdp.pcap||file=$pwd/bt-udp.pcap||file=$pwd/bigendian.pcap||file=$pwd/v6-http.pcap)&&ip.dst=2001:6f8:900:7c0::2"));
+    countTest(1, "date=-1&expression=" . uri_escape("(file=$pwd/socks5-rdp.pcap||file=$pwd/bt-udp.pcap||file=$pwd/bigendian.pcap||file=$pwd/v6-http.pcap)&&asset.dst=test3"));

@@ -2,7 +2,7 @@ import axios from 'axios';
 import store from './store';
 
 export default function setup () {
-  // set moloch xsrf cookie and always send credentials
+  // set arkime xsrf cookie and always send credentials
   axios.defaults.withCredentials = true;
   axios.defaults.xsrfCookieName = 'ARKIME-COOKIE';
   axios.defaults.xsrfHeaderName = 'X-ARKIME-COOKIE';
@@ -28,7 +28,7 @@ export default function setup () {
         reject(error);
       }
 
-      reject(error.response.data);
+      reject({ ...error.response.data, status: error.response.status });
     });
   });
 }

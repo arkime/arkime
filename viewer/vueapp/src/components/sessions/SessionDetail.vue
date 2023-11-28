@@ -1,3 +1,7 @@
+<!--
+Copyright Yahoo Inc.
+SPDX-License-Identifier: Apache-2.0
+-->
 <template>
 
   <!-- session detail -->
@@ -132,12 +136,13 @@ import Vue from 'vue';
 import qs from 'qs';
 import sanitizeHtml from 'sanitize-html';
 import SessionsService from './SessionsService';
-import MolochTagSessions from '../sessions/Tags';
-import MolochRemoveData from '../sessions/Remove';
-import MolochSendSessions from '../sessions/Send';
-import MolochExportPcap from '../sessions/ExportPcap';
-import MolochToast from '../utils/Toast';
+import ArkimeTagSessions from '../sessions/Tags';
+import ArkimeRemoveData from '../sessions/Remove';
+import ArkimeSendSessions from '../sessions/Send';
+import ArkimeExportPcap from '../sessions/ExportPcap';
+import ArkimeToast from '../utils/Toast';
 import PacketOptions from './PacketOptions';
+import FieldActions from './FieldActions';
 
 const defaultUserSettings = {
   detailFormat: 'last',
@@ -146,7 +151,7 @@ const defaultUserSettings = {
 };
 
 export default {
-  name: 'MolochSessionDetail',
+  name: 'ArkimeSessionDetail',
   props: [
     'session',
     'sessionIndex'
@@ -298,9 +303,9 @@ export default {
           propsData: {
             session: this.session,
             fields: this.$store.state.fieldsMap,
-            molochclusters: this.$store.state.remoteclusters
+            remoteclusters: this.$store.state.remoteclusters
           },
-          props: ['session', 'fields', 'molochclusters'],
+          props: ['session', 'fields', 'remoteclusters'],
           data: function () {
             return {
               form: undefined,
@@ -463,11 +468,12 @@ export default {
             }
           },
           components: {
-            MolochTagSessions,
-            MolochRemoveData,
-            MolochSendSessions,
-            MolochExportPcap,
-            MolochToast
+            ArkimeTagSessions,
+            ArkimeRemoveData,
+            ArkimeSendSessions,
+            ArkimeExportPcap,
+            ArkimeToast,
+            FieldActions
           }
         }).$mount();
 

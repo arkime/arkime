@@ -1,7 +1,13 @@
+<!--
+Copyright Yahoo Inc.
+SPDX-License-Identifier: Apache-2.0
+-->
 <template>
   <b-dropdown
     size="sm"
     @shown="setFocus"
+    :disabled="disabled"
+    v-b-tooltip="tooltip"
     class="roles-dropdown"
     :text="displayText || getRolesStr(localSelectedRoles)">
     <!-- roles search -->
@@ -73,9 +79,11 @@ export default {
   directives: { Focus },
   props: {
     id: { type: String },
+    tooltip: { type: String },
     displayText: { type: String },
     selectedRoles: { type: Array },
-    roles: { type: Array, required: true }
+    roles: { type: Array, required: true },
+    disabled: { type: Boolean, default: false }
   },
   data () {
     return {

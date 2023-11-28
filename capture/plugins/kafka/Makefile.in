@@ -1,6 +1,5 @@
-INCLUDE_KAFKA  = @KAFKA_CFLAGS@ \
-                 @KAFKA_LIBS@
-
+INCLUDE_KAFKA  = @KAFKA_CFLAGS@
+LIB_KAFKA = @KAFKA_LIBS@
 INCLUDE_OTHER = -I../.. -I../../thirdparty \
                 @GLIB2_CFLAGS@
 
@@ -12,8 +11,8 @@ PLUGINDIR = @prefix@/plugins
 SRCS=$(wildcard *.c)
 SOS=$(patsubst %.c,../%.so,$(SRCS))
 
-../%.so : %.c ../../moloch.h ../../hash.h ../../dll.h
-	$(CC) -pthread @SHARED_FLAGS@ -o $@ @CFLAGS@ -Wall -Wextra -D_GNU_SOURCE -fPIC $(INCLUDE_OTHER) $(INCLUDE_KAFKA) $< -lrdkafka
+../%.so : %.c ../../arkime.h ../../hash.h ../../dll.h
+	$(CC) -pthread @SHARED_FLAGS@ -o $@ @CFLAGS@ -Wall -Wextra -D_GNU_SOURCE -fPIC $(INCLUDE_OTHER) $(INCLUDE_KAFKA) $< $(LIB_KAFKA)
 
 all:$(SOS)
 

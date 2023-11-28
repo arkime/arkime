@@ -1,3 +1,7 @@
+<!--
+Copyright Yahoo Inc.
+SPDX-License-Identifier: Apache-2.0
+-->
 <template>
   <div>
     <textarea
@@ -5,6 +9,7 @@
       size="sm"
       v-if="rawEditMode"
       :value="rawEditText"
+      :disabled="noEdit"
       @input="e => debounceRawEdit(e)"
       class="form-control form-control-sm"
     />
@@ -285,6 +290,10 @@ export default {
     rawEditMode: {
       type: Boolean,
       default: false
+    },
+    noEdit: { // for use of disabled raw edit (for view-only privileged users)
+      type: Boolean,
+      default: false
     }
   },
   data () {
@@ -304,7 +313,7 @@ export default {
       draggedOver: undefined,
       linkTip: {
         /* eslint-disable no-template-curly-in-string */
-        title: 'These values within links will be filled in <code>${indicator}</code>, <code>${startDate}</code>, <code>${stopDate}</code>, <code>${startTS}</code>, <code>${stopTS}</code>, <code>${numDays}</code>, <code>${numHours}</code>, <code>${type}</code><br><a target="_blank" href="help#linkgroups">more info</a>'
+        title: 'These values within links will be filled in <code>${indicator}</code>, <code>${type}</code>, <code>${numDays}</code>, <code>${numHours}</code>, <code>${startDate}</code>, <code>${endDate}</code>, <code>${startTS}</code>, <code>${endTS}</code>, <code>${startEpoch}</code>, <code>${endEpoch}</code>, <code>${startSplunk}</code>, <code>${endSplunk}</code><br><a target="_blank" href="help#linkgroups">more info</a>'
       },
       linkInfoTip: {
         title: 'Use this field to provide guidance about this link. It will be shown as an <span class="fa fa-info-circle cursor-help"></span> tooltip.'
@@ -340,31 +349,37 @@ export default {
     'lg.name' () {
       this.$emit('update-link-group', this.lg);
     },
-    rawEditMode (newVal) {
-      if (!newVal) {
-        try { // need to update local lg from json input
-          this.lg = JSON.parse(this.rawEditText);
-          if (this.linkGroup) { // preserve uneditable/system fields for parent
-            this.lg._id = this.linkGroup._id;
-            this.lg.creator = this.linkGroup.creator;
-            this.lg._editable = this.linkGroup._editable;
+    rawEditMode: {
+      handler (newVal) {
+        if (!newVal) {
+          // nothing to parse (initial load)
+          if (this.rawEditText == null) { return; }
+
+          try { // need to update local lg from json input
+            this.lg = JSON.parse(this.rawEditText);
+            if (this.linkGroup) { // preserve uneditable/system fields for parent
+              this.lg._id = this.linkGroup._id;
+              this.lg.creator = this.linkGroup.creator;
+              this.lg._editable = this.linkGroup._editable;
+            }
+          } catch (err) {
+            console.warn('Invalid JSON for raw link group', err);
+            this.$store.commit('SET_LINK_GROUPS_ERROR', 'Invalid JSON');
           }
-        } catch (err) {
-          console.warn('Invalid JSON for raw link group', err);
-          this.$store.commit('SET_LINK_GROUPS_ERROR', 'Invalid JSON');
+          // clear rawEditText to be parsed again if rawEditMode triggered
+          this.rawEditText = undefined;
+          return;
         }
-        // clear rawEditText to be parsed again if rawEditMode triggered
-        this.rawEditText = undefined;
-        return;
-      }
 
-      // remove uneditable fields
-      const clone = JSON.parse(JSON.stringify(this.lg));
-      delete clone._id;
-      delete clone.creator;
-      delete clone._editable;
+        // remove uneditable fields
+        const clone = JSON.parse(JSON.stringify(this.lg));
+        delete clone._id;
+        delete clone.creator;
+        delete clone._editable;
 
-      this.rawEditText = JSON.stringify(clone, null, 2);
+        this.rawEditText = JSON.stringify(clone, null, 2);
+      },
+      immediate: true
     }
   },
   methods: {
@@ -463,16 +478,6 @@ export default {
 <style scoped>
 .alert.alert-sm {
   padding: 0.4rem 0.8rem;
-}
-
-.link-handle {
-  top: 18px;
-  left: -9px;
-  z-index: 10;
-  padding: 5px 6px;
-  position: relative;
-  border-radius: 14px;
-  background: var(--secondary);
 }
 
 .link-separator {

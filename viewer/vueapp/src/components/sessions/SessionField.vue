@@ -1,3 +1,7 @@
+<!--
+Copyright Yahoo Inc.
+SPDX-License-Identifier: Apache-2.0
+-->
 <template>
 
   <span>
@@ -160,23 +164,23 @@
     <span v-else-if="session && field.children">
       <!-- info column (is super special & has its own template) -->
       <span v-if="field.dbField === 'info'">
-        <moloch-session-info
+        <arkime-session-info
           :session="session"
           :info-fields="infoFields">
-        </moloch-session-info>
+        </arkime-session-info>
       </span> <!-- /info column -->
       <!-- recurse on child fields -->
       <span v-else>
         <div class="field-children"
           v-for="(child, index) of field.children"
           :key="child.dbField + '-' + index">
-          <moloch-session-field
+          <arkime-session-field
             :field="child"
             :expr="child.exp"
             :value="session[child.dbField]"
             :parse="parse"
             :session="session">
-          </moloch-session-field>
+          </arkime-session-field>
         </div>
       </span> <!-- /recurse on child fields -->
     </span> <!-- /multi-field column -->
@@ -193,14 +197,14 @@
 <script>
 import Vue from 'vue';
 import ConfigService from '../utils/ConfigService';
-import MolochSessionInfo from './SessionInfo';
+import ArkimeSessionInfo from './SessionInfo';
 import Utils from '../utils/utils';
 
 const noCommas = { vlan: true, 'suricata.signatureId': true };
 
 export default {
-  name: 'MolochSessionField',
-  components: { MolochSessionInfo },
+  name: 'ArkimeSessionField',
+  components: { ArkimeSessionInfo },
   props: [
     'field', // the field object that describes the field
     'expr', // the query expression to be put in the search expression
@@ -216,20 +220,20 @@ export default {
       isOpen: false,
       menuItems: {},
       asyncMenuItems: {},
-      molochClickables: undefined,
+      arkimeClickables: undefined,
       menuItemTimeout: null
     };
   },
   watch: {
     // watch route update of time params to rebuild the menu
     '$route.query.date': function (newVal, oldVal) {
-      if (this.molochClickables) { this.buildMenu(); }
+      if (this.arkimeClickables) { this.buildMenu(); }
     },
     '$route.query.startTime': function (newVal, oldVal) {
-      if (this.molochClickables) { this.buildMenu(); }
+      if (this.arkimeClickables) { this.buildMenu(); }
     },
     '$route.query.stopTime': function (newVal, oldVal) {
-      if (this.molochClickables) { this.buildMenu(); }
+      if (this.arkimeClickables) { this.buildMenu(); }
     }
   },
   computed: {
@@ -333,12 +337,12 @@ export default {
     toggleDropdown: function () {
       this.isOpen = !this.isOpen;
 
-      if (this.isOpen && !this.molochClickables) {
-        ConfigService.getMolochClickables()
+      if (this.isOpen && !this.arkimeClickables) {
+        ConfigService.getArkimeClickables()
           .then((response) => {
-            this.molochClickables = response;
+            this.arkimeClickables = response;
 
-            if (Object.keys(this.molochClickables).length !== 0) {
+            if (Object.keys(this.arkimeClickables).length !== 0) {
               // add items to the menu if they exist
               this.buildMenu();
             }
@@ -487,7 +491,7 @@ export default {
     },
     /* Builds the dropdown menu items to display */
     buildMenu: function () {
-      if (!this.parsed[0].value || !this.molochClickables) { return; }
+      if (!this.parsed[0].value || !this.arkimeClickables) { return; }
       const info = this.getInfo();
       const session = this.getSession();
       const text = this.parsed[0].queryVal.toString();
@@ -520,23 +524,24 @@ export default {
         }
         dateparams = `date=${urlParams.date}`;
       }
-      for (const key in this.molochClickables) {
-        if (this.molochClickables[key]) {
-          const rc = this.molochClickables[key];
-          if ((!rc.category || !info.category || info.category.filter(x => rc.category.includes(x)).length === 0) &&
+      for (const key in this.arkimeClickables) {
+        if (this.arkimeClickables[key]) {
+          const rc = this.arkimeClickables[key];
+          if (rc.all !== true &&
+             (!rc.category || !info.category || info.category.filter(x => rc.category.includes(x)).length === 0) &&
              (!rc.fields || rc.fields.indexOf(info.field) === -1)) {
             continue;
           }
 
-          if (this.molochClickables[key].func !== undefined) {
-            const v = this.molochClickables[key].func(key, text);
+          if (this.arkimeClickables[key].func !== undefined) {
+            const v = this.arkimeClickables[key].func(key, text);
             if (v !== undefined) {
               this.$set(this.menuItems, key, v);
             }
             continue;
           }
 
-          let result = this.molochClickables[key].url
+          let result = this.arkimeClickables[key].url
             .replace('%EXPRESSION%', encodeURIComponent(urlParams.expression))
             .replace('%DATE%', dateparams)
             .replace('%ISOSTART%', isostart.toISOString())
@@ -550,7 +555,7 @@ export default {
             .replace('%NODE%', nodename)
             .replace('%ID%', sessionid);
 
-          let clickableName = this.molochClickables[key].name || key;
+          let clickableName = this.arkimeClickables[key].name || key;
 
           clickableName = (clickableName)
             .replace('%FIELD%', info.field)
@@ -579,8 +584,8 @@ export default {
             }
           }
 
-          if (this.molochClickables[key].actionType !== undefined) {
-            if (this.molochClickables[key].actionType === 'fetch') {
+          if (this.arkimeClickables[key].actionType !== undefined) {
+            if (this.arkimeClickables[key].actionType === 'fetch') {
               this.$set(this.asyncMenuItems, key, { name: clickableName, value, url: result });
               continue;
             }

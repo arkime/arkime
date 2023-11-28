@@ -23,13 +23,18 @@ export default function setReqHeaders (headers) {
 
   const arkimeCookie = getCookie('ARKIME-COOKIE');
   const cont3xtCookie = getCookie('CONT3XT-COOKIE');
+  const parliamentCookie = getCookie('PARLIAMENT-COOKIE');
 
   if (cont3xtCookie) {
-    combinedHeaders['x-cont3xt-cookie'] = cont3xtCookie;
+    combinedHeaders['x-cont3xt-cookie'] = decodeURIComponent(cont3xtCookie);
   }
 
   if (arkimeCookie) {
-    combinedHeaders['x-arkime-cookie'] = arkimeCookie;
+    combinedHeaders['x-arkime-cookie'] = decodeURIComponent(arkimeCookie);
+  }
+
+  if (parliamentCookie) {
+    combinedHeaders['x-parliament-cookie'] = decodeURIComponent(parliamentCookie);
   }
 
   return combinedHeaders;

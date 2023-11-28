@@ -2,17 +2,7 @@
  *
  * Copyright 2018 AOL Inc. All rights reserved.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this Software except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 
@@ -27,19 +17,19 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <sys/stat.h>
-#include "moloch.h"
+#include "arkime.h"
 #include "bsb.h"
 
 /******************************************************************************/
 
-extern MolochConfig_t        config;
+extern ArkimeConfig_t        config;
 
 LOCAL GRegex     *slashslashRegex;
 
 typedef struct suricataitem_t SuricataItem_t;
 struct suricataitem_t {
     SuricataItem_t *items_next;
-    uint8_t         sessionId[MOLOCH_SESSIONID_LEN];
+    uint8_t         sessionId[ARKIME_SESSIONID_LEN];
     time_t          timestamp;
     char           *flow_id;
     char           *action;
@@ -62,7 +52,7 @@ struct suricataitem_t {
 typedef struct suricatahead_t SuricataHead_t;
 struct suricatahead_t {
     SuricataItem_t  *items[SURICATA_HASH_SIZE];
-    MOLOCH_LOCK_EXTERN(lock);
+    ARKIME_LOCK_EXTERN(lock);
     uint32_t         cnt;
     uint16_t         num;
 };
@@ -94,16 +84,16 @@ LOCAL void suricata_item_free(SuricataItem_t *item);
 LOCAL void suricata_alerts_init()
 {
     alerts.num = SURICATA_HASH_SIZE;
-    MOLOCH_LOCK_INIT(alerts.lock);
+    ARKIME_LOCK_INIT(alerts.lock);
 }
 /******************************************************************************/
 LOCAL int suricata_alerts_add(SuricataItem_t *item)
 {
     SuricataItem_t *check;
 
-    item->hash = moloch_session_hash(item->sessionId);
+    item->hash = arkime_session_hash(item->sessionId);
     int h = item->hash % alerts.num;
-    MOLOCH_LOCK(alerts.lock);
+    ARKIME_LOCK(alerts.lock);
 
     // Dup is same hash, signature_id, timestamp, ses, and sessionId
     for (check = alerts.items[h]; check; check = check->items_next) {
@@ -114,14 +104,14 @@ LOCAL int suricata_alerts_add(SuricataItem_t *item)
             memcmp(check->sessionId, item->sessionId, item->sessionId[0]) == 0) {
 
             // Dup
-            MOLOCH_UNLOCK(alerts.lock);
+            ARKIME_UNLOCK(alerts.lock);
             return 0;
         }
     }
     item->items_next = alerts.items[h];
     alerts.items[h] = item;
     alerts.cnt++;
-    MOLOCH_UNLOCK(alerts.lock);
+    ARKIME_UNLOCK(alerts.lock);
     return 1;
 }
 /******************************************************************************/
@@ -131,7 +121,7 @@ LOCAL void suricata_alerts_del(SuricataItem_t *item)
 
     int h = item->hash % alerts.num;
 
-    MOLOCH_LOCK(alerts.lock);
+    ARKIME_LOCK(alerts.lock);
 
     for (check = alerts.items[h]; check; parent = check, check = check->items_next) {
         if (check != item) {
@@ -143,17 +133,17 @@ LOCAL void suricata_alerts_del(SuricataItem_t *item)
             alerts.items[h] = check->items_next;
         }
 
-        moloch_free_later(check, (GDestroyNotify)suricata_item_free);
+        arkime_free_later(check, (GDestroyNotify)suricata_item_free);
         alerts.cnt--;
         break;
     }
-    MOLOCH_UNLOCK(alerts.lock);
+    ARKIME_UNLOCK(alerts.lock);
 }
 /******************************************************************************/
 /*
  * Called by arkime when a session is about to be saved
  */
-LOCAL void suricata_plugin_save(MolochSession_t *session, int UNUSED(final))
+LOCAL void suricata_plugin_save(ArkimeSession_t *session, int UNUSED(final))
 {
     SuricataItem_t *item;
     int h = session->h_hash % alerts.num;
@@ -175,16 +165,16 @@ LOCAL void suricata_plugin_save(MolochSession_t *session, int UNUSED(final))
         }
 
         if (item->signature)
-            moloch_field_string_add(signatureField, session, item->signature, item->signature_len, TRUE);
+            arkime_field_string_add(signatureField, session, item->signature, item->signature_len, TRUE);
         if (item->category)
-            moloch_field_string_add(categoryField, session, item->category, item->category_len, TRUE);
+            arkime_field_string_add(categoryField, session, item->category, item->category_len, TRUE);
         if (item->flow_id)
-            moloch_field_string_add(flowIdField, session, item->flow_id, item->flow_id_len, TRUE);
+            arkime_field_string_add(flowIdField, session, item->flow_id, item->flow_id_len, TRUE);
         if (item->action)
-            moloch_field_string_add(actionField, session, item->action, item->action_len, TRUE);
-        moloch_field_int_add(gidField, session, item->gid);
-        moloch_field_int_add(signatureIdField, session, item->signature_id);
-        moloch_field_int_add(severityField, session, item->severity);
+            arkime_field_string_add(actionField, session, item->action, item->action_len, TRUE);
+        arkime_field_int_add(gidField, session, item->gid);
+        arkime_field_int_add(signatureIdField, session, item->signature_id);
+        arkime_field_int_add(severityField, session, item->severity);
     }
 }
 
@@ -206,7 +196,7 @@ LOCAL void suricata_item_free(SuricataItem_t *item)
         g_free(item->category);
     if (item->flow_id)
         g_free(item->flow_id);
-    MOLOCH_TYPE_FREE(SuricataItem_t, item);
+    ARKIME_TYPE_FREE(SuricataItem_t, item);
 }
 /******************************************************************************/
 LOCAL gboolean suricata_parse_ip(char *str, int len, struct in6_addr *v)
@@ -238,36 +228,36 @@ LOCAL gboolean suricata_parse_ip(char *str, int len, struct in6_addr *v)
 /******************************************************************************/
 LOCAL void suricata_process_alert(char *data, int len, SuricataItem_t *item)
 {
-    uint32_t out[4*100];
+    uint32_t out[4 * 100];
     int rc;
-    if ((rc = js0n((unsigned char *)data, len, out, sizeof(out))) != 0) {
+    if ((rc = js0n((uint8_t *)data, len, out, sizeof(out))) != 0) {
         LOG("ERROR: Parse error %d >%.*s<\n", rc, len, data);
         fflush(stdout);
         return;
     }
 
     int i;
-    for (i = 0; out[i]; i+= 4) {
+    for (i = 0; out[i]; i += 4) {
         if (config.debug > 2)
-            LOG("  KEY %.*s DATA %.*s", out[i+1], data + out[i], out[i+3], data + out[i+2]);
+            LOG("  KEY %.*s DATA %.*s", out[i + 1], data + out[i], out[i + 3], data + out[i + 2]);
 
         if (MATCH(data, "action")) {
-            item->action = g_strndup(data + out[i+2], out[i+3]);
-            item->action_len = out[i+3];
+            item->action = g_strndup(data + out[i + 2], out[i + 3]);
+            item->action_len = out[i + 3];
         } else if (MATCH(data, "gid")) {
-            item->gid = atoi(data + out[i+2]);
+            item->gid = atoi(data + out[i + 2]);
         } else if (MATCH(data, "signature_id")) {
-            item->signature_id = atoi(data + out[i+2]);
+            item->signature_id = atoi(data + out[i + 2]);
         } else if (MATCH(data, "rev")) {
-            item->rev = atoi(data + out[i+2]);
+            item->rev = atoi(data + out[i + 2]);
         } else if (MATCH(data, "signature")) {
-            item->signature = g_regex_replace_literal(slashslashRegex, data + out[i+2], out[i+3], 0, "/", 0, NULL);
+            item->signature = g_regex_replace_literal(slashslashRegex, data + out[i + 2], out[i + 3], 0, "/", 0, NULL);
             item->signature_len = strlen(item->signature);
         } else if (MATCH(data, "severity")) {
-            item->severity = atoi(data + out[i+2]);
+            item->severity = atoi(data + out[i + 2]);
         } else if (MATCH(data, "category")) {
-            item->category = g_strndup(data + out[i+2], out[i+3]);
-            item->category_len = out[i+3];
+            item->category = g_strndup(data + out[i + 2], out[i + 3]);
+            item->category_len = out[i + 3];
         }
     }
 
@@ -281,11 +271,11 @@ LOCAL void suricata_process()
     if (lineLen < 50)
         return;
 
-    uint32_t out[4*100]; // Can have up to 100 elements at any level
+    uint32_t out[4 * 100]; // Can have up to 100 elements at any level
     int rc;
-    if ((rc = js0n((unsigned char *)line, lineLen, out, sizeof(out))) != 0) {
+    if ((rc = js0n((uint8_t *)line, lineLen, out, sizeof(out))) != 0) {
         if (rc > 0)
-            LOG("ERROR: Parse error at character pos %d (%c)(%u) >%.*s<\n", rc-1, line[rc-1], (uint8_t)line[rc-1], lineLen, line);
+            LOG("ERROR: Parse error at character pos %d (%c)(%u) >%.*s<\n", rc - 1, line[rc - 1], (uint8_t)line[rc - 1], lineLen, line);
         else
             LOG("ERROR: Parse error %d >%.*s<\n", rc, lineLen, line);
         fflush(stdout);
@@ -295,7 +285,7 @@ LOCAL void suricata_process()
     struct timespec currentTime;
     clock_gettime(CLOCK_REALTIME_COARSE, &currentTime);
 
-    SuricataItem_t *item = MOLOCH_TYPE_ALLOC0(SuricataItem_t);
+    SuricataItem_t *item = ARKIME_TYPE_ALLOC0(SuricataItem_t);
 
     struct in6_addr srcIp;
     struct in6_addr dstIp;
@@ -303,21 +293,21 @@ LOCAL void suricata_process()
     uint16_t        dstPort = 0;
 
     int i;
-    for (i = 0; out[i]; i+= 4) {
+    for (i = 0; out[i]; i += 4) {
         if (config.debug > 2)
-            LOG("KEY %.*s DATA %.*s", out[i+1], line + out[i], out[i+3], line + out[i+2]);
+            LOG("KEY %.*s DATA %.*s", out[i + 1], line + out[i], out[i + 3], line + out[i + 2]);
 
         if (MATCH(line, "timestamp")) {
             struct tm tm;
-            strptime(line + out[i+2], "%Y-%m-%dT%H:%M:%S.%%06u", &tm);
+            strptime(line + out[i + 2], "%Y-%m-%dT%H:%M:%S.%%06u", &tm);
             item->timestamp = timegm(&tm);
 
-            if (out[i+3] > 30) {
-                char *t = line + out[i+2];
-                int offset = (t[27] - '0')*10*3600 +
-                             (t[28] - '0')*3600 +
-                             (t[29] - '0')*10*60 +
-                             (t[30] - '0')*60;
+            if (out[i + 3] > 30) {
+                char *t = line + out[i + 2];
+                int offset = (t[27] - '0') * 10 * 3600 +
+                             (t[28] - '0') * 3600 +
+                             (t[29] - '0') * 10 * 60 +
+                             (t[30] - '0') * 60;
                 if (t[26] == '-')
                     offset *= -1;
                 item->timestamp -= offset;
@@ -327,8 +317,8 @@ LOCAL void suricata_process()
                 char buf[100];
                 ctime_r(&item->timestamp, buf);
                 LOG("Parsed date  = %24.24s from %lu which %s >= %lu", buf, item->timestamp,
-                        item->timestamp >= currentTime.tv_sec - suricataExpireSeconds?"is":"is not",
-                        currentTime.tv_sec - suricataExpireSeconds);
+                    item->timestamp >= currentTime.tv_sec - suricataExpireSeconds ? "is" : "is not",
+                    currentTime.tv_sec - suricataExpireSeconds);
             }
 
             if (item->timestamp < currentTime.tv_sec - suricataExpireSeconds) {
@@ -336,45 +326,45 @@ LOCAL void suricata_process()
                 return;
             }
         } else if (MATCH(line, "event_type")) {
-            if (strncmp("alert", line + out[i+2], 5) != 0) {
+            if (strncmp("alert", line + out[i + 2], 5) != 0) {
                 suricata_item_free(item);
                 return;
             }
         } else if (MATCH(line, "src_ip")) {
-            suricata_parse_ip(line + out[i+2], out[i+3], &srcIp);
+            suricata_parse_ip(line + out[i + 2], out[i + 3], &srcIp);
         } else if (MATCH(line, "src_port")) {
-            srcPort = atoi(line + out[i+2]);
+            srcPort = atoi(line + out[i + 2]);
         } else if (MATCH(line, "dest_ip")) {
-            suricata_parse_ip(line + out[i+2], out[i+3], &dstIp);
+            suricata_parse_ip(line + out[i + 2], out[i + 3], &dstIp);
         } else if (MATCH(line, "dest_port")) {
-            dstPort = atoi(line + out[i+2]);
+            dstPort = atoi(line + out[i + 2]);
         } else if (MATCH(line, "flow_id")) {
-            item->flow_id = g_strndup(line + out[i+2], out[i+3]);
-            item->flow_id_len = out[i+3];
+            item->flow_id = g_strndup(line + out[i + 2], out[i + 3]);
+            item->flow_id_len = out[i + 3];
         } else if (MATCH(line, "proto")) {
             // Match on prototol by name or by
             // IANA number: https://www.iana.org/assignments/protocol-numbers/protocol-numbers.xhtml
-            if (strncmp("TCP", line + out[i+2], 3) == 0 || strncmp("006", line + out[i+2], 3) == 0)
+            if (strncmp("TCP", line + out[i + 2], 3) == 0 || strncmp("006", line + out[i + 2], 3) == 0)
                 item->ses = SESSION_TCP;
-            else if (strncmp("UDP", line + out[i+2], 3) == 0 || strncmp("017", line + out[i+2], 3) == 0)
+            else if (strncmp("UDP", line + out[i + 2], 3) == 0 || strncmp("017", line + out[i + 2], 3) == 0)
                 item->ses = SESSION_UDP;
-            else if (strncmp("ICMP", line + out[i+2], 4) == 0 || strncmp("001", line + out[i+2], 3) == 0)
+            else if (strncmp("ICMP", line + out[i + 2], 4) == 0 || strncmp("001", line + out[i + 2], 3) == 0)
                 item->ses = SESSION_ICMP;
             else {
                 suricata_item_free(item);
                 return;
             }
         } else if (MATCH(line, "alert")) {
-            suricata_process_alert(line + out[i+2], out[i+3], item);
+            suricata_process_alert(line + out[i + 2], out[i + 3], item);
         }
     }
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wstrict-aliasing"
     if (IN6_IS_ADDR_V4MAPPED(&srcIp)) {
-        moloch_session_id(item->sessionId, MOLOCH_V6_TO_V4(srcIp), htons(srcPort), MOLOCH_V6_TO_V4(dstIp), htons(dstPort));
+        arkime_session_id(item->sessionId, ARKIME_V6_TO_V4(srcIp), htons(srcPort), ARKIME_V6_TO_V4(dstIp), htons(dstPort));
     } else {
-        moloch_session_id6(item->sessionId, srcIp.s6_addr, htons(srcPort), dstIp.s6_addr, htons(dstPort));
+        arkime_session_id6(item->sessionId, srcIp.s6_addr, htons(srcPort), dstIp.s6_addr, htons(dstPort));
     }
 #pragma GCC diagnostic pop
 
@@ -387,7 +377,7 @@ LOCAL void suricata_read()
 {
     while (fgets(line + lineLen, lineSize - lineLen, file)) {
         lineLen = strlen(line);
-        if (line[lineLen-1] == '\n') {
+        if (line[lineLen - 1] == '\n') {
             suricata_process();
             lineLen = 0;
         } else if (lineLen == lineSize - 1) {
@@ -483,72 +473,72 @@ LOCAL gboolean suricata_timer(gpointer UNUSED(user_data))
 /*
  * Called by arkime when the plugin is loaded
  */
-void moloch_plugin_init()
+void arkime_plugin_init()
 {
     line = malloc(lineSize);
 
-    suricataAlertFile     = moloch_config_str(NULL, "suricataAlertFile", NULL);
-    suricataExpireSeconds = moloch_config_int(NULL, "suricataExpireMinutes", 60, 10, 0xffffff) * 60;
+    suricataAlertFile     = arkime_config_str(NULL, "suricataAlertFile", NULL);
+    suricataExpireSeconds = arkime_config_int(NULL, "suricataExpireMinutes", 60, 10, 0xffffff) * 60;
 
     suricata_alerts_init();
 
     if (!suricataAlertFile)
         CONFIGEXIT("No suricataAlertFile set");
 
-    moloch_plugins_register("suricata", FALSE);
+    arkime_plugins_register("suricata", FALSE);
 
-    moloch_plugins_set_cb("suricata",
-      NULL,
-      NULL,
-      NULL,
-      NULL,
-      suricata_plugin_save,
-      NULL,
-      suricata_plugin_exit,
-      NULL
-    );
+    arkime_plugins_set_cb("suricata",
+                          NULL,
+                          NULL,
+                          NULL,
+                          NULL,
+                          suricata_plugin_save,
+                          NULL,
+                          suricata_plugin_exit,
+                          NULL
+                         );
 
-    flowIdField = moloch_field_define("suricata", "termfield",
-        "suricata.flowId", "Flow Id", "suricata.flowId",
-        "Suricata Flow Id",
-        MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT,
-        (char *)NULL);
+    flowIdField = arkime_field_define("suricata", "termfield",
+                                      "suricata.flowId", "Flow Id", "suricata.flowId",
+                                      "Suricata Flow Id",
+                                      ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT,
+                                      (char *)NULL);
 
-    actionField = moloch_field_define("suricata", "termfield",
-        "suricata.action", "Action", "suricata.action",
-        "Suricata Action",
-        MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT,
-        (char *)NULL);
+    actionField = arkime_field_define("suricata", "termfield",
+                                      "suricata.action", "Action", "suricata.action",
+                                      "Suricata Action",
+                                      ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT,
+                                      (char *)NULL);
 
-    signatureField = moloch_field_define("suricata", "termfield",
-        "suricata.signature", "Signature", "suricata.signature",
-        "Suricata Signature",
-        MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT,
-        (char *)NULL);
+    signatureField = arkime_field_define("suricata", "termfield",
+                                         "suricata.signature", "Signature", "suricata.signature",
+                                         "Suricata Signature",
+                                         ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT,
+                                         (char *)NULL);
 
-    categoryField = moloch_field_define("suricata", "termfield",
-        "suricata.category", "Category", "suricata.category",
-        "Suricata Category",
-        MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT,
-        (char *)NULL);
+    categoryField = arkime_field_define("suricata", "termfield",
+                                        "suricata.category", "Category", "suricata.category",
+                                        "Suricata Category",
+                                        ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT,
+                                        (char *)NULL);
 
-    gidField = moloch_field_define("suricata", "integer",
-        "suricata.gid", "Gid", "suricata.gid",
-        "Suricata Gid",
-        MOLOCH_FIELD_TYPE_INT_GHASH,  MOLOCH_FIELD_FLAG_CNT,
-        (char *)NULL);
+    gidField = arkime_field_define("suricata", "integer",
+                                   "suricata.gid", "Gid", "suricata.gid",
+                                   "Suricata Gid",
+                                   ARKIME_FIELD_TYPE_INT_GHASH,  ARKIME_FIELD_FLAG_CNT,
+                                   (char *)NULL);
 
-    signatureIdField = moloch_field_define("suricata", "integer",
-        "suricata.signatureId", "Signature Id", "suricata.signatureId",
-        "Suricata Signature Id",
-        MOLOCH_FIELD_TYPE_INT_GHASH,  MOLOCH_FIELD_FLAG_CNT,
-        (char *)NULL);
+    signatureIdField = arkime_field_define("suricata", "integer",
+                                           "suricata.signatureId", "Signature Id", "suricata.signatureId",
+                                           "Suricata Signature Id",
+                                           ARKIME_FIELD_TYPE_INT_GHASH,  ARKIME_FIELD_FLAG_CNT,
+                                           (char *)NULL);
 
-    severityField = moloch_field_define("suricata", "integer",
-        "suricata.severity", "Severity", "suricata.severity",
-        "Suricata Severity",
-        MOLOCH_FIELD_TYPE_INT_GHASH,  MOLOCH_FIELD_FLAG_CNT,
-        (char *)NULL);
+    severityField = arkime_field_define("suricata", "integer",
+                                        "suricata.severity", "Severity", "suricata.severity",
+                                        "Suricata Severity",
+                                        ARKIME_FIELD_TYPE_INT_GHASH,  ARKIME_FIELD_FLAG_CNT,
+                                        (char *)NULL);
 
     slashslashRegex = g_regex_new("\\\\/", 0, 0, 0);
 

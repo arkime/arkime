@@ -16,6 +16,6 @@ function http_hc(session, data, dir)
   end
 end
 
-MolochSession.http_on(MolochSession.HTTP.HEADER_FIELD_RAW, "http_header_field")
-MolochSession.http_on(MolochSession.HTTP.MESSAGE_BEGIN, "http_mb")
-MolochSession.http_on(MolochSession.HTTP.HEADERS_COMPLETE, "http_hc")
+ArkimeSession.http_on(ArkimeSession.HTTP.HEADER_FIELD_RAW, "http_header_field")
+ArkimeSession.http_on(ArkimeSession.HTTP.MESSAGE_BEGIN, "http_mb")
+ArkimeSession.http_on(ArkimeSession.HTTP.HEADERS_COMPLETE, "http_hc")

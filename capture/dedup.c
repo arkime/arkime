@@ -3,20 +3,10 @@
  *
  * Copyright 2020 AOL Inc. All rights reserved.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this Software except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: Apache-2.0
  */
 
-/* Circular array of chained hashtable where space is preallocated and 
+/* Circular array of chained hashtable where space is preallocated and
  * there is a count array of elements per hashtable slot. We stop
  * searching the oldest hashtable and wipe its count array.
  *
@@ -26,10 +16,10 @@
  * Currently use md5 on ip + tcp/udp hdr
  */
 
-#include "moloch.h"
+#include "arkime.h"
 #include <openssl/md5.h>
 
-extern MolochConfig_t       config;
+extern ArkimeConfig_t       config;
 
 // How many items in each hashtable we expect to be used
 #define DEDUP_SLOT_FACTOR   15
@@ -48,13 +38,13 @@ struct dedupsecond {
     uint32_t        tv_sec;
     uint32_t        count;
     char            error;
-    MOLOCH_LOCK_EXTERN(lock);
+    ARKIME_LOCK_EXTERN(lock);
 };
 
 LOCAL DedupSeconds_t *seconds;
 
 /******************************************************************************/
-int arkime_dedup_should_drop (const MolochPacket_t *packet, int headerLen)
+int arkime_dedup_should_drop (const ArkimePacket_t *packet, int headerLen)
 {
     struct timespec currentTime;
     clock_gettime(CLOCK_REALTIME_COARSE, &currentTime);
@@ -62,20 +52,20 @@ int arkime_dedup_should_drop (const MolochPacket_t *packet, int headerLen)
     uint32_t secondSlot = currentTime.tv_sec % dedupSeconds;
 
     // Create hash, headerLen should be length of ip & tcp/udp header
-    unsigned char md[16];
+    uint8_t md[16];
     MD5_CTX ctx;
     MD5_Init(&ctx);
-    uint8_t * const ptr = packet->pkt + packet->ipOffset;
+    uint8_t *const ptr = packet->pkt + packet->ipOffset;
     if ((ptr[0] & 0xf0) == 0x40) {
         MD5_Update(&ctx, ptr, 8);
         // Skip TTL (1 byte)
-        MD5_Update(&ctx, ptr+9, 1);
+        MD5_Update(&ctx, ptr + 9, 1);
         // Skip Header checksum (2 byte)
-        MD5_Update(&ctx, ptr+12, headerLen-12);
+        MD5_Update(&ctx, ptr + 12, headerLen - 12);
     } else {
         MD5_Update(&ctx, ptr, 7);
         // Skip HOP
-        MD5_Update(&ctx, ptr+8, headerLen-8);
+        MD5_Update(&ctx, ptr + 8, headerLen - 8);
     }
     MD5_Final(md, &ctx);
     int h = ((uint32_t *)md)[0] % dedupSlots;
@@ -83,7 +73,7 @@ int arkime_dedup_should_drop (const MolochPacket_t *packet, int headerLen)
     // First see if we need to clean up old slot, and block all new folks while we do
     // In theory no one should be using this slot because hadn't been searching it for a second.
     if (seconds[secondSlot].tv_sec != currentTime.tv_sec) {
-        MOLOCH_LOCK(seconds[secondSlot].lock);
+        ARKIME_LOCK(seconds[secondSlot].lock);
         if (seconds[secondSlot].tv_sec != currentTime.tv_sec) { // Check critical section again
             if (seconds[secondSlot].error) {
                 LOG ("WARNING - Ran out of room, increase dedupPackets to %u or above. pcount: %u", dedupSlots * DEDUP_SLOT_FACTOR + 1, seconds[secondSlot].count);
@@ -93,7 +83,7 @@ int arkime_dedup_should_drop (const MolochPacket_t *packet, int headerLen)
             seconds[secondSlot].count = 0;
             seconds[secondSlot].tv_sec = currentTime.tv_sec;
         }
-        MOLOCH_UNLOCK(seconds[secondSlot].lock);
+        ARKIME_UNLOCK(seconds[secondSlot].lock);
     }
 
     // Search all valid slots
@@ -106,7 +96,7 @@ int arkime_dedup_should_drop (const MolochPacket_t *packet, int headerLen)
 
         int count = seconds[s].counts[h];
         for (int c = 0; c < count; c++) {
-            if (memcmp(md, seconds[s].md5s + 16 * (h*DEDUP_SIZE_FACTOR + c), 16) == 0) {
+            if (memcmp(md, seconds[s].md5s + 16 * (h * DEDUP_SIZE_FACTOR + c), 16) == 0) {
                 return 1;
             }
         }
@@ -119,9 +109,9 @@ int arkime_dedup_should_drop (const MolochPacket_t *packet, int headerLen)
     }
 
     // For now ignore the race condition of search between incr and copy
-    int c = MOLOCH_THREAD_INCROLD(seconds[secondSlot].counts[h]);
-    memcpy(seconds[secondSlot].md5s + 16 * (h*DEDUP_SIZE_FACTOR + c), md, 16);
-    MOLOCH_THREAD_INCR(seconds[secondSlot].count);
+    int c = ARKIME_THREAD_INCROLD(seconds[secondSlot].counts[h]);
+    memcpy(seconds[secondSlot].md5s + 16 * (h * DEDUP_SIZE_FACTOR + c), md, 16);
+    ARKIME_THREAD_INCR(seconds[secondSlot].count);
 
     return 0;
 }
@@ -131,19 +121,19 @@ void arkime_dedup_init()
     if (!config.enablePacketDedup)
         return;
 
-    dedupSeconds   = moloch_config_int(NULL, "dedupSeconds", 2, 0, 30) + 1; // + 1 because a slot isn't active before being replaced
-    dedupPackets   = moloch_config_int(NULL, "dedupPackets", 0xfffff, 0xffff, 0xffffff);
-    dedupSlots     = moloch_get_next_prime(dedupPackets/DEDUP_SLOT_FACTOR);
+    dedupSeconds   = arkime_config_int(NULL, "dedupSeconds", 2, 0, 30) + 1; // + 1 because a slot isn't active before being replaced
+    dedupPackets   = arkime_config_int(NULL, "dedupPackets", 0xfffff, 0xffff, 0xffffff);
+    dedupSlots     = arkime_get_next_prime(dedupPackets / DEDUP_SLOT_FACTOR);
     dedupSize      = dedupSlots * DEDUP_SIZE_FACTOR;
 
     if (config.debug)
-        LOG("seconds = %u packets = %u slots = %u size = %u mem=%u", dedupSeconds, dedupPackets, dedupSlots, dedupSize, dedupSeconds *(dedupSlots + dedupSize*16));
+        LOG("seconds = %u packets = %u slots = %u size = %u mem=%u", dedupSeconds, dedupPackets, dedupSlots, dedupSize, dedupSeconds * (dedupSlots + dedupSize * 16));
 
-    seconds = MOLOCH_SIZE_ALLOC0("dedup seconds", sizeof(DedupSeconds_t) * dedupSeconds);
+    seconds = ARKIME_SIZE_ALLOC0("dedup seconds", sizeof(DedupSeconds_t) * dedupSeconds);
     for (uint32_t i = 0; i < dedupSeconds; i++) {
-        MOLOCH_LOCK_INIT(seconds[i].lock);
-        seconds[i].counts = MOLOCH_SIZE_ALLOC("dedup counts", dedupSlots);
-        seconds[i].md5s = MOLOCH_SIZE_ALLOC("dedup counts", dedupSize * 16);
+        ARKIME_LOCK_INIT(seconds[i].lock);
+        seconds[i].counts = ARKIME_SIZE_ALLOC("dedup counts", dedupSlots);
+        seconds[i].md5s = ARKIME_SIZE_ALLOC("dedup counts", dedupSize * 16);
     }
 }
 /******************************************************************************/

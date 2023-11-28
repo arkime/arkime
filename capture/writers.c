@@ -3,65 +3,55 @@
  *
  * Copyright 2012-2017 AOL Inc. All rights reserved.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this Software except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: Apache-2.0
  */
-#include "moloch.h"
+#include "arkime.h"
 #include <inttypes.h>
 #include <errno.h>
 
-MolochWriterQueueLength moloch_writer_queue_length;
-MolochWriterWrite moloch_writer_write;
-MolochWriterExit moloch_writer_exit;
-MolochWriterIndex moloch_writer_index;
+ArkimeWriterQueueLength arkime_writer_queue_length;
+ArkimeWriterWrite arkime_writer_write;
+ArkimeWriterExit arkime_writer_exit;
+ArkimeWriterIndex arkime_writer_index;
 
 /******************************************************************************/
-extern MolochConfig_t        config;
+extern ArkimeConfig_t        config;
 
-LOCAL  MolochStringHashStd_t writersHash;
+LOCAL  ArkimeStringHashStd_t writersHash;
 
 /******************************************************************************/
-void moloch_writers_start(char *name) {
-    MolochString_t *str;
+void arkime_writers_start(char *name) {
+    ArkimeString_t *str;
     char *freeIt = NULL;
 
     if (!name)
-        name = freeIt = moloch_config_str(NULL, "pcapWriteMethod", "simple");
+        name = freeIt = arkime_config_str(NULL, "pcapWriteMethod", "simple");
 
 
     HASH_FIND(s_, writersHash, name, str);
     if (!str) {
         CONFIGEXIT("Couldn't find pcapWriteMethod %s implementation", name);
     }
-    MolochWriterInit func = str->uw;
+    ArkimeWriterInit func = str->uw;
     func(name);
-    moloch_add_can_quit((MolochCanQuitFunc)moloch_writer_queue_length, "writer queue length");
+    arkime_add_can_quit((ArkimeCanQuitFunc)arkime_writer_queue_length, "writer queue length");
     g_free(freeIt);
 }
 /******************************************************************************/
-void moloch_writers_add(char *name, MolochWriterInit func) {
-    moloch_string_add(&writersHash, name, func, TRUE);
+void arkime_writers_add(char *name, ArkimeWriterInit func) {
+    arkime_string_add(&writersHash, name, func, TRUE);
 }
 /******************************************************************************/
-void writer_disk_init(char*);
-void writer_null_init(char*);
-void writer_inplace_init(char*);
-void writer_simple_init(char*);
+void writer_disk_init(char *);
+void writer_null_init(char *);
+void writer_inplace_init(char *);
+void writer_simple_init(char *);
 
-void moloch_writers_init()
+void arkime_writers_init()
 {
-    HASH_INIT(s_, writersHash, moloch_string_hash, moloch_string_cmp);
-    moloch_writers_add("null", writer_null_init);
-    moloch_writers_add("inplace", writer_inplace_init);
-    moloch_writers_add("simple", writer_simple_init);
-    moloch_writers_add("simple-nodirect", writer_simple_init);
+    HASH_INIT(s_, writersHash, arkime_string_hash, arkime_string_cmp);
+    arkime_writers_add("null", writer_null_init);
+    arkime_writers_add("inplace", writer_inplace_init);
+    arkime_writers_add("simple", writer_simple_init);
+    arkime_writers_add("simple-nodirect", writer_simple_init);
 }

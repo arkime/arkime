@@ -1,3 +1,7 @@
+<!--
+Copyright Yahoo Inc.
+SPDX-License-Identifier: Apache-2.0
+-->
 <template>
 
   <table v-if="computedColumns && computedColumns.length"
@@ -177,7 +181,7 @@
           class="text-danger text-center">
           <span class="fa fa-warning">
           </span>&nbsp;
-          No results match your search
+          {{ noResultsMsg }}
         </td>
       </tr> <!-- /no results -->
     </transition-group>
@@ -288,7 +292,7 @@ function gripUnclick (e, vueThis) {
  * There is no need to load data in the parent.
  */
 export default {
-  name: 'MolochTable',
+  name: 'ArkimeTable',
   components: { ToggleBtn },
   props: {
     loadData: { // event to fire when the table needs to load data
@@ -359,6 +363,10 @@ export default {
     /* IMPORTANT! 'list' is the only table animation currently available */
     tableAnimation: { // table animation name
       type: String
+    },
+    noResultsMsg: { // message to display when there are no results
+      type: String,
+      default: 'No results match your search'
     }
   },
   data: function () {

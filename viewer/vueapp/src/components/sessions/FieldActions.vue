@@ -1,3 +1,7 @@
+<!--
+Copyright Yahoo Inc.
+SPDX-License-Identifier: Apache-2.0
+-->
 <template>
   <span>
     <b-dropdown-divider
@@ -98,7 +102,7 @@ export default {
         const fieldNotInActionFields = !action.fields || action.fields.indexOf(field.exp) === -1;
 
         // field action is not applicable to this field because it is not in the action's category or field lists
-        if (fieldNotInActionCategory && fieldNotInActionFields) {
+        if (action.all !== true && fieldNotInActionCategory && fieldNotInActionFields) {
           continue;
         }
 

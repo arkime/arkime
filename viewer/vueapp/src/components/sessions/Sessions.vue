@@ -1,12 +1,16 @@
+<!--
+Copyright Yahoo Inc.
+SPDX-License-Identifier: Apache-2.0
+-->
 <template>
 
   <div class="sessions-page"
     :class="{'hide-tool-bars': !showToolBars}">
 
-    <MolochCollapsible>
+    <ArkimeCollapsible>
       <span class="fixed-header">
         <!-- search navbar -->
-        <moloch-search
+        <arkime-search
           :fields="headers"
           :open-sessions="stickySessions"
           :num-visible-sessions="query.length"
@@ -15,31 +19,31 @@
           @changeSearch="cancelAndLoad(true)"
           @setView="loadNewView"
           @setColumns="loadColumns">
-        </moloch-search> <!-- /search navbar -->
+        </arkime-search> <!-- /search navbar -->
 
         <!-- paging navbar -->
         <form class="sessions-paging">
           <div class="form-inline">
-            <moloch-paging
+            <arkime-paging
               class="mt-1 ml-1"
               :records-total="sessions.recordsTotal"
               :records-filtered="sessions.recordsFiltered"
               @changePaging="changePaging">
-            </moloch-paging>
+            </arkime-paging>
           </div>
         </form> <!-- /paging navbar -->
       </span>
-    </MolochCollapsible>
+    </ArkimeCollapsible>
 
     <!-- visualizations -->
-    <moloch-visualizations
+    <arkime-visualizations
       v-if="graphData"
       :primary="true"
       :map-data="mapData"
       :graph-data="graphData"
       @fetchMapData="cancelAndLoad(true)"
       :timelineDataFilters="timelineDataFilters">
-    </moloch-visualizations>
+    </arkime-visualizations>
     <!-- /visualizations -->
 
     <div class="sessions-content ml-2"
@@ -48,14 +52,14 @@
 
       <!-- sticky (opened) sessions -->
       <transition name="leave">
-        <moloch-sticky-sessions
+        <arkime-sticky-sessions
           class="sticky-sessions"
           v-if="stickySessions.length"
           :ms="user.settings.ms"
           :sessions="stickySessions"
           @closeSession="closeSession"
           @closeAllSessions="closeAllSessions">
-        </moloch-sticky-sessions>
+        </arkime-sticky-sessions>
       </transition> <!-- /sticky (opened) sessions -->
 
       <!-- sessions results -->
@@ -244,7 +248,7 @@
             <template v-if="headers && headers.length">
               <th v-for="header of headers"
                 :key="header.dbField"
-                class="moloch-col-header"
+                class="arkime-col-header"
                 :style="{'width': header.width > 0 ? `${header.width}px` : '100px'}"
                 :class="{'active':isSorted(header.sortBy || header.dbField) >= 0, 'info-col-header': header.dbField === 'info'}">
                 <div class="grip"
@@ -466,14 +470,14 @@
                 <span v-if="session.ipProtocol === 0">
                   notip
                 </span>
-                <moloch-session-field v-else
+                <arkime-session-field v-else
                   :field="{dbField:'ipProtocol', exp:'ip.protocol', type:'lotermfield', group:'general', transform:'ipProtocolLookup'}"
                   :session="session"
                   :expr="'ip.protocol'"
                   :value="session.ipProtocol"
                   :pull-left="true"
                   :parse="true">
-                </moloch-session-field>
+                </arkime-session-field>
                 &nbsp;
               </td> <!-- /toggle button and ip protocol -->
               <!-- field values -->
@@ -484,25 +488,25 @@
                 <span v-if="Array.isArray(session[col.dbField])">
                   <span v-for="value in session[col.dbField]"
                     :key="value + col.dbField">
-                    <moloch-session-field
+                    <arkime-session-field
                       :field="col"
                       :session="session"
                       :expr="col.exp"
                       :value="value"
                       :parse="true">
-                    </moloch-session-field>
+                    </arkime-session-field>
                   </span>
                 </span> <!-- /field value is an array -->
                 <!-- field value a single value -->
                 <span v-else>
-                  <moloch-session-field
+                  <arkime-session-field
                     :field="col"
                     :session="session"
                     :expr="col.exp"
                     :value="session[col.dbField]"
                     :parse="true"
                     :info-fields="infoFields">
-                  </moloch-session-field>
+                  </arkime-session-field>
                 </span> <!-- /field value a single value -->
               </td> <!-- /field values -->
             </tr>
@@ -512,12 +516,12 @@
               class="session-detail-row">
               <td :colspan="headers.length + 1"
                 :style="tableWidthStyle">
-                <moloch-session-detail
+                <arkime-session-detail
                   :session="session"
                   :session-index="index"
                   @toggleColVis="toggleColVis"
                   @toggleInfoVis="toggleInfoVis">
-                </moloch-session-detail>
+                </arkime-session-detail>
               </td>
             </tr> <!-- /session detail -->
           </template> <!-- /session + detail -->
@@ -525,26 +529,26 @@
       </table> <!-- /sessions results -->
 
       <!-- loading overlay -->
-      <moloch-loading
+      <arkime-loading
         :can-cancel="true"
         v-if="loading && !error"
         @cancel="cancelAndLoad(false)">
-      </moloch-loading> <!-- /loading overlay -->
+      </arkime-loading> <!-- /loading overlay -->
 
       <!-- page error -->
-      <moloch-error
+      <arkime-error
         v-if="error"
         :message="error"
         class="mt-5 mb-5">
-      </moloch-error> <!-- /page error -->
+      </arkime-error> <!-- /page error -->
 
       <!-- no results -->
-      <moloch-no-results
+      <arkime-no-results
         v-if="!error && !loading && !(sessions.data && sessions.data.length)"
         class="mt-5 mb-5"
         :records-total="sessions.recordsTotal"
         :view="query.view">
-      </moloch-no-results> <!-- /no results -->
+      </arkime-no-results> <!-- /no results -->
 
     </div>
 
@@ -562,17 +566,17 @@ import UserService from '../users/UserService';
 import ConfigService from '../utils/ConfigService';
 import Utils from '../utils/utils';
 // import components
-import MolochSearch from '../search/Search';
+import ArkimeSearch from '../search/Search';
 import customCols from './customCols.json';
-import MolochPaging from '../utils/Pagination';
+import ArkimePaging from '../utils/Pagination';
 import ToggleBtn from '../../../../../common/vueapp/ToggleBtn';
-import MolochError from '../utils/Error';
-import MolochLoading from '../utils/Loading';
-import MolochNoResults from '../utils/NoResults';
-import MolochSessionDetail from './SessionDetail';
-import MolochCollapsible from '../utils/CollapsibleWrapper';
-import MolochVisualizations from '../visualizations/Visualizations';
-import MolochStickySessions from './StickySessions';
+import ArkimeError from '../utils/Error';
+import ArkimeLoading from '../utils/Loading';
+import ArkimeNoResults from '../utils/NoResults';
+import ArkimeSessionDetail from './SessionDetail';
+import ArkimeCollapsible from '../utils/CollapsibleWrapper';
+import ArkimeVisualizations from '../visualizations/Visualizations';
+import ArkimeStickySessions from './StickySessions';
 import FieldActions from './FieldActions';
 // import external
 import Sortable from 'sortablejs';
@@ -702,16 +706,16 @@ let pendingPromise;
 export default {
   name: 'Sessions',
   components: {
-    MolochSearch,
-    MolochPaging,
+    ArkimeSearch,
+    ArkimePaging,
     ToggleBtn,
-    MolochError,
-    MolochLoading,
-    MolochNoResults,
-    MolochSessionDetail,
-    MolochVisualizations,
-    MolochStickySessions,
-    MolochCollapsible,
+    ArkimeError,
+    ArkimeLoading,
+    ArkimeNoResults,
+    ArkimeSessionDetail,
+    ArkimeVisualizations,
+    ArkimeStickySessions,
+    ArkimeCollapsible,
     FieldActions
   },
   data: function () {
@@ -736,7 +740,6 @@ export default {
       stickyHeader: false,
       tableHeaderOverflow: undefined,
       showFitButton: false,
-      multiviewer: this.$constants.MOLOCH_MULTIVIEWER,
       tableWidth: window.innerWidth - 20, // account for margins
       filteredFields: [],
       filteredFieldsCount: 0,
@@ -1505,20 +1508,15 @@ export default {
      * @param {bool} updateTable Whether the table needs updating
      */
     loadData: function (updateTable) {
+      if (!Utils.checkClusterSelection(this.query.cluster, this.$store.state.esCluster.availableCluster.active, this).valid) {
+        this.sessions.data = undefined;
+        this.dataLoading = false;
+        pendingPromise = null;
+        return;
+      }
+
       this.loading = true;
       this.error = '';
-
-      if (this.multiviewer) {
-        const availableCluster = this.$store.state.esCluster.availableCluster.active;
-        const selection = Utils.checkClusterSelection(this.query.cluster, availableCluster);
-        if (!selection.valid) { // invlaid selection
-          pendingPromise = null;
-          this.sessions.data = undefined;
-          this.error = selection.error;
-          this.dataLoading = false;
-          return;
-        }
-      }
 
       // save expanded sessions
       const expandedSessions = [];
@@ -1755,7 +1753,7 @@ export default {
     initializeColResizable () {
       colResizeInitialized = true;
 
-      cols = document.getElementsByClassName('moloch-col-header');
+      cols = document.getElementsByClassName('arkime-col-header');
       table = this.$refs.sessionsTable;
 
       for (const col of cols) { // listen for grip dragging
@@ -1918,20 +1916,20 @@ export default {
 }
 
 /* needed for grips */
-.moloch-col-header {
+.arkime-col-header {
   position: relative;
 }
 
 /* small dropdown buttons in column headers */
-.moloch-col-header .btn-group button.btn {
+.arkime-col-header .btn-group button.btn {
   padding: 0 6px;
 }
-.moloch-col-header .dropdown-menu {
+.arkime-col-header .dropdown-menu {
   max-height: 250px;
   overflow: auto;
 }
 
-.moloch-col-header .btn-group:not(.info-vis-menu) {
+.arkime-col-header .btn-group:not(.info-vis-menu) {
   visibility: hidden;
   margin-left: -25px;
 }
@@ -2030,26 +2028,31 @@ table.sessions-table.sticky-header > tbody > tr {
   display: table;
   table-layout: fixed;
 }
+/* need this when reloading the page with sticky headers */
+table.sessions-table.sticky-header > tbody {
+  display: block;
+  margin-top: 53px;
+}
 
 /* table column headers -------------------- */
-.moloch-col-header {
+.arkime-col-header {
   font-size: .9rem;
 }
 
-.moloch-col-header.active {
+.arkime-col-header.active {
   color: var(--color-foreground-accent);
 }
 
-.moloch-col-header:hover .btn-group {
+.arkime-col-header:hover .btn-group {
   visibility: visible;
 }
 
-.moloch-col-header .header-text {
+.arkime-col-header .header-text {
   display: inline-block;
   width: calc(100% - 24px);
 }
 
-.moloch-col-header .header-sort {
+.arkime-col-header .header-sort {
   display: inline-block;
   width: 8px;
   vertical-align: top;
@@ -2061,7 +2064,7 @@ table.sessions-table.sticky-header > tbody > tr {
 .info-vis-menu {
   margin-right: 10px;
 }
-.moloch-col-header:not(:last-child) .info-vis-menu {
+.arkime-col-header:not(:last-child) .info-vis-menu {
   margin-right: 5px;
 }
 

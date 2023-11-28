@@ -1,7 +1,11 @@
+<!--
+Copyright Yahoo Inc.
+SPDX-License-Identifier: Apache-2.0
+-->
 <template>
 
   <div class="history-page">
-    <MolochCollapsible>
+    <ArkimeCollapsible>
       <span class="fixed-header">
         <!-- search navbar -->
         <form class="history-search">
@@ -10,6 +14,9 @@
               title="Tip: use ? to replace a single character and * to replace zero or more characters in your query"
               v-b-tooltip.hover>
             </span>
+            <Clusters
+              class="pull-right"
+            />
             <button type="button"
               class="btn btn-sm btn-theme-tertiary pull-right ml-1 search-btn"
               @click="loadData">
@@ -56,12 +63,12 @@
               </span>
             </div>
             <div class="form-inline mt-1">
-              <moloch-time
+              <arkime-time
                 :timezone="user.settings.timezone"
                 @timeChange="loadData"
                 :hide-bounding="true"
                 :hide-interval="true">
-              </moloch-time>
+              </arkime-time>
             </div>
           </div>
         </form> <!-- /search navbar -->
@@ -69,25 +76,26 @@
         <!-- paging navbar -->
         <form class="history-paging">
           <div class="form-inline">
-            <moloch-paging v-if="history"
+            <arkime-paging v-if="history"
               class="mt-1 ml-1"
               :records-total="recordsTotal"
               :records-filtered="recordsFiltered"
               @changePaging="changePaging"
               length-default=100>
-            </moloch-paging>
-            <moloch-toast
+            </arkime-paging>
+            <arkime-toast
               class="ml-2 mb-3 mt-1"
               :message="msg"
               :type="msgType"
               :done="messageDone">
-            </moloch-toast>
+            </arkime-toast>
           </div>
         </form> <!-- /paging navbar -->
       </span>
-    </MolochCollapsible>
+    </ArkimeCollapsible>
 
-    <table class="table table-sm table-striped small">
+    <table v-if="!error"
+      class="table table-sm table-striped small">
       <thead>
         <tr>
           <th width="100px;">
@@ -326,13 +334,13 @@
     </table>
 
     <!-- loading overlay -->
-    <moloch-loading
+    <arkime-loading
       v-if="loading && !error">
-    </moloch-loading> <!-- /loading overlay -->
+    </arkime-loading> <!-- /loading overlay -->
 
     <!-- error -->
-    <moloch-error
-      v-if="!loading && error"
+    <arkime-error
+      v-if="error"
       :message="error"
     /> <!-- /error -->
 
@@ -347,34 +355,37 @@
 
 <script>
 import qs from 'qs';
-import MolochPaging from '../utils/Pagination';
-import MolochLoading from '../utils/Loading';
-import MolochError from '../utils/Error';
-import ToggleBtn from '../../../../../common/vueapp/ToggleBtn';
-import MolochTime from '../search/Time';
-import MolochToast from '../utils/Toast';
-import MolochCollapsible from '../utils/CollapsibleWrapper';
+import Utils from '../utils/utils';
+import ArkimeTime from '../search/Time';
+import Clusters from '../utils/Clusters';
+import ArkimeToast from '../utils/Toast';
+import ArkimeError from '../utils/Error';
+import ArkimeLoading from '../utils/Loading';
+import ArkimePaging from '../utils/Pagination';
 import HistoryService from './HistoryService';
 import Focus from '../../../../../common/vueapp/Focus';
+import ArkimeCollapsible from '../utils/CollapsibleWrapper';
+import ToggleBtn from '../../../../../common/vueapp/ToggleBtn';
 
 let searchInputTimeout; // timeout to debounce the search input
 
 export default {
   name: 'ArkimeHistory',
   components: {
-    MolochPaging,
-    MolochLoading,
-    MolochError,
-    MolochTime,
+    ArkimePaging,
+    ArkimeLoading,
+    ArkimeError,
+    ArkimeTime,
     ToggleBtn,
-    MolochToast,
-    MolochCollapsible
+    ArkimeToast,
+    ArkimeCollapsible,
+    Clusters
   },
   directives: { Focus },
   data: function () {
     return {
       error: '',
-      loading: true,
+      loading: false,
       history: {},
       recordsTotal: 0,
       recordsFiltered: 0,
@@ -407,7 +418,8 @@ export default {
         start: 0,
         date: this.$store.state.timeRange,
         startTime: this.$store.state.time.startTime,
-        stopTime: this.$store.state.time.stopTime
+        stopTime: this.$store.state.time.stopTime,
+        cluster: this.$route.query.cluster || undefined
       };
     },
     user: function () {
@@ -431,6 +443,14 @@ export default {
   watch: {
     issueSearch: function (newVal, oldVal) {
       if (newVal) { this.loadData(); }
+    },
+    '$route.query.cluster': {
+      handler: function (newVal, oldVal) {
+        if (newVal !== oldVal) {
+          this.query.cluster = newVal;
+          this.loadData();
+        }
+      }
     }
   },
   created: function () {
@@ -526,6 +546,11 @@ export default {
     },
     /* helper functions ------------------------------------------ */
     loadData: function () {
+      if (!Utils.checkClusterSelection(this.query.cluster, this.$store.state.esCluster.availableCluster.active, this).valid) {
+        this.history = {};
+        return;
+      }
+
       this.loading = true;
 
       const exists = [];

@@ -3,7 +3,7 @@
  * Dave Plonka <plonka@doit.wisc.edu>
  *
  * This product includes software developed by the University of Michigan,
- * Merit Network, Inc., and their contributors. 
+ * Merit Network, Inc., and their contributors.
  *
  * This file had been called "radix.h" in the MRT sources.
  *
@@ -13,28 +13,28 @@
  */
 
 /* From copyright.txt:
- * 
+ *
  * Copyright (c) 1997, 1998, 1999
- * 
- * 
+ *
+ *
  * The Regents of the University of Michigan ("The Regents") and Merit Network,
  * Inc.  All rights reserved.
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
- * 1.  Redistributions of source code must retain the above 
- *     copyright notice, this list of conditions and the 
+ * 1.  Redistributions of source code must retain the above
+ *     copyright notice, this list of conditions and the
  *     following disclaimer.
- * 2.  Redistributions in binary form must reproduce the above 
- *     copyright notice, this list of conditions and the 
- *     following disclaimer in the documentation and/or other 
+ * 2.  Redistributions in binary form must reproduce the above
+ *     copyright notice, this list of conditions and the
+ *     following disclaimer in the documentation and/or other
  *     materials provided with the distribution.
- * 3.  All advertising materials mentioning features or use of 
- *     this software must display the following acknowledgement:  
+ * 3.  All advertising materials mentioning features or use of
+ *     this software must display the following acknowledgement:
  * This product includes software developed by the University of Michigan, Merit
- * Network, Inc., and their contributors. 
+ * Network, Inc., and their contributors.
  * 4.  Neither the name of the University, Merit Network, nor the
- *     names of their contributors may be used to endorse or 
- *     promote products derived from this software without 
+ *     names of their contributors may be used to endorse or
+ *     promote products derived from this software without
  *     specific prior written permission.
  * THIS SOFTWARE IS PROVIDED BY THE REGENTS AND CONTRIBUTORS "AS IS" AND ANY
  * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
@@ -45,7 +45,7 @@
  * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON
  * ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.  
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
 #ifndef _PATRICIA_H
@@ -54,7 +54,7 @@
 #include <sys/types.h>
 
 /* typedef unsigned int u_int; */
-typedef void (*void_fn_t)();
+/* typedef void (*void_fn_t)(void *data); */
 /* { from defs.h */
 #define prefix_touchar(prefix) ((u_char *)&(prefix)->add.sin)
 #define prefix_tochar(prefix) (prefix?((u_char *)&(prefix)->add.sin):NULL)
@@ -94,6 +94,9 @@ typedef struct _prefix_t {
     } add;
 } prefix_t;
 
+typedef void (*patricia_fn_prefix_data_t)(prefix_t *prefix, void *data);
+typedef void (*patricia_fn_data_t)(void *data);
+
 /* } */
 
 typedef struct _patricia_node_t {
@@ -121,9 +124,9 @@ int patricia_search_all2(patricia_tree_t * patricia, u_char *addr, int bitlen, p
 patricia_node_t *patricia_lookup (patricia_tree_t *patricia, prefix_t *prefix);
 void patricia_remove (patricia_tree_t *patricia, patricia_node_t *node);
 patricia_tree_t *New_Patricia (int maxbits);
-void Clear_Patricia (patricia_tree_t *patricia, void_fn_t func);
-void Destroy_Patricia (patricia_tree_t *patricia, void_fn_t func);
-void patricia_process (patricia_tree_t *patricia, void_fn_t func);
+void Clear_Patricia (patricia_tree_t *patricia, patricia_fn_data_t func);
+void Destroy_Patricia (patricia_tree_t *patricia, patricia_fn_data_t func);
+void patricia_process (patricia_tree_t *patricia, patricia_fn_prefix_data_t func);
 prefix_t *New_Prefix2(int family, void *dest, int bitlen, prefix_t * prefix);
 
 void Deref_Prefix (prefix_t * prefix);

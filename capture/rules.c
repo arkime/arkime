@@ -3,19 +3,9 @@
  *
  * Copyright 2012-2017 AOL Inc. All rights reserved.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this Software except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: Apache-2.0
  */
-#include "moloch.h"
+#include "arkime.h"
 #include <stdarg.h>
 #include <arpa/inet.h>
 #include "yaml.h"
@@ -23,7 +13,7 @@
 #include "pcap.h"
 
 /******************************************************************************/
-extern MolochConfig_t        config;
+extern ArkimeConfig_t        config;
 
 //#define RULES_DEBUG 1
 
@@ -51,28 +41,28 @@ typedef struct {
     GPtrArray *values;
 } YamlNode_t;
 
-#define MOLOCH_SAVE_FLAG_MIDDLE 0x01
-#define MOLOCH_SAVE_FLAG_FINAL  0x02
-#define MOLOCH_SAVE_FLAG_BOTH   0x03
+#define ARKIME_SAVE_FLAG_MIDDLE 0x01
+#define ARKIME_SAVE_FLAG_FINAL  0x02
+#define ARKIME_SAVE_FLAG_BOTH   0x03
 
 typedef struct {
     char                *filename;
     char                *name;
     char                *bpf;                      // String version of bpf
     struct bpf_program   bpfp;
-    GHashTable          *hash[MOLOCH_FIELDS_MAX];  // For each non ip field in rule
-    GPtrArray           *match[MOLOCH_FIELDS_MAX]; // For any string fields with , modifier or int fields range
-    patricia_tree_t     *tree4[MOLOCH_FIELDS_MAX];
-    patricia_tree_t     *tree6[MOLOCH_FIELDS_MAX];
-    MolochFieldOps_t     ops;                      // Ops to run on match
+    GHashTable          *hash[ARKIME_FIELDS_MAX];  // For each non ip field in rule
+    GPtrArray           *match[ARKIME_FIELDS_MAX]; // For any string fields with , modifier or int fields range
+    patricia_tree_t     *tree4[ARKIME_FIELDS_MAX];
+    patricia_tree_t     *tree6[ARKIME_FIELDS_MAX];
+    ArkimeFieldOps_t     ops;                      // Ops to run on match
     uint64_t             matched;                  // How many times was matched
     uint16_t            *fields;                   // fieldsLen length array of field pos
     uint16_t             fieldsLen;
     uint8_t              saveFlags;                // When to save for beforeSave
     uint8_t              log;                      // should we log or not
-} MolochRule_t;
+} ArkimeRule_t;
 
-#define MOLOCH_RULES_MAX     100
+#define ARKIME_RULES_MAX     100
 
 /* All the information about the rules.  To support reloading while running
  * there can be multiple info variables.
@@ -84,42 +74,42 @@ typedef struct {
  * that we need to eval.
  */
 typedef struct {
-    GHashTable            *fieldsHash[MOLOCH_FIELDS_MAX];
-    patricia_tree_t       *fieldsTree4[MOLOCH_FIELDS_MAX];
-    patricia_tree_t       *fieldsTree6[MOLOCH_FIELDS_MAX];
-    GHashTable            *fieldsMatch[MOLOCH_FIELDS_MAX];
+    GHashTable            *fieldsHash[ARKIME_FIELDS_MAX];
+    patricia_tree_t       *fieldsTree4[ARKIME_FIELDS_MAX];
+    patricia_tree_t       *fieldsTree6[ARKIME_FIELDS_MAX];
+    GHashTable            *fieldsMatch[ARKIME_FIELDS_MAX];
 
-    int                    rulesLen[MOLOCH_RULE_TYPE_NUM];
-    MolochRule_t          *rules[MOLOCH_RULE_TYPE_NUM][MOLOCH_RULES_MAX+1];
-} MolochRulesInfo_t;
+    int                    rulesLen[ARKIME_RULE_TYPE_NUM];
+    ArkimeRule_t          *rules[ARKIME_RULE_TYPE_NUM][ARKIME_RULES_MAX + 1];
+} ArkimeRulesInfo_t;
 
-LOCAL MolochRulesInfo_t    current;
-LOCAL MolochRulesInfo_t    loading;
+LOCAL ArkimeRulesInfo_t    current;
+LOCAL ArkimeRulesInfo_t    loading;
 LOCAL char               **rulesFiles;
 
 LOCAL pcap_t              *deadPcap;
-extern MolochPcapFileHdr_t pcapFileHeader;
+extern ArkimePcapFileHdr_t pcapFileHeader;
 
-#define MOLOCH_RULES_STR_MATCH_HEAD      1
-#define MOLOCH_RULES_STR_MATCH_TAIL      2
-#define MOLOCH_RULES_STR_MATCH_CONTAINS  3
+#define ARKIME_RULES_STR_MATCH_HEAD      1
+#define ARKIME_RULES_STR_MATCH_TAIL      2
+#define ARKIME_RULES_STR_MATCH_CONTAINS  3
 
 typedef union {
     struct {
-      uint32_t      min;
-      uint32_t      max;
+        uint32_t      min;
+        uint32_t      max;
     };
     uint64_t        num;
-} MolochRuleIntMatch_t;
+} ArkimeRuleIntMatch_t;
 
-LOCAL void moloch_rules_load_add_field_range_match(MolochRule_t *rule, int pos, char *key);
+LOCAL void arkime_rules_load_add_field_range_match(ArkimeRule_t *rule, int pos, char *key);
 /******************************************************************************/
-LOCAL void moloch_rules_free_array(gpointer data)
+LOCAL void arkime_rules_free_array(gpointer data)
 {
     g_ptr_array_free(data, TRUE);
 }
 /******************************************************************************/
-LOCAL void moloch_rules_parser_free_node(YamlNode_t *node)
+LOCAL void arkime_rules_parser_free_node(YamlNode_t *node)
 {
     if (node->key)
         g_free(node->key);
@@ -127,19 +117,19 @@ LOCAL void moloch_rules_parser_free_node(YamlNode_t *node)
         g_free(node->value);
     if (node->values)
         g_ptr_array_free(node->values, TRUE);
-    MOLOCH_TYPE_FREE(YamlNode_t, node);
+    ARKIME_TYPE_FREE(YamlNode_t, node);
 }
 /******************************************************************************/
-LOCAL YamlNode_t *moloch_rules_parser_add_node(YamlNode_t *parent, char *key, char *value)
+LOCAL YamlNode_t *arkime_rules_parser_add_node(YamlNode_t *parent, char *key, char *value)
 {
-    YamlNode_t *node = MOLOCH_TYPE_ALLOC(YamlNode_t);
+    YamlNode_t *node = ARKIME_TYPE_ALLOC(YamlNode_t);
     node->key = key;
     node->value = value;
 
     if (value) {
         node->values = NULL;
     } else {
-        node->values = g_ptr_array_new_with_free_func((GDestroyNotify)moloch_rules_parser_free_node);
+        node->values = g_ptr_array_new_with_free_func((GDestroyNotify)arkime_rules_parser_free_node);
     }
 
     if (parent) {
@@ -154,7 +144,7 @@ LOCAL YamlNode_t *moloch_rules_parser_add_node(YamlNode_t *parent, char *key, ch
     return node;
 }
 /******************************************************************************/
-LOCAL YamlNode_t *moloch_rules_parser_parse_yaml(char *filename, YamlNode_t *parent, yaml_parser_t *parser, gboolean sequence) {
+LOCAL YamlNode_t *arkime_rules_parser_parse_yaml(char *filename, YamlNode_t *parent, yaml_parser_t *parser, gboolean sequence) {
 
     char *key = NULL;
     YamlNode_t *node;
@@ -180,9 +170,9 @@ LOCAL YamlNode_t *moloch_rules_parser_parse_yaml(char *filename, YamlNode_t *par
 #endif
 
             if (sequence) {
-                moloch_rules_parser_add_node(parent, g_strdup((gchar *)event.data.scalar.value), YAML_NODE_SEQUENCE_VALUE);
+                arkime_rules_parser_add_node(parent, g_strdup((gchar *)event.data.scalar.value), YAML_NODE_SEQUENCE_VALUE);
             } else if (key) {
-                moloch_rules_parser_add_node(parent, key, g_strdup((gchar *)event.data.scalar.value));
+                arkime_rules_parser_add_node(parent, key, g_strdup((gchar *)event.data.scalar.value));
                 key = NULL;
             } else {
                 key = g_strdup((gchar *)event.data.scalar.value);
@@ -191,19 +181,20 @@ LOCAL YamlNode_t *moloch_rules_parser_parse_yaml(char *filename, YamlNode_t *par
         case YAML_SEQUENCE_START_EVENT:
         case YAML_MAPPING_START_EVENT:
             if (parent == NULL) {
-                parent = node = moloch_rules_parser_add_node(NULL, g_strdup("root"), NULL);
+                parent = node = arkime_rules_parser_add_node(NULL, g_strdup("root"), NULL);
             } else {
-                node = moloch_rules_parser_add_node(parent, key, NULL);
+                node = arkime_rules_parser_add_node(parent, key, NULL);
             }
             key = NULL;
-            if (moloch_rules_parser_parse_yaml(filename, node, parser, event.type == YAML_SEQUENCE_START_EVENT) == NULL)
+            if (arkime_rules_parser_parse_yaml(filename, node, parser, event.type == YAML_SEQUENCE_START_EVENT) == NULL)
                 return NULL;
 
             break;
         case YAML_MAPPING_END_EVENT:
         case YAML_SEQUENCE_END_EVENT:
             done = 1;
-        default: ;
+        default:
+            ;
         }
         yaml_event_delete(&event);
     }
@@ -211,7 +202,7 @@ LOCAL YamlNode_t *moloch_rules_parser_parse_yaml(char *filename, YamlNode_t *par
     return parent;
 }
 /******************************************************************************/
-LOCAL void moloch_rules_parser_print(YamlNode_t *node, int level)
+LOCAL void arkime_rules_parser_print(YamlNode_t *node, int level)
 {
     static char indent[] = "                                                             ";
     if (node->value == YAML_NODE_SEQUENCE_VALUE) {
@@ -222,11 +213,11 @@ LOCAL void moloch_rules_parser_print(YamlNode_t *node, int level)
         printf("%.*s %s:\n", level, indent, node->key);
         int i;
         for (i = 0; i < (int)node->values->len; i++)
-            moloch_rules_parser_print(g_ptr_array_index(node->values, i), level+1);
+            arkime_rules_parser_print(g_ptr_array_index(node->values, i), level + 1);
     }
 }
 /******************************************************************************/
-LOCAL YamlNode_t *moloch_rules_parser_get(YamlNode_t *node, char *path)
+LOCAL YamlNode_t *arkime_rules_parser_get(YamlNode_t *node, char *path)
 {
 
     while (1) {
@@ -243,7 +234,7 @@ LOCAL YamlNode_t *moloch_rules_parser_get(YamlNode_t *node, char *path)
 
         int i;
         for (i = 0; i < (int)node->values->len; i++) {
-            if (strncmp(path, ((YamlNode_t*)g_ptr_array_index(node->values, i))->key, len) == 0)
+            if (strncmp(path, ((YamlNode_t * )g_ptr_array_index(node->values, i))->key, len) == 0)
                 break;
         }
         if (i == (int)node->values->len)
@@ -256,23 +247,23 @@ LOCAL YamlNode_t *moloch_rules_parser_get(YamlNode_t *node, char *path)
     }
 }
 /******************************************************************************/
-LOCAL char *moloch_rules_parser_get_value(YamlNode_t *parent, char *path)
+LOCAL char *arkime_rules_parser_get_value(YamlNode_t *parent, char *path)
 {
-    YamlNode_t *node = moloch_rules_parser_get(parent, path);
+    YamlNode_t *node = arkime_rules_parser_get(parent, path);
     if (!node)
         return NULL;
     return node->value;
 }
 /******************************************************************************/
-LOCAL GPtrArray *moloch_rules_parser_get_values(YamlNode_t *parent, char *path)
+LOCAL GPtrArray *arkime_rules_parser_get_values(YamlNode_t *parent, char *path)
 {
-    YamlNode_t *node = moloch_rules_parser_get(parent, path);
+    YamlNode_t *node = arkime_rules_parser_get(parent, path);
     if (!node)
         return NULL;
     return node->values;
 }
 /******************************************************************************/
-LOCAL void moloch_rules_load_add_field(MolochRule_t *rule, int pos, char *key)
+LOCAL void arkime_rules_load_add_field(ArkimeRule_t *rule, int pos, char *key)
 {
     uint32_t         n;
     float            f;
@@ -283,17 +274,17 @@ LOCAL void moloch_rules_load_add_field(MolochRule_t *rule, int pos, char *key)
     config.fields[pos]->ruleEnabled = 1;
 
     switch (config.fields[pos]->type) {
-    case MOLOCH_FIELD_TYPE_INT:
-    case MOLOCH_FIELD_TYPE_INT_ARRAY:
-    case MOLOCH_FIELD_TYPE_INT_HASH:
-    case MOLOCH_FIELD_TYPE_INT_GHASH:
+    case ARKIME_FIELD_TYPE_INT:
+    case ARKIME_FIELD_TYPE_INT_ARRAY:
+    case ARKIME_FIELD_TYPE_INT_HASH:
+    case ARKIME_FIELD_TYPE_INT_GHASH:
         if (key[0] != '-' && strchr(key, '-') != 0) {
-            moloch_rules_load_add_field_range_match(rule, pos, key);
+            arkime_rules_load_add_field_range_match(rule, pos, key);
             return;
         }
 
         if (!loading.fieldsHash[pos])
-            loading.fieldsHash[pos] = g_hash_table_new_full(NULL, NULL, NULL, moloch_rules_free_array);
+            loading.fieldsHash[pos] = g_hash_table_new_full(NULL, NULL, NULL, arkime_rules_free_array);
 
         n = atoi(key);
         g_hash_table_add(rule->hash[pos], (void *)(long)n);
@@ -306,11 +297,11 @@ LOCAL void moloch_rules_load_add_field(MolochRule_t *rule, int pos, char *key)
         g_ptr_array_add(rules, rule);
         break;
 
-    case MOLOCH_FIELD_TYPE_FLOAT:
-    case MOLOCH_FIELD_TYPE_FLOAT_ARRAY:
-    case MOLOCH_FIELD_TYPE_FLOAT_GHASH:
+    case ARKIME_FIELD_TYPE_FLOAT:
+    case ARKIME_FIELD_TYPE_FLOAT_ARRAY:
+    case ARKIME_FIELD_TYPE_FLOAT_GHASH:
         if (!loading.fieldsHash[pos])
-            loading.fieldsHash[pos] = g_hash_table_new_full(NULL, NULL, NULL, moloch_rules_free_array);
+            loading.fieldsHash[pos] = g_hash_table_new_full(NULL, NULL, NULL, arkime_rules_free_array);
 
         f = atof(key);
         memcpy(&fint, &f, 4);
@@ -324,8 +315,8 @@ LOCAL void moloch_rules_load_add_field(MolochRule_t *rule, int pos, char *key)
         g_ptr_array_add(rules, rule);
         break;
 
-    case MOLOCH_FIELD_TYPE_IP:
-    case MOLOCH_FIELD_TYPE_IP_GHASH:
+    case ARKIME_FIELD_TYPE_IP:
+    case ARKIME_FIELD_TYPE_IP_GHASH:
         if (!loading.fieldsTree4[pos]) {
             loading.fieldsTree4[pos] = New_Patricia(32);
             loading.fieldsTree6[pos] = New_Patricia(128);
@@ -353,12 +344,12 @@ LOCAL void moloch_rules_load_add_field(MolochRule_t *rule, int pos, char *key)
         break;
 
 
-    case MOLOCH_FIELD_TYPE_STR:
-    case MOLOCH_FIELD_TYPE_STR_ARRAY:
-    case MOLOCH_FIELD_TYPE_STR_HASH:
-    case MOLOCH_FIELD_TYPE_STR_GHASH:
+    case ARKIME_FIELD_TYPE_STR:
+    case ARKIME_FIELD_TYPE_STR_ARRAY:
+    case ARKIME_FIELD_TYPE_STR_HASH:
+    case ARKIME_FIELD_TYPE_STR_GHASH:
         if (!loading.fieldsHash[pos])
-            loading.fieldsHash[pos] = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, moloch_rules_free_array);
+            loading.fieldsHash[pos] = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, arkime_rules_free_array);
 
         g_hash_table_add(rule->hash[pos], g_strdup(key));
 
@@ -369,33 +360,33 @@ LOCAL void moloch_rules_load_add_field(MolochRule_t *rule, int pos, char *key)
         }
         g_ptr_array_add(rules, rule);
         break;
-    case MOLOCH_FIELD_TYPE_CERTSINFO:
+    case ARKIME_FIELD_TYPE_CERTSINFO:
         // Unsupported
         break;
     }
 }
 /******************************************************************************/
-LOCAL void moloch_rules_load_add_field_range_match(MolochRule_t *rule, int pos, char *key)
+LOCAL void arkime_rules_load_add_field_range_match(ArkimeRule_t *rule, int pos, char *key)
 {
     char *dash = strchr(key, '-');
     *dash = 0;
 
     uint32_t min = atoi(key);
-    uint32_t max = atoi(dash+1);
+    uint32_t max = atoi(dash + 1);
     if (min > max)
         CONFIGEXIT("Min %u > Max %u not allowed", min, max);
 
     // If the range is small convert back to non range.
     if (max - min < 20) {
         char str[30];
-        for (;min <= max; min++) {
+        for (; min <= max; min++) {
             snprintf(str, sizeof(str), "%u", min);
-            moloch_rules_load_add_field(rule, pos, str);
+            arkime_rules_load_add_field(rule, pos, str);
         }
         return;
     }
 
-    MolochRuleIntMatch_t match;
+    ArkimeRuleIntMatch_t match;
     match.min = min;
     match.max = max;
 
@@ -405,7 +396,7 @@ LOCAL void moloch_rules_load_add_field_range_match(MolochRule_t *rule, int pos, 
     g_ptr_array_add(rule->match[pos], (gpointer)match.num);
 
     if (!loading.fieldsMatch[pos])
-        loading.fieldsMatch[pos] = g_hash_table_new_full(g_direct_hash, g_direct_equal, g_free, moloch_rules_free_array);
+        loading.fieldsMatch[pos] = g_hash_table_new_full(g_direct_hash, g_direct_equal, g_free, arkime_rules_free_array);
 
     GPtrArray *rules = g_hash_table_lookup(loading.fieldsMatch[pos], (gpointer)match.num);
     if (!rules) {
@@ -415,7 +406,7 @@ LOCAL void moloch_rules_load_add_field_range_match(MolochRule_t *rule, int pos, 
     g_ptr_array_add(rules, rule);
 }
 /******************************************************************************/
-LOCAL void moloch_rules_load_add_field_match(MolochRule_t *rule, int pos, int type, char *key)
+LOCAL void arkime_rules_load_add_field_match(ArkimeRule_t *rule, int pos, int type, char *key)
 {
     int len = strlen(key);
 
@@ -424,15 +415,15 @@ LOCAL void moloch_rules_load_add_field_match(MolochRule_t *rule, int pos, int ty
     if (len > 255)
         CONFIGEXIT("Match %s is to too large", key);
 
-    uint8_t *nkey = g_malloc(len+3);
+    uint8_t *nkey = g_malloc(len + 3);
     nkey[0] = type;
     nkey[1] = len;
-    memcpy(nkey+2, key, len+1);
+    memcpy(nkey + 2, key, len + 1);
 
     g_ptr_array_add(rule->match[pos], (char *)nkey); // Just made a copy above
 
     if (!loading.fieldsMatch[pos])
-        loading.fieldsMatch[pos] = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, moloch_rules_free_array);
+        loading.fieldsMatch[pos] = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, arkime_rules_free_array);
 
     GPtrArray *rules = g_hash_table_lookup(loading.fieldsMatch[pos], nkey);
     if (!rules) {
@@ -442,19 +433,19 @@ LOCAL void moloch_rules_load_add_field_match(MolochRule_t *rule, int pos, int ty
     g_ptr_array_add(rules, rule);
 }
 /******************************************************************************/
-LOCAL void moloch_rules_parser_load_rule(char *filename, YamlNode_t *parent)
+LOCAL void arkime_rules_parser_load_rule(char *filename, YamlNode_t *parent)
 {
-    char *name = moloch_rules_parser_get_value(parent, "name");
+    char *name = arkime_rules_parser_get_value(parent, "name");
     if (!name)
         CONFIGEXIT("%s: name required for rule", filename);
 
-    char *when = moloch_rules_parser_get_value(parent, "when");
+    char *when = arkime_rules_parser_get_value(parent, "when");
     if (!when)
         CONFIGEXIT("%s: when required for rule '%s'", filename, name);
 
-    char *bpf = moloch_rules_parser_get_value(parent, "bpf");
-    GPtrArray *fields = moloch_rules_parser_get_values(parent, "fields");
-    char *expression = moloch_rules_parser_get_value(parent, "expression");
+    char *bpf = arkime_rules_parser_get_value(parent, "bpf");
+    GPtrArray *fields = arkime_rules_parser_get_values(parent, "fields");
+    char *expression = arkime_rules_parser_get_value(parent, "expression");
 
     if (!bpf && !fields && !expression)
         CONFIGEXIT("%s: bpf, fields, or expressions required for rule '%s'", filename, name);
@@ -462,7 +453,7 @@ LOCAL void moloch_rules_parser_load_rule(char *filename, YamlNode_t *parent)
     if ((bpf && fields) || (bpf && expression) || (fields && expression))
         CONFIGEXIT("%s: Only one of bpf, fields, or expressions can be set for rule '%s'", filename, name);
 
-    GPtrArray  *ops = moloch_rules_parser_get_values(parent, "ops");
+    GPtrArray  *ops = arkime_rules_parser_get_values(parent, "ops");
     if (!ops)
         CONFIGEXIT("%s: ops required for rule '%s'", filename, name);
 
@@ -470,48 +461,48 @@ LOCAL void moloch_rules_parser_load_rule(char *filename, YamlNode_t *parent)
         CONFIGEXIT("Currently don't support expression, hopefully soon!");
     }
 
-    char *log = moloch_rules_parser_get_value(parent, "log");
+    char *log = arkime_rules_parser_get_value(parent, "log");
 
     int type;
     int saveFlags = 0;
     if (strcmp(when, "everyPacket") == 0) {
-        type = MOLOCH_RULE_TYPE_EVERY_PACKET;
+        type = ARKIME_RULE_TYPE_EVERY_PACKET;
         if (!bpf)
             CONFIGEXIT("%s: everyPacket only supports bpf", filename);
     } else if (strcmp(when, "sessionSetup") == 0) {
-        type = MOLOCH_RULE_TYPE_SESSION_SETUP;
+        type = ARKIME_RULE_TYPE_SESSION_SETUP;
     } else if (strcmp(when, "afterClassify") == 0) {
-        type = MOLOCH_RULE_TYPE_AFTER_CLASSIFY;
+        type = ARKIME_RULE_TYPE_AFTER_CLASSIFY;
         if (bpf)
             CONFIGEXIT("%s: %s doesn't support bpf", filename, when);
     } else if (strcmp(when, "fieldSet") == 0) {
-        type = MOLOCH_RULE_TYPE_FIELD_SET;
+        type = ARKIME_RULE_TYPE_FIELD_SET;
         if (bpf)
             CONFIGEXIT("%s: %s doesn't support bpf", filename, when);
     } else if (strcmp(when, "beforeMiddleSave") == 0) {
-        type = MOLOCH_RULE_TYPE_BEFORE_SAVE;
-        saveFlags = MOLOCH_SAVE_FLAG_MIDDLE;
+        type = ARKIME_RULE_TYPE_BEFORE_SAVE;
+        saveFlags = ARKIME_SAVE_FLAG_MIDDLE;
         if (bpf)
             CONFIGEXIT("%s: %s doesn't support bpf", filename, when);
     } else if (strcmp(when, "beforeFinalSave") == 0) {
-        type = MOLOCH_RULE_TYPE_BEFORE_SAVE;
-        saveFlags = MOLOCH_SAVE_FLAG_FINAL;
+        type = ARKIME_RULE_TYPE_BEFORE_SAVE;
+        saveFlags = ARKIME_SAVE_FLAG_FINAL;
         if (bpf)
             CONFIGEXIT("%s: %s doesn't support bpf", filename, when);
     } else if (strcmp(when, "beforeBothSave") == 0) {
-        type = MOLOCH_RULE_TYPE_BEFORE_SAVE;
-        saveFlags = MOLOCH_SAVE_FLAG_BOTH;
+        type = ARKIME_RULE_TYPE_BEFORE_SAVE;
+        saveFlags = ARKIME_SAVE_FLAG_BOTH;
         if (bpf)
             CONFIGEXIT("%s: %s doesn't support bpf", filename, when);
     } else {
         CONFIGEXIT("%s: Unknown when '%s'", filename, when);
     }
 
-    if (loading.rulesLen[type] >= MOLOCH_RULES_MAX)
+    if (loading.rulesLen[type] >= ARKIME_RULES_MAX)
         CONFIGEXIT("Too many %s rules", when);
 
     int n = loading.rulesLen[type]++;
-    MolochRule_t *rule = loading.rules[type][n] = MOLOCH_TYPE_ALLOC0(MolochRule_t);
+    ArkimeRule_t *rule = loading.rules[type][n] = ARKIME_TYPE_ALLOC0(ArkimeRule_t);
     rule->name = g_strdup(name);
     rule->filename = filename;
     rule->saveFlags = saveFlags;
@@ -531,17 +522,17 @@ LOCAL void moloch_rules_parser_load_rule(char *filename, YamlNode_t *parent)
                 *comma = 0;
                 comma++;
                 if (strcmp(comma, "tail") == 0 || strcmp(comma, "endsWith") == 0) {
-                    mtype = MOLOCH_RULES_STR_MATCH_TAIL;
+                    mtype = ARKIME_RULES_STR_MATCH_TAIL;
                 } else if (strcmp(comma, "head") == 0 || strcmp(comma, "startsWith") == 0) {
-                    mtype = MOLOCH_RULES_STR_MATCH_HEAD;
+                    mtype = ARKIME_RULES_STR_MATCH_HEAD;
                 } else if (strcmp(comma, "contains") == 0) {
-                    mtype = MOLOCH_RULES_STR_MATCH_CONTAINS;
+                    mtype = ARKIME_RULES_STR_MATCH_CONTAINS;
                 } else {
                     CONFIGEXIT("Rule field %s doesn't support modifier %s", node->key, comma);
                 }
             }
 
-            int pos = moloch_field_by_exp(node->key);
+            int pos = arkime_field_by_exp(node->key);
             if (pos == -1)
                 CONFIGEXIT("%s Couldn't find field '%s'", filename, node->key);
 
@@ -550,10 +541,10 @@ LOCAL void moloch_rules_parser_load_rule(char *filename, YamlNode_t *parent)
                 rule->fields[(int)rule->fieldsLen++] = pos;
 
             switch (config.fields[pos]->type) {
-            case MOLOCH_FIELD_TYPE_INT:
-            case MOLOCH_FIELD_TYPE_INT_ARRAY:
-            case MOLOCH_FIELD_TYPE_INT_HASH:
-            case MOLOCH_FIELD_TYPE_INT_GHASH:
+            case ARKIME_FIELD_TYPE_INT:
+            case ARKIME_FIELD_TYPE_INT_ARRAY:
+            case ARKIME_FIELD_TYPE_INT_HASH:
+            case ARKIME_FIELD_TYPE_INT_GHASH:
                 if (mtype != 0)
                     CONFIGEXIT("Rule field %s doesn't support modifier %s", node->key, comma);
 
@@ -561,9 +552,9 @@ LOCAL void moloch_rules_parser_load_rule(char *filename, YamlNode_t *parent)
                     rule->hash[pos] = g_hash_table_new_full(NULL, NULL, NULL, NULL);
                 break;
 
-            case MOLOCH_FIELD_TYPE_FLOAT:
-            case MOLOCH_FIELD_TYPE_FLOAT_ARRAY:
-            case MOLOCH_FIELD_TYPE_FLOAT_GHASH:
+            case ARKIME_FIELD_TYPE_FLOAT:
+            case ARKIME_FIELD_TYPE_FLOAT_ARRAY:
+            case ARKIME_FIELD_TYPE_FLOAT_GHASH:
                 if (mtype != 0)
                     CONFIGEXIT("Rule field %s doesn't support modifier %s", node->key, comma);
 
@@ -571,8 +562,8 @@ LOCAL void moloch_rules_parser_load_rule(char *filename, YamlNode_t *parent)
                     rule->hash[pos] = g_hash_table_new_full(NULL, NULL, NULL, NULL);
                 break;
 
-            case MOLOCH_FIELD_TYPE_IP:
-            case MOLOCH_FIELD_TYPE_IP_GHASH:
+            case ARKIME_FIELD_TYPE_IP:
+            case ARKIME_FIELD_TYPE_IP_GHASH:
                 if (mtype != 0)
                     CONFIGEXIT("Rule field %s doesn't support modifier %s", node->key, comma);
 
@@ -582,10 +573,10 @@ LOCAL void moloch_rules_parser_load_rule(char *filename, YamlNode_t *parent)
                 }
                 break;
 
-            case MOLOCH_FIELD_TYPE_STR:
-            case MOLOCH_FIELD_TYPE_STR_ARRAY:
-            case MOLOCH_FIELD_TYPE_STR_HASH:
-            case MOLOCH_FIELD_TYPE_STR_GHASH:
+            case ARKIME_FIELD_TYPE_STR:
+            case ARKIME_FIELD_TYPE_STR_ARRAY:
+            case ARKIME_FIELD_TYPE_STR_HASH:
+            case ARKIME_FIELD_TYPE_STR_GHASH:
                 if (mtype != 0) {
                     if (!rule->match[pos])
                         rule->match[pos] = g_ptr_array_new_with_free_func(g_free);
@@ -595,109 +586,109 @@ LOCAL void moloch_rules_parser_load_rule(char *filename, YamlNode_t *parent)
                 }
                 break;
 
-            case MOLOCH_FIELD_TYPE_CERTSINFO:
+            case ARKIME_FIELD_TYPE_CERTSINFO:
                 CONFIGEXIT("%s: Currently don't support any certs fields", filename);
             }
 
             if (node->value) {
                 if (mtype != 0)
-                    moloch_rules_load_add_field_match(rule, pos, mtype, node->value);
+                    arkime_rules_load_add_field_match(rule, pos, mtype, node->value);
                 else
-                    moloch_rules_load_add_field(rule, pos, node->value);
+                    arkime_rules_load_add_field(rule, pos, node->value);
             } else {
                 int j;
                 for (j = 0; j < (int)node->values->len; j++) {
                     YamlNode_t *fnode = g_ptr_array_index(node->values, j);
                     if (mtype != 0)
-                        moloch_rules_load_add_field_match(rule, pos, mtype, fnode->key);
+                        arkime_rules_load_add_field_match(rule, pos, mtype, fnode->key);
                     else
-                        moloch_rules_load_add_field(rule, pos, fnode->key);
+                        arkime_rules_load_add_field(rule, pos, fnode->key);
                 }
             }
         }
     }
 
-    moloch_field_ops_init(&rule->ops, ops->len, MOLOCH_FIELD_OPS_FLAGS_COPY);
+    arkime_field_ops_init(&rule->ops, ops->len, ARKIME_FIELD_OPS_FLAGS_COPY);
     int i;
     for (i = 0; i < (int)ops->len; i++) {
         YamlNode_t *node = g_ptr_array_index(ops, i);
-        int pos = moloch_field_by_exp(node->key);
+        int pos = arkime_field_by_exp(node->key);
         if (pos == -1)
             CONFIGEXIT("%s Couldn't find field '%s'", filename, node->key);
-        moloch_field_ops_add(&rule->ops, pos, node->value, strlen(node->value));
+        arkime_field_ops_add(&rule->ops, pos, node->value, strlen(node->value));
     }
 }
 /******************************************************************************/
-LOCAL void moloch_rules_parser_load_file(char *filename, YamlNode_t *parent)
+LOCAL void arkime_rules_parser_load_file(char *filename, YamlNode_t *parent)
 {
     char       *str;
     GPtrArray  *rules;
 
-    str = moloch_rules_parser_get_value(parent, "version");
+    str = arkime_rules_parser_get_value(parent, "version");
     if (!str || strcmp(str, "1") != 0) {
         CONFIGEXIT("%s: Missing version: 1", filename);
     }
 
-    rules = moloch_rules_parser_get_values(parent, "rules");
+    rules = arkime_rules_parser_get_values(parent, "rules");
     if (!rules) {
         CONFIGEXIT("%s: Missing rules", filename);
     }
 
     int i;
     for (i = 0; i < (int)rules->len; i++) {
-        moloch_rules_parser_load_rule(filename, g_ptr_array_index(rules, i));
+        arkime_rules_parser_load_rule(filename, g_ptr_array_index(rules, i));
     }
 }
 /******************************************************************************/
-LOCAL void moloch_rules_load_complete()
+LOCAL void arkime_rules_load_complete()
 {
     char      **bpfs;
     GRegex     *regex = g_regex_new(":\\s*(\\d+)\\s*$", 0, 0, 0);
     int         i;
 
-    bpfs = moloch_config_str_list(NULL, "dontSaveBPFs", NULL);
-    int pos = moloch_field_by_exp("_maxPacketsToSave");
+    bpfs = arkime_config_str_list(NULL, "dontSaveBPFs", NULL);
+    int pos = arkime_field_by_exp("_maxPacketsToSave");
     gint start_pos;
     if (bpfs) {
         for (i = 0; bpfs[i]; i++) {
-            int n = loading.rulesLen[MOLOCH_RULE_TYPE_SESSION_SETUP]++;
-            MolochRule_t *rule = loading.rules[MOLOCH_RULE_TYPE_SESSION_SETUP][n] = MOLOCH_TYPE_ALLOC0(MolochRule_t);
+            int n = loading.rulesLen[ARKIME_RULE_TYPE_SESSION_SETUP]++;
+            ArkimeRule_t *rule = loading.rules[ARKIME_RULE_TYPE_SESSION_SETUP][n] = ARKIME_TYPE_ALLOC0(ArkimeRule_t);
             rule->filename = "dontSaveBPFs";
-            moloch_field_ops_init(&rule->ops, 1, MOLOCH_FIELD_OPS_FLAGS_COPY);
+            arkime_field_ops_init(&rule->ops, 1, ARKIME_FIELD_OPS_FLAGS_COPY);
 
             GMatchInfo *match_info = 0;
             g_regex_match(regex, bpfs[i], 0, &match_info);
             if (g_match_info_matches(match_info)) {
                 g_match_info_fetch_pos (match_info, 1, &start_pos, NULL);
-                rule->bpf = g_strndup(bpfs[i], start_pos-1);
-                moloch_field_ops_add(&rule->ops, pos, g_match_info_fetch(match_info, 1), -1);
+                rule->bpf = g_strndup(bpfs[i], start_pos - 1);
+                arkime_field_ops_add(&rule->ops, pos, g_match_info_fetch(match_info, 1), -1);
             } else {
                 rule->bpf = g_strdup(bpfs[i]);
-                moloch_field_ops_add(&rule->ops, pos, "1", -1);
+                arkime_field_ops_add(&rule->ops, pos, "1", -1);
             }
             g_match_info_free(match_info);
         }
         g_strfreev(bpfs);
     }
 
-    bpfs = moloch_config_str_list(NULL, "minPacketsSaveBPFs", NULL);
-    pos = moloch_field_by_exp("_minPacketsBeforeSavingSPI");
+    bpfs = arkime_config_str_list(NULL, "minPacketsSaveBPFs", NULL);
+    pos = arkime_field_by_exp("_minPacketsBeforeSavingSPI");
     if (bpfs) {
         for (i = 0; bpfs[i]; i++) {
-            int n = loading.rulesLen[MOLOCH_RULE_TYPE_SESSION_SETUP]++;
-            MolochRule_t *rule = loading.rules[MOLOCH_RULE_TYPE_SESSION_SETUP][n] = MOLOCH_TYPE_ALLOC0(MolochRule_t);
+            int n = loading.rulesLen[ARKIME_RULE_TYPE_SESSION_SETUP]++;
+            ArkimeRule_t *rule = loading.rules[ARKIME_RULE_TYPE_SESSION_SETUP][n] = ARKIME_TYPE_ALLOC0(ArkimeRule_t);
             rule->filename = "minPacketsSaveBPFs";
-            moloch_field_ops_init(&rule->ops, 1, MOLOCH_FIELD_OPS_FLAGS_COPY);
+            arkime_field_ops_init(&rule->ops, 1, ARKIME_FIELD_OPS_FLAGS_COPY);
 
             GMatchInfo *match_info = 0;
             g_regex_match(regex, bpfs[i], 0, &match_info);
             if (g_match_info_matches(match_info)) {
                 g_match_info_fetch_pos (match_info, 1, &start_pos, NULL);
-                rule->bpf = g_strndup(bpfs[i], start_pos-1);
-                moloch_field_ops_add(&rule->ops, pos, g_match_info_fetch(match_info, 1), -1);
+                rule->bpf = g_strndup(bpfs[i], start_pos - 1);
+                arkime_field_ops_add(&rule->ops, pos, g_match_info_fetch(match_info, 1), -1);
             } else {
                 rule->bpf = g_strdup(bpfs[i]);
-                moloch_field_ops_add(&rule->ops, pos, "1", -1);
+                arkime_field_ops_add(&rule->ops, pos, "1", -1);
             }
             g_match_info_free(match_info);
         }
@@ -709,63 +700,63 @@ LOCAL void moloch_rules_load_complete()
     memset(&loading, 0, sizeof(loading));
 }
 /******************************************************************************/
-LOCAL void moloch_rules_free(MolochRulesInfo_t *freeing)
+LOCAL void arkime_rules_free(ArkimeRulesInfo_t *freeing)
 {
     int    i, t, r;
 
-    for (i = 0; i < MOLOCH_FIELDS_MAX; i++) {
+    for (i = 0; i < ARKIME_FIELDS_MAX; i++) {
         if (freeing->fieldsHash[i]) {
             g_hash_table_destroy(freeing->fieldsHash[i]);
         }
         if (freeing->fieldsTree4[i]) {
-            Destroy_Patricia(freeing->fieldsTree4[i], moloch_rules_free_array);
+            Destroy_Patricia(freeing->fieldsTree4[i], arkime_rules_free_array);
         }
         if (freeing->fieldsTree6[i]) {
-            Destroy_Patricia(freeing->fieldsTree6[i], moloch_rules_free_array);
+            Destroy_Patricia(freeing->fieldsTree6[i], arkime_rules_free_array);
         }
         if (freeing->fieldsMatch[i]) {
             g_hash_table_destroy(freeing->fieldsMatch[i]);
         }
     }
 
-    for (t = 0; t < MOLOCH_RULE_TYPE_NUM; t++) {
+    for (t = 0; t < ARKIME_RULE_TYPE_NUM; t++) {
         for (r = 0; r < freeing->rulesLen[t]; r++) {
-            MolochRule_t *rule = freeing->rules[t][r];
+            ArkimeRule_t *rule = freeing->rules[t][r];
 
             g_free(rule->name);
             if (rule->bpf)
                 g_free(rule->bpf);
 
-            for (i = 0; i < MOLOCH_FIELDS_MAX; i++) {
+            for (i = 0; i < ARKIME_FIELDS_MAX; i++) {
                 if (rule->hash[i]) {
                     g_hash_table_destroy(rule->hash[i]);
                 }
                 if (rule->tree4[i]) {
-                    Destroy_Patricia(rule->tree4[i], moloch_rules_free_array);
+                    Destroy_Patricia(rule->tree4[i], arkime_rules_free_array);
                 }
                 if (rule->tree6[i]) {
-                    Destroy_Patricia(rule->tree6[i], moloch_rules_free_array);
+                    Destroy_Patricia(rule->tree6[i], arkime_rules_free_array);
                 }
                 if (rule->match[i]) {
                     g_ptr_array_free(rule->match[i], TRUE);
                 }
             }
 
-            moloch_field_ops_free(&rule->ops);
-            MOLOCH_TYPE_FREE(MolochRule_t, rule);
+            arkime_field_ops_free(&rule->ops);
+            ARKIME_TYPE_FREE(ArkimeRule_t, rule);
         }
     }
 
-    MOLOCH_TYPE_FREE(MolochRulesInfo_t, freeing);
+    ARKIME_TYPE_FREE(ArkimeRulesInfo_t, freeing);
 }
 /******************************************************************************/
-void moloch_rules_load(char **names)
+void arkime_rules_load(char **names)
 {
     int    i;
 
     // Make a copy of current items to free later
 
-    MolochRulesInfo_t *freeing = MOLOCH_TYPE_ALLOC0(MolochRulesInfo_t);
+    ArkimeRulesInfo_t *freeing = ARKIME_TYPE_ALLOC0(ArkimeRulesInfo_t);
     memcpy(freeing, &current, sizeof(current));
 
     // Load all the rule files
@@ -777,29 +768,29 @@ void moloch_rules_load(char **names)
             CONFIGEXIT("can not open rules file %s", names[i]);
 
         yaml_parser_set_input_file(&parser, input);
-        YamlNode_t *parent = moloch_rules_parser_parse_yaml(names[i], NULL, &parser, FALSE);
+        YamlNode_t *parent = arkime_rules_parser_parse_yaml(names[i], NULL, &parser, FALSE);
         yaml_parser_delete(&parser);
         if (!parent) {
             LOG("WARNING %s - has no rules", names[i]);
             continue;
         }
         if (config.debug > 1) {
-            moloch_rules_parser_print(parent, 0);
+            arkime_rules_parser_print(parent, 0);
         }
-        moloch_rules_parser_load_file(names[i], parent);
-        moloch_rules_parser_free_node(parent);
+        arkime_rules_parser_load_file(names[i], parent);
+        arkime_rules_parser_free_node(parent);
         fclose(input);
     }
 
     // Part 2, which will also copy loading to current
-    moloch_rules_load_complete();
+    arkime_rules_load_complete();
 
     // Now schedule free of current items
-    moloch_free_later(freeing, (GDestroyNotify) moloch_rules_free);
+    arkime_free_later(freeing, (GDestroyNotify) arkime_rules_free);
 }
 /******************************************************************************/
 /* Called at the start on main thread or each time a new file is open on single thread */
-void moloch_rules_recompile()
+void arkime_rules_recompile()
 {
     int t, r;
 
@@ -807,8 +798,8 @@ void moloch_rules_recompile()
         pcap_close(deadPcap);
 
     deadPcap = pcap_open_dead(pcapFileHeader.dlt, pcapFileHeader.snaplen);
-    MolochRule_t *rule;
-    for (t = 0; t < MOLOCH_RULE_TYPE_NUM; t++) {
+    ArkimeRule_t *rule;
+    for (t = 0; t < ARKIME_RULE_TYPE_NUM; t++) {
         for (r = 0; (rule = current.rules[t][r]); r++) {
             if (!rule->bpf)
                 continue;
@@ -825,7 +816,7 @@ void moloch_rules_recompile()
     }
 }
 /******************************************************************************/
-LOCAL gboolean moloch_rules_check_ip(const MolochRule_t * const rule, const int p, const struct in6_addr *ip, BSB *logStr)
+LOCAL gboolean arkime_rules_check_ip(const ArkimeRule_t *const rule, const int p, const struct in6_addr *ip, BSB *logStr)
 {
     if (IN6_IS_ADDR_V4MAPPED(ip)) {
         patricia_node_t *node = patricia_search_best3 (rule->tree4[p], ((u_char *)ip->s6_addr) + 12, 32);
@@ -834,12 +825,12 @@ LOCAL gboolean moloch_rules_check_ip(const MolochRule_t * const rule, const int 
         if (!logStr)
             return TRUE;
         BSB_EXPORT_sprintf(*logStr, "%s: %u.%u.%u.%u/%u, ",
-                config.fields[p]->expression,
-                node->prefix->add.sin.s_addr & 0xff,
-                (node->prefix->add.sin.s_addr >> 8) & 0xff,
-                (node->prefix->add.sin.s_addr >> 16) & 0xff,
-                (node->prefix->add.sin.s_addr >> 24) & 0xff,
-                node->prefix->bitlen);
+                           config.fields[p]->expression,
+                           node->prefix->add.sin.s_addr & 0xff,
+                           (node->prefix->add.sin.s_addr >> 8) & 0xff,
+                           (node->prefix->add.sin.s_addr >> 16) & 0xff,
+                           (node->prefix->add.sin.s_addr >> 24) & 0xff,
+                           node->prefix->bitlen);
     } else {
         patricia_node_t *node = patricia_search_best3 (rule->tree6[p], (u_char *)ip->s6_addr, 128);
         if (!node)
@@ -854,7 +845,7 @@ LOCAL gboolean moloch_rules_check_ip(const MolochRule_t * const rule, const int 
     return TRUE;
 }
 /******************************************************************************/
-LOCAL gboolean moloch_rules_check_str_match(const MolochRule_t * const rule, int p, const char * const key, BSB *logStr)
+LOCAL gboolean arkime_rules_check_str_match(const ArkimeRule_t *const rule, int p, const char *const key, BSB *logStr)
 {
 
     if (rule->hash[p] && g_hash_table_contains(rule->hash[p], key)) {
@@ -864,7 +855,7 @@ LOCAL gboolean moloch_rules_check_str_match(const MolochRule_t * const rule, int
         return TRUE;
     }
 
-    const GPtrArray * const matches = rule->match[p];
+    const GPtrArray *const matches = rule->match[p];
 
     if (!matches)
         return FALSE;
@@ -877,26 +868,26 @@ LOCAL gboolean moloch_rules_check_str_match(const MolochRule_t * const rule, int
             continue;
 
         switch (akey[0]) {
-        case MOLOCH_RULES_STR_MATCH_TAIL:
-            if (memcmp(akey+2, key + len - akey[1], akey[1]) == 0) {
+        case ARKIME_RULES_STR_MATCH_TAIL:
+            if (memcmp(akey + 2, key + len - akey[1], akey[1]) == 0) {
                 if (logStr) {
-                    BSB_EXPORT_sprintf(*logStr, "%s,tail: %s, ", config.fields[p]->expression, akey+2);
+                    BSB_EXPORT_sprintf(*logStr, "%s,tail: %s, ", config.fields[p]->expression, akey + 2);
                 }
                 return TRUE;
             }
             break;
-        case MOLOCH_RULES_STR_MATCH_HEAD:
-            if (memcmp(akey+2, key, akey[1]) == 0) {
+        case ARKIME_RULES_STR_MATCH_HEAD:
+            if (memcmp(akey + 2, key, akey[1]) == 0) {
                 if (logStr) {
-                    BSB_EXPORT_sprintf(*logStr, "%s,head: %s, ", config.fields[p]->expression, akey+2);
+                    BSB_EXPORT_sprintf(*logStr, "%s,head: %s, ", config.fields[p]->expression, akey + 2);
                 }
                 return TRUE;
             }
             break;
-        case MOLOCH_RULES_STR_MATCH_CONTAINS:
-            if (moloch_memstr(key, len, (char*)akey+2, akey[1]) != 0) {
+        case ARKIME_RULES_STR_MATCH_CONTAINS:
+            if (arkime_memstr(key, len, (char * )akey + 2, akey[1]) != 0) {
                 if (logStr) {
-                    BSB_EXPORT_sprintf(*logStr, "%s,contains: %s, ", config.fields[p]->expression, akey+2);
+                    BSB_EXPORT_sprintf(*logStr, "%s,contains: %s, ", config.fields[p]->expression, akey + 2);
                 }
                 return TRUE;
             }
@@ -906,27 +897,27 @@ LOCAL gboolean moloch_rules_check_str_match(const MolochRule_t * const rule, int
 
     return FALSE;
 }
-LOCAL void moloch_rules_check_rule_fields(MolochSession_t * const session, MolochRule_t * const rule, int skipPos, BSB *logStr);
+LOCAL void arkime_rules_check_rule_fields(ArkimeSession_t *const session, ArkimeRule_t *const rule, int skipPos, BSB *logStr);
 /******************************************************************************/
-LOCAL void moloch_rules_match(MolochSession_t * const session, MolochRule_t * const rule)
+LOCAL void arkime_rules_match(ArkimeSession_t *const session, ArkimeRule_t *const rule)
 {
     if (rule->log) {
         char ipStr[200];
         char logStr[5000];
         BSB bsb;
 
-        moloch_session_pretty_string(session, ipStr, sizeof(ipStr));
+        arkime_session_pretty_string(session, ipStr, sizeof(ipStr));
 
         BSB_INIT(bsb, logStr, sizeof(logStr));
 
-        moloch_rules_check_rule_fields(session, rule, -1, &bsb);
+        arkime_rules_check_rule_fields(session, rule, -1, &bsb);
 
         if (BSB_LENGTH(bsb) > 2) {
-            LOG("%s - %s - %.*s",rule->name, ipStr, (int)BSB_LENGTH(bsb) - 2, logStr);
+            LOG("%s - %s - %.*s", rule->name, ipStr, (int)BSB_LENGTH(bsb) - 2, logStr);
         }
     }
-    MOLOCH_THREAD_INCR(rule->matched);
-    moloch_field_ops_run(session, &rule->ops);
+    ARKIME_THREAD_INCR(rule->matched);
+    arkime_field_ops_run(session, &rule->ops);
 }
 /******************************************************************************/
 #define RULE_LOG_INT(_v) \
@@ -946,12 +937,12 @@ LOCAL void moloch_rules_match(MolochSession_t * const session, MolochRule_t * co
     if (good && logStr) \
         BSB_EXPORT_sprintf(*logStr, "%s: %" PRIu64 ", ", config.fields[p]->expression, _v);
 
-LOCAL void moloch_rules_check_rule_fields(MolochSession_t * const session, MolochRule_t * const rule, int skipPos, BSB *logStr)
+LOCAL void arkime_rules_check_rule_fields(ArkimeSession_t *const session, ArkimeRule_t *const rule, int skipPos, BSB *logStr)
 {
-    MolochString_t        *hstring;
-    MolochInt_t           *hint;
-    MolochStringHashStd_t *shash;
-    MolochIntHashStd_t    *ihash;
+    ArkimeString_t        *hstring;
+    ArkimeInt_t           *hint;
+    ArkimeStringHashStd_t *shash;
+    ArkimeIntHashStd_t    *ihash;
     GHashTable            *ghash;
     GHashTableIter         iter;
     gpointer               ikey;
@@ -967,61 +958,61 @@ LOCAL void moloch_rules_check_rule_fields(MolochSession_t * const session, Moloc
             continue;
 
         // Check fields that are directly in session
-        if (p >= MOLOCH_FIELD_EXSPECIAL_START) {
+        if (p >= ARKIME_FIELD_EXSPECIAL_START) {
             switch (p) {
-            case MOLOCH_FIELD_EXSPECIAL_SRC_IP:
-                good = moloch_rules_check_ip(rule, p, &session->addr1, logStr);
+            case ARKIME_FIELD_EXSPECIAL_SRC_IP:
+                good = arkime_rules_check_ip(rule, p, &session->addr1, logStr);
                 break;
-            case MOLOCH_FIELD_EXSPECIAL_SRC_PORT:
+            case ARKIME_FIELD_EXSPECIAL_SRC_PORT:
                 G_HASH_TABLE_CONTAINS_CHECK(session->port1);
                 break;
-            case MOLOCH_FIELD_EXSPECIAL_DST_IP:
-                good = moloch_rules_check_ip(rule, p, &session->addr2, logStr);
+            case ARKIME_FIELD_EXSPECIAL_DST_IP:
+                good = arkime_rules_check_ip(rule, p, &session->addr2, logStr);
                 break;
-            case MOLOCH_FIELD_EXSPECIAL_DST_PORT:
+            case ARKIME_FIELD_EXSPECIAL_DST_PORT:
                 G_HASH_TABLE_CONTAINS_CHECK(session->port2);
                 break;
-            case MOLOCH_FIELD_EXSPECIAL_TCPFLAGS_SYN:
-                G_HASH_TABLE_CONTAINS_CHECK(session->tcpFlagCnt[MOLOCH_TCPFLAG_SYN]);
+            case ARKIME_FIELD_EXSPECIAL_TCPFLAGS_SYN:
+                G_HASH_TABLE_CONTAINS_CHECK(session->tcpFlagCnt[ARKIME_TCPFLAG_SYN]);
                 break;
-            case MOLOCH_FIELD_EXSPECIAL_TCPFLAGS_SYN_ACK:
-                G_HASH_TABLE_CONTAINS_CHECK(session->tcpFlagCnt[MOLOCH_TCPFLAG_SYN_ACK]);
+            case ARKIME_FIELD_EXSPECIAL_TCPFLAGS_SYN_ACK:
+                G_HASH_TABLE_CONTAINS_CHECK(session->tcpFlagCnt[ARKIME_TCPFLAG_SYN_ACK]);
                 break;
-            case MOLOCH_FIELD_EXSPECIAL_TCPFLAGS_ACK:
-                G_HASH_TABLE_CONTAINS_CHECK(session->tcpFlagCnt[MOLOCH_TCPFLAG_ACK]);
+            case ARKIME_FIELD_EXSPECIAL_TCPFLAGS_ACK:
+                G_HASH_TABLE_CONTAINS_CHECK(session->tcpFlagCnt[ARKIME_TCPFLAG_ACK]);
                 break;
-            case MOLOCH_FIELD_EXSPECIAL_TCPFLAGS_PSH:
-                G_HASH_TABLE_CONTAINS_CHECK(session->tcpFlagCnt[MOLOCH_TCPFLAG_PSH]);
+            case ARKIME_FIELD_EXSPECIAL_TCPFLAGS_PSH:
+                G_HASH_TABLE_CONTAINS_CHECK(session->tcpFlagCnt[ARKIME_TCPFLAG_PSH]);
                 break;
-            case MOLOCH_FIELD_EXSPECIAL_TCPFLAGS_RST:
-                G_HASH_TABLE_CONTAINS_CHECK(session->tcpFlagCnt[MOLOCH_TCPFLAG_RST]);
+            case ARKIME_FIELD_EXSPECIAL_TCPFLAGS_RST:
+                G_HASH_TABLE_CONTAINS_CHECK(session->tcpFlagCnt[ARKIME_TCPFLAG_RST]);
                 break;
-            case MOLOCH_FIELD_EXSPECIAL_TCPFLAGS_FIN:
-                G_HASH_TABLE_CONTAINS_CHECK(session->tcpFlagCnt[MOLOCH_TCPFLAG_FIN]);
+            case ARKIME_FIELD_EXSPECIAL_TCPFLAGS_FIN:
+                G_HASH_TABLE_CONTAINS_CHECK(session->tcpFlagCnt[ARKIME_TCPFLAG_FIN]);
                 break;
-            case MOLOCH_FIELD_EXSPECIAL_TCPFLAGS_URG:
-                G_HASH_TABLE_CONTAINS_CHECK(session->tcpFlagCnt[MOLOCH_TCPFLAG_URG]);
+            case ARKIME_FIELD_EXSPECIAL_TCPFLAGS_URG:
+                G_HASH_TABLE_CONTAINS_CHECK(session->tcpFlagCnt[ARKIME_TCPFLAG_URG]);
                 break;
-            case MOLOCH_FIELD_EXSPECIAL_PACKETS_SRC:
+            case ARKIME_FIELD_EXSPECIAL_PACKETS_SRC:
                 G_HASH_TABLE_CONTAINS_CHECK(session->packets[0]);
                 break;
-            case MOLOCH_FIELD_EXSPECIAL_PACKETS_DST:
+            case ARKIME_FIELD_EXSPECIAL_PACKETS_DST:
                 G_HASH_TABLE_CONTAINS_CHECK(session->packets[1]);
                 break;
-            case MOLOCH_FIELD_EXSPECIAL_DATABYTES_SRC:
+            case ARKIME_FIELD_EXSPECIAL_DATABYTES_SRC:
                 G_HASH_TABLE_CONTAINS_CHECK_U64(session->databytes[0]);
                 break;
-            case MOLOCH_FIELD_EXSPECIAL_DATABYTES_DST:
+            case ARKIME_FIELD_EXSPECIAL_DATABYTES_DST:
                 G_HASH_TABLE_CONTAINS_CHECK_U64(session->databytes[1]);
                 break;
-            case MOLOCH_FIELD_EXSPECIAL_COMMUNITYID:
+            case ARKIME_FIELD_EXSPECIAL_COMMUNITYID:
                 if (session->ses == SESSION_ICMP) {
                     good = 0;
                     break;
                 }
                 // Only caculate once since several rules for session could use it
                 if (!communityId)
-                    communityId = moloch_db_community_id(session);
+                    communityId = arkime_db_community_id(session);
 
                 good = g_hash_table_contains(rule->hash[p], communityId);
                 if (good && logStr) \
@@ -1034,8 +1025,8 @@ LOCAL void moloch_rules_check_rule_fields(MolochSession_t * const session, Moloc
         }
 
         // Check count fields
-        if (p >= MOLOCH_FIELDS_CNT_MIN) {
-            int cp = p - MOLOCH_FIELDS_CNT_MIN; // cp is the field we are getting the count of
+        if (p >= ARKIME_FIELDS_CNT_MIN) {
+            int cp = p - ARKIME_FIELDS_CNT_MIN; // cp is the field we are getting the count of
             if (cp >= session->maxFields) {
                 good = 0;
                 continue;
@@ -1048,45 +1039,45 @@ LOCAL void moloch_rules_check_rule_fields(MolochSession_t * const session, Moloc
             }
 
             switch (config.fields[cp]->type) {
-            case MOLOCH_FIELD_TYPE_IP:
-            case MOLOCH_FIELD_TYPE_INT:
-            case MOLOCH_FIELD_TYPE_FLOAT:
-            case MOLOCH_FIELD_TYPE_STR:
+            case ARKIME_FIELD_TYPE_IP:
+            case ARKIME_FIELD_TYPE_INT:
+            case ARKIME_FIELD_TYPE_FLOAT:
+            case ARKIME_FIELD_TYPE_STR:
                 good = g_hash_table_contains(rule->hash[p], (gpointer)(long)1);
                 RULE_LOG_INT(1);
                 break;
 
-            case MOLOCH_FIELD_TYPE_INT_ARRAY:
+            case ARKIME_FIELD_TYPE_INT_ARRAY:
                 good = g_hash_table_contains(rule->hash[p], (gpointer)(long)session->fields[cp]->iarray->len);
                 RULE_LOG_INT(session->fields[cp]->iarray->len);
                 break;
-            case MOLOCH_FIELD_TYPE_FLOAT_ARRAY:
+            case ARKIME_FIELD_TYPE_FLOAT_ARRAY:
                 good = g_hash_table_contains(rule->hash[p], (gpointer)(long)session->fields[cp]->farray->len);
                 RULE_LOG_INT(session->fields[cp]->farray->len);
                 break;
-            case MOLOCH_FIELD_TYPE_INT_HASH:
+            case ARKIME_FIELD_TYPE_INT_HASH:
                 ihash = session->fields[cp]->ihash;
                 good = g_hash_table_contains(rule->hash[p], (gpointer)(long)HASH_COUNT(s_, *ihash));
                 RULE_LOG_INT(HASH_COUNT(s_, *ihash));
                 break;
-            case MOLOCH_FIELD_TYPE_IP_GHASH:
-            case MOLOCH_FIELD_TYPE_FLOAT_GHASH:
-            case MOLOCH_FIELD_TYPE_STR_GHASH:
-            case MOLOCH_FIELD_TYPE_INT_GHASH:
+            case ARKIME_FIELD_TYPE_IP_GHASH:
+            case ARKIME_FIELD_TYPE_FLOAT_GHASH:
+            case ARKIME_FIELD_TYPE_STR_GHASH:
+            case ARKIME_FIELD_TYPE_INT_GHASH:
                 ghash = session->fields[cp]->ghash;
                 good = g_hash_table_contains(rule->hash[p], (gpointer)(long)g_hash_table_size(ghash));
                 RULE_LOG_INT(g_hash_table_size(ghash));
                 break;
-            case MOLOCH_FIELD_TYPE_STR_ARRAY:
+            case ARKIME_FIELD_TYPE_STR_ARRAY:
                 good = g_hash_table_contains(rule->hash[p], (gpointer)(long)session->fields[cp]->sarray->len);
                 RULE_LOG_INT(session->fields[cp]->sarray->len);
                 break;
-            case MOLOCH_FIELD_TYPE_STR_HASH:
+            case ARKIME_FIELD_TYPE_STR_HASH:
                 shash = session->fields[cp]->shash;
                 good = g_hash_table_contains(rule->hash[p], (gpointer)(long)HASH_COUNT(s_, *shash));
                 RULE_LOG_INT(HASH_COUNT(s_, *shash));
                 break;
-            case MOLOCH_FIELD_TYPE_CERTSINFO:
+            case ARKIME_FIELD_TYPE_CERTSINFO:
                 // Unsupported
                 break;
             } /* switch */
@@ -1101,15 +1092,15 @@ LOCAL void moloch_rules_check_rule_fields(MolochSession_t * const session, Moloc
 
         // Check a real field
         switch (config.fields[p]->type) {
-        case MOLOCH_FIELD_TYPE_IP:
-            good = moloch_rules_check_ip(rule, p, session->fields[p]->ip, logStr);
+        case ARKIME_FIELD_TYPE_IP:
+            good = arkime_rules_check_ip(rule, p, session->fields[p]->ip, logStr);
             break;
 
-        case MOLOCH_FIELD_TYPE_INT:
+        case ARKIME_FIELD_TYPE_INT:
             good = g_hash_table_contains(rule->hash[p], (gpointer)(long)session->fields[p]->i);
             RULE_LOG_INT(session->fields[p]->i);
             break;
-        case MOLOCH_FIELD_TYPE_INT_ARRAY:
+        case ARKIME_FIELD_TYPE_INT_ARRAY:
             good = 0;
             for(i = 0; i < (int)session->fields[p]->iarray->len; i++) {
                 if (g_hash_table_contains(rule->hash[p], (gpointer)(long)g_array_index(session->fields[p]->iarray, uint32_t, i))) {
@@ -1119,18 +1110,18 @@ LOCAL void moloch_rules_check_rule_fields(MolochSession_t * const session, Moloc
                 }
             }
             break;
-        case MOLOCH_FIELD_TYPE_INT_HASH:
+        case ARKIME_FIELD_TYPE_INT_HASH:
             ihash = session->fields[p]->ihash;
             good = 0;
-            HASH_FORALL(i_, *ihash, hint,
+            HASH_FORALL2(i_, *ihash, hint) {
                 if (g_hash_table_contains(rule->hash[p], (gpointer)(long)hint->i_hash)) {
                     good = 1;
                     RULE_LOG_INT(hint->i_hash);
                     break;
                 }
-            );
+            }
             break;
-        case MOLOCH_FIELD_TYPE_INT_GHASH:
+        case ARKIME_FIELD_TYPE_INT_GHASH:
             ghash = session->fields[p]->ghash;
             g_hash_table_iter_init (&iter, ghash);
             good = 0;
@@ -1143,11 +1134,11 @@ LOCAL void moloch_rules_check_rule_fields(MolochSession_t * const session, Moloc
             }
             break;
 
-        case MOLOCH_FIELD_TYPE_FLOAT:
+        case ARKIME_FIELD_TYPE_FLOAT:
             good = g_hash_table_contains(rule->hash[p], (gpointer)(long)session->fields[p]->f);
             RULE_LOG_FLOAT(session->fields[p]->f);
             break;
-        case MOLOCH_FIELD_TYPE_FLOAT_ARRAY:
+        case ARKIME_FIELD_TYPE_FLOAT_ARRAY:
             good = 0;
             for(i = 0; i < (int)session->fields[p]->farray->len; i++) {
                 if (g_hash_table_contains(rule->hash[p], (gpointer)(long)g_array_index(session->fields[p]->farray, float, i))) {
@@ -1157,7 +1148,7 @@ LOCAL void moloch_rules_check_rule_fields(MolochSession_t * const session, Moloc
                 }
             }
             break;
-        case MOLOCH_FIELD_TYPE_FLOAT_GHASH:
+        case ARKIME_FIELD_TYPE_FLOAT_GHASH:
             ghash = session->fields[p]->ghash;
             g_hash_table_iter_init (&iter, ghash);
             good = 0;
@@ -1170,51 +1161,51 @@ LOCAL void moloch_rules_check_rule_fields(MolochSession_t * const session, Moloc
             }
             break;
 
-        case MOLOCH_FIELD_TYPE_IP_GHASH:
+        case ARKIME_FIELD_TYPE_IP_GHASH:
             ghash = session->fields[p]->ghash;
             g_hash_table_iter_init (&iter, ghash);
             good = 0;
             while (g_hash_table_iter_next (&iter, &ikey, NULL)) {
-                if (moloch_rules_check_ip(rule, p, ikey, logStr)) {
+                if (arkime_rules_check_ip(rule, p, ikey, logStr)) {
                     good = 1;
                     break;
                 }
             }
             break;
-        case MOLOCH_FIELD_TYPE_STR_GHASH:
+        case ARKIME_FIELD_TYPE_STR_GHASH:
             ghash = session->fields[p]->ghash;
             g_hash_table_iter_init (&iter, ghash);
             good = 0;
             while (g_hash_table_iter_next (&iter, &ikey, NULL)) {
-                if (moloch_rules_check_str_match(rule, p, ikey, logStr)) {
+                if (arkime_rules_check_str_match(rule, p, ikey, logStr)) {
                     good = 1;
                     break;
                 }
             }
             break;
-        case MOLOCH_FIELD_TYPE_STR:
-            good = moloch_rules_check_str_match(rule, p, session->fields[p]->str, logStr);
+        case ARKIME_FIELD_TYPE_STR:
+            good = arkime_rules_check_str_match(rule, p, session->fields[p]->str, logStr);
             break;
-        case MOLOCH_FIELD_TYPE_STR_ARRAY:
+        case ARKIME_FIELD_TYPE_STR_ARRAY:
             good = 0;
             for(i = 0; i < (int)session->fields[p]->sarray->len; i++) {
-                if (moloch_rules_check_str_match(rule, p, g_ptr_array_index(session->fields[p]->sarray, i), logStr)) {
+                if (arkime_rules_check_str_match(rule, p, g_ptr_array_index(session->fields[p]->sarray, i), logStr)) {
                     good = 1;
                     break;
                 }
             }
             break;
-        case MOLOCH_FIELD_TYPE_STR_HASH:
+        case ARKIME_FIELD_TYPE_STR_HASH:
             shash = session->fields[p]->shash;
             good = 0;
-            HASH_FORALL(s_, *shash, hstring,
-                if (moloch_rules_check_str_match(rule, p, (gpointer)hstring->str, logStr)) {
+            HASH_FORALL2(s_, *shash, hstring) {
+                if (arkime_rules_check_str_match(rule, p, (gpointer)hstring->str, logStr)) {
                     good = 1;
                     break;
                 }
-            );
+            }
             break;
-        case MOLOCH_FIELD_TYPE_CERTSINFO:
+        case ARKIME_FIELD_TYPE_CERTSINFO:
             // Unsupported
             break;
         } /* switch */
@@ -1228,7 +1219,7 @@ LOCAL void moloch_rules_check_rule_fields(MolochSession_t * const session, Moloc
 #ifdef RULES_DEBUG
         LOG("%s %s matched", rule->filename, rule->name);
 #endif
-        moloch_rules_match(session, rule);
+        arkime_rules_match(session, rule);
     } else {
 #ifdef RULES_DEBUG
         LOG("%s %s didn't matched", rule->filename, rule->name);
@@ -1238,25 +1229,25 @@ LOCAL void moloch_rules_check_rule_fields(MolochSession_t * const session, Moloc
     g_free(communityId);
 }
 /******************************************************************************/
-void moloch_rules_run_field_set_rules(MolochSession_t *session, int pos, GPtrArray *rules)
+void arkime_rules_run_field_set_rules(ArkimeSession_t *session, int pos, GPtrArray *rules)
 {
     for (int r = 0; r < (int)rules->len; r++) {
-        MolochRule_t *rule = g_ptr_array_index(rules, r);
+        ArkimeRule_t *rule = g_ptr_array_index(rules, r);
 
         // If there is only 1 field we are checking for then the ops can be run since it matched above
         if (rule->fieldsLen == 1) {
-            moloch_rules_match(session, rule);
+            arkime_rules_match(session, rule);
             continue;
         }
 
         // Need to check other fields in rule
-        moloch_rules_check_rule_fields(session, rule, pos, NULL);
+        arkime_rules_check_rule_fields(session, rule, pos, NULL);
     }
 }
 /******************************************************************************/
-void moloch_rules_run_field_set(MolochSession_t *session, int pos, const gpointer value)
+void arkime_rules_run_field_set(ArkimeSession_t *session, int pos, const gpointer value)
 {
-    if (MOLOCH_FIELD_TYPE_IS_IP(config.fields[pos]->type)) {
+    if (ARKIME_FIELD_TYPE_IS_IP(config.fields[pos]->type)) {
 
         patricia_node_t *nodes[PATRICIA_MAXBITS];
 
@@ -1272,7 +1263,7 @@ void moloch_rules_run_field_set(MolochSession_t *session, int pos, const gpointe
         // These are all the possible rules that match
         int i;
         for (i = 0; i < cnt; i++) {
-            moloch_rules_run_field_set_rules(session, pos, nodes[i]->data);
+            arkime_rules_run_field_set_rules(session, pos, nodes[i]->data);
         }
     } else {
         GPtrArray *rules;
@@ -1282,15 +1273,15 @@ void moloch_rules_run_field_set(MolochSession_t *session, int pos, const gpointe
             GHashTableIter         iter;
 
             g_hash_table_iter_init (&iter, current.fieldsMatch[pos]);
-            if (MOLOCH_FIELD_TYPE_IS_INT(config.fields[pos]->type)) {
+            if (ARKIME_FIELD_TYPE_IS_INT(config.fields[pos]->type)) {
                 uint64_t               num;
 
                 while (g_hash_table_iter_next (&iter, (gpointer *)&num, (gpointer *)&rules)) {
-                    MolochRuleIntMatch_t match;
+                    ArkimeRuleIntMatch_t match;
                     match.num = num;
                     uint32_t test = (uint32_t)(long)value;
                     if (test >= match.min && test <= match.max) {
-                        moloch_rules_run_field_set_rules(session, pos, rules);
+                        arkime_rules_run_field_set_rules(session, pos, rules);
                     }
                 }
             } else {
@@ -1302,17 +1293,17 @@ void moloch_rules_run_field_set(MolochSession_t *session, int pos, const gpointe
                         continue;
 
                     switch (akey[0]) {
-                    case MOLOCH_RULES_STR_MATCH_TAIL:
-                        if (memcmp(akey+2, value + len - akey[1], akey[1]) == 0)
-                            moloch_rules_run_field_set_rules(session, pos, rules);
+                    case ARKIME_RULES_STR_MATCH_TAIL:
+                        if (memcmp(akey + 2, value + len - akey[1], akey[1]) == 0)
+                            arkime_rules_run_field_set_rules(session, pos, rules);
                         break;
-                    case MOLOCH_RULES_STR_MATCH_HEAD:
-                        if (memcmp(akey+2, value, akey[1]) == 0)
-                            moloch_rules_run_field_set_rules(session, pos, rules);
+                    case ARKIME_RULES_STR_MATCH_HEAD:
+                        if (memcmp(akey + 2, value, akey[1]) == 0)
+                            arkime_rules_run_field_set_rules(session, pos, rules);
                         break;
-                    case MOLOCH_RULES_STR_MATCH_CONTAINS:
-                        if (moloch_memstr(value, len, (char*)akey+2, akey[1]) != 0)
-                            moloch_rules_run_field_set_rules(session, pos, rules);
+                    case ARKIME_RULES_STR_MATCH_CONTAINS:
+                        if (arkime_memstr(value, len, (char * )akey + 2, akey[1]) != 0)
+                            arkime_rules_run_field_set_rules(session, pos, rules);
                     }
                 }
             }
@@ -1322,80 +1313,80 @@ void moloch_rules_run_field_set(MolochSession_t *session, int pos, const gpointe
         if (current.fieldsHash[pos]) {
             rules = g_hash_table_lookup(current.fieldsHash[pos], value);
             if (rules)
-                moloch_rules_run_field_set_rules(session, pos, rules);
+                arkime_rules_run_field_set_rules(session, pos, rules);
         }
     }
 }
 /******************************************************************************/
-void moloch_rules_run_session_setup(MolochSession_t *session, MolochPacket_t *packet)
+void arkime_rules_run_session_setup(ArkimeSession_t *session, ArkimePacket_t *packet)
 {
     int r;
-    MolochRule_t *rule;
-    for (r = 0; (rule = current.rules[MOLOCH_RULE_TYPE_SESSION_SETUP][r]); r++) {
+    ArkimeRule_t *rule;
+    for (r = 0; (rule = current.rules[ARKIME_RULE_TYPE_SESSION_SETUP][r]); r++) {
         if (rule->fieldsLen) {
-            moloch_rules_check_rule_fields(session, rule, -1, NULL);
+            arkime_rules_check_rule_fields(session, rule, -1, NULL);
         } else if (rule->bpfp.bf_len && bpf_filter(rule->bpfp.bf_insns, packet->pkt, packet->pktlen, packet->pktlen)) {
-            moloch_rules_match(session, rule);
+            arkime_rules_match(session, rule);
         }
     }
 }
 /******************************************************************************/
-void moloch_rules_run_after_classify(MolochSession_t *session)
+void arkime_rules_run_after_classify(ArkimeSession_t *session)
 {
     int r;
-    MolochRule_t *rule;
-    for (r = 0; (rule = current.rules[MOLOCH_RULE_TYPE_AFTER_CLASSIFY][r]); r++) {
+    ArkimeRule_t *rule;
+    for (r = 0; (rule = current.rules[ARKIME_RULE_TYPE_AFTER_CLASSIFY][r]); r++) {
         if (rule->fieldsLen) {
-            moloch_rules_check_rule_fields(session, rule, -1, NULL);
+            arkime_rules_check_rule_fields(session, rule, -1, NULL);
         }
     }
 }
 /******************************************************************************/
-void moloch_rules_run_before_save(MolochSession_t *session, int final)
+void arkime_rules_run_before_save(ArkimeSession_t *session, int final)
 {
     int r;
     final = 1 << final;
-    MolochRule_t *rule;
-    for (r = 0; (rule = current.rules[MOLOCH_RULE_TYPE_BEFORE_SAVE][r]); r++) {
+    ArkimeRule_t *rule;
+    for (r = 0; (rule = current.rules[ARKIME_RULE_TYPE_BEFORE_SAVE][r]); r++) {
         if ((rule->saveFlags & final) == 0) {
             continue;
         }
 
         if (rule->fieldsLen) {
-            moloch_rules_check_rule_fields(session, rule, -1, NULL);
+            arkime_rules_check_rule_fields(session, rule, -1, NULL);
         }
     }
 }
 /******************************************************************************/
-void moloch_rules_session_create(MolochSession_t *session)
+void arkime_rules_session_create(ArkimeSession_t *session)
 {
     switch (session->ipProtocol) {
     case IPPROTO_SCTP:
     case IPPROTO_TCP:
     case IPPROTO_UDP:
-        if (config.fields[MOLOCH_FIELD_EXSPECIAL_SRC_PORT]->ruleEnabled)
-            moloch_rules_run_field_set(session, MOLOCH_FIELD_EXSPECIAL_SRC_PORT, (gpointer)(long)session->port1);
-        if (config.fields[MOLOCH_FIELD_EXSPECIAL_DST_PORT]->ruleEnabled)
-            moloch_rules_run_field_set(session, MOLOCH_FIELD_EXSPECIAL_DST_PORT, (gpointer)(long)session->port2);
-        // NO BREAK because TCP/UDP/SCTP have ip also
-        // fall through
+        if (config.fields[ARKIME_FIELD_EXSPECIAL_SRC_PORT]->ruleEnabled)
+            arkime_rules_run_field_set(session, ARKIME_FIELD_EXSPECIAL_SRC_PORT, (gpointer)(long)session->port1);
+        if (config.fields[ARKIME_FIELD_EXSPECIAL_DST_PORT]->ruleEnabled)
+            arkime_rules_run_field_set(session, ARKIME_FIELD_EXSPECIAL_DST_PORT, (gpointer)(long)session->port2);
+    // NO BREAK because TCP/UDP/SCTP have ip also
+    // fall through
     case IPPROTO_ESP:
     case IPPROTO_ICMP:
     case IPPROTO_ICMPV6:
-        if (config.fields[MOLOCH_FIELD_EXSPECIAL_SRC_IP]->ruleEnabled)
-            moloch_rules_run_field_set(session, MOLOCH_FIELD_EXSPECIAL_SRC_IP, &session->addr1);
-        if (config.fields[MOLOCH_FIELD_EXSPECIAL_DST_IP]->ruleEnabled)
-            moloch_rules_run_field_set(session, MOLOCH_FIELD_EXSPECIAL_DST_IP, &session->addr2);
+        if (config.fields[ARKIME_FIELD_EXSPECIAL_SRC_IP]->ruleEnabled)
+            arkime_rules_run_field_set(session, ARKIME_FIELD_EXSPECIAL_SRC_IP, &session->addr1);
+        if (config.fields[ARKIME_FIELD_EXSPECIAL_DST_IP]->ruleEnabled)
+            arkime_rules_run_field_set(session, ARKIME_FIELD_EXSPECIAL_DST_IP, &session->addr2);
         break;
     }
 }
 /******************************************************************************/
-void moloch_rules_stats()
+void arkime_rules_stats()
 {
     int t, r;
     int header = 0;
 
-    for (t = 0; t < MOLOCH_RULE_TYPE_NUM; t++) {
+    for (t = 0; t < ARKIME_RULE_TYPE_NUM; t++) {
         if (!current.rulesLen[t])
             continue;
         for (r = 0; r < current.rulesLen[t]; r++) {
@@ -1405,25 +1396,25 @@ void moloch_rules_stats()
                     header = 1;
                 }
                 printf("%-35s %-30s %" PRIu64 "\n",
-                        current.rules[t][r]->filename,
-                        current.rules[t][r]->name,
-                        current.rules[t][r]->matched);
+                       current.rules[t][r]->filename,
+                       current.rules[t][r]->name,
+                       current.rules[t][r]->matched);
             }
         }
     }
 }
 /******************************************************************************/
-void moloch_rules_init()
+void arkime_rules_init()
 {
-    rulesFiles = moloch_config_str_list(NULL, "rulesFiles", NULL);
+    rulesFiles = arkime_config_str_list(NULL, "rulesFiles", NULL);
 
     if (rulesFiles) {
-        moloch_config_monitor_files("rules files", rulesFiles, moloch_rules_load);
+        arkime_config_monitor_files("rules files", rulesFiles, arkime_rules_load);
     } else
-        moloch_rules_load_complete();
+        arkime_rules_load_complete();
 }
 /******************************************************************************/
-void moloch_rules_exit()
+void arkime_rules_exit()
 {
     g_strfreev(rulesFiles);
 }

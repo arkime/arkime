@@ -3,21 +3,11 @@
  *
  * Copyright 2012-2016 AOL Inc. All rights reserved.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this Software except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: Apache-2.0
  */
 'use strict';
 
-const MIN_DB_VERSION = 77;
+const MIN_DB_VERSION = 79;
 
 // ============================================================================
 // MODULES
@@ -29,7 +19,6 @@ const fse = require('fs-ext');
 const async = require('async');
 const Pcap = require('./pcap.js');
 const Db = require('./db.js');
-const molochparser = require('./molochparser.js');
 const version = require('../common/version');
 const http = require('http');
 const https = require('https');
@@ -41,11 +30,7 @@ const dayMs = 60000 * 60 * 24;
 const User = require('../common/user');
 const Auth = require('../common/auth');
 const ArkimeUtil = require('../common/arkimeUtil');
-
-if (typeof express !== 'function') {
-  console.log("ERROR - Need to run 'npm update' in viewer directory");
-  process.exit(1);
-}
+const ArkimeConfig = require('../common/arkimeConfig');
 
 // express app
 const app = express();
@@ -55,26 +40,26 @@ const app = express();
 // ============================================================================
 
 // app.configure
-const logger = require('morgan');
 const favicon = require('serve-favicon');
 const bodyParser = require('body-parser');
 const multer = require('multer');
 const compression = require('compression');
 
 // internal app deps
-const { internals } = require('./internals')(app, Config);
-const ViewerUtils = require('./viewerUtils')(Config, Db, internals);
+const internals = require('./internals');
+internals.initialize(app);
+const ViewerUtils = require('./viewerUtils');
 const Notifier = require('../common/notifier');
-const View = require('./apiViews');
-const Cron = require('./apiCrons');
-const sessionAPIs = require('./apiSessions')(Config, Db, internals, ViewerUtils);
-const connectionAPIs = require('./apiConnections')(Config, Db, ViewerUtils, sessionAPIs);
-const statsAPIs = require('./apiStats')(Config, Db, internals, ViewerUtils);
-const huntAPIs = require('./apiHunts')(Config, Db, internals, sessionAPIs, ViewerUtils);
-const userAPIs = require('./apiUsers')(Config, Db, internals, ViewerUtils);
-const historyAPIs = require('./apiHistory')(Db);
-const shortcutAPIs = require('./apiShortcuts')(Db, internals);
-const miscAPIs = require('./apiMisc')(Config, Db, internals, sessionAPIs, userAPIs, ViewerUtils);
+const ViewAPIs = require('./apiViews');
+const CronAPIs = require('./apiCrons');
+const SessionAPIs = require('./apiSessions');
+const ConnectionAPIs = require('./apiConnections');
+const StatsAPIs = require('./apiStats');
+const HuntAPIs = require('./apiHunts');
+const UserAPIs = require('./apiUsers');
+const HistoryAPIs = require('./apiHistory');
+const ShortcutAPIs = require('./apiShortcuts');
+const MiscAPIs = require('./apiMisc');
 
 // registers a get and a post
 app.getpost = (route, mw, func) => { app.get(route, mw, func); app.post(route, mw, func); };
@@ -83,7 +68,7 @@ app.enable('jsonp callback');
 app.set('views', path.join(__dirname, '/views'));
 app.set('view engine', 'pug');
 
-app.use(bodyParser.json());
+app.use(ArkimeUtil.jsonParser);
 app.use(bodyParser.urlencoded({ limit: '5mb', extended: true }));
 
 app.use(compression());
@@ -92,32 +77,6 @@ app.use(compression());
 // See https://github.com/nodejs/node/issues/4182
 process.on('SIGINT', function () {
   process.exit();
-});
-
-// app security options -------------------------------------------------------
-const iframeOption = Config.get('iframe', 'deny');
-if (iframeOption === 'sameorigin' || iframeOption === 'deny') {
-  app.use(helmet.frameguard({ action: iframeOption }));
-} else {
-  app.use(helmet.frameguard({
-    action: 'allow-from',
-    domain: iframeOption
-  }));
-}
-
-app.use(helmet.hidePoweredBy());
-app.use(helmet.xssFilter());
-if (Config.get('hstsHeader', false) && Config.isHTTPS()) {
-  app.use(helmet.hsts({
-    maxAge: 31536000,
-    includeSubDomains: true
-  }));
-}
-
-// calculate nonce
-app.use((req, res, next) => {
-  res.locals.nonce = Buffer.from(uuid()).toString('base64');
-  next();
 });
 
 // define csp headers
@@ -145,34 +104,51 @@ const cyberchefCspHeader = helmet.contentSecurityPolicy({
   }
 });
 
-// logging --------------------------------------------------------------------
-// send req to access log file or stdout
-let _stream = process.stdout;
-const _accesslogfile = Config.get('accessLogFile');
-if (_accesslogfile) {
-  _stream = fs.createWriteStream(_accesslogfile, { flags: 'a' });
-}
+const securityApp = express.Router();
+app.use(securityApp);
+ArkimeConfig.loaded(() => {
+  // app security options -------------------------------------------------------
+  const iframeOption = Config.get('iframe', 'deny');
+  if (iframeOption === 'sameorigin' || iframeOption === 'deny') {
+    securityApp.use(helmet.frameguard({ action: iframeOption }));
+  } else {
+    securityApp.use(helmet.frameguard({
+      action: 'allow-from',
+      domain: iframeOption
+    }));
+  }
 
-const _loggerFormat = decodeURIComponent(Config.get(
-  'accessLogFormat',
-  ':date :username %1b[1m:method%1b[0m %1b[33m:url%1b[0m :status :res[content-length] bytes :response-time ms'
-));
-const _suppressPaths = Config.getArray('accessLogSuppressPaths', ';', '');
+  securityApp.use(helmet.hidePoweredBy());
+  securityApp.use(helmet.xssFilter());
+  if (Config.get('hstsHeader', false) && Config.isHTTPS()) {
+    securityApp.use(helmet.hsts({
+      maxAge: 31536000,
+      includeSubDomains: true
+    }));
+  }
 
-app.use(logger(_loggerFormat, {
-  stream: _stream,
-  skip: (req, res) => { return _suppressPaths.includes(req.path); }
-}));
-
-logger.token('username', (req, res) => {
-  return req.user ? req.user.userId : '-';
+  // calculate nonce
+  securityApp.use((req, res, next) => {
+    res.locals.nonce = Buffer.from(uuid()).toString('base64');
+    next();
+  });
 });
+
+ArkimeUtil.logger(app);
 
 // appwide middleware ---------------------------------------------------------
 app.use((req, res, next) => {
   res.serverError = ArkimeUtil.serverError;
 
   req.url = req.url.replace(Config.basePath(), '/');
+  return next();
+});
+
+// Don't allow cluster if not multiviewer except for the /api/session.*/send calls
+app.use((req, res, next) => {
+  if (!internals.multiES && req.query.cluster !== undefined) {
+    delete req.query.cluster;
+  }
   return next();
 });
 
@@ -190,27 +166,45 @@ app.use(['/assets', '/logos'], express.static(
 ), ArkimeUtil.missingResource);
 
 // regression test methods, before auth checks --------------------------------
-if (Config.get('regressionTests')) {
+if (ArkimeConfig.regressionTests) {
   // Override default lastUsed min write internal for tests
   User.lastUsedMinInterval = 1000;
+
+  app.get('/regressionTests/makeToken', (req, res, next) => {
+    req.user = {
+      userId: req.query.arkimeRegressionUser ?? 'anonymous'
+    };
+    setCookie(req, res);
+    return res.end();
+  });
 
   app.post('/regressionTests/shutdown', function (req, res) {
     Db.close();
     process.exit(0);
   });
   app.post('/regressionTests/flushCache', function (req, res) {
+    User.flushCache();
     Db.flushCache();
     res.send('{}');
   });
-  app.get('/regressionTests/processCronQueries', function (req, res) {
-    internals.processCronQueries();
-    res.send('{}');
+  app.get('/regressionTests/processCronQueries', async function (req, res) {
+    internals.cronTimeout = 0;
+    await Db.refresh();
+    CronAPIs.processCronQueries();
+    setTimeout(async function checkCronFinished () {
+      if (internals.cronRunning) {
+        setTimeout(checkCronFinished, 500);
+      } else {
+        await Db.refresh();
+        res.send('{}');
+      }
+    }, 500);
   });
   // Make sure all jobs have run and return
   app.get('/regressionTests/processHuntJobs', async function (req, res) {
     await Db.flush();
     await Db.refresh();
-    huntAPIs.processHuntJobs();
+    HuntAPIs.processHuntJobs();
 
     setTimeout(function checkHuntFinished () {
       if (internals.runningHuntJob) {
@@ -218,7 +212,7 @@ if (Config.get('regressionTests')) {
       } else {
         Db.search('hunts', 'hunt', { query: { terms: { status: ['running', 'queued'] } } }, async function (err, result) {
           if (result.hits.total > 0) {
-            huntAPIs.processHuntJobs();
+            HuntAPIs.processHuntJobs();
             await Db.refresh();
             setTimeout(checkHuntFinished, 1000);
           } else {
@@ -248,43 +242,47 @@ app.use('/_ns_/nstest.html', function (req, res) {
 app.get(
   ['/api/parliament', '/parliament.json'],
   [ArkimeUtil.noCacheJson],
-  statsAPIs.getParliament
+  StatsAPIs.getParliament
 );
 
 // stats apis - no auth -------------------------------------------------------
 app.get( // es health endpoint
   ['/api/eshealth', '/eshealth.json'],
   [ArkimeUtil.noCacheJson],
-  statsAPIs.getESHealth
+  StatsAPIs.getESHealth
 );
 
 // password, testing, or anonymous mode setup ---------------------------------
 Auth.app(app);
-if (Config.get('passwordSecret')) {
-  // check for arkimeUser
-  app.use((req, res, next) => {
-    // For receiveSession there is no user (so no role check can be done) AND must be s2s
-    if (req.url.match(/^\/receiveSession/) || req.url.match(/^\/api\/sessions\/receive/)) {
-      if (req.headers['x-arkime-auth'] === undefined) {
-        return res.status(401).send('receive session only allowed s2s');
-      } else {
-        return next();
-      }
-    }
 
-    if (!req.user.hasRole('arkimeUser')) {
-      return res.status(403).send('Need arkimeUser role assigned');
+// check for arkimeUser
+app.use(async (req, res, next) => {
+  if (Auth.isAnonymousMode()) {
+    return next();
+  }
+  // For receiveSession there is no user (so no role check can be done) AND must be s2s
+  if (req.url.match(/^\/receiveSession/) || req.url.match(/^\/api\/sessions\/receive/)) {
+    if (req.headers['x-arkime-auth'] === undefined) {
+      return res.status(401).send('receive session only allowed s2s');
+    } else {
+      return next();
     }
-    next();
-  });
-} else if (Config.get('regressionTests', false)) {
-  console.log('WARNING - The setting "regressionTests" is set to true, do NOT use in production, for testing only');
-  internals.noPasswordSecret = true;
-} else {
-  /* Shared password isn't set, who cares about auth, db is only used for settings */
-  console.log('WARNING - The setting "passwordSecret" is not set, all access is anonymous');
-  internals.noPasswordSecret = true;
-}
+  }
+
+  if (!req.user.hasRole('arkimeUser')) {
+    if (Config.debug) {
+      console.log('Missing arkimeUser userId: %s roles: %s expanded roles: %s', req.user.userId, req.user.roles, await req.user.getRoles());
+    }
+    return res.status(403).send('Need arkimeUser role assigned');
+  }
+  next();
+});
+
+ArkimeConfig.loaded(() => {
+  if (ArkimeConfig.regressionTests) {
+    console.log('WARNING - Option --regressionTests was used, do NOT use in production, for testing only');
+  }
+});
 
 // ============================================================================
 // UTILITY
@@ -343,8 +341,8 @@ function createSessionDetail () {
   const found = {};
   let dirs = [];
 
-  dirs = dirs.concat(Config.getArray('pluginsDir', ';', `${version.config_prefix}/plugins`));
-  dirs = dirs.concat(Config.getArray('parsersDir', ';', `${version.config_prefix}/parsers`));
+  dirs = dirs.concat(Config.getArray('pluginsDir', `${version.config_prefix}/plugins`));
+  dirs = dirs.concat(Config.getArray('parsersDir', `${version.config_prefix}/parsers`));
 
   dirs.forEach(function (dir) {
     try {
@@ -389,7 +387,6 @@ function createSessionDetail () {
 
     internals.sessionDetailNew = internals.sessionDetailNew.replace(/div.sessionDetailMeta.bold/g, 'h4.sessionDetailMeta')
       .replace(/dl.sessionDetailMeta/g, 'dl')
-      .replace(/a.moloch-right-click.*molochexpr='([^']+)'.*#{(.*)}/g, "+clickableValue('$1', $2)")
     ;
   });
 }
@@ -430,11 +427,11 @@ function createActions (configKey, emitter, internalsKey) {
 // ============================================================================
 // security/access middleware -------------------------------------------------
 function checkProxyRequest (req, res, next) {
-  sessionAPIs.isLocalView(req.params.nodeName, function () {
+  SessionAPIs.isLocalView(req.params.nodeName, function () {
     return next();
   },
   function () {
-    return sessionAPIs.proxyRequest(req, res);
+    return SessionAPIs.proxyRequest(req, res);
   });
 }
 
@@ -459,7 +456,9 @@ function setCookie (req, res, next) {
     cookieOptions
   );
 
-  return next();
+  if (next) {
+    return next();
+  }
 }
 
 function checkCookieToken (req, res, next) {
@@ -490,7 +489,7 @@ function checkHeaderToken (req, res, next) {
 
 // used to disable endpoints in multi es mode
 function disableInMultiES (req, res, next) {
-  if (Config.get('multiES', false)) {
+  if (internals.multiES) {
     return res.serverError(401, 'Not supported in multies');
   }
   return next();
@@ -518,39 +517,13 @@ async function checkHuntAccess (req, res, next) {
   }
 }
 
-async function checkCronAccess (req, res, next) {
-  if (req.params.key !== undefined) {
-    req.body.key = req.params.key;
-    delete req.params.key;
-  }
-
-  if (!ArkimeUtil.isString(req.body.key)) {
-    return res.serverError(403, 'Missing cron key');
-  }
-
-  if (req.user.hasRole('arkimeAdmin')) {
-    // an admin can do anything to any query
-    return next();
-  } else {
-    try {
-      const { body: { _source: query } } = await Db.get('queries', 'query', req.body.key);
-      if (query.creator === req.user.userId) {
-        return next();
-      }
-      return res.serverError(403, 'You cannot change another user\'s query unless you have admin privileges');
-    } catch (err) {
-      return res.serverError(403, 'Unknown query');
-    }
-  }
-}
-
 function checkEsAdminUser (req, res, next) {
   if (internals.esAdminUsersSet) {
     if (internals.esAdminUsers.includes(req.user.userId)) {
       return next();
     }
   } else {
-    if (req.user.hasRole('arkimeAdmin') && Config.get('multiES', false) === false) {
+    if (req.user.hasRole('arkimeAdmin') && !internals.multiES) {
       return next();
     }
   }
@@ -624,15 +597,15 @@ function logAction (uiPage) {
       log.recordsFiltered = recordsFiltered;
     };
 
-    req._molochStartTime = new Date();
+    req._arkimeStartTime = new Date();
 
     function finish () {
       res.removeListener('finish', finish);
 
-      log.queryTime = new Date() - req._molochStartTime;
+      log.queryTime = new Date() - req._arkimeStartTime;
 
-      if (req._molochESQuery) { log.esQuery = req._molochESQuery; }
-      if (req._molochESQueryIndices) { log.esQueryIndices = req._molochESQueryIndices; }
+      if (req._arkimeESQuery) { log.esQuery = req._arkimeESQuery; }
+      if (req._arkimeESQueryIndices) { log.esQueryIndices = req._arkimeESQueryIndices; }
 
       try {
         Db.historyIt(log);
@@ -647,8 +620,8 @@ function logAction (uiPage) {
   };
 }
 
-// field to exp middleware ----------------------------------------------------
-function fieldToExp (req, res, next) {
+// exp to field middleware ----------------------------------------------------
+function expToField (req, res, next) {
   if (req.query.exp && !req.query.field) {
     const field = Config.getFieldsMap()[req.query.exp];
     if (field) {
@@ -689,7 +662,7 @@ function fillQueryFromBody (req, res, next) {
     req.query = query;
   }
   if (Config.debug > 1) {
-    console.log(`${req.url} query`, req.query);
+    console.log('%s query: %s', ArkimeUtil.sanitizeStr(req.url), ArkimeUtil.sanitizeStr(req.query));
   }
   next();
 }
@@ -705,11 +678,11 @@ function getSettingUserCache (req, res, next) {
   }
 
   // user is trying to get another user's settings without admin privilege
-  if (!req.user.hasRole('usersAdmin')) { return res.serverError(403, 'Need admin privileges'); }
+  if (!req.user.hasRole('usersAdmin') || !req.user.hasRole('arkimeAdmin')) { return res.serverError(403, 'Need admin privileges'); }
 
   User.getUserCache(req.query.userId, (err, user) => {
     if (err || !user) {
-      if (internals.noPasswordSecret) {
+      if (Auth.isAnonymousMode()) {
         req.settingUser = Object.assign(new User(), req.user);
         delete req.settingUser.found;
       } else {
@@ -759,13 +732,13 @@ function setFieldLocals () {
 function loadPlugins () {
   const api = {
     registerWriter: function (str, info) {
-      internals.writers[str] = info;
+      internals.writers.set(str, info);
     },
     getDb: function () { return Db; },
     getPcap: function () { return Pcap; }
   };
-  const plugins = Config.getArray('viewerPlugins', ';', '');
-  const dirs = Config.getArray('pluginsDir', ';', `${version.config_prefix}/plugins`);
+  const plugins = Config.getArray('viewerPlugins', '');
+  const dirs = Config.getArray('pluginsDir', `${version.config_prefix}/plugins`);
   plugins.forEach(function (plugin) {
     plugin = plugin.trim();
     if (plugin === '') {
@@ -805,7 +778,7 @@ function sendSessionWorker (options, cb) {
     return cb({ success: false, text: 'Missing cluster' });
   }
 
-  sessionAPIs.processSessionId(options.id, true, function (pcap, header) {
+  SessionAPIs.processSessionId(options.id, true, function (pcap, header) {
     packetshdr = header;
   }, function (pcap, packet, pcb, i) {
     packetslen += packet.length;
@@ -842,6 +815,7 @@ function sendSessionWorker (options, cb) {
         session.tags = [];
       }
       session.tags = session.tags.concat(tags);
+      session.tagsCnt = session.tags.length;
     }
 
     const remoteClusters = internals.remoteClusters;
@@ -907,82 +881,6 @@ function sendSessionWorker (options, cb) {
 }
 
 internals.sendSessionQueue = async.queue(sendSessionWorker, 5);
-
-const qlworking = {};
-function sendSessionsListQL (pOptions, list, nextQLCb) {
-  if (!list) {
-    return;
-  }
-
-  const nodes = {};
-
-  list.forEach(function (item) {
-    if (!nodes[item.node]) {
-      nodes[item.node] = [];
-    }
-    nodes[item.node].push(item.id);
-  });
-
-  const keys = Object.keys(nodes);
-
-  async.eachLimit(keys, 15, function (node, nextCb) {
-    sessionAPIs.isLocalView(node, function () {
-      let sent = 0;
-      nodes[node].forEach(function (item) {
-        const options = {
-          id: item,
-          nodeName: node
-        };
-        Db.merge(options, pOptions);
-
-        // Get from our DISK
-        internals.sendSessionQueue.push(options, function () {
-          sent++;
-          if (sent === nodes[node].length) {
-            nextCb();
-          }
-        });
-      });
-    },
-    function () {
-      // Get from remote DISK
-      ViewerUtils.getViewUrl(node, (err, viewUrl, client) => {
-        let sendPath = `${Config.basePath(node) + node}/sendSessions?saveId=${pOptions.saveId}&cluster=${pOptions.cluster}`;
-        if (pOptions.tags) { sendPath += `&tags=${pOptions.tags}`; }
-        const url = new URL(sendPath, viewUrl);
-        const reqOptions = {
-          method: 'POST',
-          agent: client === http ? internals.httpAgent : internals.httpsAgent
-        };
-
-        Auth.addS2SAuth(reqOptions, pOptions.user, node, sendPath);
-        ViewerUtils.addCaTrust(reqOptions, node);
-
-        const preq = client.request(url, reqOptions, (pres) => {
-          pres.on('data', (chunk) => {
-            qlworking[url.path] = 'data';
-          });
-          pres.on('end', () => {
-            delete qlworking[url.path];
-            setImmediate(nextCb);
-          });
-        });
-        preq.on('error', (e) => {
-          delete qlworking[url.path];
-          console.log("ERROR - Couldn't proxy sendSession request=", url, '\nerror=', e);
-          setImmediate(nextCb);
-        });
-        preq.setHeader('content-type', 'application/x-www-form-urlencoded');
-        preq.write('ids=');
-        preq.write(nodes[node].join(','));
-        preq.end();
-        qlworking[url.path] = 'sent';
-      });
-    });
-  }, (err) => {
-    nextQLCb();
-  });
-}
 
 // ============================================================================
 // EXPIRING
@@ -1118,12 +1016,12 @@ function expireCheckAll () {
 
     // Find all the pcap dirs for local nodes
     async.map(nodes, function (node, cb) {
-      const pcapDirs = Config.getFull(node, 'pcapDir');
-      if (typeof pcapDirs !== 'string') {
+      const pcapDirs = Config.getFullArray(node, 'pcapDir');
+      if (!pcapDirs) {
         return cb("ERROR - couldn't find pcapDir setting for node: " + node + '\nIf you have it set try running:\nnpm remove iniparser; npm cache clean; npm update iniparser');
       }
       // Create a mapping from device id to stat information and all directories on that device
-      pcapDirs.split(';').forEach(function (pcapDir) {
+      pcapDirs.forEach(function (pcapDir) {
         if (!pcapDir) {
           return; // Skip empty elements.  Prevents errors when pcapDir has a trailing or double ;
         }
@@ -1155,20 +1053,23 @@ function expireCheckAll () {
 // REDIRECTS & DEMO SETUP
 // ============================================================================
 // APIs disabled in demoMode, needs to be before real callbacks
-if (Config.get('demoMode', false)) {
-  console.log('WARNING - Starting in demo mode, some APIs disabled');
-  app.all(['/settings', '/users', '/history/list'], (req, res) => {
-    return res.send('Disabled in demo mode.');
-  });
+ArkimeConfig.loaded(() => {
+  if (Config.get('demoMode', false)) {
+    console.log('WARNING - Starting in demo mode, some APIs disabled');
+  }
+});
 
-  app.get(['/user/cron', '/api/cron', '/api/user/cron', '/history/list'], (req, res) => {
-    return res.serverError(403, 'Disabled in demo mode.');
-  });
-
-  app.post(['/user/password/change', '/changePassword', '/tableState/:tablename'], (req, res) => {
-    return res.serverError(403, 'Disabled in demo mode.');
-  });
-}
+app.all([
+  '/api/histories',
+  '/api/history/*',
+  '/api/cron*',
+  '/api/user/password*'
+], (req, res, next) => {
+  if (!req.user.isDemoMode()) {
+    return next();
+  }
+  return res.serverError(403, 'Disabled in demo mode.');
+});
 
 // redirect to sessions page and conserve params
 app.get(['/', '/app'], (req, res) => {
@@ -1188,40 +1089,130 @@ app.get('/about', User.checkPermissions(['webEnabled']), (req, res) => {
 // ============================================================================
 // APIS
 // ============================================================================
+app.all([
+  '/user/current',
+  '/user/create',
+  '/user/delete',
+  '/user.css',
+  '/user/list',
+  '/user/password/change',
+  '/user/settings',
+  '/user/settings/update',
+  '/user/columns',
+  '/user/columns/create',
+  '/user/columns/:name',
+  '/user/columns/delete',
+  '/user/spiview/fields',
+  '/user/spiview/fields/create',
+  '/user/spiview/fields/:name',
+  '/user/spiview/fields/delete',
+  '/user/:userId/acknowledgeMsg',
+  '/user/update',
+  '/state/:name',
+  '/api/user/views',
+  '/user/views',
+  '/api/user/view',
+  '/user/views/create',
+  '/api/user/view/:id',
+  '/user/views/delete',
+  '/user/views/update',
+  '/api/user/crons',
+  '/user/cron',
+  '/api/user/cron',
+  '/user/cron/create',
+  '/api/user/cron/:key',
+  '/user/cron/delete',
+  '/user/cron/update',
+  '/notifierTypes',
+  '/notifiers',
+  '/notifiers/:id',
+  '/notifiers/:id/test',
+  '/history/list',
+  '/history/list/:id',
+  '/esindices/list',
+  '/esindices/:index',
+  '/esindices/:index/optimize',
+  '/esindices/:index/close',
+  '/esindices/:index/open',
+  '/esindices/:index/shrink',
+  '/estask/list',
+  '/estask/cancel',
+  '/estask/cancelById',
+  '/estask/cancelAll',
+  '/esadmin/list',
+  '/esadmin/set',
+  '/esadmin/reroute',
+  '/esadmin/flush',
+  '/esadmin/unflood',
+  '/esadmin/clearcache',
+  '/esshard/list',
+  '/esshard/exclude/:type/:value',
+  '/esshard/include/:type/:value',
+  '/esrecovery/list',
+  '/api/title',
+  '/titleconfig',
+  '/molochRightClick',
+  '/file/list',
+  '/api/:nodeName/:fileNum/filesize',
+  '/:nodeName/:fileNum/filesize.json',
+  '/fields',
+  '/molochclusters',
+  '/remoteclusters',
+  '/clusters',
+  '/reverseDNS.txt',
+  '/lookups',
+  '/lookups/:id',
+  '/hunt/list',
+  '/hunt',
+  '/hunt/:id',
+  '/hunt/:id/cancel',
+  '/hunt/:id/pause',
+  '/hunt/:id/play',
+  '/hunt/:id/removefromsessions',
+  '/hunt/:id/users',
+  '/hunt/:id/users/:user',
+  '/:nodeName/hunt/:huntId/remote/:sessionId',
+  '/spigraphhierarchy',
+  '/addTags',
+  '/removeTags'
+], (req, res) => {
+  res.status(404).end('Old API');
+});
+
 // user apis ------------------------------------------------------------------
 app.get( // current user endpoint
-  ['/api/user', '/user/current'],
+  ['/api/user'],
   [ArkimeUtil.noCacheJson, User.checkPermissions(['webEnabled'])],
   User.apiGetUser
 );
 
 app.post( // create user endpoint
-  ['/api/user', '/user/create'],
+  ['/api/user'],
   [ArkimeUtil.noCacheJson, logAction(), checkCookieToken, User.checkRole('usersAdmin')],
   User.apiCreateUser
 );
 
 app.delete( // user delete endpoint
-  ['/api/user/:id', '/user/delete'],
+  ['/api/user/:id'],
   [ArkimeUtil.noCacheJson, logAction(), checkCookieToken, User.checkRole('usersAdmin')],
   User.apiDeleteUser
 );
-app.post( // user delete endpoint for backwards compatibility with API 0.x-2.x
-  ['/user/delete'],
-  [ArkimeUtil.noCacheJson, logAction(), checkCookieToken, User.checkRole('usersAdmin')],
-  User.apiDeleteUser
-);
-
 app.get( // user css endpoint
-  ['/api/user[/.]css', '/user.css'],
+  ['/api/user[/.]css'],
   User.checkPermissions(['webEnabled']),
-  userAPIs.getUserCSS
+  UserAPIs.getUserCSS
 );
 
 app.post( // get users endpoint
-  ['/api/users', '/user/list'],
+  ['/api/users'],
   [ArkimeUtil.noCacheJson, recordResponseTime, logAction('users'), User.checkRole('usersAdmin')],
   User.apiGetUsers
+);
+
+app.post( // get users endpoint
+  ['/api/users[./]csv'],
+  [logAction('users.csv'), User.checkRole('usersAdmin')],
+  User.apiGetUsersCSV
 );
 
 app.post( // (non-admin) list users (with role status for roleAssigners)
@@ -1231,79 +1222,79 @@ app.post( // (non-admin) list users (with role status for roleAssigners)
 );
 
 app.post( // update user password endpoint
-  ['/api/user/password', '/user/password/change'],
-  [ArkimeUtil.noCacheJson, checkCookieToken, logAction(), ArkimeUtil.getSettingUserDb],
+  ['/api/user/password'],
+  [ArkimeUtil.noCacheJson, checkCookieToken, logAction(), Auth.getSettingUserDb],
   User.apiUpdateUserPassword
 );
 
 app.get( // user settings endpoint
-  ['/api/user/settings', '/user/settings'],
-  [ArkimeUtil.noCacheJson, recordResponseTime, ArkimeUtil.getSettingUserDb, User.checkPermissions(['webEnabled']), setCookie],
-  userAPIs.getUserSettings
+  ['/api/user/settings'],
+  [ArkimeUtil.noCacheJson, recordResponseTime, Auth.getSettingUserDb, User.checkPermissions(['webEnabled']), setCookie],
+  UserAPIs.getUserSettings
 );
 
-app.post( // udpate user settings endpoint
-  ['/api/user/settings', '/user/settings/update'],
-  [ArkimeUtil.noCacheJson, checkCookieToken, logAction(), ArkimeUtil.getSettingUserDb],
-  userAPIs.updateUserSettings
+app.post( // update user settings endpoint
+  ['/api/user/settings'],
+  [ArkimeUtil.noCacheJson, checkCookieToken, logAction(), Auth.getSettingUserDb],
+  UserAPIs.updateUserSettings
 );
 
 app.get( // user custom columns endpoint
-  ['/api/user/columns', '/user/columns'],
+  ['/api/user/columns'],
   [ArkimeUtil.noCacheJson, getSettingUserCache, User.checkPermissions(['webEnabled'])],
-  userAPIs.getUserColumns
+  UserAPIs.getUserColumns
 );
 
 app.post( // create user custom columns endpoint
-  ['/api/user/column', '/user/columns/create'],
-  [ArkimeUtil.noCacheJson, checkCookieToken, logAction(), ArkimeUtil.getSettingUserDb],
-  userAPIs.createUserColumns
+  ['/api/user/column'],
+  [ArkimeUtil.noCacheJson, checkCookieToken, logAction(), Auth.getSettingUserDb],
+  UserAPIs.createUserColumns
 );
 
 app.put( // update user custom column endpoint
-  ['/api/user/column/:name', '/user/columns/:name'],
-  [ArkimeUtil.noCacheJson, checkCookieToken, logAction(), ArkimeUtil.getSettingUserDb],
-  userAPIs.updateUserColumns
+  ['/api/user/column/:name'],
+  [ArkimeUtil.noCacheJson, checkCookieToken, logAction(), Auth.getSettingUserDb],
+  UserAPIs.updateUserColumns
 );
 
-app.deletepost( // delete user custom column endpoint (DELETE and POST)
-  ['/api/user/column/:name', '/user/columns/delete'],
-  [ArkimeUtil.noCacheJson, checkCookieToken, logAction(), ArkimeUtil.getSettingUserDb],
-  userAPIs.deleteUserColumns
+app.delete( // delete user custom column endpoint
+  ['/api/user/column/:name'],
+  [ArkimeUtil.noCacheJson, checkCookieToken, logAction(), Auth.getSettingUserDb],
+  UserAPIs.deleteUserColumns
 );
 
 app.get( // user spiview fields endpoint
-  ['/api/user/spiview', '/user/spiview/fields'],
+  ['/api/user/spiview'],
   [ArkimeUtil.noCacheJson, getSettingUserCache, User.checkPermissions(['webEnabled'])],
-  userAPIs.getUserSpiviewFields
+  UserAPIs.getUserSpiviewFields
 );
 
 app.post( // create spiview fields endpoint
-  ['/api/user/spiview', '/user/spiview/fields/create'],
-  [ArkimeUtil.noCacheJson, checkCookieToken, logAction(), ArkimeUtil.getSettingUserDb],
-  userAPIs.createUserSpiviewFields
+  ['/api/user/spiview'],
+  [ArkimeUtil.noCacheJson, checkCookieToken, logAction(), Auth.getSettingUserDb],
+  UserAPIs.createUserSpiviewFields
 );
 
 app.put( // update user spiview fields endpoint
-  ['/api/user/spiview/:name', '/user/spiview/fields/:name'],
-  [ArkimeUtil.noCacheJson, checkCookieToken, logAction(), ArkimeUtil.getSettingUserDb],
-  userAPIs.updateUserSpiviewFields
+  ['/api/user/spiview/:name'],
+  [ArkimeUtil.noCacheJson, checkCookieToken, logAction(), Auth.getSettingUserDb],
+  UserAPIs.updateUserSpiviewFields
 );
 
-app.deletepost( // delete user spiview fields endpoint (DELETE and POST)
-  ['/api/user/spiview/:name', '/user/spiview/fields/delete'],
-  [ArkimeUtil.noCacheJson, checkCookieToken, logAction(), ArkimeUtil.getSettingUserDb],
-  userAPIs.deleteUserSpiviewFields
+app.delete( // delete user spiview fields endpoint
+  ['/api/user/spiview/:name'],
+  [ArkimeUtil.noCacheJson, checkCookieToken, logAction(), Auth.getSettingUserDb],
+  UserAPIs.deleteUserSpiviewFields
 );
 
-app.put( // acknowledge message endoint
-  ['/api/user/:userId/acknowledge', '/user/:userId/acknowledgeMsg'],
+app.put( // acknowledge message endpoint
+  ['/api/user/:userId/acknowledge'],
   [ArkimeUtil.noCacheJson, logAction(), checkCookieToken],
-  userAPIs.acknowledgeMsg
+  UserAPIs.acknowledgeMsg
 );
 
 app.post( // update user endpoint
-  ['/api/user/:id', '/user/update'],
+  ['/api/user/:id'],
   [ArkimeUtil.noCacheJson, logAction(), checkCookieToken, User.checkRole('usersAdmin')],
   User.apiUpdateUser
 );
@@ -1315,21 +1306,21 @@ app.post( // assign or un-assign role from a user
 );
 
 app.get( // user state endpoint
-  ['/api/user/state/:name', '/state/:name'],
+  ['/api/user/state/:name'],
   [ArkimeUtil.noCacheJson, checkCookieToken, logAction()],
-  userAPIs.getUserState
+  UserAPIs.getUserState
 );
 
 app.post( // update/create user state endpoint
-  ['/api/user/state/:name', '/state/:name'],
+  ['/api/user/state/:name'],
   [ArkimeUtil.noCacheJson, checkCookieToken, logAction()],
-  userAPIs.updateUserState
+  UserAPIs.updateUserState
 );
 
 app.get( // user page configuration endpoint
   '/api/user/config/:page',
   [ArkimeUtil.noCacheJson, checkCookieToken, getSettingUserCache],
-  userAPIs.getPageConfig
+  UserAPIs.getPageConfig
 );
 
 app.get( // user roles endpoint
@@ -1340,112 +1331,102 @@ app.get( // user roles endpoint
 
 // view apis ------------------------------------------------------------------
 app.get( // get views endpoint
-  ['/api/user/views', '/user/views', '/api/views'],
+  ['/api/views'],
   [ArkimeUtil.noCacheJson, getSettingUserCache],
-  View.apiGetViews
+  ViewAPIs.apiGetViews
 );
 
 app.post( // create view endpoint
-  ['/api/user/view', '/user/views/create', '/api/view'],
-  [ArkimeUtil.noCacheJson, checkCookieToken, logAction(), ArkimeUtil.getSettingUserDb, sanitizeViewName],
-  View.apiCreateView
+  ['/api/view'],
+  [ArkimeUtil.noCacheJson, checkCookieToken, logAction(), Auth.getSettingUserDb, sanitizeViewName],
+  ViewAPIs.apiCreateView
 );
 
-app.deletepost( // delete view endpoint
-  ['/api/user/view/:id', '/user/views/delete', '/api/view/:id'],
-  [ArkimeUtil.noCacheJson, checkCookieToken, logAction(), ArkimeUtil.getSettingUserDb, sanitizeViewName],
-  View.apiDeleteView
+app.delete( // delete view endpoint
+  ['/api/view/:id'],
+  [ArkimeUtil.noCacheJson, checkCookieToken, logAction(), Auth.getSettingUserDb, Auth.checkResourceAccess(Db.getView, 'user'), sanitizeViewName],
+  ViewAPIs.apiDeleteView
 );
 
 app.put( // update view endpoint
-  ['/api/user/view/:id', '/user/views/update', '/api/view/:id'],
-  [ArkimeUtil.noCacheJson, checkCookieToken, logAction(), ArkimeUtil.getSettingUserDb, sanitizeViewName],
-  View.apiUpdateView
-);
-app.post( // update view endpoint for backwards compatibility with API 0.x-2.x
-  ['/user/views/update'],
-  [ArkimeUtil.noCacheJson, checkCookieToken, logAction(), ArkimeUtil.getSettingUserDb, sanitizeViewName],
-  View.apiUpdateView
+  ['/api/view/:id'],
+  [ArkimeUtil.noCacheJson, checkCookieToken, logAction(), Auth.getSettingUserDb, Auth.checkResourceAccess(Db.getView, 'user'), sanitizeViewName],
+  ViewAPIs.apiUpdateView
 );
 
 // cron apis ------------------------------------------------------------------
 app.get( // get cron queries endpoint
-  ['/api/user/crons', '/user/cron', '/api/crons'],
+  ['/api/crons'],
   [ArkimeUtil.noCacheJson, getSettingUserCache],
-  Cron.getCrons
+  CronAPIs.getCrons
 );
 
 app.post( // create cron query endpoint
-  ['/api/user/cron', '/user/cron/create', '/api/cron'],
-  [ArkimeUtil.noCacheJson, checkCookieToken, logAction(), ArkimeUtil.getSettingUserDb],
-  Cron.createCron
+  ['/api/cron'],
+  [ArkimeUtil.noCacheJson, checkCookieToken, logAction(), Auth.getSettingUserDb],
+  CronAPIs.createCron
 );
 
 app.delete( // delete cron endpoint
-  ['/api/user/cron/:key', '/user/cron/delete', '/api/cron/:key'],
-  [ArkimeUtil.noCacheJson, checkCookieToken, logAction(), ArkimeUtil.getSettingUserDb, checkCronAccess],
-  Cron.deleteCron
-);
-app.post( // delete cron endpoint for backwards compatibility with API 0.x-2.x
-  '/user/cron/delete',
-  [ArkimeUtil.noCacheJson, checkCookieToken, logAction(), ArkimeUtil.getSettingUserDb, checkCronAccess],
-  Cron.deleteCron
+  ['/api/cron/:key'],
+  [ArkimeUtil.noCacheJson, checkCookieToken, logAction(), Auth.getSettingUserDb, Auth.checkResourceAccess(Db.getQuery, 'creator')],
+  CronAPIs.deleteCron
 );
 
 app.post( // update cron endpoint
-  ['/api/user/cron/:key', '/user/cron/update', '/api/cron/:key'],
-  [ArkimeUtil.noCacheJson, checkCookieToken, logAction(), ArkimeUtil.getSettingUserDb, checkCronAccess],
-  Cron.updateCron
+  ['/api/cron/:key'],
+  [ArkimeUtil.noCacheJson, checkCookieToken, logAction(), Auth.getSettingUserDb, Auth.checkResourceAccess(Db.getQuery, 'creator')],
+  CronAPIs.updateCron
 );
 
 // notifier apis --------------------------------------------------------------
 app.get( // notifier types endpoint
-  ['/api/notifiertypes', '/notifierTypes'],
+  ['/api/notifiertypes'],
   [ArkimeUtil.noCacheJson, User.checkRole('arkimeAdmin'), checkCookieToken],
   Notifier.apiGetNotifierTypes
 );
 
 app.get( // notifiers endpoint
-  ['/api/notifiers', '/notifiers'],
+  ['/api/notifiers'],
   [ArkimeUtil.noCacheJson, checkCookieToken],
   Notifier.apiGetNotifiers
 );
 
 app.post( // create notifier endpoint
-  ['/api/notifier', '/notifiers'],
-  [ArkimeUtil.noCacheJson, ArkimeUtil.getSettingUserDb, User.checkRole('arkimeAdmin'), checkCookieToken],
+  ['/api/notifier'],
+  [ArkimeUtil.noCacheJson, Auth.getSettingUserDb, User.checkRole('arkimeAdmin'), checkCookieToken],
   Notifier.apiCreateNotifier
 );
 
 app.put( // update notifier endpoint
-  ['/api/notifier/:id', '/notifiers/:id'],
-  [ArkimeUtil.noCacheJson, ArkimeUtil.getSettingUserDb, User.checkRole('arkimeAdmin'), checkCookieToken],
+  ['/api/notifier/:id'],
+  [ArkimeUtil.noCacheJson, Auth.getSettingUserDb, User.checkRole('arkimeAdmin'), checkCookieToken],
   Notifier.apiUpdateNotifier
 );
 
 app.delete( // delete notifier endpoint
-  ['/api/notifier/:id', '/notifiers/:id'],
-  [ArkimeUtil.noCacheJson, ArkimeUtil.getSettingUserDb, User.checkRole('arkimeAdmin'), checkCookieToken],
+  ['/api/notifier/:id'],
+  [ArkimeUtil.noCacheJson, Auth.getSettingUserDb, User.checkRole('arkimeAdmin'), checkCookieToken],
   Notifier.apiDeleteNotifier
 );
 
 app.post( // test notifier endpoint
-  ['/api/notifier/:id/test', '/notifiers/:id/test'],
+  ['/api/notifier/:id/test'],
   [ArkimeUtil.noCacheJson, getSettingUserCache, User.checkRole('arkimeAdmin'), checkCookieToken],
   Notifier.apiTestNotifier
 );
 
 // history apis ---------------------------------------------------------------
 app.get( // get histories endpoint
-  ['/api/histories', '/history/list'],
+  ['/api/histories'],
   [ArkimeUtil.noCacheJson, recordResponseTime, setCookie],
-  historyAPIs.getHistories
+  HistoryAPIs.getHistories
 );
 
 app.delete( // delete history endpoint
-  ['/api/history/:id', '/history/list/:id'],
+  ['/api/history/:id'],
   [ArkimeUtil.noCacheJson, checkCookieToken, User.checkRole('arkimeAdmin'), User.checkPermissions(['removeEnabled'])],
-  historyAPIs.deleteHistory
+  HistoryAPIs.deleteHistory
 );
 
 // stats apis -----------------------------------------------------------------
@@ -1453,140 +1434,140 @@ app.delete( // delete history endpoint
 app.get( // stats endpoint
   ['/api/stats', '/stats.json'],
   [ArkimeUtil.noCacheJson, recordResponseTime, User.checkPermissions(['hideStats']), setCookie],
-  statsAPIs.getStats
+  StatsAPIs.getStats
 );
 
 app.get( // detailed stats endpoint
   ['/api/dstats', '/dstats.json'],
   [ArkimeUtil.noCacheJson, User.checkPermissions(['hideStats'])],
-  statsAPIs.getDetailedStats
+  StatsAPIs.getDetailedStats
 );
 
 app.get( // OpenSearch/Elasticsearch stats endpoint
   ['/api/esstats', '/esstats.json'],
   [ArkimeUtil.noCacheJson, recordResponseTime, User.checkPermissions(['hideStats']), setCookie],
-  statsAPIs.getESStats
+  StatsAPIs.getESStats
 );
 
 app.get( // OpenSearch/Elasticsearch indices endpoint
-  ['/api/esindices', '/esindices/list'],
+  ['/api/esindices'],
   [ArkimeUtil.noCacheJson, recordResponseTime, User.checkPermissions(['hideStats']), setCookie],
-  statsAPIs.getESIndices
+  StatsAPIs.getESIndices
 );
 
 app.delete( // delete OpenSearch/Elasticsearch index endpoint
-  ['/api/esindices/:index', '/esindices/:index'],
+  ['/api/esindices/:index'],
   [ArkimeUtil.noCacheJson, recordResponseTime, User.checkRole('arkimeAdmin'), User.checkPermissions(['removeEnabled']), setCookie],
-  statsAPIs.deleteESIndex
+  StatsAPIs.deleteESIndex
 );
 
 app.post( // optimize OpenSearch/Elasticsearch index endpoint
-  ['/api/esindices/:index/optimize', '/esindices/:index/optimize'],
+  ['/api/esindices/:index/optimize'],
   [ArkimeUtil.noCacheJson, logAction(), checkCookieToken, User.checkRole('arkimeAdmin')],
-  statsAPIs.optimizeESIndex
+  StatsAPIs.optimizeESIndex
 );
 
 app.post( // close OpenSearch/Elasticsearch index endpoint
-  ['/api/esindices/:index/close', '/esindices/:index/close'],
+  ['/api/esindices/:index/close'],
   [ArkimeUtil.noCacheJson, logAction(), checkCookieToken, User.checkRole('arkimeAdmin')],
-  statsAPIs.closeESIndex
+  StatsAPIs.closeESIndex
 );
 
 app.post( // open OpenSearch/Elasticsearch index endpoint
-  ['/api/esindices/:index/open', '/esindices/:index/open'],
+  ['/api/esindices/:index/open'],
   [ArkimeUtil.noCacheJson, logAction(), checkCookieToken, User.checkRole('arkimeAdmin')],
-  statsAPIs.openESIndex
+  StatsAPIs.openESIndex
 );
 
 app.post( // shrink OpenSearch/Elasticsearch index endpoint
-  ['/api/esindices/:index/shrink', '/esindices/:index/shrink'],
+  ['/api/esindices/:index/shrink'],
   [ArkimeUtil.noCacheJson, logAction(), checkCookieToken, User.checkRole('arkimeAdmin')],
-  statsAPIs.shrinkESIndex
+  StatsAPIs.shrinkESIndex
 );
 
 app.get( // OpenSearch/Elasticsearch tasks endpoint
-  ['/api/estasks', '/estask/list'],
+  ['/api/estasks'],
   [ArkimeUtil.noCacheJson, recordResponseTime, User.checkPermissions(['hideStats']), setCookie],
-  statsAPIs.getESTasks
+  StatsAPIs.getESTasks
 );
 
 app.post( // cancel OpenSearch/Elasticsearch task endpoint
-  ['/api/estasks/:id/cancel', '/estask/cancel'],
+  ['/api/estasks/:id/cancel'],
   [ArkimeUtil.noCacheJson, logAction(), checkCookieToken, User.checkRole('arkimeAdmin')],
-  statsAPIs.cancelESTask
+  StatsAPIs.cancelESTask
 );
 
 app.post( // cancel OpenSearch/Elasticsearch task by opaque id endpoint
-  ['/api/estasks/:id/cancelwith', '/estask/cancelById'],
+  ['/api/estasks/:id/cancelwith'],
   // should not have admin check so users can use, each user is name spaced
-  [ArkimeUtil.noCacheJson, logAction(), checkCookieToken],
-  statsAPIs.cancelUserESTask
+  [ArkimeUtil.noCacheJson, logAction(), checkCookieToken, User.checkPermissions(['hideStats'])],
+  StatsAPIs.cancelUserESTask
 );
 
 app.post( // cancel all OpenSearch/Elasticsearch tasks endpoint
-  ['/api/estasks/cancelall', '/estask/cancelAll'],
+  ['/api/estasks/cancelall'],
   [ArkimeUtil.noCacheJson, logAction(), checkCookieToken, User.checkRole('arkimeAdmin')],
-  statsAPIs.cancelAllESTasks
+  StatsAPIs.cancelAllESTasks
 );
 
 app.get( // OpenSearch/Elasticsearch admin settings endpoint
-  ['/api/esadmin', '/esadmin/list'],
+  ['/api/esadmin'],
   [ArkimeUtil.noCacheJson, recordResponseTime, checkEsAdminUser, setCookie],
-  statsAPIs.getESAdminSettings
+  StatsAPIs.getESAdminSettings
 );
 
 app.post( // set OpenSearch/Elasticsearch admin setting endpoint
-  ['/api/esadmin/set', '/esadmin/set'],
+  ['/api/esadmin/set'],
   [ArkimeUtil.noCacheJson, recordResponseTime, checkEsAdminUser, checkCookieToken],
-  statsAPIs.setESAdminSettings
+  StatsAPIs.setESAdminSettings
 );
 
 app.post( // reroute OpenSearch/Elasticsearch admin endpoint
-  ['/api/esadmin/reroute', '/esadmin/reroute'],
+  ['/api/esadmin/reroute'],
   [ArkimeUtil.noCacheJson, recordResponseTime, checkEsAdminUser, checkCookieToken],
-  statsAPIs.rerouteES
+  StatsAPIs.rerouteES
 );
 
 app.post( // flush OpenSearch/Elasticsearch admin endpoint
-  ['/api/esadmin/flush', '/esadmin/flush'],
+  ['/api/esadmin/flush'],
   [ArkimeUtil.noCacheJson, recordResponseTime, checkEsAdminUser, checkCookieToken],
-  statsAPIs.flushES
+  StatsAPIs.flushES
 );
 
 app.post( // unflood OpenSearch/Elasticsearch admin endpoint
-  ['/api/esadmin/unflood', '/esadmin/unflood'],
+  ['/api/esadmin/unflood'],
   [ArkimeUtil.noCacheJson, recordResponseTime, checkEsAdminUser, checkCookieToken],
-  statsAPIs.unfloodES
+  StatsAPIs.unfloodES
 );
 
 app.post( // unflood OpenSearch/Elasticsearch admin endpoint
-  ['/api/esadmin/clearcache', '/esadmin/clearcache'],
+  ['/api/esadmin/clearcache'],
   [ArkimeUtil.noCacheJson, recordResponseTime, checkEsAdminUser, checkCookieToken],
-  statsAPIs.clearCacheES
+  StatsAPIs.clearCacheES
 );
 
 app.get( // OpenSearch/Elasticsearch shards endpoint
-  ['/api/esshards', '/esshard/list'],
+  ['/api/esshards'],
   [ArkimeUtil.noCacheJson, recordResponseTime, User.checkPermissions(['hideStats']), setCookie],
-  statsAPIs.getESShards
+  StatsAPIs.getESShards
 );
 
 app.post( // exclude OpenSearch/Elasticsearch shard endpoint
-  ['/api/esshards/:type/:value/exclude', '/esshard/exclude/:type/:value'],
+  ['/api/esshards/:type/:value/exclude'],
   [ArkimeUtil.noCacheJson, logAction(), checkCookieToken, User.checkRole('arkimeAdmin')],
-  statsAPIs.excludeESShard
+  StatsAPIs.excludeESShard
 );
 
 app.post( // include OpenSearch/Elasticsearch shard endpoint
-  ['/api/esshards/:type/:value/include', '/esshard/include/:type/:value'],
+  ['/api/esshards/:type/:value/include'],
   [ArkimeUtil.noCacheJson, logAction(), checkCookieToken, User.checkRole('arkimeAdmin')],
-  statsAPIs.includeESShard
+  StatsAPIs.includeESShard
 );
 
 app.get( // OpenSearch/Elasticsearch recovery endpoint
-  ['/api/esrecovery', '/esrecovery/list'],
+  ['/api/esrecovery'],
   [ArkimeUtil.noCacheJson, recordResponseTime, User.checkPermissions(['hideStats']), setCookie],
-  statsAPIs.getESRecovery
+  StatsAPIs.getESRecovery
 );
 
 // session apis ---------------------------------------------------------------
@@ -1594,181 +1575,181 @@ app.getpost( // sessions endpoint (POST or GET) - uses fillQueryFromBody to
   // fill the query parameters if the client uses POST to support POST and GET
   ['/api/sessions', '/sessions.json'],
   [ArkimeUtil.noCacheJson, recordResponseTime, fillQueryFromBody, logAction('sessions'), setCookie],
-  sessionAPIs.getSessions
+  SessionAPIs.getSessions
 );
 
 app.getpost( // spiview endpoint (POST or GET) - uses fillQueryFromBody to
   // fill the query parameters if the client uses POST to support POST and GET
   ['/api/spiview', '/spiview.json'],
   [ArkimeUtil.noCacheJson, recordResponseTime, fillQueryFromBody, logAction('spiview'), setCookie],
-  sessionAPIs.getSPIView
+  SessionAPIs.getSPIView
 );
 
 app.getpost( // spigraph endpoint (POST or GET) - uses fillQueryFromBody to
   // fill the query parameters if the client uses POST to support POST and GET
   ['/api/spigraph', '/spigraph.json'],
-  [ArkimeUtil.noCacheJson, recordResponseTime, fillQueryFromBody, logAction('spigraph'), setCookie, fieldToExp],
-  sessionAPIs.getSPIGraph
+  [ArkimeUtil.noCacheJson, recordResponseTime, fillQueryFromBody, logAction('spigraph'), setCookie, expToField],
+  SessionAPIs.getSPIGraph
 );
 
 app.getpost( // spigraph hierarchy endpoint (POST or GET) - uses fillQueryFromBody to
   // fill the query parameters if the client uses POST to support POST and GET
-  ['/api/spigraphhierarchy', '/spigraphhierarchy'],
+  ['/api/spigraphhierarchy'],
   [ArkimeUtil.noCacheJson, recordResponseTime, fillQueryFromBody, logAction('spigraphhierarchy'), setCookie],
-  sessionAPIs.getSPIGraphHierarchy
+  SessionAPIs.getSPIGraphHierarchy
 );
 
 app.getpost( // build query endoint (POST or GET) - uses fillQueryFromBody to
   // fill the query parameters if the client uses POST to support POST and GET
   ['/api/buildquery', '/buildQuery.json'],
   [ArkimeUtil.noCacheJson, fillQueryFromBody, logAction('query')],
-  sessionAPIs.getQuery
+  SessionAPIs.getQuery
 );
 
 app.getpost( // sessions csv endpoint (POST or GET) - uses fillQueryFromBody to
   // fill the query parameters if the client uses POST to support POST and GET
   ['/api/sessions[/.]csv', /\/sessions.csv.*/],
   [fillQueryFromBody, logAction('sessions.csv')],
-  sessionAPIs.getSessionsCSV
+  SessionAPIs.getSessionsCSV
 );
 
 app.getpost( // unique endpoint (POST or GET) - uses fillQueryFromBody to
   // fill the query parameters if the client uses POST to support POST and GET
   ['/api/unique', '/unique.txt'],
-  [fillQueryFromBody, logAction('unique'), fieldToExp],
-  sessionAPIs.getUnique
+  [fillQueryFromBody, logAction('unique'), expToField],
+  SessionAPIs.getUnique
 );
 
 app.getpost( // multiunique endpoint (POST or GET) - uses fillQueryFromBody to
   // fill the query parameters if the client uses POST to support POST and GET
   ['/api/multiunique', '/multiunique.txt'],
-  [fillQueryFromBody, logAction('multiunique'), fieldToExp],
-  sessionAPIs.getMultiunique
+  [fillQueryFromBody, logAction('multiunique')],
+  SessionAPIs.getMultiunique
 );
 
 app.get( // session detail (SPI) endpoint
-  ['/api/session/:nodeName/:id/detail', '/:nodeName/session/:id/detail'],
+  ['/api/session/:nodeName/:id/detail'],
   [logAction()],
-  sessionAPIs.getDetail
+  SessionAPIs.getDetail
 );
 
 app.get( // session packets endpoint
-  ['/api/session/:nodeName/:id/packets', '/:nodeName/session/:id/packets'],
+  ['/api/session/:nodeName/:id/packets'],
   [logAction(), User.checkPermissions(['hidePcap'])],
-  sessionAPIs.getPackets
+  SessionAPIs.getPackets
 );
 
 app.post( // add tags endpoint
-  ['/api/sessions/addtags', '/addTags'],
+  ['/api/sessions/addtags'],
   [ArkimeUtil.noCacheJson, checkHeaderToken, logAction('addTags')],
-  sessionAPIs.addTags
+  SessionAPIs.addTags
 );
 
 app.post( // remove tags endpoint
-  ['/api/sessions/removetags', '/removeTags'],
+  ['/api/sessions/removetags'],
   [ArkimeUtil.noCacheJson, checkHeaderToken, logAction('removeTags'), User.checkPermissions(['removeEnabled'])],
-  sessionAPIs.removeTags
+  SessionAPIs.removeTags
 );
 
 app.get( // session body file endpoint
   ['/api/session/:nodeName/:id/body/:bodyType/:bodyNum/:bodyName', '/:nodeName/:id/body/:bodyType/:bodyNum/:bodyName'],
   [checkProxyRequest],
-  sessionAPIs.getRawBody
+  SessionAPIs.getRawBody
 );
 
 app.get( // session body file image endpoint
   ['/api/session/:nodeName/:id/bodypng/:bodyType/:bodyNum/:bodyName', '/:nodeName/:id/bodypng/:bodyType/:bodyNum/:bodyName'],
   [checkProxyRequest],
-  sessionAPIs.getFilePNG
+  SessionAPIs.getFilePNG
 );
 
 app.get( // session pcap endpoint
   ['/api/sessions[/.]pcap', /\/sessions.pcap.*/],
   [logAction(), User.checkPermissions(['disablePcapDownload'])],
-  sessionAPIs.getPCAP
+  SessionAPIs.getPCAP
 );
 
 app.get( // session pcapng endpoint
   ['/api/sessions[/.]pcapng', /\/sessions.pcapng.*/],
   [logAction(), User.checkPermissions(['disablePcapDownload'])],
-  sessionAPIs.getPCAPNG
+  SessionAPIs.getPCAPNG
 );
 
 app.get( // session node pcap endpoint
-  ['/api/session/:nodeName/:id[/.]pcap*', '/:nodeName/pcap/:id.pcap'],
+  ['/api/session/:nodeName/:id[/.]pcap*'],
   [checkProxyRequest, User.checkPermissions(['disablePcapDownload'])],
-  sessionAPIs.getPCAPFromNode
+  SessionAPIs.getPCAPFromNode
 );
 
 app.get( // session node pcapng endpoint
-  ['/api/session/:nodeName/:id[/.]pcapng', '/:nodeName/pcapng/:id.pcapng'],
+  ['/api/session/:nodeName/:id[/.]pcapng'],
   [checkProxyRequest, User.checkPermissions(['disablePcapDownload'])],
-  sessionAPIs.getPCAPNGFromNode
+  SessionAPIs.getPCAPNGFromNode
 );
 
 app.get( // session entire pcap endpoint
-  ['/api/session/entire/:nodeName/:id[/.]pcap', '/:nodeName/entirePcap/:id.pcap'],
+  ['/api/session/entire/:nodeName/:id[/.]pcap'],
   [checkProxyRequest, User.checkPermissions(['disablePcapDownload'])],
-  sessionAPIs.getEntirePCAP
+  SessionAPIs.getEntirePCAP
 );
 
 app.get( // session packets file image endpoint
-  ['/api/session/raw/:nodeName/:id[/.]png', '/:nodeName/raw/:id.png'],
+  ['/api/session/raw/:nodeName/:id[/.]png'],
   [checkProxyRequest, User.checkPermissions(['disablePcapDownload'])],
-  sessionAPIs.getPacketPNG
+  SessionAPIs.getPacketPNG
 );
 
 app.get( // session raw packets endpoint
   ['/api/session/raw/:nodeName/:id', '/:nodeName/raw/:id'],
   [checkProxyRequest, User.checkPermissions(['disablePcapDownload'])],
-  sessionAPIs.getRawPackets
+  SessionAPIs.getRawPackets
 );
 
 app.get( // session file bodyhash endpoint
   ['/api/sessions/bodyhash/:hash', '/bodyHash/:hash'],
   [logAction('bodyhash')],
-  sessionAPIs.getBodyHash
+  SessionAPIs.getBodyHash
 );
 
 app.get( // session file bodyhash endpoint
-  ['/api/session/:nodeName/:id/bodyhash/:hash', '/:nodeName/:id/bodyHash/:hash'],
+  ['/api/session/:nodeName/:id/bodyhash/:hash'],
   [checkProxyRequest],
-  sessionAPIs.getBodyHashFromNode
+  SessionAPIs.getBodyHashFromNode
 );
 
 app.get( // sessions get decodings endpoint
   ['/api/sessions/decodings', '/decodings'],
   [ArkimeUtil.noCacheJson],
-  sessionAPIs.getDecodings
+  SessionAPIs.getDecodings
 );
 
-app.get( // session send to node endpoint
-  ['/api/session/:nodeName/:id/send', '/:nodeName/sendSession/:id'],
+app.get( // session send to node endpoint - used by SessionAPIs.#sendSessionsList
+  ['/api/session/:nodeName/:id/send'],
   [checkProxyRequest],
-  sessionAPIs.sendSessionToNode
+  SessionAPIs.sendSessionToNode
 );
 
-app.post( // sessions send to node endpoint
-  ['/api/sessions/:nodeName/send', '/:nodeName/sendSessions'],
+app.post( // sessions send to node endpoint - used by CronAPIs.#sendSessionsListQL
+  ['/api/sessions/:nodeName/send'],
   [checkProxyRequest],
-  sessionAPIs.sendSessionsToNode
+  SessionAPIs.sendSessionsToNode
 );
 
-app.post( // sessions send endpoint
-  ['/api/sessions/send', '/sendSessions'],
-  sessionAPIs.sendSessions
+app.post( // sessions send endpoint - used by vueapp
+  ['/api/sessions/send'],
+  SessionAPIs.sendSessions
 );
 
 app.post( // sessions recieve endpoint
   ['/api/sessions/receive', '/receiveSession'],
   [ArkimeUtil.noCacheJson],
-  sessionAPIs.receiveSession
+  SessionAPIs.receiveSession
 );
 
 app.post( // delete data endpoint
   ['/api/delete', '/delete'],
   [ArkimeUtil.noCacheJson, checkCookieToken, logAction(), User.checkPermissions(['removeEnabled'])],
-  sessionAPIs.deleteData
+  SessionAPIs.deleteData
 );
 
 // connections apis -----------------------------------------------------------
@@ -1776,185 +1757,172 @@ app.getpost( // connections endpoint (POST or GET) - uses fillQueryFromBody to
   // fill the query parameters if the client uses POST to support POST and GET
   ['/api/connections', '/connections.json'],
   [ArkimeUtil.noCacheJson, recordResponseTime, fillQueryFromBody, logAction('connections'), setCookie],
-  connectionAPIs.getConnections
+  ConnectionAPIs.getConnections
 );
 
 app.getpost( // connections csv endpoint (POST or GET) - uses fillQueryFromBody to
   // fill the query parameters if the client uses POST to support POST and GET
   ['/api/connections[/.]csv', '/connections.csv'],
   [fillQueryFromBody, logAction('connections.csv')],
-  connectionAPIs.getConnectionsCSV
+  ConnectionAPIs.getConnectionsCSV
 );
 
 // hunt apis ------------------------------------------------------------------
 app.get( // hunts endpoint
-  ['/api/hunts', '/hunt/list'],
+  ['/api/hunts'],
   [ArkimeUtil.noCacheJson, disableInMultiES, recordResponseTime, User.checkPermissions(['packetSearch']), setCookie],
-  huntAPIs.getHunts
+  HuntAPIs.getHunts
 );
 
 app.post( // create hunt endpoint
-  ['/api/hunt', '/hunt'],
+  ['/api/hunt'],
   [ArkimeUtil.noCacheJson, disableInMultiES, logAction('hunt'), checkCookieToken, User.checkPermissions(['packetSearch'])],
-  huntAPIs.createHunt
+  HuntAPIs.createHunt
 );
 
 app.delete( // delete hunt endpoint
-  ['/api/hunt/:id', '/hunt/:id'],
+  ['/api/hunt/:id'],
   [ArkimeUtil.noCacheJson, disableInMultiES, logAction('hunt/:id'), checkCookieToken, User.checkPermissions(['packetSearch']), checkHuntAccess],
-  huntAPIs.deleteHunt
+  HuntAPIs.deleteHunt
 );
 
 app.put( // update hunt endpoint
-  ['/api/hunt/:id', '/hunt/:id'],
+  ['/api/hunt/:id'],
   [ArkimeUtil.noCacheJson, disableInMultiES, logAction('hunt/:id'), checkCookieToken, User.checkPermissions(['packetSearch']), checkHuntAccess],
-  huntAPIs.updateHunt
+  HuntAPIs.updateHunt
 );
 
 app.put( // cancel hunt endpoint
-  ['/api/hunt/:id/cancel', '/hunt/:id/cancel'],
+  ['/api/hunt/:id/cancel'],
   [ArkimeUtil.noCacheJson, disableInMultiES, logAction('hunt/:id/cancel'), checkCookieToken, User.checkPermissions(['packetSearch']), checkHuntAccess],
-  huntAPIs.cancelHunt
+  HuntAPIs.cancelHunt
 );
 
 app.put( // pause hunt endpoint
-  ['/api/hunt/:id/pause', '/hunt/:id/pause'],
+  ['/api/hunt/:id/pause'],
   [ArkimeUtil.noCacheJson, disableInMultiES, logAction('hunt/:id/pause'), checkCookieToken, User.checkPermissions(['packetSearch']), checkHuntAccess],
-  huntAPIs.pauseHunt
+  HuntAPIs.pauseHunt
 );
 
 app.put( // play hunt endpoint
-  ['/api/hunt/:id/play', '/hunt/:id/play'],
+  ['/api/hunt/:id/play'],
   [ArkimeUtil.noCacheJson, disableInMultiES, logAction('hunt/:id/play'), checkCookieToken, User.checkPermissions(['packetSearch']), checkHuntAccess],
-  huntAPIs.playHunt
+  HuntAPIs.playHunt
 );
 
 app.put( // remove from sessions hunt endpoint
-  ['/api/hunt/:id/removefromsessions', '/hunt/:id/removefromsessions'],
+  ['/api/hunt/:id/removefromsessions'],
   [ArkimeUtil.noCacheJson, disableInMultiES, logAction('hunt/:id/removefromsessions'), checkCookieToken, User.checkPermissions(['packetSearch', 'removeEnabled']), checkHuntAccess],
-  huntAPIs.removeFromSessions
+  HuntAPIs.removeFromSessions
 );
 
 app.post( // add users to hunt endpoint
-  ['/api/hunt/:id/users', '/hunt/:id/users'],
+  ['/api/hunt/:id/users'],
   [ArkimeUtil.noCacheJson, disableInMultiES, logAction('hunt/:id/users'), checkCookieToken, User.checkPermissions(['packetSearch']), checkHuntAccess],
-  huntAPIs.addUsers
+  HuntAPIs.addUsers
 );
 
 app.delete( // remove users from hunt endpoint
-  ['/api/hunt/:id/user/:user', '/hunt/:id/users/:user'],
+  ['/api/hunt/:id/user/:user'],
   [ArkimeUtil.noCacheJson, disableInMultiES, logAction('hunt/:id/user/:user'), checkCookieToken, User.checkPermissions(['packetSearch']), checkHuntAccess],
-  huntAPIs.removeUsers
+  HuntAPIs.removeUsers
 );
 
 app.get( // remote hunt endpoint
-  ['/api/hunt/:nodeName/:huntId/remote/:sessionId', '/:nodeName/hunt/:huntId/remote/:sessionId'],
+  ['/api/hunt/:nodeName/:huntId/remote/:sessionId'],
   [ArkimeUtil.noCacheJson],
-  huntAPIs.remoteHunt
+  HuntAPIs.remoteHunt
 );
 
 // shortcut apis ----------------------------------------------------------------
 app.get( // get shortcuts endpoint
-  ['/api/shortcuts', '/lookups'],
+  ['/api/shortcuts'],
   [ArkimeUtil.noCacheJson, getSettingUserCache, recordResponseTime],
-  shortcutAPIs.getShortcuts
+  ShortcutAPIs.getShortcuts
 );
 
 app.post( // create shortcut endpoint
-  ['/api/shortcut', '/lookups'],
-  [ArkimeUtil.noCacheJson, ArkimeUtil.getSettingUserDb, logAction('shortcut'), checkCookieToken],
-  shortcutAPIs.createShortcut
+  ['/api/shortcut'],
+  [ArkimeUtil.noCacheJson, Auth.getSettingUserDb, logAction('shortcut'), checkCookieToken],
+  ShortcutAPIs.createShortcut
 );
 
 app.put( // update shortcut endpoint
-  ['/api/shortcut/:id', '/lookups/:id'],
-  [ArkimeUtil.noCacheJson, ArkimeUtil.getSettingUserDb, logAction('shortcut/:id'), checkCookieToken],
-  shortcutAPIs.updateShortcut
+  ['/api/shortcut/:id'],
+  [ArkimeUtil.noCacheJson, Auth.getSettingUserDb, logAction('shortcut/:id'), checkCookieToken, Auth.checkResourceAccess(Db.getShortcut, 'userId')],
+  ShortcutAPIs.updateShortcut
 );
 
 app.delete( // delete shortcut endpoint
-  ['/api/shortcut/:id', '/lookups/:id'],
-  [ArkimeUtil.noCacheJson, ArkimeUtil.getSettingUserDb, logAction('shortcut/:id'), checkCookieToken],
-  shortcutAPIs.deleteShortcut
+  ['/api/shortcut/:id'],
+  [ArkimeUtil.noCacheJson, Auth.getSettingUserDb, logAction('shortcut/:id'), checkCookieToken, Auth.checkResourceAccess(Db.getShortcut, 'userId')],
+  ShortcutAPIs.deleteShortcut
 );
 
 app.get( // sync shortcuts endpoint
   ['/api/syncshortcuts'],
   [ArkimeUtil.noCacheJson],
-  shortcutAPIs.syncShortcuts
+  ShortcutAPIs.syncShortcuts
 );
 
 // file apis ------------------------------------------------------------------
 app.get( // fields endpoint
-  ['/api/fields', '/fields'],
+  ['/api/fields'],
   [ArkimeUtil.noCacheJson],
-  miscAPIs.getFields
+  MiscAPIs.getFields
 );
 
 app.get( // files endpoint
-  ['/api/files', '/file/list'],
+  ['/api/files'],
   [ArkimeUtil.noCacheJson, recordResponseTime, logAction('files'), User.checkPermissions(['hideFiles']), setCookie],
-  miscAPIs.getFiles
-);
-
-app.get( // filesize endpoint
-  ['/api/:nodeName/:fileNum/filesize', '/:nodeName/:fileNum/filesize.json'],
-  [ArkimeUtil.noCacheJson, User.checkPermissions(['hideFiles'])],
-  miscAPIs.getFileSize
-);
-
-// title apis -----------------------------------------------------------------
-app.get( // titleconfig endpoint
-  ['/api/title', '/titleconfig'],
-  User.checkPermissions(['webEnabled']),
-  miscAPIs.getPageTitle
+  MiscAPIs.getFiles
 );
 
 // menu actions apis ---------------------------------------------------------
 app.get( // value actions endpoint
-  ['/api/valueactions', '/api/valueActions', '/molochRightClick'],
+  ['/api/valueactions', '/api/valueActions'],
   [ArkimeUtil.noCacheJson, User.checkPermissions(['webEnabled'])],
-  miscAPIs.getValueActions
+  MiscAPIs.getValueActions
 );
 
 app.get( // field actions endpoint
   ['/api/fieldactions', '/api/fieldActions'],
   [ArkimeUtil.noCacheJson, User.checkPermissions(['webEnabled'])],
-  miscAPIs.getFieldActions
+  MiscAPIs.getFieldActions
 );
 
 // reverse dns apis -----------------------------------------------------------
 app.get( // reverse dns endpoint
-  ['/api/reversedns', '/reverseDNS.txt'],
+  ['/api/reversedns'],
   [ArkimeUtil.noCacheJson, logAction()],
-  miscAPIs.getReverseDNS
+  MiscAPIs.getReverseDNS
 );
 
 // uploads apis ---------------------------------------------------------------
 app.post(
-  ['/api/upload', '/upload'],
+  ['/api/upload'],
   [checkCookieToken, multer({ dest: '/tmp', limits: internals.uploadLimits }).single('file')],
-  miscAPIs.upload
+  MiscAPIs.upload
 );
 
 // clusters apis --------------------------------------------------------------
 app.get(
-  ['/api/clusters', '/clusters'],
+  ['/api/clusters'],
   [ArkimeUtil.noCacheJson],
-  miscAPIs.getClusters
+  MiscAPIs.getClusters
 );
 
 app.get(
-  ['/remoteclusters', '/molochclusters'],
+  ['/api/remoteclusters'],
   [ArkimeUtil.noCacheJson],
-  miscAPIs.getRemoteClusters
+  MiscAPIs.getRemoteClusters
 );
 
 // app apis -------------------------------------------------------------------
 app.get(
   '/api/appinfo',
   [ArkimeUtil.noCacheJson, checkCookieToken, getSettingUserCache, User.checkPermissions(['webEnabled'])],
-  miscAPIs.getAppInfo
+  MiscAPIs.getAppInfo
 );
 
 // cyberchef apis -------------------------------------------------------------
@@ -1966,13 +1934,13 @@ app.get('/cyberchef.html', [cyberchefCspHeader], express.static( // cyberchef cl
 app.get( // cyberchef endpoint
   '/cyberchef/:nodeName/session/:id',
   [User.checkPermissions(['webEnabled']), checkProxyRequest, cyberchefCspHeader],
-  miscAPIs.cyberChef
+  MiscAPIs.cyberChef
 );
 
 app.use( // cyberchef UI endpoint
   ['/cyberchef/', '/modules/'],
   cyberchefCspHeader,
-  miscAPIs.getCyberChefUI
+  MiscAPIs.getCyberChefUI
 );
 
 // ============================================================================
@@ -1980,13 +1948,6 @@ app.use( // cyberchef UI endpoint
 // ============================================================================
 const Vue = require('vue');
 const vueServerRenderer = require('vue-server-renderer');
-
-// Factory function to create fresh Vue apps
-function createApp () {
-  return new Vue({
-    template: '<div id="app"></div>'
-  });
-}
 
 // using fallthrough: false because there is no 404 endpoint (client router
 // handles 404s) and sending index.html is confusing
@@ -2005,7 +1966,7 @@ app.use(cspHeader, setCookie, (req, res) => {
     return res.status(403).send('Permission denied');
   }
 
-  if (req.path === '/settings' && Config.get('demoMode', false)) {
+  if (req.path === '/settings' && req.user.isDemoMode()) {
     return res.status(403).send('Permission denied');
   }
 
@@ -2028,24 +1989,27 @@ app.use(cspHeader, setCookie, (req, res) => {
     titleConfig,
     path: Config.basePath(),
     version: version.version,
-    devMode: Config.get('devMode', false),
-    demoMode: Config.get('demoMode', false),
-    multiViewer: Config.get('multiES', false),
+    demoMode: req.user.isDemoMode(),
+    multiViewer: internals.multiES,
     hasUsersES: !!Config.get('usersElasticsearch', false),
     themeUrl: theme === 'custom-theme' ? 'api/user/css' : '',
     huntWarn: Config.get('huntWarn', 100000),
     huntLimit: limit,
     nonce: res.locals.nonce,
-    anonymousMode: !!internals.noPasswordSecret && !Config.get('regressionTests', false),
+    anonymousMode: Auth.isAnonymousMode() && !Config.regressionTests,
     businesDayStart: Config.get('businessDayStart', false),
     businessDayEnd: Config.get('businessDayEnd', false),
     businessDays: Config.get('businessDays', '1,2,3,4,5'),
     turnOffGraphDays: Config.get('turnOffGraphDays', 30),
-    disableUserPasswordUI: Config.get('disableUserPasswordUI', true)
+    disableUserPasswordUI: Config.get('disableUserPasswordUI', true),
+    logoutUrl: Auth.logoutUrl,
+    defaultTimeRange: Config.get('defaultTimeRange', '1')
   };
 
   // Create a fresh Vue app instance
-  const vueApp = createApp();
+  const vueApp = new Vue({
+    template: '<div id="app"></div>'
+  });
 
   // Render the Vue instance to HTML
   renderer.renderToString(vueApp, appContext, (err, html) => {
@@ -2065,290 +2029,6 @@ app.use(cspHeader, setCookie, (req, res) => {
 
 // Replace the default express error handler
 app.use(ArkimeUtil.expressErrorHandler);
-
-// ============================================================================
-// CRON QUERIES
-// ============================================================================
-/* Process a single cron query.  At max it will process 24 hours worth of data
- * to give other queries a chance to run.  Because its timestamp based and not
- * lastPacket based since 1.0 it now search all indices each time.
- */
-function processCronQuery (cq, options, query, endTime, cb) {
-  if (Config.debug > 2) {
-    console.log('CRON', cq.name, cq.creator, '- processCronQuery(', cq, options, query, endTime, ')');
-  }
-
-  let singleEndTime;
-  let count = 0;
-  async.doWhilst((whilstCb) => {
-    // Process at most 24 hours
-    singleEndTime = Math.min(endTime, cq.lpValue + 24 * 60 * 60);
-    query.query.bool.filter[0] = { range: { '@timestamp': { gte: cq.lpValue * 1000, lt: singleEndTime * 1000 } } };
-
-    if (Config.debug > 2) {
-      console.log('CRON', cq.name, cq.creator, '- start:', new Date(cq.lpValue * 1000), 'stop:', new Date(singleEndTime * 1000), 'end:', new Date(endTime * 1000), 'remaining runs:', ((endTime - singleEndTime) / (24 * 60 * 60.0)));
-    }
-
-    Db.searchSessions(['sessions2-*', 'sessions3-*'], query, { scroll: internals.esScrollTimeout }, function getMoreUntilDone (err, result) {
-      async function doNext () {
-        count += result.hits.hits.length;
-
-        // No more data, all done
-        if (result.hits.hits.length === 0) {
-          Db.clearScroll({ body: { scroll_id: result._scroll_id } });
-          return setImmediate(whilstCb, 'DONE');
-        } else {
-          const doc = { doc: { count: (query.count || 0) + count } };
-          try {
-            Db.update('queries', 'query', options.qid, doc, { refresh: true });
-          } catch (err) {
-            console.log('ERROR CRON - updating query', err);
-          }
-        }
-
-        query = {
-          body: {
-            scroll_id: result._scroll_id
-          },
-          scroll: internals.esScrollTimeout
-        };
-
-        try {
-          const { body: results } = await Db.scroll(query);
-          return getMoreUntilDone(null, results);
-        } catch (err) {
-          console.log('ERROR CRON - issuing scroll for cron job', err);
-          return getMoreUntilDone(err, {});
-        }
-      }
-
-      if (err || result.error) {
-        console.log('CRON - cronQuery error', err, (result ? result.error : null), 'for', cq);
-        return setImmediate(whilstCb, 'ERR');
-      }
-
-      const ids = [];
-      const hits = result.hits.hits;
-      let i, ilen;
-      if (cq.action.indexOf('forward:') === 0) {
-        for (i = 0, ilen = hits.length; i < ilen; i++) {
-          ids.push({ id: Db.session2Sid(hits[i]), node: hits[i]._source.node });
-        }
-
-        sendSessionsListQL(options, ids, doNext);
-      } else if (cq.action.indexOf('tag') === 0) {
-        for (i = 0, ilen = hits.length; i < ilen; i++) {
-          ids.push(Db.session2Sid(hits[i]));
-        }
-
-        if (Config.debug > 1) {
-          console.log('CRON', cq.name, cq.creator, '- Updating tags:', ids.length);
-        }
-
-        const tags = options.tags.split(',');
-        sessionAPIs.sessionsListFromIds(null, ids, ['tags', 'node'], (err, list) => {
-          sessionAPIs.addTagsList(tags, list, doNext);
-        });
-      } else {
-        console.log('CRON - Unknown action', cq);
-        doNext();
-      }
-    });
-  }, (testCb) => {
-    Db.refresh('sessions*');
-    if (Config.debug > 1) {
-      console.log('CRON', cq.name, cq.creator, '- Continue process', singleEndTime, endTime);
-    }
-    return setImmediate(testCb, null, singleEndTime !== endTime);
-  }, (err) => {
-    cb(count, singleEndTime);
-  });
-}
-
-internals.processCronQueries = () => {
-  Db.setQueriesNode(Config.nodeName());
-  if (internals.cronRunning) {
-    console.log('CRON - processQueries already running', qlworking);
-    return;
-  }
-  internals.cronRunning = true;
-  if (Config.debug) {
-    console.log('CRON - cronRunning set to true');
-  }
-
-  let repeat;
-  async.doWhilst(function (whilstCb) {
-    repeat = false;
-    Db.search('queries', 'query', { size: 1000 }, (err, data) => {
-      if (err) {
-        internals.cronRunning = false;
-        console.log('CRON - processCronQueries', err);
-        return setImmediate(whilstCb, err);
-      }
-
-      const queries = {};
-      data.hits.hits.forEach(function (item) {
-        queries[item._id] = item._source;
-      });
-
-      // Delayed by the max Timeout
-      const endTime = Math.floor(Date.now() / 1000) - internals.cronTimeout;
-
-      // Go thru the queries, fetch the user, make the query
-      async.eachSeries(Object.keys(queries), (qid, forQueriesCb) => {
-        const cq = queries[qid];
-        let cluster = null;
-
-        if (Config.debug > 1) {
-          console.log('CRON - Running', qid, cq);
-        }
-
-        if (!cq.enabled || endTime < cq.lpValue) {
-          return forQueriesCb();
-        }
-
-        if (cq.action.indexOf('forward:') === 0) {
-          cluster = cq.action.substring(8);
-        }
-
-        ViewerUtils.getUserCacheIncAnon(cq.creator, async (err, user) => {
-          if (err && !user) {
-            return forQueriesCb();
-          }
-          if (!user) {
-            console.log(`CRON - User ${cq.creator} doesn't exist`);
-            return forQueriesCb(null);
-          }
-          if (!user.enabled) {
-            console.log(`CRON - User '${cq.creator}' has been disabled on users tab, either delete their cron jobs or enable them`);
-            return forQueriesCb();
-          }
-
-          const options = {
-            user,
-            cluster,
-            saveId: Config.nodeName() + '-' + new Date().getTime().toString(36),
-            tags: cq.tags.replace(/[^-a-zA-Z0-9_:,]/g, ''),
-            qid
-          };
-
-          let shortcuts;
-          try { // try to fetch shortcuts
-            shortcuts = await Db.getShortcutsCache(user);
-          } catch (err) { // don't need to do anything, there will just be no
-            // shortcuts sent to the parser. but still log the error.
-            console.log('ERROR CRON - fetching shortcuts cache when processing periodic query', err);
-          }
-
-          // always complete building the query regardless of shortcuts
-          molochparser.parser.yy = {
-            emailSearch: user.emailSearch === true,
-            fieldsMap: Config.getFieldsMap(),
-            dbFieldsMap: Config.getDBFieldsMap(),
-            prefix: internals.prefix,
-            shortcuts,
-            shortcutTypeMap: internals.shortcutTypeMap
-          };
-
-          const query = {
-            from: 0,
-            size: 1000,
-            query: { bool: { filter: [{}] } },
-            _source: ['_id', 'node']
-          };
-
-          try {
-            query.query.bool.filter.push(molochparser.parse(cq.query));
-          } catch (e) {
-            console.log("CRON - Couldn't compile periodic query expression", cq, e);
-            return forQueriesCb();
-          }
-
-          if (user.getExpression()) {
-            try {
-              // Expression was set by admin, so assume email search ok
-              molochparser.parser.yy.emailSearch = true;
-              const userExpression = molochparser.parse(user.getExpression());
-              query.query.bool.filter.push(userExpression);
-            } catch (e) {
-              console.log("CRON - Couldn't compile user forced expression", user.getExpression(), e);
-              return forQueriesCb();
-            }
-          }
-
-          ViewerUtils.lookupQueryItems(query.query.bool.filter, (lerr) => {
-            processCronQuery(cq, options, query, endTime, (count, lpValue) => {
-              if (Config.debug > 1) {
-                console.log('CRON - setting lpValue', new Date(lpValue * 1000));
-              }
-              // Do the OpenSearch/Elasticsearch update
-              const doc = {
-                doc: {
-                  lpValue,
-                  lastRun: Math.floor(Date.now() / 1000),
-                  count: (cq.count || 0) + count,
-                  lastCount: count
-                }
-              };
-
-              async function continueProcess () {
-                try {
-                  await Db.update('queries', 'query', qid, doc, { refresh: true });
-                } catch (err) {
-                  console.log('ERROR CRON - updating query', err);
-                }
-                if (lpValue !== endTime) { repeat = true; }
-                return forQueriesCb();
-              }
-
-              // issue alert via notifier if the count has changed and it has been at least 10 minutes
-              if (cq.notifier && count && cq.count !== doc.doc.count &&
-                (!cq.lastNotified || (Math.floor(Date.now() / 1000) - cq.lastNotified >= 600))) {
-                const newMatchCount = cq.lastNotifiedCount ? (doc.doc.count - cq.lastNotifiedCount) : doc.doc.count;
-                doc.doc.lastNotifiedCount = doc.doc.count;
-
-                let urlPath = 'sessions?expression=';
-                const tags = cq.tags.split(',');
-                for (let t = 0, tlen = tags.length; t < tlen; t++) {
-                  const tag = tags[t];
-                  urlPath += `tags%20%3D%3D%20${tag}`; // encoded ' == '
-                  if (t !== tlen - 1) { urlPath += '%20%26%26%20'; } // encoded ' && '
-                }
-
-                const message = `
-*${cq.name}* periodic query match alert:
-*${newMatchCount} new* matches
-*${doc.doc.count} total* matches
-${Config.arkimeWebURL()}${urlPath}${cq.description ? '\n' + cq.description : ''}
-                `;
-
-                Db.refresh('*'); // Before sending alert make sure everything has been refreshed
-                Notifier.issueAlert(cq.notifier, message, continueProcess);
-              } else {
-                return continueProcess();
-              }
-            });
-          });
-        });
-      }, (err) => {
-        if (Config.debug > 1) {
-          console.log('CRON - Finished one pass of all crons');
-        }
-        return setImmediate(whilstCb, err);
-      });
-    });
-  }, (testCb) => {
-    if (Config.debug > 1) {
-      console.log('CRON - Process again: ', repeat);
-    }
-    return setImmediate(testCb, null, repeat);
-  }, (err) => {
-    if (Config.debug) {
-      console.log('CRON - Should be up to date');
-    }
-    internals.cronRunning = false;
-  });
-};
 
 // ============================================================================
 // MAIN
@@ -2388,7 +2068,7 @@ async function main () {
   loadPlugins();
 
   const pcapWriteMethod = Config.get('pcapWriteMethod');
-  const writer = internals.writers[pcapWriteMethod];
+  const writer = internals.writers.get(pcapWriteMethod);
   if (!writer || writer.localNode === true) {
     expireCheckAll();
     setInterval(expireCheckAll, 60 * 1000);
@@ -2399,48 +2079,13 @@ async function main () {
   createActions('field-actions', 'makeFieldActions', 'fieldActions');
   setInterval(() => createActions('field-actions', 'makeFieldActions', 'fieldActions'), 150 * 1000); // Check every 2.5 minutes
 
-  if (Config.get('cronQueries', false)) { // this viewer will process the cron queries
-    console.log('This node will process Periodic Queries (CRON), delayed by', internals.cronTimeout, 'seconds');
-    setInterval(internals.processCronQueries, 60 * 1000);
-    setTimeout(internals.processCronQueries, 1000);
-    setInterval(huntAPIs.processHuntJobs, 10000);
-  } else if (!Config.get('multiES', false)) {
-    const info = await Db.getQueriesNode();
-    if (info.node === undefined) {
-      console.log(`WARNING - No cronQueries=true found in ${Config.getConfigFile()}, one and only one node MUST have cronQueries=true set for cron/hunts to work`);
-    } else if (Date.now() - info.updateTime > 2 * 60 * 1000) {
-      console.log(`WARNING - cronQueries=true node '${info.node}' hasn't checked in lately, cron/hunts might be broken`);
-    }
-  }
-
-  let server;
-  if (Config.isHTTPS()) {
-    const cryptoOption = require('crypto').constants.SSL_OP_NO_TLSv1;
-    server = https.createServer({
-      key: Config.keyFileData,
-      cert: Config.certFileData,
-      secureOptions: cryptoOption
-    }, app);
-    Config.setServerToReloadCerts(server, cryptoOption);
-  } else {
-    server = http.createServer(app);
-  }
-
   const viewHost = Config.get('viewHost', undefined);
   if (internals.userNameHeader !== undefined && viewHost !== 'localhost' && viewHost !== '127.0.0.1') {
     console.log('SECURITY WARNING - when userNameHeader is set, viewHost should be localhost or use iptables');
   }
 
-  server
-    .on('error', function (e) {
-      console.log("ERROR - couldn't listen on port", Config.get('viewPort', '8005'), 'is viewer already running?');
-      process.exit(1);
-    })
-    .on('listening', function (e) {
-      console.log('Express server listening on port %d in %s mode', server.address().port, app.settings.env);
-    })
-    .listen(Config.get('viewPort', '8005'), viewHost)
-    .setTimeout(20 * 60 * 1000);
+  const server = ArkimeUtil.createHttpServer(app, viewHost, Config.get('viewPort', '8005'));
+  server.setTimeout(20 * 60 * 1000);
 }
 
 // ============================================================================
@@ -2452,12 +2097,12 @@ function processArgs (argv) {
       console.log('node.js [<options>]');
       console.log('');
       console.log('Options:');
-      console.log('  -c <config file>      Config file to use');
-      console.log('  -n <node name>        Node name section to use in config file, default first part of hostname');
-      console.log('  --debug               Increase debug level, multiple are supported');
-      console.log('  --esprofile           Turn on profiling to es search queries');
-      console.log('  --host <host name>    Host name to use, default os hostname');
-      console.log('  --insecure            Disable certificate verification for https calls');
+      console.log('  -c, --config <file|url>  Where to fetch the config file from');
+      console.log('  -n <node name>           Node name section to use in config file, default first part of hostname');
+      console.log('  --debug                  Increase debug level, multiple are supported');
+      console.log('  --esprofile              Turn on profiling to es search queries');
+      console.log('  --host <host name>       Host name to use, default os hostname');
+      console.log('  --insecure               Disable certificate verification for https calls');
 
       process.exit(0);
     }
@@ -2473,38 +2118,42 @@ process.on('unhandledRejection', (reason, p) => {
   // application specific logging, throwing an error, or other logic here
 });
 
-Db.initialize({
-  host: internals.elasticBase,
-  prefix: internals.prefix,
-  usersHost: Config.getArray('usersElasticsearch', ','),
-  // The default for usersPrefix should be '' if this is a multiviewer, otherwise Db.initialize will figure out
-  usersPrefix: Config.get('usersPrefix', Config.get('multiES', false) ? '' : undefined),
-  nodeName: Config.nodeName(),
-  hostName: Config.hostName(),
-  esClientKey: Config.get('esClientKey', null),
-  esClientCert: Config.get('esClientCert', null),
-  esClientKeyPass: Config.get('esClientKeyPass', null),
-  multiES: Config.get('multiES', false),
-  insecure: Config.insecure,
-  ca: Config.getCaTrustCerts(Config.nodeName()),
-  requestTimeout: Config.get('elasticsearchTimeout', 300),
-  esProfile: Config.esProfile,
-  debug: Config.debug,
-  esApiKey: Config.get('elasticsearchAPIKey', null),
-  usersEsApiKey: Config.get('usersElasticsearchAPIKey', null),
-  esBasicAuth: Config.get('elasticsearchBasicAuth', null),
-  usersEsBasicAuth: Config.get('usersElasticsearchBasicAuth', null),
-  cronQueries: Config.get('cronQueries', false),
-  getCurrentUserCB: userAPIs.getCurrentUserCB,
-  maxConcurrentShardRequests: Config.get('esMaxConcurrentShardRequests')
-}, main);
+async function premain () {
+  await Config.initialize();
 
-Notifier.initialize({
-  debug: Config.debug,
-  prefix: internals.prefix,
-  esclient: User.getClient()
-});
+  Db.initialize({
+    host: internals.elasticBase,
+    prefix: internals.prefix,
+    usersHost: Config.getArray('usersElasticsearch'),
+    // The default for usersPrefix should be '' if this is a multiviewer, otherwise Db.initialize will figure out
+    usersPrefix: Config.get('usersPrefix', internals.multiES ? '' : undefined),
+    nodeName: Config.nodeName(),
+    hostName: Config.hostName(),
+    esClientKey: Config.get('esClientKey', null),
+    esClientCert: Config.get('esClientCert', null),
+    esClientKeyPass: Config.get('esClientKeyPass', null),
+    multiES: internals.multiES,
+    insecure: ArkimeConfig.insecure,
+    caTrustFile: Config.get('caTrustFile', null),
+    requestTimeout: Config.get('elasticsearchTimeout', 300),
+    esProfile: Config.esProfile,
+    debug: Config.debug,
+    esApiKey: Config.get('elasticsearchAPIKey', null),
+    usersEsApiKey: Config.get('usersElasticsearchAPIKey', null),
+    esBasicAuth: Config.get('elasticsearchBasicAuth', null),
+    usersEsBasicAuth: Config.get('usersElasticsearchBasicAuth', null),
+    isPrimaryViewer: CronAPIs.isPrimaryViewer,
+    getCurrentUserCB: UserAPIs.getCurrentUserCB,
+    maxConcurrentShardRequests: Config.get('esMaxConcurrentShardRequests')
+  }, main);
 
-Cron.initialize({
-  processCronQueries: internals.processCronQueries
-});
+  Notifier.initialize({
+    prefix: Config.get('usersPrefix', Config.get('prefix', 'arkime')),
+    esclient: User.getClient()
+  });
+
+  CronAPIs.initialize({
+  });
+}
+
+premain();

@@ -5,26 +5,16 @@
  *
  * Copyright 2022 AOL Inc. All rights reserved.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this Software except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: Apache-2.0
  */
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include "gio/gio.h"
 #include "glib-object.h"
 #include "pcap.h"
-#include "moloch.h"
-extern MolochPcapFileHdr_t   pcapFileHeader;
-extern MolochConfig_t        config;
+#include "arkime.h"
+extern ArkimePcapFileHdr_t   pcapFileHeader;
+extern ArkimeConfig_t        config;
 
 LOCAL uint64_t              dropped;
 LOCAL uint64_t              packets;
@@ -55,10 +45,9 @@ LOCAL void *tzsp_thread(gpointer UNUSED(uw))
 
     g_object_unref (addr);
 
-    MolochPacketBatch_t   batch;
-    moloch_packet_batch_init(&batch);
+    ArkimePacketBatch_t   batch;
+    arkime_packet_batch_init(&batch);
     while (TRUE) {
-        GError           *error = NULL;
         gchar             buf[0xffff];
 
         gsize len = g_socket_receive(socket, buf, sizeof(buf), NULL, &error);
@@ -68,7 +57,7 @@ LOCAL void *tzsp_thread(gpointer UNUSED(uw))
             dropped++;
             continue;
         }
-        
+
         if (len <= 10) {
             dropped++;
             continue;
@@ -111,7 +100,7 @@ LOCAL void *tzsp_thread(gpointer UNUSED(uw))
             BSB_IMPORT_u08(bsb, taglen);
             BSB_IMPORT_skip(bsb, taglen);
         }
-        
+
         if (BSB_IS_ERROR(bsb) || BSB_REMAINING(bsb) < 6) {
             dropped++;
             continue;
@@ -124,14 +113,14 @@ LOCAL void *tzsp_thread(gpointer UNUSED(uw))
             continue;
         }
 
-        MolochPacket_t *packet = MOLOCH_TYPE_ALLOC0(MolochPacket_t);
+        ArkimePacket_t *packet = ARKIME_TYPE_ALLOC0(ArkimePacket_t);
         packet->pktlen        = BSB_REMAINING(bsb);
         packet->pkt           = BSB_WORK_PTR(bsb);
         packet->readerPos     = 0;
         gettimeofday(&packet->ts, NULL);
 
-        moloch_packet_batch(&batch, packet);
-        moloch_packet_batch_flush(&batch);
+        arkime_packet_batch(&batch, packet);
+        arkime_packet_batch_flush(&batch);
     }
 }
 
@@ -141,7 +130,7 @@ LOCAL void tzsp_server_start()
     g_thread_unref(g_thread_new("reader-tzsp", &tzsp_thread, NULL));
 }
 /******************************************************************************/
-LOCAL int tzsp_stats(MolochReaderStats_t *stats)
+LOCAL int tzsp_stats(ArkimeReaderStats_t *stats)
 {
     stats->dropped = dropped;
     stats->total = packets;
@@ -150,10 +139,10 @@ LOCAL int tzsp_stats(MolochReaderStats_t *stats)
 /******************************************************************************/
 void reader_tzsp_init(char *UNUSED(name))
 {
-    tzspPort = moloch_config_int(NULL, "tzspPort", 37008, 1, 0xffff);
+    tzspPort = arkime_config_int(NULL, "tzspPort", 37008, 1, 0xffff);
 
-    moloch_reader_start         = tzsp_server_start;
-    moloch_reader_stats         = tzsp_stats;
+    arkime_reader_start         = tzsp_server_start;
+    arkime_reader_stats         = tzsp_stats;
     deadPcap = pcap_open_dead(DLT_EN10MB, config.snapLen);
     if (config.bpf) {
         if (pcap_compile(deadPcap, &bpfp, config.bpf, 1, PCAP_NETMASK_UNKNOWN) == -1) {
@@ -161,5 +150,5 @@ void reader_tzsp_init(char *UNUSED(name))
         }
     }
 
-    moloch_packet_set_dltsnap(DLT_EN10MB, config.snapLen);
+    arkime_packet_set_dltsnap(DLT_EN10MB, config.snapLen);
 }

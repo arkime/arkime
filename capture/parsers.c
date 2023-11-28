@@ -2,20 +2,10 @@
  *
  * Copyright 2012-2017 AOL Inc. All rights reserved.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this Software except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: Apache-2.0
  */
 
-#include "moloch.h"
+#include "arkime.h"
 #include <fcntl.h>
 #include "gmodule.h"
 #include "magic.h"
@@ -24,31 +14,41 @@
 //#define DEBUG_PARSERS 1
 
 /******************************************************************************/
-extern MolochConfig_t        config;
+extern ArkimeConfig_t        config;
 LOCAL  gchar                 classTag[100];
 
-LOCAL  magic_t               cookie[MOLOCH_MAX_PACKET_THREADS];
+LOCAL  magic_t               cookie[ARKIME_MAX_PACKET_THREADS];
 
-extern unsigned char         moloch_char_to_hexstr[256][3];
+extern uint8_t               arkime_char_to_hexstr[256][3];
 
 int    userField;
 
-enum MolochMagicMode { MOLOCH_MAGICMODE_LIBMAGIC, MOLOCH_MAGICMODE_BOTH, MOLOCH_MAGICMODE_BASIC, MOLOCH_MAGICMODE_NONE};
+enum ArkimeMagicMode { ARKIME_MAGICMODE_LIBMAGIC, ARKIME_MAGICMODE_BOTH, ARKIME_MAGICMODE_BASIC, ARKIME_MAGICMODE_NONE};
 
-LOCAL enum MolochMagicMode magicMode;
+LOCAL enum ArkimeMagicMode magicMode;
 
+/******************************************************************************/
+typedef struct {
+    GPtrArray *funcs;
+    uint16_t   id;
+} ArkimeNamedInfo_t;
+
+#define MAX_NAMED_FUNCS  100
+LOCAL uint16_t           namedFuncsMax = 0;
+LOCAL ArkimeNamedInfo_t *namedFuncsArr[MAX_NAMED_FUNCS];
+LOCAL GHashTable        *namedFuncsHash;
 /******************************************************************************/
 #define MAGIC_MATCH(offset, needle) memcmp(data+offset, needle, sizeof(needle)-1) == 0
 #define MAGIC_MATCH_LEN(offset, needle) ((len > (int)sizeof(needle)-1+offset) && (memcmp(data+offset, needle, sizeof(needle)-1) == 0))
 
-#define MAGIC_MEMSTR(offset, needle) moloch_memstr(data+offset, len-offset, needle, sizeof(needle)-1)
-#define MAGIC_MEMSTR_LEN(offset, needle) ((len > (int)sizeof(needle)-1+offset) && (moloch_memstr(data+offset, len-offset, needle, sizeof(needle)-1)))
+#define MAGIC_MEMSTR(offset, needle) arkime_memstr(data+offset, len-offset, needle, sizeof(needle)-1)
+#define MAGIC_MEMSTR_LEN(offset, needle) ((len > (int)sizeof(needle)-1+offset) && (arkime_memstr(data+offset, len-offset, needle, sizeof(needle)-1)))
 
 #define MAGIC_STRCASE(offset, needle) strncasecmp(data+offset, needle, sizeof(needle)-1) == 0
 #define MAGIC_STRCASE_LEN(offset, needle) ((len > (int)sizeof(needle)-1+offset) && (strncasecmp(data+offset, needle, sizeof(needle)-1) == 0))
 
-#define MAGIC_RESULT(str) moloch_field_string_add(field, session, str, sizeof(str)-1, TRUE), str
-const char *moloch_parsers_magic_basic(MolochSession_t *session, int field, const char *data, int len)
+#define MAGIC_RESULT(str) arkime_field_string_add(field, session, str, sizeof(str)-1, TRUE), str
+const char *arkime_parsers_magic_basic(ArkimeSession_t *session, int field, const char *data, int len)
 {
     switch (data[0]) {
     case 0:
@@ -88,22 +88,22 @@ const char *moloch_parsers_magic_basic(MolochSession_t *session, int field, cons
 #ifdef OID_DECODE_SOMEDAY
     case 0x30:
         if (len > 100 && (gchar)data[1] == (gchar)0x82) {
-            MolochASNSeq_t seq[5];
+            ArkimeASNSeq_t seq[5];
             int i;
-            int num = moloch_parsers_asn_get_sequence(seq, 5, (unsigned char *)data, len, TRUE);
+            int num = arkime_parsers_asn_get_sequence(seq, 5, (uint8_t *)data, len, TRUE);
             for (i = 0; i < num; i++) {
                 if (seq[i].pc && seq[i].tag == 16) {
                     BSB tbsb;
                     BSB_INIT(tbsb, seq[i].value, seq[i].len);
                     uint32_t ipc, itag, ilen;
-                    unsigned char *ivalue;
-                    ivalue = moloch_parsers_asn_get_tlv(&tbsb, &ipc, &itag, &ilen);
+                    uint8_t *ivalue;
+                    ivalue = arkime_parsers_asn_get_tlv(&tbsb, &ipc, &itag, &ilen);
                     if (itag != 6)
                         continue;
                     char oid[100];
-                    moloch_parsers_asn_decode_oid(oid, sizeof(oid), ivalue, ilen);
+                    arkime_parsers_asn_decode_oid(oid, sizeof(oid), ivalue, ilen);
                     printf("%s ", oid);
-                    moloch_print_hex_string(ivalue, ilen);
+                    arkime_print_hex_string(ivalue, ilen);
                     if (ilen == 9 && MAGIC_MATCH(ivalue, "\x2a\x86\x48\x86\xf7\x0d\x01\x01\x05")) {
                     }
                 }
@@ -328,24 +328,24 @@ const char *moloch_parsers_magic_basic(MolochSession_t *session, int field, cons
     return NULL;
 }
 /******************************************************************************/
-const char *moloch_parsers_magic(MolochSession_t *session, int field, const char *data, int len)
+const char *arkime_parsers_magic(ArkimeSession_t *session, int field, const char *data, int len)
 {
     const char *m;
     if (len < 5)
         return NULL;
 
     switch (magicMode) {
-    case MOLOCH_MAGICMODE_BASIC:
-        return moloch_parsers_magic_basic(session, field, data, len);
+    case ARKIME_MAGICMODE_BASIC:
+        return arkime_parsers_magic_basic(session, field, data, len);
 
-    case MOLOCH_MAGICMODE_BOTH:
-        m = moloch_parsers_magic_basic(session, field, data, len);
+    case ARKIME_MAGICMODE_BOTH:
+        m = arkime_parsers_magic_basic(session, field, data, len);
         if (m)
             return m;
 
-        // Fall thru
-    case MOLOCH_MAGICMODE_LIBMAGIC:
-        m = magic_buffer(cookie[session->thread], data, MIN(len,50));
+    // Fall thru
+    case ARKIME_MAGICMODE_LIBMAGIC:
+        m = magic_buffer(cookie[session->thread], data, MIN(len, 50));
         if (m) {
             int mlen;
             char *semi = strchr(m, ';');
@@ -354,36 +354,35 @@ const char *moloch_parsers_magic(MolochSession_t *session, int field, const char
             } else {
                 mlen = strlen(m);
             }
-            return moloch_field_string_add(field, session, m, mlen, TRUE);
+            return arkime_field_string_add(field, session, m, mlen, TRUE);
         }
         return NULL;
-    case MOLOCH_MAGICMODE_NONE:
+    case ARKIME_MAGICMODE_NONE:
     default:
         return NULL;
     }
 }
 /******************************************************************************/
-void moloch_parsers_initial_tag(MolochSession_t *session)
+void arkime_parsers_initial_tag(ArkimeSession_t *session)
 {
     if (config.nodeClass)
-        moloch_session_add_tag(session, classTag);
+        arkime_session_add_tag(session, classTag);
 
     if (config.extraTags) {
         int i;
         for (i = 0; config.extraTags[i]; i++) {
-            moloch_session_add_tag(session, config.extraTags[i]);
+            arkime_session_add_tag(session, config.extraTags[i]);
         }
     }
 
-    moloch_field_ops_run(session, &config.ops);
+    arkime_field_ops_run(session, &config.ops);
 }
 
 
 /*############################## ASN ##############################*/
 
 /******************************************************************************/
-unsigned char *
-moloch_parsers_asn_get_tlv(BSB *bsb, uint32_t *apc, uint32_t *atag, uint32_t *alen)
+uint8_t *arkime_parsers_asn_get_tlv(BSB *bsb, uint32_t *apc, uint32_t *atag, uint32_t *alen)
 {
 
     if (BSB_REMAINING(*bsb) < 2)
@@ -414,6 +413,9 @@ moloch_parsers_asn_get_tlv(BSB *bsb, uint32_t *apc, uint32_t *atag, uint32_t *al
     if (ch & 0x80) {
         int cnt = ch & 0x7f;
         (*alen) = 0;
+        if (cnt > 4) {
+            goto get_tlv_error;
+        }
         while (cnt > 0 && BSB_REMAINING(*bsb)) {
             BSB_IMPORT_u08(*bsb, ch);
             (*alen) = ((*alen) << 8) | ch;
@@ -426,7 +428,7 @@ moloch_parsers_asn_get_tlv(BSB *bsb, uint32_t *apc, uint32_t *atag, uint32_t *al
     if (*alen > BSB_REMAINING(*bsb))
         *alen = BSB_REMAINING(*bsb);
 
-    unsigned char *value;
+    uint8_t *value;
     BSB_IMPORT_ptr(*bsb, value, *alen);
     if (BSB_IS_ERROR(*bsb)) {
         goto get_tlv_error;
@@ -441,21 +443,21 @@ get_tlv_error:
     return 0;
 }
 /******************************************************************************/
-int moloch_parsers_asn_get_sequence(MolochASNSeq_t *seqs, int maxSeq, const unsigned char *data, int len, gboolean wrapper)
+int arkime_parsers_asn_get_sequence(ArkimeASNSeq_t *seqs, int maxSeq, const uint8_t *data, int len, gboolean wrapper)
 {
     int num = 0;
     BSB bsb;
     BSB_INIT(bsb, data, len);
     if (wrapper) {
         uint32_t ipc, itag, ilen;
-        unsigned char *ivalue;
-        ivalue = moloch_parsers_asn_get_tlv(&bsb, &ipc, &itag, &ilen);
+        uint8_t *ivalue;
+        ivalue = arkime_parsers_asn_get_tlv(&bsb, &ipc, &itag, &ilen);
         if (!ipc || itag != 16)
             return 0;
         BSB_INIT(bsb, ivalue, ilen);
     }
     while (BSB_NOT_ERROR(bsb) && num < maxSeq) {
-        seqs[num].value = moloch_parsers_asn_get_tlv(&bsb, &seqs[num].pc, &seqs[num].tag, &seqs[num].len);
+        seqs[num].value = arkime_parsers_asn_get_tlv(&bsb, &seqs[num].pc, &seqs[num].tag, &seqs[num].len);
         if (seqs[num].value == 0)
             break;
 #ifdef DEBUG_PARSERS
@@ -466,23 +468,23 @@ int moloch_parsers_asn_get_sequence(MolochASNSeq_t *seqs, int maxSeq, const unsi
     return num;
 }
 /******************************************************************************/
-const char *moloch_parsers_asn_sequence_to_string(MolochASNSeq_t *seq, int *len)
+const char *arkime_parsers_asn_sequence_to_string(ArkimeASNSeq_t *seq, int *len)
 {
     if (!seq->pc) {
         *len = seq->len;
-        return (const char*)seq->value;
+        return (const char *)seq->value;
     }
 
     BSB bsb;
     BSB_INIT(bsb, seq->value, seq->len);
     uint32_t ipc, itag, ilen;
     char *ivalue;
-    ivalue = (char *)moloch_parsers_asn_get_tlv(&bsb, &ipc, &itag, &ilen);
+    ivalue = (char *)arkime_parsers_asn_get_tlv(&bsb, &ipc, &itag, &ilen);
     *len = ilen;
     return ivalue;
 }
 /******************************************************************************/
-void moloch_parsers_asn_decode_oid(char *buf, int bufsz, const unsigned char *oid, int len) {
+void arkime_parsers_asn_decode_oid(char *buf, int bufsz, const uint8_t *oid, int len) {
     int buflen = 0;
     int pos = 0;
     int first = TRUE;
@@ -499,11 +501,11 @@ void moloch_parsers_asn_decode_oid(char *buf, int bufsz, const unsigned char *oi
         if (first) {
             first = FALSE;
             if (value > 40) /* two values in first byte */
-                buflen = snprintf(buf, bufsz, "%d.%d", value/40, value % 40);
+                buflen = snprintf(buf, bufsz, "%d.%d", value / 40, value % 40);
             else /* one value in first byte */
                 buflen = snprintf(buf, bufsz, "%d", value);
         } else if (buflen < bufsz) {
-            buflen += snprintf(buf+buflen, bufsz-buflen, ".%d", value);
+            buflen += snprintf(buf + buflen, bufsz - buflen, ".%d", value);
         }
 
         value = 0;
@@ -513,7 +515,7 @@ void moloch_parsers_asn_decode_oid(char *buf, int bufsz, const unsigned char *oi
 #define char2num(ch) (isdigit(ch)?((ch) - '0'):0)
 #define str2num(str) (char2num((str)[0]) * 10 + char2num((str)[1]))
 #define str4num(str) (char2num((str)[0]) * 1000 + char2num((str)[1]) * 100 + char2num((str)[2]) * 10 + char2num((str)[3]))
-uint64_t moloch_parsers_asn_parse_time(MolochSession_t *session, int tag, unsigned char* value, int len)
+uint64_t arkime_parsers_asn_parse_time(ArkimeSession_t *session, int tag, uint8_t *value, int len)
 {
     int        offset = 0;
     struct tm  tm;
@@ -522,17 +524,17 @@ uint64_t moloch_parsers_asn_parse_time(MolochSession_t *session, int tag, unsign
     //UTCTime
     if (tag == 23 && len > 12) {
         if (len > 17 && value[12] != 'Z')
-            offset = str2num(value+13) * 60 + str2num(value+15);
+            offset = str2num(value + 13) * 60 + str2num(value + 15);
 
         if (value[12] == '-')
             offset = -offset;
 
-        tm.tm_year = str2num(value+0);
-        tm.tm_mon  = str2num(value+2) - 1;
-        tm.tm_mday = str2num(value+4);
-        tm.tm_hour = str2num(value+6);
-        tm.tm_min  = str2num(value+8);
-        tm.tm_sec  = str2num(value+10);
+        tm.tm_year = str2num(value + 0);
+        tm.tm_mon  = str2num(value + 2) - 1;
+        tm.tm_mday = str2num(value + 4);
+        tm.tm_hour = str2num(value + 6);
+        tm.tm_min  = str2num(value + 8);
+        tm.tm_sec  = str2num(value + 10);
 
         if (tm.tm_year < 50)
             tm.tm_year += 100;
@@ -540,7 +542,7 @@ uint64_t moloch_parsers_asn_parse_time(MolochSession_t *session, int tag, unsign
         val = timegm(&tm) + offset;
         if (val < 0) {
             val = 0;
-            moloch_session_add_tag(session, "cert:pre-epoch-time");
+            arkime_session_add_tag(session, "cert:pre-epoch-time");
         }
         return val;
     }
@@ -548,21 +550,21 @@ uint64_t moloch_parsers_asn_parse_time(MolochSession_t *session, int tag, unsign
     else if (tag == 24 && len >= 10) {
         int pos;
         memset(&tm, 0, sizeof(tm));
-        tm.tm_year = str4num(value+0) - 1900;
-        tm.tm_mon  = str2num(value+4) - 1;
-        tm.tm_mday = str2num(value+6);
-        tm.tm_hour = str2num(value+8);
+        tm.tm_year = str4num(value + 0) - 1900;
+        tm.tm_mon  = str2num(value + 4) - 1;
+        tm.tm_mday = str2num(value + 6);
+        tm.tm_hour = str2num(value + 8);
         if (len < 12 || value[10] == 'Z' || value[10] == '+' || value[10] == '-') {
             pos = 10;
             goto gtdone;
         }
 
-        tm.tm_min  = str2num(value+10);
+        tm.tm_min  = str2num(value + 10);
         if (len < 14 || value[12] == 'Z' || value[12] == '+' || value[12] == '-') {
             pos = 12;
             goto gtdone;
         }
-        tm.tm_sec  = str2num(value+12);
+        tm.tm_sec  = str2num(value + 12);
         if (len < 15 || value[14] == 'Z' || value[14] == '+' || value[14] == '-') {
             pos = 14;
             goto gtdone;
@@ -572,12 +574,12 @@ uint64_t moloch_parsers_asn_parse_time(MolochSession_t *session, int tag, unsign
         } else {
             pos = 14;
         }
-    gtdone:
+gtdone:
         if (pos == len) {
             val = timegm(&tm);
         } else {
             if (pos + 5 < len && (value[pos] == '+' || value[pos] == '-')) {
-                offset = str2num(value+pos+1) * 60 +  str2num(value+pos+3);
+                offset = str2num(value + pos + 1) * 60 +  str2num(value + pos + 3);
 
                 if (value[pos] == '-')
                     offset = -offset;
@@ -587,7 +589,7 @@ uint64_t moloch_parsers_asn_parse_time(MolochSession_t *session, int tag, unsign
 
         if (val < 0) {
             val = 0;
-            moloch_session_add_tag(session, "cert:pre-epoch-time");
+            arkime_session_add_tag(session, "cert:pre-epoch-time");
         }
         return val;
     }
@@ -596,51 +598,53 @@ uint64_t moloch_parsers_asn_parse_time(MolochSession_t *session, int tag, unsign
 /******************************************************************************/
 LOCAL int cstring_cmp(const void *a, const void *b)
 {
-   return strcmp(*(char **)a, *(char **)b);
+    return strcmp(*(char **)a, *(char **)b);
 }
 /******************************************************************************/
-void moloch_parsers_init()
+void arkime_parsers_init()
 {
+    namedFuncsHash = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, NULL);
+
     if (config.nodeClass)
         snprintf(classTag, sizeof(classTag), "class:%s", config.nodeClass);
 
-    moloch_field_define("general", "integer",
-        "session.segments", "Session Segments", "segmentCnt",
-        "Number of segments in session so far",
-        0,  MOLOCH_FIELD_FLAG_FAKE,
-        (char *)NULL);
+    arkime_field_define("general", "integer",
+                        "session.segments", "Session Segments", "segmentCnt",
+                        "Number of segments in session so far",
+                        0,  ARKIME_FIELD_FLAG_FAKE,
+                        (char *)NULL);
 
-    moloch_field_define("general", "integer",
-        "session.length", "Session Length", "length",
-        "Session Length in milliseconds so far",
-        0,  MOLOCH_FIELD_FLAG_FAKE,
-        (char *)NULL);
+    arkime_field_define("general", "integer",
+                        "session.length", "Session Length", "length",
+                        "Session Length in milliseconds so far",
+                        0,  ARKIME_FIELD_FLAG_FAKE,
+                        (char *)NULL);
 
-    userField = moloch_field_define("general", "lotermfield",
-        "user", "User", "user",
-        "External user set for session",
-        MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT | MOLOCH_FIELD_FLAG_LINKED_SESSIONS,
-        "category", "user",
-        (char *)NULL);
+    userField = arkime_field_define("general", "lotermfield",
+                                    "user", "User", "user",
+                                    "External user set for session",
+                                    ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT | ARKIME_FIELD_FLAG_LINKED_SESSIONS,
+                                    "category", "user",
+                                    (char *)NULL);
 
     int flags = MAGIC_MIME;
 
-    char *strMagicMode = moloch_config_str(NULL, "magicMode", "both");
+    char *strMagicMode = arkime_config_str(NULL, "magicMode", "both");
 
     if (strcmp(strMagicMode, "libmagic") == 0) {
-        magicMode = MOLOCH_MAGICMODE_LIBMAGIC;
+        magicMode = ARKIME_MAGICMODE_LIBMAGIC;
     } else if (strcmp(strMagicMode, "libmagicnotext") == 0) {
-        magicMode = MOLOCH_MAGICMODE_LIBMAGIC;
+        magicMode = ARKIME_MAGICMODE_LIBMAGIC;
         flags |= MAGIC_NO_CHECK_TEXT;
     } else if (strcmp(strMagicMode, "molochmagic") == 0) {
         LOG("WARNING - magicMode of `molochmagic` no longer supported, switching to `both`");
-        magicMode = MOLOCH_MAGICMODE_BOTH;
+        magicMode = ARKIME_MAGICMODE_BOTH;
     } else if (strcmp(strMagicMode, "basic") == 0) {
-        magicMode = MOLOCH_MAGICMODE_BASIC;
+        magicMode = ARKIME_MAGICMODE_BASIC;
     } else if (strcmp(strMagicMode, "both") == 0) {
-        magicMode = MOLOCH_MAGICMODE_BOTH;
+        magicMode = ARKIME_MAGICMODE_BOTH;
     } else if (strcmp(strMagicMode, "none") == 0) {
-        magicMode = MOLOCH_MAGICMODE_NONE;
+        magicMode = ARKIME_MAGICMODE_NONE;
     } else {
         CONFIGEXIT("Unknown magicMode '%s'", strMagicMode);
     }
@@ -658,7 +662,7 @@ void moloch_parsers_init()
     flags |= MAGIC_NO_CHECK_CDF;
 #endif
 
-    if (magicMode == MOLOCH_MAGICMODE_LIBMAGIC || magicMode == MOLOCH_MAGICMODE_BOTH) {
+    if (magicMode == ARKIME_MAGICMODE_LIBMAGIC || magicMode == ARKIME_MAGICMODE_BOTH) {
         int t;
         for (t = 0; t < config.packetThreads; t++) {
             cookie[t] = magic_open(flags);
@@ -670,29 +674,29 @@ void moloch_parsers_init()
         }
     }
 
-    MolochStringHashStd_t loaded;
-    HASH_INIT(s_, loaded, moloch_string_hash, moloch_string_cmp);
+    ArkimeStringHashStd_t loaded;
+    HASH_INIT(s_, loaded, arkime_string_hash, arkime_string_cmp);
 
-    MolochString_t *hstring;
+    ArkimeString_t *hstring;
     int d;
 
-    char **disableParsers = moloch_config_str_list(NULL, "disableParsers", "arp.so");
+    char **disableParsers = arkime_config_str_list(NULL, "disableParsers", "arp.so");
     for (d = 0; disableParsers[d]; d++) {
-        hstring = MOLOCH_TYPE_ALLOC0(MolochString_t);
+        hstring = ARKIME_TYPE_ALLOC0(ArkimeString_t);
         hstring->str = disableParsers[d];
         hstring->len = strlen(disableParsers[d]);
         HASH_ADD(s_, loaded, hstring->str, hstring);
     }
 
     if (!config.parseSMTP) {
-        hstring = MOLOCH_TYPE_ALLOC0(MolochString_t);
+        hstring = ARKIME_TYPE_ALLOC0(ArkimeString_t);
         hstring->str = g_strdup("smtp.so");
         hstring->len = strlen(hstring->str);
         HASH_ADD(s_, loaded, hstring->str, hstring);
     }
 
     if (!config.parseSMB) {
-        hstring = MOLOCH_TYPE_ALLOC0(MolochString_t);
+        hstring = ARKIME_TYPE_ALLOC0(ArkimeString_t);
         hstring->str = g_strdup("smb.so");
         hstring->len = strlen(hstring->str);
         HASH_ADD(s_, loaded, hstring->str, hstring);
@@ -723,7 +727,7 @@ void moloch_parsers_init()
                 continue;
 
             // If it doesn't end with .so we ignore it
-            if (strlen(filename) < 3 || strcasecmp(".so", filename + strlen(filename)-3) != 0) {
+            if (strlen(filename) < 3 || strcasecmp(".so", filename + strlen(filename) - 3) != 0) {
                 continue;
             }
 
@@ -753,10 +757,10 @@ void moloch_parsers_init()
                 continue;
             }
 
-            MolochPluginInitFunc parser_init;
+            ArkimePluginInitFunc parser_init;
 
-            if (!g_module_symbol(parser, "moloch_parser_init", (gpointer *)(char*)&parser_init) || parser_init == NULL) {
-                LOG("ERROR - Module %s doesn't have a moloch_parser_init", filenames[i]);
+            if (!g_module_symbol(parser, "arkime_parser_init", (gpointer *)(char * )&parser_init) || parser_init == NULL) {
+                LOG("ERROR - Module %s doesn't have a arkime_parser_init", filenames[i]);
                 g_free(filenames[i]);
                 g_free (path);
                 continue;
@@ -768,7 +772,7 @@ void moloch_parsers_init()
 
             parser_init();
 
-            hstring = MOLOCH_TYPE_ALLOC0(MolochString_t);
+            hstring = ARKIME_TYPE_ALLOC0(ArkimeString_t);
             hstring->str = filenames[i];
             hstring->len = strlen(filenames[i]);
             HASH_ADD(s_, loaded, hstring->str, hstring);
@@ -785,32 +789,32 @@ void moloch_parsers_init()
         LOG("WARNING - No parsers loaded, is parsersDir set correctly");
     }
 
-    HASH_FORALL_POP_HEAD(s_, loaded, hstring,
+    HASH_FORALL_POP_HEAD2(s_, loaded, hstring) {
         g_free(hstring->str);
-        MOLOCH_TYPE_FREE(MolochString_t, hstring);
-    );
+        ARKIME_TYPE_FREE(ArkimeString_t, hstring);
+    }
     g_free(disableParsers); // NOT, g_strfreev because using the pointers
 
     // Set tags field up AFTER loading plugins
-    config.tagsStringField = moloch_field_define("general", "termfield",
-        "tags", "Tags", "tags",
-        "Tags set for session",
-        MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT | MOLOCH_FIELD_FLAG_LINKED_SESSIONS,
-        (char *)NULL);
+    config.tagsStringField = arkime_field_define("general", "termfield",
+                                                 "tags", "Tags", "tags",
+                                                 "Tags set for session",
+                                                 ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT | ARKIME_FIELD_FLAG_LINKED_SESSIONS,
+                                                 (char *)NULL);
 
-    moloch_field_define("general", "lotermfield",
-        "asset", "Asset", "asset",
-        "Asset name",
-        MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT | MOLOCH_FIELD_FLAG_LINKED_SESSIONS,
-        (char *)NULL);
+    arkime_field_define("general", "lotermfield",
+                        "asset", "Asset", "asset",
+                        "Asset name",
+                        ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT | ARKIME_FIELD_FLAG_LINKED_SESSIONS,
+                        (char *)NULL);
 
     gsize keys_len;
-    gchar **keys = moloch_config_section_keys(NULL, "custom-fields", &keys_len);
+    gchar **keys = arkime_config_section_keys(NULL, "custom-fields", &keys_len);
 
     int i;
     for (i = 0; i < (int)keys_len; i++) {
-        char *value = moloch_config_section_str(NULL, "custom-fields", keys[i], NULL);
-        moloch_field_define_text_full(keys[i], value, NULL);
+        char *value = arkime_config_section_str(NULL, "custom-fields", keys[i], NULL);
+        arkime_field_define_text_full(keys[i], value, NULL);
         g_free(value);
     }
     g_strfreev(keys);
@@ -818,30 +822,30 @@ void moloch_parsers_init()
 
     if (config.extraOps) {
         for (i = 0; config.extraOps[i]; i++) { }
-        moloch_field_ops_init(&config.ops, i, 0);
+        arkime_field_ops_init(&config.ops, i, 0);
         for (i = 0; config.extraOps[i]; i++) {
             char *equal = strchr(config.extraOps[i], '=');
             if (!equal) {
                 CONFIGEXIT("Must be FieldExpr=value, missing equal '%s'", config.extraOps[i]);
             }
-            int len = strlen(equal+1);
+            int len = strlen(equal + 1);
             if (!len) {
                 CONFIGEXIT("Must be FieldExpr=value, empty value for '%s'", config.extraOps[i]);
             }
             *equal = 0;
-            int fieldPos = moloch_field_by_exp(config.extraOps[i]);
+            int fieldPos = arkime_field_by_exp(config.extraOps[i]);
             if (fieldPos == -1) {
                 CONFIGEXIT("Must be FieldExpr=value, Unknown field expression '%s'", config.extraOps[i]);
             }
-            moloch_field_ops_add(&config.ops, fieldPos, equal+1, len);
+            arkime_field_ops_add(&config.ops, fieldPos, equal + 1, len);
         }
     } else {
-        moloch_field_ops_init(&config.ops, 0, 0);
+        arkime_field_ops_init(&config.ops, 0, 0);
     }
 }
 /******************************************************************************/
-void moloch_parsers_exit() {
-    if (magicMode == MOLOCH_MAGICMODE_LIBMAGIC || magicMode == MOLOCH_MAGICMODE_BOTH) {
+void arkime_parsers_exit() {
+    if (magicMode == ARKIME_MAGICMODE_LIBMAGIC || magicMode == ARKIME_MAGICMODE_BOTH) {
         int t;
         for (t = 0; t < config.packetThreads; t++) {
             magic_close(cookie[t]);
@@ -849,7 +853,7 @@ void moloch_parsers_exit() {
     }
 }
 /******************************************************************************/
-void moloch_print_hex_string(const unsigned char* data, unsigned int length)
+void arkime_print_hex_string(const uint8_t *data, unsigned int length)
 {
     unsigned int i;
 
@@ -861,25 +865,36 @@ void moloch_print_hex_string(const unsigned char* data, unsigned int length)
     printf("\n");
 }
 /******************************************************************************/
-char *moloch_sprint_hex_string(char *buf, const unsigned char* data, unsigned int length)
+char *arkime_sprint_hex_string(char *buf, const uint8_t *data, unsigned int length)
 {
     unsigned int i;
 
     for (i = 0; i < length; i++)
     {
-        memcpy(buf+i*2, moloch_char_to_hexstr[data[i]], 2);
+        memcpy(buf + i * 2, arkime_char_to_hexstr[data[i]], 2);
     }
-    buf[i*2] = 0;
+    buf[i * 2] = 0;
     return buf;
 }
 /******************************************************************************/
-void  moloch_parsers_register2(MolochSession_t *session, MolochParserFunc func, void *uw, MolochParserFreeFunc ffunc, MolochParserSaveFunc sfunc)
+void  arkime_parsers_register2(ArkimeSession_t *session, ArkimeParserFunc func, void *uw, ArkimeParserFreeFunc ffunc, ArkimeParserSaveFunc sfunc)
 {
+#ifdef DEBUG_PARSERS
+    LOG("session: %p func: %p uw: %p", session, func, uw);
+#endif
+
     if (session->parserNum > 30) {
         char ipStr[200];
-        moloch_session_pretty_string(session, ipStr, sizeof(ipStr));
+        arkime_session_pretty_string(session, ipStr, sizeof(ipStr));
         LOG("WARNING - Too many parsers registered: %d %s", session->parserNum, ipStr);
         return;
+    }
+
+    // Check if this is a duplicate
+    for (int i = 0; i < session->parserNum; i++) {
+        if (session->parserInfo[i].parserFunc == func && session->parserInfo[i].uw == uw) {
+            return;
+        }
     }
 
     if (session->parserNum >= session->parserLen) {
@@ -888,7 +903,7 @@ void  moloch_parsers_register2(MolochSession_t *session, MolochParserFunc func, 
         } else {
             session->parserLen *= 1.67;
         }
-        session->parserInfo = realloc(session->parserInfo, sizeof(MolochParserInfo_t) * session->parserLen);
+        session->parserInfo = realloc(session->parserInfo, sizeof(ArkimeParserInfo_t) * session->parserLen);
     }
 
     session->parserInfo[session->parserNum].parserFunc     = func;
@@ -899,7 +914,7 @@ void  moloch_parsers_register2(MolochSession_t *session, MolochParserFunc func, 
     session->parserNum++;
 }
 /******************************************************************************/
-void  moloch_parsers_unregister(MolochSession_t *session, void *uw)
+void  arkime_parsers_unregister(ArkimeSession_t *session, void *uw)
 {
     int i;
     for (i = 0; i < session->parserNum; i++) {
@@ -914,38 +929,38 @@ void  moloch_parsers_unregister(MolochSession_t *session, void *uw)
     }
 }
 /******************************************************************************/
-typedef struct moloch_classify_t
+typedef struct arkime_classify_t
 {
     const char          *name;
     void                *uw;
     int                  offset;
-    const unsigned char *match;
+    const uint8_t       *match;
     int                  matchlen;
     int                  minlen;
-    MolochClassifyFunc   func;
-} MolochClassify_t;
+    ArkimeClassifyFunc   func;
+} ArkimeClassify_t;
 
 typedef struct
 {
-    MolochClassify_t   **arr;
+    ArkimeClassify_t   **arr;
     short               size;
     short               cnt;
-} MolochClassifyHead_t;
+} ArkimeClassifyHead_t;
 
-LOCAL MolochClassifyHead_t classifersTcp0;
-LOCAL MolochClassifyHead_t classifersTcp1[256];
-LOCAL MolochClassifyHead_t classifersTcp2[256][256];
-LOCAL MolochClassifyHead_t classifersTcpPortSrc[0x10000];
-LOCAL MolochClassifyHead_t classifersTcpPortDst[0x10000];
+LOCAL ArkimeClassifyHead_t classifersTcp0;
+LOCAL ArkimeClassifyHead_t classifersTcp1[256];
+LOCAL ArkimeClassifyHead_t classifersTcp2[256][256];
+LOCAL ArkimeClassifyHead_t classifersTcpPortSrc[0x10000];
+LOCAL ArkimeClassifyHead_t classifersTcpPortDst[0x10000];
 
-LOCAL MolochClassifyHead_t classifersUdp0;
-LOCAL MolochClassifyHead_t classifersUdp1[256];
-LOCAL MolochClassifyHead_t classifersUdp2[256][256];
-LOCAL MolochClassifyHead_t classifersUdpPortSrc[0x10000];
-LOCAL MolochClassifyHead_t classifersUdpPortDst[0x10000];
+LOCAL ArkimeClassifyHead_t classifersUdp0;
+LOCAL ArkimeClassifyHead_t classifersUdp1[256];
+LOCAL ArkimeClassifyHead_t classifersUdp2[256][256];
+LOCAL ArkimeClassifyHead_t classifersUdpPortSrc[0x10000];
+LOCAL ArkimeClassifyHead_t classifersUdpPortDst[0x10000];
 
 /******************************************************************************/
-void moloch_parsers_classifier_add(MolochClassifyHead_t *ch, MolochClassify_t *c)
+void arkime_parsers_classifier_add(ArkimeClassifyHead_t *ch, ArkimeClassify_t *c)
 {
     int i;
     for (i = 0; i < ch->cnt; i++) {
@@ -958,7 +973,7 @@ void moloch_parsers_classifier_add(MolochClassifyHead_t *ch, MolochClassify_t *c
             if (config.debug > 1) {
                 LOG("Info, duplicate (could be normal) %s %s", c->name, c->match);
             }
-            MOLOCH_TYPE_FREE(MolochClassify_t, c);
+            ARKIME_TYPE_FREE(ArkimeClassify_t, c);
             return;
         }
     }
@@ -968,28 +983,28 @@ void moloch_parsers_classifier_add(MolochClassifyHead_t *ch, MolochClassify_t *c
         } else {
             ch->size *= 1.67;
         }
-        ch->arr = realloc(ch->arr, sizeof(MolochClassify_t *) * ch->size);
+        ch->arr = realloc(ch->arr, sizeof(ArkimeClassify_t *) * ch->size);
     }
 
     ch->arr[ch->cnt] = c;
     ch->cnt++;
 }
 /******************************************************************************/
-void moloch_parsers_classifier_register_port_internal(const char *name, void *uw, uint16_t port, uint32_t type, MolochClassifyFunc func, size_t sessionsize, int apiversion)
+void arkime_parsers_classifier_register_port_internal(const char *name, void *uw, uint16_t port, uint32_t type, ArkimeClassifyFunc func, size_t sessionsize, int apiversion)
 {
-    if (sizeof(MolochSession_t) != sessionsize) {
-        CONFIGEXIT("Parser '%s' built with different version of moloch.h\n %u != %u", name, (unsigned int)sizeof(MolochSession_t),  (unsigned int)sessionsize);
+    if (sizeof(ArkimeSession_t) != sessionsize) {
+        CONFIGEXIT("Parser '%s' built with different version of arkime.h\n %u != %u", name, (unsigned int)sizeof(ArkimeSession_t),  (unsigned int)sessionsize);
     }
 
-    if (MOLOCH_API_VERSION != apiversion) {
-        CONFIGEXIT("Parser '%s' built with different version of moloch.h\n %d %d", name, MOLOCH_API_VERSION, apiversion);
+    if (ARKIME_API_VERSION != apiversion) {
+        CONFIGEXIT("Parser '%s' built with different version of arkime.h\n %d %d", name, ARKIME_API_VERSION, apiversion);
     }
 
-    if ((type & (MOLOCH_PARSERS_PORT_UDP | MOLOCH_PARSERS_PORT_TCP)) == 0) {
+    if ((type & (ARKIME_PARSERS_PORT_UDP | ARKIME_PARSERS_PORT_TCP)) == 0) {
         CONFIGEXIT("Parser '%s' has empty type", name);
     }
 
-    MolochClassify_t *c = MOLOCH_TYPE_ALLOC0(MolochClassify_t);
+    ArkimeClassify_t *c = ARKIME_TYPE_ALLOC0(ArkimeClassify_t);
     c->name     = name;
     c->uw       = uw;
     c->func     = func;
@@ -997,31 +1012,31 @@ void moloch_parsers_classifier_register_port_internal(const char *name, void *uw
     if (config.debug)
         LOG("adding %s port:%u type:%02x uw:%p", name, port, type, uw);
 
-    if (type & MOLOCH_PARSERS_PORT_TCP_SRC)
-        moloch_parsers_classifier_add(&classifersTcpPortSrc[port], c);
-    if (type & MOLOCH_PARSERS_PORT_TCP_DST)
-        moloch_parsers_classifier_add(&classifersTcpPortDst[port], c);
+    if (type & ARKIME_PARSERS_PORT_TCP_SRC)
+        arkime_parsers_classifier_add(&classifersTcpPortSrc[port], c);
+    if (type & ARKIME_PARSERS_PORT_TCP_DST)
+        arkime_parsers_classifier_add(&classifersTcpPortDst[port], c);
 
-    if (type & MOLOCH_PARSERS_PORT_UDP_SRC)
-        moloch_parsers_classifier_add(&classifersUdpPortSrc[port], c);
-    if (type & MOLOCH_PARSERS_PORT_UDP_DST)
-        moloch_parsers_classifier_add(&classifersUdpPortDst[port], c);
+    if (type & ARKIME_PARSERS_PORT_UDP_SRC)
+        arkime_parsers_classifier_add(&classifersUdpPortSrc[port], c);
+    if (type & ARKIME_PARSERS_PORT_UDP_DST)
+        arkime_parsers_classifier_add(&classifersUdpPortDst[port], c);
 }
 /******************************************************************************/
-void moloch_parsers_classifier_register_tcp_internal(const char *name, void *uw, int offset, const unsigned char *match, int matchlen, MolochClassifyFunc func, size_t sessionsize, int apiversion)
+void arkime_parsers_classifier_register_tcp_internal(const char *name, void *uw, int offset, const uint8_t *match, int matchlen, ArkimeClassifyFunc func, size_t sessionsize, int apiversion)
 {
-    if (sizeof(MolochSession_t) != sessionsize) {
-        CONFIGEXIT("Parser '%s' built with different version of moloch.h\n %u != %u", name, (unsigned int)sizeof(MolochSession_t),  (unsigned int)sessionsize);
+    if (sizeof(ArkimeSession_t) != sessionsize) {
+        CONFIGEXIT("Parser '%s' built with different version of arkime.h\n %u != %u", name, (unsigned int)sizeof(ArkimeSession_t),  (unsigned int)sessionsize);
     }
 
-    if (MOLOCH_API_VERSION != apiversion) {
-        CONFIGEXIT("Parser '%s' built with different version of moloch.h\n %d %d", name, MOLOCH_API_VERSION, apiversion);
+    if (ARKIME_API_VERSION != apiversion) {
+        CONFIGEXIT("Parser '%s' built with different version of arkime.h\n %d %d", name, ARKIME_API_VERSION, apiversion);
     }
 
     if (!match && matchlen != 0)
         CONFIGEXIT("Can't have a null match for %s", name);
 
-    MolochClassify_t *c = MOLOCH_TYPE_ALLOC0(MolochClassify_t);
+    ArkimeClassify_t *c = ARKIME_TYPE_ALLOC0(ArkimeClassify_t);
     c->name     = name;
     c->uw       = uw;
     c->offset   = offset;
@@ -1032,31 +1047,31 @@ void moloch_parsers_classifier_register_tcp_internal(const char *name, void *uw,
 
     if (config.debug) {
         char hex[1000];
-        moloch_sprint_hex_string(hex, match, matchlen);
+        arkime_sprint_hex_string(hex, match, matchlen);
         LOG("adding %s matchlen:%d offset:%d match %s (0x%s)", name, matchlen, offset, match, hex);
     }
     if (matchlen == 0 || offset != 0) {
-        moloch_parsers_classifier_add(&classifersTcp0, c);
+        arkime_parsers_classifier_add(&classifersTcp0, c);
     } else if (matchlen == 1) {
-        moloch_parsers_classifier_add(&classifersTcp1[(uint8_t)match[0]], c);
+        arkime_parsers_classifier_add(&classifersTcp1[(uint8_t)match[0]], c);
     } else  {
         c->match += 2;
         c->matchlen -= 2;
-        moloch_parsers_classifier_add(&classifersTcp2[(uint8_t)match[0]][(uint8_t)match[1]], c);
+        arkime_parsers_classifier_add(&classifersTcp2[(uint8_t)match[0]][(uint8_t)match[1]], c);
     }
 }
 /******************************************************************************/
-void moloch_parsers_classifier_register_udp_internal(const char *name, void *uw, int offset, const unsigned char *match, int matchlen, MolochClassifyFunc func, size_t sessionsize, int apiversion)
+void arkime_parsers_classifier_register_udp_internal(const char *name, void *uw, int offset, const uint8_t *match, int matchlen, ArkimeClassifyFunc func, size_t sessionsize, int apiversion)
 {
-    if (sizeof(MolochSession_t) != sessionsize) {
-        CONFIGEXIT("Parser '%s' built with different version of moloch.h", name);
+    if (sizeof(ArkimeSession_t) != sessionsize) {
+        CONFIGEXIT("Parser '%s' built with different version of arkime.h", name);
     }
 
-    if (MOLOCH_API_VERSION != apiversion) {
-        CONFIGEXIT("Parser '%s' built with different version of moloch.h", name);
+    if (ARKIME_API_VERSION != apiversion) {
+        CONFIGEXIT("Parser '%s' built with different version of arkime.h", name);
     }
 
-    MolochClassify_t *c = MOLOCH_TYPE_ALLOC0(MolochClassify_t);
+    ArkimeClassify_t *c = ARKIME_TYPE_ALLOC0(ArkimeClassify_t);
     c->name     = name;
     c->uw       = uw;
     c->offset   = offset;
@@ -1068,17 +1083,17 @@ void moloch_parsers_classifier_register_udp_internal(const char *name, void *uw,
     if (config.debug)
         LOG("adding %s matchlen:%d offset:%d match %s ", name, matchlen, offset, match);
     if (matchlen == 0 || offset != 0) {
-        moloch_parsers_classifier_add(&classifersUdp0, c);
+        arkime_parsers_classifier_add(&classifersUdp0, c);
     } else if (matchlen == 1) {
-        moloch_parsers_classifier_add(&classifersUdp1[(uint8_t)match[0]], c);
+        arkime_parsers_classifier_add(&classifersUdp1[(uint8_t)match[0]], c);
     } else  {
         c->match += 2;
         c->matchlen -= 2;
-        moloch_parsers_classifier_add(&classifersUdp2[(uint8_t)match[0]][(uint8_t)match[1]], c);
+        arkime_parsers_classifier_add(&classifersUdp2[(uint8_t)match[0]][(uint8_t)match[1]], c);
     }
 }
 /******************************************************************************/
-void moloch_parsers_classify_udp(MolochSession_t *session, const unsigned char *data, int remaining, int which)
+void arkime_parsers_classify_udp(ArkimeSession_t *session, const uint8_t *data, int remaining, int which)
 {
     int i;
 
@@ -1087,7 +1102,7 @@ void moloch_parsers_classify_udp(MolochSession_t *session, const unsigned char *
 
 #ifdef DEBUG_PARSERS
     char buf[101];
-    LOG("len: %d direction: %d hex: %s data: %.*s", remaining, which, moloch_sprint_hex_string(buf, data, MIN(remaining, 50)), MIN(remaining, 50), data);
+    LOG("len: %d direction: %d hex: %s data: %.*s", remaining, which, arkime_sprint_hex_string(buf, data, MIN(remaining, 50)), MIN(remaining, 50), data);
 #endif
 
     for (i = 0; i < classifersUdpPortSrc[session->port1].cnt; i++) {
@@ -1099,7 +1114,7 @@ void moloch_parsers_classify_udp(MolochSession_t *session, const unsigned char *
     }
 
     for (i = 0; i < classifersUdp0.cnt; i++) {
-        MolochClassify_t *c = classifersUdp0.arr[i];
+        ArkimeClassify_t *c = classifersUdp0.arr[i];
         if (remaining >= c->minlen && memcmp(data + c->offset, c->match, c->matchlen) == 0) {
             c->func(session, data, remaining, which, c->uw);
         }
@@ -1109,24 +1124,24 @@ void moloch_parsers_classify_udp(MolochSession_t *session, const unsigned char *
         classifersUdp1[data[0]].arr[i]->func(session, data, remaining, which, classifersUdp1[data[0]].arr[i]->uw);
 
     for (i = 0; i < classifersUdp2[data[0]][data[1]].cnt; i++) {
-        MolochClassify_t *c = classifersUdp2[data[0]][data[1]].arr[i];
-        if (remaining >= c->minlen && memcmp(data+2, c->match, c->matchlen) == 0) {
+        ArkimeClassify_t *c = classifersUdp2[data[0]][data[1]].arr[i];
+        if (remaining >= c->minlen && memcmp(data + 2, c->match, c->matchlen) == 0) {
             c->func(session, data, remaining, which, c->uw);
         }
     }
 
-    moloch_rules_run_after_classify(session);
+    arkime_rules_run_after_classify(session);
     if (config.yara && !config.yaraEveryPacket && !session->stopYara)
-        moloch_yara_execute(session, data, remaining, 0);
+        arkime_yara_execute(session, data, remaining, 0);
 }
 /******************************************************************************/
-void moloch_parsers_classify_tcp(MolochSession_t *session, const unsigned char *data, int remaining, int which)
+void arkime_parsers_classify_tcp(ArkimeSession_t *session, const uint8_t *data, int remaining, int which)
 {
     int i;
 
 #ifdef DEBUG_PARSERS
     char buf[101];
-    LOG("len: %d direction: %d hex: %s data: %.*s", remaining, which, moloch_sprint_hex_string(buf, data, MIN(remaining, 50)), MIN(remaining, 50), data);
+    LOG("len: %d direction: %d hex: %s data: %.*s", remaining, which, arkime_sprint_hex_string(buf, data, MIN(remaining, 50)), MIN(remaining, 50), data);
 #endif
 
     if (remaining < 2)
@@ -1141,7 +1156,7 @@ void moloch_parsers_classify_tcp(MolochSession_t *session, const unsigned char *
     }
 
     for (i = 0; i < classifersTcp0.cnt; i++) {
-        MolochClassify_t *c = classifersTcp0.arr[i];
+        ArkimeClassify_t *c = classifersTcp0.arr[i];
         if (remaining >= c->minlen && memcmp(data + c->offset, c->match, c->matchlen) == 0) {
             c->func(session, data, remaining, which, c->uw);
         }
@@ -1152,13 +1167,58 @@ void moloch_parsers_classify_tcp(MolochSession_t *session, const unsigned char *
     }
 
     for (i = 0; i < classifersTcp2[data[0]][data[1]].cnt; i++) {
-        MolochClassify_t *c = classifersTcp2[data[0]][data[1]].arr[i];
-        if (remaining >= c->minlen && memcmp(data+2, c->match, c->matchlen) == 0) {
+        ArkimeClassify_t *c = classifersTcp2[data[0]][data[1]].arr[i];
+        if (remaining >= c->minlen && memcmp(data + 2, c->match, c->matchlen) == 0) {
             c->func(session, data, remaining, which, c->uw);
         }
     }
 
-    moloch_rules_run_after_classify(session);
+    arkime_rules_run_after_classify(session);
     if (config.yara && !config.yaraEveryPacket && !session->stopYara)
-        moloch_yara_execute(session, data, remaining, 0);
+        arkime_yara_execute(session, data, remaining, 0);
+}
+
+/******************************************************************************/
+uint32_t arkime_parser_add_named_func(char *name, ArkimeParserNamedFunc func)
+{
+    ArkimeNamedInfo_t *info = g_hash_table_lookup(namedFuncsHash, name);
+    if (!info) {
+        info = ARKIME_TYPE_ALLOC0(ArkimeNamedInfo_t);
+        info->funcs = g_ptr_array_new();
+        namedFuncsMax++; // Don't use 0
+        if (namedFuncsMax >= MAX_NAMED_FUNCS)
+            return 0;
+        info->id = namedFuncsMax;
+        namedFuncsArr[namedFuncsMax] = info;
+        g_hash_table_insert(namedFuncsHash, g_strdup(name), info);
+    }
+    g_ptr_array_add(info->funcs, func);
+    return info->id;
+}
+/******************************************************************************/
+uint32_t arkime_parser_get_named_func(char *name)
+{
+    ArkimeNamedInfo_t *info = g_hash_table_lookup(namedFuncsHash, name);
+    if (!info) {
+        info = ARKIME_TYPE_ALLOC0(ArkimeNamedInfo_t);
+        info->funcs = g_ptr_array_new();
+        namedFuncsMax++; // Don't use 0
+        if (namedFuncsMax >= MAX_NAMED_FUNCS)
+            return 0;
+        info->id = namedFuncsMax;
+        namedFuncsArr[namedFuncsMax] = info;
+        g_hash_table_insert(namedFuncsHash, g_strdup(name), info);
+    }
+    return info->id;
+}
+/******************************************************************************/
+void arkime_parser_call_named_func(uint32_t id, ArkimeSession_t *session, const uint8_t *data, int len, void *uw)
+{
+    if (id == 0 || id > namedFuncsMax)
+        return;
+    ArkimeNamedInfo_t *info = namedFuncsArr[id];
+    for (int i = 0; i < (int)info->funcs->len; i++) {
+        ArkimeParserNamedFunc func = g_ptr_array_index(info->funcs, i);
+        func(session, data, len, uw);
+    }
 }

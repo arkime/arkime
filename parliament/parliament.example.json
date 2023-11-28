@@ -1,5 +1,5 @@
 {
-  "version": 2,
+  "version": 4,
   "groups": [
     {
       "title": "Cluster Group 1",
@@ -37,5 +37,21 @@
         }
       ]
     }
-  ]
+  ],
+  "settings": {
+    "general": {
+      "noPackets": 0,
+      "noPacketsLength": 10,
+      "outOfDate": 30,
+      "esQueryTimeout": 5,
+      "removeIssuesAfter": 60,
+      "removeAcknowledgedAfter": 15
+    },
+    "commonAuth": {
+      "userNameHeader": "digest",
+      "usersPrefix": "tests",
+      "passwordSecret": "password",
+      "httpRealm": "Moloch"
+    }
+  }
 }

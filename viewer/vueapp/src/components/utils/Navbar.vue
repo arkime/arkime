@@ -1,3 +1,7 @@
+<!--
+Copyright Yahoo Inc.
+SPDX-License-Identifier: Apache-2.0
+-->
 <template>
   <span :class="{
     'hide-tool-bars': !showToolBars,
@@ -91,6 +95,7 @@
         </div>
 
       </b-collapse>
+      <Logout size="sm" :base-path="path" />
     </b-navbar>
     <div class="navbarOffset" />
   </span>
@@ -101,16 +106,19 @@ import qs from 'qs';
 import { mapMutations } from 'vuex';
 
 import ESHealth from './ESHealth';
+import Logout from '../../../../../common/vueapp/Logout';
 import Version from '../../../../../common/vueapp/Version';
 
 export default {
-  name: 'MolochNavbar',
+  name: 'ArkimeNavbar',
   components: {
+    Logout,
     Version,
     ESHealth
   },
   data: function () {
     return {
+      path: this.$constants.PATH,
       menuOrder: [
         'sessions', 'spiview', 'spigraph', 'connections', 'hunt',
         'files', 'stats', 'history', 'upload', 'settings', 'users', 'roles'
@@ -136,11 +144,11 @@ export default {
         roles: { title: 'Roles', link: 'roles', permission: 'canAssignRoles' }
       };
 
-      if (!this.$constants.MOLOCH_MULTIVIEWER) {
+      if (!this.$constants.MULTIVIEWER) {
         menu.hunt = { title: 'Hunt', link: 'hunt', permission: 'packetSearch', hotkey: ['H', 'unt'] };
       }
 
-      if (!this.$constants.MOLOCH_DEMO_MODE) {
+      if (!this.$constants.DEMO_MODE) {
         menu.history = { title: 'History', link: 'history' };
         menu.settings = { title: 'Settings', link: 'settings' };
         menu.users = { title: 'Users', link: 'users', role: 'usersAdmin' };

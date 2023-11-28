@@ -1,3 +1,7 @@
+<!--
+Copyright Yahoo Inc.
+SPDX-License-Identifier: Apache-2.0
+-->
 <template>
 
   <div class="help-content">
@@ -154,7 +158,7 @@
           <a class="btn btn-link" href="https://arkime.com">Home Page</a> |
           <a class="btn btn-link" href="https://arkime.com/faq">FAQ</a> |
           <a class="btn btn-link" href="https://arkime.com/learn">Docs</a> |
-          <a class="btn btn-link" href="https://github.com/aol/moloch">GitHub</a> |
+          <a class="btn btn-link" href="https://github.com/arkime/arkime">GitHub</a> |
           <a class="btn btn-link" href="https://slackinvite.arkime.com/">Request Slack Invite</a>
         </div>
       </div>
@@ -465,6 +469,8 @@
             <li>Send the selected data to another system for further analysis.</li>
             <li>Scrub packet data by overwriting the packets (if a user has data removal privileges).</li>
             <li>Delete SPI and PCAP data entirely (if a user has data removal privileges).</li>
+            <li>Export an intersection of fields that runs an aggregation of multiple unique fields. This opens a new tab with text results.</li>
+            <li>Create Periodic Query opens a new tab directly to the periodic query section of the settings page.</li>
           </ol>
           Each of these options may be applied to the sessions which have been opened (by clicking the sessions + box),
           any items visible (on the current page), or all items which have matched the query string.
@@ -571,6 +577,10 @@
         as well as deep dive analysis. For example, if you wanted to chart all of the currently recorded http.users within your current time window, select http.user from the SPI Graph selection typeahead.
         Data will be displayed based upon count of observances over the time period. Increasing the Max Elements setting will allow an analyst to see additional items if the investigated SPI type is noisy.
         An analyst can sort by either the noisiest value (graph) or by alphabetical order (name). This page also has the ability to update every X seconds.
+      </p>e name of the hun
+      <p>
+        This page also includes pie, table, and treemap views of the data. This data can be layered similar to the export intersection functionality in the action menu dropdown.
+        This runs an aggregation of multiple unique fields and displays the data in the visualization of your choice.
       </p>
 
       <hr>
@@ -699,6 +709,8 @@
         <dl class="dl-horizontal dl-horizontal-wide">
           <dt>Name</dt>
           <dd>The name of the hunt (multiple hunts can have the same name)</dd>
+          <dt>Description</dt>
+          <dd>The description of the hunt (useful when sharing)</dd>
           <dt>Max number of packets to examine per session</dt>
           <dd>The maximum number of packets that the hunt will search within each session</dd>
           <dt>Notify</dt>
@@ -709,6 +721,8 @@
           <dd>Whether to search source or destination packets, or both. Must select at least one.</dd>
           <dt>Search raw/reassembled packets</dt>
           <dd>Whether to search raw or reassembled packets</dd>
+          <dt>Roles</dt>
+          <dd>The roles that can view the results.</dd>
           <dt>Users</dt>
           <dd>A comma separated list of users to be added to the hunt so they can view the results.</dd>
         </dl>
@@ -1105,7 +1119,6 @@
         </h6>
         <p>
           Here, a user can manage their saved views by updating, deleting, or sharing them.
-          Sharing a view allows all other users to use that view (only admins can edit it).
           A user can also create a new view in this section.
           See the <a href="help#views" class="no-decoration">Views</a> section for more information.
         </p>
@@ -1212,23 +1225,23 @@
         System Roles:
         <dl class="dl-horizontal dl-horizontal-wide">
           <dt>superAdmin</dt>
-          <dd>Has all system roles assigned. Can only be assigned by another superAdmin.</dd>
+          <dd>Has all system roles assigned. Can only be assigned by another superAdmin. Users with superAdmin assigned are the only ones that can assign Admin roles to other users.</dd>
           <dt>usersAdmin</dt>
-          <dd>Can use the Users page to add/modify/delete users</dd>
+          <dd>Can use the Users page to add/modify/delete users, except superAdmin users. Users with usersAdmin assigned can unassign Admin roles, but not assign them to other users.</dd>
           <dt>arkimeAdmin</dt>
-          <dd>Can perform arkime configuration, automatically a arkimeUser also.</dd>
+          <dd>Can perform Arkime configuration, view data for other Arkime users, and automatically assigned the arkimeUser role.</dd>
           <dt>arkimeUser</dt>
           <dd>Can use the Arkime viewer application</dd>
           <dt>cont3xtAdmin</dt>
-          <dd>Can perform cont3xt configuration, automatically a cont3xtUser also.</dd>
+          <dd>Can perform cont3xt configuration, view data for other Cont3xt users, and automatically assigned the cont3xtUser role.</dd>
           <dt>contx3tUser</dt>
           <dd>Can use the Cont3xt application</dd>
           <dt>parliamentAdmin</dt>
-          <dd>Can perform parliament configuration, automatically a parliamentUser also.</dd>
+          <dd>Can perform parliament configuration, automatically assigned the parliamentUser role.</dd>
           <dt>parliamentUser</dt>
           <dd>Can dismiss parliament issues and notifications. Unlike other roles parliament doesn't require a role to be set to use as a dashboard</dd>
           <dt>wiseAdmin</dt>
-          <dd>Can perform wise configuration, automatically a wiseUser also.</dd>
+          <dd>Can perform wise configuration, automatically assigned the wiseUser.</dd>
           <dt>wiseUser</dt>
           <dd>Can use the WISE UI to do queries and viewer stats</dd>
         </dl>

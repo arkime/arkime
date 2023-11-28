@@ -1,3 +1,7 @@
+<!--
+Copyright Yahoo Inc.
+SPDX-License-Identifier: Apache-2.0
+-->
 <template>
 
   <!-- export intersection form -->
@@ -125,7 +129,7 @@
 import SessionsService from './SessionsService';
 
 export default {
-  name: 'MolochIntersection',
+  name: 'ArkimeIntersection',
   props: {
     done: Function,
     fields: Array

@@ -1,3 +1,7 @@
+<!--
+Copyright Yahoo Inc.
+SPDX-License-Identifier: Apache-2.0
+-->
 <template>
 
   <div class="bounce"
@@ -113,7 +117,7 @@ let stickyContainer;
 let oldLength = 1;
 
 export default {
-  name: 'MolochStickySessions',
+  name: 'ArkimeStickySessions',
   props: ['sessions', 'ms'],
   data: function () {
     return {

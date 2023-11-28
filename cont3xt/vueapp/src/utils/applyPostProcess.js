@@ -34,7 +34,7 @@ const pathInto = (value, { param: fieldOrPath }) => {
   return value;
 };
 
-const template = (value, { param: templateStr }, _, data) => {
+const template = (value, { param: templateStr }, { data }) => {
   return applyTemplate(templateStr, { value, data });
 };
 
@@ -53,6 +53,14 @@ const mapTo = (value, args) => {
 // transforms map of objects to an array of objects where the keys are inserted into the objects as [fieldName]
 const keyedToArrayWith = (value, { param: fieldName }) => {
   return Object.entries(value).map(([key, val]) => ({ [fieldName]: key, ...val }));
+};
+
+const dedupeArray = (value) => {
+  return [...new Set(value)];
+};
+
+const replaceValues = (value, { param: condition }, shared) => {
+  return value.map(v => { return condition; });
 };
 
 const filterFunc = (value, { param: condition }, shared) => {
@@ -128,6 +136,8 @@ const customFilters = {
   mapTo,
   map,
   keyedToArrayWith,
+  dedupeArray,
+  replaceValues,
   setting,
   data: dataFunc,
   escapeValue,

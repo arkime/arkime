@@ -1,3 +1,7 @@
+<!--
+Copyright Yahoo Inc.
+SPDX-License-Identifier: Apache-2.0
+-->
 <template>
   <b-form inline class="d-flex align-items-center">
     <b-input-group
@@ -22,6 +26,8 @@
           :style="`width:${inputWidth}`"
           placeholder="Start Date"
           v-focus="getFocusStartDate"
+          @keyup.up="startKeyUp(1)"
+          @keyup.down="startKeyUp(-1)"
           @change="updateStopStart('startDate')"
       />
     </b-input-group>
@@ -30,7 +36,7 @@
         class="mr-2">
       <template #prepend>
         <b-input-group-text>
-          Stop
+          End
         </b-input-group-text>
       </template>
       <b-form-input
@@ -39,14 +45,18 @@
           v-model="localStopDate"
           :style="`width:${inputWidth}`"
           placeholder="Stop Date"
+          @keyup.up="stopKeyUp(1)"
+          @keyup.down="stopKeyUp(-1)"
           @change="updateStopStart('stopDate')"
       />
     </b-input-group>
-    <span class="fa fa-lg fa-question-circle cursor-help mt-1"
-          v-b-tooltip.hover.html="placeHolderTip"
-    />
-    <span class="pl-2">
-      {{ timeRangeInfo.numDays }} days | {{ timeRangeInfo.numHours }} hours
+    <span class="text-nowrap">
+      <span class="fa fa-lg fa-question-circle cursor-help mt-1"
+            v-b-tooltip.hover.html="placeHolderTip"
+      />
+      <span class="pl-1">
+        {{ timeRangeInfo.numDays }} days | {{ timeRangeInfo.numHours }} hours
+      </span>
     </span>
   </b-form>
 </template>
@@ -77,7 +87,7 @@ export default {
     },
     inputWidth: {
       type: String,
-      default: '152px'
+      default: '146px'
     }
   },
   data () {
@@ -101,6 +111,18 @@ export default {
     }
   },
   methods: { /* component methods ------------------------------------------- */
+    startKeyUp (days) {
+      const date = new Date(this.localStartDate);
+      const startMs = date.setDate(date.getDate() + days);
+      this.localStartDate = new Date(startMs).toISOString().slice(0, -5) + 'Z';
+      this.updateStopStart('startDate');
+    },
+    stopKeyUp (days) {
+      const date = new Date(this.localStopDate);
+      const stopMs = date.setDate(date.getDate() + days);
+      this.localStopDate = new Date(stopMs).toISOString().slice(0, -5) + 'Z';
+      this.updateStopStart('stopDate');
+    },
     updateStopStart (updated) {
       let startMs = new Date(this.localStartDate).getTime();
       let stopMs = new Date(this.localStopDate).getTime();

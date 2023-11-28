@@ -35,24 +35,24 @@ ul.nav.nav-pills.mb-3
       | Remove Tags
     b-dropdown-item(@click="removeData()", v-has-permission="'removeEnabled'")
       | Remove Data
-    b-dropdown-item(v-for="(value, key) in molochclusters", key="key", @click="sendSession(key)")
+    b-dropdown-item(v-for="(value, key) in remoteclusters", key="key", @click="sendSession(key)")
       | Send Session to {{ value.name }}
 
 div.mb-2
-  moloch-toast(:message="message", :type="messageType", :done="messageDone")
+  arkime-toast(:message="message", :type="messageType", :done="messageDone")
 
 div.mb-2.mr-5
   - var sessions = [{id: session.id}];
   div(v-if="form === 'add:tags'")
-    moloch-tag-sessions(:sessions=sessions, :add="true", :done="actionFormDone", :single="true")
+    arkime-tag-sessions(:sessions=sessions, :add="true", :done="actionFormDone", :single="true")
   div(v-if="form === 'remove:tags'")
-    moloch-tag-sessions(:sessions=sessions, :add="false", :done="actionFormDone", :single="true")
+    arkime-tag-sessions(:sessions=sessions, :add="false", :done="actionFormDone", :single="true")
   div(v-if="form === 'export:pcap'")
-    moloch-export-pcap(:sessions=sessions, :done="actionFormDone")
+    arkime-export-pcap(:sessions=sessions, :done="actionFormDone")
   div(v-if="form === 'remove:data'")
-    moloch-remove-data(:sessions=sessions, :done="actionFormDone", :single="true")
+    arkime-remove-data(:sessions=sessions, :done="actionFormDone", :single="true")
   div(v-if="form === 'send:session'")
-    moloch-send-sessions(:sessions=sessions, :done="actionFormDone", :cluster="cluster")
+    arkime-send-sessions(:sessions=sessions, :done="actionFormDone", :cluster="cluster")
 
 dl
   dt Id

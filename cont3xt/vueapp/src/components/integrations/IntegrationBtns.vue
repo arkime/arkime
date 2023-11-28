@@ -1,16 +1,26 @@
+<!--
+Copyright Yahoo Inc.
+SPDX-License-Identifier: Apache-2.0
+-->
 <template>
-  <div class="wrap-btns">
-    <template v-for="integration in integrations">
+  <div class="mx-2"
+    :class="{'wrap-btns d-flex justify-content-between': buttonIntegrations.length > 4}">
+    <overview-selector
+      v-if="getActiveIndicator"
+      :i-type="getActiveIndicator.itype"
+      :selected-overview="selectedOverview"
+      @set-override-overview="setOverrideOverview"
+    />
+    <template v-for="integration in buttonIntegrations">
       <b-button
         v-b-tooltip.hover.noninteractive="integration.name"
         size="xs"
         tabindex="0"
         variant="outline-dark"
-        class="ml-1 mt-1 float-right no-wrap"
-        :id="`${itype}-${integration.name}-${value}`"
-        :key="integration.name"
-        v-if="instanceData[integration.name] && integration.icon"
-        @click="$store.commit('SET_DISPLAY_INTEGRATION', { source: integration.name, itype, value })">
+        class="mr-1 mb-1 no-wrap"
+        :id="`${indicatorId}-${integration.name}-btn`"
+        :key="`${indicatorId}-${integration.name}`"
+        @click="setAsActive(integration)">
         <img
           :alt="integration.name"
           :src="integration.icon"
@@ -19,17 +29,29 @@
         />
         <b-badge
           class="btn-badge"
-          v-if="instanceData[integration.name]._cont3xt.count !== undefined"
-          :variant="countBadgeColor(instanceData[integration.name])">
-          {{ instanceData[integration.name]._cont3xt.count | humanReadableNumber }}
+          v-if="shouldDisplayCountedIntegrationBtn(integration, integrationDataMap[integration.name])"
+          :variant="integrationCountSeverity(integrationDataMap[integration.name])">
+          {{ integrationDataMap[integration.name]._cont3xt.count | humanReadableNumber }}
         </b-badge>
       </b-button>
+    </template>
+    <template v-if="!buttonIntegrations.length">
+      <b-badge
+          variant="light" class="d-flex align-items-center mb-1">
+        <span>No Integrations</span>
+      </b-badge>
     </template>
   </div>
 </template>
 
 <script>
 import { mapGetters } from 'vuex';
+import {
+  getIntegrationDataMap,
+  shouldDisplayIntegrationBtn,
+  integrationCountSeverity, shouldDisplayCountedIntegrationBtn, indicatorFromId
+} from '@/utils/cont3xtUtil';
+import OverviewSelector from '../overviews/OverviewSelector.vue';
 
 // Clicking an integration button commits to the store which integration, itype,
 // and value to display integration data for. The Cont3xt component watches for
@@ -37,54 +59,75 @@ import { mapGetters } from 'vuex';
 // component watches for changes to the integration data to display.
 export default {
   name: 'IntegrationBtns',
+  components: { OverviewSelector },
   props: {
-    data: { // the configured integrations
-      type: Object,
-      required: true
-    },
-    itype: { // the itype to display the integration data for (if clicked)
+    /**
+     * the global indicator id to display integration buttons for
+     *   we use the id instead of indicator itself to ensure that
+     *   the correct node is selected in the UI when a button is pressed
+     */
+    indicatorId: {
       type: String,
       required: true
     },
-    value: { // the value of the query to display the integration data for
-      type: String, // (there may be multiple IPs for instance, so the value
-      required: true // indicates which IP to display information for)
+    /**
+     * undefined - show all integrations
+     * 'success' | 'secondary' | 'danger' - show only integration buttons with that icon color/severity
+     */
+    countSeverityFilter: {
+      type: String,
+      required: false
+    },
+    selectedOverview: {
+      type: Object,
+      required: true
     }
   },
   computed: {
-    ...mapGetters(['getIntegrationsArray', 'getLoading']),
+    ...mapGetters(['getIntegrationsArray', 'getLoading', 'getResults', 'getActiveIndicator']),
+    /**
+     * object of { itype, query }
+     * * itype - the itype to display the integration data for (if clicked)
+     * * query - the value of the query to display the integration data for
+     * *     (there may be multiple IPs for instance, so the value
+     * *     indicates which IP to display information for)
+     */
+    indicator () {
+      return indicatorFromId(this.indicatorId);
+    },
     integrations () {
       return this.getIntegrationsArray.slice().sort((a, b) => {
         return a.order - b.order;
       });
     },
-    /** @returns a map of integration names to integration data objects */
-    instanceData () {
-      const instanceDataMap = {};
-      for (const integration of this.integrations) {
-        const dataArrayForIntegration = this.data?.[this.itype]?.[integration.name];
-        if (dataArrayForIntegration == null) { continue; }
+    buttonIntegrations () {
+      const sortedIntegrations = this.getIntegrationsArray.slice().sort((a, b) => {
+        return a.order - b.order;
+      });
 
-        // look for data object matching query in the integration's data-array
-        for (const queryElement of dataArrayForIntegration) {
-          if (this.value === queryElement?._query) {
-            instanceDataMap[integration.name] = queryElement.data;
-            break;
-          }
+      return sortedIntegrations.filter(integration => {
+        const integrationData = this.integrationDataMap[integration.name];
+        // filter out buttons whose severity don't match countSeverityFilter, if we have one
+        if (this.countSeverityFilter) {
+          return shouldDisplayCountedIntegrationBtn(integration, integrationData) &&
+              this.integrationCountSeverity(integrationData) === this.countSeverityFilter;
         }
-      }
-      return instanceDataMap;
+        return shouldDisplayIntegrationBtn(integration, integrationData);
+      });
+    },
+    /** @returns a map of integration names to integration data objects */
+    integrationDataMap () {
+      return getIntegrationDataMap(this.getResults, this.indicator);
     }
   },
   methods: {
-    countBadgeColor (data) {
-      if (data._cont3xt.count === 0) {
-        return 'secondary';
-      } else if (data._cont3xt.severity === 'high') {
-        return 'danger';
-      } else {
-        return 'success';
-      }
+    shouldDisplayCountedIntegrationBtn,
+    integrationCountSeverity,
+    setAsActive (integration) {
+      this.$store.commit('SET_QUEUED_INTEGRATION', { indicatorId: this.indicatorId, source: integration.name });
+    },
+    setOverrideOverview (id) {
+      this.$emit('set-override-overview', id);
     }
   }
 };

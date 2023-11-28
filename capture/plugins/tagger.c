@@ -6,17 +6,7 @@
  *
  * Copyright 2012-2017 AOL Inc. All rights reserved.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this Software except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 
@@ -28,12 +18,12 @@
 #include <stdlib.h>
 #include <ctype.h>
 #include "patricia.h"
-#include "moloch.h"
+#include "arkime.h"
 
 
 /******************************************************************************/
 
-extern MolochConfig_t        config;
+extern ArkimeConfig_t        config;
 
 extern void                 *esServer;
 
@@ -90,7 +80,7 @@ typedef struct {
 /******************************************************************************/
 
 typedef struct tagger_info {
-    MolochFieldOps_t  ops;
+    ArkimeFieldOps_t  ops;
     TaggerFile_t     *file;
 } TaggerInfo_t;
 
@@ -107,27 +97,29 @@ HASH_VAR(s_, allFiles, TaggerFileHead_t, 101);
 LOCAL  patricia_tree_t *allIps;
 
 /******************************************************************************/
-LOCAL void tagger_process_match(MolochSession_t *session, GPtrArray *infos)
+LOCAL void tagger_process_match(ArkimeSession_t *session, GPtrArray *infos, int matchPos)
 {
     uint32_t f, t;
     for (f = 0; f < infos->len; f++) {
         TaggerInfo_t *info = g_ptr_array_index(infos, f);
         TaggerFile_t *file = info->file;
-        for (t = 0; file->tags[t]; t++) {
-            moloch_session_add_tag(session, file->tags[t]);
+        if (file->tags) {
+            for (t = 0; file->tags[t]; t++) {
+                arkime_session_add_tag(session, file->tags[t]);
+            }
         }
-        moloch_field_ops_run(session, &info->ops);
+        arkime_field_ops_run_match(session, &info->ops, matchPos);
     }
 }
 /******************************************************************************/
 /*
  * Called by arkime when a session is about to be saved
  */
-LOCAL void tagger_plugin_save(MolochSession_t *session, int UNUSED(final))
+LOCAL void tagger_plugin_save(ArkimeSession_t *session, int UNUSED(final))
 {
     TaggerString_t *tstring;
 
-    patricia_node_t *nodes[PATRICIA_MAXBITS+1];
+    patricia_node_t *nodes[PATRICIA_MAXBITS + 1];
     int cnt;
     prefix_t prefix;
 
@@ -138,7 +130,7 @@ LOCAL void tagger_plugin_save(MolochSession_t *session, int UNUSED(final))
     if (IN6_IS_ADDR_V4MAPPED(&session->addr1)) {
         prefix.family = AF_INET;
         prefix.bitlen = 32;
-        prefix.add.sin.s_addr = MOLOCH_V6_TO_V4(session->addr1);
+        prefix.add.sin.s_addr = ARKIME_V6_TO_V4(session->addr1);
     } else {
         prefix.family = AF_INET;
         prefix.bitlen = 128;
@@ -147,13 +139,13 @@ LOCAL void tagger_plugin_save(MolochSession_t *session, int UNUSED(final))
 
     cnt = patricia_search_all(allIps, &prefix, 1, nodes);
     for (i = 0; i < cnt; i++) {
-        tagger_process_match(session, ((TaggerIP_t *)(nodes[i]->data))->infos);
+        tagger_process_match(session, ((TaggerIP_t *)(nodes[i]->data))->infos, ARKIME_FIELD_EXSPECIAL_SRC_IP);
     }
 
     if (IN6_IS_ADDR_V4MAPPED(&session->addr2)) {
         prefix.family = AF_INET;
         prefix.bitlen = 32;
-        prefix.add.sin.s_addr = MOLOCH_V6_TO_V4(session->addr2);
+        prefix.add.sin.s_addr = ARKIME_V6_TO_V4(session->addr2);
     } else {
         prefix.family = AF_INET;
         prefix.bitlen = 128;
@@ -162,7 +154,7 @@ LOCAL void tagger_plugin_save(MolochSession_t *session, int UNUSED(final))
 
     cnt = patricia_search_all(allIps, &prefix, 1, nodes);
     for (i = 0; i < cnt; i++) {
-        tagger_process_match(session, ((TaggerIP_t *)(nodes[i]->data))->infos);
+        tagger_process_match(session, ((TaggerIP_t *)(nodes[i]->data))->infos, ARKIME_FIELD_EXSPECIAL_DST_IP);
     }
 
     if (httpXffField != -1 && session->fields[httpXffField]) {
@@ -173,10 +165,10 @@ LOCAL void tagger_plugin_save(MolochSession_t *session, int UNUSED(final))
         ghash = session->fields[httpXffField]->ghash;
         g_hash_table_iter_init (&iter, ghash);
         while (g_hash_table_iter_next (&iter, &ikey, NULL)) {
-            if (IN6_IS_ADDR_V4MAPPED((struct in6_addr*)ikey)) {
+            if (IN6_IS_ADDR_V4MAPPED((struct in6_addr * )ikey)) {
                 prefix.family = AF_INET;
                 prefix.bitlen = 32;
-                prefix.add.sin.s_addr = MOLOCH_V6_TO_V4(*(struct in6_addr*)ikey);
+                prefix.add.sin.s_addr = ARKIME_V6_TO_V4(*(struct in6_addr *)ikey);
             } else {
                 prefix.family = AF_INET6;
                 prefix.bitlen = 128;
@@ -185,110 +177,110 @@ LOCAL void tagger_plugin_save(MolochSession_t *session, int UNUSED(final))
 
             cnt = patricia_search_all(allIps, &prefix, 1, nodes);
             for (i = 0; i < cnt; i++) {
-                tagger_process_match(session, ((TaggerIP_t *)(nodes[i]->data))->infos);
+                tagger_process_match(session, ((TaggerIP_t *)(nodes[i]->data))->infos, httpXffField);
             }
         }
     }
 #pragma GCC diagnostic pop
 
-    MolochString_t *hstring;
+    ArkimeString_t *hstring;
     if (httpHostField != -1 && session->fields[httpHostField]) {
-        MolochStringHashStd_t *shash = session->fields[httpHostField]->shash;
-        HASH_FORALL(s_, *shash, hstring,
+        ArkimeStringHashStd_t *shash = session->fields[httpHostField]->shash;
+        HASH_FORALL2(s_, *shash, hstring) {
             HASH_FIND_HASH(s_, allDomains, hstring->s_hash, hstring->str, tstring);
             if (tstring)
-                tagger_process_match(session, tstring->infos);
+                tagger_process_match(session, tstring->infos, httpHostField);
             char *dot = strchr(hstring->str, '.');
-            if (dot && *(dot+1)) {
-                HASH_FIND(s_, allDomains, dot+1, tstring);
+            if (dot && *(dot + 1)) {
+                HASH_FIND(s_, allDomains, dot + 1, tstring);
                 if (tstring)
-                    tagger_process_match(session, tstring->infos);
+                    tagger_process_match(session, tstring->infos, httpHostField);
             }
-        );
+        }
     }
 
     if (dnsHostField != -1 && session->fields[dnsHostField]) {
-        MolochStringHashStd_t *shash = session->fields[dnsHostField]->shash;
-        HASH_FORALL(s_, *shash, hstring,
+        ArkimeStringHashStd_t *shash = session->fields[dnsHostField]->shash;
+        HASH_FORALL2(s_, *shash, hstring) {
             HASH_FIND_HASH(s_, allDomains, hstring->s_hash, hstring->str, tstring);
             if (tstring)
-                tagger_process_match(session, tstring->infos);
+                tagger_process_match(session, tstring->infos, dnsHostField);
             char *dot = strchr(hstring->str, '.');
-            if (dot && *(dot+1)) {
-                HASH_FIND(s_, allDomains, dot+1, tstring);
+            if (dot && *(dot + 1)) {
+                HASH_FIND(s_, allDomains, dot + 1, tstring);
                 if (tstring)
-                    tagger_process_match(session, tstring->infos);
+                    tagger_process_match(session, tstring->infos, dnsHostField);
             }
-        );
+        }
     }
 
     if (dnsMailServerField != -1 && session->fields[dnsMailServerField]) {
-        MolochStringHashStd_t *shash = session->fields[dnsMailServerField]->shash;
-        HASH_FORALL(s_, *shash, hstring,
+        ArkimeStringHashStd_t *shash = session->fields[dnsMailServerField]->shash;
+        HASH_FORALL2(s_, *shash, hstring) {
             HASH_FIND_HASH(s_, allDomains, hstring->s_hash, hstring->str, tstring);
             if (tstring)
-                tagger_process_match(session, tstring->infos);
+                tagger_process_match(session, tstring->infos, dnsMailServerField);
             char *dot = strchr(hstring->str, '.');
-            if (dot && *(dot+1)) {
-                HASH_FIND(s_, allDomains, dot+1, tstring);
+            if (dot && *(dot + 1)) {
+                HASH_FIND(s_, allDomains, dot + 1, tstring);
                 if (tstring)
-                    tagger_process_match(session, tstring->infos);
+                    tagger_process_match(session, tstring->infos, dnsMailServerField);
             }
-        );
+        }
     }
 
     if (httpMd5Field != -1 && session->fields[httpMd5Field]) {
-        MolochStringHashStd_t *shash = session->fields[httpMd5Field]->shash;
-        HASH_FORALL(s_, *shash, hstring,
+        ArkimeStringHashStd_t *shash = session->fields[httpMd5Field]->shash;
+        HASH_FORALL2(s_, *shash, hstring) {
             HASH_FIND_HASH(s_, allMD5s, hstring->s_hash, hstring->str, tstring);
             if (tstring)
-                tagger_process_match(session, tstring->infos);
-        );
+                tagger_process_match(session, tstring->infos, httpMd5Field);
+        }
     }
 
     if (httpPathField != -1 && session->fields[httpPathField]) {
-        MolochStringHashStd_t *shash = session->fields[httpPathField]->shash;
-        HASH_FORALL(s_, *shash, hstring,
+        ArkimeStringHashStd_t *shash = session->fields[httpPathField]->shash;
+        HASH_FORALL2(s_, *shash, hstring) {
             HASH_FIND_HASH(s_, allURIs, hstring->s_hash, hstring->str, tstring);
             if (tstring) {
-                tagger_process_match(session, tstring->infos);
+                tagger_process_match(session, tstring->infos, httpPathField);
             }
-        );
+        }
     }
 
     if (emailMd5Field != -1 && session->fields[emailMd5Field]) {
-        MolochStringHashStd_t *shash = session->fields[emailMd5Field]->shash;
-        HASH_FORALL(s_, *shash, hstring,
+        ArkimeStringHashStd_t *shash = session->fields[emailMd5Field]->shash;
+        HASH_FORALL2(s_, *shash, hstring) {
             HASH_FIND_HASH(s_, allMD5s, hstring->s_hash, hstring->str, tstring);
             if (tstring)
-                tagger_process_match(session, tstring->infos);
-        );
+                tagger_process_match(session, tstring->infos, emailMd5Field);
+        }
     }
 
     if (emailSrcField != -1 && session->fields[emailSrcField]) {
-        MolochStringHashStd_t *shash = session->fields[emailSrcField]->shash;
-        HASH_FORALL(s_, *shash, hstring,
+        ArkimeStringHashStd_t *shash = session->fields[emailSrcField]->shash;
+        HASH_FORALL2(s_, *shash, hstring) {
             HASH_FIND_HASH(s_, allEmails, hstring->s_hash, hstring->str, tstring);
             if (tstring)
-                tagger_process_match(session, tstring->infos);
-        );
+                tagger_process_match(session, tstring->infos, emailSrcField);
+        }
     }
 
     if (emailDstField != -1 && session->fields[emailDstField]) {
-        MolochStringHashStd_t *shash = session->fields[emailDstField]->shash;
-        HASH_FORALL(s_, *shash, hstring,
+        ArkimeStringHashStd_t *shash = session->fields[emailDstField]->shash;
+        HASH_FORALL2(s_, *shash, hstring) {
             HASH_FIND_HASH(s_, allEmails, hstring->s_hash, hstring->str, tstring);
             if (tstring)
-                tagger_process_match(session, tstring->infos);
-        );
+                tagger_process_match(session, tstring->infos, emailDstField);
+        }
     }
 }
 
 /******************************************************************************/
-LOCAL void tagger_free_ip (TaggerIP_t *tip) 
+LOCAL void tagger_free_ip (TaggerIP_t *tip)
 {
     g_ptr_array_free(tip->infos, TRUE);
-    MOLOCH_TYPE_FREE(TaggerIP_t, tip);
+    ARKIME_TYPE_FREE(TaggerIP_t, tip);
 }
 /******************************************************************************/
 /*
@@ -297,41 +289,42 @@ LOCAL void tagger_free_ip (TaggerIP_t *tip)
 LOCAL void tagger_plugin_exit()
 {
     TaggerString_t *tstring;
-    HASH_FORALL_POP_HEAD(s_, allDomains, tstring,
+    HASH_FORALL_POP_HEAD2(s_, allDomains, tstring) {
         free(tstring->str);
         g_ptr_array_free(tstring->infos, TRUE);
-        MOLOCH_TYPE_FREE(TaggerString_t, tstring);
-    );
+        ARKIME_TYPE_FREE(TaggerString_t, tstring);
+    }
 
-    HASH_FORALL_POP_HEAD(s_, allMD5s, tstring,
+    HASH_FORALL_POP_HEAD2(s_, allMD5s, tstring) {
         free(tstring->str);
         g_ptr_array_free(tstring->infos, TRUE);
-        MOLOCH_TYPE_FREE(TaggerString_t, tstring);
-    );
+        ARKIME_TYPE_FREE(TaggerString_t, tstring);
+    }
 
-    HASH_FORALL_POP_HEAD(s_, allEmails, tstring,
+    HASH_FORALL_POP_HEAD2(s_, allEmails, tstring) {
         free(tstring->str);
         g_ptr_array_free(tstring->infos, TRUE);
-        MOLOCH_TYPE_FREE(TaggerString_t, tstring);
-    );
+        ARKIME_TYPE_FREE(TaggerString_t, tstring);
+    }
 
-    HASH_FORALL_POP_HEAD(s_, allURIs, tstring,
+    HASH_FORALL_POP_HEAD2(s_, allURIs, tstring) {
         free(tstring->str);
         g_ptr_array_free(tstring->infos, TRUE);
-        MOLOCH_TYPE_FREE(TaggerString_t, tstring);
-    );
+        ARKIME_TYPE_FREE(TaggerString_t, tstring);
+    }
 
     TaggerFile_t *file;
-    HASH_FORALL_POP_HEAD(s_, allFiles, file,
+    HASH_FORALL_POP_HEAD2(s_, allFiles, file) {
         free(file->str);
         g_free(file->md5);
         g_free(file->type);
-        g_strfreev(file->tags);
+        if (file->tags)
+            g_strfreev(file->tags);
         g_strfreev(file->elements);
-        MOLOCH_TYPE_FREE(TaggerFile_t, file);
-    );
+        ARKIME_TYPE_FREE(TaggerFile_t, file);
+    }
 
-    Destroy_Patricia(allIps, tagger_free_ip);
+    Destroy_Patricia(allIps, (patricia_fn_data_t)tagger_free_ip);
 }
 
 /******************************************************************************/
@@ -403,7 +396,8 @@ LOCAL void tagger_unload_file(TaggerFile_t *file) {
 
     g_free(file->md5);
     g_free(file->type);
-    g_strfreev(file->tags);
+    if (file->tags)
+        g_strfreev(file->tags);
     g_strfreev(file->elements);
     file->md5 = NULL;
 }
@@ -412,17 +406,17 @@ LOCAL void tagger_info_free(gpointer data)
 {
     TaggerInfo_t *info = data;
 
-    moloch_field_ops_free(&info->ops);
-    MOLOCH_TYPE_FREE(TaggerInfo_t, info);
+    arkime_field_ops_free(&info->ops);
+    ARKIME_TYPE_FREE(TaggerInfo_t, info);
 }
 /******************************************************************************/
 /*
  * File data from ES
  */
-LOCAL void tagger_load_file_cb(int UNUSED(code), unsigned char *data, int data_len, gpointer uw)
+LOCAL void tagger_load_file_cb(int UNUSED(code), uint8_t *data, int data_len, gpointer uw)
 {
     TaggerFile_t *file = uw;
-    uint32_t out[4*100];
+    uint32_t out[4 * 100];
 
     if (file->md5)
         tagger_unload_file(file);
@@ -431,7 +425,7 @@ LOCAL void tagger_load_file_cb(int UNUSED(code), unsigned char *data, int data_l
     if (!data_len || !data) {
         HASH_REMOVE(s_, allFiles, file);
         free(file->str);
-        MOLOCH_TYPE_FREE(TaggerFile_t, file);
+        ARKIME_TYPE_FREE(TaggerFile_t, file);
         return;
     }
 
@@ -440,7 +434,7 @@ LOCAL void tagger_load_file_cb(int UNUSED(code), unsigned char *data, int data_l
         LOG("ERROR: Parse error %d in >%.*s<\n", rc, data_len, data);
         HASH_REMOVE(s_, allFiles, file);
         free(file->str);
-        MOLOCH_TYPE_FREE(TaggerFile_t, file);
+        ARKIME_TYPE_FREE(TaggerFile_t, file);
         return;
     }
 
@@ -448,24 +442,23 @@ LOCAL void tagger_load_file_cb(int UNUSED(code), unsigned char *data, int data_l
     memset(fieldShortHand, 0xff, sizeof(fieldShortHand));
 
     int i;
-    for (i = 0; out[i]; i+= 4) {
-        if (out[i+1] == 3 && memcmp("md5", data + out[i], sizeof("md5")-1) == 0) {
-            file->md5 = g_strndup((char*)data + out[i+2], out[i+3]);
-        } else if (out[i+1] == 4 && memcmp("tags", data + out[i], sizeof("tags")-1) == 0) {
-            data[out[i+2] + out[i+3]] = 0;
-            file->tags = g_strsplit((char*)data + out[i+2], ",", 0);
-        } else if (out[i+1] == sizeof("type")-1 && memcmp("type", data + out[i], sizeof("type")-1) == 0) {
-            file->type = g_strndup((char*)data + out[i+2], out[i+3]);
-        } else if (out[i+1] == sizeof("data")-1 && memcmp("data", data + out[i], sizeof("data")-1) == 0) {
-            data[out[i+2] + out[i+3]] = 0;
-            file->elements = g_strsplit((char*)data + out[i+2], ",", 0);
-        } else if (out[i+1] == sizeof("fields") - 1 && memcmp("fields", data + out[i], sizeof("fields")-1) == 0) {
-            data[out[i+2] + out[i+3]] = 0;
-            char **fields = g_strsplit((char*)data + out[i+2], ",", 0);
-            int f;
-            for (f = 0; f < 100 && fields[f]; f++) {
+    for (i = 0; out[i]; i += 4) {
+        if (out[i + 1] == 3 && memcmp("md5", data + out[i], sizeof("md5") - 1) == 0) {
+            file->md5 = g_strndup((char *)data + out[i + 2], out[i + 3]);
+        } else if (out[i + 1] == 4 && memcmp("tags", data + out[i], sizeof("tags") - 1) == 0) {
+            data[out[i + 2] + out[i + 3]] = 0;
+            file->tags = g_strsplit((char *)data + out[i + 2], ",", 0);
+        } else if (out[i + 1] == sizeof("type") - 1 && memcmp("type", data + out[i], sizeof("type") - 1) == 0) {
+            file->type = g_strndup((char *)data + out[i + 2], out[i + 3]);
+        } else if (out[i + 1] == sizeof("data") - 1 && memcmp("data", data + out[i], sizeof("data") - 1) == 0) {
+            data[out[i + 2] + out[i + 3]] = 0;
+            file->elements = g_strsplit((char *)data + out[i + 2], ",", 0);
+        } else if (out[i + 1] == sizeof("fields") - 1 && memcmp("fields", data + out[i], sizeof("fields") - 1) == 0) {
+            data[out[i + 2] + out[i + 3]] = 0;
+            char **fields = g_strsplit((char *)data + out[i + 2], ",", 0);
+            for (int f = 0; f < 100 && fields[f]; f++) {
                 int shortcut = -1;
-                int pos = moloch_field_define_text(fields[f], &shortcut);
+                int pos = arkime_field_define_text(fields[f], &shortcut);
                 if (shortcut >= 0 && shortcut < 20)
                     fieldShortHand[shortcut] = pos;
             }
@@ -488,33 +481,33 @@ LOCAL void tagger_load_file_cb(int UNUSED(code), unsigned char *data, int data_l
             if (*str == ';' || *str == '=') {
                 if (!str[1])
                     break;
-                parts[p] = str+1;
+                parts[p] = str + 1;
                 p++;
                 *str = 0;
             }
             str++;
         }
 
-        TaggerInfo_t *info = MOLOCH_TYPE_ALLOC(TaggerInfo_t);
+        TaggerInfo_t *info = ARKIME_TYPE_ALLOC(TaggerInfo_t);
         info->file = file;
-        moloch_field_ops_init(&info->ops, p-2, 0);
+        arkime_field_ops_init(&info->ops, p - 2, 0);
 
         int j;
-        for(j = 2; j < p; j+=2) {
+        for(j = 2; j < p; j += 2) {
             int pos = -1;
             if (isdigit(parts[j][0])) {
                 unsigned int f = atoi(parts[j]);
                 if (f < 20 && fieldShortHand[f] != 0xffffffff)
                     pos = fieldShortHand[f];
             } else {
-                pos = moloch_field_by_exp(parts[j]);
+                pos = arkime_field_by_exp(parts[j]);
             }
             if (pos == -1) {
                 LOG("WARNING - Unknown expression field %s", parts[j]);
                 continue;
             }
 
-            moloch_field_ops_add(&info->ops, pos, parts[j+1], strlen(parts[j+1]));
+            arkime_field_ops_add(&info->ops, pos, parts[j + 1], strlen(parts[j + 1]));
         }
 
         TaggerStringHash_t *hash = 0;
@@ -526,7 +519,7 @@ LOCAL void tagger_load_file_cb(int UNUSED(code), unsigned char *data, int data_l
                 continue;
             }
             if (!node->data) {
-                tip = MOLOCH_TYPE_ALLOC(TaggerIP_t);
+                tip = ARKIME_TYPE_ALLOC(TaggerIP_t);
                 tip->infos = g_ptr_array_new_with_free_func(tagger_info_free);
                 node->data = tip;
             } else {
@@ -549,13 +542,13 @@ LOCAL void tagger_load_file_cb(int UNUSED(code), unsigned char *data, int data_l
         default:
             LOG("ERROR - Unknown tagger type %s for %s", file->type, file->str);
             continue;
-        } 
+        }
 
         TaggerString_t *tstring;
 
         HASH_FIND(s_, *hash, parts[0], tstring);
         if (!tstring) {
-            tstring = MOLOCH_TYPE_ALLOC(TaggerString_t);
+            tstring = ARKIME_TYPE_ALLOC(TaggerString_t);
             tstring->str = strdup(parts[0]); // Need to strdup since file might be unloaded
             tstring->infos = g_ptr_array_new_with_free_func(tagger_info_free);
             HASH_ADD(s_, *hash, tstring->str, tstring);
@@ -574,48 +567,48 @@ LOCAL void tagger_load_file(TaggerFile_t *file)
 
     key_len = snprintf(key, sizeof(key), "/tagger/_source/%s", file->str);
 
-    moloch_http_send(esServer, "GET", key, key_len, NULL, 0, NULL, FALSE, tagger_load_file_cb, file);
+    arkime_http_send(esServer, "GET", key, key_len, NULL, 0, NULL, FALSE, tagger_load_file_cb, file);
 }
 /******************************************************************************/
 /*
  * Process the list of files from ES
  */
-LOCAL void tagger_fetch_files_cb(int UNUSED(code), unsigned char *data, int data_len, gpointer UNUSED(uw))
+LOCAL void tagger_fetch_files_cb(int UNUSED(code), uint8_t *data, int data_len, gpointer UNUSED(uw))
 {
     uint32_t           hits_len;
-    unsigned char     *hits = moloch_js0n_get(data, data_len, "hits", &hits_len);
+    uint8_t           *hits = arkime_js0n_get(data, data_len, "hits", &hits_len);
 
     if (!hits_len || !hits)
         return;
 
-    hits = moloch_js0n_get(hits, hits_len, "hits", &hits_len);
+    hits = arkime_js0n_get(hits, hits_len, "hits", &hits_len);
 
     if (!hits_len || !hits)
         return;
 
-    uint32_t out[2*8000];
+    uint32_t out[2 * 8000];
     int rc;
     if ((rc = js0n(hits, hits_len, out, sizeof(out))) != 0) {
         LOG("ERROR: Parse error %d in >%.*s<\n", rc, hits_len, hits);
         return;
     }
     int i;
-    for (i = 0; out[i]; i+= 2) {
+    for (i = 0; out[i]; i += 2) {
         uint32_t           source_len;
-        unsigned char     *source = 0;
-        source = moloch_js0n_get(hits+out[i], out[i+1], "_source", &source_len);
+        uint8_t           *source = 0;
+        source = arkime_js0n_get(hits + out[i], out[i + 1], "_source", &source_len);
         if (!source) {
             continue;
         }
 
-        char     *id = moloch_js0n_get_str(hits+out[i], out[i+1], "_id");
+        char     *id = arkime_js0n_get_str(hits + out[i], out[i + 1], "_id");
 
         uint32_t           md5_len;
-        unsigned char     *md5 = 0;
-        md5 = moloch_js0n_get(source, source_len, "md5", &md5_len);
+        uint8_t           *md5 = 0;
+        md5 = arkime_js0n_get(source, source_len, "md5", &md5_len);
 
         if (*md5 == '[') {
-            md5+=2;
+            md5 += 2;
             md5_len -= 4;
         }
 
@@ -623,14 +616,14 @@ LOCAL void tagger_fetch_files_cb(int UNUSED(code), unsigned char *data, int data
         TaggerFile_t *file;
         HASH_FIND(s_, allFiles, id, file);
         if (!file) {
-            file = MOLOCH_TYPE_ALLOC0(TaggerFile_t);
+            file = ARKIME_TYPE_ALLOC0(TaggerFile_t);
             file->str = id;
             HASH_ADD(s_, allFiles, file->str, file);
             tagger_load_file(file);
             continue;
         }
         g_free(id);
-        if (!file->md5 || strncmp(file->md5, (char*)md5, md5_len) != 0) {
+        if (!file->md5 || strncmp(file->md5, (char * )md5, md5_len) != 0) {
             tagger_load_file(file);
         }
     }
@@ -650,11 +643,11 @@ LOCAL gboolean tagger_fetch_files (gpointer sync)
     /* Need to copy the data since sync uses a static buffer, should fix that */
     if (sync) {
         size_t         data_len;
-        unsigned char *data = moloch_http_send_sync(esServer, "GET", key, key_len, NULL, 0, NULL, &data_len);;
+        uint8_t       *data = arkime_http_send_sync(esServer, "GET", key, key_len, NULL, 0, NULL, &data_len, NULL);
         tagger_fetch_files_cb(200, data, data_len, NULL);
         free(data);
     } else {
-        moloch_http_send(esServer, "GET", key, key_len, NULL, 0, NULL, FALSE, tagger_fetch_files_cb, NULL);
+        arkime_http_send(esServer, "GET", key, key_len, NULL, 0, NULL, FALSE, tagger_fetch_files_cb, NULL);
     }
 
     return G_SOURCE_CONTINUE;
@@ -663,45 +656,45 @@ LOCAL gboolean tagger_fetch_files (gpointer sync)
 /*
  * Called by arkime when the plugin is loaded
  */
-void moloch_plugin_init()
+void arkime_plugin_init()
 {
     if (config.dryRun) {
         LOG("Not enabling in dryRun mode");
         return;
     }
 
-    HASH_INIT(s_, allFiles, moloch_string_hash, moloch_string_cmp);
-    HASH_INIT(s_, allDomains, moloch_string_hash, moloch_string_cmp);
-    HASH_INIT(s_, allMD5s, moloch_string_hash, moloch_string_cmp);
-    HASH_INIT(s_, allEmails, moloch_string_hash, moloch_string_cmp);
-    HASH_INIT(s_, allURIs, moloch_string_hash, moloch_string_cmp);
+    HASH_INIT(s_, allFiles, arkime_string_hash, arkime_string_cmp);
+    HASH_INIT(s_, allDomains, arkime_string_hash, arkime_string_cmp);
+    HASH_INIT(s_, allMD5s, arkime_string_hash, arkime_string_cmp);
+    HASH_INIT(s_, allEmails, arkime_string_hash, arkime_string_cmp);
+    HASH_INIT(s_, allURIs, arkime_string_hash, arkime_string_cmp);
     allIps = New_Patricia(128);
 
-    moloch_plugins_register("tagger", FALSE);
+    arkime_plugins_register("tagger", FALSE);
 
-    moloch_plugins_set_cb("tagger",
-      NULL,
-      NULL,
-      NULL,
-      NULL,
-      tagger_plugin_save,
-      NULL,
-      tagger_plugin_exit,
-      NULL
-    );
+    arkime_plugins_set_cb("tagger",
+                          NULL,
+                          NULL,
+                          NULL,
+                          NULL,
+                          tagger_plugin_save,
+                          NULL,
+                          tagger_plugin_exit,
+                          NULL
+                         );
 
-    tagsField      = moloch_field_by_db("tags");
-    httpHostField  = moloch_field_by_db("http.host");
-    httpXffField   = moloch_field_by_db("http.xffIp");
-    httpMd5Field   = moloch_field_by_db("http.md5");
-    httpPathField  = moloch_field_by_db("http.path");
-    emailMd5Field  = moloch_field_by_db("email.md5");
-    emailSrcField  = moloch_field_by_db("email.src");
-    emailDstField  = moloch_field_by_db("email.dst");
-    dnsHostField   = moloch_field_by_db("dns.host");
+    tagsField      = arkime_field_by_db("tags");
+    httpHostField  = arkime_field_by_db("http.host");
+    httpXffField   = arkime_field_by_db("http.xffIp");
+    httpMd5Field   = arkime_field_by_db("http.md5");
+    httpPathField  = arkime_field_by_db("http.path");
+    emailMd5Field  = arkime_field_by_db("email.md5");
+    emailSrcField  = arkime_field_by_db("email.src");
+    emailDstField  = arkime_field_by_db("email.dst");
+    dnsHostField   = arkime_field_by_db("dns.host");
 
     if (config.parseDNSRecordAll) {
-        dnsMailServerField = moloch_field_by_db("dns.mailserverHost");
+        dnsMailServerField = arkime_field_by_db("dns.mailserverHost");
     }
 
     /* Call right away sync, and schedule every 60 seconds async */

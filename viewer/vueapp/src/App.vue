@@ -1,15 +1,19 @@
+<!--
+Copyright Yahoo Inc.
+SPDX-License-Identifier: Apache-2.0
+-->
 <template>
   <div v-if="compatibleBrowser">
-    <moloch-navbar></moloch-navbar>
+    <arkime-navbar></arkime-navbar>
     <router-view v-if="user" />
     <div class="pull-right small app-info-error">
-      <moloch-toast
+      <arkime-toast
         class="mr-1"
         type="danger"
         :duration="1000000"
         :done="messageDone"
         :message="appInfoMissing">
-      </moloch-toast>
+      </arkime-toast>
     </div>
     <keyboard-shortcuts
       shortcuts-class="arkime-shortcuts"
@@ -38,35 +42,35 @@
         <code>'?'</code> - shows you this dialog, but I guess you already knew that
       </template>
     </keyboard-shortcuts>
-    <moloch-footer></moloch-footer>
-    <moloch-welcome-message
+    <arkime-footer></arkime-footer>
+    <arkime-welcome-message
       v-if="user && (!user.welcomeMsgNum || user.welcomeMsgNum < 1)">
-    </moloch-welcome-message>
+    </arkime-welcome-message>
   </div>
   <div v-else>
-    <moloch-upgrade-browser>
-    </moloch-upgrade-browser>
+    <arkime-upgrade-browser>
+    </arkime-upgrade-browser>
   </div>
 </template>
 
 <script>
 import ConfigService from './components/utils/ConfigService';
-import MolochToast from './components/utils/Toast';
-import MolochNavbar from './components/utils/Navbar';
-import MolochFooter from './components/utils/Footer';
-import MolochWelcomeMessage from './components/utils/WelcomeMessage';
-import MolochUpgradeBrowser from './components/utils/UpgradeBrowser';
+import ArkimeToast from './components/utils/Toast';
+import ArkimeNavbar from './components/utils/Navbar';
+import ArkimeFooter from './components/utils/Footer';
+import ArkimeWelcomeMessage from './components/utils/WelcomeMessage';
+import ArkimeUpgradeBrowser from './components/utils/UpgradeBrowser';
 import KeyboardShortcuts from '../../../common/vueapp/KeyboardShortcuts';
 
 export default {
   name: 'App',
   components: {
-    MolochToast,
-    MolochNavbar,
-    MolochFooter,
+    ArkimeToast,
+    ArkimeNavbar,
+    ArkimeFooter,
     KeyboardShortcuts,
-    MolochWelcomeMessage,
-    MolochUpgradeBrowser
+    ArkimeWelcomeMessage,
+    ArkimeUpgradeBrowser
   },
   data: function () {
     return {
@@ -543,15 +547,15 @@ dl.dl-horizontal.dl-horizontal-wide dd {
 }
 
 /* info page (404 & upgrade) */
-.moloch-info {
+.arkime-info {
   margin-top: 20px;
 }
 
-.moloch-info .center-area > img {
+.arkime-info .center-area > img {
   z-index: 99;
 }
 
-.moloch-info .center-area {
+.arkime-info .center-area {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -560,13 +564,13 @@ dl.dl-horizontal.dl-horizontal-wide dd {
   min-height: 75vh;
 }
 
-.moloch-info .well {
+.arkime-info .well {
   margin-top: -6px;
   min-width: 25%;
   box-shadow: 4px 4px 10px 0 rgba(0,0,0,0.5);
 }
 
-.moloch-info .well > h1 {
+.arkime-info .well > h1 {
   margin-top: 0;
   color: var(--color-primary);
 }

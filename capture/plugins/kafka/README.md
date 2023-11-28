@@ -24,3 +24,4 @@ The table below list all the possible configuration option of the kafka plugin.
 | kafkaSSLCertificateLocation | path where the SSL client certificate is located | `/path/to/client.crt` |
 | kafkaSSLKeyLocation | path where the SSL cilent key is located | `/path/to/client.key` |
 | kafkaSSLKeyPassword | optional password for the client key |  |
+| kafkaMsgFormat | how to send the SPI data: bulk (default, raw bulk msg), bulk1 (bulk formatted, but just 1 doc), doc (just the doc) | `bulk` |

@@ -1,3 +1,7 @@
+<!--
+Copyright Yahoo Inc.
+SPDX-License-Identifier: Apache-2.0
+-->
 <template>
 
   <div class="form-inline time-form">
@@ -257,7 +261,7 @@ let startDateCheck;
 let stopDateCheck;
 
 export default {
-  name: 'MolochTime',
+  name: 'ArkimeTime',
   components: { datePicker },
   directives: { Focus },
   props: [
@@ -365,11 +369,11 @@ export default {
     this.setCurrentTime();
 
     let date = this.$route.query.date;
-    // if no time params exist, default to last hour
+    // if no time params exist, default to config default or last hour
     if (!this.$route.query.startTime &&
       !this.$route.query.stopTime &&
       !this.$route.query.date) {
-      date = 1;
+      date = this.$constants.DEFAULT_TIME_RANGE ?? 1;
     }
 
     this.setupTimeParams(
@@ -707,11 +711,11 @@ export default {
           this.localStartTime = moment(start * 1000);
           this.time.startTime = start;
         } else { // if we can't parse stop or start time, set default
-          this.timeRange = '1'; // default to 1 hour
+          this.timeRange = this.$constants.DEFAULT_TIME_RANGE ?? '1'; // default to config or 1 hour
         }
       } else {
         // there are no time query parameters, so set defaults
-        this.timeRange = '1'; // default to 1 hour
+        this.timeRange = this.$constants.DEFAULT_TIME_RANGE ?? '1'; // default to config or 1 hour
       }
     },
     /* watch for the url parameters to change and update the page */

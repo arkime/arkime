@@ -26,3 +26,24 @@ td .integration-external-link-button {
     height: 100%;
     padding: 0 !important;
 }
+
+/* reorder list handle for link groups and overview fields */
+.link-handle {
+    top: 18px;
+    left: -9px;
+    z-index: 10;
+    padding: 5px 6px;
+    position: relative;
+    border-radius: 14px;
+    background: var(--secondary);
+}
+
+.gap-1 {
+    gap: 0.25rem;
+}
+.gap-2 {
+    gap: 0.5rem;
+}
+.gap-3 {
+    gap: 1rem;
+}
