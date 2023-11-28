@@ -48,7 +48,7 @@ jobs:
             container: andywick/arkime-build-al2023-arm64:5.0.0-3
             buildopt: "--kafka --pfring"
             package: rpm
-            runson: [self-hosted, linux, ARM64]
+            runson: buildjet-4vcpu-ubuntu-2204-arm
             arch: aarch64
 
     runs-on: ${{ matrix.runson || 'ubuntu-latest' }}
