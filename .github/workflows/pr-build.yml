@@ -45,7 +45,7 @@ jobs:
             package: rpm
 
           - version: al2023-arm
-            container: andywick/arkime-build-al2023:5.0.0-3
+            container: andywick/arkime-build-al2023-arm64:5.0.0-3
             buildopt: "--kafka --pfring"
             package: rpm
             runson: [self-hosted, linux, ARM64]
