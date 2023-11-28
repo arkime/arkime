@@ -9,11 +9,10 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        version: [el8, el9, ubuntu2004, ubuntu2204, arch, al2023]
+        version: [el8, el9, ubuntu2004, ubuntu2204, arch, al2023, al2023-arm]
         include:
           - version: el8
             container: andywick/arkime-build-8:5.0.0-2
@@ -44,6 +43,15 @@ jobs:
             container: andywick/arkime-build-al2023:5.0.0-2
             buildopt: "--kafka --pfring"
             package: rpm
+
+          - version: al2023-arm
+            container: andywick/arkime-build-al2023:5.0.0-3
+            buildopt: "--kafka --pfring"
+            package: rpm
+            runson: [self-hosted, linux, ARM64]
+            arch: aarch64
+
+    runs-on: ${{ matrix.runson || 'ubuntu-latest' }}
 
     container:
       image: ${{ matrix.container }}
@@ -106,14 +114,14 @@ jobs:
         if: ${{ matrix.package == 'rpm' }}
         run: |
           export ARKIME_VERSION=`sed 's/.*"\(.*\)\".*$/\1/' /opt/arkime/common/version.js | head -n 1 | tr "-" "_"`
-          fpm -s dir -t rpm -n arkime -x opt/arkime/logs -x opt/arkime/raw -v $ARKIME_VERSION --iteration ${{ github.run_attempt }} --template-scripts --after-install "release/afterinstall.sh" --url "https://arkime.com" --description "Arkime Full Packet System" -d perl-libwww-perl -d perl-JSON -d ethtool -d libyaml -d perl-LWP-Protocol-https --rpm-rpmbuild-define "_build_id_links none" -p arkime-${ARKIME_VERSION}-${{github.run_attempt}}.${{matrix.version}}.x86_64.rpm /opt/arkime
+          fpm -s dir -t rpm -n arkime -x opt/arkime/logs -x opt/arkime/raw -v $ARKIME_VERSION --iteration ${{ github.run_attempt }} --template-scripts --after-install "release/afterinstall.sh" --url "https://arkime.com" --description "Arkime Full Packet System" -d perl-libwww-perl -d perl-JSON -d ethtool -d libyaml -d perl-LWP-Protocol-https --rpm-rpmbuild-define "_build_id_links none" -p arkime-${ARKIME_VERSION}-${{github.run_attempt}}.${{matrix.version}}.${{matrix.arch || 'x86_64'}}.rpm /opt/arkime
           ls -l *.rpm
 
       - name: package deb
         if: ${{ matrix.package == 'deb' }}
         run: |
           export ARKIME_VERSION=`sed 's/.*"\(.*\)\".*$/\1/' /opt/arkime/common/version.js | head -n 1`
-          fpm -s dir -t deb -n arkime -x opt/arkime/logs -x opt/arkime/raw -v $ARKIME_VERSION --iteration ${{ github.run_attempt }} --template-scripts --after-install "release/afterinstall.sh" --url "https://arkime.com" --description "Arkime Full Packet System" -d libwww-perl -d libjson-perl -d ethtool -d libyaml-dev -p arkime_${ARKIME_VERSION}-${{github.run_attempt}}.${{matrix.version}}_amd64.deb /opt/arkime
+          fpm -s dir -t deb -n arkime -x opt/arkime/logs -x opt/arkime/raw -v $ARKIME_VERSION --iteration ${{ github.run_attempt }} --template-scripts --after-install "release/afterinstall.sh" --url "https://arkime.com" --description "Arkime Full Packet System" -d libwww-perl -d libjson-perl -d ethtool -d libyaml-dev -p arkime_${ARKIME_VERSION}-${{github.run_attempt}}.${{matrix.version}}_${{matrix.arch || 'amd64'}}.deb /opt/arkime
           ls -l *.deb
 
       - uses: actions/upload-artifact@v3
