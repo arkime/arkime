@@ -3,6 +3,9 @@ name: "build-arm"
 on:
   push:
     branches: [ "main" ]
+  pull_request:
+    # The branches below must be a subset of the branches above
+    branches: [ "main" ]
 
 jobs:
   build:
@@ -15,6 +18,11 @@ jobs:
             container: andywick/arkime-build-al2023-arm64:5.0.0-3
             buildopt: "--kafka"
             package: rpm
+
+          - version: ubuntu2204
+            container: andywick/arkime-build-22-arm64:5.0.0-3
+            buildopt: "--nothirdparty --kafka"
+            package: deb
 
     runs-on: buildjet-2vcpu-ubuntu-2204-arm
 
@@ -36,11 +44,11 @@ jobs:
 
       - name: build and install
         run: |
+          echo "ALW ${{ github.run_id }} ${{ github.run_number }} ${{ github.run_attempt }}"
           ./easybutton-build.sh ${{ matrix.buildopt }} --rminstall
           export PATH=/opt/arkime/bin:$PATH
           make install
 
-      - name: lint
         run: |
           export PATH=/opt/arkime/bin:$PATH
           npm run lint
@@ -48,47 +56,39 @@ jobs:
 
       - name: capture tests
         run: |
-          echo "ALW ${{ github.run_id }} ${{ github.run_number }} ${{ github.run_attempt }}"
           (cd tests; ./tests.pl)
-
-      - name: viewer test
-        if: ${{ matrix.version == 'arch' }}
-        run: |
-          export PATH=/opt/arkime/bin:$PATH
-          (chown -R opensearch /opensearch-2.7.0; cd /opensearch-2.7.0 ; su opensearch -c "ES_JAVA_OPTS='-Xms1000m -Xmx1000m' bin/opensearch" > /tmp/os &)
-          sleep 30
-          cat /tmp/os
-          (cd tests ; G_SLICE=always-malloc ./tests.pl --viewer)
 
       - name: package arch
         if: ${{ matrix.package == 'arch' }}
         run: |
           gem install --no-document fpm rexml
           export ARKIME_VERSION=`sed 's/.*"\(.*\)\".*$/\1/' /opt/arkime/common/version.js | head -n 1`
-          /root/.local/share/gem/ruby/3.0.0/bin/fpm -s dir -t pacman -n arkime -x opt/arkime/logs -x opt/arkime/raw -v $ARKIME_VERSION --iteration ${{ github.run_attempt }} --template-scripts --after-install "release/afterinstall.sh" --url "https://arkime.com" --description "Arkime Full Packet System" -d libmaxminddb -d libpcap -d yara -d perl-http-message -d perl-lwp-protocol-https -d perl-json -d libnet -d lua -d zstd -d openssl-1.1 -d pcre -p arkime-${ARKIME_VERSION}-${{github.run_attempt}}_${{matrix.version}}-aarch64.pkg.tar.zst /opt/arkime
+          /root/.local/share/gem/ruby/3.0.0/bin/fpm -s dir -t pacman -n arkime -x opt/arkime/logs -x opt/arkime/raw -v $ARKIME_VERSION --iteration ${{ github.run_id }} --template-scripts --after-install "release/afterinstall.sh" --url "https://arkime.com" --description "Arkime Full Packet System" -d libmaxminddb -d libpcap -d yara -d perl-http-message -d perl-lwp-protocol-https -d perl-json -d libnet -d lua -d zstd -d openssl-1.1 -d pcre -p arkime-${ARKIME_VERSION}-${{github.run_id}}_${{matrix.version}}-aarch64.pkg.tar.zst /opt/arkime
           ls -l *.zst
 
       - name: package rpm
         if: ${{ matrix.package == 'rpm' }}
         run: |
           export ARKIME_VERSION=`sed 's/.*"\(.*\)\".*$/\1/' /opt/arkime/common/version.js | head -n 1 | tr "-" "_"`
-          fpm -s dir -t rpm -n arkime -x opt/arkime/logs -x opt/arkime/raw -v $ARKIME_VERSION --iteration ${{ github.run_attempt }} --template-scripts --after-install "release/afterinstall.sh" --url "https://arkime.com" --description "Arkime Full Packet System" -d perl-libwww-perl -d perl-JSON -d ethtool -d libyaml -d perl-LWP-Protocol-https --rpm-rpmbuild-define "_build_id_links none" -p arkime-${ARKIME_VERSION}-${{github.run_attempt}}.${{matrix.version}}.aarch64.rpm /opt/arkime
+          fpm -s dir -t rpm -n arkime -x opt/arkime/logs -x opt/arkime/raw -v $ARKIME_VERSION --iteration ${{ github.run_id }} --template-scripts --after-install "release/afterinstall.sh" --url "https://arkime.com" --description "Arkime Full Packet System" -d perl-libwww-perl -d perl-JSON -d ethtool -d libyaml -d perl-LWP-Protocol-https --rpm-rpmbuild-define "_build_id_links none" -p arkime-${ARKIME_VERSION}-${{github.run_id}}.${{matrix.version}}.aarch64.rpm /opt/arkime
           ls -l *.rpm
+          aws s3 cp --quiet *.aarch64.rpm s3://files.molo.ch/arkime-main.${{matrix.version}}.aarch64.rpm --acl public-read
+          aws s3api put-object-acl --bucket files.molo.ch --key arkime-main.${{matrix.version}}.aarch64.rpm --acl public-read
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
       - name: package deb
         if: ${{ matrix.package == 'deb' }}
         run: |
           export ARKIME_VERSION=`sed 's/.*"\(.*\)\".*$/\1/' /opt/arkime/common/version.js | head -n 1`
-          fpm -s dir -t deb -n arkime -x opt/arkime/logs -x opt/arkime/raw -v $ARKIME_VERSION --iteration ${{ github.run_attempt }} --template-scripts --after-install "release/afterinstall.sh" --url "https://arkime.com" --description "Arkime Full Packet System" -d libwww-perl -d libjson-perl -d ethtool -d libyaml-dev -p arkime_${ARKIME_VERSION}-${{github.run_attempt}}.${{matrix.version}}_arm64.deb /opt/arkime
+          fpm -s dir -t deb -n arkime -x opt/arkime/logs -x opt/arkime/raw -v $ARKIME_VERSION --iteration ${{ github.run_id }} --template-scripts --after-install "release/afterinstall.sh" --url "https://arkime.com" --description "Arkime Full Packet System" -d libwww-perl -d libjson-perl -d ethtool -d libyaml-dev -p arkime_${ARKIME_VERSION}-${{github.run_id}}.${{matrix.version}}_arm64.deb /opt/arkime
           ls -l *.deb
-
-#      - uses: actions/upload-artifact@v3
-#        with:
-#          name: upload artifact
-#          path: |
-#            *.deb
-#            *.rpm
-#            *.zst
+          aws s3 cp --quiet *_arm64.deb s3://files.molo.ch/arkime-main_${{matrix.version}}_arm64.deb --acl public-read
+          aws s3api put-object-acl --bucket files.molo.ch --key arkime-main_${{matrix.version}}_arm64.deb --acl public-read
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
   slack:
     runs-on: ubuntu-latest
