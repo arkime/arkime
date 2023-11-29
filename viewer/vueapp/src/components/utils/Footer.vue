@@ -7,8 +7,7 @@ SPDX-License-Identifier: Apache-2.0
   <div class="footer">
     <p>
       <small>
-        Arkime v{{ version }} |
-        <a href="https://arkime.com">arkime.com</a>
+        <span v-html="footerConfig"></span>
         <span v-if="responseTime && !loadingData">
           | {{ responseTime | commaString }}ms
         </span>
@@ -27,8 +26,10 @@ SPDX-License-Identifier: Apache-2.0
 export default {
   name: 'ArkimeFooter',
   data: function () {
+    const footerConfig = new DOMParser().parseFromString(this.$constants.FOOTER_CONFIG, 'text/html').documentElement.textContent;
     return {
-      version: this.$constants.VERSION
+      version: this.$constants.VERSION,
+      footerConfig
     };
   },
   computed: {
