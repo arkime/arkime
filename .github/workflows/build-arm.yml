@@ -31,7 +31,6 @@ jobs:
 
       - name: thirdparty
         run: |
-          (cd / ; curl https://s3.amazonaws.com/files.molo.ch/snfmin.tar.gz | tar -zxvf -)
           if [ -d "/thirdparty" ]; then
             ln -s /thirdparty .
           fi
