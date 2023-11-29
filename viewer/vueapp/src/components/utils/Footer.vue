@@ -23,7 +23,8 @@ export default {
     footer = new Vue({
       parent: this,
       el: '#footerConfig',
-      template: new DOMParser().parseFromString(this.$constants.FOOTER_CONFIG, 'text/html').documentElement.textContent,
+      // add span around template because vue wants a single root element
+      template: `<span>${new DOMParser().parseFromString(this.$constants.FOOTER_CONFIG, 'text/html').documentElement.textContent}</span>`,
       computed: {
         responseTime () {
           return this.$parent.$store.state.responseTime;
