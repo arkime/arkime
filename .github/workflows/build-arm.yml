@@ -1,4 +1,4 @@
-name: "pr-build"
+name: "build-arm"
 
 on:
   push:
