@@ -1982,8 +1982,8 @@ app.use(cspHeader, setCookie, (req, res) => {
     .replace(/_userId_/g, req.user ? req.user.userId : '-')
     .replace(/_userName_/g, req.user ? req.user.userName : '-');
 
-  const footerConfig = Config.get('footerTemplate', '_version_ | <a href="https://arkime.com">arkime.com</a>')
-    .replace(/_version_/g, `Arkime v${version.version}`);
+  const footerConfig = Config.get('footerTemplate', '<span>_version_ | <a href="https://arkime.com">arkime.com</a> | _responseTime_</span>')
+    .replace(/_version_/g, `Arkime v${version.version}`).replace(/_responseTime_/g, '{{ responseTime | commaString }}ms');
 
   const limit = req.user.hasRole('arkimeAdmin') ? Config.get('huntAdminLimit', 10000000) : Config.get('huntLimit', 1000000);
 

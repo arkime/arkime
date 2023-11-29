@@ -3,42 +3,39 @@ Copyright Yahoo Inc.
 SPDX-License-Identifier: Apache-2.0
 -->
 <template>
-
   <div class="footer">
     <p>
       <small>
-        <span v-html="footerConfig"></span>
-        <span v-if="responseTime && !loadingData">
-          | {{ responseTime | commaString }}ms
-        </span>
-        <span v-if="loadingData">
-          |
-          <span class="fa fa-spinner fa-spin fa-lg text-theme-accent">
-          </span>
-        </span>
+        <div id="footerConfig"></div>
       </small>
     </p>
   </div>
-
 </template>
 
 <script>
+import Vue from 'vue';
+
+let footer;
+
 export default {
   name: 'ArkimeFooter',
-  data: function () {
-    const footerConfig = new DOMParser().parseFromString(this.$constants.FOOTER_CONFIG, 'text/html').documentElement.textContent;
-    return {
-      version: this.$constants.VERSION,
-      footerConfig
-    };
+  mounted () {
+    footer = new Vue({
+      parent: this,
+      el: '#footerConfig',
+      template: new DOMParser().parseFromString(this.$constants.FOOTER_CONFIG, 'text/html').documentElement.textContent,
+      computed: {
+        responseTime () {
+          return this.$parent.$store.state.responseTime;
+        },
+        loadingData () {
+          return this.$parent.$store.state.loadingData;
+        }
+      }
+    });
   },
-  computed: {
-    responseTime: function () {
-      return this.$store.state.responseTime;
-    },
-    loadingData: function () {
-      return this.$store.state.loadingData;
-    }
+  beforeDestroy () {
+    footer.$destroy();
   }
 };
 </script>
