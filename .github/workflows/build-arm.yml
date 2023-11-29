@@ -49,6 +49,7 @@ jobs:
           export PATH=/opt/arkime/bin:$PATH
           make install
 
+      - name: lint
         run: |
           export PATH=/opt/arkime/bin:$PATH
           npm run lint
