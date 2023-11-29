@@ -3,16 +3,13 @@ name: "build-arm"
 on:
   push:
     branches: [ "main" ]
-  pull_request:
-    # The branches below must be a subset of the branches above
-    branches: [ "main" ]
 
 jobs:
   build:
     strategy:
       fail-fast: false
       matrix:
-        version: [al2023]
+        version: [al2023, ubuntu2204]
         include:
           - version: al2023
             container: andywick/arkime-build-al2023-arm64:5.0.0-3
