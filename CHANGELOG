@@ -89,6 +89,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #2407 transfer ownership of resources
   - #2482 added uploadRoles to control who can upload
   - #2501 add defaultTimeRange setting
+  - #2521 add footerTemplate setting
 ## Parliament
   - #2377 dashboard-only mode removed, if you want users to just see the dashboard don't assign them the parliamentUser role
   - #2395 configuration is now stored in opensearch/elasticsearch

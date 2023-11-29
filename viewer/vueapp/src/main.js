@@ -64,6 +64,7 @@ new Vue({
     /* eslint-disable no-undef */
     Vue.prototype.$constants = {
       TITLE_CONFIG,
+      FOOTER_CONFIG,
       DEMO_MODE,
       VERSION,
       PATH,
