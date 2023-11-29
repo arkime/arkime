@@ -93,7 +93,7 @@ jobs:
             - AWS_SECRET_ACCESS_KEY
 
     el-9:
-        requires: [~pr,~commit]
+        requires: [~commit]
         image: andywick/arkime-build-9:5.0.0-2
         steps:
             - (cd / ; curl https://s3.amazonaws.com/files.molo.ch/snfmin.tar.gz | tar -zxvf -)
@@ -118,7 +118,7 @@ jobs:
             - AWS_SECRET_ACCESS_KEY
 
     al2023:
-        requires: [~pr,~commit]
+        requires: [~commit]
         image: andywick/arkime-build-al2023:5.0.0-2
         steps:
             - (cd / ; curl https://s3.amazonaws.com/files.molo.ch/snfmin.tar.gz | tar -zxvf -)
@@ -243,7 +243,7 @@ jobs:
             - AWS_SECRET_ACCESS_KEY
 
     ubuntu-22:
-        requires: [~pr, ~commit]
+        requires: [~commit]
         image: andywick/arkime-build-22:5.0.0-2
         steps:
             - apt-get update
@@ -267,7 +267,7 @@ jobs:
             - AWS_SECRET_ACCESS_KEY
 
     arch:
-        requires: [~pr, ~commit]
+        requires: [~commit]
         image: andywick/arkime-build-arch:5.0.0-2
         steps:
             - (cd / ; curl https://s3.amazonaws.com/files.molo.ch/snfmin.tar.gz | tar -zxvf -)
