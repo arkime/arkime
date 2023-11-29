@@ -41,7 +41,7 @@ jobs:
 
           - version: al2023
             container: andywick/arkime-build-al2023:5.0.0-2
-            buildopt: "--kafka --pfring"
+            buildopt: "--kafka"
             package: rpm
 
     runs-on: ubuntu-latest
