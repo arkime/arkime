@@ -957,6 +957,19 @@ export default {
       // sorted list of categories for the view
       this.categoryList = Object.keys(this.categoryObjects).sort();
       this.categoryList.splice(this.categoryList.indexOf('general'), 1);
+
+      if (this.$constants.SPIVIEW_CATEGORY_ORDER) {
+        const catOrder = this.$constants.SPIVIEW_CATEGORY_ORDER.split(',');
+        for (let i = catOrder.length - 1; i >= 0; i--) {
+          const cat = catOrder[i];
+          if (this.categoryList.includes(cat)) {
+            this.categoryList.splice(this.categoryList.indexOf(cat), 1);
+            this.categoryList.unshift(cat);
+          }
+        }
+      }
+
+      // general always at the top
       this.categoryList.unshift('general');
 
       this.getSpiData(this.spiQuery); // IMPORTANT: queries for spi data!
