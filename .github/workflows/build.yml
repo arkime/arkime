@@ -121,6 +121,7 @@ jobs:
           fpm -s dir -t deb -n arkime -x opt/arkime/logs -x opt/arkime/raw -v $ARKIME_VERSION --iteration ${{ github.run_id }} --template-scripts --after-install "release/afterinstall.sh" --url "https://arkime.com" --description "Arkime Full Packet System" -d libwww-perl -d libjson-perl -d ethtool -d libyaml-dev -p arkime_${ARKIME_VERSION}-${{github.run_id}}.${{matrix.version}}_amd64.deb /opt/arkime
           ls -l *.deb
 
+
   slack:
     runs-on: ubuntu-latest
     needs: build
