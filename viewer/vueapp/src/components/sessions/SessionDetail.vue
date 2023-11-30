@@ -186,11 +186,16 @@ function gripUnclick (e, vueThis) {
     selectedDT.style.width = `${newWidth}px`;
     siblingDD.style.marginLeft = `${newWidth + 10}px`;
     selectedGrip.style.left = `${newWidth + 22}px`;
+    selectedGrip.style.borderRight = 'none';
 
     // update all the dt and dd styles to reflect the new width
     for (const dt of document.getElementsByTagName('dt')) {
       dt.style.width = `${newWidth}px`;
       dt.nextElementSibling.style.marginLeft = `${newWidth + 10}px`;
+    }
+
+    for (const grip of document.getElementsByClassName('session-detail-grip')) {
+      grip.style.left = `${newWidth + 22}px`;
     }
 
     // save it as a user configuration
