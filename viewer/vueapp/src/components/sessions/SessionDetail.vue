@@ -159,22 +159,22 @@ let siblingDD; // the dd element following the dt element in the dl that is bein
 
 // fired when a column resize grip is clicked
 // stores values for calculations when the grip is unclicked
-function gripClick (e, dt) {
+function gripClick (e, div) {
   e.preventDefault();
   e.stopPropagation();
-  selectedDT = dt;
-  siblingDD = dt.nextElementSibling;
-  dtOffset = dt.offsetWidth - e.pageX;
-  selectedGrip = dt.getElementsByClassName('detail-grip')[0];
+  selectedDT = div.getElementsByTagName('dt')[0];
+  siblingDD = selectedDT.nextElementSibling;
+  dtOffset = selectedDT.offsetWidth - e.pageX;
+  selectedGrip = div.getElementsByClassName('session-detail-grip')[0];
 };
 
 // fired when the column resize grip is dragged
 // styles the grip to show where it's being dragged
 function gripDrag (e) { // move the grip where the user moves their cursor
   if (selectedDT && selectedGrip) {
-    const newWidth = dtOffset + e.pageX - selectedDT.offsetWidth;
+    const newWidth = dtOffset + e.pageX;
     selectedGrip.style.borderRight = '1px dotted var(--color-gray)';
-    selectedGrip.style.left = `${newWidth}px`;
+    selectedGrip.style.left = `${newWidth + 22}px`;
   }
 }
 
@@ -185,7 +185,7 @@ function gripUnclick (e, vueThis) {
     const newWidth = Math.max(dtOffset + e.pageX, 100); // min width is 100px
     selectedDT.style.width = `${newWidth}px`;
     siblingDD.style.marginLeft = `${newWidth + 10}px`;
-    selectedGrip.style = '';
+    selectedGrip.style.left = `${newWidth + 22}px`;
 
     // update all the dt and dd styles to reflect the new width
     for (const dt of document.getElementsByTagName('dt')) {
@@ -371,17 +371,23 @@ export default {
           },
           mounted () {
             this.$nextTick(() => { // wait for content to render
+              // add grip to each section of the section detail
+              const sessionDetailSection = document.getElementsByTagName('dl');
+              for (const div of sessionDetailSection) {
+                // set the width of the session detail div based on user setting
+                const grip = document.createElement('div');
+                grip.classList.add('session-detail-grip');
+                grip.style.height = `${div.clientHeight}px`;
+                grip.style.left = `${this.$parent.dlWidth + 22}px`;
+                div.prepend(grip);
+                grip.addEventListener('mousedown', (e) => gripClick(e, div));
+              }
+
               const dts = document.getElementsByTagName('dt');
               for (const dt of dts) {
                 // set the width of the dt and the margin of the dd based on user setting
                 dt.style.width = `${this.$parent.dlWidth}px`;
                 dt.nextElementSibling.style.marginLeft = `${this.$parent.dlWidth + 10}px`;
-                // create the grip element and add it to the dt
-                const grip = document.createElement('div');
-                grip.classList.add('detail-grip');
-                dt.appendChild(grip);
-                // listen for grip clicks
-                grip.addEventListener('mousedown', (e) => gripClick(e, dt));
               }
 
               // listen for grip drags
@@ -1013,16 +1019,14 @@ export default {
 }
 
 /* dl resizing */
-.detail-grip {
+.session-detail-grip {
   width: 5px;
-  height: 31px;
-  margin-bottom: -14px;
+  z-index: 4;
   cursor: col-resize;
-  position: relative;
+  position: absolute;
   display: inline-block;
-  z-index: 999;
 }
-dt:hover > .detail-grip {
+dl:hover > .session-detail-grip {
   border-right: 1px dotted var(--color-gray) !important;
 }
 </style>
