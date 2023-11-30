@@ -143,12 +143,63 @@ import ArkimeExportPcap from '../sessions/ExportPcap';
 import ArkimeToast from '../utils/Toast';
 import PacketOptions from './PacketOptions';
 import FieldActions from './FieldActions';
+import UserService from '../users/UserService';
 
 const defaultUserSettings = {
   detailFormat: 'last',
   numPackets: 'last',
   showTimestamps: 'last'
 };
+
+// dl resize variables and functions
+let selectedDT; // store selected dt to watch drag and calculate new width
+let dtOffset; // store offset width to calculate new width
+let selectedGrip; // the column resize grip that is currently being dragged
+let siblingDD; // the dd element following the dt element in the dl that is being resized
+
+// fired when a column resize grip is clicked
+// stores values for calculations when the grip is unclicked
+function gripClick (e, dt) {
+  e.preventDefault();
+  e.stopPropagation();
+  selectedDT = dt;
+  siblingDD = dt.nextElementSibling;
+  dtOffset = dt.offsetWidth - e.pageX;
+  selectedGrip = dt.getElementsByClassName('detail-grip')[0];
+};
+
+// fired when the column resize grip is dragged
+// styles the grip to show where it's being dragged
+function gripDrag (e) { // move the grip where the user moves their cursor
+  if (selectedDT && selectedGrip) {
+    const newWidth = dtOffset + e.pageX - selectedDT.offsetWidth;
+    selectedGrip.style.borderRight = '1px dotted var(--color-gray)';
+    selectedGrip.style.left = `${newWidth}px`;
+  }
+}
+
+// fired when a clicked and dragged grip is dropped
+// updates the column and table width and saves the values
+function gripUnclick (e, vueThis) {
+  if (selectedDT && selectedGrip) {
+    const newWidth = Math.max(dtOffset + e.pageX, 100); // min width is 100px
+    selectedDT.style.width = `${newWidth}px`;
+    siblingDD.style.marginLeft = `${newWidth + 10}px`;
+    selectedGrip.style = '';
+
+    // update all the dt and dd styles to reflect the new width
+    for (const dt of document.getElementsByTagName('dt')) {
+      dt.style.width = `${newWidth}px`;
+      dt.nextElementSibling.style.marginLeft = `${newWidth + 10}px`;
+    }
+
+    // save it as a user configuration
+    vueThis.saveDLWidth(newWidth);
+  }
+
+  selectedGrip = undefined;
+  selectedDT = undefined;
+}
 
 export default {
   name: 'ArkimeSessionDetail',
@@ -181,7 +232,8 @@ export default {
         packets: 200,
         showFrames: false,
         showSrc: true,
-        showDst: true
+        showDst: true,
+        dlWidth: 160
       }
     };
   },
@@ -199,6 +251,9 @@ export default {
   created: function () {
     this.setUserParams();
     this.getDetailData();
+    UserService.getState('sessionDetailDLWidth').then((response) => {
+      this.dlWidth = response.data.width ?? 160;
+    });
   },
   methods: {
     /* exposed functions --------------------------------------------------- */
@@ -314,6 +369,27 @@ export default {
               messageType
             };
           },
+          mounted () {
+            this.$nextTick(() => { // wait for content to render
+              const dts = document.getElementsByTagName('dt');
+              for (const dt of dts) {
+                // set the width of the dt and the margin of the dd based on user setting
+                dt.style.width = `${this.$parent.dlWidth}px`;
+                dt.nextElementSibling.style.marginLeft = `${this.$parent.dlWidth + 10}px`;
+                // create the grip element and add it to the dt
+                const grip = document.createElement('div');
+                grip.classList.add('detail-grip');
+                dt.appendChild(grip);
+                // listen for grip clicks
+                grip.addEventListener('mousedown', (e) => gripClick(e, dt));
+              }
+
+              // listen for grip drags
+              document.addEventListener('mousemove', gripDrag);
+              const self = this; // listen for grip unclicks
+              document.addEventListener('mouseup', (e) => gripUnclick(e, self));
+            });
+          },
           computed: {
             expression: {
               get: function () {
@@ -333,6 +409,10 @@ export default {
             }
           },
           methods: {
+            /* Saves the dl widths */
+            saveDLWidth: function (width) {
+              UserService.saveState({ width }, 'sessionDetailDLWidth');
+            },
             getField: function (expr) {
               if (!this.fields[expr]) {
                 console.log('UNDEFINED', expr);
@@ -930,5 +1010,19 @@ export default {
 
 .session-detail .clickable-label .dropdown-menu .dropdown-item {
   font-size: 12px;
+}
+
+/* dl resizing */
+.detail-grip {
+  width: 5px;
+  height: 31px;
+  margin-bottom: -14px;
+  cursor: col-resize;
+  position: relative;
+  display: inline-block;
+  z-index: 999;
+}
+dt:hover > .detail-grip {
+  border-right: 1px dotted var(--color-gray) !important;
 }
 </style>
