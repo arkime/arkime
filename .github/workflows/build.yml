@@ -106,6 +106,7 @@ jobs:
           export ARKIME_VERSION=`sed 's/.*"\(.*\)\".*$/\1/' /opt/arkime/common/version.js | head -n 1`
           /root/.local/share/gem/ruby/3.0.0/bin/fpm -s dir -t pacman -n arkime -x opt/arkime/logs -x opt/arkime/raw -v $ARKIME_VERSION --iteration ${{ github.run_id }} --template-scripts --after-install "release/afterinstall.sh" --url "https://arkime.com" --description "Arkime Full Packet System" -d libmaxminddb -d libpcap -d yara -d perl-http-message -d perl-lwp-protocol-https -d perl-json -d libnet -d lua -d zstd -d openssl-1.1 -d pcre -p arkime-${ARKIME_VERSION}-${{github.run_id}}_${{matrix.version}}-x86_64.pkg.tar.zst /opt/arkime
           ls -l *.zst
+          mv *.zst arkime-main.${{matrix.version}}-x86_64.pkg.tar.zst
 
       - name: package rpm
         if: ${{ matrix.package == 'rpm' }}
@@ -113,6 +114,7 @@ jobs:
           export ARKIME_VERSION=`sed 's/.*"\(.*\)\".*$/\1/' /opt/arkime/common/version.js | head -n 1 | tr "-" "_"`
           fpm -s dir -t rpm -n arkime -x opt/arkime/logs -x opt/arkime/raw -v $ARKIME_VERSION --iteration ${{ github.run_id }} --template-scripts --after-install "release/afterinstall.sh" --url "https://arkime.com" --description "Arkime Full Packet System" -d perl-libwww-perl -d perl-JSON -d ethtool -d libyaml -d perl-LWP-Protocol-https --rpm-rpmbuild-define "_build_id_links none" -p arkime-${ARKIME_VERSION}-${{github.run_id}}.${{matrix.version}}.x86_64.rpm /opt/arkime
           ls -l *.rpm
+          mv *.rpm arkime-main.${{matrix.version}}.x86_64.rpm
 
       - name: package deb
         if: ${{ matrix.package == 'deb' }}
@@ -120,6 +122,13 @@ jobs:
           export ARKIME_VERSION=`sed 's/.*"\(.*\)\".*$/\1/' /opt/arkime/common/version.js | head -n 1`
           fpm -s dir -t deb -n arkime -x opt/arkime/logs -x opt/arkime/raw -v $ARKIME_VERSION --iteration ${{ github.run_id }} --template-scripts --after-install "release/afterinstall.sh" --url "https://arkime.com" --description "Arkime Full Packet System" -d libwww-perl -d libjson-perl -d ethtool -d libyaml-dev -p arkime_${ARKIME_VERSION}-${{github.run_id}}.${{matrix.version}}_amd64.deb /opt/arkime
           ls -l *.deb
+          mv *.deb arkime-main_${{matrix.version}}_amd64.deb
+
+      - name: upload
+          ssh-agent bash -c "(echo '$LATEST_PASSWORD' | ssh-add -) && (echo 'put *.deb\nput *.rpm\nput *.zst' | sftp $LATEST_USER@latest.arkime.net:/latest)"
+        env:
+          LATEST_USER: ${{ secrets.LATEST_USER }}
+          LATEST_PASSWORD: ${{ secrets.LATEST_PASSWORD }}
 
 
   slack:
