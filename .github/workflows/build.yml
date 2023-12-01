@@ -126,7 +126,8 @@ jobs:
 
       - name: upload
         run: |
-          echo "$LATEST_PASSWORD" > key
+          echo "${{secrets.LATEST_PASSWORD }}" > key
+          wc key
           chmod 600 key
           echo 'put *.deb\nput *.rpm\nput *.zst' | sftp -i key $LATEST_USER@latest.arkime.net:/latest
           /bin/rm -f key
