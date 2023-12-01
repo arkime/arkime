@@ -81,7 +81,8 @@ new Vue({
       BUILD_VERSION, // from webpack.DefinePlugin
       BUILD_DATE, // from webpack.DefinePlugin
       LOGOUT_URL,
-      DEFAULT_TIME_RANGE
+      DEFAULT_TIME_RANGE,
+      SPIVIEW_CATEGORY_ORDER
     };
   }
 });

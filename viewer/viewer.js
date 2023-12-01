@@ -2007,7 +2007,8 @@ app.use(cspHeader, setCookie, (req, res) => {
     turnOffGraphDays: Config.get('turnOffGraphDays', 30),
     disableUserPasswordUI: Config.get('disableUserPasswordUI', true),
     logoutUrl: Auth.logoutUrl,
-    defaultTimeRange: Config.get('defaultTimeRange', '1')
+    defaultTimeRange: Config.get('defaultTimeRange', '1'),
+    spiViewCategoryOrder: Config.get('spiViewCategoryOrder')
   };
 
   // Create a fresh Vue app instance
