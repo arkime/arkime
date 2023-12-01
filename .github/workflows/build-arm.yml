@@ -96,8 +96,14 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
       - name: upload
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         run: |
-          ssh-agent bash -c "(echo \"$LATEST_PASSWORD\" | ssh-add -) && (echo 'put *.deb\nput *.rpm\nput *.zst' | sftp $LATEST_USER@latest.arkime.net:/latest)"
+          echo "${{secrets.LATEST_PASSWORD }}" > key
+          chmod 600 key
+          echo "put *.deb
+            put *.rpm
+            put *.zst" | sftp -o StrictHostKeyChecking=no -i key $LATEST_USER@latest.arkime.net:/latest
+          /bin/rm -f key
         env:
           LATEST_USER: ${{ secrets.LATEST_USER }}
           LATEST_PASSWORD: ${{ secrets.LATEST_PASSWORD }}

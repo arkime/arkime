@@ -125,6 +125,7 @@ jobs:
           mv *.deb arkime-main_${{matrix.version}}_amd64.deb
 
       - name: upload
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         run: |
           echo "${{secrets.LATEST_PASSWORD }}" > key
           chmod 600 key
