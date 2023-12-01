@@ -96,6 +96,7 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
       - name: upload
+        run: |
           ssh-agent bash -c "(echo '$LATEST_PASSWORD' | ssh-add -) && (echo 'put *.deb\nput *.rpm\nput *.zst' | sftp $LATEST_USER@latest.arkime.net:/latest)"
         env:
           LATEST_USER: ${{ secrets.LATEST_USER }}
