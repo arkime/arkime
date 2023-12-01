@@ -400,7 +400,7 @@ class Integration {
     }
 
     const writeOne = (integration, response) => {
-      if (integration.addMoreIntegrations) {
+      if (integration.addMoreIntegrations && !shared.skipChildren) {
         integration.addMoreIntegrations(itype, response, (moreIndicator, enhanceInfo = undefined) => {
           if (moreIndicator != null && enhanceInfo != null && typeof enhanceInfo === 'object') {
             shared.res.write(JSON.stringify({ purpose: 'enhance', indicator: moreIndicator, enhanceInfo }));
@@ -590,6 +590,7 @@ class Integration {
    * @param {string} query - The string to query integrations
    * @param {string[]} doIntegrations - A list of integration names to query
    * @param {boolean} skipCache - Ignore any cached data and query all integrations again
+   * @param {boolean} skipChildren - Don't query integrations for sub-indicators
    * @param {string[]} tags - Tags applied at the time of search
    * @param {string | undefined} viewId - The ID of the view at the time of search (if any)
    * @returns {IntegrationChunk[]} results - An array data chunks with the data
@@ -641,6 +642,7 @@ class Integration {
     const issuedAt = Date.now();
     const shared = {
       skipCache: !!req.body.skipCache,
+      skipChildren: !!req.body.skipChildren,
       doIntegrations: req.body.doIntegrations,
       user: req.user,
       res,
@@ -680,16 +682,18 @@ class Integration {
       const integrations = Integration.#integrations[itype];
 
       Integration.runIntegrationsList(shared, indicator, undefined, integrations);
-      if (itype === 'email') {
-        const dquery = query.slice(query.indexOf('@') + 1);
-        Integration.runIntegrationsList(shared, { query: dquery, itype: 'domain' }, indicator, Integration.#integrations.domain);
-      } else if (itype === 'url') {
-        const url = new URL(query);
-        if (Integration.classify(url.hostname) === 'ip') {
-          Integration.runIntegrationsList(shared, { query: url.hostname, itype: 'ip' }, indicator, Integration.#integrations.ip);
-        } else {
-          const equery = extractDomain(query, { tld: true });
-          Integration.runIntegrationsList(shared, { query: equery, itype: 'domain' }, indicator, Integration.#integrations.domain);
+      if (!shared.skipChildren) {
+        if (itype === 'email') {
+          const dquery = query.slice(query.indexOf('@') + 1);
+          Integration.runIntegrationsList(shared, { query: dquery, itype: 'domain' }, indicator, Integration.#integrations.domain);
+        } else if (itype === 'url') {
+          const url = new URL(query);
+          if (Integration.classify(url.hostname) === 'ip') {
+            Integration.runIntegrationsList(shared, { query: url.hostname, itype: 'ip' }, indicator, Integration.#integrations.ip);
+          } else {
+            const equery = extractDomain(query, { tld: true });
+            Integration.runIntegrationsList(shared, { query: equery, itype: 'domain' }, indicator, Integration.#integrations.domain);
+          }
         }
       }
     }

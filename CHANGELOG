@@ -55,6 +55,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #2396 drop privileges is now AFTER http(s) list
   - #2509 add optional login message for form auth
   - #2511 new authOIDCScope setting
+  - #2482 new logoutUrl setting
 ## Capture
   - #2295 moloch converted to arkime
   - #2312 override ips can now set any field
@@ -79,6 +80,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #2437 new csv/json data source supports
   - #2441 new redis data source support
   - #2507 demoMode added
+  - #2527 skipChildren added
 ## ESProxy
   - #2483 #2484 support field updates/deletes
 ## Viewer

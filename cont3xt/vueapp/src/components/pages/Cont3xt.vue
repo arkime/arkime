@@ -118,6 +118,13 @@ SPDX-License-Identifier: Apache-2.0
               Skip Cache
             </b-dropdown-item>
             <b-dropdown-item
+                :active="skipChildren"
+                @click="skipChildren = !skipChildren"
+                v-b-tooltip.hover.left="skipChildren ? 'Ignorning child queries - select to enable child queries' : 'Including child queries - select to disable child queries'">
+              <span class="fa fa-child fa-fw mr-1" />
+              Skip Children
+            </b-dropdown-item>
+            <b-dropdown-item
                 @click="generateReport"
                 :disabled="!searchComplete"
                 v-b-tooltip.hover.left="'Download a report of this result (shift + r)'">
@@ -507,6 +514,7 @@ export default {
       searchTerm: this.$route.query.q ? this.$route.query.q : (this.$route.query.b ? window.atob(this.$route.query.b) : ''),
       overrideOverviewId: undefined,
       skipCache: false,
+      skipChildren: false,
       searchComplete: false,
       linkSearchTerm: this.$route.query.linkSearch || '',
       hideLinks: {},
@@ -551,7 +559,7 @@ export default {
       'getIntegrationsError', 'getLinkGroupsError', 'getLinkGroups',
       'getSidebarKeepOpen', 'getShiftKeyHold', 'getFocusSearch',
       'getIssueSearch', 'getFocusLinkSearch', 'getFocusTagInput',
-      'getToggleCache', 'getDownloadReport', 'getCopyShareLink',
+      'getToggleCache', 'getToggleChildren', 'getDownloadReport', 'getCopyShareLink',
       'getAllViews', 'getImmediateSubmissionReady', 'getSelectedView',
       'getTags', 'getTagDisplayCollapsed', 'getSeeAllViews', 'getSeeAllLinkGroups',
       'getSeeAllOverviews', 'getSelectedOverviewMap', 'getOverviewMap', 'getResults',
@@ -702,6 +710,13 @@ export default {
       if (val) {
         this.$refs.actionDropdown.show();
         setTimeout(() => { this.skipCache = !this.skipCache; }, 100);
+        setTimeout(() => { this.$refs.actionDropdown.hide(); }, 1000);
+      }
+    },
+    getToggleChildren (val) {
+      if (val) {
+        this.$refs.actionDropdown.show();
+        setTimeout(() => { this.skipChildren = !this.skipChildren; }, 100);
         setTimeout(() => { this.$refs.actionDropdown.hide(); }, 1000);
       }
     },
@@ -900,7 +915,7 @@ export default {
         });
       }
       const viewId = this.getSelectedView?._id;
-      Cont3xtService.search({ searchTerm: this.searchTerm, skipCache: this.skipCache, tags: this.tags, viewId }).subscribe({
+      Cont3xtService.search({ searchTerm: this.searchTerm, skipCache: this.skipCache, skipChildren: this.skipChildren, tags: this.tags, viewId }).subscribe({
         next: this.handleIntegrationChunk,
         error: (e) => {
           this.error = e;
