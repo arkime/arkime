@@ -126,7 +126,10 @@ jobs:
 
       - name: upload
         run: |
-          ssh-agent bash -c "(echo \"$LATEST_PASSWORD\" | ssh-add -) && (echo 'put *.deb\nput *.rpm\nput *.zst' | sftp $LATEST_USER@latest.arkime.net:/latest)"
+          echo "$LATEST_PASSWORD" > key
+          chmod 600 key
+          echo 'put *.deb\nput *.rpm\nput *.zst' | sftp -i key $LATEST_USER@latest.arkime.net:/latest
+          /bin/rm -f key
         env:
           LATEST_USER: ${{ secrets.LATEST_USER }}
           LATEST_PASSWORD: ${{ secrets.LATEST_PASSWORD }}
