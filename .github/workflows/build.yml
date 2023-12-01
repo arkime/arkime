@@ -131,7 +131,6 @@ jobs:
           LATEST_USER: ${{ secrets.LATEST_USER }}
           LATEST_PASSWORD: ${{ secrets.LATEST_PASSWORD }}
 
-
   slack:
     runs-on: ubuntu-latest
     needs: build
