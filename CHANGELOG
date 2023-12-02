@@ -68,6 +68,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #2297 always build zstd (except arch)
   - #2517 new custom-fields-remap feature
   - #2186 count the number of http methods per session
+  - #2245 new oui.txt location, some names have changes, fixes #2347
 ## Cont3xt
   - #2121 new bulk UI and support for bulk queries
   - #2271 lots of keyboard shortcut improvements
