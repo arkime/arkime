@@ -52,7 +52,7 @@ jobs:
                 mv moloch*.rpm moloch-main.el7.x86_64.rpm
             - install-arkime: yum -y install arkime*.x86_64.rpm
             - upload-latest: |
-                echo "${LATEST_PASSWORD}" > key
+                echo "${LATEST_PASSWORD}" | base64 -d > key
                 wc key
                 chmod 600 key
                 echo "put *.rpm" | sftp -o StrictHostKeyChecking=no -i key $LATEST_USER@latest.arkime.net:/latest
@@ -191,7 +191,7 @@ jobs:
                 mv moloch*.deb moloch-main_ubuntu1804_amd64.deb
 
             - upload-latest: |
-                echo "${LATEST_PASSWORD}" > key
+                echo "${LATEST_PASSWORD}" | base64 -d > key
                 wc key
                 chmod 600 key
                 echo "put *.deb" | sftp -o StrictHostKeyChecking=no -i key $LATEST_USER@latest.arkime.net:/latest
