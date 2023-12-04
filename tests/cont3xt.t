@@ -1,5 +1,5 @@
 # Test cont3xt.js
-use Test::More tests => 161;
+use Test::More tests => 164;
 use Test::Differences;
 use Data::Dumper;
 use ArkimeTest;
@@ -863,6 +863,14 @@ $json = cont3xtPost('/api/integration/ip/csv:rir/search', to_json({
   query => "8.8.8.8"
 }));
 is($json->{data}->{_cont3xt}->{count}, 1);
+
+# wise tests
+$json = cont3xtPost('/api/integration/ip/wise:test/search', to_json({
+  query => "10.0.0.2"
+}));
+is($json->{data}->{_cont3xt}->{count}, 1);
+is($json->{data}->{results}->[0]->{value}, "ipwisecsv");
+is($json->{data}->{results}->[0]->{key}, "tags");
 
 ################################################################################
 ### HISTORY

@@ -82,6 +82,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #2441 new redis data source support
   - #2507 demoMode added
   - #2527 skipChildren added
+  - #2532 new wise integration
 ## ESProxy
   - #2483 #2484 support field updates/deletes
 ## Viewer
