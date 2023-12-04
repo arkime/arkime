@@ -113,16 +113,48 @@ jobs:
         run: |
           export ARKIME_VERSION=`sed 's/.*"\(.*\)\".*$/\1/' /opt/arkime/common/version.js | head -n 1 | tr "-" "_"`
           fpm -s dir -t rpm -n arkime -x opt/arkime/logs -x opt/arkime/raw -v $ARKIME_VERSION --iteration ${{ github.run_id }} --template-scripts --after-install "release/afterinstall.sh" --url "https://arkime.com" --description "Arkime Full Packet System" -d perl-libwww-perl -d perl-JSON -d ethtool -d libyaml -d perl-LWP-Protocol-https --rpm-rpmbuild-define "_build_id_links none" -p arkime-${ARKIME_VERSION}-${{github.run_id}}.${{matrix.version}}.x86_64.rpm /opt/arkime
-          ls -l *.rpm
           mv *.rpm arkime-main.${{matrix.version}}.x86_64.rpm
+          ls -l *.rpm
+
+      - name: moloch el8 package rpm
+        if: ${{ matrix.version == 'el8' }}
+        run: |
+          export ARKIME_VERSION=`sed 's/.*"\(.*\)\".*$/\1/' /opt/arkime/common/version.js | head -n 1 | tr "-" "_"`
+          rm -rf /data/moloch; mkdir -p /data
+          mv /opt/arkime /data/moloch
+          ./easybutton-build.sh ${{ matrix.buildopt }} --dir /data/moloch
+          (cd capture ; make clean; make; make install)
+          (cd release ; make installmoloch)
+          mv /data/moloch/bin/capture /data/moloch/bin/moloch-capture
+          /bin/cp -f common/version.js /data/moloch/common/
+
+          fpm -s dir -t rpm -n moloch -x data/moloch/logs -x data/molcoh/raw -v $ARKIME_VERSION --iteration ${{ github.run_id }} --template-scripts --url "https://arkime.com" --description "Moloch Full Packet System" -d perl-libwww-perl -d perl-JSON -d ethtool -d libyaml -d perl-LWP-Protocol-https --rpm-rpmbuild-define "_build_id_links none" -p moloch-${ARKIME_VERSION}-${{github.run_id}}.${{matrix.version}}.x86_64.rpm /data/moloch
+          mv moloch*.rpm moloch-main.${{matrix.version}}.x86_64.rpm
+          ls -l *.rpm
 
       - name: package deb
         if: ${{ matrix.package == 'deb' }}
         run: |
           export ARKIME_VERSION=`sed 's/.*"\(.*\)\".*$/\1/' /opt/arkime/common/version.js | head -n 1`
           fpm -s dir -t deb -n arkime -x opt/arkime/logs -x opt/arkime/raw -v $ARKIME_VERSION --iteration ${{ github.run_id }} --template-scripts --after-install "release/afterinstall.sh" --url "https://arkime.com" --description "Arkime Full Packet System" -d libwww-perl -d libjson-perl -d ethtool -d libyaml-dev -p arkime_${ARKIME_VERSION}-${{github.run_id}}.${{matrix.version}}_amd64.deb /opt/arkime
-          ls -l *.deb
           mv *.deb arkime-main_${{matrix.version}}_amd64.deb
+          ls -l *.deb
+
+      - name: moloch ubuntu2004 package rpm
+        if: ${{ matrix.version == 'ubuntu2004' }}
+        run: |
+          export ARKIME_VERSION=`sed 's/.*"\(.*\)\".*$/\1/' /opt/arkime/common/version.js | head -n 1`
+          rm -rf /data/moloch; mkdir -p /data
+          mv /opt/arkime /data/moloch
+          ./easybutton-build.sh ${{ matrix.buildopt }} --dir /data/moloch
+          (cd capture ; make clean; make; make install)
+          (cd release ; make installmoloch)
+          mv /data/moloch/bin/capture /data/moloch/bin/moloch-capture
+          /bin/cp -f common/version.js /data/moloch/common/
+
+          fpm -s dir -t deb -n moloch -x data/moloch/logs -x data/moloch/raw -v $ARKIME_VERSION --iteration ${{ github.run_id }} --template-scripts --after-install "release/afterinstall.sh" --url "https://arkime.com" --description "Moloch Full Packet System" -d libwww-perl -d libjson-perl -d ethtool -d libyaml-dev -p moloch_${ARKIME_VERSION}-${{github.run_id}}.${{matrix.version}}_amd64.deb /data/moloch
+          mv moloch*.deb moloch-main_${{matrix.version}}_amd64.deb
+          ls -l *.deb
 
       - name: upload
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
