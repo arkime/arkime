@@ -313,7 +313,7 @@ SPDX-License-Identifier: Apache-2.0
                 </span>
               </div>
               <p class="form-text small text-muted">
-                Configure the Parliament's hostname to add a link to the Parliament Dashbaord to every alert
+                Configure the Parliament's hostname to add a link to the Parliament Dashboard to every alert
               </p>
             </div>
           </div> <!-- /hostname -->
