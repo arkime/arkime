@@ -1514,7 +1514,6 @@ app.put('/parliament/api/settings/restoreDefaults', [isAdmin, checkCookieToken],
 app.get('/parliament/api/user', User.apiGetUser);
 app.post('/parliament/api/users', [jsonParser, User.checkRole('usersAdmin'), setCookie], User.apiGetUsers);
 app.post('/parliament/api/users/csv', [jsonParser, User.checkRole('usersAdmin'), setCookie], User.apiGetUsersCSV);
-app.post('/parliament/api/users/min', [jsonParser, checkCookieToken, User.checkAssignableRole], User.apiGetUsersMin);
 app.post('/parliament/api/user', [jsonParser, checkCookieToken, User.checkRole('usersAdmin')], User.apiCreateUser);
 app.post('/parliament/api/user/password', [jsonParser, checkCookieToken, Auth.getSettingUserDb], User.apiUpdateUserPassword);
 app.delete('/parliament/api/user/:id', [jsonParser, checkCookieToken, User.checkRole('usersAdmin')], User.apiDeleteUser);

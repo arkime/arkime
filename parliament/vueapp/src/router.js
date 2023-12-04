@@ -1,3 +1,7 @@
+/*
+Copyright Yahoo Inc.
+SPDX-License-Identifier: Apache-2.0
+*/
 import Vue from 'vue';
 import Router from 'vue-router';
 import Parliament from '@/components/Parliament';

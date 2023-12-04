@@ -1,3 +1,7 @@
+/*
+Copyright Yahoo Inc.
+SPDX-License-Identifier: Apache-2.0
+*/
 import Vue from 'vue';
 
 import store from '@/store';
@@ -26,7 +30,7 @@ export default {
 
   /**
   * Fetches the list of user roles.
-  * @returns {Promise} - The promise that either resovles the request or rejects in error
+  * @returns {Promise} - The promise that either resolves the request or rejects in error
   */
   getRoles () {
     return new Promise((resolve, reject) => {
