@@ -5,7 +5,6 @@
  */
 const Integration = require('../../integration.js');
 const ArkimeConfig = require('../../../common/arkimeConfig');
-const ArkimeUtil = require('../../../common/arkimeUtil');
 const axios = require('axios');
 
 class WiseIntegration extends Integration {
@@ -98,7 +97,7 @@ class WiseIntegration extends Integration {
 
   // ----------------------------------------------------------------------------
   async fetchIp (user, item) {
-    return this.doFetch(user, item, 'ip')
+    return this.doFetch(user, item, 'ip');
   }
 }
 
