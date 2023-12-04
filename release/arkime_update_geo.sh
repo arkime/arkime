@@ -20,7 +20,7 @@ fi
 
 # Try and download manuf, only copy if it works
 FILENAME=$(mktemp)
-wget -nv --timeout=${TIMEOUT} -O "$FILENAME" https://raw.githubusercontent.com/wireshark/wireshark/release-4.0/manuf
+wget -nv --timeout=${TIMEOUT} -O "$FILENAME" https://www.wireshark.org/download/automated/data/manuf
 if (( $? == 0 )) ; then
   chmod a+r "$FILENAME"
   mv "$FILENAME" "${DEST_DIR}/oui.txt"
