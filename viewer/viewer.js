@@ -1163,7 +1163,6 @@ app.all([
   '/lookups',
   '/lookups/:id',
   '/hunt/list',
-  '/hunt',
   '/hunt/:id',
   '/hunt/:id/cancel',
   '/hunt/:id/pause',
