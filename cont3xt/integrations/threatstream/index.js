@@ -23,6 +23,17 @@ class ThreatstreamIntegration extends Integration {
     title: 'Threatstream for %{query}',
     fields: [
       {
+        label: 'Tags',
+        field: 'objects',
+        fieldRoot: 'tags',
+        type: 'array',
+        postProcess: [
+          'flatten',
+          { mapTo: 'name' },
+          'removeNullish'
+        ]
+      },
+      {
         label: 'Objects',
         field: 'objects',
         type: 'table',

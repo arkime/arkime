@@ -46,6 +46,7 @@ const store = new Vuex.Store({
     focusOverviewSearch: false,
     focusTagInput: false,
     toggleCache: false,
+    toggleChildren: false,
     downloadReport: false,
     copyShareLink: false,
     toggleIntegrationPanel: false,
@@ -473,6 +474,9 @@ const store = new Vuex.Store({
     },
     getToggleCache (state) {
       return state.toggleCache;
+    },
+    getToggleChildren (state) {
+      return state.toggleChildren;
     },
     getDownloadReport (state) {
       return state.downloadReport;
