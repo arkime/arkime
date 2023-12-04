@@ -5,6 +5,7 @@ Vue.use(Vuex);
 
 const store = new Vuex.Store({
   state: {
+    user: undefined,
     roles: [],
     notifiers: [],
     theme: 'light',
@@ -14,6 +15,9 @@ const store = new Vuex.Store({
     refreshInterval: 15000
   },
   mutations: {
+    setUser (state, value) {
+      state.user = value;
+    },
     setTheme (state, value) {
       state.theme = value;
     },
@@ -29,7 +33,7 @@ const store = new Vuex.Store({
       state.refreshInterval = value;
     },
     setRoles (state, value) {
-      state.roles = Vue.filter('parseRoles')(value);
+      state.roles = value || [];
     },
     setNotifiers (state, value) {
       state.notifiers = value;
@@ -40,6 +44,10 @@ const store = new Vuex.Store({
     setSettings (state, value) {
       state.parliament.settings = value;
     }
+  },
+  getters: {
+    getUser: state => state.user,
+    getRoles: state => state.roles
   }
 });
 

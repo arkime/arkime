@@ -5,6 +5,7 @@ import Issues from '@/components/Issues';
 import Settings from '@/components/Settings';
 import Parliament404 from '@/components/404';
 import Help from '@/components/Help';
+import Users from '@/components/Users';
 import AuthService from '@/auth';
 
 Vue.use(Router);
@@ -41,6 +42,11 @@ const router = new Router({
       path: '/help',
       name: 'Help',
       component: Help
+    },
+    {
+      path: '/users',
+      name: 'Users',
+      component: Users
     },
     {
       path: '*',

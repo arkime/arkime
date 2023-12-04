@@ -337,8 +337,8 @@ SPDX-License-Identifier: Apache-2.0
 
 <script>
 import SettingsService from './settings.service';
+import UserService from '@/components/user.service';
 import Notifiers from '../../../../common/vueapp/Notifiers';
-import setReqHeaders from '../../../../common/vueapp/setReqHeaders';
 
 let inputDebounce;
 let msgCloseTimeout;
@@ -371,6 +371,8 @@ export default {
     }
   },
   mounted: function () {
+    UserService.getRoles();
+
     // does the url specify a tab in hash
     let tab = window.location.hash;
     if (tab) { // if there is a tab specified and it's a valid tab
@@ -379,8 +381,6 @@ export default {
         this.visibleTab = tab;
       }
     }
-
-    this.loadRoles();
   },
   methods: {
     /* page functions ------------------------------------------------------ */
@@ -464,16 +464,6 @@ export default {
       this.msgType = type;
     },
     /* helper functions ---------------------------------------------------- */
-    loadRoles: function () {
-      fetch('api/user/roles', {
-        method: 'GET',
-        headers: setReqHeaders({ 'Content-Type': 'application/json' })
-      }).then((response) => {
-        return response.json();
-      }).then((response) => {
-        this.$store.commit('setRoles', response.roles || []);
-      });
-    },
     clearMessage: function (time) {
       if (msgCloseTimeout) { clearTimeout(msgCloseTimeout); }
       msgCloseTimeout = setTimeout(() => {
