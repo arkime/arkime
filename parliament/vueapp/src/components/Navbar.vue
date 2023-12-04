@@ -44,6 +44,14 @@ SPDX-License-Identifier: Apache-2.0
             Settings
           </router-link>
         </li>
+        <li class="nav-item mr-2"
+          v-if="isAdmin">
+          <router-link to="users"
+            active-class="active"
+            class="nav-link">
+            Users
+          </router-link>
+        </li>
       </ul> <!-- /page links -->
       <!-- version -->
       <span class="pr-2">

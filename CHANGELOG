@@ -99,6 +99,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
 ## Parliament
   - #2377 dashboard-only mode removed, if you want users to just see the dashboard don't assign them the parliamentUser role
   - #2395 configuration is now stored in opensearch/elasticsearch
+  - #2530 add Users page
 
 
 4.6.0 2023/10/16

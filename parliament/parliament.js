@@ -33,6 +33,7 @@ const version = require('../common/version');
 const Notifier = require('../common/notifier');
 const ArkimeUtil = require('../common/arkimeUtil');
 const ArkimeConfig = require('../common/arkimeConfig');
+const jsonParser = ArkimeUtil.jsonParser;
 
 // ----------------------------------------------------------------------------
 // APP SETUP
@@ -135,7 +136,7 @@ const cspDirectives = {
   // need unsafe-eval for vue full build: https://vuejs.org/v2/guide/installation.html#CSP-environments
   scriptSrc: ["'self'", "'unsafe-eval'", (req, res) => `'nonce-${res.locals.nonce}'`],
   objectSrc: ["'none'"],
-  imgSrc: ["'self'"]
+  imgSrc: ["'self'", 'data:']
 };
 if (process.env.NODE_ENV === 'development') {
   // need unsafe inline styles for hot module replacement
@@ -1508,6 +1509,16 @@ app.put('/parliament/api/settings', [isAdmin, checkCookieToken], Parliament.apiU
 
 // Update the parliament general settings object to the defaults
 app.put('/parliament/api/settings/restoreDefaults', [isAdmin, checkCookieToken], Parliament.apiRestoreDefaultSettings);
+
+// user endpoints
+app.get('/parliament/api/user', User.apiGetUser);
+app.post('/parliament/api/users', [jsonParser, User.checkRole('usersAdmin'), setCookie], User.apiGetUsers);
+app.post('/parliament/api/users/csv', [jsonParser, User.checkRole('usersAdmin'), setCookie], User.apiGetUsersCSV);
+app.post('/parliament/api/user', [jsonParser, checkCookieToken, User.checkRole('usersAdmin')], User.apiCreateUser);
+app.post('/parliament/api/user/password', [jsonParser, checkCookieToken, Auth.getSettingUserDb], User.apiUpdateUserPassword);
+app.delete('/parliament/api/user/:id', [jsonParser, checkCookieToken, User.checkRole('usersAdmin')], User.apiDeleteUser);
+app.post('/parliament/api/user/:id', [jsonParser, checkCookieToken, User.checkRole('usersAdmin')], User.apiUpdateUser);
+app.post('/parliament/api/user/:id/assignment', [jsonParser, checkCookieToken, User.checkAssignableRole], User.apiUpdateUserRole);
 
 // user roles endpoint
 app.get('/parliament/api/user/roles', [ArkimeUtil.noCacheJson, checkCookieToken], User.apiRoles);
