@@ -34,6 +34,7 @@ jobs:
                   scl enable devtoolset-9 rh-python36 'aws s3 cp arkime*.x86_64.rpm s3://files.molo.ch/arkime-${ARKIME_FILE_NAME}.centos7.x86_64.rpm --acl public-read'
                   scl enable devtoolset-9 rh-python36 'aws s3api put-object-acl --bucket files.molo.ch --key arkime-${ARKIME_FILE_NAME}.centos7.x86_64.rpm --acl public-read'
                 fi
+                mv arkime*.rpm arkime-main.el7.x86_64.rpm
             - build-moloch-package: |
                 rm -rf /data/moloch; mkdir -p /data
                 mv /opt/arkime /data/moloch
@@ -48,10 +49,21 @@ jobs:
                   scl enable devtoolset-9 rh-python36 'aws s3 cp moloch*.x86_64.rpm s3://files.molo.ch/moloch-${MOLOCH_FILE_NAME}.centos7.x86_64.rpm --acl public-read'
                   scl enable devtoolset-9 rh-python36 'aws s3api put-object-acl --bucket files.molo.ch --key moloch-${MOLOCH_FILE_NAME}.centos7.x86_64.rpm --acl public-read'
                 fi
+                mv moloch*.rpm moloch-main.el7.x86_64.rpm
             - install-arkime: yum -y install arkime*.x86_64.rpm
+            - upload-latest: |
+                if [ "$GIT_BRANCH" = "$MOLOCH_COPY_BRANCH" ]; then
+                  echo "${LATEST_PASSWORD}" | base64 -d > key
+                  chmod 600 key
+                  echo "put *.rpm" | sftp -o StrictHostKeyChecking=no -i key $LATEST_USER@latest.arkime.net:/latest
+                  /bin/rm -f key
+                fi
+
         secrets:
             - AWS_ACCESS_KEY_ID
             - AWS_SECRET_ACCESS_KEY
+            - LATEST_USER
+            - LATEST_PASSWORD
 
     centos-8:
         requires: [~commit]
@@ -161,16 +173,7 @@ jobs:
                   aws s3 cp --quiet arkime*amd64.deb s3://files.molo.ch/arkime-${ARKIME_FILE_NAME}_ubuntu18_amd64.deb --acl public-read
                   aws s3api put-object-acl --bucket files.molo.ch --key arkime-${ARKIME_FILE_NAME}_ubuntu18_amd64.deb --acl public-read
                 fi
-
-            - build-sanitize: (cd capture; make SANITIZE_LDFLAGS='-fno-common -fsanitize=address -fsanitize=undefined -fno-omit-frame-pointer' sanitize)
-            - install-sanitize: (cd capture; make install)
-            - build-sanitize-package: |
-                rm -f arkime*amd64.deb
-                fpm -s dir -t deb -n arkime -x opt/arkime/logs -x opt/arkime/raw -v $ARKIME_VERSION --iteration $SD_BUILD_ID --template-scripts --after-install "release/afterinstall.sh" --url "https://arkime.com" --description "Arkime Full Packet System" -d libwww-perl -d libjson-perl -d ethtool -d libyaml-dev /opt/arkime
-                if [ "$GIT_BRANCH" = "$MOLOCH_COPY_BRANCH" ]; then
-                  aws s3 cp --quiet arkime*amd64.deb s3://files.molo.ch/sanitize/arkime-${ARKIME_FILE_NAME}_ubuntu18_amd64.deb --acl public-read
-                  aws s3api put-object-acl --bucket files.molo.ch --key sanitize/arkime-${ARKIME_FILE_NAME}_ubuntu18_amd64.deb --acl public-read
-                fi
+                mv arkime*.deb arkime-main_ubuntu1804_amd64.deb
 
             - build-moloch-package: |
                 rm -rf /data/moloch; mkdir -p /data
@@ -186,10 +189,21 @@ jobs:
                   aws s3 cp --quiet moloch*amd64.deb s3://files.molo.ch/moloch-${MOLOCH_FILE_NAME}_ubuntu18_amd64.deb --acl public-read
                   aws s3api put-object-acl --bucket files.molo.ch --key moloch-${MOLOCH_FILE_NAME}_ubuntu18_amd64.deb --acl public-read
                 fi
+                mv moloch*.deb moloch-main_ubuntu1804_amd64.deb
+
+            - upload-latest: |
+                if [ "$GIT_BRANCH" = "$MOLOCH_COPY_BRANCH" ]; then
+                  echo "${LATEST_PASSWORD}" | base64 -d > key
+                  chmod 600 key
+                  echo "put *.deb" | sftp -o StrictHostKeyChecking=no -i key $LATEST_USER@latest.arkime.net:/latest
+                  /bin/rm -f key
+                fi
 
         secrets:
             - AWS_ACCESS_KEY_ID
             - AWS_SECRET_ACCESS_KEY
+            - LATEST_USER
+            - LATEST_PASSWORD
 
     ubuntu-20:
         requires: [~commit]
