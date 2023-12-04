@@ -11,7 +11,7 @@ const axios = require('axios');
 class WiseIntegration extends Integration {
   name;
   section;
-  icon = '../assets/Arkime_Logo_Mark_FullGradient.png';
+  icon = '../assets/wise.png';
   itypes = {
     domain: 'fetchDomain',
     email: 'fetchEmail',
