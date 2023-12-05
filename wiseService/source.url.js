@@ -19,6 +19,8 @@ class URLSource extends SimpleSource {
     if (this.urlScrapeRedirect) {
       this.urlScrapeRedirect = new RegExp(this.urlScrapeRedirect);
     }
+    this.urlScrapePrefix = api.getConfig(section, 'urlScrapePrefix', '');
+    this.urlScrapeSuffix = api.getConfig(section, 'urlScrapeSuffix', '');
     this.headers = {};
     const headers = api.getConfig(section, 'headers');
 
@@ -55,7 +57,8 @@ class URLSource extends SimpleSource {
             return cb('URL Scrape not found');
           }
 
-          axios.get(match[0], { headers: this.headers, transformResponse: x => x })
+          const url = `${this.urlScrapePrefix}${match[0]}`;
+          axios.get(url, { headers: this.headers, transformResponse: x => x })
             .then((subResponse) => {
               return cb(null, subResponse.data);
             }).catch((subError) => {
@@ -82,12 +85,14 @@ exports.initSource = function (api) {
     fields: [
       { name: 'type', required: true, help: 'The wise query type this source supports' },
       { name: 'tags', required: false, help: 'Comma separated list of tags to set for matches', regex: '^[-a-z0-9,]+' },
-      { name: 'format', required: false, help: 'The format data is in: csv (default), tagger, or json', regex: '^(csv|tagger|json)$' },
+      { name: 'format', required: false, help: 'The format data is in: csv (default), tagger, jsonl, jsonl, or json', regex: '^(csv|tagger|jsonl|json)$' },
       { name: 'column', required: false, help: 'The numerical column number to use as the key', regex: '^[0-9]*$', ifField: 'format', ifValue: 'csv' },
-      { name: 'arrayPath', required: false, help: "The path of where to find the array, if the json result isn't an array", ifField: 'format', ifValue: 'json' },
-      { name: 'keyPath', required: true, help: 'The path of what field to use as the key', ifField: 'format', ifValue: 'json' },
+      { name: 'arrayPath', required: false, help: "The path of where to find the array, if the json result isn't an array", ifField: 'format', ifValue: ['jsonl', 'json'] },
+      { name: 'keyPath', required: true, help: 'The path of what field to use as the key', ifField: 'format', ifValue: ['jsonl', 'json'] },
       { name: 'url', required: true, help: 'The URL to load' },
-      { name: 'urlScrapeRedirect', required: false, help: 'If set this is a redirect to match against the results of URL to find the url with the real data' },
+      { name: 'urlScrapeRedirect', required: false, help: 'If set this is a regex to match against the results of URL to find the url with the real data' },
+      { name: 'urlScrapePrefix', required: false, help: 'If set, prefix the results of urlScrapeRedirect with this value' },
+      { name: 'urlScrapeSuffix', required: false, help: 'If set, add this value as the suffix to the  results of urlScrapeRedirect' },
       { name: 'reload', required: false, help: 'How often in minutes to refresh the file, or -1 (default) to never refresh it' },
       { name: 'headers', required: false, multiline: ';', help: 'List of headers to send in the URL request' }
     ]

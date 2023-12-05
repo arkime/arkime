@@ -669,7 +669,11 @@ export default {
         return this.configDefs[this.selectedSourceSplit].fields.filter((field) => {
           if (field.ifField === undefined) { return true; }
           if (this.currConfig[this.selectedSourceKey] === undefined) { return false; }
-          return this.currConfig[this.selectedSourceKey][field.ifField] === field.ifValue;
+          if (Array.isArray(field.ifValue)) {
+            return field.ifValue.includes(this.currConfig[this.selectedSourceKey][field.ifField]);
+          } else {
+            return this.currConfig[this.selectedSourceKey][field.ifField] === field.ifValue;
+          }
         });
       } else {
         return [];
