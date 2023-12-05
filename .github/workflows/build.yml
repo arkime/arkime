@@ -22,6 +22,7 @@ jobs:
             container: andywick/arkime-build-8:5.0.0-2
             buildopt: "--kafka --pfring"
             package: rpm
+            ja4plus: true
 
           - version: el9
             container: andywick/arkime-build-9:5.0.0-2
@@ -116,6 +117,15 @@ jobs:
           mv *.rpm arkime-main.${{matrix.version}}.x86_64.rpm
           ls -l *.rpm
 
+      - name: ja4plus
+        if: ${{ matrix.ja4plus }}
+        run: |
+          (cd .. ; git clone https://github.com/arkime/ja4)
+          cp ../ja4/ja4plus.c capture/plugins
+          (cd capture/plugins; make)
+          mv capture/plugins/ja4plus.so ja4plus.amd64.so
+          rm -f capture/plugins/ja4plus.c
+
       - name: moloch el8 package rpm
         if: ${{ matrix.version == 'el8' }}
         run: |
@@ -162,6 +172,7 @@ jobs:
           echo "${{secrets.LATEST_PASSWORD }}" > key
           chmod 600 key
           echo "put *.deb
+            put *.so
             put *.rpm
             put *.zst" | sftp -o StrictHostKeyChecking=no -i key $LATEST_USER@latest.arkime.net:/latest
           /bin/rm -f key
