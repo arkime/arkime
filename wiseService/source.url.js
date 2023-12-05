@@ -57,7 +57,7 @@ class URLSource extends SimpleSource {
             return cb('URL Scrape not found');
           }
 
-          const url = `${this.urlScrapePrefix}${match[0]}`;
+          const url = `${this.urlScrapePrefix}${match[0]}${this.urlScrapeSuffix}`;
           axios.get(url, { headers: this.headers, transformResponse: x => x })
             .then((subResponse) => {
               return cb(null, subResponse.data);
