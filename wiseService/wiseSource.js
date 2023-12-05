@@ -352,6 +352,7 @@ class WISESource {
       endCb(e);
     }
   }
+
   // ----------------------------------------------------------------------------
   /**
    * Util function to parse JSONL formatted data
@@ -360,7 +361,7 @@ class WISESource {
    * @param {function} endCB - all done parsing
    */
   parseJSONL (body, setCb, endCb) {
-    json = body.toString().split('\n').reduce((acc, line) => {
+    const json = body.toString().split('\n').reduce((acc, line) => {
       try {
         if (line.trim() !== '') {
           acc.push(JSON.parse(line));
