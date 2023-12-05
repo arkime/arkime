@@ -42,6 +42,7 @@ SPDX-License-Identifier: Apache-2.0
         class="d-inline-flex flex-wrap group-container mw-100 overflow-auto text-wrap mb-1"
         :class="groupClassMap(tidbit.display)">
         <b-badge v-for="(element, index) in (tidbit.displayValue || tidbit.value)"
+          v-b-tooltip.hover.noninteractive=element
           :key="index" class="group-member" variant="light">
           {{ element }}
         </b-badge>
@@ -105,5 +106,7 @@ export default {
 
 .group-member {
   margin: 0 0 2px 2px;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 </style>
