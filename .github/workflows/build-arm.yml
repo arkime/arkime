@@ -19,6 +19,7 @@ jobs:
             container: andywick/arkime-build-al2023-arm64:5.0.0-3
             buildopt: "--kafka"
             package: rpm
+            ja4plus: true
 
           - version: ubuntu2204
             container: andywick/arkime-build-22-arm64:5.0.0-3
@@ -95,12 +96,22 @@ jobs:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
+      - name: ja4plus
+        if: ${{ matrix.ja4plus }}
+        run: |
+          (cd .. ; git clone https://github.com/arkime/ja4)
+          cp ../ja4/ja4plus.c capture/plugins
+          (cd capture/plugins; make)
+          mv capture/plugins/ja4plus.so ja4plus.arm64.so
+          rm -f capture/plugins/ja4plus.c
+
       - name: upload
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         run: |
           echo "${{secrets.LATEST_PASSWORD }}" > key
           chmod 600 key
           echo "put *.deb
+            put *.so
             put *.rpm
             put *.zst" | sftp -o StrictHostKeyChecking=no -i key $LATEST_USER@latest.arkime.net:/latest
           /bin/rm -f key
