@@ -336,7 +336,8 @@ export default {
     preUpdatedLinkGroup: { // persists unsaved changes between switching the actively-edited link group
       type: Object,
       required: false
-    }
+    },
+    itype: String // the itype to filter links by
   },
   data () {
     return {
@@ -352,9 +353,6 @@ export default {
     ...mapGetters([
       'getUser', 'getCheckedLinks'
     ]),
-    itype () {
-      return this.indicator?.itype;
-    },
     query () {
       return this.indicator?.query;
     },
