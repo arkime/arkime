@@ -36,6 +36,14 @@
   "keyPath": "ip",
   "fields": "field:tags;shortcut:tag"
  },
+ "file:ipjsonl": {
+  "file": "../tests/ip.wise.jsonl",
+  "tags": "ipwisejsonl",
+  "type": "ip",
+  "format": "jsonl",
+  "keyPath": "ip",
+  "fields": "field:tags;shortcut:tag"
+ },
  "file:md5": {
   "file": "../tests/md5.wise",
   "tags": "md5wise",
