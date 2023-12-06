@@ -128,6 +128,7 @@ test('Link Group Card Display', async () => {
   } = render(LinkGroupCard, {
     store,
     props: {
+      itype: 'ip',
       linkGroup,
       indicator: {
         itype: 'ip',
@@ -157,6 +158,7 @@ test('Link Group Card Display 2', async () => {
   } = render(LinkGroupCard, {
     store,
     props: {
+      itype: 'ip',
       linkGroup,
       indicator: {
         itype: 'ip',

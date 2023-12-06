@@ -352,45 +352,58 @@ SPDX-License-Identifier: Apache-2.0
                         <template #prepend>
                           <b-input-group-text>
                             <span v-if="!getShiftKeyHold"
-                                  class="fa fa-search fa-fw"
+                              class="fa fa-search fa-fw"
                             />
                             <span v-else
-                                  class="lg-query-shortcut">
+                              class="lg-query-shortcut">
                               F
                             </span>
                           </b-input-group-text>
                         </template>
                         <b-form-input
-                            tabindex="0"
-                            debounce="400"
-                            ref="linkSearch"
-                            v-model="linkSearchTerm"
-                            v-focus="getFocusLinkSearch"
-                            placeholder="Search links below"
+                          tabindex="0"
+                          debounce="400"
+                          ref="linkSearch"
+                          v-model="linkSearchTerm"
+                          v-focus="getFocusLinkSearch"
+                          placeholder="Search links below"
                         />
+                        <template #append>
+                          <b-dropdown
+                            right
+                            size="sm"
+                            v-b-tooltip.hover="`Showing links for ${currentItype} iType. Click to change.`">
+                            <b-dropdown-item :key="iType"
+                              @click="changeItype(iType)"
+                              :active="currentItype === iType"
+                              v-for="iType in iTypes">
+                              {{ iType }}
+                            </b-dropdown-item>
+                          </b-dropdown>
+                        </template>
                       </b-input-group>
                     </div>
                     <b-button
-                        size="sm"
-                        class="mx-1"
-                        v-b-tooltip.hover
-                        variant="outline-secondary"
-                        :disabled="!hasVisibleLinkGroup"
-                        @click="toggleAllVisibleLinkGroupsCollapse"
-                        :title="`${!allVisibleLinkGroupsCollapsed ? 'Collapse' : 'Expand'} ALL Link Groups`">
+                      size="sm"
+                      class="mx-1"
+                      v-b-tooltip.hover
+                      variant="outline-secondary"
+                      :disabled="!hasVisibleLinkGroup"
+                      @click="toggleAllVisibleLinkGroupsCollapse"
+                      :title="`${!allVisibleLinkGroupsCollapsed ? 'Collapse' : 'Expand'} ALL Link Groups`">
                       <span class="fa fa-fw"
-                            :class="[!allVisibleLinkGroupsCollapsed ? 'fa-chevron-up' : 'fa-chevron-down']">
+                        :class="[!allVisibleLinkGroupsCollapsed ? 'fa-chevron-up' : 'fa-chevron-down']">
                       </span>
                     </b-button>
                     <!-- toggle link groups panel button -->
                     <b-button
-                        size="sm"
-                        tabindex="-1"
-                        variant="link"
-                        class="float-right"
-                        @click="toggleLinkGroupsPanel"
-                        v-b-tooltip.hover.top
-                        title="Hide Link Groups Panel">
+                      size="sm"
+                      tabindex="-1"
+                      variant="link"
+                      class="float-right"
+                      @click="toggleLinkGroupsPanel"
+                      v-b-tooltip.hover.top
+                      title="Hide Link Groups Panel">
                       <span class="fa fa-lg fa-angle-double-right" />
                     </b-button>
                     <!-- /toggle link groups panel button -->
@@ -399,7 +412,8 @@ SPDX-License-Identifier: Apache-2.0
 
                   <!-- time range input for links -->
                   <time-range-input v-model="timeRangeInfo"
-                                    :place-holder-tip="linkPlaceholderTip" />
+                    :place-holder-tip="linkPlaceholderTip"
+                  />
                   <!-- /time range input for links -->
                 </div>
                 <div v-if="getActiveIndicator" class="pane-scroll-content">
@@ -408,34 +422,35 @@ SPDX-License-Identifier: Apache-2.0
                   <template v-if="hasVisibleLinkGroup">
                     <template v-for="(linkGroup, index) in getLinkGroups">
                       <reorder-list
-                          :index="index"
-                          @update="updateList"
-                          :key="linkGroup._id"
-                          :list="getLinkGroups"
-                          class="w-100"
-                          v-if="hasVisibleLink(linkGroup)">
+                        :index="index"
+                        @update="updateList"
+                        :key="linkGroup._id"
+                        :list="getLinkGroups"
+                        class="w-100"
+                        v-if="hasVisibleLink(linkGroup)">
                         <template #handle>
                         <span
-                            :id="`${linkGroup._id}-tt`"
-                            class="fa fa-bars d-inline link-group-card-handle">
-                        </span>
-                          <b-tooltip
-                              noninteractive
-                              :target="`${linkGroup._id}-tt`">
-                            Drag &amp; drop to reorder Link Groups
-                          </b-tooltip>
+                          :id="`${linkGroup._id}-tt`"
+                          class="fa fa-bars d-inline link-group-card-handle"
+                        ></span>
+                        <b-tooltip
+                          noninteractive
+                          :target="`${linkGroup._id}-tt`">
+                          Drag &amp; drop to reorder Link Groups
+                        </b-tooltip>
                         </template>
                         <template #default>
                           <link-group-card
-                              v-if="getLinkGroups.length"
-                              class="w-100"
-                              :indicator="getActiveIndicator"
-                              :num-days="timeRangeInfo.numDays"
-                              :num-hours="timeRangeInfo.numHours"
-                              :stop-date="timeRangeInfo.stopDate"
-                              :start-date="timeRangeInfo.startDate"
-                              :link-group="getLinkGroups[index]"
-                              :hide-links="hideLinks[linkGroup._id]"
+                            v-if="getLinkGroups.length && getActiveIndicator"
+                            class="w-100"
+                            :itype="currentItype"
+                            :indicator="getActiveIndicator"
+                            :num-days="timeRangeInfo.numDays"
+                            :num-hours="timeRangeInfo.numHours"
+                            :stop-date="timeRangeInfo.stopDate"
+                            :start-date="timeRangeInfo.startDate"
+                            :link-group="getLinkGroups[index]"
+                            :hide-links="hideLinks[linkGroup._id]"
                           />
                         </template>
                       </reorder-list>
@@ -456,11 +471,10 @@ SPDX-License-Identifier: Apache-2.0
           </div>
         </div>
         <div v-if="shouldDisplayResults && !getLinkGroupsPanelOpen" class="side-panel-stub link-group-panel-stub h-100 cursor-pointer d-flex flex-column"
-             v-b-tooltip.hover.top="'Show Link Groups Panel'"
-             @click="toggleLinkGroupsPanel"
-        >
+          v-b-tooltip.hover.top="'Show Link Groups Panel'"
+          @click="toggleLinkGroupsPanel">
           <span
-              class="fa fa-link p-1 mt-1"
+            class="fa fa-link p-1 mt-1"
           />
         </div>
       </div>
@@ -489,6 +503,7 @@ import OverviewService from '@/components/services/OverviewService';
 import ITypeNode from '@/components/itypes/ITypeNode.vue';
 import IntegrationBtns from '@/components/integrations/IntegrationBtns.vue';
 import { indicatorFromId, indicatorParentId, localIndicatorId } from '@/utils/cont3xtUtil';
+import { iTypes } from '@/utils/iTypes';
 
 export default {
   name: 'Cont3xt',
@@ -508,6 +523,7 @@ export default {
   directives: { Focus },
   data () {
     return {
+      iTypes,
       error: '',
       scrollPx: 0,
       initialized: false,
@@ -529,7 +545,8 @@ export default {
         startDate: new Date(new Date().getTime() - (3600000 * 24 * 7)).toISOString().slice(0, -5) + 'Z', // 1 week ago
         stopDate: new Date().toISOString().slice(0, -5) + 'Z' // now
       },
-      tagInput: ''
+      tagInput: '',
+      overrideItype: undefined
     };
   },
   mounted () {
@@ -614,6 +631,13 @@ export default {
       }
       return this.getSelectedOverviewMap[this.getActiveIndicator.itype];
     },
+    currentItype: {
+      get () {
+        if (this.overrideItype) { return this.overrideItype; }
+        return this.getActiveIndicator?.itype;
+      },
+      set (val) { this.overrideItype = val; }
+    },
     /** @returns {Cont3xtIndicatorNode[]} */
     indicatorTreeRoots () {
       return Object.values(this.getIndicatorGraph).filter(node => node.parentIds.has(undefined));
@@ -685,6 +709,7 @@ export default {
     activeIndicatorId (newIndicatorId, oldIndicatorId) {
       if (newIndicatorId !== oldIndicatorId) {
         this.overrideOverviewId = undefined;
+        this.changeItype(this.getActiveIndicator?.itype);
       }
     },
     linkSearchTerm (searchTerm) {
@@ -771,6 +796,9 @@ export default {
   },
   methods: {
     /* page functions ------------------------------------------------------ */
+    changeItype (itype) {
+      this.currentItype = itype;
+    },
     toggleLinkGroupsPanel () {
       this.$store.commit('TOGGLE_LINK_GROUPS_PANEL');
     },
@@ -851,10 +879,9 @@ export default {
         }
         break;
       case 'fail':
-        // TODO: in the future, visually show result for integration as a failure
         if (chunk.sent && chunk.total) { // add failure to the progress bar
           this.loading.failed++;
-          this.loading.failure = chunk.name;
+          this.loading.failures.push(`${chunk.name} (${chunk.indicator.query})`);
         }
         break;
       case 'link':
