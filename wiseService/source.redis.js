@@ -96,9 +96,9 @@ exports.initSource = function (api) {
       { name: 'redisURL', password: true, required: false, help: 'Format is redis://[:password@]host:port/db-number, redis-sentinel://[[sentinelPassword]:[password]@]host[:port]/redis-name/db-number, or redis-cluster://[:password@]host:port/db-number' },
       { name: 'type', required: true, help: 'The wise query type this source supports' },
       { name: 'tags', required: false, help: 'Comma separated list of tags to set for matches', regex: '^[-a-z0-9,]+' },
-      { name: 'format', required: false, help: 'The format data is in: csv (default), tagger, or json', regex: '^(csv|tagger|json)$' },
+      { name: 'format', required: false, help: 'The format data is in: csv (default), tagger, jsonl, or json', regex: '^(csv|tagger|jsonl|json)$' },
       { name: 'column', required: false, help: 'The numerical column number to use as the key', regex: '^[0-9]*$', ifField: 'format', ifValue: 'csv' },
-      { name: 'keyPath', required: true, help: 'The path of what field to use as the key', ifField: 'format', ifValue: 'json' },
+      { name: 'keyPath', required: true, help: 'The path of what field to use as the key', ifField: 'format', ifValue: ['jsonl', 'json'] },
       { name: 'template', required: true, help: 'The template when forming the key name. %key% = the key being looked up, %type% = the type being looked up' },
       { name: 'redisMethod', required: false, help: 'The lowercase redis method to retrieve values, defaults to "get"' }
     ]
