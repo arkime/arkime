@@ -251,27 +251,10 @@ class WISESource {
    * @param {function} setCb - the function to call for each row found
    * @param {function} endCB - all done parsing
    */
-  parseJSON (body, setCb, endCb) {
+  parseJSONArray (json, setCb, endCb) {
     try {
-      let json = JSON.parse(body);
-
       if (this.keyPath === undefined) {
         return endCb('No keyPath set');
-      }
-
-      if (this.arrayPath !== undefined) {
-        const arrayPath = this.arrayPath.split('.');
-        for (let i = 0; i < arrayPath.length; i++) {
-          json = json[arrayPath[i]];
-          if (!json) {
-            return endCb(`Couldn't find ${arrayPath[i]} in results`);
-          }
-        }
-      }
-
-      // The rest of the code assumes an array
-      if (!Array.isArray(json)) {
-        json = [json];
       }
 
       const keyPath = this.keyPath.split('.');
@@ -338,6 +321,59 @@ class WISESource {
     }
   }
 
+  // ----------------------------------------------------------------------------
+  /**
+   * Util function to parse JSON formatted data
+   * @param {string} body - the raw JSON data
+   * @param {function} setCb - the function to call for each row found
+   * @param {function} endCB - all done parsing
+   */
+  parseJSON (body, setCb, endCb) {
+    try {
+      let json = JSON.parse(body);
+
+      if (this.arrayPath !== undefined) {
+        const arrayPath = this.arrayPath.split('.');
+        for (let i = 0; i < arrayPath.length; i++) {
+          json = json[arrayPath[i]];
+          if (!json) {
+            return endCb(`Couldn't find ${arrayPath[i]} in results`);
+          }
+        }
+      }
+
+      // The rest of the code assumes an array
+      if (!Array.isArray(json)) {
+        json = [json];
+      }
+
+      return this.parseJSONArray(json, setCb, endCb);
+    } catch (e) {
+      endCb(e);
+    }
+  }
+
+  // ----------------------------------------------------------------------------
+  /**
+   * Util function to parse JSONL formatted data
+   * @param {string} body - the raw JSONL data
+   * @param {function} setCb - the function to call for each row found
+   * @param {function} endCB - all done parsing
+   */
+  parseJSONL (body, setCb, endCb) {
+    const json = body.toString().split('\n').reduce((acc, line) => {
+      try {
+        if (line.trim() !== '') {
+          acc.push(JSON.parse(line));
+        }
+      } catch (e) {
+        console.log(this.section, `Skipping bad JSON line: ${line}`);
+      }
+      return acc;
+    }, []);
+    return this.parseJSONArray(json, setCb, endCb);
+  }
+
   /** The encoded tags result if options.tagsSetting was set to true */
   tagsResult;
 
@@ -371,6 +407,8 @@ class WISESource {
       this.parse = this.parseTagger;
     } else if (this.format === 'json') {
       this.parse = this.parseJSON;
+    } else if (this.format === 'jsonl') {
+      this.parse = this.parseJSONL;
     } else {
       throw new Error(`${this.section} - ERROR not loading unknown data format - ${this.format}`);
     }

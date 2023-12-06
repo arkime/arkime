@@ -1,5 +1,5 @@
 # WISE tests
-use Test::More tests => 145;
+use Test::More tests => 146;
 use ArkimeTest;
 use Cwd;
 use URI::Escape;
@@ -50,24 +50,57 @@ $wise = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8081/ip/10.0.0.1")
 eq_or_diff($wise, '[]',"All 10.0.0.1");
 
 $wise = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8081/ip/2001:16d8:ffce:0010:aca8:353c:291d:a9b3")->content;
-eq_or_diff($wise, '[{"field":"tags","len":12,"value":"ipwise-array"},
-{"field":"tags","len":10,"value":"ipwisejson"}]');
+$wise = [sort { $a->{value} cmp $b->{value}} @{from_json($wise)}];
+eq_or_diff($wise, from_json('[{"field":"tags","len":12,"value":"ipwise-array"},
+{"field":"tags","len":18,"value":"ipwise-jsonl-array"},
+{"field":"tags","len":10,"value":"ipwisejson"},
+{"field":"tags","len":11,"value":"ipwisejsonl"}]'));
 
 $wise = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8081/ip/2001:16d8:ffce:0010:aca8:353c:291d:0001")->content;
-eq_or_diff($wise, '[{"field":"tags","len":13,"value":"ipwise-normal"},
-{"field":"tags","len":10,"value":"ipwisejson"}]');
+$wise = [sort { $a->{value} cmp $b->{value}} @{from_json($wise)}];
+eq_or_diff($wise, from_json('[{"field":"tags","len":19,"value":"ipwise-jsonl-normal"},
+{"field":"tags","len":13,"value":"ipwise-normal"},
+{"field":"tags","len":10,"value":"ipwisejson"},
+{"field":"tags","len":11,"value":"ipwisejsonl"}]'));
 
 $wise = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8081/ip/2001:16d8:ffce:0010:aca8:353c:291d:0002")->content;
-eq_or_diff($wise, '[{"field":"tags","len":12,"value":"ipwise-comma"},
-{"field":"tags","len":10,"value":"ipwisejson"}]');
+$wise = [sort { $a->{value} cmp $b->{value}} @{from_json($wise)}];
+eq_or_diff($wise, from_json('[{"field":"tags","len":12,"value":"ipwise-comma"},
+{"field":"tags","len":18,"value":"ipwise-jsonl-comma"},
+{"field":"tags","len":10,"value":"ipwisejson"},
+{"field":"tags","len":11,"value":"ipwisejsonl"}]'));
 
 $wise = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8081/ip/10.20.30.50")->content;
-eq_or_diff($wise, '[{"field":"tags","len":12,"value":"ipwise-array"},
-{"field":"tags","len":10,"value":"ipwisejson"}]');
+$wise = [sort { $a->{value} cmp $b->{value}} @{from_json($wise)}];
+eq_or_diff($wise, from_json('[{"field":"tags","len":12,"value":"ipwise-array"},
+{"field":"tags","len":18,"value":"ipwise-jsonl-array"},
+{"field":"tags","len":10,"value":"ipwisejson"},
+{"field":"tags","len":11,"value":"ipwisejsonl"}]'));
 
 $wise = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8081/ip/10.20.30.51")->content;
-eq_or_diff($wise, '[{"field":"tags","len":12,"value":"ipwise-comma"},
-{"field":"tags","len":10,"value":"ipwisejson"}]');
+$wise = [sort { $a->{value} cmp $b->{value}} @{from_json($wise)}];
+eq_or_diff($wise, from_json('[{"field":"tags","len":12,"value":"ipwise-comma"},
+{"field":"tags","len":18,"value":"ipwise-jsonl-comma"},
+{"field":"tags","len":10,"value":"ipwisejson"},
+{"field":"tags","len":11,"value":"ipwisejsonl"}]'));
+
+# IP File jsonl Dump
+$wise = "[" . $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8081/dump/file:ipjsonl")->content . "]";
+@wise = sort { $a->{key} cmp $b->{key}} @{from_json($wise, {relaxed=>1})};
+
+eq_or_diff(\@wise,
+from_json('[
+{"key":"10.20.30.50","ops":[{"len":11,"value":"ipwisejsonl","field":"tags"},
+{"value":"ipwise-jsonl-array","len":18,"field":"tags"}]},
+{"ops":[{"len":11,"value":"ipwisejsonl","field":"tags"},
+{"len":18,"value":"ipwise-jsonl-comma","field":"tags"}],"key":"10.20.30.51"},
+{"key":"2001:16d8:ffce:0010:aca8:353c:291d:0001","ops":[{"field":"tags","value":"ipwisejsonl","len":11},
+{"field":"tags","value":"ipwise-jsonl-normal","len":19}]},
+{"key":"2001:16d8:ffce:0010:aca8:353c:291d:0002","ops":[{"len":11,"value":"ipwisejsonl","field":"tags"},
+{"field":"tags","value":"ipwise-jsonl-comma","len":18}]},
+{"ops":[{"len":11,"value":"ipwisejsonl","field":"tags"},
+{"field":"tags","value":"ipwise-jsonl-array","len":18}],"key":"2001:16d8:ffce:0010:aca8:353c:291d:a9b3"}
+]', {relaxed=>1}));
 
 # IP File Dump
 $wise = "[" . $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8081/dump/file:ip")->content . "]";
@@ -222,7 +255,7 @@ eq_or_diff($wise, '[{"field":"tags","len":10,"value":"wisebymac1"},
 
 # Sources
 $wise = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8081/sources")->content;
-eq_or_diff($wise, '["fieldactions:test","file:domain","file:email","file:ip","file:ipcsv","file:ipjson","file:ja3","file:mac","file:md5","file:sha256","file:url","reversedns","url:aws-ips","url:azure-ips","url:gcloud-ips4","url:gcloud-ips6","valueactions:test"]',"/sources");
+eq_or_diff($wise, '["fieldactions:test","file:domain","file:email","file:ip","file:ipcsv","file:ipjson","file:ipjsonl","file:ja3","file:mac","file:md5","file:sha256","file:url","reversedns","url:aws-ips","url:azure-ips","url:gcloud-ips4","url:gcloud-ips6","valueactions:test"]',"/sources");
 
 # Types
 $wise = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8081/types")->content;
