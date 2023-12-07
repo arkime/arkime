@@ -110,3 +110,6 @@ if (session.cert)
       - if (cert.curve)
         strong.medium.ml-1 Curve
         arkime-session-field.detail-field(:expr="'cert.curve'", :value='"'+cert.curve+'"', :field="fields['cert.curve']", :pull-left="true")
+      - if (cert.ja4x)
+        strong.medium.ml-1 JA4x
+        arkime-session-field.detail-field(:expr="'cert.ja4x'", :value='"'+cert.ja4x+'"', :field="fields['cert.ja4x']", :pull-left="true")
