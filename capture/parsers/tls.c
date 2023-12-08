@@ -553,11 +553,13 @@ LOCAL uint32_t tls_process_server_certificate(ArkimeSession_t *session, const ui
 
         if (!arkime_field_certsinfo_add(certsField, session, certs, clen * 2)) {
             arkime_field_certsinfo_free(certs);
+            certs = 0;
         }
 
         BSB_IMPORT_skip(cbsb, clen + 3);
 
-        arkime_parser_call_named_func(tls_process_certificate_wInfo_func, session, cdata + 3, clen, certs);
+        if (certs)
+            arkime_parser_call_named_func(tls_process_certificate_wInfo_func, session, cdata + 3, clen, certs);
 
         continue;
 
