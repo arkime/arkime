@@ -64,7 +64,7 @@ For advanced users, you can build Arkime yourself:
 
 ## Configuration
 
-Most of the system configuration will take place in the `/data/arkime/etc/config.ini` file.  The variables are documented in our [Settings Wiki page](https://arkime.com/settings).
+Most of the system configuration will be performed in the `/data/arkime/etc/config.ini` file.  The variables are documented in our [Settings Wiki page](https://arkime.com/settings).
 
 ## Usage
 
