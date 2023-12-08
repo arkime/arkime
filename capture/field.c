@@ -1359,6 +1359,14 @@ void arkime_field_free(ArkimeSession_t *session)
     session->fields = 0;
 }
 /******************************************************************************/
+void arkime_field_certsinfo_update_extra (ArkimeCertsInfo_t *certs, char *key, char *value)
+{
+    if (!certs->extra)
+        certs->extra = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, g_free);
+
+    g_hash_table_replace(certs->extra, key, value);
+}
+/******************************************************************************/
 void arkime_field_certsinfo_free (ArkimeCertsInfo_t *certs)
 {
     ArkimeString_t *string;

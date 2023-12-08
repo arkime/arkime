@@ -48,7 +48,7 @@
 #define SUPPRESS_INT_CONVERSION
 #endif
 
-#define ARKIME_API_VERSION 501
+#define ARKIME_API_VERSION 502
 
 #define ARKIME_SESSIONID_LEN  37
 #define ARKIME_SESSIONID6_LEN 37
@@ -1307,6 +1307,7 @@ gboolean arkime_field_float_add(int pos, ArkimeSession_t *session, float f);
 void arkime_field_macoui_add(ArkimeSession_t *session, int macField, int ouiField, const uint8_t *mac);
 
 int  arkime_field_count(int pos, ArkimeSession_t *session);
+void arkime_field_certsinfo_update_extra (ArkimeCertsInfo_t *certs, char *key, char *value);
 void arkime_field_certsinfo_free (ArkimeCertsInfo_t *certs);
 void arkime_field_free(ArkimeSession_t *session);
 void arkime_field_exit();
