@@ -186,8 +186,7 @@ jobs:
       - name: upload github
         uses: softprops/action-gh-release@v1
         with:
-          name: latest-commit
-          tag_name: latest-commit
+          tag_name: last-commit
           draft: false
           prerelease: true
           generate_release_notes: false
@@ -196,23 +195,6 @@ jobs:
             *.so
             *.rpm
             *.zst
-
-            #      - name: upload github
-            #        run: |
-            #          RELEASE_ID=133404691
-            #          GITHUB_TOKEN=${{ secrets.GITHUB_TOKEN }}
-            #
-            #          for file in *.deb *.so *.rpm *.zst; do
-            #            [ -f "$file" ] || continue
-            #            curl -L \
-            #              -X POST \
-            #              -H "Accept: application/vnd.github+json" \
-            #              -H "Authorization: Bearer $GITHUB_TOKEN" \
-            #              -H "X-GitHub-Api-Version: 2022-11-28" \
-            #              -H "Content-Type: application/octet-stream" \
-            #              "https://uploads.github.com/repos/arkime/arkime/releases/$RELEASE_ID/assets?name=$file" \
-            #              --data-binary "@$file"
-            #          done
 
   slack:
     runs-on: ubuntu-latest
