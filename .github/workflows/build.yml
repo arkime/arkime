@@ -9,6 +9,9 @@ on:
 
 jobs:
   build:
+    permissions:
+      contents: write
+
     concurrency:
       group: ${{ github.workflow }}-${{ matrix.version }}-${{ github.event.pull_request.number || github.ref }}
       cancel-in-progress: true
@@ -179,6 +182,20 @@ jobs:
         env:
           LATEST_USER: ${{ secrets.LATEST_USER }}
           LATEST_PASSWORD: ${{ secrets.LATEST_PASSWORD }}
+
+      - name: upload github
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: last-commit
+          draft: false
+          prerelease: true
+          generate_release_notes: false
+          files: |
+            *.deb
+            *.so
+            *.rpm
+            *.zst
 
   slack:
     runs-on: ubuntu-latest
