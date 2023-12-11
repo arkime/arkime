@@ -9,6 +9,9 @@ on:
 
 jobs:
   build:
+    permissions:
+      contents: write
+
     concurrency:
       group: ${{ github.workflow }}-${{ matrix.version }}-${{ github.event.pull_request.number || github.ref }}
       cancel-in-progress: true
