@@ -675,6 +675,8 @@ void arkime_config_load()
         config.rotate = ARKIME_ROTATE_WEEKLY;
     else if (strcmp(rotateIndex, "monthly") == 0)
         config.rotate = ARKIME_ROTATE_MONTHLY;
+    else if (strcmp(rotateIndex, "datastream") == 0)
+        config.rotate = ARKIME_ROTATE_DS;
     else {
         CONFIGEXIT("Unknown rotateIndex '%s' in config file (%s), see https://arkime.com/settings#rotateindex", rotateIndex, config.configFile);
     }

@@ -337,6 +337,7 @@ typedef enum {
  * Configuration Information
  */
 enum ArkimeRotate {
+    ARKIME_ROTATE_DS,
     ARKIME_ROTATE_HOURLY,
     ARKIME_ROTATE_HOURLY2,
     ARKIME_ROTATE_HOURLY3,

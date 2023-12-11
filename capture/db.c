@@ -570,7 +570,7 @@ void arkime_db_save_session(ArkimeSession_t *session, int final)
     }
 
     /* figure out ES index name per thread, can change every second */
-    if (dbInfo[thread].prefixTime != session->lastPacket.tv_sec) {
+    if ((config.rotate != ARKIME_ROTATE_DS) && (dbInfo[thread].prefixTime != session->lastPacket.tv_sec)) {
         dbInfo[thread].prefixTime = session->lastPacket.tv_sec;
 
         struct tm tmp;
@@ -606,6 +606,8 @@ void arkime_db_save_session(ArkimeSession_t *session, int final)
             break;
         case ARKIME_ROTATE_MONTHLY:
             snprintf(dbInfo[thread].prefix, sizeof(dbInfo[thread].prefix), "%02dm%02d", tmp.tm_year % 100, tmp.tm_mon + 1);
+            break;
+        case ARKIME_ROTATE_DS:
             break;
         }
     }
@@ -661,10 +663,18 @@ void arkime_db_save_session(ArkimeSession_t *session, int final)
     startPtr = BSB_WORK_PTR(jbsb);
 
     if (sendBulkHeader) {
-        if (config.autoGenerateId) {
-            BSB_EXPORT_sprintf(jbsb, "{\"index\":{\"_index\":\"%ssessions3-%s\"}}\n", config.prefix, dbInfo[thread].prefix);
+        if (config.rotate == ARKIME_ROTATE_DS) {
+            if (config.autoGenerateId) {
+               BSB_EXPORT_sprintf(jbsb, "{\"create\":{\"_index\":\"%ssessions3-ds\"}}\n", config.prefix);
+            } else {
+                BSB_EXPORT_sprintf(jbsb, "{\"create\":{\"_index\":\"%ssessions3-ds\", \"_id\": \"%s\"}}\n", config.prefix, id);
+            }
         } else {
-            BSB_EXPORT_sprintf(jbsb, "{\"index\":{\"_index\":\"%ssessions3-%s\", \"_id\": \"%s\"}}\n", config.prefix, dbInfo[thread].prefix, id);
+            if (config.autoGenerateId) {
+                BSB_EXPORT_sprintf(jbsb, "{\"index\":{\"_index\":\"%ssessions3-%s\"}}\n", config.prefix, dbInfo[thread].prefix);
+            } else {
+                BSB_EXPORT_sprintf(jbsb, "{\"index\":{\"_index\":\"%ssessions3-%s\", \"_id\": \"%s\"}}\n", config.prefix, dbInfo[thread].prefix, id);
+            }
         }
     }
 
@@ -688,7 +698,11 @@ void arkime_db_save_session(ArkimeSession_t *session, int final)
                        session->ipProtocol);
 
     if (sendIndexInDoc) {
-        BSB_EXPORT_sprintf(jbsb, "\"index\":\"%ssessions3-%s\",", config.prefix, dbInfo[thread].prefix);
+        if (config.rotate == ARKIME_ROTATE_DS) {
+             BSB_EXPORT_sprintf(jbsb, "\"create\":\"%ssessions3-ds\",", config.prefix);
+        } else {
+            BSB_EXPORT_sprintf(jbsb, "\"index\":\"%ssessions3-%s\",", config.prefix, dbInfo[thread].prefix);
+        }
     }
 
     if (session->ipProtocol == IPPROTO_TCP) {
