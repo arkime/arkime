@@ -185,7 +185,9 @@ jobs:
           RELEASE_ID=133404691
           GITHUB_TOKEN=${{ secrets.GITHUB_TOKEN }}
 
+
           for file in *.deb *.so *.rpm *.zst; do
+            [ -f "$file" ] || continue
             curl -L \
               -X POST \
               -H "Accept: application/vnd.github+json" \
