@@ -44,8 +44,10 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #2453 Increase simpleCompressionBlockSize default to 64000
 ## Release
   - #2448 zstd 1.5.5, nghttp2 1.57.0, maxmind 1.7.1, yara 4.2.3
-  - #2448 node v18.18.2 - Centos 7, Ubuntu 18, Alpine use unofficial builds
+  - #2443 Centos 7, Ubuntu 18, Alpine use unofficial builds of node
+  - #2543 node v18.19.0
   - #2447 support building on alpine
+  - #2549 use configure prefix more places (thanks @vpiserchia)
 ## All
   - #2316 programs support same config file formats (ini/json/yaml) and retrieval (file, elasticsearch)
   - #2419 json/yaml config file formats now allow arrays instead of comma/semi separated

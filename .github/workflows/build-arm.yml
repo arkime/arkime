@@ -6,6 +6,9 @@ on:
 
 jobs:
   build:
+    permissions:
+      contents: write
+
     concurrency:
       group: ${{ github.workflow }}-${{ matrix.version }}-${{ github.event.pull_request.number || github.ref }}
       cancel-in-progress: true
@@ -105,19 +108,19 @@ jobs:
           mv capture/plugins/ja4plus.so ja4plus.arm64.so
           rm -f capture/plugins/ja4plus.c
 
-      - name: upload
+      - name: upload github
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-        run: |
-          echo "${{secrets.LATEST_PASSWORD }}" > key
-          chmod 600 key
-          echo "put *.deb
-            put *.so
-            put *.rpm
-            put *.zst" | sftp -o StrictHostKeyChecking=no -i key $LATEST_USER@latest.arkime.net:/latest
-          /bin/rm -f key
-        env:
-          LATEST_USER: ${{ secrets.LATEST_USER }}
-          LATEST_PASSWORD: ${{ secrets.LATEST_PASSWORD }}
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: last-commit
+          draft: false
+          prerelease: true
+          generate_release_notes: false
+          files: |
+            *.deb
+            *.so
+            *.rpm
+            *.zst
 
   slack:
     runs-on: ubuntu-latest

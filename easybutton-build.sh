@@ -26,7 +26,7 @@ NGHTTP2=1.57.0
 ZSTD=1.5.5
 KAFKA=1.5.3
 
-NODE=18.18.2
+NODE=18.19.0
 
 TDIR="/opt/arkime"
 DOPFRING=0
@@ -310,6 +310,7 @@ elif [ -f "/etc/arch-release" ]; then
     BUILDZSTD=0
 
     echo './configure \
+      --prefix=$TDIR \
       --with-zstd=yes \
       --with-libpcap=no \
       --with-yara=no \
@@ -320,6 +321,7 @@ elif [ -f "/etc/arch-release" ]; then
       KAFKA_LIBS="-lrdkafka" KAFKA_CFLAGS="-I/usr/include/librdkafka" \
       --with-kafka=no'
     ./configure \
+      --prefix=$TDIR \
       --with-zstd=yes \
       --with-libpcap=no \
       --with-yara=no \
@@ -338,6 +340,7 @@ elif [ -f "/etc/alpine-release" ] ; then
     (cd thirdparty; buildYara)
 
     echo './configure \
+      --prefix=$TDIR \
       --with-zstd=yes \
       --with-libpcap=no \
       --with-yara=thirdparty/yara/yara-$YARA \
@@ -349,6 +352,7 @@ elif [ -f "/etc/alpine-release" ] ; then
       --with-kafka=no'
 
     ./configure \
+      --prefix=$TDIR \
       --with-zstd=yes \
       --with-libpcap=no \
       --with-yara=thirdparty/yara/yara-$YARA \
@@ -359,7 +363,15 @@ elif [ -f "/etc/alpine-release" ] ; then
       KAFKA_LIBS="-lrdkafka" KAFKA_CFLAGS="-I/usr/include/librdkafka" \
       --with-kafka=no
 elif [ $DOTHIRDPARTY -eq 0 ]; then
-    ./configure --with-lua=$with_lua --with-kafka=$with_kafka
+    echo "./configure \
+      --prefix=$TDIR \
+      --with-lua=$with_lua \
+      --with-kafka=$with_kafka"
+
+    ./configure \
+      --prefix=$TDIR \
+      --with-lua=$with_lua \
+      --with-kafka=$with_kafka
 else
   echo "ARKIME: Downloading and building static thirdparty libraries"
   if [ ! -d "thirdparty" ]; then
