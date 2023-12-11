@@ -184,6 +184,7 @@ jobs:
           LATEST_PASSWORD: ${{ secrets.LATEST_PASSWORD }}
 
       - name: upload github
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         uses: softprops/action-gh-release@v1
         with:
           tag_name: last-commit
