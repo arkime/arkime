@@ -108,20 +108,6 @@ jobs:
           mv capture/plugins/ja4plus.so ja4plus.arm64.so
           rm -f capture/plugins/ja4plus.c
 
-      - name: upload
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-        run: |
-          echo "${{secrets.LATEST_PASSWORD }}" > key
-          chmod 600 key
-          echo "put *.deb
-            put *.so
-            put *.rpm
-            put *.zst" | sftp -o StrictHostKeyChecking=no -i key $LATEST_USER@latest.arkime.net:/latest
-          /bin/rm -f key
-        env:
-          LATEST_USER: ${{ secrets.LATEST_USER }}
-          LATEST_PASSWORD: ${{ secrets.LATEST_PASSWORD }}
-
       - name: upload github
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         uses: softprops/action-gh-release@v1
