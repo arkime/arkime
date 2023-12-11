@@ -187,7 +187,7 @@ jobs:
         uses: softprops/action-gh-release@v1
         with:
           name: latest-commit
-          tag: latest-commit
+          tag_name: latest-commit
           draft: false
           prerelease: true
           generate_release_notes: false
