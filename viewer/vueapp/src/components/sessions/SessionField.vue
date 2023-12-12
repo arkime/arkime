@@ -549,6 +549,7 @@ export default {
             .replace('%FIELD%', info.field)
             .replace('%DBFIELD%', info.info.dbField)
             .replace('%TEXT%', text)
+            .replace('%URIEncodedText%', encodeURIComponent(text))
             .replace('%UCTEXT%', text.toUpperCase())
             .replace('%HOST%', host)
             .replace('%URL%', encodeURIComponent('http:' + url))
