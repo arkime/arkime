@@ -69,6 +69,9 @@ rules:
       port.dst:
         - 400-500
         - 5353-5354
+      port.dst:
+        - 5300-5400
+        - 50509-50510
       protocols.cnt: 1
     ops:
       "protocols": "iprulztest"
