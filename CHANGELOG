@@ -74,6 +74,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #2528 new oui.txt location, some names have changes, fixes #2347
   - #2539 new tls:has_esni tag if the client hello has esni
   - #2553 fix rules range matching not working always
+  - #2554 support fieldSet tcpflag rules
 ## Cont3xt
   - #2121 new bulk UI and support for bulk queries
   - #2271 lots of keyboard shortcut improvements
