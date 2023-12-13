@@ -215,7 +215,6 @@ typedef enum {
 /* prepend ip stuff - dont use*/
 #define ARKIME_FIELD_FLAG_IPPRE              0x4000
 
-
 typedef struct arkime_field_info {
     struct arkime_field_info *d_next, *d_prev; /* Must be first */
     char                     *dbFieldFull;     /* Must be second - this is the full version example:mysql.user-term */
@@ -1388,6 +1387,7 @@ typedef enum {
 
 void arkime_rules_init();
 void arkime_rules_recompile();
+#define ARKIME_RULES_RUN_FIELD_SET(session, pos, value) do { if (config.fields[pos]->ruleEnabled) arkime_rules_run_field_set(session, pos, value); } while (0)
 void arkime_rules_run_field_set(ArkimeSession_t *session, int pos, const gpointer value);
 int arkime_rules_run_every_packet(ArkimePacket_t *packet);
 void arkime_rules_session_create(ArkimeSession_t *session);
