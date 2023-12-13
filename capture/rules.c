@@ -925,7 +925,7 @@ LOCAL gboolean arkime_rules_check_int_match(const ArkimeRule_t *const rule, int 
         match.num = (long)g_ptr_array_index(matches, i);
         if (key >= match.min && key <= match.max) {
             if (logStr) {
-                BSB_EXPORT_sprintf(*logStr, "%s,contains: %d, ", config.fields[p]->expression, key);
+                BSB_EXPORT_sprintf(*logStr, "%s: %u, ", config.fields[p]->expression, key);
             }
             return TRUE;
         }
