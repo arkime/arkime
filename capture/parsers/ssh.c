@@ -6,11 +6,14 @@
 
 #define MAX_SSH_BUFFER 8196
 
+#define MAX_LENS 200
+
 typedef struct {
     char       buf[2][MAX_SSH_BUFFER];
     int32_t    len[2];
     uint16_t   packets[2];
     uint16_t   counts[2][2];
+    uint16_t   lens[2][MAX_LENS]; // Keep up to MAX_LENS packet lengths
     uint16_t   done;
 } SSHInfo_t;
 
@@ -19,6 +22,8 @@ LOCAL  int verField;
 LOCAL  int keyField;
 LOCAL  int hasshField;
 LOCAL  int hasshServerField;
+
+LOCAL uint32_t ssh_ja4ssh_func;
 
 /******************************************************************************/
 LOCAL void ssh_parse_keyinit(ArkimeSession_t *session, const uint8_t *data, int remaining, int isDst)
@@ -104,16 +109,53 @@ LOCAL void ssh_parse_keyinit(ArkimeSession_t *session, const uint8_t *data, int 
 
     }
 }
+/******************************************************************************/
+// Given a list of numbers find the mode, we ignore numbers > 2048
+LOCAL int ssh_mode(uint16_t *nums, int num) {
+    unsigned char count[2048];
+    unsigned short mode = 0;
+    unsigned char modeCount = 0;
+    memset(count, 0, sizeof(count));
+    for (int i = 0; i < num; i++) {
+        if (nums[i] >= 2048)
+            continue;
+        count[nums[i]]++;
+        if (count[nums[i]] == modeCount && nums[i] < mode) {
+            // new count same as old max, but lower mode
+            mode = nums[i];
+        } else if (count[nums[i]] > modeCount) {
+            mode = nums[i];
+            modeCount = count[nums[i]];
+        }
 
+    }
+    return mode;
+}
+/******************************************************************************/
+LOCAL void ssh_send_ja4ssh (ArkimeSession_t *session, SSHInfo_t *ssh)
+{
+    LOG("enter %u %u\n", ssh_mode(ssh->lens[0], ssh->packets[0]), ssh_mode(ssh->lens[1], ssh->packets[1]));
+
+    // ALW TODO: We need to pass modes and packets
+    arkime_parser_call_named_func(ssh_ja4ssh_func, session, NULL, 0, NULL);
+}
 /******************************************************************************/
 LOCAL int ssh_parser(ArkimeSession_t *session, void *uw, const uint8_t *data, int remaining, int which)
 {
     SSHInfo_t *ssh = uw;
 
+    ssh->packets[which]++;
+
+    if (ssh->packets[0] + ssh->packets[1] <= MAX_LENS) {
+        ssh->lens[which][ssh->packets[which] - 1] = remaining;
+        if (ssh->packets[0] + ssh->packets[1] == MAX_LENS) {
+            ssh_send_ja4ssh(session, ssh);
+        }
+    }
+
     /* From packets 6-15 count number number of packets between 0-49 and 50-99 bytes.
      * If more of the bigger packets in both directions this probably is a reverse shell
      */
-    ssh->packets[which]++;
     if (ssh->packets[which] > 5) {
         if (remaining < 50)
             ssh->counts[which][0]++;
@@ -239,5 +281,7 @@ void arkime_parser_init()
                                            (char *)NULL);
 
     arkime_parsers_classifier_register_tcp("ssh", NULL, 0, (uint8_t *)"SSH", 3, ssh_classify);
+
+    ssh_ja4ssh_func = arkime_parser_get_named_func("ssh_ja4ssh");
 }
 
