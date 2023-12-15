@@ -73,7 +73,6 @@ class ViewerUtils {
       reqQuery.date = '-1';
     }
 
-
     if ((reqQuery.date && parseInt(reqQuery.date) === -1) ||
         (reqQuery.segments && reqQuery.segments === 'all')) {
       interval = 60 * 60; // Hour to be safe
