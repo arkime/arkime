@@ -69,6 +69,11 @@ class ViewerUtils {
       console.log('determineQueryTimes <-', reqQuery);
     }
 
+    if (reqQuery.date && isNaN(parseInt(reqQuery.date))) {
+      reqQuery.date = '-1';
+    }
+
+
     if ((reqQuery.date && parseInt(reqQuery.date) === -1) ||
         (reqQuery.segments && reqQuery.segments === 'all')) {
       interval = 60 * 60; // Hour to be safe
@@ -127,7 +132,7 @@ class ViewerUtils {
       console.log('determineQueryTimes ->', 'startTimeSec', startTimeSec, 'stopTimeSec', stopTimeSec, 'interval', interval);
     }
 
-    return [startTimeSec, stopTimeSec, interval];
+    return [startTimeSec, Math.floor(stopTimeSec), interval];
   };
 
   // ----------------------------------------------------------------------------
