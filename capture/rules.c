@@ -300,6 +300,10 @@ LOCAL void arkime_rules_load_add_field(ArkimeRule_t *rule, int pos, char *key)
     case ARKIME_FIELD_TYPE_FLOAT:
     case ARKIME_FIELD_TYPE_FLOAT_ARRAY:
     case ARKIME_FIELD_TYPE_FLOAT_GHASH:
+        if (key[0] != '-' && strchr(key, '-') != 0) {
+            LOGEXIT("Range match not supported for float fields");
+            return;
+        }
         if (!loading.fieldsHash[pos])
             loading.fieldsHash[pos] = g_hash_table_new_full(NULL, NULL, NULL, arkime_rules_free_array);
 
@@ -317,6 +321,11 @@ LOCAL void arkime_rules_load_add_field(ArkimeRule_t *rule, int pos, char *key)
 
     case ARKIME_FIELD_TYPE_IP:
     case ARKIME_FIELD_TYPE_IP_GHASH:
+        if (strchr(key, '-') != 0) {
+            LOGEXIT("Range match not supported for ip fields");
+            return;
+        }
+
         if (!loading.fieldsTree4[pos]) {
             loading.fieldsTree4[pos] = New_Patricia(32);
             loading.fieldsTree6[pos] = New_Patricia(128);
@@ -847,7 +856,6 @@ LOCAL gboolean arkime_rules_check_ip(const ArkimeRule_t *const rule, const int p
 /******************************************************************************/
 LOCAL gboolean arkime_rules_check_str_match(const ArkimeRule_t *const rule, int p, const char *const key, BSB *logStr)
 {
-
     if (rule->hash[p] && g_hash_table_contains(rule->hash[p], key)) {
         if (logStr) {
             BSB_EXPORT_sprintf(*logStr, "%s: %s, ", config.fields[p]->expression, key);
@@ -897,6 +905,35 @@ LOCAL gboolean arkime_rules_check_str_match(const ArkimeRule_t *const rule, int 
 
     return FALSE;
 }
+/******************************************************************************/
+LOCAL gboolean arkime_rules_check_int_match(const ArkimeRule_t *const rule, int p, const uint32_t key, BSB *logStr)
+{
+    if (rule->hash[p] && g_hash_table_contains(rule->hash[p], (gpointer)(long)key)) {
+        if (logStr) {
+            BSB_EXPORT_sprintf(*logStr, "%s: %u, ", config.fields[p]->expression, key);
+        }
+        return TRUE;
+    }
+
+    const GPtrArray *const matches = rule->match[p];
+
+    if (!matches)
+        return FALSE;
+
+    for (guint i = 0; i < matches->len; i++) {
+        ArkimeRuleIntMatch_t match;
+        match.num = (long)g_ptr_array_index(matches, i);
+        if (key >= match.min && key <= match.max) {
+            if (logStr) {
+                BSB_EXPORT_sprintf(*logStr, "%s: %u, ", config.fields[p]->expression, key);
+            }
+            return TRUE;
+        }
+    }
+
+    return FALSE;
+}
+
 LOCAL void arkime_rules_check_rule_fields(ArkimeSession_t *const session, ArkimeRule_t *const rule, int skipPos, BSB *logStr);
 /******************************************************************************/
 LOCAL void arkime_rules_match(ArkimeSession_t *const session, ArkimeRule_t *const rule)
@@ -928,9 +965,7 @@ LOCAL void arkime_rules_match(ArkimeSession_t *const session, ArkimeRule_t *cons
     if (good && logStr) \
         BSB_EXPORT_sprintf(*logStr, "%s: %f, ", config.fields[p]->expression, (float)(_v))
 
-#define G_HASH_TABLE_CONTAINS_CHECK(_v) \
-    good = g_hash_table_contains(rule->hash[p], (gpointer)(long)_v); \
-    RULE_LOG_INT(_v);
+#define G_HASH_TABLE_CONTAINS_CHECK(_v) good = arkime_rules_check_int_match(rule, p, _v, logStr);
 
 #define G_HASH_TABLE_CONTAINS_CHECK_U64(_v) \
     good = g_hash_table_contains(rule->hash[p], (gpointer)(long)_v); \
@@ -1097,15 +1132,14 @@ LOCAL void arkime_rules_check_rule_fields(ArkimeSession_t *const session, Arkime
             break;
 
         case ARKIME_FIELD_TYPE_INT:
-            good = g_hash_table_contains(rule->hash[p], (gpointer)(long)session->fields[p]->i);
+            good = arkime_rules_check_int_match(rule, p, session->fields[p]->i, logStr);
             RULE_LOG_INT(session->fields[p]->i);
             break;
         case ARKIME_FIELD_TYPE_INT_ARRAY:
             good = 0;
             for(i = 0; i < (int)session->fields[p]->iarray->len; i++) {
-                if (g_hash_table_contains(rule->hash[p], (gpointer)(long)g_array_index(session->fields[p]->iarray, uint32_t, i))) {
+                if (arkime_rules_check_int_match(rule, p, g_array_index(session->fields[p]->iarray, uint32_t, i), logStr)) {
                     good = 1;
-                    RULE_LOG_INT(g_array_index(session->fields[p]->iarray, uint32_t, i));
                     break;
                 }
             }
@@ -1114,9 +1148,8 @@ LOCAL void arkime_rules_check_rule_fields(ArkimeSession_t *const session, Arkime
             ihash = session->fields[p]->ihash;
             good = 0;
             HASH_FORALL2(i_, *ihash, hint) {
-                if (g_hash_table_contains(rule->hash[p], (gpointer)(long)hint->i_hash)) {
+                if (arkime_rules_check_int_match(rule, p, hint->i_hash, logStr)) {
                     good = 1;
-                    RULE_LOG_INT(hint->i_hash);
                     break;
                 }
             }
@@ -1126,9 +1159,8 @@ LOCAL void arkime_rules_check_rule_fields(ArkimeSession_t *const session, Arkime
             g_hash_table_iter_init (&iter, ghash);
             good = 0;
             while (g_hash_table_iter_next (&iter, &ikey, NULL)) {
-                if (g_hash_table_contains(rule->hash[p], ikey)) {
+                if (arkime_rules_check_int_match(rule, p, (long)ikey, logStr)) {
                     good = 1;
-                    RULE_LOG_INT((long)ikey);
                     break;
                 }
             }

@@ -73,6 +73,8 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #2186 count the number of http methods per session
   - #2528 new oui.txt location, some names have changes, fixes #2347
   - #2539 new tls:has_esni tag if the client hello has esni
+  - #2553 fix rules range matching not working always
+  - #2554 support fieldSet tcpflag rules
 ## Cont3xt
   - #2121 new bulk UI and support for bulk queries
   - #2271 lots of keyboard shortcut improvements
@@ -99,6 +101,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #2521 add footerTemplate setting
   - #2525 add [config setting](https://arkime.com/settings#spiViewCategoryOrder) to set spiview category order
   - #2523 resize session detail field label/values
+  - #2552 added %URIEncodedText% for URI encoded substitution (thanks @vpiserchia)
 ## Parliament
   - #2377 dashboard-only mode removed, if you want users to just see the dashboard don't assign them the parliamentUser role
   - #2395 configuration is now stored in opensearch/elasticsearch
