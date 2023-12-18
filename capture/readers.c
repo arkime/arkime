@@ -18,6 +18,7 @@ void reader_tpacketv3_init(char *);
 void reader_null_init(char *);
 void reader_pcapoverip_init(char *);
 void reader_tzsp_init(char *);
+void arkime_reader_scheme_init(char *);
 
 ArkimeReaderStart  arkime_reader_start;
 ArkimeReaderStats  arkime_reader_stats;
@@ -27,6 +28,9 @@ ArkimeReaderExit   arkime_reader_exit;
 char              *readerFileName[256];
 ArkimeFieldOps_t   readerFieldOps[256];
 uint32_t           readerOutputIds[256];
+
+ArkimeFilenameOps_t  readerFilenameOps[256];
+int                  readerFilenameOpsNum;
 
 
 /******************************************************************************/
@@ -63,6 +67,7 @@ void arkime_readers_init()
     arkime_readers_add("pcapoveripserver", reader_pcapoverip_init);
     arkime_readers_add("pcap-over-ip-server", reader_pcapoverip_init);
     arkime_readers_add("tzsp", reader_tzsp_init);
+    arkime_readers_add("scheme", arkime_reader_scheme_init);
 }
 
 /******************************************************************************/
@@ -100,6 +105,54 @@ void arkime_readers_start()
         g_strfreev(opsstr);
     }
     g_strfreev(interfaceOps);
+
+    // Compile all the filename ops.  The formation is fieldexpr=value%value
+    // value is expanded using the g_regex_replace rules (\1 being the first capture group)
+    // https://developer.gnome.org/glib/stable/glib-Perl-compatible-regular-expressions.html#g-regex-replace
+    char **filenameOpsStr;
+    filenameOpsStr = arkime_config_str_list(NULL, "filenameOps", "");
+
+    for (i = 0; filenameOpsStr && filenameOpsStr[i] && i < 100; i++) {
+        if (!filenameOpsStr[i][0])
+            continue;
+
+        char *equal = strchr(filenameOpsStr[i], '=');
+        if (!equal) {
+            CONFIGEXIT("Must be FieldExpr=regex%%value, missing equal '%s'", filenameOpsStr[i]);
+        }
+
+        char *percent = strchr(equal + 1, '%');
+        if (!percent) {
+            CONFIGEXIT("Must be FieldExpr=regex%%value, missing percent '%s'", filenameOpsStr[i]);
+        }
+
+        *equal = 0;
+        *percent = 0;
+
+        int elen = strlen(equal + 1);
+        if (!elen) {
+            CONFIGEXIT("Must be FieldExpr=regex%%value, empty regex for '%s'", filenameOpsStr[i]);
+        }
+
+        int vlen = strlen(percent + 1);
+        if (!vlen) {
+            CONFIGEXIT("Must be FieldExpr=regex%%value, empty value for '%s'", filenameOpsStr[i]);
+        }
+
+        int fieldPos = arkime_field_by_exp(filenameOpsStr[i]);
+        if (fieldPos == -1) {
+            CONFIGEXIT("Must be FieldExpr=regex?value, Unknown field expression '%s'", filenameOpsStr[i]);
+        }
+
+        readerFilenameOps[readerFilenameOpsNum].regex = g_regex_new(equal + 1, 0, 0, 0);
+        readerFilenameOps[readerFilenameOpsNum].expand = g_strdup(percent + 1);
+        if (!readerFilenameOps[readerFilenameOpsNum].regex)
+            CONFIGEXIT("Couldn't compile regex '%s'", equal + 1);
+        readerFilenameOps[readerFilenameOpsNum].field = fieldPos;
+        readerFilenameOpsNum++;
+    }
+    g_strfreev(filenameOpsStr);
+
     arkime_reader_start();
 }
 /******************************************************************************/

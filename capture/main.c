@@ -23,6 +23,8 @@
 #define BUILD_VERSION "unkn"
 #endif
 #include "nghttp2/nghttp2.h"
+#include <errno.h>
+#include <sys/stat.h>
 
 /******************************************************************************/
 ArkimeConfig_t         config;
@@ -40,6 +42,7 @@ ARKIME_LOCK_DEFINE(LOG);
 
 /******************************************************************************/
 LOCAL  gboolean showVersion    = FALSE;
+LOCAL  gboolean useScheme      = FALSE;
 
 #define FREE_LATER_SIZE 32768
 LOCAL int freeLaterFront;
@@ -111,6 +114,7 @@ LOCAL  GOptionEntry entries[] =
     { "ignoreerrors", 0, G_OPTION_FLAG_HIDDEN, G_OPTION_ARG_NONE,           &config.ignoreErrors,  "Ignore most errors and continue", NULL },
     { "dumpConfig",  0, G_OPTION_FLAG_HIDDEN, G_OPTION_ARG_NONE,           &config.dumpConfig,    "Display the config.", NULL },
     { "regressionTests",  0, G_OPTION_FLAG_HIDDEN, G_OPTION_ARG_NONE,      &config.regressionTests, "Regression Tests", NULL },
+    { "scheme",  0, G_OPTION_FLAG_HIDDEN, G_OPTION_ARG_NONE,      &useScheme, "Use new scheme offline pcap", NULL },
     { NULL,          0, 0,                                    0,           NULL, NULL, NULL }
 };
 
@@ -338,6 +342,56 @@ void terminate(int UNUSED(sig))
 void reload(int UNUSED(sig))
 {
     arkime_plugins_reload();
+}
+/******************************************************************************/
+void arkime_check_file_permissions(char *filename)
+{
+    char          path[PATH_MAX];
+    struct stat   stats;
+    char         *token;
+    char          *save_ptr;
+    char          tmpFilename[PATH_MAX];
+    struct group *gr;
+    struct passwd *pw;
+
+    if (strlen (filename) >= PATH_MAX) {
+        // filename bigger than path buffer, skip check
+    } else if ((config.dropUser == NULL) && (config.dropGroup == NULL)) {
+        // drop.User,Group not defined -- skip check
+    } else if (strncmp (filename, "/", 1) != 0) {
+        LOG("WARNING using a relative path may make pcap inaccessible to viewer");
+    } else {
+        path[0] = 0;
+
+        // process copy of filename given strtok_r changes arg
+        g_strlcpy (tmpFilename, filename, sizeof(tmpFilename));
+
+        token = strtok_r (tmpFilename, "/", &save_ptr);
+
+        while (token != NULL) {
+            g_strlcat (path, "/", sizeof(path));
+            g_strlcat (path, token, sizeof(path));
+
+            if (stat(path, &stats) != -1) {
+                gr = getgrgid (stats.st_gid);
+                pw = getpwuid (stats.st_uid);
+
+                if (stats.st_mode & S_IROTH) {
+                    // world readable
+                } else if ((stats.st_mode & S_IRGRP) && config.dropGroup && (strcmp (config.dropGroup, gr->gr_name) == 0)) {
+                    // group readable and dropGroup matches file group
+                    // TODO compare group id values as opposed to group name
+                } else if ((stats.st_mode & S_IRUSR) && config.dropUser && (strcmp (config.dropUser, pw->pw_name) == 0)) {
+                    // user readable and dropUser matches file user
+                    // TODO compare user id values as opposed to user name
+                } else
+                    LOG("WARNING -- permission issues with %s might make pcap inaccessible to viewer", path);
+            } else
+                LOG("WARNING -- Can't stat %s.  Pcap might not be accessible to viewer", path);
+
+            token = strtok_r (NULL, "/", &save_ptr);
+        }
+    }
 }
 /******************************************************************************/
 uint32_t arkime_get_next_prime(uint32_t v)
@@ -874,7 +928,10 @@ int main(int argc, char **argv)
     arkime_plugins_init();
     arkime_plugins_load(config.rootPlugins);
     if (config.pcapReadOffline)
-        arkime_readers_set("libpcap-file");
+        if (useScheme)
+            arkime_readers_set("scheme");
+        else
+            arkime_readers_set("libpcap-file");
     else
         arkime_readers_set(NULL);
     if (!config.pcapReadOffline) {

@@ -1,0 +1,386 @@
+/******************************************************************************/
+/* reader-scheme.c
+ *
+ * Copyright 2023 All rights reserved.
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+#include "arkime.h"
+#include "pcap.h"
+
+extern ArkimePcapFileHdr_t   pcapFileHeader;
+
+extern ArkimeConfig_t        config;
+
+typedef struct {
+    ArkimeReaderExit   exit;
+    ArkimeSchemaLoad   load;
+} ArkimeSchema_t;
+
+LOCAL  ArkimeStringHashStd_t  schemesHash;
+LOCAL  ArkimeSchema_t        *fileSchema;
+
+LOCAL uint64_t total;
+LOCAL uint64_t dropped;
+
+LOCAL int state = 0;
+LOCAL uint8_t tmpBuffer[0xffff];
+LOCAL uint32_t tmpBufferLen;
+
+LOCAL int                   offlineDispatchAfter;
+extern void                *esServer;
+extern char                *readerFileName[256];
+extern uint32_t             readerOutputIds[256];
+
+extern ArkimeFieldOps_t     readerFieldOps[256];
+extern ArkimeFilenameOps_t  readerFilenameOps[256];
+extern int                  readerFilenameOpsNum;
+
+#define SWAP32(x) ((((x)&0xff000000) >> 24) | (((x)&0x00ff0000) >> 8) | (((x)&0x0000ff00) << 8) | (((x)&0x000000ff) << 24))
+#define SWAP16(x) ((((x)&0xff00) >> 8) | (((x)&0x00ff) << 8))
+
+LOCAL uint64_t startPos;
+LOCAL uint8_t  readerPos;
+LOCAL int      needSwap;
+LOCAL int      nanosecond;
+
+/******************************************************************************/
+LOCAL ArkimeSchema_t *uri2scheme(const char *uri)
+{
+    ArkimeString_t *str;
+
+    char *colonslashslash = strstr(uri, "://");
+    if (colonslashslash) {
+        *colonslashslash = 0;
+        HASH_FIND(s_, schemesHash, uri, str);
+        *colonslashslash = ':';
+    } else {
+        return fileSchema;
+    }
+    return str?str->uw:NULL;
+}
+/******************************************************************************/
+void arkime_reader_scheme_load(const char *uri)
+{
+    LOG ("Processing %s", uri);
+    ArkimeSchema_t *readerSchema = uri2scheme(uri);
+    if (!readerSchema) {
+        LOG("ERROR - Unknown scheme for %s", uri);
+        return;
+    }
+
+    if (config.flushBetween) {
+        arkime_session_flush();
+        int rc[4];
+
+        // Pause until all packets and commands are done
+        while ((rc[0] = arkime_session_cmd_outstanding()) + (rc[1] = arkime_session_close_outstanding()) + (rc[2] = arkime_packet_outstanding()) + (rc[3] = arkime_session_monitoring()) > 0) {
+            if (config.debug) {
+                LOG("Waiting next file %d %d %d %d", rc[0], rc[1], rc[2], rc[3]);
+            }
+            usleep(5000);
+        }
+    }
+
+    startPos = 0;
+    state = 0;
+    readerSchema->load(uri);
+}
+/******************************************************************************/
+LOCAL void reader_scheme_header(const char *uri, const uint8_t *header)
+{
+    ArkimePcapFileHdr_t *h = (ArkimePcapFileHdr_t *)header;
+    needSwap = (h->magic == 0xd4c3b2a1 || h->magic == 0x4d3cb2a1);
+    nanosecond = (h->magic == 0xa1b23c4d || h->magic == 0x4d3cb2a1);
+
+    if (needSwap) {
+        h->snaplen = SWAP32(h->snaplen);
+        h->dlt = SWAP32(h->dlt);
+    }
+
+    readerPos++;
+    // We've wrapped around all 256 reader items, clear the previous file information
+    if (readerFileName[readerPos]) {
+        g_free(readerFileName[readerPos]);
+        readerOutputIds[readerPos] = 0;
+    }
+    readerFileName[readerPos] = g_strdup(uri);
+
+    if (readerFilenameOpsNum > 0) {
+        // Free any previously allocated
+        if (readerFieldOps[readerPos].size > 0)
+            arkime_field_ops_free(&readerFieldOps[readerPos]);
+
+        arkime_field_ops_init(&readerFieldOps[readerPos], readerFilenameOpsNum, ARKIME_FIELD_OPS_FLAGS_COPY);
+
+        // Go thru all the filename ops looking for matches and then expand the value string
+        int i;
+        for (i = 0; i < readerFilenameOpsNum; i++) {
+            GMatchInfo *match_info = 0;
+            g_regex_match(readerFilenameOps[i].regex, uri, 0, &match_info);
+            if (g_match_info_matches(match_info)) {
+                GError *error = 0;
+                char *expand = g_match_info_expand_references(match_info, readerFilenameOps[i].expand, &error);
+                if (error) {
+                    LOG("Error expanding '%s' with '%s' - %s", uri, readerFilenameOps[i].expand, error->message);
+                    g_error_free(error);
+                }
+                if (expand) {
+                    arkime_field_ops_add(&readerFieldOps[readerPos], readerFilenameOps[i].field, expand, -1);
+                    g_free(expand);
+                }
+            }
+            g_match_info_free(match_info);
+        }
+    }
+
+    arkime_packet_set_dltsnap(h->dlt, h->snaplen);
+
+    if (config.bpf && pcapFileHeader.dlt != DLT_NFLOG) {
+        //struct bpf_program   bpf;
+
+        /*if (pcap_compile(pcap, &bpf, config.bpf, 1, PCAP_NETMASK_UNKNOWN) == -1) {
+            LOGEXIT("ERROR - Couldn't compile bpf filter: '%s' with %s", config.bpf, pcap_geterr(pcap));
+        }
+
+        if (pcap_setfilter(pcap, &bpf) == -1) {
+            LOGEXIT("ERROR - Couldn't set bpf filter: '%s' with %s", config.bpf, pcap_geterr(pcap));
+        }
+        pcap_freecode(&bpf);*/
+    }
+}
+/******************************************************************************/
+LOCAL void *reader_scheme_thread(void *UNUSED(arg))
+{
+
+    // Load files
+    for (int i = 0; config.pcapReadFiles && config.pcapReadFiles[i]; i++) {
+        arkime_reader_scheme_load(config.pcapReadFiles[i]);
+    }
+
+    // Load list of files
+    for (int i = 0; config.pcapFileLists && config.pcapFileLists[i]; i++) {
+        FILE *file;
+        char line[PATH_MAX];
+        arkime_reader_scheme_load(config.pcapReadFiles[i]);
+
+        if (strcmp(config.pcapFileLists[i], "-") == 0)
+            file = stdin;
+        else
+            file = fopen(config.pcapFileLists[i], "r");
+        if (!file) {
+            LOG("ERROR - Couldn't open %s", config.pcapFileLists[i]);
+            continue;
+        }
+
+        while (!feof(file)) {
+            if (!fgets(line, sizeof(line), file)) {
+                fclose(file);
+                break;
+            }
+
+            int lineLen = strlen(line);
+            if (line[lineLen - 1] == '\n') {
+                line[lineLen - 1] = 0;
+            }
+
+            g_strstrip(line);
+            if (!line[0] || line[0] == '#')
+                continue;
+            arkime_reader_scheme_load(line);
+        }
+        fclose(file);
+    }
+
+    for (int i = 0; config.pcapReadDirs && config.pcapReadDirs[i]; i++) {
+        arkime_reader_scheme_load(config.pcapReadDirs[i]);
+    }
+
+    arkime_quit();
+    return NULL;
+}
+
+/******************************************************************************/
+LOCAL void reader_scheme_start()
+{
+    g_thread_unref(g_thread_new("arkime-scheme", &reader_scheme_thread, NULL));
+}
+
+/******************************************************************************/
+LOCAL int reader_scheme_stats(ArkimeReaderStats_t *stats)
+{
+    stats->dropped = dropped;
+    stats->total = total;
+    return 0;
+}
+/******************************************************************************/
+LOCAL void reader_scheme_pause()
+{
+    // pause reading if too many waiting disk operations
+    if (arkime_writer_queue_length() > 10) {
+        if (config.debug)
+            LOG("Waiting to process more packets, write q: %u", arkime_writer_queue_length());
+        usleep(10);
+    }
+
+    // pause reading if too many waiting ES operations
+    if (arkime_http_queue_length(esServer) > 30) {
+        if (config.debug)
+            LOG("Waiting to process more packets, es q: %d", arkime_http_queue_length(esServer));
+        usleep(10);
+    }
+
+    // pause reading if too many packets are waiting to be processed
+    if (arkime_packet_outstanding() > (int)(config.maxPacketsInQueue - offlineDispatchAfter)) {
+        if (config.debug)
+            LOG("Waiting to process more packets, packet q: %d allow %d, try increasing maxPacketsInQueue (%u)", arkime_packet_outstanding(), (int)(config.maxPacketsInQueue - offlineDispatchAfter), config.maxPacketsInQueue);
+        usleep(10);
+    }
+}
+
+/******************************************************************************/
+ArkimePacket_t *packet;
+void arkime_reader_scheme_process(const char *uri, uint8_t *data, int len)
+{
+    ArkimePacketBatch_t   batch;
+    arkime_packet_batch_init(&batch);
+
+    reader_scheme_pause();
+
+    while (len > 0) {
+        if (state == 0) {
+            uint8_t *header;
+            if (tmpBufferLen == 0) {
+                if (len < 24) {
+                    memcpy(tmpBuffer, data, len);
+                    tmpBufferLen = len;
+                    return;
+                }
+                header = data;
+                data += 24;
+                len -= 24;
+            } else {
+                int need = 24 - tmpBufferLen;
+                if (len < need) {
+                    memcpy(tmpBuffer + tmpBufferLen, data, len);
+                    tmpBufferLen += len;
+                    return;
+                }
+                memcpy(tmpBuffer + tmpBufferLen, data, need);
+                header = tmpBuffer;
+                data += need;
+                len -= need;
+                tmpBufferLen = 0;
+            }
+            reader_scheme_header(uri, header);
+            startPos = 24;
+            state = 1;
+            continue;
+        }
+        if (state == 1) {
+            uint8_t *pheader;
+            if (tmpBufferLen == 0) {
+                if (len < 16) {
+                    memcpy(tmpBuffer, data, len);
+                    tmpBufferLen = len;
+                    goto process;
+                }
+                pheader = data;
+                data += 16;
+                len -= 16;
+            } else {
+                int need = 16 - tmpBufferLen;
+                if (len < need) {
+                    memcpy(tmpBuffer + tmpBufferLen, data, len);
+                    tmpBufferLen += len;
+                    goto process;
+                }
+                memcpy(tmpBuffer + tmpBufferLen, data, need);
+                pheader = tmpBuffer;
+                data += need;
+                len -= need;
+                tmpBufferLen = 0;
+            }
+            state = 2;
+            packet = ARKIME_TYPE_ALLOC0(ArkimePacket_t);
+            struct arkime_pcap_sf_pkthdr *h = (struct arkime_pcap_sf_pkthdr *)pheader;
+            if (needSwap) {
+                packet->pktlen = SWAP32(h->caplen);
+                packet->ts.tv_sec = SWAP32(h->ts.tv_sec);
+                packet->ts.tv_usec = SWAP32(h->ts.tv_usec);
+            } else {
+                packet->pktlen = h->caplen;
+                packet->ts.tv_sec = h->ts.tv_sec;
+                packet->ts.tv_usec = h->ts.tv_usec;
+            }
+            if (nanosecond)
+                packet->ts.tv_usec = packet->ts.tv_usec / 1000;
+
+            packet->readerFilePos = startPos;
+            packet->readerPos = readerPos;
+            startPos += packet->pktlen + 16;
+        }
+        if (state == 2) {
+            if (tmpBufferLen == 0) {
+                if (len < packet->pktlen) {
+                    memcpy(tmpBuffer, data, len);
+                    tmpBufferLen = len;
+                    goto process;
+                }
+                packet->pkt = data;
+                data += packet->pktlen;
+                len -= packet->pktlen;
+            } else {
+                int need = packet->pktlen - tmpBufferLen;
+                if (len < need) {
+                    memcpy(tmpBuffer + tmpBufferLen, data, len);
+                    tmpBufferLen += len;
+                    goto process;
+                }
+                memcpy(tmpBuffer + tmpBufferLen, data, need);
+                packet->pkt = tmpBuffer;
+                data += need;
+                len -= need;
+                tmpBufferLen = 0;
+            }
+            total++;
+            arkime_packet_batch(&batch, packet);
+            packet = 0;
+            state = 1;
+        }
+    }
+process:
+    arkime_packet_batch_flush(&batch);
+}
+/******************************************************************************/
+void arkime_reader_scheme_register(char *name, ArkimeSchemaLoad load, ArkimeSchemaExit exit)
+{
+    ArkimeSchema_t *readerSchema = ARKIME_TYPE_ALLOC0(ArkimeSchema_t);
+    readerSchema->load = load;
+    readerSchema->exit = exit;
+    arkime_string_add(&schemesHash, name, readerSchema, TRUE);
+    if (strcmp(name, "file") == 0) {
+        fileSchema = readerSchema;
+    }
+}
+/******************************************************************************/
+void arkime_reader_scheme_init()
+{
+    HASH_INIT(s_, schemesHash, arkime_string_hash, arkime_string_cmp);
+
+    arkime_reader_start         = reader_scheme_start;
+    arkime_reader_stats         = reader_scheme_stats;
+
+    offlineDispatchAfter        = arkime_config_int(NULL, "offlineDispatchAfter", 2500, 1, 0x7fff);
+
+    if (offlineDispatchAfter > (int)(config.maxPacketsInQueue + 1000)) {
+        CONFIGEXIT("offlineDispatchAfter (%d) must be less than maxPacketsInQueue (%u) + 1000", offlineDispatchAfter, config.maxPacketsInQueue);
+    }
+
+    void arkime_reader_scheme_file_init();
+    arkime_reader_scheme_file_init();
+
+    void arkime_reader_scheme_http_init();
+    arkime_reader_scheme_http_init();
+}
