@@ -15,6 +15,7 @@ typedef struct {
     uint16_t   counts[2][2];
     uint16_t   lens[2][MAX_LENS]; // Keep up to MAX_LENS packet lengths
     uint16_t   done;
+    uint8_t    sentja4;
 } SSHInfo_t;
 
 typedef struct {
@@ -122,6 +123,7 @@ LOCAL int ssh_mode(uint16_t *nums, int num) {
     unsigned char modeCount = 0;
     memset(count, 0, sizeof(count));
     for (int i = 0; i < num; i++) {
+        printf("nums[i] %d ", nums[i]); // TODO REMOVE
         if (nums[i] >= 2048)
             continue;
         count[nums[i]]++;
@@ -134,6 +136,7 @@ LOCAL int ssh_mode(uint16_t *nums, int num) {
         }
 
     }
+    printf(" mode %d\n", mode); // TODO REMOVE
     return mode;
 }
 /******************************************************************************/
@@ -141,8 +144,11 @@ LOCAL void ssh_send_ja4ssh (ArkimeSession_t *session, SSHInfo_t *ssh)
 {
     LOG("enter %u %u\n", ssh_mode(ssh->lens[0], ssh->packets[0]), ssh_mode(ssh->lens[1], ssh->packets[1]));
 
-    // ALW TODO: We need to pass modes and packets
     SSHJA4_t ja4;
+    if (ssh->sentja4)
+        return;
+
+    ssh->sentja4 = 1;
     ja4.modes[0] = ssh_mode(ssh->lens[0], ssh->packets[0]);
     ja4.modes[1] = ssh_mode(ssh->lens[1], ssh->packets[1]);
     ja4.packets[0] = ssh->packets[0];
@@ -253,6 +259,13 @@ LOCAL void ssh_free(ArkimeSession_t UNUSED(*session), void *uw)
     ARKIME_TYPE_FREE(SSHInfo_t, ssh);
 }
 /******************************************************************************/
+LOCAL void ssh_save(ArkimeSession_t *session, void *uw, int UNUSED(final))
+{
+    SSHInfo_t            *ssh          = uw;
+
+    ssh_send_ja4ssh(session, ssh);
+}
+/******************************************************************************/
 LOCAL void ssh_classify(ArkimeSession_t *session, const uint8_t *UNUSED(data), int UNUSED(len), int UNUSED(which), void *UNUSED(uw))
 {
     if (arkime_session_has_protocol(session, "ssh"))
@@ -262,7 +275,7 @@ LOCAL void ssh_classify(ArkimeSession_t *session, const uint8_t *UNUSED(data), i
 
     SSHInfo_t            *ssh          = ARKIME_TYPE_ALLOC0(SSHInfo_t);
 
-    arkime_parsers_register(session, ssh_parser, ssh, ssh_free);
+    arkime_parsers_register2(session, ssh_parser, ssh, ssh_free, ssh_save);
 }
 /******************************************************************************/
 void arkime_parser_init()
