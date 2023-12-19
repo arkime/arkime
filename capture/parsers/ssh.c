@@ -14,8 +14,9 @@ typedef struct {
     uint16_t   packets[2];
     uint16_t   counts[2][2];
     uint16_t   lens[2][MAX_LENS]; // Keep up to MAX_LENS packet lengths
-    uint16_t   done;
+    uint8_t    done;
     uint8_t    sentja4;
+    uint8_t    doneRS;;
 } SSHInfo_t;
 
 typedef struct {
@@ -122,8 +123,9 @@ LOCAL int ssh_mode(uint16_t *nums, int num) {
     unsigned short mode = 0;
     unsigned char modeCount = 0;
     memset(count, 0, sizeof(count));
+    printf("MODE: "); // TODO REMOVE
     for (int i = 0; i < num; i++) {
-        printf("nums[i] %d ", nums[i]); // TODO REMOVE
+        printf("%d ", nums[i]); // TODO REMOVE
         if (nums[i] >= 2048)
             continue;
         count[nums[i]]++;
@@ -167,13 +169,14 @@ LOCAL int ssh_parser(ArkimeSession_t *session, void *uw, const uint8_t *data, in
         ssh->lens[which][ssh->packets[which] - 1] = remaining;
         if (ssh->packets[0] + ssh->packets[1] == MAX_LENS) {
             ssh_send_ja4ssh(session, ssh);
+            arkime_parsers_unregister(session, uw);
         }
     }
 
     /* From packets 6-15 count number number of packets between 0-49 and 50-99 bytes.
      * If more of the bigger packets in both directions this probably is a reverse shell
      */
-    if (ssh->packets[which] > 5) {
+    if (!ssh->doneRS && ssh->packets[which] > 5) {
         if (remaining < 50)
             ssh->counts[which][0]++;
         else if (remaining < 100)
@@ -184,7 +187,7 @@ LOCAL int ssh_parser(ArkimeSession_t *session, void *uw, const uint8_t *data, in
                 arkime_session_add_tag(session, "ssh-reverse-shell");
             }
 
-            arkime_parsers_unregister(session, uw);
+            ssh->doneRS = 1;
             return 0;
         }
     }
