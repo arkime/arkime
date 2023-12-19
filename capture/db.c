@@ -2816,7 +2816,15 @@ void arkime_db_exit()
     }
 
     if (config.debug) {
-        LOG("totalPackets: %" PRId64 " totalSessions: %" PRId64 " writtenBytes: %" PRId64 " unwrittenBytes: %" PRId64,
-            totalPackets, totalSessions, writtenBytes, unwrittenBytes);
+        LOG("totalPackets: %" PRId64 " totalSessions: %" PRId64 " writtenBytes: %" PRId64 " unwrittenBytes: %" PRId64 " pstats: %" PRIu64 "/%" PRIu64 "/%" PRIu64 "/%" PRIu64 "/%" PRIu64 "/%" PRIu64 "/%" PRIu64,
+            totalPackets, totalSessions, writtenBytes, unwrittenBytes,
+            packetStats[ARKIME_PACKET_DO_PROCESS],
+            packetStats[ARKIME_PACKET_IP_DROPPED],
+            packetStats[ARKIME_PACKET_OVERLOAD_DROPPED],
+            packetStats[ARKIME_PACKET_CORRUPT],
+            packetStats[ARKIME_PACKET_UNKNOWN],
+            packetStats[ARKIME_PACKET_IPPORT_DROPPED],
+            packetStats[ARKIME_PACKET_DUPLICATE_DROPPED]
+        );
     }
 }

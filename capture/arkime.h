@@ -767,7 +767,7 @@ typedef struct {
 typedef int (*ArkimeWatchFd_func)(gint fd, GIOCondition cond, gpointer data);
 
 typedef void (*ArkimeHttpResponse_cb)(int code, uint8_t *data, int len, gpointer uw);
-typedef void (*ArkimeHttpRead_cb)(uint8_t *data, int len, gpointer uw);
+typedef int (*ArkimeHttpRead_cb)(uint8_t *data, int len, gpointer uw);
 
 typedef void (*ArkimeTag_cb)(void *uw, int tagType, const char *tagName, uint32_t tagValue, gboolean async);
 
@@ -1390,7 +1390,7 @@ typedef int  (*ArkimeSchemaLoad)(const char *uri);
 typedef void (*ArkimeSchemaExit)();
 
 void arkime_reader_scheme_register(char *name, ArkimeSchemaLoad load, ArkimeSchemaExit exit);
-void arkime_reader_scheme_process(const char *uri, uint8_t *data, int len);
+int arkime_reader_scheme_process(const char *uri, uint8_t *data, int len);
 void arkime_reader_scheme_load(const char *uri);
 
 /******************************************************************************/

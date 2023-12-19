@@ -17,7 +17,7 @@ use Try::Tiny;
 $ArkimeTest::userAgent = LWP::UserAgent->new(timeout => 120);
 $ArkimeTest::host = "127.0.0.1";
 $ArkimeTest::elasticsearch = $ENV{ELASTICSEARCH} || "http://127.0.0.1:9200";
-$ArkimeTest::es = "-o 'elasticsearch=$ArkimeTest::elasticsearch' -o 'usersElasticsearch=$ArkimeTest::elasticsearch' $ENV{INSECURE}";
+$ArkimeTest::es = "-o 'elasticsearch=$ArkimeTest::elasticsearch' -o 'usersElasticsearch=$ArkimeTest::elasticsearch' $ENV{INSECURE} $ENV{SCHEME}";
 
 if ($ENV{INSECURE} eq "--insecure") {
     $ArkimeTest::userAgent->ssl_opts(

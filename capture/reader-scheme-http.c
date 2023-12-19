@@ -20,15 +20,12 @@ LOCAL ARKIME_LOCK_DEFINE(waiting);
 /******************************************************************************/
 LOCAL void scheme_http_done(int code, uint8_t *data, int data_len, gpointer UNUSED(uw))
 {
-    LOG("DONE %d %d", code, data_len);
     ARKIME_UNLOCK(waiting);
 }
 /******************************************************************************/
-LOCAL void scheme_http_read(uint8_t *data, int data_len, gpointer uw)
+LOCAL int scheme_http_read(uint8_t *data, int data_len, gpointer uw)
 {
-    LOG("READ %s %d", (char *)uw, data_len);
-    arkime_print_hex_string(data, data_len);
-    arkime_reader_scheme_process((char *)uw, data, data_len);
+    return arkime_reader_scheme_process((char *)uw, data, data_len);
 }
 /******************************************************************************/
 int scheme_http_load(const char *uri)
@@ -48,6 +45,9 @@ int scheme_http_load(const char *uri)
     CURLU *h = curl_url();
     curl_url_set(h, CURLUPART_URL, uri, CURLU_NON_SUPPORT_SCHEME);
 
+    char *scheme;
+    rc = curl_url_get(h, CURLUPART_SCHEME, &scheme, 0);
+
     char *host;
     rc = curl_url_get(h, CURLUPART_HOST, &host, 0);
 
@@ -57,15 +57,22 @@ int scheme_http_load(const char *uri)
     char *path;
     rc = curl_url_get(h, CURLUPART_PATH, &path, 0);
 
-    LOG("ALW %s %s %s", uri, host, port);
 
-    void *server = g_hash_table_lookup(servers, host);
+    char hostport[1000];
+    snprintf(hostport, sizeof(hostport), "%s://%s:%s", scheme, host, port);
+
+    void *server = g_hash_table_lookup(servers, hostport);
     if (!server) {
-        server = arkime_http_create_server(uri, 2, 2, TRUE);
-        g_hash_table_insert(servers, g_strdup(host), server);
+        server = arkime_http_create_server(hostport, 2, 2, TRUE);
+        g_hash_table_insert(servers, g_strdup(hostport), server);
     }
 
     arkime_http_schedule2(server, "GET", path, -1, NULL, 0, NULL, ARKIME_HTTP_PRIORITY_NORMAL, scheme_http_done, scheme_http_read, uri);
+
+    curl_free(scheme);
+    curl_free(host);
+    curl_free(port);
+    curl_free(path);
 
     ARKIME_LOCK(waiting);
     ARKIME_LOCK(waiting);

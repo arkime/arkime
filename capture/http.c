@@ -135,8 +135,9 @@ LOCAL size_t arkime_http_curl_write_callback(void *contents, size_t size, size_t
     size_t sz = size * nmemb;
 
     if (request->rfunc) {
-        request->rfunc(contents, sz, request->uw);
-        return sz;
+        if (!request->rfunc(contents, sz, request->uw))
+            return sz;
+        return 0;
     }
 
     if (!request->dataIn) {

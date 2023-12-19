@@ -88,9 +88,15 @@ void arkime_reader_scheme_load(const char *uri)
     readerSchema->load(uri);
 }
 /******************************************************************************/
-LOCAL void reader_scheme_header(const char *uri, const uint8_t *header)
+LOCAL int reader_scheme_header(const char *uri, const uint8_t *header)
 {
     ArkimePcapFileHdr_t *h = (ArkimePcapFileHdr_t *)header;
+    if (h->magic != 0xa1b2c3d4 && h->magic != 0xd4c3b2a1 &&
+        h->magic != 0xa1b23c4d && h->magic != 0x4d3cb2a1) {
+        LOG("ERROR - Unknown magic %x in %s", h->magic, uri);
+        return 1;
+    }
+
     needSwap = (h->magic == 0xd4c3b2a1 || h->magic == 0x4d3cb2a1);
     nanosecond = (h->magic == 0xa1b23c4d || h->magic == 0x4d3cb2a1);
 
@@ -149,6 +155,8 @@ LOCAL void reader_scheme_header(const char *uri, const uint8_t *header)
         }
         pcap_freecode(&bpf);*/
     }
+
+    return 0;
 }
 /******************************************************************************/
 LOCAL void *reader_scheme_thread(void *UNUSED(arg))
@@ -215,33 +223,51 @@ LOCAL int reader_scheme_stats(ArkimeReaderStats_t *stats)
     return 0;
 }
 /******************************************************************************/
+// Pause the reading thread if we are getting too far ahead of the processing
 LOCAL void reader_scheme_pause()
 {
-    // pause reading if too many waiting disk operations
-    if (arkime_writer_queue_length() > 10) {
-        if (config.debug)
-            LOG("Waiting to process more packets, write q: %u", arkime_writer_queue_length());
-        usleep(10);
-    }
+    while (1) {
+        // pause reading if too many waiting disk operations
+        if (arkime_writer_queue_length() > 10) {
+            if (config.debug) {
+                static uint8_t msgcnt;
+                if (msgcnt++ % 10 == 0)
+                    LOG("Waiting to process more packets, write q: %u", arkime_writer_queue_length());
+            }
+            while (arkime_writer_queue_length() > 10) {
+                usleep(5000);
+            }
+            continue;
+        }
 
-    // pause reading if too many waiting ES operations
-    if (arkime_http_queue_length(esServer) > 30) {
-        if (config.debug)
-            LOG("Waiting to process more packets, es q: %d", arkime_http_queue_length(esServer));
-        usleep(10);
-    }
+        // pause reading if too many waiting ES operations
+        if (arkime_http_queue_length(esServer) > 30) {
+            if (config.debug) {
+                static uint8_t msgcnt;
+                if (msgcnt++ % 10 == 0)
+                    LOG("Waiting to process more packets, es q: %d", arkime_http_queue_length(esServer));
+            }
+            while (arkime_http_queue_length(esServer) > 30) {
+                usleep(5000);
+            }
+            continue;
+        }
 
-    // pause reading if too many packets are waiting to be processed
-    if (arkime_packet_outstanding() > (int)(config.maxPacketsInQueue - offlineDispatchAfter)) {
-        if (config.debug)
-            LOG("Waiting to process more packets, packet q: %d allow %d, try increasing maxPacketsInQueue (%u)", arkime_packet_outstanding(), (int)(config.maxPacketsInQueue - offlineDispatchAfter), config.maxPacketsInQueue);
-        usleep(10);
+        // pause reading if too many packets are waiting to be processed
+        int m = config.maxPacketsInQueue - offlineDispatchAfter;
+        if (arkime_packet_outstanding() > m) {
+            while (arkime_packet_outstanding() > m) {
+                usleep(5000);
+            }
+            continue;
+        }
+        break;
     }
 }
 
 /******************************************************************************/
 ArkimePacket_t *packet;
-void arkime_reader_scheme_process(const char *uri, uint8_t *data, int len)
+int arkime_reader_scheme_process(const char *uri, uint8_t *data, int len)
 {
     ArkimePacketBatch_t   batch;
     arkime_packet_batch_init(&batch);
@@ -255,7 +281,7 @@ void arkime_reader_scheme_process(const char *uri, uint8_t *data, int len)
                 if (len < 24) {
                     memcpy(tmpBuffer, data, len);
                     tmpBufferLen = len;
-                    return;
+                    return 0;
                 }
                 header = data;
                 data += 24;
@@ -265,7 +291,7 @@ void arkime_reader_scheme_process(const char *uri, uint8_t *data, int len)
                 if (len < need) {
                     memcpy(tmpBuffer + tmpBufferLen, data, len);
                     tmpBufferLen += len;
-                    return;
+                    return 0;
                 }
                 memcpy(tmpBuffer + tmpBufferLen, data, need);
                 header = tmpBuffer;
@@ -273,7 +299,8 @@ void arkime_reader_scheme_process(const char *uri, uint8_t *data, int len)
                 len -= need;
                 tmpBufferLen = 0;
             }
-            reader_scheme_header(uri, header);
+            if (reader_scheme_header(uri, header))
+                return 1;
             startPos = 24;
             state = 1;
             continue;
@@ -352,6 +379,7 @@ void arkime_reader_scheme_process(const char *uri, uint8_t *data, int len)
     }
 process:
     arkime_packet_batch_flush(&batch);
+    return 0;
 }
 /******************************************************************************/
 void arkime_reader_scheme_register(char *name, ArkimeSchemaLoad load, ArkimeSchemaExit exit)
