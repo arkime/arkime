@@ -17,6 +17,11 @@ typedef struct {
     uint16_t   done;
 } SSHInfo_t;
 
+typedef struct {
+    uint16_t  modes[2];
+    uint16_t  packets[2];
+} SSHJA4_t;
+
 extern ArkimeConfig_t        config;
 LOCAL  int verField;
 LOCAL  int keyField;
@@ -137,7 +142,13 @@ LOCAL void ssh_send_ja4ssh (ArkimeSession_t *session, SSHInfo_t *ssh)
     LOG("enter %u %u\n", ssh_mode(ssh->lens[0], ssh->packets[0]), ssh_mode(ssh->lens[1], ssh->packets[1]));
 
     // ALW TODO: We need to pass modes and packets
-    arkime_parser_call_named_func(ssh_ja4ssh_func, session, NULL, 0, NULL);
+    SSHJA4_t ja4;
+    ja4.modes[0] = ssh_mode(ssh->lens[0], ssh->packets[0]);
+    ja4.modes[1] = ssh_mode(ssh->lens[1], ssh->packets[1]);
+    ja4.packets[0] = ssh->packets[0];
+    ja4.packets[1] = ssh->packets[1];
+
+    arkime_parser_call_named_func(ssh_ja4ssh_func, session, NULL, 0, &ja4);
 }
 /******************************************************************************/
 LOCAL int ssh_parser(ArkimeSession_t *session, void *uw, const uint8_t *data, int remaining, int which)

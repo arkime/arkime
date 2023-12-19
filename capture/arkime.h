@@ -681,6 +681,7 @@ typedef struct arkime_session {
     uint16_t               segments;
     uint16_t               stopSaving;
     uint16_t               tcpFlagCnt[ARKIME_TCPFLAG_MAX];
+    uint8_t                tcpFlagAckCnt[2];
     uint16_t               maxFields;
 
     uint8_t                consumed[2];
