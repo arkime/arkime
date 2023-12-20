@@ -19,6 +19,7 @@ typedef struct {
     uint8_t    doneRS;;
 } SSHInfo_t;
 
+// keep this in sync with ja4plus.c
 typedef struct {
     uint16_t  modes[2];
     uint16_t  packets[2];
@@ -119,13 +120,11 @@ LOCAL void ssh_parse_keyinit(ArkimeSession_t *session, const uint8_t *data, int 
 /******************************************************************************/
 // Given a list of numbers find the mode, we ignore numbers > 2048
 LOCAL int ssh_mode(uint16_t *nums, int num) {
-    unsigned char count[2048];
+    unsigned char  count[2048];
     unsigned short mode = 0;
-    unsigned char modeCount = 0;
+    unsigned char  modeCount = 0;
     memset(count, 0, sizeof(count));
-    printf("MODE: "); // TODO REMOVE
     for (int i = 0; i < num; i++) {
-        printf("%d ", nums[i]); // TODO REMOVE
         if (nums[i] >= 2048)
             continue;
         count[nums[i]]++;
@@ -138,14 +137,11 @@ LOCAL int ssh_mode(uint16_t *nums, int num) {
         }
 
     }
-    printf(" mode %d\n", mode); // TODO REMOVE
     return mode;
 }
 /******************************************************************************/
 LOCAL void ssh_send_ja4ssh (ArkimeSession_t *session, SSHInfo_t *ssh)
 {
-    LOG("enter %u %u\n", ssh_mode(ssh->lens[0], ssh->packets[0]), ssh_mode(ssh->lens[1], ssh->packets[1]));
-
     SSHJA4_t ja4;
     if (ssh->sentja4)
         return;
@@ -266,6 +262,7 @@ LOCAL void ssh_save(ArkimeSession_t *session, void *uw, int UNUSED(final))
 {
     SSHInfo_t            *ssh          = uw;
 
+    // Call on save incase it wasn't called based on number of packets above
     ssh_send_ja4ssh(session, ssh);
 }
 /******************************************************************************/
