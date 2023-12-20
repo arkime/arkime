@@ -3,27 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 #include "arkime.h"
-
-#define MAX_SSH_BUFFER 8196
-
-#define MAX_LENS 200
-
-typedef struct {
-    char       buf[2][MAX_SSH_BUFFER];
-    int32_t    len[2];
-    uint16_t   packets[2];
-    uint16_t   counts[2][2];
-    uint16_t   lens[2][MAX_LENS]; // Keep up to MAX_LENS packet lengths
-    uint8_t    done;
-    uint8_t    sentja4;
-    uint8_t    doneRS;;
-} SSHInfo_t;
-
-// keep this in sync with ja4plus.c
-typedef struct {
-    uint16_t  modes[2];
-    uint16_t  packets[2];
-} SSHJA4_t;
+#include "ssh_info.h"
 
 extern ArkimeConfig_t        config;
 LOCAL  int verField;
@@ -31,7 +11,7 @@ LOCAL  int keyField;
 LOCAL  int hasshField;
 LOCAL  int hasshServerField;
 
-LOCAL uint32_t ssh_ja4ssh_func;
+LOCAL uint32_t ssh_counting200_func;
 
 /******************************************************************************/
 LOCAL void ssh_parse_keyinit(ArkimeSession_t *session, const uint8_t *data, int remaining, int isDst)
@@ -118,41 +98,14 @@ LOCAL void ssh_parse_keyinit(ArkimeSession_t *session, const uint8_t *data, int 
     }
 }
 /******************************************************************************/
-// Given a list of numbers find the mode, we ignore numbers > 2048
-LOCAL int ssh_mode(uint16_t *nums, int num) {
-    unsigned char  count[2048];
-    unsigned short mode = 0;
-    unsigned char  modeCount = 0;
-    memset(count, 0, sizeof(count));
-    for (int i = 0; i < num; i++) {
-        if (nums[i] >= 2048)
-            continue;
-        count[nums[i]]++;
-        if (count[nums[i]] == modeCount && nums[i] < mode) {
-            // new count same as old max, but lower mode
-            mode = nums[i];
-        } else if (count[nums[i]] > modeCount) {
-            mode = nums[i];
-            modeCount = count[nums[i]];
-        }
-
-    }
-    return mode;
-}
-/******************************************************************************/
-LOCAL void ssh_send_ja4ssh (ArkimeSession_t *session, SSHInfo_t *ssh)
+LOCAL void ssh_send_counting200 (ArkimeSession_t *session, SSHInfo_t *ssh)
 {
-    SSHJA4_t ja4;
-    if (ssh->sentja4)
+    if (ssh->sentCounting)
         return;
 
-    ssh->sentja4 = 1;
-    ja4.modes[0] = ssh_mode(ssh->lens[0], ssh->packets[0]);
-    ja4.modes[1] = ssh_mode(ssh->lens[1], ssh->packets[1]);
-    ja4.packets[0] = ssh->packets[0];
-    ja4.packets[1] = ssh->packets[1];
+    ssh->sentCounting = 1;
 
-    arkime_parser_call_named_func(ssh_ja4ssh_func, session, NULL, 0, &ja4);
+    arkime_parser_call_named_func(ssh_counting200_func, session, NULL, 0, ssh);
 }
 /******************************************************************************/
 LOCAL int ssh_parser(ArkimeSession_t *session, void *uw, const uint8_t *data, int remaining, int which)
@@ -164,7 +117,7 @@ LOCAL int ssh_parser(ArkimeSession_t *session, void *uw, const uint8_t *data, in
     if (ssh->packets[0] + ssh->packets[1] <= MAX_LENS) {
         ssh->lens[which][ssh->packets[which] - 1] = remaining;
         if (ssh->packets[0] + ssh->packets[1] == MAX_LENS) {
-            ssh_send_ja4ssh(session, ssh);
+            ssh_send_counting200(session, ssh);
             arkime_parsers_unregister(session, uw);
         }
     }
@@ -263,7 +216,7 @@ LOCAL void ssh_save(ArkimeSession_t *session, void *uw, int UNUSED(final))
     SSHInfo_t            *ssh          = uw;
 
     // Call on save incase it wasn't called based on number of packets above
-    ssh_send_ja4ssh(session, ssh);
+    ssh_send_counting200(session, ssh);
 }
 /******************************************************************************/
 LOCAL void ssh_classify(ArkimeSession_t *session, const uint8_t *UNUSED(data), int UNUSED(len), int UNUSED(which), void *UNUSED(uw))
@@ -306,6 +259,6 @@ void arkime_parser_init()
 
     arkime_parsers_classifier_register_tcp("ssh", NULL, 0, (uint8_t *)"SSH", 3, ssh_classify);
 
-    ssh_ja4ssh_func = arkime_parser_get_named_func("ssh_ja4ssh");
+    ssh_counting200_func = arkime_parser_get_named_func("ssh_counting200");
 }
 
