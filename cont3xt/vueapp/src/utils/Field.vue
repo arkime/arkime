@@ -37,7 +37,7 @@ SPDX-License-Identifier: Apache-2.0
         key="pivot"
         target="_blank"
         v-if="options.pivot"
-        :href="`?b=${base64Encode(value)}`">
+        :href="pivotHref">
         {{ options.pivot }}
       </b-dropdown-item>
     </div>
@@ -85,6 +85,11 @@ export default {
     return {
       isOpen: false
     };
+  },
+  computed: {
+    pivotHref () {
+      return window.location.search;
+    }
   },
   methods: {
     formatUrl (option) {
