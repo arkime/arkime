@@ -207,6 +207,7 @@ int tcp_packet_process(ArkimeSession_t *const session, ArkimePacket_t *const pac
 
     if ((tcphdr->th_flags & (TH_FIN | TH_RST | TH_PUSH | TH_SYN | TH_ACK)) == TH_ACK) {
         session->tcpFlagCnt[ARKIME_TCPFLAG_ACK]++;
+        session->tcpFlagAckCnt[packet->direction]++;
         ARKIME_RULES_RUN_FIELD_SET(session, ARKIME_FIELD_EXSPECIAL_TCPFLAGS_ACK, (gpointer)(long)session->tcpFlagCnt[ARKIME_TCPFLAG_ACK]);
         if (session->ackTime == 0) {
             session->ackTime = (packet->ts.tv_sec - session->firstPacket.tv_sec) * 1000000 +
