@@ -48,7 +48,7 @@
 #define SUPPRESS_INT_CONVERSION
 #endif
 
-#define ARKIME_API_VERSION 502
+#define ARKIME_API_VERSION 503
 
 #define ARKIME_SESSIONID_LEN  37
 #define ARKIME_SESSIONID6_LEN 37
@@ -681,6 +681,7 @@ typedef struct arkime_session {
     uint16_t               segments;
     uint16_t               stopSaving;
     uint16_t               tcpFlagCnt[ARKIME_TCPFLAG_MAX];
+    uint8_t                tcpFlagAckCnt[2];
     uint16_t               maxFields;
 
     uint8_t                consumed[2];
