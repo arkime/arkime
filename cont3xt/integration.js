@@ -16,6 +16,8 @@ const ipaddr = require('ipaddr.js');
 const Audit = require('./audit');
 const RE2 = require('re2');
 const normalizeCardField = require('./normalizeCardField');
+// Note: need the trailing slash to get the userland module instead of node core punycode module (deprecated)
+const punycode = require('punycode/');
 
 const itypeStats = {};
 
@@ -164,23 +166,23 @@ class Integration {
 
   static classify (str) {
     if (str.match(/^(\d{3}[-. ]?\d{3}[-. ]?\d{4}|\+[\d-.]{9,17})$/)) {
-      return 'phone';
+      return { itype: 'phone' };
     }
 
     // https://www.oreilly.com/library/view/regular-expressions-cookbook/9780596802837/ch07s16.html
     if (str.match(/^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$/)) {
-      return 'ip'; // v4
+      return { itype: 'ip' }; // v4
     }
 
     // https://stackoverflow.com/questions/53497/regular-expression-that-matches-valid-ipv6-addresses
     if (str.match(/^(([0-9a-fA-F]{1,4}:){7,7}[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,7}:|([0-9a-fA-F]{1,4}:){1,6}:[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,5}(:[0-9a-fA-F]{1,4}){1,2}|([0-9a-fA-F]{1,4}:){1,4}(:[0-9a-fA-F]{1,4}){1,3}|([0-9a-fA-F]{1,4}:){1,3}(:[0-9a-fA-F]{1,4}){1,4}|([0-9a-fA-F]{1,4}:){1,2}(:[0-9a-fA-F]{1,4}){1,5}|[0-9a-fA-F]{1,4}:((:[0-9a-fA-F]{1,4}){1,6})|:((:[0-9a-fA-F]{1,4}){1,7}|:)|fe80:(:[0-9a-fA-F]{0,4}){0,4}%[0-9a-zA-Z]{1,}|::(ffff(:0{1,4}){0,1}:){0,1}((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])|([0-9a-fA-F]{1,4}:){1,4}:((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9]))$/)) {
-      return 'ip'; // v6
+      return { itype: 'ip' }; // v6
     }
 
     // https://emailregex.com/
     // eslint-disable-next-line no-useless-escape
     if (str.match(/^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/)) {
-      return 'email';
+      return { itype: 'email' };
     }
 
     if (str.match(/https?:\/\//) && str.match(cont3xtUrlRegex)) {
@@ -188,23 +190,32 @@ class Integration {
         // Make sure we can construct a proper URL-object using this string
         // eslint-disable-next-line no-unused-vars
         const url = new URL(str);
-        return 'url';
+        return { itype: 'url' };
       } catch (e) {
         // This looked like a URL but could not be parsed as such. Continue testing below.
       }
     }
 
     if (str.match(/^[A-Fa-f0-9]{32}$/) || str.match(/^[A-Fa-f0-9]{40}$/) || str.match(/^[A-Fa-f0-9]{64}$/)) {
-      return 'hash';
+      return { itype: 'hash' };
+    }
+
+    if (str.startsWith('xn--')) {
+      try {
+        const decoded = punycode.toUnicode(str);
+        return { itype: 'domain', decoded };
+      } catch (err) {
+        // This looked like punycode but could not be parsed as such. Continue testing below.
+      }
     }
 
     // https://stackoverflow.com/questions/106179/regular-expression-to-match-dns-hostname-or-ip-address
     if (str.match(/^([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9-]{0,61}[a-zA-Z0-9])(\.([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9-]{0,61}[a-zA-Z0-9]))+$/)) {
-      return 'domain';
+      return { itype: 'domain' };
     }
 
     // Not sure
-    return 'text';
+    return { itype: 'text' };
   }
 
   /**
@@ -634,9 +645,11 @@ class Integration {
       return res.send({ purpose: 'error', text: 'query must contain at least one non-whitespace indicator' });
     }
 
-    const indicators = queries.map(query => ({
-      query, itype: Integration.classify(query)
-    }));
+    const indicators = queries.map((query) => {
+      const { itype, decoded } = Integration.classify(query);
+      return { query, itype, decoded };
+    });
+
     const isBulk = indicators.length > 1;
 
     const issuedAt = Date.now();

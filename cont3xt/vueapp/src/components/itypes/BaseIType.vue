@@ -12,11 +12,11 @@ SPDX-License-Identifier: Apache-2.0
           {{ indicator.itype.toUpperCase() }}
         </h4>
         <cont3xt-field
+            :decoded-value="indicator.decoded"
             :value="indicator.query"
             class="align-self-center mr-1"
             :id="`${indicator.query}-${indicator.itype}`"
         />
-
         <integration-severity-counts :indicator-id="indicatorId" />
 
         <!--    unlabeled tidbits    -->
