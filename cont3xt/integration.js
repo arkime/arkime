@@ -701,7 +701,7 @@ class Integration {
           Integration.runIntegrationsList(shared, { query: dquery, itype: 'domain' }, indicator, Integration.#integrations.domain);
         } else if (itype === 'url') {
           const url = new URL(query);
-          if (Integration.classify(url.hostname) === 'ip') {
+          if (Integration.classify(url.hostname).itype === 'ip') {
             Integration.runIntegrationsList(shared, { query: url.hostname, itype: 'ip' }, indicator, Integration.#integrations.ip);
           } else {
             const equery = extractDomain(query, { tld: true });
