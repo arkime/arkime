@@ -527,7 +527,7 @@ export default {
       error: '',
       scrollPx: 0,
       initialized: false,
-      searchTerm: this.$route.query.q ? this.$route.query.q : (this.$route.query.b ? window.atob(this.$route.query.b) : ''),
+      searchTerm: this.$route.query.q ? this.$route.query.q : (this.$route.query.b && this.$route.query.b.length > 1 ? window.atob(this.$route.query.b) : ''),
       overrideOverviewId: undefined,
       skipCache: false,
       skipChildren: false,
@@ -930,8 +930,8 @@ export default {
       this.overrideOverviewId = undefined;
 
       // only match on b because we remove the q param
-      if (!this.$route.query.b ||
-          (this.$route.query.b && window.atob(this.$route.query.b) !== this.searchTerm)
+      if (!this.$route.query.b || this.$route.query.b.length === 1 ||
+          (this.$route.query.b && this.$route.query.b.length > 1 && window.atob(this.$route.query.b) !== this.searchTerm)
       ) {
         this.$router.push({
           query: {
@@ -941,6 +941,7 @@ export default {
           }
         });
       }
+
       const viewId = this.getSelectedView?._id;
       Cont3xtService.search({ searchTerm: this.searchTerm, skipCache: this.skipCache, skipChildren: this.skipChildren, tags: this.tags, viewId }).subscribe({
         next: this.handleIntegrationChunk,
