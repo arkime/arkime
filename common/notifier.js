@@ -284,7 +284,7 @@ class Notifier {
           // non-admins only need name and type to use notifiers (they cannot create/update/delete)
           const notifierType = result.type;
           const notifierName = result.name;
-          return { name: notifierName, type: notifierType };
+          return { name: notifierName, type: notifierType, id };
         }
         result.id = id;
         return result;
