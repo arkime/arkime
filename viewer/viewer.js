@@ -734,6 +734,9 @@ function loadPlugins () {
     registerWriter: function (str, info) {
       internals.writers.set(str, info);
     },
+    registerScheme: function (scheme, info) {
+      internals.schemes.set(scheme, info);
+    },
     getDb: function () { return Db; },
     getPcap: function () { return Pcap; }
   };

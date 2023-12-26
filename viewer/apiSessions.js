@@ -27,6 +27,11 @@ const arkimeparser = require('./arkimeparser.js');
 const internals = require('./internals');
 const ViewerUtils = require('./viewerUtils');
 const ipaddr = require('ipaddr.js');
+const axios = require('axios');
+const LRU = require('lru-cache');
+
+const headerlru = new LRU({ max: 100 });
+const blocklru = new LRU({ max: 100 });
 
 class SessionAPIs {
   // --------------------------------------------------------------------------
@@ -742,6 +747,97 @@ class SessionAPIs {
   }
 
   // --------------------------------------------------------------------------
+  static async getBlock(url, pos) {
+    const blockSize = 0x10000;
+    const blockStart = Math.floor(pos/blockSize) * blockSize;
+    const key = `${url}:${blockStart}`;
+    let block = blocklru.get(key);
+    if (!block) {
+      const agent = new http.Agent({ family: 4 });
+      const result = await axios.get(url, { responseType: 'arraybuffer', httpAgent: agent, headers: { range: `bytes=${blockStart}-${blockStart + blockSize}`}});
+      block = result.data;
+      blocklru.set(key, block);
+    }
+
+    // Return a new buffer starting at pos
+    return block.slice(pos - blockStart);
+  }
+
+  // --------------------------------------------------------------------------
+  static async getHeaderAsync (node, fileNum) {
+    const info = await Db.fileIdToFile(node, fileNum);
+    const key = `${node}:${fileNum}`;
+    let obj = headerlru.get(key);
+    if (obj) {
+      return obj;
+    }
+
+    const block = await SessionAPIs.getBlock(info.name, 0);
+    obj = { info, header: block };
+    headerlru.set(key, obj);
+    return obj;
+  }
+
+  // --------------------------------------------------------------------------
+  static getHeader(node, fileNum) {
+    const key = `${node}:${fileNum}`;
+    const header = headerlru.get(key);
+    return header;
+  }
+
+  // --------------------------------------------------------------------------
+  static async getPacket(pcap, pos, i, packetCb, nextCb) {
+    let block = await SessionAPIs.getBlock(pcap.key, pos);
+    if (block.length < 16) {
+      const block2 = await SessionAPIs.getBlock(pcap.key, pos + block.length);
+      block = Buffer.concat([block, block2]);
+    }
+    const len = (pcap.bigEndian ? block.readUInt32BE(8) : block.readUInt32LE(8)) + 16;
+
+    if (block.length < len) {
+      const block2 = await SessionAPIs.getBlock(pcap.key, pos + block.length);
+      block = Buffer.concat([block, block2]);
+    }
+
+    packetCb(pcap, block.slice(0, len), nextCb, i);
+  }
+
+  // --------------------------------------------------------------------------
+  static async processSessionIdHTTP (session, headerCb, packetCb, endCb, limit) {
+    const fields = session.fields;
+    const waits = [];
+    fields.packetPos.forEach((pos) => {
+      if (pos < 0) {
+        waits.push(SessionAPIs.getHeaderAsync(fields.node, -pos));
+      }
+    });
+
+    try {
+      await Promise.all(waits);
+    } catch (e) {
+      console.log("Failure fetching header", e.response);
+      return endCb('Only have SPI data, PCAP file no longer available for ' + e.response?.config?.url);
+    }
+
+    let pcap;
+    let itemPos = 0;
+    async.eachLimit(fields.packetPos, 1, (pos, nextCb) => {
+      if (pos < 0) {
+        const h = SessionAPIs.getHeader(fields.node, -pos);
+        pcap = Pcap.make(h.info.name, h.header);
+        if (headerCb) {
+          headerCb(pcap, h.header);
+          headerCb = null;
+        }
+        return nextCb(null);
+      }
+      SessionAPIs.getPacket(pcap, pos, itemPos++, packetCb, nextCb);
+    }, (pcapErr, results) => {
+      endCb(pcapErr, fields);
+    });
+  }
+
+  // --------------------------------------------------------------------------
   static #sessionsPcapList (req, res, list, pcapWriter, extension) {
     if (list.length > 0 && list[0].fields) {
       list = list.sort((a, b) => {
@@ -1159,7 +1255,7 @@ class SessionAPIs {
       options = { _source: false, fields: 'node,network.packets,packetPos,source.ip,source.port,destination.ip,destination.port,ipProtocol,packetLen'.split(',') };
     }
 
-    Db.getSession(id, options, (err, session) => {
+    Db.getSession(id, options, async (err, session) => {
       if (err || !session.found) {
         console.log('ERROR - session get error in processSessionId', util.inspect(err, false, 50), session);
         return endCb('Session not found', null);
@@ -1175,49 +1271,44 @@ class SessionAPIs {
         fields.packetPos.length = maxPackets;
       }
 
-      /* Go through the list of prefetch the id to file name if we are running in parallel to
-       * reduce the number of elasticsearch queries and problems
-       */
-      let outstanding = 0;
-      let i;
-      let ilen;
-
-      function fileReadyCb (fileInfo) {
-        outstanding--;
-
-        // All of the replies have been received
-        if (i === ilen && outstanding === 0) {
-          readyToProcess();
-        }
-      }
-
-      for (i = 0, ilen = fields.packetPos.length; i < ilen; i++) {
+      /* Go through the list of packets and prefetch the id to file name mapping */
+      let afileInfo;
+      for (let i = 0, ilen = fields.packetPos.length; i < ilen; i++) {
         if (fields.packetPos[i] < 0) {
-          outstanding++;
-          Db.fileIdToFile(fields.node, -1 * fields.packetPos[i], fileReadyCb);
+          afileInfo ??= await Db.fileIdToFile(fields.node, -1 * fields.packetPos[i]);
         }
       }
 
-      function readyToProcess () {
-        const pcapWriteMethod = Config.getFull(fields.node, 'pcapWriteMethod');
-        let psid = SessionAPIs.#processSessionIdDisk;
-        const writer = internals.writers.get(pcapWriteMethod);
-        if (writer && writer.processSessionId) {
-          psid = writer.processSessionId;
+      /* Figure out which decoder to use */
+      let psid;
+      const parts = afileInfo.name.split('://');
+      if (parts.length == 2) {
+        const scheme = internals.schemes.get(parts[0]);
+        if (scheme && scheme.processSessionId) {
+          psid ??= scheme.processSessionId;
+        }
+      }
+
+      const pcapWriteMethod = Config.getFull(fields.node, 'pcapWriteMethod');
+      const writer = internals.writers.get(pcapWriteMethod);
+      if (writer && writer.processSessionId) {
+        psid ??= writer.processSessionId;
+      }
+
+      psid ??= SessionAPIs.#processSessionIdDisk;
+
+      /* Decode the packets */
+      psid(session, headerCb, packetCb, (err, psidFields) => {
+        if (!psidFields) {
+          return endCb(err, psidFields);
         }
 
-        psid(session, headerCb, packetCb, (err, psidFields) => {
-          if (!psidFields) {
-            return endCb(err, psidFields);
-          }
+        if (!psidFields.tags) {
+          psidFields.tags = [];
+        }
 
-          if (!psidFields.tags) {
-            psidFields.tags = [];
-          }
-
-          ViewerUtils.fixFields(psidFields, endCb);
-        }, limit);
-      }
+        ViewerUtils.fixFields(psidFields, endCb);
+      }, limit);
     });
   };
 
@@ -3410,4 +3501,9 @@ class SessionAPIs {
     });
   };
 };
+
+internals.schemes.set('http', { processSessionId: SessionAPIs.processSessionIdHTTP  });
+internals.schemes.set('https', { processSessionId: SessionAPIs.processSessionIdHTTP  });
+internals.schemes.set('s3', { processSessionId: SessionAPIs.processSessionIdS3  });
+
 module.exports = SessionAPIs;
