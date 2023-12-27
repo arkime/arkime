@@ -27,11 +27,9 @@ const arkimeparser = require('./arkimeparser.js');
 const internals = require('./internals');
 const ViewerUtils = require('./viewerUtils');
 const ipaddr = require('ipaddr.js');
-const axios = require('axios');
 const LRU = require('lru-cache');
 
 const headerlru = new LRU({ max: 100 });
-const blocklru = new LRU({ max: 100 });
 
 class SessionAPIs {
   // --------------------------------------------------------------------------
@@ -747,24 +745,7 @@ class SessionAPIs {
   }
 
   // --------------------------------------------------------------------------
-  static async getBlock(url, pos) {
-    const blockSize = 0x10000;
-    const blockStart = Math.floor(pos/blockSize) * blockSize;
-    const key = `${url}:${blockStart}`;
-    let block = blocklru.get(key);
-    if (!block) {
-      const agent = new http.Agent({ family: 4 });
-      const result = await axios.get(url, { responseType: 'arraybuffer', httpAgent: agent, headers: { range: `bytes=${blockStart}-${blockStart + blockSize}`}});
-      block = result.data;
-      blocklru.set(key, block);
-    }
-
-    // Return a new buffer starting at pos
-    return block.slice(pos - blockStart);
-  }
-
-  // --------------------------------------------------------------------------
-  static async getHeaderAsync (node, fileNum) {
+  static async #getHeader (node, fileNum, getBlock) {
     const info = await Db.fileIdToFile(node, fileNum);
     const key = `${node}:${fileNum}`;
     let obj = headerlru.get(key);
@@ -772,66 +753,59 @@ class SessionAPIs {
       return obj;
     }
 
-    const block = await SessionAPIs.getBlock(info.name, 0);
+    const block = await getBlock(info, 0);
     obj = { info, header: block };
     headerlru.set(key, obj);
     return obj;
   }
 
   // --------------------------------------------------------------------------
-  static getHeader(node, fileNum) {
-    const key = `${node}:${fileNum}`;
-    const header = headerlru.get(key);
-    return header;
-  }
-
-  // --------------------------------------------------------------------------
-  static async getPacket(pcap, pos, i, packetCb, nextCb) {
-    let block = await SessionAPIs.getBlock(pcap.key, pos);
+  static async #getPacket (pcap, info, pos, getBlock) {
+    let block = await getBlock(info, pos);
     if (block.length < 16) {
-      const block2 = await SessionAPIs.getBlock(pcap.key, pos + block.length);
+      const block2 = await getBlock(info, pos + block.length);
       block = Buffer.concat([block, block2]);
     }
     const len = (pcap.bigEndian ? block.readUInt32BE(8) : block.readUInt32LE(8)) + 16;
 
     if (block.length < len) {
-      const block2 = await SessionAPIs.getBlock(pcap.key, pos + block.length);
+      const block2 = await getBlock(info, pos + block.length);
       block = Buffer.concat([block, block2]);
     }
 
-    packetCb(pcap, block.slice(0, len), nextCb, i);
+    return block.slice(0, len);
   }
 
   // --------------------------------------------------------------------------
-  static async processSessionIdHTTP (session, headerCb, packetCb, endCb, limit) {
+  static async #processSessionIdBlock (session, headerCb, packetCb, endCb, limit, getBlock) {
     const fields = session.fields;
-    const waits = [];
-    fields.packetPos.forEach((pos) => {
-      if (pos < 0) {
-        waits.push(SessionAPIs.getHeaderAsync(fields.node, -pos));
-      }
-    });
-
-    try {
-      await Promise.all(waits);
-    } catch (e) {
-      console.log("Failure fetching header", e.response);
-      return endCb('Only have SPI data, PCAP file no longer available for ' + e.response?.config?.url);
-    }
 
     let pcap;
-    let itemPos = 0;
-    async.eachLimit(fields.packetPos, 1, (pos, nextCb) => {
-      if (pos < 0) {
-        const h = SessionAPIs.getHeader(fields.node, -pos);
-        pcap = Pcap.make(h.info.name, h.header);
-        if (headerCb) {
-          headerCb(pcap, h.header);
-          headerCb = null;
+    let packetNum = 0;
+    let h;
+    async.eachLimit(fields.packetPos, 1, async (pos) => {
+      if (pos > 0) {
+        const packet = await SessionAPIs.#getPacket(pcap, h.info, pos, getBlock);
+        if (packetCb) {
+          const promise = new Promise((resolve, reject) => {
+            packetCb(pcap, packet, (err) => { if (err) { reject(err); } else { resolve(); }}, packetNum++);
+          });
+          await promise;
         }
-        return nextCb(null);
+        return;
       }
-      SessionAPIs.getPacket(pcap, pos, itemPos++, packetCb, nextCb);
+
+      try {
+        h = await SessionAPIs.#getHeader(fields.node, -pos, getBlock);
+      } catch (e) {
+        console.log('Failure fetching header', e.response);
+        return endCb('Only have SPI data, PCAP file no longer available for ' + e.response?.config?.url);
+      }
+      pcap = Pcap.make(h.info.name, h.header);
+      if (headerCb) {
+        headerCb(pcap, h.header);
+        headerCb = null;
+      }
     }, (pcapErr, results) => {
       endCb(pcapErr, fields);
     });
@@ -1250,6 +1224,7 @@ class SessionAPIs {
   // EXPOSED HELPERS
   // --------------------------------------------------------------------------
   static processSessionId (id, fullSession, headerCb, packetCb, endCb, maxPackets, limit) {
+    let extra;
     let options;
     if (!fullSession) {
       options = { _source: false, fields: 'node,network.packets,packetPos,source.ip,source.port,destination.ip,destination.port,ipProtocol,packetLen'.split(',') };
@@ -1282,10 +1257,11 @@ class SessionAPIs {
       /* Figure out which decoder to use */
       let psid;
       const parts = afileInfo.name.split('://');
-      if (parts.length == 2) {
+      if (parts.length === 2) {
         const scheme = internals.schemes.get(parts[0]);
-        if (scheme && scheme.processSessionId) {
-          psid ??= scheme.processSessionId;
+        if (scheme && scheme.getBlock) {
+          psid ??= SessionAPIs.#processSessionIdBlock;
+          extra = scheme.getBlock
         }
       }
 
@@ -1308,7 +1284,7 @@ class SessionAPIs {
         }
 
         ViewerUtils.fixFields(psidFields, endCb);
-      }, limit);
+      }, limit, extra);
     });
   };
 
@@ -3501,9 +3477,5 @@ class SessionAPIs {
     });
   };
 };
-
-internals.schemes.set('http', { processSessionId: SessionAPIs.processSessionIdHTTP  });
-internals.schemes.set('https', { processSessionId: SessionAPIs.processSessionIdHTTP  });
-internals.schemes.set('s3', { processSessionId: SessionAPIs.processSessionIdS3  });
 
 module.exports = SessionAPIs;
