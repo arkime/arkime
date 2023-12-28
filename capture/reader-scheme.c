@@ -21,8 +21,11 @@ typedef struct {
 LOCAL  ArkimeStringHashStd_t  schemesHash;
 LOCAL  ArkimeSchema_t        *fileSchema;
 
-LOCAL uint64_t total;
+LOCAL uint64_t totalPackets;
 LOCAL uint64_t dropped;
+
+LOCAL uint64_t lastBytes;
+LOCAL uint64_t lastPackets;
 
 LOCAL int state = 0;
 LOCAL uint8_t tmpBuffer[0xffff];
@@ -85,7 +88,16 @@ void arkime_reader_scheme_load(const char *uri)
 
     startPos = 0;
     state = 0;
+    lastBytes = 0;
+    lastPackets = 0;
+
     readerSchema->load(uri);
+
+    // Wait for the first packet to be processed so we have an outputId
+    while (readerOutputIds[readerPos] == 0) {
+        usleep(5000);
+    }
+    arkime_db_update_filesize(readerOutputIds[readerPos], lastBytes, lastBytes, lastPackets);
 }
 /******************************************************************************/
 LOCAL int reader_scheme_header(const char *uri, const uint8_t *header)
@@ -219,7 +231,7 @@ LOCAL void reader_scheme_start()
 LOCAL int reader_scheme_stats(ArkimeReaderStats_t *stats)
 {
     stats->dropped = dropped;
-    stats->total = total;
+    stats->total = totalPackets;
     return 0;
 }
 /******************************************************************************/
@@ -273,6 +285,7 @@ int arkime_reader_scheme_process(const char *uri, uint8_t *data, int len)
     arkime_packet_batch_init(&batch);
 
     reader_scheme_pause();
+    lastBytes += len;
 
     while (len > 0) {
         if (state == 0) {
@@ -371,7 +384,8 @@ int arkime_reader_scheme_process(const char *uri, uint8_t *data, int len)
                 len -= need;
                 tmpBufferLen = 0;
             }
-            total++;
+            totalPackets++;
+            lastPackets++;
             arkime_packet_batch(&batch, packet);
             packet = 0;
             state = 1;

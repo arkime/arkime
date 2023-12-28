@@ -928,7 +928,7 @@ int main(int argc, char **argv)
     arkime_plugins_init();
     arkime_plugins_load(config.rootPlugins);
     if (config.pcapReadOffline)
-        if (useScheme)
+        if (useScheme || (config.pcapReadFiles && config.pcapReadFiles[0] && strstr(config.pcapReadFiles[0], "://")))
             arkime_readers_set("scheme");
         else
             arkime_readers_set("libpcap-file");

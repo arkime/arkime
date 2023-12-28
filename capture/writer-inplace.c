@@ -38,7 +38,9 @@ LOCAL long writer_inplace_create(ArkimePacket_t *const packet)
     struct stat st;
     const char *readerName = readerFileName[packet->readerPos];
 
-    stat(readerName, &st);
+    // ALW - This is a hack to get around the fact that we don't know the size of the file
+    if (stat(readerName, &st))
+        st.st_size = 0;
 
     uint32_t outputId;
     if (config.pcapReprocess) {

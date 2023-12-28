@@ -19,8 +19,9 @@ LOCAL char                  *s3AccessKeyId;
 LOCAL char                  *s3SecretAccessKey;
 LOCAL char                  *s3Token;
 LOCAL char                  *s3Host;
-LOCAL gboolean               s3PathAccessStyle;
+LOCAL char                  *s3Region;
 LOCAL gboolean               inited;
+LOCAL gboolean               s3PathAccessStyle;
 
 LOCAL uint32_t               first;
 LOCAL uint32_t               tryAgain;
@@ -33,6 +34,7 @@ LOCAL void scheme_s3_init()
     s3AccessKeyId = arkime_config_str(NULL, "s3AccessKeyId", NULL);
     s3SecretAccessKey = arkime_config_str(NULL, "s3SecretAccessKey", NULL);
     s3Host = arkime_config_str(NULL, "s3Host", NULL);
+    s3Region = arkime_config_str(NULL, "s3Region", "us-east-1");
     config.gapPacketPos = arkime_config_boolean(NULL, "s3GapPacketPos", TRUE);
     inited = TRUE;
 }
@@ -229,22 +231,23 @@ int scheme_s3_load(const char *uri)
 
     char **uris = g_strsplit(uri, "/", 0);
 
-    char hostport[1000];
-    if (s3Host) {
-        snprintf(hostport, sizeof(hostport), "%s.%s", uris[2], s3Host);
-    } else {
-        snprintf(hostport, sizeof(hostport), "%s.s3.amazonaws.com", uris[2]);
-    }
-
-    char schemehostport[1000];
-    snprintf(schemehostport, sizeof(schemehostport), "https://%s", hostport);
-
     do {
         char *region = g_hash_table_lookup(regions, uris[2]);
         if (!region) {
-            region = "us-east-1";
-            LOG("WARNING - region not found, might need to retry");
+            region = s3Region;
         }
+
+        char hostport[1000];
+        if (s3Host) {
+            snprintf(hostport, sizeof(hostport), "%s.%s", uris[2], s3Host);
+        } else if (strcmp(region, "us-east-1") == 0) {
+            snprintf(hostport, sizeof(hostport), "%s.s3.amazonaws.com", uris[2]);
+        } else {
+            snprintf(hostport, sizeof(hostport), "%s.s3-%s.amazonaws.com", uris[2], region);
+        }
+
+        char schemehostport[1000];
+        snprintf(schemehostport, sizeof(schemehostport), "https://%s", hostport);
 
         void *server = g_hash_table_lookup(servers, schemehostport);
         if (!server) {
@@ -252,7 +255,6 @@ int scheme_s3_load(const char *uri)
             g_hash_table_insert(servers, g_strdup(schemehostport), server);
         }
 
-        LOG("ALW host %s region %s path %s uri %s", hostport, region, uri + 5 + strlen(uris[2]) , uri);
         scheme_s3_request(server, hostport, region, uri + 5 + strlen(uris[2]), uris[2], uri);
 
         ARKIME_LOCK(waiting);
@@ -314,7 +316,20 @@ int scheme_s3_load_full(const char *uri)
         g_hash_table_insert(servers, g_strdup(schemehostport), server);
     }
 
-    scheme_s3_request(server, hostport, "us-east-1", path, paths[1], uri);
+    char region[100];
+    g_strlcpy(region, s3Region, sizeof(region)); // default
+
+    char *s3 = strstr(host, ".s3-");
+    if (s3) {
+        s3 += 4;
+        char *dot = strchr(s3, '.');
+        if (dot) {
+            memcpy(region, s3, dot - s3);
+            region[dot - s3] = 0;
+        }
+    }
+
+    scheme_s3_request(server, hostport, region, path, paths[1], uri);
 
     curl_free(scheme);
     curl_free(host);
