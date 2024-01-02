@@ -1256,9 +1256,8 @@ class SessionAPIs {
 
       /* Figure out which decoder to use */
       let psid;
-      const parts = afileInfo.name.split('://');
-      if (parts.length === 2) {
-        const scheme = internals.schemes.get(parts[0]);
+      if (afileInfo?.scheme && internals.schemes.has(afileInfo.scheme)) {
+        const scheme = internals.schemes.get(afileInfo.scheme);
         if (scheme && scheme.getBlock) {
           psid ??= SessionAPIs.#processSessionIdBlock;
           extra = scheme.getBlock

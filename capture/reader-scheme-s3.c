@@ -37,6 +37,7 @@ LOCAL void scheme_s3_init()
     s3Host = arkime_config_str(NULL, "s3Host", NULL);
     s3Region = arkime_config_str(NULL, "s3Region", "us-east-1");
     config.gapPacketPos = arkime_config_boolean(NULL, "s3GapPacketPos", TRUE);
+    s3PathAccessStyle     = arkime_config_boolean(NULL, "s3PathAccessStyle", TRUE);
     inited = TRUE;
 }
 
@@ -71,7 +72,7 @@ LOCAL int scheme_s3_read(uint8_t *data, int data_len, gpointer uw)
     return arkime_reader_scheme_process((char *)uw, data, data_len, extraInfo);
 }
 /******************************************************************************/
-LOCAL void scheme_s3_request(void *server, char *host, char *region, const char *path, char *bucket, const char *uri)
+LOCAL void scheme_s3_request(void *server, char *host, char *region, const char *path, char *bucket, const char *uri, gboolean pathStyle)
 {
     char           canonicalRequest[20000];
     char           datetime[17];
@@ -79,9 +80,6 @@ LOCAL void scheme_s3_request(void *server, char *host, char *region, const char 
     char           fullpath[2000];
     char           tokenHeader[4200];
     struct timeval outputFileTime;
-
-    snprintf(extraInfo, sizeof(extraInfo), "{\"host\":\"%s\",\"bucket\":\"%s\",\"region\":\"%s\",\"path\":\"%s\"}", host, bucket, region, path);
-    LOG("extraInfo: %s", extraInfo);
 
     gettimeofday(&outputFileTime, 0);
     struct tm      gm;
@@ -99,7 +97,7 @@ LOCAL void scheme_s3_request(void *server, char *host, char *region, const char 
         snprintf(tokenHeader, sizeof(tokenHeader), "x-amz-security-token:%s\n", s3Token);
     }
 
-    if (s3PathAccessStyle)
+    if (pathStyle)
         snprintf(objectkey, sizeof(objectkey), "/%s%s", bucket, path);
     else
         snprintf(objectkey, sizeof(objectkey), "%s", path);
@@ -261,7 +259,13 @@ int scheme_s3_load(const char *uri)
             g_hash_table_insert(servers, g_strdup(schemehostport), server);
         }
 
-        scheme_s3_request(server, hostport, region, uri + 5 + strlen(uris[2]), uris[2], uri);
+        snprintf(extraInfo, sizeof(extraInfo), "{\"endpoint\":\"%s\",\"bucket\":\"%s\",\"region\":\"%s\",\"path\":\"%s\", \"pathStyle\": %s}",
+                 schemehostport,
+                 uris[2],
+                 region,
+                 uri + 5 + strlen(uris[2]),
+                 s3PathAccessStyle ? "true" : "false");
+        scheme_s3_request(server, hostport, region, uri + 5 + strlen(uris[2]), uris[2], uri, s3PathAccessStyle);
 
         ARKIME_LOCK(waiting);
         ARKIME_LOCK(waiting);
@@ -272,8 +276,8 @@ int scheme_s3_load(const char *uri)
     return 0;
 }
 /******************************************************************************/
-// s3http://hostport/bucketname/path
-// s3https://hostport/bucketname/path
+// s3http://hostport/bucketname/key
+// s3https://hostport/bucketname/key
 int scheme_s3_load_full(const char *uri)
 {
     if (config.pcapSkip && arkime_db_file_exists(uri, NULL)) {
@@ -338,7 +342,15 @@ int scheme_s3_load_full(const char *uri)
         }
     }
 
-    scheme_s3_request(server, hostport, region, path, paths[1], uri);
+    snprintf(extraInfo, sizeof(extraInfo), "{\"endpoint\":\"%s\",\"bucket\":\"%s\",\"region\":\"%s\",\"path\":\"%s\", \"pathStyle\": true}",
+             schemehostport,
+             paths[1],
+             region,
+             path + 1 + strlen(paths[1]));
+    if (config.debug)
+        LOG("extraInfo: %s", extraInfo);
+
+    scheme_s3_request(server, hostport, region, path + 1 + strlen(paths[1]), paths[1], uri, TRUE);
 
     curl_free(scheme);
     curl_free(host);

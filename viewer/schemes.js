@@ -13,7 +13,7 @@ const axios = require('axios');
 const LRU = require('lru-cache');
 const fs = require('fs');
 const Config = require('./config.js');
-const { S3 } = require('@aws-sdk/client-s3');
+const { GetObjectCommand, S3 } = require('@aws-sdk/client-s3');
 
 const blocklru = new LRU({ max: 100 });
 const S3s = {};
@@ -36,18 +36,20 @@ async function getBlockHTTP (info, pos) {
 }
 
 // --------------------------------------------------------------------------
-function makeS3 (node, region, bucket) {
-  const key = Config.getFull(node, 's3AccessKeyId') ?? Config.get('s3AccessKeyId');
+function makeS3 (info) {
+  const key = Config.getFull(info.node, 's3AccessKeyId') ?? Config.get('s3AccessKeyId');
 
-  const s3 = S3s[region + key];
+  const cacheKey = `${info.extra.endpoint}:${info.extra.bucket}:${key}`;
+
+  const s3 = S3s[cacheKey];
   if (s3) {
     return s3;
   }
 
-  const s3Params = { region };
+  const s3Params = { region: info.extra.region, endpoint: info.extra.endpoint };
 
   if (key) {
-    const secret = Config.getFull(node, 's3SecretAccessKey') ?? Config.get('s3SecretAccessKey');
+    const secret = Config.getFull(info.node, 's3SecretAccessKey') ?? Config.get('s3SecretAccessKey');
     if (!secret) {
       console.log('ERROR - No s3SecretAccessKey set for ', node);
     }
@@ -55,22 +57,11 @@ function makeS3 (node, region, bucket) {
     s3Params.credentials = { accessKeyId: key, secretAccessKey: secret };
   }
 
-  if (Config.getFull(node, 's3Host') !== undefined) {
-    s3Params.endpoint = Config.getFull(node, 's3Host');
-  }
-
-  bucket ??= Config.getFull(node, 's3Bucket');
-  const bucketHasDot = bucket.indexOf('.') >= 0;
-  if (Config.getFull(node, 's3PathAccessStyle', bucketHasDot) === true) {
-    s3Params.s3ForcePathStyle = true;
-  }
-
-  if (Config.getFull(node, 's3UseHttp', false) === true) {
-    s3Params.sslEnabled = false;
-  }
+  s3Params.forcePathStyle = info.extra.pathStyle
+  s3Params.sslEnabled = info.extra.endpoint.startsWith('https://');
 
   // Lets hope that we can find a credential provider elsewhere
-  const rv = S3s[region + key] = new S3(s3Params);
+  const rv = S3s[cacheKey] = new S3(s3Params);
   return rv;
 }
 
@@ -95,7 +86,7 @@ async function getBlockS3 (info, pos) {
   let block = blocklru.get(key);
   if (!block) {
     const parts = splitRemain(info.name, '/', 4);
-    s3 = makeS3(fields.node, parts[2], parts[3]);
+    s3 = makeS3(info);
 
     const params = {
       Bucket: parts[3],
@@ -117,20 +108,26 @@ async function getBlockS3 (info, pos) {
 async function getBlockS3HTTP (info, pos) {
   const blockSize = 0x10000;
   const blockStart = Math.floor(pos / blockSize) * blockSize;
-  const key = `${info.name}:${blockStart}`;
+  const key = `${info.extra.host}:${info.extra.bucket}:${blockStart}`;
   let block = blocklru.get(key);
   if (!block) {
-    const parts = splitRemain(info.name, '/', 4);
-    s3 = makeS3(fields.node, parts[2], parts[3]);
+    try {
+      const s3 = makeS3(info);
 
-    const params = {
-      Bucket: parts[3],
-      Key: parts[4],
-      Range: `bytes=${blockStart}-${blockStart + blockSize}`
-    };
-    const result = await s3.getObject(params).promise();
-    const block = result.Body;
-    blocklru.set(key, block);
+      const params = {
+        Bucket: info.extra.bucket,
+        //Key: info.extra.path,
+        Key: '/bcd0741c9988/pim.pcap',
+        Range: `bytes=${blockStart}-${blockStart + blockSize}`
+      };
+
+      const command = new GetObjectCommand(params);
+      const response = await s3.send(command);
+      block = Buffer.from(await response.Body.transformToByteArray());
+      blocklru.set(key, block);
+    } catch (err) {
+      console.error(err);
+    }
   }
 
   // Return a new buffer starting at pos
