@@ -1,5 +1,5 @@
 # Test cont3xt.js
-use Test::More tests => 164;
+use Test::More tests => 165;
 use Test::Differences;
 use Data::Dumper;
 use ArkimeTest;
@@ -1017,7 +1017,10 @@ is ($json, "SyntaxError: Object contains forbidden prototype property");
 ################################################################################
 ### Classify
 $json = cont3xtPost('/regressionTests/classify', '["aol.com", "1.2.3.4", "a----b.com", "https://a----b.com", "703-867-5309", "text", "foo@example.com", "d07708229fb0d2d513c82f36e5cdc68f", "25425d55a6af7586bf68c3989f0d4d89ffbb1641"]');
-eq_or_diff($json, from_json('["domain", "ip", "domain", "url", "phone", "text", "email", "hash", "hash"]'));
+eq_or_diff($json, from_json('[{"itype":"domain"}, {"itype":"ip"}, {"itype":"domain"}, {"itype":"url"}, {"itype":"phone"}, {"itype":"text"}, {"itype":"email"}, {"itype":"hash"}, {"itype":"hash"}]'));
 
 $json = cont3xtPost('/regressionTests/classify', '["415-123-4567", "415.123.4567","4151234567","+01133143122222", "+011.33.143122222", "+011-33-143122222", "+33143122222"]');
-eq_or_diff($json, from_json('["phone", "phone", "phone", "phone", "phone", "phone", "phone"]'));
+eq_or_diff($json, from_json('[{"itype":"phone"}, {"itype":"phone"}, {"itype":"phone"}, {"itype":"phone"}, {"itype":"phone"}, {"itype":"phone"}, {"itype":"phone"}]'));
+
+$json = cont3xtPost('/regressionTests/classify', '["xn--yho-ela6g.com"]');
+eq_or_diff($json, from_json('[{"itype":"domain", "decoded":"yáhoó.com"}]'));
