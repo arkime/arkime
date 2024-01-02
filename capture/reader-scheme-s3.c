@@ -25,6 +25,7 @@ LOCAL gboolean               s3PathAccessStyle;
 
 LOCAL uint32_t               first;
 LOCAL uint32_t               tryAgain;
+LOCAL char                   extraInfo[1000];
 
 LOCAL ARKIME_LOCK_DEFINE(waiting);
 
@@ -47,25 +48,27 @@ LOCAL void scheme_s3_done(int UNUSED(code), uint8_t UNUSED(*data), int UNUSED(da
 /******************************************************************************/
 LOCAL int scheme_s3_read(uint8_t *data, int data_len, gpointer uw)
 {
-    if (data_len > 10 && first && data[0] == '<') {
+    if (first) {
         first = FALSE;
-        const char *wrong = arkime_memstr((char *)data, data_len, "' is wrong; expecting '", 23);
-        if (wrong) {
-            wrong += 23;
-            const char *end = arkime_memstr(wrong, data_len - (wrong - (char *)data), "'", 1);
-            if (end) {
-                char *region = g_strndup(wrong, end - wrong);
-                char **uris = g_strsplit((char *)uw, "/", 0);
-                g_hash_table_insert(regions, g_strdup(uris[2]), region);
-                g_strfreev(uris);
-                tryAgain = TRUE;
+        if (data_len > 10 && data[0] == '<') {
+            const char *wrong = arkime_memstr((char *)data, data_len, "' is wrong; expecting '", 23);
+            if (wrong) {
+                wrong += 23;
+                const char *end = arkime_memstr(wrong, data_len - (wrong - (char *)data), "'", 1);
+                if (end) {
+                    char *region = g_strndup(wrong, end - wrong);
+                    char **uris = g_strsplit((char *)uw, "/", 0);
+                    g_hash_table_insert(regions, g_strdup(uris[2]), region);
+                    g_strfreev(uris);
+                    tryAgain = TRUE;
+                }
+            } else {
+                LOG("ERROR - %.*s", data_len, data);
             }
-        } else {
-            LOG("ERROR - %.*s", data_len, data);
+            return 1;
         }
-        return 1;
     }
-    return arkime_reader_scheme_process((char *)uw, data, data_len);
+    return arkime_reader_scheme_process((char *)uw, data, data_len, extraInfo);
 }
 /******************************************************************************/
 LOCAL void scheme_s3_request(void *server, char *host, char *region, const char *path, char *bucket, const char *uri)
@@ -76,6 +79,9 @@ LOCAL void scheme_s3_request(void *server, char *host, char *region, const char 
     char           fullpath[2000];
     char           tokenHeader[4200];
     struct timeval outputFileTime;
+
+    snprintf(extraInfo, sizeof(extraInfo), "{\"host\":\"%s\",\"bucket\":\"%s\",\"region\":\"%s\",\"path\":\"%s\"}", host, bucket, region, path);
+    LOG("extraInfo: %s", extraInfo);
 
     gettimeofday(&outputFileTime, 0);
     struct tm      gm;
@@ -118,7 +124,7 @@ LOCAL void scheme_s3_request(void *server, char *host, char *region, const char 
              datetime,
              (s3Token ? tokenHeader : ""),
              (s3Token ? ";x-amz-security-token" : "")
-             );
+            );
     //LOG("canonicalRequest: %s", canonicalRequest);
 
     GChecksum *checksum = g_checksum_new(G_CHECKSUM_SHA256);
@@ -302,7 +308,10 @@ int scheme_s3_load_full(const char *uri)
     char **paths = g_strsplit(path, "/", 0);
 
     char schemehostport[1000];
-    snprintf(schemehostport, sizeof(schemehostport), "%s://%s:%s", scheme+2, host, port);
+    if (port)
+        snprintf(schemehostport, sizeof(schemehostport), "%s://%s:%s", scheme + 2, host, port);
+    else
+        snprintf(schemehostport, sizeof(schemehostport), "%s://%s", scheme + 2, host);
 
     char hostport[1000];
     if (port)

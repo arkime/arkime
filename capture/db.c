@@ -1954,6 +1954,12 @@ LOCAL void arkime_db_mkpath(char *path)
     }
 }
 /******************************************************************************/
+/* For var args: field, value
+ * field=="indexFilename", value has #NUM# replaced with outputId
+ * field starts with #, and value is NOT ARKIME_VAR_ARG_INT_SKIP, output ', ${field+1}: ${value}'
+ * value starts with { or [, and value is NOT ARKIME_VAR_ARG_STR_SKIP, output ', ${field}:${value}'
+ * value is NOT ARKIME_VAR_ARG_STR_SKIP, output ', ${field}:"${value}"'
+ */
 char *arkime_db_create_file_full(time_t firstPacket, const char *name, uint64_t size, int locked, uint32_t *id, ...)
 {
     static GRegex     *numRegex;
@@ -2825,6 +2831,6 @@ void arkime_db_exit()
             packetStats[ARKIME_PACKET_UNKNOWN],
             packetStats[ARKIME_PACKET_IPPORT_DROPPED],
             packetStats[ARKIME_PACKET_DUPLICATE_DROPPED]
-        );
+           );
     }
 }

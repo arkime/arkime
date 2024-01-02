@@ -14,12 +14,13 @@ extern ArkimePcapFileHdr_t   pcapFileHeader;
 extern ArkimeConfig_t        config;
 
 typedef struct {
+    char              *name;
     ArkimeReaderExit   exit;
-    ArkimeSchemaLoad   load;
-} ArkimeSchema_t;
+    ArkimeSchemeLoad   load;
+} ArkimeScheme_t;
 
 LOCAL  ArkimeStringHashStd_t  schemesHash;
-LOCAL  ArkimeSchema_t        *fileSchema;
+LOCAL  ArkimeScheme_t        *fileScheme;
 
 LOCAL uint64_t totalPackets;
 LOCAL uint64_t dropped;
@@ -33,8 +34,8 @@ LOCAL uint32_t tmpBufferLen;
 
 LOCAL int                   offlineDispatchAfter;
 extern void                *esServer;
-extern char                *readerFileName[256];
-extern uint32_t             readerOutputIds[256];
+
+extern ArkimeOfflineInfo_t  offlineInfo[256];
 
 extern ArkimeFieldOps_t     readerFieldOps[256];
 extern ArkimeFilenameOps_t  readerFilenameOps[256];
@@ -43,13 +44,13 @@ extern int                  readerFilenameOpsNum;
 #define SWAP32(x) ((((x)&0xff000000) >> 24) | (((x)&0x00ff0000) >> 8) | (((x)&0x0000ff00) << 8) | (((x)&0x000000ff) << 24))
 #define SWAP16(x) ((((x)&0xff00) >> 8) | (((x)&0x00ff) << 8))
 
-LOCAL uint64_t startPos;
-LOCAL uint8_t  readerPos;
-LOCAL int      needSwap;
-LOCAL int      nanosecond;
+LOCAL uint64_t             startPos;
+LOCAL uint8_t              readerPos;
+LOCAL int                  needSwap;
+LOCAL int                  nanosecond;
 
 /******************************************************************************/
-LOCAL ArkimeSchema_t *uri2scheme(const char *uri)
+LOCAL ArkimeScheme_t *uri2scheme(const char *uri)
 {
     ArkimeString_t *str;
 
@@ -59,16 +60,16 @@ LOCAL ArkimeSchema_t *uri2scheme(const char *uri)
         HASH_FIND(s_, schemesHash, uri, str);
         *colonslashslash = ':';
     } else {
-        return fileSchema;
+        return fileScheme;
     }
-    return str?str->uw:NULL;
+    return str ? str->uw : NULL;
 }
 /******************************************************************************/
 void arkime_reader_scheme_load(const char *uri)
 {
     LOG ("Processing %s", uri);
-    ArkimeSchema_t *readerSchema = uri2scheme(uri);
-    if (!readerSchema) {
+    ArkimeScheme_t *readerScheme = uri2scheme(uri);
+    if (!readerScheme) {
         LOG("ERROR - Unknown scheme for %s", uri);
         return;
     }
@@ -91,16 +92,16 @@ void arkime_reader_scheme_load(const char *uri)
     lastBytes = 0;
     lastPackets = 0;
 
-    readerSchema->load(uri);
+    readerScheme->load(uri);
 
     // Wait for the first packet to be processed so we have an outputId
-    while (readerOutputIds[readerPos] == 0) {
+    while (offlineInfo[readerPos].outputId == 0) {
         usleep(5000);
     }
-    arkime_db_update_filesize(readerOutputIds[readerPos], lastBytes, lastBytes, lastPackets);
+    arkime_db_update_filesize(offlineInfo[readerPos].outputId, lastBytes, lastBytes, lastPackets);
 }
 /******************************************************************************/
-LOCAL int reader_scheme_header(const char *uri, const uint8_t *header)
+LOCAL int reader_scheme_header(const char *uri, const uint8_t *header, char *extraInfo)
 {
     ArkimePcapFileHdr_t *h = (ArkimePcapFileHdr_t *)header;
     if (h->magic != 0xa1b2c3d4 && h->magic != 0xd4c3b2a1 &&
@@ -119,11 +120,16 @@ LOCAL int reader_scheme_header(const char *uri, const uint8_t *header)
 
     readerPos++;
     // We've wrapped around all 256 reader items, clear the previous file information
-    if (readerFileName[readerPos]) {
-        g_free(readerFileName[readerPos]);
-        readerOutputIds[readerPos] = 0;
+    if (offlineInfo[readerPos].filename) {
+        g_free(offlineInfo[readerPos].filename);
+        g_free(offlineInfo[readerPos].extra);
+        memset(&offlineInfo[readerPos], 0, sizeof(ArkimeOfflineInfo_t));
     }
-    readerFileName[readerPos] = g_strdup(uri);
+    offlineInfo[readerPos].filename = g_strdup(uri);
+
+    ArkimeScheme_t *readerScheme = uri2scheme(uri);
+    offlineInfo[readerPos].scheme = readerScheme->name;
+    offlineInfo[readerPos].extra = g_strdup(extraInfo);
 
     if (readerFilenameOpsNum > 0) {
         // Free any previously allocated
@@ -279,7 +285,7 @@ LOCAL void reader_scheme_pause()
 
 /******************************************************************************/
 ArkimePacket_t *packet;
-int arkime_reader_scheme_process(const char *uri, uint8_t *data, int len)
+int arkime_reader_scheme_process(const char *uri, uint8_t *data, int len, char *extraInfo)
 {
     ArkimePacketBatch_t   batch;
     arkime_packet_batch_init(&batch);
@@ -312,7 +318,7 @@ int arkime_reader_scheme_process(const char *uri, uint8_t *data, int len)
                 len -= need;
                 tmpBufferLen = 0;
             }
-            if (reader_scheme_header(uri, header))
+            if (reader_scheme_header(uri, header, extraInfo))
                 return 1;
             startPos = 24;
             state = 1;
@@ -396,14 +402,15 @@ process:
     return 0;
 }
 /******************************************************************************/
-void arkime_reader_scheme_register(char *name, ArkimeSchemaLoad load, ArkimeSchemaExit exit)
+void arkime_reader_scheme_register(char *name, ArkimeSchemeLoad load, ArkimeSchemeExit exit)
 {
-    ArkimeSchema_t *readerSchema = ARKIME_TYPE_ALLOC0(ArkimeSchema_t);
-    readerSchema->load = load;
-    readerSchema->exit = exit;
-    arkime_string_add(&schemesHash, name, readerSchema, TRUE);
+    ArkimeScheme_t *readerScheme = ARKIME_TYPE_ALLOC0(ArkimeScheme_t);
+    readerScheme->name = name;
+    readerScheme->load = load;
+    readerScheme->exit = exit;
+    arkime_string_add(&schemesHash, name, readerScheme, TRUE);
     if (strcmp(name, "file") == 0) {
-        fileSchema = readerSchema;
+        fileScheme = readerScheme;
     }
 }
 /******************************************************************************/

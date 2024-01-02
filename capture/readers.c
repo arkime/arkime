@@ -27,7 +27,8 @@ ArkimeReaderExit   arkime_reader_exit;
 
 char              *readerFileName[256];
 ArkimeFieldOps_t   readerFieldOps[256];
-uint32_t           readerOutputIds[256];
+
+ArkimeOfflineInfo_t  offlineInfo[256];
 
 ArkimeFilenameOps_t  readerFilenameOps[256];
 int                  readerFilenameOpsNum;

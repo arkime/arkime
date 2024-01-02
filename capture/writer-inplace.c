@@ -20,8 +20,7 @@ extern ArkimeConfig_t        config;
 
 LOCAL ARKIME_LOCK_DEFINE(filePtr2Id);
 
-extern char                *readerFileName[256];
-extern uint32_t             readerOutputIds[256];
+extern ArkimeOfflineInfo_t  offlineInfo[256];
 
 /******************************************************************************/
 LOCAL uint32_t writer_inplace_queue_length()
@@ -35,28 +34,21 @@ LOCAL void writer_inplace_exit()
 /******************************************************************************/
 LOCAL long writer_inplace_create(ArkimePacket_t *const packet)
 {
-    struct stat st;
-    const char *readerName = readerFileName[packet->readerPos];
-
-    // ALW - This is a hack to get around the fact that we don't know the size of the file
-    if (stat(readerName, &st))
-        st.st_size = 0;
+    const char *readerName = offlineInfo[packet->readerPos].filename;
 
     uint32_t outputId;
     if (config.pcapReprocess) {
         arkime_db_file_exists(readerName, &outputId);
     } else {
         char *filename;
-        if (config.gapPacketPos)
-            filename = arkime_db_create_file_full(packet->ts.tv_sec, readerName, st.st_size, !config.noLockPcap, &outputId,
-                                                  "packetPosEncoding", "gap0",
-                                                  (char *)NULL);
-        else
-            filename = arkime_db_create_file(packet->ts.tv_sec, readerName, st.st_size, !config.noLockPcap, &outputId);
-
+        filename = arkime_db_create_file_full(packet->ts.tv_sec, readerName, offlineInfo[packet->readerPos].size, !config.noLockPcap, &outputId,
+                                              "packetPosEncoding", config.gapPacketPos ? "gap0" : ARKIME_VAR_ARG_STR_SKIP,
+                                              "scheme", offlineInfo[packet->readerPos].scheme ? offlineInfo[packet->readerPos].scheme : ARKIME_VAR_ARG_STR_SKIP,
+                                              "extra", offlineInfo[packet->readerPos].extra ? offlineInfo[packet->readerPos].extra : ARKIME_VAR_ARG_STR_SKIP,
+                                              (char *)NULL);
         g_free(filename);
     }
-    readerOutputIds[packet->readerPos] = outputId;
+    offlineInfo[packet->readerPos].outputId = outputId;
     return outputId;
 }
 
@@ -65,7 +57,7 @@ LOCAL void writer_inplace_write(const ArkimeSession_t *const UNUSED(session), Ar
 {
     // Need to lock since multiple packet threads for the same readerPos are running and only want to create once
     ARKIME_LOCK(filePtr2Id);
-    long outputId = readerOutputIds[packet->readerPos];
+    long outputId = offlineInfo[packet->readerPos].outputId;
     if (!outputId)
         outputId = writer_inplace_create(packet);
     ARKIME_UNLOCK(filePtr2Id);

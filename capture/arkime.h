@@ -571,7 +571,7 @@ typedef struct arkimepacket_t
     uint16_t       vlan;                // non zero if the reader gets the vlan
     uint8_t        ipProtocol;          // ip protocol
     uint8_t        mProtocol;           // arkime protocol
-    uint8_t        readerPos;           // position for filename/ops
+    uint8_t        readerPos;           // offline - offlineInfo, online - which interface
     uint32_t       etherOffset: 11;     // offset to current ethernet frame from start
     uint32_t       outerEtherOffset: 11; // offset to previous ethernet frame from start
     uint32_t       tunnel: 8;           // tunnel type
@@ -597,8 +597,17 @@ typedef struct
 {
     ArkimePacketHead_t    packetQ[ARKIME_MAX_PACKET_THREADS];
     int                   count;
-    uint8_t               readerPos;
+    uint8_t               readerPos; // used by libpcap reader to set readerPos
 } ArkimePacketBatch_t;
+
+typedef struct
+{
+    char       *filename;
+    uint32_t    outputId;
+    uint64_t    size;
+    char       *scheme;
+    char       *extra;
+} ArkimeOfflineInfo_t;
 /******************************************************************************/
 typedef struct arkime_tcp_data {
     struct arkime_tcp_data *td_next, *td_prev;
@@ -1387,11 +1396,11 @@ void arkime_readers_exit();
  * reader-scheme.c
  */
 
-typedef int  (*ArkimeSchemaLoad)(const char *uri);
-typedef void (*ArkimeSchemaExit)();
+typedef int  (*ArkimeSchemeLoad)(const char *uri);
+typedef void (*ArkimeSchemeExit)();
 
-void arkime_reader_scheme_register(char *name, ArkimeSchemaLoad load, ArkimeSchemaExit exit);
-int arkime_reader_scheme_process(const char *uri, uint8_t *data, int len);
+void arkime_reader_scheme_register(char *name, ArkimeSchemeLoad load, ArkimeSchemeExit exit);
+int arkime_reader_scheme_process(const char *uri, uint8_t *data, int len, char *extraInfo);
 void arkime_reader_scheme_load(const char *uri);
 
 /******************************************************************************/

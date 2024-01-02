@@ -32,9 +32,9 @@ LOCAL void reader_libpcapfile_opened();
 
 LOCAL ArkimePacketBatch_t   batch;
 LOCAL uint8_t               readerPos;
-extern char                *readerFileName[256];
+
+extern ArkimeOfflineInfo_t  offlineInfo[256];
 extern ArkimeFieldOps_t     readerFieldOps[256];
-extern uint32_t             readerOutputIds[256];
 
 LOCAL  int                  offlineDispatchAfter;
 
@@ -535,11 +535,16 @@ LOCAL void reader_libpcapfile_opened()
 
     readerPos++;
     // We've wrapped around all 256 reader items, clear the previous file information
-    if (readerFileName[readerPos]) {
-        g_free(readerFileName[readerPos]);
-        readerOutputIds[readerPos] = 0;
+    if (offlineInfo[readerPos].filename) {
+        g_free(offlineInfo[readerPos].filename);
+        g_free(offlineInfo[readerPos].extra);
+        memset(&offlineInfo[readerPos], 0, sizeof(ArkimeOfflineInfo_t));
     }
-    readerFileName[readerPos] = g_strdup(offlinePcapFilename);
+    offlineInfo[readerPos].filename = g_strdup(offlinePcapFilename);
+
+    struct stat st;
+    if (stat(offlinePcapFilename, &st))
+        offlineInfo[readerPos].size = st.st_size;
 
     int fd = pcap_fileno(pcap);
     if (fd == -1) {
