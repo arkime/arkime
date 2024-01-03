@@ -10,7 +10,7 @@ import Cont3xtField from '../src/utils/Field.vue';
 Vue.use(BootstrapVue);
 Vue.use(VueClipboard);
 
-window.location = { search: '?b=dGhyZWF0YnV0dC5jb20%3D&startDate=2023-12-16T21%3A53%3A03Z' };
+window.btoa = jest.fn().mockImplementation((str) => str);
 
 test('field - defaults', async () => {
   const { getByText, getByTestId, queryByTestId } = render(Cont3xtField, {
@@ -35,7 +35,9 @@ test('field - defaults', async () => {
   expect(queryByTestId('field-dropdown')).not.toBeInTheDocument();
 
   // pivot button uses current url search parameters
-  expect(pivotBtn.href).toBe(`http://localhost/#${window.location.search}`);
+  expect(pivotBtn.href).toBe('http://localhost/?b=field+value');
+  expect(window.btoa).toHaveBeenCalledWith('field value');
+  expect(window.btoa).toHaveBeenCalledTimes(1);
 });
 
 test('field - with options', async () => {
