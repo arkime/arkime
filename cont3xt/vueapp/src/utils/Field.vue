@@ -10,6 +10,9 @@ SPDX-License-Identifier: Apache-2.0
       </template>
       <template v-else>
         {{display || value}}
+        <template v-if="decodedValue">
+          <span class="text-muted">({{decodedValue}})</span>
+        </template>
       </template>
       <span class="fa fa-caret-down" />
     </a>
@@ -36,8 +39,8 @@ SPDX-License-Identifier: Apache-2.0
       <b-dropdown-item
         key="pivot"
         target="_blank"
-        v-if="options.pivot"
-        :href="pivotHref">
+        :href="pivotHref"
+        v-if="options.pivot">
         {{ options.pivot }}
       </b-dropdown-item>
     </div>
@@ -62,6 +65,10 @@ export default {
     value: { // the value to be used in copy and display if no display value
       type: String,
       required: true
+    },
+    decodedValue: { // the decoded value to be displayed next to searched value
+      type: String,
+      required: false
     },
     display: { // the value to display (uses value is this is missing)
       type: String
@@ -88,7 +95,9 @@ export default {
   },
   computed: {
     pivotHref () {
-      return window.location.search;
+      const params = new URLSearchParams(window.location.search);
+      params.set('b', window.btoa(this.value));
+      return `?${params.toString()}`;
     }
   },
   methods: {
@@ -108,10 +117,6 @@ export default {
     doCopy (value) {
       this.$copyText(value);
       this.isOpen = false;
-    },
-    /* base64 encodes value */
-    base64Encode (value) {
-      return window.btoa(value);
     }
   }
 };
