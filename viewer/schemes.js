@@ -156,4 +156,4 @@ internals.schemes.set('https', { getBlock: getBlockHTTP });
 internals.schemes.set('s3', { getBlock: getBlockS3 });
 internals.schemes.set('s3http', { getBlock: getBlockS3HTTP });
 internals.schemes.set('s3https', { getBlock: getBlockS3HTTP });
-internals.schemes.set('file', { getBlock: getBlockDisk });
+//internals.schemes.set('file', { getBlock: getBlockDisk });

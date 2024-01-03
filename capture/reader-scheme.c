@@ -11,6 +11,9 @@
 
 extern ArkimePcapFileHdr_t   pcapFileHeader;
 
+LOCAL struct bpf_program     bpf;
+LOCAL pcap_t                *deadPcap;
+
 extern ArkimeConfig_t        config;
 
 typedef struct {
@@ -162,16 +165,14 @@ LOCAL int reader_scheme_header(const char *uri, const uint8_t *header, char *ext
     arkime_packet_set_dltsnap(h->dlt, h->snaplen);
 
     if (config.bpf && pcapFileHeader.dlt != DLT_NFLOG) {
-        //struct bpf_program   bpf;
-
-        /*if (pcap_compile(pcap, &bpf, config.bpf, 1, PCAP_NETMASK_UNKNOWN) == -1) {
-            LOGEXIT("ERROR - Couldn't compile bpf filter: '%s' with %s", config.bpf, pcap_geterr(pcap));
+        if (deadPcap) {
+            pcap_freecode(&bpf);
+            pcap_close(deadPcap);
         }
-
-        if (pcap_setfilter(pcap, &bpf) == -1) {
-            LOGEXIT("ERROR - Couldn't set bpf filter: '%s' with %s", config.bpf, pcap_geterr(pcap));
+        deadPcap = pcap_open_dead(pcapFileHeader.dlt, pcapFileHeader.snaplen);
+        if (pcap_compile(deadPcap, &bpf, config.bpf, 1, PCAP_NETMASK_UNKNOWN) == -1) {
+            CONFIGEXIT("Couldn't compile bpf filter: '%s' with %s", config.bpf, pcap_geterr(deadPcap));
         }
-        pcap_freecode(&bpf);*/
     }
 
     return 0;
@@ -392,7 +393,11 @@ int arkime_reader_scheme_process(const char *uri, uint8_t *data, int len, char *
             }
             totalPackets++;
             lastPackets++;
-            arkime_packet_batch(&batch, packet);
+            if (deadPcap && bpf_filter(bpf.bf_insns, packet->pkt, packet->pktlen, packet->pktlen)) {
+                ARKIME_TYPE_FREE(ArkimePacket_t, packet);
+            } else {
+                arkime_packet_batch(&batch, packet);
+            }
             packet = 0;
             state = 1;
         }
