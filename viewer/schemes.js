@@ -51,13 +51,13 @@ function makeS3 (info) {
   if (key) {
     const secret = Config.getFull(info.node, 's3SecretAccessKey') ?? Config.get('s3SecretAccessKey');
     if (!secret) {
-      console.log('ERROR - No s3SecretAccessKey set for ', node);
+      console.log('ERROR - No s3SecretAccessKey set for ', info.node);
     }
 
     s3Params.credentials = { accessKeyId: key, secretAccessKey: secret };
   }
 
-  s3Params.forcePathStyle = info.extra.pathStyle
+  s3Params.forcePathStyle = info.extra.pathStyle;
   s3Params.sslEnabled = info.extra.endpoint.startsWith('https://');
 
   // Lets hope that we can find a credential provider elsewhere
@@ -86,7 +86,7 @@ async function getBlockS3 (info, pos) {
   let block = blocklru.get(key);
   if (!block) {
     const parts = splitRemain(info.name, '/', 4);
-    s3 = makeS3(info);
+    const s3 = makeS3(info);
 
     const params = {
       Bucket: parts[3],
@@ -94,7 +94,7 @@ async function getBlockS3 (info, pos) {
       Range: `bytes=${blockStart}-${blockStart + blockSize}`
     };
     const result = await s3.getObject(params).promise();
-    const block = result.Body;
+    block = result.Body;
     blocklru.set(key, block);
   }
 
@@ -116,8 +116,7 @@ async function getBlockS3HTTP (info, pos) {
 
       const params = {
         Bucket: info.extra.bucket,
-        //Key: info.extra.path,
-        Key: '/bcd0741c9988/pim.pcap',
+        Key: info.extra.path,
         Range: `bytes=${blockStart}-${blockStart + blockSize}`
       };
 

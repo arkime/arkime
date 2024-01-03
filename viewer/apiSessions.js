@@ -788,7 +788,7 @@ class SessionAPIs {
         const packet = await SessionAPIs.#getPacket(pcap, h.info, pos, getBlock);
         if (packetCb) {
           const promise = new Promise((resolve, reject) => {
-            packetCb(pcap, packet, (err) => { if (err) { reject(err); } else { resolve(); }}, packetNum++);
+            packetCb(pcap, packet, (err) => { if (err) { reject(err); } else { resolve(); } }, packetNum++);
           });
           await promise;
         }
@@ -1260,7 +1260,7 @@ class SessionAPIs {
         const scheme = internals.schemes.get(afileInfo.scheme);
         if (scheme && scheme.getBlock) {
           psid ??= SessionAPIs.#processSessionIdBlock;
-          extra = scheme.getBlock
+          extra = scheme.getBlock;
         }
       }
 
