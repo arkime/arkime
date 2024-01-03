@@ -11,7 +11,7 @@ const internals = require('./internals.js');
 const http = require('http');
 const axios = require('axios');
 const LRU = require('lru-cache');
-const fs = require('fs');
+// const fs = require('fs');
 const Config = require('./config.js');
 const { GetObjectCommand, S3 } = require('@aws-sdk/client-s3');
 
@@ -134,6 +134,7 @@ async function getBlockS3HTTP (info, pos) {
 }
 
 // --------------------------------------------------------------------------
+/*
 async function getBlockDisk (info, pos) {
   const blockSize = 0x10000;
   const blockStart = Math.floor(pos / blockSize) * blockSize;
@@ -150,10 +151,11 @@ async function getBlockDisk (info, pos) {
   // Return a new buffer starting at pos
   return block.slice(pos - blockStart);
 }
+internals.schemes.set('file', { getBlock: getBlockDisk });
+*/
 
 internals.schemes.set('http', { getBlock: getBlockHTTP });
 internals.schemes.set('https', { getBlock: getBlockHTTP });
 internals.schemes.set('s3', { getBlock: getBlockS3 });
 internals.schemes.set('s3http', { getBlock: getBlockS3HTTP });
 internals.schemes.set('s3https', { getBlock: getBlockS3HTTP });
-//internals.schemes.set('file', { getBlock: getBlockDisk });
