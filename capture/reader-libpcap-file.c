@@ -543,7 +543,7 @@ LOCAL void reader_libpcapfile_opened()
     offlineInfo[readerPos].filename = g_strdup(offlinePcapFilename);
 
     struct stat st;
-    if (stat(offlinePcapFilename, &st))
+    if (stat(offlinePcapFilename, &st) == 0)
         offlineInfo[readerPos].size = st.st_size;
 
     int fd = pcap_fileno(pcap);
