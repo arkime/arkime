@@ -101,11 +101,10 @@ int scheme_file_load(const char *uri)
 
     do {
         bytesRead = read(fd, buffer, sizeof(buffer));
-
         if (bytesRead > 0) {
             arkime_reader_scheme_process(uri, buffer, bytesRead, NULL);
         } else if (bytesRead == 0) {
-            return 0;
+            break;
         } else if (bytesRead < 0) {
         }
     } while (bytesRead > 0);

@@ -95,13 +95,15 @@ void arkime_reader_scheme_load(const char *uri)
     lastBytes = 0;
     lastPackets = 0;
 
-    readerScheme->load(uri);
+    int rc = readerScheme->load(uri);
 
-    // Wait for the first packet to be processed so we have an outputId
-    while (offlineInfo[readerPos].outputId == 0) {
-        usleep(5000);
+    if (rc == 0 && !config.dryRun && !config.copyPcap) {
+        // Wait for the first packet to be processed so we have an outputId
+        while (offlineInfo[readerPos].outputId == 0) {
+            usleep(5000);
+        }
+        arkime_db_update_filesize(offlineInfo[readerPos].outputId, lastBytes, lastBytes, lastPackets);
     }
-    arkime_db_update_filesize(offlineInfo[readerPos].outputId, lastBytes, lastBytes, lastPackets);
 }
 /******************************************************************************/
 LOCAL int reader_scheme_header(const char *uri, const uint8_t *header, char *extraInfo)

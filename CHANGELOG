@@ -58,6 +58,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #2509 add optional login message for form auth
   - #2511 new authOIDCScope setting
   - #2482 new logoutUrl setting
+  - #2571 new scheme pcap reading
 ## Capture
   - #2295 moloch converted to arkime
   - #2312 override ips can now set any field
