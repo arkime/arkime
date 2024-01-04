@@ -429,6 +429,9 @@ LOCAL void reader_libpcapfile_pcap_cb(u_char *UNUSED(user), const struct pcap_pk
         packet->pktlen     = h->len;
     }
 
+    lastPackets++;
+    lastBytes += packet->pktlen + 16;
+
     packet->pkt           = (u_char *)bytes;
     /* libpcap casts to int32_t which sign extends, undo that */
     packet->ts.tv_sec     = (uint32_t)h->ts.tv_sec;
@@ -436,9 +439,6 @@ LOCAL void reader_libpcapfile_pcap_cb(u_char *UNUSED(user), const struct pcap_pk
     packet->readerFilePos = ftell(offlineFile) - 16 - h->len;
     packet->readerPos     = readerPos;
     arkime_packet_batch(&batch, packet);
-
-    lastPackets++;
-    lastBytes += packet->pktlen + 16;
 }
 /******************************************************************************/
 LOCAL gboolean reader_libpcapfile_read()
