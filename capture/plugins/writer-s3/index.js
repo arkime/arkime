@@ -65,7 +65,7 @@ function makeS3 (node, region, bucket) {
   bucket ??= Config.getFull(node, 's3Bucket');
   const bucketHasDot = bucket.indexOf('.') >= 0;
   if (Config.getFull(node, 's3PathAccessStyle', bucketHasDot) === true) {
-    s3Params.s3ForcePathStyle = true;
+    s3Params.forcePathStyle = true;
   }
 
   if (Config.getFull(node, 's3UseHttp', false) === true) {

@@ -22,6 +22,7 @@ my $ELASTICSEARCH = $ENV{ELASTICSEARCH} = "http://127.0.0.1:9200";
 $ENV{'PERL5LIB'} = getcwd();
 $ENV{'TZ'} = 'US/Eastern';
 my $INSECURE = "";
+my $SCHEME = "";
 
 ################################################################################
 sub doGeo {
@@ -123,7 +124,7 @@ sub doTests {
         my $savedJson = sortJson(from_json($savedData, {relaxed => 1}));
 
 
-        my $cmd = "../capture/capture --tests -c config.test.ini -n test -r $filename.pcap 2>&1 1>/dev/null | ./tests.pl --fix";
+        my $cmd = "../capture/capture $SCHEME --tests -c config.test.ini -n test -r $filename.pcap 2>&1 1>/dev/null | ./tests.pl --fix";
 
         if ($main::valgrind) {
             $cmd = "G_SLICE=always-malloc valgrind --leak-check=full --log-file=$filename.val " . $cmd;
@@ -315,7 +316,7 @@ my ($cmd) = @_;
 
         print ("Loading PCAP\n");
 
-        my $mcmd = "../capture/capture $es $INSECURE $main::copy -c config.test.ini -n test -R pcap --flush";
+        my $mcmd = "../capture/capture $es $INSECURE $SCHEME $main::copy -c config.test.ini -n test -R pcap --flush";
         if (!$main::debug) {
             $mcmd .= " 2>&1 1>/dev/null";
         } else {
@@ -434,6 +435,9 @@ while (scalar (@ARGV) > 0) {
         shift @ARGV;
     } elsif ($ARGV[0] eq "--valgrind") {
         $main::valgrind = 1;
+        shift @ARGV;
+    } elsif ($ARGV[0] eq "--scheme") {
+        $ENV{SCHEME} = $SCHEME = "--scheme";
         shift @ARGV;
     } elsif ($ARGV[0] eq "--copy") {
         $main::copy = "--copy";

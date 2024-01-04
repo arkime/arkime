@@ -27,6 +27,7 @@ const internals = {
   fieldActions: {},
   pluginEmitter: new EventEmitter(),
   writers: new Map(),
+  schemes: new Map(),
   oldDBFields: new Map(),
   uploadLimits: {},
 

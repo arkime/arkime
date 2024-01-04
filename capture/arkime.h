@@ -536,8 +536,8 @@ typedef struct {
 
 /******************************************************************************/
 struct arkime_pcap_timeval {
-    int32_t tv_sec;		   /* seconds */
-    int32_t tv_usec;	   	   /* microseconds */
+    uint32_t tv_sec;		   /* seconds */
+    uint32_t tv_usec;	   	   /* microseconds */
 };
 struct arkime_pcap_sf_pkthdr {
     struct arkime_pcap_timeval ts; /* time stamp */
@@ -571,7 +571,7 @@ typedef struct arkimepacket_t
     uint16_t       vlan;                // non zero if the reader gets the vlan
     uint8_t        ipProtocol;          // ip protocol
     uint8_t        mProtocol;           // arkime protocol
-    uint8_t        readerPos;           // position for filename/ops
+    uint8_t        readerPos;           // offline - offlineInfo, online - which interface
     uint32_t       etherOffset: 11;     // offset to current ethernet frame from start
     uint32_t       outerEtherOffset: 11; // offset to previous ethernet frame from start
     uint32_t       tunnel: 8;           // tunnel type
@@ -597,8 +597,17 @@ typedef struct
 {
     ArkimePacketHead_t    packetQ[ARKIME_MAX_PACKET_THREADS];
     int                   count;
-    uint8_t               readerPos;
+    uint8_t               readerPos; // used by libpcap reader to set readerPos
 } ArkimePacketBatch_t;
+
+typedef struct
+{
+    char       *filename;
+    uint32_t    outputId;
+    uint64_t    size;
+    char       *scheme;
+    char       *extra;
+} ArkimeOfflineInfo_t;
 /******************************************************************************/
 typedef struct arkime_tcp_data {
     struct arkime_tcp_data *td_next, *td_prev;
@@ -768,6 +777,7 @@ typedef struct {
 typedef int (*ArkimeWatchFd_func)(gint fd, GIOCondition cond, gpointer data);
 
 typedef void (*ArkimeHttpResponse_cb)(int code, uint8_t *data, int len, gpointer uw);
+typedef int (*ArkimeHttpRead_cb)(uint8_t *data, int len, gpointer uw);
 
 typedef void (*ArkimeTag_cb)(void *uw, int tagType, const char *tagName, uint32_t tagValue, gboolean async);
 
@@ -839,6 +849,7 @@ void arkime_quit();
 
 uint32_t arkime_get_next_prime(uint32_t v);
 uint32_t arkime_get_next_powerof2(uint32_t v);
+void arkime_check_file_permissions(char *filename);
 
 
 /******************************************************************************/
@@ -1009,6 +1020,8 @@ gboolean arkime_http_send(void *serverV, const char *method, const char *key, in
 #define ARKIME_HTTP_PRIORITY_NORMAL    1
 #define ARKIME_HTTP_PRIORITY_DROPABLE  2
 gboolean arkime_http_schedule(void *serverV, const char *method, const char *key, int32_t key_len, char *data, uint32_t data_len, char **headers, int priority, ArkimeHttpResponse_cb func, gpointer uw);
+
+gboolean arkime_http_schedule2(void *serverV, const char *method, const char *key, int32_t key_len, char *data, uint32_t data_len, char **headers, int priority, ArkimeHttpResponse_cb func, ArkimeHttpRead_cb, gpointer uw);
 
 
 uint8_t *arkime_http_get(void *server, char *key, int key_len, size_t *mlen);
@@ -1355,6 +1368,12 @@ typedef struct {
     uint64_t dropped;
 } ArkimeReaderStats_t;
 
+typedef struct {
+    GRegex    *regex;
+    int        field;
+    char      *expand;
+} ArkimeFilenameOps_t;
+
 typedef void (*ArkimeReaderInit)(char *name);
 typedef int  (*ArkimeReaderStats)(ArkimeReaderStats_t *stats);
 typedef void (*ArkimeReaderStart)();
@@ -1371,6 +1390,18 @@ void arkime_readers_set(char *name);
 void arkime_readers_start();
 void arkime_readers_add(char *name, ArkimeReaderInit func);
 void arkime_readers_exit();
+
+/******************************************************************************/
+/*
+ * reader-scheme.c
+ */
+
+typedef int  (*ArkimeSchemeLoad)(const char *uri);
+typedef void (*ArkimeSchemeExit)();
+
+void arkime_reader_scheme_register(char *name, ArkimeSchemeLoad load, ArkimeSchemeExit exit);
+int arkime_reader_scheme_process(const char *uri, uint8_t *data, int len, char *extraInfo);
+void arkime_reader_scheme_load(const char *uri);
 
 /******************************************************************************/
 /*

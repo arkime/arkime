@@ -32,18 +32,17 @@ LOCAL void reader_libpcapfile_opened();
 
 LOCAL ArkimePacketBatch_t   batch;
 LOCAL uint8_t               readerPos;
-extern char                *readerFileName[256];
+
+extern ArkimeOfflineInfo_t  offlineInfo[256];
 extern ArkimeFieldOps_t     readerFieldOps[256];
-extern uint32_t             readerOutputIds[256];
 
 LOCAL  int                  offlineDispatchAfter;
 
-LOCAL struct {
-    GRegex    *regex;
-    int        field;
-    char      *expand;
-} filenameOps[100];
-LOCAL int                   filenameOpsNum;
+extern ArkimeFilenameOps_t  readerFilenameOps[256];
+extern int                  readerFilenameOpsNum;
+
+LOCAL uint64_t              lastBytes;
+LOCAL uint64_t              lastPackets;
 
 #ifdef HAVE_SYS_INOTIFY_H
 #include <sys/inotify.h>
@@ -174,13 +173,6 @@ LOCAL void reader_libpcapfile_init_monitor()
 LOCAL int reader_libpcapfile_process(char *filename)
 {
     char         errbuf[1024];
-    char         path[PATH_MAX];
-    struct       stat stats;
-    char         *token;
-    char         *save_ptr;
-    char         tmpFilename[PATH_MAX];
-    struct group *gr;
-    struct passwd *pw;
 
     if (strcmp(filename, "-") == 0) {
         goto process;
@@ -204,46 +196,7 @@ LOCAL int reader_libpcapfile_process(char *filename)
 
     // check to see if viewer might have access issues to non-copied pcap file
     if (config.copyPcap == 0) {
-
-        if (strlen (filename) >= PATH_MAX) {
-            // filename bigger than path buffer, skip check
-        } else if ((config.dropUser == NULL) && (config.dropGroup == NULL)) {
-            // drop.User,Group not defined -- skip check
-        } else if (strncmp (filename, "/", 1) != 0) {
-            LOG("WARNING using a relative path may make pcap inaccessible to viewer");
-        } else {
-
-            path[0] = 0;
-
-            // process copy of filename given strtok_r changes arg
-            g_strlcpy (tmpFilename, filename, sizeof(tmpFilename));
-
-            token = strtok_r (tmpFilename, "/", &save_ptr);
-
-            while (token != NULL) {
-                g_strlcat (path, "/", sizeof(path));
-                g_strlcat (path, token, sizeof(path));
-
-                if (stat(path, &stats) != -1) {
-                    gr = getgrgid (stats.st_gid);
-                    pw = getpwuid (stats.st_uid);
-
-                    if (stats.st_mode & S_IROTH) {
-                        // world readable
-                    } else if ((stats.st_mode & S_IRGRP) && config.dropGroup && (strcmp (config.dropGroup, gr->gr_name) == 0)) {
-                        // group readable and dropGroup matches file group
-                        // TODO compare group id values as opposed to group name
-                    } else if ((stats.st_mode & S_IRUSR) && config.dropUser && (strcmp (config.dropUser, pw->pw_name) == 0)) {
-                        // user readable and dropUser matches file user
-                        // TODO compare user id values as opposed to user name
-                    } else
-                        LOG("WARNING -- permission issues with %s might make pcap inaccessible to viewer", path);
-                } else
-                    LOG("WARNING -- Can't stat %s.  Pcap might not be accessible to viewer", path);
-
-                token = strtok_r (NULL, "/", &save_ptr);
-            }
-        }
+        arkime_check_file_permissions(filename);
     }
 
 process:
@@ -476,6 +429,9 @@ LOCAL void reader_libpcapfile_pcap_cb(u_char *UNUSED(user), const struct pcap_pk
         packet->pktlen     = h->len;
     }
 
+    lastPackets++;
+    lastBytes += packet->pktlen + 16;
+
     packet->pkt           = (u_char *)bytes;
     /* libpcap casts to int32_t which sign extends, undo that */
     packet->ts.tv_sec     = (uint32_t)h->ts.tv_sec;
@@ -531,6 +487,9 @@ LOCAL gboolean reader_libpcapfile_read()
             if (rc != 0)
                 LOG("Failed to delete file %s %s (%d)", offlinePcapFilename, strerror(errno), errno);
         }
+        if (!config.dryRun && !config.copyPcap) {
+            arkime_db_update_filesize(offlineInfo[readerPos].outputId, lastBytes, lastBytes, lastPackets);
+        }
         pcap_close(pcap);
         if (reader_libpcapfile_next()) {
             return G_SOURCE_REMOVE;
@@ -585,11 +544,16 @@ LOCAL void reader_libpcapfile_opened()
 
     readerPos++;
     // We've wrapped around all 256 reader items, clear the previous file information
-    if (readerFileName[readerPos]) {
-        g_free(readerFileName[readerPos]);
-        readerOutputIds[readerPos] = 0;
+    if (offlineInfo[readerPos].filename) {
+        g_free(offlineInfo[readerPos].filename);
+        g_free(offlineInfo[readerPos].extra);
+        memset(&offlineInfo[readerPos], 0, sizeof(ArkimeOfflineInfo_t));
     }
-    readerFileName[readerPos] = g_strdup(offlinePcapFilename);
+    offlineInfo[readerPos].filename = g_strdup(offlinePcapFilename);
+
+    struct stat st;
+    if (stat(offlinePcapFilename, &st) == 0)
+        offlineInfo[readerPos].size = st.st_size;
 
     int fd = pcap_fileno(pcap);
     if (fd == -1) {
@@ -598,89 +562,42 @@ LOCAL void reader_libpcapfile_opened()
         arkime_watch_fd(fd, ARKIME_GIO_READ_COND, reader_libpcapfile_read, NULL);
     }
 
-    if (filenameOpsNum > 0) {
+    if (readerFilenameOpsNum > 0) {
 
         // Free any previously allocated
         if (readerFieldOps[readerPos].size > 0)
             arkime_field_ops_free(&readerFieldOps[readerPos]);
 
-        arkime_field_ops_init(&readerFieldOps[readerPos], filenameOpsNum, ARKIME_FIELD_OPS_FLAGS_COPY);
+        arkime_field_ops_init(&readerFieldOps[readerPos], readerFilenameOpsNum, ARKIME_FIELD_OPS_FLAGS_COPY);
 
         // Go thru all the filename ops looking for matches and then expand the value string
         int i;
-        for (i = 0; i < filenameOpsNum; i++) {
+        for (i = 0; i < readerFilenameOpsNum; i++) {
             GMatchInfo *match_info = 0;
-            g_regex_match(filenameOps[i].regex, offlinePcapFilename, 0, &match_info);
+            g_regex_match(readerFilenameOps[i].regex, offlinePcapFilename, 0, &match_info);
             if (g_match_info_matches(match_info)) {
                 GError *error = 0;
-                char *expand = g_match_info_expand_references(match_info, filenameOps[i].expand, &error);
+                char *expand = g_match_info_expand_references(match_info, readerFilenameOps[i].expand, &error);
                 if (error) {
-                    LOG("Error expanding '%s' with '%s' - %s", offlinePcapFilename, filenameOps[i].expand, error->message);
+                    LOG("Error expanding '%s' with '%s' - %s", offlinePcapFilename, readerFilenameOps[i].expand, error->message);
                     g_error_free(error);
                 }
                 if (expand) {
-                    arkime_field_ops_add(&readerFieldOps[readerPos], filenameOps[i].field, expand, -1);
+                    arkime_field_ops_add(&readerFieldOps[readerPos], readerFilenameOps[i].field, expand, -1);
                     g_free(expand);
                 }
             }
             g_match_info_free(match_info);
         }
     }
+
+    lastBytes = 24;
+    lastPackets = 0;
 }
 
 /******************************************************************************/
-LOCAL void reader_libpcapfile_start() {
-
-
-    // Compile all the filename ops.  The formation is fieldexpr=value%value
-    // value is expanded using the g_regex_replace rules (\1 being the first capture group)
-    // https://developer.gnome.org/glib/stable/glib-Perl-compatible-regular-expressions.html#g-regex-replace
-    char **filenameOpsStr;
-    filenameOpsStr = arkime_config_str_list(NULL, "filenameOps", "");
-
-    int i;
-    for (i = 0; filenameOpsStr && filenameOpsStr[i] && i < 100; i++) {
-        if (!filenameOpsStr[i][0])
-            continue;
-
-        char *equal = strchr(filenameOpsStr[i], '=');
-        if (!equal) {
-            CONFIGEXIT("Must be FieldExpr=regex%%value, missing equal '%s'", filenameOpsStr[i]);
-        }
-
-        char *percent = strchr(equal + 1, '%');
-        if (!percent) {
-            CONFIGEXIT("Must be FieldExpr=regex%%value, missing percent '%s'", filenameOpsStr[i]);
-        }
-
-        *equal = 0;
-        *percent = 0;
-
-        int elen = strlen(equal + 1);
-        if (!elen) {
-            CONFIGEXIT("Must be FieldExpr=regex%%value, empty regex for '%s'", filenameOpsStr[i]);
-        }
-
-        int vlen = strlen(percent + 1);
-        if (!vlen) {
-            CONFIGEXIT("Must be FieldExpr=regex%%value, empty value for '%s'", filenameOpsStr[i]);
-        }
-
-        int fieldPos = arkime_field_by_exp(filenameOpsStr[i]);
-        if (fieldPos == -1) {
-            CONFIGEXIT("Must be FieldExpr=regex?value, Unknown field expression '%s'", filenameOpsStr[i]);
-        }
-
-        filenameOps[filenameOpsNum].regex = g_regex_new(equal + 1, 0, 0, 0);
-        filenameOps[filenameOpsNum].expand = g_strdup(percent + 1);
-        if (!filenameOps[filenameOpsNum].regex)
-            CONFIGEXIT("Couldn't compile regex '%s'", equal + 1);
-        filenameOps[filenameOpsNum].field = fieldPos;
-        filenameOpsNum++;
-    }
-    g_strfreev(filenameOpsStr);
-
-    // Now actually start
+LOCAL void reader_libpcapfile_start()
+{
     reader_libpcapfile_next();
     if (!pcap) {
         if (config.pcapMonitor) {

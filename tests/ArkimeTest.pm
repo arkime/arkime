@@ -524,6 +524,7 @@ my ($host, $port, $extraSleep) = @_;
 }
 ################################################################################
 sub addUser {
+    #diag ("cd ../viewer ; node addUser.js $ArkimeTest::es -c ../tests/config.test.ini $_[0]\n");
     return system("cd ../viewer ; node addUser.js $ArkimeTest::es -c ../tests/config.test.ini $_[0]");
 }
 ################################################################################

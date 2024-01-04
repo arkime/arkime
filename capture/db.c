@@ -1954,6 +1954,12 @@ LOCAL void arkime_db_mkpath(char *path)
     }
 }
 /******************************************************************************/
+/* For var args: field, value
+ * field=="indexFilename", value has #NUM# replaced with outputId
+ * field starts with #, and value is NOT ARKIME_VAR_ARG_INT_SKIP, output ', ${field+1}: ${value}'
+ * value starts with { or [, and value is NOT ARKIME_VAR_ARG_STR_SKIP, output ', ${field}:${value}'
+ * value is NOT ARKIME_VAR_ARG_STR_SKIP, output ', ${field}:"${value}"'
+ */
 char *arkime_db_create_file_full(time_t firstPacket, const char *name, uint64_t size, int locked, uint32_t *id, ...)
 {
     static GRegex     *numRegex;
@@ -2816,7 +2822,15 @@ void arkime_db_exit()
     }
 
     if (config.debug) {
-        LOG("totalPackets: %" PRId64 " totalSessions: %" PRId64 " writtenBytes: %" PRId64 " unwrittenBytes: %" PRId64,
-            totalPackets, totalSessions, writtenBytes, unwrittenBytes);
+        LOG("totalPackets: %" PRId64 " totalSessions: %" PRId64 " writtenBytes: %" PRId64 " unwrittenBytes: %" PRId64 " pstats: %" PRIu64 "/%" PRIu64 "/%" PRIu64 "/%" PRIu64 "/%" PRIu64 "/%" PRIu64 "/%" PRIu64,
+            totalPackets, totalSessions, writtenBytes, unwrittenBytes,
+            packetStats[ARKIME_PACKET_DO_PROCESS],
+            packetStats[ARKIME_PACKET_IP_DROPPED],
+            packetStats[ARKIME_PACKET_OVERLOAD_DROPPED],
+            packetStats[ARKIME_PACKET_CORRUPT],
+            packetStats[ARKIME_PACKET_UNKNOWN],
+            packetStats[ARKIME_PACKET_IPPORT_DROPPED],
+            packetStats[ARKIME_PACKET_DUPLICATE_DROPPED]
+           );
     }
 }

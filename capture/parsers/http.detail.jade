@@ -7,7 +7,6 @@ if (session.http)
       dd
         each method in session.http.method
           +clickableValue("http.method", method, null, session)
-          - console.log(method, session.http, session.http["method-" + method])
           if (session.http["method-" + method])
               | (
               +clickableValue("http.method." + method, session.http["method-" + method][0], null, session)
