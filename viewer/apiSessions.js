@@ -2000,7 +2000,7 @@ class SessionAPIs {
 
       const indicesa = indices.split(',');
       if (spiDataMaxIndices !== -1 && indicesa.length > spiDataMaxIndices) {
-        bsqErr = 'To save ES from blowing up, reducing number of spi data indices searched from ' + indicesa.length + ' to ' + spiDataMaxIndices + '.  This can be increased by setting spiDataMaxIndices in the config file.  Indices being searched: ';
+        bsqErr = `To save OpenSearch/Elasticsearch from blowing up, Arkime is reducing the number of spi data indices searched from ${indicesa.length} to ${spiDataMaxIndices} for this query.  The Arkime admin can increase the number of searched indices for future queries by setting spiDataMaxIndices to a larger value in the config file.  Indices being searched: `;
         indices = indicesa.slice(-spiDataMaxIndices).join(',');
         bsqErr += indices;
       }

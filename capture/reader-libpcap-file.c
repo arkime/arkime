@@ -41,6 +41,9 @@ LOCAL  int                  offlineDispatchAfter;
 extern ArkimeFilenameOps_t  readerFilenameOps[256];
 extern int                  readerFilenameOpsNum;
 
+LOCAL uint64_t              lastBytes;
+LOCAL uint64_t              lastPackets;
+
 #ifdef HAVE_SYS_INOTIFY_H
 #include <sys/inotify.h>
 LOCAL int         monitorFd;
@@ -433,6 +436,9 @@ LOCAL void reader_libpcapfile_pcap_cb(u_char *UNUSED(user), const struct pcap_pk
     packet->readerFilePos = ftell(offlineFile) - 16 - h->len;
     packet->readerPos     = readerPos;
     arkime_packet_batch(&batch, packet);
+
+    lastPackets++;
+    lastBytes += packet->pktlen + 16;
 }
 /******************************************************************************/
 LOCAL gboolean reader_libpcapfile_read()
@@ -480,6 +486,9 @@ LOCAL gboolean reader_libpcapfile_read()
             int rc = unlink(offlinePcapFilename);
             if (rc != 0)
                 LOG("Failed to delete file %s %s (%d)", offlinePcapFilename, strerror(errno), errno);
+        }
+        if (!config.dryRun && !config.copyPcap) {
+            arkime_db_update_filesize(offlineInfo[readerPos].outputId, lastBytes, lastBytes, lastPackets);
         }
         pcap_close(pcap);
         if (reader_libpcapfile_next()) {
@@ -581,6 +590,9 @@ LOCAL void reader_libpcapfile_opened()
             g_match_info_free(match_info);
         }
     }
+
+    lastBytes = 24;
+    lastPackets = 0;
 }
 
 /******************************************************************************/
