@@ -319,6 +319,25 @@ int arkime_field_define(char *group, char *kind, char *expression, char *friendl
     ArkimeFieldInfo_t *minfo = 0;
     HASH_FIND(d_, fieldsByDb, dbField, minfo);
 
+    char *category = NULL;
+    char *transform = NULL;
+    char *aliases = NULL;
+    va_list args;
+    va_start(args, flags);
+    while(1) {
+        char *field = va_arg(args, char *);
+        if (!field) break;
+        char *value = va_arg(args, char *);
+        if (strcmp(field, "category") == 0 && value) {
+            category = value;
+        } else if (strcmp(field, "transform") == 0 && value) {
+            transform = value;
+        } else if (strcmp(field, "aliases") == 0 && value) {
+            aliases = value;
+        }
+    }
+    va_end(args);
+
     if (!minfo) {
         minfo = ARKIME_TYPE_ALLOC0(ArkimeFieldInfo_t);
         minfo->dbFieldFull = g_strdup(dbField);
@@ -328,6 +347,12 @@ int arkime_field_define(char *group, char *kind, char *expression, char *friendl
         minfo->expression  = g_strdup(expression);
         minfo->group       = g_strdup(group);
         minfo->kind        = g_strdup(kind);
+        if (aliases)
+            minfo->aliases = g_strdup(aliases);
+        if (category)
+            minfo->category = g_strdup(category);
+        if (transform)
+            minfo->transform = g_strdup(transform);
         HASH_ADD(d_, fieldsByDb, minfo->dbField, minfo);
         HASH_ADD(e_, fieldsByExp, minfo->expression, minfo);
 
@@ -345,27 +370,10 @@ int arkime_field_define(char *group, char *kind, char *expression, char *friendl
             return minfo->pos;
         }
 
-        char *category = NULL;
-        char *transform = NULL;
-        char *aliases = NULL;
         if (strcmp(kind, minfo->kind) != 0) {
             LOG("WARNING - Field kind in db %s doesn't match field kind %s in capture for field %s", minfo->kind, kind, expression);
         }
-        va_list args;
-        va_start(args, flags);
-        while(1) {
-            char *field = va_arg(args, char *);
-            if (!field) break;
-            char *value = va_arg(args, char *);
-            if (strcmp(field, "category") == 0 && value) {
-                category = value;
-            } else if (strcmp(field, "transform") == 0 && value) {
-                transform = value;
-            } else if (strcmp(field, "aliases") == 0 && value) {
-                aliases = value;
-            }
-        }
-        va_end(args);
+
         if (category && (!minfo->category || strcmp(category, minfo->category) != 0)) {
             LOG("UPDATING - Field category in db %s doesn't match field category %s in capture for field %s", minfo->category, category, expression);
             arkime_db_update_field(expression, "category", category);
