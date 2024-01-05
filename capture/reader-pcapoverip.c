@@ -36,11 +36,14 @@ typedef struct {
     int                     readWatch;
     int                     interface;
     uint16_t                state: 1;
-    uint16_t                bigEndian: 1;
+    uint16_t                needSwap: 1;
     uint16_t                isClient: 1;
 } POIClient_t;
 
 LOCAL int                   isConnected[MAX_INTERFACES];
+
+#define SWAP32(x) ((((x)&0xff000000) >> 24) | (((x)&0x00ff0000) >> 8) | (((x)&0x0000ff00) << 8) | (((x)&0x000000ff) << 24))
+#define SWAP16(x) ((((x)&0xff00) >> 8) | (((x)&0x00ff) << 8))
 
 /******************************************************************************/
 void pcapoverip_client_free (POIClient_t *poic)
@@ -54,11 +57,13 @@ void pcapoverip_client_free (POIClient_t *poic)
     ARKIME_TYPE_FREE(POIClient_t, poic);
 }
 /******************************************************************************/
+SUPPRESS_ALIGNMENT
 gboolean pcapoverip_client_read_cb(gint UNUSED(fd), GIOCondition cond, gpointer data) {
     POIClient_t *poic = (POIClient_t *)data;
 
     //LOG("fd: %d cond: %x data: %p", fd, cond, data);
     GError              *error = 0;
+    static int           first = 1;
 
     int len = g_socket_receive(poic->socket, poic->data + poic->len, sizeof(poic->data) - poic->len, NULL, &error);
 
@@ -76,15 +81,32 @@ gboolean pcapoverip_client_read_cb(gint UNUSED(fd), GIOCondition cond, gpointer 
         if (poic->state == 0) {
             if (poic->len - pos < 24) // Not enough for pcap file header
                 break;
-            if (memcmp(poic->data + pos, "\xa1\xb2\xc3\xd4", 4) == 0)
-                poic->bigEndian = 1;
-            else if (memcmp(poic->data + pos, "\xd4\xc3\xb2\xa1", 4) == 0)
-                poic->bigEndian = 0;
-            else {
-                pcapoverip_client_free(poic);
+
+            ArkimePcapFileHdr_t *h = (ArkimePcapFileHdr_t *)(poic->data + pos);
+
+            if (h->magic != 0xa1b2c3d4 && h->magic != 0xd4c3b2a1 &&
+                h->magic != 0xa1b23c4d && h->magic != 0x4d3cb2a1) {
+                LOG("ERROR - Unknown magic %xs", h->magic);
                 return FALSE;
             }
+
+            poic->needSwap = (h->magic == 0xd4c3b2a1 || h->magic == 0x4d3cb2a1);
+
             // TODO: Really we should save the header per connection and do stuff
+            if (first) {
+                if (poic->needSwap) {
+                    h->dlt = SWAP32(h->dlt);
+                }
+                arkime_packet_set_dltsnap(h->dlt, config.snapLen);
+
+                if (config.bpf && !deadPcap) {
+                    deadPcap = pcap_open_dead(h->dlt, config.snapLen);
+                    if (pcap_compile(deadPcap, &bpfp, config.bpf, 1, PCAP_NETMASK_UNKNOWN) == -1) {
+                        CONFIGEXIT("Couldn't compile bpf filter '%s' with %s", config.bpf, pcap_geterr(deadPcap));
+                    }
+                }
+                first = 0;
+            }
             poic->state = 1;
             pos += 24;
             continue;
@@ -93,23 +115,21 @@ gboolean pcapoverip_client_read_cb(gint UNUSED(fd), GIOCondition cond, gpointer 
         if (poic->len - pos < 16) // Not enough for packet header
             break;
 
-        BSB bsb;
-        BSB_INIT(bsb, poic->data + pos, poic->len - pos);
+        struct arkime_pcap_sf_pkthdr *ph = (struct arkime_pcap_sf_pkthdr *)(poic->data + pos);
 
         ArkimePacket_t *packet = ARKIME_TYPE_ALLOC0(ArkimePacket_t);
-
-        uint32_t caplen = 0;
         uint32_t origlen = 0;
-        if (poic->bigEndian) {
-            BSB_IMPORT_u32(bsb, packet->ts.tv_sec);
-            BSB_IMPORT_u32(bsb, packet->ts.tv_usec);
-            BSB_IMPORT_u32(bsb, caplen);
-            BSB_IMPORT_u32(bsb, origlen);
+        uint32_t caplen = 0;
+        if (poic->needSwap) {
+            caplen = SWAP32(ph->caplen);
+            origlen = SWAP32(ph->pktlen);
+            packet->ts.tv_sec = SWAP32(ph->ts.tv_sec);
+            packet->ts.tv_usec = SWAP32(ph->ts.tv_usec);
         } else {
-            BSB_LIMPORT_u32(bsb, packet->ts.tv_sec);
-            BSB_LIMPORT_u32(bsb, packet->ts.tv_usec);
-            BSB_LIMPORT_u32(bsb, caplen);
-            BSB_LIMPORT_u32(bsb, origlen);
+            caplen = ph->caplen;
+            origlen = ph->pktlen;
+            packet->ts.tv_sec = ph->ts.tv_sec;
+            packet->ts.tv_usec = ph->ts.tv_usec;
         }
 
         if (unlikely(caplen != origlen)) {
@@ -311,10 +331,4 @@ void reader_pcapoverip_init(char *name)
     }
     arkime_reader_stats         = pcapoverip_stats;
     arkime_packet_batch_init(&batch);
-    deadPcap = pcap_open_dead(DLT_EN10MB, config.snapLen);
-    if (config.bpf) {
-        if (pcap_compile(deadPcap, &bpfp, config.bpf, 1, PCAP_NETMASK_UNKNOWN) == -1) {
-            CONFIGEXIT("Couldn't compile bpf filter '%s' with %s", config.bpf, pcap_geterr(deadPcap));
-        }
-    }
 }

@@ -30,7 +30,7 @@ NOTICE: Restart wiseService before capture when upgrading
 NOTICE: Cross-cluster Shortcuts require you to not restart all your viewers at once after upgrading
 NOTICE: Create a parliament config file before upgrading (see https://arkime.com/settings#parliament and https://arkime.com/faq#how_do_i_upgrade_to_arkime_5)
 
-5.0.0 2023/11/xx
+5.0.0 2024/02/xx
 ## BREAKING
   - #2297 s3Compression/simpleCompression now defaults to zstd
   - #2297 s3WriteGzip removed, use s3Compression=gzip for gzip instead of new zstd default
@@ -76,6 +76,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #2539 new tls:has_esni tag if the client hello has esni
   - #2553 fix rules range matching not working always
   - #2554 support fieldSet tcpflag rules
+  - #2576 support different dlt for pcap-over-ip
 ## Cont3xt
   - #2121 new bulk UI and support for bulk queries
   - #2271 lots of keyboard shortcut improvements
