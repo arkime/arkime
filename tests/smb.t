@@ -10,13 +10,13 @@ my $files = "(file=$pwd/smb-port80.pcap||file=$pwd/smb-smbclient.pcap)";
 countTest(2, "date=-1&expression=" . uri_escape("$files&&protocols==smb"));
 
 # smb.share
-    countTest(1, "date=-1&expression=" . uri_escape("$files&&smb.share==\"\\\\\\\\LOCALHOST\\\\MP3\""));
-    countTest(0, "date=-1&expression=" . uri_escape("$files&&smb.share==\"\\\\\\\\localhost\\\\MP3\""));
+    countTest(1, "date=-1&expression=" . uri_escape("$files&&smb.share==\"\\\\LOCALHOST\\MP3\""));
+    countTest(0, "date=-1&expression=" . uri_escape("$files&&smb.share==\"\\\\localhost\\MP3\""));
     countTest(1, "date=-1&expression=" . uri_escape("$files&&smb.share.cnt==1"));
 
 # smb.fn
-    countTest(1, "date=-1&expression=" . uri_escape("$files&&smb.fn==\"\\\\tmp\\\\foo\""));
-    countTest(0, "date=-1&expression=" . uri_escape("$files&&smb.fn==\"\\\\TMP\\\\foo\""));
+    countTest(1, "date=-1&expression=" . uri_escape("$files&&smb.fn==\"\\tmp\\foo\""));
+    countTest(0, "date=-1&expression=" . uri_escape("$files&&smb.fn==\"\\TMP\\foo\""));
     countTest(1, "date=-1&expression=" . uri_escape("$files&&smb.fn.cnt==1"));
 
 # smb.user
