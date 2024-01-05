@@ -60,6 +60,7 @@ typedef struct {
     uint16_t             fieldsLen;
     uint8_t              saveFlags;                // When to save for beforeSave
     uint8_t              log;                      // should we log or not
+    uint8_t              setRule;                  // This is a set rule type
 } ArkimeRule_t;
 
 #define ARKIME_RULES_MAX     100
@@ -283,18 +284,20 @@ LOCAL void arkime_rules_load_add_field(ArkimeRule_t *rule, int pos, char *key)
             return;
         }
 
-        if (!loading.fieldsHash[pos])
-            loading.fieldsHash[pos] = g_hash_table_new_full(NULL, NULL, NULL, arkime_rules_free_array);
-
         n = atoi(key);
         g_hash_table_add(rule->hash[pos], (void *)(long)n);
 
-        rules = g_hash_table_lookup(loading.fieldsHash[pos], (void *)(long)n);
-        if (!rules) {
-            rules = g_ptr_array_new();
-            g_hash_table_insert(loading.fieldsHash[pos], (void *)(long)n, rules);
+        if (rule->setRule) {
+            if (!loading.fieldsHash[pos])
+                loading.fieldsHash[pos] = g_hash_table_new_full(NULL, NULL, NULL, arkime_rules_free_array);
+
+            rules = g_hash_table_lookup(loading.fieldsHash[pos], (void *)(long)n);
+            if (!rules) {
+                rules = g_ptr_array_new();
+                g_hash_table_insert(loading.fieldsHash[pos], (void *)(long)n, rules);
+            }
+            g_ptr_array_add(rules, rule);
         }
-        g_ptr_array_add(rules, rule);
         break;
 
     case ARKIME_FIELD_TYPE_FLOAT:
@@ -304,19 +307,22 @@ LOCAL void arkime_rules_load_add_field(ArkimeRule_t *rule, int pos, char *key)
             LOGEXIT("Range match not supported for float fields");
             return;
         }
-        if (!loading.fieldsHash[pos])
-            loading.fieldsHash[pos] = g_hash_table_new_full(NULL, NULL, NULL, arkime_rules_free_array);
 
         f = atof(key);
         memcpy(&fint, &f, 4);
         g_hash_table_add(rule->hash[pos], (gpointer)(long)fint);
 
-        rules = g_hash_table_lookup(loading.fieldsHash[pos], (gpointer)(long)fint);
-        if (!rules) {
-            rules = g_ptr_array_new();
-            g_hash_table_insert(loading.fieldsHash[pos], (gpointer)(long)fint, rules);
+        if (rule->setRule) {
+            if (!loading.fieldsHash[pos])
+                loading.fieldsHash[pos] = g_hash_table_new_full(NULL, NULL, NULL, arkime_rules_free_array);
+
+            rules = g_hash_table_lookup(loading.fieldsHash[pos], (gpointer)(long)fint);
+            if (!rules) {
+                rules = g_ptr_array_new();
+                g_hash_table_insert(loading.fieldsHash[pos], (gpointer)(long)fint, rules);
+            }
+            g_ptr_array_add(rules, rule);
         }
-        g_ptr_array_add(rules, rule);
         break;
 
     case ARKIME_FIELD_TYPE_IP:
@@ -326,30 +332,38 @@ LOCAL void arkime_rules_load_add_field(ArkimeRule_t *rule, int pos, char *key)
             return;
         }
 
-        if (!loading.fieldsTree4[pos]) {
-            loading.fieldsTree4[pos] = New_Patricia(32);
-            loading.fieldsTree6[pos] = New_Patricia(128);
+        if (rule->setRule) {
+            if (!loading.fieldsTree4[pos]) {
+                loading.fieldsTree4[pos] = New_Patricia(32);
+                loading.fieldsTree6[pos] = New_Patricia(128);
+            }
         }
 
         if (strcmp(key, "ipv4") == 0) {
             make_and_lookup(rule->tree4[pos], "0.0.0.0/0");
-            node = make_and_lookup(loading.fieldsTree4[pos], "0.0.0.0/0");
+            if (rule->setRule)
+                node = make_and_lookup(loading.fieldsTree4[pos], "0.0.0.0/0");
         } else if (strcmp(key, "ipv6") == 0) {
             make_and_lookup(rule->tree6[pos], "::/0");
-            node = make_and_lookup(loading.fieldsTree6[pos], "::/0");
+            if (rule->setRule)
+                node = make_and_lookup(loading.fieldsTree6[pos], "::/0");
         } else if (strchr(key, '.') != 0) {
             make_and_lookup(rule->tree4[pos], key);
-            node = make_and_lookup(loading.fieldsTree4[pos], key);
+            if (rule->setRule)
+                node = make_and_lookup(loading.fieldsTree4[pos], key);
         } else {
             make_and_lookup(rule->tree6[pos], key);
-            node = make_and_lookup(loading.fieldsTree6[pos], key);
+            if (rule->setRule)
+                node = make_and_lookup(loading.fieldsTree6[pos], key);
         }
-        if (node->data) {
-            rules = node->data;
-        } else {
-            node->data = rules = g_ptr_array_new();
+        if (rule->setRule) {
+            if (node->data) {
+                rules = node->data;
+            } else {
+                node->data = rules = g_ptr_array_new();
+            }
+            g_ptr_array_add(rules, rule);
         }
-        g_ptr_array_add(rules, rule);
         break;
 
 
@@ -357,17 +371,19 @@ LOCAL void arkime_rules_load_add_field(ArkimeRule_t *rule, int pos, char *key)
     case ARKIME_FIELD_TYPE_STR_ARRAY:
     case ARKIME_FIELD_TYPE_STR_HASH:
     case ARKIME_FIELD_TYPE_STR_GHASH:
-        if (!loading.fieldsHash[pos])
-            loading.fieldsHash[pos] = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, arkime_rules_free_array);
-
         g_hash_table_add(rule->hash[pos], g_strdup(key));
 
-        rules = g_hash_table_lookup(loading.fieldsHash[pos], key);
-        if (!rules) {
-            rules = g_ptr_array_new();
-            g_hash_table_insert(loading.fieldsHash[pos], g_strdup(key), rules);
+        if (rule->setRule) {
+            if (!loading.fieldsHash[pos])
+                loading.fieldsHash[pos] = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, arkime_rules_free_array);
+
+            rules = g_hash_table_lookup(loading.fieldsHash[pos], key);
+            if (!rules) {
+                rules = g_ptr_array_new();
+                g_hash_table_insert(loading.fieldsHash[pos], g_strdup(key), rules);
+            }
+            g_ptr_array_add(rules, rule);
         }
-        g_ptr_array_add(rules, rule);
         break;
     case ARKIME_FIELD_TYPE_CERTSINFO:
         // Unsupported
@@ -404,15 +420,17 @@ LOCAL void arkime_rules_load_add_field_range_match(ArkimeRule_t *rule, int pos, 
 
     g_ptr_array_add(rule->match[pos], (gpointer)match.num);
 
-    if (!loading.fieldsMatch[pos])
-        loading.fieldsMatch[pos] = g_hash_table_new_full(g_direct_hash, g_direct_equal, g_free, arkime_rules_free_array);
+    if (rule->setRule) {
+        if (!loading.fieldsMatch[pos])
+            loading.fieldsMatch[pos] = g_hash_table_new_full(g_direct_hash, g_direct_equal, g_free, arkime_rules_free_array);
 
-    GPtrArray *rules = g_hash_table_lookup(loading.fieldsMatch[pos], (gpointer)match.num);
-    if (!rules) {
-        rules = g_ptr_array_new();
-        g_hash_table_insert(loading.fieldsMatch[pos], (gpointer)match.num, rules);
+        GPtrArray *rules = g_hash_table_lookup(loading.fieldsMatch[pos], (gpointer)match.num);
+        if (!rules) {
+            rules = g_ptr_array_new();
+            g_hash_table_insert(loading.fieldsMatch[pos], (gpointer)match.num, rules);
+        }
+        g_ptr_array_add(rules, rule);
     }
-    g_ptr_array_add(rules, rule);
 }
 /******************************************************************************/
 LOCAL void arkime_rules_load_add_field_match(ArkimeRule_t *rule, int pos, int type, char *key)
@@ -431,15 +449,17 @@ LOCAL void arkime_rules_load_add_field_match(ArkimeRule_t *rule, int pos, int ty
 
     g_ptr_array_add(rule->match[pos], (char *)nkey); // Just made a copy above
 
-    if (!loading.fieldsMatch[pos])
-        loading.fieldsMatch[pos] = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, arkime_rules_free_array);
+    if (rule->setRule) {
+        if (!loading.fieldsMatch[pos])
+            loading.fieldsMatch[pos] = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, arkime_rules_free_array);
 
-    GPtrArray *rules = g_hash_table_lookup(loading.fieldsMatch[pos], nkey);
-    if (!rules) {
-        rules = g_ptr_array_new();
-        g_hash_table_insert(loading.fieldsMatch[pos], g_strdup((char *)nkey), rules);
+        GPtrArray *rules = g_hash_table_lookup(loading.fieldsMatch[pos], nkey);
+        if (!rules) {
+            rules = g_ptr_array_new();
+            g_hash_table_insert(loading.fieldsMatch[pos], g_strdup((char *)nkey), rules);
+        }
+        g_ptr_array_add(rules, rule);
     }
-    g_ptr_array_add(rules, rule);
 }
 /******************************************************************************/
 LOCAL void arkime_rules_parser_load_rule(char *filename, YamlNode_t *parent)
@@ -516,6 +536,7 @@ LOCAL void arkime_rules_parser_load_rule(char *filename, YamlNode_t *parent)
     rule->filename = filename;
     rule->saveFlags = saveFlags;
     rule->log = log && strcasecmp(log, "true") == 0;
+    rule->setRule = type == ARKIME_RULE_TYPE_FIELD_SET;
     if (bpf)
         rule->bpf = g_strdup(bpf);
 

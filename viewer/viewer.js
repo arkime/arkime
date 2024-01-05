@@ -60,6 +60,7 @@ const UserAPIs = require('./apiUsers');
 const HistoryAPIs = require('./apiHistory');
 const ShortcutAPIs = require('./apiShortcuts');
 const MiscAPIs = require('./apiMisc');
+require('./schemes');
 
 // registers a get and a post
 app.getpost = (route, mw, func) => { app.get(route, mw, func); app.post(route, mw, func); };
@@ -733,6 +734,9 @@ function loadPlugins () {
   const api = {
     registerWriter: function (str, info) {
       internals.writers.set(str, info);
+    },
+    registerScheme: function (scheme, info) {
+      internals.schemes.set(scheme, info);
     },
     getDb: function () { return Db; },
     getPcap: function () { return Pcap; }

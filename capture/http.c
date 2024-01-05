@@ -30,6 +30,7 @@ typedef struct arkimehttprequest_t {
     struct arkimehttprequest_t *rqt_next, *rqt_prev;
 
     ArkimeHttpResponse_cb func;
+    ArkimeHttpRead_cb    rfunc;
     gpointer              uw;
 
     ArkimeHttpServer_t   *server;
@@ -132,6 +133,12 @@ LOCAL size_t arkime_http_curl_write_callback(void *contents, size_t size, size_t
     ArkimeHttpRequest_t *request = requestP;
 
     size_t sz = size * nmemb;
+
+    if (request->rfunc) {
+        if (!request->rfunc(contents, sz, request->uw))
+            return sz;
+        return 0;
+    }
 
     if (!request->dataIn) {
         double cl;
@@ -733,7 +740,7 @@ gboolean arkime_http_send(void *serverV, const char *method, const char *key, in
     return arkime_http_schedule(serverV, method, key, key_len, data, data_len, headers, dropable ? ARKIME_HTTP_PRIORITY_DROPABLE : ARKIME_HTTP_PRIORITY_NORMAL, func, uw);
 }
 /******************************************************************************/
-gboolean arkime_http_schedule(void *serverV, const char *method, const char *key, int32_t key_len, char *data, uint32_t data_len, char **headers, int priority, ArkimeHttpResponse_cb func, gpointer uw)
+gboolean arkime_http_schedule2(void *serverV, const char *method, const char *key, int32_t key_len, char *data, uint32_t data_len, char **headers, int priority, ArkimeHttpResponse_cb func, ArkimeHttpRead_cb rfunc, gpointer uw)
 {
     ArkimeHttpServer_t        *server = serverV;
 
@@ -814,6 +821,7 @@ gboolean arkime_http_schedule(void *serverV, const char *method, const char *key
 
     request->server     = server;
     request->func       = func;
+    request->rfunc      = rfunc;
     request->uw         = uw;
     request->dataOut    = data;
     request->dataOutLen = data_len;
@@ -880,6 +888,12 @@ gboolean arkime_http_schedule(void *serverV, const char *method, const char *key
     arkime_http_add_request(server, request, priority);
     ARKIME_UNLOCK(requests);
     return 0;
+}
+
+/******************************************************************************/
+gboolean arkime_http_schedule(void *serverV, const char *method, const char *key, int32_t key_len, char *data, uint32_t data_len, char **headers, int priority, ArkimeHttpResponse_cb func, gpointer uw)
+{
+    return arkime_http_schedule2(serverV, method, key, key_len, data, data_len, headers, priority, func, NULL, uw);
 }
 
 /******************************************************************************/

@@ -27,6 +27,9 @@ const arkimeparser = require('./arkimeparser.js');
 const internals = require('./internals');
 const ViewerUtils = require('./viewerUtils');
 const ipaddr = require('ipaddr.js');
+const LRU = require('lru-cache');
+
+const headerlru = new LRU({ max: 100 });
 
 class SessionAPIs {
   // --------------------------------------------------------------------------
@@ -742,6 +745,73 @@ class SessionAPIs {
   }
 
   // --------------------------------------------------------------------------
+  static async #getHeader (node, fileNum, getBlock) {
+    const info = await Db.fileIdToFile(node, fileNum);
+    const key = `${node}:${fileNum}`;
+    let obj = headerlru.get(key);
+    if (obj) {
+      return obj;
+    }
+
+    const block = await getBlock(info, 0);
+    obj = { info, header: block };
+    headerlru.set(key, obj);
+    return obj;
+  }
+
+  // --------------------------------------------------------------------------
+  static async #getPacket (pcap, info, pos, getBlock) {
+    let block = await getBlock(info, pos);
+    if (block.length < 16) {
+      const block2 = await getBlock(info, pos + block.length);
+      block = Buffer.concat([block, block2]);
+    }
+    const len = (pcap.bigEndian ? block.readUInt32BE(8) : block.readUInt32LE(8)) + 16;
+
+    if (block.length < len) {
+      const block2 = await getBlock(info, pos + block.length);
+      block = Buffer.concat([block, block2]);
+    }
+
+    return block.slice(0, len);
+  }
+
+  // --------------------------------------------------------------------------
+  static async #processSessionIdBlock (session, headerCb, packetCb, endCb, limit, getBlock) {
+    const fields = session.fields;
+
+    let pcap;
+    let packetNum = 0;
+    let h;
+    async.eachLimit(fields.packetPos, 1, async (pos) => {
+      if (pos > 0) {
+        const packet = await SessionAPIs.#getPacket(pcap, h.info, pos, getBlock);
+        if (packetCb) {
+          const promise = new Promise((resolve, reject) => {
+            packetCb(pcap, packet, (err) => { if (err) { reject(err); } else { resolve(); } }, packetNum++);
+          });
+          await promise;
+        }
+        return;
+      }
+
+      try {
+        h = await SessionAPIs.#getHeader(fields.node, -pos, getBlock);
+      } catch (e) {
+        console.log('Failure fetching header', e.response);
+        return endCb('Only have SPI data, PCAP file no longer available for ' + e.response?.config?.url);
+      }
+      pcap = Pcap.make(h.info.name, h.header);
+      if (headerCb) {
+        headerCb(pcap, h.header);
+        headerCb = null;
+      }
+    }, (pcapErr, results) => {
+      endCb(pcapErr, fields);
+    });
+  }
+
+  // --------------------------------------------------------------------------
   static #sessionsPcapList (req, res, list, pcapWriter, extension) {
     if (list.length > 0 && list[0].fields) {
       list = list.sort((a, b) => {
@@ -1154,12 +1224,13 @@ class SessionAPIs {
   // EXPOSED HELPERS
   // --------------------------------------------------------------------------
   static processSessionId (id, fullSession, headerCb, packetCb, endCb, maxPackets, limit) {
+    let extra;
     let options;
     if (!fullSession) {
       options = { _source: false, fields: 'node,network.packets,packetPos,source.ip,source.port,destination.ip,destination.port,ipProtocol,packetLen'.split(',') };
     }
 
-    Db.getSession(id, options, (err, session) => {
+    Db.getSession(id, options, async (err, session) => {
       if (err || !session.found) {
         console.log('ERROR - session get error in processSessionId', util.inspect(err, false, 50), session);
         return endCb('Session not found', null);
@@ -1175,49 +1246,44 @@ class SessionAPIs {
         fields.packetPos.length = maxPackets;
       }
 
-      /* Go through the list of prefetch the id to file name if we are running in parallel to
-       * reduce the number of elasticsearch queries and problems
-       */
-      let outstanding = 0;
-      let i;
-      let ilen;
-
-      function fileReadyCb (fileInfo) {
-        outstanding--;
-
-        // All of the replies have been received
-        if (i === ilen && outstanding === 0) {
-          readyToProcess();
-        }
-      }
-
-      for (i = 0, ilen = fields.packetPos.length; i < ilen; i++) {
+      /* Go through the list of packets and prefetch the id to file name mapping */
+      let afileInfo;
+      for (let i = 0, ilen = fields.packetPos.length; i < ilen; i++) {
         if (fields.packetPos[i] < 0) {
-          outstanding++;
-          Db.fileIdToFile(fields.node, -1 * fields.packetPos[i], fileReadyCb);
+          afileInfo ??= await Db.fileIdToFile(fields.node, -1 * fields.packetPos[i]);
         }
       }
 
-      function readyToProcess () {
-        const pcapWriteMethod = Config.getFull(fields.node, 'pcapWriteMethod');
-        let psid = SessionAPIs.#processSessionIdDisk;
-        const writer = internals.writers.get(pcapWriteMethod);
-        if (writer && writer.processSessionId) {
-          psid = writer.processSessionId;
+      /* Figure out which decoder to use */
+      let psid;
+      if (afileInfo?.scheme && internals.schemes.has(afileInfo.scheme)) {
+        const scheme = internals.schemes.get(afileInfo.scheme);
+        if (scheme && scheme.getBlock) {
+          psid ??= SessionAPIs.#processSessionIdBlock;
+          extra = scheme.getBlock;
+        }
+      }
+
+      const pcapWriteMethod = Config.getFull(fields.node, 'pcapWriteMethod');
+      const writer = internals.writers.get(pcapWriteMethod);
+      if (writer && writer.processSessionId) {
+        psid ??= writer.processSessionId;
+      }
+
+      psid ??= SessionAPIs.#processSessionIdDisk;
+
+      /* Decode the packets */
+      psid(session, headerCb, packetCb, (err, psidFields) => {
+        if (!psidFields) {
+          return endCb(err, psidFields);
         }
 
-        psid(session, headerCb, packetCb, (err, psidFields) => {
-          if (!psidFields) {
-            return endCb(err, psidFields);
-          }
+        if (!psidFields.tags) {
+          psidFields.tags = [];
+        }
 
-          if (!psidFields.tags) {
-            psidFields.tags = [];
-          }
-
-          ViewerUtils.fixFields(psidFields, endCb);
-        }, limit);
-      }
+        ViewerUtils.fixFields(psidFields, endCb);
+      }, limit, extra);
     });
   };
 
@@ -1934,7 +2000,7 @@ class SessionAPIs {
 
       const indicesa = indices.split(',');
       if (spiDataMaxIndices !== -1 && indicesa.length > spiDataMaxIndices) {
-        bsqErr = 'To save ES from blowing up, reducing number of spi data indices searched from ' + indicesa.length + ' to ' + spiDataMaxIndices + '.  This can be increased by setting spiDataMaxIndices in the config file.  Indices being searched: ';
+        bsqErr = `To save OpenSearch/Elasticsearch from blowing up, Arkime is reducing the number of spi data indices searched from ${indicesa.length} to ${spiDataMaxIndices} for this query.  The Arkime admin can increase the number of searched indices for future queries by setting spiDataMaxIndices to a larger value in the config file.  Indices being searched: `;
         indices = indicesa.slice(-spiDataMaxIndices).join(',');
         bsqErr += indices;
       }
@@ -3410,4 +3476,5 @@ class SessionAPIs {
     });
   };
 };
+
 module.exports = SessionAPIs;
