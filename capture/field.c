@@ -546,7 +546,7 @@ const char *arkime_field_string_add(int pos, ArkimeSession_t *session, const cha
     ArkimeString_t                   *hstring;
     const ArkimeFieldInfo_t          *info = config.fields[pos];
 
-    if (info->flags & ARKIME_FIELD_FLAG_DISABLED || pos >= session->maxFields)
+    if (pos >= session->maxFields || info->flags & ARKIME_FIELD_FLAG_DISABLED)
         return NULL;
 
     if (!session->fields[pos]) {
@@ -719,7 +719,7 @@ const char *arkime_field_string_uw_add(int pos, ArkimeSession_t *session, const 
     ArkimeString_t                   *hstring;
     const ArkimeFieldInfo_t          *info = config.fields[pos];
 
-    if (info->flags & ARKIME_FIELD_FLAG_DISABLED || pos >= session->maxFields)
+    if (pos >= session->maxFields || info->flags & ARKIME_FIELD_FLAG_DISABLED)
         return NULL;
 
     if (!session->fields[pos]) {
@@ -798,7 +798,7 @@ gboolean arkime_field_int_add(int pos, ArkimeSession_t *session, int i)
     ArkimeInt_t                      *hint;
     const ArkimeFieldInfo_t          *info = config.fields[pos];
 
-    if (info->flags & ARKIME_FIELD_FLAG_DISABLED || pos >= session->maxFields)
+    if (pos >= session->maxFields || info->flags & ARKIME_FIELD_FLAG_DISABLED)
         return FALSE;
 
     if (!session->fields[pos]) {
@@ -870,7 +870,7 @@ gboolean arkime_field_float_add(int pos, ArkimeSession_t *session, float f)
     uint32_t                          fint;
     const ArkimeFieldInfo_t          *info = config.fields[pos];
 
-    if (info->flags & ARKIME_FIELD_FLAG_DISABLED || pos >= session->maxFields)
+    if (pos >= session->maxFields || info->flags & ARKIME_FIELD_FLAG_DISABLED)
         return FALSE;
 
     if (!session->fields[pos]) {
@@ -974,7 +974,7 @@ gboolean arkime_field_ip_add_str(int pos, ArkimeSession_t *session, char *str)
     ArkimeField_t                    *field;
     const ArkimeFieldInfo_t          *info = config.fields[pos];
 
-    if (info->flags & ARKIME_FIELD_FLAG_DISABLED || pos >= session->maxFields)
+    if (pos >= session->maxFields || info->flags & ARKIME_FIELD_FLAG_DISABLED)
         return FALSE;
 
     int len = strlen(str);
@@ -1032,7 +1032,7 @@ gboolean arkime_field_ip4_add(int pos, ArkimeSession_t *session, uint32_t i)
     const ArkimeFieldInfo_t          *info = config.fields[pos];
     char                              ipbuf[INET6_ADDRSTRLEN];
 
-    if (info->flags & ARKIME_FIELD_FLAG_DISABLED || pos >= session->maxFields)
+    if (pos >= session->maxFields || info->flags & ARKIME_FIELD_FLAG_DISABLED)
         return FALSE;
 
     struct in6_addr *v = g_malloc(sizeof(struct in6_addr));
@@ -1091,7 +1091,7 @@ gboolean arkime_field_ip6_add(int pos, ArkimeSession_t *session, const uint8_t *
     const ArkimeFieldInfo_t          *info = config.fields[pos];
     char                              ipbuf[INET6_ADDRSTRLEN];
 
-    if (info->flags & ARKIME_FIELD_FLAG_DISABLED || pos >= session->maxFields)
+    if (pos >= session->maxFields || info->flags & ARKIME_FIELD_FLAG_DISABLED)
         return FALSE;
 
     struct in6_addr *v = g_memdup(val, sizeof(struct in6_addr));
