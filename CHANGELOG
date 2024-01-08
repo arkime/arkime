@@ -90,6 +90,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #2507 demoMode added
   - #2527 skipChildren added
   - #2532 new wise integration
+  - #2580 add link to integration search page from card
 ## ESProxy
   - #2483 #2484 support field updates/deletes
 ## Viewer
