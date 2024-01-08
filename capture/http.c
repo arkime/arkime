@@ -436,14 +436,15 @@ LOCAL void arkime_http_curlm_check_multi_info(ArkimeHttpServer_t *server)
                 if (request->headerList) {
                     curl_slist_free_all(request->headerList);
                 }
-                ARKIME_TYPE_FREE(ArkimeHttpRequest_t, request);
-
                 curl_multi_remove_handle(server->multi, easy);
                 curl_easy_cleanup(easy);
+
                 ARKIME_LOCK(requests);
                 server->outstanding--;
                 server->outstandingPri[request->priority]--;
                 ARKIME_UNLOCK(requests);
+
+                ARKIME_TYPE_FREE(ArkimeHttpRequest_t, request);
             }
         }
     }
