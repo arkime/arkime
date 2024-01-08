@@ -157,7 +157,7 @@ jobs:
             *.so
             *.rpm
             *.zst
-          text: |
+          body: |
             ### [Installation Instructions](https://raw.githubusercontent.com/arkime/arkime/main/release/README.txt) | [5.x Upgrade instructions](https://arkime.com/faq#how_do_i_upgrade_to_arkime_5) | [Copyright Notices](https://s3.amazonaws.com/files.molo.ch/NOTICE.txt) | [FAQ](https://arkime.com/faq) | [CHANGELOG](https://raw.githubusercontent.com/arkime/arkime/main/CHANGELOG)
 
             A db.pl upgrade is required when upgrading.
@@ -170,7 +170,7 @@ jobs:
 
   slack:
     runs-on: ubuntu-latest
-    needs: build
+    needs: build-release
     steps:
       - name: send
         env:
