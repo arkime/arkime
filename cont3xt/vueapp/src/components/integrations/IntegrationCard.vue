@@ -12,6 +12,16 @@ SPDX-License-Identifier: Apache-2.0
         <b-button
           size="sm"
           tabindex="-1"
+          target="_blank"
+          v-if="card.searchUrl"
+          variant="outline-primary"
+          v-b-tooltip.hover="`Search ${source} for ${indicator.query}`"
+          :href="card.searchUrl.replace('%{query}', indicator.query)">
+          <span class="fa fa-search fa-fw" />
+        </b-button>
+        <b-button
+          size="sm"
+          tabindex="-1"
           @click="copy"
           v-b-tooltip.hover
           title="Copy as raw JSON"

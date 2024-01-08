@@ -5,8 +5,8 @@ SPDX-License-Identifier: Apache-2.0
 <template>
   <b-card class="mb-2">
     <h5 class="text-warning mb-3"
-        v-if="card.title && indicator.query">
-    {{ card.title.replace('%{query}', indicator.query) }}
+      v-if="card.title && indicator.query">
+      {{ card.title.replace('%{query}', indicator.query) }}
     </h5>
 
     <!-- field errors -->
