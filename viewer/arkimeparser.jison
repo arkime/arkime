@@ -705,7 +705,7 @@ function stringQuery (yy, field, str) {
 
   let quoted = false;
   if (str[0] === '"' && str[str.length - 1] === '"') {
-    str = str.substring(1, str.length - 1).replace(/\\(.)/g, '$1');
+    str = str.substring(1, str.length - 1).replace(/\\(")/g, '$1');
     quoted = true;
   } else if (isArrayFull(str)) {
     const rawField = field2Raw(yy, field);
