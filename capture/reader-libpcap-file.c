@@ -451,9 +451,9 @@ LOCAL gboolean reader_libpcapfile_read()
     }
 
     // pause reading if too many waiting ES operations
-    if (arkime_http_queue_length(esServer) > 30) {
+    if (arkime_http_queue_length(esServer) > 30 || arkime_http_queue_length_best(esServer) > 0) {
         if (config.debug)
-            LOG("Waiting to process more packets, es q: %d", arkime_http_queue_length(esServer));
+            LOG("Waiting to process more packets, es q: %d  best q %d", arkime_http_queue_length(esServer), arkime_http_queue_length_best(esServer));
         return G_SOURCE_CONTINUE;
     }
 

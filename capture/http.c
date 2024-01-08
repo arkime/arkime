@@ -104,6 +104,7 @@ struct arkimehttpserver_t {
     uint16_t                 maxConns;
     uint16_t                 maxOutstandingRequests;
     uint16_t                 outstanding;
+    uint16_t                 outstandingPri[PRIORITY_MAX + 1];
     uint16_t                 connections;
     uint16_t                 maxRetries;
 
@@ -348,6 +349,7 @@ LOCAL void arkime_http_add_request(ArkimeHttpServer_t *server, ArkimeHttpRequest
         LOG("HTTPDEBUG INCR %p %d %s", request, server->outstanding, request->url);
 #endif
         server->outstanding++;
+        server->outstandingPri[priority]++;
 
         DLL_PUSH_TAIL(rqt_, &requests[priority], request);
 
@@ -440,6 +442,7 @@ LOCAL void arkime_http_curlm_check_multi_info(ArkimeHttpServer_t *server)
                 curl_easy_cleanup(easy);
                 ARKIME_LOCK(requests);
                 server->outstanding--;
+                server->outstandingPri[request->priority]--;
                 ARKIME_UNLOCK(requests);
             }
         }
@@ -907,6 +910,12 @@ int arkime_http_queue_length(void *serverV)
 {
     ArkimeHttpServer_t        *server = serverV;
     return server ? server->outstanding : 0;
+}
+/******************************************************************************/
+int arkime_http_queue_length_best(void *serverV)
+{
+    ArkimeHttpServer_t        *server = serverV;
+    return server ? server->outstandingPri[ARKIME_HTTP_PRIORITY_BEST] : 0;
 }
 /******************************************************************************/
 uint64_t arkime_http_dropped_count(void *serverV)

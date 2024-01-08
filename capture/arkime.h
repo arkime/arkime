@@ -1029,6 +1029,7 @@ uint8_t *arkime_http_get(void *server, char *key, int key_len, size_t *mlen);
 #define arkime_http_free_buffer(b) ARKIME_SIZE_FREE(buffer, b)
 void arkime_http_exit();
 int arkime_http_queue_length(void *server);
+int arkime_http_queue_length_best(void *server);
 uint64_t arkime_http_dropped_count(void *server);
 
 void *arkime_http_create_server(const char *hostnames, int maxConns, int maxOutstandingRequests, int compress);
