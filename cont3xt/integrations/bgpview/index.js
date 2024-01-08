@@ -25,6 +25,7 @@ class BGPViewIntegration extends Integration {
 
   card = {
     title: 'BGPView for %{query}',
+    searchUrl: 'https://bgpview.io/search/%{query}',
     fields: [
       {
         label: 'Data',

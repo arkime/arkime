@@ -143,6 +143,8 @@ class ArkimeIntegration extends Integration {
       });
     });
 
+    this.card.searchUrl = ArkimeConfig.getFull(section, 'searchUrl', '');
+
     const elasticsearch = ArkimeConfig.getFullArray(section, 'elasticsearch', 'http://localhost:9200');
     const elasticsearchAPIKey = ArkimeConfig.getFull(section, 'elasticsearchAPIKey');
     let elasticsearchBasicAuth = ArkimeConfig.getFull(section, 'elasticsearchBasicAuth');

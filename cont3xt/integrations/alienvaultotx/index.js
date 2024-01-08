@@ -33,6 +33,7 @@ class AlienVaultOTXIntegration extends Integration {
 
   card = {
     title: 'AlienVault OTX for %{query}',
+    searchUrl: 'https://otx.alienvault.com/browse/global/pulses?q=%{query}',
     fields: [
       {
         label: 'Validation',
