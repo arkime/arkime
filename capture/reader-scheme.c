@@ -99,7 +99,7 @@ void arkime_reader_scheme_load(const char *uri)
 
     if (rc == 0 && !config.dryRun && !config.copyPcap) {
         // Wait for the first packet to be processed so we have an outputId
-        while (offlineInfo[readerPos].outputId == 0) {
+        while (offlineInfo[readerPos].outputId == 0 || arkime_http_queue_length_best(esServer) > 0) {
             usleep(5000);
         }
         arkime_db_update_filesize(offlineInfo[readerPos].outputId, lastBytes, lastBytes, lastPackets);
