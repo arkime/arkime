@@ -378,12 +378,13 @@ export default {
             this.$nextTick(() => { // wait for content to render
               // add grip to each section of the section detail
               const sessionDetailSection = document.getElementsByTagName('dl');
+              const dlWidth = (this.$parent.dlWidth || this.dlWidth) + 22;
               for (const div of sessionDetailSection) {
                 // set the width of the session detail div based on user setting
                 const grip = document.createElement('div');
                 grip.classList.add('session-detail-grip');
                 grip.style.height = `${div.clientHeight}px`;
-                grip.style.left = `${this.$parent.dlWidth + 22}px`;
+                grip.style.left = `${dlWidth}px`;
                 div.prepend(grip);
                 grip.addEventListener('mousedown', (e) => gripClick(e, div));
               }
