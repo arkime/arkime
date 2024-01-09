@@ -75,7 +75,7 @@ jobs:
         run: |
           ./easybutton-build.sh ${{ matrix.buildopt }} --rminstall
           export PATH=/opt/arkime/bin:$PATH
-          make install
+          INSTALL_BUNDLE=bundle make install
 
       - name: lint
         run: |
