@@ -260,7 +260,9 @@ jobs:
   #### Slack Msg ###
   slack:
     runs-on: ubuntu-latest
-    needs: build-release
+    needs:
+      - build-release
+      - build-release-arm
     steps:
       - name: send
         env:
