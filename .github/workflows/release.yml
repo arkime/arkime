@@ -1,0 +1,180 @@
+name: "Release"
+
+on:
+  workflow_dispatch:
+    inputs:
+      release_tag:
+        description: 'Enter the release tag without leading v (e.g., 1.0.0)'
+        required: true
+
+      iteration:
+        description: 'Enter the iteration'
+        required: true
+        default: '1'
+
+jobs:
+  build-release:
+    permissions:
+      contents: write
+
+    concurrency:
+      group: ${{ github.workflow }}-${{ matrix.version }}-${{ github.event.inputs.release_tag }}
+      cancel-in-progress: true
+
+    strategy:
+      fail-fast: false
+      matrix:
+        version: [el8, el9, ubuntu2004, ubuntu2204, arch, al2023]
+        include:
+          - version: el8
+            container: andywick/arkime-build-8:5.0.0-2
+            buildopt: "--kafka --pfring"
+            package: rpm
+            ja4plus: true
+
+          - version: el9
+            container: andywick/arkime-build-9:5.0.0-2
+            buildopt: "--kafka --pfring"
+            package: rpm
+
+          - version: ubuntu2004
+            container: andywick/arkime-build-20:5.0.0-2
+            buildopt: "--kafka --pfring"
+            package: deb
+
+          - version: ubuntu2204
+            container: andywick/arkime-build-22:5.0.0-2
+            buildopt: "--nothirdparty --kafka --pfring"
+            package: deb
+
+          - version: arch
+            container: andywick/arkime-build-arch:5.0.0-3
+            buildopt: "--kafka"
+            package: arch
+
+          - version: al2023
+            container: andywick/arkime-build-al2023:5.0.0-2
+            buildopt: "--kafka"
+            package: rpm
+
+    runs-on: ubuntu-latest
+
+    container:
+      image: ${{ matrix.container }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: "refs/tags/v${{ github.event.inputs.release_tag }}"
+
+      - name: thirdparty
+        run: |
+          (cd / ; curl https://s3.amazonaws.com/files.molo.ch/snfmin.tar.gz | tar -zxvf -)
+          if [ -d "/thirdparty" ]; then
+            ln -s /thirdparty .
+          fi
+          git config --global --add safe.directory `pwd`
+
+      - name: build and install
+        run: |
+          ./easybutton-build.sh ${{ matrix.buildopt }} --rminstall
+          export PATH=/opt/arkime/bin:$PATH
+          make install
+
+      - name: package arch
+        if: ${{ matrix.package == 'arch' }}
+        run: |
+          gem install --no-document fpm rexml
+          export ARKIME_VERSION="v${{ github.event.inputs.release_tag }}"
+          /root/.local/share/gem/ruby/3.0.0/bin/fpm -s dir -t pacman -n arkime -x opt/arkime/logs -x opt/arkime/raw -v $ARKIME_VERSION --iteration ${{ github.event.inputs.iteration }} --template-scripts --after-install "release/afterinstall.sh" --url "https://arkime.com" --description "Arkime Full Packet System" -d libmaxminddb -d libpcap -d yara -d perl-http-message -d perl-lwp-protocol-https -d perl-json -d libnet -d lua -d zstd -d openssl-1.1 -d pcre -p arkime-${ARKIME_VERSION}-${{github.run_id}}_${{matrix.version}}-x86_64.pkg.tar.zst /opt/arkime
+          ls -l *.zst
+
+      - name: package rpm
+        if: ${{ matrix.package == 'rpm' }}
+        run: |
+          export ARKIME_VERSION="v${{ github.event.inputs.release_tag }}"
+          fpm -s dir -t rpm -n arkime -x opt/arkime/logs -x opt/arkime/raw -v $ARKIME_VERSION --iteration ${{ github.event.inputs.iteration }} --template-scripts --after-install "release/afterinstall.sh" --url "https://arkime.com" --description "Arkime Full Packet System" -d perl-libwww-perl -d perl-JSON -d ethtool -d libyaml -d perl-LWP-Protocol-https --rpm-rpmbuild-define "_build_id_links none" -p arkime-${ARKIME_VERSION}-${{github.run_id}}.${{matrix.version}}.x86_64.rpm /opt/arkime
+          ls -l *.rpm
+
+      - name: ja4plus
+        if: ${{ matrix.ja4plus }}
+        run: |
+          (cd .. ; git clone https://github.com/arkime/ja4)
+          cp ../ja4/ja4plus.c capture/plugins
+          (cd capture/plugins; make)
+          mv capture/plugins/ja4plus.so ja4plus.amd64.so
+          rm -f capture/plugins/ja4plus.c
+
+      - name: moloch el8 package rpm
+        if: ${{ matrix.version == 'el8' }}
+        run: |
+          export ARKIME_VERSION="v${{ github.event.inputs.release_tag }}"
+          rm -rf /data/moloch; mkdir -p /data
+          mv /opt/arkime /data/moloch
+          ./easybutton-build.sh ${{ matrix.buildopt }} --dir /data/moloch
+          (cd capture ; make clean; make; make install)
+          (cd release ; make installmoloch)
+          mv /data/moloch/bin/capture /data/moloch/bin/moloch-capture
+          /bin/cp -f common/version.js /data/moloch/common/
+
+          fpm -s dir -t rpm -n moloch -x data/moloch/logs -x data/molcoh/raw -v $ARKIME_VERSION --iteration ${{ github.event.inputs.iteration }} --template-scripts --url "https://arkime.com" --description "Moloch Full Packet System" -d perl-libwww-perl -d perl-JSON -d ethtool -d libyaml -d perl-LWP-Protocol-https --rpm-rpmbuild-define "_build_id_links none" -p moloch-${ARKIME_VERSION}-${{github.run_id}}.${{matrix.version}}.x86_64.rpm /data/moloch
+          ls -l *.rpm
+
+      - name: package deb
+        if: ${{ matrix.package == 'deb' }}
+        run: |
+          export ARKIME_VERSION="v${{ github.event.inputs.release_tag }}"
+          fpm -s dir -t deb -n arkime -x opt/arkime/logs -x opt/arkime/raw -v $ARKIME_VERSION --iteration ${{ github.event.inputs.iteration }} --template-scripts --after-install "release/afterinstall.sh" --url "https://arkime.com" --description "Arkime Full Packet System" -d libwww-perl -d libjson-perl -d ethtool -d libyaml-dev -p arkime_${ARKIME_VERSION}-${{github.run_id}}.${{matrix.version}}_amd64.deb /opt/arkime
+          ls -l *.deb
+
+      - name: moloch ubuntu2004 package rpm
+        if: ${{ matrix.version == 'ubuntu2004' }}
+        run: |
+          export ARKIME_VERSION="v${{ github.event.inputs.release_tag }}"
+          rm -rf /data/moloch; mkdir -p /data
+          mv /opt/arkime /data/moloch
+          ./easybutton-build.sh ${{ matrix.buildopt }} --dir /data/moloch
+          (cd capture ; make clean; make; make install)
+          (cd release ; make installmoloch)
+          mv /data/moloch/bin/capture /data/moloch/bin/moloch-capture
+          /bin/cp -f common/version.js /data/moloch/common/
+
+          fpm -s dir -t deb -n moloch -x data/moloch/logs -x data/moloch/raw -v $ARKIME_VERSION --iteration ${{ github.event.inputs.iteration }} --template-scripts --after-install "release/afterinstall.sh" --url "https://arkime.com" --description "Moloch Full Packet System" -d libwww-perl -d libjson-perl -d ethtool -d libyaml-dev -p moloch_${ARKIME_VERSION}-${{github.run_id}}.${{matrix.version}}_amd64.deb /data/moloch
+          mv moloch*.deb moloch-main_${{matrix.version}}_amd64.deb
+          ls -l *.deb
+
+      - name: upload github
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: "v${{ github.event.inputs.release_tag }}"
+          draft: false
+          prerelease: true
+          generate_release_notes: false
+          files: |
+            *.deb
+            *.so
+            *.rpm
+            *.zst
+          body: |
+            ### [Installation Instructions](https://raw.githubusercontent.com/arkime/arkime/main/release/README.txt) | [5.x Upgrade instructions](https://arkime.com/faq#how_do_i_upgrade_to_arkime_5) | [Copyright Notices](https://s3.amazonaws.com/files.molo.ch/NOTICE.txt) | [FAQ](https://arkime.com/faq) | [CHANGELOG](https://raw.githubusercontent.com/arkime/arkime/main/CHANGELOG)
+
+            ### Download Info
+            We offer downloads for many different OS versions because of library differences.  For example, use the el7 download for Centos 7 or RHEL 7. If you have a libssl version error, it is most likely that the wrong download was used for your OS. The moloch builds have the old filesystem layouts, we will stop providing the moloch builds in 2024
+
+  slack:
+    runs-on: ubuntu-latest
+    needs: build-release
+    steps:
+      - name: send
+        env:
+          SLACK_URL: ${{ secrets.SLACK_URL }}
+        run: |
+          echo "Sending msg"
+          export ARKIME_VERSION="v${{ github.event.inputs.release_tag }}"
+          echo ARKIME_VERSION: $ARKIME_VERSION
+          MSG=`git log -1 --format=%s`
+          BODY="{\"icon_emoji\": \":sushi:\", \"username\": \"GitAction\", \"text\":\"X86 worked: $GIT_BRANCH - arkime-$ARKIME_VERSION-$SD_BUILD_ID - $MSG\"}"
+          curl -XPOST -H "Content-type: application/json" --data "$BODY" $SLACK_URL
+
