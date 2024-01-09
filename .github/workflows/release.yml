@@ -143,7 +143,6 @@ jobs:
           /bin/cp -f common/version.js /data/moloch/common/
 
           fpm -s dir -t deb -n moloch -x data/moloch/logs -x data/moloch/raw -v $ARKIME_VERSION --iteration ${{ github.event.inputs.iteration }} --template-scripts --after-install "release/afterinstall.sh" --url "https://arkime.com" --description "Moloch Full Packet System" -d libwww-perl -d libjson-perl -d ethtool -d libyaml-dev -p moloch_${ARKIME_VERSION}-${{github.event.inputs.iteration}}.${{matrix.version}}_amd64.deb /data/moloch
-          mv moloch*.deb moloch-main_${{matrix.version}}_amd64.deb
           ls -l *.deb
 
       - name: upload github
