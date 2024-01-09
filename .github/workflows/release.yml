@@ -160,12 +160,7 @@ jobs:
           body: |
             ### [Installation Instructions](https://raw.githubusercontent.com/arkime/arkime/main/release/README.txt) | [5.x Upgrade instructions](https://arkime.com/faq#how_do_i_upgrade_to_arkime_5) | [Copyright Notices](https://s3.amazonaws.com/files.molo.ch/NOTICE.txt) | [FAQ](https://arkime.com/faq) | [CHANGELOG](https://raw.githubusercontent.com/arkime/arkime/main/CHANGELOG)
 
-            A db.pl upgrade is required when upgrading.
-
-            # ✨ What's new ✨
-
-            ---
-            ### ℹ️ Download Info
+            ### Download Info
             We offer downloads for many different OS versions because of library differences.  For example, use the el7 download for Centos 7 or RHEL 7. If you have a libssl version error, it is most likely that the wrong download was used for your OS. The moloch builds have the old filesystem layouts, we will stop providing the moloch builds in 2024
 
   slack:
