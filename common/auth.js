@@ -272,7 +272,8 @@ class Auth {
           // User is not authenticated, show the login form
           let html = fs.readFileSync(path.join(__dirname, '/vueapp/formAuth.html'), 'utf-8');
           html = html.toString().replace(/@@BASEHREF@@/g, Auth.#basePath)
-            .replace(/@@MESSAGE@@/g, ArkimeConfig.get('loginMessage', ''));
+            .replace(/@@MESSAGE@@/g, ArkimeConfig.get('loginMessage', ''))
+            .replace(/@@OGURL@@/g, req.session.ogurl ?? Auth.#basePath);
           return res.send(html);
         });
 
@@ -758,6 +759,12 @@ class Auth {
       req.url = req.url.replace('/', Auth.#basePath);
     }
 
+    if (req.url !== '/api/login' && req.originalUrl !== '/' && req.session) {
+      // save the original url so we can redirect after successful login
+      // the ogurl is saved in the form login page and accessed using req.body.ogurl
+      req.session.ogurl = req.originalUrl;
+    }
+
     passport.authenticate(Auth.#strategies, Auth.#passportAuthOptions)(req, res, function (err) {
       if (Auth.#basePath !== '/') {
         req.url = req.url.replace(Auth.#basePath, '/');
@@ -771,7 +778,7 @@ class Auth {
       } else {
         // Redirect to / if this is a login url
         if (req.route?.path === '/api/login' || req.route?.path === '/auth/login/callback') {
-          return res.redirect(Auth.#basePath);
+          return res.redirect(req.body.ogurl ?? Auth.#basePath);
         }
         return next();
       }
