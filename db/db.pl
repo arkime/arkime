@@ -408,7 +408,7 @@ sub esCopy
 ################################################################################
 sub esScroll
 {
-    my ($index, $type, $query) = @_;
+    my ($index, $query) = @_;
 
     my @hits = ();
 
@@ -420,11 +420,7 @@ sub esScroll
         }
         my $url;
         if ($id eq "") {
-            if ($type eq "") {
-                $url = "/${PREFIX}$index/_search?scroll=10m&size=500";
-            } else {
-                $url = "/${PREFIX}$index/$type/_search?scroll=10m&size=500";
-            }
+            $url = "/$index/_search?scroll=10m&size=500";
         } else {
             $url = "/_search/scroll?scroll=10m&scroll_id=$id";
             $query = "";
@@ -432,7 +428,7 @@ sub esScroll
 
 
         my $incoming = esPost($url, $query, 1);
-        die Dumper($incoming) if ($incoming->{status} == 404);
+        die Dumper($incoming) if (! exists $incoming->{hits});
         last if (@{$incoming->{hits}->{hits}} == 0);
 
         push(@hits, @{$incoming->{hits}->{hits}});
@@ -6448,7 +6444,7 @@ if ($ARGV[1] =~ /^(users-?import|import)$/) {
     exit 0;
 } elsif ($ARGV[1] =~ /^export$/) {
     my $index = $ARGV[2];
-    my $data = esScroll($index, "", '{"version": true}');
+    my $data = esScroll("$PREFIX$index", '{"version": true}');
     if (scalar(@{$data}) == 0){
         logmsg "The index is empty\n";
         exit 0;
@@ -6468,22 +6464,34 @@ if ($ARGV[1] =~ /^(users-?import|import)$/) {
     sub bopen {
         my ($index) = @_;
         if ($GZ) {
-            my $g = new IO::Compress::Gzip"$ARGV[2].${PREFIX}${index}.json.gz" or die "cannot open $ARGV[2].${PREFIX}${index}.json.gz: $GzipError\n";
+            my $g = new IO::Compress::Gzip"$ARGV[2].${index}.json.gz" or die "cannot open $ARGV[2].${index}.json.gz: $GzipError\n";
             return $g
         } else {
-            open(my $fh, ">", "$ARGV[2].${PREFIX}${index}.json") or die "cannot open > $ARGV[2].${PREFIX}${index}.json: $!";
+            open(my $fh, ">", "$ARGV[2].${index}.json") or die "cannot open > $ARGV[2].${index}.json: $!";
             return $fh;
         }
     }
 
-    my @indices = ("dstats", "fields", "files", "hunts", "lookups", "notifiers", "parliament", "queries", "sequence", "stats", "users", "views");
+    my %allAliases = map { $_->{alias} => $_ } @{ esGet("/_cat/aliases/${PREFIX}*?format=json", 1) };
+    my %cont3xtIndices = map { $_->{index} => $_ } @{ esGet("/_cat/indices/cont3xt*?format=json", 1) };
+
+    # Indices we want to backup, if there is an alias
+    my @indices = ("dstats", "fields", "files", "hunts", "lookups", "notifiers", "parliament", "queries", "sequence", "stats", "users", "views", "cont3xt_links", "cont3xt_views", "cont3xt_overviews", "cont3xt_history");
+
+    # find which we have aliases for or are in cont3xt
+    @indices = grep { exists $allAliases{"${PREFIX}${_}"} || $cont3xtIndices{$_} } @indices;
+
+    # now add the prefix
+    @indices = map { $cont3xtIndices{$_} ? $_ : "${PREFIX}${_}" } @indices;
+
     logmsg "Exporting documents...\n";
     foreach my $index (@indices) {
-        my $data = esScroll($index, "", '{"version": true}');
+        my $data = esScroll("$index", '{"version": true}');
+
         next if (scalar(@{$data}) == 0);
         my $fh = bopen($index);
         foreach my $hit (@{$data}) {
-            print $fh "{\"index\": {\"_index\": \"${PREFIX}${index}\", \"_id\": \"$hit->{_id}\", \"version\": $hit->{_version}, \"version_type\": \"external\"}}\n";
+            print $fh "{\"index\": {\"_index\": \"${index}\", \"_id\": \"$hit->{_id}\", \"version\": $hit->{_version}, \"version_type\": \"external\"}}\n";
             if (exists $hit->{_source}) {
                 print $fh to_json($hit->{_source}) . "\n";
             } else {
@@ -6496,34 +6504,31 @@ if ($ARGV[1] =~ /^(users-?import|import)$/) {
     my @templates = ("sessions3_ecs",  "sessions3", "history_v1");
     foreach my $template (@templates) {
         my $data = esGet("/_template/${PREFIX}${template}_template");
-        my $fh = bopen("$template.template");
+        my $fh = bopen("${PREFIX}${template}.template");
         print $fh to_json($data);
         close($fh);
     }
     logmsg "Exporting settings...\n";
     foreach my $index (@indices) {
-        my $data = esGet("/${PREFIX}${index}/_settings");
+        my $data = esGet("/${index}/_settings");
+
         my $fh = bopen("${index}.settings");
         print $fh to_json($data);
         close($fh);
     }
     logmsg "Exporting mappings...\n";
     foreach my $index (@indices) {
-        my $data = esGet("/${PREFIX}${index}/_mappings");
+        my $data = esGet("/${index}/_mappings");
         my $fh = bopen("${index}.mappings");
         print $fh to_json($data);
         close($fh);
     }
     logmsg "Exporting aliaes...\n";
 
-    my @indices_prefixed = ();
-    foreach my $index (@indices) {
-        push(@indices_prefixed, $PREFIX . $index);
-    }
-    my $aliases = join(',', @indices_prefixed);
+    my $aliases = join(',', @indices);
     $aliases = "/_cat/aliases/${aliases}?format=json";
     my $data = esGet($aliases);
-    my $fh = bopen("aliases");
+    my $fh = bopen("${PREFIX}aliases");
     print $fh to_json($data);
     close($fh);
     logmsg "Finished\n";
@@ -7178,7 +7183,7 @@ if ($ARGV[1] =~ /^(users-?import|import)$/) {
     }
 
     # See what files are in db
-    my $remotefiles = esScroll("files", "", to_json({'query' => {'terms' => {'node' => \@nodes}}}));
+    my $remotefiles = esScroll("${PREFIX}files", to_json({'query' => {'terms' => {'node' => \@nodes}}}));
     logmsg("\n") if ($verbose > 0);
     my %remotefileshash;
     foreach my $hit (@{$remotefiles}) {

@@ -1633,7 +1633,9 @@ async function buildConfigAndStart () {
     }
   }, ((3000 * 60) + (Math.random() * 3000 * 60))); // Check 3min + 0-3min
 
-  setupAuth();
+  if (internals.webconfig) {
+    setupAuth();
+  }
   if (internals.workers <= 1 || cluster.isWorker) {
     main();
   }
