@@ -77,6 +77,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #2553 fix rules range matching not working always
   - #2554 support fieldSet tcpflag rules
   - #2576 support different dlt for pcap-over-ip
+  - #2592 fix sometimes not identifying quic protocol correctly
 ## Cont3xt
   - #2121 new bulk UI and support for bulk queries
   - #2271 lots of keyboard shortcut improvements
