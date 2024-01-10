@@ -762,7 +762,7 @@ class Auth {
     if (req.url !== '/api/login' && req.originalUrl !== '/' && req.session) {
       // save the original url so we can redirect after successful login
       // the ogurl is saved in the form login page and accessed using req.body.ogurl
-      req.session.ogurl = req.originalUrl;
+      req.session.ogurl = Buffer.from(Auth.obj2authNext(req.originalUrl)).toString('base64');
     }
 
     passport.authenticate(Auth.#strategies, Auth.#passportAuthOptions)(req, res, function (err) {
@@ -778,7 +778,16 @@ class Auth {
       } else {
         // Redirect to / if this is a login url
         if (req.route?.path === '/api/login' || req.route?.path === '/auth/login/callback') {
-          return res.redirect(req.body.ogurl ?? Auth.#basePath);
+          if (req.body.ogurl) {
+            try {
+              const ogurl = Auth.auth2objNext(Buffer.from(req.body.ogurl, 'base64').toString());
+              return res.redirect(ogurl);
+            } catch (e) {
+              console.log('Error', e);
+              // Fall through to redirect below
+            }
+          }
+          return res.redirect(Auth.#basePath);
         }
         return next();
       }
