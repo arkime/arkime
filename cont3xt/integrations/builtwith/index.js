@@ -30,7 +30,11 @@ class BuiltWithIntegration extends Integration {
 
   card = {
     title: 'BuiltWith for %{query}',
-    searchUrl: 'https://builtwith.com/%{query}',
+    searchUrls: [{
+      url: 'https://builtwith.com/%{query}',
+      itypes: ['domain', 'url', 'text', 'email', 'hash', 'ip'],
+      title: 'Search BuiltWith for %{query}'
+    }],
     fields: [
       'domain',
       {

@@ -16,7 +16,11 @@ class WhoisIntegration extends Integration {
 
   card = {
     title: 'Whois for %{query}',
-    searchUrl: 'https://whois.com/whois/%{query}',
+    searchUrls: [{
+      url: 'https://whois.com/whois/%{query}',
+      itypes: ['ip', 'domain', 'url'],
+      title: 'Search Whois for %{query}'
+    }],
     fields: [
       {
         label: 'updatedDate',

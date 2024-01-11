@@ -7,18 +7,27 @@ SPDX-License-Identifier: Apache-2.0
     class="mb-2">
     <h5 class="text-warning mb-3"
       v-if="card && card.title">
-      {{ card.title.replace('%{query}', this.indicator.query) }}
+      {{ card.title.replace('%{query}', indicator.query) }}
       <div class="float-right mt-1">
-        <b-button
+        <b-dropdown
+          right
           size="sm"
-          tabindex="-1"
-          target="_blank"
-          v-if="card.searchUrl"
+          v-if="card.searchUrls"
           variant="outline-primary"
-          v-b-tooltip.hover="`Search ${source} for ${indicator.query}`"
-          :href="card.searchUrl.replace('%{query}', indicator.query)">
-          <span class="fa fa-search fa-fw" />
-        </b-button>
+          v-b-tooltip.hover="`Pivot your search into ${source}`">
+          <template #button-content>
+            <span class="fa fa-external-link fa-fw"></span>
+          </template>
+          <template v-for="searchUrl in card.searchUrls">
+            <b-dropdown-item
+              target="_blank"
+              :key="searchUrl.name"
+              v-if="searchUrl.itypes.includes(indicator.itype)"
+              :href="searchUrl.url.replace('%{query}', indicator.query)">
+              {{ searchUrl.name.replace('%{query}', indicator.query) }}
+            </b-dropdown-item>
+          </template>
+        </b-dropdown>
         <b-button
           size="sm"
           tabindex="-1"

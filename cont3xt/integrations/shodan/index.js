@@ -16,6 +16,11 @@ class ShodanIntegration extends Integration {
 
   card = {
     title: 'Shodan for %{query}',
+    searchUrls: [{
+      url: 'https://www.shodan.io/search?query=%{query}',
+      itypes: ['ip'], // TODO what does this search pertain to?
+      title: 'Search Shodan for %{query}'
+    }],
     fields: [
       {
         label: 'tags',

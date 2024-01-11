@@ -25,7 +25,19 @@ class BGPViewIntegration extends Integration {
 
   card = {
     title: 'BGPView for %{query}',
-    searchUrl: 'https://bgpview.io/search/%{query}',
+    searchUrls: [{
+      url: 'https://bgpview.io/search/%{query}',
+      itypes: ['ip', 'domain', 'url', 'email', 'hash', 'phone', 'text'],
+      title: 'Search BGPView for %{query}'
+    }, {
+      url: 'https://bgpview.io/ip/%{query}',
+      itypes: ['ip'],
+      title: 'Search BGPView for IP: %{query}'
+    }, {
+      url: 'https://bgpview.io/asn/%{query}',
+      itypes: ['text'],
+      title: 'Search BGPView for ASN: %{query}'
+    }],
     fields: [
       {
         label: 'Data',

@@ -49,6 +49,11 @@ class VirusTotalDomainIntegration extends Integration {
 
   card = {
     title: 'VirusTotal Domain for %{query}',
+    searchUrls: [{
+      url: 'https://www.virustotal.com/gui/home/search/%{query}',
+      itypes: ['domain', 'ip', 'url', 'hash'],
+      title: 'Search VirusTotal for %{query}'
+    }],
     fields: [
       'asn',
       'as_owner',

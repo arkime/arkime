@@ -16,6 +16,11 @@ class GreyNoiseIntegration extends Integration {
 
   card = {
     title: 'GreyNoise for %{query}',
+    searchUrls: [{
+      url: 'https://viz.greynoise.io/ip/%{query}',
+      itypes: ['ip'],
+      title: 'Search GreyNoise for %{query}'
+    }],
     fields: [
       'classification',
       {
