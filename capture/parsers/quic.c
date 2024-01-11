@@ -403,7 +403,7 @@ LOCAL void quic_ietf_udp_classify(ArkimeSession_t *session, const uint8_t *data,
     // Source
     int slen = 0;
     BSB_IMPORT_u08(bsb, slen);
-    if (slen != 0)
+    if (slen > 16)
         return;
     BSB_IMPORT_skip(bsb, slen);
 
@@ -413,7 +413,7 @@ LOCAL void quic_ietf_udp_classify(ArkimeSession_t *session, const uint8_t *data,
 
     // Length
     uint32_t packet_len = quic_get_number(&bsb);
-    if (packet_len != BSB_REMAINING(bsb)) {
+    if (packet_len < 100 || packet_len > BSB_REMAINING(bsb)) {
         char ipStr[200];
         arkime_session_pretty_string(session, ipStr, sizeof(ipStr));
         LOG("Couldn't parse header packet len %u remaining %ld %s", packet_len, (long)BSB_REMAINING(bsb), ipStr);

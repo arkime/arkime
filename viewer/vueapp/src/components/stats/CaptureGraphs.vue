@@ -28,13 +28,12 @@ SPDX-License-Identifier: Apache-2.0
         length-default=200>
       </arkime-paging>
 
-      <div
-        v-if="stats && stats.recordsFiltered"
-        id="statsGraph"
-        style="width:1440px;">
+      <div id="statsGraph"
+        style="width:1440px;"
+        v-show="stats && stats.recordsFiltered">
       </div>
 
-      <div class="text-center" v-else>
+      <div class="text-center" v-if="!stats || !stats.recordsFiltered">
         <h3>
           <span class="fa fa-folder-open fa-2x text-muted" />
         </h3>

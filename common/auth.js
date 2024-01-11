@@ -199,7 +199,7 @@ class Auth {
       check('clientSecret', 'authClientSecret');
       check('redirectURIs', 'authRedirectURIs');
       Auth.#strategies = ['oidc'];
-      Auth.#passportAuthOptions = { session: true, failureRedirect: `${Auth.#basePath}fail`, scope: Auth.#authConfig.oidcScope };
+      Auth.#passportAuthOptions = { session: true, failureRedirect: `${Auth.#basePath}api/login`, scope: Auth.#authConfig.oidcScope };
       sessionAuth = true;
       break;
     case 'form':
@@ -248,7 +248,6 @@ class Auth {
 
     // If sessionAuth is required enable the express and passport sessions
     if (sessionAuth) {
-      Auth.#authRouter.get('/fail', (req, res) => { res.send('User not found'); });
       Auth.#authRouter.use(expressSession({
         name: 'ARKIME-SID',
         secret: Auth.passwordSecret + Auth.#serverSecret,
@@ -272,7 +271,8 @@ class Auth {
           // User is not authenticated, show the login form
           let html = fs.readFileSync(path.join(__dirname, '/vueapp/formAuth.html'), 'utf-8');
           html = html.toString().replace(/@@BASEHREF@@/g, Auth.#basePath)
-            .replace(/@@MESSAGE@@/g, ArkimeConfig.get('loginMessage', ''));
+            .replace(/@@MESSAGE@@/g, ArkimeConfig.get('loginMessage', ''))
+            .replace(/@@OGURL@@/g, req.session.ogurl ?? Auth.#basePath);
           return res.send(html);
         });
 
@@ -758,6 +758,12 @@ class Auth {
       req.url = req.url.replace('/', Auth.#basePath);
     }
 
+    if (req.url !== '/api/login' && req.originalUrl !== '/' && req.session) {
+      // save the original url so we can redirect after successful login
+      // the ogurl is saved in the form login page and accessed using req.body.ogurl
+      req.session.ogurl = Buffer.from(Auth.obj2authNext(req.originalUrl)).toString('base64');
+    }
+
     passport.authenticate(Auth.#strategies, Auth.#passportAuthOptions)(req, res, function (err) {
       if (Auth.#basePath !== '/') {
         req.url = req.url.replace(Auth.#basePath, '/');
@@ -770,7 +776,16 @@ class Auth {
         return res.send(JSON.stringify({ success: false, text: err }));
       } else {
         // Redirect to / if this is a login url
-        if (req.route?.path === '/api/login' || req.route?.path === '/auth/login/callback') {
+        if (req.route?.path === '/api/login' || req._parsedUrl.pathname === `${Auth.#basePath}auth/login/callback`) {
+          if (req.body.ogurl) {
+            try {
+              const ogurl = Auth.auth2objNext(Buffer.from(req.body.ogurl, 'base64').toString());
+              return res.redirect(ogurl);
+            } catch (e) {
+              console.log('Error', e);
+              // Fall through to redirect below
+            }
+          }
           return res.redirect(Auth.#basePath);
         }
         return next();

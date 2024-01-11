@@ -77,6 +77,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #2553 fix rules range matching not working always
   - #2554 support fieldSet tcpflag rules
   - #2576 support different dlt for pcap-over-ip
+  - #2592 fix sometimes not identifying quic protocol correctly
 ## Cont3xt
   - #2121 new bulk UI and support for bulk queries
   - #2271 lots of keyboard shortcut improvements
@@ -90,7 +91,10 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #2507 demoMode added
   - #2527 skipChildren added
   - #2532 new wise integration
-  - #2580 add link to integration search page from card
+  - #2580 add links to integration search page from card
+## db.pl
+  - #2588 db.pl won't try and backup indices that don't exist
+  - #2588 db.pl backup cont3xt indices
 ## ESProxy
   - #2483 #2484 support field updates/deletes
 ## Viewer
@@ -113,6 +117,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
 ## WISE
   - #2537 new urlScrapePrefix/urlScrapeSuffix used with urlScrapeRedirect
   - #2537 new jsonl format supported
+  - #2588 don't setup auth if --webconfig isn't used
 
 
 4.6.0 2023/10/16
