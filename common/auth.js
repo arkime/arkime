@@ -199,7 +199,7 @@ class Auth {
       check('clientSecret', 'authClientSecret');
       check('redirectURIs', 'authRedirectURIs');
       Auth.#strategies = ['oidc'];
-      Auth.#passportAuthOptions = { session: true, failureRedirect: `${Auth.#basePath}fail`, scope: Auth.#authConfig.oidcScope };
+      Auth.#passportAuthOptions = { session: true, failureRedirect: `${Auth.#basePath}api/login`, scope: Auth.#authConfig.oidcScope };
       sessionAuth = true;
       break;
     case 'form':
@@ -248,7 +248,6 @@ class Auth {
 
     // If sessionAuth is required enable the express and passport sessions
     if (sessionAuth) {
-      Auth.#authRouter.get('/fail', (req, res) => { res.send('User not found'); });
       Auth.#authRouter.use(expressSession({
         name: 'ARKIME-SID',
         secret: Auth.passwordSecret + Auth.#serverSecret,
@@ -777,7 +776,7 @@ class Auth {
         return res.send(JSON.stringify({ success: false, text: err }));
       } else {
         // Redirect to / if this is a login url
-        if (req.route?.path === '/api/login' || req.route?.path === '/auth/login/callback') {
+        if (req.route?.path === '/api/login' || req._parsedUrl.pathname === `${Auth.#basePath}auth/login/callback`) {
           if (req.body.ogurl) {
             try {
               const ogurl = Auth.auth2objNext(Buffer.from(req.body.ogurl, 'base64').toString());
