@@ -216,9 +216,6 @@ int tcp_packet_process(ArkimeSession_t *const session, ArkimePacket_t *const pac
             session->ackTime = (packet->ts.tv_sec - session->firstPacket.tv_sec) * 1000000 +
                                (packet->ts.tv_usec - session->firstPacket.tv_usec) + 1;
         }
-	// Send only the header up with a length 0, useful for tools like JA4Plus
-        if (pluginsCbs & ARKIME_PLUGIN_TCP)
-            arkime_plugins_cb_tcp(session, packet, 0, packet->direction);
     }
 
     if (tcphdr->th_flags & TH_PUSH) {
@@ -271,8 +268,12 @@ int tcp_packet_process(ArkimeSession_t *const session, ArkimePacket_t *const pac
     }
 
     // Empty packet, drop from tcp processing
-    if (len <= 0 || tcphdr->th_flags & TH_RST)
+    if (len <= 0 || tcphdr->th_flags & TH_RST) {
+	// Send only the header up with a length 0, useful for tools like JA4Plus
+        if (pluginsCbs & ARKIME_PLUGIN_TCP)
+            arkime_plugins_cb_tcp(session, packet, 0, packet->direction);
         return 1;
+    }
 
     // This packet is before what we are processing
     int64_t diff = tcp_sequence_diff(session->tcpSeq[packet->direction], seq + len);
