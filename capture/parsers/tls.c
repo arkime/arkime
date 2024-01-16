@@ -808,6 +808,9 @@ uint32_t tls_process_client_hello_data(ArkimeSession_t *session, const uint8_t *
                 } else if (etype == 0xffce) { // esni
                     arkime_session_add_tag(session, "tls:has_esni");
                     BSB_IMPORT_skip (ebsb, elen);
+                } else if (etype == 0xfe0d) { // encrypted_client_hello
+                    arkime_session_add_tag(session, "tls:has_ech");
+                    BSB_IMPORT_skip (ebsb, elen);
                 } else {
                     BSB_IMPORT_skip (ebsb, elen);
                 }
