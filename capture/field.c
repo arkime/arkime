@@ -34,7 +34,7 @@ GHashTable *groupName2Num;
 int16_t fieldOpsRemap[ARKIME_FIELDS_MAX][ARKIME_FIELDS_MAX];
 
 /******************************************************************************/
-void arkime_field_by_exp_add_special(char *exp, int pos)
+LOCAL void arkime_field_by_exp_add_special(const char *exp, int pos)
 {
     ArkimeFieldInfo_t *info = ARKIME_TYPE_ALLOC0(ArkimeFieldInfo_t);
     info->expression = g_strdup(exp);
@@ -42,7 +42,7 @@ void arkime_field_by_exp_add_special(char *exp, int pos)
     HASH_ADD(e_, fieldsByExp, info->expression, info);
 }
 /******************************************************************************/
-void arkime_field_by_exp_add_special_type(char *exp, int pos, ArkimeFieldType type)
+LOCAL void arkime_field_by_exp_add_special_type(const char *exp, int pos, ArkimeFieldType type)
 {
     ArkimeFieldInfo_t *info = ARKIME_TYPE_ALLOC0(ArkimeFieldInfo_t);
     info->expression   = g_strdup(exp);
@@ -357,10 +357,10 @@ int arkime_field_define(char *group, char *kind, char *expression, char *friendl
         HASH_ADD(e_, fieldsByExp, minfo->expression, minfo);
 
         if ((flags & ARKIME_FIELD_FLAG_NODB) == 0) {
-            va_list args;
-            va_start(args, flags);
-            arkime_db_add_field(group, kind, expression, friendlyName, dbField, help, TRUE, args);
-            va_end(args);
+            va_list args2;
+            va_start(args2, flags);
+            arkime_db_add_field(group, kind, expression, friendlyName, dbField, help, TRUE, args2);
+            va_end(args2);
         }
     } else {
         flags |= (minfo->flags & ARKIME_FIELD_FLAG_DISABLED);

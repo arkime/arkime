@@ -425,7 +425,7 @@ uint32_t arkime_get_next_powerof2(uint32_t v)
     return v;
 }
 /******************************************************************************/
-uint8_t *arkime_js0n_get(uint8_t *data, uint32_t len, char *key, uint32_t *olen)
+uint8_t *arkime_js0n_get(uint8_t *data, uint32_t len, const char *key, uint32_t *olen)
 {
     uint32_t key_len = strlen(key);
     int      i;
@@ -448,7 +448,7 @@ uint8_t *arkime_js0n_get(uint8_t *data, uint32_t len, char *key, uint32_t *olen)
     return 0;
 }
 /******************************************************************************/
-char *arkime_js0n_get_str(uint8_t *data, uint32_t len, char *key)
+char *arkime_js0n_get_str(uint8_t *data, uint32_t len, const char *key)
 {
     uint32_t           value_len;
     uint8_t           *value = 0;

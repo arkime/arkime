@@ -72,7 +72,7 @@ LOCAL int scheme_s3_read(uint8_t *data, int data_len, gpointer uw)
     return arkime_reader_scheme_process((char *)uw, data, data_len, extraInfo);
 }
 /******************************************************************************/
-LOCAL void scheme_s3_request(void *server, char *host, char *region, const char *path, char *bucket, const char *uri, gboolean pathStyle)
+LOCAL void scheme_s3_request(void *server, const char *host, char *region, const char *path, const char *bucket, const char *uri, gboolean pathStyle)
 {
     char           canonicalRequest[20000];
     char           datetime[17];
@@ -335,7 +335,7 @@ int scheme_s3_load_full(const char *uri)
     char *s3 = strstr(host, ".s3-");
     if (s3) {
         s3 += 4;
-        char *dot = strchr(s3, '.');
+        const char *dot = strchr(s3, '.');
         if (dot) {
             memcpy(region, s3, dot - s3);
             region[dot - s3] = 0;

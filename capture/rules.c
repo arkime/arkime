@@ -205,7 +205,7 @@ LOCAL YamlNode_t *arkime_rules_parser_parse_yaml(char *filename, YamlNode_t *par
 /******************************************************************************/
 LOCAL void arkime_rules_parser_print(YamlNode_t *node, int level)
 {
-    static char indent[] = "                                                             ";
+    static const char indent[] = "                                                             ";
     if (node->value == YAML_NODE_SEQUENCE_VALUE) {
         printf("%.*s - %s\n", level, indent, node->key);
     } else if (node->value) {
@@ -218,11 +218,11 @@ LOCAL void arkime_rules_parser_print(YamlNode_t *node, int level)
     }
 }
 /******************************************************************************/
-LOCAL YamlNode_t *arkime_rules_parser_get(YamlNode_t *node, char *path)
+LOCAL YamlNode_t *arkime_rules_parser_get(YamlNode_t *node, const char *path)
 {
 
     while (1) {
-        char *colon = strchr(path, ':');
+        const char *colon = strchr(path, ':');
         int   len;
 
         if (colon)
@@ -248,17 +248,17 @@ LOCAL YamlNode_t *arkime_rules_parser_get(YamlNode_t *node, char *path)
     }
 }
 /******************************************************************************/
-LOCAL char *arkime_rules_parser_get_value(YamlNode_t *parent, char *path)
+LOCAL char *arkime_rules_parser_get_value(YamlNode_t *parent, const char *path)
 {
-    YamlNode_t *node = arkime_rules_parser_get(parent, path);
+    const YamlNode_t *node = arkime_rules_parser_get(parent, path);
     if (!node)
         return NULL;
     return node->value;
 }
 /******************************************************************************/
-LOCAL GPtrArray *arkime_rules_parser_get_values(YamlNode_t *parent, char *path)
+LOCAL GPtrArray *arkime_rules_parser_get_values(YamlNode_t *parent, const char *path)
 {
-    YamlNode_t *node = arkime_rules_parser_get(parent, path);
+    const YamlNode_t *node = arkime_rules_parser_get(parent, path);
     if (!node)
         return NULL;
     return node->values;
@@ -464,7 +464,7 @@ LOCAL void arkime_rules_load_add_field_match(ArkimeRule_t *rule, int pos, int ty
 /******************************************************************************/
 LOCAL void arkime_rules_parser_load_rule(char *filename, YamlNode_t *parent)
 {
-    char *name = arkime_rules_parser_get_value(parent, "name");
+    const char *name = arkime_rules_parser_get_value(parent, "name");
     if (!name)
         CONFIGEXIT("%s: name required for rule", filename);
 
@@ -472,9 +472,9 @@ LOCAL void arkime_rules_parser_load_rule(char *filename, YamlNode_t *parent)
     if (!when)
         CONFIGEXIT("%s: when required for rule '%s'", filename, name);
 
-    char *bpf = arkime_rules_parser_get_value(parent, "bpf");
+    const char *bpf = arkime_rules_parser_get_value(parent, "bpf");
     GPtrArray *fields = arkime_rules_parser_get_values(parent, "fields");
-    char *expression = arkime_rules_parser_get_value(parent, "expression");
+    const char *expression = arkime_rules_parser_get_value(parent, "expression");
 
     if (!bpf && !fields && !expression)
         CONFIGEXIT("%s: bpf, fields, or expressions required for rule '%s'", filename, name);
@@ -849,7 +849,7 @@ void arkime_rules_recompile()
 LOCAL gboolean arkime_rules_check_ip(const ArkimeRule_t *const rule, const int p, const struct in6_addr *ip, BSB *logStr)
 {
     if (IN6_IS_ADDR_V4MAPPED(ip)) {
-        patricia_node_t *node = patricia_search_best3 (rule->tree4[p], ((u_char *)ip->s6_addr) + 12, 32);
+        const patricia_node_t *node = patricia_search_best3 (rule->tree4[p], ((u_char *)ip->s6_addr) + 12, 32);
         if (!node)
             return FALSE;
         if (!logStr)

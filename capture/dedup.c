@@ -55,7 +55,7 @@ int arkime_dedup_should_drop (const ArkimePacket_t *packet, int headerLen)
     uint8_t md[16];
     MD5_CTX ctx;
     MD5_Init(&ctx);
-    uint8_t *const ptr = packet->pkt + packet->ipOffset;
+    const uint8_t *const ptr = packet->pkt + packet->ipOffset;
     if ((ptr[0] & 0xf0) == 0x40) {
         MD5_Update(&ctx, ptr, 8);
         // Skip TTL (1 byte)

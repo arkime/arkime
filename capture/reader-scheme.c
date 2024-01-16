@@ -106,7 +106,7 @@ void arkime_reader_scheme_load(const char *uri)
     }
 }
 /******************************************************************************/
-LOCAL int reader_scheme_header(const char *uri, const uint8_t *header, char *extraInfo)
+LOCAL int reader_scheme_header(const char *uri, const uint8_t *header, const char *extraInfo)
 {
     ArkimePcapFileHdr_t *h = (ArkimePcapFileHdr_t *)header;
     if (h->magic != 0xa1b2c3d4 && h->magic != 0xd4c3b2a1 &&
@@ -300,7 +300,7 @@ int arkime_reader_scheme_process(const char *uri, uint8_t *data, int len, char *
 
     while (len > 0) {
         if (state == 0) {
-            uint8_t *header;
+            const uint8_t *header;
             if (tmpBufferLen == 0) {
                 if (len < 24) {
                     memcpy(tmpBuffer, data, len);
