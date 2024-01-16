@@ -470,8 +470,8 @@ gboolean arkime_config_load_yaml(GKeyFile *keyfile, char *data, GError **UNUSED(
     char *section = NULL;
     char *key = NULL;
     char buf[20000];
-    char sep;
-    BSB bsb;
+    char sep = 0;
+    BSB bsb = {0, 0, 0};
     while (!done) {
         yaml_event_t event;
 
