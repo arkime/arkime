@@ -69,6 +69,12 @@ fuzzloch:thirdparty/js0n.o thirdparty/http_parser.o thirdparty/patricia.o
 	mv capture fuzzloch-capture
 	touch arkime.h
 
+sfuzzloch:thirdparty/js0n.o thirdparty/http_parser.o thirdparty/patricia.o
+	touch arkime.h
+	$(MAKE) EXTRA_CFLAGS="-DSFUZZLOCH $(FUZZ_CFLAGS)" EXTRA_LDFLAGS="$(FUZZ_LDFLAGS)"
+	mv capture fuzzloch-capture
+	touch arkime.h
+
 thirdparty/js0n.o:thirdparty/js0n.c
 	$(CC) -fno-strict-aliasing -pthread -fPIC -O2 -c thirdparty/js0n.c -o thirdparty/js0n.o
 

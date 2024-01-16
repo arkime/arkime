@@ -59,9 +59,13 @@ LOCAL ArkimeScheme_t *uri2scheme(const char *uri)
 
     char *colonslashslash = strstr(uri, "://");
     if (colonslashslash) {
-        *colonslashslash = 0;
-        HASH_FIND(s_, schemesHash, uri, str);
-        *colonslashslash = ':';
+        char scheme[30];
+        if (colonslashslash - uri > 29) {
+            LOGEXIT("ERROR - Scheme too long for %s", uri);
+        }
+        memcpy(scheme, uri, colonslashslash - uri);
+        scheme[colonslashslash - uri] = 0;
+        HASH_FIND(s_, schemesHash, scheme, str);
     } else {
         return fileScheme;
     }
@@ -323,8 +327,10 @@ int arkime_reader_scheme_process(const char *uri, uint8_t *data, int len, char *
                 len -= need;
                 tmpBufferLen = 0;
             }
-            if (reader_scheme_header(uri, header, extraInfo))
+            if (reader_scheme_header(uri, header, extraInfo)) {
+                tmpBufferLen = 0;
                 return 1;
+            }
             startPos = 24;
             state = 1;
             continue;
