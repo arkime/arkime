@@ -222,7 +222,7 @@ LOCAL void arkime_db_js0n_str_unquoted(BSB *bsb, uint8_t *in, int len, gboolean 
     if (len == -1)
         len = strlen((char *)in);
 
-    uint8_t *end = in + len;
+    const uint8_t *end = in + len;
 
     while (in < end) {
         switch(*in) {
@@ -299,9 +299,9 @@ void arkime_db_geo_lookup6(ArkimeSession_t *session, struct in6_addr addr, char 
         }
     }
 
-    struct sockaddr    *sa;
-    struct sockaddr_in  sin;
-    struct sockaddr_in6 sin6;
+    const struct sockaddr    *sa;
+    struct sockaddr_in        sin;
+    struct sockaddr_in6       sin6;
 
     if (IN6_IS_ADDR_V4MAPPED(&addr)) {
         sin.sin_family = AF_INET;
@@ -514,8 +514,8 @@ void arkime_db_save_session(ArkimeSession_t *session, int final)
     ArkimeIntHashStd_t    *ihash;
     GHashTable            *ghash;
     GHashTableIter         iter;
-    uint8_t               *startPtr;
-    uint8_t               *dataPtr;
+    const uint8_t         *startPtr;
+    const uint8_t         *dataPtr;
     uint32_t               jsonSize;
     gpointer               ikey;
     gpointer               ival;
@@ -1378,7 +1378,7 @@ cleanup:
     ARKIME_UNLOCK(dbInfo[thread].lock);
 }
 /******************************************************************************/
-LOCAL uint64_t zero_atoll(char *v) {
+LOCAL uint64_t zero_atoll(const char *v) {
     if (v)
         return atoll(v);
     return 0;
@@ -1407,7 +1407,7 @@ LOCAL void arkime_db_load_stats()
     uint8_t           *data = arkime_http_get(esServer, stats_key, stats_key_len, &data_len);
 
     uint32_t           version_len;
-    uint8_t           *version = arkime_js0n_get(data, data_len, "_version", &version_len);
+    const uint8_t     *version = arkime_js0n_get(data, data_len, "_version", &version_len);
 
     if (!version_len || !version) {
         dbVersion = 0;
@@ -1537,7 +1537,7 @@ LOCAL void arkime_db_update_stats(int n, gboolean sync)
     static uint64_t       lastDupDropped[NUMBER_OF_STATS];
     static struct rusage  lastUsage[NUMBER_OF_STATS];
     static struct timeval lastTime[NUMBER_OF_STATS];
-    static int            intervals[NUMBER_OF_STATS] = {1, 5, 60, 600};
+    static const int      intervals[NUMBER_OF_STATS] = {1, 5, 60, 600};
     static uint64_t       lastUsedSpaceM = 0;
     uint64_t              freeSpaceM = 0;
     uint64_t              totalSpaceM = 0;
@@ -1782,7 +1782,7 @@ LOCAL void arkime_db_health_check_cb(int UNUSED(code), uint8_t *data, int data_l
     }
 
     uint32_t           status_len;
-    uint8_t           *status;
+    const uint8_t     *status;
     struct timespec    stopHealthCheck;
 
     clock_gettime(CLOCK_MONOTONIC, &stopHealthCheck);
@@ -1819,13 +1819,13 @@ typedef struct arkime_seq_request {
     gpointer            uw;
 } ArkimeSeqRequest_t;
 
-void arkime_db_get_sequence_number(char *name, ArkimeSeqNum_cb func, gpointer uw);
+LOCAL void arkime_db_get_sequence_number(const char *name, ArkimeSeqNum_cb func, gpointer uw);
 LOCAL void arkime_db_get_sequence_number_cb(int UNUSED(code), uint8_t *data, int data_len, gpointer uw)
 {
     ArkimeSeqRequest_t *r = uw;
     uint32_t            version_len;
 
-    uint8_t *version = arkime_js0n_get(data, data_len, "_version", &version_len);
+    const uint8_t *version = arkime_js0n_get(data, data_len, "_version", &version_len);
 
     if (!version_len || !version) {
         LOG("ERROR - Couldn't fetch sequence: %.*s", data_len, data);
@@ -1839,7 +1839,7 @@ LOCAL void arkime_db_get_sequence_number_cb(int UNUSED(code), uint8_t *data, int
     ARKIME_TYPE_FREE(ArkimeSeqRequest_t, r);
 }
 /******************************************************************************/
-void arkime_db_get_sequence_number(char *name, ArkimeSeqNum_cb func, gpointer uw)
+LOCAL void arkime_db_get_sequence_number(const char *name, ArkimeSeqNum_cb func, gpointer uw)
 {
     char                key[200];
     int                 key_len;
@@ -2212,7 +2212,7 @@ LOCAL void arkime_db_free_mmdb(MMDB_s *geo)
     free(geo);
 }
 /******************************************************************************/
-LOCAL void arkime_db_load_geo_country(char *name)
+LOCAL void arkime_db_load_geo_country(const char *name)
 {
     MMDB_s  *country = malloc(sizeof(MMDB_s));
     int status = MMDB_open(name, MMDB_MODE_MMAP, country);
@@ -2226,7 +2226,7 @@ LOCAL void arkime_db_load_geo_country(char *name)
     geoCountry = country;
 }
 /******************************************************************************/
-LOCAL void arkime_db_load_geo_asn(char *name)
+LOCAL void arkime_db_load_geo_asn(const char *name)
 {
     MMDB_s  *asn = malloc(sizeof(MMDB_s));
     int status = MMDB_open(name, MMDB_MODE_MMAP, asn);
@@ -2240,7 +2240,7 @@ LOCAL void arkime_db_load_geo_asn(char *name)
     geoASN = asn;
 }
 /******************************************************************************/
-LOCAL void arkime_db_load_rir(char *name)
+LOCAL void arkime_db_load_rir(const char *name)
 {
     FILE *fp;
     char line[1000];
@@ -2291,7 +2291,7 @@ LOCAL void arkime_db_free_oui(patricia_tree_t *oui)
     Destroy_Patricia(oui, g_free);
 }
 /******************************************************************************/
-LOCAL void arkime_db_load_oui(char *name)
+LOCAL void arkime_db_load_oui(const char *name)
 {
     if (ouiTree)
         LOG("Loading new version of oui file");
@@ -2489,11 +2489,11 @@ void arkime_db_add_field(char *group, char *kind, char *expression, char *friend
 
     if (haveap) {
         while (1) {
-            char *field = va_arg(ap, char *);
+            const char *field = va_arg(ap, char *);
             if (!field)
                 break;
 
-            char *value = va_arg(ap, char *);
+            const char *value = va_arg(ap, char *);
             if (!value)
                 break;
 
@@ -2518,7 +2518,7 @@ void arkime_db_delete_field(const char *expression)
     BSB_EXPORT_sprintf(fieldBSB, "{\"delete\": {\"_index\": \"%sfields\", \"_id\": \"%s\"}}\n", config.prefix, expression);
 }
 /******************************************************************************/
-void arkime_db_update_field(char *expression, char *name, char *value)
+void arkime_db_update_field(const char *expression, const char *name, const char *value)
 {
     if (config.dryRun)
         return;

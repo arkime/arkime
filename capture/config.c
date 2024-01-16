@@ -40,7 +40,7 @@ LOCAL char *yaml_names[] = {
 #endif
 
 /******************************************************************************/
-gchar **arkime_config_section_raw_str_list(GKeyFile *keyfile, char *section, char *key, char *d)
+gchar **arkime_config_section_raw_str_list(GKeyFile *keyfile, const char *section, const char *key, const char *d)
 {
     gchar **result;
 
@@ -59,7 +59,7 @@ gchar **arkime_config_section_raw_str_list(GKeyFile *keyfile, char *section, cha
 }
 
 /******************************************************************************/
-gchar **arkime_config_section_str_list(GKeyFile *keyfile, char *section, char *key, char *d)
+gchar **arkime_config_section_str_list(GKeyFile *keyfile, const char *section, const char *key, const char *d)
 {
     gchar **strs = arkime_config_section_raw_str_list(keyfile, section, key, d);
     if (!strs) {
@@ -108,7 +108,7 @@ gchar **arkime_config_section_str_list(GKeyFile *keyfile, char *section, char *k
 }
 
 /******************************************************************************/
-gchar *arkime_config_section_str(GKeyFile *keyfile, char *section, char *key, char *d)
+gchar *arkime_config_section_str(GKeyFile *keyfile, const char *section, const char *key, const char *d)
 {
     char *result;
     if (!keyfile)
@@ -129,7 +129,7 @@ gchar *arkime_config_section_str(GKeyFile *keyfile, char *section, char *key, ch
     return result;
 }
 /******************************************************************************/
-gchar **arkime_config_section_keys(GKeyFile *keyfile, char *section, gsize *keys_len)
+gchar **arkime_config_section_keys(GKeyFile *keyfile, const char *section, gsize *keys_len)
 {
     if (!keyfile)
         keyfile = arkimeKeyFile;
@@ -149,7 +149,7 @@ gchar **arkime_config_section_keys(GKeyFile *keyfile, char *section, gsize *keys
 }
 
 /******************************************************************************/
-gchar *arkime_config_str(GKeyFile *keyfile, char *key, char *d)
+gchar *arkime_config_str(GKeyFile *keyfile, const char *key, const char *d)
 {
     char *result;
 
@@ -184,9 +184,9 @@ gchar *arkime_config_str(GKeyFile *keyfile, char *key, char *d)
 }
 
 /******************************************************************************/
-gchar **arkime_config_raw_str_list(GKeyFile *keyfile, char *key, char *d)
+gchar **arkime_config_raw_str_list(GKeyFile *keyfile, const char *key, const char *d)
 {
-    char   *hvalue;
+    const char   *hvalue;
     gchar **result;
 
     if (!keyfile)
@@ -210,7 +210,7 @@ gchar **arkime_config_raw_str_list(GKeyFile *keyfile, char *key, char *d)
 }
 
 /******************************************************************************/
-gchar **arkime_config_str_list(GKeyFile *keyfile, char *key, char *d)
+gchar **arkime_config_str_list(GKeyFile *keyfile, const char *key, const char *d)
 {
     gchar **strs = arkime_config_raw_str_list(keyfile, key, d);
     if (!strs) {
@@ -259,10 +259,10 @@ gchar **arkime_config_str_list(GKeyFile *keyfile, char *key, char *d)
 }
 
 /******************************************************************************/
-uint32_t arkime_config_int(GKeyFile *keyfile, char *key, uint32_t d, uint32_t min, uint32_t max)
+uint32_t arkime_config_int(GKeyFile *keyfile, const char *key, uint32_t d, uint32_t min, uint32_t max)
 {
-    char     *result;
-    uint32_t  value = d;
+    const char *result;
+    uint32_t    value = d;
 
     if (!keyfile)
         keyfile = arkimeKeyFile;
@@ -294,10 +294,10 @@ uint32_t arkime_config_int(GKeyFile *keyfile, char *key, uint32_t d, uint32_t mi
 }
 
 /******************************************************************************/
-double arkime_config_double(GKeyFile *keyfile, char *key, double d, double min, double max)
+double arkime_config_double(GKeyFile *keyfile, const char *key, double d, double min, double max)
 {
-    char     *result;
-    double    value = d;
+    const char *result;
+    double      value = d;
 
     if (!keyfile)
         keyfile = arkimeKeyFile;
@@ -325,10 +325,10 @@ double arkime_config_double(GKeyFile *keyfile, char *key, double d, double min, 
 }
 
 /******************************************************************************/
-char arkime_config_boolean(GKeyFile *keyfile, char *key, char d)
+char arkime_config_boolean(GKeyFile *keyfile, const char *key, char d)
 {
-    char     *result;
-    gboolean  value = d;
+    const char *result;
+    gboolean    value = d;
 
     if (!keyfile)
         keyfile = arkimeKeyFile;
@@ -389,7 +389,7 @@ void arkime_config_load_includes(char **includes)
     }
 }
 /******************************************************************************/
-void arkime_config_load_hidden(char *configFile)
+void arkime_config_load_hidden(const char *configFile)
 {
     char line[1000];
     FILE *file = fopen(configFile, "r");
@@ -405,7 +405,7 @@ void arkime_config_load_hidden(char *configFile)
     config.configFile = g_strdup(line);
 }
 /******************************************************************************/
-char arkime_config_key_sep(char *key) {
+char arkime_config_key_sep(const char *key) {
     if (strcmp(key, "elasticsearch") == 0 ||
         strcmp(key, "usersElasticsearch") == 0)
         return ',';
@@ -470,8 +470,8 @@ gboolean arkime_config_load_yaml(GKeyFile *keyfile, char *data, GError **UNUSED(
     char *section = NULL;
     char *key = NULL;
     char buf[20000];
-    char sep;
-    BSB bsb;
+    char sep = 0;
+    BSB bsb = {0, 0, 0};
     while (!done) {
         yaml_event_t event;
 
@@ -824,7 +824,7 @@ void arkime_config_load()
     gchar **saveUnknownPackets     = arkime_config_str_list(keyfile, "saveUnknownPackets", NULL);
     if (saveUnknownPackets) {
         for (i = 0; saveUnknownPackets[i]; i++) {
-            char *s = saveUnknownPackets[i];
+            const char *s = saveUnknownPackets[i];
 
             if (strcmp(s, "all") == 0) {
                 memset(&config.etherSavePcap, 0xff, sizeof(config.etherSavePcap));
@@ -932,8 +932,7 @@ void arkime_config_parse_override_ips(GKeyFile *keyFile)
 /******************************************************************************/
 void arkime_config_load_override_ips()
 {
-    gboolean  status;
-    GError   *error = 0;
+    GError *error = 0;
 
     if (g_key_file_has_group(arkimeKeyFile, "override-ips")) {
         arkime_config_parse_override_ips(arkimeKeyFile);
@@ -943,7 +942,7 @@ void arkime_config_load_override_ips()
     if (overrideIpsFiles) {
         for (int i = 0; overrideIpsFiles[i]; i++) {
             GKeyFile *keyfile = g_key_file_new();
-            status = g_key_file_load_from_file(keyfile, overrideIpsFiles[i], G_KEY_FILE_NONE, &error);
+            gboolean status = g_key_file_load_from_file(keyfile, overrideIpsFiles[i], G_KEY_FILE_NONE, &error);
             if (!status || error) {
                 if (overrideIpsFiles[i][0] == '-') {
                     if (error)
@@ -963,7 +962,7 @@ void arkime_config_load_override_ips()
 /******************************************************************************/
 void arkime_config_parse_packet_ips(GKeyFile *keyFile)
 {
-    GError   *error = 0;
+    GError *error = 0;
 
     if (!g_key_file_has_group(keyFile, "packet-drop-ips"))
         return;
@@ -1000,8 +999,7 @@ void arkime_config_parse_packet_ips(GKeyFile *keyFile)
 /******************************************************************************/
 void arkime_config_load_packet_ips()
 {
-    gboolean  status;
-    GError   *error = 0;
+    GError *error = 0;
 
     if (g_key_file_has_group(arkimeKeyFile, "packet-ips")) {
         arkime_config_parse_packet_ips(arkimeKeyFile);
@@ -1011,7 +1009,7 @@ void arkime_config_load_packet_ips()
     if (packetDropIpsFiles) {
         for (int i = 0; packetDropIpsFiles[i]; i++) {
             GKeyFile *keyfile = g_key_file_new();
-            status = g_key_file_load_from_file(keyfile, packetDropIpsFiles[i], G_KEY_FILE_NONE, &error);
+            gboolean status = g_key_file_load_from_file(keyfile, packetDropIpsFiles[i], G_KEY_FILE_NONE, &error);
             if (!status || error) {
                 if (packetDropIpsFiles[i][0] == '-') {
                     if (error)
@@ -1155,7 +1153,7 @@ typedef struct {
 LOCAL int                numFiles;
 LOCAL ArkimeFileChange_t files[ARKIME_CONFIG_FILES];
 /******************************************************************************/
-void arkime_config_monitor_file_msg(char *desc, char *name, ArkimeFileChange_cb cb, const char *msg)
+void arkime_config_monitor_file_msg(const char *desc, char *name, ArkimeFileChange_cb cb, const char *msg)
 {
     struct stat     sb;
 
@@ -1177,12 +1175,12 @@ void arkime_config_monitor_file_msg(char *desc, char *name, ArkimeFileChange_cb 
     cb(name);
 }
 /******************************************************************************/
-void arkime_config_monitor_file(char *desc, char *name, ArkimeFileChange_cb cb)
+void arkime_config_monitor_file(const char *desc, char *name, ArkimeFileChange_cb cb)
 {
     arkime_config_monitor_file_msg(desc, name, cb, "");
 }
 /******************************************************************************/
-void arkime_config_monitor_files(char *desc, char **names, ArkimeFilesChange_cb cb)
+void arkime_config_monitor_files(const char *desc, char **names, ArkimeFilesChange_cb cb)
 {
     struct stat     sb;
     int             i;

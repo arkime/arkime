@@ -48,7 +48,7 @@ void arkime_yara_report_error(int error_level, const char *file_name, int line_n
     LOG("%d %s:%d: %s\n", error_level, file_name, line_number, error_message);
 }
 /******************************************************************************/
-void arkime_yara_open(char *filename, YR_COMPILER **compiler, YR_RULES **rules)
+void arkime_yara_open(const char *filename, YR_COMPILER **compiler, YR_RULES **rules)
 {
     yr_compiler_create(compiler);
     (*compiler)->callback = arkime_yara_report_error;
@@ -73,7 +73,7 @@ void arkime_yara_open(char *filename, YR_COMPILER **compiler, YR_RULES **rules)
     }
 }
 /******************************************************************************/
-void arkime_yara_load(char *name)
+void arkime_yara_load(const char *name)
 {
     YR_COMPILER *compiler;
     YR_RULES *rules;
@@ -160,7 +160,7 @@ void arkime_yara_report_error(int error_level, const char *file_name, int line_n
     LOG("%d %s:%d: %s\n", error_level, file_name, line_number, error_message);
 }
 /******************************************************************************/
-void arkime_yara_open(char *filename, YR_COMPILER **compiler, YR_RULES **rules)
+void arkime_yara_open(const char *filename, YR_COMPILER **compiler, YR_RULES **rules)
 {
     yr_compiler_create(compiler);
     (*compiler)->callback = arkime_yara_report_error;
@@ -185,7 +185,7 @@ void arkime_yara_open(char *filename, YR_COMPILER **compiler, YR_RULES **rules)
     }
 }
 /******************************************************************************/
-void arkime_yara_load(char *name)
+void arkime_yara_load(const char *name)
 {
     YR_COMPILER *compiler;
     YR_RULES *rules;
@@ -269,7 +269,7 @@ void arkime_yara_report_error(int error_level, const char *file_name, int line_n
     LOG("%d %s:%d: %s\n", error_level, file_name, line_number, error_message);
 }
 /******************************************************************************/
-void arkime_yara_open(char *filename, YR_COMPILER **compiler, YR_RULES **rules)
+void arkime_yara_open(const char *filename, YR_COMPILER **compiler, YR_RULES **rules)
 {
     yr_compiler_create(compiler);
     (*compiler)->callback = arkime_yara_report_error;

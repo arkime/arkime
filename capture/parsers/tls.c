@@ -420,6 +420,7 @@ LOCAL uint32_t tls_process_server_certificate(ArkimeSession_t *session, const ui
 
         g_checksum_update(checksum, cdata + 3, clen);
         g_checksum_get_digest(checksum, digest, &dlen);
+        g_checksum_reset(checksum);
         if (dlen > 0) {
             int i;
             for(i = 0; i < 20; i++) {
@@ -429,7 +430,6 @@ LOCAL uint32_t tls_process_server_certificate(ArkimeSession_t *session, const ui
             }
         }
         certs->hash[59] = 0;
-        g_checksum_reset(checksum);
 
         /* Certificate */
         if (!(value = arkime_parsers_asn_get_tlv(&bsb, &apc, &atag, &alen)))
