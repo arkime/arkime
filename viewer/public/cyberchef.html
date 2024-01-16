@@ -50,6 +50,26 @@
       .then((result) => {
         interval = setInterval(() => {
           if (typeof app !== 'undefined') {
+            // THIS IS A HACK TO GET AROUND A CYBERCHEF BUG
+            // https://github.com/gchq/CyberChef/issues/1468
+            // https://github.com/gchq/CyberChef/pull/1549
+            app.manager.recipe.addOperation = (name) => {
+              const item = document.createElement('li');
+
+              item.classList.add('operation');
+
+              if (app.operations[name] != null) {
+                item.innerHTML = name;
+              }
+
+              app.manager.recipe.buildRecipeOperation(item);
+              document.getElementById('rec-list').appendChild(item);
+
+              $(item).find("[data-toggle='tooltip']").tooltip();
+              item.dispatchEvent(app.manager.operationadd);
+              return item;
+            };
+
             app.manager.recipe.addOperation('From Hex');
             app.setInput(result.data);
             clearInterval(interval);
