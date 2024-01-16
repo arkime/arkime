@@ -157,7 +157,7 @@ void writer_s3_complete_cb (int code, uint8_t *data, int len, gpointer uw)
     if (config.debug)
         LOG("Complete-Response: %s %d %.*s", file->outputFileName, len, len, data);
 
-    uint64_t size;
+    uint64_t size = 0;
     switch (compressionMode) {
     case ARKIME_COMPRESSION_NONE:
         size = file->outputActualFilePos;

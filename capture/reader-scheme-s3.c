@@ -25,7 +25,7 @@ LOCAL gboolean               s3PathAccessStyle;
 
 LOCAL uint32_t               first;
 LOCAL uint32_t               tryAgain;
-LOCAL char                   extraInfo[1000];
+LOCAL char                   extraInfo[600];
 
 LOCAL ARKIME_LOCK_DEFINE(waiting);
 
@@ -241,7 +241,7 @@ int scheme_s3_load(const char *uri)
             region = s3Region;
         }
 
-        char hostport[1000];
+        char hostport[256];
         if (s3Host) {
             snprintf(hostport, sizeof(hostport), "%s.%s", uris[2], s3Host);
         } else if (strcmp(region, "us-east-1") == 0) {
@@ -250,7 +250,7 @@ int scheme_s3_load(const char *uri)
             snprintf(hostport, sizeof(hostport), "%s.s3-%s.amazonaws.com", uris[2], region);
         }
 
-        char schemehostport[1000];
+        char schemehostport[300];
         snprintf(schemehostport, sizeof(schemehostport), "https://%s", hostport);
 
         void *server = g_hash_table_lookup(servers, schemehostport);
@@ -311,13 +311,13 @@ int scheme_s3_load_full(const char *uri)
 
     char **paths = g_strsplit(path, "/", 0);
 
-    char schemehostport[1000];
+    char schemehostport[300];
     if (port)
         snprintf(schemehostport, sizeof(schemehostport), "%s://%s:%s", scheme + 2, host, port);
     else
         snprintf(schemehostport, sizeof(schemehostport), "%s://%s", scheme + 2, host);
 
-    char hostport[1000];
+    char hostport[256];
     if (port)
         snprintf(hostport, sizeof(hostport), "%s:%s", host, port);
     else

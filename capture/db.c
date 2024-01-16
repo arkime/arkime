@@ -1537,7 +1537,7 @@ LOCAL void arkime_db_update_stats(int n, gboolean sync)
     static uint64_t       lastDupDropped[NUMBER_OF_STATS];
     static struct rusage  lastUsage[NUMBER_OF_STATS];
     static struct timeval lastTime[NUMBER_OF_STATS];
-    const static int      intervals[NUMBER_OF_STATS] = {1, 5, 60, 600};
+    static const int      intervals[NUMBER_OF_STATS] = {1, 5, 60, 600};
     static uint64_t       lastUsedSpaceM = 0;
     uint64_t              freeSpaceM = 0;
     uint64_t              totalSpaceM = 0;
