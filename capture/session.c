@@ -55,7 +55,7 @@ struct {
 LOCAL char                 stoppedFilename[PATH_MAX];
 
 /******************************************************************************/
-#ifdef FUZZLOCH
+#if defined(FUZZLOCH) && !defined(SFUZZLOCH)
 // If FUZZLOCH mode we just use a unique sessionid for each input
 extern uint64_t fuzzloch_sessionid;
 void arkime_session_id (uint8_t *buf, uint32_t UNUSED(addr1), uint16_t UNUSED(port1), uint32_t UNUSED(addr2), uint16_t UNUSED(port2))
