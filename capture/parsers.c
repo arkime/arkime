@@ -348,7 +348,7 @@ const char *arkime_parsers_magic(ArkimeSession_t *session, int field, const char
         m = magic_buffer(cookie[session->thread], data, MIN(len, 50));
         if (m) {
             int mlen;
-            char *semi = strchr(m, ';');
+            const char *semi = strchr(m, ';');
             if (semi) {
                 mlen = semi - m;
             } else {
@@ -1179,15 +1179,17 @@ void arkime_parsers_classify_tcp(ArkimeSession_t *session, const uint8_t *data, 
 }
 
 /******************************************************************************/
-uint32_t arkime_parser_add_named_func(char *name, ArkimeParserNamedFunc func)
+uint32_t arkime_parser_add_named_func(const char *name, ArkimeParserNamedFunc func)
 {
     ArkimeNamedInfo_t *info = g_hash_table_lookup(namedFuncsHash, name);
     if (!info) {
         info = ARKIME_TYPE_ALLOC0(ArkimeNamedInfo_t);
         info->funcs = g_ptr_array_new();
         namedFuncsMax++; // Don't use 0
-        if (namedFuncsMax >= MAX_NAMED_FUNCS)
+        if (namedFuncsMax >= MAX_NAMED_FUNCS) {
+            LOGEXIT("ERROR - Too many named functions %s", name);
             return 0;
+        }
         info->id = namedFuncsMax;
         namedFuncsArr[namedFuncsMax] = info;
         g_hash_table_insert(namedFuncsHash, g_strdup(name), info);
@@ -1196,15 +1198,17 @@ uint32_t arkime_parser_add_named_func(char *name, ArkimeParserNamedFunc func)
     return info->id;
 }
 /******************************************************************************/
-uint32_t arkime_parser_get_named_func(char *name)
+uint32_t arkime_parser_get_named_func(const char *name)
 {
     ArkimeNamedInfo_t *info = g_hash_table_lookup(namedFuncsHash, name);
     if (!info) {
         info = ARKIME_TYPE_ALLOC0(ArkimeNamedInfo_t);
         info->funcs = g_ptr_array_new();
         namedFuncsMax++; // Don't use 0
-        if (namedFuncsMax >= MAX_NAMED_FUNCS)
+        if (namedFuncsMax >= MAX_NAMED_FUNCS) {
+            LOGEXIT("ERROR - Too many named functions %s", name);
             return 0;
+        }
         info->id = namedFuncsMax;
         namedFuncsArr[namedFuncsMax] = info;
         g_hash_table_insert(namedFuncsHash, g_strdup(name), info);

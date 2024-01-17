@@ -425,7 +425,7 @@ uint32_t arkime_get_next_powerof2(uint32_t v)
     return v;
 }
 /******************************************************************************/
-uint8_t *arkime_js0n_get(uint8_t *data, uint32_t len, char *key, uint32_t *olen)
+uint8_t *arkime_js0n_get(uint8_t *data, uint32_t len, const char *key, uint32_t *olen)
 {
     uint32_t key_len = strlen(key);
     int      i;
@@ -448,7 +448,7 @@ uint8_t *arkime_js0n_get(uint8_t *data, uint32_t len, char *key, uint32_t *olen)
     return 0;
 }
 /******************************************************************************/
-char *arkime_js0n_get_str(uint8_t *data, uint32_t len, char *key)
+char *arkime_js0n_get_str(uint8_t *data, uint32_t len, const char *key)
 {
     uint32_t           value_len;
     uint8_t           *value = 0;
@@ -808,8 +808,61 @@ void arkime_mlockall_init()
     }
 #endif
 }
+
 /******************************************************************************/
-#ifdef FUZZLOCH
+#ifdef SFUZZLOCH
+
+/* This replaces main for libFuzzer.  Basically initialized everything like main
+ * would for starting up and set some important settings.  Must be run from tests
+ * directory, and config.test.ini will be loaded for fuzz node.
+ */
+
+int
+LLVMFuzzerInitialize(int *UNUSED(argc), char ***UNUSED(argv))
+{
+    config.configFile = g_strdup("config.test.ini");
+    config.dryRun = 1;
+    config.pcapReadOffline = 1;
+    config.hostName = strdup("fuzz.example.com");
+    config.nodeName = strdup("fuzz");
+
+    hashSalt = 0;
+    pcapFileHeader.dlt = DLT_EN10MB;
+
+    arkime_free_later_init();
+    arkime_hex_init();
+    arkime_http_init();
+    arkime_config_init();
+    arkime_writers_init();
+    arkime_writers_start("null");
+    arkime_readers_init();
+    arkime_readers_set("scheme");
+    arkime_plugins_init();
+    arkime_field_init();
+    arkime_db_init();
+    arkime_packet_init();
+    arkime_config_load_packet_ips();
+    arkime_yara_init();
+    arkime_parsers_init();
+    arkime_session_init();
+    arkime_plugins_load(config.plugins);
+    arkime_config_load_override_ips();
+    arkime_rules_init();
+    arkime_reader_scheme_register("fuzz", NULL, NULL);
+    return 0;
+}
+
+/******************************************************************************/
+/* In libFuzzer mode this is called for each packet.
+ * There are no packet threads in fuzz mode, and the batch call will actually
+ * process the packet.  The current time just increases for each packet.
+ */
+int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
+    arkime_reader_scheme_process("fuzz://foo", (uint8_t *)data, size, NULL);
+    return 0;
+}
+/******************************************************************************/
+#elif FUZZLOCH
 
 /* This replaces main for libFuzzer.  Basically initialized everything like main
  * would for starting up and set some important settings.  Must be run from tests
@@ -897,7 +950,6 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
 
     return 0;
 }
-
 #else
 int main(int argc, char **argv)
 {

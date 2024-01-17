@@ -824,8 +824,8 @@ typedef int  (* ArkimeCanQuitFunc) ();
 #define ARKIME_GIO_WRITE_COND (G_IO_OUT | G_IO_HUP | G_IO_ERR | G_IO_NVAL)
 
 gint arkime_watch_fd(gint fd, GIOCondition cond, ArkimeWatchFd_func func, gpointer data);
-uint8_t *arkime_js0n_get(uint8_t *data, uint32_t len, char *key, uint32_t *olen);
-char *arkime_js0n_get_str(uint8_t *data, uint32_t len, char *key);
+uint8_t *arkime_js0n_get(uint8_t *data, uint32_t len, const char *key, uint32_t *olen);
+char *arkime_js0n_get_str(uint8_t *data, uint32_t len, const char *key);
 
 gboolean arkime_string_add(void *hashv, char *string, gpointer uw, gboolean copy);
 
@@ -864,22 +864,22 @@ void arkime_config_add_header(ArkimeStringHashStd_t *hash, char *key, int pos);
 void arkime_config_load_header(char *section, char *group, char *helpBase, char *expBase, char *aliasBase, char *dbBase, ArkimeStringHashStd_t *hash, int flags);
 void arkime_config_exit();
 
-gchar **arkime_config_section_raw_str_list(GKeyFile *keyfile, char *section, char *key, char *d);
-gchar **arkime_config_section_str_list(GKeyFile *keyfile, char *section, char *key, char *d);
-gchar *arkime_config_section_str(GKeyFile *keyfile, char *section, char *key, char *d);
-gchar **arkime_config_section_keys(GKeyFile *keyfile, char *section, gsize *keys_len);
+gchar **arkime_config_section_raw_str_list(GKeyFile *keyfile, const char *section, const char *key, const char *d);
+gchar **arkime_config_section_str_list(GKeyFile *keyfile, const char *section, const char *key, const char *d);
+gchar *arkime_config_section_str(GKeyFile *keyfile, const char *section, const char *key, const char *d);
+gchar **arkime_config_section_keys(GKeyFile *keyfile, const char *section, gsize *keys_len);
 
-gchar *arkime_config_str(GKeyFile *keyfile, char *key, char *d);
-gchar **arkime_config_str_list(GKeyFile *keyfile, char *key, char *d);
-gchar **arkime_config_raw_str_list(GKeyFile *keyfile, char *key, char *d);
-uint32_t arkime_config_int(GKeyFile *keyfile, char *key, uint32_t d, uint32_t min, uint32_t max);
-char arkime_config_boolean(GKeyFile *keyfile, char *key, char d);
+gchar *arkime_config_str(GKeyFile *keyfile, const char *key, const char *d);
+gchar **arkime_config_str_list(GKeyFile *keyfile, const char *key, const char *d);
+gchar **arkime_config_raw_str_list(GKeyFile *keyfile, const char *key, const char *d);
+uint32_t arkime_config_int(GKeyFile *keyfile, const char *key, uint32_t d, uint32_t min, uint32_t max);
+char arkime_config_boolean(GKeyFile *keyfile, const char *key, char d);
 
-typedef void (*ArkimeFileChange_cb)(char *name);
+typedef void (*ArkimeFileChange_cb)(const char *name);
 typedef void (*ArkimeFilesChange_cb)(char **names);
-void arkime_config_monitor_file_msg(char *desc, char *name, ArkimeFileChange_cb cb, const char *msg);
-void arkime_config_monitor_file(char *desc, char *name, ArkimeFileChange_cb cb);
-void arkime_config_monitor_files(char *desc, char **names, ArkimeFilesChange_cb cb);
+void arkime_config_monitor_file_msg(const char *desc, char *name, ArkimeFileChange_cb cb, const char *msg);
+void arkime_config_monitor_file(const char *desc, char *name, ArkimeFileChange_cb cb);
+void arkime_config_monitor_files(const char *desc, char **names, ArkimeFilesChange_cb cb);
 
 /******************************************************************************/
 /*
@@ -893,7 +893,7 @@ void     arkime_db_add_override_ip(char *str, ArkimeIpInfo_t *ii);
 void     arkime_db_install_override_ip();
 void     arkime_db_add_field(char *group, char *kind, char *expression, char *friendlyName, char *dbField, char *help, int haveap, va_list ap);
 void     arkime_db_delete_field(const char *expression);
-void     arkime_db_update_field(char *expression, char *name, char *value);
+void     arkime_db_update_field(const char *expression, const char *name, const char *value);
 void     arkime_db_update_filesize(uint32_t fileid, uint64_t filesize, uint64_t packetsSize, uint32_t packets);
 gboolean arkime_db_file_exists(const char *filename, uint32_t *outputId);
 void     arkime_db_exit();
@@ -997,8 +997,8 @@ char *arkime_sprint_hex_string(char *buf, const uint8_t *data, unsigned int leng
 #define CLASSIFY_UDP(name, offset, bytes, cb) arkime_parsers_classifier_register_udp(name, name, offset, (uint8_t *)bytes, sizeof(bytes) - 1, cb);
 
 typedef uint32_t (* ArkimeParserNamedFunc) (ArkimeSession_t *session, const uint8_t *data, int len, void *uw);
-uint32_t arkime_parser_add_named_func(char *name, ArkimeParserNamedFunc func);
-uint32_t arkime_parser_get_named_func(char *name);
+uint32_t arkime_parser_add_named_func(const char *name, ArkimeParserNamedFunc func);
+uint32_t arkime_parser_get_named_func(const char *name);
 void arkime_parser_call_named_func(uint32_t id, ArkimeSession_t *session, const uint8_t *data, int len, void *uw);
 
 /******************************************************************************/
@@ -1024,7 +1024,7 @@ gboolean arkime_http_schedule(void *serverV, const char *method, const char *key
 gboolean arkime_http_schedule2(void *serverV, const char *method, const char *key, int32_t key_len, char *data, uint32_t data_len, char **headers, int priority, ArkimeHttpResponse_cb func, ArkimeHttpRead_cb, gpointer uw);
 
 
-uint8_t *arkime_http_get(void *server, char *key, int key_len, size_t *mlen);
+uint8_t *arkime_http_get(void *server, const char *key, int key_len, size_t *mlen);
 #define arkime_http_get_buffer(size) ARKIME_SIZE_ALLOC(buffer, size)
 #define arkime_http_free_buffer(b) ARKIME_SIZE_FREE(buffer, b)
 void arkime_http_exit();

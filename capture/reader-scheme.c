@@ -59,9 +59,13 @@ LOCAL ArkimeScheme_t *uri2scheme(const char *uri)
 
     char *colonslashslash = strstr(uri, "://");
     if (colonslashslash) {
-        *colonslashslash = 0;
-        HASH_FIND(s_, schemesHash, uri, str);
-        *colonslashslash = ':';
+        char scheme[30];
+        if (colonslashslash - uri > 29) {
+            LOGEXIT("ERROR - Scheme too long for %s", uri);
+        }
+        memcpy(scheme, uri, colonslashslash - uri);
+        scheme[colonslashslash - uri] = 0;
+        HASH_FIND(s_, schemesHash, scheme, str);
     } else {
         return fileScheme;
     }
@@ -106,7 +110,7 @@ void arkime_reader_scheme_load(const char *uri)
     }
 }
 /******************************************************************************/
-LOCAL int reader_scheme_header(const char *uri, const uint8_t *header, char *extraInfo)
+LOCAL int reader_scheme_header(const char *uri, const uint8_t *header, const char *extraInfo)
 {
     ArkimePcapFileHdr_t *h = (ArkimePcapFileHdr_t *)header;
     if (h->magic != 0xa1b2c3d4 && h->magic != 0xd4c3b2a1 &&
@@ -300,7 +304,7 @@ int arkime_reader_scheme_process(const char *uri, uint8_t *data, int len, char *
 
     while (len > 0) {
         if (state == 0) {
-            uint8_t *header;
+            const uint8_t *header;
             if (tmpBufferLen == 0) {
                 if (len < 24) {
                     memcpy(tmpBuffer, data, len);
@@ -323,8 +327,10 @@ int arkime_reader_scheme_process(const char *uri, uint8_t *data, int len, char *
                 len -= need;
                 tmpBufferLen = 0;
             }
-            if (reader_scheme_header(uri, header, extraInfo))
+            if (reader_scheme_header(uri, header, extraInfo)) {
+                tmpBufferLen = 0;
                 return 1;
+            }
             startPos = 24;
             state = 1;
             continue;

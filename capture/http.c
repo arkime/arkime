@@ -349,7 +349,7 @@ LOCAL void arkime_http_add_request(ArkimeHttpServer_t *server, ArkimeHttpRequest
         LOG("HTTPDEBUG INCR %p %d %s", request, server->outstanding, request->url);
 #endif
         server->outstanding++;
-        server->outstandingPri[priority]++;
+        server->outstandingPri[request->priority]++;
 
         DLL_PUSH_TAIL(rqt_, &requests[priority], request);
 
@@ -410,6 +410,7 @@ LOCAL void arkime_http_curlm_check_multi_info(ArkimeHttpServer_t *server)
                 ARKIME_LOCK(requests);
                 server->snames[request->snamePos].allowedAtSeconds = now.tv_sec + 30;
                 server->outstanding--;
+                server->outstandingPri[request->priority]--;
                 arkime_http_add_request(server, request, request->priority);
                 ARKIME_UNLOCK(requests);
             } else {
@@ -901,7 +902,7 @@ gboolean arkime_http_schedule(void *serverV, const char *method, const char *key
 }
 
 /******************************************************************************/
-uint8_t *arkime_http_get(void *serverV, char *key, int key_len, size_t *mlen)
+uint8_t *arkime_http_get(void *serverV, const char *key, int key_len, size_t *mlen)
 {
     return arkime_http_send_sync(serverV, "GET", key, key_len, NULL, 0, NULL, mlen, NULL);
 }
