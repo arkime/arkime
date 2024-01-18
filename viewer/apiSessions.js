@@ -2514,7 +2514,7 @@ class SessionAPIs {
 
       const fieldDef = Config.getFieldsMap()[req.query.field];
       if (fieldDef && fieldDef.type === 'integer') {
-        query.query.bool.filter.push ({
+        query.query.bool.filter.push({
           script: {
             script: {
               source: `doc["${req.query.field}"].value.toString().startsWith("${req.query.autocomplete}")`
