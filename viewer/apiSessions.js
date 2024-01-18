@@ -2479,6 +2479,7 @@ class SessionAPIs {
       doneCb = () => {
         res.send(items);
       };
+
       writeCb = (item) => {
         items.push(item.key);
       };
@@ -2509,6 +2510,17 @@ class SessionAPIs {
       if (err) {
         res.status(403);
         return res.end(err);
+      }
+
+      const fieldDef = Config.getFieldsMap()[req.query.field];
+      if (fieldDef && fieldDef.type === 'integer') {
+        query.query.bool.filter.push({
+          script: {
+            script: {
+              source: `doc["${req.query.field}"].size() > 0 && doc["${req.query.field}"].value.toString().startsWith("${req.query.autocomplete}")`
+            }
+          }
+        });
       }
 
       delete query.sort;
