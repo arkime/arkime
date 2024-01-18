@@ -2565,7 +2565,6 @@ class SessionAPIs {
 
       const options = ViewerUtils.addCluster(req.query.cluster);
       Db.searchSessions(indices, query, options, (err, result) => {
-
         if (err) {
           console.log(`ERROR - ${req.method} /api/unique`, query, util.inspect(err, false, 50));
           return doneCb ? doneCb() : res.end();
