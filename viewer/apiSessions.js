@@ -2517,7 +2517,7 @@ class SessionAPIs {
         query.query.bool.filter.push({
           script: {
             script: {
-              source: `doc["${req.query.field}"].value.toString().startsWith("${req.query.autocomplete}")`
+              source: `doc["${req.query.field}"].size() > 0 && doc["${req.query.field}"].value.toString().startsWith("${req.query.autocomplete}")`
             }
           }
         });
@@ -2565,6 +2565,7 @@ class SessionAPIs {
 
       const options = ViewerUtils.addCluster(req.query.cluster);
       Db.searchSessions(indices, query, options, (err, result) => {
+
         if (err) {
           console.log(`ERROR - ${req.method} /api/unique`, query, util.inspect(err, false, 50));
           return doneCb ? doneCb() : res.end();
