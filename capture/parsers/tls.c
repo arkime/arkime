@@ -842,7 +842,7 @@ uint32_t tls_process_client_hello_data(ArkimeSession_t *session, const uint8_t *
     char vstr[3];
     tls_ja4_version(ver, vstr);
 
-    char ja4_r[200];
+    char ja4_r[4096];
     BSB ja4_rbsb;
     BSB_INIT(ja4_rbsb, ja4_r, sizeof(ja4_r));
 
@@ -871,9 +871,11 @@ uint32_t tls_process_client_hello_data(ArkimeSession_t *session, const uint8_t *
     for (int i = 0; i < ja4NumCiphers; i++) {
         BSB_EXPORT_sprintf(tmpBSB, "%04x,", ja4Ciphers[i]);
     }
-    BSB_EXPORT_rewind(tmpBSB, 1); // Remove last ,
+    if (ja4NumCiphers > 0) {
+        BSB_EXPORT_rewind(tmpBSB, 1); // Remove last ,
+        BSB_EXPORT_ptr(ja4_rbsb, tmpBuf, BSB_LENGTH(tmpBSB));
+    }
 
-    BSB_EXPORT_ptr(ja4_rbsb, tmpBuf, BSB_LENGTH(tmpBSB));
     BSB_EXPORT_u08(ja4_rbsb, '_');
 
     GChecksum *const checksum = checksums256[session->thread];
@@ -894,7 +896,9 @@ uint32_t tls_process_client_hello_data(ArkimeSession_t *session, const uint8_t *
     for (int i = 0; i < ja4NumExtensionsSome; i++) {
         BSB_EXPORT_sprintf(tmpBSB, "%04x,", ja4Extensions[i]);
     }
-    BSB_EXPORT_rewind(tmpBSB, 1); // Remove last ,
+    if (ja4NumExtensionsSome > 0) {
+        BSB_EXPORT_rewind(tmpBSB, 1); // Remove last ,
+    }
     if (ja4NumAlgos > 0) {
         BSB_EXPORT_u08(tmpBSB, '_');
         for (int i = 0; i < ja4NumAlgos; i++) {
