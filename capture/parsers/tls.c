@@ -18,6 +18,9 @@ LOCAL  int                   dstIdField;
 LOCAL  int                   ja3StrField;
 LOCAL  int                   ja3sStrField;
 LOCAL  int                   ja4Field;
+LOCAL  int                   ja4RawField;
+
+LOCAL  gboolean              ja4Raw;
 
 typedef struct {
     uint8_t             buf[8192];
@@ -839,6 +842,10 @@ uint32_t tls_process_client_hello_data(ArkimeSession_t *session, const uint8_t *
     char vstr[3];
     tls_ja4_version(ver, vstr);
 
+    char ja4_r[200];
+    BSB ja4_rbsb;
+    BSB_INIT(ja4_rbsb, ja4_r, sizeof(ja4_r));
+
     char ja4[37];
     ja4[36] = 0;
     ja4[0] = (session->ipProtocol == IPPROTO_TCP) ? 't' : 'q';
@@ -853,7 +860,9 @@ uint32_t tls_process_client_hello_data(ArkimeSession_t *session, const uint8_t *
     ja4[9] = ja4ALPN[1];
     ja4[10] = '_';
 
-    char tmpBuf[10 * 256];
+    BSB_EXPORT_ptr(ja4_rbsb, ja4, 11);
+
+    char tmpBuf[5 * 256];
     BSB tmpBSB;
 
     // Sort ciphers, convert to hex, first 12 bytes of sha256
@@ -863,6 +872,9 @@ uint32_t tls_process_client_hello_data(ArkimeSession_t *session, const uint8_t *
         BSB_EXPORT_sprintf(tmpBSB, "%04x,", ja4Ciphers[i]);
     }
     BSB_EXPORT_rewind(tmpBSB, 1); // Remove last ,
+
+    BSB_EXPORT_ptr(ja4_rbsb, tmpBuf, BSB_LENGTH(tmpBSB));
+    BSB_EXPORT_u08(ja4_rbsb, '_');
 
     GChecksum *const checksum = checksums256[session->thread];
 
@@ -891,6 +903,9 @@ uint32_t tls_process_client_hello_data(ArkimeSession_t *session, const uint8_t *
         BSB_EXPORT_rewind(tmpBSB, 1); // Remove last ,
     }
 
+    BSB_EXPORT_ptr(ja4_rbsb, tmpBuf, BSB_LENGTH(tmpBSB));
+    BSB_EXPORT_u08(ja4_rbsb, 0);
+
     if (BSB_LENGTH(tmpBSB) > 0) {
         g_checksum_update(checksum, (guchar *)tmpBuf, BSB_LENGTH(tmpBSB));
         memcpy(ja4 + 24, g_checksum_get_string(checksum), 12);
@@ -901,6 +916,9 @@ uint32_t tls_process_client_hello_data(ArkimeSession_t *session, const uint8_t *
 
     // Add the field
     arkime_field_string_add(ja4Field, session, ja4, 36, TRUE);
+    if (ja4Raw) {
+        arkime_field_string_add(ja4RawField, session, ja4_r, BSB_LENGTH(ja4_rbsb), TRUE);
+    }
 
     return 0;
 }
@@ -1015,6 +1033,8 @@ LOCAL void tls_classify(ArkimeSession_t *session, const uint8_t *data, int len, 
 /******************************************************************************/
 void arkime_parser_init()
 {
+    ja4Raw = arkime_config_boolean(NULL, "ja4Raw", TRUE);
+
     certsField = arkime_field_define("cert", "notreal",
                                      "cert", "cert", "cert",
                                      "CERT Info",
@@ -1154,6 +1174,12 @@ void arkime_parser_init()
                                    "SSL/TLS JA4 field",
                                    ARKIME_FIELD_TYPE_STR_GHASH,  ARKIME_FIELD_FLAG_CNT,
                                    (char *)NULL);
+
+    ja4RawField = arkime_field_define("tls", "lotermfield",
+                                      "tls.ja4_r", "JA4_r", "tls.ja4_r",
+                                      "SSL/TLS JA4_r field",
+                                      ARKIME_FIELD_TYPE_STR_GHASH,  ARKIME_FIELD_FLAG_CNT,
+                                      (char *)NULL);
 
     ja3sField = arkime_field_define("tls", "lotermfield",
                                     "tls.ja3s", "JA3S", "tls.ja3s",
