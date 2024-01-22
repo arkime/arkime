@@ -100,7 +100,7 @@ LOCAL void ssh_parse_keyinit(ArkimeSession_t *session, const uint8_t *data, int 
 /******************************************************************************/
 LOCAL void ssh_send_counting200 (ArkimeSession_t *session, SSHInfo_t *ssh)
 {
-    arkime_parser_call_named_func(ssh_counting200_func, session, NULL, 0, ssh);
+    arkime_parsers_call_named_func(ssh_counting200_func, session, NULL, 0, ssh);
 }
 /******************************************************************************/
 LOCAL int ssh_parser(ArkimeSession_t *session, void *uw, const uint8_t *data, int remaining, int which)
@@ -255,6 +255,6 @@ void arkime_parser_init()
 
     arkime_parsers_classifier_register_tcp("ssh", NULL, 0, (uint8_t *)"SSH", 3, ssh_classify);
 
-    ssh_counting200_func = arkime_parser_get_named_func("ssh_counting200");
+    ssh_counting200_func = arkime_parsers_get_named_func("ssh_counting200");
 }
 

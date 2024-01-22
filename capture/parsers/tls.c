@@ -562,7 +562,7 @@ LOCAL uint32_t tls_process_server_certificate(ArkimeSession_t *session, const ui
         BSB_IMPORT_skip(cbsb, clen + 3);
 
         if (certs)
-            arkime_parser_call_named_func(tls_process_certificate_wInfo_func, session, cdata + 3, clen, certs);
+            arkime_parsers_call_named_func(tls_process_certificate_wInfo_func, session, cdata + 3, clen, certs);
 
         continue;
 
@@ -590,10 +590,10 @@ LOCAL int tls_process_server_handshake_record(ArkimeSession_t *session, const ui
 
         switch(hdata[0]) {
         case 2:
-            arkime_parser_call_named_func(tls_process_server_hello_func, session, hdata + 4, hlen - 4, NULL);
+            arkime_parsers_call_named_func(tls_process_server_hello_func, session, hdata + 4, hlen - 4, NULL);
             break;
         case 11:
-            arkime_parser_call_named_func(tls_process_server_certificate_func, session, hdata + 4, hlen - 4, NULL);
+            arkime_parsers_call_named_func(tls_process_server_certificate_func, session, hdata + 4, hlen - 4, NULL);
             break;
         case 14:
             return 1;
@@ -938,7 +938,7 @@ LOCAL void tls_process_client(ArkimeSession_t *session, const uint8_t *data, int
         int            ssllen = MIN(BSB_REMAINING(sslbsb) - 5, ssldata[3] << 8 | ssldata[4]);
 
 
-        arkime_parser_call_named_func(tls_process_client_hello_func, session, ssldata + 5, ssllen, NULL);
+        arkime_parsers_call_named_func(tls_process_client_hello_func, session, ssldata + 5, ssllen, NULL);
     }
 }
 
@@ -1232,9 +1232,9 @@ void arkime_parser_init()
         checksums256[t] = g_checksum_new(G_CHECKSUM_SHA256);
     }
 
-    tls_process_client_hello_func = arkime_parser_add_named_func("tls_process_client_hello", tls_process_client_hello_data);
-    tls_process_server_hello_func = arkime_parser_add_named_func("tls_process_server_hello", tls_process_server_hello);
-    tls_process_server_certificate_func = arkime_parser_add_named_func("tls_process_server_certificate", tls_process_server_certificate);
-    tls_process_certificate_wInfo_func = arkime_parser_get_named_func("tls_process_certificate_wInfo");
+    tls_process_client_hello_func = arkime_parsers_add_named_func("tls_process_client_hello", tls_process_client_hello_data);
+    tls_process_server_hello_func = arkime_parsers_add_named_func("tls_process_server_hello", tls_process_server_hello);
+    tls_process_server_certificate_func = arkime_parsers_add_named_func("tls_process_server_certificate", tls_process_server_certificate);
+    tls_process_certificate_wInfo_func = arkime_parsers_get_named_func("tls_process_certificate_wInfo");
 }
 
