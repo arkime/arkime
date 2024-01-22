@@ -23,6 +23,7 @@ $ENV{'PERL5LIB'} = getcwd();
 $ENV{'TZ'} = 'US/Eastern';
 my $INSECURE = "";
 my $SCHEME = "";
+my $EXTRA = "";
 
 ################################################################################
 sub doGeo {
@@ -124,7 +125,7 @@ sub doTests {
         my $savedJson = sortJson(from_json($savedData, {relaxed => 1}));
 
 
-        my $cmd = "../capture/capture $SCHEME --tests -c config.test.ini -n test -r $filename.pcap 2>&1 1>/dev/null | ./tests.pl --fix";
+        my $cmd = "../capture/capture $SCHEME $EXTRA --tests -c config.test.ini -n test -r $filename.pcap 2>&1 1>/dev/null | ./tests.pl --fix";
 
         if ($main::valgrind) {
             $cmd = "G_SLICE=always-malloc valgrind --leak-check=full --log-file=$filename.val " . $cmd;
@@ -228,9 +229,9 @@ sub doMake {
     foreach my $filename (@ARGV) {
         $filename = substr($filename, 0, -5) if ($filename =~ /\.pcap$/);
         if ($main::debug) {
-          print("../capture/capture --tests -c config.test.ini -n test -r $filename.pcap 2>&1 1>/dev/null | ./tests.pl --fix > $filename.test\n");
+          print("../capture/capture $EXTRA --tests -c config.test.ini -n test -r $filename.pcap 2>&1 1>/dev/null | ./tests.pl --fix > $filename.test\n");
         }
-        system("../capture/capture --tests -c config.test.ini -n test -r $filename.pcap 2>&1 1>/dev/null | ./tests.pl --fix > $filename.test");
+        system("../capture/capture $EXTRA --tests -c config.test.ini -n test -r $filename.pcap 2>&1 1>/dev/null | ./tests.pl --fix > $filename.test");
     }
 }
 ################################################################################
@@ -425,6 +426,10 @@ while (scalar (@ARGV) > 0) {
         system("rm -rf ../wiseService/coverage");
         system("rm -rf ../parliament/coverage");
         system("rm -rf ../cont3xt/coverage");
+        shift @ARGV;
+    } elsif ($ARGV[0] eq "--extra") {
+        shift @ARGV;
+        $EXTRA = $ARGV[0];
         shift @ARGV;
     } elsif ($ARGV[0] eq "--insecure") {
         $ArkimeTest::userAgent->ssl_opts(
