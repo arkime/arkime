@@ -214,6 +214,8 @@ typedef enum {
 #define ARKIME_FIELD_FLAG_ECS_CNT            0x2000
 /* prepend ip stuff - dont use*/
 #define ARKIME_FIELD_FLAG_IPPRE              0x4000
+/* new value has to be different from last value */
+#define ARKIME_FIELD_FLAG_DIFF_FROM_LAST     0x8000
 
 typedef struct arkime_field_info {
     struct arkime_field_info *d_next, *d_prev; /* Must be first */
@@ -953,6 +955,8 @@ typedef struct {
     const uint8_t *value;
 } ArkimeASNSeq_t;
 
+#define ARKIME_PARSERS_HAS_NAMED_FUNC(id) (arkime_parsers_has_named_func & (1ULL << id))
+extern uint64_t arkime_parsers_has_named_func;
 void arkime_parsers_init();
 void arkime_parsers_initial_tag(ArkimeSession_t *session);
 uint8_t *arkime_parsers_asn_get_tlv(BSB *bsb, uint32_t *apc, uint32_t *atag, uint32_t *alen);
@@ -996,10 +1000,10 @@ char *arkime_sprint_hex_string(char *buf, const uint8_t *data, unsigned int leng
 #define CLASSIFY_TCP(name, offset, bytes, cb) arkime_parsers_classifier_register_tcp(name, name, offset, (uint8_t *)bytes, sizeof(bytes) - 1, cb);
 #define CLASSIFY_UDP(name, offset, bytes, cb) arkime_parsers_classifier_register_udp(name, name, offset, (uint8_t *)bytes, sizeof(bytes) - 1, cb);
 
-typedef uint32_t (* ArkimeParserNamedFunc) (ArkimeSession_t *session, const uint8_t *data, int len, void *uw);
-uint32_t arkime_parser_add_named_func(const char *name, ArkimeParserNamedFunc func);
-uint32_t arkime_parser_get_named_func(const char *name);
-void arkime_parser_call_named_func(uint32_t id, ArkimeSession_t *session, const uint8_t *data, int len, void *uw);
+typedef uint32_t (* ArkimeParsersNamedFunc) (ArkimeSession_t *session, const uint8_t *data, int len, void *uw);
+uint32_t arkime_parsers_add_named_func(const char *name, ArkimeParsersNamedFunc func);
+uint32_t arkime_parsers_get_named_func(const char *name);
+void arkime_parsers_call_named_func(uint32_t id, ArkimeSession_t *session, const uint8_t *data, int len, void *uw);
 
 /******************************************************************************/
 /*

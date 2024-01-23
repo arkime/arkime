@@ -9,8 +9,9 @@ if (session.tls)
     +arrayList(session.tls, "ja3Comment", "JA3 Comment", "tls.ja3comment")
     +arrayList(session.tls, "ja3s", "JA3s", "tls.ja3s")
     +arrayList(session.tls, "ja4", "JA4", "tls.ja4")
+    +arrayList(session.tls, "ja4_r", "JA4_r", "tls.ja4_r")
     +arrayList(session.tls, "ja4s", "JA4s", "tls.ja4s")
-    +arrayList(session.tls, "ja4x", "JA4x", "tls.ja4x")
+    +arrayList(session.tls, "ja4s_r", "JA4s_r", "tls.ja4s_r")
 
 if (session.cert)
   div.sessionDetailMeta.bold Cert
@@ -113,3 +114,6 @@ if (session.cert)
       - if (cert.ja4x)
         strong.medium.ml-1 JA4x
         arkime-session-field.detail-field(:expr="'cert.ja4x'", :value='"'+cert.ja4x+'"', :field="fields['cert.ja4x']", :pull-left="true")
+      - if (cert.ja4x_r)
+        strong.medium.ml-1 JA4x_r
+        arkime-session-field.detail-field(:expr="'cert.ja4x_r'", :value='"'+cert.ja4x_r+'"', :field="fields['cert.ja4x_r']", :pull-left="true")

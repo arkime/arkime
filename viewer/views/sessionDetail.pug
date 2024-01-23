@@ -596,6 +596,24 @@ dl
   if (session.greIp)
     +ipArrayList(session, "greIp", "GRE IPs", "gre.ip")
 
+  if (session.tcp)
+    dt
+      +clickableLabel('tcp.ja4lc', 'JA4lc')
+    dd
+      +arrayPrint(session.tcp, "ja4lc", "tcp.ja4lc")
+    dt
+      +clickableLabel('tcp.ja4ls', 'JA4ls')
+    dd
+      +arrayPrint(session.tcp, "ja4ls", "tcp.ja4ls")
+    dt
+      +clickableLabel('tcp.ja4tc', 'JA4tc')
+    dd
+      +arrayPrint(session.tcp, "ja4tc", "tcp.ja4tc")
+    dt
+      +clickableLabel('tcp.ja4ts', 'JA4ts')
+    dd
+      +arrayPrint(session.tcp, "ja4ts", "tcp.ja4ts")
+
   if (session.tcpflags)
     dt
       b-dropdown.clickable-label(text="TCP Flags", size="sm", variant="default")

@@ -33,7 +33,8 @@ typedef struct {
     uint16_t   id;
 } ArkimeNamedInfo_t;
 
-#define MAX_NAMED_FUNCS  100
+#define MAX_NAMED_FUNCS  64
+uint64_t                 arkime_parsers_has_named_func;
 LOCAL uint16_t           namedFuncsMax = 0;
 LOCAL ArkimeNamedInfo_t *namedFuncsArr[MAX_NAMED_FUNCS];
 LOCAL GHashTable        *namedFuncsHash;
@@ -1179,12 +1180,11 @@ void arkime_parsers_classify_tcp(ArkimeSession_t *session, const uint8_t *data, 
 }
 
 /******************************************************************************/
-uint32_t arkime_parser_add_named_func(const char *name, ArkimeParserNamedFunc func)
+uint32_t arkime_parsers_add_named_func(const char *name, ArkimeParsersNamedFunc func)
 {
     ArkimeNamedInfo_t *info = g_hash_table_lookup(namedFuncsHash, name);
     if (!info) {
         info = ARKIME_TYPE_ALLOC0(ArkimeNamedInfo_t);
-        info->funcs = g_ptr_array_new();
         namedFuncsMax++; // Don't use 0
         if (namedFuncsMax >= MAX_NAMED_FUNCS) {
             LOGEXIT("ERROR - Too many named functions %s", name);
@@ -1194,11 +1194,14 @@ uint32_t arkime_parser_add_named_func(const char *name, ArkimeParserNamedFunc fu
         namedFuncsArr[namedFuncsMax] = info;
         g_hash_table_insert(namedFuncsHash, g_strdup(name), info);
     }
+    arkime_parsers_has_named_func |= (1ULL << info->id);
+    if (!info->funcs)
+        info->funcs = g_ptr_array_new();
     g_ptr_array_add(info->funcs, func);
     return info->id;
 }
 /******************************************************************************/
-uint32_t arkime_parser_get_named_func(const char *name)
+uint32_t arkime_parsers_get_named_func(const char *name)
 {
     ArkimeNamedInfo_t *info = g_hash_table_lookup(namedFuncsHash, name);
     if (!info) {
@@ -1216,13 +1219,13 @@ uint32_t arkime_parser_get_named_func(const char *name)
     return info->id;
 }
 /******************************************************************************/
-void arkime_parser_call_named_func(uint32_t id, ArkimeSession_t *session, const uint8_t *data, int len, void *uw)
+void arkime_parsers_call_named_func(uint32_t id, ArkimeSession_t *session, const uint8_t *data, int len, void *uw)
 {
-    if (id == 0 || id > namedFuncsMax)
+    if (id == 0 || id > namedFuncsMax || !ARKIME_PARSERS_HAS_NAMED_FUNC(id))
         return;
     ArkimeNamedInfo_t *info = namedFuncsArr[id];
     for (int i = 0; i < (int)info->funcs->len; i++) {
-        ArkimeParserNamedFunc func = g_ptr_array_index(info->funcs, i);
+        ArkimeParsersNamedFunc func = g_ptr_array_index(info->funcs, i);
         func(session, data, len, uw);
     }
 }
