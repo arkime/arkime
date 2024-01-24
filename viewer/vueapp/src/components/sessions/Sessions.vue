@@ -1941,6 +1941,10 @@ export default {
 </style>
 
 <style scoped>
+.sessions-page {
+  overflow: hidden;
+}
+
 form.sessions-paging {
   height: 40px;
 }

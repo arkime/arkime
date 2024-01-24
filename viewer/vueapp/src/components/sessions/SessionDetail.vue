@@ -1040,7 +1040,7 @@ dl:hover > .session-detail-grip {
   column-count: 2;
   -moz-column-count: 2;
 }
-@media (max-width: 1300px) {
+@media (max-width: 1350px) {
   .session-detail .card-columns {
     column-count: 1;
     -moz-column-count: 1;
