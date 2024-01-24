@@ -110,6 +110,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #2523 resize session detail field label/values
   - #2552 added %URIEncodedText% for URI encoded substitution (thanks @vpiserchia)
   - #2601 patch cyberchef xss vuln (https://github.com/gchq/CyberChef/issues/1468)
+  - #2606 zstd sometimes didn't read all packets
 ## Parliament
   - #2377 dashboard-only mode removed, if you want users to just see the dashboard don't assign them the parliamentUser role
   - #2395 configuration is now stored in opensearch/elasticsearch

@@ -349,6 +349,10 @@ class Pcap {
         const headerLen = (this.shortHeader === undefined) ? 16 : 6;
 
         if (readBuffer.length < headerLen) {
+          // Read failed, try one more time with bigger buffer if zstd
+          if (hpLenArg === -1 && this.compression === 'zstd') {
+            return this.readPacketInternal(posArg, this.uncompressedBitsSize * 2, cb);
+          }
           console.log(`Not enough data ${readBuffer.length} for header ${headerLen}`);
           return cb(undefined);
         }
