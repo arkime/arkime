@@ -309,7 +309,7 @@ function parseCustomView (key, input) {
   const fields = match[1];
 
   const parts = req.split('.');
-  let output = '  if (';
+  let output = '    if (';
   for (let i = 0; i < parts.length; i++) {
     if (i > 0) {
       output += ' && ';
@@ -319,8 +319,8 @@ function parseCustomView (key, input) {
       output += `.${parts[j]}`;
     }
   }
-  output += ')\n';
-  output += `    div.sessionDetailMeta.bold ${title}\n    dl.sessionDetailMeta\n`;
+  // note: significant whitespace is for losers
+  output += `)\n      b-card\n        div.sessionDetailMeta.bold ${title}\n        dl.sessionDetailMeta\n`;
 
   for (const field of fields.split(',')) {
     const info = fieldsMap[field];
@@ -329,9 +329,9 @@ function parseCustomView (key, input) {
     }
     const pos = info.dbField.lastIndexOf('.');
     if (pos === -1) {
-      output += `      +arrayList(session, '${info.dbField}', '${info.friendlyName}', '${field}')\n`;
+      output += `          +arrayList(session, '${info.dbField}', '${info.friendlyName}', '${field}')\n`;
     } else {
-      output += `      +arrayList(session.${info.dbField.slice(0, pos)}, '${info.dbField.slice(pos + 1)}', '${info.friendlyName}', '${field}')\n`;
+      output += `          +arrayList(session.${info.dbField.slice(0, pos)}, '${info.dbField.slice(pos + 1)}', '${info.friendlyName}', '${field}')\n`;
     }
   }
 
@@ -355,9 +355,9 @@ function createSessionDetail () {
           return;
         }
         if (file.match(/\.detail\.jade$/i)) {
-          found[sfile] = fs.readFileSync(dir + '/' + file, 'utf8').replace(/^/mg, '  ') + '\n';
+          found[sfile] = fs.readFileSync(dir + '/' + file, 'utf8').replace(/^/mg, '        ') + '\n';
         } else if (file.match(/\.detail\.pug$/i)) {
-          found[sfile] = '  include ' + dir + '/' + file + '\n';
+          found[sfile] = '        include ' + dir + '/' + file + '\n';
         }
       });
     } catch (e) {}
@@ -374,21 +374,27 @@ function createSessionDetail () {
   async.each(makers, function (cb, nextCb) {
     cb(function (err, items) {
       for (const k in items) {
-        found[k] = items[k].replace(/^/mg, '  ') + '\n';
+        found[k] = items[k].replace(/^/mg, '      ') + '\n'; // this is re-indenting it
       }
       return nextCb();
     });
   }, function () {
     internals.sessionDetailNew = 'include views/mixins.pug\n' +
                                  'div.session-detail(sessionid=session.id,hidePackets=hidePackets)\n' +
-                                 '  include views/sessionDetail\n';
+                                 '  include views/sessionOptions\n' +
+                                 '  b-card-group(columns)\n' +
+                                 '    b-card\n' +
+                                 '      include views/sessionDetail\n';
+
     Object.keys(found).sort().forEach(function (k) {
-      internals.sessionDetailNew += found[k];
+      const type = `session.${k.split('.')[0]}`;
+      internals.sessionDetailNew += `    if (${type})\n`;
+      internals.sessionDetailNew += '      b-card\n';
+      internals.sessionDetailNew += found[k]; // note: already indented properly ^
     });
 
-    internals.sessionDetailNew = internals.sessionDetailNew.replace(/div.sessionDetailMeta.bold/g, 'h4.sessionDetailMeta')
-      .replace(/dl.sessionDetailMeta/g, 'dl')
-    ;
+    internals.sessionDetailNew = internals.sessionDetailNew.replace(/div.sessionDetailMeta.bold/g, 'h4.card-title')
+      .replace(/dl.sessionDetailMeta/g, 'dl');
   });
 }
 

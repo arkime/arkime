@@ -394,6 +394,10 @@ export default {
                 // set the width of the dt and the margin of the dd based on user setting
                 dt.style.width = `${this.$parent.dlWidth}px`;
                 dt.nextElementSibling.style.marginLeft = `${this.$parent.dlWidth + 10}px`;
+                const labelBtn = dt.getElementsByClassName('clickable-label');
+                if (labelBtn && labelBtn.length) {
+                  labelBtn[0].style.maxWidth = `${this.$parent.dlWidth}px`;
+                }
               }
 
               // listen for grip drags
@@ -810,11 +814,6 @@ export default {
   margin-right: var(--px-md);
 }
 
-.session-detail h4.sessionDetailMeta {
-  padding-top: 10px;
-  border-top: 1px solid var(--color-gray);
-}
-
 .packet-options {
   border-top: var(--color-gray) 1px solid;
 }
@@ -1003,7 +1002,7 @@ export default {
   font-weight: 600;
   line-height: 21px;
   padding: 0 5px 1px 5px;
-  max-width: 160px;
+  max-width: 160px; /* this gets updated by the dl resizing */
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -1034,5 +1033,53 @@ export default {
 }
 dl:hover > .session-detail-grip {
   border-right: 1px dotted var(--color-gray) !important;
+}
+
+/* detail card styles */
+.session-detail .card-columns {
+  column-count: 2;
+  -moz-column-count: 2;
+}
+@media (max-width: 1300px) {
+  .session-detail .card-columns {
+    column-count: 1;
+    -moz-column-count: 1;
+  }
+}
+.session-detail .card > .card-body > .card-title {
+  padding: 0.5rem;
+  margin: -1.25rem;
+  margin-bottom: 1.25rem;
+  border-radius: 4px 4px 0 0;
+  background-color: var(--color-gray);
+  color: var(--color-background, #333);
+}
+.session-detail .card > .card-body > dl .card-title {
+  z-index: 4;
+  font-size: 1rem;
+  padding: 0.25rem;
+  margin-top: 0.3rem;
+  position: relative;
+  border-radius: 4px;
+  margin-bottom: 1rem;
+  color: var(--color-foreground, #333);
+  background-color: var(--color-gray-light);
+}
+
+.session-detail .card > .card-body dl {
+  margin-bottom: 0rem;
+  margin-top: -0.75rem;
+}
+
+.session-detail .card > .card-body > dl > dt:hover + dd,
+.session-detail .card > .card-body > dl > dd:hover {
+  border-radius: 10px;
+  background-color: var(--color-gray-lighter);
+}
+
+.session-detail .card > .card-body dt,
+.session-detail .card > .card-body dd {
+  line-height: 1.7;
+  margin-bottom: 0.2rem !important;
 }
 </style>
