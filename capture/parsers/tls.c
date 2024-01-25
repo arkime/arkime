@@ -253,9 +253,9 @@ LOCAL void tls_ja4_version(uint16_t ver, char vstr[3])
     case 0x0304:
         memcpy(vstr, "13", 3);
         break;
-    case 0x7f00 ... 0x7fff:
+/*    case 0x7f00 ... 0x7fff:
         memcpy(vstr, "13", 3);
-        break;
+        break;*/
     default:
         memcpy(vstr, "00", 3);
         break;
@@ -313,7 +313,10 @@ LOCAL uint32_t tls_process_server_hello(ArkimeSession_t *session, const uint8_t 
         arkime_field_string_add(cipherField, session, str, 6, TRUE);
     }
 
-    BSB_IMPORT_skip(bsb, 1);
+    /* Thanks wireshark - No compression with TLS 1.3 before draft -22 */
+    if (ver < 0x0700 || ver >= 0x7f16) {
+        BSB_IMPORT_skip(bsb, 1);
+    }
 
 
     char ja3[30000];
