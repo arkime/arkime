@@ -18,6 +18,9 @@ LOCAL  int                   dstIdField;
 LOCAL  int                   ja3StrField;
 LOCAL  int                   ja3sStrField;
 LOCAL  int                   ja4Field;
+LOCAL  int                   ja4RawField;
+
+LOCAL  gboolean              ja4Raw;
 
 typedef struct {
     uint8_t             buf[8192];
@@ -559,7 +562,7 @@ LOCAL uint32_t tls_process_server_certificate(ArkimeSession_t *session, const ui
         BSB_IMPORT_skip(cbsb, clen + 3);
 
         if (certs)
-            arkime_parser_call_named_func(tls_process_certificate_wInfo_func, session, cdata + 3, clen, certs);
+            arkime_parsers_call_named_func(tls_process_certificate_wInfo_func, session, cdata + 3, clen, certs);
 
         continue;
 
@@ -587,10 +590,10 @@ LOCAL int tls_process_server_handshake_record(ArkimeSession_t *session, const ui
 
         switch(hdata[0]) {
         case 2:
-            arkime_parser_call_named_func(tls_process_server_hello_func, session, hdata + 4, hlen - 4, NULL);
+            arkime_parsers_call_named_func(tls_process_server_hello_func, session, hdata + 4, hlen - 4, NULL);
             break;
         case 11:
-            arkime_parser_call_named_func(tls_process_server_certificate_func, session, hdata + 4, hlen - 4, NULL);
+            arkime_parsers_call_named_func(tls_process_server_certificate_func, session, hdata + 4, hlen - 4, NULL);
             break;
         case 14:
             return 1;
@@ -839,6 +842,10 @@ uint32_t tls_process_client_hello_data(ArkimeSession_t *session, const uint8_t *
     char vstr[3];
     tls_ja4_version(ver, vstr);
 
+    char ja4_r[4096];
+    BSB ja4_rbsb;
+    BSB_INIT(ja4_rbsb, ja4_r, sizeof(ja4_r));
+
     char ja4[37];
     ja4[36] = 0;
     ja4[0] = (session->ipProtocol == IPPROTO_TCP) ? 't' : 'q';
@@ -853,7 +860,9 @@ uint32_t tls_process_client_hello_data(ArkimeSession_t *session, const uint8_t *
     ja4[9] = ja4ALPN[1];
     ja4[10] = '_';
 
-    char tmpBuf[10 * 256];
+    BSB_EXPORT_ptr(ja4_rbsb, ja4, 11);
+
+    char tmpBuf[5 * 256];
     BSB tmpBSB;
 
     // Sort ciphers, convert to hex, first 12 bytes of sha256
@@ -862,7 +871,12 @@ uint32_t tls_process_client_hello_data(ArkimeSession_t *session, const uint8_t *
     for (int i = 0; i < ja4NumCiphers; i++) {
         BSB_EXPORT_sprintf(tmpBSB, "%04x,", ja4Ciphers[i]);
     }
-    BSB_EXPORT_rewind(tmpBSB, 1); // Remove last ,
+    if (ja4NumCiphers > 0) {
+        BSB_EXPORT_rewind(tmpBSB, 1); // Remove last ,
+        BSB_EXPORT_ptr(ja4_rbsb, tmpBuf, BSB_LENGTH(tmpBSB));
+    }
+
+    BSB_EXPORT_u08(ja4_rbsb, '_');
 
     GChecksum *const checksum = checksums256[session->thread];
 
@@ -882,7 +896,9 @@ uint32_t tls_process_client_hello_data(ArkimeSession_t *session, const uint8_t *
     for (int i = 0; i < ja4NumExtensionsSome; i++) {
         BSB_EXPORT_sprintf(tmpBSB, "%04x,", ja4Extensions[i]);
     }
-    BSB_EXPORT_rewind(tmpBSB, 1); // Remove last ,
+    if (ja4NumExtensionsSome > 0) {
+        BSB_EXPORT_rewind(tmpBSB, 1); // Remove last ,
+    }
     if (ja4NumAlgos > 0) {
         BSB_EXPORT_u08(tmpBSB, '_');
         for (int i = 0; i < ja4NumAlgos; i++) {
@@ -890,6 +906,9 @@ uint32_t tls_process_client_hello_data(ArkimeSession_t *session, const uint8_t *
         }
         BSB_EXPORT_rewind(tmpBSB, 1); // Remove last ,
     }
+
+    BSB_EXPORT_ptr(ja4_rbsb, tmpBuf, BSB_LENGTH(tmpBSB));
+    BSB_EXPORT_u08(ja4_rbsb, 0);
 
     if (BSB_LENGTH(tmpBSB) > 0) {
         g_checksum_update(checksum, (guchar *)tmpBuf, BSB_LENGTH(tmpBSB));
@@ -901,6 +920,9 @@ uint32_t tls_process_client_hello_data(ArkimeSession_t *session, const uint8_t *
 
     // Add the field
     arkime_field_string_add(ja4Field, session, ja4, 36, TRUE);
+    if (ja4Raw) {
+        arkime_field_string_add(ja4RawField, session, ja4_r, BSB_LENGTH(ja4_rbsb), TRUE);
+    }
 
     return 0;
 }
@@ -916,7 +938,7 @@ LOCAL void tls_process_client(ArkimeSession_t *session, const uint8_t *data, int
         int            ssllen = MIN(BSB_REMAINING(sslbsb) - 5, ssldata[3] << 8 | ssldata[4]);
 
 
-        arkime_parser_call_named_func(tls_process_client_hello_func, session, ssldata + 5, ssllen, NULL);
+        arkime_parsers_call_named_func(tls_process_client_hello_func, session, ssldata + 5, ssllen, NULL);
     }
 }
 
@@ -1015,6 +1037,8 @@ LOCAL void tls_classify(ArkimeSession_t *session, const uint8_t *data, int len, 
 /******************************************************************************/
 void arkime_parser_init()
 {
+    ja4Raw = arkime_config_boolean(NULL, "ja4Raw", TRUE);
+
     certsField = arkime_field_define("cert", "notreal",
                                      "cert", "cert", "cert",
                                      "CERT Info",
@@ -1155,6 +1179,12 @@ void arkime_parser_init()
                                    ARKIME_FIELD_TYPE_STR_GHASH,  ARKIME_FIELD_FLAG_CNT,
                                    (char *)NULL);
 
+    ja4RawField = arkime_field_define("tls", "lotermfield",
+                                      "tls.ja4_r", "JA4_r", "tls.ja4_r",
+                                      "SSL/TLS JA4_r field",
+                                      ARKIME_FIELD_TYPE_STR_GHASH,  ARKIME_FIELD_FLAG_CNT,
+                                      (char *)NULL);
+
     ja3sField = arkime_field_define("tls", "lotermfield",
                                     "tls.ja3s", "JA3S", "tls.ja3s",
                                     "SSL/TLS JA3S field",
@@ -1202,9 +1232,9 @@ void arkime_parser_init()
         checksums256[t] = g_checksum_new(G_CHECKSUM_SHA256);
     }
 
-    tls_process_client_hello_func = arkime_parser_add_named_func("tls_process_client_hello", tls_process_client_hello_data);
-    tls_process_server_hello_func = arkime_parser_add_named_func("tls_process_server_hello", tls_process_server_hello);
-    tls_process_server_certificate_func = arkime_parser_add_named_func("tls_process_server_certificate", tls_process_server_certificate);
-    tls_process_certificate_wInfo_func = arkime_parser_get_named_func("tls_process_certificate_wInfo");
+    tls_process_client_hello_func = arkime_parsers_add_named_func("tls_process_client_hello", tls_process_client_hello_data);
+    tls_process_server_hello_func = arkime_parsers_add_named_func("tls_process_server_hello", tls_process_server_hello);
+    tls_process_server_certificate_func = arkime_parsers_add_named_func("tls_process_server_certificate", tls_process_server_certificate);
+    tls_process_certificate_wInfo_func = arkime_parsers_get_named_func("tls_process_certificate_wInfo");
 }
 

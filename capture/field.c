@@ -33,6 +33,8 @@ GHashTable *groupName2Num;
 
 int16_t fieldOpsRemap[ARKIME_FIELDS_MAX][ARKIME_FIELDS_MAX];
 
+#define FIELD_MAX_JSON_SIZE 20000
+
 /******************************************************************************/
 LOCAL void arkime_field_by_exp_add_special(const char *exp, int pos)
 {
@@ -568,7 +570,7 @@ const char *arkime_field_string_add(int pos, ArkimeSession_t *session, const cha
             arkime_field_truncated(session, info);
         }
 
-        field->jsonSize = 6 + info->dbFieldLen + 2 * len;
+        field->jsonSize = info->dbFieldLen;
         if (copy)
             string = g_strndup(string, len);
         switch (info->type) {
@@ -608,10 +610,6 @@ const char *arkime_field_string_add(int pos, ArkimeSession_t *session, const cha
     }
 
     field = session->fields[pos];
-    field->jsonSize += (6 + 2 * len);
-
-    if (field->jsonSize > 20000)
-        session->midSave = 1;
 
     switch (info->type) {
     case ARKIME_FIELD_TYPE_STR:
@@ -623,13 +621,19 @@ const char *arkime_field_string_add(int pos, ArkimeSession_t *session, const cha
     case ARKIME_FIELD_TYPE_STR_ARRAY:
         if (copy)
             string = g_strndup(string, len);
+        if (info->flags & ARKIME_FIELD_FLAG_DIFF_FROM_LAST) {
+            if (strcmp(field->sarray->pdata[field->sarray->len - 1], string) == 0) {
+                if (copy)
+                    g_free((char *)string);
+                return NULL;
+            }
+        }
         g_ptr_array_add(field->sarray, (char *)string);
         goto added;
     case ARKIME_FIELD_TYPE_STR_HASH:
         HASH_FIND_HASH(s_, *(field->shash), arkime_string_hash_len(string, len), string, hstring);
 
         if (hstring) {
-            field->jsonSize -= (6 + 2 * len);
             return NULL;
         }
         hstring = ARKIME_TYPE_ALLOC(ArkimeString_t);
@@ -645,7 +649,6 @@ const char *arkime_field_string_add(int pos, ArkimeSession_t *session, const cha
         if (copy)
             string = g_strndup(string, len);
         if (g_hash_table_lookup(field->ghash, string)) {
-            field->jsonSize -= (6 + 2 * len);
             if (copy)
                 g_free((gpointer)string);
             return NULL;
@@ -657,6 +660,11 @@ const char *arkime_field_string_add(int pos, ArkimeSession_t *session, const cha
     }
 
 added:
+    field->jsonSize += (6 + 2 * len);
+
+    if (field->jsonSize > FIELD_MAX_JSON_SIZE)
+        session->midSave = 1;
+
     if (info->ruleEnabled)
         arkime_rules_run_field_set(session, pos, (const gpointer) string);
 
@@ -772,7 +780,7 @@ const char *arkime_field_string_uw_add(int pos, ArkimeSession_t *session, const 
         arkime_field_truncated(session, info);
     }
 
-    if (field->jsonSize > 20000)
+    if (field->jsonSize > FIELD_MAX_JSON_SIZE)
         session->midSave = 1;
 
     switch (info->type) {
@@ -812,7 +820,7 @@ gboolean arkime_field_int_add(int pos, ArkimeSession_t *session, int i)
     if (!session->fields[pos]) {
         field = ARKIME_TYPE_ALLOC(ArkimeField_t);
         session->fields[pos] = field;
-        field->jsonSize = 13 + info->dbFieldLen;
+        field->jsonSize = info->dbFieldLen;
         switch (info->type) {
         case ARKIME_FIELD_TYPE_INT:
             field->i = i;
@@ -838,7 +846,6 @@ gboolean arkime_field_int_add(int pos, ArkimeSession_t *session, int i)
     }
 
     field = session->fields[pos];
-    field->jsonSize += 13;
     switch (info->type) {
     case ARKIME_FIELD_TYPE_INT:
         field->i = i;
@@ -849,7 +856,6 @@ gboolean arkime_field_int_add(int pos, ArkimeSession_t *session, int i)
     case ARKIME_FIELD_TYPE_INT_HASH:
         HASH_FIND_INT(i_, *(field->ihash), i, hint);
         if (hint) {
-            field->jsonSize -= 13;
             return FALSE;
         }
         hint = ARKIME_TYPE_ALLOC(ArkimeInt_t);
@@ -857,7 +863,6 @@ gboolean arkime_field_int_add(int pos, ArkimeSession_t *session, int i)
         goto added;
     case ARKIME_FIELD_TYPE_INT_GHASH:
         if (!g_hash_table_add(field->ghash, (void *)(long)i)) {
-            field->jsonSize -= 13;
             return FALSE;
         }
         goto added;
@@ -866,6 +871,11 @@ gboolean arkime_field_int_add(int pos, ArkimeSession_t *session, int i)
     }
 
 added:
+    field->jsonSize += 13;
+
+    if (field->jsonSize > FIELD_MAX_JSON_SIZE)
+        session->midSave = 1;
+
     if (info->ruleEnabled)
         arkime_rules_run_field_set(session, pos, (gpointer)(long)i);
 
@@ -884,7 +894,7 @@ gboolean arkime_field_float_add(int pos, ArkimeSession_t *session, float f)
     if (!session->fields[pos]) {
         field = ARKIME_TYPE_ALLOC(ArkimeField_t);
         session->fields[pos] = field;
-        field->jsonSize = 15 + info->dbFieldLen;
+        field->jsonSize = info->dbFieldLen;
         switch (info->type) {
         case ARKIME_FIELD_TYPE_FLOAT:
             field->f = f;
@@ -904,7 +914,6 @@ gboolean arkime_field_float_add(int pos, ArkimeSession_t *session, float f)
     }
 
     field = session->fields[pos];
-    field->jsonSize += 15;
     switch (info->type) {
     case ARKIME_FIELD_TYPE_FLOAT:
         field->f = f;
@@ -916,7 +925,6 @@ gboolean arkime_field_float_add(int pos, ArkimeSession_t *session, float f)
         memcpy(&fint, &f, 4);
         g_hash_table_add(field->ghash, (gpointer)(long)fint);
         if (!g_hash_table_add(field->ghash, (gpointer)(long)fint)) {
-            field->jsonSize -= 15;
             return FALSE;
         }
         goto added;
@@ -925,6 +933,11 @@ gboolean arkime_field_float_add(int pos, ArkimeSession_t *session, float f)
     }
 
 added:
+    field->jsonSize += 15;
+
+    if (field->jsonSize > FIELD_MAX_JSON_SIZE)
+        session->midSave = 1;
+
     if (info->ruleEnabled) {
         memcpy(&fint, &f, 4);
         arkime_rules_run_field_set(session, pos, (gpointer)(long)fint);
@@ -995,7 +1008,7 @@ gboolean arkime_field_ip_add_str(int pos, ArkimeSession_t *session, char *str)
     if (!session->fields[pos]) {
         field = ARKIME_TYPE_ALLOC(ArkimeField_t);
         session->fields[pos] = field;
-        field->jsonSize = 3 + info->dbFieldLen + len + 100;
+        field->jsonSize = info->dbFieldLen;
         switch (info->type) {
         case ARKIME_FIELD_TYPE_IP:
             field->ip = v;
@@ -1010,7 +1023,6 @@ gboolean arkime_field_ip_add_str(int pos, ArkimeSession_t *session, char *str)
     }
 
     field = session->fields[pos];
-    field->jsonSize += (3 + len + 100);
     switch (info->type) {
     case ARKIME_FIELD_TYPE_IP:
         g_free(field->ip);
@@ -1018,7 +1030,6 @@ gboolean arkime_field_ip_add_str(int pos, ArkimeSession_t *session, char *str)
         goto added;
     case ARKIME_FIELD_TYPE_IP_GHASH:
         if (!g_hash_table_add(field->ghash, v)) {
-            field->jsonSize -= 3 + len + 100;
             return FALSE;
         } else {
             goto added;
@@ -1028,6 +1039,11 @@ gboolean arkime_field_ip_add_str(int pos, ArkimeSession_t *session, char *str)
     }
 
 added:
+    field->jsonSize += (3 + len + 100);
+
+    if (field->jsonSize > FIELD_MAX_JSON_SIZE)
+        session->midSave = 1;
+
     if (info->ruleEnabled)
         arkime_rules_run_field_set(session, pos, v);
 
@@ -1052,7 +1068,7 @@ gboolean arkime_field_ip4_add(int pos, ArkimeSession_t *session, uint32_t i)
     if (!session->fields[pos]) {
         field = ARKIME_TYPE_ALLOC(ArkimeField_t);
         session->fields[pos] = field;
-        field->jsonSize = 3 + info->dbFieldLen + 15 + 100;
+        field->jsonSize = info->dbFieldLen;
         switch (info->type) {
         case ARKIME_FIELD_TYPE_IP:
             field->ip = v;
@@ -1068,7 +1084,6 @@ gboolean arkime_field_ip4_add(int pos, ArkimeSession_t *session, uint32_t i)
     }
 
     field = session->fields[pos];
-    field->jsonSize += (3 + 15 + 100);
     switch (info->type) {
     case ARKIME_FIELD_TYPE_IP:
         g_free(field->ip);
@@ -1076,7 +1091,6 @@ gboolean arkime_field_ip4_add(int pos, ArkimeSession_t *session, uint32_t i)
         goto added;
     case ARKIME_FIELD_TYPE_IP_GHASH:
         if (!g_hash_table_add(field->ghash, v)) {
-            field->jsonSize -= 3 + 15 + 100;
             return FALSE;
         } else {
             goto added;
@@ -1087,6 +1101,11 @@ gboolean arkime_field_ip4_add(int pos, ArkimeSession_t *session, uint32_t i)
     }
 
 added:
+    field->jsonSize += (3 + 15 + 100);
+
+    if (field->jsonSize > FIELD_MAX_JSON_SIZE)
+        session->midSave = 1;
+
     if (info->ruleEnabled)
         arkime_rules_run_field_set(session, pos, v);
 
@@ -1107,7 +1126,7 @@ gboolean arkime_field_ip6_add(int pos, ArkimeSession_t *session, const uint8_t *
     if (!session->fields[pos]) {
         field = ARKIME_TYPE_ALLOC(ArkimeField_t);
         session->fields[pos] = field;
-        field->jsonSize = 3 + info->dbFieldLen + 30 + 100;
+        field->jsonSize = info->dbFieldLen;
         switch (info->type) {
         case ARKIME_FIELD_TYPE_IP:
             field->ip = v;
@@ -1123,7 +1142,6 @@ gboolean arkime_field_ip6_add(int pos, ArkimeSession_t *session, const uint8_t *
     }
 
     field = session->fields[pos];
-    field->jsonSize += (3 + 30 + 100);
     switch (info->type) {
     case ARKIME_FIELD_TYPE_IP:
         g_free(field->ip);
@@ -1131,7 +1149,6 @@ gboolean arkime_field_ip6_add(int pos, ArkimeSession_t *session, const uint8_t *
         goto added;
     case ARKIME_FIELD_TYPE_IP_GHASH:
         if (!g_hash_table_add(field->ghash, v)) {
-            field->jsonSize -= 3 + 30 + 100;
             return FALSE;
         } else {
             goto added;
@@ -1142,6 +1159,11 @@ gboolean arkime_field_ip6_add(int pos, ArkimeSession_t *session, const uint8_t *
     }
 
 added:
+    field->jsonSize += (3 + 30 + 100);
+
+    if (field->jsonSize > FIELD_MAX_JSON_SIZE)
+        session->midSave = 1;
+
     if (info->ruleEnabled)
         arkime_rules_run_field_set(session, pos, v);
 

@@ -22,6 +22,7 @@ extern int                   tcpMProtocol;
 extern ArkimeSessionHead_t   tcpWriteQ[ARKIME_MAX_PACKET_THREADS];
 LOCAL int                    maxTcpOutOfOrderPackets;
 extern uint32_t              pluginsCbs;
+LOCAL int                    tcp_raw_packet_func;
 
 void arkime_packet_free(ArkimePacket_t *packet);
 
@@ -411,6 +412,9 @@ int tcp_pre_process(ArkimeSession_t *session, ArkimePacket_t *const packet, int 
 int tcp_process(ArkimeSession_t *session, ArkimePacket_t *const packet)
 {
     int freePacket = tcp_packet_process(session, packet);
+    if (ARKIME_PARSERS_HAS_NAMED_FUNC(tcp_raw_packet_func)) {
+        arkime_parsers_call_named_func(tcp_raw_packet_func, session, NULL, 0, packet);
+    }
     tcp_packet_finish(session);
     return freePacket;
 }
@@ -418,6 +422,7 @@ int tcp_process(ArkimeSession_t *session, ArkimePacket_t *const packet)
 void arkime_parser_init()
 {
     maxTcpOutOfOrderPackets = arkime_config_int(NULL, "maxTcpOutOfOrderPackets", 256, 64, 10000);
+    tcp_raw_packet_func = arkime_parsers_get_named_func("tcp_raw_packet");
 
     tcpMProtocol = arkime_mprotocol_register("tcp",
                                              SESSION_TCP,

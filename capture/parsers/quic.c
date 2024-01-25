@@ -562,7 +562,7 @@ LOCAL void quic_ietf_udp_classify(ArkimeSession_t *session, const uint8_t *data,
 
     // Now actually decode the client hello
     if (clen > 0) {
-        arkime_parser_call_named_func(tls_process_client_hello_func, session, cbuf, clen, NULL);
+        arkime_parsers_call_named_func(tls_process_client_hello_func, session, cbuf, clen, NULL);
     }
 }
 /******************************************************************************/
@@ -605,5 +605,5 @@ void arkime_parser_init()
                                        ARKIME_FIELD_TYPE_STR_GHASH,  ARKIME_FIELD_FLAG_CNT,
                                        (char *)NULL);
 
-    tls_process_client_hello_func = arkime_parser_get_named_func("tls_process_client_hello");
+    tls_process_client_hello_func = arkime_parsers_get_named_func("tls_process_client_hello");
 }

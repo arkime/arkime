@@ -100,12 +100,7 @@ LOCAL void ssh_parse_keyinit(ArkimeSession_t *session, const uint8_t *data, int 
 /******************************************************************************/
 LOCAL void ssh_send_counting200 (ArkimeSession_t *session, SSHInfo_t *ssh)
 {
-    if (ssh->sentCounting)
-        return;
-
-    ssh->sentCounting = 1;
-
-    arkime_parser_call_named_func(ssh_counting200_func, session, NULL, 0, ssh);
+    arkime_parsers_call_named_func(ssh_counting200_func, session, NULL, 0, ssh);
 }
 /******************************************************************************/
 LOCAL int ssh_parser(ArkimeSession_t *session, void *uw, const uint8_t *data, int remaining, int which)
@@ -113,12 +108,13 @@ LOCAL int ssh_parser(ArkimeSession_t *session, void *uw, const uint8_t *data, in
     SSHInfo_t *ssh = uw;
 
     ssh->packets[which]++;
+    ssh->packets200[which]++;
 
-    if (ssh->packets[0] + ssh->packets[1] <= MAX_LENS) {
-        ssh->lens[which][ssh->packets[which] - 1] = remaining;
-        if (ssh->packets[0] + ssh->packets[1] == MAX_LENS) {
+    if (ssh->packets200[0] + ssh->packets200[1] <= MAX_LENS) {
+        ssh->lens[which][ssh->packets200[which] - 1] = remaining;
+        if (ssh->packets200[0] + ssh->packets200[1] == MAX_LENS) {
             ssh_send_counting200(session, ssh);
-            arkime_parsers_unregister(session, uw);
+            ssh->packets200[0] = ssh->packets200[1] = 0;
         }
     }
 
@@ -259,6 +255,6 @@ void arkime_parser_init()
 
     arkime_parsers_classifier_register_tcp("ssh", NULL, 0, (uint8_t *)"SSH", 3, ssh_classify);
 
-    ssh_counting200_func = arkime_parser_get_named_func("ssh_counting200");
+    ssh_counting200_func = arkime_parsers_get_named_func("ssh_counting200");
 }
 
