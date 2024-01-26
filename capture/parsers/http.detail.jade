@@ -35,6 +35,8 @@ if (session.http)
     +arrayList(session.http, "user", "User", "http.user")
     +arrayList(session.http, "authType", "Auth Type", "http.authtype")
     +arrayList(session.http, "bodyMagic", "libfile content type", "http.bodymagic")
+    +arrayList(session.http, "ja4h", "JA4h", "http.ja4h")
+    +arrayList(session.http, "ja4h_r", "JA4h_r", "http.ja4h_r")
     if (session.http.requestHeaderField && session.http.requestHeaderValue)
       div.sessionDetailMeta.bold HTTP Request Header Detail
       dl.sessionDetailMeta(suffix="http-request-header-detail")
