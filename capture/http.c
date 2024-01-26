@@ -104,7 +104,7 @@ struct arkimehttpserver_t {
     uint16_t                 maxConns;
     uint16_t                 maxOutstandingRequests;
     uint16_t                 outstanding;
-    uint16_t                 outstandingPri[PRIORITY_MAX + 1];
+    uint16_t                 outstandingPri[ARKIME_HTTP_PRIORITY_DROPABLE + 1];
     uint16_t                 connections;
     uint16_t                 maxRetries;
 
