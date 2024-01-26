@@ -309,7 +309,7 @@ function parseCustomView (key, input) {
   const fields = match[1];
 
   const parts = req.split('.');
-  let output = '    if (';
+  let output = '  if (';
   for (let i = 0; i < parts.length; i++) {
     if (i > 0) {
       output += ' && ';
@@ -319,8 +319,8 @@ function parseCustomView (key, input) {
       output += `.${parts[j]}`;
     }
   }
-  // note: significant whitespace is for losers
-  output += `)\n      b-card\n        div.sessionDetailMeta.bold ${title}\n        dl.sessionDetailMeta\n`;
+  output += ')\n';
+  output += `    div.sessionDetailMeta.bold ${title}\n    dl.sessionDetailMeta\n`;
 
   for (const field of fields.split(',')) {
     const info = fieldsMap[field];
@@ -329,12 +329,13 @@ function parseCustomView (key, input) {
     }
     const pos = info.dbField.lastIndexOf('.');
     if (pos === -1) {
-      output += `          +arrayList(session, '${info.dbField}', '${info.friendlyName}', '${field}')\n`;
+      output += `      +arrayList(session, '${info.dbField}', '${info.friendlyName}', '${field}')\n`;
     } else {
-      output += `          +arrayList(session.${info.dbField.slice(0, pos)}, '${info.dbField.slice(pos + 1)}', '${info.friendlyName}', '${field}')\n`;
+      output += `      +arrayList(session.${info.dbField.slice(0, pos)}, '${info.dbField.slice(pos + 1)}', '${info.friendlyName}', '${field}')\n`;
     }
   }
 
+  output += '\n';
   return output;
 }
 
@@ -355,9 +356,9 @@ function createSessionDetail () {
           return;
         }
         if (file.match(/\.detail\.jade$/i)) {
-          found[sfile] = fs.readFileSync(dir + '/' + file, 'utf8').replace(/^/mg, '        ') + '\n';
+          found[sfile] = fs.readFileSync(dir + '/' + file, 'utf8').replace(/^/mg, '  ') + '\n';
         } else if (file.match(/\.detail\.pug$/i)) {
-          found[sfile] = '        include ' + dir + '/' + file + '\n';
+          found[sfile] = '  include ' + dir + '/' + file + '\n';
         }
       });
     } catch (e) {}
@@ -374,7 +375,7 @@ function createSessionDetail () {
   async.each(makers, function (cb, nextCb) {
     cb(function (err, items) {
       for (const k in items) {
-        found[k] = items[k].replace(/^/mg, '      ') + '\n'; // this is re-indenting it
+        found[k] = items[k].replace(/^/mg, '  ') + '\n';
       }
       return nextCb();
     });
@@ -385,13 +386,39 @@ function createSessionDetail () {
                                  '  b-card-group(columns)\n' +
                                  '    b-card\n' +
                                  '      include views/sessionDetail\n';
-
     Object.keys(found).sort().forEach(function (k) {
-      const type = `session.${k.split('.')[0]}`;
-      internals.sessionDetailNew += `    if (${type})\n`;
-      internals.sessionDetailNew += '      b-card\n';
-      internals.sessionDetailNew += found[k]; // note: already indented properly ^
+      internals.sessionDetailNew += found[k].replaceAll(/^/mg, '  ');
     });
+
+    // console.log('INPUT -------------------------------------------------------------------')
+    // console.log(internals.sessionDetailNew);
+    let state = 0;
+    let numSpaces = 0;
+    internals.sessionDetailNew = internals.sessionDetailNew.split('\n').map((line) => {
+      // console.log(line);
+      if (state === 0) {
+        if (line.includes('div.sessionDetailMeta.bold')) {
+          numSpaces = line.search(/\S/);
+          state = 1;
+          // add numSpaces to beginning of line
+          return ' '.repeat(numSpaces) + 'b-card\n  ' + line;
+        } else {
+          return line;
+        }
+      } else {
+        if (line[numSpaces] !== ' ' && !line.includes('dl.sessionDetailMeta')) {
+          // console.log('RESET THE STATE!', line);
+          // process.exit();
+          state = 0;
+          return line;
+        } else {
+          return '  ' + line; // TODO
+        }
+      }
+    }).join('\n');
+
+    console.log('OUTPUT ----------------------------------------------------');
+    console.log(internals.sessionDetailNew);
 
     internals.sessionDetailNew = internals.sessionDetailNew.replace(/div.sessionDetailMeta.bold/g, 'h4.card-title')
       .replace(/dl.sessionDetailMeta/g, 'dl');

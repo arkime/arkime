@@ -174,7 +174,7 @@ function gripDrag (e) { // move the grip where the user moves their cursor
   if (selectedDT && selectedGrip) {
     const newWidth = dtOffset + e.pageX;
     selectedGrip.style.borderRight = '1px dotted var(--color-gray)';
-    selectedGrip.style.left = `${newWidth + 22}px`;
+    selectedGrip.style.left = `${newWidth}px`;
   }
 }
 
@@ -185,7 +185,7 @@ function gripUnclick (e, vueThis) {
     const newWidth = Math.max(dtOffset + e.pageX, 100); // min width is 100px
     selectedDT.style.width = `${newWidth}px`;
     siblingDD.style.marginLeft = `${newWidth + 10}px`;
-    selectedGrip.style.left = `${newWidth + 22}px`;
+    selectedGrip.style.left = `${newWidth}px`;
     selectedGrip.style.borderRight = 'none';
 
     // update all the dt and dd styles to reflect the new width
@@ -195,7 +195,7 @@ function gripUnclick (e, vueThis) {
     }
 
     for (const grip of document.getElementsByClassName('session-detail-grip')) {
-      grip.style.left = `${newWidth + 22}px`;
+      grip.style.left = `${newWidth}px`;
     }
 
     // save it as a user configuration
@@ -378,12 +378,11 @@ export default {
             this.$nextTick(() => { // wait for content to render
               // add grip to each section of the section detail
               const sessionDetailSection = document.getElementsByTagName('dl');
-              const dlWidth = (this.$parent.dlWidth || this.dlWidth) + 22;
+              const dlWidth = (this.$parent.dlWidth || this.dlWidth);
               for (const div of sessionDetailSection) {
                 // set the width of the session detail div based on user setting
                 const grip = document.createElement('div');
                 grip.classList.add('session-detail-grip');
-                grip.style.height = `${div.clientHeight}px`;
                 grip.style.left = `${dlWidth}px`;
                 div.prepend(grip);
                 grip.addEventListener('mousedown', (e) => gripClick(e, div));
@@ -404,6 +403,33 @@ export default {
               document.addEventListener('mousemove', gripDrag);
               const self = this; // listen for grip unclicks
               document.addEventListener('mouseup', (e) => gripUnclick(e, self));
+
+              // TODO document
+              // find all the card titles and add a click listener to toggle the collapse
+              const elementsArray = document.getElementsByClassName('card-title');
+              for (const elem of elementsArray) {
+                // check if the element was previously collapsed and collapse it
+                if (localStorage && localStorage['arkime-detail-collapsed']) {
+                  const collapsed = JSON.parse(localStorage['arkime-detail-collapsed']);
+                  if (collapsed[elem.innerText.toLowerCase()]) {
+                    elem.classList.add('collapsed');
+                    elem.nextElementSibling.classList.add('collapse');
+                    elem.parentElement.classList.add('collapsed');
+                  }
+                }
+
+                elem.addEventListener('click', (e) => { // TODO PUT THIS ELSEWHERE
+                  e.target.classList.toggle('collapsed');
+                  e.target.nextElementSibling.classList.toggle('collapse');
+                  e.target.parentElement.classList.toggle('collapsed');
+
+                  if (localStorage) {
+                    const collapsed = JSON.parse(localStorage['arkime-detail-collapsed'] || '{}');
+                    collapsed[e.target.innerText.toLowerCase()] = e.target.classList.contains('collapsed');
+                    localStorage['arkime-detail-collapsed'] = JSON.stringify(collapsed);
+                  }
+                });
+              }
             });
           },
           computed: {
@@ -1027,6 +1053,7 @@ export default {
 .session-detail-grip {
   width: 5px;
   z-index: 4;
+  height: 100%;
   cursor: col-resize;
   position: absolute;
   display: inline-block;
@@ -1047,6 +1074,7 @@ dl:hover > .session-detail-grip {
   }
 }
 .session-detail .card > .card-body > .card-title {
+  cursor: pointer;
   padding: 0.5rem;
   margin: -1.25rem;
   margin-bottom: 1.25rem;
@@ -1056,6 +1084,7 @@ dl:hover > .session-detail-grip {
 }
 .session-detail .card > .card-body > dl .card-title {
   z-index: 4;
+  cursor: pointer;
   font-size: 1rem;
   padding: 0.25rem;
   margin-top: 0.3rem;
@@ -1069,6 +1098,8 @@ dl:hover > .session-detail-grip {
 .session-detail .card > .card-body dl {
   margin-bottom: 0rem;
   margin-top: -0.75rem;
+  overflow:hidden;
+  position:relative;
 }
 
 .session-detail .card > .card-body > dl > dt:hover + dd,
@@ -1081,5 +1112,28 @@ dl:hover > .session-detail-grip {
 .session-detail .card > .card-body dd {
   line-height: 1.7;
   margin-bottom: 0.2rem !important;
+}
+
+/* detail card collapse/expand */
+.session-detail .card h4:after {
+  float: right;
+  content: "\f078";
+  font-family: FontAwesome;
+}
+.session-detail .card h4.collapsed:after {
+  float: right;
+  content: "\f077";
+  font-family: FontAwesome;
+}
+
+.session-detail .card > .card-body.collapsed {
+  padding-bottom: 0;
+}
+.session-detail .card > .card-body.collapsed > h4 {
+  margin-bottom: 0;
+  border-radius: 4px;
+}
+.session-detail .card > .card-body > dl > h4.collapsed {
+  margin-bottom: 0;
 }
 </style>

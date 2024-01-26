@@ -166,3 +166,45 @@ mixin printHeader(inHeaderNames, inHeaderValues, expr)
     each headerValue,i in headerValues
       dd
         +clickableValue(expr, headerValue)
+
+mixin ipArrayListDNS(container, field, title, expr, max)
+  if (!max)
+    - max = 25
+  if (container[field+ "Ip"])
+    dt
+      b-dropdown.clickable-label(text=title, size="sm", variant="default")
+        b-dropdown-item(@click="exportUnique('" + "ip." + expr  + "', 0)")
+          | Export Unique #{title}
+        b-dropdown-item(@click="exportUnique('" + "ip." + expr  + "', 1)")
+          | Export Unique #{title} with counts
+        b-dropdown-item(@click="openSpiGraph('" + "ip." + expr  + "')")
+          | Open #{title} SPI Graph
+        b-dropdown-divider
+        b-dropdown-item(@click="exportUnique('" +   "country." + expr + "', 0)")
+          | Export Unique #{title} Country
+        b-dropdown-item(@click="exportUnique('" +  "country." + expr + "', 1)")
+          | Export Unique #{title} Country with counts
+        b-dropdown-item(@click="openSpiGraph('" + "country." + expr +"')")
+          | Open #{title} Country SPI Graph
+        b-dropdown-divider
+        b-dropdown-item(@click="exportUnique('" + "asn." + expr + "', 0)")
+          | Export Unique #{title} ASN
+        b-dropdown-item(@click="exportUnique('" + "asn."+ expr + "', 1)")
+          | Export Unique #{title} ASN with counts
+        b-dropdown-item(@click="openSpiGraph('" + "asn." + expr + "')")
+          | Open #{title} ASN SPI Graph
+        b-dropdown-divider
+        b-dropdown-item(@click="exportUnique('" + "rir." + expr + "', 0)")
+          | Export Unique #{title} RIR
+        b-dropdown-item(@click="exportUnique('" + "rir." + expr + "', 1)")
+          | Export Unique #{title} RIR with counts
+        b-dropdown-item(@click="openSpiGraph('" + "rir." + expr + "')")
+          | Open #{title} RIR SPI Graph
+    dd
+      each ip,i in container[field + "Ip"]
+        if (i == max)
+          |<span style="display:none">
+        +ipPrint(container, container[field + "Ip"][i], undefined, (container[field + "GEO"]?container[field + "GEO"][i]:null), (container[field+"ASN"]?container[field + "ASN"][i]:null), (container[field + "RIR"]?container[field + "RIR"][i]:null), expr)
+      if (container[field + "Ip"].length > max)
+        |</span>
+        a.cursor-pointer.show-more-items &hellip
