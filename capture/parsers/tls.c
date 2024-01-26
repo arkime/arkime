@@ -253,9 +253,9 @@ LOCAL void tls_ja4_version(uint16_t ver, char vstr[3])
     case 0x0304:
         memcpy(vstr, "13", 3);
         break;
-/*    case 0x7f00 ... 0x7fff:
-        memcpy(vstr, "13", 3);
-        break;*/
+    /*    case 0x7f00 ... 0x7fff:
+            memcpy(vstr, "13", 3);
+            break;*/
     default:
         memcpy(vstr, "00", 3);
         break;
