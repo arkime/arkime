@@ -387,7 +387,7 @@ function createSessionDetail () {
                                  '    b-card\n' +
                                  '      include views/sessionDetail\n';
     Object.keys(found).sort().forEach(function (k) {
-      internals.sessionDetailNew += found[k].replaceAll(/^/mg, '  ');
+      internals.sessionDetailNew += found[k].replaceAll(/^/mg, '  ') + '\n';
     });
 
     // console.log('INPUT -------------------------------------------------------------------')
