@@ -110,20 +110,20 @@ my $pwd = "*/pcap";
     is($sd, "No match", "No Match");
 
 # ipv6/4 port separators
-#     $sdId = viewerGet("/sessions.json?date=-1&expression=" . uri_escape("file=$pwd/v6.pcap"));
-#     $id = $sdId->{data}->[0]->{id};
-#     $sd = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8123/api/session/test/$id/detail")->content;
-#     ok($sd =~ m{Export Unique Src IP.Port}s, "ipv6 separator");
+    $sdId = viewerGet("/sessions.json?date=-1&expression=" . uri_escape("file=$pwd/v6.pcap"));
+    $id = $sdId->{data}->[0]->{id};
+    $sd = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8123/api/session/test/$id/detail")->content;
+    ok($sd =~ m{Export Unique Src IP.Port}s, "ipv6 separator");
 
-#     $sdId = viewerGet("/sessions.json?date=-1&expression=" . uri_escape("file=$pwd/mpls-basic.pcap"));
-#     $id = $sdId->{data}->[0]->{id};
-#     $sd = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8123/api/session/test/$id/detail")->content;
-#     ok($sd =~ m{Export Unique Src IP:Port}s, "ipv4 separator");
+    $sdId = viewerGet("/sessions.json?date=-1&expression=" . uri_escape("file=$pwd/mpls-basic.pcap"));
+    $id = $sdId->{data}->[0]->{id};
+    $sd = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8123/api/session/test/$id/detail")->content;
+    ok($sd =~ m{Export Unique Src IP:Port}s, "ipv4 separator");
 
-# # cyberchef
-#     $sd = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8123/cyberchef.html")->content;
-#     ok($sd =~ m{<base href="./cyberchef/" /><meta name="referrer" content="no-referrer">}s, "cyber chef header");
-#     ok($sd =~ m{else if \(param.startsWith\('session'\)\)}s, "cyber chef script");
+# cyberchef
+    $sd = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8123/cyberchef.html")->content;
+    ok($sd =~ m{<base href="./cyberchef/" /><meta name="referrer" content="no-referrer">}s, "cyber chef header");
+    ok($sd =~ m{else if \(param.startsWith\('session'\)\)}s, "cyber chef script");
 
-#     $sd = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8123/cyberchef/test/session/$id?type=src")->content;
-#     is ($sd, '{"data":"000100100a0100010000010c0f0300040a010001000100100a0100010000010d0f0300040a010001000100100a0100010000010e0f0300040a010001000100100a0100010000010f0f0300040a010001000100100a010001000001100f0300040a010001000100100a010001000001110f0300040a010001"}');
+    $sd = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8123/cyberchef/test/session/$id?type=src")->content;
+    is ($sd, '{"data":"000100100a0100010000010c0f0300040a010001000100100a0100010000010d0f0300040a010001000100100a0100010000010e0f0300040a010001000100100a0100010000010f0f0300040a010001000100100a010001000001100f0300040a010001000100100a010001000001110f0300040a010001"}');
