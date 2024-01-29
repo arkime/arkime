@@ -393,20 +393,24 @@ function createSessionDetail () {
     // console.log('INPUT -------------------------------------------------------------------')
     // console.log(internals.sessionDetailNew);
     let state = 0;
-    let numSpaces = 0;
+    let spaces;
     internals.sessionDetailNew = internals.sessionDetailNew.split('\n').map((line) => {
-      // console.log(line);
+      // Ignore lines that are just spaces
+      if (line.match(/^\s*$/)) {
+        return "";
+      }
+
       if (state === 0) {
         if (line.includes('div.sessionDetailMeta.bold')) {
-          numSpaces = line.search(/\S/);
+          // Save current indent level, so we can look for line without it
+          spaces = ' '.repeat(line.search(/\S/));
           state = 1;
-          // add numSpaces to beginning of line
-          return ' '.repeat(numSpaces) + 'b-card\n  ' + line;
+          return spaces + 'b-card\n  ' + line;
         } else {
           return line;
         }
       } else {
-        if (line[numSpaces] !== ' ' && !line.includes('dl.sessionDetailMeta')) {
+        if (!line.startsWith(spaces) && !line.includes('dl.sessionDetailMeta')) {
           // console.log('RESET THE STATE!', line);
           // process.exit();
           state = 0;
