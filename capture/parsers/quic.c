@@ -84,7 +84,7 @@ LOCAL int quic_chlo_parser(ArkimeSession_t *session, BSB dbsb) {
 /******************************************************************************/
 LOCAL int quic_2445_udp_parser(ArkimeSession_t *session, void *UNUSED(uw), const uint8_t *data, int len, int UNUSED(which))
 {
-    uint32_t version = -1;
+    uint32_t version = 0;
     uint32_t offset = 1;
 
     if ( len < 9) {
@@ -184,21 +184,20 @@ LOCAL int quic_2445_udp_parser(ArkimeSession_t *session, void *UNUSED(uw), const
 // https://docs.google.com/document/d/1FcpCJGTDEMblAs-Bm5TYuqhHyUqeWpqrItw2vkMFsdY/edit
 LOCAL int quic_4648_udp_parser(ArkimeSession_t *session, void *UNUSED(uw), const uint8_t *data, int len, int UNUSED(which))
 {
-    uint32_t version = -1;
-    uint32_t offset = 5;
-
     if (len < 20 || data[1] != 'Q' || (data[0] & 0xc0) != 0xc0) {
         return ARKIME_PARSER_UNREGISTER;
     }
 
     // Get version
-    version = (data[2] - '0') * 100 +
-              (data[3] - '0') * 10 +
-              (data[4] - '0');
+    uint32_t version = (data[2] - '0') * 100 +
+                       (data[3] - '0') * 10 +
+                       (data[4] - '0');
 
     if (version < 46 || version > 48) {
         return ARKIME_PARSER_UNREGISTER;
     }
+
+    uint32_t offset = 5;
     for (; offset < (uint32_t)len - 20; offset++) {
         if (data[offset] == 'C' && memcmp(data + offset, "CHLO", 4) == 0) {
             BSB bsb;
