@@ -397,7 +397,7 @@ function createSessionDetail () {
     internals.sessionDetailNew = internals.sessionDetailNew.split('\n').map((line) => {
       // Ignore lines that are just spaces
       if (line.match(/^\s*$/)) {
-        return "";
+        return '';
       }
 
       if (state === 0) {
