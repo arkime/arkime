@@ -390,10 +390,8 @@ function createSessionDetail () {
       internals.sessionDetailNew += found[k].replaceAll(/^/mg, '  ') + '\n';
     });
 
-    // console.log('INPUT -------------------------------------------------------------------')
-    // console.log(internals.sessionDetailNew);
-    let state = 0;
     let spaces;
+    let state = 0;
     internals.sessionDetailNew = internals.sessionDetailNew.split('\n').map((line) => {
       // Ignore lines that are just spaces
       if (line.match(/^\s*$/)) {
@@ -411,18 +409,13 @@ function createSessionDetail () {
         }
       } else {
         if (!line.startsWith(spaces) && !line.includes('dl.sessionDetailMeta')) {
-          // console.log('RESET THE STATE!', line);
-          // process.exit();
           state = 0;
           return line;
         } else {
-          return '  ' + line; // TODO
+          return '  ' + line;
         }
       }
     }).join('\n');
-
-    console.log('OUTPUT ----------------------------------------------------');
-    console.log(internals.sessionDetailNew);
 
     internals.sessionDetailNew = internals.sessionDetailNew.replace(/div.sessionDetailMeta.bold/g, 'h4.card-title')
       .replace(/dl.sessionDetailMeta/g, 'dl');
