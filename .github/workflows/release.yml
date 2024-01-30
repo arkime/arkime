@@ -34,31 +34,37 @@ jobs:
             container: andywick/arkime-build-8:5.0.0-2
             buildopt: "--kafka --pfring"
             package: rpm
+            fpmdeps: "-d perl-libwww-perl -d perl-JSON -d ethtool -d libyaml -d perl-LWP-Protocol-https"
             ja4plus: true
 
           - version: el9
             container: andywick/arkime-build-9:5.0.0-2
             buildopt: "--kafka --pfring"
+            fpmdeps: "-d perl-libwww-perl -d perl-JSON -d ethtool -d libyaml -d perl-LWP-Protocol-https"
             package: rpm
 
           - version: ubuntu2004
             container: andywick/arkime-build-20:5.0.0-2
             buildopt: "--kafka --pfring"
+            fpmdeps: "-d libwww-perl -d libjson-perl -d ethtool -d libyaml-dev"
             package: deb
 
           - version: ubuntu2204
             container: andywick/arkime-build-22:5.0.0-2
             buildopt: "--nothirdparty --kafka --pfring"
+            fpmdeps: "-d libwww-perl -d libjson-perl -d ethtool -d libyaml-dev -d liblua5.4-0 -d libmaxminddb0 -d libcurl4 -d libpcap0.8 -d libglib2.0-0 -d libnghttp2-14 -d libyara8 -d librdkafka1"
             package: deb
 
           - version: arch
             container: andywick/arkime-build-arch:5.0.0-3
             buildopt: "--kafka"
+            fpmdeps: "-d libmaxminddb -d libpcap -d yara -d perl-http-message -d perl-lwp-protocol-https -d perl-json -d libnet -d lua -d zstd -d openssl-1.1 -d pcre"
             package: arch
 
           - version: al2023
             container: andywick/arkime-build-al2023:5.0.0-2
             buildopt: "--kafka"
+            fpmdeps: "-d perl-libwww-perl -d perl-JSON -d ethtool -d libyaml -d perl-LWP-Protocol-https"
             package: rpm
 
     runs-on: ubuntu-latest
@@ -92,14 +98,14 @@ jobs:
         run: |
           gem install --no-document fpm rexml
           export ARKIME_VERSION="${{ github.event.inputs.release_tag }}"
-          /root/.local/share/gem/ruby/3.0.0/bin/fpm -s dir -t pacman -n arkime -x opt/arkime/logs -x opt/arkime/raw -v $ARKIME_VERSION --iteration ${{ github.event.inputs.iteration }} --template-scripts --after-install "release/afterinstall.sh" --url "https://arkime.com" --description "Arkime Full Packet System" -d libmaxminddb -d libpcap -d yara -d perl-http-message -d perl-lwp-protocol-https -d perl-json -d libnet -d lua -d zstd -d openssl-1.1 -d pcre -p arkime-${ARKIME_VERSION}-${{github.event.inputs.iteration}}_${{matrix.version}}-x86_64.pkg.tar.zst /opt/arkime
+          /root/.local/share/gem/ruby/3.0.0/bin/fpm -s dir -t pacman -n arkime -x opt/arkime/logs -x opt/arkime/raw -v $ARKIME_VERSION --iteration ${{ github.event.inputs.iteration }} --template-scripts --after-install "release/afterinstall.sh" --url "https://arkime.com" --description "Arkime Full Packet System" ${{ matrix.fpmdeps }} -p arkime-${ARKIME_VERSION}-${{github.event.inputs.iteration}}_${{matrix.version}}-x86_64.pkg.tar.zst /opt/arkime
           ls -l *.zst
 
       - name: package rpm
         if: ${{ matrix.package == 'rpm' }}
         run: |
           export ARKIME_VERSION="${{ github.event.inputs.release_tag }}"
-          fpm -s dir -t rpm -n arkime -x opt/arkime/logs -x opt/arkime/raw -v $ARKIME_VERSION --iteration ${{ github.event.inputs.iteration }} --template-scripts --after-install "release/afterinstall.sh" --url "https://arkime.com" --description "Arkime Full Packet System" -d perl-libwww-perl -d perl-JSON -d ethtool -d libyaml -d perl-LWP-Protocol-https --rpm-rpmbuild-define "_build_id_links none" -p arkime-${ARKIME_VERSION}-${{github.event.inputs.iteration}}.${{matrix.version}}.x86_64.rpm /opt/arkime
+          fpm -s dir -t rpm -n arkime -x opt/arkime/logs -x opt/arkime/raw -v $ARKIME_VERSION --iteration ${{ github.event.inputs.iteration }} --template-scripts --after-install "release/afterinstall.sh" --url "https://arkime.com" --description "Arkime Full Packet System" ${{ matrix.fpmdeps }} --rpm-rpmbuild-define "_build_id_links none" -p arkime-${ARKIME_VERSION}-${{github.event.inputs.iteration}}.${{matrix.version}}.x86_64.rpm /opt/arkime
           ls -l *.rpm
 
       - name: ja4plus
@@ -123,14 +129,14 @@ jobs:
           mv /data/moloch/bin/capture /data/moloch/bin/moloch-capture
           /bin/cp -f common/version.js /data/moloch/common/
 
-          fpm -s dir -t rpm -n moloch -x data/moloch/logs -x data/molcoh/raw -v $ARKIME_VERSION --iteration ${{ github.event.inputs.iteration }} --template-scripts --url "https://arkime.com" --description "Moloch Full Packet System" -d perl-libwww-perl -d perl-JSON -d ethtool -d libyaml -d perl-LWP-Protocol-https --rpm-rpmbuild-define "_build_id_links none" -p moloch-${ARKIME_VERSION}-${{github.event.inputs.iteration}}.${{matrix.version}}.x86_64.rpm /data/moloch
+          fpm -s dir -t rpm -n moloch -x data/moloch/logs -x data/molcoh/raw -v $ARKIME_VERSION --iteration ${{ github.event.inputs.iteration }} --template-scripts --url "https://arkime.com" --description "Moloch Full Packet System" ${{ matrix.fpmdeps }} --rpm-rpmbuild-define "_build_id_links none" -p moloch-${ARKIME_VERSION}-${{github.event.inputs.iteration}}.${{matrix.version}}.x86_64.rpm /data/moloch
           ls -l *.rpm
 
       - name: package deb
         if: ${{ matrix.package == 'deb' }}
         run: |
           export ARKIME_VERSION="${{ github.event.inputs.release_tag }}"
-          fpm -s dir -t deb -n arkime -x opt/arkime/logs -x opt/arkime/raw -v $ARKIME_VERSION --iteration ${{ github.event.inputs.iteration }} --template-scripts --after-install "release/afterinstall.sh" --url "https://arkime.com" --description "Arkime Full Packet System" -d libwww-perl -d libjson-perl -d ethtool -d libyaml-dev -p arkime_${ARKIME_VERSION}-${{github.event.inputs.iteration}}.${{matrix.version}}_amd64.deb /opt/arkime
+          fpm -s dir -t deb -n arkime -x opt/arkime/logs -x opt/arkime/raw -v $ARKIME_VERSION --iteration ${{ github.event.inputs.iteration }} --template-scripts --after-install "release/afterinstall.sh" --url "https://arkime.com" --description "Arkime Full Packet System" ${{ matrix.fpmdeps }} -p arkime_${ARKIME_VERSION}-${{github.event.inputs.iteration}}.${{matrix.version}}_amd64.deb /opt/arkime
           ls -l *.deb
 
       - name: moloch ubuntu2004 package rpm
@@ -145,7 +151,7 @@ jobs:
           mv /data/moloch/bin/capture /data/moloch/bin/moloch-capture
           /bin/cp -f common/version.js /data/moloch/common/
 
-          fpm -s dir -t deb -n moloch -x data/moloch/logs -x data/moloch/raw -v $ARKIME_VERSION --iteration ${{ github.event.inputs.iteration }} --template-scripts --after-install "release/afterinstall.sh" --url "https://arkime.com" --description "Moloch Full Packet System" -d libwww-perl -d libjson-perl -d ethtool -d libyaml-dev -p moloch_${ARKIME_VERSION}-${{github.event.inputs.iteration}}.${{matrix.version}}_amd64.deb /data/moloch
+          fpm -s dir -t deb -n moloch -x data/moloch/logs -x data/moloch/raw -v $ARKIME_VERSION --iteration ${{ github.event.inputs.iteration }} --template-scripts --after-install "release/afterinstall.sh" --url "https://arkime.com" --description "Moloch Full Packet System" ${{ matrix.fpmdeps }} -p moloch_${ARKIME_VERSION}-${{github.event.inputs.iteration}}.${{matrix.version}}_amd64.deb /data/moloch
           ls -l *.deb
 
       - name: upload github
@@ -183,12 +189,14 @@ jobs:
           - version: al2023
             container: andywick/arkime-build-al2023-arm64:5.0.0-3
             buildopt: "--kafka"
+            fpmdeps: "-d perl-libwww-perl -d perl-JSON -d ethtool -d libyaml -d perl-LWP-Protocol-https"
             package: rpm
             ja4plus: true
 
           - version: ubuntu2204
             container: andywick/arkime-build-22-arm64:5.0.0-3
             buildopt: "--nothirdparty --kafka"
+            fpmdeps: "-d libwww-perl -d libjson-perl -d ethtool -d libyaml-dev -d liblua5.4-0 -d libmaxminddb0 -d libcurl4 -d libpcap0.8 -d libglib2.0-0 -d libnghttp2-14 -d libyara8 -d librdkafka1"
             package: deb
 
     runs-on: buildjet-2vcpu-ubuntu-2204-arm
@@ -220,21 +228,21 @@ jobs:
         run: |
           gem install --no-document fpm rexml
           export ARKIME_VERSION="${{ github.event.inputs.release_tag }}"
-          /root/.local/share/gem/ruby/3.0.0/bin/fpm -s dir -t pacman -n arkime -x opt/arkime/logs -x opt/arkime/raw -v $ARKIME_VERSION --iteration ${{ github.event.inputs.iteration }} --template-scripts --after-install "release/afterinstall.sh" --url "https://arkime.com" --description "Arkime Full Packet System" -d libmaxminddb -d libpcap -d yara -d perl-http-message -d perl-lwp-protocol-https -d perl-json -d libnet -d lua -d zstd -d openssl-1.1 -d pcre -p arkime-${ARKIME_VERSION}-${{github.event.inputs.iteration}}_${{matrix.version}}-aarch64.pkg.tar.zst /opt/arkime
+          /root/.local/share/gem/ruby/3.0.0/bin/fpm -s dir -t pacman -n arkime -x opt/arkime/logs -x opt/arkime/raw -v $ARKIME_VERSION --iteration ${{ github.event.inputs.iteration }} --template-scripts --after-install "release/afterinstall.sh" --url "https://arkime.com" --description "Arkime Full Packet System" ${{ matrix.fpmdeps }} -p arkime-${ARKIME_VERSION}-${{github.event.inputs.iteration}}_${{matrix.version}}-aarch64.pkg.tar.zst /opt/arkime
           ls -l *.zst
 
       - name: package rpm
         if: ${{ matrix.package == 'rpm' }}
         run: |
           export ARKIME_VERSION="${{ github.event.inputs.release_tag }}"
-          fpm -s dir -t rpm -n arkime -x opt/arkime/logs -x opt/arkime/raw -v $ARKIME_VERSION --iteration ${{ github.event.inputs.iteration }} --template-scripts --after-install "release/afterinstall.sh" --url "https://arkime.com" --description "Arkime Full Packet System" -d perl-libwww-perl -d perl-JSON -d ethtool -d libyaml -d perl-LWP-Protocol-https --rpm-rpmbuild-define "_build_id_links none" -p arkime-${ARKIME_VERSION}-${{github.event.inputs.iteration}}.${{matrix.version}}.aarch64.rpm /opt/arkime
+          fpm -s dir -t rpm -n arkime -x opt/arkime/logs -x opt/arkime/raw -v $ARKIME_VERSION --iteration ${{ github.event.inputs.iteration }} --template-scripts --after-install "release/afterinstall.sh" --url "https://arkime.com" --description "Arkime Full Packet System" ${{ matrix.fpmdeps }} --rpm-rpmbuild-define "_build_id_links none" -p arkime-${ARKIME_VERSION}-${{github.event.inputs.iteration}}.${{matrix.version}}.aarch64.rpm /opt/arkime
           ls -l *.rpm
 
       - name: package deb
         if: ${{ matrix.package == 'deb' }}
         run: |
           export ARKIME_VERSION="${{ github.event.inputs.release_tag }}"
-          fpm -s dir -t deb -n arkime -x opt/arkime/logs -x opt/arkime/raw -v $ARKIME_VERSION --iteration ${{ github.event.inputs.iteration }} --template-scripts --after-install "release/afterinstall.sh" --url "https://arkime.com" --description "Arkime Full Packet System" -d libwww-perl -d libjson-perl -d ethtool -d libyaml-dev -p arkime_${ARKIME_VERSION}-${{github.event.inputs.iteration}}.${{matrix.version}}_arm64.deb /opt/arkime
+          fpm -s dir -t deb -n arkime -x opt/arkime/logs -x opt/arkime/raw -v $ARKIME_VERSION --iteration ${{ github.event.inputs.iteration }} --template-scripts --after-install "release/afterinstall.sh" --url "https://arkime.com" --description "Arkime Full Packet System" ${{ matrix.fpmdeps }} -p arkime_${ARKIME_VERSION}-${{github.event.inputs.iteration}}.${{matrix.version}}_arm64.deb /opt/arkime
           ls -l *.deb
 
       - name: ja4plus
