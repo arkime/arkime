@@ -48,6 +48,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #2543 node v18.19.0
   - #2447 support building on alpine
   - #2549 use configure prefix more places (thanks @vpiserchia)
+  - #2584 AL2023 & Ubuntu22.04 ARM builds
 ## All
   - #2316 programs support same config file formats (ini/json/yaml) and retrieval (file, elasticsearch)
   - #2419 json/yaml config file formats now allow arrays instead of comma/semi separated
@@ -76,6 +77,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #2539 new tls:has_esni tag if the client hello has esni
   - #2553 fix rules range matching not working always
   - #2554 support fieldSet tcpflag rules
+  - #2575 fix startup complaint about aliases, category, and transforms
   - #2576 support different dlt for pcap-over-ip
   - #2592 fix sometimes not identifying quic protocol correctly
   - #2600 add tls:has_ech tag (thanks @renini)
@@ -93,6 +95,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #2507 demoMode added
   - #2527 skipChildren added
   - #2532 new wise integration
+  - #2565 added punycode decoding
 ## db.pl
   - #2588 db.pl won't try and backup indices that don't exist
   - #2588 db.pl backup cont3xt indices
@@ -110,8 +113,10 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #2525 add [config setting](https://arkime.com/settings#spiViewCategoryOrder) to set spiview category order
   - #2523 resize session detail field label/values
   - #2552 added %URIEncodedText% for URI encoded substitution (thanks @vpiserchia)
+  - #2574 fix longs tanding issue with backslash search and SMB
   - #2601 patch cyberchef xss vuln (https://github.com/gchq/CyberChef/issues/1468)
   - #2606 zstd sometimes didn't read all packets
+  - #2607 improved session detail display
 ## Parliament
   - #2377 dashboard-only mode removed, if you want users to just see the dashboard don't assign them the parliamentUser role
   - #2395 configuration is now stored in opensearch/elasticsearch
