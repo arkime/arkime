@@ -218,6 +218,20 @@ void arkime_plugin_init()
         }
     }
 
+    gsize keys_len;
+    gchar **keys = arkime_config_section_keys(NULL, "kafka-config", &keys_len);
+
+    int i;
+    for (i = 0; i < (int)keys_len; i++) {
+        char *value = arkime_config_section_str(NULL, "kafka-config", keys[i], NULL);
+        if (rd_kafka_conf_set(conf, keys[i], value,
+                              errstr, sizeof(errstr)) != RD_KAFKA_CONF_OK) {
+            LOGEXIT("Error configuring %s, error = %s", keys[i], errstr);
+        }
+        g_free(value);
+    }
+    g_strfreev(keys);
+
 
     rd_kafka_conf_set_dr_msg_cb(conf, kafka_msg_delivered_bulk_cb);
 
@@ -235,6 +249,10 @@ void arkime_plugin_init()
     rk = rd_kafka_new(RD_KAFKA_PRODUCER, conf, errstr, sizeof(errstr));
     if (!rk) {
         LOGEXIT("Failed to create new producer: %s", errstr);
+    }
+
+    if (config.debug > 2) {
+        rd_kafka_conf_properties_show(stdout);
     }
 
     LOG("Kafka plugin loaded");
