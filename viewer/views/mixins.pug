@@ -163,8 +163,8 @@ mixin printHeader(inHeaderNames, inHeaderValues, expr)
         b-dropdown-item(@click="exportUnique('" + expr  + "', 1)")
           | Export Unique Header Value with counts
     - var headerValues = Array.from (headers[headerName]);
-    each headerValue,i in headerValues
-      dd
+    dd
+      each headerValue,i in headerValues
         +clickableValue(expr, headerValue)
 
 mixin ipArrayListDNS(container, field, title, expr, max)
