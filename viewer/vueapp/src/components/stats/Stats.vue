@@ -13,7 +13,7 @@ SPDX-License-Identifier: Apache-2.0
 
             <div v-if="tabIndex === 7">&nbsp;</div>
 
-            <div class="input-group input-group-sm flex-grow-1"
+            <div class="input-group input-group-sm flex-grow-1 mr-1"
               v-if="tabIndex !== 7">
               <div class="input-group-prepend">
                 <span class="input-group-text input-group-text-fw">
@@ -35,7 +35,7 @@ SPDX-License-Identifier: Apache-2.0
                 v-focus="focusInput"
                 @blur="onOffFocus"
                 @input="debounceSearchInput"
-                @keyup.enter="debounceSearchInput"
+                @keydown.stop.prevent.enter="debounceSearchInput"
                 placeholder="Begin typing to search for items below"
               />
               <span class="input-group-append">

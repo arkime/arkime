@@ -335,6 +335,7 @@ function parseCustomView (key, input) {
     }
   }
 
+  output += '\n';
   return output;
 }
 
@@ -381,14 +382,43 @@ function createSessionDetail () {
   }, function () {
     internals.sessionDetailNew = 'include views/mixins.pug\n' +
                                  'div.session-detail(sessionid=session.id,hidePackets=hidePackets)\n' +
-                                 '  include views/sessionDetail\n';
+                                 '  include views/sessionOptions\n' +
+                                 '  b-card-group(columns)\n' +
+                                 '    b-card\n' +
+                                 '      include views/sessionDetail\n';
     Object.keys(found).sort().forEach(function (k) {
-      internals.sessionDetailNew += found[k];
+      internals.sessionDetailNew += found[k].replaceAll(/^/mg, '  ') + '\n';
     });
 
-    internals.sessionDetailNew = internals.sessionDetailNew.replace(/div.sessionDetailMeta.bold/g, 'h4.sessionDetailMeta')
-      .replace(/dl.sessionDetailMeta/g, 'dl')
-    ;
+    let spaces;
+    let state = 0;
+    internals.sessionDetailNew = internals.sessionDetailNew.split('\n').map((line) => {
+      // Ignore lines that are just spaces
+      if (line.match(/^\s*$/)) {
+        return '';
+      }
+
+      if (state === 0) {
+        if (line.includes('div.sessionDetailMeta.bold')) {
+          // Save current indent level, so we can look for line without it
+          spaces = ' '.repeat(line.search(/\S/));
+          state = 1;
+          return spaces + 'b-card\n  ' + line;
+        } else {
+          return line;
+        }
+      } else {
+        if (!line.startsWith(spaces) && !line.includes('dl.sessionDetailMeta')) {
+          state = 0;
+          return line;
+        } else {
+          return '  ' + line;
+        }
+      }
+    }).join('\n');
+
+    internals.sessionDetailNew = internals.sessionDetailNew.replace(/div.sessionDetailMeta.bold/g, 'h4.card-title')
+      .replace(/dl.sessionDetailMeta/g, 'dl');
   });
 }
 

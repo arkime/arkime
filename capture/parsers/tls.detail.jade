@@ -1,4 +1,4 @@
-if (session.tls)
+if (session.tls || session.cert)
   div.sessionDetailMeta.bold TLS
   dl.sessionDetailMeta
     +arrayList(session.tls, "version", "Version", "tls.version")
@@ -13,107 +13,105 @@ if (session.tls)
     +arrayList(session.tls, "ja4s", "JA4s", "tls.ja4s")
     +arrayList(session.tls, "ja4s_r", "JA4s_r", "tls.ja4s_r")
 
-if (session.cert)
-  div.sessionDetailMeta.bold Cert
-  dl.sessionDetailMeta
-  each cert in session.cert
-    dt Certificate
-    dd
-      - if (cert.sn)
-        strong.medium.ml-1 Serial
-        arkime-session-field.detail-field(:expr="'cert.serial'", :value='"'+cert.sn+'"', :field="fields['cert.serial']", :pull-left="true")
-      - if (cert.hash)
-        | [
-        arkime-session-field.detail-field(:expr="'cert.hash'", :value='"'+cert.hash+'"', :field="fields['cert.hash']", :pull-left="true")
-        |]
-      - if (cert.notBefore)
-        strong.medium.ml-1 Not Before
-        arkime-session-field.detail-field(:expr="'cert.notbefore'", :value='"'+cert.notBefore+'"', :field="fields['cert.notbefore']", :pull-left="true")
-      - if (cert.notAfter)
-        strong.medium.ml-1 Not After
-        arkime-session-field.detail-field(:expr="'cert.notafter'", :value='"'+cert.notAfter+'"', :field="fields['cert.notafter']", :pull-left="true")
-      - if (cert.validDays)
-        strong.medium.ml-1 Days Valid For
-        arkime-session-field.detail-field(:expr="'cert.validfor'", :value='"'+cert.validDays+'"', :field="fields['cert.validfor']", :pull-left="true")
-      - if (cert.validSeconds)
-        strong.medium.ml-1 Seconds Valid For
-        arkime-session-field.detail-field(:expr="'cert.validforSeconds'", :value='"'+cert.validSeconds+'"', :field="fields['cert.validforSeconds']", :pull-left="true")
-      - if (cert.remainingDays)
-        strong.medium.ml-1 Days Remaining
-        arkime-session-field.detail-field(:expr="'cert.remainingDays'", :value='"'+cert.remainingDays+'"', :field="fields['cert.remainingDays']", :pull-left="true")
-      - if (cert.remainingSeconds)
-        strong.medium.ml-1 Seconds Remaining
-        arkime-session-field.detail-field(:expr="'cert.remainingSeconds'", :value='"'+cert.remainingSeconds+'"', :field="fields['cert.remainingSeconds']", :pull-left="true")
-      - if (cert.issueCN && Array.isArray(cert.issueCN))
-        strong.medium.ml-1 Issuer Common
-        each cn,i in cert.issueCN
-          if (i > 0)
-            |,
-          arkime-session-field.detail-field(:expr="'cert.issuer.cn'", :value='"'+cn+'"', :field="fields['cert.issuer.cn']", :pull-left="true")
-      - else if (cert.issueCN)
-        strong.medium.ml-1 Issuer Common
-        arkime-session-field.detail-field(:expr="'cert.issuer.cn'", :value='"'+cert.issueCN+'"', :field="fields['cert.issuer.cn']", :pull-left="true")
-      - if (cert.issuerON && Array.isArray(cert.issuerON))
-        strong.medium.ml-1 Issuer Org
-        each on,i in cert.issuerON
-          if (i > 0)
-            |,
-          arkime-session-field.detail-field(:expr="'cert.issuer.on'", :value='"'+on+'"', :field="fields['cert.issuer.on']", :pull-left="true")
-      - else if (cert.issuerON)
-        strong.medium.ml-1 Issuer Org
-        arkime-session-field.detail-field(:expr="'cert.issuer.on'", :value='"'+cert.issuerON+'"', :field="fields['cert.issuer.on']", :pull-left="true")
-      - if (cert.issuerOU && Array.isArray(cert.issuerOU))
-        strong.medium.ml-1 Issuer Org Unit
-        each ou,i in cert.issuerOU
-          if (i > 0)
-            |,
-          arkime-session-field.detail-field(:expr="'cert.issuer.ou'", :value='"'+ou+'"', :field="fields['cert.issuer.ou']", :pull-left="true")
-      - else if (cert.issuerOU)
-        strong.medium.ml-1 Issuer Org unit
-        arkime-session-field.detail-field(:expr="'cert.issuer.ou'", :value='"'+cert.issuerOU+'"', :field="fields['cert.issuer.ou']", :pull-left="true")
-      - if (cert.subjectCN && Array.isArray(cert.subjectCN))
-        strong.medium.ml-1 Subject Common
-        each cn,i in cert.subjectCN
-          if (i > 0)
-            |,
-          arkime-session-field.detail-field(:expr="'cert.subject.cn'", :value='"'+cn+'"', :field="fields['cert.subject.cn']", :pull-left="true")
-      - else if (cert.subjectCN)
-        strong.medium.ml-1 Subject Common
-        arkime-session-field.detail-field(:expr="'cert.subject.cn'", :value='"'+cert.subjectCN+'"', :field="fields['cert.subject.cn']", :pull-left="true")
-      - if (cert.subjectON && Array.isArray(cert.subjectON))
-        strong.medium.ml-1 Subject Org
-        each on,i in cert.subjectON
-          if (i > 0)
-            |,
-          arkime-session-field.detail-field(:expr="'cert.subject.on'", :value='"'+on+'"', :field="fields['cert.subject.on']", :pull-left="true")
-      - else if (cert.subjectON)
-        strong.medium.ml-1 Subject Org
-        arkime-session-field.detail-field(:expr="'cert.subject.on'", :value='"'+cert.subjectON+'"', :field="fields['cert.subject.on']", :pull-left="true")
-      - if (cert.subjectOU && Array.isArray(cert.subjectOU))
-        strong.medium.ml-1 Subject Org Unit
-        each ou,i in cert.subjectOU
-          if (i > 0)
-            |,
-          arkime-session-field.detail-field(:expr="'cert.subject.ou'", :value='"'+ou+'"', :field="fields['cert.subject.ou']", :pull-left="true")
-      - else if (cert.subjectOU)
-        strong.medium.ml-1 Subject Org Unit
-        arkime-session-field.detail-field(:expr="'cert.subject.ou'", :value='"'+cert.subjectOU+'"', :field="fields['cert.subject.ou']", :pull-left="true")
-      - if (cert.alt)
-        | [
-        each alt,i in cert.alt
-          if (i > 0)
-            |,
-          arkime-session-field.detail-field(:expr="'cert.alt'", :value='"'+alt+'"', :field="fields['cert.alt']", :pull-left="true")
-        |]
-      - if (cert.publicAlgorithm)
-        strong.medium.ml-1 Public Algorithm
-        arkime-session-field.detail-field(:expr="'cert.publicAlgorithm'", :value='"'+cert.publicAlgorithm+'"', :field="fields['cert.publicAlgorithm']", :pull-left="true")
-      - if (cert.curve)
-        strong.medium.ml-1 Curve
-        arkime-session-field.detail-field(:expr="'cert.curve'", :value='"'+cert.curve+'"', :field="fields['cert.curve']", :pull-left="true")
-      - if (cert.ja4x)
-        strong.medium.ml-1 JA4x
-        arkime-session-field.detail-field(:expr="'cert.ja4x'", :value='"'+cert.ja4x+'"', :field="fields['cert.ja4x']", :pull-left="true")
-      - if (cert.ja4x_r)
-        strong.medium.ml-1 JA4x_r
-        arkime-session-field.detail-field(:expr="'cert.ja4x_r'", :value='"'+cert.ja4x_r+'"', :field="fields['cert.ja4x_r']", :pull-left="true")
+    if (session.cert)
+      each cert in session.cert
+        dt Certificate
+        dd
+          - if (cert.sn)
+            strong.medium.ml-1 Serial
+            arkime-session-field.detail-field(:expr="'cert.serial'", :value='"'+cert.sn+'"', :field="fields['cert.serial']", :pull-left="true")
+          - if (cert.hash)
+            | [
+            arkime-session-field.detail-field(:expr="'cert.hash'", :value='"'+cert.hash+'"', :field="fields['cert.hash']", :pull-left="true")
+            |]
+          - if (cert.notBefore)
+            strong.medium.ml-1 Not Before
+            arkime-session-field.detail-field(:expr="'cert.notbefore'", :value='"'+cert.notBefore+'"', :field="fields['cert.notbefore']", :pull-left="true")
+          - if (cert.notAfter)
+            strong.medium.ml-1 Not After
+            arkime-session-field.detail-field(:expr="'cert.notafter'", :value='"'+cert.notAfter+'"', :field="fields['cert.notafter']", :pull-left="true")
+          - if (cert.validDays)
+            strong.medium.ml-1 Days Valid For
+            arkime-session-field.detail-field(:expr="'cert.validfor'", :value='"'+cert.validDays+'"', :field="fields['cert.validfor']", :pull-left="true")
+          - if (cert.validSeconds)
+            strong.medium.ml-1 Seconds Valid For
+            arkime-session-field.detail-field(:expr="'cert.validforSeconds'", :value='"'+cert.validSeconds+'"', :field="fields['cert.validforSeconds']", :pull-left="true")
+          - if (cert.remainingDays)
+            strong.medium.ml-1 Days Remaining
+            arkime-session-field.detail-field(:expr="'cert.remainingDays'", :value='"'+cert.remainingDays+'"', :field="fields['cert.remainingDays']", :pull-left="true")
+          - if (cert.remainingSeconds)
+            strong.medium.ml-1 Seconds Remaining
+            arkime-session-field.detail-field(:expr="'cert.remainingSeconds'", :value='"'+cert.remainingSeconds+'"', :field="fields['cert.remainingSeconds']", :pull-left="true")
+          - if (cert.issueCN && Array.isArray(cert.issueCN))
+            strong.medium.ml-1 Issuer Common
+            each cn,i in cert.issueCN
+              if (i > 0)
+                |,
+              arkime-session-field.detail-field(:expr="'cert.issuer.cn'", :value='"'+cn+'"', :field="fields['cert.issuer.cn']", :pull-left="true")
+          - else if (cert.issueCN)
+            strong.medium.ml-1 Issuer Common
+            arkime-session-field.detail-field(:expr="'cert.issuer.cn'", :value='"'+cert.issueCN+'"', :field="fields['cert.issuer.cn']", :pull-left="true")
+          - if (cert.issuerON && Array.isArray(cert.issuerON))
+            strong.medium.ml-1 Issuer Org
+            each on,i in cert.issuerON
+              if (i > 0)
+                |,
+              arkime-session-field.detail-field(:expr="'cert.issuer.on'", :value='"'+on+'"', :field="fields['cert.issuer.on']", :pull-left="true")
+          - else if (cert.issuerON)
+            strong.medium.ml-1 Issuer Org
+            arkime-session-field.detail-field(:expr="'cert.issuer.on'", :value='"'+cert.issuerON+'"', :field="fields['cert.issuer.on']", :pull-left="true")
+          - if (cert.issuerOU && Array.isArray(cert.issuerOU))
+            strong.medium.ml-1 Issuer Org Unit
+            each ou,i in cert.issuerOU
+              if (i > 0)
+                |,
+              arkime-session-field.detail-field(:expr="'cert.issuer.ou'", :value='"'+ou+'"', :field="fields['cert.issuer.ou']", :pull-left="true")
+          - else if (cert.issuerOU)
+            strong.medium.ml-1 Issuer Org unit
+            arkime-session-field.detail-field(:expr="'cert.issuer.ou'", :value='"'+cert.issuerOU+'"', :field="fields['cert.issuer.ou']", :pull-left="true")
+          - if (cert.subjectCN && Array.isArray(cert.subjectCN))
+            strong.medium.ml-1 Subject Common
+            each cn,i in cert.subjectCN
+              if (i > 0)
+                |,
+              arkime-session-field.detail-field(:expr="'cert.subject.cn'", :value='"'+cn+'"', :field="fields['cert.subject.cn']", :pull-left="true")
+          - else if (cert.subjectCN)
+            strong.medium.ml-1 Subject Common
+            arkime-session-field.detail-field(:expr="'cert.subject.cn'", :value='"'+cert.subjectCN+'"', :field="fields['cert.subject.cn']", :pull-left="true")
+          - if (cert.subjectON && Array.isArray(cert.subjectON))
+            strong.medium.ml-1 Subject Org
+            each on,i in cert.subjectON
+              if (i > 0)
+                |,
+              arkime-session-field.detail-field(:expr="'cert.subject.on'", :value='"'+on+'"', :field="fields['cert.subject.on']", :pull-left="true")
+          - else if (cert.subjectON)
+            strong.medium.ml-1 Subject Org
+            arkime-session-field.detail-field(:expr="'cert.subject.on'", :value='"'+cert.subjectON+'"', :field="fields['cert.subject.on']", :pull-left="true")
+          - if (cert.subjectOU && Array.isArray(cert.subjectOU))
+            strong.medium.ml-1 Subject Org Unit
+            each ou,i in cert.subjectOU
+              if (i > 0)
+                |,
+              arkime-session-field.detail-field(:expr="'cert.subject.ou'", :value='"'+ou+'"', :field="fields['cert.subject.ou']", :pull-left="true")
+          - else if (cert.subjectOU)
+            strong.medium.ml-1 Subject Org Unit
+            arkime-session-field.detail-field(:expr="'cert.subject.ou'", :value='"'+cert.subjectOU+'"', :field="fields['cert.subject.ou']", :pull-left="true")
+          - if (cert.alt)
+            | [
+            each alt,i in cert.alt
+              if (i > 0)
+                |,
+              arkime-session-field.detail-field(:expr="'cert.alt'", :value='"'+alt+'"', :field="fields['cert.alt']", :pull-left="true")
+            |]
+          - if (cert.publicAlgorithm)
+            strong.medium.ml-1 Public Algorithm
+            arkime-session-field.detail-field(:expr="'cert.publicAlgorithm'", :value='"'+cert.publicAlgorithm+'"', :field="fields['cert.publicAlgorithm']", :pull-left="true")
+          - if (cert.curve)
+            strong.medium.ml-1 Curve
+            arkime-session-field.detail-field(:expr="'cert.curve'", :value='"'+cert.curve+'"', :field="fields['cert.curve']", :pull-left="true")
+          - if (cert.ja4x)
+            strong.medium.ml-1 JA4x
+            arkime-session-field.detail-field(:expr="'cert.ja4x'", :value='"'+cert.ja4x+'"', :field="fields['cert.ja4x']", :pull-left="true")
+          - if (cert.ja4x_r)
+              strong.medium.ml-1 JA4x_r
+              arkime-session-field.detail-field(:expr="'cert.ja4x_r'", :value='"'+cert.ja4x_r+'"', :field="fields['cert.ja4x_r']", :pull-left="true")
