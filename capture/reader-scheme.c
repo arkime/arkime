@@ -115,8 +115,13 @@ LOCAL int reader_scheme_header(const char *uri, const uint8_t *header, const cha
     ArkimePcapFileHdr_t *h = (ArkimePcapFileHdr_t *)header;
     if (h->magic != 0xa1b2c3d4 && h->magic != 0xd4c3b2a1 &&
         h->magic != 0xa1b23c4d && h->magic != 0x4d3cb2a1) {
-        LOG("ERROR - Unknown magic %x in %s", h->magic, uri);
-        return 1;
+
+        if (config.ignoreErrors) {
+            LOG("ERROR - Unknown magic %x in %s", h->magic, uri);
+            return 1;
+        } else {
+            LOGEXIT("ERROR - Unknown magic %x in %s", h->magic, uri);
+        }
     }
 
     needSwap = (h->magic == 0xd4c3b2a1 || h->magic == 0x4d3cb2a1);
