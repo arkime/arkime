@@ -136,5 +136,21 @@ We encourage inclusive and professional interactions on our project. We welcome 
 
 ---
 
+### Building a release
+1. Create a branch
+   1. Update CHANGELOG with correct date
+   2. Update AC_INIT in configure.ac with correct version
+   3. commit and push branch
+2. Merge branch on github.com
+3. Update local area `git checkout main && git pull`
+4. Tag using version from configure.ac including leading v, `git tag vN.N.N`
+5. `git push --tags`
+6. Visit https://github.com/arkime/arkime/actions/workflows/release.yml
+7. Select "Run workflow" upper right and fill in the version tag *WITHOUT* the leading v
+8. Click "Run workflow" button
+9. Profit!
+
+---
+
 ### :heart: Thanks,
 Andy & Elyse
