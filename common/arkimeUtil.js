@@ -588,6 +588,19 @@ class ArkimeUtil {
       return parts.join('.');
     }
   }
+
+  // ----------------------------------------------------------------------------
+  static searchErrorMsg (err, host, msg) {
+    console.log('ERROR - OpenSearch/Elasticsearch', util.inspect(err?.meta?.body?.error ?? err, false, 10));
+    console.log(msg, '- the above error message might explain why');
+    console.log('Common issues:');
+    console.log(`  * Is OpenSearch/Elasticsearch running? (${host})`);
+    console.log('  * Have you run \'db/db.pl <host:port> init\'?');
+    console.log('  * Is the \'elasticsearch\' setting correct in config file and has a username and password if needed? (https://arkime.com/settings#elasticsearch)');
+    if (!ArkimeConfig.insecure) {
+      console.log('  * Do you need the --insecure option? (https://arkime.com/faq#insecure)');
+    }
+  }
 }
 
 module.exports = ArkimeUtil;

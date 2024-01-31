@@ -60,6 +60,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #2511 new authOIDCScope setting
   - #2482 new logoutUrl setting
   - #2571 new scheme pcap reading
+  - #2618 better error message when can't use OpenSearch/Elasticsearch on startup
 ## Capture
   - #2295 moloch converted to arkime
   - #2312 override ips can now set any field
@@ -113,7 +114,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #2525 add [config setting](https://arkime.com/settings#spiViewCategoryOrder) to set spiview category order
   - #2523 resize session detail field label/values
   - #2552 added %URIEncodedText% for URI encoded substitution (thanks @vpiserchia)
-  - #2574 fix longs tanding issue with backslash search and SMB
+  - #2574 fix longstanding issue with backslash search and SMB
   - #2601 patch cyberchef xss vuln (https://github.com/gchq/CyberChef/issues/1468)
   - #2606 zstd sometimes didn't read all packets
   - #2607 improved session detail display

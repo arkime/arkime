@@ -186,7 +186,7 @@ Db.initialize = async (info, cb) => {
     }
     return cb();
   } catch (err) {
-    console.log('ERROR - getting OpenSearch/Elasticsearch client info failed, is it running?', err);
+    ArkimeUtil.searchErrorMsg(err, internals.info.host, 'Getting OpenSearch/Elasticsearch info failed');
     process.exit(1);
   }
 };
