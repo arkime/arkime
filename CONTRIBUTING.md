@@ -149,7 +149,8 @@ We encourage inclusive and professional interactions on our project. We welcome 
 6. Visit https://github.com/arkime/arkime/actions/workflows/release.yml
 7. Select "Run workflow" upper right and fill in the version tag *WITHOUT* the leading v
 8. Click "Run workflow" button
-9. Profit!
+9. AFTER everything finishes, update the release notes https://github.com/arkime/arkime/releases/
+10. Profit!
 
 ---
 
