@@ -1536,7 +1536,7 @@ class UserESImplementation {
         try {
           await this.client.indices.stats({ index: this.prefix + 'users' });
         } catch (err) {
-          console.log(`ERROR - Issue with '${this.prefix + 'users'}' index, make sure 'db/db.pl <host:port> init' has been run.\n`, err);
+          ArkimeUtil.searchErrorMsg(err, options.node, `Issue with OpenSearch/Elasticsearch '${this.prefix + 'users'}' index`);
           process.exit(1);
         }
       });
