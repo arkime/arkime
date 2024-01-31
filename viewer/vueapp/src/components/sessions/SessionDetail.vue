@@ -281,6 +281,10 @@ export default {
     },
     toggleShowFrames: function () {
       this.params.showFrames = !this.params.showFrames;
+      if (localStorage) {
+        // update browser saved ts if the user settings is set to last
+        localStorage['moloch-showFrames'] = this.params.showFrames;
+      }
 
       if (this.params.showFrames) {
         // show timestamps and info by default for show frames option
@@ -404,7 +408,6 @@ export default {
               const self = this; // listen for grip unclicks
               document.addEventListener('mouseup', (e) => gripUnclick(e, self));
 
-              // TODO document
               // find all the card titles and add a click listener to toggle the collapse
               const elementsArray = document.getElementsByClassName('card-title');
               for (const elem of elementsArray) {
@@ -418,7 +421,7 @@ export default {
                   }
                 }
 
-                elem.addEventListener('click', (e) => { // TODO PUT THIS ELSEWHERE
+                elem.addEventListener('click', (e) => {
                   e.target.classList.toggle('collapsed');
                   e.target.nextElementSibling.classList.toggle('collapse');
                   e.target.parentElement.classList.toggle('collapsed');
@@ -448,6 +451,23 @@ export default {
               set: function (newValue) {
                 this.$store.commit('setTime', { startTime: newValue });
               }
+            },
+            permalink () {
+              const id = this.session.id.split(':');
+              let prefixlessId = id.length > 1 ? id[1] : id[0];
+              if (prefixlessId[1] === '@') {
+                prefixlessId = prefixlessId.substr(2);
+              }
+
+              const params = {
+                expression: `id == ${prefixlessId}`,
+                startTime: Math.floor(this.session.firstPacket / 1000),
+                stopTime: Math.ceil(this.session.lastPacket / 1000),
+                cluster: this.session.cluster,
+                openAll: 1
+              };
+
+              return `sessions?${qs.stringify(params)}`;
             }
           },
           methods: {
@@ -495,24 +515,6 @@ export default {
             sendSession: function (cluster) {
               this.form = 'send:session';
               this.cluster = cluster;
-            },
-            openPermalink: function () {
-              const id = this.session.id.split(':');
-              let prefixlessId = id.length > 1 ? id[1] : id[0];
-              if (prefixlessId[1] === '@') {
-                prefixlessId = prefixlessId.substr(2);
-              }
-
-              const params = {
-                expression: `id == ${prefixlessId}`,
-                startTime: Math.floor(this.session.firstPacket / 1000),
-                stopTime: Math.ceil(this.session.lastPacket / 1000),
-                openAll: 1
-              };
-
-              const url = `sessions?${qs.stringify(params)}`;
-
-              window.location = url;
             },
             /**
              * Adds a rootId expression and applies a new start time
@@ -661,6 +663,9 @@ export default {
         }
         if (localStorage['moloch-image']) {
           this.params.image = JSON.parse(localStorage['moloch-image']);
+        }
+        if (localStorage['moloch-showFrames']) {
+          this.params.showFrames = JSON.parse(localStorage['moloch-showFrames']);
         }
         if (localStorage['moloch-decodings']) {
           this.params.decode = JSON.parse(localStorage['moloch-decodings']);
@@ -1098,7 +1103,6 @@ dl:hover > .session-detail-grip {
 .session-detail .card > .card-body dl {
   margin-bottom: 0rem;
   margin-top: -0.75rem;
-  overflow:hidden;
   position:relative;
 }
 

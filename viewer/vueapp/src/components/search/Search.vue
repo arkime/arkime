@@ -26,23 +26,23 @@ SPDX-License-Identifier: Apache-2.0
           <b-dropdown-item
             @click="overrideDisabledAggregations(1)"
             v-b-tooltip.hover.left="'might take a while'">
-            Fetch vizualizations for this query
+            Fetch visualizations for this query
           </b-dropdown-item>
           <b-dropdown-item
             @click="overrideDisabledAggregations(0)"
             v-b-tooltip.hover.left="'slows down future searches until you close this tab'">
-            Fetch vizualizations for this browser session
+            Fetch visualizations for this browser session
           </b-dropdown-item>
           <b-dropdown-item
             @click="overrideDisabledAggregations(-1)"
             v-b-tooltip.hover.left="'slows down future searches until you turn it off'">
-            Always fetch vizualizations for this browser
+            Always fetch visualizations for this browser
           </b-dropdown-item>
         </template>
         <template v-if="forcedAggregations">
           <b-dropdown-item
             @click="overrideDisabledAggregations(undefined)">
-            Disable forced vizualizations
+            Disable forced visualizations
           </b-dropdown-item>
         </template>
         <b-dropdown-divider v-if="!hideViz && disabledAggregations" />

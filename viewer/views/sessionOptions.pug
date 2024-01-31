@@ -22,7 +22,7 @@ ul.nav.nav-pills.mb-3
         span.fa.fa-arrow-circle-down
         | &nbsp;Destination Raw
   li.nav-item
-    a.nav-link.cursor-pointer(@click="openPermalink", v-b-tooltip.hover.bottom.d300="'Navigate to the sessions page containing just this session. You can use this link to share this session with other users.'")
+    a.nav-link.cursor-pointer(:href="permalink", v-b-tooltip.hover.bottom.d300="'Navigate to the sessions page containing just this session. You can use this link to share this session with other users.'")
       span.fa.fa-link
       | &nbsp;Link
   b-dropdown.nav-item(text="Actions", size="sm")

@@ -315,7 +315,7 @@ SPDX-License-Identifier: Apache-2.0
                             :id="key + k + 'infoitem'"
                             :key="key + k + 'infoitem'"
                             :class="{'active':isInfoVisible(field.dbField) >= 0}"
-                            @click.stop.prevent="toggleInfoVis(field.dbField)">
+                            @click.native.capture.stop.prevent="toggleInfoVis(field.dbField)">
                             {{ field.friendlyName }}
                             <small>({{ field.exp }})</small>
                           </b-dropdown-item>
@@ -1308,7 +1308,6 @@ export default {
         const field = FieldService.getField(id);
         if (field) { this.infoFields.push(field); }
       }
-
       this.saveInfoFields();
 
       if (reloadData) { // need data from the server
@@ -1337,7 +1336,7 @@ export default {
         infoDBFields.push(field.dbField);
       }
       this.user.settings.infoFields = infoDBFields;
-      customCols.info.children = infoDBFields;
+      customCols.info.children = this.infoFields;
       UserService.saveSettings(this.user.settings);
     },
     /* Fits the table to the width of the current window size */
