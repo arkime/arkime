@@ -542,22 +542,10 @@ dl
     +ipArrayList(session, "greIp", "GRE IPs", "gre.ip")
 
   if (session.tcp)
-    dt
-      +clickableLabel('tcp.ja4l', 'JA4l')
-    dd
-      +arrayPrint(session.tcp, "ja4l", "tcp.ja4l")
-    dt
-      +clickableLabel('tcp.ja4ls', 'JA4ls')
-    dd
-      +arrayPrint(session.tcp, "ja4ls", "tcp.ja4ls")
-    dt
-      +clickableLabel('tcp.ja4t', 'JA4t')
-    dd
-      +arrayPrint(session.tcp, "ja4t", "tcp.ja4t")
-    dt
-      +clickableLabel('tcp.ja4ts', 'JA4ts')
-    dd
-      +arrayPrint(session.tcp, "ja4ts", "tcp.ja4ts")
+    +arrayList(session.tcp, "ja4l", "JA4l", "tcp.ja4l")
+    +arrayList(session.tcp, "ja4ls", "JA4ls", "tcp.ja4ls")
+    +arrayList(session.tcp, "ja4t", "JA4t", "tcp.ja4t")
+    +arrayList(session.tcp, "ja4ts", "JA4ts", "tcp.ja4ts")
 
   if (session.tcpflags)
     dt
