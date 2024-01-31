@@ -140,8 +140,9 @@ We encourage inclusive and professional interactions on our project. We welcome 
 1. Create a branch
    1. Update CHANGELOG with correct date
    2. Update AC_INIT in configure.ac with correct version
-   3. commit and push branch
-2. Merge branch on github.com
+   3. Update ARKIME_API_VERSION in capture/arkime.h when incompatible C API changes
+   4. commit and push branch
+2. Merge branch on https://github.com/arkime/arkime
 3. Update local area `git checkout main && git pull`
 4. Tag using version from configure.ac including leading v, `git tag vN.N.N`
 5. `git push --tags`
