@@ -1,20 +1,19 @@
 h4.card-title General
 dl
-  dt Id
-  dd
-    +clickableValue('id', Db.sid2Id(session.id))
-    if (session.rootId)
-      strong.ml-4 Root Id:
-      +clickableValue('rootId', session.rootId)
-    if (session.network && session.network.community_id)
-      strong.ml-4 Community Id:
-      +clickableValue('communityId', session.network.community_id)
-
   dt Time
   dd
     +clickableValue('starttime', session.firstPacket)
     strong -&nbsp;
     +clickableValue('stoptime', session.lastPacket)
+
+  dt Id
+  dd
+    +clickableValue('id', Db.sid2Id(session.id))
+
+  +arrayList(session, "rootId", "Root Id", "rootId")
+
+  if (session.network && session.network.community_id)
+    +arrayList(session.network, "community_id", "Community Id", "communityId")
 
   dt
     +clickableLabel('node', 'Node')
@@ -67,12 +66,15 @@ dl
           | Add Src Databytes EXISTS! to query
         +clickableFieldActions('databytes.src', false)
     dd
-      strong.medium.ml-1 Packets
-      +clickableValue('packets.src', session.source.packets)
-      strong.medium.ml-4 Bytes
-      +clickableValue('bytes.src', session.source.bytes)
-      strong.medium.ml-4 Databytes
-      +clickableValue('databytes.src', session.client.bytes)
+      span.no-wrap
+        strong.ml-1 Packets
+        +clickableValue('packets.src', session.source.packets)
+      span.no-wrap
+        strong.ml-1 Bytes
+        +clickableValue('bytes.src', session.source.bytes)
+      span.no-wrap
+        strong.ml-1 Databytes
+        +clickableValue('databytes.src', session.client.bytes)
 
     dt
       b-dropdown.clickable-label(text="Dst", size="sm", variant="default")
@@ -106,16 +108,19 @@ dl
           | Add Dst Databytes EXISTS! to query
         +clickableFieldActions('databytes.dst', false)
     dd
-      strong.medium.ml-1 Packets
-      +clickableValue('packets.dst', session.destination.packets)
-      strong.medium.ml-4 Bytes
-      +clickableValue('bytes.dst', session.destination.bytes)
-      strong.medium.ml-4 Databytes
-      +clickableValue('databytes.dst', session.server.bytes)
+      span.no-wrap
+        strong.ml-1 Packets
+        +clickableValue('packets.dst', session.destination.packets)
+      span.no-wrap
+        strong.ml-1 Bytes
+        +clickableValue('bytes.dst', session.destination.bytes)
+      span.no-wrap
+        strong.ml-1 Databytes
+        +clickableValue('databytes.dst', session.server.bytes)
 
   if (session.source.mac)
     dt
-      b-dropdown.clickable-label(text="Ethernet", size="sm", variant="default")
+      b-dropdown.clickable-label(text="Src Ethernet", size="sm", variant="default")
         b-dropdown-item(@click="exportUnique('mac.src', 0)")
           | Export Unique Src Mac
         b-dropdown-item(@click="exportUnique('mac.src', 1)")
@@ -135,7 +140,19 @@ dl
         b-dropdown-item(@click="fieldExists('oui.src', '==')")
           | Add Src OUI EXISTS! to query
         +clickableFieldActions('oui.src', false)
-        b-dropdown-divider
+    dd
+      span.no-wrap
+        strong.ml-1 Mac
+        +arrayPrint(session.source, "mac", "mac.src", true)
+
+      if (session.srcOui)
+        span.no-wrap
+          strong OUI
+          +arrayPrint(session, "srcOui", "oui.src", true)
+
+  if (session.destination.mac)
+    dt
+      b-dropdown.clickable-label(text="Dst Ethernet", size="sm", variant="default")
         b-dropdown-item(@click="exportUnique('mac.dst', 0)")
           | Export Unique Dst Mac
         b-dropdown-item(@click="exportUnique('mac.dst', 1)")
@@ -155,52 +172,22 @@ dl
         b-dropdown-item(@click="fieldExists('oui.dst', '==')")
           | Add Dst OUI EXISTS! to query
         +clickableFieldActions('oui.dst', false)
-        b-dropdown-divider
-        b-dropdown-item(@click="exportUnique('vlan', 0)")
-          | Export Unique VLan
-        b-dropdown-item(@click="exportUnique('vlan', 1)")
-          | Export Unique VLan with counts
-        b-dropdown-item(@click="openSpiGraph('vlan')")
-          | Open VLan SPI Graph
-        b-dropdown-item(@click="fieldExists('vlan', '==')")
-          | Add VLan EXISTS! to query
-        +clickableFieldActions('vlan', false)
-        b-dropdown-divider
-        b-dropdown-item(@click="exportUnique('vni', 0)")
-          | Export Unique VNI
-        b-dropdown-item(@click="exportUnique('vni', 1)")
-          | Export Unique VNI with counts
-        b-dropdown-item(@click="openSpiGraph('vni')")
-          | Open VNI SPI Graph
-        b-dropdown-item(@click="fieldExists('vni', '==')")
-          | Add VNI EXISTS! to query
-        +clickableFieldActions('vni', false)
     dd
-      strong.medium.ml-1 Src Mac
-      +arrayPrint(session.source, "mac", "mac.src", true)
-
-      if (session.srcOui)
-        strong.medium OUI
-        +arrayPrint(session, "srcOui", "oui.src", true)
-
-      strong.medium.ml-4 Dst Mac
+      strong.ml-1 Mac
       +arrayPrint(session.destination, "mac", "mac.dst", true)
 
       if (session.dstOui)
-        strong.medium OUI
+        strong OUI
         +arrayPrint(session, "dstOui", "oui.dst", true)
 
-      if (session.network.vlan)
-        strong.medium.ml-4 VLan
-        +arrayPrint(session.network.vlan, "id", "vlan")
+  if (session.network.vlan)
+    +arrayList(session.network.vlan, "id", "VLan", "vlan")
 
-      if (session.vni)
-        strong.medium.ml-4 VNI
-        +arrayPrint(session, "vni", "vni")
+  +arrayList(session, "vni", "VNI", "vni")
 
-  if (session.srcOuterMac ||session.dstOuterMac ||session.srcOuterIp||session.dstOuterIp )
+  if (session.srcOuterMac || session.srcOuterIp )
     dt
-      b-dropdown.clickable-label(text="Outer Layer", size="sm", variant="default")
+      b-dropdown.clickable-label(text="Src Outer Layer", size="sm", variant="default")
         if (session.srcOuterMac)
           b-dropdown-item(@click="exportUnique('outermac.src', 0)")
             | Export outer Unique Src Mac
@@ -211,16 +198,6 @@ dl
           b-dropdown-item(@click="fieldExists('outermac.src', '==')")
             | Add outer Src Mac EXISTS! to query
           b-dropdown-divider
-        if (session.dstOuterMac)
-          b-dropdown-item(@click="exportUnique('outermac.dst', 0)")
-            | Export outer Unique Dst Mac
-          b-dropdown-item(@click="exportUnique('outermac.dst', 1)")
-            | Export outer Unique Dst Mac with counts
-          b-dropdown-item(@click="openSpiGraph('outermac.dst')")
-            | Open outer Dst Mac SPI Graph
-          b-dropdown-item(@click="fieldExists('outermac.dst', '==')")
-            | Add outer Dst Mac EXISTS! to query
-          b-dropdown-divider
         if (session.srcOuterIp)
           b-dropdown-item(@click="exportUnique('outerip.src', 0)")
             | Export outer Unique Src IP
@@ -230,6 +207,40 @@ dl
             | Open outer Src IP SPI Graph
           b-dropdown-item(@click="fieldExists('outerip.src', '==')")
             | Add outer Src IP EXISTS! to query
+          b-dropdown-divider
+        if (session.srcOuterOui)
+          b-dropdown-item(@click="exportUnique('outeroui.src', 0)")
+            | Export outer Unique Src Oui
+          b-dropdown-item(@click="exportUnique('outeroui.src', 1)")
+            | Export outer Unique Src Oui with counts
+          b-dropdown-item(@click="openSpiGraph('outeroui.src')")
+            | Open outer Src Oui SPI Graph
+          b-dropdown-item(@click="fieldExists('outeroui.src', '==')")
+            | Add outer Src Oui EXISTS! to query
+          b-dropdown-divider
+    dd
+      if (session.srcOuterMac)
+        strong.ml-1 Mac
+        +arrayPrint(session, "srcOuterMac", "outermac.src", true)
+      if (session.srcOuterOui)
+        strong.ml-1 Oui
+        +arrayPrint(session, "srcOuterOui", "outeroui.src", true)
+      if (session.srcOuterIp)
+        strong.ml-1 IP
+        +arrayPrint(session, "srcOuterIp", "outerip.src", true)
+
+  if (session.dstOuterMac || session.dstOuterIp )
+    dt
+      b-dropdown.clickable-label(text="Dst Outer Layer", size="sm", variant="default")
+        if (session.dstOuterMac)
+          b-dropdown-item(@click="exportUnique('outermac.dst', 0)")
+            | Export outer Unique Dst Mac
+          b-dropdown-item(@click="exportUnique('outermac.dst', 1)")
+            | Export outer Unique Dst Mac with counts
+          b-dropdown-item(@click="openSpiGraph('outermac.dst')")
+            | Open outer Dst Mac SPI Graph
+          b-dropdown-item(@click="fieldExists('outermac.dst', '==')")
+            | Add outer Dst Mac EXISTS! to query
           b-dropdown-divider
         if (session.dstOuterIp)
           b-dropdown-item(@click="exportUnique('outerip.dst', 0)")
@@ -250,35 +261,15 @@ dl
             | Open outer Dst Oui SPI Graph
           b-dropdown-item(@click="fieldExists('outeroui.dst', '==')")
             | Add outer Dst Oui EXISTS! to query
-          b-dropdown-divider
-        if (session.srcOuterOui)
-          b-dropdown-item(@click="exportUnique('outeroui.src', 0)")
-            | Export outer Unique Src Oui
-          b-dropdown-item(@click="exportUnique('outeroui.src', 1)")
-            | Export outer Unique Src Oui with counts
-          b-dropdown-item(@click="openSpiGraph('outeroui.src')")
-            | Open outer Src Oui SPI Graph
-          b-dropdown-item(@click="fieldExists('outeroui.src', '==')")
-            | Add outer Src Oui EXISTS! to query
-          b-dropdown-divider
     dd
-      if (session.srcOuterMac)
-        strong.medium.ml-1 Outer Src Mac
-        +arrayPrint(session, "srcOuterMac", "outermac.src", true)
-      if (session.srcOuterOui)
-        strong.medium.ml-1 Outer Src Oui
-        +arrayPrint(session, "srcOuterOui", "outeroui.src", true)
       if (session.dstOuterMac)
-        strong.medium.ml-1 Outer Dst Mac
+        strong.ml-1 Mac
         +arrayPrint(session, "dstOuterMac", "outermac.dst", true)
       if (session.dstOuterOui)
-        strong.medium.ml-1 Outer Dst Oui
+        strong.ml-1 Oui
         +arrayPrint(session, "dstOuterOui", "outeroui.dst", true)
-      if (session.srcOuterIp)
-        strong.medium.ml-1 Outer Src IP
-        +arrayPrint(session, "srcOuterIp", "outerip.src", true)
       if (session.dstOuterIp)
-        strong.medium.ml-1 Outer Dst IP
+        strong.ml-1 IP
         +arrayPrint(session, "dstOuterIp", "outerip.dst", true)
 
   dt
@@ -418,17 +409,19 @@ dl
       - function isprint(char) { return !( /[\x00-\x08\x0E-\x1F\x80-\xFF]/.test(char)); }
       - function printstr(str) { for (let char of str) { if (!isprint(char)) { char = '�'; } } return str; }
       if (session.srcPayload8)
-        strong.medium.ml-1 Src
-        - var srcPayload8a = new Buffer(session.srcPayload8, "hex").toString();
-        +clickableValue('payload8.src.hex', session.srcPayload8)
+        span.no-wrap
+          strong.ml-1 Src
+          - var srcPayload8a = new Buffer(session.srcPayload8, "hex").toString();
+          +clickableValue('payload8.src.hex', session.srcPayload8)
         | ( #{printstr(srcPayload8a)} )
       if (session.dstPayload8)
-        if (session.srcPayload8)
-          strong.medium.ml-4 Dst
-        else
-          strong.medium Dst
-        - var dstPayload8a = new Buffer(session.dstPayload8, "hex").toString();
-        +clickableValue('payload8.dst.hex', session.dstPayload8)
+        span.no-wrap
+          if (session.srcPayload8)
+            strong.ml-1 Dst
+          else
+            strong Dst
+          - var dstPayload8a = new Buffer(session.dstPayload8, "hex").toString();
+          +clickableValue('payload8.dst.hex', session.dstPayload8)
         | ( #{printstr(dstPayload8a)} )
 
   div.tag-list
@@ -620,20 +613,27 @@ dl
           | Add URG EXISTS! to query
         +clickableFieldActions('tcpflags.urg', false)
     dd
-      strong.medium.ml-1 SYN
-      +clickableValue('tcpflags.syn', session.tcpflags.syn)
-      strong.medium.ml-4 SYN-ACK
-      +clickableValue('tcpflags.syn-ack', session.tcpflags['syn-ack'])
-      strong.medium.ml-4 ACK
-      +clickableValue('tcpflags.ack', session.tcpflags.ack)
-      strong.medium.ml-4 PSH
-      +clickableValue('tcpflags.psh', session.tcpflags.psh)
-      strong.medium.ml-4 RST
-      +clickableValue('tcpflags.rst', session.tcpflags.rst)
-      strong.medium.ml-4 FIN
-      +clickableValue('tcpflags.fin', session.tcpflags.fin)
-      strong.medium.ml-4 URG
-      +clickableValue('tcpflags.urg', session.tcpflags.urg)
+      span.no-wrap
+        strong.ml-1 SYN
+        +clickableValue('tcpflags.syn', session.tcpflags.syn)
+      span.no-wrap
+        strong.ml-1 SYN-ACK
+        +clickableValue('tcpflags.syn-ack', session.tcpflags['syn-ack'])
+      span.no-wrap
+        strong.ml-1 ACK
+        +clickableValue('tcpflags.ack', session.tcpflags.ack)
+      span.no-wrap
+        strong.ml-1 PSH
+        +clickableValue('tcpflags.psh', session.tcpflags.psh)
+      span.no-wrap
+        strong.ml-1 RST
+        +clickableValue('tcpflags.rst', session.tcpflags.rst)
+      span.no-wrap
+        strong.ml-1 FIN
+        +clickableValue('tcpflags.fin', session.tcpflags.fin)
+      span.no-wrap
+        strong.ml-1 URG
+        +clickableValue('tcpflags.urg', session.tcpflags.urg)
 
   if (session.icmp)
     dt
@@ -654,9 +654,9 @@ dl
           | Add ICMP Code EXISTS! to query
         +clickableFieldActions('icmp.code', false)
     dd
-      strong.medium.ml-1 Type
+      strong.ml-1 Type
       +arrayPrint(session.icmp, "type", "icmp.type")
-      strong.medium.ml-4 Code
+      strong.ml-1 Code
       +arrayPrint(session.icmp, "code", "icmp.code")
 
   if (session.srcDscp || session.dstDscp)
@@ -676,8 +676,8 @@ dl
           +clickableFieldActions('dscp.dst', false)
     dd
       if (session.srcDscp)
-        strong.medium.ml-1 Src
+        strong.ml-1 Src
         +arrayPrint(session, "srcDscp", "dscp.src")
       if (session.dstDscp)
-        strong.medium.ml-4 Dst
+        strong.ml-1 Dst
         +arrayPrint(session, "dstDscp", "dscp.dst")

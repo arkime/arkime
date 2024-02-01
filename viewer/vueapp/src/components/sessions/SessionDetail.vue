@@ -557,7 +557,7 @@ export default {
              */
             showMoreItems: function (e) {
               e.target.style.display = 'none';
-              e.target.previousSibling.style.display = 'inline-block';
+              e.target.previousSibling.style.display = 'inline';
             },
             /**
              * Hides more items in a list of values
@@ -565,7 +565,7 @@ export default {
              */
             showFewerItems: function (e) {
               e.target.parentElement.style.display = 'none';
-              e.target.parentElement.nextElementSibling.style.display = 'inline-block';
+              e.target.parentElement.nextElementSibling.style.display = 'inline';
             },
             /**
              * Toggles a column in the sessions table

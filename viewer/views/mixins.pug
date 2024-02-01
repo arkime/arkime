@@ -56,7 +56,7 @@ mixin arrayList(container, field, title, expr, extra, max, session)
           a.cursor-pointer.show-more-items(@click="showMoreItems($event)") more...
       if (extra)
         |!{extra}
-      div(style="display:inline-block;") &nbsp;
+      div(style="display:inline;") &nbsp;
 
 //- Standard method to print ip, port, geo, asn, and rir info
 mixin ipPrint(session, ipstr, port, geo, as, rir, expr, full, v6)
