@@ -66,12 +66,15 @@ dl
           | Add Src Databytes EXISTS! to query
         +clickableFieldActions('databytes.src', false)
     dd
-      strong.medium.ml-1 Packets
-      +clickableValue('packets.src', session.source.packets)
-      strong.medium.ml-1 Bytes
-      +clickableValue('bytes.src', session.source.bytes)
-      strong.medium.ml-1 Databytes
-      +clickableValue('databytes.src', session.client.bytes)
+      span.no-wrap
+        strong.ml-1 Packets
+        +clickableValue('packets.src', session.source.packets)
+      span.no-wrap
+        strong.ml-1 Bytes
+        +clickableValue('bytes.src', session.source.bytes)
+      span.no-wrap
+        strong.ml-1 Databytes
+        +clickableValue('databytes.src', session.client.bytes)
 
     dt
       b-dropdown.clickable-label(text="Dst", size="sm", variant="default")
@@ -105,12 +108,15 @@ dl
           | Add Dst Databytes EXISTS! to query
         +clickableFieldActions('databytes.dst', false)
     dd
-      strong.medium.ml-1 Packets
-      +clickableValue('packets.dst', session.destination.packets)
-      strong.medium.ml-1 Bytes
-      +clickableValue('bytes.dst', session.destination.bytes)
-      strong.medium.ml-1 Databytes
-      +clickableValue('databytes.dst', session.server.bytes)
+      span.no-wrap
+        strong.ml-1 Packets
+        +clickableValue('packets.dst', session.destination.packets)
+      span.no-wrap
+        strong.ml-1 Bytes
+        +clickableValue('bytes.dst', session.destination.bytes)
+      span.no-wrap
+        strong.ml-1 Databytes
+        +clickableValue('databytes.dst', session.server.bytes)
 
   if (session.source.mac)
     dt
@@ -135,12 +141,14 @@ dl
           | Add Src OUI EXISTS! to query
         +clickableFieldActions('oui.src', false)
     dd
-      strong.medium.ml-1 Mac
-      +arrayPrint(session.source, "mac", "mac.src", true)
+      span.no-wrap
+        strong.ml-1 Mac
+        +arrayPrint(session.source, "mac", "mac.src", true)
 
       if (session.srcOui)
-        strong.medium OUI
-        +arrayPrint(session, "srcOui", "oui.src", true)
+        span.no-wrap
+          strong OUI
+          +arrayPrint(session, "srcOui", "oui.src", true)
 
   if (session.destination.mac)
     dt
@@ -165,11 +173,11 @@ dl
           | Add Dst OUI EXISTS! to query
         +clickableFieldActions('oui.dst', false)
     dd
-      strong.medium.ml-1 Mac
+      strong.ml-1 Mac
       +arrayPrint(session.destination, "mac", "mac.dst", true)
 
       if (session.dstOui)
-        strong.medium OUI
+        strong OUI
         +arrayPrint(session, "dstOui", "oui.dst", true)
 
   if (session.network.vlan)
@@ -212,13 +220,13 @@ dl
           b-dropdown-divider
     dd
       if (session.srcOuterMac)
-        strong.medium.ml-1 Mac
+        strong.ml-1 Mac
         +arrayPrint(session, "srcOuterMac", "outermac.src", true)
       if (session.srcOuterOui)
-        strong.medium.ml-1 Oui
+        strong.ml-1 Oui
         +arrayPrint(session, "srcOuterOui", "outeroui.src", true)
       if (session.srcOuterIp)
-        strong.medium.ml-1 IP
+        strong.ml-1 IP
         +arrayPrint(session, "srcOuterIp", "outerip.src", true)
 
   if (session.dstOuterMac || session.dstOuterIp )
@@ -255,13 +263,13 @@ dl
             | Add outer Dst Oui EXISTS! to query
     dd
       if (session.dstOuterMac)
-        strong.medium.ml-1 Mac
+        strong.ml-1 Mac
         +arrayPrint(session, "dstOuterMac", "outermac.dst", true)
       if (session.dstOuterOui)
-        strong.medium.ml-1 Oui
+        strong.ml-1 Oui
         +arrayPrint(session, "dstOuterOui", "outeroui.dst", true)
       if (session.dstOuterIp)
-        strong.medium.ml-1 IP
+        strong.ml-1 IP
         +arrayPrint(session, "dstOuterIp", "outerip.dst", true)
 
   dt
@@ -401,17 +409,19 @@ dl
       - function isprint(char) { return !( /[\x00-\x08\x0E-\x1F\x80-\xFF]/.test(char)); }
       - function printstr(str) { for (let char of str) { if (!isprint(char)) { char = '�'; } } return str; }
       if (session.srcPayload8)
-        strong.medium.ml-1 Src
-        - var srcPayload8a = new Buffer(session.srcPayload8, "hex").toString();
-        +clickableValue('payload8.src.hex', session.srcPayload8)
+        span.no-wrap
+          strong.ml-1 Src
+          - var srcPayload8a = new Buffer(session.srcPayload8, "hex").toString();
+          +clickableValue('payload8.src.hex', session.srcPayload8)
         | ( #{printstr(srcPayload8a)} )
       if (session.dstPayload8)
-        if (session.srcPayload8)
-          strong.medium.ml-1 Dst
-        else
-          strong.medium Dst
-        - var dstPayload8a = new Buffer(session.dstPayload8, "hex").toString();
-        +clickableValue('payload8.dst.hex', session.dstPayload8)
+        span.no-wrap
+          if (session.srcPayload8)
+            strong.ml-1 Dst
+          else
+            strong Dst
+          - var dstPayload8a = new Buffer(session.dstPayload8, "hex").toString();
+          +clickableValue('payload8.dst.hex', session.dstPayload8)
         | ( #{printstr(dstPayload8a)} )
 
   div.tag-list
@@ -603,20 +613,27 @@ dl
           | Add URG EXISTS! to query
         +clickableFieldActions('tcpflags.urg', false)
     dd
-      strong.medium.ml-1 SYN
-      +clickableValue('tcpflags.syn', session.tcpflags.syn)
-      strong.medium.ml-1 SYN-ACK
-      +clickableValue('tcpflags.syn-ack', session.tcpflags['syn-ack'])
-      strong.medium.ml-1 ACK
-      +clickableValue('tcpflags.ack', session.tcpflags.ack)
-      strong.medium.ml-1 PSH
-      +clickableValue('tcpflags.psh', session.tcpflags.psh)
-      strong.medium.ml-1 RST
-      +clickableValue('tcpflags.rst', session.tcpflags.rst)
-      strong.medium.ml-1 FIN
-      +clickableValue('tcpflags.fin', session.tcpflags.fin)
-      strong.medium.ml-1 URG
-      +clickableValue('tcpflags.urg', session.tcpflags.urg)
+      span.no-wrap
+        strong.ml-1 SYN
+        +clickableValue('tcpflags.syn', session.tcpflags.syn)
+      span.no-wrap
+        strong.ml-1 SYN-ACK
+        +clickableValue('tcpflags.syn-ack', session.tcpflags['syn-ack'])
+      span.no-wrap
+        strong.ml-1 ACK
+        +clickableValue('tcpflags.ack', session.tcpflags.ack)
+      span.no-wrap
+        strong.ml-1 PSH
+        +clickableValue('tcpflags.psh', session.tcpflags.psh)
+      span.no-wrap
+        strong.ml-1 RST
+        +clickableValue('tcpflags.rst', session.tcpflags.rst)
+      span.no-wrap
+        strong.ml-1 FIN
+        +clickableValue('tcpflags.fin', session.tcpflags.fin)
+      span.no-wrap
+        strong.ml-1 URG
+        +clickableValue('tcpflags.urg', session.tcpflags.urg)
 
   if (session.icmp)
     dt
@@ -637,9 +654,9 @@ dl
           | Add ICMP Code EXISTS! to query
         +clickableFieldActions('icmp.code', false)
     dd
-      strong.medium.ml-1 Type
+      strong.ml-1 Type
       +arrayPrint(session.icmp, "type", "icmp.type")
-      strong.medium.ml-1 Code
+      strong.ml-1 Code
       +arrayPrint(session.icmp, "code", "icmp.code")
 
   if (session.srcDscp || session.dstDscp)
@@ -659,8 +676,8 @@ dl
           +clickableFieldActions('dscp.dst', false)
     dd
       if (session.srcDscp)
-        strong.medium.ml-1 Src
+        strong.ml-1 Src
         +arrayPrint(session, "srcDscp", "dscp.src")
       if (session.dstDscp)
-        strong.medium.ml-1 Dst
+        strong.ml-1 Dst
         +arrayPrint(session, "dstDscp", "dscp.dst")
