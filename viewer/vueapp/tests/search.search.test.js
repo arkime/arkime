@@ -247,12 +247,12 @@ test('search bar - viz buttons', async () => {
   expect(store.mutations.setForcedAggregations).toHaveBeenCalledWith(store.state, true);
 
   // should not have the remove disabled force viz button
-  expect(queryByText('Disable forced vizualizations')).not.toBeInTheDocument();
+  expect(queryByText('Disable forced visualizations')).not.toBeInTheDocument();
 
   // should show all fetch viz buttons
-  getByText('Fetch vizualizations for this query');
-  const alwaysBtn = getByText('Always fetch vizualizations for this browser');
-  const sessionBtn = getByText('Fetch vizualizations for this browser session');
+  getByText('Fetch visualizations for this query');
+  const alwaysBtn = getByText('Always fetch visualizations for this browser');
+  const sessionBtn = getByText('Fetch visualizations for this browser session');
 
   // clicking always button should fetch data and set forced aggs
   await fireEvent.click(alwaysBtn);
@@ -289,7 +289,7 @@ test('search bar - disable forced viz button', async () => {
   expect(queryByText('Fetch Viz Data')).not.toBeInTheDocument();
 
   // should see disable force viz button
-  const disableForced = getByText('Disable forced vizualizations');
+  const disableForced = getByText('Disable forced visualizations');
   await fireEvent.click(disableForced);
   expect(store.mutations.setFetchGraphData).not.toHaveBeenCalled();
   expect(store.mutations.setForcedAggregations).toHaveBeenCalledWith(store.state, false);
