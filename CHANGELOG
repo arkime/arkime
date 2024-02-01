@@ -83,6 +83,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #2592 fix sometimes not identifying quic protocol correctly
   - #2600 add tls:has_ech tag (thanks @renini)
   - #2614 new kafka-config section
+  - #2622 fix malicious quic packet crashing capture
 ## Cont3xt
   - #2121 new bulk UI and support for bulk queries
   - #2271 lots of keyboard shortcut improvements
@@ -118,6 +119,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #2601 patch cyberchef xss vuln (https://github.com/gchq/CyberChef/issues/1468)
   - #2606 zstd sometimes didn't read all packets
   - #2607 improved session detail display
+  - #2621 session detail link a link now, multi select info column items now
 ## Parliament
   - #2377 dashboard-only mode removed, if you want users to just see the dashboard don't assign them the parliamentUser role
   - #2395 configuration is now stored in opensearch/elasticsearch
