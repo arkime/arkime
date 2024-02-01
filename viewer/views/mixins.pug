@@ -79,12 +79,14 @@ mixin ipPrint(session, ipstr, port, geo, as, rir, expr, full, v6)
         +clickableValue(`country.${expr}`, geo)
       |) &nbsp;
     - if (as)
-      | [
+      span(style="display:inline-flex")
+        |[
       if (full)
         +clickableValue(expr + '.asn', as)
       else
         +clickableValue('asn.' + expr, as)
-      |] &nbsp;
+      span(style="display:inline-flex")
+        |] &nbsp;
     - if (rir)
       | {
       if (full)
