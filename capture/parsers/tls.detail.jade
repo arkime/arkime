@@ -22,9 +22,11 @@ if (session.tls || session.cert)
               strong.ml-1 Serial
               arkime-session-field.detail-field(:expr="'cert.serial'", :value='"'+cert.sn+'"', :field="fields['cert.serial']", :pull-left="true")
           - if (cert.hash)
-            | [
+            span(style="display:inline-flex")
+              |[
             arkime-session-field.detail-field(:expr="'cert.hash'", :value='"'+cert.hash+'"', :field="fields['cert.hash']", :pull-left="true")
-            |]
+            span(style="display:inline-flex")
+              |]
           - if (cert.notBefore)
             span.no-wrap
               strong.ml-1 Not Before
@@ -109,12 +111,14 @@ if (session.tls || session.cert)
               strong.ml-1 Subject Org Unit
               arkime-session-field.detail-field(:expr="'cert.subject.ou'", :value='"'+cert.subjectOU+'"', :field="fields['cert.subject.ou']", :pull-left="true")
           - if (cert.alt)
-            | [
+            span(style="display:inline-flex")
+              |[
             each alt,i in cert.alt
               if (i > 0)
                 |,
               arkime-session-field.detail-field(:expr="'cert.alt'", :value='"'+alt+'"', :field="fields['cert.alt']", :pull-left="true")
-            |]
+            span(style="display:inline-flex")
+              |]
           - if (cert.publicAlgorithm)
             span.no-wrap
               strong.ml-1 Public Algorithm
