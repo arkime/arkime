@@ -1040,7 +1040,7 @@ LOCAL void tls_classify(ArkimeSession_t *session, const uint8_t *data, int len, 
 /******************************************************************************/
 void arkime_parser_init()
 {
-    ja4Raw = arkime_config_boolean(NULL, "ja4Raw", TRUE);
+    ja4Raw = arkime_config_boolean(NULL, "ja4Raw", FALSE);
 
     certsField = arkime_field_define("cert", "notreal",
                                      "cert", "cert", "cert",

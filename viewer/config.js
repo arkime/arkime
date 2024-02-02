@@ -92,7 +92,7 @@ class Config {
 
   // ----------------------------------------------------------------------------
   static getFull (node, key, defaultValue) {
-    return ArkimeConfig.getFull([node, 'default'], key, defaultValue);
+    return ArkimeConfig.getFull([node, ArkimeConfig.getFull([node], 'nodeClass'), 'default'], key, defaultValue);
   }
 
   // ----------------------------------------------------------------------------
@@ -105,29 +105,7 @@ class Config {
   // ----------------------------------------------------------------------------
   // Return an array split on separator, remove leading/trailing spaces, remove empty elements
   static getFullArray (node, key, defaultValue, sep) {
-    return ArkimeConfig.getFullArray([node, 'default'], key, defaultValue, sep);
-  };
-
-  // ----------------------------------------------------------------------------
-  static getObj (key, defaultValue) {
-    const full = Config.getFull(internals.nodeName, key, defaultValue);
-    if (!full) {
-      return null;
-    }
-
-    const obj = {};
-    full.split(';').forEach((element) => {
-      const parts = element.split('=');
-      if (parts && parts.length === 2) {
-        if (parts[1] === 'true') {
-          parts[1] = true;
-        } else if (parts[1] === 'false') {
-          parts[1] = false;
-        }
-        obj[parts[0]] = parts[1];
-      }
-    });
-    return obj;
+    return ArkimeConfig.getFullArray([node, ArkimeConfig.getFull([node], 'nodeClass'), 'default'], key, defaultValue, sep);
   };
 
   // ----------------------------------------------------------------------------
@@ -323,7 +301,12 @@ class Config {
         console.log('ERROR - [default] section missing from', ArkimeConfig.configFile);
         process.exit(1);
       }
-    });
+
+      const nodeClass = ArkimeConfig.getFull([internals.nodeName], 'nodeClass');
+      if (nodeClass && ArkimeConfig.getSection(nodeClass) !== undefined) {
+        sections.splice(1, 0, nodeClass);
+      }
+    }, true);
 
     await ArkimeConfig.initialize({
       defaultConfigFile: `${version.config_prefix}/etc/config.ini`,
