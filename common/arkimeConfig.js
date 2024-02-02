@@ -154,6 +154,7 @@ class ArkimeConfig {
     let key;
 
     for (const section of sections) {
+      if (section === undefined) { continue; }
       key = `${section}.${sectionKey}`;
       value = ArkimeConfig.#override.get(key) ?? ArkimeConfig.#config?.[section]?.[sectionKey];
       if (value !== undefined) { break; }
@@ -297,9 +298,11 @@ class ArkimeConfig {
 
   // ----------------------------------------------------------------------------
   static #loadedCbs = [];
-  static loaded (cb) {
+  static loaded (cb, front) {
     if (ArkimeConfig.#loadedCbs === undefined) {
       cb(); // Loaded already, call right away
+    } else if (front) {
+      ArkimeConfig.#loadedCbs.unshift(cb);
     } else {
       ArkimeConfig.#loadedCbs.push(cb);
     }
