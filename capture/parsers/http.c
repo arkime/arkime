@@ -82,8 +82,8 @@ void http_common_parse_cookie(ArkimeSession_t *session, char *cookie, int len)
 {
     char *start = cookie;
     char *end = cookie + len;
-    while (1) {
-        while (isspace(*start) && start < end) start++;
+    while (start < end) {
+        while (start < end && isspace(*start)) start++;
         char *equal = memchr(start, '=', end - start);
         if (!equal)
             break;
@@ -91,7 +91,7 @@ void http_common_parse_cookie(ArkimeSession_t *session, char *cookie, int len)
         start = memchr(equal + 1, ';', end - (equal + 1));
         if (config.parseCookieValue) {
             equal++;
-            while (isspace(*equal) && equal < end) equal++;
+            while (equal < end && isspace(*equal)) equal++;
             if (equal < end && equal != start)
                 arkime_field_string_add(cookieValueField, session, equal, start ? start - equal : end - equal, TRUE);
         }
