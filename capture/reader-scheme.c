@@ -57,7 +57,7 @@ LOCAL ArkimeScheme_t *uri2scheme(const char *uri)
 {
     ArkimeString_t *str;
 
-    char *colonslashslash = strstr(uri, "://");
+    const char *colonslashslash = strstr(uri, "://");
     if (colonslashslash) {
         char scheme[30];
         if (colonslashslash - uri > 29) {

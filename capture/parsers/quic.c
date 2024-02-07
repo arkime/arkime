@@ -32,8 +32,8 @@ LOCAL uint32_t tls_process_client_hello_func;
 /******************************************************************************/
 LOCAL int quic_chlo_parser(ArkimeSession_t *session, BSB dbsb) {
 
-    guchar   *tag = 0;
-    uint16_t  tagLen = 0;
+    const guchar *tag = 0;
+    uint16_t      tagLen = 0;
 
     BSB_LIMPORT_ptr(dbsb, tag, 4);
     BSB_LIMPORT_u16(dbsb, tagLen);
@@ -54,8 +54,8 @@ LOCAL int quic_chlo_parser(ArkimeSession_t *session, BSB dbsb) {
 
     uint32_t start = 0;
     while (!BSB_IS_ERROR(dbsb) && BSB_REMAINING(dbsb) && tagLen > 0) {
-        guchar   *subTag = 0;
-        uint32_t  endOffset = 0;
+        const guchar *subTag = 0;
+        uint32_t      endOffset = 0;
 
         BSB_LIMPORT_ptr(dbsb, subTag, 4);
         BSB_LIMPORT_u32(dbsb, endOffset);
@@ -426,7 +426,7 @@ LOCAL void quic_ietf_udp_classify(ArkimeSession_t *session, const uint8_t *data,
     // https://datatracker.ietf.org/doc/html/rfc5869
 
     // HKDF-Extract(salt, IKM) -> PRK
-    static uint8_t salt[20] = { 0x38, 0x76, 0x2c, 0xf7, 0xf5, 0x59, 0x34, 0xb3, 0x4d, 0x17, 0x9a, 0xe6, 0xa4, 0xc8, 0x0c, 0xad, 0xcc, 0xbb, 0x7f, 0x0a };
+    static const uint8_t salt[20] = { 0x38, 0x76, 0x2c, 0xf7, 0xf5, 0x59, 0x34, 0xb3, 0x4d, 0x17, 0x9a, 0xe6, 0xa4, 0xc8, 0x0c, 0xad, 0xcc, 0xbb, 0x7f, 0x0a };
     GHmac *hmac = g_hmac_new(G_CHECKSUM_SHA256, salt, 20);
     g_hmac_update(hmac, (guchar *)did, dlen);
     uint8_t prk[65];

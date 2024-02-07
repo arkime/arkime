@@ -15,7 +15,7 @@ LOCAL void rdp_classify(ArkimeSession_t *session, const uint8_t *data, int len, 
     if (len > 5 && data[3] <= len && data[4] == (data[3] - 5) && data[5] == 0xe0) {
         arkime_session_add_protocol(session, "rdp");
         if (len > 30 && memcmp(data + 11, "Cookie: mstshash=", 17) == 0) {
-            char *end = g_strstr_len((char *)data + 28, len - 28, "\r\n");
+            const char *end = g_strstr_len((char *)data + 28, len - 28, "\r\n");
             if (end)
                 arkime_field_string_add_lower(userField, session, (char * )data + 28, end - (char *)data - 28);
         }

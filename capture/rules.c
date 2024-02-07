@@ -468,7 +468,7 @@ LOCAL void arkime_rules_parser_load_rule(char *filename, YamlNode_t *parent)
     if (!name)
         CONFIGEXIT("%s: name required for rule", filename);
 
-    char *when = arkime_rules_parser_get_value(parent, "when");
+    const char *when = arkime_rules_parser_get_value(parent, "when");
     if (!when)
         CONFIGEXIT("%s: when required for rule '%s'", filename, name);
 
@@ -492,7 +492,7 @@ LOCAL void arkime_rules_parser_load_rule(char *filename, YamlNode_t *parent)
 
     char *log = arkime_rules_parser_get_value(parent, "log");
 
-    int type;
+    int type = 0;
     int saveFlags = 0;
     if (strcmp(when, "everyPacket") == 0) {
         type = ARKIME_RULE_TYPE_EVERY_PACKET;
@@ -651,7 +651,7 @@ LOCAL void arkime_rules_parser_load_rule(char *filename, YamlNode_t *parent)
 /******************************************************************************/
 LOCAL void arkime_rules_parser_load_file(char *filename, YamlNode_t *parent)
 {
-    char       *str;
+    const char *str;
     GPtrArray  *rules;
 
     str = arkime_rules_parser_get_value(parent, "version");
@@ -995,18 +995,18 @@ LOCAL void arkime_rules_match(ArkimeSession_t *const session, ArkimeRule_t *cons
 
 LOCAL void arkime_rules_check_rule_fields(ArkimeSession_t *const session, ArkimeRule_t *const rule, int skipPos, BSB *logStr)
 {
-    ArkimeString_t        *hstring;
-    ArkimeInt_t           *hint;
-    ArkimeStringHashStd_t *shash;
-    ArkimeIntHashStd_t    *ihash;
-    GHashTable            *ghash;
-    GHashTableIter         iter;
-    gpointer               ikey;
-    gpointer               fkey;
-    char                  *communityId = NULL;
-    int                    i;
-    int                    f;
-    int                    good = 1;
+    ArkimeString_t              *hstring;
+    ArkimeInt_t                 *hint;
+    const ArkimeStringHashStd_t *shash;
+    const ArkimeIntHashStd_t    *ihash;
+    GHashTable                  *ghash;
+    GHashTableIter               iter;
+    gpointer                     ikey;
+    gpointer                     fkey;
+    char                        *communityId = NULL;
+    int                          i;
+    int                          f;
+    int                          good = 1;
 
     for (f = 0; good && f < rule->fieldsLen; f++) {
         int p = rule->fields[f];
@@ -1347,15 +1347,15 @@ void arkime_rules_run_field_set(ArkimeSession_t *session, int pos, const gpointe
 
                     switch (akey[0]) {
                     case ARKIME_RULES_STR_MATCH_TAIL:
-                        if (memcmp(akey + 2, value + len - akey[1], akey[1]) == 0)
+                        if (memcmp(akey + 2, (char *)value + len - akey[1], akey[1]) == 0)
                             arkime_rules_run_field_set_rules(session, pos, rules);
                         break;
                     case ARKIME_RULES_STR_MATCH_HEAD:
-                        if (memcmp(akey + 2, value, akey[1]) == 0)
+                        if (memcmp(akey + 2, (char *)value, akey[1]) == 0)
                             arkime_rules_run_field_set_rules(session, pos, rules);
                         break;
                     case ARKIME_RULES_STR_MATCH_CONTAINS:
-                        if (arkime_memstr(value, len, (char * )akey + 2, akey[1]) != 0)
+                        if (arkime_memstr((char *)value, len, (char * )akey + 2, akey[1]) != 0)
                             arkime_rules_run_field_set_rules(session, pos, rules);
                     }
                 }

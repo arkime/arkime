@@ -60,7 +60,7 @@ LOCAL void dtls_key_usage (ArkimeCertsInfo_t *certs, BSB *bsb)
     uint32_t apc, atag, alen;
 
     while (BSB_REMAINING(*bsb) >= 2) {
-        uint8_t *value = arkime_parsers_asn_get_tlv(bsb, &apc, &atag, &alen);
+        const uint8_t *value = arkime_parsers_asn_get_tlv(bsb, &apc, &atag, &alen);
 
         if (value && atag == 4 && alen == 4)
             certs->isCA = (value[3] & 0x02);

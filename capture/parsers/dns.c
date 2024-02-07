@@ -471,7 +471,7 @@ LOCAL void dns_parser(ArkimeSession_t *session, int kind, const uint8_t *data, i
             case RR_AAAA: {
                 if (rdlength != 16)
                     break;
-                uint8_t *ptr = BSB_WORK_PTR(bsb);
+                const uint8_t *ptr = BSB_WORK_PTR(bsb);
 
                 if (opcode == 5) { // update
                     arkime_field_ip6_add(ipField, session, ptr);

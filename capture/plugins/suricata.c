@@ -303,7 +303,7 @@ LOCAL void suricata_process()
             item->timestamp = timegm(&tm);
 
             if (out[i + 3] > 30) {
-                char *t = line + out[i + 2];
+                const char *t = line + out[i + 2];
                 int offset = (t[27] - '0') * 10 * 3600 +
                              (t[28] - '0') * 3600 +
                              (t[29] - '0') * 10 * 60 +

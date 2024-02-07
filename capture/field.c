@@ -71,7 +71,7 @@ LOCAL void arkime_field_free_info(ArkimeFieldInfo_t *info)
     ARKIME_TYPE_FREE(ArkimeFieldInfo_t, info);
 }
 /******************************************************************************/
-void arkime_field_define_json(uint8_t *expression, int expression_len, uint8_t *data, int data_len)
+void arkime_field_define_json(const uint8_t *expression, int expression_len, const uint8_t *data, int data_len)
 {
     ArkimeFieldInfo_t *info = ARKIME_TYPE_ALLOC0(ArkimeFieldInfo_t);
     int                i;
@@ -225,7 +225,7 @@ int arkime_field_define_text_full(char *field, char *text, int *shortcut)
 
     char groupbuf[100];
     if (!group) {
-        char *dot = strchr(field, '.');
+        const char *dot = strchr(field, '.');
         if (dot) {
             if (dot - field >= (int)sizeof(groupbuf) - 1)
                 LOGEXIT("ERROR - field '%s' too long", field);
@@ -321,15 +321,15 @@ int arkime_field_define(char *group, char *kind, char *expression, char *friendl
     ArkimeFieldInfo_t *minfo = 0;
     HASH_FIND(d_, fieldsByDb, dbField, minfo);
 
-    char *category = NULL;
-    char *transform = NULL;
-    char *aliases = NULL;
+    const char *category = NULL;
+    const char *transform = NULL;
+    const char *aliases = NULL;
     va_list args;
     va_start(args, flags);
     while(1) {
-        char *field = va_arg(args, char *);
+        const char *field = va_arg(args, char *);
         if (!field) break;
-        char *value = va_arg(args, char *);
+        const char *value = va_arg(args, char *);
         if (strcmp(field, "category") == 0 && value) {
             category = value;
         } else if (strcmp(field, "transform") == 0 && value) {
@@ -404,7 +404,7 @@ int arkime_field_define(char *group, char *kind, char *expression, char *friendl
         config.fields[minfo->pos] = minfo;
 
         // Change leading part to dbGroup
-        char *firstdot = strchr(minfo->dbField, '.');
+        const char *firstdot = strchr(minfo->dbField, '.');
         if (firstdot) {
             minfo->dbGroupNum = arkime_field_group_num(minfo->dbField, (firstdot - minfo->dbField) + 1);
             minfo->dbGroup = minfo->dbField;

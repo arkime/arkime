@@ -132,8 +132,8 @@ LOCAL char          *iBuf = 0;
 /******************************************************************************/
 LOCAL int wise_item_cmp(const void *keyv, const void *elementv)
 {
-    char *key = (char *)keyv;
-    WiseItem_t *element = (WiseItem_t *)elementv;
+    const char *key = (char *)keyv;
+    const WiseItem_t *element = (WiseItem_t *)elementv;
 
     return strcmp(key, element->key) == 0;
 }
@@ -554,7 +554,7 @@ void wise_lookup_tuple(ArkimeSession_t *session, WiseRequest_t *request)
 
     int first = 1;
     ArkimeString_t *hstring;
-    ArkimeStringHashStd_t *shash = session->fields[protocolField]->shash;
+    const ArkimeStringHashStd_t *shash = session->fields[protocolField]->shash;
     HASH_FORALL2(s_, *shash, hstring) {
         if (first) {
             first = 0;
@@ -696,13 +696,13 @@ void wise_plugin_pre_save(ArkimeSession_t *session, int UNUSED(final))
             if (pos < 0 || pos > session->maxFields || !session->fields[pos])
                 continue;
 
-            ArkimeStringHashStd_t *shash;
-            gpointer               ikey;
-            GHashTable            *ghash;
-            GHashTableIter         iter;
-            ArkimeIntHashStd_t    *ihash;
-            ArkimeInt_t           *hint;
-            char                   buf[20];
+            const ArkimeStringHashStd_t *shash;
+            gpointer                     ikey;
+            GHashTable                  *ghash;
+            GHashTableIter               iter;
+            const ArkimeIntHashStd_t    *ihash;
+            ArkimeInt_t                 *hint;
+            char                         buf[20];
 
             switch(config.fields[pos]->type) {
             case ARKIME_FIELD_TYPE_INT:

@@ -345,9 +345,9 @@ int tcp_packet_process(ArkimeSession_t *const session, ArkimePacket_t *const pac
 SUPPRESS_ALIGNMENT
 void tcp_create_sessionid(uint8_t *sessionId, ArkimePacket_t *packet)
 {
-    struct ip           *ip4 = (struct ip *)(packet->pkt + packet->ipOffset);
-    struct ip6_hdr      *ip6 = (struct ip6_hdr *)(packet->pkt + packet->ipOffset);
-    struct tcphdr       *tcphdr = (struct tcphdr *)(packet->pkt + packet->payloadOffset);
+    const struct ip           *ip4 = (struct ip *)(packet->pkt + packet->ipOffset);
+    const struct ip6_hdr      *ip6 = (struct ip6_hdr *)(packet->pkt + packet->ipOffset);
+    const struct tcphdr       *tcphdr = (struct tcphdr *)(packet->pkt + packet->payloadOffset);
 
     if (packet->v6) {
         arkime_session_id6(sessionId, ip6->ip6_src.s6_addr, tcphdr->th_sport,
@@ -361,9 +361,9 @@ void tcp_create_sessionid(uint8_t *sessionId, ArkimePacket_t *packet)
 SUPPRESS_ALIGNMENT
 int tcp_pre_process(ArkimeSession_t *session, ArkimePacket_t *const packet, int isNewSession)
 {
-    struct ip           *ip4 = (struct ip *)(packet->pkt + packet->ipOffset);
-    struct ip6_hdr      *ip6 = (struct ip6_hdr *)(packet->pkt + packet->ipOffset);
-    struct tcphdr       *tcphdr = (struct tcphdr *)(packet->pkt + packet->payloadOffset);
+    const struct ip           *ip4 = (struct ip *)(packet->pkt + packet->ipOffset);
+    const struct ip6_hdr      *ip6 = (struct ip6_hdr *)(packet->pkt + packet->ipOffset);
+    const struct tcphdr       *tcphdr = (struct tcphdr *)(packet->pkt + packet->payloadOffset);
 
     // If this is an old session that hash RSTs and we get a syn, probably a port reuse, close old session
     if (!isNewSession && (tcphdr->th_flags & TH_SYN) && ((tcphdr->th_flags & TH_ACK) == 0) &&

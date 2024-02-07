@@ -236,7 +236,7 @@ uint8_t *arkime_get_instance_metadata(void *serverV, char *key, int key_len, siz
         char *tokenRequestHeaders[2] = {"X-aws-ec2-metadata-token-ttl-seconds: 30", NULL};
         if (config.debug)
             LOG("Requesting IMDSv2 metadata token");
-        uint8_t *token = arkime_http_send_sync(serverV, "PUT", "/latest/api/token", -1, NULL, 0, tokenRequestHeaders, mlen, NULL);
+        const uint8_t *token = arkime_http_send_sync(serverV, "PUT", "/latest/api/token", -1, NULL, 0, tokenRequestHeaders, mlen, NULL);
         if (config.debug)
             LOG("IMDSv2 metadata token received");
         snprintf(tokenHeader, sizeof(tokenHeader), "X-aws-ec2-metadata-token: %s", token);
@@ -307,8 +307,8 @@ void writer_s3_init_cb (int code, uint8_t *data, int len, gpointer uw)
         return;
     }
 
-    static GRegex      *regex = 0;
-    SavepcapS3Output_t *output;
+    static const GRegex  *regex = 0;
+    SavepcapS3Output_t   *output;
 
     if (!regex) {
         regex = g_regex_new("<UploadId>(.*)</UploadId>", 0, 0, 0);
@@ -341,7 +341,7 @@ void writer_s3_header_cb (char *url, const char *field, const char *value, int v
     if (strcasecmp("etag", field) != 0)
         return;
 
-    char *pnstr = strstr(url, "partNumber=");
+    const char *pnstr = strstr(url, "partNumber=");
     if (!pnstr)
         return;
 
@@ -800,7 +800,7 @@ extern ArkimePcapFileHdr_t pcapFileHeader;
 SavepcapS3File_t *writer_s3_create(const ArkimePacket_t *packet)
 {
     char               filename[1000];
-    static char       *extension[3] = {"", ".gz", ".zst"};
+    static const char *extension[3] = {"", ".gz", ".zst"};
     struct tm          tmp;
     int                offset = 6 + strlen(s3Region) + strlen(s3Bucket);
     char              *compressionBlockSizeArg = ARKIME_VAR_ARG_INT_SKIP;
@@ -924,7 +924,7 @@ void writer_s3_init(char *UNUSED(name))
     s3PathAccessStyle     = arkime_config_boolean(NULL, "s3PathAccessStyle", strchr(s3Bucket, '.') != NULL);
     s3Compress            = arkime_config_boolean(NULL, "s3Compress", FALSE);
     REMOVEDCONFIG("s3WriteGzip", "use s3Compression=gzip");
-    char *s3Compression   = arkime_config_str(NULL, "s3Compression", "zstd");
+    const char *s3Compression = arkime_config_str(NULL, "s3Compression", "zstd");
     s3CompressionLevel    = arkime_config_int(NULL, "s3CompressionLevel", 0, 0, 22);
     s3CompressionBlockSize = arkime_config_int(NULL, "s3CompressionBlockSize", 100000, 0xffff, 0x7ffff);
     s3StorageClass        = arkime_config_str(NULL, "s3StorageClass", "STANDARD");
@@ -978,7 +978,7 @@ void writer_s3_init(char *UNUSED(name))
         }
 
 
-        char *relativeURI = getenv("AWS_CONTAINER_CREDENTIALS_RELATIVE_URI");
+        const char *relativeURI = getenv("AWS_CONTAINER_CREDENTIALS_RELATIVE_URI");
         if (!relativeURI)
             LOGEXIT("AWS_CONTAINER_CREDENTIALS_RELATIVE_URI not set");
 

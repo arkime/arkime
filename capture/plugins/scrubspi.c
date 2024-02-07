@@ -35,18 +35,18 @@ LOCAL SS_t               ss[MAX_SS];
 /******************************************************************************/
 LOCAL void scrubspi_plugin_save(ArkimeSession_t *session, int UNUSED(final))
 {
-    int                    s;
-    guint                  i;
-    gchar                 *newstr;
-    ArkimeStringHashStd_t *shash;
-    ArkimeString_t        *hstring;
+    int                          s;
+    guint                        i;
+    gchar                       *newstr;
+    const ArkimeStringHashStd_t *shash;
+    ArkimeString_t              *hstring;
 
     for (s = 0; s < ssLen; s++) {
         const int pos = ss[s].pos;
         if (!session->fields[pos])
             continue;
 
-        ArkimeFieldInfo_t *field = config.fields[pos];
+        const ArkimeFieldInfo_t *field = config.fields[pos];
         switch (field->type) {
         case ARKIME_FIELD_TYPE_STR:
             newstr = g_regex_replace(ss[s].search, session->fields[pos]->str, -1, 0, ss[s].replace, 0, NULL);
@@ -131,7 +131,7 @@ LOCAL void scrubspi_add_entry(char *key, char *value)
             CONFIGEXIT("Field %s in section [scrubspi] not found", keys[j]);
         if (ssLen >= MAX_SS)
             CONFIGEXIT("Too many [scrubspi] items, max is %d", MAX_SS);
-        ArkimeFieldInfo_t *field = config.fields[pos];
+        const ArkimeFieldInfo_t *field = config.fields[pos];
         if (field->type != ARKIME_FIELD_TYPE_STR &&
             field->type != ARKIME_FIELD_TYPE_STR_ARRAY &&
             field->type != ARKIME_FIELD_TYPE_STR_HASH &&

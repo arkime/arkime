@@ -197,7 +197,7 @@ void http_common_add_header(ArkimeSession_t *session, int pos, int isReq, const 
 /******************************************************************************/
 void http_common_parse_url(ArkimeSession_t *session, char *url, int len)
 {
-    char *end = url + len;
+    const char *end = url + len;
     char *question = memchr(url, '?', len);
 
     if (question) {
@@ -333,7 +333,7 @@ LOCAL void arkime_http_parse_authorization(ArkimeSession_t *session, char *str)
 
     while (isspace(*str)) str++;
 
-    char *space = strchr(str, ' ');
+    const char *space = strchr(str, ' ');
 
     if (!space)
         return;
@@ -409,7 +409,7 @@ LOCAL int arkime_hp_cb_on_message_complete (http_parser *parser)
 LOCAL void http_add_value(ArkimeSession_t *session, HTTPInfo_t *http)
 {
     int                     pos  = http->pos[http->which];
-    char                    *s   = http->valueString[http->which]->str;
+    const char             *s    = http->valueString[http->which]->str;
     int                     l    = http->valueString[http->which]->len;
 
     http_common_add_header_value(session, pos, s, l);
@@ -606,7 +606,7 @@ LOCAL int arkime_hp_cb_on_headers_complete (http_parser *parser)
 
     gboolean truncated = FALSE;
     if (http->urlString && http->hostString) {
-        char *colon = strchr(http->hostString->str, ':');
+        const char *colon = strchr(http->hostString->str, ':');
         if (colon) {
             arkime_field_string_add(hostField, session, http->hostString->str, colon - http->hostString->str, TRUE);
         } else {
@@ -616,7 +616,7 @@ LOCAL int arkime_hp_cb_on_headers_complete (http_parser *parser)
         http_common_parse_url(session, http->urlString->str, http->urlString->len);
 
         if (http->urlString->str[0] != '/') {
-            char *result = strstr(http->urlString->str, http->hostString->str);
+            const char *result = strstr(http->urlString->str, http->hostString->str);
 
             /* If the host header is in the first 8 bytes of url then just use the url */
             if (result && result - http->urlString->str <= 8) {
@@ -671,7 +671,7 @@ LOCAL int arkime_hp_cb_on_headers_complete (http_parser *parser)
 
         http->urlString = NULL;
     } else if (http->hostString) {
-        char *colon = strchr(http->hostString->str, ':');
+        const char *colon = strchr(http->hostString->str, ':');
         if (colon) {
             arkime_field_string_add(hostField, session, http->hostString->str, colon - http->hostString->str, TRUE);
         } else {

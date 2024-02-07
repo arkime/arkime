@@ -235,7 +235,7 @@ void arkime_plugin_init()
 
     rd_kafka_conf_set_dr_msg_cb(conf, kafka_msg_delivered_bulk_cb);
 
-    char *kafkaMsgFormat = arkime_config_str(NULL, "kafkaMsgFormat", "bulk");
+    const char *kafkaMsgFormat = arkime_config_str(NULL, "kafkaMsgFormat", "bulk");
     if (strcmp(kafkaMsgFormat, "bulk") == 0) {
         arkime_db_set_send_bulk2(kafka_send_session_bulk, TRUE, FALSE, 0xffff);
     } else if (strcmp(kafkaMsgFormat, "bulk1") == 0) {

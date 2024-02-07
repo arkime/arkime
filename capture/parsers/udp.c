@@ -22,9 +22,9 @@ extern uint32_t              pluginsCbs;
 SUPPRESS_ALIGNMENT
 void udp_create_sessionid(uint8_t *sessionId, ArkimePacket_t *packet)
 {
-    struct ip           *ip4 = (struct ip *)(packet->pkt + packet->ipOffset);
-    struct ip6_hdr      *ip6 = (struct ip6_hdr *)(packet->pkt + packet->ipOffset);
-    struct udphdr       *udphdr = (struct udphdr *)(packet->pkt + packet->payloadOffset);
+    const struct ip         *ip4 = (struct ip *)(packet->pkt + packet->ipOffset);
+    const struct ip6_hdr    *ip6 = (struct ip6_hdr *)(packet->pkt + packet->ipOffset);
+    const struct udphdr     *udphdr = (struct udphdr *)(packet->pkt + packet->payloadOffset);
 
     if (packet->v6) {
         arkime_session_id6(sessionId, ip6->ip6_src.s6_addr, udphdr->uh_sport,
@@ -38,9 +38,9 @@ void udp_create_sessionid(uint8_t *sessionId, ArkimePacket_t *packet)
 SUPPRESS_ALIGNMENT
 int udp_pre_process(ArkimeSession_t *session, ArkimePacket_t *const packet, int isNewSession)
 {
-    struct ip           *ip4 = (struct ip *)(packet->pkt + packet->ipOffset);
-    struct ip6_hdr      *ip6 = (struct ip6_hdr *)(packet->pkt + packet->ipOffset);
-    struct udphdr       *udphdr = (struct udphdr *)(packet->pkt + packet->payloadOffset);
+    const struct ip           *ip4 = (struct ip *)(packet->pkt + packet->ipOffset);
+    const struct ip6_hdr      *ip6 = (struct ip6_hdr *)(packet->pkt + packet->ipOffset);
+    const struct udphdr       *udphdr = (struct udphdr *)(packet->pkt + packet->payloadOffset);
 
     if (isNewSession) {
         session->port1 = ntohs(udphdr->uh_sport);
