@@ -34,6 +34,7 @@ my $script = q|
       }
     }
 
+    let data;
     let interval;
 
     // fetch the data to populate the input
@@ -53,27 +54,6 @@ my $script = q|
       }).finally(() => {
         interval = setInterval(() => {
           if (typeof app !== 'undefined') {
-            // THIS IS A HACK TO GET AROUND A CYBERCHEF BUG
-            // https://github.com/gchq/CyberChef/issues/1468
-            // https://github.com/gchq/CyberChef/pull/1549
-            // replaces the addOperation function
-            app.manager.recipe.addOperation = (name) => {
-              const item = document.createElement('li');
-
-              item.classList.add('operation');
-
-              if (app.operations[name] != null) { // THIS is the fix
-                item.innerHTML = name;
-              }
-
-              app.manager.recipe.buildRecipeOperation(item);
-              document.getElementById('rec-list').appendChild(item);
-
-              $(item).find("[data-toggle='tooltip']").tooltip();
-              item.dispatchEvent(app.manager.operationadd);
-              return item;
-            };
-
             if (data) {
               app.manager.recipe.addOperation('From Hex');
               app.setInput(data);
