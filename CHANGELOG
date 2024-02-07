@@ -32,7 +32,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
 
 5.0.1 2024/02/xx
 ## Viewer
-  - upgrade cyberchef to 10.6.0
+  - #2631 upgrade cyberchef to 10.6.0
 
 5.0.0 2024/02/06
 ## BREAKING
