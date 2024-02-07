@@ -47,7 +47,7 @@ LOCAL int irc_parser(ArkimeSession_t *session, void *uw, const uint8_t *data, in
             while (BSB_REMAINING(bsb) > 0 && BSB_PEEK(bsb) != ' ' && BSB_PEEK(bsb) != '\r' && BSB_PEEK(bsb) != '\n') {
                 BSB_IMPORT_skip(bsb, 1);
             }
-            uint8_t *end = BSB_WORK_PTR(bsb);
+            const uint8_t *end = BSB_WORK_PTR(bsb);
 
             if (!BSB_IS_ERROR(bsb) && start != end) {
                 arkime_field_string_add(channelsField, session, (char *)start, end - start, TRUE);
@@ -60,7 +60,7 @@ LOCAL int irc_parser(ArkimeSession_t *session, void *uw, const uint8_t *data, in
             while (BSB_REMAINING(bsb) > 0 && BSB_PEEK(bsb) != ' ' && BSB_PEEK(bsb) != '\r' && BSB_PEEK(bsb) != '\n') {
                 BSB_IMPORT_skip(bsb, 1);
             }
-            uint8_t *end = BSB_WORK_PTR(bsb);
+            const uint8_t *end = BSB_WORK_PTR(bsb);
 
             if (!BSB_IS_ERROR(bsb) && start != end) {
                 arkime_field_string_add(nickField, session, (char *)start, end - start, TRUE);

@@ -20,18 +20,18 @@ LOCAL  int                   sctpMProtocol;
 SUPPRESS_ALIGNMENT
 LOCAL ArkimePacketRC sctp_packet_enqueue(ArkimePacketBatch_t *UNUSED(batch), ArkimePacket_t *const packet, const uint8_t *UNUSED(data), int UNUSED(len))
 {
-    uint8_t             sessionId[ARKIME_SESSIONID_LEN];
-    struct udphdr       *udphdr = (struct udphdr *)(packet->pkt + packet->payloadOffset); /* Not really udp, but port in same location */
+    uint8_t              sessionId[ARKIME_SESSIONID_LEN];
+    const struct udphdr *udphdr = (struct udphdr *)(packet->pkt + packet->payloadOffset); /* Not really udp, but port in same location */
 
     if (packet->payloadLen < (int)sizeof(struct udphdr))
         return ARKIME_PACKET_CORRUPT;
 
     if (packet->v6) {
-        struct ip6_hdr *ip6 = (struct ip6_hdr *)(packet->pkt + packet->ipOffset);
+        const struct ip6_hdr *ip6 = (struct ip6_hdr *)(packet->pkt + packet->ipOffset);
         arkime_session_id6(sessionId, ip6->ip6_src.s6_addr, udphdr->uh_sport,
                            ip6->ip6_dst.s6_addr, udphdr->uh_dport);
     } else {
-        struct ip *ip4 = (struct ip *)(packet->pkt + packet->ipOffset);
+        const struct ip *ip4 = (struct ip *)(packet->pkt + packet->ipOffset);
         arkime_session_id(sessionId, ip4->ip_src.s_addr, udphdr->uh_sport,
                           ip4->ip_dst.s_addr, udphdr->uh_dport);
     }
@@ -43,14 +43,14 @@ LOCAL ArkimePacketRC sctp_packet_enqueue(ArkimePacketBatch_t *UNUSED(batch), Ark
 SUPPRESS_ALIGNMENT
 LOCAL void sctp_create_sessionid(uint8_t *sessionId, ArkimePacket_t *packet)
 {
-    struct udphdr       *udphdr = (struct udphdr *)(packet->pkt + packet->payloadOffset); /* Not really udp, but port in same location */
+    const struct udphdr    *udphdr = (struct udphdr *)(packet->pkt + packet->payloadOffset); /* Not really udp, but port in same location */
 
     if (packet->v6) {
-        struct ip6_hdr *ip6 = (struct ip6_hdr *)(packet->pkt + packet->ipOffset);
+        const struct ip6_hdr *ip6 = (struct ip6_hdr *)(packet->pkt + packet->ipOffset);
         arkime_session_id6(sessionId, ip6->ip6_src.s6_addr, udphdr->uh_sport,
                            ip6->ip6_dst.s6_addr, udphdr->uh_dport);
     } else {
-        struct ip *ip4 = (struct ip *)(packet->pkt + packet->ipOffset);
+        const struct ip *ip4 = (struct ip *)(packet->pkt + packet->ipOffset);
         arkime_session_id(sessionId, ip4->ip_src.s_addr, udphdr->uh_sport,
                           ip4->ip_dst.s_addr, udphdr->uh_dport);
     }
@@ -59,9 +59,9 @@ LOCAL void sctp_create_sessionid(uint8_t *sessionId, ArkimePacket_t *packet)
 SUPPRESS_ALIGNMENT
 LOCAL int sctp_pre_process(ArkimeSession_t *session, ArkimePacket_t *const packet, int isNewSession)
 {
-    struct ip           *ip4 = (struct ip *)(packet->pkt + packet->ipOffset);
-    struct ip6_hdr      *ip6 = (struct ip6_hdr *)(packet->pkt + packet->ipOffset);
-    struct udphdr       *udphdr = (struct udphdr *)(packet->pkt + packet->payloadOffset);
+    const struct ip        *ip4 = (struct ip *)(packet->pkt + packet->ipOffset);
+    const struct ip6_hdr   *ip6 = (struct ip6_hdr *)(packet->pkt + packet->ipOffset);
+    const struct udphdr    *udphdr = (struct udphdr *)(packet->pkt + packet->payloadOffset);
     if (isNewSession) {
         session->port1 = ntohs(udphdr->uh_sport);
         session->port2 = ntohs(udphdr->uh_dport);

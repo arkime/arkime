@@ -21,7 +21,7 @@ LOCAL void ssh_parse_keyinit(ArkimeSession_t *session, const uint8_t *data, int 
     BSB   hbsb;
 
     uint32_t       len = 0;
-    uint8_t *value = 0;
+    const uint8_t *value = 0;
 
     BSB_INIT(bsb, data, remaining);
     BSB_INIT(hbsb, hbuf, sizeof(hbuf));

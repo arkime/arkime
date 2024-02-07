@@ -333,7 +333,7 @@ LOCAL void arkime_http_add_request(ArkimeHttpServer_t *server, ArkimeHttpRequest
     request->snamePos = server->snamesPos;
     server->snamesPos = (server->snamesPos + 1) % server->snamesCnt;
 
-    char *host = server->snames[request->snamePos].name;
+    const char *host = server->snames[request->snamePos].name;
     snprintf(request->url, sizeof(request->url), "%s%s", host, request->key);
 
     curl_easy_setopt(request->easy, CURLOPT_URL, request->url);

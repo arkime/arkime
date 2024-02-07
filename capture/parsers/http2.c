@@ -148,7 +148,7 @@ LOCAL void http2_parse_header_block(ArkimeSession_t *session, HTTP2Info_t *http2
                 if (nv.namelen == 7 && memcmp(nv.name, ":method", 7) == 0) {
                     arkime_field_string_add(methodField, session, (char *)nv.value, nv.valuelen, TRUE);
                 } else if (nv.namelen == 10 && memcmp(nv.name, ":authority", 10) == 0) {
-                    uint8_t *colon = memchr(nv.value, ':', nv.valuelen);
+                    const uint8_t *colon = memchr(nv.value, ':', nv.valuelen);
                     if (colon) {
                         arkime_field_string_add(hostField, session, (char *)nv.value, colon - nv.value, TRUE);
                     } else {

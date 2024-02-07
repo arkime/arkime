@@ -172,7 +172,7 @@ LOCAL void krb5_parse(ArkimeSession_t *session, const uint8_t *data, int len)
 {
     BSB obsb;
     uint32_t opc, msgType, olen;
-    uint8_t *ovalue;
+    const uint8_t *ovalue;
 
     BSB_INIT(obsb, data, len);
     ovalue = arkime_parsers_asn_get_tlv(&obsb, &opc, &msgType, &olen);

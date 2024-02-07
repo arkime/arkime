@@ -826,8 +826,8 @@ typedef int  (* ArkimeCanQuitFunc) ();
 #define ARKIME_GIO_WRITE_COND (G_IO_OUT | G_IO_HUP | G_IO_ERR | G_IO_NVAL)
 
 gint arkime_watch_fd(gint fd, GIOCondition cond, ArkimeWatchFd_func func, gpointer data);
-uint8_t *arkime_js0n_get(uint8_t *data, uint32_t len, const char *key, uint32_t *olen);
-char *arkime_js0n_get_str(uint8_t *data, uint32_t len, const char *key);
+const uint8_t *arkime_js0n_get(const uint8_t *data, uint32_t len, const char *key, uint32_t *olen);
+char *arkime_js0n_get_str(const uint8_t *data, uint32_t len, const char *key);
 
 gboolean arkime_string_add(void *hashv, char *string, gpointer uw, gboolean copy);
 
@@ -1053,7 +1053,7 @@ gboolean arkime_http_is_arkime(uint32_t hash, uint8_t *sessionId);
 
 
 void     arkime_session_id (uint8_t *sessionId, uint32_t addr1, uint16_t port1, uint32_t addr2, uint16_t port2);
-void     arkime_session_id6 (uint8_t *sessionId, uint8_t *addr1, uint16_t port1, uint8_t *addr2, uint16_t port2);
+void     arkime_session_id6 (uint8_t *sessionId, const uint8_t *addr1, uint16_t port1, const uint8_t *addr2, uint16_t port2);
 char    *arkime_session_id_string (uint8_t *sessionId, char *buf);
 char    *arkime_session_pretty_string (ArkimeSession_t *session, char *buf, int len);
 
@@ -1305,7 +1305,7 @@ char *arkime_yara_version();
  */
 
 void arkime_field_init();
-void arkime_field_define_json(uint8_t *expression, int expression_len, uint8_t *data, int data_len);
+void arkime_field_define_json(const uint8_t *expression, int expression_len, const uint8_t *data, int data_len);
 int  arkime_field_define_text(char *text, int *shortcut);
 int  arkime_field_define_text_full(char *field, char *text, int *shortcut);
 int  arkime_field_define(char *group, char *kind, char *expression, char *friendlyName, char *dbField, char *help, ArkimeFieldType type, int flags, ...);

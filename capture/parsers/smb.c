@@ -226,7 +226,7 @@ LOCAL void smb1_parse_userdomainosver(ArkimeSession_t *session, char *buf, int l
 /******************************************************************************/
 LOCAL int smb1_parse(ArkimeSession_t *session, SMBInfo_t *smb, BSB *bsb, char *state, uint32_t *remlen, int which)
 {
-    uint8_t *start = BSB_WORK_PTR(*bsb);
+    const uint8_t *start = BSB_WORK_PTR(*bsb);
 
     switch (*state) {
     case SMB_SMBHEADER: {
@@ -371,7 +371,7 @@ LOCAL int smb1_parse(ArkimeSession_t *session, SMBInfo_t *smb, BSB *bsb, char *s
 /******************************************************************************/
 LOCAL int smb2_parse(ArkimeSession_t *session, SMBInfo_t *UNUSED(smb), BSB *bsb, char *state, uint32_t *remlen, int UNUSED(which))
 {
-    uint8_t *start = BSB_WORK_PTR(*bsb);
+    const uint8_t *start = BSB_WORK_PTR(*bsb);
 
     switch (*state) {
     case SMB_SMBHEADER: {

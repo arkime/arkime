@@ -192,10 +192,10 @@ LOCAL void arkime_packet_process(ArkimePacket_t *packet, int thread)
 
     arkime_pq_run(thread, 10);
 
-    ArkimeSession_t     *session;
-    struct ip           *ip4 = (struct ip *)(packet->pkt + packet->ipOffset);
-    struct ip6_hdr      *ip6 = (struct ip6_hdr *)(packet->pkt + packet->ipOffset);
-    uint8_t              sessionId[ARKIME_SESSIONID_LEN];
+    ArkimeSession_t      *session;
+    struct ip            *ip4 = (struct ip *)(packet->pkt + packet->ipOffset);
+    const struct ip6_hdr *ip6 = (struct ip6_hdr *)(packet->pkt + packet->ipOffset);
+    uint8_t               sessionId[ARKIME_SESSIONID_LEN];
 
 
     mProtocols[packet->mProtocol].createSessionId(sessionId, packet);
@@ -712,7 +712,7 @@ LOCAL ArkimePacketRC arkime_packet_ip4(ArkimePacketBatch_t *batch, ArkimePacket_
 {
     struct ip           *ip4 = (struct ip *)data;
     struct tcphdr       *tcphdr = 0;
-    struct udphdr       *udphdr = 0;
+    const struct udphdr *udphdr = 0;
     uint8_t              sessionId[ARKIME_SESSIONID_LEN];
 
 #ifdef DEBUG_PACKET
@@ -749,7 +749,7 @@ LOCAL ArkimePacketRC arkime_packet_ip4(ArkimePacketBatch_t *batch, ArkimePacket_
         return ARKIME_PACKET_CORRUPT;
     }
     if (ipTree4) {
-        patricia_node_t *node;
+        const patricia_node_t *node;
 
         if ((node = patricia_search_best3 (ipTree4, (u_char * )&ip4->ip_src, 32)) && node->data == NULL)
             return ARKIME_PACKET_IP_DROPPED;
@@ -886,7 +886,7 @@ LOCAL ArkimePacketRC arkime_packet_ip6(ArkimePacketBatch_t *batch, ArkimePacket_
     }
 
     if (ipTree6) {
-        patricia_node_t *node;
+        const patricia_node_t *node;
 
         if ((node = patricia_search_best3 (ipTree6, (u_char * )&ip6->ip6_src, 128)) && node->data == NULL)
             return ARKIME_PACKET_IP_DROPPED;

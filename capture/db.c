@@ -1398,7 +1398,7 @@ LOCAL void arkime_db_load_stats()
     size_t             data_len;
     uint32_t           len;
     uint32_t           source_len;
-    uint8_t           *source = 0;
+    const uint8_t     *source = 0;
 
     char     stats_key[200];
     int      stats_key_len = 0;
@@ -1866,7 +1866,7 @@ uint32_t arkime_db_get_sequence_number_sync(char *name)
         uint8_t *data = arkime_http_send_sync(esServer, "POST", key, key_len, "{}", 2, NULL, &data_len, NULL);
 
         uint32_t version_len;
-        uint8_t *version = arkime_js0n_get(data, data_len, "_version", &version_len);
+        const uint8_t *version = arkime_js0n_get(data, data_len, "_version", &version_len);
 
         if (!version_len || !version) {
             LOG("ERROR - Couldn't fetch sequence: %d %.*s", (int)data_len, (int)data_len, data);
@@ -1900,7 +1900,7 @@ LOCAL void arkime_db_load_file_num()
     size_t             data_len;
     uint8_t           *data;
     uint32_t           found_len;
-    uint8_t           *found = 0;
+    const uint8_t     *found = 0;
 
     /* First see if we have the new style number or not */
     key_len = snprintf(key, sizeof(key), "/%ssequence/_doc/fn-%s", config.prefix, config.nodeName);
@@ -2094,11 +2094,11 @@ char *arkime_db_create_file_full(time_t firstPacket, const char *name, uint64_t 
     va_list  args;
     va_start(args, id);
     while (1) {
-        char *field = va_arg(args, char *);
+        const char *field = va_arg(args, char *);
         if (!field)
             break;
 
-        char *value = va_arg(args, char *);
+        const char *value = va_arg(args, char *);
         if (!value)
             break;
 
@@ -2168,7 +2168,7 @@ LOCAL void arkime_db_check()
     }
 
     uint32_t           template_len;
-    uint8_t           *template = 0;
+    const uint8_t     *template = 0;
 
     template = arkime_js0n_get(data, data_len, tname, &template_len);
     if(!template || template_len == 0) {
@@ -2176,7 +2176,7 @@ LOCAL void arkime_db_check()
     }
 
     uint32_t           mappings_len;
-    uint8_t           *mappings = 0;
+    const uint8_t     *mappings = 0;
 
     mappings = arkime_js0n_get(template, template_len, "mappings", &mappings_len);
     if(!mappings || mappings_len == 0) {
@@ -2184,7 +2184,7 @@ LOCAL void arkime_db_check()
     }
 
     uint32_t           meta_len;
-    uint8_t           *meta = 0;
+    const uint8_t     *meta = 0;
 
     meta = arkime_js0n_get(mappings, mappings_len, "_meta", &meta_len);
     if(!meta || meta_len == 0) {
@@ -2192,7 +2192,7 @@ LOCAL void arkime_db_check()
     }
 
     uint32_t           version_len = 0;
-    uint8_t           *version = 0;
+    const uint8_t     *version = 0;
 
     version = arkime_js0n_get(meta, meta_len, "molochDbVersion", &version_len);
 
@@ -2249,8 +2249,9 @@ LOCAL void arkime_db_load_rir(const char *name)
     }
 
     while(fgets(line, sizeof(line), fp)) {
-        int   cnt = 0, quote = 0, num = 0;
-        char *ptr, *start;
+        int cnt = 0, quote = 0, num = 0;
+        const char *start;
+        char *ptr;
 
         for (start = ptr = line; *ptr != 0; ptr++) {
             if (*ptr == '"') {
@@ -2323,7 +2324,7 @@ LOCAL void arkime_db_load_oui(const char *name)
             CONFIGEXIT("OUI file %s bad line '%s'", name, line);
         }
 
-        char *str = NULL;
+        const char *str = NULL;
         if (parts[2]) {
             if (parts[2][0])
                 str = parts[2];
@@ -2376,7 +2377,7 @@ LOCAL void arkime_db_load_oui(const char *name)
 /******************************************************************************/
 void arkime_db_oui_lookup(int field, ArkimeSession_t *session, const uint8_t *mac)
 {
-    patricia_node_t *node;
+    const patricia_node_t *node;
 
     if (!ouiTree)
         return;
@@ -2402,7 +2403,7 @@ LOCAL void arkime_db_load_fields()
     }
 
     uint32_t           hits_len;
-    uint8_t           *hits = 0;
+    const uint8_t     *hits = 0;
     hits = arkime_js0n_get(data, data_len, "hits", &hits_len);
     if (!hits) {
         LOGEXIT("ERROR - Couldn't download %sfields, database (%s) might be down or not initialized.", config.prefix, config.elasticsearch);
@@ -2411,7 +2412,7 @@ LOCAL void arkime_db_load_fields()
     }
 
     uint32_t           ahits_len;
-    uint8_t           *ahits = 0;
+    const uint8_t     *ahits = 0;
     ahits = arkime_js0n_get(hits, hits_len, "hits", &ahits_len);
 
     if (!ahits) {
@@ -2426,11 +2427,11 @@ LOCAL void arkime_db_load_fields()
     int i;
     for (i = 0; out[i]; i += 2) {
         uint32_t           id_len;
-        uint8_t           *id = 0;
+        const uint8_t     *id = 0;
         id = arkime_js0n_get(ahits + out[i], out[i + 1], "_id", &id_len);
 
         uint32_t           source_len;
-        uint8_t           *source = 0;
+        const uint8_t     *source = 0;
         source = arkime_js0n_get(ahits + out[i], out[i + 1], "_source", &source_len);
         if (!source) {
             continue;
@@ -2567,7 +2568,7 @@ gboolean arkime_db_file_exists(const char *filename, uint32_t *outputId)
     uint8_t *data = arkime_http_get(esServer, key, key_len, &data_len);
 
     uint32_t           hits_len;
-    uint8_t           *hits = arkime_js0n_get(data, data_len, "hits", &hits_len);
+    const uint8_t     *hits = arkime_js0n_get(data, data_len, "hits", &hits_len);
 
     if (!hits_len || !hits) {
         free(data);
@@ -2575,7 +2576,7 @@ gboolean arkime_db_file_exists(const char *filename, uint32_t *outputId)
     }
 
     uint32_t           total_len;
-    uint8_t           *total = arkime_js0n_get(hits, hits_len, "total", &total_len);
+    const uint8_t     *total = arkime_js0n_get(hits, hits_len, "total", &total_len);
 
     if (!total_len || !total) {
         free(data);
@@ -2591,16 +2592,16 @@ gboolean arkime_db_file_exists(const char *filename, uint32_t *outputId)
         hits = arkime_js0n_get(data, data_len, "hits", &hits_len);
 
         uint32_t           hit_len;
-        uint8_t           *hit = arkime_js0n_get(hits, hits_len, "hits", &hit_len);
+        const uint8_t     *hit = arkime_js0n_get(hits, hits_len, "hits", &hit_len);
 
         uint32_t           source_len;
-        uint8_t           *source = 0;
+        const uint8_t     *source = 0;
 
         /* Remove array wrapper */
         source = arkime_js0n_get(hit + 1, hit_len - 2, "_source", &source_len);
 
         uint32_t           len;
-        uint8_t           *value;
+        const uint8_t     *value;
 
         if ((value = arkime_js0n_get(source, source_len, "num", &len))) {
             *outputId = atoi((char *)value);
@@ -2679,8 +2680,8 @@ void arkime_db_init()
 
         static char *headers[4] = {"Content-Type: application/json", "Expect:", NULL, NULL};
 
-        char *elasticsearchAPIKey = arkime_config_str(NULL, "elasticsearchAPIKey", NULL);
-        char *elasticsearchBasicAuth = arkime_config_str(NULL, "elasticsearchBasicAuth", NULL);
+        const char *elasticsearchAPIKey = arkime_config_str(NULL, "elasticsearchAPIKey", NULL);
+        const char *elasticsearchBasicAuth = arkime_config_str(NULL, "elasticsearchBasicAuth", NULL);
         if (elasticsearchAPIKey) {
             static char auth[1024];
             snprintf(auth, sizeof(auth), "Authorization: ApiKey %s", elasticsearchAPIKey);

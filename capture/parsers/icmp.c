@@ -29,10 +29,10 @@ LOCAL ArkimePacketRC icmp_packet_enqueue(ArkimePacketBatch_t *UNUSED(batch), Ark
     uint8_t                 sessionId[ARKIME_SESSIONID_LEN];
 
     if (packet->v6) {
-        struct ip6_hdr *ip6 = (struct ip6_hdr *)(packet->pkt + packet->ipOffset);
+        const struct ip6_hdr *ip6 = (struct ip6_hdr *)(packet->pkt + packet->ipOffset);
         arkime_session_id6(sessionId, ip6->ip6_src.s6_addr, 0, ip6->ip6_dst.s6_addr, 0);
     } else {
-        struct ip *ip4 = (struct ip *)(packet->pkt + packet->ipOffset);
+        const struct ip *ip4 = (struct ip *)(packet->pkt + packet->ipOffset);
         arkime_session_id(sessionId, ip4->ip_src.s_addr, 0, ip4->ip_dst.s_addr, 0);
     }
     packet->mProtocol = icmpMProtocol;
@@ -48,7 +48,7 @@ LOCAL ArkimePacketRC icmpv6_packet_enqueue(ArkimePacketBatch_t *UNUSED(batch), A
     if (!packet->v6)
         return ARKIME_PACKET_CORRUPT;
 
-    struct ip6_hdr *ip6 = (struct ip6_hdr *)(packet->pkt + packet->ipOffset);
+    const struct ip6_hdr *ip6 = (struct ip6_hdr *)(packet->pkt + packet->ipOffset);
     arkime_session_id6(sessionId, ip6->ip6_src.s6_addr, 0, ip6->ip6_dst.s6_addr, 0);
     packet->mProtocol = icmpv6MProtocol;
     packet->hash = arkime_session_hash(sessionId);
@@ -58,8 +58,8 @@ LOCAL ArkimePacketRC icmpv6_packet_enqueue(ArkimePacketBatch_t *UNUSED(batch), A
 SUPPRESS_ALIGNMENT
 LOCAL void icmp_create_sessionid(uint8_t *sessionId, ArkimePacket_t *packet)
 {
-    struct ip           *ip4 = (struct ip *)(packet->pkt + packet->ipOffset);
-    struct ip6_hdr      *ip6 = (struct ip6_hdr *)(packet->pkt + packet->ipOffset);
+    const struct ip           *ip4 = (struct ip *)(packet->pkt + packet->ipOffset);
+    const struct ip6_hdr      *ip6 = (struct ip6_hdr *)(packet->pkt + packet->ipOffset);
 
     if (packet->v6) {
         arkime_session_id6(sessionId, ip6->ip6_src.s6_addr, 0, ip6->ip6_dst.s6_addr, 0);
@@ -71,8 +71,8 @@ LOCAL void icmp_create_sessionid(uint8_t *sessionId, ArkimePacket_t *packet)
 SUPPRESS_ALIGNMENT
 LOCAL int icmp_pre_process(ArkimeSession_t *session, ArkimePacket_t *const packet, int isNewSession)
 {
-    struct ip           *ip4 = (struct ip *)(packet->pkt + packet->ipOffset);
-    struct ip6_hdr      *ip6 = (struct ip6_hdr *)(packet->pkt + packet->ipOffset);
+    const struct ip           *ip4 = (struct ip *)(packet->pkt + packet->ipOffset);
+    const struct ip6_hdr      *ip6 = (struct ip6_hdr *)(packet->pkt + packet->ipOffset);
 
     if (isNewSession)
         arkime_session_add_protocol(session, "icmp");
@@ -106,14 +106,14 @@ LOCAL int icmp_process(ArkimeSession_t *session, ArkimePacket_t *const packet)
 SUPPRESS_ALIGNMENT
 LOCAL void icmpv6_create_sessionid(uint8_t *sessionId, ArkimePacket_t *packet)
 {
-    struct ip6_hdr      *ip6 = (struct ip6_hdr *)(packet->pkt + packet->ipOffset);
+    const struct ip6_hdr      *ip6 = (struct ip6_hdr *)(packet->pkt + packet->ipOffset);
     arkime_session_id6(sessionId, ip6->ip6_src.s6_addr, 0, ip6->ip6_dst.s6_addr, 0);
 }
 /******************************************************************************/
 SUPPRESS_ALIGNMENT
 LOCAL int icmpv6_pre_process(ArkimeSession_t *session, ArkimePacket_t *const packet, int isNewSession)
 {
-    struct ip6_hdr      *ip6 = (struct ip6_hdr *)(packet->pkt + packet->ipOffset);
+    const struct ip6_hdr      *ip6 = (struct ip6_hdr *)(packet->pkt + packet->ipOffset);
 
     if (isNewSession)
         arkime_session_add_protocol(session, "icmp");

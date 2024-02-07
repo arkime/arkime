@@ -339,11 +339,11 @@ LOCAL void smtp_email_add_encoded(ArkimeSession_t *session, int pos, char *strin
 /******************************************************************************/
 LOCAL void smtp_parse_email_addresses(int field, ArkimeSession_t *session, char *data, int len)
 {
-    char *end = data + len;
+    const char *end = data + len;
 
     while (data < end) {
         while (data < end && isspace(*data)) data++;
-        char *start = data;
+        const char *start = data;
 
         /* Starts with quote is easy */
         if (data < end && *data == '"') {
@@ -371,8 +371,8 @@ LOCAL void smtp_parse_email_addresses(int field, ArkimeSession_t *session, char 
 /******************************************************************************/
 LOCAL void smtp_parse_email_received(ArkimeSession_t *session, char *data, int len)
 {
-    char *start = data;
-    char *end = data + len;
+    const char *start = data;
+    const char *end = data + len;
 
     while (data < end) {
         if (end - data > 10) {
@@ -584,7 +584,7 @@ LOCAL int smtp_parser(ArkimeSession_t *session, void *uw, const uint8_t *data, i
                 break;
             }
 
-            char *colon = strchr(line->str, ':');
+            const char *colon = strchr(line->str, ':');
             if (!colon) {
                 g_string_truncate(line, 0);
                 break;

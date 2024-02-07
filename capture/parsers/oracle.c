@@ -18,7 +18,7 @@ LOCAL char *oracle_get_item(const uint8_t *data, char *needle, int needle_len, i
 
     uint8_t *item = (uint8_t *)g_strstr_len((char *)start, data[25], (gchar *)needle);
     if (item) {
-        uint8_t *paren = (uint8_t *)g_strstr_len((char *)item, data[25] - (item - start), ")");
+        const uint8_t *paren = (uint8_t *)g_strstr_len((char *)item, data[25] - (item - start), ")");
         if (paren) {
             *len = (paren - item) - needle_len;
             if (*len == 0)

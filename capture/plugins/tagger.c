@@ -102,7 +102,7 @@ LOCAL void tagger_process_match(ArkimeSession_t *session, GPtrArray *infos, int 
     uint32_t f, t;
     for (f = 0; f < infos->len; f++) {
         TaggerInfo_t *info = g_ptr_array_index(infos, f);
-        TaggerFile_t *file = info->file;
+        const TaggerFile_t *file = info->file;
         if (file->tags) {
             for (t = 0; file->tags[t]; t++) {
                 arkime_session_add_tag(session, file->tags[t]);
@@ -185,7 +185,7 @@ LOCAL void tagger_plugin_save(ArkimeSession_t *session, int UNUSED(final))
 
     ArkimeString_t *hstring;
     if (httpHostField != -1 && session->fields[httpHostField]) {
-        ArkimeStringHashStd_t *shash = session->fields[httpHostField]->shash;
+        const ArkimeStringHashStd_t *shash = session->fields[httpHostField]->shash;
         HASH_FORALL2(s_, *shash, hstring) {
             HASH_FIND_HASH(s_, allDomains, hstring->s_hash, hstring->str, tstring);
             if (tstring)
@@ -200,7 +200,7 @@ LOCAL void tagger_plugin_save(ArkimeSession_t *session, int UNUSED(final))
     }
 
     if (dnsHostField != -1 && session->fields[dnsHostField]) {
-        ArkimeStringHashStd_t *shash = session->fields[dnsHostField]->shash;
+        const ArkimeStringHashStd_t *shash = session->fields[dnsHostField]->shash;
         HASH_FORALL2(s_, *shash, hstring) {
             HASH_FIND_HASH(s_, allDomains, hstring->s_hash, hstring->str, tstring);
             if (tstring)
@@ -215,7 +215,7 @@ LOCAL void tagger_plugin_save(ArkimeSession_t *session, int UNUSED(final))
     }
 
     if (dnsMailServerField != -1 && session->fields[dnsMailServerField]) {
-        ArkimeStringHashStd_t *shash = session->fields[dnsMailServerField]->shash;
+        const ArkimeStringHashStd_t *shash = session->fields[dnsMailServerField]->shash;
         HASH_FORALL2(s_, *shash, hstring) {
             HASH_FIND_HASH(s_, allDomains, hstring->s_hash, hstring->str, tstring);
             if (tstring)
@@ -230,7 +230,7 @@ LOCAL void tagger_plugin_save(ArkimeSession_t *session, int UNUSED(final))
     }
 
     if (httpMd5Field != -1 && session->fields[httpMd5Field]) {
-        ArkimeStringHashStd_t *shash = session->fields[httpMd5Field]->shash;
+        const ArkimeStringHashStd_t *shash = session->fields[httpMd5Field]->shash;
         HASH_FORALL2(s_, *shash, hstring) {
             HASH_FIND_HASH(s_, allMD5s, hstring->s_hash, hstring->str, tstring);
             if (tstring)
@@ -239,7 +239,7 @@ LOCAL void tagger_plugin_save(ArkimeSession_t *session, int UNUSED(final))
     }
 
     if (httpPathField != -1 && session->fields[httpPathField]) {
-        ArkimeStringHashStd_t *shash = session->fields[httpPathField]->shash;
+        const ArkimeStringHashStd_t *shash = session->fields[httpPathField]->shash;
         HASH_FORALL2(s_, *shash, hstring) {
             HASH_FIND_HASH(s_, allURIs, hstring->s_hash, hstring->str, tstring);
             if (tstring) {
@@ -249,7 +249,7 @@ LOCAL void tagger_plugin_save(ArkimeSession_t *session, int UNUSED(final))
     }
 
     if (emailMd5Field != -1 && session->fields[emailMd5Field]) {
-        ArkimeStringHashStd_t *shash = session->fields[emailMd5Field]->shash;
+        const ArkimeStringHashStd_t *shash = session->fields[emailMd5Field]->shash;
         HASH_FORALL2(s_, *shash, hstring) {
             HASH_FIND_HASH(s_, allMD5s, hstring->s_hash, hstring->str, tstring);
             if (tstring)
@@ -258,7 +258,7 @@ LOCAL void tagger_plugin_save(ArkimeSession_t *session, int UNUSED(final))
     }
 
     if (emailSrcField != -1 && session->fields[emailSrcField]) {
-        ArkimeStringHashStd_t *shash = session->fields[emailSrcField]->shash;
+        const ArkimeStringHashStd_t *shash = session->fields[emailSrcField]->shash;
         HASH_FORALL2(s_, *shash, hstring) {
             HASH_FIND_HASH(s_, allEmails, hstring->s_hash, hstring->str, tstring);
             if (tstring)
@@ -267,7 +267,7 @@ LOCAL void tagger_plugin_save(ArkimeSession_t *session, int UNUSED(final))
     }
 
     if (emailDstField != -1 && session->fields[emailDstField]) {
-        ArkimeStringHashStd_t *shash = session->fields[emailDstField]->shash;
+        const ArkimeStringHashStd_t *shash = session->fields[emailDstField]->shash;
         HASH_FORALL2(s_, *shash, hstring) {
             HASH_FIND_HASH(s_, allEmails, hstring->s_hash, hstring->str, tstring);
             if (tstring)
@@ -576,7 +576,7 @@ LOCAL void tagger_load_file(TaggerFile_t *file)
 LOCAL void tagger_fetch_files_cb(int UNUSED(code), uint8_t *data, int data_len, gpointer UNUSED(uw))
 {
     uint32_t           hits_len;
-    uint8_t           *hits = arkime_js0n_get(data, data_len, "hits", &hits_len);
+    const uint8_t     *hits = arkime_js0n_get(data, data_len, "hits", &hits_len);
 
     if (!hits_len || !hits)
         return;
@@ -595,7 +595,7 @@ LOCAL void tagger_fetch_files_cb(int UNUSED(code), uint8_t *data, int data_len, 
     int i;
     for (i = 0; out[i]; i += 2) {
         uint32_t           source_len;
-        uint8_t           *source = 0;
+        const uint8_t     *source = 0;
         source = arkime_js0n_get(hits + out[i], out[i + 1], "_source", &source_len);
         if (!source) {
             continue;
@@ -604,7 +604,7 @@ LOCAL void tagger_fetch_files_cb(int UNUSED(code), uint8_t *data, int data_len, 
         char     *id = arkime_js0n_get_str(hits + out[i], out[i + 1], "_id");
 
         uint32_t           md5_len;
-        uint8_t           *md5 = 0;
+        const uint8_t     *md5 = 0;
         md5 = arkime_js0n_get(source, source_len, "md5", &md5_len);
 
         if (*md5 == '[') {

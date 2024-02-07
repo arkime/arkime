@@ -34,8 +34,8 @@ LOCAL int mysql_parser(ArkimeSession_t *session, void *uw, const uint8_t *data, 
         return 0;
     }
 
-    uint8_t *ptr = (uint8_t *)data + 36;
-    uint8_t *end = (uint8_t *)data + len;
+    const uint8_t *ptr = (uint8_t *)data + 36;
+    const uint8_t *end = (uint8_t *)data + len;
 
     while (ptr < end) {
         if (*ptr == 0)
@@ -81,7 +81,7 @@ LOCAL void mysql_classify(ArkimeSession_t *session, const uint8_t *data, int len
         return;
 
     uint8_t *ptr = (uint8_t *)data + 5;
-    uint8_t *end = (uint8_t *)data + len;
+    const uint8_t *end = (uint8_t *)data + len;
 
     while (ptr < end) {
         if (*ptr == 0)

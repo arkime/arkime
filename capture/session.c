@@ -98,7 +98,7 @@ void arkime_session_id (uint8_t *buf, uint32_t addr1, uint16_t port1, uint32_t a
     }
 }
 /******************************************************************************/
-void arkime_session_id6 (uint8_t *buf, uint8_t *addr1, uint16_t port1, uint8_t *addr2, uint16_t port2)
+void arkime_session_id6 (uint8_t *buf, const uint8_t *addr1, uint16_t port1, const uint8_t *addr2, uint16_t port2)
 {
     buf[0] = ARKIME_SESSIONID6_LEN;
     int cmp = memcmp(addr1, addr2, 16);
@@ -160,7 +160,7 @@ SUPPRESS_UNSIGNED_INTEGER_OVERFLOW
 uint32_t arkime_session_hash(const void *key)
 {
     uint32_t *p = (uint32_t *)key;
-    uint32_t *end = (uint32_t *)((uint8_t *)key + ((uint8_t *)key)[0] - 4);
+    const uint32_t *end = (uint32_t *)((uint8_t *)key + ((uint8_t *)key)[0] - 4);
     uint32_t h = ((uint8_t *)key)[((uint8_t *)key)[0] - 1];  // There is one extra byte at the end
 
     while (p < end) {

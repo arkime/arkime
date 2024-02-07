@@ -129,7 +129,7 @@ LOCAL void tls_key_usage (ArkimeCertsInfo_t *certs, BSB *bsb)
     uint32_t apc, atag, alen;
 
     while (BSB_REMAINING(*bsb) >= 2) {
-        uint8_t *value = arkime_parsers_asn_get_tlv(bsb, &apc, &atag, &alen);
+        const uint8_t *value = arkime_parsers_asn_get_tlv(bsb, &apc, &atag, &alen);
 
         if (value && atag == 4 && alen == 4)
             certs->isCA = (value[3] & 0x02);
@@ -287,7 +287,7 @@ LOCAL uint32_t tls_process_server_hello(ArkimeSession_t *session, const uint8_t 
         int skiplen = 0;
         BSB_IMPORT_u08(bsb, skiplen);   // Session Id Length
         if (skiplen > 0 && BSB_REMAINING(bsb) > skiplen) {
-            uint8_t *ptr = BSB_WORK_PTR(bsb);
+            const uint8_t *ptr = BSB_WORK_PTR(bsb);
             char sessionId[513];
             int  i;
             for(i = 0; i < skiplen; i++) {
@@ -304,7 +304,7 @@ LOCAL uint32_t tls_process_server_hello(ArkimeSession_t *session, const uint8_t 
     BSB_IMPORT_u16(bsb, cipher);
 
     /* Parse cipher */
-    char *cipherStr = ciphers[cipher >> 8][cipher & 0xff];
+    const char *cipherStr = ciphers[cipher >> 8][cipher & 0xff];
     if (cipherStr)
         arkime_field_string_add(cipherField, session, cipherStr, -1, TRUE);
     else {
@@ -588,7 +588,7 @@ LOCAL int tls_process_server_handshake_record(ArkimeSession_t *session, const ui
     BSB_INIT(rbsb, data, len);
 
     while (BSB_REMAINING(rbsb) >= 4) {
-        uint8_t *hdata = BSB_WORK_PTR(rbsb);
+        const uint8_t *hdata = BSB_WORK_PTR(rbsb);
         int hlen = MIN(BSB_REMAINING(rbsb), (hdata[1] << 16 | hdata[2] << 8 | hdata[3]) + 4);
 
         switch(hdata[0]) {
@@ -663,7 +663,7 @@ uint32_t tls_process_client_hello_data(ArkimeSession_t *session, const uint8_t *
         int skiplen = 0;
         BSB_IMPORT_u08(cbsb, skiplen);   // Session Id Length
         if (skiplen > 0 && BSB_REMAINING(cbsb) > skiplen) {
-            uint8_t *ptr = BSB_WORK_PTR(cbsb);
+            const uint8_t *ptr = BSB_WORK_PTR(cbsb);
             char sessionId[513];
             int  i;
 
@@ -791,7 +791,7 @@ uint32_t tls_process_client_hello_data(ArkimeSession_t *session, const uint8_t *
                     BSB_IMPORT_skip (bsb, 2); // len
                     uint8_t plen = 0;
                     BSB_IMPORT_u08 (bsb, plen); // len
-                    uint8_t *pstr = NULL;
+                    const uint8_t *pstr = NULL;
                     BSB_IMPORT_ptr (bsb, pstr, plen);
                     if (plen > 0 && pstr && !BSB_IS_ERROR(bsb)) {
                         ja4ALPN[0] = pstr[0];
@@ -937,7 +937,7 @@ LOCAL void tls_process_client(ArkimeSession_t *session, const uint8_t *data, int
     BSB_INIT(sslbsb, data, len);
 
     if (BSB_REMAINING(sslbsb) > 5) {
-        uint8_t *ssldata = BSB_WORK_PTR(sslbsb);
+        const uint8_t *ssldata = BSB_WORK_PTR(sslbsb);
         int            ssllen = MIN(BSB_REMAINING(sslbsb) - 5, ssldata[3] << 8 | ssldata[4]);
 
 
