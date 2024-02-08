@@ -7743,11 +7743,13 @@ my $health = dbCheckHealth();
 
 my $nodes = esGet("/_nodes");
 $main::numberOfNodes = dataNodes($nodes->{nodes});
-logmsg "It is STRONGLY recommended that you stop ALL Arkime captures and viewers before proceeding.  Use 'db.pl ${main::elasticsearch} backup' to backup db first.\n\n";
-if ($main::numberOfNodes == 1) {
-    logmsg "There is $main::numberOfNodes OpenSearch/Elasticsearch data node, if you expect more please fix first before proceeding.\n\n";
-} else {
-    logmsg "There are $main::numberOfNodes OpenSearch/Elasticsearch data nodes, if you expect more please fix first before proceeding.\n\n";
+if ($ARGV[1] !~ /noprompt$/) {
+    logmsg "It is STRONGLY recommended that you stop ALL Arkime captures and viewers before proceeding.  Use 'db.pl ${main::elasticsearch} backup' to backup db first.\n\n";
+    if ($main::numberOfNodes == 1) {
+        logmsg "There is $main::numberOfNodes OpenSearch/Elasticsearch data node, if you expect more please fix first before proceeding.\n\n";
+    } else {
+        logmsg "There are $main::numberOfNodes OpenSearch/Elasticsearch data nodes, if you expect more please fix first before proceeding.\n\n";
+    }
 }
 
 if (int($SHARDS) > $main::numberOfNodes) {

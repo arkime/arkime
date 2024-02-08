@@ -33,6 +33,10 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
 5.0.1 2024/02/xx
 ## Viewer
   - #2631 upgrade cyberchef to 10.6.0
+  - #2632 fix field labels not expanding fully
+
+## db.pl
+  - #2633 noprompt outputs less warnings
 
 5.0.0 2024/02/06
 ## BREAKING
