@@ -52,6 +52,7 @@ LOCAL void esp_create_sessionid(uint8_t *sessionId, ArkimePacket_t *packet)
     }
 }
 /******************************************************************************/
+SUPPRESS_ALIGNMENT
 LOCAL int esp_pre_process(ArkimeSession_t *session, ArkimePacket_t *const UNUSED(packet), int isNewSession)
 {
     const struct ip           *ip4 = (struct ip *)(packet->pkt + packet->ipOffset);
