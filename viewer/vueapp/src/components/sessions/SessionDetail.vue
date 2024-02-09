@@ -399,7 +399,10 @@ export default {
                 dt.nextElementSibling.style.marginLeft = `${this.$parent.dlWidth + 10}px`;
                 const labelBtn = dt.getElementsByClassName('clickable-label');
                 if (labelBtn && labelBtn.length) {
-                  labelBtn[0].style.maxWidth = `${this.$parent.dlWidth}px`;
+                  const btn = labelBtn[0].getElementsByTagName('button');
+                  if (btn && btn.length) {
+                    btn[0].style.maxWidth = `${dlWidth}px`;
+                  }
                 }
               }
 
