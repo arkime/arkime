@@ -520,7 +520,8 @@ SPDX-License-Identifier: Apache-2.0
                   :session="session"
                   :session-index="index"
                   @toggleColVis="toggleColVis"
-                  @toggleInfoVis="toggleInfoVis">
+                  @toggleInfoVis="toggleInfoVis"
+                  :session-detail-dl-width="dlWidth">
                 </arkime-session-detail>
               </td>
             </tr> <!-- /session detail -->
@@ -764,6 +765,10 @@ export default {
     window.addEventListener('resize', windowResizeEvent, { passive: true });
     this.$root.$on('bv::dropdown::show', this.dropdownShowListener);
     this.$root.$on('bv::dropdown::hide', this.dropdownHideListener);
+
+    UserService.getState('sessionDetailDLWidth').then((response) => {
+      this.$store.commit('setSessionDetailDLWidth', response.data.width ?? 160);
+    });
   },
   computed: {
     query: function () {
@@ -814,6 +819,14 @@ export default {
     },
     hideViz: function () {
       return this.$store.state.hideViz;
+    },
+    dlWidth: {
+      get: function () {
+        return this.$store.state.sessionDetailDLWidth || 160;
+      },
+      set: function (newValue) {
+        this.$store.commit('setSessionDetailDLWidth', newValue);
+      }
     }
   },
   watch: {

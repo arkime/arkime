@@ -55,7 +55,8 @@ const store = new Vuex.Store({
     capStartTimes: [{ nodeName: 'none', startTime: 1 }],
     roles: [],
     fieldActions: {},
-    notifiers: []
+    notifiers: [],
+    sessionDetailDLWidth: 160
   },
   getters: {
     sessionsTableState (state) {
@@ -250,6 +251,9 @@ const store = new Vuex.Store({
     },
     setNotifiers (state, value) {
       state.notifiers = value;
+    },
+    setSessionDetailDLWidth (state, value) {
+      state.sessionDetailDLWidth = value;
     }
   }
 });
