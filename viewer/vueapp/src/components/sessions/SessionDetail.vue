@@ -5,7 +5,7 @@ SPDX-License-Identifier: Apache-2.0
 <template>
 
   <!-- session detail -->
-  <div>
+  <div :ref="session.id" :id="`${session.id}-detail`">
 
     <!-- detail loading -->
     <div v-if="loading"
@@ -97,7 +97,7 @@ SPDX-License-Identifier: Apache-2.0
     <div v-if="!loadingPackets && !errorPackets && !hidePackets && !user.hidePcap"
       class="inner packet-container mr-1 ml-1"
       v-html="packetHtml"
-      ref="packetContainer"
+      :ref="`${session.id}-packet-container`"
       :class="{'show-ts':params.ts,'hide-src':!params.showSrc,'hide-dst':!params.showDst}">
     </div> <!-- packets -->
 
@@ -194,6 +194,14 @@ function gripUnclick (e, vueThis) {
       dt.nextElementSibling.style.marginLeft = `${newWidth + 10}px`;
     }
 
+    const labelBtns = document.getElementsByClassName('clickable-label');
+    if (labelBtns && labelBtns.length) {
+      const btn = labelBtns[0].getElementsByTagName('button');
+      if (btn && btn.length) {
+        btn[0].style.maxWidth = `${newWidth}px`;
+      }
+    }
+
     for (const grip of document.getElementsByClassName('session-detail-grip')) {
       grip.style.left = `${newWidth}px`;
     }
@@ -206,11 +214,24 @@ function gripUnclick (e, vueThis) {
   selectedDT = undefined;
 }
 
+function collapseSection (e) {
+  e.target.classList.toggle('collapsed');
+  e.target.nextElementSibling.classList.toggle('collapse');
+  e.target.parentElement.classList.toggle('collapsed');
+
+  if (localStorage) {
+    const collapsed = JSON.parse(localStorage['arkime-detail-collapsed'] || '{}');
+    collapsed[e.target.innerText.toLowerCase()] = e.target.classList.contains('collapsed');
+    localStorage['arkime-detail-collapsed'] = JSON.stringify(collapsed);
+  }
+}
+
 export default {
   name: 'ArkimeSessionDetail',
   props: [
     'session',
-    'sessionIndex'
+    'sessionIndex',
+    'sessionDetailDlWidth'
   ],
   components: { PacketOptions },
   data () {
@@ -237,9 +258,9 @@ export default {
         packets: 200,
         showFrames: false,
         showSrc: true,
-        showDst: true,
-        dlWidth: 160
-      }
+        showDst: true
+      },
+      packetContainerRef: `${this.session.id}-packet-container`
     };
   },
   computed: {
@@ -251,14 +272,19 @@ export default {
     },
     cyberChefDstUrl: function () {
       return `cyberchef.html?nodeId=${this.session.node}&sessionId=${this.session.id}&type=dst`;
+    },
+    dlWidth: {
+      get: function () {
+        return this.$store.state.sessionDetailDLWidth || 160;
+      },
+      set: function (newValue) {
+        this.$store.commit('setSessionDetailDLWidth', newValue);
+      }
     }
   },
   created: function () {
     this.setUserParams();
     this.getDetailData();
-    UserService.getState('sessionDetailDLWidth').then((response) => {
-      this.dlWidth = response.data.width ?? 160;
-    });
   },
   methods: {
     /* exposed functions --------------------------------------------------- */
@@ -381,9 +407,12 @@ export default {
           mounted () {
             this.$nextTick(() => { // wait for content to render
               // add grip to each section of the section detail
-              const sessionDetailSection = document.getElementsByTagName('dl');
-              const dlWidth = (this.$parent.dlWidth || this.dlWidth);
-              for (const div of sessionDetailSection) {
+              const sessionDetailSection = document.getElementById(`${this.session.id}-detail`);
+              if (!sessionDetailSection) { return; }
+
+              const sessionDetailDL = sessionDetailSection.getElementsByTagName('dl');
+              const dlWidth = this.dlWidth;
+              for (const div of sessionDetailDL) {
                 // set the width of the session detail div based on user setting
                 const grip = document.createElement('div');
                 grip.classList.add('session-detail-grip');
@@ -392,11 +421,11 @@ export default {
                 grip.addEventListener('mousedown', (e) => gripClick(e, div));
               }
 
-              const dts = document.getElementsByTagName('dt');
+              const dts = sessionDetailSection.getElementsByTagName('dt');
               for (const dt of dts) {
                 // set the width of the dt and the margin of the dd based on user setting
-                dt.style.width = `${this.$parent.dlWidth}px`;
-                dt.nextElementSibling.style.marginLeft = `${this.$parent.dlWidth + 10}px`;
+                dt.style.width = `${this.dlWidth}px`;
+                dt.nextElementSibling.style.marginLeft = `${this.dlWidth + 10}px`;
                 const labelBtn = dt.getElementsByClassName('clickable-label');
                 if (labelBtn && labelBtn.length) {
                   const btn = labelBtn[0].getElementsByTagName('button');
@@ -412,7 +441,7 @@ export default {
               document.addEventListener('mouseup', (e) => gripUnclick(e, self));
 
               // find all the card titles and add a click listener to toggle the collapse
-              const elementsArray = document.getElementsByClassName('card-title');
+              const elementsArray = sessionDetailSection.getElementsByClassName('card-title');
               for (const elem of elementsArray) {
                 // check if the element was previously collapsed and collapse it
                 if (localStorage && localStorage['arkime-detail-collapsed']) {
@@ -424,17 +453,7 @@ export default {
                   }
                 }
 
-                elem.addEventListener('click', (e) => {
-                  e.target.classList.toggle('collapsed');
-                  e.target.nextElementSibling.classList.toggle('collapse');
-                  e.target.parentElement.classList.toggle('collapsed');
-
-                  if (localStorage) {
-                    const collapsed = JSON.parse(localStorage['arkime-detail-collapsed'] || '{}');
-                    collapsed[e.target.innerText.toLowerCase()] = e.target.classList.contains('collapsed');
-                    localStorage['arkime-detail-collapsed'] = JSON.stringify(collapsed);
-                  }
-                });
+                elem.addEventListener('click', collapseSection);
               }
             });
           },
@@ -471,11 +490,20 @@ export default {
               };
 
               return `sessions?${qs.stringify(params)}`;
+            },
+            dlWidth: {
+              get: function () {
+                return this.$store.state.sessionDetailDLWidth || 160;
+              },
+              set: function (newValue) {
+                this.$store.commit('setSessionDetailDLWidth', newValue);
+              }
             }
           },
           methods: {
             /* Saves the dl widths */
             saveDLWidth: function (width) {
+              this.dlWidth = width;
               UserService.saveState({ width }, 'sessionDetailDLWidth');
             },
             getField: function (expr) {
@@ -743,8 +771,8 @@ export default {
 
           setTimeout(() => { // wait until session packets are rendered
             // tooltips for src/dst byte images
-            if (!this.$refs.packetContainer) { return; }
-            const tss = this.$refs.packetContainer.getElementsByClassName('session-detail-ts');
+            if (!this.$refs[this.packetContainerRef]) { return; }
+            const tss = this.$refs[this.packetContainerRef].getElementsByClassName('session-detail-ts');
             for (let i = 0; i < tss.length; ++i) {
               let timeEl = tss[i];
               const value = timeEl.getAttribute('value');
@@ -760,7 +788,7 @@ export default {
             }
 
             // tooltips for linked images
-            const imgs = this.$refs.packetContainer.getElementsByClassName('imagetag');
+            const imgs = this.$refs[this.packetContainerRef].getElementsByClassName('imagetag');
             for (let i = 0; i < imgs.length; ++i) {
               const img = imgs[i];
               let href = img.href;
@@ -777,12 +805,12 @@ export default {
             }
 
             // add listeners to fetch the src/dst bytes images on mouse enter
-            const srcBytes = this.$refs.packetContainer.getElementsByClassName('srccol');
+            const srcBytes = this.$refs[this.packetContainerRef].getElementsByClassName('srccol');
             if (srcBytes && srcBytes.length) {
               srcBytes[0].addEventListener('mouseenter', this.showSrcBytesImg);
             }
 
-            const dstBytes = this.$refs.packetContainer.getElementsByClassName('dstcol');
+            const dstBytes = this.$refs[this.packetContainerRef].getElementsByClassName('dstcol');
             if (dstBytes && dstBytes.length) {
               dstBytes[0].addEventListener('mouseenter', this.showDstBytesImg);
             }
@@ -798,7 +826,7 @@ export default {
     },
     showSrcBytesImg: function () {
       const url = `api/session/raw/${this.session.node}/${this.session.id}.png?type=src`;
-      this.$refs.packetContainer.getElementsByClassName('src-col-tip')[0].innerHTML = `Source Bytes:
+      this.$refs[this.packetContainerRef].getElementsByClassName('src-col-tip')[0].innerHTML = `Source Bytes:
         <br>
         <img src="${url}">
         <a class="no-decoration download-bytes" href="${url}" download="${this.session.id}-src.png">
@@ -806,11 +834,11 @@ export default {
           Download source bytes image
         </button>
       `;
-      this.$refs.packetContainer.getElementsByClassName('srccol')[0].removeEventListener('mouseenter', this.showSrcBytesImg);
+      this.$refs[this.packetContainerRef].getElementsByClassName('srccol')[0].removeEventListener('mouseenter', this.showSrcBytesImg);
     },
     showDstBytesImg: function () {
       const url = `api/session/raw/${this.session.node}/${this.session.id}.png?type=dst`;
-      this.$refs.packetContainer.getElementsByClassName('dst-col-tip')[0].innerHTML = `Destination Bytes:
+      this.$refs[this.packetContainerRef].getElementsByClassName('dst-col-tip')[0].innerHTML = `Destination Bytes:
         <br>
         <img src="${url}">
         <a class="no-decoration download-bytes" href="${url}" download="${this.session.id}-dst.png">
@@ -818,7 +846,7 @@ export default {
           Download destination bytes image
         </button>
       `;
-      this.$refs.packetContainer.getElementsByClassName('dstcol')[0].removeEventListener('mouseenter', this.showDstBytesImg);
+      this.$refs[this.packetContainerRef].getElementsByClassName('dstcol')[0].removeEventListener('mouseenter', this.showDstBytesImg);
     }
   },
   beforeDestroy: function () {
@@ -826,13 +854,13 @@ export default {
       this.cancelPacketLoad();
     }
 
-    if (this.$refs.packetContainer) {
-      const srcBytes = this.$refs.packetContainer.getElementsByClassName('srccol');
+    if (this.$refs[this.packetContainerRef]) {
+      const srcBytes = this.$refs[this.packetContainerRef].getElementsByClassName('srccol');
       if (srcBytes && srcBytes.length) {
         srcBytes[0].removeEventListener('mouseenter', this.showSrcBytesImg);
       }
 
-      const dstBytes = this.$refs.packetContainer.getElementsByClassName('dstcol');
+      const dstBytes = this.$refs[this.packetContainerRef].getElementsByClassName('dstcol');
       if (dstBytes && dstBytes.length) {
         dstBytes[0].removeEventListener('mouseenter', this.showDstBytesImg);
       }
