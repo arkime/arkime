@@ -132,12 +132,10 @@ gboolean pcapoverip_client_read_cb(gint UNUSED(fd), GIOCondition cond, gpointer 
             packet->ts.tv_usec = ph->ts.tv_usec;
         }
 
-        if (unlikely(caplen != origlen)) {
-            if (!config.readTruncatedPackets && !config.ignoreErrors) {
-                LOGEXIT("ERROR - Arkime requires full packet captures caplen: %u pktlen: %u. "
-                        "If using tcpdump use the \"-s0\" option, or set readTruncatedPackets in ini file",
-                        caplen, origlen);
-            }
+        if (unlikely(caplen != origlen) && config.readTruncatedPackets && !config.ignoreErrors) {
+            LOGEXIT("ERROR - Arkime requires full packet captures caplen: %d pktlen: %d\n"
+                    "See https://arkime.com/faq#arkime_requires_full_packet_captures_error",
+                    caplen, origlen);
         }
 
         if (unlikely(caplen > ARKIME_PACKET_MAX_LEN)) {

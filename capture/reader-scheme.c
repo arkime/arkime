@@ -367,6 +367,12 @@ int arkime_reader_scheme_process(const char *uri, uint8_t *data, int len, char *
             state = 2;
             packet = ARKIME_TYPE_ALLOC0(ArkimePacket_t);
             struct arkime_pcap_sf_pkthdr *h = (struct arkime_pcap_sf_pkthdr *)pheader;
+            if (unlikely(h->caplen != h->pktlen) && !config.readTruncatedPackets && !config.ignoreErrors) {
+                LOGEXIT("ERROR - Arkime requires full packet captures caplen: %d pktlen: %d. "
+                        "If using tcpdump use the \"-s0\" option, or set readTruncatedPackets in ini file",
+                        needSwap ? SWAP32(h->caplen) : h->caplen,
+                        needSwap ? SWAP32(h->pktlen) : h->pktlen);
+            }
             if (needSwap) {
                 packet->pktlen = SWAP32(h->caplen);
                 packet->ts.tv_sec = SWAP32(h->ts.tv_sec);

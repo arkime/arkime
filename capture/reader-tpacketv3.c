@@ -125,15 +125,15 @@ LOCAL void *reader_tpacketv3_thread(gpointer infov)
         uint32_t p;
 
         for (p = 0; p < tbd->hdr.bh1.num_pkts; p++) {
-            if (unlikely(th->tp_snaplen != th->tp_len)) {
+            if (unlikely(th->tp_snaplen != th->tp_len) && !config.readTruncatedPackets && !config.ignoreErrors) {
                 LOGEXIT("ERROR - Arkime requires full packet captures caplen: %d pktlen: %d\n"
                         "See https://arkime.com/faq#arkime_requires_full_packet_captures_error",
                         th->tp_snaplen, th->tp_len);
             }
 
             ArkimePacket_t *packet = ARKIME_TYPE_ALLOC0(ArkimePacket_t);
+            packet->pktlen        = th->tp_snaplen;
             packet->pkt           = (u_char *)th + th->tp_mac;
-            packet->pktlen        = th->tp_len;
             packet->ts.tv_sec     = th->tp_sec;
             packet->ts.tv_usec    = th->tp_nsec / 1000;
             packet->readerPos     = info->interfacePos;
