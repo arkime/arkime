@@ -64,7 +64,7 @@ void arkime_session_id (uint8_t *buf, uint32_t UNUSED(addr1), uint16_t UNUSED(po
     memcpy(buf + 1, &fuzzloch_sessionid, sizeof(fuzzloch_sessionid));
     memset(buf + 1 + sizeof(fuzzloch_sessionid), 0, ARKIME_SESSIONID4_LEN - 1 - sizeof(fuzzloch_sessionid));
 }
-void arkime_session_id6 (uint8_t *buf, uint8_t UNUSED(*addr1), uint16_t UNUSED(port1), uint8_t UNUSED(*addr2), uint16_t UNUSED(port2))
+void arkime_session_id6 (uint8_t *buf, const uint8_t UNUSED(*addr1), uint16_t UNUSED(port1), const uint8_t UNUSED(*addr2), uint16_t UNUSED(port2))
 {
     buf[0] = ARKIME_SESSIONID6_LEN;
     memcpy(buf + 1, &fuzzloch_sessionid, sizeof(fuzzloch_sessionid));
