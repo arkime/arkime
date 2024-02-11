@@ -418,20 +418,16 @@ LOCAL void reader_libpcapfile_pcap_cb(u_char *UNUSED(user), const struct pcap_pk
 {
     ArkimePacket_t *packet = ARKIME_TYPE_ALLOC0(ArkimePacket_t);
 
-    if (unlikely(h->caplen != h->len)) {
-        if (!config.readTruncatedPackets && !config.ignoreErrors) {
-            LOGEXIT("ERROR - Arkime requires full packet captures caplen: %d pktlen: %d. "
-                    "If using tcpdump use the \"-s0\" option, or set readTruncatedPackets in ini file",
-                    h->caplen, h->len);
-        }
-        packet->pktlen     = h->caplen;
-    } else {
-        packet->pktlen     = h->len;
+    if (unlikely(h->caplen != h->len) && !config.readTruncatedPackets && !config.ignoreErrors) {
+        LOGEXIT("ERROR - Arkime requires full packet captures caplen: %d pktlen: %d. "
+                "If using tcpdump use the \"-s0\" option, or set readTruncatedPackets in ini file",
+                h->caplen, h->len);
     }
 
     lastPackets++;
     lastBytes += packet->pktlen + 16;
 
+    packet->pktlen        = h->caplen;
     packet->pkt           = (u_char *)bytes;
     /* libpcap casts to int32_t which sign extends, undo that */
     packet->ts.tv_sec     = (uint32_t)h->ts.tv_sec;

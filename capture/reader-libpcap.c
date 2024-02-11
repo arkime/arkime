@@ -38,7 +38,7 @@ int reader_libpcap_stats(ArkimeReaderStats_t *stats)
 /******************************************************************************/
 void reader_libpcap_pcap_cb(u_char *batch, const struct pcap_pkthdr *h, const u_char *bytes)
 {
-    if (unlikely(h->caplen != h->len)) {
+    if (unlikely(h->caplen != h->len) && !config.readTruncatedPackets && !config.ignoreErrors) {
         LOGEXIT("ERROR - Arkime requires full packet captures caplen: %d pktlen: %d\n"
                 "See https://arkime.com/faq#arkime_requires_full_packet_captures_error",
                 h->caplen, h->len);
@@ -50,7 +50,7 @@ void reader_libpcap_pcap_cb(u_char *batch, const struct pcap_pkthdr *h, const u_
     /* libpcap casts to int32_t which sign extends, undo that */
     packet->ts.tv_sec     = (uint32_t)h->ts.tv_sec;
     packet->ts.tv_usec    = h->ts.tv_usec;
-    packet->pktlen        = h->len;
+    packet->pktlen        = h->caplen;
     packet->readerPos     = ((ArkimePacketBatch_t *)batch)->readerPos;
 
     arkime_packet_batch((ArkimePacketBatch_t *)batch, packet);
