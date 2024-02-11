@@ -425,7 +425,6 @@ LOCAL void reader_libpcapfile_pcap_cb(u_char *UNUSED(user), const struct pcap_pk
     }
 
     lastPackets++;
-    lastBytes += packet->pktlen + 16;
 
     packet->pktlen        = h->caplen;
     packet->pkt           = (u_char *)bytes;
@@ -434,6 +433,9 @@ LOCAL void reader_libpcapfile_pcap_cb(u_char *UNUSED(user), const struct pcap_pk
     packet->ts.tv_usec    = h->ts.tv_usec;
     packet->readerFilePos = ftell(offlineFile) - 16 - h->len;
     packet->readerPos     = readerPos;
+
+    lastBytes += packet->pktlen + 16;
+
     arkime_packet_batch(&batch, packet);
 }
 /******************************************************************************/
@@ -484,6 +486,10 @@ LOCAL gboolean reader_libpcapfile_read()
                 LOG("Failed to delete file %s %s (%d)", offlinePcapFilename, strerror(errno), errno);
         }
         if (!config.dryRun && !config.copyPcap) {
+            // Make sure the output file has been opened otherwise we can't update the entry
+            while (offlineInfo[readerPos].outputId == 0) {
+                g_main_context_iteration(NULL, TRUE);
+            }
             arkime_db_update_filesize(offlineInfo[readerPos].outputId, lastBytes, lastBytes, lastPackets);
         }
         pcap_close(pcap);
