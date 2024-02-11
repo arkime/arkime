@@ -433,9 +433,10 @@ LOCAL void reader_libpcapfile_pcap_cb(u_char *UNUSED(user), const struct pcap_pk
     packet->ts.tv_usec    = h->ts.tv_usec;
     packet->readerFilePos = ftell(offlineFile) - 16 - h->len;
     packet->readerPos     = readerPos;
-    arkime_packet_batch(&batch, packet);
 
     lastBytes += packet->pktlen + 16;
+
+    arkime_packet_batch(&batch, packet);
 }
 /******************************************************************************/
 LOCAL gboolean reader_libpcapfile_read()
