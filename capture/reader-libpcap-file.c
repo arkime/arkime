@@ -484,6 +484,10 @@ LOCAL gboolean reader_libpcapfile_read()
                 LOG("Failed to delete file %s %s (%d)", offlinePcapFilename, strerror(errno), errno);
         }
         if (!config.dryRun && !config.copyPcap) {
+            // Make sure the output file has been opened otherwise we can't update the entry
+            while (offlineInfo[readerPos].outputId == 0) {
+                g_main_context_iteration(NULL, TRUE);
+            }
             arkime_db_update_filesize(offlineInfo[readerPos].outputId, lastBytes, lastBytes, lastPackets);
         }
         pcap_close(pcap);

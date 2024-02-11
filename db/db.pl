@@ -381,6 +381,21 @@ sub esDelete
     my $json = from_json($response->content);
     return $json
 }
+################################################################################
+sub esDeleteIndices
+{
+    my ($indices, $dontcheck) = @_;
+
+    my @items = split /,/, $indices;
+
+    # Delete 100 items at a time because OS/ES has a url length limit
+    for (my $i = 0; $i < @items; $i += 100) {
+        my $max = $i+100+1 < $#items ? $i+100-1 : $#items;
+        my @chunk = @items[$i .. $max];
+        my $str = join ',', @chunk;
+        esDelete("/$str", $dontcheck);
+    }
+}
 
 ################################################################################
 sub esCopy
@@ -7796,10 +7811,10 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
     esDelete("/${PREFIX}notifiers_v40,${PREFIX}notifiers?ignore_unavailable=true", 1);
     esDelete("/${PREFIX}views_v40,${PREFIX}views?ignore_unavailable=true", 1);
     my $indices;
-    esDelete("/$indices" , 1) if (($indices = esMatchingIndices("${OLDPREFIX}sessions2-*")) ne "");
-    esDelete("/$indices" , 1) if (($indices = esMatchingIndices("${PREFIX}sessions3-*")) ne "");
-    esDelete("/$indices" , 1) if (($indices = esMatchingIndices("${OLDPREFIX}history_v1-*")) ne "");
-    esDelete("/$indices" , 1) if (($indices = esMatchingIndices("${PREFIX}history_v1-*")) ne "");
+    esDeleteIndices($indices, 1) if (($indices = esMatchingIndices("${OLDPREFIX}sessions2-*")) ne "");
+    esDeleteIndices($indices, 1) if (($indices = esMatchingIndices("${PREFIX}sessions3-*")) ne "");
+    esDeleteIndices($indices, 1) if (($indices = esMatchingIndices("${OLDPREFIX}history_v1-*")) ne "");
+    esDeleteIndices($indices, 1) if (($indices = esMatchingIndices("${PREFIX}history_v1-*")) ne "");
     esDelete("/_template/${OLDPREFIX}template_1", 1);
     esDelete("/_template/${OLDPREFIX}sessions_template", 1);
     esDelete("/_template/${OLDPREFIX}sessions2_template", 1);
@@ -7814,6 +7829,8 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
     }
     esDelete("/tagger", 1);
 
+    esGet("/_flush", 1);
+    esGet("/_refresh", 1);
     sleep(1);
 
     exit 0 if ($ARGV[1] =~ "clean");
