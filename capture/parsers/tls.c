@@ -789,13 +789,13 @@ uint32_t tls_process_client_hello_data(ArkimeSession_t *session, const uint8_t *
                     BSB_IMPORT_bsb (ebsb, bsb, elen);
 
                     BSB_IMPORT_skip (bsb, 2); // len
-                    uint8_t plen = 0;
-                    BSB_IMPORT_u08 (bsb, plen); // len
-                    const uint8_t *pstr = NULL;
-                    BSB_IMPORT_ptr (bsb, pstr, plen);
-                    if (plen > 0 && pstr && !BSB_IS_ERROR(bsb)) {
-                        ja4ALPN[0] = pstr[0];
-                        ja4ALPN[1] = pstr[plen - 1];
+                    uint8_t alen = 0;
+                    BSB_IMPORT_u08 (bsb, alen); // len
+                    const uint8_t *astr = NULL;
+                    BSB_IMPORT_ptr (bsb, astr, alen);
+                    if (alen > 0 && astr && !BSB_IS_ERROR(bsb)) {
+                        ja4ALPN[0] = astr[0];
+                        ja4ALPN[1] = astr[alen - 1];
                     }
                 } else if (etype == 0x2b) { // etype 0x2b is supported version
                     BSB bsb;

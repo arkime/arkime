@@ -47,7 +47,7 @@ typedef struct {
 #define SMB2_FLAGS_SERVER_TO_REDIR 0x00000001
 
 /******************************************************************************/
-LOCAL void smb_add_string(ArkimeSession_t *session, int field, char *buf, int len, int useunicode)
+LOCAL void smb_add_string(ArkimeSession_t *session, int field, const char *buf, int len, int useunicode)
 {
     if (len == 0)
         return;
@@ -369,7 +369,7 @@ LOCAL int smb1_parse(ArkimeSession_t *session, SMBInfo_t *smb, BSB *bsb, char *s
     return 0;
 }
 /******************************************************************************/
-LOCAL int smb2_parse(ArkimeSession_t *session, SMBInfo_t *UNUSED(smb), BSB *bsb, char *state, uint32_t *remlen, int UNUSED(which))
+LOCAL int smb2_parse(ArkimeSession_t *session, const SMBInfo_t *UNUSED(smb), BSB *bsb, char *state, uint32_t *remlen, int UNUSED(which))
 {
     const uint8_t *start = BSB_WORK_PTR(*bsb);
 

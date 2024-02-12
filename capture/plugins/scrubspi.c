@@ -108,7 +108,7 @@ LOCAL void scrubspi_plugin_save(ArkimeSession_t *session, int UNUSED(final))
     }
 }
 /******************************************************************************/
-LOCAL void scrubspi_add_entry(char *key, char *value)
+LOCAL void scrubspi_add_entry(const char *key, const char *value)
 {
     char spliton[2] = {0, 0};
     spliton[0] = value[0];

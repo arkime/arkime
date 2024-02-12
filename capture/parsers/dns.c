@@ -200,13 +200,13 @@ LOCAL int dns_find_host(int pos, ArkimeSession_t *session, char *string, int len
     return FALSE;
 }
 /******************************************************************************/
-LOCAL void dns_parser_rr_https(ArkimeSession_t *session, const uint8_t *data, int len)
+LOCAL void dns_parser_rr_https(ArkimeSession_t *session, const uint8_t *data, int length)
 {
-    if (len < 10)
+    if (length < 10)
         return;
 
     BSB bsb;
-    BSB_INIT(bsb, data, len);
+    BSB_INIT(bsb, data, length);
 
     BSB_IMPORT_skip(bsb, 2); // priority
     uint8_t name = 1;

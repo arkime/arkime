@@ -60,7 +60,7 @@ int MD_gc(lua_State *L)
 /******************************************************************************/
 int MD_memmem(lua_State *L)
 {
-    MD_t *md = checkArkimeData(L, 1);
+    const MD_t *md = checkArkimeData(L, 1);
     size_t len;
     const char *needle = luaL_checklstring(L, 2, &len);
     const char *match = arkime_memstr(md->str, md->len, needle, len);
@@ -74,7 +74,7 @@ int MD_memmem(lua_State *L)
 /******************************************************************************/
 int MD_copy(lua_State *L)
 {
-    MD_t *md = checkArkimeData(L, 1);
+    const MD_t *md = checkArkimeData(L, 1);
     MD_t *nmd = molua_pushArkimeData(L, md->str, md->len);
     nmd->str = g_memdup(md->str, md->len);
     nmd->needFree = 1;
@@ -101,8 +101,8 @@ int MD_pcre_create(lua_State *L)
 /******************************************************************************/
 int MD_pcre_ismatch(lua_State *L)
 {
-    MD_t *data = checkArkimeData(L, 1);
-    GRegex *pattern = lua_touserdata(L, 2);
+    const MD_t *data = checkArkimeData(L, 1);
+    const GRegex *pattern = lua_touserdata(L, 2);
     gboolean result = g_regex_match_full (pattern, data->str, data->len, 0, 0, NULL, NULL);
     lua_pushboolean(L, result);
     return 1;
@@ -140,7 +140,7 @@ int MD_pattern_create(lua_State *L)
 /******************************************************************************/
 int MD_pattern_ismatch(lua_State *L)
 {
-    MD_t *data = checkArkimeData(L, 1);
+    const MD_t *data = checkArkimeData(L, 1);
     GPatternSpec *pattern = lua_touserdata(L, 2);
     lua_pushboolean(L, g_pattern_match(pattern, data->len, data->str, NULL));
     return 1;

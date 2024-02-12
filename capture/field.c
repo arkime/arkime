@@ -139,20 +139,20 @@ void arkime_field_define_json(const uint8_t *expression, int expression_len, con
     return;
 }
 /******************************************************************************/
-int arkime_field_define_text_full(char *field, char *text, int *shortcut)
+int arkime_field_define_text_full(char *field, const char *text, int *shortcut)
 {
     int count = 0;
     int nolinked = 0;
     int noutf8 = 0;
     int fake = 0;
-    char *kind = 0;
-    char *help = 0;
-    char *db = 0;
-    char *group = 0;
-    char *friendly = 0;
-    char *category = 0;
-    char *transform = 0;
-    char *aliases = 0;
+    const char *kind = 0;
+    const char *help = 0;
+    const char *db = 0;
+    const char *group = 0;
+    const char *friendly = 0;
+    const char *category = 0;
+    const char *transform = 0;
+    const char *aliases = 0;
 
     if (config.debug)
         LOG("Parsing %s", text);
@@ -275,7 +275,7 @@ int arkime_field_define_text_full(char *field, char *text, int *shortcut)
     return pos;
 }
 /******************************************************************************/
-int arkime_field_define_text(char *text, int *shortcut)
+int arkime_field_define_text(const char *text, int *shortcut)
 {
     return arkime_field_define_text_full(NULL, text, shortcut);
 }
@@ -289,7 +289,7 @@ int arkime_field_define_text(char *text, int *shortcut)
     va_end(args);
 }*/
 /******************************************************************************/
-int arkime_field_group_num(char *group, int len)
+LOCAL int arkime_field_group_num(const char *group, int len)
 {
     static int maxGroupNum = 0;
     char       groupName[100];
@@ -311,7 +311,7 @@ int arkime_field_group_num(char *group, int len)
     return groupNum;
 }
 /******************************************************************************/
-int arkime_field_define(char *group, char *kind, char *expression, char *friendlyName, char *dbField, char *help, ArkimeFieldType type, int flags, ...)
+int arkime_field_define(const char *group, const char *kind, const char *expression, const char *friendlyName, const char *dbField, const char *help, ArkimeFieldType type, int flags, ...)
 {
     char dbField2[100];
     char expression2[1000];
@@ -990,7 +990,7 @@ void *arkime_field_parse_ip(const char *str) {
     return v;
 }
 /******************************************************************************/
-gboolean arkime_field_ip_add_str(int pos, ArkimeSession_t *session, char *str)
+gboolean arkime_field_ip_add_str(int pos, ArkimeSession_t *session, const char *str)
 {
     ArkimeField_t                    *field;
     const ArkimeFieldInfo_t          *info = config.fields[pos];
@@ -1481,7 +1481,7 @@ int arkime_field_count(int pos, ArkimeSession_t *session)
     }
 }
 /******************************************************************************/
-int arkime_field_ops_should_run_int_op(ArkimeFieldOp_t *op, int value)
+LOCAL int arkime_field_ops_should_run_int_op(const ArkimeFieldOp_t *op, int value)
 {
     switch (op->set) {
     case ARKIME_FIELD_OP_SET:
@@ -1505,7 +1505,7 @@ void arkime_field_ops_run_match(ArkimeSession_t *session, ArkimeFieldOps_t *ops,
     int i;
 
     for (i = 0; i < ops->num; i++) {
-        ArkimeFieldOp_t *op = &(ops->ops[i]);
+        const ArkimeFieldOp_t *op = &(ops->ops[i]);
         int16_t fieldPos = op->fieldPos;
 
         // Special field pos that really are setting a field in sessions
@@ -1643,7 +1643,7 @@ void arkime_field_ops_init(ArkimeFieldOps_t *ops, int numOps, uint16_t flags)
 
 
 /******************************************************************************/
-void arkime_field_ops_int_parse(ArkimeFieldOp_t *op, char *value)
+LOCAL void arkime_field_ops_int_parse(ArkimeFieldOp_t *op, const char *value)
 {
     int len;
     switch(value[0]) {

@@ -851,7 +851,7 @@ void arkime_quit();
 
 uint32_t arkime_get_next_prime(uint32_t v);
 uint32_t arkime_get_next_powerof2(uint32_t v);
-void arkime_check_file_permissions(char *filename);
+void arkime_check_file_permissions(const char *filename);
 
 
 /******************************************************************************/
@@ -893,7 +893,7 @@ char    *arkime_db_create_file_full(time_t firstPacket, const char *name, uint64
 void     arkime_db_save_session(ArkimeSession_t *session, int final);
 void     arkime_db_add_override_ip(char *str, ArkimeIpInfo_t *ii);
 void     arkime_db_install_override_ip();
-void     arkime_db_add_field(char *group, char *kind, char *expression, char *friendlyName, char *dbField, char *help, int haveap, va_list ap);
+void     arkime_db_add_field(const char *group, const char *kind, const char *expression, const char *friendlyName, const char *dbField, const char *help, int haveap, va_list ap);
 void     arkime_db_delete_field(const char *expression);
 void     arkime_db_update_field(const char *expression, const char *name, const char *value);
 void     arkime_db_update_filesize(uint32_t fileid, uint64_t filesize, uint64_t packetsSize, uint32_t packets);
@@ -940,7 +940,7 @@ struct arkimedrophashgroup_t {
 };
 
 
-void arkime_drophash_init(ArkimeDropHashGroup_t *group, char *file, int keyLen);
+void arkime_drophash_init(ArkimeDropHashGroup_t *group, const char *file, int keyLen);
 int arkime_drophash_add (ArkimeDropHashGroup_t *group, int port, const void *key, uint32_t current, uint32_t goodFor);
 int arkime_drophash_should_drop (ArkimeDropHashGroup_t *group, int port, void *key, uint32_t current);
 void arkime_drophash_delete (ArkimeDropHashGroup_t *group, int port, void *key);
@@ -1054,7 +1054,7 @@ gboolean arkime_http_is_arkime(uint32_t hash, uint8_t *sessionId);
 
 void     arkime_session_id (uint8_t *sessionId, uint32_t addr1, uint16_t port1, uint32_t addr2, uint16_t port2);
 void     arkime_session_id6 (uint8_t *sessionId, const uint8_t *addr1, uint16_t port1, const uint8_t *addr2, uint16_t port2);
-char    *arkime_session_id_string (uint8_t *sessionId, char *buf);
+char    *arkime_session_id_string (const uint8_t *sessionId, char *buf);
 char    *arkime_session_pretty_string (ArkimeSession_t *session, char *buf, int len);
 
 uint32_t arkime_session_hash(const void *key);
@@ -1306,9 +1306,9 @@ char *arkime_yara_version();
 
 void arkime_field_init();
 void arkime_field_define_json(const uint8_t *expression, int expression_len, const uint8_t *data, int data_len);
-int  arkime_field_define_text(char *text, int *shortcut);
-int  arkime_field_define_text_full(char *field, char *text, int *shortcut);
-int  arkime_field_define(char *group, char *kind, char *expression, char *friendlyName, char *dbField, char *help, ArkimeFieldType type, int flags, ...);
+int  arkime_field_define_text(const char *text, int *shortcut);
+int  arkime_field_define_text_full(char *field, const char *text, int *shortcut);
+int  arkime_field_define(const char *group, const char *kind, const char *expression, const char *friendlyName, const char *dbField, const char *help, ArkimeFieldType type, int flags, ...);
 
 int  arkime_field_by_db(const char *dbField);
 int  arkime_field_by_exp(const char *exp);
@@ -1319,7 +1319,7 @@ const char *arkime_field_string_uw_add(int pos, ArkimeSession_t *session, const 
 gboolean arkime_field_int_add(int pos, ArkimeSession_t *session, int i);
 gboolean arkime_field_ip4_add(int pos, ArkimeSession_t *session, uint32_t i);
 gboolean arkime_field_ip6_add(int pos, ArkimeSession_t *session, const uint8_t *val);
-gboolean arkime_field_ip_add_str(int pos, ArkimeSession_t *session, char *str);
+gboolean arkime_field_ip_add_str(int pos, ArkimeSession_t *session, const char *str);
 gboolean arkime_field_certsinfo_add(int pos, ArkimeSession_t *session, ArkimeCertsInfo_t *certs, int len);
 gboolean arkime_field_float_add(int pos, ArkimeSession_t *session, float f);
 void arkime_field_macoui_add(ArkimeSession_t *session, int macField, int ouiField, const uint8_t *mac);

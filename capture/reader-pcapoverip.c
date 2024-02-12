@@ -133,7 +133,7 @@ gboolean pcapoverip_client_read_cb(gint UNUSED(fd), GIOCondition cond, gpointer 
         }
 
         if (unlikely(caplen != origlen) && config.readTruncatedPackets && !config.ignoreErrors) {
-            LOGEXIT("ERROR - Arkime requires full packet captures caplen: %d pktlen: %d\n"
+            LOGEXIT("ERROR - Arkime requires full packet captures caplen: %u pktlen: %u\n"
                     "See https://arkime.com/faq#arkime_requires_full_packet_captures_error",
                     caplen, origlen);
         }

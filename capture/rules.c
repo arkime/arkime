@@ -103,7 +103,7 @@ typedef union {
     uint64_t        num;
 } ArkimeRuleIntMatch_t;
 
-LOCAL void arkime_rules_load_add_field_range_match(ArkimeRule_t *rule, int pos, char *key);
+LOCAL void arkime_rules_load_add_field_range_match(ArkimeRule_t *rule, int pos, const char *key);
 /******************************************************************************/
 LOCAL void arkime_rules_free_array(gpointer data)
 {
@@ -391,7 +391,7 @@ LOCAL void arkime_rules_load_add_field(ArkimeRule_t *rule, int pos, char *key)
     }
 }
 /******************************************************************************/
-LOCAL void arkime_rules_load_add_field_range_match(ArkimeRule_t *rule, int pos, char *key)
+LOCAL void arkime_rules_load_add_field_range_match(ArkimeRule_t *rule, int pos, const char *key)
 {
     char *dash = strchr(key, '-');
     *dash = 0;
@@ -433,7 +433,7 @@ LOCAL void arkime_rules_load_add_field_range_match(ArkimeRule_t *rule, int pos, 
     }
 }
 /******************************************************************************/
-LOCAL void arkime_rules_load_add_field_match(ArkimeRule_t *rule, int pos, int type, char *key)
+LOCAL void arkime_rules_load_add_field_match(ArkimeRule_t *rule, int pos, int type, const char *key)
 {
     int len = strlen(key);
 

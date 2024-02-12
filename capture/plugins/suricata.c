@@ -391,7 +391,7 @@ LOCAL void suricata_read()
 
 }
 /******************************************************************************/
-LOCAL void suricata_open(struct stat *sb)
+LOCAL void suricata_open(const struct stat *sb)
 {
     static int printedError;
 
