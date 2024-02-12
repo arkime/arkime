@@ -344,7 +344,7 @@ void reload(int UNUSED(sig))
     arkime_plugins_reload();
 }
 /******************************************************************************/
-void arkime_check_file_permissions(char *filename)
+void arkime_check_file_permissions(const char *filename)
 {
     char                 path[PATH_MAX];
     struct stat          stats;

@@ -341,7 +341,7 @@ LOCAL uint64_t quic_get_number(BSB *bsb)
     return result;
 }
 /******************************************************************************/
-LOCAL void hkdfExpandLabel(uint8_t *secret, int secretLen, char *label, uint8_t *okm, gsize okmLen)
+LOCAL void hkdfExpandLabel(const uint8_t *secret, int secretLen, const char *label, uint8_t *okm, gsize okmLen)
 {
     uint8_t data[100];
     BSB bsb;

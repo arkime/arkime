@@ -1855,7 +1855,7 @@ LOCAL void arkime_db_get_sequence_number(const char *name, ArkimeSeqNum_cb func,
     arkime_http_schedule(esServer, "POST", key, key_len, json, json_len, NULL, ARKIME_HTTP_PRIORITY_BEST, arkime_db_get_sequence_number_cb, r);
 }
 /******************************************************************************/
-uint32_t arkime_db_get_sequence_number_sync(char *name)
+LOCAL uint32_t arkime_db_get_sequence_number_sync(const char *name)
 {
 
     while (1) {
@@ -2473,7 +2473,7 @@ LOCAL void arkime_db_fieldbsb_make()
     }
 }
 /******************************************************************************/
-void arkime_db_add_field(char *group, char *kind, char *expression, char *friendlyName, char *dbField, char *help, int haveap, va_list ap)
+void arkime_db_add_field(const char *group, const char *kind, const char *expression, const char *friendlyName, const char *dbField, const char *help, int haveap, va_list ap)
 {
     if (config.dryRun)
         return;

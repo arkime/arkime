@@ -126,7 +126,7 @@ void arkime_session_id6 (uint8_t *buf, const uint8_t *addr1, uint16_t port1, con
 }
 #endif
 /******************************************************************************/
-char *arkime_session_id_string (uint8_t *sessionId, char *buf)
+char *arkime_session_id_string (const uint8_t *sessionId, char *buf)
 {
     // ALW: Rewrite to make pretty
     return arkime_sprint_hex_string(buf, sessionId, sessionId[0]);
