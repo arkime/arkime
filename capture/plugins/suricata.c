@@ -292,6 +292,9 @@ LOCAL void suricata_process()
     uint16_t        srcPort = 0;
     uint16_t        dstPort = 0;
 
+    memset(&srcIp, 0, sizeof(srcIp));
+    memset(&dstIp, 0, sizeof(dstIp));
+
     int i;
     for (i = 0; out[i]; i += 4) {
         if (config.debug > 2)
