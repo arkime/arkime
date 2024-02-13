@@ -18,7 +18,7 @@ First, checkout the main [Arkime README](README.md) for information on how to bu
 **Then, get some test data!**
 
 * If using a VM/docker make sure your dev host has at least 2-3G of memory
-* Make sure `node` is in your path, currently main only supports Node version 16 (Use the latest version in "Node Versions" section of [CHANGELOG](CHANGELOG)), we recommend using [nvm](https://github.com/nvm-sh/nvm) to manage what version of node is installed
+* Make sure `node` is in your path, currently main only supports Node version 18 (Use the latest version in "Node Versions" section of [CHANGELOG](CHANGELOG)), we recommend using [nvm](https://github.com/nvm-sh/nvm) to manage what version of node is installed
 * Install [OpenSearch](https://opensearch.org/downloads.html) OR [Elasticsearch](https://www.elastic.co/downloads/past-releases#elasticsearch) (Use the latest version in "OpenSearch Versions" or "Elasticsearch versions" section of [CHANGELOG](CHANGELOG))
 * Start OpenSearch/Elasticsearch
 * If on a Mac install either [Homebrew](https://brew.sh) or [MacPorts](https://www.macports.org/)
@@ -31,9 +31,6 @@ First, checkout the main [Arkime README](README.md) for information on how to bu
 
 You should now have test data loaded, so let's **start the web app**:
 
-* Move to the Arkime viewer directory
-* Run `npm ci`
-* Move back up to the top level Arkime directory
 * Run `npm run viewer:test`
 * Now browse to the app at `http://localhost:8123`
 
@@ -75,7 +72,6 @@ Feature requests include new features and minor improvements to existing functio
 
 Feature requests are tracked as [GitHub Issues](https://guides.github.com/features/issues/).
 **Please follow these guidelines when submitting a feature request:**
-* Please use a [fork](https://guides.github.com/activities/forking/) to submit a [pull request](https://help.github.com/articles/creating-a-pull-request/) for your contribution.
 * Provide a clear and descriptive title
 * Describe the suggested feature in as much detail as possible
 * Use examples to help us understand the use case of the feature
@@ -99,6 +95,7 @@ To implement something new, please create an issue first so we can discuss it to
 * The README file in the tests directory provides additional information on the test cases
 * When creating a Pull Request please follow [best practices](https://github.com/trein/dev-best-practices/wiki/Git-Commit-Best-Practices) for creating git commits.
 * When your code is ready to be submitted, submit a Pull Request to begin the code review process.
+* Please use a [fork](https://guides.github.com/activities/forking/) to submit a [pull request](https://help.github.com/articles/creating-a-pull-request/) for your contribution.
 
 We only seek to accept code that you are authorized to contribute to the project. We have added a pull request template on our projects so that your contributions are made with the following confirmation:
 > I confirm that this contribution is made under an Apache 2.0 license and that I have the authority necessary to make this contribution on behalf of its copyright owner.
@@ -151,6 +148,7 @@ We encourage inclusive and professional interactions on our project. We welcome 
 8. Click "Run workflow" button
 9. AFTER everything finishes, update the release notes https://github.com/arkime/arkime/releases/
 10. Profit!
+11. Edit CHANGELOG and configure.ac with the next version when ready
 
 ---
 
