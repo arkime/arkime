@@ -114,7 +114,7 @@ let issues;
 
 // save noPackets issues so that the time of issue can be compared to the
 // noPacketsLength user setting (only issue alerts when the time the issue
-// was encounterd exceeds the noPacketsLength user setting)
+// was encountered exceeds the noPacketsLength user setting)
 const noPacketsMap = new Map();
 
 // super secret
@@ -244,9 +244,13 @@ class Parliament {
 
   // DB INTERACTIONS ---------------------------------------------------------
   static async getParliament () {
-    return Parliament.#esclient.get({
+    const parliament = await Parliament.#esclient.get({
       index: Parliament.#parliamentIndex, id: Parliament.name
     });
+
+    Parliament.#cache.set('parliament', parliament.body._source);
+
+    return parliament;
   }
 
   static async createParliament (parliament) {
@@ -273,7 +277,7 @@ class Parliament {
 
   // APIS --------------------------------------------------------------------
   /**
-   * The Parliament configuration continaing all the settings, groups, and clusters.
+   * The Parliament configuration containing all the settings, groups, and clusters.
    * @typedef Parliament
    * @type {object}
    * @property {string} name - The name of the Parliament.
@@ -291,7 +295,7 @@ class Parliament {
    * @property {number} esQueryTimeout - The maximum Elasticsearch status query duration. If the query exceeds this time setting, an ES Down issue is added to the cluster. The default for this setting is 5 seconds.
    * @property {number} removeIssuesAfter - When an issue is removed if it has not occurred again. The issue is removed from the cluster after this time expires as long as the issue has not occurred again. The default for this setting is 60 minutes.
    * @property {number} removeAcknowledgedAfter - When an acknowledged issue is removed. The issue is removed from the cluster after this time expires (so you don't have to remove issues manually with the trashcan button). The default for this setting is 15 minutes.
-   * @property {string} hostname - The hostname of the Parliament instance. Configure the Parliament's hostname to add a link to the Parliament Dashbaord to every alert.
+   * @property {string} hostname - The hostname of the Parliament instance. Configure the Parliament's hostname to add a link to the Parliament Dashboard to every alert.
    */
 
   /**
@@ -331,8 +335,6 @@ class Parliament {
   static async apiGetParliament (req, res) {
     try {
       const { body: { _source: parliament } } = await Parliament.getParliament();
-
-      Parliament.#cache.set('parliament', parliament);
 
       const parliamentClone = JSON.parse(JSON.stringify(parliament));
 
@@ -794,16 +796,8 @@ class Parliament {
    * Caches it for 1 minute
    * @param {string} type - The type of setting to retrieve.
    */
-  static async getGeneralSetting (type) {
-    let parliament = Parliament.#cache.get('parliament');
-
-    if (!parliament) {
-      const { body: { _source: updatedParliament } } = await Parliament.getParliament();
-      Parliament.#cache.set('parliament', updatedParliament);
-      parliament = updatedParliament;
-    }
-
-    return parliament?.settings?.general[type] ?? Parliament.settingsDefault.general[type];
+  static getGeneralSetting (type) {
+    return Parliament.#cache.get('parliament')?.settings?.general[type] ?? Parliament.settingsDefault.general[type];
   }
 }
 
@@ -853,7 +847,7 @@ function isAdmin (req, res, next) {
 let alerts = [];
 // sends alerts in the alerts list
 async function sendAlerts () {
-  const hostname = await Parliament.getGeneralSetting('hostname');
+  const hostname = Parliament.getGeneralSetting('hostname');
   const promise = new Promise((resolve, reject) => {
     for (let index = 0, len = alerts.length; index < len; index++) {
       (function (i) {
@@ -1244,16 +1238,12 @@ function getHealth (cluster) {
 }
 
 async function getStats (cluster) {
-  await Parliament.getGeneralSetting('esQueryTimeout');
-
   return new Promise((resolve, reject) => {
-    const timeout = Parliament.getGeneralSetting('esQueryTimeout') * 1000;
-
     const options = {
       url: `${cluster.localUrl ?? cluster.url}/api/parliament`,
       method: 'GET',
       httpsAgent: internals.httpsAgent,
-      timeout
+      timeout: Parliament.getGeneralSetting('esQueryTimeout') * 1000
     };
 
     // Get now before the query since we don't know how long query/response will take
@@ -1283,8 +1273,6 @@ async function getStats (cluster) {
       cluster.arkimeNodes = 0;
       cluster.monitoring = 0;
 
-      const outOfDate = Parliament.getGeneralSetting('outOfDate');
-
       for (const stat of stats.data) {
         // sum delta bytes per second
         if (stat.deltaBytesPerSec) {
@@ -1300,12 +1288,12 @@ async function getStats (cluster) {
           cluster.monitoring += stat.monitoring;
         }
 
-        if ((now - stat.currentTime) <= outOfDate && stat.deltaPacketsPerSec > 0) {
+        if ((now - stat.currentTime) <= Parliament.getGeneralSetting('outOfDate') && stat.deltaPacketsPerSec > 0) {
           cluster.arkimeNodes++;
         }
 
         // Look for issues
-        if ((now - stat.currentTime) > outOfDate) {
+        if ((now - stat.currentTime) > Parliament.getGeneralSetting('outOfDate')) {
           setIssue(cluster, {
             type: 'outOfDate',
             node: stat.nodeName,
