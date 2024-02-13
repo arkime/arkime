@@ -487,7 +487,7 @@ LOCAL gboolean reader_libpcapfile_read()
         }
         if (!config.dryRun && !config.copyPcap) {
             // Make sure the output file has been opened otherwise we can't update the entry
-            while (offlineInfo[readerPos].outputId == 0) {
+            while (offlineInfo[readerPos].outputId == 0 || arkime_http_queue_length_best(esServer) > 0) {
                 g_main_context_iteration(NULL, TRUE);
             }
             arkime_db_update_filesize(offlineInfo[readerPos].outputId, lastBytes, lastBytes, lastPackets);
