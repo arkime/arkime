@@ -39,6 +39,7 @@ The Arkime system is comprised of 3 main components:
 We also provide several optional applications:
 * **cont3xt** - An application that provides a structured approach to gathering contextual intelligence in support of technical investigations.
 * **esProxy** - A proxy that provides extra security between capture and OpenSearch/Elasticsearch.
+* **Parliament** - An application that monitors and is a front door to multiple Arkime clusters.
 * **wiseService** - An application that integrates threat intelligence into the session metadata.
 
 Once installed, a user can look at the data Arkime has captured using a simple web interface. Arkime provides multiple views of the data.  The primary view is the Sessions page that contains a list of sessions. Each session can be opened to view the metadata and PCAP data.
