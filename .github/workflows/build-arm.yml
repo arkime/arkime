@@ -95,8 +95,6 @@ jobs:
           fpm -s dir -t rpm -n arkime -x opt/arkime/logs -x opt/arkime/raw -v $ARKIME_VERSION --iteration ${{ github.run_id }} --template-scripts --after-install "release/afterinstall.sh" --url "https://arkime.com" --description "Arkime Full Packet System" ${{ matrix.fpmdeps }} --rpm-rpmbuild-define "_build_id_links none" -p arkime-${ARKIME_VERSION}-${{github.run_id}}.${{matrix.version}}.aarch64.rpm /opt/arkime
           ls -l *.rpm
           mv *.aarch64.rpm arkime-main.${{matrix.version}}.aarch64.rpm
-          aws s3 cp --quiet *.aarch64.rpm s3://files.molo.ch/ --acl public-read
-          aws s3api put-object-acl --bucket files.molo.ch --key arkime-main.${{matrix.version}}.aarch64.rpm --acl public-read
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
@@ -108,8 +106,6 @@ jobs:
           fpm -s dir -t deb -n arkime -x opt/arkime/logs -x opt/arkime/raw -v $ARKIME_VERSION --iteration ${{ github.run_id }} --template-scripts --after-install "release/afterinstall.sh" --url "https://arkime.com" --description "Arkime Full Packet System" ${{ matrix.fpmdeps }} -p arkime_${ARKIME_VERSION}-${{github.run_id}}.${{matrix.version}}_arm64.deb /opt/arkime
           ls -l *.deb
           mv *.deb arkime-main_${{matrix.version}}_arm64.deb
-          aws s3 cp --quiet *_arm64.deb s3://files.molo.ch/ --acl public-read
-          aws s3api put-object-acl --bucket files.molo.ch --key arkime-main_${{matrix.version}}_arm64.deb --acl public-read
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
