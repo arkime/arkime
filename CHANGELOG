@@ -33,18 +33,21 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
 5.0.1 2024/02/xx
 ## Release
   - #2631 CyberChef 10.6.0
-## Viewer
-  - #2632 fix field labels not expanding fully
-  - #2637 fix session detail grip
-## db.pl
-  - #2633 noprompt outputs less warnings
-  - #2639 fix init not working with large number of indices
+  - #2648 Build for Ubuntu 24.04
 ## Capture
   - #2634 add esp packet stats (fixes #1116)
   - #2638 support readTruncatedPackets on live captures
+## db.pl
+  - #2633 noprompt outputs less warnings
+  - #2639 fix init not working with large number of indices
 ## JA4+
   - Fixed memory leak
   - Fixed JA4H issue with long cookies
+## Parliament
+  - Fixed issues not being detected
+## Viewer
+  - #2632 fix field labels not expanding fully
+  - #2637 fix session detail grip
 
 5.0.0 2024/02/06
 ## BREAKING
