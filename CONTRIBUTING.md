@@ -152,5 +152,25 @@ We encourage inclusive and professional interactions on our project. We welcome 
 
 ---
 
+### Adding a new build OS
+1. In arkime/arkime-build repo
+  1. Add a new directory, usually starting with a previous version
+  2. Update the makeDockerBuild.sh file in the build and copy sections
+  3. Update the Dockerfile for new OS
+  4. Run the 2 exports and the docker image build manually
+  5. Repeat steps 3-5 until successful
+  6. Run docker push
+2. Update .github/workflows/build\*.yml
+  1. In matrix section add a new section for the OS
+  2. Add the name of the new section from 1 to matrix.version array
+  3. Test
+3. Update .github/workflows/release
+  1. In matrix section add a new section for the OS
+  2. Add the name of the new section from 2 to matrix.version array
+4. Update CHANGELOG
+
+
+---
+
 ### :heart: Thanks,
 Andy & Elyse

@@ -7,6 +7,9 @@ on:
       - '*.md'
       - '.*'
 
+        #  pull_request:
+        #    branches: [ "main" ]
+
 
 jobs:
   build:
@@ -20,7 +23,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        version: [al2023, ubuntu2204]
+        version: [al2023, ubuntu2204, ubuntu2404]
         include:
           - version: al2023
             container: andywick/arkime-build-al2023-arm64:5.0.0-3
@@ -33,6 +36,12 @@ jobs:
             container: andywick/arkime-build-22-arm64:5.0.0-3
             buildopt: "--nothirdparty --kafka"
             fpmdeps: "-d libwww-perl -d libjson-perl -d ethtool -d libyaml-dev -d liblua5.4-0 -d libmaxminddb0 -d libcurl4 -d libpcap0.8 -d libglib2.0-0 -d libnghttp2-14 -d libyara8 -d librdkafka1"
+            package: deb
+
+          - version: ubuntu2404
+            container: andywick/arkime-build-24-arm64:5.0.0-3
+            buildopt: "--nothirdparty --kafka"
+            fpmdeps: "-d libwww-perl -d libjson-perl -d ethtool -d libyaml-dev -d liblua5.4-0 -d libmaxminddb0 -d libcurl4 -d libpcap0.8 -d libglib2.0-0 -d libnghttp2-14 -d libyara10 -d librdkafka1"
             package: deb
 
     runs-on: buildjet-2vcpu-ubuntu-2204-arm
@@ -86,11 +95,6 @@ jobs:
           fpm -s dir -t rpm -n arkime -x opt/arkime/logs -x opt/arkime/raw -v $ARKIME_VERSION --iteration ${{ github.run_id }} --template-scripts --after-install "release/afterinstall.sh" --url "https://arkime.com" --description "Arkime Full Packet System" ${{ matrix.fpmdeps }} --rpm-rpmbuild-define "_build_id_links none" -p arkime-${ARKIME_VERSION}-${{github.run_id}}.${{matrix.version}}.aarch64.rpm /opt/arkime
           ls -l *.rpm
           mv *.aarch64.rpm arkime-main.${{matrix.version}}.aarch64.rpm
-          aws s3 cp --quiet *.aarch64.rpm s3://files.molo.ch/ --acl public-read
-          aws s3api put-object-acl --bucket files.molo.ch --key arkime-main.${{matrix.version}}.aarch64.rpm --acl public-read
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
       - name: package deb
         if: ${{ matrix.package == 'deb' }}
@@ -99,11 +103,6 @@ jobs:
           fpm -s dir -t deb -n arkime -x opt/arkime/logs -x opt/arkime/raw -v $ARKIME_VERSION --iteration ${{ github.run_id }} --template-scripts --after-install "release/afterinstall.sh" --url "https://arkime.com" --description "Arkime Full Packet System" ${{ matrix.fpmdeps }} -p arkime_${ARKIME_VERSION}-${{github.run_id}}.${{matrix.version}}_arm64.deb /opt/arkime
           ls -l *.deb
           mv *.deb arkime-main_${{matrix.version}}_arm64.deb
-          aws s3 cp --quiet *_arm64.deb s3://files.molo.ch/ --acl public-read
-          aws s3api put-object-acl --bucket files.molo.ch --key arkime-main_${{matrix.version}}_arm64.deb --acl public-read
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
       - name: ja4plus
         if: ${{ matrix.ja4plus }}

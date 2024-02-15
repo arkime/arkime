@@ -23,7 +23,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        version: [el8, el9, ubuntu2004, ubuntu2204, arch, al2023]
+        version: [el8, el9, ubuntu2004, ubuntu2204, ubuntu2404, arch, al2023]
         include:
           - version: el8
             container: andywick/arkime-build-8:5.0.0-2
@@ -48,6 +48,12 @@ jobs:
             container: andywick/arkime-build-22:5.0.0-2
             buildopt: "--nothirdparty --kafka --pfring"
             fpmdeps: "-d libwww-perl -d libjson-perl -d ethtool -d libyaml-dev -d liblua5.4-0 -d libmaxminddb0 -d libcurl4 -d libpcap0.8 -d libglib2.0-0 -d libnghttp2-14 -d libyara8 -d librdkafka1"
+            package: deb
+
+          - version: ubuntu2404
+            container: andywick/arkime-build-24:5.0.0-3
+            buildopt: "--nothirdparty --kafka --pfring"
+            fpmdeps: "-d libwww-perl -d libjson-perl -d ethtool -d libyaml-dev -d liblua5.4-0 -d libmaxminddb0 -d libcurl4 -d libpcap0.8 -d libglib2.0-0 -d libnghttp2-14 -d libyara10 -d librdkafka1"
             package: deb
 
           - version: arch
