@@ -11,6 +11,9 @@ on:
       - '*.md'
       - '.*'
 
+permissions:
+  contents: read
+
 jobs:
   build:
     permissions:
