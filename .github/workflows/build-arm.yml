@@ -23,7 +23,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        version: [al2023, ubuntu2204]
+        version: [al2023, ubuntu2204, ubuntu2404]
         include:
           - version: al2023
             container: andywick/arkime-build-al2023-arm64:5.0.0-3
