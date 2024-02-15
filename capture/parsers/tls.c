@@ -608,8 +608,9 @@ LOCAL int tls_process_server_handshake_record(ArkimeSession_t *session, const ui
 }
 /******************************************************************************/
 // Comparison function for qsort
-int compare_uint16_t(const void *a, const void *b) {
-    return (int)(*(const uint16_t *)a - * (const uint16_t *)b);
+LOCAL int compare_uint16_t(const void *a, const void *b)
+{
+    return (*(const uint16_t *)a < *(const uint16_t *)b ? -1 : *(const uint16_t *)a > *(const uint16_t *)b);
 }
 /******************************************************************************/
 uint32_t tls_process_client_hello_data(ArkimeSession_t *session, const uint8_t *data, int len, void UNUSED(*uw))
