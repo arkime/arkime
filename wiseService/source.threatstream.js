@@ -99,9 +99,10 @@ class ThreatStreamSource extends WISESource {
     this.maltypeField = this.api.addField('field:threatstream.maltype;db:threatstream.maltype;kind:lotermfield;friendly:Malware Type;help:Threatstream Malware Type;count:true');
     this.sourceField = this.api.addField('field:threatstream.source;db:threatstream.source;kind:termfield;friendly:Source;help:Threatstream Source;count:true');
     this.importIdField = this.api.addField('field:threatstream.importId;db:threatstream.importId;kind:integer;friendly:Import Id;help:Threatstream Import Id;count:true');
+    this.indicatorField = this.api.addField('field:threatstream.indicator;db:threatstream.indicator;kind:termfield;friendly:Indicator;help:Threatstream Matching Indicator');
 
     this.api.addView('threatstream',
-      'require:threatstream;title:Threatstream;fields:threatstream.severity,threatstream.confidence,threatstream.id,threatstream.importId,threatstream.type,threatstream.maltype,threatstream.source');
+      'require:threatstream;title:Threatstream;fields:threatstream.severity,threatstream.confidence,threatstream.id,threatstream.importId,threatstream.type,threatstream.maltype,threatstream.source,threatstream.indicator');
 
     this.api.addValueAction('threatstreamip', { name: 'Threatstream', url: 'https://ui.threatstream.com/detail/ip/%TEXT%', category: 'ip' });
     this.api.addValueAction('threatstreamhost', { name: 'Threatstream', url: 'https://ui.threatstream.com/detail/domain/%HOST%', category: 'host' });
@@ -264,6 +265,7 @@ class ThreatStreamSource extends WISESource {
         const args = [];
         body.objects.forEach((item) => {
           args.push(
+            this.indicatorField, '' + value,
             this.confidenceField, '' + item.confidence,
             this.idField, '' + item.id,
             this.typeField, item.itype.toLowerCase(),
@@ -321,6 +323,7 @@ class ThreatStreamSource extends WISESource {
       const args = [];
       data.forEach((item) => {
         args.push(
+          this.indicatorField, '' + value,
           this.confidenceField, '' + item.confidence,
           this.idField, '' + item.id,
           this.typeField, item.itype.toLowerCase(),
