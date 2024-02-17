@@ -94,7 +94,7 @@ jobs:
         if: ${{ matrix.package == 'rpm' }}
         run: |
           export ARKIME_VERSION=`sed 's/.*"\(.*\)\".*$/\1/' /opt/arkime/common/version.js | head -n 1 | tr "-" "_"`
-          fpm -s dir -t rpm -n arkime -x opt/arkime/logs -x opt/arkime/raw -v $ARKIME_VERSION --iteration ${{ github.run_id }} --template-scripts --after-install "release/afterinstall.sh" --url "https://arkime.com" --description "Arkime Full Packet System" ${{ matrix.fpmdeps }} --rpm-rpmbuild-define "_build_id_links none" -p arkime-${ARKIME_VERSION}-${{github.run_id}}.${{matrix.version}}.aarch64.rpm /opt/arkime
+          fpm -s dir -t rpm --rpm-digest sha256 -n arkime -x opt/arkime/logs -x opt/arkime/raw -v $ARKIME_VERSION --iteration ${{ github.run_id }} --template-scripts --after-install "release/afterinstall.sh" --url "https://arkime.com" --description "Arkime Full Packet System" ${{ matrix.fpmdeps }} --rpm-rpmbuild-define "_build_id_links none" -p arkime-${ARKIME_VERSION}-${{github.run_id}}.${{matrix.version}}.aarch64.rpm /opt/arkime
           ls -l *.rpm
           mv *.aarch64.rpm arkime-main.${{matrix.version}}.aarch64.rpm
 
