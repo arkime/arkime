@@ -392,9 +392,7 @@ class ArkimeUtil {
    * Check the Arkime Schema Version
    */
   static async checkArkimeSchemaVersion (esClient, prefix, minVersion) {
-    if (prefix.length > 0 && !prefix.endsWith('_')) {
-      prefix += '_';
-    }
+    prefix = ArkimeUtil.formatPrefix(prefix);
 
     try {
       const { body: doc } = await esClient.indices.getTemplate({
