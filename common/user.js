@@ -210,6 +210,7 @@ class User {
   }
 
   /**
+   * @private
    * Create a user from thin air!
    */
 

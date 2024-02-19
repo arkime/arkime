@@ -21,7 +21,9 @@ exports.getReturnDescription = (value, options) => {
 };
 
 exports.getKind = (kind, name) => {
-  if (kind === 'member' && name[0] === '/') {
+  if (name === 'SessionsQuery') {
+    return ' Parameter List';
+  } else if (kind === 'member' && name[0] === '/') {
     return ' API';
   } else if (kind === 'typedef') {
     return ' Type';
