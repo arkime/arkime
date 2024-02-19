@@ -686,6 +686,7 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
    * A packet search job that allows users to search within session packets for text.
    * @typedef Hunt
    * @type {object}
+   * @param {SessionsQuery} See_List - This API supports a common set of parameters documented in the SessionsQuery section
    * @property {string} userId - The ID of the user that created the hunt.
    * @property {string} status - The status of the hunt. Options include:
      queued - The hunt is queued to search packets once the currently running hunt has finished.
@@ -711,7 +712,6 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
    * @property {number} created - The time that the hunt was created. Format is seconds since Unix EPOC.
    * @property {number} lastUpdated - The time that the hunt was last updated in the DB. Used to only update every 2 seconds. Format is seconds since Unix EPOC.
    * @property {number} started - The time that the hunt was started (put into running state). Format is seconds since Unix EPOC.
-   * @property {SessionsQuery} query - The request query to filter sessions.
    * @property {array} errors - The list of errors that a hunt encountered. A hunt error includes:
      value - The error text to display to the user.
      time - The time the error was encountered.
@@ -729,7 +729,7 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
    *
    * Creates a new hunt.
    * @name /hunt
-   * @param {SessionsQuery} query - The request query to filter sessions.
+   * @param {SessionsQuery} See_List - This API supports a common set of parameters documented in the SessionsQuery section
    * @param {number} totalSessions - The number of sessions to search.
    * @param {string} name - The name of the hunt (not unique).
    * @param {number} size - The number of packets to search within each session.

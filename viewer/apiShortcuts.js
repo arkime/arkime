@@ -50,6 +50,8 @@ class ShortcutAPIs {
 
   // --------------------------------------------------------------------------
   /**
+   * @private
+   *
    * Normalizes the data in a shortcut by turning values and users string to arrays
    * and removing the type parameter and replacing it with `type: values`
    * Also validates that the users added to the shortcut are valid within the system

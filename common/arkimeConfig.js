@@ -243,6 +243,7 @@ class ArkimeConfig {
 
   // ----------------------------------------------------------------------------
   /**
+   * @private
    * Load include files, currently these must be local in ini format
    */
   static #loadIncludes (includes) {

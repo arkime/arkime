@@ -82,6 +82,8 @@ class Notifier {
   // --------------------------------------------------------------------------
 
   /**
+   * @private
+   *
    * Checks that the notifier is valid.
    * Mutates the notifier if on/alerts properties are missing or the name has special chars.
    * @param {object} notifier - The notifier object to be checked
