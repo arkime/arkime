@@ -2524,7 +2524,8 @@ class SessionAPIs {
     SessionAPIs.buildSessionQuery(req, (err, query, indices) => {
       if (err) {
         res.status(403);
-        return res.end(err);
+
+        return res.send(err.toString());
       }
 
       const fieldDef = Config.getFieldsMap()[req.query.field];
