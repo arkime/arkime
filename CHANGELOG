@@ -47,6 +47,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - Fixed JA4H issue with long cookies
 ## Parliament
   - #2645 Fixed issues not being detected
+  - #2659 Fixed parliament crashing if userPrefix not set
 ## Viewer
   - #2632 fix field labels not expanding fully
   - #2637 fix session detail grip
