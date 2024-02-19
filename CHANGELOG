@@ -35,7 +35,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #2631 CyberChef 10.6.0
   - #2648 Build for Ubuntu 24.04
   - #2655 Support rpm fips installs again
-  - #2548 Node 18.19.1
+  - #2558 Node 18.19.1
 ## Capture
   - #2634 add esp packet stats (fixes #1116)
   - #2638 support readTruncatedPackets on live captures
