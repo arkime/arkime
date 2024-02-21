@@ -5,9 +5,6 @@
     "type": "git",
     "url": "https://github.com/arkime/arkime.git"
   },
-  "dependencies": {
-    "fs-ext": "^2.0.0"
-  },
   "devDependencies": {
     "d3": "^7.7.0",
     "jquery": "^3.6.0",
