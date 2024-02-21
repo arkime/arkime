@@ -15,7 +15,6 @@ const MIN_DB_VERSION = 79;
 const Config = require('./config.js');
 const express = require('express');
 const fs = require('fs');
-const fse = require('fs-ext');
 const async = require('async');
 const Pcap = require('./pcap.js');
 const Db = require('./db.js');
@@ -983,8 +982,8 @@ function expireDevice (nodes, dirs, minFreeSpaceG, nextCb) {
 
       let freeG;
       try {
-        const stat = fse.statVFS(fields.name);
-        freeG = stat.f_frsize / 1024.0 * stat.f_bavail / (1024.0 * 1024.0);
+        const stat = fs.statfsSync(fields.name);
+        freeG = stat.bsize / 1024.0 * stat.bavail / (1024.0 * 1024.0);
       } catch (e) {
         console.log('ERROR', e);
         // File doesn't exist, delete it
@@ -1015,9 +1014,9 @@ function expireCheckDevice (nodes, stat, nextCb) {
   async.forEach(nodes, function (node, cb) {
     let freeSpaceG = Config.getFull(node, 'freeSpaceG', '5%');
     if (freeSpaceG[freeSpaceG.length - 1] === '%') {
-      freeSpaceG = (+freeSpaceG.substr(0, freeSpaceG.length - 1)) * 0.01 * stat.f_frsize / 1024.0 * stat.f_blocks / (1024.0 * 1024.0);
+      freeSpaceG = (+freeSpaceG.substr(0, freeSpaceG.length - 1)) * 0.01 * stat.bsize / 1024.0 * stat.blocks / (1024.0 * 1024.0);
     }
-    const freeG = stat.f_frsize / 1024.0 * stat.f_bavail / (1024.0 * 1024.0);
+    const freeG = stat.bsize / 1024.0 * stat.bavail / (1024.0 * 1024.0);
     if (Config.debug > 0) {
       console.log(`EXPIRE check device node: ${node} free: ${freeG} freeSpaceG: ${freeSpaceG}`);
     }
@@ -1061,7 +1060,7 @@ function expireCheckAll () {
         }
         pcapDir = pcapDir.trim();
         const fileStat = fs.statSync(pcapDir);
-        const vfsStat = fse.statVFS(pcapDir);
+        const vfsStat = fs.statfsSync(pcapDir);
         if (!devToStat[fileStat.dev]) {
           vfsStat.dirs = {};
           vfsStat.dirs[pcapDir] = {};
