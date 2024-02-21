@@ -53,6 +53,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
 ## Viewer
   - #2632 fix field labels not expanding fully
   - #2637 fix session detail grip
+  - #2668 fix pcap export with only default time range and no date param in url
 ## WISE
   - #2653 set a threatstream.indicator field
 
