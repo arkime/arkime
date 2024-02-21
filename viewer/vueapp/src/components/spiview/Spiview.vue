@@ -891,12 +891,14 @@ export default {
       const source = Vue.axios.CancelToken.source();
 
       Utils.setFacetsQuery(query, 'spiview');
+      // need to reset this because ^ sets it to 1 if forced aggs are on
+      query.facets = newQuery ? '1' : '0';
 
       // set whether map is open on the spiview page
       if (localStorage.getItem('spiview-open-map') === 'true') {
         query.map = true;
       }
-      // set whether vizualizations are open on the spiview page
+      // set whether visualizations are open on the spiview page
       if (localStorage.getItem('spiview-hide-viz') === 'true') {
         query.facets = 0;
       }
