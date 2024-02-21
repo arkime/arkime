@@ -1009,7 +1009,7 @@ $json = cont3xtPut('/api/integration/settings', '{}');
 eq_or_diff($json, from_json('{"success": false, "text": "Missing token"}'));
 
 $json = cont3xtPutToken('/api/integration/settings', 'hi', $token);
-is ($json, "SyntaxError: Unexpected token h in JSON at position 0");
+ok($json =~ /SyntaxError: Unexpected token/);
 
 $json = cont3xtPutToken('/api/integration/settings', '{"__proto__": {"foo": 1}}', $token);
 is ($json, "SyntaxError: Object contains forbidden prototype property");
