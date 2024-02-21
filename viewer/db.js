@@ -1585,11 +1585,11 @@ Db.numberOfDocuments = async (index, options) => {
 Db.checkVersion = async function (minVersion) {
   const match = process.versions.node.match(/^(\d+)\.(\d+)\.(\d+)/);
   const nodeVersion = parseInt(match[1], 10) * 10000 + parseInt(match[2], 10) * 100 + parseInt(match[3], 10);
-  if (nodeVersion < 160000) {
-    console.log(`ERROR - Need node 16.x, currently using ${process.version}`);
+  if (nodeVersion < 181500) {
+    console.log(`ERROR - Need node 18 (18.15 or higher) or node 20, currently using ${process.version}`);
     process.exit(1);
-  } else if (nodeVersion >= 190000) {
-    console.log(`ERROR - Node version ${process.version} is not supported, please use node 16.x or 18.x`);
+  } else if (nodeVersion >= 210000) {
+    console.log(`ERROR - Node version ${process.version} is not supported, please use node 18 (18.15 or higher) or node 20`);
     process.exit(1);
   }
 
