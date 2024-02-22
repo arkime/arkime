@@ -1337,7 +1337,7 @@ void arkime_db_save_session(ArkimeSession_t *session, int final)
             ArkimeFieldObject_t *object;
 
             HASH_FORALL_POP_HEAD2(o_, *ohash, object) {
-                saveCB(&jbsb, object);
+                saveCB(&jbsb, object, session);
                 freeCB(object);
                 BSB_EXPORT_u08(jbsb, ',');
             }
