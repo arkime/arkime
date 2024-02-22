@@ -187,6 +187,9 @@ typedef struct {
 typedef HASH_VAR(o_, ArkimeFieldObjectHash_t, ArkimeFieldObjectHead_t, 1);
 typedef HASH_VAR(o_, ArkimeFieldObjectHashStd_t, ArkimeFieldObjectHead_t, 13);
 
+// forward declaration of ArkimeSession_t
+typedef struct arkime_session ArkimeSession_t;
+
 typedef void (* ArkimeFieldObjectSaveFunc) (BSB *jbsb, ArkimeFieldObject_t *object, ArkimeSession_t *session);
 typedef void (* ArkimeFieldObjectFreeFunc) (ArkimeFieldObject_t *object);
 typedef uint32_t (* ArkimeFieldObjectHashFunc) (const void *key);
