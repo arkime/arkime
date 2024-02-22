@@ -59,8 +59,13 @@ LOCAL uint32_t tls_process_server_hello_func;
 LOCAL uint32_t tls_process_server_certificate_func;
 LOCAL uint32_t tls_process_certificate_wInfo_func;
 
+void certinfo_save(BSB *jbsb, ArkimeFieldObject_t *object, ArkimeSession_t *session);
+void certinfo_free(ArkimeFieldObject_t *object);
+uint32_t certinfo_hash(const void *key);
+int certinfo_cmp(const void *keyv, const void *elementv);
+
 /******************************************************************************/
-LOCAL void tls_certinfo_processCertNames_t *ci, BSB *bsb)
+LOCAL void tls_certinfo_process(CertNames_t *ci, BSB *bsb)
 {
     uint32_t apc, atag, alen;
     char lastOid[1000];
@@ -1063,6 +1068,71 @@ LOCAL void tls_classify(ArkimeSession_t *session, const uint8_t *data, int len, 
     }
 }
 /******************************************************************************/
+LOCAL void arkime_db_js0n_str(BSB *bsb, uint8_t *in, gboolean utf8)
+{
+    BSB_EXPORT_u08(*bsb, '"');
+    while (*in) {
+        switch(*in) {
+        case '\b':
+            BSB_EXPORT_cstr(*bsb, "\\b");
+            break;
+        case '\n':
+            BSB_EXPORT_cstr(*bsb, "\\n");
+            break;
+        case '\r':
+            BSB_EXPORT_cstr(*bsb, "\\r");
+            break;
+        case '\f':
+            BSB_EXPORT_cstr(*bsb, "\\f");
+            break;
+        case '\t':
+            BSB_EXPORT_cstr(*bsb, "\\t");
+            break;
+        case '"':
+            BSB_EXPORT_cstr(*bsb, "\\\"");
+            break;
+        case '\\':
+            BSB_EXPORT_cstr(*bsb, "\\\\");
+            break;
+        case '/':
+            BSB_EXPORT_cstr(*bsb, "\\/");
+            break;
+        default:
+            if(*in < 32) {
+                BSB_EXPORT_sprintf(*bsb, "\\u%04x", *in);
+            } else if (utf8) {
+                if ((*in & 0xf0) == 0xf0) {
+                    if (!in[1] || !in[2] || !in[3]) goto end;
+                    BSB_EXPORT_ptr(*bsb, in, 4);
+                    in += 3;
+                } else if ((*in & 0xf0) == 0xe0) {
+                    if (!in[1] || !in[2]) goto end;
+                    BSB_EXPORT_ptr(*bsb, in, 3);
+                    in += 2;
+                } else if ((*in & 0xf0) == 0xd0) {
+                    if (!in[1]) goto end;
+                    BSB_EXPORT_ptr(*bsb, in, 2);
+                    in += 1;
+                } else {
+                    BSB_EXPORT_u08(*bsb, *in);
+                }
+            } else {
+                if(*in & 0x80) {
+                    BSB_EXPORT_u08(*bsb, (0xc0 | (*in >> 6)));
+                    BSB_EXPORT_u08(*bsb, (0x80 | (*in & 0x3f)));
+                } else {
+                    BSB_EXPORT_u08(*bsb, *in);
+                }
+            }
+            break;
+        }
+        in++;
+    }
+
+end:
+    BSB_EXPORT_u08(*bsb, '"');
+}
+/******************************************************************************/
 #define SAVE_STRING_HEAD(HEAD, STR) \
 if (HEAD.s_count > 0) { \
     BSB_EXPORT_cstr(*jbsb, "\"" STR "\":["); \
@@ -1132,11 +1202,12 @@ void certinfo_save(BSB *jbsb, ArkimeFieldObject_t *object, ArkimeSession_t *sess
 
     BSB_EXPORT_rewind(*jbsb, 1); // Remove last comma
 
-    BSB_EXPORT_u08(jbsb, '}');
+    BSB_EXPORT_u08(*jbsb, '}');
 }
 
 void certinfo_free(ArkimeFieldObject_t *object) {
     if (object->object == NULL) {
+        ARKIME_TYPE_FREE(ArkimeFieldObject_t, object);
         return;
     }
 
@@ -1183,6 +1254,7 @@ void certinfo_free(ArkimeFieldObject_t *object) {
         free(ci->serialNumber);
 
     ARKIME_TYPE_FREE(CertInfo_t, ci);
+    ARKIME_TYPE_FREE(ArkimeFieldObject_t, object);
 }
 
 SUPPRESS_UNSIGNED_INTEGER_OVERFLOW
@@ -1217,7 +1289,7 @@ int certinfo_cmp(const void *keyv, const void *elementv) {
     ArkimeFieldObject_t *key      = (ArkimeFieldObject_t *)keyv;
     ArkimeFieldObject_t *element = (ArkimeFieldObject_t *)elementv;
 
-    CertInfo_t *keyCI, elementCI;
+    CertInfo_t *keyCI, *elementCI;
 
     if (key->object == NULL || element->object == NULL) {
         return 0;
