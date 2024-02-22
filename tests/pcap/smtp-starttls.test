@@ -28,29 +28,6 @@
                   "validSeconds" : 62985600
                },
                {
-                  "hash" : "73:59:75:5c:6d:f9:a0:ab:c3:06:0b:ce:36:95:64:c8:ec:45:42:a3",
-                  "issuerON" : [
-                     "Equifax"
-                  ],
-                  "issuerOU" : [
-                     "Equifax Secure Certificate Authority"
-                  ],
-                  "notAfter" : 1534824000000,
-                  "notBefore" : 1021953600000,
-                  "publicAlgorithm" : "rsaEncryption",
-                  "remainingDays" : 1699,
-                  "remainingSeconds" : 146806876,
-                  "serial" : "12bbe6",
-                  "subjectCN" : [
-                     "geotrust global ca"
-                  ],
-                  "subjectON" : [
-                     "GeoTrust Inc."
-                  ],
-                  "validDays" : 5936,
-                  "validSeconds" : 512870400
-               },
-               {
                   "alt" : [
                      "aspmx.l.google.com",
                      "alt1.aspmx.l.google.com",
@@ -95,6 +72,29 @@
                   ],
                   "validDays" : 365,
                   "validSeconds" : 31536000
+               },
+               {
+                  "hash" : "73:59:75:5c:6d:f9:a0:ab:c3:06:0b:ce:36:95:64:c8:ec:45:42:a3",
+                  "issuerON" : [
+                     "Equifax"
+                  ],
+                  "issuerOU" : [
+                     "Equifax Secure Certificate Authority"
+                  ],
+                  "notAfter" : 1534824000000,
+                  "notBefore" : 1021953600000,
+                  "publicAlgorithm" : "rsaEncryption",
+                  "remainingDays" : 1699,
+                  "remainingSeconds" : 146806876,
+                  "serial" : "12bbe6",
+                  "subjectCN" : [
+                     "geotrust global ca"
+                  ],
+                  "subjectON" : [
+                     "GeoTrust Inc."
+                  ],
+                  "validDays" : 5936,
+                  "validSeconds" : 512870400
                }
             ],
             "certCnt" : 3,

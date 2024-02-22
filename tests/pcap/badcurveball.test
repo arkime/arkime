@@ -5,30 +5,6 @@
             "@timestamp" : "SET",
             "cert" : [
                {
-                  "curve" : "corrupt",
-                  "hash" : "f9:ce:21:f0:64:d4:99:f9:e9:95:e8:4d:c7:30:6d:19:62:e1:02:c4",
-                  "issuerCN" : [
-                     "infigo"
-                  ],
-                  "issuerON" : [
-                     "INFIGO IS"
-                  ],
-                  "notAfter" : 1581775250000,
-                  "notBefore" : 1579183250000,
-                  "publicAlgorithm" : "id-ecPublicKey",
-                  "remainingDays" : 28,
-                  "remainingSeconds" : 2481434,
-                  "serial" : "62344031f7ab03e6f9327cde33419cf7fb09df94",
-                  "subjectCN" : [
-                     "infigo"
-                  ],
-                  "subjectON" : [
-                     "INFIGO IS"
-                  ],
-                  "validDays" : 30,
-                  "validSeconds" : 2592000
-               },
-               {
                   "alt" : [
                      "bad.curveballtest.com"
                   ],
@@ -55,6 +31,30 @@
                   ],
                   "validDays" : 730,
                   "validSeconds" : 63072000
+               },
+               {
+                  "curve" : "corrupt",
+                  "hash" : "f9:ce:21:f0:64:d4:99:f9:e9:95:e8:4d:c7:30:6d:19:62:e1:02:c4",
+                  "issuerCN" : [
+                     "infigo"
+                  ],
+                  "issuerON" : [
+                     "INFIGO IS"
+                  ],
+                  "notAfter" : 1581775250000,
+                  "notBefore" : 1579183250000,
+                  "publicAlgorithm" : "id-ecPublicKey",
+                  "remainingDays" : 28,
+                  "remainingSeconds" : 2481434,
+                  "serial" : "62344031f7ab03e6f9327cde33419cf7fb09df94",
+                  "subjectCN" : [
+                     "infigo"
+                  ],
+                  "subjectON" : [
+                     "INFIGO IS"
+                  ],
+                  "validDays" : 30,
+                  "validSeconds" : 2592000
                }
             ],
             "certCnt" : 2,
