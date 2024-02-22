@@ -1342,6 +1342,9 @@ void arkime_db_save_session(ArkimeSession_t *session, int final)
                 BSB_EXPORT_u08(jbsb, ',');
             }
             ARKIME_TYPE_FREE(ArkimeFieldObjectHashStd_t, ohash);
+
+            BSB_EXPORT_rewind(jbsb, 1); // Remove last comma
+            BSB_EXPORT_cstr(jbsb, "],");
         }
         } /* switch */
         if (freeField) {
