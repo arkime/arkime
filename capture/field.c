@@ -1486,7 +1486,7 @@ int arkime_field_object_register(const char *name, ArkimeFieldObjectSaveFunc sav
 }
 gboolean arkime_field_object_add(int pos, ArkimeSession_t *session, ArkimeFieldObject_t *object, int len) {
     ArkimeField_t               *field;
-    ArkimeFieldObjectdHashStd_t *hash;
+    ArkimeFieldObjectHashStd_t  *hash;
     ArkimeFieldObject_t         *ho;
 
     if (!session->fields[pos]) {
