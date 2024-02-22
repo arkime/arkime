@@ -1455,13 +1455,13 @@ void arkime_field_certsinfo_free (ArkimeCertsInfo_t *certs)
     ARKIME_TYPE_FREE(ArkimeCertsInfo_t, certs);
 }
 /******************************************************************************/
-int arkime_field_object_register(const char *name, ArkimeFieldObjectSaveFunc save, ArkimeFieldObjectFreeFunc free, ArkimeFieldObjectHashFunc hash, ArkimeFieldObjectCmpFunc cmp) {
+int arkime_field_object_register(const char *name, const char *help, ArkimeFieldObjectSaveFunc save, ArkimeFieldObjectFreeFunc free, ArkimeFieldObjectHashFunc hash, ArkimeFieldObjectCmpFunc cmp) {
     int object_pos;
     ArkimeFieldInfo_t *object_info;
 
     object_pos = arkime_field_define(name, "notreal",
                                      name, name, name,
-                                     "Object Info", /*TODO: Improve the help string to contain object name*/
+                                     help,
                                      ARKIME_FIELD_TYPE_OBJECT, ARKIME_FIELD_FLAG_CNT | ARKIME_FIELD_FLAG_NODB,
                                      (char *)NULL);
 

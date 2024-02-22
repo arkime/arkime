@@ -1375,7 +1375,7 @@ void *arkime_field_parse_ip(const char *str);
 gboolean arkime_field_ip_equal (gconstpointer v1, gconstpointer v2);
 guint arkime_field_ip_hash (gconstpointer v);
 
-int arkime_field_object_register(const char *name, ArkimeFieldObjectSaveFunc save, ArkimeFieldObjectFreeFunc free, ArkimeFieldObjectHashFunc hash, ArkimeFieldObjectCmpFunc cmp);
+int arkime_field_object_register(const char *name, const char *help, ArkimeFieldObjectSaveFunc save, ArkimeFieldObjectFreeFunc free, ArkimeFieldObjectHashFunc hash, ArkimeFieldObjectCmpFunc cmp);
 gboolean arkime_field_object_add(int pos, ArkimeSession_t *session, ArkimeFieldObject_t *object, int len);
 
 /******************************************************************************/
