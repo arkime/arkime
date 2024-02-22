@@ -2,7 +2,6 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-#include "arkime.h"
 #include "certs_internals.h"
 #include "tls-cipher.h"
 #include "openssl/objects.h"

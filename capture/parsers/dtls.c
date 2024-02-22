@@ -2,7 +2,6 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-#include "arkime.h"
 #include "certs_internals.h"
 
 //#define DTLSDEBUG 1
