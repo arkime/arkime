@@ -136,6 +136,7 @@ LOCAL void smtp_email_add_value(ArkimeSession_t *session, int pos, char *s, int 
         break;
     }
     case ARKIME_FIELD_TYPE_CERTSINFO:
+    case ARKIME_FIELD_TYPE_OBJECT:
         // Unsupported
         break;
     } /* SWITCH */
