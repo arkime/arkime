@@ -477,7 +477,7 @@ if (HEAD.s_count > 0) { \
 
 #define SAVE_STRING_HEAD_CNT(HEAD, CNT) \
 if (HEAD.s_count > 0) { \
-    BSB_EXPORT_sprintf(jbsb, "\"" CNT "\":%d,", HEAD.s_count); \
+    BSB_EXPORT_sprintf(jbsb, "\"" CNT "\":%d,", certs->alt.s_count); \
 }
 
 #define SAVE_FIELD_STR_HASH(POS, FLAGS) \
@@ -518,7 +518,6 @@ void arkime_db_save_session(ArkimeSession_t *session, int final)
     const uint8_t         *dataPtr;
     uint32_t               jsonSize;
     gpointer               ikey;
-    gpointer               ival;
     char                   ipsrc[INET6_ADDRSTRLEN];
     char                   ipdst[INET6_ADDRSTRLEN];
 
