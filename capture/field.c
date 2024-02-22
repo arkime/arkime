@@ -1467,14 +1467,14 @@ int arkime_field_object_register(const char *name, ArkimeFieldObjectSaveFunc sav
 
     // This should never be the case but better safe than sorry
     if (object_pos == -1) {
-        return -1;
+        LOGEXIT("ERROR - Field object position is %d", object_pos);
     }
 
     object_info = config.fields[object_pos];
 
     // This shouldn't happen but lets be sure
-    if (object_info) {
-        return -1;
+    if (!object_info) {
+        LOGEXIT("ERROR - Field object info is null");
     }
 
     object_info->object_save = save;
