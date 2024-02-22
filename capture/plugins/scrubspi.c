@@ -101,7 +101,6 @@ LOCAL void scrubspi_plugin_save(ArkimeSession_t *session, int UNUSED(final))
         case ARKIME_FIELD_TYPE_FLOAT_GHASH:
         case ARKIME_FIELD_TYPE_IP:
         case ARKIME_FIELD_TYPE_IP_GHASH:
-        case ARKIME_FIELD_TYPE_CERTSINFO:
         case ARKIME_FIELD_TYPE_OBJECT:
             // Unsupported
             break;

@@ -131,44 +131,6 @@ typedef struct arkime_trie {
 
 /******************************************************************************/
 /*
- * Certs Info
- */
-
-typedef struct {
-    ArkimeStringHead_t  commonName; // 2.5.4.3
-    ArkimeStringHead_t  orgName;    // 2.5.4.10
-    ArkimeStringHead_t  orgUnit;    // 2.5.4.11
-    char                orgUtf8;
-} ArkimeCertInfo_t;
-
-typedef struct arkime_certsinfo {
-    struct arkime_certsinfo *t_next, *t_prev;
-    uint32_t                 t_hash;
-    uint64_t                 notBefore;
-    uint64_t                 notAfter;
-    ArkimeCertInfo_t         issuer;
-    ArkimeCertInfo_t         subject;
-    ArkimeStringHead_t       alt;
-    uint8_t                 *serialNumber;
-    short                    serialNumberLen;
-    short                    t_bucket;
-    uint8_t                  hash[60];
-    char                     isCA;
-    const char              *publicAlgorithm;
-    const char              *curve;
-    GHashTable              *extra;
-} ArkimeCertsInfo_t;
-
-typedef struct {
-    struct arkime_certsinfo *t_next, *t_prev;
-    int                      t_count;
-} ArkimeCertsInfoHead_t;
-
-typedef HASH_VAR(s_, ArkimeCertsInfoHash_t, ArkimeCertsInfoHead_t, 1);
-typedef HASH_VAR(s_, ArkimeCertsInfoHashStd_t, ArkimeCertsInfoHead_t, 5);
-
-/******************************************************************************/
-/*
  * Generic object field type
  */
 
@@ -210,7 +172,6 @@ typedef enum {
     ARKIME_FIELD_TYPE_STR_GHASH,
     ARKIME_FIELD_TYPE_IP,
     ARKIME_FIELD_TYPE_IP_GHASH,
-    ARKIME_FIELD_TYPE_CERTSINFO,
     ARKIME_FIELD_TYPE_FLOAT,
     ARKIME_FIELD_TYPE_FLOAT_ARRAY,
     ARKIME_FIELD_TYPE_FLOAT_GHASH,
@@ -288,7 +249,6 @@ typedef struct {
         ArkimeIntHashStd_t         *ihash;
         float                       f;
         GArray                     *farray;
-        ArkimeCertsInfoHashStd_t   *cihash;
         GHashTable                 *ghash;
         struct in6_addr            *ip;
         ArkimeFieldObjectHashStd_t *ohash;
@@ -1351,13 +1311,10 @@ gboolean arkime_field_int_add(int pos, ArkimeSession_t *session, int i);
 gboolean arkime_field_ip4_add(int pos, ArkimeSession_t *session, uint32_t i);
 gboolean arkime_field_ip6_add(int pos, ArkimeSession_t *session, const uint8_t *val);
 gboolean arkime_field_ip_add_str(int pos, ArkimeSession_t *session, const char *str);
-gboolean arkime_field_certsinfo_add(int pos, ArkimeSession_t *session, ArkimeCertsInfo_t *certs, int len);
 gboolean arkime_field_float_add(int pos, ArkimeSession_t *session, float f);
 void arkime_field_macoui_add(ArkimeSession_t *session, int macField, int ouiField, const uint8_t *mac);
 
 int  arkime_field_count(int pos, ArkimeSession_t *session);
-void arkime_field_certsinfo_update_extra (ArkimeCertsInfo_t *certs, char *key, char *value);
-void arkime_field_certsinfo_free (ArkimeCertsInfo_t *certs);
 void arkime_field_free(ArkimeSession_t *session);
 void arkime_field_exit();
 
