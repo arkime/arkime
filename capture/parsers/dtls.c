@@ -688,5 +688,5 @@ void arkime_parser_init()
     arkime_parsers_classifier_register_udp("dtls", NULL, 0, (const uint8_t *)"\x16\xfe\xfe", 3, dtls_udp_classify);
     arkime_parsers_classifier_register_udp("dtls", NULL, 0, (const uint8_t *)"\x16\xfe\xfd", 3, dtls_udp_classify);
 
-    certsField = arkime_field_object_register("cert", certinfo_save, certinfo_free, certinfo_hash, certinfo_cmp);
+    certsField = arkime_field_object_register("cert", "Certificates info", certinfo_save, certinfo_free, certinfo_hash, certinfo_cmp);
 }

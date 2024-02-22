@@ -1371,7 +1371,7 @@ void arkime_parser_init()
 {
     ja4Raw = arkime_config_boolean(NULL, "ja4Raw", FALSE);
 
-    certsField = arkime_field_object_register("cert", certinfo_save, certinfo_free, certinfo_hash, certinfo_cmp);
+    certsField = arkime_field_object_register("cert", "Certificates info", certinfo_save, certinfo_free, certinfo_hash, certinfo_cmp);
 
     arkime_field_define("cert", "integer",
                         "cert.cnt", "Cert Cnt", "certCnt",
