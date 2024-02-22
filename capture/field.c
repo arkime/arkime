@@ -1329,6 +1329,7 @@ void arkime_field_free(ArkimeSession_t *session)
     ArkimeCertsInfoHashStd_t   *cihash;
     ArkimeFieldObject_t        *ho;
     ArkimeFieldObjectHashStd_t *ohash;
+    ArkimeFieldObjectFreeFunc   freeCB;
 
     for (pos = 0; pos < session->maxFields; pos++) {
         ArkimeField_t        *field;
@@ -1384,14 +1385,15 @@ void arkime_field_free(ArkimeSession_t *session)
             }
             ARKIME_TYPE_FREE(ArkimeCertsInfoHashStd_t, cihash);
             break;
-        case ARKIME_FIELD_TYPE_OBJECT:
-            ArkimeFieldObjectFreeFunc freeCB = config.fields[pos]->object_free;
+        case ARKIME_FIELD_TYPE_OBJECT: {
+            freeCB = config.fields[pos]->object_free;
             ohash = session->fields[pos]->ohash;
             HASH_FORALL_POP_HEAD2(o_, *ohash, ho) {
                 freeCB(ho);
             }
             ARKIME_TYPE_FREE(ArkimeFieldObjectHashStd_t, ohash);
-            break;
+        }
+        break;
         } // switch
         ARKIME_TYPE_FREE(ArkimeField_t, session->fields[pos]);
     }
