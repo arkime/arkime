@@ -201,7 +201,6 @@ LOCAL void *reader_scheme_thread(void *UNUSED(arg))
     for (int i = 0; config.pcapFileLists && config.pcapFileLists[i]; i++) {
         FILE *file;
         char line[PATH_MAX];
-        arkime_reader_scheme_load(config.pcapReadFiles[i]);
 
         if (strcmp(config.pcapFileLists[i], "-") == 0)
             file = stdin;
