@@ -446,6 +446,7 @@ gboolean arkime_config_load_json(GKeyFile *keyfile, char *data, GError **UNUSED(
                 }
                 BSB_EXPORT_u08(bsb, 0);
                 g_key_file_set_string(keyfile, section, key, buf);
+                free(buf);
             } else {
                 g_key_file_set_string(keyfile, section, key, value);
             }
