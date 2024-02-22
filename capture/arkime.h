@@ -131,6 +131,32 @@ typedef struct arkime_trie {
 
 /******************************************************************************/
 /*
+ * Certs Info
+ */
+
+typedef struct {
+    ArkimeStringHead_t  commonName; // 2.5.4.3
+    ArkimeStringHead_t  orgName;    // 2.5.4.10
+    ArkimeStringHead_t  orgUnit;    // 2.5.4.11
+    char                orgUtf8;
+} ArkimeCertInfo_t;
+
+typedef struct arkime_certsinfo {
+    uint64_t                 notBefore;
+    uint64_t                 notAfter;
+    ArkimeCertInfo_t         issuer;
+    ArkimeCertInfo_t         subject;
+    ArkimeStringHead_t       alt;
+    uint8_t                 *serialNumber;
+    short                    serialNumberLen;
+    uint8_t                  hash[60];
+    char                     isCA;
+    const char              *publicAlgorithm;
+    const char              *curve;
+    GHashTable              *extra;
+} ArkimeCertsInfo_t;
+/******************************************************************************/
+/*
  * Generic object field type
  */
 
@@ -1315,6 +1341,7 @@ gboolean arkime_field_float_add(int pos, ArkimeSession_t *session, float f);
 void arkime_field_macoui_add(ArkimeSession_t *session, int macField, int ouiField, const uint8_t *mac);
 
 int  arkime_field_count(int pos, ArkimeSession_t *session);
+void arkime_field_certsinfo_update_extra (ArkimeCertsInfo_t *certs, char *key, char *value);
 void arkime_field_free(ArkimeSession_t *session);
 void arkime_field_exit();
 
