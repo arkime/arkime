@@ -2,6 +2,7 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
+#include "arkime.h"
 #include "certs_internals.h"
 #include "tls-cipher.h"
 #include "openssl/objects.h"
@@ -614,7 +615,7 @@ LOCAL int tls_process_server_handshake_record(ArkimeSession_t *session, const ui
 // Comparison function for qsort
 LOCAL int compare_uint16_t(const void *a, const void *b)
 {
-    return (*(const uint16_t *)a < *(const uint16_t *)b ? -1 : *(const uint16_t *)a > *(const uint16_t *)b);
+    return (*(const uint16_t *)a < * (const uint16_t *)b ? -1 : * (const uint16_t *)a > *(const uint16_t *)b);
 }
 /******************************************************************************/
 uint32_t tls_process_client_hello_data(ArkimeSession_t *session, const uint8_t *data, int len, void UNUSED(*uw))

@@ -1260,14 +1260,8 @@ void arkime_field_free(ArkimeSession_t *session)
     session->fields = 0;
 }
 /******************************************************************************/
-void arkime_field_certsinfo_update_extra (ArkimeCertsInfo_t *certs, char *key, char *value)
+int arkime_field_object_register(const char *name, const char *help, ArkimeFieldObjectSaveFunc save, ArkimeFieldObjectFreeFunc free, ArkimeFieldObjectHashFunc hash, ArkimeFieldObjectCmpFunc cmp)
 {
-    if (!certs->extra)
-        certs->extra = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, g_free);
-
-    g_hash_table_replace(certs->extra, key, value);
-}
-int arkime_field_object_register(const char *name, const char *help, ArkimeFieldObjectSaveFunc save, ArkimeFieldObjectFreeFunc free, ArkimeFieldObjectHashFunc hash, ArkimeFieldObjectCmpFunc cmp) {
     int object_pos;
     ArkimeFieldInfo_t *object_info;
 
@@ -1296,7 +1290,9 @@ int arkime_field_object_register(const char *name, const char *help, ArkimeField
 
     return object_info->pos;
 }
-gboolean arkime_field_object_add(int pos, ArkimeSession_t *session, ArkimeFieldObject_t *object, int len) {
+/******************************************************************************/
+gboolean arkime_field_object_add(int pos, ArkimeSession_t *session, ArkimeFieldObject_t *object, int len)
+{
     ArkimeField_t               *field;
     ArkimeFieldObjectHashStd_t  *hash;
     ArkimeFieldObject_t         *ho;

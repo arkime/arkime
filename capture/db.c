@@ -150,7 +150,7 @@ LOCAL ArkimeIpInfo_t *arkime_db_get_override_ip6(ArkimeSession_t *session, struc
 }
 
 /******************************************************************************/
-LOCAL void arkime_db_js0n_str(BSB *bsb, uint8_t *in, gboolean utf8)
+void arkime_db_js0n_str(BSB *bsb, uint8_t *in, gboolean utf8)
 {
     BSB_EXPORT_u08(*bsb, '"');
     while (*in) {
@@ -1276,6 +1276,7 @@ void arkime_db_save_session(ArkimeSession_t *session, int final)
             BSB_EXPORT_rewind(jbsb, 1); // Remove last comma
             BSB_EXPORT_cstr(jbsb, "],");
         }
+        break;
         } /* switch */
         if (freeField) {
             ARKIME_TYPE_FREE(ArkimeField_t, session->fields[pos]);

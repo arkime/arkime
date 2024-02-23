@@ -1,5 +1,12 @@
+/* Copyright 2023 AOL Inc. All rights reserved.
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
 #include "arkime.h"
+#include "certs_internals.h"
+#include <inttypes.h>
 
+extern ArkimeConfig_t        config;
 
 #define SAVE_STRING_HEAD(HEAD, STR) \
 if (HEAD.s_count > 0) { \
@@ -14,71 +21,6 @@ if (HEAD.s_count > 0) { \
     BSB_EXPORT_rewind(*jbsb, 1); \
     BSB_EXPORT_u08(*jbsb, ']'); \
     BSB_EXPORT_u08(*jbsb, ','); \
-}
-/******************************************************************************/
-LOCAL void arkime_db_js0n_str(BSB *bsb, uint8_t *in, gboolean utf8)
-{
-    BSB_EXPORT_u08(*bsb, '"');
-    while (*in) {
-        switch(*in) {
-        case '\b':
-            BSB_EXPORT_cstr(*bsb, "\\b");
-            break;
-        case '\n':
-            BSB_EXPORT_cstr(*bsb, "\\n");
-            break;
-        case '\r':
-            BSB_EXPORT_cstr(*bsb, "\\r");
-            break;
-        case '\f':
-            BSB_EXPORT_cstr(*bsb, "\\f");
-            break;
-        case '\t':
-            BSB_EXPORT_cstr(*bsb, "\\t");
-            break;
-        case '"':
-            BSB_EXPORT_cstr(*bsb, "\\\"");
-            break;
-        case '\\':
-            BSB_EXPORT_cstr(*bsb, "\\\\");
-            break;
-        case '/':
-            BSB_EXPORT_cstr(*bsb, "\\/");
-            break;
-        default:
-            if(*in < 32) {
-                BSB_EXPORT_sprintf(*bsb, "\\u%04x", *in);
-            } else if (utf8) {
-                if ((*in & 0xf0) == 0xf0) {
-                    if (!in[1] || !in[2] || !in[3]) goto end;
-                    BSB_EXPORT_ptr(*bsb, in, 4);
-                    in += 3;
-                } else if ((*in & 0xf0) == 0xe0) {
-                    if (!in[1] || !in[2]) goto end;
-                    BSB_EXPORT_ptr(*bsb, in, 3);
-                    in += 2;
-                } else if ((*in & 0xf0) == 0xd0) {
-                    if (!in[1]) goto end;
-                    BSB_EXPORT_ptr(*bsb, in, 2);
-                    in += 1;
-                } else {
-                    BSB_EXPORT_u08(*bsb, *in);
-                }
-            } else {
-                if(*in & 0x80) {
-                    BSB_EXPORT_u08(*bsb, (0xc0 | (*in >> 6)));
-                    BSB_EXPORT_u08(*bsb, (0x80 | (*in & 0x3f)));
-                } else {
-                    BSB_EXPORT_u08(*bsb, *in);
-                }
-            }
-            break;
-        }
-        in++;
-    }
-
-end:
-    BSB_EXPORT_u08(*bsb, '"');
 }
 /******************************************************************************/
 void certinfo_save(BSB *jbsb, ArkimeFieldObject_t *object, ArkimeSession_t *session) {
@@ -116,8 +58,8 @@ void certinfo_save(BSB *jbsb, ArkimeFieldObject_t *object, ArkimeSession_t *sess
         BSB_EXPORT_u08(*jbsb, ',');
     }
 
-    if (ci->alt.s_count > 0) { \
-        BSB_EXPORT_sprintf(*jbsb, "\"altCnt\":%d,", ci->alt.s_count); \
+    if (ci->alt.s_count > 0) {
+        BSB_EXPORT_sprintf(*jbsb, "\"altCnt\":%d,", ci->alt.s_count);
     }
     SAVE_STRING_HEAD(ci->alt, "alt");
 
@@ -205,13 +147,13 @@ SUPPRESS_SHIFT
 SUPPRESS_INT_CONVERSION
 uint32_t certinfo_hash(const void *key) {
     ArkimeFieldObject_t *obj = (ArkimeFieldObject_t *)key;
-    
+
     ArkimeCertsInfo_t *ci;
 
     if (obj->object == NULL) {
         return 0;
     }
-    
+
     ci = (ArkimeCertsInfo_t *)obj->object;
 
     if (ci->serialNumberLen == 0) {
@@ -308,4 +250,18 @@ int certinfo_cmp(const void *keyv, const void *elementv) {
     }
 
     return 1;
+}
+/******************************************************************************/
+void arkime_field_certsinfo_update_extra (void *cert, char *key, char *value)
+{
+    ArkimeCertsInfo_t *certs = cert;
+
+    if (!certs->extra)
+        certs->extra = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, g_free);
+
+    g_hash_table_replace(certs->extra, key, value);
+}
+/******************************************************************************/
+void arkime_parser_init()
+{
 }
