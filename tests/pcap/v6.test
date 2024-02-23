@@ -119,6 +119,205 @@
                "packets" : 2
             },
             "node" : "test",
+            "ocsfdns" : [
+               {
+                  "answers" : [
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "AUTHORITATIVE ANSWER",
+                           "RECURSION DESIRED",
+                           "RECURSION AVAILABLE"
+                        ],
+                        "packet_uid" : 6,
+                        "rdata" : "coconut.itojun.org",
+                        "rr_name" : "itojun.org",
+                        "rr_type" : "Answer",
+                        "ttl" : 3600,
+                        "type" : "NS"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "AUTHORITATIVE ANSWER",
+                           "RECURSION DESIRED",
+                           "RECURSION AVAILABLE"
+                        ],
+                        "packet_uid" : 6,
+                        "rdata" : "tiger.hiroo.oshokuji.org",
+                        "rr_name" : "itojun.org",
+                        "rr_type" : "Answer",
+                        "ttl" : 3600,
+                        "type" : "NS"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "AUTHORITATIVE ANSWER",
+                           "RECURSION DESIRED",
+                           "RECURSION AVAILABLE"
+                        ],
+                        "packet_uid" : 6,
+                        "rdata" : "(10)coconut.itojun.org",
+                        "rr_name" : "itojun.org",
+                        "rr_type" : "Answer",
+                        "ttl" : 3600,
+                        "type" : "MX"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "AUTHORITATIVE ANSWER",
+                           "RECURSION DESIRED",
+                           "RECURSION AVAILABLE"
+                        ],
+                        "packet_uid" : 6,
+                        "rdata" : "(20)kiwi.itojun.org",
+                        "rr_name" : "itojun.org",
+                        "rr_type" : "Answer",
+                        "ttl" : 3600,
+                        "type" : "MX"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "AUTHORITATIVE ANSWER",
+                           "RECURSION DESIRED",
+                           "RECURSION AVAILABLE"
+                        ],
+                        "packet_uid" : 6,
+                        "rdata" : "210.160.95.97",
+                        "rr_name" : "itojun.org",
+                        "rr_type" : "Answer",
+                        "ttl" : 3600,
+                        "type" : "A"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "AUTHORITATIVE ANSWER",
+                           "RECURSION DESIRED",
+                           "RECURSION AVAILABLE"
+                        ],
+                        "packet_uid" : 6,
+                        "rr_name" : "itojun.org",
+                        "rr_type" : "Answer",
+                        "ttl" : 3600,
+                        "type" : "SOA"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "AUTHORITATIVE ANSWER",
+                           "RECURSION DESIRED",
+                           "RECURSION AVAILABLE"
+                        ],
+                        "packet_uid" : 6,
+                        "rdata" : "coconut.itojun.org",
+                        "rr_name" : "itojun.org",
+                        "rr_type" : "Authoritative",
+                        "ttl" : 3600,
+                        "type" : "NS"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "AUTHORITATIVE ANSWER",
+                           "RECURSION DESIRED",
+                           "RECURSION AVAILABLE"
+                        ],
+                        "packet_uid" : 6,
+                        "rdata" : "tiger.hiroo.oshokuji.org",
+                        "rr_name" : "itojun.org",
+                        "rr_type" : "Authoritative",
+                        "ttl" : 3600,
+                        "type" : "NS"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "AUTHORITATIVE ANSWER",
+                           "RECURSION DESIRED",
+                           "RECURSION AVAILABLE"
+                        ],
+                        "packet_uid" : 6,
+                        "rdata" : "210.160.95.97",
+                        "rr_name" : "coconut.itojun.org",
+                        "rr_type" : "Additional",
+                        "ttl" : 3600,
+                        "type" : "A"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "AUTHORITATIVE ANSWER",
+                           "RECURSION DESIRED",
+                           "RECURSION AVAILABLE"
+                        ],
+                        "packet_uid" : 6,
+                        "rdata" : "210.145.33.242",
+                        "rr_name" : "tiger.hiroo.oshokuji.org",
+                        "rr_type" : "Additional",
+                        "ttl" : 3600,
+                        "type" : "A"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "AUTHORITATIVE ANSWER",
+                           "RECURSION DESIRED",
+                           "RECURSION AVAILABLE"
+                        ],
+                        "packet_uid" : 6,
+                        "rdata" : "3ffe:0501:0410:0000:02c0:dfff:fe47:033e",
+                        "rr_name" : "kiwi.itojun.org",
+                        "rr_type" : "Additional",
+                        "ttl" : 3600,
+                        "type" : "AAAA"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "AUTHORITATIVE ANSWER",
+                           "RECURSION DESIRED",
+                           "RECURSION AVAILABLE"
+                        ],
+                        "packet_uid" : 6,
+                        "rdata" : "3ffe:0501:0410:0100:5254:00ff:feda:48bf",
+                        "rr_name" : "kiwi.itojun.org",
+                        "rr_type" : "Additional",
+                        "ttl" : 3600,
+                        "type" : "AAAA"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "AUTHORITATIVE ANSWER",
+                           "RECURSION DESIRED",
+                           "RECURSION AVAILABLE"
+                        ],
+                        "packet_uid" : 6,
+                        "rdata" : "210.160.95.99",
+                        "rr_name" : "kiwi.itojun.org",
+                        "rr_type" : "Additional",
+                        "ttl" : 3600,
+                        "type" : "A"
+                     }
+                  ],
+                  "answersCnt" : 13,
+                  "query" : {
+                     "class" : "IN",
+                     "hostname" : "itojun.org",
+                     "opcode" : "QUERY",
+                     "opcode_id" : 0,
+                     "packet_uid" : 6,
+                     "type" : "ANY"
+                  },
+                  "rcode" : "NOERROR",
+                  "rcode_id" : 0
+               }
+            ],
+            "ocsfdnsCnt" : 1,
             "packetLen" : [
                106,
                526
@@ -471,6 +670,154 @@
                "packets" : 2
             },
             "node" : "test",
+            "ocsfdns" : [
+               {
+                  "answers" : [
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RECURSION DESIRED",
+                           "RECURSION AVAILABLE"
+                        ],
+                        "packet_uid" : 6,
+                        "rdata" : "(0)mr1.yahoo.com",
+                        "rr_name" : "www.yahoo.com",
+                        "rr_type" : "Answer",
+                        "ttl" : 796,
+                        "type" : "MX"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RECURSION DESIRED",
+                           "RECURSION AVAILABLE"
+                        ],
+                        "packet_uid" : 6,
+                        "rdata" : "ns1.yahoo.com",
+                        "rr_name" : "yahoo.com",
+                        "rr_type" : "Authoritative",
+                        "ttl" : 172696,
+                        "type" : "NS"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RECURSION DESIRED",
+                           "RECURSION AVAILABLE"
+                        ],
+                        "packet_uid" : 6,
+                        "rdata" : "ns2.dca.yahoo.com",
+                        "rr_name" : "yahoo.com",
+                        "rr_type" : "Authoritative",
+                        "ttl" : 172696,
+                        "type" : "NS"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RECURSION DESIRED",
+                           "RECURSION AVAILABLE"
+                        ],
+                        "packet_uid" : 6,
+                        "rdata" : "ns.europe.yahoo.com",
+                        "rr_name" : "yahoo.com",
+                        "rr_type" : "Authoritative",
+                        "ttl" : 172696,
+                        "type" : "NS"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RECURSION DESIRED",
+                           "RECURSION AVAILABLE"
+                        ],
+                        "packet_uid" : 6,
+                        "rdata" : "ns5.dcx.yahoo.com",
+                        "rr_name" : "yahoo.com",
+                        "rr_type" : "Authoritative",
+                        "ttl" : 172696,
+                        "type" : "NS"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RECURSION DESIRED",
+                           "RECURSION AVAILABLE"
+                        ],
+                        "packet_uid" : 6,
+                        "rdata" : "206.251.17.77",
+                        "rr_name" : "mr1.yahoo.com",
+                        "rr_type" : "Additional",
+                        "ttl" : 796,
+                        "type" : "A"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RECURSION DESIRED",
+                           "RECURSION AVAILABLE"
+                        ],
+                        "packet_uid" : 6,
+                        "rdata" : "216.32.74.10",
+                        "rr_name" : "ns5.dcx.yahoo.com",
+                        "rr_type" : "Additional",
+                        "ttl" : 172695,
+                        "type" : "A"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RECURSION DESIRED",
+                           "RECURSION AVAILABLE"
+                        ],
+                        "packet_uid" : 6,
+                        "rdata" : "195.67.49.25",
+                        "rr_name" : "ns.europe.yahoo.com",
+                        "rr_type" : "Additional",
+                        "ttl" : 172695,
+                        "type" : "A"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RECURSION DESIRED",
+                           "RECURSION AVAILABLE"
+                        ],
+                        "packet_uid" : 6,
+                        "rdata" : "209.143.200.34",
+                        "rr_name" : "ns2.dca.yahoo.com",
+                        "rr_type" : "Additional",
+                        "ttl" : 172695,
+                        "type" : "A"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RECURSION DESIRED",
+                           "RECURSION AVAILABLE"
+                        ],
+                        "packet_uid" : 6,
+                        "rdata" : "204.71.200.33",
+                        "rr_name" : "ns1.yahoo.com",
+                        "rr_type" : "Additional",
+                        "ttl" : 172695,
+                        "type" : "A"
+                     }
+                  ],
+                  "answersCnt" : 10,
+                  "query" : {
+                     "class" : "IN",
+                     "hostname" : "www.yahoo.com",
+                     "opcode" : "QUERY",
+                     "opcode_id" : 0,
+                     "packet_uid" : 6,
+                     "type" : "MX"
+                  },
+                  "rcode" : "NOERROR",
+                  "rcode_id" : 0
+               }
+            ],
+            "ocsfdnsCnt" : 1,
             "packetLen" : [
                109,
                374
@@ -670,6 +1017,102 @@
                "packets" : 2
             },
             "node" : "test",
+            "ocsfdns" : [
+               {
+                  "answers" : [
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RECURSION DESIRED",
+                           "RECURSION AVAILABLE"
+                        ],
+                        "packet_uid" : 11378,
+                        "rdata" : "3ffe:0501:0410:0000:02c0:dfff:fe47:033e",
+                        "rr_name" : "kiwi.itojun.org",
+                        "rr_type" : "Answer",
+                        "ttl" : 3425,
+                        "type" : "AAAA"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RECURSION DESIRED",
+                           "RECURSION AVAILABLE"
+                        ],
+                        "packet_uid" : 11378,
+                        "rdata" : "3ffe:0501:0410:0100:5254:00ff:feda:48bf",
+                        "rr_name" : "kiwi.itojun.org",
+                        "rr_type" : "Answer",
+                        "ttl" : 3425,
+                        "type" : "AAAA"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RECURSION DESIRED",
+                           "RECURSION AVAILABLE"
+                        ],
+                        "packet_uid" : 11378,
+                        "rdata" : "coconut.itojun.org",
+                        "rr_name" : "itojun.org",
+                        "rr_type" : "Authoritative",
+                        "ttl" : 3474,
+                        "type" : "NS"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RECURSION DESIRED",
+                           "RECURSION AVAILABLE"
+                        ],
+                        "packet_uid" : 11378,
+                        "rdata" : "tiger.hiroo.oshokuji.org",
+                        "rr_name" : "itojun.org",
+                        "rr_type" : "Authoritative",
+                        "ttl" : 3474,
+                        "type" : "NS"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RECURSION DESIRED",
+                           "RECURSION AVAILABLE"
+                        ],
+                        "packet_uid" : 11378,
+                        "rdata" : "210.145.33.242",
+                        "rr_name" : "tiger.hiroo.oshokuji.org",
+                        "rr_type" : "Additional",
+                        "ttl" : 3425,
+                        "type" : "A"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RECURSION DESIRED",
+                           "RECURSION AVAILABLE"
+                        ],
+                        "packet_uid" : 11378,
+                        "rdata" : "210.160.95.97",
+                        "rr_name" : "coconut.itojun.org",
+                        "rr_type" : "Additional",
+                        "ttl" : 3425,
+                        "type" : "A"
+                     }
+                  ],
+                  "answersCnt" : 6,
+                  "query" : {
+                     "class" : "IN",
+                     "hostname" : "kiwi.itojun.org",
+                     "opcode" : "QUERY",
+                     "opcode_id" : 0,
+                     "packet_uid" : 11378,
+                     "type" : "AAAA"
+                  },
+                  "rcode" : "NOERROR",
+                  "rcode_id" : 0
+               }
+            ],
+            "ocsfdnsCnt" : 1,
             "packetLen" : [
                111,
                298
@@ -1013,6 +1456,102 @@
                "packets" : 2
             },
             "node" : "test",
+            "ocsfdns" : [
+               {
+                  "answers" : [
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RECURSION DESIRED",
+                           "RECURSION AVAILABLE"
+                        ],
+                        "packet_uid" : 32501,
+                        "rdata" : "3ffe:0501:0410:0000:02c0:dfff:fe47:033e",
+                        "rr_name" : "kiwi.itojun.org",
+                        "rr_type" : "Answer",
+                        "ttl" : 3414,
+                        "type" : "AAAA"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RECURSION DESIRED",
+                           "RECURSION AVAILABLE"
+                        ],
+                        "packet_uid" : 32501,
+                        "rdata" : "3ffe:0501:0410:0100:5254:00ff:feda:48bf",
+                        "rr_name" : "kiwi.itojun.org",
+                        "rr_type" : "Answer",
+                        "ttl" : 3414,
+                        "type" : "AAAA"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RECURSION DESIRED",
+                           "RECURSION AVAILABLE"
+                        ],
+                        "packet_uid" : 32501,
+                        "rdata" : "coconut.itojun.org",
+                        "rr_name" : "itojun.org",
+                        "rr_type" : "Authoritative",
+                        "ttl" : 3463,
+                        "type" : "NS"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RECURSION DESIRED",
+                           "RECURSION AVAILABLE"
+                        ],
+                        "packet_uid" : 32501,
+                        "rdata" : "tiger.hiroo.oshokuji.org",
+                        "rr_name" : "itojun.org",
+                        "rr_type" : "Authoritative",
+                        "ttl" : 3463,
+                        "type" : "NS"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RECURSION DESIRED",
+                           "RECURSION AVAILABLE"
+                        ],
+                        "packet_uid" : 32501,
+                        "rdata" : "210.145.33.242",
+                        "rr_name" : "tiger.hiroo.oshokuji.org",
+                        "rr_type" : "Additional",
+                        "ttl" : 3414,
+                        "type" : "A"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RECURSION DESIRED",
+                           "RECURSION AVAILABLE"
+                        ],
+                        "packet_uid" : 32501,
+                        "rdata" : "210.160.95.97",
+                        "rr_name" : "coconut.itojun.org",
+                        "rr_type" : "Additional",
+                        "ttl" : 3414,
+                        "type" : "A"
+                     }
+                  ],
+                  "answersCnt" : 6,
+                  "query" : {
+                     "class" : "IN",
+                     "hostname" : "kiwi.itojun.org",
+                     "opcode" : "QUERY",
+                     "opcode_id" : 0,
+                     "packet_uid" : 32501,
+                     "type" : "AAAA"
+                  },
+                  "rcode" : "NOERROR",
+                  "rcode_id" : 0
+               }
+            ],
+            "ocsfdnsCnt" : 1,
             "packetLen" : [
                111,
                298
@@ -1192,6 +1731,62 @@
                "packets" : 2
             },
             "node" : "test",
+            "ocsfdns" : [
+               {
+                  "answers" : [
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RECURSION DESIRED",
+                           "RECURSION AVAILABLE"
+                        ],
+                        "packet_uid" : 32502,
+                        "rr_name" : "a.e.9.6.7.0.e.f.f.f.7.9.0.6.2.0.1.0.0.0.0.0.0.0.7.0.5.0.e.f.f.3.ip6.int",
+                        "rr_type" : "Answer",
+                        "ttl" : 858,
+                        "type" : "PTR"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RECURSION DESIRED",
+                           "RECURSION AVAILABLE"
+                        ],
+                        "packet_uid" : 32502,
+                        "rdata" : "sh1.iijlab.net",
+                        "rr_name" : "1.0.0.0.0.0.0.0.7.0.5.0.e.f.f.3.ip6.int",
+                        "rr_type" : "Authoritative",
+                        "ttl" : 858,
+                        "type" : "NS"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RECURSION DESIRED",
+                           "RECURSION AVAILABLE"
+                        ],
+                        "packet_uid" : 32502,
+                        "rdata" : "202.232.15.98",
+                        "rr_name" : "sh1.iijlab.net",
+                        "rr_type" : "Additional",
+                        "ttl" : 26066,
+                        "type" : "A"
+                     }
+                  ],
+                  "answersCnt" : 3,
+                  "query" : {
+                     "class" : "IN",
+                     "hostname" : "a.e.9.6.7.0.e.f.f.f.7.9.0.6.2.0.1.0.0.0.0.0.0.0.7.0.5.0.e.f.f.3.ip6.int",
+                     "opcode" : "QUERY",
+                     "opcode_id" : 0,
+                     "packet_uid" : 32502,
+                     "type" : "PTR"
+                  },
+                  "rcode" : "NOERROR",
+                  "rcode_id" : 0
+               }
+            ],
+            "ocsfdnsCnt" : 1,
             "packetLen" : [
                167,
                256
@@ -1594,6 +2189,101 @@
                "packets" : 2
             },
             "node" : "test",
+            "ocsfdns" : [
+               {
+                  "answers" : [
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RECURSION DESIRED",
+                           "RECURSION AVAILABLE"
+                        ],
+                        "packet_uid" : 32503,
+                        "rr_name" : "0.f.f.7.6.b.e.f.f.f.7.9.0.6.2.0.2.0.8.1.0.0.0.0.1.0.5.0.e.f.f.3.ip6.int",
+                        "rr_type" : "Answer",
+                        "ttl" : 3422,
+                        "type" : "PTR"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RECURSION DESIRED",
+                           "RECURSION AVAILABLE"
+                        ],
+                        "packet_uid" : 32503,
+                        "rdata" : "ns1.v6.wide.ad.jp",
+                        "rr_name" : "5.0.e.f.f.3.ip6.int",
+                        "rr_type" : "Authoritative",
+                        "ttl" : 3422,
+                        "type" : "NS"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RECURSION DESIRED",
+                           "RECURSION AVAILABLE"
+                        ],
+                        "packet_uid" : 32503,
+                        "rdata" : "ns2.v6.wide.ad.jp",
+                        "rr_name" : "5.0.e.f.f.3.ip6.int",
+                        "rr_type" : "Authoritative",
+                        "ttl" : 3422,
+                        "type" : "NS"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RECURSION DESIRED",
+                           "RECURSION AVAILABLE"
+                        ],
+                        "packet_uid" : 32503,
+                        "rdata" : "203.178.136.188",
+                        "rr_name" : "ns2.v6.wide.ad.jp",
+                        "rr_type" : "Additional",
+                        "ttl" : 1298,
+                        "type" : "A"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RECURSION DESIRED",
+                           "RECURSION AVAILABLE"
+                        ],
+                        "packet_uid" : 32503,
+                        "rdata" : "3ffe:0501:4819:2000:5254:00ff:fedc:50d2",
+                        "rr_name" : "ns1.v6.wide.ad.jp",
+                        "rr_type" : "Additional",
+                        "ttl" : 3422,
+                        "type" : "AAAA"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RECURSION DESIRED",
+                           "RECURSION AVAILABLE"
+                        ],
+                        "packet_uid" : 32503,
+                        "rdata" : "203.178.141.212",
+                        "rr_name" : "ns1.v6.wide.ad.jp",
+                        "rr_type" : "Additional",
+                        "ttl" : 1298,
+                        "type" : "A"
+                     }
+                  ],
+                  "answersCnt" : 6,
+                  "query" : {
+                     "class" : "IN",
+                     "hostname" : "0.f.f.7.6.b.e.f.f.f.7.9.0.6.2.0.2.0.8.1.0.0.0.0.1.0.5.0.e.f.f.3.ip6.int",
+                     "opcode" : "QUERY",
+                     "opcode_id" : 0,
+                     "packet_uid" : 32503,
+                     "type" : "PTR"
+                  },
+                  "rcode" : "NOERROR",
+                  "rcode_id" : 0
+               }
+            ],
+            "ocsfdnsCnt" : 1,
             "packetLen" : [
                167,
                346
@@ -2000,6 +2690,101 @@
                "packets" : 2
             },
             "node" : "test",
+            "ocsfdns" : [
+               {
+                  "answers" : [
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RECURSION DESIRED",
+                           "RECURSION AVAILABLE"
+                        ],
+                        "packet_uid" : 32504,
+                        "rr_name" : "2.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.5.4.3.2.0.0.8.1.1.0.5.0.e.f.f.3.ip6.int",
+                        "rr_type" : "Answer",
+                        "ttl" : 3422,
+                        "type" : "PTR"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RECURSION DESIRED",
+                           "RECURSION AVAILABLE"
+                        ],
+                        "packet_uid" : 32504,
+                        "rdata" : "ns1.v6.wide.ad.jp",
+                        "rr_name" : "5.0.e.f.f.3.ip6.int",
+                        "rr_type" : "Authoritative",
+                        "ttl" : 3422,
+                        "type" : "NS"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RECURSION DESIRED",
+                           "RECURSION AVAILABLE"
+                        ],
+                        "packet_uid" : 32504,
+                        "rdata" : "ns2.v6.wide.ad.jp",
+                        "rr_name" : "5.0.e.f.f.3.ip6.int",
+                        "rr_type" : "Authoritative",
+                        "ttl" : 3422,
+                        "type" : "NS"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RECURSION DESIRED",
+                           "RECURSION AVAILABLE"
+                        ],
+                        "packet_uid" : 32504,
+                        "rdata" : "203.178.136.188",
+                        "rr_name" : "ns2.v6.wide.ad.jp",
+                        "rr_type" : "Additional",
+                        "ttl" : 1298,
+                        "type" : "A"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RECURSION DESIRED",
+                           "RECURSION AVAILABLE"
+                        ],
+                        "packet_uid" : 32504,
+                        "rdata" : "3ffe:0501:4819:2000:5254:00ff:fedc:50d2",
+                        "rr_name" : "ns1.v6.wide.ad.jp",
+                        "rr_type" : "Additional",
+                        "ttl" : 3422,
+                        "type" : "AAAA"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RECURSION DESIRED",
+                           "RECURSION AVAILABLE"
+                        ],
+                        "packet_uid" : 32504,
+                        "rdata" : "203.178.141.212",
+                        "rr_name" : "ns1.v6.wide.ad.jp",
+                        "rr_type" : "Additional",
+                        "ttl" : 1298,
+                        "type" : "A"
+                     }
+                  ],
+                  "answersCnt" : 6,
+                  "query" : {
+                     "class" : "IN",
+                     "hostname" : "2.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.5.4.3.2.0.0.8.1.1.0.5.0.e.f.f.3.ip6.int",
+                     "opcode" : "QUERY",
+                     "opcode_id" : 0,
+                     "packet_uid" : 32504,
+                     "type" : "PTR"
+                  },
+                  "rcode" : "NOERROR",
+                  "rcode_id" : 0
+               }
+            ],
+            "ocsfdnsCnt" : 1,
             "packetLen" : [
                167,
                341
@@ -2393,6 +3178,62 @@
                "packets" : 2
             },
             "node" : "test",
+            "ocsfdns" : [
+               {
+                  "answers" : [
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RECURSION DESIRED",
+                           "RECURSION AVAILABLE"
+                        ],
+                        "packet_uid" : 32505,
+                        "rr_name" : "e.3.3.0.7.4.e.f.f.f.f.d.0.c.2.0.0.0.0.0.0.1.4.0.1.0.5.0.e.f.f.3.ip6.int",
+                        "rr_type" : "Answer",
+                        "ttl" : 3415,
+                        "type" : "PTR"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RECURSION DESIRED",
+                           "RECURSION AVAILABLE"
+                        ],
+                        "packet_uid" : 32505,
+                        "rdata" : "coconut.itojun.org",
+                        "rr_name" : "0.0.0.0.0.1.4.0.1.0.5.0.e.f.f.3.ip6.int",
+                        "rr_type" : "Authoritative",
+                        "ttl" : 3415,
+                        "type" : "NS"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RECURSION DESIRED",
+                           "RECURSION AVAILABLE"
+                        ],
+                        "packet_uid" : 32505,
+                        "rdata" : "210.160.95.97",
+                        "rr_name" : "coconut.itojun.org",
+                        "rr_type" : "Additional",
+                        "ttl" : 3414,
+                        "type" : "A"
+                     }
+                  ],
+                  "answersCnt" : 3,
+                  "query" : {
+                     "class" : "IN",
+                     "hostname" : "e.3.3.0.7.4.e.f.f.f.f.d.0.c.2.0.0.0.0.0.0.1.4.0.1.0.5.0.e.f.f.3.ip6.int",
+                     "opcode" : "QUERY",
+                     "opcode_id" : 0,
+                     "packet_uid" : 32505,
+                     "type" : "PTR"
+                  },
+                  "rcode" : "NOERROR",
+                  "rcode_id" : 0
+               }
+            ],
+            "ocsfdnsCnt" : 1,
             "packetLen" : [
                167,
                262
@@ -2664,6 +3505,136 @@
                "packets" : 2
             },
             "node" : "test",
+            "ocsfdns" : [
+               {
+                  "answers" : [
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "AUTHORITATIVE ANSWER",
+                           "RECURSION DESIRED",
+                           "RECURSION AVAILABLE"
+                        ],
+                        "packet_uid" : 45922,
+                        "rdata" : "endo.wide.ad.jp",
+                        "rr_name" : "www.wide.ad.jp",
+                        "rr_type" : "Answer",
+                        "ttl" : 3600,
+                        "type" : "CNAME"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "AUTHORITATIVE ANSWER",
+                           "RECURSION DESIRED",
+                           "RECURSION AVAILABLE"
+                        ],
+                        "packet_uid" : 45922,
+                        "rdata" : "3ffe:0501:0000:1001:0000:0000:0000:0002",
+                        "rr_name" : "endo.wide.ad.jp",
+                        "rr_type" : "Answer",
+                        "ttl" : 3600,
+                        "type" : "AAAA"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "AUTHORITATIVE ANSWER",
+                           "RECURSION DESIRED",
+                           "RECURSION AVAILABLE"
+                        ],
+                        "packet_uid" : 45922,
+                        "rdata" : "ns.wide.ad.jp",
+                        "rr_name" : "wide.ad.jp",
+                        "rr_type" : "Authoritative",
+                        "ttl" : 3600,
+                        "type" : "NS"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "AUTHORITATIVE ANSWER",
+                           "RECURSION DESIRED",
+                           "RECURSION AVAILABLE"
+                        ],
+                        "packet_uid" : 45922,
+                        "rdata" : "ns.tokyo.wide.ad.jp",
+                        "rr_name" : "wide.ad.jp",
+                        "rr_type" : "Authoritative",
+                        "ttl" : 3600,
+                        "type" : "NS"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "AUTHORITATIVE ANSWER",
+                           "RECURSION DESIRED",
+                           "RECURSION AVAILABLE"
+                        ],
+                        "packet_uid" : 45922,
+                        "rdata" : "ns.rcac.tdi.co.jp",
+                        "rr_name" : "wide.ad.jp",
+                        "rr_type" : "Authoritative",
+                        "ttl" : 3600,
+                        "type" : "NS"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "AUTHORITATIVE ANSWER",
+                           "RECURSION DESIRED",
+                           "RECURSION AVAILABLE"
+                        ],
+                        "packet_uid" : 45922,
+                        "rdata" : "203.178.136.63",
+                        "rr_name" : "ns.wide.ad.jp",
+                        "rr_type" : "Additional",
+                        "ttl" : 3600,
+                        "type" : "A"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "AUTHORITATIVE ANSWER",
+                           "RECURSION DESIRED",
+                           "RECURSION AVAILABLE"
+                        ],
+                        "packet_uid" : 45922,
+                        "rdata" : "203.178.136.61",
+                        "rr_name" : "ns.tokyo.wide.ad.jp",
+                        "rr_type" : "Additional",
+                        "ttl" : 3600,
+                        "type" : "A"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "AUTHORITATIVE ANSWER",
+                           "RECURSION DESIRED",
+                           "RECURSION AVAILABLE"
+                        ],
+                        "packet_uid" : 45922,
+                        "rdata" : "202.249.17.17",
+                        "rr_name" : "ns.rcac.tdi.co.jp",
+                        "rr_type" : "Additional",
+                        "ttl" : 86400,
+                        "type" : "A"
+                     }
+                  ],
+                  "answersCnt" : 8,
+                  "query" : {
+                     "class" : "IN",
+                     "hostname" : "www.wide.ad.jp",
+                     "opcode" : "QUERY",
+                     "opcode_id" : 0,
+                     "packet_uid" : 45922,
+                     "type" : "AAAA"
+                  },
+                  "rcode" : "NOERROR",
+                  "rcode_id" : 0
+               }
+            ],
+            "ocsfdnsCnt" : 1,
             "packetLen" : [
                110,
                338
@@ -2869,6 +3840,107 @@
                "packets" : 2
             },
             "node" : "test",
+            "ocsfdns" : [
+               {
+                  "answers" : [
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "AUTHORITATIVE ANSWER",
+                           "RECURSION DESIRED",
+                           "RECURSION AVAILABLE"
+                        ],
+                        "packet_uid" : 45923,
+                        "rr_name" : "2.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.1.0.0.1.0.0.0.0.1.0.5.0.e.f.f.3.ip6.int",
+                        "rr_type" : "Answer",
+                        "ttl" : 3600,
+                        "type" : "PTR"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "AUTHORITATIVE ANSWER",
+                           "RECURSION DESIRED",
+                           "RECURSION AVAILABLE"
+                        ],
+                        "packet_uid" : 45923,
+                        "rdata" : "ns1.v6.wide.ad.jp",
+                        "rr_name" : "5.0.e.f.f.3.ip6.int",
+                        "rr_type" : "Authoritative",
+                        "ttl" : 3600,
+                        "type" : "NS"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "AUTHORITATIVE ANSWER",
+                           "RECURSION DESIRED",
+                           "RECURSION AVAILABLE"
+                        ],
+                        "packet_uid" : 45923,
+                        "rdata" : "ns2.v6.wide.ad.jp",
+                        "rr_name" : "5.0.e.f.f.3.ip6.int",
+                        "rr_type" : "Authoritative",
+                        "ttl" : 3600,
+                        "type" : "NS"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "AUTHORITATIVE ANSWER",
+                           "RECURSION DESIRED",
+                           "RECURSION AVAILABLE"
+                        ],
+                        "packet_uid" : 45923,
+                        "rdata" : "203.178.141.212",
+                        "rr_name" : "ns1.v6.wide.ad.jp",
+                        "rr_type" : "Additional",
+                        "ttl" : 3600,
+                        "type" : "A"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "AUTHORITATIVE ANSWER",
+                           "RECURSION DESIRED",
+                           "RECURSION AVAILABLE"
+                        ],
+                        "packet_uid" : 45923,
+                        "rdata" : "3ffe:0501:4819:2000:5254:00ff:fedc:50d2",
+                        "rr_name" : "ns1.v6.wide.ad.jp",
+                        "rr_type" : "Additional",
+                        "ttl" : 3600,
+                        "type" : "AAAA"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "AUTHORITATIVE ANSWER",
+                           "RECURSION DESIRED",
+                           "RECURSION AVAILABLE"
+                        ],
+                        "packet_uid" : 45923,
+                        "rdata" : "203.178.136.188",
+                        "rr_name" : "ns2.v6.wide.ad.jp",
+                        "rr_type" : "Additional",
+                        "ttl" : 3600,
+                        "type" : "A"
+                     }
+                  ],
+                  "answersCnt" : 6,
+                  "query" : {
+                     "class" : "IN",
+                     "hostname" : "2.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.1.0.0.1.0.0.0.0.1.0.5.0.e.f.f.3.ip6.int",
+                     "opcode" : "QUERY",
+                     "opcode_id" : 0,
+                     "packet_uid" : 45923,
+                     "type" : "PTR"
+                  },
+                  "rcode" : "NOERROR",
+                  "rcode_id" : 0
+               }
+            ],
+            "ocsfdnsCnt" : 1,
             "packetLen" : [
                167,
                339
@@ -2989,6 +4061,101 @@
                "packets" : 2
             },
             "node" : "test",
+            "ocsfdns" : [
+               {
+                  "answers" : [
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RECURSION DESIRED",
+                           "RECURSION AVAILABLE"
+                        ],
+                        "packet_uid" : 45924,
+                        "rr_name" : "2.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.1.0.0.1.0.0.0.0.1.0.5.0.e.f.f.3.ip6.int",
+                        "rr_type" : "Answer",
+                        "ttl" : 3599,
+                        "type" : "PTR"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RECURSION DESIRED",
+                           "RECURSION AVAILABLE"
+                        ],
+                        "packet_uid" : 45924,
+                        "rdata" : "ns1.v6.wide.ad.jp",
+                        "rr_name" : "5.0.e.f.f.3.ip6.int",
+                        "rr_type" : "Authoritative",
+                        "ttl" : 3413,
+                        "type" : "NS"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RECURSION DESIRED",
+                           "RECURSION AVAILABLE"
+                        ],
+                        "packet_uid" : 45924,
+                        "rdata" : "ns2.v6.wide.ad.jp",
+                        "rr_name" : "5.0.e.f.f.3.ip6.int",
+                        "rr_type" : "Authoritative",
+                        "ttl" : 3413,
+                        "type" : "NS"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RECURSION DESIRED",
+                           "RECURSION AVAILABLE"
+                        ],
+                        "packet_uid" : 45924,
+                        "rdata" : "203.178.136.188",
+                        "rr_name" : "ns2.v6.wide.ad.jp",
+                        "rr_type" : "Additional",
+                        "ttl" : 1289,
+                        "type" : "A"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RECURSION DESIRED",
+                           "RECURSION AVAILABLE"
+                        ],
+                        "packet_uid" : 45924,
+                        "rdata" : "3ffe:0501:4819:2000:5254:00ff:fedc:50d2",
+                        "rr_name" : "ns1.v6.wide.ad.jp",
+                        "rr_type" : "Additional",
+                        "ttl" : 3413,
+                        "type" : "AAAA"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RECURSION DESIRED",
+                           "RECURSION AVAILABLE"
+                        ],
+                        "packet_uid" : 45924,
+                        "rdata" : "203.178.141.212",
+                        "rr_name" : "ns1.v6.wide.ad.jp",
+                        "rr_type" : "Additional",
+                        "ttl" : 1289,
+                        "type" : "A"
+                     }
+                  ],
+                  "answersCnt" : 6,
+                  "query" : {
+                     "class" : "IN",
+                     "hostname" : "2.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.1.0.0.1.0.0.0.0.1.0.5.0.e.f.f.3.ip6.int",
+                     "opcode" : "QUERY",
+                     "opcode_id" : 0,
+                     "packet_uid" : 45924,
+                     "type" : "PTR"
+                  },
+                  "rcode" : "NOERROR",
+                  "rcode_id" : 0
+               }
+            ],
+            "ocsfdnsCnt" : 1,
             "packetLen" : [
                167,
                339
@@ -3109,6 +4276,101 @@
                "packets" : 2
             },
             "node" : "test",
+            "ocsfdns" : [
+               {
+                  "answers" : [
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RECURSION DESIRED",
+                           "RECURSION AVAILABLE"
+                        ],
+                        "packet_uid" : 45925,
+                        "rr_name" : "2.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.1.0.0.1.0.0.0.0.1.0.5.0.e.f.f.3.ip6.int",
+                        "rr_type" : "Answer",
+                        "ttl" : 3598,
+                        "type" : "PTR"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RECURSION DESIRED",
+                           "RECURSION AVAILABLE"
+                        ],
+                        "packet_uid" : 45925,
+                        "rdata" : "ns1.v6.wide.ad.jp",
+                        "rr_name" : "5.0.e.f.f.3.ip6.int",
+                        "rr_type" : "Authoritative",
+                        "ttl" : 3412,
+                        "type" : "NS"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RECURSION DESIRED",
+                           "RECURSION AVAILABLE"
+                        ],
+                        "packet_uid" : 45925,
+                        "rdata" : "ns2.v6.wide.ad.jp",
+                        "rr_name" : "5.0.e.f.f.3.ip6.int",
+                        "rr_type" : "Authoritative",
+                        "ttl" : 3412,
+                        "type" : "NS"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RECURSION DESIRED",
+                           "RECURSION AVAILABLE"
+                        ],
+                        "packet_uid" : 45925,
+                        "rdata" : "203.178.136.188",
+                        "rr_name" : "ns2.v6.wide.ad.jp",
+                        "rr_type" : "Additional",
+                        "ttl" : 1288,
+                        "type" : "A"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RECURSION DESIRED",
+                           "RECURSION AVAILABLE"
+                        ],
+                        "packet_uid" : 45925,
+                        "rdata" : "3ffe:0501:4819:2000:5254:00ff:fedc:50d2",
+                        "rr_name" : "ns1.v6.wide.ad.jp",
+                        "rr_type" : "Additional",
+                        "ttl" : 3412,
+                        "type" : "AAAA"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RECURSION DESIRED",
+                           "RECURSION AVAILABLE"
+                        ],
+                        "packet_uid" : 45925,
+                        "rdata" : "203.178.141.212",
+                        "rr_name" : "ns1.v6.wide.ad.jp",
+                        "rr_type" : "Additional",
+                        "ttl" : 1288,
+                        "type" : "A"
+                     }
+                  ],
+                  "answersCnt" : 6,
+                  "query" : {
+                     "class" : "IN",
+                     "hostname" : "2.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.1.0.0.1.0.0.0.0.1.0.5.0.e.f.f.3.ip6.int",
+                     "opcode" : "QUERY",
+                     "opcode_id" : 0,
+                     "packet_uid" : 45925,
+                     "type" : "PTR"
+                  },
+                  "rcode" : "NOERROR",
+                  "rcode_id" : 0
+               }
+            ],
+            "ocsfdnsCnt" : 1,
             "packetLen" : [
                167,
                339
@@ -3386,6 +4648,108 @@
                "packets" : 2
             },
             "node" : "test",
+            "ocsfdns" : [
+               {
+                  "answers" : [
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "AUTHORITATIVE ANSWER",
+                           "RECURSION DESIRED",
+                           "RECURSION AVAILABLE"
+                        ],
+                        "packet_uid" : 23668,
+                        "rdata" : "3ffe:0507:0000:0001:0260:97ff:fe07:69ea",
+                        "rr_name" : "sh1.iijlab.net",
+                        "rr_type" : "Answer",
+                        "ttl" : 3600,
+                        "type" : "AAAA"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "AUTHORITATIVE ANSWER",
+                           "RECURSION DESIRED",
+                           "RECURSION AVAILABLE"
+                        ],
+                        "packet_uid" : 23668,
+                        "rdata" : "sh1.iijlab.net",
+                        "rr_name" : "iijlab.net",
+                        "rr_type" : "Authoritative",
+                        "ttl" : 3600,
+                        "type" : "NS"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "AUTHORITATIVE ANSWER",
+                           "RECURSION DESIRED",
+                           "RECURSION AVAILABLE"
+                        ],
+                        "packet_uid" : 23668,
+                        "rdata" : "dns0.iij.ad.jp",
+                        "rr_name" : "iijlab.net",
+                        "rr_type" : "Authoritative",
+                        "ttl" : 3600,
+                        "type" : "NS"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "AUTHORITATIVE ANSWER",
+                           "RECURSION DESIRED",
+                           "RECURSION AVAILABLE"
+                        ],
+                        "packet_uid" : 23668,
+                        "rdata" : "202.232.15.98",
+                        "rr_name" : "sh1.iijlab.net",
+                        "rr_type" : "Additional",
+                        "ttl" : 3600,
+                        "type" : "A"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "AUTHORITATIVE ANSWER",
+                           "RECURSION DESIRED",
+                           "RECURSION AVAILABLE"
+                        ],
+                        "packet_uid" : 23668,
+                        "rdata" : "3ffe:0507:0000:0001:0260:97ff:fe07:69ea",
+                        "rr_name" : "sh1.iijlab.net",
+                        "rr_type" : "Additional",
+                        "ttl" : 3600,
+                        "type" : "AAAA"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "AUTHORITATIVE ANSWER",
+                           "RECURSION DESIRED",
+                           "RECURSION AVAILABLE"
+                        ],
+                        "packet_uid" : 23668,
+                        "rdata" : "202.232.2.44",
+                        "rr_name" : "dns0.iij.ad.jp",
+                        "rr_type" : "Additional",
+                        "ttl" : 77903,
+                        "type" : "A"
+                     }
+                  ],
+                  "answersCnt" : 6,
+                  "query" : {
+                     "class" : "IN",
+                     "hostname" : "sh1.iijlab.net",
+                     "opcode" : "QUERY",
+                     "opcode_id" : 0,
+                     "packet_uid" : 23668,
+                     "type" : "AAAA"
+                  },
+                  "rcode" : "NOERROR",
+                  "rcode_id" : 0
+               }
+            ],
+            "ocsfdnsCnt" : 1,
             "packetLen" : [
                110,
                268
@@ -3645,6 +5009,75 @@
                "packets" : 2
             },
             "node" : "test",
+            "ocsfdns" : [
+               {
+                  "answers" : [
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RECURSION DESIRED",
+                           "RECURSION AVAILABLE"
+                        ],
+                        "packet_uid" : 23669,
+                        "rr_name" : "a.e.9.6.7.0.e.f.f.f.7.9.0.6.2.0.1.0.0.0.0.0.0.0.7.0.5.0.e.f.f.3.ip6.int",
+                        "rr_type" : "Answer",
+                        "ttl" : 825,
+                        "type" : "PTR"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RECURSION DESIRED",
+                           "RECURSION AVAILABLE"
+                        ],
+                        "packet_uid" : 23669,
+                        "rdata" : "sh1.iijlab.net",
+                        "rr_name" : "1.0.0.0.0.0.0.0.7.0.5.0.e.f.f.3.ip6.int",
+                        "rr_type" : "Authoritative",
+                        "ttl" : 825,
+                        "type" : "NS"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RECURSION DESIRED",
+                           "RECURSION AVAILABLE"
+                        ],
+                        "packet_uid" : 23669,
+                        "rdata" : "3ffe:0507:0000:0001:0260:97ff:fe07:69ea",
+                        "rr_name" : "sh1.iijlab.net",
+                        "rr_type" : "Additional",
+                        "ttl" : 3599,
+                        "type" : "AAAA"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RECURSION DESIRED",
+                           "RECURSION AVAILABLE"
+                        ],
+                        "packet_uid" : 23669,
+                        "rdata" : "202.232.15.98",
+                        "rr_name" : "sh1.iijlab.net",
+                        "rr_type" : "Additional",
+                        "ttl" : 26033,
+                        "type" : "A"
+                     }
+                  ],
+                  "answersCnt" : 4,
+                  "query" : {
+                     "class" : "IN",
+                     "hostname" : "a.e.9.6.7.0.e.f.f.f.7.9.0.6.2.0.1.0.0.0.0.0.0.0.7.0.5.0.e.f.f.3.ip6.int",
+                     "opcode" : "QUERY",
+                     "opcode_id" : 0,
+                     "packet_uid" : 23669,
+                     "type" : "PTR"
+                  },
+                  "rcode" : "NOERROR",
+                  "rcode_id" : 0
+               }
+            ],
+            "ocsfdnsCnt" : 1,
             "packetLen" : [
                167,
                284
@@ -3760,6 +5193,75 @@
                "packets" : 2
             },
             "node" : "test",
+            "ocsfdns" : [
+               {
+                  "answers" : [
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RECURSION DESIRED",
+                           "RECURSION AVAILABLE"
+                        ],
+                        "packet_uid" : 23670,
+                        "rr_name" : "a.e.9.6.7.0.e.f.f.f.7.9.0.6.2.0.1.0.0.0.0.0.0.0.7.0.5.0.e.f.f.3.ip6.int",
+                        "rr_type" : "Answer",
+                        "ttl" : 825,
+                        "type" : "PTR"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RECURSION DESIRED",
+                           "RECURSION AVAILABLE"
+                        ],
+                        "packet_uid" : 23670,
+                        "rdata" : "sh1.iijlab.net",
+                        "rr_name" : "1.0.0.0.0.0.0.0.7.0.5.0.e.f.f.3.ip6.int",
+                        "rr_type" : "Authoritative",
+                        "ttl" : 825,
+                        "type" : "NS"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RECURSION DESIRED",
+                           "RECURSION AVAILABLE"
+                        ],
+                        "packet_uid" : 23670,
+                        "rdata" : "3ffe:0507:0000:0001:0260:97ff:fe07:69ea",
+                        "rr_name" : "sh1.iijlab.net",
+                        "rr_type" : "Additional",
+                        "ttl" : 3599,
+                        "type" : "AAAA"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RECURSION DESIRED",
+                           "RECURSION AVAILABLE"
+                        ],
+                        "packet_uid" : 23670,
+                        "rdata" : "202.232.15.98",
+                        "rr_name" : "sh1.iijlab.net",
+                        "rr_type" : "Additional",
+                        "ttl" : 26033,
+                        "type" : "A"
+                     }
+                  ],
+                  "answersCnt" : 4,
+                  "query" : {
+                     "class" : "IN",
+                     "hostname" : "a.e.9.6.7.0.e.f.f.f.7.9.0.6.2.0.1.0.0.0.0.0.0.0.7.0.5.0.e.f.f.3.ip6.int",
+                     "opcode" : "QUERY",
+                     "opcode_id" : 0,
+                     "packet_uid" : 23670,
+                     "type" : "PTR"
+                  },
+                  "rcode" : "NOERROR",
+                  "rcode_id" : 0
+               }
+            ],
+            "ocsfdnsCnt" : 1,
             "packetLen" : [
                167,
                284
@@ -3875,6 +5377,75 @@
                "packets" : 2
             },
             "node" : "test",
+            "ocsfdns" : [
+               {
+                  "answers" : [
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RECURSION DESIRED",
+                           "RECURSION AVAILABLE"
+                        ],
+                        "packet_uid" : 23671,
+                        "rr_name" : "a.e.9.6.7.0.e.f.f.f.7.9.0.6.2.0.1.0.0.0.0.0.0.0.7.0.5.0.e.f.f.3.ip6.int",
+                        "rr_type" : "Answer",
+                        "ttl" : 824,
+                        "type" : "PTR"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RECURSION DESIRED",
+                           "RECURSION AVAILABLE"
+                        ],
+                        "packet_uid" : 23671,
+                        "rdata" : "sh1.iijlab.net",
+                        "rr_name" : "1.0.0.0.0.0.0.0.7.0.5.0.e.f.f.3.ip6.int",
+                        "rr_type" : "Authoritative",
+                        "ttl" : 824,
+                        "type" : "NS"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RECURSION DESIRED",
+                           "RECURSION AVAILABLE"
+                        ],
+                        "packet_uid" : 23671,
+                        "rdata" : "3ffe:0507:0000:0001:0260:97ff:fe07:69ea",
+                        "rr_name" : "sh1.iijlab.net",
+                        "rr_type" : "Additional",
+                        "ttl" : 3598,
+                        "type" : "AAAA"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RECURSION DESIRED",
+                           "RECURSION AVAILABLE"
+                        ],
+                        "packet_uid" : 23671,
+                        "rdata" : "202.232.15.98",
+                        "rr_name" : "sh1.iijlab.net",
+                        "rr_type" : "Additional",
+                        "ttl" : 26032,
+                        "type" : "A"
+                     }
+                  ],
+                  "answersCnt" : 4,
+                  "query" : {
+                     "class" : "IN",
+                     "hostname" : "a.e.9.6.7.0.e.f.f.f.7.9.0.6.2.0.1.0.0.0.0.0.0.0.7.0.5.0.e.f.f.3.ip6.int",
+                     "opcode" : "QUERY",
+                     "opcode_id" : 0,
+                     "packet_uid" : 23671,
+                     "type" : "PTR"
+                  },
+                  "rcode" : "NOERROR",
+                  "rcode_id" : 0
+               }
+            ],
+            "ocsfdnsCnt" : 1,
             "packetLen" : [
                167,
                284
@@ -3990,6 +5561,75 @@
                "packets" : 2
             },
             "node" : "test",
+            "ocsfdns" : [
+               {
+                  "answers" : [
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RECURSION DESIRED",
+                           "RECURSION AVAILABLE"
+                        ],
+                        "packet_uid" : 23672,
+                        "rr_name" : "a.e.9.6.7.0.e.f.f.f.7.9.0.6.2.0.1.0.0.0.0.0.0.0.7.0.5.0.e.f.f.3.ip6.int",
+                        "rr_type" : "Answer",
+                        "ttl" : 823,
+                        "type" : "PTR"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RECURSION DESIRED",
+                           "RECURSION AVAILABLE"
+                        ],
+                        "packet_uid" : 23672,
+                        "rdata" : "sh1.iijlab.net",
+                        "rr_name" : "1.0.0.0.0.0.0.0.7.0.5.0.e.f.f.3.ip6.int",
+                        "rr_type" : "Authoritative",
+                        "ttl" : 823,
+                        "type" : "NS"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RECURSION DESIRED",
+                           "RECURSION AVAILABLE"
+                        ],
+                        "packet_uid" : 23672,
+                        "rdata" : "3ffe:0507:0000:0001:0260:97ff:fe07:69ea",
+                        "rr_name" : "sh1.iijlab.net",
+                        "rr_type" : "Additional",
+                        "ttl" : 3597,
+                        "type" : "AAAA"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RECURSION DESIRED",
+                           "RECURSION AVAILABLE"
+                        ],
+                        "packet_uid" : 23672,
+                        "rdata" : "202.232.15.98",
+                        "rr_name" : "sh1.iijlab.net",
+                        "rr_type" : "Additional",
+                        "ttl" : 26031,
+                        "type" : "A"
+                     }
+                  ],
+                  "answersCnt" : 4,
+                  "query" : {
+                     "class" : "IN",
+                     "hostname" : "a.e.9.6.7.0.e.f.f.f.7.9.0.6.2.0.1.0.0.0.0.0.0.0.7.0.5.0.e.f.f.3.ip6.int",
+                     "opcode" : "QUERY",
+                     "opcode_id" : 0,
+                     "packet_uid" : 23672,
+                     "type" : "PTR"
+                  },
+                  "rcode" : "NOERROR",
+                  "rcode_id" : 0
+               }
+            ],
+            "ocsfdnsCnt" : 1,
             "packetLen" : [
                167,
                284
@@ -4105,6 +5745,75 @@
                "packets" : 2
             },
             "node" : "test",
+            "ocsfdns" : [
+               {
+                  "answers" : [
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RECURSION DESIRED",
+                           "RECURSION AVAILABLE"
+                        ],
+                        "packet_uid" : 23673,
+                        "rr_name" : "a.e.9.6.7.0.e.f.f.f.7.9.0.6.2.0.1.0.0.0.0.0.0.0.7.0.5.0.e.f.f.3.ip6.int",
+                        "rr_type" : "Answer",
+                        "ttl" : 822,
+                        "type" : "PTR"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RECURSION DESIRED",
+                           "RECURSION AVAILABLE"
+                        ],
+                        "packet_uid" : 23673,
+                        "rdata" : "sh1.iijlab.net",
+                        "rr_name" : "1.0.0.0.0.0.0.0.7.0.5.0.e.f.f.3.ip6.int",
+                        "rr_type" : "Authoritative",
+                        "ttl" : 822,
+                        "type" : "NS"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RECURSION DESIRED",
+                           "RECURSION AVAILABLE"
+                        ],
+                        "packet_uid" : 23673,
+                        "rdata" : "3ffe:0507:0000:0001:0260:97ff:fe07:69ea",
+                        "rr_name" : "sh1.iijlab.net",
+                        "rr_type" : "Additional",
+                        "ttl" : 3596,
+                        "type" : "AAAA"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RECURSION DESIRED",
+                           "RECURSION AVAILABLE"
+                        ],
+                        "packet_uid" : 23673,
+                        "rdata" : "202.232.15.98",
+                        "rr_name" : "sh1.iijlab.net",
+                        "rr_type" : "Additional",
+                        "ttl" : 26030,
+                        "type" : "A"
+                     }
+                  ],
+                  "answersCnt" : 4,
+                  "query" : {
+                     "class" : "IN",
+                     "hostname" : "a.e.9.6.7.0.e.f.f.f.7.9.0.6.2.0.1.0.0.0.0.0.0.0.7.0.5.0.e.f.f.3.ip6.int",
+                     "opcode" : "QUERY",
+                     "opcode_id" : 0,
+                     "packet_uid" : 23673,
+                     "type" : "PTR"
+                  },
+                  "rcode" : "NOERROR",
+                  "rcode_id" : 0
+               }
+            ],
+            "ocsfdnsCnt" : 1,
             "packetLen" : [
                167,
                284

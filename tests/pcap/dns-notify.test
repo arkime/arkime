@@ -65,6 +65,22 @@
                "packets" : 2
             },
             "node" : "test",
+            "ocsfdns" : [
+               {
+                  "answersCnt" : 0,
+                  "query" : {
+                     "class" : "IN",
+                     "hostname" : "bortzmeyer.42",
+                     "opcode" : "NOTIFY",
+                     "opcode_id" : 4,
+                     "packet_uid" : 38504,
+                     "type" : "SOA"
+                  },
+                  "rcode" : "NOERROR",
+                  "rcode_id" : 0
+               }
+            ],
+            "ocsfdnsCnt" : 1,
             "packetLen" : [
                181,
                89

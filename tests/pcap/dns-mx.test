@@ -83,6 +83,102 @@
                "packets" : 2
             },
             "node" : "test",
+            "ocsfdns" : [
+               {
+                  "answers" : [
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RECURSION DESIRED",
+                           "RECURSION AVAILABLE"
+                        ],
+                        "packet_uid" : 19479,
+                        "rdata" : "(10)cluster5.us.messagelabs.com",
+                        "rr_name" : "mx.com",
+                        "rr_type" : "Answer",
+                        "ttl" : 3600,
+                        "type" : "MX"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RECURSION DESIRED",
+                           "RECURSION AVAILABLE"
+                        ],
+                        "packet_uid" : 19479,
+                        "rdata" : "(20)cluster5a.us.messagelabs.com",
+                        "rr_name" : "mx.com",
+                        "rr_type" : "Answer",
+                        "ttl" : 3600,
+                        "type" : "MX"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RECURSION DESIRED",
+                           "RECURSION AVAILABLE"
+                        ],
+                        "packet_uid" : 19479,
+                        "rdata" : "dns2.stabletransit.com",
+                        "rr_name" : "mx.com",
+                        "rr_type" : "Authoritative",
+                        "ttl" : 3600,
+                        "type" : "NS"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RECURSION DESIRED",
+                           "RECURSION AVAILABLE"
+                        ],
+                        "packet_uid" : 19479,
+                        "rdata" : "dns1.stabletransit.com",
+                        "rr_name" : "mx.com",
+                        "rr_type" : "Authoritative",
+                        "ttl" : 3600,
+                        "type" : "NS"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RECURSION DESIRED",
+                           "RECURSION AVAILABLE"
+                        ],
+                        "packet_uid" : 19479,
+                        "rdata" : "65.61.188.4",
+                        "rr_name" : "dns2.stabletransit.com",
+                        "rr_type" : "Additional",
+                        "ttl" : 1302,
+                        "type" : "A"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RECURSION DESIRED",
+                           "RECURSION AVAILABLE"
+                        ],
+                        "packet_uid" : 19479,
+                        "rdata" : "69.20.95.4",
+                        "rr_name" : "dns1.stabletransit.com",
+                        "rr_type" : "Additional",
+                        "ttl" : 3559,
+                        "type" : "A"
+                     }
+                  ],
+                  "answersCnt" : 6,
+                  "query" : {
+                     "class" : "IN",
+                     "hostname" : "mx.com",
+                     "opcode" : "QUERY",
+                     "opcode_id" : 0,
+                     "packet_uid" : 19479,
+                     "type" : "MX"
+                  },
+                  "rcode" : "NOERROR",
+                  "rcode_id" : 0
+               }
+            ],
+            "ocsfdnsCnt" : 1,
             "packetLen" : [
                82,
                232

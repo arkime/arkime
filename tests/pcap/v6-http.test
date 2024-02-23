@@ -377,6 +377,10 @@
             ],
             "srcOuiCnt" : 1,
             "srcPayload8" : "0000000000020000",
+            "tags" : [
+               "dns-qdcount-not-1"
+            ],
+            "tagsCnt" : 1,
             "totDataBytes" : 1286
          },
          "header" : {

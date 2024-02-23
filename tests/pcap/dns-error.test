@@ -66,6 +66,37 @@
                "packets" : 2
             },
             "node" : "test",
+            "ocsfdns" : [
+               {
+                  "answers" : [
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "AUTHORITATIVE ANSWER",
+                           "RECURSION DESIRED",
+                           "RECURSION AVAILABLE"
+                        ],
+                        "packet_uid" : 43450,
+                        "rr_name" : "<root>",
+                        "rr_type" : "Authoritative",
+                        "ttl" : 300,
+                        "type" : "SOA"
+                     }
+                  ],
+                  "answersCnt" : 1,
+                  "query" : {
+                     "class" : "IN",
+                     "hostname" : "no.such.host",
+                     "opcode" : "QUERY",
+                     "opcode_id" : 0,
+                     "packet_uid" : 43450,
+                     "type" : "A"
+                  },
+                  "rcode" : "NXDOMAIN",
+                  "rcode_id" : 3
+               }
+            ],
+            "ocsfdnsCnt" : 1,
             "packetLen" : [
                88,
                163

@@ -107,6 +107,191 @@
                "packets" : 2
             },
             "node" : "test",
+            "ocsfdns" : [
+               {
+                  "answers" : [
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "AUTHORITATIVE ANSWER"
+                        ],
+                        "packet_uid" : 35828,
+                        "rr_name" : "уаноо.қаз",
+                        "rr_type" : "Answer",
+                        "ttl" : 1800,
+                        "type" : "SOA"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "AUTHORITATIVE ANSWER"
+                        ],
+                        "packet_uid" : 35828,
+                        "rdata" : "ns4.yahoo.com",
+                        "rr_name" : "уаноо.қаз",
+                        "rr_type" : "Authoritative",
+                        "ttl" : 172800,
+                        "type" : "NS"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "AUTHORITATIVE ANSWER"
+                        ],
+                        "packet_uid" : 35828,
+                        "rdata" : "ns5.yahoo.com",
+                        "rr_name" : "уаноо.қаз",
+                        "rr_type" : "Authoritative",
+                        "ttl" : 172800,
+                        "type" : "NS"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "AUTHORITATIVE ANSWER"
+                        ],
+                        "packet_uid" : 35828,
+                        "rdata" : "ns3.yahoo.com",
+                        "rr_name" : "уаноо.қаз",
+                        "rr_type" : "Authoritative",
+                        "ttl" : 172800,
+                        "type" : "NS"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "AUTHORITATIVE ANSWER"
+                        ],
+                        "packet_uid" : 35828,
+                        "rdata" : "ns2.yahoo.com",
+                        "rr_name" : "уаноо.қаз",
+                        "rr_type" : "Authoritative",
+                        "ttl" : 172800,
+                        "type" : "NS"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "AUTHORITATIVE ANSWER"
+                        ],
+                        "packet_uid" : 35828,
+                        "rdata" : "ns1.yahoo.com",
+                        "rr_name" : "уаноо.қаз",
+                        "rr_type" : "Authoritative",
+                        "ttl" : 172800,
+                        "type" : "NS"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "AUTHORITATIVE ANSWER"
+                        ],
+                        "packet_uid" : 35828,
+                        "rdata" : "68.180.131.16",
+                        "rr_name" : "ns1.yahoo.com",
+                        "rr_type" : "Additional",
+                        "ttl" : 1209600,
+                        "type" : "A"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "AUTHORITATIVE ANSWER"
+                        ],
+                        "packet_uid" : 35828,
+                        "rdata" : "2001:4998:0130:0000:0000:0000:0000:1001",
+                        "rr_name" : "ns1.yahoo.com",
+                        "rr_type" : "Additional",
+                        "ttl" : 86400,
+                        "type" : "AAAA"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "AUTHORITATIVE ANSWER"
+                        ],
+                        "packet_uid" : 35828,
+                        "rdata" : "68.142.255.16",
+                        "rr_name" : "ns2.yahoo.com",
+                        "rr_type" : "Additional",
+                        "ttl" : 1209600,
+                        "type" : "A"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "AUTHORITATIVE ANSWER"
+                        ],
+                        "packet_uid" : 35828,
+                        "rdata" : "2001:4998:0140:0000:0000:0000:0000:1002",
+                        "rr_name" : "ns2.yahoo.com",
+                        "rr_type" : "Additional",
+                        "ttl" : 86400,
+                        "type" : "AAAA"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "AUTHORITATIVE ANSWER"
+                        ],
+                        "packet_uid" : 35828,
+                        "rdata" : "203.84.221.53",
+                        "rr_name" : "ns3.yahoo.com",
+                        "rr_type" : "Additional",
+                        "ttl" : 1209600,
+                        "type" : "A"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "AUTHORITATIVE ANSWER"
+                        ],
+                        "packet_uid" : 35828,
+                        "rdata" : "2406:8600:00b8:fe03:0000:0000:0000:1003",
+                        "rr_name" : "ns3.yahoo.com",
+                        "rr_type" : "Additional",
+                        "ttl" : 86400,
+                        "type" : "AAAA"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "AUTHORITATIVE ANSWER"
+                        ],
+                        "packet_uid" : 35828,
+                        "rdata" : "98.138.11.157",
+                        "rr_name" : "ns4.yahoo.com",
+                        "rr_type" : "Additional",
+                        "ttl" : 1209600,
+                        "type" : "A"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "AUTHORITATIVE ANSWER"
+                        ],
+                        "packet_uid" : 35828,
+                        "rdata" : "119.160.253.83",
+                        "rr_name" : "ns5.yahoo.com",
+                        "rr_type" : "Additional",
+                        "ttl" : 1209600,
+                        "type" : "A"
+                     }
+                  ],
+                  "answersCnt" : 14,
+                  "query" : {
+                     "class" : "IN",
+                     "hostname" : "уаноо.қаз",
+                     "opcode" : "QUERY",
+                     "opcode_id" : 0,
+                     "packet_uid" : 35828,
+                     "type" : "SOA"
+                  },
+                  "rcode" : "NOERROR",
+                  "rcode_id" : 0
+               }
+            ],
+            "ocsfdnsCnt" : 1,
             "packetLen" : [
                111,
                445

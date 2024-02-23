@@ -89,6 +89,36 @@
                }
             },
             "node" : "test",
+            "ocsfdns" : [
+               {
+                  "answers" : [
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RECURSION DESIRED",
+                           "RECURSION AVAILABLE"
+                        ],
+                        "packet_uid" : 42540,
+                        "rr_name" : "<root>",
+                        "rr_type" : "Authoritative",
+                        "ttl" : 757,
+                        "type" : "SOA"
+                     }
+                  ],
+                  "answersCnt" : 1,
+                  "query" : {
+                     "class" : "IN",
+                     "hostname" : "xqt-detect-mode2-97712e88-167a-45b9-93ee-913140e76678",
+                     "opcode" : "QUERY",
+                     "opcode_id" : 0,
+                     "packet_uid" : 42540,
+                     "type" : "AAAA"
+                  },
+                  "rcode" : "NXDOMAIN",
+                  "rcode_id" : 3
+               }
+            ],
+            "ocsfdnsCnt" : 1,
             "packetLen" : [
                213,
                284

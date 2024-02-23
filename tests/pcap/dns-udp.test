@@ -90,6 +90,154 @@
                "packets" : 2
             },
             "node" : "test",
+            "ocsfdns" : [
+               {
+                  "answers" : [
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RECURSION DESIRED",
+                           "RECURSION AVAILABLE"
+                        ],
+                        "packet_uid" : 57401,
+                        "rdata" : "github.com",
+                        "rr_name" : "www.github.com",
+                        "rr_type" : "Answer",
+                        "ttl" : 1980,
+                        "type" : "CNAME"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RECURSION DESIRED",
+                           "RECURSION AVAILABLE"
+                        ],
+                        "packet_uid" : 57401,
+                        "rdata" : "192.30.252.128",
+                        "rr_name" : "github.com",
+                        "rr_type" : "Answer",
+                        "ttl" : 4,
+                        "type" : "A"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RECURSION DESIRED",
+                           "RECURSION AVAILABLE"
+                        ],
+                        "packet_uid" : 57401,
+                        "rdata" : "ns3.p16.dynect.net",
+                        "rr_name" : "github.com",
+                        "rr_type" : "Authoritative",
+                        "ttl" : 328,
+                        "type" : "NS"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RECURSION DESIRED",
+                           "RECURSION AVAILABLE"
+                        ],
+                        "packet_uid" : 57401,
+                        "rdata" : "ns2.p16.dynect.net",
+                        "rr_name" : "github.com",
+                        "rr_type" : "Authoritative",
+                        "ttl" : 328,
+                        "type" : "NS"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RECURSION DESIRED",
+                           "RECURSION AVAILABLE"
+                        ],
+                        "packet_uid" : 57401,
+                        "rdata" : "ns4.p16.dynect.net",
+                        "rr_name" : "github.com",
+                        "rr_type" : "Authoritative",
+                        "ttl" : 328,
+                        "type" : "NS"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RECURSION DESIRED",
+                           "RECURSION AVAILABLE"
+                        ],
+                        "packet_uid" : 57401,
+                        "rdata" : "ns1.p16.dynect.net",
+                        "rr_name" : "github.com",
+                        "rr_type" : "Authoritative",
+                        "ttl" : 328,
+                        "type" : "NS"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RECURSION DESIRED",
+                           "RECURSION AVAILABLE"
+                        ],
+                        "packet_uid" : 57401,
+                        "rdata" : "10.2.95.12",
+                        "rr_name" : "ns2.p16.dynect.net",
+                        "rr_type" : "Additional",
+                        "ttl" : 3600,
+                        "type" : "A"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RECURSION DESIRED",
+                           "RECURSION AVAILABLE"
+                        ],
+                        "packet_uid" : 57401,
+                        "rdata" : "10.2.95.12",
+                        "rr_name" : "ns3.p16.dynect.net",
+                        "rr_type" : "Additional",
+                        "ttl" : 3600,
+                        "type" : "A"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RECURSION DESIRED",
+                           "RECURSION AVAILABLE"
+                        ],
+                        "packet_uid" : 57401,
+                        "rdata" : "10.2.95.12",
+                        "rr_name" : "ns1.p16.dynect.net",
+                        "rr_type" : "Additional",
+                        "ttl" : 3600,
+                        "type" : "A"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RECURSION DESIRED",
+                           "RECURSION AVAILABLE"
+                        ],
+                        "packet_uid" : 57401,
+                        "rdata" : "10.2.95.12",
+                        "rr_name" : "ns4.p16.dynect.net",
+                        "rr_type" : "Additional",
+                        "ttl" : 3600,
+                        "type" : "A"
+                     }
+                  ],
+                  "answersCnt" : 10,
+                  "query" : {
+                     "class" : "IN",
+                     "hostname" : "www.github.com",
+                     "opcode" : "QUERY",
+                     "opcode_id" : 0,
+                     "packet_uid" : 57401,
+                     "type" : "A"
+                  },
+                  "rcode" : "NOERROR",
+                  "rcode_id" : 0
+               }
+            ],
+            "ocsfdnsCnt" : 1,
             "packetLen" : [
                90,
                270
@@ -222,6 +370,154 @@
                "packets" : 2
             },
             "node" : "test",
+            "ocsfdns" : [
+               {
+                  "answers" : [
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RECURSION DESIRED",
+                           "RECURSION AVAILABLE"
+                        ],
+                        "packet_uid" : 57401,
+                        "rdata" : "github.com",
+                        "rr_name" : "www.github.com",
+                        "rr_type" : "Answer",
+                        "ttl" : 3600,
+                        "type" : "CNAME"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RECURSION DESIRED",
+                           "RECURSION AVAILABLE"
+                        ],
+                        "packet_uid" : 57401,
+                        "rdata" : "192.30.252.130",
+                        "rr_name" : "github.com",
+                        "rr_type" : "Answer",
+                        "ttl" : 30,
+                        "type" : "A"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RECURSION DESIRED",
+                           "RECURSION AVAILABLE"
+                        ],
+                        "packet_uid" : 57401,
+                        "rdata" : "ns2.p16.dynect.net",
+                        "rr_name" : "github.com",
+                        "rr_type" : "Authoritative",
+                        "ttl" : 327,
+                        "type" : "NS"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RECURSION DESIRED",
+                           "RECURSION AVAILABLE"
+                        ],
+                        "packet_uid" : 57401,
+                        "rdata" : "ns3.p16.dynect.net",
+                        "rr_name" : "github.com",
+                        "rr_type" : "Authoritative",
+                        "ttl" : 327,
+                        "type" : "NS"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RECURSION DESIRED",
+                           "RECURSION AVAILABLE"
+                        ],
+                        "packet_uid" : 57401,
+                        "rdata" : "ns4.p16.dynect.net",
+                        "rr_name" : "github.com",
+                        "rr_type" : "Authoritative",
+                        "ttl" : 327,
+                        "type" : "NS"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RECURSION DESIRED",
+                           "RECURSION AVAILABLE"
+                        ],
+                        "packet_uid" : 57401,
+                        "rdata" : "ns1.p16.dynect.net",
+                        "rr_name" : "github.com",
+                        "rr_type" : "Authoritative",
+                        "ttl" : 327,
+                        "type" : "NS"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RECURSION DESIRED",
+                           "RECURSION AVAILABLE"
+                        ],
+                        "packet_uid" : 57401,
+                        "rdata" : "10.2.95.12",
+                        "rr_name" : "ns1.p16.dynect.net",
+                        "rr_type" : "Additional",
+                        "ttl" : 3600,
+                        "type" : "A"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RECURSION DESIRED",
+                           "RECURSION AVAILABLE"
+                        ],
+                        "packet_uid" : 57401,
+                        "rdata" : "10.2.95.12",
+                        "rr_name" : "ns3.p16.dynect.net",
+                        "rr_type" : "Additional",
+                        "ttl" : 3600,
+                        "type" : "A"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RECURSION DESIRED",
+                           "RECURSION AVAILABLE"
+                        ],
+                        "packet_uid" : 57401,
+                        "rdata" : "10.2.95.12",
+                        "rr_name" : "ns4.p16.dynect.net",
+                        "rr_type" : "Additional",
+                        "ttl" : 3600,
+                        "type" : "A"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RECURSION DESIRED",
+                           "RECURSION AVAILABLE"
+                        ],
+                        "packet_uid" : 57401,
+                        "rdata" : "10.2.95.12",
+                        "rr_name" : "ns2.p16.dynect.net",
+                        "rr_type" : "Additional",
+                        "ttl" : 3600,
+                        "type" : "A"
+                     }
+                  ],
+                  "answersCnt" : 10,
+                  "query" : {
+                     "class" : "IN",
+                     "hostname" : "www.github.com",
+                     "opcode" : "QUERY",
+                     "opcode_id" : 0,
+                     "packet_uid" : 57401,
+                     "type" : "A"
+                  },
+                  "rcode" : "NOERROR",
+                  "rcode_id" : 0
+               }
+            ],
+            "ocsfdnsCnt" : 1,
             "packetLen" : [
                90,
                270
@@ -314,6 +610,19 @@
                "packets" : 1
             },
             "node" : "test",
+            "ocsfdns" : [
+               {
+                  "query" : {
+                     "class" : "IN",
+                     "hostname" : "10.100.10.10.in-addr.arpa",
+                     "opcode" : "QUERY",
+                     "opcode_id" : 0,
+                     "packet_uid" : 51878,
+                     "type" : "ANY"
+                  }
+               }
+            ],
+            "ocsfdnsCnt" : 1,
             "packetLen" : [
                112
             ],

@@ -2709,7 +2709,7 @@ class SessionAPIs {
    */
   static getDetail (req, res) {
     const options = ViewerUtils.addCluster(req.query.cluster);
-    options._source = 'cert';
+    options._source = ['cert', 'ocsfdns'];
     options.fields = ['*'];
     Db.getSession(req.params.id, options, (err, session) => {
       if (err || !session.found) {

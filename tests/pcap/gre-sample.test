@@ -544,6 +544,19 @@
                "packets" : 2
             },
             "node" : "test",
+            "ocsfdns" : [
+               {
+                  "query" : {
+                     "class" : "IN",
+                     "hostname" : "www.gleeble.org",
+                     "opcode" : "QUERY",
+                     "opcode_id" : 0,
+                     "packet_uid" : 48554,
+                     "type" : "ANY"
+                  }
+               }
+            ],
+            "ocsfdnsCnt" : 1,
             "packetLen" : [
                115,
                115

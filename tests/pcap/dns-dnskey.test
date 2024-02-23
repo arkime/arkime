@@ -66,6 +66,19 @@
                }
             },
             "node" : "test",
+            "ocsfdns" : [
+               {
+                  "query" : {
+                     "class" : "IN",
+                     "hostname" : "<root>",
+                     "opcode" : "QUERY",
+                     "opcode_id" : 0,
+                     "packet_uid" : 62326,
+                     "type" : "DNSKEY"
+                  }
+               }
+            ],
+            "ocsfdnsCnt" : 1,
             "packetLen" : [
                90
             ],

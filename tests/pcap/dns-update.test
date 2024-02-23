@@ -76,6 +76,22 @@
                }
             },
             "node" : "test",
+            "ocsfdns" : [
+               {
+                  "answersCnt" : 0,
+                  "query" : {
+                     "class" : "IN",
+                     "hostname" : "xxxxxxxxx.com",
+                     "opcode" : "UPDATE",
+                     "opcode_id" : 5,
+                     "packet_uid" : 26905,
+                     "type" : "SOA"
+                  },
+                  "rcode" : "NOTIMPL",
+                  "rcode_id" : 4
+               }
+            ],
+            "ocsfdnsCnt" : 1,
             "packetLen" : [
                186,
                186

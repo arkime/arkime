@@ -136,6 +136,440 @@
                "packets" : 24
             },
             "node" : "test",
+            "ocsfdns" : [
+               {
+                  "answers" : [
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RECURSION DESIRED",
+                           "RECURSION AVAILABLE"
+                        ],
+                        "packet_uid" : 36275,
+                        "rdata" : "www.l.google.com",
+                        "rr_name" : "www.google.com",
+                        "rr_type" : "Answer",
+                        "ttl" : 633,
+                        "type" : "CNAME"
+                     }
+                  ],
+                  "answersCnt" : 1,
+                  "query" : {
+                     "class" : "IN",
+                     "hostname" : "www.google.com",
+                     "opcode" : "QUERY",
+                     "opcode_id" : 0,
+                     "packet_uid" : 36275,
+                     "type" : "AAAA"
+                  },
+                  "rcode" : "NOERROR",
+                  "rcode_id" : 0
+               },
+               {
+                  "answersCnt" : 0,
+                  "query" : {
+                     "class" : "IN",
+                     "hostname" : "www.example.notginh",
+                     "opcode" : "QUERY",
+                     "opcode_id" : 0,
+                     "packet_uid" : 9837,
+                     "type" : "AAAA"
+                  },
+                  "rcode" : "NXDOMAIN",
+                  "rcode_id" : 3
+               },
+               {
+                  "answers" : [
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RECURSION DESIRED",
+                           "RECURSION AVAILABLE"
+                        ],
+                        "packet_uid" : 30144,
+                        "rdata" : "204.152.190.12",
+                        "rr_name" : "www.netbsd.org",
+                        "rr_type" : "Answer",
+                        "ttl" : 82159,
+                        "type" : "A"
+                     }
+                  ],
+                  "answersCnt" : 1,
+                  "query" : {
+                     "class" : "IN",
+                     "hostname" : "www.netbsd.org",
+                     "opcode" : "QUERY",
+                     "opcode_id" : 0,
+                     "packet_uid" : 30144,
+                     "type" : "A"
+                  },
+                  "rcode" : "NOERROR",
+                  "rcode_id" : 0
+               },
+               {
+                  "answers" : [
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RECURSION DESIRED",
+                           "RECURSION AVAILABLE"
+                        ],
+                        "packet_uid" : 4146,
+                        "rdata" : "v=spf1 ptr ?all",
+                        "rr_name" : "google.com",
+                        "rr_type" : "Answer",
+                        "ttl" : 270,
+                        "type" : "TXT"
+                     }
+                  ],
+                  "answersCnt" : 1,
+                  "query" : {
+                     "class" : "IN",
+                     "hostname" : "google.com",
+                     "opcode" : "QUERY",
+                     "opcode_id" : 0,
+                     "packet_uid" : 4146,
+                     "type" : "TXT"
+                  },
+                  "rcode" : "NOERROR",
+                  "rcode_id" : 0
+               },
+               {
+                  "answers" : [
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RECURSION DESIRED",
+                           "RECURSION AVAILABLE"
+                        ],
+                        "packet_uid" : 32569,
+                        "rdata" : "2001:04f8:0004:0007:02e0:81ff:fe52:9a6b",
+                        "rr_name" : "www.netbsd.org",
+                        "rr_type" : "Answer",
+                        "ttl" : 86340,
+                        "type" : "AAAA"
+                     }
+                  ],
+                  "answersCnt" : 1,
+                  "query" : {
+                     "class" : "IN",
+                     "hostname" : "www.netbsd.org",
+                     "opcode" : "QUERY",
+                     "opcode_id" : 0,
+                     "packet_uid" : 32569,
+                     "type" : "AAAA"
+                  },
+                  "rcode" : "NOERROR",
+                  "rcode_id" : 0
+               },
+               {
+                  "answers" : [
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RECURSION DESIRED",
+                           "RECURSION AVAILABLE"
+                        ],
+                        "packet_uid" : 61652,
+                        "rdata" : "2001:04f8:0004:0007:02e0:81ff:fe52:9a6b",
+                        "rr_name" : "www.netbsd.org",
+                        "rr_type" : "Answer",
+                        "ttl" : 86400,
+                        "type" : "AAAA"
+                     }
+                  ],
+                  "answersCnt" : 1,
+                  "query" : {
+                     "class" : "IN",
+                     "hostname" : "www.netbsd.org",
+                     "opcode" : "QUERY",
+                     "opcode_id" : 0,
+                     "packet_uid" : 61652,
+                     "type" : "AAAA"
+                  },
+                  "rcode" : "NOERROR",
+                  "rcode_id" : 0
+               },
+               {
+                  "answersCnt" : 0,
+                  "query" : {
+                     "class" : "IN",
+                     "hostname" : "www.l.google.com",
+                     "opcode" : "QUERY",
+                     "opcode_id" : 0,
+                     "packet_uid" : 56482,
+                     "type" : "AAAA"
+                  },
+                  "rcode" : "NOERROR",
+                  "rcode_id" : 0
+               },
+               {
+                  "answers" : [
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RECURSION DESIRED",
+                           "RECURSION AVAILABLE"
+                        ],
+                        "packet_uid" : 63343,
+                        "rdata" : "(40)smtp4.google.com",
+                        "rr_name" : "google.com",
+                        "rr_type" : "Answer",
+                        "ttl" : 552,
+                        "type" : "MX"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RECURSION DESIRED",
+                           "RECURSION AVAILABLE"
+                        ],
+                        "packet_uid" : 63343,
+                        "rdata" : "(10)smtp5.google.com",
+                        "rr_name" : "google.com",
+                        "rr_type" : "Answer",
+                        "ttl" : 552,
+                        "type" : "MX"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RECURSION DESIRED",
+                           "RECURSION AVAILABLE"
+                        ],
+                        "packet_uid" : 63343,
+                        "rdata" : "(10)smtp6.google.com",
+                        "rr_name" : "google.com",
+                        "rr_type" : "Answer",
+                        "ttl" : 552,
+                        "type" : "MX"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RECURSION DESIRED",
+                           "RECURSION AVAILABLE"
+                        ],
+                        "packet_uid" : 63343,
+                        "rdata" : "(10)smtp1.google.com",
+                        "rr_name" : "google.com",
+                        "rr_type" : "Answer",
+                        "ttl" : 552,
+                        "type" : "MX"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RECURSION DESIRED",
+                           "RECURSION AVAILABLE"
+                        ],
+                        "packet_uid" : 63343,
+                        "rdata" : "(10)smtp2.google.com",
+                        "rr_name" : "google.com",
+                        "rr_type" : "Answer",
+                        "ttl" : 552,
+                        "type" : "MX"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RECURSION DESIRED",
+                           "RECURSION AVAILABLE"
+                        ],
+                        "packet_uid" : 63343,
+                        "rdata" : "(40)smtp3.google.com",
+                        "rr_name" : "google.com",
+                        "rr_type" : "Answer",
+                        "ttl" : 552,
+                        "type" : "MX"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RECURSION DESIRED",
+                           "RECURSION AVAILABLE"
+                        ],
+                        "packet_uid" : 63343,
+                        "rdata" : "216.239.37.26",
+                        "rr_name" : "smtp4.google.com",
+                        "rr_type" : "Additional",
+                        "ttl" : 600,
+                        "type" : "A"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RECURSION DESIRED",
+                           "RECURSION AVAILABLE"
+                        ],
+                        "packet_uid" : 63343,
+                        "rdata" : "64.233.167.25",
+                        "rr_name" : "smtp5.google.com",
+                        "rr_type" : "Additional",
+                        "ttl" : 600,
+                        "type" : "A"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RECURSION DESIRED",
+                           "RECURSION AVAILABLE"
+                        ],
+                        "packet_uid" : 63343,
+                        "rdata" : "66.102.9.25",
+                        "rr_name" : "smtp6.google.com",
+                        "rr_type" : "Additional",
+                        "ttl" : 600,
+                        "type" : "A"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RECURSION DESIRED",
+                           "RECURSION AVAILABLE"
+                        ],
+                        "packet_uid" : 63343,
+                        "rdata" : "216.239.57.25",
+                        "rr_name" : "smtp1.google.com",
+                        "rr_type" : "Additional",
+                        "ttl" : 600,
+                        "type" : "A"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RECURSION DESIRED",
+                           "RECURSION AVAILABLE"
+                        ],
+                        "packet_uid" : 63343,
+                        "rdata" : "216.239.37.25",
+                        "rr_name" : "smtp2.google.com",
+                        "rr_type" : "Additional",
+                        "ttl" : 600,
+                        "type" : "A"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RECURSION DESIRED",
+                           "RECURSION AVAILABLE"
+                        ],
+                        "packet_uid" : 63343,
+                        "rdata" : "216.239.57.26",
+                        "rr_name" : "smtp3.google.com",
+                        "rr_type" : "Additional",
+                        "ttl" : 600,
+                        "type" : "A"
+                     }
+                  ],
+                  "answersCnt" : 12,
+                  "query" : {
+                     "class" : "IN",
+                     "hostname" : "google.com",
+                     "opcode" : "QUERY",
+                     "opcode_id" : 0,
+                     "packet_uid" : 63343,
+                     "type" : "MX"
+                  },
+                  "rcode" : "NOERROR",
+                  "rcode_id" : 0
+               },
+               {
+                  "answersCnt" : 0,
+                  "query" : {
+                     "class" : "IN",
+                     "hostname" : "www.example.com",
+                     "opcode" : "QUERY",
+                     "opcode_id" : 0,
+                     "packet_uid" : 48159,
+                     "type" : "AAAA"
+                  },
+                  "rcode" : "NOERROR",
+                  "rcode_id" : 0
+               },
+               {
+                  "answersCnt" : 0,
+                  "query" : {
+                     "class" : "IN",
+                     "hostname" : "google.com",
+                     "opcode" : "QUERY",
+                     "opcode_id" : 0,
+                     "packet_uid" : 18849,
+                     "type" : "LOC"
+                  },
+                  "rcode" : "NOERROR",
+                  "rcode_id" : 0
+               },
+               {
+                  "answers" : [
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RECURSION DESIRED",
+                           "RECURSION AVAILABLE"
+                        ],
+                        "packet_uid" : 65251,
+                        "rdata" : "2001:04f8:0000:0002:0000:0000:0000:000d",
+                        "rr_name" : "www.isc.org",
+                        "rr_type" : "Answer",
+                        "ttl" : 600,
+                        "type" : "AAAA"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RECURSION DESIRED",
+                           "RECURSION AVAILABLE"
+                        ],
+                        "packet_uid" : 65251,
+                        "rdata" : "204.152.184.88",
+                        "rr_name" : "www.isc.org",
+                        "rr_type" : "Answer",
+                        "ttl" : 600,
+                        "type" : "A"
+                     }
+                  ],
+                  "answersCnt" : 2,
+                  "query" : {
+                     "class" : "IN",
+                     "hostname" : "www.isc.org",
+                     "opcode" : "QUERY",
+                     "opcode_id" : 0,
+                     "packet_uid" : 65251,
+                     "type" : "ANY"
+                  },
+                  "rcode" : "NOERROR",
+                  "rcode_id" : 0
+               },
+               {
+                  "answers" : [
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RECURSION DESIRED",
+                           "RECURSION AVAILABLE"
+                        ],
+                        "packet_uid" : 39867,
+                        "rr_name" : "104.9.192.66.in-addr.arpa",
+                        "rr_type" : "Answer",
+                        "ttl" : 86309,
+                        "type" : "PTR"
+                     }
+                  ],
+                  "answersCnt" : 1,
+                  "query" : {
+                     "class" : "IN",
+                     "hostname" : "104.9.192.66.in-addr.arpa",
+                     "opcode" : "QUERY",
+                     "opcode_id" : 0,
+                     "packet_uid" : 39867,
+                     "type" : "PTR"
+                  },
+                  "rcode" : "NOERROR",
+                  "rcode_id" : 0
+               }
+            ],
+            "ocsfdnsCnt" : 12,
             "packetLen" : [
                86,
                114,
@@ -276,6 +710,37 @@
                "packets" : 2
             },
             "node" : "test",
+            "ocsfdns" : [
+               {
+                  "answers" : [
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "AUTHORITATIVE ANSWER",
+                           "RECURSION DESIRED",
+                           "RECURSION AVAILABLE"
+                        ],
+                        "packet_uid" : 23123,
+                        "rr_name" : "1.0.0.127.in-addr.arpa",
+                        "rr_type" : "Answer",
+                        "ttl" : 3600,
+                        "type" : "PTR"
+                     }
+                  ],
+                  "answersCnt" : 1,
+                  "query" : {
+                     "class" : "IN",
+                     "hostname" : "1.0.0.127.in-addr.arpa",
+                     "opcode" : "QUERY",
+                     "opcode_id" : 0,
+                     "packet_uid" : 23123,
+                     "type" : "PTR"
+                  },
+                  "rcode" : "NOERROR",
+                  "rcode_id" : 0
+               }
+            ],
+            "ocsfdnsCnt" : 1,
             "packetLen" : [
                98,
                121
@@ -379,6 +844,76 @@
                "packets" : 2
             },
             "node" : "test",
+            "ocsfdns" : [
+               {
+                  "answers" : [
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RECURSION DESIRED",
+                           "RECURSION AVAILABLE"
+                        ],
+                        "packet_uid" : 8330,
+                        "rdata" : "ns-ext.nrt1.isc.org",
+                        "rr_name" : "isc.org",
+                        "rr_type" : "Answer",
+                        "ttl" : 3600,
+                        "type" : "NS"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RECURSION DESIRED",
+                           "RECURSION AVAILABLE"
+                        ],
+                        "packet_uid" : 8330,
+                        "rdata" : "ns-ext.sth1.isc.org",
+                        "rr_name" : "isc.org",
+                        "rr_type" : "Answer",
+                        "ttl" : 3600,
+                        "type" : "NS"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RECURSION DESIRED",
+                           "RECURSION AVAILABLE"
+                        ],
+                        "packet_uid" : 8330,
+                        "rdata" : "ns-ext.isc.org",
+                        "rr_name" : "isc.org",
+                        "rr_type" : "Answer",
+                        "ttl" : 3600,
+                        "type" : "NS"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RECURSION DESIRED",
+                           "RECURSION AVAILABLE"
+                        ],
+                        "packet_uid" : 8330,
+                        "rdata" : "ns-ext.lga1.isc.org",
+                        "rr_name" : "isc.org",
+                        "rr_type" : "Answer",
+                        "ttl" : 3600,
+                        "type" : "NS"
+                     }
+                  ],
+                  "answersCnt" : 4,
+                  "query" : {
+                     "class" : "IN",
+                     "hostname" : "isc.org",
+                     "opcode" : "QUERY",
+                     "opcode_id" : 0,
+                     "packet_uid" : 8330,
+                     "type" : "NS"
+                  },
+                  "rcode" : "NOERROR",
+                  "rcode_id" : 0
+               }
+            ],
+            "ocsfdnsCnt" : 1,
             "packetLen" : [
                83,
                182
@@ -485,6 +1020,22 @@
                "packets" : 2
             },
             "node" : "test",
+            "ocsfdns" : [
+               {
+                  "answersCnt" : 0,
+                  "query" : {
+                     "class" : "IN",
+                     "hostname" : "_ldap._tcp.default-first-site-name._sites.dc._msdcs.utelsystems.local",
+                     "opcode" : "QUERY",
+                     "opcode_id" : 0,
+                     "packet_uid" : 12910,
+                     "type" : "SRV"
+                  },
+                  "rcode" : "NXDOMAIN",
+                  "rcode_id" : 3
+               }
+            ],
+            "ocsfdnsCnt" : 1,
             "packetLen" : [
                145,
                145
@@ -591,6 +1142,22 @@
                "packets" : 2
             },
             "node" : "test",
+            "ocsfdns" : [
+               {
+                  "answersCnt" : 0,
+                  "query" : {
+                     "class" : "IN",
+                     "hostname" : "_ldap._tcp.dc._msdcs.utelsystems.local",
+                     "opcode" : "QUERY",
+                     "opcode_id" : 0,
+                     "packet_uid" : 61793,
+                     "type" : "SRV"
+                  },
+                  "rcode" : "NXDOMAIN",
+                  "rcode_id" : 3
+               }
+            ],
+            "ocsfdnsCnt" : 1,
             "packetLen" : [
                114,
                114
@@ -697,6 +1264,22 @@
                "packets" : 2
             },
             "node" : "test",
+            "ocsfdns" : [
+               {
+                  "answersCnt" : 0,
+                  "query" : {
+                     "class" : "IN",
+                     "hostname" : "_ldap._tcp.05b5292b-34b8-4fb7-85a3-8beef5fd2069.domains._msdcs.utelsystems.local",
+                     "opcode" : "QUERY",
+                     "opcode_id" : 0,
+                     "packet_uid" : 33633,
+                     "type" : "SRV"
+                  },
+                  "rcode" : "NXDOMAIN",
+                  "rcode_id" : 3
+               }
+            ],
+            "ocsfdnsCnt" : 1,
             "packetLen" : [
                156,
                156
@@ -803,6 +1386,22 @@
                "packets" : 2
             },
             "node" : "test",
+            "ocsfdns" : [
+               {
+                  "answersCnt" : 0,
+                  "query" : {
+                     "class" : "IN",
+                     "hostname" : "grimm.utelsystems.local",
+                     "opcode" : "QUERY",
+                     "opcode_id" : 0,
+                     "packet_uid" : 53344,
+                     "type" : "A"
+                  },
+                  "rcode" : "NXDOMAIN",
+                  "rcode_id" : 3
+               }
+            ],
+            "ocsfdnsCnt" : 1,
             "packetLen" : [
                99,
                99
@@ -909,6 +1508,22 @@
                "packets" : 2
             },
             "node" : "test",
+            "ocsfdns" : [
+               {
+                  "answersCnt" : 0,
+                  "query" : {
+                     "class" : "IN",
+                     "hostname" : "grimm.utelsystems.local",
+                     "opcode" : "QUERY",
+                     "opcode_id" : 0,
+                     "packet_uid" : 30307,
+                     "type" : "A"
+                  },
+                  "rcode" : "NXDOMAIN",
+                  "rcode_id" : 3
+               }
+            ],
+            "ocsfdnsCnt" : 1,
             "packetLen" : [
                99,
                99

@@ -92,6 +92,66 @@
                }
             },
             "node" : "test",
+            "ocsfdns" : [
+               {
+                  "answers" : [
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RECURSION DESIRED",
+                           "RECURSION AVAILABLE",
+                           "CHECKING DISABLED"
+                        ],
+                        "packet_uid" : 23214,
+                        "rdata" : "91.189.90.40",
+                        "rr_name" : "start.ubuntu.com",
+                        "rr_type" : "Answer",
+                        "ttl" : 491,
+                        "type" : "A"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RECURSION DESIRED",
+                           "RECURSION AVAILABLE",
+                           "CHECKING DISABLED"
+                        ],
+                        "packet_uid" : 23214,
+                        "rdata" : "91.189.90.41",
+                        "rr_name" : "start.ubuntu.com",
+                        "rr_type" : "Answer",
+                        "ttl" : 491,
+                        "type" : "A"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RECURSION DESIRED",
+                           "RECURSION AVAILABLE",
+                           "CHECKING DISABLED"
+                        ],
+                        "packet_uid" : 23214,
+                        "rdata" : "91.189.89.88",
+                        "rr_name" : "start.ubuntu.com",
+                        "rr_type" : "Answer",
+                        "ttl" : 491,
+                        "type" : "A"
+                     }
+                  ],
+                  "answersCnt" : 3,
+                  "query" : {
+                     "class" : "IN",
+                     "hostname" : "start.ubuntu.com",
+                     "opcode" : "QUERY",
+                     "opcode_id" : 0,
+                     "packet_uid" : 23214,
+                     "type" : "A"
+                  },
+                  "rcode" : "NOERROR",
+                  "rcode_id" : 0
+               }
+            ],
+            "ocsfdnsCnt" : 1,
             "packetLen" : [
                151,
                107

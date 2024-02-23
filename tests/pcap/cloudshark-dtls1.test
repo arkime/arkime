@@ -296,6 +296,517 @@
                "packets" : 2
             },
             "node" : "test",
+            "ocsfdns" : [
+               {
+                  "answers" : [
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "AUTHORITATIVE ANSWER",
+                           "RECURSION DESIRED"
+                        ],
+                        "packet_uid" : 10043,
+                        "rdata" : "a.root-servers.net",
+                        "rr_name" : "<root>",
+                        "rr_type" : "Answer",
+                        "ttl" : 518400,
+                        "type" : "NS"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "AUTHORITATIVE ANSWER",
+                           "RECURSION DESIRED"
+                        ],
+                        "packet_uid" : 10043,
+                        "rdata" : "b.root-servers.net",
+                        "rr_name" : "<root>",
+                        "rr_type" : "Answer",
+                        "ttl" : 518400,
+                        "type" : "NS"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "AUTHORITATIVE ANSWER",
+                           "RECURSION DESIRED"
+                        ],
+                        "packet_uid" : 10043,
+                        "rdata" : "c.root-servers.net",
+                        "rr_name" : "<root>",
+                        "rr_type" : "Answer",
+                        "ttl" : 518400,
+                        "type" : "NS"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "AUTHORITATIVE ANSWER",
+                           "RECURSION DESIRED"
+                        ],
+                        "packet_uid" : 10043,
+                        "rdata" : "d.root-servers.net",
+                        "rr_name" : "<root>",
+                        "rr_type" : "Answer",
+                        "ttl" : 518400,
+                        "type" : "NS"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "AUTHORITATIVE ANSWER",
+                           "RECURSION DESIRED"
+                        ],
+                        "packet_uid" : 10043,
+                        "rdata" : "e.root-servers.net",
+                        "rr_name" : "<root>",
+                        "rr_type" : "Answer",
+                        "ttl" : 518400,
+                        "type" : "NS"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "AUTHORITATIVE ANSWER",
+                           "RECURSION DESIRED"
+                        ],
+                        "packet_uid" : 10043,
+                        "rdata" : "f.root-servers.net",
+                        "rr_name" : "<root>",
+                        "rr_type" : "Answer",
+                        "ttl" : 518400,
+                        "type" : "NS"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "AUTHORITATIVE ANSWER",
+                           "RECURSION DESIRED"
+                        ],
+                        "packet_uid" : 10043,
+                        "rdata" : "g.root-servers.net",
+                        "rr_name" : "<root>",
+                        "rr_type" : "Answer",
+                        "ttl" : 518400,
+                        "type" : "NS"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "AUTHORITATIVE ANSWER",
+                           "RECURSION DESIRED"
+                        ],
+                        "packet_uid" : 10043,
+                        "rdata" : "h.root-servers.net",
+                        "rr_name" : "<root>",
+                        "rr_type" : "Answer",
+                        "ttl" : 518400,
+                        "type" : "NS"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "AUTHORITATIVE ANSWER",
+                           "RECURSION DESIRED"
+                        ],
+                        "packet_uid" : 10043,
+                        "rdata" : "i.root-servers.net",
+                        "rr_name" : "<root>",
+                        "rr_type" : "Answer",
+                        "ttl" : 518400,
+                        "type" : "NS"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "AUTHORITATIVE ANSWER",
+                           "RECURSION DESIRED"
+                        ],
+                        "packet_uid" : 10043,
+                        "rdata" : "j.root-servers.net",
+                        "rr_name" : "<root>",
+                        "rr_type" : "Answer",
+                        "ttl" : 518400,
+                        "type" : "NS"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "AUTHORITATIVE ANSWER",
+                           "RECURSION DESIRED"
+                        ],
+                        "packet_uid" : 10043,
+                        "rdata" : "k.root-servers.net",
+                        "rr_name" : "<root>",
+                        "rr_type" : "Answer",
+                        "ttl" : 518400,
+                        "type" : "NS"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "AUTHORITATIVE ANSWER",
+                           "RECURSION DESIRED"
+                        ],
+                        "packet_uid" : 10043,
+                        "rdata" : "l.root-servers.net",
+                        "rr_name" : "<root>",
+                        "rr_type" : "Answer",
+                        "ttl" : 518400,
+                        "type" : "NS"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "AUTHORITATIVE ANSWER",
+                           "RECURSION DESIRED"
+                        ],
+                        "packet_uid" : 10043,
+                        "rdata" : "m.root-servers.net",
+                        "rr_name" : "<root>",
+                        "rr_type" : "Answer",
+                        "ttl" : 518400,
+                        "type" : "NS"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "AUTHORITATIVE ANSWER",
+                           "RECURSION DESIRED"
+                        ],
+                        "packet_uid" : 10043,
+                        "rr_name" : "<root>",
+                        "rr_type" : "Answer",
+                        "ttl" : 518400,
+                        "type" : "RRSIG"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "AUTHORITATIVE ANSWER",
+                           "RECURSION DESIRED"
+                        ],
+                        "packet_uid" : 10043,
+                        "rdata" : "198.41.0.4",
+                        "rr_name" : "a.root-servers.net",
+                        "rr_type" : "Additional",
+                        "ttl" : 518400,
+                        "type" : "A"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "AUTHORITATIVE ANSWER",
+                           "RECURSION DESIRED"
+                        ],
+                        "packet_uid" : 10043,
+                        "rdata" : "192.228.79.201",
+                        "rr_name" : "b.root-servers.net",
+                        "rr_type" : "Additional",
+                        "ttl" : 518400,
+                        "type" : "A"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "AUTHORITATIVE ANSWER",
+                           "RECURSION DESIRED"
+                        ],
+                        "packet_uid" : 10043,
+                        "rdata" : "192.33.4.12",
+                        "rr_name" : "c.root-servers.net",
+                        "rr_type" : "Additional",
+                        "ttl" : 518400,
+                        "type" : "A"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "AUTHORITATIVE ANSWER",
+                           "RECURSION DESIRED"
+                        ],
+                        "packet_uid" : 10043,
+                        "rdata" : "199.7.91.13",
+                        "rr_name" : "d.root-servers.net",
+                        "rr_type" : "Additional",
+                        "ttl" : 518400,
+                        "type" : "A"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "AUTHORITATIVE ANSWER",
+                           "RECURSION DESIRED"
+                        ],
+                        "packet_uid" : 10043,
+                        "rdata" : "192.203.230.10",
+                        "rr_name" : "e.root-servers.net",
+                        "rr_type" : "Additional",
+                        "ttl" : 518400,
+                        "type" : "A"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "AUTHORITATIVE ANSWER",
+                           "RECURSION DESIRED"
+                        ],
+                        "packet_uid" : 10043,
+                        "rdata" : "192.5.5.241",
+                        "rr_name" : "f.root-servers.net",
+                        "rr_type" : "Additional",
+                        "ttl" : 518400,
+                        "type" : "A"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "AUTHORITATIVE ANSWER",
+                           "RECURSION DESIRED"
+                        ],
+                        "packet_uid" : 10043,
+                        "rdata" : "192.112.36.4",
+                        "rr_name" : "g.root-servers.net",
+                        "rr_type" : "Additional",
+                        "ttl" : 518400,
+                        "type" : "A"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "AUTHORITATIVE ANSWER",
+                           "RECURSION DESIRED"
+                        ],
+                        "packet_uid" : 10043,
+                        "rdata" : "128.63.2.53",
+                        "rr_name" : "h.root-servers.net",
+                        "rr_type" : "Additional",
+                        "ttl" : 518400,
+                        "type" : "A"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "AUTHORITATIVE ANSWER",
+                           "RECURSION DESIRED"
+                        ],
+                        "packet_uid" : 10043,
+                        "rdata" : "192.36.148.17",
+                        "rr_name" : "i.root-servers.net",
+                        "rr_type" : "Additional",
+                        "ttl" : 518400,
+                        "type" : "A"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "AUTHORITATIVE ANSWER",
+                           "RECURSION DESIRED"
+                        ],
+                        "packet_uid" : 10043,
+                        "rdata" : "192.58.128.30",
+                        "rr_name" : "j.root-servers.net",
+                        "rr_type" : "Additional",
+                        "ttl" : 518400,
+                        "type" : "A"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "AUTHORITATIVE ANSWER",
+                           "RECURSION DESIRED"
+                        ],
+                        "packet_uid" : 10043,
+                        "rdata" : "193.0.14.129",
+                        "rr_name" : "k.root-servers.net",
+                        "rr_type" : "Additional",
+                        "ttl" : 518400,
+                        "type" : "A"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "AUTHORITATIVE ANSWER",
+                           "RECURSION DESIRED"
+                        ],
+                        "packet_uid" : 10043,
+                        "rdata" : "199.7.83.42",
+                        "rr_name" : "l.root-servers.net",
+                        "rr_type" : "Additional",
+                        "ttl" : 518400,
+                        "type" : "A"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "AUTHORITATIVE ANSWER",
+                           "RECURSION DESIRED"
+                        ],
+                        "packet_uid" : 10043,
+                        "rdata" : "202.12.27.33",
+                        "rr_name" : "m.root-servers.net",
+                        "rr_type" : "Additional",
+                        "ttl" : 518400,
+                        "type" : "A"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "AUTHORITATIVE ANSWER",
+                           "RECURSION DESIRED"
+                        ],
+                        "packet_uid" : 10043,
+                        "rdata" : "2001:0503:ba3e:0000:0000:0000:0002:0030",
+                        "rr_name" : "a.root-servers.net",
+                        "rr_type" : "Additional",
+                        "ttl" : 518400,
+                        "type" : "AAAA"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "AUTHORITATIVE ANSWER",
+                           "RECURSION DESIRED"
+                        ],
+                        "packet_uid" : 10043,
+                        "rdata" : "2001:0500:0084:0000:0000:0000:0000:000b",
+                        "rr_name" : "b.root-servers.net",
+                        "rr_type" : "Additional",
+                        "ttl" : 518400,
+                        "type" : "AAAA"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "AUTHORITATIVE ANSWER",
+                           "RECURSION DESIRED"
+                        ],
+                        "packet_uid" : 10043,
+                        "rdata" : "2001:0500:0002:0000:0000:0000:0000:000c",
+                        "rr_name" : "c.root-servers.net",
+                        "rr_type" : "Additional",
+                        "ttl" : 518400,
+                        "type" : "AAAA"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "AUTHORITATIVE ANSWER",
+                           "RECURSION DESIRED"
+                        ],
+                        "packet_uid" : 10043,
+                        "rdata" : "2001:0500:002d:0000:0000:0000:0000:000d",
+                        "rr_name" : "d.root-servers.net",
+                        "rr_type" : "Additional",
+                        "ttl" : 518400,
+                        "type" : "AAAA"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "AUTHORITATIVE ANSWER",
+                           "RECURSION DESIRED"
+                        ],
+                        "packet_uid" : 10043,
+                        "rdata" : "2001:0500:002f:0000:0000:0000:0000:000f",
+                        "rr_name" : "f.root-servers.net",
+                        "rr_type" : "Additional",
+                        "ttl" : 518400,
+                        "type" : "AAAA"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "AUTHORITATIVE ANSWER",
+                           "RECURSION DESIRED"
+                        ],
+                        "packet_uid" : 10043,
+                        "rdata" : "2001:0500:0001:0000:0000:0000:803f:0235",
+                        "rr_name" : "h.root-servers.net",
+                        "rr_type" : "Additional",
+                        "ttl" : 518400,
+                        "type" : "AAAA"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "AUTHORITATIVE ANSWER",
+                           "RECURSION DESIRED"
+                        ],
+                        "packet_uid" : 10043,
+                        "rdata" : "2001:07fe:0000:0000:0000:0000:0000:0053",
+                        "rr_name" : "i.root-servers.net",
+                        "rr_type" : "Additional",
+                        "ttl" : 518400,
+                        "type" : "AAAA"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "AUTHORITATIVE ANSWER",
+                           "RECURSION DESIRED"
+                        ],
+                        "packet_uid" : 10043,
+                        "rdata" : "2001:0503:0c27:0000:0000:0000:0002:0030",
+                        "rr_name" : "j.root-servers.net",
+                        "rr_type" : "Additional",
+                        "ttl" : 518400,
+                        "type" : "AAAA"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "AUTHORITATIVE ANSWER",
+                           "RECURSION DESIRED"
+                        ],
+                        "packet_uid" : 10043,
+                        "rdata" : "2001:07fd:0000:0000:0000:0000:0000:0001",
+                        "rr_name" : "k.root-servers.net",
+                        "rr_type" : "Additional",
+                        "ttl" : 518400,
+                        "type" : "AAAA"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "AUTHORITATIVE ANSWER",
+                           "RECURSION DESIRED"
+                        ],
+                        "packet_uid" : 10043,
+                        "rdata" : "2001:0500:0003:0000:0000:0000:0000:0042",
+                        "rr_name" : "l.root-servers.net",
+                        "rr_type" : "Additional",
+                        "ttl" : 518400,
+                        "type" : "AAAA"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "AUTHORITATIVE ANSWER",
+                           "RECURSION DESIRED"
+                        ],
+                        "packet_uid" : 10043,
+                        "rdata" : "2001:0dc3:0000:0000:0000:0000:0000:0035",
+                        "rr_name" : "m.root-servers.net",
+                        "rr_type" : "Additional",
+                        "ttl" : 518400,
+                        "type" : "AAAA"
+                     }
+                  ],
+                  "answersCnt" : 38,
+                  "query" : {
+                     "class" : "IN",
+                     "hostname" : "<root>",
+                     "opcode" : "QUERY",
+                     "opcode_id" : 0,
+                     "packet_uid" : 10043,
+                     "type" : "NS"
+                  },
+                  "rcode" : "NOERROR",
+                  "rcode_id" : 0
+               }
+            ],
+            "ocsfdnsCnt" : 1,
             "packetLen" : [
                86,
                971

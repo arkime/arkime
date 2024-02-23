@@ -1,0 +1,64 @@
+if (session.ocsfdns)
+  each event in session.ocsfdns
+    div.sessionDetailMeta.bold DNS #{event.query.hostname}
+    dl.sessionDetailMeta(suffix="ocsfdns")
+      dt
+        +clickableLabel("ocsfdns.hostname", "Hostname")
+      dd
+        +clickableValue("ocsfdns.hostname", event.query.hostname)
+      dt
+        +clickableLabel("ocsfdns.opcode", "Opcode")
+      dd
+        +clickableValue("ocsfdns.opcode", event.query.opcode)
+      dt
+        +clickableLabel("ocsfdns.queryType", "Query Type")
+      dd
+        +clickableValue("ocsfdns.queryType", event.query.type)
+      dt
+        +clickableLabel("ocsfdns.packetUID", "Query Packet UID")
+      dd
+        +clickableValue("ocsfdns.packetUID", event.query.packet_uid)
+      if (event.rcode)
+        dt
+          +clickableLabel("ocsfdns.responseCode", "Response Code")
+        dd
+          +clickableValue("ocsfdns.responseCode", event.rcode)
+        if (event.answersCnt > 0)
+          dt
+            div Answers
+          dd
+            div.detail-field &nbsp; 
+          each answer,i in event.answers
+            dt
+              div #{answer.rr_type}
+            dd
+              div.detail-field #{i}
+            dt
+              +clickableLabel("ocsfdns.answerType", "Answer Type")
+            dd
+              +clickableValue("ocsfdns.answerType", answer.type)
+            dt
+              +clickableLabel("ocsfdns.answerClass", "Answer Class")
+            dd
+              +clickableValue("ocsfdns.answerClass", answer.class)
+            dt
+              +clickableLabel("ocsfdns.answerTTL", "Answer TTL")
+            dd
+              +clickableValue("ocsfdns.answerTTL", answer.ttl)
+            dt
+              +clickableLabel("ocsfdns.answerPacketUID", "Answer Packet UID")
+            dd
+              +clickableValue("ocsfdns.answerPacketUID", answer.packet_uid)
+            +arrayList(answer, 'flags', "Answer Flags", "ocsfdns.answerFlags")
+            if (answer.rdata)
+              dt
+                +clickableLabel("ocsfdns.answerRDATA", "Answer RDATA")
+              dd
+                +clickableValue("ocsfdns.answerRDATA", answer.rdata)
+            if (answer.rr_name != event.query.hostname)
+              dt
+                +clickableLabel("ocsfdns.answerRRName", "RR Name")
+              dd
+                +clickableValue("ocsfdns.answerRRName", answer.rr_name)
+
+

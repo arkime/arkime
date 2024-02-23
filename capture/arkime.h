@@ -888,6 +888,7 @@ void     arkime_db_exit();
 void     arkime_db_oui_lookup(int field, ArkimeSession_t *session, const uint8_t *mac);
 gchar   *arkime_db_community_id(ArkimeSession_t *session);
 void     arkime_db_js0n_str(BSB *bsb, uint8_t *in, gboolean utf8);
+void     arkime_db_js0n_str_unquoted(BSB *bsb, uint8_t *in, int len, gboolean utf8);
 
 
 // Replace how SPI data is sent to ES.

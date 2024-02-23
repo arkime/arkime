@@ -89,7 +89,7 @@ sub sortObj {
             sortObj($key, $obj->{$key});
         } elsif ($r eq "ARRAY") {
             next if (scalar (@{$obj->{$key}}) < 2);
-            next if ($key =~ /(packetPos|packetLen|cert)/);
+            next if ($key =~ /(packetPos|packetLen|cert|ocsfdns)/);
             if ("$parentkey.$key" =~ /vlan.id|http.statuscode|icmp.type|icmp.code/) {
                 my @tmp = sort { $a <=> $b } (@{$obj->{$key}});
                 $obj->{$key} = \@tmp;
@@ -213,6 +213,17 @@ my ($json) = @_;
             for (my $i = 0; $i < @{$body->{dns}->{mailserverIp}}; $i++) {
                 if ($body->{dns}->{mailserverIp}[$i] =~ /:/) {
                     $body->{dns}->{mailserverIp}[$i] = join ":", (unpack("H*", inet_pton(AF_INET6, $body->{dns}->{mailserverIp}[$i])) =~ m/(....)/g );
+                }
+            }
+        }
+        if (exists $body->{ocsfdns}) {
+            for (my $i = 0; $i < @{$body->{ocsfdns}}; $i++) {
+                if (exists $body->{ocsfdns}[$i]->{answers}) {
+                    for (my $j = 0; $j < @{$body->{ocsfdns}[$i]->{answers}}; $j++) {
+                        if (exists $body->{ocsfdns}[$i]->{answers}[$j]->{rdata} && $body->{ocsfdns}[$i]->{answers}[$j]->{rdata} =~ /:/) {
+                            $body->{ocsfdns}[$i]->{answers}[$j]->{rdata} = join ":", (unpack("H*", inet_pton(AF_INET6, $body->{ocsfdns}[$i]->{answers}[$j]->{rdata})) =~ m/(....)/g );
+                        }
+                    }
                 }
             }
         }
