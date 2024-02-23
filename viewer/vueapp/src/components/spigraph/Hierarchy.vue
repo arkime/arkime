@@ -914,7 +914,7 @@ export default {
       this.$emit('toggleLoad', true);
       this.$emit('toggleError', '');
 
-      // create unique cancel id to make canel req for corresponding es task
+      // create unique cancel id to make cancel req for corresponding es task
       const cancelId = Utils.createRandomString();
       const source = Vue.axios.CancelToken.source();
 
@@ -954,7 +954,8 @@ export default {
           this.tableData = response.data.tableResults;
           this.sortTable();
           this.applyColorsToTableData(response.data.tableResults);
-          this.showHiddenColumns(); // initializes resizeable cols
+          this.showHiddenColumns(); // initializes resizable cols
+          this.$emit('fetchedResults', response.data.tableResults, this.fieldTypeaheadList, this.baseFieldObj);
         });
       }).catch((error) => {
         pendingPromise = null;

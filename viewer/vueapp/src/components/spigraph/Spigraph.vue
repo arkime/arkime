@@ -129,6 +129,15 @@ SPDX-License-Identifier: Apache-2.0
                 {{ recordsTotal | commaString }} total entries
               </strong>
             </div>
+
+            <!-- export button-->
+            <button
+              v-if="spiGraphType !== 'default'"
+              class="btn btn-default btn-sm ml-1"
+              v-b-tooltip.hover.top="'Export this data as a CSV file'"
+              @click.stop.prevent="exportCSV">
+              <span class="fa fa-download"></span>
+            </button> <!-- /export button-->
           </div>
         </form>
       </span>
@@ -158,7 +167,8 @@ SPDX-License-Identifier: Apache-2.0
           :query="query"
           :spiGraphType="spiGraphType"
           @toggleLoad="toggleLoad"
-          @toggleError="toggleError">
+          @toggleError="toggleError"
+          @fetchedResults="fetchedResults">
         </arkime-pie>
 
       </div> <!-- /pie graph type -->
@@ -284,7 +294,10 @@ export default {
       fieldTypeahead: 'node',
       baseField: this.$route.query.exp || this.$route.query.field || this.$store.state.user.settings.spiGraph || 'node',
       sortBy: this.$route.query.sort || 'graph',
-      spiGraphType: this.$route.query.spiGraphType || 'default'
+      spiGraphType: this.$route.query.spiGraphType || 'default',
+      tableResults: [],
+      fieldTypeaheadList: [],
+      baseFieldObj: {}
     };
   },
   computed: {
@@ -449,6 +462,49 @@ export default {
         }
       });
     },
+    fetchedResults: function (tableResults, fieldTypeaheadList, baseFieldObj) {
+      this.fieldTypeaheadList = fieldTypeaheadList;
+      this.tableResults = tableResults;
+      this.baseFieldObj = baseFieldObj;
+    },
+    exportCSV () {
+      let fieldList = [this.baseFieldObj.friendlyName];
+      fieldList = fieldList.concat(this.fieldTypeaheadList.map(f => f.friendlyName));
+
+      let csv = '';
+      if (this.tableResults.length) {
+        const keys = ['name', 'size'];
+
+        // add the headers
+        fieldList.forEach((field) => {
+          keys.forEach((key) => {
+            csv += `${field} ${key === 'name' ? 'value' : 'count'},`;
+          });
+        });
+
+        csv = csv.slice(0, -1); // remove trailing comma
+        csv += '\n'; // newline for next row
+
+        // add the values
+        this.tableResults.forEach((row) => {
+          csv += row.parents.map(p => {
+            return keys.map(key => p[key]).join(',');
+          }).join(',');
+          if (row.parents.length) {
+            csv += ',';
+          }
+          csv += keys.map(key => row[key]).join(',') + '\n';
+        });
+      }
+
+      const blob = new Blob([csv], { type: 'text/csv' });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'spigraph.csv';
+      a.click();
+      window.URL.revokeObjectURL(url);
+    },
     /* event functions ----------------------------------------------------- */
     changeField: function (field) {
       this.fieldTypeahead = field.friendlyName;
@@ -489,7 +545,7 @@ export default {
         this.query.map = true;
       }
 
-      // create unique cancel id to make canel req for corresponding es task
+      // create unique cancel id to make cancel req for corresponding es task
       const cancelId = Utils.createRandomString();
       this.query.cancelId = cancelId;
 
