@@ -1320,13 +1320,16 @@ void arkime_field_macoui_add(ArkimeSession_t *session, int macField, int ouiFiel
 /******************************************************************************/
 void arkime_field_free(ArkimeSession_t *session)
 {
-    int                       pos;
-    ArkimeString_t           *hstring;
-    ArkimeStringHashStd_t    *shash;
-    ArkimeInt_t              *hint;
-    ArkimeIntHashStd_t       *ihash;
-    ArkimeCertsInfo_t        *hci;
-    ArkimeCertsInfoHashStd_t *cihash;
+    int                         pos;
+    ArkimeString_t             *hstring;
+    ArkimeStringHashStd_t      *shash;
+    ArkimeInt_t                *hint;
+    ArkimeIntHashStd_t         *ihash;
+    ArkimeCertsInfo_t          *hci;
+    ArkimeCertsInfoHashStd_t   *cihash;
+    ArkimeFieldObject_t        *ho;
+    ArkimeFieldObjectHashStd_t *ohash;
+    ArkimeFieldObjectFreeFunc   freeCB;
 
     for (pos = 0; pos < session->maxFields; pos++) {
         ArkimeField_t        *field;
@@ -1382,6 +1385,15 @@ void arkime_field_free(ArkimeSession_t *session)
             }
             ARKIME_TYPE_FREE(ArkimeCertsInfoHashStd_t, cihash);
             break;
+        case ARKIME_FIELD_TYPE_OBJECT: {
+            freeCB = config.fields[pos]->object_free;
+            ohash = session->fields[pos]->ohash;
+            HASH_FORALL_POP_HEAD2(o_, *ohash, ho) {
+                freeCB(ho);
+            }
+            ARKIME_TYPE_FREE(ArkimeFieldObjectHashStd_t, ohash);
+        }
+        break;
         } // switch
         ARKIME_TYPE_FREE(ArkimeField_t, session->fields[pos]);
     }
@@ -1445,6 +1457,78 @@ void arkime_field_certsinfo_free (ArkimeCertsInfo_t *certs)
     ARKIME_TYPE_FREE(ArkimeCertsInfo_t, certs);
 }
 /******************************************************************************/
+int arkime_field_object_register(const char *name, const char *help, ArkimeFieldObjectSaveFunc save, ArkimeFieldObjectFreeFunc free, ArkimeFieldObjectHashFunc hash, ArkimeFieldObjectCmpFunc cmp) {
+    int object_pos;
+    ArkimeFieldInfo_t *object_info;
+
+    object_pos = arkime_field_define(name, "notreal",
+                                     name, name, name,
+                                     help,
+                                     ARKIME_FIELD_TYPE_OBJECT, ARKIME_FIELD_FLAG_CNT | ARKIME_FIELD_FLAG_NODB,
+                                     (char *)NULL);
+
+    // This should never be the case but better safe than sorry
+    if (object_pos == -1) {
+        LOGEXIT("ERROR - Field object position is %d", object_pos);
+    }
+
+    object_info = config.fields[object_pos];
+
+    // This shouldn't happen but lets be sure
+    if (!object_info) {
+        LOGEXIT("ERROR - Field object info is null");
+    }
+
+    object_info->object_save = save;
+    object_info->object_free = free;
+    object_info->object_hash = hash;
+    object_info->object_cmp = cmp;
+
+    return object_info->pos;
+}
+gboolean arkime_field_object_add(int pos, ArkimeSession_t *session, ArkimeFieldObject_t *object, int len) {
+    ArkimeField_t               *field;
+    ArkimeFieldObjectHashStd_t  *hash;
+    ArkimeFieldObject_t         *ho;
+
+    if (!session->fields[pos]) {
+        field = ARKIME_TYPE_ALLOC(ArkimeField_t);
+        session->fields[pos] = field;
+        // 3 for the quotes and colon
+        // length of the object name
+        // 4 for the brackets and braces
+        // len should be the length of the contents of the object
+        field->jsonSize = 3 + config.fields[pos]->dbFieldLen + 4 + len;
+        switch (config.fields[pos]->type) {
+        case ARKIME_FIELD_TYPE_OBJECT:
+            hash = ARKIME_TYPE_ALLOC(ArkimeFieldObjectHashStd_t);
+            HASH_INIT(o_, *hash, config.fields[pos]->object_hash, config.fields[pos]->object_cmp);
+            field->ohash = hash;
+            HASH_ADD(o_, *hash, object, object);
+            return TRUE;
+        default:
+            LOGEXIT("ERROR - Not a field object %s field", config.fields[pos]->dbField);
+        }
+    }
+
+    field = session->fields[pos];
+    switch (config.fields[pos]->type) {
+    case ARKIME_FIELD_TYPE_OBJECT:
+        HASH_FIND(o_, *(field->ohash), object, ho);
+        if (ho) {
+            return FALSE;
+        }
+        // 3 for braces and comma
+        // len should be the length of contents of the object
+        field->jsonSize += 3 + len;
+        HASH_ADD(o_, *(field->ohash), object, object);
+        return TRUE;
+    default:
+        LOGEXIT("ERROR - Not a field object %s field", config.fields[pos]->dbField);
+    }
+}
+
+/******************************************************************************/
 int arkime_field_count(int pos, ArkimeSession_t *session)
 {
     ArkimeField_t         *field;
@@ -1476,6 +1560,8 @@ int arkime_field_count(int pos, ArkimeSession_t *session)
         return g_hash_table_size(field->ghash);
     case ARKIME_FIELD_TYPE_CERTSINFO:
         return HASH_COUNT(s_, *(field->cihash));
+    case ARKIME_FIELD_TYPE_OBJECT:
+        return HASH_COUNT(o_, *(field->ohash));
     default:
         LOGEXIT("ERROR - Unknown field type for counting %s %d", config.fields[pos]->dbField, config.fields[pos]->type);
     }
@@ -1603,6 +1689,7 @@ void arkime_field_ops_run_match(ArkimeSession_t *session, ArkimeFieldOps_t *ops,
             arkime_field_string_add(fieldPos, session, op->str, op->strLenOrInt, TRUE);
             break;
         case ARKIME_FIELD_TYPE_CERTSINFO:
+        case ARKIME_FIELD_TYPE_OBJECT:
             // Unsupported
             break;
         }

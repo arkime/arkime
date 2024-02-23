@@ -167,6 +167,33 @@ typedef struct {
 typedef HASH_VAR(s_, ArkimeCertsInfoHash_t, ArkimeCertsInfoHead_t, 1);
 typedef HASH_VAR(s_, ArkimeCertsInfoHashStd_t, ArkimeCertsInfoHead_t, 5);
 
+/******************************************************************************/
+/*
+ * Generic object field type
+ */
+
+typedef struct arkime_field_object {
+    struct arkime_field_object      *o_next, *o_prev;
+    uint32_t                         o_hash;
+    short                            o_bucket;
+    void                            *object;
+} ArkimeFieldObject_t;
+
+typedef struct {
+    struct arkime_field_object      *o_next, *o_prev;
+    short                            o_count;
+} ArkimeFieldObjectHead_t;
+
+typedef HASH_VAR(o_, ArkimeFieldObjectHash_t, ArkimeFieldObjectHead_t, 1);
+typedef HASH_VAR(o_, ArkimeFieldObjectHashStd_t, ArkimeFieldObjectHead_t, 13);
+
+// forward declaration of ArkimeSession_t
+typedef struct arkime_session ArkimeSession_t;
+
+typedef void (* ArkimeFieldObjectSaveFunc) (BSB *jbsb, ArkimeFieldObject_t *object, ArkimeSession_t *session);
+typedef void (* ArkimeFieldObjectFreeFunc) (ArkimeFieldObject_t *object);
+typedef uint32_t (* ArkimeFieldObjectHashFunc) (const void *key);
+typedef int (* ArkimeFieldObjectCmpFunc) (const void *keyv, const void *elementv);
 
 /******************************************************************************/
 /*
@@ -187,7 +214,8 @@ typedef enum {
     ARKIME_FIELD_TYPE_CERTSINFO,
     ARKIME_FIELD_TYPE_FLOAT,
     ARKIME_FIELD_TYPE_FLOAT_ARRAY,
-    ARKIME_FIELD_TYPE_FLOAT_GHASH
+    ARKIME_FIELD_TYPE_FLOAT_GHASH,
+    ARKIME_FIELD_TYPE_OBJECT
 } ArkimeFieldType;
 
 #define ARKIME_FIELD_TYPE_IS_INT(t) (t >= ARKIME_FIELD_TYPE_INT && t <= ARKIME_FIELD_TYPE_INT_GHASH)
@@ -244,21 +272,27 @@ typedef struct arkime_field_info {
     char                      ruleEnabled;
     char                     *transform;
     char                     *aliases;
+
+    ArkimeFieldObjectSaveFunc object_save;
+    ArkimeFieldObjectFreeFunc object_free;
+    ArkimeFieldObjectHashFunc object_hash;
+    ArkimeFieldObjectCmpFunc  object_cmp;
 } ArkimeFieldInfo_t;
 
 typedef struct {
     union {
-        char                     *str;
-        GPtrArray                *sarray;
-        ArkimeStringHashStd_t    *shash;
-        int                       i;
-        GArray                   *iarray;
-        ArkimeIntHashStd_t       *ihash;
-        float                     f;
-        GArray                   *farray;
-        ArkimeCertsInfoHashStd_t *cihash;
-        GHashTable               *ghash;
-        struct in6_addr          *ip;
+        char                       *str;
+        GPtrArray                  *sarray;
+        ArkimeStringHashStd_t      *shash;
+        int                         i;
+        GArray                     *iarray;
+        ArkimeIntHashStd_t         *ihash;
+        float                       f;
+        GArray                     *farray;
+        ArkimeCertsInfoHashStd_t   *cihash;
+        GHashTable                 *ghash;
+        struct in6_addr            *ip;
+        ArkimeFieldObjectHashStd_t *ohash;
     };
     uint32_t                   jsonSize;
 } ArkimeField_t;
@@ -1341,6 +1375,8 @@ void *arkime_field_parse_ip(const char *str);
 gboolean arkime_field_ip_equal (gconstpointer v1, gconstpointer v2);
 guint arkime_field_ip_hash (gconstpointer v);
 
+int arkime_field_object_register(const char *name, const char *help, ArkimeFieldObjectSaveFunc save, ArkimeFieldObjectFreeFunc free, ArkimeFieldObjectHashFunc hash, ArkimeFieldObjectCmpFunc cmp);
+gboolean arkime_field_object_add(int pos, ArkimeSession_t *session, ArkimeFieldObject_t *object, int len);
 
 /******************************************************************************/
 /*

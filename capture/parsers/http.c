@@ -153,6 +153,7 @@ void http_common_add_header_value(ArkimeSession_t *session, int pos, const char 
         break;
     }
     case ARKIME_FIELD_TYPE_CERTSINFO:
+    case ARKIME_FIELD_TYPE_OBJECT:
         // Unsupported
         break;
     } /* SWITCH */

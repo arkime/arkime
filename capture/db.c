@@ -1323,6 +1323,32 @@ void arkime_db_save_session(ArkimeSession_t *session, int final)
 
             BSB_EXPORT_rewind(jbsb, 1); // Remove last comma
             BSB_EXPORT_cstr(jbsb, "],");
+
+            break;
+        }
+        case ARKIME_FIELD_TYPE_OBJECT: {
+            ArkimeFieldObjectHashStd_t *ohash = session->fields[pos]->ohash;
+            ArkimeFieldObjectSaveFunc saveCB = config.fields[pos]->object_save;
+            ArkimeFieldObjectFreeFunc freeCB = config.fields[pos]->object_free;
+
+            BSB_EXPORT_sprintf(jbsb, "\"%sCnt\":%d,", config.fields[pos]->dbField, HASH_COUNT(o_, *ohash));
+            BSB_EXPORT_sprintf(jbsb, "\"%s\":[", config.fields[pos]->dbField);
+
+            ArkimeFieldObject_t *object;
+
+            HASH_FORALL_POP_HEAD2(o_, *ohash, object) {
+                saveCB(&jbsb, object, session);
+                if (freeField) {
+                    freeCB(object);
+                }
+                BSB_EXPORT_u08(jbsb, ',');
+            }
+            if (freeField) {
+                ARKIME_TYPE_FREE(ArkimeFieldObjectHashStd_t, ohash);
+            }
+
+            BSB_EXPORT_rewind(jbsb, 1); // Remove last comma
+            BSB_EXPORT_cstr(jbsb, "],");
         }
         } /* switch */
         if (freeField) {
