@@ -3,6 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 #include "arkime.h"
+#include "certs_internals.h"
 #include "tls-cipher.h"
 #include "openssl/objects.h"
 
@@ -405,6 +406,7 @@ LOCAL uint32_t tls_process_server_certificate(ArkimeSession_t *session, const ui
         uint8_t *cdata = BSB_WORK_PTR(cbsb);
         int            clen = MIN(BSB_REMAINING(cbsb) - 3, (cdata[0] << 16 | cdata[1] << 8 | cdata[2]));
 
+        ArkimeFieldObject_t *fobject = ARKIME_TYPE_ALLOC0(ArkimeFieldObject_t);
 
         ArkimeCertsInfo_t *certs = ARKIME_TYPE_ALLOC0(ArkimeCertsInfo_t);
         DLL_INIT(s_, &certs->alt);
@@ -414,6 +416,8 @@ LOCAL uint32_t tls_process_server_certificate(ArkimeSession_t *session, const ui
         DLL_INIT(s_, &certs->issuer.commonName);
         DLL_INIT(s_, &certs->issuer.orgName);
         DLL_INIT(s_, &certs->issuer.orgUnit);
+
+        fobject->object = certs;
 
         uint32_t       atag, alen, apc;
         uint8_t *value;
@@ -557,8 +561,9 @@ LOCAL uint32_t tls_process_server_certificate(ArkimeSession_t *session, const ui
         }
 
 
-        if (!arkime_field_certsinfo_add(certsField, session, certs, clen * 2)) {
-            arkime_field_certsinfo_free(certs);
+        if (!arkime_field_object_add(certsField, session, fobject, clen * 2)) {
+            certinfo_free(fobject);
+            fobject = 0;
             certs = 0;
         }
 
@@ -572,7 +577,7 @@ LOCAL uint32_t tls_process_server_certificate(ArkimeSession_t *session, const ui
 bad_cert:
         if (config.debug)
             LOG("bad cert %d - %d", badreason, clen);
-        arkime_field_certsinfo_free(certs);
+        certinfo_free(fobject);
         break;
     }
     return 0;
@@ -610,7 +615,7 @@ LOCAL int tls_process_server_handshake_record(ArkimeSession_t *session, const ui
 // Comparison function for qsort
 LOCAL int compare_uint16_t(const void *a, const void *b)
 {
-    return (*(const uint16_t *)a < *(const uint16_t *)b ? -1 : *(const uint16_t *)a > *(const uint16_t *)b);
+    return (*(const uint16_t *)a < * (const uint16_t *)b ? -1 : * (const uint16_t *)a > *(const uint16_t *)b);
 }
 /******************************************************************************/
 uint32_t tls_process_client_hello_data(ArkimeSession_t *session, const uint8_t *data, int len, void UNUSED(*uw))
@@ -1043,11 +1048,7 @@ void arkime_parser_init()
 {
     ja4Raw = arkime_config_boolean(NULL, "ja4Raw", FALSE);
 
-    certsField = arkime_field_define("cert", "notreal",
-                                     "cert", "cert", "cert",
-                                     "CERT Info",
-                                     ARKIME_FIELD_TYPE_CERTSINFO,  ARKIME_FIELD_FLAG_CNT | ARKIME_FIELD_FLAG_NODB,
-                                     (char *)NULL);
+    certsField = arkime_field_object_register("cert", "Certificates info", certinfo_save, certinfo_free, certinfo_hash, certinfo_cmp);
 
     arkime_field_define("cert", "integer",
                         "cert.cnt", "Cert Cnt", "certCnt",

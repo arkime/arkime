@@ -1170,138 +1170,6 @@ added:
     return TRUE;
 }
 /******************************************************************************/
-SUPPRESS_UNSIGNED_INTEGER_OVERFLOW
-SUPPRESS_SHIFT
-SUPPRESS_INT_CONVERSION
-uint32_t arkime_field_certsinfo_hash(const void *key)
-{
-    ArkimeCertsInfo_t *ci = (ArkimeCertsInfo_t *)key;
-
-    if (ci->serialNumberLen == 0) {
-        return ((ci->issuer.commonName.s_count << 18) |
-                (ci->issuer.orgName.s_count << 12) |
-                (ci->subject.commonName.s_count << 6) |
-                (ci->subject.orgName.s_count));
-    }
-    return ((ci->serialNumber[0] << 28) |
-            (ci->serialNumber[ci->serialNumberLen - 1] << 24) |
-            (ci->issuer.commonName.s_count << 18) |
-            (ci->issuer.orgName.s_count << 12) |
-            (ci->subject.commonName.s_count << 6) |
-            (ci->subject.orgName.s_count));
-}
-
-/******************************************************************************/
-int arkime_field_certsinfo_cmp(const void *keyv, const void *elementv)
-{
-    ArkimeCertsInfo_t *key = (ArkimeCertsInfo_t *)keyv;
-    ArkimeCertsInfo_t *element = (ArkimeCertsInfo_t *)elementv;
-
-    // Make sure all the easy things to check are the same
-    if ( !((key->serialNumberLen == element->serialNumberLen) &&
-           (memcmp(key->serialNumber, element->serialNumber, element->serialNumberLen) == 0) &&
-           (key->issuer.commonName.s_count == element->issuer.commonName.s_count) &&
-           (key->issuer.orgName.s_count == element->issuer.orgName.s_count) &&
-           (key->issuer.orgUnit.s_count == element->issuer.orgUnit.s_count) &&
-           (key->subject.commonName.s_count == element->subject.commonName.s_count) &&
-           (key->subject.orgName.s_count == element->subject.orgName.s_count) &&
-           (key->subject.orgUnit.s_count == element->subject.orgUnit.s_count)
-          )
-       ) {
-
-        return 0;
-    }
-
-    // Now see if all the other items are the same
-
-    ArkimeString_t *kstr, *estr;
-    for (kstr = key->issuer.commonName.s_next, estr = element->issuer.commonName.s_next;
-         kstr != (void *) & (key->issuer.commonName);
-         kstr = kstr->s_next, estr = estr->s_next) {
-
-        if (strcmp(kstr->str, estr->str) != 0)
-            return 0;
-    }
-
-    for (kstr = key->issuer.orgName.s_next, estr = element->issuer.orgName.s_next;
-         kstr != (void *) & (key->issuer.orgName);
-         kstr = kstr->s_next, estr = estr->s_next) {
-
-        if (strcmp(kstr->str, estr->str) != 0)
-            return 0;
-    }
-
-    for (kstr = key->issuer.orgUnit.s_next, estr = element->issuer.orgUnit.s_next;
-         kstr != (void *) & (key->issuer.orgUnit);
-         kstr = kstr->s_next, estr = estr->s_next) {
-
-        if (strcmp(kstr->str, estr->str) != 0)
-            return 0;
-    }
-
-    for (kstr = key->subject.commonName.s_next, estr = element->subject.commonName.s_next;
-         kstr != (void *) & (key->subject.commonName);
-         kstr = kstr->s_next, estr = estr->s_next) {
-
-        if (strcmp(kstr->str, estr->str) != 0)
-            return 0;
-    }
-
-    for (kstr = key->subject.orgName.s_next, estr = element->subject.orgName.s_next;
-         kstr != (void *) & (key->subject.orgName);
-         kstr = kstr->s_next, estr = estr->s_next) {
-
-        if (strcmp(kstr->str, estr->str) != 0)
-            return 0;
-    }
-
-    for (kstr = key->subject.orgUnit.s_next, estr = element->subject.orgUnit.s_next;
-         kstr != (void *) & (key->subject.orgUnit);
-         kstr = kstr->s_next, estr = estr->s_next) {
-
-        if (strcmp(kstr->str, estr->str) != 0)
-            return 0;
-    }
-
-    return 1;
-}
-/******************************************************************************/
-gboolean arkime_field_certsinfo_add(int pos, ArkimeSession_t *session, ArkimeCertsInfo_t *certs, int len)
-{
-    ArkimeField_t             *field;
-    ArkimeCertsInfoHashStd_t   *hash;
-    ArkimeCertsInfo_t          *hci;
-
-    if (!session->fields[pos]) {
-        field = ARKIME_TYPE_ALLOC(ArkimeField_t);
-        session->fields[pos] = field;
-        field->jsonSize = 3 + config.fields[pos]->dbFieldLen + 120 + len;
-        switch (config.fields[pos]->type) {
-        case ARKIME_FIELD_TYPE_CERTSINFO:
-            hash = ARKIME_TYPE_ALLOC(ArkimeCertsInfoHashStd_t);
-            HASH_INIT(t_, *hash, arkime_field_certsinfo_hash, arkime_field_certsinfo_cmp);
-            field->cihash = hash;
-            HASH_ADD(t_, *hash, certs, certs);
-            return TRUE;
-        default:
-            LOGEXIT("ERROR - Not a certsinfo %s field", config.fields[pos]->dbField);
-        }
-    }
-
-    field = session->fields[pos];
-    switch (config.fields[pos]->type) {
-    case ARKIME_FIELD_TYPE_CERTSINFO:
-        HASH_FIND(t_, *(field->cihash), certs, hci);
-        if (hci)
-            return FALSE;
-        field->jsonSize += 3 + 120 + len;
-        HASH_ADD(t_, *(field->cihash), certs, certs);
-        return TRUE;
-    default:
-        LOGEXIT("ERROR - Not a certsinfo %s field", config.fields[pos]->dbField);
-    }
-}
-/******************************************************************************/
 void arkime_field_macoui_add(ArkimeSession_t *session, int macField, int ouiField, const uint8_t *mac)
 {
     char str[20];
@@ -1325,8 +1193,6 @@ void arkime_field_free(ArkimeSession_t *session)
     ArkimeStringHashStd_t      *shash;
     ArkimeInt_t                *hint;
     ArkimeIntHashStd_t         *ihash;
-    ArkimeCertsInfo_t          *hci;
-    ArkimeCertsInfoHashStd_t   *cihash;
     ArkimeFieldObject_t        *ho;
     ArkimeFieldObjectHashStd_t *ohash;
     ArkimeFieldObjectFreeFunc   freeCB;
@@ -1378,13 +1244,6 @@ void arkime_field_free(ArkimeSession_t *session)
         case ARKIME_FIELD_TYPE_FLOAT_GHASH:
             g_hash_table_destroy(session->fields[pos]->ghash);
             break;
-        case ARKIME_FIELD_TYPE_CERTSINFO:
-            cihash = session->fields[pos]->cihash;
-            HASH_FORALL_POP_HEAD2(t_, *cihash, hci) {
-                arkime_field_certsinfo_free(hci);
-            }
-            ARKIME_TYPE_FREE(ArkimeCertsInfoHashStd_t, cihash);
-            break;
         case ARKIME_FIELD_TYPE_OBJECT: {
             freeCB = config.fields[pos]->object_free;
             ohash = session->fields[pos]->ohash;
@@ -1401,63 +1260,8 @@ void arkime_field_free(ArkimeSession_t *session)
     session->fields = 0;
 }
 /******************************************************************************/
-void arkime_field_certsinfo_update_extra (ArkimeCertsInfo_t *certs, char *key, char *value)
+int arkime_field_object_register(const char *name, const char *help, ArkimeFieldObjectSaveFunc save, ArkimeFieldObjectFreeFunc free, ArkimeFieldObjectHashFunc hash, ArkimeFieldObjectCmpFunc cmp)
 {
-    if (!certs->extra)
-        certs->extra = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, g_free);
-
-    g_hash_table_replace(certs->extra, key, value);
-}
-/******************************************************************************/
-void arkime_field_certsinfo_free (ArkimeCertsInfo_t *certs)
-{
-    ArkimeString_t *string;
-
-    while (DLL_POP_HEAD(s_, &certs->alt, string)) {
-        g_free(string->str);
-        ARKIME_TYPE_FREE(ArkimeString_t, string);
-    }
-
-    while (DLL_POP_HEAD(s_, &certs->issuer.commonName, string)) {
-        g_free(string->str);
-        ARKIME_TYPE_FREE(ArkimeString_t, string);
-    }
-
-    while (DLL_POP_HEAD(s_, &certs->issuer.orgName, string)) {
-        g_free(string->str);
-        ARKIME_TYPE_FREE(ArkimeString_t, string);
-    }
-
-    while (DLL_POP_HEAD(s_, &certs->issuer.orgUnit, string)) {
-        g_free(string->str);
-        ARKIME_TYPE_FREE(ArkimeString_t, string);
-    }
-
-    while (DLL_POP_HEAD(s_, &certs->subject.commonName, string)) {
-        g_free(string->str);
-        ARKIME_TYPE_FREE(ArkimeString_t, string);
-    }
-
-    while (DLL_POP_HEAD(s_, &certs->subject.orgName, string)) {
-        g_free(string->str);
-        ARKIME_TYPE_FREE(ArkimeString_t, string);
-    }
-
-    while (DLL_POP_HEAD(s_, &certs->subject.orgUnit, string)) {
-        g_free(string->str);
-        ARKIME_TYPE_FREE(ArkimeString_t, string);
-    }
-
-    if (certs->serialNumber)
-        free(certs->serialNumber);
-
-    if (certs->extra)
-        g_hash_table_destroy(certs->extra);
-
-    ARKIME_TYPE_FREE(ArkimeCertsInfo_t, certs);
-}
-/******************************************************************************/
-int arkime_field_object_register(const char *name, const char *help, ArkimeFieldObjectSaveFunc save, ArkimeFieldObjectFreeFunc free, ArkimeFieldObjectHashFunc hash, ArkimeFieldObjectCmpFunc cmp) {
     int object_pos;
     ArkimeFieldInfo_t *object_info;
 
@@ -1486,7 +1290,9 @@ int arkime_field_object_register(const char *name, const char *help, ArkimeField
 
     return object_info->pos;
 }
-gboolean arkime_field_object_add(int pos, ArkimeSession_t *session, ArkimeFieldObject_t *object, int len) {
+/******************************************************************************/
+gboolean arkime_field_object_add(int pos, ArkimeSession_t *session, ArkimeFieldObject_t *object, int len)
+{
     ArkimeField_t               *field;
     ArkimeFieldObjectHashStd_t  *hash;
     ArkimeFieldObject_t         *ho;
@@ -1558,8 +1364,6 @@ int arkime_field_count(int pos, ArkimeSession_t *session)
     case ARKIME_FIELD_TYPE_INT_GHASH:
     case ARKIME_FIELD_TYPE_STR_GHASH:
         return g_hash_table_size(field->ghash);
-    case ARKIME_FIELD_TYPE_CERTSINFO:
-        return HASH_COUNT(s_, *(field->cihash));
     case ARKIME_FIELD_TYPE_OBJECT:
         return HASH_COUNT(o_, *(field->ohash));
     default:
@@ -1688,7 +1492,6 @@ void arkime_field_ops_run_match(ArkimeSession_t *session, ArkimeFieldOps_t *ops,
         case ARKIME_FIELD_TYPE_STR_GHASH:
             arkime_field_string_add(fieldPos, session, op->str, op->strLenOrInt, TRUE);
             break;
-        case ARKIME_FIELD_TYPE_CERTSINFO:
         case ARKIME_FIELD_TYPE_OBJECT:
             // Unsupported
             break;

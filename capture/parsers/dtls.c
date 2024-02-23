@@ -3,6 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 #include "arkime.h"
+#include "certs_internals.h"
 
 //#define DTLSDEBUG 1
 
@@ -124,6 +125,7 @@ LOCAL void dtls_process_server_certificate(ArkimeSession_t *session, const uint8
         uint8_t *cdata = BSB_WORK_PTR(cbsb);
         int            clen = MIN(BSB_REMAINING(cbsb) - 3, (cdata[0] << 16 | cdata[1] << 8 | cdata[2]));
 
+        ArkimeFieldObject_t *fobject = ARKIME_TYPE_ALLOC0(ArkimeFieldObject_t);
 
         ArkimeCertsInfo_t *certs = ARKIME_TYPE_ALLOC0(ArkimeCertsInfo_t);
         DLL_INIT(s_, &certs->alt);
@@ -133,6 +135,8 @@ LOCAL void dtls_process_server_certificate(ArkimeSession_t *session, const uint8
         DLL_INIT(s_, &certs->issuer.commonName);
         DLL_INIT(s_, &certs->issuer.orgName);
         DLL_INIT(s_, &certs->issuer.orgUnit);
+
+        fobject->object = certs;
 
         uint32_t       atag, alen, apc;
         uint8_t *value;
@@ -271,8 +275,9 @@ LOCAL void dtls_process_server_certificate(ArkimeSession_t *session, const uint8
         }
 
 
-        if (!arkime_field_certsinfo_add(certsField, session, certs, clen * 2)) {
-            arkime_field_certsinfo_free(certs);
+        if (!arkime_field_object_add(certsField, session, fobject, clen * 2)) {
+            certinfo_free(fobject);
+            fobject = 0;
         }
 
         BSB_IMPORT_skip(cbsb, clen + 3);
@@ -282,7 +287,7 @@ LOCAL void dtls_process_server_certificate(ArkimeSession_t *session, const uint8
 bad_cert:
         if (config.debug)
             LOG("bad cert %d - %d", badreason, clen);
-        arkime_field_certsinfo_free(certs);
+        certinfo_free(fobject);
         break;
     }
 }
@@ -359,9 +364,5 @@ void arkime_parser_init()
     arkime_parsers_classifier_register_udp("dtls", NULL, 0, (const uint8_t *)"\x16\xfe\xfe", 3, dtls_udp_classify);
     arkime_parsers_classifier_register_udp("dtls", NULL, 0, (const uint8_t *)"\x16\xfe\xfd", 3, dtls_udp_classify);
 
-    certsField = arkime_field_define("cert", "notreal",
-                                     "cert", "cert", "cert",
-                                     "CERT Info",
-                                     ARKIME_FIELD_TYPE_CERTSINFO,  ARKIME_FIELD_FLAG_CNT | ARKIME_FIELD_FLAG_NODB,
-                                     (char *)NULL);
+    certsField = arkime_field_object_register("cert", "Certificates info", certinfo_save, certinfo_free, certinfo_hash, certinfo_cmp);
 }

@@ -635,49 +635,6 @@ LOCAL int MSP_get_port2(lua_State *L)
     return 1;
 }
 /******************************************************************************/
-LOCAL int MS_get_certs(lua_State *L, ArkimeSession_t *session, const char *exp)
-{
-    const ArkimeField_t *field = session->fields[certsField];
-
-    if (!field) {
-        lua_pushnil(L);
-        return 1;
-    }
-
-    const ArkimeCertsInfoHashStd_t *cihash = session->fields[certsField]->cihash;
-    ArkimeCertsInfo_t *certs;
-
-    int i = 0;
-    if (strcmp(exp, "cert.curve") == 0) {
-        lua_newtable(L);
-        HASH_FORALL2(t_, *cihash, certs) {
-            if (!certs->curve)
-                continue;
-            lua_pushinteger(L, i + 1);
-            lua_pushstring(L, certs->curve);
-            lua_settable(L, -3);
-            i++;
-        }
-        return 1;
-    }
-
-    if (strcmp(exp, "cert.publicAlgorithm") == 0) {
-        lua_newtable(L);
-        HASH_FORALL2(t_, *cihash, certs) {
-            if (!certs->publicAlgorithm)
-                continue;
-            lua_pushinteger(L, i + 1);
-            lua_pushstring(L, certs->publicAlgorithm);
-            lua_settable(L, -3);
-            i++;
-        }
-        return 1;
-    }
-
-    lua_pushnil(L);
-    return 1;
-}
-/******************************************************************************/
 LOCAL int MS_get(lua_State *L)
 {
     if (config.debug > 2)
@@ -694,11 +651,6 @@ LOCAL int MS_get(lua_State *L)
     } else {
         const char *exp = lua_tostring(L, 2);
         switch(exp[0]) {
-        case 'c':
-            if (strncmp(exp, "cert.", 5) == 0) {
-                return MS_get_certs(L, session, exp);
-            }
-            break;
         case 'd':
             if (strcmp(exp, "databytes.src") == 0) {
                 lua_pushinteger(L, session->databytes[0]);

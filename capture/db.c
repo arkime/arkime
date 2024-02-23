@@ -150,7 +150,7 @@ LOCAL ArkimeIpInfo_t *arkime_db_get_override_ip6(ArkimeSession_t *session, struc
 }
 
 /******************************************************************************/
-LOCAL void arkime_db_js0n_str(BSB *bsb, uint8_t *in, gboolean utf8)
+void arkime_db_js0n_str(BSB *bsb, uint8_t *in, gboolean utf8)
 {
     BSB_EXPORT_u08(*bsb, '"');
     while (*in) {
@@ -518,7 +518,6 @@ void arkime_db_save_session(ArkimeSession_t *session, int final)
     const uint8_t         *dataPtr;
     uint32_t               jsonSize;
     gpointer               ikey;
-    gpointer               ival;
     char                   ipsrc[INET6_ADDRSTRLEN];
     char                   ipdst[INET6_ADDRSTRLEN];
 
@@ -1253,79 +1252,6 @@ void arkime_db_save_session(ArkimeSession_t *session, int final)
 
             break;
         }
-        case ARKIME_FIELD_TYPE_CERTSINFO: {
-            ArkimeCertsInfoHashStd_t *cihash = session->fields[pos]->cihash;
-
-            BSB_EXPORT_sprintf(jbsb, "\"certCnt\":%d,", HASH_COUNT(t_, *cihash));
-            BSB_EXPORT_cstr(jbsb, "\"cert\":[");
-
-            ArkimeCertsInfo_t *certs;
-            ArkimeString_t *string;
-
-            HASH_FORALL_POP_HEAD2(t_, *cihash, certs) {
-                BSB_EXPORT_u08(jbsb, '{');
-
-                BSB_EXPORT_sprintf(jbsb, "\"hash\":\"%s\",", certs->hash);
-
-                if (certs->publicAlgorithm)
-                    BSB_EXPORT_sprintf(jbsb, "\"publicAlgorithm\":\"%s\",", certs->publicAlgorithm);
-                if (certs->curve)
-                    BSB_EXPORT_sprintf(jbsb, "\"curve\":\"%s\",", certs->curve);
-
-                SAVE_STRING_HEAD(certs->issuer.commonName, "issuerCN");
-                SAVE_STRING_HEAD(certs->issuer.orgName, "issuerON");
-                SAVE_STRING_HEAD(certs->issuer.orgUnit, "issuerOU");
-                SAVE_STRING_HEAD(certs->subject.commonName, "subjectCN");
-                SAVE_STRING_HEAD(certs->subject.orgName, "subjectON");
-                SAVE_STRING_HEAD(certs->subject.orgUnit, "subjectOU");
-
-                if (certs->serialNumber) {
-                    int k;
-                    BSB_EXPORT_cstr(jbsb, "\"serial\":\"");
-                    for (k = 0; k < certs->serialNumberLen; k++) {
-                        BSB_EXPORT_sprintf(jbsb, "%02x", certs->serialNumber[k]);
-                    }
-                    BSB_EXPORT_u08(jbsb, '"');
-                    BSB_EXPORT_u08(jbsb, ',');
-                }
-
-                SAVE_STRING_HEAD_CNT(certs->alt, "altCnt");
-                SAVE_STRING_HEAD(certs->alt, "alt");
-
-                BSB_EXPORT_sprintf(jbsb, "\"notBefore\":%" PRId64 ",", certs->notBefore * 1000);
-                BSB_EXPORT_sprintf(jbsb, "\"notAfter\":%" PRId64 ",", certs->notAfter * 1000);
-                if (certs->notAfter < ((uint64_t)session->firstPacket.tv_sec)) {
-                    BSB_EXPORT_sprintf(jbsb, "\"remainingDays\":%" PRId64 ",", ((int64_t)0));
-                    BSB_EXPORT_sprintf(jbsb, "\"remainingSeconds\":%" PRId64 ",", ((int64_t)0));
-                } else {
-                    BSB_EXPORT_sprintf(jbsb, "\"remainingDays\":%" PRId64 ",", ((int64_t)certs->notAfter - ((uint64_t)session->firstPacket.tv_sec)) / (60 * 60 * 24));
-                    BSB_EXPORT_sprintf(jbsb, "\"remainingSeconds\":%" PRId64 ",", ((int64_t)certs->notAfter - ((uint64_t)session->firstPacket.tv_sec)));
-                }
-                BSB_EXPORT_sprintf(jbsb, "\"validDays\":%" PRId64 ",", ((int64_t)certs->notAfter - (int64_t)certs->notBefore) / (60 * 60 * 24));
-                BSB_EXPORT_sprintf(jbsb, "\"validSeconds\":%" PRId64 ",", ((int64_t)certs->notAfter - (int64_t)certs->notBefore));
-
-                if (certs->extra) {
-                    g_hash_table_iter_init (&iter, certs->extra);
-                    while (g_hash_table_iter_next (&iter, &ikey, &ival)) {
-                        BSB_EXPORT_sprintf(jbsb, "\"%s\":\"%s\",", (char *)ikey, (char *)ival);
-                    }
-                }
-
-                BSB_EXPORT_rewind(jbsb, 1); // Remove last comma
-
-                arkime_field_certsinfo_free(certs);
-                i++;
-
-                BSB_EXPORT_u08(jbsb, '}');
-                BSB_EXPORT_u08(jbsb, ',');
-            }
-            ARKIME_TYPE_FREE(ArkimeCertsInfoHashStd_t, cihash);
-
-            BSB_EXPORT_rewind(jbsb, 1); // Remove last comma
-            BSB_EXPORT_cstr(jbsb, "],");
-
-            break;
-        }
         case ARKIME_FIELD_TYPE_OBJECT: {
             ArkimeFieldObjectHashStd_t *ohash = session->fields[pos]->ohash;
             ArkimeFieldObjectSaveFunc saveCB = config.fields[pos]->object_save;
@@ -1350,6 +1276,7 @@ void arkime_db_save_session(ArkimeSession_t *session, int final)
             BSB_EXPORT_rewind(jbsb, 1); // Remove last comma
             BSB_EXPORT_cstr(jbsb, "],");
         }
+        break;
         } /* switch */
         if (freeField) {
             ARKIME_TYPE_FREE(ArkimeField_t, session->fields[pos]);
