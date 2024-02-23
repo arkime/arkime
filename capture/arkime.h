@@ -187,10 +187,9 @@ typedef struct {
 typedef HASH_VAR(o_, ArkimeFieldObjectHash_t, ArkimeFieldObjectHead_t, 1);
 typedef HASH_VAR(o_, ArkimeFieldObjectHashStd_t, ArkimeFieldObjectHead_t, 13);
 
-// forward declaration of ArkimeSession_t
-typedef struct arkime_session ArkimeSession_t;
+struct arkime_session;
 
-typedef void (* ArkimeFieldObjectSaveFunc) (BSB *jbsb, ArkimeFieldObject_t *object, ArkimeSession_t *session);
+typedef void (* ArkimeFieldObjectSaveFunc) (BSB *jbsb, ArkimeFieldObject_t *object, struct arkime_session *session);
 typedef void (* ArkimeFieldObjectFreeFunc) (ArkimeFieldObject_t *object);
 typedef uint32_t (* ArkimeFieldObjectHashFunc) (const void *key);
 typedef int (* ArkimeFieldObjectCmpFunc) (const void *keyv, const void *elementv);
@@ -554,8 +553,6 @@ typedef struct {
 /*
  * Parser
  */
-
-struct arkime_session;
 
 #define ARKIME_PARSER_UNREGISTER -1
 typedef int  (* ArkimeParserFunc) (struct arkime_session *session, void *uw, const uint8_t *data, int remaining, int which);
