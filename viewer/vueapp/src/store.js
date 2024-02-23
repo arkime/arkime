@@ -56,7 +56,8 @@ const store = new Vuex.Store({
     roles: [],
     fieldActions: {},
     notifiers: [],
-    sessionDetailDLWidth: 160
+    sessionDetailDLWidth: 160,
+    sessionDetailCols: localStorage.getItem('sessionDetailCols') || 2
   },
   getters: {
     sessionsTableState (state) {
@@ -254,6 +255,10 @@ const store = new Vuex.Store({
     },
     setSessionDetailDLWidth (state, value) {
       state.sessionDetailDLWidth = value;
+    },
+    setSessionDetailCols (state, value) {
+      state.sessionDetailCols = value;
+      localStorage.setItem('sessionDetailCols', value);
     }
   }
 });

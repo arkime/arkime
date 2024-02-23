@@ -1971,6 +1971,7 @@ form.sessions-paging {
 /* sessions table styles --------------------- */
 table.sessions-table {
   margin-bottom: 20px;
+  table-layout: fixed;
 }
 
 /* borders for header */

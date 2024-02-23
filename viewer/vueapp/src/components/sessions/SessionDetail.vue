@@ -5,7 +5,10 @@ SPDX-License-Identifier: Apache-2.0
 <template>
 
   <!-- session detail -->
-  <div :ref="session.id" :id="`${session.id}-detail`">
+  <div
+    :ref="session.id"
+    :id="`${session.id}-detail`"
+    :class="['session-detail-wrapper', `card-columns-${numCols}`]">
 
     <!-- detail loading -->
     <div v-if="loading"
@@ -280,6 +283,9 @@ export default {
       set: function (newValue) {
         this.$store.commit('setSessionDetailDLWidth', newValue);
       }
+    },
+    numCols: function () {
+      return this.$store.state.sessionDetailCols || '';
     }
   },
   created: function () {
@@ -501,6 +507,9 @@ export default {
             }
           },
           methods: {
+            toggleLayout (numCols) {
+              this.$store.commit('setSessionDetailCols', numCols);
+            },
             /* Saves the dl widths */
             saveDLWidth: function (width) {
               this.dlWidth = width;
@@ -1099,12 +1108,20 @@ dl:hover > .session-detail-grip {
 }
 
 /* detail card styles */
-.session-detail .card-columns {
+.session-detail-wrapper .card-columns { /* default */
   column-count: 2;
   -moz-column-count: 2;
 }
+.session-detail-wrapper.card-columns-1 .card-columns {
+  column-count: 1;
+  -moz-column-count: 1;
+}
+.session-detail-wrapper.card-columns-3 .card-columns {
+  column-count: 3;
+  -moz-column-count: 3;
+}
 @media (max-width: 1350px) {
-  .session-detail .card-columns {
+  .session-detail-wrapper .card-columns {
     column-count: 1;
     -moz-column-count: 1;
   }
