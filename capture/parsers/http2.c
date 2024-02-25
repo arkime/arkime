@@ -136,7 +136,7 @@ LOCAL void http2_parse_header_block(ArkimeSession_t *session, HTTP2Info_t *http2
                                             in, inlen, final);
 
         if(rv < 0) {
-            LOG("inflate failed with error code %zd", rv);
+            LOG_RATE(5, "inflate failed with error code %zd", rv);
             return;
         }
 

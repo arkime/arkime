@@ -275,8 +275,9 @@ LOCAL void smtp_email_add_encoded(ArkimeSession_t *session, int pos, char *strin
 
             if (question[3] && question[4]) {
                 g_base64_decode_inplace(question + 3, &olen);
-            } else
+            } else {
                 olen = 0;
+            }
 
             char *fmt = smtp_gformat(str + 2);
             if (strcasecmp(fmt, "utf-8") == 0) {
@@ -297,7 +298,11 @@ LOCAL void smtp_email_add_encoded(ArkimeSession_t *session, int pos, char *strin
         } else if (*(question + 1) == 'Q' || *(question + 1) == 'q') {
             *question = 0;
 
-            smtp_quoteable_decode_inplace(question + 3, &olen);
+            if (question[3] && question[4]) {
+                smtp_quoteable_decode_inplace(question + 3, &olen);
+            } else {
+                olen = 0;
+            }
 
             char *fmt = smtp_gformat(str + 2);
             if (strcasecmp(fmt, "utf-8") == 0) {
@@ -477,7 +482,9 @@ LOCAL int smtp_parser(ArkimeSession_t *session, void *uw, const uint8_t *data, i
                 arkime_session_add_tag(session, "smtp:authlogin");
                 if (line->len > 11) {
                     gsize out_len = 0;
-                    g_base64_decode_inplace(line->str + 11, &out_len);
+                    if (line->str[11] && line->str[12]) {
+                        g_base64_decode_inplace(line->str + 11, &out_len);
+                    }
                     if (out_len > 0) {
                         arkime_field_string_add_lower(userField, session, line->str + 11, out_len);
                     }
@@ -522,8 +529,9 @@ LOCAL int smtp_parser(ArkimeSession_t *session, void *uw, const uint8_t *data, i
         }
         case EMAIL_AUTHLOGIN_RETURN: {
             gsize out_len = 0;
-            if (line->len > 1)
+            if (line->str[0] && line->str[1]) {
                 g_base64_decode_inplace(line->str, &out_len);
+            }
             if (out_len > 0) {
                 arkime_field_string_add_lower(userField, session, line->str, out_len);
             }
@@ -533,8 +541,9 @@ LOCAL int smtp_parser(ArkimeSession_t *session, void *uw, const uint8_t *data, i
         case EMAIL_AUTHPLAIN_RETURN: {
             gsize out_len = 0;
             gsize zation = 0;
-            if (line->len > 1)
+            if (line->str[0] && line->str[1]) {
                 g_base64_decode_inplace(line->str, &out_len);
+            }
             zation = strlen(line->str);
             if (zation < out_len) {
                 gsize cation = strlen(line->str + zation + 1);

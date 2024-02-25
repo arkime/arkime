@@ -797,6 +797,15 @@ extern ARKIME_LOCK_EXTERN(LOG);
 #define CONFIGEXIT(...) do { printf("vvvvvvvvvvvvvvvvvvvvvvvvv IMPORTANT vvvvvvvvvvvvvvvvvvvvvvvvv\n"); printf("FATAL CONFIG ERROR - " __VA_ARGS__); printf("\n^^^^^^^^^^^^^^^^^^^^^^^^^ IMPORTANT ^^^^^^^^^^^^^^^^^^^^^^^^^\n");exit(1); } while(0) /* no trailing ; */
 #define REMOVEDCONFIG(_var,_help) do { if (arkime_config_str(NULL, _var, NULL) != NULL) CONFIGEXIT("Setting '" _var "' removed - " _help); } while (0) /* no trailing ; */
 
+#define LOG_RATE(rate, ...) do { \
+    static time_t last_time = 0; \
+    time_t current_time = time(NULL); \
+    if (config.debug || current_time - last_time >= rate) { \
+        LOG(__VA_ARGS__); \
+        last_time = current_time; \
+    } \
+} while (0) /* no trailing ; */
+
 
 /******************************************************************************/
 /* Simple bit macros, assuming uint64_t */

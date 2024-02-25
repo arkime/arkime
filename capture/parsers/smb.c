@@ -446,7 +446,7 @@ LOCAL int smb2_parse(ArkimeSession_t *session, const SMBInfo_t *UNUSED(smb), BSB
             GError      *error = 0;
             char *out = g_convert((char *)BSB_WORK_PTR(*bsb), namelen, "utf-8", "ucs-2le", &bread, &bwritten, &error);
             if (error) {
-                LOG("ERROR %s", error->message);
+                LOG_RATE(5, "ERROR %s", error->message);
                 g_error_free(error);
             } else {
                 if (!arkime_field_string_add(fnField, session, out, -1, FALSE)) {
