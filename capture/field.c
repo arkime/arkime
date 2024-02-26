@@ -551,9 +551,6 @@ void arkime_field_truncated(ArkimeSession_t *session, const ArkimeFieldInfo_t *i
 /******************************************************************************/
 const char *arkime_field_string_add(int pos, ArkimeSession_t *session, const char *string, int len, gboolean copy)
 {
-    if (len == 0)
-        return NULL;
-
     ArkimeField_t                    *field;
     ArkimeStringHashStd_t            *hash;
     ArkimeString_t                   *hstring;
@@ -634,14 +631,17 @@ const char *arkime_field_string_add(int pos, ArkimeSession_t *session, const cha
         g_ptr_array_add(field->sarray, (char *)string);
         goto added;
     case ARKIME_FIELD_TYPE_STR_HASH:
+        if (copy)
+            string = g_strndup(string, len);
+
         HASH_FIND_HASH(s_, *(field->shash), arkime_string_hash_len(string, len), string, hstring);
 
         if (hstring) {
+            if (copy)
+                g_free((gpointer)string);
             return NULL;
         }
         hstring = ARKIME_TYPE_ALLOC(ArkimeString_t);
-        if (copy)
-            string = g_strndup(string, len);
         hstring->str = (char *)string;
         hstring->len = len;
         hstring->utf8 = 0;
