@@ -562,7 +562,7 @@ const char *arkime_field_string_add(int pos, ArkimeSession_t *session, const cha
     if (!session->fields[pos]) {
         field = ARKIME_TYPE_ALLOC(ArkimeField_t);
         session->fields[pos] = field;
-        if (len == -1)
+        if (len < 0)
             len = strlen(string);
 
         if (len > ARKIME_FIELD_MAX_ELEMENT_SIZE) {
@@ -601,7 +601,7 @@ const char *arkime_field_string_add(int pos, ArkimeSession_t *session, const cha
         }
     }
 
-    if (len == -1)
+    if (len < 0)
         len = strlen(string);
 
     if (len > ARKIME_FIELD_MAX_ELEMENT_SIZE) {
@@ -631,14 +631,17 @@ const char *arkime_field_string_add(int pos, ArkimeSession_t *session, const cha
         g_ptr_array_add(field->sarray, (char *)string);
         goto added;
     case ARKIME_FIELD_TYPE_STR_HASH:
+        if (copy)
+            string = g_strndup(string, len);
+
         HASH_FIND_HASH(s_, *(field->shash), arkime_string_hash_len(string, len), string, hstring);
 
         if (hstring) {
+            if (copy)
+                g_free((gpointer)string);
             return NULL;
         }
         hstring = ARKIME_TYPE_ALLOC(ArkimeString_t);
-        if (copy)
-            string = g_strndup(string, len);
         hstring->str = (char *)string;
         hstring->len = len;
         hstring->utf8 = 0;
@@ -673,7 +676,7 @@ added:
 /******************************************************************************/
 gboolean arkime_field_string_add_lower(int pos, ArkimeSession_t *session, const char *string, int len)
 {
-    if (len == -1)
+    if (len < 0)
         len = strlen(string);
 
     if (len > ARKIME_FIELD_MAX_ELEMENT_SIZE) {
@@ -693,7 +696,7 @@ gboolean arkime_field_string_add_host(int pos, ArkimeSession_t *session, char *s
 {
     char *host;
 
-    if (len == -1 ) {
+    if (len < 0) {
         len = strlen(string);
     }
 
@@ -741,7 +744,7 @@ const char *arkime_field_string_uw_add(int pos, ArkimeSession_t *session, const 
     if (!session->fields[pos]) {
         field = ARKIME_TYPE_ALLOC(ArkimeField_t);
         session->fields[pos] = field;
-        if (len == -1)
+        if (len < 0)
             len = strlen(string);
         if (len > ARKIME_FIELD_MAX_ELEMENT_SIZE) {
             len = ARKIME_FIELD_MAX_ELEMENT_SIZE;
@@ -769,7 +772,7 @@ const char *arkime_field_string_uw_add(int pos, ArkimeSession_t *session, const 
         }
     }
 
-    if (len == -1)
+    if (len < 0)
         len = strlen(string);
 
     field = session->fields[pos];
