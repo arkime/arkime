@@ -551,6 +551,9 @@ void arkime_field_truncated(ArkimeSession_t *session, const ArkimeFieldInfo_t *i
 /******************************************************************************/
 const char *arkime_field_string_add(int pos, ArkimeSession_t *session, const char *string, int len, gboolean copy)
 {
+    if (len == 0)
+        return NULL;
+
     ArkimeField_t                    *field;
     ArkimeStringHashStd_t            *hash;
     ArkimeString_t                   *hstring;
@@ -562,7 +565,7 @@ const char *arkime_field_string_add(int pos, ArkimeSession_t *session, const cha
     if (!session->fields[pos]) {
         field = ARKIME_TYPE_ALLOC(ArkimeField_t);
         session->fields[pos] = field;
-        if (len == -1)
+        if (len < 0)
             len = strlen(string);
 
         if (len > ARKIME_FIELD_MAX_ELEMENT_SIZE) {
@@ -601,7 +604,7 @@ const char *arkime_field_string_add(int pos, ArkimeSession_t *session, const cha
         }
     }
 
-    if (len == -1)
+    if (len < 0)
         len = strlen(string);
 
     if (len > ARKIME_FIELD_MAX_ELEMENT_SIZE) {
@@ -673,7 +676,7 @@ added:
 /******************************************************************************/
 gboolean arkime_field_string_add_lower(int pos, ArkimeSession_t *session, const char *string, int len)
 {
-    if (len == -1)
+    if (len < 0)
         len = strlen(string);
 
     if (len > ARKIME_FIELD_MAX_ELEMENT_SIZE) {
@@ -693,7 +696,7 @@ gboolean arkime_field_string_add_host(int pos, ArkimeSession_t *session, char *s
 {
     char *host;
 
-    if (len == -1 ) {
+    if (len < 0) {
         len = strlen(string);
     }
 
@@ -741,7 +744,7 @@ const char *arkime_field_string_uw_add(int pos, ArkimeSession_t *session, const 
     if (!session->fields[pos]) {
         field = ARKIME_TYPE_ALLOC(ArkimeField_t);
         session->fields[pos] = field;
-        if (len == -1)
+        if (len < 0)
             len = strlen(string);
         if (len > ARKIME_FIELD_MAX_ELEMENT_SIZE) {
             len = ARKIME_FIELD_MAX_ELEMENT_SIZE;
@@ -769,7 +772,7 @@ const char *arkime_field_string_uw_add(int pos, ArkimeSession_t *session, const 
         }
     }
 
-    if (len == -1)
+    if (len < 0)
         len = strlen(string);
 
     field = session->fields[pos];
