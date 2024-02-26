@@ -497,7 +497,9 @@ LOCAL int smtp_parser(ArkimeSession_t *session, void *uw, const uint8_t *data, i
                 if (line->len > 11) {
                     gsize out_len = 0;
                     gsize zation = 0;
-                    g_base64_decode_inplace(line->str + 11, &out_len);
+                    if (line->str[11] && line->str[12]) {
+                        g_base64_decode_inplace(line->str + 11, &out_len);
+                    }
                     zation = strlen(line->str + 11);
                     if (zation < out_len) {
                         gsize cation = strlen(line->str + 11 + zation + 1);
