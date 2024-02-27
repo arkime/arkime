@@ -410,6 +410,7 @@ class MiscAPIs {
       const user = await User.getCurrentUser(req);
       const fieldsArr = internals.fieldsArr;
       const fieldsMap = JSON.parse(internals.fieldsMap);
+      const userSettingDefaults = internals.settingDefaults;
 
       return res.send({
         esHealth,
@@ -421,7 +422,8 @@ class MiscAPIs {
         user,
         fieldsArr,
         fieldsMap,
-        roles
+        roles,
+        userSettingDefaults
       });
     } catch (err) {
       console.log('ERROR - /api/appinfo', err);

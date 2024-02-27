@@ -127,9 +127,8 @@ ArkimeConfig.loaded(() => {
     internals.elasticBase[0] = 'http://' + internals.elasticBase[0];
   }
 
-  // loop through user settingDefaults
-  // update user settingDefaults with user-setting-defaults config option if set
-  for (const key of Object.entries(internals.settingDefaults)) {
+  // update user settingDefaults with user-setting-defaults config option if set\
+  for (const key in internals.settingDefaults) {
     const userSettingDefault = ArkimeConfig.getFull('user-setting-defaults', key);
     if (userSettingDefault !== undefined && userSettingDefault !== null) {
       internals.settingDefaults[key] = key === 'timelineDataFilters' ? userSettingDefault.split(';') : userSettingDefault;
