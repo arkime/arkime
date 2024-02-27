@@ -1694,6 +1694,10 @@
             ],
             "srcOuiCnt" : 1,
             "srcPayload8" : "05020000f9c8e736",
+            "tags" : [
+               "communityidTest"
+            ],
+            "tagsCnt" : 1,
             "totDataBytes" : 12
          },
          "header" : {

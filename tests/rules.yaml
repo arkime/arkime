@@ -85,3 +85,11 @@ rules:
       packets.dst: 0
     ops:
       _dontSaveSPI: 1
+
+  - name: "communityId"
+    when: "beforeFinalSave"
+    fields:
+      communityId: "FuiRMncy2mhAkCJ4mYumMiRK0uw="
+    ops:
+      "tags": "communityidTest"
+
