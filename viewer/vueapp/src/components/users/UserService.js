@@ -1,27 +1,11 @@
 import Vue from 'vue';
 import store from '../../store';
 
-// default settings also in internals.js
-const defaultSettings = {
-  connDstField: 'ip.dst:port',
-  connSrcField: 'source.ip',
-  detailFormat: 'last',
-  numPackets: 'last',
-  showTimestamps: 'last',
-  sortColumn: 'firstPacket',
-  sortDirection: 'desc',
-  spiGraph: 'node',
-  theme: 'arkime-light-theme',
-  timezone: 'local',
-  manualQuery: false,
-  timelineDataFilters: ['totPackets', 'totBytes', 'totDataBytes'] // dbField2 values from fields
-};
-
 export default {
 
   /* returns the default user settings */
   getDefaultSettings () {
-    return defaultSettings;
+    return store.state.userSettingDefaults;
   },
 
   /**
@@ -87,7 +71,7 @@ export default {
           let settings = response.data;
           // if the settings are empty, set smart default
           if (Object.keys(settings).length === 0) {
-            settings = defaultSettings;
+            settings = store.state.userSettingDefaults;
           }
           resolve(settings);
         }, (error) => {
@@ -137,7 +121,7 @@ export default {
    *                            or rejection of the request.
    */
   resetSettings (userId, theme) {
-    const settings = JSON.parse(JSON.stringify(defaultSettings));
+    const settings = JSON.parse(JSON.stringify(store.state.userSettingDefaults));
 
     if (theme) {
       settings.theme = theme;
