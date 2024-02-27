@@ -58,6 +58,11 @@ LOCAL void arkime_field_by_exp_add_internal(const char *exp, ArkimeFieldType typ
 /******************************************************************************/
 LOCAL void arkime_field_by_exp_add_count(const char *exp, int cntForPos)
 {
+    // Fake fields don't actully have a cnt
+    if (cntForPos == -1) {
+        return;
+    }
+
     ArkimeFieldInfo_t *info = ARKIME_TYPE_ALLOC0(ArkimeFieldInfo_t);
     info->expression   = g_strdup(exp);
     info->pos          = ARKIME_THREAD_DECRNEW(config.minInternalField);
@@ -1456,7 +1461,7 @@ void arkime_field_ops_run_match(ArkimeSession_t *session, ArkimeFieldOps_t *ops,
             fieldPos = fieldOpsRemap[fieldPos][matchPos];
         }
 
-        // Exspecial Fields
+        // Internal Fields
         if (fieldPos >= config.minInternalField) {
             // ALW TODO
             continue;
