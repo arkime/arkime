@@ -96,7 +96,7 @@ internals.initialize = (app) => {
 };
 
 ArkimeConfig.loaded(() => {
-// build internals
+  // build internals
   internals.elasticBase = Config.getArray('elasticsearch', 'http://localhost:9200');
   internals.remoteClusters = Config.configMap('remote-clusters', 'moloch-clusters');
   internals.esQueryTimeout = Config.get('elasticsearchTimeout', 5 * 60) + 's';
@@ -125,6 +125,15 @@ ArkimeConfig.loaded(() => {
 
   if (!internals.elasticBase[0].startsWith('http')) {
     internals.elasticBase[0] = 'http://' + internals.elasticBase[0];
+  }
+
+  // loop through user settingDefaults
+  // update user settingDefaults with user-setting-defaults config option if set
+  for (const key of Object.entries(internals.settingDefaults)) {
+    const userSettingDefault = ArkimeConfig.getFull('user-setting-defaults', key);
+    if (userSettingDefault !== undefined && userSettingDefault !== null) {
+      internals.settingDefaults[key] = key === 'timelineDataFilters' ? userSettingDefault.split(';') : userSettingDefault;
+    }
   }
 });
 
