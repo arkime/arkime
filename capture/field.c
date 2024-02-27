@@ -44,7 +44,7 @@ LOCAL void arkime_field_by_exp_add_special(const char *exp, int pos)
     HASH_ADD(e_, fieldsByExp, info->expression, info);
 }
 /******************************************************************************/
-LOCAL void arkime_field_by_exp_add_internal(const char *exp, ArkimeFieldType type, ArkimeFieldGetFunc getCb, ArkimeFieldSetFunc setCb)
+int arkime_field_by_exp_add_internal(const char *exp, ArkimeFieldType type, ArkimeFieldGetFunc getCb, ArkimeFieldSetFunc setCb)
 {
     ArkimeFieldInfo_t *info = ARKIME_TYPE_ALLOC0(ArkimeFieldInfo_t);
     info->expression   = g_strdup(exp);
@@ -54,6 +54,8 @@ LOCAL void arkime_field_by_exp_add_internal(const char *exp, ArkimeFieldType typ
     info->setCb        = setCb;
     config.fields[info->pos] = info;
     HASH_ADD(e_, fieldsByExp, info->expression, info);
+
+    return info->pos;
 }
 /******************************************************************************/
 LOCAL void arkime_field_by_exp_add_count(const char *exp, int cntForPos)

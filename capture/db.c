@@ -459,27 +459,6 @@ LOCAL struct {
 
 LOCAL ARKIME_LOCK_DEFINE(outputed);
 
-
-#define SAVE_STRING_HEAD(HEAD, STR) \
-if (HEAD.s_count > 0) { \
-    BSB_EXPORT_cstr(jbsb, "\"" STR "\":["); \
-    while (HEAD.s_count > 0) { \
-	DLL_POP_HEAD(s_, &HEAD, string); \
-	arkime_db_js0n_str(&jbsb, (uint8_t *)string->str, string->utf8); \
-	BSB_EXPORT_u08(jbsb, ','); \
-	g_free(string->str); \
-	ARKIME_TYPE_FREE(ArkimeString_t, string); \
-    } \
-    BSB_EXPORT_rewind(jbsb, 1); \
-    BSB_EXPORT_u08(jbsb, ']'); \
-    BSB_EXPORT_u08(jbsb, ','); \
-}
-
-#define SAVE_STRING_HEAD_CNT(HEAD, CNT) \
-if (HEAD.s_count > 0) { \
-    BSB_EXPORT_sprintf(jbsb, "\"" CNT "\":%d,", certs->alt.s_count); \
-}
-
 #define SAVE_FIELD_STR_HASH(POS, FLAGS) \
 do { \
     shash = session->fields[POS]->shash; \
@@ -1264,14 +1243,10 @@ void arkime_db_save_session(ArkimeSession_t *session, int final)
 
             HASH_FORALL_POP_HEAD2(o_, *ohash, object) {
                 saveCB(&jbsb, object, session);
-                if (freeField) {
-                    freeCB(object);
-                }
+                freeCB(object);
                 BSB_EXPORT_u08(jbsb, ',');
             }
-            if (freeField) {
-                ARKIME_TYPE_FREE(ArkimeFieldObjectHashStd_t, ohash);
-            }
+            ARKIME_TYPE_FREE(ArkimeFieldObjectHashStd_t, ohash);
 
             BSB_EXPORT_rewind(jbsb, 1); // Remove last comma
             BSB_EXPORT_cstr(jbsb, "],");

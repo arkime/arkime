@@ -125,63 +125,6 @@ LOCAL void tls_certinfo_process_publickey(ArkimeCertsInfo_t *certs, uint8_t *dat
     }
 }
 /******************************************************************************/
-LOCAL void tls_key_usage (ArkimeCertsInfo_t *certs, BSB *bsb)
-{
-    uint32_t apc, atag, alen;
-
-    while (BSB_REMAINING(*bsb) >= 2) {
-        const uint8_t *value = arkime_parsers_asn_get_tlv(bsb, &apc, &atag, &alen);
-
-        if (value && atag == 4 && alen == 4)
-            certs->isCA = (value[3] & 0x02);
-    }
-}
-/******************************************************************************/
-LOCAL void tls_alt_names(ArkimeSession_t *session, ArkimeCertsInfo_t *certs, BSB *bsb, char *lastOid)
-{
-    uint32_t apc, atag, alen;
-
-    while (BSB_REMAINING(*bsb) >= 2) {
-        uint8_t *value = arkime_parsers_asn_get_tlv(bsb, &apc, &atag, &alen);
-
-        if (!value)
-            return;
-
-        if (apc) {
-            BSB tbsb;
-            BSB_INIT(tbsb, value, alen);
-            tls_alt_names(session, certs, &tbsb, lastOid);
-            if (certs->alt.s_count > 0) {
-                return;
-            }
-        } else if (atag == 6) {
-            arkime_parsers_asn_decode_oid(lastOid, 100, value, alen);
-            if (strcmp(lastOid, "2.5.29.15") == 0) {
-                tls_key_usage(certs, bsb);
-            }
-            if (strcmp(lastOid, "2.5.29.17") != 0)
-                lastOid[0] = 0;
-        } else if (lastOid[0] && atag == 4) {
-            BSB tbsb;
-            BSB_INIT(tbsb, value, alen);
-            tls_alt_names(session, certs, &tbsb, lastOid);
-            return;
-        } else if (lastOid[0] && atag == 2) {
-            if (g_utf8_validate((char *)value, alen, NULL)) {
-                ArkimeString_t *element = ARKIME_TYPE_ALLOC0(ArkimeString_t);
-                element->str = g_ascii_strdown((char *)value, alen);
-                element->len = alen;
-                element->utf8 = 1;
-                DLL_PUSH_TAIL(s_, &certs->alt, element);
-            } else {
-                arkime_session_add_tag(session, "bad-altname");
-            }
-        }
-    }
-    lastOid[0] = 0;
-    return;
-}
-/******************************************************************************/
 // https://tools.ietf.org/html/draft-davidben-tls-grease-00
 LOCAL int tls_is_grease_value(uint32_t val)
 {
@@ -541,7 +484,7 @@ LOCAL uint32_t tls_process_server_certificate(ArkimeSession_t *session, const ui
             BSB_INIT(tbsb, value, alen);
             char lastOid[100];
             lastOid[0] = 0;
-            tls_alt_names(session, certs, &tbsb, lastOid);
+            certinfo_alt_names(session, certs, &tbsb, lastOid);
         }
 
         // no previous certs AND not a CA AND either no orgName or the same orgName AND the same 1 commonName
@@ -1049,114 +992,6 @@ void arkime_parser_init()
     ja4Raw = arkime_config_boolean(NULL, "ja4Raw", FALSE);
 
     certsField = arkime_field_object_register("cert", "Certificates info", certinfo_save, certinfo_free, certinfo_hash, certinfo_cmp);
-
-    arkime_field_define("cert", "integer",
-                        "cert.cnt", "Cert Cnt", "certCnt",
-                        "Count of certificates",
-                        0, ARKIME_FIELD_FLAG_FAKE,
-                        (char *)NULL);
-
-    arkime_field_define("cert", "lotermfield",
-                        "cert.alt", "Alt Name", "cert.alt",
-                        "Certificate alternative names",
-                        0,  ARKIME_FIELD_FLAG_CNT | ARKIME_FIELD_FLAG_FAKE,
-                        (char *)NULL);
-
-    arkime_field_define("cert", "lotermfield",
-                        "cert.serial", "Serial Number", "cert.serial",
-                        "Serial Number",
-                        0, ARKIME_FIELD_FLAG_FAKE,
-                        (char *)NULL);
-
-    arkime_field_define("cert", "lotermfield",
-                        "cert.issuer.cn", "Issuer CN", "cert.issuerCN",
-                        "Issuer's common name",
-                        0, ARKIME_FIELD_FLAG_FAKE,
-                        (char *)NULL);
-
-    arkime_field_define("cert", "lotermfield",
-                        "cert.subject.cn", "Subject CN", "cert.subjectCN",
-                        "Subject's common name",
-                        0, ARKIME_FIELD_FLAG_FAKE,
-                        (char *)NULL);
-
-    arkime_field_define("cert", "termfield",
-                        "cert.issuer.on", "Issuer ON", "cert.issuerON",
-                        "Issuer's organization name",
-                        0, ARKIME_FIELD_FLAG_FAKE,
-                        (char *)NULL);
-
-    arkime_field_define("cert", "termfield",
-                        "cert.subject.on", "Subject ON", "cert.subjectON",
-                        "Subject's organization name",
-                        0, ARKIME_FIELD_FLAG_FAKE,
-                        (char *)NULL);
-
-    arkime_field_define("cert", "termfield",
-                        "cert.issuer.ou", "Issuer Org Unit", "cert.issuerOU",
-                        "Issuer's organizational unit",
-                        0, ARKIME_FIELD_FLAG_FAKE,
-                        (char *)NULL);
-
-    arkime_field_define("cert", "termfield",
-                        "cert.subject.ou", "Subject Org Unit", "cert.subjectOU",
-                        "Subject's organizational unit",
-                        0, ARKIME_FIELD_FLAG_FAKE,
-                        (char *)NULL);
-
-    arkime_field_define("cert", "lotermfield",
-                        "cert.hash", "Hash", "cert.hash",
-                        "SHA1 hash of entire certificate",
-                        0, ARKIME_FIELD_FLAG_FAKE,
-                        (char *)NULL);
-
-    arkime_field_define("cert", "date",
-                        "cert.notbefore", "Not Before", "cert.notBefore",
-                        "Certificate is not valid before this date",
-                        0, ARKIME_FIELD_FLAG_FAKE,
-                        (char *)NULL);
-
-    arkime_field_define("cert", "date",
-                        "cert.notafter", "Not After", "cert.notAfter",
-                        "Certificate is not valid after this date",
-                        0, ARKIME_FIELD_FLAG_FAKE,
-                        (char *)NULL);
-
-    arkime_field_define("cert", "integer",
-                        "cert.validfor", "Days Valid For", "cert.validDays",
-                        "Certificate is valid for this many days total",
-                        0, ARKIME_FIELD_FLAG_FAKE,
-                        (char *)NULL);
-
-    arkime_field_define("cert", "integer",
-                        "cert.remainingDays", "Days remaining", "cert.remainingDays",
-                        "Certificate is still valid for this many days",
-                        0, ARKIME_FIELD_FLAG_FAKE,
-                        (char *)NULL);
-
-    arkime_field_define("cert", "integer",
-                        "cert.validforSeconds", "Seconds Valid For", "cert.validSeconds",
-                        "Certificate is valid for this many seconds total",
-                        0, ARKIME_FIELD_FLAG_FAKE,
-                        (char *)NULL);
-
-    arkime_field_define("cert", "integer",
-                        "cert.remainingSeconds", "Seconds remaining", "cert.remainingSeconds",
-                        "Certificate is still valid for this many seconds",
-                        0, ARKIME_FIELD_FLAG_FAKE,
-                        (char *)NULL);
-
-    arkime_field_define("cert", "termfield",
-                        "cert.curve", "Curve", "cert.curve",
-                        "Curve Algorithm",
-                        0, ARKIME_FIELD_FLAG_FAKE,
-                        (char *)NULL);
-
-    arkime_field_define("cert", "termfield",
-                        "cert.publicAlgorithm", "Public Algorithm", "cert.publicAlgorithm",
-                        "Public Key Algorithm",
-                        0, ARKIME_FIELD_FLAG_FAKE,
-                        (char *)NULL);
 
     hostField = arkime_field_by_exp("host.http");
 

@@ -55,59 +55,7 @@ LOCAL void dtls_certinfo_process(ArkimeCertInfo_t *ci, BSB *bsb)
         }
     }
 }
-/******************************************************************************/
-LOCAL void dtls_key_usage (ArkimeCertsInfo_t *certs, BSB *bsb)
-{
-    uint32_t apc, atag, alen;
 
-    while (BSB_REMAINING(*bsb) >= 2) {
-        const uint8_t *value = arkime_parsers_asn_get_tlv(bsb, &apc, &atag, &alen);
-
-        if (value && atag == 4 && alen == 4)
-            certs->isCA = (value[3] & 0x02);
-    }
-}
-/******************************************************************************/
-LOCAL void dtls_alt_names(ArkimeCertsInfo_t *certs, BSB *bsb, char *lastOid)
-{
-    uint32_t apc, atag, alen;
-
-    while (BSB_REMAINING(*bsb) >= 2) {
-        uint8_t *value = arkime_parsers_asn_get_tlv(bsb, &apc, &atag, &alen);
-
-        if (!value)
-            return;
-
-        if (apc) {
-            BSB tbsb;
-            BSB_INIT(tbsb, value, alen);
-            dtls_alt_names(certs, &tbsb, lastOid);
-            if (certs->alt.s_count > 0) {
-                return;
-            }
-        } else if (atag == 6) {
-            arkime_parsers_asn_decode_oid(lastOid, 100, value, alen);
-            if (strcmp(lastOid, "2.5.29.15") == 0) {
-                dtls_key_usage(certs, bsb);
-            }
-            if (strcmp(lastOid, "2.5.29.17") != 0)
-                lastOid[0] = 0;
-        } else if (lastOid[0] && atag == 4) {
-            BSB tbsb;
-            BSB_INIT(tbsb, value, alen);
-            dtls_alt_names(certs, &tbsb, lastOid);
-            return;
-        } else if (lastOid[0] && atag == 2) {
-            ArkimeString_t *element = ARKIME_TYPE_ALLOC0(ArkimeString_t);
-            element->str = g_ascii_strdown((char *)value, alen);
-            element->len = alen;
-            element->utf8 = 1;
-            DLL_PUSH_TAIL(s_, &certs->alt, element);
-        }
-    }
-    lastOid[0] = 0;
-    return;
-}
 /******************************************************************************/
 LOCAL void dtls_process_server_certificate(ArkimeSession_t *session, const uint8_t *data, int len)
 {
@@ -259,7 +207,7 @@ LOCAL void dtls_process_server_certificate(ArkimeSession_t *session, const uint8
             BSB_INIT(tbsb, value, alen);
             char lastOid[100];
             lastOid[0] = 0;
-            dtls_alt_names(certs, &tbsb, lastOid);
+            certinfo_alt_names(session, certs, &tbsb, lastOid);
         }
 
         // no previous certs AND not a CA AND either no orgName or the same orgName AND the same 1 commonName

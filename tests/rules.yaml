@@ -93,3 +93,14 @@ rules:
     ops:
       "tags": "communityidTest"
 
+  - name: "cert.alt"
+    when: "fieldSet"
+    log: true
+    fields:
+      cert.alt: "bad.curveballtest.com"
+      communityId: "YzavRzM2u5v8TNEv4SuCDe3OgWg="
+      ip.dst: 54.226.182.138
+      ip.src: 172.130.128.76
+      protocols.cnt: 2
+    ops:
+      "tags": "cert.alt test"

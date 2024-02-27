@@ -1090,13 +1090,11 @@ LOCAL void arkime_rules_check_rule_fields(ArkimeSession_t *const session, Arkime
                 continue;
             }
 
-
             // Check a real field
             switch (config.fields[p]->type) {
             case ARKIME_FIELD_TYPE_IP:
                 good = arkime_rules_check_ip(rule, p, value, logStr);
                 break;
-
             case ARKIME_FIELD_TYPE_INT:
                 good = arkime_rules_check_int_match(rule, p, (long)value, logStr);
                 RULE_LOG_INT((long)value);
@@ -1104,6 +1102,17 @@ LOCAL void arkime_rules_check_rule_fields(ArkimeSession_t *const session, Arkime
             case ARKIME_FIELD_TYPE_STR:
                 good = arkime_rules_check_str_match(rule, p, value, logStr);
                 break;
+            case ARKIME_FIELD_TYPE_STR_ARRAY: {
+                GPtrArray *sarray = (GPtrArray *)value;
+                good = 0;
+                for(i = 0; i < (int)sarray->len; i++) {
+                    if (arkime_rules_check_str_match(rule, p, g_ptr_array_index(sarray, i), logStr)) {
+                        good = 1;
+                        break;
+                    }
+                }
+                break;
+            }
             default:
                 // Unsupported
                 good = 0;

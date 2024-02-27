@@ -1319,6 +1319,8 @@ void arkime_field_certsinfo_update_extra (void *cert, char *key, char *value);
 void arkime_field_free(ArkimeSession_t *session);
 void arkime_field_exit();
 
+int arkime_field_by_exp_add_internal(const char *exp, ArkimeFieldType type, ArkimeFieldGetFunc getCb, ArkimeFieldSetFunc setCb);
+
 void arkime_field_ops_init(ArkimeFieldOps_t *ops, int numOps, uint16_t flags);
 void arkime_field_ops_free(ArkimeFieldOps_t *ops);
 void arkime_field_ops_add(ArkimeFieldOps_t *ops, int fieldPos, char *value, int valuelen);
