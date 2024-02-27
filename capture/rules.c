@@ -103,6 +103,12 @@ typedef union {
     uint64_t        num;
 } ArkimeRuleIntMatch_t;
 
+LOCAL int srcPortField;
+LOCAL int srcIpField;
+LOCAL int dstPortField;
+LOCAL int dstIpField;
+
+
 LOCAL void arkime_rules_load_add_field_range_match(ArkimeRule_t *rule, int pos, const char *key);
 /******************************************************************************/
 LOCAL void arkime_rules_free_array(gpointer data)
@@ -1013,76 +1019,9 @@ LOCAL void arkime_rules_check_rule_fields(ArkimeSession_t *const session, Arkime
         if (p == skipPos)
             continue;
 
-        // Check fields that are directly in session
-        if (p >= ARKIME_FIELD_EXSPECIAL_START) {
-            switch (p) {
-            case ARKIME_FIELD_EXSPECIAL_SRC_IP:
-                good = arkime_rules_check_ip(rule, p, &session->addr1, logStr);
-                break;
-            case ARKIME_FIELD_EXSPECIAL_SRC_PORT:
-                G_HASH_TABLE_CONTAINS_CHECK(session->port1);
-                break;
-            case ARKIME_FIELD_EXSPECIAL_DST_IP:
-                good = arkime_rules_check_ip(rule, p, &session->addr2, logStr);
-                break;
-            case ARKIME_FIELD_EXSPECIAL_DST_PORT:
-                G_HASH_TABLE_CONTAINS_CHECK(session->port2);
-                break;
-            case ARKIME_FIELD_EXSPECIAL_TCPFLAGS_SYN:
-                G_HASH_TABLE_CONTAINS_CHECK(session->tcpFlagCnt[ARKIME_TCPFLAG_SYN]);
-                break;
-            case ARKIME_FIELD_EXSPECIAL_TCPFLAGS_SYN_ACK:
-                G_HASH_TABLE_CONTAINS_CHECK(session->tcpFlagCnt[ARKIME_TCPFLAG_SYN_ACK]);
-                break;
-            case ARKIME_FIELD_EXSPECIAL_TCPFLAGS_ACK:
-                G_HASH_TABLE_CONTAINS_CHECK(session->tcpFlagCnt[ARKIME_TCPFLAG_ACK]);
-                break;
-            case ARKIME_FIELD_EXSPECIAL_TCPFLAGS_PSH:
-                G_HASH_TABLE_CONTAINS_CHECK(session->tcpFlagCnt[ARKIME_TCPFLAG_PSH]);
-                break;
-            case ARKIME_FIELD_EXSPECIAL_TCPFLAGS_RST:
-                G_HASH_TABLE_CONTAINS_CHECK(session->tcpFlagCnt[ARKIME_TCPFLAG_RST]);
-                break;
-            case ARKIME_FIELD_EXSPECIAL_TCPFLAGS_FIN:
-                G_HASH_TABLE_CONTAINS_CHECK(session->tcpFlagCnt[ARKIME_TCPFLAG_FIN]);
-                break;
-            case ARKIME_FIELD_EXSPECIAL_TCPFLAGS_URG:
-                G_HASH_TABLE_CONTAINS_CHECK(session->tcpFlagCnt[ARKIME_TCPFLAG_URG]);
-                break;
-            case ARKIME_FIELD_EXSPECIAL_PACKETS_SRC:
-                G_HASH_TABLE_CONTAINS_CHECK(session->packets[0]);
-                break;
-            case ARKIME_FIELD_EXSPECIAL_PACKETS_DST:
-                G_HASH_TABLE_CONTAINS_CHECK(session->packets[1]);
-                break;
-            case ARKIME_FIELD_EXSPECIAL_DATABYTES_SRC:
-                G_HASH_TABLE_CONTAINS_CHECK_U64(session->databytes[0]);
-                break;
-            case ARKIME_FIELD_EXSPECIAL_DATABYTES_DST:
-                G_HASH_TABLE_CONTAINS_CHECK_U64(session->databytes[1]);
-                break;
-            case ARKIME_FIELD_EXSPECIAL_COMMUNITYID:
-                if (session->ses == SESSION_ICMP) {
-                    good = 0;
-                    break;
-                }
-                // Only caculate once since several rules for session could use it
-                if (!communityId)
-                    communityId = arkime_db_community_id(session);
-
-                good = g_hash_table_contains(rule->hash[p], communityId);
-                if (good && logStr) \
-                    BSB_EXPORT_sprintf(*logStr, "%s: %s, ", config.fields[p]->expression, communityId);
-                break;
-            default:
-                good = 0;
-            }
-            continue;
-        }
-
         // Check count fields
-        if (p >= ARKIME_FIELDS_CNT_MIN) {
-            int cp = p - ARKIME_FIELDS_CNT_MIN; // cp is the field we are getting the count of
+        if (config.fields[p]->cntForPos) {
+            int cp = config.fields[p]->cntForPos;
             if (cp >= session->maxFields) {
                 good = 0;
                 continue;
@@ -1137,6 +1076,40 @@ LOCAL void arkime_rules_check_rule_fields(ArkimeSession_t *const session, Arkime
                 // Unsupported
                 break;
             } /* switch */
+            continue;
+        }
+
+        // Check fields that are directly in session
+        if (p >= config.minInternalField) {
+            void *value = NULL;;
+            if (config.fields[p]->getCb)
+                value = config.fields[p]->getCb(session, p);
+
+            if (!value) {
+                good = 0;
+                continue;
+            }
+
+
+            // Check a real field
+            switch (config.fields[p]->type) {
+            case ARKIME_FIELD_TYPE_IP:
+                good = arkime_rules_check_ip(rule, p, value, logStr);
+                break;
+
+            case ARKIME_FIELD_TYPE_INT:
+                good = arkime_rules_check_int_match(rule, p, (long)value, logStr);
+                RULE_LOG_INT((long)value);
+                break;
+            case ARKIME_FIELD_TYPE_STR:
+                good = arkime_rules_check_str_match(rule, p, value, logStr);
+                break;
+            default:
+                // Unsupported
+                good = 0;
+                break;
+            } /* switch */
+
             continue;
         }
 
@@ -1417,19 +1390,19 @@ void arkime_rules_session_create(ArkimeSession_t *session)
     case IPPROTO_SCTP:
     case IPPROTO_TCP:
     case IPPROTO_UDP:
-        if (config.fields[ARKIME_FIELD_EXSPECIAL_SRC_PORT]->ruleEnabled)
-            arkime_rules_run_field_set(session, ARKIME_FIELD_EXSPECIAL_SRC_PORT, (gpointer)(long)session->port1);
-        if (config.fields[ARKIME_FIELD_EXSPECIAL_DST_PORT]->ruleEnabled)
-            arkime_rules_run_field_set(session, ARKIME_FIELD_EXSPECIAL_DST_PORT, (gpointer)(long)session->port2);
+        if (config.fields[srcPortField]->ruleEnabled)
+            arkime_rules_run_field_set(session, srcPortField, (gpointer)(long)session->port1);
+        if (config.fields[dstPortField]->ruleEnabled)
+            arkime_rules_run_field_set(session, dstPortField, (gpointer)(long)session->port2);
     // NO BREAK because TCP/UDP/SCTP have ip also
     // fall through
     case IPPROTO_ESP:
     case IPPROTO_ICMP:
     case IPPROTO_ICMPV6:
-        if (config.fields[ARKIME_FIELD_EXSPECIAL_SRC_IP]->ruleEnabled)
-            arkime_rules_run_field_set(session, ARKIME_FIELD_EXSPECIAL_SRC_IP, &session->addr1);
-        if (config.fields[ARKIME_FIELD_EXSPECIAL_DST_IP]->ruleEnabled)
-            arkime_rules_run_field_set(session, ARKIME_FIELD_EXSPECIAL_DST_IP, &session->addr2);
+        if (config.fields[srcIpField]->ruleEnabled)
+            arkime_rules_run_field_set(session, srcIpField, &session->addr1);
+        if (config.fields[dstIpField]->ruleEnabled)
+            arkime_rules_run_field_set(session, dstIpField, &session->addr2);
         break;
     }
 }
@@ -1460,6 +1433,11 @@ void arkime_rules_stats()
 void arkime_rules_init()
 {
     rulesFiles = arkime_config_str_list(NULL, "rulesFiles", NULL);
+
+    srcPortField = arkime_field_by_exp("port.src");
+    srcIpField = arkime_field_by_exp("ip.src");
+    dstPortField = arkime_field_by_exp("port.dst");
+    dstIpField = arkime_field_by_exp("ip.dst");
 
     if (rulesFiles) {
         arkime_config_monitor_files("rules files", rulesFiles, arkime_rules_load);

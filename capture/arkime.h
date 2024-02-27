@@ -156,6 +156,9 @@ typedef void (* ArkimeFieldObjectFreeFunc) (ArkimeFieldObject_t *object);
 typedef uint32_t (* ArkimeFieldObjectHashFunc) (const void *key);
 typedef int (* ArkimeFieldObjectCmpFunc) (const void *keyv, const void *elementv);
 
+typedef void (* ArkimeFieldSetFunc) (struct arkime_session *session, int pos, void *value);
+typedef void *(* ArkimeFieldGetFunc) (struct arkime_session *session, int pos);
+
 /******************************************************************************/
 /*
  * Information about the various fields that we capture
@@ -230,8 +233,12 @@ typedef struct arkime_field_info {
     ArkimeFieldType           type;
     uint16_t                  flags;
     char                      ruleEnabled;
+    uint16_t                  cntForPos;
     char                     *transform;
     char                     *aliases;
+
+    ArkimeFieldSetFunc        setCb;
+    ArkimeFieldGetFunc        getCb;
 
     ArkimeFieldObjectSaveFunc object_save;
     ArkimeFieldObjectFreeFunc object_free;
@@ -298,6 +305,9 @@ typedef struct {
 #define ARKIME_THREAD_INCROLD(var)       __sync_fetch_and_add(&var, 1);
 #define ARKIME_THREAD_INCR_NUM(var, num) __sync_add_and_fetch(&var, num);
 
+#define ARKIME_THREAD_DECRNEW(var)       __sync_sub_and_fetch(&var, 1);
+#define ARKIME_THREAD_DECROLD(var)       __sync_fetch_and_sub(&var, 1);
+
 /* You are probably looking here because you think 24 is too low, really it isn't.
  * Instead, increase the number of threads used for reading packets.
  * https://arkime.com/faq#why-am-i-dropping-packets
@@ -346,34 +356,13 @@ enum ArkimeRotate {
 /* Field numbers are signed
  * [ARKIME_FIELD_SPECIAL_MIN, -1)                   - Rules only, Op fields
  * -1                                               - Field not found for lookups
- * [0, ARKIME_FIELDS_DB_MAX)                        - Normal fields
- * [ARKIME_FIELDS_DB_MAX, ARKIME_FIELDS_DB_MAX * 2) - Rules only, .cnt version of normal fields
- * [ARKIME_FIELDS_DB_MAX * 2, ARKIME_FIELDS_MAX)    - Rules only, fields that are in the sessions structure
+ * [0, config.maxDbField)                           - Normal fields
+ * [config.maxDbField, config.minInternalField)     - Unused fields
+ * [config.minInternalField, ARKIME_FIELDS_MAX)     - Internal fields
  */
 
 #define ARKIME_FIELD_NOT_FOUND  -1
-#define ARKIME_FIELDS_DB_MAX 512
-#define ARKIME_FIELDS_CNT_MIN ARKIME_FIELDS_DB_MAX
-#define ARKIME_FIELDS_CNT_MAX (ARKIME_FIELDS_DB_MAX * 2)
-#define ARKIME_FIELD_EXSPECIAL_START            (ARKIME_FIELDS_CNT_MAX)
-#define ARKIME_FIELD_EXSPECIAL_SRC_IP           (ARKIME_FIELDS_CNT_MAX)
-#define ARKIME_FIELD_EXSPECIAL_SRC_PORT         (ARKIME_FIELDS_CNT_MAX + 1)
-#define ARKIME_FIELD_EXSPECIAL_DST_IP           (ARKIME_FIELDS_CNT_MAX + 2)
-#define ARKIME_FIELD_EXSPECIAL_DST_PORT         (ARKIME_FIELDS_CNT_MAX + 3)
-#define ARKIME_FIELD_EXSPECIAL_TCPFLAGS_SYN     (ARKIME_FIELDS_CNT_MAX + 4)
-#define ARKIME_FIELD_EXSPECIAL_TCPFLAGS_SYN_ACK (ARKIME_FIELDS_CNT_MAX + 5)
-#define ARKIME_FIELD_EXSPECIAL_TCPFLAGS_ACK     (ARKIME_FIELDS_CNT_MAX + 6)
-#define ARKIME_FIELD_EXSPECIAL_TCPFLAGS_PSH     (ARKIME_FIELDS_CNT_MAX + 7)
-#define ARKIME_FIELD_EXSPECIAL_TCPFLAGS_RST     (ARKIME_FIELDS_CNT_MAX + 8)
-#define ARKIME_FIELD_EXSPECIAL_TCPFLAGS_FIN     (ARKIME_FIELDS_CNT_MAX + 9)
-#define ARKIME_FIELD_EXSPECIAL_TCPFLAGS_URG     (ARKIME_FIELDS_CNT_MAX + 10)
-#define ARKIME_FIELD_EXSPECIAL_PACKETS_SRC      (ARKIME_FIELDS_CNT_MAX + 11)
-#define ARKIME_FIELD_EXSPECIAL_PACKETS_DST      (ARKIME_FIELDS_CNT_MAX + 12)
-#define ARKIME_FIELD_EXSPECIAL_DATABYTES_SRC    (ARKIME_FIELDS_CNT_MAX + 13)
-#define ARKIME_FIELD_EXSPECIAL_DATABYTES_DST    (ARKIME_FIELDS_CNT_MAX + 14)
-#define ARKIME_FIELD_EXSPECIAL_COMMUNITYID      (ARKIME_FIELDS_CNT_MAX + 15)
-#define ARKIME_FIELD_EXSPECIAL_DST_IP_PORT      (ARKIME_FIELDS_CNT_MAX + 16)
-#define ARKIME_FIELDS_MAX                       (ARKIME_FIELDS_CNT_MAX + 17)
+#define ARKIME_FIELDS_MAX 1024
 
 typedef struct arkime_config {
     gboolean  quitting;
@@ -419,7 +408,8 @@ typedef struct arkime_config {
 
     HASH_VAR(s_, dontSaveTags, ArkimeStringHead_t, 11);
     ArkimeFieldInfo_t *fields[ARKIME_FIELDS_MAX];
-    int                maxField;
+    int                maxDbField;
+    int                minInternalField;
     int                tagsStringField;
 
     int                numPlugins;

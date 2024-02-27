@@ -727,7 +727,7 @@ gboolean arkime_ready_gfunc (gpointer UNUSED(user_data))
         return G_SOURCE_CONTINUE;
 
     if (config.debug)
-        LOG("maxField = %d", config.maxField);
+        LOG("maxDbField = %d minInternalField = %d", config.maxDbField, config.minInternalField);
 
     if (config.pcapReadOffline) {
         if (config.dryRun || !config.copyPcap) {

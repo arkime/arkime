@@ -27,11 +27,15 @@ LOCAL uint32_t              logEvery;
 
 
 LOCAL int                   protocolField;
+LOCAL int                   srcPortField;
+LOCAL int                   srcIpField;
+LOCAL int                   dstPortField;
+LOCAL int                   dstIpField;
 
 LOCAL uint32_t              fieldsTS;
 
 #define FIELDS_MAP_MAX      21
-LOCAL int                   fieldsMap[FIELDS_MAP_MAX][ARKIME_FIELDS_DB_MAX];
+LOCAL int                   fieldsMap[FIELDS_MAP_MAX][ARKIME_FIELDS_MAX];
 LOCAL char                 *fieldsMapHash[FIELDS_MAP_MAX];
 LOCAL int                   fieldsMapCnt;
 
@@ -189,8 +193,8 @@ LOCAL void wise_load_fields()
         BSB_IMPORT_u16(bsb, cnt);
     }
 
-    if (cnt > ARKIME_FIELDS_DB_MAX) {
-        LOGEXIT("ERROR - Wise server is returning too many fields %d > %d", cnt, ARKIME_FIELDS_DB_MAX);
+    if (cnt > ARKIME_FIELDS_MAX) {
+        LOGEXIT("ERROR - Wise server is returning too many fields %d > %d", cnt, ARKIME_FIELDS_MAX);
     }
 
     for (int i = 0; i < cnt; i++) {
@@ -654,8 +658,8 @@ void wise_plugin_pre_save(ArkimeSession_t *session, int UNUSED(final))
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wstrict-aliasing"
     //IPs
-    wise_lookup_ip(session, iRequest, &session->addr1, ARKIME_FIELD_EXSPECIAL_SRC_IP);
-    wise_lookup_ip(session, iRequest, &session->addr2, ARKIME_FIELD_EXSPECIAL_DST_IP);
+    wise_lookup_ip(session, iRequest, &session->addr1, srcIpField);
+    wise_lookup_ip(session, iRequest, &session->addr2, dstIpField);
 
 #pragma GCC diagnostic pop
 
@@ -664,30 +668,19 @@ void wise_plugin_pre_save(ArkimeSession_t *session, int UNUSED(final))
         for (i = 0; i < types[type].fieldsLen; i++) {
             int pos = types[type].fields[i];
 
-            if (pos >= ARKIME_FIELD_EXSPECIAL_START) {
-                switch (pos) {
-                case ARKIME_FIELD_EXSPECIAL_COMMUNITYID:
-                    // Currently don't do communityId for ICMP because it requires magic
-                    if (session->ses != SESSION_ICMP) {
-                        char *communityId = arkime_db_community_id(session);
-                        wise_lookup(session, iRequest, communityId, type, pos);
-                        g_free(communityId);
-                    }
-                    break;
-                case ARKIME_FIELD_EXSPECIAL_DST_IP_PORT: {
-                    char ipstr[INET6_ADDRSTRLEN + 10];
+            if (pos >= config.minInternalField && config.fields[pos] && config.fields[pos]->getCb) {
+                void *value = config.fields[pos]->getCb(session, pos);
 
-                    if (IN6_IS_ADDR_V4MAPPED(&session->addr2)) {
-                        uint32_t ip = ARKIME_V6_TO_V4(session->addr2);
-                        snprintf(ipstr, sizeof(ipstr), "%u.%u.%u.%u:%d", ip & 0xff, (ip >> 8) & 0xff, (ip >> 16) & 0xff, (ip >> 24) & 0xff, session->port2);
-                    } else {
-                        inet_ntop(AF_INET6, &session->addr1, ipstr, sizeof(ipstr));
-                        int len = strlen(ipstr);
-                        snprintf(ipstr + len, sizeof(ipstr) - len, ".%d", session->port2);
-                    }
-                    wise_lookup(session, iRequest, ipstr, type, pos);
+                if (!value)
+                    continue;
+
+                switch (config.fields[pos]->type) {
+                case ARKIME_FIELD_TYPE_STR:
+                    wise_lookup(session, iRequest, value, type, pos);
                     break;
-                }
+                default:
+                    // Unsupported
+                    break;
                 } /* switch */
                 continue;
             }
@@ -936,9 +929,7 @@ LOCAL void wise_load_wise_types()
                 CONFIGEXIT("wise-types '%s' has too man fields, max %d", keys[i], INTEL_TYPE_MAX_FIELDS);
 
             int pos;
-            if (strcmp("ip.dst:port", values[v]) == 0 || strcmp("dst.ip:port", values[v]) == 0) {
-                pos = ARKIME_FIELD_EXSPECIAL_DST_IP_PORT;
-            } else if  (strncmp("db:", values[v], 3) == 0)
+            if  (strncmp("db:", values[v], 3) == 0)
                 pos = arkime_field_by_db(values[v] + 3);
             else
                 pos = arkime_field_by_exp(values[v]);
@@ -974,6 +965,10 @@ void arkime_plugin_init()
     wiseHost = arkime_config_str(NULL, "wiseHost", "127.0.0.1");
 
     protocolField    = arkime_field_by_db("protocol");
+    srcPortField     = arkime_field_by_exp("port.src");
+    srcIpField       = arkime_field_by_exp("ip.src");
+    dstPortField     = arkime_field_by_exp("port.dst");
+    dstIpField       = arkime_field_by_exp("ip.dst");
 
     wise_load_wise_types();
 

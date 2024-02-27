@@ -27,7 +27,6 @@ extern ArkimeConfig_t        config;
 
 extern void                 *esServer;
 
-LOCAL  int                   tagsField;
 LOCAL  int                   httpHostField;
 LOCAL  int                   httpXffField;
 LOCAL  int                   httpMd5Field;
@@ -37,6 +36,8 @@ LOCAL  int                   emailSrcField;
 LOCAL  int                   emailDstField;
 LOCAL  int                   dnsHostField;
 LOCAL  int                   dnsMailServerField;
+LOCAL  int                   srcIpField;
+LOCAL  int                   dstIpField;
 
 /******************************************************************************/
 
@@ -139,7 +140,7 @@ LOCAL void tagger_plugin_save(ArkimeSession_t *session, int UNUSED(final))
 
     cnt = patricia_search_all(allIps, &prefix, 1, nodes);
     for (i = 0; i < cnt; i++) {
-        tagger_process_match(session, ((TaggerIP_t *)(nodes[i]->data))->infos, ARKIME_FIELD_EXSPECIAL_SRC_IP);
+        tagger_process_match(session, ((TaggerIP_t *)(nodes[i]->data))->infos, srcIpField);
     }
 
     if (IN6_IS_ADDR_V4MAPPED(&session->addr2)) {
@@ -154,7 +155,7 @@ LOCAL void tagger_plugin_save(ArkimeSession_t *session, int UNUSED(final))
 
     cnt = patricia_search_all(allIps, &prefix, 1, nodes);
     for (i = 0; i < cnt; i++) {
-        tagger_process_match(session, ((TaggerIP_t *)(nodes[i]->data))->infos, ARKIME_FIELD_EXSPECIAL_DST_IP);
+        tagger_process_match(session, ((TaggerIP_t *)(nodes[i]->data))->infos, dstIpField);
     }
 
     if (httpXffField != -1 && session->fields[httpXffField]) {
@@ -683,7 +684,6 @@ void arkime_plugin_init()
                           NULL
                          );
 
-    tagsField      = arkime_field_by_db("tags");
     httpHostField  = arkime_field_by_db("http.host");
     httpXffField   = arkime_field_by_db("http.xffIp");
     httpMd5Field   = arkime_field_by_db("http.md5");
@@ -692,6 +692,8 @@ void arkime_plugin_init()
     emailSrcField  = arkime_field_by_db("email.src");
     emailDstField  = arkime_field_by_db("email.dst");
     dnsHostField   = arkime_field_by_db("dns.host");
+    srcIpField     = arkime_field_by_exp("ip.src");
+    dstIpField     = arkime_field_by_exp("ip.dst");
 
     if (config.parseDNSRecordAll) {
         dnsMailServerField = arkime_field_by_db("dns.mailserverHost");

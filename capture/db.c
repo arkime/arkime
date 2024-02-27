@@ -449,7 +449,7 @@ LOCAL struct {
     time_t   lastSave;
     char     prefix[100];
     time_t   prefixTime;
-    short    sortedFieldsIndex[ARKIME_FIELDS_DB_MAX];
+    short    sortedFieldsIndex[ARKIME_FIELDS_MAX];
     uint16_t sortedFieldsIndexCnt;
     uint16_t cnt;
     ARKIME_LOCK_EXTERN(lock);
