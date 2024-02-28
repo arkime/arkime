@@ -2529,7 +2529,7 @@ class SessionAPIs {
       }
 
       const fieldDef = Config.getFieldsMap()[req.query.field];
-      if (fieldDef && fieldDef.type === 'integer') {
+      if (req.query.autocomplete !== undefined && fieldDef && fieldDef.type === 'integer') {
         query.query.bool.filter.push({
           script: {
             script: {
