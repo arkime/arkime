@@ -1081,7 +1081,7 @@ LOCAL void arkime_rules_check_rule_fields(ArkimeSession_t *const session, Arkime
 
         // Check fields that are directly in session
         if (p >= config.minInternalField) {
-            void *value = NULL;;
+            void *value = NULL;
             if (config.fields[p]->getCb)
                 value = config.fields[p]->getCb(session, p);
 
@@ -1107,6 +1107,17 @@ LOCAL void arkime_rules_check_rule_fields(ArkimeSession_t *const session, Arkime
                 good = 0;
                 for(i = 0; i < (int)sarray->len; i++) {
                     if (arkime_rules_check_str_match(rule, p, g_ptr_array_index(sarray, i), logStr)) {
+                        good = 1;
+                        break;
+                    }
+                }
+                break;
+            }
+            case ARKIME_FIELD_TYPE_INT_ARRAY: {
+                GArray *iarray = (GArray *)value;
+                good = 0;
+                for(i = 0; i < (int)iarray->len; i++) {
+                    if (arkime_rules_check_int_match(rule, p, g_array_index(iarray, uint32_t, i), logStr)) {
                         good = 1;
                         break;
                     }
