@@ -109,7 +109,7 @@ SPDX-License-Identifier: Apache-2.0
           Integrations
         </h3>
         <p>
-          You must use this page to configure your integations.
+          You must use this page to configure your integrations.
           Most integrations require API keys (and some require more data) in order to use them.
           Integrations are configured per user, not per Cont3xt application.
           Therefore <strong>every user must update this page for the application to work as intended.</strong>
@@ -130,6 +130,13 @@ SPDX-License-Identifier: Apache-2.0
         </p>
         <p>
           Use the search bar to search for integrations by name.
+        </p>
+        <p>
+          An administrator can lock (<span class="fa fa-lock"></span>) integrations in the configuration file.
+          Under the integration section, set <code>locked = true</code> to lock the integration.
+          Locked integrations use the globally configured settings (see <span class="fa fa-globe"></span> above).
+          Users cannot update locked integrations.
+          Any previously configured settings for locked integrations will be ignored in favor of the global configuration.
         </p>
       </div> <!-- /integrations -->
 

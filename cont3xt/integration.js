@@ -162,6 +162,8 @@ class Integration {
     }
 
     integration.viewRoles = integration.getConfigArray('viewRoles');
+
+    integration.locked = integration.getConfig('locked', false);
   }
 
   static classify (str) {
@@ -383,7 +385,8 @@ class Integration {
         card,
         order,
         tidbits: integration.tidbits?.fields || [],
-        uiSettings: uiSettings || {}
+        uiSettings: uiSettings || {},
+        locked: integration.locked
       };
     }
 
@@ -790,6 +793,7 @@ class Integration {
    * @typedef IntegrationSetting
    * @type {object}
    * @param {boolean} globalConfiged - Whether integration is configured globally across cont3xt users or by this user (if a user has changed the settings for an integration, this if false)
+   * @param {boolean} locked - Whether integration is locked. Locked integrations use the globally configured settings. Users cannot update locked integrations. Any previously configured settings for locked integrations will be ignored in favor of the global configuration.
    * @param {string} homePage - The link to the home page for this integration so a user can learn more
    * @param {object} settings - The setting field definitions for this integration
    * @param {object} values - The values that map to the setting fields for this integration (empty object if not set)
@@ -841,7 +845,8 @@ class Integration {
         settings: integration.settings,
         values,
         globalConfiged,
-        homePage: integration.homePage
+        homePage: integration.homePage,
+        locked: integration.locked
       };
     }
     res.send({ success: true, settings: result });
@@ -922,12 +927,11 @@ class Integration {
   //   user config is indexed by name, config file by section
   // - should never have both configName and section set
   getUserConfig (user, key, d) {
-    if (user.cont3xt?.keys) {
+    if (user.cont3xt?.keys && !this.locked) {
       const keys = user.getCont3xtKeys();
       const configName = this.configName ?? this.name;
       if (keys[configName]?.[key]) { return keys[configName]?.[key]; }
     }
-
     return ArkimeConfig.getFull(this.configName ?? this.section ?? this.name, key, d);
   }
 

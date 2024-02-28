@@ -1,5 +1,5 @@
 # Test cont3xt.js
-use Test::More tests => 165;
+use Test::More tests => 167;
 use Test::Differences;
 use Data::Dumper;
 use ArkimeTest;
@@ -1004,6 +1004,8 @@ is (scalar @{$json->{views}}, 1);
 ### Settings
 $json = cont3xtGet('/api/integration/settings');
 ok($json->{success});
+ok($json->{settings}->{Threatstream}->{locked});
+ok(!$json->{settings}->{Twilio}->{locked});
 
 $json = cont3xtPut('/api/integration/settings', '{}');
 eq_or_diff($json, from_json('{"success": false, "text": "Missing token"}'));
@@ -1013,7 +1015,6 @@ ok($json =~ /SyntaxError: Unexpected token/);
 
 $json = cont3xtPutToken('/api/integration/settings', '{"__proto__": {"foo": 1}}', $token);
 is ($json, "SyntaxError: Object contains forbidden prototype property");
-
 ################################################################################
 ### Classify
 $json = cont3xtPost('/regressionTests/classify', '["aol.com", "1.2.3.4", "a----b.com", "https://a----b.com", "703-867-5309", "text", "foo@example.com", "d07708229fb0d2d513c82f36e5cdc68f", "25425d55a6af7586bf68c3989f0d4d89ffbb1641"]');
