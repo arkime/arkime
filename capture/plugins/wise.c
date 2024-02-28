@@ -678,6 +678,13 @@ void wise_plugin_pre_save(ArkimeSession_t *session, int UNUSED(final))
                 case ARKIME_FIELD_TYPE_STR:
                     wise_lookup(session, iRequest, value, type, pos);
                     break;
+                case ARKIME_FIELD_TYPE_STR_ARRAY: {
+                    GPtrArray *sarray = (GPtrArray *)value;
+                    for(i = 0; i < (int)sarray->len; i++) {
+                        wise_lookup(session, iRequest, g_ptr_array_index(sarray, i), type, pos);
+                    }
+                    break;
+                }
                 default:
                     // Unsupported
                     break;
