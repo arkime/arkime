@@ -198,6 +198,7 @@ jobs:
           (cd capture ; make sanitize CC=clang-18)
           (cd tests; ./tests.pl)
           cat /tmp/os
+          export PATH=/opt/arkime/bin:$PATH
           (cd tests ; G_SLICE=always-malloc ./tests.pl --viewer)
 
       - name: upload github
