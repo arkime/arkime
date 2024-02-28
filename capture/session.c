@@ -256,7 +256,8 @@ gboolean arkime_session_has_protocol(ArkimeSession_t *session, const char *proto
     return hstring != 0;
 }
 /******************************************************************************/
-void arkime_session_add_tag(ArkimeSession_t *session, const char *tag) {
+void arkime_session_add_tag(ArkimeSession_t *session, const char *tag)
+{
     arkime_field_string_add(config.tagsStringField, session, tag, -1, TRUE);
 }
 /******************************************************************************/
@@ -668,8 +669,8 @@ ArkimeSession_t *arkime_session_find_or_create(int mProtocol, uint32_t hash, uin
         session->fileLenArray = g_array_sized_new(FALSE, FALSE, sizeof(uint16_t), 100);
     }
     session->fileNumArray = g_array_new(FALSE, FALSE, 4);
-    session->fields = ARKIME_SIZE_ALLOC0(fields, sizeof(ArkimeField_t *)*config.maxField);
-    session->maxFields = config.maxField;
+    session->fields = ARKIME_SIZE_ALLOC0(fields, sizeof(ArkimeField_t *) * config.maxDbField);
+    session->maxFields = config.maxDbField;
     session->thread = thread;
     DLL_INIT(td_, &session->tcpData);
     if (config.numPlugins > 0)

@@ -82,8 +82,7 @@ gboolean arkime_cmdline_option(const gchar *option_name, const gchar *input, gpo
 }
 /******************************************************************************/
 
-LOCAL  GOptionEntry entries[] =
-{
+LOCAL  GOptionEntry entries[] = {
     { "config",    'c',                    0, G_OPTION_ARG_FILENAME,       &config.configFile,    "Config file name, default '" CONFIG_PREFIX "/etc/config.ini'", NULL },
     { "pcapfile",  'r',                    0, G_OPTION_ARG_FILENAME_ARRAY, &config.pcapReadFiles, "Offline pcap file", NULL },
     { "pcapdir",   'R',                    0, G_OPTION_ARG_FILENAME_ARRAY, &config.pcapReadDirs,  "Offline pcap directory, all *.pcap files will be processed", NULL },
@@ -151,8 +150,7 @@ void parse_args(int argc, char **argv)
 
     context = g_option_context_new ("- capture");
     g_option_context_add_main_entries (context, entries, NULL);
-    if (!g_option_context_parse (context, &argc, &argv, &error))
-    {
+    if (!g_option_context_parse (context, &argc, &argv, &error)) {
         g_print ("option parsing failed: %s\n", error->message);
         exit (1);
     }
@@ -477,8 +475,7 @@ const char *arkime_memcasestr(const char *haystack, int haysize, const char *nee
     const char *end = haystack + haysize - needlesize;
     int i;
 
-    for (p = haystack; p <= end; p++)
-    {
+    for (p = haystack; p <= end; p++) {
         for (i = 0; i < needlesize; i++) {
             if (tolower(p[i]) != needle[i]) {
                 goto memcasestr_outer;
@@ -727,7 +724,7 @@ gboolean arkime_ready_gfunc (gpointer UNUSED(user_data))
         return G_SOURCE_CONTINUE;
 
     if (config.debug)
-        LOG("maxField = %d", config.maxField);
+        LOG("maxDbField = %d minInternalField = %d", config.maxDbField, config.minInternalField);
 
     if (config.pcapReadOffline) {
         if (config.dryRun || !config.copyPcap) {
@@ -857,7 +854,8 @@ LLVMFuzzerInitialize(int *UNUSED(argc), char ***UNUSED(argv))
  * There are no packet threads in fuzz mode, and the batch call will actually
  * process the packet.  The current time just increases for each packet.
  */
-int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
+int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
+{
     arkime_reader_scheme_process("fuzz://foo", (uint8_t *)data, size, NULL);
     return 0;
 }
@@ -912,7 +910,8 @@ LLVMFuzzerInitialize(int *UNUSED(argc), char ***UNUSED(argv))
  * There are no packet threads in fuzz mode, and the batch call will actually
  * process the packet.  The current time just increases for each packet.
  */
-int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
+int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
+{
     static uint64_t       ts = 10000;
     BSB                   bsb;
 

@@ -126,8 +126,7 @@ uint32_t writer_s3_queue_length()
     ARKIME_LOCK(fileQ);
 
     SavepcapS3File_t *file;
-    DLL_FOREACH(fs3_, &fileQ, file)
-    {
+    DLL_FOREACH(fs3_, &fileQ, file) {
         if (config.debug && DLL_COUNT(os3_, &file->outputQ) > 0)
             LOG("Waiting: %s - %d", file->outputFileName, DLL_COUNT(os3_, &file->outputQ));
         q += DLL_COUNT(os3_, &file->outputQ);
@@ -526,7 +525,8 @@ void writer_s3_request(char *method, char *path, char *qs, uint8_t *data, int le
  * This will cause the encryption to fully flush any waiting data
  * and the next data written will cause a new block header.
  */
-LOCAL void make_new_block(SavepcapS3File_t *s3file) {
+LOCAL void make_new_block(SavepcapS3File_t *s3file)
+{
     if (compressionMode == ARKIME_COMPRESSION_GZIP) {
         while (TRUE) {
             deflate(&s3file->z_strm, Z_FULL_FLUSH);
@@ -563,7 +563,8 @@ LOCAL void make_new_block(SavepcapS3File_t *s3file) {
  * data that is waiting to be written out. Because encryption lib does its
  * own buffer we do our best guess here.
  */
-LOCAL void ensure_space_for_output(SavepcapS3File_t *s3file, size_t space) {
+LOCAL void ensure_space_for_output(SavepcapS3File_t *s3file, size_t space)
+{
     if (compressionMode == ARKIME_COMPRESSION_GZIP) {
         size_t max_need_space = s3file->outputActualFilePos - s3file->outputLastBlockStart + 64 + deflateBound(&s3file->z_strm, space + s3file->outputDataSinceLastMiniBlock);
 
@@ -614,7 +615,8 @@ LOCAL void ensure_space_for_output(SavepcapS3File_t *s3file, size_t space) {
  * When packetHeader is true the return value is where the writerFilePos of the start of the packetHeader.
  * This value might be encoded if using encryption.
  */
-LOCAL uint64_t append_to_output(SavepcapS3File_t *s3file, void *data, size_t length, gboolean packetHeader, size_t extra_space) {
+LOCAL uint64_t append_to_output(SavepcapS3File_t *s3file, void *data, size_t length, gboolean packetHeader, size_t extra_space)
+{
     uint64_t pos;
 
     if (compressionMode == ARKIME_COMPRESSION_GZIP) {

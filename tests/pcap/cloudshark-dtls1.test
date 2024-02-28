@@ -5,12 +5,13 @@
             "@timestamp" : "SET",
             "cert" : [
                {
-                  "hash" : "",
+                  "hash" : "df:59:fa:ee:21:8a:ee:0b:99:b4:25:40:4a:78:e1:f9:16:20:9e:5c",
                   "issuerON" : [
                      "Internet Widgits Pty Ltd"
                   ],
                   "notAfter" : 1720007767000,
                   "notBefore" : 1404647767000,
+                  "publicAlgorithm" : "rsaEncryption",
                   "remainingDays" : 3649,
                   "remainingSeconds" : 315359665,
                   "serial" : "00f1965d11e3ff07ee",

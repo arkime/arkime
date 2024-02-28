@@ -30,7 +30,8 @@ typedef struct {
 LOCAL uint32_t tls_process_client_hello_func;
 
 /******************************************************************************/
-LOCAL int quic_chlo_parser(ArkimeSession_t *session, BSB dbsb) {
+LOCAL int quic_chlo_parser(ArkimeSession_t *session, BSB dbsb)
+{
 
     const guchar *tag = 0;
     uint16_t      tagLen = 0;

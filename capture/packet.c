@@ -353,13 +353,12 @@ LOCAL void arkime_packet_process(ArkimePacket_t *packet, int thread)
             arkime_field_macoui_add(session, outermac1Field, outeroui1Field, packet->pkt + packet->outerEtherOffset);
             arkime_field_macoui_add(session, outermac2Field, outeroui2Field, packet->pkt + packet->outerEtherOffset + 6);
         }
-        if(packet->outerIpOffset != 0 && packet->outerIpOffset != packet->ipOffset) {
+        if (packet->outerIpOffset != 0 && packet->outerIpOffset != packet->ipOffset) {
             if (packet->outerv6 == 0) {
                 ip4 = (struct ip *) (packet->pkt + packet->outerIpOffset);
                 arkime_field_ip4_add(outerip1Field, session, ip4->ip_src.s_addr);
                 arkime_field_ip4_add(outerip2Field, session, ip4->ip_dst.s_addr);
-            }
-            else {
+            } else {
                 ip6 = (struct ip6_hdr *) (packet->pkt + packet->outerIpOffset);
                 arkime_field_ip6_add(outerip1Field, session, ip6->ip6_src.s6_addr);
                 arkime_field_ip6_add(outerip2Field, session, ip6->ip6_dst.s6_addr);
@@ -1269,7 +1268,7 @@ void arkime_packet_batch(ArkimePacketBatch_t *batch, ArkimePacket_t *const packe
     arkime_print_hex_string(packet->pkt, packet->pktlen);
 #endif
 
-    switch(pcapFileHeader.dlt) {
+    switch (pcapFileHeader.dlt) {
     case DLT_NULL: // NULL
         if (packet->pktlen > 4) {
             if (packet->pkt[0] == 30)
@@ -1842,8 +1841,7 @@ uint32_t arkime_packet_dlt_to_linktype(int dlt)
     if (dlt <= 10 || dlt >= 104)
         return dlt;
 
-    switch (dlt)
-    {
+    switch (dlt) {
 #ifdef DLT_FR
     case DLT_FR:
         return 107; // LINKTYPE_FRELAY;

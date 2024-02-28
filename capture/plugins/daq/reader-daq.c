@@ -77,7 +77,8 @@ LOCAL void *reader_daq_thread(gpointer posv)
     return NULL;
 }
 /******************************************************************************/
-void reader_daq_start() {
+void reader_daq_start()
+{
     int err;
 
     //ALW - Bug: assumes all linktypes are the same

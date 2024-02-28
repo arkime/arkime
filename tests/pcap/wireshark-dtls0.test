@@ -5,7 +5,7 @@
             "@timestamp" : "SET",
             "cert" : [
                {
-                  "hash" : "",
+                  "hash" : "10:99:10:99:fc:73:97:ad:b4:bf:67:fb:19:9a:39:b1:be:d8:97:4c",
                   "issuerCN" : [
                      "snake oil ca"
                   ],
@@ -17,6 +17,7 @@
                   ],
                   "notAfter" : 1204562865000,
                   "notBefore" : 1046882865000,
+                  "publicAlgorithm" : "rsaEncryption",
                   "remainingDays" : 630,
                   "remainingSeconds" : 54441796,
                   "serial" : "01",

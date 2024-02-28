@@ -146,7 +146,7 @@ void chad_plugin_init(char **chads, char **ignores, gboolean http)
 
     for (i = 0, p = 0; chads[i] && p < 64; i++) {
         ChadToken_t *token;
-        if(http)
+        if (http)
             HASH_FIND(c_, chadTokens, chads[i], token);
         else
             HASH_FIND(c_, chadSMTPTokens, chads[i], token);
@@ -160,7 +160,7 @@ void chad_plugin_init(char **chads, char **ignores, gboolean http)
 
     for (i = 0, p = 0; ignores[i] && p < 64; i++) {
         ChadToken_t *token;
-        if(http)
+        if (http)
             HASH_FIND(c_, chadTokens, ignores[i], token);
         else
             HASH_FIND(c_, chadSMTPTokens, ignores[i], token);

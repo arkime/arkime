@@ -161,6 +161,10 @@
             "srcOuiCnt" : 1,
             "srcPayload8" : "1603010200010001",
             "srcRIR" : "ARIN",
+            "tags" : [
+               "cert.alt test"
+            ],
+            "tagsCnt" : 1,
             "tcpflags" : {
                "ack" : 5,
                "dstZero" : 0,

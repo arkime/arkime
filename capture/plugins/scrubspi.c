@@ -56,7 +56,7 @@ LOCAL void scrubspi_plugin_save(ArkimeSession_t *session, int UNUSED(final))
             }
             break;
         case ARKIME_FIELD_TYPE_STR_ARRAY:
-            for(i = 0; i < session->fields[pos]->sarray->len; i++) {
+            for (i = 0; i < session->fields[pos]->sarray->len; i++) {
                 newstr = g_regex_replace(ss[s].search, g_ptr_array_index(session->fields[pos]->sarray, i), -1, 0, ss[s].replace, 0, NULL);
                 if (newstr) {
                     g_free(g_ptr_array_index(session->fields[pos]->sarray, i));
@@ -75,8 +75,7 @@ LOCAL void scrubspi_plugin_save(ArkimeSession_t *session, int UNUSED(final))
             }
 
             break;
-        case ARKIME_FIELD_TYPE_STR_GHASH:
-        {
+        case ARKIME_FIELD_TYPE_STR_GHASH: {
             GHashTableIter iter;
             GHashTable    *ghash = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, NULL);
             gpointer       ikey;

@@ -96,7 +96,7 @@ void http_common_parse_cookie(ArkimeSession_t *session, char *cookie, int len)
                 arkime_field_string_add(cookieValueField, session, equal, start ? start - equal : end - equal, TRUE);
         }
 
-        if(!start)
+        if (!start)
             break;
         start++;
     }
@@ -131,8 +131,7 @@ void http_common_add_header_value(ArkimeSession_t *session, int pos, const char 
             arkime_field_string_add(pos, session, s, l, TRUE);
         break;
     case ARKIME_FIELD_TYPE_IP:
-    case ARKIME_FIELD_TYPE_IP_GHASH:
-    {
+    case ARKIME_FIELD_TYPE_IP_GHASH: {
         int i;
         gchar **parts = g_strsplit(s, ",", 0);
 
@@ -180,8 +179,7 @@ void http_common_add_header(ArkimeSession_t *session, int pos, int isReq, const 
         } else if (isReq && config.parseHTTPHeaderRequestAll) { // Header in request
             arkime_field_string_add(headerReqField, session, lower, -1, TRUE);
             pos = headerReqValue;
-        }
-        else if (!isReq && config.parseHTTPHeaderResponseAll) { // Header in response
+        } else if (!isReq && config.parseHTTPHeaderResponseAll) { // Header in response
             arkime_field_string_add(headerResField, session, lower, -1, TRUE);
             pos = headerResValue;
         }
@@ -485,8 +483,7 @@ LOCAL int arkime_hp_cb_on_header_value (http_parser *parser, const char *at, siz
             if ((http->which == 0) && config.parseHTTPHeaderRequestAll) { // Header in request
                 arkime_field_string_add(headerReqField, session, lower, -1, TRUE);
                 http->pos[http->which] = (long) headerReqValue;
-            }
-            else if ((http->which == 1) && config.parseHTTPHeaderResponseAll) { // Header in response
+            } else if ((http->which == 1) && config.parseHTTPHeaderResponseAll) { // Header in response
                 arkime_field_string_add(headerResField, session, lower, -1, TRUE);
                 http->pos[http->which] = (long) headerResValue;
             }
@@ -829,8 +826,7 @@ LOCAL void http_classify(ArkimeSession_t *session, const uint8_t *UNUSED(data), 
 /******************************************************************************/
 void arkime_parser_init()
 {
-    static const char *method_strings[] =
-    {
+    static const char *method_strings[] = {
 #define XX(num, name, string) #string,
         HTTP_METHOD_MAP(XX)
 #undef XX

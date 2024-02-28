@@ -586,6 +586,9 @@ patricia_search_all(patricia_tree_t * patricia, prefix_t * prefix, int inclusive
 int
 patricia_search_all2(patricia_tree_t * patricia, u_char *addr, int bitlen, patricia_node_t **results, int resultsize)
 {
+    if (patricia == NULL)
+        return 0;
+
     patricia_node_t *node;
     int             cnt = 0;
 

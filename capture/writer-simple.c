@@ -157,7 +157,7 @@ LOCAL void writer_simple_free(ArkimeSimple_t *info)
     int thread = info->file->thread;
 
     if (info->closing) {
-        switch(simpleMode) {
+        switch (simpleMode) {
         case ARKIME_SIMPLE_NORMAL:
             break;
         case ARKIME_SIMPLE_XOR2048:
@@ -166,7 +166,7 @@ LOCAL void writer_simple_free(ArkimeSimple_t *info)
             EVP_CIPHER_CTX_free(info->file->cipher_ctx);
             break;
         }
-        switch(compressionMode) {
+        switch (compressionMode) {
         case ARKIME_COMPRESSION_GZIP:
             deflateEnd(&info->file->z_strm);
             break;
@@ -210,7 +210,7 @@ LOCAL ArkimeSimple_t *writer_simple_process_buf(int thread, int closing)
         memcpy(ninfo->buf, info->buf + writeSize, info->bufpos - writeSize);
         ninfo->bufpos = info->bufpos - writeSize;
 
-        switch(compressionMode) {
+        switch (compressionMode) {
         case ARKIME_COMPRESSION_GZIP:
             // Start the gzip buffer after what we copied from previous buffer.
             ninfo->file->z_strm.next_out = (Bytef *) ninfo->buf + ninfo->bufpos;
@@ -229,7 +229,7 @@ LOCAL ArkimeSimple_t *writer_simple_process_buf(int thread, int closing)
         // Set what we are going to write
         info->bufpos = writeSize;
 
-        switch(compressionMode) {
+        switch (compressionMode) {
         case ARKIME_COMPRESSION_GZIP:
             info->file->pos += info->bufpos;
             break;
@@ -243,7 +243,7 @@ LOCAL ArkimeSimple_t *writer_simple_process_buf(int thread, int closing)
         }
 
     } else {
-        switch(compressionMode) {
+        switch (compressionMode) {
         case ARKIME_COMPRESSION_GZIP:
             deflate(&info->file->z_strm, Z_FINISH);
             info->bufpos = (uint8_t *)info->file->z_strm.next_out - info->buf;
@@ -310,7 +310,7 @@ LOCAL char *writer_simple_get_kekId ()
 {
     char *kek = arkime_config_str(NULL, "simpleKEKId", NULL);
 
-    if(!kek) {
+    if (!kek) {
         return NULL;
     }
 
@@ -338,7 +338,7 @@ LOCAL char *writer_simple_get_kekId ()
             continue;
         }
         i++;
-        switch(kek[i]) {
+        switch (kek[i]) {
         case 'y':
             okek[j] = '0' + (tmp.tm_year % 100) / 10;
             okek[j + 1] = '0' + tmp.tm_year % 10;
@@ -359,12 +359,11 @@ LOCAL char *writer_simple_get_kekId ()
             okek[j + 1] = '0' + tmp.tm_hour % 10;
             j += 2;
             break;
-        case 'N':
-        {
+        case 'N': {
             int namelen = strlen(config.nodeName);
             int bufboundary = j + namelen;
 
-            if(bufboundary >= (int) sizeof(okek)) {
+            if (bufboundary >= (int) sizeof(okek)) {
                 LOGEXIT("ERROR - node name '%s' is too long", config.nodeName);
             }
             memcpy(okek + j, config.nodeName, namelen);
@@ -381,7 +380,7 @@ LOCAL void writer_simple_write_output(int thread, const uint8_t *data, int len)
 {
     ArkimeSimple_t *info = currentInfo[thread];
 
-    switch(compressionMode) {
+    switch (compressionMode) {
     case ARKIME_COMPRESSION_NONE:
         memcpy(info->buf + info->bufpos, data, len);
         info->bufpos += len;
@@ -493,7 +492,7 @@ LOCAL void writer_simple_write(const ArkimeSession_t *const session, ArkimePacke
         info->file = ARKIME_TYPE_ALLOC0(ArkimeSimpleFile_t);
         info->file->thread = thread;
 
-        switch(compressionMode) {
+        switch (compressionMode) {
         case ARKIME_COMPRESSION_GZIP:
             uncompressedBitsArg = (gpointer)(long)uncompressedBits;
             compressionArg = "gzip";
@@ -519,7 +518,7 @@ LOCAL void writer_simple_write(const ArkimeSession_t *const session, ArkimePacke
             break;
         }
 
-        switch(simpleMode) {
+        switch (simpleMode) {
         case ARKIME_SIMPLE_NORMAL:
             if (simpleShortHeader)
                 name = ".arkime";
@@ -695,7 +694,7 @@ LOCAL void *writer_simple_thread(void *UNUSED(arg))
                 total = ((total / pageSize) + 1) * pageSize;
         }
 
-        switch(simpleMode) {
+        switch (simpleMode) {
         case ARKIME_SIMPLE_NORMAL:
             break;
         case ARKIME_SIMPLE_XOR2048: {
@@ -847,7 +846,7 @@ void writer_simple_index (ArkimeSession_t *session)
     FILE *fp = 0;
     uint64_t last = 0;
     uint64_t lastgap = 0;
-    for(guint i = 0; i < session->filePosArray->len; i++) {
+    for (guint i = 0; i < session->filePosArray->len; i++) {
         int64_t packetPos = (int64_t)g_array_index(session->filePosArray, int64_t, i);
         if (packetPos < 0) {
             if (fp) {

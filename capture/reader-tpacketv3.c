@@ -154,7 +154,8 @@ LOCAL void *reader_tpacketv3_thread(gpointer infov)
     return NULL;
 }
 /******************************************************************************/
-void reader_tpacketv3_start() {
+void reader_tpacketv3_start()
+{
     char name[100];
     for (int i = 0; i < MAX_INTERFACES && config.interface[i]; i++) {
         for (int t = 0; t < numThreads; t++) {
@@ -259,7 +260,7 @@ void reader_tpacketv3_init(char *UNUSED(name))
 
             int fanout_type = PACKET_FANOUT_HASH;
             int fanout_arg = ((fanout_group_id + i) | (fanout_type << 16));
-            if(setsockopt(infos[i][t].fd, SOL_PACKET, PACKET_FANOUT, &fanout_arg, sizeof(fanout_arg)) < 0)
+            if (setsockopt(infos[i][t].fd, SOL_PACKET, PACKET_FANOUT, &fanout_arg, sizeof(fanout_arg)) < 0)
                 CONFIGEXIT("Error setting packet fanout parameters: tpacketv3ClusterId: %d (%s)", fanout_group_id, strerror(errno));
         }
 

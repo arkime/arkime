@@ -58,7 +58,8 @@ void pcapoverip_client_free (POIClient_t *poic)
 }
 /******************************************************************************/
 SUPPRESS_ALIGNMENT
-gboolean pcapoverip_client_read_cb(gint UNUSED(fd), GIOCondition cond, gpointer data) {
+gboolean pcapoverip_client_read_cb(gint UNUSED(fd), GIOCondition cond, gpointer data)
+{
     POIClient_t *poic = (POIClient_t *)data;
 
     //LOG("fd: %d cond: %x data: %p", fd, cond, data);
@@ -179,7 +180,8 @@ gboolean pcapoverip_client_read_cb(gint UNUSED(fd), GIOCondition cond, gpointer 
     return TRUE;
 }
 /******************************************************************************/
-LOCAL void pcapoverip_client_connect(int interface) {
+LOCAL void pcapoverip_client_connect(int interface)
+{
     GError                   *error = NULL;
     GSocketConnectable       *connectable;
     GSocketAddressEnumerator *enumerator;
@@ -195,8 +197,7 @@ LOCAL void pcapoverip_client_connect(int interface) {
     g_object_unref(connectable);
 
     GSocket *conn = NULL;
-    while (!conn && (sockaddr = g_socket_address_enumerator_next (enumerator, NULL, &error)))
-    {
+    while (!conn && (sockaddr = g_socket_address_enumerator_next (enumerator, NULL, &error))) {
         conn = g_socket_new(G_SOCKET_FAMILY_IPV4, G_SOCKET_TYPE_STREAM, G_SOCKET_PROTOCOL_TCP, &error);
 
         if (!error) {
