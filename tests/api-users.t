@@ -1,4 +1,4 @@
-use Test::More tests => 166;
+use Test::More tests => 167;
 use Cwd;
 use URI::Escape;
 use ArkimeTest;
@@ -108,6 +108,10 @@ anonymous,,true,true,false,"arkimeAdmin, cont3xtUser, parliamentUser, usersAdmin
     eq_or_diff(sort($json->{roles}), from_json('["arkimeAdmin", "arkimeUser", "cont3xtAdmin", "cont3xtUser", "parliamentAdmin", "parliamentUser", "superAdmin", "usersAdmin", "wiseAdmin", "wiseUser"]'));
     my @roles = sort @{$json->{user}->{roles}};
     eq_or_diff(\@roles, from_json('["arkimeAdmin", "arkimeUser", "cont3xtUser", "parliamentUser", "usersAdmin", "wiseUser"]'));
+
+# Check default user settings
+    $json = viewerGetToken("/api/appInfo", $token);
+    eq_or_diff(sort($json->{userSettingDefaults}), from_json('{"timezone":"gmt", "detailFormat":"last", "showTimestamps":"last", "sortColumn":"firstPacket", "sortDirection":"desc", "spiGraph":"node", "connSrcField":"source.ip", "connDstField":"ip.dst:port", "numPackets":"last", "theme":"default-theme", "manualQuery":false, "timelineDataFilters":["network.packets","network.bytes","totDataBytes"]}'));
 
 # Can we create superAdmin
     $json = viewerPostToken("/api/user", '{"userId": "testSuper", "userName": "SUserName", "enabled":true, "password":"password", "roles":["superAdmin"]}', $token);
