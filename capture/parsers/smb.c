@@ -507,7 +507,7 @@ LOCAL int smb_parser(ArkimeSession_t *session, void *uw, const uint8_t *data, in
 #endif
             switch (*state) {
             case SMB_NETBIOS:
-                if(BSB_REMAINING(bsb) < 5) {
+                if (BSB_REMAINING(bsb) < 5) {
                     done = 1;
                     break;
                 }

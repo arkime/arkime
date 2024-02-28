@@ -448,7 +448,7 @@ LOCAL uint32_t certinfo_process_server_certificate(ArkimeSession_t *session, con
 
     GChecksum *const checksum = checksums[session->thread];
 
-    while(BSB_REMAINING(cbsb) > 3) {
+    while (BSB_REMAINING(cbsb) > 3) {
         int            badreason = 0;
         uint8_t *cdata = BSB_WORK_PTR(cbsb);
         int            clen = MIN(BSB_REMAINING(cbsb) - 3, (cdata[0] << 16 | cdata[1] << 8 | cdata[2]));
@@ -480,7 +480,7 @@ LOCAL uint32_t certinfo_process_server_certificate(ArkimeSession_t *session, con
         g_checksum_reset(checksum);
         if (dlen > 0) {
             int i;
-            for(i = 0; i < 20; i++) {
+            for (i = 0; i < 20; i++) {
                 certs->hash[i * 3] = arkime_char_to_hexstr[digest[i]][0];
                 certs->hash[i * 3 + 1] = arkime_char_to_hexstr[digest[i]][1];
                 certs->hash[i * 3 + 2] = ':';
@@ -489,31 +489,27 @@ LOCAL uint32_t certinfo_process_server_certificate(ArkimeSession_t *session, con
         certs->hash[59] = 0;
 
         /* Certificate */
-        if (!(value = arkime_parsers_asn_get_tlv(&bsb, &apc, &atag, &alen)))
-        {
+        if (!(value = arkime_parsers_asn_get_tlv(&bsb, &apc, &atag, &alen))) {
             badreason = 1;
             goto bad_cert;
         }
         BSB_INIT(bsb, value, alen);
 
         /* signedCertificate */
-        if (!(value = arkime_parsers_asn_get_tlv(&bsb, &apc, &atag, &alen)))
-        {
+        if (!(value = arkime_parsers_asn_get_tlv(&bsb, &apc, &atag, &alen))) {
             badreason = 2;
             goto bad_cert;
         }
         BSB_INIT(bsb, value, alen);
 
         /* serialNumber or version*/
-        if (!(value = arkime_parsers_asn_get_tlv(&bsb, &apc, &atag, &alen)))
-        {
+        if (!(value = arkime_parsers_asn_get_tlv(&bsb, &apc, &atag, &alen))) {
             badreason = 3;
             goto bad_cert;
         }
 
         if (apc) {
-            if (!(value = arkime_parsers_asn_get_tlv(&bsb, &apc, &atag, &alen)))
-            {
+            if (!(value = arkime_parsers_asn_get_tlv(&bsb, &apc, &atag, &alen))) {
                 badreason = 4;
                 goto bad_cert;
             }
@@ -523,15 +519,13 @@ LOCAL uint32_t certinfo_process_server_certificate(ArkimeSession_t *session, con
         memcpy(certs->serialNumber, value, alen);
 
         /* signature */
-        if (!arkime_parsers_asn_get_tlv(&bsb, &apc, &atag, &alen))
-        {
+        if (!arkime_parsers_asn_get_tlv(&bsb, &apc, &atag, &alen)) {
             badreason = 5;
             goto bad_cert;
         }
 
         /* issuer */
-        if (!(value = arkime_parsers_asn_get_tlv(&bsb, &apc, &atag, &alen)))
-        {
+        if (!(value = arkime_parsers_asn_get_tlv(&bsb, &apc, &atag, &alen))) {
             badreason = 6;
             goto bad_cert;
         }
@@ -540,30 +534,26 @@ LOCAL uint32_t certinfo_process_server_certificate(ArkimeSession_t *session, con
         certinfo_process(&certs->issuer, &tbsb);
 
         /* validity */
-        if (!(value = arkime_parsers_asn_get_tlv(&bsb, &apc, &atag, &alen)))
-        {
+        if (!(value = arkime_parsers_asn_get_tlv(&bsb, &apc, &atag, &alen))) {
             badreason = 7;
             goto bad_cert;
         }
 
         BSB_INIT(tbsb, value, alen);
-        if (!(value = arkime_parsers_asn_get_tlv(&tbsb, &apc, &atag, &alen)))
-        {
+        if (!(value = arkime_parsers_asn_get_tlv(&tbsb, &apc, &atag, &alen))) {
             badreason = 7;
             goto bad_cert;
         }
         certs->notBefore = arkime_parsers_asn_parse_time(session, atag, value, alen);
 
-        if (!(value = arkime_parsers_asn_get_tlv(&tbsb, &apc, &atag, &alen)))
-        {
+        if (!(value = arkime_parsers_asn_get_tlv(&tbsb, &apc, &atag, &alen))) {
             badreason = 7;
             goto bad_cert;
         }
         certs->notAfter = arkime_parsers_asn_parse_time(session, atag, value, alen);
 
         /* subject */
-        if (!(value = arkime_parsers_asn_get_tlv(&bsb, &apc, &atag, &alen)))
-        {
+        if (!(value = arkime_parsers_asn_get_tlv(&bsb, &apc, &atag, &alen))) {
             badreason = 8;
             goto bad_cert;
         }
@@ -571,8 +561,7 @@ LOCAL uint32_t certinfo_process_server_certificate(ArkimeSession_t *session, con
         certinfo_process(&certs->subject, &tbsb);
 
         /* subjectPublicKeyInfo */
-        if (!(value = arkime_parsers_asn_get_tlv(&bsb, &apc, &atag, &alen)))
-        {
+        if (!(value = arkime_parsers_asn_get_tlv(&bsb, &apc, &atag, &alen))) {
             badreason = 9;
             goto bad_cert;
         }
@@ -580,8 +569,7 @@ LOCAL uint32_t certinfo_process_server_certificate(ArkimeSession_t *session, con
 
         /* extensions */
         if (BSB_REMAINING(bsb)) {
-            if (!(value = arkime_parsers_asn_get_tlv(&bsb, &apc, &atag, &alen)))
-            {
+            if (!(value = arkime_parsers_asn_get_tlv(&bsb, &apc, &atag, &alen))) {
                 badreason = 10;
                 goto bad_cert;
             }

@@ -405,7 +405,8 @@ void arkime_config_load_hidden(const char *configFile)
     config.configFile = g_strdup(line);
 }
 /******************************************************************************/
-char arkime_config_key_sep(const char *key) {
+char arkime_config_key_sep(const char *key)
+{
     if (strcmp(key, "elasticsearch") == 0 ||
         strcmp(key, "usersElasticsearch") == 0)
         return ',';
@@ -482,7 +483,7 @@ gboolean arkime_config_load_yaml(GKeyFile *keyfile, char *data, GError **UNUSED(
 #ifdef CONFIG_DEBUG
         LOG("event level %d type %d - %s", level, event.type, yaml_names[event.type]);
 #endif
-        switch(event.type) {
+        switch (event.type) {
         case YAML_NO_EVENT:
             done = 1;
             break;
@@ -532,8 +533,7 @@ gboolean arkime_config_load_yaml(GKeyFile *keyfile, char *data, GError **UNUSED(
             if (level == 1) {
                 g_free(section);
                 section = NULL;
-            }
-            else if (level == 2) {
+            } else if (level == 2) {
                 g_free(key);
                 key = NULL;
             }

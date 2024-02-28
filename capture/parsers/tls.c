@@ -126,7 +126,7 @@ LOCAL uint32_t tls_process_server_hello(ArkimeSession_t *session, const uint8_t 
     BSB_IMPORT_u16(bsb, ver);
     BSB_IMPORT_skip(bsb, 32);     // Random
 
-    if(BSB_IS_ERROR(bsb))
+    if (BSB_IS_ERROR(bsb))
         return -1;
 
     int  add12Later = FALSE;
@@ -145,7 +145,7 @@ LOCAL uint32_t tls_process_server_hello(ArkimeSession_t *session, const uint8_t 
             const uint8_t *ptr = BSB_WORK_PTR(bsb);
             char sessionId[513];
             int  i;
-            for(i = 0; i < skiplen; i++) {
+            for (i = 0; i < skiplen; i++) {
                 sessionId[i * 2] = arkime_char_to_hexstr[ptr[i]][0];
                 sessionId[i * 2 + 1] = arkime_char_to_hexstr[ptr[i]][1];
             }
@@ -257,7 +257,7 @@ LOCAL int tls_process_server_handshake_record(ArkimeSession_t *session, const ui
         const uint8_t *hdata = BSB_WORK_PTR(rbsb);
         int hlen = MIN(BSB_REMAINING(rbsb), (hdata[1] << 16 | hdata[2] << 8 | hdata[3]) + 4);
 
-        switch(hdata[0]) {
+        switch (hdata[0]) {
         case 2:
             arkime_parsers_call_named_func(tls_process_server_hello_func, session, hdata + 4, hlen - 4, NULL);
             break;
@@ -324,7 +324,7 @@ uint32_t tls_process_client_hello_data(ArkimeSession_t *session, const uint8_t *
     BSB cbsb;
     BSB_INIT(cbsb, pdata + 6, plen - 2); // The - 4 for plen is done above, confusing
 
-    if(BSB_REMAINING(cbsb) > 32) {
+    if (BSB_REMAINING(cbsb) > 32) {
         BSB_IMPORT_skip(cbsb, 32);     // Random
 
         int skiplen = 0;
@@ -334,7 +334,7 @@ uint32_t tls_process_client_hello_data(ArkimeSession_t *session, const uint8_t *
             char sessionId[513];
             int  i;
 
-            for(i = 0; i < skiplen; i++) {
+            for (i = 0; i < skiplen; i++) {
                 sessionId[i * 2] = arkime_char_to_hexstr[ptr[i]][0];
                 sessionId[i * 2 + 1] = arkime_char_to_hexstr[ptr[i]][1];
             }

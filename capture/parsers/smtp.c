@@ -123,8 +123,7 @@ LOCAL void smtp_email_add_value(ArkimeSession_t *session, int pos, char *s, int 
         arkime_field_string_add(pos, session, s, l, TRUE);
         break;
     case ARKIME_FIELD_TYPE_IP:
-    case ARKIME_FIELD_TYPE_IP_GHASH:
-    {
+    case ARKIME_FIELD_TYPE_IP_GHASH: {
         int i;
         gchar **parts = g_strsplit(s, ",", 0);
 
@@ -149,7 +148,7 @@ LOCAL char *smtp_quoteable_decode_inplace(char *str, gsize *olen)
     int   done = 0;
 
     while (str[ipos] && !done) {
-        switch(str[ipos]) {
+        switch (str[ipos]) {
         case '=':
             if (str[ipos + 1] && str[ipos + 2] && str[ipos + 1] != '\n') {
                 str[opos] = (char)arkime_hex_to_char[(uint8_t)str[ipos + 1]][(uint8_t)str[ipos + 2]];
@@ -383,7 +382,7 @@ LOCAL void smtp_parse_email_received(ArkimeSession_t *session, char *data, int l
         if (end - data > 10) {
             if (memcmp("from ", data, 5) == 0 && (data == start || data[-1] != '-')) {
                 data += 5;
-                while(data < end && isspace(*data)) data++;
+                while (data < end && isspace(*data)) data++;
 
                 if (*data == '[') {
                     data++;
@@ -405,7 +404,7 @@ LOCAL void smtp_parse_email_received(ArkimeSession_t *session, char *data, int l
                 arkime_field_string_add_lower(hostField, session, (char *)fromstart, data - fromstart);
             } else if (memcmp("by ", data, 3) == 0) {
                 data += 3;
-                while(data < end && isspace(*data)) data++;
+                while (data < end && isspace(*data)) data++;
                 char *fromstart = data;
                 while (data < end && *data != ' ' && *data != ')') {
                     if (*data == '@')
@@ -628,7 +627,7 @@ LOCAL int smtp_parser(ArkimeSession_t *session, void *uw, const uint8_t *data, i
                     smtp_parse_email_received(session, line->str + cpos, line->len - cpos);
                 } else if ((long)emailHeader->uw == ctField) {
                     char *s = line->str + 13;
-                    while(isspace(*s)) s++;
+                    while (isspace(*s)) s++;
 
                     arkime_field_string_add(ctField, session, s, -1, TRUE);
                     char *boundary = (char *)arkime_memcasestr(s, line->len - (s - line->str), "boundary=", 9);
@@ -819,7 +818,7 @@ LOCAL int smtp_parser(ArkimeSession_t *session, void *uw, const uint8_t *data, i
 
             if (strncasecmp(line->str, "content-type:", 13) == 0) {
                 char *s = line->str + 13;
-                while(isspace(*s)) s++;
+                while (isspace(*s)) s++;
                 char *boundary = (char *)arkime_memcasestr(s, line->len - (s - line->str), "boundary=", 9);
                 if (boundary) {
                     ArkimeString_t *string = ARKIME_TYPE_ALLOC0(ArkimeString_t);
@@ -829,14 +828,14 @@ LOCAL int smtp_parser(ArkimeSession_t *session, void *uw, const uint8_t *data, i
                 }
             } else if (strncasecmp(line->str, "content-disposition:", 20) == 0) {
                 char *s = line->str + 13;
-                while(isspace(*s)) s++;
+                while (isspace(*s)) s++;
                 char *filename = (char *)arkime_memcasestr(s, line->len - (s - line->str), "filename=", 9);
                 if (filename) {
                     char *matching = smtp_remove_matching(filename + 9, '"', '"');
                     smtp_email_add_encoded(session, fnField, matching, strlen(matching));
                 }
             } else if (strncasecmp(line->str, "content-transfer-encoding:", 26) == 0) {
-                if(arkime_memcasestr(line->str + 26, line->len - 26, "base64", 6)) {
+                if (arkime_memcasestr(line->str + 26, line->len - 26, "base64", 6)) {
                     email->base64Decode |= (1 << which);
                 }
             }

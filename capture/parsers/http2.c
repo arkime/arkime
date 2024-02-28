@@ -128,14 +128,14 @@ LOCAL void http2_parse_header_block(ArkimeSession_t *session, HTTP2Info_t *http2
 #endif
 
     // https://nghttp2.org/documentation/nghttp2_hd_inflate_hd2.html
-    for(;;) {
+    for (;;) {
         nghttp2_nv nv;
         int inflate_flags = 0;
 
         ssize_t rv = nghttp2_hd_inflate_hd2(http2->hd_inflater[which], &nv, &inflate_flags,
                                             in, inlen, final);
 
-        if(rv < 0) {
+        if (rv < 0) {
             LOG_RATE(5, "inflate failed with error code %zd", rv);
             return;
         }
@@ -143,7 +143,7 @@ LOCAL void http2_parse_header_block(ArkimeSession_t *session, HTTP2Info_t *http2
         in += rv;
         inlen -= rv;
 
-        if(inflate_flags & NGHTTP2_HD_INFLATE_EMIT) {
+        if (inflate_flags & NGHTTP2_HD_INFLATE_EMIT) {
             if (nv.name[0] == ':') {
                 if (nv.namelen == 7 && memcmp(nv.name, ":method", 7) == 0) {
                     arkime_field_string_add(methodField, session, (char *)nv.value, nv.valuelen, TRUE);
@@ -173,12 +173,12 @@ LOCAL void http2_parse_header_block(ArkimeSession_t *session, HTTP2Info_t *http2
             fprintf(stderr, "\n");
 #endif
         }
-        if(inflate_flags & NGHTTP2_HD_INFLATE_FINAL) {
+        if (inflate_flags & NGHTTP2_HD_INFLATE_FINAL) {
             nghttp2_hd_inflate_end_headers(http2->hd_inflater[which]);
             break;
         }
-        if((inflate_flags & NGHTTP2_HD_INFLATE_EMIT) == 0 &&
-           inlen == 0) {
+        if ((inflate_flags & NGHTTP2_HD_INFLATE_EMIT) == 0 &&
+            inlen == 0) {
             break;
         }
     }
@@ -358,7 +358,7 @@ LOCAL int http2_parse_frame(ArkimeSession_t *session, HTTP2Info_t *http2, int wh
 #ifdef HTTPDEBUG
     LOG("which: %d len: %u, type: %u (%s), flags: 0x%x, streamId: %u", which, len, type, http2_frameNames[type], flags, streamId);
 #endif
-    switch(type) {
+    switch (type) {
     case NGHTTP2_HEADERS:
         http2_parse_frame_headers(session, http2, which, flags, streamId, BSB_WORK_PTR(bsb), len);
         break;

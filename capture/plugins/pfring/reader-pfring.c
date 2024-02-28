@@ -77,7 +77,8 @@ LOCAL void *reader_pfring_thread(void *posv)
     return NULL;
 }
 /******************************************************************************/
-void reader_pfring_start() {
+void reader_pfring_start()
+{
     arkime_packet_set_dltsnap(DLT_EN10MB, config.snapLen);
 
     int i;

@@ -210,10 +210,10 @@ uint8_t *arkime_http_send_sync(void *serverV, const char *method, const char *ke
     }
 
     // Send client certs if so configured
-    if(server->clientAuth) {
+    if (server->clientAuth) {
         curl_easy_setopt(easy, CURLOPT_SSLCERT, server->clientAuth->clientCert);
         curl_easy_setopt(easy, CURLOPT_SSLKEY, server->clientAuth->clientKey);
-        if(server->clientAuth->clientKeyPass) {
+        if (server->clientAuth->clientKeyPass) {
             curl_easy_setopt(easy, CURLOPT_SSLKEYPASSWD, server->clientAuth->clientKeyPass);
         }
     }
@@ -846,10 +846,10 @@ gboolean arkime_http_schedule2(void *serverV, const char *method, const char *ke
     }
 
     // Send client certs if so configured
-    if(server->clientAuth) {
+    if (server->clientAuth) {
         curl_easy_setopt(request->easy, CURLOPT_SSLCERT, server->clientAuth->clientCert);
         curl_easy_setopt(request->easy, CURLOPT_SSLKEY, server->clientAuth->clientKey);
-        if(server->clientAuth->clientKeyPass) {
+        if (server->clientAuth->clientKeyPass) {
             curl_easy_setopt(request->easy, CURLOPT_SSLKEYPASSWD, server->clientAuth->clientKeyPass);
         }
     }
@@ -990,7 +990,7 @@ void arkime_http_set_client_cert(void *serverV, char *clientCert,
                                  char *clientKey, char *clientKeyPass)
 {
     ArkimeHttpServer_t        *server = serverV;
-    if(server->clientAuth != NULL) {
+    if (server->clientAuth != NULL) {
         ARKIME_TYPE_FREE(ArkimeClientAuth_t, server->clientAuth);
     }
     ArkimeClientAuth_t *clientAuth = ARKIME_TYPE_ALLOC0(ArkimeClientAuth_t);

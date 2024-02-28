@@ -26,8 +26,7 @@ LOCAL  int                   httpsAlpnField;
 LOCAL  int                   httpsPortField;
 LOCAL  int                   httpsIpField;
 
-typedef enum dns_type
-{
+typedef enum dns_type {
     RR_A          =   1,
     RR_NS         =   2,
     RR_CNAME      =   5,
@@ -36,8 +35,7 @@ typedef enum dns_type
     RR_HTTPS      =  65
 } DNSType_t;
 
-typedef enum dns_class
-{
+typedef enum dns_class {
     CLASS_IN      =     1,
     CLASS_CS      =     2,
     CLASS_CH      =     3,
@@ -47,8 +45,7 @@ typedef enum dns_class
     CLASS_UNKNOWN = 65280
 } DNSClass_t;
 
-typedef enum dns_result_record_type
-{
+typedef enum dns_result_record_type {
     RESULT_RECORD_ANSWER          =     1,    /* Answer or Prerequisites Record */
     RESULT_RECORD_AUTHORITATIVE   =     2,    /* Authoritative or Update Record */
     RESULT_RECORD_ADDITIONAL      =     3,    /* Additional Record */
@@ -159,7 +156,8 @@ LOCAL void dns_add_host(int field, ArkimeSession_t *session, char *string, int l
     }
 }
 /******************************************************************************/
-LOCAL int dns_find_host(int pos, ArkimeSession_t *session, char *string, int len) {
+LOCAL int dns_find_host(int pos, ArkimeSession_t *session, char *string, int len)
+{
 
     char *host = 0;
     ArkimeField_t *field = 0;
@@ -342,7 +340,7 @@ LOCAL void dns_parser(ArkimeSession_t *session, int kind, const uint8_t *data, i
         }
     }
     arkime_field_string_add(opCodeField, session, opcodes[opcode], -1, TRUE);
-    switch(kind) {
+    switch (kind) {
     case 0:
         arkime_session_add_protocol(session, "dns");
         break;

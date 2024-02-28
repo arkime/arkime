@@ -29,7 +29,8 @@ LOCAL  int exceptionCodeField;
 #define MODBUS_TCP_HEADER_LEN 7
 
 /******************************************************************************/
-LOCAL int modbus_tcp_parser(ArkimeSession_t *session, void *uw, const uint8_t *data, int len, int which) {
+LOCAL int modbus_tcp_parser(ArkimeSession_t *session, void *uw, const uint8_t *data, int len, int which)
+{
 
     if (len < MODBUS_TCP_HEADER_LEN || data[3] != 0) {
         return ARKIME_PARSER_UNREGISTER;

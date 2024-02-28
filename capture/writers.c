@@ -20,7 +20,8 @@ extern ArkimeConfig_t        config;
 LOCAL  ArkimeStringHashStd_t writersHash;
 
 /******************************************************************************/
-void arkime_writers_start(char *name) {
+void arkime_writers_start(char *name)
+{
     ArkimeString_t *str;
     char *freeIt = NULL;
 
@@ -38,7 +39,8 @@ void arkime_writers_start(char *name) {
     g_free(freeIt);
 }
 /******************************************************************************/
-void arkime_writers_add(char *name, ArkimeWriterInit func) {
+void arkime_writers_add(char *name, ArkimeWriterInit func)
+{
     arkime_string_add(&writersHash, name, func, TRUE);
 }
 /******************************************************************************/

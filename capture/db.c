@@ -154,7 +154,7 @@ void arkime_db_js0n_str(BSB *bsb, uint8_t *in, gboolean utf8)
 {
     BSB_EXPORT_u08(*bsb, '"');
     while (*in) {
-        switch(*in) {
+        switch (*in) {
         case '\b':
             BSB_EXPORT_cstr(*bsb, "\\b");
             break;
@@ -180,7 +180,7 @@ void arkime_db_js0n_str(BSB *bsb, uint8_t *in, gboolean utf8)
             BSB_EXPORT_cstr(*bsb, "\\/");
             break;
         default:
-            if(*in < 32) {
+            if (*in < 32) {
                 BSB_EXPORT_sprintf(*bsb, "\\u%04x", *in);
             } else if (utf8) {
                 if ((*in & 0xf0) == 0xf0) {
@@ -199,7 +199,7 @@ void arkime_db_js0n_str(BSB *bsb, uint8_t *in, gboolean utf8)
                     BSB_EXPORT_u08(*bsb, *in);
                 }
             } else {
-                if(*in & 0x80) {
+                if (*in & 0x80) {
                     BSB_EXPORT_u08(*bsb, (0xc0 | (*in >> 6)));
                     BSB_EXPORT_u08(*bsb, (0x80 | (*in & 0x3f)));
                 } else {
@@ -225,7 +225,7 @@ LOCAL void arkime_db_js0n_str_unquoted(BSB *bsb, uint8_t *in, int len, gboolean 
     const uint8_t *end = in + len;
 
     while (in < end) {
-        switch(*in) {
+        switch (*in) {
         case '\b':
             BSB_EXPORT_cstr(*bsb, "\\b");
             break;
@@ -251,7 +251,7 @@ LOCAL void arkime_db_js0n_str_unquoted(BSB *bsb, uint8_t *in, int len, gboolean 
             BSB_EXPORT_cstr(*bsb, "\\/");
             break;
         default:
-            if(*in < 32) {
+            if (*in < 32) {
                 BSB_EXPORT_sprintf(*bsb, "\\u%04x", *in);
             } else if (utf8) {
                 if ((*in & 0xf0) == 0xf0) {
@@ -270,7 +270,7 @@ LOCAL void arkime_db_js0n_str_unquoted(BSB *bsb, uint8_t *in, int len, gboolean 
                     BSB_EXPORT_u08(*bsb, *in);
                 }
             } else {
-                if(*in & 0x80) {
+                if (*in & 0x80) {
                     BSB_EXPORT_u08(*bsb, (0xc0 | (*in >> 6)));
                     BSB_EXPORT_u08(*bsb, (0x80 | (*in & 0x3f)));
                 } else {
@@ -477,7 +477,8 @@ do { \
     BSB_EXPORT_cstr(jbsb, "],"); \
 } while(0)
 
-int arkime_db_field_sort(const void *a, const void *b) {
+int arkime_db_field_sort(const void *a, const void *b)
+{
     return strcmp(config.fields[*(short *)a]->dbFieldFull, config.fields[*(short *)b]->dbFieldFull);
 }
 
@@ -554,7 +555,7 @@ void arkime_db_save_session(ArkimeSession_t *session, int final)
         struct tm tmp;
         gmtime_r(&dbInfo[thread].prefixTime, &tmp);
 
-        switch(config.rotate) {
+        switch (config.rotate) {
         case ARKIME_ROTATE_HOURLY:
             snprintf(dbInfo[thread].prefix, sizeof(dbInfo[thread].prefix), "%02d%02d%02dh%02d", tmp.tm_year % 100, tmp.tm_mon + 1, tmp.tm_mday, tmp.tm_hour);
             break;
@@ -884,7 +885,7 @@ void arkime_db_save_session(ArkimeSession_t *session, int final)
          */
         int64_t last = 0;
         int64_t lastgap = 0;
-        for(i = 0; i < session->filePosArray->len; i++) {
+        for (i = 0; i < session->filePosArray->len; i++) {
             if (i != 0)
                 BSB_EXPORT_u08(jbsb, ',');
             int64_t fpos = (int64_t)g_array_index(session->filePosArray, int64_t, i);
@@ -904,7 +905,7 @@ void arkime_db_save_session(ArkimeSession_t *session, int final)
         }
     } else {
         // Do NOT remove this, S3 and others use this
-        for(i = 0; i < session->filePosArray->len; i++) {
+        for (i = 0; i < session->filePosArray->len; i++) {
             if (i != 0)
                 BSB_EXPORT_u08(jbsb, ',');
             BSB_EXPORT_sprintf(jbsb, "%" PRId64, (int64_t)g_array_index(session->filePosArray, int64_t, i));
@@ -914,7 +915,7 @@ void arkime_db_save_session(ArkimeSession_t *session, int final)
 
     if (config.enablePacketLen) {
         BSB_EXPORT_cstr(jbsb, "\"packetLen\":[");
-        for(i = 0; i < session->fileLenArray->len; i++) {
+        for (i = 0; i < session->fileLenArray->len; i++) {
             if (i != 0)
                 BSB_EXPORT_u08(jbsb, ',');
             BSB_EXPORT_sprintf(jbsb, "%u", (uint16_t)g_array_index(session->fileLenArray, uint16_t, i));
@@ -963,7 +964,7 @@ void arkime_db_save_session(ArkimeSession_t *session, int final)
             }
         }
 
-        switch(config.fields[pos]->type) {
+        switch (config.fields[pos]->type) {
         case ARKIME_FIELD_TYPE_INT:
             BSB_EXPORT_sprintf(jbsb, "\"%s\":%d", config.fields[pos]->dbField, session->fields[pos]->i);
             BSB_EXPORT_u08(jbsb, ',');
@@ -987,7 +988,7 @@ void arkime_db_save_session(ArkimeSession_t *session, int final)
                 BSB_EXPORT_sprintf(jbsb, "\"%sCnt\":%u,", config.fields[pos]->dbField, session->fields[pos]->iarray->len);
             }
             BSB_EXPORT_sprintf(jbsb, "\"%s\":[", config.fields[pos]->dbField);
-            for(i = 0; i < session->fields[pos]->iarray->len; i++) {
+            for (i = 0; i < session->fields[pos]->iarray->len; i++) {
                 BSB_EXPORT_sprintf(jbsb, "%u", g_array_index(session->fields[pos]->iarray, uint32_t, i));
                 BSB_EXPORT_u08(jbsb, ',');
             }
@@ -1002,7 +1003,7 @@ void arkime_db_save_session(ArkimeSession_t *session, int final)
                 BSB_EXPORT_sprintf(jbsb, "\"%sCnt\":%u,", config.fields[pos]->dbField, session->fields[pos]->sarray->len);
             }
             BSB_EXPORT_sprintf(jbsb, "\"%s\":[", config.fields[pos]->dbField);
-            for(i = 0; i < session->fields[pos]->sarray->len; i++) {
+            for (i = 0; i < session->fields[pos]->sarray->len; i++) {
                 arkime_db_js0n_str(&jbsb,
                                    g_ptr_array_index(session->fields[pos]->sarray, i),
                                    flags & ARKIME_FIELD_FLAG_FORCE_UTF8);
@@ -1084,7 +1085,7 @@ void arkime_db_save_session(ArkimeSession_t *session, int final)
                 BSB_EXPORT_sprintf(jbsb, "\"%sCnt\":%u,", config.fields[pos]->dbField, session->fields[pos]->farray->len);
             }
             BSB_EXPORT_sprintf(jbsb, "\"%s\":[", config.fields[pos]->dbField);
-            for(i = 0; i < session->fields[pos]->farray->len; i++) {
+            for (i = 0; i < session->fields[pos]->farray->len; i++) {
                 BSB_EXPORT_sprintf(jbsb, "%f", g_array_index(session->fields[pos]->farray, float, i));
                 BSB_EXPORT_u08(jbsb, ',');
             }
@@ -1306,7 +1307,8 @@ cleanup:
     ARKIME_UNLOCK(dbInfo[thread].lock);
 }
 /******************************************************************************/
-LOCAL uint64_t zero_atoll(const char *v) {
+LOCAL uint64_t zero_atoll(const char *v)
+{
     if (v)
         return atoll(v);
     return 0;
@@ -1966,8 +1968,7 @@ char *arkime_db_create_file_full(time_t firstPacket, const char *name, uint64_t 
                 if (config.debug)
                     LOG("%s has %0.2f%% free", config.pcapDir[i], 100 * ((double)vfs.f_bavail / (double)vfs.f_blocks));
 
-                if ((double)vfs.f_bavail / (double)vfs.f_blocks >= maxFreeSpacePercent)
-                {
+                if ((double)vfs.f_bavail / (double)vfs.f_blocks >= maxFreeSpacePercent) {
                     maxFreeSpacePercent = (double)vfs.f_bavail / (double)vfs.f_blocks;
                     config.pcapDirPos = i;
                 }
@@ -1984,8 +1985,7 @@ char *arkime_db_create_file_full(time_t firstPacket, const char *name, uint64_t 
                 statvfs(config.pcapDir[i], &vfs);
                 if (config.debug)
                     LOG("%s has %" PRIu64 " megabytes available", config.pcapDir[i], (uint64_t)vfs.f_bavail * (uint64_t)vfs.f_frsize / (1000 * 1000));
-                if ((uint64_t)vfs.f_bavail * (uint64_t)vfs.f_frsize >= maxFreeSpaceBytes)
-                {
+                if ((uint64_t)vfs.f_bavail * (uint64_t)vfs.f_frsize >= maxFreeSpaceBytes) {
                     maxFreeSpaceBytes = (uint64_t)vfs.f_bavail * (uint64_t)vfs.f_frsize;
                     config.pcapDirPos = i;
                 }
@@ -2099,7 +2099,7 @@ LOCAL void arkime_db_check()
     const uint8_t     *template = 0;
 
     template = arkime_js0n_get(data, data_len, tname, &template_len);
-    if(!template || template_len == 0) {
+    if (!template || template_len == 0) {
         LOGEXIT("ERROR - Couldn't load version information, database might be down or out of date.  Run \"db/db.pl host:port upgrade\"");
     }
 
@@ -2107,7 +2107,7 @@ LOCAL void arkime_db_check()
     const uint8_t     *mappings = 0;
 
     mappings = arkime_js0n_get(template, template_len, "mappings", &mappings_len);
-    if(!mappings || mappings_len == 0) {
+    if (!mappings || mappings_len == 0) {
         LOGEXIT("ERROR - Couldn't load version information, database might be down or out of date.  Run \"db/db.pl host:port upgrade\"");
     }
 
@@ -2115,7 +2115,7 @@ LOCAL void arkime_db_check()
     const uint8_t     *meta = 0;
 
     meta = arkime_js0n_get(mappings, mappings_len, "_meta", &meta_len);
-    if(!meta || meta_len == 0) {
+    if (!meta || meta_len == 0) {
         LOGEXIT("ERROR - Couldn't load version information, database might be down or out of date.  Run \"db/db.pl host:port upgrade\"");
     }
 
@@ -2176,7 +2176,7 @@ LOCAL void arkime_db_load_rir(const char *name)
         CONFIGEXIT("Couldn't open RIR from %s", name);
     }
 
-    while(fgets(line, sizeof(line), fp)) {
+    while (fgets(line, sizeof(line), fp)) {
         int cnt = 0, quote = 0, num = 0;
         const char *start;
         char *ptr;
@@ -2234,7 +2234,7 @@ LOCAL void arkime_db_load_oui(const char *name)
         exit(1);
     }
 
-    while(fgets(line, sizeof(line), fp)) {
+    while (fgets(line, sizeof(line), fp)) {
         char *hash = strchr(line, '#');
         if (hash)
             *hash = 0;
