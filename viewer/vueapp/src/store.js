@@ -57,7 +57,8 @@ const store = new Vuex.Store({
     fieldActions: {},
     notifiers: [],
     sessionDetailDLWidth: 160,
-    sessionDetailCols: localStorage.getItem('sessionDetailCols') || 2
+    sessionDetailCols: localStorage.getItem('sessionDetailCols') || 2,
+    userSettingDefaults: {}
   },
   getters: {
     sessionsTableState (state) {
@@ -220,6 +221,7 @@ const store = new Vuex.Store({
       state.fieldhistory = value.fieldhistory.fields || [];
       state.esCluster.availableCluster = value.clusters;
       state.roles = Vue.filter('parseRoles')(value.roles);
+      state.userSettingDefaults = value.userSettingDefaults;
 
       // fieldsMap has keys for these fields: dbField, dbField2, fieldECS, and exp (id/key)
       // fieldsAliasMap has keys for field aliases
