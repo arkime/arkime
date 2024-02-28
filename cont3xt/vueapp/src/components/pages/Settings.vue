@@ -342,9 +342,14 @@ SPDX-License-Identifier: Apache-2.0
                   </h4>
                   <div class="pull-right mt-1">
                     <span
+                      v-if="getIntegrations[key] && getIntegrations[key].locked"
+                      class="fa fa-lock fa-lg mr-2 cursor-help"
+                      v-b-tooltip.hover="'This integration has been locked by your administrator. You cannot update this integration. Any previously configured settings for this integration will be ignored in favor of the global configuration.'"
+                    />
+                    <span
                       v-if="setting.globalConfiged"
                       class="fa fa-globe fa-lg mr-2 cursor-help"
-                      v-b-tooltip.hover="'This integration has been globally configured by the admin with a shared account. If you fill out the account fields below, it will override that configuration.'"
+                      v-b-tooltip.hover="'This integration has been globally configured by the administrator with a shared account. If you fill out the account fields below, it will override that configuration.'"
                     />
                     <a target="_blank"
                       :href="setting.homePage"
@@ -378,6 +383,7 @@ SPDX-License-Identifier: Apache-2.0
                     <b-form-input
                       v-model="setting.values[name]"
                       :state="getState(field, setting, name)"
+                      :disabled="getIntegrations[key] && getIntegrations[key].locked"
                       :type="field.password && !field.showValue ? 'password' : 'text'"
                     />
                     <b-input-group-append

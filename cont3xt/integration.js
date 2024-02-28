@@ -29,7 +29,6 @@ class Integration {
   static NoResult = Symbol('NoResult');
 
   static debug = ArkimeConfig.debug; // Used by integrations
-
   static #cache;
   static #cont3xtStartTime = Date.now();
   static #integrationsByName = {};
@@ -162,6 +161,8 @@ class Integration {
     }
 
     integration.viewRoles = integration.getConfigArray('viewRoles');
+
+    integration.locked = integration.getConfig('locked', false);
   }
 
   static classify (str) {
@@ -383,7 +384,8 @@ class Integration {
         card,
         order,
         tidbits: integration.tidbits?.fields || [],
-        uiSettings: uiSettings || {}
+        uiSettings: uiSettings || {},
+        locked: integration.locked
       };
     }
 
@@ -922,12 +924,11 @@ class Integration {
   //   user config is indexed by name, config file by section
   // - should never have both configName and section set
   getUserConfig (user, key, d) {
-    if (user.cont3xt?.keys) {
+    if (user.cont3xt?.keys && !this.locked) {
       const keys = user.getCont3xtKeys();
       const configName = this.configName ?? this.name;
       if (keys[configName]?.[key]) { return keys[configName]?.[key]; }
     }
-
     return ArkimeConfig.getFull(this.configName ?? this.section ?? this.name, key, d);
   }
 
