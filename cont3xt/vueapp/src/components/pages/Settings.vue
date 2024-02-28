@@ -342,7 +342,7 @@ SPDX-License-Identifier: Apache-2.0
                   </h4>
                   <div class="pull-right mt-1">
                     <span
-                      v-if="getIntegrations[key] && getIntegrations[key].locked"
+                      v-if="setting.locked"
                       class="fa fa-lock fa-lg mr-2 cursor-help"
                       v-b-tooltip.hover="'This integration has been locked by your administrator. You cannot update this integration. Any previously configured settings for this integration will be ignored in favor of the global configuration.'"
                     />
@@ -381,9 +381,9 @@ SPDX-License-Identifier: Apache-2.0
                       </b-input-group-text>
                     </b-input-group-prepend>
                     <b-form-input
+                      :disabled="setting.locked"
                       v-model="setting.values[name]"
                       :state="getState(field, setting, name)"
-                      :disabled="getIntegrations[key] && getIntegrations[key].locked"
                       :type="field.password && !field.showValue ? 'password' : 'text'"
                     />
                     <b-input-group-append
