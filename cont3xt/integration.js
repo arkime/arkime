@@ -29,6 +29,7 @@ class Integration {
   static NoResult = Symbol('NoResult');
 
   static debug = ArkimeConfig.debug; // Used by integrations
+
   static #cache;
   static #cont3xtStartTime = Date.now();
   static #integrationsByName = {};
