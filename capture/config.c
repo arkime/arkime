@@ -641,7 +641,9 @@ void arkime_config_load()
             fprintf(stderr, "OVERRIDE:\n");
             g_hash_table_foreach(config.override, arkime_config_override_print, NULL);
         }
-        fprintf(stderr, "CONFIG:\n%s", g_key_file_to_data(arkimeKeyFile, NULL, NULL));
+        char *data = g_key_file_to_data(arkimeKeyFile, NULL, NULL);
+        fprintf(stderr, "CONFIG:\n%s", data);
+        g_free(data);
         if (config.regressionTests) {
             exit(0);
         }
