@@ -597,8 +597,10 @@ void arkime_config_load()
         int code;
         uint8_t *data = arkime_http_send_sync(server, "GET", end, strlen(end), NULL, 0, NULL, NULL, &code);
 
-        if (!data || code != 200)
+        if (!data || code != 200) {
+            free(data);
             CONFIGEXIT("Couldn't download from code: %d host: %s url: %s", code, host, end);
+        }
 
         if (g_str_has_suffix(config.configFile, ".ini"))
             status = g_key_file_load_from_data(keyfile, (gchar *)data, -1, G_KEY_FILE_NONE, &error);
