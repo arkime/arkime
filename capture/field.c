@@ -1825,11 +1825,11 @@ LOCAL void *arkime_field_get_dst_ip_port(ArkimeSession_t *session, int UNUSED(po
 
     if (IN6_IS_ADDR_V4MAPPED(&session->addr2)) {
         uint32_t ip = ARKIME_V6_TO_V4(session->addr2);
-        snprintf(ipstr, sizeof(ipstr), "%u.%u.%u.%u:%d", ip & 0xff, (ip >> 8) & 0xff, (ip >> 16) & 0xff, (ip >> 24) & 0xff, session->port2);
+        snprintf(ipstr, INET6_ADDRSTRLEN + 10, "%u.%u.%u.%u:%d", ip & 0xff, (ip >> 8) & 0xff, (ip >> 16) & 0xff, (ip >> 24) & 0xff, session->port2);
     } else {
         inet_ntop(AF_INET6, &session->addr2, ipstr, sizeof(ipstr));
         int len = strlen(ipstr);
-        snprintf(ipstr + len, sizeof(ipstr) - len, ".%d", session->port2);
+        snprintf(ipstr + len, INET6_ADDRSTRLEN + 10 - len, ".%d", session->port2);
     }
 
     arkime_free_later(ipstr, g_free);

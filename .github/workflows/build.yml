@@ -48,7 +48,7 @@ jobs:
             package: deb
 
           - version: ubuntu2204
-            container: andywick/arkime-build-22:5.0.0-4
+            container: andywick/arkime-build-22:5.0.0-5
             buildopt: "--nothirdparty --kafka --pfring"
             fpmdeps: "-d libwww-perl -d libjson-perl -d ethtool -d libyaml-dev -d liblua5.4-0 -d libmaxminddb0 -d libcurl4 -d libpcap0.8 -d libglib2.0-0 -d libnghttp2-14 -d libyara8 -d librdkafka1"
             package: deb
@@ -194,8 +194,12 @@ jobs:
       - name: sanitize
         if: ${{ matrix.sanitize }}
         run: |
+          (chown -R opensearch /opensearch-2.7.0; cd /opensearch-2.7.0 ; su opensearch -c "ES_JAVA_OPTS='-Xms1000m -Xmx1000m' bin/opensearch" > /tmp/os &)
           (cd capture ; make sanitize CC=clang-18)
           (cd tests; ./tests.pl)
+          cat /tmp/os
+          export PATH=/opt/arkime/bin:$PATH
+          (cd tests ; G_SLICE=always-malloc ./tests.pl --viewer)
 
       - name: upload github
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
