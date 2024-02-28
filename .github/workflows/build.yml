@@ -48,14 +48,14 @@ jobs:
             package: deb
 
           - version: ubuntu2204
-            container: andywick/arkime-build-22:5.0.0-4
+            container: andywick/arkime-build-22:5.0.0-5
             buildopt: "--nothirdparty --kafka --pfring"
             fpmdeps: "-d libwww-perl -d libjson-perl -d ethtool -d libyaml-dev -d liblua5.4-0 -d libmaxminddb0 -d libcurl4 -d libpcap0.8 -d libglib2.0-0 -d libnghttp2-14 -d libyara8 -d librdkafka1"
             package: deb
             sanitize: true
 
           - version: ubuntu2404
-            container: andywick/arkime-build-24:5.0.0-5
+            container: andywick/arkime-build-24:5.0.0-3
             buildopt: "--nothirdparty --kafka"
             fpmdeps: "-d libwww-perl -d libjson-perl -d ethtool -d libyaml-dev -d liblua5.4-0 -d libmaxminddb0 -d libcurl4 -d libpcap0.8 -d libglib2.0-0 -d libnghttp2-14 -d libyara10 -d librdkafka1"
             package: deb
