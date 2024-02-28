@@ -26,6 +26,14 @@ LOCAL int                    tcp_raw_packet_func;
 
 void arkime_packet_free(ArkimePacket_t *packet);
 
+LOCAL int tcpflagsSynField;
+LOCAL int tcpflagsSynAckField;
+LOCAL int tcpflagsAckField;
+LOCAL int tcpflagsPshField;
+LOCAL int tcpflagsRstField;
+LOCAL int tcpflagsFinField;
+LOCAL int tcpflagsUrgField;
+
 /******************************************************************************/
 void tcp_session_free(ArkimeSession_t *session)
 {
@@ -147,7 +155,7 @@ int tcp_packet_process(ArkimeSession_t *const session, ArkimePacket_t *const pac
 
     if (tcphdr->th_flags & TH_URG) {
         session->tcpFlagCnt[ARKIME_TCPFLAG_URG]++;
-        ARKIME_RULES_RUN_FIELD_SET(session, ARKIME_FIELD_EXSPECIAL_TCPFLAGS_URG, (gpointer)(long)session->tcpFlagCnt[ARKIME_TCPFLAG_URG]);
+        ARKIME_RULES_RUN_FIELD_SET(session, tcpflagsUrgField, (gpointer)(long)session->tcpFlagCnt[ARKIME_TCPFLAG_URG]);
     }
 
     // add to the long open
@@ -158,7 +166,7 @@ int tcp_packet_process(ArkimeSession_t *const session, ArkimePacket_t *const pac
     if (tcphdr->th_flags & TH_SYN) {
         if (tcphdr->th_flags & TH_ACK) {
             session->tcpFlagCnt[ARKIME_TCPFLAG_SYN_ACK]++;
-            ARKIME_RULES_RUN_FIELD_SET(session, ARKIME_FIELD_EXSPECIAL_TCPFLAGS_SYN_ACK, (gpointer)(long)session->tcpFlagCnt[ARKIME_TCPFLAG_SYN_ACK]);
+            ARKIME_RULES_RUN_FIELD_SET(session, tcpflagsSynAckField, (gpointer)(long)session->tcpFlagCnt[ARKIME_TCPFLAG_SYN_ACK]);
 
             if (!session->haveTcpSession) {
 #ifdef DEBUG_TCP
@@ -168,7 +176,7 @@ int tcp_packet_process(ArkimeSession_t *const session, ArkimePacket_t *const pac
             }
         } else {
             session->tcpFlagCnt[ARKIME_TCPFLAG_SYN]++;
-            ARKIME_RULES_RUN_FIELD_SET(session, ARKIME_FIELD_EXSPECIAL_TCPFLAGS_SYN, (gpointer)(long)session->tcpFlagCnt[ARKIME_TCPFLAG_SYN]);
+            ARKIME_RULES_RUN_FIELD_SET(session, tcpflagsSynField, (gpointer)(long)session->tcpFlagCnt[ARKIME_TCPFLAG_SYN]);
             if (session->synTime == 0) {
                 session->synTime = (packet->ts.tv_sec - session->firstPacket.tv_sec) * 1000000 +
                                    (packet->ts.tv_usec - session->firstPacket.tv_usec) + 1;
@@ -188,7 +196,7 @@ int tcp_packet_process(ArkimeSession_t *const session, ArkimePacket_t *const pac
 
     if (tcphdr->th_flags & TH_RST) {
         session->tcpFlagCnt[ARKIME_TCPFLAG_RST]++;
-        ARKIME_RULES_RUN_FIELD_SET(session, ARKIME_FIELD_EXSPECIAL_TCPFLAGS_RST, (gpointer)(long)session->tcpFlagCnt[ARKIME_TCPFLAG_RST]);
+        ARKIME_RULES_RUN_FIELD_SET(session, tcpflagsRstField, (gpointer)(long)session->tcpFlagCnt[ARKIME_TCPFLAG_RST]);
         int64_t diff = tcp_sequence_diff(seq, session->tcpSeq[packet->direction]);
         if (diff  <= 0) {
             if (diff == 0 && !session->closingQ) {
@@ -202,7 +210,7 @@ int tcp_packet_process(ArkimeSession_t *const session, ArkimePacket_t *const pac
 
     if (tcphdr->th_flags & TH_FIN) {
         session->tcpFlagCnt[ARKIME_TCPFLAG_FIN]++;
-        ARKIME_RULES_RUN_FIELD_SET(session, ARKIME_FIELD_EXSPECIAL_TCPFLAGS_FIN, (gpointer)(long)session->tcpFlagCnt[ARKIME_TCPFLAG_FIN]);
+        ARKIME_RULES_RUN_FIELD_SET(session, tcpflagsFinField, (gpointer)(long)session->tcpFlagCnt[ARKIME_TCPFLAG_FIN]);
         session->tcpState[packet->direction] = ARKIME_TCP_STATE_FIN;
     }
 
@@ -211,7 +219,7 @@ int tcp_packet_process(ArkimeSession_t *const session, ArkimePacket_t *const pac
         if (session->tcpFlagAckCnt[packet->direction] < 0xff) {
             session->tcpFlagAckCnt[packet->direction]++;
         }
-        ARKIME_RULES_RUN_FIELD_SET(session, ARKIME_FIELD_EXSPECIAL_TCPFLAGS_ACK, (gpointer)(long)session->tcpFlagCnt[ARKIME_TCPFLAG_ACK]);
+        ARKIME_RULES_RUN_FIELD_SET(session, tcpflagsAckField, (gpointer)(long)session->tcpFlagCnt[ARKIME_TCPFLAG_ACK]);
         if (session->ackTime == 0) {
             session->ackTime = (packet->ts.tv_sec - session->firstPacket.tv_sec) * 1000000 +
                                (packet->ts.tv_usec - session->firstPacket.tv_usec) + 1;
@@ -220,7 +228,7 @@ int tcp_packet_process(ArkimeSession_t *const session, ArkimePacket_t *const pac
 
     if (tcphdr->th_flags & TH_PUSH) {
         session->tcpFlagCnt[ARKIME_TCPFLAG_PSH]++;
-        ARKIME_RULES_RUN_FIELD_SET(session, ARKIME_FIELD_EXSPECIAL_TCPFLAGS_PSH, (gpointer)(long)session->tcpFlagCnt[ARKIME_TCPFLAG_PSH]);
+        ARKIME_RULES_RUN_FIELD_SET(session, tcpflagsPshField, (gpointer)(long)session->tcpFlagCnt[ARKIME_TCPFLAG_PSH]);
     }
 
     if (session->stopTCP)
@@ -432,4 +440,12 @@ void arkime_parser_init()
                                              tcp_pre_process,
                                              tcp_process,
                                              tcp_session_free);
+
+    tcpflagsSynField = arkime_field_by_exp("tcpflags.syn");
+    tcpflagsSynAckField = arkime_field_by_exp("tcpflags.syn-ack");
+    tcpflagsAckField = arkime_field_by_exp("tcpflags.ack");
+    tcpflagsPshField = arkime_field_by_exp("tcpflags.psh");
+    tcpflagsRstField = arkime_field_by_exp("tcpflags.rst");
+    tcpflagsFinField = arkime_field_by_exp("tcpflags.fin");
+    tcpflagsUrgField = arkime_field_by_exp("tcpflags.urg");
 }
