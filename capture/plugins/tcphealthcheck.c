@@ -23,7 +23,8 @@ extern ArkimeConfig_t        config;
 LOCAL  int                   tcp_port;
 
 /******************************************************************************/
-void tcp_server(void) {
+void tcp_server(void)
+{
     int server_fd, err;
     struct sockaddr_in server, client;
 
@@ -58,8 +59,7 @@ void tcp_server(void) {
         int client_fd = accept(server_fd, (struct sockaddr *) &client, &client_len);
         if (client_fd < 0) {
             LOG("Error establishing new connection: %d", client_fd);
-        }
-        else {
+        } else {
             if (config.debug) {
                 char str[INET6_ADDRSTRLEN];
                 inet_ntop(AF_INET, &client.sin_addr, str, sizeof(str));
@@ -94,8 +94,7 @@ void arkime_plugin_init()
         pthread_create(&thread_id, NULL, tcp_listener, NULL);
         LOG("TCP listener thread created");
         arkime_plugins_register("tcphealthcheck", FALSE);
-    }
-    else {
+    } else {
         LOG("To use TCP health checks, set tcpHealthCheckPort to a value between 1 and 65535");
     }
 }

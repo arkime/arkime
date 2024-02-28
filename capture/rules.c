@@ -151,7 +151,8 @@ LOCAL YamlNode_t *arkime_rules_parser_add_node(YamlNode_t *parent, char *key, ch
     return node;
 }
 /******************************************************************************/
-LOCAL YamlNode_t *arkime_rules_parser_parse_yaml(char *filename, YamlNode_t *parent, yaml_parser_t *parser, gboolean sequence) {
+LOCAL YamlNode_t *arkime_rules_parser_parse_yaml(char *filename, YamlNode_t *parent, yaml_parser_t *parser, gboolean sequence)
+{
 
     char *key = NULL;
     YamlNode_t *node;
@@ -167,7 +168,7 @@ LOCAL YamlNode_t *arkime_rules_parser_parse_yaml(char *filename, YamlNode_t *par
         LOG("%s %d", yaml_names[event.type], event.type);
 #endif
 
-        switch(event.type) {
+        switch (event.type) {
         case YAML_NO_EVENT:
             done = 1;
             break;
@@ -1105,7 +1106,7 @@ LOCAL void arkime_rules_check_rule_fields(ArkimeSession_t *const session, Arkime
             case ARKIME_FIELD_TYPE_STR_ARRAY: {
                 GPtrArray *sarray = (GPtrArray *)value;
                 good = 0;
-                for(i = 0; i < (int)sarray->len; i++) {
+                for (i = 0; i < (int)sarray->len; i++) {
                     if (arkime_rules_check_str_match(rule, p, g_ptr_array_index(sarray, i), logStr)) {
                         good = 1;
                         break;
@@ -1116,7 +1117,7 @@ LOCAL void arkime_rules_check_rule_fields(ArkimeSession_t *const session, Arkime
             case ARKIME_FIELD_TYPE_INT_ARRAY: {
                 GArray *iarray = (GArray *)value;
                 good = 0;
-                for(i = 0; i < (int)iarray->len; i++) {
+                for (i = 0; i < (int)iarray->len; i++) {
                     if (arkime_rules_check_int_match(rule, p, g_array_index(iarray, uint32_t, i), logStr)) {
                         good = 1;
                         break;
@@ -1151,7 +1152,7 @@ LOCAL void arkime_rules_check_rule_fields(ArkimeSession_t *const session, Arkime
             break;
         case ARKIME_FIELD_TYPE_INT_ARRAY:
             good = 0;
-            for(i = 0; i < (int)session->fields[p]->iarray->len; i++) {
+            for (i = 0; i < (int)session->fields[p]->iarray->len; i++) {
                 if (arkime_rules_check_int_match(rule, p, g_array_index(session->fields[p]->iarray, uint32_t, i), logStr)) {
                     good = 1;
                     break;
@@ -1186,7 +1187,7 @@ LOCAL void arkime_rules_check_rule_fields(ArkimeSession_t *const session, Arkime
             break;
         case ARKIME_FIELD_TYPE_FLOAT_ARRAY:
             good = 0;
-            for(i = 0; i < (int)session->fields[p]->farray->len; i++) {
+            for (i = 0; i < (int)session->fields[p]->farray->len; i++) {
                 if (g_hash_table_contains(rule->hash[p], (gpointer)(long)g_array_index(session->fields[p]->farray, float, i))) {
                     good = 1;
                     RULE_LOG_FLOAT(g_array_index(session->fields[p]->farray, float, i));
@@ -1234,7 +1235,7 @@ LOCAL void arkime_rules_check_rule_fields(ArkimeSession_t *const session, Arkime
             break;
         case ARKIME_FIELD_TYPE_STR_ARRAY:
             good = 0;
-            for(i = 0; i < (int)session->fields[p]->sarray->len; i++) {
+            for (i = 0; i < (int)session->fields[p]->sarray->len; i++) {
                 if (arkime_rules_check_str_match(rule, p, g_ptr_array_index(session->fields[p]->sarray, i), logStr)) {
                     good = 1;
                     break;

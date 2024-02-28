@@ -137,7 +137,7 @@ const char *arkime_parsers_magic_basic(ArkimeSession_t *session, int field, cons
         }
         break;
     case '<':
-        switch(data[1]) {
+        switch (data[1]) {
         case '!':
             if (MAGIC_STRCASE_LEN(0, "<!doctype html")) {
                 return MAGIC_RESULT("text/html");
@@ -485,7 +485,8 @@ const char *arkime_parsers_asn_sequence_to_string(ArkimeASNSeq_t *seq, int *len)
     return ivalue;
 }
 /******************************************************************************/
-void arkime_parsers_asn_decode_oid(char *buf, int bufsz, const uint8_t *oid, int len) {
+void arkime_parsers_asn_decode_oid(char *buf, int bufsz, const uint8_t *oid, int len)
+{
     int buflen = 0;
     int pos = 0;
     int first = TRUE;
@@ -845,7 +846,8 @@ void arkime_parsers_init()
     }
 }
 /******************************************************************************/
-void arkime_parsers_exit() {
+void arkime_parsers_exit()
+{
     if (magicMode == ARKIME_MAGICMODE_LIBMAGIC || magicMode == ARKIME_MAGICMODE_BOTH) {
         int t;
         for (t = 0; t < config.packetThreads; t++) {
@@ -858,8 +860,7 @@ void arkime_print_hex_string(const uint8_t *data, unsigned int length)
 {
     unsigned int i;
 
-    for (i = 0; i < length; i++)
-    {
+    for (i = 0; i < length; i++) {
         printf("%02x", data[i]);
     }
 
@@ -870,8 +871,7 @@ char *arkime_sprint_hex_string(char *buf, const uint8_t *data, unsigned int leng
 {
     unsigned int i;
 
-    for (i = 0; i < length; i++)
-    {
+    for (i = 0; i < length; i++) {
         memcpy(buf + i * 2, arkime_char_to_hexstr[data[i]], 2);
     }
     buf[i * 2] = 0;
@@ -930,8 +930,7 @@ void  arkime_parsers_unregister(ArkimeSession_t *session, void *uw)
     }
 }
 /******************************************************************************/
-typedef struct arkime_classify_t
-{
+typedef struct arkime_classify_t {
     const char          *name;
     void                *uw;
     int                  offset;
@@ -941,8 +940,7 @@ typedef struct arkime_classify_t
     ArkimeClassifyFunc   func;
 } ArkimeClassify_t;
 
-typedef struct
-{
+typedef struct {
     ArkimeClassify_t   **arr;
     short               size;
     short               cnt;

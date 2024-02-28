@@ -256,7 +256,8 @@ gboolean arkime_session_has_protocol(ArkimeSession_t *session, const char *proto
     return hstring != 0;
 }
 /******************************************************************************/
-void arkime_session_add_tag(ArkimeSession_t *session, const char *tag) {
+void arkime_session_add_tag(ArkimeSession_t *session, const char *tag)
+{
     arkime_field_string_add(config.tagsStringField, session, tag, -1, TRUE);
 }
 /******************************************************************************/

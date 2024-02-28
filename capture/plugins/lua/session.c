@@ -26,8 +26,7 @@ static struct {
     HTTP_CONSTANT(MESSAGE_COMPLETE)
 };
 
-static const char *http_method_strings[] =
-{
+static const char *http_method_strings[] = {
 #define XX(num, name, string) #string,
     HTTP_METHOD_MAP(XX)
 #undef XX
@@ -650,7 +649,7 @@ LOCAL int MS_get(lua_State *L)
         pos = lua_tointeger(L, 2);
     } else {
         const char *exp = lua_tostring(L, 2);
-        switch(exp[0]) {
+        switch (exp[0]) {
         case 'd':
             if (strcmp(exp, "databytes.src") == 0) {
                 lua_pushinteger(L, session->databytes[0]);
@@ -758,7 +757,7 @@ LOCAL int MS_get(lua_State *L)
         break;
     case ARKIME_FIELD_TYPE_STR_ARRAY:
         lua_newtable(L);
-        for(i = 0; i < field->sarray->len; i++) {
+        for (i = 0; i < field->sarray->len; i++) {
             lua_pushinteger(L, i + 1);
             lua_pushstring(L, g_ptr_array_index(field->sarray, i));
             lua_settable(L, -3);

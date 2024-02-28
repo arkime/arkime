@@ -56,7 +56,7 @@ int reader_snf_stats(ArkimeReaderStats_t *stats)
             // inability to tie overrun drops to a particular ring
             // is not possible in the current SNF implementation
             //
-            if(r == ringStartOffset) { // Overflows are not reported per ring...
+            if (r == ringStartOffset) { // Overflows are not reported per ring...
                 stats->dropped += (ss.ring_pkt_overflow / snfNumProcs);
             }
             // The previous implementation read this statistic
@@ -110,7 +110,8 @@ LOCAL void *reader_snf_thread(gpointer posv)
     return NULL;
 }
 /******************************************************************************/
-void reader_snf_start() {
+void reader_snf_start()
+{
     arkime_packet_set_dltsnap(DLT_EN10MB, config.snapLen);
 
     int ringStartOffset = (snfProcNum - 1) * snfNumRings;

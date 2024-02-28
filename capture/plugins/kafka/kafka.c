@@ -160,8 +160,7 @@ void arkime_plugin_init()
     // See more config on https://github.com/edenhill/librdkafka/blob/master/CONFIGURATION.md
 
     if (rd_kafka_conf_set(conf, "metadata.broker.list", brokers,
-                          errstr, sizeof(errstr)) != RD_KAFKA_CONF_OK)
-    {
+                          errstr, sizeof(errstr)) != RD_KAFKA_CONF_OK) {
         LOGEXIT("Error configuring kafka:metadata.broker.list, error = %s", errstr);
     }
 
@@ -169,23 +168,19 @@ void arkime_plugin_init()
         LOG("kafka broker %s", brokers);
 
     kafkaSSL = arkime_config_boolean(NULL, "kafkaSSL", FALSE);
-    if (kafkaSSL)
-    {
+    if (kafkaSSL) {
         if (config.debug)
             LOG("kafka SSL is turned on");
 
         if (rd_kafka_conf_set(conf, "security.protocol", "SSL",
-                              errstr, sizeof(errstr)) != RD_KAFKA_CONF_OK)
-        {
+                              errstr, sizeof(errstr)) != RD_KAFKA_CONF_OK) {
             LOGEXIT("Error configuring kafka:security.protocol, error = %s", errstr);
         }
 
         kafkaSSLCALocation = arkime_config_str(NULL, "kafkaSSLCALocation", NULL);
-        if (kafkaSSLCALocation)
-        {
+        if (kafkaSSLCALocation) {
             if (rd_kafka_conf_set(conf, "ssl.ca.location", kafkaSSLCALocation,
-                                  errstr, sizeof(errstr)) != RD_KAFKA_CONF_OK)
-            {
+                                  errstr, sizeof(errstr)) != RD_KAFKA_CONF_OK) {
                 LOGEXIT("Error configuring kafka:ssl.ca.location, error = %s", errstr);
             }
         }
@@ -193,8 +188,7 @@ void arkime_plugin_init()
         kafkaSSLCertificateLocation = arkime_config_str(NULL, "kafkaSSLCertificateLocation", NULL);
         if (kafkaSSLCertificateLocation) {
             if (rd_kafka_conf_set(conf, "ssl.certificate.location", kafkaSSLCertificateLocation,
-                                  errstr, sizeof(errstr)) != RD_KAFKA_CONF_OK)
-            {
+                                  errstr, sizeof(errstr)) != RD_KAFKA_CONF_OK) {
                 LOGEXIT("Error configuring kafka:ssl.certificate.location, error = %s", errstr);
             }
         }
@@ -202,8 +196,7 @@ void arkime_plugin_init()
         kafkaSSLKeyLocation = arkime_config_str(NULL, "kafkaSSLKeyLocation", NULL);
         if (kafkaSSLKeyLocation) {
             if (rd_kafka_conf_set(conf, "ssl.key.location", kafkaSSLKeyLocation,
-                                  errstr, sizeof(errstr)) != RD_KAFKA_CONF_OK)
-            {
+                                  errstr, sizeof(errstr)) != RD_KAFKA_CONF_OK) {
                 LOGEXIT("Error configuring kafka:ssl.key.location, error = %s", errstr);
             }
         }
@@ -211,8 +204,7 @@ void arkime_plugin_init()
         kafkaSSLKeyPassword = arkime_config_str(NULL, "kafkaSSLKeyPassword", NULL);
         if (kafkaSSLKeyPassword) {
             if (rd_kafka_conf_set(conf, "ssl.key.password", kafkaSSLKeyPassword,
-                                  errstr, sizeof(errstr)) != RD_KAFKA_CONF_OK)
-            {
+                                  errstr, sizeof(errstr)) != RD_KAFKA_CONF_OK) {
                 LOGEXIT("Error configuring kafka:ss.key.password, error = %s", errstr);
             }
         }

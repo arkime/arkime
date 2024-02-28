@@ -1,3 +1,4 @@
+--style=linux
 --mode=c
 --pad-oper
 --min-conditional-indent=0
@@ -5,3 +6,4 @@
 --suffix=none
 --squeeze-lines=2
 --align-pointer=name
+--pad-header

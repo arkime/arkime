@@ -346,7 +346,7 @@ int arkime_field_define(const char *group, const char *kind, const char *express
     const char *aliases = NULL;
     va_list args;
     va_start(args, flags);
-    while(1) {
+    while (1) {
         const char *field = va_arg(args, char *);
         if (!field) break;
         const char *value = va_arg(args, char *);
@@ -989,7 +989,8 @@ guint arkime_field_ip_hash (gconstpointer v)
 }
 
 /******************************************************************************/
-void *arkime_field_parse_ip(const char *str) {
+void *arkime_field_parse_ip(const char *str)
+{
 
     struct in6_addr *v = g_malloc(sizeof(struct in6_addr));
 
@@ -1541,7 +1542,7 @@ void arkime_field_ops_init(ArkimeFieldOps_t *ops, int numOps, uint16_t flags)
 LOCAL void arkime_field_ops_int_parse(ArkimeFieldOp_t *op, const char *value)
 {
     int len;
-    switch(value[0]) {
+    switch (value[0]) {
     case '<':
         op->set = ARKIME_FIELD_OP_SET_IF_LESS;
         op->strLenOrInt = atoi(value + 1);
@@ -1708,9 +1709,9 @@ gboolean arkime_field_load_field_remap (gpointer UNUSED(user_data))
                 continue;
             *value = 0;
             value++;
-            while(isspace(*key)) key++;
+            while (isspace(*key)) key++;
             g_strchomp(key);
-            while(isspace(*value)) value++;
+            while (isspace(*value)) value++;
             g_strchomp(value);
             int matchPos = arkime_field_by_exp(key);
             if (matchPos == -1) {

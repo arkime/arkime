@@ -539,8 +539,7 @@ struct arkime_pcap_sf_pkthdr {
 #define ARKIME_PACKET_TUNNEL_GENEVE     0x80
 // Increase tunnel size below
 
-typedef struct arkimepacket_t
-{
+typedef struct arkimepacket_t {
     struct arkimepacket_t   *packet_next, *packet_prev;
     struct timeval ts;                  // timestamp
     uint8_t       *pkt;                 // full packet
@@ -568,23 +567,20 @@ typedef struct arkimepacket_t
     uint32_t       vni: 24;             // vxlan id
 } ArkimePacket_t;
 
-typedef struct
-{
+typedef struct {
     struct arkimepacket_t   *packet_next, *packet_prev;
     uint32_t                 packet_count;
     ARKIME_LOCK_EXTERN(lock);
     ARKIME_COND_EXTERN(lock);
 } ArkimePacketHead_t;
 
-typedef struct
-{
+typedef struct {
     ArkimePacketHead_t    packetQ[ARKIME_MAX_PACKET_THREADS];
     int                   count;
     uint8_t               readerPos; // used by libpcap reader to set readerPos
 } ArkimePacketBatch_t;
 
-typedef struct
-{
+typedef struct {
     char       *filename;
     uint32_t    outputId;
     uint64_t    size;

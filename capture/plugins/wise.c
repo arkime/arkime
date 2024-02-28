@@ -680,7 +680,7 @@ void wise_plugin_pre_save(ArkimeSession_t *session, int UNUSED(final))
                     break;
                 case ARKIME_FIELD_TYPE_STR_ARRAY: {
                     GPtrArray *sarray = (GPtrArray *)value;
-                    for(i = 0; i < (int)sarray->len; i++) {
+                    for (i = 0; i < (int)sarray->len; i++) {
                         wise_lookup(session, iRequest, g_ptr_array_index(sarray, i), type, pos);
                     }
                     break;
@@ -704,13 +704,13 @@ void wise_plugin_pre_save(ArkimeSession_t *session, int UNUSED(final))
             ArkimeInt_t                 *hint;
             char                         buf[20];
 
-            switch(config.fields[pos]->type) {
+            switch (config.fields[pos]->type) {
             case ARKIME_FIELD_TYPE_INT:
                 snprintf(buf, sizeof(buf), "%d", session->fields[pos]->i);
                 wise_lookup(session, iRequest, buf, type, pos);
                 break;
             case ARKIME_FIELD_TYPE_INT_ARRAY:
-                for(i = 0; i < (int)session->fields[pos]->iarray->len; i++) {
+                for (i = 0; i < (int)session->fields[pos]->iarray->len; i++) {
                     snprintf(buf, sizeof(buf), "%u", g_array_index(session->fields[pos]->iarray, uint32_t, i));
                     wise_lookup(session, iRequest, buf, type, pos);
                 }
@@ -735,7 +735,7 @@ void wise_plugin_pre_save(ArkimeSession_t *session, int UNUSED(final))
                 wise_lookup(session, iRequest, buf, type, pos);
                 break;
             case ARKIME_FIELD_TYPE_FLOAT_ARRAY:
-                for(i = 0; i < (int)session->fields[pos]->farray->len; i++) {
+                for (i = 0; i < (int)session->fields[pos]->farray->len; i++) {
                     snprintf(buf, sizeof(buf), "%f", g_array_index(session->fields[pos]->farray, float, i));
                     wise_lookup(session, iRequest, buf, type, pos);
                 }
@@ -765,7 +765,7 @@ void wise_plugin_pre_save(ArkimeSession_t *session, int UNUSED(final))
                     wise_lookup(session, iRequest, session->fields[pos]->str, type, pos);
                 break;
             case ARKIME_FIELD_TYPE_STR_ARRAY:
-                for(i = 0; i < (int)session->fields[pos]->sarray->len; i++) {
+                for (i = 0; i < (int)session->fields[pos]->sarray->len; i++) {
                     if (type == INTEL_TYPE_DOMAIN)
                         wise_lookup_domain(session, iRequest, g_ptr_array_index(session->fields[pos]->sarray, i), pos);
                     else
