@@ -130,7 +130,6 @@ user-agent, 7
 
 #
 $txt = get("date=-1&exp=port.dst&expression=$files&counts=0");
-$txt = join("\n", sort split(/\n/, $txt));
 
 eq_or_diff($txt,
 "0
@@ -139,7 +138,8 @@ eq_or_diff($txt,
 42356
 5353
 80
-8855", "port.dst", { context => 3 });
+8855
+", "port.dst", { context => 3 });
 
 #
 $txt = get("date=-1&field=http.md5&expression=$files");
