@@ -36,13 +36,14 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #2667 support Node 20
 ## Capture
   - #2674 Fix filelist not working in scheme mode
+  - #2679 Cert.alt can be used in rules
+## Cont3xt
+  - #2683 lock integration settings
 ## Viewer
   - #2668 fix pcap export with only default time range and no date param in url
   - #2680 add default user settings to viewer config
           https://arkime.com/settings#user-setting-defaults
   - #2681 fix unique of numerical fields
-## Cont3xt
-  - #2683 lock integration settings
 
 5.0.1 2024/02/20
 ## Release
