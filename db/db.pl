@@ -7212,9 +7212,9 @@ if ($ARGV[1] =~ /^(users-?import|import)$/) {
 
     # Now see which local are missing
     foreach my $file (@localfiles) {
+        next if ($file !~ /\/([^\/]*)-(\d+)-(\d+).(pcap|arkime)/);
         my @stat = stat("$file");
         if (!exists $remotefileshash{$file}) {
-            next if ($file !~ /\/([^\/]*)-(\d+)-(\d+).(pcap|arkime)/);
             print $file;
             my $node = $1;
             my $filenum = int($3);
@@ -7226,9 +7226,8 @@ if ($ARGV[1] =~ /^(users-?import|import)$/) {
                          'name' => "$file",
                          'node' => $node,
                          'filesize' => $stat[7]}), 1);
-        } elsif ($stat[7] != $remotefileshash{$file}->{filesize}) {
+        } elsif (!exists $remotefileshash{$file}->{filesize} || $stat[7] != $remotefileshash{$file}->{filesize}) {
             progress("Updating filesize $file $stat[7]\n");
-            next if ($file !~ /\/([^\/]*)-(\d+)-(\d+).(pcap|arkime)/);
             my $node = $1;
             my $filenum = int($3);
             $remotefileshash{$file}->{filesize} = $stat[7];
