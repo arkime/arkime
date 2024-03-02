@@ -176,6 +176,9 @@ LOCAL void certinfo_free(ArkimeFieldObject_t *object)
     if (ci->serialNumber)
         free(ci->serialNumber);
 
+    if (ci->extra)
+        g_hash_table_destroy(ci->extra);
+
     ARKIME_TYPE_FREE(ArkimeCertsInfo_t, ci);
     ARKIME_TYPE_FREE(ArkimeFieldObject_t, object);
 }
@@ -622,8 +625,9 @@ void arkime_field_certsinfo_update_extra (void *cert, char *key, char *value)
 {
     ArkimeCertsInfo_t *certs = cert;
 
-    if (!certs->extra)
+    if (!certs->extra) {
         certs->extra = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, g_free);
+    }
 
     g_hash_table_replace(certs->extra, key, value);
 }
