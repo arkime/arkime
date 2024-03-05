@@ -28,19 +28,19 @@ my $EXTRA = "";
 ################################################################################
 sub doGeo {
     if (! -f "ipv4-address-space.csv") {
-        system("wget https://s3.amazonaws.com/files.molo.ch/testing/ipv4-address-space.csv");
+        system("wget https://raw.githubusercontent.com/arkime/arkime-test-data/main/ipv4-address-space.csv");
     }
 
     if (! -f "oui.txt") {
-        system("wget https://s3.amazonaws.com/files.molo.ch/testing/oui.txt");
+        system("wget https://raw.githubusercontent.com/arkime/arkime-test-data/main/oui.txt");
     }
 
     if (! -f "GeoLite2-Country.mmdb") {
-        system("wget https://s3.amazonaws.com/files.molo.ch/testing/GeoLite2-Country.mmdb");
+        system("wget https://raw.githubusercontent.com/arkime/arkime-test-data/main/GeoLite2-Country.mmdb");
     }
 
     if (! -f "GeoLite2-ASN.mmdb") {
-        system("wget https://s3.amazonaws.com/files.molo.ch/testing/GeoLite2-ASN.mmdb");
+        system("wget https://raw.githubusercontent.com/arkime/arkime-test-data/main/GeoLite2-ASN.mmdb");
     }
 
     if (! -f "plugins/test.so" || (stat('../capture/arkime.h'))[9] > (stat('plugins/test.so'))[9]) {
