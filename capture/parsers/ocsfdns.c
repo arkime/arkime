@@ -17,8 +17,7 @@ LOCAL  char                 *opcodes[16] = {"QUERY", "IQUERY", "STATUS", "3", "N
 LOCAL  char                 *flags[8] = {"UNKNOWN", "AUTHORITATIVE ANSWER", "TRUNCATED RESPONSE", "RECURSION DESIRED", "RECURSION AVAILABLE", "AUTHENTIC DATA", "CHECKING DISABLED", "OTHER"};
 LOCAL  char                 *rr_types[5] = {"0", "Answer", "Authoritative", "Additional", "Unknown"};
 
-typedef enum ocsf_dns_type
-{
+typedef enum ocsf_dns_type {
     OCSFDNS_RR_A          =   1,
     OCSFDNS_RR_NS         =   2,
     OCSFDNS_RR_CNAME      =   5,
@@ -28,8 +27,7 @@ typedef enum ocsf_dns_type
     OCSFDNS_RR_CAA        = 257
 } OCSFDNSType_t;
 
-typedef enum ocsf_dns_class
-{
+typedef enum ocsf_dns_class {
     CLASS_IN      =     1,
     CLASS_CS      =     2,
     CLASS_CH      =     3,
@@ -39,8 +37,7 @@ typedef enum ocsf_dns_class
     CLASS_UNKNOWN = 65280
 } OCSFDNSClass_t;
 
-typedef enum ocsf_dns_result_record_type
-{
+typedef enum ocsf_dns_result_record_type {
     RESULT_RECORD_ANSWER          =     1,    /* Answer or Prerequisites Record */
     RESULT_RECORD_AUTHORITATIVE   =     2,    /* Authoritative or Update Record */
     RESULT_RECORD_ADDITIONAL      =     3,    /* Additional Record */
@@ -302,7 +299,7 @@ LOCAL void ocsf_dns_parser(ArkimeSession_t *session, int kind, const uint8_t *da
     dns->query.opcode_id = opcode;
     dns->query.opcode = g_strndup(opcodes[opcode], strlen(opcodes[opcode]));
 
-    switch(kind) {
+    switch (kind) {
     case 0:
         arkime_session_add_protocol(session, "dns");
         break;
@@ -319,9 +316,9 @@ LOCAL void ocsf_dns_parser(ArkimeSession_t *session, int kind, const uint8_t *da
         dns->rcode_id    = -1; // Not a response
         dns->query_ts = session->lastPacket;
         dns->activity_id = 1;
-        #ifdef OCSFDNSDEBUG
+#ifdef OCSFDNSDEBUG
         LOG("OCSFDNSDEBUG: Parsed a query with TS secs: %lu, usecs: %lu", dns->query_ts.tv_sec, dns->query_ts.tv_usec);
-        #endif
+#endif
         if (!arkime_field_object_add(ocsfDNSField, session, fobject, 720/*static + query*/)) {
             ocsf_dns_free_object(fobject);
             dns = 0;
@@ -337,23 +334,23 @@ LOCAL void ocsf_dns_parser(ArkimeSession_t *session, int kind, const uint8_t *da
             ocsf_dns_free_object(fobject);
             fobject = existingFObject;
             dns = (OCSFDNS_t *)fobject->object;
-            #ifdef OCSFDNSDEBUG
+#ifdef OCSFDNSDEBUG
             LOG("OCSFDNSDEBUG: Retrieved an existing object");
-            #endif
+#endif
             preexistingObject = 1;
             if (dns->answers.t_count == 0) {
                 DLL_INIT(t_, &dns->answers);
             }
         } else {
-            #ifdef OCSFDNSDEBUG
+#ifdef OCSFDNSDEBUG
             LOG("OCSFDNSDEBUG: No existing object");
-            #endif
+#endif
             DLL_INIT(t_, &dns->answers);
         }
     } else {
-        #ifdef OCSFDNSDEBUG
+#ifdef OCSFDNSDEBUG
         LOG("OCSFDNSDEBUG: No object added so far");
-        #endif
+#endif
         DLL_INIT(t_, &dns->answers);
     }
 
@@ -380,9 +377,9 @@ LOCAL void ocsf_dns_parser(ArkimeSession_t *session, int kind, const uint8_t *da
             if (BSB_IS_ERROR(bsb) || !name)
                 break;
 
-            #ifdef OCSFDNSDEBUG
-                LOG("OCSFDNSDEBUG: RR Name=%s", name);
-            #endif
+#ifdef OCSFDNSDEBUG
+            LOG("OCSFDNSDEBUG: RR Name=%s", name);
+#endif
 
             uint16_t antype = 0;
             BSB_IMPORT_u16 (bsb, antype);
@@ -424,9 +421,9 @@ LOCAL void ocsf_dns_parser(ArkimeSession_t *session, int kind, const uint8_t *da
 
                 const uint8_t *ptr = BSB_WORK_PTR(bsb);
                 answer->ipA = ((uint32_t)(ptr[3])) << 24 | ((uint32_t)(ptr[2])) << 16 | ((uint32_t)(ptr[1])) << 8 | ptr[0];
-                #ifdef OCSFDNSDEBUG
+#ifdef OCSFDNSDEBUG
                 LOG("OCSFDNSDEBUG: RR_A=%u.%u.%u.%u, name=%s", answer->ipA & 0xff, (answer->ipA >> 8) & 0xff, (answer->ipA >> 16) & 0xff, (answer->ipA >> 24) & 0xff, answer->rr_name);
-                #endif
+#endif
             }
             break;
             case OCSFDNS_RR_NS: {
@@ -442,9 +439,9 @@ LOCAL void ocsf_dns_parser(ArkimeSession_t *session, int kind, const uint8_t *da
                     continue;
                 }
 
-                #ifdef OCSFDNSDEBUG
-                    LOG("OCSFDNSDEBUG: RR_NS Name=%s", name);
-                #endif
+#ifdef OCSFDNSDEBUG
+                LOG("OCSFDNSDEBUG: RR_NS Name=%s", name);
+#endif
 
                 answer->nsdname = g_hostname_to_unicode(name);
             }
@@ -462,9 +459,9 @@ LOCAL void ocsf_dns_parser(ArkimeSession_t *session, int kind, const uint8_t *da
                     continue;
                 }
 
-                #ifdef OCSFDNSDEBUG
-                    LOG("OCSFDNSDEBUG: RR_CNAME Name=%s", name);
-                #endif
+#ifdef OCSFDNSDEBUG
+                LOG("OCSFDNSDEBUG: RR_CNAME Name=%s", name);
+#endif
 
                 answer->cname = g_hostname_to_unicode(name);
             }
@@ -484,9 +481,9 @@ LOCAL void ocsf_dns_parser(ArkimeSession_t *session, int kind, const uint8_t *da
                     continue;
                 }
 
-                #ifdef OCSFDNSDEBUG
-                    LOG("OCSFDNSDEBUG: RR_MX Exchange=%s, Preference=%d", name, mx_preference);
-                #endif
+#ifdef OCSFDNSDEBUG
+                LOG("OCSFDNSDEBUG: RR_MX Exchange=%s, Preference=%d", name, mx_preference);
+#endif
 
                 answer->mx = ARKIME_TYPE_ALLOC0(OCSFDNSMXRDATA_t);
                 (answer->mx)->preference = mx_preference;
@@ -504,11 +501,11 @@ LOCAL void ocsf_dns_parser(ArkimeSession_t *session, int kind, const uint8_t *da
 
                 answer->ipAAAA = g_memdup((const void *)ptr, sizeof(struct in6_addr));
 
-                #ifdef OCSFDNSDEBUG
+#ifdef OCSFDNSDEBUG
                 char ipbuf[INET6_ADDRSTRLEN];
                 inet_ntop(AF_INET6, answer->ipAAAA, ipbuf, sizeof(ipbuf));
                 LOG("OCSFDNSDEBUG: RR_AAAA=%s, name=%s", ipbuf, answer->rr_name);
-                #endif
+#endif
             }
             break;
             case OCSFDNS_RR_TXT: {
@@ -517,9 +514,9 @@ LOCAL void ocsf_dns_parser(ArkimeSession_t *session, int kind, const uint8_t *da
 
                 answer->txt = g_strndup((const char *)ptr, txtLen);
 
-                #ifdef OCSFDNSDEBUG
+#ifdef OCSFDNSDEBUG
                 LOG("OCSFDNSDEBUG: RR_TXT=%s", answer->txt);
-                #endif
+#endif
 
                 extraLen += txtLen;
                 txtLen = 0;
@@ -551,9 +548,9 @@ LOCAL void ocsf_dns_parser(ArkimeSession_t *session, int kind, const uint8_t *da
                 ptr = BSB_WORK_PTR(rdbsb);
                 answer->caa->value = g_strndup((const char *)ptr, valueLen);
 
-                #ifdef OCSFDNSDEBUG
+#ifdef OCSFDNSDEBUG
                 LOG("OCSFDNSDEBUG: RR_CAA %d %s", answer->caa->flags, answer->caa->value);
-                #endif
+#endif
 
                 extraLen += tagLen + valueLen;
             }
@@ -610,7 +607,7 @@ LOCAL void ocsf_dns_parser(ArkimeSession_t *session, int kind, const uint8_t *da
         } // record loop
     } // record type loop
 
-    if (!arkime_field_object_add(ocsfDNSField, session, fobject, 720/*static + query*/ + (resultRecordCount[0]+resultRecordCount[1]+resultRecordCount[2])*180/*180 per RR*/ + extraLen) && !preexistingObject) {
+    if (!arkime_field_object_add(ocsfDNSField, session, fobject, 720/*static + query*/ + (resultRecordCount[0] + resultRecordCount[1] + resultRecordCount[2]) * 180/*180 per RR*/ + extraLen) && !preexistingObject) {
         ocsf_dns_free_object(fobject);
         dns = 0;
     }
@@ -710,7 +707,8 @@ if (HEAD.s_count > 0) { \
     BSB_EXPORT_u08(*jbsb, ','); \
 }
 /*******************************************************************************************/
-void ocsf_dns_save(BSB *jbsb, ArkimeFieldObject_t *object, struct arkime_session *session) {
+void ocsf_dns_save(BSB *jbsb, ArkimeFieldObject_t *object, struct arkime_session *session)
+{
     if (object->object == NULL) {
         return;
     }
@@ -735,16 +733,16 @@ void ocsf_dns_save(BSB *jbsb, ArkimeFieldObject_t *object, struct arkime_session
         gettimeofday(&currentTime, NULL);
 
         BSB_EXPORT_sprintf(*jbsb,
-                "\"time\":%" PRIu64 ",",
-                ((uint64_t)currentTime.tv_sec) * 1000 + ((uint64_t)currentTime.tv_usec) / 1000);
+                           "\"time\":%" PRIu64 ",",
+                           ((uint64_t)currentTime.tv_sec) * 1000 + ((uint64_t)currentTime.tv_usec) / 1000);
 
         BSB_EXPORT_sprintf(*jbsb,
-                "\"query_time\":%" PRIu64 ",",
-                ((uint64_t)dns->query_ts.tv_sec) * 1000 + ((uint64_t)dns->query_ts.tv_usec) / 1000);
+                           "\"query_time\":%" PRIu64 ",",
+                           ((uint64_t)dns->query_ts.tv_sec) * 1000 + ((uint64_t)dns->query_ts.tv_usec) / 1000);
 
         BSB_EXPORT_sprintf(*jbsb,
-                "\"response_time\":%" PRIu64 ",",
-                ((uint64_t)dns->response_ts.tv_sec) * 1000 + ((uint64_t)dns->response_ts.tv_usec) / 1000);
+                           "\"response_time\":%" PRIu64 ",",
+                           ((uint64_t)dns->response_ts.tv_sec) * 1000 + ((uint64_t)dns->response_ts.tv_usec) / 1000);
     }
 
     BSB_EXPORT_cstr(*jbsb, "\"query\":{");
@@ -883,7 +881,8 @@ void ocsf_dns_save(BSB *jbsb, ArkimeFieldObject_t *object, struct arkime_session
     BSB_EXPORT_u08(*jbsb, '}');
 }
 /*******************************************************************************************/
-void ocsf_dns_free_object(ArkimeFieldObject_t *object) {
+void ocsf_dns_free_object(ArkimeFieldObject_t *object)
+{
     if (object->object == NULL) {
         ARKIME_TYPE_FREE(ArkimeFieldObject_t, object);
         return;
@@ -901,7 +900,7 @@ void ocsf_dns_free_object(ArkimeFieldObject_t *object) {
         }
         switch (answer->type_id) {
         case OCSFDNS_RR_A: {
-                // Nothing to do
+            // Nothing to do
         }
         break;
         case OCSFDNS_RR_NS: {
@@ -925,7 +924,7 @@ void ocsf_dns_free_object(ArkimeFieldObject_t *object) {
         break;
         case OCSFDNS_RR_AAAA: {
             if (answer->ipAAAA) {
-                g_free(answer->ipAAAA);  
+                g_free(answer->ipAAAA);
             }
         }
         break;
@@ -966,7 +965,7 @@ void ocsf_dns_free_object(ArkimeFieldObject_t *object) {
         g_free(dns->query.hostname);
     }
     if (dns->query.class) {
-        g_free(dns->query.class);  
+        g_free(dns->query.class);
     }
     if (dns->query.type) {
         g_free(dns->query.type);
@@ -985,7 +984,8 @@ void ocsf_dns_free_object(ArkimeFieldObject_t *object) {
 SUPPRESS_UNSIGNED_INTEGER_OVERFLOW
 SUPPRESS_SHIFT
 SUPPRESS_INT_CONVERSION
-uint32_t ocsf_dns_hash(const void *key) {
+uint32_t ocsf_dns_hash(const void *key)
+{
     ArkimeFieldObject_t *obj = (ArkimeFieldObject_t *)key;
 
     if (obj->object == NULL) {
@@ -995,24 +995,24 @@ uint32_t ocsf_dns_hash(const void *key) {
     OCSFDNS_t *dns = (OCSFDNS_t *)obj->object;
 
     uint32_t hostname_hash = FNV_OFFSET;
-    uint8_t *s = (uint8_t*) dns->query.hostname;
+    uint8_t *s = (uint8_t *) dns->query.hostname;
 
-    while (*s)
-    {
-        hostname_hash ^= (uint32_t) *s++; // NOTE: make this toupper(*s) or tolower(*s) if you want case-insensitive hashes
+    while (*s) {
+        hostname_hash ^= (uint32_t) * s++; // NOTE: make this toupper(*s) or tolower(*s) if you want case-insensitive hashes
         hostname_hash *= FNV_PRIME; // 32 bit magic FNV-1a prime
     }
 
     uint32_t hash = (hostname_hash ^ (dns->query.opcode_id << 24 | dns->query.packet_uid << 8) ^ (dns->query.type_id << 16 | dns->query.class_id));
 
-    #ifdef OCSFDNSDEBUG
+#ifdef OCSFDNSDEBUG
     LOG("OCSFDNSDEBUG: Host hash: %u/Object hash: %u", hostname_hash, hash);
-    #endif
+#endif
 
     return hash;
 }
 /*******************************************************************************************/
-int ocsf_dns_cmp(const void *keyv, const void *elementv) {
+int ocsf_dns_cmp(const void *keyv, const void *elementv)
+{
     ArkimeFieldObject_t *key      = (ArkimeFieldObject_t *)keyv;
     ArkimeFieldObject_t *element = (ArkimeFieldObject_t *)elementv;
 
@@ -1111,7 +1111,7 @@ void arkime_parser_init()
                         "OCSF DNS Answer Packet UID",
                         0, ARKIME_FIELD_FLAG_FAKE,
                         (char *)NULL);
-    
+
     arkime_field_define("ocsfdns", "integer",
                         "ocsfdns.answerTTL", "OCSF DNS Answer TTL", "ocsfdns.answers.ttl",
                         "OCSF DNS Answer TTL",
