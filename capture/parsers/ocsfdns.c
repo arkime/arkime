@@ -1047,91 +1047,91 @@ void arkime_parser_init()
     ocsfDNSField = arkime_field_object_register("ocsfdns", "DNS Query/Responses in OCSF format", ocsf_dns_save, ocsf_dns_free_object, ocsf_dns_hash, ocsf_dns_cmp);
 
     arkime_field_define("ocsfdns", "integer",
-                        "ocsfdns.cnt", "OCSF DNS events Cnt", "ocsfdnsCnt",
+                        "ocsf.dns.cnt", "OCSF DNS events Cnt", "ocsfdnsCnt",
                         "Count of OCSF DNS events",
                         0, ARKIME_FIELD_FLAG_FAKE,
                         (char *)NULL);
 
     arkime_field_define("ocsfdns", "uptermfield",
-                        "ocsfdns.responseCode", "OCSF DNS Response Code", "ocsfdns.rcode",
+                        "ocsf.dns.responseCode", "OCSF DNS Response Code", "ocsfdns.rcode",
                         "OCSF DNS Response code",
                         0, ARKIME_FIELD_FLAG_FAKE,
                         (char *)NULL);
 
     arkime_field_define("ocsfdns", "uptermfield",
-                        "ocsfdns.opcode", "OCSF DNS Opcode", "ocsfdns.query.opcode",
+                        "ocsf.dns.opcode", "OCSF DNS Opcode", "ocsfdns.query.opcode",
                         "OCSF DNS Opcode",
                         0, ARKIME_FIELD_FLAG_FAKE,
                         (char *)NULL);
 
     arkime_field_define("ocsfdns", "uptermfield",
-                        "ocsfdns.queryType", "OCSF DNS Query Type", "ocsfdns.query.type",
+                        "ocsf.dns.queryType", "OCSF DNS Query Type", "ocsfdns.query.type",
                         "OCSF DNS Query Type",
                         0, ARKIME_FIELD_FLAG_FAKE,
                         (char *)NULL);
 
     arkime_field_define("ocsfdns", "uptermfield",
-                        "ocsfdns.queryClass", "OCSF DNS Query Class", "ocsfdns.query.class",
+                        "ocsf.dns.queryClass", "OCSF DNS Query Class", "ocsfdns.query.class",
                         "OCSF DNS Query Class",
                         0, ARKIME_FIELD_FLAG_FAKE,
                         (char *)NULL);
 
     arkime_field_define("ocsfdns", "termfield",
-                        "ocsfdns.hostname", "OCSF DNS Query Hostname", "ocsfdns.query.hostname",
+                        "ocsf.dns.hostname", "OCSF DNS Query Hostname", "ocsfdns.query.hostname",
                         "OCSF DNS Query Hostname",
                         0, ARKIME_FIELD_FLAG_FAKE,
                         (char *)NULL);
 
     arkime_field_define("ocsfdns", "integer",
-                        "ocsfdns.packetUID", "OCSF DNS Query Packet UID", "ocsfdns.query.packet_uid",
+                        "ocsf.dns.packetUID", "OCSF DNS Query Packet UID", "ocsfdns.query.packet_uid",
                         "OCSF DNS Query Packet UID",
                         0, ARKIME_FIELD_FLAG_FAKE,
                         (char *)NULL);
 
     arkime_field_define("ocsfdns", "integer",
-                        "ocsfdns.answersCnt", "OCSF DNS Answers Cnt", "ocsfdns.answersCnt",
+                        "ocsf.dns.answersCnt", "OCSF DNS Answers Cnt", "ocsfdns.answersCnt",
                         "Count of OCSF DNS Answers",
                         0, ARKIME_FIELD_FLAG_FAKE,
                         (char *)NULL);
 
     arkime_field_define("ocsfdns", "uptermfield",
-                        "ocsfdns.answerType", "OCSF DNS Answer Type", "ocsfdns.answers.type",
+                        "ocsf.dns.answerType", "OCSF DNS Answer Type", "ocsfdns.answers.type",
                         "OCSF DNS Answer Type",
                         0, ARKIME_FIELD_FLAG_FAKE,
                         (char *)NULL);
 
     arkime_field_define("ocsfdns", "uptermfield",
-                        "ocsfdns.answerClass", "OCSF DNS Answer Class", "ocsfdns.answers.class",
+                        "ocsf.dns.answerClass", "OCSF DNS Answer Class", "ocsfdns.answers.class",
                         "OCSF DNS Answer Class",
                         0, ARKIME_FIELD_FLAG_FAKE,
                         (char *)NULL);
 
     arkime_field_define("ocsfdns", "integer",
-                        "ocsfdns.answerPacketUID", "OCSF DNS Answer Packet UID", "ocsfdns.answers.packet_uid",
+                        "ocsf.dns.answerPacketUID", "OCSF DNS Answer Packet UID", "ocsfdns.answers.packet_uid",
                         "OCSF DNS Answer Packet UID",
                         0, ARKIME_FIELD_FLAG_FAKE,
                         (char *)NULL);
 
     arkime_field_define("ocsfdns", "integer",
-                        "ocsfdns.answerTTL", "OCSF DNS Answer TTL", "ocsfdns.answers.ttl",
+                        "ocsf.dns.answerTTL", "OCSF DNS Answer TTL", "ocsfdns.answers.ttl",
                         "OCSF DNS Answer TTL",
                         0, ARKIME_FIELD_FLAG_FAKE,
                         (char *)NULL);
 
     arkime_field_define("ocsfdns", "termfield",
-                        "ocsfdns.answerRDATA", "OCSF DNS Answer RDATA", "ocsfdns.answers.rdata",
+                        "ocsf.dns.answerRDATA", "OCSF DNS Answer RDATA", "ocsfdns.answers.rdata",
                         "OCSF DNS Answer RDATA",
                         0, ARKIME_FIELD_FLAG_FAKE,
                         (char *)NULL);
 
     arkime_field_define("ocsfdns", "uptermfield",
-                        "ocsfdns.answerFlags", "OCSF DNS Answer Flags", "ocsfdns.answers.flags",
+                        "ocsf.dns.answerFlags", "OCSF DNS Answer Flags", "ocsfdns.answers.flags",
                         "OCSF DNS Answer Flags",
                         0, ARKIME_FIELD_FLAG_FAKE | ARKIME_FIELD_FLAG_CNT,
                         (char *)NULL);
 
     arkime_field_define("ocsfdns", "termfield",
-                        "ocsfdns.answerRRName", "OCSF DNS RR Name", "ocsfdns.answers.rr_name",
+                        "ocsf.dns.answerRRName", "OCSF DNS RR Name", "ocsfdns.answers.rr_name",
                         "OCSF DNS Answer RR Name",
                         0, ARKIME_FIELD_FLAG_FAKE,
                         (char *)NULL);

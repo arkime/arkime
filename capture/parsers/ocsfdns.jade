@@ -3,26 +3,26 @@ if (session.ocsfdns)
     div.sessionDetailMeta.bold DNS #{event.query.hostname}
     dl.sessionDetailMeta(suffix="ocsfdns")
       dt
-        +clickableLabel("ocsfdns.hostname", "Hostname")
+        +clickableLabel("ocsf.dns.hostname", "Hostname")
       dd
-        +clickableValue("ocsfdns.hostname", event.query.hostname)
+        +clickableValue("ocsf.dns.hostname", event.query.hostname)
       dt
-        +clickableLabel("ocsfdns.opcode", "Opcode")
+        +clickableLabel("ocsf.dns.opcode", "Opcode")
       dd
-        +clickableValue("ocsfdns.opcode", event.query.opcode)
+        +clickableValue("ocsf.dns.opcode", event.query.opcode)
       dt
-        +clickableLabel("ocsfdns.queryType", "Query Type")
+        +clickableLabel("ocsf.dns.queryType", "Query Type")
       dd
-        +clickableValue("ocsfdns.queryType", event.query.type)
+        +clickableValue("ocsf.dns.queryType", event.query.type)
       dt
-        +clickableLabel("ocsfdns.packetUID", "Query Packet UID")
+        +clickableLabel("ocsf.dns.packetUID", "Query Packet UID")
       dd
-        +clickableValue("ocsfdns.packetUID", event.query.packet_uid)
+        +clickableValue("ocsf.dns.packetUID", event.query.packet_uid)
       if (event.rcode)
         dt
-          +clickableLabel("ocsfdns.responseCode", "Response Code")
+          +clickableLabel("ocsf.dns.responseCode", "Response Code")
         dd
-          +clickableValue("ocsfdns.responseCode", event.rcode)
+          +clickableValue("ocsf.dns.responseCode", event.rcode)
         if (event.answersCnt > 0)
           dt
             div Answers
@@ -34,31 +34,31 @@ if (session.ocsfdns)
             dd
               div.detail-field #{i}
             dt
-              +clickableLabel("ocsfdns.answerType", "Answer Type")
+              +clickableLabel("ocsf.dns.answerType", "Answer Type")
             dd
-              +clickableValue("ocsfdns.answerType", answer.type)
+              +clickableValue("ocsf.dns.answerType", answer.type)
             dt
-              +clickableLabel("ocsfdns.answerClass", "Answer Class")
+              +clickableLabel("ocsf.dns.answerClass", "Answer Class")
             dd
-              +clickableValue("ocsfdns.answerClass", answer.class)
+              +clickableValue("ocsf.dns.answerClass", answer.class)
             dt
-              +clickableLabel("ocsfdns.answerTTL", "Answer TTL")
+              +clickableLabel("ocsf.dns.answerTTL", "Answer TTL")
             dd
-              +clickableValue("ocsfdns.answerTTL", answer.ttl)
+              +clickableValue("ocsf.dns.answerTTL", answer.ttl)
             dt
-              +clickableLabel("ocsfdns.answerPacketUID", "Answer Packet UID")
+              +clickableLabel("ocsf.dns.answerPacketUID", "Answer Packet UID")
             dd
-              +clickableValue("ocsfdns.answerPacketUID", answer.packet_uid)
-            +arrayList(answer, 'flags', "Answer Flags", "ocsfdns.answerFlags")
+              +clickableValue("ocsf.dns.answerPacketUID", answer.packet_uid)
+            +arrayList(answer, 'flags', "Answer Flags", "ocsf.dns.answerFlags")
             if (answer.rdata)
               dt
-                +clickableLabel("ocsfdns.answerRDATA", "Answer RDATA")
+                +clickableLabel("ocsf.dns.answerRDATA", "Answer RDATA")
               dd
-                +clickableValue("ocsfdns.answerRDATA", answer.rdata)
+                +clickableValue("ocsf.dns.answerRDATA", answer.rdata)
             if (answer.rr_name != event.query.hostname)
               dt
-                +clickableLabel("ocsfdns.answerRRName", "RR Name")
+                +clickableLabel("ocsf.dns.answerRRName", "RR Name")
               dd
-                +clickableValue("ocsfdns.answerRRName", answer.rr_name)
+                +clickableValue("ocsf.dns.answerRRName", answer.rr_name)
 
 
