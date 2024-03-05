@@ -16,6 +16,10 @@
 #define MAX_QTYPES   512
 #define MAX_QCLASSES 256
 
+#define OCSF_METADATA_JSON_LEN 420
+#define OCSF_QUERY_JSON_LEN 300
+#define OCSF_RR_JSON_LEN 300
+
 #define FNV_OFFSET ((uint32_t)0x811c9dc5)
 #define FNV_PRIME ((uint32_t)0x01000193)
 
@@ -328,7 +332,7 @@ LOCAL void ocsf_dns_parser(ArkimeSession_t *session, int kind, const uint8_t *da
 #ifdef OCSFDNSDEBUG
         LOG("OCSFDNSDEBUG: Parsed a query with TS secs: %lu, usecs: %lu", dns->query_ts.tv_sec, dns->query_ts.tv_usec);
 #endif
-        if (!arkime_field_object_add(ocsfDNSField, session, fobject, 720/*static + query*/)) {
+        if (!arkime_field_object_add(ocsfDNSField, session, fobject, OCSF_METADATA_JSON_LEN + OCSF_QUERY_JSON_LEN)) {
             ocsf_dns_free_object(fobject);
             dns = 0;
         }
@@ -616,7 +620,7 @@ LOCAL void ocsf_dns_parser(ArkimeSession_t *session, int kind, const uint8_t *da
         } // record loop
     } // record type loop
 
-    if (!arkime_field_object_add(ocsfDNSField, session, fobject, 720/*static + query*/ + (resultRecordCount[0] + resultRecordCount[1] + resultRecordCount[2]) * 180/*180 per RR*/ + extraLen) && !preexistingObject) {
+    if (!arkime_field_object_add(ocsfDNSField, session, fobject, OCSF_METADATA_JSON_LEN + OCSF_QUERY_JSON_LEN + OCSF_RR_JSON_LEN * (resultRecordCount[0] + resultRecordCount[1] + resultRecordCount[2]) + extraLen) && !preexistingObject) {
         ocsf_dns_free_object(fobject);
         dns = 0;
     }
