@@ -1,3 +1,12 @@
+/**
+ * This parser outputs the parsed data in an OCSF compliant format, specifically the DNS Activity class https://schema.ocsf.io/1.1.0/classes/dns_activity?extensions=linux.
+ * 
+ * Not all fields are output, all the "Required" fields are output, and most of the "Recommended" fields, the same applies to the sub-objects of the DNS Activity.
+ * 
+ * There is an "ocsfStrictMode" configuration flag that is by default `FALSE`, when set to `FALSE` the parser does not output all of the redundant fields get duplicated in
+ * every event like the metadata object, it also outputs an additional "rr_name" field in the answer object and when `TRUE` outputs the redundant fields and does not output the "rr_name" field.
+ */
+
 #include "arkime.h"
 #include <arpa/inet.h>
 
