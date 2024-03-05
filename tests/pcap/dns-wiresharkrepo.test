@@ -624,9 +624,10 @@
             ],
             "protocol" : [
                "dns",
+               "ocsfdns",
                "udp"
             ],
-            "protocolCnt" : 2,
+            "protocolCnt" : 3,
             "segmentCnt" : 1,
             "server" : {
                "bytes" : 824
@@ -751,9 +752,10 @@
             ],
             "protocol" : [
                "dns",
+               "ocsfdns",
                "udp"
             ],
-            "protocolCnt" : 2,
+            "protocolCnt" : 3,
             "segmentCnt" : 1,
             "server" : {
                "bytes" : 63
@@ -924,9 +926,10 @@
             ],
             "protocol" : [
                "dns",
+               "ocsfdns",
                "udp"
             ],
-            "protocolCnt" : 2,
+            "protocolCnt" : 3,
             "segmentCnt" : 1,
             "server" : {
                "bytes" : 124
@@ -1046,9 +1049,10 @@
             ],
             "protocol" : [
                "dns",
+               "ocsfdns",
                "udp"
             ],
-            "protocolCnt" : 2,
+            "protocolCnt" : 3,
             "segmentCnt" : 1,
             "server" : {
                "bytes" : 87
@@ -1168,9 +1172,10 @@
             ],
             "protocol" : [
                "dns",
+               "ocsfdns",
                "udp"
             ],
-            "protocolCnt" : 2,
+            "protocolCnt" : 3,
             "segmentCnt" : 1,
             "server" : {
                "bytes" : 56
@@ -1290,9 +1295,10 @@
             ],
             "protocol" : [
                "dns",
+               "ocsfdns",
                "udp"
             ],
-            "protocolCnt" : 2,
+            "protocolCnt" : 3,
             "segmentCnt" : 1,
             "server" : {
                "bytes" : 98
@@ -1412,9 +1418,10 @@
             ],
             "protocol" : [
                "dns",
+               "ocsfdns",
                "udp"
             ],
-            "protocolCnt" : 2,
+            "protocolCnt" : 3,
             "segmentCnt" : 1,
             "server" : {
                "bytes" : 41
@@ -1534,9 +1541,10 @@
             ],
             "protocol" : [
                "dns",
+               "ocsfdns",
                "udp"
             ],
-            "protocolCnt" : 2,
+            "protocolCnt" : 3,
             "segmentCnt" : 1,
             "server" : {
                "bytes" : 41

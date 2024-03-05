@@ -255,9 +255,10 @@
             "protocol" : [
                "dns",
                "gtp",
+               "ocsfdns",
                "udp"
             ],
-            "protocolCnt" : 3,
+            "protocolCnt" : 4,
             "segmentCnt" : 1,
             "server" : {
                "bytes" : 254
@@ -720,9 +721,10 @@
             "protocol" : [
                "dns",
                "gtp",
+               "ocsfdns",
                "udp"
             ],
-            "protocolCnt" : 3,
+            "protocolCnt" : 4,
             "segmentCnt" : 1,
             "server" : {
                "bytes" : 254
@@ -1813,9 +1815,10 @@
             "protocol" : [
                "dns",
                "gtp",
+               "ocsfdns",
                "udp"
             ],
-            "protocolCnt" : 3,
+            "protocolCnt" : 4,
             "segmentCnt" : 1,
             "server" : {
                "bytes" : 254

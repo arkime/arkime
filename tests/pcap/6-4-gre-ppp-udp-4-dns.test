@@ -130,10 +130,11 @@
             "protocol" : [
                "dns",
                "gre",
+               "ocsfdns",
                "ppp",
                "udp"
             ],
-            "protocolCnt" : 4,
+            "protocolCnt" : 5,
             "segmentCnt" : 1,
             "server" : {
                "bytes" : 146

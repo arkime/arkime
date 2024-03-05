@@ -141,6 +141,271 @@
                "packets" : 10
             },
             "node" : "test",
+            "ocsfdns" : [
+               {
+                  "answers" : [
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RECURSION DESIRED",
+                           "RECURSION AVAILABLE"
+                        ],
+                        "packet_uid" : 24163,
+                        "rdata" : "74.125.228.46",
+                        "rr_name" : "google.com",
+                        "rr_type" : "Answer",
+                        "ttl" : 166,
+                        "type" : "A"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RECURSION DESIRED",
+                           "RECURSION AVAILABLE"
+                        ],
+                        "packet_uid" : 24163,
+                        "rdata" : "74.125.228.32",
+                        "rr_name" : "google.com",
+                        "rr_type" : "Answer",
+                        "ttl" : 166,
+                        "type" : "A"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RECURSION DESIRED",
+                           "RECURSION AVAILABLE"
+                        ],
+                        "packet_uid" : 24163,
+                        "rdata" : "74.125.228.33",
+                        "rr_name" : "google.com",
+                        "rr_type" : "Answer",
+                        "ttl" : 166,
+                        "type" : "A"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RECURSION DESIRED",
+                           "RECURSION AVAILABLE"
+                        ],
+                        "packet_uid" : 24163,
+                        "rdata" : "74.125.228.34",
+                        "rr_name" : "google.com",
+                        "rr_type" : "Answer",
+                        "ttl" : 166,
+                        "type" : "A"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RECURSION DESIRED",
+                           "RECURSION AVAILABLE"
+                        ],
+                        "packet_uid" : 24163,
+                        "rdata" : "74.125.228.35",
+                        "rr_name" : "google.com",
+                        "rr_type" : "Answer",
+                        "ttl" : 166,
+                        "type" : "A"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RECURSION DESIRED",
+                           "RECURSION AVAILABLE"
+                        ],
+                        "packet_uid" : 24163,
+                        "rdata" : "74.125.228.36",
+                        "rr_name" : "google.com",
+                        "rr_type" : "Answer",
+                        "ttl" : 166,
+                        "type" : "A"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RECURSION DESIRED",
+                           "RECURSION AVAILABLE"
+                        ],
+                        "packet_uid" : 24163,
+                        "rdata" : "74.125.228.37",
+                        "rr_name" : "google.com",
+                        "rr_type" : "Answer",
+                        "ttl" : 166,
+                        "type" : "A"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RECURSION DESIRED",
+                           "RECURSION AVAILABLE"
+                        ],
+                        "packet_uid" : 24163,
+                        "rdata" : "74.125.228.38",
+                        "rr_name" : "google.com",
+                        "rr_type" : "Answer",
+                        "ttl" : 166,
+                        "type" : "A"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RECURSION DESIRED",
+                           "RECURSION AVAILABLE"
+                        ],
+                        "packet_uid" : 24163,
+                        "rdata" : "74.125.228.39",
+                        "rr_name" : "google.com",
+                        "rr_type" : "Answer",
+                        "ttl" : 166,
+                        "type" : "A"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RECURSION DESIRED",
+                           "RECURSION AVAILABLE"
+                        ],
+                        "packet_uid" : 24163,
+                        "rdata" : "74.125.228.40",
+                        "rr_name" : "google.com",
+                        "rr_type" : "Answer",
+                        "ttl" : 166,
+                        "type" : "A"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RECURSION DESIRED",
+                           "RECURSION AVAILABLE"
+                        ],
+                        "packet_uid" : 24163,
+                        "rdata" : "74.125.228.41",
+                        "rr_name" : "google.com",
+                        "rr_type" : "Answer",
+                        "ttl" : 166,
+                        "type" : "A"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RECURSION DESIRED",
+                           "RECURSION AVAILABLE"
+                        ],
+                        "packet_uid" : 24163,
+                        "rdata" : "ns4.google.com",
+                        "rr_name" : "google.com",
+                        "rr_type" : "Authoritative",
+                        "ttl" : 1051,
+                        "type" : "NS"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RECURSION DESIRED",
+                           "RECURSION AVAILABLE"
+                        ],
+                        "packet_uid" : 24163,
+                        "rdata" : "ns2.google.com",
+                        "rr_name" : "google.com",
+                        "rr_type" : "Authoritative",
+                        "ttl" : 1051,
+                        "type" : "NS"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RECURSION DESIRED",
+                           "RECURSION AVAILABLE"
+                        ],
+                        "packet_uid" : 24163,
+                        "rdata" : "ns3.google.com",
+                        "rr_name" : "google.com",
+                        "rr_type" : "Authoritative",
+                        "ttl" : 1051,
+                        "type" : "NS"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RECURSION DESIRED",
+                           "RECURSION AVAILABLE"
+                        ],
+                        "packet_uid" : 24163,
+                        "rdata" : "ns1.google.com",
+                        "rr_name" : "google.com",
+                        "rr_type" : "Authoritative",
+                        "ttl" : 1051,
+                        "type" : "NS"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RECURSION DESIRED",
+                           "RECURSION AVAILABLE"
+                        ],
+                        "packet_uid" : 24163,
+                        "rdata" : "216.239.32.10",
+                        "rr_name" : "ns1.google.com",
+                        "rr_type" : "Additional",
+                        "ttl" : 15883,
+                        "type" : "A"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RECURSION DESIRED",
+                           "RECURSION AVAILABLE"
+                        ],
+                        "packet_uid" : 24163,
+                        "rdata" : "216.239.36.10",
+                        "rr_name" : "ns3.google.com",
+                        "rr_type" : "Additional",
+                        "ttl" : 251858,
+                        "type" : "A"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RECURSION DESIRED",
+                           "RECURSION AVAILABLE"
+                        ],
+                        "packet_uid" : 24163,
+                        "rdata" : "216.239.38.10",
+                        "rr_name" : "ns4.google.com",
+                        "rr_type" : "Additional",
+                        "ttl" : 2392,
+                        "type" : "A"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RECURSION DESIRED",
+                           "RECURSION AVAILABLE"
+                        ],
+                        "packet_uid" : 24163,
+                        "rdata" : "216.239.34.10",
+                        "rr_name" : "ns2.google.com",
+                        "rr_type" : "Additional",
+                        "ttl" : 725,
+                        "type" : "A"
+                     }
+                  ],
+                  "answersCnt" : 19,
+                  "query" : {
+                     "class" : "IN",
+                     "hostname" : "google.com",
+                     "opcode" : "QUERY",
+                     "opcode_id" : 0,
+                     "packet_uid" : 24163,
+                     "type" : "A"
+                  },
+                  "rcode" : "NOERROR",
+                  "rcode_id" : 0
+               }
+            ],
+            "ocsfdnsCnt" : 1,
             "packetLen" : [
                94,
                90,
@@ -167,9 +432,10 @@
             ],
             "protocol" : [
                "dns",
+               "ocsfdns",
                "tcp"
             ],
-            "protocolCnt" : 2,
+            "protocolCnt" : 3,
             "segmentCnt" : 1,
             "server" : {
                "bytes" : 342
@@ -328,6 +594,193 @@
                "packets" : 10
             },
             "node" : "test",
+            "ocsfdns" : [
+               {
+                  "answers" : [
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RECURSION DESIRED",
+                           "RECURSION AVAILABLE"
+                        ],
+                        "packet_uid" : 58092,
+                        "rdata" : "205.188.100.58",
+                        "rr_name" : "aol.com",
+                        "rr_type" : "Answer",
+                        "ttl" : 10,
+                        "type" : "A"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RECURSION DESIRED",
+                           "RECURSION AVAILABLE"
+                        ],
+                        "packet_uid" : 58092,
+                        "rdata" : "205.188.101.58",
+                        "rr_name" : "aol.com",
+                        "rr_type" : "Answer",
+                        "ttl" : 10,
+                        "type" : "A"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RECURSION DESIRED",
+                           "RECURSION AVAILABLE"
+                        ],
+                        "packet_uid" : 58092,
+                        "rdata" : "207.200.74.38",
+                        "rr_name" : "aol.com",
+                        "rr_type" : "Answer",
+                        "ttl" : 10,
+                        "type" : "A"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RECURSION DESIRED",
+                           "RECURSION AVAILABLE"
+                        ],
+                        "packet_uid" : 58092,
+                        "rdata" : "64.12.79.57",
+                        "rr_name" : "aol.com",
+                        "rr_type" : "Answer",
+                        "ttl" : 10,
+                        "type" : "A"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RECURSION DESIRED",
+                           "RECURSION AVAILABLE"
+                        ],
+                        "packet_uid" : 58092,
+                        "rdata" : "64.12.89.186",
+                        "rr_name" : "aol.com",
+                        "rr_type" : "Answer",
+                        "ttl" : 10,
+                        "type" : "A"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RECURSION DESIRED",
+                           "RECURSION AVAILABLE"
+                        ],
+                        "packet_uid" : 58092,
+                        "rdata" : "dns-01.ns.aol.com",
+                        "rr_name" : "aol.com",
+                        "rr_type" : "Authoritative",
+                        "ttl" : 10,
+                        "type" : "NS"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RECURSION DESIRED",
+                           "RECURSION AVAILABLE"
+                        ],
+                        "packet_uid" : 58092,
+                        "rdata" : "dns-02.ns.aol.com",
+                        "rr_name" : "aol.com",
+                        "rr_type" : "Authoritative",
+                        "ttl" : 10,
+                        "type" : "NS"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RECURSION DESIRED",
+                           "RECURSION AVAILABLE"
+                        ],
+                        "packet_uid" : 58092,
+                        "rdata" : "dns-06.ns.aol.com",
+                        "rr_name" : "aol.com",
+                        "rr_type" : "Authoritative",
+                        "ttl" : 10,
+                        "type" : "NS"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RECURSION DESIRED",
+                           "RECURSION AVAILABLE"
+                        ],
+                        "packet_uid" : 58092,
+                        "rdata" : "dns-07.ns.aol.com",
+                        "rr_name" : "aol.com",
+                        "rr_type" : "Authoritative",
+                        "ttl" : 10,
+                        "type" : "NS"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RECURSION DESIRED",
+                           "RECURSION AVAILABLE"
+                        ],
+                        "packet_uid" : 58092,
+                        "rdata" : "64.236.1.107",
+                        "rr_name" : "dns-07.ns.aol.com",
+                        "rr_type" : "Additional",
+                        "ttl" : 69,
+                        "type" : "A"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RECURSION DESIRED",
+                           "RECURSION AVAILABLE"
+                        ],
+                        "packet_uid" : 58092,
+                        "rdata" : "207.200.73.80",
+                        "rr_name" : "dns-06.ns.aol.com",
+                        "rr_type" : "Additional",
+                        "ttl" : 421,
+                        "type" : "A"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RECURSION DESIRED",
+                           "RECURSION AVAILABLE"
+                        ],
+                        "packet_uid" : 58092,
+                        "rdata" : "64.12.51.132",
+                        "rr_name" : "dns-01.ns.aol.com",
+                        "rr_type" : "Additional",
+                        "ttl" : 302,
+                        "type" : "A"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RECURSION DESIRED",
+                           "RECURSION AVAILABLE"
+                        ],
+                        "packet_uid" : 58092,
+                        "rdata" : "205.188.157.232",
+                        "rr_name" : "dns-02.ns.aol.com",
+                        "rr_type" : "Additional",
+                        "ttl" : 1705,
+                        "type" : "A"
+                     }
+                  ],
+                  "answersCnt" : 13,
+                  "query" : {
+                     "class" : "IN",
+                     "hostname" : "aol.com",
+                     "opcode" : "QUERY",
+                     "opcode_id" : 0,
+                     "packet_uid" : 58092,
+                     "type" : "A"
+                  },
+                  "rcode" : "NOERROR",
+                  "rcode_id" : 0
+               }
+            ],
+            "ocsfdnsCnt" : 1,
             "packetLen" : [
                94,
                90,
@@ -354,9 +807,10 @@
             ],
             "protocol" : [
                "dns",
+               "ocsfdns",
                "tcp"
             ],
-            "protocolCnt" : 2,
+            "protocolCnt" : 3,
             "segmentCnt" : 1,
             "server" : {
                "bytes" : 258
