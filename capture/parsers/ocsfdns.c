@@ -882,7 +882,7 @@ void ocsf_dns_save(BSB *jbsb, ArkimeFieldObject_t *object, struct arkime_session
 
     BSB_EXPORT_u08(*jbsb, '}');
 }
-
+/*******************************************************************************************/
 void ocsf_dns_free_object(ArkimeFieldObject_t *object) {
     if (object->object == NULL) {
         ARKIME_TYPE_FREE(ArkimeFieldObject_t, object);
@@ -981,7 +981,7 @@ void ocsf_dns_free_object(ArkimeFieldObject_t *object) {
     ARKIME_TYPE_FREE(OCSFDNS_t, dns);
     ARKIME_TYPE_FREE(ArkimeFieldObject_t, object);
 }
-
+/*******************************************************************************************/
 SUPPRESS_UNSIGNED_INTEGER_OVERFLOW
 SUPPRESS_SHIFT
 SUPPRESS_INT_CONVERSION
@@ -1011,7 +1011,7 @@ uint32_t ocsf_dns_hash(const void *key) {
 
     return hash;
 }
-
+/*******************************************************************************************/
 int ocsf_dns_cmp(const void *keyv, const void *elementv) {
     ArkimeFieldObject_t *key      = (ArkimeFieldObject_t *)keyv;
     ArkimeFieldObject_t *element = (ArkimeFieldObject_t *)elementv;
@@ -1039,7 +1039,6 @@ int ocsf_dns_cmp(const void *keyv, const void *elementv) {
 
     return 1;
 }
-
 /******************************************************************************/
 void arkime_parser_init()
 {
