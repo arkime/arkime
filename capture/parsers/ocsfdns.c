@@ -301,13 +301,13 @@ LOCAL void ocsf_dns_parser(ArkimeSession_t *session, int kind, const uint8_t *da
 
     switch (kind) {
     case 0:
-        arkime_session_add_protocol(session, "dns");
+        arkime_session_add_protocol(session, "ocsfdns");
         break;
     case 1:
-        arkime_session_add_protocol(session, "llmnr");
+        arkime_session_add_protocol(session, "ocsfllmnr");
         break;
     case 2:
-        arkime_session_add_protocol(session, "mdns");
+        arkime_session_add_protocol(session, "ocsfmdns");
         break;
     }
 
@@ -672,8 +672,8 @@ LOCAL int ocsf_dns_tcp_parser(ArkimeSession_t *session, void *uw, const uint8_t 
 /******************************************************************************/
 LOCAL void ocsf_dns_tcp_classify(ArkimeSession_t *session, const uint8_t *UNUSED(data), int UNUSED(len), int UNUSED(which), void *UNUSED(uw))
 {
-    if (session->port2 == 53 && !arkime_session_has_protocol(session, "dns")) {
-        arkime_session_add_protocol(session, "dns");
+    if (session->port2 == 53 && !arkime_session_has_protocol(session, "ocsfdns")) {
+        arkime_session_add_protocol(session, "ocsfdns");
         OCSFDNSInfo_t  *info = ARKIME_TYPE_ALLOC0(OCSFDNSInfo_t);
         arkime_parsers_register(session, ocsf_dns_tcp_parser, info, ocsf_dns_free);
     }
@@ -1204,9 +1204,9 @@ void arkime_parser_init()
     qtypes[255] = "ANY";
     qtypes[257] = "CAA";
 
-    arkime_parsers_classifier_register_port("dns", NULL, 53, ARKIME_PARSERS_PORT_TCP_DST, ocsf_dns_tcp_classify);
+    arkime_parsers_classifier_register_port("ocsfdns", NULL, 53, ARKIME_PARSERS_PORT_TCP_DST, ocsf_dns_tcp_classify);
 
-    arkime_parsers_classifier_register_port("dns",   (void *)(long)0,   53, ARKIME_PARSERS_PORT_UDP, oscf_dns_udp_classify);
-    arkime_parsers_classifier_register_port("llmnr", (void *)(long)1, 5355, ARKIME_PARSERS_PORT_UDP, oscf_dns_udp_classify);
-    arkime_parsers_classifier_register_port("mdns",  (void *)(long)2, 5353, ARKIME_PARSERS_PORT_UDP, oscf_dns_udp_classify);
+    arkime_parsers_classifier_register_port("ocsfdns",   (void *)(long)0,   53, ARKIME_PARSERS_PORT_UDP, oscf_dns_udp_classify);
+    arkime_parsers_classifier_register_port("ocsfllmnr", (void *)(long)1, 5355, ARKIME_PARSERS_PORT_UDP, oscf_dns_udp_classify);
+    arkime_parsers_classifier_register_port("ocsfmdns",  (void *)(long)2, 5353, ARKIME_PARSERS_PORT_UDP, oscf_dns_udp_classify);
 }
