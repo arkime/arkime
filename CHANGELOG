@@ -37,6 +37,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
 ## Capture
   - #2674 Fix filelist not working in scheme mode
   - #2679 Cert.alt can be used in rules
+  - #2699 Disable reader s3 download timeout
 ## Cont3xt
   - #2683 lock integration settings
 ## Viewer
