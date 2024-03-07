@@ -1759,7 +1759,8 @@ Db.getIndices = async (startTime, stopTime, bounding, rotateIndex, extraIndices)
 
       if (isQueryExtraIndex) {
         // TODO: this is NOT the right thing to do with the extra indexes, but just
-        //   testing it for now
+        //   testing it for now. we need to somehow extract the numbers from the index
+        //   name (if possible) and guess what they represent (sort of like below)
         indices.push(iname);
 
       } else {
