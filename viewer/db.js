@@ -215,18 +215,21 @@ function fixIndex (index) {
     }).join(',');
   }
 
-  // If prefix isn't there, add it. But don't add it for sessions2 unless really set.
-  if (!index.startsWith(internals.prefix) && (!index.startsWith('sessions2') || internals.prefix !== 'arkime_')) {
-    index = internals.prefix + index;
-  }
+  // Don't fix extra  user-specified indexes from the queryExtraIndices
+  if (!Array.isArray(internals.info.queryExtraIndices) || internals.info.queryExtraIndices.includes(index)) {
+    // If prefix isn't there, add it. But don't add it for sessions2 unless really set.
+    if (!index.startsWith(internals.prefix) && (!index.startsWith('sessions2') || internals.prefix !== 'arkime_')) {
+      index = internals.prefix + index;
+    }
 
-  if (internals.aliasesCache && !internals.aliasesCache[index]) {
-    if (internals.aliasesCache[index + '-shrink']) {
-      // If the index doesn't exist but the shrink version does exist, add -shrink
-      index += '-shrink';
-    } else if (internals.aliasesCache[index + '-reindex']) {
-      // If the index doesn't exist but the reindex version does exist, add -reindex
-      index += '-reindex';
+    if (internals.aliasesCache && !internals.aliasesCache[index]) {
+      if (internals.aliasesCache[index + '-shrink']) {
+        // If the index doesn't exist but the shrink version does exist, add -shrink
+        index += '-shrink';
+      } else if (internals.aliasesCache[index + '-reindex']) {
+        // If the index doesn't exist but the reindex version does exist, add -reindex
+        index += '-reindex';
+      }
     }
   }
 
