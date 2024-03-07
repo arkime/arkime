@@ -25,6 +25,7 @@ const internals = {
   arkimeNodeStatsCache: new Map(),
   shortcutsCache: new Map(),
   shortcutsCacheTS: new Map(),
+  queryExtraIndicesRegex: new Array(),
   remoteShortcutsIndex: undefined,
   localShortcutsIndex: undefined,
   localShortcutsVersion: -1 // always start with -1 so there's an initial sync of shortcuts from user's es db
@@ -152,6 +153,13 @@ Db.initialize = async (info, cb) => {
 
   if (internals.debug) {
     console.log(`prefix:${internals.prefix} usersPrefix:${internals.usersPrefix}`);
+  }
+
+  // build regular expressions for the user-specified extra query index patterns
+  if (Array.isArray(info.queryExtraIndices)) {
+    for (const pattern in info.queryExtraIndices) {
+      internals.queryExtraIndicesRegex.push(ArkimeUtil.wildcardToRegexp(info.queryExtraIndices[pattern]));
+    }
   }
 
   // Update aliases cache so -shrink/-reindex works
@@ -1742,7 +1750,8 @@ Db.getIndices = async (startTime, stopTime, bounding, rotateIndex, extraIndices)
       }
       if (index.startsWith('sessions2-')) { // sessions2 might not have prefix
         index = index.substring(10);
-      } else if (Array.isArray(internals.info.queryExtraIndices) && internals.info.queryExtraIndices.includes(index)) {
+      } else if (internals.queryExtraIndicesRegex.some(re => re.test(index))) {
+        // extra user-specified indexes from the queryExtraIndices don't have the prefix
         isQueryExtraIndex = true;
       } else {
         index = index.substring(internals.prefix.length + 10);
@@ -1807,6 +1816,9 @@ Db.getIndices = async (startTime, stopTime, bounding, rotateIndex, extraIndices)
       return fixIndex(Db.defaultIndexPatterns(extraIndices));
     }
 
+    if (internals.debug > 2) {
+      console.log(`getIndices: ${indices}`);
+    }
     return indices.join();
   } catch {
     return '';
