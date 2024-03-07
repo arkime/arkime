@@ -1704,7 +1704,7 @@ Db.loadFields = async () => {
 };
 
 Db.defaultIndexPatterns = function (extraIndices) {
-  results = [...new Set([...['sessions2-*', 'sessions3-*'], ...extraIndices])];
+  const results = [...new Set([...['sessions2-*', 'sessions3-*'], ...extraIndices])];
   if (internals.debug > 2) {
     console.log(`defaultIndexPatterns: ${results}`);
   }
