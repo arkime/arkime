@@ -1733,6 +1733,7 @@ Db.getIndices = async (startTime, stopTime, bounding, rotateIndex, extraIndices)
     // For hourly and month indices we may search extra
     for (const iname in aliases) {
       let index = iname;
+      let isQueryExtraIndex = false;
       if (index.endsWith('-shrink')) {
         index = index.substring(0, index.length - 7);
       }
@@ -1741,54 +1742,64 @@ Db.getIndices = async (startTime, stopTime, bounding, rotateIndex, extraIndices)
       }
       if (index.startsWith('sessions2-')) { // sessions2 might not have prefix
         index = index.substring(10);
+      } else if (Array.isArray(internals.info.queryExtraIndices) && internals.info.queryExtraIndices.includes(index)) {
+        isQueryExtraIndex = true;
       } else {
         index = index.substring(internals.prefix.length + 10);
       }
-      let year; let month; let day = 0; let hour = 0; let len;
 
-      if (+index[0] >= 6) {
-        year = 1900 + (+index[0]) * 10 + (+index[1]);
+      if (isQueryExtraIndex) {
+        // TODO: this is NOT the right thing to do with the extra indexes, but just
+        //   testing it for now
+        indices.push(iname);
+
       } else {
-        year = 2000 + (+index[0]) * 10 + (+index[1]);
-      }
+        let year; let month; let day = 0; let hour = 0; let len;
 
-      if (index[2] === 'w') {
-        len = 7 * 24 * 60 * 60;
-        month = 1;
-        day = (+index[3] * 10 + (+index[4])) * 7;
-      } else if (index[2] === 'm') {
-        month = (+index[3]) * 10 + (+index[4]);
-        day = 1;
-        len = 31 * 24 * 60 * 60;
-      } else if (index.length === 6) {
-        month = (+index[2]) * 10 + (+index[3]);
-        day = (+index[4]) * 10 + (+index[5]);
-        len = 24 * 60 * 60;
-      } else {
-        month = (+index[2]) * 10 + (+index[3]);
-        day = (+index[4]) * 10 + (+index[5]);
-        hour = (+index[7]) * 10 + (+index[8]);
-        len = hlength;
-      }
-
-      const start = Date.UTC(year, month - 1, day, hour) / 1000;
-      const stop = Date.UTC(year, month - 1, day, hour) / 1000 + len;
-
-      switch (bounding) {
-      default:
-      case 'last':
-        if (stop >= startTime && start <= stopTime) {
-          indices.push(iname);
+        if (+index[0] >= 6) {
+          year = 1900 + (+index[0]) * 10 + (+index[1]);
+        } else {
+          year = 2000 + (+index[0]) * 10 + (+index[1]);
         }
-        break;
-      case 'first':
-      case 'both':
-      case 'either':
-      case 'database':
-        if (stop >= (startTime - len) && start <= (stopTime + len)) {
-          indices.push(iname);
+
+        if (index[2] === 'w') {
+          len = 7 * 24 * 60 * 60;
+          month = 1;
+          day = (+index[3] * 10 + (+index[4])) * 7;
+        } else if (index[2] === 'm') {
+          month = (+index[3]) * 10 + (+index[4]);
+          day = 1;
+          len = 31 * 24 * 60 * 60;
+        } else if (index.length === 6) {
+          month = (+index[2]) * 10 + (+index[3]);
+          day = (+index[4]) * 10 + (+index[5]);
+          len = 24 * 60 * 60;
+        } else {
+          month = (+index[2]) * 10 + (+index[3]);
+          day = (+index[4]) * 10 + (+index[5]);
+          hour = (+index[7]) * 10 + (+index[8]);
+          len = hlength;
         }
-        break;
+
+        const start = Date.UTC(year, month - 1, day, hour) / 1000;
+        const stop = Date.UTC(year, month - 1, day, hour) / 1000 + len;
+
+        switch (bounding) {
+        default:
+        case 'last':
+          if (stop >= startTime && start <= stopTime) {
+            indices.push(iname);
+          }
+          break;
+        case 'first':
+        case 'both':
+        case 'either':
+        case 'database':
+          if (stop >= (startTime - len) && start <= (stopTime + len)) {
+            indices.push(iname);
+          }
+          break;
+        }
       }
     }
 
