@@ -97,6 +97,7 @@ struct arkimehttpserver_t {
     ArkimeHttpServerName_t  *snames;
     ArkimeClientAuth_t      *clientAuth;
     char                   **defaultHeaders;
+    uint64_t                 timeout;
     int                      snamesCnt;
     int                      snamesPos;
     char                     compress;
@@ -194,7 +195,7 @@ uint8_t *arkime_http_send_sync(void *serverV, const char *method, const char *ke
         curl_easy_setopt(easy, CURLOPT_WRITEFUNCTION, arkime_http_curl_write_callback);
         curl_easy_setopt(easy, CURLOPT_WRITEDATA, (void *)&server->syncRequest);
         curl_easy_setopt(easy, CURLOPT_CONNECTTIMEOUT, 10L);
-        curl_easy_setopt(easy, CURLOPT_TIMEOUT, 120L);
+        curl_easy_setopt(easy, CURLOPT_TIMEOUT, server->timeout);
         curl_easy_setopt(easy, CURLOPT_TCP_KEEPALIVE, 1L);
     } else {
         easy = server->syncRequest.easy;
@@ -884,7 +885,7 @@ gboolean arkime_http_schedule2(void *serverV, const char *method, const char *ke
     }
 
     curl_easy_setopt(request->easy, CURLOPT_CONNECTTIMEOUT, 10L);
-    curl_easy_setopt(request->easy, CURLOPT_TIMEOUT, 120L);
+    curl_easy_setopt(request->easy, CURLOPT_TIMEOUT, server->timeout);
 
     memcpy(request->key, key, key_len);
     request->key[key_len] = 0;
@@ -986,6 +987,13 @@ void arkime_http_set_retries(void *serverV, uint16_t retries)
     server->maxRetries = retries;
 }
 /******************************************************************************/
+void arkime_http_set_timeout(void *serverV, uint64_t timeout)
+{
+    ArkimeHttpServer_t        *server = serverV;
+
+    server->timeout = timeout;
+}
+/******************************************************************************/
 void arkime_http_set_client_cert(void *serverV, char *clientCert,
                                  char *clientKey, char *clientKeyPass)
 {
@@ -1034,6 +1042,7 @@ void *arkime_http_create_server(const char *hostnames, int maxConns, int maxOuts
     server->compress = compress;
     server->maxRetries = 2;
     server->clientAuth = NULL;
+    server->timeout = 120;
 
     for (i = 0; names[i]; i++) {
         g_strstrip(names[i]);
