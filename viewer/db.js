@@ -156,8 +156,8 @@ Db.initialize = async (info, cb) => {
 
   // Update aliases cache so -shrink/-reindex works
   if (internals.nodeName !== undefined) {
-    Db.getAliasesCache(Db.defaultIndexPatterns(extraIndices));
-    setInterval(() => { Db.getAliasesCache(Db.defaultIndexPatterns(extraIndices)); }, 2 * 60 * 1000);
+    Db.getAliasesCache(Db.defaultIndexPatterns(info.queryExtraIndices));
+    setInterval(() => { Db.getAliasesCache(Db.defaultIndexPatterns(info.queryExtraIndices)); }, 2 * 60 * 1000);
   }
 
   internals.localShortcutsIndex = fixIndex('lookups');
