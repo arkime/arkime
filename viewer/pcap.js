@@ -12,6 +12,7 @@ const fs = require('fs');
 const cryptoLib = require('crypto');
 const ipaddr = require('ipaddr.js');
 const zlib = require('zlib');
+const async = require('async');
 const { decompressSync } = require('@xingrz/cppzst');
 
 const internals = {
@@ -1215,16 +1216,16 @@ class Pcap {
       let previous = 0;
 
       const results = [];
-      packets.forEach((item) => {
+      async.forEachSeries(packets, (item, nextCb) => {
         const pkey = item.ip.addr1 + ':' + item.tcp.sport;
         if (pkey === clientKey) {
           if (clientSeq >= (item.tcp.seq + item.tcp.data.length)) {
-            return;
+            return nextCb();
           }
           clientSeq = (item.tcp.seq + item.tcp.data.length);
         } else {
           if (hostSeq >= (item.tcp.seq + item.tcp.data.length)) {
-            return;
+            return nextCb();
           }
           hostSeq = (item.tcp.seq + item.tcp.data.length);
         }
@@ -1255,12 +1256,13 @@ class Pcap {
           item.tcp.data.copy(newBuf, item.tcp.seq - start);
           results[results.length - 1].data = newBuf;
         }
+        setImmediate(nextCb);
+      }, (err) => {
+        if (skey !== results[0].key) {
+          results.unshift({ data: Buffer.alloc(0), key: skey });
+        }
+        cb(null, results);
       });
-
-      if (skey !== results[0].key) {
-        results.unshift({ data: Buffer.alloc(0), key: skey });
-      }
-      cb(null, results);
     } catch (e) {
       cb(e, null);
     }
