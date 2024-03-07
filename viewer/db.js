@@ -216,7 +216,7 @@ function fixIndex (index) {
   }
 
   // Don't fix extra  user-specified indexes from the queryExtraIndices
-  if (!Array.isArray(internals.info.queryExtraIndices) || internals.info.queryExtraIndices.includes(index)) {
+  if (!Array.isArray(internals.info.queryExtraIndices) || !internals.info.queryExtraIndices.includes(index)) {
     // If prefix isn't there, add it. But don't add it for sessions2 unless really set.
     if (!index.startsWith(internals.prefix) && (!index.startsWith('sessions2') || internals.prefix !== 'arkime_')) {
       index = internals.prefix + index;
