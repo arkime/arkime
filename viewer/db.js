@@ -156,8 +156,8 @@ Db.initialize = async (info, cb) => {
 
   // Update aliases cache so -shrink/-reindex works
   if (internals.nodeName !== undefined) {
-    Db.getAliasesCache(['sessions2-*', 'sessions3-*']);
-    setInterval(() => { Db.getAliasesCache(['sessions2-*', 'sessions3-*']); }, 2 * 60 * 1000);
+    Db.getAliasesCache(Db.defaultIndexPatterns(extraIndices));
+    setInterval(() => { Db.getAliasesCache(Db.defaultIndexPatterns(extraIndices)); }, 2 * 60 * 1000);
   }
 
   internals.localShortcutsIndex = fixIndex('lookups');
@@ -258,7 +258,7 @@ Db.getSessionPromise = (id, options) => {
   });
 };
 
-// Fields too hard to leave as arrays for now
+//  too hard to leave as arrays for now
 const singletonFields = {
   'destination.ip': true,
   'destination.port': true,
@@ -1703,9 +1703,17 @@ Db.loadFields = async () => {
   return Db.search('fields', 'field', { size: 10000 });
 };
 
-Db.getIndices = async (startTime, stopTime, bounding, rotateIndex) => {
+Db.defaultIndexPatterns = function (extraIndices) {
+  results = [...new Set([...['sessions2-*', 'sessions3-*'], ...extraIndices])];
+  if (internals.debug > 2) {
+    console.log(`defaultIndexPatterns: ${results}`);
+  }
+  return results;
+};
+
+Db.getIndices = async (startTime, stopTime, bounding, rotateIndex, extraIndices) => {
   try {
-    const aliases = await Db.getAliasesCache(['sessions2-*', 'sessions3-*']);
+    const aliases = await Db.getAliasesCache(Db.defaultIndexPatterns(extraIndices));
     const indices = [];
 
     // Guess how long hour indices we find are
@@ -1782,7 +1790,7 @@ Db.getIndices = async (startTime, stopTime, bounding, rotateIndex) => {
     }
 
     if (indices.length === 0) {
-      return fixIndex(['sessions2-*', 'sessions3-*']);
+      return fixIndex(Db.defaultIndexPatterns(extraIndices));
     }
 
     return indices.join();
