@@ -45,7 +45,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #2680 add default user settings to viewer config
           https://arkime.com/settings#user-setting-defaults
   - #2681 fix unique of numerical fields
-  - #2700 Make sure pcap reassembly doesn't starve viewer
+  - #2701 Make sure pcap reassembly doesn't starve viewer
 
 5.0.1 2024/02/20
 ## Release
